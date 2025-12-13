@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+// ============================================================
+// APP.TSX - New Manager OVHcloud
+// Layout: Sidebar | Header (NAV1 Univers) + NAV2 Sections + Content
+// NAV3 (sous-sections) = géré à l'intérieur de chaque page
+// ============================================================
+
+import { useEffect, useState, useMemo } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -13,72 +19,111 @@ import CommunicationPage from "./pages/Communication";
 import SupportPage from "./pages/Support";
 import CarbonPage from "./pages/Carbon";
 import IamPage from "./pages/Iam";
-import { Sidebar, NavNode } from "./components/Sidebar";
+import { Sidebar, universes, Icon } from "./components/Sidebar";
 import { AccountSidebar } from "./components/AccountSidebar";
 import * as authService from "./services/auth.service";
 import type { OvhCredentials, OvhUser } from "./types/auth.types";
+import type { Resource, Universe, UniversSection } from "./components/Sidebar/navigationTree";
 import "./design-system/tokens.css";
 
 const STORAGE_KEY = "ovh_credentials";
 
-type PaneType = 
-  | "home" 
-  | "account" 
-  | "billing" 
-  | "services"
-  | "orders"
-  | "communication"
-  | "contacts"
-  | "carbon"
-  | "support"
-  | "iam"
-  | "dev"
-  | "dedicated-servers"
-  | "vps"
-  | "public-cloud"
-  | "domains"
-  | "hosting"
-  | "emails";
-
-interface PlaceholderConfig {
-  title: string;
-  description?: string;
-  oldManagerPath: string;
+// ============================================================
+// UNIVERS TABS (Niveau 1)
+// ============================================================
+interface UniversTabsProps {
+  universes: Universe[];
+  activeUniverseId: string;
+  onUniverseChange: (universeId: string) => void;
 }
 
-const PLACEHOLDER_CONFIGS: Record<string, PlaceholderConfig> = {
-  "dedicated-servers": { title: "Serveurs dédiés", description: "Gérez vos serveurs dédiés, leurs configurations et options.", oldManagerPath: "#/dedicated/servers" },
-  "vps": { title: "VPS", description: "Gérez vos serveurs virtuels privés.", oldManagerPath: "#/vps" },
-  "public-cloud": { title: "Public Cloud", description: "Gérez vos projets Public Cloud, instances et ressources.", oldManagerPath: "#/public-cloud" },
-  "domains": { title: "Noms de domaine", description: "Gérez vos domaines, DNS et redirections.", oldManagerPath: "#/domain" },
-  "hosting": { title: "Hébergements Web", description: "Gérez vos hébergements web, bases de données et certificats SSL.", oldManagerPath: "#/hosting" },
-  "emails": { title: "E-mails", description: "Gérez vos comptes e-mail, alias et redirections.", oldManagerPath: "#/email" },
-};
+function UniversTabs({ universes, activeUniverseId, onUniverseChange }: UniversTabsProps) {
+  return (
+    <nav className="univers-tabs">
+      {universes.map((u) => (
+        <button
+          key={u.id}
+          className={`univers-tab ${activeUniverseId === u.id ? "active" : ""}`}
+          onClick={() => onUniverseChange(u.id)}
+        >
+          {u.label}
+        </button>
+      ))}
+    </nav>
+  );
+}
 
-const NAV_TABS = [
-  { id: "home", label: "Accueil" },
-  { id: "account", label: "Compte" },
-  { id: "billing", label: "Factures" },
-  { id: "services", label: "Services" },
-  { id: "orders", label: "Commandes" },
-  { id: "communication", label: "Communications" },
-  { id: "contacts", label: "Contacts" },
-  { id: "carbon", label: "Carbone" },
-  { id: "support", label: "Assistance" },
-  { id: "iam", label: "IAM" },
-  { id: "dev", label: "Dev" },
-];
+// ============================================================
+// SECTION TABS (Niveau 2)
+// ============================================================
+interface SectionTabsProps {
+  sections: UniversSection[];
+  activeSectionId: string;
+  onSectionChange: (sectionId: string) => void;
+}
 
+function SectionTabs({ sections, activeSectionId, onSectionChange }: SectionTabsProps) {
+  if (!sections || sections.length === 0) return null;
+  return (
+    <nav className="section-tabs">
+      {sections.map((s) => (
+        <button
+          key={s.id}
+          className={`section-tab ${activeSectionId === s.id ? "active" : ""}`}
+          onClick={() => onSectionChange(s.id)}
+        >
+          {s.label}
+        </button>
+      ))}
+      {sections.length > 10 && (
+        <button className="section-tab more">
+          <Icon name="ellipsis" className="more-icon" />
+        </button>
+      )}
+    </nav>
+  );
+}
+
+// ============================================================
+// USER MENU (Header droite)
+// ============================================================
+interface UserMenuProps {
+  user: OvhUser | null;
+  onClick: () => void;
+}
+
+function UserMenu({ user, onClick }: UserMenuProps) {
+  return (
+    <button className="user-menu" onClick={onClick}>
+      <span className="user-badge">OK</span>
+      <span className="user-nic">{user?.nichandle || "---"}</span>
+      <Icon name="chevronDown" className="user-chevron" />
+    </button>
+  );
+}
+
+// ============================================================
+// MAIN APP CONTENT
+// ============================================================
 function AppContent() {
   const { isLoading, logout } = useAuth();
   const [user, setUser] = useState<OvhUser | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checking, setChecking] = useState(true);
   const [accountSidebarOpen, setAccountSidebarOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activePane, setActivePane] = useState<PaneType>("home");
-  const [billingTab, setBillingTab] = useState("invoices");
 
+  // Navigation state
+  const [activeUniverseId, setActiveUniverseId] = useState("home");
+  const [activeSectionId, setActiveSectionId] = useState("home-dashboard");
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+
+  // Ressources (vide par défaut, à charger via API)
+  const [resources, setResources] = useState<Resource[]>([]);
+
+  // Derived state
+  const activeUniverse = useMemo(() => universes.find((u) => u.id === activeUniverseId), [activeUniverseId]);
+
+  // Auth check
   useEffect(() => {
     const checkSession = async () => {
       const stored = sessionStorage.getItem(STORAGE_KEY);
@@ -97,6 +142,17 @@ function AppContent() {
     checkSession();
   }, []);
 
+  // Reset section when universe changes
+  useEffect(() => {
+    if (activeUniverse && activeUniverse.sections.length > 0) {
+      setActiveSectionId(activeUniverse.sections[0].id);
+    } else {
+      setActiveSectionId("");
+    }
+    setSelectedResource(null);
+    setResources([]);
+  }, [activeUniverseId]);
+
   const handleLogout = () => {
     sessionStorage.removeItem(STORAGE_KEY);
     sessionStorage.removeItem("ovh_user");
@@ -106,101 +162,157 @@ function AppContent() {
     logout();
   };
 
-  const handleNavigate = (node: NavNode) => {
-    const nodeToPane: Record<string, PaneType> = {
-      "home": "home",
-      "dedicated_server": "dedicated-servers",
-      "vps": "vps",
-      "public_cloud": "public-cloud",
-      "domain": "domains",
-      "hosting_web": "hosting",
-      "email": "emails",
-      "support": "support",
-    };
-    const pane = nodeToPane[node.id];
-    if (pane) { setActivePane(pane); }
-    else if (node.id === "home" || node.url === "#/") { setActivePane("home"); }
+  const handleResourceSelect = (resource: Resource | null) => {
+    setSelectedResource(resource);
   };
 
-  const handleShortcutNavigation = (shortcutId: string) => {
-    switch (shortcutId) {
-      case "ALL_BILLS": setActivePane("billing"); setBillingTab("invoices"); break;
-      case "PAYMENT_FOLLOW_UP": setActivePane("billing"); setBillingTab("payments"); break;
-      case "ADD_PAYMENT_METHOD": setActivePane("billing"); setBillingTab("methods"); break;
-      case "MANAGE_SERVICES": setActivePane("services"); break;
-      default: break;
+  const handleHomeClick = () => {
+    setActiveUniverseId("home");
+    setActiveSectionId("home-dashboard");
+  };
+
+  // Navigation callback pour les pages (ex: raccourcis)
+  const handleNavigate = (target: { section?: string; tab?: string }) => {
+    if (target.section) {
+      setActiveSectionId(target.section);
     }
   };
 
+  // Loading
   if (checking || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-600">Chargement...</div>
+      <div className="app-loading">
+        <div className="loading-text">Chargement...</div>
       </div>
     );
   }
 
-  if (!isAuthenticated) { return <Login />; }
+  // Not authenticated
+  if (!isAuthenticated) {
+    return <Login />;
+  }
 
-  const renderPane = () => {
-    if (PLACEHOLDER_CONFIGS[activePane]) {
-      const config = PLACEHOLDER_CONFIGS[activePane];
-      return <PlaceholderPage {...config} />;
+  // ============================================================
+  // CONTENT ROUTING
+  // NAV3 (sous-sections) est géré par chaque page individuellement
+  // ============================================================
+  const renderContent = () => {
+    // HOME Universe
+    if (activeUniverseId === "home") {
+      switch (activeSectionId) {
+        case "home-dashboard":
+          return <Home />;
+
+        case "home-account":
+          return (
+            <AccountPage
+              user={user}
+              isActive={true}
+              onShortcutClick={(shortcutId) => {
+                // Navigation via raccourcis
+                if (shortcutId === "ALL_BILLS" || shortcutId === "PAYMENT_FOLLOW_UP" || shortcutId === "ADD_PAYMENT_METHOD") {
+                  setActiveSectionId("home-billing");
+                } else if (shortcutId === "MANAGE_SERVICES") {
+                  setActiveSectionId("home-services");
+                }
+              }}
+            />
+          );
+
+        case "home-billing":
+          return <BillingPage isActive={true} />;
+
+        case "home-services":
+          return <ServicesPage isActive={true} />;
+
+        case "home-orders":
+          return <OrdersPage />;
+
+        case "home-contacts":
+          return <ContactsPage />;
+
+        case "home-iam":
+          return <IamPage />;
+
+        case "home-support":
+          return <SupportPage />;
+
+        case "home-communication":
+          return <CommunicationPage />;
+
+        case "home-carbon":
+          return <CarbonPage />;
+
+        case "home-api":
+          return <Dev />;
+
+        default:
+          return <Home />;
+      }
     }
-    switch (activePane) {
-      case "home": return <Home />;
-      case "account": return <AccountPage user={user} isActive={true} onShortcutClick={handleShortcutNavigation} />;
-      case "billing": return <BillingPage isActive={true} initialTab={billingTab} />;
-      case "services": return <ServicesPage isActive={true} />;
-      case "orders": return <OrdersPage />;
-      case "contacts": return <ContactsPage />;
-      case "communication": return <CommunicationPage />;
-      case "support": return <SupportPage />;
-      case "carbon": return <CarbonPage />;
-      case "iam": return <IamPage />;
-      case "dev": return <Dev />;
-      default: return <Home />;
-    }
+
+    // Autres univers - Placeholder pour l'instant
+    const activeSection = activeUniverse?.sections.find((s) => s.id === activeSectionId);
+    return (
+      <PlaceholderPage
+        title={`${activeUniverse?.label || "Univers"} - ${activeSection?.label || "Section"}`}
+        description="Cette section est en cours de développement."
+        oldManagerPath="#/"
+      />
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gray-200 flex">
-      <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={handleNavigate} activeNodeId={activePane} />
-      <main className="flex-1 flex flex-col min-h-screen">
-        <header className="bg-white border-b px-4 py-2 flex items-center justify-between sticky top-0 z-10">
-          <div className="flex items-center gap-4 overflow-x-auto">
-            <nav className="flex gap-1 flex-nowrap">
-              {NAV_TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActivePane(tab.id as PaneType)}
-                  className="px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap"
-                  style={activePane === tab.id ? { backgroundColor: "var(--color-primary-100)", color: "var(--color-primary-700)" } : { color: "var(--color-neutral-600)" }}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-          <button onClick={() => setAccountSidebarOpen(!accountSidebarOpen)} className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0">
-            <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-medium" style={{ backgroundColor: "var(--color-primary-300)" }}>
-              {user?.firstname?.[0]?.toUpperCase() || ""}{user?.name?.[0]?.toUpperCase() || ""}
-            </div>
-            <span className="text-sm text-gray-700 hidden md:inline">{user?.nichandle}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          </button>
+    <div className="app-layout">
+      {/* Sidebar gauche */}
+      <Sidebar
+        resources={resources}
+        selectedResourceId={selectedResource?.id}
+        onResourceSelect={handleResourceSelect}
+        onHomeClick={handleHomeClick}
+      />
+
+      {/* Zone principale */}
+      <div className="main-area">
+        {/* Header: NAV1 Univers tabs + User menu */}
+        <header className="main-header">
+          <UniversTabs
+            universes={universes}
+            activeUniverseId={activeUniverseId}
+            onUniverseChange={setActiveUniverseId}
+          />
+          <UserMenu user={user} onClick={() => setAccountSidebarOpen(!accountSidebarOpen)} />
         </header>
-        <div className="flex-1 overflow-hidden bg-gray-100">
-          <div className="h-full overflow-y-auto">{renderPane()}</div>
-        </div>
-      </main>
-      <AccountSidebar user={user} isOpen={accountSidebarOpen} onClose={() => setAccountSidebarOpen(false)} onLogout={handleLogout} />
+
+        {/* NAV2: Section tabs */}
+        {activeUniverse && activeUniverse.sections.length > 0 && (
+          <SectionTabs
+            sections={activeUniverse.sections}
+            activeSectionId={activeSectionId}
+            onSectionChange={setActiveSectionId}
+          />
+        )}
+
+        {/* Content area - NAV3 est géré à l'intérieur de chaque page */}
+        <main className="content-area">
+          {renderContent()}
+        </main>
+      </div>
+
+      {/* Account Sidebar (droite) */}
+      <AccountSidebar
+        user={user}
+        isOpen={accountSidebarOpen}
+        onClose={() => setAccountSidebarOpen(false)}
+        onLogout={handleLogout}
+      />
     </div>
   );
 }
 
+// ============================================================
+// APP ROOT
+// ============================================================
 export default function App() {
   return (
     <AuthProvider>

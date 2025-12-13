@@ -1,16 +1,23 @@
-import { useState } from "react";
-import { navigationTree, assistanceTree, icons, NavNode } from "./navigationTree";
+// ============================================================
+// SIDEBAR - New Manager OVHcloud
+// Layout: Header → Search → Liste (TOUS + ressources) → Pagination
+// ============================================================
+
+import { useState, useMemo } from "react";
+import { icons, Resource } from "./navigationTree";
 import "./styles.css";
 
 interface SidebarProps {
-  isOpen: boolean;
-  onToggle: () => void;
-  onNavigate: (node: NavNode) => void;
-  activeNodeId?: string;
+  resources: Resource[];
+  selectedResourceId?: string;
+  onResourceSelect: (resource: Resource | null) => void;
+  onHomeClick: () => void;
 }
 
+type ViewMode = "list" | "grid";
+
 function Icon({ name, className = "" }: { name: string; className?: string }) {
-  const path = icons[name as keyof typeof icons];
+  const path = icons[name];
   if (!path) return null;
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -19,150 +26,134 @@ function Icon({ name, className = "" }: { name: string; className?: string }) {
   );
 }
 
-export default function Sidebar({ isOpen, onToggle, onNavigate, activeNodeId }: SidebarProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+export default function Sidebar({ resources, selectedResourceId, onResourceSelect, onHomeClick }: SidebarProps) {
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showAll, setShowAll] = useState(true);
+  const itemsPerPage = 15;
 
-  const handleNodeClick = (node: NavNode) => {
-    if (node.children && node.children.length > 0) {
-      setExpandedId(expandedId === node.id ? null : node.id);
-    } else if (node.url) {
-      onNavigate(node);
-    }
+  // Filtrer les ressources par recherche
+  const filteredResources = useMemo(() => {
+    if (!searchQuery.trim()) return resources;
+    const query = searchQuery.toLowerCase();
+    return resources.filter((r) => r.name.toLowerCase().includes(query) || r.type.toLowerCase().includes(query));
+  }, [resources, searchQuery]);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredResources.length / itemsPerPage));
+  const paginatedResources = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredResources.slice(start, start + itemsPerPage);
+  }, [filteredResources, currentPage, itemsPerPage]);
+
+  // Reset page quand la recherche change
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
   };
 
-  const handleChildClick = (child: NavNode, e: React.MouseEvent) => {
-    e.stopPropagation();
-    onNavigate(child);
+  // Clic sur TOUS
+  const handleTousClick = () => {
+    setShowAll(true);
+    onResourceSelect(null);
   };
 
-  const sidebarClass = isOpen ? "ovh-sidebar expanded" : "ovh-sidebar collapsed";
+  // Clic sur une ressource
+  const handleResourceClick = (resource: Resource) => {
+    setShowAll(false);
+    onResourceSelect(resource);
+  };
 
   return (
-    <aside className={sidebarClass}>
-      <div className="sidebar-logo">
-        <a href="#/" className="logo-link">
-          {isOpen ? (
-            <svg viewBox="0 0 120 40" className="logo-full">
-              <text x="10" y="28" fill="var(--color-primary-500)" fontSize="24" fontWeight="bold">OVHcloud</text>
-            </svg>
-          ) : (
-            <svg viewBox="0 0 40 40" className="logo-short">
-              <text x="5" y="28" fill="var(--color-primary-500)" fontSize="24" fontWeight="bold">O</text>
-            </svg>
-          )}
-        </a>
+    <aside className="new-sidebar">
+      {/* Header: Home + View buttons */}
+      <div className="sidebar-header">
+        <button className="header-btn home-btn" onClick={onHomeClick} title="Accueil">
+          <Icon name="home" className="header-icon" />
+        </button>
+        <div className="header-divider" />
+        <button
+          className={`header-btn ${viewMode === "list" ? "active" : ""}`}
+          onClick={() => setViewMode("list")}
+          title="Vue liste"
+        >
+          <Icon name="list" className="header-icon" />
+        </button>
+        <button
+          className={`header-btn ${viewMode === "grid" ? "active" : ""}`}
+          onClick={() => setViewMode("grid")}
+          title="Vue grille"
+        >
+          <Icon name="grid" className="header-icon" />
+        </button>
       </div>
 
-      <nav className="sidebar-nav">
-        <div className="nav-section">
-          {isOpen && <h2 className="nav-title">Mes services</h2>}
+      {/* Search - EN HAUT */}
+      <div className="sidebar-search">
+        <div className="search-input-wrapper">
+          <Icon name="search" className="search-icon" />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
         </div>
-
-        <ul className="nav-list">
-          {navigationTree.map((node) => {
-            const itemClass = node.separator ? "nav-item has-separator" : "nav-item";
-            const linkActive = expandedId === node.id ? "active" : "";
-            const linkSelected = activeNodeId === node.id ? "selected" : "";
-            const linkClass = "nav-link " + linkActive + " " + linkSelected;
-            
-            return (
-              <li key={node.id} className={itemClass}>
-                <button
-                  className={linkClass}
-                  onClick={() => handleNodeClick(node)}
-                  onMouseEnter={() => !isOpen && setHoveredId(node.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  title={!isOpen ? node.label : undefined}
-                >
-                  <Icon name={node.icon || "cog"} className="nav-icon" />
-                  {isOpen && (
-                    <>
-                      <span className="nav-label">{node.label}</span>
-                      {node.children && (
-                        <Icon 
-                          name={expandedId === node.id ? "chevronDown" : "chevronRight"} 
-                          className="nav-chevron" 
-                        />
-                      )}
-                    </>
-                  )}
-                </button>
-
-                {isOpen && expandedId === node.id && node.children && (
-                  <ul className="nav-submenu">
-                    {node.children.map((child) => {
-                      const subClass = activeNodeId === child.id ? "nav-sublink selected" : "nav-sublink";
-                      return (
-                        <li key={child.id}>
-                          <a
-                            href={child.url}
-                            className={subClass}
-                            onClick={(e) => handleChildClick(child, e)}
-                          >
-                            {child.label}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-
-                {!isOpen && hoveredId === node.id && node.children && (
-                  <div className="nav-popover">
-                    <div className="popover-header">{node.label}</div>
-                    <ul className="popover-list">
-                      {node.children.map((child) => (
-                        <li key={child.id}>
-                          <a
-                            href={child.url}
-                            className="popover-link"
-                            onClick={(e) => handleChildClick(child, e)}
-                          >
-                            {child.label}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
-      <div className="sidebar-action">
-        <a href="#/catalog" className={isOpen ? "add-service-btn" : "add-service-btn icon-only"}>
-          <Icon name="cart" className="btn-icon" />
-          {isOpen && <span>Commander</span>}
-        </a>
       </div>
 
-      <div className="sidebar-assistance">
-        {isOpen && <h3 className="assistance-title">Assistance</h3>}
-        <ul className="assistance-list">
-          {assistanceTree.map((node) => (
-            <li key={node.id}>
-              <a
-                href={node.url}
-                className="assistance-link"
-                target={node.external ? "_blank" : undefined}
-                rel={node.external ? "noopener noreferrer" : undefined}
-                title={!isOpen ? node.label : undefined}
+      {/* Liste des ressources */}
+      <div className="sidebar-content">
+        <div className="resources-header">
+          <span className="resources-label">Liste:</span>
+        </div>
+        <ul className={`resources-list ${viewMode}`}>
+          {/* TOUS - toujours en premier */}
+          <li>
+            <button
+              className={`resource-item tous-item ${showAll ? "selected" : ""}`}
+              onClick={handleTousClick}
+            >
+              <span className="resource-name">TOUS</span>
+            </button>
+          </li>
+          {/* Ressources dynamiques */}
+          {paginatedResources.map((resource) => (
+            <li key={resource.id}>
+              <button
+                className={`resource-item ${!showAll && selectedResourceId === resource.id ? "selected" : ""}`}
+                onClick={() => handleResourceClick(resource)}
               >
-                <Icon name={node.icon || "help"} className="assistance-icon" />
-                {isOpen && <span>{node.label}</span>}
-              </a>
+                <span className={`resource-status ${resource.status || "ok"}`} />
+                <span className="resource-name">{resource.name}</span>
+              </button>
             </li>
           ))}
         </ul>
       </div>
 
-      <button className="sidebar-toggle" onClick={onToggle}>
-        {isOpen && <span className="toggle-text">Reduire</span>}
-        <Icon name={isOpen ? "chevronLeft" : "chevronRight"} className="toggle-icon" />
-      </button>
+      {/* Pagination */}
+      <div className="sidebar-pagination">
+        <button
+          className="pagination-btn"
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage <= 1}
+        >
+          <Icon name="chevronLeft" className="pagination-icon" />
+        </button>
+        <span className="pagination-info">{currentPage}</span>
+        <button
+          className="pagination-btn"
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          disabled={currentPage >= totalPages}
+        >
+          <Icon name="chevronRight" className="pagination-icon" />
+        </button>
+      </div>
     </aside>
   );
 }
+
+export { Icon };
+export type { Resource };
