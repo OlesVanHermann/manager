@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { OvhCredentials, OvhUser } from "../types/auth.types";
 import * as servicesService from "../services/services.service";
 import * as billingService from "../services/billing.service";
+import "./dashboard.css";
 
 const STORAGE_KEY = "ovh_credentials";
 
@@ -45,7 +46,23 @@ function formatSupportLevel(level: string | undefined): string {
   return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
 }
 
-export default function Home() {
+// Map service type labels to filter values
+const SERVICE_TYPE_MAP: Record<string, string> = {
+  "Noms de domaine": "domain",
+  "Hebergements Web": "hosting",
+  "Emails": "email",
+  "VPS": "vps",
+  "Serveurs dedies": "dedicated",
+  "Public Cloud": "cloud",
+  "IP": "ip",
+  "Logs Data Platform": "dbaas",
+};
+
+interface HomeProps {
+  onNavigate?: (pane: string, options?: { serviceType?: string }) => void;
+}
+
+export default function Home({ onNavigate }: HomeProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData>({
@@ -88,6 +105,17 @@ export default function Home() {
     }
   };
 
+  const handleNavigate = (pane: string, options?: { serviceType?: string }) => {
+    if (onNavigate) {
+      onNavigate(pane, options);
+    }
+  };
+
+  const handleServiceClick = (serviceType: string) => {
+    const filterType = SERVICE_TYPE_MAP[serviceType] || serviceType;
+    handleNavigate("services", { serviceType: filterType });
+  };
+
   if (loading) {
     return (
       <div className="dashboard-page">
@@ -128,59 +156,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Quick Stats */}
-      <div className="dashboard-stats">
-        <div className="stat-card">
-          <div className="stat-icon services">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" />
-            </svg>
-          </div>
-          <div className="stat-content">
-            <span className="stat-value">{data.services?.total || 0}</span>
-            <span className="stat-label">Services actifs</span>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon billing">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-            </svg>
-          </div>
-          <div className="stat-content">
-            <span className="stat-value">{data.lastBill?.priceWithTax?.text || "-"}</span>
-            <span className="stat-label">Derniere facture</span>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon support">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-            </svg>
-          </div>
-          <div className="stat-content">
-            <span className="stat-value">{formatSupportLevel(user?.supportLevel?.level)}</span>
-            <span className="stat-label">Niveau de support</span>
-          </div>
-        </div>
-
-        <div className={`stat-card ${data.debtAmount > 0 ? "warning" : ""}`}>
-          <div className="stat-icon debt">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div className="stat-content">
-            <span className="stat-value">
-              {data.debtAmount > 0 ? `${data.debtAmount.toFixed(2)} EUR` : "0,00 EUR"}
-            </span>
-            <span className="stat-label">Encours</span>
-          </div>
-        </div>
-      </div>
-
       {/* Services Grid */}
       {data.services && data.services.types.length > 0 && (
         <div className="dashboard-section">
@@ -193,7 +168,12 @@ export default function Home() {
                   <span className="service-count">{service.count}</span>
                 </div>
                 <div className="service-footer">
-                  <a href="#" className="service-link">Voir tout</a>
+                  <button 
+                    className="service-link"
+                    onClick={() => handleServiceClick(service.type)}
+                  >
+                    Voir tout
+                  </button>
                 </div>
               </div>
             ))}
@@ -205,25 +185,25 @@ export default function Home() {
       <div className="dashboard-section">
         <h2 className="section-title">Actions rapides</h2>
         <div className="quick-actions">
-          <a href="#" className="action-card" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('navigate', { detail: 'billing' })); }}>
+          <button className="action-card" onClick={() => handleNavigate("billing")}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
             </svg>
             <span>Mes factures</span>
-          </a>
-          <a href="#" className="action-card" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('navigate', { detail: 'account' })); }}>
+          </button>
+          <button className="action-card" onClick={() => handleNavigate("account")}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
             <span>Mon compte</span>
-          </a>
+          </button>
           <a href="https://help.ovhcloud.com" target="_blank" rel="noopener noreferrer" className="action-card">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
             </svg>
             <span>Documentation</span>
           </a>
-          <a href="https://www.ovhcloud.com/fr/order/" target="_blank" rel="noopener noreferrer" className="action-card highlight">
+          <a href="https://www.ovhcloud.com/fr/" target="_blank" rel="noopener noreferrer" className="action-card highlight">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>

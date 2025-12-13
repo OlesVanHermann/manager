@@ -79,11 +79,26 @@ async function ovhRequest<T>(
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 
+  // Handle 204 No Content
   if (response.status === 204) {
     return {} as T;
   }
 
   return response.json();
+}
+
+// Silent request - returns null on any error (for optional endpoints)
+async function ovhRequestOptional<T>(
+  credentials: OvhCredentials,
+  method: string,
+  path: string
+): Promise<T | null> {
+  try {
+    return await ovhRequest<T>(credentials, method, path);
+  } catch {
+    // Silently fail for optional endpoints
+    return null;
+  }
 }
 
 // ============ SUPPORT LEVEL ============
@@ -106,32 +121,28 @@ export async function updateMarketing(
 }
 
 // ============ PRIVACY / GDPR ============
-// Note: Ces endpoints existent dans le manager officiel mais ne sont pas exposes publiquement.
-// Les try/catch retournent des valeurs par defaut en cas de 404.
+// Note: These endpoints may not be available for all accounts
 
 export async function getPrivacyRequests(credentials: OvhCredentials): Promise<number[]> {
-  try {
-    return await ovhRequest<number[]>(credentials, "GET", "/me/privacy/requests");
-  } catch {
-    console.warn("getPrivacyRequests: endpoint non disponible (404 attendu)");
-    return [];
-  }
+  const result = await ovhRequestOptional<number[]>(credentials, "GET", "/me/privacy/requests");
+  return result || [];
 }
 
 export async function getPrivacyRequest(
   credentials: OvhCredentials,
   requestId: number
-): Promise<PrivacyRequest> {
-  return ovhRequest<PrivacyRequest>(credentials, "GET", `/me/privacy/requests/${requestId}`);
+): Promise<PrivacyRequest | null> {
+  return ovhRequestOptional<PrivacyRequest>(credentials, "GET", `/me/privacy/requests/${requestId}`);
 }
 
 export async function getPrivacyCapabilities(credentials: OvhCredentials): Promise<PrivacyCapabilities> {
-  try {
-    return await ovhRequest<PrivacyCapabilities>(credentials, "GET", "/me/privacy/requests/capabilities");
-  } catch {
-    console.warn("getPrivacyCapabilities: endpoint non disponible (404 attendu)");
-    return { canRequestErasure: false, ineligibilityReasons: ["API non disponible"] };
-  }
+  const result = await ovhRequestOptional<PrivacyCapabilities>(
+    credentials, 
+    "GET", 
+    "/me/privacy/requests/capabilities"
+  );
+  // Default: allow erasure request if endpoint not available
+  return result || { canRequestErasure: true };
 }
 
 export async function createErasureRequest(credentials: OvhCredentials): Promise<PrivacyRequest> {
@@ -141,11 +152,12 @@ export async function createErasureRequest(credentials: OvhCredentials): Promise
 // ============ CONSENTS ============
 
 export async function getConsents(credentials: OvhCredentials): Promise<string[]> {
-  return ovhRequest<string[]>(credentials, "GET", "/me/consent");
+  const result = await ovhRequestOptional<string[]>(credentials, "GET", "/me/consent");
+  return result || [];
 }
 
-export async function getConsent(credentials: OvhCredentials, name: string): Promise<Consent> {
-  return ovhRequest<Consent>(credentials, "GET", `/me/consent/${name}`);
+export async function getConsent(credentials: OvhCredentials, name: string): Promise<Consent | null> {
+  return ovhRequestOptional<Consent>(credentials, "GET", `/me/consent/${name}`);
 }
 
 export async function updateConsent(
@@ -159,12 +171,8 @@ export async function updateConsent(
 // ============ PRIVACY / GDPR (suite) ============
 
 export async function getAllPrivacyRequests(credentials: OvhCredentials): Promise<PrivacyRequest[]> {
-  try {
-    return await ovhRequest<PrivacyRequest[]>(credentials, "GET", "/me/privacy/requests");
-  } catch {
-    console.warn("getAllPrivacyRequests: endpoint non disponible (404 attendu)");
-    return [];
-  }
+  const result = await ovhRequestOptional<PrivacyRequest[]>(credentials, "GET", "/me/privacy/requests");
+  return result || [];
 }
 
 export async function cancelErasureRequest(
@@ -208,23 +216,16 @@ export async function updateDeveloperMode(
 }
 
 // ============ BETA / PREFERENCES ============
-// Note: L'endpoint /me/preferences/manager/* n'est pas expose publiquement.
-// Le try/catch retourne false par defaut en cas de 404.
 
 const BETA_PREFERENCE_KEY = "NAV_RESHUFFLE_BETA_ACCESS";
 
 export async function getBetaPreference(credentials: OvhCredentials): Promise<boolean> {
-  try {
-    const pref = await ovhRequest<Preference>(
-      credentials, 
-      "GET", 
-      `/me/preferences/manager/${BETA_PREFERENCE_KEY}`
-    );
-    return pref.value === "true";
-  } catch {
-    console.warn("getBetaPreference: endpoint non disponible (404 attendu)");
-    return false;
-  }
+  const pref = await ovhRequestOptional<Preference>(
+    credentials, 
+    "GET", 
+    `/me/preferences/manager/${BETA_PREFERENCE_KEY}`
+  );
+  return pref?.value === "true";
 }
 
 export async function setBetaPreference(
@@ -234,6 +235,7 @@ export async function setBetaPreference(
   const value = enabled.toString();
   
   try {
+    // Try to update existing preference
     await ovhRequest<void>(
       credentials, 
       "PUT", 
@@ -241,15 +243,12 @@ export async function setBetaPreference(
       { key: BETA_PREFERENCE_KEY, value }
     );
   } catch {
-    try {
-      await ovhRequest<void>(
-        credentials, 
-        "POST", 
-        "/me/preferences/manager",
-        { key: BETA_PREFERENCE_KEY, value }
-      );
-    } catch {
-      console.warn("setBetaPreference: impossible de creer la preference (404 attendu)");
-    }
+    // If not found, create it
+    await ovhRequest<void>(
+      credentials, 
+      "POST", 
+      "/me/preferences/manager",
+      { key: BETA_PREFERENCE_KEY, value }
+    );
   }
 }

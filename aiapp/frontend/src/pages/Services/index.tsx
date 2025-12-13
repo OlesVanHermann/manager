@@ -58,9 +58,10 @@ function getStateBadge(state: string): { label: string; className: string } {
 
 interface ServicesPageProps {
   isActive?: boolean;
+  initialTypeFilter?: string;
 }
 
-export function ServicesPage({ isActive }: ServicesPageProps) {
+export function ServicesPage({ isActive, initialTypeFilter }: ServicesPageProps) {
   const [services, setServices] = useState<BillingService[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,13 +70,21 @@ export function ServicesPage({ isActive }: ServicesPageProps) {
   
   // Filters
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState(initialTypeFilter || "all");
   const [statusFilter, setStatusFilter] = useState<ServiceStatusFilter>("all");
   const [stateFilter, setStateFilter] = useState<ServiceStateFilter>("all");
   
   // Pagination
   const [page, setPage] = useState(0);
   const [pageSize] = useState(25);
+
+  // Reset type filter when initialTypeFilter changes
+  useEffect(() => {
+    if (initialTypeFilter) {
+      setTypeFilter(initialTypeFilter);
+      setPage(0);
+    }
+  }, [initialTypeFilter]);
 
   useEffect(() => {
     if (isActive !== false) {
@@ -124,6 +133,14 @@ export function ServicesPage({ isActive }: ServicesPageProps) {
     e.preventDefault();
     setPage(0);
     loadServices();
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    setTypeFilter("all");
+    setStatusFilter("all");
+    setStateFilter("all");
+    setPage(0);
   };
 
   return (
@@ -183,6 +200,12 @@ export function ServicesPage({ isActive }: ServicesPageProps) {
             <option value="suspended">Suspendu</option>
             <option value="expired">Expiré</option>
           </select>
+
+          {(typeFilter !== "all" || statusFilter !== "all" || stateFilter !== "all" || search) && (
+            <button onClick={clearFilters} className="btn btn-secondary">
+              Effacer filtres
+            </button>
+          )}
         </div>
       </div>
 

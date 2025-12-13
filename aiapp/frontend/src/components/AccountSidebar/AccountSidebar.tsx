@@ -9,23 +9,18 @@ interface AccountSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onLogout: () => void;
-  onNavigate: (target: string) => void;
+  onNavigate?: (pane: string) => void;
 }
 
-export default function AccountSidebar({ user, isOpen, onClose, onLogout, onNavigate }: AccountSidebarProps) {
-  const handleNavigate = (target: string) => {
-    onNavigate(target);
-    onClose();
-  };
-
+export default function AccountSidebar({ user, isOpen, onClose, onLogout }: AccountSidebarProps) {
   return (
     <>
       {isOpen && <div className="account-sidebar-overlay" onClick={onClose} />}
       <div className={`account-sidebar-wrapper ${isOpen ? "open" : ""}`}>
         <div className="account-sidebar">
           <UserInfos user={user} onLogout={onLogout} />
-          <Shortcuts onNavigate={handleNavigate} />
-          <UsefulLinks onNavigate={handleNavigate} />
+          <Shortcuts />
+          <UsefulLinks />
         </div>
       </div>
     </>
