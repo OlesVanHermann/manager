@@ -52,9 +52,14 @@ export default function SupportPage({ initialTab = "tickets" }: SupportPageProps
 
   return (
     <div className="support-page">
-      <div className="page-header">
-        <h1>Support</h1>
-        <p className="page-description">Gérez vos demandes d'assistance et votre niveau de support OVHcloud.</p>
+      <div className="support-header">
+        <div className="support-header-content">
+          <h1>Support</h1>
+          <p className="support-subtitle">Gérez vos demandes d'assistance et votre niveau de support OVHcloud.</p>
+        </div>
+        <a href="https://help.ovhcloud.com/csm/fr-support" target="_blank" rel="noopener noreferrer" className="guides-link">
+          Guides
+        </a>
       </div>
 
       <div className="tabs-container">

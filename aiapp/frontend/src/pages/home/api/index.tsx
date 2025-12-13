@@ -51,21 +51,28 @@ export default function Dev({ initialTab = "api" }: DevProps) {
 
   return (
     <div className="dev-page">
-      <div className="page-header">
-        <h1>Playground API</h1>
-        <p className="page-description">Testez les APIs OVHcloud et gérez les paramètres avancés.</p>
+      <div className="api-header">
+        <div className="api-header-content">
+          <h1>Playground API</h1>
+          <p className="api-subtitle">Testez les APIs OVHcloud et gérez les paramètres avancés.</p>
+        </div>
+        <a href="https://api.ovh.com/console" target="_blank" rel="noopener noreferrer" className="guides-link">
+          Console API
+        </a>
       </div>
 
-      <div className="page-tabs">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="tabs-container">
+        <div className="tabs-list">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="tab-content">

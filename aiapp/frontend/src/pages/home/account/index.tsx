@@ -75,10 +75,10 @@ export default function AccountPage({ user, isActive, onNavigate, initialTab }: 
 
   return (
     <div className="account-page">
-      <div className="account-header">
-        <div className="account-header-content">
+      <div className="page-header">
+        <div className="page-header-content">
           <h1>Mon compte</h1>
-          <p className="account-subtitle">
+          <p className="page-subtitle">
             Administrez votre compte client. Dans cette rubrique, vous gérez la sécurité de votre compte et vos paramètres.
           </p>
         </div>
@@ -87,7 +87,7 @@ export default function AccountPage({ user, isActive, onNavigate, initialTab }: 
         </a>
       </div>
 
-      <div className="account-tabs">
+      <div className="tabs-container">
         <div className="tabs-list">
           {tabs.map((tab) => (
             <button

@@ -78,10 +78,10 @@ export function BillingPage({ isActive, initialTab = "services" }: BillingPagePr
   if (!credentials) {
     return (
       <div className="billing-page">
-        <div className="billing-header">
-          <div className="billing-header-content">
+        <div className="page-header">
+          <div className="page-header-content">
             <h1>Facturation</h1>
-            <p className="billing-subtitle">Connectez-vous pour accéder à vos factures et moyens de paiement.</p>
+            <p className="page-subtitle">Connectez-vous pour accéder à vos factures et moyens de paiement.</p>
           </div>
         </div>
         <div className="billing-content">
@@ -97,10 +97,10 @@ export function BillingPage({ isActive, initialTab = "services" }: BillingPagePr
 
   return (
     <div className="billing-page">
-      <div className="billing-header">
-        <div className="billing-header-content">
+      <div className="page-header">
+        <div className="page-header-content">
           <h1>Facturation</h1>
-          <p className="billing-subtitle">Gérez vos services, factures, paiements et moyens de paiement.</p>
+          <p className="page-subtitle">Gérez vos services, factures, paiements et moyens de paiement.</p>
         </div>
         <a href="https://help.ovhcloud.com/csm/fr-billing-faq" target="_blank" rel="noopener noreferrer" className="guides-link">
           <BookIcon /> Guides
