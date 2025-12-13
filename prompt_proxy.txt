@@ -1,0 +1,100 @@
+# Proxy OVH API
+
+## Endpoint
+
+```
+/api/ovh/
+```
+
+## Principe
+
+Le serveur nginx agit comme proxy vers l'API OVH. Il intercepte les requêtes vers `/api/ovh/*`, calcule la signature d'authentification OVH côté serveur, puis transmet la requête à `https://eu.api.ovh.com/1.0/*`.
+
+## Headers à envoyer
+
+| Header | Obligatoire | Description |
+|--------|-------------|-------------|
+| `X-Ovh-App-Key` | Oui | Application Key OVH |
+| `X-Ovh-App-Secret` | Oui | Application Secret OVH |
+| `X-Ovh-Consumer-Key` | Non | Consumer Key (requis pour les appels authentifiés) |
+
+## Mapping des URLs
+
+Le préfixe `/api/ovh` est remplacé par `https://eu.api.ovh.com/1.0` :
+
+```
+/api/ovh/me                    → https://eu.api.ovh.com/1.0/me
+/api/ovh/domain                → https://eu.api.ovh.com/1.0/domain
+/api/ovh/cloud/project         → https://eu.api.ovh.com/1.0/cloud/project
+/api/ovh/domain/zone/{zone}    → https://eu.api.ovh.com/1.0/domain/zone/{zone}
+```
+
+Les query parameters sont transmis automatiquement.
+
+## Exemple d'utilisation
+
+```javascript
+const credentials = {
+  appKey: 'votre-app-key',
+  appSecret: 'votre-app-secret',
+  consumerKey: 'votre-consumer-key'
+};
+
+const response = await fetch('/api/ovh/me', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Ovh-App-Key': credentials.appKey,
+    'X-Ovh-App-Secret': credentials.appSecret,
+    'X-Ovh-Consumer-Key': credentials.consumerKey
+  }
+});
+
+const data = await response.json();
+```
+
+## Méthodes HTTP supportées
+
+- `GET` : lecture de données
+- `POST` : création de ressources
+- `PUT` : modification de ressources
+- `DELETE` : suppression de ressources
+
+Pour les méthodes avec body (POST, PUT), envoyer le JSON dans le body de la requête :
+
+```javascript
+await fetch('/api/ovh/domain/zone/example.com/record', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Ovh-App-Key': credentials.appKey,
+    'X-Ovh-App-Secret': credentials.appSecret,
+    'X-Ovh-Consumer-Key': credentials.consumerKey
+  },
+  body: JSON.stringify({
+    fieldType: 'A',
+    subDomain: 'www',
+    target: '1.2.3.4'
+  })
+});
+```
+
+## Réponses d'erreur
+
+Erreur du proxy (credentials manquants) :
+```json
+{"error": "Missing OVH credentials"}
+```
+
+Erreurs de l'API OVH (transmises directement) :
+```json
+{"message": "Invalid signature"}
+{"message": "This credential is not valid"}
+{"message": "Not authenticated"}
+```
+
+## Sécurité
+
+- Les credentials (`appSecret`) ne sont jamais envoyés à l'API OVH
+- La signature est calculée côté serveur nginx
+- Seule la signature hashée est transmise à OVH
