@@ -1,6 +1,6 @@
 // ============================================================
 // IAM PAGE - Identity & Access Management
-// Univers autonome - 4 sections: Identités, Politiques, Groupes, Logs
+// Univers autonome - Section Accueil avec 4 tabs (NAV3)
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -10,12 +10,24 @@ import "./styles.css";
 
 const STORAGE_KEY = "ovh_credentials";
 
+const tabs = [
+  { id: "identities", label: "Identités" },
+  { id: "policies", label: "Politiques" },
+  { id: "groups", label: "Groupes" },
+  { id: "logs", label: "Logs" },
+];
+
+// Mapping des IDs de navigation vers les IDs de tabs
+const tabIdMap: Record<string, string> = {
+  "iam-identities": "identities",
+  "iam-policies": "policies",
+  "iam-groups": "groups",
+  "iam-logs": "logs",
+};
+
 interface IamPageProps {
   initialTab?: string;
 }
-
-// Note: Dans l'univers IAM, les sections sont directement les tabs
-// La navigation se fait via les section tabs dans App.tsx
 
 function useCredentials(): OvhCredentials | null {
   const stored = sessionStorage.getItem(STORAGE_KEY);
@@ -24,8 +36,17 @@ function useCredentials(): OvhCredentials | null {
 }
 
 export default function IamPage({ initialTab = "identities" }: IamPageProps) {
-  // Le tab actif est contrôlé par la section active dans App.tsx
-  const activeTab = initialTab;
+  const [activeTab, setActiveTab] = useState("identities");
+
+  // Sync avec initialTab (navigation externe)
+  useEffect(() => {
+    if (initialTab) {
+      const mappedTab = tabIdMap[initialTab] || initialTab;
+      if (tabs.some((t) => t.id === mappedTab)) {
+        setActiveTab(mappedTab);
+      }
+    }
+  }, [initialTab]);
 
   return (
     <div className="iam-page">
@@ -39,6 +60,21 @@ export default function IamPage({ initialTab = "identities" }: IamPageProps) {
         <a href="https://docs.ovh.com/fr/iam/" target="_blank" rel="noopener noreferrer" className="guides-link">
           Documentation IAM
         </a>
+      </div>
+
+      {/* NAV3 - Tabs internes */}
+      <div className="tabs-container">
+        <nav className="tabs-list">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
       <div className="iam-content">
