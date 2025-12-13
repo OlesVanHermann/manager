@@ -75,8 +75,6 @@ export function BillingPage({ isActive, initialTab = "services" }: BillingPagePr
 
   if (!isActive) return null;
 
-  const currentIdx = tabs.findIndex((t) => t.id === activeTab);
-
   if (!credentials) {
     return (
       <div className="billing-page">
@@ -109,18 +107,12 @@ export function BillingPage({ isActive, initialTab = "services" }: BillingPagePr
         </a>
       </div>
 
-      <div className="billing-tabs">
-        <button className="tab-nav-btn prev" disabled={currentIdx <= 0} onClick={() => { if (currentIdx > 0) setActiveTab(tabs[currentIdx - 1].id); }}>
-          <ChevronLeftIcon />
-        </button>
+      <div className="tabs-container">
         <div className="tabs-list">
           {tabs.map((tab) => (
             <button key={tab.id} className={`tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
           ))}
         </div>
-        <button className="tab-nav-btn next" disabled={currentIdx >= tabs.length - 1} onClick={() => { if (currentIdx < tabs.length - 1) setActiveTab(tabs[currentIdx + 1].id); }}>
-          <ChevronRightIcon />
-        </button>
       </div>
 
       <div className="billing-content">
@@ -256,7 +248,14 @@ function InvoicesTab({ credentials }: TabProps) {
   };
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-  const formatAmount = (v: number, c: string) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: c }).format(v);
+  const formatAmount = (v: number, c: string) => {
+    if (!c || c.toLowerCase() === "points") return `${v.toLocaleString("fr-FR")} pts`;
+    try {
+      return new Intl.NumberFormat("fr-FR", { style: "currency", currency: c }).format(v);
+    } catch {
+      return `${v.toLocaleString("fr-FR")} ${c}`;
+    }
+  };
   const totalHT = bills.reduce((s, b) => s + b.priceWithoutTax.value, 0);
   const totalTTC = bills.reduce((s, b) => s + b.priceWithTax.value, 0);
   const currency = bills[0]?.priceWithTax.currencyCode || "EUR";
@@ -937,7 +936,5 @@ function ServerIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="non
 function CartIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="empty-icon"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>; }
 function TagIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="empty-icon"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" /></svg>; }
 function BookIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>; }
-function ChevronLeftIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>; }
-function ChevronRightIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>; }
 
 export default BillingPage;

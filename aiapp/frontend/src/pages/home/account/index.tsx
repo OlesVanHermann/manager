@@ -109,9 +109,9 @@ export default function AccountPage({ user, isActive, onNavigate, initialTab }: 
         </div>
       )}
 
-      {activeTab === "edit" && <ProfileEditTab user={user} />}
+      {activeTab === "edit" && <EditTab user={user} />}
       {activeTab === "security" && <SecurityTab />}
-      {activeTab === "gdpr" && <GdprTab />}
+      {activeTab === "gdpr" && <PrivacyTab />}
       {activeTab === "advanced" && <AdvancedTab />}
       {activeTab === "contacts-services" && <ContactsServicesTab />}
       {activeTab === "contacts-requests" && <ContactsRequestsTab />}

@@ -71,7 +71,7 @@ npm run build:prod
 /home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh --from-dist
 ```
 
-### 4.3 Arborescence du framework
+### 4.3 Arborescence du framework (Organisation par Univers)
 ```
 /home/ubuntu/aiapp/frontend/src/
 ├── App.tsx                    # App principale + routing (NAV1 + NAV2)
@@ -84,34 +84,80 @@ npm run build:prod
 │   │   ├── navigationTree.ts  # Définition des univers et sections
 │   │   ├── styles.css         # Styles sidebar
 │   │   └── index.ts           # Exports
-│   └── AccountSidebar/        # Sidebar droite (menu utilisateur)
-│       ├── AccountSidebar.tsx # Composant principal
-│       ├── UserInfos.tsx      # Infos profil
-│       ├── UsefulLinks.tsx    # Liens utiles
-│       ├── Shortcuts.tsx      # Raccourcis
-│       ├── styles.css         # Styles
-│       └── index.ts           # Exports
+│   ├── AccountSidebar/        # Sidebar droite (menu utilisateur)
+│   │   ├── AccountSidebar.tsx # Composant principal
+│   │   ├── UserInfos.tsx      # Infos profil
+│   │   ├── UsefulLinks.tsx    # Liens utiles
+│   │   ├── Shortcuts.tsx      # Raccourcis
+│   │   ├── styles.css         # Styles
+│   │   └── index.ts           # Exports
+│   ├── Skeleton.tsx           # Composants skeleton loading
+│   └── ServiceIcons.tsx       # Icônes des services
 │
-├── pages/                     # Pages/Routes (chaque page gère son NAV3)
-│   ├── Home.tsx               # Dashboard accueil
+├── pages/                     # Pages organisées par UNIVERS (NAV1)
 │   ├── Login.tsx              # Page connexion OAuth OVH
-│   ├── Dev.tsx                # Playground API / debug
-│   ├── Account/               # Mon compte (7 sous-sections)
-│   ├── Billing/               # Facturation (11 sous-sections)
-│   ├── Support/               # Assistance (5 sous-sections)
-│   ├── Carbon/                # Empreinte carbone
-│   ├── Iam/                   # Identity & Access Management (univers séparé)
-│   └── Placeholder/           # Pages placeholder (univers non implémentés)
+│   │
+│   ├── home/                  # A) Univers HOME
+│   │   ├── index.tsx          # Dashboard accueil
+│   │   ├── styles.css
+│   │   ├── account/           # A.2 Compte (7 tabs)
+│   │   │   ├── index.tsx      # AccountPage (router tabs)
+│   │   │   ├── SecurityTab.tsx
+│   │   │   ├── EditTab.tsx
+│   │   │   ├── PrivacyTab.tsx
+│   │   │   ├── AdvancedTab.tsx
+│   │   │   ├── ContactServicesTab.tsx
+│   │   │   ├── styles.css
+│   │   │   └── components/
+│   │   │       ├── ProfileTile.tsx
+│   │   │       ├── LastBillTile.tsx
+│   │   │       └── ShortcutsTile.tsx
+│   │   ├── billing/           # A.3 Facturation (11 tabs)
+│   │   │   ├── index.tsx      # BillingPage (router tabs)
+│   │   │   ├── ServicesTab.tsx
+│   │   │   ├── PaymentsTab.tsx
+│   │   │   ├── OrdersTab.tsx
+│   │   │   └── styles.css
+│   │   ├── support/           # A.4 Support (5 tabs)
+│   │   │   ├── index.tsx      # SupportPage (router tabs)
+│   │   │   ├── LevelTab.tsx
+│   │   │   ├── CommunicationsTab.tsx
+│   │   │   └── styles.css
+│   │   ├── carbon/            # A.5 Carbone
+│   │   │   ├── index.tsx
+│   │   │   └── styles.css
+│   │   └── api/               # A.6 Playground API (2 tabs)
+│   │       ├── index.tsx
+│   │       └── styles.css
+│   │
+│   ├── iam/                   # G) Univers IAM (4 tabs)
+│   │   ├── index.tsx          # IamPage (router tabs)
+│   │   └── styles.css
+│   │
+│   ├── public-cloud/          # B) Univers PUBLIC CLOUD (placeholder)
+│   ├── private-cloud/         # C) Univers PRIVATE CLOUD (placeholder)
+│   ├── bare-metal/            # D) Univers BARE METAL (placeholder)
+│   ├── web-cloud/             # E) Univers WEB CLOUD (placeholder)
+│   ├── network/               # F) Univers NETWORK (placeholder)
+│   │
+│   └── _placeholder/          # Template pages non implémentées
+│       ├── index.tsx
+│       └── styles.css
 │
 ├── contexts/                  # React Contexts
 │   └── AuthContext.tsx
 │
 ├── services/                  # Services API
+│   ├── api.ts                 # Client API base + getCredentials
 │   ├── auth.service.ts
 │   ├── account.service.ts
 │   ├── billing.service.ts
 │   ├── services.service.ts
+│   ├── orders.service.ts
+│   ├── contacts.service.ts
 │   ├── support.service.ts
+│   ├── notifications.service.ts
+│   ├── agreements.service.ts
 │   ├── iam.service.ts
 │   └── security.service.ts
 │
@@ -135,6 +181,45 @@ npm run build:prod
     ├── DESIGN_TOKENS.md       # Patterns d'usage
     └── ICONS.md               # Icônes disponibles
 ```
+
+### 4.4 Convention de nommage des fichiers
+
+| Élément | Convention | Exemple |
+|---------|------------|---------|
+| Répertoire univers (NAV1) | `kebab-case` | `public-cloud/`, `bare-metal/` |
+| Répertoire section (NAV2) | `kebab-case` | `account/`, `billing/` |
+| Page principale section | `index.tsx` | `pages/home/account/index.tsx` |
+| Tab (NAV3) | `PascalCaseTab.tsx` | `SecurityTab.tsx`, `OrdersTab.tsx` |
+| Composant local | `PascalCase.tsx` | `ProfileTile.tsx` |
+| Styles section | `styles.css` | `pages/home/account/styles.css` |
+
+### 4.5 Imports dans App.tsx
+
+```typescript
+// Univers HOME (A)
+import HomePage from "./pages/home";
+import AccountPage from "./pages/home/account";
+import BillingPage from "./pages/home/billing";
+import SupportPage from "./pages/home/support";
+import CarbonPage from "./pages/home/carbon";
+import ApiPage from "./pages/home/api";
+
+// Univers IAM (G)
+import IamPage from "./pages/iam";
+
+// Placeholder pour univers non implémentés
+import { PlaceholderPage } from "./pages/_placeholder";
+```
+
+### 4.6 Chemins d'imports relatifs
+
+| Depuis | Vers services/ | Vers types/ |
+|--------|---------------|-------------|
+| `pages/home/index.tsx` | `../../services/` | `../../types/` |
+| `pages/home/account/index.tsx` | `../../../services/` | `../../../types/` |
+| `pages/home/account/SecurityTab.tsx` | `../../../services/` | `../../../types/` |
+| `pages/home/account/components/ProfileTile.tsx` | `../../../../services/` | `../../../../types/` |
+| `pages/iam/index.tsx` | `../../services/` | `../../types/` |
 
 ---
 
@@ -250,15 +335,15 @@ La signature des requêtes est gérée automatiquement côté serveur.
 
 ### 6.3 Navigation Niveau 1 (Univers) - NAV1
 
-| ID | Onglet | Description |
-|----|--------|-------------|
-| A | **HOME** | Fonctionnalités non-produit (compte, facturation, support, carbone, API) |
-| B | **PUBLIC CLOUD** | Instances, Storage, Network, AI/ML, Databases |
-| C | **PRIVATE CLOUD** | VMware, Nutanix, SAP HANA |
-| D | **BARE METAL** | Serveurs dédiés, VPS, Managed Bare Metal |
-| E | **WEB CLOUD** | Domaines, Hébergement, Emails, DNS |
-| F | **NETWORK** | IP, vRack, Load Balancer, CDN |
-| G | **IAM** | Identity & Access Management (univers séparé) |
+| ID | Onglet | Répertoire | Description |
+|----|--------|------------|-------------|
+| A | **HOME** | `pages/home/` | Fonctionnalités transverses (compte, facturation, support) |
+| B | **PUBLIC CLOUD** | `pages/public-cloud/` | Instances, Storage, Network, AI/ML, Databases |
+| C | **PRIVATE CLOUD** | `pages/private-cloud/` | VMware, Nutanix, SAP HANA |
+| D | **BARE METAL** | `pages/bare-metal/` | Serveurs dédiés, VPS, Managed Bare Metal |
+| E | **WEB CLOUD** | `pages/web-cloud/` | Domaines, Hébergement, Emails, DNS |
+| F | **NETWORK** | `pages/network/` | IP, vRack, Load Balancer, CDN |
+| G | **IAM** | `pages/iam/` | Identity & Access Management |
 
 ### 6.4 Sidebar gauche (Liste des ressources)
 
@@ -280,96 +365,88 @@ La signature des requêtes est gérée automatiquement côté serveur.
 
 ## 7. Univers HOME - Structure complète (A)
 
-L'univers **HOME** regroupe toutes les fonctionnalités non-produit.
+L'univers **HOME** regroupe toutes les fonctionnalités transverses.
 
 ### 7.1 Sections HOME (NAV2)
 
-| # | Section (NAV2) | Page | Route |
-|---|----------------|------|-------|
-| 1 | **Accueil** | `Home.tsx` | `/home` |
-| 2 | **Compte** | `AccountPage` | `/home/account/*` |
-| 3 | **Facturation** | `BillingPage` | `/home/billing/*` |
-| 4 | **Support** | `SupportPage` | `/home/support/*` |
-| 5 | **Carbone** | `CarbonPage` | `/home/carbon` |
-| 6 | **Playground API** | `Dev.tsx` | `/home/api/*` |
+| # | Section (NAV2) | Répertoire | Route interne |
+|---|----------------|------------|---------------|
+| 1 | **Accueil** | `home/index.tsx` | `home-dashboard` |
+| 2 | **Compte** | `home/account/` | `home-account` |
+| 3 | **Facturation** | `home/billing/` | `home-billing` |
+| 4 | **Support** | `home/support/` | `home-support` |
+| 5 | **Carbone** | `home/carbon/` | `home-carbon` |
+| 6 | **Playground API** | `home/api/` | `home-api` |
 
-### 7.2 Compte - Sous-sections (NAV3)
+### 7.2 Compte - Tabs (NAV3)
 
-| # | Onglet (NAV3) | Description | Endpoint API principal |
-|---|---------------|-------------|------------------------|
-| a | **Informations Générales** | Profil utilisateur (nom, adresse, société) | `GET /me` |
-| b | **Éditer mon compte** | Modification profil | `PUT /me` |
-| c | **Sécurité** | 2FA, sessions, mot de passe | `GET /me/accessRestriction/*` |
-| d | **Données personnelles** | RGPD, export/suppression données | `GET /me/privacy/*` |
-| e | **Paramètres avancés** | Configuration avancée compte | `GET /me/preferences` |
-| f | **Mes services** | Gestion des contacts sur services | `GET /me/contact` |
-| g | **Mes demandes** | Demandes de gestion de contacts | `GET /me/task/contactChange` |
+| # | Tab ID | Label | Fichier | API principale |
+|---|--------|-------|---------|----------------|
+| a | `info` | Informations générales | `index.tsx` (default) | `GET /me` |
+| b | `edit` | Éditer mon compte | `EditTab.tsx` | `PUT /me` |
+| c | `security` | Sécurité | `SecurityTab.tsx` | `GET /me/accessRestriction/*` |
+| d | `gdpr` | Données personnelles | `PrivacyTab.tsx` | `GET /me/privacy/*` |
+| e | `advanced` | Paramètres avancés | `AdvancedTab.tsx` | `GET /me/preferences` |
+| f | `contacts-services` | Mes services (contacts) | `ContactServicesTab.tsx` | `GET /me/contact` |
+| g | `contacts-requests` | Mes demandes (contacts) | *(à créer)* | `GET /me/task/contactChange` |
 
-### 7.3 Facturation - Sous-sections (NAV3)
+### 7.3 Facturation - Tabs (NAV3)
 
-| # | Onglet (NAV3) | Description | Endpoint API principal |
-|---|---------------|-------------|------------------------|
-| a | **Mes services** | Liste services actifs, renouvellement | `GET /services` |
-| b | **Factures** | Historique factures | `GET /me/bill` |
-| c | **Avoirs** | Notes de crédit | `GET /me/refund` |
-| d | **Paiement** | Historique paiements (deposits) | `GET /me/deposit` |
-| e | **Commandes** | Historique commandes | `GET /me/order` |
-| f | **Mes références internes** | PO numbers, références | `GET /me/billing/invoicesByPostalMail` |
-| g | **Moyens de paiement** | CB, SEPA, PayPal | `GET /me/payment/method` |
-| h | **Compte prépayé** | Solde OVH Account | `GET /me/ovhAccount` |
-| i | **Bon d'achat** | Vouchers, codes promo | `GET /me/voucherAccount` |
-| j | **Points de fidélité** | Programme fidélité | `GET /me/fidelityAccount` |
-| k | **Contrats** | Contrats actifs, CGV | `GET /me/agreements` |
+| # | Tab ID | Label | Fichier | API principale |
+|---|--------|-------|---------|----------------|
+| a | `services` | Mes services | `ServicesTab.tsx` | `GET /services` |
+| b | `invoices` | Factures | `index.tsx` (dans BillingPage) | `GET /me/bill` |
+| c | `refunds` | Avoirs | `index.tsx` | `GET /me/refund` |
+| d | `payments` | Paiement | `PaymentsTab.tsx` | `GET /me/deposit` |
+| e | `orders` | Commandes | `OrdersTab.tsx` | `GET /me/order` |
+| f | `references` | Mes références internes | *(à créer)* | `GET /me/billing/invoicesByPostalMail` |
+| g | `methods` | Moyens de paiement | `index.tsx` | `GET /me/payment/method` |
+| h | `prepaid` | Compte prépayé | `index.tsx` | `GET /me/ovhAccount` |
+| i | `vouchers` | Bon d'achat | `index.tsx` | `GET /me/voucherAccount` |
+| j | `fidelity` | Points de fidélité | `index.tsx` | `GET /me/fidelityAccount` |
+| k | `contracts` | Contrats | `index.tsx` | `GET /me/agreements` |
 
-### 7.4 Support - Sous-sections (NAV3)
+### 7.4 Support - Tabs (NAV3)
 
-| # | Onglet (NAV3) | Description | Endpoint API principal |
-|---|---------------|-------------|------------------------|
-| a | **Mes tickets** | Liste des tickets support | `GET /support/tickets` |
-| b | **Créer un nouveau ticket** | Formulaire création ticket | `POST /support/tickets` |
-| c | **Mon niveau de support** | Standard, Business, Enterprise | `GET /me/supportLevel` |
-| d | **Mes communications** | Messages OVH reçus | `GET /me/notification` |
-| e | **Paramètres de diffusion** | Préférences notifications | `GET /me/notification/preferences` |
+| # | Tab ID | Label | Fichier | API principale |
+|---|--------|-------|---------|----------------|
+| a | `tickets` | Mes tickets | `index.tsx` (default) | `GET /support/tickets` |
+| b | `create` | Créer un nouveau ticket | `index.tsx` | `POST /support/tickets` |
+| c | `level` | Mon niveau de support | `LevelTab.tsx` | `GET /me/supportLevel` |
+| d | `communications` | Mes communications | `CommunicationsTab.tsx` | `GET /me/notification` |
+| e | `broadcast` | Paramètres de diffusion | *(à créer)* | `GET /me/notification/preferences` |
 
-### 7.5 Carbone
+### 7.5 Playground API - Tabs (NAV3)
 
-| Page | Description | Endpoint API principal |
-|------|-------------|------------------------|
-| **Dashboard carbone** | Empreinte carbone des services | `GET /me/carbonCalculator/*` |
-
-### 7.6 Playground API - Sous-sections (NAV3)
-
-| # | Onglet (NAV3) | Description | Endpoint API principal |
-|---|---------------|-------------|------------------------|
-| a | **API** | Console interactive, test endpoints | `GET /me/api/application` |
-| b | **Paramètres avancés** | Credentials, tokens, apps | `GET /me/api/credential` |
+| # | Tab ID | Label | Fichier | Description |
+|---|--------|-------|---------|-------------|
+| a | `api` | API | `index.tsx` (default) | Console interactive |
+| b | `advanced` | Paramètres avancés | *(dans index)* | Credentials, tokens |
 
 ---
 
 ## 8. Univers IAM - Structure complète (G)
 
-L'univers **IAM** est un univers séparé dédié à la gestion des accès.
+L'univers **IAM** est un univers autonome dédié à la gestion des accès.
 
-### 8.1 Sections IAM (NAV2)
+### 8.1 Sections IAM (NAV2 = Tabs)
 
-| # | Section (NAV2) | Page | Route |
-|---|----------------|------|-------|
-| 1 | **Accueil** | `IamHome.tsx` | `/iam` |
+Dans IAM, les sections NAV2 sont directement les tabs (pas de sous-navigation).
 
-### 8.2 Accueil IAM - Sous-sections (NAV3)
-
-| # | Onglet (NAV3) | Description | Endpoint API principal |
-|---|---------------|-------------|------------------------|
-| a | **Identités** | Utilisateurs, comptes service | `GET /me/identity/user` |
-| b | **Politiques** | Règles d'accès, permissions | `GET /iam/policy` |
-| c | **Groupes** | Groupes d'utilisateurs | `GET /me/identity/group` |
-| d | **Logs** | Audit trail, historique accès | `GET /me/logs` |
+| # | Section ID | Label | Fichier | API principale |
+|---|------------|-------|---------|----------------|
+| a | `iam-identities` | Identités | `index.tsx` | `GET /me/identity/user` |
+| b | `iam-policies` | Politiques | `index.tsx` | `GET /iam/policy` |
+| c | `iam-groups` | Groupes | `index.tsx` | `GET /me/identity/group` |
+| d | `iam-logs` | Logs | `index.tsx` | `GET /me/logs` |
 
 ---
 
-## 9. Univers Produits (B-F)
+## 9. Univers Produits (B-F) - Placeholders
 
-### 9.1 PUBLIC CLOUD (B)
+Ces univers utilisent `_placeholder/index.tsx` en attendant l'implémentation.
+
+### 9.1 PUBLIC CLOUD (B) - `pages/public-cloud/`
 
 | Section | Subsections |
 |---------|-------------|
@@ -380,7 +457,7 @@ L'univers **IAM** est un univers séparé dédié à la gestion des accès.
 | Databases | Managed DB |
 | AI & ML | Services IA |
 
-### 9.2 PRIVATE CLOUD (C)
+### 9.2 PRIVATE CLOUD (C) - `pages/private-cloud/`
 
 | Section | Subsections |
 |---------|-------------|
@@ -389,7 +466,7 @@ L'univers **IAM** est un univers séparé dédié à la gestion des accès.
 | Nutanix | Clusters |
 | SAP HANA | Instances SAP |
 
-### 9.3 BARE METAL (D)
+### 9.3 BARE METAL (D) - `pages/bare-metal/`
 
 | Section | Subsections |
 |---------|-------------|
@@ -398,7 +475,7 @@ L'univers **IAM** est un univers séparé dédié à la gestion des accès.
 | VPS | Mes VPS, Commander |
 | Managed Bare Metal | Services managés |
 
-### 9.4 WEB CLOUD (E)
+### 9.4 WEB CLOUD (E) - `pages/web-cloud/`
 
 | Section | Subsections |
 |---------|-------------|
@@ -407,7 +484,7 @@ L'univers **IAM** est un univers séparé dédié à la gestion des accès.
 | Hébergements | Mes hébergements, Bases de données |
 | Emails | Email domain, Email Pro, Exchange |
 
-### 9.5 NETWORK (F)
+### 9.5 NETWORK (F) - `pages/network/`
 
 | Section | Subsections |
 |---------|-------------|
@@ -493,14 +570,6 @@ L'univers **IAM** est un univers séparé dédié à la gestion des accès.
 | GET | `/me/identity/group` | Liste groupes |
 | GET | `/me/logs` | Logs audit |
 
-### 10.8 Playground API
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/me/api/application` | Mes applications API |
-| GET | `/me/api/credential` | Mes credentials |
-| POST | `/me/api/application` | Créer application |
-
 ---
 
 ## 11. Old Manager (Référence)
@@ -576,7 +645,7 @@ grep -rn "interface.*Ticket" packages/manager/modules/support/
 
 # Étape 4 : Générer dans new_manager
 # → Créer support.service.ts avec getTickets(), createTicket()
-# → Créer TicketsTab.tsx dans pages/Support/
+# → Créer pages/home/support/TicketsTab.tsx
 ```
 
 ---
@@ -589,8 +658,9 @@ grep -rn "interface.*Ticket" packages/manager/modules/support/
 | **Composants** | Fonctionnels avec hooks |
 | **Nommage composants** | PascalCase |
 | **Nommage fonctions/variables** | camelCase |
+| **Nommage répertoires** | kebab-case |
 | **Structure fichiers** | Un composant = un fichier |
-| **Exports** | Nommés (préférés aux exports default) |
+| **Exports** | Default pour pages, nommés pour composants |
 | **Appels API** | Dans `services/`, jamais dans les composants |
 | **NAV3 (onglets internes)** | Gérés par chaque page, pas dans App.tsx |
 
@@ -640,6 +710,47 @@ cd /home/ubuntu/aiapp/frontend && npm run build:prod
 /home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh --from-dist
 ```
 
+### 13.3 Créer un nouveau Tab
+
+```bash
+# Exemple : créer ContactRequestsTab dans Account
+touch /home/ubuntu/aiapp/frontend/src/pages/home/account/ContactRequestsTab.tsx
+```
+
+Structure type :
+```typescript
+import { useState, useEffect } from "react";
+import type { OvhCredentials } from "../../../types/auth.types";
+import * as contactsService from "../../../services/contacts.service";
+
+const STORAGE_KEY = "ovh_credentials";
+
+function getCredentials(): OvhCredentials | null {
+  const stored = sessionStorage.getItem(STORAGE_KEY);
+  if (!stored) return null;
+  try { return JSON.parse(stored); } catch { return null; }
+}
+
+export default function ContactRequestsTab() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const creds = getCredentials();
+    if (!creds) return;
+    // Appel API...
+  }, []);
+
+  if (loading) return <div>Chargement...</div>;
+  
+  return (
+    <div className="tab-content">
+      {/* Contenu */}
+    </div>
+  );
+}
+```
+
 ---
 
 ## 14. Structure navigationTree.ts
@@ -683,48 +794,34 @@ export const universes: Universe[] = [
 
 ---
 
-## 15. Mapping Routes ↔ Navigation
+## 15. Mapping Fichiers ↔ Navigation
 
-### 15.1 Routes HOME (A)
+### 15.1 Univers HOME (A)
 
-| Route | NAV2 | NAV3 | Composant |
-|-------|------|------|-----------|
-| `/home` | Accueil | - | `Home.tsx` |
-| `/home/account` | Compte | Info générales | `AccountPage/GeneralInfo.tsx` |
-| `/home/account/edit` | Compte | Éditer | `AccountPage/EditAccount.tsx` |
-| `/home/account/security` | Compte | Sécurité | `AccountPage/Security.tsx` |
-| `/home/account/privacy` | Compte | Données perso | `AccountPage/Privacy.tsx` |
-| `/home/account/advanced` | Compte | Paramètres avancés | `AccountPage/Advanced.tsx` |
-| `/home/account/services` | Compte | Mes services | `AccountPage/Services.tsx` |
-| `/home/account/requests` | Compte | Mes demandes | `AccountPage/Requests.tsx` |
-| `/home/billing` | Facturation | Mes services | `BillingPage/Services.tsx` |
-| `/home/billing/bills` | Facturation | Factures | `BillingPage/Bills.tsx` |
-| `/home/billing/refunds` | Facturation | Avoirs | `BillingPage/Refunds.tsx` |
-| `/home/billing/payments` | Facturation | Paiement | `BillingPage/Payments.tsx` |
-| `/home/billing/orders` | Facturation | Commandes | `BillingPage/Orders.tsx` |
-| `/home/billing/references` | Facturation | Références | `BillingPage/References.tsx` |
-| `/home/billing/methods` | Facturation | Moyens paiement | `BillingPage/Methods.tsx` |
-| `/home/billing/prepaid` | Facturation | Prépayé | `BillingPage/Prepaid.tsx` |
-| `/home/billing/vouchers` | Facturation | Bons d'achat | `BillingPage/Vouchers.tsx` |
-| `/home/billing/fidelity` | Facturation | Fidélité | `BillingPage/Fidelity.tsx` |
-| `/home/billing/contracts` | Facturation | Contrats | `BillingPage/Contracts.tsx` |
-| `/home/support` | Support | Mes tickets | `SupportPage/Tickets.tsx` |
-| `/home/support/new` | Support | Créer ticket | `SupportPage/NewTicket.tsx` |
-| `/home/support/level` | Support | Niveau support | `SupportPage/Level.tsx` |
-| `/home/support/communications` | Support | Communications | `SupportPage/Communications.tsx` |
-| `/home/support/preferences` | Support | Paramètres | `SupportPage/Preferences.tsx` |
-| `/home/carbon` | Carbone | - | `CarbonPage.tsx` |
-| `/home/api` | Playground | API | `Dev.tsx` |
-| `/home/api/advanced` | Playground | Paramètres avancés | `Dev/Advanced.tsx` |
+| Fichier | NAV2 | NAV3 (tab) |
+|---------|------|------------|
+| `pages/home/index.tsx` | Accueil | - |
+| `pages/home/account/index.tsx` | Compte | (router) |
+| `pages/home/account/EditTab.tsx` | Compte | Éditer |
+| `pages/home/account/SecurityTab.tsx` | Compte | Sécurité |
+| `pages/home/account/PrivacyTab.tsx` | Compte | Données perso |
+| `pages/home/account/AdvancedTab.tsx` | Compte | Avancé |
+| `pages/home/account/ContactServicesTab.tsx` | Compte | Mes services |
+| `pages/home/billing/index.tsx` | Facturation | (router) |
+| `pages/home/billing/ServicesTab.tsx` | Facturation | Mes services |
+| `pages/home/billing/PaymentsTab.tsx` | Facturation | Paiement |
+| `pages/home/billing/OrdersTab.tsx` | Facturation | Commandes |
+| `pages/home/support/index.tsx` | Support | (router) |
+| `pages/home/support/LevelTab.tsx` | Support | Niveau |
+| `pages/home/support/CommunicationsTab.tsx` | Support | Communications |
+| `pages/home/carbon/index.tsx` | Carbone | - |
+| `pages/home/api/index.tsx` | Playground | API |
 
-### 15.2 Routes IAM (G)
+### 15.2 Univers IAM (G)
 
-| Route | NAV2 | NAV3 | Composant |
-|-------|------|------|-----------|
-| `/iam` | Accueil | Identités | `IamPage/Identities.tsx` |
-| `/iam/policies` | Accueil | Politiques | `IamPage/Policies.tsx` |
-| `/iam/groups` | Accueil | Groupes | `IamPage/Groups.tsx` |
-| `/iam/logs` | Accueil | Logs | `IamPage/Logs.tsx` |
+| Fichier | Section NAV2 |
+|---------|--------------|
+| `pages/iam/index.tsx` | Identités / Politiques / Groupes / Logs |
 
 ---
 

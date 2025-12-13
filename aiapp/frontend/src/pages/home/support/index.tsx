@@ -57,16 +57,18 @@ export default function SupportPage({ initialTab = "tickets" }: SupportPageProps
         <p className="page-description">Gérez vos demandes d'assistance et votre niveau de support OVHcloud.</p>
       </div>
 
-      <div className="page-tabs">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="tabs-container">
+        <div className="tabs-list">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="tab-content support-content">
