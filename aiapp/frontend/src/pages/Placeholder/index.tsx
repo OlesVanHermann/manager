@@ -6,11 +6,7 @@ interface PlaceholderPageProps {
   oldManagerPath?: string;
 }
 
-export function PlaceholderPage({ title, description, oldManagerPath }: PlaceholderPageProps) {
-  const oldManagerUrl = oldManagerPath 
-    ? `https://www.ovh.com/manager/${oldManagerPath}`
-    : "https://www.ovh.com/manager/";
-
+export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
   return (
     <div className="placeholder-page">
       <div className="placeholder-content">
@@ -21,20 +17,14 @@ export function PlaceholderPage({ title, description, oldManagerPath }: Placehol
         </div>
         <h1>{title}</h1>
         <p className="placeholder-description">
-          {description || "Cette page est en cours de développement dans le nouveau manager."}
+          {description || "Cette fonctionnalite est en cours de developpement dans le nouveau manager."}
         </p>
-        <div className="placeholder-actions">
-          <a href={oldManagerUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-            Ouvrir dans l'ancien manager
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="btn-icon">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-            </svg>
-          </a>
+        <div className="placeholder-info">
+          <p>
+            Nous travaillons activement sur cette section.
+            Elle sera disponible prochainement avec toutes les fonctionnalites.
+          </p>
         </div>
-        <p className="placeholder-note">
-          Nous travaillons activement à migrer toutes les fonctionnalités. 
-          En attendant, vous pouvez utiliser l'ancien manager.
-        </p>
       </div>
     </div>
   );

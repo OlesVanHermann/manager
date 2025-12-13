@@ -1,7 +1,7 @@
 // ============================================================
 // APP.TSX - New Manager OVHcloud
 // Layout: Sidebar | Header (NAV1 Univers) + NAV2 Sections + Content
-// NAV3 (sous-sections) = géré à l'intérieur de chaque page
+// NAV3 (sous-sections) = geré à l'interieur de chaque page
 // ============================================================
 
 import { useEffect, useState, useMemo } from "react";
@@ -115,9 +115,11 @@ function AppContent() {
   // Navigation state
   const [activeUniverseId, setActiveUniverseId] = useState("home");
   const [activeSectionId, setActiveSectionId] = useState("home-dashboard");
+  const [activeTabId, setActiveTabId] = useState<string | undefined>(undefined);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+   const [serviceTypeFilter, setServiceTypeFilter] = useState<string | undefined>(undefined);
 
-  // Ressources (vide par défaut, à charger via API)
+  // Ressources (vide par defaut, a charger via API)
   const [resources, setResources] = useState<Resource[]>([]);
 
   // Derived state
@@ -151,6 +153,7 @@ function AppContent() {
     }
     setSelectedResource(null);
     setResources([]);
+    setActiveTabId(undefined);
   }, [activeUniverseId]);
 
   const handleLogout = () => {
@@ -169,13 +172,22 @@ function AppContent() {
   const handleHomeClick = () => {
     setActiveUniverseId("home");
     setActiveSectionId("home-dashboard");
+    setActiveTabId(undefined);
   };
 
-  // Navigation callback pour les pages (ex: raccourcis)
-  const handleNavigate = (target: { section?: string; tab?: string }) => {
-    if (target.section) {
-      setActiveSectionId(target.section);
+  // Navigation callback pour les pages (raccourcis, Home, etc.)
+  const handleNavigate = (section: string, options?: { serviceType?: string; tab?: string }) => {
+    setActiveSectionId(section);
+    if (options?.tab) {
+      setActiveTabId(options.tab);
+    } else {
+      setActiveTabId(undefined);
     }
+     if (options?.serviceType) {
+       setServiceTypeFilter(options.serviceType);
+     } else {
+       setServiceTypeFilter(undefined);
+     }
   };
 
   // Loading
@@ -194,36 +206,29 @@ function AppContent() {
 
   // ============================================================
   // CONTENT ROUTING
-  // NAV3 (sous-sections) est géré par chaque page individuellement
+  // NAV3 (sous-sections) est gere par chaque page individuellement
   // ============================================================
   const renderContent = () => {
     // HOME Universe
     if (activeUniverseId === "home") {
       switch (activeSectionId) {
         case "home-dashboard":
-          return <Home />;
+          return <Home onNavigate={handleNavigate} />;
 
         case "home-account":
           return (
             <AccountPage
               user={user}
               isActive={true}
-              onShortcutClick={(shortcutId) => {
-                // Navigation via raccourcis
-                if (shortcutId === "ALL_BILLS" || shortcutId === "PAYMENT_FOLLOW_UP" || shortcutId === "ADD_PAYMENT_METHOD") {
-                  setActiveSectionId("home-billing");
-                } else if (shortcutId === "MANAGE_SERVICES") {
-                  setActiveSectionId("home-services");
-                }
-              }}
+              onNavigate={handleNavigate}
             />
           );
 
         case "home-billing":
-          return <BillingPage isActive={true} />;
+          return <BillingPage isActive={true} initialTab={activeTabId} />;
 
         case "home-services":
-          return <ServicesPage isActive={true} />;
+           return <ServicesPage isActive={true} initialTypeFilter={serviceTypeFilter} />;
 
         case "home-orders":
           return <OrdersPage />;
@@ -232,7 +237,7 @@ function AppContent() {
           return <ContactsPage />;
 
         case "home-iam":
-          return <IamPage />;
+          return <IamPage initialTab={activeTabId} />;
 
         case "home-support":
           return <SupportPage />;
@@ -247,7 +252,7 @@ function AppContent() {
           return <Dev />;
 
         default:
-          return <Home />;
+          return <Home onNavigate={handleNavigate} />;
       }
     }
 
@@ -256,7 +261,7 @@ function AppContent() {
     return (
       <PlaceholderPage
         title={`${activeUniverse?.label || "Univers"} - ${activeSection?.label || "Section"}`}
-        description="Cette section est en cours de développement."
+        description="Cette section est en cours de developpement."
         oldManagerPath="#/"
       />
     );
@@ -289,11 +294,14 @@ function AppContent() {
           <SectionTabs
             sections={activeUniverse.sections}
             activeSectionId={activeSectionId}
-            onSectionChange={setActiveSectionId}
+            onSectionChange={(sectionId) => {
+              setActiveSectionId(sectionId);
+              setActiveTabId(undefined);
+            }}
           />
         )}
 
-        {/* Content area - NAV3 est géré à l'intérieur de chaque page */}
+        {/* Content area - NAV3 est gere à l'interieur de chaque page */}
         <main className="content-area">
           {renderContent()}
         </main>

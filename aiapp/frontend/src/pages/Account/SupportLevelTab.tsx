@@ -1,55 +1,100 @@
 import { useState, useEffect } from "react";
+import type { OvhCredentials, OvhUser } from "../../types/auth.types";
 import * as accountService from "../../services/account.service";
-import type { OvhCredentials } from "../../types/auth.types";
 
 const STORAGE_KEY = "ovh_credentials";
 
-const supportLevels = [
+function getCredentials(): OvhCredentials | null {
+  const stored = sessionStorage.getItem(STORAGE_KEY);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+function getUser(): OvhUser | null {
+  const stored = sessionStorage.getItem("ovh_user");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+interface SupportLevelInfo {
+  id: string;
+  name: string;
+  description: string;
+  features: string[];
+  price?: string;
+  isCurrent: boolean;
+}
+
+const SUPPORT_LEVELS: Omit<SupportLevelInfo, "isCurrent">[] = [
   {
     id: "standard",
     name: "Standard",
-    description: "Une assistance numerique toujours disponible, et un acces a nos experts dans les moments critiques.",
-    color: "var(--color-support-standard)",
+    description: "Support de base inclus avec tous les produits OVHcloud.",
+    features: [
+      "Acces aux guides et documentation",
+      "Communaute et forum",
+      "Assistance par ticket",
+      "Temps de reponse sous 8h ouvrees",
+    ],
+    price: "Inclus",
   },
   {
     id: "premium",
     name: "Premium",
-    description: "Un acces direct a nos experts pour un accompagnement a la configuration et a l'utilisation de votre solution au quotidien, et dans les moments critiques.",
-    recommended: true,
-    color: "var(--color-support-premium)",
+    description: "Support prioritaire pour les besoins professionnels.",
+    features: [
+      "Tout le niveau Standard",
+      "Support telephonique",
+      "Temps de reponse sous 2h",
+      "Suivi personnalise",
+    ],
+    price: "Sur devis",
   },
   {
     id: "business",
     name: "Business",
-    description: "Un service client 24/7 avec un temps de reponse optimise adapte a des enjeux majeurs.",
-    color: "var(--color-support-business)",
+    description: "Support avance pour les entreprises exigeantes.",
+    features: [
+      "Tout le niveau Premium",
+      "Technical Account Manager dedie",
+      "Temps de reponse sous 1h",
+      "Support 24/7",
+      "Revues trimestrielles",
+    ],
+    price: "Sur devis",
   },
   {
     id: "enterprise",
     name: "Enterprise",
-    description: "Un service client 24/7 au travers d'une relation privilegiee avec une equipe dediee pour vous accompagner a relever vos defis business.",
-    color: "var(--color-support-enterprise)",
+    description: "Support sur mesure pour les grands comptes.",
+    features: [
+      "Tout le niveau Business",
+      "Equipe dediee",
+      "SLA personnalises",
+      "Acces aux roadmaps produits",
+      "Support proactif",
+    ],
+    price: "Sur devis",
   },
 ];
 
 export default function SupportLevelTab() {
-  const [currentLevel, setCurrentLevel] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentLevel, setCurrentLevel] = useState<string>("standard");
+  const user = getUser();
 
   useEffect(() => {
     loadSupportLevel();
   }, []);
-
-  const getCredentials = (): OvhCredentials | null => {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return null;
-    }
-  };
 
   const loadSupportLevel = async () => {
     const credentials = getCredentials();
@@ -61,12 +106,22 @@ export default function SupportLevelTab() {
 
     try {
       const level = await accountService.getSupportLevel(credentials);
-      setCurrentLevel(level.level);
+      setCurrentLevel(level.level || "standard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
+      setCurrentLevel("standard");
     } finally {
       setLoading(false);
     }
+  };
+
+  const getOrderUrl = (levelId: string): string => {
+    const subsidiary = user?.ovhSubsidiary || "FR";
+    const baseUrl = `https://www.ovh.com/${subsidiary.toLowerCase()}/order/express/`;
+    return `${baseUrl}#/express/review?products=~(~(planCode~'support-${levelId}~quantity~1))`;
+  };
+
+  const handleContactSales = () => {
+    window.open("https://www.ovhcloud.com/fr/contact/", "_blank", "noopener,noreferrer");
   };
 
   if (loading) {
@@ -74,7 +129,7 @@ export default function SupportLevelTab() {
       <div className="tab-content">
         <div className="loading-state">
           <div className="spinner"></div>
-          <p>Chargement...</p>
+          <p>Chargement du niveau de support...</p>
         </div>
       </div>
     );
@@ -83,70 +138,86 @@ export default function SupportLevelTab() {
   if (error) {
     return (
       <div className="tab-content">
-        <div className="error-banner">
-          <span>{error}</span>
-          <button onClick={loadSupportLevel}>Reessayer</button>
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={loadSupportLevel} className="btn btn-primary">Reessayer</button>
         </div>
       </div>
     );
   }
 
+  const levels: SupportLevelInfo[] = SUPPORT_LEVELS.map(level => ({
+    ...level,
+    isCurrent: level.id === currentLevel,
+  }));
+
+  const currentLevelInfo = levels.find(l => l.isCurrent);
+
   return (
-    <div className="tab-content support-tab">
-      <div className="support-intro">
+    <div className="tab-content support-level-tab">
+      <div className="support-header">
         <h2>Mon niveau de support</h2>
-        <h3>Quels sont les differents niveaux de support ?</h3>
         <p>
-          Pour repondre a chacune de vos specificites, OVHcloud a mis en place 4 niveaux d'accompagnement. 
-          Par defaut, nos solutions sont livrees avec le niveau Standard. Selon les solutions auxquelles vous souscrivez, 
-          nous vous recommandons un niveau de support qui vous fera beneficier au mieux d'un accompagnement de nos experts. 
-          Vous avez neanmoins le choix de garder votre niveau de support actuel, ou de souscrire a un niveau autre que celui recommande.
+          Choisissez le niveau de support adapte a vos besoins.
+          Plus le niveau est eleve, plus vous beneficiez d'un accompagnement personnalise.
         </p>
       </div>
 
+      {currentLevelInfo && (
+        <div className="current-level-banner">
+          <div className="current-level-info">
+            <span className="current-label">Votre niveau actuel</span>
+            <span className="current-name">{currentLevelInfo.name}</span>
+          </div>
+          <span className="badge badge-primary">Actif</span>
+        </div>
+      )}
+
       <div className="support-levels-grid">
-        {supportLevels.map((level) => {
-          const isCurrentLevel = currentLevel === level.id;
-          return (
-            <div 
-              key={level.id} 
-              className={`support-level-card ${isCurrentLevel ? "current" : ""}`}
-              style={{ borderTopColor: level.color }}
-            >
-              <div className="level-header">
-                <h4>{level.name}</h4>
-                {level.recommended && (
-                  <span className="recommended-badge" style={{ backgroundColor: level.color }}>
-                    Niveau recommande
-                  </span>
-                )}
-              </div>
-              
-              <div className="level-illustration">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke={level.color}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-                </svg>
-              </div>
-
-              <p className="level-description">{level.description}</p>
-
-              <div className="level-actions">
-                {isCurrentLevel ? (
-                  <span className="current-level-badge">Votre niveau actuel</span>
-                ) : (
-                  <a 
-                    href={`https://www.ovh.com/manager/#/billing/autorenew/supportLevel?level=${level.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-outline"
-                  >
-                    Souscrire
-                  </a>
-                )}
-              </div>
+        {levels.map((level) => (
+          <div key={level.id} className={`support-level-card ${level.isCurrent ? "current" : ""}`}>
+            <div className="level-header">
+              <h3>{level.name}</h3>
+              {level.isCurrent && <span className="badge badge-success">Actuel</span>}
             </div>
-          );
-        })}
+            <p className="level-description">{level.description}</p>
+            <div className="level-price">{level.price}</div>
+            <ul className="level-features">
+              {level.features.map((feature, idx) => (
+                <li key={idx}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="check-icon">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <div className="level-actions">
+              {level.isCurrent ? (
+                <button className="btn btn-secondary" disabled>Niveau actuel</button>
+              ) : level.id === "standard" ? (
+                <span className="included-text">Inclus par defaut</span>
+              ) : (
+                <a
+                  href={getOrderUrl(level.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                >
+                  Souscrire
+                </a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="support-contact">
+        <h3>Besoin d'aide pour choisir ?</h3>
+        <p>Nos equipes commerciales sont disponibles pour vous conseiller sur le niveau de support le plus adapte a vos besoins.</p>
+        <button className="btn btn-secondary" onClick={handleContactSales}>
+          Contacter un conseiller
+        </button>
       </div>
     </div>
   );

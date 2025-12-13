@@ -12,7 +12,7 @@ import "./styles.css";
 interface AccountPageProps {
   user: OvhUser | null;
   isActive?: boolean;
-  onShortcutClick?: (shortcutId: string) => void;
+  onNavigate?: (section: string, tab?: string) => void;
 }
 
 const tabs = [
@@ -23,10 +23,26 @@ const tabs = [
   { id: "advanced", label: "Parametres avances" },
 ];
 
-export default function AccountPage({ user, isActive, onShortcutClick }: AccountPageProps) {
+export default function AccountPage({ user, isActive, onNavigate }: AccountPageProps) {
   const [activeTab, setActiveTab] = useState("general");
 
   if (!isActive) return null;
+
+  const handleShortcutClick = (shortcutId: string, section?: string, tab?: string) => {
+    if (onNavigate && section) {
+      onNavigate(section, tab);
+    }
+  };
+
+  const handleEditProfile = () => {
+    setActiveTab("general");
+  };
+
+  const handleViewBill = () => {
+    if (onNavigate) {
+      onNavigate("home-billing", "bills");
+    }
+  };
 
   return (
     <div className="account-page">
@@ -84,9 +100,9 @@ export default function AccountPage({ user, isActive, onShortcutClick }: Account
 
       {activeTab === "general" && (
         <div className="account-tiles">
-          <ProfileTile user={user} />
-          <ShortcutsTile onShortcutClick={onShortcutClick} />
-          <LastBillTile onViewBill={() => onShortcutClick?.("ALL_BILLS")} />
+          <ProfileTile user={user} onEditProfile={handleEditProfile} />
+          <ShortcutsTile onShortcutClick={handleShortcutClick} />
+          <LastBillTile onViewBill={handleViewBill} />
         </div>
       )}
 

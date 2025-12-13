@@ -1,27 +1,33 @@
 interface Shortcut {
   id: string;
   label: string;
+  target: "internal" | "external";
+  section?: string;
+  tab?: string;
+  url?: string;
 }
 
 const shortcuts: Shortcut[] = [
-  { id: "ALL_BILLS", label: "Voir mes factures" },
-  { id: "PAYMENT_FOLLOW_UP", label: "Suivre mes paiements" },
-  { id: "ADD_PAYMENT_METHOD", label: "Ajouter un moyen de paiement" },
-  { id: "ALL_AGREEMENTS", label: "Voir mes contrats" },
-  { id: "MANAGE_SERVICES", label: "Gerer mes services" },
-  { id: "MANAGE_USERS", label: "Gerer mes utilisateurs" },
-  { id: "ADD_CONTACT", label: "Ajouter un contact" },
+  { id: "ALL_BILLS", label: "Voir mes factures", target: "internal", section: "home-billing", tab: "bills" },
+  { id: "PAYMENT_FOLLOW_UP", label: "Suivre mes paiements", target: "internal", section: "home-billing", tab: "payments" },
+  { id: "ADD_PAYMENT_METHOD", label: "Ajouter un moyen de paiement", target: "internal", section: "home-billing", tab: "payment-methods" },
+  { id: "ALL_AGREEMENTS", label: "Voir mes contrats", target: "internal", section: "home-billing", tab: "agreements" },
+  { id: "MANAGE_SERVICES", label: "Gerer mes services", target: "internal", section: "home-services" },
+  { id: "MANAGE_USERS", label: "Gerer mes utilisateurs", target: "internal", section: "home-iam", tab: "users" },
+  { id: "ADD_CONTACT", label: "Ajouter un contact", target: "internal", section: "home-contacts" },
 ];
 
 interface ShortcutsTileProps {
-  onShortcutClick?: (shortcutId: string) => void;
+  onShortcutClick?: (shortcutId: string, section?: string, tab?: string) => void;
 }
 
 export default function ShortcutsTile({ onShortcutClick }: ShortcutsTileProps) {
   const handleClick = (shortcut: Shortcut, e: React.MouseEvent) => {
     e.preventDefault();
-    if (onShortcutClick) {
-      onShortcutClick(shortcut.id);
+    if (shortcut.target === "internal" && onShortcutClick) {
+      onShortcutClick(shortcut.id, shortcut.section, shortcut.tab);
+    } else if (shortcut.target === "external" && shortcut.url) {
+      window.open(shortcut.url, "_blank", "noopener,noreferrer");
     }
   };
 

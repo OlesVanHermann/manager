@@ -1,27 +1,36 @@
 import { useState, useEffect } from "react";
-import * as securityService from "../../services/security.service";
 import type { OvhCredentials } from "../../types/auth.types";
+import * as securityService from "../../services/security.service";
 
 const STORAGE_KEY = "ovh_credentials";
+
+function getCredentials(): OvhCredentials | null {
+  const stored = sessionStorage.getItem(STORAGE_KEY);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+type ModalType = "sms" | "totp" | "u2f" | "backup" | "ip" | "password" | "disable2fa" | null;
 
 export default function SecurityTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [twoFactorStatus, setTwoFactorStatus] = useState<securityService.TwoFactorStatus | null>(null);
+  const [status, setStatus] = useState<securityService.TwoFactorStatus | null>(null);
+  const [ipRestrictions, setIpRestrictions] = useState<securityService.IpRestriction[]>([]);
+  const [ipDefaultRule, setIpDefaultRule] = useState<securityService.IpDefaultRule | null>(null);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [totpSecret, setTotpSecret] = useState<securityService.TotpSecret | null>(null);
+  const [formData, setFormData] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadSecurityData();
   }, []);
-
-  const getCredentials = (): OvhCredentials | null => {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return null;
-    }
-  };
 
   const loadSecurityData = async () => {
     const credentials = getCredentials();
@@ -32,8 +41,14 @@ export default function SecurityTab() {
     }
 
     try {
-      const status = await securityService.getTwoFactorStatus(credentials);
-      setTwoFactorStatus(status);
+      const [twoFactorStatus, restrictions, defaultRule] = await Promise.all([
+        securityService.getTwoFactorStatus(credentials),
+        securityService.getIpRestrictions(credentials),
+        securityService.getIpDefaultRule(credentials),
+      ]);
+      setStatus(twoFactorStatus);
+      setIpRestrictions(restrictions);
+      setIpDefaultRule(defaultRule);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur de chargement");
     } finally {
@@ -41,10 +56,169 @@ export default function SecurityTab() {
     }
   };
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "-";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const openModal = (type: ModalType) => {
+    setActiveModal(type);
+    setModalError(null);
+    setFormData({});
+    setTotpSecret(null);
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setModalError(null);
+    setFormData({});
+    setTotpSecret(null);
+  };
+
+  const handleAddSms = async () => {
+    const credentials = getCredentials();
+    if (!credentials || !formData.phone) return;
+
+    setModalLoading(true);
+    setModalError(null);
+    try {
+      await securityService.addSms(credentials, formData.phone);
+      await loadSecurityData();
+      closeModal();
+    } catch (err) {
+      setModalError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleAddTotp = async () => {
+    const credentials = getCredentials();
+    if (!credentials) return;
+
+    setModalLoading(true);
+    setModalError(null);
+    try {
+      if (!totpSecret) {
+        const secret = await securityService.addTotp(credentials);
+        setTotpSecret(secret);
+      } else if (formData.code) {
+        await securityService.validateTotp(credentials, totpSecret.id, formData.code);
+        await loadSecurityData();
+        closeModal();
+      }
+    } catch (err) {
+      setModalError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleAddU2f = async () => {
+    const credentials = getCredentials();
+    if (!credentials) return;
+
+    setModalLoading(true);
+    setModalError(null);
+    try {
+      const challenge = await securityService.addU2f(credentials);
+      setModalError("Clé de sécurité créée (ID: " + challenge.id + "). Utilisez WebAuthn pour finaliser.");
+      await loadSecurityData();
+    } catch (err) {
+      setModalError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleGenerateBackupCodes = async () => {
+    const credentials = getCredentials();
+    if (!credentials) return;
+
+    setModalLoading(true);
+    setModalError(null);
+    try {
+      const result = await securityService.generateBackupCodes(credentials);
+      setFormData({ codes: result.codes.join("\n") });
+    } catch (err) {
+      setModalError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleValidateBackupCodes = async () => {
+    const credentials = getCredentials();
+    if (!credentials || !formData.code) return;
+
+    setModalLoading(true);
+    setModalError(null);
+    try {
+      await securityService.validateBackupCodes(credentials, formData.code);
+      await loadSecurityData();
+      closeModal();
+    } catch (err) {
+      setModalError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleDisable2fa = async () => {
+    const credentials = getCredentials();
+    if (!credentials || !formData.code) return;
+
+    setModalLoading(true);
+    setModalError(null);
+    try {
+      await securityService.disableBackupCodes(credentials, formData.code);
+      await loadSecurityData();
+      closeModal();
+    } catch (err) {
+      setModalError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleAddIpRestriction = async () => {
+    const credentials = getCredentials();
+    if (!credentials || !formData.ip) return;
+
+    setModalLoading(true);
+    setModalError(null);
+    try {
+      const rule = (formData.rule as "accept" | "deny") || "accept";
+      const warning = formData.warning === "true";
+      await securityService.addIpRestriction(credentials, formData.ip, rule, warning);
+      await loadSecurityData();
+      closeModal();
+    } catch (err) {
+      setModalError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleDeleteIpRestriction = async (id: number) => {
+    const credentials = getCredentials();
+    if (!credentials) return;
+
+    try {
+      await securityService.deleteIpRestriction(credentials, id);
+      await loadSecurityData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setModalError("Un email de reinitialisation va vous etre envoye.");
+  };
+
+  const getStatusBadge = (methodStatus: string) => {
+    if (methodStatus === "enabled" || methodStatus === "active") {
+      return <span className="badge badge-success">Active</span>;
+    }
+    if (methodStatus === "disabled") {
+      return <span className="badge badge-warning">Desactive</span>;
+    }
+    return <span className="badge badge-info">En attente</span>;
   };
 
   if (loading) {
@@ -52,7 +226,7 @@ export default function SecurityTab() {
       <div className="tab-content">
         <div className="loading-state">
           <div className="spinner"></div>
-          <p>Chargement...</p>
+          <p>Chargement des parametres de securite...</p>
         </div>
       </div>
     );
@@ -61,299 +235,391 @@ export default function SecurityTab() {
   if (error) {
     return (
       <div className="tab-content">
-        <div className="error-banner">
-          <span>{error}</span>
-          <button onClick={loadSecurityData}>Reessayer</button>
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={loadSecurityData} className="btn btn-primary">Reessayer</button>
         </div>
       </div>
     );
   }
 
-  const enabledSms = twoFactorStatus?.sms.filter(s => s.status === "enabled") || [];
-  const enabledTotp = twoFactorStatus?.totp.filter(t => t.status === "enabled") || [];
-  const enabledU2f = twoFactorStatus?.u2f.filter(u => u.status === "enabled") || [];
+  const smsStatus = status?.sms.some(s => s.status === "enabled") ? "active" : (status?.sms.length ? "enabled" : "disabled");
+  const totpStatus = status?.totp.some(t => t.status === "enabled") ? "active" : (status?.totp.length ? "enabled" : "disabled");
+  const u2fStatus = status?.u2f.some(u => u.status === "enabled") ? "active" : (status?.u2f.length ? "enabled" : "disabled");
+  const backupStatus = status?.backupCode ? "active" : "disabled";
 
   return (
     <div className="tab-content security-tab">
-      {/* Warning Banner */}
-      <div className="security-warning">
-        <div className="warning-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-          </svg>
-        </div>
-        <div className="warning-content">
-          <strong>Attention !</strong>
-          <p>
-            Les actions effectuees sur cette page modifient les parametres de securite de votre compte.
-            En cas de perte ou de vol de votre smartphone ou de votre ordinateur, stockez vos mots de passe 
-            et la liste de vos codes de secours a usage unique dans un endroit securise. 
-            Ne divulguez aucune information confidentielle.
-          </p>
+      <div className="security-header">
+        <h2>Securite du compte</h2>
+        <p>Gerez les methodes d'authentification et les restrictions d'acces a votre compte.</p>
+      </div>
+
+      <div className="security-section">
+        <h3>Mot de passe</h3>
+        <div className="security-card">
+          <div className="security-card-content">
+            <p>Modifiez votre mot de passe de connexion OVHcloud.</p>
+          </div>
+          <div className="security-card-actions">
+            <button className="btn btn-secondary" onClick={() => openModal("password")}>
+              Modifier le mot de passe
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Password Section */}
-      <div className="security-card">
-        <div className="security-card-header">
-          <div className="security-card-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
+      <div className="security-section">
+        <h3>Double authentification (2FA)</h3>
+        <p className="section-description">
+          Renforcez la securite de votre compte en activant une ou plusieurs methodes de double authentification.
+        </p>
+
+        <div className="security-cards">
+          <div className="security-card">
+            <div className="security-card-header">
+              <span className="method-name">SMS</span>
+              {getStatusBadge(smsStatus)}
+            </div>
+            <div className="security-card-content">
+              <p>Recevez un code par SMS pour vous connecter.</p>
+              {status?.sms && status.sms.length > 0 && (
+                <ul className="method-list">
+                  {status.sms.map(sms => (
+                    <li key={sms.id}>{sms.phoneNumber} - {sms.status}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="security-card-actions">
+              <button className="btn btn-primary" onClick={() => openModal("sms")}>
+                Ajouter un numero
+              </button>
+            </div>
           </div>
-          <h3>Mot de passe</h3>
-          <a 
-            href="https://www.ovh.com/manager/#/useraccount/security/password" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn btn-primary"
-          >
-            Modifier
-          </a>
+
+          <div className="security-card">
+            <div className="security-card-header">
+              <span className="method-name">Application mobile (TOTP)</span>
+              {getStatusBadge(totpStatus)}
+            </div>
+            <div className="security-card-content">
+              <p>Utilisez une application comme Google Authenticator ou Authy.</p>
+              {status?.totp && status.totp.length > 0 && (
+                <ul className="method-list">
+                  {status.totp.map(totp => (
+                    <li key={totp.id}>{totp.description || `TOTP #${totp.id}`} - {totp.status}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="security-card-actions">
+              <button className="btn btn-primary" onClick={() => openModal("totp")}>
+                Ajouter une application
+              </button>
+            </div>
+          </div>
+
+          <div className="security-card">
+            <div className="security-card-header">
+              <span className="method-name">Cle de securite (U2F/WebAuthn)</span>
+              {getStatusBadge(u2fStatus)}
+            </div>
+            <div className="security-card-content">
+              <p>Utilisez une cle physique comme YubiKey.</p>
+              {status?.u2f && status.u2f.length > 0 && (
+                <ul className="method-list">
+                  {status.u2f.map(u2f => (
+                    <li key={u2f.id}>{u2f.description || `U2F #${u2f.id}`} - {u2f.status}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="security-card-actions">
+              <button className="btn btn-primary" onClick={() => openModal("u2f")}>
+                Ajouter une cle
+              </button>
+            </div>
+          </div>
+
+          <div className="security-card">
+            <div className="security-card-header">
+              <span className="method-name">Codes de secours</span>
+              {getStatusBadge(backupStatus)}
+            </div>
+            <div className="security-card-content">
+              <p>Codes a usage unique en cas de perte d'acces.</p>
+              {status?.backupCode && (
+                <p className="backup-remaining">Codes restants : {status.backupCode.remaining}</p>
+              )}
+            </div>
+            <div className="security-card-actions">
+              <button className="btn btn-primary" onClick={() => openModal("backup")}>
+                {status?.backupCode ? "Regenerer les codes" : "Generer des codes"}
+              </button>
+              {status?.isEnabled && (
+                <button className="btn btn-danger" onClick={() => openModal("disable2fa")}>
+                  Desactiver la 2FA
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Double Authentication Section */}
-      <div className="security-card">
-        <div className="security-card-header">
-          <div className="security-card-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
-          </div>
-          <h3>Double authentification</h3>
-          <span className={`status-text ${twoFactorStatus?.isEnabled ? "status-active" : "status-inactive"}`}>
-            {twoFactorStatus?.isEnabled ? "ACTIVE" : "INACTIVE"}
-          </span>
-        </div>
+      <div className="security-section">
+        <h3>Restrictions IP</h3>
+        <p className="section-description">
+          Limitez l'acces a votre compte depuis certaines adresses IP.
+        </p>
 
-        {/* SMS */}
-        <div className="two-factor-method">
-          <div className="method-header">
-            <div className="method-icon-box">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-              </svg>
-              <span className="method-label">1234</span>
-            </div>
-            <div className="method-info">
-              <h4>
-                {enabledSms.length > 0 && <span className="check-icon">✓</span>}
-                SMS
-              </h4>
-              <p>S'authentifier a l'aide d'un code de securite recu par SMS.</p>
-            </div>
-          </div>
-
-          {enabledSms.length > 0 && (
-            <div className="method-details">
-              <table className="method-table">
+        <div className="security-card">
+          <div className="security-card-content">
+            {ipDefaultRule && (
+              <p>Regle par defaut : <strong>{ipDefaultRule.rule === "accept" ? "Autoriser" : "Refuser"}</strong></p>
+            )}
+            {ipRestrictions.length > 0 ? (
+              <table className="ip-table">
                 <thead>
                   <tr>
-                    <th>Numero</th>
-                    <th>Description</th>
-                    <th></th>
+                    <th>IP</th>
+                    <th>Regle</th>
+                    <th>Avertissement</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {enabledSms.map((sms) => (
-                    <tr key={sms.id}>
-                      <td>{sms.phoneNumber}</td>
+                  {ipRestrictions.map(ip => (
+                    <tr key={ip.id}>
+                      <td>{ip.ip}</td>
+                      <td>{ip.rule === "accept" ? "Autoriser" : "Refuser"}</td>
+                      <td>{ip.warning ? "Oui" : "Non"}</td>
                       <td>
-                        {sms.description || "-"}
-                        {sms.lastUsedDate && (
-                          <span className="last-used">(Derniere utilisation : {formatDate(sms.lastUsedDate)})</span>
-                        )}
-                      </td>
-                      <td className="actions-cell">
-                        <button className="btn-icon" title="Actions">•••</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDeleteIpRestriction(ip.id)}>
+                          Supprimer
+                        </button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-
-          <a 
-            href="https://www.ovh.com/manager/#/useraccount/security/sms/add" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn btn-outline"
-          >
-            Ajouter un numero
-          </a>
-        </div>
-
-        {/* TOTP - Application Mobile */}
-        <div className="two-factor-method">
-          <div className="method-header">
-            <div className="method-icon-box">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5h3m-6.75 2.25h10.5a2.25 2.25 0 002.25-2.25v-15a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 4.5v15a2.25 2.25 0 002.25 2.25z" />
-              </svg>
-            </div>
-            <div className="method-info">
-              <h4>
-                {enabledTotp.length > 0 && <span className="check-icon">✓</span>}
-                Application Mobile
-              </h4>
-              <p>S'authentifier a l'aide d'une application mobile gratuite (compatible Android / iPhone / Windows Phone).</p>
-            </div>
+            ) : (
+              <p>Aucune restriction IP configuree.</p>
+            )}
           </div>
-
-          {enabledTotp.length > 0 && (
-            <div className="method-details">
-              <table className="method-table">
-                <thead>
-                  <tr>
-                    <th>Description</th>
-                    <th>Derniere utilisation</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {enabledTotp.map((totp) => (
-                    <tr key={totp.id}>
-                      <td>{totp.description || "Application TOTP"}</td>
-                      <td>{formatDate(totp.lastUsedDate)}</td>
-                      <td className="actions-cell">
-                        <button className="btn-icon" title="Actions">•••</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <a 
-            href="https://www.ovh.com/manager/#/useraccount/security/totp/add" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn btn-outline"
-          >
-            Ajouter une application
-          </a>
-        </div>
-
-        {/* U2F - Security Key */}
-        <div className="two-factor-method">
-          <div className="method-header">
-            <div className="method-icon-box">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-              </svg>
-            </div>
-            <div className="method-info">
-              <h4>
-                {enabledU2f.length > 0 && <span className="check-icon">✓</span>}
-                Cle de securite
-              </h4>
-              <p>S'authentifier a l'aide d'une cle de securite compatible U2F.</p>
-            </div>
+          <div className="security-card-actions">
+            <button className="btn btn-primary" onClick={() => openModal("ip")}>
+              Ajouter une restriction
+            </button>
           </div>
-
-          {enabledU2f.length > 0 && (
-            <div className="method-details">
-              <table className="method-table">
-                <thead>
-                  <tr>
-                    <th>Description</th>
-                    <th>Derniere utilisation</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {enabledU2f.map((u2f) => (
-                    <tr key={u2f.id}>
-                      <td>{u2f.description || "Cle U2F"}</td>
-                      <td>{formatDate(u2f.lastUsedDate)}</td>
-                      <td className="actions-cell">
-                        <button className="btn-icon" title="Actions">•••</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <a 
-            href="https://www.ovh.com/manager/#/useraccount/security/u2f/add" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn btn-outline"
-          >
-            Ajouter une cle
-          </a>
         </div>
+      </div>
 
-        {/* Backup Codes */}
-        <div className="two-factor-method">
-          <div className="method-header">
-            <div className="method-icon-box">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-              </svg>
-            </div>
-            <div className="method-info">
-              <h4>
-                {twoFactorStatus?.backupCode && <span className="check-icon">✓</span>}
-                Codes de secours
-              </h4>
-              <p>Utilisez ces codes si vous perdez ou n'avez pas acces a votre telephone.</p>
-            </div>
-          </div>
+      {activeModal && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>&times;</button>
 
-          {twoFactorStatus?.backupCode && (
-            <p className="backup-codes-info">
-              Vous disposez de <strong>{twoFactorStatus.backupCode.remaining}</strong> codes de secours valides.
-            </p>
-          )}
+            {activeModal === "password" && (
+              <>
+                <h3>Modifier le mot de passe</h3>
+                <p>Vous allez recevoir un email pour reinitialiser votre mot de passe.</p>
+                {modalError && <p className="modal-info">{modalError}</p>}
+                <div className="modal-actions">
+                  <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                  <button className="btn btn-primary" onClick={handleChangePassword} disabled={modalLoading}>
+                    {modalLoading ? "Envoi..." : "Envoyer l'email"}
+                  </button>
+                </div>
+              </>
+            )}
 
-          <div className="method-actions">
-            <a 
-              href="https://www.ovh.com/manager/#/useraccount/security/backup-code" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="btn btn-outline"
-            >
-              Regenerer les codes
-            </a>
-            {twoFactorStatus?.backupCode && (
-              <a 
-                href="https://www.ovh.com/manager/#/useraccount/security/backup-code/disable" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="btn btn-outline"
-              >
-                Desactiver les codes 2FA
-              </a>
+            {activeModal === "sms" && (
+              <>
+                <h3>Ajouter un numero SMS</h3>
+                <div className="form-group">
+                  <label>Numero de telephone (format international)</label>
+                  <input
+                    type="tel"
+                    placeholder="+33612345678"
+                    value={formData.phone || ""}
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+                {modalError && <p className="modal-error">{modalError}</p>}
+                <div className="modal-actions">
+                  <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                  <button className="btn btn-primary" onClick={handleAddSms} disabled={modalLoading || !formData.phone}>
+                    {modalLoading ? "Ajout..." : "Ajouter"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {activeModal === "totp" && (
+              <>
+                <h3>Ajouter une application TOTP</h3>
+                {!totpSecret ? (
+                  <>
+                    <p>Cliquez sur "Generer" pour obtenir un QR code a scanner.</p>
+                    {modalError && <p className="modal-error">{modalError}</p>}
+                    <div className="modal-actions">
+                      <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                      <button className="btn btn-primary" onClick={handleAddTotp} disabled={modalLoading}>
+                        {modalLoading ? "Generation..." : "Generer"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="totp-setup">
+                      <p>Scannez ce QR code avec votre application :</p>
+                      <img src={totpSecret.qrcodeUrl} alt="QR Code TOTP" className="totp-qr" />
+                      <p className="totp-secret">Ou entrez manuellement : <code>{totpSecret.secret}</code></p>
+                    </div>
+                    <div className="form-group">
+                      <label>Code de verification</label>
+                      <input
+                        type="text"
+                        placeholder="123456"
+                        value={formData.code || ""}
+                        onChange={e => setFormData({ ...formData, code: e.target.value })}
+                      />
+                    </div>
+                    {modalError && <p className="modal-error">{modalError}</p>}
+                    <div className="modal-actions">
+                      <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                      <button className="btn btn-primary" onClick={handleAddTotp} disabled={modalLoading || !formData.code}>
+                        {modalLoading ? "Validation..." : "Valider"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {activeModal === "u2f" && (
+              <>
+                <h3>Ajouter une cle de securite</h3>
+                <p>Cliquez sur "Ajouter" puis suivez les instructions de votre navigateur.</p>
+                {modalError && <p className="modal-info">{modalError}</p>}
+                <div className="modal-actions">
+                  <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                  <button className="btn btn-primary" onClick={handleAddU2f} disabled={modalLoading}>
+                    {modalLoading ? "En cours..." : "Ajouter"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {activeModal === "backup" && (
+              <>
+                <h3>Codes de secours</h3>
+                {!formData.codes ? (
+                  <>
+                    <p>Generez des codes de secours a conserver en lieu sur.</p>
+                    {modalError && <p className="modal-error">{modalError}</p>}
+                    <div className="modal-actions">
+                      <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                      <button className="btn btn-primary" onClick={handleGenerateBackupCodes} disabled={modalLoading}>
+                        {modalLoading ? "Generation..." : "Generer"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="backup-codes">
+                      <p><strong>Conservez ces codes en lieu sur :</strong></p>
+                      <pre>{formData.codes}</pre>
+                    </div>
+                    <div className="form-group">
+                      <label>Entrez un des codes pour valider</label>
+                      <input
+                        type="text"
+                        placeholder="Code"
+                        value={formData.code || ""}
+                        onChange={e => setFormData({ ...formData, code: e.target.value })}
+                      />
+                    </div>
+                    {modalError && <p className="modal-error">{modalError}</p>}
+                    <div className="modal-actions">
+                      <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                      <button className="btn btn-primary" onClick={handleValidateBackupCodes} disabled={modalLoading || !formData.code}>
+                        {modalLoading ? "Validation..." : "Valider"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {activeModal === "disable2fa" && (
+              <>
+                <h3>Desactiver la double authentification</h3>
+                <p className="warning-text">Attention : cette action va desactiver toutes les methodes 2FA.</p>
+                <div className="form-group">
+                  <label>Entrez un code de secours pour confirmer</label>
+                  <input
+                    type="text"
+                    placeholder="Code de secours"
+                    value={formData.code || ""}
+                    onChange={e => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                {modalError && <p className="modal-error">{modalError}</p>}
+                <div className="modal-actions">
+                  <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                  <button className="btn btn-danger" onClick={handleDisable2fa} disabled={modalLoading || !formData.code}>
+                    {modalLoading ? "Desactivation..." : "Desactiver"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {activeModal === "ip" && (
+              <>
+                <h3>Ajouter une restriction IP</h3>
+                <div className="form-group">
+                  <label>Adresse IP ou CIDR</label>
+                  <input
+                    type="text"
+                    placeholder="192.168.1.0/24"
+                    value={formData.ip || ""}
+                    onChange={e => setFormData({ ...formData, ip: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Regle</label>
+                  <select
+                    value={formData.rule || "accept"}
+                    onChange={e => setFormData({ ...formData, rule: e.target.value })}
+                  >
+                    <option value="accept">Autoriser</option>
+                    <option value="deny">Refuser</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={formData.warning === "true"}
+                      onChange={e => setFormData({ ...formData, warning: e.target.checked ? "true" : "false" })}
+                    />
+                    Avertissement par email
+                  </label>
+                </div>
+                {modalError && <p className="modal-error">{modalError}</p>}
+                <div className="modal-actions">
+                  <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
+                  <button className="btn btn-primary" onClick={handleAddIpRestriction} disabled={modalLoading || !formData.ip}>
+                    {modalLoading ? "Ajout..." : "Ajouter"}
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
-      </div>
-
-      {/* IP Restriction Section */}
-      <div className="security-card">
-        <div className="security-card-header">
-          <div className="security-card-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
-          </div>
-          <h3>Restriction d'acces par IP</h3>
-          <a 
-            href="https://www.ovh.com/manager/#/useraccount/ip-restriction" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn btn-primary"
-          >
-            Activer
-          </a>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

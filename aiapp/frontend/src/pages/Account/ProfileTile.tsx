@@ -2,17 +2,24 @@ import type { OvhUser } from "../../types/auth.types";
 
 interface ProfileTileProps {
   user: OvhUser | null;
+  onEditProfile?: () => void;
 }
 
-// Capitaliser le niveau de support pour l'affichage
 function formatSupportLevel(level: string | undefined): string {
   if (!level) return "Standard";
   return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
 }
 
-export default function ProfileTile({ user }: ProfileTileProps) {
+export default function ProfileTile({ user, onEditProfile }: ProfileTileProps) {
   const supportLevel = formatSupportLevel(user?.supportLevel?.level);
   const customerCode = user?.customerCode || "-";
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onEditProfile) {
+      onEditProfile();
+    }
+  };
 
   return (
     <div className="tile">
@@ -44,9 +51,9 @@ export default function ProfileTile({ user }: ProfileTileProps) {
         </div>
         
         <div className="tile-footer">
-          <a href="#/account/profile" className="btn btn-secondary">
+          <button onClick={handleEditClick} className="btn btn-secondary">
             Editer mon profil
-          </a>
+          </button>
         </div>
       </div>
     </div>

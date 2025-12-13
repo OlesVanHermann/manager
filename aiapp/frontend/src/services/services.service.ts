@@ -1,7 +1,12 @@
-import type { OvhCredentials } from "../types/auth.types";
+// ============================================================
+// SERVICES SERVICE - Gestion des services OVHcloud
+// Utilise 2API pour les listes agrégées, APIv6 pour le détail
+// ============================================================
+
+import { ovhGet, ovh2apiGet } from "./api";
 import type { BillingService, ServicesResponse, ServiceStatusFilter, ServiceStateFilter } from "../types/services.types";
 
-const API_BASE = "/api/ovh";
+// ============ TYPES ============
 
 export interface ServiceCount {
   type: string;
@@ -13,33 +18,7 @@ export interface ServiceSummary {
   types: ServiceCount[];
 }
 
-async function ovhRequest<T>(
-  credentials: OvhCredentials,
-  method: string,
-  path: string
-): Promise<T> {
-  const url = `${API_BASE}${path}`;
-  
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "X-Ovh-App-Key": credentials.appKey,
-    "X-Ovh-App-Secret": credentials.appSecret,
-  };
-
-  if (credentials.consumerKey) {
-    headers["X-Ovh-Consumer-Key"] = credentials.consumerKey;
-  }
-
-  const response = await fetch(url, { method, headers });
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-
-  return response.json();
-}
-
-// Types de services connus
+// Types de services connus (fallback)
 const SERVICE_TYPES = [
   { route: "/domain", label: "Noms de domaine", icon: "globe" },
   { route: "/hosting/web", label: "Hebergements Web", icon: "server" },
@@ -51,14 +30,99 @@ const SERVICE_TYPES = [
   { route: "/dbaas/logs", label: "Logs Data Platform", icon: "database" },
 ];
 
-export async function getServicesSummary(credentials: OvhCredentials): Promise<ServiceSummary> {
+// Mapping des types 2API vers labels français
+const SERVICE_TYPE_LABELS: Record<string, string> = {
+  "DOMAIN": "Noms de domaine",
+  "HOSTING_WEB": "Hebergements Web",
+  "HOSTING_PRIVATEDATABASE": "Bases de donnees",
+  "EMAIL_DOMAIN": "Emails",
+  "EMAIL_PRO": "Email Pro",
+  "EMAIL_EXCHANGE": "Exchange",
+  "VPS": "VPS",
+  "DEDICATED_SERVER": "Serveurs dedies",
+  "CLOUD": "Public Cloud",
+  "PUBLIC_CLOUD": "Public Cloud",
+  "IP_SERVICE": "IP",
+  "IP": "IP",
+  "VRACK": "vRack",
+  "DBAAS_LOGS": "Logs Data Platform",
+  "CDN": "CDN",
+  "LOAD_BALANCER": "Load Balancer",
+  "SSL": "Certificats SSL",
+  "SMS": "SMS",
+  "TELEPHONY": "Telephonie",
+  "DEDICATED_CLOUD": "Hosted Private Cloud",
+  "NUTANIX": "Nutanix",
+};
+
+// ============ 2API TYPES ============
+
+interface BillingService2API {
+  serviceId: number;
+  serviceType: string;
+  serviceName?: string;
+  displayName?: string;
+  state?: string;
+  status?: string;
+  expirationDate?: string;
+  nextBillingDate?: string;
+  renewalType?: string;
+  plan?: string;
+  offer?: string;
+}
+
+interface BillingServicesResponse {
+  count: number;
+  data: BillingService2API[];
+}
+
+// ============ SUMMARY (via 2API - 1 seul appel) ============
+
+export async function getServicesSummary(): Promise<ServiceSummary> {
+  try {
+    // Appel 2API unique pour récupérer tous les services
+    const response = await ovh2apiGet<BillingServicesResponse>(
+      "/billing/services",
+      { count: 1000, offset: 0 },
+      { skipAuthRedirect: true }
+    );
+
+    if (!response || !response.data || response.data.length === 0) {
+      return { total: 0, types: [] };
+    }
+
+    // Compter par type
+    const typeCounts = new Map<string, number>();
+    
+    for (const service of response.data) {
+      const typeKey = service.serviceType || "AUTRE";
+      const label = SERVICE_TYPE_LABELS[typeKey] || typeKey;
+      typeCounts.set(label, (typeCounts.get(label) || 0) + 1);
+    }
+
+    // Convertir en tableau trié par count décroissant
+    const types: ServiceCount[] = Array.from(typeCounts.entries())
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count);
+
+    return {
+      total: response.data.length,
+      types,
+    };
+  } catch (error) {
+    console.warn("2API /billing/services non disponible, fallback APIv6:", error);
+    return getServicesSummaryFallback();
+  }
+}
+
+// Fallback via APIv6 (8 appels parallèles)
+async function getServicesSummaryFallback(): Promise<ServiceSummary> {
   const results: ServiceCount[] = [];
   let total = 0;
 
-  // Fetch each service type in parallel
   const promises = SERVICE_TYPES.map(async (serviceType) => {
     try {
-      const services = await ovhRequest<string[]>(credentials, "GET", serviceType.route);
+      const services = await ovhGet<string[]>(serviceType.route, { skipAuthRedirect: true });
       if (services && services.length > 0) {
         return {
           type: serviceType.label,
@@ -81,82 +145,34 @@ export async function getServicesSummary(credentials: OvhCredentials): Promise<S
     }
   }
 
-  // Sort by count descending
   results.sort((a, b) => b.count - a.count);
 
   return { total, types: results };
 }
 
-export async function getDomains(credentials: OvhCredentials): Promise<string[]> {
-  return ovhRequest<string[]>(credentials, "GET", "/domain");
+// ============ LISTE PAR TYPE ============
+
+export async function getDomains(): Promise<string[]> {
+  return ovhGet<string[]>("/domain");
 }
 
-export async function getHostings(credentials: OvhCredentials): Promise<string[]> {
-  return ovhRequest<string[]>(credentials, "GET", "/hosting/web");
+export async function getHostings(): Promise<string[]> {
+  return ovhGet<string[]>("/hosting/web");
 }
 
-export async function getVps(credentials: OvhCredentials): Promise<string[]> {
-  return ovhRequest<string[]>(credentials, "GET", "/vps");
+export async function getVps(): Promise<string[]> {
+  return ovhGet<string[]>("/vps");
 }
 
-export async function getDedicatedServers(credentials: OvhCredentials): Promise<string[]> {
-  return ovhRequest<string[]>(credentials, "GET", "/dedicated/server");
+export async function getDedicatedServers(): Promise<string[]> {
+  return ovhGet<string[]>("/dedicated/server");
 }
 
-export async function getCloudProjects(credentials: OvhCredentials): Promise<string[]> {
-  return ovhRequest<string[]>(credentials, "GET", "/cloud/project");
+export async function getCloudProjects(): Promise<string[]> {
+  return ovhGet<string[]>("/cloud/project");
 }
 
-// ============================================
-// Services API - Liste détaillée des services
-// ============================================
-
-// Structure retournée par GET /services/{id}
-interface OvhServiceDetails {
-  serviceId: number;
-  serviceName: string;
-  serviceType?: string;
-  route?: {
-    path: string;
-    url?: string;
-    vars?: { key: string; value: string }[];
-  };
-  billing?: {
-    nextBillingDate?: string;
-    expirationDate?: string;
-    plan?: {
-      code: string;
-      name?: string;
-    };
-    pricing?: {
-      text: string;
-      value: number;
-      currency: string;
-    };
-    lifecycle?: {
-      current: {
-        state: string;
-      };
-    };
-  };
-  resource?: {
-    displayName?: string;
-    name?: string;
-    product?: {
-      name?: string;
-      description?: string;
-    };
-    resellingProvider?: string;
-    state?: string;
-  };
-  customer?: {
-    contacts?: {
-      admin?: string;
-      billing?: string;
-      tech?: string;
-    };
-  };
-}
+// ============ SERVICES DETAILLES (2API + pagination) ============
 
 export interface GetServicesParams {
   count?: number;
@@ -168,93 +184,55 @@ export interface GetServicesParams {
   order?: { field: string; dir: "asc" | "desc" };
 }
 
-// Convertit les détails OVH vers notre format BillingService
-function mapOvhServiceToBillingService(details: OvhServiceDetails): BillingService {
-  const lifecycle = details.billing?.lifecycle?.current?.state || "active";
-  
-  // Map lifecycle state to our status/state
-  let status: string;
-  let state: string;
-  
-  switch (lifecycle) {
-    case "active":
-      status = "ok";
-      state = "active";
-      break;
-    case "toRenew":
-      status = "ok";
-      state = "toRenew";
-      break;
-    case "suspended":
-      status = "expired";
-      state = "suspended";
-      break;
-    case "terminated":
-    case "expired":
-      status = "expired";
-      state = "expired";
-      break;
-    case "unPaid":
-      status = "unPaid";
-      state = "active";
-      break;
-    default:
-      status = "ok";
-      state = lifecycle;
+function mapServiceTypeLabel(apiType: string): string {
+  return SERVICE_TYPE_LABELS[apiType] || apiType;
+}
+
+function map2APIToBillingService(service: BillingService2API): BillingService {
+  // Mapper status/state
+  let status: string = "ok";
+  let state: string = "active";
+
+  const apiState = (service.state || "").toLowerCase();
+  const apiStatus = (service.status || "").toLowerCase();
+
+  if (apiState === "expired" || apiStatus === "expired") {
+    status = "expired";
+    state = "expired";
+  } else if (apiState === "suspended" || apiStatus === "suspended") {
+    status = "expired";
+    state = "suspended";
+  } else if (apiStatus === "unpaid" || apiState === "unpaid") {
+    status = "unPaid";
+    state = "active";
+  } else if (apiState === "torenew" || apiStatus === "torenew") {
+    status = "ok";
+    state = "toRenew";
   }
 
   return {
-    id: details.serviceId,
-    serviceId: details.serviceName || String(details.serviceId),
-    serviceType: details.serviceType || extractServiceType(details.route?.path),
+    id: service.serviceId,
+    serviceId: service.serviceName || String(service.serviceId),
+    serviceType: mapServiceTypeLabel(service.serviceType),
     status,
     state,
-    expiration: details.billing?.expirationDate,
+    expiration: service.expirationDate,
     resource: {
-      displayName: details.resource?.displayName,
-      name: details.resource?.name || details.serviceName,
-      product: details.resource?.product ? {
-        name: details.resource.product.name,
-        description: details.resource.product.description,
-      } : undefined,
+      displayName: service.displayName || service.serviceName,
+      name: service.serviceName || String(service.serviceId),
     },
     renew: {
-      automatic: lifecycle !== "toRenew",
+      automatic: service.renewalType !== "manual",
       period: undefined,
     },
-    billing: details.billing ? {
-      nextBillingDate: details.billing.nextBillingDate,
-      plan: details.billing.plan,
-      pricing: details.billing.pricing,
-    } : undefined,
+    billing: {
+      nextBillingDate: service.nextBillingDate,
+      plan: service.plan ? { code: service.plan, name: service.offer } : undefined,
+    },
   };
 }
 
-function extractServiceType(path?: string): string {
-  if (!path) return "Autre";
-  
-  // Extract type from path like "/domain/{domain}" → "domain"
-  const match = path.match(/^\/([^/]+)/);
-  if (!match) return "Autre";
-  
-  const typeMap: Record<string, string> = {
-    "domain": "Noms de domaine",
-    "hosting": "Hebergements Web",
-    "email": "Emails",
-    "vps": "VPS",
-    "dedicated": "Serveurs dedies",
-    "cloud": "Public Cloud",
-    "ip": "IP",
-    "dbaas": "Logs Data Platform",
-  };
-  
-  return typeMap[match[1]] || match[1];
-}
-
-export async function getBillingServices(
-  credentials: OvhCredentials,
-  params: GetServicesParams = {}
-): Promise<ServicesResponse> {
+export async function getBillingServices(params: GetServicesParams = {}): Promise<ServicesResponse> {
   const {
     count = 25,
     offset = 0,
@@ -266,10 +244,25 @@ export async function getBillingServices(
   } = params;
 
   try {
-    // 1. Get list of all service IDs
-    const serviceIds = await ovhRequest<number[]>(credentials, "GET", "/services");
-    
-    if (!serviceIds || serviceIds.length === 0) {
+    // Utiliser 2API pour récupérer les services avec pagination
+    const apiParams: Record<string, string | number> = {
+      count: 1000, // Récupérer tout pour filtrer côté client
+      offset: 0,
+    };
+
+    // Ajouter le tri si supporté
+    if (order.field === "expiration") {
+      apiParams.sort = "expirationDate";
+      apiParams.sortOrder = order.dir;
+    }
+
+    const response = await ovh2apiGet<BillingServicesResponse>(
+      "/billing/services",
+      apiParams,
+      { skipAuthRedirect: true }
+    );
+
+    if (!response || !response.data) {
       return {
         count: 0,
         list: { results: [] },
@@ -277,38 +270,17 @@ export async function getBillingServices(
       };
     }
 
-    // 2. Fetch details for each service (in parallel, with limit)
-    const BATCH_SIZE = 20;
-    const allDetails: BillingService[] = [];
+    // Mapper les services
+    let allServices = response.data.map(map2APIToBillingService);
+    
+    // Collecter les types uniques
     const typesSet = new Set<string>();
-
-    for (let i = 0; i < serviceIds.length; i += BATCH_SIZE) {
-      const batch = serviceIds.slice(i, i + BATCH_SIZE);
-      const detailsPromises = batch.map(async (id) => {
-        try {
-          const details = await ovhRequest<OvhServiceDetails>(
-            credentials,
-            "GET",
-            `/services/${id}`
-          );
-          return mapOvhServiceToBillingService(details);
-        } catch {
-          // Service detail not available
-          return null;
-        }
-      });
-
-      const batchResults = await Promise.all(detailsPromises);
-      for (const result of batchResults) {
-        if (result) {
-          allDetails.push(result);
-          typesSet.add(result.serviceType);
-        }
-      }
+    for (const s of allServices) {
+      typesSet.add(s.serviceType);
     }
 
-    // 3. Apply filters
-    let filtered = allDetails;
+    // Appliquer les filtres
+    let filtered = allServices;
 
     if (search) {
       const searchLower = search.toLowerCase();
@@ -331,7 +303,7 @@ export async function getBillingServices(
       filtered = filtered.filter((s) => s.state === state);
     }
 
-    // 4. Sort
+    // Trier
     filtered.sort((a, b) => {
       let aVal: string | number | undefined;
       let bVal: string | number | undefined;
@@ -361,7 +333,7 @@ export async function getBillingServices(
       }
     });
 
-    // 5. Paginate
+    // Paginer
     const totalCount = filtered.length;
     const paginated = filtered.slice(offset, offset + count);
 
@@ -371,25 +343,19 @@ export async function getBillingServices(
       servicesTypes: Array.from(typesSet).sort(),
     };
   } catch (error) {
-    console.error("getBillingServices error:", error);
-    // Fallback: use getServicesSummary approach
-    return getFallbackServices(credentials, params);
+    console.warn("2API /billing/services non disponible, fallback:", error);
+    return getBillingServicesFallback(params);
   }
 }
 
-// Fallback using the per-type approach
-async function getFallbackServices(
-  credentials: OvhCredentials,
-  params: GetServicesParams
-): Promise<ServicesResponse> {
-  console.log("getBillingServices: /services non disponible, utilisation du fallback");
-  
+// Fallback via APIv6
+async function getBillingServicesFallback(params: GetServicesParams): Promise<ServicesResponse> {
   const allServices: BillingService[] = [];
   const typesSet = new Set<string>();
 
   const fetchPromises = SERVICE_TYPES.map(async (serviceType) => {
     try {
-      const ids = await ovhRequest<string[]>(credentials, "GET", serviceType.route);
+      const ids = await ovhGet<string[]>(serviceType.route, { skipAuthRedirect: true });
       if (ids && ids.length > 0) {
         return ids.map((id, index) => ({
           id: index,
@@ -418,7 +384,7 @@ async function getFallbackServices(
     }
   }
 
-  // Apply filters
+  // Appliquer filtres
   let filtered = allServices;
   const { search, type, offset = 0, count = 25 } = params;
 
@@ -440,7 +406,7 @@ async function getFallbackServices(
   };
 }
 
-export async function getServiceTypes(credentials: OvhCredentials): Promise<string[]> {
-  const result = await getBillingServices(credentials, { count: 1 });
+export async function getServiceTypes(): Promise<string[]> {
+  const result = await getBillingServices({ count: 1 });
   return result.servicesTypes || [];
 }

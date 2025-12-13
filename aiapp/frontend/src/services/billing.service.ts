@@ -1,18 +1,11 @@
 // ============================================================
-// BILLING SERVICE - OVHcloud API via proxy nginx
-// Proxy: /api/ovh/* → https://eu.api.ovh.com/1.0/*
-// Auth: Headers X-Ovh-App-Key, X-Ovh-App-Secret, X-Ovh-Consumer-Key
+// BILLING SERVICE - Facturation OVHcloud
+// Utilise le helper centralisé api.ts
 // ============================================================
 
-const API_BASE = "/api/ovh";
+import { ovhGet } from "./api";
 
 // ============ TYPES ============
-
-export interface OvhCredentials {
-  appKey: string;
-  appSecret: string;
-  consumerKey?: string;
-}
 
 export interface Bill {
   billId: string;
@@ -131,77 +124,28 @@ export interface Credit {
   url: string;
 }
 
-// ============ CREDENTIALS HELPER ============
-
-const STORAGE_KEY = "ovh_credentials";
-
-export function getStoredCredentials(): OvhCredentials | null {
-  const stored = sessionStorage.getItem(STORAGE_KEY);
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return null;
-  }
-}
-
-export function storeCredentials(credentials: OvhCredentials): void {
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(credentials));
-}
-
-export function clearCredentials(): void {
-  sessionStorage.removeItem(STORAGE_KEY);
-}
-
-// ============ API REQUEST HELPER ============
-
-async function apiRequest<T>(credentials: OvhCredentials, method: string, path: string, body?: unknown): Promise<T> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "X-Ovh-App-Key": credentials.appKey,
-    "X-Ovh-App-Secret": credentials.appSecret,
-  };
-
-  if (credentials.consumerKey) {
-    headers["X-Ovh-Consumer-Key"] = credentials.consumerKey;
-  }
-
-  const response = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(error.message || `Erreur HTTP ${response.status}`);
-  }
-
-  return response.json();
-}
-
 // ============ FACTURES (/me/bill) ============
 
-export async function getBillIds(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
+export async function getBillIds(options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
   const params = new URLSearchParams();
   if (options?.["date.from"]) params.append("date.from", options["date.from"]);
   if (options?.["date.to"]) params.append("date.to", options["date.to"]);
   const query = params.toString() ? `?${params.toString()}` : "";
-  return apiRequest<string[]>(credentials, "GET", `/me/bill${query}`);
+  return ovhGet<string[]>(`/me/bill${query}`);
 }
 
-export async function getBill(credentials: OvhCredentials, billId: string): Promise<Bill> {
-  return apiRequest<Bill>(credentials, "GET", `/me/bill/${encodeURIComponent(billId)}`);
+export async function getBill(billId: string): Promise<Bill> {
+  return ovhGet<Bill>(`/me/bill/${encodeURIComponent(billId)}`);
 }
 
-export async function getBills(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Bill[]> {
-  const billIds = await getBillIds(credentials, options);
+export async function getBills(options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Bill[]> {
+  const billIds = await getBillIds(options);
   const idsToFetch = options?.limit ? billIds.slice(0, options.limit) : billIds;
   const bills: Bill[] = [];
   const batchSize = 10;
   for (let i = 0; i < idsToFetch.length; i += batchSize) {
     const batch = idsToFetch.slice(i, i + batchSize);
-    const results = await Promise.all(batch.map((id) => getBill(credentials, id).catch(() => null)));
+    const results = await Promise.all(batch.map((id) => getBill(id).catch(() => null)));
     bills.push(...results.filter((b): b is Bill => b !== null));
   }
   return bills.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -209,26 +153,26 @@ export async function getBills(credentials: OvhCredentials, options?: { "date.fr
 
 // ============ AVOIRS / REFUNDS (/me/refund) ============
 
-export async function getRefundIds(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
+export async function getRefundIds(options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
   const params = new URLSearchParams();
   if (options?.["date.from"]) params.append("date.from", options["date.from"]);
   if (options?.["date.to"]) params.append("date.to", options["date.to"]);
   const query = params.toString() ? `?${params.toString()}` : "";
-  return apiRequest<string[]>(credentials, "GET", `/me/refund${query}`);
+  return ovhGet<string[]>(`/me/refund${query}`);
 }
 
-export async function getRefund(credentials: OvhCredentials, refundId: string): Promise<Credit> {
-  return apiRequest<Credit>(credentials, "GET", `/me/refund/${encodeURIComponent(refundId)}`);
+export async function getRefund(refundId: string): Promise<Credit> {
+  return ovhGet<Credit>(`/me/refund/${encodeURIComponent(refundId)}`);
 }
 
-export async function getCredits(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Credit[]> {
-  const refundIds = await getRefundIds(credentials, options);
+export async function getCredits(options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Credit[]> {
+  const refundIds = await getRefundIds(options);
   const idsToFetch = options?.limit ? refundIds.slice(0, options.limit) : refundIds;
   const credits: Credit[] = [];
   const batchSize = 10;
   for (let i = 0; i < idsToFetch.length; i += batchSize) {
     const batch = idsToFetch.slice(i, i + batchSize);
-    const results = await Promise.all(batch.map((id) => getRefund(credentials, id).catch(() => null)));
+    const results = await Promise.all(batch.map((id) => getRefund(id).catch(() => null)));
     credits.push(...results.filter((c): c is Credit => c !== null));
   }
   return credits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -236,26 +180,26 @@ export async function getCredits(credentials: OvhCredentials, options?: { "date.
 
 // ============ PAIEMENTS / DEPOTS (/me/deposit) ============
 
-export async function getDepositIds(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
+export async function getDepositIds(options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
   const params = new URLSearchParams();
   if (options?.["date.from"]) params.append("date.from", options["date.from"]);
   if (options?.["date.to"]) params.append("date.to", options["date.to"]);
   const query = params.toString() ? `?${params.toString()}` : "";
-  return apiRequest<string[]>(credentials, "GET", `/me/deposit${query}`);
+  return ovhGet<string[]>(`/me/deposit${query}`);
 }
 
-export async function getDeposit(credentials: OvhCredentials, depositId: string): Promise<Deposit> {
-  return apiRequest<Deposit>(credentials, "GET", `/me/deposit/${encodeURIComponent(depositId)}`);
+export async function getDeposit(depositId: string): Promise<Deposit> {
+  return ovhGet<Deposit>(`/me/deposit/${encodeURIComponent(depositId)}`);
 }
 
-export async function getDeposits(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Deposit[]> {
-  const depositIds = await getDepositIds(credentials, options);
+export async function getDeposits(options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Deposit[]> {
+  const depositIds = await getDepositIds(options);
   const idsToFetch = options?.limit ? depositIds.slice(0, options.limit) : depositIds;
   const deposits: Deposit[] = [];
   const batchSize = 10;
   for (let i = 0; i < idsToFetch.length; i += batchSize) {
     const batch = idsToFetch.slice(i, i + batchSize);
-    const results = await Promise.all(batch.map((id) => getDeposit(credentials, id).catch(() => null)));
+    const results = await Promise.all(batch.map((id) => getDeposit(id).catch(() => null)));
     deposits.push(...results.filter((d): d is Deposit => d !== null));
   }
   return deposits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -263,106 +207,106 @@ export async function getDeposits(credentials: OvhCredentials, options?: { "date
 
 // ============ MOYENS DE PAIEMENT (/me/payment/method) ============
 
-export async function getPaymentMethodIds(credentials: OvhCredentials): Promise<number[]> {
-  return apiRequest<number[]>(credentials, "GET", "/me/payment/method");
+export async function getPaymentMethodIds(): Promise<number[]> {
+  return ovhGet<number[]>("/me/payment/method");
 }
 
-export async function getPaymentMethod(credentials: OvhCredentials, paymentMethodId: number): Promise<PaymentMethod> {
-  return apiRequest<PaymentMethod>(credentials, "GET", `/me/payment/method/${paymentMethodId}`);
+export async function getPaymentMethod(paymentMethodId: number): Promise<PaymentMethod> {
+  return ovhGet<PaymentMethod>(`/me/payment/method/${paymentMethodId}`);
 }
 
-export async function getPaymentMethods(credentials: OvhCredentials): Promise<PaymentMethod[]> {
-  const ids = await getPaymentMethodIds(credentials);
-  const methods = await Promise.all(ids.map((id) => getPaymentMethod(credentials, id).catch(() => null)));
+export async function getPaymentMethods(): Promise<PaymentMethod[]> {
+  const ids = await getPaymentMethodIds();
+  const methods = await Promise.all(ids.map((id) => getPaymentMethod(id).catch(() => null)));
   return methods.filter((m): m is PaymentMethod => m !== null);
 }
 
 // ============ ENCOURS / DETTE (/me/debtAccount) ============
 
-export async function getDebtAccount(credentials: OvhCredentials): Promise<DebtAccount> {
-  return apiRequest<DebtAccount>(credentials, "GET", "/me/debtAccount");
+export async function getDebtAccount(): Promise<DebtAccount> {
+  return ovhGet<DebtAccount>("/me/debtAccount");
 }
 
-export async function getDebtIds(credentials: OvhCredentials): Promise<number[]> {
-  return apiRequest<number[]>(credentials, "GET", "/me/debtAccount/debt");
+export async function getDebtIds(): Promise<number[]> {
+  return ovhGet<number[]>("/me/debtAccount/debt");
 }
 
-export async function getDebt(credentials: OvhCredentials, debtId: number): Promise<Debt> {
-  return apiRequest<Debt>(credentials, "GET", `/me/debtAccount/debt/${debtId}`);
+export async function getDebt(debtId: number): Promise<Debt> {
+  return ovhGet<Debt>(`/me/debtAccount/debt/${debtId}`);
 }
 
-export async function getDebts(credentials: OvhCredentials): Promise<Debt[]> {
-  const ids = await getDebtIds(credentials);
-  const debts = await Promise.all(ids.map((id) => getDebt(credentials, id).catch(() => null)));
+export async function getDebts(): Promise<Debt[]> {
+  const ids = await getDebtIds();
+  const debts = await Promise.all(ids.map((id) => getDebt(id).catch(() => null)));
   return debts.filter((d): d is Debt => d !== null);
 }
 
 // ============ COMPTE PREPAYE OVH (/me/ovhAccount) ============
 
-export async function getOvhAccountIds(credentials: OvhCredentials): Promise<string[]> {
-  return apiRequest<string[]>(credentials, "GET", "/me/ovhAccount");
+export async function getOvhAccountIds(): Promise<string[]> {
+  return ovhGet<string[]>("/me/ovhAccount");
 }
 
-export async function getOvhAccount(credentials: OvhCredentials, ovhAccountId: string): Promise<OvhAccount> {
-  return apiRequest<OvhAccount>(credentials, "GET", `/me/ovhAccount/${encodeURIComponent(ovhAccountId)}`);
+export async function getOvhAccount(ovhAccountId: string): Promise<OvhAccount> {
+  return ovhGet<OvhAccount>(`/me/ovhAccount/${encodeURIComponent(ovhAccountId)}`);
 }
 
-export async function getOvhAccountMovementIds(credentials: OvhCredentials, ovhAccountId: string, options?: { "date.from"?: string; "date.to"?: string }): Promise<number[]> {
+export async function getOvhAccountMovementIds(ovhAccountId: string, options?: { "date.from"?: string; "date.to"?: string }): Promise<number[]> {
   const params = new URLSearchParams();
   if (options?.["date.from"]) params.append("date.from", options["date.from"]);
   if (options?.["date.to"]) params.append("date.to", options["date.to"]);
   const query = params.toString() ? `?${params.toString()}` : "";
-  return apiRequest<number[]>(credentials, "GET", `/me/ovhAccount/${encodeURIComponent(ovhAccountId)}/movements${query}`);
+  return ovhGet<number[]>(`/me/ovhAccount/${encodeURIComponent(ovhAccountId)}/movements${query}`);
 }
 
-export async function getOvhAccountMovement(credentials: OvhCredentials, ovhAccountId: string, movementId: number): Promise<OvhAccountMovement> {
-  return apiRequest<OvhAccountMovement>(credentials, "GET", `/me/ovhAccount/${encodeURIComponent(ovhAccountId)}/movements/${movementId}`);
+export async function getOvhAccountMovement(ovhAccountId: string, movementId: number): Promise<OvhAccountMovement> {
+  return ovhGet<OvhAccountMovement>(`/me/ovhAccount/${encodeURIComponent(ovhAccountId)}/movements/${movementId}`);
 }
 
-export async function getOvhAccountMovements(credentials: OvhCredentials, ovhAccountId: string, options?: { "date.from"?: string; "date.to"?: string }): Promise<OvhAccountMovement[]> {
-  const movementIds = await getOvhAccountMovementIds(credentials, ovhAccountId, options);
+export async function getOvhAccountMovements(ovhAccountId: string, options?: { "date.from"?: string; "date.to"?: string }): Promise<OvhAccountMovement[]> {
+  const movementIds = await getOvhAccountMovementIds(ovhAccountId, options);
   const movements = await Promise.all(
-    movementIds.map((id) => getOvhAccountMovement(credentials, ovhAccountId, id).catch(() => null))
+    movementIds.map((id) => getOvhAccountMovement(ovhAccountId, id).catch(() => null))
   );
   return movements.filter((m): m is OvhAccountMovement => m !== null).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 // ============ BONS D'ACHAT / VOUCHERS (/me/voucherAccount) ============
 
-export async function getVoucherAccountIds(credentials: OvhCredentials): Promise<string[]> {
-  return apiRequest<string[]>(credentials, "GET", "/me/voucherAccount");
+export async function getVoucherAccountIds(): Promise<string[]> {
+  return ovhGet<string[]>("/me/voucherAccount");
 }
 
-export async function getVoucherAccount(credentials: OvhCredentials, voucherId: string): Promise<Voucher> {
-  return apiRequest<Voucher>(credentials, "GET", `/me/voucherAccount/${encodeURIComponent(voucherId)}`);
+export async function getVoucherAccount(voucherId: string): Promise<Voucher> {
+  return ovhGet<Voucher>(`/me/voucherAccount/${encodeURIComponent(voucherId)}`);
 }
 
-export async function getVouchers(credentials: OvhCredentials): Promise<Voucher[]> {
-  const ids = await getVoucherAccountIds(credentials);
-  const vouchers = await Promise.all(ids.map((id) => getVoucherAccount(credentials, id).catch(() => null)));
+export async function getVouchers(): Promise<Voucher[]> {
+  const ids = await getVoucherAccountIds();
+  const vouchers = await Promise.all(ids.map((id) => getVoucherAccount(id).catch(() => null)));
   return vouchers.filter((v): v is Voucher => v !== null);
 }
 
 // ============ FIDELITE (/me/fidelityAccount) ============
 
-export async function getFidelityAccount(credentials: OvhCredentials): Promise<FidelityAccount> {
-  return apiRequest<FidelityAccount>(credentials, "GET", "/me/fidelityAccount");
+export async function getFidelityAccount(): Promise<FidelityAccount> {
+  return ovhGet<FidelityAccount>("/me/fidelityAccount");
 }
 
-export async function getFidelityMovementIds(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string }): Promise<number[]> {
+export async function getFidelityMovementIds(options?: { "date.from"?: string; "date.to"?: string }): Promise<number[]> {
   const params = new URLSearchParams();
   if (options?.["date.from"]) params.append("date.from", options["date.from"]);
   if (options?.["date.to"]) params.append("date.to", options["date.to"]);
   const query = params.toString() ? `?${params.toString()}` : "";
-  return apiRequest<number[]>(credentials, "GET", `/me/fidelityAccount/movements${query}`);
+  return ovhGet<number[]>(`/me/fidelityAccount/movements${query}`);
 }
 
-export async function getFidelityMovement(credentials: OvhCredentials, movementId: number): Promise<FidelityMovement> {
-  return apiRequest<FidelityMovement>(credentials, "GET", `/me/fidelityAccount/movements/${movementId}`);
+export async function getFidelityMovement(movementId: number): Promise<FidelityMovement> {
+  return ovhGet<FidelityMovement>(`/me/fidelityAccount/movements/${movementId}`);
 }
 
-export async function getFidelityMovements(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string }): Promise<FidelityMovement[]> {
-  const ids = await getFidelityMovementIds(credentials, options);
-  const movements = await Promise.all(ids.map((id) => getFidelityMovement(credentials, id).catch(() => null)));
+export async function getFidelityMovements(options?: { "date.from"?: string; "date.to"?: string }): Promise<FidelityMovement[]> {
+  const ids = await getFidelityMovementIds(options);
+  const movements = await Promise.all(ids.map((id) => getFidelityMovement(id).catch(() => null)));
   return movements.filter((m): m is FidelityMovement => m !== null).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }

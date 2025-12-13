@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as billingService from "../../services/billing.service";
+import { getCredentials } from "../../services/api";
 import "./styles.css";
 
 // ============ TYPES ============
@@ -27,7 +28,7 @@ function useCredentials() {
   const [credentials, setCredentials] = useState<billingService.OvhCredentials | null>(null);
 
   useEffect(() => {
-    const creds = billingService.getStoredCredentials();
+    const creds = getCredentials();
     setCredentials(creds);
   }, []);
 
@@ -443,7 +444,7 @@ function MethodsTab({ credentials }: TabProps) {
       </div>
       <div className="toolbar">
         <div className="toolbar-left">
-          <a href="https://www.ovh.com/manager/#/dedicated/billing/payment/method/add" target="_blank" rel="noopener noreferrer" className="btn btn-primary">+ Ajouter un moyen de paiement</a>
+           <a href="https://www.ovh.com/fr/order/express/#/express/review?products=~(~(planCode~'paymentMethod~quantity~1))" target="_blank" rel="noopener noreferrer" className="btn btn-primary">+ Ajouter un moyen de paiement</a>
         </div>
       </div>
 
@@ -540,7 +541,7 @@ function PrepaidTab({ credentials }: TabProps) {
         <h3>Solde du compte prepaye</h3>
         <div className="balance-amount">{account?.balance.text || "0,00 €"}</div>
         <p className="balance-info">Le compte prepaye permet de payer vos factures OVHcloud. Vous pouvez le crediter a tout moment.</p>
-        <a href="https://www.ovh.com/manager/#/dedicated/billing/ovhaccount/credit" target="_blank" rel="noopener noreferrer" className="btn btn-white">Crediter mon compte</a>
+         <a href="https://www.ovh.com/fr/order/express/#/express/review?products=~(~(planCode~'ovhaccount~quantity~1))" target="_blank" rel="noopener noreferrer" className="btn btn-white">Crediter mon compte</a>
       </div>
 
       <h4>Historique des mouvements</h4>
@@ -705,7 +706,7 @@ function FidelityTab({ credentials }: TabProps) {
         <div className="points-amount">{account?.balance || 0} points</div>
         <p className="points-info">Cumulez des points a chaque commande et convertissez-les en reduction sur vos prochains achats.</p>
         {account?.canBeCredited && (
-          <a href="https://www.ovh.com/manager/#/dedicated/billing/fidelity/creditOrder" target="_blank" rel="noopener noreferrer" className="btn btn-white">Utiliser mes points</a>
+           <a href="https://www.ovh.com/fr/order/express/#/express/review?products=~(~(planCode~'fidelity~quantity~1))" target="_blank" rel="noopener noreferrer" className="btn btn-white">Utiliser mes points</a>
         )}
       </div>
 

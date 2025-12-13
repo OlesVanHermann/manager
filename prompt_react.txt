@@ -6,6 +6,21 @@ Interface **New Manager** pour la gestion des services OVHcloud : Cloud, Héberg
 
 Ce projet est une **réécriture progressive** du "old manager" existant (monorepo Angular + React OVHcloud).
 
+### 1.1 Objectif de migration
+
+Le **Old Manager** est accessible en production sur : `https://manager.eu.ovhcloud.com`
+
+**Stratégie de migration :**
+- ❌ **NE PAS** faire de redirections vers `manager.eu.ovhcloud.com`
+- ✅ **RÉÉCRIRE** les fonctionnalités en identifiant les appels API dans le code source du old manager
+- ✅ **UTILISER** les APIs OVH directement dans le New Manager
+
+**Méthodologie "la méthode" :**
+1. **Localiser** la fonctionnalité dans le old manager (`/home/ubuntu/manager/`)
+2. **Identifier** les appels API (endpoints `/me/*`, `/services/*`, etc.)
+3. **Extraire** la logique métier et les types TypeScript
+4. **Générer** le composant React équivalent pour le new manager
+
 ---
 
 ## 2. Règles de travail
@@ -15,7 +30,7 @@ Ce projet est une **réécriture progressive** du "old manager" existant (monore
 3. **Attendre les consignes** avant toute action.
 4. **Générer le code** dans le chat en utilisant **un seul bloc de code** avec copier-coller.
 5. **Encapsuler** les commandes `cp` et `tee` dans un bloc markdown.
-6. **Migration** : utiliser "la méthode" → `grep` → localiser → extraire → générer.
+6. **Migration** : utiliser "la méthode" → `grep` dans old manager → localiser les appels API → extraire types → générer composant React (⚠️ pas de redirection vers manager.eu.ovhcloud.com)
 7. **Conserver** le design system existant, ne pas réinventer les composants UI.
 8. **Erreur 401 API** : rediriger vers l'auth OVH, pas d'erreur affichée.
 
@@ -399,6 +414,9 @@ Accessible via l'avatar/NIC en haut à droite :
 
 ## 8. Old Manager (Référence)
 
+**Production** : `https://manager.eu.ovhcloud.com`
+**Code source** : `/home/ubuntu/manager/`
+
 ### 8.1 Structure principale
 ```
 /home/ubuntu/manager/packages/manager/
@@ -427,6 +445,49 @@ iam, pci, public-cloud, vps, vrack, web, web-hosting,
 support, sms, telecom, exchange, email-pro, ...
 ```
 
+### 8.5 Méthodologie : Trouver les appels API
+
+**⚠️ IMPORTANT : Ne jamais rediriger vers manager.eu.ovhcloud.com**
+
+Pour chaque fonctionnalité à migrer, identifier les appels API dans le old manager :
+
+```bash
+# 1. Chercher les endpoints API dans un module
+cd /home/ubuntu/manager
+grep -r "api.get\|api.post\|api.put\|api.delete" packages/manager/modules/billing/
+
+# 2. Chercher les appels /me/* (compte utilisateur)
+grep -rn "/me/" packages/manager/apps/account/
+
+# 3. Chercher les services API d'un module
+find packages/manager/modules/billing -name "*.service.ts" -o -name "*api*.ts"
+
+# 4. Chercher une fonctionnalité spécifique
+grep -rn "refund\|avoir" packages/manager/modules/billing/
+
+# 5. Voir les types/interfaces d'un endpoint
+grep -rn "interface.*Bill\|type.*Bill" packages/manager/modules/billing/
+```
+
+**Exemple de migration - Avoirs (Refunds) :**
+```bash
+# Étape 1 : Localiser
+grep -rn "refund" packages/manager/modules/billing/
+# → Trouve : billing-refund.service.ts
+
+# Étape 2 : Identifier l'API
+cat packages/manager/modules/billing/src/services/billing-refund.service.ts
+# → Trouve : GET /me/refund, GET /me/refund/{refundId}
+
+# Étape 3 : Extraire les types
+grep -rn "interface.*Refund" packages/manager/modules/billing/
+# → Trouve les interfaces TypeScript
+
+# Étape 4 : Générer dans new_manager
+# → Créer billing.service.ts avec getRefunds(), getRefundById()
+# → Créer RefundsTab.tsx dans pages/Billing/
+```
+
 ---
 
 ## 9. Conventions de code
@@ -453,10 +514,27 @@ support, sms, telecom, exchange, email-pro, ...
 ---
 
 ## 10. Référence rapide
-```bash
-# Localiser dans l'ancien manager
-cd /home/ubuntu/manager && grep -r "pattern" packages/
 
+### 10.1 Recherche dans le Old Manager
+```bash
+# Chercher une fonctionnalité
+cd /home/ubuntu/manager && grep -rn "pattern" packages/
+
+# Chercher les appels API d'un module
+grep -r "api.get\|api.post" packages/manager/modules/MODULE_NAME/
+
+# Chercher les endpoints /me/*
+grep -rn '"/me/' packages/manager/apps/APP_NAME/
+
+# Chercher les services d'un module
+find packages/manager/modules/MODULE_NAME -name "*.service.ts"
+
+# Chercher les types/interfaces
+grep -rn "interface\|type" packages/manager/modules/MODULE_NAME/src/types/
+```
+
+### 10.2 Build New Manager
+```bash
 # Créer archive new manager
 cd /home/ubuntu && tar -cvf new_manager.tar --exclude='*2025*' aiapp/frontend/src/
 
