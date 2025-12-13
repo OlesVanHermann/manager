@@ -14,7 +14,7 @@ Ce projet est une **réécriture progressive** du "old manager" existant (monore
 2. **Ne rien faire** sans autorisation.
 3. **Attendre les consignes** avant toute action.
 4. **Générer le code** dans le chat en utilisant **un seul bloc de code** avec copier-coller.
-5. **Encapsuler** les commandes `tee` dans un bloc markdown.
+5. **Encapsuler** les commandes `cp` et `tee` dans un bloc markdown.
 6. **Migration** : utiliser "la méthode" → `grep` → localiser → extraire → générer.
 7. **Conserver** le design system existant, ne pas réinventer les composants UI.
 8. **Erreur 401 API** : rediriger vers l'auth OVH, pas d'erreur affichée.
@@ -70,10 +70,11 @@ npm run build:prod
 │   └── AccountSidebar/        # Sidebar compte utilisateur
 │
 ├── pages/                     # Pages/Routes
-│   ├── Home.tsx
-│   ├── Login.tsx
-│   ├── Account/               # Mon compte
-│   ├── Billing/               # Factures
+│   ├── Home.tsx               # Dashboard accueil
+│   ├── Login.tsx              # Page connexion OAuth OVH
+│   ├── Dev.tsx                # Page développeur/debug
+│   ├── Account/               # Mon compte (onglets)
+│   ├── Billing/               # Factures (onglets)
 │   ├── Services/              # Services
 │   └── Placeholder/           # Pages placeholder
 │
@@ -138,11 +139,181 @@ color: var(--color-primary-500, #0050D7);
 | Thèmes | `@ovhcloud/ods-themes` v19.2.1 |
 | CSS | Tailwind CSS |
 
+### 5.4 Classes CSS disponibles
+
+```css
+/* Boutons */
+.btn  .btn-primary  .btn-secondary  .btn-outline
+
+/* Cartes/Tiles */
+.tile  .tile-header  .tile-content
+
+/* Onglets */
+.tab-btn  .tabs-list
+
+/* Badges */
+.status-badge  .badge-success  .badge-warning  .badge-error
+
+/* Formulaires */
+.toggle-switch  .toggle-slider
+
+/* Sécurité */
+.security-card  .two-factor-method
+
+/* Tableaux */
+.bills-table  .method-table
+```
+
 ---
 
-## 6. Old Manager (Référence)
+## 6. Architecture technique
 
-### 6.1 Structure principale
+### 6.1 Proxy Nginx
+
+Le frontend communique avec l'API OVH via un proxy Nginx :
+
+```
+/api/ovh/*  →  https://eu.api.ovh.com/1.0/*
+```
+
+La signature des requêtes est gérée automatiquement côté serveur.
+
+
+### 6.2 Layout principal (App.tsx)
+
+```
++---------------------------------------------------------------------------------+
+| +-----------------+ +---------------------------------------------------------+ |
+| | H | o | o | o | |  NIVEAU 1 : Onglets Univers                             | |
+| |  (header icons) | |  PUBLIC CLOUD | PRIVATE CLOUD | BARE METAL | WEB CLOUD | |
+| |                 | |  CONTACT IAM | FACTURES                                 | |
+| +-----------------+ +---------------------------------------------------------+ |
+| | Liste:          | |  NIVEAU 2 : Sections de l'univers                       | |
+| | - service 1     | |  ACCUEIL | INSTANCES | STORAGE | NETWORK | ...          | |
+| | - service 2     | +---------------------------------------------------------+ |
+| | - service 3     | |  NIVEAU 3 : Sous-sections (optionnel)                   | |
+| | - ...           | |  TAB 1 | TAB 2 | TAB 3 | ...                            | |
+| |                 | +---------------------------------------------------------+ |
+| | (liste des      | |                                                         | |
+| |  ressources     | |                                                         | |
+| |  de l'univers   | |              ZONE DE CONTENU                            | |
+| |  selectionne)   | |                                                         | |
+| |                 | |                                                         | |
+| |                 | |                                                         | |
+| +-----------------+ |                                                         | |
+| |    [Search]     | |                                                         | |
+| +-----------------+ +---------------------------------------------------------+ |
+| |  <  |  10  |  > | |                                                         | |
+| +-----------------+ +---------------------------------------------------------+ |
++---------------------------------------------------------------------------------+
+```
+
+**Composants du layout :**
+
+| Zone | Composant | Description |
+|------|-----------|-------------|
+| Sidebar Header | `SidebarHeader` | Icone accueil + boutons de vue |
+| Sidebar Liste | `ServiceList` | Liste paginee des ressources de l'univers |
+| Sidebar Search | `SearchInput` | Recherche dans les ressources |
+| Sidebar Pagination | `Pagination` | Navigation < page > |
+| Niveau 1 | `UniversTabs` | Onglets univers OVH (navigation principale) |
+| Niveau 2 | `SectionTabs` | Sections de l'univers selectionne |
+| Niveau 3 | `SubSectionTabs` | Sous-sections (si applicable) |
+| Contenu | `ContentArea` | Zone de contenu dynamique |
+
+### 6.3 Navigation par onglets (Niveau 1 - Univers)
+
+| Onglet | Contenu |
+|--------|---------|
+| **PUBLIC CLOUD** | Instances, Storage, Network, AI/ML, Databases |
+| **PRIVATE CLOUD** | VMware, Nutanix, Hosted Private Cloud |
+| **BARE METAL** | Serveurs dédiés, VPS, Housing |
+| **WEB CLOUD** | Domaines, Hébergement, Emails, DNS |
+| **CONTACT IAM** | Contacts, Gestion des accès, Identités |
+| **FACTURES** | Historique, Paiements, Moyens de paiement, Encours |
+
+### 6.4 Sidebar (Liste des ressources)
+
+La sidebar affiche les ressources de l'univers sélectionné :
+
+| Élément | Fonction |
+|---------|----------|
+| **Header** | Icône accueil + boutons de mode (liste/grille/...) |
+| **Liste** | Ressources de l'univers (serveurs, instances, domaines...) |
+| **Search** | Filtre de recherche dans les ressources |
+| **Pagination** | Navigation `◄ 10 ►` (page courante + flèches) |
+
+**Comportement :**
+- La liste se met à jour selon l'univers sélectionné (Niveau 1)
+- Cliquer sur une ressource affiche ses détails dans la zone de contenu
+- La recherche filtre en temps réel
+- Pagination avec affichage du numéro de page
+
+### 6.5 Onglets des pages principales
+
+**Mon Compte (AccountPage) :**
+| Onglet | Contenu |
+|--------|---------|
+| Informations générales | Profil, Raccourcis, Dernière facture |
+| Sécurité | Mot de passe, 2FA (SMS/TOTP/U2F), Codes secours |
+| Mon niveau de support | Standard/Premium/Business/Enterprise |
+| Données personnelles | Suppression compte, demandes RGPD |
+| Paramètres avancés | Beta, Mode développeur |
+
+**Facturation (BillingPage) :**
+| Onglet | Contenu |
+|--------|---------|
+| Historique des factures | Liste + téléchargement PDF |
+| Suivi des paiements | Dépôts/paiements |
+| Moyens de paiement | Cartes, SEPA, etc. |
+| Mon encours | Dette éventuelle |
+
+---
+
+## 7. APIs OVH
+
+### 7.1 Authentification
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/auth/credential` | Demande de consumer key |
+| GET | `/me` | Informations utilisateur |
+
+### 7.2 Facturation
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/me/bill` | Liste des IDs de factures |
+| GET | `/me/bill/{billId}` | Détails d'une facture |
+| GET | `/me/deposit` | Liste des paiements |
+| GET | `/me/deposit/{depositId}` | Détails d'un paiement |
+| GET | `/me/payment/method` | Moyens de paiement |
+| GET | `/me/debtAccount` | Encours/dette |
+
+### 7.3 Sécurité (2FA)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/me/accessRestriction/sms` | Liste SMS 2FA |
+| GET | `/me/accessRestriction/totp` | Liste TOTP (app mobile) |
+| GET | `/me/accessRestriction/u2f` | Liste clés U2F |
+| GET | `/me/accessRestriction/backupCode` | Codes de secours |
+
+### 7.4 Compte
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/me/supportLevel` | Niveau de support |
+| GET | `/me/marketing` | Préférences marketing |
+| PUT | `/me/marketing` | Mise à jour marketing |
+| GET | `/me/privacy/requests` | Demandes RGPD |
+| POST | `/me/privacy/requests/erasure` | Demande suppression |
+
+---
+
+## 8. Old Manager (Référence)
+
+### 8.1 Structure principale
 
 ```
 /home/ubuntu/manager/packages/manager/
@@ -151,14 +322,14 @@ color: var(--color-primary-500, #0050D7);
 └── apps/          # Applications complètes
 ```
 
-### 6.2 Core (`packages/manager/core/`)
+### 8.2 Core (`packages/manager/core/`)
 
 ```
 api, application, ovh-product-icons, request-tagger,
 shell-client, sso, url-builder, utils
 ```
 
-### 6.3 Modules (`packages/manager/modules/`)
+### 8.3 Modules (`packages/manager/modules/`)
 
 ```
 account, billing, billing-components, iam, support, order,
@@ -166,7 +337,7 @@ exchange, emailpro, email-domain, nasha, netapp, pci,
 vps, vrack, carbon-calculator, mfa-enrollment, ...
 ```
 
-### 6.4 Apps (`packages/manager/apps/`)
+### 8.4 Apps (`packages/manager/apps/`)
 
 ```
 account, billing, dedicated, dedicated-servers, hub,
@@ -176,7 +347,7 @@ support, sms, telecom, exchange, email-pro, ...
 
 ---
 
-## 7. Conventions de code
+## 9. Conventions de code
 
 | Règle | Application |
 |-------|-------------|
@@ -198,7 +369,7 @@ support, sms, telecom, exchange, email-pro, ...
 
 ---
 
-## 8. Référence rapide
+## 10. Référence rapide
 
 ```bash
 # Localiser dans l'ancien manager
