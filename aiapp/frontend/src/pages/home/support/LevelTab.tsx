@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import type { OvhCredentials } from "../../types/auth.types";
-import * as accountService from "../../services/account.service";
+import type { OvhCredentials } from "../../../types/auth.types";
+import * as accountService from "../../../services/account.service";
 
 const STORAGE_KEY = "ovh_credentials";
 

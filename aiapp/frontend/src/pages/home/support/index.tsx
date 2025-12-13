@@ -4,9 +4,9 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
-import type { OvhCredentials } from "../../types/auth.types";
-import * as supportService from "../../services/support.service";
-import * as accountService from "../../services/account.service";
+import type { OvhCredentials } from "../../../types/auth.types";
+import * as supportService from "../../../services/support.service";
+import * as accountService from "../../../services/account.service";
 import "./styles.css";
 
 const STORAGE_KEY = "ovh_credentials";

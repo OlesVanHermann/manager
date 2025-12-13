@@ -1,9 +1,0 @@
-export { default as AccountPage } from "./AccountPage";
-export { default as ProfileTile } from "./ProfileTile";
-export { default as ProfileEditTab } from "./ProfileEditTab";
-export { default as ShortcutsTile } from "./ShortcutsTile";
-export { default as LastBillTile } from "./LastBillTile";
-export { default as SecurityTab } from "./SecurityTab";
-export { default as SupportLevelTab } from "./SupportLevelTab";
-export { default as GdprTab } from "./GdprTab";
-export { default as AdvancedTab } from "./AdvancedTab";

@@ -4,13 +4,13 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
-import type { OvhUser } from "../../types/auth.types";
-import ProfileTile from "./ProfileTile";
-import ShortcutsTile from "./ShortcutsTile";
-import LastBillTile from "./LastBillTile";
-import ProfileEditTab from "./ProfileEditTab";
+import type { OvhUser } from "../../../types/auth.types";
+import ProfileTile from "./components/ProfileTile";
+import ShortcutsTile from "./components/ShortcutsTile";
+import LastBillTile from "./components/LastBillTile";
+import EditTab from "./EditTab";
 import SecurityTab from "./SecurityTab";
-import GdprTab from "./GdprTab";
+import PrivacyTab from "./PrivacyTab";
 import AdvancedTab from "./AdvancedTab";
 import "./styles.css";
 

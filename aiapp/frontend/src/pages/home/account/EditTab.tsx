@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import type { OvhUser, OvhCredentials } from "../../types/auth.types";
-import * as accountService from "../../services/account.service";
+import type { OvhUser, OvhCredentials } from "../../../types/auth.types";
+import * as accountService from "../../../services/account.service";
 
 interface ProfileEditTabProps {
   user: OvhUser | null;

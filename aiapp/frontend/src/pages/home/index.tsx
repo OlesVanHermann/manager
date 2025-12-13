@@ -3,13 +3,13 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
-import { isAuthenticated, redirectToAuth } from "../services/api";
-import * as servicesService from "../services/services.service";
-import * as billingService from "../services/billing.service";
-import * as notificationsService from "../services/notifications.service";
-import { Tile, SkeletonServicesGrid, SkeletonBillCard, SkeletonText } from "../components/Skeleton";
-import { ServiceIcon } from "../components/ServiceIcons";
-import "./dashboard.css";
+import { isAuthenticated, redirectToAuth } from "../../services/api";
+import * as servicesService from "../../services/services.service";
+import * as billingService from "../../services/billing.service";
+import * as notificationsService from "../../services/notifications.service";
+import { Tile, SkeletonServicesGrid, SkeletonBillCard, SkeletonText } from "../../components/Skeleton";
+import { ServiceIcon } from "../../components/ServiceIcons";
+import "./styles.css";
 
 // ============ TYPES ============
 

@@ -5,11 +5,11 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
-import * as billingService from "../../services/billing.service";
-import * as agreementsService from "../../services/agreements.service";
-import * as ordersService from "../../services/orders.service";
-import * as servicesService from "../../services/services.service";
-import { getCredentials } from "../../services/api";
+import * as billingService from "../../../services/billing.service";
+import * as agreementsService from "../../../services/agreements.service";
+import * as ordersService from "../../../services/orders.service";
+import * as servicesService from "../../../services/services.service";
+import { getCredentials } from "../../../services/api";
 import "./styles.css";
 
 interface BillingPageProps {

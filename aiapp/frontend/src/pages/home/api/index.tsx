@@ -4,8 +4,8 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
-import type { OvhCredentials, OvhUser } from "../types/auth.types";
-import "./dev.css";
+import type { OvhCredentials, OvhUser } from "../../../types/auth.types";
+import "./styles.css";
 
 const STORAGE_KEY = "ovh_credentials";
 const API_BASE = "/api/ovh";

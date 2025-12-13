@@ -7,14 +7,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
-import Home from "./pages/Home";
-import Dev from "./pages/Dev";
-import { AccountPage } from "./pages/Account";
-import { BillingPage } from "./pages/Billing";
-import { PlaceholderPage } from "./pages/Placeholder";
-import SupportPage from "./pages/Support";
-import CarbonPage from "./pages/Carbon";
-import IamPage from "./pages/Iam";
+import HomePage from "./pages/home";
+import ApiPage from "./pages/home/api";
+import AccountPage from "./pages/home/account";
+import BillingPage from "./pages/home/billing";
+import SupportPage from "./pages/home/support";
+import CarbonPage from "./pages/home/carbon";
+import IamPage from "./pages/iam";
+import { PlaceholderPage } from "./pages/_placeholder";
 import { Sidebar, universes, Icon } from "./components/Sidebar";
 import { AccountSidebar } from "./components/AccountSidebar";
 import * as authService from "./services/auth.service";
@@ -207,7 +207,7 @@ function AppContent() {
     if (activeUniverseId === "home") {
       switch (activeSectionId) {
         case "home-dashboard":
-          return <Home onNavigate={handleNavigate} />;
+          return <HomePage onNavigate={handleNavigate} />;
 
         case "home-account":
           return (
@@ -229,24 +229,16 @@ function AppContent() {
           return <CarbonPage />;
 
         case "home-api":
-          return <Dev initialTab={activeTabId} />;
+          return <ApiPage initialTab={activeTabId} />;
 
         default:
-          return <Home onNavigate={handleNavigate} />;
+          return <HomePage onNavigate={handleNavigate} />;
       }
     }
 
     // ==================== IAM Universe ====================
     if (activeUniverseId === "iam") {
-      // Mapper section IAM vers tab
-      const iamTabMap: Record<string, string> = {
-        "iam-identities": "identities",
-        "iam-policies": "policies",
-        "iam-groups": "groups",
-        "iam-logs": "logs",
-      };
-      const iamTab = iamTabMap[activeSectionId] || "identities";
-      return <IamPage initialTab={iamTab} />;
+      return <IamPage initialTab={activeTabId} />;
     }
 
     // ==================== Autres univers - Placeholder ====================

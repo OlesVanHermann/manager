@@ -260,20 +260,14 @@ export const universes: Universe[] = [
     shortLabel: "IAM",
     sections: [
       {
-        id: "iam-identities",
-        label: "Identités",
-      },
-      {
-        id: "iam-policies",
-        label: "Politiques",
-      },
-      {
-        id: "iam-groups",
-        label: "Groupes",
-      },
-      {
-        id: "iam-logs",
-        label: "Logs",
+        id: "iam-home",
+        label: "Accueil",
+        subsections: [
+          { id: "iam-identities", label: "Identités" },
+          { id: "iam-policies", label: "Politiques" },
+          { id: "iam-groups", label: "Groupes" },
+          { id: "iam-logs", label: "Logs" },
+        ],
       },
     ],
   },

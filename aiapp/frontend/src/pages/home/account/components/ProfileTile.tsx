@@ -1,4 +1,4 @@
-import type { OvhUser } from "../../types/auth.types";
+import type { OvhUser } from "../../../../types/auth.types";
 
 interface ProfileTileProps {
   user: OvhUser | null;
