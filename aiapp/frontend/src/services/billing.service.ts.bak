@@ -311,23 +311,3 @@ export async function getFidelityMovements(options?: { "date.from"?: string; "da
   return movements.filter((m): m is FidelityMovement => m !== null).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-
-// ============ ALIAS MANQUANTS ============
-
-export async function getRefunds(options?: { "date.from"?: string; "date.to"?: string }): Promise<Credit[]> {
-  const refundIds = await getRefundIds(options);
-  const batches = [];
-  for (let i = 0; i < refundIds.length; i += 10) {
-    batches.push(refundIds.slice(i, i + 10));
-  }
-  const allRefunds: Credit[] = [];
-  for (const batch of batches) {
-    const results = await Promise.all(batch.map((id) => getRefund(id).catch(() => null)));
-    allRefunds.push(...results.filter((r): r is Credit => r !== null));
-  }
-  return allRefunds.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}
-
-export async function getVoucherAccounts(): Promise<Voucher[]> {
-  return getVouchers();
-}

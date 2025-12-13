@@ -222,22 +222,37 @@ export async function updateConsent(
   await ovhRequest<void>(credentials, "PUT", `/me/consent/${name}/decision`, { value });
 }
 
+// ============ DEVELOPER MODE ============
+
+export async function getDeveloperMode(credentials: OvhCredentials): Promise<DeveloperMode> {
+  try {
+    const me = await ovhRequest<{ developerMode: boolean }>(credentials, "GET", "/me");
+    return { enabled: me.developerMode || false };
+  } catch {
+    return { enabled: false };
+  }
+}
+
+export async function updateDeveloperMode(
+  credentials: OvhCredentials,
+  enabled: boolean
+): Promise<void> {
+  await ovhRequest<void>(credentials, "PUT", "/me", { developerMode: enabled });
+}
+
 // ============ BETA / PREFERENCES ============
 
-const BETA_PREFERENCE_KEY = "ACCOUNT_BETA_FEATURES";
-const DEV_MODE_STORAGE_KEY = "ovh_developer_mode";
+const BETA_PREFERENCE_KEY = "NAV_RESHUFFLE_BETA_ACCESS";
 
 export async function getBetaPreference(credentials: OvhCredentials): Promise<boolean> {
   try {
-    // Si la préférence existe, beta est activée
-    await ovhRequest<Preference>(
+    const pref = await ovhRequest<Preference>(
       credentials, 
       "GET", 
       `/me/preferences/manager/${BETA_PREFERENCE_KEY}`
     );
-    return true;
+    return pref?.value === "true";
   } catch {
-    // Si 404 ou erreur, beta est désactivée
     return false;
   }
 }
@@ -246,47 +261,21 @@ export async function setBetaPreference(
   credentials: OvhCredentials,
   enabled: boolean
 ): Promise<void> {
-  if (enabled) {
-    // Créer la préférence pour activer beta
+  const value = enabled.toString();
+  
+  try {
     await ovhRequest<void>(
-      credentials,
-      "POST",
+      credentials, 
+      "PUT", 
+      `/me/preferences/manager/${BETA_PREFERENCE_KEY}`,
+      { key: BETA_PREFERENCE_KEY, value }
+    );
+  } catch {
+    await ovhRequest<void>(
+      credentials, 
+      "POST", 
       "/me/preferences/manager",
-      { key: BETA_PREFERENCE_KEY, value: "true" }
+      { key: BETA_PREFERENCE_KEY, value }
     );
-  } else {
-    // Supprimer la préférence pour désactiver beta
-    await ovhRequest<void>(
-      credentials,
-      "DELETE",
-      `/me/preferences/manager/${BETA_PREFERENCE_KEY}`
-    );
-  }
-}
-
-// ============ DEVELOPER MODE ============
-
-export async function getDeveloperMode(credentials: OvhCredentials): Promise<DeveloperMode> {
-  try {
-    const me = await ovhRequest<{ developerMode?: boolean }>(credentials, "GET", "/me");
-    if (typeof me.developerMode === "boolean") {
-      return { enabled: me.developerMode };
-    }
-  } catch {
-    // Ignore API errors
-  }
-  return { enabled: localStorage.getItem(DEV_MODE_STORAGE_KEY) === "true" };
-}
-
-export async function updateDeveloperMode(
-  credentials: OvhCredentials,
-  enabled: boolean
-): Promise<void> {
-  try {
-    await ovhRequest<void>(credentials, "PUT", "/me", { developerMode: enabled });
-  } catch {
-    // Fallback localStorage si API échoue
-    localStorage.setItem(DEV_MODE_STORAGE_KEY, enabled.toString());
-    throw new Error("Sauvegardé localement uniquement");
   }
 }

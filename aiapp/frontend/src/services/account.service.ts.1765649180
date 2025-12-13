@@ -224,21 +224,19 @@ export async function updateConsent(
 
 // ============ BETA / PREFERENCES ============
 
-const BETA_PREFERENCE_KEY = "ACCOUNT_BETA_FEATURES";
+const BETA_STORAGE_KEY = "ovh_beta_enabled";
 const DEV_MODE_STORAGE_KEY = "ovh_developer_mode";
 
 export async function getBetaPreference(credentials: OvhCredentials): Promise<boolean> {
   try {
-    // Si la préférence existe, beta est activée
-    await ovhRequest<Preference>(
+    const pref = await ovhRequest<Preference>(
       credentials, 
       "GET", 
-      `/me/preferences/manager/${BETA_PREFERENCE_KEY}`
+      "/me/preferences/manager/NAV_RESHUFFLE_BETA_ACCESS"
     );
-    return true;
+    return pref?.value === "true";
   } catch {
-    // Si 404 ou erreur, beta est désactivée
-    return false;
+    return localStorage.getItem(BETA_STORAGE_KEY) === "true";
   }
 }
 
@@ -246,22 +244,7 @@ export async function setBetaPreference(
   credentials: OvhCredentials,
   enabled: boolean
 ): Promise<void> {
-  if (enabled) {
-    // Créer la préférence pour activer beta
-    await ovhRequest<void>(
-      credentials,
-      "POST",
-      "/me/preferences/manager",
-      { key: BETA_PREFERENCE_KEY, value: "true" }
-    );
-  } else {
-    // Supprimer la préférence pour désactiver beta
-    await ovhRequest<void>(
-      credentials,
-      "DELETE",
-      `/me/preferences/manager/${BETA_PREFERENCE_KEY}`
-    );
-  }
+  localStorage.setItem(BETA_STORAGE_KEY, enabled.toString());
 }
 
 // ============ DEVELOPER MODE ============
@@ -273,7 +256,7 @@ export async function getDeveloperMode(credentials: OvhCredentials): Promise<Dev
       return { enabled: me.developerMode };
     }
   } catch {
-    // Ignore API errors
+    // Ignore
   }
   return { enabled: localStorage.getItem(DEV_MODE_STORAGE_KEY) === "true" };
 }
@@ -285,8 +268,6 @@ export async function updateDeveloperMode(
   try {
     await ovhRequest<void>(credentials, "PUT", "/me", { developerMode: enabled });
   } catch {
-    // Fallback localStorage si API échoue
     localStorage.setItem(DEV_MODE_STORAGE_KEY, enabled.toString());
-    throw new Error("Sauvegardé localement uniquement");
   }
 }

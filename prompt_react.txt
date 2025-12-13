@@ -96,15 +96,11 @@ npm run build:prod
 │   ├── Home.tsx               # Dashboard accueil
 │   ├── Login.tsx              # Page connexion OAuth OVH
 │   ├── Dev.tsx                # Playground API / debug
-│   ├── Account/               # Mon compte (5 onglets internes)
-│   ├── Billing/               # Facturation (8 onglets internes)
-│   ├── Services/              # Mes services
-│   ├── Orders/                # Commandes
-│   ├── Contacts/              # Contacts
-│   ├── Communication/         # Communications
-│   ├── Support/               # Assistance
+│   ├── Account/               # Mon compte (7 sous-sections)
+│   ├── Billing/               # Facturation (11 sous-sections)
+│   ├── Support/               # Assistance (5 sous-sections)
 │   ├── Carbon/                # Empreinte carbone
-│   ├── Iam/                   # Identity & Access Management
+│   ├── Iam/                   # Identity & Access Management (univers séparé)
 │   └── Placeholder/           # Pages placeholder (univers non implémentés)
 │
 ├── contexts/                  # React Contexts
@@ -115,6 +111,8 @@ npm run build:prod
 │   ├── account.service.ts
 │   ├── billing.service.ts
 │   ├── services.service.ts
+│   ├── support.service.ts
+│   ├── iam.service.ts
 │   └── security.service.ts
 │
 ├── types/                     # TypeScript types
@@ -215,9 +213,9 @@ La signature des requêtes est gérée automatiquement côté serveur.
 +-------------------------------------------------------------------------------------------+
 | +-----------------+ +-------------------------------------------------------+ +-------+ |
 | | [H] [□] [□] [□] | | HOME | PUBLIC CLOUD | PRIVATE CLOUD | BARE METAL |    | | OK    | |
-| +-----------------+ |      | WEB CLOUD | IPv4/IPv6 NETWORK                   | | nic   | |
+| +-----------------+ |      | WEB CLOUD | NETWORK | IAM                      | | nic   | |
 | | [🔍 Search    ] | +-------------------------------------------------------+ +-------+ |
-| +-----------------+ | [Accueil] [Mon compte] [Facturation] [Services] [...]  | <- NAV2  |
+| +-----------------+ | [Accueil] [Compte] [Facturation] [Support] [...]       | <- NAV2  |
 | | Liste:          | +-------------------------------------------------------+          |
 | | - TOUS          | |                                                       |          |
 | | - ressource 1   | |    PAGE AVEC SES PROPRES ONGLETS NAV3 INTERNES        |          |
@@ -250,16 +248,17 @@ La signature des requêtes est gérée automatiquement côté serveur.
 | User Menu | `UserMenu` | Avatar + NIC handle, ouvre AccountSidebar |
 | AccountSidebar | `AccountSidebar` | Sidebar droite avec profil et actions |
 
-### 6.3 Navigation Niveau 1 (Univers)
+### 6.3 Navigation Niveau 1 (Univers) - NAV1
 
-| Onglet | Description |
-|--------|-------------|
-| **HOME** | Fonctionnalités non-produit (compte, facturation, services, IAM, support...) |
-| **PUBLIC CLOUD** | Instances, Storage, Network, AI/ML, Databases |
-| **PRIVATE CLOUD** | VMware, Nutanix, SAP HANA |
-| **BARE METAL** | Serveurs dédiés, VPS, Managed Bare Metal |
-| **WEB CLOUD** | Domaines, Hébergement, Emails, DNS |
-| **IPv4/IPv6 NETWORK** | IP, vRack, Load Balancer, CDN |
+| ID | Onglet | Description |
+|----|--------|-------------|
+| A | **HOME** | Fonctionnalités non-produit (compte, facturation, support, carbone, API) |
+| B | **PUBLIC CLOUD** | Instances, Storage, Network, AI/ML, Databases |
+| C | **PRIVATE CLOUD** | VMware, Nutanix, SAP HANA |
+| D | **BARE METAL** | Serveurs dédiés, VPS, Managed Bare Metal |
+| E | **WEB CLOUD** | Domaines, Hébergement, Emails, DNS |
+| F | **NETWORK** | IP, vRack, Load Balancer, CDN |
+| G | **IAM** | Identity & Access Management (univers séparé) |
 
 ### 6.4 Sidebar gauche (Liste des ressources)
 
@@ -277,25 +276,459 @@ La signature des requêtes est gérée automatiquement côté serveur.
 - La recherche filtre en temps réel
 - Pagination avec numéro de page courant
 
-### 6.5 Univers HOME - Sections (Niveau 2)
+---
 
-L'univers **HOME** regroupe toutes les fonctionnalités non-produit :
+## 7. Univers HOME - Structure complète (A)
 
-| Section (NAV2) | Page | Onglets internes (NAV3) |
-|----------------|------|-------------------------|
-| **Accueil** | `Home.tsx` | Dashboard principal |
-| **Mon compte** | `AccountPage` | Info générales, Sécurité, Niveau support, RGPD, Avancé |
-| **Facturation** | `BillingPage` | Factures, Avoirs, Paiements, Moyens, Encours, Prépayé, Bons, Fidélité |
-| **Mes services** | `ServicesPage` | Tous, Renouvellement, Résiliation |
-| **Commandes** | `OrdersPage` | Historique, Bons de commande |
-| **Contacts** | `ContactsPage` | Mes contacts, Gestion droits |
-| **IAM** | `IamPage` | Identités, Politiques, Groupes, Logs |
-| **Support** | `SupportPage` | Mes demandes, Créer, Centre d'aide |
-| **Communications** | `CommunicationPage` | Emails, Marketing, Notifications |
-| **Empreinte carbone** | `CarbonPage` | Dashboard carbone |
-| **Playground API** | `Dev.tsx` | Console, Apps, Credentials, Docs |
+L'univers **HOME** regroupe toutes les fonctionnalités non-produit.
 
-### 6.6 AccountSidebar (Menu utilisateur)
+### 7.1 Sections HOME (NAV2)
+
+| # | Section (NAV2) | Page | Route |
+|---|----------------|------|-------|
+| 1 | **Accueil** | `Home.tsx` | `/home` |
+| 2 | **Compte** | `AccountPage` | `/home/account/*` |
+| 3 | **Facturation** | `BillingPage` | `/home/billing/*` |
+| 4 | **Support** | `SupportPage` | `/home/support/*` |
+| 5 | **Carbone** | `CarbonPage` | `/home/carbon` |
+| 6 | **Playground API** | `Dev.tsx` | `/home/api/*` |
+
+### 7.2 Compte - Sous-sections (NAV3)
+
+| # | Onglet (NAV3) | Description | Endpoint API principal |
+|---|---------------|-------------|------------------------|
+| a | **Informations Générales** | Profil utilisateur (nom, adresse, société) | `GET /me` |
+| b | **Éditer mon compte** | Modification profil | `PUT /me` |
+| c | **Sécurité** | 2FA, sessions, mot de passe | `GET /me/accessRestriction/*` |
+| d | **Données personnelles** | RGPD, export/suppression données | `GET /me/privacy/*` |
+| e | **Paramètres avancés** | Configuration avancée compte | `GET /me/preferences` |
+| f | **Mes services** | Gestion des contacts sur services | `GET /me/contact` |
+| g | **Mes demandes** | Demandes de gestion de contacts | `GET /me/task/contactChange` |
+
+### 7.3 Facturation - Sous-sections (NAV3)
+
+| # | Onglet (NAV3) | Description | Endpoint API principal |
+|---|---------------|-------------|------------------------|
+| a | **Mes services** | Liste services actifs, renouvellement | `GET /services` |
+| b | **Factures** | Historique factures | `GET /me/bill` |
+| c | **Avoirs** | Notes de crédit | `GET /me/refund` |
+| d | **Paiement** | Historique paiements (deposits) | `GET /me/deposit` |
+| e | **Commandes** | Historique commandes | `GET /me/order` |
+| f | **Mes références internes** | PO numbers, références | `GET /me/billing/invoicesByPostalMail` |
+| g | **Moyens de paiement** | CB, SEPA, PayPal | `GET /me/payment/method` |
+| h | **Compte prépayé** | Solde OVH Account | `GET /me/ovhAccount` |
+| i | **Bon d'achat** | Vouchers, codes promo | `GET /me/voucherAccount` |
+| j | **Points de fidélité** | Programme fidélité | `GET /me/fidelityAccount` |
+| k | **Contrats** | Contrats actifs, CGV | `GET /me/agreements` |
+
+### 7.4 Support - Sous-sections (NAV3)
+
+| # | Onglet (NAV3) | Description | Endpoint API principal |
+|---|---------------|-------------|------------------------|
+| a | **Mes tickets** | Liste des tickets support | `GET /support/tickets` |
+| b | **Créer un nouveau ticket** | Formulaire création ticket | `POST /support/tickets` |
+| c | **Mon niveau de support** | Standard, Business, Enterprise | `GET /me/supportLevel` |
+| d | **Mes communications** | Messages OVH reçus | `GET /me/notification` |
+| e | **Paramètres de diffusion** | Préférences notifications | `GET /me/notification/preferences` |
+
+### 7.5 Carbone
+
+| Page | Description | Endpoint API principal |
+|------|-------------|------------------------|
+| **Dashboard carbone** | Empreinte carbone des services | `GET /me/carbonCalculator/*` |
+
+### 7.6 Playground API - Sous-sections (NAV3)
+
+| # | Onglet (NAV3) | Description | Endpoint API principal |
+|---|---------------|-------------|------------------------|
+| a | **API** | Console interactive, test endpoints | `GET /me/api/application` |
+| b | **Paramètres avancés** | Credentials, tokens, apps | `GET /me/api/credential` |
+
+---
+
+## 8. Univers IAM - Structure complète (G)
+
+L'univers **IAM** est un univers séparé dédié à la gestion des accès.
+
+### 8.1 Sections IAM (NAV2)
+
+| # | Section (NAV2) | Page | Route |
+|---|----------------|------|-------|
+| 1 | **Accueil** | `IamHome.tsx` | `/iam` |
+
+### 8.2 Accueil IAM - Sous-sections (NAV3)
+
+| # | Onglet (NAV3) | Description | Endpoint API principal |
+|---|---------------|-------------|------------------------|
+| a | **Identités** | Utilisateurs, comptes service | `GET /me/identity/user` |
+| b | **Politiques** | Règles d'accès, permissions | `GET /iam/policy` |
+| c | **Groupes** | Groupes d'utilisateurs | `GET /me/identity/group` |
+| d | **Logs** | Audit trail, historique accès | `GET /me/logs` |
+
+---
+
+## 9. Univers Produits (B-F)
+
+### 9.1 PUBLIC CLOUD (B)
+
+| Section | Subsections |
+|---------|-------------|
+| Accueil | Dashboard |
+| Instances | Liste, Créer |
+| Storage | Block, Object, Archive |
+| Network | Private Network, Load Balancer |
+| Databases | Managed DB |
+| AI & ML | Services IA |
+
+### 9.2 PRIVATE CLOUD (C)
+
+| Section | Subsections |
+|---------|-------------|
+| Accueil | Dashboard |
+| VMware | vSphere, NSX |
+| Nutanix | Clusters |
+| SAP HANA | Instances SAP |
+
+### 9.3 BARE METAL (D)
+
+| Section | Subsections |
+|---------|-------------|
+| Accueil | Dashboard |
+| Serveurs dédiés | Mes serveurs, Commander |
+| VPS | Mes VPS, Commander |
+| Managed Bare Metal | Services managés |
+
+### 9.4 WEB CLOUD (E)
+
+| Section | Subsections |
+|---------|-------------|
+| Accueil | Dashboard |
+| Domaines | Mes domaines, Zones DNS |
+| Hébergements | Mes hébergements, Bases de données |
+| Emails | Email domain, Email Pro, Exchange |
+
+### 9.5 NETWORK (F)
+
+| Section | Subsections |
+|---------|-------------|
+| Accueil | Dashboard |
+| IP | Gestion IP |
+| vRack | Private network |
+| Load Balancer | LB |
+| CDN | Content Delivery |
+
+---
+
+## 10. APIs OVH
+
+### 10.1 Authentification
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/auth/credential` | Demande de consumer key |
+| GET | `/me` | Informations utilisateur |
+
+### 10.2 Compte
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/me` | Informations générales |
+| PUT | `/me` | Éditer mon compte |
+| GET | `/me/contact` | Mes services (contacts) |
+| GET | `/me/task/contactChange` | Mes demandes (contact change) |
+| GET | `/me/preferences` | Paramètres avancés |
+
+### 10.3 Sécurité (2FA)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/me/accessRestriction/sms` | Liste SMS 2FA |
+| GET | `/me/accessRestriction/totp` | Liste TOTP (app mobile) |
+| GET | `/me/accessRestriction/u2f` | Liste clés U2F |
+| GET | `/me/accessRestriction/backupCode` | Codes de secours |
+
+### 10.4 Données personnelles (RGPD)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/me/privacy/requests` | Demandes RGPD |
+| POST | `/me/privacy/requests/erasure` | Demande suppression |
+| POST | `/me/privacy/requests/export` | Demande export |
+
+### 10.5 Facturation
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/services` | Mes services |
+| GET | `/me/bill` | Factures |
+| GET | `/me/bill/{billId}` | Détails facture |
+| GET | `/me/refund` | Avoirs |
+| GET | `/me/deposit` | Paiements |
+| GET | `/me/deposit/{depositId}` | Détails paiement |
+| GET | `/me/order` | Commandes |
+| GET | `/me/payment/method` | Moyens de paiement |
+| GET | `/me/debtAccount` | Encours/dette |
+| GET | `/me/ovhAccount` | Compte prépayé |
+| GET | `/me/voucherAccount` | Bons d'achat |
+| GET | `/me/fidelityAccount` | Points fidélité |
+| GET | `/me/agreements` | Contrats |
+
+### 10.6 Support
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/support/tickets` | Mes tickets |
+| POST | `/support/tickets` | Créer ticket |
+| GET | `/support/tickets/{ticketId}` | Détails ticket |
+| GET | `/me/supportLevel` | Niveau de support |
+| GET | `/me/notification` | Mes communications |
+| GET/PUT | `/me/notification/preferences` | Paramètres de diffusion |
+
+### 10.7 IAM
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/me/identity/user` | Liste identités |
+| GET | `/iam/policy` | Liste politiques |
+| GET | `/me/identity/group` | Liste groupes |
+| GET | `/me/logs` | Logs audit |
+
+### 10.8 Playground API
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/me/api/application` | Mes applications API |
+| GET | `/me/api/credential` | Mes credentials |
+| POST | `/me/api/application` | Créer application |
+
+---
+
+## 11. Old Manager (Référence)
+
+**Production** : `https://manager.eu.ovhcloud.com`
+**Code source** : `/home/ubuntu/manager/`
+
+### 11.1 Structure principale
+```
+/home/ubuntu/manager/packages/manager/
+├── core/          # Utilitaires fondamentaux
+├── modules/       # Modules métier réutilisables
+└── apps/          # Applications complètes
+```
+
+### 11.2 Core (`packages/manager/core/`)
+```
+api, application, ovh-product-icons, request-tagger,
+shell-client, sso, url-builder, utils
+```
+
+### 11.3 Modules (`packages/manager/modules/`)
+```
+account, billing, billing-components, iam, support, order,
+exchange, emailpro, email-domain, nasha, netapp, pci,
+vps, vrack, carbon-calculator, mfa-enrollment, ...
+```
+
+### 11.4 Apps (`packages/manager/apps/`)
+```
+account, billing, dedicated, dedicated-servers, hub,
+iam, pci, public-cloud, vps, vrack, web, web-hosting,
+support, sms, telecom, exchange, email-pro, ...
+```
+
+### 11.5 Méthodologie : Trouver les appels API
+
+**⚠️ IMPORTANT : Ne jamais rediriger vers manager.eu.ovhcloud.com**
+
+Pour chaque fonctionnalité à migrer, identifier les appels API dans le old manager :
+
+```bash
+# 1. Chercher les endpoints API dans un module
+cd /home/ubuntu/manager
+grep -r "api.get\|api.post\|api.put\|api.delete" packages/manager/modules/billing/
+
+# 2. Chercher les appels /me/* (compte utilisateur)
+grep -rn "/me/" packages/manager/apps/account/
+
+# 3. Chercher les services API d'un module
+find packages/manager/modules/billing -name "*.service.ts" -o -name "*api*.ts"
+
+# 4. Chercher une fonctionnalité spécifique
+grep -rn "refund\|avoir" packages/manager/modules/billing/
+
+# 5. Voir les types/interfaces d'un endpoint
+grep -rn "interface.*Bill\|type.*Bill" packages/manager/modules/billing/
+```
+
+**Exemple de migration - Support (Tickets) :**
+```bash
+# Étape 1 : Localiser
+grep -rn "ticket" packages/manager/modules/support/
+# → Trouve : support-ticket.service.ts
+
+# Étape 2 : Identifier l'API
+cat packages/manager/modules/support/src/services/support-ticket.service.ts
+# → Trouve : GET /support/tickets, POST /support/tickets
+
+# Étape 3 : Extraire les types
+grep -rn "interface.*Ticket" packages/manager/modules/support/
+# → Trouve les interfaces TypeScript
+
+# Étape 4 : Générer dans new_manager
+# → Créer support.service.ts avec getTickets(), createTicket()
+# → Créer TicketsTab.tsx dans pages/Support/
+```
+
+---
+
+## 12. Conventions de code
+
+| Règle | Application |
+|-------|-------------|
+| **TypeScript** | Mode strict |
+| **Composants** | Fonctionnels avec hooks |
+| **Nommage composants** | PascalCase |
+| **Nommage fonctions/variables** | camelCase |
+| **Structure fichiers** | Un composant = un fichier |
+| **Exports** | Nommés (préférés aux exports default) |
+| **Appels API** | Dans `services/`, jamais dans les composants |
+| **NAV3 (onglets internes)** | Gérés par chaque page, pas dans App.tsx |
+
+### ⚠️ Sécurité
+
+**JAMAIS de secrets dans le code frontend :**
+- Pas de clés API, tokens, mots de passe ou credentials en dur
+- Pas de secrets dans les variables d'environnement exposées au client (`VITE_*`)
+- L'authentification passe par le flow OAuth OVH (cookies httpOnly côté serveur)
+- Les appels API utilisent les credentials de session, pas de tokens hardcodés
+
+---
+
+## 13. Référence rapide
+
+### 13.1 Recherche dans le Old Manager
+```bash
+# Chercher une fonctionnalité
+cd /home/ubuntu/manager && grep -rn "pattern" packages/
+
+# Chercher les appels API d'un module
+grep -r "api.get\|api.post" packages/manager/modules/MODULE_NAME/
+
+# Chercher les endpoints /me/*
+grep -rn '"/me/' packages/manager/apps/APP_NAME/
+
+# Chercher les services d'un module
+find packages/manager/modules/MODULE_NAME -name "*.service.ts"
+
+# Chercher les types/interfaces
+grep -rn "interface\|type" packages/manager/modules/MODULE_NAME/src/types/
+```
+
+### 13.2 Build New Manager
+```bash
+# Créer archive new manager
+cd /home/ubuntu && tar -cvf new_manager.tar --exclude='*2025*' aiapp/frontend/src/
+
+# Build dev (compile + déploie en dev)
+cd /home/ubuntu/aiapp/frontend && npm run build:dev
+/home/ubuntu/aiapp/scripts/D1-build_frontend_dev.sh
+
+# Build prod (compile + promeut en prod)
+cd /home/ubuntu/aiapp/frontend && npm run build:prod
+/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh
+# ou directement depuis dist :
+/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh --from-dist
+```
+
+---
+
+## 14. Structure navigationTree.ts
+
+Définition des univers dans `/src/components/Sidebar/navigationTree.ts` :
+
+```typescript
+interface Universe {
+  id: string;           // "home", "public-cloud", "iam", etc.
+  label: string;        // "HOME", "PUBLIC CLOUD", "IAM", etc.
+  shortLabel?: string;  // Label court pour affichage compact
+  sections: UniverseSection[];
+}
+
+interface UniverseSection {
+  id: string;           // "home-account", "iam-identities", etc.
+  label: string;        // "Compte", "Identités", etc.
+  subsections?: NavNode[];  // Sous-sections (onglets NAV3)
+}
+
+interface NavNode {
+  id: string;
+  label: string;
+  url?: string;         // URL pour liens externes
+  external?: boolean;   // true = ouvre dans nouvel onglet
+}
+```
+
+**Univers définis :**
+```typescript
+export const universes: Universe[] = [
+  { id: 'home', label: 'HOME', sections: [...] },           // A
+  { id: 'public-cloud', label: 'PUBLIC CLOUD', sections: [...] },  // B
+  { id: 'private-cloud', label: 'PRIVATE CLOUD', sections: [...] }, // C
+  { id: 'bare-metal', label: 'BARE METAL', sections: [...] },      // D
+  { id: 'web-cloud', label: 'WEB CLOUD', sections: [...] },        // E
+  { id: 'network', label: 'NETWORK', sections: [...] },            // F
+  { id: 'iam', label: 'IAM', sections: [...] },                    // G
+];
+```
+
+---
+
+## 15. Mapping Routes ↔ Navigation
+
+### 15.1 Routes HOME (A)
+
+| Route | NAV2 | NAV3 | Composant |
+|-------|------|------|-----------|
+| `/home` | Accueil | - | `Home.tsx` |
+| `/home/account` | Compte | Info générales | `AccountPage/GeneralInfo.tsx` |
+| `/home/account/edit` | Compte | Éditer | `AccountPage/EditAccount.tsx` |
+| `/home/account/security` | Compte | Sécurité | `AccountPage/Security.tsx` |
+| `/home/account/privacy` | Compte | Données perso | `AccountPage/Privacy.tsx` |
+| `/home/account/advanced` | Compte | Paramètres avancés | `AccountPage/Advanced.tsx` |
+| `/home/account/services` | Compte | Mes services | `AccountPage/Services.tsx` |
+| `/home/account/requests` | Compte | Mes demandes | `AccountPage/Requests.tsx` |
+| `/home/billing` | Facturation | Mes services | `BillingPage/Services.tsx` |
+| `/home/billing/bills` | Facturation | Factures | `BillingPage/Bills.tsx` |
+| `/home/billing/refunds` | Facturation | Avoirs | `BillingPage/Refunds.tsx` |
+| `/home/billing/payments` | Facturation | Paiement | `BillingPage/Payments.tsx` |
+| `/home/billing/orders` | Facturation | Commandes | `BillingPage/Orders.tsx` |
+| `/home/billing/references` | Facturation | Références | `BillingPage/References.tsx` |
+| `/home/billing/methods` | Facturation | Moyens paiement | `BillingPage/Methods.tsx` |
+| `/home/billing/prepaid` | Facturation | Prépayé | `BillingPage/Prepaid.tsx` |
+| `/home/billing/vouchers` | Facturation | Bons d'achat | `BillingPage/Vouchers.tsx` |
+| `/home/billing/fidelity` | Facturation | Fidélité | `BillingPage/Fidelity.tsx` |
+| `/home/billing/contracts` | Facturation | Contrats | `BillingPage/Contracts.tsx` |
+| `/home/support` | Support | Mes tickets | `SupportPage/Tickets.tsx` |
+| `/home/support/new` | Support | Créer ticket | `SupportPage/NewTicket.tsx` |
+| `/home/support/level` | Support | Niveau support | `SupportPage/Level.tsx` |
+| `/home/support/communications` | Support | Communications | `SupportPage/Communications.tsx` |
+| `/home/support/preferences` | Support | Paramètres | `SupportPage/Preferences.tsx` |
+| `/home/carbon` | Carbone | - | `CarbonPage.tsx` |
+| `/home/api` | Playground | API | `Dev.tsx` |
+| `/home/api/advanced` | Playground | Paramètres avancés | `Dev/Advanced.tsx` |
+
+### 15.2 Routes IAM (G)
+
+| Route | NAV2 | NAV3 | Composant |
+|-------|------|------|-----------|
+| `/iam` | Accueil | Identités | `IamPage/Identities.tsx` |
+| `/iam/policies` | Accueil | Politiques | `IamPage/Policies.tsx` |
+| `/iam/groups` | Accueil | Groupes | `IamPage/Groups.tsx` |
+| `/iam/logs` | Accueil | Logs | `IamPage/Logs.tsx` |
+
+---
+
+## 16. AccountSidebar (Menu utilisateur)
 
 Accessible via l'avatar/NIC en haut à droite :
 ```
@@ -324,262 +757,6 @@ Accessible via l'avatar/NIC en haut à droite :
 
 **Sections :**
 - **Profil** : Avatar, niveau support, nom, rôle, société, email, NIC
-- **Raccourcis** : Liens rapides vers sections HOME
+- **Raccourcis** : Liens rapides vers sections HOME (Factures, Paiements, Services)
 - **Liens externes** : Documentation, API, Status
 - **Session** : Logout
-
-### 6.7 Univers Produits - Sections (Niveau 2)
-
-**PUBLIC CLOUD :**
-| Section | Subsections |
-|---------|-------------|
-| Accueil | Dashboard |
-| Instances | Liste, Créer |
-| Storage | Block, Object, Archive |
-| Network | Private Network, Load Balancer |
-| Databases | Managed DB |
-| AI & ML | Services IA |
-
-**BARE METAL :**
-| Section | Subsections |
-|---------|-------------|
-| Accueil | Dashboard |
-| Serveurs dédiés | Mes serveurs, Commander |
-| VPS | Mes VPS, Commander |
-| Managed Bare Metal | Services managés |
-
-**WEB CLOUD :**
-| Section | Subsections |
-|---------|-------------|
-| Accueil | Dashboard |
-| Domaines | Mes domaines, Zones DNS |
-| Hébergements | Mes hébergements, Bases de données |
-| Emails | Email domain, Email Pro, Exchange |
-
-**IPv4/IPv6 NETWORK :**
-| Section | Subsections |
-|---------|-------------|
-| Accueil | Dashboard |
-| IP | Gestion IP |
-| vRack | Private network |
-| Load Balancer | LB |
-| CDN | Content Delivery |
-
----
-
-## 7. APIs OVH
-
-### 7.1 Authentification
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| POST | `/auth/credential` | Demande de consumer key |
-| GET | `/me` | Informations utilisateur |
-
-### 7.2 Facturation
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/me/bill` | Liste des IDs de factures |
-| GET | `/me/bill/{billId}` | Détails d'une facture |
-| GET | `/me/refund` | Liste des avoirs |
-| GET | `/me/deposit` | Liste des paiements |
-| GET | `/me/deposit/{depositId}` | Détails d'un paiement |
-| GET | `/me/payment/method` | Moyens de paiement |
-| GET | `/me/debtAccount` | Encours/dette |
-| GET | `/me/ovhAccount` | Compte prépayé |
-| GET | `/me/voucherAccount` | Bons d'achat |
-| GET | `/me/fidelityAccount` | Points fidélité |
-
-### 7.3 Sécurité (2FA)
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/me/accessRestriction/sms` | Liste SMS 2FA |
-| GET | `/me/accessRestriction/totp` | Liste TOTP (app mobile) |
-| GET | `/me/accessRestriction/u2f` | Liste clés U2F |
-| GET | `/me/accessRestriction/backupCode` | Codes de secours |
-
-### 7.4 Compte
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/me/supportLevel` | Niveau de support |
-| GET | `/me/marketing` | Préférences marketing |
-| PUT | `/me/marketing` | Mise à jour marketing |
-| GET | `/me/privacy/requests` | Demandes RGPD |
-| POST | `/me/privacy/requests/erasure` | Demande suppression |
-
----
-
-## 8. Old Manager (Référence)
-
-**Production** : `https://manager.eu.ovhcloud.com`
-**Code source** : `/home/ubuntu/manager/`
-
-### 8.1 Structure principale
-```
-/home/ubuntu/manager/packages/manager/
-├── core/          # Utilitaires fondamentaux
-├── modules/       # Modules métier réutilisables
-└── apps/          # Applications complètes
-```
-
-### 8.2 Core (`packages/manager/core/`)
-```
-api, application, ovh-product-icons, request-tagger,
-shell-client, sso, url-builder, utils
-```
-
-### 8.3 Modules (`packages/manager/modules/`)
-```
-account, billing, billing-components, iam, support, order,
-exchange, emailpro, email-domain, nasha, netapp, pci,
-vps, vrack, carbon-calculator, mfa-enrollment, ...
-```
-
-### 8.4 Apps (`packages/manager/apps/`)
-```
-account, billing, dedicated, dedicated-servers, hub,
-iam, pci, public-cloud, vps, vrack, web, web-hosting,
-support, sms, telecom, exchange, email-pro, ...
-```
-
-### 8.5 Méthodologie : Trouver les appels API
-
-**⚠️ IMPORTANT : Ne jamais rediriger vers manager.eu.ovhcloud.com**
-
-Pour chaque fonctionnalité à migrer, identifier les appels API dans le old manager :
-
-```bash
-# 1. Chercher les endpoints API dans un module
-cd /home/ubuntu/manager
-grep -r "api.get\|api.post\|api.put\|api.delete" packages/manager/modules/billing/
-
-# 2. Chercher les appels /me/* (compte utilisateur)
-grep -rn "/me/" packages/manager/apps/account/
-
-# 3. Chercher les services API d'un module
-find packages/manager/modules/billing -name "*.service.ts" -o -name "*api*.ts"
-
-# 4. Chercher une fonctionnalité spécifique
-grep -rn "refund\|avoir" packages/manager/modules/billing/
-
-# 5. Voir les types/interfaces d'un endpoint
-grep -rn "interface.*Bill\|type.*Bill" packages/manager/modules/billing/
-```
-
-**Exemple de migration - Avoirs (Refunds) :**
-```bash
-# Étape 1 : Localiser
-grep -rn "refund" packages/manager/modules/billing/
-# → Trouve : billing-refund.service.ts
-
-# Étape 2 : Identifier l'API
-cat packages/manager/modules/billing/src/services/billing-refund.service.ts
-# → Trouve : GET /me/refund, GET /me/refund/{refundId}
-
-# Étape 3 : Extraire les types
-grep -rn "interface.*Refund" packages/manager/modules/billing/
-# → Trouve les interfaces TypeScript
-
-# Étape 4 : Générer dans new_manager
-# → Créer billing.service.ts avec getRefunds(), getRefundById()
-# → Créer RefundsTab.tsx dans pages/Billing/
-```
-
----
-
-## 9. Conventions de code
-
-| Règle | Application |
-|-------|-------------|
-| **TypeScript** | Mode strict |
-| **Composants** | Fonctionnels avec hooks |
-| **Nommage composants** | PascalCase |
-| **Nommage fonctions/variables** | camelCase |
-| **Structure fichiers** | Un composant = un fichier |
-| **Exports** | Nommés (préférés aux exports default) |
-| **Appels API** | Dans `services/`, jamais dans les composants |
-| **NAV3 (onglets internes)** | Gérés par chaque page, pas dans App.tsx |
-
-### ⚠️ Sécurité
-
-**JAMAIS de secrets dans le code frontend :**
-- Pas de clés API, tokens, mots de passe ou credentials en dur
-- Pas de secrets dans les variables d'environnement exposées au client (`VITE_*`)
-- L'authentification passe par le flow OAuth OVH (cookies httpOnly côté serveur)
-- Les appels API utilisent les credentials de session, pas de tokens hardcodés
-
----
-
-## 10. Référence rapide
-
-### 10.1 Recherche dans le Old Manager
-```bash
-# Chercher une fonctionnalité
-cd /home/ubuntu/manager && grep -rn "pattern" packages/
-
-# Chercher les appels API d'un module
-grep -r "api.get\|api.post" packages/manager/modules/MODULE_NAME/
-
-# Chercher les endpoints /me/*
-grep -rn '"/me/' packages/manager/apps/APP_NAME/
-
-# Chercher les services d'un module
-find packages/manager/modules/MODULE_NAME -name "*.service.ts"
-
-# Chercher les types/interfaces
-grep -rn "interface\|type" packages/manager/modules/MODULE_NAME/src/types/
-```
-
-### 10.2 Build New Manager
-```bash
-# Créer archive new manager
-cd /home/ubuntu && tar -cvf new_manager.tar --exclude='*2025*' aiapp/frontend/src/
-
-# Build dev (compile + déploie en dev)
-cd /home/ubuntu/aiapp/frontend && npm run build:dev
-/home/ubuntu/aiapp/scripts/D1-build_frontend_dev.sh
-
-# Build prod (compile + promeut en prod)
-cd /home/ubuntu/aiapp/frontend && npm run build:prod
-/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh
-# ou directement depuis dist :
-/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh --from-dist
-```
-
----
-
-## 11. Structure navigationTree.ts
-
-Définition des univers dans `/src/components/Sidebar/navigationTree.ts` :
-```typescript
-interface Universe {
-  id: string;           // "home", "public-cloud", etc.
-  label: string;        // "HOME", "PUBLIC CLOUD", etc.
-  shortLabel?: string;  // Label court pour affichage compact
-  sections: UniversSection[];
-}
-
-interface UniversSection {
-  id: string;           // "home-account", "pci-instances", etc.
-  label: string;        // "Mon compte", "Instances", etc.
-  subsections?: NavNode[];  // Sous-sections (liens externes possibles)
-}
-
-interface NavNode {
-  id: string;
-  label: string;
-  url?: string;         // URL pour liens externes
-  external?: boolean;   // true = ouvre dans nouvel onglet
-}
-```
-
-**Univers définis :**
-1. `home` - HOME (11 sections)
-2. `public-cloud` - PUBLIC CLOUD
-3. `private-cloud` - PRIVATE CLOUD
-4. `bare-metal` - BARE METAL
-5. `web-cloud` - WEB CLOUD
-6. `network` - IPv4/IPv6 NETWORK

@@ -1,7 +1,7 @@
 // ============================================================
 // APP.TSX - New Manager OVHcloud
 // Layout: Sidebar | Header (NAV1 Univers) + NAV2 Sections + Content
-// NAV3 (sous-sections) = géré à l'intérieur de chaque page
+// NAV3 (sous-sections) = geré à l'interieur de chaque page
 // ============================================================
 
 import { useEffect, useState, useMemo } from "react";
@@ -11,7 +11,11 @@ import Home from "./pages/Home";
 import Dev from "./pages/Dev";
 import { AccountPage } from "./pages/Account";
 import { BillingPage } from "./pages/Billing";
+import { ServicesPage } from "./pages/Services";
 import { PlaceholderPage } from "./pages/Placeholder";
+import OrdersPage from "./pages/Orders";
+import ContactsPage from "./pages/Contacts";
+import CommunicationPage from "./pages/Communication";
 import SupportPage from "./pages/Support";
 import CarbonPage from "./pages/Carbon";
 import IamPage from "./pages/Iam";
@@ -113,8 +117,9 @@ function AppContent() {
   const [activeSectionId, setActiveSectionId] = useState("home-dashboard");
   const [activeTabId, setActiveTabId] = useState<string | undefined>(undefined);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+   const [serviceTypeFilter, setServiceTypeFilter] = useState<string | undefined>(undefined);
 
-  // Ressources (vide par défaut, à charger via API)
+  // Ressources (vide par defaut, a charger via API)
   const [resources, setResources] = useState<Resource[]>([]);
 
   // Derived state
@@ -171,17 +176,18 @@ function AppContent() {
   };
 
   // Navigation callback pour les pages (raccourcis, Home, etc.)
-  const handleNavigate = (section: string, options?: { tab?: string }) => {
-    // Gérer la navigation inter-univers
-    if (section.startsWith("iam-")) {
-      setActiveUniverseId("iam");
-    }
+  const handleNavigate = (section: string, options?: { serviceType?: string; tab?: string }) => {
     setActiveSectionId(section);
     if (options?.tab) {
       setActiveTabId(options.tab);
     } else {
       setActiveTabId(undefined);
     }
+     if (options?.serviceType) {
+       setServiceTypeFilter(options.serviceType);
+     } else {
+       setServiceTypeFilter(undefined);
+     }
   };
 
   // Loading
@@ -200,10 +206,10 @@ function AppContent() {
 
   // ============================================================
   // CONTENT ROUTING
-  // NAV3 (sous-sections) est géré par chaque page individuellement
+  // NAV3 (sous-sections) est gere par chaque page individuellement
   // ============================================================
   const renderContent = () => {
-    // ==================== HOME Universe ====================
+    // HOME Universe
     if (activeUniverseId === "home") {
       switch (activeSectionId) {
         case "home-dashboard":
@@ -215,46 +221,47 @@ function AppContent() {
               user={user}
               isActive={true}
               onNavigate={handleNavigate}
-              initialTab={activeTabId}
             />
           );
 
         case "home-billing":
           return <BillingPage isActive={true} initialTab={activeTabId} />;
 
+        case "home-services":
+           return <ServicesPage isActive={true} initialTypeFilter={serviceTypeFilter} />;
+
+        case "home-orders":
+          return <OrdersPage />;
+
+        case "home-contacts":
+          return <ContactsPage />;
+
+        case "home-iam":
+          return <IamPage initialTab={activeTabId} />;
+
         case "home-support":
-          return <SupportPage initialTab={activeTabId} />;
+          return <SupportPage />;
+
+        case "home-communication":
+          return <CommunicationPage />;
 
         case "home-carbon":
           return <CarbonPage />;
 
         case "home-api":
-          return <Dev initialTab={activeTabId} />;
+          return <Dev />;
 
         default:
           return <Home onNavigate={handleNavigate} />;
       }
     }
 
-    // ==================== IAM Universe ====================
-    if (activeUniverseId === "iam") {
-      // Mapper section IAM vers tab
-      const iamTabMap: Record<string, string> = {
-        "iam-identities": "identities",
-        "iam-policies": "policies",
-        "iam-groups": "groups",
-        "iam-logs": "logs",
-      };
-      const iamTab = iamTabMap[activeSectionId] || "identities";
-      return <IamPage initialTab={iamTab} />;
-    }
-
-    // ==================== Autres univers - Placeholder ====================
+    // Autres univers - Placeholder pour l'instant
     const activeSection = activeUniverse?.sections.find((s) => s.id === activeSectionId);
     return (
       <PlaceholderPage
         title={`${activeUniverse?.label || "Univers"} - ${activeSection?.label || "Section"}`}
-        description="Cette section est en cours de développement."
+        description="Cette section est en cours de developpement."
         oldManagerPath="#/"
       />
     );
@@ -294,7 +301,7 @@ function AppContent() {
           />
         )}
 
-        {/* Content area - NAV3 est géré à l'intérieur de chaque page */}
+        {/* Content area - NAV3 est gere à l'interieur de chaque page */}
         <main className="content-area">
           {renderContent()}
         </main>

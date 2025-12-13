@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import Dev from "./pages/Dev";
 import { AccountPage } from "./pages/Account";
 import { BillingPage } from "./pages/Billing";
+import { ServicesPage } from "./pages/Services";
 import { PlaceholderPage } from "./pages/Placeholder";
 import SupportPage from "./pages/Support";
 import CarbonPage from "./pages/Carbon";
@@ -113,6 +114,7 @@ function AppContent() {
   const [activeSectionId, setActiveSectionId] = useState("home-dashboard");
   const [activeTabId, setActiveTabId] = useState<string | undefined>(undefined);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [serviceTypeFilter, setServiceTypeFilter] = useState<string | undefined>(undefined);
 
   // Ressources (vide par défaut, à charger via API)
   const [resources, setResources] = useState<Resource[]>([]);
@@ -171,16 +173,23 @@ function AppContent() {
   };
 
   // Navigation callback pour les pages (raccourcis, Home, etc.)
-  const handleNavigate = (section: string, options?: { tab?: string }) => {
+  const handleNavigate = (section: string, options?: { serviceType?: string; tab?: string }) => {
     // Gérer la navigation inter-univers
     if (section.startsWith("iam-")) {
       setActiveUniverseId("iam");
+    } else if (!section.startsWith("home-")) {
+      // Par défaut, rester dans home pour les sections home-*
     }
     setActiveSectionId(section);
     if (options?.tab) {
       setActiveTabId(options.tab);
     } else {
       setActiveTabId(undefined);
+    }
+    if (options?.serviceType) {
+      setServiceTypeFilter(options.serviceType);
+    } else {
+      setServiceTypeFilter(undefined);
     }
   };
 

@@ -128,12 +128,7 @@ async function ovhRequestOptional<T>(
 // ============ PASSWORD ============
 
 export async function changePassword(credentials: OvhCredentials): Promise<void> {
-  try {
-    await ovhRequest<void>(credentials, "POST", "/me/changePassword");
-  } catch {
-    window.location.href = "https://www.ovh.com/auth/?action=forgottenPassword";
-    throw new Error("Redirection vers le portail OVH...");
-  }
+  await ovhRequest<void>(credentials, "POST", "/me/changePassword");
 }
 
 // ============ SMS 2FA ============
@@ -154,8 +149,8 @@ export async function getAllSms(credentials: OvhCredentials): Promise<SmsRestric
   return results.filter((r): r is SmsRestriction => r !== null);
 }
 
-export async function addSms(credentials: OvhCredentials, phone: string): Promise<SmsRestriction> {
-  return ovhRequest<SmsRestriction>(credentials, "POST", "/me/accessRestriction/sms", { phone });
+export async function addSms(credentials: OvhCredentials, phoneNumber: string): Promise<SmsRestriction> {
+  return ovhRequest<SmsRestriction>(credentials, "POST", "/me/accessRestriction/sms", { phoneNumber });
 }
 
 export async function updateSms(credentials: OvhCredentials, id: number, description: string): Promise<void> {
@@ -179,11 +174,7 @@ export async function validateSms(credentials: OvhCredentials, id: number, code:
 }
 
 export async function sendSmsCode(credentials: OvhCredentials, id: number): Promise<void> {
-  try {
-    await ovhRequest<void>(credentials, "POST", `/me/accessRestriction/sms/${id}/sendCode`);
-  } catch {
-    console.warn("sendSmsCode endpoint not available, code was sent at creation");
-  }
+  await ovhRequest<void>(credentials, "POST", `/me/accessRestriction/sms/${id}/sendCode`);
 }
 
 // ============ TOTP 2FA ============
