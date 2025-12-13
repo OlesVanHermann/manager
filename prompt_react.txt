@@ -1,262 +1,211 @@
-CONSIGNES GENERALES POUR REACT - NEW MANAGER
-=============================================
+# CONSIGNES REACT - NEW MANAGER OVHcloud
 
-## CONTEXTE DU PROJET
+## 1. Contexte du projet
 
-On travaille sur une interface "new manager" qui permet de gerer les services OVHcloud:
-Cloud, Hebergement Web, Email, DNS, Domaines, VPS, Serveurs dedies.
+Interface **New Manager** pour la gestion des services OVHcloud : Cloud, Hébergement Web, Email, DNS, Domaines, VPS, Serveurs dédiés.
 
-Ce projet est une reecriture progressive du "manager" existant (Angular + React monorepo OVHcloud).
-
-### Structure des repertoires
-
-Frontend React: /home/ubuntu/aiapp/frontend/
-Sources: /home/ubuntu/aiapp/frontend/src/
-
-Framework dans /home/ubuntu/aiapp/frontend/src/:
-- ./index.tsx
-- ./App.tsx
-- ./api.ts
-- ./index.css
-- ./main.tsx
-
-Composants dans /home/ubuntu/aiapp/frontend/src/components/:
-- ./components/Layout/Navbar.tsx
-- ./components/Layout/Sidebar.tsx
-- ./components/Layout/MainLayout.tsx
-- ...
-
-Design System dans /home/ubuntu/aiapp/frontend/src/design-system/:
-- DESIGN_TOKENS.md (couleurs, typo, spacing)
-- COMPONENTS.md (catalogue composants)
-- PATTERNS.md (patterns d'usage)
-- ICONS.md (icones disponibles)
-- tokens.css (variables CSS)
-- globals.css (styles globaux)
-- tokens/index.ts (constantes TypeScript)
+Ce projet est une **réécriture progressive** du "old manager" existant (monorepo Angular + React OVHcloud).
 
 ---
 
-## SOURCES DE REFERENCE
+## 2. Règles de travail
 
-Design System: @ovh-ux/muk (Manager UI Kit)
-Base ODS: @ovhcloud/ods-react v19.2.1
-Themes: @ovhcloud/ods-themes v19.2.1
-CSS: Tailwind CSS
-
----
-
-## API OVH
-
-API OVH: https://api.ovh.com (EU) / https://ca.api.ovh.com (CA) / https://us.api.ovh.com (US)
-Documentation: https://api.ovh.com/console/
-
-Authentification API OVH:
-- Application Key (AK)
-- Application Secret (AS)
-- Consumer Key (CK) - obtenu apres login utilisateur
-- Signature: "$1$" + SHA1(AS+"+"+CK+"+"+METHOD+"+"+QUERY+"+"+BODY+"+"+TIMESTAMP)
-
-Endpoints OVH principaux:
-- Auth: /auth/credential (creer CK), /auth/logout
-- Me: /me (infos utilisateur), /me/api/application, /me/api/credential
-- Services: /domain, /hosting/web, /email, /cloud, /vps, /dedicated, etc.
+1. **Lire et analyser** le code fourni. Ne pas partager l'analyse sauf demande explicite.
+2. **Ne rien faire** sans autorisation.
+3. **Attendre les consignes** avant toute action.
+4. **Générer le code** dans le chat en utilisant **un seul bloc de code** avec copier-coller.
+5. **Encapsuler** les commandes `tee` dans un bloc markdown.
+6. **Migration** : utiliser "la méthode" → `grep` → localiser → extraire → générer.
+7. **Conserver** le design system existant, ne pas réinventer les composants UI.
+8. **Erreur 401 API** : rediriger vers l'auth OVH, pas d'erreur affichée.
 
 ---
 
-## STRATEGIE DE MIGRATION
+## 3. Structure des répertoires
 
-Deux methodes possibles pour chaque bout de code:
-a) COPIER-COLLER: code existant fonctionnel -> adapter minimalement
-b) REECRIRE: code legacy ou complexe -> reecrire proprement en React
-
-Modules critiques a migrer en priorite:
-1. Authentification (login/logout/session) - P1
-2. Layout principal (navbar, sidebar) - P1
-3. Routing/Navigation - P1
-4. i18n/Traductions - P2
-5. Tracking/Analytics - P3
+| Élément | Chemin |
+|---------|--------|
+| **New Manager (Frontend React)** | `/home/ubuntu/aiapp/frontend/src/` |
+| **Old Manager (Référence)** | `/home/ubuntu/manager/` |
 
 ---
 
-## ACTIONS ET COMMANDES
+## 4. New Manager
 
-### "analyser"
-Analyser le code, trouver les bugs, NE PAS proposer d'optimisations.
+### 4.1 Archive
 
-### "optimiser"
-Proposer une optimisation, un refactoring, creation, modification, effacement de def.
+```bash
+cd /home/ubuntu/
+tar -cvf new_manager.tar --exclude='*2025*' aiapp/frontend/src/
+```
 
-### "regenerer"
-TOUJOURS fournir dans Markdown UNE SEULE fenetre de code par fichier,
-la derniere version du script, tout le script en une fois sans "... comme avant",
-avec tous les commentaires # et tous les prompts pour chaque def.
+### 4.2 Build
 
-Regenerer avec la commande bash, qui marche en copier coller:
+**Développement :**
+```bash
+cd /home/ubuntu/aiapp/frontend
+npm run build:dev
+/home/ubuntu/aiapp/scripts/D1-build_frontend_dev.sh
+```
 
-cp /home/repertoire_complet/fichier /home/repertoire_complet/fichier.TIMESTAMP
-tee /home/repertoire_complet/fichier > /dev/null <<'FS'
-le code entier, avec tous les #, JAMAIS ... etc.
-FS
+**Production :**
+```bash
+cd /home/ubuntu/aiapp/frontend
+npm run build:prod
+/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh
+# ou
+/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh --from-dist
+```
 
-Rappels anti-casse:
-- FS final doit etre en debut de ligne, sans espace (tres important)
-- pas de guillemets "intelligents" - garder 'FS' avec apostrophes simples
-- pas d'indentation avant tee ... <<'FS' ni avant FS
-- si le fichier n'existe pas, tee le cree; s'il existe, il est ecrase
+### 4.3 Arborescence du framework
 
-### "patcher"
-TOUJOURS fournir le patch dans Markdown, UNE SEULE fenetre de code par fichier.
-
-super-patch <<'EOF'
---- /home/ubuntu/aiapp/frontend/src/components/Check.tsx
-+++ /home/ubuntu/aiapp/frontend/src/components/Check.tsx
-@@
- ligne normale
--ancienne
-+nouvelle
- ligne normale
-@@
- ligne normale
--{isOpen && (c.details.length ? ( ... ))}
-+{isOpen && (k === "web" ? ( ... ) : ( ... ))}
- ligne normale
-EOF
-
-TOUJOURS ajouter une ligne sans -/+ avant et apres @@
-
-Exemple mauvais:
-@@
--old
-+new
-EOF
-
-Exemple bon:
-@@
- blabla
--old
-+new
- blabla
-EOF
-
-Rappels anti-casse:
-- EOF final colonne 0, sans espace
-- Gardez les chemins exacts; utilisez des chemins absolus si vous voulez un patch "peu importe le repertoire courant"
-
-### "migrer"
-Pour migrer du code depuis le manager existant:
-1. Recevoir le code source (Angular ou React legacy)
-2. Analyser la logique metier et les dependances
-3. Proposer: (a) copier-adapter ou (b) reecrire
-4. Generer le code React avec cp+tee ou super-patch
-5. Lister les dependances a installer si necessaire
-
-### "comparer"
-Comparer l'ancien code (manager) avec le nouveau (new manager):
-- Identifier les differences fonctionnelles
-- Verifier la couverture des features
-- Lister ce qui manque
-
----
-
-## ARCHITECTURE CIBLE
-
+```
 /home/ubuntu/aiapp/frontend/src/
-- index.tsx                    # Point d'entree
-- App.tsx                      # App principale + providers
-- api.ts                       # Couche API (fetch, signature OVH)
-- main.tsx                     # Bootstrap React
-- index.css                    # Styles globaux
-- components/                  # Composants reutilisables
-  - Layout/
-    - Navbar.tsx
-    - Sidebar.tsx
-    - MainLayout.tsx
-- pages/                       # Pages/Routes
-  - Home.tsx
-  - Login.tsx
-- hooks/                       # Custom hooks
-  - useAuth.ts
-  - useApi.ts
-  - useTranslation.ts
-- contexts/                    # React Contexts
-  - AuthContext.tsx
-  - ConfigContext.tsx
-- services/                    # Services metier
-  - auth.service.ts
-  - check.service.ts
-- types/                       # TypeScript types
-  - auth.types.ts
-  - api.types.ts
-- utils/                       # Utilitaires
-  - helpers.ts
-- design-system/               # Design system
-  - DESIGN_TOKENS.md
-  - COMPONENTS.md
-  - PATTERNS.md
-  - ICONS.md
-  - tokens.css
-  - globals.css
-  - tokens/index.ts
+├── App.tsx                    # App principale + routing
+├── main.tsx                   # Bootstrap React
+├── index.css                  # Styles globaux
+│
+├── components/                # Composants réutilisables
+│   ├── Sidebar/               # Navigation principale
+│   └── AccountSidebar/        # Sidebar compte utilisateur
+│
+├── pages/                     # Pages/Routes
+│   ├── Home.tsx
+│   ├── Login.tsx
+│   ├── Account/               # Mon compte
+│   ├── Billing/               # Factures
+│   ├── Services/              # Services
+│   └── Placeholder/           # Pages placeholder
+│
+├── contexts/                  # React Contexts
+│   └── AuthContext.tsx
+│
+├── services/                  # Services API
+│   ├── auth.service.ts
+│   ├── account.service.ts
+│   ├── billing.service.ts
+│   ├── services.service.ts
+│   └── security.service.ts
+│
+├── types/                     # TypeScript types
+│   ├── auth.types.ts
+│   └── services.types.ts
+│
+└── design-system/             # Design System
+    ├── index.ts               # Constantes TypeScript
+    ├── globals.css
+    ├── tokens.css
+    ├── tokens/index.ts
+    ├── PATTERNS.md            # Couleurs, typo, spacing
+    ├── COMPONENTS.md          # Catalogue composants
+    ├── DESIGN_TOKENS.md       # Patterns d'usage
+    └── ICONS.md               # Icônes disponibles
+```
 
 ---
 
-## AUTH (Priorite 1)
+## 5. Design System (OVH Classic Blue)
 
-Source: ovh-shell/plugin/auth + ng-ovh-sso-auth
-Cible: /src/contexts/AuthContext.tsx + /src/hooks/useAuth.ts + /src/services/auth.service.ts
+### 5.1 Couleurs primaires (tokens.css)
 
-API OVH Auth:
-- POST /auth/credential: creer une session (retourne consumerKey + validationUrl)
-- GET /auth/currentCredential: verifier la session active
-- POST /auth/logout: deconnecter
-- GET /me: infos utilisateur (nichandle, email, firstname, name, etc.)
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `--color-primary-500` | `#0050D7` | Bleu OVH principal |
+| `--color-primary-600` | `#003DA8` | Hover/Active |
+| `--color-primary-700` | `#002B7A` | Pressed |
+| `--color-primary-800` | `#122844` | Dark |
+| `--color-primary-300` | `#85A5FF` | Light |
+| `--color-primary-100` | `#D6E4FF` | Background |
 
-Fonctionnalites requises:
-- Login (redirection vers validationUrl OVH pour autorisation)
-- Logout (appel /auth/logout + nettoyage local)
-- Session check (verifier consumerKey valide via /auth/currentCredential)
-- User info (GET /me -> nichandle, email, etc.)
-- Protected routes (HOC ou wrapper)
-- Stockage securise du consumerKey (httpOnly cookie ou secure storage)
+### 5.2 Règle d'utilisation
 
----
+Utiliser **uniquement** les variables CSS **sans fallback** :
 
-## DESIGN SYSTEM
+```css
+/* ✅ BON */
+color: var(--color-primary-500);
 
-Respecter les fichiers dans /src/design-system/:
-- Couleurs: utiliser les variables --color-primary-500, --color-success-500, etc.
-- Typography: --font-size-md, --font-weight-semibold, etc.
-- Spacing: --space-4, --space-6, etc.
-- Composants: utiliser ceux de @ovh-ux/muk (Button, Modal, Datagrid, etc.)
+/* ❌ MAUVAIS */
+color: var(--color-primary-500, #0050D7);
+```
 
-Imports obligatoires:
-import '@ovhcloud/ods-themes/default';
-import './design-system/globals.css';
+### 5.3 Stack technique
 
----
-
-## CONVENTIONS DE CODE
-
-- TypeScript strict
-- Composants fonctionnels avec hooks
-- Nommage PascalCase pour composants, camelCase pour fonctions/variables
-- Un composant = un fichier (sauf petits composants internes)
-- Exports nommes preferes aux exports default
-- Tests avec .spec.tsx ou .test.tsx
+| Composant | Source |
+|-----------|--------|
+| Design System | `@ovh-ux/muk` (Manager UI Kit) |
+| Base ODS | `@ovhcloud/ods-react` v19.2.1 |
+| Thèmes | `@ovhcloud/ods-themes` v19.2.1 |
+| CSS | Tailwind CSS |
 
 ---
 
-## REGLES IMPORTANTES
+## 6. Old Manager (Référence)
 
-1. Lis le code fourni. Analyse-le. NE PAS partager l'analyse sauf si demande.
-2. Ne fait RIEN sans autorisation.
-3. Tiens-toi pret pour les nouvelles consignes. NE fais RIEN sans mes consignes.
-4. TOUJOURS generer le code dans le chat en utilisant UNE SEULE fenetre de code proposant le copier coller du code.
-5. IMPORTANT: encapsuler la commande tee <<'FS' ... FS dans un bloc de code markdown.
-6. Pour la migration: toujours demander confirmation avant de generer (copier ou reecrire?)
-7. Garder le design system existant (manager-ui-kit) - ne pas reinventer les composants UI.
+### 6.1 Structure principale
+
+```
+/home/ubuntu/manager/packages/manager/
+├── core/          # Utilitaires fondamentaux
+├── modules/       # Modules métier réutilisables
+└── apps/          # Applications complètes
+```
+
+### 6.2 Core (`packages/manager/core/`)
+
+```
+api, application, ovh-product-icons, request-tagger,
+shell-client, sso, url-builder, utils
+```
+
+### 6.3 Modules (`packages/manager/modules/`)
+
+```
+account, billing, billing-components, iam, support, order,
+exchange, emailpro, email-domain, nasha, netapp, pci,
+vps, vrack, carbon-calculator, mfa-enrollment, ...
+```
+
+### 6.4 Apps (`packages/manager/apps/`)
+
+```
+account, billing, dedicated, dedicated-servers, hub,
+iam, pci, public-cloud, vps, vrack, web, web-hosting,
+support, sms, telecom, exchange, email-pro, ...
+```
 
 ---
 
-FIN DES CONSIGNES - EN ATTENTE DE TES INSTRUCTIONS
+## 7. Conventions de code
+
+| Règle | Application |
+|-------|-------------|
+| **TypeScript** | Mode strict |
+| **Composants** | Fonctionnels avec hooks |
+| **Nommage composants** | PascalCase |
+| **Nommage fonctions/variables** | camelCase |
+| **Structure fichiers** | Un composant = un fichier |
+| **Exports** | Nommés (préférés aux exports default) |
+| **Appels API** | Dans `services/`, jamais dans les composants |
+
+---
+
+## 8. Référence rapide
+
+```bash
+# Localiser dans l'ancien manager
+cd /home/ubuntu/manager && grep -r "pattern" packages/
+
+# Créer archive new manager
+cd /home/ubuntu && tar -cvf new_manager.tar --exclude='*2025*' aiapp/frontend/src/
+
+# Build dev (compile + déploie en dev)
+cd /home/ubuntu/aiapp/frontend && npm run build:dev
+/home/ubuntu/aiapp/scripts/D1-build_frontend_dev.sh
+
+# Build prod (compile + promeut en prod)
+cd /home/ubuntu/aiapp/frontend && npm run build:prod
+/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh
+# ou directement depuis dist :
+/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh --from-dist
+```

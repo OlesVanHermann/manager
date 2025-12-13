@@ -1,0 +1,648 @@
+# OVHcloud API Reference - Frontend React (Sans Backend)
+
+## Prérequis
+
+L'utilisateur DOIT être connecté au Manager OVHcloud. Les APIs utilisent les cookies de session.
+Pas de AK/AS/CK nécessaire - l'auth est gérée par les cookies.
+
+Si l'app n'est pas hébergée sur un domaine OVH, les cookies cross-site seront bloqués (SameSite/CORS).
+Solution : héberger sur un sous-domaine OVH, utiliser un reverse proxy, ou intégrer dans le Manager.
+
+---
+
+## Architecture API
+
+### Régions et URLs de base
+
+| Région | APIv6 (Iceberg) | 2API | Engine API |
+|--------|-----------------|------|------------|
+| EU | https://www.ovh.com/engine/apiv6 | https://www.ovh.com/engine/2api-m | https://www.ovh.com/engine/api |
+| CA | https://ca.ovh.com/engine/apiv6 | https://ca.ovh.com/engine/2api-m | https://ca.ovh.com/engine/api |
+| US | https://us.ovhcloud.com/engine/apiv6 | https://us.ovhcloud.com/engine/2api-m | https://us.ovhcloud.com/engine/api |
+
+### URLs Manager alternatives (équivalentes)
+
+| Région | Manager Engine |
+|--------|----------------|
+| EU | https://manager.eu.ovhcloud.com/engine/api/v1 |
+| CA | https://manager.ca.ovhcloud.com/engine/api/v1 |
+| US | https://manager.us.ovhcloud.com/engine/api/v1 |
+
+### URLs Auth (redirection si 401)
+
+| Région | URL Auth |
+|--------|----------|
+| EU | https://www.ovh.com/auth/?onsuccess=https%3A%2F%2Fwww.ovh.com%2Fmanager |
+| CA | https://ca.ovh.com/auth/?onsuccess=https%3A%2F%2Fca.ovh.com%2Fmanager |
+| US | https://us.ovhcloud.com/auth/?onsuccess=https%3A%2F%2Fus.ovhcloud.com%2Fmanager |
+
+### Types d'APIs
+
+| API | Usage | Auth | Pagination |
+|-----|-------|------|------------|
+| apiv6 | API standard, accès direct aux ressources | Cookies session | Headers X-Pagination (Iceberg) |
+| 2API (AAPI) | API agrégée/enrichie pour le Manager | Cookies session | Params count/offset |
+| Engine API | BFF interne Manager | Cookies session | Standard |
+
+---
+
+## Authentification
+
+### Mode Cookies de Session
+
+L'authentification est gérée automatiquement par les cookies de session OVHcloud.
+```typescript
+// OBLIGATOIRE : credentials: 'include' pour envoyer les cookies
+fetch(url, {
+  credentials: 'include',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+```
+
+### Gestion du 401
+
+Si un appel API retourne 401 (non authentifié), rediriger vers la page de login :
+```typescript
+if (response.status === 401) {
+  window.location.href = AUTH_URLS[region];
+}
+```
+
+---
+
+## 2API - API Agrégée du Manager
+
+### Description
+
+La 2API est une couche BFF (Backend For Frontend) interne qui agrège et transforme les données de l'APIv6 pour les besoins du Manager. Elle offre des endpoints optimisés avec pagination intégrée.
+
+### Configuration dans le code OVH (ng-ovh-sso-auth)
+```javascript
+const serviceTypes = [
+  { serviceType: 'api', urlPrefix: 'api' },
+  { serviceType: 'aapi', urlPrefix: '../2api-m' },  // 2API
+  { serviceType: 'apiv6', urlPrefix: 'apiv6' }      // Iceberg
+];
+```
+
+### Endpoints 2API identifiés (reverse engineering)
+```typescript
+// Billing & Services (avec pagination)
+GET /billing/services?count=10&offset=0&sort=serviceId&sortOrder=asc
+GET /billing/autorenew
+GET /service/{serviceId}
+GET /services
+
+// VPS
+GET /vps/{serviceName}/capabilities
+
+// Dedicated Cloud
+GET /dedicatedCloud/{serviceName}/datacenters-summary
+GET /dedicatedCloud/{serviceName}/networks
+
+// Hosting
+GET /hosting/web/{serviceName}/domain-configuration
+
+// Notifications
+GET /me/notifications
+GET /banner
+
+// Produits
+GET /ovhProduct
+```
+
+### Paramètres de pagination 2API
+
+| Param | Description | Défaut |
+|-------|-------------|--------|
+| count | Nombre d'éléments | 25 |
+| offset | Décalage | 0 |
+| sort | Champ de tri | - |
+| sortOrder | 'asc' ou 'desc' | 'asc' |
+
+---
+
+## Iceberg - Pagination moderne (APIv6)
+
+### Description
+
+Iceberg est le nouveau système de requêtes utilisant l'APIv6 avec pagination via headers HTTP. OVH migre progressivement de 2API vers Iceberg.
+
+### Headers de requête
+```typescript
+const headers = {
+  'X-Pagination-Mode': 'CachedObjectList-Pages',
+  'X-Pagination-Size': '25',        // items par page
+  'X-Pagination-Number': '1',       // numéro de page (1-indexed)
+  'X-Pagination-Sort': 'field',     // champ de tri (optionnel)
+  'X-Pagination-Sort-Order': 'ASC', // 'ASC' ou 'DESC' (optionnel)
+};
+```
+
+### Headers de réponse
+```typescript
+// Headers retournés par l'API
+'X-Pagination-Elements': '150'      // total d'éléments
+'X-Pagination-Number': '1'          // page actuelle
+'X-Pagination-Size': '25'           // taille page
+```
+
+---
+
+## Endpoints principaux
+
+### Utilisateur (/me)
+```typescript
+GET /me                        // Infos compte
+GET /me/supportLevel           // Niveau support
+GET /me/api/application        // Apps API
+GET /me/bill                   // Factures
+GET /me/bill/{billId}          // Détail facture
+GET /me/order                  // Commandes
+GET /me/payment/method         // Moyens de paiement
+GET /me/autorenew              // Config renouvellement
+```
+
+### Services génériques
+```typescript
+GET /services                  // Liste IDs services
+GET /services/{serviceId}      // Détail complet (billing, resource, contacts)
+```
+
+### Domaines
+```typescript
+GET /domain                    // Liste domaines
+GET /domain/{domain}           // Détail domaine
+GET /domain/zone/{zoneName}    // Zone DNS
+GET /domain/zone/{zoneName}/record  // Records DNS
+```
+
+### Hébergement Web
+```typescript
+GET /hosting/web                      // Liste hébergements
+GET /hosting/web/{serviceName}        // Détail
+GET /hosting/web/{serviceName}/user   // Utilisateurs FTP
+GET /hosting/web/{serviceName}/database  // Bases de données
+```
+
+### Email
+```typescript
+GET /email/domain                     // Domaines email
+GET /email/domain/{domain}/account    // Comptes
+GET /email/pro                        // Email Pro
+GET /email/exchange                   // Exchange
+```
+
+### VPS
+```typescript
+GET /vps                              // Liste VPS
+GET /vps/{serviceName}                // Détail
+GET /vps/{serviceName}/ips            // IPs
+GET /vps/{serviceName}/datacenter     // Datacenter
+// 2API: GET /vps/{serviceName}/capabilities
+```
+
+### Serveurs Dédiés
+```typescript
+GET /dedicated/server                 // Liste serveurs
+GET /dedicated/server/{serviceName}   // Détail
+GET /dedicated/server/{serviceName}/specifications/hardware
+GET /dedicated/server/{serviceName}/ips
+```
+
+### Cloud (Public Cloud)
+```typescript
+GET /cloud/project                    // Liste projets
+GET /cloud/project/{serviceName}      // Détail projet
+GET /cloud/project/{serviceName}/instance
+GET /cloud/project/{serviceName}/storage
+```
+
+### Dedicated Cloud (VMware)
+```typescript
+GET /dedicatedCloud                   // Liste
+GET /dedicatedCloud/{serviceName}     // Détail
+// 2API: GET /dedicatedCloud/{serviceName}/datacenters-summary
+// 2API: GET /dedicatedCloud/{serviceName}/networks
+```
+
+---
+
+## Configuration React
+
+### Service API complet
+```typescript
+// src/services/ovhApi.ts
+
+type Region = 'EU' | 'CA' | 'US';
+
+const API_URLS: Record<Region, { apiv6: string; api2: string; engine: string }> = {
+  EU: {
+    apiv6: 'https://www.ovh.com/engine/apiv6',
+    api2: 'https://www.ovh.com/engine/2api-m',
+    engine: 'https://www.ovh.com/engine/api',
+  },
+  CA: {
+    apiv6: 'https://ca.ovh.com/engine/apiv6',
+    api2: 'https://ca.ovh.com/engine/2api-m',
+    engine: 'https://ca.ovh.com/engine/api',
+  },
+  US: {
+    apiv6: 'https://us.ovhcloud.com/engine/apiv6',
+    api2: 'https://us.ovhcloud.com/engine/2api-m',
+    engine: 'https://us.ovhcloud.com/engine/api',
+  },
+};
+
+const AUTH_URLS: Record<Region, string> = {
+  EU: 'https://www.ovh.com/auth/?onsuccess=https%3A%2F%2Fwww.ovh.com%2Fmanager',
+  CA: 'https://ca.ovh.com/auth/?onsuccess=https%3A%2F%2Fca.ovh.com%2Fmanager',
+  US: 'https://us.ovhcloud.com/auth/?onsuccess=https%3A%2F%2Fus.ovhcloud.com%2Fmanager',
+};
+
+class OvhApi {
+  private region: Region = 'EU';
+
+  setRegion(region: Region) {
+    this.region = region;
+  }
+
+  getRegion(): Region {
+    return this.region;
+  }
+
+  private async request<T>(
+    baseUrl: string,
+    method: string,
+    path: string,
+    options?: {
+      body?: any;
+      headers?: Record<string, string>;
+    }
+  ): Promise<T> {
+    const response = await fetch(`${baseUrl}${path}`, {
+      method,
+      credentials: 'include', // OBLIGATOIRE pour les cookies
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+      body: options?.body ? JSON.stringify(options.body) : undefined,
+    });
+
+    if (response.status === 401) {
+      window.location.href = AUTH_URLS[this.region];
+      throw new Error('Non authentifié - redirection login');
+    }
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || `Erreur ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  // ============================================
+  // APIv6 - Appels standards
+  // ============================================
+
+  async get<T>(path: string): Promise<T> {
+    return this.request(API_URLS[this.region].apiv6, 'GET', path);
+  }
+
+  async post<T>(path: string, body: any): Promise<T> {
+    return this.request(API_URLS[this.region].apiv6, 'POST', path, { body });
+  }
+
+  async put<T>(path: string, body: any): Promise<T> {
+    return this.request(API_URLS[this.region].apiv6, 'PUT', path, { body });
+  }
+
+  async delete<T>(path: string): Promise<T> {
+    return this.request(API_URLS[this.region].apiv6, 'DELETE', path);
+  }
+
+  // ============================================
+  // APIv6 + Iceberg (pagination par headers)
+  // ============================================
+
+  async getIceberg<T>(
+    path: string,
+    options: {
+      page?: number;
+      pageSize?: number;
+      sort?: string;
+      sortOrder?: 'ASC' | 'DESC';
+    } = {}
+  ): Promise<{ data: T[]; total: number; page: number }> {
+    const { page = 1, pageSize = 25, sort, sortOrder = 'ASC' } = options;
+
+    const headers: Record<string, string> = {
+      'X-Pagination-Mode': 'CachedObjectList-Pages',
+      'X-Pagination-Size': String(pageSize),
+      'X-Pagination-Number': String(page),
+    };
+
+    if (sort) {
+      headers['X-Pagination-Sort'] = sort;
+      headers['X-Pagination-Sort-Order'] = sortOrder;
+    }
+
+    const response = await fetch(`${API_URLS[this.region].apiv6}${path}`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    });
+
+    if (response.status === 401) {
+      window.location.href = AUTH_URLS[this.region];
+      throw new Error('Non authentifié');
+    }
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || `Erreur ${response.status}`);
+    }
+
+    return {
+      data: await response.json(),
+      total: parseInt(response.headers.get('X-Pagination-Elements') || '0'),
+      page: parseInt(response.headers.get('X-Pagination-Number') || '1'),
+    };
+  }
+
+  // ============================================
+  // 2API (endpoints agrégés du Manager)
+  // ============================================
+
+  async get2api<T>(
+    path: string,
+    params?: {
+      count?: number;
+      offset?: number;
+      sort?: string;
+      sortOrder?: 'asc' | 'desc';
+    }
+  ): Promise<T> {
+    const searchParams = params
+      ? '?' + new URLSearchParams(params as Record<string, string>).toString()
+      : '';
+    return this.request(API_URLS[this.region].api2, 'GET', `${path}${searchParams}`);
+  }
+
+  async post2api<T>(path: string, body: any): Promise<T> {
+    return this.request(API_URLS[this.region].api2, 'POST', path, { body });
+  }
+
+  async put2api<T>(path: string, body: any): Promise<T> {
+    return this.request(API_URLS[this.region].api2, 'PUT', path, { body });
+  }
+
+  async delete2api<T>(path: string): Promise<T> {
+    return this.request(API_URLS[this.region].api2, 'DELETE', path);
+  }
+}
+
+export const ovhApi = new OvhApi();
+```
+
+### Hooks React
+```typescript
+// src/hooks/useOvhApi.ts
+import { useState, useEffect, useCallback } from 'react';
+import { ovhApi } from '../services/ovhApi';
+
+// Hook simple pour APIv6
+export function useOvhApi<T>(path: string) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const refetch = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await ovhApi.get<T>(path);
+      setData(result);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [path]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { data, loading, error, refetch };
+}
+
+// Hook avec pagination Iceberg
+export function useIceberg<T>(
+  path: string,
+  options: {
+    pageSize?: number;
+    sort?: string;
+    sortOrder?: 'ASC' | 'DESC';
+  } = {}
+) {
+  const [data, setData] = useState<T[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchPage = useCallback(
+    async (pageNum: number) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await ovhApi.getIceberg<T>(path, {
+          page: pageNum,
+          pageSize: options.pageSize,
+          sort: options.sort,
+          sortOrder: options.sortOrder,
+        });
+        setData(result.data);
+        setTotal(result.total);
+        setPage(result.page);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [path, options.pageSize, options.sort, options.sortOrder]
+  );
+
+  useEffect(() => {
+    fetchPage(1);
+  }, [fetchPage]);
+
+  return {
+    data,
+    total,
+    page,
+    loading,
+    error,
+    nextPage: () => fetchPage(page + 1),
+    prevPage: () => fetchPage(Math.max(1, page - 1)),
+    goToPage: fetchPage,
+    refetch: () => fetchPage(page),
+  };
+}
+
+// Hook 2API avec pagination
+export function use2api<T>(
+  path: string,
+  params?: {
+    count?: number;
+    offset?: number;
+    sort?: string;
+    sortOrder?: 'asc' | 'desc';
+  }
+) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const refetch = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await ovhApi.get2api<T>(path, params);
+      setData(result);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [path, params?.count, params?.offset, params?.sort, params?.sortOrder]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { data, loading, error, refetch };
+}
+```
+
+---
+
+## Exemples d'utilisation
+```typescript
+import { useOvhApi, useIceberg, use2api } from './hooks/useOvhApi';
+import { ovhApi } from './services/ovhApi';
+
+// Configuration région (une seule fois au démarrage)
+ovhApi.setRegion('EU');
+
+function Dashboard() {
+  // Infos utilisateur (APIv6)
+  const { data: me, loading: meLoading } = useOvhApi<{
+    firstname: string;
+    name: string;
+    nichandle: string;
+  }>('/me');
+
+  // Liste services avec pagination Iceberg
+  const {
+    data: services,
+    total,
+    page,
+    nextPage,
+    prevPage,
+    loading: servicesLoading,
+  } = useIceberg<number>('/services', { pageSize: 25 });
+
+  // Billing via 2API
+  const { data: billing } = use2api<{ list: any[] }>('/billing/services', {
+    count: 10,
+    offset: 0,
+  });
+
+  if (meLoading) return <div>Chargement...</div>;
+
+  return (
+    <div>
+      <h1>Bonjour {me?.firstname} {me?.name}</h1>
+      <p>NIC: {me?.nichandle}</p>
+
+      <h2>Services ({total})</h2>
+      {servicesLoading ? (
+        <p>Chargement services...</p>
+      ) : (
+        <>
+          <ul>
+            {services.map((id) => (
+              <li key={id}>Service #{id}</li>
+            ))}
+          </ul>
+          <button onClick={prevPage} disabled={page === 1}>
+            Précédent
+          </button>
+          <span> Page {page} </span>
+          <button onClick={nextPage}>Suivant</button>
+        </>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## Debug & Reverse Engineering
+
+### Méthode pour découvrir les endpoints 2API
+
+1. **Ouvrir le Manager OVHcloud** : https://www.ovh.com/manager/
+
+2. **DevTools Network** (F12) :
+   - Filtrer par `2api-m` ou `engine`
+   - Observer les requêtes XHR/Fetch
+   - Noter les URLs, headers, payloads
+
+3. **Dans le code source Manager** (GitHub) :
+   - Chercher `rootPath: '2api'` → utilise /engine/2api-m
+   - Chercher `rootPath: 'apiv6'` → utilise /engine/apiv6 (Iceberg)
+   - Chercher `.Aapi()` → appels 2API
+
+4. **Repos utiles** :
+   - https://github.com/ovh/manager
+   - https://github.com/ovh-ux/ovh-api-services
+
+### Exemple de requête 2API observée
+```
+Request URL: https://www.ovh.com/engine/2api-m/billing/services?count=25&offset=0
+Request Method: GET
+Cookie: SESSION=xxx; XSRF-TOKEN=xxx
+
+Response: { data: [...], count: 25, total: 150 }
+```
+
+---
+
+## Notes de migration 2API → Iceberg
+
+OVHcloud migre progressivement de 2API vers Iceberg. Exemples trouvés dans les changelogs :
+- "replace 2API datacenters-summary by iceberg query"
+- "remove 2API to fetch hosts"
+- "change 2api call by iceberg on domain configuration"
+
+**Recommandation** : Pour les nouvelles features, préférer Iceberg (pagination headers) plutôt que 2API.
+
+---
+
+## Documentation et ressources
+
+- Console API : https://api.ovh.com/console/
+- GitHub Manager : https://github.com/ovh/manager
+- GitHub ovh-api-services : https://github.com/ovh-ux/ovh-api-services
+- Guides : https://docs.ovh.com/

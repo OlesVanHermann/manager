@@ -1,0 +1,197 @@
+# LA MÉTHODE - Migration Old Manager → New Manager
+
+## Vue d'ensemble
+
+Méthodologie systématique pour migrer les features de l'ancien manager OVHcloud (Angular) vers le nouveau manager (React).
+
+---
+
+## PHASE 1 : IDENTIFICATION
+
+### 1.1 Cibler la feature
+Décider précisément quelle partie de l'interface on veut migrer (page, composant, fonctionnalité).
+
+### 1.2 Localiser les fichiers sources
+Rechercher dans le monorepo par texte visible dans l'UI :
+
+```bash
+grep -r "texte_visible_dans_UI" /home/ubuntu/manager/ --include="*.json" --include="*.html" --include="*.js"
+```
+
+**Fichiers à identifier :**
+| Type | Extension | Contenu |
+|------|-----------|---------|
+| Template | `.html` | Structure Angular |
+| Logique | `.controller.js`, `.component.js` | État et handlers |
+| Services | `.service.js` | Appels API |
+| Traductions | `Messages_fr_FR.json` | Textes i18n |
+| Styles | `.less`, `.scss` | CSS spécifique |
+
+---
+
+## PHASE 2 : EXTRACTION
+
+### 2.1 Créer l'archive des sources
+```bash
+cd /home/ubuntu/
+tar cvf feature_name.tar <liste_fichiers_et_repertoires>
+```
+
+### 2.2 Transférer et uploader
+```bash
+# Depuis la machine locale
+scp ubuntu@mx4.di2amp.com:/home/ubuntu/feature_name.tar ./
+```
+
+Puis uploader `feature_name.tar` dans le chat Claude.
+
+---
+
+## PHASE 3 : ANALYSE
+
+### 3.1 Décortiquer les sources Angular
+
+**Template HTML → JSX**
+- `ng-if` → `{condition && ...}`
+- `ng-repeat` → `.map()`
+- `ng-click` → `onClick`
+- `ng-model` → `useState` + `onChange`
+
+**Textes i18n → Français hardcodé**
+- Extraire les clés de traduction
+- Remplacer par les valeurs françaises directement
+
+**Appels API → Format OVH**
+- Identifier les endpoints (`/dedicated/server/{serviceName}/...`)
+- Adapter au client API du new_manager (`/src/api.ts`)
+- Vérifier l'authentification (cookies SSO)
+
+**Styles → Design System**
+- Utiliser les tokens de `/src/design-system/tokens.css`
+- Utiliser les composants ODS existants (@ovhcloud/ods-react)
+- Respecter les variables `--color-*`, `--space-*`, `--font-*`
+
+---
+
+## PHASE 4 : GÉNÉRATION
+
+### 4.1 Créer un nouveau fichier avec cp+tee
+
+```bash
+cp /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx.$(date +%s) 2>/dev/null
+tee /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx > /dev/null <<'FS'
+// Code React COMPLET ici
+// JAMAIS de "... comme avant"
+// TOUS les imports, TOUT le code
+FS
+```
+
+**Rappels anti-casse cp+tee :**
+- `FS` final en début de ligne, sans espace
+- Pas de guillemets "intelligents" - garder `'FS'` avec apostrophes simples
+- Pas d'indentation avant `tee ... <<'FS'` ni avant `FS`
+- Si le fichier n'existe pas, tee le crée ; s'il existe, il est écrasé
+
+### 4.2 Modifier un fichier existant avec super-patch
+
+```bash
+super-patch <<'EOF'
+--- /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx
++++ /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx
+@@
+ ligne de contexte avant
+-ancienne ligne à supprimer
++nouvelle ligne à ajouter
+ ligne de contexte après
+EOF
+```
+
+**Rappels anti-casse super-patch :**
+- `EOF` final colonne 0, sans espace
+- TOUJOURS une ligne de contexte (sans `-/+`) avant et après `@@`
+- Utiliser des chemins absolus
+
+**Exemple MAUVAIS :**
+```
+@@
+-old
++new
+EOF
+```
+
+**Exemple BON :**
+```
+@@
+ const x = 1;
+-old
++new
+ return x;
+EOF
+```
+
+### 4.3 Structure type d'un composant
+
+```
+/home/ubuntu/aiapp/frontend/src/pages/FeatureName/
+├── FeatureName.page.tsx      # Page principale
+├── components/
+│   └── SubComponent.tsx      # Sous-composants
+├── hooks/
+│   └── useFeatureData.ts     # Hooks custom (API calls)
+└── index.ts                  # Export
+```
+
+---
+
+## PHASE 5 : BUILD & TEST
+
+### 5.1 Compiler le frontend
+```bash
+cd /home/ubuntu/aiapp/frontend
+npm run build:dev
+/home/ubuntu/aiapp/scripts/D1-build_frontend_dev.sh
+```
+
+### 5.2 Tester en environnement dev
+Ouvrir : **https://manager.di2amp.com/dev/**
+
+**Checklist de validation :**
+- [ ] Rendu visuel conforme à l'original
+- [ ] Appels API fonctionnels (vérifier Network tab)
+- [ ] Pas d'erreurs console
+- [ ] Navigation correcte
+- [ ] États de chargement/erreur gérés
+
+---
+
+## RÉSUMÉ EXPRESS
+
+```
+1. CIBLER    → Quelle feature migrer ?
+2. GREP      → Trouver les fichiers sources
+3. TAR+SCP   → Extraire et transférer
+4. UPLOAD    → Partager avec Claude
+5. ANALYSER  → HTML→JSX, i18n→FR, API→nouveau format
+6. GÉNÉRER   → cp+tee (nouveau) ou super-patch (modif)
+7. BUILD     → npm run build:dev + D1-build_frontend_dev.sh
+8. TESTER    → https://manager.di2amp.com/dev/
+```
+
+---
+
+## CHOIX DE MÉTHODE
+
+| Situation | Méthode |
+|-----------|---------|
+| Nouveau fichier | `cp+tee` |
+| Fichier existant, petite modif | `super-patch` |
+| Fichier existant, gros changements | `cp+tee` (réécriture complète) |
+
+---
+
+## NOTES
+
+- Toujours vérifier les endpoints API dans la doc OVH (https://api.ovh.com/console/)
+- Privilégier les composants ODS (@ovhcloud/ods-react v19.2.1)
+- Garder la structure de fichiers cohérente avec `/src/` existant
+- Design system : `/src/design-system/DESIGN_TOKENS.md`
