@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import "./Login.css";
 
 export default function Login() {
   const { login, isLoading, error } = useAuth();
@@ -17,54 +18,46 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-2">New Manager</h1>
-        <p className="text-gray-500 text-sm mb-6">Connectez-vous avec vos credentials OVH API</p>
+    <div className="login-page">
+      <div className="login-card">
+        <h1 className="login-title">New Manager</h1>
+        <p className="login-subtitle">Connectez-vous avec vos credentials OVH API</p>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded text-sm">
-            {error}
-          </div>
-        )}
+        {error && <div className="login-error">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Application Key</label>
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="login-field">
+            <label className="login-label">Application Key</label>
             <input
               type="text"
               value={appKey}
               onChange={(e) => setAppKey(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="login-input"
               placeholder="Votre Application Key"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Application Secret</label>
+          <div className="login-field">
+            <label className="login-label">Application Secret</label>
             <input
               type="password"
               value={appSecret}
               onChange={(e) => setAppSecret(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="login-input"
               placeholder="Votre Application Secret"
               required
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={isLoading} className="login-button">
             {isLoading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t text-center">
-          <p className="text-sm text-gray-500 mb-2">Pas encore de credentials ?</p>
-          <a href="https://eu.api.ovh.com/createApp/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">Creer une application sur eu.api.ovh.com</a>
+        <div className="login-footer">
+          <p className="login-footer-text">Pas encore de credentials ?</p>
+          <a href="https://eu.api.ovh.com/createApp/" target="_blank" rel="noopener noreferrer" className="login-footer-link">Creer une application sur eu.api.ovh.com</a>
         </div>
       </div>
     </div>

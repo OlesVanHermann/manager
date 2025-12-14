@@ -118,24 +118,34 @@ export async function getServiceContacts(credentials: OvhCredentials): Promise<S
         batch.map(async (id) => {
           try {
             const details = await ovhRequest<{
-              serviceName: string;
-              serviceType?: string;
-              customer?: {
-                contacts?: {
-                  admin?: string;
-                  billing?: string;
-                  tech?: string;
+              resource?: {
+                displayName?: string;
+                name?: string;
+                product?: {
+                  description?: string;
+                  name?: string;
                 };
+              };
+              customer?: {
+                contacts?: Array<{
+                  customerCode: string;
+                  type: string;
+                }>;
               };
             }>(credentials, "GET", `/services/${id}`);
             
-            if (details.customer?.contacts) {
+            if (details.resource && details.customer?.contacts) {
+              const contacts = details.customer.contacts;
+              const findContact = (type: string) => {
+                const contact = contacts.find(c => c.type === type);
+                return contact?.customerCode || "-";
+              };
               return {
-                serviceName: details.serviceName,
-                serviceType: details.serviceType || "Autre",
-                contactAdmin: details.customer.contacts.admin || "-",
-                contactTech: details.customer.contacts.tech || "-",
-                contactBilling: details.customer.contacts.billing || "-",
+                serviceName: details.resource.displayName || details.resource.name || "-",
+                serviceType: details.resource.product?.description || details.resource.product?.name || "Autre",
+                contactAdmin: findContact("administrator"),
+                contactTech: findContact("technical"),
+                contactBilling: findContact("billing"),
               };
             }
           } catch {

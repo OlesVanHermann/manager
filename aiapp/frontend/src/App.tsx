@@ -298,6 +298,7 @@ function AppContent() {
         isOpen={accountSidebarOpen}
         onClose={() => setAccountSidebarOpen(false)}
         onLogout={handleLogout}
+        onNavigate={handleNavigate}
       />
     </div>
   );

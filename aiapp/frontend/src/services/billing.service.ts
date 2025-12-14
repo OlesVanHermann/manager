@@ -56,7 +56,7 @@ export interface Deposit {
   date: string;
   amount: { currencyCode: string; text: string; value: number };
   orderId: number;
-  paymentInfo?: { paymentType: string; description: string };
+  paymentInfo?: { paymentType: string; publicLabel?: string; description?: string | null };
   url: string;
   pdfUrl: string;
 }

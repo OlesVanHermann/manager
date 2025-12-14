@@ -8,13 +8,13 @@ interface Shortcut {
 }
 
 const shortcuts: Shortcut[] = [
-  { id: "ALL_BILLS", label: "Voir mes factures", target: "internal", section: "home-billing", tab: "bills" },
+  { id: "ALL_BILLS", label: "Voir mes factures", target: "internal", section: "home-billing", tab: "invoices" },
   { id: "PAYMENT_FOLLOW_UP", label: "Suivre mes paiements", target: "internal", section: "home-billing", tab: "payments" },
-  { id: "ADD_PAYMENT_METHOD", label: "Ajouter un moyen de paiement", target: "internal", section: "home-billing", tab: "payment-methods" },
-  { id: "ALL_AGREEMENTS", label: "Voir mes contrats", target: "internal", section: "home-billing", tab: "agreements" },
-  { id: "MANAGE_SERVICES", label: "Gerer mes services", target: "internal", section: "home-services" },
-  { id: "MANAGE_USERS", label: "Gerer mes utilisateurs", target: "internal", section: "home-iam", tab: "users" },
-  { id: "ADD_CONTACT", label: "Ajouter un contact", target: "internal", section: "home-contacts" },
+  { id: "ADD_PAYMENT_METHOD", label: "Ajouter un moyen de paiement", target: "internal", section: "home-billing", tab: "methods" },
+  { id: "ALL_AGREEMENTS", label: "Voir mes contrats", target: "internal", section: "home-billing", tab: "contracts" },
+  { id: "MANAGE_SERVICES", label: "Gerer mes services", target: "internal", section: "home-billing", tab: "services" },
+  { id: "MANAGE_USERS", label: "Gerer mes utilisateurs", target: "internal", section: "iam" },
+  { id: "ADD_CONTACT", label: "Ajouter un contact", target: "internal", section: "home-account", tab: "contacts-services" },
 ];
 
 interface ShortcutsTileProps {

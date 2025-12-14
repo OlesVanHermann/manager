@@ -14,6 +14,7 @@ export interface ProcedureStatus {
 }
 
 export interface FraudStatus extends ProcedureStatus {
+  ticketId?: string;
   documentsRequired?: boolean;
   // Statut possible: "required" (documents nécessaires), "pending" (en cours de vérification), "none" (pas de procédure)
 }
@@ -34,12 +35,9 @@ export async function getFraudStatus(): Promise<FraudStatus> {
   try {
     const status = await ovhGet<FraudStatus>("/me/procedure/fraud");
     return status;
-  } catch (err: unknown) {
-    // Si 404 ou pas de procédure, retourner status "none"
-    if (err && typeof err === "object" && "status" in err && (err as { status: number }).status === 404) {
-      return { status: "none" };
-    }
-    throw err;
+  } catch {
+    // Si erreur (404 = pas de procédure), retourner status "none"
+    return { status: "none" };
   }
 }
 

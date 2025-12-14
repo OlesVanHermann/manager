@@ -287,7 +287,12 @@ export async function getBackupCode(credentials: OvhCredentials): Promise<Backup
 }
 
 export async function generateBackupCodes(credentials: OvhCredentials): Promise<BackupCodeGeneration> {
-  return ovhRequest<BackupCodeGeneration>(credentials, "POST", "/me/accessRestriction/backupCode");
+  const result = await ovhRequest<string[] | BackupCodeGeneration>(credentials, "POST", "/me/accessRestriction/backupCode");
+  // L'API peut retourner soit un tableau direct, soit un objet { codes: [] }
+  if (Array.isArray(result)) {
+    return { codes: result };
+  }
+  return result;
 }
 
 export async function deleteBackupCodes(credentials: OvhCredentials): Promise<void> {

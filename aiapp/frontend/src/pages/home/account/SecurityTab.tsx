@@ -452,8 +452,8 @@ export default function SecurityTab() {
                           )}
                         </td>
                         <td className="actions-cell">
-                          <button className="btn-icon" onClick={() => openModal("deleteSms", s.id)} title="Supprimer">
-                            <IconDots />
+                           <button className="btn btn-outline-danger btn-sm" onClick={() => openModal("deleteSms", s.id)}>
+                            Supprimer
                           </button>
                         </td>
                       </tr>
@@ -502,8 +502,8 @@ export default function SecurityTab() {
                           )}
                         </td>
                         <td className="actions-cell">
-                          <button className="btn-icon" onClick={() => openModal("deleteTotp", t.id)} title="Supprimer">
-                            <IconDots />
+                           <button className="btn btn-danger btn-sm" onClick={() => openModal("deleteTotp", t.id)}>
+                            Supprimer
                           </button>
                         </td>
                       </tr>
@@ -552,8 +552,8 @@ export default function SecurityTab() {
                           )}
                         </td>
                         <td className="actions-cell">
-                          <button className="btn-icon" onClick={() => openModal("deleteU2f", u.id)} title="Supprimer">
-                            <IconDots />
+                           <button className="btn btn-danger btn-sm" onClick={() => openModal("deleteU2f", u.id)}>
+                            Supprimer
                           </button>
                         </td>
                       </tr>
