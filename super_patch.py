@@ -22,6 +22,8 @@ VERSION CORRIGÉE :
 - FIX #15: Reconstruction précise de new_block — anchor_before/after lus depuis fichier, seul g_plus ajusté avec indent_delta
 - FIX #16: Détection des patchs no-op (g_minus == g_plus) avec avertissement
 - FIX #17: Affichage diff -u automatique après application pour visualiser les modifications
+- FIX #18: Échappement des lignes commençant par +/- avec double préfixe (++ → +, +- → -, -- → -, -+ → +)
+- FIX #19: Flush correct quand contexte sépare deux blocs + consécutifs (insertions multiples à différents endroits)
 """
 
 import sys, os, re, tempfile, subprocess, shutil
@@ -156,9 +158,39 @@ def _normalize_devnull_headers(files: List[Dict]) -> None:
             fe["old"] = new_hdr
             fe["is_creation"] = True
 
+# ===== FIX #18: DÉCODAGE ÉCHAPPEMENT DOUBLE PRÉFIXE =====
+def _decode_diff_line(line: str) -> Tuple[str, str]:
+    """Décoder une ligne diff avec support échappement double préfixe; line->(type, content). Type: '+', '-', ' ', ou '' pour autre. Convention: ++ → ajouter '+...', +- → ajouter '-...', -- → supprimer '-...', -+ → supprimer '+...'."""
+    if len(line) < 1:
+        return "", line
+    
+    # FIX #18: Double préfixe = échappement
+    if len(line) >= 2:
+        two = line[:2]
+        rest = line[2:]
+        if two == "++":
+            return "+", "+" + rest
+        elif two == "+-":
+            return "+", "-" + rest
+        elif two == "--":
+            return "-", "-" + rest
+        elif two == "-+":
+            return "-", "+" + rest
+    
+    # Préfixe simple standard
+    first = line[0]
+    if first == "+":
+        return "+", line[1:]
+    elif first == "-":
+        return "-", line[1:]
+    elif first == " ":
+        return " ", line[1:]
+    else:
+        return "", line
+
 # ===== OUTILS SUR HUNKS =====
 def split_groups_with_context(hunk: Dict) -> List[Tuple[List[str], List[str], List[str], List[str]]]:
-    """Découper un hunk en groupes séquentiels (context_before, minus, plus, context_after); FIX #12: flush quand contexte intermédiaire sépare deux blocs; hunk->list tuples."""
+    """Découper un hunk en groupes séquentiels (context_before, minus, plus, context_after); FIX #12/#19: flush quand contexte sépare deux blocs +; FIX #18: support échappement double préfixe; hunk->list tuples."""
     lines: List[str] = hunk.get("lines") or []
 
     groups: List[Tuple[List[str], List[str], List[str], List[str]]] = []
@@ -177,27 +209,35 @@ def split_groups_with_context(hunk: Dict) -> List[Tuple[List[str], List[str], Li
         cur_plus = []
 
     for l in lines:
-        if l.startswith(" "):
+        line_type, content = _decode_diff_line(l)
+        
+        if line_type == " ":
             if cur_minus or cur_plus:
-                cur_context_after.append(l[1:])
+                cur_context_after.append(content)
             else:
                 if cur_context_after:
                     cur_context_before = cur_context_after.copy()
                     cur_context_after = []
-                cur_context_before.append(l[1:])
-        elif l.startswith("-"):
+                cur_context_before.append(content)
+        elif line_type == "-":
             if cur_context_after and not cur_minus and not cur_plus:
                 cur_context_before = cur_context_after.copy()
                 cur_context_after = []
             elif cur_plus:
                 flush()
-            cur_minus.append(l[1:])
-        elif l.startswith("+"):
-            if cur_context_after and not cur_minus and not cur_plus:
-                cur_context_before = cur_context_after.copy()
-                cur_context_after = []
-            cur_plus.append(l[1:])
+            cur_minus.append(content)
+        elif line_type == "+":
+            # FIX #19: Si on a du contexte après un bloc + et qu'on rencontre un nouveau +, flush d'abord
+            if cur_context_after:
+                if cur_plus:
+                    # Contexte après un +, puis nouveau + → flush le groupe précédent
+                    flush()
+                else:
+                    cur_context_before = cur_context_after.copy()
+                    cur_context_after = []
+            cur_plus.append(content)
         else:
+            # Ligne non reconnue, traiter comme contexte
             flush()
             cur_context_before.append(l)
 
@@ -566,7 +606,6 @@ def restore_from_backup(src: str, backups: Dict[str, str]) -> None:
     try:
         shutil.copy2(bak, src)
         print(f"[ROLLBACK] Restauration: {bak} -> {src}")
-        # Retirer du dict global si rollback
         if src in _all_backups:
             del _all_backups[src]
     except Exception as e:
