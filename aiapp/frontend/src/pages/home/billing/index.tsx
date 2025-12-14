@@ -718,31 +718,92 @@ function MethodsTab({ credentials }: TabProps) {
     }
   };
 
-  const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString("fr-FR", { month: "short", year: "numeric" }) : "-";
+   const formatDate = (d: string | null) => d ? new Date(d).toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) : null;
+ 
+   const getPaymentIcon = (type: string, subType?: string) => {
+     const t = (subType || type || "").toLowerCase();
+     if (t.includes("visa")) return <VisaIcon />;
+     if (t.includes("mastercard") || t.includes("mc")) return <MastercardIcon />;
+     if (t.includes("amex") || t.includes("american")) return <AmexIcon />;
+     if (t.includes("sepa") || t.includes("bank") || t.includes("prelevement")) return <BankIcon />;
+     if (t.includes("paypal")) return <PaypalIcon />;
+     return <CardIcon />;
+   };
+ 
+   const getPaymentTypeName = (type: string, subType?: string) => {
+     const t = (subType || type || "").toLowerCase();
+     if (t.includes("visa")) return "Visa";
+     if (t.includes("mastercard") || t.includes("mc")) return "Mastercard";
+     if (t.includes("amex") || t.includes("american")) return "American Express";
+     if (t.includes("sepa") || t.includes("prelevement")) return "Prélèvement SEPA";
+     if (t.includes("bank")) return "Virement bancaire";
+     if (t.includes("paypal")) return "PayPal";
+     if (t.includes("credit") || t.includes("card")) return "Carte bancaire";
+     return type || "Autre";
+   };
 
   if (loading) return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement...</p></div></div>;
-  if (error) return <div className="tab-panel"><div className="error-banner">{error}</div></div>;
+   if (error) return <div className="tab-panel"><div className="error-banner">{error}<button onClick={loadMethods} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button></div></div>;
 
   return (
     <div className="tab-panel">
+       <div className="section-description" style={{ marginBottom: "1.5rem", padding: "1rem", background: "var(--color-background-subtle, #f8f9fa)", borderRadius: "8px" }}>
+         <p style={{ margin: 0, color: "var(--color-text-secondary, #6c757d)" }}>
+           Gérez vos moyens de paiement pour le règlement automatique de vos factures OVHcloud.
+         </p>
+       </div>
+ 
       <div className="toolbar">
         <span className="result-count">{methods.length} moyen(s) de paiement</span>
         <a href="https://www.ovh.com/manager/#/dedicated/billing/payment/method/add" target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm">Ajouter un moyen de paiement</a>
       </div>
       {methods.length === 0 ? (
-        <div className="empty-state"><CardIcon /><h3>Aucun moyen de paiement</h3><p>Ajoutez un moyen de paiement pour régler vos factures.</p></div>
+         <div className="empty-state">
+           <CardIcon />
+           <h3>Aucun moyen de paiement</h3>
+           <p>Ajoutez un moyen de paiement pour régler automatiquement vos factures.</p>
+           <a href="https://www.ovh.com/manager/#/dedicated/billing/payment/method/add" target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ marginTop: "1rem" }}>Ajouter un moyen de paiement</a>
+         </div>
       ) : (
         <div className="methods-grid">
           {methods.map((m) => (
             <div key={m.paymentMethodId} className={`method-card ${m.default ? "default" : ""}`}>
-              <div className="method-header">
-                <span className="method-type">{m.paymentType}</span>
-                {getStatusBadge(m.status, m.default)}
+               <div className="method-icon-wrapper">
+                 {getPaymentIcon(m.paymentType, m.paymentSubType)}
               </div>
-              <div className="method-details">
-                {m.label && <p className="method-label">{m.label}</p>}
-                {m.description && <p className="method-description">{m.description}</p>}
-                {m.expirationDate && <p className="method-expiry">Expire: {formatDate(m.expirationDate)}</p>}
+               <div className="method-content">
+                 <div className="method-header">
+                   <h4 className="method-name">{getPaymentTypeName(m.paymentType, m.paymentSubType)}</h4>
+                   <div className="method-badges">
+                     {m.default && <span className="status-badge badge-primary">Par défaut</span>}
+                     {getStatusBadge(m.status, false)}
+                   </div>
+                 </div>
+                 <div className="method-details">
+                   {m.label && <p className="method-label">{m.label}</p>}
+                   {m.description && <p className="method-description">{m.description}</p>}
+                 </div>
+                 <div className="method-meta">
+                   {m.expirationDate && formatDate(m.expirationDate) && (
+                     <span className="method-expiry">
+                       {new Date(m.expirationDate) < new Date() ? "Expiré" : "Expire"} : {formatDate(m.expirationDate)}
+                     </span>
+                   )}
+                   {m.creationDate && (
+                     <span className="method-created">Ajouté le {new Date(m.creationDate).toLocaleDateString("fr-FR")}</span>
+                   )}
+                 </div>
+               </div>
+               <div className="method-actions">
+                 <a 
+                   href={`https://www.ovh.com/manager/#/dedicated/billing/payment/method/${m.paymentMethodId}`}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="action-btn"
+                   title="Gérer"
+                 >
+                   <ExternalIcon />
+                 </a>
               </div>
             </div>
           ))}
@@ -1063,5 +1124,10 @@ function ServerIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="non
 function CartIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="empty-icon"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>; }
 function TagIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="empty-icon"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" /></svg>; }
 function BookIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>; }
+function VisaIcon() { return <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M9.112 8.262L5.97 15.758H3.92L2.374 9.775c-.094-.368-.175-.503-.461-.658C1.447 8.864.677 8.627 0 8.479l.046-.217h3.3a.904.904 0 01.894.764l.817 4.338 2.018-5.102h2.037zm8.033 5.049c.008-1.979-2.736-2.088-2.717-2.972.006-.269.262-.555.823-.628a3.66 3.66 0 011.91.336l.34-1.59a5.207 5.207 0 00-1.814-.332c-1.917 0-3.266 1.02-3.278 2.479-.013 1.08.963 1.683 1.7 2.042.756.368 1.01.604 1.006.933-.005.504-.603.726-1.16.735-.975.015-1.54-.263-1.992-.473l-.351 1.642c.453.208 1.289.39 2.156.398 2.037 0 3.37-1.006 3.377-2.57zm5.061 2.447H24l-1.565-7.496h-1.656a.883.883 0 00-.826.55l-2.909 6.946h2.036l.405-1.12h2.488l.233 1.12zm-2.166-2.656l1.02-2.815.588 2.815h-1.608zm-8.151-4.84l-1.603 7.496H8.34l1.605-7.496h1.944z"/></svg>; }
+function MastercardIcon() { return <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><circle cx="9" cy="12" r="7" fillOpacity="0.8"/><circle cx="15" cy="12" r="7" fillOpacity="0.6"/></svg>; }
+function AmexIcon() { return <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><rect x="2" y="5" width="20" height="14" rx="2" fillOpacity="0.8"/><text x="12" y="14" textAnchor="middle" fontSize="6" fill="white" fontWeight="bold">AMEX</text></svg>; }
+function BankIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>; }
+function PaypalIcon() { return <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M7.076 21.337H2.47a.641.641 0 01-.633-.74L4.944 3.72a.771.771 0 01.762-.654h6.417c2.136 0 3.848.562 4.993 1.64 1.19 1.12 1.57 2.673 1.14 4.627-.49 2.226-1.537 3.897-3.117 4.967-1.55 1.05-3.534 1.582-5.899 1.582H7.573a.77.77 0 00-.761.654l-.736 4.8z"/></svg>; }
 
 export default BillingPage;
