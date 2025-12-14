@@ -1,12 +1,12 @@
 // ============================================================
 // NAVIGATION TREE - New Manager OVHcloud
 // Structure: Univers → Sections → Sous-sections (NAV3)
+// Labels via clés i18n (namespace: navigation)
 // ============================================================
 
 export interface NavNode {
   id: string;
-  label: string;
-  shortLabel?: string;
+  i18nKey: string;
   icon?: string;
   url?: string;
   external?: boolean;
@@ -14,14 +14,14 @@ export interface NavNode {
 
 export interface UniversSection {
   id: string;
-  label: string;
+  i18nKey: string;
   subsections?: NavNode[];
 }
 
 export interface Universe {
   id: string;
-  label: string;
-  shortLabel?: string;
+  i18nKey: string;
+  shortI18nKey?: string;
   sections: UniversSection[];
 }
 
@@ -53,70 +53,63 @@ export const universes: Universe[] = [
   // ============================================================
   {
     id: "home",
-    label: "HOME",
-    shortLabel: "Home",
+    i18nKey: "universes.home",
     sections: [
-      // 1) Accueil
       {
         id: "home-dashboard",
-        label: "Accueil",
+        i18nKey: "sections.home.dashboard",
       },
-      // 2) Compte
       {
         id: "home-account",
-        label: "Compte",
+        i18nKey: "sections.home.account",
         subsections: [
-          { id: "account-info", label: "Informations générales" },
-          { id: "account-edit", label: "Éditer mon compte" },
-          { id: "account-security", label: "Sécurité" },
-          { id: "account-gdpr", label: "Données personnelles" },
-          { id: "account-advanced", label: "Paramètres avancés" },
-          { id: "account-contacts-services", label: "Mes services (gestion de contacts)" },
-          { id: "account-contacts-requests", label: "Mes demandes (gestion de contacts)" },
+          { id: "account-info", i18nKey: "subsections.account.info" },
+          { id: "account-edit", i18nKey: "subsections.account.edit" },
+          { id: "account-security", i18nKey: "subsections.account.security" },
+          { id: "account-gdpr", i18nKey: "subsections.account.gdpr" },
+          { id: "account-advanced", i18nKey: "subsections.account.advanced" },
+          { id: "account-contacts-services", i18nKey: "subsections.account.contactsServices" },
+          { id: "account-contacts-requests", i18nKey: "subsections.account.contactsRequests" },
         ],
       },
-      // 3) Facturation
       {
         id: "home-billing",
-        label: "Facturation",
+        i18nKey: "sections.home.billing",
         subsections: [
-          { id: "billing-services", label: "Mes services" },
-          { id: "billing-invoices", label: "Factures" },
-          { id: "billing-refunds", label: "Avoirs" },
-          { id: "billing-payments", label: "Paiement" },
-          { id: "billing-orders", label: "Commandes" },
-          { id: "billing-references", label: "Mes références internes" },
-          { id: "billing-methods", label: "Moyens de paiement" },
-          { id: "billing-prepaid", label: "Compte prépayé" },
-          { id: "billing-vouchers", label: "Bon d'achat" },
-          { id: "billing-fidelity", label: "Points de fidélité" },
-          { id: "billing-contracts", label: "Contrats" },
+          { id: "billing-services", i18nKey: "subsections.billing.services" },
+          { id: "billing-invoices", i18nKey: "subsections.billing.invoices" },
+          { id: "billing-refunds", i18nKey: "subsections.billing.refunds" },
+          { id: "billing-payments", i18nKey: "subsections.billing.payments" },
+          { id: "billing-orders", i18nKey: "subsections.billing.orders" },
+          { id: "billing-references", i18nKey: "subsections.billing.references" },
+          { id: "billing-methods", i18nKey: "subsections.billing.methods" },
+          { id: "billing-prepaid", i18nKey: "subsections.billing.prepaid" },
+          { id: "billing-vouchers", i18nKey: "subsections.billing.vouchers" },
+          { id: "billing-fidelity", i18nKey: "subsections.billing.fidelity" },
+          { id: "billing-contracts", i18nKey: "subsections.billing.contracts" },
         ],
       },
-      // 4) Support
       {
         id: "home-support",
-        label: "Support",
+        i18nKey: "sections.home.support",
         subsections: [
-          { id: "support-tickets", label: "Mes tickets" },
-          { id: "support-create", label: "Créer un nouveau ticket" },
-          { id: "support-level", label: "Mon niveau de support" },
-          { id: "support-communications", label: "Mes communications" },
-          { id: "support-broadcast", label: "Paramètres de diffusion" },
+          { id: "support-tickets", i18nKey: "subsections.support.tickets" },
+          { id: "support-create", i18nKey: "subsections.support.create" },
+          { id: "support-level", i18nKey: "subsections.support.level" },
+          { id: "support-communications", i18nKey: "subsections.support.communications" },
+          { id: "support-broadcast", i18nKey: "subsections.support.broadcast" },
         ],
       },
-      // 5) Carbone
       {
         id: "home-carbon",
-        label: "Carbone",
+        i18nKey: "sections.home.carbon",
       },
-      // 6) Playground API
       {
         id: "home-api",
-        label: "Playground API",
+        i18nKey: "sections.home.api",
         subsections: [
-          { id: "api-console", label: "API" },
-          { id: "api-advanced", label: "Paramètres avancés" },
+          { id: "api-console", i18nKey: "subsections.api.console" },
+          { id: "api-advanced", i18nKey: "subsections.api.advanced" },
         ],
       },
     ],
@@ -127,30 +120,29 @@ export const universes: Universe[] = [
   // ============================================================
   {
     id: "public-cloud",
-    label: "PUBLIC CLOUD",
-    shortLabel: "Public",
+    i18nKey: "universes.publicCloud",
     sections: [
-      { id: "pci-home", label: "Accueil" },
+      { id: "pci-home", i18nKey: "sections.publicCloud.home" },
       {
         id: "pci-instances",
-        label: "Instances",
+        i18nKey: "sections.publicCloud.instances",
         subsections: [
-          { id: "pci-instances-list", label: "Liste" },
-          { id: "pci-instances-create", label: "Créer" },
+          { id: "pci-instances-list", i18nKey: "subsections.publicCloud.instancesList" },
+          { id: "pci-instances-create", i18nKey: "subsections.publicCloud.instancesCreate" },
         ],
       },
       {
         id: "pci-storage",
-        label: "Storage",
+        i18nKey: "sections.publicCloud.storage",
         subsections: [
-          { id: "pci-block", label: "Block Storage" },
-          { id: "pci-object", label: "Object Storage" },
-          { id: "pci-archive", label: "Cold Archive" },
+          { id: "pci-block", i18nKey: "subsections.publicCloud.blockStorage" },
+          { id: "pci-object", i18nKey: "subsections.publicCloud.objectStorage" },
+          { id: "pci-archive", i18nKey: "subsections.publicCloud.coldArchive" },
         ],
       },
-      { id: "pci-network", label: "Network" },
-      { id: "pci-databases", label: "Databases" },
-      { id: "pci-ai", label: "AI & ML" },
+      { id: "pci-network", i18nKey: "sections.publicCloud.network" },
+      { id: "pci-databases", i18nKey: "sections.publicCloud.databases" },
+      { id: "pci-ai", i18nKey: "sections.publicCloud.ai" },
     ],
   },
 
@@ -159,13 +151,12 @@ export const universes: Universe[] = [
   // ============================================================
   {
     id: "private-cloud",
-    label: "PRIVATE CLOUD",
-    shortLabel: "Private",
+    i18nKey: "universes.privateCloud",
     sections: [
-      { id: "hpc-home", label: "Accueil" },
-      { id: "hpc-vmware", label: "VMware" },
-      { id: "hpc-nutanix", label: "Nutanix" },
-      { id: "hpc-sap", label: "SAP HANA" },
+      { id: "hpc-home", i18nKey: "sections.privateCloud.home" },
+      { id: "hpc-vmware", i18nKey: "sections.privateCloud.vmware" },
+      { id: "hpc-nutanix", i18nKey: "sections.privateCloud.nutanix" },
+      { id: "hpc-sap", i18nKey: "sections.privateCloud.sap" },
     ],
   },
 
@@ -174,27 +165,26 @@ export const universes: Universe[] = [
   // ============================================================
   {
     id: "bare-metal",
-    label: "BARE METAL",
-    shortLabel: "Bare Metal",
+    i18nKey: "universes.bareMetal",
     sections: [
-      { id: "bm-home", label: "Accueil" },
+      { id: "bm-home", i18nKey: "sections.bareMetal.home" },
       {
         id: "bm-dedicated",
-        label: "Serveurs dédiés",
+        i18nKey: "sections.bareMetal.dedicated",
         subsections: [
-          { id: "bm-dedicated-list", label: "Mes serveurs" },
-          { id: "bm-dedicated-order", label: "Commander" },
+          { id: "bm-dedicated-list", i18nKey: "subsections.bareMetal.dedicatedList" },
+          { id: "bm-dedicated-order", i18nKey: "subsections.bareMetal.dedicatedOrder" },
         ],
       },
       {
         id: "bm-vps",
-        label: "VPS",
+        i18nKey: "sections.bareMetal.vps",
         subsections: [
-          { id: "bm-vps-list", label: "Mes VPS" },
-          { id: "bm-vps-order", label: "Commander" },
+          { id: "bm-vps-list", i18nKey: "subsections.bareMetal.vpsList" },
+          { id: "bm-vps-order", i18nKey: "subsections.bareMetal.vpsOrder" },
         ],
       },
-      { id: "bm-managed", label: "Managed Bare Metal" },
+      { id: "bm-managed", i18nKey: "sections.bareMetal.managed" },
     ],
   },
 
@@ -203,33 +193,32 @@ export const universes: Universe[] = [
   // ============================================================
   {
     id: "web-cloud",
-    label: "WEB CLOUD",
-    shortLabel: "Web",
+    i18nKey: "universes.webCloud",
     sections: [
-      { id: "web-home", label: "Accueil" },
+      { id: "web-home", i18nKey: "sections.webCloud.home" },
       {
         id: "web-domains",
-        label: "Domaines",
+        i18nKey: "sections.webCloud.domains",
         subsections: [
-          { id: "web-domains-list", label: "Mes domaines" },
-          { id: "web-domains-dns", label: "Zones DNS" },
+          { id: "web-domains-list", i18nKey: "subsections.webCloud.domainsList" },
+          { id: "web-domains-dns", i18nKey: "subsections.webCloud.domainsDns" },
         ],
       },
       {
         id: "web-hosting",
-        label: "Hébergements",
+        i18nKey: "sections.webCloud.hosting",
         subsections: [
-          { id: "web-hosting-list", label: "Mes hébergements" },
-          { id: "web-hosting-db", label: "Bases de données" },
+          { id: "web-hosting-list", i18nKey: "subsections.webCloud.hostingList" },
+          { id: "web-hosting-db", i18nKey: "subsections.webCloud.hostingDb" },
         ],
       },
       {
         id: "web-emails",
-        label: "Emails",
+        i18nKey: "sections.webCloud.emails",
         subsections: [
-          { id: "web-emails-domain", label: "Email domain" },
-          { id: "web-emails-pro", label: "Email Pro" },
-          { id: "web-emails-exchange", label: "Exchange" },
+          { id: "web-emails-domain", i18nKey: "subsections.webCloud.emailsDomain" },
+          { id: "web-emails-pro", i18nKey: "subsections.webCloud.emailsPro" },
+          { id: "web-emails-exchange", i18nKey: "subsections.webCloud.emailsExchange" },
         ],
       },
     ],
@@ -240,14 +229,13 @@ export const universes: Universe[] = [
   // ============================================================
   {
     id: "network",
-    label: "NETWORK",
-    shortLabel: "Network",
+    i18nKey: "universes.network",
     sections: [
-      { id: "net-home", label: "Accueil" },
-      { id: "net-ip", label: "IP" },
-      { id: "net-vrack", label: "vRack" },
-      { id: "net-lb", label: "Load Balancer" },
-      { id: "net-cdn", label: "CDN" },
+      { id: "net-home", i18nKey: "sections.network.home" },
+      { id: "net-ip", i18nKey: "sections.network.ip" },
+      { id: "net-vrack", i18nKey: "sections.network.vrack" },
+      { id: "net-lb", i18nKey: "sections.network.loadBalancer" },
+      { id: "net-cdn", i18nKey: "sections.network.cdn" },
     ],
   },
 
@@ -256,17 +244,16 @@ export const universes: Universe[] = [
   // ============================================================
   {
     id: "iam",
-    label: "IAM",
-    shortLabel: "IAM",
+    i18nKey: "universes.iam",
     sections: [
       {
         id: "iam-home",
-        label: "Accueil",
+        i18nKey: "sections.iam.home",
         subsections: [
-          { id: "iam-identities", label: "Identités" },
-          { id: "iam-policies", label: "Politiques" },
-          { id: "iam-groups", label: "Groupes" },
-          { id: "iam-logs", label: "Logs" },
+          { id: "iam-identities", i18nKey: "sections.iam.identities" },
+          { id: "iam-policies", i18nKey: "sections.iam.policies" },
+          { id: "iam-groups", i18nKey: "sections.iam.groups" },
+          { id: "iam-logs", i18nKey: "sections.iam.logs" },
         ],
       },
     ],

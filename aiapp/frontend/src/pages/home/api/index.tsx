@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { OvhCredentials, OvhUser } from "../../../types/auth.types";
 import "./styles.css";
 
@@ -14,12 +15,6 @@ interface DevProps {
   initialTab?: string;
 }
 
-const tabs = [
-  { id: "api", label: "API" },
-  { id: "advanced", label: "Paramètres avancés" },
-];
-
-// Mapping des IDs de navigation vers les IDs de tabs
 const tabIdMap: Record<string, string> = {
   "api-console": "api",
   "api-advanced": "advanced",
@@ -38,7 +33,13 @@ function getUser(): OvhUser | null {
 }
 
 export default function Dev({ initialTab = "api" }: DevProps) {
+  const { t } = useTranslation('home/api/index');
   const [activeTab, setActiveTab] = useState(initialTab);
+
+  const tabs = [
+    { id: "api", label: t('tabs.api') },
+    { id: "advanced", label: t('tabs.advanced') },
+  ];
 
   useEffect(() => {
     if (initialTab) {
@@ -53,11 +54,11 @@ export default function Dev({ initialTab = "api" }: DevProps) {
     <div className="dev-page">
       <div className="api-header">
         <div className="api-header-content">
-          <h1>Playground API</h1>
-          <p className="api-subtitle">Testez les APIs OVHcloud et gérez les paramètres avancés.</p>
+          <h1>{t('title')}</h1>
+          <p className="api-subtitle">{t('subtitle')}</p>
         </div>
         <a href="https://api.ovh.com/console" target="_blank" rel="noopener noreferrer" className="guides-link">
-          Console API
+          {t('consoleLink')}
         </a>
       </div>
 
@@ -87,6 +88,7 @@ export default function Dev({ initialTab = "api" }: DevProps) {
 // API TAB - Console de test API
 // ============================================================
 function ApiTab() {
+  const { t } = useTranslation('home/api/index');
   const [apiPath, setApiPath] = useState("/me");
   const [apiMethod, setApiMethod] = useState("GET");
   const [apiBody, setApiBody] = useState("");
@@ -99,7 +101,7 @@ function ApiTab() {
 
   const testApi = async () => {
     if (!credentials) {
-      setApiError("Non authentifié");
+      setApiError(t('errors.notAuthenticated'));
       return;
     }
 
@@ -127,14 +129,13 @@ function ApiTab() {
       const data = await response.json();
       setApiResponse(JSON.stringify(data, null, 2));
 
-      // Ajouter à l'historique
       setHistory(prev => [{ method: apiMethod, path: apiPath, status: response.status }, ...prev.slice(0, 9)]);
 
       if (!response.ok) {
         setApiError(`HTTP ${response.status}: ${data.message || response.statusText}`);
       }
     } catch (err) {
-      setApiError(err instanceof Error ? err.message : "Erreur inconnue");
+      setApiError(err instanceof Error ? err.message : t('errors.unknown'));
     } finally {
       setApiLoading(false);
     }
@@ -158,13 +159,13 @@ function ApiTab() {
             className="api-path"
           />
           <button onClick={testApi} disabled={apiLoading} className="btn btn-primary">
-            {apiLoading ? "..." : "Exécuter"}
+            {apiLoading ? "..." : t('api.execute')}
           </button>
         </div>
 
         {(apiMethod === "POST" || apiMethod === "PUT") && (
           <div className="api-body-section">
-            <label>Corps de la requête (JSON)</label>
+            <label>{t('api.requestBody')}</label>
             <textarea
               value={apiBody}
               onChange={(e) => setApiBody(e.target.value)}
@@ -176,7 +177,7 @@ function ApiTab() {
         )}
 
         <div className="api-shortcuts">
-          <span>Raccourcis:</span>
+          <span>{t('api.shortcuts')}:</span>
           <button onClick={() => setApiPath("/me")}>/me</button>
           <button onClick={() => setApiPath("/me/bill")}>/me/bill</button>
           <button onClick={() => setApiPath("/me/order")}>/me/order</button>
@@ -193,8 +194,8 @@ function ApiTab() {
         {apiResponse && (
           <div className="api-response-section">
             <div className="api-response-header">
-              <span>Réponse</span>
-              <button className="btn btn-sm btn-outline" onClick={() => navigator.clipboard.writeText(apiResponse)}>Copier</button>
+              <span>{t('api.response')}</span>
+              <button className="btn btn-sm btn-outline" onClick={() => navigator.clipboard.writeText(apiResponse)}>{t('api.copy')}</button>
             </div>
             <pre className="api-response">{apiResponse}</pre>
           </div>
@@ -203,7 +204,7 @@ function ApiTab() {
 
       {history.length > 0 && (
         <div className="api-history">
-          <h4>Historique récent</h4>
+          <h4>{t('api.recentHistory')}</h4>
           <div className="history-list">
             {history.map((item, idx) => (
               <div key={idx} className="history-item" onClick={() => { setApiMethod(item.method); setApiPath(item.path); }}>
@@ -217,11 +218,11 @@ function ApiTab() {
       )}
 
       <div className="api-docs">
-        <h4>Documentation API</h4>
+        <h4>{t('api.documentation')}</h4>
         <div className="docs-links">
-          <a href="https://api.ovh.com/console/" target="_blank" rel="noopener noreferrer">Console API OVH</a>
-          <a href="https://docs.ovh.com/fr/api/" target="_blank" rel="noopener noreferrer">Documentation API</a>
-          <a href="https://api.ovh.com/1.0/me.json" target="_blank" rel="noopener noreferrer">Schéma /me</a>
+          <a href="https://api.ovh.com/console/" target="_blank" rel="noopener noreferrer">{t('api.links.console')}</a>
+          <a href="https://docs.ovh.com/fr/api/" target="_blank" rel="noopener noreferrer">{t('api.links.docs')}</a>
+          <a href="https://api.ovh.com/1.0/me.json" target="_blank" rel="noopener noreferrer">{t('api.links.schema')}</a>
         </div>
       </div>
     </div>
@@ -232,6 +233,7 @@ function ApiTab() {
 // ADVANCED TAB - Paramètres avancés
 // ============================================================
 function AdvancedTab() {
+  const { t } = useTranslation('home/api/index');
   const credentials = getCredentials();
   const user = getUser();
 
@@ -245,85 +247,85 @@ function AdvancedTab() {
     <div className="advanced-tab">
       {/* Session Info */}
       <div className="dev-section">
-        <h3>Informations de session</h3>
+        <h3>{t('advanced.session.title')}</h3>
         <div className="dev-card">
           <div className="dev-grid">
             <div className="dev-field">
-              <label>Authentifié</label>
+              <label>{t('advanced.session.authenticated')}</label>
               <span className={credentials ? "badge badge-success" : "badge badge-error"}>
-                {credentials ? "Oui" : "Non"}
+                {credentials ? t('advanced.yes') : t('advanced.no')}
               </span>
             </div>
             <div className="dev-field">
-              <label>App Key</label>
+              <label>{t('advanced.session.appKey')}</label>
               <code>{credentials?.appKey || "-"}</code>
             </div>
             <div className="dev-field">
-              <label>Consumer Key</label>
+              <label>{t('advanced.session.consumerKey')}</label>
               <code>{credentials?.consumerKey ? `${credentials.consumerKey.substring(0, 12)}...` : "-"}</code>
             </div>
           </div>
-          <button onClick={clearSession} className="btn btn-danger btn-sm">Effacer la session</button>
+          <button onClick={clearSession} className="btn btn-danger btn-sm">{t('advanced.session.clear')}</button>
         </div>
       </div>
 
       {/* User Info */}
       <div className="dev-section">
-        <h3>Informations utilisateur</h3>
+        <h3>{t('advanced.user.title')}</h3>
         <div className="dev-card">
           {user ? (
             <div className="dev-grid">
               <div className="dev-field">
-                <label>Nichandle</label>
+                <label>{t('advanced.user.nichandle')}</label>
                 <code>{user.nichandle}</code>
               </div>
               <div className="dev-field">
-                <label>Email</label>
+                <label>{t('advanced.user.email')}</label>
                 <code>{user.email}</code>
               </div>
               <div className="dev-field">
-                <label>Nom</label>
+                <label>{t('advanced.user.name')}</label>
                 <span>{user.firstname} {user.name}</span>
               </div>
               <div className="dev-field">
-                <label>Code client</label>
+                <label>{t('advanced.user.customerCode')}</label>
                 <code>{user.customerCode || "-"}</code>
               </div>
               <div className="dev-field">
-                <label>Support Level</label>
+                <label>{t('advanced.user.supportLevel')}</label>
                 <span>{user.supportLevel?.level || "-"}</span>
               </div>
               <div className="dev-field">
-                <label>Auth Method</label>
+                <label>{t('advanced.user.authMethod')}</label>
                 <code>{user.auth?.method || "-"}</code>
               </div>
               <div className="dev-field">
-                <label>Is Trusted</label>
+                <label>{t('advanced.user.isTrusted')}</label>
                 <span className={user.isTrusted ? "badge badge-success" : "badge badge-neutral"}>
-                  {user.isTrusted ? "Oui" : "Non"}
+                  {user.isTrusted ? t('advanced.yes') : t('advanced.no')}
                 </span>
               </div>
               <div className="dev-field">
-                <label>Organisation</label>
+                <label>{t('advanced.user.organisation')}</label>
                 <span>{user.organisation || "-"}</span>
               </div>
             </div>
           ) : (
-            <p className="dev-empty">Aucun utilisateur chargé</p>
+            <p className="dev-empty">{t('advanced.user.empty')}</p>
           )}
         </div>
       </div>
 
       {/* Raw Data */}
       <div className="dev-section">
-        <h3>Données brutes</h3>
+        <h3>{t('advanced.rawData.title')}</h3>
         <div className="dev-card">
           <details>
-            <summary>Credentials (sessionStorage)</summary>
+            <summary>{t('advanced.rawData.credentials')}</summary>
             <pre>{credentials ? JSON.stringify(credentials, null, 2) : "null"}</pre>
           </details>
           <details>
-            <summary>User (sessionStorage)</summary>
+            <summary>{t('advanced.rawData.user')}</summary>
             <pre>{user ? JSON.stringify(user, null, 2) : "null"}</pre>
           </details>
         </div>
@@ -331,19 +333,19 @@ function AdvancedTab() {
 
       {/* Environment */}
       <div className="dev-section">
-        <h3>Environnement</h3>
+        <h3>{t('advanced.environment.title')}</h3>
         <div className="dev-card">
           <div className="dev-grid">
             <div className="dev-field">
-              <label>API Base</label>
+              <label>{t('advanced.environment.apiBase')}</label>
               <code>{API_BASE}</code>
             </div>
             <div className="dev-field">
-              <label>User Agent</label>
+              <label>{t('advanced.environment.userAgent')}</label>
               <code style={{ fontSize: "0.75rem" }}>{navigator.userAgent.substring(0, 50)}...</code>
             </div>
             <div className="dev-field">
-              <label>Timestamp</label>
+              <label>{t('advanced.environment.timestamp')}</label>
               <code>{new Date().toISOString()}</code>
             </div>
           </div>

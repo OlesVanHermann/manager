@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import * as billingService from "../../../../services/billing.service";
 import type { OvhCredentials } from "../../../../types/auth.types";
 
@@ -9,6 +10,8 @@ interface LastBillTileProps {
 }
 
 export default function LastBillTile({ onViewBill }: LastBillTileProps) {
+  const { t } = useTranslation('home/account/index');
+  const { t: tCommon } = useTranslation('common');
   const [bill, setBill] = useState<billingService.Bill | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +33,7 @@ export default function LastBillTile({ onViewBill }: LastBillTileProps) {
   const loadLastBill = async () => {
     const credentials = getCredentials();
     if (!credentials) {
-      setError("Non authentifie");
+      setError(t('lastBill.errors.notAuthenticated'));
       setLoading(false);
       return;
     }
@@ -41,7 +44,7 @@ export default function LastBillTile({ onViewBill }: LastBillTileProps) {
         setBill(bills[0]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
+      setError(err instanceof Error ? err.message : tCommon('error.generic'));
     } finally {
       setLoading(false);
     }
@@ -54,20 +57,20 @@ export default function LastBillTile({ onViewBill }: LastBillTileProps) {
 
   return (
     <div className="tile">
-      <h2 className="tile-header">Ma derniere facture</h2>
+      <h2 className="tile-header">{t('lastBill.title')}</h2>
       <div className="tile-content">
         {loading ? (
-          <div className="skeleton-loader">Chargement...</div>
+          <div className="skeleton-loader">{tCommon('loading')}</div>
         ) : error ? (
           <div className="error-text">{error}</div>
         ) : bill ? (
           <>
             <dl className="bill-details">
-              <dt>Reference</dt>
+              <dt>{t('lastBill.reference')}</dt>
               <dd>{bill.billId}</dd>
-              <dt>Date</dt>
+              <dt>{t('lastBill.date')}</dt>
               <dd>{formatDate(bill.date)}</dd>
-              <dt>Montant</dt>
+              <dt>{t('lastBill.amount')}</dt>
               <dd className="bill-amount">{bill.priceWithTax.text}</dd>
             </dl>
             
@@ -78,18 +81,18 @@ export default function LastBillTile({ onViewBill }: LastBillTileProps) {
                 rel="noopener noreferrer"
                 className="btn btn-secondary"
               >
-                Voir ma facture
+                {t('lastBill.viewBill')}
               </a>
             </div>
           </>
         ) : (
-          <div className="empty-text">Aucune facture</div>
+          <div className="empty-text">{t('lastBill.empty')}</div>
         )}
         
         {!loading && (
           <div className="tile-footer" style={{ marginTop: "0.5rem" }}>
             <button onClick={onViewBill} className="btn btn-link">
-              Voir toutes mes factures
+              {t('lastBill.viewAllBills')}
             </button>
           </div>
         )}

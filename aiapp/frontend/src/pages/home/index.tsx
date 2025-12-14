@@ -3,11 +3,12 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { isAuthenticated, redirectToAuth } from "../../services/api";
 import * as servicesService from "../../services/services.service";
 import * as billingService from "../../services/billing.service";
 import * as notificationsService from "../../services/notifications.service";
-import { Tile, SkeletonServicesGrid, SkeletonBillCard, SkeletonText } from "../../components/Skeleton";
+import { Tile, SkeletonServicesGrid, SkeletonBillCard } from "../../components/Skeleton";
 import { ServiceIcon } from "../../components/ServiceIcons";
 import "./styles.css";
 
@@ -41,21 +42,6 @@ function getUser(): { firstname?: string; name?: string; nichandle?: string; isT
   }
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function formatDateShort(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "short",
-  });
-}
-
 const SERVICE_TYPE_MAP: Record<string, string> = {
   "Noms de domaine": "domain",
   "Hebergements Web": "hosting",
@@ -70,9 +56,9 @@ const SERVICE_TYPE_MAP: Record<string, string> = {
 // ============ MAIN COMPONENT ============
 
 export default function Home({ onNavigate }: HomeProps) {
+  const { t, i18n } = useTranslation('home/dashboard');
   const user = getUser();
 
-  // States séparés pour chaque section
   const [services, setServices] = useState<servicesService.ServiceSummary | null>(null);
   const [lastBill, setLastBill] = useState<billingService.Bill | null>(null);
   const [debtAmount, setDebtAmount] = useState(0);
@@ -90,6 +76,23 @@ export default function Home({ onNavigate }: HomeProps) {
     alerts: null,
   });
 
+  // ============ FORMATTERS ============
+
+  const formatDate = (dateStr: string): string => {
+    return new Date(dateStr).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const formatDateShort = (dateStr: string): string => {
+    return new Date(dateStr).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
+      day: "numeric",
+      month: "short",
+    });
+  };
+
   // ============ LOADERS ============
 
   const loadServices = useCallback(async () => {
@@ -99,11 +102,11 @@ export default function Home({ onNavigate }: HomeProps) {
       const data = await servicesService.getServicesSummary();
       setServices(data);
     } catch (err) {
-      setErrors((prev) => ({ ...prev, services: "Impossible de charger les services" }));
+      setErrors((prev) => ({ ...prev, services: t('errors.servicesLoad') }));
     } finally {
       setLoading((prev) => ({ ...prev, services: false }));
     }
-  }, []);
+  }, [t]);
 
   const loadBilling = useCallback(async () => {
     setLoading((prev) => ({ ...prev, billing: true }));
@@ -116,11 +119,11 @@ export default function Home({ onNavigate }: HomeProps) {
       setLastBill(bills.length > 0 ? bills[0] : null);
       setDebtAmount(debt?.dueAmount?.value || 0);
     } catch (err) {
-      setErrors((prev) => ({ ...prev, billing: "Impossible de charger la facturation" }));
+      setErrors((prev) => ({ ...prev, billing: t('errors.billingLoad') }));
     } finally {
       setLoading((prev) => ({ ...prev, billing: false }));
     }
-  }, []);
+  }, [t]);
 
   const loadAlerts = useCallback(async () => {
     setLoading((prev) => ({ ...prev, alerts: true }));
@@ -129,7 +132,6 @@ export default function Home({ onNavigate }: HomeProps) {
       const data = await notificationsService.getDashboardAlerts();
       setAlerts(data);
     } catch (err) {
-      // Alerts are non-critical, don't show error
       setAlerts(null);
     } finally {
       setLoading((prev) => ({ ...prev, alerts: false }));
@@ -169,7 +171,7 @@ export default function Home({ onNavigate }: HomeProps) {
               <span className="banner-message">{banner.message}</span>
               {banner.linkUrl && (
                 <a href={banner.linkUrl} className="banner-link" target="_blank" rel="noopener noreferrer">
-                  {banner.linkLabel || "En savoir plus"}
+                  {banner.linkLabel || t('banners.learnMore')}
                 </a>
               )}
             </div>
@@ -183,13 +185,13 @@ export default function Home({ onNavigate }: HomeProps) {
           <span className="kyc-icon">🪪</span>
           <span className="kyc-message">
             {alerts.kycStatus.status === "pending" 
-              ? "Vérification d'identité en cours" 
+              ? t('kyc.pending')
               : alerts.kycStatus.status === "rejected"
-              ? "Vérification d'identité rejetée - action requise"
-              : "Vérification d'identité requise"}
+              ? t('kyc.rejected')
+              : t('kyc.required')}
           </span>
           <a href="https://www.ovh.com/manager/dedicated/#/identity-documents" className="kyc-link">
-            Compléter
+            {t('kyc.complete')}
           </a>
         </div>
       )}
@@ -197,15 +199,15 @@ export default function Home({ onNavigate }: HomeProps) {
       {/* Welcome */}
       <div className="dashboard-welcome">
         <div className="welcome-content">
-          <h1>Bonjour {user?.firstname || ""},</h1>
-          <p className="welcome-subtitle">Bienvenue sur votre espace client OVHcloud</p>
+          <h1>{t('welcome.greeting', { name: user?.firstname || '' })}</h1>
+          <p className="welcome-subtitle">{t('welcome.subtitle')}</p>
         </div>
         {user?.isTrusted && (
           <span className="badge badge-success trusted-badge">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="badge-icon">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
             </svg>
-            Compte securise
+            {t('welcome.securedAccount')}
           </span>
         )}
       </div>
@@ -214,11 +216,9 @@ export default function Home({ onNavigate }: HomeProps) {
       {!loading.billing && debtAmount > 0 && (
         <div className="debt-alert">
           <span className="debt-icon">⚠️</span>
-          <span className="debt-message">
-            Vous avez un encours de <strong>{debtAmount.toFixed(2)} €</strong>
-          </span>
+          <span className="debt-message" dangerouslySetInnerHTML={{ __html: t('debt.message', { amount: debtAmount.toFixed(2) }) }} />
           <button className="debt-pay-btn" onClick={() => handleNavigate("home-billing", { tab: "payments" })}>
-            Regulariser
+            {t('debt.payButton')}
           </button>
         </div>
       )}
@@ -229,7 +229,7 @@ export default function Home({ onNavigate }: HomeProps) {
         <div className="dashboard-main">
           {/* Services */}
           <Tile
-            title={`Mes services${services ? ` (${services.total})` : ""}`}
+            title={services ? t('services.titleWithCount', { count: services.total }) : t('services.title')}
             loading={loading.services}
             error={errors.services}
             onRetry={loadServices}
@@ -249,7 +249,7 @@ export default function Home({ onNavigate }: HomeProps) {
                     </div>
                     <div className="service-info">
                       <span className="service-name">{service.type}</span>
-                      <span className="service-count">{service.count} service{service.count > 1 ? "s" : ""}</span>
+                      <span className="service-count">{t('services.serviceCount', { count: service.count })}</span>
                     </div>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="service-arrow">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -259,9 +259,9 @@ export default function Home({ onNavigate }: HomeProps) {
               </div>
             ) : (
               <div className="empty-state">
-                <p>Aucun service actif</p>
+                <p>{t('services.empty')}</p>
                 <a href="https://www.ovhcloud.com/fr/order/" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                  Commander un service
+                  {t('services.orderButton')}
                 </a>
               </div>
             )}
@@ -269,31 +269,31 @@ export default function Home({ onNavigate }: HomeProps) {
 
           {/* Actions rapides */}
           <div className="quick-actions-section">
-            <h3 className="section-title">Actions rapides</h3>
+            <h3 className="section-title">{t('quickActions.title')}</h3>
             <div className="quick-actions">
               <button className="action-card" onClick={() => handleNavigate("home-billing", { tab: "invoices" })}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>
-                <span>Mes factures</span>
+                <span>{t('quickActions.invoices')}</span>
               </button>
               <button className="action-card" onClick={() => handleNavigate("home-account")}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
-                <span>Mon compte</span>
+                <span>{t('quickActions.account')}</span>
               </button>
               <button className="action-card" onClick={() => handleNavigate("home-support")}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
                 </svg>
-                <span>Assistance</span>
+                <span>{t('quickActions.support')}</span>
               </button>
               <a href="https://www.ovhcloud.com/fr/order/" target="_blank" rel="noopener noreferrer" className="action-card highlight">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-                <span>Commander</span>
+                <span>{t('quickActions.order')}</span>
               </a>
             </div>
           </div>
@@ -303,7 +303,7 @@ export default function Home({ onNavigate }: HomeProps) {
         <div className="dashboard-sidebar">
           {/* Dernière facture */}
           <Tile
-            title="Derniere facture"
+            title={t('lastBill.title')}
             loading={loading.billing}
             error={errors.billing}
             onRetry={loadBilling}
@@ -319,21 +319,21 @@ export default function Home({ onNavigate }: HomeProps) {
                 <span className="bill-date">{formatDate(lastBill.date)}</span>
                 <div className="bill-actions">
                   <a href={lastBill.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary">
-                    Telecharger PDF
+                    {t('lastBill.downloadPdf')}
                   </a>
                   <button className="btn btn-sm btn-outline" onClick={() => handleNavigate("home-billing", { tab: "invoices" })}>
-                    Voir tout
+                    {t('lastBill.viewAll')}
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="empty-text">Aucune facture</p>
+              <p className="empty-text">{t('lastBill.empty')}</p>
             )}
           </Tile>
 
           {/* Suivi commande */}
           {alerts?.lastOrder && (
-            <Tile title="Derniere commande" className="tile-order">
+            <Tile title={t('lastOrder.title')} className="tile-order">
               <div className="order-content">
                 <div className="order-header">
                   <span className="order-id">#{alerts.lastOrder.order.orderId}</span>
@@ -356,7 +356,7 @@ export default function Home({ onNavigate }: HomeProps) {
 
           {/* Notifications */}
           {alerts?.notifications && alerts.notifications.length > 0 && (
-            <Tile title="Notifications" className="tile-notifications">
+            <Tile title={t('notifications.title')} className="tile-notifications">
               <div className="notifications-list">
                 {alerts.notifications.slice(0, 3).map((notif) => (
                   <div key={notif.id} className={`notification-item notification-${notif.level}`}>
@@ -373,7 +373,7 @@ export default function Home({ onNavigate }: HomeProps) {
 
           {/* Support */}
           {alerts?.openTickets && alerts.openTickets.length > 0 && (
-            <Tile title="Tickets en cours" className="tile-support">
+            <Tile title={t('openTickets.title')} className="tile-support">
               <div className="support-list">
                 {alerts.openTickets.slice(0, 3).map((ticket) => (
                   <div key={ticket.ticketId} className="support-ticket">
@@ -383,7 +383,7 @@ export default function Home({ onNavigate }: HomeProps) {
                 ))}
               </div>
               <a href="https://help.ovhcloud.com/csm" className="tile-link" target="_blank" rel="noopener noreferrer">
-                Voir tous les tickets →
+                {t('openTickets.viewAll')} →
               </a>
             </Tile>
           )}

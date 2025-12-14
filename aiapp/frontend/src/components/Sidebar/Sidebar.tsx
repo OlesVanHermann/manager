@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { icons, Resource } from "./navigationTree";
 import "./styles.css";
 
@@ -27,6 +28,7 @@ function Icon({ name, className = "" }: { name: string; className?: string }) {
 }
 
 export default function Sidebar({ resources, selectedResourceId, onResourceSelect, onHomeClick }: SidebarProps) {
+  const { t } = useTranslation('navigation');
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,21 +71,21 @@ export default function Sidebar({ resources, selectedResourceId, onResourceSelec
     <aside className="new-sidebar">
       {/* Header: Home + View buttons */}
       <div className="sidebar-header">
-        <button className="header-btn home-btn" onClick={onHomeClick} title="Accueil">
+        <button className="header-btn home-btn" onClick={onHomeClick} title={t('sections.home.dashboard')}>
           <Icon name="home" className="header-icon" />
         </button>
         <div className="header-divider" />
         <button
           className={`header-btn ${viewMode === "list" ? "active" : ""}`}
           onClick={() => setViewMode("list")}
-          title="Vue liste"
+          title={t('sidebar.viewList', { defaultValue: 'Vue liste' })}
         >
           <Icon name="list" className="header-icon" />
         </button>
         <button
           className={`header-btn ${viewMode === "grid" ? "active" : ""}`}
           onClick={() => setViewMode("grid")}
-          title="Vue grille"
+          title={t('sidebar.viewGrid', { defaultValue: 'Vue grille' })}
         >
           <Icon name="grid" className="header-icon" />
         </button>
@@ -96,7 +98,7 @@ export default function Sidebar({ resources, selectedResourceId, onResourceSelec
           <input
             type="text"
             className="search-input"
-            placeholder="Search"
+            placeholder={t('sidebar.search')}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
           />
@@ -106,7 +108,7 @@ export default function Sidebar({ resources, selectedResourceId, onResourceSelec
       {/* Liste des ressources */}
       <div className="sidebar-content">
         <div className="resources-header">
-          <span className="resources-label">Liste:</span>
+          <span className="resources-label">{t('sidebar.list', { defaultValue: 'Liste:' })}</span>
         </div>
         <ul className={`resources-list ${viewMode}`}>
           {/* TOUS - toujours en premier */}
@@ -115,7 +117,7 @@ export default function Sidebar({ resources, selectedResourceId, onResourceSelec
               className={`resource-item tous-item ${showAll ? "selected" : ""}`}
               onClick={handleTousClick}
             >
-              <span className="resource-name">TOUS</span>
+              <span className="resource-name">{t('sidebar.all')}</span>
             </button>
           </li>
           {/* Ressources dynamiques */}
@@ -130,6 +132,12 @@ export default function Sidebar({ resources, selectedResourceId, onResourceSelec
               </button>
             </li>
           ))}
+          {/* Message si aucun résultat */}
+          {paginatedResources.length === 0 && searchQuery && (
+            <li className="no-results">
+              <span>{t('sidebar.noResults')}</span>
+            </li>
+          )}
         </ul>
       </div>
 

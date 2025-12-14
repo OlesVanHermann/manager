@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import * as billingService from "../../../../services/billing.service";
 import { TabProps, formatDate, isNotFoundError } from "../utils";
 import { WalletIcon } from "../icons";
 
 export function PrepaidTab({ credentials }: TabProps) {
+  const { t } = useTranslation('home/billing/tabs');
+  const { t: tCommon } = useTranslation('common');
   const [account, setAccount] = useState<billingService.OvhAccount | null>(null);
   const [movements, setMovements] = useState<billingService.OvhAccountMovement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,30 +26,30 @@ export function PrepaidTab({ credentials }: TabProps) {
       setMovements(mvts);
     } catch (err) {
       if (isNotFoundError(err)) { setNotAvailable(true); }
-      else { setError(err instanceof Error ? err.message : "Erreur de chargement"); }
+      else { setError(err instanceof Error ? err.message : t('errors.loadError')); }
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement...</p></div></div>;
+  if (loading) return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>{tCommon('loading')}</p></div></div>;
   if (error) return <div className="tab-panel"><div className="error-banner">{error}</div></div>;
-  if (notAvailable) return <div className="tab-panel"><div className="empty-state"><WalletIcon /><h3>Compte prépayé non disponible</h3><p>Le compte prépayé n'est pas activé pour votre compte OVH.</p></div></div>;
+  if (notAvailable) return <div className="tab-panel"><div className="empty-state"><WalletIcon /><h3>{t('prepaid.notAvailable.title')}</h3><p>{t('prepaid.notAvailable.description')}</p></div></div>;
 
   return (
     <div className="tab-panel">
       <div className="prepaid-card">
-        <h3>Solde du compte prépayé</h3>
+        <h3>{t('prepaid.balance')}</h3>
         <div className="prepaid-amount">{account?.balance.text || "0,00 EUR"}</div>
-        {account?.alertThreshold !== undefined && <p className="prepaid-threshold">Seuil d'alerte : {account.alertThreshold} {account.balance.currencyCode}</p>}
+        {account?.alertThreshold !== undefined && <p className="prepaid-threshold">{t('prepaid.alertThreshold')}: {account.alertThreshold} {account.balance.currencyCode}</p>}
       </div>
-      <h4>Historique des mouvements</h4>
+      <h4>{t('prepaid.movementsHistory')}</h4>
       {movements.length === 0 ? (
-        <div className="empty-state small"><p>Aucun mouvement</p></div>
+        <div className="empty-state small"><p>{t('prepaid.noMovements')}</p></div>
       ) : (
         <div className="table-container">
           <table className="data-table">
-            <thead><tr><th>Date</th><th>Description</th><th>Montant</th><th>Solde</th></tr></thead>
+            <thead><tr><th>{t('columns.date')}</th><th>{t('columns.description')}</th><th>{t('columns.amount')}</th><th>{t('columns.balance')}</th></tr></thead>
             <tbody>
               {movements.map((m) => (
                 <tr key={m.movementId}>

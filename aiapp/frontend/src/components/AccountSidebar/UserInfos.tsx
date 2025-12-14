@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { OvhUser } from "../../types/auth.types";
 
 interface UserInfosProps {
@@ -19,27 +20,30 @@ function getUserDisplayName(user: OvhUser | null): string {
   return `${user.firstname} ${user.name}`;
 }
 
-function formatSupportLevel(level: string | undefined): string {
-  if (!level) return "Standard";
-  return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
-}
-
-function getUserRole(user: OvhUser | null): { label: string; isSubUser: boolean } {
-  const method = user?.auth?.method || "account";
-  switch (method) {
-    case "provider":
-      return { label: "Provider SSO", isSubUser: true };
-    case "user":
-      return { label: "Utilisateur", isSubUser: true };
-    case "account":
-    default:
-      return { label: "Administrateur", isSubUser: false };
-  }
-}
-
 export default function UserInfos({ user }: UserInfosProps) {
-  const supportLevel = formatSupportLevel(user?.supportLevel?.level);
-  const role = getUserRole(user);
+  const { t } = useTranslation('navigation');
+
+  const getSupportLevelLabel = (level: string | undefined): string => {
+    if (!level) return t('userMenu.supportLevel.standard');
+    const key = level.toLowerCase();
+    return t(`userMenu.supportLevel.${key}`, { defaultValue: level });
+  };
+
+  const getUserRole = (): { label: string; isSubUser: boolean } => {
+    const method = user?.auth?.method || "account";
+    switch (method) {
+      case "provider":
+        return { label: "Provider SSO", isSubUser: true };
+      case "user":
+        return { label: t('userMenu.role.technical'), isSubUser: true };
+      case "account":
+      default:
+        return { label: t('userMenu.role.admin'), isSubUser: false };
+    }
+  };
+
+  const supportLevel = getSupportLevelLabel(user?.supportLevel?.level);
+  const role = getUserRole();
 
   return (
     <div className="account-sidebar-user-infos">

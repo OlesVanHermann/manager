@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { OvhCredentials } from "../../../types/auth.types";
 import * as accountService from "../../../services/account.service";
 
@@ -13,6 +14,8 @@ function getCredentials(): OvhCredentials | null {
 type ModalType = "erasure" | "confirm" | null;
 
 export default function GdprTab() {
+  const { t } = useTranslation('home/account/privacy');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [capabilities, setCapabilities] = useState<accountService.PrivacyCapabilities | null>(null);
@@ -27,7 +30,7 @@ export default function GdprTab() {
 
   const loadGdprData = async () => {
     const credentials = getCredentials();
-    if (!credentials) { setError("Non authentifie"); setLoading(false); return; }
+    if (!credentials) { setError(t('errors.notAuthenticated')); setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
@@ -38,7 +41,7 @@ export default function GdprTab() {
       setCapabilities(caps);
       setRequests(reqs);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur de chargement");
+      setError(err instanceof Error ? err.message : t('errors.loadError'));
     } finally {
       setLoading(false);
     }
@@ -58,7 +61,7 @@ export default function GdprTab() {
       setActiveModal("confirm");
       await loadGdprData();
     } catch (err) {
-      setModalError(err instanceof Error ? err.message : "Erreur");
+      setModalError(err instanceof Error ? err.message : tCommon('error.generic'));
     } finally {
       setModalLoading(false);
     }
@@ -69,9 +72,9 @@ export default function GdprTab() {
     if (!credentials) return;
     try {
       await accountService.sendErasureConfirmationEmail(credentials, requestId);
-      setModalError("Email envoye.");
+      setModalError(t('modal.emailSent'));
     } catch (err) {
-      setModalError(err instanceof Error ? err.message : "Erreur");
+      setModalError(err instanceof Error ? err.message : tCommon('error.generic'));
     }
   };
 
@@ -85,7 +88,7 @@ export default function GdprTab() {
       await loadGdprData();
       closeModal();
     } catch (err) {
-      setModalError(err instanceof Error ? err.message : "Code invalide");
+      setModalError(err instanceof Error ? err.message : t('errors.invalidCode'));
     } finally {
       setModalLoading(false);
     }
@@ -98,25 +101,25 @@ export default function GdprTab() {
       await accountService.cancelErasureRequest(credentials, requestId);
       await loadGdprData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
+      setError(err instanceof Error ? err.message : tCommon('error.generic'));
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "completed": return <span className="badge badge-success">Termine</span>;
-      case "in_progress": return <span className="badge badge-info">En cours</span>;
-      case "cancelled": return <span className="badge badge-secondary">Annule</span>;
-      case "blocked": return <span className="badge badge-danger">Bloque</span>;
-      case "confirm_verification_code": return <span className="badge badge-warning">En attente</span>;
+      case "completed": return <span className="badge badge-success">{t('status.completed')}</span>;
+      case "in_progress": return <span className="badge badge-info">{t('status.inProgress')}</span>;
+      case "cancelled": return <span className="badge badge-secondary">{t('status.cancelled')}</span>;
+      case "blocked": return <span className="badge badge-danger">{t('status.blocked')}</span>;
+      case "confirm_verification_code": return <span className="badge badge-warning">{t('status.pending')}</span>;
       default: return <span className="badge badge-secondary">{status}</span>;
     }
   };
 
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
-  if (loading) return <div className="tab-content"><div className="loading-state"><div className="spinner"></div><p>Chargement...</p></div></div>;
-  if (error) return <div className="tab-content"><div className="error-state"><p>{error}</p><button onClick={loadGdprData} className="btn btn-primary">Reessayer</button></div></div>;
+  if (loading) return <div className="tab-content"><div className="loading-state"><div className="spinner"></div><p>{tCommon('loading')}</p></div></div>;
+  if (error) return <div className="tab-content"><div className="error-state"><p>{error}</p><button onClick={loadGdprData} className="btn btn-primary">{tCommon('actions.refresh')}</button></div></div>;
 
   const pendingRequests = requests.filter(r => r.status === "in_progress" || r.status === "confirm_verification_code");
   const pastRequests = requests.filter(r => r.status === "completed" || r.status === "cancelled" || r.status === "blocked");
@@ -124,25 +127,25 @@ export default function GdprTab() {
   return (
     <div className="tab-content gdpr-tab">
       <div className="gdpr-header">
-        <h2>Donnees personnelles</h2>
-        <p>Conformement au RGPD, vous pouvez demander la suppression de votre compte.</p>
+        <h2>{t('title')}</h2>
+        <p>{t('description')}</p>
       </div>
 
       <div className="gdpr-section">
-        <h3>Vos droits</h3>
+        <h3>{t('rights.title')}</h3>
         <div className="rights-grid">
-          <div className="right-card"><h4>Droit d'acces</h4><p>Consultez vos donnees dans votre espace client.</p></div>
-          <div className="right-card"><h4>Droit de rectification</h4><p>Modifiez vos informations dans "Mon profil".</p></div>
-          <div className="right-card"><h4>Droit a l'effacement</h4><p>Demandez la suppression de votre compte.</p></div>
-          <div className="right-card"><h4>Droit a la portabilite</h4><p>Exportez vos donnees.</p></div>
+          <div className="right-card"><h4>{t('rights.access.title')}</h4><p>{t('rights.access.description')}</p></div>
+          <div className="right-card"><h4>{t('rights.rectification.title')}</h4><p>{t('rights.rectification.description')}</p></div>
+          <div className="right-card"><h4>{t('rights.erasure.title')}</h4><p>{t('rights.erasure.description')}</p></div>
+          <div className="right-card"><h4>{t('rights.portability.title')}</h4><p>{t('rights.portability.description')}</p></div>
         </div>
       </div>
 
       <div className="gdpr-section">
-        <h3>Demandes de suppression</h3>
+        <h3>{t('requests.title')}</h3>
         {pendingRequests.length > 0 && (
           <div className="pending-requests">
-            <h4>Demandes en cours</h4>
+            <h4>{t('requests.pending')}</h4>
             {pendingRequests.map(request => (
               <div key={request.id} className="request-card pending">
                 <div className="request-info">
@@ -152,11 +155,11 @@ export default function GdprTab() {
                 <div className="request-actions">
                   {request.status === "confirm_verification_code" && (
                     <>
-                      <button className="btn btn-sm btn-primary" onClick={() => { setPendingRequestId(String(request.id)); openModal("confirm"); }}>Confirmer</button>
-                      <button className="btn btn-sm btn-secondary" onClick={() => handleSendConfirmationEmail(String(request.id))}>Renvoyer email</button>
+                      <button className="btn btn-sm btn-primary" onClick={() => { setPendingRequestId(String(request.id)); openModal("confirm"); }}>{tCommon('actions.confirm')}</button>
+                      <button className="btn btn-sm btn-secondary" onClick={() => handleSendConfirmationEmail(String(request.id))}>{t('requests.resendEmail')}</button>
                     </>
                   )}
-                  <button className="btn btn-sm btn-danger" onClick={() => handleCancelRequest(String(request.id))}>Annuler</button>
+                  <button className="btn btn-sm btn-danger" onClick={() => handleCancelRequest(String(request.id))}>{tCommon('actions.cancel')}</button>
                 </div>
               </div>
             ))}
@@ -164,7 +167,7 @@ export default function GdprTab() {
         )}
         {pastRequests.length > 0 && (
           <div className="past-requests">
-            <h4>Historique</h4>
+            <h4>{t('requests.history')}</h4>
             {pastRequests.map(request => (
               <div key={request.id} className="request-card">
                 <div className="request-info">
@@ -178,32 +181,32 @@ export default function GdprTab() {
         <div className="erasure-action">
           {capabilities?.canRequestErasure !== false ? (
             <>
-              <p className="warning-text"><strong>Attention :</strong> Action irreversible.</p>
-              <button className="btn btn-danger" onClick={() => openModal("erasure")}>Demander la suppression</button>
+              <p className="warning-text"><strong>{t('erasure.warning')}</strong></p>
+              <button className="btn btn-danger" onClick={() => openModal("erasure")}>{t('erasure.requestButton')}</button>
             </>
           ) : (
-            <p>Suppression non disponible actuellement.</p>
+            <p>{t('erasure.unavailable')}</p>
           )}
         </div>
       </div>
 
       <div className="gdpr-section">
-        <h3>En savoir plus</h3>
+        <h3>{t('learnMore.title')}</h3>
         <div className="gdpr-links">
-          <a href="https://www.ovhcloud.com/fr/terms-and-conditions/privacy-policy/" target="_blank" rel="noopener noreferrer">Politique de confidentialite</a>
+          <a href="https://www.ovhcloud.com/fr/terms-and-conditions/privacy-policy/" target="_blank" rel="noopener noreferrer">{t('learnMore.privacyPolicy')}</a>
         </div>
       </div>
 
       {activeModal === "erasure" && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModal}>x</button>
-            <h3>Confirmer la demande</h3>
-            <p>Un email de confirmation vous sera envoye.</p>
+            <button className="modal-close" onClick={closeModal}>×</button>
+            <h3>{t('modal.confirmRequest.title')}</h3>
+            <p>{t('modal.confirmRequest.description')}</p>
             {modalError && <p className="modal-error">{modalError}</p>}
             <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
-              <button className="btn btn-danger" onClick={handleCreateErasureRequest} disabled={modalLoading}>{modalLoading ? "..." : "Confirmer"}</button>
+              <button className="btn btn-secondary" onClick={closeModal}>{tCommon('actions.cancel')}</button>
+              <button className="btn btn-danger" onClick={handleCreateErasureRequest} disabled={modalLoading}>{modalLoading ? "..." : tCommon('actions.confirm')}</button>
             </div>
           </div>
         </div>
@@ -212,14 +215,14 @@ export default function GdprTab() {
       {activeModal === "confirm" && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModal}>x</button>
-            <h3>Code de confirmation</h3>
-            <input type="text" placeholder="Code" value={confirmCode} onChange={e => setConfirmCode(e.target.value)} />
+            <button className="modal-close" onClick={closeModal}>×</button>
+            <h3>{t('modal.enterCode.title')}</h3>
+            <input type="text" placeholder={t('modal.enterCode.placeholder')} value={confirmCode} onChange={e => setConfirmCode(e.target.value)} />
             {modalError && <p className="modal-error">{modalError}</p>}
             <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={closeModal}>Annuler</button>
-              <button className="btn btn-secondary" onClick={() => pendingRequestId && handleSendConfirmationEmail(pendingRequestId)}>Renvoyer</button>
-              <button className="btn btn-danger" onClick={handleConfirmErasure} disabled={modalLoading || !confirmCode}>{modalLoading ? "..." : "Confirmer"}</button>
+              <button className="btn btn-secondary" onClick={closeModal}>{tCommon('actions.cancel')}</button>
+              <button className="btn btn-secondary" onClick={() => pendingRequestId && handleSendConfirmationEmail(pendingRequestId)}>{t('requests.resendEmail')}</button>
+              <button className="btn btn-danger" onClick={handleConfirmErasure} disabled={modalLoading || !confirmCode}>{modalLoading ? "..." : tCommon('actions.confirm')}</button>
             </div>
           </div>
         </div>

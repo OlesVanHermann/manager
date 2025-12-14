@@ -33,6 +33,7 @@ Le **Old Manager** est accessible en production sur : `https://manager.eu.ovhclo
 6. **Migration** : utiliser "la methode" -> `grep` dans old manager -> localiser les appels API -> extraire types -> generer composant React (pas de redirection vers manager.eu.ovhcloud.com)
 7. **Conserver** le design system existant, ne pas reinventer les composants UI.
 8. **Erreur 401 API** : rediriger vers l'auth OVH, pas d'erreur affichee.
+9. **i18n** : tous les textes visibles doivent utiliser `useTranslation()` (voir section 17).
 
 ---
 
@@ -77,6 +78,32 @@ npm run build:prod
 ├── App.tsx                    # App principale + routing (NAV1 + NAV2)
 ├── main.tsx                   # Bootstrap React
 ├── index.css                  # Styles globaux + layout
+│
+├── i18n/                      # Internationalisation
+│   ├── index.ts               # Configuration i18next
+│   ├── LanguageContext.tsx    # React Context langue
+│   └── LanguageSelector.tsx   # Composant selecteur
+│
+├── locales/                   # Fichiers de traduction (miroir de pages/)
+│   ├── fr/                    # Francais
+│   │   ├── common.json        # Termes globaux
+│   │   ├── navigation.json    # Labels navigation
+│   │   └── home/
+│   │       ├── index.json
+│   │       ├── account/
+│   │       │   ├── index.json
+│   │       │   ├── security.json
+│   │       │   ├── edit.json
+│   │       │   └── ...
+│   │       ├── billing/
+│   │       │   ├── index.json
+│   │       │   ├── invoices.json
+│   │       │   ├── payments.json
+│   │       │   └── ...
+│   │       └── support/
+│   │           └── ...
+│   └── en/                    # English (meme structure)
+│       └── ...
 │
 ├── components/                # Composants reutilisables
 │   ├── Sidebar/               # Sidebar gauche (header, search, liste, pagination)
@@ -194,6 +221,8 @@ npm run build:prod
 | Tab (NAV3) | `PascalCaseTab.tsx` | `SecurityTab.tsx`, `OrdersTab.tsx` |
 | Composant local | `PascalCase.tsx` | `ProfileTile.tsx` |
 | Styles section | `styles.css` | `pages/home/account/styles.css` |
+| Traduction page | `index.json` | `locales/fr/home/account/index.json` |
+| Traduction tab | `{tab}.json` | `locales/fr/home/billing/invoices.json` |
 
 ### 4.5 Imports dans App.tsx
 ```typescript
@@ -210,17 +239,20 @@ import IamPage from "./pages/iam";
 
 // Placeholder pour univers non implementes
 import { PlaceholderPage } from "./pages/_placeholder";
+
+// i18n
+import "./i18n";
 ```
 
 ### 4.6 Chemins d'imports relatifs
 
-| Depuis | Vers services/ | Vers types/ |
-|--------|---------------|-------------|
-| `pages/home/index.tsx` | `../../services/` | `../../types/` |
-| `pages/home/account/index.tsx` | `../../../services/` | `../../../types/` |
-| `pages/home/account/SecurityTab.tsx` | `../../../services/` | `../../../types/` |
-| `pages/home/account/components/ProfileTile.tsx` | `../../../../services/` | `../../../../types/` |
-| `pages/iam/index.tsx` | `../../services/` | `../../types/` |
+| Depuis | Vers services/ | Vers types/ | Vers locales/ |
+|--------|---------------|-------------|---------------|
+| `pages/home/index.tsx` | `../../services/` | `../../types/` | N/A (useTranslation) |
+| `pages/home/account/index.tsx` | `../../../services/` | `../../../types/` | N/A |
+| `pages/home/account/SecurityTab.tsx` | `../../../services/` | `../../../types/` | N/A |
+| `pages/home/account/components/ProfileTile.tsx` | `../../../../services/` | `../../../../types/` | N/A |
+| `pages/iam/index.tsx` | `../../services/` | `../../types/` | N/A |
 
 ---
 
@@ -256,6 +288,7 @@ color: var(--color-primary-500, #0050D7);
 | Base ODS | `@ovhcloud/ods-react` v19.2.1 |
 | Themes | `@ovhcloud/ods-themes` v19.2.1 |
 | CSS | Variables CSS custom (tokens.css) |
+| i18n | `react-i18next` + `i18next` |
 
 ### 5.4 Classes CSS disponibles
 ```css
@@ -284,7 +317,7 @@ color: var(--color-primary-500, #0050D7);
 ### 5.5 CHARGEMENT PROGRESSIF (Streaming UI)
 
 ### Cas d'usage
-Quand l'API OVH retourne une liste d'IDs puis nécessite N appels pour les détails (ex: /me/deposit, /me/bill).
+Quand l'API OVH retourne une liste d'IDs puis necessite N appels pour les details (ex: /me/deposit, /me/bill).
 
 ### Structure du state
 ```typescript
@@ -304,8 +337,8 @@ const abortRef = useRef(false);
 ```
 1. GET /me/deposit → liste d'IDs (rapide)
 2. Afficher tableau avec IDs + skeletons
-3. Charger détails par batches de 10 (Promise.all)
-4. Mettre à jour chaque ligne dès réception
+3. Charger details par batches de 10 (Promise.all)
+4. Mettre a jour chaque ligne des reception
 5. Afficher compteur: {loadedCount}/{total}
 ```
 
@@ -333,7 +366,7 @@ const exportCSV = () => {
   
   const csv = [headers.join(";"), ...data.map(row => [...].join(";"))].join("\n");
   const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
-  // Télécharger via URL.createObjectURL
+  // Telecharger via URL.createObjectURL
 };
 ```
 
@@ -354,8 +387,8 @@ const exportPDF = () => {
 ### Endpoints
 ```
 GET /me/deposit                    → string[] (liste IDs)
-GET /me/deposit?date.from=&date.to= → string[] (filtré par période)
-GET /me/deposit/{depositId}        → Deposit (détails)
+GET /me/deposit?date.from=&date.to= → string[] (filtre par periode)
+GET /me/deposit/{depositId}        → Deposit (details)
 ```
 
 ### Interface Deposit
@@ -375,24 +408,29 @@ interface Deposit {
 }
 ```
 
-### Labels de paiement (FR)
+### Labels de paiement (i18n)
 ```typescript
-const PAYMENT_LABELS: Record = {
-  creditCard: "Carte",
-  withdrawal: "Prélèvement",
-  bankAccount: "Virement",
-  paypal: "PayPal",
-  fidelityAccount: "Points fidélité",
-  ovhAccount: "Compte OVH",
-  voucher: "Bon d'achat",
-};
+// Dans locales/fr/common.json
+"paymentTypes": {
+  "creditCard": "Carte",
+  "withdrawal": "Prelevement",
+  "bankAccount": "Virement",
+  "paypal": "PayPal",
+  "fidelityAccount": "Points fidelite",
+  "ovhAccount": "Compte OVH",
+  "voucher": "Bon d'achat"
+}
+
+// Usage
+const { t } = useTranslation('common');
+t(`paymentTypes.${paymentType}`)
 ```
 
 ### Formatage publicLabel
 ```typescript
 // Masquer et raccourcir: "XXXX XXXX XXXX 5575" → "•••• 5575"
 const short = publicLabel.replace(/X/g, "•").slice(-8);
-return `${PAYMENT_LABELS[paymentType]} ${short}`;
+return `${t(`paymentTypes.${paymentType}`)} ${short}`;
 ```
 
 ---
@@ -447,6 +485,7 @@ La signature des requetes est geree automatiquement cote serveur.
 | Contenu | `ContentArea` | Zone de contenu dynamique |
 | User Menu | `UserMenu` | Avatar + NIC handle, ouvre AccountSidebar |
 | AccountSidebar | `AccountSidebar` | Sidebar droite avec profil et actions |
+| Language Selector | `LanguageSelector` | Selecteur de langue (header) |
 
 ### 6.3 Navigation Niveau 1 (Univers) - NAV1
 
@@ -466,82 +505,69 @@ La signature des requetes est geree automatiquement cote serveur.
 |---------|----------|----------|
 | **Header** | Haut | Icone home + boutons vue (liste/grille) |
 | **Search** | Apres header | Filtre de recherche |
-| **Liste** | Centre | TOUS (premier) + ressources de l'univers |
-| **Pagination** | Bas | Navigation < page > |
-
-**Comportement :**
-- La liste se met a jour selon l'univers selectionne (NAV1)
-- **TOUS** est toujours le premier element
-- Cliquer sur une ressource affiche ses details dans le contenu
-- La recherche filtre en temps reel
-- Pagination avec numero de page courant
+| **TOUS** | Premier item | Affiche vue globale (pas de ressource selectionnee) |
+| **Liste** | Corps | Ressources de l'univers actif |
+| **Pagination** | Bas | Navigation entre pages |
 
 ---
 
-## 7. Univers HOME - Structure complete (A)
+## 7. Univers HOME (A)
 
-L'univers **HOME** regroupe toutes les fonctionnalites transverses.
+L'univers **HOME** regroupe les fonctionnalites transverses du compte OVH.
 
 ### 7.1 Sections HOME (NAV2)
 
-| # | Section (NAV2) | Repertoire | Route interne |
-|---|----------------|------------|---------------|
-| 1 | **Accueil** | `home/index.tsx` | `home-dashboard` |
-| 2 | **Compte** | `home/account/` | `home-account` |
-| 3 | **Facturation** | `home/billing/` | `home-billing` |
-| 4 | **Support** | `home/support/` | `home-support` |
-| 5 | **Carbone** | `home/carbon/` | `home-carbon` |
-| 6 | **Playground API** | `home/api/` | `home-api` |
+| # | Section ID | Label (i18n) | Fichier |
+|---|------------|--------------|---------|
+| 1 | `home-dashboard` | navigation.sections.home.dashboard | `pages/home/index.tsx` |
+| 2 | `home-account` | navigation.sections.home.account | `pages/home/account/index.tsx` |
+| 3 | `home-billing` | navigation.sections.home.billing | `pages/home/billing/index.tsx` |
+| 4 | `home-support` | navigation.sections.home.support | `pages/home/support/index.tsx` |
+| 5 | `home-carbon` | navigation.sections.home.carbon | `pages/home/carbon/index.tsx` |
+| 6 | `home-api` | navigation.sections.home.api | `pages/home/api/index.tsx` |
 
-### 7.2 Compte - Tabs (NAV3)
+### 7.2 Compte (home-account) - NAV3
 
-| # | Tab ID | Label | Fichier | API principale |
-|---|--------|-------|---------|----------------|
-| a | `info` | Informations generales | `index.tsx` (default) | `GET /me` |
-| b | `edit` | Editer mon compte | `EditTab.tsx` | `PUT /me` |
-| c | `security` | Securite | `SecurityTab.tsx` | `GET /me/accessRestriction/*` |
-| d | `gdpr` | Donnees personnelles | `PrivacyTab.tsx` | `GET /me/privacy/*` |
-| e | `advanced` | Parametres avances | `AdvancedTab.tsx` | `GET /me/preferences` |
-| f | `contacts-services` | Mes services (contacts) | `ContactServicesTab.tsx` | `GET /me/contact` |
-| g | `contacts-requests` | Mes demandes (contacts) | *(dans index)* | `GET /me/task/contactChange` |
-| h | `kyc` | Documents KYC | *(dans index)* | `GET /me/procedure/fraud` |
+| # | Tab ID | Cle i18n | Fichier | API principale |
+|---|--------|----------|---------|----------------|
+| a | `info` | home/account/index.tabs.info | `index.tsx` | `GET /me` |
+| b | `edit` | home/account/index.tabs.edit | `EditTab.tsx` | `PUT /me` |
+| c | `security` | home/account/index.tabs.security | `SecurityTab.tsx` | `/me/accessRestriction/*` |
+| d | `gdpr` | home/account/index.tabs.gdpr | `PrivacyTab.tsx` | `/me/consent` |
+| e | `advanced` | home/account/index.tabs.advanced | `AdvancedTab.tsx` | `/me` |
+| f | `contacts-services` | home/account/index.tabs.contactsServices | `ContactServicesTab.tsx` | `GET /services` |
+| g | `contacts-requests` | home/account/index.tabs.contactsRequests | `ContactRequestsTab.tsx` | `GET /me/task/contactChange` |
+| h | `kyc` | home/account/index.tabs.kyc | `KycTab.tsx` | `GET /me/procedure/fraud` |
 
-### 7.3 Facturation - Tabs (NAV3)
+### 7.3 Facturation (home-billing) - NAV3
 
-| # | Tab ID | Label | Fichier | API principale |
-|---|--------|-------|---------|----------------|
-| a | `services` | Mes services | `ServicesTab.tsx` | `GET /services` |
-| b | `invoices` | Factures | `index.tsx` (dans BillingPage) | `GET /me/bill` |
-| c | `refunds` | Avoirs | `index.tsx` | `GET /me/refund` |
-| d | `payments` | Paiement | `PaymentsTab.tsx` | `GET /me/deposit` |
-| e | `orders` | Commandes | `OrdersTab.tsx` | `GET /me/order` |
-| f | `references` | Mes references internes | `index.tsx` | `GET /me/billing/purchaseOrder` |
-| g | `methods` | Moyens de paiement | `index.tsx` | `GET /me/payment/method` |
-| h | `prepaid` | Compte prepaye | `index.tsx` | `GET /me/ovhAccount` |
-| i | `vouchers` | Bon d'achat | `index.tsx` | `GET /me/voucherAccount` |
-| j | `fidelity` | Points de fidelite | `index.tsx` | `GET /me/fidelityAccount` |
-| k | `contracts` | Contrats | `index.tsx` | `GET /me/agreements` |
+| # | Tab ID | Cle i18n | Fichier | API principale |
+|---|--------|----------|---------|----------------|
+| a | `services` | home/billing/index.tabs.services | `ServicesTab.tsx` | `GET /services` |
+| b | `invoices` | home/billing/index.tabs.invoices | `InvoicesTab.tsx` | `GET /me/bill` |
+| c | `refunds` | home/billing/index.tabs.refunds | `RefundsTab.tsx` | `GET /me/refund` |
+| d | `payments` | home/billing/index.tabs.payments | `PaymentsTab.tsx` | `GET /me/deposit` |
+| e | `orders` | home/billing/index.tabs.orders | `OrdersTab.tsx` | `GET /me/order` |
+| f | `references` | home/billing/index.tabs.references | `ReferencesTab.tsx` | `GET /me/billing/purchaseOrder` |
+| g | `methods` | home/billing/index.tabs.methods | `MethodsTab.tsx` | `GET /me/payment/method` |
+| h | `prepaid` | home/billing/index.tabs.prepaid | `PrepaidTab.tsx` | `GET /me/ovhAccount` |
+| i | `vouchers` | home/billing/index.tabs.vouchers | `VouchersTab.tsx` | `GET /me/voucherAccount` |
+| j | `fidelity` | home/billing/index.tabs.fidelity | `FidelityTab.tsx` | `GET /me/fidelityAccount` |
+| k | `contracts` | home/billing/index.tabs.contracts | `ContractsTab.tsx` | `GET /me/agreements` |
 
-### 7.4 Support - Tabs (NAV3)
+### 7.4 Support (home-support) - NAV3
 
-| # | Tab ID | Label | Fichier | API principale |
-|---|--------|-------|---------|----------------|
-| a | `tickets` | Mes tickets | `index.tsx` (default) | `GET /support/tickets` |
-| b | `create` | Creer un nouveau ticket | `index.tsx` | `POST /support/tickets` |
-| c | `level` | Mon niveau de support | `LevelTab.tsx` | `GET /me/supportLevel` |
-| d | `communications` | Mes communications | `CommunicationsTab.tsx` | `GET /me/notification` |
-| e | `broadcast` | Parametres de diffusion | `index.tsx` | `GET /me/notification/preferences` |
-
-### 7.5 Playground API
-
-| # | Tab ID | Label | Fichier | Description |
-|---|--------|-------|---------|-------------|
-| a | `api` | API | `index.tsx` (default) | Console interactive |
-| b | `advanced` | Parametres avances | *(dans index)* | Credentials, tokens |
+| # | Tab ID | Cle i18n | Fichier | API principale |
+|---|--------|----------|---------|----------------|
+| a | `tickets` | home/support/index.tabs.tickets | `TicketsTab.tsx` | `GET /support/tickets` |
+| b | `create` | home/support/index.tabs.create | `CreateTab.tsx` | `POST /support/tickets` |
+| c | `level` | home/support/index.tabs.level | `LevelTab.tsx` | `GET /me/supportLevel` |
+| d | `communications` | home/support/index.tabs.communications | `CommunicationsTab.tsx` | `GET /notification/history` |
+| e | `broadcast` | home/support/index.tabs.broadcast | `BroadcastTab.tsx` | `GET /me/marketing` |
 
 ---
 
-## 8. Univers IAM - Structure complete (G)
+## 8. Univers IAM (G)
 
 L'univers **IAM** est un univers autonome dedie a la gestion des acces.
 
@@ -549,12 +575,12 @@ L'univers **IAM** est un univers autonome dedie a la gestion des acces.
 
 Dans IAM, les sections NAV2 sont directement les tabs (pas de sous-navigation).
 
-| # | Section ID | Label | Fichier | API principale |
-|---|------------|-------|---------|----------------|
-| a | `iam-identities` | Identites | `index.tsx` | `GET /me/identity/user` |
-| b | `iam-policies` | Politiques | `index.tsx` | `GET /iam/policy` |
-| c | `iam-groups` | Groupes | `index.tsx` | `GET /me/identity/group` |
-| d | `iam-logs` | Logs | `index.tsx` | `GET /me/logs` |
+| # | Section ID | Cle i18n | Fichier | API principale |
+|---|------------|----------|---------|----------------|
+| a | `iam-identities` | iam/index.tabs.identities | `index.tsx` | `GET /me/identity/user` |
+| b | `iam-policies` | iam/index.tabs.policies | `index.tsx` | `GET /iam/policy` |
+| c | `iam-groups` | iam/index.tabs.groups | `index.tsx` | `GET /me/identity/group` |
+| d | `iam-logs` | iam/index.tabs.logs | `index.tsx` | `GET /me/logs` |
 
 ---
 
@@ -759,6 +785,7 @@ grep -rn "interface.*Bill\|type.*Bill" packages/manager/modules/billing/
 | **Exports** | Default pour pages, nommes pour composants |
 | **Appels API** | Dans `services/`, jamais dans les composants |
 | **NAV3 (onglets internes)** | Geres par chaque page, pas dans App.tsx |
+| **Textes UI** | Toujours via `t()` de react-i18next |
 
 ### Securite
 
@@ -810,11 +837,14 @@ cd /home/ubuntu/aiapp/frontend && npm run build:prod
 ```bash
 # Exemple : creer ContactRequestsTab dans Account
 touch /home/ubuntu/aiapp/frontend/src/pages/home/account/ContactRequestsTab.tsx
+touch /home/ubuntu/aiapp/frontend/public/locales/fr/home/account/contacts-requests.json
+touch /home/ubuntu/aiapp/frontend/public/locales/en/home/account/contacts-requests.json
 ```
 
 Structure type :
 ```typescript
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { OvhCredentials } from "../../../types/auth.types";
 import * as contactsService from "../../../services/contacts.service";
 
@@ -827,6 +857,8 @@ function getCredentials(): OvhCredentials | null {
 }
 
 export default function ContactRequestsTab() {
+  const { t } = useTranslation('home/account/contacts-requests');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
 
@@ -836,10 +868,11 @@ export default function ContactRequestsTab() {
     // Appel API...
   }, []);
 
-  if (loading) return <div>Chargement...</div>;
+  if (loading) return <div>{tCommon('loading')}</div>;
   
   return (
     <div className="tab-content">
+      <h2>{t('title')}</h2>
       {/* Contenu */}
     </div>
   );
@@ -854,35 +887,35 @@ Definition des univers dans `/src/components/Sidebar/navigationTree.ts` :
 ```typescript
 interface Universe {
   id: string;           // "home", "public-cloud", "iam", etc.
-  label: string;        // "HOME", "PUBLIC CLOUD", "IAM", etc.
-  shortLabel?: string;  // Label court pour affichage compact
+  labelKey: string;     // Cle i18n: "navigation.universes.home"
+  shortLabelKey?: string;
   sections: UniverseSection[];
 }
 
 interface UniverseSection {
   id: string;           // "home-account", "iam-identities", etc.
-  label: string;        // "Compte", "Identites", etc.
-  subsections?: NavNode[];  // Sous-sections (onglets NAV3)
+  labelKey: string;     // Cle i18n: "navigation.sections.home.account"
+  subsections?: NavNode[];
 }
 
 interface NavNode {
   id: string;
-  label: string;
-  url?: string;         // URL pour liens externes
-  external?: boolean;   // true = ouvre dans nouvel onglet
+  labelKey: string;     // Cle i18n
+  url?: string;
+  external?: boolean;
 }
 ```
 
 **Univers definis :**
 ```typescript
 export const universes: Universe[] = [
-  { id: 'home', label: 'HOME', sections: [...] },           // A
-  { id: 'public-cloud', label: 'PUBLIC CLOUD', sections: [...] },  // B
-  { id: 'private-cloud', label: 'PRIVATE CLOUD', sections: [...] }, // C
-  { id: 'bare-metal', label: 'BARE METAL', sections: [...] },      // D
-  { id: 'web-cloud', label: 'WEB CLOUD', sections: [...] },        // E
-  { id: 'network', label: 'NETWORK', sections: [...] },            // F
-  { id: 'iam', label: 'IAM', sections: [...] },                    // G
+  { id: 'home', labelKey: 'navigation.universes.home', sections: [...] },
+  { id: 'public-cloud', labelKey: 'navigation.universes.publicCloud', sections: [...] },
+  { id: 'private-cloud', labelKey: 'navigation.universes.privateCloud', sections: [...] },
+  { id: 'bare-metal', labelKey: 'navigation.universes.bareMetal', sections: [...] },
+  { id: 'web-cloud', labelKey: 'navigation.universes.webCloud', sections: [...] },
+  { id: 'network', labelKey: 'navigation.universes.network', sections: [...] },
+  { id: 'iam', labelKey: 'navigation.universes.iam', sections: [...] },
 ];
 ```
 
@@ -900,42 +933,6 @@ export const universes: Universe[] = [
 | `pages/home/support/index.tsx` | Support | tickets, create, level, communications, broadcast |
 | `pages/home/carbon/index.tsx` | Carbone | - |
 | `pages/home/api/index.tsx` | Playground | - |
-
-#### Account tabs (8) - APIs
-| Tab | Label | Endpoint |
-|-----|-------|----------|
-| info | Informations generales | GET /me |
-| edit | Editer mon compte | PUT /me |
-| security | Securite | /me/accessRestriction/* |
-| gdpr | Donnees personnelles | /me/consent |
-| advanced | Parametres avances | /me |
-| contacts-services | Mes services (contacts) | GET /services |
-| contacts-requests | Mes demandes (contacts) | GET /me/task/contactChange |
-| kyc | Documents KYC | GET /me/procedure/fraud |
-
-#### Billing tabs (11) - APIs
-| Tab | Label | Endpoint |
-|-----|-------|----------|
-| services | Mes services | GET /services |
-| invoices | Factures | GET /me/bill |
-| refunds | Avoirs | GET /me/refund |
-| payments | Paiement | GET /me/deposit |
-| orders | Commandes | GET /me/order |
-| references | References internes | GET/POST/PUT /me/billing/purchaseOrder |
-| methods | Moyens de paiement | GET /me/payment/method |
-| prepaid | Compte prepaye | GET /me/ovhAccount |
-| vouchers | Bons d'achat | GET /me/voucherAccount |
-| fidelity | Points fidelite | GET /me/fidelityAccount |
-| contracts | Contrats | GET /me/agreements |
-
-#### Support tabs (5) - APIs
-| Tab | Label | Endpoint |
-|-----|-------|----------|
-| tickets | Mes tickets | GET /support/tickets |
-| create | Creer un ticket | POST /support/tickets |
-| level | Niveau de support | GET /me/supportLevel |
-| communications | Mes communications | GET /notification/history (v2) |
-| broadcast | Parametres diffusion | GET/PUT /me/marketing, GET /notification/routing (v2) |
 
 ### 15.2 Univers IAM (G)
 
@@ -986,25 +983,381 @@ Accessible via l'avatar/NIC en haut a droite :
 +----------------------------+
 ```
 
-**Sections :**
-- **Profil** : Avatar, nom, role, societe, email, NIC, niveau support (en bas de la carte)
-- **Raccourcis** : 13 liens internes vers Billing, Account, Support, API
-- **Liens externes** : Documentation, Etat des services
-- **Session** : Logout
+**Labels i18n (navigation.json) :**
+```json
+"shortcuts": {
+  "invoices": "Voir mes factures",
+  "payments": "Verifier mes paiements",
+  "orders": "Suivre mes commandes",
+  "services": "Renouveler mes services",
+  "methods": "Mes moyens de paiement",
+  "contracts": "Valider mes contrats",
+  "profile": "Voir mon profil",
+  "password": "Changer mon mot de passe",
+  "security": "2FA, Restriction IP",
+  "kyc": "KYC Know Your Customer",
+  "createTicket": "Creer un ticket support",
+  "tickets": "Voir mes tickets",
+  "api": "Playground API"
+}
+```
 
-**Navigation interne (onNavigate) :**
+---
+
+## 17. Internationalisation (i18n)
+
+### 17.1 Stack technique
+
+| Package | Version | Role |
+|---------|---------|------|
+| `i18next` | ^23.x | Core i18n |
+| `react-i18next` | ^14.x | Bindings React |
+| `i18next-http-backend` | ^2.x | Chargement lazy JSON |
+| `i18next-browser-languagedetector` | ^7.x | Detection langue navigateur |
+
+### 17.2 Structure des fichiers de traduction
+
+**Regle : 1 fichier JSON = 1 fichier TSX (miroir exact de pages/)**
+
+**IMPORTANT : Les locales doivent etre dans `public/locales/` (pas `src/locales/`)**
+- Vite copie automatiquement `public/*` vers `dist/` lors du build
+- Le script D1 (rsync dist → /var/www/aiapp/dev/) inclut ainsi les locales
+- Chemin relatif `./locales/...` fonctionne pour /dev/ et / (prod)
+
+```
+/public/locales/
+├── fr/
+│   ├── common.json                    # Termes globaux (erreurs, actions, mois)
+│   ├── navigation.json                # Labels univers, sections, shortcuts
+│   └── home/
+│       ├── index.json                 # Dashboard HomePage
+│       ├── account/
+│       │   ├── index.json             # AccountPage (tabs labels + InfoTab)
+│       │   ├── security.json          # SecurityTab
+│       │   ├── edit.json              # EditTab
+│       │   ├── privacy.json           # PrivacyTab
+│       │   ├── advanced.json          # AdvancedTab
+│       │   ├── contacts-services.json # ContactServicesTab
+│       │   ├── contacts-requests.json # ContactRequestsTab
+│       │   └── kyc.json               # KycTab
+│       ├── billing/
+│       │   ├── index.json             # BillingPage (tabs labels)
+│       │   ├── services.json          # ServicesTab
+│       │   ├── invoices.json          # InvoicesTab
+│       │   ├── refunds.json           # RefundsTab
+│       │   ├── payments.json          # PaymentsTab
+│       │   ├── orders.json            # OrdersTab
+│       │   ├── references.json        # ReferencesTab
+│       │   ├── methods.json           # MethodsTab
+│       │   ├── prepaid.json           # PrepaidTab
+│       │   ├── vouchers.json          # VouchersTab
+│       │   ├── fidelity.json          # FidelityTab
+│       │   └── contracts.json         # ContractsTab
+│       ├── support/
+│       │   ├── index.json             # SupportPage (tabs labels)
+│       │   ├── tickets.json           # TicketsTab
+│       │   ├── create.json            # CreateTab
+│       │   ├── level.json             # LevelTab
+│       │   ├── communications.json    # CommunicationsTab
+│       │   └── broadcast.json         # BroadcastTab
+│       ├── carbon/
+│       │   └── index.json             # CarbonPage
+│       └── api/
+│           └── index.json             # ApiPage
+│   └── iam/
+│       └── index.json                 # IamPage
+└── en/
+    └── (meme structure exacte)
+```
+
+### 17.3 Tailles estimees des fichiers
+
+| Fichier | Taille | Gzip |
+|---------|--------|------|
+| common.json | ~3 KB | ~1 KB |
+| navigation.json | ~2 KB | ~0.7 KB |
+| Tab simple (fidelity, prepaid) | ~0.5 KB | ~0.2 KB |
+| Tab moyen (orders, methods) | ~1.5 KB | ~0.5 KB |
+| Tab complexe (invoices, security) | ~2-3 KB | ~1 KB |
+| **Total FR** | ~35 KB | ~12 KB |
+
+### 17.4 Configuration i18next
 ```typescript
-// Format: onNavigate(section, { tab })
-onNavigate("home-billing", { tab: "invoices" })  // Factures
-onNavigate("home-billing", { tab: "payments" })  // Paiements
-onNavigate("home-billing", { tab: "orders" })    // Commandes
-onNavigate("home-billing", { tab: "services" })  // Services
-onNavigate("home-billing", { tab: "methods" })   // Moyens de paiement
-onNavigate("home-billing", { tab: "contracts" }) // Contrats
-onNavigate("home-account", { tab: "info" })      // Profil
-onNavigate("home-account", { tab: "security" })  // Mot de passe / 2FA
-onNavigate("home-account", { tab: "kyc" })       // KYC
-onNavigate("home-support", { tab: "create" })    // Creer ticket
-onNavigate("home-support", { tab: "tickets" })   // Mes tickets
-onNavigate("home-api")                           // Playground API
+// /src/i18n/index.ts
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import HttpBackend from 'i18next-http-backend';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+i18n
+  .use(HttpBackend)
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    supportedLngs: ['fr', 'en', 'de'],
+    fallbackLng: 'fr',
+    defaultNS: 'common',
+    ns: ['common', 'navigation'],
+    
+    backend: {
+      loadPath: './locales/{{lng}}/{{ns}}.json',
+    },
+    
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+    },
+    
+    interpolation: {
+      escapeValue: false,
+    },
+    
+    react: {
+      useSuspense: true,
+    },
+  });
+
+export default i18n;
+```
+
+### 17.5 Usage dans les composants
+
+**Page principale (charge son namespace) :**
+```typescript
+// pages/home/billing/index.tsx
+import { useTranslation } from 'react-i18next';
+
+export default function BillingPage() {
+  const { t } = useTranslation('home/billing/index');
+  
+  const tabs = [
+    { id: 'services', label: t('tabs.services') },
+    { id: 'invoices', label: t('tabs.invoices') },
+    // ...
+  ];
+  
+  return <div>{/* ... */}</div>;
+}
+```
+
+**Tab (charge son propre namespace) :**
+```typescript
+// pages/home/billing/tabs/InvoicesTab.tsx
+import { useTranslation } from 'react-i18next';
+
+export function InvoicesTab() {
+  const { t } = useTranslation('home/billing/invoices');
+  const { t: tCommon } = useTranslation('common');
+  
+  return (
+    <div>
+      <h2>{t('title')}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>{t('columns.ref')}</th>
+            <th>{t('columns.date')}</th>
+            <th>{t('columns.amount')}</th>
+          </tr>
+        </thead>
+      </table>
+      {loading && <p>{tCommon('loading')}</p>}
+    </div>
+  );
+}
+```
+
+### 17.6 Exemples de fichiers JSON
+
+**common.json :**
+```json
+{
+  "loading": "Chargement...",
+  "error": {
+    "generic": "Une erreur est survenue",
+    "network": "Erreur de connexion",
+    "401": "Session expiree"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "export": "Exporter",
+    "download": "Telecharger",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "confirm": "Confirmer",
+    "back": "Retour"
+  },
+  "pagination": {
+    "previous": "Precedent",
+    "next": "Suivant",
+    "page": "Page {{current}} sur {{total}}"
+  },
+  "empty": {
+    "title": "Aucun resultat",
+    "description": "Aucune donnee a afficher"
+  },
+  "months": {
+    "short": ["Janv.", "Fev.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Aout", "Sept.", "Oct.", "Nov.", "Dec."],
+    "full": ["Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre"]
+  },
+  "paymentTypes": {
+    "creditCard": "Carte",
+    "withdrawal": "Prelevement",
+    "bankAccount": "Virement",
+    "paypal": "PayPal",
+    "fidelityAccount": "Points fidelite",
+    "ovhAccount": "Compte OVH",
+    "voucher": "Bon d'achat"
+  }
+}
+```
+
+**navigation.json :**
+```json
+{
+  "universes": {
+    "home": "HOME",
+    "publicCloud": "PUBLIC CLOUD",
+    "privateCloud": "PRIVATE CLOUD",
+    "bareMetal": "BARE METAL",
+    "webCloud": "WEB CLOUD",
+    "network": "NETWORK",
+    "iam": "IAM"
+  },
+  "sections": {
+    "home": {
+      "dashboard": "Accueil",
+      "account": "Compte",
+      "billing": "Facturation",
+      "support": "Support",
+      "carbon": "Carbone",
+      "api": "Playground API"
+    },
+    "iam": {
+      "identities": "Identites",
+      "policies": "Politiques",
+      "groups": "Groupes",
+      "logs": "Logs"
+    }
+  },
+  "shortcuts": {
+    "invoices": "Voir mes factures",
+    "payments": "Verifier mes paiements",
+    "orders": "Suivre mes commandes",
+    "services": "Renouveler mes services",
+    "methods": "Mes moyens de paiement",
+    "contracts": "Valider mes contrats",
+    "profile": "Voir mon profil",
+    "password": "Changer mon mot de passe",
+    "security": "2FA, Restriction IP",
+    "kyc": "KYC Know Your Customer",
+    "createTicket": "Creer un ticket support",
+    "tickets": "Voir mes tickets",
+    "api": "Playground API"
+  },
+  "externalLinks": {
+    "documentation": "Documentation",
+    "status": "Etat des services"
+  },
+  "session": {
+    "logout": "Se deconnecter"
+  }
+}
+```
+
+**home/billing/invoices.json :**
+```json
+{
+  "title": "Historique des factures",
+  "toolbar": {
+    "periodPrevious": "Periode precedente",
+    "periodNext": "Periode suivante",
+    "reset": "Retour a la periode initiale"
+  },
+  "columns": {
+    "ref": "Reference",
+    "date": "Date",
+    "amountHT": "Montant HT",
+    "vat": "TVA",
+    "amountTTC": "Montant TTC",
+    "actions": "Actions"
+  },
+  "totals": {
+    "ht": "Total HT",
+    "vat": "TVA",
+    "ttc": "Total TTC"
+  },
+  "actions": {
+    "downloadPdf": "Telecharger PDF",
+    "viewOnline": "Voir en ligne"
+  },
+  "empty": {
+    "title": "Aucune facture",
+    "description": "Aucune facture enregistree sur cette periode."
+  },
+  "count": "{{loaded}}/{{total}} facture(s)",
+  "export": {
+    "csv": "CSV",
+    "pdf": "PDF",
+    "filename": "OVHcloud-factures_{{start}}_{{end}}",
+    "generatedAt": "Genere le {{date}} depuis OVHcloud Manager"
+  }
+}
+```
+
+### 17.7 Mecanisme de chargement
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  INITIAL LOAD                                                   │
+│  ├── Bundle JS inclut i18next config                           │
+│  └── Charge: common.json + navigation.json (~5 KB gzip)        │
+│                                                                 │
+│  NAVIGATION vers /billing                                       │
+│  └── Charge: home/billing/index.json (~1 KB)                   │
+│                                                                 │
+│  CLIC sur Tab "Factures"                                        │
+│  └── Charge: home/billing/invoices.json (~1.5 KB)              │
+│      → Cache navigateur (prochaine visite: 0 ms)               │
+│                                                                 │
+│  CHANGEMENT LANGUE (FR → EN)                                    │
+│  └── Recharge uniquement les namespaces actifs                 │
+│      → Ex: common + navigation + billing/invoices (~4 KB)      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 17.8 Ajout d'une nouvelle langue
+
+1. Creer le repertoire `/public/locales/de/`
+2. Copier la structure de `/public/locales/fr/`
+3. Traduire tous les fichiers JSON
+4. Ajouter `'de'` dans `supportedLngs` de i18n/index.ts
+5. Ajouter l'option dans `LanguageSelector.tsx`
+
+### 17.9 Bonnes pratiques i18n
+
+| Regle | Application |
+|-------|-------------|
+| **Pas de texte en dur** | Tous les textes visibles via `t()` |
+| **Namespace = fichier** | 1 Tab = 1 fichier JSON |
+| **Interpolation** | `t('count', { n: 5 })` → "5 elements" |
+| **Pluralisation** | `t('item', { count })` avec `item_one`, `item_other` |
+| **Dates/Nombres** | Utiliser Intl.DateTimeFormat, Intl.NumberFormat |
+| **Pas de concatenation** | `t('hello', { name })` pas `t('hello') + name` |
+| **Cles semantiques** | `columns.ref` pas `table_header_1` |
+
+### 17.10 Commandes utiles
+```bash
+# Creer les fichiers JSON pour un nouveau Tab
+mkdir -p /home/ubuntu/aiapp/frontend/public/locales/fr/home/billing
+mkdir -p /home/ubuntu/aiapp/frontend/public/locales/en/home/billing
+touch /home/ubuntu/aiapp/frontend/public/locales/fr/home/billing/newtab.json
+touch /home/ubuntu/aiapp/frontend/public/locales/en/home/billing/newtab.json
+
+# Verifier les cles manquantes (script custom)
+node scripts/check-i18n-keys.js
+
+# Extraire les cles utilisees (optionnel avec i18next-parser)
+npx i18next-parser
 ```

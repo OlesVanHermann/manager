@@ -1,64 +1,18 @@
 // ============================================================
 // PAYMENTS TAB - Paiements avec chargement streaming + fallback
 // ============================================================
-// 
-// FALLBACK AUTOMATIQUE:
-// Cherche dans des blocs alignés de taille croissante (1, 2, 3, 4, 6, 12 mois)
-// jusqu'à trouver des résultats.
-// 
-// BLOCS ALIGNÉS:
-// - 1 mois  : Jan, Fév, Mars, ..., Déc
-// - 2 mois  : Jan-Fév, Mars-Avr, Mai-Juin, Juil-Août, Sep-Oct, Nov-Déc
-// - 3 mois  : Jan-Mars, Avr-Juin, Juil-Sep, Oct-Déc
-// - 4 mois  : Jan-Avr, Mai-Août, Sep-Déc
-// - 6 mois  : Jan-Juin, Juil-Déc
-// - 12 mois : Jan-Déc
-// 
-// ANCRE AFFICHÉE:
-// Si le bloc courant est incomplet (fin > mois actuel), on affiche:
-// bloc précédent complet + mois jusqu'au mois courant
-// Ex: Juillet 2025, windowSize=2 → Mai-Juil (Mai-Juin + Juil)
-// 
-// NAVIGATION < > :
-// Se déplace par blocs alignés de taille windowSizeCurrent
-// windowSizeCurrent est calculé dynamiquement selon la sélection:
-// monthCount → windowSize (1→1, 2→2, 3→3, 4→4, 5→4, 6→6, 7-11→6, 12→12)
-// 
-// RESET ↺ :
-// Retourne à l'ancre initiale (windowSizeInitial)
-// 
-// TOOLBAR LAYOUT:
-// ┌──────────────────────────────────────────────────────────────────────────┐
-// │  2025    [<] [Mai ▼] → [Juil. ▼] [>]    [↺]       [CSV] [PDF]  5/5 paie. │
-// │    ↑      ↑                       ↑      ↑                               │
-// │  année  prev                    next  reset                              │
-// └──────────────────────────────────────────────────────────────────────────┘
-// 
-// ============================================================
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import * as billingService from "../../../../services/billing.service";
 import { TabProps, formatDate, formatAmount, formatDateISO } from "../utils";
 import { DownloadIcon, ExternalIcon, CheckIcon, FileTextIcon, FileIcon } from "../icons";
 
 // ============ CONSTANTES ============
 
-const MONTHS_FR = ["Janv.", "Fév.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."];
-const MONTHS_FR_FULL = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 const MIN_YEAR = 2020;
 const BATCH_SIZE = 10;
-
 const VALID_WINDOW_SIZES = [1, 2, 3, 4, 6, 12];
-
-const PAYMENT_LABELS: Record<string, string> = {
-  creditCard: "Carte",
-  withdrawal: "Prélèvement",
-  bankAccount: "Virement",
-  paypal: "PayPal",
-  fidelityAccount: "Points fidélité",
-  ovhAccount: "Compte OVH",
-  voucher: "Bon d'achat",
-};
 
 // ============ TYPES ============
 
@@ -102,7 +56,6 @@ function calculateAnchor(
   windowSize: number
 ): { startMonth: number; endMonth: number } {
   const blocks = getBlocks(windowSize);
-  
   const currentBlockIndex = blocks.findIndex(([s, e]) => s <= currentMonth && currentMonth <= e);
   const currentBlock = blocks[currentBlockIndex];
   
@@ -121,6 +74,29 @@ function calculateAnchor(
 // ============ COMPOSANT ============
 
 export function PaymentsTab({ credentials }: TabProps) {
+  const { t, i18n } = useTranslation('home/billing/tabs');
+  const { t: tCommon } = useTranslation('common');
+  
+  const MONTHS_SHORT = t('invoices.months.short', { returnObjects: true }) as string[];
+  const MONTHS_FULL = t('invoices.months.full', { returnObjects: true }) as string[];
+  
+  const PAYMENT_LABELS: Record<string, string> = {
+    creditCard: t('payments.methods.creditCard'),
+    withdrawal: t('payments.methods.withdrawal'),
+    bankAccount: t('payments.methods.bankAccount'),
+    paypal: t('payments.methods.paypal'),
+    fidelityAccount: t('payments.methods.fidelityAccount'),
+    ovhAccount: t('payments.methods.ovhAccount'),
+    voucher: t('payments.methods.voucher'),
+  };
+
+  const formatPayment = (info: billingService.PaymentInfo | undefined): string => {
+    if (!info) return "-";
+    const label = PAYMENT_LABELS[info.paymentType] || info.paymentType;
+    if (info.publicLabel) return `${label} (${info.publicLabel})`;
+    return label;
+  };
+  
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
@@ -250,18 +226,6 @@ export function PaymentsTab({ credentials }: TabProps) {
     return { from, to };
   };
 
-  const formatPayment = (info?: { paymentType: string; publicLabel?: string }) => {
-    if (!info) return "-";
-    const label = PAYMENT_LABELS[info.paymentType] || info.paymentType;
-    if (info.publicLabel) {
-      const short = info.publicLabel.length > 20 
-        ? info.publicLabel.slice(-12) 
-        : info.publicLabel.replace(/X/g, "•").slice(-8);
-      return `${label} ${short}`;
-    }
-    return label;
-  };
-
   // ============ LOGIQUE DE FALLBACK ============
   
   const applyFallback = () => {
@@ -378,10 +342,10 @@ export function PaymentsTab({ credentials }: TabProps) {
         loadAllDetails(sortedIds);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur de chargement");
+      setError(err instanceof Error ? err.message : t('errors.loadError'));
       setLoadingIds(false);
     }
-  }, [year, startMonth, endMonth, isAutoFallback, fallbackIndex, loadAllDetails]);
+  }, [year, startMonth, endMonth, isAutoFallback, fallbackIndex, loadAllDetails, t]);
 
   useEffect(() => {
     loadDeposits();
@@ -397,7 +361,7 @@ export function PaymentsTab({ credentials }: TabProps) {
     
     if (loadedData.length === 0) return;
     
-    const headers = ["Référence", "Date", "Montant", "Devise", "Moyen de paiement"];
+    const headers = [t('columns.reference'), t('columns.date'), t('columns.amount'), t('invoices.currency'), t('payments.method')];
     const rows = loadedData.map(d => [
       d.depositId,
       formatDateISO(d.date),
@@ -411,7 +375,7 @@ export function PaymentsTab({ credentials }: TabProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `OVHcloud-paiements_${year}-${String(startMonth + 1).padStart(2, "0")}_${year}-${String(endMonth + 1).padStart(2, "0")}.csv`;
+    a.download = `OVHcloud-${t('payments.exportFilename')}_${year}-${String(startMonth + 1).padStart(2, "0")}_${year}-${String(endMonth + 1).padStart(2, "0")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -428,9 +392,9 @@ export function PaymentsTab({ credentials }: TabProps) {
     
     const total = loadedData.reduce((s, d) => s + d.amount.value, 0);
     const currency = loadedData[0]?.amount.currencyCode || "EUR";
-    const periodLabel = `${MONTHS_FR_FULL[startMonth]} ${year} - ${MONTHS_FR_FULL[endMonth]} ${year}`;
+    const periodLabel = `${MONTHS_FULL[startMonth]} ${year} - ${MONTHS_FULL[endMonth]} ${year}`;
     
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>OVHcloud-Paiements - ${periodLabel}</title><style>body{font-family:Arial,sans-serif;margin:40px;color:#333}h1{color:#0050d7;margin-bottom:5px}.period{color:#666;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin-bottom:20px}th,td{padding:10px;text-align:left;border-bottom:1px solid #ddd}th{background:#f5f5f5;font-weight:600}.amount{text-align:right}.total-row{font-weight:bold;background:#f0f7ff}.footer{margin-top:30px;color:#888;font-size:12px}@media print{body{margin:20px}}</style></head><body><h1>Historique des paiements</h1><p class="period">${periodLabel} — ${loadedData.length} paiement(s)</p><table><thead><tr><th>Référence</th><th>Date</th><th>Moyen</th><th class="amount">Montant</th></tr></thead><tbody>${loadedData.map(d => `<tr><td>${d.depositId}</td><td>${formatDate(d.date)}</td><td>${formatPayment(d.paymentInfo)}</td><td class="amount">${formatAmount(d.amount.value, d.amount.currencyCode)}</td></tr>`).join("")}<tr class="total-row"><td colspan="3">Total</td><td class="amount">${formatAmount(total, currency)}</td></tr></tbody></table><p class="footer">Généré le ${new Date().toLocaleDateString("fr-FR")} depuis OVHcloud Manager</p></body></html>`;
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>OVHcloud-${t('payments.pdfTitle')} - ${periodLabel}</title><style>body{font-family:Arial,sans-serif;margin:40px;color:#333}h1{color:#0050d7;margin-bottom:5px}.period{color:#666;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin-bottom:20px}th,td{padding:10px;text-align:left;border-bottom:1px solid #ddd}th{background:#f5f5f5;font-weight:600}.amount{text-align:right}.total-row{font-weight:bold;background:#f0f7ff}.footer{margin-top:30px;color:#888;font-size:12px}@media print{body{margin:20px}}</style></head><body><h1>${t('payments.pdfTitle')}</h1><p class="period">${periodLabel} — ${loadedData.length} ${t('payments.paymentUnit')}</p><table><thead><tr><th>${t('columns.reference')}</th><th>${t('columns.date')}</th><th>${t('payments.method')}</th><th class="amount">${t('columns.amount')}</th></tr></thead><tbody>${loadedData.map(d => `<tr><td>${d.depositId}</td><td>${formatDate(d.date)}</td><td>${formatPayment(d.paymentInfo)}</td><td class="amount">${formatAmount(d.amount.value, d.amount.currencyCode)}</td></tr>`).join("")}<tr class="total-row"><td colspan="3">${t('invoices.total')}</td><td class="amount">${formatAmount(total, currency)}</td></tr></tbody></table><p class="footer">${t('invoices.generatedOn')} ${new Date().toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')} ${t('invoices.fromManager')}</p></body></html>`;
     
     const printWindow = window.open("", "_blank");
     if (printWindow) {
@@ -457,31 +421,28 @@ export function PaymentsTab({ credentials }: TabProps) {
       {/* ===== TOOLBAR ===== */}
       <div className="toolbar payments-toolbar">
         <div className="toolbar-left">
-          {/* Année */}
           <span className="year-label">{year}</span>
           
-          {/* Navigation < */}
-          <button className="btn year-nav-btn" onClick={goToPrevious} disabled={!canGoPrevious} title="Période précédente">
+          <button className="btn year-nav-btn" onClick={goToPrevious} disabled={!canGoPrevious} title={t('invoices.nav.previous')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
           
           <select className="period-select month-select" value={startMonth} onChange={(e) => handleStartMonthChange(Number(e.target.value))}>
-            {MONTHS_FR.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}
+            {MONTHS_SHORT.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}
           </select>
           
           <span className="date-separator">→</span>
           
           <select className="period-select month-select" value={endMonth} onChange={(e) => handleEndMonthChange(Number(e.target.value))}>
-            {MONTHS_FR.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}
+            {MONTHS_SHORT.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}
           </select>
           
-          {/* Navigation > */}
-          <button className="btn year-nav-btn" onClick={goToNext} disabled={!canGoNext} title="Période suivante">
+          <button className="btn year-nav-btn" onClick={goToNext} disabled={!canGoNext} title={t('invoices.nav.next')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
           
           {showReset && (
-            <button className="btn reset-btn" onClick={resetToAnchor} title="Retour à la période initiale">
+            <button className="btn reset-btn" onClick={resetToAnchor} title={t('invoices.nav.reset')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
           )}
@@ -490,31 +451,31 @@ export function PaymentsTab({ credentials }: TabProps) {
         <div className="toolbar-right">
           {allLoaded && depositIds.length > 0 && (
             <>
-              <button className="btn btn-sm btn-secondary export-btn" onClick={exportCSV} title="Exporter en CSV"><FileTextIcon /> CSV</button>
-              <button className="btn btn-sm btn-secondary export-btn" onClick={exportPDF} title="Exporter en PDF"><FileIcon /> PDF</button>
+              <button className="btn btn-sm btn-secondary export-btn" onClick={exportCSV} title={t('invoices.export.csv')}><FileTextIcon /> CSV</button>
+              <button className="btn btn-sm btn-secondary export-btn" onClick={exportPDF} title={t('invoices.export.pdf')}><FileIcon /> PDF</button>
             </>
           )}
-          <span className="result-count">{loadingIds ? "Chargement..." : `${loadedCount}/${depositIds.length} paiement(s)`}</span>
+          <span className="result-count">{loadingIds ? tCommon('loading') : t('payments.countProgress', { loaded: loadedCount, total: depositIds.length })}</span>
         </div>
       </div>
 
       {/* ===== CONTENU ===== */}
       {loadingIds ? (
-        <div className="loading-state"><div className="spinner"></div><p>Chargement...</p></div>
+        <div className="loading-state"><div className="spinner"></div><p>{tCommon('loading')}</p></div>
       ) : error ? (
         <div className="error-banner">{error}</div>
       ) : depositIds.length === 0 ? (
-        <div className="empty-state"><CheckIcon /><h3>Aucun paiement</h3><p>Aucun paiement enregistré sur cette période.</p></div>
+        <div className="empty-state"><CheckIcon /><h3>{t('payments.empty.title')}</h3><p>{t('payments.empty.description')}</p></div>
       ) : (
         <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Référence</th>
-                <th>Date</th>
-                <th>Montant</th>
-                <th>Moyen</th>
-                <th>Actions</th>
+                <th>{t('columns.reference')}</th>
+                <th>{t('columns.date')}</th>
+                <th>{t('columns.amount')}</th>
+                <th>{t('payments.method')}</th>
+                <th>{t('columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -527,8 +488,8 @@ export function PaymentsTab({ credentials }: TabProps) {
                   <td className="actions-cell">
                     {row.loaded && row.details ? (
                       <>
-                        {row.details.pdfUrl && <a href={row.details.pdfUrl} target="_blank" rel="noopener noreferrer" className="action-btn" title="Télécharger PDF"><DownloadIcon /></a>}
-                        {row.details.url && <a href={row.details.url} target="_blank" rel="noopener noreferrer" className="action-btn" title="Voir en ligne"><ExternalIcon /></a>}
+                        {row.details.pdfUrl && <a href={row.details.pdfUrl} target="_blank" rel="noopener noreferrer" className="action-btn" title={t('actions.downloadPdf')}><DownloadIcon /></a>}
+                        {row.details.url && <a href={row.details.url} target="_blank" rel="noopener noreferrer" className="action-btn" title={t('actions.viewOnline')}><ExternalIcon /></a>}
                       </>
                     ) : <Skeleton />}
                   </td>

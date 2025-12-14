@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useCredentials } from "./utils";
 import { LockIcon, BookIcon } from "./icons";
 import {
@@ -16,20 +17,6 @@ interface BillingPageProps {
   isActive: boolean;
   initialTab?: string;
 }
-
-const tabs = [
-  { id: "services", label: "Mes services" },
-  { id: "invoices", label: "Factures" },
-  { id: "refunds", label: "Avoirs" },
-  { id: "payments", label: "Paiement" },
-  { id: "orders", label: "Commandes" },
-  { id: "references", label: "Mes références internes" },
-  { id: "methods", label: "Moyens de paiement" },
-  { id: "prepaid", label: "Compte prépayé" },
-  { id: "vouchers", label: "Bon d'achat" },
-  { id: "fidelity", label: "Points de fidélité" },
-  { id: "contracts", label: "Contrats" },
-];
 
 const tabIdMap: Record<string, string> = {
   "billing-services": "services",
@@ -46,8 +33,23 @@ const tabIdMap: Record<string, string> = {
 };
 
 export function BillingPage({ isActive, initialTab = "services" }: BillingPageProps) {
+  const { t } = useTranslation('home/billing/index');
   const [activeTab, setActiveTab] = useState(initialTab);
   const credentials = useCredentials();
+
+  const tabs = [
+    { id: "services", label: t('tabs.services') },
+    { id: "invoices", label: t('tabs.invoices') },
+    { id: "refunds", label: t('tabs.refunds') },
+    { id: "payments", label: t('tabs.payments') },
+    { id: "orders", label: t('tabs.orders') },
+    { id: "references", label: t('tabs.references') },
+    { id: "methods", label: t('tabs.methods') },
+    { id: "prepaid", label: t('tabs.prepaid') },
+    { id: "vouchers", label: t('tabs.vouchers') },
+    { id: "fidelity", label: t('tabs.fidelity') },
+    { id: "contracts", label: t('tabs.contracts') },
+  ];
 
   useEffect(() => {
     if (initialTab) {
@@ -65,15 +67,15 @@ export function BillingPage({ isActive, initialTab = "services" }: BillingPagePr
       <div className="billing-page">
         <div className="page-header">
           <div className="page-header-content">
-            <h1>Facturation</h1>
-            <p className="page-subtitle">Connectez-vous pour accéder à vos factures et moyens de paiement.</p>
+            <h1>{t('title')}</h1>
+            <p className="page-subtitle">{t('subtitleNoAuth')}</p>
           </div>
         </div>
         <div className="billing-content">
           <div className="empty-state">
             <LockIcon />
-            <h3>Authentification requise</h3>
-            <p>Veuillez vous connecter avec vos identifiants OVH pour accéder à cette section.</p>
+            <h3>{t('authRequired.title')}</h3>
+            <p>{t('authRequired.description')}</p>
           </div>
         </div>
       </div>
@@ -84,11 +86,11 @@ export function BillingPage({ isActive, initialTab = "services" }: BillingPagePr
     <div className="billing-page">
       <div className="page-header">
         <div className="page-header-content">
-          <h1>Facturation</h1>
-          <p className="page-subtitle">Gérez vos services, factures, paiements et moyens de paiement.</p>
+          <h1>{t('title')}</h1>
+          <p className="page-subtitle">{t('subtitle')}</p>
         </div>
         <a href="https://help.ovhcloud.com/csm/fr-billing-faq" target="_blank" rel="noopener noreferrer" className="guides-link">
-          <BookIcon /> Guides
+          <BookIcon /> {t('guides')}
         </a>
       </div>
 

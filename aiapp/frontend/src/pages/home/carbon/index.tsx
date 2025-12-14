@@ -1,53 +1,56 @@
+import { useTranslation } from "react-i18next";
 import "./styles.css";
 
 export default function CarbonPage() {
+  const { t } = useTranslation('home/carbon/index');
+
   return (
     <div className="carbon-page">
       <div className="page-header">
-        <h1>Mon empreinte carbone</h1>
-        <p className="page-description">Retrouvez et téléchargez l'analyse des émissions des gaz à effet de serre de votre infrastructure. Suivez l'impact environnemental lié à la fabrication, à la consommation énergétique et aux opérations annexes de vos services Cloud.</p>
+        <h1>{t('title')}</h1>
+        <p className="page-description">{t('description')}</p>
       </div>
 
       <div className="carbon-section">
-        <h2>Quelle est la composition du bilan carbone d'OVHcloud ?</h2>
-        <p>OVHcloud inclut l'ensemble des sources émettrices de CO2eq, données fournies par la formule :</p>
+        <h2>{t('composition.title')}</h2>
+        <p>{t('composition.intro')}</p>
         
         <div className="carbon-formula">
           <div className="formula-item">
             <div className="formula-icon">🏭</div>
-            <span>Fabrication</span>
+            <span>{t('composition.manufacturing')}</span>
           </div>
           <span className="formula-operator">+</span>
           <div className="formula-item">
             <div className="formula-icon">⚡</div>
-            <span>Électricité</span>
+            <span>{t('composition.electricity')}</span>
           </div>
           <span className="formula-operator">+</span>
           <div className="formula-item">
             <div className="formula-icon">⚙️</div>
-            <span>Opérations</span>
+            <span>{t('composition.operations')}</span>
           </div>
           <span className="formula-operator">=</span>
           <div className="formula-item result">
             <div className="formula-icon">🌍</div>
-            <span>Émissions de gaz à effet de serre</span>
+            <span>{t('composition.emissions')}</span>
           </div>
         </div>
       </div>
 
       <div className="carbon-section">
-        <p>Ce document comprend les émissions de gaz à effet de serre du mois précédent :</p>
+        <p>{t('services.intro')}</p>
         <ul className="carbon-list">
-          <li>de vos services <strong>infrastructure Baremetal</strong></li>
-          <li>de vos services <strong>Hosted Private Cloud</strong></li>
-          <li>de vos services <strong>Public Cloud</strong></li>
+          <li dangerouslySetInnerHTML={{ __html: t('services.baremetal') }} />
+          <li dangerouslySetInnerHTML={{ __html: t('services.hpc') }} />
+          <li dangerouslySetInnerHTML={{ __html: t('services.publicCloud') }} />
         </ul>
-        <p>dont vous êtes le <strong>contact facturation</strong></p>
+        <p dangerouslySetInnerHTML={{ __html: t('services.billingContact') }} />
       </div>
 
       <div className="carbon-actions">
         <a href="https://www.ovh.com/manager/#/dedicated/carbon-calculator" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-          Télécharger mon empreinte de novembre 2025
+          {t('downloadButton')}
         </a>
       </div>
     </div>

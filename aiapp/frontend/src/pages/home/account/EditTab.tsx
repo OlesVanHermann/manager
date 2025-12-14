@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { OvhUser, OvhCredentials } from "../../../types/auth.types";
 import * as accountService from "../../../services/account.service";
 
@@ -19,6 +20,7 @@ function getCredentials(): OvhCredentials | null {
 }
 
 export default function ProfileEditTab({ user }: ProfileEditTabProps) {
+  const { t } = useTranslation('home/account/edit');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
     e.preventDefault();
     const credentials = getCredentials();
     if (!credentials) {
-      setError("Non authentifie");
+      setError(t('errors.notAuthenticated'));
       return;
     }
 
@@ -77,9 +79,9 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
         city: formData.city || undefined,
         zip: formData.zip || undefined,
       });
-      setSuccess("Profil mis a jour avec succes.");
+      setSuccess(t('success'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la mise a jour");
+      setError(err instanceof Error ? err.message : t('errors.updateFailed'));
     } finally {
       setLoading(false);
     }
@@ -106,17 +108,17 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
   return (
     <div className="tab-content profile-edit-tab">
       <div className="profile-edit-header">
-        <h2>Editer mon profil</h2>
-        <p>Modifiez vos informations personnelles. Certains champs ne peuvent pas etre modifies directement.</p>
+        <h2>{t('title')}</h2>
+        <p>{t('description')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="profile-edit-form">
         <div className="form-section">
-          <h3>Identite</h3>
+          <h3>{t('sections.identity')}</h3>
           
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="firstname">Prenom *</label>
+              <label htmlFor="firstname">{t('fields.firstname')} *</label>
               <input
                 type="text"
                 id="firstname"
@@ -127,7 +129,7 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="name">Nom *</label>
+              <label htmlFor="name">{t('fields.name')} *</label>
               <input
                 type="text"
                 id="name"
@@ -140,7 +142,7 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('fields.email')}</label>
             <input
               type="email"
               id="email"
@@ -149,11 +151,11 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
               disabled
               className="input-disabled"
             />
-            <small>L'email ne peut pas etre modifie ici. Contactez le support pour changer d'email.</small>
+            <small>{t('hints.emailDisabled')}</small>
           </div>
 
           <div className="form-group">
-            <label htmlFor="phone">Telephone</label>
+            <label htmlFor="phone">{t('fields.phone')}</label>
             <input
               type="tel"
               id="phone"
@@ -166,10 +168,10 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
         </div>
 
         <div className="form-section">
-          <h3>Adresse</h3>
+          <h3>{t('sections.address')}</h3>
 
           <div className="form-group">
-            <label htmlFor="address">Adresse</label>
+            <label htmlFor="address">{t('fields.address')}</label>
             <input
               type="text"
               id="address"
@@ -182,7 +184,7 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="zip">Code postal</label>
+              <label htmlFor="zip">{t('fields.zip')}</label>
               <input
                 type="text"
                 id="zip"
@@ -193,7 +195,7 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="city">Ville</label>
+              <label htmlFor="city">{t('fields.city')}</label>
               <input
                 type="text"
                 id="city"
@@ -206,7 +208,7 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="country">Pays</label>
+            <label htmlFor="country">{t('fields.country')}</label>
             <input
               type="text"
               id="country"
@@ -215,15 +217,15 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
               disabled
               className="input-disabled"
             />
-            <small>Le pays ne peut pas etre modifie. Contactez le support si necessaire.</small>
+            <small>{t('hints.countryDisabled')}</small>
           </div>
         </div>
 
         <div className="form-section">
-          <h3>Preferences</h3>
+          <h3>{t('sections.preferences')}</h3>
 
           <div className="form-group">
-            <label htmlFor="language">Langue</label>
+            <label htmlFor="language">{t('fields.language')}</label>
             <input
               type="text"
               id="language"
@@ -232,18 +234,18 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
               disabled
               className="input-disabled"
             />
-            <small>La langue est geree dans les parametres du Manager.</small>
+            <small>{t('hints.languageDisabled')}</small>
           </div>
 
           <div className="form-group">
-            <label>Nichandle</label>
+            <label>{t('fields.nichandle')}</label>
             <input
               type="text"
               value={user?.nichandle || ""}
               disabled
               className="input-disabled"
             />
-            <small>Votre identifiant client OVHcloud (non modifiable).</small>
+            <small>{t('hints.nichandleDisabled')}</small>
           </div>
         </div>
 
@@ -267,10 +269,10 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
 
         <div className="form-actions">
           <button type="button" className="btn btn-secondary" onClick={handleReset} disabled={loading}>
-            Reinitialiser
+            {t('buttons.reset')}
           </button>
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Enregistrement..." : "Enregistrer les modifications"}
+            {loading ? t('buttons.saving') : t('buttons.save')}
           </button>
         </div>
       </form>

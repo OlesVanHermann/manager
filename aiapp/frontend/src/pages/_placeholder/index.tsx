@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import "./styles.css";
 
 interface PlaceholderPageProps {
@@ -7,6 +8,8 @@ interface PlaceholderPageProps {
 }
 
 export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
+  const { t } = useTranslation('placeholder');
+
   return (
     <div className="placeholder-page">
       <div className="placeholder-content">
@@ -17,13 +20,10 @@ export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
         </div>
         <h1>{title}</h1>
         <p className="placeholder-description">
-          {description || "Cette fonctionnalite est en cours de developpement dans le nouveau manager."}
+          {description || t('defaultDescription')}
         </p>
         <div className="placeholder-info">
-          <p>
-            Nous travaillons activement sur cette section.
-            Elle sera disponible prochainement avec toutes les fonctionnalites.
-          </p>
+          <p>{t('workingMessage')}</p>
         </div>
       </div>
     </div>

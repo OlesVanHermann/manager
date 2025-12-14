@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { OvhUser } from "../../../../types/auth.types";
 
 interface ProfileTileProps {
@@ -5,13 +6,17 @@ interface ProfileTileProps {
   onEditProfile?: () => void;
 }
 
-function formatSupportLevel(level: string | undefined): string {
-  if (!level) return "Standard";
-  return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
-}
-
 export default function ProfileTile({ user, onEditProfile }: ProfileTileProps) {
-  const supportLevel = formatSupportLevel(user?.supportLevel?.level);
+  const { t } = useTranslation('home/account/index');
+  const { t: tNav } = useTranslation('navigation');
+
+  const getSupportLevelLabel = (level: string | undefined): string => {
+    if (!level) return tNav('userMenu.supportLevel.standard');
+    const key = level.toLowerCase();
+    return tNav(`userMenu.supportLevel.${key}`, { defaultValue: level });
+  };
+
+  const supportLevel = getSupportLevelLabel(user?.supportLevel?.level);
   const customerCode = user?.customerCode || "-";
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -23,7 +28,7 @@ export default function ProfileTile({ user, onEditProfile }: ProfileTileProps) {
 
   return (
     <div className="tile">
-      <h2 className="tile-header">Mon profil</h2>
+      <h2 className="tile-header">{t('profile.title')}</h2>
       <div className="tile-content">
         <div className="profile-info">
           <div className="profile-icon">
@@ -38,21 +43,21 @@ export default function ProfileTile({ user, onEditProfile }: ProfileTileProps) {
             </div>
             
             <dl className="profile-dl">
-              <dt>Nichandle</dt>
+              <dt>{t('profile.nichandle')}</dt>
               <dd>{user?.nichandle}</dd>
-              <dt>Code client</dt>
+              <dt>{t('profile.customerCode')}</dt>
               <dd>{customerCode}</dd>
             </dl>
             
             <p className="profile-support">
-              Mon niveau de support : <span>{supportLevel}</span>
+              {t('profile.supportLevel')} : <span>{supportLevel}</span>
             </p>
           </div>
         </div>
         
         <div className="tile-footer">
           <button onClick={handleEditClick} className="btn btn-secondary">
-            Editer mon profil
+            {t('profile.editButton')}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { OvhCredentials } from "../../../types/auth.types";
 import * as accountService from "../../../services/account.service";
 
@@ -15,6 +16,8 @@ function getCredentials(): OvhCredentials | null {
 }
 
 export default function AdvancedTab() {
+  const { t } = useTranslation('home/account/advanced');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -30,7 +33,7 @@ export default function AdvancedTab() {
   const loadSettings = async () => {
     const credentials = getCredentials();
     if (!credentials) {
-      setError("Non authentifié");
+      setError(t('errors.notAuthenticated'));
       setLoading(false);
       return;
     }
@@ -46,7 +49,7 @@ export default function AdvancedTab() {
       setBetaEnabled(betaPref);
       setDeveloperMode(devMode.enabled);
     } catch {
-      setError("Erreur lors du chargement des paramètres");
+      setError(t('errors.loadError'));
     } finally {
       setLoading(false);
     }
@@ -72,9 +75,9 @@ export default function AdvancedTab() {
     try {
       await accountService.setBetaPreference(credentials, enabled);
       setBetaEnabled(enabled);
-      showSuccess("Vos préférences ont été enregistrées");
+      showSuccess(t('success.preferencesSaved'));
     } catch {
-      showError("Une erreur est survenue lors de la modification de vos préférences");
+      showError(t('errors.saveFailed'));
       setBetaEnabled(!enabled);
     } finally {
       setSavingBeta(false);
@@ -91,10 +94,10 @@ export default function AdvancedTab() {
     try {
       await accountService.updateDeveloperMode(credentials, enabled);
       setDeveloperMode(enabled);
-      showSuccess(enabled ? "Mode développeur activé" : "Mode développeur désactivé");
+      showSuccess(enabled ? t('success.devModeEnabled') : t('success.devModeDisabled'));
     } catch {
       setDeveloperMode(enabled);
-      showSuccess("Préférence enregistrée localement");
+      showSuccess(t('success.savedLocally'));
     } finally {
       setSavingDev(false);
     }
@@ -135,7 +138,7 @@ export default function AdvancedTab() {
       <div className="advanced-tab">
         <div className="loading-state">
           <div className="spinner"></div>
-          <p>Chargement des paramètres...</p>
+          <p>{tCommon('loading')}</p>
         </div>
       </div>
     );
@@ -148,7 +151,7 @@ export default function AdvancedTab() {
 
       {/* Section Beta */}
       <div className="advanced-section">
-        <h2>Fonctionnalités Bêta</h2>
+        <h2>{t('beta.title')}</h2>
         <div className="advanced-box">
           {savingBeta ? (
             <div className="spinner spinner-sm"></div>
@@ -161,7 +164,7 @@ export default function AdvancedTab() {
                 disabled={savingBeta}
               />
               <span className="checkmark"></span>
-              <span className="checkbox-label">Activer les fonctionnalités Bêta</span>
+              <span className="checkbox-label">{t('beta.enableLabel')}</span>
             </label>
           )}
         </div>
@@ -169,20 +172,20 @@ export default function AdvancedTab() {
 
       {/* Section Développeur */}
       <div className="advanced-section">
-        <h2>Options développeurs</h2>
+        <h2>{t('developer.title')}</h2>
 
         <div className="developer-features">
           <div className="developer-feature">
             <div className="developer-feature-icon"><IconDesktop /></div>
-            <p>Les interfaces du manager OVHcloud sont <strong>open source</strong></p>
+            <p>{t('developer.features.openSource')}</p>
           </div>
           <div className="developer-feature">
             <div className="developer-feature-icon"><IconPuzzle /></div>
-            <p>Bibliothèque de <strong>composants réutilisables</strong></p>
+            <p>{t('developer.features.components')}</p>
           </div>
           <div className="developer-feature">
             <div className="developer-feature-icon"><IconCode /></div>
-            <p>Accédez à la <strong>console API</strong> OVHcloud</p>
+            <p>{t('developer.features.apiConsole')}</p>
           </div>
         </div>
 
@@ -198,12 +201,12 @@ export default function AdvancedTab() {
               <span className="toggle-slider"></span>
             </div>
             <span className="toggle-label">
-              {savingDev ? "Enregistrement..." : "Mode développeur"}
+              {savingDev ? t('developer.saving') : t('developer.modeLabel')}
             </span>
           </label>
         </div>
 
-        <h3>Rejoignez-nous</h3>
+        <h3>{t('developer.joinUs')}</h3>
         <ul className="developer-links">
           <li>
             <a href="https://github.com/ovh" target="_blank" rel="noopener noreferrer">

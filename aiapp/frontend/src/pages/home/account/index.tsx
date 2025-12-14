@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { OvhUser } from "../../../types/auth.types";
 import ProfileTile from "./components/ProfileTile";
 import ShortcutsTile from "./components/ShortcutsTile";
@@ -24,18 +25,6 @@ interface AccountPageProps {
   initialTab?: string;
 }
 
-const tabs = [
-  { id: "info", label: "Informations générales" },
-  { id: "edit", label: "Éditer mon compte" },
-  { id: "security", label: "Sécurité" },
-  { id: "gdpr", label: "Données personnelles" },
-  { id: "advanced", label: "Paramètres avancés" },
-  { id: "contacts-services", label: "Mes services (contacts)" },
-  { id: "contacts-requests", label: "Mes demandes (contacts)" },
-  { id: "kyc", label: "Documents KYC" },
-];
-
-// Mapping des IDs de navigation vers les IDs de tabs
 const tabIdMap: Record<string, string> = {
   "account-info": "info",
   "account-edit": "edit",
@@ -48,13 +37,24 @@ const tabIdMap: Record<string, string> = {
 };
 
 export default function AccountPage({ user, isActive, onNavigate, initialTab }: AccountPageProps) {
+  const { t } = useTranslation('home/account/index');
   const [activeTab, setActiveTab] = useState("info");
 
-  // Sync avec initialTab
+  const tabs = [
+    { id: "info", label: t('tabs.info') },
+    { id: "edit", label: t('tabs.edit') },
+    { id: "security", label: t('tabs.security') },
+    { id: "gdpr", label: t('tabs.gdpr') },
+    { id: "advanced", label: t('tabs.advanced') },
+    { id: "contacts-services", label: t('tabs.contactsServices') },
+    { id: "contacts-requests", label: t('tabs.contactsRequests') },
+    { id: "kyc", label: t('tabs.kyc') },
+  ];
+
   useEffect(() => {
     if (initialTab) {
       const mappedTab = tabIdMap[initialTab] || initialTab;
-      if (tabs.find(t => t.id === mappedTab)) {
+      if (tabs.find(tab => tab.id === mappedTab)) {
         setActiveTab(mappedTab);
       }
     }
@@ -68,40 +68,23 @@ export default function AccountPage({ user, isActive, onNavigate, initialTab }: 
     }
   };
 
-  const handleEditProfile = () => {
-    setActiveTab("edit");
-  };
-
-  const handleViewBill = () => {
-    if (onNavigate) {
-      onNavigate("home-billing", { tab: "billing-invoices" });
-    }
-  };
+  const handleEditProfile = () => setActiveTab("edit");
+  const handleViewBill = () => onNavigate?.("home-billing", { tab: "billing-invoices" });
 
   return (
     <div className="account-page">
       <div className="page-header">
         <div className="page-header-content">
-          <h1>Mon compte</h1>
-          <p className="page-subtitle">
-            Administrez votre compte client. Dans cette rubrique, vous gérez la sécurité de votre compte et vos paramètres.
-          </p>
+          <h1>{t('title')}</h1>
+          <p className="page-subtitle">{t('subtitle')}</p>
         </div>
-        <a href="https://help.ovhcloud.com" target="_blank" rel="noopener noreferrer" className="guides-link">
-          Guides
-        </a>
+        <a href="https://help.ovhcloud.com" target="_blank" rel="noopener noreferrer" className="guides-link">{t('guides')}</a>
       </div>
 
       <div className="tabs-container">
         <div className="tabs-list">
           {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={"tab-btn" + (activeTab === tab.id ? " active" : "")}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
+            <button key={tab.id} className={"tab-btn" + (activeTab === tab.id ? " active" : "")} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
           ))}
         </div>
       </div>
@@ -126,9 +109,11 @@ export default function AccountPage({ user, isActive, onNavigate, initialTab }: 
 }
 
 // ============================================================
-// CONTACTS SERVICES TAB - Gestion des contacts par service
+// CONTACTS SERVICES TAB
 // ============================================================
 function ContactsServicesTab() {
+  const { t } = useTranslation('home/account/contacts-services');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [services, setServices] = useState<contactsService.ServiceContact[]>([]);
@@ -140,64 +125,45 @@ function ContactsServicesTab() {
     setError(null);
     try {
       const creds = getCredentials();
-      if (!creds) {
-        setError("Authentification requise");
-        return;
-      }
+      if (!creds) { setError(t('errors.authRequired')); return; }
       const data = await contactsService.getServiceContacts(creds);
       setServices(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur de chargement");
+      setError(err instanceof Error ? err.message : t('errors.loadError'));
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="tab-content">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Chargement des services...</p>
-        </div>
-      </div>
-    );
+    return <div className="tab-content"><div className="loading-state"><div className="spinner"></div><p>{t('loading')}</p></div></div>;
   }
 
   if (error) {
-    return (
-      <div className="tab-content">
-        <div className="error-banner">
-          {error}
-          <button onClick={loadServices} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button>
-        </div>
-      </div>
-    );
+    return <div className="tab-content"><div className="error-banner">{error}<button onClick={loadServices} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
   }
 
   return (
     <div className="tab-content">
       <div className="section-header">
-        <h2>Mes services</h2>
-        <p>Gérez les contacts associés à chacun de vos services. Un changement de contact nécessite la validation du nouveau contact.</p>
+        <h2>{t('title')}</h2>
+        <p>{t('description')}</p>
       </div>
 
       {services.length === 0 ? (
-        <div className="empty-state">
-          <p>Aucun service avec contacts trouvé.</p>
-        </div>
+        <div className="empty-state"><p>{t('empty')}</p></div>
       ) : (
         <div className="contacts-table-container">
-          <p style={{ marginBottom: "1rem", color: "var(--color-text-secondary)" }}>{services.length} service(s)</p>
+          <p style={{ marginBottom: "1rem", color: "var(--color-text-secondary)" }}>{t('count', { count: services.length })}</p>
           <table className="contacts-table">
             <thead>
               <tr>
-                <th>Service</th>
-                <th>Type</th>
-                <th>Contact Admin</th>
-                <th>Contact Tech</th>
-                <th>Contact Facturation</th>
-                <th>Actions</th>
+                <th>{t('columns.service')}</th>
+                <th>{t('columns.type')}</th>
+                <th>{t('columns.admin')}</th>
+                <th>{t('columns.tech')}</th>
+                <th>{t('columns.billing')}</th>
+                <th>{t('columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -208,16 +174,7 @@ function ContactsServicesTab() {
                   <td><code className="contact-code">{service.contactAdmin}</code></td>
                   <td><code className="contact-code">{service.contactTech}</code></td>
                   <td><code className="contact-code">{service.contactBilling}</code></td>
-                  <td>
-                    <a
-                      href={`https://www.ovh.com/manager/#/dedicated/contacts/services/${encodeURIComponent(service.serviceName)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-outline btn-sm"
-                    >
-                      Modifier
-                    </a>
-                  </td>
+                  <td><a href={"https://www.ovh.com/manager/#/dedicated/contacts/services/" + encodeURIComponent(service.serviceName)} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">{tCommon('actions.edit')}</a></td>
                 </tr>
               ))}
             </tbody>
@@ -229,9 +186,11 @@ function ContactsServicesTab() {
 }
 
 // ============================================================
-// CONTACTS REQUESTS TAB - Demandes de changement de contact
+// CONTACTS REQUESTS TAB
 // ============================================================
 function ContactsRequestsTab() {
+  const { t, i18n } = useTranslation('home/account/contacts-requests');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [requests, setRequests] = useState<contactsService.ContactChange[]>([]);
@@ -244,108 +203,76 @@ function ContactsRequestsTab() {
     setError(null);
     try {
       const creds = getCredentials();
-      if (!creds) {
-        setError("Authentification requise");
-        return;
-      }
+      if (!creds) { setError(t('errors.authRequired')); return; }
       const data = await contactsService.getContactChanges(creds);
       setRequests(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur de chargement");
+      setError(err instanceof Error ? err.message : t('errors.loadError'));
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  const formatDate = (d: string) => new Date(d).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { day: "numeric", month: "short", year: "numeric" });
 
   const getStatusBadge = (state: string) => {
     const map: Record<string, { label: string; className: string }> = {
-      todo: { label: "En attente", className: "badge-warning" },
-      doing: { label: "En cours", className: "badge-info" },
-      done: { label: "Terminé", className: "badge-success" },
-      refused: { label: "Refusé", className: "badge-error" },
-      validatingByCustomers: { label: "Validation client", className: "badge-warning" },
+      todo: { label: t('status.todo'), className: "badge-warning" },
+      doing: { label: t('status.doing'), className: "badge-info" },
+      done: { label: t('status.done'), className: "badge-success" },
+      refused: { label: t('status.refused'), className: "badge-error" },
+      validatingByCustomers: { label: t('status.validating'), className: "badge-warning" },
     };
     return map[state] || { label: state, className: "badge-neutral" };
   };
 
   const getContactTypeName = (type: string) => {
     const map: Record<string, string> = {
-      contactAdmin: "Administrateur",
-      contactTech: "Technique",
-      contactBilling: "Facturation",
+      contactAdmin: t('contactTypes.admin'),
+      contactTech: t('contactTypes.tech'),
+      contactBilling: t('contactTypes.billing'),
     };
     return map[type] || type;
   };
 
   const pendingStates = ["todo", "doing", "validatingByCustomers"];
-  const filteredRequests = filter === "pending"
-    ? requests.filter(r => pendingStates.includes(r.state))
-    : requests;
+  const filteredRequests = filter === "pending" ? requests.filter(r => pendingStates.includes(r.state)) : requests;
+  const pendingCount = requests.filter(r => pendingStates.includes(r.state)).length;
 
   if (loading) {
-    return (
-      <div className="tab-content">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Chargement des demandes...</p>
-        </div>
-      </div>
-    );
+    return <div className="tab-content"><div className="loading-state"><div className="spinner"></div><p>{t('loading')}</p></div></div>;
   }
 
   if (error) {
-    return (
-      <div className="tab-content">
-        <div className="error-banner">
-          {error}
-          <button onClick={loadRequests} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button>
-        </div>
-      </div>
-    );
+    return <div className="tab-content"><div className="error-banner">{error}<button onClick={loadRequests} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
   }
-
-  const pendingCount = requests.filter(r => pendingStates.includes(r.state)).length;
 
   return (
     <div className="tab-content">
       <div className="section-header">
-        <h2>Mes demandes de changement de contact</h2>
-        <p>Suivez et validez les demandes de transfert de contact. Vous recevrez un email avec un lien de validation.</p>
+        <h2>{t('title')}</h2>
+        <p>{t('description')}</p>
       </div>
 
       <div className="filter-bar">
-        <button
-          className={"filter-btn" + (filter === "pending" ? " active" : "")}
-          onClick={() => setFilter("pending")}
-        >
-          En attente ({pendingCount})
-        </button>
-        <button
-          className={"filter-btn" + (filter === "all" ? " active" : "")}
-          onClick={() => setFilter("all")}
-        >
-          Toutes ({requests.length})
-        </button>
+        <button className={"filter-btn" + (filter === "pending" ? " active" : "")} onClick={() => setFilter("pending")}>{t('filters.pending')} ({pendingCount})</button>
+        <button className={"filter-btn" + (filter === "all" ? " active" : "")} onClick={() => setFilter("all")}>{t('filters.all')} ({requests.length})</button>
       </div>
 
       {filteredRequests.length === 0 ? (
-        <div className="empty-state">
-          <p>Aucune demande {filter === "pending" ? "en attente" : ""}</p>
-        </div>
+        <div className="empty-state"><p>{filter === "pending" ? t('empty.pending') : t('empty.all')}</p></div>
       ) : (
         <div className="contacts-table-container">
           <table className="contacts-table">
             <thead>
               <tr>
-                <th>Service</th>
-                <th>Type de contact</th>
-                <th>De</th>
-                <th>Vers</th>
-                <th>Date</th>
-                <th>Statut</th>
-                <th>Actions</th>
+                <th>{t('columns.service')}</th>
+                <th>{t('columns.contactType')}</th>
+                <th>{t('columns.from')}</th>
+                <th>{t('columns.to')}</th>
+                <th>{t('columns.date')}</th>
+                <th>{t('columns.status')}</th>
+                <th>{t('columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -358,21 +285,8 @@ function ContactsRequestsTab() {
                     <td><code className="contact-code">{req.from}</code></td>
                     <td><code className="contact-code">{req.to}</code></td>
                     <td>{formatDate(req.askDate)}</td>
-                    <td>
-                      <span className={`status-badge ${status.className}`}>{status.label}</span>
-                    </td>
-                    <td>
-                      {pendingStates.includes(req.state) && (
-                        <a
-                          href={`https://www.ovh.com/manager/#/dedicated/contacts/requests/${req.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-outline btn-sm"
-                        >
-                          Gérer
-                        </a>
-                      )}
-                    </td>
+                    <td><span className={"status-badge " + status.className}>{status.label}</span></td>
+                    <td>{pendingStates.includes(req.state) && <a href={"https://www.ovh.com/manager/#/dedicated/contacts/requests/" + req.id} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">{t('actions.manage')}</a>}</td>
                   </tr>
                 );
               })}
@@ -385,9 +299,11 @@ function ContactsRequestsTab() {
 }
 
 // ============================================================
-// KYC TAB - Documents KYC / Vérification d'identité
+// KYC TAB
 // ============================================================
 function KycTab() {
+  const { t } = useTranslation('home/account/kyc');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<proceduresService.FraudStatus | null>(null);
@@ -401,64 +317,29 @@ function KycTab() {
       const data = await proceduresService.getFraudStatus();
       setStatus(data);
     } catch (err) {
-      // Si erreur 404, pas de procédure en cours
       setStatus({ status: "none" });
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusInfo = (status: string) => {
+  const getStatusInfo = (statusVal: string) => {
     const map: Record<string, { label: string; className: string; description: string }> = {
-      required: { 
-        label: "Documents requis", 
-        className: "badge-warning",
-        description: "OVHcloud a besoin de vérifier votre identité. Veuillez soumettre les documents demandés."
-      },
-      pending: { 
-        label: "En cours de vérification", 
-        className: "badge-info",
-        description: "Vos documents ont été reçus et sont en cours d'examen par nos équipes."
-      },
-      open: { 
-        label: "Procédure en cours", 
-        className: "badge-info",
-        description: "Une procédure de vérification est en cours sur votre compte."
-      },
-      closed: { 
-        label: "Vérifié", 
-        className: "badge-success",
-        description: "Votre identité a été vérifiée avec succès."
-      },
-      none: { 
-        label: "Aucune procédure", 
-        className: "badge-neutral",
-        description: "Aucune vérification de documents n'est requise pour le moment."
-      },
+      required: { label: t('status.required.label'), className: "badge-warning", description: t('status.required.description') },
+      pending: { label: t('status.pending.label'), className: "badge-info", description: t('status.pending.description') },
+      open: { label: t('status.open.label'), className: "badge-info", description: t('status.open.description') },
+      closed: { label: t('status.closed.label'), className: "badge-success", description: t('status.closed.description') },
+      none: { label: t('status.none.label'), className: "badge-neutral", description: t('status.none.description') },
     };
-    return map[status] || map.none;
+    return map[statusVal] || map.none;
   };
 
   if (loading) {
-    return (
-      <div className="tab-content">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Chargement du statut KYC...</p>
-        </div>
-      </div>
-    );
+    return <div className="tab-content"><div className="loading-state"><div className="spinner"></div><p>{t('loading')}</p></div></div>;
   }
 
   if (error) {
-    return (
-      <div className="tab-content">
-        <div className="error-banner">
-          {error}
-          <button onClick={loadStatus} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button>
-        </div>
-      </div>
-    );
+    return <div className="tab-content"><div className="error-banner">{error}<button onClick={loadStatus} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
   }
 
   const statusInfo = getStatusInfo(status?.status || "none");
@@ -466,82 +347,45 @@ function KycTab() {
   return (
     <div className="tab-content">
       <div className="section-header">
-        <h2>Documents KYC</h2>
-        <p>
-          La procédure KYC (Know Your Customer) permet de vérifier votre identité conformément aux réglementations en vigueur.
-        </p>
+        <h2>{t('title')}</h2>
+        <p>{t('description')}</p>
       </div>
 
-      <div className="kyc-status-card" style={{ 
-        padding: "2rem", 
-        background: "var(--color-background-subtle)", 
-        borderRadius: "12px",
-        marginBottom: "1.5rem"
-      }}>
+      <div className="kyc-status-card" style={{ padding: "2rem", background: "var(--color-background-subtle)", borderRadius: "12px", marginBottom: "1.5rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
-          <span className={`status-badge ${statusInfo.className}`} style={{ fontSize: "1rem", padding: "0.5rem 1rem" }}>
-            {statusInfo.label}
-          </span>
+          <span className={"status-badge " + statusInfo.className} style={{ fontSize: "1rem", padding: "0.5rem 1rem" }}>{statusInfo.label}</span>
         </div>
-        <p style={{ color: "var(--color-text-secondary)", marginBottom: "1.5rem" }}>
-          {statusInfo.description}
-        </p>
+        <p style={{ color: "var(--color-text-secondary)", marginBottom: "1.5rem" }}>{statusInfo.description}</p>
 
         {status?.status === "required" && (
           <div className="kyc-required-section">
-            <h4 style={{ marginBottom: "1rem" }}>Documents généralement demandés :</h4>
+            <h4 style={{ marginBottom: "1rem" }}>{t('required.documentsTitle')}</h4>
             <ul style={{ marginLeft: "1.5rem", marginBottom: "1.5rem", color: "var(--color-text-secondary)" }}>
-              <li>Pièce d'identité (carte d'identité, passeport, permis de conduire)</li>
-              <li>Justificatif de domicile de moins de 3 mois</li>
-              <li>Pour les entreprises : extrait Kbis ou équivalent</li>
+              <li>{t('required.doc1')}</li>
+              <li>{t('required.doc2')}</li>
+              <li>{t('required.doc3')}</li>
             </ul>
-            <a
-              href="https://www.ovh.com/manager/#/dedicated/useraccount/kyc-documents"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary"
-            >
-              Soumettre mes documents
-            </a>
+            <a href="https://www.ovh.com/manager/#/dedicated/useraccount/kyc-documents" target="_blank" rel="noopener noreferrer" className="btn btn-primary">{t('required.submitButton')}</a>
           </div>
         )}
 
         {status?.status === "pending" && (
           <div className="kyc-pending-section">
-            <p style={{ color: "var(--color-text-secondary)" }}>
-              Le délai de traitement est généralement de 2 à 5 jours ouvrés. Vous serez notifié par email une fois la vérification terminée.
-            </p>
+            <p style={{ color: "var(--color-text-secondary)" }}>{t('pending.processingTime')}</p>
           </div>
         )}
 
         {status?.status === "none" && (
           <div className="kyc-none-section">
-            <p style={{ color: "var(--color-text-secondary)" }}>
-              Si une vérification est requise à l'avenir, vous en serez informé par email.
-            </p>
+            <p style={{ color: "var(--color-text-secondary)" }}>{t('none.futureNotice')}</p>
           </div>
         )}
       </div>
 
-      <div className="kyc-info" style={{ 
-        padding: "1.5rem", 
-        border: "1px solid var(--color-border)", 
-        borderRadius: "8px",
-        background: "var(--color-background)"
-      }}>
-        <h4 style={{ marginBottom: "0.5rem" }}>À propos de la vérification KYC</h4>
-        <p style={{ color: "var(--color-text-secondary)", fontSize: "0.9rem", marginBottom: "1rem" }}>
-          La vérification de votre identité nous permet de sécuriser votre compte et de respecter les réglementations anti-fraude.
-          Vos documents sont traités de manière confidentielle et sécurisée.
-        </p>
-        <a
-          href="https://www.ovhcloud.com/fr/terms-and-conditions/privacy-policy/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: "var(--color-primary)", fontSize: "0.9rem" }}
-        >
-          Consulter notre politique de confidentialité →
-        </a>
+      <div className="kyc-info" style={{ padding: "1.5rem", border: "1px solid var(--color-border)", borderRadius: "8px", background: "var(--color-background)" }}>
+        <h4 style={{ marginBottom: "0.5rem" }}>{t('info.title')}</h4>
+        <p style={{ color: "var(--color-text-secondary)", fontSize: "0.9rem", marginBottom: "1rem" }}>{t('info.description')}</p>
+        <a href="https://www.ovhcloud.com/fr/terms-and-conditions/privacy-policy/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-primary)", fontSize: "0.9rem" }}>{t('info.privacyLink')}</a>
       </div>
     </div>
   );

@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import * as billingService from "../../../../services/billing.service";
 import { TabProps, formatDate, isNotFoundError } from "../utils";
 import { StarIcon } from "../icons";
 
 export function FidelityTab({ credentials }: TabProps) {
+  const { t } = useTranslation('home/billing/tabs');
+  const { t: tCommon } = useTranslation('common');
   const [account, setAccount] = useState<billingService.FidelityAccount | null>(null);
   const [movements, setMovements] = useState<billingService.FidelityMovement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,31 +26,31 @@ export function FidelityTab({ credentials }: TabProps) {
       setMovements(mvts);
     } catch (err) {
       if (isNotFoundError(err)) { setNotAvailable(true); }
-      else { setError(err instanceof Error ? err.message : "Erreur de chargement"); }
+      else { setError(err instanceof Error ? err.message : t('errors.loadError')); }
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement...</p></div></div>;
+  if (loading) return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>{tCommon('loading')}</p></div></div>;
   if (error) return <div className="tab-panel"><div className="error-banner">{error}</div></div>;
-  if (notAvailable) return <div className="tab-panel"><div className="empty-state"><StarIcon /><h3>Programme de fidélité non disponible</h3><p>Le programme de fidélité n'est pas activé pour votre compte OVH.</p></div></div>;
+  if (notAvailable) return <div className="tab-panel"><div className="empty-state"><StarIcon /><h3>{t('fidelity.notAvailable.title')}</h3><p>{t('fidelity.notAvailable.description')}</p></div></div>;
 
   return (
     <div className="tab-panel">
       <div className="points-card">
-        <h3>Mes points de fidélité</h3>
-        <div className="points-amount">{account?.balance || 0} points</div>
-        <p className="points-info">Cumulez des points à chaque commande et convertissez-les en réduction sur vos prochains achats.</p>
-        {account?.canBeCredited && <a href="https://www.ovh.com/fr/order/express/#/express/review?products=~(~(planCode~'fidelity~quantity~1))" target="_blank" rel="noopener noreferrer" className="btn btn-white">Utiliser mes points</a>}
+        <h3>{t('fidelity.myPoints')}</h3>
+        <div className="points-amount">{account?.balance || 0} {t('fidelity.points')}</div>
+        <p className="points-info">{t('fidelity.info')}</p>
+        {account?.canBeCredited && <a href="https://www.ovh.com/fr/order/express/#/express/review?products=~(~(planCode~'fidelity~quantity~1))" target="_blank" rel="noopener noreferrer" className="btn btn-white">{t('fidelity.usePoints')}</a>}
       </div>
-      <h4>Historique des points</h4>
+      <h4>{t('fidelity.history')}</h4>
       {movements.length === 0 ? (
-        <div className="empty-state small"><p>Aucun historique de points</p></div>
+        <div className="empty-state small"><p>{t('fidelity.noHistory')}</p></div>
       ) : (
         <div className="table-container">
           <table className="data-table">
-            <thead><tr><th>Date</th><th>Opération</th><th>Crédit</th><th>Débit</th><th>Solde</th></tr></thead>
+            <thead><tr><th>{t('columns.date')}</th><th>{t('columns.operation')}</th><th>{t('columns.credit')}</th><th>{t('columns.debit')}</th><th>{t('columns.balance')}</th></tr></thead>
             <tbody>
               {movements.map((m) => (
                 <tr key={m.movementId}>

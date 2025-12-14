@@ -4,7 +4,8 @@
 // NAV3 (sous-sections) = géré à l'intérieur de chaque page
 // ============================================================
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
+import { useTranslation } from "react-i18next";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import HomePage from "./pages/home";
@@ -21,6 +22,7 @@ import * as authService from "./services/auth.service";
 import type { OvhCredentials, OvhUser } from "./types/auth.types";
 import type { Resource, Universe, UniversSection } from "./components/Sidebar/navigationTree";
 import "./design-system/tokens.css";
+import "./i18n";
 
 const STORAGE_KEY = "ovh_credentials";
 
@@ -34,6 +36,8 @@ interface UniversTabsProps {
 }
 
 function UniversTabs({ universes, activeUniverseId, onUniverseChange }: UniversTabsProps) {
+  const { t } = useTranslation('navigation');
+  
   return (
     <nav className="univers-tabs">
       {universes.map((u) => (
@@ -42,7 +46,7 @@ function UniversTabs({ universes, activeUniverseId, onUniverseChange }: UniversT
           className={`univers-tab ${activeUniverseId === u.id ? "active" : ""}`}
           onClick={() => onUniverseChange(u.id)}
         >
-          {u.label}
+          {t(u.i18nKey)}
         </button>
       ))}
     </nav>
@@ -59,6 +63,8 @@ interface SectionTabsProps {
 }
 
 function SectionTabs({ sections, activeSectionId, onSectionChange }: SectionTabsProps) {
+  const { t } = useTranslation('navigation');
+  
   if (!sections || sections.length === 0) return null;
   return (
     <nav className="section-tabs">
@@ -68,7 +74,7 @@ function SectionTabs({ sections, activeSectionId, onSectionChange }: SectionTabs
           className={`section-tab ${activeSectionId === s.id ? "active" : ""}`}
           onClick={() => onSectionChange(s.id)}
         >
-          {s.label}
+          {t(s.i18nKey)}
         </button>
       ))}
       {sections.length > 10 && (
@@ -99,9 +105,23 @@ function UserMenu({ user, onClick }: UserMenuProps) {
 }
 
 // ============================================================
+// LOADING FALLBACK
+// ============================================================
+function LoadingFallback() {
+  const { t } = useTranslation('common');
+  return (
+    <div className="app-loading">
+      <div className="loading-text">{t('loading')}</div>
+    </div>
+  );
+}
+
+// ============================================================
 // MAIN APP CONTENT
 // ============================================================
 function AppContent() {
+  const { t } = useTranslation('common');
+  const { t: tNav } = useTranslation('navigation');
   const { isLoading, logout } = useAuth();
   const [user, setUser] = useState<OvhUser | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -188,7 +208,7 @@ function AppContent() {
   if (checking || isLoading) {
     return (
       <div className="app-loading">
-        <div className="loading-text">Chargement...</div>
+        <div className="loading-text">{t('loading')}</div>
       </div>
     );
   }
@@ -243,11 +263,13 @@ function AppContent() {
 
     // ==================== Autres univers - Placeholder ====================
     const activeSection = activeUniverse?.sections.find((s) => s.id === activeSectionId);
+    const universeLabel = activeUniverse ? tNav(activeUniverse.i18nKey) : t('empty.title');
+    const sectionLabel = activeSection ? tNav(activeSection.i18nKey) : '';
+    
     return (
       <PlaceholderPage
-        title={`${activeUniverse?.label || "Univers"} - ${activeSection?.label || "Section"}`}
-        description="Cette section est en cours de développement."
-        oldManagerPath="#/"
+        universeI18nKey={activeUniverse?.i18nKey}
+        sectionI18nKey={activeSection?.i18nKey}
       />
     );
   };
@@ -309,8 +331,10 @@ function AppContent() {
 // ============================================================
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <Suspense fallback={<LoadingFallback />}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </Suspense>
   );
 }

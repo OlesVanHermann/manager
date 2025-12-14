@@ -4,20 +4,13 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type { OvhCredentials } from "../../types/auth.types";
 import * as iamService from "../../services/iam.service";
 import "./styles.css";
 
 const STORAGE_KEY = "ovh_credentials";
 
-const tabs = [
-  { id: "identities", label: "Identités" },
-  { id: "policies", label: "Politiques" },
-  { id: "groups", label: "Groupes" },
-  { id: "logs", label: "Logs" },
-];
-
-// Mapping des IDs de navigation vers les IDs de tabs
 const tabIdMap: Record<string, string> = {
   "iam-identities": "identities",
   "iam-policies": "policies",
@@ -36,9 +29,16 @@ function useCredentials(): OvhCredentials | null {
 }
 
 export default function IamPage({ initialTab = "identities" }: IamPageProps) {
+  const { t } = useTranslation('iam/index');
   const [activeTab, setActiveTab] = useState("identities");
 
-  // Sync avec initialTab (navigation externe)
+  const tabs = [
+    { id: "identities", label: t('tabs.identities') },
+    { id: "policies", label: t('tabs.policies') },
+    { id: "groups", label: t('tabs.groups') },
+    { id: "logs", label: t('tabs.logs') },
+  ];
+
   useEffect(() => {
     if (initialTab) {
       const mappedTab = tabIdMap[initialTab] || initialTab;
@@ -52,17 +52,14 @@ export default function IamPage({ initialTab = "identities" }: IamPageProps) {
     <div className="iam-page">
       <div className="page-header">
         <div className="page-header-content">
-          <h1>IAM - Gestion des identités et accès</h1>
-          <p className="page-description">
-            Gérez les identités, les politiques d'accès et les groupes de ressources de votre compte OVHcloud.
-          </p>
+          <h1>{t('title')}</h1>
+          <p className="page-description">{t('description')}</p>
         </div>
         <a href="https://docs.ovh.com/fr/iam/" target="_blank" rel="noopener noreferrer" className="guides-link">
-          Documentation IAM
+          {t('docsLink')}
         </a>
       </div>
 
-      {/* NAV3 - Tabs internes */}
       <div className="tabs-container">
         <nav className="tabs-list">
           {tabs.map((tab) => (
@@ -91,6 +88,8 @@ export default function IamPage({ initialTab = "identities" }: IamPageProps) {
 // IDENTITIES TAB
 // ============================================================
 function IdentitiesTab() {
+  const { t } = useTranslation('iam/index');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<iamService.IamUser[]>([]);
@@ -99,12 +98,12 @@ function IdentitiesTab() {
   useEffect(() => { loadUsers(); }, []);
 
   const loadUsers = async () => {
-    if (!credentials) { setError("Non authentifié"); setLoading(false); return; }
+    if (!credentials) { setError(t('errors.notAuthenticated')); setLoading(false); return; }
     try {
       const data = await iamService.getUsers(credentials);
       setUsers(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
+      setError(err instanceof Error ? err.message : t('errors.loadError'));
     } finally {
       setLoading(false);
     }
@@ -112,50 +111,50 @@ function IdentitiesTab() {
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
-      OK: { label: "Actif", className: "badge-success" },
-      DISABLED: { label: "Désactivé", className: "badge-error" },
-      PASSWORD_CHANGE_REQUIRED: { label: "MDP à changer", className: "badge-warning" },
+      OK: { label: t('identities.status.active'), className: "badge-success" },
+      DISABLED: { label: t('identities.status.disabled'), className: "badge-error" },
+      PASSWORD_CHANGE_REQUIRED: { label: t('identities.status.passwordChange'), className: "badge-warning" },
     };
     return statusMap[status] || { label: status, className: "badge-neutral" };
   };
 
   if (loading) {
-    return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement des identités...</p></div></div>;
+    return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>{t('identities.loading')}</p></div></div>;
   }
 
   if (error) {
-    return <div className="tab-panel"><div className="error-banner"><span>{error}</span><button onClick={loadUsers} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button></div></div>;
+    return <div className="tab-panel"><div className="error-banner"><span>{error}</span><button onClick={loadUsers} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
   }
 
   return (
     <div className="tab-panel identities-tab">
       <div className="section-intro">
-        <h2>Identités</h2>
-        <p>Gérez les utilisateurs et les identités qui ont accès à votre compte OVHcloud.</p>
+        <h2>{t('identities.title')}</h2>
+        <p>{t('identities.description')}</p>
       </div>
 
       <div className="toolbar">
-        <span className="result-count">{users.length} identité(s)</span>
-        <button className="btn btn-primary btn-sm">Ajouter une identité</button>
+        <span className="result-count">{t('identities.count', { count: users.length })}</span>
+        <button className="btn btn-primary btn-sm">{t('identities.addButton')}</button>
       </div>
 
       {users.length === 0 ? (
         <div className="empty-state">
           <UserIcon />
-          <h3>Aucune identité</h3>
-          <p>Créez des utilisateurs pour leur donner accès à votre compte.</p>
-          <button className="btn btn-primary">Ajouter une identité</button>
+          <h3>{t('identities.empty.title')}</h3>
+          <p>{t('identities.empty.description')}</p>
+          <button className="btn btn-primary">{t('identities.addButton')}</button>
         </div>
       ) : (
         <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Identifiant</th>
-                <th>Email</th>
-                <th>Groupe</th>
-                <th>Statut</th>
-                <th>Actions</th>
+                <th>{t('identities.columns.login')}</th>
+                <th>{t('identities.columns.email')}</th>
+                <th>{t('identities.columns.group')}</th>
+                <th>{t('identities.columns.status')}</th>
+                <th>{t('identities.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -168,7 +167,7 @@ function IdentitiesTab() {
                     <td>{user.group || "-"}</td>
                     <td><span className={`badge ${status.className}`}>{status.label}</span></td>
                     <td className="actions-cell">
-                      <button className="btn btn-outline btn-sm">Modifier</button>
+                      <button className="btn btn-outline btn-sm">{t('actions.edit')}</button>
                     </td>
                   </tr>
                 );
@@ -185,6 +184,8 @@ function IdentitiesTab() {
 // POLICIES TAB
 // ============================================================
 function PoliciesTab() {
+  const { t, i18n } = useTranslation('iam/index');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [policies, setPolicies] = useState<iamService.IamPolicy[]>([]);
@@ -193,12 +194,12 @@ function PoliciesTab() {
   useEffect(() => { loadPolicies(); }, []);
 
   const loadPolicies = async () => {
-    if (!credentials) { setError("Non authentifié"); setLoading(false); return; }
+    if (!credentials) { setError(t('errors.notAuthenticated')); setLoading(false); return; }
     try {
       const data = await iamService.getPolicies(credentials);
       setPolicies(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
+      setError(err instanceof Error ? err.message : t('errors.loadError'));
     } finally {
       setLoading(false);
     }
@@ -206,47 +207,47 @@ function PoliciesTab() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+    return date.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { day: "numeric", month: "short", year: "numeric" });
   };
 
   if (loading) {
-    return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement des politiques...</p></div></div>;
+    return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>{t('policies.loading')}</p></div></div>;
   }
 
   if (error) {
-    return <div className="tab-panel"><div className="error-banner"><span>{error}</span><button onClick={loadPolicies} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button></div></div>;
+    return <div className="tab-panel"><div className="error-banner"><span>{error}</span><button onClick={loadPolicies} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
   }
 
   return (
     <div className="tab-panel policies-tab">
       <div className="section-intro">
-        <h2>Politiques</h2>
-        <p>Définissez les politiques d'accès pour contrôler les permissions sur vos ressources.</p>
+        <h2>{t('policies.title')}</h2>
+        <p>{t('policies.description')}</p>
       </div>
 
       <div className="toolbar">
-        <span className="result-count">{policies.length} politique(s)</span>
-        <button className="btn btn-primary btn-sm">Créer une politique</button>
+        <span className="result-count">{t('policies.count', { count: policies.length })}</span>
+        <button className="btn btn-primary btn-sm">{t('policies.createButton')}</button>
       </div>
 
       {policies.length === 0 ? (
         <div className="empty-state">
           <ShieldIcon />
-          <h3>Aucune politique</h3>
-          <p>Créez des politiques pour définir les permissions d'accès.</p>
-          <button className="btn btn-primary">Créer une politique</button>
+          <h3>{t('policies.empty.title')}</h3>
+          <p>{t('policies.empty.description')}</p>
+          <button className="btn btn-primary">{t('policies.createButton')}</button>
         </div>
       ) : (
         <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Nom</th>
-                <th>Description</th>
-                <th>Identités</th>
-                <th>Ressources</th>
-                <th>Date création</th>
-                <th>Actions</th>
+                <th>{t('policies.columns.name')}</th>
+                <th>{t('policies.columns.description')}</th>
+                <th>{t('policies.columns.identities')}</th>
+                <th>{t('policies.columns.resources')}</th>
+                <th>{t('policies.columns.createdAt')}</th>
+                <th>{t('policies.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -254,14 +255,14 @@ function PoliciesTab() {
                 <tr key={policy.id}>
                   <td>
                     <strong>{policy.name}</strong>
-                    {policy.readOnly && <span className="badge badge-neutral" style={{ marginLeft: "0.5rem" }}>Lecture seule</span>}
+                    {policy.readOnly && <span className="badge badge-neutral" style={{ marginLeft: "0.5rem" }}>{t('common.readOnly')}</span>}
                   </td>
                   <td>{policy.description || "-"}</td>
                   <td>{policy.identities?.length || 0}</td>
                   <td>{policy.resources?.length || 0}</td>
                   <td>{formatDate(policy.createdAt)}</td>
                   <td className="actions-cell">
-                    <button className="btn btn-outline btn-sm">Modifier</button>
+                    <button className="btn btn-outline btn-sm">{t('actions.edit')}</button>
                   </td>
                 </tr>
               ))}
@@ -277,6 +278,8 @@ function PoliciesTab() {
 // GROUPS TAB
 // ============================================================
 function GroupsTab() {
+  const { t, i18n } = useTranslation('iam/index');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [groups, setGroups] = useState<iamService.IamResourceGroup[]>([]);
@@ -285,12 +288,12 @@ function GroupsTab() {
   useEffect(() => { loadGroups(); }, []);
 
   const loadGroups = async () => {
-    if (!credentials) { setError("Non authentifié"); setLoading(false); return; }
+    if (!credentials) { setError(t('errors.notAuthenticated')); setLoading(false); return; }
     try {
       const data = await iamService.getResourceGroups(credentials);
       setGroups(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
+      setError(err instanceof Error ? err.message : t('errors.loadError'));
     } finally {
       setLoading(false);
     }
@@ -298,46 +301,46 @@ function GroupsTab() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+    return date.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { day: "numeric", month: "short", year: "numeric" });
   };
 
   if (loading) {
-    return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement des groupes...</p></div></div>;
+    return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>{t('groups.loading')}</p></div></div>;
   }
 
   if (error) {
-    return <div className="tab-panel"><div className="error-banner"><span>{error}</span><button onClick={loadGroups} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button></div></div>;
+    return <div className="tab-panel"><div className="error-banner"><span>{error}</span><button onClick={loadGroups} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
   }
 
   return (
     <div className="tab-panel groups-tab">
       <div className="section-intro">
-        <h2>Groupes de ressources</h2>
-        <p>Organisez vos ressources en groupes pour simplifier la gestion des accès.</p>
+        <h2>{t('groups.title')}</h2>
+        <p>{t('groups.description')}</p>
       </div>
 
       <div className="toolbar">
-        <span className="result-count">{groups.length} groupe(s)</span>
-        <button className="btn btn-primary btn-sm">Créer un groupe</button>
+        <span className="result-count">{t('groups.count', { count: groups.length })}</span>
+        <button className="btn btn-primary btn-sm">{t('groups.createButton')}</button>
       </div>
 
       {groups.length === 0 ? (
         <div className="empty-state">
           <FolderIcon />
-          <h3>Aucun groupe</h3>
-          <p>Créez des groupes pour organiser vos ressources.</p>
-          <button className="btn btn-primary">Créer un groupe</button>
+          <h3>{t('groups.empty.title')}</h3>
+          <p>{t('groups.empty.description')}</p>
+          <button className="btn btn-primary">{t('groups.createButton')}</button>
         </div>
       ) : (
         <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Nom du groupe</th>
-                <th>Propriétaire</th>
-                <th>Ressources</th>
-                <th>Date création</th>
-                <th>Actions</th>
+                <th>{t('groups.columns.name')}</th>
+                <th>{t('groups.columns.owner')}</th>
+                <th>{t('groups.columns.resources')}</th>
+                <th>{t('groups.columns.createdAt')}</th>
+                <th>{t('groups.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -345,13 +348,13 @@ function GroupsTab() {
                 <tr key={group.id}>
                   <td>
                     <strong>{group.name}</strong>
-                    {group.readOnly && <span className="badge badge-neutral" style={{ marginLeft: "0.5rem" }}>Lecture seule</span>}
+                    {group.readOnly && <span className="badge badge-neutral" style={{ marginLeft: "0.5rem" }}>{t('common.readOnly')}</span>}
                   </td>
                   <td>{group.owner}</td>
                   <td>{group.resources?.length || 0}</td>
                   <td>{formatDate(group.createdAt)}</td>
                   <td className="actions-cell">
-                    <button className="btn btn-outline btn-sm">Modifier</button>
+                    <button className="btn btn-outline btn-sm">{t('actions.edit')}</button>
                   </td>
                 </tr>
               ))}
@@ -367,6 +370,8 @@ function GroupsTab() {
 // LOGS TAB
 // ============================================================
 function LogsTab() {
+  const { t, i18n } = useTranslation('iam/index');
+  const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [logs, setLogs] = useState<iamService.IamLog[]>([]);
@@ -376,12 +381,12 @@ function LogsTab() {
   useEffect(() => { loadLogs(); }, []);
 
   const loadLogs = async () => {
-    if (!credentials) { setError("Non authentifié"); setLoading(false); return; }
+    if (!credentials) { setError(t('errors.notAuthenticated')); setLoading(false); return; }
     try {
       const data = await iamService.getLogs(credentials);
       setLogs(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
+      setError(err instanceof Error ? err.message : t('errors.loadError'));
     } finally {
       setLoading(false);
     }
@@ -389,7 +394,7 @@ function LogsTab() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
   };
 
   const filteredLogs = logs.filter(log => {
@@ -400,48 +405,48 @@ function LogsTab() {
   });
 
   if (loading) {
-    return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement des logs...</p></div></div>;
+    return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>{t('logs.loading')}</p></div></div>;
   }
 
   if (error) {
-    return <div className="tab-panel"><div className="error-banner"><span>{error}</span><button onClick={loadLogs} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button></div></div>;
+    return <div className="tab-panel"><div className="error-banner"><span>{error}</span><button onClick={loadLogs} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
   }
 
   return (
     <div className="tab-panel logs-tab">
       <div className="section-intro">
-        <h2>Logs d'accès</h2>
-        <p>Consultez l'historique des actions effectuées sur votre compte.</p>
+        <h2>{t('logs.title')}</h2>
+        <p>{t('logs.description')}</p>
       </div>
 
       <div className="toolbar">
         <div className="toolbar-left">
           <select className="filter-select" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
-            <option value="all">Tous les logs</option>
-            <option value="allowed">Autorisés</option>
-            <option value="denied">Refusés</option>
+            <option value="all">{t('logs.filters.all')}</option>
+            <option value="allowed">{t('logs.filters.allowed')}</option>
+            <option value="denied">{t('logs.filters.denied')}</option>
           </select>
-          <span className="result-count">{filteredLogs.length} entrée(s)</span>
+          <span className="result-count">{t('logs.count', { count: filteredLogs.length })}</span>
         </div>
-        <button className="btn btn-outline btn-sm" onClick={loadLogs}>Rafraîchir</button>
+        <button className="btn btn-outline btn-sm" onClick={loadLogs}>{tCommon('actions.refresh')}</button>
       </div>
 
       {filteredLogs.length === 0 ? (
         <div className="empty-state">
           <LogIcon />
-          <h3>Aucun log</h3>
-          <p>Aucune action enregistrée pour le moment.</p>
+          <h3>{t('logs.empty.title')}</h3>
+          <p>{t('logs.empty.description')}</p>
         </div>
       ) : (
         <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Identité</th>
-                <th>Action</th>
-                <th>Ressource</th>
-                <th>Résultat</th>
+                <th>{t('logs.columns.date')}</th>
+                <th>{t('logs.columns.identity')}</th>
+                <th>{t('logs.columns.action')}</th>
+                <th>{t('logs.columns.resource')}</th>
+                <th>{t('logs.columns.result')}</th>
               </tr>
             </thead>
             <tbody>
@@ -453,7 +458,7 @@ function LogsTab() {
                   <td className="urn-cell" title={log.resourceUrn}>{log.resourceUrn.split("/").pop()}</td>
                   <td>
                     <span className={`badge ${log.allowed ? "badge-success" : "badge-error"}`}>
-                      {log.allowed ? "Autorisé" : "Refusé"}
+                      {log.allowed ? t('logs.result.allowed') : t('logs.result.denied')}
                     </span>
                   </td>
                 </tr>
