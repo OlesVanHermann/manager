@@ -156,8 +156,10 @@ npm run build:prod
 │   ├── orders.service.ts
 │   ├── contacts.service.ts
 │   ├── support.service.ts
+│   ├── communication.service.ts  # APIs v2 /notification/*
 │   ├── notifications.service.ts
 │   ├── agreements.service.ts
+│   ├── procedures.service.ts     # KYC /me/procedure/*
 │   ├── iam.service.ts
 │   └── security.service.ts
 │
@@ -798,24 +800,50 @@ export const universes: Universe[] = [
 
 ### 15.1 Univers HOME (A)
 
-| Fichier | NAV2 | NAV3 (tab) |
-|---------|------|------------|
+| Fichier | NAV2 | NAV3 (tabs) |
+|---------|------|-------------|
 | `pages/home/index.tsx` | Accueil | - |
-| `pages/home/account/index.tsx` | Compte | (router) |
-| `pages/home/account/EditTab.tsx` | Compte | Éditer |
-| `pages/home/account/SecurityTab.tsx` | Compte | Sécurité |
-| `pages/home/account/PrivacyTab.tsx` | Compte | Données perso |
-| `pages/home/account/AdvancedTab.tsx` | Compte | Avancé |
-| `pages/home/account/ContactServicesTab.tsx` | Compte | Mes services |
-| `pages/home/billing/index.tsx` | Facturation | (router) |
-| `pages/home/billing/ServicesTab.tsx` | Facturation | Mes services |
-| `pages/home/billing/PaymentsTab.tsx` | Facturation | Paiement |
-| `pages/home/billing/OrdersTab.tsx` | Facturation | Commandes |
-| `pages/home/support/index.tsx` | Support | (router) |
-| `pages/home/support/LevelTab.tsx` | Support | Niveau |
-| `pages/home/support/CommunicationsTab.tsx` | Support | Communications |
+| `pages/home/account/index.tsx` | Compte | info, edit, security, gdpr, advanced, contacts-services, contacts-requests, kyc |
+| `pages/home/billing/index.tsx` | Facturation | services, invoices, refunds, payments, orders, references, methods, prepaid, vouchers, fidelity, contracts |
+| `pages/home/support/index.tsx` | Support | tickets, create, level, communications, broadcast |
 | `pages/home/carbon/index.tsx` | Carbone | - |
-| `pages/home/api/index.tsx` | Playground | API |
+| `pages/home/api/index.tsx` | Playground | - |
+
+#### Account tabs (8) - APIs
+| Tab | Label | Endpoint |
+|-----|-------|----------|
+| info | Informations générales | GET /me |
+| edit | Éditer mon compte | PUT /me |
+| security | Sécurité | /me/accessRestriction/* |
+| gdpr | Données personnelles | /me/consent |
+| advanced | Paramètres avancés | /me |
+| contacts-services | Mes services (contacts) | GET /services |
+| contacts-requests | Mes demandes (contacts) | GET /me/task/contactChange |
+| kyc | Documents KYC | GET /me/procedure/fraud |
+
+#### Billing tabs (11) - APIs
+| Tab | Label | Endpoint |
+|-----|-------|----------|
+| services | Mes services | GET /services |
+| invoices | Factures | GET /me/bill |
+| refunds | Avoirs | GET /me/refund |
+| payments | Paiement | GET /me/deposit |
+| orders | Commandes | GET /me/order |
+| references | Références internes | GET/POST/PUT /me/billing/purchaseOrder |
+| methods | Moyens de paiement | GET /me/payment/method |
+| prepaid | Compte prépayé | GET /me/ovhAccount |
+| vouchers | Bons d'achat | GET /me/voucherAccount |
+| fidelity | Points fidélité | GET /me/fidelityAccount |
+| contracts | Contrats | GET /me/agreements |
+
+#### Support tabs (5) - APIs
+| Tab | Label | Endpoint |
+|-----|-------|----------|
+| tickets | Mes tickets | GET /support/tickets |
+| create | Créer un ticket | POST /support/tickets |
+| level | Niveau de support | GET /me/supportLevel |
+| communications | Mes communications | GET /notification/history (v2) |
+| broadcast | Paramètres diffusion | GET/PUT /me/marketing, GET /notification/routing (v2) |
 
 ### 15.2 Univers IAM (G)
 
@@ -832,13 +860,14 @@ Accessible via l'avatar/NIC en haut à droite :
 +---------------------------+
 |        [Avatar]           |
 |           OK              |
-|       [Standard]          |  <- Niveau de support
-|      Octave Klaba         |  <- Nom
-|    [Administrateur]       |  <- Rôle
-|         Jezby             |  <- Société
+|       [Standard]          |  <- Niveau support
+|      Jean Dupont          |  <- Nom
+|    [Administrateur]       |  <- Rôle IAM
+|        Acme Corp          |  <- Société
 |                           |
-|  octave.klaba@ovh.com     |  <- Email
-|     ko51027-ovh           |  <- NIC handle
+|  jean.dupont@example.com  |  <- Email
+|       ab12345-ovh         |  <- NIC handle
+---------------------------+
 +---------------------------+
 |    Voir mes factures  >   |
 |  Suivre mes paiements >   |

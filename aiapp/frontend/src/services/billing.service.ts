@@ -3,9 +3,27 @@
 // Utilise le helper centralisé api.ts
 // ============================================================
 
-import { ovhGet } from "./api";
+import { ovhGet, ovhPost, ovhPut } from "./api";
 
 // ============ TYPES ============
+
+export interface PurchaseOrder {
+  id: number;
+  reference: string;
+  creationDate: string;
+  startDate: string;
+  endDate?: string;
+  active: boolean;
+  status: string; // CREATED, etc.
+  type: string; // REFERENCE_ORDER, PURCHASE_ORDER
+}
+
+export interface PurchaseOrderCreate {
+  reference: string;
+  startDate: string;
+  endDate?: string;
+  type?: string;
+}
 
 export interface Bill {
   billId: string;
@@ -330,4 +348,30 @@ export async function getRefunds(options?: { "date.from"?: string; "date.to"?: s
 
 export async function getVoucherAccounts(): Promise<Voucher[]> {
   return getVouchers();
+}
+
+// ============ REFERENCES INTERNES / PURCHASE ORDERS (/me/billing/purchaseOrder) ============
+
+export async function getPurchaseOrderIds(): Promise<number[]> {
+  return ovhGet<number[]>("/me/billing/purchaseOrder");
+}
+
+export async function getPurchaseOrder(id: number): Promise<PurchaseOrder> {
+  return ovhGet<PurchaseOrder>(`/me/billing/purchaseOrder/${id}`);
+}
+
+export async function getPurchaseOrders(): Promise<PurchaseOrder[]> {
+  const ids = await getPurchaseOrderIds();
+  const orders = await Promise.all(ids.map((id) => getPurchaseOrder(id).catch(() => null)));
+  return orders
+    .filter((o): o is PurchaseOrder => o !== null)
+    .sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
+}
+
+export async function createPurchaseOrder(data: PurchaseOrderCreate): Promise<PurchaseOrder> {
+  return ovhPost<PurchaseOrder>("/me/billing/purchaseOrder", data);
+}
+
+export async function updatePurchaseOrder(id: number, data: Partial<PurchaseOrderCreate> & { active?: boolean }): Promise<PurchaseOrder> {
+  return ovhPut<PurchaseOrder>(`/me/billing/purchaseOrder/${id}`, data);
 }

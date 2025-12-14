@@ -502,9 +502,13 @@ function OrdersTab({ credentials }: TabProps) {
 // REFERENCES TAB - Références internes (PO numbers)
 // ============================================================
 function ReferencesTab({ credentials }: TabProps) {
-  const [references, setReferences] = useState<any[]>([]);
+  const [references, setReferences] = useState<billingService.PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingRef, setEditingRef] = useState<billingService.PurchaseOrder | null>(null);
+  const [formData, setFormData] = useState({ reference: "", startDate: "", endDate: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => { loadReferences(); }, []);
 
@@ -512,47 +516,167 @@ function ReferencesTab({ credentials }: TabProps) {
     setLoading(true);
     setError(null);
     try {
-      // TODO: API /me/billing/purchaseOrder
-      setReferences([]);
+      const data = await billingService.getPurchaseOrders();
+      setReferences(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur de chargement");
+      if (isNotFoundError(err)) {
+        setReferences([]);
+      } else {
+        setError(err instanceof Error ? err.message : "Erreur de chargement");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement...</p></div></div>;
-  if (error) return <div className="tab-panel"><div className="error-banner">{error}</div></div>;
+  const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const formatDateInput = (d: string) => d ? new Date(d).toISOString().split("T")[0] : "";
+
+  // Calcul du statut dynamique basé sur les dates
+  const getDisplayStatus = (ref: billingService.PurchaseOrder): "actif" | "inactif" | "desactivate" => {
+    if (!ref.active) return "desactivate";
+    const now = new Date();
+    const start = new Date(ref.startDate);
+    const end = ref.endDate ? new Date(ref.endDate) : null;
+    if (end) {
+      if (now >= start && now < end) return "actif";
+      return "inactif";
+    }
+    if (now >= start) return "actif";
+    return "inactif";
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "actif": return <span className="status-badge badge-success">Actif</span>;
+      case "inactif": return <span className="status-badge badge-warning">Inactif</span>;
+      case "desactivate": return <span className="status-badge badge-error">Désactivé</span>;
+      default: return <span className="status-badge">{status}</span>;
+    }
+  };
+
+  const openCreateForm = () => {
+    setEditingRef(null);
+    setFormData({ reference: "", startDate: new Date().toISOString().split("T")[0], endDate: "" });
+    setShowForm(true);
+  };
+
+  const openEditForm = (ref: billingService.PurchaseOrder) => {
+    setEditingRef(ref);
+    setFormData({
+      reference: ref.reference,
+      startDate: formatDateInput(ref.startDate),
+      endDate: ref.endDate ? formatDateInput(ref.endDate) : ""
+    });
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      if (editingRef) {
+        await billingService.updatePurchaseOrder(editingRef.id, {
+          reference: formData.reference,
+          startDate: formData.startDate,
+          endDate: formData.endDate || undefined
+        });
+      } else {
+        await billingService.createPurchaseOrder({
+          reference: formData.reference,
+          startDate: formData.startDate,
+          endDate: formData.endDate || undefined
+        });
+      }
+      setShowForm(false);
+      await loadReferences();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const toggleStatus = async (ref: billingService.PurchaseOrder) => {
+    try {
+      await billingService.updatePurchaseOrder(ref.id, { active: !ref.active });
+      await loadReferences();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors du changement de statut");
+    }
+  };
+
+  if (loading) return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>Chargement des références...</p></div></div>;
+  if (error) return <div className="tab-panel"><div className="error-banner">{error}<button onClick={loadReferences} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button></div></div>;
 
   return (
     <div className="tab-panel">
+      <div className="section-description" style={{ marginBottom: "1.5rem", padding: "1rem", background: "var(--color-background-subtle)", borderRadius: "8px" }}>
+        <p style={{ margin: 0, color: "var(--color-text-secondary)" }}>
+          Votre référence interne correspond à une purchase order (PO), un nom de projet ou une mention interne. 
+          Toutes les factures émises indiqueront cette référence.
+        </p>
+      </div>
+
+      {showForm && (
+        <div className="form-card" style={{ marginBottom: "1.5rem", padding: "1.5rem", border: "1px solid var(--color-border)", borderRadius: "8px", background: "var(--color-background)" }}>
+          <h4 style={{ marginBottom: "1rem" }}>{editingRef ? "Modifier la référence" : "Créer une référence interne"}</h4>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group" style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Référence *</label>
+              <input type="text" value={formData.reference} onChange={(e) => setFormData({ ...formData, reference: e.target.value })} required className="form-input" style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid var(--color-border)" }} placeholder="Ex: PO-2024-001" />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+              <div className="form-group">
+                <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Date de début *</label>
+                <input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} required className="form-input" style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid var(--color-border)" }} />
+              </div>
+              <div className="form-group">
+                <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: 500 }}>Date de fin <span style={{ fontWeight: 400, color: "var(--color-text-tertiary)" }}>(optionnel, exclue)</span></label>
+                <input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className="form-input" style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid var(--color-border)" }} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+              <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary">Annuler</button>
+              <button type="submit" disabled={submitting} className="btn btn-primary">{submitting ? "Enregistrement..." : (editingRef ? "Modifier" : "Créer")}</button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div className="toolbar">
         <span className="result-count">{references.length} référence(s)</span>
-        <button className="btn btn-primary btn-sm">Ajouter une référence</button>
+        {!showForm && <button className="btn btn-primary btn-sm" onClick={openCreateForm}>{references.length > 0 ? "Ajouter une référence" : "Créer une référence interne"}</button>}
       </div>
+
       {references.length === 0 ? (
         <div className="empty-state">
           <TagIcon />
           <h3>Aucune référence interne</h3>
-          <p>Les références internes (numéro de bon de commande) vous permettent de retrouver facilement vos factures.</p>
-          <button className="btn btn-primary">Ajouter une référence</button>
+          <p>Les références internes (numéro de bon de commande, PO) vous permettent d'identifier vos factures plus facilement.</p>
+          {!showForm && <button className="btn btn-primary" onClick={openCreateForm}>Créer une référence interne</button>}
         </div>
       ) : (
         <div className="table-container">
           <table className="data-table">
-            <thead><tr><th>Référence</th><th>Description</th><th>Services liés</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Référence</th><th>Date de création</th><th>Date de début</th><th>Date de fin</th><th>Statut</th><th>Actions</th></tr></thead>
             <tbody>
-              {references.map((r: any) => (
-                <tr key={r.id}>
-                  <td className="ref-cell"><span className="ref-badge">{r.reference}</span></td>
-                  <td>{r.description || "-"}</td>
-                  <td>{r.serviceCount || 0}</td>
-                  <td className="actions-cell">
-                    <button className="btn btn-outline btn-sm">Modifier</button>
-                    <button className="btn btn-outline btn-sm" style={{ marginLeft: "0.5rem" }}>Supprimer</button>
-                  </td>
-                </tr>
-              ))}
+              {references.map((r) => {
+                const displayStatus = getDisplayStatus(r);
+                return (
+                  <tr key={r.id}>
+                    <td><span className="ref-badge" style={{ fontWeight: 600 }}>{r.reference}</span></td>
+                    <td>{formatDate(r.creationDate)}</td>
+                    <td>{formatDate(r.startDate)}</td>
+                    <td>{r.endDate ? formatDate(r.endDate) : "-"}</td>
+                    <td>{getStatusBadge(displayStatus)}</td>
+                    <td className="actions-cell">
+                      <button className="action-btn" title="Modifier" onClick={() => openEditForm(r)}><EditIcon /></button>
+                      <button className="action-btn" title={r.active ? "Désactiver" : "Réactiver"} onClick={() => toggleStatus(r)}>{r.active ? <PauseIcon /> : <PlayIcon />}</button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -924,6 +1048,9 @@ function ContractsTab({ credentials }: TabProps) {
 // ============================================================
 function DownloadIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>; }
 function ExternalIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>; }
+function EditIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>; }
+function PauseIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" /></svg>; }
+function PlayIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" /></svg>; }
 function EmptyIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="empty-icon"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>; }
 function CheckIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="empty-icon"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>; }
 function CardIcon() { return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="empty-icon"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>; }

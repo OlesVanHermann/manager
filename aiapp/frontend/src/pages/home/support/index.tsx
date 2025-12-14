@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import type { OvhCredentials } from "../../../types/auth.types";
 import * as supportService from "../../../services/support.service";
 import * as accountService from "../../../services/account.service";
+import * as communicationService from "../../../services/communication.service";
 import "./styles.css";
 
 const STORAGE_KEY = "ovh_credentials";
@@ -345,34 +346,75 @@ function SupportLevelTab() {
 // ============================================================
 function CommunicationsTab() {
   const [loading, setLoading] = useState(true);
-  const [communications, setCommunications] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<communicationService.NotificationHistory[]>([]);
+  const [contactMeans, setContactMeans] = useState<communicationService.ContactMean[]>([]);
 
-  useEffect(() => {
-    // TODO: API /me/notification ou /me/email
-    const timer = setTimeout(() => {
-      setCommunications([
-        { id: "1", subject: "Facture disponible - Janvier 2025", date: "2025-01-15", type: "billing", read: true },
-        { id: "2", subject: "Maintenance prévue sur votre VPS", date: "2025-01-10", type: "incident", read: true },
-        { id: "3", subject: "Nouvelle fonctionnalité disponible", date: "2025-01-05", type: "news", read: false },
+  useEffect(() => { loadData(); }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [notifs, contacts] = await Promise.all([
+        communicationService.getNotificationHistory(50),
+        communicationService.getContactMeans(),
       ]);
+      setNotifications(notifs);
+      setContactMeans(contacts);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur de chargement");
+    } finally {
       setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  };
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-  const getTypeBadge = (type: string) => {
+  const getPriorityBadge = (priority: string) => {
     const map: Record<string, { label: string; className: string }> = {
-      billing: { label: "Facturation", className: "badge-info" },
-      incident: { label: "Incident", className: "badge-warning" },
-      news: { label: "Actualité", className: "badge-success" },
+      high: { label: "Haute", className: "badge-error" },
+      medium: { label: "Moyenne", className: "badge-warning" },
+      low: { label: "Basse", className: "badge-info" },
+      normal: { label: "Normale", className: "badge-neutral" },
     };
-    return map[type] || { label: type, className: "badge-neutral" };
+    return map[priority?.toLowerCase()] || { label: priority || "Normal", className: "badge-neutral" };
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const map: Record<string, string> = {
+      billing: "Facturation",
+      incident: "Incident",
+      technical: "Technique",
+      security: "Sécurité",
+      commercial: "Commercial",
+    };
+    return map[category?.toLowerCase()] || category || "Autre";
+  };
+
+  const getContactStatusBadge = (status: string) => {
+    const map: Record<string, { label: string; className: string }> = {
+      VALID: { label: "Validé", className: "badge-success" },
+      TO_VALIDATE: { label: "À valider", className: "badge-warning" },
+      ERROR: { label: "Erreur", className: "badge-error" },
+      DISABLED: { label: "Désactivé", className: "badge-neutral" },
+    };
+    return map[status] || { label: status, className: "badge-neutral" };
   };
 
   if (loading) {
     return <div className="communications-tab"><div className="loading-state"><div className="spinner"></div><p>Chargement...</p></div></div>;
+  }
+
+  if (error) {
+    return (
+      <div className="communications-tab">
+        <div className="error-banner">
+          {error}
+          <button onClick={loadData} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -382,7 +424,48 @@ function CommunicationsTab() {
         <p>Retrouvez les emails et notifications que vous avez reçus de la part d'OVHcloud.</p>
       </div>
 
-      {communications.length === 0 ? (
+      {/* Contacts configurés */}
+      {contactMeans.length > 0 && (
+        <div className="contacts-section" style={{ marginBottom: "2rem" }}>
+          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "var(--color-text-secondary)" }}>Contacts de notification configurés</h3>
+          <div className="contacts-chips" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            {contactMeans.map((c) => {
+              const status = getContactStatusBadge(c.status);
+              return (
+                <div key={c.id} className="contact-chip" style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "0.5rem", 
+                  padding: "0.5rem 1rem", 
+                  background: "var(--color-background-subtle)", 
+                  borderRadius: "20px",
+                  fontSize: "0.875rem"
+                }}>
+                  <MailIcon />
+                  <span>{c.email}</span>
+                  <span className={`badge ${status.className}`} style={{ fontSize: "0.75rem" }}>{status.label}</span>
+                  {c.default && <span className="badge badge-info" style={{ fontSize: "0.75rem" }}>Par défaut</span>}
+                </div>
+              );
+            })}
+          </div>
+          <a 
+            href="https://www.ovh.com/manager/#/dedicated/contacts" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ display: "inline-block", marginTop: "0.75rem", fontSize: "0.875rem", color: "var(--color-primary)" }}
+          >
+            Gérer mes contacts →
+          </a>
+        </div>
+      )}
+
+      {/* Historique des notifications */}
+      <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "var(--color-text-secondary)" }}>
+        Historique des notifications ({notifications.length})
+      </h3>
+
+      {notifications.length === 0 ? (
         <div className="empty-state">
           <MailIcon />
           <h3>Aucune communication</h3>
@@ -390,21 +473,21 @@ function CommunicationsTab() {
         </div>
       ) : (
         <div className="communications-list">
-          {communications.map((c) => {
-            const type = getTypeBadge(c.type);
+          {notifications.map((n) => {
+            const priority = getPriorityBadge(n.priority);
             return (
-              <div key={c.id} className={`communication-item ${c.read ? "" : "unread"}`}>
+              <div key={n.id} className="communication-item">
                 <div className="communication-icon">
                   <MailIcon />
                 </div>
                 <div className="communication-content">
-                  <h4>{c.subject}</h4>
+                  <h4>{n.subject}</h4>
                   <div className="communication-meta">
-                    <span className="communication-date">{formatDate(c.date)}</span>
-                    <span className={`badge ${type.className}`}>{type.label}</span>
+                    <span className="communication-date">{formatDate(n.createdAt)}</span>
+                    <span className="badge badge-neutral">{getCategoryLabel(n.category)}</span>
+                    <span className={`badge ${priority.className}`}>{priority.label}</span>
                   </div>
                 </div>
-                {!c.read && <span className="unread-dot"></span>}
               </div>
             );
           })}
@@ -419,26 +502,66 @@ function CommunicationsTab() {
 // ============================================================
 function BroadcastTab() {
   const [loading, setLoading] = useState(true);
-  const [preferences, setPreferences] = useState({
-    incidents: true,
-    billing: true,
-    news: false,
-    marketing: false,
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [marketingPrefs, setMarketingPrefs] = useState<communicationService.MarketingPreferences>({
+    email: false,
+    phone: false,
+    sms: false,
+    fax: false,
   });
+  const [routingRules, setRoutingRules] = useState<communicationService.NotificationRouting[]>([]);
+  const [reference, setReference] = useState<communicationService.NotificationReference | null>(null);
 
-  useEffect(() => {
-    // TODO: API /me/marketing ou /me/notification/preferences
-    const timer = setTimeout(() => { setLoading(false); }, 300);
-    return () => clearTimeout(timer);
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  const handleToggle = (key: keyof typeof preferences) => {
-    setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
-    // TODO: Appeler l'API pour sauvegarder
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [prefs, rules, ref] = await Promise.all([
+        communicationService.getMarketingPreferences(),
+        communicationService.getRoutingRules(),
+        communicationService.getNotificationReference(),
+      ]);
+      setMarketingPrefs(prefs);
+      setRoutingRules(rules);
+      setReference(ref);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur de chargement");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMarketingToggle = async (key: keyof communicationService.MarketingPreferences) => {
+    const newPrefs = { ...marketingPrefs, [key]: !marketingPrefs[key] };
+    setMarketingPrefs(newPrefs);
+    setSaving(true);
+    try {
+      await communicationService.updateMarketingPreferences(newPrefs);
+    } catch (err) {
+      // Revert on error
+      setMarketingPrefs(marketingPrefs);
+      setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
     return <div className="broadcast-tab"><div className="loading-state"><div className="spinner"></div><p>Chargement...</p></div></div>;
+  }
+
+  if (error) {
+    return (
+      <div className="broadcast-tab">
+        <div className="error-banner">
+          {error}
+          <button onClick={loadData} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>Réessayer</button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -448,53 +571,136 @@ function BroadcastTab() {
         <p>Configurez les types de communications que vous souhaitez recevoir.</p>
       </div>
 
-      <div className="preferences-list">
-        <div className="preference-item">
-          <div className="preference-info">
-            <h4>Incidents et maintenances</h4>
-            <p>Notifications concernant les incidents et maintenances programmées sur vos services.</p>
+      {/* Marketing Preferences */}
+      <div className="preferences-section" style={{ marginBottom: "2rem" }}>
+        <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "var(--color-text-secondary)" }}>
+          Communications marketing {saving && <span style={{ fontSize: "0.75rem", color: "var(--color-primary)" }}>(sauvegarde...)</span>}
+        </h3>
+        <div className="preferences-list">
+          <div className="preference-item">
+            <div className="preference-info">
+              <h4>Emails marketing</h4>
+              <p>Offres promotionnelles et événements OVHcloud par email.</p>
+            </div>
+            <label className="toggle-switch">
+              <input type="checkbox" checked={marketingPrefs.email} onChange={() => handleMarketingToggle("email")} disabled={saving} />
+              <span className="toggle-slider"></span>
+            </label>
           </div>
-          <label className="toggle-switch">
-            <input type="checkbox" checked={preferences.incidents} onChange={() => handleToggle("incidents")} />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
 
-        <div className="preference-item">
-          <div className="preference-info">
-            <h4>Facturation</h4>
-            <p>Notifications de factures, paiements et renouvellements.</p>
+          <div className="preference-item">
+            <div className="preference-info">
+              <h4>Appels téléphoniques</h4>
+              <p>Communications commerciales par téléphone.</p>
+            </div>
+            <label className="toggle-switch">
+              <input type="checkbox" checked={marketingPrefs.phone} onChange={() => handleMarketingToggle("phone")} disabled={saving} />
+              <span className="toggle-slider"></span>
+            </label>
           </div>
-          <label className="toggle-switch">
-            <input type="checkbox" checked={preferences.billing} onChange={() => handleToggle("billing")} />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
 
-        <div className="preference-item">
-          <div className="preference-info">
-            <h4>Actualités produits</h4>
-            <p>Informations sur les nouvelles fonctionnalités et mises à jour.</p>
+          <div className="preference-item">
+            <div className="preference-info">
+              <h4>SMS</h4>
+              <p>Offres et alertes par SMS.</p>
+            </div>
+            <label className="toggle-switch">
+              <input type="checkbox" checked={marketingPrefs.sms} onChange={() => handleMarketingToggle("sms")} disabled={saving} />
+              <span className="toggle-slider"></span>
+            </label>
           </div>
-          <label className="toggle-switch">
-            <input type="checkbox" checked={preferences.news} onChange={() => handleToggle("news")} />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div className="preference-item">
-          <div className="preference-info">
-            <h4>Communications marketing</h4>
-            <p>Offres promotionnelles et événements OVHcloud.</p>
-          </div>
-          <label className="toggle-switch">
-            <input type="checkbox" checked={preferences.marketing} onChange={() => handleToggle("marketing")} />
-            <span className="toggle-slider"></span>
-          </label>
         </div>
       </div>
 
-      <div className="preferences-footer">
+      {/* Routing Rules */}
+      <div className="routing-section" style={{ marginBottom: "2rem" }}>
+        <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "var(--color-text-secondary)" }}>
+          Règles de routage des notifications ({routingRules.length})
+        </h3>
+        
+        {routingRules.length === 0 ? (
+          <div className="empty-routing" style={{ 
+            padding: "1.5rem", 
+            background: "var(--color-background-subtle)", 
+            borderRadius: "8px",
+            textAlign: "center"
+          }}>
+            <p style={{ marginBottom: "1rem", color: "var(--color-text-secondary)" }}>
+              Aucune règle de routage configurée. Les notifications seront envoyées à votre email principal.
+            </p>
+            <a 
+              href="https://www.ovh.com/manager/#/dedicated/communication/settings" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="btn btn-primary btn-sm"
+            >
+              Configurer les règles
+            </a>
+          </div>
+        ) : (
+          <div className="routing-list">
+            {routingRules.map((rule) => (
+              <div key={rule.id} className="routing-item" style={{
+                padding: "1rem",
+                border: "1px solid var(--color-border)",
+                borderRadius: "8px",
+                marginBottom: "0.75rem"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                  <h4 style={{ margin: 0 }}>{rule.name}</h4>
+                  <span className={`badge ${rule.active ? "badge-success" : "badge-neutral"}`}>
+                    {rule.active ? "Actif" : "Inactif"}
+                  </span>
+                </div>
+                <p style={{ fontSize: "0.875rem", color: "var(--color-text-secondary)", margin: 0 }}>
+                  {rule.rules.length} règle(s) • Créée le {new Date(rule.createdAt).toLocaleDateString("fr-FR")}
+                </p>
+              </div>
+            ))}
+            <a 
+              href="https://www.ovh.com/manager/#/dedicated/communication/settings" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.875rem", color: "var(--color-primary)" }}
+            >
+              Gérer les règles →
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* Available categories and priorities */}
+      {reference && (reference.categories.length > 0 || reference.priorities.length > 0) && (
+        <div className="reference-section">
+          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "var(--color-text-secondary)" }}>
+            Types de notifications disponibles
+          </h3>
+          <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
+            {reference.categories.length > 0 && (
+              <div>
+                <h4 style={{ fontSize: "0.875rem", marginBottom: "0.5rem" }}>Catégories</h4>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  {reference.categories.map((c) => (
+                    <span key={c.id} className="badge badge-neutral">{c.name}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {reference.priorities.length > 0 && (
+              <div>
+                <h4 style={{ fontSize: "0.875rem", marginBottom: "0.5rem" }}>Priorités</h4>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  {reference.priorities.map((p) => (
+                    <span key={p.id} className="badge badge-neutral">{p.name}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="preferences-footer" style={{ marginTop: "2rem" }}>
         <p className="preferences-note">Les notifications critiques de sécurité seront toujours envoyées.</p>
       </div>
     </div>
