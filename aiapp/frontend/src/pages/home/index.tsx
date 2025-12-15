@@ -2,14 +2,12 @@
 // HOME PAGE - Dashboard accueil OVHcloud (style Hub)
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { isAuthenticated, redirectToAuth } from "../../services/api";
-import * as servicesService from "../../services/services.service";
-import * as billingService from "../../services/billing.service";
-import * as notificationsService from "../../services/notifications.service";
 import { Tile, SkeletonServicesGrid, SkeletonBillCard } from "../../components/Skeleton";
 import { ServiceIcon } from "../../components/ServiceIcons";
+import { getUser, SERVICE_TYPE_MAP } from "./utils";
+import { useHomeData } from "./useHomeData";
+import { DashboardAlerts } from "./components";
 import "./styles.css";
 
 // ============ TYPES ============
@@ -18,66 +16,15 @@ interface HomeProps {
   onNavigate?: (section: string, options?: { serviceType?: string; tab?: string }) => void;
 }
 
-interface LoadingState {
-  services: boolean;
-  billing: boolean;
-  alerts: boolean;
-}
+// ============ COMPOSANT ============
 
-interface ErrorState {
-  services: string | null;
-  billing: string | null;
-  alerts: string | null;
-}
-
-// ============ HELPERS ============
-
-function getUser(): { firstname?: string; name?: string; nichandle?: string; isTrusted?: boolean } | null {
-  const stored = sessionStorage.getItem("ovh_user");
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return null;
-  }
-}
-
-const SERVICE_TYPE_MAP: Record<string, string> = {
-  "Noms de domaine": "domain",
-  "Hebergements Web": "hosting",
-  "Emails": "email",
-  "VPS": "vps",
-  "Serveurs dedies": "dedicated",
-  "Public Cloud": "cloud",
-  "IP": "ip",
-  "Logs Data Platform": "dbaas",
-};
-
-// ============ MAIN COMPONENT ============
-
+/** Dashboard accueil avec services, facturation et alertes. */
 export default function Home({ onNavigate }: HomeProps) {
   const { t, i18n } = useTranslation('home/dashboard');
   const user = getUser();
+  const { services, lastBill, debtAmount, alerts, loading, errors, loadServices, loadBilling } = useHomeData();
 
-  const [services, setServices] = useState<servicesService.ServiceSummary | null>(null);
-  const [lastBill, setLastBill] = useState<billingService.Bill | null>(null);
-  const [debtAmount, setDebtAmount] = useState(0);
-  const [alerts, setAlerts] = useState<notificationsService.DashboardAlerts | null>(null);
-
-  const [loading, setLoading] = useState<LoadingState>({
-    services: true,
-    billing: true,
-    alerts: true,
-  });
-
-  const [errors, setErrors] = useState<ErrorState>({
-    services: null,
-    billing: null,
-    alerts: null,
-  });
-
-  // ============ FORMATTERS ============
-
+  // ---------- FORMATTERS ----------
   const formatDate = (dateStr: string): string => {
     return new Date(dateStr).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
       day: "numeric",
@@ -93,63 +40,7 @@ export default function Home({ onNavigate }: HomeProps) {
     });
   };
 
-  // ============ LOADERS ============
-
-  const loadServices = useCallback(async () => {
-    setLoading((prev) => ({ ...prev, services: true }));
-    setErrors((prev) => ({ ...prev, services: null }));
-    try {
-      const data = await servicesService.getServicesSummary();
-      setServices(data);
-    } catch (err) {
-      setErrors((prev) => ({ ...prev, services: t('errors.servicesLoad') }));
-    } finally {
-      setLoading((prev) => ({ ...prev, services: false }));
-    }
-  }, [t]);
-
-  const loadBilling = useCallback(async () => {
-    setLoading((prev) => ({ ...prev, billing: true }));
-    setErrors((prev) => ({ ...prev, billing: null }));
-    try {
-      const [bills, debt] = await Promise.all([
-        billingService.getBills({ limit: 1 }),
-        billingService.getDebtAccount().catch(() => null),
-      ]);
-      setLastBill(bills.length > 0 ? bills[0] : null);
-      setDebtAmount(debt?.dueAmount?.value || 0);
-    } catch (err) {
-      setErrors((prev) => ({ ...prev, billing: t('errors.billingLoad') }));
-    } finally {
-      setLoading((prev) => ({ ...prev, billing: false }));
-    }
-  }, [t]);
-
-  const loadAlerts = useCallback(async () => {
-    setLoading((prev) => ({ ...prev, alerts: true }));
-    setErrors((prev) => ({ ...prev, alerts: null }));
-    try {
-      const data = await notificationsService.getDashboardAlerts();
-      setAlerts(data);
-    } catch (err) {
-      setAlerts(null);
-    } finally {
-      setLoading((prev) => ({ ...prev, alerts: false }));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      redirectToAuth();
-      return;
-    }
-    loadServices();
-    loadBilling();
-    loadAlerts();
-  }, [loadServices, loadBilling, loadAlerts]);
-
-  // ============ HANDLERS ============
-
+  // ---------- HANDLERS ----------
   const handleNavigate = (section: string, options?: { serviceType?: string; tab?: string }) => {
     onNavigate?.(section, options);
   };
@@ -159,69 +50,16 @@ export default function Home({ onNavigate }: HomeProps) {
     handleNavigate("home-billing", { serviceType: filterType, tab: "services" });
   };
 
-  // ============ RENDER ============
-
+  // ---------- RENDER ----------
   return (
     <div className="dashboard-page">
-      {/* Bannières système */}
-      {alerts?.banners && alerts.banners.length > 0 && (
-        <div className="banners-container">
-          {alerts.banners.map((banner) => (
-            <div key={banner.id} className={`banner-alert banner-${banner.level}`}>
-              <span className="banner-message">{banner.message}</span>
-              {banner.linkUrl && (
-                <a href={banner.linkUrl} className="banner-link" target="_blank" rel="noopener noreferrer">
-                  {banner.linkLabel || t('banners.learnMore')}
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Alerte KYC */}
-      {alerts?.kycStatus?.required && alerts.kycStatus.status !== "validated" && (
-        <div className={`kyc-alert kyc-${alerts.kycStatus.status === "rejected" ? "error" : "warning"}`}>
-          <span className="kyc-icon">🪪</span>
-          <span className="kyc-message">
-            {alerts.kycStatus.status === "pending" 
-              ? t('kyc.pending')
-              : alerts.kycStatus.status === "rejected"
-              ? t('kyc.rejected')
-              : t('kyc.required')}
-          </span>
-          <a href="https://www.ovh.com/manager/dedicated/#/identity-documents" className="kyc-link">
-            {t('kyc.complete')}
-          </a>
-        </div>
-      )}
-
-      {/* Welcome */}
-      <div className="dashboard-welcome">
-        <div className="welcome-content">
-          <h1>{t('welcome.greeting', { name: user?.firstname || '' })}</h1>
-          <p className="welcome-subtitle">{t('welcome.subtitle')}</p>
-        </div>
-        {user?.isTrusted && (
-          <span className="badge badge-success trusted-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="badge-icon">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
-            {t('welcome.securedAccount')}
-          </span>
-        )}
-      </div>
-
-      {/* Alerte dette */}
-      {!loading.billing && debtAmount > 0 && (
-        <div className="debt-alert">
-          <span className="debt-icon">⚠️</span>
-          <span className="debt-message" dangerouslySetInnerHTML={{ __html: t('debt.message', { amount: debtAmount.toFixed(2) }) }} />
-          <button className="debt-pay-btn" onClick={() => handleNavigate("home-billing", { tab: "payments" })}>
-            {t('debt.payButton')}
-          </button>
-        </div>
-      )}
+      <DashboardAlerts
+        alerts={alerts}
+        user={user}
+        debtAmount={debtAmount}
+        loadingBilling={loading.billing}
+        onNavigate={handleNavigate}
+      />
 
       {/* Layout 2 colonnes */}
       <div className="dashboard-grid">
@@ -239,11 +77,7 @@ export default function Home({ onNavigate }: HomeProps) {
             {services && services.types.length > 0 ? (
               <div className="services-grid">
                 {services.types.map((service) => (
-                  <button
-                    key={service.type}
-                    className="service-card"
-                    onClick={() => handleServiceClick(service.type)}
-                  >
+                  <button key={service.type} className="service-card" onClick={() => handleServiceClick(service.type)}>
                     <div className="service-icon-wrapper">
                       <ServiceIcon serviceType={service.type} size={32} className="service-icon" />
                     </div>
