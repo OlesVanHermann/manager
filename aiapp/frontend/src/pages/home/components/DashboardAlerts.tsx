@@ -51,9 +51,9 @@ export function DashboardAlerts({ alerts, user, debtAmount, loadingBilling, onNa
               ? t('kyc.rejected')
               : t('kyc.required')}
           </span>
-          <a href="https://www.ovh.com/manager/dedicated/#/identity-documents" className="kyc-link">
+          <button className="kyc-link" onClick={() => onNavigate("home-account", { tab: "kyc" })}>
             {t('kyc.complete')}
-          </a>
+          </button>
         </div>
       )}
 

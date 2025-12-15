@@ -3,7 +3,7 @@
 // Utilise le helper centralisé api.ts
 // ============================================================
 
-import { ovhGet, ovhPost, ovhPut } from "./api";
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "./api";
 
 // ============ TYPES ============
 
@@ -14,8 +14,8 @@ export interface PurchaseOrder {
   startDate: string;
   endDate?: string;
   active: boolean;
-  status: string; // CREATED, etc.
-  type: string; // REFERENCE_ORDER, PURCHASE_ORDER
+  status: string;
+  type: string;
 }
 
 export interface PurchaseOrderCreate {
@@ -239,6 +239,16 @@ export async function getPaymentMethods(): Promise<PaymentMethod[]> {
   return methods.filter((m): m is PaymentMethod => m !== null);
 }
 
+/** Supprime un moyen de paiement. */
+export async function deletePaymentMethod(paymentMethodId: number): Promise<void> {
+  return ovhDelete<void>(`/me/payment/method/${paymentMethodId}`);
+}
+
+/** Définit un moyen de paiement comme défaut. */
+export async function setDefaultPaymentMethod(paymentMethodId: number): Promise<PaymentMethod> {
+  return ovhPost<PaymentMethod>(`/me/payment/method/${paymentMethodId}/setAsDefault`, {});
+}
+
 // ============ ENCOURS / DETTE (/me/debtAccount) ============
 
 export async function getDebtAccount(): Promise<DebtAccount> {
@@ -329,7 +339,6 @@ export async function getFidelityMovements(options?: { "date.from"?: string; "da
   return movements.filter((m): m is FidelityMovement => m !== null).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-
 // ============ ALIAS MANQUANTS ============
 
 export async function getRefunds(options?: { "date.from"?: string; "date.to"?: string }): Promise<Credit[]> {
@@ -374,4 +383,26 @@ export async function createPurchaseOrder(data: PurchaseOrderCreate): Promise<Pu
 
 export async function updatePurchaseOrder(id: number, data: Partial<PurchaseOrderCreate> & { active?: boolean }): Promise<PurchaseOrder> {
   return ovhPut<PurchaseOrder>(`/me/billing/purchaseOrder/${id}`, data);
+}
+
+
+// ============ AJOUT MOYEN DE PAIEMENT ============
+
+/** Initie l'ajout d'un nouveau moyen de paiement. Retourne l'URL de validation. */
+export async function createPaymentMethod(params: {
+  paymentType: string;
+  description?: string;
+  default?: boolean;
+  callbackUrl?: string;
+}): Promise<{ paymentMethodId: number; validationUrl?: string }> {
+  return ovhPost<{ paymentMethodId: number; validationUrl?: string }>("/me/payment/method", params);
+}
+
+/** Liste les types de moyens de paiement disponibles. */
+export async function getAvailablePaymentTypes(): Promise<string[]> {
+  try {
+    return await ovhGet<string[]>("/me/payment/availableMethods");
+  } catch {
+    return ["CREDIT_CARD", "SEPA_DIRECT_DEBIT", "PAYPAL", "BANK_ACCOUNT"];
+  }
 }

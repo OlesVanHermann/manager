@@ -1,3 +1,7 @@
+// ============================================================
+// CONTACTS SERVICE - Gestion des contacts OVHcloud
+// ============================================================
+
 import type { OvhCredentials } from "../types/auth.types";
 
 const API_BASE = "/api/ovh";
@@ -37,12 +41,25 @@ export interface ServiceContact {
   contactBilling: string;
 }
 
+export interface ContactChangeRequest {
+  contactAdmin?: string;
+  contactTech?: string;
+  contactBilling?: string;
+}
+
+export interface ContactChangeResponse {
+  contactAdmin?: number[];
+  contactTech?: number[];
+  contactBilling?: number[];
+}
+
 // ============ API REQUEST ============
 
 async function ovhRequest<T>(
   credentials: OvhCredentials,
   method: string,
-  path: string
+  path: string,
+  body?: unknown
 ): Promise<T> {
   const url = `${API_BASE}${path}`;
   
@@ -56,14 +73,21 @@ async function ovhRequest<T>(
     headers["X-Ovh-Consumer-Key"] = credentials.consumerKey;
   }
 
-  const response = await fetch(url, { method, headers });
+  const response = await fetch(url, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: response.statusText }));
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 
-  return response.json();
+  // Certains endpoints retournent vide (204)
+  const text = await response.text();
+  if (!text) return {} as T;
+  return JSON.parse(text);
 }
 
 // ============ CONTACTS ============
@@ -103,9 +127,31 @@ export async function getContactChanges(credentials: OvhCredentials): Promise<Co
     .sort((a, b) => new Date(b.askDate).getTime() - new Date(a.askDate).getTime());
 }
 
+/** Accepte une demande de changement de contact. Requiert le token reçu par email. */
+export async function acceptContactChange(credentials: OvhCredentials, taskId: number, token: string): Promise<void> {
+  return ovhRequest<void>(credentials, "POST", `/me/task/contactChange/${taskId}/accept`, { token });
+}
+
+/** Refuse une demande de changement de contact. Requiert le token reçu par email. */
+export async function refuseContactChange(credentials: OvhCredentials, taskId: number, token: string): Promise<void> {
+  return ovhRequest<void>(credentials, "POST", `/me/task/contactChange/${taskId}/refuse`, { token });
+}
+
+/** Initie un changement de contact pour un service. Envoie un email de validation aux contacts concernés. */
+export async function initiateContactChange(
+  credentials: OvhCredentials,
+  serviceName: string,
+  contacts: ContactChangeRequest
+): Promise<ContactChangeResponse> {
+  return ovhRequest<ContactChangeResponse>(credentials, "POST", `/me/change/contact`, {
+    serviceName,
+    ...contacts,
+  });
+}
+
 // ============ SERVICE CONTACTS ============
 
-// Fetch contacts for all services using /services endpoint
+/** Récupère les contacts de tous les services (limité à 50 pour performance). */
 export async function getServiceContacts(credentials: OvhCredentials): Promise<ServiceContact[]> {
   try {
     const serviceIds = await ovhRequest<number[]>(credentials, "GET", "/services");

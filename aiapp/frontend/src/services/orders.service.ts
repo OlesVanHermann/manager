@@ -1,6 +1,10 @@
-import type { OvhCredentials } from "../types/auth.types";
+// ============================================================
+// ORDERS SERVICE - Commandes OVHcloud
+// Utilise le helper centralisé api.ts
+// ============================================================
 
-const API_BASE = "/api/ovh";
+import { ovhGet } from "./api";
+import type { OvhCredentials } from "../types/auth.types";
 
 // ============ TYPES ============
 
@@ -30,74 +34,51 @@ export interface OrderDetail {
   unitPrice: { currencyCode: string; text: string; value: number };
 }
 
-// ============ API REQUEST ============
-
-async function ovhRequest<T>(
-  credentials: OvhCredentials,
-  method: string,
-  path: string
-): Promise<T> {
-  const url = `${API_BASE}${path}`;
-  
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "X-Ovh-App-Key": credentials.appKey,
-    "X-Ovh-App-Secret": credentials.appSecret,
-  };
-
-  if (credentials.consumerKey) {
-    headers["X-Ovh-Consumer-Key"] = credentials.consumerKey;
-  }
-
-  const response = await fetch(url, { method, headers });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(error.message || `HTTP ${response.status}`);
-  }
-
-  return response.json();
+export interface OrderWithStatus extends Order {
+  status: string;
 }
 
-// ============ ORDERS ============
+// ============ COMMANDES (/me/order) ============
 
+/** Récupère la liste des IDs de commandes, filtrée par période optionnelle. */
 export async function getOrderIds(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string }): Promise<number[]> {
   const params = new URLSearchParams();
   if (options?.["date.from"]) params.append("date.from", options["date.from"]);
   if (options?.["date.to"]) params.append("date.to", options["date.to"]);
   const query = params.toString() ? `?${params.toString()}` : "";
-  return ovhRequest<number[]>(credentials, "GET", `/me/order${query}`);
+  return ovhGet<number[]>(`/me/order${query}`);
 }
 
+/** Récupère le détail d'une commande par son ID. */
 export async function getOrder(credentials: OvhCredentials, orderId: number): Promise<Order> {
-  return ovhRequest<Order>(credentials, "GET", `/me/order/${orderId}`);
+  return ovhGet<Order>(`/me/order/${orderId}`);
 }
 
+/** Récupère le statut d'une commande. */
 export async function getOrderStatus(credentials: OvhCredentials, orderId: number): Promise<OrderStatus> {
-  return ovhRequest<OrderStatus>(credentials, "GET", `/me/order/${orderId}/status`);
+  return ovhGet<OrderStatus>(`/me/order/${orderId}/status`);
 }
 
+/** Récupère la liste des IDs de détails d'une commande. */
 export async function getOrderDetails(credentials: OvhCredentials, orderId: number): Promise<number[]> {
-  return ovhRequest<number[]>(credentials, "GET", `/me/order/${orderId}/details`);
+  return ovhGet<number[]>(`/me/order/${orderId}/details`);
 }
 
+/** Récupère un détail spécifique d'une commande. */
 export async function getOrderDetail(credentials: OvhCredentials, orderId: number, detailId: number): Promise<OrderDetail> {
-  return ovhRequest<OrderDetail>(credentials, "GET", `/me/order/${orderId}/details/${detailId}`);
+  return ovhGet<OrderDetail>(`/me/order/${orderId}/details/${detailId}`);
 }
 
-// ============ ORDERS WITH STATUS ============
+// ============ COMMANDES AVEC STATUT ============
 
-export interface OrderWithStatus extends Order {
-  status: string;
-}
-
+/** Récupère les commandes avec leur statut, chargement par batch de 10. */
 export async function getOrders(credentials: OvhCredentials, options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<OrderWithStatus[]> {
   const orderIds = await getOrderIds(credentials, options);
   const idsToFetch = options?.limit ? orderIds.slice(0, options.limit) : orderIds;
-  
+
   const orders: OrderWithStatus[] = [];
   const batchSize = 10;
-  
+
   for (let i = 0; i < idsToFetch.length; i += batchSize) {
     const batch = idsToFetch.slice(i, i + batchSize);
     const results = await Promise.all(
@@ -115,6 +96,6 @@ export async function getOrders(credentials: OvhCredentials, options?: { "date.f
     );
     orders.push(...results.filter((o): o is OrderWithStatus => o !== null));
   }
-  
+
   return orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }

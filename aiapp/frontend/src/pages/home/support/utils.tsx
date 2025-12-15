@@ -13,8 +13,13 @@ export const SUPPORT_URLS = {
   contact: "https://www.ovhcloud.com/fr/contact/",
   helpCenter: "https://help.ovhcloud.com/csm",
   createTicket: "https://help.ovhcloud.com/csm?id=csm_get_help",
-  managerContacts: "https://www.ovh.com/manager/#/dedicated/contacts",
-  communicationSettings: "https://www.ovh.com/manager/#/dedicated/communication/settings",
+};
+
+// Routes internes New Manager (remplacent les liens old manager)
+export const INTERNAL_ROUTES = {
+  contacts: { section: "home-account", tab: "contacts-services" },
+  contactRequests: { section: "home-account", tab: "contacts-requests" },
+  communicationSettings: { section: "home-support", tab: "broadcast" },
 };
 
 // ============ HELPERS ============
