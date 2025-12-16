@@ -4,8 +4,9 @@
 // NAV3 (sous-sections) = géré à l'intérieur de chaque page
 // ============================================================
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
+import { BrowserRouter } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import HomePage from "./pages/home";
@@ -24,6 +25,43 @@ import * as authService from "./services/auth.service";
 import type { OvhCredentials, OvhUser } from "./types/auth.types";
 import "./design-system/tokens.css";
 import "./i18n";
+
+// ============================================================
+// LAZY IMPORTS - Pages Produits
+// ============================================================
+
+// Public Cloud
+const PublicCloudDashboard = lazy(() => import("./pages/public-cloud"));
+const CloudProjectPage = lazy(() => import("./pages/public-cloud/project"));
+
+// Bare Metal
+const BareMetalDashboard = lazy(() => import("./pages/bare-metal"));
+const VpsPage = lazy(() => import("./pages/bare-metal/vps"));
+const DedicatedPage = lazy(() => import("./pages/bare-metal/dedicated"));
+
+// Web Cloud
+const WebCloudDashboard = lazy(() => import("./pages/web-cloud"));
+const DomainsPage = lazy(() => import("./pages/web-cloud/domains"));
+const HostingPage = lazy(() => import("./pages/web-cloud/hosting"));
+const DnsZonesPage = lazy(() => import("./pages/web-cloud/dns-zones"));
+const PrivateDatabasePage = lazy(() => import("./pages/web-cloud/private-database"));
+const EmailDomainPage = lazy(() => import("./pages/web-cloud/email-domain"));
+const EmailProPage = lazy(() => import("./pages/web-cloud/email-pro"));
+const ExchangePage = lazy(() => import("./pages/web-cloud/exchange"));
+const ZimbraPage = lazy(() => import("./pages/web-cloud/zimbra"));
+const OfficePage = lazy(() => import("./pages/web-cloud/office"));
+
+// Network
+const NetworkDashboard = lazy(() => import("./pages/network"));
+const IpPage = lazy(() => import("./pages/network/ip"));
+const VrackPage = lazy(() => import("./pages/network/vrack"));
+const LoadBalancerPage = lazy(() => import("./pages/network/load-balancer"));
+
+// Telecom
+const TelecomDashboard = lazy(() => import("./pages/telecom"));
+const VoipPage = lazy(() => import("./pages/telecom/voip"));
+const SmsPage = lazy(() => import("./pages/telecom/sms"));
+const FaxPage = lazy(() => import("./pages/telecom/fax"));
 
 const STORAGE_KEY = "ovh_credentials";
 
@@ -89,7 +127,9 @@ function AppContent() {
 
   // ---------- CONTENT ROUTING ----------
   const renderContent = () => {
-    // Home Universe
+    // ============================================================
+    // HOME Universe
+    // ============================================================
     if (nav.activeUniverseId === "home") {
       switch (nav.activeSectionId) {
         case "home-dashboard":
@@ -109,12 +149,120 @@ function AppContent() {
       }
     }
 
+    // ============================================================
     // IAM Universe
+    // ============================================================
     if (nav.activeUniverseId === "iam") {
       return <IamPage initialTab={nav.activeTabId} />;
     }
 
+    // ============================================================
+    // PUBLIC CLOUD Universe
+    // ============================================================
+    if (nav.activeUniverseId === "public-cloud") {
+      switch (nav.activeSectionId) {
+        case "pci-home":
+          return <PublicCloudDashboard />;
+        case "pci-instances":
+        case "pci-storage":
+        case "pci-network":
+        case "pci-databases":
+        case "pci-ai":
+          return <CloudProjectPage />;
+        default:
+          return <PublicCloudDashboard />;
+      }
+    }
+
+    // ============================================================
+    // BARE METAL Universe
+    // ============================================================
+    if (nav.activeUniverseId === "bare-metal") {
+      switch (nav.activeSectionId) {
+        case "bm-home":
+          return <BareMetalDashboard />;
+        case "bm-dedicated":
+          return <DedicatedPage />;
+        case "bm-vps":
+          return <VpsPage />;
+        case "bm-managed":
+          return <BareMetalDashboard />;
+        default:
+          return <BareMetalDashboard />;
+      }
+    }
+
+    // ============================================================
+    // WEB CLOUD Universe
+    // ============================================================
+    if (nav.activeUniverseId === "web-cloud") {
+      switch (nav.activeSectionId) {
+        case "web-home":
+          return <WebCloudDashboard />;
+        case "web-domains":
+          return <DomainsPage />;
+        case "web-dns-zones":
+          return <DnsZonesPage />;
+        case "web-hosting":
+          return <HostingPage />;
+        case "web-private-db":
+          return <PrivateDatabasePage />;
+        case "web-email-domain":
+          return <EmailDomainPage />;
+        case "web-email-pro":
+          return <EmailProPage />;
+        case "web-exchange":
+          return <ExchangePage />;
+        case "web-zimbra":
+          return <ZimbraPage />;
+        case "web-office":
+          return <OfficePage />;
+        default:
+          return <WebCloudDashboard />;
+      }
+    }
+
+    // ============================================================
+    // NETWORK Universe
+    // ============================================================
+    if (nav.activeUniverseId === "network") {
+      switch (nav.activeSectionId) {
+        case "net-home":
+          return <NetworkDashboard />;
+        case "net-ip":
+          return <IpPage />;
+        case "net-vrack":
+          return <VrackPage />;
+        case "net-lb":
+          return <LoadBalancerPage />;
+        case "net-cdn":
+          return <NetworkDashboard />;
+        default:
+          return <NetworkDashboard />;
+      }
+    }
+
+    // ============================================================
+    // TELECOM Universe
+    // ============================================================
+    if (nav.activeUniverseId === "telecom") {
+      switch (nav.activeSectionId) {
+        case "telecom-home":
+          return <TelecomDashboard />;
+        case "telecom-voip":
+          return <VoipPage />;
+        case "telecom-sms":
+          return <SmsPage />;
+        case "telecom-fax":
+          return <FaxPage />;
+        default:
+          return <TelecomDashboard />;
+      }
+    }
+
+    // ============================================================
     // Other universes - Placeholder
+    // ============================================================
     const activeSection = nav.activeUniverse?.sections.find((s) => s.id === nav.activeSectionId);
     return (
       <PlaceholderPage
@@ -156,7 +304,9 @@ function AppContent() {
         )}
 
         <main className="content-area">
-          {renderContent()}
+          <Suspense fallback={<LoadingFallback />}>
+            {renderContent()}
+          </Suspense>
         </main>
       </div>
 
@@ -176,10 +326,12 @@ function AppContent() {
 // ============================================================
 export default function App() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </Suspense>
+    <BrowserRouter>
+      <Suspense fallback={<LoadingFallback />}>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </Suspense>
+    </BrowserRouter>
   );
 }
