@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { domainsService, GlueRecord } from "../../../../services/domains.service";
+import { domainsService, GlueRecord } from "../../../../services/web-cloud.domains";
 
 interface Props {
   domain: string;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { networkService } from "../../../../services/network.service";
+import { networkService } from "../../../../services/network";
 
 interface Props { serviceName: string; }
 

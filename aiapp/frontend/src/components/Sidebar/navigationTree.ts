@@ -55,10 +55,7 @@ export const universes: Universe[] = [
     id: "home",
     i18nKey: "universes.home",
     sections: [
-      {
-        id: "home-dashboard",
-        i18nKey: "sections.home.dashboard",
-      },
+      { id: "home-dashboard", i18nKey: "sections.home.dashboard" },
       {
         id: "home-account",
         i18nKey: "sections.home.account",
@@ -100,10 +97,7 @@ export const universes: Universe[] = [
           { id: "support-broadcast", i18nKey: "subsections.support.broadcast" },
         ],
       },
-      {
-        id: "home-carbon",
-        i18nKey: "sections.home.carbon",
-      },
+      { id: "home-carbon", i18nKey: "sections.home.carbon" },
       {
         id: "home-api",
         i18nKey: "sections.home.api",
@@ -196,31 +190,18 @@ export const universes: Universe[] = [
     i18nKey: "universes.webCloud",
     sections: [
       { id: "web-home", i18nKey: "sections.webCloud.home" },
-      {
-        id: "web-domains",
-        i18nKey: "sections.webCloud.domains",
-        subsections: [
-          { id: "web-domains-list", i18nKey: "subsections.webCloud.domainsList" },
-          { id: "web-domains-dns", i18nKey: "subsections.webCloud.domainsDns" },
-        ],
-      },
-      {
-        id: "web-hosting",
-        i18nKey: "sections.webCloud.hosting",
-        subsections: [
-          { id: "web-hosting-list", i18nKey: "subsections.webCloud.hostingList" },
-          { id: "web-hosting-db", i18nKey: "subsections.webCloud.hostingDb" },
-        ],
-      },
-      {
-        id: "web-emails",
-        i18nKey: "sections.webCloud.emails",
-        subsections: [
-          { id: "web-emails-domain", i18nKey: "subsections.webCloud.emailsDomain" },
-          { id: "web-emails-pro", i18nKey: "subsections.webCloud.emailsPro" },
-          { id: "web-emails-exchange", i18nKey: "subsections.webCloud.emailsExchange" },
-        ],
-      },
+      { id: "web-domains", i18nKey: "sections.webCloud.domains" },
+      { id: "web-dns-zones", i18nKey: "sections.webCloud.dnsZones" },
+      { id: "web-hosting", i18nKey: "sections.webCloud.hosting" },
+      { id: "web-private-db", i18nKey: "sections.webCloud.privateDb" },
+      { id: "web-email-domain", i18nKey: "sections.webCloud.emailDomain" },
+      { id: "web-email-pro", i18nKey: "sections.webCloud.emailPro" },
+      { id: "web-exchange", i18nKey: "sections.webCloud.exchange" },
+      { id: "web-zimbra", i18nKey: "sections.webCloud.zimbra" },
+      { id: "web-office", i18nKey: "sections.webCloud.office" },
+      { id: "web-voip", i18nKey: "sections.webCloud.voip" },
+      { id: "web-sms", i18nKey: "sections.webCloud.sms" },
+      { id: "web-fax", i18nKey: "sections.webCloud.fax" },
     ],
   },
 

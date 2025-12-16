@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import type { AuthState, OvhCredentials, OvhUser } from "../types/auth.types";
-import * as authService from "../services/auth.service";
+import * as authService from "../services/auth";
 
 const STORAGE_KEY = "ovh_credentials";
 

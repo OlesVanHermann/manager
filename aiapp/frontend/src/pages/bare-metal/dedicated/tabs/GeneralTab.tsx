@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { DedicatedServer, DedicatedServerServiceInfos, DedicatedServerHardware } from "../../../../services/dedicated.service";
+import { DedicatedServer, DedicatedServerServiceInfos, DedicatedServerHardware } from "../../../../services/bare-metal.dedicated";
 
 interface Props { serviceName: string; details?: DedicatedServer; serviceInfos?: DedicatedServerServiceInfos; hardware?: DedicatedServerHardware; loading: boolean; }
 

@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { dedicatedService, DedicatedServer, DedicatedServerServiceInfos, DedicatedServerHardware } from "../../../services/dedicated.service";
+import { dedicatedService, DedicatedServer, DedicatedServerServiceInfos, DedicatedServerHardware } from "../../../services/bare-metal.dedicated";
 import { GeneralTab, NetworkTab, IpmiTab, InterventionsTab, TasksTab } from "./tabs";
 import "./styles.css";
 

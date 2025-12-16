@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService, PrivateDatabaseTask } from "../../../../services/private-database.service";
+import { privateDatabaseService, PrivateDatabaseTask } from "../../../../services/web-cloud.private-database";
 
 interface Props { serviceName: string; }
 

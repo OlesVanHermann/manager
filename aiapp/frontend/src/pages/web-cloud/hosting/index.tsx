@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, Hosting, HostingServiceInfos } from "../../../services/hosting.service";
+import { hostingService, Hosting, HostingServiceInfos } from "../../../services/web-cloud.hosting";
 import { GeneralTab, MultisiteTab, FtpTab, DatabaseTab, CronTab, SslTab, RuntimesTab, EnvvarsTab, LogsTab, EmailsTab, ModulesTab, TasksTab } from "./tabs";
 import "../styles.css";
 import "./styles.css";

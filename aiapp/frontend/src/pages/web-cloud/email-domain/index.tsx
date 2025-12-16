@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { emailDomainService, EmailDomain } from "../../../services/email-domain.service";
+import { emailDomainService, EmailDomain } from "../../../services/web-cloud.email-domain";
 import { AccountsTab, RedirectionsTab, MailingListsTab, TasksTab } from "./tabs";
 import "../styles.css";
 

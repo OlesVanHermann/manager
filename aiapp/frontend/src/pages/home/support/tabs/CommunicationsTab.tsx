@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as communicationService from "../../../../services/communication.service";
+import * as communicationService from "../../../../services/home.support.communication";
 import { formatDate, MailIcon, SUPPORT_URLS } from "../utils";
 
 // ============ COMPOSANT ============

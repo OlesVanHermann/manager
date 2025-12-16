@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { cloudService } from "../../services/cloud.service";
+import { cloudService } from "../../services/public-cloud";
 import "./styles.css";
 
 export default function PublicCloudDashboard() {

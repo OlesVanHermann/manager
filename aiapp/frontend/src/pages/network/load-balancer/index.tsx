@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { networkService, IpLoadBalancing, IpLoadBalancingServiceInfos } from "../../../services/network.service";
+import { networkService, IpLoadBalancing, IpLoadBalancingServiceInfos } from "../../../services/network";
 import { FarmsTab, FrontendsTab } from "./tabs";
 import "./styles.css";
 

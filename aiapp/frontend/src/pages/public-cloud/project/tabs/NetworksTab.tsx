@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { cloudService, CloudNetwork } from "../../../../services/cloud.service";
+import { cloudService, CloudNetwork } from "../../../../services/public-cloud";
 
 interface Props { projectId: string; }
 

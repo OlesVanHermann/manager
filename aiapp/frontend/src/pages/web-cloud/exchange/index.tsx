@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { exchangeService, ExchangeService as ExchangeServiceType } from "../../../services/exchange.service";
+import { exchangeService, ExchangeService as ExchangeServiceType } from "../../../services/web-cloud.exchange";
 import { AccountsTab, GroupsTab, ResourcesTab, DomainsTab, TasksTab } from "./tabs";
 import "../styles.css";
 

@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { emailDomainService, EmailTask } from "../../../../services/email-domain.service";
+import { emailDomainService, EmailTask } from "../../../../services/web-cloud.email-domain";
 
 interface Props { domain: string; }
 

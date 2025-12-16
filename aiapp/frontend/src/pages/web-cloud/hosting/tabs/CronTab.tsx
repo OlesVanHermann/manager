@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, CronJob } from "../../../../services/hosting.service";
+import { hostingService, CronJob } from "../../../../services/web-cloud.hosting";
 
 interface Props { serviceName: string; }
 

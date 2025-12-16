@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService, PrivateDatabase, PrivateDatabaseServiceInfos } from "../../../services/private-database.service";
+import { privateDatabaseService, PrivateDatabase, PrivateDatabaseServiceInfos } from "../../../services/web-cloud.private-database";
 import { GeneralTab, DatabasesTab, UsersTab, WhitelistTab, TasksTab } from "./tabs";
 import "../styles.css";
 import "./styles.css";

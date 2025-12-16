@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import * as ordersService from "../../../../services/orders.service";
+import * as ordersService from "../../../../services/home.billing.orders";
 import { TabProps, formatDate, formatAmount, formatDateISO } from "../utils";
 import { DownloadIcon, ExternalIcon, CartIcon } from "../icons";
 import { BATCH_SIZE, VALID_WINDOW_SIZES, usePeriodNavigation, PeriodToolbar } from "../shared";

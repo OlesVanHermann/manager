@@ -21,7 +21,7 @@ import { Sidebar, universes } from "./components/Sidebar";
 import { AccountSidebar } from "./components/AccountSidebar";
 import { UniversTabs, SectionTabs, UserMenu, LoadingFallback } from "./components/HeaderNav";
 import { useAppNavigation } from "./hooks/useAppNavigation";
-import * as authService from "./services/auth.service";
+import * as authService from "./services/auth";
 import type { OvhCredentials, OvhUser } from "./types/auth.types";
 import "./design-system/tokens.css";
 import "./i18n";
@@ -50,18 +50,15 @@ const EmailProPage = lazy(() => import("./pages/web-cloud/email-pro"));
 const ExchangePage = lazy(() => import("./pages/web-cloud/exchange"));
 const ZimbraPage = lazy(() => import("./pages/web-cloud/zimbra"));
 const OfficePage = lazy(() => import("./pages/web-cloud/office"));
+const VoipPage = lazy(() => import("./pages/web-cloud/voip"));
+const SmsPage = lazy(() => import("./pages/web-cloud/sms"));
+const FaxPage = lazy(() => import("./pages/web-cloud/fax"));
 
 // Network
 const NetworkDashboard = lazy(() => import("./pages/network"));
 const IpPage = lazy(() => import("./pages/network/ip"));
 const VrackPage = lazy(() => import("./pages/network/vrack"));
 const LoadBalancerPage = lazy(() => import("./pages/network/load-balancer"));
-
-// Telecom
-const TelecomDashboard = lazy(() => import("./pages/telecom"));
-const VoipPage = lazy(() => import("./pages/telecom/voip"));
-const SmsPage = lazy(() => import("./pages/telecom/sms"));
-const FaxPage = lazy(() => import("./pages/telecom/fax"));
 
 const STORAGE_KEY = "ovh_credentials";
 
@@ -217,6 +214,12 @@ function AppContent() {
           return <ZimbraPage />;
         case "web-office":
           return <OfficePage />;
+        case "web-voip":
+          return <VoipPage />;
+        case "web-sms":
+          return <SmsPage />;
+        case "web-fax":
+          return <FaxPage />;
         default:
           return <WebCloudDashboard />;
       }
@@ -239,24 +242,6 @@ function AppContent() {
           return <NetworkDashboard />;
         default:
           return <NetworkDashboard />;
-      }
-    }
-
-    // ============================================================
-    // TELECOM Universe
-    // ============================================================
-    if (nav.activeUniverseId === "telecom") {
-      switch (nav.activeSectionId) {
-        case "telecom-home":
-          return <TelecomDashboard />;
-        case "telecom-voip":
-          return <VoipPage />;
-        case "telecom-sms":
-          return <SmsPage />;
-        case "telecom-fax":
-          return <FaxPage />;
-        default:
-          return <TelecomDashboard />;
       }
     }
 

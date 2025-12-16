@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { IconNetwork } from "./SecurityIcons";
 import type { ModalType } from "./useSecurityData";
-import type * as securityService from "../../../../services/security.service";
+import type * as securityService from "../../../../services/home.account.security";
 
 interface IpRestrictionsSectionProps {
   ipRestrictions: securityService.IpRestriction[];

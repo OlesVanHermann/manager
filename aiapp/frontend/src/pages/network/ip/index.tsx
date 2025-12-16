@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { networkService, IpBlock } from "../../../services/network.service";
+import { networkService, IpBlock } from "../../../services/network";
 import "./styles.css";
 
 export default function IpPage() {

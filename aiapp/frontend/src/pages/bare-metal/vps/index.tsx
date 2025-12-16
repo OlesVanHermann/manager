@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { vpsService, Vps, VpsServiceInfos } from "../../../services/vps.service";
+import { vpsService, Vps, VpsServiceInfos } from "../../../services/bare-metal.vps";
 import { GeneralTab, IpsTab, DisksTab, SnapshotTab, TasksTab } from "./tabs";
 import "./styles.css";
 

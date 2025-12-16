@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getCredentials } from "../../../services/api";
-import * as contactsService from "../../../services/contacts.service";
+import * as contactsService from "../../../services/home.account.contacts";
 
 // ============ TYPES ============
 

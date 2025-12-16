@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { OvhUser, OvhCredentials } from "../../../types/auth.types";
-import * as accountService from "../../../services/account.service";
+import * as accountService from "../../../services/home.account";
 
 interface ProfileEditTabProps {
   user: OvhUser | null;

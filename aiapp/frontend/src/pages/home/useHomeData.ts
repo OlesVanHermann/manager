@@ -5,9 +5,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { isAuthenticated, redirectToAuth } from "../../services/api";
-import * as servicesService from "../../services/services.service";
-import * as billingService from "../../services/billing.service";
-import * as notificationsService from "../../services/notifications.service";
+import * as servicesService from "../../services/home.billing.services";
+import * as billingService from "../../services/home.billing";
+import * as notificationsService from "../../services/home.notifications";
 
 // ============ TYPES ============
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { dedicatedService, DedicatedServerIntervention } from "../../../../services/dedicated.service";
+import { dedicatedService, DedicatedServerIntervention } from "../../../../services/bare-metal.dedicated";
 
 interface Props { serviceName: string; }
 

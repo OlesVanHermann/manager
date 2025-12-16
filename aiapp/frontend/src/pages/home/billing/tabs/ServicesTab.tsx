@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as servicesService from "../../../../services/services.service";
+import * as servicesService from "../../../../services/home.billing.services";
 import { TabProps, formatDate } from "../utils";
 import { ServerIcon } from "../icons";
 

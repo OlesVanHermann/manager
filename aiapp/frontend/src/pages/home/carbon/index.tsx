@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as carbonService from "../../../services/carbon.service";
+import * as carbonService from "../../../services/home.carbon";
 import "./styles.css";
 
 // ============ COMPOSANT ============

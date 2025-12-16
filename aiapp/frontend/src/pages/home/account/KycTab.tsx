@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import * as proceduresService from "../../../services/procedures.service";
+import * as proceduresService from "../../../services/home.account.procedures";
 
 // ============ TYPES ============
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { vpsService, VpsTask } from "../../../../services/vps.service";
+import { vpsService, VpsTask } from "../../../../services/bare-metal.vps";
 
 interface Props { serviceName: string; }
 

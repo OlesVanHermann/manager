@@ -257,3 +257,12 @@ export async function ovhDirectFetch<T>(
 export async function ovhDirectGet<T>(path: string, options?: { skipAuthRedirect?: boolean }): Promise<T> {
   return ovhDirectFetch<T>("GET", path, options);
 }
+
+// ============ OBJET API UNIFIÉ ============
+
+export const ovhApi = {
+  get: ovhGet,
+  post: ovhPost,
+  put: ovhPut,
+  delete: ovhDelete,
+};

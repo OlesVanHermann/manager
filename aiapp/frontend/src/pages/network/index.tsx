@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { networkService } from "../../services/network.service";
+import { networkService } from "../../services/network";
 import "./styles.css";
 
 export default function NetworkDashboard() {

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { IconSms, IconTotp, IconKey, IconBackup, IconCheck } from "./SecurityIcons";
 import type { ModalType } from "./useSecurityData";
-import type * as securityService from "../../../../services/security.service";
+import type * as securityService from "../../../../services/home.account.security";
 
 interface TwoFactorSectionProps {
   status: securityService.TwoFactorStatus | null;

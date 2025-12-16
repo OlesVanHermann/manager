@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { networkService, Vrack, VrackServiceInfos } from "../../../services/network.service";
+import { networkService, Vrack, VrackServiceInfos } from "../../../services/network";
 import { ServicesTab, TasksTab } from "./tabs";
 import "./styles.css";
 

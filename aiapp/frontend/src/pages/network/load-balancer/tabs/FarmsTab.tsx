@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { networkService, IpLoadBalancingFarm, IpLoadBalancingServer } from "../../../../services/network.service";
+import { networkService, IpLoadBalancingFarm, IpLoadBalancingServer } from "../../../../services/network";
 
 interface Props { serviceName: string; }
 

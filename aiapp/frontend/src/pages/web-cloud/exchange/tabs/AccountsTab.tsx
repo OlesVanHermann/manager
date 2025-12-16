@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { exchangeService, ExchangeAccount } from "../../../../services/exchange.service";
+import { exchangeService, ExchangeAccount } from "../../../../services/web-cloud.exchange";
 
 interface Props { org: string; service: string; }
 

@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import { Vps, VpsServiceInfos } from "../../../../services/vps.service";
+import { Vps, VpsServiceInfos } from "../../../../services/bare-metal.vps";
 
 interface Props { serviceName: string; details?: Vps; serviceInfos?: VpsServiceInfos; loading: boolean; }
 

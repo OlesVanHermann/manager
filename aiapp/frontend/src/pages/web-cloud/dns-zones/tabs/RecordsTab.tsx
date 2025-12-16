@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { dnsZonesService, DnsZoneRecord } from "../../../../services/dns-zones.service";
+import { dnsZonesService, DnsZoneRecord } from "../../../../services/web-cloud.dns-zones";
 
 interface Props { zoneName: string; }
 

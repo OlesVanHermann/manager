@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { zimbraService, ZimbraService as ZimbraServiceType } from "../../../services/zimbra.service";
+import { zimbraService, ZimbraService as ZimbraServiceType } from "../../../services/web-cloud.zimbra";
 import { AccountsTab, DomainsTab, AliasesTab, TasksTab } from "./tabs";
 import "../styles.css";
 

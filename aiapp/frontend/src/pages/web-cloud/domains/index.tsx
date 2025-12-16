@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { domainsService, Domain, DomainServiceInfos } from "../../../services/domains.service";
+import { domainsService, Domain, DomainServiceInfos } from "../../../services/web-cloud.domains";
 import { GeneralTab, DnsTab, ZoneTab, RedirectionTab, DnssecTab, GlueTab, DynHostTab, TasksTab } from "./tabs";
 import "../styles.css";
 import "./styles.css";

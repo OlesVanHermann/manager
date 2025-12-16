@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { emailProService, EmailProTask } from "../../../../services/email-pro.service";
+import { emailProService, EmailProTask } from "../../../../services/web-cloud.email-pro";
 
 interface Props { service: string; }
 

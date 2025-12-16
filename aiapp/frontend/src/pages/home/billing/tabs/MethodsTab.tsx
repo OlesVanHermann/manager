@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../services/billing.service";
+import * as billingService from "../../../../services/home.billing";
 import { TabProps, formatDateMonth } from "../utils";
 import { CardIcon, VisaIcon, MastercardIcon, AmexIcon, BankIcon, PaypalIcon, TrashIcon, StarIcon } from "../icons";
 

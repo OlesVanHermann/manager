@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import { Hosting } from "../../../../services/hosting.service";
+import { Hosting } from "../../../../services/web-cloud.hosting";
 
 interface Props { serviceName: string; details?: Hosting; }
 

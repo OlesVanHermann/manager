@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as iamService from "../../../services/iam.service";
+import * as iamService from "../../../services/iam";
 import { useCredentials, UserIcon } from "../utils";
 
 // ============ COMPOSANT ============

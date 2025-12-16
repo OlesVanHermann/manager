@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { officeService, OfficeTenant } from "../../../services/office.service";
+import { officeService, OfficeTenant } from "../../../services/web-cloud.office";
 import { UsersTab, DomainsTab, TasksTab } from "./tabs";
 import "../styles.css";
 

@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import type * as notificationsService from "../../../services/notifications.service";
+import type * as notificationsService from "../../../services/home.notifications";
 import type { UserInfo } from "../utils";
 
 // ============ TYPES ============

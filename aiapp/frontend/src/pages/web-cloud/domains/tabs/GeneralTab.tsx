@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import { Domain, DomainServiceInfos } from "../../../../services/domains.service";
+import { Domain, DomainServiceInfos } from "../../../../services/web-cloud.domains";
 
 interface Props {
   domain: string;

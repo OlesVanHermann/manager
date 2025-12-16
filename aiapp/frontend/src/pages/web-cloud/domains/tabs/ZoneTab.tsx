@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { domainsService, DnsRecord } from "../../../../services/domains.service";
+import { domainsService, DnsRecord } from "../../../../services/web-cloud.domains";
 
 interface Props {
   domain: string;

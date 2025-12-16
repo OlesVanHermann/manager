@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { dnsZonesService, DnsZone, DnsZoneServiceInfos } from "../../../services/dns-zones.service";
+import { dnsZonesService, DnsZone, DnsZoneServiceInfos } from "../../../services/web-cloud.dns-zones";
 import { RecordsTab, HistoryTab, TasksTab } from "./tabs";
 import "../styles.css";
 import "./styles.css";

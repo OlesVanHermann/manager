@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { zimbraService, ZimbraAlias } from "../../../../services/zimbra.service";
+import { zimbraService, ZimbraAlias } from "../../../../services/web-cloud.zimbra";
 
 interface Props { serviceId: string; }
 

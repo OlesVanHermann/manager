@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { domainsService, Redirection } from "../../../../services/domains.service";
+import { domainsService, Redirection } from "../../../../services/web-cloud.domains";
 
 interface Props {
   domain: string;

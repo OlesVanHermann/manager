@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as agreementsService from "../../../../services/agreements.service";
+import * as agreementsService from "../../../../services/home.billing.agreements";
 import { TabProps, formatDateLong } from "../utils";
 import { DownloadIcon, ContractIcon } from "../icons";
 

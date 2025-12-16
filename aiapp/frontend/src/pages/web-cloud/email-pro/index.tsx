@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { emailProService, EmailProService } from "../../../services/email-pro.service";
+import { emailProService, EmailProService } from "../../../services/web-cloud.email-pro";
 import { AccountsTab, DomainsTab, TasksTab } from "./tabs";
 import "../styles.css";
 

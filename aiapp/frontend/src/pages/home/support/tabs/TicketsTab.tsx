@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as supportService from "../../../../services/support.service";
+import * as supportService from "../../../../services/home.support";
 import { getCredentials, formatDate, TicketIcon, SUPPORT_URLS } from "../utils";
 
 // ============ COMPOSANT ============

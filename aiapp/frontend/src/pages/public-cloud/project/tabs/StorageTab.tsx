@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { cloudService, CloudContainer } from "../../../../services/cloud.service";
+import { cloudService, CloudContainer } from "../../../../services/public-cloud";
 
 interface Props { projectId: string; }
 

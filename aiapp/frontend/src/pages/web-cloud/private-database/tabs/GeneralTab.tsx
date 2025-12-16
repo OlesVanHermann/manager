@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import { PrivateDatabase, PrivateDatabaseServiceInfos } from "../../../../services/private-database.service";
+import { PrivateDatabase, PrivateDatabaseServiceInfos } from "../../../../services/web-cloud.private-database";
 
 interface Props { serviceName: string; details?: PrivateDatabase; serviceInfos?: PrivateDatabaseServiceInfos; loading: boolean; }
 

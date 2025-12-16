@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as accountService from "../../../../services/account.service";
+import * as accountService from "../../../../services/home.account";
 import { getCredentials, SUPPORT_URLS } from "../utils";
 
 // ============ TYPES ============

@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { cloudService, CloudProject, CloudProjectServiceInfos } from "../../../services/cloud.service";
+import { cloudService, CloudProject, CloudProjectServiceInfos } from "../../../services/public-cloud";
 import { InstancesTab, VolumesTab, SnapshotsTab, StorageTab, NetworksTab, SshKeysTab, QuotaTab } from "./tabs";
 import "./styles.css";
 

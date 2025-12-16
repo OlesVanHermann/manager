@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, HostingTask } from "../../../../services/hosting.service";
+import { hostingService, HostingTask } from "../../../../services/web-cloud.hosting";
 
 interface Props { serviceName: string; }
 

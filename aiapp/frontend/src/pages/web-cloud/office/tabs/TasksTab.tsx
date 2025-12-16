@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { officeService, OfficeTask } from "../../../../services/office.service";
+import { officeService, OfficeTask } from "../../../../services/web-cloud.office";
 
 interface Props { serviceName: string; }
 
