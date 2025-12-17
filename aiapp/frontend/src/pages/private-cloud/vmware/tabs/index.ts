@@ -1,0 +1,9 @@
+export { default as GeneralTab } from "./GeneralTab";
+export { default as DatacentersTab } from "./DatacentersTab";
+export { default as HostsTab } from "./HostsTab";
+export { default as DatastoresTab } from "./DatastoresTab";
+export { default as UsersTab } from "./UsersTab";
+export { default as SecurityTab } from "./SecurityTab";
+export { default as LicenseTab } from "./LicenseTab";
+export { default as OperationsTab } from "./OperationsTab";
+export { default as TasksTab } from "./TasksTab";
