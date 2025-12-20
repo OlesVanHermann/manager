@@ -1,96 +1,107 @@
 // ============================================================
-// VOIP - Page principale
+// VOIP PAGE - Téléphonie VoIP (style Billing)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { voipService, TelephonyBillingAccount } from "../../../services/web-cloud.voip";
+import { ServiceListPage, ServiceItem } from "../shared";
+import { voipService } from "../../../services/web-cloud.voip";
 import { LinesTab, NumbersTab, VoicemailsTab } from "./tabs";
-import "./styles.css";
+import "../styles.css";
 
-interface Tab { id: string; labelKey: string; }
-interface AccountWithDetails { billingAccount: string; details?: TelephonyBillingAccount; loading: boolean; }
+// ============ ICONS ============
 
+const PhoneIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+  </svg>
+);
+
+// ============ COMPOSANT ============
+
+/** Page VoIP avec liste à gauche et détails à droite. */
 export default function VoipPage() {
   const { t } = useTranslation("web-cloud/voip/index");
-  const { t: tCommon } = useTranslation("common");
-  const [accounts, setAccounts] = useState<AccountWithDetails[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("lines");
+
+  // ---------- STATE ----------
+  const [accounts, setAccounts] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("lines");
 
-  const tabs: Tab[] = [
-    { id: "lines", labelKey: "tabs.lines" },
-    { id: "numbers", labelKey: "tabs.numbers" },
-    { id: "voicemails", labelKey: "tabs.voicemails" },
-  ];
-
+  // ---------- LOAD ACCOUNTS ----------
   const loadAccounts = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await voipService.listBillingAccounts();
-      const list: AccountWithDetails[] = names.map(billingAccount => ({ billingAccount, loading: true }));
-      setAccounts(list);
-      if (names.length > 0 && !selected) setSelected(names[0]);
-      for (const name of names) {
-        try {
-          const details = await voipService.getBillingAccount(name);
-          setAccounts(prev => prev.map(a => a.billingAccount === name ? { ...a, details, loading: false } : a));
-        } catch { setAccounts(prev => prev.map(a => a.billingAccount === name ? { ...a, loading: false } : a)); }
+      setError(null);
+      const accountNames = await voipService.listBillingAccounts();
+      const items: ServiceItem[] = accountNames.map((name) => ({
+        id: name,
+        name: name,
+        type: "VoIP",
+      }));
+      setAccounts(items);
+      if (items.length > 0 && !selectedAccount) {
+        setSelectedAccount(items[0].id);
       }
-    } finally { setLoading(false); }
-  }, [selected]);
-
-  useEffect(() => { loadAccounts(); }, []);
-
-  const filtered = accounts.filter(a => a.billingAccount.toLowerCase().includes(searchQuery.toLowerCase()));
-  const current = accounts.find(a => a.billingAccount === selected);
-
-  const renderTab = () => {
-    if (!selected) return null;
-    switch (activeTab) {
-      case "lines": return <LinesTab billingAccount={selected} />;
-      case "numbers": return <NumbersTab billingAccount={selected} />;
-      case "voicemails": return <VoicemailsTab billingAccount={selected} />;
-      default: return null;
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
+  useEffect(() => {
+    loadAccounts();
+  }, [loadAccounts]);
+
+  // ---------- TABS ----------
+  const detailTabs = [
+    { id: "lines", label: t("tabs.lines") },
+    { id: "numbers", label: t("tabs.numbers") },
+    { id: "voicemails", label: t("tabs.voicemails") },
+  ];
+
+  // ---------- RENDER ----------
   return (
-    <div className="voip-page">
-      <aside className="voip-sidebar">
-        <div className="sidebar-header"><h2>{t("title")}</h2><span className="count-badge">{accounts.length}</span></div>
-        <div className="sidebar-search"><input type="text" placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
-        <div className="account-list">
-          {loading && accounts.length === 0 ? (<div className="loading-state"><div className="skeleton-item" /></div>) : filtered.length === 0 ? (<div className="empty-state">{tCommon("empty.title")}</div>) : (
-            filtered.map((a) => (
-              <button key={a.billingAccount} className={`account-item ${selected === a.billingAccount ? "active" : ""}`} onClick={() => setSelected(a.billingAccount)}>
-                <div className={`account-status-dot ${a.details?.status === 'enabled' ? 'running' : 'stopped'}`} />
-                <div className="account-info">
-                  <span className="account-name">{a.billingAccount}</span>
-                  {a.details?.description && <span className="account-desc">{a.details.description}</span>}
-                </div>
+    <ServiceListPage
+      titleKey="title"
+      descriptionKey="description"
+      guidesUrl="https://help.ovhcloud.com/csm/fr-voip"
+      i18nNamespace="web-cloud/voip/index"
+      services={accounts}
+      loading={loading}
+      error={error}
+      selectedService={selectedAccount}
+      onSelectService={setSelectedAccount}
+      emptyIcon={<PhoneIcon />}
+      emptyTitleKey="empty.title"
+      emptyDescriptionKey="empty.description"
+    >
+      {selectedAccount && (
+        <div className="detail-card">
+          <div className="detail-card-header">
+            <h2>{selectedAccount}</h2>
+          </div>
+          <div className="detail-tabs">
+            {detailTabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
               </button>
-            ))
-          )}
+            ))}
+          </div>
+          <div className="detail-tab-content">
+            {activeTab === "lines" && <LinesTab billingAccount={selectedAccount} />}
+            {activeTab === "numbers" && <NumbersTab billingAccount={selectedAccount} />}
+            {activeTab === "voicemails" && <VoicemailsTab billingAccount={selectedAccount} />}
+          </div>
         </div>
-      </aside>
-      <main className="voip-main">
-        {selected && current ? (
-          <>
-            <header className="page-header">
-              <div>
-                <h1>{selected}</h1>
-                {current.details && <p className="page-description">{current.details.description} | Credits: {current.details.currentOutplan?.toFixed(2) || 0}€ / {current.details.allowedOutplan}€</p>}
-              </div>
-              <button className="btn-refresh" onClick={loadAccounts}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>{tCommon("actions.refresh")}</button>
-            </header>
-            <div className="tabs-container"><div className="tabs-list">{tabs.map((tab) => (<button key={tab.id} className={`tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{t(tab.labelKey)}</button>))}</div></div>
-            <div className="tab-content">{renderTab()}</div>
-          </>
-        ) : (<div className="no-selection"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg><p>{t("selectAccount")}</p></div>)}
-      </main>
-    </div>
+      )}
+    </ServiceListPage>
   );
 }

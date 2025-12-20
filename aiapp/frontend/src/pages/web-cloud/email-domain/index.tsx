@@ -1,96 +1,108 @@
 // ============================================================
-// EMAIL DOMAIN (MX Plan) - Page principale
+// EMAIL DOMAIN PAGE - MX Plan (style Billing)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { emailDomainService, EmailDomain } from "../../../services/web-cloud.email-domain";
+import { ServiceListPage, ServiceItem } from "../shared";
+import { emailDomainService } from "../../../services/web-cloud.email-domain";
 import { AccountsTab, RedirectionsTab, MailingListsTab, TasksTab } from "./tabs";
 import "../styles.css";
 
-interface Tab { id: string; labelKey: string; }
-interface DomainWithDetails { domain: string; details?: EmailDomain; loading: boolean; error?: string; }
+// ============ ICONS ============
 
+const MailIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+  </svg>
+);
+
+// ============ COMPOSANT ============
+
+/** Page Email Domain (MX Plan) avec liste à gauche et détails à droite. */
 export default function EmailDomainPage() {
   const { t } = useTranslation("web-cloud/email-domain/index");
-  const { t: tCommon } = useTranslation("common");
-  const [domains, setDomains] = useState<DomainWithDetails[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("accounts");
+
+  // ---------- STATE ----------
+  const [domains, setDomains] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("accounts");
 
-  const tabs: Tab[] = [
-    { id: "accounts", labelKey: "tabs.accounts" },
-    { id: "redirections", labelKey: "tabs.redirections" },
-    { id: "mailingLists", labelKey: "tabs.mailingLists" },
-    { id: "tasks", labelKey: "tabs.tasks" },
-  ];
-
+  // ---------- LOAD DOMAINS ----------
   const loadDomains = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await emailDomainService.listDomains();
-      const list: DomainWithDetails[] = names.map(domain => ({ domain, loading: true }));
-      setDomains(list);
-      if (names.length > 0 && !selected) setSelected(names[0]);
-      for (const name of names) {
-        try {
-          const details = await emailDomainService.getDomain(name);
-          setDomains(prev => prev.map(d => d.domain === name ? { ...d, details, loading: false } : d));
-        } catch (err) {
-          setDomains(prev => prev.map(d => d.domain === name ? { ...d, loading: false, error: String(err) } : d));
-        }
+      setError(null);
+      const domainNames = await emailDomainService.listDomains();
+      const items: ServiceItem[] = domainNames.map((name) => ({
+        id: name,
+        name: name,
+      }));
+      setDomains(items);
+      if (items.length > 0 && !selectedDomain) {
+        setSelectedDomain(items[0].id);
       }
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
-  }, [selected]);
-
-  useEffect(() => { loadDomains(); }, []);
-
-  const filtered = domains.filter(d => d.domain.toLowerCase().includes(searchQuery.toLowerCase()));
-  const current = domains.find(d => d.domain === selected);
-
-  const renderTab = () => {
-    if (!selected) return null;
-    switch (activeTab) {
-      case "accounts": return <AccountsTab domain={selected} />;
-      case "redirections": return <RedirectionsTab domain={selected} />;
-      case "mailingLists": return <MailingListsTab domain={selected} />;
-      case "tasks": return <TasksTab domain={selected} />;
-      default: return null;
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
+  useEffect(() => {
+    loadDomains();
+  }, [loadDomains]);
+
+  // ---------- TABS ----------
+  const detailTabs = [
+    { id: "accounts", label: t("tabs.accounts") },
+    { id: "redirections", label: t("tabs.redirections") },
+    { id: "mailinglists", label: t("tabs.mailinglists") },
+    { id: "tasks", label: t("tabs.tasks") },
+  ];
+
+  // ---------- RENDER ----------
   return (
-    <div className="email-page">
-      <aside className="email-sidebar">
-        <div className="sidebar-header"><h2>{t("title")}</h2><span className="count-badge">{domains.length}</span></div>
-        <div className="sidebar-search"><input type="text" placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
-        <div className="email-list">
-          {loading && domains.length === 0 ? (<div className="loading-state"><div className="skeleton-item" /></div>) : error ? (<div className="error-state">{error}</div>) : filtered.length === 0 ? (<div className="empty-state">{tCommon("empty.title")}</div>) : (
-            filtered.map((d) => (
-              <button key={d.domain} className={`email-item ${selected === d.domain ? "active" : ""}`} onClick={() => setSelected(d.domain)}>
-                <div className="email-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg></div>
-                <div className="email-info"><span className="email-name">{d.domain}</span>{d.details && <span className="email-status badge success">{d.details.status}</span>}</div>
+    <ServiceListPage
+      titleKey="title"
+      descriptionKey="description"
+      guidesUrl="https://help.ovhcloud.com/csm/fr-mx-plan"
+      i18nNamespace="web-cloud/email-domain/index"
+      services={domains}
+      loading={loading}
+      error={error}
+      selectedService={selectedDomain}
+      onSelectService={setSelectedDomain}
+      emptyIcon={<MailIcon />}
+      emptyTitleKey="empty.title"
+      emptyDescriptionKey="empty.description"
+    >
+      {selectedDomain && (
+        <div className="detail-card">
+          <div className="detail-card-header">
+            <h2>{selectedDomain}</h2>
+          </div>
+          <div className="detail-tabs">
+            {detailTabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
               </button>
-            ))
-          )}
+            ))}
+          </div>
+          <div className="detail-tab-content">
+            {activeTab === "accounts" && <AccountsTab domain={selectedDomain} />}
+            {activeTab === "redirections" && <RedirectionsTab domain={selectedDomain} />}
+            {activeTab === "mailinglists" && <MailingListsTab domain={selectedDomain} />}
+            {activeTab === "tasks" && <TasksTab domain={selectedDomain} />}
+          </div>
         </div>
-      </aside>
-      <main className="email-main">
-        {selected && current ? (
-          <>
-            <header className="page-header">
-              <div><h1>{selected}</h1><p className="page-description">MX Plan</p></div>
-              <button className="btn-refresh" onClick={loadDomains}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>{tCommon("actions.refresh")}</button>
-            </header>
-            <div className="tabs-container"><div className="tabs-list">{tabs.map((tab) => (<button key={tab.id} className={`tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{t(tab.labelKey)}</button>))}</div></div>
-            <div className="tab-content">{renderTab()}</div>
-          </>
-        ) : (<div className="no-selection"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75" /></svg><p>{t("selectDomain")}</p></div>)}
-      </main>
-    </div>
+      )}
+    </ServiceListPage>
   );
 }

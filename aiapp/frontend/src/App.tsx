@@ -1,6 +1,6 @@
 // ============================================================
 // APP.TSX - New Manager OVHcloud
-// Layout: Sidebar | Header (NAV1 Univers) + NAV2 Sections + Content
+// Layout: Header (NAV1 Univers) + NAV2 Sections + Content
 // NAV3 (sous-sections) = géré à l'intérieur de chaque page
 // ============================================================
 
@@ -17,7 +17,7 @@ import SupportPage from "./pages/home/support";
 import CarbonPage from "./pages/home/carbon";
 import IamPage from "./pages/iam";
 import { PlaceholderPage } from "./pages/_placeholder";
-import { Sidebar, universes } from "./components/Sidebar";
+import { universes } from "./components/Sidebar";
 import { AccountSidebar } from "./components/AccountSidebar";
 import { UniversTabs, SectionTabs, UserMenu, LoadingFallback } from "./components/HeaderNav";
 import { useAppNavigation } from "./hooks/useAppNavigation";
@@ -55,23 +55,13 @@ const NashaPage = lazy(() => import("./pages/bare-metal/nasha"));
 const NetappPage = lazy(() => import("./pages/bare-metal/netapp"));
 const HousingPage = lazy(() => import("./pages/bare-metal/housing"));
 
-// Web Cloud
+// Web Cloud - 6 sections regroupées
 const WebCloudDashboard = lazy(() => import("./pages/web-cloud"));
-const DomainsPage = lazy(() => import("./pages/web-cloud/domains"));
+const DomainsDnsPage = lazy(() => import("./pages/web-cloud/domains-dns"));
 const HostingPage = lazy(() => import("./pages/web-cloud/hosting"));
-const DnsZonesPage = lazy(() => import("./pages/web-cloud/dns-zones"));
-const PrivateDatabasePage = lazy(() => import("./pages/web-cloud/private-database"));
-const EmailDomainPage = lazy(() => import("./pages/web-cloud/email-domain"));
-const EmailProPage = lazy(() => import("./pages/web-cloud/email-pro"));
-const ExchangePage = lazy(() => import("./pages/web-cloud/exchange"));
-const ZimbraPage = lazy(() => import("./pages/web-cloud/zimbra"));
-const OfficePage = lazy(() => import("./pages/web-cloud/office"));
+const EmailsPage = lazy(() => import("./pages/web-cloud/emails"));
 const VoipPage = lazy(() => import("./pages/web-cloud/voip"));
-const SmsPage = lazy(() => import("./pages/web-cloud/sms"));
-const FaxPage = lazy(() => import("./pages/web-cloud/fax"));
-const CarrierSipPage = lazy(() => import("./pages/web-cloud/carrier-sip"));
-const PackXdslPage = lazy(() => import("./pages/web-cloud/pack-xdsl"));
-const OvertheboxPage = lazy(() => import("./pages/web-cloud/overthebox"));
+const AccessPage = lazy(() => import("./pages/web-cloud/access"));
 
 // Network
 const NetworkDashboard = lazy(() => import("./pages/network"));
@@ -228,25 +218,15 @@ function AppContent() {
       }
     }
 
-    // WEB CLOUD Universe
+    // WEB CLOUD Universe - 6 sections regroupées
     if (nav.activeUniverseId === "web-cloud") {
       switch (nav.activeSectionId) {
         case "web-home": return <WebCloudDashboard />;
-        case "web-domains": return <DomainsPage />;
-        case "web-dns-zones": return <DnsZonesPage />;
+        case "web-domains-dns": return <DomainsDnsPage />;
         case "web-hosting": return <HostingPage />;
-        case "web-private-db": return <PrivateDatabasePage />;
-        case "web-email-domain": return <EmailDomainPage />;
-        case "web-email-pro": return <EmailProPage />;
-        case "web-exchange": return <ExchangePage />;
-        case "web-zimbra": return <ZimbraPage />;
-        case "web-office": return <OfficePage />;
+        case "web-emails": return <EmailsPage />;
         case "web-voip": return <VoipPage />;
-        case "web-sms": return <SmsPage />;
-        case "web-fax": return <FaxPage />;
-        case "web-carrier-sip": return <CarrierSipPage />;
-        case "web-pack-xdsl": return <PackXdslPage />;
-        case "web-overthebox": return <OvertheboxPage />;
+        case "web-access": return <AccessPage />;
         default: return <WebCloudDashboard />;
       }
     }
@@ -278,13 +258,7 @@ function AppContent() {
 
   // ---------- RENDER ----------
   return (
-    <div className="app-layout">
-      <Sidebar
-        resources={nav.resources}
-        selectedResourceId={nav.selectedResource?.id}
-        onResourceSelect={nav.handleResourceSelect}
-        onHomeClick={nav.handleHomeClick}
-      />
+    <div className="app-layout no-sidebar">
       <div className="main-area">
         <header className="main-header">
           <UniversTabs

@@ -1,80 +1,107 @@
 // ============================================================
-// OVERTHEBOX - Agrégation de liens Internet
+// OVERTHEBOX PAGE - OverTheBox (style Billing)
 // ============================================================
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
-import { useTabs } from "../../../lib/useTabs";
-import * as otbService from "../../../services/web-cloud.overthebox";
-import GeneralTab from "./tabs/GeneralTab";
-import RemotesTab from "./tabs/RemotesTab";
-import TasksTab from "./tabs/TasksTab";
+import { ServiceListPage, ServiceItem } from "../shared";
+import { overtheboxService } from "../../../services/web-cloud.overthebox";
+import { GeneralTab, RemotesTab, TasksTab } from "./tabs";
 import "../styles.css";
 
-interface OtbInfo {
-  serviceName: string;
-  customerDescription?: string;
-  status: string;
-  releaseChannel: string;
-  systemVersion?: string;
-  tunnelMode: string;
-}
+// ============ ICONS ============
 
-export default function OverTheBoxPage() {
+const OtbIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M18 12h.01"/>
+  </svg>
+);
+
+// ============ COMPOSANT ============
+
+/** Page OverTheBox avec liste à gauche et détails à droite. */
+export default function OvertheboxPage() {
   const { t } = useTranslation("web-cloud/overthebox/index");
-  const [searchParams] = useSearchParams();
-  const serviceId = searchParams.get("id") || "";
 
-  const [otb, setOtb] = useState<OtbInfo | null>(null);
+  // ---------- STATE ----------
+  const [devices, setDevices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("general");
 
-  const tabs = [
+  // ---------- LOAD DEVICES ----------
+  const loadDevices = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const deviceNames = await overtheboxService.listDevices();
+      const items: ServiceItem[] = deviceNames.map((name) => ({
+        id: name,
+        name: name,
+        type: "OTB",
+      }));
+      setDevices(items);
+      if (items.length > 0 && !selectedDevice) {
+        setSelectedDevice(items[0].id);
+      }
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDevices();
+  }, [loadDevices]);
+
+  // ---------- TABS ----------
+  const detailTabs = [
     { id: "general", label: t("tabs.general") },
     { id: "remotes", label: t("tabs.remotes") },
     { id: "tasks", label: t("tabs.tasks") },
   ];
-  const { activeTab, TabButtons } = useTabs(tabs, "general");
 
-  useEffect(() => {
-    if (!serviceId) { setLoading(false); return; }
-    loadOtb();
-  }, [serviceId]);
-
-  const loadOtb = async () => {
-    try { setLoading(true); setError(null); const data = await otbService.getOverTheBox(serviceId); setOtb(data); }
-    catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
-    finally { setLoading(false); }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const classes: Record<string, string> = { active: "badge-success", inactive: "badge-error", creating: "badge-warning" };
-    return <span className={`status-badge ${classes[status] || ""}`}>{t(`status.${status}`)}</span>;
-  };
-
-  if (!serviceId) return <div className="page-content"><div className="empty-state"><h2>{t("noService.title")}</h2></div></div>;
-  if (loading) return <div className="page-content"><div className="loading-state">{t("loading")}</div></div>;
-  if (error) return <div className="page-content"><div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadOtb}>{t("error.retry")}</button></div></div>;
-
+  // ---------- RENDER ----------
   return (
-    <div className="page-content web-cloud-page">
-      <header className="page-header">
-        <h1>📡 {otb?.customerDescription || otb?.serviceName}</h1>
-        {otb && (
-          <div className="service-meta">
-            <span className="meta-item">Canal: {otb.releaseChannel}</span>
-            {otb.systemVersion && <span className="meta-item">Version: {otb.systemVersion}</span>}
-            {getStatusBadge(otb.status)}
+    <ServiceListPage
+      titleKey="title"
+      descriptionKey="description"
+      guidesUrl="https://help.ovhcloud.com/csm/fr-overthebox"
+      i18nNamespace="web-cloud/overthebox/index"
+      services={devices}
+      loading={loading}
+      error={error}
+      selectedService={selectedDevice}
+      onSelectService={setSelectedDevice}
+      emptyIcon={<OtbIcon />}
+      emptyTitleKey="empty.title"
+      emptyDescriptionKey="empty.description"
+    >
+      {selectedDevice && (
+        <div className="detail-card">
+          <div className="detail-card-header">
+            <h2>{selectedDevice}</h2>
           </div>
-        )}
-      </header>
-      <TabButtons />
-      <div className="tab-content">
-        {activeTab === "general" && <GeneralTab serviceId={serviceId} otb={otb} onRefresh={loadOtb} />}
-        {activeTab === "remotes" && <RemotesTab serviceId={serviceId} />}
-        {activeTab === "tasks" && <TasksTab serviceId={serviceId} />}
-      </div>
-    </div>
+          <div className="detail-tabs">
+            {detailTabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="detail-tab-content">
+            {activeTab === "general" && <GeneralTab serviceName={selectedDevice} />}
+            {activeTab === "remotes" && <RemotesTab serviceName={selectedDevice} />}
+            {activeTab === "tasks" && <TasksTab serviceName={selectedDevice} />}
+          </div>
+        </div>
+      )}
+    </ServiceListPage>
   );
 }

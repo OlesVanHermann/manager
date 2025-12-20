@@ -23,10 +23,17 @@ export interface FreefaxAccount {
 // ============================================================
 
 class FaxService {
+  /** Liste tous les services FreeFax. */
   async listFreefax(): Promise<string[]> {
     return ovhApi.get<string[]>('/freefax');
   }
 
+  /** Alias pour compatibilite. */
+  async listServices(): Promise<string[]> {
+    return this.listFreefax();
+  }
+
+  /** Recupere les details d'un service FreeFax. */
   async getFreefax(serviceName: string): Promise<FreefaxAccount> {
     return ovhApi.get<FreefaxAccount>(`/freefax/${serviceName}`);
   }

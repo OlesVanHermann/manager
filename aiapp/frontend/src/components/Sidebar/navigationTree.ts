@@ -97,27 +97,17 @@ export const universes: Universe[] = [
     ],
   },
 
-  // E) WEB CLOUD
+  // E) WEB CLOUD - 6 sections regroupées
   {
     id: "web-cloud",
     i18nKey: "universes.webCloud",
     sections: [
       { id: "web-home", i18nKey: "sections.webCloud.home" },
-      { id: "web-domains", i18nKey: "sections.webCloud.domains" },
-      { id: "web-dns-zones", i18nKey: "sections.webCloud.dnsZones" },
+      { id: "web-domains-dns", i18nKey: "sections.webCloud.domainsDns" },
       { id: "web-hosting", i18nKey: "sections.webCloud.hosting" },
-      { id: "web-private-db", i18nKey: "sections.webCloud.privateDb" },
-      { id: "web-email-domain", i18nKey: "sections.webCloud.emailDomain" },
-      { id: "web-email-pro", i18nKey: "sections.webCloud.emailPro" },
-      { id: "web-exchange", i18nKey: "sections.webCloud.exchange" },
-      { id: "web-zimbra", i18nKey: "sections.webCloud.zimbra" },
-      { id: "web-office", i18nKey: "sections.webCloud.office" },
+      { id: "web-emails", i18nKey: "sections.webCloud.emails" },
       { id: "web-voip", i18nKey: "sections.webCloud.voip" },
-      { id: "web-sms", i18nKey: "sections.webCloud.sms" },
-      { id: "web-fax", i18nKey: "sections.webCloud.fax" },
-      { id: "web-carrier-sip", i18nKey: "sections.webCloud.carrierSip" },
-      { id: "web-pack-xdsl", i18nKey: "sections.webCloud.packXdsl" },
-      { id: "web-overthebox", i18nKey: "sections.webCloud.overthebox" },
+      { id: "web-access", i18nKey: "sections.webCloud.access" },
     ],
   },
 

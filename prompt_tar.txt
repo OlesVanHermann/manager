@@ -20,11 +20,12 @@ Limiter le contexte du chat en uploadant uniquement les fichiers nécessaires au
 ## 2. Stratégie de division
 Proposer 3 niveaux de tars :
 - `{prefix}_core.tar` : config + composants partagés + design-system + lib (obligatoire)
-- `{prefix}_{NAV1}.tar` : domaine complet
-- `{prefix}_{NAV1}.{NAV2}.tar` : sous-domaine granulaire
+- `{prefix}_{NAV1}.{NAV2}.tar` : sous-domaine granulaire (PRIORITAIRE)
 - `{prefix}_all.tar` : tous les fichiers (travail transversal / refactoring global)
 
 Où `{prefix}` = `new_manager` ou `old_manager`
+
+**NOTE** : Les tars NAV1 seuls (ex: `home.tar`) sont OPTIONNELS. Privilégier les tars NAV2 granulaires.
 
 ## 2.5 Validation des patterns (AVANT script)
 Pour chaque tar proposé, lister explicitement :
@@ -34,12 +35,33 @@ Pour chaque tar proposé, lister explicitement :
 Ne PAS inclure de wildcards dans le script final.
 Lister tous les fichiers explicitement.
 
+## 2.6 Correspondance new/old (CRITIQUE)
+**Règle : old_manager suit EXACTEMENT la structure NAV2 de new_manager**
+
+1. Lister tous les NAV2 présents dans new_manager
+2. Créer un tar old_manager pour CHAQUE NAV2 de new_manager
+3. Les tars NAV1 seuls (ex: home.tar) sont OPTIONNELS
+
+Objectif : uploader uniquement `new_manager_home.billing.tar` + `old_manager_home.billing.tar` pour migrer billing avec un contexte minimal.
+
+Exemple de paires attendues :
+- `new_manager_core.tar` ↔ `old_manager_core.tar`
+- `new_manager_home.billing.tar` ↔ `old_manager_home.billing.tar`
+- `new_manager_home.account.tar` ↔ `old_manager_home.account.tar`
+- `new_manager_public-cloud.kubernetes.tar` ↔ `old_manager_public-cloud.kubernetes.tar`
+- `new_manager_all.tar` ↔ `old_manager_all.tar`
+
+Si un NAV2 existe dans new mais pas dans old :
+- Signaler dans l'analyse
+- Créer quand même le tar (vide ou avec ce qui existe)
+
 ## 3. Tableau récapitulatif
 Pour chaque tar, indiquer :
 - Nom du tar
 - Nombre de fichiers
 - Taille (XS/S/M/L/XL)
 - Patterns de fichiers inclus (chemins réels uniquement)
+- Correspondance avec l'autre manager (oui/non/partiel)
 
 ## 4. Scripts de génération (2 scripts séparés)
 
@@ -52,6 +74,7 @@ Pour chaque tar, indiquer :
 - Supprime UNIQUEMENT `/home/ubuntu/old_manager_*.tar` (jamais new_manager)
 - Génère uniquement les tars `old_manager_*.tar`
 - Travaille dans `/home/ubuntu/manager`
+- DOIT créer un tar pour CHAQUE NAV2 présent dans new_manager
 
 Chaque script DOIT :
 1. Supprimer UNIQUEMENT ses propres tars (pas ceux de l'autre manager)
@@ -64,24 +87,42 @@ Chaque script DOIT :
 - `old_generate_manager_tars.sh` : `rm -f /home/ubuntu/old_manager_*.tar`
 - INTERDIT de faire `rm -f /home/ubuntu/*_manager_*.tar` ou similaire
 
+**CRITIQUE - Exclusions OBLIGATOIRES pour old_manager (monorepo lourd) :**
+Chaque commande tar dans `old_generate_manager_tars.sh` DOIT inclure ces exclusions :
+```
+--exclude='node_modules' \
+--exclude='.git' \
+--exclude='dist' \
+--exclude='coverage' \
+--exclude='*.lock' \
+--exclude='yarn.lock' \
+--exclude='package-lock.json' \
+--exclude='*.map' \
+--exclude='.cache' \
+```
+
 **Interdit :**
 - Wildcards `*.ts` dans tar (non interprétés)
 - `2>/dev/null` qui masque les erreurs
 - Chemins `~/new_manager` ou `~/old_manager` (n'existent pas)
 - Utiliser `~` au lieu de `/home/ubuntu`
 - Un script qui supprime les tars de l'autre manager
+- Oublier les exclusions dans old_manager
+- Créer des tars NAV2 dans old qui n'existent pas dans new
 
 # Contraintes
 - Tars new_manager commencent par `new_manager_`
 - Tars old_manager commencent par `old_manager_`
 - Inclure obligatoirement `new_manager_all.tar` et `old_manager_all.tar`
+- old_manager DOIT avoir un tar pour CHAQUE NAV2 de new_manager
 - Ne générer AUCUN code sans mon autorisation explicite
 
 # Sortie attendue
-1. Tableau d'analyse NAV1 avec comptage
-2. Tableau d'analyse NAV1.NAV2 avec comptage
-3. Proposition de stratégie
-4. **Attendre mon GO** avant de générer les scripts
+1. Tableau d'analyse NAV2 de new_manager (référence)
+2. Tableau de mapping NAV2 new → old (correspondances trouvées)
+3. Tableau récapitulatif des tars proposés (new ET old côte à côte)
+4. Proposition de stratégie
+5. **Attendre mon GO** avant de générer les scripts
 
 # Format de génération des scripts
 Quand je dis "GO", générer les 2 scripts avec cp+tee, chacun dans un markdown séparé, facile à copier coller.
