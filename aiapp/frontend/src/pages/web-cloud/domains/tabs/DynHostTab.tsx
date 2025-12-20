@@ -1,5 +1,5 @@
 // ============================================================
-// TAB: DYNHOST - DNS Dynamique
+// TAB: DYNHOST - DNS dynamique
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -7,12 +7,13 @@ import { useTranslation } from "react-i18next";
 import { domainsService, DynHostRecord } from "../../../../services/web-cloud.domains";
 
 interface Props {
-  domain: string;
+  zoneName: string;
 }
 
-/** Onglet DynHost - Gestion du DNS dynamique. */
-export function DynHostTab({ domain }: Props) {
+/** Onglet DynHost - DNS dynamique. */
+export function DynHostTab({ zoneName }: Props) {
   const { t } = useTranslation("web-cloud/domains/index");
+
   const [records, setRecords] = useState<DynHostRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +23,8 @@ export function DynHostTab({ domain }: Props) {
       try {
         setLoading(true);
         setError(null);
-        const ids = await domainsService.listDynHostRecords(domain);
-        const details = await Promise.all(ids.map(id => domainsService.getDynHostRecord(domain, id)));
+        const ids = await domainsService.listDynHostRecords(zoneName);
+        const details = await Promise.all(ids.map((id) => domainsService.getDynHostRecord(zoneName, id)));
         setRecords(details);
       } catch (err) {
         setError(String(err));
@@ -32,9 +33,17 @@ export function DynHostTab({ domain }: Props) {
       }
     };
     load();
-  }, [domain]);
+  }, [zoneName]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) {
+    return (
+      <div className="tab-loading">
+        <div className="skeleton-block" />
+        <div className="skeleton-block" />
+      </div>
+    );
+  }
+
   if (error) return <div className="error-state">{error}</div>;
 
   return (
@@ -48,39 +57,31 @@ export function DynHostTab({ domain }: Props) {
 
       {records.length === 0 ? (
         <div className="empty-state">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-          </svg>
-          <p>{t("dynhost.empty")}</p>
-          <span className="empty-hint">{t("dynhost.emptyHint")}</span>
+          <h3>{t("dynhost.empty")}</h3>
+          <p className="hint">{t("dynhost.emptyHint")}</p>
         </div>
       ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>{t("dynhost.subdomain")}</th>
-              <th>{t("dynhost.ip")}</th>
-              <th>{t("dynhost.login")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records.map(record => (
-              <tr key={record.id}>
-                <td className="font-mono">{record.subDomain || '@'}.{record.zone}</td>
-                <td className="font-mono"><span className="ip-badge">{record.ip}</span></td>
-                <td>{record.login || '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="dynhost-cards">
+          {records.map((record) => (
+            <div key={record.id} className="dynhost-card">
+              <div className="dynhost-header">
+                <h4>{record.subDomain}.{zoneName}</h4>
+                <span className="badge success">Actif</span>
+              </div>
+              <div className="dynhost-info">
+                <label>{t("dynhost.ip")}</label>
+                <span>{record.ip}</span>
+                <label>{t("dynhost.zone")}</label>
+                <span>{record.zone}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       <div className="info-box">
-        <h4>{t("dynhost.whatIs")}</h4>
-        <p>{t("dynhost.explanation")}</p>
-        <div className="code-block">
-          <code>curl -X PUT "https://www.ovh.com/nic/update?system=dyndns&hostname=sub.{domain}&myip=YOUR_IP" -u "login:password"</code>
-        </div>
+        <h4>{t("dynhost.info")}</h4>
+        <p>{t("dynhost.infoDesc")}</p>
       </div>
     </div>
   );

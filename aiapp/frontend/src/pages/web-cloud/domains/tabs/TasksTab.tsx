@@ -1,34 +1,80 @@
 // ============================================================
-// TAB: TASKS - Operations en cours
+// TAB: TASKS - Tâches fusionnées (domaine + zone)
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { domainsService, DomainTask } from "../../../../services/web-cloud.domains";
+import { dnsZonesService, DnsZoneTask } from "../../../../services/web-cloud.dns-zones";
 
 interface Props {
-  domain: string;
+  name: string;
+  hasDomain: boolean;
+  hasZone: boolean;
 }
 
-/** Onglet Operations en cours du domaine. */
-export function TasksTab({ domain }: Props) {
+interface UnifiedTask {
+  id: string;
+  source: "domain" | "zone";
+  function: string;
+  status: string;
+  createdAt: string;
+  doneAt: string | null;
+}
+
+/** Onglet tâches fusionnées domaine + zone. */
+export function TasksTab({ name, hasDomain, hasZone }: Props) {
   const { t } = useTranslation("web-cloud/domains/index");
   const { t: tCommon } = useTranslation("common");
-  const [tasks, setTasks] = useState<DomainTask[]>([]);
+
+  const [tasks, setTasks] = useState<UnifiedTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>("");
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         setError(null);
-        const ids = await domainsService.listTasks(domain, filter || undefined);
-        const details = await Promise.all(ids.map(id => domainsService.getTask(domain, id)));
-        // Trier par date de creation (plus recent en premier)
-        details.sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
-        setTasks(details);
+
+        const allTasks: UnifiedTask[] = [];
+
+        if (hasDomain) {
+          const domainTaskIds = await domainsService.listTasks(name).catch(() => [] as number[]);
+          const domainTasks = await Promise.all(
+            domainTaskIds.slice(0, 10).map((id) => domainsService.getTask(name, id))
+          );
+          domainTasks.forEach((task: DomainTask) => {
+            allTasks.push({
+              id: `domain-${task.id}`,
+              source: "domain",
+              function: task.function,
+              status: task.status,
+              createdAt: task.creationDate,
+              doneAt: task.lastUpdate,
+            });
+          });
+        }
+
+        if (hasZone) {
+          const zoneTaskIds = await dnsZonesService.listTasks(name).catch(() => [] as number[]);
+          const zoneTasks = await Promise.all(
+            zoneTaskIds.slice(0, 10).map((id) => dnsZonesService.getTask(name, id))
+          );
+          zoneTasks.forEach((task: DnsZoneTask) => {
+            allTasks.push({
+              id: `zone-${task.id}`,
+              source: "zone",
+              function: task.function,
+              status: task.status,
+              createdAt: task.createdAt,
+              doneAt: task.doneAt,
+            });
+          });
+        }
+
+        allTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setTasks(allTasks);
       } catch (err) {
         setError(String(err));
       } finally {
@@ -36,31 +82,37 @@ export function TasksTab({ domain }: Props) {
       }
     };
     load();
-  }, [domain, filter]);
+  }, [name, hasDomain, hasZone]);
 
-  const getStatusBadge = (status: string) => {
-    const classes: Record<string, string> = {
-      todo: 'warning',
-      doing: 'info',
-      done: 'success',
-      error: 'error',
-      cancelled: 'inactive',
-    };
-    const icons: Record<string, string> = {
-      todo: '⏳',
-      doing: '🔄',
-      done: '✓',
-      error: '✗',
-      cancelled: '⊘',
-    };
-    return (
-      <span className={`badge ${classes[status] || ''}`}>
-        {icons[status]} {t(`tasks.status.${status}`)}
-      </span>
-    );
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "done": return "success";
+      case "doing": case "init": case "todo": return "info";
+      case "error": return "error";
+      case "cancelled": return "warning";
+      default: return "";
+    }
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="tab-loading">
+        <div className="skeleton-block" />
+        <div className="skeleton-block" />
+      </div>
+    );
+  }
+
   if (error) return <div className="error-state">{error}</div>;
 
   return (
@@ -70,41 +122,32 @@ export function TasksTab({ domain }: Props) {
           <h3>{t("tasks.title")}</h3>
           <p className="tab-description">{t("tasks.description")}</p>
         </div>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="filter-select">
-          <option value="">{t("tasks.allStatuses")}</option>
-          <option value="todo">{t("tasks.status.todo")}</option>
-          <option value="doing">{t("tasks.status.doing")}</option>
-          <option value="done">{t("tasks.status.done")}</option>
-          <option value="error">{t("tasks.status.error")}</option>
-        </select>
+        <span className="section-count">{tasks.length} {t("tasks.count")}</span>
       </div>
 
       {tasks.length === 0 ? (
         <div className="empty-state">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p>{t("tasks.empty")}</p>
+          <h3>{t("tasks.empty")}</h3>
         </div>
       ) : (
         <table className="data-table">
           <thead>
             <tr>
+              <th>{t("tasks.source")}</th>
               <th>{t("tasks.function")}</th>
               <th>{t("tasks.status")}</th>
               <th>{t("tasks.created")}</th>
-              <th>{t("tasks.updated")}</th>
-              <th>{t("tasks.comment")}</th>
+              <th>{t("tasks.done")}</th>
             </tr>
           </thead>
           <tbody>
-            {tasks.map(task => (
+            {tasks.map((task) => (
               <tr key={task.id}>
-                <td className="font-mono">{task.function}</td>
-                <td>{getStatusBadge(task.status)}</td>
-                <td>{new Date(task.creationDate).toLocaleString()}</td>
-                <td>{new Date(task.lastUpdate).toLocaleString()}</td>
-                <td className="comment-cell">{task.comment || '-'}</td>
+                <td><span className={`badge ${task.source === "domain" ? "info" : "success"}`}>{task.source === "domain" ? "🌐 Domaine" : "📋 Zone"}</span></td>
+                <td>{task.function}</td>
+                <td><span className={`status-badge ${getStatusClass(task.status)}`}>{task.status}</span></td>
+                <td>{formatDate(task.createdAt)}</td>
+                <td>{task.doneAt ? formatDate(task.doneAt) : "-"}</td>
               </tr>
             ))}
           </tbody>

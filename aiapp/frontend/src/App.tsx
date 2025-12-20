@@ -57,10 +57,10 @@ const HousingPage = lazy(() => import("./pages/bare-metal/housing"));
 
 // Web Cloud - 6 sections regroupées
 const WebCloudDashboard = lazy(() => import("./pages/web-cloud"));
-const DomainsDnsPage = lazy(() => import("./pages/web-cloud/domains-dns"));
-const HostingPage = lazy(() => import("./pages/web-cloud/hosting"));
+const DomainsDnsPage = lazy(() => import("./pages/web-cloud/domains"));
+const HebergementPage = lazy(() => import("./pages/web-cloud/hebergement"));
 const EmailsPage = lazy(() => import("./pages/web-cloud/emails"));
-const VoipPage = lazy(() => import("./pages/web-cloud/voip"));
+const TelecomPage = lazy(() => import("./pages/web-cloud/telecom"));
 const AccessPage = lazy(() => import("./pages/web-cloud/access"));
 
 // Network
@@ -221,13 +221,13 @@ function AppContent() {
     // WEB CLOUD Universe - 6 sections regroupées
     if (nav.activeUniverseId === "web-cloud") {
       switch (nav.activeSectionId) {
-        case "web-home": return <WebCloudDashboard />;
+        case "web-home": return <WebCloudDashboard onNavigate={nav.handleNavigate} />;
         case "web-domains-dns": return <DomainsDnsPage />;
-        case "web-hosting": return <HostingPage />;
+        case "web-hosting": return <HebergementPage />;
         case "web-emails": return <EmailsPage />;
-        case "web-voip": return <VoipPage />;
+        case "web-voip": return <TelecomPage />;
         case "web-access": return <AccessPage />;
-        default: return <WebCloudDashboard />;
+        default: return <WebCloudDashboard onNavigate={nav.handleNavigate} />;
       }
     }
 

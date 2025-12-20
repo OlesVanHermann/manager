@@ -1,2 +1,7 @@
+// ============================================================
+// WEB-CLOUD SHARED - Exports
+// ============================================================
+
+export * from "./types";
 export { ServiceListPage } from "./ServiceListPage";
-export type { ServiceItem, Tab, ServiceListPageProps } from "./ServiceListPage";
+export { TasksTab } from "./TasksTab";

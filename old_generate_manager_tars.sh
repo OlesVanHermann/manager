@@ -1,439 +1,309 @@
 #!/bin/bash
 set -e
 
+echo "=== Génération des tars old_manager ==="
 cd /home/ubuntu/manager
-echo "=== Generating old_manager tars ==="
 
-# Exclusions obligatoires pour monorepo lourd
+# Exclusions standard pour monorepo lourd
 EXCLUDES="--exclude=node_modules --exclude=.git --exclude=dist --exclude=coverage --exclude=*.lock --exclude=yarn.lock --exclude=package-lock.json --exclude=*.map --exclude=.cache"
 
-# Cleanup ONLY old_manager tars
-echo "Cleaning up old old_manager_*.tar files..."
-rm -f /home/ubuntu/old_manager_*.tar
+# Nettoyage des anciens tars old_manager UNIQUEMENT
+echo "Suppression des anciens old_manager.*.tar..."
+rm -f /home/ubuntu/old_manager.*.tar
 
-# ============================================
-# CORE TAR
-# ============================================
-echo "Creating old_manager_core.tar..."
-tar -cvf /home/ubuntu/old_manager_core.tar $EXCLUDES \
-  package.json \
-  lerna.json \
-  turbo.json \
-  babel.config.json \
-  packages/components/ovh-reket \
-  packages/components/ng-ovh-sso-auth \
-  packages/components/ovh-at-internet \
-  packages/components/ng-at-internet \
-  packages/manager/core
+# ============================================================
+# CORE GLOBAL
+# ============================================================
+echo "Création old_manager.core.tar..."
+tar -cf /home/ubuntu/old_manager.core.tar $EXCLUDES \
+    ./packages/manager/modules/core \
+    ./packages/manager/modules/common-api \
+    ./packages/manager/modules/common-translations \
+    ./packages/manager/modules/config \
+    ./packages/manager/modules/models \
+    ./packages/manager/modules/error-page \
+    ./packages/components/ovh-shell \
+    ./packages/components/ovh-reket
 
-# ============================================
-# HOME.ACCOUNT
-# ============================================
-echo "Creating old_manager_home.account.tar..."
-tar -cvf /home/ubuntu/old_manager_home.account.tar $EXCLUDES \
-  packages/manager/apps/account \
-  packages/manager/apps/procedures
+# ============================================================
+# BARE-METAL
+# ============================================================
+echo "Création old_manager.bare-metal.core.tar..."
+tar -cf /home/ubuntu/old_manager.bare-metal.core.tar $EXCLUDES \
+    ./packages/manager/modules/bm-server-components \
+    ./packages/manager/apps/dedicated-servers
 
-# ============================================
-# HOME.BILLING
-# ============================================
-echo "Creating old_manager_home.billing.tar..."
-tar -cvf /home/ubuntu/old_manager_home.billing.tar $EXCLUDES \
-  packages/manager/apps/billing
+echo "Création old_manager.bare-metal.dedicated.tar..."
+tar -cf /home/ubuntu/old_manager.bare-metal.dedicated.tar $EXCLUDES \
+    ./packages/manager/apps/dedicated
 
-# ============================================
-# HOME.SUPPORT
-# ============================================
-echo "Creating old_manager_home.support.tar..."
-tar -cvf /home/ubuntu/old_manager_home.support.tar $EXCLUDES \
-  packages/manager/apps/support
+echo "Création old_manager.bare-metal.housing.tar..."
+# housing n'existe pas dans old, tar vide avec un placeholder
+mkdir -p /tmp/old_manager_placeholder
+echo "# No equivalent in old_manager for bare-metal/housing" > /tmp/old_manager_placeholder/README.md
+tar -cf /home/ubuntu/old_manager.bare-metal.housing.tar -C /tmp/old_manager_placeholder .
 
-# ============================================
-# HOME.API
-# ============================================
-echo "Creating old_manager_home.api.tar..."
-tar -cvf /home/ubuntu/old_manager_home.api.tar $EXCLUDES \
-  packages/manager/apps/account
+echo "Création old_manager.bare-metal.nasha.tar..."
+tar -cf /home/ubuntu/old_manager.bare-metal.nasha.tar $EXCLUDES \
+    ./packages/manager/apps/nasha \
+    ./packages/manager/modules/nasha
 
-# ============================================
-# HOME.CARBON
-# ============================================
-echo "Creating old_manager_home.carbon.tar..."
-tar -cvf /home/ubuntu/old_manager_home.carbon.tar $EXCLUDES \
-  packages/manager/apps/carbon-calculator
+echo "Création old_manager.bare-metal.netapp.tar..."
+tar -cf /home/ubuntu/old_manager.bare-metal.netapp.tar $EXCLUDES \
+    ./packages/manager/apps/netapp \
+    ./packages/manager/modules/netapp
 
-# ============================================
-# PUBLIC-CLOUD.BLOCK-STORAGE
-# ============================================
-echo "Creating old_manager_public-cloud.block-storage.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.block-storage.tar $EXCLUDES \
-  packages/manager/apps/pci-block-storage \
-  packages/manager/apps/pci-volume-snapshot \
-  packages/manager/apps/pci-volume-backup
+echo "Création old_manager.bare-metal.vps.tar..."
+tar -cf /home/ubuntu/old_manager.bare-metal.vps.tar $EXCLUDES \
+    ./packages/manager/apps/vps \
+    ./packages/manager/modules/vps
 
-# ============================================
-# PUBLIC-CLOUD.DATABASES
-# ============================================
-echo "Creating old_manager_public-cloud.databases.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.databases.tar $EXCLUDES \
-  packages/manager/apps/pci-databases-analytics
+# ============================================================
+# HOME
+# ============================================================
+echo "Création old_manager.home.core.tar..."
+tar -cf /home/ubuntu/old_manager.home.core.tar $EXCLUDES \
+    ./packages/manager/apps/hub \
+    ./packages/manager/modules/manager-components
 
-# ============================================
-# PUBLIC-CLOUD.PROJECT
-# ============================================
-echo "Creating old_manager_public-cloud.project.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.project.tar $EXCLUDES \
-  packages/manager/apps/pci \
-  packages/manager/apps/public-cloud \
-  packages/manager/apps/pci-billing \
-  packages/manager/apps/pci-vouchers \
-  packages/manager/apps/pci-quota \
-  packages/manager/apps/pci-ssh-keys \
-  packages/manager/apps/pci-users
+echo "Création old_manager.home.account.tar..."
+tar -cf /home/ubuntu/old_manager.home.account.tar $EXCLUDES \
+    ./packages/manager/apps/account \
+    ./packages/manager/modules/account
 
-# ============================================
-# PUBLIC-CLOUD.AI
-# ============================================
-echo "Creating old_manager_public-cloud.ai.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.ai.tar $EXCLUDES \
-  packages/manager/apps/pci-ai-tools \
-  packages/manager/apps/pci-ai-endpoints
+echo "Création old_manager.home.api.tar..."
+# api n'existe pas directement, placeholder
+echo "# No direct equivalent in old_manager for home/api" > /tmp/old_manager_placeholder/README.md
+tar -cf /home/ubuntu/old_manager.home.api.tar -C /tmp/old_manager_placeholder .
 
-# ============================================
-# PUBLIC-CLOUD.INSTANCES
-# ============================================
-echo "Creating old_manager_public-cloud.instances.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.instances.tar $EXCLUDES \
-  packages/manager/apps/pci-instances
+echo "Création old_manager.home.billing.tar..."
+tar -cf /home/ubuntu/old_manager.home.billing.tar $EXCLUDES \
+    ./packages/manager/apps/billing \
+    ./packages/manager/modules/billing \
+    ./packages/manager/modules/billing-components \
+    ./packages/manager/modules/new-billing
 
-# ============================================
-# PUBLIC-CLOUD.OBJECT-STORAGE
-# ============================================
-echo "Creating old_manager_public-cloud.object-storage.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.object-storage.tar $EXCLUDES \
-  packages/manager/apps/pci-object-storage \
-  packages/manager/apps/pci-cold-archive
+echo "Création old_manager.home.carbon.tar..."
+tar -cf /home/ubuntu/old_manager.home.carbon.tar $EXCLUDES \
+    ./packages/manager/apps/carbon-calculator \
+    ./packages/manager/modules/carbon-calculator
 
-# ============================================
-# PUBLIC-CLOUD.KUBERNETES
-# ============================================
-echo "Creating old_manager_public-cloud.kubernetes.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.kubernetes.tar $EXCLUDES \
-  packages/manager/apps/pci-kubernetes \
-  packages/manager/apps/pci-rancher
+echo "Création old_manager.home.support.tar..."
+tar -cf /home/ubuntu/old_manager.home.support.tar $EXCLUDES \
+    ./packages/manager/apps/support \
+    ./packages/manager/modules/support
 
-# ============================================
-# PUBLIC-CLOUD.REGISTRY
-# ============================================
-echo "Creating old_manager_public-cloud.registry.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.registry.tar $EXCLUDES \
-  packages/manager/apps/pci-private-registry
+# ============================================================
+# IAM
+# ============================================================
+echo "Création old_manager.iam.core.tar..."
+tar -cf /home/ubuntu/old_manager.iam.core.tar $EXCLUDES \
+    ./packages/manager/apps/iam \
+    ./packages/manager/modules/iam
 
-# ============================================
-# PUBLIC-CLOUD.LOAD-BALANCER
-# ============================================
-echo "Creating old_manager_public-cloud.load-balancer.tar..."
-tar -cvf /home/ubuntu/old_manager_public-cloud.load-balancer.tar $EXCLUDES \
-  packages/manager/apps/pci-load-balancer \
-  packages/manager/apps/pci-gateway \
-  packages/manager/apps/pci-public-ip \
-  packages/manager/apps/pci-private-network
+echo "Création old_manager.iam.dbaas-logs.tar..."
+tar -cf /home/ubuntu/old_manager.iam.dbaas-logs.tar $EXCLUDES \
+    ./packages/manager/apps/dbaas-logs \
+    ./packages/manager/modules/dbaas-logs
 
-# ============================================
-# IAM.OKMS
-# ============================================
-echo "Creating old_manager_iam.okms.tar..."
-tar -cvf /home/ubuntu/old_manager_iam.okms.tar $EXCLUDES \
-  packages/manager/apps/okms
+echo "Création old_manager.iam.hsm.tar..."
+echo "# No equivalent in old_manager for iam/hsm" > /tmp/old_manager_placeholder/README.md
+tar -cf /home/ubuntu/old_manager.iam.hsm.tar -C /tmp/old_manager_placeholder .
 
-# ============================================
-# IAM.SECRET (nouveau - vide ou minimal)
-# ============================================
-echo "Creating old_manager_iam.secret.tar (nouveau service - minimal)..."
-tar -cvf /home/ubuntu/old_manager_iam.secret.tar $EXCLUDES \
-  packages/manager/apps/iam
+echo "Création old_manager.iam.logs.tar..."
+tar -cf /home/ubuntu/old_manager.iam.logs.tar $EXCLUDES \
+    ./packages/manager/modules/logs-to-customer \
+    ./packages/manager/modules/log-to-customer
 
-# ============================================
-# IAM.DBAAS-LOGS
-# ============================================
-echo "Creating old_manager_iam.dbaas-logs.tar..."
-tar -cvf /home/ubuntu/old_manager_iam.dbaas-logs.tar $EXCLUDES \
-  packages/manager/apps/dbaas-logs
+echo "Création old_manager.iam.metrics.tar..."
+tar -cf /home/ubuntu/old_manager.iam.metrics.tar $EXCLUDES \
+    ./packages/manager/apps/metrics \
+    ./packages/manager/modules/metrics
 
-# ============================================
-# IAM.METRICS
-# ============================================
-echo "Creating old_manager_iam.metrics.tar..."
-tar -cvf /home/ubuntu/old_manager_iam.metrics.tar $EXCLUDES \
-  packages/manager/apps/metrics
+echo "Création old_manager.iam.okms.tar..."
+tar -cf /home/ubuntu/old_manager.iam.okms.tar $EXCLUDES \
+    ./packages/manager/apps/okms
 
-# ============================================
-# IAM.HSM (nouveau - vide ou minimal)
-# ============================================
-echo "Creating old_manager_iam.hsm.tar (nouveau service - minimal)..."
-tar -cvf /home/ubuntu/old_manager_iam.hsm.tar $EXCLUDES \
-  packages/manager/apps/iam
+echo "Création old_manager.iam.secret.tar..."
+echo "# No equivalent in old_manager for iam/secret" > /tmp/old_manager_placeholder/README.md
+tar -cf /home/ubuntu/old_manager.iam.secret.tar -C /tmp/old_manager_placeholder .
 
-# ============================================
-# IAM.LOGS
-# ============================================
-echo "Creating old_manager_iam.logs.tar..."
-tar -cvf /home/ubuntu/old_manager_iam.logs.tar $EXCLUDES \
-  packages/manager/apps/iam \
-  packages/manager/apps/identity-access-management
-
-# ============================================
-# WEB-CLOUD.VOIP
-# ============================================
-echo "Creating old_manager_web-cloud.voip.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.voip.tar $EXCLUDES \
-  packages/manager/apps/telecom \
-  packages/manager/apps/telecom-dashboard
-
-# ============================================
-# WEB-CLOUD.DOMAINS
-# ============================================
-echo "Creating old_manager_web-cloud.domains.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.domains.tar $EXCLUDES \
-  packages/manager/apps/web-domains \
-  packages/manager/apps/web
-
-# ============================================
-# WEB-CLOUD.HOSTING
-# ============================================
-echo "Creating old_manager_web-cloud.hosting.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.hosting.tar $EXCLUDES \
-  packages/manager/apps/web-hosting \
-  packages/manager/apps/web
-
-# ============================================
-# WEB-CLOUD.EMAIL-PRO
-# ============================================
-echo "Creating old_manager_web-cloud.email-pro.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.email-pro.tar $EXCLUDES \
-  packages/manager/apps/email-pro
-
-# ============================================
-# WEB-CLOUD.CARRIER-SIP
-# ============================================
-echo "Creating old_manager_web-cloud.carrier-sip.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.carrier-sip.tar $EXCLUDES \
-  packages/manager/apps/carrier-sip
-
-# ============================================
-# WEB-CLOUD.OFFICE
-# ============================================
-echo "Creating old_manager_web-cloud.office.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.office.tar $EXCLUDES \
-  packages/manager/apps/web-office
-
-# ============================================
-# WEB-CLOUD.PRIVATE-DATABASE
-# ============================================
-echo "Creating old_manager_web-cloud.private-database.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.private-database.tar $EXCLUDES \
-  packages/manager/apps/web
-
-# ============================================
-# WEB-CLOUD.EXCHANGE
-# ============================================
-echo "Creating old_manager_web-cloud.exchange.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.exchange.tar $EXCLUDES \
-  packages/manager/apps/exchange
-
-# ============================================
-# WEB-CLOUD.EMAIL-DOMAIN
-# ============================================
-echo "Creating old_manager_web-cloud.email-domain.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.email-domain.tar $EXCLUDES \
-  packages/manager/apps/email-domain
-
-# ============================================
-# WEB-CLOUD.PACK-XDSL
-# ============================================
-echo "Creating old_manager_web-cloud.pack-xdsl.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.pack-xdsl.tar $EXCLUDES \
-  packages/manager/apps/telecom
-
-# ============================================
-# WEB-CLOUD.DNS-ZONES
-# ============================================
-echo "Creating old_manager_web-cloud.dns-zones.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.dns-zones.tar $EXCLUDES \
-  packages/manager/apps/web-domains
-
-# ============================================
-# WEB-CLOUD.SMS
-# ============================================
-echo "Creating old_manager_web-cloud.sms.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.sms.tar $EXCLUDES \
-  packages/manager/apps/sms
-
-# ============================================
-# WEB-CLOUD.OVERTHEBOX
-# ============================================
-echo "Creating old_manager_web-cloud.overthebox.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.overthebox.tar $EXCLUDES \
-  packages/manager/apps/overthebox
-
-# ============================================
-# WEB-CLOUD.ZIMBRA
-# ============================================
-echo "Creating old_manager_web-cloud.zimbra.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.zimbra.tar $EXCLUDES \
-  packages/manager/apps/zimbra
-
-# ============================================
-# WEB-CLOUD.FAX
-# ============================================
-echo "Creating old_manager_web-cloud.fax.tar..."
-tar -cvf /home/ubuntu/old_manager_web-cloud.fax.tar $EXCLUDES \
-  packages/manager/apps/freefax
-
-# ============================================
+# ============================================================
 # LICENSE
-# ============================================
-echo "Creating old_manager_license.tar..."
-tar -cvf /home/ubuntu/old_manager_license.tar $EXCLUDES \
-  packages/manager/apps/dedicated
+# ============================================================
+echo "Création old_manager.license.core.tar..."
+# Licenses sont dans dedicated
+tar -cf /home/ubuntu/old_manager.license.core.tar $EXCLUDES \
+    ./packages/manager/apps/dedicated
 
-# ============================================
-# BARE-METAL.HOUSING
-# ============================================
-echo "Creating old_manager_bare-metal.housing.tar..."
-tar -cvf /home/ubuntu/old_manager_bare-metal.housing.tar $EXCLUDES \
-  packages/manager/apps/dedicated
+# ============================================================
+# NETWORK
+# ============================================================
+echo "Création old_manager.network.core.tar..."
+tar -cf /home/ubuntu/old_manager.network.core.tar $EXCLUDES \
+    ./packages/manager/modules/network-common
 
-# ============================================
-# BARE-METAL.VPS
-# ============================================
-echo "Creating old_manager_bare-metal.vps.tar..."
-tar -cvf /home/ubuntu/old_manager_bare-metal.vps.tar $EXCLUDES \
-  packages/manager/apps/vps
+echo "Création old_manager.network.cdn.tar..."
+echo "# CDN is part of dedicated in old_manager" > /tmp/old_manager_placeholder/README.md
+tar -cf /home/ubuntu/old_manager.network.cdn.tar -C /tmp/old_manager_placeholder .
 
-# ============================================
-# BARE-METAL.DEDICATED
-# ============================================
-echo "Creating old_manager_bare-metal.dedicated.tar..."
-tar -cvf /home/ubuntu/old_manager_bare-metal.dedicated.tar $EXCLUDES \
-  packages/manager/apps/dedicated \
-  packages/manager/apps/dedicated-servers
+echo "Création old_manager.network.cloud-connect.tar..."
+tar -cf /home/ubuntu/old_manager.network.cloud-connect.tar $EXCLUDES \
+    ./packages/manager/apps/cloud-connect \
+    ./packages/manager/modules/cloud-connect
 
-# ============================================
-# BARE-METAL.NASHA
-# ============================================
-echo "Creating old_manager_bare-metal.nasha.tar..."
-tar -cvf /home/ubuntu/old_manager_bare-metal.nasha.tar $EXCLUDES \
-  packages/manager/apps/nasha
+echo "Création old_manager.network.ip.tar..."
+tar -cf /home/ubuntu/old_manager.network.ip.tar $EXCLUDES \
+    ./packages/manager/apps/ips
 
-# ============================================
-# BARE-METAL.NETAPP
-# ============================================
-echo "Creating old_manager_bare-metal.netapp.tar..."
-tar -cvf /home/ubuntu/old_manager_bare-metal.netapp.tar $EXCLUDES \
-  packages/manager/apps/netapp
+echo "Création old_manager.network.load-balancer.tar..."
+tar -cf /home/ubuntu/old_manager.network.load-balancer.tar $EXCLUDES \
+    ./packages/manager/apps/iplb \
+    ./packages/manager/modules/iplb
 
-# ============================================
-# PRIVATE-CLOUD.NUTANIX
-# ============================================
-echo "Creating old_manager_private-cloud.nutanix.tar..."
-tar -cvf /home/ubuntu/old_manager_private-cloud.nutanix.tar $EXCLUDES \
-  packages/manager/apps/nutanix
+echo "Création old_manager.network.security.tar..."
+echo "# Security is part of dedicated/ips in old_manager" > /tmp/old_manager_placeholder/README.md
+tar -cf /home/ubuntu/old_manager.network.security.tar -C /tmp/old_manager_placeholder .
 
-# ============================================
-# PRIVATE-CLOUD.SAP
-# ============================================
-echo "Creating old_manager_private-cloud.sap.tar..."
-tar -cvf /home/ubuntu/old_manager_private-cloud.sap.tar $EXCLUDES \
-  packages/manager/apps/sap-features-hub
+echo "Création old_manager.network.vrack.tar..."
+tar -cf /home/ubuntu/old_manager.network.vrack.tar $EXCLUDES \
+    ./packages/manager/apps/vrack \
+    ./packages/manager/modules/vrack
 
-# ============================================
-# PRIVATE-CLOUD.VEEAM
-# ============================================
-echo "Creating old_manager_private-cloud.veeam.tar..."
-tar -cvf /home/ubuntu/old_manager_private-cloud.veeam.tar $EXCLUDES \
-  packages/manager/apps/veeam-backup \
-  packages/manager/apps/veeam-enterprise
+echo "Création old_manager.network.vrack-services.tar..."
+tar -cf /home/ubuntu/old_manager.network.vrack-services.tar $EXCLUDES \
+    ./packages/manager/apps/vrack-services
 
-# ============================================
-# PRIVATE-CLOUD.MANAGED-BAREMETAL
-# ============================================
-echo "Creating old_manager_private-cloud.managed-baremetal.tar..."
-tar -cvf /home/ubuntu/old_manager_private-cloud.managed-baremetal.tar $EXCLUDES \
-  packages/manager/apps/hpc-vmware-vsphere
+# ============================================================
+# PRIVATE-CLOUD
+# ============================================================
+echo "Création old_manager.private-cloud.core.tar..."
+echo "# Private cloud core - see individual services" > /tmp/old_manager_placeholder/README.md
+tar -cf /home/ubuntu/old_manager.private-cloud.core.tar -C /tmp/old_manager_placeholder .
 
-# ============================================
-# PRIVATE-CLOUD.VMWARE
-# ============================================
-echo "Creating old_manager_private-cloud.vmware.tar..."
-tar -cvf /home/ubuntu/old_manager_private-cloud.vmware.tar $EXCLUDES \
-  packages/manager/apps/hpc-vmware-vsphere \
-  packages/manager/apps/hpc-vmware-public-vcf-aas
+echo "Création old_manager.private-cloud.nutanix.tar..."
+tar -cf /home/ubuntu/old_manager.private-cloud.nutanix.tar $EXCLUDES \
+    ./packages/manager/apps/nutanix \
+    ./packages/manager/modules/nutanix
 
-# ============================================
-# NETWORK.VRACK
-# ============================================
-echo "Creating old_manager_network.vrack.tar..."
-tar -cvf /home/ubuntu/old_manager_network.vrack.tar $EXCLUDES \
-  packages/manager/apps/vrack
+echo "Création old_manager.private-cloud.vmware.tar..."
+tar -cf /home/ubuntu/old_manager.private-cloud.vmware.tar $EXCLUDES \
+    ./packages/manager/apps/hpc-vmware-public-vcf-aas \
+    ./packages/manager/apps/hpc-vmware-vsphere
 
-# ============================================
-# NETWORK.VRACK-SERVICES
-# ============================================
-echo "Creating old_manager_network.vrack-services.tar..."
-tar -cvf /home/ubuntu/old_manager_network.vrack-services.tar $EXCLUDES \
-  packages/manager/apps/vrack-services
+# ============================================================
+# PUBLIC-CLOUD
+# ============================================================
+echo "Création old_manager.public-cloud.core.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.core.tar $EXCLUDES \
+    ./packages/manager/apps/pci \
+    ./packages/manager/apps/public-cloud \
+    ./packages/manager/modules/pci \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
-# ============================================
-# NETWORK.CLOUD-CONNECT
-# ============================================
-echo "Creating old_manager_network.cloud-connect.tar..."
-tar -cvf /home/ubuntu/old_manager_network.cloud-connect.tar $EXCLUDES \
-  packages/manager/apps/cloud-connect
+echo "Création old_manager.public-cloud.ai.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.ai.tar $EXCLUDES \
+    ./packages/manager/apps/pci-ai-endpoints \
+    ./packages/manager/apps/pci-ai-tools
 
-# ============================================
-# NETWORK.CDN
-# ============================================
-echo "Creating old_manager_network.cdn.tar..."
-tar -cvf /home/ubuntu/old_manager_network.cdn.tar $EXCLUDES \
-  packages/manager/apps/dedicated
+echo "Création old_manager.public-cloud.block-storage.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.block-storage.tar $EXCLUDES \
+    ./packages/manager/apps/pci-block-storage
 
-# ============================================
-# NETWORK.IP
-# ============================================
-echo "Creating old_manager_network.ip.tar..."
-tar -cvf /home/ubuntu/old_manager_network.ip.tar $EXCLUDES \
-  packages/manager/apps/ips
+echo "Création old_manager.public-cloud.databases.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.databases.tar $EXCLUDES \
+    ./packages/manager/apps/pci-databases-analytics
 
-# ============================================
-# NETWORK.SECURITY
-# ============================================
-echo "Creating old_manager_network.security.tar..."
-tar -cvf /home/ubuntu/old_manager_network.security.tar $EXCLUDES \
-  packages/manager/apps/dedicated
+echo "Création old_manager.public-cloud.instances.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.instances.tar $EXCLUDES \
+    ./packages/manager/apps/pci-instances
 
-# ============================================
-# NETWORK.LOAD-BALANCER
-# ============================================
-echo "Creating old_manager_network.load-balancer.tar..."
-tar -cvf /home/ubuntu/old_manager_network.load-balancer.tar $EXCLUDES \
-  packages/manager/apps/iplb
+echo "Création old_manager.public-cloud.kubernetes.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.kubernetes.tar $EXCLUDES \
+    ./packages/manager/apps/pci-kubernetes
 
-# ============================================
-# ALL TAR
-# ============================================
-echo "Creating old_manager_all.tar..."
-tar -cvf /home/ubuntu/old_manager_all.tar $EXCLUDES \
-  .
+echo "Création old_manager.public-cloud.load-balancer.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.load-balancer.tar $EXCLUDES \
+    ./packages/manager/apps/pci-load-balancer
 
-# ============================================
-# SUMMARY
-# ============================================
+echo "Création old_manager.public-cloud.object-storage.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.object-storage.tar $EXCLUDES \
+    ./packages/manager/apps/pci-object-storage
+
+echo "Création old_manager.public-cloud.project.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.project.tar $EXCLUDES \
+    ./packages/manager/apps/pci-quota \
+    ./packages/manager/apps/pci-vouchers \
+    ./packages/manager/apps/pci-billing \
+    ./packages/manager/apps/pci-contacts \
+    ./packages/manager/apps/pci-users \
+    ./packages/manager/apps/pci-ssh-keys
+
+echo "Création old_manager.public-cloud.registry.tar..."
+tar -cf /home/ubuntu/old_manager.public-cloud.registry.tar $EXCLUDES \
+    ./packages/manager/apps/pci-private-registry
+
+# ============================================================
+# WEB-CLOUD
+# ============================================================
+echo "Création old_manager.web-cloud.core.tar..."
+tar -cf /home/ubuntu/old_manager.web-cloud.core.tar $EXCLUDES \
+    ./packages/manager/apps/web \
+    ./packages/manager/modules/web-universe-components
+
+echo "Création old_manager.web-cloud.access.tar..."
+tar -cf /home/ubuntu/old_manager.web-cloud.access.tar $EXCLUDES \
+    ./packages/manager/apps/overthebox \
+    ./packages/manager/modules/overthebox
+
+echo "Création old_manager.web-cloud.domains-dns.tar..."
+tar -cf /home/ubuntu/old_manager.web-cloud.domains-dns.tar $EXCLUDES \
+    ./packages/manager/apps/web-domains
+
+echo "Création old_manager.web-cloud.emails.tar..."
+tar -cf /home/ubuntu/old_manager.web-cloud.emails.tar $EXCLUDES \
+    ./packages/manager/apps/email-domain \
+    ./packages/manager/apps/email-pro \
+    ./packages/manager/apps/exchange \
+    ./packages/manager/apps/zimbra \
+    ./packages/manager/apps/web-office \
+    ./packages/manager/modules/email-domain \
+    ./packages/manager/modules/emailpro \
+    ./packages/manager/modules/exchange
+
+echo "Création old_manager.web-cloud.hebergement.tar..."
+tar -cf /home/ubuntu/old_manager.web-cloud.hebergement.tar $EXCLUDES \
+    ./packages/manager/apps/web-hosting
+
+echo "Création old_manager.web-cloud.telecom.tar..."
+tar -cf /home/ubuntu/old_manager.web-cloud.telecom.tar $EXCLUDES \
+    ./packages/manager/apps/telecom \
+    ./packages/manager/apps/telecom-dashboard \
+    ./packages/manager/apps/sms \
+    ./packages/manager/apps/carrier-sip \
+    ./packages/manager/apps/freefax \
+    ./packages/manager/modules/sms \
+    ./packages/manager/modules/carrier-sip \
+    ./packages/manager/modules/freefax \
+    ./packages/manager/modules/telecom-styles \
+    ./packages/manager/modules/telecom-universe-components
+
+# ============================================================
+# ALL
+# ============================================================
+echo "Création old_manager.all.tar..."
+tar -cf /home/ubuntu/old_manager.all.tar $EXCLUDES \
+    ./packages/manager
+
+# Nettoyage
+rm -rf /tmp/old_manager_placeholder
+
+# ============================================================
+# RÉSUMÉ
+# ============================================================
 echo ""
-echo "=== Summary ==="
-for f in /home/ubuntu/old_manager_*.tar; do
-  size=$(du -h "$f" | cut -f1)
-  count=$(tar -tf "$f" 2>/dev/null | wc -l)
-  echo "$f : $count files, $size"
-done
-echo "=== Done ==="
+echo "=== Tars générés ==="
+ls -lh /home/ubuntu/old_manager.*.tar | awk '{print $9, $5}'
+echo ""
+echo "Total: $(ls /home/ubuntu/old_manager.*.tar | wc -l) tars"

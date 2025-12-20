@@ -1,13 +1,16 @@
 // ============================================================
-// DOMAINS PAGE - Gestion des domaines (style Billing)
+// DOMAINS PAGE - Liste unifiée Domaines + Zones DNS
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem, Tab } from "../shared";
+import { useDomainZoneList, DomainZoneEntry } from "./hooks/useDomainZoneList";
+import { ServiceItemBadge } from "./components/ServiceItemBadge";
 import { domainsService, Domain, DomainServiceInfos } from "../../../services/web-cloud.domains";
-import { GeneralTab, ZoneTab, DnsTab, TasksTab, RedirectionTab, DynHostTab, DnssecTab, GlueTab } from "./tabs";
+import { dnsZonesService, DnsZone } from "../../../services/web-cloud.dns-zones";
+import { GeneralTab, ZoneTab, HistoryTab, DnsServersTab, RedirectionTab, DynHostTab, GlueTab, DnssecTab, TasksTab } from "./tabs";
 import "../styles.css";
+import "./styles.css";
 
 // ============ ICONS ============
 
@@ -17,136 +20,272 @@ const GlobeIcon = () => (
   </svg>
 );
 
-// ============ COMPOSANT ============
+// ============ TYPES ============
 
-/** Page Domaines avec liste à gauche et détails à droite. */
+interface TabDef {
+  id: string;
+  labelKey: string;
+  condition: (entry: DomainZoneEntry) => boolean;
+}
+
+// ============ TABS DEFINITION ============
+
+const ALL_TABS: TabDef[] = [
+  { id: "general", labelKey: "tabs.general", condition: (e) => e.hasDomain },
+  { id: "zone", labelKey: "tabs.zone", condition: (e) => e.hasZone },
+  { id: "history", labelKey: "tabs.history", condition: (e) => e.hasZone },
+  { id: "dns-servers", labelKey: "tabs.dnsServers", condition: (e) => e.hasDomain },
+  { id: "redirections", labelKey: "tabs.redirections", condition: (e) => e.hasDomain },
+  { id: "dynhost", labelKey: "tabs.dynhost", condition: (e) => e.hasZone },
+  { id: "glue", labelKey: "tabs.glue", condition: (e) => e.hasDomain },
+  { id: "dnssec", labelKey: "tabs.dnssec", condition: (e) => e.hasDomain },
+  { id: "tasks", labelKey: "tabs.tasks", condition: () => true },
+];
+
+// ============ COMPOSANT PRINCIPAL ============
+
+/** Page unifiée Domaines & Zones DNS avec liste à gauche et détails à droite. */
 export default function DomainsPage() {
   const { t } = useTranslation("web-cloud/domains/index");
+  const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
-  const [domains, setDomains] = useState<ServiceItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("general");
+  const { entries, loading, error } = useDomainZoneList();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("general");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // ---------- SELECTED DOMAIN DATA ----------
+  // ---------- SELECTED ENTRY ----------
+  const selectedEntry = useMemo(
+    () => entries.find((e) => e.id === selectedId) || null,
+    [entries, selectedId]
+  );
+
+  // ---------- DOMAIN DETAILS STATE ----------
   const [domainDetails, setDomainDetails] = useState<Domain | null>(null);
   const [serviceInfos, setServiceInfos] = useState<DomainServiceInfos | null>(null);
+  const [zoneDetails, setZoneDetails] = useState<DnsZone | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  // ---------- LOAD DOMAINS ----------
-  const loadDomains = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const domainNames = await domainsService.listDomains();
-      const items: ServiceItem[] = domainNames.map((name) => ({
-        id: name,
-        name: name,
-      }));
-      setDomains(items);
-      if (items.length > 0 && !selectedDomain) {
-        setSelectedDomain(items[0].id);
-      }
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setLoading(false);
+  // ---------- AUTO-SELECT FIRST ----------
+  useEffect(() => {
+    if (entries.length > 0 && !selectedId) {
+      setSelectedId(entries[0].id);
     }
-  }, []);
+  }, [entries, selectedId]);
 
+  // ---------- LOAD DETAILS ----------
   useEffect(() => {
-    loadDomains();
-  }, [loadDomains]);
-
-  // ---------- LOAD SELECTED DOMAIN DETAILS ----------
-  useEffect(() => {
-    if (!selectedDomain) {
+    if (!selectedEntry) {
       setDomainDetails(null);
       setServiceInfos(null);
+      setZoneDetails(null);
       return;
     }
+
     const loadDetails = async () => {
+      setDetailLoading(true);
       try {
-        setDetailLoading(true);
-        const [details, infos] = await Promise.all([
-          domainsService.getDomain(selectedDomain),
-          domainsService.getServiceInfos(selectedDomain),
+        const [domain, infos, zone] = await Promise.all([
+          selectedEntry.hasDomain ? domainsService.getDomain(selectedEntry.id) : Promise.resolve(null),
+          selectedEntry.hasDomain ? domainsService.getServiceInfos(selectedEntry.id) : Promise.resolve(null),
+          selectedEntry.hasZone ? dnsZonesService.getZone(selectedEntry.id) : Promise.resolve(null),
         ]);
-        setDomainDetails(details);
+        setDomainDetails(domain);
         setServiceInfos(infos);
+        setZoneDetails(zone);
       } catch {
         setDomainDetails(null);
         setServiceInfos(null);
+        setZoneDetails(null);
       } finally {
         setDetailLoading(false);
       }
     };
-    loadDetails();
-  }, [selectedDomain]);
 
-  // ---------- TABS ----------
-  const detailTabs = [
-    { id: "general", label: t("tabs.general") },
-    { id: "zone", label: t("tabs.zone") },
-    { id: "dns", label: t("tabs.dns") },
-    { id: "redirection", label: t("tabs.redirection") },
-    { id: "dynhost", label: t("tabs.dynhost") },
-    { id: "glue", label: t("tabs.glue") },
-    { id: "dnssec", label: t("tabs.dnssec") },
-    { id: "tasks", label: t("tabs.tasks") },
-  ];
+    loadDetails();
+  }, [selectedEntry]);
+
+  // ---------- RESET TAB ON SELECTION CHANGE ----------
+  useEffect(() => {
+    if (selectedEntry) {
+      const availableTabs = ALL_TABS.filter((tab) => tab.condition(selectedEntry));
+      if (availableTabs.length > 0 && !availableTabs.find((t) => t.id === activeTab)) {
+        setActiveTab(availableTabs[0].id);
+      }
+    }
+  }, [selectedEntry, activeTab]);
+
+  // ---------- FILTERED ENTRIES ----------
+  const filteredEntries = useMemo(() => {
+    if (!searchQuery.trim()) return entries;
+    const q = searchQuery.toLowerCase();
+    return entries.filter((e) => e.id.toLowerCase().includes(q));
+  }, [entries, searchQuery]);
+
+  // ---------- AVAILABLE TABS ----------
+  const availableTabs = useMemo(() => {
+    if (!selectedEntry) return [];
+    return ALL_TABS.filter((tab) => tab.condition(selectedEntry));
+  }, [selectedEntry]);
+
+  // ---------- RENDER LOADING ----------
+  if (loading) {
+    return (
+      <div className="service-list-page">
+        <div className="service-list-header">
+          <h1>{t("title")}</h1>
+          <p>{t("description")}</p>
+        </div>
+        <div className="empty-state">
+          <p>{tCommon("loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- RENDER ERROR ----------
+  if (error) {
+    return (
+      <div className="service-list-page">
+        <div className="service-list-header">
+          <h1>{t("title")}</h1>
+          <p>{t("description")}</p>
+        </div>
+        <div className="empty-state">
+          <p className="status-badge error">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- RENDER EMPTY ----------
+  if (entries.length === 0) {
+    return (
+      <div className="service-list-page">
+        <div className="service-list-header">
+          <h1>{t("title")}</h1>
+          <p>{t("description")}</p>
+        </div>
+        <div className="empty-state">
+          <div className="empty-state-icon"><GlobeIcon /></div>
+          <h3>{t("empty.title")}</h3>
+          <p>{t("empty.description")}</p>
+          <a href="https://help.ovhcloud.com/csm/fr-domains" target="_blank" rel="noopener noreferrer" className="guides-link">
+            {tCommon("actions.viewGuides")} →
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- RENDER TAB CONTENT ----------
+  const renderTabContent = () => {
+    if (!selectedEntry) return null;
+
+    switch (activeTab) {
+      case "general":
+        return <GeneralTab domain={selectedEntry.id} details={domainDetails || undefined} serviceInfos={serviceInfos || undefined} loading={detailLoading} />;
+      case "zone":
+        return <ZoneTab zoneName={selectedEntry.id} />;
+      case "history":
+        return <HistoryTab zoneName={selectedEntry.id} />;
+      case "dns-servers":
+        return <DnsServersTab domain={selectedEntry.id} />;
+      case "redirections":
+        return <RedirectionTab domain={selectedEntry.id} />;
+      case "dynhost":
+        return <DynHostTab zoneName={selectedEntry.id} />;
+      case "glue":
+        return <GlueTab domain={selectedEntry.id} />;
+      case "dnssec":
+        return <DnssecTab domain={selectedEntry.id} />;
+      case "tasks":
+        return <TasksTab name={selectedEntry.id} hasDomain={selectedEntry.hasDomain} hasZone={selectedEntry.hasZone} />;
+      default:
+        return null;
+    }
+  };
 
   // ---------- RENDER ----------
   return (
-    <ServiceListPage
-      titleKey="title"
-      descriptionKey="description"
-      guidesUrl="https://help.ovhcloud.com/csm/fr-domains"
-      i18nNamespace="web-cloud/domains/index"
-      services={domains}
-      loading={loading}
-      error={error}
-      selectedService={selectedDomain}
-      onSelectService={setSelectedDomain}
-      emptyIcon={<GlobeIcon />}
-      emptyTitleKey="empty.title"
-      emptyDescriptionKey="empty.description"
-    >
-      {selectedDomain && (
-        <div className="detail-card">
-          <div className="detail-card-header">
-            <h2>{selectedDomain}</h2>
-            {domainDetails && (
-              <span className={`badge ${domainDetails.transferLockStatus === 'locked' ? 'success' : 'warning'}`}>
-                {domainDetails.transferLockStatus === 'locked' ? '🔒' : '🔓'} {domainDetails.transferLockStatus}
-              </span>
-            )}
+    <div className="service-list-page">
+      <div className="service-list-header">
+        <h1>{t("title")}</h1>
+        <p>{t("description")}</p>
+        <a href="https://help.ovhcloud.com/csm/fr-domains" target="_blank" rel="noopener noreferrer" className="guides-link">
+          {tCommon("actions.viewGuides")} →
+        </a>
+      </div>
+      <div className="service-list-content">
+        <div className="service-list-sidebar">
+          <div className="sidebar-search">
+            <input
+              type="text"
+              placeholder={tCommon("search")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
           </div>
-          <div className="detail-tabs">
-            {detailTabs.map((tab) => (
-              <button
-                key={tab.id}
-                className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`}
-                onClick={() => setActiveTab(tab.id)}
+          <div className="section-header" style={{ padding: "var(--space-3) var(--space-4)" }}>
+            <span className="section-count">{filteredEntries.length} {t("serviceUnit")}</span>
+          </div>
+          <div className="service-list-items">
+            {filteredEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className={`service-item ${selectedId === entry.id ? "selected" : ""}`}
+                onClick={() => setSelectedId(entry.id)}
               >
-                {tab.label}
-              </button>
+                <div className="service-item-content">
+                  <div className="service-item-name">{entry.id}</div>
+                  <ServiceItemBadge hasDomain={entry.hasDomain} hasZone={entry.hasZone} />
+                </div>
+              </div>
             ))}
           </div>
-          <div className="detail-tab-content">
-            {activeTab === "general" && <GeneralTab domain={selectedDomain} details={domainDetails || undefined} serviceInfos={serviceInfos || undefined} loading={detailLoading} />}
-            {activeTab === "zone" && <ZoneTab domain={selectedDomain} />}
-            {activeTab === "dns" && <DnsTab domain={selectedDomain} />}
-            {activeTab === "redirection" && <RedirectionTab domain={selectedDomain} />}
-            {activeTab === "dynhost" && <DynHostTab domain={selectedDomain} />}
-            {activeTab === "glue" && <GlueTab domain={selectedDomain} />}
-            {activeTab === "dnssec" && <DnssecTab domain={selectedDomain} />}
-            {activeTab === "tasks" && <TasksTab domain={selectedDomain} />}
-          </div>
         </div>
-      )}
-    </ServiceListPage>
+        <div className="service-list-main">
+          {selectedEntry ? (
+            <div className="detail-card">
+              <div className="detail-card-header">
+                <h2>{selectedEntry.id}</h2>
+                <div className="header-badges">
+                  {selectedEntry.hasDomain && domainDetails && (
+                    <span className={`badge ${domainDetails.transferLockStatus === "locked" ? "success" : "warning"}`}>
+                      {domainDetails.transferLockStatus === "locked" ? "🔒" : "🔓"} {domainDetails.transferLockStatus}
+                    </span>
+                  )}
+                  {selectedEntry.hasZone && zoneDetails?.dnssecSupported && (
+                    <span className="badge info">🔐 DNSSEC</span>
+                  )}
+                </div>
+              </div>
+              <div className="detail-tabs">
+                {availableTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`}
+                    onClick={() => setActiveTab(tab.id)}
+                  >
+                    {t(tab.labelKey)}
+                  </button>
+                ))}
+              </div>
+              <div className="detail-tab-content">
+                {renderTabContent()}
+              </div>
+            </div>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-state-icon"><GlobeIcon /></div>
+              <h3>{t("empty.selectTitle")}</h3>
+              <p>{t("empty.selectDescription")}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

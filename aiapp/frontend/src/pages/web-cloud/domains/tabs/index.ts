@@ -2,11 +2,12 @@
 // DOMAINS TABS - Export central
 // ============================================================
 
-export { GeneralTab } from './GeneralTab';
-export { DnsTab } from './DnsTab';
-export { ZoneTab } from './ZoneTab';
-export { RedirectionTab } from './RedirectionTab';
-export { DnssecTab } from './DnssecTab';
-export { GlueTab } from './GlueTab';
-export { DynHostTab } from './DynHostTab';
-export { TasksTab } from './TasksTab';
+export { GeneralTab } from "./GeneralTab";
+export { ZoneTab } from "./ZoneTab";
+export { HistoryTab } from "./HistoryTab";
+export { DnsServersTab } from "./DnsServersTab";
+export { RedirectionTab } from "./RedirectionTab";
+export { DynHostTab } from "./DynHostTab";
+export { GlueTab } from "./GlueTab";
+export { DnssecTab } from "./DnssecTab";
+export { TasksTab } from "./TasksTab";
