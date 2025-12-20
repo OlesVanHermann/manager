@@ -103,6 +103,18 @@ class DomainsService {
     return ovhApi.get<DomainServiceInfos>(`/domain/${domain}/serviceInfos`);
   }
 
+  // ---------- Transfer Lock ----------
+
+  /** Verrouille le domaine contre les transferts. */
+  async lockDomain(domain: string): Promise<void> {
+    return ovhApi.post<void>(`/domain/${domain}/lock`, {});
+  }
+
+  /** Deverrouille le domaine pour permettre les transferts. */
+  async unlockDomain(domain: string): Promise<void> {
+    return ovhApi.delete<void>(`/domain/${domain}/lock`);
+  }
+
   // ---------- DNS Servers ----------
 
   /** Liste les serveurs DNS d'un domaine. */

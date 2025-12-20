@@ -1,5 +1,50 @@
 # Objectif
-Limiter le contexte du chat en uploadant uniquement les fichiers nécessaires au travail du jour.
+Générer 2 scripts bash pour créer des archives tar granulaires des managers (new et old), permettant d'uploader uniquement les fichiers nécessaires au travail du jour.
+
+# RÈGLES ABSOLUES (LIRE EN PREMIER)
+
+## Règle 1 : Extraction stricte - JAMAIS inventer
+**INTERDIT d'inventer ou déduire des chemins.**
+- Chaque chemin DOIT être extrait VERBATIM des listes fournies
+- Si un fichier/dossier attendu n'existe pas dans la liste → NE PAS l'inclure
+- En cas de doute → grep la liste pour vérifier
+
+**INTERDIT :**
+```bash
+# J'imagine que ce fichier existe basé sur une convention
+./src/pages/bare-metal/dedicated/tabs/StorageTab.tsx  # ✗ INVENTÉ
+```
+
+**CORRECT :**
+```bash
+# J'ai vérifié dans new_manager_files.txt : ligne 847
+./src/pages/bare-metal/dedicated/tabs/NetworkTab.tsx  # ✓ EXISTE
+```
+
+## Règle 2 : Dossiers plutôt que fichiers individuels
+**Utiliser des DOSSIERS entiers** pour éviter les erreurs de noms.
+
+**MAUVAIS (fragile) :**
+```bash
+tar -cf archive.tar \
+  ./src/pages/home/billing/tabs/PaymentsTab.tsx \
+  ./src/pages/home/billing/tabs/OrdersTab.tsx \
+  ./src/pages/home/billing/tabs/ServicesTab.tsx
+```
+
+**BON (robuste) :**
+```bash
+tar -cf archive.tar \
+  ./src/pages/home/billing
+```
+
+**Exception** : Fichiers core isolés (index.tsx, styles.css à la racine d'un NAV1)
+
+## Règle 3 : Validation avant génération
+**AVANT de générer les scripts**, pour chaque tar :
+1. Lister les dossiers/fichiers à inclure
+2. Vérifier que chaque chemin existe dans la liste fournie
+3. Signaler les chemins introuvables
 
 # Entrées
 - Liste de fichiers `new_manager` (fichier joint)
@@ -9,13 +54,13 @@ Limiter le contexte du chat en uploadant uniquement les fichiers nécessaires au
 - `new_manager` = `/home/ubuntu/aiapp/frontend` (React/Vite)
 - `old_manager` = `/home/ubuntu/manager/` (Angular monorepo avec packages/)
 
-# Nommage des tars (CRITIQUE - LIRE ATTENTIVEMENT)
+# Nommage des tars (CRITIQUE)
 Format OBLIGATOIRE : `{prefix}.{domaine}.tar`
 - Séparateur entre prefix et domaine : `.` (POINT, pas underscore)
 - Séparateur entre NAV1 et NAV2 : `.` (POINT)
 - JAMAIS de `_` (underscore) après le prefix
 
-**Exemples de noms de fichiers CORRECTS :**
+**Exemples de noms CORRECTS :**
 - `new_manager.core.tar` ✓
 - `new_manager.home.core.tar` ✓
 - `new_manager.home.billing.tar` ✓
@@ -23,11 +68,10 @@ Format OBLIGATOIRE : `{prefix}.{domaine}.tar`
 - `new_manager.all.tar` ✓
 - `old_manager.home.billing.tar` ✓
 
-**Exemples de noms de fichiers INCORRECTS (INTERDIT) :**
+**Exemples de noms INCORRECTS (INTERDIT) :**
 - `new_manager_core.tar` ✗
 - `new_manager_home.billing.tar` ✗
 - `new_manager_home.account.tar` ✗
-- `new_manager_public-cloud.kubernetes.tar` ✗
 
 **Exemples de commandes tar CORRECTES :**
 ```bash
@@ -42,67 +86,28 @@ tar -cf /home/ubuntu/new_manager_home.billing.tar ...  # ✗ underscore
 tar -cvf /home/ubuntu/new_manager_home.account.tar ... # ✗ underscore + verbose
 ```
 
-# Tâches
+# Structure des tars
 
-## 1. Analyse de structure
-- Identifier les domaines NAV1 (ex: public-cloud, home, network...)
-- Identifier les sous-domaines NAV2 (ex: home.billing, public-cloud.kubernetes...)
-- Compter les fichiers par niveau (pages + services + locales)
-- Classifier par taille : XS (<15), S (15-35), M (35-70), L (70-120), XL (>120)
+## Niveaux de granularité
+1. `{prefix}.core.tar` : Config globale + design-system + lib + services de base
+2. `{prefix}.{NAV1}.core.tar` : Structure de base du domaine NAV1 (index, styles, shared, components directs)
+3. `{prefix}.{NAV1}.{NAV2}.tar` : Sous-domaine complet (PRIORITAIRE pour le travail quotidien)
+4. `{prefix}.all.tar` : Tous les fichiers (refactoring global)
 
-## 2. Stratégie de division
-Proposer 4 niveaux de tars :
-- `{prefix}.core.tar` : config + composants partagés globaux + design-system + lib (obligatoire)
-- `{prefix}.{NAV1}.core.tar` : structure de base du domaine NAV1 (index, shared, styles, routes)
-- `{prefix}.{NAV1}.{NAV2}.tar` : sous-domaine granulaire (PRIORITAIRE)
-- `{prefix}.all.tar` : tous les fichiers (travail transversal / refactoring global)
-
-Où `{prefix}` = `new_manager` ou `old_manager`
-
-## 2.5 Validation des patterns (AVANT script)
-Pour chaque tar proposé, lister explicitement :
-- Les fichiers/dossiers qui EXISTENT réellement (via la liste fournie)
-- Signaler les patterns qui ne matchent RIEN
-
-Ne PAS inclure de wildcards dans le script final.
-Lister tous les fichiers explicitement.
-
-## 2.6 Correspondance new/old (CRITIQUE)
-**Règle : old_manager suit EXACTEMENT la structure NAV1/NAV2 de new_manager**
-
-1. Lister tous les NAV1 et NAV2 présents dans new_manager
-2. Créer un tar old_manager pour CHAQUE NAV1.core et NAV2 de new_manager
-3. Les tars NAV1 complets (ex: home.tar avec tout) sont OPTIONNELS
-
-Objectif : uploader uniquement `new_manager.home.core.tar` + `new_manager.home.billing.tar` + leurs équivalents old pour migrer billing avec le contexte minimal du domaine.
-
-Exemple de paires attendues :
-- `new_manager.core.tar` ↔ `old_manager.core.tar`
-- `new_manager.home.core.tar` ↔ `old_manager.home.core.tar`
-- `new_manager.home.billing.tar` ↔ `old_manager.home.billing.tar`
-- `new_manager.home.account.tar` ↔ `old_manager.home.account.tar`
-- `new_manager.web-cloud.core.tar` ↔ `old_manager.web-cloud.core.tar`
-- `new_manager.web-cloud.hosting.tar` ↔ `old_manager.web-cloud.hosting.tar`
-- `new_manager.all.tar` ↔ `old_manager.all.tar`
-
-Si un NAV1 ou NAV2 existe dans new mais pas dans old :
-- Signaler dans l'analyse
-- Créer quand même le tar (vide ou avec ce qui existe)
-
-## 2.7 Fichiers NAV1.core (CRITIQUE)
-**Chaque domaine NAV1 a un tar .core avec sa structure de base.**
-
-Fichiers à inclure dans `{prefix}.{NAV1}.core.tar` :
-- `src/pages/{NAV1}/index.tsx` (point d'entrée)
-- `src/pages/{NAV1}/routes.tsx` (si existe)
-- `src/pages/{NAV1}/shared.tsx` (si existe)
-- `src/pages/{NAV1}/shared/` (tout le dossier si existe)
-- `src/pages/{NAV1}/styles.css` ou `*.scss` (si existe)
-- `src/pages/{NAV1}/hooks/` (hooks partagés du domaine)
-- `src/pages/{NAV1}/components/` (composants partagés du domaine, PAS les sous-domaines)
-- `src/pages/{NAV1}/types.ts` ou `types/` (si existe)
-- `src/pages/{NAV1}/constants.ts` (si existe)
-- `src/pages/{NAV1}/utils.ts` ou `utils/` (si existe)
+## Contenu des tars NAV1.core
+Inclure les fichiers/dossiers DIRECTS du NAV1 (pas les sous-domaines NAV2) :
+```
+./src/pages/{NAV1}/index.tsx
+./src/pages/{NAV1}/routes.tsx (si existe)
+./src/pages/{NAV1}/styles.css (si existe)
+./src/pages/{NAV1}/utils.ts (si existe)
+./src/pages/{NAV1}/types.ts (si existe)
+./src/pages/{NAV1}/constants.ts (si existe)
+./src/pages/{NAV1}/shared/ (si existe)
+./src/pages/{NAV1}/shared.tsx (si existe)
+./src/pages/{NAV1}/components/ (si existe, PAS les sous-domaines)
+./src/pages/{NAV1}/hooks/ (si existe)
+```
 
 **NE PAS inclure** les sous-dossiers NAV2 (billing/, account/, hosting/, etc.)
 
@@ -117,7 +122,14 @@ src/pages/home/hooks/useHomeServices.ts
 src/pages/home/types.ts
 ```
 
-## 2.8 Fichiers NAV2 + shared parent
+## Contenu des tars NAV2
+Inclure :
+- Le dossier NAV2 complet : `./src/pages/{NAV1}/{NAV2}/`
+- Le shared du parent : `./src/pages/{NAV1}/shared/` ou `./src/pages/{NAV1}/shared.tsx` (si existe)
+- Les services associés : `./src/services/{nav1}.{nav2}.ts` (si existe)
+- Les locales : `./public/locales/{en,fr}/{nav1}/{nav2}/` (si existe)
+
+## Imports shared parent (CRITIQUE)
 **Les imports `../../shared` ou `../shared` référencent des composants partagés AU NIVEAU DU DOMAINE.**
 
 Exemple :
@@ -126,54 +138,62 @@ Exemple :
 import { ServiceListPage, ServiceItem } from "../../shared";
 ```
 
-**RÈGLE : Chaque tar NAV2 DOIT inclure le fichier shared du domaine parent.**
+Résolution :
+- `src/pages/web-cloud/shared.tsx`
+- Ou `src/pages/web-cloud/shared/index.tsx`
+
+**RÈGLE : Chaque tar NAV2 DOIT inclure le shared du domaine parent.**
 
 Quand on génère `new_manager.web-cloud.hosting.tar`, inclure aussi :
 - `src/pages/web-cloud/shared.tsx` (si existe)
 - `src/pages/web-cloud/shared/` (si existe)
 
-## 3. Tableau récapitulatif
-Pour chaque tar, indiquer :
-- Nom du tar
-- Nombre de fichiers
-- Taille (XS/S/M/L/XL)
-- Patterns de fichiers inclus (chemins réels uniquement)
-- Correspondance avec l'autre manager (oui/non/partiel)
-- Fichier shared inclus (oui/non)
+# Correspondance new ↔ old (CRITIQUE)
+**old_manager DOIT avoir un tar pour CHAQUE tar de new_manager.**
 
-## 4. Scripts de génération (2 scripts séparés)
+Pour chaque NAV1/NAV2 de new_manager, identifier le(s) chemin(s) équivalent(s) dans old_manager :
+- `home.account` → `packages/manager/modules/account` + `packages/manager/apps/account`
+- `home.billing` → `packages/manager/modules/billing` + `packages/manager/apps/billing`
+- `public-cloud.kubernetes` → `packages/manager/apps/pci-kubernetes`
+- etc.
 
-### Script 1 : `/home/ubuntu/new_generate_manager_tars.sh`
-- Supprime UNIQUEMENT `/home/ubuntu/new_manager.*.tar` (jamais old_manager)
-- Génère uniquement les tars `new_manager.*.tar`
+Exemple de paires attendues :
+- `new_manager.core.tar` ↔ `old_manager.core.tar`
+- `new_manager.home.core.tar` ↔ `old_manager.home.core.tar`
+- `new_manager.home.billing.tar` ↔ `old_manager.home.billing.tar`
+- `new_manager.all.tar` ↔ `old_manager.all.tar`
+
+Si un NAV1/NAV2 existe dans new mais pas dans old :
+- Signaler dans l'analyse
+- Créer quand même le tar (avec ce qui existe, ou vide)
+
+# Scripts à générer
+
+## Script 1 : `/home/ubuntu/new_generate_manager_tars.sh`
 - Travaille dans `/home/ubuntu/aiapp/frontend`
+- Supprime UNIQUEMENT `/home/ubuntu/new_manager.*.tar` (jamais old_manager)
+- Génère les tars `new_manager.*.tar`
 
-### Script 2 : `/home/ubuntu/old_generate_manager_tars.sh`
-- Supprime UNIQUEMENT `/home/ubuntu/old_manager.*.tar` (jamais new_manager)
-- Génère uniquement les tars `old_manager.*.tar`
+## Script 2 : `/home/ubuntu/old_generate_manager_tars.sh`
 - Travaille dans `/home/ubuntu/manager`
+- Supprime UNIQUEMENT `/home/ubuntu/old_manager.*.tar` (jamais new_manager)
+- Génère les tars `old_manager.*.tar`
 - DOIT créer un tar pour CHAQUE NAV1.core et NAV2 présent dans new_manager
-
-Chaque script DOIT :
-1. Supprimer UNIQUEMENT ses propres tars (pas ceux de l'autre manager)
-2. Créer tous les tars avec le format `{prefix}.{domaine}.tar` (POINT, pas underscore)
-3. Créer les tars NAV1.core avec la structure de base du domaine
-4. Inclure les fichiers shared du domaine parent dans les tars NAV2
-5. Afficher la progression avec des echo
-6. Vérifier que chaque tar n'est pas vide
+- DOIT inclure les exclusions (voir ci-dessous)
 
 **CRITIQUE - Isolation des rm :**
 - `new_generate_manager_tars.sh` : `rm -f /home/ubuntu/new_manager.*.tar`
 - `old_generate_manager_tars.sh` : `rm -f /home/ubuntu/old_manager.*.tar`
 - INTERDIT de faire `rm -f /home/ubuntu/*manager*.tar` ou similaire
 
-**CRITIQUE - Options tar :**
-- Utiliser `tar -cf` (création simple, sans verbose)
-- Ne PAS utiliser `-v` (pollue la sortie avec des milliers de lignes)
+# Options tar
+- Utiliser `tar -cf` (création simple)
+- NE PAS utiliser `-v` (verbose pollue la sortie)
+- NE PAS utiliser `2>/dev/null` (masque les erreurs)
 
-**CRITIQUE - Exclusions OBLIGATOIRES pour old_manager (monorepo lourd) :**
+# Exclusions OBLIGATOIRES pour old_manager
 Chaque commande tar dans `old_generate_manager_tars.sh` DOIT inclure ces exclusions :
-```
+```bash
 --exclude='node_modules' \
 --exclude='.git' \
 --exclude='dist' \
@@ -182,10 +202,11 @@ Chaque commande tar dans `old_generate_manager_tars.sh` DOIT inclure ces exclusi
 --exclude='yarn.lock' \
 --exclude='package-lock.json' \
 --exclude='*.map' \
---exclude='.cache' \
+--exclude='.cache'
 ```
 
-**Interdit :**
+# Liste des INTERDIT
+
 - Wildcards `*.ts` dans tar (non interprétés)
 - Option `-v` dans tar (verbose inutile, pollue la sortie)
 - `2>/dev/null` qui masque les erreurs
@@ -198,44 +219,62 @@ Chaque commande tar dans `old_generate_manager_tars.sh` DOIT inclure ces exclusi
 - Inclure les sous-dossiers NAV2 dans les tars NAV1.core
 - Utiliser underscore `_` après le prefix (DOIT être `.`)
 - Format `new_manager_xxx.tar` (INCORRECT, utiliser `new_manager.xxx.tar`)
+- Inventer des chemins non vérifiés dans les listes
 
-# Contraintes
-- Format des tars : `{prefix}.{domaine}.tar` avec POINT (pas underscore)
-- Tars new_manager : `new_manager.{domaine}.tar`
-- Tars old_manager : `old_manager.{domaine}.tar`
-- Inclure obligatoirement `new_manager.all.tar` et `old_manager.all.tar`
-- Créer un tar NAV1.core pour CHAQUE domaine NAV1
-- old_manager DOIT avoir un tar pour CHAQUE NAV1.core et NAV2 de new_manager
-- Chaque tar NAV2 DOIT inclure les fichiers shared du domaine parent
-- Ne générer AUCUN code sans mon autorisation explicite
+# Tâches
 
-# Sortie attendue
-1. Tableau d'analyse NAV1 et NAV2 de new_manager (référence)
-2. Tableau de mapping NAV1.core et NAV2 new → old (correspondances trouvées)
-3. Tableau récapitulatif des tars proposés (new ET old côte à côte)
-4. Liste des fichiers core détectés par domaine NAV1
-5. Liste des fichiers shared détectés par domaine
-6. Proposition de stratégie
-7. **Attendre mon GO** avant de générer les scripts
+## 1. Analyse de structure
+Depuis les listes fournies :
+- Identifier les NAV1 présents dans new_manager (`src/pages/{NAV1}/`)
+- Identifier les NAV2 pour chaque NAV1 (`src/pages/{NAV1}/{NAV2}/`)
+- Compter les fichiers par domaine
+- Classifier par taille : XS (<15), S (15-35), M (35-70), L (70-120), XL (>120)
 
-# Format de génération des scripts
-Quand je dis "GO", générer les 2 scripts avec cp+tee, chacun dans un markdown séparé, facile à copier coller.
+## 2. Mapping new → old
+Pour chaque NAV1 et NAV2 de new_manager :
+- Identifier le(s) chemin(s) équivalent(s) dans old_manager
+- Vérifier leur existence dans la liste
+- Signaler les absences
 
-Pattern OBLIGATOIRE pour script 1 :
+## 3. Validation des chemins (CRITIQUE)
+Pour chaque tar proposé :
+- Lister les chemins à inclure
+- Vérifier chaque chemin dans la liste fournie (grep)
+- Si un chemin n'existe pas → NE PAS l'inclure + signaler
+
+## 4. Tableau récapitulatif
+| Tar | Chemins new_manager | Chemins old_manager | Shared inclus | Vérifié |
+|-----|---------------------|---------------------|---------------|---------|
+| ... | ... | ... | oui/non | ✓/✗ |
+
+## 5. Attendre confirmation
+**NE PAS générer les scripts avant mon "GO".**
+
+## 6. Générer les scripts
+Après le "GO" :
+- Générer les 2 scripts avec cp+tee
+- Chaque script dans un bloc markdown séparé
+- Facile à copier-coller
+
+# Format de génération (cp+tee)
+
+**Pattern OBLIGATOIRE pour script 1 :**
 ```
 cp /home/ubuntu/new_generate_manager_tars.sh /home/ubuntu/new_generate_manager_tars.sh.$(date +%Y%m%d%H%M%S) 2>/dev/null || true
 tee /home/ubuntu/new_generate_manager_tars.sh <<'FS'
 #!/bin/bash
+set -e
 [contenu]
 FS
 chmod +x /home/ubuntu/new_generate_manager_tars.sh
 ```
 
-Pattern OBLIGATOIRE pour script 2 :
+**Pattern OBLIGATOIRE pour script 2 :**
 ```
 cp /home/ubuntu/old_generate_manager_tars.sh /home/ubuntu/old_generate_manager_tars.sh.$(date +%Y%m%d%H%M%S) 2>/dev/null || true
 tee /home/ubuntu/old_generate_manager_tars.sh <<'FS'
 #!/bin/bash
+set -e
 [contenu]
 FS
 chmod +x /home/ubuntu/old_generate_manager_tars.sh
@@ -243,6 +282,30 @@ chmod +x /home/ubuntu/old_generate_manager_tars.sh
 
 **Rappels anti-casse cp+tee :**
 - `FS` final en début de ligne, sans espace
-- Pas de guillemets "intelligents" - garder `'FS'` avec apostrophes simples
+- Apostrophes simples `'FS'` (pas de guillemets intelligents)
 - Pas d'indentation avant `tee ... <<'FS'` ni avant `FS`
 - Toujours `/home/ubuntu`, jamais `~`
+
+# Sortie attendue
+
+1. **Tableau NAV1/NAV2** de new_manager avec comptage fichiers
+2. **Tableau mapping** new → old avec vérification existence
+3. **Liste des fichiers core** détectés par domaine NAV1
+4. **Liste des fichiers shared** détectés par domaine
+5. **Signalement** des chemins introuvables
+6. **Proposition** de stratégie
+7. **Attente du GO**
+8. (après GO) **Scripts** avec cp+tee, chacun dans un markdown séparé
+
+# Checklist finale avant scripts
+
+Avant de générer, vérifier :
+- [ ] Tous les chemins existent dans les listes fournies
+- [ ] Format des noms : `{prefix}.{domaine}.tar` avec POINT (pas underscore)
+- [ ] Exclusions présentes pour old_manager
+- [ ] Utilisation de dossiers plutôt que fichiers individuels
+- [ ] Shared du domaine parent inclus dans les tars NAV2
+- [ ] Pas de wildcards dans tar
+- [ ] Pas d'option -v
+- [ ] Chemins absolus /home/ubuntu (pas ~)
+- [ ] Chaque script supprime UNIQUEMENT ses propres tars
