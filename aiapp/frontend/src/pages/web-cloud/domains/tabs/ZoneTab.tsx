@@ -1,5 +1,5 @@
 // ============================================================
-// TAB: ZONE DNS - Enregistrements DNS
+// TAB: ZONE DNS - Enregistrements DNS + Historique (toggle)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
@@ -12,12 +12,15 @@ interface Props {
 
 const RECORD_TYPES = ["A", "AAAA", "CNAME", "MX", "TXT", "NS", "SRV", "CAA", "DKIM", "SPF", "DMARC", "PTR"];
 
-/** Onglet Zone DNS - Gestion des enregistrements. */
+/** Onglet Zone DNS - Gestion des enregistrements + historique. */
 export function ZoneTab({ zoneName }: Props) {
   const { t } = useTranslation("web-cloud/domains/index");
   const { t: tCommon } = useTranslation("common");
 
-  // ---------- STATE ----------
+  // ---------- STATE VIEW ----------
+  const [view, setView] = useState<"records" | "history">("records");
+
+  // ---------- STATE RECORDS ----------
   const [records, setRecords] = useState<DnsZoneRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +29,12 @@ export function ZoneTab({ zoneName }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [loadedCount, setLoadedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+
+  // ---------- STATE HISTORY ----------
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [restoring, setRestoring] = useState<string | null>(null);
 
   // ---------- LOAD RECORDS ----------
   const loadRecords = useCallback(async () => {
@@ -55,6 +64,28 @@ export function ZoneTab({ zoneName }: Props) {
     loadRecords();
   }, [loadRecords]);
 
+  // ---------- LOAD HISTORY ----------
+  const loadHistory = async () => {
+    if (historyLoaded) return;
+    try {
+      setHistoryLoading(true);
+      const dates = await dnsZonesService.listHistory(zoneName);
+      setHistory(dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime()));
+      setHistoryLoaded(true);
+    } catch (err) {
+      console.error("Failed to load history:", err);
+      setHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // ---------- SWITCH TO HISTORY ----------
+  const handleShowHistory = () => {
+    setView("history");
+    loadHistory();
+  };
+
   // ---------- REFRESH ZONE ----------
   const handleRefreshZone = async () => {
     try {
@@ -68,13 +99,97 @@ export function ZoneTab({ zoneName }: Props) {
     }
   };
 
+  // ---------- RESTORE HISTORY ----------
+  const handleRestore = async (createdAt: string) => {
+    if (!confirm(t("history.confirmRestore"))) return;
+    try {
+      setRestoring(createdAt);
+      await dnsZonesService.restoreHistory(zoneName, createdAt);
+      alert(t("history.restored"));
+      setHistoryLoaded(false);
+      setView("records");
+      await loadRecords();
+    } catch (err) {
+      alert(String(err));
+    } finally {
+      setRestoring(null);
+    }
+  };
+
   // ---------- FILTERED RECORDS ----------
   const filteredRecords = records.filter((r) => {
     if (filterSubdomain && !r.subDomain.toLowerCase().includes(filterSubdomain.toLowerCase())) return false;
     return true;
   });
 
-  // ---------- RENDER ----------
+  // ---------- FORMAT DATE ----------
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // ---------- RENDER HISTORY VIEW ----------
+  if (view === "history") {
+    return (
+      <div className="zone-tab">
+        <div className="tab-header">
+          <div>
+            <h3>{t("history.title")}</h3>
+            <p className="tab-description">{t("history.description")}</p>
+          </div>
+          <button className="btn-secondary" onClick={() => setView("records")}>
+            ← {t("zone.backToRecords")}
+          </button>
+        </div>
+
+        {historyLoading ? (
+          <div className="tab-loading">
+            <div className="skeleton-block" />
+            <div className="skeleton-block" />
+          </div>
+        ) : history.length === 0 ? (
+          <div className="empty-state">
+            <p>{t("history.empty")}</p>
+          </div>
+        ) : (
+          <div className="history-timeline">
+            {history.map((date, index) => (
+              <div key={date} className="history-item">
+                <div className="history-dot" />
+                <div className="history-content">
+                  <div className="history-info">
+                    <div className="history-date">{formatDate(date)}</div>
+                    {index === 0 && <span className="badge success">{t("history.current")}</span>}
+                  </div>
+                  {index > 0 && (
+                    <button
+                      className="btn-secondary btn-sm"
+                      onClick={() => handleRestore(date)}
+                      disabled={restoring === date}
+                    >
+                      {restoring === date ? tCommon("loading") : t("history.restore")}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="info-box">
+          <h4>{t("history.info")}</h4>
+          <p>{t("history.infoDesc")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- RENDER RECORDS VIEW ----------
   if (loading && records.length === 0) {
     return (
       <div className="tab-loading">
@@ -87,16 +202,23 @@ export function ZoneTab({ zoneName }: Props) {
 
   return (
     <div className="zone-tab">
+      {/* Header */}
       <div className="tab-header">
         <div>
           <h3>{t("zone.title")}</h3>
           <p className="tab-description">{t("zone.description")}</p>
         </div>
-        <button className="btn-primary" onClick={handleRefreshZone} disabled={refreshing}>
-          {refreshing ? tCommon("loading") : t("zone.refresh")}
-        </button>
+        <div className="tab-header-actions">
+          <button className="btn-secondary" onClick={handleShowHistory}>
+            📜 {t("zone.history")}
+          </button>
+          <button className="btn-primary" onClick={handleRefreshZone} disabled={refreshing}>
+            {refreshing ? tCommon("loading") : t("zone.refresh")}
+          </button>
+        </div>
       </div>
 
+      {/* Stats */}
       <div className="zone-stats">
         <div className="stat-card">
           <div className="stat-value">{totalCount}</div>
@@ -120,6 +242,7 @@ export function ZoneTab({ zoneName }: Props) {
         </div>
       </div>
 
+      {/* Filters */}
       <div className="filters-row">
         <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select">
           <option value="">{t("zone.allTypes")}</option>
@@ -139,8 +262,10 @@ export function ZoneTab({ zoneName }: Props) {
         </span>
       </div>
 
+      {/* Error */}
       {error && <div className="error-banner">{error}</div>}
 
+      {/* Records table */}
       {filteredRecords.length === 0 && !loading ? (
         <div className="empty-state">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="48" height="48">

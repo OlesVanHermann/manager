@@ -4,7 +4,6 @@
 
 export { GeneralTab } from "./GeneralTab";
 export { ZoneTab } from "./ZoneTab";
-export { HistoryTab } from "./HistoryTab";
 export { DnsServersTab } from "./DnsServersTab";
 export { RedirectionTab } from "./RedirectionTab";
 export { DynHostTab } from "./DynHostTab";

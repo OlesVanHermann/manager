@@ -8,7 +8,7 @@ import { useDomainZoneList, DomainZoneEntry } from "./hooks/useDomainZoneList";
 import { ServiceItemBadge } from "./components/ServiceItemBadge";
 import { domainsService, Domain, DomainServiceInfos } from "../../../services/web-cloud.domains";
 import { dnsZonesService, DnsZone } from "../../../services/web-cloud.dns-zones";
-import { GeneralTab, ZoneTab, HistoryTab, DnsServersTab, RedirectionTab, DynHostTab, GlueTab, DnssecTab, TasksTab } from "./tabs";
+import { GeneralTab, ZoneTab, DnsServersTab, RedirectionTab, DynHostTab, GlueTab, DnssecTab, TasksTab } from "./tabs";
 import "../styles.css";
 import "./styles.css";
 
@@ -33,7 +33,6 @@ interface TabDef {
 const ALL_TABS: TabDef[] = [
   { id: "general", labelKey: "tabs.general", condition: (e) => e.hasDomain },
   { id: "zone", labelKey: "tabs.zone", condition: (e) => e.hasZone },
-  { id: "history", labelKey: "tabs.history", condition: (e) => e.hasZone },
   { id: "dns-servers", labelKey: "tabs.dnsServers", condition: (e) => e.hasDomain },
   { id: "redirections", labelKey: "tabs.redirections", condition: (e) => e.hasDomain },
   { id: "dynhost", labelKey: "tabs.dynhost", condition: (e) => e.hasZone },
@@ -188,8 +187,6 @@ export default function DomainsPage() {
         return <GeneralTab domain={selectedEntry.id} details={domainDetails || undefined} serviceInfos={serviceInfos || undefined} loading={detailLoading} />;
       case "zone":
         return <ZoneTab zoneName={selectedEntry.id} />;
-      case "history":
-        return <HistoryTab zoneName={selectedEntry.id} />;
       case "dns-servers":
         return <DnsServersTab domain={selectedEntry.id} />;
       case "redirections":
