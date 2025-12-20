@@ -38,6 +38,11 @@ export interface DnsServer {
   toDelete: boolean;
 }
 
+export interface DnsServerInput {
+  host: string;
+  ip?: string;
+}
+
 export interface DnsRecord {
   id: number;
   fieldType: string;
@@ -70,7 +75,21 @@ export interface Redirection {
   type: 'visible' | 'visiblePermanent' | 'invisible';
 }
 
+export interface RedirectionCreate {
+  subDomain: string;
+  target: string;
+  type: 'visible' | 'visiblePermanent' | 'invisible';
+  title?: string;
+  keywords?: string;
+  description?: string;
+}
+
 export interface GlueRecord {
+  host: string;
+  ips: string[];
+}
+
+export interface GlueRecordCreate {
   host: string;
   ips: string[];
 }
@@ -80,7 +99,17 @@ export interface DynHostRecord {
   ip: string;
   subDomain: string;
   zone: string;
-  login?: string;
+}
+
+export interface DynHostRecordCreate {
+  ip: string;
+  subDomain: string;
+}
+
+export interface DynHostLogin {
+  login: string;
+  subDomain: string;
+  zone: string;
 }
 
 // ============================================================
@@ -127,6 +156,11 @@ class DomainsService {
     return ovhApi.get<DnsServer>(`/domain/${domain}/nameServer/${id}`);
   }
 
+  /** Met a jour les serveurs DNS d'un domaine. */
+  async updateDnsServers(domain: string, nameServers: DnsServerInput[]): Promise<DomainTask> {
+    return ovhApi.post<DomainTask>(`/domain/${domain}/nameServers/update`, { nameServers });
+  }
+
   // ---------- Zone DNS ----------
 
   /** Liste les IDs des records DNS d'une zone. */
@@ -166,14 +200,29 @@ class DomainsService {
 
   // ---------- Redirections ----------
 
-  /** Liste les redirections web. */
-  async listRedirections(domain: string): Promise<number[]> {
-    return ovhApi.get<number[]>(`/domain/${domain}/redirection`);
+  /** Liste les redirections web d'une zone. */
+  async listRedirections(zoneName: string): Promise<number[]> {
+    return ovhApi.get<number[]>(`/domain/zone/${zoneName}/redirection`);
   }
 
   /** Recupere une redirection. */
-  async getRedirection(domain: string, id: number): Promise<Redirection> {
-    return ovhApi.get<Redirection>(`/domain/${domain}/redirection/${id}`);
+  async getRedirection(zoneName: string, id: number): Promise<Redirection> {
+    return ovhApi.get<Redirection>(`/domain/zone/${zoneName}/redirection/${id}`);
+  }
+
+  /** Cree une redirection web. */
+  async createRedirection(zoneName: string, data: RedirectionCreate): Promise<Redirection> {
+    return ovhApi.post<Redirection>(`/domain/zone/${zoneName}/redirection`, data);
+  }
+
+  /** Modifie une redirection web. */
+  async updateRedirection(zoneName: string, id: number, data: { target?: string; title?: string; keywords?: string; description?: string }): Promise<void> {
+    return ovhApi.put<void>(`/domain/zone/${zoneName}/redirection/${id}`, data);
+  }
+
+  /** Supprime une redirection web. */
+  async deleteRedirection(zoneName: string, id: number): Promise<void> {
+    return ovhApi.delete<void>(`/domain/zone/${zoneName}/redirection/${id}`);
   }
 
   // ---------- DNSSEC ----------
@@ -205,6 +254,21 @@ class DomainsService {
     return ovhApi.get<GlueRecord>(`/domain/${domain}/glueRecord/${host}`);
   }
 
+  /** Cree un glue record. */
+  async createGlueRecord(domain: string, data: GlueRecordCreate): Promise<void> {
+    return ovhApi.post<void>(`/domain/${domain}/glueRecord`, data);
+  }
+
+  /** Modifie un glue record. */
+  async updateGlueRecord(domain: string, host: string, ips: string[]): Promise<void> {
+    return ovhApi.put<void>(`/domain/${domain}/glueRecord/${host}`, { ips });
+  }
+
+  /** Supprime un glue record. */
+  async deleteGlueRecord(domain: string, host: string): Promise<void> {
+    return ovhApi.delete<void>(`/domain/${domain}/glueRecord/${host}`);
+  }
+
   // ---------- DynHost ----------
 
   /** Liste les records DynHost. */
@@ -215,6 +279,46 @@ class DomainsService {
   /** Recupere un record DynHost. */
   async getDynHostRecord(zoneName: string, id: number): Promise<DynHostRecord> {
     return ovhApi.get<DynHostRecord>(`/domain/zone/${zoneName}/dynHost/record/${id}`);
+  }
+
+  /** Cree un record DynHost. */
+  async createDynHostRecord(zoneName: string, data: DynHostRecordCreate): Promise<DynHostRecord> {
+    return ovhApi.post<DynHostRecord>(`/domain/zone/${zoneName}/dynHost/record`, data);
+  }
+
+  /** Modifie un record DynHost. */
+  async updateDynHostRecord(zoneName: string, id: number, data: { ip?: string; subDomain?: string }): Promise<void> {
+    return ovhApi.put<void>(`/domain/zone/${zoneName}/dynHost/record/${id}`, data);
+  }
+
+  /** Supprime un record DynHost. */
+  async deleteDynHostRecord(zoneName: string, id: number): Promise<void> {
+    return ovhApi.delete<void>(`/domain/zone/${zoneName}/dynHost/record/${id}`);
+  }
+
+  /** Liste les logins DynHost. */
+  async listDynHostLogins(zoneName: string): Promise<string[]> {
+    return ovhApi.get<string[]>(`/domain/zone/${zoneName}/dynHost/login`);
+  }
+
+  /** Recupere un login DynHost. */
+  async getDynHostLogin(zoneName: string, login: string): Promise<DynHostLogin> {
+    return ovhApi.get<DynHostLogin>(`/domain/zone/${zoneName}/dynHost/login/${login}`);
+  }
+
+  /** Cree un login DynHost. */
+  async createDynHostLogin(zoneName: string, data: { loginSuffix: string; password: string; subDomain: string }): Promise<void> {
+    return ovhApi.post<void>(`/domain/zone/${zoneName}/dynHost/login`, data);
+  }
+
+  /** Change le mot de passe d'un login DynHost. */
+  async changeDynHostPassword(zoneName: string, login: string, password: string): Promise<void> {
+    return ovhApi.post<void>(`/domain/zone/${zoneName}/dynHost/login/${login}/changePassword`, { password });
+  }
+
+  /** Supprime un login DynHost. */
+  async deleteDynHostLogin(zoneName: string, login: string): Promise<void> {
+    return ovhApi.delete<void>(`/domain/zone/${zoneName}/dynHost/login/${login}`);
   }
 
   // ---------- Tasks ----------
@@ -229,6 +333,21 @@ class DomainsService {
   /** Recupere une tache. */
   async getTask(domain: string, id: number): Promise<DomainTask> {
     return ovhApi.get<DomainTask>(`/domain/${domain}/task/${id}`);
+  }
+
+  /** Accelere une tache. */
+  async accelerateTask(domain: string, id: number): Promise<void> {
+    return ovhApi.post<void>(`/domain/${domain}/task/${id}/accelerate`, {});
+  }
+
+  /** Annule une tache. */
+  async cancelTask(domain: string, id: number): Promise<void> {
+    return ovhApi.post<void>(`/domain/${domain}/task/${id}/cancel`, {});
+  }
+
+  /** Relance une tache. */
+  async relaunchTask(domain: string, id: number): Promise<void> {
+    return ovhApi.post<void>(`/domain/${domain}/task/${id}/relaunch`, {});
   }
 }
 
