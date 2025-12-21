@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../shared";
 import { hostingService, Hosting, HostingServiceInfos } from "../../../../services/web-cloud.hosting";
 import { GeneralTab, MultisiteTab, FtpTab, DatabaseTab, CronTab, TasksTab, ModulesTab, EnvvarsTab, LogsTab, SslTab, RuntimesTab, EmailsTab, BoostTab, CdnTab, LocalSeoTab } from "./tabs";
+import { HostingOnboarding } from "./Onboarding";
 import "../../styles.css";
 
 // ============ ICONS ============
