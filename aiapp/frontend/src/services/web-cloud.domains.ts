@@ -1,21 +1,19 @@
 // ============================================================
-// SERVICE DOMAINS - Gestion des domaines OVHcloud
+// SERVICE: Domains API - Gestion des noms de domaine
 // ============================================================
 
-import { ovhApi } from './api';
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "./api";
 
-// ============================================================
-// TYPES
-// ============================================================
+// ============ TYPES ============
 
 export interface Domain {
   domain: string;
-  nameServerType: 'hosted' | 'external';
-  offer: string;
-  transferLockStatus: 'locked' | 'locking' | 'unlocked' | 'unlocking';
-  whoisOwner: string;
+  nameServerType: "hosted" | "external";
+  transferLockStatus: "locked" | "unlocked" | "locking" | "unlocking";
+  offer?: string;
   owoSupported: boolean;
-  parentService: { name: string; type: string } | null;
+  whoisOwner?: string;
+  dnssecSupported?: boolean;
 }
 
 export interface DomainServiceInfos {
@@ -26,10 +24,26 @@ export interface DomainServiceInfos {
   contactAdmin: string;
   contactTech: string;
   contactBilling: string;
-  status: string;
-  renew: { automatic: boolean; deleteAtExpiration: boolean; forced: boolean; period: number | null };
+  renew: {
+    automatic: boolean;
+    deleteAtExpiration: boolean;
+    forced: boolean;
+    manualPayment: boolean;
+    period: number;
+  };
 }
 
+export interface DomainContact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  organisationName?: string;
+  address?: { line1: string; city: string; zip: string; country: string };
+}
+
+// DNS Servers
 export interface DnsServer {
   id: number;
   host: string;
@@ -43,67 +57,32 @@ export interface DnsServerInput {
   ip?: string;
 }
 
-export interface DnsRecord {
-  id: number;
-  fieldType: string;
-  subDomain: string;
-  target: string;
-  ttl: number;
-  zone: string;
-}
-
-export interface DomainTask {
-  id: number;
-  function: string;
-  status: 'todo' | 'doing' | 'done' | 'error' | 'cancelled';
-  creationDate: string;
-  todoDate: string;
-  lastUpdate: string;
-  comment?: string;
-  canCancel: boolean;
-  canAccelerate: boolean;
-  canRelaunch: boolean;
-}
-
+// Redirections
 export interface Redirection {
   id: number;
+  subDomain: string;
+  target: string;
+  type: "visible" | "visiblePermanent" | "invisible";
+  title?: string;
   keywords?: string;
   description?: string;
-  title?: string;
-  target: string;
-  subDomain: string;
-  type: 'visible' | 'visiblePermanent' | 'invisible';
 }
 
 export interface RedirectionCreate {
   subDomain: string;
   target: string;
-  type: 'visible' | 'visiblePermanent' | 'invisible';
+  type: "visible" | "visiblePermanent" | "invisible";
   title?: string;
   keywords?: string;
   description?: string;
 }
 
-export interface GlueRecord {
-  host: string;
-  ips: string[];
-}
-
-export interface GlueRecordCreate {
-  host: string;
-  ips: string[];
-}
-
+// DynHost
 export interface DynHostRecord {
   id: number;
-  ip: string;
   subDomain: string;
+  ip: string;
   zone: string;
-}
-
-export interface DynHostRecordCreate {
-  ip: string;
-  subDomain: string;
 }
 
 export interface DynHostLogin {
@@ -112,242 +91,149 @@ export interface DynHostLogin {
   zone: string;
 }
 
-// ============================================================
-// SERVICE
-// ============================================================
+// Glue Records
+export interface GlueRecord {
+  host: string;
+  ips: string[];
+}
+
+// ============ SERVICE ============
 
 class DomainsService {
-  /** Liste tous les domaines du compte. */
+  // -------- DOMAIN BASIC --------
   async listDomains(): Promise<string[]> {
-    return ovhApi.get<string[]>('/domain');
+    return ovhGet<string[]>("/domain");
   }
 
-  /** Recupere les details d'un domaine. */
   async getDomain(domain: string): Promise<Domain> {
-    return ovhApi.get<Domain>(`/domain/${domain}`);
+    return ovhGet<Domain>(`/domain/${domain}`);
   }
 
-  /** Recupere les infos de service d'un domaine. */
   async getServiceInfos(domain: string): Promise<DomainServiceInfos> {
-    return ovhApi.get<DomainServiceInfos>(`/domain/${domain}/serviceInfos`);
+    return ovhGet<DomainServiceInfos>(`/domain/${domain}/serviceInfos`);
   }
 
-  // ---------- Transfer Lock ----------
-
-  /** Verrouille le domaine contre les transferts. */
   async lockDomain(domain: string): Promise<void> {
-    return ovhApi.post<void>(`/domain/${domain}/lock`, {});
+    await ovhPut(`/domain/${domain}`, { transferLockStatus: "locked" });
   }
 
-  /** Deverrouille le domaine pour permettre les transferts. */
   async unlockDomain(domain: string): Promise<void> {
-    return ovhApi.delete<void>(`/domain/${domain}/lock`);
+    await ovhPut(`/domain/${domain}`, { transferLockStatus: "unlocked" });
   }
 
-  // ---------- DNS Servers ----------
+  async getAuthInfo(domain: string): Promise<string> {
+    const response = await ovhPost<{ authInfo: string }>(`/domain/${domain}/authInfo`, {});
+    return response.authInfo;
+  }
 
-  /** Liste les serveurs DNS d'un domaine. */
+  async hasEmailDomain(domain: string): Promise<boolean> {
+    try {
+      await ovhGet(`/email/domain/${domain}`);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async getContact(nichandle: string): Promise<DomainContact> {
+    return ovhGet<DomainContact>(`/me/contact/${nichandle}`);
+  }
+
+  // -------- DNS SERVERS --------
   async listDnsServers(domain: string): Promise<number[]> {
-    return ovhApi.get<number[]>(`/domain/${domain}/nameServer`);
+    return ovhGet<number[]>(`/domain/${domain}/nameServer`);
   }
 
-  /** Recupere un serveur DNS. */
   async getDnsServer(domain: string, id: number): Promise<DnsServer> {
-    return ovhApi.get<DnsServer>(`/domain/${domain}/nameServer/${id}`);
+    return ovhGet<DnsServer>(`/domain/${domain}/nameServer/${id}`);
   }
 
-  /** Met a jour les serveurs DNS d'un domaine. */
-  async updateDnsServers(domain: string, nameServers: DnsServerInput[]): Promise<DomainTask> {
-    return ovhApi.post<DomainTask>(`/domain/${domain}/nameServers/update`, { nameServers });
+  async updateDnsServers(domain: string, servers: DnsServerInput[]): Promise<void> {
+    await ovhPost(`/domain/${domain}/nameServers/update`, { nameServers: servers });
   }
 
-  // ---------- Zone DNS ----------
-
-  /** Liste les IDs des records DNS d'une zone. */
-  async listZoneRecords(zoneName: string, fieldType?: string, subDomain?: string): Promise<number[]> {
-    let path = `/domain/zone/${zoneName}/record`;
-    const params: string[] = [];
-    if (fieldType) params.push(`fieldType=${fieldType}`);
-    if (subDomain !== undefined) params.push(`subDomain=${subDomain}`);
-    if (params.length) path += '?' + params.join('&');
-    return ovhApi.get<number[]>(path);
+  // -------- REDIRECTIONS --------
+  async listRedirections(domain: string): Promise<number[]> {
+    return ovhGet<number[]>(`/domain/${domain}/redirection`);
   }
 
-  /** Recupere un record DNS. */
-  async getZoneRecord(zoneName: string, id: number): Promise<DnsRecord> {
-    return ovhApi.get<DnsRecord>(`/domain/zone/${zoneName}/record/${id}`);
+  async getRedirection(domain: string, id: number): Promise<Redirection> {
+    return ovhGet<Redirection>(`/domain/${domain}/redirection/${id}`);
   }
 
-  /** Cree un record DNS. */
-  async createZoneRecord(zoneName: string, record: { fieldType: string; subDomain: string; target: string; ttl?: number }): Promise<DnsRecord> {
-    return ovhApi.post<DnsRecord>(`/domain/zone/${zoneName}/record`, record);
+  async createRedirection(domain: string, data: RedirectionCreate): Promise<Redirection> {
+    return ovhPost<Redirection>(`/domain/${domain}/redirection`, data);
   }
 
-  /** Modifie un record DNS. */
-  async updateZoneRecord(zoneName: string, id: number, record: { subDomain?: string; target?: string; ttl?: number }): Promise<void> {
-    return ovhApi.put<void>(`/domain/zone/${zoneName}/record/${id}`, record);
+  async updateRedirection(domain: string, id: number, data: Partial<RedirectionCreate>): Promise<void> {
+    await ovhPut(`/domain/${domain}/redirection/${id}`, data);
   }
 
-  /** Supprime un record DNS. */
-  async deleteZoneRecord(zoneName: string, id: number): Promise<void> {
-    return ovhApi.delete<void>(`/domain/zone/${zoneName}/record/${id}`);
+  async deleteRedirection(domain: string, id: number): Promise<void> {
+    await ovhDelete(`/domain/${domain}/redirection/${id}`);
   }
 
-  /** Rafraichit la zone DNS. */
-  async refreshZone(zoneName: string): Promise<void> {
-    return ovhApi.post<void>(`/domain/zone/${zoneName}/refresh`, {});
+  // -------- DYNHOST RECORDS --------
+  async listDynHostRecords(zone: string): Promise<number[]> {
+    return ovhGet<number[]>(`/domain/zone/${zone}/dynHost/record`);
   }
 
-  // ---------- Redirections ----------
-
-  /** Liste les redirections web d'une zone. */
-  async listRedirections(zoneName: string): Promise<number[]> {
-    return ovhApi.get<number[]>(`/domain/zone/${zoneName}/redirection`);
+  async getDynHostRecord(zone: string, id: number): Promise<DynHostRecord> {
+    return ovhGet<DynHostRecord>(`/domain/zone/${zone}/dynHost/record/${id}`);
   }
 
-  /** Recupere une redirection. */
-  async getRedirection(zoneName: string, id: number): Promise<Redirection> {
-    return ovhApi.get<Redirection>(`/domain/zone/${zoneName}/redirection/${id}`);
+  async createDynHostRecord(zone: string, data: { subDomain: string; ip: string }): Promise<DynHostRecord> {
+    return ovhPost<DynHostRecord>(`/domain/zone/${zone}/dynHost/record`, data);
   }
 
-  /** Cree une redirection web. */
-  async createRedirection(zoneName: string, data: RedirectionCreate): Promise<Redirection> {
-    return ovhApi.post<Redirection>(`/domain/zone/${zoneName}/redirection`, data);
+  async updateDynHostRecord(zone: string, id: number, data: { ip: string; subDomain?: string }): Promise<void> {
+    await ovhPut(`/domain/zone/${zone}/dynHost/record/${id}`, data);
   }
 
-  /** Modifie une redirection web. */
-  async updateRedirection(zoneName: string, id: number, data: { target?: string; title?: string; keywords?: string; description?: string }): Promise<void> {
-    return ovhApi.put<void>(`/domain/zone/${zoneName}/redirection/${id}`, data);
+  async deleteDynHostRecord(zone: string, id: number): Promise<void> {
+    await ovhDelete(`/domain/zone/${zone}/dynHost/record/${id}`);
   }
 
-  /** Supprime une redirection web. */
-  async deleteRedirection(zoneName: string, id: number): Promise<void> {
-    return ovhApi.delete<void>(`/domain/zone/${zoneName}/redirection/${id}`);
+  // -------- DYNHOST LOGINS --------
+  async listDynHostLogins(zone: string): Promise<string[]> {
+    return ovhGet<string[]>(`/domain/zone/${zone}/dynHost/login`);
   }
 
-  // ---------- DNSSEC ----------
-
-  /** Recupere le statut DNSSEC. */
-  async getDnssecStatus(domain: string): Promise<{ status: string }> {
-    return ovhApi.get<{ status: string }>(`/domain/${domain}/dnssec`);
+  async getDynHostLogin(zone: string, login: string): Promise<DynHostLogin> {
+    return ovhGet<DynHostLogin>(`/domain/zone/${zone}/dynHost/login/${login}`);
   }
 
-  /** Active DNSSEC. */
-  async enableDnssec(domain: string): Promise<void> {
-    return ovhApi.post<void>(`/domain/${domain}/dnssec`, {});
+  async createDynHostLogin(zone: string, data: { loginSuffix: string; password: string; subDomain: string }): Promise<void> {
+    await ovhPost(`/domain/zone/${zone}/dynHost/login`, data);
   }
 
-  /** Desactive DNSSEC. */
-  async disableDnssec(domain: string): Promise<void> {
-    return ovhApi.delete<void>(`/domain/${domain}/dnssec`);
+  async updateDynHostLogin(zone: string, login: string, data: { password?: string; subDomain?: string }): Promise<void> {
+    await ovhPut(`/domain/zone/${zone}/dynHost/login/${login}`, data);
   }
 
-  // ---------- Glue Records ----------
+  async deleteDynHostLogin(zone: string, login: string): Promise<void> {
+    await ovhDelete(`/domain/zone/${zone}/dynHost/login/${login}`);
+  }
 
-  /** Liste les glue records. */
+  // -------- GLUE RECORDS --------
   async listGlueRecords(domain: string): Promise<string[]> {
-    return ovhApi.get<string[]>(`/domain/${domain}/glueRecord`);
+    return ovhGet<string[]>(`/domain/${domain}/glueRecord`);
   }
 
-  /** Recupere un glue record. */
   async getGlueRecord(domain: string, host: string): Promise<GlueRecord> {
-    return ovhApi.get<GlueRecord>(`/domain/${domain}/glueRecord/${host}`);
+    return ovhGet<GlueRecord>(`/domain/${domain}/glueRecord/${host}`);
   }
 
-  /** Cree un glue record. */
-  async createGlueRecord(domain: string, data: GlueRecordCreate): Promise<void> {
-    return ovhApi.post<void>(`/domain/${domain}/glueRecord`, data);
+  async createGlueRecord(domain: string, data: GlueRecord): Promise<void> {
+    await ovhPost(`/domain/${domain}/glueRecord`, data);
   }
 
-  /** Modifie un glue record. */
   async updateGlueRecord(domain: string, host: string, ips: string[]): Promise<void> {
-    return ovhApi.put<void>(`/domain/${domain}/glueRecord/${host}`, { ips });
+    await ovhPut(`/domain/${domain}/glueRecord/${host}`, { ips });
   }
 
-  /** Supprime un glue record. */
   async deleteGlueRecord(domain: string, host: string): Promise<void> {
-    return ovhApi.delete<void>(`/domain/${domain}/glueRecord/${host}`);
-  }
-
-  // ---------- DynHost ----------
-
-  /** Liste les records DynHost. */
-  async listDynHostRecords(zoneName: string): Promise<number[]> {
-    return ovhApi.get<number[]>(`/domain/zone/${zoneName}/dynHost/record`);
-  }
-
-  /** Recupere un record DynHost. */
-  async getDynHostRecord(zoneName: string, id: number): Promise<DynHostRecord> {
-    return ovhApi.get<DynHostRecord>(`/domain/zone/${zoneName}/dynHost/record/${id}`);
-  }
-
-  /** Cree un record DynHost. */
-  async createDynHostRecord(zoneName: string, data: DynHostRecordCreate): Promise<DynHostRecord> {
-    return ovhApi.post<DynHostRecord>(`/domain/zone/${zoneName}/dynHost/record`, data);
-  }
-
-  /** Modifie un record DynHost. */
-  async updateDynHostRecord(zoneName: string, id: number, data: { ip?: string; subDomain?: string }): Promise<void> {
-    return ovhApi.put<void>(`/domain/zone/${zoneName}/dynHost/record/${id}`, data);
-  }
-
-  /** Supprime un record DynHost. */
-  async deleteDynHostRecord(zoneName: string, id: number): Promise<void> {
-    return ovhApi.delete<void>(`/domain/zone/${zoneName}/dynHost/record/${id}`);
-  }
-
-  /** Liste les logins DynHost. */
-  async listDynHostLogins(zoneName: string): Promise<string[]> {
-    return ovhApi.get<string[]>(`/domain/zone/${zoneName}/dynHost/login`);
-  }
-
-  /** Recupere un login DynHost. */
-  async getDynHostLogin(zoneName: string, login: string): Promise<DynHostLogin> {
-    return ovhApi.get<DynHostLogin>(`/domain/zone/${zoneName}/dynHost/login/${login}`);
-  }
-
-  /** Cree un login DynHost. */
-  async createDynHostLogin(zoneName: string, data: { loginSuffix: string; password: string; subDomain: string }): Promise<void> {
-    return ovhApi.post<void>(`/domain/zone/${zoneName}/dynHost/login`, data);
-  }
-
-  /** Change le mot de passe d'un login DynHost. */
-  async changeDynHostPassword(zoneName: string, login: string, password: string): Promise<void> {
-    return ovhApi.post<void>(`/domain/zone/${zoneName}/dynHost/login/${login}/changePassword`, { password });
-  }
-
-  /** Supprime un login DynHost. */
-  async deleteDynHostLogin(zoneName: string, login: string): Promise<void> {
-    return ovhApi.delete<void>(`/domain/zone/${zoneName}/dynHost/login/${login}`);
-  }
-
-  // ---------- Tasks ----------
-
-  /** Liste les taches en cours. */
-  async listTasks(domain: string, status?: string): Promise<number[]> {
-    let path = `/domain/${domain}/task`;
-    if (status) path += `?status=${status}`;
-    return ovhApi.get<number[]>(path);
-  }
-
-  /** Recupere une tache. */
-  async getTask(domain: string, id: number): Promise<DomainTask> {
-    return ovhApi.get<DomainTask>(`/domain/${domain}/task/${id}`);
-  }
-
-  /** Accelere une tache. */
-  async accelerateTask(domain: string, id: number): Promise<void> {
-    return ovhApi.post<void>(`/domain/${domain}/task/${id}/accelerate`, {});
-  }
-
-  /** Annule une tache. */
-  async cancelTask(domain: string, id: number): Promise<void> {
-    return ovhApi.post<void>(`/domain/${domain}/task/${id}/cancel`, {});
-  }
-
-  /** Relance une tache. */
-  async relaunchTask(domain: string, id: number): Promise<void> {
-    return ovhApi.post<void>(`/domain/${domain}/task/${id}/relaunch`, {});
+    await ovhDelete(`/domain/${domain}/glueRecord/${host}`);
   }
 }
 

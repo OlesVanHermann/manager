@@ -8,7 +8,7 @@ import { useDomainZoneList, DomainZoneEntry } from "./hooks/useDomainZoneList";
 import { ServiceItemBadge } from "./components/ServiceItemBadge";
 import { domainsService, Domain, DomainServiceInfos } from "../../../services/web-cloud.domains";
 import { dnsZonesService, DnsZone } from "../../../services/web-cloud.dns-zones";
-import { GeneralTab, ZoneTab, DnsServersTab, RedirectionTab, DynHostTab, GlueTab, DnssecTab, TasksTab } from "./tabs";
+import { GeneralTab, ZoneTab, DnsServersTab, RedirectionTab, DynHostTab, GlueTab, DnssecTab, TasksTab, ContactsTab } from "./tabs";
 import "../styles.css";
 import "./styles.css";
 
@@ -38,6 +38,7 @@ const ALL_TABS: TabDef[] = [
   { id: "dynhost", labelKey: "tabs.dynhost", condition: (e) => e.hasZone },
   { id: "glue", labelKey: "tabs.glue", condition: (e) => e.hasDomain },
   { id: "dnssec", labelKey: "tabs.dnssec", condition: (e) => e.hasDomain },
+  { id: "contacts", labelKey: "tabs.contacts", condition: (e) => e.hasDomain },
   { id: "tasks", labelKey: "tabs.tasks", condition: () => true },
 ];
 
@@ -197,6 +198,8 @@ export default function DomainsPage() {
         return <GlueTab domain={selectedEntry.id} />;
       case "dnssec":
         return <DnssecTab domain={selectedEntry.id} />;
+      case "contacts":
+        return <ContactsTab domain={selectedEntry.id} serviceInfos={serviceInfos || undefined} />;
       case "tasks":
         return <TasksTab name={selectedEntry.id} hasDomain={selectedEntry.hasDomain} hasZone={selectedEntry.hasZone} />;
       default:

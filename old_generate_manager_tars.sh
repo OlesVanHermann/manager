@@ -76,26 +76,31 @@ tar -cf /home/ubuntu/old_manager.bare-metal.core.tar $EXCLUDES \
 echo "Création old_manager.bare-metal.dedicated.tar..."
 tar -cf /home/ubuntu/old_manager.bare-metal.dedicated.tar $EXCLUDES \
     ./packages/manager/apps/dedicated \
-    ./packages/manager/apps/dedicated-servers
+    ./packages/manager/apps/dedicated-servers \
+    ./packages/manager/modules/bm-server-components
 
 echo "Création old_manager.bare-metal.housing.tar..."
 tar -cf /home/ubuntu/old_manager.bare-metal.housing.tar $EXCLUDES \
-    ./packages/manager/apps/dedicated
+    ./packages/manager/apps/dedicated \
+    ./packages/manager/modules/bm-server-components
 
 echo "Création old_manager.bare-metal.nasha.tar..."
 tar -cf /home/ubuntu/old_manager.bare-metal.nasha.tar $EXCLUDES \
     ./packages/manager/apps/nasha \
-    ./packages/manager/modules/nasha
+    ./packages/manager/modules/nasha \
+    ./packages/manager/modules/bm-server-components
 
 echo "Création old_manager.bare-metal.netapp.tar..."
 tar -cf /home/ubuntu/old_manager.bare-metal.netapp.tar $EXCLUDES \
     ./packages/manager/apps/netapp \
-    ./packages/manager/modules/netapp
+    ./packages/manager/modules/netapp \
+    ./packages/manager/modules/bm-server-components
 
 echo "Création old_manager.bare-metal.vps.tar..."
 tar -cf /home/ubuntu/old_manager.bare-metal.vps.tar $EXCLUDES \
     ./packages/manager/apps/vps \
-    ./packages/manager/modules/vps
+    ./packages/manager/modules/vps \
+    ./packages/manager/modules/bm-server-components
 
 # ============================================================
 # HOME
@@ -310,35 +315,49 @@ tar -cf /home/ubuntu/old_manager.public-cloud.core.tar $EXCLUDES \
 echo "Création old_manager.public-cloud.ai.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.ai.tar $EXCLUDES \
     ./packages/manager/apps/pci-ai-tools \
-    ./packages/manager/apps/pci-ai-endpoints
+    ./packages/manager/apps/pci-ai-endpoints \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 echo "Création old_manager.public-cloud.block-storage.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.block-storage.tar $EXCLUDES \
     ./packages/manager/apps/pci-block-storage \
     ./packages/manager/apps/pci-volume-backup \
-    ./packages/manager/apps/pci-volume-snapshot
+    ./packages/manager/apps/pci-volume-snapshot \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 echo "Création old_manager.public-cloud.databases.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.databases.tar $EXCLUDES \
-    ./packages/manager/apps/pci-databases-analytics
+    ./packages/manager/apps/pci-databases-analytics \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 echo "Création old_manager.public-cloud.instances.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.instances.tar $EXCLUDES \
-    ./packages/manager/apps/pci-instances
+    ./packages/manager/apps/pci-instances \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 echo "Création old_manager.public-cloud.kubernetes.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.kubernetes.tar $EXCLUDES \
     ./packages/manager/apps/pci-kubernetes \
-    ./packages/manager/apps/pci-rancher
+    ./packages/manager/apps/pci-rancher \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 echo "Création old_manager.public-cloud.load-balancer.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.load-balancer.tar $EXCLUDES \
-    ./packages/manager/apps/pci-load-balancer
+    ./packages/manager/apps/pci-load-balancer \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 echo "Création old_manager.public-cloud.object-storage.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.object-storage.tar $EXCLUDES \
     ./packages/manager/apps/pci-object-storage \
-    ./packages/manager/apps/pci-cold-archive
+    ./packages/manager/apps/pci-cold-archive \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 echo "Création old_manager.public-cloud.project.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.project.tar $EXCLUDES \
@@ -349,11 +368,15 @@ tar -cf /home/ubuntu/old_manager.public-cloud.project.tar $EXCLUDES \
     ./packages/manager/apps/pci-gateway \
     ./packages/manager/apps/pci-workflow \
     ./packages/manager/apps/pci-dataplatform \
-    ./packages/manager/apps/pci-savings-plan
+    ./packages/manager/apps/pci-savings-plan \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 echo "Création old_manager.public-cloud.registry.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.registry.tar $EXCLUDES \
-    ./packages/manager/apps/pci-private-registry
+    ./packages/manager/apps/pci-private-registry \
+    ./packages/manager/modules/pci-universe-components \
+    ./packages/manager/modules/manager-pci-common
 
 # ============================================================
 # WEB-CLOUD
@@ -366,20 +389,25 @@ tar -cf /home/ubuntu/old_manager.web-cloud.core.tar $EXCLUDES \
 
 echo "Création old_manager.web-cloud.access.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.access.tar $EXCLUDES \
-    ./packages/manager/apps/telecom
+    ./packages/manager/apps/telecom \
+    ./packages/manager/modules/telecom-universe-components
 
 echo "Création old_manager.web-cloud.access.overthebox.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.access.overthebox.tar $EXCLUDES \
     ./packages/manager/apps/overthebox \
-    ./packages/manager/modules/overthebox
+    ./packages/manager/modules/overthebox \
+    ./packages/manager/modules/telecom-universe-components
 
 echo "Création old_manager.web-cloud.access.pack-xdsl.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.access.pack-xdsl.tar $EXCLUDES \
-    ./packages/manager/apps/telecom
+    ./packages/manager/apps/telecom \
+    ./packages/manager/modules/telecom-universe-components
 
 echo "Création old_manager.web-cloud.alldom.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.alldom.tar $EXCLUDES \
-    ./packages/manager/apps/web-domains
+    ./packages/manager/apps/web-domains \
+    ./packages/manager/apps/web/client/app/components \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.domains.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.domains.tar $EXCLUDES \
@@ -387,47 +415,60 @@ tar -cf /home/ubuntu/old_manager.web-cloud.domains.tar $EXCLUDES \
     ./packages/manager/apps/web/client/app/domains \
     ./packages/manager/apps/web/client/app/domain-operation \
     ./packages/manager/apps/web/client/app/dns-zone \
-    ./packages/manager/apps/web-ongoing-operations
+    ./packages/manager/apps/web/client/app/components \
+    ./packages/manager/apps/web-ongoing-operations \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.emails.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.tar $EXCLUDES \
-    ./packages/manager/apps/web
+    ./packages/manager/apps/web \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.emails.email-domain.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.email-domain.tar $EXCLUDES \
     ./packages/manager/apps/email-domain \
-    ./packages/manager/modules/email-domain
+    ./packages/manager/modules/email-domain \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.emails.email-pro.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.email-pro.tar $EXCLUDES \
     ./packages/manager/apps/email-pro \
-    ./packages/manager/modules/emailpro
+    ./packages/manager/modules/emailpro \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.emails.exchange.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.exchange.tar $EXCLUDES \
     ./packages/manager/apps/exchange \
-    ./packages/manager/modules/exchange
+    ./packages/manager/modules/exchange \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.emails.office.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.office.tar $EXCLUDES \
-    ./packages/manager/apps/web-office
+    ./packages/manager/apps/web-office \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.emails.zimbra.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.zimbra.tar $EXCLUDES \
-    ./packages/manager/apps/zimbra
+    ./packages/manager/apps/zimbra \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.hebergement.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.hebergement.tar $EXCLUDES \
-    ./packages/manager/apps/web-hosting
+    ./packages/manager/apps/web-hosting \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.hebergement.hosting.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.hebergement.hosting.tar $EXCLUDES \
     ./packages/manager/apps/web-hosting \
-    ./packages/manager/apps/web/client/app/hosting
+    ./packages/manager/apps/web/client/app/hosting \
+    ./packages/manager/apps/web/client/app/components \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.hebergement.private-database.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.hebergement.private-database.tar $EXCLUDES \
-    ./packages/manager/apps/web/client/app/private-database
+    ./packages/manager/apps/web/client/app/private-database \
+    ./packages/manager/apps/web/client/app/components \
+    ./packages/manager/modules/web-universe-components
 
 echo "Création old_manager.web-cloud.telecom.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.tar $EXCLUDES \
@@ -442,21 +483,25 @@ tar -cf /home/ubuntu/old_manager.web-cloud.telecom.tar $EXCLUDES \
 echo "Création old_manager.web-cloud.telecom.carrier-sip.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.carrier-sip.tar $EXCLUDES \
     ./packages/manager/apps/carrier-sip \
-    ./packages/manager/modules/carrier-sip
+    ./packages/manager/modules/carrier-sip \
+    ./packages/manager/modules/telecom-universe-components
 
 echo "Création old_manager.web-cloud.telecom.fax.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.fax.tar $EXCLUDES \
     ./packages/manager/apps/freefax \
-    ./packages/manager/modules/freefax
+    ./packages/manager/modules/freefax \
+    ./packages/manager/modules/telecom-universe-components
 
 echo "Création old_manager.web-cloud.telecom.sms.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.sms.tar $EXCLUDES \
     ./packages/manager/apps/sms \
-    ./packages/manager/modules/sms
+    ./packages/manager/modules/sms \
+    ./packages/manager/modules/telecom-universe-components
 
 echo "Création old_manager.web-cloud.telecom.voip.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.voip.tar $EXCLUDES \
-    ./packages/manager/apps/telecom
+    ./packages/manager/apps/telecom \
+    ./packages/manager/modules/telecom-universe-components
 
 # ============================================================
 # RÉSUMÉ

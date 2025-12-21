@@ -1,90 +1,130 @@
 // ============================================================
-// SERVICE: ALLDOM - Gestion des packs AllDom
+// SERVICE: AllDom API - Gestion des packs AllDom
 // ============================================================
 
-import { ovhDirectGet, ovhDirectFetch } from "./api";
+import { ovhGet, ovhPut, ovh2apiGet } from "./api";
 
 // ============ TYPES ============
 
-export interface AllDomPack {
-  name: string;
-  type: "FRENCH" | "FRENCH+INTERNATIONAL" | "INTERNATIONAL";
-  domains: AllDomDomain[];
-  extensions: string[];
-}
+export type AllDomType = "FRENCH" | "FRENCH+INTERNATIONAL" | "INTERNATIONAL";
+export type RenewMode = "automatic" | "manual";
+export type RegistrationStatus = "REGISTERED" | "UNREGISTERED";
 
 export interface AllDomDomain {
   name: string;
-  registrationStatus: "REGISTERED" | "UNREGISTERED";
+  registrationStatus: RegistrationStatus;
   expiresAt?: string;
+  extension?: string;
+}
+
+export interface AllDomResource {
+  currentState: {
+    name: string;
+    type: AllDomType;
+    domains: AllDomDomain[];
+    extensions: string[];
+  };
 }
 
 export interface AllDomServiceInfo {
   serviceId: number;
-  billing: {
-    expirationDate: string | null;
-    renew?: { current: { mode: "automatic" | "manual" | null; nextDate: string } } | null;
-    lifecycle?: { current: { creationDate: string | null; pendingActions: string[] } } | null;
-  };
-  customer?: { contacts: { customerCode: string; type: string }[] };
-  resource: { name: string };
+  serviceName: string;
+  creation: string;
+  expiration: string;
+  renewMode: RenewMode | null;
+  contactAdmin: string;
+  contactTech: string;
+  contactBilling: string;
+  isTerminating: boolean;
 }
 
-export interface AllDomFullInfo {
-  pack: AllDomPack;
-  service: AllDomServiceInfo;
-  nicAdmin: string;
-  nicBilling: string;
-  nicTechnical: string;
-  renewMode: "automatic" | "manual" | null;
-  expirationDate: string | null;
-  creationDate: string | null;
-  renewalDate: string | null;
-  lifecyclePendingActions: string[];
+export interface AllDomEntry {
+  serviceName: string;
+  type: AllDomType;
+  domains: AllDomDomain[];
+  extensions: string[];
+  serviceInfo: AllDomServiceInfo | null;
 }
 
 // ============ SERVICE ============
 
 class AllDomService {
-  async listPacks(): Promise<string[]> {
-    return ovhDirectGet<string[]>("/domain/alldom");
+  async listAllDom(): Promise<string[]> {
+    return ovhGet<string[]>("/allDom");
   }
 
-  async getPack(serviceName: string): Promise<AllDomPack> {
-    const data = await ovhDirectGet<{ currentState: AllDomPack }>(`/domain/alldom/${serviceName}`);
-    return data.currentState;
+  async getAllDomResource(serviceName: string): Promise<AllDomResource> {
+    return ovh2apiGet<AllDomResource>(`/domain/alldom/${serviceName}`);
   }
 
-  async getServiceId(serviceName: string): Promise<number[]> {
-    return ovhDirectGet<number[]>(`/services?resourceName=${encodeURIComponent(serviceName)}&routes=/allDom`);
-  }
-
-  async getServiceInfo(serviceId: number): Promise<AllDomServiceInfo> {
-    return ovhDirectGet<AllDomServiceInfo>(`/services/${serviceId}`);
-  }
-
-  async getFullInfo(serviceName: string): Promise<AllDomFullInfo> {
-    const pack = await this.getPack(serviceName);
-    const serviceIds = await this.getServiceId(serviceName);
-    if (!serviceIds || serviceIds.length === 0) throw new Error("Service non trouvé");
-    const service = await this.getServiceInfo(serviceIds[0]);
-    const contacts = service.customer?.contacts || [];
-    const findContact = (type: string) => contacts.find(c => c.type.toLowerCase() === type.toLowerCase())?.customerCode || "";
+  async getServiceInfo(serviceName: string): Promise<AllDomServiceInfo> {
+    const serviceInfos = await ovhGet<any>(`/allDom/${serviceName}/serviceInfos`);
     return {
-      pack, service,
-      nicAdmin: findContact("administrator"),
-      nicBilling: findContact("billing"),
-      nicTechnical: findContact("technical"),
-      renewMode: service.billing.renew?.current?.mode || null,
-      expirationDate: service.billing.expirationDate,
-      creationDate: service.billing.lifecycle?.current?.creationDate || null,
-      renewalDate: service.billing.renew?.current?.nextDate || null,
-      lifecyclePendingActions: service.billing.lifecycle?.current?.pendingActions || [],
+      serviceId: serviceInfos.serviceId || 0,
+      serviceName: serviceName,
+      creation: serviceInfos.creation,
+      expiration: serviceInfos.expiration,
+      renewMode: serviceInfos.renew?.automatic ? "automatic" : "manual",
+      contactAdmin: serviceInfos.contactAdmin,
+      contactTech: serviceInfos.contactTech,
+      contactBilling: serviceInfos.contactBilling,
+      isTerminating: serviceInfos.renew?.deleteAtExpiration || false,
     };
   }
 
-  async updateTermination(serviceId: number, terminationPolicy: "empty" | "terminateAtExpirationDate"): Promise<void> {
-    await ovhDirectFetch<void>("PUT", `/services/${serviceId}`, { body: { terminationPolicy } });
+  async getAllDom(serviceName: string): Promise<AllDomEntry> {
+    const [resource, serviceInfo] = await Promise.all([
+      this.getAllDomResource(serviceName).catch(() => null),
+      this.getServiceInfo(serviceName).catch(() => null),
+    ]);
+    return {
+      serviceName,
+      type: resource?.currentState.type || "FRENCH",
+      domains: resource?.currentState.domains || [],
+      extensions: resource?.currentState.extensions || [],
+      serviceInfo,
+    };
+  }
+
+  async listAllDomWithDetails(): Promise<AllDomEntry[]> {
+    const names = await this.listAllDom();
+    return Promise.all(names.map((name) => this.getAllDom(name)));
+  }
+
+  async terminateAllDom(serviceName: string): Promise<void> {
+    const serviceIds = await ovhGet<number[]>(`/services?resourceName=${serviceName}&routes=/allDom`);
+    if (serviceIds.length > 0) {
+      await ovhPut(`/services/${serviceIds[0]}`, { terminationPolicy: "terminateAtExpirationDate" });
+    }
+  }
+
+  async terminateDomains(domainNames: string[]): Promise<void> {
+    await Promise.all(
+      domainNames.map(async (domain) => {
+        const serviceIds = await ovhGet<number[]>(`/services?resourceName=${domain}&routes=/domain`);
+        if (serviceIds.length > 0) {
+          await ovhPut(`/services/${serviceIds[0]}`, { terminationPolicy: "terminateAtExpirationDate" });
+        }
+      })
+    );
+  }
+
+  async cancelTermination(serviceName: string): Promise<void> {
+    const serviceIds = await ovhGet<number[]>(`/services?resourceName=${serviceName}&routes=/allDom`);
+    if (serviceIds.length > 0) {
+      await ovhPut(`/services/${serviceIds[0]}`, { terminationPolicy: "empty" });
+    }
+  }
+
+  async cancelDomainTerminations(domainNames: string[]): Promise<void> {
+    await Promise.all(
+      domainNames.map(async (domain) => {
+        const serviceIds = await ovhGet<number[]>(`/services?resourceName=${domain}&routes=/domain`);
+        if (serviceIds.length > 0) {
+          await ovhPut(`/services/${serviceIds[0]}`, { terminationPolicy: "empty" });
+        }
+      })
+    );
   }
 }
 

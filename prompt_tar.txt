@@ -35,6 +35,41 @@ Action proposée : [tar à créer/modifier pour combler les manques]
 ## Règle 5 : Mapping 1:1 STRICT new -> old
 UN tar new_manager = UN tar old_manager correspondant. JAMAIS d'options, JAMAIS de partage.
 
+## Règle 6 : Inclure les SERVICES Angular (pas juste les controllers)
+
+### Problème
+Les controllers Angular utilisent des abstractions de services :
+```javascript
+// Controller (dans apps/) - ABSTRACTION
+Domain.getSelected(productId)
+Zone.getRecords(zoneName)
+```
+
+Mais les VRAIS endpoints REST sont définis dans les SERVICES :
+```javascript
+// Service (dans modules/) - VRAI ENDPOINT
+$http.get(`/domain/${serviceName}`)
+$resource('/domain/zone/:zoneName/record')
+```
+
+### Solution OBLIGATOIRE
+Pour chaque tar old_manager, TOUJOURS inclure :
+1. Les **apps** (controllers) : `./packages/manager/apps/{app-name}/`
+2. Les **modules de services** : `./packages/manager/modules/{service-name}/`
+
+### Identification des modules de services
+Chercher dans old_manager_files.txt :
+```bash
+# Modules de services par domaine
+grep -E "modules/(domain|zone|dns)" old_manager_files.txt
+grep -E "modules/(hosting|web-hosting)" old_manager_files.txt
+grep -E "modules/(billing|order|payment)" old_manager_files.txt
+
+# Fichiers de services (définissent les vrais endpoints)
+grep -E "\.(service|resource)\.(js|ts)$" old_manager_files.txt
+grep -E "-api\.(js|ts)$" old_manager_files.txt
+```
+
 ### Principe fondamental
 Le mapping se fait par FONCTION (ce que fait le code), PAS par structure de fichiers.
 
@@ -287,7 +322,7 @@ Exemple INCORRECT :
 | access.overthebox | ./src/pages/web-cloud/access/overthebox/ | ./packages/manager/apps/overthebox, ./packages/manager/modules/overthebox |
 | access.pack-xdsl | ./src/pages/web-cloud/access/pack-xdsl/ | ./packages/manager/apps/telecom |
 | alldom | ./src/pages/web-cloud/alldom/ | ./packages/manager/apps/web-domains/src/alldoms |
-| domains | ./src/pages/web-cloud/domains/ | ./packages/manager/apps/web/client/app/domain, ./packages/manager/apps/web/client/app/domains, ./packages/manager/apps/web/client/app/domain-operation, ./packages/manager/apps/web/client/app/dns-zone, ./packages/manager/apps/web-ongoing-operations |
+| domains | ./src/pages/web-cloud/domains/ | ./packages/manager/apps/web/client/app/domain, ./packages/manager/apps/web/client/app/domains, ./packages/manager/apps/web/client/app/domain-operation, ./packages/manager/apps/web/client/app/dns-zone, ./packages/manager/apps/web-ongoing-operations, ./packages/manager/modules/domain, ./packages/manager/modules/dns-zone |
 | emails | ./src/pages/web-cloud/emails/index.tsx | ./packages/manager/apps/web |
 | emails.email-domain | ./src/pages/web-cloud/emails/email-domain/ | ./packages/manager/apps/email-domain, ./packages/manager/modules/email-domain |
 | emails.email-pro | ./src/pages/web-cloud/emails/email-pro/ | ./packages/manager/apps/email-pro, ./packages/manager/modules/emailpro |
@@ -309,6 +344,39 @@ Exemple INCORRECT :
 | locales | ./public/locales/ | ./packages/manager/modules/common-translations |
 | login | ./src/pages/Login.tsx, ./src/pages/Login.css | ./packages/manager/apps/sign-up, ./packages/manager/modules/sign-up, ./packages/manager/apps/account-creation, ./packages/manager/modules/mfa-enrollment |
 | placeholder | ./src/pages/_placeholder/ | (vide) |
+
+### Modules de services Angular (CRITIQUE - vrais endpoints API)
+Ces modules contiennent les définitions des vrais appels REST ($http, $resource) et DOIVENT être inclus dans les tars correspondants.
+
+| Domaine fonctionnel | Modules de services à vérifier/inclure |
+|---------------------|----------------------------------------|
+| domain/dns | ./packages/manager/modules/domain, ./packages/manager/modules/dns-zone, ./packages/manager/modules/zone |
+| email | ./packages/manager/modules/email-domain, ./packages/manager/modules/emailpro, ./packages/manager/modules/exchange |
+| hosting | ./packages/manager/modules/hosting, ./packages/manager/modules/web-hosting |
+| billing | ./packages/manager/modules/billing, ./packages/manager/modules/order, ./packages/manager/modules/payment-method |
+| account | ./packages/manager/modules/account, ./packages/manager/modules/contacts |
+| vrack | ./packages/manager/modules/vrack |
+| ip | ./packages/manager/modules/ip |
+| dedicated | ./packages/manager/modules/dedicated-server, ./packages/manager/modules/server |
+| pci | ./packages/manager/modules/pci, ./packages/manager/modules/manager-pci-common |
+| telecom | ./packages/manager/modules/telecom-dashboard, ./packages/manager/modules/telecom-universe-components |
+
+**AVANT de générer chaque tar old_manager, VÉRIFIER :**
+```bash
+# Exemple pour le domaine "domains"
+grep -E "^./packages/manager/modules/domain($|/)" old_manager_files.txt
+grep -E "^./packages/manager/modules/dns-zone($|/)" old_manager_files.txt
+```
+
+**Structure typique d'un module de service :**
+```
+./packages/manager/modules/domain/
+├── src/
+│   ├── domain.service.js      ← $http.get('/domain/{serviceName}')
+│   ├── domain.resource.js     ← $resource('/domain/:serviceName')
+│   ├── zone.service.js        ← Endpoints zone DNS
+│   └── index.js               ← Export du module Angular
+```
 
 # Scripts à générer
 
@@ -355,6 +423,7 @@ Chaque commande tar dans old_generate_manager_tars.sh DOIT inclure ces exclusion
 - Proposer des "options" de mapping (Option A / Option B)
 - Dire qu'un répertoire est "partagé" entre tars
 - Sur-compliquer les mappings simples
+- **OUBLIER LES MODULES DE SERVICES** : un tar old_manager avec uniquement des apps/ sans les modules/ correspondants est INCOMPLET (manque les vrais endpoints API)
 
 # Tâches
 
@@ -626,3 +695,5 @@ Avant de générer, vérifier :
 - [ ] Mapping 1:1 strict (pas d'options, pas de partage)
 - [ ] Chaque chemin old_manager vérifié par grep avant inclusion
 - [ ] Script de vérification Python exécuté après génération
+- [ ] **SERVICES ANGULAR INCLUS** : chaque tar old_manager contient les modules de services correspondants (pas juste les apps/controllers)
+- [ ] **VRAIS ENDPOINTS VÉRIFIÉS** : les modules dans ./packages/manager/modules/{domain}/ sont inclus pour accéder aux fichiers *.service.js, *.resource.js

@@ -1,124 +1,121 @@
 // ============================================================
-// MODAL: TerminateModal - Résiliation du pack AllDom
+// MODAL: Terminate AllDom - Résiliation avec sélection domaines
 // ============================================================
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { AllDomDomain, allDomService } from "../../../../services/web-cloud.alldom";
+import { AllDomDomain } from "../../../../services/web-cloud.alldom";
 
 interface Props {
   serviceName: string;
-  serviceId: number;
   domains: AllDomDomain[];
+  onConfirm: (selectedDomains: string[]) => Promise<void>;
   onClose: () => void;
-  onSuccess: () => void;
 }
 
-const CloseIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-  </svg>
-);
-
-export function TerminateModal({ serviceName, serviceId, domains, onClose, onSuccess }: Props) {
+/** Modal de résiliation d'un pack AllDom avec sélection des domaines à résilier. */
+export function TerminateModal({ serviceName, domains, onConfirm, onClose }: Props) {
   const { t } = useTranslation("web-cloud/alldom/index");
-  const { t: tCommon } = useTranslation("common");
 
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
+  // ---------- STATE ----------
+  const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<1 | 2>(1);
 
-  const registeredDomains = domains.filter(d => d.registrationStatus === "REGISTERED");
+  // ---------- FILTERED DOMAINS ----------
+  const registeredDomains = useMemo(
+    () => domains.filter((d) => d.registrationStatus === "REGISTERED"),
+    [domains]
+  );
 
-  const handleSelectAll = (checked: boolean) => {
-    setSelectAll(checked);
-    setSelectedDomains(checked ? registeredDomains.map(d => d.name) : []);
+  // ---------- HANDLERS ----------
+  const toggleDomain = (name: string) => {
+    setSelectedDomains((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
   };
 
-  const handleSelectDomain = (domain: string, checked: boolean) => {
-    if (checked) {
-      setSelectedDomains([...selectedDomains, domain]);
+  const toggleAll = () => {
+    if (selectedDomains.size === registeredDomains.length) {
+      setSelectedDomains(new Set());
     } else {
-      setSelectedDomains(selectedDomains.filter(d => d !== domain));
-      setSelectAll(false);
+      setSelectedDomains(new Set(registeredDomains.map((d) => d.name)));
     }
   };
 
   const handleConfirm = async () => {
+    if (step === 1) {
+      setStep(2);
+      return;
+    }
     try {
       setLoading(true);
-      setError(null);
-      await allDomService.updateTermination(serviceId, "terminateAtExpirationDate");
-      onSuccess();
+      await onConfirm(Array.from(selectedDomains));
+      onClose();
     } catch (err) {
-      setError(String(err));
+      alert(String(err));
     } finally {
       setLoading(false);
     }
   };
 
+  const isAllSelected = selectedDomains.size === registeredDomains.length;
+
+  // ---------- RENDER ----------
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-lg modal-danger" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{t("terminate.title", { serviceName })}</h3>
-          <button className="btn-icon" onClick={onClose}><CloseIcon /></button>
+          <h2>{t("terminate.title", { serviceName })}</h2>
+          <p>{t("terminate.subtitle")}</p>
         </div>
 
         <div className="modal-body">
-          {error && <div className="error-banner">{error}</div>}
-
-          <p className="modal-subtitle">{t("terminate.subtitle")}</p>
-
           {step === 1 ? (
             <>
-              <div className="form-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={selectAll}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                  />
-                  <span>{t("terminate.selectAll")}</span>
-                </label>
+              <div className="warning-banner" style={{ marginBottom: "var(--space-4)" }}>
+                <span>{t("terminate.warning")}</span>
               </div>
 
-              <p className="form-label">{t("terminate.selectDomains")}</p>
+              <p style={{ marginBottom: "var(--space-3)", fontWeight: 500 }}>{t("terminate.selectDomains")}</p>
 
-              <div className="domains-checkbox-list">
+              <div className="select-all-row">
+                <input type="checkbox" id="select-all" checked={isAllSelected} onChange={toggleAll} />
+                <label htmlFor="select-all">{t("terminate.selectAll")}</label>
+              </div>
+
+              <div className="checkbox-list">
                 {registeredDomains.map((domain) => (
-                  <label key={domain.name} className="checkbox-label">
+                  <div key={domain.name} className="checkbox-item">
                     <input
                       type="checkbox"
-                      checked={selectedDomains.includes(domain.name)}
-                      onChange={(e) => handleSelectDomain(domain.name, e.target.checked)}
+                      id={domain.name}
+                      checked={selectedDomains.has(domain.name)}
+                      onChange={() => toggleDomain(domain.name)}
                     />
-                    <span className="font-mono">{domain.name}</span>
-                  </label>
+                    <label htmlFor={domain.name}>{domain.name}</label>
+                  </div>
                 ))}
-              </div>
-
-              <div className="info-box info-box-warning">
-                <p>{t("terminate.keepDomainsInfo")}</p>
               </div>
             </>
           ) : (
             <>
-              <div className="warning-box">
-                <strong>⚠️ {t("terminate.warningTitle")}</strong>
+              <div className="warning-banner" style={{ marginBottom: "var(--space-4)", background: "var(--color-error-100)", borderColor: "var(--color-error-300)", color: "var(--color-error-700)" }}>
+                <span>{t("terminate.confirmWarning")}</span>
               </div>
 
-              {selectedDomains.length > 0 ? (
-                <div className="terminate-summary">
-                  <p>{t("terminate.willTerminate")}</p>
-                  <ul>
-                    {selectedDomains.map((d) => (
-                      <li key={d} className="font-mono">{d}</li>
+              {selectedDomains.size > 0 ? (
+                <>
+                  <p style={{ marginBottom: "var(--space-3)", fontWeight: 500 }}>{t("terminate.domainsToTerminate")}</p>
+                  <ul style={{ margin: 0, paddingLeft: "var(--space-5)" }}>
+                    {Array.from(selectedDomains).map((name) => (
+                      <li key={name} style={{ fontFamily: "var(--font-family-mono)", fontSize: "var(--font-size-sm)" }}>{name}</li>
                     ))}
                   </ul>
-                </div>
+                </>
               ) : (
                 <p>{t("terminate.noDomainsSelected", { serviceName })}</p>
               )}
@@ -127,19 +124,17 @@ export function TerminateModal({ serviceName, serviceId, domains, onClose, onSuc
         </div>
 
         <div className="modal-footer">
-          {step === 1 ? (
-            <>
-              <button className="btn-secondary" onClick={onClose}>{tCommon("actions.cancel")}</button>
-              <button className="btn-danger" onClick={() => setStep(2)}>{t("terminate.next")}</button>
-            </>
-          ) : (
-            <>
-              <button className="btn-secondary" onClick={() => setStep(1)}>{t("terminate.back")}</button>
-              <button className="btn-danger" onClick={handleConfirm} disabled={loading}>
-                {loading ? tCommon("loading") : t("terminate.confirm")}
-              </button>
-            </>
+          {step === 2 && (
+            <button className="btn-secondary" onClick={() => setStep(1)} disabled={loading}>
+              {t("terminate.back")}
+            </button>
           )}
+          <button className="btn-secondary" onClick={onClose} disabled={loading}>
+            {t("terminate.cancel")}
+          </button>
+          <button className="btn-danger" onClick={handleConfirm} disabled={loading}>
+            {loading ? "..." : step === 1 ? t("terminate.next") : t("terminate.confirm")}
+          </button>
         </div>
       </div>
     </div>

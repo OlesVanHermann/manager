@@ -10,3 +10,4 @@ export { DynHostTab } from "./DynHostTab";
 export { GlueTab } from "./GlueTab";
 export { DnssecTab } from "./DnssecTab";
 export { TasksTab } from "./TasksTab";
+export { ContactsTab } from "./ContactsTab";

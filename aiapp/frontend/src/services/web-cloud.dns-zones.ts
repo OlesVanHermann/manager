@@ -1,32 +1,20 @@
 // ============================================================
-// SERVICE DNS ZONES - Gestion des zones DNS OVHcloud
+// SERVICE: DNS Zones API - Gestion des zones DNS
 // ============================================================
 
-import { ovhApi } from './api';
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "./api";
 
-// ============================================================
-// TYPES
-// ============================================================
+// ============ TYPES ============
 
 export interface DnsZone {
   name: string;
   hasDnsAnycast: boolean;
-  lastUpdate: string;
   dnssecSupported: boolean;
+  lastUpdate: string;
   nameServers: string[];
 }
 
-export interface DnsZoneServiceInfos {
-  serviceId: number;
-  creation: string;
-  expiration: string;
-  contactAdmin: string;
-  contactTech: string;
-  contactBilling: string;
-  status: string;
-}
-
-export interface DnsZoneRecord {
+export interface DnsRecord {
   id: number;
   fieldType: string;
   subDomain: string;
@@ -35,139 +23,75 @@ export interface DnsZoneRecord {
   zone: string;
 }
 
-export interface DnsZoneHistory {
-  createdAt: string;
-  zoneId: number;
+export interface DnsRecordCreate {
+  fieldType: string;
+  subDomain: string;
+  target: string;
+  ttl?: number;
 }
 
-export interface DnsZoneTask {
-  id: number;
-  function: string;
-  status: 'cancelled' | 'doing' | 'done' | 'error' | 'todo';
-  createdAt: string;
-  doneAt: string | null;
-  lastUpdateAt: string;
-  comment: string | null;
+export interface DnssecStatus {
+  status: "enabled" | "disabled" | "enableInProgress" | "disableInProgress";
 }
 
-export interface DnsZoneSoa {
-  serial: number;
-  ttl: number;
-  email: string;
-  nxDomainTtl: number;
-  refresh: number;
-  expire: number;
-  server: string;
-}
-
-// ============================================================
-// SERVICE
-// ============================================================
+// ============ SERVICE ============
 
 class DnsZonesService {
-  /** Liste toutes les zones DNS du compte. */
   async listZones(): Promise<string[]> {
-    return ovhApi.get<string[]>('/domain/zone');
+    return ovhGet<string[]>("/domain/zone");
   }
 
-  /** Recupere les details d'une zone DNS. */
-  async getZone(zoneName: string): Promise<DnsZone> {
-    return ovhApi.get<DnsZone>(`/domain/zone/${zoneName}`);
+  async getZone(zone: string): Promise<DnsZone> {
+    return ovhGet<DnsZone>(`/domain/zone/${zone}`);
   }
 
-  /** Recupere les infos de service. */
-  async getServiceInfos(zoneName: string): Promise<DnsZoneServiceInfos> {
-    return ovhApi.get<DnsZoneServiceInfos>(`/domain/zone/${zoneName}/serviceInfos`);
+  async listRecords(zone: string, params?: { fieldType?: string; subDomain?: string }): Promise<number[]> {
+    let path = `/domain/zone/${zone}/record`;
+    const query: string[] = [];
+    if (params?.fieldType) query.push(`fieldType=${params.fieldType}`);
+    if (params?.subDomain) query.push(`subDomain=${params.subDomain}`);
+    if (query.length) path += `?${query.join("&")}`;
+    return ovhGet<number[]>(path);
   }
 
-  /** Recupere le SOA de la zone. */
-  async getSoa(zoneName: string): Promise<DnsZoneSoa> {
-    return ovhApi.get<DnsZoneSoa>(`/domain/zone/${zoneName}/soa`);
+  async getRecord(zone: string, id: number): Promise<DnsRecord> {
+    return ovhGet<DnsRecord>(`/domain/zone/${zone}/record/${id}`);
   }
 
-  // ---------- Records ----------
-
-  /** Liste les IDs des records. */
-  async listRecords(zoneName: string, fieldType?: string, subDomain?: string): Promise<number[]> {
-    let path = `/domain/zone/${zoneName}/record`;
-    const params: string[] = [];
-    if (fieldType) params.push(`fieldType=${fieldType}`);
-    if (subDomain !== undefined) params.push(`subDomain=${subDomain}`);
-    if (params.length) path += '?' + params.join('&');
-    return ovhApi.get<number[]>(path);
+  async createRecord(zone: string, data: DnsRecordCreate): Promise<DnsRecord> {
+    return ovhPost<DnsRecord>(`/domain/zone/${zone}/record`, data);
   }
 
-  /** Recupere un record. */
-  async getRecord(zoneName: string, id: number): Promise<DnsZoneRecord> {
-    return ovhApi.get<DnsZoneRecord>(`/domain/zone/${zoneName}/record/${id}`);
+  async updateRecord(zone: string, id: number, data: Partial<DnsRecordCreate>): Promise<void> {
+    await ovhPut(`/domain/zone/${zone}/record/${id}`, data);
   }
 
-  /** Cree un record. */
-  async createRecord(zoneName: string, record: { fieldType: string; subDomain: string; target: string; ttl?: number }): Promise<DnsZoneRecord> {
-    return ovhApi.post<DnsZoneRecord>(`/domain/zone/${zoneName}/record`, record);
+  async deleteRecord(zone: string, id: number): Promise<void> {
+    await ovhDelete(`/domain/zone/${zone}/record/${id}`);
   }
 
-  /** Modifie un record. */
-  async updateRecord(zoneName: string, id: number, record: { subDomain?: string; target?: string; ttl?: number }): Promise<void> {
-    return ovhApi.put<void>(`/domain/zone/${zoneName}/record/${id}`, record);
+  async refreshZone(zone: string): Promise<void> {
+    await ovhPost(`/domain/zone/${zone}/refresh`, {});
   }
 
-  /** Supprime un record. */
-  async deleteRecord(zoneName: string, id: number): Promise<void> {
-    return ovhApi.delete<void>(`/domain/zone/${zoneName}/record/${id}`);
+  async getDnssecStatus(zone: string): Promise<DnssecStatus> {
+    return ovhGet<DnssecStatus>(`/domain/zone/${zone}/dnssec`);
   }
 
-  /** Rafraichit la zone. */
-  async refreshZone(zoneName: string): Promise<void> {
-    return ovhApi.post<void>(`/domain/zone/${zoneName}/refresh`, {});
+  async enableDnssec(zone: string): Promise<void> {
+    await ovhPost(`/domain/zone/${zone}/dnssec`, {});
   }
 
-  /** Reset la zone aux valeurs par defaut. */
-  async resetZone(zoneName: string, minimized: boolean = false): Promise<void> {
-    return ovhApi.post<void>(`/domain/zone/${zoneName}/reset`, { minimized });
+  async disableDnssec(zone: string): Promise<void> {
+    await ovhDelete(`/domain/zone/${zone}/dnssec`);
   }
 
-  // ---------- History ----------
-
-  /** Liste l'historique de la zone. */
-  async listHistory(zoneName: string): Promise<string[]> {
-    return ovhApi.get<string[]>(`/domain/zone/${zoneName}/history`);
+  async getHistory(zone: string): Promise<string[]> {
+    return ovhGet<string[]>(`/domain/zone/${zone}/history`);
   }
 
-  /** Recupere une version historique. */
-  async getHistory(zoneName: string, createdAt: string): Promise<DnsZoneHistory> {
-    return ovhApi.get<DnsZoneHistory>(`/domain/zone/${zoneName}/history/${createdAt}`);
-  }
-
-  /** Restaure une version historique. */
-  async restoreHistory(zoneName: string, createdAt: string): Promise<void> {
-    return ovhApi.post<void>(`/domain/zone/${zoneName}/history/${createdAt}/restore`, {});
-  }
-
-  // ---------- Tasks ----------
-
-  /** Liste les taches. */
-  async listTasks(zoneName: string, status?: string): Promise<number[]> {
-    let path = `/domain/zone/${zoneName}/task`;
-    if (status) path += `?status=${status}`;
-    return ovhApi.get<number[]>(path);
-  }
-
-  /** Recupere une tache. */
-  async getTask(zoneName: string, id: number): Promise<DnsZoneTask> {
-    return ovhApi.get<DnsZoneTask>(`/domain/zone/${zoneName}/task/${id}`);
-  }
-
-  // ---------- Export/Import ----------
-
-  /** Exporte la zone en format texte. */
-  async exportZone(zoneName: string): Promise<string> {
-    return ovhApi.get<string>(`/domain/zone/${zoneName}/export`);
-  }
-
-  /** Importe une zone depuis un format texte. */
-  async importZone(zoneName: string, zoneFile: string): Promise<void> {
-    return ovhApi.post<void>(`/domain/zone/${zoneName}/import`, { zoneFile });
+  async restoreHistory(zone: string, creationDate: string): Promise<void> {
+    await ovhPost(`/domain/zone/${zone}/history/${creationDate}/restore`, {});
   }
 }
 
