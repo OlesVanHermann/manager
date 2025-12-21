@@ -5,8 +5,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../shared";
-import { hostingService } from "../../../../services/web-cloud.hosting";
-import { GeneralTab, MultisiteTab, FtpTab, DatabaseTab, CronTab, TasksTab, ModulesTab, EnvvarsTab, LogsTab, SslTab, RuntimesTab, EmailsTab } from "./tabs";
+import { hostingService, Hosting, HostingServiceInfos } from "../../../../services/web-cloud.hosting";
+import { GeneralTab, MultisiteTab, FtpTab, DatabaseTab, CronTab, TasksTab, ModulesTab, EnvvarsTab, LogsTab, SslTab, RuntimesTab, EmailsTab, BoostTab, CdnTab, LocalSeoTab } from "./tabs";
 import "../../styles.css";
 
 // ============ ICONS ============
@@ -30,7 +30,12 @@ export default function HostingPage() {
   const [selectedHosting, setSelectedHosting] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("general");
 
-  // ---------- LOAD HOSTINGS ----------
+  // ---------- DETAILS STATE ----------
+  const [details, setDetails] = useState<Hosting | null>(null);
+  const [serviceInfos, setServiceInfos] = useState<HostingServiceInfos | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+
+  // ---------- LOAD HOSTINGS LIST ----------
   const loadHostings = useCallback(async () => {
     try {
       setLoading(true);
@@ -39,12 +44,8 @@ export default function HostingPage() {
       const items: ServiceItem[] = [];
       for (const name of names) {
         try {
-          const details = await hostingService.getHosting(name);
-          items.push({
-            id: name,
-            name: name,
-            type: details.offer || undefined,
-          });
+          const d = await hostingService.getHosting(name);
+          items.push({ id: name, name: name, type: d.offer || undefined });
         } catch {
           items.push({ id: name, name: name });
         }
@@ -64,6 +65,33 @@ export default function HostingPage() {
     loadHostings();
   }, [loadHostings]);
 
+  // ---------- LOAD SELECTED HOSTING DETAILS ----------
+  useEffect(() => {
+    if (!selectedHosting) {
+      setDetails(null);
+      setServiceInfos(null);
+      return;
+    }
+    const loadDetails = async () => {
+      try {
+        setDetailsLoading(true);
+        const [d, si] = await Promise.all([
+          hostingService.getHosting(selectedHosting),
+          hostingService.getServiceInfos(selectedHosting),
+        ]);
+        setDetails(d);
+        setServiceInfos(si);
+      } catch (err) {
+        console.error("Failed to load hosting details:", err);
+        setDetails(null);
+        setServiceInfos(null);
+      } finally {
+        setDetailsLoading(false);
+      }
+    };
+    loadDetails();
+  }, [selectedHosting]);
+
   // ---------- TABS ----------
   const detailTabs = [
     { id: "general", label: t("tabs.general") },
@@ -75,6 +103,9 @@ export default function HostingPage() {
     { id: "envvars", label: t("tabs.envvars") },
     { id: "runtimes", label: t("tabs.runtimes") },
     { id: "ssl", label: t("tabs.ssl") },
+    { id: "cdn", label: t("tabs.cdn") },
+    { id: "boost", label: t("tabs.boost") },
+    { id: "localseo", label: t("tabs.localseo") },
     { id: "emails", label: t("tabs.emails") },
     { id: "logs", label: t("tabs.logs") },
     { id: "tasks", label: t("tabs.tasks") },
@@ -100,6 +131,7 @@ export default function HostingPage() {
         <div className="detail-card">
           <div className="detail-card-header">
             <h2>{selectedHosting}</h2>
+            {details && <span className="badge success">{details.offer}</span>}
           </div>
           <div className="detail-tabs">
             {detailTabs.map((tab) => (
@@ -113,17 +145,20 @@ export default function HostingPage() {
             ))}
           </div>
           <div className="detail-tab-content">
-            {activeTab === "general" && <GeneralTab serviceName={selectedHosting} />}
+            {activeTab === "general" && <GeneralTab serviceName={selectedHosting} details={details} serviceInfos={serviceInfos} loading={detailsLoading} />}
             {activeTab === "multisite" && <MultisiteTab serviceName={selectedHosting} />}
-            {activeTab === "ftp" && <FtpTab serviceName={selectedHosting} />}
+            {activeTab === "ftp" && <FtpTab serviceName={selectedHosting} details={details} />}
             {activeTab === "database" && <DatabaseTab serviceName={selectedHosting} />}
             {activeTab === "modules" && <ModulesTab serviceName={selectedHosting} />}
             {activeTab === "cron" && <CronTab serviceName={selectedHosting} />}
             {activeTab === "envvars" && <EnvvarsTab serviceName={selectedHosting} />}
             {activeTab === "runtimes" && <RuntimesTab serviceName={selectedHosting} />}
             {activeTab === "ssl" && <SslTab serviceName={selectedHosting} />}
+            {activeTab === "cdn" && <CdnTab serviceName={selectedHosting} details={details} />}
+            {activeTab === "boost" && <BoostTab serviceName={selectedHosting} details={details} />}
+            {activeTab === "localseo" && <LocalSeoTab serviceName={selectedHosting} />}
             {activeTab === "emails" && <EmailsTab serviceName={selectedHosting} />}
-            {activeTab === "logs" && <LogsTab serviceName={selectedHosting} />}
+            {activeTab === "logs" && <LogsTab serviceName={selectedHosting} details={details} />}
             {activeTab === "tasks" && <TasksTab serviceName={selectedHosting} />}
           </div>
         </div>

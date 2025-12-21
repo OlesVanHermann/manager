@@ -14,3 +14,6 @@ export { LogsTab } from './LogsTab';
 export { EmailsTab } from './EmailsTab';
 export { ModulesTab } from './ModulesTab';
 export { TasksTab } from './TasksTab';
+export { BoostTab } from './BoostTab';
+export { CdnTab } from './CdnTab';
+export { LocalSeoTab } from './LocalSeoTab';

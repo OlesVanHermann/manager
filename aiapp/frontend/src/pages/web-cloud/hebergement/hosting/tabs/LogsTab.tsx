@@ -5,7 +5,7 @@
 import { useTranslation } from "react-i18next";
 import { Hosting } from "../../../../../services/web-cloud.hosting";
 
-interface Props { serviceName: string; details?: Hosting; }
+interface Props { serviceName: string; details?: Hosting | null; }
 
 /** Onglet Logs et statistiques. */
 export function LogsTab({ serviceName, details }: Props) {

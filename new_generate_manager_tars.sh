@@ -201,43 +201,14 @@ tar -cf /home/ubuntu/new_manager.iam.secret.tar \
     ./public/locales/fr/iam/secret
 
 # ============================================================
-# LICENSE (pas de locales NAV2)
+# LICENSE
 # ============================================================
 
 echo "Création new_manager.license.core.tar..."
 tar -cf /home/ubuntu/new_manager.license.core.tar \
-    ./src/pages/license/index.tsx \
-    ./src/pages/license/styles.css \
-    ./public/locales/en/license/index.json \
-    ./public/locales/fr/license/index.json
-
-echo "Création new_manager.license.cloudlinux.tar..."
-tar -cf /home/ubuntu/new_manager.license.cloudlinux.tar \
-    ./src/pages/license/cloudlinux
-
-echo "Création new_manager.license.cpanel.tar..."
-tar -cf /home/ubuntu/new_manager.license.cpanel.tar \
-    ./src/pages/license/cpanel
-
-echo "Création new_manager.license.directadmin.tar..."
-tar -cf /home/ubuntu/new_manager.license.directadmin.tar \
-    ./src/pages/license/directadmin
-
-echo "Création new_manager.license.plesk.tar..."
-tar -cf /home/ubuntu/new_manager.license.plesk.tar \
-    ./src/pages/license/plesk
-
-echo "Création new_manager.license.sqlserver.tar..."
-tar -cf /home/ubuntu/new_manager.license.sqlserver.tar \
-    ./src/pages/license/sqlserver
-
-echo "Création new_manager.license.virtuozzo.tar..."
-tar -cf /home/ubuntu/new_manager.license.virtuozzo.tar \
-    ./src/pages/license/virtuozzo
-
-echo "Création new_manager.license.windows.tar..."
-tar -cf /home/ubuntu/new_manager.license.windows.tar \
-    ./src/pages/license/windows
+    ./src/pages/license \
+    ./public/locales/en/license \
+    ./public/locales/fr/license
 
 # ============================================================
 # NETWORK
@@ -303,23 +274,11 @@ tar -cf /home/ubuntu/new_manager.private-cloud.core.tar \
     ./public/locales/en/private-cloud/index.json \
     ./public/locales/fr/private-cloud/index.json
 
-echo "Création new_manager.private-cloud.managed-baremetal.tar..."
-tar -cf /home/ubuntu/new_manager.private-cloud.managed-baremetal.tar \
-    ./src/pages/private-cloud/managed-baremetal
-
 echo "Création new_manager.private-cloud.nutanix.tar..."
 tar -cf /home/ubuntu/new_manager.private-cloud.nutanix.tar \
     ./src/pages/private-cloud/nutanix \
     ./public/locales/en/private-cloud/nutanix \
     ./public/locales/fr/private-cloud/nutanix
-
-echo "Création new_manager.private-cloud.sap.tar..."
-tar -cf /home/ubuntu/new_manager.private-cloud.sap.tar \
-    ./src/pages/private-cloud/sap
-
-echo "Création new_manager.private-cloud.veeam.tar..."
-tar -cf /home/ubuntu/new_manager.private-cloud.veeam.tar \
-    ./src/pages/private-cloud/veeam
 
 echo "Création new_manager.private-cloud.vmware.tar..."
 tar -cf /home/ubuntu/new_manager.private-cloud.vmware.tar \
@@ -490,23 +449,17 @@ tar -cf /home/ubuntu/new_manager.web-cloud.emails.zimbra.tar \
 
 echo "Création new_manager.web-cloud.hebergement.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.tar \
-    ./src/pages/web-cloud/hebergement/index.tsx \
-    ./public/locales/en/web-cloud/hebergement/index.json \
-    ./public/locales/fr/web-cloud/hebergement/index.json
+    ./src/pages/web-cloud/hebergement/index.tsx
 
 echo "Création new_manager.web-cloud.hebergement.hosting.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.hosting.tar \
     ./src/pages/web-cloud/hebergement/hosting \
-    ./public/locales/en/web-cloud/hebergement/hosting \
-    ./public/locales/fr/web-cloud/hebergement/hosting \
     ./public/locales/en/web-cloud/hosting \
     ./public/locales/fr/web-cloud/hosting
 
 echo "Création new_manager.web-cloud.hebergement.private-database.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.private-database.tar \
     ./src/pages/web-cloud/hebergement/private-database \
-    ./public/locales/en/web-cloud/hebergement/private-database \
-    ./public/locales/fr/web-cloud/hebergement/private-database \
     ./public/locales/en/web-cloud/private-database \
     ./public/locales/fr/web-cloud/private-database
 

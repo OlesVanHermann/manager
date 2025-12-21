@@ -7,13 +7,13 @@ import { Hosting, HostingServiceInfos } from "../../../../../services/web-cloud.
 
 interface Props {
   serviceName: string;
-  details?: Hosting;
-  serviceInfos?: HostingServiceInfos;
-  loading: boolean;
+  details?: Hosting | null;
+  serviceInfos?: HostingServiceInfos | null;
+  loading?: boolean;
 }
 
 /** Onglet informations generales de l'hebergement. */
-export function GeneralTab({ serviceName, details, serviceInfos, loading }: Props) {
+export function GeneralTab({ serviceName, details, serviceInfos, loading = false }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
 
   if (loading) {
@@ -126,8 +126,8 @@ export function GeneralTab({ serviceName, details, serviceInfos, loading }: Prop
             </div>
             <div className="info-item">
               <label>{t("serviceInfo.autoRenew")}</label>
-              <span className={`badge ${serviceInfos.renew.automatic ? "success" : "warning"}`}>
-                {serviceInfos.renew.automatic ? "✓ Actif" : "✗ Inactif"}
+              <span className={`badge ${serviceInfos.renew?.automatic ? "success" : "warning"}`}>
+                {serviceInfos.renew?.automatic ? "✓ Actif" : "✗ Inactif"}
               </span>
             </div>
           </div>
