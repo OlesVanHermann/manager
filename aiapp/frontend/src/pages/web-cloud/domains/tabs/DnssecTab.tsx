@@ -4,11 +4,25 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { domainsService } from "../../../../services/web-cloud.domains";
+import { dnsZonesService } from "../../../../services/web-cloud.dns-zones";
 
 interface Props {
   domain: string;
 }
+
+// ============ ICONS ============
+
+const ShieldIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  </svg>
+);
+
+const ShieldCheckIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>
+  </svg>
+);
 
 /** Onglet DNSSEC du domaine. */
 export function DnssecTab({ domain }: Props) {
@@ -24,11 +38,16 @@ export function DnssecTab({ domain }: Props) {
     try {
       setLoading(true);
       setError(null);
-      const result = await domainsService.getDnssecStatus(domain);
+      const result = await dnsZonesService.getDnssecStatus(domain);
       setStatus(result.status);
     } catch (err) {
-      setError(String(err));
-      setStatus(null);
+      const errMsg = String(err);
+      if (errMsg.includes("404") || errMsg.includes("not found")) {
+        setStatus("disabled");
+      } else {
+        setError(errMsg);
+        setStatus(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -41,14 +60,15 @@ export function DnssecTab({ domain }: Props) {
   const handleToggle = async () => {
     try {
       setToggling(true);
+      setError(null);
       if (status === "enabled") {
-        await domainsService.disableDnssec(domain);
+        await dnsZonesService.disableDnssec(domain);
       } else {
-        await domainsService.enableDnssec(domain);
+        await dnsZonesService.enableDnssec(domain);
       }
       await loadStatus();
     } catch (err) {
-      alert(String(err));
+      setError(String(err));
     } finally {
       setToggling(false);
     }
@@ -57,12 +77,13 @@ export function DnssecTab({ domain }: Props) {
   if (loading) {
     return (
       <div className="tab-loading">
-        <div className="skeleton-block" />
+        <div className="skeleton-block" style={{ height: "200px" }} />
       </div>
     );
   }
 
   const isEnabled = status === "enabled";
+  const isInProgress = status === "enableInProgress" || status === "disableInProgress";
   const isSupported = status !== null && status !== "unsupported";
 
   return (
@@ -74,22 +95,39 @@ export function DnssecTab({ domain }: Props) {
         </div>
       </div>
 
-      <div className={`dnssec-card ${isEnabled ? "active" : "inactive"}`}>
-        <div className={`dnssec-icon ${isEnabled ? "active" : "inactive"}`}>
-          {isEnabled ? "🔐" : "🔓"}
+      {error && <div className="error-banner">{error}</div>}
+
+      <div className={`dnssec-status-card ${isEnabled ? "enabled" : "disabled"}`}>
+        <div className="dnssec-icon">
+          {isEnabled ? <ShieldCheckIcon /> : <ShieldIcon />}
         </div>
-        <h3>{isEnabled ? t("dnssec.enabled") : t("dnssec.disabled")}</h3>
-        <p>
-          {isEnabled
-            ? t("dnssec.enabledDesc")
-            : isSupported
-            ? t("dnssec.disabledDesc")
-            : t("dnssec.unsupportedDesc")}
-        </p>
-        {isSupported && (
-          <button className="btn-primary" onClick={handleToggle} disabled={toggling}>
-            {toggling ? tCommon("loading") : isEnabled ? t("dnssec.disable") : t("dnssec.enable")}
-          </button>
+        <div className="dnssec-content">
+          <h3 className={isEnabled ? "text-success" : "text-warning"}>
+            {isEnabled ? t("dnssec.enabled") : t("dnssec.disabled")}
+          </h3>
+          <p>
+            {isEnabled
+              ? t("dnssec.enabledDesc")
+              : isSupported
+              ? t("dnssec.disabledDesc")
+              : t("dnssec.unsupportedDesc")}
+          </p>
+          {isInProgress && (
+            <p className="status-progress">
+              {status === "enableInProgress" ? "Activation en cours..." : "Désactivation en cours..."}
+            </p>
+          )}
+        </div>
+        {isSupported && !isInProgress && (
+          <div className="dnssec-action">
+            <button 
+              className={isEnabled ? "btn-secondary" : "btn-primary"} 
+              onClick={handleToggle} 
+              disabled={toggling}
+            >
+              {toggling ? tCommon("loading") : isEnabled ? t("dnssec.disable") : t("dnssec.enable")}
+            </button>
+          </div>
         )}
       </div>
 

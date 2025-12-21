@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Domain, DomainServiceInfos, domainsService } from "../../../../services/web-cloud.domains";
+import { dnsZonesService } from "../../../../services/web-cloud.dns-zones";
 import { AuthInfoModal } from "../modals/AuthInfoModal";
 
 interface Props {
@@ -13,6 +14,14 @@ interface Props {
   serviceInfos?: DomainServiceInfos;
   loading: boolean;
   onRefresh?: () => void;
+  onTabChange?: (tab: string) => void;
+}
+
+interface PendingTask {
+  id: number;
+  function: string;
+  status: string;
+  comment?: string;
 }
 
 // ============ ICONS ============
@@ -77,19 +86,30 @@ const MailIcon = () => (
   </svg>
 );
 
+const WarningIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </svg>
+);
+
 // ============ EXTERNAL LINKS ============
 
 const OVH_MANAGER_BASE = "https://www.ovh.com/manager";
 const getAutorenewUrl = (domain: string) => `${OVH_MANAGER_BASE}/#/dedicated/billing/autorenew?searchText=${encodeURIComponent(domain)}`;
 const getContactsUrl = (domain: string) => `${OVH_MANAGER_BASE}/#/dedicated/contacts/services?serviceName=${encodeURIComponent(domain)}`;
-const getWhoisUrl = (domain: string) => `${OVH_MANAGER_BASE}/#/web/domain/${encodeURIComponent(domain)}/owo`;
-const getHostingUrl = () => "https://www.ovhcloud.com/fr/web-hosting/";
+const getHostingOrderUrl = () => "https://www.ovhcloud.com/fr/web-hosting/";
 const getExtensionUrl = () => "https://www.ovhcloud.com/fr/domains/tld/";
 const getEmailUrl = () => "https://www.ovhcloud.com/fr/emails/";
 
 // ============ COMPOSANT PRINCIPAL ============
 
-export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh }: Props) {
+export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, onTabChange }: Props) {
   const { t } = useTranslation("web-cloud/domains/general");
   const { t: tCommon } = useTranslation("common");
 
@@ -99,18 +119,63 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh }
   const [guidesOpen, setGuidesOpen] = useState(false);
   const [showAuthInfo, setShowAuthInfo] = useState(false);
   const [hasEmail, setHasEmail] = useState<boolean | null>(null);
+  const [dnssecStatus, setDnssecStatus] = useState<string | null>(null);
+  const [subdomains, setSubdomains] = useState<string[]>([]);
+  const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([]);
+  const [linkedHosting, setLinkedHosting] = useState<string | null>(null);
 
-  // ---------- CHECK EMAIL ----------
+  // ---------- LOAD EXTRA DATA ----------
   useEffect(() => {
-    const checkEmail = async () => {
+    const loadExtraData = async () => {
       try {
         const result = await domainsService.hasEmailDomain(domain);
         setHasEmail(result);
       } catch {
         setHasEmail(false);
       }
+
+      try {
+        const dnssec = await domainsService.getDnssecStatus(domain);
+        setDnssecStatus(dnssec.status);
+      } catch {
+        setDnssecStatus(null);
+      }
+
+      try {
+        const records = await dnsZonesService.listRecordsDetailed(domain);
+        const subs = new Set<string>();
+        records.forEach((r) => {
+          if (r.subDomain && r.subDomain !== "" && (r.fieldType === "A" || r.fieldType === "AAAA" || r.fieldType === "CNAME")) {
+            subs.add(r.subDomain);
+          }
+        });
+        setSubdomains(Array.from(subs).sort());
+      } catch {
+        setSubdomains([]);
+      }
+
+      try {
+        const taskIds = await domainsService.listDomainTasks(domain);
+        if (taskIds.length > 0) {
+          const tasks = await Promise.all(taskIds.slice(0, 5).map((id) => domainsService.getDomainTask(domain, id)));
+          const pending = tasks.filter((t) => t.status === "todo" || t.status === "doing" || t.status === "problem");
+          setPendingTasks(pending);
+        } else {
+          setPendingTasks([]);
+        }
+      } catch {
+        setPendingTasks([]);
+      }
+
+      try {
+        const hosting = await domainsService.getLinkedHosting(domain);
+        setLinkedHosting(hosting);
+      } catch {
+        setLinkedHosting(null);
+      }
     };
-    checkEmail();
+
+    loadExtraData();
   }, [domain]);
 
   // ---------- HELPERS ----------
@@ -137,16 +202,35 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh }
   const handleToggleDnssec = async () => {
     setDnssecToggling(true);
     setTimeout(() => {
-      alert("Configuration DNSSEC : utilisez l'onglet DNSSEC pour gérer les enregistrements DS.");
+      alert(t("security.dnssecManual"));
       setDnssecToggling(false);
     }, 500);
+  };
+
+  const handleGoToTasks = () => {
+    if (onTabChange) {
+      onTabChange("tasks");
+    }
+  };
+
+  const handleGoToDnsServers = () => {
+    if (onTabChange) {
+      onTabChange("dns-servers");
+    }
+  };
+
+  const handleGoToContacts = () => {
+    if (onTabChange) {
+      onTabChange("contacts");
+    }
   };
 
   // ---------- DERIVED STATE ----------
   const isLocked = details?.transferLockStatus === "locked";
   const isLocking = details?.transferLockStatus === "locking" || details?.transferLockStatus === "unlocking";
-  const dnssecEnabled = details?.dnssecSupported || false;
+  const dnssecEnabled = dnssecStatus === "enabled" || dnssecStatus === "ENABLED";
   const canShowAuthInfo = details?.transferLockStatus === "unlocked";
+  const dnsServerType = details?.nameServerType === "hosted" ? t("values.dnsHosted") : t("values.dnsExternal");
 
   // ---------- RENDER LOADING ----------
   if (loading) {
@@ -164,38 +248,53 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh }
   // ---------- RENDER ----------
   return (
     <div className="general-tab-v3">
+      {/* ============ WARNING BANNER ============ */}
+      {pendingTasks.length > 0 && (
+        <div className="warning-banner-v3">
+          <WarningIcon />
+          <div className="warning-content">
+            <span>{t("warnings.pendingTasks", { count: pendingTasks.length })}</span>
+            <button className="btn-link" onClick={handleGoToTasks}>
+              {t("warnings.viewTasks")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============ ROW 1: 3 CARDS ============ */}
       <div className="general-grid-3">
-        {/* ============ COL 1: INFORMATIONS GÉNÉRALES ============ */}
+        {/* ============ COL 1: INFORMATIONS ============ */}
         <div className="info-card-v3">
           <h3 className="card-title-v3">{t("sections.info")}</h3>
-          
+
           <div className="info-row-v3">
             <div className="row-label">{t("fields.status")}</div>
             <div className="row-value-box">
-              <span className="badge-status info">{serviceInfos?.renew.automatic ? t("values.autoRenewal") : t("values.manualRenewal")}</span>
+              <span className="badge-status success">{t("values.registered")}</span>
             </div>
           </div>
 
-          <div className="info-row-v3 with-action">
-            <div className="row-main">
-              <div className="row-label"><ServerIcon /> {t("fields.dnsServers")}</div>
-              <div className="row-value-box">
-                <span className={`badge-status ${details?.nameServerType === "hosted" ? "success" : "warning"}`}>
-                  {details?.nameServerType === "hosted" ? t("values.active") : t("values.external")}
-                </span>
-              </div>
+          <div className="info-row-v3">
+            <div className="row-label"><ServerIcon /> {t("fields.dnsServers")}</div>
+            <div className="row-value-box with-action">
+              <span className={`badge-status ${details?.nameServerType === "hosted" ? "success" : "info"}`}>
+                {dnsServerType}
+              </span>
+              <button className="btn-more-v3" onClick={handleGoToDnsServers} title={t("actions.viewDnsServers")}><MoreIcon /></button>
             </div>
-            <button className="btn-more-v3"><MoreIcon /></button>
           </div>
 
-          <div className="info-row-v3 with-action">
-            <div className="row-main">
-              <div className="row-label">{t("fields.hosting")}</div>
-              <div className="row-value-box">
-                <a href={getHostingUrl()} target="_blank" rel="noopener noreferrer" className="link-primary-v3">{t("actions.orderHosting")} <ExternalLinkIcon /></a>
-              </div>
+          <div className="info-row-v3">
+            <div className="row-label">{t("fields.webHosting")}</div>
+            <div className="row-value-box with-action">
+              {linkedHosting ? (
+                <span className="value-text">{linkedHosting}</span>
+              ) : (
+                <a href={getHostingOrderUrl()} target="_blank" rel="noopener noreferrer" className="btn-order">
+                  {t("actions.orderHosting")} <ExternalLinkIcon />
+                </a>
+              )}
             </div>
-            <button className="btn-more-v3"><MoreIcon /></button>
           </div>
 
           <div className="info-row-v3">
@@ -212,9 +311,20 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh }
           </div>
 
           <div className="info-row-v3">
-            <div className="row-label">{t("fields.subdomains")}</div>
+            <div className="row-label"><GlobeIcon /> {t("fields.subdomains")}</div>
             <div className="row-value-box">
-              <span className="value-text muted">{t("values.noSubdomain")}</span>
+              {subdomains.length > 0 ? (
+                <div className="subdomains-list">
+                  {subdomains.slice(0, 3).map((sub) => (
+                    <span key={sub} className="subdomain-item">{sub}.{domain}</span>
+                  ))}
+                  {subdomains.length > 3 && (
+                    <span className="subdomain-more">+{subdomains.length - 3} {t("values.more")}</span>
+                  )}
+                </div>
+              ) : (
+                <span className="value-text muted">{t("values.noSubdomain")}</span>
+              )}
             </div>
           </div>
         </div>
@@ -268,9 +378,9 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh }
             <div className="security-label-row">
               <span>{t("security.whois")}</span>
             </div>
-            <a href={getWhoisUrl(domain)} target="_blank" rel="noopener noreferrer" className="btn-whois">
+            <button className="btn-whois" onClick={handleGoToContacts}>
               {t("security.configureWhois")}
-            </a>
+            </button>
           </div>
         </div>
 
@@ -340,13 +450,13 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh }
           <h3 className="card-title-v3">{t("sections.options")}</h3>
           <div className="option-row-v3"><span className="option-label-v3">{t("options.dnsAnycast")}</span><span className="option-value-v3 muted">{t("options.notAvailable")}</span></div>
           <div className="option-row-v3"><span className="option-label-v3">{t("options.owo")}</span><span className={`option-value-v3 ${details?.owoSupported ? "" : "muted"}`}>{details?.owoSupported ? t("options.available") : t("options.notSupported")}</span></div>
-          <div className="option-row-v3"><span className="option-label-v3">{t("options.dnsType")}</span><span className="option-value-v3">{details?.nameServerType === "hosted" ? "OVH" : t("values.external")}</span></div>
+          <div className="option-row-v3"><span className="option-label-v3">{t("options.dnsType")}</span><span className="option-value-v3">{dnsServerType}</span></div>
         </div>
 
         <div className="info-card-v3 compact highlight">
           <h3 className="card-title-v3">{t("sections.tips")}</h3>
           <p className="advice-intro-v3">{t("tips.intro")}</p>
-          <a href={getHostingUrl()} target="_blank" rel="noopener noreferrer" className="advice-link-v3"><span>{t("tips.hosting")}</span><ChevronRightIcon /></a>
+          <a href={getHostingOrderUrl()} target="_blank" rel="noopener noreferrer" className="advice-link-v3"><span>{t("tips.hosting")}</span><ChevronRightIcon /></a>
           <a href={getExtensionUrl()} target="_blank" rel="noopener noreferrer" className="advice-link-v3"><span>{t("tips.extension")}</span><ChevronRightIcon /></a>
           <a href={getEmailUrl()} target="_blank" rel="noopener noreferrer" className="advice-link-v3"><span>{t("tips.email")}</span><ChevronRightIcon /></a>
         </div>

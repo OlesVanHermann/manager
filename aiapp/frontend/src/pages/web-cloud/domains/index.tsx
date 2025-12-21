@@ -185,13 +185,13 @@ export default function DomainsPage() {
 
     switch (activeTab) {
       case "general":
-        return <GeneralTab domain={selectedEntry.id} details={domainDetails || undefined} serviceInfos={serviceInfos || undefined} loading={detailLoading} onRefresh={() => { setDomainDetails(null); setServiceInfos(null); const load = async () => { const [d, s] = await Promise.all([domainsService.getDomain(selectedEntry.id), domainsService.getServiceInfos(selectedEntry.id)]); setDomainDetails(d); setServiceInfos(s); }; load(); }} />;
+        return <GeneralTab domain={selectedEntry.id} details={domainDetails || undefined} serviceInfos={serviceInfos || undefined} loading={detailLoading} onRefresh={() => { setDomainDetails(null); setServiceInfos(null); const load = async () => { const [d, s] = await Promise.all([domainsService.getDomain(selectedEntry.id), domainsService.getServiceInfos(selectedEntry.id)]); setDomainDetails(d); setServiceInfos(s); }; load(); }} onTabChange={setActiveTab} />;
       case "zone":
         return <ZoneTab zoneName={selectedEntry.id} />;
       case "dns-servers":
         return <DnsServersTab domain={selectedEntry.id} />;
       case "redirections":
-        return <RedirectionTab domain={selectedEntry.id} />;
+        return <RedirectionTab domain={selectedEntry.id} nameServerType={domainDetails?.nameServerType} />;
       case "dynhost":
         return <DynHostTab zoneName={selectedEntry.id} />;
       case "glue":

@@ -2,7 +2,7 @@
 // SERVICE: DNS Zones API - Gestion des zones DNS
 // ============================================================
 
-import { ovhGet, ovhPost, ovhPut, ovhDelete } from "./api";
+import { ovhGet, ovhPost, ovhPostNoBody, ovhPut, ovhDelete } from "./api";
 
 // ============ TYPES ============
 
@@ -79,7 +79,7 @@ class DnsZonesService {
   }
 
   async enableDnssec(zone: string): Promise<void> {
-    await ovhPost(`/domain/zone/${zone}/dnssec`, {});
+    await ovhPostNoBody(`/domain/zone/${zone}/dnssec`);
   }
 
   async disableDnssec(zone: string): Promise<void> {
@@ -92,6 +92,17 @@ class DnsZonesService {
 
   async restoreHistory(zone: string, creationDate: string): Promise<void> {
     await ovhPost(`/domain/zone/${zone}/history/${creationDate}/restore`, {});
+  }
+
+  async listRecordsDetailed(zone: string): Promise<DnsRecord[]> {
+    try {
+      const ids = await ovhGet<number[]>(`/domain/zone/${zone}/record`);
+      if (ids.length === 0) return [];
+      const records = await Promise.all(ids.slice(0, 100).map((id) => this.getRecord(zone, id)));
+      return records;
+    } catch {
+      return [];
+    }
   }
 }
 

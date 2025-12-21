@@ -235,6 +235,48 @@ class DomainsService {
   async deleteGlueRecord(domain: string, host: string): Promise<void> {
     await ovhDelete(`/domain/${domain}/glueRecord/${host}`);
   }
+
+  // -------- ZONE REFRESH --------
+  async refreshZone(zone: string): Promise<void> {
+    await ovhPost(`/domain/zone/${zone}/refresh`, {});
+  }
+
+  // -------- DNSSEC STATUS --------
+  async getDnssecStatus(zone: string): Promise<{ status: string }> {
+    return ovhGet<{ status: string }>(`/domain/zone/${zone}/dnssec`);
+  }
+
+  // -------- DOMAIN TASKS --------
+  async listDomainTasks(domain: string): Promise<number[]> {
+    return ovhGet<number[]>(`/domain/${domain}/task`);
+  }
+
+  async getDomainTask(domain: string, id: number): Promise<{ id: number; function: string; status: string; comment?: string }> {
+    return ovhGet(`/domain/${domain}/task/${id}`);
+  }
+
+  // -------- ZONE TASKS --------
+  async listZoneTasks(zone: string): Promise<number[]> {
+    return ovhGet<number[]>(`/domain/zone/${zone}/task`);
+  }
+
+  async getZoneTask(zone: string, id: number): Promise<{ id: number; function: string; status: string; comment?: string; creationDate?: string; lastUpdate?: string }> {
+    return ovhGet(`/domain/zone/${zone}/task/${id}`);
+  }
+
+  // -------- HOSTING LINKED --------
+  async getLinkedHosting(domain: string): Promise<string | null> {
+    try {
+      const hostings = await ovhGet<string[]>(`/hosting/web`);
+      for (const h of hostings) {
+        const info = await ovhGet<{ serviceName: string; hostingIp?: string }>(`/hosting/web/${h}`);
+        if (info.serviceName === domain || h === domain) return h;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 }
 
 export const domainsService = new DomainsService();

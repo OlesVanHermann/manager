@@ -129,6 +129,10 @@ export async function ovhPost<T>(path: string, body: unknown, options?: { skipAu
   return ovhFetch<T>("POST", path, { body, ...options });
 }
 
+export async function ovhPostNoBody<T>(path: string, options?: { skipAuthRedirect?: boolean }): Promise<T> {
+  return ovhFetch<T>("POST", path, options);
+}
+
 export async function ovhPut<T>(path: string, body: unknown, options?: { skipAuthRedirect?: boolean }): Promise<T> {
   return ovhFetch<T>("PUT", path, { body, ...options });
 }

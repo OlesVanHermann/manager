@@ -8,6 +8,7 @@ import { domainsService, Redirection, RedirectionCreate } from "../../../../serv
 
 interface Props {
   domain: string;
+  nameServerType?: "hosted" | "external";
 }
 
 interface RedirectionForm {
@@ -21,9 +22,9 @@ interface RedirectionForm {
 }
 
 const REDIRECTION_TYPES = [
-  { value: 'visiblePermanent', labelKey: 'redirections.typePermanent' },
-  { value: 'visible', labelKey: 'redirections.typeVisible' },
-  { value: 'invisible', labelKey: 'redirections.typeInvisible' },
+  { value: 'visiblePermanent', labelKey: 'typePermanent' },
+  { value: 'visible', labelKey: 'typeVisible' },
+  { value: 'invisible', labelKey: 'typeInvisible' },
 ] as const;
 
 const DEFAULT_FORM: RedirectionForm = { subDomain: '', target: '', type: 'visiblePermanent', title: '', keywords: '', description: '' };
@@ -60,17 +61,24 @@ const ArrowIcon = () => (
   </svg>
 );
 
+const AlertIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+);
+
 // ============ COMPOSANT PRINCIPAL ============
 
-/** Onglet redirections web avec CRUD complet. */
-export function RedirectionTab({ domain }: Props) {
-  const { t } = useTranslation("web-cloud/domains/index");
+export function RedirectionTab({ domain, nameServerType }: Props) {
+  const { t } = useTranslation("web-cloud/domains/redirection");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
   const [redirections, setRedirections] = useState<Redirection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notSupported, setNotSupported] = useState(false);
+  const [notSupportedReason, setNotSupportedReason] = useState<"external" | "api" | null>(null);
 
   // ---------- MODAL STATE ----------
   const [modalOpen, setModalOpen] = useState(false);
@@ -83,11 +91,30 @@ export function RedirectionTab({ domain }: Props) {
   const [deleteConfirm, setDeleteConfirm] = useState<Redirection | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // ---------- CHECK IF SUPPORTED ----------
+  const isExternalDns = nameServerType === "external";
+
   // ---------- LOAD DATA ----------
   const loadRedirections = useCallback(async () => {
+    // Si DNS externes, pas de redirections possibles
+    if (isExternalDns) {
+      setNotSupported(true);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
+      // Si DNS externes, marquer comme non supporté
+      if (isExternalDns) {
+        setNotSupported(true);
+        setNotSupportedReason("external");
+        setRedirections([]);
+        return;
+      }
+      setNotSupported(false);
+      setNotSupportedReason(null);
       const ids = await domainsService.listRedirections(domain);
       if (ids.length === 0) {
         setRedirections([]);
@@ -96,11 +123,19 @@ export function RedirectionTab({ domain }: Props) {
       const details = await Promise.all(ids.map((id) => domainsService.getRedirection(domain, id)));
       setRedirections(details);
     } catch (err) {
-      setError(String(err));
+      const errMsg = String(err);
+      if (errMsg.includes("invalid") || errMsg.includes("empty") || errMsg.includes("URL") || errMsg.includes("404") || errMsg.includes("not found")) {
+        setNotSupported(true);
+        setNotSupportedReason("api");
+        setRedirections([]);
+        setError(null);
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }
-  }, [domain]);
+  }, [domain, isExternalDns]);
 
   useEffect(() => {
     loadRedirections();
@@ -142,7 +177,12 @@ export function RedirectionTab({ domain }: Props) {
   // ---------- SAVE ----------
   const handleSave = async () => {
     if (!formData.target.trim()) {
-      setFormError(t("redirections.errorTargetRequired"));
+      setFormError(t("errorTargetRequired"));
+      return;
+    }
+    // Validation URL basique
+    if (!formData.target.startsWith("http://") && !formData.target.startsWith("https://")) {
+      setFormError(t("errorInvalidUrl"));
       return;
     }
     try {
@@ -200,7 +240,7 @@ export function RedirectionTab({ domain }: Props) {
 
   // ---------- HELPERS ----------
   const getTypeLabel = (type: string) => {
-    const found = REDIRECTION_TYPES.find((t) => t.value === type);
+    const found = REDIRECTION_TYPES.find((rt) => rt.value === type);
     return found ? t(found.labelKey) : type;
   };
 
@@ -224,18 +264,45 @@ export function RedirectionTab({ domain }: Props) {
     );
   }
 
+  // ---------- RENDER NOT SUPPORTED ----------
+  if (notSupported) {
+    return (
+      <div className="redirections-tab">
+        <div className="tab-header">
+          <div>
+            <h3>{t("title")}</h3>
+            <p className="tab-description">{t("description")}</p>
+          </div>
+        </div>
+
+        <div className="not-supported-banner">
+          <AlertIcon />
+          <div className="not-supported-content">
+            <h4>{notSupportedReason === "external" ? t("notSupportedTitle") : t("notSupportedApiTitle")}</h4>
+            <p>{notSupportedReason === "external" ? t("notSupportedDesc") : t("notSupportedApiDesc")}</p>
+          </div>
+        </div>
+
+        <div className="info-box">
+          <h4>{t("info")}</h4>
+          <p>{t("infoDesc")}</p>
+        </div>
+      </div>
+    );
+  }
+
   // ---------- RENDER ----------
   return (
     <div className="redirections-tab">
       {/* Header */}
       <div className="tab-header">
         <div>
-          <h3>{t("redirections.title")}</h3>
-          <p className="tab-description">{t("redirections.description")}</p>
+          <h3>{t("title")}</h3>
+          <p className="tab-description">{t("description")}</p>
         </div>
         <div className="tab-header-actions">
           <button className="btn-primary" onClick={openCreateModal}>
-            <PlusIcon /> {t("redirections.add")}
+            <PlusIcon /> {t("add")}
           </button>
         </div>
       </div>
@@ -249,10 +316,10 @@ export function RedirectionTab({ domain }: Props) {
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
           </svg>
-          <h3>{t("redirections.empty")}</h3>
-          <p className="hint">{t("redirections.emptyHint")}</p>
+          <h3>{t("empty")}</h3>
+          <p className="hint">{t("emptyHint")}</p>
           <button className="btn-primary" onClick={openCreateModal}>
-            <PlusIcon /> {t("redirections.add")}
+            <PlusIcon /> {t("add")}
           </button>
         </div>
       ) : (
@@ -265,10 +332,10 @@ export function RedirectionTab({ domain }: Props) {
                   {getTypeLabel(redir.type)}
                 </span>
                 <div className="card-actions">
-                  <button className="btn-icon" onClick={() => openEditModal(redir)} title={t("redirections.edit")}>
+                  <button className="btn-icon" onClick={() => openEditModal(redir)} title={t("edit")}>
                     <EditIcon />
                   </button>
-                  <button className="btn-icon btn-icon-danger" onClick={() => handleDeleteClick(redir)} title={t("redirections.delete")}>
+                  <button className="btn-icon btn-icon-danger" onClick={() => handleDeleteClick(redir)} title={t("delete")}>
                     <TrashIcon />
                   </button>
                 </div>
@@ -278,8 +345,8 @@ export function RedirectionTab({ domain }: Props) {
                 <span className="arrow"><ArrowIcon /></span>
                 <span className="to">{redir.target}</span>
               </div>
-              {redir.title && <div className="redirection-meta"><strong>{t("redirections.metaTitle")}:</strong> {redir.title}</div>}
-              {redir.keywords && <div className="redirection-meta"><strong>{t("redirections.metaKeywords")}:</strong> {redir.keywords}</div>}
+              {redir.title && <div className="redirection-meta"><strong>{t("metaTitle")}:</strong> {redir.title}</div>}
+              {redir.keywords && <div className="redirection-meta"><strong>{t("metaKeywords")}:</strong> {redir.keywords}</div>}
             </div>
           ))}
         </div>
@@ -287,8 +354,8 @@ export function RedirectionTab({ domain }: Props) {
 
       {/* Info box */}
       <div className="info-box">
-        <h4>{t("redirections.info")}</h4>
-        <p>{t("redirections.infoDesc")}</p>
+        <h4>{t("info")}</h4>
+        <p>{t("infoDesc")}</p>
       </div>
 
       {/* Modal Create/Edit */}
@@ -296,13 +363,13 @@ export function RedirectionTab({ domain }: Props) {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{modalMode === 'create' ? t("redirections.modalTitleCreate") : t("redirections.modalTitleEdit")}</h3>
+              <h3>{modalMode === 'create' ? t("modalTitleCreate") : t("modalTitleEdit")}</h3>
               <button className="btn-icon" onClick={closeModal}><CloseIcon /></button>
             </div>
             <div className="modal-body">
               {formError && <div className="form-error">{formError}</div>}
               <div className="form-group">
-                <label>{t("redirections.type")}</label>
+                <label>{t("type")}</label>
                 <select
                   value={formData.type}
                   onChange={(e) => handleFormChange('type', e.target.value)}
@@ -315,7 +382,7 @@ export function RedirectionTab({ domain }: Props) {
                 </select>
               </div>
               <div className="form-group">
-                <label>{t("redirections.subdomain")}</label>
+                <label>{t("subdomain")}</label>
                 <div className="input-with-suffix">
                   <input
                     type="text"
@@ -327,10 +394,10 @@ export function RedirectionTab({ domain }: Props) {
                   />
                   <span className="input-suffix">.{domain}</span>
                 </div>
-                <small className="form-hint">{t("redirections.subdomainHint")}</small>
+                <small className="form-hint">{t("subdomainHint")}</small>
               </div>
               <div className="form-group">
-                <label>{t("redirections.target")} *</label>
+                <label>{t("target")} *</label>
                 <input
                   type="text"
                   value={formData.target}
@@ -343,31 +410,31 @@ export function RedirectionTab({ domain }: Props) {
               {formData.type === 'invisible' && (
                 <>
                   <div className="form-group">
-                    <label>{t("redirections.metaTitle")}</label>
+                    <label>{t("metaTitle")}</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => handleFormChange('title', e.target.value)}
-                      placeholder={t("redirections.metaTitlePlaceholder")}
+                      placeholder={t("metaTitlePlaceholder")}
                       className="form-input"
                     />
                   </div>
                   <div className="form-group">
-                    <label>{t("redirections.metaKeywords")}</label>
+                    <label>{t("metaKeywords")}</label>
                     <input
                       type="text"
                       value={formData.keywords}
                       onChange={(e) => handleFormChange('keywords', e.target.value)}
-                      placeholder={t("redirections.metaKeywordsPlaceholder")}
+                      placeholder={t("metaKeywordsPlaceholder")}
                       className="form-input"
                     />
                   </div>
                   <div className="form-group">
-                    <label>{t("redirections.metaDescription")}</label>
+                    <label>{t("metaDescription")}</label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => handleFormChange('description', e.target.value)}
-                      placeholder={t("redirections.metaDescriptionPlaceholder")}
+                      placeholder={t("metaDescriptionPlaceholder")}
                       className="form-input form-textarea"
                       rows={3}
                     />
@@ -390,11 +457,11 @@ export function RedirectionTab({ domain }: Props) {
         <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
           <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{t("redirections.confirmDeleteTitle")}</h3>
+              <h3>{t("confirmDeleteTitle")}</h3>
               <button className="btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
             </div>
             <div className="modal-body">
-              <p>{t("redirections.confirmDeleteMessage")}</p>
+              <p>{t("confirmDeleteMessage")}</p>
               <div className="delete-preview">
                 <strong>{deleteConfirm.subDomain || "@"}.{domain}</strong> → {deleteConfirm.target}
               </div>

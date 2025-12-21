@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { apiClient } from "../../../../services/api";
+import { domainsService } from "../../../../services/web-cloud.domains";
 
 // ============ TYPES ============
 
@@ -12,9 +12,11 @@ interface Task {
   id: number;
   function: string;
   status: "cancelled" | "doing" | "done" | "error" | "init" | "todo";
-  startDate: string;
-  doneDate: string | null;
-  source: "domain" | "dns";
+  comment?: string;
+  creationDate?: string;
+  doneDate?: string;
+  lastUpdate?: string;
+  source: "domain" | "zone";
 }
 
 interface Props {
@@ -31,48 +33,77 @@ const RefreshIcon = () => (
   </svg>
 );
 
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+
+const AlertIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+);
+
+const LoaderIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="spin">
+    <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+  </svg>
+);
+
 // ============ COMPOSANT PRINCIPAL ============
 
-/** Onglet listant les tâches en cours sur le domaine et la zone DNS. */
 export function TasksTab({ name, hasDomain, hasZone }: Props) {
-  const { t } = useTranslation("web-cloud/domains/index");
+  const { t } = useTranslation("web-cloud/domains/tasks");
 
-  // ---------- STATE ----------
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  // ---------- LOAD TASKS ----------
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
       const results: Task[] = [];
 
+      // Charger tâches domaine via /domain/{name}/task
       if (hasDomain) {
         try {
-          const domainTaskIds = await apiClient.get<number[]>(`/me/task/domain?domain=${name}`);
-          for (const id of domainTaskIds.slice(0, 20)) {
+          const taskIds = await domainsService.listDomainTasks(name);
+          for (const id of taskIds.slice(0, 20)) {
             try {
-              const task = await apiClient.get<any>(`/me/task/domain/${id}`);
+              const task = await domainsService.getDomainTask(name, id);
               results.push({ ...task, source: "domain" as const });
             } catch {}
           }
         } catch {}
       }
 
+      // Charger tâches zone via /domain/zone/{name}/task
       if (hasZone) {
         try {
-          const dnsTaskIds = await apiClient.get<number[]>(`/me/task/dns?domain=${name}`);
-          for (const id of dnsTaskIds.slice(0, 20)) {
+          const zoneTaskIds = await domainsService.listZoneTasks(name);
+          for (const id of zoneTaskIds.slice(0, 20)) {
             try {
-              const task = await apiClient.get<any>(`/me/task/dns/${id}`);
-              results.push({ ...task, source: "dns" as const });
+              const task = await domainsService.getZoneTask(name, id);
+              results.push({ ...task, source: "zone" as const });
             } catch {}
           }
         } catch {}
       }
 
-      results.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      // Tri par date
+      results.sort((a, b) => {
+        const dateA = a.lastUpdate || a.creationDate || "";
+        const dateB = b.lastUpdate || b.creationDate || "";
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      });
+
       setTasks(results);
     } catch {
       setTasks([]);
@@ -85,130 +116,115 @@ export function TasksTab({ name, hasDomain, hasZone }: Props) {
     loadTasks();
   }, [loadTasks]);
 
-  // ---------- TASK ACTIONS ----------
-  const handleAccelerate = async (taskId: number, source: "domain" | "dns") => {
-    if (!confirm(t("tasks.confirmAccelerate"))) return;
-    try {
-      await apiClient.post(`/me/task/${source}/${taskId}/accelerate`, {});
-      loadTasks();
-    } catch (err) {
-      alert(String(err));
+  const filteredTasks = statusFilter === "all" 
+    ? tasks 
+    : tasks.filter((t) => {
+        if (statusFilter === "pending") return t.status === "todo" || t.status === "init";
+        if (statusFilter === "doing") return t.status === "doing";
+        if (statusFilter === "done") return t.status === "done";
+        if (statusFilter === "error") return t.status === "error" || t.status === "cancelled";
+        return true;
+      });
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "done": return <CheckIcon />;
+      case "doing": return <LoaderIcon />;
+      case "error":
+      case "cancelled": return <AlertIcon />;
+      default: return <ClockIcon />;
     }
   };
 
-  const handleCancel = async (taskId: number, source: "domain" | "dns") => {
-    if (!confirm(t("tasks.confirmCancel"))) return;
-    try {
-      await apiClient.post(`/me/task/${source}/${taskId}/cancel`, {});
-      loadTasks();
-    } catch (err) {
-      alert(String(err));
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "done": return "status-done";
+      case "doing": return "status-doing";
+      case "error":
+      case "cancelled": return "status-error";
+      default: return "status-pending";
     }
   };
 
-  const handleRelaunch = async (taskId: number, source: "domain" | "dns") => {
-    if (!confirm(t("tasks.confirmRelaunch"))) return;
-    try {
-      await apiClient.post(`/me/task/${source}/${taskId}/relaunch`, {});
-      loadTasks();
-    } catch (err) {
-      alert(String(err));
-    }
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
-  // ---------- FILTERED TASKS ----------
-  const filteredTasks = statusFilter === "all" ? tasks : tasks.filter((t) => t.status === statusFilter);
-
-  // ---------- HELPERS ----------
-  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-
-  const getStatusBadge = (status: string) => {
-    const map: Record<string, { class: string; label: string }> = {
-      todo: { class: "info", label: t("tasks.status_todo") },
-      init: { class: "info", label: t("tasks.status_todo") },
-      doing: { class: "warning", label: t("tasks.status_doing") },
-      done: { class: "success", label: t("tasks.status_done") },
-      error: { class: "error", label: t("tasks.status_error") },
-      cancelled: { class: "muted", label: t("tasks.status_cancelled") },
-    };
-    const s = map[status] || { class: "muted", label: status };
-    return <span className={`badge ${s.class}`}>{s.label}</span>;
-  };
-
-  // ---------- RENDER LOADING ----------
   if (loading) {
     return (
       <div className="tab-loading">
-        <div className="skeleton-block" style={{ height: "40px" }} />
-        <div className="skeleton-block" style={{ height: "200px" }} />
+        <div className="skeleton-block" />
+        <div className="skeleton-block" />
       </div>
     );
   }
 
-  // ---------- RENDER ----------
   return (
     <div className="tasks-tab">
       <div className="tab-header">
         <div>
-          <h3>{t("tasks.title")}</h3>
-          <p className="tab-description">{t("tasks.description")}</p>
+          <h3>{t("title")}</h3>
+          <p className="tab-description">{t("description")}</p>
         </div>
         <div className="tab-header-actions">
-          <button className="btn-secondary" onClick={loadTasks}><RefreshIcon /> {t("tasks.refresh")}</button>
+          <button className="btn-secondary" onClick={loadTasks}>
+            <RefreshIcon /> {t("refresh")}
+          </button>
         </div>
       </div>
 
-      <div className="filters-row">
-        <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="all">{t("tasks.allStatus")}</option>
-          <option value="todo">{t("tasks.todo")}</option>
-          <option value="doing">{t("tasks.doing")}</option>
-          <option value="done">{t("tasks.statusDone")}</option>
-          <option value="error">{t("tasks.error")}</option>
-        </select>
-        <span className="records-count">{filteredTasks.length} {t("tasks.count")}</span>
+      <div className="tasks-filters">
+        <div className="filter-buttons">
+          <button className={`filter-btn ${statusFilter === "all" ? "active" : ""}`} onClick={() => setStatusFilter("all")}>
+            {t("filters.all")}
+          </button>
+          <button className={`filter-btn ${statusFilter === "pending" ? "active" : ""}`} onClick={() => setStatusFilter("pending")}>
+            {t("filters.pending")}
+          </button>
+          <button className={`filter-btn ${statusFilter === "doing" ? "active" : ""}`} onClick={() => setStatusFilter("doing")}>
+            {t("filters.doing")}
+          </button>
+          <button className={`filter-btn ${statusFilter === "done" ? "active" : ""}`} onClick={() => setStatusFilter("done")}>
+            {t("filters.done")}
+          </button>
+          <button className={`filter-btn ${statusFilter === "error" ? "active" : ""}`} onClick={() => setStatusFilter("error")}>
+            {t("filters.error")}
+          </button>
+        </div>
+        <span className="tasks-count">{filteredTasks.length} {t("taskCount")}</span>
       </div>
 
       {filteredTasks.length === 0 ? (
         <div className="empty-state">
-          <p>{t("tasks.empty")}</p>
+          <CheckIcon />
+          <h3>{t("empty")}</h3>
+          <p className="hint">{t("emptyHint")}</p>
         </div>
       ) : (
-        <div className="table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t("tasks.source")}</th>
-                <th>{t("tasks.function")}</th>
-                <th>{t("tasks.status")}</th>
-                <th>{t("tasks.created")}</th>
-                <th>{t("tasks.done")}</th>
-                <th>{t("tasks.actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTasks.map((task) => (
-                <tr key={`${task.source}-${task.id}`}>
-                  <td><span className={`badge ${task.source === "domain" ? "info" : "primary"}`}>{task.source}</span></td>
-                  <td>{task.function}</td>
-                  <td>{getStatusBadge(task.status)}</td>
-                  <td>{formatDate(task.startDate)}</td>
-                  <td>{task.doneDate ? formatDate(task.doneDate) : "-"}</td>
-                  <td className="task-actions-cell">
-                    {(task.status === "todo" || task.status === "doing") && (
-                      <>
-                        <button className="btn-icon" title={t("tasks.accelerate")} onClick={() => handleAccelerate(task.id, task.source)}>⚡</button>
-                        <button className="btn-icon" title={t("tasks.cancel")} onClick={() => handleCancel(task.id, task.source)}>✕</button>
-                      </>
-                    )}
-                    {task.status === "error" && (
-                      <button className="btn-icon" title={t("tasks.relaunch")} onClick={() => handleRelaunch(task.id, task.source)}>🔄</button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="tasks-list">
+          {filteredTasks.map((task) => (
+            <div key={`${task.source}-${task.id}`} className={`task-card ${getStatusClass(task.status)}`}>
+              <div className="task-icon">{getStatusIcon(task.status)}</div>
+              <div className="task-content">
+                <div className="task-function">{task.function}</div>
+                {task.comment && <div className="task-comment">{task.comment}</div>}
+                <div className="task-meta">
+                  <span className="task-source">{task.source === "domain" ? "Domaine" : "Zone DNS"}</span>
+                  <span className="task-date">{formatDate(task.lastUpdate || task.creationDate)}</span>
+                </div>
+              </div>
+              <div className={`task-status ${getStatusClass(task.status)}`}>
+                {t(`status.${task.status}`)}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
