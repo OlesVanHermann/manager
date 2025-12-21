@@ -1,0 +1,213 @@
+# PROMPT RÉSUMÉ - Génération de Cahier des Charges depuis Old Manager
+
+## Emplacement du fichier
+
+| Élément | Valeur |
+|---------|--------|
+| **Fichier** | `prompt_resume.txt` |
+| **Répertoire local** | `/home/ubuntu/` |
+| **Chemin complet** | `/home/ubuntu/prompt_resume.txt` |
+| **Destination cahiers des charges** | `/home/ubuntu/old_manager/` |
+
+---
+
+## Objectif
+
+Analyser un tar extrait de l'old_manager OVHcloud et produire un **cahier des charges complet** permettant de recoder la fonctionnalité dans le new_manager **sans jamais rouvrir le code source original**.
+
+---
+
+## Méthodologie d'analyse
+
+### 1) FRONTEND
+
+**Look & Feel :**
+- Layout général (grilles, colonnes, espacements)
+- Hiérarchie visuelle (titres, sections, cartes)
+- États visuels (loading, error, empty, success)
+
+**UX :**
+- Parcours utilisateur (navigation entre pages)
+- Flux modaux (ouverture, étapes, fermeture)
+- Feedback utilisateur (notifications, messages, spinners)
+
+**Design System :**
+- Composants ODS utilisés (@ovhcloud/ods-react)
+- Composants manager-react-components utilisés
+- Classes Tailwind récurrentes
+- Tokens CSS (couleurs, espacements)
+
+**Ergonomie :**
+- Actions disponibles par contexte (menus, boutons)
+- Tri, filtres, recherche, pagination
+- Responsive / breakpoints
+
+---
+
+### 2) BACKEND (APIs)
+
+**Endpoints utilisés :**
+- Liste exhaustive des routes API (GET, POST, PUT, DELETE)
+- Version API (v6, v2, 2API, Engine)
+- Paramètres requis et optionnels
+
+**Séquencement :**
+- Ordre des appels (séquentiel vs parallèle)
+- Dépendances entre appels (ex: récupérer serviceId avant update)
+- Batch / Promise.all patterns
+
+**Types de données :**
+- Interfaces TypeScript (request/response)
+- Enums et constantes métier
+- Structures imbriquées
+
+---
+
+### 3) FRONTEND ↔ BACKEND
+
+**Hooks de données :**
+- useQuery / useQueries (lecture)
+- useMutation (écriture)
+- Cache keys et invalidation
+
+**Déclencheurs :**
+- Au montage (useEffect, queryFn)
+- Sur action utilisateur (onClick, onSubmit)
+- Sur navigation (route params)
+
+**Gestion d'états :**
+- Loading states
+- Error handling (401 → redirect auth, autres → affichage)
+- Optimistic updates
+
+---
+
+## Structure du Cahier des Charges (7 sections)
+
+| # | Section | Contenu |
+|---|---------|---------|
+| 1 | **RÉSUMÉ EXÉCUTIF** | Périmètre, objectif fonctionnel, users cibles |
+| 2 | **ARCHITECTURE** | Arborescence fichiers, patterns, dépendances |
+| 3 | **PAGES & NAVIGATION** | Routes, params, breadcrumb, flux |
+| 4 | **COMPOSANTS UI** | Liste avec props, comportement, ODS mapping |
+| 5 | **APIs & DONNÉES** | Endpoints, séquences, types complets |
+| 6 | **TRADUCTIONS** | Clés i18n avec valeurs FR (et EN si dispo) |
+| 7 | **RÈGLES MÉTIER** | Validations, conditions, états, permissions |
+
+---
+
+## Format de sortie
+
+**Nom du fichier :** Identique au tar, extension `.txt`
+```
+old_manager_<module>.tar  →  old_manager_<module>.txt
+```
+
+**Destination :**
+```
+/home/ubuntu/old_manager/
+```
+
+---
+
+## Génération et modification de fichiers
+
+### Choix de méthode
+
+| Situation | Méthode |
+|-----------|---------|
+| Nouveau fichier | `cp+tee` |
+| Fichier existant, petite modif | `super-patch` |
+| Fichier existant, gros changements | `cp+tee` (réécriture complète) |
+
+---
+
+### Créer un nouveau fichier avec cp+tee
+```bash
+mkdir -p /home/ubuntu/old_manager
+cp /home/ubuntu/old_manager/<nom>.txt /home/ubuntu/old_manager/<nom>.txt.$(date +%Y%m%dT%H%M%S) 2>/dev/null
+tee /home/ubuntu/old_manager/<nom>.txt > /dev/null <<'DELIM'
+# Contenu COMPLET du cahier des charges
+# JAMAIS de "... comme avant"
+# JAMAIS de sections tronquées
+DELIM
+```
+
+**Rappels anti-casse cp+tee :**
+- Délimiteur final (`DELIM`, `EOF`, etc.) en début de ligne, colonne 0, sans espace
+- Pas de guillemets "intelligents" - utiliser `'DELIM'` avec apostrophes simples ASCII
+- Pas d'indentation avant `tee ... <<'DELIM'` ni avant le délimiteur final
+- Si le fichier n'existe pas, tee le crée ; s'il existe, il est écrasé
+- Si le contenu contient le même délimiteur, utiliser un délimiteur unique (ex: `CDC_EOF`, `MODULE_END`)
+
+---
+
+### Modifier un fichier existant avec super-patch
+```bash
+super-patch <<'PATCH_EOF'
+--- /home/ubuntu/old_manager/<nom>.txt
++++ /home/ubuntu/old_manager/<nom>.txt
+@@
+ ligne de contexte avant (sans +/-)
+-ancienne ligne à supprimer
++nouvelle ligne à ajouter
+ ligne de contexte après (sans +/-)
+PATCH_EOF
+```
+
+**Rappels anti-casse super-patch :**
+- Délimiteur final colonne 0, sans espace
+- TOUJOURS au moins une ligne de contexte (sans `-/+`) avant ET après chaque bloc `@@`
+- Utiliser des chemins absolus
+- Le contexte doit correspondre EXACTEMENT au fichier existant
+
+**Exemple MAUVAIS (pas de contexte) :**
+```
+@@
+-old
++new
+```
+
+**Exemple BON (avec contexte) :**
+```
+@@
+ ## Section existante
+-ancienne valeur
++nouvelle valeur
+```
+
+---
+
+## Critères de qualité
+
+Le cahier des charges est **complet** si un développeur peut :
+- [ ] Recréer toutes les pages sans voir l'original
+- [ ] Implémenter tous les appels API correctement
+- [ ] Reproduire le comportement UX identique
+- [ ] Utiliser les bons composants ODS
+- [ ] Appliquer les traductions exactes
+- [ ] Comprendre le séquencement des appels API
+- [ ] Gérer tous les états (loading, error, empty, success)
+
+---
+
+## Workflow
+
+1. **RECEVOIR** le tar uploadé
+2. **EXTRAIRE** dans /tmp pour analyse
+3. **IDENTIFIER** : pages, composants, hooks, APIs, types, traductions
+4. **ANALYSER** : séquencement, dépendances, règles métier
+5. **RÉDIGER** le cahier des charges (7 sections)
+6. **PROPOSER** la structure au user pour validation
+7. **ATTENDRE** confirmation avant génération
+8. **GÉNÉRER** avec cp+tee après GO explicite
+
+---
+
+## Règles absolues
+
+- **NE JAMAIS** générer de code sans validation préalable
+- **NE JAMAIS** tronquer le contenu avec "..." ou "comme avant"
+- **TOUJOURS** utiliser des chemins absolus
+- **TOUJOURS** proposer avant de pousser
+- **TOUJOURS** vérifier les délimiteurs pour éviter les conflits

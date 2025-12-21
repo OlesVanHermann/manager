@@ -1,254 +1,388 @@
 # Objectif
 Générer 2 scripts bash pour créer des archives tar granulaires des managers (new et old), permettant d'uploader uniquement les fichiers nécessaires au travail du jour.
 
+# Emplacement de ce prompt
+Ce fichier se trouve en local : /home/ubuntu/prompt_tar.txt
+
 # RÈGLES ABSOLUES (LIRE EN PREMIER)
 
 ## Règle 1 : Extraction stricte - JAMAIS inventer
-**INTERDIT d'inventer ou déduire des chemins.**
+INTERDIT d'inventer ou déduire des chemins.
 - Chaque chemin DOIT être extrait VERBATIM des listes fournies
-- Si un fichier/dossier attendu n'existe pas dans la liste → NE PAS l'inclure
-- En cas de doute → grep la liste pour vérifier
-
-**INTERDIT :**
-```bash
-# J'imagine que ce fichier existe basé sur une convention
-./src/pages/bare-metal/dedicated/tabs/StorageTab.tsx  # ✗ INVENTÉ
-```
-
-**CORRECT :**
-```bash
-# J'ai vérifié dans new_manager_files.txt : ligne 847
-./src/pages/bare-metal/dedicated/tabs/NetworkTab.tsx  # ✓ EXISTE
-```
+- Si un fichier/dossier attendu n'existe pas dans la liste -> NE PAS l'inclure
+- En cas de doute -> grep la liste pour vérifier
 
 ## Règle 2 : Dossiers plutôt que fichiers individuels
-**Utiliser des DOSSIERS entiers** pour éviter les erreurs de noms.
-
-**MAUVAIS (fragile) :**
-```bash
-tar -cf archive.tar \
-  ./src/pages/home/billing/tabs/PaymentsTab.tsx \
-  ./src/pages/home/billing/tabs/OrdersTab.tsx \
-  ./src/pages/home/billing/tabs/ServicesTab.tsx
-```
-
-**BON (robuste) :**
-```bash
-tar -cf archive.tar \
-  ./src/pages/home/billing
-```
-
-**Exception** : Fichiers core isolés (index.tsx, styles.css à la racine d'un NAV1)
+Utiliser des DOSSIERS entiers pour éviter les erreurs de noms.
+Exception : Fichiers core isolés (index.tsx, styles.css à la racine d'un NAV1)
 
 ## Règle 3 : Validation avant génération
-**AVANT de générer les scripts**, pour chaque tar :
+AVANT de générer les scripts, pour chaque tar :
 1. Lister les dossiers/fichiers à inclure
 2. Vérifier que chaque chemin existe dans la liste fournie
 3. Signaler les chemins introuvables
 
+## Règle 4 : Couverture complète - AUCUN fichier oublié
+STRICTEMENT TOUS LES FICHIERS doivent se retrouver dans au moins un tar.
+
+Format du rapport de couverture (OBLIGATOIRE à la fin de l'analyse) :
+=== RAPPORT DE COUVERTURE ===
+Répertoires couverts : [liste]
+Répertoires NON couverts : [liste ou "aucun"]
+Fichiers orphelins : [liste ou "aucun"]
+Action proposée : [tar à créer/modifier pour combler les manques]
+
+## Règle 5 : Mapping 1:1 STRICT new -> old
+UN tar new_manager = UN tar old_manager correspondant. JAMAIS d'options, JAMAIS de partage.
+
+### Principe fondamental
+Le mapping se fait par FONCTION (ce que fait le code), PAS par structure de fichiers.
+
+### Processus de mapping OBLIGATOIRE
+Pour chaque NAV2 de new_manager :
+1. Identifier la FONCTION (pas la structure de fichiers)
+2. Chercher dans old_manager les chemins qui remplissent CETTE FONCTION
+3. GREP pour vérifier l'existence EXACTE de chaque chemin
+4. Si le chemin n'existe pas -> tar vide, signaler dans le rapport
+5. NE JAMAIS proposer d'alternatives ou d'options
+
+### Erreurs INTERDITES
+- Proposer "Option A / Option B" pour un mapping
+- Dire qu'un répertoire est "partagé" entre plusieurs tars
+- Inclure un chemin old_manager dans plusieurs tars NAV2 différents (sauf si justifié fonctionnellement)
+- Inventer un chemin sans l'avoir vérifié par grep
+- Sur-compliquer un mapping simple
+
+### Vérification par grep OBLIGATOIRE
+Avant d'inclure un chemin dans un tar old_manager :
+```bash
+grep -E "^\./{chemin_exact}($|/)" old_manager_files.txt
+```
+Si le résultat est vide -> NE PAS inclure, signaler comme absent.
+
+### Format du rapport de mapping (OBLIGATOIRE)
+| NAV2 new | Chemin new | Chemin old proposé | grep vérifié ? | Existe ? |
+|----------|------------|-------------------|----------------|----------|
+
+### Gestion des chemins absents
+Si un chemin old_manager n'existe pas :
+- Créer quand même le tar (peut être vide ou avec ce qui existe)
+- Signaler dans le rapport : "⚠️ ABSENT dans old_manager"
+- NE PAS chercher d'alternative, NE PAS proposer d'option
+
 # Entrées
-- Liste de fichiers `new_manager` (fichier joint)
-- Liste de fichiers `old_manager` (fichier joint)
+- Liste de fichiers new_manager (fichier joint)
+- Liste de fichiers old_manager (fichier joint)
 
 # Chemins réels
-- `new_manager` = `/home/ubuntu/aiapp/frontend` (React/Vite)
-- `old_manager` = `/home/ubuntu/manager/` (Angular monorepo avec packages/)
+- new_manager = /home/ubuntu/aiapp/frontend (React/Vite)
+- old_manager = /home/ubuntu/manager/ (Angular monorepo avec packages/)
 
 # Nommage des tars (CRITIQUE)
-Format OBLIGATOIRE : `{prefix}.{domaine}.tar`
-- Séparateur entre prefix et domaine : `.` (POINT, pas underscore)
-- Séparateur entre NAV1 et NAV2 : `.` (POINT)
-- JAMAIS de `_` (underscore) après le prefix
+Format OBLIGATOIRE : {prefix}.{domaine}.tar
+- Séparateur entre prefix et domaine : . (POINT, pas underscore)
+- Séparateur entre NAV1 et NAV2 : . (POINT)
+- JAMAIS de _ (underscore) après le prefix
 
-**Exemples de noms CORRECTS :**
-- `new_manager.core.tar` ✓
-- `new_manager.home.core.tar` ✓
-- `new_manager.home.billing.tar` ✓
-- `new_manager.public-cloud.kubernetes.tar` ✓
-- `new_manager.all.tar` ✓
-- `old_manager.home.billing.tar` ✓
-
-**Exemples de noms INCORRECTS (INTERDIT) :**
-- `new_manager_core.tar` ✗
-- `new_manager_home.billing.tar` ✗
-- `new_manager_home.account.tar` ✗
-
-**Exemples de commandes tar CORRECTES :**
-```bash
-tar -cf /home/ubuntu/new_manager.home.billing.tar ./src/pages/home/billing
-tar -cf /home/ubuntu/new_manager.home.account.tar ./src/pages/home/account
-tar -cf /home/ubuntu/old_manager.home.billing.tar ./packages/manager/modules/billing
-```
-
-**Exemples de commandes tar INCORRECTES (INTERDIT) :**
-```bash
-tar -cf /home/ubuntu/new_manager_home.billing.tar ...  # ✗ underscore
-tar -cvf /home/ubuntu/new_manager_home.account.tar ... # ✗ underscore + verbose
-```
+Exemples CORRECTS : new_manager.core.tar, new_manager.home.billing.tar
+Exemples INCORRECTS : new_manager_core.tar, new_manager_home.billing.tar
 
 # Structure des tars
 
 ## Niveaux de granularité
-1. `{prefix}.core.tar` : Config globale + design-system + lib + services de base
-2. `{prefix}.{NAV1}.core.tar` : Structure de base du domaine NAV1 (index, styles, shared, components directs)
-3. `{prefix}.{NAV1}.{NAV2}.tar` : Sous-domaine complet (PRIORITAIRE pour le travail quotidien)
-4. `{prefix}.all.tar` : Tous les fichiers (refactoring global)
+1. {prefix}.core.tar : Config globale + design-system + lib + services + components + contexts + types + hooks + i18n + styles + scripts
+2. {prefix}.locales.tar : Toutes les traductions (public/locales/)
+3. {prefix}.{NAV1}.core.tar : Structure de base du domaine NAV1 (index, styles, shared, components directs)
+4. {prefix}.{NAV1}.{NAV2}.tar : Sous-domaine complet - UN TAR PAR NAV2 (même XS ou S)
+5. {prefix}.all.tar : Tous les fichiers (refactoring global)
+
+## Découverte dynamique des NAV1/NAV2
+Le LLM DOIT analyser les listes de fichiers pour :
+1. Identifier tous les NAV1 dans src/pages/{NAV1}/
+2. Pour chaque NAV1, identifier tous les NAV2 dans src/pages/{NAV1}/{NAV2}/
+3. Créer UN tar par NAV2 découvert (peu importe la taille XS, S, M, L, XL)
+4. Créer un tar {NAV1}.core pour les fichiers directs du NAV1
 
 ## Contenu des tars NAV1.core
 Inclure les fichiers/dossiers DIRECTS du NAV1 (pas les sous-domaines NAV2) :
-```
-./src/pages/{NAV1}/index.tsx
-./src/pages/{NAV1}/routes.tsx (si existe)
-./src/pages/{NAV1}/styles.css (si existe)
-./src/pages/{NAV1}/utils.ts (si existe)
-./src/pages/{NAV1}/types.ts (si existe)
-./src/pages/{NAV1}/constants.ts (si existe)
-./src/pages/{NAV1}/shared/ (si existe)
-./src/pages/{NAV1}/shared.tsx (si existe)
-./src/pages/{NAV1}/components/ (si existe, PAS les sous-domaines)
-./src/pages/{NAV1}/hooks/ (si existe)
-```
+- ./src/pages/{NAV1}/index.tsx
+- ./src/pages/{NAV1}/styles.css (si existe)
+- ./src/pages/{NAV1}/utils.ts ou utils.tsx (si existe)
+- ./src/pages/{NAV1}/types.ts (si existe)
+- ./src/pages/{NAV1}/shared/ (si existe)
+- ./src/pages/{NAV1}/components/ (si existe)
+- ./src/pages/{NAV1}/hooks/ (si existe)
+- ./src/pages/{NAV1}/tabs/ (si existe)
+- ./src/pages/{NAV1}/useHomeData.ts (si existe)
 
-**NE PAS inclure** les sous-dossiers NAV2 (billing/, account/, hosting/, etc.)
-
-Exemple pour `new_manager.home.core.tar` :
-```
-src/pages/home/index.tsx
-src/pages/home/routes.tsx
-src/pages/home/shared.tsx
-src/pages/home/shared/ServiceListPage.tsx
-src/pages/home/shared/ServiceItem.tsx
-src/pages/home/hooks/useHomeServices.ts
-src/pages/home/types.ts
-```
+NE PAS inclure les sous-dossiers NAV2 (billing/, account/, etc.)
 
 ## Contenu des tars NAV2
-Inclure :
-- Le dossier NAV2 complet : `./src/pages/{NAV1}/{NAV2}/`
-- Le shared du parent : `./src/pages/{NAV1}/shared/` ou `./src/pages/{NAV1}/shared.tsx` (si existe)
-- Les services associés : `./src/services/{nav1}.{nav2}.ts` (si existe)
-- Les locales : `./public/locales/{en,fr}/{nav1}/{nav2}/` (si existe)
+Inclure uniquement le dossier NAV2 complet : ./src/pages/{NAV1}/{NAV2}/
+Le shared du parent est dans le tar NAV1.core.
 
-## Imports shared parent (CRITIQUE)
-**Les imports `../../shared` ou `../shared` référencent des composants partagés AU NIVEAU DU DOMAINE.**
+# Correspondance new <-> old (CRITIQUE)
+old_manager DOIT avoir un tar pour CHAQUE tar de new_manager.
 
-Exemple :
-```tsx
-// Dans src/pages/web-cloud/hosting/HostingList.page.tsx
-import { ServiceListPage, ServiceItem } from "../../shared";
+## Mapping par FONCTION (pas par nom)
+Le mapping se base sur ce que FAIT le code, pas sur comment il s'appelle.
+
+Exemple CORRECT :
+- new: `src/pages/web-cloud/alldom/` (gestion des packs alldom)
+- old: `packages/manager/apps/web-domains/src/alldoms/` (même fonction)
+
+Exemple INCORRECT :
+- Inclure `web-domains` entier dans alldom.tar (trop large)
+- Proposer plusieurs options de mapping (interdit)
+
+## Mappings de référence vérifiés
+
+### core (new_manager)
+```
+./vite.config.ts
+./package.json
+./index.html
+./tsconfig.json
+./tsconfig.node.json
+./tailwind.config.js
+./postcss.config.js
+./prompt_react.md
+./npm_install.sh
+./public/favicon.svg
+./scripts
+./src/components
+./src/contexts
+./src/design-system
+./src/hooks
+./src/i18n
+./src/lib
+./src/locales
+./src/services
+./src/styles
+./src/types
+./src/App.tsx
+./src/main.tsx
+./src/index.css
 ```
 
-Résolution :
-- `src/pages/web-cloud/shared.tsx`
-- Ou `src/pages/web-cloud/shared/index.tsx`
+### core (old_manager)
+```
+./packages/manager/core
+./packages/components
+./packages/manager/modules/advices
+./packages/manager/modules/at-internet-configuration
+./packages/manager/modules/banner
+./packages/manager/modules/beta-preference
+./packages/manager/modules/catalog-price
+./packages/manager/modules/cloud-styles
+./packages/manager/modules/cloud-universe-components
+./packages/manager/modules/common-api
+./packages/manager/modules/config
+./packages/manager/modules/cookie-policy
+./packages/manager/modules/core
+./packages/manager/modules/error-page
+./packages/manager/modules/filters
+./packages/manager/modules/gcj
+./packages/manager/modules/manager-components
+./packages/manager/modules/models
+./packages/manager/modules/ng-apiv2-helper
+./packages/manager/modules/ng-layout-helpers
+./packages/manager/modules/phone-prefix
+./packages/manager/modules/product-offers
+./packages/manager/modules/request-tagger
+./packages/manager/modules/resource-tagging
+./lerna.json
+./package.json
+./turbo.json
+./scripts
+./docs
+./jest
+./playwright-helpers
+```
 
-**RÈGLE : Chaque tar NAV2 DOIT inclure le shared du domaine parent.**
+### bare-metal
+| NAV2 | new_manager | old_manager |
+|------|-------------|-------------|
+| core | ./src/pages/bare-metal/index.tsx, ./src/pages/bare-metal/styles.css | ./packages/manager/modules/bm-server-components |
+| dedicated | ./src/pages/bare-metal/dedicated/ | ./packages/manager/apps/dedicated, ./packages/manager/apps/dedicated-servers |
+| housing | ./src/pages/bare-metal/housing/ | ./packages/manager/apps/dedicated |
+| nasha | ./src/pages/bare-metal/nasha/ | ./packages/manager/apps/nasha, ./packages/manager/modules/nasha |
+| netapp | ./src/pages/bare-metal/netapp/ | ./packages/manager/apps/netapp, ./packages/manager/modules/netapp |
+| vps | ./src/pages/bare-metal/vps/ | ./packages/manager/apps/vps, ./packages/manager/modules/vps |
 
-Quand on génère `new_manager.web-cloud.hosting.tar`, inclure aussi :
-- `src/pages/web-cloud/shared.tsx` (si existe)
-- `src/pages/web-cloud/shared/` (si existe)
+### home
+| NAV2 | new_manager | old_manager |
+|------|-------------|-------------|
+| core | ./src/pages/home/index.tsx, ./src/pages/home/styles.css, ./src/pages/home/useHomeData.ts, ./src/pages/home/utils.ts, ./src/pages/home/components/ | ./packages/manager/apps/hub, ./packages/manager/apps/catalog, ./packages/manager/apps/cda, ./packages/manager/modules/cda, ./packages/manager/apps/restricted |
+| account | ./src/pages/home/account/ | ./packages/manager/apps/account, ./packages/manager/modules/account, ./packages/manager/apps/procedures, ./packages/manager/modules/trusted-nic |
+| api | ./src/pages/home/api/ | ./packages/manager/apps/hub |
+| billing | ./src/pages/home/billing/ | ./packages/manager/apps/billing, ./packages/manager/modules/billing, ./packages/manager/modules/billing-components, ./packages/manager/modules/billing-informations, ./packages/manager/modules/new-billing, ./packages/manager/apps/order-tracking, ./packages/manager/modules/ng-ovh-order-tracking, ./packages/manager/modules/order |
+| carbon | ./src/pages/home/carbon/ | ./packages/manager/apps/carbon-calculator, ./packages/manager/modules/carbon-calculator |
+| support | ./src/pages/home/support/ | ./packages/manager/apps/support, ./packages/manager/modules/support, ./packages/manager/apps/communication |
 
-# Correspondance new ↔ old (CRITIQUE)
-**old_manager DOIT avoir un tar pour CHAQUE tar de new_manager.**
+### iam
+| NAV2 | new_manager | old_manager |
+|------|-------------|-------------|
+| core | ./src/pages/iam/index.tsx, ./src/pages/iam/styles.css, ./src/pages/iam/utils.tsx, ./src/pages/iam/tabs/, ./src/pages/iam/components/ | ./packages/manager/apps/iam, ./packages/manager/apps/identity-access-management, ./packages/manager/modules/iam |
+| dbaas-logs | ./src/pages/iam/dbaas-logs/ | ./packages/manager/apps/dbaas-logs, ./packages/manager/modules/dbaas-logs |
+| hsm | ./src/pages/iam/hsm/ | ⚠️ ABSENT dans old_manager |
+| logs | ./src/pages/iam/logs/ | ./packages/manager/modules/logs-to-customer, ./packages/manager/modules/log-to-customer |
+| metrics | ./src/pages/iam/metrics/ | ./packages/manager/apps/metrics, ./packages/manager/modules/metrics |
+| okms | ./src/pages/iam/okms/ | ./packages/manager/apps/okms |
+| secret | ./src/pages/iam/secret/ | ./packages/manager/apps/okms |
 
-Pour chaque NAV1/NAV2 de new_manager, identifier le(s) chemin(s) équivalent(s) dans old_manager :
-- `home.account` → `packages/manager/modules/account` + `packages/manager/apps/account`
-- `home.billing` → `packages/manager/modules/billing` + `packages/manager/apps/billing`
-- `public-cloud.kubernetes` → `packages/manager/apps/pci-kubernetes`
-- etc.
+### license
+| NAV2 | new_manager | old_manager |
+|------|-------------|-------------|
+| core | ./src/pages/license/index.tsx, ./src/pages/license/styles.css | ./packages/manager/apps/dedicated |
+| cloudlinux | ./src/pages/license/cloudlinux/ | ./packages/manager/apps/dedicated |
+| cpanel | ./src/pages/license/cpanel/ | ./packages/manager/apps/dedicated |
+| directadmin | ./src/pages/license/directadmin/ | ./packages/manager/apps/dedicated |
+| plesk | ./src/pages/license/plesk/ | ./packages/manager/apps/dedicated |
+| sqlserver | ./src/pages/license/sqlserver/ | ./packages/manager/apps/dedicated |
+| virtuozzo | ./src/pages/license/virtuozzo/ | ./packages/manager/apps/dedicated |
+| windows | ./src/pages/license/windows/ | ./packages/manager/apps/dedicated |
 
-Exemple de paires attendues :
-- `new_manager.core.tar` ↔ `old_manager.core.tar`
-- `new_manager.home.core.tar` ↔ `old_manager.home.core.tar`
-- `new_manager.home.billing.tar` ↔ `old_manager.home.billing.tar`
-- `new_manager.all.tar` ↔ `old_manager.all.tar`
+### network
+| NAV2 | new_manager | old_manager |
+|------|-------------|-------------|
+| core | ./src/pages/network/index.tsx, ./src/pages/network/styles.css | ./packages/manager/modules/network-common |
+| cdn | ./src/pages/network/cdn/ | ./packages/manager/apps/dedicated |
+| cloud-connect | ./src/pages/network/cloud-connect/ | ./packages/manager/apps/cloud-connect, ./packages/manager/modules/cloud-connect |
+| ip | ./src/pages/network/ip/ | ./packages/manager/apps/ips |
+| load-balancer | ./src/pages/network/load-balancer/ | ./packages/manager/apps/iplb, ./packages/manager/modules/iplb |
+| security | ./src/pages/network/security/ | ./packages/manager/apps/dedicated |
+| vrack | ./src/pages/network/vrack/ | ./packages/manager/apps/vrack, ./packages/manager/modules/vrack |
+| vrack-services | ./src/pages/network/vrack-services/ | ./packages/manager/apps/vrack-services |
 
-Si un NAV1/NAV2 existe dans new mais pas dans old :
-- Signaler dans l'analyse
-- Créer quand même le tar (avec ce qui existe, ou vide)
+### private-cloud
+| NAV2 | new_manager | old_manager |
+|------|-------------|-------------|
+| core | ./src/pages/private-cloud/index.tsx, ./src/pages/private-cloud/styles.css | ./packages/manager/apps/dedicated |
+| managed-baremetal | ./src/pages/private-cloud/managed-baremetal/ | ./packages/manager/apps/dedicated |
+| nutanix | ./src/pages/private-cloud/nutanix/ | ./packages/manager/apps/nutanix, ./packages/manager/modules/nutanix, ./packages/manager/apps/hycu |
+| sap | ./src/pages/private-cloud/sap/ | ./packages/manager/apps/sap-features-hub |
+| veeam | ./src/pages/private-cloud/veeam/ | ./packages/manager/apps/veeam-backup, ./packages/manager/apps/veeam-enterprise, ./packages/manager/modules/veeam-enterprise |
+| vmware | ./src/pages/private-cloud/vmware/ | ./packages/manager/apps/hpc-vmware-vsphere, ./packages/manager/apps/hpc-vmware-public-vcf-aas, ./packages/manager/modules/vcd-api |
+
+### public-cloud
+| NAV2 | new_manager | old_manager |
+|------|-------------|-------------|
+| core | ./src/pages/public-cloud/index.tsx, ./src/pages/public-cloud/styles.css | ./packages/manager/apps/public-cloud, ./packages/manager/apps/pci, ./packages/manager/modules/pci, ./packages/manager/modules/manager-pci-common, ./packages/manager/modules/pci-universe-components, ./packages/manager/apps/pci-billing, ./packages/manager/apps/pci-contacts, ./packages/manager/apps/pci-quota, ./packages/manager/apps/pci-ssh-keys, ./packages/manager/apps/pci-users, ./packages/manager/apps/pci-vouchers, ./packages/manager/apps/cloud-shell, ./packages/manager/apps/container |
+| ai | ./src/pages/public-cloud/ai/ | ./packages/manager/apps/pci-ai-tools, ./packages/manager/apps/pci-ai-endpoints |
+| block-storage | ./src/pages/public-cloud/block-storage/ | ./packages/manager/apps/pci-block-storage, ./packages/manager/apps/pci-volume-backup, ./packages/manager/apps/pci-volume-snapshot |
+| databases | ./src/pages/public-cloud/databases/ | ./packages/manager/apps/pci-databases-analytics |
+| instances | ./src/pages/public-cloud/instances/ | ./packages/manager/apps/pci-instances |
+| kubernetes | ./src/pages/public-cloud/kubernetes/ | ./packages/manager/apps/pci-kubernetes, ./packages/manager/apps/pci-rancher |
+| load-balancer | ./src/pages/public-cloud/load-balancer/ | ./packages/manager/apps/pci-load-balancer |
+| object-storage | ./src/pages/public-cloud/object-storage/ | ./packages/manager/apps/pci-object-storage, ./packages/manager/apps/pci-cold-archive |
+| project | ./src/pages/public-cloud/project/ | ./packages/manager/apps/pci, ./packages/manager/apps/public-cloud, ./packages/manager/apps/pci-private-network, ./packages/manager/apps/pci-public-ip, ./packages/manager/apps/pci-gateway, ./packages/manager/apps/pci-workflow, ./packages/manager/apps/pci-dataplatform, ./packages/manager/apps/pci-savings-plan |
+| registry | ./src/pages/public-cloud/registry/ | ./packages/manager/apps/pci-private-registry |
+
+### web-cloud
+| NAV2 | new_manager | old_manager |
+|------|-------------|-------------|
+| core | ./src/pages/web-cloud/index.tsx, ./src/pages/web-cloud/styles.css, ./src/pages/web-cloud/shared/ | ./packages/manager/apps/web, ./packages/manager/modules/web-universe-components |
+| access | ./src/pages/web-cloud/access/index.tsx | ./packages/manager/apps/telecom |
+| access.overthebox | ./src/pages/web-cloud/access/overthebox/ | ./packages/manager/apps/overthebox, ./packages/manager/modules/overthebox |
+| access.pack-xdsl | ./src/pages/web-cloud/access/pack-xdsl/ | ./packages/manager/apps/telecom |
+| alldom | ./src/pages/web-cloud/alldom/ | ./packages/manager/apps/web-domains/src/alldoms |
+| domains | ./src/pages/web-cloud/domains/ | ./packages/manager/apps/web/client/app/domain, ./packages/manager/apps/web/client/app/domains, ./packages/manager/apps/web/client/app/domain-operation, ./packages/manager/apps/web/client/app/dns-zone, ./packages/manager/apps/web-ongoing-operations |
+| emails | ./src/pages/web-cloud/emails/index.tsx | ./packages/manager/apps/web |
+| emails.email-domain | ./src/pages/web-cloud/emails/email-domain/ | ./packages/manager/apps/email-domain, ./packages/manager/modules/email-domain |
+| emails.email-pro | ./src/pages/web-cloud/emails/email-pro/ | ./packages/manager/apps/email-pro, ./packages/manager/modules/emailpro |
+| emails.exchange | ./src/pages/web-cloud/emails/exchange/ | ./packages/manager/apps/exchange, ./packages/manager/modules/exchange |
+| emails.office | ./src/pages/web-cloud/emails/office/ | ./packages/manager/apps/web-office |
+| emails.zimbra | ./src/pages/web-cloud/emails/zimbra/ | ./packages/manager/apps/zimbra |
+| hebergement | ./src/pages/web-cloud/hebergement/index.tsx | ./packages/manager/apps/web-hosting |
+| hebergement.hosting | ./src/pages/web-cloud/hebergement/hosting/ | ./packages/manager/apps/web-hosting, ./packages/manager/apps/web/client/app/hosting |
+| hebergement.private-database | ./src/pages/web-cloud/hebergement/private-database/ | ./packages/manager/apps/web/client/app/private-database |
+| telecom | ./src/pages/web-cloud/telecom/index.tsx | ./packages/manager/apps/telecom, ./packages/manager/apps/telecom-dashboard, ./packages/manager/modules/telecom-dashboard, ./packages/manager/modules/telecom-styles, ./packages/manager/modules/telecom-universe-components, ./packages/manager/modules/telecom-task, ./packages/manager/apps/telecom-task |
+| telecom.carrier-sip | ./src/pages/web-cloud/telecom/carrier-sip/ | ./packages/manager/apps/carrier-sip, ./packages/manager/modules/carrier-sip |
+| telecom.fax | ./src/pages/web-cloud/telecom/fax/ | ./packages/manager/apps/freefax, ./packages/manager/modules/freefax |
+| telecom.sms | ./src/pages/web-cloud/telecom/sms/ | ./packages/manager/apps/sms, ./packages/manager/modules/sms |
+| telecom.voip | ./src/pages/web-cloud/telecom/voip/ | ./packages/manager/apps/telecom |
+
+### Autres tars spéciaux
+| Tar | new_manager | old_manager |
+|-----|-------------|-------------|
+| locales | ./public/locales/ | ./packages/manager/modules/common-translations |
+| login | ./src/pages/Login.tsx, ./src/pages/Login.css | ./packages/manager/apps/sign-up, ./packages/manager/modules/sign-up, ./packages/manager/apps/account-creation, ./packages/manager/modules/mfa-enrollment |
+| placeholder | ./src/pages/_placeholder/ | (vide) |
 
 # Scripts à générer
 
-## Script 1 : `/home/ubuntu/new_generate_manager_tars.sh`
-- Travaille dans `/home/ubuntu/aiapp/frontend`
-- Supprime UNIQUEMENT `/home/ubuntu/new_manager.*.tar` (jamais old_manager)
-- Génère les tars `new_manager.*.tar`
+## Script 1 : /home/ubuntu/new_generate_manager_tars.sh
+- Travaille dans /home/ubuntu/aiapp/frontend
+- Supprime UNIQUEMENT /home/ubuntu/new_manager.*.tar (jamais old_manager)
+- Génère les tars new_manager.*.tar
 
-## Script 2 : `/home/ubuntu/old_generate_manager_tars.sh`
-- Travaille dans `/home/ubuntu/manager`
-- Supprime UNIQUEMENT `/home/ubuntu/old_manager.*.tar` (jamais new_manager)
-- Génère les tars `old_manager.*.tar`
+## Script 2 : /home/ubuntu/old_generate_manager_tars.sh
+- Travaille dans /home/ubuntu/manager
+- Supprime UNIQUEMENT /home/ubuntu/old_manager.*.tar (jamais new_manager)
+- Génère les tars old_manager.*.tar
 - DOIT créer un tar pour CHAQUE NAV1.core et NAV2 présent dans new_manager
 - DOIT inclure les exclusions (voir ci-dessous)
 
-**CRITIQUE - Isolation des rm :**
-- `new_generate_manager_tars.sh` : `rm -f /home/ubuntu/new_manager.*.tar`
-- `old_generate_manager_tars.sh` : `rm -f /home/ubuntu/old_manager.*.tar`
-- INTERDIT de faire `rm -f /home/ubuntu/*manager*.tar` ou similaire
+CRITIQUE - Isolation des rm :
+- new_generate_manager_tars.sh : rm -f /home/ubuntu/new_manager.*.tar
+- old_generate_manager_tars.sh : rm -f /home/ubuntu/old_manager.*.tar
+- INTERDIT de faire rm -f /home/ubuntu/*manager*.tar ou similaire
 
 # Options tar
-- Utiliser `tar -cf` (création simple)
-- NE PAS utiliser `-v` (verbose pollue la sortie)
-- NE PAS utiliser `2>/dev/null` (masque les erreurs)
+- Utiliser tar -cf (création simple)
+- NE PAS utiliser -v (verbose pollue la sortie)
+- NE PAS utiliser 2>/dev/null (masque les erreurs)
 
 # Exclusions OBLIGATOIRES pour old_manager
-Chaque commande tar dans `old_generate_manager_tars.sh` DOIT inclure ces exclusions :
-```bash
---exclude='node_modules' \
---exclude='.git' \
---exclude='dist' \
---exclude='coverage' \
---exclude='*.lock' \
---exclude='yarn.lock' \
---exclude='package-lock.json' \
---exclude='*.map' \
---exclude='.cache'
-```
+Chaque commande tar dans old_generate_manager_tars.sh DOIT inclure ces exclusions :
+--exclude='node_modules' --exclude='.git' --exclude='dist' --exclude='coverage' --exclude='*.lock' --exclude='yarn.lock' --exclude='package-lock.json' --exclude='*.map' --exclude='.cache'
 
 # Liste des INTERDIT
-
-- Wildcards `*.ts` dans tar (non interprétés)
-- Option `-v` dans tar (verbose inutile, pollue la sortie)
-- `2>/dev/null` qui masque les erreurs
-- Chemins `~/new_manager` ou `~/old_manager` (n'existent pas)
-- Utiliser `~` au lieu de `/home/ubuntu`
+- Wildcards *.ts dans tar (non interprétés)
+- Option -v dans tar
+- 2>/dev/null qui masque les erreurs
+- Chemins ~/new_manager ou ~/old_manager (n'existent pas)
+- Utiliser ~ au lieu de /home/ubuntu
 - Un script qui supprime les tars de l'autre manager
 - Oublier les exclusions dans old_manager
-- Créer des tars NAV1/NAV2 dans old qui n'existent pas dans new
-- Oublier d'inclure les fichiers shared du domaine dans les tars NAV2
+- Oublier d'inclure les fichiers shared du domaine dans les tars NAV1.core
 - Inclure les sous-dossiers NAV2 dans les tars NAV1.core
-- Utiliser underscore `_` après le prefix (DOIT être `.`)
-- Format `new_manager_xxx.tar` (INCORRECT, utiliser `new_manager.xxx.tar`)
+- Utiliser underscore _ après le prefix (DOIT être .)
 - Inventer des chemins non vérifiés dans les listes
+- Oublier des fichiers : chaque fichier DOIT être dans au moins 1 tar
+- Fusionner des NAV2 : chaque NAV2 a son propre tar
+- Proposer des "options" de mapping (Option A / Option B)
+- Dire qu'un répertoire est "partagé" entre tars
+- Sur-compliquer les mappings simples
 
 # Tâches
 
 ## 1. Analyse de structure
 Depuis les listes fournies :
-- Identifier les NAV1 présents dans new_manager (`src/pages/{NAV1}/`)
-- Identifier les NAV2 pour chaque NAV1 (`src/pages/{NAV1}/{NAV2}/`)
+- Identifier les NAV1 présents dans new_manager (src/pages/{NAV1}/)
+- Identifier les NAV2 pour chaque NAV1 (src/pages/{NAV1}/{NAV2}/)
 - Compter les fichiers par domaine
 - Classifier par taille : XS (<15), S (15-35), M (35-70), L (70-120), XL (>120)
 
-## 2. Mapping new → old
+## 2. Mapping new -> old avec GREP
 Pour chaque NAV1 et NAV2 de new_manager :
-- Identifier le(s) chemin(s) équivalent(s) dans old_manager
-- Vérifier leur existence dans la liste
-- Signaler les absences
+- Identifier le(s) chemin(s) équivalent(s) dans old_manager par FONCTION
+- EXÉCUTER grep pour vérifier l'existence EXACTE
+- Si absent -> signaler, créer tar vide
+- NE JAMAIS proposer d'alternatives
 
 ## 3. Validation des chemins (CRITIQUE)
 Pour chaque tar proposé :
 - Lister les chemins à inclure
 - Vérifier chaque chemin dans la liste fournie (grep)
-- Si un chemin n'existe pas → NE PAS l'inclure + signaler
+- Si un chemin n'existe pas -> NE PAS l'inclure + signaler
 
 ## 4. Tableau récapitulatif
-| Tar | Chemins new_manager | Chemins old_manager | Shared inclus | Vérifié |
-|-----|---------------------|---------------------|---------------|---------|
-| ... | ... | ... | oui/non | ✓/✗ |
+| Tar | Chemins new_manager | Chemins old_manager | Vérifié par grep |
 
 ## 5. Attendre confirmation
-**NE PAS générer les scripts avant mon "GO".**
+NE PAS générer les scripts avant mon "GO".
 
 ## 6. Générer les scripts
 Après le "GO" :
@@ -256,56 +390,239 @@ Après le "GO" :
 - Chaque script dans un bloc markdown séparé
 - Facile à copier-coller
 
+## 7. Vérification d'exhaustivité (OBLIGATOIRE après GO)
+Après génération des scripts, TOUJOURS exécuter le script de vérification Python.
+
 # Format de génération (cp+tee)
 
-**Pattern OBLIGATOIRE pour script 1 :**
+Pattern OBLIGATOIRE pour les scripts :
 ```
-cp /home/ubuntu/new_generate_manager_tars.sh /home/ubuntu/new_generate_manager_tars.sh.$(date +%Y%m%d%H%M%S) 2>/dev/null || true
-tee /home/ubuntu/new_generate_manager_tars.sh <<'FS'
+cp /home/ubuntu/{script}.sh /home/ubuntu/{script}.sh.$(date +%Y%m%d%H%M%S) 2>/dev/null || true
+tee /home/ubuntu/{script}.sh << 'ENDSCRIPT'
 #!/bin/bash
 set -e
 [contenu]
-FS
-chmod +x /home/ubuntu/new_generate_manager_tars.sh
+ENDSCRIPT
+chmod +x /home/ubuntu/{script}.sh
 ```
 
-**Pattern OBLIGATOIRE pour script 2 :**
-```
-cp /home/ubuntu/old_generate_manager_tars.sh /home/ubuntu/old_generate_manager_tars.sh.$(date +%Y%m%d%H%M%S) 2>/dev/null || true
-tee /home/ubuntu/old_generate_manager_tars.sh <<'FS'
-#!/bin/bash
-set -e
-[contenu]
-FS
-chmod +x /home/ubuntu/old_generate_manager_tars.sh
+Rappels anti-casse cp+tee :
+- ENDSCRIPT final en début de ligne, sans espace
+- Apostrophes simples 'ENDSCRIPT' (pas de guillemets intelligents)
+- Pas d'indentation avant tee ni avant ENDSCRIPT final
+- Toujours /home/ubuntu, jamais ~
+- Si le fichier généré contient lui-même un heredoc, utiliser un délimiteur DIFFÉRENT
+
+# Vérification d'exhaustivité
+
+## Principe
+Après génération des scripts tar, un script Python vérifie que 100% des fichiers sont couverts.
+
+## Script de vérification : /home/ubuntu/verify_tar_coverage.py
+```python
+#!/usr/bin/env python3
+"""
+verify_tar_coverage.py
+Vérifie que tous les fichiers sont couverts par au moins un tar.
+Usage: python3 verify_tar_coverage.py <files_list.txt> <generate_script.sh> [--excludes node_modules,dist,.git]
+"""
+
+import sys
+import re
+from pathlib import Path
+
+def parse_file_list(filepath):
+    """Lit la liste des fichiers et retourne un set de chemins."""
+    files = set()
+    with open(filepath, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and line != '.':
+                files.add(line)
+    return files
+
+def parse_tar_script(filepath):
+    """Extrait les chemins des commandes tar du script."""
+    tar_contents = {}
+    
+    with open(filepath, 'r') as f:
+        content = f.read()
+    
+    lines = content.replace('\\\n', ' ').split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        if line.startswith('tar -cf'):
+            match = re.search(r'tar -cf\s+(/[^\s]+\.tar)', line)
+            if match:
+                tar_path = match.group(1)
+                tar_name = Path(tar_path).name
+                
+                paths_part = re.sub(r'--exclude=\'[^\']+\'', '', line)
+                paths_part = re.sub(r'\$EXCLUDES', '', paths_part)
+                paths_part = re.sub(r'tar -cf\s+/[^\s]+\.tar', '', paths_part)
+                
+                paths = [p.strip() for p in paths_part.split() if p.strip().startswith('./')]
+                
+                tar_contents[tar_name] = paths
+    
+    return tar_contents
+
+def expand_directories(paths, all_files):
+    """Expand les dossiers en liste de fichiers contenus."""
+    covered = set()
+    for path in paths:
+        path = path.rstrip('/')
+        if path in all_files:
+            covered.add(path)
+        for f in all_files:
+            if f == path or f.startswith(path + '/'):
+                covered.add(f)
+    return covered
+
+def should_exclude(filepath, excludes):
+    """Vérifie si un fichier doit être exclu."""
+    for exc in excludes:
+        if exc in filepath:
+            return True
+    return False
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: python3 verify_tar_coverage.py <files_list.txt> <generate_script.sh> [--excludes node_modules,dist,.git]")
+        sys.exit(1)
+    
+    files_list = sys.argv[1]
+    script_path = sys.argv[2]
+    
+    excludes = ['node_modules', '.git', 'dist', 'coverage', '.cache', 'package-lock.json', 'yarn.lock']
+    
+    for i, arg in enumerate(sys.argv):
+        if arg == '--excludes' and i + 1 < len(sys.argv):
+            excludes = sys.argv[i + 1].split(',')
+    
+    print(f"=== Vérification de couverture ===")
+    print(f"Liste fichiers : {files_list}")
+    print(f"Script tar     : {script_path}")
+    print(f"Exclusions     : {excludes}")
+    print()
+    
+    all_files = parse_file_list(files_list)
+    print(f"Fichiers totaux dans la liste : {len(all_files)}")
+    
+    filtered_files = {f for f in all_files if not should_exclude(f, excludes)}
+    print(f"Fichiers après exclusions     : {len(filtered_files)}")
+    
+    only_files = {f for f in filtered_files if not any(
+        other.startswith(f + '/') for other in filtered_files if other != f
+    )}
+    print(f"Fichiers (feuilles uniquement): {len(only_files)}")
+    print()
+    
+    tar_contents = parse_tar_script(script_path)
+    print(f"Tars trouvés : {len(tar_contents)}")
+    for tar_name, paths in sorted(tar_contents.items()):
+        print(f"  - {tar_name}: {len(paths)} chemins")
+    print()
+    
+    all_covered = set()
+    coverage_by_tar = {}
+    
+    for tar_name, paths in tar_contents.items():
+        covered = expand_directories(paths, only_files)
+        coverage_by_tar[tar_name] = covered
+        all_covered.update(covered)
+    
+    orphans = only_files - all_covered
+    
+    print(f"=== RAPPORT DE COUVERTURE ===")
+    print(f"Fichiers couverts   : {len(all_covered)} / {len(only_files)}")
+    if only_files:
+        print(f"Couverture          : {100 * len(all_covered) / len(only_files):.1f}%")
+    print(f"Fichiers orphelins  : {len(orphans)}")
+    print()
+    
+    if orphans:
+        print("=== FICHIERS ORPHELINS (non couverts) ===")
+        for f in sorted(orphans)[:100]:
+            print(f"  {f}")
+        if len(orphans) > 100:
+            print(f"  ... et {len(orphans) - 100} autres")
+        print()
+        
+        print("=== SUGGESTION ===")
+        orphan_dirs = set()
+        for f in orphans:
+            parts = f.split('/')
+            if len(parts) >= 3:
+                orphan_dirs.add('/'.join(parts[:3]))
+        print("Dossiers racine des orphelins :")
+        for d in sorted(orphan_dirs):
+            count = sum(1 for f in orphans if f.startswith(d))
+            print(f"  {d} ({count} fichiers)")
+    else:
+        print("✅ COUVERTURE 100% - Aucun fichier orphelin")
+    
+    sys.exit(0 if not orphans else 1)
+
+if __name__ == '__main__':
+    main()
 ```
 
-**Rappels anti-casse cp+tee :**
-- `FS` final en début de ligne, sans espace
-- Apostrophes simples `'FS'` (pas de guillemets intelligents)
-- Pas d'indentation avant `tee ... <<'FS'` ni avant `FS`
-- Toujours `/home/ubuntu`, jamais `~`
+## Utilisation du script de vérification
+
+Après avoir généré les scripts tar, exécuter :
+```bash
+# Vérifier new_manager
+python3 /home/ubuntu/verify_tar_coverage.py \
+    /home/ubuntu/new_manager_files.txt \
+    /home/ubuntu/new_generate_manager_tars.sh
+
+# Vérifier old_manager
+python3 /home/ubuntu/verify_tar_coverage.py \
+    /home/ubuntu/old_manager_files.txt \
+    /home/ubuntu/old_generate_manager_tars.sh \
+    --excludes node_modules,.git,dist,coverage,.cache
+```
+
+## Critère de succès
+- Couverture 100% pour new_manager (aucun orphelin)
+- Couverture ~100% pour old_manager (orphelins acceptés si justifiés : .github, fichiers racine CI/CD)
+
+## En cas d'échec
+1. Analyser les fichiers orphelins listés
+2. Identifier le tar qui devrait les couvrir
+3. Modifier le script de génération
+4. Relancer la vérification
 
 # Sortie attendue
 
-1. **Tableau NAV1/NAV2** de new_manager avec comptage fichiers
-2. **Tableau mapping** new → old avec vérification existence
-3. **Liste des fichiers core** détectés par domaine NAV1
-4. **Liste des fichiers shared** détectés par domaine
-5. **Signalement** des chemins introuvables
-6. **Proposition** de stratégie
-7. **Attente du GO**
-8. (après GO) **Scripts** avec cp+tee, chacun dans un markdown séparé
+1. Tableau NAV1/NAV2 de new_manager avec comptage fichiers
+2. Tableau mapping new -> old avec vérification grep (OBLIGATOIRE)
+3. Liste des fichiers core détectés par domaine NAV1
+4. Liste des fichiers shared détectés par domaine
+5. Signalement des chemins introuvables
+6. RAPPORT DE COUVERTURE : répertoires/fichiers non couverts par aucun tar
+7. Proposition de stratégie
+8. Attente du GO
+9. (après GO) Scripts avec cp+tee, chacun dans un markdown séparé
+10. (après GO) Exécution du script de vérification Python
+11. (après GO) Confirmation couverture 100% ou liste des ajustements
 
 # Checklist finale avant scripts
 
 Avant de générer, vérifier :
-- [ ] Tous les chemins existent dans les listes fournies
-- [ ] Format des noms : `{prefix}.{domaine}.tar` avec POINT (pas underscore)
+- [ ] Tous les chemins existent dans les listes fournies (vérifiés par grep)
+- [ ] Format des noms : {prefix}.{domaine}.tar avec POINT (pas underscore)
 - [ ] Exclusions présentes pour old_manager
 - [ ] Utilisation de dossiers plutôt que fichiers individuels
-- [ ] Shared du domaine parent inclus dans les tars NAV2
+- [ ] Shared du domaine parent inclus dans les tars NAV1.core
 - [ ] Pas de wildcards dans tar
 - [ ] Pas d'option -v
 - [ ] Chemins absolus /home/ubuntu (pas ~)
 - [ ] Chaque script supprime UNIQUEMENT ses propres tars
+- [ ] COUVERTURE 100% : tous les fichiers sont dans au moins 1 tar
+- [ ] TOUS les NAV2 ont leur propre tar (même XS et S)
+- [ ] Mapping 1:1 strict (pas d'options, pas de partage)
+- [ ] Chaque chemin old_manager vérifié par grep avant inclusion
+- [ ] Script de vérification Python exécuté après génération
