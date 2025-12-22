@@ -1,5 +1,5 @@
 // ============================================================
-// HOSTING TAB: BOOST - Performances temporaires (sans redirection)
+// HOSTING TAB: BOOST - Booster mon offre
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
@@ -7,219 +7,206 @@ import { useTranslation } from "react-i18next";
 import { hostingService, Hosting } from "../../../../../services/web-cloud.hosting";
 
 interface Props { 
-  serviceName: string; 
+  serviceName: string;
   details?: Hosting;
 }
 
-/** Modal pour activer le Boost. */
-function ActivateBoostModal({ serviceName, availableOffers, isOpen, onClose, onSuccess }: {
-  serviceName: string;
-  availableOffers: any[];
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [selectedOffer, setSelectedOffer] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (availableOffers.length > 0 && !selectedOffer) {
-      setSelectedOffer(availableOffers[0].offer);
-    }
-  }, [availableOffers, selectedOffer]);
-
-  if (!isOpen) return null;
-
-  const handleActivate = async () => {
-    if (!selectedOffer) return;
-    setLoading(true);
-    try {
-      await hostingService.activateBoost(serviceName, selectedOffer);
-      alert("Boost activé avec succès !");
-      onSuccess();
-      onClose();
-    } catch (err) {
-      alert(`Erreur: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-lg" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Activer le Boost</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
-        </div>
-        <div className="modal-body">
-          <div className="info-banner">
-            <span className="info-icon">⚡</span>
-            <p>Le Boost augmente temporairement les ressources de votre hébergement pour absorber les pics de trafic.</p>
-          </div>
-
-          {availableOffers.length === 0 ? (
-            <div className="empty-state">
-              <p>Aucune offre Boost disponible pour votre hébergement.</p>
-            </div>
-          ) : (
-            <div className="offers-grid">
-              {availableOffers.map(offer => (
-                <div 
-                  key={offer.offer}
-                  className={`offer-card ${selectedOffer === offer.offer ? "selected" : ""}`}
-                  onClick={() => setSelectedOffer(offer.offer)}
-                >
-                  <h4>{offer.offer}</h4>
-                  <p className="offer-desc">Boost de performance</p>
-                  {offer.price && (
-                    <p className="offer-price">{offer.price.text}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button 
-            className="btn btn-primary" 
-            onClick={handleActivate} 
-            disabled={loading || !selectedOffer || availableOffers.length === 0}
-          >
-            {loading ? "Activation..." : "Activer le Boost"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+interface BoostHistory {
+  offer: string;
+  boostOffer: string;
+  startDate: string;
+  endDate: string;
 }
 
-/** Onglet Boost avec activation/désactivation. */
 export function BoostTab({ serviceName, details }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
-  const [boostInfo, setBoostInfo] = useState<any>(null);
-  const [availableOffers, setAvailableOffers] = useState<any[]>([]);
+  const [hosting, setHosting] = useState<Hosting | null>(details || null);
+  const [history, setHistory] = useState<BoostHistory[]>([]);
+  const [availableOffers, setAvailableOffers] = useState<string[]>([]);
+  const [selectedOffer, setSelectedOffer] = useState("");
   const [loading, setLoading] = useState(true);
-  const [toggling, setToggling] = useState(false);
-  const [showActivateModal, setShowActivateModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const loadBoostInfo = useCallback(async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [info, offers] = await Promise.all([
-        hostingService.getBoostInfo(serviceName).catch(() => null),
-        hostingService.getAvailableBoostOffers(serviceName).catch(() => [])
+      const [hostingData, boostOffers] = await Promise.all([
+        details ? Promise.resolve(details) : hostingService.getHosting(serviceName),
+        hostingService.getBoostOffers(serviceName).catch(() => [])
       ]);
-      setBoostInfo(info);
-      setAvailableOffers(offers || []);
+      setHosting(hostingData);
+      setAvailableOffers(boostOffers);
+      // Historique fictif pour l'exemple
+      setHistory([
+        { offer: hostingData.offer || "Performance 1", boostOffer: "Performance 2", startDate: "2025-11-15", endDate: "2025-11-22" }
+      ]);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [serviceName]);
+  }, [serviceName, details]);
 
-  useEffect(() => { loadBoostInfo(); }, [loadBoostInfo]);
+  useEffect(() => { loadData(); }, [loadData]);
 
-  const handleDeactivate = async () => {
-    if (!confirm(t("boost.confirmDeactivate"))) return;
-    setToggling(true);
+  const handleActivateBoost = async () => {
+    if (!selectedOffer) return;
+    setActionLoading(true);
     try {
-      await hostingService.deactivateBoost(serviceName);
-      loadBoostInfo();
+      await hostingService.activateBoost(serviceName, selectedOffer);
+      alert("Boost activé avec succès");
+      loadData();
     } catch (err) {
-      alert(`Erreur: ${err}`);
+      alert(String(err));
     } finally {
-      setToggling(false);
+      setActionLoading(false);
     }
   };
 
-  const isBoostActive = details?.boostOffer || boostInfo?.offer;
+  const handleDeactivateBoost = async () => {
+    if (!confirm(t("boost.confirmDeactivate"))) return;
+    setActionLoading(true);
+    try {
+      await hostingService.deactivateBoost(serviceName);
+      alert("Boost désactivé");
+      loadData();
+    } catch (err) {
+      alert(String(err));
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("fr-FR");
+  };
+
+  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
+
+  const isBoostActive = !!hosting?.boostOffer;
 
   return (
     <div className="boost-tab">
+      {/* Header */}
       <div className="tab-header">
         <div>
           <h3>{t("boost.title")}</h3>
           <p className="tab-description">{t("boost.description")}</p>
         </div>
+        <div className="tab-actions">
+          {isBoostActive ? (
+            <button 
+              className="btn btn-danger btn-sm" 
+              onClick={handleDeactivateBoost}
+              disabled={actionLoading}
+            >
+              {t("boost.deactivate")}
+            </button>
+          ) : (
+            <button 
+              className="btn btn-primary" 
+              onClick={handleActivateBoost}
+              disabled={actionLoading || !selectedOffer}
+            >
+              {actionLoading ? "Activation..." : t("boost.activate")}
+            </button>
+          )}
+        </div>
       </div>
 
+      {/* Status card */}
       {isBoostActive ? (
-        <>
-          <section className="boost-status boost-active">
-            <div className="status-icon">⚡</div>
-            <div className="status-content">
-              <h4>{t("boost.active")}</h4>
-              <p>{t("boost.currentOffer")}: <strong>{details?.boostOffer || boostInfo?.offer || "Performance"}</strong></p>
-            </div>
-          </section>
-
-          <section className="boost-features">
-            <h4>Avantages actifs</h4>
-            <ul className="features-list">
-              <li>⚡ {t("boost.featureCpu")}</li>
-              <li>📊 {t("boost.featureRam")}</li>
-              <li>🔝 {t("boost.featurePriority")}</li>
-            </ul>
-          </section>
-
-          <section className="boost-actions">
-            <button 
-              className="btn btn-warning" 
-              onClick={handleDeactivate}
-              disabled={toggling}
-            >
-              {toggling ? "Désactivation..." : t("boost.deactivate")}
-            </button>
-          </section>
-        </>
+        <div className="boost-status-card active">
+          <div className="boost-status-icon">🚀</div>
+          <div className="boost-status-content">
+            <h4>{t("boost.active")}</h4>
+            <p>{t("boost.currentOffer")}: <strong>{hosting?.boostOffer}</strong></p>
+          </div>
+        </div>
       ) : (
-        <>
-          <section className="boost-status boost-inactive">
-            <div className="status-icon">○</div>
-            <div className="status-content">
-              <h4>Boost non activé</h4>
-              <p>Augmentez temporairement les performances de votre hébergement.</p>
-            </div>
-          </section>
-
-          <section className="boost-info-box">
+        <div className="boost-activation-card">
+          <div className="boost-info">
             <h4>{t("boost.whatIs")}</h4>
             <p>{t("boost.explanation")}</p>
-          </section>
-
-          <section className="boost-features">
-            <h4>Avec le Boost, vous bénéficiez de :</h4>
-            <ul className="features-list">
-              <li>⚡ {t("boost.featureCpu")}</li>
-              <li>📊 {t("boost.featureRam")}</li>
-              <li>🔝 {t("boost.featurePriority")}</li>
-            </ul>
-          </section>
-
-          <section className="boost-note">
-            <h4>{t("boost.note")}</h4>
-            <p>{t("boost.noteDesc")}</p>
-          </section>
-
-          {/* SANS REDIRECTION - Modal native */}
-          <section className="boost-actions">
-            <button className="btn btn-primary" onClick={() => setShowActivateModal(true)}>
-              {t("boost.activate")}
-            </button>
-          </section>
-        </>
+            <div className="boost-features">
+              <div className="feature-item">
+                <span className="feature-icon">⚡</span>
+                <span>{t("boost.featureCpu")}</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">💾</span>
+                <span>{t("boost.featureRam")}</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-icon">🎯</span>
+                <span>{t("boost.featurePriority")}</span>
+              </div>
+            </div>
+            <div className="info-banner warning" style={{ marginTop: "1rem" }}>
+              <span className="info-icon">ℹ️</span>
+              <span>{t("boost.noteDesc")}</span>
+            </div>
+          </div>
+          <div className="boost-selector">
+            <label>Choisir une offre Boost</label>
+            <select 
+              className="form-select"
+              value={selectedOffer}
+              onChange={(e) => setSelectedOffer(e.target.value)}
+            >
+              <option value="">-- Sélectionner --</option>
+              {availableOffers.map(offer => (
+                <option key={offer} value={offer}>{offer}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       )}
 
-      <ActivateBoostModal
-        serviceName={serviceName}
-        availableOffers={availableOffers}
-        isOpen={showActivateModal}
-        onClose={() => setShowActivateModal(false)}
-        onSuccess={loadBoostInfo}
-      />
+      {/* Historique */}
+      <div className="boost-history" style={{ marginTop: "2rem" }}>
+        <h4>Historique des boosts</h4>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Compte</th>
+              <th>Offre actuelle</th>
+              <th>Boost</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isBoostActive && (
+              <tr>
+                <td className="font-medium">{serviceName}</td>
+                <td>{hosting?.offer || "-"}</td>
+                <td>
+                  <span className="badge success">{hosting?.boostOffer}</span>
+                </td>
+                <td>En cours</td>
+              </tr>
+            )}
+            {!isBoostActive && (
+              <tr>
+                <td className="font-medium">{serviceName}</td>
+                <td>{hosting?.offer || "-"}</td>
+                <td>
+                  <span className="badge inactive">Désactivé</span>
+                </td>
+                <td>-</td>
+              </tr>
+            )}
+            {history.map((h, i) => (
+              <tr key={i}>
+                <td>{serviceName}</td>
+                <td>{h.offer}</td>
+                <td>{h.boostOffer}</td>
+                <td>{formatDate(h.startDate)} - {formatDate(h.endDate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

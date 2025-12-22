@@ -1,104 +1,26 @@
 // ============================================================
-// HOSTING TAB: SSL - Certificats SSL (corrigé - sans redirection)
+// HOSTING TAB: SSL - Certificats SSL
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { hostingService, SslCertificate, AttachedDomain } from "../../../../../services/web-cloud.hosting";
-import { ImportSslModal } from "../components/ImportSslModal";
+import { ImportSslModal } from "../components";
 
 interface Props { serviceName: string; }
 
-/** Modal pour commander un certificat Sectigo. */
-function OrderSectigoModal({ serviceName, isOpen, onClose }: {
-  serviceName: string;
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  const [certType, setCertType] = useState<"DV" | "OV" | "EV">("DV");
-  const [loading, setLoading] = useState(false);
-
-  if (!isOpen) return null;
-
-  const handleOrder = async () => {
-    setLoading(true);
-    try {
-      // Appel API pour commander via /order/cartServiceOption/webHosting
-      const result = await hostingService.orderSectigo(serviceName, certType);
-      if (result?.url) {
-        window.open(result.url, "_blank");
-      }
-      alert("Redirection vers le bon de commande...");
-      onClose();
-    } catch (err) {
-      alert(`Erreur: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Commander un certificat Sectigo</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
-        </div>
-        <div className="modal-body">
-          <div className="info-banner">
-            <span className="info-icon">ℹ</span>
-            <p>Les certificats Sectigo offrent une validation plus poussée et une meilleure confiance pour vos visiteurs.</p>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Type de certificat</label>
-            <div className="radio-group">
-              <label className="radio-label">
-                <input type="radio" name="certType" value="DV" checked={certType === "DV"} onChange={() => setCertType("DV")} />
-                <div>
-                  <strong>DV (Domain Validation)</strong>
-                  <span className="text-muted">Validation du domaine uniquement</span>
-                </div>
-              </label>
-              <label className="radio-label">
-                <input type="radio" name="certType" value="OV" checked={certType === "OV"} onChange={() => setCertType("OV")} />
-                <div>
-                  <strong>OV (Organization Validation)</strong>
-                  <span className="text-muted">Validation de l'organisation</span>
-                </div>
-              </label>
-              <label className="radio-label">
-                <input type="radio" name="certType" value="EV" checked={certType === "EV"} onChange={() => setCertType("EV")} />
-                <div>
-                  <strong>EV (Extended Validation)</strong>
-                  <span className="text-muted">Validation étendue - barre verte</span>
-                </div>
-              </label>
-            </div>
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={handleOrder} disabled={loading}>
-            {loading ? "Commande..." : "Commander"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Onglet SSL avec gestion des certificats. */
 export function SslTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [ssl, setSsl] = useState<SslCertificate | null>(null);
   const [domains, setDomains] = useState<AttachedDomain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Modals & menus
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showSectigoModal, setShowSectigoModal] = useState(false);
-  const [regenerating, setRegenerating] = useState(false);
-  const [activatingDomain, setActivatingDomain] = useState<string | null>(null);
+  const [showOrderMenu, setShowOrderMenu] = useState(false);
+  const orderMenuRef = useRef<HTMLDivElement>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -108,222 +30,220 @@ export function SslTab({ serviceName }: Props) {
         hostingService.listAttachedDomains(serviceName)
       ]);
       setSsl(sslData);
-      const domainDetails = await Promise.all(
-        domainNames.map(d => hostingService.getAttachedDomain(serviceName, d))
-      );
-      setDomains(domainDetails);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
+      const domainsData = await Promise.all(domainNames.map(n => hostingService.getAttachedDomain(serviceName, n)));
+      setDomains(domainsData);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
   }, [serviceName]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (orderMenuRef.current && !orderMenuRef.current.contains(e.target as Node)) {
+        setShowOrderMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // --- HANDLERS ---
+  const handleGenerateLetsEncrypt = async () => {
+    setActionLoading(true);
+    try {
+      await hostingService.generateLetsEncrypt(serviceName);
+      alert("Génération du certificat Let's Encrypt lancée");
+      loadData();
+    } catch (err) {
+      alert(String(err));
+    } finally {
+      setActionLoading(false);
+      setShowOrderMenu(false);
+    }
+  };
+
+  const handleOrderSectigo = () => {
+    window.open(`https://www.ovh.com/manager/#/web/hosting/${serviceName}/ssl/order`, "_blank");
+    setShowOrderMenu(false);
+  };
+
   const handleRegenerate = async () => {
-    if (!confirm("Régénérer le certificat SSL ? Cette opération peut prendre quelques minutes.")) return;
-    setRegenerating(true);
+    if (!confirm("Voulez-vous régénérer le certificat SSL ?")) return;
+    setActionLoading(true);
     try {
       await hostingService.regenerateSsl(serviceName);
-      alert("Régénération demandée. Le nouveau certificat sera actif dans quelques minutes.");
+      alert("Régénération lancée");
       loadData();
     } catch (err) {
-      alert(`Erreur: ${err}`);
+      alert(String(err));
     } finally {
-      setRegenerating(false);
+      setActionLoading(false);
     }
   };
 
-  const handleDeleteSsl = async () => {
-    if (!confirm("Supprimer le certificat SSL ? Les sites ne seront plus accessibles en HTTPS.")) return;
+  const handleDelete = async () => {
+    if (!confirm(t("ssl.confirmDelete"))) return;
+    setActionLoading(true);
     try {
       await hostingService.deleteSsl(serviceName);
+      alert("Certificat supprimé");
       loadData();
     } catch (err) {
-      alert(`Erreur: ${err}`);
-    }
-  };
-
-  const handleActivateDomain = async (domain: string) => {
-    setActivatingDomain(domain);
-    try {
-      await hostingService.activateSslForDomain(serviceName, domain);
-      loadData();
-    } catch (err) {
-      alert(`Erreur: ${err}`);
+      alert(String(err));
     } finally {
-      setActivatingDomain(null);
+      setActionLoading(false);
     }
   };
 
-  const handleExportCsv = () => {
-    if (!ssl) return;
-    const headers = ["Domaine principal", "Type", "État", "Date création", "Date expiration"];
-    const rows = [
-      [ssl.domain || serviceName, ssl.provider || "-", ssl.status || "-", 
-       ssl.creationDate || "-", ssl.expirationDate || "-"]
-    ];
-    const csvContent = [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `ssl_${serviceName}_${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
+  const formatDate = (date: string | undefined) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("fr-FR");
   };
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString("fr-FR");
-  };
+  // Domaines avec leur statut SSL
+  const domainsWithSsl = useMemo(() => {
+    return domains.map(d => ({
+      ...d,
+      sslStatus: d.ssl ? (ssl?.status === "ok" ? "active" : "pending") : "none"
+    }));
+  }, [domains, ssl]);
 
-  const getStatusBadge = (status?: string) => {
-    const map: Record<string, { class: string; label: string }> = {
-      created: { class: "success", label: "Actif" },
-      creating: { class: "warning", label: "Création..." },
-      deleting: { class: "warning", label: "Suppression..." },
-      regenerating: { class: "warning", label: "Régénération..." },
-      error: { class: "error", label: "Erreur" },
-    };
-    return map[status || ""] || { class: "inactive", label: status || "-" };
-  };
+  if (loading) {
+    return (
+      <div className="ssl-tab">
+        <div className="skeleton-block" style={{ height: "400px" }} />
+      </div>
+    );
+  }
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
   if (error) return <div className="error-state">{error}</div>;
 
   return (
     <div className="ssl-tab">
+      {/* Header avec dropdown */}
       <div className="tab-header">
         <div>
           <h3>{t("ssl.title")}</h3>
           <p className="tab-description">{t("ssl.description")}</p>
         </div>
         <div className="tab-actions">
-          <button className="btn btn-secondary btn-sm" onClick={handleExportCsv} disabled={!ssl}>
-            📊 {t("ssl.exportCsv")}
-          </button>
-          <button className="btn btn-secondary btn-sm" onClick={() => setShowImportModal(true)}>
-            📥 {t("ssl.importOwn")}
-          </button>
+          <div className="dropdown-container" ref={orderMenuRef}>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowOrderMenu(!showOrderMenu)}
+              disabled={actionLoading}
+            >
+              Commander un certificat ▼
+            </button>
+            {showOrderMenu && (
+              <div className="dropdown-menu">
+                <button onClick={handleGenerateLetsEncrypt}>
+                  🔒 Générer Let's Encrypt (gratuit)
+                </button>
+                <button onClick={handleOrderSectigo}>
+                  🛡️ Commander Sectigo (payant)
+                </button>
+                <div className="dropdown-divider" />
+                <button onClick={() => { setShowImportModal(true); setShowOrderMenu(false); }}>
+                  📥 Importer un certificat
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Current SSL Certificate - Layout SVG: card avec actions à droite */}
-      {ssl ? (
-        <section className="ssl-card">
-          <div className="ssl-card-content">
+      {/* Infos certificat actuel */}
+      {ssl && (
+        <div className="ssl-info-card">
+          <div className="ssl-info-header">
             <h4>Certificat actuel</h4>
-            <div className="info-grid-2col">
-              <div className="info-item">
-                <label>{t("ssl.mainDomain")}</label>
-                <span className="font-mono">{ssl.domain || serviceName}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("ssl.provider")}</label>
-                <span>{ssl.provider || "Let's Encrypt"}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("ssl.status")}</label>
-                <span className={`badge ${getStatusBadge(ssl.status).class}`}>
-                  {getStatusBadge(ssl.status).label}
-                </span>
-              </div>
-              <div className="info-item">
-                <label>{t("ssl.type")}</label>
-                <span>{ssl.type || "DV"}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("ssl.creationDate")}</label>
-                <span>{formatDate(ssl.creationDate)}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("ssl.expirationDate")}</label>
-                <span>{formatDate(ssl.expirationDate)}</span>
-              </div>
+            <div className="ssl-actions">
+              <button className="btn btn-secondary btn-sm" onClick={handleRegenerate} disabled={actionLoading}>
+                {t("ssl.regenerate")}
+              </button>
+              <button className="btn btn-danger btn-sm" onClick={handleDelete} disabled={actionLoading}>
+                {t("ssl.delete")}
+              </button>
             </div>
           </div>
-          <div className="ssl-card-actions">
-            <button 
-              className="btn btn-secondary" 
-              onClick={handleRegenerate}
-              disabled={regenerating || ssl.status !== "created"}
-            >
-              🔄 Régénérer le certificat
-            </button>
-            <button className="btn btn-danger" onClick={handleDeleteSsl}>
-              🗑 Supprimer
-            </button>
+          <div className="ssl-info-grid">
+            <div className="info-item">
+              <span className="info-label">{t("ssl.type")}</span>
+              <span className="info-value">{ssl.type || "Let's Encrypt"}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">{t("ssl.provider")}</span>
+              <span className="info-value">{ssl.provider || "-"}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">{t("ssl.status")}</span>
+              <span className={`badge ${ssl.status === "ok" ? "success" : ssl.status === "creating" ? "info" : "warning"}`}>
+                {ssl.status === "ok" ? "Actif" : ssl.status === "creating" ? "En cours" : ssl.status}
+              </span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">{t("ssl.expirationDate")}</span>
+              <span className="info-value">{formatDate(ssl.expirationDate)}</span>
+            </div>
           </div>
-        </section>
-      ) : (
-        <section className="ssl-empty">
-          <div className="empty-state">
-            <h4>Aucun certificat SSL actif</h4>
-            <p>Activez SSL sur vos domaines pour sécuriser vos sites en HTTPS.</p>
-          </div>
-        </section>
+        </div>
       )}
 
-      {/* Domains without SSL */}
-      <section className="ssl-domains-section">
-        <h4>{t("ssl.activateTitle")}</h4>
-        <p className="section-description">
-          Sélectionnez les domaines pour lesquels activer Let's Encrypt.
-        </p>
+      {/* Table domaines */}
+      <table className="data-table" style={{ marginTop: "1.5rem" }}>
+        <thead>
+          <tr>
+            <th>{t("ssl.domain")}</th>
+            <th>{t("ssl.type")}</th>
+            <th>{t("ssl.status")}</th>
+            <th>{t("ssl.expirationDate")}</th>
+            <th>Rapport</th>
+          </tr>
+        </thead>
+        <tbody>
+          {domainsWithSsl.map(domain => (
+            <tr key={domain.domain}>
+              <td className="font-mono">{domain.domain}</td>
+              <td>{ssl?.type || "Let's Encrypt"}</td>
+              <td>
+                {domain.ssl ? (
+                  <span className={`badge ${ssl?.status === "ok" ? "success" : ssl?.status === "creating" ? "info" : "warning"}`}>
+                    {ssl?.status === "ok" ? "Actif" : ssl?.status === "creating" ? "En cours" : "À générer"}
+                  </span>
+                ) : (
+                  <span className="badge inactive">Non activé</span>
+                )}
+              </td>
+              <td>{domain.ssl ? formatDate(ssl?.expirationDate) : "-"}</td>
+              <td>
+                {domain.ssl && ssl?.status === "ok" ? (
+                  <a 
+                    href={`https://www.ssllabs.com/ssltest/analyze.html?d=${domain.domain}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="link-action"
+                  >
+                    Voir le rapport
+                  </a>
+                ) : "-"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-        {domains.filter(d => !d.ssl).length === 0 ? (
-          <div className="info-box">
-            <p>Tous vos domaines ont déjà SSL activé.</p>
-          </div>
-        ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t("multisite.domain")}</th>
-                <th>{t("ssl.status")}</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {domains.filter(d => !d.ssl).map(d => (
-                <tr key={d.domain}>
-                  <td className="font-mono">{d.domain}</td>
-                  <td>
-                    <span className="badge inactive">Non activé</span>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => handleActivateDomain(d.domain)}
-                      disabled={activatingDomain === d.domain}
-                    >
-                      {activatingDomain === d.domain ? "Activation..." : t("ssl.activateLetsEncrypt")}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-
-      {/* Certificats payants - SANS REDIRECTION */}
-      <section className="ssl-order-section">
-        <h4>Certificats payants</h4>
-        <p>Besoin d'un certificat OV ou EV ? Commandez un certificat Sectigo.</p>
-        <button className="btn btn-secondary" onClick={() => setShowSectigoModal(true)}>
-          {t("ssl.orderSectigo")}
-        </button>
-      </section>
-
+      {/* Modal import */}
       <ImportSslModal
         serviceName={serviceName}
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
         onSuccess={loadData}
-      />
-
-      <OrderSectigoModal
-        serviceName={serviceName}
-        isOpen={showSectigoModal}
-        onClose={() => setShowSectigoModal(false)}
       />
     </div>
   );

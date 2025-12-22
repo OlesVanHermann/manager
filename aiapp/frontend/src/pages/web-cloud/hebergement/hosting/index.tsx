@@ -2,7 +2,7 @@
 // HOSTING INDEX - Page principale hébergements web
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage } from "../../shared";
 import { hostingService, Hosting } from "../../../../services/web-cloud.hosting";
@@ -43,26 +43,52 @@ const TABS = [
 
 export function HostingPage() {
   const { t } = useTranslation("web-cloud/hosting/index");
-  const [services, setServices] = useState<Hosting[]>([]);
+  const [hostings, setHostings] = useState<Hosting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<Hosting | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("general");
 
+  // Charger les hébergements
   const loadServices = useCallback(async () => {
     try {
       setLoading(true);
       const names = await hostingService.listHostings();
       const data = await Promise.all(names.map(n => hostingService.getHosting(n)));
-      setServices(data);
-      if (data.length > 0 && !selected) {
-        setSelected(data[0]);
+      setHostings(data);
+      // Sélectionner le premier par défaut
+      if (data.length > 0 && !selectedId) {
+        setSelectedId(data[0].serviceName);
       }
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
-  }, [selected]);
+    } catch (err) { 
+      setError(String(err)); 
+    } finally { 
+      setLoading(false); 
+    }
+  }, [selectedId]);
 
   useEffect(() => { loadServices(); }, [loadServices]);
+
+  // Mapper Hosting[] vers le format attendu par ServiceListPage
+  const mappedServices = useMemo(() => {
+    return hostings.map(h => ({
+      id: h.serviceName,
+      name: h.displayName || h.serviceName,
+      type: h.offer || "Hébergement"
+    }));
+  }, [hostings]);
+
+  // Récupérer l'objet Hosting sélectionné
+  const selected = useMemo(() => {
+    return hostings.find(h => h.serviceName === selectedId) || null;
+  }, [hostings, selectedId]);
+
+  // Handler de sélection
+  const handleSelectService = useCallback((id: string | { id: string }) => {
+    // ServiceListPage peut passer un id string ou un objet
+    const serviceId = typeof id === 'string' ? id : id.id;
+    setSelectedId(serviceId);
+  }, []);
 
   const renderTabContent = () => {
     if (!selected) return null;
@@ -94,11 +120,11 @@ export function HostingPage() {
       descriptionKey="description"
       guidesUrl="https://help.ovhcloud.com/csm/fr-web-hosting"
       i18nNamespace="web-cloud/hosting/index"
-      services={services}
+      services={mappedServices}
       loading={loading}
       error={error}
-      selectedService={selected}
-      onSelectService={setSelected}
+      selectedService={selectedId}
+      onSelectService={handleSelectService}
       emptyIcon={<span style={{ fontSize: '3rem' }}>🌐</span>}
       emptyTitleKey="empty.title"
       emptyDescriptionKey="empty.description"

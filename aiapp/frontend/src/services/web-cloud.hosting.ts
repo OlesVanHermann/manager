@@ -54,6 +54,7 @@ export interface AttachedDomain {
   firewall?: string;
   git?: boolean;
   ownLog?: string;
+  status?: string;
 }
 
 export interface CronJob {
@@ -98,6 +99,7 @@ export interface SslCertificate {
   status?: string;
   creationDate?: string;
   expirationDate?: string;
+  subjects?: string[];
 }
 
 export interface HostingTask {
@@ -106,6 +108,13 @@ export interface HostingTask {
   status: string;
   startDate: string;
   doneDate?: string;
+}
+
+export interface UserLogs {
+  login: string;
+  description?: string;
+  state?: string;
+  creationDate?: string;
 }
 
 // ============================================================
@@ -243,6 +252,15 @@ export const hostingService = {
   // --- TASKS ---
   listTasks: (sn: string) => ovhGet<number[]>(`/hosting/web/${sn}/tasks`),
   getTask: (sn: string, id: number) => ovhGet<HostingTask>(`/hosting/web/${sn}/tasks/${id}`),
+
+  // --- USER LOGS ---
+  listUserLogs: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/userLogs`),
+  getUserLogs: (sn: string, login: string) => ovhGet<UserLogs>(`/hosting/web/${sn}/userLogs/${login}`),
+  createUserLogs: (sn: string, data: { login: string; password: string; description?: string }) => 
+    ovhPost<void>(`/hosting/web/${sn}/userLogs`, data),
+  deleteUserLogs: (sn: string, login: string) => ovhDelete<void>(`/hosting/web/${sn}/userLogs/${login}`),
+  changeUserLogsPassword: (sn: string, login: string, password: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/userLogs/${login}/changePassword`, { password }),
 };
 
 export default hostingService;

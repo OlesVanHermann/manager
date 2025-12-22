@@ -5,14 +5,12 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { hostingService, EnvVar } from "../../../../../services/web-cloud.hosting";
-import { CreateEnvvarModal } from "../components/CreateEnvvarModal";
-import { EditEnvvarModal } from "../components/EditEnvvarModal";
+import { CreateEnvvarModal, EditEnvvarModal } from "../components";
 
 interface Props { serviceName: string; }
 
 const PAGE_SIZE = 10;
 
-/** Onglet Variables d'environnement avec CRUD complet. */
 export function EnvvarsTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [envvars, setEnvvars] = useState<EnvVar[]>([]);
@@ -20,39 +18,43 @@ export function EnvvarsTab({ serviceName }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editModal, setEditModal] = useState<{ open: boolean; envvar: EnvVar | null }>({ open: false, envvar: null });
 
-  // ---------- LOAD ----------
+  // Modals
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editEnvvar, setEditEnvvar] = useState<EnvVar | null>(null);
+
   const loadEnvvars = useCallback(async () => {
     try {
       setLoading(true);
       const keys = await hostingService.listEnvVars(serviceName);
       const data = await Promise.all(keys.map(k => hostingService.getEnvVar(serviceName, k)));
       setEnvvars(data);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
   }, [serviceName]);
 
   useEffect(() => { loadEnvvars(); }, [loadEnvvars]);
 
-  // ---------- HANDLERS ----------
   const handleDelete = async (key: string) => {
     if (!confirm(t("envvars.confirmDelete", { key }))) return;
     try {
       await hostingService.deleteEnvVar(serviceName, key);
       loadEnvvars();
-    } catch (err) { alert(String(err)); }
+    } catch (err) {
+      alert(String(err));
+    }
   };
 
-  // ---------- FILTERING ----------
+  // --- FILTERING ---
   const filteredEnvvars = useMemo(() => {
     if (!searchTerm) return envvars;
     const term = searchTerm.toLowerCase();
     return envvars.filter(e => e.key.toLowerCase().includes(term));
   }, [envvars, searchTerm]);
 
-  // ---------- PAGINATION ----------
   const totalPages = Math.ceil(filteredEnvvars.length / PAGE_SIZE);
   const paginatedEnvvars = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -61,12 +63,12 @@ export function EnvvarsTab({ serviceName }: Props) {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
   if (error) return <div className="error-state">{error}</div>;
 
-  // ---------- RENDER ----------
   return (
     <div className="envvars-tab">
+      {/* Header */}
       <div className="tab-header">
         <div>
           <h3>{t("envvars.title")}</h3>
@@ -91,9 +93,10 @@ export function EnvvarsTab({ serviceName }: Props) {
         <span className="records-count">{envvars.length} {t("envvars.count")}</span>
       </div>
 
-      {/* Envvars table */}
+      {/* Table */}
       {paginatedEnvvars.length === 0 ? (
         <div className="empty-state">
+          <div className="empty-icon">🔧</div>
           <p>{searchTerm ? t("common.noResult") : t("envvars.empty")}</p>
           <p className="empty-hint">{t("envvars.emptyHint")}</p>
           {!searchTerm && (
@@ -114,31 +117,25 @@ export function EnvvarsTab({ serviceName }: Props) {
               </tr>
             </thead>
             <tbody>
-              {paginatedEnvvars.map(e => (
-                <tr key={e.key}>
-                  <td className="font-mono">{e.key}</td>
-                  <td className="font-mono">
-                    <span className="value-masked" title={e.value}>
-                      {e.value && e.value.length > 30 ? e.value.substring(0, 30) + "..." : e.value || "-"}
-                    </span>
+              {paginatedEnvvars.map(env => (
+                <tr key={env.key}>
+                  <td className="font-mono font-medium">{env.key}</td>
+                  <td>
+                    <code className="value-cell">{env.value || "***"}</code>
                   </td>
-                  <td>{e.type || "string"}</td>
+                  <td>{env.type || "string"}</td>
                   <td>
                     <div className="action-buttons">
                       <button 
                         className="btn-icon" 
-                        onClick={() => setEditModal({ open: true, envvar: e })}
-                        title="Modifier"
-                      >
-                        ✏️
-                      </button>
+                        onClick={() => setEditEnvvar(env)}
+                        title={t("envvars.edit")}
+                      >✏️</button>
                       <button 
                         className="btn-icon btn-danger-icon" 
-                        onClick={() => handleDelete(e.key)}
+                        onClick={() => handleDelete(env.key)}
                         title={t("envvars.delete")}
-                      >
-                        🗑
-                      </button>
+                      >🗑</button>
                     </div>
                   </td>
                 </tr>
@@ -148,23 +145,9 @@ export function EnvvarsTab({ serviceName }: Props) {
 
           {totalPages > 1 && (
             <div className="pagination">
-              <button 
-                className="pagination-btn" 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                ←
-              </button>
-              <span className="pagination-info">
-                {t("common.page")} {currentPage} / {totalPages}
-              </span>
-              <button 
-                className="pagination-btn" 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-              >
-                →
-              </button>
+              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
+              <span className="pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
+              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
             </div>
           )}
         </>
@@ -178,13 +161,15 @@ export function EnvvarsTab({ serviceName }: Props) {
         onSuccess={loadEnvvars}
       />
 
-      <EditEnvvarModal
-        serviceName={serviceName}
-        envvar={editModal.envvar}
-        isOpen={editModal.open}
-        onClose={() => setEditModal({ open: false, envvar: null })}
-        onSuccess={loadEnvvars}
-      />
+      {editEnvvar && (
+        <EditEnvvarModal
+          serviceName={serviceName}
+          envvar={editEnvvar}
+          isOpen={!!editEnvvar}
+          onClose={() => setEditEnvvar(null)}
+          onSuccess={loadEnvvars}
+        />
+      )}
     </div>
   );
 }

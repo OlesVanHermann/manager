@@ -1,110 +1,144 @@
 // ============================================================
-// HOSTING TAB: TASKS - Tâches en cours (selon old manager)
+// HOSTING TAB: TASKS - Tâches en cours
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, HostingTask } from "../../../../../services/web-cloud.hosting";
+import { hostingService, Task } from "../../../../../services/web-cloud.hosting";
 
 interface Props { serviceName: string; }
 
-const POLL_INTERVAL = 30000;
+type TaskStatus = "done" | "doing" | "todo" | "error" | "cancelled" | "init";
 
-/** Onglet Tâches en cours avec colonnes exactes old manager. */
+const STATUS_CONFIG: Record<TaskStatus, { label: string; className: string }> = {
+  done: { label: "Terminée", className: "success" },
+  doing: { label: "En cours", className: "info" },
+  todo: { label: "Planifiée", className: "warning" },
+  init: { label: "En cours", className: "info" },
+  error: { label: "En erreur", className: "error" },
+  cancelled: { label: "Annulée", className: "inactive" },
+};
+
 export function TasksTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
-  const [tasks, setTasks] = useState<HostingTask[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const loadTasks = useCallback(async (showLoading = true) => {
+  const loadTasks = useCallback(async () => {
     try {
-      if (showLoading) setLoading(true);
+      setLoading(true);
       const ids = await hostingService.listTasks(serviceName);
-      const data = await Promise.all(ids.slice(0, 50).map(id => hostingService.getTask(serviceName, id)));
-      data.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      const data = await Promise.all(ids.map(id => hostingService.getTask(serviceName, id)));
+      // Tri par date de début décroissante
+      data.sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
       setTasks(data);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
   }, [serviceName]);
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
 
+  // Auto-refresh si tâches en cours
   useEffect(() => {
-    if (!autoRefresh) return;
-    const interval = setInterval(() => loadTasks(false), POLL_INTERVAL);
+    const hasRunningTasks = tasks.some(t => t.status === "doing" || t.status === "init" || t.status === "todo");
+    if (!hasRunningTasks) return;
+    
+    const interval = setInterval(loadTasks, 10000);
     return () => clearInterval(interval);
-  }, [autoRefresh, loadTasks]);
+  }, [tasks, loadTasks]);
 
-  const getStatusBadge = (status: string) => {
-    const map: Record<string, { class: string; label: string }> = {
-      todo: { class: 'warning', label: 'À faire' },
-      init: { class: 'info', label: 'Initialisation' },
-      doing: { class: 'info', label: 'En cours' },
-      done: { class: 'success', label: 'Terminé' },
-      error: { class: 'error', label: 'Erreur' },
-      cancelled: { class: 'inactive', label: 'Annulé' },
-    };
-    const s = map[status] || { class: 'inactive', label: status };
-    return <span className={`badge ${s.class}`}>{s.label}</span>;
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadTasks();
+    setRefreshing(false);
   };
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  const formatDate = (date: string | undefined) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
     });
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  const getStatusBadge = (status: string) => {
+    const config = STATUS_CONFIG[status as TaskStatus] || { label: status, className: "inactive" };
+    return <span className={`badge ${config.className}`}>{config.label}</span>;
+  };
+
+  if (loading) {
+    return (
+      <div className="tasks-tab">
+        <div className="skeleton-block" style={{ height: "300px" }} />
+      </div>
+    );
+  }
+
   if (error) return <div className="error-state">{error}</div>;
 
   return (
     <div className="tasks-tab">
+      {/* Header */}
       <div className="tab-header">
         <div>
           <h3>{t("tasks.title")}</h3>
+          <p className="tab-description">{t("tasks.description")}</p>
         </div>
         <div className="tab-actions">
-          <button className="btn-icon" onClick={() => loadTasks()} title={t("tasks.refresh")}>
-            ↻
+          <button 
+            className="btn btn-icon-only" 
+            onClick={handleRefresh} 
+            disabled={refreshing}
+            title={t("tasks.refresh")}
+          >
+            {refreshing ? "⏳" : "↻"}
           </button>
         </div>
       </div>
 
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Tâche</th>
-            <th>Statut</th>
-            <th>Date de création</th>
-            <th>Date de fin</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.length === 0 ? (
+      {/* Table */}
+      {tasks.length === 0 ? (
+        <div className="empty-state">
+          <p>{t("tasks.empty")}</p>
+        </div>
+      ) : (
+        <table className="data-table">
+          <thead>
             <tr>
-              <td colSpan={4} className="text-center text-muted" style={{ padding: 'var(--space-8)' }}>
-                Aucun résultat
-              </td>
+              <th>{t("tasks.function")}</th>
+              <th>{t("tasks.status")}</th>
+              <th>{t("tasks.startDate")}</th>
+              <th>{t("tasks.doneDate")}</th>
             </tr>
-          ) : (
-            tasks.map(task => (
+          </thead>
+          <tbody>
+            {tasks.map(task => (
               <tr key={task.id}>
-                <td className="font-mono">{task.function}</td>
+                <td>{task.function || task.id}</td>
                 <td>{getStatusBadge(task.status)}</td>
                 <td>{formatDate(task.startDate)}</td>
                 <td>{formatDate(task.doneDate)}</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {/* Indicateur tâches en cours */}
+      {tasks.some(t => t.status === "doing" || t.status === "init") && (
+        <div className="info-banner" style={{ marginTop: "1rem" }}>
+          <span className="info-icon">🔄</span>
+          <span>Des tâches sont en cours d'exécution. Actualisation automatique toutes les 10 secondes.</span>
+        </div>
+      )}
     </div>
   );
 }

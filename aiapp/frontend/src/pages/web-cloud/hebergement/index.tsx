@@ -37,11 +37,11 @@ export function HebergementPage() {
         {SECTIONS.map(section => (
           <button
             key={section.id}
-            className={`section-btn ${activeSection === section.id ? "active" : ""}`}
+            className={`section-nav-btn ${activeSection === section.id ? "active" : ""}`}
             onClick={() => setActiveSection(section.id as Section)}
           >
-            <span className="section-icon">{section.icon}</span>
-            <span className="section-label">{t(section.labelKey)}</span>
+            <span className="nav-icon">{section.icon}</span>
+            <span className="nav-label">{t(section.labelKey)}</span>
           </button>
         ))}
       </div>

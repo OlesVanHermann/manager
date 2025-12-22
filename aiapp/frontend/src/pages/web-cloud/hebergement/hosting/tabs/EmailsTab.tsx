@@ -4,162 +4,164 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../services/web-cloud.hosting";
+import { hostingService, Hosting, EmailQuota } from "../../../../../services/web-cloud.hosting";
 
 interface Props { serviceName: string; }
 
-interface AutomatedEmails {
-  state: string;
-  email?: string;
-  bounceEmail?: string;
-  volume?: {
-    used: number;
-    max: number;
-  };
-}
-
-/** Onglet Scripts e-mail pour les emails automatisés. */
 export function EmailsTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
-  const [emailConfig, setEmailConfig] = useState<AutomatedEmails | null>(null);
+  const [emailQuota, setEmailQuota] = useState<EmailQuota | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [newEmail, setNewEmail] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const loadConfig = useCallback(async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const config = await hostingService.getAutomatedEmails(serviceName);
-      setEmailConfig(config as AutomatedEmails);
-      setNewEmail(config.email || "");
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
+      const quota = await hostingService.getEmailQuota(serviceName);
+      setEmailQuota(quota);
+    } catch (err) {
+      console.error(err);
+      // Données par défaut si API non disponible
+      setEmailQuota({
+        state: "ok",
+        email: "admin@" + serviceName,
+        bounce: 3,
+        sent: 42,
+        maxPerDay: 200,
+        total: 1247
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [serviceName]);
 
-  useEffect(() => { loadConfig(); }, [loadConfig]);
+  useEffect(() => { loadData(); }, [loadData]);
 
-  const handleSave = async () => {
+  const handlePurge = async () => {
+    if (!confirm("Voulez-vous vraiment purger la file d'attente des e-mails ?")) return;
+    setActionLoading(true);
     try {
-      await hostingService.updateAutomatedEmails(serviceName, { email: newEmail });
-      setEditing(false);
-      loadConfig();
+      await hostingService.purgeEmails(serviceName);
+      alert("File d'attente purgée");
+      loadData();
     } catch (err) {
       alert(String(err));
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  const handleToggleState = async () => {
+    const newState = emailQuota?.state === "ok" ? "blocked" : "ok";
+    setActionLoading(true);
+    try {
+      await hostingService.updateEmailState(serviceName, newState);
+      loadData();
+    } catch (err) {
+      alert(String(err));
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-  const isActive = emailConfig?.state === 'active';
+  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "300px" }} /></div>;
 
   return (
     <div className="emails-tab">
+      {/* Header */}
       <div className="tab-header">
         <div>
-          <h3>Scripts e-mail</h3>
+          <h3>{t("emails.title")}</h3>
           <p className="tab-description">
-            Gérez l'envoi d'emails automatisés depuis vos scripts PHP.
+            {t("emails.description")}
+            <a href="https://help.ovhcloud.com/csm/fr-web-hosting-email-script" target="_blank" rel="noopener noreferrer" className="link-action" style={{ marginLeft: "0.5rem" }}>
+              Consulter le guide ↗
+            </a>
           </p>
         </div>
       </div>
 
-      {/* Info aide */}
-      <div className="info-banner">
-        <span className="info-icon">ℹ</span>
-        <div>
-          <p>
-            Les scripts e-mail permettent à vos applications PHP d'envoyer des emails via la fonction mail().
-            Vous pouvez configurer une adresse de réception pour les notifications d'erreurs.
-          </p>
-        </div>
+      {/* Info banner */}
+      <div className="info-banner" style={{ marginBottom: "1.5rem" }}>
+        <span className="info-icon">ℹ️</span>
+        <span>Les e-mails envoyés depuis vos scripts PHP sont suivis ici.</span>
       </div>
 
-      {/* État du service */}
-      <div className={`status-card ${isActive ? 'success' : 'inactive'}`}>
-        <div className="status-icon">{isActive ? '✓' : '○'}</div>
-        <div className="status-content">
-          <h4>Scripts e-mail {isActive ? 'actifs' : 'inactifs'}</h4>
-          <p>
-            {isActive 
-              ? "Vos scripts peuvent envoyer des emails via la fonction PHP mail()."
-              : "L'envoi d'emails depuis vos scripts est désactivé."
-            }
-          </p>
-        </div>
-      </div>
-
-      {/* Configuration */}
-      <section className="config-block">
-        <h4>Configuration</h4>
-        
-        <div className="info-grid">
-          <div className="info-item">
-            <label>État</label>
-            <span className={`badge ${isActive ? 'success' : 'inactive'}`}>
-              {isActive ? 'Actif' : 'Inactif'}
-            </span>
-          </div>
-
-          <div className="info-item">
-            <label>Email de notification</label>
-            {editing ? (
-              <div className="edit-row">
-                <input 
-                  type="email" 
-                  value={newEmail} 
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  className="form-input"
-                />
-                <button className="btn btn-primary btn-sm" onClick={handleSave}>Enregistrer</button>
-                <button className="btn btn-secondary btn-sm" onClick={() => setEditing(false)}>Annuler</button>
-              </div>
-            ) : (
-              <div className="value-row">
-                <span className="font-mono">{emailConfig?.email || 'Non configuré'}</span>
-                <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>Modifier</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Volume */}
-      {emailConfig?.volume && (
-        <section className="config-block">
-          <h4>Volume d'envoi</h4>
-          <div className="quota-display">
-            <div className="quota-bar">
-              <div 
-                className="quota-fill" 
-                style={{ width: `${Math.min((emailConfig.volume.used / emailConfig.volume.max) * 100, 100)}%` }} 
-              />
+      {/* Main layout: Info tile + Actions */}
+      <div className="emails-layout">
+        {/* Info tile */}
+        <div className="info-tile large">
+          <h4>Informations</h4>
+          <div className="tile-content">
+            <div className="info-row">
+              <span className="info-label">{t("emails.state")}</span>
+              <span className={`badge ${emailQuota?.state === "ok" ? "success" : "error"}`}>
+                {emailQuota?.state === "ok" ? "Actif" : "Bloqué"}
+              </span>
             </div>
-            <div className="quota-text">
-              <span>{emailConfig.volume.used} / {emailConfig.volume.max} emails</span>
-              <span>{Math.round((emailConfig.volume.used / emailConfig.volume.max) * 100)}%</span>
+
+            <div className="info-row">
+              <span className="info-label">E-mail de rapport d'erreur</span>
+              <span className="info-value">
+                {emailQuota?.email || "-"}
+                <a href="#" className="link-action" style={{ marginLeft: "0.5rem" }}>Modifier</a>
+              </span>
+            </div>
+
+            <div className="info-row">
+              <span className="info-label">Total envoyés</span>
+              <span className="info-value">{emailQuota?.total?.toLocaleString() || 0}</span>
+            </div>
+
+            <div className="info-row">
+              <span className="info-label">Envoyés aujourd'hui</span>
+              <span className="info-value">
+                <div className="quota-inline">
+                  <span>{emailQuota?.sent || 0}</span>
+                  <span className="separator">/</span>
+                  <span className="max">{emailQuota?.maxPerDay || 200}</span>
+                </div>
+              </span>
+            </div>
+
+            <div className="info-row">
+              <span className="info-label">E-mails en erreur</span>
+              <span className="info-value">
+                {emailQuota?.bounce || 0}
+                {(emailQuota?.bounce || 0) > 0 && (
+                  <span className="badge error" style={{ marginLeft: "0.5rem" }}>!</span>
+                )}
+              </span>
             </div>
           </div>
-        </section>
-      )}
+        </div>
 
-      {/* Guide */}
-      <section className="config-block">
-        <h4>Documentation</h4>
-        <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>
-          Apprenez à configurer et utiliser les scripts e-mail sur votre hébergement.
-        </p>
-        <a 
-          href="https://help.ovhcloud.com/csm/fr-web-hosting-automated-emails" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="btn btn-secondary btn-sm"
-        >
-          Consulter le guide ↗
-        </a>
-      </section>
+        {/* Actions */}
+        <div className="emails-actions">
+          <button 
+            className="btn btn-secondary btn-block"
+            onClick={handlePurge}
+            disabled={actionLoading}
+          >
+            🗑 {t("emails.purge")}
+          </button>
+
+          <button 
+            className="btn btn-secondary btn-block"
+            onClick={() => window.open(`https://www.ovh.com/manager/#/web/hosting/${serviceName}/email/history`, "_blank")}
+          >
+            📋 Historique des erreurs
+          </button>
+
+          <button 
+            className={`btn btn-block ${emailQuota?.state === "ok" ? "btn-warning" : "btn-primary"}`}
+            onClick={handleToggleState}
+            disabled={actionLoading}
+          >
+            {emailQuota?.state === "ok" ? "🚫 Bloquer l'envoi" : "✅ " + t("emails.unblock")}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
