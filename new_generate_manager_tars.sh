@@ -490,13 +490,16 @@ tar -cf /home/ubuntu/new_manager.web-cloud.emails.zimbra.tar \
 
 echo "Création new_manager.web-cloud.hebergement.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.tar \
-    ./src/pages/web-cloud/hebergement/index.tsx
+    ./src/pages/web-cloud/hebergement/index.tsx \
+    ./src/pages/web-cloud/hebergement/styles.css
 
 echo "Création new_manager.web-cloud.hebergement.hosting.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.hosting.tar \
     ./src/pages/web-cloud/hebergement/hosting \
     ./public/locales/en/web-cloud/hosting \
-    ./public/locales/fr/web-cloud/hosting
+    ./public/locales/fr/web-cloud/hosting \
+    ./public/locales/en/web-cloud/hebergement \
+    ./public/locales/fr/web-cloud/hebergement
 
 echo "Création new_manager.web-cloud.hebergement.private-database.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.private-database.tar \

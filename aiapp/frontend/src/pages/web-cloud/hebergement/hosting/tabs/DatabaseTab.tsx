@@ -6,9 +6,11 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { hostingService, Database } from "../../../../../services/web-cloud.hosting";
 import { CreateDatabaseModal } from "../components/CreateDatabaseModal";
+import { CopyDatabaseModal } from "../components/CopyDatabaseModal";
 import { DumpDatabaseModal } from "../components/DumpDatabaseModal";
 import { RestoreDatabaseModal } from "../components/RestoreDatabaseModal";
 import { ImportSqlModal } from "../components/ImportSqlModal";
+import { ChangePasswordModal } from "../components/ChangePasswordModal";
 
 interface Props { serviceName: string; }
 
@@ -28,6 +30,8 @@ export function DatabaseTab({ serviceName }: Props) {
   const [dumpModal, setDumpModal] = useState<{ open: boolean; name: string }>({ open: false, name: "" });
   const [restoreModal, setRestoreModal] = useState<{ open: boolean; name: string }>({ open: false, name: "" });
   const [importModal, setImportModal] = useState<{ open: boolean; name: string }>({ open: false, name: "" });
+  const [copyModal, setCopyModal] = useState<{ open: boolean; name: string }>({ open: false, name: "" });
+  const [passwordModal, setPasswordModal] = useState<{ open: boolean; name: string }>({ open: false, name: "" });
 
   // ---------- LOAD ----------
   const loadDatabases = useCallback(async () => {
@@ -144,6 +148,13 @@ export function DatabaseTab({ serviceName }: Props) {
                     <div className="action-buttons">
                       <button 
                         className="btn-icon" 
+                        onClick={() => setPasswordModal({ open: true, name: db.name })}
+                        title="Changer mot de passe"
+                      >
+                        🔑
+                      </button>
+                      <button 
+                        className="btn-icon" 
                         onClick={() => setDumpModal({ open: true, name: db.name })}
                         title={t("database.dump")}
                       >
@@ -155,6 +166,13 @@ export function DatabaseTab({ serviceName }: Props) {
                         title={t("database.restore")}
                       >
                         🔄
+                      </button>
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => setCopyModal({ open: true, name: db.name })}
+                        title={t("database.copy")}
+                      >
+                        📋
                       </button>
                       <button 
                         className="btn-icon" 
@@ -230,6 +248,24 @@ export function DatabaseTab({ serviceName }: Props) {
         databaseName={importModal.name}
         isOpen={importModal.open}
         onClose={() => setImportModal({ open: false, name: "" })}
+        onSuccess={loadDatabases}
+      />
+
+      <CopyDatabaseModal
+        serviceName={serviceName}
+        databaseName={copyModal.name}
+        databases={databases}
+        isOpen={copyModal.open}
+        onClose={() => setCopyModal({ open: false, name: "" })}
+        onSuccess={loadDatabases}
+      />
+
+      <ChangePasswordModal
+        serviceName={serviceName}
+        login={passwordModal.name}
+        type="database"
+        isOpen={passwordModal.open}
+        onClose={() => setPasswordModal({ open: false, name: "" })}
         onSuccess={loadDatabases}
       />
     </div>

@@ -133,9 +133,9 @@ export function CronTab({ serviceName }: Props) {
             <tbody>
               {paginatedCrons.map(c => (
                 <tr key={c.id}>
-                  <td className="font-mono">
-                    {c.command}
-                    {c.description && <small className="text-muted d-block">{c.description}</small>}
+                  <td>
+                    <div className="font-mono">{c.command}</div>
+                    {c.description && <div className="text-muted text-small">{c.description}</div>}
                   </td>
                   <td className="font-mono">{c.frequency}</td>
                   <td>{c.language}</td>

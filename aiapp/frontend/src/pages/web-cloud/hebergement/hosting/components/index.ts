@@ -1,36 +1,24 @@
 // ============================================================
-// HOSTING COMPONENTS - Export central
+// HOSTING COMPONENTS - Index
 // ============================================================
 
-// UI Components
-export { ActionMenu } from './ActionMenu';
+// Modals
+export { CopyDatabaseModal } from "./CopyDatabaseModal";
+export { ChangePasswordModal } from "./ChangePasswordModal";
+export { RestoreSnapshotModal } from "./RestoreSnapshotModal";
+export { OvhConfigModal } from "./OvhConfigModal";
 
-// Domain modals
-export { AddDomainModal } from './AddDomainModal';
-export { EditDomainModal } from './EditDomainModal';
-
-// FTP modals
-export { CreateFtpUserModal } from './CreateFtpUserModal';
-export { ChangePasswordModal } from './ChangePasswordModal';
-
-// Database modals
-export { CreateDatabaseModal } from './CreateDatabaseModal';
-export { DumpDatabaseModal } from './DumpDatabaseModal';
-export { RestoreDatabaseModal } from './RestoreDatabaseModal';
-export { ImportSqlModal } from './ImportSqlModal';
-
-// Cron modals
-export { CreateCronModal } from './CreateCronModal';
-export { EditCronModal } from './EditCronModal';
-
-// Envvar modals
-export { CreateEnvvarModal } from './CreateEnvvarModal';
-export { EditEnvvarModal } from './EditEnvvarModal';
-
-// Runtime modals
-export { CreateRuntimeModal } from './CreateRuntimeModal';
-export { EditRuntimeModal } from './EditRuntimeModal';
-
-// Other modals
-export { InstallModuleModal } from './InstallModuleModal';
-export { ImportSslModal } from './ImportSslModal';
+// Re-export existing modals if they exist
+export * from "./CreateDatabaseModal";
+export * from "./DumpDatabaseModal";
+export * from "./RestoreDatabaseModal";
+export * from "./ImportSqlModal";
+export * from "./ImportSslModal";
+export * from "./CreateCronModal";
+export * from "./EditCronModal";
+export * from "./CreateEnvvarModal";
+export * from "./EditEnvvarModal";
+export * from "./CreateRuntimeModal";
+export * from "./EditRuntimeModal";
+export * from "./CreateFtpUserModal";
+export * from "./InstallModuleModal";

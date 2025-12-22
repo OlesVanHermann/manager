@@ -1,132 +1,101 @@
 // ============================================================
-// WEB-CLOUD HOSTING SERVICE - API hébergements web
+// SERVICE: Web Cloud Hosting - Complete API
 // ============================================================
 
-import { apiClient } from "./api";
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "./api";
 
-// ============ TYPES ============
+// ============================================================
+// TYPES
+// ============================================================
 
 export interface Hosting {
   serviceName: string;
   displayName?: string;
   offer: string;
-  state: "active" | "bloqued" | "maintenance";
-  cluster: string;
-  hostingIp: string;
-  hostingIpv6?: string;
-  operatingSystem: string;
-  home: string;
+  state: string;
+  cluster?: string;
+  datacenter?: string;
   primaryLogin?: string;
   quotaSize?: { value: number; unit: string };
   quotaUsed?: { value: number; unit: string };
-  hasCdn?: boolean;
-  hasHostedSsl?: boolean;
   boostOffer?: string;
-  serviceManagementAccess?: {
-    ftp?: { url: string; port: number };
-    ssh?: { url: string; port: number };
-    http?: { url: string; port: number };
-  };
-}
-
-export interface HostingServiceInfos {
-  serviceId: number;
-  creation: string;
-  expiration: string;
-  contactAdmin: string;
-  contactTech: string;
-  contactBilling: string;
-  renew?: { automatic: boolean; period?: string };
-}
-
-export interface AttachedDomain {
-  domain: string;
-  path: string;
-  ssl?: boolean;
-  cdn?: string;
-  firewall?: string;
-  status?: string;
-  ownLog?: string;
-  ipv4?: string;
-  ipv6?: string;
-  git?: { status?: string; url?: string };
-  runtimeId?: number;
-}
-
-export interface FtpUser {
-  login: string;
-  home: string;
-  state: string;
-  isPrimaryAccount?: boolean;
-  serviceManagementCredentials?: {
-    ftp?: boolean;
-    ssh?: boolean;
-  };
+  hasCdn?: boolean;
+  hostingIp?: string;
+  hostingIpv6?: string;
+  phpVersion?: string;
+  sslState?: string;
 }
 
 export interface Database {
   name: string;
   user: string;
-  server?: string;
-  type?: string;
-  version?: string;
-  state?: string;
-  status?: string;
+  server: string;
+  port: number;
+  type: string;
+  version: string;
+  state: string;
   quotaSize?: { value: number; unit: string };
   quotaUsed?: { value: number; unit: string };
-  dumpCount?: number;
-  port?: number;
-  guiURL?: string;
 }
 
-export interface Module {
-  id: number;
-  moduleId: string;
+export interface FtpUser {
+  login: string;
+  home: string;
+  isPrimaryAccount: boolean;
+  state: string;
+  sshState?: string;
+}
+
+export interface AttachedDomain {
+  domain: string;
   path: string;
-  targetUrl?: string;
-  adminName?: string;
-  adminFolder?: string;
-  language?: string;
-  version?: string;
-  status?: string;
-  creationDate?: string;
+  ssl: boolean;
+  cdn?: string;
+  firewall?: string;
+  git?: boolean;
+  ownLog?: string;
 }
 
-export interface Cron {
+export interface CronJob {
   id: number;
   command: string;
   frequency: string;
   language: string;
-  email?: string;
   status: string;
   description?: string;
+  email?: string;
 }
 
 export interface EnvVar {
   key: string;
   value: string;
-  type: string;
-  status?: string;
+  type?: string;
 }
 
 export interface Runtime {
   id: number;
   name?: string;
-  type: string;
-  version?: string;
+  type?: string;
   publicDir?: string;
-  status?: string;
-  isDefault?: boolean;
-  appBootstrap?: string;
   appEnv?: string;
+  isDefault?: boolean;
+}
+
+export interface Module {
+  id: number;
+  moduleId?: number;
+  path?: string;
+  version?: string;
+  adminName?: string;
+  adminFolder?: string;
+  targetUrl?: string;
 }
 
 export interface SslCertificate {
-  status: string;
+  domain?: string;
   provider?: string;
   type?: string;
-  isReportable?: boolean;
-  regenerable?: boolean;
+  status?: string;
   creationDate?: string;
   expirationDate?: string;
 }
@@ -137,322 +106,143 @@ export interface HostingTask {
   status: string;
   startDate: string;
   doneDate?: string;
-  lastUpdate?: string;
-  objectId?: string;
-  objectType?: string;
 }
-
-export interface LocalSeoAccount {
-  id: number;
-  name: string;
-  offer?: string;
-  status?: string;
-  country?: string;
-  creationDate?: string;
-}
-
-// ============ SERVICE ============
-
-class HostingService {
-  private basePath = "/hosting/web";
-
-  // ---------- HOSTINGS ----------
-  async listHostings(): Promise<string[]> {
-    return apiClient.get<string[]>(this.basePath);
-  }
-
-  async getHosting(serviceName: string): Promise<Hosting> {
-    return apiClient.get<Hosting>(`${this.basePath}/${serviceName}`);
-  }
-
-  async getServiceInfos(serviceName: string): Promise<HostingServiceInfos> {
-    return apiClient.get<HostingServiceInfos>(`${this.basePath}/${serviceName}/serviceInfos`);
-  }
-
-  // ---------- ATTACHED DOMAINS (MULTISITE) ----------
-  async listAttachedDomains(serviceName: string): Promise<string[]> {
-    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/attachedDomain`);
-  }
-
-  async getAttachedDomain(serviceName: string, domain: string): Promise<AttachedDomain> {
-    return apiClient.get<AttachedDomain>(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}`);
-  }
-
-  async createAttachedDomain(serviceName: string, data: Partial<AttachedDomain>): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/attachedDomain`, data);
-  }
-
-  async updateAttachedDomain(serviceName: string, domain: string, data: Partial<AttachedDomain>): Promise<void> {
-    return apiClient.put(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}`, data);
-  }
-
-  async deleteAttachedDomain(serviceName: string, domain: string): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}`);
-  }
-
-  // ---------- FTP USERS ----------
-  async listFtpUsers(serviceName: string): Promise<string[]> {
-    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/user`);
-  }
-
-  async getFtpUser(serviceName: string, login: string): Promise<FtpUser> {
-    return apiClient.get<FtpUser>(`${this.basePath}/${serviceName}/user/${encodeURIComponent(login)}`);
-  }
-
-  async createFtpUser(serviceName: string, data: { login: string; password: string; home?: string; sshState?: string }): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/user`, data);
-  }
-
-  async deleteFtpUser(serviceName: string, login: string): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/user/${encodeURIComponent(login)}`);
-  }
-
-  async changeFtpUserPassword(serviceName: string, login: string, password: string): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/user/${encodeURIComponent(login)}/changePassword`, { password });
-  }
-
-  // ---------- DATABASES ----------
-  async listDatabases(serviceName: string): Promise<string[]> {
-    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/database`);
-  }
-
-  async getDatabase(serviceName: string, name: string): Promise<Database> {
-    return apiClient.get<Database>(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}`);
-  }
-
-  async createDatabase(serviceName: string, data: { type: string; user: string; password: string; version?: string }): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/database`, data);
-  }
-
-  async deleteDatabase(serviceName: string, name: string): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}`);
-  }
-
-  async getDatabaseDumps(serviceName: string, name: string): Promise<number[]> {
-    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}/dump`);
-  }
-
-  async createDatabaseDump(serviceName: string, name: string, data?: { date?: string; sendEmail?: boolean }): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}/dump`, data || {});
-  }
-
-  async restoreDatabaseDump(serviceName: string, name: string, dumpId: number): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}/dump/${dumpId}/restore`, {});
-  }
-
-  // ---------- MODULES ----------
-  async listModules(serviceName: string): Promise<number[]> {
-    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/module`);
-  }
-
-  async getModule(serviceName: string, id: number): Promise<Module> {
-    return apiClient.get<Module>(`${this.basePath}/${serviceName}/module/${id}`);
-  }
-
-  async installModule(serviceName: string, data: { moduleId: number; domain: string; path: string; adminName?: string; adminPassword?: string; language?: string }): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/module`, data);
-  }
-
-  async deleteModule(serviceName: string, id: number): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/module/${id}`);
-  }
-
-  // ---------- CRON ----------
-  async listCrons(serviceName: string): Promise<number[]> {
-    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/cron`);
-  }
-
-  async getCron(serviceName: string, id: number): Promise<Cron> {
-    return apiClient.get<Cron>(`${this.basePath}/${serviceName}/cron/${id}`);
-  }
-
-  async createCron(serviceName: string, data: Partial<Cron>): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/cron`, data);
-  }
-
-  async updateCron(serviceName: string, id: number, data: Partial<Cron>): Promise<void> {
-    return apiClient.put(`${this.basePath}/${serviceName}/cron/${id}`, data);
-  }
-
-  async deleteCron(serviceName: string, id: number): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/cron/${id}`);
-  }
-
-  // ---------- ENVVARS ----------
-  async listEnvVars(serviceName: string): Promise<string[]> {
-    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/envVar`);
-  }
-
-  async getEnvVar(serviceName: string, key: string): Promise<EnvVar> {
-    return apiClient.get<EnvVar>(`${this.basePath}/${serviceName}/envVar/${encodeURIComponent(key)}`);
-  }
-
-  async createEnvVar(serviceName: string, data: { key: string; value: string; type: string }): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/envVar`, data);
-  }
-
-  async deleteEnvVar(serviceName: string, key: string): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/envVar/${encodeURIComponent(key)}`);
-  }
-
-  // ---------- RUNTIMES ----------
-  async listRuntimes(serviceName: string): Promise<number[]> {
-    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/runtime`);
-  }
-
-  async getRuntime(serviceName: string, id: number): Promise<Runtime> {
-    return apiClient.get<Runtime>(`${this.basePath}/${serviceName}/runtime/${id}`);
-  }
-
-  async createRuntime(serviceName: string, data: Partial<Runtime>): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/runtime`, data);
-  }
-
-  async deleteRuntime(serviceName: string, id: number): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/runtime/${id}`);
-  }
-
-  async setDefaultRuntime(serviceName: string, id: number): Promise<void> {
-    return apiClient.put(`${this.basePath}/${serviceName}/runtime/${id}`, { isDefault: true });
-  }
-
-  // ---------- SSL ----------
-  async getSsl(serviceName: string): Promise<SslCertificate | null> {
-    try {
-      return await apiClient.get<SslCertificate>(`${this.basePath}/${serviceName}/ssl`);
-    } catch {
-      return null;
-    }
-  }
-
-  async deleteSsl(serviceName: string): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/ssl`);
-  }
-
-  async regenerateSsl(serviceName: string): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/ssl/regenerate`, {});
-  }
-
-  async enableSsl(serviceName: string, domain: string): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/ssl`, {});
-  }
-
-  async disableSsl(serviceName: string, domain: string): Promise<void> {
-    return apiClient.delete(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/ssl`);
-  }
-
-  async importSsl(serviceName: string, data: { certificate: string; key: string; chain?: string }): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/ssl`, data);
-  }
-
-  // ---------- CDN ----------
-  async flushCdn(serviceName: string): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/cdn/flush`, {});
-  }
-
-  // ---------- TASKS ----------
-  async listTasks(serviceName: string): Promise<number[]> {
-    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/tasks`);
-  }
-
-  async getTask(serviceName: string, id: number): Promise<HostingTask> {
-    return apiClient.get<HostingTask>(`${this.basePath}/${serviceName}/tasks/${id}`);
-  }
-
-  // ---------- LOCAL SEO ----------
-  async listLocalSeoAccounts(serviceName: string): Promise<number[]> {
-    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/localSeo/account`);
-  }
-
-  async getLocalSeoAccount(serviceName: string, id: number): Promise<LocalSeoAccount> {
-    return apiClient.get<LocalSeoAccount>(`${this.basePath}/${serviceName}/localSeo/account/${id}`);
-  }
-
-  async terminateLocalSeo(serviceName: string, id: number): Promise<void> {
-    return apiClient.post(`${this.basePath}/${serviceName}/localSeo/account/${id}/terminate`, {});
-  }
-
-  // ---------- AUTOMATED EMAILS ----------
-  async getAutomatedEmails(serviceName: string): Promise<{ state: string; email?: string }> {
-    return apiClient.get(`${this.basePath}/${serviceName}/automatedEmails`);
-  }
-
-  async updateAutomatedEmails(serviceName: string, data: { email: string }): Promise<void> {
-    return apiClient.put(`${this.basePath}/${serviceName}/automatedEmails`, data);
-  }
-}
-
-export const hostingService = new HostingService();
 
 // ============================================================
-// ADDITIONAL API METHODS - Phase A Complete
+// SERVICE OBJECT
 // ============================================================
 
-// SSL Methods
-export const sslMethods = {
-  regenerateSsl: (serviceName: string) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/ssl/regenerate`, { method: 'POST' }),
-  deleteSsl: (serviceName: string) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/ssl`, { method: 'DELETE' }),
-  activateSslForDomain: (serviceName: string, domain: string) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/ssl`, { method: 'POST' }),
+export const hostingService = {
+  // --- HOSTING ---
+  listHostings: () => ovhGet<string[]>("/hosting/web"),
+  getHosting: (sn: string) => ovhGet<Hosting>(`/hosting/web/${sn}`),
+  updateHosting: (sn: string, data: Partial<Hosting>) => ovhPut<void>(`/hosting/web/${sn}`, data),
+  getServiceInfos: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/serviceInfos`),
+
+  // --- ATTACHED DOMAINS ---
+  listAttachedDomains: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/attachedDomain`),
+  getAttachedDomain: (sn: string, d: string) => ovhGet<AttachedDomain>(`/hosting/web/${sn}/attachedDomain/${d}`),
+  createAttachedDomain: (sn: string, data: Partial<AttachedDomain>) => ovhPost<void>(`/hosting/web/${sn}/attachedDomain`, data),
+  updateAttachedDomain: (sn: string, d: string, data: Partial<AttachedDomain>) => ovhPut<void>(`/hosting/web/${sn}/attachedDomain/${d}`, data),
+  deleteAttachedDomain: (sn: string, d: string) => ovhDelete<void>(`/hosting/web/${sn}/attachedDomain/${d}`),
+
+  // --- DATABASES ---
+  listDatabases: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/database`),
+  getDatabase: (sn: string, name: string) => ovhGet<Database>(`/hosting/web/${sn}/database/${name}`),
+  createDatabase: (sn: string, data: any) => ovhPost<void>(`/hosting/web/${sn}/database`, data),
+  deleteDatabase: (sn: string, name: string) => ovhDelete<void>(`/hosting/web/${sn}/database/${name}`),
+  dumpDatabase: (sn: string, name: string, date = "now", sendEmail?: boolean) => 
+    ovhPost<void>(`/hosting/web/${sn}/database/${name}/dump`, { date, sendEmail }),
+  restoreDatabase: (sn: string, name: string, dumpId: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/database/${name}/restore`, { dumpId }),
+  importDatabase: (sn: string, name: string, url: string, sendEmail?: boolean) => 
+    ovhPost<void>(`/hosting/web/${sn}/database/${name}/import`, { documentUrl: url, sendEmail }),
+  copyDatabase: (sn: string, src: string, tgt: string, flush: boolean) => 
+    ovhPost<void>(`/hosting/web/${sn}/database/${src}/copy`, { flushDestination: flush, destinationDatabaseName: tgt }),
+  changeDatabasePassword: (sn: string, name: string, password: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/database/${name}/changePassword`, { password }),
+  listDatabaseDumps: (sn: string, name: string) => ovhGet<any[]>(`/hosting/web/${sn}/database/${name}/dump`),
+
+  // --- FTP USERS ---
+  listFtpUsers: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/user`),
+  getFtpUser: (sn: string, login: string) => ovhGet<FtpUser>(`/hosting/web/${sn}/user/${login}`),
+  createFtpUser: (sn: string, data: any) => ovhPost<void>(`/hosting/web/${sn}/user`, data),
+  updateFtpUser: (sn: string, login: string, data: Partial<FtpUser>) => ovhPut<void>(`/hosting/web/${sn}/user/${login}`, data),
+  deleteFtpUser: (sn: string, login: string) => ovhDelete<void>(`/hosting/web/${sn}/user/${login}`),
+  changeFtpPassword: (sn: string, login: string, password: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/user/${login}/changePassword`, { password }),
+
+  // --- SSL ---
+  getSsl: (sn: string) => ovhGet<SslCertificate>(`/hosting/web/${sn}/ssl`).catch(() => null),
+  regenerateSsl: (sn: string) => ovhPost<void>(`/hosting/web/${sn}/ssl/regenerate`, {}),
+  deleteSsl: (sn: string) => ovhDelete<void>(`/hosting/web/${sn}/ssl`),
+  importSsl: (sn: string, certificate: string, key: string, chain?: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/ssl`, { certificate, key, chain }),
+  orderSectigo: (sn: string, type: string) => 
+    ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `ssl-${type.toLowerCase()}`, quantity: 1 }),
+  activateSslForDomain: (sn: string, domain: string) => 
+    ovhPut<void>(`/hosting/web/${sn}/attachedDomain/${domain}`, { ssl: true }),
+
+  // --- CRON ---
+  listCrons: (sn: string) => ovhGet<number[]>(`/hosting/web/${sn}/cron`),
+  getCron: (sn: string, id: number) => ovhGet<CronJob>(`/hosting/web/${sn}/cron/${id}`),
+  createCron: (sn: string, data: Partial<CronJob>) => ovhPost<void>(`/hosting/web/${sn}/cron`, data),
+  updateCron: (sn: string, id: number, data: Partial<CronJob>) => ovhPut<void>(`/hosting/web/${sn}/cron/${id}`, data),
+  deleteCron: (sn: string, id: number) => ovhDelete<void>(`/hosting/web/${sn}/cron/${id}`),
+
+  // --- ENV VARS ---
+  listEnvVars: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/envVar`),
+  getEnvVar: (sn: string, key: string) => ovhGet<EnvVar>(`/hosting/web/${sn}/envVar/${key}`),
+  createEnvVar: (sn: string, key: string, value: string, type?: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/envVar`, { key, value, type }),
+  updateEnvVar: (sn: string, key: string, value: string) => 
+    ovhPut<void>(`/hosting/web/${sn}/envVar/${key}`, { value }),
+  deleteEnvVar: (sn: string, key: string) => ovhDelete<void>(`/hosting/web/${sn}/envVar/${key}`),
+
+  // --- RUNTIMES ---
+  listRuntimes: (sn: string) => ovhGet<number[]>(`/hosting/web/${sn}/runtime`),
+  getRuntime: (sn: string, id: number) => ovhGet<Runtime>(`/hosting/web/${sn}/runtime/${id}`),
+  createRuntime: (sn: string, data: Partial<Runtime>) => ovhPost<void>(`/hosting/web/${sn}/runtime`, data),
+  updateRuntime: (sn: string, id: number, data: Partial<Runtime>) => ovhPut<void>(`/hosting/web/${sn}/runtime/${id}`, data),
+  deleteRuntime: (sn: string, id: number) => ovhDelete<void>(`/hosting/web/${sn}/runtime/${id}`),
+  setDefaultRuntime: (sn: string, id: number) => ovhPut<void>(`/hosting/web/${sn}/runtime/${id}`, { isDefault: true }),
+
+  // --- MODULES ---
+  listModules: (sn: string) => ovhGet<number[]>(`/hosting/web/${sn}/module`),
+  getModule: (sn: string, id: number) => ovhGet<Module>(`/hosting/web/${sn}/module/${id}`),
+  installModule: (sn: string, data: any) => ovhPost<void>(`/hosting/web/${sn}/module`, data),
+  deleteModule: (sn: string, id: number) => ovhDelete<void>(`/hosting/web/${sn}/module/${id}`),
+  changeModulePassword: (sn: string, id: number, password: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/module/${id}/changePassword`, { password }),
+
+  // --- CDN ---
+  getCdnInfo: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/cdn`).catch(() => null),
+  flushCdnCache: (sn: string) => ovhPost<void>(`/hosting/web/${sn}/cdn/flush`, {}),
+  orderCdn: (sn: string, type: string) => 
+    ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `cdn-${type}`, quantity: 1 }),
+
+  // --- BOOST ---
+  getBoostInfo: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/boost`).catch(() => null),
+  getAvailableBoostOffers: (sn: string) => ovhGet<any[]>(`/hosting/web/${sn}/boostHistory`).catch(() => []),
+  activateBoost: (sn: string, offer: string) => ovhPost<void>(`/hosting/web/${sn}/requestBoost`, { offer }),
+  deactivateBoost: (sn: string) => ovhDelete<void>(`/hosting/web/${sn}/requestBoost`),
+
+  // --- LOCAL SEO ---
+  listLocalSeo: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/localSeo/location`).catch(() => []),
+  getLocalSeo: (sn: string, id: string) => ovhGet<any>(`/hosting/web/${sn}/localSeo/location/${id}`),
+  terminateLocalSeo: (sn: string, id: string) => ovhPost<void>(`/hosting/web/${sn}/localSeo/location/${id}/terminate`, {}),
+  orderLocalSeo: (sn: string, country: string) => 
+    ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `localSeo-${country}`, quantity: 1 }),
+  loginLocalSeo: (sn: string, id: string) => ovhPost<any>(`/hosting/web/${sn}/localSeo/location/${id}/serviceInfosUpdate`, {}),
+  getLocalSeoAccount: (sn: string, id: string) => ovhGet<any>(`/hosting/web/${sn}/localSeo/location/${id}/account`),
+
+  // --- AUTOMATED EMAILS ---
+  getAutomatedEmails: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/email`),
+  updateAutomatedEmails: (sn: string, data: any) => ovhPut<void>(`/hosting/web/${sn}/email`, data),
+
+  // --- SNAPSHOTS ---
+  listSnapshots: async (sn: string) => {
+    const dates = await ovhGet<string[]>(`/hosting/web/${sn}/dump`);
+    return Promise.all(dates.map(d => ovhGet<any>(`/hosting/web/${sn}/dump/${d}`)));
+  },
+  restoreSnapshot: (sn: string, date: string) => ovhPost<void>(`/hosting/web/${sn}/restoreSnapshot`, { backup: date }),
+
+  // --- OVHCONFIG ---
+  getOvhConfig: async (sn: string) => {
+    const ids = await ovhGet<number[]>(`/hosting/web/${sn}/ovhConfig`);
+    return ids.length > 0 ? ovhGet<any>(`/hosting/web/${sn}/ovhConfig/${ids[0]}`) : null;
+  },
+  updateOvhConfig: async (sn: string, config: any) => {
+    const ids = await ovhGet<number[]>(`/hosting/web/${sn}/ovhConfig`);
+    if (ids.length === 0) throw new Error("No ovhConfig found");
+    return ovhPut<void>(`/hosting/web/${sn}/ovhConfig/${ids[0]}`, config);
+  },
+  getAvailablePhpVersions: (sn: string) => 
+    ovhGet<string[]>(`/hosting/web/${sn}/ovhConfig/availableVersions`).catch(() => ["7.4", "8.0", "8.1", "8.2", "8.3"]),
+
+  // --- TASKS ---
+  listTasks: (sn: string) => ovhGet<number[]>(`/hosting/web/${sn}/tasks`),
+  getTask: (sn: string, id: number) => ovhGet<HostingTask>(`/hosting/web/${sn}/tasks/${id}`),
 };
 
-// Attached Domain Methods
-export const attachedDomainMethods = {
-  updateAttachedDomain: (serviceName: string, domain: string, data: any) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/attachedDomain/${encodeURIComponent(domain)}`, { method: 'PUT', body: JSON.stringify(data) }),
-  getDomainDigStatus: (serviceName: string, domain: string) => 
-    apiFetch<{ ipv4: boolean; ipv6: boolean; cname: boolean }>(`/hosting/web/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/digStatus`),
-  restartAttachedDomain: (serviceName: string, domain: string) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/restart`, { method: 'POST' }),
-};
-
-// Cron Methods
-export const cronMethods = {
-  updateCron: (serviceName: string, cronId: number, data: any) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/cron/${cronId}`, { method: 'PUT', body: JSON.stringify(data) }),
-};
-
-// EnvVar Methods
-export const envvarMethods = {
-  updateEnvVar: (serviceName: string, key: string, data: { value: string }) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/envVar/${encodeURIComponent(key)}`, { method: 'PUT', body: JSON.stringify(data) }),
-};
-
-// Runtime Methods
-export const runtimeMethods = {
-  updateRuntime: (serviceName: string, runtimeId: number, data: any) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/runtime/${runtimeId}`, { method: 'PUT', body: JSON.stringify(data) }),
-  setDefaultRuntime: (serviceName: string, runtimeId: number) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/runtime/${runtimeId}/setDefault`, { method: 'POST' }),
-};
-
-// CDN Methods
-export const cdnMethods = {
-  getCdnInfo: (serviceName: string) => 
-    apiFetch<any>(`/hosting/web/${serviceName}/cdn`),
-  flushCdnCache: (serviceName: string) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/cdn/flush`, { method: 'POST' }),
-};
-
-// Boost Methods
-export const boostMethods = {
-  getBoostInfo: (serviceName: string) => 
-    apiFetch<any>(`/hosting/web/${serviceName}/boostInfo`),
-  deactivateBoost: (serviceName: string) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/boost/deactivate`, { method: 'POST' }),
-};
-
-// LocalSeo Methods
-export const localSeoMethods = {
-  listLocalSeo: (serviceName: string) => 
-    apiFetch<string[]>(`/hosting/web/${serviceName}/localSeo`),
-  getLocalSeo: (serviceName: string, id: string) => 
-    apiFetch<any>(`/hosting/web/${serviceName}/localSeo/${id}`),
-  terminateLocalSeo: (serviceName: string, id: string) => 
-    apiFetch<void>(`/hosting/web/${serviceName}/localSeo/${id}/terminate`, { method: 'POST' }),
-};
-
-// Merge all methods into hostingService
-Object.assign(hostingService, sslMethods, attachedDomainMethods, cronMethods, envvarMethods, runtimeMethods, cdnMethods, boostMethods, localSeoMethods);
+export default hostingService;

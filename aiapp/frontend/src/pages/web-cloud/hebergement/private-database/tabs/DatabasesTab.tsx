@@ -1,79 +1,108 @@
 // ============================================================
-// PRIVATE DATABASE TAB: DATABASES - Gestion des bases
+// PRIVATE DATABASE TAB: Bases de données
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { privateDatabaseService, PdbDatabase } from "../../../../../services/web-cloud.private-database";
-import { CreatePdbDatabaseModal } from "../components/CreatePdbDatabaseModal";
+import { CreatePdbDatabaseModal, ExtensionsModal } from "../components";
 
-interface Props { serviceName: string; }
+interface Props { 
+  serviceName: string; 
+  dbType?: string; 
+}
 
 /** Onglet Bases de données CloudDB. */
-export function DatabasesTab({ serviceName }: Props) {
+export function DatabasesTab({ serviceName, dbType }: Props) {
   const { t } = useTranslation("web-cloud/private-database/index");
   const [databases, setDatabases] = useState<PdbDatabase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [dumpLoading, setDumpLoading] = useState<string | null>(null);
+  const [extensionsTarget, setExtensionsTarget] = useState<string | null>(null);
+
+  const isPostgres = dbType?.toLowerCase() === "postgresql";
 
   const loadDatabases = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const names = await privateDatabaseService.listDatabases(serviceName);
-      const data = await Promise.all(names.map(n => privateDatabaseService.getDatabase(serviceName, n)));
-      setDatabases(data);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
+      const details = await Promise.all(
+        names.map(name => privateDatabaseService.getDatabase(serviceName, name))
+      );
+      setDatabases(details);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
   }, [serviceName]);
 
-  useEffect(() => { loadDatabases(); }, [loadDatabases]);
+  useEffect(() => {
+    loadDatabases();
+  }, [loadDatabases]);
 
   const handleDelete = async (databaseName: string) => {
     if (!confirm(t("databases.confirmDelete", { name: databaseName }))) return;
     try {
       await privateDatabaseService.deleteDatabase(serviceName, databaseName);
       loadDatabases();
-    } catch (err) { alert(String(err)); }
+    } catch (err) {
+      alert(String(err));
+    }
   };
 
-  const handleCreateDump = async (databaseName: string) => {
+  const handleDump = async (databaseName: string) => {
     try {
       setDumpLoading(databaseName);
-      await privateDatabaseService.createDump(serviceName, databaseName);
+      await privateDatabaseService.createDump(serviceName, databaseName, true);
       alert(t("databases.dumpCreated"));
-    } catch (err) { alert(String(err)); }
-    finally { setDumpLoading(null); }
+    } catch (err) {
+      alert(String(err));
+    } finally {
+      setDumpLoading(null);
+    }
   };
 
-  const formatSize = (bytes?: number) => {
-    if (!bytes) return '-';
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} Ko`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} Mo`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} Go`;
+  const formatSize = (quota: { value: number; unit: string }) => {
+    if (quota.unit === "MB") return `${quota.value} Mo`;
+    if (quota.unit === "GB") return `${quota.value} Go`;
+    return `${quota.value} ${quota.unit}`;
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  // ---------- RENDER ----------
+  if (loading) {
+    return <div className="loading-spinner">{t("common.loading")}</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="error-state">
+        <p>{error}</p>
+        <button className="btn btn-primary" onClick={loadDatabases}>
+          {t("common.retry")}
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="pdb-databases-tab">
+    <div className="tab-panel">
       <div className="tab-header">
         <div>
           <h3>{t("databases.title")}</h3>
           <p className="tab-description">{t("databases.description")}</p>
         </div>
-        <div className="tab-actions">
-          <span className="records-count">{databases.length} {t("databases.count")}</span>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
-            + {t("databases.create")}
-          </button>
-        </div>
+        <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+          {t("databases.create")}
+        </button>
       </div>
 
       {databases.length === 0 ? (
         <div className="empty-state">
+          <span className="empty-icon">🗄️</span>
           <p>{t("databases.empty")}</p>
           <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
             {t("databases.createFirst")}
@@ -84,47 +113,43 @@ export function DatabasesTab({ serviceName }: Props) {
           <thead>
             <tr>
               <th>{t("databases.name")}</th>
-              <th>{t("databases.size")}</th>
+              <th>{t("databases.quotaUsed")}</th>
               <th>{t("databases.users")}</th>
-              <th>{t("databases.backupTime")}</th>
-              <th>Actions</th>
+              <th>{t("common.actions")}</th>
             </tr>
           </thead>
           <tbody>
             {databases.map(db => (
               <tr key={db.databaseName}>
-                <td className="font-mono">{db.databaseName}</td>
-                <td>{formatSize(db.quotaUsed?.value)}</td>
                 <td>
-                  {db.users && db.users.length > 0 ? (
-                    <div className="users-list">
-                      {db.users.slice(0, 3).map(u => (
-                        <span key={u} className="badge info">{u}</span>
-                      ))}
-                      {db.users.length > 3 && (
-                        <span className="badge inactive">+{db.users.length - 3}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-muted">-</span>
-                  )}
+                  <strong>{db.databaseName}</strong>
                 </td>
-                <td>{db.backupTime || '-'}</td>
+                <td>
+                  {formatSize(db.quotaUsed)} / {formatSize(db.quotaSize)}
+                </td>
+                <td>{db.usersCount ?? "-"}</td>
                 <td>
                   <div className="action-buttons">
-                    <button 
-                      className="btn btn-secondary btn-sm" 
-                      onClick={() => handleCreateDump(db.databaseName)}
+                    <button
+                      className="btn btn-sm"
+                      onClick={() => handleDump(db.databaseName)}
                       disabled={dumpLoading === db.databaseName}
                     >
                       {dumpLoading === db.databaseName ? "..." : t("databases.dump")}
                     </button>
-                    <button 
-                      className="btn-icon btn-danger-icon" 
+                    {isPostgres && (
+                      <button
+                        className="btn btn-sm"
+                        onClick={() => setExtensionsTarget(db.databaseName)}
+                      >
+                        {t("databases.extensions")}
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-sm btn-danger"
                       onClick={() => handleDelete(db.databaseName)}
-                      title={t("databases.delete")}
                     >
-                      🗑
+                      {t("databases.delete")}
                     </button>
                   </div>
                 </td>
@@ -134,12 +159,35 @@ export function DatabasesTab({ serviceName }: Props) {
         </table>
       )}
 
+      <div className="tab-footer">
+        <span className="count-label">
+          {databases.length} {t("databases.count")}
+        </span>
+      </div>
+
+      {/* Modals */}
       <CreatePdbDatabaseModal
         serviceName={serviceName}
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onSuccess={loadDatabases}
+        onSuccess={() => {
+          setShowCreateModal(false);
+          loadDatabases();
+        }}
       />
+
+      {extensionsTarget && (
+        <ExtensionsModal
+          serviceName={serviceName}
+          databaseName={extensionsTarget}
+          isOpen={!!extensionsTarget}
+          onClose={() => setExtensionsTarget(null)}
+          onSuccess={() => {
+            setExtensionsTarget(null);
+            loadDatabases();
+          }}
+        />
+      )}
     </div>
   );
 }

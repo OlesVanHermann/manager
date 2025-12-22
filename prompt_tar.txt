@@ -466,8 +466,8 @@ Après génération des scripts, TOUJOURS exécuter le script de vérification P
 
 Pattern OBLIGATOIRE pour les scripts :
 ```
-cp /home/ubuntu/{script}.sh /home/ubuntu/{script}.sh.$(date +%Y%m%d%H%M%S) 2>/dev/null || true
-tee /home/ubuntu/{script}.sh << 'ENDSCRIPT'
+cp /home/ubuntu/{script}.sh /home/ubuntu/{script}.sh.$(date +%Y%m%d%H%M%S) || true
+tee /home/ubuntu/{script}.sh > /dev/null << 'ENDSCRIPT'
 #!/bin/bash
 set -e
 [contenu]
@@ -475,18 +475,42 @@ ENDSCRIPT
 chmod +x /home/ubuntu/{script}.sh
 ```
 
+**Règle CRITIQUE :** Le `cp` est OBLIGATOIRE même si le fichier n'existe pas. La commande peut échouer (`|| true`), ce n'est pas grave. Cela garantit une sauvegarde systématique si le fichier existe.
+
 Rappels anti-casse cp+tee :
 - ENDSCRIPT final en début de ligne, sans espace
 - Apostrophes simples 'ENDSCRIPT' (pas de guillemets intelligents)
 - Pas d'indentation avant tee ni avant ENDSCRIPT final
 - Toujours /home/ubuntu, jamais ~
-- Si le fichier généré contient lui-même un heredoc, utiliser un délimiteur DIFFÉRENT
+- **ATTENTION aux délimiteurs doubles** : si le fichier généré contient lui-même un heredoc (ex: `<<'EOF'`), utiliser un délimiteur DIFFÉRENT pour l'enveloppe externe
+
+**Exemples de conflits de délimiteurs :**
+
+MAUVAIS (ENDSCRIPT dans ENDSCRIPT) :
+```bash
+tee /home/ubuntu/script.sh > /dev/null << 'ENDSCRIPT'
+#!/bin/bash
+cat > config.txt << 'ENDSCRIPT'   # <-- CONFLIT !
+contenu
+ENDSCRIPT
+ENDSCRIPT
+```
+
+BON (délimiteurs différents) :
+```bash
+tee /home/ubuntu/script.sh > /dev/null << 'OUTER_SCRIPT'
+#!/bin/bash
+cat > config.txt << 'ENDSCRIPT'
+contenu
+ENDSCRIPT
+OUTER_SCRIPT
+```
 
 ## Format de modification (super-patch)
 
 Pour modifier un fichier existant sans le réécrire entièrement :
 ```
-super-patch <<'EOF'
+super-patch <<'PATCH_EOF'
 --- /chemin/absolu/fichier.sh
 +++ /chemin/absolu/fichier.sh
 @@
@@ -494,14 +518,14 @@ super-patch <<'EOF'
 -ancienne ligne à supprimer
 +nouvelle ligne à ajouter
  ligne de contexte après
-EOF
+PATCH_EOF
 ```
 
 **Rappels anti-casse super-patch :**
-- `EOF` final colonne 0, sans espace
+- Délimiteur final colonne 0, sans espace
 - TOUJOURS une ligne de contexte (sans `-/+`) avant ET après `@@`
 - Utiliser des chemins absolus /home/ubuntu (pas ~)
-- Si le contenu du patch contient EOF, utiliser un délimiteur DIFFÉRENT (PATCH_END, etc.)
+- **ATTENTION aux délimiteurs doubles** : si le contenu du patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
 
 **Exemple MAUVAIS (pas de contexte) :**
 ```
@@ -519,6 +543,8 @@ EOF
 +rm -f $TAR_DIR/new_manager.*.tar
  cd /home/ubuntu/aiapp/frontend
 EOF
+```
+
 ```
 
 ## Choix cp+tee vs super-patch

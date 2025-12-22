@@ -6,38 +6,49 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HostingPage } from "./hosting";
 import { PrivateDatabasePage } from "./private-database";
+import { ManagedWordPressPage } from "./managed-wordpress";
 
-type Section = "hosting" | "private-database";
+type Section = "hosting" | "private-database" | "managed-wordpress";
+
+const SECTIONS = [
+  { id: "hosting", labelKey: "sections.hosting", icon: "🌐" },
+  { id: "private-database", labelKey: "sections.privateDatabase", icon: "🗄️" },
+  { id: "managed-wordpress", labelKey: "sections.managedWordpress", icon: "📝" },
+];
 
 /** Page principale Hébergement avec sous-navigation. */
 export function HebergementPage() {
-  const { t } = useTranslation("web-cloud/hosting/index");
+  const { t } = useTranslation("web-cloud/hebergement/index");
   const [activeSection, setActiveSection] = useState<Section>("hosting");
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "hosting": return <HostingPage />;
+      case "private-database": return <PrivateDatabasePage />;
+      case "managed-wordpress": return <ManagedWordPressPage />;
+      default: return <HostingPage />;
+    }
+  };
 
   return (
     <div className="hebergement-page">
       {/* Sous-navigation */}
       <div className="section-nav">
-        <button
-          className={`section-nav-btn ${activeSection === "hosting" ? "active" : ""}`}
-          onClick={() => setActiveSection("hosting")}
-        >
-          <span className="nav-icon">🌐</span>
-          <span className="nav-label">Hébergements Web</span>
-        </button>
-        <button
-          className={`section-nav-btn ${activeSection === "private-database" ? "active" : ""}`}
-          onClick={() => setActiveSection("private-database")}
-        >
-          <span className="nav-icon">🗄️</span>
-          <span className="nav-label">Web Cloud Databases</span>
-        </button>
+        {SECTIONS.map(section => (
+          <button
+            key={section.id}
+            className={`section-btn ${activeSection === section.id ? "active" : ""}`}
+            onClick={() => setActiveSection(section.id as Section)}
+          >
+            <span className="section-icon">{section.icon}</span>
+            <span className="section-label">{t(section.labelKey)}</span>
+          </button>
+        ))}
       </div>
 
-      {/* Contenu de la section */}
+      {/* Contenu */}
       <div className="section-content">
-        {activeSection === "hosting" && <HostingPage />}
-        {activeSection === "private-database" && <PrivateDatabasePage />}
+        {renderContent()}
       </div>
     </div>
   );

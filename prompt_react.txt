@@ -1551,10 +1551,109 @@ touch /home/ubuntu/aiapp/frontend/public/locales/fr/UNIVERS/SECTION/newtab.json
 touch /home/ubuntu/aiapp/frontend/public/locales/en/UNIVERS/SECTION/newtab.json
 ```
 
-### 22.4 Format cp+tee pour modifications
+
+### 22.4 Generation et modification de fichiers
+
+#### Choix de methode
+
+| Situation | Methode |
+|-----------|---------|
+| Nouveau fichier | cp+tee |
+| Fichier existant, petite modif (< 30 lignes) | super-patch |
+| Fichier existant, gros changements | cp+tee (reecriture complete) |
+
+---
+
+#### Creer/reecrire un fichier avec cp+tee
+
 ```bash
-cp /chemin/fichier.tsx /chemin/fichier.tsx.$(date +%Y%m%dT%H%M%S)
-tee /chemin/fichier.tsx <<'DELIM'
-// contenu du fichier
+cp /chemin/complet/fichier.tsx /chemin/complet/fichier.tsx.$(date +%Y%m%dT%H%M%S) || true
+tee /chemin/complet/fichier.tsx > /dev/null <<'DELIM'
+// Contenu COMPLET du fichier
+// JAMAIS de "... comme avant"
+// JAMAIS de sections tronquees
 DELIM
 ```
+
+**Regle CRITIQUE :** Le `cp` est OBLIGATOIRE meme si le fichier n'existe pas. La commande peut echouer (`|| true`), ce n'est pas grave. Cela garantit une sauvegarde systematique si le fichier existe.
+
+**Rappels anti-casse cp+tee :**
+- Delimiteur final (DELIM, EOF, etc.) en debut de ligne, colonne 0, **sans espace**
+- Pas de guillemets "intelligents" - utiliser `'DELIM'` avec apostrophes simples ASCII
+- Pas d'indentation avant `tee ... <<'DELIM'` ni avant le delimiteur final
+- Si le fichier n'existe pas, `tee` le cree ; s'il existe, il est ecrase
+- **ATTENTION aux delimiteurs doubles** : si le contenu genere contient lui-meme un heredoc (ex: un script bash avec `<<'EOF'`), utiliser un delimiteur DIFFERENT pour l'enveloppe externe (ex: `SCRIPT_END`, `FILE_EOF`, `OUTER_DELIM`)
+
+**Exemples de conflits de delimiteurs :**
+
+MAUVAIS (FS dans FS) :
+```bash
+tee /chemin/script.sh > /dev/null <<'FS'
+#!/bin/bash
+cat > config.txt <<'FS'   # <-- CONFLIT ! Le shell ferme le heredoc ici
+contenu
+FS
+FS
+```
+
+BON (delimiteurs differents) :
+```bash
+tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
+#!/bin/bash
+cat > config.txt <<'FS'
+contenu
+FS
+SCRIPT_END
+```
+
+---
+
+#### Modifier un fichier existant avec super-patch
+
+```bash
+super-patch <<'PATCH_EOF'
+--- /chemin/complet/fichier.tsx
++++ /chemin/complet/fichier.tsx
+@@
+ ligne de contexte avant (sans +/-)
+-ancienne ligne a supprimer
++nouvelle ligne a ajouter
+ ligne de contexte apres (sans +/-)
+PATCH_EOF
+```
+
+**Rappels anti-casse super-patch :**
+- Delimiteur final colonne 0, sans espace
+- TOUJOURS au moins une ligne de contexte (sans `-/+`) **avant ET apres** chaque bloc `@@`
+- Utiliser des chemins absolus `/home/ubuntu/...` (jamais `~`)
+- Le contexte doit correspondre EXACTEMENT au fichier existant
+- **ATTENTION aux delimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
+
+**Exemple MAUVAIS (pas de contexte) :**
+```
+@@
+-old
++new
+EOF
+```
+
+**Exemple BON (avec contexte) :**
+```
+@@
+ const x = 1;
+-old
++new
+ return x;
+EOF
+```
+
+---
+
+#### Regles absolues de generation
+
+1. **JAMAIS** de `// ... comme avant` ou `/* reste inchange */`
+2. **JAMAIS** de sections tronquees avec `...`
+3. **TOUJOURS** le code complet, tous les imports, tous les commentaires
+4. **TOUJOURS** un seul bloc de code markdown par fichier genere
+5. **TOUJOURS** des chemins absolus (`/home/ubuntu/...`)
+6. **TOUJOURS** verifier qu'aucun delimiteur interne ne conflit avec l'externe

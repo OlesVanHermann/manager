@@ -1,5 +1,5 @@
 // ============================================================
-// HOSTING TAB: BOOST - Performances temporaires
+// HOSTING TAB: BOOST - Performances temporaires (sans redirection)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
@@ -11,19 +11,108 @@ interface Props {
   details?: Hosting;
 }
 
+/** Modal pour activer le Boost. */
+function ActivateBoostModal({ serviceName, availableOffers, isOpen, onClose, onSuccess }: {
+  serviceName: string;
+  availableOffers: any[];
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [selectedOffer, setSelectedOffer] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (availableOffers.length > 0 && !selectedOffer) {
+      setSelectedOffer(availableOffers[0].offer);
+    }
+  }, [availableOffers, selectedOffer]);
+
+  if (!isOpen) return null;
+
+  const handleActivate = async () => {
+    if (!selectedOffer) return;
+    setLoading(true);
+    try {
+      await hostingService.activateBoost(serviceName, selectedOffer);
+      alert("Boost activé avec succès !");
+      onSuccess();
+      onClose();
+    } catch (err) {
+      alert(`Erreur: ${err}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content modal-lg" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Activer le Boost</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="info-banner">
+            <span className="info-icon">⚡</span>
+            <p>Le Boost augmente temporairement les ressources de votre hébergement pour absorber les pics de trafic.</p>
+          </div>
+
+          {availableOffers.length === 0 ? (
+            <div className="empty-state">
+              <p>Aucune offre Boost disponible pour votre hébergement.</p>
+            </div>
+          ) : (
+            <div className="offers-grid">
+              {availableOffers.map(offer => (
+                <div 
+                  key={offer.offer}
+                  className={`offer-card ${selectedOffer === offer.offer ? "selected" : ""}`}
+                  onClick={() => setSelectedOffer(offer.offer)}
+                >
+                  <h4>{offer.offer}</h4>
+                  <p className="offer-desc">Boost de performance</p>
+                  {offer.price && (
+                    <p className="offer-price">{offer.price.text}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
+          <button 
+            className="btn btn-primary" 
+            onClick={handleActivate} 
+            disabled={loading || !selectedOffer || availableOffers.length === 0}
+          >
+            {loading ? "Activation..." : "Activer le Boost"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Onglet Boost avec activation/désactivation. */
 export function BoostTab({ serviceName, details }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [boostInfo, setBoostInfo] = useState<any>(null);
+  const [availableOffers, setAvailableOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
 
-  // ---------- LOAD ----------
   const loadBoostInfo = useCallback(async () => {
     try {
       setLoading(true);
-      const info = await hostingService.getBoostInfo(serviceName).catch(() => null);
+      const [info, offers] = await Promise.all([
+        hostingService.getBoostInfo(serviceName).catch(() => null),
+        hostingService.getAvailableBoostOffers(serviceName).catch(() => [])
+      ]);
       setBoostInfo(info);
+      setAvailableOffers(offers || []);
     } finally {
       setLoading(false);
     }
@@ -31,7 +120,6 @@ export function BoostTab({ serviceName, details }: Props) {
 
   useEffect(() => { loadBoostInfo(); }, [loadBoostInfo]);
 
-  // ---------- HANDLERS ----------
   const handleDeactivate = async () => {
     if (!confirm(t("boost.confirmDeactivate"))) return;
     setToggling(true);
@@ -49,7 +137,6 @@ export function BoostTab({ serviceName, details }: Props) {
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
 
-  // ---------- RENDER ----------
   return (
     <div className="boost-tab">
       <div className="tab-header">
@@ -61,7 +148,6 @@ export function BoostTab({ serviceName, details }: Props) {
 
       {isBoostActive ? (
         <>
-          {/* Boost Active */}
           <section className="boost-status boost-active">
             <div className="status-icon">⚡</div>
             <div className="status-content">
@@ -70,7 +156,6 @@ export function BoostTab({ serviceName, details }: Props) {
             </div>
           </section>
 
-          {/* Boost Features */}
           <section className="boost-features">
             <h4>Avantages actifs</h4>
             <ul className="features-list">
@@ -80,7 +165,6 @@ export function BoostTab({ serviceName, details }: Props) {
             </ul>
           </section>
 
-          {/* Actions */}
           <section className="boost-actions">
             <button 
               className="btn btn-warning" 
@@ -93,7 +177,6 @@ export function BoostTab({ serviceName, details }: Props) {
         </>
       ) : (
         <>
-          {/* Boost Inactive */}
           <section className="boost-status boost-inactive">
             <div className="status-icon">○</div>
             <div className="status-content">
@@ -102,13 +185,11 @@ export function BoostTab({ serviceName, details }: Props) {
             </div>
           </section>
 
-          {/* What is Boost */}
           <section className="boost-info-box">
             <h4>{t("boost.whatIs")}</h4>
             <p>{t("boost.explanation")}</p>
           </section>
 
-          {/* Features preview */}
           <section className="boost-features">
             <h4>Avec le Boost, vous bénéficiez de :</h4>
             <ul className="features-list">
@@ -118,25 +199,27 @@ export function BoostTab({ serviceName, details }: Props) {
             </ul>
           </section>
 
-          {/* Note */}
           <section className="boost-note">
             <h4>{t("boost.note")}</h4>
             <p>{t("boost.noteDesc")}</p>
           </section>
 
-          {/* Order link */}
+          {/* SANS REDIRECTION - Modal native */}
           <section className="boost-actions">
-            <a 
-              href={`https://www.ovh.com/manager/#/web/hosting/${serviceName}/boost`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary"
-            >
-              {t("boost.order")} ↗
-            </a>
+            <button className="btn btn-primary" onClick={() => setShowActivateModal(true)}>
+              {t("boost.activate")}
+            </button>
           </section>
         </>
       )}
+
+      <ActivateBoostModal
+        serviceName={serviceName}
+        availableOffers={availableOffers}
+        isOpen={showActivateModal}
+        onClose={() => setShowActivateModal(false)}
+        onSuccess={loadBoostInfo}
+      />
     </div>
   );
 }

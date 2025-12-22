@@ -140,6 +140,7 @@ export function MultisiteTab({ serviceName }: Props) {
                 <th>{t("multisite.domain")}</th>
                 <th>{t("multisite.path")}</th>
                 <th>{t("multisite.ssl")}</th>
+              <th>{t("multisite.git")}</th>
                 <th>{t("multisite.cdn")}</th>
                 <th>{t("multisite.firewall")}</th>
                 <th>Actions</th>
@@ -153,6 +154,11 @@ export function MultisiteTab({ serviceName }: Props) {
                   <td>
                     <span className={`badge ${d.ssl ? 'success' : 'inactive'}`}>
                       {d.ssl ? 'Actif' : 'Non'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`badge ${d.git ? 'success' : 'inactive'}`}>
+                      {d.git ? 'Actif' : 'Non'}
                     </span>
                   </td>
                   <td>

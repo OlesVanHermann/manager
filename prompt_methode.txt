@@ -88,7 +88,7 @@ Puis uploader `feature_name.tar` dans le chat Claude.
 ### 4.1 Créer un nouveau fichier avec cp+tee
 
 ```bash
-cp /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx.$(date +%Y%m%dT%H%M%S) 2>/dev/null
+cp /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx.$(date +%Y%m%dT%H%M%S) || true
 tee /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx > /dev/null <<'FS'
 // Code React COMPLET ici
 // JAMAIS de "... comme avant"
@@ -96,16 +96,41 @@ tee /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx > /dev/null <<'FS'
 FS
 ```
 
+**Règle CRITIQUE :** Le `cp` est OBLIGATOIRE même si le fichier n'existe pas. La commande peut échouer (`|| true`), ce n'est pas grave. Cela garantit une sauvegarde systématique si le fichier existe.
+
 **Rappels anti-casse cp+tee :**
 - `FS` final en début de ligne, sans espace
 - Pas de guillemets "intelligents" - garder `'FS'` avec apostrophes simples
 - Pas d'indentation avant `tee ... <<'FS'` ni avant `FS`
 - Si le fichier n'existe pas, tee le crée ; s'il existe, il est écrasé
+- **ATTENTION aux délimiteurs doubles** : si le contenu généré contient lui-même un heredoc (ex: `<<'EOF'`), utiliser un délimiteur DIFFÉRENT pour l'enveloppe externe (ex: `SCRIPT_END`, `FILE_EOF`, `OUTER_FS`)
+
+**Exemples de conflits de délimiteurs :**
+
+MAUVAIS (FS dans FS) :
+```bash
+tee /chemin/script.sh > /dev/null <<'FS'
+#!/bin/bash
+cat > config.txt <<'FS'   # <-- CONFLIT ! Le shell ferme le heredoc ici
+contenu
+FS
+FS
+```
+
+BON (délimiteurs différents) :
+```bash
+tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
+#!/bin/bash
+cat > config.txt <<'FS'
+contenu
+FS
+SCRIPT_END
+```
 
 ### 4.2 Modifier un fichier existant avec super-patch
 
 ```bash
-super-patch <<'EOF'
+super-patch <<'PATCH_EOF'
 --- /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx
 +++ /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx
 @@
@@ -113,13 +138,14 @@ super-patch <<'EOF'
 -ancienne ligne à supprimer
 +nouvelle ligne à ajouter
  ligne de contexte après
-EOF
+PATCH_EOF
 ```
 
 **Rappels anti-casse super-patch :**
-- `EOF` final colonne 0, sans espace
+- Délimiteur final colonne 0, sans espace
 - TOUJOURS une ligne de contexte (sans `-/+`) avant et après `@@`
 - Utiliser des chemins absolus
+- **ATTENTION aux délimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
 
 **Exemple MAUVAIS :**
 ```
@@ -137,6 +163,8 @@ EOF
 +new
  return x;
 EOF
+```
+
 ```
 
 ### 4.3 Structure type d'un composant

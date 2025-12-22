@@ -4,18 +4,301 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { RestoreSnapshotModal, OvhConfigModal } from "../components";
 import { hostingService, Hosting, HostingServiceInfos } from "../../../../../services/web-cloud.hosting";
-import { ActionMenu } from "../components/ActionMenu";
 
 interface Props { serviceName: string; }
 
-/** Onglet Informations générales - Layout 3 colonnes comme Old Manager. */
+// ---------- MODAL COMPONENTS ----------
+function ChangePhpModal({ serviceName, currentVersion, isOpen, onClose, onSuccess }: {
+  serviceName: string;
+  currentVersion: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [version, setVersion] = useState(currentVersion);
+  const [loading, setLoading] = useState(false);
+  const versions = ["5.6", "7.0", "7.1", "7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3"];
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      await hostingService.updateHosting(serviceName, { phpVersion: version });
+      onSuccess();
+      onClose();
+    } catch (err) {
+      alert(`Erreur: ${err}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Modifier la version PHP</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="form-group">
+            <label>Version PHP</label>
+            <select className="form-select" value={version} onChange={e => setVersion(e.target.value)}>
+              {versions.map(v => (
+                <option key={v} value={v}>PHP {v} {parseFloat(v) < 8.0 ? "(obsolète)" : ""}</option>
+              ))}
+            </select>
+          </div>
+          {parseFloat(version) < 8.0 && (
+            <div className="info-banner warning">
+              <span className="info-icon">⚠</span>
+              <span>Les versions PHP inférieures à 8.0 ne reçoivent plus de mises à jour de sécurité.</span>
+            </div>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Modification..." : "Appliquer"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChangeDisplayNameModal({ serviceName, currentName, isOpen, onClose, onSuccess }: {
+  serviceName: string;
+  currentName: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [name, setName] = useState(currentName);
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      await hostingService.updateHosting(serviceName, { displayName: name });
+      onSuccess();
+      onClose();
+    } catch (err) {
+      alert(`Erreur: ${err}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Modifier le nom d'affichage</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="form-group">
+            <label>Nom d'affichage</label>
+            <input 
+              type="text" 
+              className="form-input" 
+              value={name} 
+              onChange={e => setName(e.target.value)}
+              maxLength={250}
+            />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading || !name.trim()}>
+            {loading ? "Modification..." : "Enregistrer"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UpgradeOfferModal({ serviceName, currentOffer, isOpen, onClose }: {
+  serviceName: string;
+  currentOffer: string;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const [offers, setOffers] = useState<any[]>([]);
+  const [selectedOffer, setSelectedOffer] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [ordering, setOrdering] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setLoading(true);
+    hostingService.getAvailableOffers(serviceName)
+      .then(data => setOffers(data || []))
+      .catch(() => setOffers([]))
+      .finally(() => setLoading(false));
+  }, [serviceName, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleOrder = async () => {
+    if (!selectedOffer) return;
+    setOrdering(true);
+    try {
+      const orderUrl = await hostingService.orderUpgrade(serviceName, selectedOffer);
+      if (orderUrl) {
+        window.open(orderUrl, "_blank");
+      }
+      alert("Redirection vers le bon de commande...");
+      onClose();
+    } catch (err) {
+      alert(`Erreur: ${err}`);
+    } finally {
+      setOrdering(false);
+    }
+  };
+
+  const offerOrder = ["START", "PERSO", "PRO", "PERFORMANCE_1", "PERFORMANCE_2", "PERFORMANCE_3", "PERFORMANCE_4"];
+  const currentIndex = offerOrder.indexOf(currentOffer);
+  const upgradableOffers = offers.filter(o => offerOrder.indexOf(o.planCode) > currentIndex);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content modal-lg" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Changer d'offre</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <p>Offre actuelle : <strong>{currentOffer}</strong></p>
+          
+          {loading ? (
+            <div className="skeleton-block" />
+          ) : upgradableOffers.length === 0 ? (
+            <div className="info-banner">
+              <span className="info-icon">ℹ</span>
+              <span>Vous disposez déjà de l'offre la plus élevée ou aucune offre supérieure n'est disponible.</span>
+            </div>
+          ) : (
+            <div className="offers-grid">
+              {upgradableOffers.map(offer => (
+                <div 
+                  key={offer.planCode}
+                  className={`offer-card ${selectedOffer === offer.planCode ? "selected" : ""}`}
+                  onClick={() => setSelectedOffer(offer.planCode)}
+                >
+                  <h4>{offer.planCode}</h4>
+                  <p className="offer-desc">{offer.description || "Hébergement web OVHcloud"}</p>
+                  {offer.price && (
+                    <p className="offer-price">{offer.price.text}/mois</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
+          <button 
+            className="btn btn-primary" 
+            onClick={handleOrder} 
+            disabled={ordering || !selectedOffer}
+          >
+            {ordering ? "Commande..." : "Commander"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TerminateModal({ serviceName, isOpen, onClose }: {
+  serviceName: string;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleTerminate = async () => {
+    if (confirm !== serviceName) return;
+    setLoading(true);
+    try {
+      await hostingService.terminate(serviceName);
+      alert("Demande de résiliation enregistrée. Votre service sera résilié à la date d'expiration.");
+      onClose();
+    } catch (err) {
+      alert(`Erreur: ${err}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Résilier l'hébergement</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="info-banner danger">
+            <span className="info-icon">⚠</span>
+            <div>
+              <p><strong>Attention :</strong> Cette action est irréversible.</p>
+              <p>Votre hébergement et toutes ses données seront supprimés à la date d'expiration.</p>
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Pour confirmer, tapez <strong>{serviceName}</strong></label>
+            <input 
+              type="text" 
+              className="form-input" 
+              value={confirm} 
+              onChange={e => setConfirm(e.target.value)}
+              placeholder={serviceName}
+            />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
+          <button 
+            className="btn btn-danger" 
+            onClick={handleTerminate} 
+            disabled={loading || confirm !== serviceName}
+          >
+            {loading ? "Résiliation..." : "Confirmer la résiliation"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- MAIN COMPONENT ----------
+/** Onglet Informations générales - Layout 3 colonnes. */
 export function GeneralTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [hosting, setHosting] = useState<Hosting | null>(null);
   const [serviceInfos, setServiceInfos] = useState<HostingServiceInfos | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Modals state
+  const [showPhpModal, setShowPhpModal] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showTerminateModal, setShowTerminateModal] = useState(false);
+  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
+  const [showOvhConfigModal, setShowOvhConfigModal] = useState(false);
 
   // ---------- LOAD ----------
   const loadData = useCallback(async () => {
@@ -63,8 +346,6 @@ export function GeneralTab({ serviceName }: Props) {
     return map[state || ""] || { class: "inactive", label: state || "-" };
   };
 
-  const managerBaseUrl = `https://www.ovh.com/manager/#/web/hosting/${serviceName}`;
-
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /><div className="skeleton-block" /></div>;
   if (error) return <div className="error-state">{error}</div>;
   if (!hosting) return <div className="empty-state">Aucune donnée</div>;
@@ -74,12 +355,28 @@ export function GeneralTab({ serviceName }: Props) {
   // ---------- RENDER ----------
   return (
     <div className="general-tab">
+      {/* Actions rapides */}
+      <div className="quick-actions" style={{ marginBottom: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)' }}>
+        <button className="btn btn-secondary btn-sm" onClick={() => setShowSnapshotModal(true)}>
+          📸 Restaurer un snapshot
+        </button>
+        <button className="btn btn-secondary btn-sm" onClick={() => setShowOvhConfigModal(true)}>
+          ⚙️ Configuration .ovhconfig
+        </button>
+      </div>
+
       {/* Layout 3 colonnes */}
       <div className="general-grid">
         {/* COLONNE 1 : Informations générales */}
         <section className="general-card">
           <h4>Informations générales</h4>
           
+          <div className="info-row with-action">
+            <span className="info-label">Nom d'affichage</span>
+            <span className="info-value">{hosting.displayName || serviceName}</span>
+            <button className="btn-action" onClick={() => setShowNameModal(true)} title="Modifier">✏️</button>
+          </div>
+
           <div className="info-row">
             <span className="info-label">État du service</span>
             <span className="info-value">
@@ -94,9 +391,7 @@ export function GeneralTab({ serviceName }: Props) {
             <span className="info-value copyable">
               <code>{hosting.hostingIp || "-"}</code>
               {hosting.hostingIp && (
-                <button className="copy-btn" onClick={() => copyToClipboard(hosting.hostingIp)} title="Copier">
-                  📋
-                </button>
+                <button className="copy-btn" onClick={() => copyToClipboard(hosting.hostingIp)} title="Copier">📋</button>
               )}
             </span>
           </div>
@@ -106,9 +401,7 @@ export function GeneralTab({ serviceName }: Props) {
             <span className="info-value copyable">
               <code>{hosting.hostingIpv6 || "-"}</code>
               {hosting.hostingIpv6 && (
-                <button className="copy-btn" onClick={() => copyToClipboard(hosting.hostingIpv6!)} title="Copier">
-                  📋
-                </button>
+                <button className="copy-btn" onClick={() => copyToClipboard(hosting.hostingIpv6!)} title="Copier">📋</button>
               )}
             </span>
           </div>
@@ -141,8 +434,8 @@ export function GeneralTab({ serviceName }: Props) {
           </div>
 
           <div className="info-row">
-            <span className="info-label">Filer</span>
-            <span className="info-value">{hosting.filer || "-"}</span>
+            <span className="info-label">Système</span>
+            <span className="info-value">{hosting.operatingSystem || "Linux"}</span>
           </div>
 
           <div className="info-row">
@@ -163,66 +456,46 @@ export function GeneralTab({ serviceName }: Props) {
                 <span className="badge warning" title="Version obsolète">⚠️</span>
               )}
             </span>
-            <ActionMenu actions={[
-              { label: "Modifier la version PHP", href: `${managerBaseUrl}/php`, external: true },
-              { label: "Voir les versions disponibles", href: "https://docs.ovh.com/fr/hosting/configurer-le-php-sur-son-hebergement-web/", external: true }
-            ]} />
+            <button className="btn-action" onClick={() => setShowPhpModal(true)} title="Modifier">✏️</button>
           </div>
 
-          <div className="info-row with-action">
+          <div className="info-row">
             <span className="info-label">Adresses e-mails</span>
             <span className="info-value">
               <span className={`badge ${hosting.hasEmail ? 'success' : 'inactive'}`}>
                 {hosting.hasEmail ? "Actif" : "Non"}
               </span>
             </span>
-            <ActionMenu actions={[
-              { label: "Gérer les emails", href: `${managerBaseUrl}/email`, external: true }
-            ]} />
           </div>
 
-          <div className="info-row with-action">
+          <div className="info-row">
             <span className="info-label">Option CDN</span>
             <span className="info-value">
               <span className={`badge ${hosting.hasCdn ? 'success' : 'inactive'}`}>
                 {hosting.hasCdn ? "Actif" : "Non"}
               </span>
             </span>
-            <ActionMenu actions={[
-              { label: hosting.hasCdn ? "Gérer le CDN" : "Activer le CDN", href: `${managerBaseUrl}/cdn`, external: true }
-            ]} />
           </div>
 
-          <div className="info-row with-action">
+          <div className="info-row">
             <span className="info-label">Certificat SSL</span>
             <span className="info-value">
               <span className={`badge ${hosting.hasHostedSsl ? 'success' : 'inactive'}`}>
                 {hosting.hasHostedSsl ? "Actif" : "Non"}
               </span>
             </span>
-            <ActionMenu actions={[
-              { label: "Gérer SSL", href: `${managerBaseUrl}/ssl`, external: true },
-              { label: "Commander Sectigo", href: `${managerBaseUrl}/ssl/order`, external: true }
-            ]} />
           </div>
 
-          <div className="info-row with-action">
+          <div className="info-row">
             <span className="info-label">Bases de données</span>
             <span className="info-value">
               {hosting.databaseCount !== undefined ? `${hosting.databaseCount}` : "-"}
             </span>
-            <ActionMenu actions={[
-              { label: "Gérer les BDD", href: `${managerBaseUrl}/database`, external: true },
-              { label: "Créer une BDD", href: `${managerBaseUrl}/database/add`, external: true }
-            ]} />
           </div>
 
-          <div className="info-row with-action">
+          <div className="info-row">
             <span className="info-label">Web Cloud Databases</span>
             <span className="info-value">{hosting.privateDbCount || "0"}</span>
-            <ActionMenu actions={[
-              { label: "Voir les CloudDB", href: "/web-cloud/hebergement?section=private-database" }
-            ]} />
           </div>
         </section>
 
@@ -235,49 +508,38 @@ export function GeneralTab({ serviceName }: Props) {
             <span className="info-value">
               <strong>{hosting.offer || "-"}</strong>
             </span>
-            <ActionMenu actions={[
-              { label: "Changer d'offre", href: `${managerBaseUrl}/upgrade`, external: true }
-            ]} />
+            <button className="btn-action" onClick={() => setShowUpgradeModal(true)} title="Changer d'offre">⬆️</button>
           </div>
 
-          <div className="info-row with-action">
-            <span className="info-label">Renouvellement automatique</span>
+          <div className="info-row">
+            <span className="info-label">Renouvellement</span>
             <span className="info-value">
               {serviceInfos?.renew?.automatic ? (
-                <span>{formatDate(serviceInfos.expiration)}</span>
+                <span className="badge success">Automatique</span>
               ) : (
                 <span className="badge warning">Manuel</span>
               )}
             </span>
-            <ActionMenu actions={[
-              { label: "Gérer le renouvellement", href: `https://www.ovh.com/manager/#/billing/autoRenew?searchText=${serviceName}`, external: true }
-            ]} />
           </div>
 
-          <div className="info-row with-action">
+          <div className="info-row">
             <span className="info-label">Boost</span>
             <span className="info-value">
               {hosting.boostOffer ? (
                 <span className="badge success">{hosting.boostOffer}</span>
               ) : (
-                <span className="badge inactive">Indisponible</span>
+                <span className="badge inactive">Non activé</span>
               )}
             </span>
-            <ActionMenu actions={[
-              { label: hosting.boostOffer ? "Gérer le Boost" : "Commander Boost", href: `${managerBaseUrl}/boost`, external: true }
-            ]} />
           </div>
 
-          <div className="info-row with-action">
+          <div className="info-row">
             <span className="info-label">Contacts</span>
             <span className="info-value contacts-list">
-              {serviceInfos?.contactAdmin && <span>{serviceInfos.contactAdmin}: Admin</span>}
-              {serviceInfos?.contactTech && <span>{serviceInfos.contactTech}: Tech</span>}
-              {serviceInfos?.contactBilling && <span>{serviceInfos.contactBilling}: Facturation</span>}
+              {serviceInfos?.contactAdmin && <span title="Administrateur">{serviceInfos.contactAdmin}</span>}
+              {serviceInfos?.contactTech && <span title="Technique">{serviceInfos.contactTech}</span>}
+              {serviceInfos?.contactBilling && <span title="Facturation">{serviceInfos.contactBilling}</span>}
             </span>
-            <ActionMenu actions={[
-              { label: "Gérer les contacts", href: `https://www.ovh.com/manager/#/contacts/services?serviceName=${serviceName}`, external: true }
-            ]} />
           </div>
 
           <div className="info-row">
@@ -289,8 +551,57 @@ export function GeneralTab({ serviceName }: Props) {
             <span className="info-label">Date d'expiration</span>
             <span className="info-value">{formatDate(serviceInfos?.expiration)}</span>
           </div>
+
+          <div className="section-divider" />
+
+          <div className="danger-zone">
+            <button className="btn btn-danger btn-sm" onClick={() => setShowTerminateModal(true)}>
+              Résilier l'hébergement
+            </button>
+          </div>
         </section>
       </div>
+
+      {/* Modals */}
+      <ChangePhpModal
+        serviceName={serviceName}
+        currentVersion={hosting.phpVersion || "8.0"}
+        isOpen={showPhpModal}
+        onClose={() => setShowPhpModal(false)}
+        onSuccess={loadData}
+      />
+      <ChangeDisplayNameModal
+        serviceName={serviceName}
+        currentName={hosting.displayName || ""}
+        isOpen={showNameModal}
+        onClose={() => setShowNameModal(false)}
+        onSuccess={loadData}
+      />
+      <UpgradeOfferModal
+        serviceName={serviceName}
+        currentOffer={hosting.offer || ""}
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
+      <TerminateModal
+        serviceName={serviceName}
+        isOpen={showTerminateModal}
+        onClose={() => setShowTerminateModal(false)}
+      />
+
+      <RestoreSnapshotModal
+        serviceName={serviceName}
+        isOpen={showSnapshotModal}
+        onClose={() => setShowSnapshotModal(false)}
+        onSuccess={loadData}
+      />
+
+      <OvhConfigModal
+        serviceName={serviceName}
+        isOpen={showOvhConfigModal}
+        onClose={() => setShowOvhConfigModal(false)}
+        onSuccess={loadData}
+      />
     </div>
   );
 }

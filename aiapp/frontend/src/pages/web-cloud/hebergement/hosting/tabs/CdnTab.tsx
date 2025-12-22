@@ -1,5 +1,5 @@
 // ============================================================
-// HOSTING TAB: CDN - Content Delivery Network
+// HOSTING TAB: CDN - Content Delivery Network (sans redirection)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
@@ -11,14 +11,91 @@ interface Props {
   details?: Hosting;
 }
 
+/** Modal pour activer le CDN. */
+function ActivateCdnModal({ serviceName, isOpen, onClose, onSuccess }: {
+  serviceName: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [cdnType, setCdnType] = useState<"basic" | "security" | "advanced">("basic");
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleActivate = async () => {
+    setLoading(true);
+    try {
+      await hostingService.orderCdn(serviceName, cdnType);
+      alert("Commande CDN en cours de traitement...");
+      onSuccess();
+      onClose();
+    } catch (err) {
+      alert(`Erreur: ${err}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>Activer le CDN</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="info-banner">
+            <span className="info-icon">ℹ</span>
+            <p>Le CDN accélère votre site en distribuant le contenu depuis des serveurs proches de vos visiteurs.</p>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Type de CDN</label>
+            <div className="radio-group">
+              <label className="radio-label">
+                <input type="radio" name="cdnType" value="basic" checked={cdnType === "basic"} onChange={() => setCdnType("basic")} />
+                <div>
+                  <strong>CDN Basic</strong>
+                  <span className="text-muted">Cache statique et compression</span>
+                </div>
+              </label>
+              <label className="radio-label">
+                <input type="radio" name="cdnType" value="security" checked={cdnType === "security"} onChange={() => setCdnType("security")} />
+                <div>
+                  <strong>CDN Security</strong>
+                  <span className="text-muted">+ Protection DDoS avancée</span>
+                </div>
+              </label>
+              <label className="radio-label">
+                <input type="radio" name="cdnType" value="advanced" checked={cdnType === "advanced"} onChange={() => setCdnType("advanced")} />
+                <div>
+                  <strong>CDN Advanced</strong>
+                  <span className="text-muted">+ Règles personnalisées</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="btn btn-primary" onClick={handleActivate} disabled={loading}>
+            {loading ? "Activation..." : "Activer le CDN"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Onglet CDN avec état et actions. */
 export function CdnTab({ serviceName, details }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [cdnInfo, setCdnInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [flushing, setFlushing] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
 
-  // ---------- LOAD ----------
   const loadCdnInfo = useCallback(async () => {
     try {
       setLoading(true);
@@ -31,7 +108,6 @@ export function CdnTab({ serviceName, details }: Props) {
 
   useEffect(() => { loadCdnInfo(); }, [loadCdnInfo]);
 
-  // ---------- HANDLERS ----------
   const handleFlushCache = async () => {
     if (!confirm(t("cdn.confirmFlush"))) return;
     setFlushing(true);
@@ -45,11 +121,10 @@ export function CdnTab({ serviceName, details }: Props) {
     }
   };
 
-  const isCdnActive = details?.cdn === "active" || cdnInfo?.status === "active";
+  const isCdnActive = details?.hasCdn || cdnInfo?.status === "active";
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
 
-  // ---------- RENDER ----------
   return (
     <div className="cdn-tab">
       <div className="tab-header">
@@ -61,7 +136,6 @@ export function CdnTab({ serviceName, details }: Props) {
 
       {isCdnActive ? (
         <>
-          {/* CDN Active */}
           <section className="cdn-status cdn-active">
             <div className="status-icon">✓</div>
             <div className="status-content">
@@ -70,7 +144,6 @@ export function CdnTab({ serviceName, details }: Props) {
             </div>
           </section>
 
-          {/* CDN Info */}
           {cdnInfo && (
             <section className="cdn-details">
               <h4>Informations CDN</h4>
@@ -87,7 +160,6 @@ export function CdnTab({ serviceName, details }: Props) {
             </section>
           )}
 
-          {/* CDN Features */}
           <section className="cdn-features">
             <h4>{t("cdn.features")}</h4>
             <ul className="features-list">
@@ -98,7 +170,6 @@ export function CdnTab({ serviceName, details }: Props) {
             </ul>
           </section>
 
-          {/* Actions */}
           <section className="cdn-actions">
             <button 
               className="btn btn-warning" 
@@ -111,7 +182,6 @@ export function CdnTab({ serviceName, details }: Props) {
         </>
       ) : (
         <>
-          {/* CDN Inactive */}
           <section className="cdn-status cdn-inactive">
             <div className="status-icon">○</div>
             <div className="status-content">
@@ -120,7 +190,6 @@ export function CdnTab({ serviceName, details }: Props) {
             </div>
           </section>
 
-          {/* Why activate */}
           <section className="cdn-promo">
             <h4>{t("cdn.whyActivate")}</h4>
             <ul className="benefits-list">
@@ -130,25 +199,26 @@ export function CdnTab({ serviceName, details }: Props) {
             </ul>
           </section>
 
-          {/* What is CDN */}
           <section className="cdn-info-box">
             <h4>{t("cdn.whatIs")}</h4>
             <p>{t("cdn.explanation")}</p>
           </section>
 
-          {/* Activate link */}
+          {/* SANS REDIRECTION - Modal native */}
           <section className="cdn-actions">
-            <a 
-              href={`https://www.ovh.com/manager/#/web/hosting/${serviceName}/cdn`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary"
-            >
-              {t("cdn.activate")} ↗
-            </a>
+            <button className="btn btn-primary" onClick={() => setShowActivateModal(true)}>
+              {t("cdn.activate")}
+            </button>
           </section>
         </>
       )}
+
+      <ActivateCdnModal
+        serviceName={serviceName}
+        isOpen={showActivateModal}
+        onClose={() => setShowActivateModal(false)}
+        onSuccess={loadCdnInfo}
+      />
     </div>
   );
 }

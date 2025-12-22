@@ -244,10 +244,11 @@ old_manager.bare-metal.tar             ->  old_manager.bare-metal.txt
 
 ---
 
+
 ### Creer un nouveau fichier avec cp+tee
 ```bash
 mkdir -p /home/ubuntu/old_manager
-cp /home/ubuntu/old_manager/<nom>.txt /home/ubuntu/old_manager/<nom>.txt.$(date +%Y%m%dT%H%M%S) 2>/dev/null
+cp /home/ubuntu/old_manager/<nom>.txt /home/ubuntu/old_manager/<nom>.txt.$(date +%Y%m%dT%H%M%S) || true
 tee /home/ubuntu/old_manager/<nom>.txt > /dev/null <<'DELIM'
 # Contenu COMPLET du cahier des charges
 # JAMAIS de "... comme avant"
@@ -255,12 +256,36 @@ tee /home/ubuntu/old_manager/<nom>.txt > /dev/null <<'DELIM'
 DELIM
 ```
 
+**Regle CRITIQUE :** Le `cp` est OBLIGATOIRE meme si le fichier n'existe pas. La commande peut echouer (`|| true`), ce n'est pas grave. Cela garantit une sauvegarde systematique si le fichier existe.
+
 **Rappels anti-casse cp+tee :**
 - Delimiteur final (DELIM, EOF, etc.) en debut de ligne, colonne 0, sans espace
 - Pas de guillemets intelligents - utiliser 'DELIM' avec apostrophes simples ASCII
 - Pas d indentation avant tee ... <<'DELIM' ni avant le delimiteur final
 - Si le fichier n existe pas, tee le cree ; s il existe, il est ecrase
-- Si le contenu contient le meme delimiteur, utiliser un delimiteur unique (ex: CDC_EOF, MODULE_END)
+- **ATTENTION aux delimiteurs doubles** : si le contenu genere contient lui-meme un heredoc (ex: un script bash avec `<<'EOF'`), utiliser un delimiteur DIFFERENT pour l'enveloppe externe (ex: `CDC_EOF`, `MODULE_END`, `OUTER_DELIM`)
+
+**Exemples de conflits de delimiteurs :**
+
+MAUVAIS (FS dans FS) :
+```bash
+tee /chemin/script.sh > /dev/null <<'FS'
+#!/bin/bash
+cat > config.txt <<'FS'   # <-- CONFLIT ! Le shell ferme le heredoc ici
+contenu
+FS
+FS
+```
+
+BON (delimiteurs differents) :
+```bash
+tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
+#!/bin/bash
+cat > config.txt <<'FS'
+contenu
+FS
+SCRIPT_END
+```
 
 ---
 
@@ -282,6 +307,25 @@ PATCH_EOF
 - TOUJOURS au moins une ligne de contexte (sans -/+) avant ET apres chaque bloc @@
 - Utiliser des chemins absolus
 - Le contexte doit correspondre EXACTEMENT au fichier existant
+- **ATTENTION aux delimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
+
+**Exemple MAUVAIS (pas de contexte) :**
+```
+@@
+-old
++new
+EOF
+```
+
+**Exemple BON (avec contexte) :**
+```
+@@
+ ligne avant
+-old
++new
+ ligne apres
+EOF
+```
 
 ---
 
