@@ -1,43 +1,55 @@
 // ============================================================
-// HOSTING TAB: BOOST - Performance temporaire
+// HOSTING TAB: BOOST - Performances temporaires
 // ============================================================
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Hosting } from "../../../../../services/web-cloud.hosting";
+import { hostingService, Hosting } from "../../../../../services/web-cloud.hosting";
 
 interface Props { 
   serviceName: string; 
   details?: Hosting;
 }
 
-/** Onglet Boost pour performances temporaires. */
+/** Onglet Boost avec activation/désactivation. */
 export function BoostTab({ serviceName, details }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
-  const [deactivating, setDeactivating] = useState(false);
+  const [boostInfo, setBoostInfo] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState(false);
 
-  const hasBoost = !!details?.boostOffer;
-  const boostOffer = details?.boostOffer || '';
+  // ---------- LOAD ----------
+  const loadBoostInfo = useCallback(async () => {
+    try {
+      setLoading(true);
+      const info = await hostingService.getBoostInfo(serviceName).catch(() => null);
+      setBoostInfo(info);
+    } finally {
+      setLoading(false);
+    }
+  }, [serviceName]);
 
+  useEffect(() => { loadBoostInfo(); }, [loadBoostInfo]);
+
+  // ---------- HANDLERS ----------
   const handleDeactivate = async () => {
     if (!confirm(t("boost.confirmDeactivate"))) return;
+    setToggling(true);
     try {
-      setDeactivating(true);
-      // TODO: API call to deactivate boost
-      await new Promise(r => setTimeout(r, 1000));
-      alert("Boost désactivé");
-      window.location.reload();
+      await hostingService.deactivateBoost(serviceName);
+      loadBoostInfo();
     } catch (err) {
-      alert(String(err));
+      alert(`Erreur: ${err}`);
     } finally {
-      setDeactivating(false);
+      setToggling(false);
     }
   };
 
-  const handleOrder = () => {
-    window.open(`https://www.ovh.com/manager/#/web/hosting/${serviceName}/boost/order`, '_blank');
-  };
+  const isBoostActive = details?.boostOffer || boostInfo?.offer;
 
+  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+
+  // ---------- RENDER ----------
   return (
     <div className="boost-tab">
       <div className="tab-header">
@@ -47,69 +59,82 @@ export function BoostTab({ serviceName, details }: Props) {
         </div>
       </div>
 
-      {hasBoost ? (
+      {isBoostActive ? (
         <>
-          {/* Boost Actif */}
-          <div className="status-card success">
+          {/* Boost Active */}
+          <section className="boost-status boost-active">
             <div className="status-icon">⚡</div>
             <div className="status-content">
               <h4>{t("boost.active")}</h4>
-              <p>{t("boost.currentOffer")}: <strong>{boostOffer}</strong></p>
+              <p>{t("boost.currentOffer")}: <strong>{details?.boostOffer || boostInfo?.offer || "Performance"}</strong></p>
             </div>
-          </div>
-
-          {/* Actions */}
-          <section className="info-section">
-            <button 
-              className="btn btn-danger"
-              onClick={handleDeactivate}
-              disabled={deactivating}
-            >
-              {deactivating ? "Désactivation..." : t("boost.deactivate")}
-            </button>
           </section>
 
-          {/* Explication */}
-          <section className="info-section" style={{ marginTop: 'var(--space-6)' }}>
-            <h4>{t("boost.whatIs")}</h4>
-            <p>{t("boost.explanation")}</p>
+          {/* Boost Features */}
+          <section className="boost-features">
+            <h4>Avantages actifs</h4>
+            <ul className="features-list">
+              <li>⚡ {t("boost.featureCpu")}</li>
+              <li>📊 {t("boost.featureRam")}</li>
+              <li>🔝 {t("boost.featurePriority")}</li>
+            </ul>
+          </section>
+
+          {/* Actions */}
+          <section className="boost-actions">
+            <button 
+              className="btn btn-warning" 
+              onClick={handleDeactivate}
+              disabled={toggling}
+            >
+              {toggling ? "Désactivation..." : t("boost.deactivate")}
+            </button>
           </section>
         </>
       ) : (
         <>
-          {/* Boost Inactif - Promotion */}
-          <section className="promo-section">
-            <h4>{t("boost.whatIs")}</h4>
-            <p style={{ marginBottom: 'var(--space-4)' }}>{t("boost.explanation")}</p>
-
-            <div className="features-grid">
-              <div className="feature-item">
-                <span className="feature-icon">🚀</span>
-                <span>{t("boost.featureCpu")}</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">💾</span>
-                <span>{t("boost.featureRam")}</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">⚡</span>
-                <span>{t("boost.featurePriority")}</span>
-              </div>
+          {/* Boost Inactive */}
+          <section className="boost-status boost-inactive">
+            <div className="status-icon">○</div>
+            <div className="status-content">
+              <h4>Boost non activé</h4>
+              <p>Augmentez temporairement les performances de votre hébergement.</p>
             </div>
+          </section>
 
-            <button className="btn btn-primary" onClick={handleOrder} style={{ marginTop: 'var(--space-4)' }}>
-              {t("boost.order")}
-            </button>
+          {/* What is Boost */}
+          <section className="boost-info-box">
+            <h4>{t("boost.whatIs")}</h4>
+            <p>{t("boost.explanation")}</p>
+          </section>
+
+          {/* Features preview */}
+          <section className="boost-features">
+            <h4>Avec le Boost, vous bénéficiez de :</h4>
+            <ul className="features-list">
+              <li>⚡ {t("boost.featureCpu")}</li>
+              <li>📊 {t("boost.featureRam")}</li>
+              <li>🔝 {t("boost.featurePriority")}</li>
+            </ul>
           </section>
 
           {/* Note */}
-          <div className="info-banner" style={{ marginTop: 'var(--space-4)' }}>
-            <span className="info-icon">ℹ</span>
-            <div>
-              <p><strong>{t("boost.note")}</strong></p>
-              <p>{t("boost.noteDesc")}</p>
-            </div>
-          </div>
+          <section className="boost-note">
+            <h4>{t("boost.note")}</h4>
+            <p>{t("boost.noteDesc")}</p>
+          </section>
+
+          {/* Order link */}
+          <section className="boost-actions">
+            <a 
+              href={`https://www.ovh.com/manager/#/web/hosting/${serviceName}/boost`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary"
+            >
+              {t("boost.order")} ↗
+            </a>
+          </section>
         </>
       )}
     </div>

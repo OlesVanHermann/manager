@@ -383,3 +383,76 @@ class HostingService {
 }
 
 export const hostingService = new HostingService();
+
+// ============================================================
+// ADDITIONAL API METHODS - Phase A Complete
+// ============================================================
+
+// SSL Methods
+export const sslMethods = {
+  regenerateSsl: (serviceName: string) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/ssl/regenerate`, { method: 'POST' }),
+  deleteSsl: (serviceName: string) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/ssl`, { method: 'DELETE' }),
+  activateSslForDomain: (serviceName: string, domain: string) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/ssl`, { method: 'POST' }),
+};
+
+// Attached Domain Methods
+export const attachedDomainMethods = {
+  updateAttachedDomain: (serviceName: string, domain: string, data: any) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/attachedDomain/${encodeURIComponent(domain)}`, { method: 'PUT', body: JSON.stringify(data) }),
+  getDomainDigStatus: (serviceName: string, domain: string) => 
+    apiFetch<{ ipv4: boolean; ipv6: boolean; cname: boolean }>(`/hosting/web/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/digStatus`),
+  restartAttachedDomain: (serviceName: string, domain: string) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/restart`, { method: 'POST' }),
+};
+
+// Cron Methods
+export const cronMethods = {
+  updateCron: (serviceName: string, cronId: number, data: any) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/cron/${cronId}`, { method: 'PUT', body: JSON.stringify(data) }),
+};
+
+// EnvVar Methods
+export const envvarMethods = {
+  updateEnvVar: (serviceName: string, key: string, data: { value: string }) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/envVar/${encodeURIComponent(key)}`, { method: 'PUT', body: JSON.stringify(data) }),
+};
+
+// Runtime Methods
+export const runtimeMethods = {
+  updateRuntime: (serviceName: string, runtimeId: number, data: any) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/runtime/${runtimeId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  setDefaultRuntime: (serviceName: string, runtimeId: number) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/runtime/${runtimeId}/setDefault`, { method: 'POST' }),
+};
+
+// CDN Methods
+export const cdnMethods = {
+  getCdnInfo: (serviceName: string) => 
+    apiFetch<any>(`/hosting/web/${serviceName}/cdn`),
+  flushCdnCache: (serviceName: string) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/cdn/flush`, { method: 'POST' }),
+};
+
+// Boost Methods
+export const boostMethods = {
+  getBoostInfo: (serviceName: string) => 
+    apiFetch<any>(`/hosting/web/${serviceName}/boostInfo`),
+  deactivateBoost: (serviceName: string) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/boost/deactivate`, { method: 'POST' }),
+};
+
+// LocalSeo Methods
+export const localSeoMethods = {
+  listLocalSeo: (serviceName: string) => 
+    apiFetch<string[]>(`/hosting/web/${serviceName}/localSeo`),
+  getLocalSeo: (serviceName: string, id: string) => 
+    apiFetch<any>(`/hosting/web/${serviceName}/localSeo/${id}`),
+  terminateLocalSeo: (serviceName: string, id: string) => 
+    apiFetch<void>(`/hosting/web/${serviceName}/localSeo/${id}/terminate`, { method: 'POST' }),
+};
+
+// Merge all methods into hostingService
+Object.assign(hostingService, sslMethods, attachedDomainMethods, cronMethods, envvarMethods, runtimeMethods, cdnMethods, boostMethods, localSeoMethods);

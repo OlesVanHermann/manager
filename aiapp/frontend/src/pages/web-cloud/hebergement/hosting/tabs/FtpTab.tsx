@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { hostingService, FtpUser, Hosting } from "../../../../../services/web-cloud.hosting";
 import { CreateFtpUserModal } from "../components/CreateFtpUserModal";
+import { ChangePasswordModal } from "../components/ChangePasswordModal";
 
 interface Props { 
   serviceName: string; 
@@ -23,7 +24,10 @@ export function FtpTab({ serviceName, details }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [passwordModal, setPasswordModal] = useState<{ open: boolean; login: string }>({ open: false, login: "" });
+  const [togglingSSH, setTogglingSSH] = useState<string | null>(null);
 
+  // ---------- LOAD ----------
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -36,6 +40,7 @@ export function FtpTab({ serviceName, details }: Props) {
 
   useEffect(() => { loadUsers(); }, [loadUsers]);
 
+  // ---------- HANDLERS ----------
   const handleDelete = async (login: string, isPrimary: boolean) => {
     if (isPrimary) {
       alert(t("ftp.cannotDeletePrimary"));
@@ -48,14 +53,27 @@ export function FtpTab({ serviceName, details }: Props) {
     } catch (err) { alert(String(err)); }
   };
 
-  // Filtering
+  const handleToggleSSH = async (user: FtpUser) => {
+    const newState = user.sshState === "active" ? "none" : "active";
+    setTogglingSSH(user.login);
+    try {
+      await hostingService.updateFtpUser(serviceName, user.login, { sshState: newState });
+      loadUsers();
+    } catch (err) { 
+      alert(String(err)); 
+    } finally {
+      setTogglingSSH(null);
+    }
+  };
+
+  // ---------- FILTERING ----------
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users;
     const term = searchTerm.toLowerCase();
     return users.filter(u => u.login.toLowerCase().includes(term));
   }, [users, searchTerm]);
 
-  // Pagination
+  // ---------- PAGINATION ----------
   const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
@@ -64,7 +82,7 @@ export function FtpTab({ serviceName, details }: Props) {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
-  // Connection info
+  // ---------- CONNECTION INFO ----------
   const cluster = details?.cluster || serviceName.match(/cluster(\d+)/)?.[1] || '0';
   const ftpServer = `ftp.cluster${cluster}.hosting.ovh.net`;
   const sshServer = `ssh.cluster${cluster}.hosting.ovh.net`;
@@ -73,6 +91,7 @@ export function FtpTab({ serviceName, details }: Props) {
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
   if (error) return <div className="error-state">{error}</div>;
 
+  // ---------- RENDER ----------
   return (
     <div className="ftp-tab">
       <div className="tab-header">
@@ -117,10 +136,7 @@ export function FtpTab({ serviceName, details }: Props) {
 
         {/* Quick links */}
         <div className="quick-links">
-          <a 
-            href={`ftp://${primaryLogin}@${ftpServer}:21/`} 
-            className="btn btn-secondary btn-sm"
-          >
+          <a href={`ftp://${primaryLogin}@${ftpServer}:21/`} className="btn btn-secondary btn-sm">
             Ouvrir FTP ↗
           </a>
           <a 
@@ -164,7 +180,6 @@ export function FtpTab({ serviceName, details }: Props) {
                 <th>{t("ftp.login")}</th>
                 <th>{t("ftp.home")}</th>
                 <th>{t("ftp.ssh")}</th>
-                <th>{t("ftp.sftp")}</th>
                 <th>{t("ftp.state")}</th>
                 <th>Actions</th>
               </tr>
@@ -178,11 +193,15 @@ export function FtpTab({ serviceName, details }: Props) {
                   </td>
                   <td className="font-mono">{u.home || '/'}</td>
                   <td>
-                    <span className={`badge ${u.sshState === 'active' ? 'success' : 'inactive'}`}>
-                      {u.sshState === 'active' ? 'Activé' : 'Désactivé'}
-                    </span>
+                    <button
+                      className={`toggle-btn ${u.sshState === 'active' ? 'active' : ''}`}
+                      onClick={() => handleToggleSSH(u)}
+                      disabled={togglingSSH === u.login}
+                      title={u.sshState === 'active' ? 'Désactiver SSH' : 'Activer SSH'}
+                    >
+                      {togglingSSH === u.login ? '...' : (u.sshState === 'active' ? 'ON' : 'OFF')}
+                    </button>
                   </td>
-                  <td><span className="badge success">Activé</span></td>
                   <td>
                     <span className={`badge ${u.state === 'ok' ? 'success' : 'warning'}`}>
                       {u.state === 'ok' ? 'Actif' : u.state}
@@ -190,6 +209,13 @@ export function FtpTab({ serviceName, details }: Props) {
                   </td>
                   <td>
                     <div className="action-buttons">
+                      <button 
+                        className="btn-icon" 
+                        onClick={() => setPasswordModal({ open: true, login: u.login })}
+                        title={t("ftp.changePassword")}
+                      >
+                        🔑
+                      </button>
                       <button 
                         className="btn-icon btn-danger-icon" 
                         onClick={() => handleDelete(u.login, !!u.isPrimaryAccount)}
@@ -229,10 +255,19 @@ export function FtpTab({ serviceName, details }: Props) {
         </>
       )}
 
+      {/* Modals */}
       <CreateFtpUserModal
         serviceName={serviceName}
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+        onSuccess={loadUsers}
+      />
+
+      <ChangePasswordModal
+        serviceName={serviceName}
+        login={passwordModal.login}
+        isOpen={passwordModal.open}
+        onClose={() => setPasswordModal({ open: false, login: "" })}
         onSuccess={loadUsers}
       />
     </div>

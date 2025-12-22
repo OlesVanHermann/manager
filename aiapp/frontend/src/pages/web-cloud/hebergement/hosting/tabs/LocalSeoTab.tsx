@@ -4,59 +4,68 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, LocalSeoAccount } from "../../../../../services/web-cloud.hosting";
+import { hostingService } from "../../../../../services/web-cloud.hosting";
+
+interface LocalSeoSubscription {
+  id: string;
+  offer: string;
+  country: string;
+  status: string;
+  creationDate: string;
+}
 
 interface Props { serviceName: string; }
 
-/** Onglet Visibilité Pro (Local SEO). */
+/** Onglet Visibilité Pro avec gestion des abonnements. */
 export function LocalSeoTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
-  const [accounts, setAccounts] = useState<LocalSeoAccount[]>([]);
+  const [subscriptions, setSubscriptions] = useState<LocalSeoSubscription[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [terminating, setTerminating] = useState<string | null>(null);
 
-  const loadAccounts = useCallback(async () => {
+  // ---------- LOAD ----------
+  const loadSubscriptions = useCallback(async () => {
     try {
       setLoading(true);
-      const ids = await hostingService.listLocalSeoAccounts(serviceName);
+      const ids = await hostingService.listLocalSeo(serviceName).catch(() => []);
       if (ids.length > 0) {
-        const data = await Promise.all(ids.map(id => hostingService.getLocalSeoAccount(serviceName, id)));
-        setAccounts(data);
-      } else {
-        setAccounts([]);
+        const data = await Promise.all(
+          ids.map((id: string) => hostingService.getLocalSeo(serviceName, id))
+        );
+        setSubscriptions(data);
       }
-    } catch (err) { 
-      // Si 404, c'est normal - pas de compte Local SEO
-      setAccounts([]);
+    } finally {
+      setLoading(false);
     }
-    finally { setLoading(false); }
   }, [serviceName]);
 
-  useEffect(() => { loadAccounts(); }, [loadAccounts]);
+  useEffect(() => { loadSubscriptions(); }, [loadSubscriptions]);
 
-  const handleTerminate = async (id: number) => {
+  // ---------- HANDLERS ----------
+  const handleTerminate = async (id: string) => {
     if (!confirm(t("localSeo.confirmTerminate"))) return;
+    setTerminating(id);
     try {
       await hostingService.terminateLocalSeo(serviceName, id);
-      loadAccounts();
+      loadSubscriptions();
     } catch (err) {
-      alert(String(err));
+      alert(`Erreur: ${err}`);
+    } finally {
+      setTerminating(null);
     }
   };
 
-  const handleActivate = () => {
-    window.open(`https://www.ovh.com/manager/#/web/hosting/${serviceName}/local-seo/order`, '_blank');
+  const handleManage = (id: string) => {
+    window.open(`https://www.ovh.com/manager/#/web/hosting/${serviceName}/localSeo/${id}`, "_blank");
   };
 
-  const handleManage = (id: number) => {
-    window.open(`https://www.ovh.com/manager/#/web/hosting/${serviceName}/local-seo/${id}`, '_blank');
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("fr-FR");
   };
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
 
-  const hasAccounts = accounts.length > 0;
-
+  // ---------- RENDER ----------
   return (
     <div className="localseo-tab">
       <div className="tab-header">
@@ -66,79 +75,85 @@ export function LocalSeoTab({ serviceName }: Props) {
         </div>
       </div>
 
-      {hasAccounts ? (
+      {subscriptions.length > 0 ? (
         <>
-          {/* Liste des comptes Local SEO */}
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t("localSeo.offer")}</th>
-                <th>{t("localSeo.country")}</th>
-                <th>Statut</th>
-                <th>{t("localSeo.since")}</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map(account => (
-                <tr key={account.id}>
-                  <td>{account.offer || 'Visibilité Pro'}</td>
-                  <td>{account.country || 'FR'}</td>
-                  <td>
-                    <span className={`badge ${account.status === 'active' ? 'success' : 'warning'}`}>
-                      {account.status === 'active' ? 'Actif' : account.status}
-                    </span>
-                  </td>
-                  <td>{account.creationDate ? new Date(account.creationDate).toLocaleDateString() : '-'}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleManage(account.id)}>
-                        {t("localSeo.manage")}
-                      </button>
-                      <button className="btn btn-danger btn-sm" onClick={() => handleTerminate(account.id)}>
-                        {t("localSeo.terminate")}
-                      </button>
-                    </div>
-                  </td>
+          {/* Active subscriptions */}
+          <section className="seo-subscriptions">
+            <h4>Vos abonnements</h4>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>{t("localSeo.offer")}</th>
+                  <th>{t("localSeo.country")}</th>
+                  <th>{t("localSeo.since")}</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {subscriptions.map(sub => (
+                  <tr key={sub.id}>
+                    <td>{sub.offer}</td>
+                    <td>{sub.country}</td>
+                    <td>{formatDate(sub.creationDate)}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button 
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleManage(sub.id)}
+                        >
+                          {t("localSeo.manage")} ↗
+                        </button>
+                        <button 
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleTerminate(sub.id)}
+                          disabled={terminating === sub.id}
+                        >
+                          {terminating === sub.id ? "..." : t("localSeo.terminate")}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
         </>
       ) : (
         <>
-          {/* Promotion Visibilité Pro */}
-          <div className="promo-section">
+          {/* No subscription - Promo */}
+          <section className="seo-promo">
+            <div className="promo-icon">📍</div>
             <h4>{t("localSeo.promoTitle")}</h4>
             <p>{t("localSeo.promoDesc")}</p>
+          </section>
 
-            <div className="features-grid" style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-              <div className="feature-item">
-                <span className="feature-icon">🔍</span>
-                <span>{t("localSeo.feature1")}</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">⭐</span>
-                <span>{t("localSeo.feature2")}</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">📊</span>
-                <span>{t("localSeo.feature3")}</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">📍</span>
-                <span>{t("localSeo.feature4")}</span>
-              </div>
-            </div>
+          {/* Features */}
+          <section className="seo-features">
+            <h4>Fonctionnalités incluses</h4>
+            <ul className="features-list">
+              <li>📋 {t("localSeo.feature1")}</li>
+              <li>⭐ {t("localSeo.feature2")}</li>
+              <li>📊 {t("localSeo.feature3")}</li>
+              <li>🗺️ {t("localSeo.feature4")}</li>
+            </ul>
+          </section>
 
-            <button className="btn btn-primary" onClick={handleActivate}>
-              {t("localSeo.activate")}
-            </button>
-          </div>
-
-          <section className="info-section" style={{ marginTop: 'var(--space-6)' }}>
+          {/* What is */}
+          <section className="seo-info-box">
             <h4>{t("localSeo.whatIs")}</h4>
             <p>{t("localSeo.explanation")}</p>
+          </section>
+
+          {/* Activate link */}
+          <section className="seo-actions">
+            <a 
+              href={`https://www.ovh.com/manager/#/web/hosting/${serviceName}/localSeo/order`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary"
+            >
+              {t("localSeo.activate")} ↗
+            </a>
           </section>
         </>
       )}
