@@ -482,6 +482,55 @@ Rappels anti-casse cp+tee :
 - Toujours /home/ubuntu, jamais ~
 - Si le fichier généré contient lui-même un heredoc, utiliser un délimiteur DIFFÉRENT
 
+## Format de modification (super-patch)
+
+Pour modifier un fichier existant sans le réécrire entièrement :
+```
+super-patch <<'EOF'
+--- /chemin/absolu/fichier.sh
++++ /chemin/absolu/fichier.sh
+@@
+ ligne de contexte avant
+-ancienne ligne à supprimer
++nouvelle ligne à ajouter
+ ligne de contexte après
+EOF
+```
+
+**Rappels anti-casse super-patch :**
+- `EOF` final colonne 0, sans espace
+- TOUJOURS une ligne de contexte (sans `-/+`) avant ET après `@@`
+- Utiliser des chemins absolus /home/ubuntu (pas ~)
+- Si le contenu du patch contient EOF, utiliser un délimiteur DIFFÉRENT (PATCH_END, etc.)
+
+**Exemple MAUVAIS (pas de contexte) :**
+```
+@@
+-old
++new
+EOF
+```
+
+**Exemple BON (avec contexte) :**
+```
+@@
+ local TAR_DIR="/home/ubuntu"
+-rm -f $TAR_DIR/*.tar
++rm -f $TAR_DIR/new_manager.*.tar
+ cd /home/ubuntu/aiapp/frontend
+EOF
+```
+
+## Choix cp+tee vs super-patch
+
+| Situation | Outil |
+|-----------|-------|
+| Nouveau fichier | cp+tee |
+| Réécriture complète | cp+tee |
+| Modification < 30 lignes | super-patch |
+| Ajout de section | super-patch |
+| Correction ponctuelle | super-patch |
+
 # Vérification d'exhaustivité
 
 ## Principe

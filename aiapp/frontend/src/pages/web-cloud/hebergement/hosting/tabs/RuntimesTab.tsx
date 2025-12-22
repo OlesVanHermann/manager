@@ -1,5 +1,5 @@
 // ============================================================
-// HOSTING TAB: RUNTIMES - Environnements d'execution avec CRUD
+// HOSTING TAB: RUNTIMES - Environnements d'exécution
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
@@ -9,7 +9,7 @@ import { CreateRuntimeModal } from "../components/CreateRuntimeModal";
 
 interface Props { serviceName: string; }
 
-/** Onglet Environnements d'execution avec création et suppression. */
+/** Onglet Runtimes - Environnements d'exécution. */
 export function RuntimesTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [runtimes, setRuntimes] = useState<Runtime[]>([]);
@@ -27,31 +27,22 @@ export function RuntimesTab({ serviceName }: Props) {
     finally { setLoading(false); }
   }, [serviceName]);
 
-  useEffect(() => {
-    loadRuntimes();
-  }, [loadRuntimes]);
+  useEffect(() => { loadRuntimes(); }, [loadRuntimes]);
 
   const handleDelete = async (id: number, isDefault: boolean) => {
-    if (isDefault) {
-      alert(t("runtimes.cannotDeleteDefault"));
-      return;
-    }
+    if (isDefault) { alert(t("runtimes.cannotDeleteDefault")); return; }
     if (!confirm(t("runtimes.confirmDelete"))) return;
     try {
       await hostingService.deleteRuntime(serviceName, id);
       loadRuntimes();
-    } catch (err) {
-      alert(String(err));
-    }
+    } catch (err) { alert(String(err)); }
   };
 
   const handleSetDefault = async (id: number) => {
     try {
       await hostingService.setDefaultRuntime(serviceName, id);
       loadRuntimes();
-    } catch (err) {
-      alert(String(err));
-    }
+    } catch (err) { alert(String(err)); }
   };
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
@@ -72,6 +63,15 @@ export function RuntimesTab({ serviceName }: Props) {
         </div>
       </div>
 
+      {/* Info Cloud Web */}
+      <div className="info-banner">
+        <span className="info-icon">ℹ</span>
+        <div>
+          <strong>{t("runtimes.info")}</strong>
+          <p style={{ margin: 'var(--space-1) 0 0 0' }}>{t("runtimes.infoDesc")}</p>
+        </div>
+      </div>
+
       {runtimes.length === 0 ? (
         <div className="empty-state">
           <p>{t("runtimes.empty")}</p>
@@ -80,49 +80,55 @@ export function RuntimesTab({ serviceName }: Props) {
           </button>
         </div>
       ) : (
-        <div className="runtime-cards">
-          {runtimes.map(r => (
-            <div key={r.id} className={`runtime-card ${r.isDefault ? 'default' : ''}`}>
-              {r.isDefault && <span className="default-badge">{t("runtimes.default")}</span>}
-              <div className="runtime-type">
-                <span className={`badge ${r.type === 'phpfpm' ? 'info' : 'success'}`}>{r.type}</span>
-              </div>
-              <h4>{r.name}</h4>
-              <div className="runtime-info">
-                <div><label>{t("runtimes.publicDir")}</label><span className="font-mono">{r.publicDir}</span></div>
-                <div><label>{t("runtimes.appEnv")}</label><span>{r.appEnv || '-'}</span></div>
-                <div><label>{t("runtimes.bootstrap")}</label><span className="font-mono">{r.appBootstrap || '-'}</span></div>
-                <div><label>{t("runtimes.status")}</label><span className={`badge ${r.status === 'active' ? 'success' : 'inactive'}`}>{r.status}</span></div>
-              </div>
-              <div className="runtime-actions">
-                {!r.isDefault && (
-                  <>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => handleSetDefault(r.id)}
-                      title={t("runtimes.setDefault")}
-                    >
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Type</th>
+              <th>{t("runtimes.publicDir")}</th>
+              <th>{t("runtimes.appEnv")}</th>
+              <th>{t("runtimes.default")}</th>
+              <th>{t("runtimes.status")}</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {runtimes.map(rt => (
+              <tr key={rt.id}>
+                <td>{rt.name || `Runtime ${rt.id}`}</td>
+                <td className="font-mono">{rt.type}</td>
+                <td className="font-mono">{rt.publicDir || '-'}</td>
+                <td>{rt.appEnv || 'production'}</td>
+                <td>
+                  {rt.isDefault ? (
+                    <span className="badge success">★ Par défaut</span>
+                  ) : (
+                    <button className="btn btn-secondary btn-sm" onClick={() => handleSetDefault(rt.id)}>
                       {t("runtimes.setDefault")}
                     </button>
-                    <button
-                      className="btn-icon btn-danger-icon"
-                      onClick={() => handleDelete(r.id, !!r.isDefault)}
+                  )}
+                </td>
+                <td>
+                  <span className={`badge ${rt.status === 'active' ? 'success' : 'inactive'}`}>
+                    {rt.status === 'active' ? 'Actif' : rt.status || 'Actif'}
+                  </span>
+                </td>
+                <td>
+                  {!rt.isDefault && (
+                    <button 
+                      className="btn-icon btn-danger-icon" 
+                      onClick={() => handleDelete(rt.id, !!rt.isDefault)} 
                       title={t("runtimes.delete")}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                      🗑
                     </button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
-
-      <div className="info-box">
-        <h4>{t("runtimes.info")}</h4>
-        <p>{t("runtimes.infoDesc")}</p>
-      </div>
 
       <CreateRuntimeModal
         serviceName={serviceName}

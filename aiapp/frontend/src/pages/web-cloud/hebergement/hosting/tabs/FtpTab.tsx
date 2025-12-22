@@ -1,20 +1,27 @@
 // ============================================================
-// HOSTING TAB: FTP - Utilisateurs FTP/SSH avec CRUD
+// HOSTING TAB: FTP - Utilisateurs FTP/SSH
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { hostingService, FtpUser, Hosting } from "../../../../../services/web-cloud.hosting";
 import { CreateFtpUserModal } from "../components/CreateFtpUserModal";
 
-interface Props { serviceName: string; details?: Hosting | null; }
+interface Props { 
+  serviceName: string; 
+  details?: Hosting;
+}
 
-/** Onglet FTP/SSH - Gestion des utilisateurs avec CRUD. */
+const PAGE_SIZE = 10;
+
+/** Onglet FTP-SSH avec infos connexion et gestion utilisateurs. */
 export function FtpTab({ serviceName, details }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [users, setUsers] = useState<FtpUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const loadUsers = useCallback(async () => {
@@ -27,9 +34,7 @@ export function FtpTab({ serviceName, details }: Props) {
     finally { setLoading(false); }
   }, [serviceName]);
 
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+  useEffect(() => { loadUsers(); }, [loadUsers]);
 
   const handleDelete = async (login: string, isPrimary: boolean) => {
     if (isPrimary) {
@@ -40,10 +45,30 @@ export function FtpTab({ serviceName, details }: Props) {
     try {
       await hostingService.deleteFtpUser(serviceName, login);
       loadUsers();
-    } catch (err) {
-      alert(String(err));
-    }
+    } catch (err) { alert(String(err)); }
   };
+
+  // Filtering
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm) return users;
+    const term = searchTerm.toLowerCase();
+    return users.filter(u => u.login.toLowerCase().includes(term));
+  }, [users, searchTerm]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredUsers.slice(start, start + PAGE_SIZE);
+  }, [filteredUsers, currentPage]);
+
+  useEffect(() => { setCurrentPage(1); }, [searchTerm]);
+
+  // Connection info
+  const cluster = details?.cluster || serviceName.match(/cluster(\d+)/)?.[1] || '0';
+  const ftpServer = `ftp.cluster${cluster}.hosting.ovh.net`;
+  const sshServer = `ssh.cluster${cluster}.hosting.ovh.net`;
+  const primaryLogin = users.find(u => u.isPrimaryAccount)?.login || serviceName.split('.')[0];
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
   if (error) return <div className="error-state">{error}</div>;
@@ -62,68 +87,146 @@ export function FtpTab({ serviceName, details }: Props) {
         </div>
       </div>
 
-      {details && (
-        <div className="connection-info">
-          <h4>{t("ftp.connectionInfo")}</h4>
-          <div className="info-grid">
-            <div className="info-item">
-              <label>{t("ftp.server")}</label>
-              <span className="font-mono">ftp.cluster0{details.cluster}.hosting.ovh.net</span>
-            </div>
-            <div className="info-item">
-              <label>{t("ftp.port")}</label>
-              <span className="font-mono">{details.serviceManagementAccess?.ftp?.port || 21}</span>
-            </div>
-            <div className="info-item">
-              <label>{t("ftp.sshPort")}</label>
-              <span className="font-mono">{details.serviceManagementAccess?.ssh?.port || 22}</span>
-            </div>
+      {/* Connection Info */}
+      <section className="connection-info">
+        <h4>Informations de connexion</h4>
+        <div className="info-grid-2col">
+          <div className="info-item">
+            <label>{t("ftp.server")}</label>
+            <span className="font-mono copyable">
+              {ftpServer}
+              <button className="copy-btn" onClick={() => navigator.clipboard.writeText(ftpServer)}>📋</button>
+            </span>
+          </div>
+          <div className="info-item">
+            <label>{t("ftp.sshServer")}</label>
+            <span className="font-mono copyable">
+              {sshServer}
+              <button className="copy-btn" onClick={() => navigator.clipboard.writeText(sshServer)}>📋</button>
+            </span>
+          </div>
+          <div className="info-item">
+            <label>{t("ftp.port")} / {t("ftp.sftpPort")}</label>
+            <span className="font-mono">21 / 22</span>
+          </div>
+          <div className="info-item">
+            <label>{t("ftp.login")}</label>
+            <span className="font-mono">{primaryLogin}</span>
           </div>
         </div>
-      )}
 
-      {users.length === 0 ? (
+        {/* Quick links */}
+        <div className="quick-links">
+          <a 
+            href={`ftp://${primaryLogin}@${ftpServer}:21/`} 
+            className="btn btn-secondary btn-sm"
+          >
+            Ouvrir FTP ↗
+          </a>
+          <a 
+            href={`https://net2ftp.cluster${cluster}.hosting.ovh.net/`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-secondary btn-sm"
+          >
+            FTP Explorer ↗
+          </a>
+        </div>
+      </section>
+
+      {/* Search */}
+      <div className="table-toolbar">
+        <input
+          type="text"
+          className="search-input"
+          placeholder={t("common.search")}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <span className="records-count">{users.length} utilisateur(s)</span>
+      </div>
+
+      {/* Users table */}
+      {paginatedUsers.length === 0 ? (
         <div className="empty-state">
-          <p>{t("ftp.empty")}</p>
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-            {t("ftp.createFirst")}
-          </button>
+          <p>{searchTerm ? t("common.noResult") : t("ftp.empty")}</p>
+          {!searchTerm && (
+            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+              {t("ftp.createFirst")}
+            </button>
+          )}
         </div>
       ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>{t("ftp.login")}</th>
-              <th>{t("ftp.home")}</th>
-              <th>{t("ftp.state")}</th>
-              <th>{t("ftp.ssh")}</th>
-              <th>{t("ftp.primary")}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(u => (
-              <tr key={u.login}>
-                <td className="font-mono">{u.login}</td>
-                <td className="font-mono">{u.home}</td>
-                <td><span className={`badge ${u.state === 'rw' ? 'success' : u.state === 'read' ? 'info' : 'inactive'}`}>{u.state}</span></td>
-                <td><span className={`badge ${u.serviceManagementCredentials?.ssh ? 'success' : 'inactive'}`}>{u.serviceManagementCredentials?.ssh ? '✓' : '✗'}</span></td>
-                <td>{u.isPrimaryAccount ? '★' : ''}</td>
-                <td>
-                  {!u.isPrimaryAccount && (
-                    <button
-                      className="btn-icon btn-danger-icon"
-                      onClick={() => handleDelete(u.login, !!u.isPrimaryAccount)}
-                      title={t("ftp.delete")}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                    </button>
-                  )}
-                </td>
+        <>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>{t("ftp.login")}</th>
+                <th>{t("ftp.home")}</th>
+                <th>{t("ftp.ssh")}</th>
+                <th>{t("ftp.sftp")}</th>
+                <th>{t("ftp.state")}</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {paginatedUsers.map(u => (
+                <tr key={u.login}>
+                  <td className="font-mono">
+                    {u.login}
+                    {u.isPrimaryAccount && <span className="badge info" style={{ marginLeft: 'var(--space-2)' }}>{t("ftp.primary")}</span>}
+                  </td>
+                  <td className="font-mono">{u.home || '/'}</td>
+                  <td>
+                    <span className={`badge ${u.sshState === 'active' ? 'success' : 'inactive'}`}>
+                      {u.sshState === 'active' ? 'Activé' : 'Désactivé'}
+                    </span>
+                  </td>
+                  <td><span className="badge success">Activé</span></td>
+                  <td>
+                    <span className={`badge ${u.state === 'ok' ? 'success' : 'warning'}`}>
+                      {u.state === 'ok' ? 'Actif' : u.state}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        className="btn-icon btn-danger-icon" 
+                        onClick={() => handleDelete(u.login, !!u.isPrimaryAccount)}
+                        title={t("ftp.delete")}
+                        disabled={u.isPrimaryAccount}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button 
+                className="pagination-btn" 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                ←
+              </button>
+              <span className="pagination-info">
+                {t("common.page")} {currentPage} / {totalPages}
+              </span>
+              <button 
+                className="pagination-btn" 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                →
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <CreateFtpUserModal

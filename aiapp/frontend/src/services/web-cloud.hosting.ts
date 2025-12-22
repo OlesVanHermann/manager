@@ -1,12 +1,10 @@
 // ============================================================
-// SERVICE: Web Hosting - API OVHcloud
+// WEB-CLOUD HOSTING SERVICE - API hébergements web
 // ============================================================
 
-import { ovhGet, ovhPost, ovhPut, ovhDelete } from "./api";
+import { apiClient } from "./api";
 
-// ============================================================
-// TYPES
-// ============================================================
+// ============ TYPES ============
 
 export interface Hosting {
   serviceName: string;
@@ -18,7 +16,7 @@ export interface Hosting {
   hostingIpv6?: string;
   operatingSystem: string;
   home: string;
-  primaryLogin: string;
+  primaryLogin?: string;
   quotaSize?: { value: number; unit: string };
   quotaUsed?: { value: number; unit: string };
   hasCdn?: boolean;
@@ -38,35 +36,27 @@ export interface HostingServiceInfos {
   contactAdmin: string;
   contactTech: string;
   contactBilling: string;
-  status: string;
-  renew?: {
-    automatic: boolean;
-    period?: string;
-    forced?: boolean;
-  };
+  renew?: { automatic: boolean; period?: string };
 }
 
 export interface AttachedDomain {
   domain: string;
   path: string;
   ssl?: boolean;
-  cdn?: "active" | "none";
-  firewall?: "active" | "none";
+  cdn?: string;
+  firewall?: string;
   status?: string;
   ownLog?: string;
+  ipv4?: string;
+  ipv6?: string;
+  git?: { status?: string; url?: string };
   runtimeId?: number;
-  ipLocation?: string;
-}
-
-export interface DigStatus {
-  isOk: boolean;
-  errors?: string[];
 }
 
 export interface FtpUser {
   login: string;
   home: string;
-  state: "rw" | "read" | "off";
+  state: string;
   isPrimaryAccount?: boolean;
   serviceManagementCredentials?: {
     ftp?: boolean;
@@ -76,24 +66,30 @@ export interface FtpUser {
 
 export interface Database {
   name: string;
-  type: "mysql" | "postgresql" | "redis";
-  version: string;
-  server: string;
   user: string;
-  port: number;
+  server?: string;
+  type?: string;
+  version?: string;
+  state?: string;
   status?: string;
   quotaSize?: { value: number; unit: string };
   quotaUsed?: { value: number; unit: string };
+  dumpCount?: number;
+  port?: number;
+  guiURL?: string;
 }
 
-export interface DatabaseDump {
+export interface Module {
   id: number;
-  creationDate: string;
-  deletionDate?: string;
-  type: "daily" | "weekly" | "now";
-  status: "created" | "creating" | "deleted";
-  size?: number;
-  url?: string;
+  moduleId: string;
+  path: string;
+  targetUrl?: string;
+  adminName?: string;
+  adminFolder?: string;
+  language?: string;
+  version?: string;
+  status?: string;
+  creationDate?: string;
 }
 
 export interface Cron {
@@ -102,413 +98,288 @@ export interface Cron {
   frequency: string;
   language: string;
   email?: string;
-  status: "enabled" | "disabled";
+  status: string;
   description?: string;
 }
 
 export interface EnvVar {
   key: string;
   value: string;
-  type: "string" | "password";
+  type: string;
   status?: string;
 }
 
 export interface Runtime {
   id: number;
-  name: string;
-  type: string;
-  publicDir?: string;
-  appEnv?: string;
-  appBootstrap?: string;
-  isDefault?: boolean;
-  status?: string;
-}
-
-export interface Module {
-  id: number;
-  moduleId: number;
   name?: string;
-  adminName?: string;
-  adminFolder?: string;
-  targetUrl?: string;
-  path?: string;
-  language?: string;
-  creationDate?: string;
+  type: string;
+  version?: string;
+  publicDir?: string;
   status?: string;
+  isDefault?: boolean;
+  appBootstrap?: string;
+  appEnv?: string;
 }
 
 export interface SslCertificate {
-  provider: "LETSENCRYPT" | "SECTIGO" | "CUSTOM" | "COMODO";
-  type: string;
   status: string;
+  provider?: string;
+  type?: string;
   isReportable?: boolean;
   regenerable?: boolean;
+  creationDate?: string;
+  expirationDate?: string;
 }
 
-export interface CdnStatus {
-  active: boolean;
-  type?: string;
-  status?: string;
-}
-
-export interface Task {
+export interface HostingTask {
   id: number;
   function: string;
-  status: "cancelled" | "doing" | "done" | "error" | "init" | "todo";
-  startDate?: string;
+  status: string;
+  startDate: string;
   doneDate?: string;
   lastUpdate?: string;
   objectId?: string;
   objectType?: string;
 }
 
-export interface LocalSeo {
+export interface LocalSeoAccount {
   id: number;
-  offer: string;
-  country: string;
-  status: string;
+  name: string;
+  offer?: string;
+  status?: string;
+  country?: string;
   creationDate?: string;
 }
 
-export interface Email {
-  domain: string;
-  quota?: { value: number; unit: string };
-  bounces?: number;
-  state?: string;
-}
-
-// ============================================================
-// SERVICE
-// ============================================================
+// ============ SERVICE ============
 
 class HostingService {
-  // ---------- HOSTING ----------
+  private basePath = "/hosting/web";
+
+  // ---------- HOSTINGS ----------
   async listHostings(): Promise<string[]> {
-    return ovhGet<string[]>("/hosting/web");
+    return apiClient.get<string[]>(this.basePath);
   }
 
   async getHosting(serviceName: string): Promise<Hosting> {
-    return ovhGet<Hosting>(`/hosting/web/${serviceName}`);
+    return apiClient.get<Hosting>(`${this.basePath}/${serviceName}`);
   }
 
   async getServiceInfos(serviceName: string): Promise<HostingServiceInfos> {
-    return ovhGet<HostingServiceInfos>(`/hosting/web/${serviceName}/serviceInfos`);
-  }
-
-  async getAbuseState(serviceName: string): Promise<string> {
-    try {
-      const data = await ovhGet<{ state: string }>(`/hosting/web/${serviceName}/abuseState`);
-      return data.state || "ok";
-    } catch {
-      return "ok";
-    }
-  }
-
-  async unblockTcpOut(serviceName: string): Promise<void> {
-    await ovhPost(`/hosting/web/${serviceName}/unblockTCPOut`, {});
+    return apiClient.get<HostingServiceInfos>(`${this.basePath}/${serviceName}/serviceInfos`);
   }
 
   // ---------- ATTACHED DOMAINS (MULTISITE) ----------
   async listAttachedDomains(serviceName: string): Promise<string[]> {
-    return ovhGet<string[]>(`/hosting/web/${serviceName}/attachedDomain`);
+    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/attachedDomain`);
   }
 
   async getAttachedDomain(serviceName: string, domain: string): Promise<AttachedDomain> {
-    return ovhGet<AttachedDomain>(`/hosting/web/${serviceName}/attachedDomain/${domain}`);
+    return apiClient.get<AttachedDomain>(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}`);
   }
 
-  async addAttachedDomain(serviceName: string, data: Partial<AttachedDomain>): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/attachedDomain`, data);
+  async createAttachedDomain(serviceName: string, data: Partial<AttachedDomain>): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/attachedDomain`, data);
   }
 
   async updateAttachedDomain(serviceName: string, domain: string, data: Partial<AttachedDomain>): Promise<void> {
-    await ovhPut(`/hosting/web/${serviceName}/attachedDomain/${domain}`, data);
+    return apiClient.put(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}`, data);
   }
 
-  async deleteAttachedDomain(serviceName: string, domain: string): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/attachedDomain/${domain}`);
+  async deleteAttachedDomain(serviceName: string, domain: string): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}`);
   }
 
-  async getDigStatus(serviceName: string, domain: string): Promise<DigStatus> {
-    try {
-      return await ovhGet<DigStatus>(`/hosting/web/${serviceName}/attachedDomain/${domain}/digStatus`);
-    } catch {
-      return { isOk: true };
-    }
+  // ---------- FTP USERS ----------
+  async listFtpUsers(serviceName: string): Promise<string[]> {
+    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/user`);
   }
 
-  async restartDomain(serviceName: string, domain: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/attachedDomain/${domain}/restart`, {});
+  async getFtpUser(serviceName: string, login: string): Promise<FtpUser> {
+    return apiClient.get<FtpUser>(`${this.basePath}/${serviceName}/user/${encodeURIComponent(login)}`);
   }
 
-  async enableDomainSsl(serviceName: string, domain: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/attachedDomain/${domain}/ssl`, {});
+  async createFtpUser(serviceName: string, data: { login: string; password: string; home?: string; sshState?: string }): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/user`, data);
   }
 
-  async disableDomainSsl(serviceName: string, domain: string): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/attachedDomain/${domain}/ssl`);
+  async deleteFtpUser(serviceName: string, login: string): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/user/${encodeURIComponent(login)}`);
+  }
+
+  async changeFtpUserPassword(serviceName: string, login: string, password: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/user/${encodeURIComponent(login)}/changePassword`, { password });
+  }
+
+  // ---------- DATABASES ----------
+  async listDatabases(serviceName: string): Promise<string[]> {
+    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/database`);
+  }
+
+  async getDatabase(serviceName: string, name: string): Promise<Database> {
+    return apiClient.get<Database>(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}`);
+  }
+
+  async createDatabase(serviceName: string, data: { type: string; user: string; password: string; version?: string }): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/database`, data);
+  }
+
+  async deleteDatabase(serviceName: string, name: string): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}`);
+  }
+
+  async getDatabaseDumps(serviceName: string, name: string): Promise<number[]> {
+    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}/dump`);
+  }
+
+  async createDatabaseDump(serviceName: string, name: string, data?: { date?: string; sendEmail?: boolean }): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}/dump`, data || {});
+  }
+
+  async restoreDatabaseDump(serviceName: string, name: string, dumpId: number): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/database/${encodeURIComponent(name)}/dump/${dumpId}/restore`, {});
+  }
+
+  // ---------- MODULES ----------
+  async listModules(serviceName: string): Promise<number[]> {
+    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/module`);
+  }
+
+  async getModule(serviceName: string, id: number): Promise<Module> {
+    return apiClient.get<Module>(`${this.basePath}/${serviceName}/module/${id}`);
+  }
+
+  async installModule(serviceName: string, data: { moduleId: number; domain: string; path: string; adminName?: string; adminPassword?: string; language?: string }): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/module`, data);
+  }
+
+  async deleteModule(serviceName: string, id: number): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/module/${id}`);
+  }
+
+  // ---------- CRON ----------
+  async listCrons(serviceName: string): Promise<number[]> {
+    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/cron`);
+  }
+
+  async getCron(serviceName: string, id: number): Promise<Cron> {
+    return apiClient.get<Cron>(`${this.basePath}/${serviceName}/cron/${id}`);
+  }
+
+  async createCron(serviceName: string, data: Partial<Cron>): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/cron`, data);
+  }
+
+  async updateCron(serviceName: string, id: number, data: Partial<Cron>): Promise<void> {
+    return apiClient.put(`${this.basePath}/${serviceName}/cron/${id}`, data);
+  }
+
+  async deleteCron(serviceName: string, id: number): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/cron/${id}`);
+  }
+
+  // ---------- ENVVARS ----------
+  async listEnvVars(serviceName: string): Promise<string[]> {
+    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/envVar`);
+  }
+
+  async getEnvVar(serviceName: string, key: string): Promise<EnvVar> {
+    return apiClient.get<EnvVar>(`${this.basePath}/${serviceName}/envVar/${encodeURIComponent(key)}`);
+  }
+
+  async createEnvVar(serviceName: string, data: { key: string; value: string; type: string }): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/envVar`, data);
+  }
+
+  async deleteEnvVar(serviceName: string, key: string): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/envVar/${encodeURIComponent(key)}`);
+  }
+
+  // ---------- RUNTIMES ----------
+  async listRuntimes(serviceName: string): Promise<number[]> {
+    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/runtime`);
+  }
+
+  async getRuntime(serviceName: string, id: number): Promise<Runtime> {
+    return apiClient.get<Runtime>(`${this.basePath}/${serviceName}/runtime/${id}`);
+  }
+
+  async createRuntime(serviceName: string, data: Partial<Runtime>): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/runtime`, data);
+  }
+
+  async deleteRuntime(serviceName: string, id: number): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/runtime/${id}`);
+  }
+
+  async setDefaultRuntime(serviceName: string, id: number): Promise<void> {
+    return apiClient.put(`${this.basePath}/${serviceName}/runtime/${id}`, { isDefault: true });
   }
 
   // ---------- SSL ----------
   async getSsl(serviceName: string): Promise<SslCertificate | null> {
     try {
-      return await ovhGet<SslCertificate>(`/hosting/web/${serviceName}/ssl`);
+      return await apiClient.get<SslCertificate>(`${this.basePath}/${serviceName}/ssl`);
     } catch {
       return null;
     }
   }
 
-  async generateLetsEncrypt(serviceName: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/ssl`, {});
+  async deleteSsl(serviceName: string): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/ssl`);
   }
 
-  async importSsl(serviceName: string, data: { certificate: string; key: string; chain?: string }): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/ssl`, data);
+  async regenerateSsl(serviceName: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/ssl/regenerate`, {});
   }
 
-  async regenerateSsl(serviceName: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/ssl/regenerate`, {});
+  async enableSsl(serviceName: string, domain: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/ssl`, {});
   }
 
-  async deleteSsl(serviceName: string): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/ssl`);
+  async disableSsl(serviceName: string, domain: string): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/attachedDomain/${encodeURIComponent(domain)}/ssl`);
   }
 
-  // ---------- FTP USERS ----------
-  async listFtpUsers(serviceName: string): Promise<string[]> {
-    return ovhGet<string[]>(`/hosting/web/${serviceName}/user`);
-  }
-
-  async getFtpUser(serviceName: string, login: string): Promise<FtpUser> {
-    return ovhGet<FtpUser>(`/hosting/web/${serviceName}/user/${login}`);
-  }
-
-  async createFtpUser(serviceName: string, data: { login: string; password: string; home?: string; sshState?: string }): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/user`, data);
-  }
-
-  async deleteFtpUser(serviceName: string, login: string): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/user/${login}`);
-  }
-
-  async changeFtpPassword(serviceName: string, login: string, password: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/user/${login}/changePassword`, { password });
-  }
-
-  // ---------- DATABASES ----------
-  async listDatabases(serviceName: string): Promise<string[]> {
-    return ovhGet<string[]>(`/hosting/web/${serviceName}/database`);
-  }
-
-  async getDatabase(serviceName: string, name: string): Promise<Database> {
-    return ovhGet<Database>(`/hosting/web/${serviceName}/database/${name}`);
-  }
-
-  async createDatabase(serviceName: string, data: { type: string; version: string; user: string; password: string }): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/database`, data);
-  }
-
-  async deleteDatabase(serviceName: string, name: string): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/database/${name}`);
-  }
-
-  async changeDatabasePassword(serviceName: string, name: string, password: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/database/${name}/changePassword`, { password });
-  }
-
-  // ---------- DATABASE DUMPS ----------
-  async listDatabaseDumps(serviceName: string, databaseName: string): Promise<number[]> {
-    try {
-      return await ovhGet<number[]>(`/hosting/web/${serviceName}/database/${databaseName}/dump`);
-    } catch {
-      return [];
-    }
-  }
-
-  async getDatabaseDump(serviceName: string, databaseName: string, dumpId: number): Promise<DatabaseDump> {
-    return ovhGet<DatabaseDump>(`/hosting/web/${serviceName}/database/${databaseName}/dump/${dumpId}`);
-  }
-
-  async createDatabaseDump(serviceName: string, databaseName: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/database/${databaseName}/dump`, { type: "now" });
-  }
-
-  async restoreDatabaseDump(serviceName: string, databaseName: string, dumpId: number): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/database/${databaseName}/dump/${dumpId}/restore`, {});
-  }
-
-  async deleteDatabaseDump(serviceName: string, databaseName: string, dumpId: number): Promise<void> {
-    await ovhDelete(`/hosting/web/${serviceName}/database/${databaseName}/dump/${dumpId}`);
-  }
-
-  // ---------- CRONS ----------
-  async listCrons(serviceName: string): Promise<number[]> {
-    try {
-      return await ovhGet<number[]>(`/hosting/web/${serviceName}/cron`);
-    } catch {
-      return [];
-    }
-  }
-
-  async getCron(serviceName: string, cronId: number): Promise<Cron> {
-    return ovhGet<Cron>(`/hosting/web/${serviceName}/cron/${cronId}`);
-  }
-
-  async createCron(serviceName: string, data: { command: string; frequency: string; language: string; email?: string }): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/cron`, data);
-  }
-
-  async updateCron(serviceName: string, cronId: number, data: Partial<Cron>): Promise<void> {
-    await ovhPut(`/hosting/web/${serviceName}/cron/${cronId}`, data);
-  }
-
-  async deleteCron(serviceName: string, cronId: number): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/cron/${cronId}`);
-  }
-
-  // ---------- ENV VARS ----------
-  async listEnvVars(serviceName: string): Promise<string[]> {
-    try {
-      return await ovhGet<string[]>(`/hosting/web/${serviceName}/envVar`);
-    } catch {
-      return [];
-    }
-  }
-
-  async getEnvVar(serviceName: string, key: string): Promise<EnvVar> {
-    return ovhGet<EnvVar>(`/hosting/web/${serviceName}/envVar/${key}`);
-  }
-
-  async createEnvVar(serviceName: string, data: { key: string; value: string; type?: string }): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/envVar`, data);
-  }
-
-  async deleteEnvVar(serviceName: string, key: string): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/envVar/${key}`);
-  }
-
-  // ---------- RUNTIMES ----------
-  async listRuntimes(serviceName: string): Promise<number[]> {
-    try {
-      return await ovhGet<number[]>(`/hosting/web/${serviceName}/runtime`);
-    } catch {
-      return [];
-    }
-  }
-
-  async getRuntime(serviceName: string, runtimeId: number): Promise<Runtime> {
-    return ovhGet<Runtime>(`/hosting/web/${serviceName}/runtime/${runtimeId}`);
-  }
-
-  async createRuntime(serviceName: string, data: { name: string; type: string; publicDir?: string; appEnv?: string; appBootstrap?: string }): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/runtime`, data);
-  }
-
-  async deleteRuntime(serviceName: string, runtimeId: number): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/runtime/${runtimeId}`);
-  }
-
-  // ---------- MODULES ----------
-  async listModules(serviceName: string): Promise<number[]> {
-    try {
-      return await ovhGet<number[]>(`/hosting/web/${serviceName}/module`);
-    } catch {
-      return [];
-    }
-  }
-
-  async getModule(serviceName: string, moduleId: number): Promise<Module> {
-    return ovhGet<Module>(`/hosting/web/${serviceName}/module/${moduleId}`);
-  }
-
-  async installModule(serviceName: string, data: { moduleId: number; domain: string; path?: string; adminName?: string; adminPassword?: string; adminEmail?: string; language?: string }): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/module`, data);
-  }
-
-  async deleteModule(serviceName: string, moduleId: number): Promise<Task> {
-    return ovhDelete<Task>(`/hosting/web/${serviceName}/module/${moduleId}`);
-  }
-
-  async getAvailableModules(): Promise<{ id: number; name: string; version?: string }[]> {
-    try {
-      return await ovhGet<{ id: number; name: string; version?: string }[]>("/hosting/web/moduleList");
-    } catch {
-      return [];
-    }
+  async importSsl(serviceName: string, data: { certificate: string; key: string; chain?: string }): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/ssl`, data);
   }
 
   // ---------- CDN ----------
-  async getCdnStatus(serviceName: string): Promise<CdnStatus> {
-    try {
-      const data = await ovhGet<{ type: string; status: string }>(`/hosting/web/${serviceName}/cdn`);
-      return { active: true, type: data.type, status: data.status };
-    } catch {
-      return { active: false };
-    }
-  }
-
-  async flushCdnCache(serviceName: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/cdn/flush`, {});
+  async flushCdn(serviceName: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/cdn/flush`, {});
   }
 
   // ---------- TASKS ----------
   async listTasks(serviceName: string): Promise<number[]> {
-    try {
-      return await ovhGet<number[]>(`/hosting/web/${serviceName}/tasks`);
-    } catch {
-      return [];
-    }
+    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/tasks`);
   }
 
-  async getTask(serviceName: string, taskId: number): Promise<Task> {
-    return ovhGet<Task>(`/hosting/web/${serviceName}/tasks/${taskId}`);
-  }
-
-  async getRecentTasks(serviceName: string, limit = 20): Promise<Task[]> {
-    const ids = await this.listTasks(serviceName);
-    const recentIds = ids.slice(0, limit);
-    return Promise.all(recentIds.map(id => this.getTask(serviceName, id)));
+  async getTask(serviceName: string, id: number): Promise<HostingTask> {
+    return apiClient.get<HostingTask>(`${this.basePath}/${serviceName}/tasks/${id}`);
   }
 
   // ---------- LOCAL SEO ----------
-  async listLocalSeo(serviceName: string): Promise<number[]> {
-    try {
-      return await ovhGet<number[]>(`/hosting/web/${serviceName}/localSeo/account`);
-    } catch {
-      return [];
-    }
+  async listLocalSeoAccounts(serviceName: string): Promise<number[]> {
+    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/localSeo/account`);
   }
 
-  async getLocalSeo(serviceName: string, accountId: number): Promise<LocalSeo> {
-    return ovhGet<LocalSeo>(`/hosting/web/${serviceName}/localSeo/account/${accountId}`);
+  async getLocalSeoAccount(serviceName: string, id: number): Promise<LocalSeoAccount> {
+    return apiClient.get<LocalSeoAccount>(`${this.basePath}/${serviceName}/localSeo/account/${id}`);
   }
 
-  async terminateLocalSeo(serviceName: string, accountId: number): Promise<void> {
-    await ovhPost(`/hosting/web/${serviceName}/localSeo/account/${accountId}/terminate`, {});
+  async terminateLocalSeo(serviceName: string, id: number): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/localSeo/account/${id}/terminate`, {});
   }
 
-  // ---------- EMAIL ----------
-  async getEmail(serviceName: string): Promise<Email | null> {
-    try {
-      return await ovhGet<Email>(`/hosting/web/${serviceName}/email`);
-    } catch {
-      return null;
-    }
+  // ---------- AUTOMATED EMAILS ----------
+  async getAutomatedEmails(serviceName: string): Promise<{ state: string; email?: string }> {
+    return apiClient.get(`${this.basePath}/${serviceName}/automatedEmails`);
   }
 
-  // ---------- BOOST ----------
-  async getBoostHistory(serviceName: string): Promise<{ offer: string; startDate: string; endDate: string }[]> {
-    try {
-      return await ovhGet<{ offer: string; startDate: string; endDate: string }[]>(`/hosting/web/${serviceName}/boostHistory`);
-    } catch {
-      return [];
-    }
-  }
-
-  async requestBoost(serviceName: string, offer: string): Promise<Task> {
-    return ovhPost<Task>(`/hosting/web/${serviceName}/requestBoost`, { offer });
+  async updateAutomatedEmails(serviceName: string, data: { email: string }): Promise<void> {
+    return apiClient.put(`${this.basePath}/${serviceName}/automatedEmails`, data);
   }
 }
 
 export const hostingService = new HostingService();
-export default hostingService;

@@ -1,77 +1,85 @@
 // ============================================================
-// HOSTING TAB: SSL - Certificat SSL avec actions
+// HOSTING TAB: SSL - Certificats SSL
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, SslCertificate } from "../../../../../services/web-cloud.hosting";
+import { hostingService, SslCertificate, AttachedDomain } from "../../../../../services/web-cloud.hosting";
+import { ImportSslModal } from "../components/ImportSslModal";
 
 interface Props { serviceName: string; }
 
-/** Onglet Certificat SSL avec actions. */
+/** Onglet SSL avec workflow complet Let's Encrypt et import. */
 export function SslTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [ssl, setSsl] = useState<SslCertificate | null>(null);
+  const [domains, setDomains] = useState<AttachedDomain[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [activating, setActivating] = useState(false);
 
-  const loadSsl = useCallback(async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await hostingService.getSslCertificate(serviceName);
-      setSsl(data);
-    } catch {
-      setSsl(null);
-    } finally {
-      setLoading(false);
-    }
+      const [sslData, domainNames] = await Promise.all([
+        hostingService.getSsl(serviceName).catch(() => null),
+        hostingService.listAttachedDomains(serviceName),
+      ]);
+      setSsl(sslData);
+      
+      const domainsData = await Promise.all(domainNames.map(d => hostingService.getAttachedDomain(serviceName, d)));
+      setDomains(domainsData);
+      
+      // Pre-select first domain without SSL
+      const eligible = domainsData.filter(d => !d.ssl);
+      if (eligible.length > 0) setSelectedDomain(eligible[0].domain);
+    } catch (err) { setError(String(err)); }
+    finally { setLoading(false); }
   }, [serviceName]);
 
-  useEffect(() => {
-    loadSsl();
-  }, [loadSsl]);
+  useEffect(() => { loadData(); }, [loadData]);
 
-  // ---------- ACTIONS ----------
-  const handleGenerateLetsEncrypt = async () => {
-    if (!confirm(t("ssl.confirmGenerate"))) return;
+  const handleActivateLetsEncrypt = async () => {
+    if (!selectedDomain) return;
     try {
-      setActionLoading(true);
-      await hostingService.createSslCertificate(serviceName);
-      setTimeout(loadSsl, 2000);
-    } catch (err) {
-      alert(String(err));
-    } finally {
-      setActionLoading(false);
-    }
+      setActivating(true);
+      await hostingService.enableSsl(serviceName, selectedDomain);
+      loadData();
+    } catch (err) { alert(String(err)); }
+    finally { setActivating(false); }
   };
 
-  const handleRegenerate = async () => {
-    if (!confirm(t("ssl.confirmRegenerate"))) return;
-    try {
-      setActionLoading(true);
-      await hostingService.regenerateSslCertificate(serviceName);
-      setTimeout(loadSsl, 2000);
-    } catch (err) {
-      alert(String(err));
-    } finally {
-      setActionLoading(false);
-    }
+  const handleExportCsv = () => {
+    if (!ssl) return;
+    const headers = ['Domaine', 'Type', 'État', 'Création', 'Expiration'];
+    const rows = [[
+      ssl.domain || serviceName,
+      ssl.provider || 'Let\'s Encrypt',
+      ssl.status || 'active',
+      ssl.creationDate || '-',
+      ssl.expirationDate || '-',
+    ]];
+    
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ssl-${serviceName}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
-  const handleDelete = async () => {
-    if (!confirm(t("ssl.confirmDelete"))) return;
-    try {
-      setActionLoading(true);
-      await hostingService.deleteSslCertificate(serviceName);
-      setTimeout(loadSsl, 2000);
-    } catch (err) {
-      alert(String(err));
-    } finally {
-      setActionLoading(false);
-    }
+  const handleOrderSectigo = () => {
+    window.open(`https://www.ovh.com/manager/#/web/hosting/${serviceName}/ssl/order`, '_blank');
   };
+
+  const eligibleDomains = domains.filter(d => !d.ssl);
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (error) return <div className="error-state">{error}</div>;
 
   return (
     <div className="ssl-tab">
@@ -80,58 +88,109 @@ export function SslTab({ serviceName }: Props) {
           <h3>{t("ssl.title")}</h3>
           <p className="tab-description">{t("ssl.description")}</p>
         </div>
-        {!ssl && (
-          <button className="btn btn-primary" onClick={handleGenerateLetsEncrypt} disabled={actionLoading}>
-            {actionLoading ? "..." : t("ssl.generateLetsEncrypt")}
+        <div className="tab-actions">
+          <button className="btn btn-secondary btn-sm" onClick={handleOrderSectigo}>
+            {t("ssl.orderSectigo")} ↗
           </button>
-        )}
+          <button className="btn btn-secondary btn-sm" onClick={() => setShowImportModal(true)}>
+            {t("ssl.importOwn")}
+          </button>
+          {ssl && (
+            <button className="btn btn-secondary btn-sm" onClick={handleExportCsv}>
+              {t("ssl.exportCsv")}
+            </button>
+          )}
+        </div>
       </div>
 
-      {ssl ? (
-        <div className="ssl-card">
-          <div className="ssl-status">
-            <div className="status-icon enabled">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
-            </div>
-            <div className="status-text">
-              <span className="status-label enabled">{t("ssl.active")}</span>
-              <span className="status-description">{t("ssl.provider")}: {ssl.provider}</span>
-            </div>
-          </div>
-          <div className="ssl-details">
-            <div className="info-item"><label>{t("ssl.type")}</label><span className="badge success">{ssl.type}</span></div>
-            <div className="info-item"><label>{t("ssl.status")}</label><span className="badge info">{ssl.status}</span></div>
-            <div className="info-item"><label>{t("ssl.regenerable")}</label><span>{ssl.regenerable ? '✓' : '✗'}</span></div>
-          </div>
-          <div className="ssl-actions">
-            {ssl.regenerable && (
-              <button className="btn btn-secondary" onClick={handleRegenerate} disabled={actionLoading}>
-                {t("ssl.regenerate")}
-              </button>
-            )}
-            <button className="btn btn-danger" onClick={handleDelete} disabled={actionLoading}>
-              {t("ssl.delete")}
+      {/* Activation Let's Encrypt */}
+      {eligibleDomains.length > 0 && (
+        <section className="ssl-activate-section">
+          <h4>{t("ssl.activateTitle")}</h4>
+          <div className="ssl-activate-row">
+            <select 
+              className="form-select select-domain"
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value)}
+            >
+              {eligibleDomains.map(d => (
+                <option key={d.domain} value={d.domain}>{d.domain}</option>
+              ))}
+            </select>
+            <button 
+              className="btn btn-primary"
+              onClick={handleActivateLetsEncrypt}
+              disabled={activating || !selectedDomain}
+            >
+              {activating ? "Activation..." : t("ssl.activateLetsEncrypt")}
             </button>
           </div>
-        </div>
+        </section>
+      )}
+
+      {/* Current SSL */}
+      {ssl ? (
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>{t("ssl.mainDomain")}</th>
+              <th>{t("ssl.type")}</th>
+              <th>{t("ssl.state")}</th>
+              <th>{t("ssl.creationDate")}</th>
+              <th>{t("ssl.expirationDate")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="font-mono">{ssl.domain || serviceName}</td>
+              <td>{ssl.provider || 'Let\'s Encrypt'}</td>
+              <td>
+                <span className={`badge ${ssl.status === 'active' || ssl.status === 'created' ? 'success' : 'warning'}`}>
+                  {ssl.status === 'active' || ssl.status === 'created' ? 'Actif' : ssl.status}
+                </span>
+              </td>
+              <td>{ssl.creationDate ? new Date(ssl.creationDate).toLocaleDateString() : '-'}</td>
+              <td>{ssl.expirationDate ? new Date(ssl.expirationDate).toLocaleDateString() : '-'}</td>
+            </tr>
+          </tbody>
+        </table>
       ) : (
-        <div className="ssl-card inactive">
-          <div className="ssl-status">
-            <div className="status-icon disabled">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
-            </div>
-            <div className="status-text">
-              <span className="status-label disabled">{t("ssl.inactive")}</span>
-              <span className="status-description">{t("ssl.noSsl")}</span>
-            </div>
-          </div>
+        <div className="empty-state">
+          <p>{t("ssl.empty")}</p>
         </div>
       )}
 
-      <div className="info-box">
-        <h4>{t("ssl.whatIs")}</h4>
-        <p>{t("ssl.explanation")}</p>
-      </div>
+      {/* Domains SSL status */}
+      <section style={{ marginTop: 'var(--space-6)' }}>
+        <h4>État SSL par domaine</h4>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Domaine</th>
+              <th>SSL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {domains.map(d => (
+              <tr key={d.domain}>
+                <td className="font-mono">{d.domain}</td>
+                <td>
+                  <span className={`badge ${d.ssl ? 'success' : 'inactive'}`}>
+                    {d.ssl ? 'Actif' : 'Inactif'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <ImportSslModal
+        serviceName={serviceName}
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={loadData}
+      />
     </div>
   );
 }

@@ -1,10 +1,10 @@
 // ============================================================
-// CREATE FTP USER MODAL - Créer un utilisateur FTP
+// CREATE PDB USER MODAL - Créer un utilisateur CloudDB
 // ============================================================
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../services/web-cloud.hosting";
+import { privateDatabaseService } from "../../../../../services/web-cloud.private-database";
 
 interface Props {
   serviceName: string;
@@ -13,18 +13,24 @@ interface Props {
   onSuccess: () => void;
 }
 
-/** Modal pour créer un utilisateur FTP/SSH. */
-export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: Props) {
-  const { t } = useTranslation("web-cloud/hosting/index");
-  const [login, setLogin] = useState("");
+/** Modal pour créer un utilisateur sur CloudDB. */
+export function CreatePdbUserModal({ serviceName, isOpen, onClose, onSuccess }: Props) {
+  const { t } = useTranslation("web-cloud/private-database/index");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [home, setHome] = useState("");
-  const [sshState, setSshState] = useState("none");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Validation du mot de passe OVH
+  const validateUserName = (name: string): string | null => {
+    if (name.length < 1) return "Le nom est obligatoire";
+    if (name.length > 16) return "Maximum 16 caractères";
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) {
+      return "Le nom doit commencer par une lettre et contenir uniquement des lettres, chiffres et underscores";
+    }
+    return null;
+  };
+
   const validatePassword = (pwd: string): string | null => {
     if (pwd.length < 9) return "Minimum 9 caractères";
     if (pwd.length > 30) return "Maximum 30 caractères";
@@ -38,8 +44,9 @@ export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!login.trim()) {
-      setError("Le login est obligatoire");
+    const userError = validateUserName(userName);
+    if (userError) {
+      setError(userError);
       return;
     }
 
@@ -57,17 +64,7 @@ export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: 
     try {
       setLoading(true);
       setError(null);
-      
-      // Le login complet sera: primaryLogin-suffixe
-      const primaryLogin = serviceName.split('.')[0];
-      const fullLogin = login.startsWith(primaryLogin) ? login : `${primaryLogin}-${login}`;
-      
-      await hostingService.createFtpUser(serviceName, {
-        login: fullLogin,
-        password,
-        home: home.trim() || ".",
-        sshState,
-      });
+      await privateDatabaseService.createUser(serviceName, userName.trim(), password);
       onSuccess();
       onClose();
       resetForm();
@@ -79,11 +76,9 @@ export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: 
   };
 
   const resetForm = () => {
-    setLogin("");
+    setUserName("");
     setPassword("");
     setConfirmPassword("");
-    setHome("");
-    setSshState("none");
     setError(null);
   };
 
@@ -92,15 +87,13 @@ export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: 
     onClose();
   };
 
-  const primaryLogin = serviceName.split('.')[0];
-
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{t("ftp.create")}</h3>
+          <h3>{t("modals.createUser")}</h3>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
 
@@ -108,20 +101,25 @@ export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: 
           <div className="modal-body">
             {error && <div className="error-message">{error}</div>}
 
+            <div className="info-banner" style={{ marginBottom: 'var(--space-4)' }}>
+              <span className="info-icon">ℹ</span>
+              <p>L'utilisateur sera créé sans droits. Vous pourrez ensuite lui attribuer des droits sur les bases de données.</p>
+            </div>
+
             <div className="form-group">
-              <label className="form-label required">Login</label>
-              <div className="input-prefix-group">
-                <span className="input-prefix">{primaryLogin}-</span>
-                <input
-                  type="text"
-                  className="form-input font-mono"
-                  value={login}
-                  onChange={(e) => setLogin(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-                  placeholder="monuser"
-                  required
-                />
-              </div>
-              <span className="form-hint">Login final: {primaryLogin}-{login || 'monuser'}</span>
+              <label className="form-label required">Nom d'utilisateur</label>
+              <input
+                type="text"
+                className="form-input font-mono"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
+                placeholder="mon_user"
+                maxLength={16}
+                required
+              />
+              <span className="form-hint">
+                Maximum 16 caractères. Lettres, chiffres et underscores uniquement.
+              </span>
             </div>
 
             <div className="form-group">
@@ -148,31 +146,6 @@ export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: 
                 required
               />
             </div>
-
-            <div className="form-group">
-              <label className="form-label">Répertoire cible</label>
-              <input
-                type="text"
-                className="form-input font-mono"
-                value={home}
-                onChange={(e) => setHome(e.target.value)}
-                placeholder="."
-              />
-              <span className="form-hint">Relatif au dossier home (. = racine)</span>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Accès SSH</label>
-              <select
-                className="form-select"
-                value={sshState}
-                onChange={(e) => setSshState(e.target.value)}
-              >
-                <option value="none">Désactivé</option>
-                <option value="active">Activé</option>
-              </select>
-              <span className="form-hint">Permet l'accès en ligne de commande</span>
-            </div>
           </div>
 
           <div className="modal-footer">
@@ -189,4 +162,4 @@ export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: 
   );
 }
 
-export default CreateFtpUserModal;
+export default CreatePdbUserModal;

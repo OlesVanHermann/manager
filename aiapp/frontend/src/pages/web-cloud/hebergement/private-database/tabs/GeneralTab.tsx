@@ -1,55 +1,227 @@
 // ============================================================
-// PRIVATE DB TAB: GENERAL
+// PRIVATE DATABASE TAB: GENERAL - Informations générales
 // ============================================================
 
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { PrivateDatabase, PrivateDatabaseServiceInfos } from "../../../../../services/web-cloud.private-database";
+import { privateDatabaseService, PrivateDatabase, PrivateDatabaseServiceInfos } from "../../../../../services/web-cloud.private-database";
 
-interface Props { serviceName: string; details?: PrivateDatabase; serviceInfos?: PrivateDatabaseServiceInfos; loading: boolean; }
+interface Props {
+  serviceName: string;
+  details: PrivateDatabase;
+  onRefresh: () => void;
+}
 
-export function GeneralTab({ serviceName, details, serviceInfos, loading }: Props) {
+/** Onglet Informations générales avec actions serveur. */
+export function GeneralTab({ serviceName, details, onRefresh }: Props) {
   const { t } = useTranslation("web-cloud/private-database/index");
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /></div>;
+  const [serviceInfos, setServiceInfos] = useState<PrivateDatabaseServiceInfos | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const formatSize = (q: { value: number; unit: string } | undefined) => q ? `${q.value} ${q.unit}` : '-';
-  const quotaPercent = details?.quotaSize && details?.quotaUsed ? Math.round((details.quotaUsed.value / details.quotaSize.value) * 100) : 0;
+  const loadServiceInfos = useCallback(async () => {
+    try {
+      setLoading(true);
+      const infos = await privateDatabaseService.getServiceInfos(serviceName);
+      setServiceInfos(infos);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  }, [serviceName]);
+
+  useEffect(() => { loadServiceInfos(); }, [loadServiceInfos]);
+
+  const handleServerAction = async (action: "start" | "stop" | "restart") => {
+    const confirmMsg = {
+      start: "Voulez-vous démarrer le serveur ?",
+      stop: "Voulez-vous arrêter le serveur ?",
+      restart: "Voulez-vous redémarrer le serveur ?",
+    };
+    if (!confirm(confirmMsg[action])) return;
+
+    try {
+      setActionLoading(action);
+      switch (action) {
+        case "start": await privateDatabaseService.startServer(serviceName); break;
+        case "stop": await privateDatabaseService.stopServer(serviceName); break;
+        case "restart": await privateDatabaseService.restartServer(serviceName); break;
+      }
+      setTimeout(onRefresh, 2000);
+    } catch (err) {
+      alert(String(err));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    });
+  };
+
+  const formatSize = (bytes?: number) => {
+    if (!bytes) return '-';
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} Ko`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} Mo`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} Go`;
+  };
+
+  const getQuotaPercent = () => {
+    if (!details.quotaUsed?.value || !details.quotaSize?.value) return 0;
+    return Math.round((details.quotaUsed.value / details.quotaSize.value) * 100);
+  };
+
+  const isStarted = details.state === "started";
+  const isStopped = details.state === "stopped";
 
   return (
-    <div className="general-tab">
-      <section className="info-section">
-        <h3>{t("general.title")}</h3>
-        <div className="info-grid">
-          <div className="info-item"><label>{t("general.serviceName")}</label><span className="font-mono">{serviceName}</span></div>
-          {details && (<>
-            <div className="info-item"><label>{t("general.type")}</label><span className={`badge db-${details.type}`}>{details.type} {details.version}</span></div>
-            <div className="info-item"><label>{t("general.state")}</label><span className={`badge ${details.state === 'started' ? 'success' : 'warning'}`}>{details.state}</span></div>
-            <div className="info-item"><label>{t("general.offer")}</label><span>{details.offer}</span></div>
-            <div className="info-item"><label>{t("general.datacenter")}</label><span>{details.datacenter}</span></div>
-            <div className="info-item"><label>{t("general.hostname")}</label><span className="font-mono">{details.hostname}:{details.port}</span></div>
-            <div className="info-item"><label>{t("general.ram")}</label><span>{formatSize(details.ram)}</span></div>
-            <div className="info-item"><label>{t("general.cpu")}</label><span>{details.cpu} vCPU</span></div>
-          </>)}
+    <div className="pdb-general-tab">
+      {/* Actions serveur */}
+      <section className="server-actions">
+        <h4>{t("general.serverActions")}</h4>
+        <div className="action-buttons-row">
+          <button 
+            className="btn btn-success btn-sm" 
+            onClick={() => handleServerAction("start")}
+            disabled={isStarted || !!actionLoading}
+          >
+            {actionLoading === "start" ? "Démarrage..." : "▶ Démarrer"}
+          </button>
+          <button 
+            className="btn btn-warning btn-sm" 
+            onClick={() => handleServerAction("restart")}
+            disabled={isStopped || !!actionLoading}
+          >
+            {actionLoading === "restart" ? "Redémarrage..." : "↻ Redémarrer"}
+          </button>
+          <button 
+            className="btn btn-danger btn-sm" 
+            onClick={() => handleServerAction("stop")}
+            disabled={isStopped || !!actionLoading}
+          >
+            {actionLoading === "stop" ? "Arrêt..." : "■ Arrêter"}
+          </button>
         </div>
       </section>
-      {details && (
-        <section className="info-section">
-          <h3>{t("general.storage")}</h3>
-          <div className="quota-display">
-            <div className="quota-bar"><div className="quota-fill" style={{ width: `${Math.min(quotaPercent, 100)}%` }} /></div>
-            <div className="quota-text"><span>{formatSize(details.quotaUsed)} / {formatSize(details.quotaSize)}</span><span className={quotaPercent > 90 ? 'warning' : ''}>{quotaPercent}%</span></div>
+
+      {/* Informations générales */}
+      <section className="info-section">
+        <h4>{t("general.title")}</h4>
+        <div className="info-grid">
+          <div className="info-item">
+            <label>{t("general.serviceName")}</label>
+            <span className="font-mono">{details.serviceName}</span>
           </div>
-        </section>
-      )}
+          <div className="info-item">
+            <label>{t("general.type")}</label>
+            <span>{details.type} {details.version}</span>
+          </div>
+          <div className="info-item">
+            <label>{t("general.offer")}</label>
+            <span>{details.offer}</span>
+          </div>
+          <div className="info-item">
+            <label>{t("general.hostname")}</label>
+            <span className="font-mono copyable">
+              {details.hostname}
+              <button className="copy-btn" onClick={() => navigator.clipboard.writeText(details.hostname)}>📋</button>
+            </span>
+          </div>
+          <div className="info-item">
+            <label>{t("general.port")}</label>
+            <span className="font-mono">{details.port}</span>
+          </div>
+          {details.hostnameFtp && (
+            <div className="info-item">
+              <label>{t("general.hostnameFtp")}</label>
+              <span className="font-mono">{details.hostnameFtp}:{details.portFtp}</span>
+            </div>
+          )}
+          <div className="info-item">
+            <label>{t("general.datacenter")}</label>
+            <span>{details.datacenter || 'EU'}</span>
+          </div>
+          <div className="info-item">
+            <label>{t("general.infrastructure")}</label>
+            <span className="badge info">{details.infrastructure || 'docker'}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Ressources */}
+      <section className="info-section">
+        <h4>{t("general.resources")}</h4>
+        
+        {/* Espace disque */}
+        <div className="quota-section">
+          <div className="quota-header">
+            <label>{t("general.diskUsage")}</label>
+            <span className="quota-value">
+              {formatSize(details.quotaUsed?.value)} / {formatSize(details.quotaSize?.value)}
+            </span>
+          </div>
+          <div className="quota-bar">
+            <div 
+              className={`quota-fill ${getQuotaPercent() > 90 ? 'critical' : getQuotaPercent() > 70 ? 'warning' : ''}`}
+              style={{ width: `${getQuotaPercent()}%` }}
+            />
+          </div>
+          <span className="quota-percent">{getQuotaPercent()}% utilisé</span>
+        </div>
+
+        <div className="info-grid" style={{ marginTop: 'var(--space-4)' }}>
+          {details.ram && (
+            <div className="info-item">
+              <label>{t("general.ram")}</label>
+              <span>{details.ram.value} {details.ram.unit}</span>
+            </div>
+          )}
+          {details.cpu && (
+            <div className="info-item">
+              <label>{t("general.cpu")}</label>
+              <span>{details.cpu} vCore(s)</span>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Informations service */}
       {serviceInfos && (
         <section className="info-section">
-          <h3>{t("general.service")}</h3>
+          <h4>{t("general.serviceInfo")}</h4>
           <div className="info-grid">
-            <div className="info-item"><label>{t("general.creation")}</label><span>{new Date(serviceInfos.creation).toLocaleDateString()}</span></div>
-            <div className="info-item"><label>{t("general.expiration")}</label><span>{new Date(serviceInfos.expiration).toLocaleDateString()}</span></div>
-            <div className="info-item"><label>{t("general.autoRenew")}</label><span className={`badge ${serviceInfos.renew?.automatic ? 'success' : 'warning'}`}>{serviceInfos.renew?.automatic ? '✓' : '✗'}</span></div>
+            <div className="info-item">
+              <label>{t("general.creation")}</label>
+              <span>{formatDate(serviceInfos.creation)}</span>
+            </div>
+            <div className="info-item">
+              <label>{t("general.expiration")}</label>
+              <span>{formatDate(serviceInfos.expiration)}</span>
+            </div>
+            <div className="info-item">
+              <label>{t("general.autoRenew")}</label>
+              <span className={`badge ${serviceInfos.renew?.automatic ? 'success' : 'warning'}`}>
+                {serviceInfos.renew?.automatic ? 'Activé' : 'Désactivé'}
+              </span>
+            </div>
           </div>
         </section>
       )}
+
+      {/* Connexion info */}
+      <section className="connection-info-section">
+        <h4>{t("general.connectionInfo")}</h4>
+        <div className="info-banner">
+          <span className="info-icon">ℹ</span>
+          <div>
+            <p><strong>Chaîne de connexion:</strong></p>
+            <code className="connection-string">
+              {details.type}://{details.hostname}:{details.port}
+            </code>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

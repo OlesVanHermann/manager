@@ -1,32 +1,29 @@
 // ============================================================
-// SERVICE PRIVATE DATABASE - Cloud Databases OVHcloud
+// WEB-CLOUD PRIVATE DATABASE SERVICE - API CloudDB
 // ============================================================
 
-import { ovhApi } from './api';
+import { apiClient } from "./api";
 
-// ============================================================
-// TYPES
-// ============================================================
+// ============ TYPES ============
 
 export interface PrivateDatabase {
   serviceName: string;
-  displayName: string;
-  state: 'detached' | 'restartPending' | 'started' | 'startPending' | 'stopped' | 'stopPending';
-  type: 'mysql' | 'postgresql' | 'redis' | 'mongodb';
-  version: string;
-  versionNumber: number;
+  displayName?: string;
   offer: string;
+  state: "started" | "stopped" | "starting" | "stopping" | "error";
+  type: "mysql" | "postgresql" | "mariadb" | "redis";
+  version: string;
   hostname: string;
-  hostnameFtp: string | null;
+  hostnameFtp?: string;
   port: number;
-  portFtp: number | null;
-  datacenter: string;
-  ram: { unit: string; value: number };
-  quotaSize: { unit: string; value: number };
-  quotaUsed: { unit: string; value: number };
-  cpu: number;
-  tlsCa: string | null;
-  infrastructure: string;
+  portFtp?: number;
+  ram?: { value: number; unit: string };
+  cpu?: number;
+  quotaSize?: { value: number; unit: string };
+  quotaUsed?: { value: number; unit: string };
+  datacenter?: string;
+  infrastructure?: "legacy" | "docker";
+  lastCheck?: string;
 }
 
 export interface PrivateDatabaseServiceInfos {
@@ -36,171 +33,198 @@ export interface PrivateDatabaseServiceInfos {
   contactAdmin: string;
   contactTech: string;
   contactBilling: string;
-  status: string;
-  renew: { automatic: boolean; deleteAtExpiration: boolean; period: number | null };
+  renew?: { automatic: boolean; period?: string };
 }
 
-export interface PrivateDatabaseDb {
+export interface PdbDatabase {
   databaseName: string;
-  quotaUsed: { unit: string; value: number };
-  creationDate: string;
-  users: { userName: string; grantType: string }[];
+  quotaUsed?: { value: number; unit: string };
+  creationDate?: string;
+  users?: string[];
+  backupTime?: string;
 }
 
-export interface PrivateDatabaseUser {
+export interface PdbUser {
   userName: string;
-  creationDate: string;
-  databases: { databaseName: string; grantType: string }[];
+  creationDate?: string;
+  databases?: Array<{ databaseName: string; grantType: "admin" | "rw" | "ro" | "none" }>;
 }
 
-export interface PrivateDatabaseWhitelist {
+export interface PdbWhitelist {
   ip: string;
-  name: string;
-  sftp: boolean;
-  service: boolean;
-  creationDate: string;
-  lastUpdate: string;
-  status: 'created' | 'creating' | 'deleting';
+  name?: string;
+  service?: boolean;
+  sftp?: boolean;
+  creationDate?: string;
+  lastUpdate?: string;
+  status?: string;
 }
 
-export interface PrivateDatabaseTask {
+export interface PdbTask {
   id: number;
   function: string;
-  status: 'cancelled' | 'doing' | 'done' | 'error' | 'init' | 'todo';
+  status: string;
   startDate: string;
-  doneDate: string | null;
-  lastUpdate: string;
-  progress: number;
+  doneDate?: string;
+  lastUpdate?: string;
 }
 
-export interface PrivateDatabaseLog {
-  filename: string;
-  size: number;
+export interface PdbDump {
+  id: number;
+  databaseName: string;
   creationDate: string;
-  url: string;
+  deletionDate?: string;
+  url?: string;
 }
 
-export interface PrivateDatabaseMetrics {
-  cpu: { timestamp: string; value: number }[];
-  ram: { timestamp: string; value: number }[];
-  connections: { timestamp: string; value: number }[];
+export interface PdbConfig {
+  key: string;
+  value: string;
+  defaultValue: string;
+  description?: string;
+  type?: string;
+  availableValues?: string[];
+  unit?: string;
+  min?: number;
+  max?: number;
 }
 
-// ============================================================
-// SERVICE
-// ============================================================
+// ============ SERVICE ============
 
 class PrivateDatabaseService {
-  /** Liste toutes les bases privees du compte. */
-  async listDatabases(): Promise<string[]> {
-    return ovhApi.get<string[]>('/hosting/privateDatabase');
+  private basePath = "/hosting/privateDatabase";
+
+  // ---------- PRIVATE DATABASES ----------
+  async listPrivateDatabases(): Promise<string[]> {
+    return apiClient.get<string[]>(this.basePath);
   }
 
-  /** Recupere les details d'une base privee. */
-  async getDatabase(serviceName: string): Promise<PrivateDatabase> {
-    return ovhApi.get<PrivateDatabase>(`/hosting/privateDatabase/${serviceName}`);
+  async getPrivateDatabase(serviceName: string): Promise<PrivateDatabase> {
+    return apiClient.get<PrivateDatabase>(`${this.basePath}/${serviceName}`);
   }
 
-  /** Recupere les infos de service. */
   async getServiceInfos(serviceName: string): Promise<PrivateDatabaseServiceInfos> {
-    return ovhApi.get<PrivateDatabaseServiceInfos>(`/hosting/privateDatabase/${serviceName}/serviceInfos`);
+    return apiClient.get<PrivateDatabaseServiceInfos>(`${this.basePath}/${serviceName}/serviceInfos`);
   }
 
-  // ---------- Databases ----------
-
-  /** Liste les bases de donnees. */
-  async listDbs(serviceName: string): Promise<string[]> {
-    return ovhApi.get<string[]>(`/hosting/privateDatabase/${serviceName}/database`);
+  // ---------- SERVER ACTIONS ----------
+  async startServer(serviceName: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/start`, {});
   }
 
-  /** Recupere une base de donnees. */
-  async getDb(serviceName: string, databaseName: string): Promise<PrivateDatabaseDb> {
-    return ovhApi.get<PrivateDatabaseDb>(`/hosting/privateDatabase/${serviceName}/database/${databaseName}`);
+  async stopServer(serviceName: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/stop`, {});
   }
 
-  /** Cree une base de donnees. */
-  async createDb(serviceName: string, databaseName: string): Promise<void> {
-    return ovhApi.post<void>(`/hosting/privateDatabase/${serviceName}/database`, { databaseName });
+  async restartServer(serviceName: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/restart`, {});
   }
 
-  /** Supprime une base de donnees. */
-  async deleteDb(serviceName: string, databaseName: string): Promise<void> {
-    return ovhApi.delete<void>(`/hosting/privateDatabase/${serviceName}/database/${databaseName}`);
+  // ---------- DATABASES ----------
+  async listDatabases(serviceName: string): Promise<string[]> {
+    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/database`);
   }
 
-  // ---------- Users ----------
+  async getDatabase(serviceName: string, databaseName: string): Promise<PdbDatabase> {
+    return apiClient.get<PdbDatabase>(`${this.basePath}/${serviceName}/database/${encodeURIComponent(databaseName)}`);
+  }
 
-  /** Liste les utilisateurs. */
+  async createDatabase(serviceName: string, databaseName: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/database`, { databaseName });
+  }
+
+  async deleteDatabase(serviceName: string, databaseName: string): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/database/${encodeURIComponent(databaseName)}`);
+  }
+
+  // ---------- USERS ----------
   async listUsers(serviceName: string): Promise<string[]> {
-    return ovhApi.get<string[]>(`/hosting/privateDatabase/${serviceName}/user`);
+    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/user`);
   }
 
-  /** Recupere un utilisateur. */
-  async getUser(serviceName: string, userName: string): Promise<PrivateDatabaseUser> {
-    return ovhApi.get<PrivateDatabaseUser>(`/hosting/privateDatabase/${serviceName}/user/${userName}`);
+  async getUser(serviceName: string, userName: string): Promise<PdbUser> {
+    return apiClient.get<PdbUser>(`${this.basePath}/${serviceName}/user/${encodeURIComponent(userName)}`);
   }
 
-  /** Cree un utilisateur. */
   async createUser(serviceName: string, userName: string, password: string): Promise<void> {
-    return ovhApi.post<void>(`/hosting/privateDatabase/${serviceName}/user`, { userName, password });
+    return apiClient.post(`${this.basePath}/${serviceName}/user`, { userName, password });
   }
 
-  /** Supprime un utilisateur. */
   async deleteUser(serviceName: string, userName: string): Promise<void> {
-    return ovhApi.delete<void>(`/hosting/privateDatabase/${serviceName}/user/${userName}`);
+    return apiClient.delete(`${this.basePath}/${serviceName}/user/${encodeURIComponent(userName)}`);
   }
 
-  // ---------- Whitelist ----------
+  async changeUserPassword(serviceName: string, userName: string, password: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/user/${encodeURIComponent(userName)}/changePassword`, { password });
+  }
 
-  /** Liste les IPs autorisees. */
+  async setUserGrant(serviceName: string, userName: string, databaseName: string, grant: "admin" | "rw" | "ro" | "none"): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/user/${encodeURIComponent(userName)}/grant/${encodeURIComponent(databaseName)}`, { grant });
+  }
+
+  // ---------- WHITELIST ----------
   async listWhitelist(serviceName: string): Promise<string[]> {
-    return ovhApi.get<string[]>(`/hosting/privateDatabase/${serviceName}/whitelist`);
+    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/whitelist`);
   }
 
-  /** Recupere une IP autorisee. */
-  async getWhitelist(serviceName: string, ip: string): Promise<PrivateDatabaseWhitelist> {
-    return ovhApi.get<PrivateDatabaseWhitelist>(`/hosting/privateDatabase/${serviceName}/whitelist/${ip}`);
+  async getWhitelistEntry(serviceName: string, ip: string): Promise<PdbWhitelist> {
+    return apiClient.get<PdbWhitelist>(`${this.basePath}/${serviceName}/whitelist/${encodeURIComponent(ip)}`);
   }
 
-  /** Ajoute une IP a la whitelist. */
-  async addWhitelist(serviceName: string, ip: string, name: string, service: boolean, sftp: boolean): Promise<void> {
-    return ovhApi.post<void>(`/hosting/privateDatabase/${serviceName}/whitelist`, { ip, name, service, sftp });
+  async addWhitelistEntry(serviceName: string, ip: string, name?: string, service?: boolean, sftp?: boolean): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/whitelist`, { ip, name, service, sftp });
   }
 
-  /** Supprime une IP de la whitelist. */
-  async removeWhitelist(serviceName: string, ip: string): Promise<void> {
-    return ovhApi.delete<void>(`/hosting/privateDatabase/${serviceName}/whitelist/${ip}`);
+  async deleteWhitelistEntry(serviceName: string, ip: string): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/whitelist/${encodeURIComponent(ip)}`);
   }
 
-  // ---------- Tasks ----------
-
-  /** Liste les taches. */
-  async listTasks(serviceName: string, status?: string): Promise<number[]> {
-    let path = `/hosting/privateDatabase/${serviceName}/tasks`;
-    if (status) path += `?status=${status}`;
-    return ovhApi.get<number[]>(path);
+  // ---------- TASKS ----------
+  async listTasks(serviceName: string): Promise<number[]> {
+    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/tasks`);
   }
 
-  /** Recupere une tache. */
-  async getTask(serviceName: string, id: number): Promise<PrivateDatabaseTask> {
-    return ovhApi.get<PrivateDatabaseTask>(`/hosting/privateDatabase/${serviceName}/tasks/${id}`);
+  async getTask(serviceName: string, id: number): Promise<PdbTask> {
+    return apiClient.get<PdbTask>(`${this.basePath}/${serviceName}/tasks/${id}`);
   }
 
-  // ---------- Actions ----------
-
-  /** Redemarre le service. */
-  async restart(serviceName: string): Promise<void> {
-    return ovhApi.post<void>(`/hosting/privateDatabase/${serviceName}/restart`, {});
+  // ---------- DUMPS ----------
+  async listDumps(serviceName: string, databaseName: string): Promise<number[]> {
+    return apiClient.get<number[]>(`${this.basePath}/${serviceName}/database/${encodeURIComponent(databaseName)}/dump`);
   }
 
-  /** Demarre le service. */
-  async start(serviceName: string): Promise<void> {
-    return ovhApi.post<void>(`/hosting/privateDatabase/${serviceName}/start`, {});
+  async getDump(serviceName: string, databaseName: string, id: number): Promise<PdbDump> {
+    return apiClient.get<PdbDump>(`${this.basePath}/${serviceName}/database/${encodeURIComponent(databaseName)}/dump/${id}`);
   }
 
-  /** Arrete le service. */
-  async stop(serviceName: string): Promise<void> {
-    return ovhApi.post<void>(`/hosting/privateDatabase/${serviceName}/stop`, {});
+  async createDump(serviceName: string, databaseName: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/database/${encodeURIComponent(databaseName)}/dump`, {});
+  }
+
+  async restoreDump(serviceName: string, databaseName: string, dumpId: number): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/database/${encodeURIComponent(databaseName)}/dump/${dumpId}/restore`, {});
+  }
+
+  async deleteDump(serviceName: string, databaseName: string, dumpId: number): Promise<void> {
+    return apiClient.delete(`${this.basePath}/${serviceName}/database/${encodeURIComponent(databaseName)}/dump/${dumpId}`);
+  }
+
+  // ---------- CONFIGURATION ----------
+  async listConfigurations(serviceName: string): Promise<string[]> {
+    return apiClient.get<string[]>(`${this.basePath}/${serviceName}/config`);
+  }
+
+  async getConfiguration(serviceName: string, key: string): Promise<PdbConfig> {
+    return apiClient.get<PdbConfig>(`${this.basePath}/${serviceName}/config/${encodeURIComponent(key)}`);
+  }
+
+  async updateConfiguration(serviceName: string, key: string, value: string): Promise<void> {
+    return apiClient.put(`${this.basePath}/${serviceName}/config/${encodeURIComponent(key)}`, { value });
+  }
+
+  // ---------- ROOT PASSWORD ----------
+  async changeRootPassword(serviceName: string, password: string): Promise<void> {
+    return apiClient.post(`${this.basePath}/${serviceName}/changePassword`, { password });
   }
 }
 

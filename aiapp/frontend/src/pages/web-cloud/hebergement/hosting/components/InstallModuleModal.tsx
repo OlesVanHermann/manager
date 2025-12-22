@@ -1,10 +1,10 @@
 // ============================================================
-// MODAL: Installer un module en 1 clic
+// INSTALL MODULE MODAL - Installer un module en 1 clic
 // ============================================================
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../services/web-cloud.hosting";
+import { hostingService, AttachedDomain } from "../../../../../services/web-cloud.hosting";
 
 interface Props {
   serviceName: string;
@@ -13,71 +13,61 @@ interface Props {
   onSuccess: () => void;
 }
 
-interface ModuleTemplate {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-  category: string;
-}
-
-const MODULE_TEMPLATES: ModuleTemplate[] = [
-  { id: "wordpress", name: "WordPress", icon: "📝", description: "CMS le plus populaire", category: "cms" },
-  { id: "prestashop", name: "PrestaShop", icon: "🛒", description: "E-commerce professionnel", category: "ecommerce" },
-  { id: "joomla", name: "Joomla", icon: "🌐", description: "CMS flexible", category: "cms" },
-  { id: "drupal", name: "Drupal", icon: "💧", description: "CMS entreprise", category: "cms" },
-  { id: "nextcloud", name: "Nextcloud", icon: "☁️", description: "Cloud privé", category: "tools" },
-  { id: "dolibarr", name: "Dolibarr", icon: "📊", description: "ERP/CRM", category: "business" },
+const MODULES = [
+  { id: 1, name: "WordPress", icon: "📝", desc: "CMS le plus populaire au monde" },
+  { id: 2, name: "PrestaShop", icon: "🛒", desc: "Solution e-commerce complète" },
+  { id: 3, name: "Joomla", icon: "🌐", desc: "CMS flexible et extensible" },
+  { id: 4, name: "Drupal", icon: "💧", desc: "CMS robuste pour sites complexes" },
 ];
 
-/** Modal d'installation de module en 1 clic. */
+const LANGUAGES = [
+  { value: "fr", label: "Français" },
+  { value: "en", label: "English" },
+  { value: "de", label: "Deutsch" },
+  { value: "es", label: "Español" },
+  { value: "it", label: "Italiano" },
+  { value: "pt", label: "Português" },
+];
+
+/** Modal wizard pour installer un module en 1 clic. */
 export function InstallModuleModal({ serviceName, isOpen, onClose, onSuccess }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
-
-  // ---------- STATE ----------
   const [step, setStep] = useState(1);
-  const [selectedModule, setSelectedModule] = useState<ModuleTemplate | null>(null);
-  const [domain, setDomain] = useState("");
+  const [selectedModule, setSelectedModule] = useState<number | null>(null);
+  const [domains, setDomains] = useState<AttachedDomain[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState("");
   const [path, setPath] = useState("/");
-  const [adminUser, setAdminUser] = useState("admin");
+  const [adminName, setAdminName] = useState("admin");
   const [adminPassword, setAdminPassword] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [language, setLanguage] = useState("fr");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      loadDomains();
+    }
+  }, [isOpen]);
 
-  // ---------- HANDLERS ----------
-  const handleClose = () => {
-    setStep(1);
-    setSelectedModule(null);
-    setDomain("");
-    setPath("/");
-    setAdminUser("admin");
-    setAdminPassword("");
-    setAdminEmail("");
-    setError(null);
-    onClose();
-  };
-
-  const handleSelectModule = (module: ModuleTemplate) => {
-    setSelectedModule(module);
-    setStep(2);
+  const loadDomains = async () => {
+    try {
+      const names = await hostingService.listAttachedDomains(serviceName);
+      const data = await Promise.all(names.map(d => hostingService.getAttachedDomain(serviceName, d)));
+      setDomains(data);
+      if (data.length > 0) setSelectedDomain(data[0].domain);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleSubmit = async () => {
-    if (!selectedModule) return;
-    if (!domain.trim()) {
-      setError(t("installModule.errorDomainRequired"));
+    if (!selectedModule || !selectedDomain) {
+      setError("Veuillez sélectionner un module et un domaine");
       return;
     }
     if (!adminPassword || adminPassword.length < 8) {
-      setError(t("installModule.errorPasswordMin"));
-      return;
-    }
-    if (!adminEmail.includes("@")) {
-      setError(t("installModule.errorEmailInvalid"));
+      setError("Le mot de passe doit contenir au moins 8 caractères");
       return;
     }
 
@@ -85,16 +75,16 @@ export function InstallModuleModal({ serviceName, isOpen, onClose, onSuccess }: 
       setLoading(true);
       setError(null);
       await hostingService.installModule(serviceName, {
-        moduleId: selectedModule.id,
-        domain: domain.trim(),
+        moduleId: selectedModule,
+        domain: selectedDomain,
         path: path.trim() || "/",
-        adminName: adminUser.trim(),
+        adminName: adminName.trim(),
         adminPassword,
-        adminEmail: adminEmail.trim(),
         language,
       });
       onSuccess();
-      handleClose();
+      onClose();
+      resetForm();
     } catch (err) {
       setError(String(err));
     } finally {
@@ -102,146 +92,170 @@ export function InstallModuleModal({ serviceName, isOpen, onClose, onSuccess }: 
     }
   };
 
-  // ---------- RENDER ----------
+  const resetForm = () => {
+    setStep(1);
+    setSelectedModule(null);
+    setSelectedDomain("");
+    setPath("/");
+    setAdminName("admin");
+    setAdminPassword("");
+    setAdminEmail("");
+    setLanguage("fr");
+    setError(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const canProceed = () => {
+    if (step === 1) return selectedModule !== null;
+    if (step === 2) return selectedDomain !== "";
+    if (step === 3) return adminPassword.length >= 8;
+    return false;
+  };
+
+  if (!isOpen) return null;
+
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{t("installModule.title")}</h3>
+          <h3>{t("modules.install")}</h3>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
 
         <div className="modal-body">
-          {error && <div className="error-banner">{error}</div>}
+          {error && <div className="error-message">{error}</div>}
 
+          {/* Progress */}
+          <div className="wizard-progress">
+            <div className={`wizard-step ${step >= 1 ? 'active' : ''}`}>1. Module</div>
+            <div className={`wizard-step ${step >= 2 ? 'active' : ''}`}>2. Domaine</div>
+            <div className={`wizard-step ${step >= 3 ? 'active' : ''}`}>3. Configuration</div>
+          </div>
+
+          {/* Step 1: Choix du module */}
           {step === 1 && (
-            <div className="step-content">
-              <p className="step-description">{t("installModule.step1Desc")}</p>
+            <div className="wizard-content">
+              <h4>Choisissez un module</h4>
               <div className="module-grid">
-                {MODULE_TEMPLATES.map((mod) => (
-                  <button
+                {MODULES.map(mod => (
+                  <div
                     key={mod.id}
-                    className="module-option"
-                    onClick={() => handleSelectModule(mod)}
+                    className={`module-card ${selectedModule === mod.id ? 'selected' : ''}`}
+                    onClick={() => setSelectedModule(mod.id)}
                   >
                     <span className="module-icon">{mod.icon}</span>
                     <span className="module-name">{mod.name}</span>
-                    <span className="module-desc">{mod.description}</span>
-                  </button>
+                    <span className="module-desc">{mod.desc}</span>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          {step === 2 && selectedModule && (
-            <div className="step-content">
-              <div className="selected-module-header">
-                <span className="module-icon-lg">{selectedModule.icon}</span>
-                <div>
-                  <h4>{selectedModule.name}</h4>
-                  <p>{selectedModule.description}</p>
-                </div>
-              </div>
-
+          {/* Step 2: Choix du domaine */}
+          {step === 2 && (
+            <div className="wizard-content">
+              <h4>Choisissez le domaine</h4>
               <div className="form-group">
-                <label>{t("installModule.domainLabel")}</label>
+                <label className="form-label">Domaine</label>
+                <select
+                  className="form-select"
+                  value={selectedDomain}
+                  onChange={(e) => setSelectedDomain(e.target.value)}
+                >
+                  {domains.map(d => (
+                    <option key={d.domain} value={d.domain}>{d.domain}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Chemin d'installation</label>
                 <input
                   type="text"
-                  value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
-                  placeholder="monsite.com"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>{t("installModule.pathLabel")}</label>
-                <input
-                  type="text"
+                  className="form-input font-mono"
                   value={path}
                   onChange={(e) => setPath(e.target.value)}
                   placeholder="/"
-                  className="form-input font-mono"
                 />
-                <span className="form-hint">{t("installModule.pathHint")}</span>
+                <span className="form-hint">Laissez "/" pour installer à la racine</span>
               </div>
             </div>
           )}
 
-          {step === 3 && selectedModule && (
-            <div className="step-content">
-              <p className="step-description">{t("installModule.step3Desc")}</p>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>{t("installModule.adminUserLabel")}</label>
-                  <input
-                    type="text"
-                    value={adminUser}
-                    onChange={(e) => setAdminUser(e.target.value)}
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>{t("installModule.languageLabel")}</label>
-                  <select value={language} onChange={(e) => setLanguage(e.target.value)} className="form-select">
-                    <option value="fr">Français</option>
-                    <option value="en">English</option>
-                    <option value="de">Deutsch</option>
-                    <option value="es">Español</option>
-                    <option value="it">Italiano</option>
-                  </select>
-                </div>
-              </div>
-
+          {/* Step 3: Configuration admin */}
+          {step === 3 && (
+            <div className="wizard-content">
+              <h4>Configuration administrateur</h4>
               <div className="form-group">
-                <label>{t("installModule.adminEmailLabel")}</label>
+                <label className="form-label">Identifiant admin</label>
                 <input
-                  type="email"
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  type="text"
                   className="form-input"
+                  value={adminName}
+                  onChange={(e) => setAdminName(e.target.value)}
+                  placeholder="admin"
                 />
               </div>
-
               <div className="form-group">
-                <label>{t("installModule.adminPasswordLabel")}</label>
+                <label className="form-label required">Mot de passe admin</label>
                 <input
                   type="password"
+                  className="form-input"
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
-                  className="form-input"
+                  placeholder="••••••••"
+                  required
                 />
-                <span className="form-hint">{t("installModule.passwordHint")}</span>
+                <span className="form-hint">Minimum 8 caractères</span>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Langue</label>
+                <select
+                  className="form-select"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  {LANGUAGES.map(l => (
+                    <option key={l.value} value={l.value}>{l.label}</option>
+                  ))}
+                </select>
               </div>
             </div>
           )}
         </div>
 
         <div className="modal-footer">
-          <div className="step-indicator">
-            {[1, 2, 3].map((s) => (
-              <span key={s} className={`step-dot ${step >= s ? "active" : ""}`} />
-            ))}
-          </div>
-          <div className="modal-actions">
-            {step > 1 && (
-              <button className="btn btn-secondary" onClick={() => setStep(step - 1)} disabled={loading}>
-                {t("installModule.back")}
-              </button>
-            )}
-            {step === 2 && (
-              <button className="btn btn-primary" onClick={() => setStep(3)}>
-                {t("installModule.next")}
-              </button>
-            )}
-            {step === 3 && (
-              <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
-                {loading ? t("installModule.installing") : t("installModule.confirm")}
-              </button>
-            )}
-          </div>
+          <button type="button" className="btn btn-secondary" onClick={handleClose}>
+            Annuler
+          </button>
+          {step > 1 && (
+            <button type="button" className="btn btn-secondary" onClick={() => setStep(s => s - 1)}>
+              Précédent
+            </button>
+          )}
+          {step < 3 ? (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setStep(s => s + 1)}
+              disabled={!canProceed()}
+            >
+              Suivant
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleSubmit}
+              disabled={loading || !canProceed()}
+            >
+              {loading ? "Installation..." : "Installer"}
+            </button>
+          )}
         </div>
       </div>
     </div>

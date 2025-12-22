@@ -1,110 +1,122 @@
 // ============================================================
-// PRIVATE DATABASE PAGE - Bases de données privées (style Billing)
+// PRIVATE DATABASE INDEX - Page principale CloudDB
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
-import { privateDatabaseService } from "../../../../services/web-cloud.private-database";
-import { GeneralTab, DatabasesTab, UsersTab, WhitelistTab, TasksTab } from "./tabs";
-import "../../styles.css";
+import { ServiceListPage } from "../../shared";
+import { privateDatabaseService, PrivateDatabase } from "../../../../services/web-cloud.private-database";
+import { GeneralTab } from "./tabs/GeneralTab";
+import { DatabasesTab } from "./tabs/DatabasesTab";
+import { UsersTab } from "./tabs/UsersTab";
+import { WhitelistTab } from "./tabs/WhitelistTab";
+import { TasksTab } from "./tabs/TasksTab";
+import "./styles.css";
 
-// ============ ICONS ============
+const TABS = [
+  { id: "general", labelKey: "tabs.general" },
+  { id: "databases", labelKey: "tabs.databases" },
+  { id: "users", labelKey: "tabs.users" },
+  { id: "whitelist", labelKey: "tabs.whitelist" },
+  { id: "tasks", labelKey: "tabs.tasks" },
+];
 
-const DatabaseIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-  </svg>
-);
-
-// ============ COMPOSANT ============
-
-/** Page Private Database avec liste à gauche et détails à droite. */
-export default function PrivateDatabasePage() {
+export function PrivateDatabasePage() {
   const { t } = useTranslation("web-cloud/private-database/index");
-
-  // ---------- STATE ----------
-  const [databases, setDatabases] = useState<ServiceItem[]>([]);
+  const [services, setServices] = useState<PrivateDatabase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDb, setSelectedDb] = useState<string | null>(null);
+  const [selected, setSelected] = useState<PrivateDatabase | null>(null);
   const [activeTab, setActiveTab] = useState("general");
 
-  // ---------- LOAD DATABASES ----------
-  const loadDatabases = useCallback(async () => {
+  const loadServices = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
-      const dbNames = await privateDatabaseService.listDatabases();
-      const items: ServiceItem[] = dbNames.map((name) => ({
-        id: name,
-        name: name,
-      }));
-      setDatabases(items);
-      if (items.length > 0 && !selectedDb) {
-        setSelectedDb(items[0].id);
+      const names = await privateDatabaseService.listPrivateDatabases();
+      const data = await Promise.all(names.map(n => privateDatabaseService.getPrivateDatabase(n)));
+      setServices(data);
+      if (data.length > 0 && !selected) {
+        setSelected(data[0]);
       }
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setLoading(false);
+    } catch (err) { setError(String(err)); }
+    finally { setLoading(false); }
+  }, [selected]);
+
+  useEffect(() => { loadServices(); }, [loadServices]);
+
+  const getStateBadge = (state: string) => {
+    const map: Record<string, { class: string; label: string }> = {
+      started: { class: 'success', label: 'Démarré' },
+      stopped: { class: 'inactive', label: 'Arrêté' },
+      starting: { class: 'warning', label: 'Démarrage...' },
+      stopping: { class: 'warning', label: 'Arrêt...' },
+      error: { class: 'error', label: 'Erreur' },
+    };
+    return map[state] || { class: 'inactive', label: state };
+  };
+
+  const renderTabContent = () => {
+    if (!selected) return null;
+    const props = { serviceName: selected.serviceName, details: selected };
+    
+    switch (activeTab) {
+      case "general": return <GeneralTab {...props} onRefresh={loadServices} />;
+      case "databases": return <DatabasesTab serviceName={selected.serviceName} />;
+      case "users": return <UsersTab serviceName={selected.serviceName} />;
+      case "whitelist": return <WhitelistTab serviceName={selected.serviceName} />;
+      case "tasks": return <TasksTab serviceName={selected.serviceName} />;
+      default: return <GeneralTab {...props} onRefresh={loadServices} />;
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    loadDatabases();
-  }, [loadDatabases]);
-
-  // ---------- TABS ----------
-  const detailTabs = [
-    { id: "general", label: t("tabs.general") },
-    { id: "databases", label: t("tabs.databases") },
-    { id: "users", label: t("tabs.users") },
-    { id: "whitelist", label: t("tabs.whitelist") },
-    { id: "tasks", label: t("tabs.tasks") },
-  ];
-
-  // ---------- RENDER ----------
   return (
     <ServiceListPage
       titleKey="title"
       descriptionKey="description"
-      guidesUrl="https://help.ovhcloud.com/csm/fr-private-sql"
+      guidesUrl="https://help.ovhcloud.com/csm/fr-web-cloud-databases"
       i18nNamespace="web-cloud/private-database/index"
-      services={databases}
+      services={services}
       loading={loading}
       error={error}
-      selectedService={selectedDb}
-      onSelectService={setSelectedDb}
-      emptyIcon={<DatabaseIcon />}
+      selectedService={selected}
+      onSelectService={setSelected}
+      emptyIcon={<span style={{ fontSize: '3rem' }}>🗄️</span>}
       emptyTitleKey="empty.title"
       emptyDescriptionKey="empty.description"
     >
-      {selectedDb && (
-        <div className="detail-card">
-          <div className="detail-card-header">
-            <h2>{selectedDb}</h2>
+      {selected && (
+        <div className="service-detail">
+          <div className="detail-header">
+            <div className="detail-title-row">
+              <h2>{selected.displayName || selected.serviceName}</h2>
+              <span className={`badge ${getStateBadge(selected.state).class}`}>
+                {getStateBadge(selected.state).label}
+              </span>
+            </div>
+            <span className="service-sublabel">{selected.type} {selected.version} • {selected.hostname}</span>
           </div>
-          <div className="detail-tabs">
-            {detailTabs.map((tab) => (
-              <button
-                key={tab.id}
-                className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ))}
+
+          <div className="tabs-container">
+            <div className="tabs-scroll">
+              {TABS.map(tab => (
+                <button
+                  key={tab.id}
+                  className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {t(tab.labelKey)}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="detail-tab-content">
-            {activeTab === "general" && <GeneralTab serviceName={selectedDb} />}
-            {activeTab === "databases" && <DatabasesTab serviceName={selectedDb} />}
-            {activeTab === "users" && <UsersTab serviceName={selectedDb} />}
-            {activeTab === "whitelist" && <WhitelistTab serviceName={selectedDb} />}
-            {activeTab === "tasks" && <TasksTab serviceName={selectedDb} />}
+
+          <div className="tab-content">
+            {renderTabContent()}
           </div>
         </div>
       )}
     </ServiceListPage>
   );
 }
+
+export default PrivateDatabasePage;

@@ -1,62 +1,46 @@
 // ============================================================
-// HÉBERGEMENT - Page groupe avec sous-navigation
+// HÉBERGEMENT INDEX - Router Web Cloud Hébergement
 // ============================================================
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../services/web-cloud.hosting";
-import { privateDatabaseService } from "../../../services/web-cloud.private-database";
-import HostingPage from "./hosting";
-import PrivateDatabasePage from "./private-database";
-import "../styles.css";
+import { HostingPage } from "./hosting";
+import { PrivateDatabasePage } from "./private-database";
 
-type SubSection = "hosting" | "private-database";
+type Section = "hosting" | "private-database";
 
-/** Page groupe Hébergement avec sous-navigation. */
-export default function HebergementPage() {
-  const { t } = useTranslation("web-cloud/hebergement/index");
-
-  const [activeSection, setActiveSection] = useState<SubSection>("hosting");
-  const [counts, setCounts] = useState({ hosting: 0, privateDb: 0 });
-
-  useEffect(() => {
-    const loadCounts = async () => {
-      try {
-        const [hostings, dbs] = await Promise.all([
-          hostingService.listHostings(),
-          privateDatabaseService.listDatabases(),
-        ]);
-        setCounts({ hosting: hostings.length, privateDb: dbs.length });
-      } catch (err) {
-        console.error("Failed to load counts:", err);
-      }
-    };
-    loadCounts();
-  }, []);
-
-  const sections: { id: SubSection; labelKey: string; count: number }[] = [
-    { id: "hosting", labelKey: "sections.hosting", count: counts.hosting },
-    { id: "private-database", labelKey: "sections.privateDatabase", count: counts.privateDb },
-  ];
+/** Page principale Hébergement avec sous-navigation. */
+export function HebergementPage() {
+  const { t } = useTranslation("web-cloud/hosting/index");
+  const [activeSection, setActiveSection] = useState<Section>("hosting");
 
   return (
-    <div className="service-list-page">
-      <div className="sub-nav">
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            className={`sub-nav-item ${activeSection === section.id ? "active" : ""}`}
-            onClick={() => setActiveSection(section.id)}
-          >
-            {t(section.labelKey)}
-            <span className="count">{section.count}</span>
-          </button>
-        ))}
+    <div className="hebergement-page">
+      {/* Sous-navigation */}
+      <div className="section-nav">
+        <button
+          className={`section-nav-btn ${activeSection === "hosting" ? "active" : ""}`}
+          onClick={() => setActiveSection("hosting")}
+        >
+          <span className="nav-icon">🌐</span>
+          <span className="nav-label">Hébergements Web</span>
+        </button>
+        <button
+          className={`section-nav-btn ${activeSection === "private-database" ? "active" : ""}`}
+          onClick={() => setActiveSection("private-database")}
+        >
+          <span className="nav-icon">🗄️</span>
+          <span className="nav-label">Web Cloud Databases</span>
+        </button>
       </div>
-      <div style={{ flex: 1, overflow: "auto" }}>
+
+      {/* Contenu de la section */}
+      <div className="section-content">
         {activeSection === "hosting" && <HostingPage />}
         {activeSection === "private-database" && <PrivateDatabasePage />}
       </div>
     </div>
   );
 }
+
+export default HebergementPage;

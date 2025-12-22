@@ -1,3 +1,7 @@
+// ============================================================
+// PRIVATE DATABASE TABS - Export central
+// ============================================================
+
 export { GeneralTab } from './GeneralTab';
 export { DatabasesTab } from './DatabasesTab';
 export { UsersTab } from './UsersTab';

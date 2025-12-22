@@ -206,9 +206,38 @@ tar -cf /home/ubuntu/new_manager.iam.secret.tar \
 
 echo "Création new_manager.license.core.tar..."
 tar -cf /home/ubuntu/new_manager.license.core.tar \
-    ./src/pages/license \
-    ./public/locales/en/license \
-    ./public/locales/fr/license
+    ./src/pages/license/index.tsx \
+    ./src/pages/license/styles.css \
+    ./public/locales/en/license/index.json \
+    ./public/locales/fr/license/index.json
+
+echo "Création new_manager.license.cloudlinux.tar..."
+tar -cf /home/ubuntu/new_manager.license.cloudlinux.tar \
+    ./src/pages/license/cloudlinux
+
+echo "Création new_manager.license.cpanel.tar..."
+tar -cf /home/ubuntu/new_manager.license.cpanel.tar \
+    ./src/pages/license/cpanel
+
+echo "Création new_manager.license.directadmin.tar..."
+tar -cf /home/ubuntu/new_manager.license.directadmin.tar \
+    ./src/pages/license/directadmin
+
+echo "Création new_manager.license.plesk.tar..."
+tar -cf /home/ubuntu/new_manager.license.plesk.tar \
+    ./src/pages/license/plesk
+
+echo "Création new_manager.license.sqlserver.tar..."
+tar -cf /home/ubuntu/new_manager.license.sqlserver.tar \
+    ./src/pages/license/sqlserver
+
+echo "Création new_manager.license.virtuozzo.tar..."
+tar -cf /home/ubuntu/new_manager.license.virtuozzo.tar \
+    ./src/pages/license/virtuozzo
+
+echo "Création new_manager.license.windows.tar..."
+tar -cf /home/ubuntu/new_manager.license.windows.tar \
+    ./src/pages/license/windows
 
 # ============================================================
 # NETWORK
@@ -274,11 +303,23 @@ tar -cf /home/ubuntu/new_manager.private-cloud.core.tar \
     ./public/locales/en/private-cloud/index.json \
     ./public/locales/fr/private-cloud/index.json
 
+echo "Création new_manager.private-cloud.managed-baremetal.tar..."
+tar -cf /home/ubuntu/new_manager.private-cloud.managed-baremetal.tar \
+    ./src/pages/private-cloud/managed-baremetal
+
 echo "Création new_manager.private-cloud.nutanix.tar..."
 tar -cf /home/ubuntu/new_manager.private-cloud.nutanix.tar \
     ./src/pages/private-cloud/nutanix \
     ./public/locales/en/private-cloud/nutanix \
     ./public/locales/fr/private-cloud/nutanix
+
+echo "Création new_manager.private-cloud.sap.tar..."
+tar -cf /home/ubuntu/new_manager.private-cloud.sap.tar \
+    ./src/pages/private-cloud/sap
+
+echo "Création new_manager.private-cloud.veeam.tar..."
+tar -cf /home/ubuntu/new_manager.private-cloud.veeam.tar \
+    ./src/pages/private-cloud/veeam
 
 echo "Création new_manager.private-cloud.vmware.tar..."
 tar -cf /home/ubuntu/new_manager.private-cloud.vmware.tar \

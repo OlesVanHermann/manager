@@ -1,5 +1,5 @@
 // ============================================================
-// MODAL: Créer une variable d'environnement
+// CREATE ENVVAR MODAL - Créer une variable d'environnement
 // ============================================================
 
 import { useState } from "react";
@@ -13,46 +13,29 @@ interface Props {
   onSuccess: () => void;
 }
 
-type EnvVarType = "string" | "password";
-
-/** Modal de création de variable d'environnement. */
+/** Modal pour créer une variable d'environnement. */
 export function CreateEnvvarModal({ serviceName, isOpen, onClose, onSuccess }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
-
-  // ---------- STATE ----------
   const [key, setKey] = useState("");
   const [value, setValue] = useState("");
-  const [type, setType] = useState<EnvVarType>("string");
+  const [type, setType] = useState("string");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  const validateKey = (k: string) => /^[A-Z0-9_]+$/.test(k);
 
-  // ---------- VALIDATION ----------
-  const validateKey = (k: string): string | null => {
-    if (!k.trim()) return t("createEnvvar.errorKeyRequired");
-    if (!/^[A-Z][A-Z0-9_]*$/.test(k)) return t("createEnvvar.errorKeyFormat");
-    if (k.length > 255) return t("createEnvvar.errorKeyMax");
-    return null;
-  };
-
-  // ---------- HANDLERS ----------
-  const handleClose = () => {
-    setKey("");
-    setValue("");
-    setType("string");
-    setError(null);
-    onClose();
-  };
-
-  const handleSubmit = async () => {
-    const keyError = validateKey(key);
-    if (keyError) {
-      setError(keyError);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!key.trim()) {
+      setError("La clé est obligatoire");
+      return;
+    }
+    if (!validateKey(key)) {
+      setError("La clé doit contenir uniquement des majuscules, chiffres et underscores");
       return;
     }
     if (!value.trim()) {
-      setError(t("createEnvvar.errorValueRequired"));
+      setError("La valeur est obligatoire");
       return;
     }
 
@@ -65,7 +48,8 @@ export function CreateEnvvarModal({ serviceName, isOpen, onClose, onSuccess }: P
         type,
       });
       onSuccess();
-      handleClose();
+      onClose();
+      resetForm();
     } catch (err) {
       setError(String(err));
     } finally {
@@ -73,79 +57,103 @@ export function CreateEnvvarModal({ serviceName, isOpen, onClose, onSuccess }: P
     }
   };
 
-  // ---------- RENDER ----------
+  const resetForm = () => {
+    setKey("");
+    setValue("");
+    setType("string");
+    setError(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleKeyChange = (val: string) => {
+    setKey(val.toUpperCase().replace(/[^A-Z0-9_]/g, ''));
+  };
+
+  if (!isOpen) return null;
+
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{t("createEnvvar.title")}</h3>
+          <h3>{t("envvars.create")}</h3>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
 
-        <div className="modal-body">
-          {error && <div className="error-banner">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            {error && <div className="error-message">{error}</div>}
 
-          <div className="form-group">
-            <label>{t("createEnvvar.keyLabel")}</label>
-            <input
-              type="text"
-              value={key}
-              onChange={(e) => setKey(e.target.value.toUpperCase())}
-              placeholder="MY_VARIABLE"
-              className="form-input font-mono"
-              autoFocus
-            />
-            <span className="form-hint">{t("createEnvvar.keyHint")}</span>
-          </div>
-
-          <div className="form-group">
-            <label>{t("createEnvvar.valueLabel")}</label>
-            <input
-              type={type === "password" ? "password" : "text"}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="valeur"
-              className="form-input font-mono"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>{t("createEnvvar.typeLabel")}</label>
-            <div className="radio-group">
-              <label className="radio-item">
-                <input
-                  type="radio"
-                  name="envType"
-                  checked={type === "string"}
-                  onChange={() => setType("string")}
-                />
-                <span className="radio-label">{t("createEnvvar.typeString")}</span>
-              </label>
-              <label className="radio-item">
-                <input
-                  type="radio"
-                  name="envType"
-                  checked={type === "password"}
-                  onChange={() => setType("password")}
-                />
-                <span className="radio-label">{t("createEnvvar.typePassword")}</span>
-              </label>
+            <div className="info-banner" style={{ marginBottom: 'var(--space-4)' }}>
+              <span className="info-icon">ℹ</span>
+              <p>Les variables d'environnement sont accessibles dans vos scripts via $_ENV ou getenv().</p>
             </div>
-            <span className="form-hint">{t("createEnvvar.typeHint")}</span>
-          </div>
-        </div>
 
-        <div className="modal-footer">
-          <div></div>
-          <div className="modal-actions">
-            <button className="btn btn-secondary" onClick={handleClose} disabled={loading}>
-              {t("createEnvvar.cancel")}
+            <div className="form-group">
+              <label className="form-label required">Clé</label>
+              <input
+                type="text"
+                className="form-input font-mono"
+                value={key}
+                onChange={(e) => handleKeyChange(e.target.value)}
+                placeholder="MY_API_KEY"
+                maxLength={255}
+                required
+              />
+              <span className="form-hint">Majuscules, chiffres et underscores uniquement</span>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label required">Valeur</label>
+              <input
+                type={type === "password" ? "password" : "text"}
+                className="form-input font-mono"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="sk_live_xxxxx"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Type</label>
+              <div className="radio-group">
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="string"
+                    checked={type === "string"}
+                    onChange={(e) => setType(e.target.value)}
+                  />
+                  Texte (visible)
+                </label>
+                <label className="radio-label">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="password"
+                    checked={type === "password"}
+                    onChange={(e) => setType(e.target.value)}
+                  />
+                  Masqué (mot de passe, clé API)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={handleClose}>
+              Annuler
             </button>
-            <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
-              {loading ? t("createEnvvar.creating") : t("createEnvvar.confirm")}
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? "Création..." : "Créer la variable"}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

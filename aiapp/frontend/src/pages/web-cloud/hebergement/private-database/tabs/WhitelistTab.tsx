@@ -1,56 +1,130 @@
 // ============================================================
-// PRIVATE DB TAB: WHITELIST
+// PRIVATE DATABASE TAB: WHITELIST - IPs autorisées
 // ============================================================
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService, PrivateDatabaseWhitelist } from "../../../../../services/web-cloud.private-database";
+import { privateDatabaseService, PdbWhitelist } from "../../../../../services/web-cloud.private-database";
+import { AddWhitelistModal } from "../components/AddWhitelistModal";
 
 interface Props { serviceName: string; }
 
+/** Onglet Whitelist (IPs autorisées) CloudDB. */
 export function WhitelistTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/private-database/index");
-  const [whitelist, setWhitelist] = useState<PrivateDatabaseWhitelist[]>([]);
+  const [entries, setEntries] = useState<PdbWhitelist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true);
-        const ips = await privateDatabaseService.listWhitelist(serviceName);
-        const data = await Promise.all(ips.map(ip => privateDatabaseService.getWhitelist(serviceName, ip)));
-        setWhitelist(data);
-      } catch (err) { setError(String(err)); }
-      finally { setLoading(false); }
-    };
-    load();
+  const loadEntries = useCallback(async () => {
+    try {
+      setLoading(true);
+      const ips = await privateDatabaseService.listWhitelist(serviceName);
+      const data = await Promise.all(ips.map(ip => privateDatabaseService.getWhitelistEntry(serviceName, ip)));
+      setEntries(data);
+    } catch (err) { setError(String(err)); }
+    finally { setLoading(false); }
   }, [serviceName]);
+
+  useEffect(() => { loadEntries(); }, [loadEntries]);
+
+  const handleDelete = async (ip: string) => {
+    if (!confirm(t("whitelist.confirmDelete", { ip }))) return;
+    try {
+      await privateDatabaseService.deleteWhitelistEntry(serviceName, ip);
+      loadEntries();
+    } catch (err) { alert(String(err)); }
+  };
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
   if (error) return <div className="error-state">{error}</div>;
 
   return (
-    <div className="whitelist-tab">
-      <div className="tab-header"><h3>{t("whitelist.title")}</h3><p className="tab-description">{t("whitelist.description")}</p></div>
-      {whitelist.length === 0 ? (
-        <div className="empty-state"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg><p>{t("whitelist.empty")}</p></div>
+    <div className="pdb-whitelist-tab">
+      <div className="tab-header">
+        <div>
+          <h3>{t("whitelist.title")}</h3>
+          <p className="tab-description">{t("whitelist.description")}</p>
+        </div>
+        <div className="tab-actions">
+          <span className="records-count">{entries.length} {t("whitelist.count")}</span>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
+            + {t("whitelist.add")}
+          </button>
+        </div>
+      </div>
+
+      {/* Info aide */}
+      <div className="info-banner">
+        <span className="info-icon">ℹ</span>
+        <div>
+          <p>{t("whitelist.info")}</p>
+          <p style={{ marginTop: 'var(--space-2)' }}>
+            <strong>Votre IP actuelle:</strong>{' '}
+            <code id="current-ip">Chargement...</code>
+          </p>
+        </div>
+      </div>
+
+      {entries.length === 0 ? (
+        <div className="empty-state">
+          <p>{t("whitelist.empty")}</p>
+          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+            {t("whitelist.addFirst")}
+          </button>
+        </div>
       ) : (
         <table className="data-table">
-          <thead><tr><th>{t("whitelist.ip")}</th><th>{t("whitelist.name")}</th><th>{t("whitelist.service")}</th><th>{t("whitelist.sftp")}</th><th>{t("whitelist.status")}</th></tr></thead>
+          <thead>
+            <tr>
+              <th>{t("whitelist.ip")}</th>
+              <th>{t("whitelist.name")}</th>
+              <th>{t("whitelist.options")}</th>
+              <th>{t("whitelist.status")}</th>
+              <th>{t("whitelist.creationDate")}</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
           <tbody>
-            {whitelist.map(w => (
-              <tr key={w.ip}>
-                <td className="font-mono">{w.ip}</td>
-                <td>{w.name}</td>
-                <td><span className={`badge ${w.service ? 'success' : 'inactive'}`}>{w.service ? '✓' : '✗'}</span></td>
-                <td><span className={`badge ${w.sftp ? 'success' : 'inactive'}`}>{w.sftp ? '✓' : '✗'}</span></td>
-                <td><span className={`badge ${w.status === 'created' ? 'success' : 'warning'}`}>{w.status}</span></td>
+            {entries.map(entry => (
+              <tr key={entry.ip}>
+                <td className="font-mono">{entry.ip}</td>
+                <td>{entry.name || '-'}</td>
+                <td>
+                  <div className="whitelist-options">
+                    {entry.service && <span className="badge success">Service</span>}
+                    {entry.sftp && <span className="badge info">SFTP</span>}
+                    {!entry.service && !entry.sftp && <span className="text-muted">-</span>}
+                  </div>
+                </td>
+                <td>
+                  <span className={`badge ${entry.status === 'ok' ? 'success' : 'warning'}`}>
+                    {entry.status === 'ok' ? 'Actif' : entry.status || 'En attente'}
+                  </span>
+                </td>
+                <td>{entry.creationDate ? new Date(entry.creationDate).toLocaleDateString() : '-'}</td>
+                <td>
+                  <button 
+                    className="btn-icon btn-danger-icon" 
+                    onClick={() => handleDelete(entry.ip)}
+                    title={t("whitelist.delete")}
+                  >
+                    🗑
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
+      <AddWhitelistModal
+        serviceName={serviceName}
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={loadEntries}
+      />
     </div>
   );
 }

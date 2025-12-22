@@ -1,81 +1,165 @@
 // ============================================================
-// HOSTING TAB: EMAILS - Emails inclus
+// HOSTING TAB: EMAILS - Scripts e-mail automatisés
 // ============================================================
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, EmailOption } from "../../../../../services/web-cloud.hosting";
+import { hostingService } from "../../../../../services/web-cloud.hosting";
 
 interface Props { serviceName: string; }
 
-/** Onglet Emails inclus avec l'hebergement. */
+interface AutomatedEmails {
+  state: string;
+  email?: string;
+  bounceEmail?: string;
+  volume?: {
+    used: number;
+    max: number;
+  };
+}
+
+/** Onglet Scripts e-mail pour les emails automatisés. */
 export function EmailsTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
-  const [email, setEmail] = useState<EmailOption | null>(null);
+  const [emailConfig, setEmailConfig] = useState<AutomatedEmails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true);
-        const data = await hostingService.getEmailOption(serviceName);
-        setEmail(data);
-      } finally { setLoading(false); }
-    };
-    load();
+  const loadConfig = useCallback(async () => {
+    try {
+      setLoading(true);
+      const config = await hostingService.getAutomatedEmails(serviceName);
+      setEmailConfig(config as AutomatedEmails);
+      setNewEmail(config.email || "");
+    } catch (err) { setError(String(err)); }
+    finally { setLoading(false); }
   }, [serviceName]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  useEffect(() => { loadConfig(); }, [loadConfig]);
 
-  const getStatusBadge = (status: string) => {
-    const map: Record<string, { class: string; label: string }> = {
-      normal: { class: 'success', label: t("emails.statusNormal") },
-      bounce: { class: 'warning', label: t("emails.statusBounce") },
-      spam: { class: 'error', label: t("emails.statusSpam") },
-      suspend: { class: 'error', label: t("emails.statusSuspend") },
-      force: { class: 'info', label: t("emails.statusForce") },
-      none: { class: 'inactive', label: t("emails.statusNone") },
-    };
-    const s = map[status] || { class: 'inactive', label: status };
-    return <span className={`badge ${s.class}`}>{s.label}</span>;
+  const handleSave = async () => {
+    try {
+      await hostingService.updateAutomatedEmails(serviceName, { email: newEmail });
+      setEditing(false);
+      loadConfig();
+    } catch (err) {
+      alert(String(err));
+    }
   };
+
+  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (error) return <div className="error-state">{error}</div>;
+
+  const isActive = emailConfig?.state === 'active';
 
   return (
     <div className="emails-tab">
       <div className="tab-header">
-        <h3>{t("emails.title")}</h3>
-        <p className="tab-description">{t("emails.description")}</p>
+        <div>
+          <h3>Scripts e-mail</h3>
+          <p className="tab-description">
+            Gérez l'envoi d'emails automatisés depuis vos scripts PHP.
+          </p>
+        </div>
       </div>
 
-      {email ? (
-        <div className="email-card">
-          <div className="email-status">
-            <div className={`status-icon ${email.status === 'normal' ? 'enabled' : 'disabled'}`}>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+      {/* Info aide */}
+      <div className="info-banner">
+        <span className="info-icon">ℹ</span>
+        <div>
+          <p>
+            Les scripts e-mail permettent à vos applications PHP d'envoyer des emails via la fonction mail().
+            Vous pouvez configurer une adresse de réception pour les notifications d'erreurs.
+          </p>
+        </div>
+      </div>
+
+      {/* État du service */}
+      <div className={`status-card ${isActive ? 'success' : 'inactive'}`}>
+        <div className="status-icon">{isActive ? '✓' : '○'}</div>
+        <div className="status-content">
+          <h4>Scripts e-mail {isActive ? 'actifs' : 'inactifs'}</h4>
+          <p>
+            {isActive 
+              ? "Vos scripts peuvent envoyer des emails via la fonction PHP mail()."
+              : "L'envoi d'emails depuis vos scripts est désactivé."
+            }
+          </p>
+        </div>
+      </div>
+
+      {/* Configuration */}
+      <section className="config-block">
+        <h4>Configuration</h4>
+        
+        <div className="info-grid">
+          <div className="info-item">
+            <label>État</label>
+            <span className={`badge ${isActive ? 'success' : 'inactive'}`}>
+              {isActive ? 'Actif' : 'Inactif'}
+            </span>
+          </div>
+
+          <div className="info-item">
+            <label>Email de notification</label>
+            {editing ? (
+              <div className="edit-row">
+                <input 
+                  type="email" 
+                  value={newEmail} 
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  className="form-input"
+                />
+                <button className="btn btn-primary btn-sm" onClick={handleSave}>Enregistrer</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => setEditing(false)}>Annuler</button>
+              </div>
+            ) : (
+              <div className="value-row">
+                <span className="font-mono">{emailConfig?.email || 'Non configuré'}</span>
+                <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>Modifier</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Volume */}
+      {emailConfig?.volume && (
+        <section className="config-block">
+          <h4>Volume d'envoi</h4>
+          <div className="quota-display">
+            <div className="quota-bar">
+              <div 
+                className="quota-fill" 
+                style={{ width: `${Math.min((emailConfig.volume.used / emailConfig.volume.max) * 100, 100)}%` }} 
+              />
             </div>
-            <div className="status-text">
-              <span className="status-label">{email.domain}</span>
-              {getStatusBadge(email.status)}
+            <div className="quota-text">
+              <span>{emailConfig.volume.used} / {emailConfig.volume.max} emails</span>
+              <span>{Math.round((emailConfig.volume.used / emailConfig.volume.max) * 100)}%</span>
             </div>
           </div>
-          {email.quota && (
-            <div className="email-quota">
-              <label>{t("emails.quota")}</label>
-              <span>{email.quota.value} {email.quota.unit}</span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="empty-state">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75" /></svg>
-          <p>{t("emails.noEmail")}</p>
-        </div>
+        </section>
       )}
 
-      <div className="info-box">
-        <h4>{t("emails.info")}</h4>
-        <p>{t("emails.infoDesc")}</p>
-      </div>
+      {/* Guide */}
+      <section className="config-block">
+        <h4>Documentation</h4>
+        <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>
+          Apprenez à configurer et utiliser les scripts e-mail sur votre hébergement.
+        </p>
+        <a 
+          href="https://help.ovhcloud.com/csm/fr-web-hosting-automated-emails" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="btn btn-secondary btn-sm"
+        >
+          Consulter le guide ↗
+        </a>
+      </section>
     </div>
   );
 }

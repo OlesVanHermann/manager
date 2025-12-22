@@ -1,21 +1,31 @@
 // ============================================================
-// HOSTING TAB: DATABASE - Bases de donnees avec CRUD
+// HOSTING TAB: DATABASE - Bases de données
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { hostingService, Database } from "../../../../../services/web-cloud.hosting";
 import { CreateDatabaseModal } from "../components/CreateDatabaseModal";
 
 interface Props { serviceName: string; }
 
-/** Onglet Bases de donnees avec création et suppression. */
+const PAGE_SIZE = 10;
+
+interface DatabaseSlot {
+  type: 'used' | 'available';
+  database?: Database;
+}
+
+/** Onglet Bases de données avec slots et progress bars. */
 export function DatabaseTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [databases, setDatabases] = useState<Database[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [maxDatabases] = useState(5); // TODO: get from hosting details
 
   const loadDatabases = useCallback(async () => {
     try {
@@ -27,22 +37,55 @@ export function DatabaseTab({ serviceName }: Props) {
     finally { setLoading(false); }
   }, [serviceName]);
 
-  useEffect(() => {
-    loadDatabases();
-  }, [loadDatabases]);
+  useEffect(() => { loadDatabases(); }, [loadDatabases]);
 
   const handleDelete = async (name: string) => {
     if (!confirm(t("database.confirmDelete", { name }))) return;
     try {
       await hostingService.deleteDatabase(serviceName, name);
       loadDatabases();
-    } catch (err) {
-      alert(String(err));
-    }
+    } catch (err) { alert(String(err)); }
   };
 
-  const formatQuota = (q: { value: number; unit: string }) => q.unit === 'MB' ? `${q.value} MB` : `${q.value} ${q.unit}`;
-  const getQuotaPercent = (used: { value: number }, size: { value: number }) => Math.round((used.value / size.value) * 100);
+  // Build slots (used + available)
+  const slots: DatabaseSlot[] = useMemo(() => {
+    const usedSlots: DatabaseSlot[] = databases.map(db => ({ type: 'used', database: db }));
+    const availableCount = Math.max(0, maxDatabases - databases.length);
+    const availableSlots: DatabaseSlot[] = Array(availableCount).fill(null).map(() => ({ type: 'available' }));
+    return [...usedSlots, ...availableSlots];
+  }, [databases, maxDatabases]);
+
+  // Filtering (only used databases)
+  const filteredSlots = useMemo(() => {
+    if (!searchTerm) return slots;
+    const term = searchTerm.toLowerCase();
+    return slots.filter(s => 
+      s.type === 'available' || 
+      s.database?.user?.toLowerCase().includes(term) ||
+      s.database?.name?.toLowerCase().includes(term)
+    );
+  }, [slots, searchTerm]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredSlots.length / PAGE_SIZE);
+  const paginatedSlots = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredSlots.slice(start, start + PAGE_SIZE);
+  }, [filteredSlots, currentPage]);
+
+  useEffect(() => { setCurrentPage(1); }, [searchTerm]);
+
+  const formatSize = (bytes?: number) => {
+    if (!bytes) return '-';
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} Go`;
+  };
+
+  const getQuotaPercent = (db: Database) => {
+    if (!db.quotaUsed || !db.quotaSize) return 0;
+    return Math.round((db.quotaUsed / db.quotaSize) * 100);
+  };
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
   if (error) return <div className="error-state">{error}</div>;
@@ -55,45 +98,111 @@ export function DatabaseTab({ serviceName }: Props) {
           <p className="tab-description">{t("database.description")}</p>
         </div>
         <div className="tab-actions">
-          <span className="records-count">{databases.length} {t("database.count")}</span>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
+          <span className="records-count">
+            {databases.length}/{maxDatabases} {t("database.count")}
+          </span>
+          <button 
+            className="btn btn-primary btn-sm" 
+            onClick={() => setShowCreateModal(true)}
+            disabled={databases.length >= maxDatabases}
+          >
             + {t("database.create")}
           </button>
         </div>
       </div>
 
-      {databases.length === 0 ? (
-        <div className="empty-state">
-          <p>{t("database.empty")}</p>
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-            {t("database.createFirst")}
-          </button>
-        </div>
-      ) : (
-        <div className="database-cards">
-          {databases.map(db => (
-            <div key={db.name} className="database-card">
-              <div className="db-header">
-                <span className={`db-type type-${db.type}`}>{db.type}</span>
-                <div className="db-actions">
-                  <span className={`badge ${db.state === 'activated' ? 'success' : 'warning'}`}>{db.state}</span>
-                  <button className="btn-icon btn-danger-icon" onClick={() => handleDelete(db.name)} title={t("database.delete")}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+      {/* Search */}
+      <div className="table-toolbar">
+        <input
+          type="text"
+          className="search-input"
+          placeholder={t("common.search")}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {/* Table */}
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>{t("database.user")}</th>
+            <th>{t("database.name")}</th>
+            <th>{t("database.server")}</th>
+            <th>{t("database.size")}</th>
+            <th>{t("database.version")}</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedSlots.map((slot, idx) => (
+            slot.type === 'used' && slot.database ? (
+              <tr key={slot.database.name}>
+                <td className="font-mono">{slot.database.user}</td>
+                <td className="font-mono">{slot.database.name}</td>
+                <td className="font-mono">{slot.database.server || '-'}</td>
+                <td>
+                  <div className="quota-cell">
+                    <div className="quota-bar-small">
+                      <div 
+                        className="quota-fill" 
+                        style={{ width: `${getQuotaPercent(slot.database)}%` }}
+                      />
+                    </div>
+                    <span className="quota-text-small">
+                      {formatSize(slot.database.quotaUsed)} / {formatSize(slot.database.quotaSize)}
+                    </span>
+                  </div>
+                </td>
+                <td>{slot.database.version || '-'}</td>
+                <td>
+                  <button 
+                    className="btn-icon btn-danger-icon" 
+                    onClick={() => handleDelete(slot.database!.name)}
+                    title={t("database.delete")}
+                  >
+                    🗑
                   </button>
-                </div>
-              </div>
-              <h4 className="font-mono">{db.name}</h4>
-              <div className="db-info">
-                <div><label>{t("database.server")}</label><span className="font-mono">{db.server}:{db.port}</span></div>
-                <div><label>{t("database.user")}</label><span className="font-mono">{db.user}</span></div>
-                <div><label>{t("database.version")}</label><span>{db.version}</span></div>
-              </div>
-              <div className="quota-mini">
-                <div className="quota-bar"><div className="quota-fill" style={{ width: `${getQuotaPercent(db.quotaUsed, db.quotaSize)}%` }} /></div>
-                <span>{formatQuota(db.quotaUsed)} / {formatQuota(db.quotaSize)}</span>
-              </div>
-            </div>
+                </td>
+              </tr>
+            ) : (
+              <tr key={`available-${idx}`} className="row-available">
+                <td colSpan={5} className="text-muted">
+                  {t("database.available")} — {t("database.toCreate")}
+                </td>
+                <td>
+                  <button 
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => setShowCreateModal(true)}
+                  >
+                    + {t("database.create")}
+                  </button>
+                </td>
+              </tr>
+            )
           ))}
+        </tbody>
+      </table>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button 
+            className="pagination-btn" 
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            ←
+          </button>
+          <span className="pagination-info">
+            {t("common.page")} {currentPage} / {totalPages}
+          </span>
+          <button 
+            className="pagination-btn" 
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            →
+          </button>
         </div>
       )}
 

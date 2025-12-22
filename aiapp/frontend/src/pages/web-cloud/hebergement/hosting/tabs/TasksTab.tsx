@@ -1,5 +1,5 @@
 // ============================================================
-// HOSTING TAB: TASKS - Operations en cours avec polling
+// HOSTING TAB: TASKS - Tâches en cours (selon old manager)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
@@ -8,15 +8,14 @@ import { hostingService, HostingTask } from "../../../../../services/web-cloud.h
 
 interface Props { serviceName: string; }
 
-const POLL_INTERVAL = 30000; // 30 secondes
+const POLL_INTERVAL = 30000;
 
-/** Onglet Operations en cours avec auto-refresh. */
+/** Onglet Tâches en cours avec colonnes exactes old manager. */
 export function TasksTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
   const [tasks, setTasks] = useState<HostingTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   const loadTasks = useCallback(async (showLoading = true) => {
@@ -26,17 +25,12 @@ export function TasksTab({ serviceName }: Props) {
       const data = await Promise.all(ids.slice(0, 50).map(id => hostingService.getTask(serviceName, id)));
       data.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
       setTasks(data);
-      setLastUpdate(new Date());
     } catch (err) { setError(String(err)); }
     finally { setLoading(false); }
   }, [serviceName]);
 
-  // Initial load
-  useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
+  useEffect(() => { loadTasks(); }, [loadTasks]);
 
-  // Polling
   useEffect(() => {
     if (!autoRefresh) return;
     const interval = setInterval(() => loadTasks(false), POLL_INTERVAL);
@@ -44,19 +38,28 @@ export function TasksTab({ serviceName }: Props) {
   }, [autoRefresh, loadTasks]);
 
   const getStatusBadge = (status: string) => {
-    const map: Record<string, { class: string; icon: string }> = {
-      todo: { class: 'warning', icon: '⏳' },
-      init: { class: 'info', icon: '🔄' },
-      doing: { class: 'info', icon: '🔄' },
-      done: { class: 'success', icon: '✓' },
-      error: { class: 'error', icon: '✗' },
-      cancelled: { class: 'inactive', icon: '⊘' },
+    const map: Record<string, { class: string; label: string }> = {
+      todo: { class: 'warning', label: 'À faire' },
+      init: { class: 'info', label: 'Initialisation' },
+      doing: { class: 'info', label: 'En cours' },
+      done: { class: 'success', label: 'Terminé' },
+      error: { class: 'error', label: 'Erreur' },
+      cancelled: { class: 'inactive', label: 'Annulé' },
     };
-    const s = map[status] || { class: 'inactive', icon: '?' };
-    return <span className={`badge ${s.class}`}>{s.icon} {status}</span>;
+    const s = map[status] || { class: 'inactive', label: status };
+    return <span className={`badge ${s.class}`}>{s.label}</span>;
   };
 
-  const pendingCount = tasks.filter(t => ['todo', 'init', 'doing'].includes(t.status)).length;
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
   if (error) return <div className="error-state">{error}</div>;
@@ -66,57 +69,42 @@ export function TasksTab({ serviceName }: Props) {
       <div className="tab-header">
         <div>
           <h3>{t("tasks.title")}</h3>
-          <p className="tab-description">{t("tasks.description")}</p>
         </div>
         <div className="tab-actions">
-          {pendingCount > 0 && (
-            <span className="badge warning">{pendingCount} {t("tasks.pending")}</span>
-          )}
-          <label className="auto-refresh-toggle">
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-            />
-            <span>{t("tasks.autoRefresh")}</span>
-          </label>
-          <button className="btn btn-secondary btn-sm" onClick={() => loadTasks()}>
-            ↻ {t("tasks.refresh")}
+          <button className="btn-icon" onClick={() => loadTasks()} title={t("tasks.refresh")}>
+            ↻
           </button>
         </div>
       </div>
 
-      <div className="last-update">
-        {t("tasks.lastUpdate")}: {lastUpdate.toLocaleTimeString()}
-      </div>
-
-      {tasks.length === 0 ? (
-        <div className="empty-state">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <p>{t("tasks.empty")}</p>
-        </div>
-      ) : (
-        <table className="data-table">
-          <thead>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Tâche</th>
+            <th>Statut</th>
+            <th>Date de création</th>
+            <th>Date de fin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tasks.length === 0 ? (
             <tr>
-              <th>{t("tasks.function")}</th>
-              <th>{t("tasks.status")}</th>
-              <th>{t("tasks.started")}</th>
-              <th>{t("tasks.finished")}</th>
+              <td colSpan={4} className="text-center text-muted" style={{ padding: 'var(--space-8)' }}>
+                Aucun résultat
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {tasks.map(task => (
-              <tr key={task.id} className={['todo', 'init', 'doing'].includes(task.status) ? 'row-pending' : ''}>
+          ) : (
+            tasks.map(task => (
+              <tr key={task.id}>
                 <td className="font-mono">{task.function}</td>
                 <td>{getStatusBadge(task.status)}</td>
-                <td>{new Date(task.startDate).toLocaleString()}</td>
-                <td>{task.doneDate ? new Date(task.doneDate).toLocaleString() : '-'}</td>
+                <td>{formatDate(task.startDate)}</td>
+                <td>{formatDate(task.doneDate)}</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

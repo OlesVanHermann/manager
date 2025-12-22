@@ -1,145 +1,214 @@
 // ============================================================
-// HOSTING TAB: GENERAL - Informations de l'hebergement
+// HOSTING TAB: GENERAL - Informations générales enrichies
 // ============================================================
 
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Hosting, HostingServiceInfos } from "../../../../../services/web-cloud.hosting";
+import { hostingService, Hosting, HostingServiceInfos } from "../../../../../services/web-cloud.hosting";
 
-interface Props {
-  serviceName: string;
-  details?: Hosting | null;
-  serviceInfos?: HostingServiceInfos | null;
-  loading?: boolean;
-}
+interface Props { serviceName: string; }
 
-/** Onglet informations generales de l'hebergement. */
-export function GeneralTab({ serviceName, details, serviceInfos, loading = false }: Props) {
+/** Onglet Informations générales avec détails complets. */
+export function GeneralTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/index");
+  const [details, setDetails] = useState<Hosting | null>(null);
+  const [serviceInfos, setServiceInfos] = useState<HostingServiceInfos | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (loading) {
-    return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /></div>;
-  }
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [hosting, infos] = await Promise.all([
+        hostingService.getHosting(serviceName),
+        hostingService.getServiceInfos(serviceName),
+      ]);
+      setDetails(hosting);
+      setServiceInfos(infos);
+    } catch (err) { setError(String(err)); }
+    finally { setLoading(false); }
+  }, [serviceName]);
 
-  const formatQuota = (quota: { value: number; unit: string } | null | undefined) => {
-    if (!quota) return '-';
-    if (quota.unit === 'MB') return `${(quota.value / 1024).toFixed(2)} GB`;
-    if (quota.unit === 'GB') return `${quota.value} GB`;
-    return `${quota.value} ${quota.unit}`;
+  useEffect(() => { loadData(); }, [loadData]);
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
-  const quotaPercent = details?.quotaSize && details?.quotaUsed 
-    ? Math.round((details.quotaUsed.value / details.quotaSize.value) * 100) 
-    : 0;
+  const formatSize = (bytes?: number) => {
+    if (!bytes) return '-';
+    if (bytes < 1024) return `${bytes} o`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} Ko`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} Mo`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} Go`;
+  };
+
+  const getQuotaPercent = () => {
+    if (!details?.quotaUsed?.value || !details?.quotaSize?.value) return 0;
+    return Math.round((details.quotaUsed.value / details.quotaSize.value) * 100);
+  };
+
+  const getStateBadge = (state?: string) => {
+    const map: Record<string, { class: string; label: string }> = {
+      active: { class: 'success', label: t("state.active") },
+      bloqued: { class: 'error', label: t("state.bloqued") },
+      maintenance: { class: 'warning', label: t("state.maintenance") },
+    };
+    const s = map[state || 'active'] || map.active;
+    return <span className={`badge ${s.class}`}>{s.label}</span>;
+  };
+
+  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (error) return <div className="error-state">{error}</div>;
+  if (!details) return null;
 
   return (
     <div className="general-tab">
+      {/* Section Informations générales */}
       <section className="info-section">
-        <h3>{t("generalInfo.title")}</h3>
+        <h4>{t("generalInfo.title")}</h4>
         <div className="info-grid">
           <div className="info-item">
             <label>{t("generalInfo.serviceName")}</label>
-            <span className="font-mono">{serviceName}</span>
+            <span className="font-mono">{details.serviceName}</span>
           </div>
-          {details && (
-            <>
-              <div className="info-item">
-                <label>{t("generalInfo.offer")}</label>
-                <span className="badge success">{details.offer}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("generalInfo.state")}</label>
-                <span className={`badge ${details.state === 'active' ? 'success' : 'warning'}`}>
-                  {details.state === 'active' ? '✓ ' : '⚠ '}{t(`state.${details.state}`)}
-                </span>
-              </div>
-              <div className="info-item">
-                <label>{t("generalInfo.cluster")}</label>
-                <span>{details.cluster}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("generalInfo.ip")}</label>
-                <span className="font-mono">{details.hostingIp}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("generalInfo.ipv6")}</label>
-                <span className="font-mono">{details.hostingIpv6 || '-'}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("generalInfo.os")}</label>
-                <span>{details.operatingSystem}</span>
-              </div>
-              <div className="info-item">
-                <label>{t("generalInfo.home")}</label>
-                <span className="font-mono">{details.home}</span>
-              </div>
-            </>
+          {details.displayName && (
+            <div className="info-item">
+              <label>{t("generalInfo.displayName")}</label>
+              <span>{details.displayName}</span>
+            </div>
           )}
+          <div className="info-item">
+            <label>{t("generalInfo.offer")}</label>
+            <span>{details.offer}</span>
+          </div>
+          <div className="info-item">
+            <label>{t("generalInfo.state")}</label>
+            {getStateBadge(details.state)}
+          </div>
+          <div className="info-item">
+            <label>{t("generalInfo.cluster")}</label>
+            <span>cluster{details.cluster}.hosting.ovh.net</span>
+          </div>
+          <div className="info-item">
+            <label>{t("generalInfo.ip")}</label>
+            <span className="font-mono copyable">
+              {details.hostingIp}
+              <button className="copy-btn" title="Copier" onClick={() => navigator.clipboard.writeText(details.hostingIp)}>📋</button>
+            </span>
+          </div>
+          {details.hostingIpv6 && (
+            <div className="info-item">
+              <label>{t("generalInfo.ipv6")}</label>
+              <span className="font-mono">{details.hostingIpv6}</span>
+            </div>
+          )}
+          <div className="info-item">
+            <label>{t("generalInfo.os")}</label>
+            <span>{details.operatingSystem}</span>
+          </div>
+          <div className="info-item">
+            <label>{t("generalInfo.home")}</label>
+            <span className="font-mono">{details.home}</span>
+          </div>
         </div>
       </section>
 
-      {details && (
-        <section className="info-section">
-          <h3>{t("quotaInfo.title")}</h3>
-          <div className="quota-display">
-            <div className="quota-bar">
-              <div className="quota-fill" style={{ width: `${Math.min(quotaPercent, 100)}%` }} />
-            </div>
-            <div className="quota-text">
-              <span>{formatQuota(details.quotaUsed)} / {formatQuota(details.quotaSize)}</span>
-              <span className={quotaPercent > 90 ? 'warning' : ''}>{quotaPercent}%</span>
-            </div>
+      {/* Section Quotas */}
+      <section className="info-section">
+        <h4>{t("quotaInfo.title")}</h4>
+        
+        {/* Espace disque */}
+        <div className="quota-section">
+          <div className="quota-header">
+            <label>{t("quotaInfo.diskUsage")}</label>
+            <span className="quota-value">
+              {formatSize(details.quotaUsed?.value)} / {formatSize(details.quotaSize?.value)}
+            </span>
           </div>
-          <div className="info-grid" style={{ marginTop: 'var(--space-4)' }}>
-            <div className="info-item">
-              <label>{t("quotaInfo.cdn")}</label>
-              <span className={`badge ${details.hasCdn ? 'success' : 'inactive'}`}>
-                {details.hasCdn ? '✓ Actif' : '✗ Inactif'}
-              </span>
-            </div>
-            <div className="info-item">
-              <label>{t("quotaInfo.ssl")}</label>
-              <span className={`badge ${details.hasHostedSsl ? 'success' : 'inactive'}`}>
-                {details.hasHostedSsl ? '✓ Actif' : '✗ Inactif'}
-              </span>
-            </div>
-            <div className="info-item">
-              <label>{t("quotaInfo.boost")}</label>
-              <span>{details.boostOffer || '-'}</span>
-            </div>
+          <div className="quota-bar">
+            <div 
+              className={`quota-fill ${getQuotaPercent() > 90 ? 'critical' : getQuotaPercent() > 70 ? 'warning' : ''}`} 
+              style={{ width: `${getQuotaPercent()}%` }} 
+            />
           </div>
-        </section>
-      )}
+          <span className="quota-percent">{getQuotaPercent()}% utilisé</span>
+        </div>
 
+        {/* Options */}
+        <div className="info-grid" style={{ marginTop: 'var(--space-4)' }}>
+          <div className="info-item">
+            <label>{t("quotaInfo.cdn")}</label>
+            <span className={`badge ${details.hasCdn ? 'success' : 'inactive'}`}>
+              {details.hasCdn ? 'Activé' : 'Désactivé'}
+            </span>
+          </div>
+          <div className="info-item">
+            <label>{t("quotaInfo.ssl")}</label>
+            <span className={`badge ${details.hasHostedSsl ? 'success' : 'inactive'}`}>
+              {details.hasHostedSsl ? 'Activé' : 'Désactivé'}
+            </span>
+          </div>
+          <div className="info-item">
+            <label>{t("quotaInfo.boost")}</label>
+            <span className={`badge ${details.boostOffer ? 'success' : 'inactive'}`}>
+              {details.boostOffer || 'Désactivé'}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Informations service */}
       {serviceInfos && (
         <section className="info-section">
-          <h3>{t("serviceInfo.title")}</h3>
+          <h4>{t("serviceInfo.title")}</h4>
           <div className="info-grid">
             <div className="info-item">
               <label>{t("serviceInfo.creation")}</label>
-              <span>{new Date(serviceInfos.creation).toLocaleDateString()}</span>
+              <span>{formatDate(serviceInfos.creation)}</span>
             </div>
             <div className="info-item">
               <label>{t("serviceInfo.expiration")}</label>
-              <span className={isExpiringSoon(serviceInfos.expiration) ? "expiring" : ""}>
-                {new Date(serviceInfos.expiration).toLocaleDateString()}
-              </span>
+              <span>{formatDate(serviceInfos.expiration)}</span>
             </div>
             <div className="info-item">
               <label>{t("serviceInfo.autoRenew")}</label>
-              <span className={`badge ${serviceInfos.renew?.automatic ? "success" : "warning"}`}>
-                {serviceInfos.renew?.automatic ? "✓ Actif" : "✗ Inactif"}
+              <span className={`badge ${serviceInfos.renew?.automatic ? 'success' : 'warning'}`}>
+                {serviceInfos.renew?.automatic ? 'Activé' : 'Désactivé'}
               </span>
+            </div>
+            <div className="info-item">
+              <label>{t("serviceInfo.contactAdmin")}</label>
+              <span>{serviceInfos.contactAdmin}</span>
+            </div>
+            <div className="info-item">
+              <label>{t("serviceInfo.contactTech")}</label>
+              <span>{serviceInfos.contactTech}</span>
             </div>
           </div>
         </section>
       )}
+
+      {/* Actions */}
+      <section className="actions-section">
+        <button className="btn btn-secondary">Modifier l'offre</button>
+        <button className="btn btn-secondary">Renouveler</button>
+        <a 
+          href={`https://www.ovh.com/manager/#/web/hosting/${serviceName}`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="btn btn-secondary"
+        >
+          Ouvrir dans l'ancien manager ↗
+        </a>
+      </section>
     </div>
   );
-}
-
-function isExpiringSoon(expiration: string): boolean {
-  const days = (new Date(expiration).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-  return days < 30;
 }
 
 export default GeneralTab;
