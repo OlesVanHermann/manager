@@ -1,652 +1,329 @@
 // ============================================================
-// HOSTING TAB: GENERAL - Informations générales (3 colonnes)
+// GENERAL TAB - 4 blocs × 5 colonnes - VERSION ICÔNES
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { RestoreSnapshotModal, OvhConfigModal } from "../components";
-import { hostingService, Hosting, HostingServiceInfos } from "../../../../../services/web-cloud.hosting";
+import { useNavigate } from "react-router-dom";
+import { hostingService, Hosting } from "../../../../../services/web-cloud.hosting";
+import { RestoreSnapshotModal, OvhConfigModal, TerminateModal } from "../components";
 
-interface Props { serviceName: string; }
-
-// --- MODAL: Changer PHP ---
-function ChangePhpModal({ serviceName, currentVersion, isOpen, onClose, onSuccess }: {
+interface Props {
   serviceName: string;
-  currentVersion: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [version, setVersion] = useState(currentVersion);
-  const [loading, setLoading] = useState(false);
-  const versions = ["5.6", "7.0", "7.1", "7.2", "7.3", "7.4", "8.0", "8.1", "8.2", "8.3"];
+  onTabChange?: (tabId: string) => void;
+  onRefresh?: () => void;
+}
 
-  if (!isOpen) return null;
+interface ServiceInfos {
+  status?: string;
+  creation?: string;
+  expiration?: string;
+  contactAdmin?: string;
+  contactTech?: string;
+  contactBilling?: string;
+  renew?: { automatic: boolean };
+}
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    try {
-      await hostingService.updateHosting(serviceName, { phpVersion: version });
-      onSuccess();
-      onClose();
-    } catch (err) {
-      alert(`Erreur: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+// Toggle Switch Component
+function Toggle({ enabled, onChange, disabled }: { enabled: boolean; onChange?: () => void; disabled?: boolean }) {
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Modifier la version PHP</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
-        </div>
-        <div className="modal-body">
-          <div className="form-group">
-            <label>Version PHP</label>
-            <select className="form-select" value={version} onChange={e => setVersion(e.target.value)}>
-              {versions.map(v => (
-                <option key={v} value={v}>PHP {v} {parseFloat(v) < 8.0 ? "(obsolète)" : ""}</option>
-              ))}
-            </select>
-          </div>
-          {parseFloat(version) < 8.0 && (
-            <div className="info-banner warning">
-              <span className="info-icon">⚠</span>
-              <span>Les versions PHP inférieures à 8.0 ne reçoivent plus de mises à jour de sécurité.</span>
-            </div>
-          )}
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
-            {loading ? "Modification..." : "Appliquer"}
-          </button>
-        </div>
-      </div>
+    <button 
+      className={`toggle ${enabled ? 'on' : 'off'} ${disabled ? 'disabled' : ''}`}
+      onClick={onChange}
+      disabled={disabled}
+      title={enabled ? "Activé" : "Désactivé"}
+    >
+      <span className="toggle-knob" />
+    </button>
+  );
+}
+
+// Icon Button Component
+function IconBtn({ icon, title, onClick, danger }: { icon: string; title: string; onClick?: () => void; danger?: boolean }) {
+  return (
+    <button 
+      className={`icon-btn ${danger ? 'danger' : ''}`}
+      onClick={onClick}
+      title={title}
+    >
+      {icon}
+    </button>
+  );
+}
+
+function Toast({ message, type, onClose }: { message: string; type: "success" | "error"; onClose: () => void }) {
+  useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
+  return (
+    <div className={`toast toast-${type}`}>
+      <span>{type === "success" ? "✓" : "✗"} {message}</span>
+      <button className="toast-close" onClick={onClose}>×</button>
     </div>
   );
 }
 
-// --- MODAL: Changer nom d'affichage ---
-function ChangeDisplayNameModal({ serviceName, currentName, isOpen, onClose, onSuccess }: {
-  serviceName: string;
-  currentName: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [name, setName] = useState(currentName);
-  const [loading, setLoading] = useState(false);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = async () => {
-    setLoading(true);
-    try {
-      await hostingService.updateHosting(serviceName, { displayName: name });
-      onSuccess();
-      onClose();
-    } catch (err) {
-      alert(`Erreur: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Modifier le nom d'affichage</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
-        </div>
-        <div className="modal-body">
-          <div className="form-group">
-            <label>Nom d'affichage</label>
-            <input 
-              type="text" 
-              className="form-input" 
-              value={name} 
-              onChange={e => setName(e.target.value)}
-              maxLength={250}
-            />
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading || !name.trim()}>
-            {loading ? "Modification..." : "Enregistrer"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- MODAL: Upgrade offre ---
-function UpgradeOfferModal({ serviceName, currentOffer, isOpen, onClose }: {
-  serviceName: string;
-  currentOffer: string;
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  const [offers, setOffers] = useState<any[]>([]);
-  const [selectedOffer, setSelectedOffer] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [ordering, setOrdering] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    setLoading(true);
-    hostingService.getAvailableOffers(serviceName)
-      .then(data => setOffers(data || []))
-      .catch(() => setOffers([]))
-      .finally(() => setLoading(false));
-  }, [serviceName, isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleOrder = async () => {
-    if (!selectedOffer) return;
-    setOrdering(true);
-    try {
-      const orderUrl = await hostingService.orderUpgrade(serviceName, selectedOffer);
-      if (orderUrl) window.open(orderUrl, "_blank");
-      onClose();
-    } catch (err) {
-      alert(`Erreur: ${err}`);
-    } finally {
-      setOrdering(false);
-    }
-  };
-
-  const offerOrder = ["START", "PERSO", "PRO", "PERFORMANCE_1", "PERFORMANCE_2", "PERFORMANCE_3", "PERFORMANCE_4"];
-  const currentIndex = offerOrder.indexOf(currentOffer);
-  const upgradableOffers = offers.filter(o => offerOrder.indexOf(o.planCode) > currentIndex);
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-lg" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Changer d'offre</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
-        </div>
-        <div className="modal-body">
-          <p>Offre actuelle : <strong>{currentOffer}</strong></p>
-          {loading ? (
-            <div className="skeleton-block" />
-          ) : upgradableOffers.length === 0 ? (
-            <div className="info-banner">
-              <span className="info-icon">ℹ</span>
-              <span>Vous disposez déjà de l'offre la plus élevée.</span>
-            </div>
-          ) : (
-            <div className="offers-grid">
-              {upgradableOffers.map(offer => (
-                <div 
-                  key={offer.planCode}
-                  className={`offer-card ${selectedOffer === offer.planCode ? "selected" : ""}`}
-                  onClick={() => setSelectedOffer(offer.planCode)}
-                >
-                  <h4>{offer.planCode}</h4>
-                  <p className="offer-desc">{offer.description || "Hébergement web OVHcloud"}</p>
-                  {offer.price && <p className="offer-price">{offer.price.text}/mois</p>}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={handleOrder} disabled={ordering || !selectedOffer}>
-            {ordering ? "Commande..." : "Commander"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- MODAL: Résiliation ---
-function TerminateModal({ serviceName, isOpen, onClose }: {
-  serviceName: string;
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  const [confirm, setConfirm] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  if (!isOpen) return null;
-
-  const handleTerminate = async () => {
-    if (confirm !== serviceName) return;
-    setLoading(true);
-    try {
-      await hostingService.terminateHosting(serviceName);
-      alert("Demande de résiliation envoyée.");
-      onClose();
-    } catch (err) {
-      alert(`Erreur: ${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Résilier l'hébergement</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
-        </div>
-        <div className="modal-body">
-          <div className="info-banner error">
-            <span className="info-icon">⚠</span>
-            <span>Cette action est irréversible. Toutes les données seront supprimées.</span>
-          </div>
-          <div className="form-group" style={{ marginTop: "1rem" }}>
-            <label>Tapez <strong>{serviceName}</strong> pour confirmer</label>
-            <input 
-              type="text" 
-              className="form-input" 
-              value={confirm} 
-              onChange={e => setConfirm(e.target.value)}
-              placeholder={serviceName}
-            />
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button 
-            className="btn btn-danger" 
-            onClick={handleTerminate} 
-            disabled={loading || confirm !== serviceName}
-          >
-            {loading ? "Résiliation..." : "Résilier définitivement"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- COMPOSANT PRINCIPAL ---
-export function GeneralTab({ serviceName }: Props) {
-  const { t } = useTranslation("web-cloud/hosting/index");
+export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
+  const navigate = useNavigate();
+  
   const [hosting, setHosting] = useState<Hosting | null>(null);
-  const [serviceInfos, setServiceInfos] = useState<HostingServiceInfos | null>(null);
+  const [serviceInfos, setServiceInfos] = useState<ServiceInfos | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Modals state
-  const [showPhpModal, setShowPhpModal] = useState(false);
-  const [showNameModal, setShowNameModal] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  
+  const [counts, setCounts] = useState({ attachedDomains: 0, databases: 0, ftpUsers: 0, crons: 0, envVars: 0, modules: 0 });
+  const [ssl, setSsl] = useState<any>(null);
+  const [cdn, setCdn] = useState<any>(null);
+  const [phpVersion, setPhpVersion] = useState("-");
+  const [lastBackupDate, setLastBackupDate] = useState<string | null>(null);
+  
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
   const [showTerminateModal, setShowTerminateModal] = useState(false);
-  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
-  const [showOvhConfigModal, setShowOvhConfigModal] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [hostingData, infos] = await Promise.all([
+      const [h, infos] = await Promise.all([
         hostingService.getHosting(serviceName),
         hostingService.getServiceInfos(serviceName)
       ]);
-      setHosting(hostingData);
+      setHosting(h);
       setServiceInfos(infos);
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setLoading(false);
-    }
+      if (h.phpVersion) setPhpVersion(h.phpVersion);
+      else {
+        try { const c = await hostingService.getOvhConfig(serviceName); setPhpVersion(c?.engineVersion || "-"); } catch {}
+      }
+      try {
+        const backups = await fetch(`/api/ovh/hosting/web/${serviceName}/dump`).then(r => r.json());
+        if (Array.isArray(backups) && backups.length > 0) {
+          const first = backups.find((b: string) => b.startsWith("daily.1")) || backups[0];
+          const detail = await fetch(`/api/ovh/hosting/web/${serviceName}/dump/${first}`).then(r => r.json());
+          if (detail?.creationDate) setLastBackupDate(detail.creationDate);
+        }
+      } catch {}
+    } catch (err) { setError(String(err)); } 
+    finally { setLoading(false); }
   }, [serviceName]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  const loadCounts = useCallback(async () => {
+    try {
+      const r = await Promise.allSettled([
+        hostingService.listAttachedDomains(serviceName),
+        hostingService.listDatabases(serviceName),
+        hostingService.listFtpUsers(serviceName),
+        hostingService.listCrons(serviceName),
+        hostingService.listEnvVars(serviceName),
+        hostingService.listModules(serviceName),
+      ]);
+      setCounts({
+        attachedDomains: r[0].status === "fulfilled" ? r[0].value.length : 0,
+        databases: r[1].status === "fulfilled" ? r[1].value.length : 0,
+        ftpUsers: r[2].status === "fulfilled" ? r[2].value.length : 0,
+        crons: r[3].status === "fulfilled" ? r[3].value.length : 0,
+        envVars: r[4].status === "fulfilled" ? r[4].value.length : 0,
+        modules: r[5].status === "fulfilled" ? r[5].value.length : 0,
+      });
+    } catch {}
+  }, [serviceName]);
 
-  // --- HELPERS ---
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const loadServices = useCallback(async () => {
+    try {
+      const [s, c] = await Promise.allSettled([hostingService.getSsl(serviceName), hostingService.getCdnInfo(serviceName)]);
+      if (s.status === "fulfilled") setSsl(s.value);
+      if (c.status === "fulfilled") setCdn(c.value);
+    } catch {}
+  }, [serviceName]);
+
+  useEffect(() => { loadData(); loadCounts(); loadServices(); }, [loadData, loadCounts, loadServices]);
+
+  const formatDate = (d?: string | null) => { 
+    if (!d) return "-"; 
+    try { return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" }); } 
+    catch { return d; } 
+  };
+  
+  const formatDateTime = (d?: string | null) => { 
+    if (!d) return "-"; 
+    try { return new Date(d).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } 
+    catch { return d; } 
+  };
+  
+  const formatQuota = () => {
+    const used = hosting?.quotaUsed, size = hosting?.quotaSize;
+    if (!used?.value || !size?.value) return { text: "- / - Go", pct: 0 };
+    const toGb = (v: number, u: string) => u === "GB" ? v : u === "MB" ? v/1024 : v/(1024*1024*1024);
+    const usedGb = toGb(used.value, used.unit || "B"), sizeGb = toGb(size.value, size.unit || "B");
+    const pct = sizeGb > 0 ? Math.round((usedGb / sizeGb) * 100) : 0;
+    return { text: `${usedGb.toFixed(1)}/${sizeGb.toFixed(0)}Go`, pct };
   };
 
-  const formatDate = (date: string | undefined) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+  const copyToClipboard = (t: string) => { navigator.clipboard.writeText(t); setToast({ message: "Copié", type: "success" }); };
+  const goToTab = (id: string) => onTabChange?.(id);
+  
+  const handleFlushCache = async () => {
+    if (!hosting?.hasCdn && !cdn) { setToast({ message: "CDN non activé", type: "error" }); return; }
+    try { await hostingService.flushCdnCache(serviceName); setToast({ message: "Cache vidé", type: "success" }); }
+    catch { setToast({ message: "CDN non disponible", type: "error" }); }
   };
 
-  const formatQuota = (bytes: number | undefined) => {
-    if (!bytes) return "0";
-    if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} Go`;
-    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(0)} Mo`;
-    return `${bytes} octets`;
-  };
+  const handleModalSuccess = (msg: string) => { setToast({ message: msg, type: "success" }); loadData(); onRefresh?.(); };
 
-  if (loading) {
-    return (
-      <div className="general-tab">
-        <div className="general-grid">
-          <div className="general-card skeleton"><div className="skeleton-block" style={{ height: "300px" }} /></div>
-          <div className="general-card skeleton"><div className="skeleton-block" style={{ height: "300px" }} /></div>
-          <div className="general-card skeleton"><div className="skeleton-block" style={{ height: "300px" }} /></div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="general-tab"><div className="bloc-skeleton"/><div className="bloc-skeleton"/><div className="bloc-skeleton"/><div className="bloc-skeleton"/></div>;
+  if (error || !hosting) return <div className="error-state">{error || "Erreur"}</div>;
 
-  if (error || !hosting) {
-    return <div className="error-state">{error || "Impossible de charger les données"}</div>;
-  }
-
-  const quotaPercent = hosting.quotaSize ? Math.round((hosting.quotaUsed || 0) / hosting.quotaSize * 100) : 0;
+  const quota = formatQuota();
+  const sshEnabled = hosting.sshState === "active";
+  const sslProvider = ssl?.provider === "LETSENCRYPT" ? "LE" : ssl?.provider || "-";
+  const cdnEnabled = !!cdn?.type || hosting.hasCdn;
+  const boostEnabled = !!hosting.boostOffer;
+  const renewAuto = serviceInfos?.renew?.automatic;
 
   return (
     <div className="general-tab">
-      {/* Actions rapides */}
-      <div className="tab-header" style={{ marginBottom: "1rem" }}>
-        <div className="tab-actions">
-          <button className="btn btn-secondary btn-sm" onClick={() => setShowSnapshotModal(true)}>
-            📸 {t("actions.snapshot")}
-          </button>
-          <button className="btn btn-secondary btn-sm" onClick={() => setShowOvhConfigModal(true)}>
-            ⚙️ {t("actions.ovhconfig")}
-          </button>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {/* BLOC 1: WEB */}
+      <div className="info-bloc">
+        <h3 className="bloc-title">Web</h3>
+        <div className="bloc-dividers"><div className="bloc-divider"/><div className="bloc-divider"/><div className="bloc-divider"/><div className="bloc-divider"/></div>
+        <div className="bloc-columns">
+          <div className="theme-col">
+            <div className="theme-title">STOCKAGE</div>
+            <div className="info-row">
+              <span className="info-label">Espace</span>
+              <div className="progress-container">
+                <div className="progress-bar"><div className={`progress-fill ${quota.pct > 90 ? 'danger' : quota.pct > 70 ? 'warning' : ''}`} style={{ width: `${Math.min(quota.pct, 100)}%` }}/></div>
+                <span className="progress-text">{quota.text}</span>
+              </div>
+            </div>
+            <div className="info-row"><span className="info-label">Sites</span><span className="info-value">{counts.attachedDomains}</span><IconBtn icon="⚙" title="Gérer les sites" onClick={() => goToTab("multisite")} /></div>
+            <div className="info-row"><span className="info-label">Modules</span><span className="info-value">{counts.modules}</span><IconBtn icon="⚙" title="Gérer les modules" onClick={() => goToTab("modules")} /></div>
+          </div>
+          <div className="theme-col">
+            <div className="theme-title">PHP</div>
+            <div className="info-row"><span className="info-label">Version</span><span className="info-value">{phpVersion}</span><IconBtn icon="⇄" title="Changer version" onClick={() => setShowConfigModal(true)} /></div>
+            <div className="info-row"><span className="info-label">.ovhconfig</span><IconBtn icon="✎" title="Modifier" onClick={() => setShowConfigModal(true)} /></div>
+          </div>
+          <div className="theme-col">
+            <div className="theme-title">LOGS</div>
+            <div className="info-row"><span className="info-label">Temps réel</span><IconBtn icon="↗" title="Accéder aux logs" onClick={() => goToTab("logs")} /></div>
+            <div className="info-row"><span className="info-label">Stats</span><IconBtn icon="📊" title="Voir statistiques" onClick={() => window.open(`https://logs.ovh.net/${serviceName}/`, '_blank')} /></div>
+          </div>
+          <div className="theme-col">
+            <div className="theme-title">BACKUP</div>
+            <div className="info-row"><span className="info-label">Dernière</span><span className="info-value">{formatDateTime(lastBackupDate)}</span></div>
+            <div className="info-row"><span className="info-label">Restore</span><IconBtn icon="↺" title="Restaurer un snapshot" onClick={() => setShowRestoreModal(true)} /></div>
+          </div>
+          <div className="theme-col">
+            <div className="theme-title">PERF</div>
+            <div className="info-row"><span className="info-label">Boost</span><Toggle enabled={boostEnabled} onChange={() => goToTab("boost")} /></div>
+            <div className="info-row"><span className="info-label">CDN</span><Toggle enabled={cdnEnabled} onChange={() => goToTab("cdn")} /></div>
+            <div className="info-row"><span className="info-label">Cache</span><IconBtn icon="🗑" title="Vider le cache" onClick={handleFlushCache} /></div>
+          </div>
         </div>
       </div>
 
-      {/* Grille 3 colonnes */}
-      <div className="general-grid">
-        {/* COLONNE 1 : Informations générales */}
-        <section className="general-card">
-          <h4>Informations générales</h4>
-
-          <div className="info-row with-action">
-            <span className="info-label">Nom du service</span>
-            <span className="info-value"><code>{serviceName}</code></span>
+      {/* BLOC 2: EXPERT */}
+      <div className="info-bloc">
+        <h3 className="bloc-title">Expert</h3>
+        <div className="bloc-dividers"><div className="bloc-divider"/><div className="bloc-divider"/><div className="bloc-divider"/><div className="bloc-divider"/></div>
+        <div className="bloc-columns">
+          <div className="theme-col">
+            <div className="theme-title">ACCÈS</div>
+            <div className="info-row"><span className="info-label">SSH</span><Toggle enabled={sshEnabled} onChange={() => goToTab("ftp")} /></div>
+            <div className="info-row"><span className="info-label">FTP</span><span className="info-value">{counts.ftpUsers}</span><IconBtn icon="⚙" title="Gérer FTP" onClick={() => goToTab("ftp")} /></div>
+            <div className="info-row"><span className="info-label">HTTP</span><IconBtn icon="↗" title="Accéder HTTP" onClick={() => window.open(`https://${hosting.cluster}.hosting.ovh.net/`, '_blank')} /></div>
           </div>
-
-          <div className="info-row with-action">
-            <span className="info-label">Nom d'affichage</span>
-            <span className="info-value">{hosting.displayName || serviceName}</span>
-            <button className="btn-action" onClick={() => setShowNameModal(true)} title="Modifier">✏️</button>
+          <div className="theme-col">
+            <div className="theme-title">BDD</div>
+            <div className="info-row"><span className="info-label">MySQL</span><span className="info-value">{counts.databases}/5</span><IconBtn icon="⚙" title="Gérer BDD" onClick={() => goToTab("database")} /></div>
+            <div className="info-row"><span className="info-label">phpMyAdmin</span><IconBtn icon="↗" title="Ouvrir phpMyAdmin" onClick={() => window.open('https://phpmyadmin.ovh.net/', '_blank')} /></div>
           </div>
-
-          <div className="info-row">
-            <span className="info-label">Offre</span>
-            <span className="info-value">
-              <span className="badge primary">{hosting.offer || "-"}</span>
-            </span>
+          <div className="theme-col">
+            <div className="theme-title">CRON</div>
+            <div className="info-row"><span className="info-label">Tâches</span><span className="info-value">{counts.crons}</span><IconBtn icon="⚙" title="Gérer Cron" onClick={() => goToTab("cron")} /></div>
           </div>
-
-          <div className="info-row">
-            <span className="info-label">État</span>
-            <span className="info-value">
-              <span className={`badge ${hosting.state === "active" ? "success" : "warning"}`}>
-                {hosting.state === "active" ? "Actif" : hosting.state}
-              </span>
-            </span>
+          <div className="theme-col">
+            <div className="theme-title">VARIABLES</div>
+            <div className="info-row"><span className="info-label">Env</span><span className="info-value">{counts.envVars}</span><IconBtn icon="⚙" title="Gérer variables" onClick={() => goToTab("envvars")} /></div>
           </div>
-
-          <div className="info-row">
-            <span className="info-label">IPv4</span>
-            <span className="info-value copyable">
-              <code>{hosting.hostingIp || "-"}</code>
-              {hosting.hostingIp && (
-                <button className="copy-btn" onClick={() => copyToClipboard(hosting.hostingIp)} title="Copier">📋</button>
-              )}
-            </span>
+          <div className="theme-col">
+            <div className="theme-title">RUNTIMES</div>
+            <div className="info-row"><span className="info-label">Node.js</span><IconBtn icon="⚙" title="Configurer" onClick={() => goToTab("runtimes")} /></div>
           </div>
-
-          <div className="info-row">
-            <span className="info-label">IPv6</span>
-            <span className="info-value copyable">
-              <code>{hosting.hostingIpv6 || "-"}</code>
-              {hosting.hostingIpv6 && (
-                <button className="copy-btn" onClick={() => copyToClipboard(hosting.hostingIpv6!)} title="Copier">📋</button>
-              )}
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Espace disque</span>
-            <span className="info-value">
-              <div className="quota-display">
-                <div className="progress-bar">
-                  <div 
-                    className={`progress-fill ${quotaPercent > 90 ? 'danger' : quotaPercent > 70 ? 'warning' : ''}`}
-                    style={{ width: `${quotaPercent}%` }}
-                  />
-                </div>
-                <span className="quota-text">{formatQuota(hosting.quotaUsed)} / {formatQuota(hosting.quotaSize)}</span>
-              </div>
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Datacenter</span>
-            <span className="info-value">{hosting.datacenter || "-"}</span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Cluster</span>
-            <span className="info-value">{hosting.cluster || "-"}</span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Dossier racine</span>
-            <span className="info-value"><code>{hosting.home || "-"}</code></span>
-          </div>
-        </section>
-
-        {/* COLONNE 2 : Configuration */}
-        <section className="general-card">
-          <h4>Configuration</h4>
-
-          <div className="info-row with-action">
-            <span className="info-label">Version PHP globale</span>
-            <span className="info-value">
-              <code>{hosting.phpVersion || "-"}</code>
-              {hosting.phpVersion && parseFloat(hosting.phpVersion) < 8.0 && (
-                <span className="badge warning" title="Version obsolète">⚠️</span>
-              )}
-            </span>
-            <button className="btn-action" onClick={() => setShowPhpModal(true)} title="Modifier">✏️</button>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Certificat SSL</span>
-            <span className="info-value">
-              <span className={`badge ${hosting.hasHostedSsl ? 'success' : 'inactive'}`}>
-                {hosting.hasHostedSsl ? "Actif" : "Non"}
-              </span>
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Option CDN</span>
-            <span className="info-value">
-              <span className={`badge ${hosting.hasCdn ? 'success' : 'inactive'}`}>
-                {hosting.hasCdn ? "Actif" : "Non"}
-              </span>
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Adresses e-mails</span>
-            <span className="info-value">
-              <span className={`badge ${hosting.hasEmail ? 'success' : 'inactive'}`}>
-                {hosting.hasEmail ? "Actif" : "Non"}
-              </span>
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Bases de données</span>
-            <span className="info-value">
-              {hosting.databaseCount !== undefined ? (
-                <div className="quota-display" style={{ maxWidth: "150px" }}>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: `${(hosting.databaseCount / 5) * 100}%` }} />
-                  </div>
-                  <span className="quota-text">{hosting.databaseCount} / 5</span>
-                </div>
-              ) : "-"}
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Web Cloud Databases</span>
-            <span className="info-value">{hosting.privateDbCount || "0"}</span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Système</span>
-            <span className="info-value">{hosting.operatingSystem || "Linux"}</span>
-          </div>
-        </section>
-
-        {/* COLONNE 3 : Abonnement */}
-        <section className="general-card">
-          <h4>Abonnement</h4>
-
-          <div className="info-row with-action">
-            <span className="info-label">Offre</span>
-            <span className="info-value"><strong>{hosting.offer || "-"}</strong></span>
-            <button className="btn-action" onClick={() => setShowUpgradeModal(true)} title="Changer d'offre">⬆️</button>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Renouvellement</span>
-            <span className="info-value">
-              {serviceInfos?.renew?.automatic ? (
-                <span className="badge success">Automatique</span>
-              ) : (
-                <span className="badge warning">Manuel</span>
-              )}
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Boost</span>
-            <span className="info-value">
-              {hosting.boostOffer ? (
-                <span className="badge success">{hosting.boostOffer}</span>
-              ) : (
-                <span className="badge inactive">Non activé</span>
-              )}
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Contacts</span>
-            <span className="info-value contacts-list">
-              {serviceInfos?.contactAdmin && <span><small>Admin:</small> {serviceInfos.contactAdmin}</span>}
-              {serviceInfos?.contactTech && <span><small>Tech:</small> {serviceInfos.contactTech}</span>}
-              {serviceInfos?.contactBilling && <span><small>Fact:</small> {serviceInfos.contactBilling}</span>}
-            </span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Date de création</span>
-            <span className="info-value">{formatDate(serviceInfos?.creation)}</span>
-          </div>
-
-          <div className="info-row">
-            <span className="info-label">Date d'expiration</span>
-            <span className="info-value">{formatDate(serviceInfos?.expiration)}</span>
-          </div>
-
-          <div className="section-divider" />
-
-          <div className="danger-zone">
-            <button className="btn btn-danger btn-sm" onClick={() => setShowTerminateModal(true)}>
-              Résilier l'hébergement
-            </button>
-          </div>
-        </section>
+        </div>
       </div>
 
-      {/* Ligne 2 : Liens utiles + Aperçu + Conseils */}
-      <div className="general-grid" style={{ marginTop: "1.5rem" }}>
-        <section className="general-card">
-          <h4>Liens utiles</h4>
-          <div className="links-list">
-            <a href={`https://logs.ovh.net/${serviceName}/`} target="_blank" rel="noopener noreferrer" className="link-item">
-              Website Statistiques <span className="link-external">↗</span>
-            </a>
-            <a href={`https://${hosting.cluster}.hosting.ovh.net/`} target="_blank" rel="noopener noreferrer" className="link-item">
-              Accès HTTP au cluster <span className="link-external">↗</span>
-            </a>
-            <a href="https://www.ovhcloud.com/fr/web-hosting/uc-programming-language/" target="_blank" rel="noopener noreferrer" className="link-item">
-              Versions des langages disponibles <span className="link-external">↗</span>
-            </a>
+      {/* BLOC 3: GENERAL */}
+      <div className="info-bloc">
+        <h3 className="bloc-title">General</h3>
+        <div className="bloc-dividers"><div className="bloc-divider"/><div className="bloc-divider"/><div className="bloc-divider"/><div className="bloc-divider"/></div>
+        <div className="bloc-columns">
+          <div className="theme-col">
+            <div className="theme-title">INFRA</div>
+            <div className="info-row"><span className="info-label">DC</span><span className="info-value">{hosting.datacenter || "-"}</span></div>
+            <div className="info-row"><span className="info-label">Cluster</span><span className="info-value">{hosting.cluster || "-"}</span></div>
+            <div className="info-row"><span className="info-label">Filer</span><span className="info-value">{(hosting as any).filer || "-"}</span></div>
           </div>
-        </section>
-
-        <section className="general-card">
-          <h4>Aperçu du site</h4>
-          <div className="site-preview">
-            <div className="preview-placeholder">
-              <span>🌐</span>
-              <a href={`https://${serviceName}`} target="_blank" rel="noopener noreferrer">
-                {serviceName} ↗
-              </a>
-            </div>
+          <div className="theme-col">
+            <div className="theme-title">RÉSEAU</div>
+            <div className="info-row"><span className="info-label">IPv4</span><span className="info-value ip-compact">{hosting.hostingIp || "-"}</span><IconBtn icon="📋" title="Copier" onClick={() => copyToClipboard(hosting.hostingIp || "")} /></div>
+            <div className="info-row"><span className="info-label">IPv6</span><span className="info-value ip-compact">{hosting.hostingIpv6 || "-"}</span><IconBtn icon="📋" title="Copier" onClick={() => copyToClipboard(hosting.hostingIpv6 || "")} /></div>
           </div>
-        </section>
-
-        <section className="general-card">
-          <h4>Conseils OVHcloud</h4>
-          <div className="tips-card">
-            <span className="tip-icon">💡</span>
-            <div>
-              <strong>Optimisez votre hébergement</strong>
-              <p>Activez le CDN pour améliorer les performances de votre site.</p>
-            </div>
+          <div className="theme-col">
+            <div className="theme-title">SÉCURITÉ</div>
+            <div className="info-row"><span className="info-label">SSL</span><span className="info-value">{sslProvider}</span><IconBtn icon="↺" title="Régénérer" onClick={() => goToTab("ssl")} /><IconBtn icon="⇄" title="Changer" onClick={() => goToTab("ssl")} /></div>
+            <div className="info-row"><span className="info-label">Firewall</span><Toggle enabled={true} onChange={() => goToTab("ftp")} /></div>
           </div>
-        </section>
+          <div className="theme-col">
+            <div className="theme-title">EMAILS</div>
+            <div className="info-row"><span className="info-label">Comptes</span><span className="info-value">-</span><IconBtn icon="⚙" title="Gérer" onClick={() => goToTab("emails")} /></div>
+            <div className="info-row"><span className="info-label">Alias</span><span className="info-value">-</span><IconBtn icon="⚙" title="Gérer" onClick={() => goToTab("emails")} /></div>
+            <div className="info-row"><span className="info-label">Redir</span><span className="info-value">-</span><IconBtn icon="⚙" title="Gérer" onClick={() => goToTab("emails")} /></div>
+          </div>
+          <div className="theme-col"></div>
+        </div>
       </div>
 
-      {/* Modals */}
-      <ChangePhpModal
-        serviceName={serviceName}
-        currentVersion={hosting.phpVersion || "8.0"}
-        isOpen={showPhpModal}
-        onClose={() => setShowPhpModal(false)}
-        onSuccess={loadData}
-      />
-      <ChangeDisplayNameModal
-        serviceName={serviceName}
-        currentName={hosting.displayName || ""}
-        isOpen={showNameModal}
-        onClose={() => setShowNameModal(false)}
-        onSuccess={loadData}
-      />
-      <UpgradeOfferModal
-        serviceName={serviceName}
-        currentOffer={hosting.offer || ""}
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-      />
-      <TerminateModal
-        serviceName={serviceName}
-        isOpen={showTerminateModal}
-        onClose={() => setShowTerminateModal(false)}
-      />
-      <RestoreSnapshotModal
-        serviceName={serviceName}
-        isOpen={showSnapshotModal}
-        onClose={() => setShowSnapshotModal(false)}
-        onSuccess={loadData}
-      />
-      <OvhConfigModal
-        serviceName={serviceName}
-        isOpen={showOvhConfigModal}
-        onClose={() => setShowOvhConfigModal(false)}
-        onSuccess={loadData}
-      />
+      {/* BLOC 4: FACTURATION */}
+      <div className="info-bloc">
+        <h3 className="bloc-title">Facturation</h3>
+        <div className="bloc-dividers"><div className="bloc-divider"/><div className="bloc-divider"/><div className="bloc-divider"/><div className="bloc-divider"/></div>
+        <div className="bloc-columns">
+          <div className="theme-col">
+            <div className="theme-title">SERVICE</div>
+            <div className="info-row"><span className="info-label">État</span><span className="info-value status-ok">{hosting.state === "active" ? "Actif" : hosting.state}</span></div>
+            <div className="info-row"><span className="info-label">Expiration</span><span className="info-value">{formatDate(serviceInfos?.expiration)}</span><IconBtn icon="↻" title="Renouveler" onClick={() => navigate("/home/billing/services")} /></div>
+            <div className="info-row"><span className="info-label">Création</span><span className="info-value">{formatDate(serviceInfos?.creation)}</span></div>
+          </div>
+          <div className="theme-col">
+            <div className="theme-title">OFFRE</div>
+            <div className="info-row"><span className="info-label">Formule</span><span className="info-value">{hosting.offer || "-"}</span><IconBtn icon="⇄" title="Changer offre" onClick={() => setToast({ message: "Upgrade via espace client", type: "error" })} /></div>
+            <div className="info-row"><span className="info-label">Nom</span><span className="info-value">{hosting.displayName || serviceName}</span><IconBtn icon="✎" title="Modifier nom" onClick={() => setToast({ message: "Modification...", type: "success" })} /></div>
+          </div>
+          <div className="theme-col">
+            <div className="theme-title">CONTACTS</div>
+            <div className="info-row"><span className="info-label">Admin</span><span className="info-value">{serviceInfos?.contactAdmin || "-"}</span><IconBtn icon="✎" title="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
+            <div className="info-row"><span className="info-label">Tech</span><span className="info-value">{serviceInfos?.contactTech || "-"}</span><IconBtn icon="✎" title="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
+            <div className="info-row"><span className="info-label">Billing</span><span className="info-value">{serviceInfos?.contactBilling || "-"}</span><IconBtn icon="✎" title="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
+          </div>
+          <div className="theme-col">
+            <div className="theme-title">PAIEMENT</div>
+            <div className="info-row"><span className="info-label">Auto</span><Toggle enabled={!!renewAuto} onChange={() => navigate("/home/billing/services")} /></div>
+            <div className="info-row"><span className="info-label">CB</span><span className="info-value">••••</span><IconBtn icon="✎" title="Modifier" onClick={() => navigate("/home/billing/payment-methods")} /></div>
+            <div className="info-row"><span className="info-label">Factures</span><IconBtn icon="↗" title="Voir factures" onClick={() => navigate("/home/billing/invoices")} /></div>
+          </div>
+          <div className="theme-col">
+            <div className="theme-title">RÉSILIATION</div>
+            <div className="info-row"><span className="info-label">Domaine</span><IconBtn icon="×" title="Résilier domaine" onClick={() => setToast({ message: "Via espace client", type: "error" })} danger /></div>
+            <div className="info-row"><span className="info-label">Hosting</span><IconBtn icon="×" title="Résilier hébergement" onClick={() => setShowTerminateModal(true)} danger /></div>
+            <div className="info-row"><span className="info-label">Tout</span><IconBtn icon="×" title="Supprimer tout" onClick={() => setShowTerminateModal(true)} danger /></div>
+          </div>
+        </div>
+      </div>
+
+      <RestoreSnapshotModal serviceName={serviceName} isOpen={showRestoreModal} onClose={() => setShowRestoreModal(false)} onSuccess={() => { setShowRestoreModal(false); handleModalSuccess("Restauration lancée"); }} />
+      <OvhConfigModal serviceName={serviceName} isOpen={showConfigModal} onClose={() => setShowConfigModal(false)} onSuccess={() => { setShowConfigModal(false); handleModalSuccess("Config mise à jour"); }} />
+      <TerminateModal serviceName={serviceName} isOpen={showTerminateModal} onClose={() => setShowTerminateModal(false)} />
     </div>
   );
 }

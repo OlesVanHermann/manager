@@ -24,21 +24,21 @@ import { TasksTab } from "./tabs/TasksTab";
 import "./styles.css";
 
 const TABS = [
-  { id: "general", labelKey: "tabs.general" },
-  { id: "multisite", labelKey: "tabs.multisite" },
-  { id: "ssl", labelKey: "tabs.ssl" },
-  { id: "modules", labelKey: "tabs.modules" },
-  { id: "logs", labelKey: "tabs.logs" },
-  { id: "ftp", labelKey: "tabs.ftp" },
-  { id: "database", labelKey: "tabs.database" },
-  { id: "tasks", labelKey: "tabs.tasks" },
-  { id: "cron", labelKey: "tabs.cron" },
-  { id: "envvars", labelKey: "tabs.envvars" },
-  { id: "runtimes", labelKey: "tabs.runtimes" },
-  { id: "cdn", labelKey: "tabs.cdn" },
-  { id: "boost", labelKey: "tabs.boost" },
-  { id: "localseo", labelKey: "tabs.localseo" },
-  { id: "emails", labelKey: "tabs.emails" },
+  { id: "general", label: "Home" },
+  { id: "multisite", label: "Multisite" },
+  { id: "ftp", label: "FTP-SSH" },
+  { id: "modules", label: "Modules" },
+  { id: "tasks", label: "Tâches" },
+  { id: "emails", label: "Emails" },
+  { id: "envvars", label: "Variables" },
+  { id: "runtimes", label: "Runtimes" },
+  { id: "ssl", label: "SSL" },
+  { id: "cdn", label: "CDN" },
+  { id: "boost", label: "Boost" },
+  { id: "logs", label: "Logs" },
+  { id: "database", label: "BDD" },
+  { id: "cron", label: "Cron" },
+  { id: "localseo", label: "SEO" },
 ];
 
 export function HostingPage() {
@@ -48,15 +48,14 @@ export function HostingPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("general");
+  const [attachedDomains, setAttachedDomains] = useState<string[]>([]);
 
-  // Charger les hébergements
   const loadServices = useCallback(async () => {
     try {
       setLoading(true);
       const names = await hostingService.listHostings();
       const data = await Promise.all(names.map(n => hostingService.getHosting(n)));
       setHostings(data);
-      // Sélectionner le premier par défaut
       if (data.length > 0 && !selectedId) {
         setSelectedId(data[0].serviceName);
       }
@@ -67,35 +66,85 @@ export function HostingPage() {
     }
   }, [selectedId]);
 
+  const loadAttachedDomains = useCallback(async (serviceName: string) => {
+    try {
+      const domains = await hostingService.listAttachedDomains(serviceName);
+      setAttachedDomains(domains || []);
+    } catch {
+      setAttachedDomains([]);
+    }
+  }, []);
+
   useEffect(() => { loadServices(); }, [loadServices]);
 
-  // Mapper Hosting[] vers le format attendu par ServiceListPage
+  useEffect(() => {
+    if (selectedId) {
+      loadAttachedDomains(selectedId);
+    }
+  }, [selectedId, loadAttachedDomains]);
+
   const mappedServices = useMemo(() => {
     return hostings.map(h => ({
       id: h.serviceName,
       name: h.displayName || h.serviceName,
-      type: h.offer || "Hébergement"
+      type: h.offer || "Hébergement",
+      status: h.state === "active" ? "active" as const : 
+              h.state === "bloqued" ? "suspended" as const : "active" as const
     }));
   }, [hostings]);
 
-  // Récupérer l'objet Hosting sélectionné
   const selected = useMemo(() => {
     return hostings.find(h => h.serviceName === selectedId) || null;
   }, [hostings, selectedId]);
 
-  // Handler de sélection
   const handleSelectService = useCallback((id: string | { id: string }) => {
-    // ServiceListPage peut passer un id string ou un objet
     const serviceId = typeof id === 'string' ? id : id.id;
     setSelectedId(serviceId);
+    setActiveTab("general");
   }, []);
+
+  const handleTabChange = useCallback((tabId: string) => {
+    setActiveTab(tabId);
+  }, []);
+
+  const handleRefresh = useCallback(() => {
+    loadServices();
+    if (selectedId) loadAttachedDomains(selectedId);
+  }, [loadServices, selectedId, loadAttachedDomains]);
+
+  const formatMultisites = (domains: string[], mainDomain: string, maxLength: number = 80) => {
+    const otherDomains = domains.filter(d => d !== mainDomain && d !== `www.${mainDomain}`);
+    if (otherDomains.length === 0) return null;
+    
+    let result = "";
+    let count = 0;
+    
+    for (const domain of otherDomains) {
+      const separator = count === 0 ? "" : ", ";
+      const newPart = separator + domain;
+      
+      if ((result + newPart).length > maxLength) {
+        const remaining = otherDomains.length - count;
+        if (remaining > 0) {
+          result += ` +${remaining}`;
+        }
+        break;
+      }
+      
+      result += newPart;
+      count++;
+    }
+    
+    return result ? `(${result})` : null;
+  };
 
   const renderTabContent = () => {
     if (!selected) return null;
     const props = { serviceName: selected.serviceName, details: selected };
     
     switch (activeTab) {
-      case "general": return <GeneralTab serviceName={selected.serviceName} />;
+      case "general": 
+        return <GeneralTab serviceName={selected.serviceName} onTabChange={handleTabChange} onRefresh={handleRefresh} />;
       case "multisite": return <MultisiteTab serviceName={selected.serviceName} />;
       case "ssl": return <SslTab serviceName={selected.serviceName} />;
       case "modules": return <ModulesTab serviceName={selected.serviceName} />;
@@ -110,9 +159,12 @@ export function HostingPage() {
       case "boost": return <BoostTab {...props} />;
       case "localseo": return <LocalSeoTab serviceName={selected.serviceName} />;
       case "emails": return <EmailsTab serviceName={selected.serviceName} />;
-      default: return <GeneralTab serviceName={selected.serviceName} />;
+      default: 
+        return <GeneralTab serviceName={selected.serviceName} onTabChange={handleTabChange} onRefresh={handleRefresh} />;
     }
   };
+
+  const multisitesText = selected ? formatMultisites(attachedDomains, selected.serviceName) : null;
 
   return (
     <ServiceListPage
@@ -131,25 +183,30 @@ export function HostingPage() {
     >
       {selected && (
         <div className="service-detail">
-          <div className="detail-header">
+          {/* Ligne 1: Nom domaine + aliases */}
+          <div className="detail-header-domains">
             <h2>{selected.displayName || selected.serviceName}</h2>
-            <span className="service-sublabel">{selected.serviceName}</span>
+            {multisitesText && (
+              <span className="multisites-list" title={attachedDomains.join(", ")}>
+                {multisitesText}
+              </span>
+            )}
           </div>
 
-          <div className="tabs-container">
-            <div className="tabs-scroll">
-              {TABS.map(tab => (
-                <button
-                  key={tab.id}
-                  className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab.id)}
-                >
-                  {t(tab.labelKey)}
-                </button>
-              ))}
-            </div>
+          {/* Ligne 2: NAV3 Tabs */}
+          <div className="detail-header-tabs">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
+          {/* Contenu */}
           <div className="tab-content">
             {renderTabContent()}
           </div>
