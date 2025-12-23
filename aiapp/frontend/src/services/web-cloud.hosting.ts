@@ -26,6 +26,8 @@ export interface Hosting {
   sslState?: string;
 }
 
+export interface HostingInfo extends Hosting {}
+
 export interface Database {
   name: string;
   user: string;
@@ -68,6 +70,8 @@ export interface CronJob {
   email?: string;
 }
 
+export interface Cron extends CronJob {}
+
 export interface EnvVar {
   key: string;
   value: string;
@@ -103,6 +107,8 @@ export interface SslCertificate {
   subjects?: string[];
 }
 
+export interface SslInfo extends SslCertificate {}
+
 export interface HostingTask {
   id: number;
   function: string;
@@ -118,6 +124,12 @@ export interface UserLogs {
   creationDate?: string;
 }
 
+export interface OwnLog {
+  id: number;
+  fqdn: string;
+  status: string;
+}
+
 // ============================================================
 // SERVICE OBJECT
 // ============================================================
@@ -126,7 +138,9 @@ export const hostingService = {
   // --- HOSTING ---
   listHostings: () => ovhGet<string[]>("/hosting/web"),
   getHosting: (sn: string) => ovhGet<Hosting>(`/hosting/web/${sn}`),
+  getHostingInfo: (sn: string) => ovhGet<HostingInfo>(`/hosting/web/${sn}`),
   updateHosting: (sn: string, data: Partial<Hosting>) => ovhPut<void>(`/hosting/web/${sn}`, data),
+  updateHostingInfo: (sn: string, data: Partial<HostingInfo>) => ovhPut<void>(`/hosting/web/${sn}`, data),
   getServiceInfos: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/serviceInfos`),
 
   // --- ATTACHED DOMAINS ---
@@ -155,19 +169,31 @@ export const hostingService = {
 
   // --- FTP USERS ---
   listFtpUsers: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/user`),
+  listUsers: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/user`),
   getFtpUser: (sn: string, login: string) => ovhGet<FtpUser>(`/hosting/web/${sn}/user/${login}`),
+  getUser: (sn: string, login: string) => ovhGet<FtpUser>(`/hosting/web/${sn}/user/${login}`),
   createFtpUser: (sn: string, data: any) => ovhPost<void>(`/hosting/web/${sn}/user`, data),
   updateFtpUser: (sn: string, login: string, data: Partial<FtpUser>) => ovhPut<void>(`/hosting/web/${sn}/user/${login}`, data),
+  updateUser: (sn: string, login: string, data: Partial<FtpUser>) => ovhPut<void>(`/hosting/web/${sn}/user/${login}`, data),
   deleteFtpUser: (sn: string, login: string) => ovhDelete<void>(`/hosting/web/${sn}/user/${login}`),
   changeFtpPassword: (sn: string, login: string, password: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/user/${login}/changePassword`, { password }),
+  changeUserPassword: (sn: string, login: string, password: string) => 
     ovhPost<void>(`/hosting/web/${sn}/user/${login}/changePassword`, { password }),
 
   // --- SSL ---
   getSsl: (sn: string) => ovhGet<SslCertificate>(`/hosting/web/${sn}/ssl`).catch(() => null),
+  getSslInfo: (sn: string) => ovhGet<SslInfo>(`/hosting/web/${sn}/ssl`).catch(() => null),
   regenerateSsl: (sn: string) => ovhPost<void>(`/hosting/web/${sn}/ssl/regenerate`, {}),
   deleteSsl: (sn: string) => ovhDelete<void>(`/hosting/web/${sn}/ssl`),
   importSsl: (sn: string, certificate: string, key: string, chain?: string) => 
     ovhPost<void>(`/hosting/web/${sn}/ssl`, { certificate, key, chain }),
+  orderSsl: (sn: string, type: string, certificate?: string, key?: string, chain?: string) => {
+    if (type === 'import' && certificate && key) {
+      return ovhPost<void>(`/hosting/web/${sn}/ssl`, { certificate, key, chain });
+    }
+    return ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `ssl-${type.toLowerCase()}`, quantity: 1 });
+  },
   orderSectigo: (sn: string, type: string) => 
     ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `ssl-${type.toLowerCase()}`, quantity: 1 }),
   activateSslForDomain: (sn: string, domain: string) => 
@@ -212,12 +238,18 @@ export const hostingService = {
   // --- CDN ---
   getCdnInfo: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/cdn`).catch(() => null),
   flushCdnCache: (sn: string) => ovhPost<void>(`/hosting/web/${sn}/cdn/flush`, {}),
-  flushDomainCdn: (sn: string, domain: string) => ovhPost<void>(`/hosting/web/${sn}/cdn/flush`, { domain }),
+  flushDomainCdn: (sn: string, domain: string, purgeType = 'all', pattern = '') => {
+    const payload: any = { patternType: purgeType };
+    if (purgeType !== 'all' && pattern) payload.pattern = pattern;
+    if (domain) payload.domain = domain;
+    return ovhPost<void>(`/hosting/web/${sn}/cdn/flush`, payload);
+  },
   orderCdn: (sn: string, type: string) => 
     ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `cdn-${type}`, quantity: 1 }),
 
   // --- BOOST ---
   getBoostInfo: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/boost`).catch(() => null),
+  getBoostHistory: (sn: string) => ovhGet<any[]>(`/hosting/web/${sn}/boostHistory`).catch(() => []),
   getAvailableBoostOffers: (sn: string) => ovhGet<any[]>(`/hosting/web/${sn}/boostHistory`).catch(() => []),
   activateBoost: (sn: string, offer: string) => ovhPost<void>(`/hosting/web/${sn}/requestBoost`, { offer }),
   deactivateBoost: (sn: string) => ovhDelete<void>(`/hosting/web/${sn}/requestBoost`),
@@ -233,6 +265,7 @@ export const hostingService = {
 
   // --- AUTOMATED EMAILS ---
   getAutomatedEmails: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/email`),
+  getEmailState: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/email`).catch(() => null),
   updateAutomatedEmails: (sn: string, data: any) => ovhPut<void>(`/hosting/web/${sn}/email`, data),
 
   // --- SNAPSHOTS ---
@@ -267,6 +300,10 @@ export const hostingService = {
   deleteUserLogs: (sn: string, login: string) => ovhDelete<void>(`/hosting/web/${sn}/userLogs/${login}`),
   changeUserLogsPassword: (sn: string, login: string, password: string) => 
     ovhPost<void>(`/hosting/web/${sn}/userLogs/${login}/changePassword`, { password }),
+
+  // --- OWN LOGS ---
+  listOwnLogs: (sn: string) => ovhGet<number[]>(`/hosting/web/${sn}/ownLogs`).catch(() => []),
+  getOwnLog: (sn: string, id: number) => ovhGet<OwnLog>(`/hosting/web/${sn}/ownLogs/${id}`),
 };
 
 export default hostingService;

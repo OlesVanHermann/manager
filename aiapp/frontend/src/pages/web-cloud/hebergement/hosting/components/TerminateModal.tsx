@@ -1,69 +1,32 @@
-// ============================================================
-// TERMINATE MODAL - Résiliation hébergement
-// ============================================================
-
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../services/web-cloud.hosting";
-
-interface TerminateModalProps {
+interface Props {
   serviceName: string;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
 }
 
-export function TerminateModal({ serviceName, isOpen, onClose, onSuccess }: TerminateModalProps) {
-  const { t } = useTranslation("web-cloud/hosting/modals/terminate");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleTerminate = async () => {
-    try {
-      setSubmitting(true);
-      setError(null);
-      await hostingService.terminateHosting(serviceName);
-      onSuccess?.();
-      onClose();
-    } catch (err) {
-      console.error("[TerminateModal] Error:", err);
-      setError(t("error"));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+export function TerminateModal({ serviceName, isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-danger" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-container" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{t("title")}</h3>
-          <button className="btn-close" onClick={onClose}>×</button>
+          <h2>Résilier le service</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
         </div>
-
         <div className="modal-body">
           <div className="alert alert-warning">
-            <strong>⚠️ {t("warningTitle")}</strong>
-            <p>{t("warning")}</p>
+            <span className="alert-icon">⚠️</span>
+            <p>La résiliation de {serviceName} doit être effectuée depuis l'espace client OVHcloud.</p>
           </div>
-          <p>{t("description1")}</p>
-          <p>{t("question")}</p>
-          {error && <div className="alert alert-error mt-3">{error}</div>}
+          <p>
+            <a href="https://www.ovh.com/manager/" target="_blank" rel="noopener noreferrer">
+              Accéder à l'espace client →
+            </a>
+          </p>
         </div>
-
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
-            {t("cancel")}
-          </button>
-          <button 
-            className="btn btn-danger"
-            onClick={handleTerminate}
-            disabled={submitting}
-          >
-            {submitting ? t("terminating") : t("confirm")}
-          </button>
+          <button className="btn btn-secondary" onClick={onClose}>Fermer</button>
         </div>
       </div>
     </div>

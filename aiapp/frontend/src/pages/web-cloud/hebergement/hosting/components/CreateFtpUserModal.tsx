@@ -1,10 +1,4 @@
-// ============================================================
-// CREATE FTP USER MODAL - Créer un utilisateur FTP
-// ============================================================
-
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../services/web-cloud.hosting";
 
 interface Props {
   serviceName: string;
@@ -13,177 +7,59 @@ interface Props {
   onSuccess: () => void;
 }
 
-/** Modal pour créer un utilisateur FTP/SSH. */
 export function CreateFtpUserModal({ serviceName, isOpen, onClose, onSuccess }: Props) {
-  const { t } = useTranslation("web-cloud/hosting/index");
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [home, setHome] = useState("");
-  const [sshState, setSshState] = useState("none");
+  const [home, setHome] = useState("./");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Validation du mot de passe OVH
-  const validatePassword = (pwd: string): string | null => {
-    if (pwd.length < 9) return "Minimum 9 caractères";
-    if (pwd.length > 30) return "Maximum 30 caractères";
-    if (!/\d/.test(pwd)) return "Au moins 1 chiffre requis";
-    if (!/[a-z]/.test(pwd)) return "Au moins 1 minuscule requise";
-    if (!/[A-Z]/.test(pwd)) return "Au moins 1 majuscule requise";
-    if (!/^[a-zA-Z0-9]+$/.test(pwd)) return "Caractères alphanumériques uniquement";
-    return null;
-  };
+  if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!login.trim()) {
-      setError("Le login est obligatoire");
-      return;
-    }
-
-    const pwdError = validatePassword(password);
-    if (pwdError) {
-      setError(pwdError);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas");
-      return;
-    }
-
+  const handleCreate = async () => {
+    if (!login.trim() || !password.trim()) return;
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-      
-      // Le login complet sera: primaryLogin-suffixe
-      const primaryLogin = serviceName.split('.')[0];
-      const fullLogin = login.startsWith(primaryLogin) ? login : `${primaryLogin}-${login}`;
-      
-      await hostingService.createFtpUser(serviceName, {
-        login: fullLogin,
-        password,
-        home: home.trim() || ".",
-        sshState,
+      await fetch(`/api/ovh/hosting/web/${serviceName}/user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, password, home }),
       });
       onSuccess();
       onClose();
-      resetForm();
     } catch (err) {
-      setError(String(err));
+      alert(String(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setLogin("");
-    setPassword("");
-    setConfirmPassword("");
-    setHome("");
-    setSshState("none");
-    setError(null);
-  };
-
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
-
-  const primaryLogin = serviceName.split('.')[0];
-
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-container" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{t("ftp.create")}</h3>
-          <button className="modal-close" onClick={handleClose}>×</button>
+          <h2>Créer un utilisateur FTP</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="modal-body">
-            {error && <div className="error-message">{error}</div>}
-
-            <div className="form-group">
-              <label className="form-label required">Login</label>
-              <div className="input-prefix-group">
-                <span className="input-prefix">{primaryLogin}-</span>
-                <input
-                  type="text"
-                  className="form-input font-mono"
-                  value={login}
-                  onChange={(e) => setLogin(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-                  placeholder="monuser"
-                  required
-                />
-              </div>
-              <span className="form-hint">Login final: {primaryLogin}-{login || 'monuser'}</span>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label required">Mot de passe</label>
-              <input
-                type="password"
-                className="form-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••"
-                required
-              />
-              <span className="form-hint">9-30 caractères, 1 majuscule, 1 minuscule, 1 chiffre</span>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label required">Confirmer le mot de passe</label>
-              <input
-                type="password"
-                className="form-input"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••••"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Répertoire cible</label>
-              <input
-                type="text"
-                className="form-input font-mono"
-                value={home}
-                onChange={(e) => setHome(e.target.value)}
-                placeholder="."
-              />
-              <span className="form-hint">Relatif au dossier home (. = racine)</span>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Accès SSH</label>
-              <select
-                className="form-select"
-                value={sshState}
-                onChange={(e) => setSshState(e.target.value)}
-              >
-                <option value="none">Désactivé</option>
-                <option value="active">Activé</option>
-              </select>
-              <span className="form-hint">Permet l'accès en ligne de commande</span>
-            </div>
+        <div className="modal-body">
+          <div className="form-group">
+            <label>Login</label>
+            <input type="text" className="form-input" value={login} onChange={e => setLogin(e.target.value)} placeholder="nouvel-utilisateur" />
           </div>
-
-          <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={handleClose}>
-              Annuler
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? "Création..." : "Créer l'utilisateur"}
-            </button>
+          <div className="form-group">
+            <label>Mot de passe</label>
+            <input type="password" className="form-input" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
-        </form>
+          <div className="form-group">
+            <label>Répertoire home</label>
+            <input type="text" className="form-input" value={home} onChange={e => setHome(e.target.value)} placeholder="./" />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="btn btn-primary" onClick={handleCreate} disabled={loading || !login.trim() || !password.trim()}>
+            {loading ? "Création..." : "Créer"}
+          </button>
+        </div>
       </div>
     </div>
   );
