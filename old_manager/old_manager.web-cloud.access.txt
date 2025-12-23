@@ -1,0 +1,1388 @@
+# CAHIER DES CHARGES - Module Access (Accès Internet xDSL)
+# Source: old_manager_web-cloud_access.tar
+# Généré le: 2025-01-21
+# Framework: AngularJS 1.7.x → React 18+
+
+================================================================================
+SECTION 1 - RÉSUMÉ EXÉCUTIF
+================================================================================
+
+## 1.1 Périmètre fonctionnel
+
+Le module "Access" permet la gestion complète d'un accès Internet xDSL/Fibre :
+- Consultation des informations de l'accès (synchronisation, atténuation, état)
+- Diagnostic et résolution de problèmes de connexion
+- Gestion du modem (configuration, reboot, reset, échange)
+- Configuration réseau (IPv4, IPv6, DMZ, ports, WiFi)
+- Alertes et notifications de monitoring
+- Statistiques de connexion (graphiques)
+- Dégroupage total
+- Échange de modem de confort
+
+## 1.2 Utilisateurs cibles
+
+- Clients OVHcloud avec un pack xDSL/Fibre
+- Administrateurs techniques gérant des accès Internet
+- Support technique OVHcloud (lecture seule pour diagnostic)
+
+## 1.3 Objectifs de la migration
+
+- Moderniser l'interface avec React et le nouveau Design System ODS
+- Améliorer les performances (lazy loading, cache optimisé)
+- Maintenir 100% des fonctionnalités existantes
+- Conserver les mêmes endpoints API
+
+================================================================================
+SECTION 2 - ARCHITECTURE
+================================================================================
+
+## 2.1 Arborescence des fichiers sources
+
+```
+telecom/pack/xdsl/
+├── pack-xdsl.routing.js              # Routes principales
+├── access/                            # MODULE PRINCIPAL
+│   ├── index.js                       # Module definition
+│   ├── pack-xdsl-access.component.js  # Composant principal
+│   ├── pack-xdsl-access.controller.js # Contrôleur (723 lignes)
+│   ├── pack-xdsl-access.service.js    # Service API
+│   ├── pack-xdsl-access.constants.js  # Constantes métier
+│   ├── pack-xdsl-access.html          # Template (1022 lignes)
+│   ├── translations/
+│   │   └── Messages_fr_FR.json
+│   │
+│   ├── comfortExchange/               # Échange modem confort
+│   │   ├── comfort-exchange.component.js
+│   │   ├── comfort-exchange.controller.js
+│   │   ├── comfort-exchange.service.js
+│   │   ├── comfort-exchange.constant.js
+│   │   ├── comfort-exchange.routing.js
+│   │   ├── comfort-exchange.html
+│   │   └── translations/
+│   │
+│   ├── deconsolidation/               # Dégroupage total
+│   │   ├── deconsolidation.html
+│   │   ├── contract/
+│   │   │   └── contract.modal.html
+│   │   └── translations/
+│   │
+│   ├── diagnostic/                    # Diagnostic avancé
+│   │   ├── diagnostic.html
+│   │   ├── details/
+│   │   │   └── details.html
+│   │   └── translations/
+│   │
+│   ├── ip/                            # Gestion IPv4
+│   │   ├── ip.controller.js
+│   │   ├── ip.routing.js
+│   │   ├── ip.html
+│   │   ├── order/                     # Commande bloc IP
+│   │   │   ├── order.controller.js
+│   │   │   ├── order.modal.html
+│   │   │   └── translations/
+│   │   └── translations/
+│   │
+│   ├── ipv6/                          # Activation IPv6
+│   │   ├── ipv6.controller.js
+│   │   ├── ipv6.html
+│   │   └── translations/
+│   │
+│   ├── linediagnostic/                # Wizard diagnostic
+│   │   ├── linediagnostic.controller.js
+│   │   ├── linediagnostic.routing.js
+│   │   ├── linediagnostic.html
+│   │   └── translations/
+│   │
+│   ├── notifications/                 # Alertes monitoring
+│   │   ├── notifications.controller.js
+│   │   ├── notifications.routing.js
+│   │   ├── notifications.html
+│   │   └── translations/
+│   │
+│   ├── portReset/                     # Reset port DSLAM
+│   │   ├── port-reset.html
+│   │   └── translations/
+│   │
+│   ├── profil/                        # Profil connexion
+│   │   ├── profil.controller.js
+│   │   ├── profil.html
+│   │   └── translations/
+│   │
+│   ├── rateLimit/                     # Limite débit
+│   │   ├── ratelimit.controller.js
+│   │   ├── ratelimit.html
+│   │   └── translations/
+│   │
+│   └── statistics/                    # Statistiques
+│       ├── statistics.controller.js
+│       ├── statistics.constant.js
+│       ├── statistics.html
+│       └── translations/
+│
+├── modem/                             # Configuration modem
+│   ├── pack-xdsl-modem.routing.js
+│   ├── acsBackend/
+│   ├── bridgeMode/
+│   ├── connectedDevices/
+│   ├── dmz/
+│   ├── firewall/
+│   ├── firmware/
+│   ├── managedByOvh/
+│   ├── mtu/
+│   ├── reboot/
+│   ├── reset/
+│   ├── router/
+│   │   ├── dhcp/
+│   │   │   └── bdhcp/
+│   │   ├── lan/
+│   │   └── ports/
+│   ├── service/
+│   ├── templates/
+│   └── wifi/
+│       └── config/
+│
+├── missingRio/                        # RIO manquant
+├── resiliation/                       # Résiliation
+└── tasks/                             # Tâches en cours
+```
+
+## 2.2 Dépendances principales
+
+```json
+{
+  "@ovh-ux/ng-ovh-telecom-universe-components": "^7.29.3",
+  "@ovh-ux/ng-ovh-http": "^5.1.6",
+  "@ovh-ux/ui-kit": "^6.10.5",
+  "ovh-api-services": "^17.0.0",
+  "chart.js": "^4.4.2",
+  "moment": "^2.24.0",
+  "lodash": "^4.17.15"
+}
+```
+
+## 2.3 Patterns architecturaux
+
+| Pattern | Implémentation |
+|---------|----------------|
+| Module | AngularJS module avec components |
+| Controller | ES6 Class avec injection |
+| Service | Singleton pour appels API |
+| Factory | Pour objets métier (TimeCondition) |
+| Routing | UI-Router avec states imbriqués |
+| Events | $rootScope.$broadcast / $on |
+| Polling | XdslTaskPoller service |
+
+================================================================================
+SECTION 3 - PAGES & NAVIGATION
+================================================================================
+
+## 3.1 Routes UI-Router
+
+| State | URL | Composant | Description |
+|-------|-----|-----------|-------------|
+| telecom.packs.pack.xdsl | /xdsl/:serviceName | Container | Conteneur principal |
+| telecom.packs.pack.xdsl.line | /lines/:number | packXdslAccess | Page accès |
+| telecom.packs.pack.xdsl.line.modem | /modem | packXdslModem | Config modem |
+| telecom.packs.pack.xdsl.line.tasks | /tasks | packXdslTasks | Tâches |
+| telecom.packs.pack.xdsl.line.access-diagnostic | /diagnostic | Diagnostic | Wizard diag |
+| telecom.packs.pack.xdsl.line.access-diagnostic-details | /diagnostic/details | Modal | Détails diag |
+| telecom.packs.pack.xdsl.line.access-deconsolidation | /deconsolidation | Deconsolidation | Dégroupage |
+| telecom.packs.pack.xdsl.line.access-notifications | /notifications | Notifications | Alertes |
+| telecom.packs.pack.xdsl.line.access-ip | /ip | IP | Gestion IP |
+| telecom.packs.pack.xdsl.line.access-comfort-exchange | /comfort-exchange | ComfortExchange | Échange modem |
+
+## 3.2 Paramètres de route
+
+```javascript
+// Route principale
+$stateParams = {
+  packName: string,      // Identifiant du pack (ex: "pack-123456")
+  serviceName: string,   // Identifiant xDSL (ex: "xdsl-ab12-cd34")
+  number: string         // Numéro de ligne (ex: "0123456789")
+}
+```
+
+## 3.3 Breadcrumb
+
+```
+Accueil > Telecom > Pack xDSL > [Nom du pack] > [Nom de l'accès] > [Section]
+```
+
+## 3.4 Navigation entre onglets
+
+```
+┌──────────────┬─────────────┬──────────────┐
+│   Accès      │    Modem    │    Tâches    │
+│   (actif)    │             │              │
+└──────────────┴─────────────┴──────────────┘
+```
+
+## 3.5 Flux utilisateur principal
+
+```
+[Dashboard Pack]
+      │
+      ▼
+[Liste des accès xDSL]
+      │
+      ▼
+[Page Access] ──────────────────────────────────────┐
+      │                                              │
+      ├── [Diagnostic] ◄── Lancer diagnostic        │
+      │        │                                     │
+      │        └── [Détails diagnostic]              │
+      │                                              │
+      ├── [Échange modem] ◄── Si éligible           │
+      │                                              │
+      ├── [Dégroupage] ◄── Si partiel               │
+      │                                              │
+      ├── [Notifications] ◄── Gestion alertes       │
+      │                                              │
+      └── [Modem] ──────────────────────────────────┘
+              │
+              ├── WiFi config
+              ├── DHCP / LAN
+              ├── Ports / DMZ
+              ├── Firewall
+              └── Firmware
+```
+
+================================================================================
+SECTION 4 - COMPOSANTS UI
+================================================================================
+
+## 4.1 Composant principal: PackXdslAccess
+
+### Structure du template
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              LOADING SPINNER                                 │
+│                         (si $ctrl.isLoading())                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          TOAST MESSAGES                                      │
+│                      <tuc-toast-message>                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    MODAL CHANGEMENT MAIL SENDING                            │
+│              (si $ctrl.showModal === true)                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────┬────────────────────────────────────────┐
+│      INFORMATIONS GÉNÉRALES        │           CONNEXION                    │
+│         (oui-tile)                 │          (oui-tile)                    │
+│                                    │                                        │
+│  • État + bouton diagnostic        │  • Type de connexion                   │
+│  • Envoi email SMTP                │  • LNS                                 │
+│  • Synchronisation                 │  • Profil DSLAM                        │
+│  • Atténuation                     │  • Gestion débit                       │
+│  • Type d'accès                    │  • Port DSLAM (reset)                  │
+│  • Dégroupage                      │  • Adresse MAC                         │
+│  • GTR                             │  • Numéro série                        │
+│  • Adresse                         │  • Modèle modem                        │
+│                                    │  • Profil modem                        │
+├────────────────────────────────────┴────────────────────────────────────────┤
+│                                                                              │
+│                              IPs                                             │
+│                           (oui-tile)                                         │
+│                                                                              │
+│  ┌─────────────────────────────────┬───────────────────────────────────────┐│
+│  │           IPv4                  │              IPv6                     ││
+│  │  • Liste des blocs IP           │  • Statut activation                  ││
+│  │  • Reverse DNS                  │  • Toggle on/off                      ││
+│  │  • Bouton commander             │                                       ││
+│  │  • Bouton supprimer             │                                       ││
+│  └─────────────────────────────────┴───────────────────────────────────────┘│
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                          ALERTES (notifications)                             │
+│                              (oui-tile)                                      │
+│                                                                              │
+│  • Nombre d'alertes configurées                                              │
+│  • Lien vers gestion des alertes                                             │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                           ÉCHANGE MODEM                                      │
+│                            (oui-tile)                                        │
+│                                                                              │
+│  • Nouveau modèle proposé                                                    │
+│  • Prix HT / TTC                                                             │
+│  • Bouton échanger                                                           │
+│  • Message si non éligible                                                   │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                          STATISTIQUES                                        │
+│                           (oui-tile)                                         │
+│                                                                              │
+│  ┌────────────────┬────────────────┬────────────────┬─────────────────────┐ │
+│  │  Journalier    │  Hebdomadaire  │   Mensuel      │     Annuel          │ │
+│  └────────────────┴────────────────┴────────────────┴─────────────────────┘ │
+│                                                                              │
+│  • Graphique Synchronisation (download/upload)                               │
+│  • Graphique Trafic                                                          │
+│  • Graphique Ping                                                            │
+│  • Graphique SNR (marge de bruit)                                            │
+│  • Graphique Atténuation                                                     │
+│  • Graphique Erreurs (HEC/FEC/CRC)                                           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 4.2 Composants OUI-KIT utilisés
+
+| Composant | Props | Usage |
+|-----------|-------|-------|
+| `<oui-spinner>` | - | Loading states |
+| `<oui-modal>` | heading, type, primary-label, primary-action, secondary-label, secondary-action, on-dismiss | Confirmations |
+| `<oui-button>` | variant, on-click, disabled | Actions |
+| `<oui-message>` | type (warning/error/info/success) | Alertes inline |
+| `<oui-tile>` | - | Cartes d'information |
+| `<oui-tile__title>` | - | Titres de carte |
+| `<oui-tile__item>` | - | Élément de liste |
+| `<oui-tile__term>` | - | Label |
+| `<oui-tile__description>` | - | Valeur |
+| `<oui-popover>` | data-oui-popover | Tooltips |
+
+## 4.3 Composants TUC (Telecom Universe Components)
+
+| Composant | Props | Usage |
+|-----------|-------|-------|
+| `<tuc-toast-message>` | - | Notifications toast |
+| `<notification-list>` | ng-model, xdsl-service, error-handler, on-change | Liste alertes |
+
+## 4.4 Directives personnalisées
+
+| Directive | Attributs | Usage |
+|-----------|-----------|-------|
+| `data-uib-tooltip-template` | template path | Tooltips avec template HTML |
+| `data-responsive-popover` | template path | Popovers responsives |
+| `data-ui-sref` | state name | Navigation UI-Router |
+| `data-ng-include` | template path | Inclusion de templates |
+
+## 4.5 États visuels
+
+### Loading states
+```javascript
+$scope.loaders = {
+  details: true,        // Chargement détails accès
+  tasks: true,          // Chargement tâches
+  deconsolidation: true,// Chargement état dégroupage
+  xdsl: true,           // Chargement info xDSL
+  accessDiagnosticLaunched: false, // Diagnostic en cours
+  incident: true        // Chargement incident
+}
+```
+
+### Status labels
+```javascript
+// Active
+statusLabel = '<h5 class="ovh-font ovh-font-success text-success">✓</h5> Actif';
+
+// En cours
+statusLabel = '<h5 class="ovh-font ovh-font-success text-success">✓</h5> En cours de création';
+
+// Erreur
+statusLabel = '<h5 class="ovh-font ovh-font-failure text-danger">✗</h5> Annulée';
+```
+
+================================================================================
+SECTION 5 - APIs & DONNÉES
+================================================================================
+
+## 5.1 Endpoints xDSL principaux
+
+### GET /xdsl/{serviceName}
+```typescript
+// Response
+interface XdslAccess {
+  accessName: string;
+  accessType: 'adsl' | 'vdsl' | 'sdsl' | 'ftth' | 'ftte' | 'ftto';
+  address: {
+    city: string;
+    country: string;
+    doorCode: string;
+    floor: string;
+    residence: string;
+    stair: string;
+    street: string;
+    zipCode: string;
+    numberStreet: string;
+  };
+  capabilities: {
+    canApplyLnsRateLimit: boolean;
+    canChangeDslamProfile: boolean;
+    canChangeIcs: boolean;
+    canChangeLns: boolean;
+    canGetRadiusConnectionLogs: boolean;
+    canResetDslamPort: boolean;
+    hasDslamPort: boolean;
+  };
+  description: string;
+  ipv6Enabled: boolean;
+  lnsRateLimit: number | null;
+  mainService: string;
+  pairsNumber: number;
+  status: 'active' | 'cancelled' | 'close' | 'deleting' | 'doing' | 'migration' | 'slamming' | 'upgradeOffer';
+  provider: 'kosc' | 'bouygues' | null;
+  providerInfra: 'OR' | 'ORANGE' | null;
+  mttr: '10ho' | '4ho' | '4hno' | 'dplus1' | 'none';
+  modemProfile: string;
+  mailSending: 'enabled' | 'disabled' | 'blockedForSpam';
+}
+```
+
+### GET /xdsl/{serviceName}/lines
+```typescript
+// Response: string[] - Liste des numéros de ligne
+["0123456789"]
+```
+
+### GET /xdsl/{serviceName}/lines/{number}
+```typescript
+// Response
+interface XdslLine {
+  deconsolidation: 'partial' | 'total' | 'createNeighbour' | 'creation';
+  directDistribution: boolean;
+  distance: number;
+  faultRepairTime: string;
+  lineSectionsLength: Array<{
+    diameter: number;
+    length: number;
+  }>;
+  mitigation: number;
+  number: string;
+  originalNumber: string;
+  portability: boolean;
+  syncDown: number;
+  syncUp: number;
+}
+```
+
+### GET /xdsl/{serviceName}/modem
+```typescript
+// Response
+interface XdslModem {
+  brandName: string;        // "Zyxel", "Technicolor", etc.
+  capabilities: {
+    canBeManagedByOvh: boolean;
+    canChangeACS: boolean;
+    canChangeBridgeMode: boolean;
+    canChangeDHCP: boolean;
+    canChangeDMZ: boolean;
+    canChangeEasyFirewallLevel: boolean;
+    canChangeFirmware: boolean;
+    canChangeLAN: boolean;
+    canChangeMTU: boolean;
+    canChangeManagement: boolean;
+    canChangePortMapping: boolean;
+    canChangeWLAN: boolean;
+    canReboot: boolean;
+    canReconfigureVoip: boolean;
+    canRefreshConnectedDevices: boolean;
+    canReset: boolean;
+  };
+  dmzIP: string | null;
+  easyFirewallLevel: 'BlockAll' | 'Disabled' | 'Normal';
+  ipv6Support: boolean;
+  isBridged: boolean;
+  lastCwmpRequestDate: string;
+  macAddress: string;
+  managedByOvh: boolean;
+  model: string;
+  mtuSize: number;
+  serialNumber: string;
+}
+```
+
+### POST /xdsl/{serviceName}/mailSending
+```typescript
+// Request
+interface MailSendingRequest {
+  status: 'enabled' | 'disabled';
+}
+
+// Response: Task
+```
+
+### GET /xdsl/{serviceName}/tasks
+```typescript
+// Query params
+interface TasksQuery {
+  function?: string;  // ex: 'changeMailSendingStatus'
+  status?: 'cancelled' | 'doing' | 'done' | 'error' | 'problem' | 'todo';
+}
+
+// Response: number[] - Liste des IDs de tâches
+```
+
+### GET /xdsl/{serviceName}/diagnostic
+```typescript
+// Response
+interface XdslDiagnostic {
+  capabilities: {
+    ping: boolean;
+    lineTest: boolean;
+  };
+  diagnosticTime: string;
+  incident: string | null;
+  isActiveOnLns: boolean;
+  isModemConnected: boolean;
+  lineDetails: Array<{
+    lineTest: 'actionPending' | 'customerSideProblem' | 'error' | 'noProblem' | 'ovhSideProblem';
+    lineTestTime: string;
+    number: string;
+    proposedProfileId: number;
+    sync: boolean;
+  }>;
+  ping: boolean;
+  remaining: number;
+}
+```
+
+### POST /xdsl/{serviceName}/diagnostic
+```typescript
+// Response: Task
+// Lance un nouveau diagnostic
+```
+
+### GET /xdsl/{serviceName}/incident
+```typescript
+// Response 200: Incident en cours
+interface XdslIncident {
+  // Détails incident
+}
+
+// Response 404: Pas d'incident (code XDSL_NO_INCIDENT_CODE = 404)
+```
+
+## 5.2 Endpoints Pack xDSL
+
+### GET /pack/xdsl/{packName}
+```typescript
+interface Pack {
+  capabilities: {
+    canMoveAddress: boolean;
+    isLegacyOffer: boolean;
+  };
+  description: string;
+  offerDescription: string;
+  offerPrice: {
+    currencyCode: string;
+    text: string;
+    value: number;
+  };
+  packName: string;
+}
+```
+
+### GET /pack/xdsl/{packName}/xdslAccess/services
+```typescript
+// Response: string[] - Liste des serviceName xDSL
+["xdsl-ab12-cd34"]
+```
+
+### GET /pack/xdsl/{packName}/tasks
+```typescript
+// Query params
+interface PackTasksQuery {
+  function?: string;  // ex: 'pendingAddressMove'
+  status?: string;
+}
+
+// Response: number[]
+```
+
+## 5.3 Endpoints IPs
+
+### GET /xdsl/{serviceName}/ips (via Aapi)
+```typescript
+// Response
+interface XdslIp {
+  ip: string;
+  range: number;       // 32, 29, 28...
+  version: 'v4' | 'v6';
+  dnsList: string[];
+  reverse: string;
+}[]
+```
+
+### DELETE /xdsl/{serviceName}/ips/{ip}
+```typescript
+// Suppression d'un bloc IP additionnel
+// Response: Task
+```
+
+### POST /xdsl/{serviceName}/ips
+```typescript
+// Commande d'un bloc IP
+// Response: Order
+```
+
+## 5.4 Endpoints Modem Confort Exchange
+
+### GET /xdsl/{serviceName}/modem/comfortExchange
+```typescript
+// Response
+interface ComfortExchange {
+  newModel: string;
+  price: {
+    currencyCode: string;
+    text: string;
+    value: number;
+  };
+  priceWithTax: {
+    currencyCode: string;
+    text: string;
+    value: number;
+  };
+}
+
+// Errors possibles:
+// ERR001: Dernier modèle déjà possédé
+// ERR002: RMA déjà en cours
+// ERR004: SDSL non éligible
+```
+
+### POST /xdsl/{serviceName}/modem/comfortExchange
+```typescript
+// Request
+interface ComfortExchangeRequest {
+  contactShipping: string;  // Contact ID
+}
+
+// Response: Order
+```
+
+## 5.5 Endpoints Notifications
+
+### GET /xdsl/{serviceName}/monitoringNotifications
+```typescript
+// Response: number[] - Liste des IDs
+```
+
+### GET /xdsl/{serviceName}/monitoringNotifications (via Aapi - liste complète)
+```typescript
+// Response
+interface Notification {
+  id: number;
+  type: 'mail' | 'sms';
+  frequency: 'once' | '5m' | '1h' | '6h';
+  email?: string;
+  phone?: string;
+  smsAccount?: string;
+  allowIncident: boolean;
+  downThreshold: number;  // en secondes
+}[]
+```
+
+### POST /xdsl/{serviceName}/monitoringNotifications
+```typescript
+// Request
+interface NotificationCreate {
+  type: 'mail' | 'sms';
+  frequency: 'once' | '5m' | '1h' | '6h';
+  email?: string;
+  phone?: string;
+  smsAccount?: string;
+  allowIncident: boolean;
+  downThreshold: number;
+}
+```
+
+### DELETE /xdsl/{serviceName}/monitoringNotifications/{id}
+```typescript
+// Suppression d'une notification
+```
+
+## 5.6 Endpoints DSLAM
+
+### GET /xdsl/{serviceName}/lines/{number}/dslamPort/availableProfiles (via Aapi)
+```typescript
+// Response
+interface DslamProfile {
+  id: number;
+  name: string;  // "ADSL_24M", "VDSL_SAFE2", "VDSL_PERF1", etc.
+  isCurrent: boolean;
+}[]
+```
+
+### POST /xdsl/{serviceName}/lines/{number}/dslamPort/changeProfile
+```typescript
+// Request
+interface ChangeProfileRequest {
+  dslamProfileId: number;
+}
+
+// Response: Task
+```
+
+### POST /xdsl/{serviceName}/lines/{number}/dslamPort/reset
+```typescript
+// Reset du port DSLAM
+// Response: Task
+```
+
+## 5.7 Endpoints Statistiques
+
+### GET /xdsl/{serviceName}/statistics
+```typescript
+// Query params
+interface StatsQuery {
+  period: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'preview';
+  type: 'ping' | 'traffic:download' | 'traffic:upload' | 'synchronization:download' | 'synchronization:upload' | 'snr:download' | 'snr:upload' | 'attenuation:download' | 'attenuation:upload';
+}
+
+// Response
+interface StatPoint {
+  timestamp: number;
+  value: number;
+}[]
+```
+
+## 5.8 Séquencement des appels
+
+### Initialisation de la page Access
+```
+┌──────────────────────────────────────────────────────────────┐
+│                      $onInit()                                │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│   $q.all([                                                    │
+│       getLinesDetails(),  ──────────────────────┐             │
+│       getDiagnostic(),                          │             │
+│       getIncident(),                            │ PARALLÈLE   │
+│       getModemExchange()                        │             │
+│   ])                        ◄───────────────────┘             │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌──────────────────────────────────────────────────────────────┐
+│                   getLinesDetails()                           │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│   XdslTaskPoller.start() // Polling des tâches               │
+│                                                               │
+│   $q.allSettled([                                             │
+│       OvhApiXdsl.v6().get(),           // Détails accès      │
+│       OvhApiXdslLines.v6().get(),      // Détails ligne      │
+│       OvhApiXdslModem.v6().get(),      // Détails modem      │
+│       getIps(),                         // IPs v4/v6          │
+│       OvhApiXdslNotifications.v6().query(), // Nb alertes    │
+│       OvhApiXdsl.v6().getOrder(),      // Commande en cours  │
+│       OvhApiPackXdsl.Task().v6().query() // Move pending     │
+│   ])                                                          │
+│                                                               │
+│   SI !isFiber:                                                │
+│       getAvailableProfiles()  // Profils DSLAM               │
+│                                                               │
+│   getChangeMailSendingTask()  // Tâche mail en cours         │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Lancement diagnostic
+```
+┌─────────────────────────────────────────────────────────────┐
+│               openDetailsPopup()                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   if (accessDiagnostic === null && !loaders.launched):      │
+│       launchDiagnostic()                                     │
+│                                                              │
+│   $state.go('telecom.packs.pack.xdsl.line.access-diagnostic-details')
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│               launchDiagnostic()                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   accessDiagnostic = null                                    │
+│   loaders.accessDiagnosticLaunched = true                    │
+│                                                              │
+│   OvhApiXdslDiagnostic.launchDiagnostic()                   │
+│                                                              │
+│   // XdslTaskPoller surveille 'accessDiagnosticRun'          │
+│   // Quand terminé → getDiagnostic()                         │
+│   // Broadcast 'accessDiagnosticDetails:arrived'             │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Changement mail sending
+```
+┌─────────────────────────────────────────────────────────────┐
+│            changeMailSending(status)                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   showModal = true  // Affiche confirmation                  │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│          launchChangeMailSending()                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   showModal = false                                          │
+│                                                              │
+│   XdslAccessService.updateMailSending(serviceName, status)   │
+│       .then(() => {                                          │
+│           TucToast.success()                                 │
+│           getChangeMailSendingTask()  // Poll jusqu'à fin    │
+│       })                                                     │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│          getChangeMailSendingTask() [POLLING]                │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   XdslAccessService.getChangeMailTasks(serviceName)          │
+│       .then(({ data }) => {                                  │
+│           if (data.length > 0) {                             │
+│               isTaskRunning = true                           │
+│               $timeout(() => getChangeMailSendingTask(),     │
+│                        POLLING_INTERVAL)  // 60000ms         │
+│           } else {                                           │
+│               // Tâche terminée                              │
+│               XdslAccessService.getAccess(serviceName)       │
+│                   .then((result) => {                        │
+│                       mailSendingStatus = result.mailSending │
+│                       isTaskRunning = false                  │
+│                   })                                         │
+│           }                                                  │
+│       })                                                     │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 5.9 Gestion du cache (invalidation)
+
+```javascript
+// Pattern de polling avec XdslTaskPoller
+XdslTaskPoller.register('taskFunctionName', callbackOnComplete);
+
+// Pattern d'invalidation après action
+OvhApiXdsl.v6().resetCache();
+OvhApiXdsl.Aapi().resetCache();
+```
+
+================================================================================
+SECTION 6 - TRADUCTIONS (i18n)
+================================================================================
+
+## 6.1 Section Informations générales
+
+| Clé | FR | EN |
+|-----|----|----|
+| xdsl_details_title | Informations générales | General information |
+| xdsl_details_status_label | État | Status |
+| xdsl_details_status_active | Actif | Active |
+| xdsl_details_status_doing | En cours de création | Creating |
+| xdsl_details_status_migration | En cours de migration | Migrating |
+| xdsl_details_status_cancelled | Annulée | Cancelled |
+| xdsl_details_status_close | Fermée | Closed |
+| xdsl_details_status_deleting | En cours de suppression | Deleting |
+| xdsl_details_status_slamming | Écrasée | Slammed |
+| xdsl_details_sync_label | Synchronisation | Synchronization |
+| xdsl_details_syncDown | {{syncDown}} Kbps | {{syncDown}} Kbps |
+| xdsl_details_syncUp | {{syncUp}} Kbps | {{syncUp}} Kbps |
+| xdsl_details_att | Atténuation | Attenuation |
+| xdsl_details_db | {{mitigation}} dB | {{mitigation}} dB |
+| xdsl_details_type_label | Type | Type |
+| xdsl_details_degroupage_label | Dégroupage | Unbundling |
+| xdsl_details_mean_time_to_repair | Garantie de temps de rétablissement (GTR) | Mean time to repair (MTTR) |
+| xdsl_details_address | Adresse de raccordement | Connection address |
+
+## 6.2 Section Mail Sending
+
+| Clé | FR |
+|-----|-----|
+| xdsl_detail_mail_sending | Envoi d'email via notre serveur SMTP |
+| xdsl_detail_mail_sending_enable | Activer |
+| xdsl_detail_mail_sending_disable | Désactiver |
+| xdsl_detail_mail_sending_status_enabled | Activé |
+| xdsl_detail_mail_sending_status_disabled | Désactivé |
+| xdsl_detail_mail_sending_status_blockedForSpam | Bloqué pour spams |
+| xdsl_detail_mail_sending_status_noStatus | Le statut d'envoi d'email est inconnu... |
+| xdsl_detail_mail_sending_modal_header | Confirmation |
+| xdsl_detail_mail_sending_modal_enabled | Êtes-vous sûr de vouloir activer l'envoi d'email ? |
+| xdsl_detail_mail_sending_modal_disabled | Êtes-vous sûr de vouloir désactiver l'envoi d'email ? |
+| xdsl_detail_mail_sending_modal_description | La validation du changement prend entre 5 et 10 minutes... |
+| xdsl_detail_mail_sending_update_running | La demande de changement est en cours de traitement... |
+| xdsl_detail_mail_sending_update_succeed | La demande a été effectuée avec succès... |
+| xdsl_detail_mail_sending_guide | En savoir plus |
+
+## 6.3 Section Diagnostic
+
+| Clé | FR |
+|-----|-----|
+| xdsl_details_diagnostic_label | Diagnostic de ligne |
+| xdsl_details_diagnostic_description | Vous rencontrez des difficultés avec votre accès internet ?... |
+| xdsl_details_diagnostic_not_yet_available | L'outil de résolution de problèmes n'est pas encore disponible... |
+| xdsl_details_diagnostic_known_incident | Nous avons détecté un incident sur votre ligne... |
+| xdsl_details_button_diagnostic | Lancer l'outil |
+| xdsl_details_diagnostic_modal_button | Plus de détails sur l'état de ma ligne |
+| xdsl_details_diagnostic_modal_title | Détails de l'état de votre ligne |
+| xdsl_details_diagnostic_modal_loading | Un diagnostic est en cours... |
+| xdsl_details_diagnostic_modal_relaunch_status_check | Lancer un test |
+| pack_xdsl_access_diagnostic_title | Diagnostic de votre ligne |
+| pack_xdsl_access_diagnostic_launch | Lancer un diagnostic |
+| pack_xdsl_access_diagnostic_remaining | {{value}} restant(s) |
+| pack_xdsl_access_diagnostic_modem_connected | Statut de connexion |
+| pack_xdsl_access_diagnostic_modem_state_connected | Votre équipement OVHcloud est connecté |
+| pack_xdsl_access_diagnostic_modem_state_disconnected | Votre équipement OVHcloud est déconnecté |
+| pack_xdsl_access_diagnostic_line_sync | Synchronisation de la ligne |
+| pack_xdsl_access_diagnostic_line_sync_ok | La ligne est synchronisée |
+| pack_xdsl_access_diagnostic_line_sync_ko | La ligne n'est pas synchronisée |
+| pack_xdsl_access_diagnostic_ping_ok | Votre équipement répond correctement aux pings |
+| pack_xdsl_access_diagnostic_ping_ko | Votre équipement ne répond pas aux pings |
+| pack_xdsl_access_diagnostic_lns_active_ok | Votre équipement est actif |
+| pack_xdsl_access_diagnostic_lns_active_ko | Votre équipement n'est pas actif |
+
+## 6.4 Section IPs
+
+| Clé | FR |
+|-----|-----|
+| xdsl_details_ips_title | IPs |
+| xdsl_details_ips_v4 | IPv4 |
+| xdsl_details_ips_v6 | IPv6 |
+| xdsl_details_ips_order | Commander |
+| xdsl_details_ips_manage | gérer les IPs |
+| xdsl_details_ips_delete | supprimer ce bloc d'IPs |
+| xdsl_details_ips_remove_only_extra | Il n'est possible d'enlever que les blocks d'IPs supplémentaires |
+| xdsl_details_ips_block_pending_order | Une commande est en cours de validation |
+| xdsl_access_ip_block_delete_success | Votre demande de suppression du bloc d'IP {{ip}} a bien été prise en compte |
+| pack_xdsl_access_ip_order_title | Commander un bloc d'IP |
+| pack_xdsl_access_ip_order_operation | Commande d'un bloc de {{amountIp}} adresses IP |
+
+## 6.5 Section IPv6
+
+| Clé | FR |
+|-----|-----|
+| xdsl_access_ipv6_status | IPv6 activée |
+| xdsl_access_ipv6_status_off | IPv6 désactivée |
+| xdsl_access_ipv6_description | L'activation du routage IPv6 sera effective sous 5 à 10 minutes... |
+| xdsl_access_ipv6_warning | Veuillez patienter et ne pas éteindre votre modem... |
+| xdsl_access_ipv6_success_validation_on | Activation de l'IPv6 en cours |
+| xdsl_access_ipv6_success_validation_off | Désactivation de l'IPv6 en cours |
+| xdsl_access_ipv6_really_on | Êtes-vous sûr(e) de vouloir activer l'IPv6 ? |
+| xdsl_access_ipv6_really_off | Êtes-vous sûr(e) de vouloir désactiver l'IPv6 ? |
+| xdsl_access_ipv6_zyxel_warning | Cette action réinitialisera votre modem... |
+
+## 6.6 Section Dégroupage
+
+| Clé | FR |
+|-----|-----|
+| xdsl_access_deconsolidation_title | Dégroupage Total |
+| xdsl_access_deconsolidation_partial | Partiel |
+| xdsl_access_deconsolidation_total | Total |
+| xdsl_access_deconsolidation_validate | Valider le dégroupage |
+| xdsl_access_deconsolidation_warning_total | Vous êtes déjà en dégroupage total... |
+| xdsl_access_deconsolidation_warning_partial | Vous êtes en dégroupage partiel... |
+| xdsl_access_deconsolidation_desc_important | Cette opération est IRRÉVERSIBLE... |
+| xdsl_access_deconsolidation_rio | RIO |
+| xdsl_access_deconsolidation_rio_warning | Joignez impérativement le code RIO... |
+| xdsl_access_deconsolidation_success | Passage au dégroupage total !... |
+
+## 6.7 Section Échange modem
+
+| Clé | FR |
+|-----|-----|
+| xdsl_modem_comfort_exchange_subtitle | Échange de modem de confort |
+| xdsl_modem_exchange | Échanger mon modem |
+| xdsl_modem_comfort_exchange_description_part1 | Vous avez la possibilité de changer votre modem... |
+| xdsl_modem_comfort_exchange_description_part2 | Le coût de l'échange est de {{ priceHT }}€ HT... |
+| xdsl_modem_comfort_exchange_description_part3 | Le nouveau modem sera envoyé automatiquement... |
+| xdsl_modem_comfort_exchange_already_opened_rma | Il y a déjà une demande d'échange en cours |
+| xdsl_modem_comfort_exchange_already_last_model | Vous possédez déjà le dernier modèle |
+| xdsl_modem_comfort_exchange_not_replace_modem_sdsl | Il n'est pas possible de remplacer ce modem pour un accès SDSL |
+| xdsl_access_comfort_exchange_success_message | Vous allez recevoir un e-mail vous décrivant la marche à suivre... |
+| xdsl_access_comfort_exchange_warning_part1 | Cet échange a pour seul but de vous proposer un modem plus récent... |
+| xdsl_access_comfort_exchange_warning_part2 | En cas de défaut sur votre modem actuel, merci de contacter le support |
+
+## 6.8 Section Statistiques
+
+| Clé | FR |
+|-----|-----|
+| xdsl_statistics_title | Statistiques |
+| xdsl_statistics_period | Périodicité |
+| xdsl_statistics_sync_title | Synchronisation |
+| xdsl_statistics_traffic_title | Trafic |
+| xdsl_statistics_ping_title | Ping |
+| xdsl_statistics_snr_title | Marge de bruit |
+| xdsl_statistics_attenuation_title | Atténuation |
+| xdsl_statistics_errors_title | Erreurs |
+| xdsl_statistics_upload_label | Upload |
+| xdsl_statistics_download_label | Download |
+| xdsl_statistics_daily_label | Journalier |
+| xdsl_statistics_weekly_label | Hebdomadaire |
+| xdsl_statistics_monthly_label | Mensuel |
+| xdsl_statistics_yearly_label | Annuel |
+| xdsl_statistics_preview_label | Dernièrement |
+| xdsl_statistics_bits_per_sec_legend | bits/s |
+| xdsl_statistics_millisecond_legend | ms |
+| xdsl_statistics_decibel_legend | dB |
+
+## 6.9 Section Notifications
+
+| Clé | FR |
+|-----|-----|
+| notification_explanation | Les notifications servent à indiquer lorsqu'un accès ne répond plus... |
+| notification_breadcrumb | Alertes |
+| xdsl_details_notif_show_none_part1 | Créer des alertes afin d'être notifié par Email |
+| xdsl_details_notif_show_none_part2 | et / ou SMS lorsque l'accès ne répond plus |
+| xdsl_details_notif_show_many | {{count}} alertes programmées |
+| xdsl_details_notif_show_one | {{count}} alerte programmée |
+| xdsl_details_notif_show_alerts | Afficher les alertes |
+| components_notification_mail | E-mail |
+| components_notification_sms | SMS |
+| components_notification_once | Une fois |
+| components_notification_5m | Toutes les 5 minutes |
+| components_notification_1h | Toutes les heures |
+| components_notification_6h | Toutes les 6 heures |
+| components_notification_allowIncident | Notification des incidents |
+| components_notification_downThreshold | Délai avant notification (en minutes) |
+
+## 6.10 Section Connexion / Modem
+
+| Clé | FR |
+|-----|-----|
+| xdsl_details_connection_title | Connexion |
+| xdsl_details_connection | Type de connexion |
+| xdsl_details_profile | Profil de connexion |
+| xdsl_details_reset_dslam_port | Port de connexion |
+| xdsl_details_rate_limit | Gestion de débit |
+| xdsl_details_mac_address | Adresse MAC |
+| xdsl_details_mac_address_description | Adresse physique de l'équipement |
+| xdsl_details_serial_number | Numéro de série |
+| xdsl_details_modem_model | Modèle du modem |
+| xdsl_details_modem_profile | Profil du modem |
+| xdsl_details_LNS | LNS |
+| xdsl_connection_ovh | Dégroupé OVHcloud |
+| xdsl_connection_no_ovh | Collecte |
+| xdsl_access_dslam_reset | Réinitialiser |
+| xdsl_access_dslam_reset_description | Cette fonction vous permet de rebooter le port de connexion... |
+| xdsl_access_dslam_reset_warning | Votre connexion sera interrompue quelques minutes |
+| xdsl_access_dslam_reset_success | Réinitialisation du port de connexion en cours |
+| xdsl_access_lns_ratelimit_title | Optimisation de l'accès internet |
+| xdsl_access_lns_ratelimit_activate | Supprimer la limite du débit de la ligne |
+| xdsl_access_lns_ratelimit_description | Ajuster la limite haute du débit de la ligne... |
+| xdsl_access_profile_doing | Changement de profil en cours |
+| xdsl_access_profile_tooltip_description | Plus le chiffre du SNR sera grand, plus la stabilité sera bonne... |
+
+================================================================================
+SECTION 7 - RÈGLES MÉTIER
+================================================================================
+
+## 7.1 Conditions d'affichage
+
+### Synchronisation
+```javascript
+// Affichée uniquement pour les accès non-fibre
+ng-if="!access.xdsl.isFiber"
+```
+
+### Dégroupage
+```javascript
+// Bouton visible si partiel ET pas de tâche en cours
+ng-if="lineDetails.deconsolidation === 'partial' && !access.tasks.current.accessPartToTotal"
+```
+
+### Échange modem
+```javascript
+// Section visible si éligible
+ng-if="access.xdsl.canExchange"
+
+// Éligibilité déterminée par GET /xdsl/{}/modem/comfortExchange
+// Erreurs possibles:
+// - ERR001: Dernier modèle → canExchange = false
+// - ERR002: RMA en cours → canExchange = false
+// - ERR004: SDSL → canExchange = false
+```
+
+### Diagnostic
+```javascript
+// Bouton diagnostic désactivé pour fibre
+ng-disabled="access.xdsl.isFiber"
+
+// Message incident visible si incident détecté
+ng-if="$ctrl.hasIncidentOccured"
+```
+
+### Profil DSLAM
+```javascript
+// Section visible si capability
+ng-if="access.xdsl.capabilities.canChangeDslamProfile"
+```
+
+### Rate limit
+```javascript
+// Section visible si capability
+ng-if="access.xdsl.capabilities.canApplyLnsRateLimit"
+```
+
+### Reset port DSLAM
+```javascript
+// Section visible si capabilities
+ng-if="access.xdsl.capabilities.canResetDslamPort && access.xdsl.capabilities.hasDslamPort"
+```
+
+### IPv6
+```javascript
+// Toggle affiché si modem supporte IPv6
+ng-if="modem.ipv6Support"
+
+// Warning spécial Zyxel
+ng-if="access.isZyxel"
+```
+
+## 7.2 Validations
+
+### Commande bloc IP
+```javascript
+// Conditions
+- Pas de commande en cours (hasPendingOrderAdditionalIpOption === false)
+- Pas de bloc additionnel existant (canHaveMoreIps === true)
+- Checkbox "exécution immédiate" cochée
+- Checkbox "accepte conditions" cochée
+```
+
+### Notifications
+```javascript
+// Validation email
+isValidEmail() {
+  return this.type === 'mail' && this.email;
+}
+
+// Validation SMS
+isValidSms() {
+  return this.type === 'sms' && this.phone && this.smsAccount;
+}
+
+// Validation globale
+isValid() {
+  return this.frequency && this.type && this.allowIncident && 
+         this.downThreshold && (isValidEmail() || isValidSms());
+}
+```
+
+### Dégroupage total
+```javascript
+// Conditions pour valider
+- Checkbox contrat accepté
+- Si pas de RIO → avertissement numéro perdu affiché
+- RIO optionnel mais recommandé
+```
+
+## 7.3 États des tâches
+
+```javascript
+// États possibles
+type TaskStatus = 'cancelled' | 'doing' | 'done' | 'error' | 'problem' | 'todo';
+
+// Tâches surveillées par polling
+const POLLED_TASKS = [
+  'accessDiagnosticRun',
+  'pendingOrderAdditionalIpOption',
+  'changeMailSendingStatus',
+  'accessPartToTotal',
+  'pendingAddressMove'
+];
+```
+
+## 7.4 Logique de statut
+
+### Status access
+```javascript
+switch (status) {
+  case 'active':
+    // Icône succès verte
+    break;
+  case 'doing':
+  case 'migration':
+  case 'upgradeOffer':
+    // Icône succès verte + texte spécifique
+    break;
+  case 'cancelled':
+  case 'close':
+  case 'deleting':
+  case 'slamming':
+    // Icône erreur rouge
+    break;
+}
+```
+
+### Type d'accès fibre
+```javascript
+const FIBER_ACCESS = ['ftth', 'ftte', 'ftto'];
+isFiber = FIBER_ACCESS.includes(access.accessType);
+```
+
+### Provider et profil modem
+```javascript
+// Profil Orange si provider KOSC + infra Orange + accès FTTH/VDSL
+if (provider === 'kosc' && 
+    ['ftth', 'vdsl'].includes(accessType) && 
+    ['OR', 'ORANGE'].includes(providerInfra)) {
+  modemProfile = 'Profile Orange';
+}
+```
+
+## 7.5 Délais et intervalles
+
+```javascript
+const POLLING_INTERVAL = 60000;  // 60 secondes pour mail sending
+
+// Délais indiqués dans l'UI
+// - Changement IPv6: 5-10 minutes
+// - Changement mail sending: 5-10 minutes
+// - Reset DSLAM: quelques minutes
+// - Changement profil DSLAM: 1-5 minutes
+// - Dégroupage total: 7 jours ouvrés
+```
+
+## 7.6 Gestion des erreurs
+
+### Codes erreur échange modem
+```javascript
+const XDSL_EXCHANGE_MODEM = {
+  errBase: 'ERR0',
+  errorCodeLast: 'ERR001',   // Dernier modèle
+  errorCodeRMA: 'ERR002',    // RMA en cours
+  errorCodeSDSL: 'ERR004'    // SDSL non éligible
+};
+```
+
+### Code incident
+```javascript
+const XDSL_NO_INCIDENT_CODE = 404;  // Pas d'incident
+```
+
+### Gestion 401/403
+```javascript
+// Redirection vers login si non authentifié
+// Affichage message accès refusé si 403
+```
+
+## 7.7 Événements inter-composants
+
+### Diagnostic
+```javascript
+// Demande de diagnostic
+$rootScope.$broadcast('accessDiagnosticDetails:launch');
+
+// Demande du diagnostic actuel
+$rootScope.$broadcast('accessDiagnosticDetails:get');
+
+// Réponse avec diagnostic
+$rootScope.$broadcast('accessDiagnosticDetails:arrived', accessDiagnostic);
+```
+
+### Changement de nom
+```javascript
+// Notification changement description
+$scope.$on('changeAccessNameEvent', (event, data) => {
+  if (access.xdsl.accessName === data.xdslId) {
+    access.xdsl.description = data.description;
+  }
+});
+```
+
+## 7.8 Permissions et capabilities
+
+```typescript
+interface XdslCapabilities {
+  canApplyLnsRateLimit: boolean;      // Limite de débit
+  canChangeDslamProfile: boolean;     // Changement profil
+  canChangeIcs: boolean;              // Changement ICS
+  canChangeLns: boolean;              // Changement LNS
+  canGetRadiusConnectionLogs: boolean;// Logs Radius
+  canResetDslamPort: boolean;         // Reset DSLAM
+  hasDslamPort: boolean;              // A un port DSLAM
+}
+
+interface ModemCapabilities {
+  canBeManagedByOvh: boolean;
+  canChangeACS: boolean;
+  canChangeBridgeMode: boolean;
+  canChangeDHCP: boolean;
+  canChangeDMZ: boolean;
+  canChangeEasyFirewallLevel: boolean;
+  canChangeFirmware: boolean;
+  canChangeLAN: boolean;
+  canChangeMTU: boolean;
+  canChangeManagement: boolean;
+  canChangePortMapping: boolean;
+  canChangeWLAN: boolean;
+  canReboot: boolean;
+  canReconfigureVoip: boolean;
+  canRefreshConnectedDevices: boolean;
+  canReset: boolean;
+}
+```
+
+================================================================================
+SECTION 8 - MAPPING COMPOSANTS ODS (React)
+================================================================================
+
+## 8.1 Correspondance OUI-KIT → ODS React
+
+| OUI-KIT (AngularJS) | ODS React | Notes |
+|---------------------|-----------|-------|
+| `<oui-spinner>` | `<OdsSpinner>` | - |
+| `<oui-button>` | `<OdsButton>` | variant → color |
+| `<oui-modal>` | `<OdsModal>` | - |
+| `<oui-message>` | `<OdsMessage>` | type → color |
+| `<oui-tile>` | `<OdsTile>` | Structure différente |
+| `<oui-popover>` | `<OdsPopover>` | - |
+| `<oui-select>` | `<OdsSelect>` | - |
+| `<oui-checkbox>` | `<OdsCheckbox>` | - |
+| `<oui-radio>` | `<OdsRadio>` | - |
+| `<oui-input-text>` | `<OdsInput>` | - |
+| `<oui-textarea>` | `<OdsTextarea>` | - |
+| `<oui-clipboard>` | `<OdsClipboard>` | - |
+
+## 8.2 Structure React proposée
+
+```
+src/pages/telecom/pack/xdsl/access/
+├── AccessPage.tsx                    # Page principale
+├── AccessPage.module.scss            # Styles
+├── hooks/
+│   ├── useAccessData.ts              # Hook données accès
+│   ├── useDiagnostic.ts              # Hook diagnostic
+│   ├── useMailSending.ts             # Hook mail sending
+│   ├── useStatistics.ts              # Hook statistiques
+│   └── useNotifications.ts           # Hook alertes
+├── components/
+│   ├── AccessGeneralInfo/            # Bloc infos générales
+│   ├── AccessConnection/             # Bloc connexion
+│   ├── AccessIps/                    # Bloc IPs
+│   ├── AccessNotifications/          # Bloc alertes
+│   ├── AccessModemExchange/          # Bloc échange modem
+│   ├── AccessStatistics/             # Bloc statistiques
+│   ├── DiagnosticModal/              # Modal diagnostic
+│   ├── MailSendingModal/             # Modal mail sending
+│   └── IpOrderModal/                 # Modal commande IP
+├── constants.ts                      # Constantes
+├── types.ts                          # Types TypeScript
+└── api/
+    ├── xdsl.api.ts                   # Appels API xDSL
+    ├── pack.api.ts                   # Appels API pack
+    └── queries.ts                    # React Query hooks
+```
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

@@ -1,0 +1,645 @@
+# CAHIER DES CHARGES - OLD MANAGER TELECOM
+# Fichier: old_manager.web-cloud.telecom.txt
+# Source: old_manager_web-cloud_telecom.tar
+
+================================================================================
+## 1. RESUME EXECUTIF
+================================================================================
+
+### Perimetre fonctionnel
+
+Application Telecom Manager OVHcloud permettant la gestion de :
+- Telephonie VoIP (lignes SIP, fax, numeros alias, trunk, carrier SIP)
+- Packs xDSL (acces internet, modem, WiFi, migration, resiliation)
+- Services annexes : SMS, FreeFax, OverTheBox
+
+### Utilisateurs cibles
+- Clients OVHcloud avec services telecom
+- Administrateurs de groupes de facturation VoIP
+- Gestionnaires de packs xDSL
+
+### Statistiques du code source
+
+| Element                  | Quantite |
+|--------------------------|----------|
+| Fichiers totaux          | 5 372    |
+| Fichiers JS/TS/HTML/JSON | 4 317    |
+| Fichiers de routing      | 203      |
+| Controllers AngularJS    | 368      |
+| Components               | 134      |
+| Services                 | 50+      |
+| Factories                | 47       |
+| Fichiers traduction FR   | 309      |
+| Endpoints API uniques    | 137      |
+
+### Stack technique actuelle
+- Framework: AngularJS 1.x
+- Routing: UI-Router
+- Lazy loading: OC LazyLoad
+- UI: OUI Kit (OVH UI Kit) + Bootstrap 3
+- API: OVH API Services (angular)
+
+================================================================================
+## 2. ARCHITECTURE
+================================================================================
+
+### Arborescence principale
+
+packages/manager/
+  apps/
+    telecom/                              # Application principale
+      src/
+        app/
+          app.module.js                   # Module racine Angular
+          telecom/
+            pack/                         # Module Packs xDSL
+              index.js                    # Routes lazy
+              packs.routing.js            # Liste packs
+              dashboard/                  # Dashboard pack
+              xdsl/                       # Acces xDSL
+                access/                   # Configuration acces
+                modem/                    # Configuration modem
+                tasks/                    # Taches en cours
+              migration/                  # Migration offre
+              move/                       # Demenagement
+              resiliation/                # Resiliation
+              slots/                      # Services du pack
+            telephony/                    # Module Telephonie VoIP
+              index.js                    # Routes lazy
+              billingAccount/             # Groupe de facturation
+                dashboard/                # Tableau de bord
+                services/                 # Liste services
+                billing/                  # Facturation
+                administration/           # Administration
+                orderAlias/               # Commander numero
+                phonebook/                # Carnet contacts
+              line/                       # Ligne VoIP
+                calls/                    # Gestion appels
+                phone/                    # Telephone
+                softphone/                # Application mobile
+                management/               # Gestion ligne
+                answer/                   # Repondeur
+                consumption/              # Consommation
+                assist/                   # Assistance
+              alias/                      # Numeros alias
+              fax/                        # Fax
+              svaWallet/                  # Portefeuille SVA
+              repayments/                 # Reversements
+              carrierSip/                 # Carrier SIP
+            orders/                       # Commandes
+          search/                         # Recherche globale
+        components/                       # Composants partages
+          telecom/
+            telephony/
+              mediator.service.js         # Service central
+              scheduler/                  # Planificateur
+              timeCondition/              # Conditions horaires
+  modules/
+    telecom-universe-components/          # Composants univers telecom
+    telecom-dashboard/                    # Module dashboard
+    telecom-styles/                       # Styles LESS
+
+### Patterns architecturaux
+
+1. Lazy Loading : Chaque module majeur charge a la demande via OC LazyLoad
+2. Structure modules : index.js + *.module.js + *.routing.js + *.controller.js + *.service.js
+3. Factories : Objets metier (TelephonyGroup, TelephonyGroupLine, etc.)
+
+================================================================================
+## 3. PAGES & NAVIGATION
+================================================================================
+
+### Routes principales
+
+| Etat UI-Router                           | URL                                    | Description                    |
+|------------------------------------------|----------------------------------------|--------------------------------|
+| telecom.packs                            | /pack                                  | Liste des packs xDSL           |
+| telecom.packs.pack                       | /pack/:packName                        | Dashboard pack                 |
+| telecom.packs.pack.xdsl                  | /pack/:packName/xdsl/:serviceName      | Acces xDSL                     |
+| telecom.xdsl-access-list                 | /xdsl-access-list                      | Liste tous acces xDSL          |
+| telecom.telephony                        | /telephony                             | Liste groupes facturation      |
+| telecom.telephony.billingAccount         | /telephony/:billingAccount             | Dashboard groupe               |
+| telecom.telephony.billingAccount.line    | /telephony/:ba/line/:serviceName       | Ligne VoIP                     |
+| telecom.telephony.billingAccount.alias   | /telephony/:ba/alias/:serviceName      | Numero alias                   |
+| telecom.telephony.billingAccount.fax     | /telephony/:ba/fax/:serviceName        | Fax                            |
+| telecom.telephony.svaWallet              | /telephony/sva-wallet                  | SVA Wallet                     |
+| telecom.telephony.repayments             | /telephony/repayments                  | Reversements                   |
+
+### Sous-routes Pack xDSL
+
+| Sous-route                 | Description              |
+|----------------------------|--------------------------|
+| .xdsl.access               | Configuration acces      |
+| .xdsl.access.ip            | Gestion IP               |
+| .xdsl.access.statistics    | Statistiques             |
+| .xdsl.access.diagnostic    | Diagnostic               |
+| .xdsl.modem                | Configuration modem      |
+| .xdsl.modem.wifi           | Configuration WiFi       |
+| .xdsl.modem.router         | Routeur (LAN, DHCP, Ports)|
+| .xdsl.tasks                | Taches en cours          |
+
+### Sous-routes Telephony BillingAccount
+
+| Sous-route              | Description               |
+|-------------------------|---------------------------|
+| .dashboard              | Tableau de bord           |
+| .services               | Liste services            |
+| .billing                | Facturation               |
+| .billing.summary        | Resume                    |
+| .billing.bill           | Factures                  |
+| .billing.deposit        | Depot de garantie         |
+| .administration         | Administration            |
+| .orderAlias             | Commander numero          |
+| .phonebook              | Carnet contacts           |
+| .abbreviatedNumbers     | Numeros abreges           |
+| .manageContacts         | Gestion contacts          |
+| .guides                 | Guides                    |
+| .svaWallet              | SVA Wallet                |
+
+### Sous-routes Line
+
+| Sous-route                  | Description               |
+|-----------------------------|---------------------------|
+| .calls                      | Gestion appels            |
+| .calls.forward              | Renvoi appel              |
+| .calls.filtering            | Filtrage appels           |
+| .calls.timeCondition        | Conditions horaires       |
+| .calls.click2Call           | Click to call             |
+| .phone                      | Telephone                 |
+| .phone.configuration        | Configuration             |
+| .phone.programmableKeys     | Touches programmables     |
+| .phone.phonebook            | Repertoire                |
+| .softphone                  | Application mobile        |
+| .management                 | Gestion ligne             |
+| .management.password        | Mot de passe              |
+| .management.offerChange     | Changement offre          |
+| .management.terminate       | Resiliation               |
+| .answer                     | Repondeur                 |
+| .consumption                | Consommation              |
+| .assist                     | Assistance                |
+| .assist.rma                 | Retour materiel           |
+| .assist.troubleshooting     | Depannage                 |
+
+### Parametres de route
+
+| Parametre        | Type     | Description                       |
+|------------------|----------|-----------------------------------|
+| packName         | string   | Nom du pack xDSL                  |
+| serviceName      | string   | Identifiant du service            |
+| billingAccount   | string   | ID groupe de facturation          |
+
+================================================================================
+## 4. COMPOSANTS UI
+================================================================================
+
+### Composants OVH UI Kit (oui-*)
+
+| Composant          | Usage                                    |
+|--------------------|------------------------------------------|
+| oui-modal          | Fenetres modales de confirmation/action  |
+| oui-button         | Boutons action (primaire, secondaire)    |
+| oui-field          | Champs de formulaire avec label/erreur   |
+| oui-select         | Selecteurs deroulants                    |
+| oui-checkbox       | Cases a cocher                           |
+| oui-switch         | Interrupteurs on/off                     |
+| oui-calendar       | Selecteur de date (flatpickr)            |
+| oui-datagrid       | Tableaux de donnees pagines              |
+| oui-action-menu    | Menus actions contextuels                |
+| oui-spinner        | Indicateur de chargement                 |
+| oui-message        | Messages info/warning/error/success      |
+| oui-clipboard      | Bouton copier presse-papiers             |
+| oui-tabs           | Navigation par onglets                   |
+| oui-stepper        | Wizard pas a pas                         |
+
+### Composants Telecom personnalises
+
+| Composant                           | Usage                              |
+|-------------------------------------|------------------------------------|
+| telephony-scheduler                 | Planificateur horaire              |
+| voip-time-condition-slot            | Plage horaire                      |
+| voip-time-condition-calendar        | Calendrier conditions              |
+| telephony-alias-members             | Membres alias                      |
+| telephony-alias-records             | Enregistrements                    |
+| telephony-alias-live-calls          | Appels en cours                    |
+| telephony-service-choice-popover    | Choix de service                   |
+| telephony-associate-device          | Association appareil               |
+| tuc-input-file                      | Upload fichier                     |
+| tuc-gauge                           | Jauge                              |
+| tuc-editable-service-name           | Nom editable                       |
+| tuc-toast-error                     | Toast erreur                       |
+| tuc-shipping-mode-selection         | Selection mode livraison           |
+
+### Classes CSS recurrentes
+
+Layout Bootstrap 3: .row, .col-md-*, .container, .pull-left, .pull-right
+Flexbox: .d-flex, .flex-column, .justify-content-*, .align-items-*
+OUI Kit: .oui-button, .oui-field, .oui-message, .oui-spinner, .oui-icon
+Telecom: .telecom-telephony, .telephony-scheduler, .voip-time-condition-slot
+Etats: .loading, .error, .empty, .success, .is-active, .is-disabled
+
+================================================================================
+## 5. APIs & DONNEES
+================================================================================
+
+### Vue d'ensemble (137 endpoints uniques)
+
+| Categorie          | Endpoints | Methodes               |
+|--------------------|-----------|------------------------|
+| Telephony          | 83        | GET, POST, PUT, DELETE |
+| Pack xDSL          | 25        | GET, POST              |
+| Me (Compte)        | 19        | GET, POST, PUT         |
+| Domain             | 1         | GET                    |
+| Services (2API)    | 1         | GET                    |
+| SMS                | 1         | GET                    |
+| FreeFax            | 1         | GET                    |
+| OverTheBox         | 1         | GET                    |
+| Pack               | 2         | GET                    |
+| TOTAL              | 137       |                        |
+
+### Endpoints Telephony (principaux)
+
+GET  /telephony                                    Liste groupes facturation
+GET  /telephony/searchServices                     Recherche services
+GET  /telephony/{billingAccount}                   Detail groupe
+GET  /telephony/{ba}/service                       Services du groupe
+GET  /telephony/{ba}/service/{sn}                  Detail service
+GET  /telephony/{ba}/line/{sn}                     Detail ligne
+GET  /telephony/{ba}/line/{sn}/options             Options ligne
+PUT  /telephony/{ba}/line/{sn}/options             Modifier options
+POST /telephony/{ba}/line/{sn}/changePassword      Changer mot de passe
+GET  /telephony/{ba}/line/{sn}/softphone/status    Statut softphone
+PUT  /telephony/{ba}/line/{sn}/softphone/beta      Activer/desactiver
+GET  /telephony/{ba}/line/{sn}/softphone/devices   Appareils connectes
+POST /telephony/{ba}/line/{sn}/softphone/token     Generer token
+GET  /telephony/{ba}/fax/{sn}                      Detail fax
+GET  /telephony/{ba}/fax/{sn}/settings             Parametres fax
+GET  /telephony/{ba}/number/{sn}                   Detail numero
+GET  /telephony/{ba}/timeCondition/{sn}/condition  Conditions horaires
+GET  /telephony/{ba}/voicemail/{sn}/settings       Parametres repondeur
+GET  /telephony/{ba}/portability                   Portabilites
+GET  /telephony/{ba}/repayment                     Reversements
+GET  /telephony/softphone/themes                   Themes disponibles
+GET  /telephony/softphone/storeLinks               Liens stores
+
+### Endpoints Pack xDSL (principaux)
+
+GET  /pack/xdsl                                    Liste packs
+GET  /pack/xdsl/{packName}                         Detail pack
+GET  /pack/xdsl/{packName}/orderFollowUp           Suivi commande
+GET  /xdsl                                         Liste acces xDSL
+GET  /xdsl/{serviceName}                           Detail acces
+GET  /xdsl/{sn}/lines                              Lignes associees
+GET  /xdsl/{sn}/tasks                              Taches en cours
+GET  /xdsl/{sn}/fiberEligibilities                 Eligibilites fibre
+
+### Endpoints Me (Compte)
+
+GET  /me/bill                                      Factures
+GET  /me/document                                  Documents
+POST /me/document                                  Creer document
+POST /me/document/cors                             Configurer CORS
+GET  /me/sva/wallet                                Portefeuille SVA
+PUT  /me/sva/wallet                                Modifier portefeuille
+POST /me/sva/onboarding                            Demarrer onboarding
+GET  /me/sva/wallet/bankAccount                    Compte bancaire
+POST /me/sva/wallet/document                       Upload document SVA
+
+### Sequencement des appels
+
+Chargement liste Telephony:
+  1. GET /telephony (Iceberg pagination)
+  2. Pour chaque groupe: GET /telephony/{ba}/service (count)
+
+Chargement BillingAccount:
+  1. GET /telephony/{ba}
+  2. GET /telephony/{ba}/service (Iceberg)
+  3. GET /telephony/{ba}/serviceInfos
+
+Chargement Softphone:
+  1. GET /telephony/{ba}/line/{sn}/softphone/status
+  2. GET /telephony/{ba}/line/{sn}/softphone/devices
+  3. GET /telephony/{ba}/line/{sn}/softphone/theme
+  4. GET /telephony/softphone/themes
+  5. GET /telephony/softphone/storeLinks
+
+Upload document SVA:
+  1. POST /me/document (create)
+  2. POST /me/document/cors
+  3. PUT {putUrl} (upload fichier)
+  4. GET /me/document/{id}
+  5. POST /me/sva/wallet/document
+
+### Pagination Iceberg
+
+Headers requete:
+  X-Pagination-Mode: CachedObjectList-Pages
+  X-Pagination-Size: 25
+  X-Pagination-Number: 1
+  X-Pagination-Sort: billingAccount
+  X-Pagination-Sort-Order: ASC
+
+Headers reponse:
+  X-Pagination-Elements: 150
+  X-Pagination-Number: 1
+  X-Pagination-Size: 25
+
+### Types TypeScript (interfaces principales)
+
+interface TelephonyBillingAccount {
+  billingAccount: string;
+  description: string;
+  status: 'enabled' | 'closed' | 'deleted' | 'expired';
+  securityDeposit: number;
+  currentOutplan: number;
+}
+
+interface TelephonyService {
+  serviceName: string;
+  serviceType: 'line' | 'alias';
+  featureType: 'sip' | 'mgcp' | 'fax' | 'voicefax' | 'trunk' | 'freefax';
+  billingAccount: string;
+  description: string;
+}
+
+interface TelephonyLine {
+  serviceName: string;
+  featureType: 'sip' | 'mgcp' | 'trunk';
+  simultaneousLines: number;
+  hasPhone: boolean;
+}
+
+interface TelephonyLineOptions {
+  callWaiting: boolean;
+  displayNumber: string;
+  doNotDisturb: boolean;
+  forwardUnconditional: boolean;
+  forwardUnconditionalNumber: string;
+  identificationRestriction: boolean;
+}
+
+interface TelephonySoftphone {
+  status: 'enabled' | 'disabled';
+  devices: TelephonySoftphoneDevice[];
+}
+
+interface TelephonyTimeCondition {
+  conditionId: number;
+  weekDay: string;
+  timeFrom: string;
+  timeTo: string;
+  policy: 'available' | 'slot1' | 'slot2' | 'slot3';
+  status: 'enabled' | 'disabled';
+}
+
+interface SvaWallet {
+  id: string;
+  status: 'pending' | 'valid' | 'rejected';
+  companyKind: 'individual' | 'company';
+}
+
+interface XdslAccess {
+  accessName: string;
+  accessType: 'adsl' | 'vdsl' | 'sdsl' | 'ftth';
+  status: 'active' | 'creating' | 'deleting' | 'suspended';
+  packName: string;
+}
+
+================================================================================
+## 6. TRADUCTIONS
+================================================================================
+
+### Cles principales - Telephony
+
+telephony_breadcrumb = VoIP
+telephony_page_title = Ma Telephonie "{{name}}"
+telephony_order = Commander
+telephony_billing_account_label = Groupe de facturation
+telephony_description_label = Description
+telephony_num_service_label = Services
+telephony_current_outplan_label = Hors forfait
+telephony_security_deposit_label = Depot de garantie
+telephony_status_label = Statut
+telephony_status_label_enabled = OK
+telephony_status_label_closed = Cloture
+telephony_status_label_deleted = Supprime
+telephony_section_load_error = Oups ! Une erreur est survenue lors du chargement.
+
+### Cles - Types de service
+
+telephony_service_type_alias = Numero
+telephony_service_type_line = Ligne
+telephony_service_feature_type_sip = Ligne SIP
+telephony_service_feature_type_fax = FAX
+telephony_service_feature_type_trunk = Trunk
+telephony_service_feature_type_voicefax = Fax
+
+### Cles - Carnet de contacts
+
+telephony_phonebook_title = Carnet de contacts
+telephony_phonebook_create_title = Nouveau carnet de contacts
+telephony_phonebook_delete_label = Supprimer le carnet de contacts
+telephony_phonebook_contact_add = Ajouter un contact
+telephony_phonebook_contact_action_import = Importer
+telephony_phonebook_contact_action_export = Exporter
+telephony_phonebook_contact_column_surname = Nom
+telephony_phonebook_contact_column_name = Prenom
+
+### Cles - Conditions horaires
+
+telephony_common_time_condition_slot_from = de
+telephony_common_time_condition_slot_to = a
+telephony_common_time_condition_export_configuration = Exporter des plages horaires
+telephony_common_time_condition_import_configuration = Importer des plages horaires
+
+### Cles - Pack xDSL
+
+packs_breadcrumb = Acces Internet
+packs_pack_name_label = Pack
+packs_description_label = Description
+packs_num_service_label = Acces Internet
+pack_internet_access_title = Acces Internet
+
+### Cles - Communs
+
+common_required_fields = Les champs marques d'un asterisque sont obligatoires.
+cancel = Annuler
+confirm = Confirmer
+save = Enregistrer
+delete = Supprimer
+edit = Editer
+add = Ajouter
+loading = Chargement...
+error = Erreur
+success = Succes
+
+================================================================================
+## 7. REGLES METIER
+================================================================================
+
+### Validation des donnees
+
+Numero de telephone:
+  Pattern: /^\+?(\d|\.| |#|-)+$/
+  Longueur: 3-25 caracteres
+
+Carnet de contacts:
+  Nom carnet: alphanumeriques, max 50 caracteres
+  Contact nom: obligatoire, alphanumeriques, max 246 caracteres
+  Contact prenom: obligatoire, alphanumeriques, max 246 caracteres
+  Au moins un numero requis
+
+### Etats et conditions
+
+Statuts groupe de facturation:
+  enabled  -> Actif, toutes actions possibles
+  closed   -> Cloture, consultation seule
+  deleted  -> Supprime, aucune action
+  expired  -> Expire, renouvellement requis
+
+Types de fonctionnalite (featureType):
+  sip       -> Ligne SIP standard (appels, renvoi, repondeur, softphone)
+  mgcp      -> Ligne MGCP (appels, renvoi, repondeur)
+  fax       -> Fax dedie
+  voicefax  -> Ligne avec fax
+  trunk     -> Trunk SIP entreprise
+  freefax   -> FreeFax
+
+Etats de portabilite:
+  todo      -> A traiter
+  doing     -> En cours
+  done      -> Terminee
+  error     -> Erreur
+  cancelled -> Annulee
+
+### Conditions d'affichage
+
+SVA Wallet:
+  - Feature flag: telephony:sva-wallet
+  - Verification KYC: wallet.status === 'valid'
+  - Redirection onboarding si non valide
+
+Softphone:
+  - Condition: line.featureType === 'sip'
+  - Condition: !line.isAttachedToOtherLinesPhone
+
+### Gestion des erreurs
+
+Pattern standard:
+  this.loading = true;
+  this.error = null;
+  $http.get('/api/endpoint')
+    .then((response) => { this.data = response.data; })
+    .catch((error) => {
+      this.error = {
+        message: error.data?.message,
+        status: error.status,
+        queryId: error.headers?.('x-ovh-queryId')
+      };
+    })
+    .finally(() => { this.loading = false; });
+
+Redirection page erreur:
+  $state.go('telecomError', {
+    detail: { message, status, code },
+    to: { state, params }
+  });
+
+### Constantes metier
+
+SVA_WALLET_STATUS:
+  PENDING, VALID, REJECTED
+
+BILLING_ACCOUNT_STATUS:
+  ENABLED, CLOSED, DELETED, EXPIRED
+
+SERVICE_TYPES:
+  LINE, ALIAS
+
+FEATURE_TYPES:
+  SIP, MGCP, FAX, VOICEFAX, TRUNK, FREEFAX, PLUG_AND_FAX
+
+================================================================================
+## 8. DEPENDANCES
+================================================================================
+
+### Modules OVH
+
+@ovh-ux/manager-core
+@ovh-ux/ui-kit
+@ovh-ux/ng-ovh-http
+@ovh-ux/ng-ovh-sso-auth
+@ovh-ux/ng-ovh-api-wrappers
+@ovh-ux/ng-ovh-feature-flipping
+@ovh-ux/manager-telecom-dashboard
+@ovh-ux/manager-freefax
+@ovh-ux/manager-overthebox
+@ovh-ux/manager-sms
+@ovh-ux/ng-ovh-telecom-universe-components
+@ovh-ux/ng-ovh-line-diagnostics
+
+### AngularJS et routing
+
+angular (1.8.x)
+@uirouter/angularjs (1.x)
+oclazyload (1.x)
+angular-translate (2.x)
+angular-ui-bootstrap (2.x)
+
+### UI et visualisation
+
+bootstrap (3.x)
+ovh-ui-kit-bs
+d3
+fullcalendar
+flatpickr
+leaflet
+moment
+
+### Services Angular injectables
+
+$http, $q, $state, $translate
+iceberg, OvhApiTelephony, OvhHttp
+ssoAuthentication, ovhFeatureFlipping
+TucToastError, TelephonyMediator
+
+================================================================================
+## 9. NOTES DE MIGRATION
+================================================================================
+
+### Mapping AngularJS vers React
+
+Module          -> Context/Provider
+Controller      -> Functional Component + hooks
+Service         -> Custom hook ou service class
+$scope          -> useState, useReducer
+$watch          -> useEffect
+$http           -> fetch ou axios
+UI-Router state -> React Router route
+$translate      -> react-i18next
+ng-if           -> {condition && }
+ng-repeat       -> .map()
+ng-model        -> Controlled component
+
+### Mapping OUI Kit
+
+oui-button    -> OsdsButton
+oui-field     -> OsdsFormField
+oui-input     -> OsdsInput
+oui-select    -> OsdsSelect
+oui-modal     -> OsdsModal
+oui-message   -> OsdsMessage
+oui-spinner   -> OsdsSpinner
+oui-datagrid  -> Datagrid (manager-react-components)
+
+### Points d'attention
+
+1. Lazy loading : React.lazy() + Suspense
+2. Pagination Iceberg : useResourcesIcebergV2
+3. Feature flipping : useFeatureAvailability
+4. Traductions : Format i18next
+5. Formulaires : react-hook-form ou Formik
+6. Etat global : Zustand ou Jotai
+
+================================================================================
+## FIN DU CAHIER DES CHARGES
+================================================================================

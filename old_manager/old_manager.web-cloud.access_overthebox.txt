@@ -1,0 +1,1391 @@
+# CAHIER DES CHARGES - OverTheBox Manager
+# Source: old_manager_web-cloud_access_overthebox.tar
+# Date: 2025-01-XX
+# Version module: 6.24.7
+
+---
+
+## 1. RESUME EXECUTIF
+
+### 1.1 Perimetre
+| Element | Valeur |
+|---------|--------|
+| Produit | OverTheBox (OTB) |
+| Univers | Web & Cloud / Telecom |
+| Framework source | AngularJS 1.7.x |
+| Module npm | @ovh-ux/manager-overthebox |
+
+### 1.2 Objectif fonctionnel
+Gestion complete des boitiers OverTheBox permettant l agregation de liens Internet et VPN :
+- Visualisation et gestion des services OTB
+- Monitoring temps reel (traffic, logs)
+- Configuration des acces distants SSH/HTTPS
+- Gestion du cycle de vie (resilitation, migration offre)
+- Attachement/detachement des peripheriques
+
+### 1.3 Utilisateurs cibles
+Clients OVHcloud disposant d un ou plusieurs services OverTheBox.
+
+---
+
+## 2. ARCHITECTURE
+
+### 2.1 Arborescence des fichiers
+
+```
+packages/manager/
+├── apps/overthebox/
+│   ├── src/app.module.js
+│   ├── src/index.js
+│   └── src/index.html
+│
+└── modules/overthebox/src/
+    ├── overtheboxes.module.js
+    ├── overtheboxes.routing.js
+    ├── overtheboxes.component.js
+    ├── overtheboxes.controller.js
+    ├── overtheboxes.html
+    ├── translations/
+    │
+    ├── onboarding/
+    │   ├── constants.js
+    │   ├── onboarding.module.js
+    │   ├── onboarding.routing.js
+    │   ├── onboarding.component.js
+    │   ├── onboarding.controller.js
+    │   ├── onboarding.html
+    │   └── translations/
+    │
+    ├── feature-availability/
+    │   └── feature-availability.constants.js
+    │
+    └── overthebox/
+        ├── overTheBox.module.js
+        ├── overTheBox.routing.js
+        ├── overTheBox.component.js
+        ├── overTheBox.controller.js
+        ├── overTheBox.constant.js
+        ├── overTheBox.html
+        ├── translations/
+        │
+        ├── details/
+        │   ├── overTheBox-details.service.js
+        │   ├── overTheBox-details.controller.js
+        │   ├── overTheBox-details.constant.js
+        │   ├── overTheBox-details.component.js
+        │   ├── overTheBox-details.routing.js
+        │   ├── overTheBox-details.html
+        │   ├── index.js
+        │   └── translations/
+        │
+        ├── remote/
+        │   ├── overTheBox-remote.controller.js
+        │   ├── overTheBox-remote.constant.js
+        │   ├── overTheBox-remote.component.js
+        │   ├── overTheBox-remote.routing.js
+        │   ├── overTheBox-remote.html
+        │   ├── index.js
+        │   └── translations/
+        │
+        ├── tasks/
+        │   ├── overTheBox-tasks.controller.js
+        │   ├── overTheBox-tasks.component.js
+        │   ├── overTheBox-tasks.routing.js
+        │   ├── overTheBox-tasks.html
+        │   ├── index.js
+        │   └── translations/
+        │
+        ├── logs/
+        │   ├── overTheBox-logs.controller.js
+        │   ├── overTheBox-logs.component.js
+        │   ├── overTheBox-logs.routing.js
+        │   ├── overTheBox-logs.html
+        │   ├── index.js
+        │   └── translations/
+        │
+        ├── actions/
+        │   ├── overTheBox-actions.controller.js
+        │   ├── overTheBox-actions.constant.js
+        │   ├── overTheBox-actions.component.js
+        │   ├── overTheBox-actions.routing.js
+        │   ├── overTheBox-actions.html
+        │   ├── index.js
+        │   └── translations/
+        │
+        ├── migration/
+        │   ├── overTheBox-migration.controller.js
+        │   ├── overTheBox-migration.constant.js
+        │   ├── overTheBox-migration.component.js
+        │   ├── overTheBox-migration.routing.js
+        │   ├── overTheBox-migration.html
+        │   ├── translations/
+        │   ├── offers/
+        │   │   ├── overTheBox-migration-offers.service.js
+        │   │   ├── overTheBox-migration-offers.controller.js
+        │   │   ├── overTheBox-migration-offers.component.js
+        │   │   ├── overTheBox-migration-offers.html
+        │   │   └── index.js
+        │   ├── contact/
+        │   │   ├── overTheBox-migration-contact.controller.js
+        │   │   ├── overTheBox-migration-contact.component.js
+        │   │   ├── overTheBox-migration-contact.html
+        │   │   └── index.js
+        │   └── summary/
+        │       ├── overTheBox-migration-summary.service.js
+        │       ├── overTheBox-migration-summary.controller.js
+        │       ├── overTheBox-migration-summary.component.js
+        │       ├── overTheBox-migration-summary.html
+        │       └── index.js
+        │
+        ├── order/
+        │   ├── order-overTheBox.controller.js
+        │   ├── order-overTheBox.component.js
+        │   ├── order-overTheBox.routing.js
+        │   ├── order-overTheBox.html
+        │   ├── index.js
+        │   └── translations/
+        │
+        ├── configure/
+        │   ├── overTheBox-configure.controller.js
+        │   ├── overTheBox-configure.component.js
+        │   ├── overTheBox-configure.routing.js
+        │   ├── overTheBox-configure.html
+        │   └── index.js
+        │
+        ├── ip-display/
+        │   ├── ip-display.controller.js
+        │   ├── ip-display.constant.js
+        │   ├── ip-display.component.js
+        │   ├── ip-display.html
+        │   └── index.js
+        │
+        └── warning/
+            ├── overTheBox-warning.controller.js
+            ├── overTheBox-warning-deviceToLink.controller.js
+            ├── overTheBox-warning-deviceToLink.html
+            ├── overTheBox-warning-noPaymentMeans.html
+            ├── overTheBox-warning-noSubscription.html
+            ├── overTheBox-warning-notActivated.html
+            ├── overTheBox-warning-notFound.html
+            ├── index.js
+            └── translations/
+```
+
+### 2.2 Dependances principales
+
+| Package | Version | Usage |
+|---------|---------|-------|
+| @ovh-ux/ui-kit | ^6.10.5 | Composants OUI-Kit |
+| @ovh-ux/manager-core | ^12.0.0 | Core manager |
+| @ovh-ux/ng-ovh-chart | ^1.0.0 | Graphiques |
+| @ovh-ux/ng-tail-logs | ^2.0.7 | Logs temps reel |
+| @ovh-ux/ng-ovh-contracts | ^4.2.0 | Contrats |
+| @ovh-ux/ng-ovh-telecom-universe-components | ^6.0.0 | Composants Telecom |
+| chart.js | ^4.4.2 | Graphiques traffic |
+| chartjs-adapter-date-fns | ^3.0.0 | Adapter dates |
+| date-fns | ^2.24.0 | Manipulation dates |
+| moment | ^2.24.0 | Dates legacy |
+| ovh-api-services | ^15.0.0 | Wrappers API |
+| @uirouter/angularjs | ^1.0.15 | Router |
+
+### 2.3 Patterns architecturaux
+- Pattern MVC AngularJS (Controller/Service/Component)
+- Lazy loading des modules via ocLazyLoad
+- State-based routing (ui-router)
+- Wrappers API via ovh-api-services
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### 3.1 Arborescence des routes
+
+| State | URL | Composant | Description |
+|-------|-----|-----------|-------------|
+| overTheBoxes | / | - | Etat parent |
+| overTheBoxes.index | /?filter&sort&... | ovhManagerOverTheBoxes | Liste services |
+| overTheBoxes.onboarding | /onboarding | overTheBoxOnboarding | Page vide |
+| overTheBoxes.overTheBox | /:serviceName | ovhManagerOverTheBoxComponent | Container |
+| overTheBoxes.overTheBox.details | /:serviceName/details | overTheBoxDetails | Onglet details |
+| overTheBoxes.overTheBox.remote | /:serviceName/remote | overTheBoxRemote | Acces distant |
+| overTheBoxes.overTheBox.tasks | /:serviceName/tasks | overTheBoxTasks | Taches |
+| overTheBoxes.overTheBox.logs | /:serviceName/logs | overTheBoxLogs | Logs |
+| overTheBoxes.overTheBox.actions | /:serviceName/actions | overTheBoxActions | Actions device |
+| overTheBoxes.overTheBox.migration | /:serviceName/migration | overTheBoxMigration | Changement offre |
+| overTheBoxes.overTheBox.order | /:serviceName/order | orderOverTheBox | Commander |
+| overTheBoxes.overTheBox.configure | /configure | overTheBoxConfigure | Configuration |
+
+### 3.2 Parametres de route
+
+| Parametre | Type | Description |
+|-----------|------|-------------|
+| serviceName | string | Identifiant unique du service OTB |
+
+### 3.3 Navigation principale (onglets)
+
+```
+[Mon OverTheBox] [Acces a distance] [Taches] [Logs] [Actions]
+```
+
+### 3.4 Breadcrumb
+```
+OverTheBox > {serviceName|customerDescription}
+```
+
+### 3.5 Flux modaux et confirmations
+
+| Action | Type | Message |
+|--------|------|---------|
+| Resilier | ng-really | overTheBox_resiliation_confirm |
+| Annuler resilitation | click | - |
+| Attacher device | ng-really | overTheBox_link_device_confirm |
+| Dissocier device | ng-really | overTheBox_confirm_unlink_device |
+| Autoriser remote | ng-really | overTheBox_remote_authorize_confirm |
+| Supprimer remote | ng-really | overTheBox_remote_authorize_delete_confirm |
+| Reboot | oui-button | - |
+| Sysupgrade | oui-dropdown-item | - |
+
+### 3.6 Redirections
+
+| Condition | Redirection |
+|-----------|-------------|
+| Liste vide | overTheBoxes.onboarding |
+| Acces /:serviceName | overTheBoxes.overTheBox.details |
+| 401 Unauthorized | Page login OVH |
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 Composants OUI-Kit utilises
+
+| Composant | Usage | Props principales |
+|-----------|-------|-------------------|
+| oui-message | Alertes info/warning/error | type, dismissable, on-dismiss |
+| oui-spinner | Loading states | size |
+| oui-button | Actions | disabled, on-click |
+| oui-dropdown | Menu actions | placement |
+| oui-dropdown-trigger | Declencheur menu | text |
+| oui-dropdown-content | Contenu menu | - |
+| oui-dropdown-item | Item menu | disabled, on-click |
+| oui-switch | Toggle IPv6/auto-upgrade | model, on-change |
+| oui-tile | Cartes information | - |
+| oui-datagrid | Listes paginées | - |
+
+### 4.2 Composants Manager/Telecom utilises
+
+| Composant | Usage |
+|-----------|-------|
+| tuc-toast-message | Container notifications |
+| tuc-gauge | Jauges download/upload |
+| tuc-editable-service-name | Edition nom service |
+| ng-really | Confirmation actions |
+| chart (directive) | Graphiques Chart.js |
+
+### 4.3 Composants custom du module
+
+#### ip-display
+```javascript
+{
+  bindings: {
+    ip: '<',           // Object IP {ip, version, enabled}
+    isUpdating: '<',   // Boolean loading
+    onActivationUpdate: '&'  // Callback toggle
+  }
+}
+```
+
+### 4.4 Structure HTML type - Page details
+
+```html
+<div class="overthebox">
+  <!-- Alerts -->
+  <oui-message type="info" ng-if="$ctrl.device.availableUpdate">
+    <span translate="overTheBox_available_update"></span>
+  </oui-message>
+  
+  <oui-message type="error" ng-if="$ctrl.error.ipv6Update" dismissable>
+    <p translate="overTheBox_enabled_ipv6_error"></p>
+  </oui-message>
+  
+  <!-- Toast container -->
+  <tuc-toast-message></tuc-toast-message>
+  
+  <!-- Warning expiration -->
+  <div class="alert alert-warning" ng-if="$ctrl.serviceInfos.renew.deleteAtExpiration">
+    ...
+  </div>
+  
+  <!-- Loading -->
+  <div class="text-center" ng-if="$ctrl.loaders.init">
+    <oui-spinner></oui-spinner>
+  </div>
+  
+  <!-- Content -->
+  <div ng-if="$ctrl.service">
+    <div class="row d-md-flex mb-5">
+      <!-- Tile Informations generales -->
+      <div class="col-xs-12 col-md-6">
+        <div class="oui-tile">
+          <h3 class="oui-tile__title oui-heading_3">...</h3>
+          <div class="oui-tile__body">
+            <div class="oui-tile__item">
+              <div class="oui-tile__definition">
+                <div class="oui-tile__term">...</div>
+                <div class="oui-tile__description">...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tile Peripherique -->
+      <div class="col-xs-12 col-md-6">
+        <div class="oui-tile">...</div>
+      </div>
+    </div>
+    
+    <!-- Graphiques -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="oui-tile">
+          <h3 class="oui-tile__title">Download</h3>
+          <div class="chart-container" chart chartjs="$ctrl.chartDown"></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="oui-tile">
+          <h3 class="oui-tile__title">Upload</h3>
+          <div class="chart-container" chart chartjs="$ctrl.chartUp"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### 4.5 Classes CSS recurrentes
+
+```css
+/* Layout */
+.overthebox { }
+.row { }
+.col-xs-12, .col-md-6 { }
+.d-md-flex { }
+
+/* Spacing (Bootstrap) */
+.m-2, .mb-2, .mb-5 { }
+.ml-2, .ml-3, .mr-2 { }
+
+/* Display */
+.d-block, .d-inline-block { }
+.align-middle { }
+.text-center { }
+
+/* OUI Tiles */
+.oui-tile { }
+.oui-tile__title { }
+.oui-tile__body { }
+.oui-tile__item { }
+.oui-tile__definition { }
+.oui-tile__term { }
+.oui-tile__description { }
+.oui-heading_3, .oui-heading_5 { }
+
+/* Alerts */
+.alert, .alert-warning { }
+
+/* Status icons */
+.ovh-font { }
+.ovh-font-success, .text-success { }
+.ovh-font-warning, .text-warning { }
+.ovh-font-key { }
+.ovh-font-bin { }
+
+/* Charts */
+.chart-container { }
+
+/* Forms */
+.form-group { }
+.form-control { }
+.has-error { }
+.help-block { }
+.input-group { }
+
+/* Buttons */
+.btn, .btn-default, .btn-primary, .btn-link { }
+
+/* Tables */
+.table, .table-responsive { }
+.table-hover, .table-striped { }
+```
+
+---
+
+## 5. APIs & DONNEES
+
+### 5.1 Vue d ensemble des endpoints
+
+| Categorie | Nombre | Base path |
+|-----------|--------|-----------|
+| OverTheBox | 25+ | /overTheBox |
+| Order | 4 | /order/overTheBox |
+| IP | 2 | /ip |
+| Me | 1 | /me |
+
+### 5.2 Endpoints OverTheBox (APIv6)
+
+#### Liste et details service
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox | Liste des services |
+| GET | /overTheBox/{serviceName} | Detail service |
+| PUT | /overTheBox/{serviceName} | Modifier service |
+| GET | /overTheBox/{serviceName}/serviceInfos | Infos facturation |
+
+#### Device
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox/devices | Devices detectes reseau |
+| GET | /overTheBox/{serviceName}/device | Device attache |
+| DELETE | /overTheBox/{serviceName}/device | Dissocier device |
+| POST | /overTheBox/{serviceName}/linkDevice | Attacher device |
+| GET | /overTheBox/{serviceName}/device/hardware | Specs hardware |
+| GET | /overTheBox/{serviceName}/device/actions | Liste actions device |
+| GET | /overTheBox/{serviceName}/device/actions/{actionId} | Detail action |
+
+#### Reseau
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox/{serviceName}/ips | Liste IPs (Iceberg) |
+| GET | /overTheBox/{serviceName}/ipv6 | Etat IPv6 |
+| PUT | /overTheBox/{serviceName}/ipv6 | Activer/desactiver IPv6 |
+
+#### Monitoring
+
+| Methode | Endpoint | Params | Description |
+|---------|----------|--------|-------------|
+| GET | /overTheBox/{serviceName}/statistics | period, metricsType | Metriques |
+| POST | /overTheBox/{serviceName}/logs | - | URL logs streaming |
+
+#### Taches
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox/{serviceName}/tasks | Liste taches |
+| GET | /overTheBox/{serviceName}/tasks/{taskId} | Detail tache |
+
+#### Actions distantes
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox/{serviceName}/availableActions | Actions disponibles |
+| POST | /overTheBox/{serviceName}/action | Lancer action (reboot, sysupgrade) |
+| GET | /overTheBox/{serviceName}/availableReleaseChannels | Versions disponibles |
+
+#### Acces distant
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox/{serviceName}/remoteAccesses | Liste acces |
+| POST | /overTheBox/{serviceName}/remoteAccesses | Creer acces |
+| GET | /overTheBox/{serviceName}/remoteAccesses/{id} | Detail acces |
+| DELETE | /overTheBox/{serviceName}/remoteAccesses/{id} | Supprimer acces |
+| POST | /overTheBox/{serviceName}/remoteAccesses/{id}/authorize | Autoriser |
+
+#### Cycle de vie
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| PUT | /overTheBox/{serviceName}/deleteAtExpiration | Resilier |
+| PUT | /overTheBox/{serviceName}/keepAtExpiration | Annuler resiliation |
+
+#### Migration
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox/{serviceName}/migration/offers | Offres disponibles |
+| POST | /overTheBox/{serviceName}/migration/changeOffers | Executer migration |
+
+#### Offres
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox/availableOffers | Offres disponibles |
+
+### 5.3 Endpoints 2API (AAPI)
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /overTheBox/{serviceName}/remoteAccesses | Liste enrichie |
+| POST | /overTheBox/{serviceName}/remoteAccesses/createAndAuthorize | Creer + autoriser |
+| GET | /overTheBox (poll) | Polling acces distants |
+| GET | /overTheBox | Services enrichis |
+
+### 5.4 Endpoints Order
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /order/overTheBox/new | Durees disponibles |
+| GET | /order/overTheBox/new/{duration} | Details commande |
+| POST | /order/overTheBox/new/{duration} | Creer commande |
+| GET | /order/overTheBox/{serviceName}/migrate | Simulation migration |
+
+### 5.5 Endpoints IP
+
+| Methode | Endpoint | Params | Description |
+|---------|----------|--------|-------------|
+| GET | /ip | routedTo.serviceName, type=overthebox | IP publique |
+| GET | /ip/{ip}/reverse | - | Reverse DNS |
+
+### 5.6 Endpoints Me
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /me/payment/method | Moyens de paiement |
+
+### 5.7 Sequencement des appels
+
+#### Chargement page details
+
+```
+PARALLELE:
+├── GET /overTheBox/{sn}/serviceInfos
+├── GET /overTheBox/devices
+├── GET /overTheBox/{sn}/device
+├── GET /overTheBox/{sn}/tasks
+├── GET /overTheBox/{sn}
+├── GET /overTheBox/{sn}/device/hardware
+└── GET /overTheBox/{sn}/ips (Iceberg)
+
+PUIS:
+└── GET /overTheBox/{sn}/statistics?period=daily&metricsType=traffic
+
+EN PARALLELE (independant):
+├── GET /overTheBox/{sn}/availableReleaseChannels
+└── GET /overTheBox/{sn}/availableActions
+
+SI device.publicIp:
+├── GET /ip?routedTo.serviceName={sn}&type=overthebox
+└── GET /ip/{ip}/reverse
+```
+
+#### Activation IPv6
+
+```
+1. PUT /overTheBox/{sn}/ipv6 { enabled: true }
+   => Response: { taskId: xxx }
+
+2. POLLING (interval 500ms):
+   GET /overTheBox/{sn}/tasks/{taskId}
+   => Jusqu a status === 'done'
+```
+
+#### Creation acces distant
+
+```
+1. POST /overTheBox/{sn}/remoteAccesses/createAndAuthorize
+   Body: { allowedIp, exposedPort, expirationDate, publicKey }
+
+2. Rechargement liste via polling AAPI
+```
+
+#### Migration offre
+
+```
+1. GET /overTheBox/{sn}/migration/offers
+   => Liste offres avec hardwares
+
+2. GET /order/overTheBox/{sn}/migrate?offer=xxx&hardware=yyy
+   => Simulation avec prix
+
+3. POST /overTheBox/{sn}/migration/changeOffers
+   Body: { offer, hardwareName?, shippingContactID? }
+   => orderId, orderUrl
+```
+
+### 5.8 Types de donnees
+
+```typescript
+// Service OverTheBox
+interface OverTheBoxService {
+  serviceName: string;
+  customerDescription?: string;
+  status: ServiceStatus;
+  releaseChannel: string;
+  autoUpgrade: boolean;
+  prettyOfferName: string;
+  offer: string;
+  bandwidth: number;
+  ipv6Enabled: boolean;
+}
+
+type ServiceStatus = 
+  | 'active' 
+  | 'creating' 
+  | 'deleted' 
+  | 'toCreate' 
+  | 'toDelete';
+
+// Device
+interface Device {
+  deviceId: string;
+  activated: boolean;
+  lastSeen: string; // ISO 8601
+  publicIp: string;
+  networkInterfaces: NetworkInterface[];
+  availableUpdate: boolean;
+  systemVersion: string;
+  reverse?: string;
+}
+
+interface NetworkInterface {
+  name: string;
+  device?: string;
+  gateway?: string;
+}
+
+// Service Infos (facturation)
+interface ServiceInfos {
+  expiration: string;
+  renew: {
+    deleteAtExpiration: boolean;
+    undoDeleteAtExpiration?: boolean;
+  };
+  canDeleteAtExpiration: boolean;
+}
+
+// IP
+interface IP {
+  ip: string;
+  version: 4 | 6;
+  enabled?: boolean;
+}
+
+// Task
+interface Task {
+  taskId: number;
+  name: string;
+  status: TaskStatus;
+}
+
+type TaskStatus = 'todo' | 'doing' | 'done' | 'error';
+
+// Remote Access
+interface RemoteAccess {
+  remoteAccessId: string;
+  exposedPort: number;
+  status: RemoteStatus;
+  accepted: boolean;
+  authorizedBy?: string;
+  expirationDate?: string;
+  connectionInfos?: {
+    ip: string;
+    port: number;
+  };
+  remoteUserInfos?: {
+    ip: string;
+    publicKey?: string;
+  };
+}
+
+type RemoteStatus = 
+  | 'active' 
+  | 'creating' 
+  | 'deleted' 
+  | 'deleting' 
+  | 'pendingValidation' 
+  | 'toDelete';
+
+// Statistics
+interface Statistics {
+  name: string;
+  unit: string;
+  points: StatPoint[];
+  tags: StatTag[];
+}
+
+interface StatPoint {
+  timestamp: number;
+  value: number;
+}
+
+interface StatTag {
+  name: string;
+  value: string;
+}
+
+// Migration
+interface MigrationOffer {
+  offerName: string;
+  displayName: string;
+  currentOfferPrice: Price;
+  hardwares: Hardware[];
+}
+
+interface Hardware {
+  hardwareName: string;
+  hardwareDisplayName: string;
+  hardwarePrice?: Price;
+}
+
+interface Price {
+  value: number;
+  text: string;
+  currencyCode: string;
+}
+
+// Action
+interface DeviceAction {
+  actionId: string;
+  name: string;
+  status: TaskStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Remote creation request
+interface CreateRemoteRequest {
+  allowedIp?: string;
+  exposedPort: number;
+  expirationDate?: string;
+  publicKey?: string;
+}
+```
+
+### 5.9 Pagination Iceberg
+
+Pour endpoint /overTheBox/{sn}/ips :
+
+```javascript
+// Request
+iceberg('/overTheBox/{serviceName}/ips')
+  .query()
+  .expand('CachedObjectList-Pages')
+  .execute()
+
+// Headers automatiques
+'X-Pagination-Mode': 'CachedObjectList-Pages'
+```
+
+---
+
+## 6. TRADUCTIONS
+
+### 6.1 Namespace
+Prefixes utilises :
+- overTheBox_*
+- overthebox_*
+- order_overTheBox_*
+- over_the_box_onboarding_*
+
+### 6.2 Fichiers de traduction
+- Messages_fr_FR.json
+- Messages_en_GB.json
+- Messages_de_DE.json
+- Messages_es_ES.json
+- Messages_it_IT.json
+- Messages_pl_PL.json
+- Messages_pt_PT.json
+- Messages_fr_CA.json
+
+### 6.3 Cles principales (FR)
+
+#### Navigation et titres
+```json
+{
+  "overTheBox_page_title": "Mon OverTheBox \"{{name}}\"",
+  "overTheBox_title": "Over The Box",
+  "overTheBox_back": "Retour",
+  "overTheBox_tabs_detail": "Mon OverTheBox",
+  "overTheBox_tabs_remote": "Acces a distance",
+  "overTheBox_tabs_tasks": "Taches",
+  "overTheBox_tabs_logs": "Logs",
+  "overTheBox_tabs_actions": "Actions"
+}
+```
+
+#### Informations generales
+```json
+{
+  "overthebox_general_information": "Informations generales",
+  "overthebox_device": "Peripherique",
+  "overthebox_caracteristics": "Caracteristiques",
+  "overthebox_traffic": "Debit",
+  "overthebox_traffic_download": "Download",
+  "overthebox_traffic_upload": "Upload",
+  "overTheBox_device_state": "Etat du peripherique :",
+  "overTheBox_billing_date": "Prochaine facturation :",
+  "overTheBox_expiration_date": "Prochaine facturation :",
+  "overTheBox_offer_name": "Offre du service",
+  "overTheBox_service_id": "Identifiant du service :",
+  "overTheBox_deviceId": "Identifiant du peripherique :",
+  "overTheBox_publicIp": "Adresse IP publique",
+  "overTheBox_reverse_dns": "Reverse DNS",
+  "overTheBox_version_system": "Version du systeme d exploitation",
+  "overTheBox_model_device": "Modele du peripherique",
+  "overTheBox_detail_bandwidth": "Bande passante maximum",
+  "overTheBox_detail_ips": "IPs",
+  "overTheBox_last_seen": "Derniere connexion du peripherique"
+}
+```
+
+#### Statuts
+```json
+{
+  "overTheBox_status": "Statut :",
+  "overTheBox_status_active": "Actif",
+  "overTheBox_status_creating": "En cours de creation ...",
+  "overTheBox_status_deleted": "Supprime",
+  "overTheBox_status_toCreate": "A creer",
+  "overTheBox_status_toDelete": "A supprimer",
+  "overTheBox_status_true": "Active",
+  "overTheBox_status_false": "Desactive"
+}
+```
+
+#### Actions
+```json
+{
+  "overTheBox_action_reboot_label": "Redemarrer",
+  "overTheBox_action_update_label": "Mettre a jour",
+  "overTheBox_action_sysupgrade_title": "Effectuer la mise a jour du systeme",
+  "overTheBox_action_sysupgrade_label": "Entraine une reinstallation, un redemarrage de la machine avec une sauvegarde de votre configuration.",
+  "overTheBox_action_launch_success": "L action a distance a ete transmise a votre appareil avec succes. Cette action peut prendre quelques minutes.",
+  "overTheBox_action_launch_error": "L action a distance n a pas pu etre executee par votre appareil. Veuillez recommencer.",
+  "overTheBox_authorize_autoupgrade": "Autoriser les mises a jour automatiques la nuit"
+}
+```
+
+#### Device
+```json
+{
+  "overTheBox_device_not_linked": "Aucun peripherique n est attache a votre service.",
+  "overTheBox_device_not_linked_infos": "Pour continuer, vous devez attacher un peripherique a votre service.",
+  "overTheBox_device_link": "Attacher le peripherique",
+  "overTheBox_link_device_confirm": "Voulez-vous attacher votre service a ce peripherique ?",
+  "overTheBox_link_device_success": "Le peripherique a ete attache a votre service.",
+  "overTheBox_change_device": "Attacher a un autre peripherique",
+  "overTheBox_deviceId_unlink": "Dissocier",
+  "overTheBox_confirm_unlink_device": "Ce peripherique ne pourra plus se connecter ce service, en etes-vous sur?",
+  "overTheBox_unlink_device_success": "Votre peripherique a ete dissocie avec succes.",
+  "overTheBox_unlink_device_error": "Nous n avons pas pu dissocier le peripherique : {{errorMessage}}"
+}
+```
+
+#### Resiliation
+```json
+{
+  "overTheBox_resiliate": "Resilier",
+  "overTheBox_cancel_resiliation": "Annuler la resiliation",
+  "overTheBox_resiliation_confirm": "Voulez-vous resilier le service OverTheBox <strong>{{service}}</strong> (La resiliation sera effective le {{date}}) ?",
+  "overTheBox_resiliation_success": "Le service {{service}} sera resilie le {{date}}.",
+  "overTheBox_resiliation_error": "Oups ! Nous n avons pas pu resilier le service {{service}}.",
+  "overTheBox_cancel_resiliation_success": "La resiliation de votre service {{service}} vient d etre annulee.",
+  "overTheBox_expiration_warning": "Le service expire le {{date}}.",
+  "overTheBox_expiration_warning_help": "Vous pouvez annuler la resiliation avant la date d expiration."
+}
+```
+
+#### Acces distant
+```json
+{
+  "overTheBox_remote": "Acces a distance",
+  "overTheBox_remote_configure": "Configurer l acces a distance",
+  "overTheBox_remote_add": "Ajouter un acces a distance",
+  "overTheBox_remote_table_id": "IP",
+  "overTheBox_remote_table_port": "Port",
+  "overTheBox_remote_table_status": "Statut",
+  "overTheBox_remote_table_authorized_by": "Autorise par",
+  "overTheBox_remote_table_expire": "Expiration",
+  "overTheBox_remote_table_empty": "Aucun acces a distance enregistre.",
+  "overTheBox_remote_add_allowedIp": "IP autorisee :",
+  "overTheBox_remote_add_exposedPort": "Port expose (443, 22, ...) :",
+  "overTheBox_remote_add_expirationDate": "Date d expiration :",
+  "overTheBox_remote_add_publicKey": "Clef publique :",
+  "overTheBox_remote_element_added": "Nouvel acces a distance ajoute.",
+  "overTheBox_remote_element_deleted": "Acces a distance en cours de suppression...",
+  "overTheBox_remote_authorized": "Acces a distance autorise sur le port {{port}}.",
+  "overTheBox_remote_error_no_contact": "Impossible de creer un acces a distance. Votre OverTheBox est muette depuis plus de 10 minutes."
+}
+```
+
+#### Migration
+```json
+{
+  "overthebox_migration_title": "Changement d offre",
+  "overthebox_migration_offers_title": "Choix de l offre",
+  "overthebox_migration_current_offer": "Offre actuelle : {{offerName}}",
+  "overthebox_migration_monthly_subscription": "Abonnement mensuel",
+  "overthebox_migration_hardware": "Boitier",
+  "overthebox_migration_hardware_yes": "Je souhaite prendre un nouveau boitier {{ deviceName }} ({{ price }} HT) *",
+  "overthebox_migration_hardware_no": "Je ne souhaite pas de boitier",
+  "overthebox_migration_choose_offer_action": "Selectionner",
+  "overthebox_migration_contact_title": "Livraison",
+  "overthebox_migration_summary_title": "Resume du changement d offre",
+  "overthebox_migration_summary_apply_change_offer": "Valider le changement d offre",
+  "overTheBox_change_offer": "Changer d offre"
+}
+```
+
+#### Taches
+```json
+{
+  "overTheBox_tasks_list": "Liste des taches",
+  "overTheBox_tasks_id": "ID",
+  "overTheBox_tasks_name": "Nom",
+  "overTheBox_tasks_status": "Statut",
+  "overTheBox_no_task": "Aucune tache",
+  "overTheBox_tasks_status_todo": "A faire",
+  "overTheBox_tasks_status_doing": "En cours",
+  "overTheBox_tasks_status_done": "Terminee",
+  "overTheBox_tasks_status_error": "Erreur"
+}
+```
+
+#### Logs
+```json
+{
+  "overTheBox_logs_title": "Logs de mon OverTheBox",
+  "overTheBox_logs_no_logs": "Aucun message",
+  "overTheBox_logs_breadcrumb": "Logs"
+}
+```
+
+#### Onboarding
+```json
+{
+  "over_the_box_onboarding_title": "OverTheBox",
+  "over_the_box_onboarding_description": "Securisez votre acces a Internet et augmentez votre debit.",
+  "over_the_box_onboarding_order": "Decouvrir",
+  "over_the_box_onboarding_guide1_title": "Installation OverTheBox Plus ou IT v2",
+  "over_the_box_onboarding_guide2_title": "Configurer votre propre serveur DNS",
+  "over_the_box_onboarding_guide3_title": "FAQ OverTheBox"
+}
+```
+
+#### Graphiques
+```json
+{
+  "overTheBox_graph_filter_last5min": "Les dernieres 5 min",
+  "overTheBox_graph_filter_lastHour": "La derniere heure",
+  "overTheBox_graph_filter_last24Hour": "Les dernieres 24 h",
+  "overTheBox_graph_filter_lastWeek": "La derniere semaine",
+  "overTheBox_graph_filter_lastMonth": "Le dernier mois",
+  "overTheBox_statistics_bits_per_sec_legend": "bits/s",
+  "overthebox_traffic_error": "Oups! Nous n avons pas pu recuperer les informations de debit."
+}
+```
+
+#### Erreurs et validations
+```json
+{
+  "an_error_occured": "Une erreur est survenue.",
+  "overTheBox_remote_add_allowedIp_error": "L adresse IP n est pas correcte.",
+  "overTheBox_remote_add_exposedPort_error": "Le port est invalide.",
+  "overTheBox_remote_add_expirationDate_error": "La date d expiration est invalide.",
+  "overTheBox_remote_add_expirationDate_error_future": "Specifiez une date future.",
+  "overTheBox_remote_add_publicKey_error": "Une clef publique est obligatoire sur le port 22.",
+  "overTheBox_enabled_ipv6_error": "Une erreur a eu lieu pendant l activation de l IPv6 :"
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### 7.1 Statuts et transitions service
+
+| Statut | Description | Actions UI |
+|--------|-------------|------------|
+| active | Service actif | Toutes actions disponibles |
+| creating | En cours de creation | Lecture seule |
+| toCreate | A creer | Lecture seule |
+| toDelete | Resiliation programmee | Annuler resiliation |
+| deleted | Supprime | Aucune |
+
+### 7.2 Conditions de resiliation
+
+```javascript
+// Peut resilier si:
+canResiliate() {
+  return !renew.deleteAtExpiration 
+      && !renew.undoDeleteAtExpiration 
+      && serviceInfos.canDeleteAtExpiration;
+}
+
+// Peut annuler si:
+canCancelResiliation() {
+  return renew.deleteAtExpiration 
+      && !renew.undoDeleteAtExpiration;
+}
+```
+
+### 7.3 Edition du nom service
+
+```javascript
+// Editable uniquement si service actif
+nameEditable = service.status === 'active';
+```
+
+### 7.4 Acces distant
+
+#### Limites
+```javascript
+maxRemotes = 10; // Maximum 10 acces distants
+```
+
+#### Validation formulaire
+```javascript
+// IP autorisee (optionnel)
+isIpValid(ip) {
+  return !ip || TucIpAddress.isValidIp(ip);
+}
+
+// Port (obligatoire, entier)
+validator.isInt(exposedPort);
+
+// Date expiration (optionnel, doit etre future)
+isInFuture(when) {
+  return !when || moment(when).isAfter(new Date());
+}
+
+// Cle publique obligatoire sur port 22
+if (exposedPort === 22 && !publicKey) {
+  error = 'overTheBox_remote_add_publicKey_error';
+}
+```
+
+#### Statuts acces
+| Statut | Icone | Actions |
+|--------|-------|---------|
+| active | ovh-font-success | Supprimer |
+| creating | spinner | - |
+| pendingValidation | ovh-font-key | Autoriser, Supprimer |
+| toDelete | ovh-font-failure | - |
+| deleted | ovh-font-failure | - |
+
+### 7.5 Device
+
+#### Pattern UUID
+```javascript
+deviceIdPattern = /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/;
+```
+
+#### Last seen recent
+```javascript
+// Recent si < 5 minutes
+const LAST_SEEN_LIMIT = 5; // minutes
+lastSeenAccess.isRecent = diffDate < LAST_SEEN_LIMIT;
+```
+
+#### Detection interfaces KPI
+```javascript
+// Interfaces pour graphiques = celles avec gateway
+kpiInterfaces = device.networkInterfaces
+  .filter(ni => ni.gateway != null)
+  .map(ni => ni.device ?? ni.name);
+```
+
+### 7.6 Graphiques
+
+#### Periodes
+```javascript
+period = {
+  daily: 'daily',
+  hourly: 'hourly',
+  monthly: 'monthly',
+  weekly: 'weekly'
+};
+```
+
+#### Types metriques
+```javascript
+type = {
+  traffic: 'traffic',
+  memory_free: 'memory_free',
+  load: 'load'
+};
+```
+
+#### Conversion debit
+```javascript
+const CONVERT_TO_MBPS = 104857.6;
+const CONVERT_TO_KBPS = 102.4;
+
+// Valeurs negatives = 0
+makeGraphPositive(graph) {
+  forEach(Object.keys(graph.dps), (key) => {
+    graph.dps[key] = graph.dps[key] < 0 ? 0 : graph.dps[key];
+  });
+}
+```
+
+### 7.7 Migration offre
+
+#### Etapes
+```javascript
+STEPS = {
+  offers: 'offers',   // 1. Choix offre
+  contact: 'contact', // 2. Contact livraison (si hardware)
+  summary: 'summary'  // 3. Resume et validation
+};
+
+NO_HARDWARE = 'no';
+```
+
+#### Flux
+```
+1. Selectionner offre
+   |
+   +-> Si hardware selectionne
+   |     -> Etape contact livraison
+   |     -> Etape resume
+   |
+   +-> Si pas de hardware ("no")
+         -> Etape resume directement
+```
+
+### 7.8 Commande nouveau service
+
+#### Pre-requis
+- Moyen de paiement enregistre
+- Verification via GET /me/payment/method
+
+#### Detection devices orphelins
+```javascript
+// Propose lier si:
+// - Devices detectes sur reseau
+// - Services sans device attache
+proposeLinkDevice = devices.length > 0 && unlinkedServices.length > 0;
+```
+
+### 7.9 URLs externes
+
+```javascript
+CORE_URLS = {
+  orderExpressLite: 'https://www.ovhtelecom.fr/overthebox/',
+  orderBoost: '...',
+  keyGenHelp: '...' // Aide generation cle SSH
+};
+
+guidesUrl = {
+  fr: 'https://docs.ovh.com/fr/overthebox/'
+};
+```
+
+### 7.10 Configuration graphiques Chart.js
+
+```javascript
+chartConfig = {
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        display: true
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false
+      }
+    },
+    elements: {
+      line: { tension: 0.5 },
+      point: { radius: 0 }
+    },
+    scales: {
+      x: {
+        type: 'time',
+        position: 'bottom',
+        grid: { drawBorder: true, display: false }
+      },
+      y: {
+        display: true,
+        position: 'left',
+        title: { display: true },
+        grid: { drawBorder: true, display: false }
+      }
+    }
+  }
+};
+```
+
+---
+
+## 8. ETATS VISUELS
+
+### 8.1 Loading states
+
+| Contexte | Variable | Composant |
+|----------|----------|-----------|
+| Init page | loaders.init | oui-spinner centre |
+| Device | loaders.device | oui-spinner |
+| Graphiques | loaders.graph | oui-spinner dans tile |
+| Service infos | loaders.infos | - |
+| Taches | loaders.tasks | - |
+| IPv6 update | loaders.ipv6Update | oui-spinner |
+| Resiliation | loaders.resiliating | disabled button |
+| Remote add | adding | disabled form |
+
+### 8.2 Error states
+
+| Erreur | Affichage |
+|--------|-----------|
+| error.noDeviceLinked | Warning template |
+| error.ipv6Update | oui-message error dismissable |
+| error.checking | Toast error |
+
+### 8.3 Empty states
+
+| Contexte | Message |
+|----------|---------|
+| Aucun service | Page onboarding |
+| Aucun device | Template warning |
+| Aucune tache | overTheBox_no_task |
+| Aucun remote | overTheBox_remote_table_empty |
+
+### 8.4 Warning states
+
+| Condition | Template |
+|-----------|----------|
+| Device non active | overTheBox-warning-notActivated.html |
+| Pas de device | overTheBox-warning-notFound.html |
+| Pas de paiement | overTheBox-warning-noPaymentMeans.html |
+| Pas de souscription | overTheBox-warning-noSubscription.html |
+| Device a lier | overTheBox-warning-deviceToLink.html |
+
+---
+
+## 9. ANNEXES
+
+### 9.1 Constantes
+
+```javascript
+// overTheBox.constant.js
+export default {
+  statistics: {
+    sampleRate: '5m-avg'
+  },
+  maxRemotes: 10,
+  local: 'local'
+};
+
+// overTheBox-details.constant.js
+export default {
+  lastSeen: { limit: 5 },
+  serviceIpStatus: {
+    unknown: 'unknown',
+    locked: 'locked',
+    warning: 'warning'
+  },
+  period: {
+    daily: 'daily',
+    hourly: 'hourly',
+    monthly: 'monthly',
+    weekly: 'weekly'
+  },
+  type: {
+    traffic: 'traffic',
+    memory_free: 'memory_free',
+    load: 'load'
+  },
+  guidesUrl: {
+    fr: 'https://docs.ovh.com/fr/overthebox/'
+  },
+  convertToMbps: 104857.6,
+  convertToKbps: 102.4,
+  pattern: /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/,
+  deprecated: '_deprecated',
+  version: 'v'
+};
+
+// overTheBox-actions.constant.js
+export const PAGINATION_PER_PAGE = 10;
+
+// overTheBox-remote.constant.js
+export default {
+  active: { class: 'ovh-font ovh-font-success active' },
+  creating: { class: 'ovh-font ovh-font-inprogress create' },
+  deleted: { class: 'ovh-font ovh-font-failure delete' },
+  deleting: { class: 'ovh-font ovh-font-failure delete' },
+  pendingValidation: { class: 'ovh-font ovh-font-key pending' },
+  toDelete: { class: 'ovh-font ovh-font-failure delete' }
+};
+
+// overTheBox-migration.constant.js
+export const STEPS = {
+  offers: 'offers',
+  contact: 'contact',
+  summary: 'summary'
+};
+export const NO_HARDWARE = 'no';
+export const ABOUT_OTB_SERVICE = 'https://www.ovhtelecom.fr/overthebox/';
+```
+
+### 9.2 Services injectes
+
+| Service | Usage |
+|---------|-------|
+| OvhApiOverTheBox | Wrapper API v6 + Aapi |
+| OvhApiOverTheBoxDevice | API device |
+| OvhApiIp | API IP |
+| OvhApiIpReverse | Reverse DNS |
+| OvhApiOrderOverTheBoxNew | API commande |
+| OvhApiPriceOverTheBoxOffer | Prix offres |
+| OvhApiMePaymentMean | Moyens paiement |
+| TucToast | Notifications |
+| TucToastError | Erreurs |
+| TucIpAddress | Validation IP |
+| tucValidator | Validations |
+| TailLogs | Logs streaming |
+| ChartFactory | Graphiques |
+| iceberg | Pagination |
+| $translate | i18n |
+| $q | Promises |
+| $http | HTTP client |
+| $interval | Polling |
+| $timeout | Timeouts |
+| $scope | Scope Angular |
+| $filter | Filtres |
+| $location | URL |
+| $anchorScroll | Scroll |
+
+### 9.3 Filtres utilises
+
+| Filtre | Usage |
+|--------|-------|
+| date | Formatage dates |
+| translate | Traductions |
+| limitTo | Truncation |
+| orderBy | Tri |
+| bandwidth | Conversion bande passante |
+| tuc-unit-humanize | Humanisation unites |
+
+### 9.4 Directives utilisees
+
+| Directive | Usage |
+|-----------|-------|
+| data-translate | Traduction inline |
+| data-translate-values | Parametres traduction |
+| data-translate-attr | Attributs traduits |
+| data-ng-if | Conditionnels |
+| data-ng-show/hide | Visibilite |
+| data-ng-class | Classes dynamiques |
+| data-ng-bind | Binding texte |
+| data-ng-click | Events click |
+| data-ng-model | Two-way binding |
+| data-ng-disabled | Desactivation |
+| data-ng-repeat | Iterations |
+| data-ng-include | Inclusion templates |
+| data-ng-really-click | Confirmation |
+| data-uib-tooltip | Tooltips |
+| data-uib-datepicker-popup | Datepicker |
+| data-ui-validate | Validation custom |
+
+---
+
+## FIN DU CAHIER DES CHARGES

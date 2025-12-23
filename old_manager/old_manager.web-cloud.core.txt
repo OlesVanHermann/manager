@@ -1,0 +1,1057 @@
+# CAHIER DES CHARGES - Module Web-Cloud Core
+# Source: old_manager_web-cloud_core.tar
+# Généré le: 2025-12-21
+# Framework: AngularJS 1.7.x → React 18+
+
+================================================================================
+SECTION 1 - RÉSUMÉ EXÉCUTIF
+================================================================================
+
+## 1.1 Périmètre
+
+Ce module couvre l'ensemble des fonctionnalités **Web-Cloud** du Manager OVHcloud :
+
+| Module | Description | Sous-modules |
+|--------|-------------|--------------|
+| **domain** | Gestion noms de domaine | DNS, Zone, DNSSEC, Glue, DynHost, Redirections |
+| **hosting** | Hébergement web mutualisé | Multisite, Database, FTP, Cron, SSL, CDN, Modules |
+| **dns-zone** | Zones DNS autonomes | Records, History, DynHost, Tasks |
+| **private-database** | CloudDB | Databases, Users, Whitelist, Logs, Metrics |
+| **domains** | Liste/bulk domaines | Export CSV, Bulk actions |
+| **domain-operation** | Opérations domaines | Tasks, Transfers |
+
+## 1.2 Statistiques
+
+- **1795 fichiers** analysés (JS, HTML, JSON, TS)
+- **434 répertoires**
+- **634 endpoints API** uniques détectés
+- **223 fichiers sources** contenant des appels API
+
+## 1.3 Utilisateurs cibles
+
+- Propriétaires de noms de domaine
+- Webmasters gérant des hébergements mutualisés
+- Administrateurs de zones DNS
+- Développeurs utilisant des bases de données CloudDB
+
+================================================================================
+SECTION 2 - ARCHITECTURE
+================================================================================
+
+## 2.1 Stack technique source
+
+| Élément | Technologie |
+|---------|-------------|
+| Framework | AngularJS 1.7.x |
+| UI Kit | @ovh-ux/ui-kit (OUI) |
+| API Wrapper | @ovh-ux/ng-ovh-http + OvhHttp |
+| State Management | UI-Router (états imbriqués) |
+| Traductions | angular-translate (JSON) |
+| CSS | Less + SCSS + OUI classes |
+| Build | Webpack |
+
+## 2.2 Stack technique cible (React)
+
+| Élément | Technologie |
+|---------|-------------|
+| Framework | React 18+ |
+| UI Kit | @ovhcloud/ods-react (ODS) |
+| API | @tanstack/react-query + @ovh-ux/manager-core-api |
+| State Management | React Router v6 + Context |
+| Traductions | react-i18next |
+| CSS | Tailwind CSS + ODS tokens |
+| Build | Vite |
+
+## 2.3 Arborescence source
+
+```
+packages/manager/apps/web/client/app/
+├── app.module.js                    # Module principal Angular
+├── app.routes.js                    # Routes racine
+├── constants.js                     # Constantes globales
+├── config/                          # Configuration
+├── components/                      # Composants partagés
+│   ├── alldom/                      # Service AllDom
+│   ├── cron/                        # Composant cron
+│   └── service-status/              # Statut service
+├── domain/                          # Module Domain (27 sous-dossiers)
+├── domains/                         # Liste domaines
+├── dns-zone/                        # Module DNS Zone (11 sous-dossiers)
+├── hosting/                         # Module Hosting (29 sous-dossiers)
+├── private-database/                # Module CloudDB (17 sous-dossiers)
+├── domain-operation/                # Opérations domaines
+└── error-page/                      # Page erreur
+```
+
+## 2.4 Arborescence cible proposée (React)
+
+```
+src/pages/web-cloud/
+├── domain/
+│   ├── DomainListPage.tsx
+│   ├── DomainDashboardPage.tsx
+│   ├── components/
+│   ├── hooks/
+│   └── api/
+├── hosting/
+│   ├── HostingListPage.tsx
+│   ├── HostingDashboardPage.tsx
+│   ├── components/
+│   ├── hooks/
+│   └── api/
+├── dns-zone/
+└── private-database/
+```
+
+================================================================================
+SECTION 3 - PAGES & NAVIGATION
+================================================================================
+
+## 3.1 Routes Domain
+
+| État | URL | Description |
+|------|-----|-------------|
+| app.domain.index | /domain | Liste des domaines |
+| app.domain.product | /domain/:productId | Dashboard domaine |
+| app.domain.product.information | /domain/:id/information | Infos générales |
+| app.domain.product.dns | /domain/:id/dns | Config DNS |
+| app.domain.product.zone | /domain/:id/zone | Zone DNS |
+| app.domain.product.dnssec | /domain/:id/dnssec | DNSSEC |
+| app.domain.product.glue | /domain/:id/glue | Glue records |
+| app.domain.product.dynhost | /domain/:id/dynhost | DynHost |
+| app.domain.product.redirection | /domain/:id/redirection | Redirections |
+| app.domain.product.tasks | /domain/:id/tasks | Tâches |
+| app.domain.product.anycast | /domain/:id/dns-anycast | DNS Anycast |
+| app.domain.product.contact | /domain/:id/contact-management | Contacts |
+| app.domain.product.optin | /domain/:id/optin | Opt-in WHOIS |
+
+## 3.2 Routes Hosting
+
+| État | URL | Description |
+|------|-----|-------------|
+| app.hosting.index | /hosting | Liste hébergements |
+| app.hosting.product | /hosting/:productId | Dashboard |
+| app.hosting.product.multisite | /hosting/:id/multisite | Multisites |
+| app.hosting.product.database | /hosting/:id/database | Bases de données |
+| app.hosting.product.ftp | /hosting/:id/ftp | FTP |
+| app.hosting.product.cron | /hosting/:id/cron | Tâches cron |
+| app.hosting.product.module | /hosting/:id/module | Modules CMS |
+| app.hosting.product.ssl | /hosting/:id/ssl | SSL |
+| app.hosting.product.cdn | /hosting/:id/cdn | CDN |
+| app.hosting.product.statistics | /hosting/:id/statistics | Stats |
+| app.hosting.product.envvars | /hosting/:id/envvars | Variables env |
+| app.hosting.product.runtimes | /hosting/:id/runtimes | Runtimes |
+| app.hosting.product.boost | /hosting/:id/boost | Boost |
+| app.hosting.product.task | /hosting/:id/task | Tâches |
+| app.hosting.product.automated-emails | /hosting/:id/automated-emails | Emails auto |
+| app.hosting.product.local-seo | /hosting/:id/localSeo | LocalSEO |
+
+## 3.3 Routes DNS-Zone
+
+| État | URL | Description |
+|------|-----|-------------|
+| app.dns-zone.zones | /dns-zone | Liste zones |
+| app.dns-zone.zone | /dns-zone/:productId | Dashboard zone |
+| app.dns-zone.zone.dashboard | /dns-zone/:id/zone | Zone records |
+| app.dns-zone.zone.dynhost | /dns-zone/:id/dynhost | DynHost |
+| app.dns-zone.zone.history | /dns-zone/:id/zone-history | Historique |
+| app.dns-zone.zone.tasks | /dns-zone/:id/tasks | Tâches |
+| app.dns-zone.new | /dns-zone/new | Nouvelle zone |
+
+## 3.4 Routes Private Database
+
+| État | URL | Description |
+|------|-----|-------------|
+| app.private-database.index | /private_database | Liste CloudDB |
+| app.private-database.product | /private_database/:productId | Dashboard |
+| app.private-database.product.database | /private_database/:id/database | Bases |
+| app.private-database.product.user | /private_database/:id/user | Utilisateurs |
+| app.private-database.product.whitelist | /private_database/:id/allowedIps | IPs |
+| app.private-database.product.logs | /private_database/:id/logs | Logs |
+| app.private-database.product.metrics | /private_database/:id/metrics | Métriques |
+| app.private-database.product.task | /private_database/:id/task | Tâches |
+| app.private-database.product.configuration | /private_database/:id/configuration | Config |
+
+## 3.5 Breadcrumb
+
+```
+Domain: Accueil > Web Cloud > Noms de domaine > example.com > Zone DNS
+Hosting: Accueil > Web Cloud > Hébergements > monsite > Multisite
+DNS Zone: Accueil > Web Cloud > Zone DNS > example.com > Historique
+CloudDB: Accueil > Web Cloud > CloudDB > sqlprive-xxx > Bases
+```
+
+================================================================================
+SECTION 4 - COMPOSANTS UI
+================================================================================
+
+## 4.1 Mapping composants AngularJS → React ODS
+
+| AngularJS (OUI) | React (ODS) |
+|-----------------|-------------|
+| oui-button | OdsButton |
+| oui-spinner | OdsSpinner |
+| oui-message | OdsMessage |
+| oui-modal | OdsModal |
+| oui-field | OdsFormField |
+| oui-input | OdsInput |
+| oui-select | OdsSelect |
+| oui-checkbox | OdsCheckbox |
+| oui-radio | OdsRadio |
+| oui-textarea | OdsTextarea |
+| oui-switch | OdsToggle |
+| oui-clipboard | OdsClipboard |
+| oui-tooltip | OdsTooltip |
+| oui-icon | OdsIcon |
+| oui-tile | OdsTile |
+| oui-header-tabs | OdsTabs |
+| oui-back-button | OdsLink + icône |
+| oui-progress | OdsProgressBar |
+| oui-skeleton | OdsSkeleton |
+| oui-datagrid | Datagrid (manager-react-components) |
+
+## 4.2 Composants manager-react-components
+
+| Composant | Usage |
+|-----------|-------|
+| Datagrid | Tableaux paginés avec tri/filtre |
+| DashboardTile | Tuile dashboard |
+| Description | Description avec label/value |
+| Notifications | Container notifications |
+| GuideButton | Bouton vers documentation |
+
+================================================================================
+SECTION 5 - APIs & DONNÉES
+================================================================================
+
+## 5.1 Configuration API
+
+### URLs par région
+
+| Région | APIv6 | 2API |
+|--------|-------|------|
+| EU | https://www.ovh.com/engine/apiv6 | https://www.ovh.com/engine/2api-m |
+| CA | https://ca.ovh.com/engine/apiv6 | https://ca.ovh.com/engine/2api-m |
+| US | https://us.ovhcloud.com/engine/apiv6 | https://us.ovhcloud.com/engine/2api-m |
+
+## 5.2 Endpoints Domain
+
+### Liste et informations
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /domain | Liste tous les domaines |
+| GET | /domain/{domain} | Détails du domaine |
+| PUT | /domain/{domain} | Modifier le domaine |
+| GET | /domain/{domain}/serviceInfos | Infos service |
+| GET | /domain/{domain}/authInfo | Code de transfert |
+
+### Serveurs DNS
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /domain/{domain}/nameServer | Liste serveurs DNS |
+| POST | /domain/{domain}/nameServer | Ajouter serveur DNS |
+| DELETE | /domain/{domain}/nameServer/{id} | Supprimer serveur DNS |
+| GET | /domain/{domain}/nameServer/{id}/status | Statut serveur DNS |
+| POST | /domain/{domain}/nameServers/update | Modifier liste DNS |
+
+### DNSSEC
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /domain/{domain}/dsRecord | Liste records DS |
+| POST | /domain/{domain}/dsRecord | Ajouter record DS |
+| DELETE | /domain/{domain}/dsRecord/{id} | Supprimer record DS |
+
+### Glue Records
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /domain/{domain}/glueRecord | Liste glue records |
+| POST | /domain/{domain}/glueRecord | Ajouter glue record |
+| DELETE | /domain/{domain}/glueRecord/{host} | Supprimer glue record |
+| POST | /domain/{domain}/glueRecord/{host}/update | Modifier glue record |
+
+### Tâches
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /domain/{domain}/task | Liste tâches |
+| GET | /domain/{domain}/task/{id} | Détails tâche |
+
+## 5.3 Endpoints Zone DNS
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /domain/zone | Liste zones |
+| GET | /domain/zone/{zone} | Détails zone |
+| GET | /domain/zone/{zone}/capabilities | Capacités zone |
+| GET | /domain/zone/{zone}/status | Statut zone |
+| GET | /domain/zone/{zone}/soa | Record SOA |
+| PUT | /domain/zone/{zone}/soa | Modifier SOA |
+| GET | /domain/zone/{zone}/dnssec | Statut DNSSEC |
+| GET | /domain/zone/{zone}/export | Exporter zone |
+| POST | /domain/zone/{zone}/import | Importer zone |
+| POST | /domain/zone/{zone}/refresh | Rafraîchir zone |
+| POST | /domain/zone/{zone}/reset | Réinitialiser zone |
+| POST | /domain/zone/{zone}/terminate | Supprimer zone |
+| GET | /domain/zone/{zone}/record | Liste records |
+| POST | /domain/zone/{zone}/record | Ajouter record |
+| GET | /domain/zone/{zone}/record/{id} | Détails record |
+| PUT | /domain/zone/{zone}/record/{id} | Modifier record |
+| DELETE | /domain/zone/{zone}/record/{id} | Supprimer record |
+| GET | /domain/zone/{zone}/dynHost/login | Liste logins DynHost |
+| POST | /domain/zone/{zone}/dynHost/login | Créer login |
+| GET | /domain/zone/{zone}/dynHost/record | Liste records DynHost |
+| POST | /domain/zone/{zone}/dynHost/record | Créer record |
+| GET | /domain/zone/{zone}/history | Liste historique |
+| POST | /domain/zone/{zone}/history/{date}/restore | Restaurer version |
+
+## 5.4 Endpoints Hosting
+
+### Liste et informations
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web | Liste hébergements |
+| GET | /hosting/web/{serviceName} | Détails hébergement |
+| PUT | /hosting/web/{serviceName} | Modifier hébergement |
+| GET | /hosting/web/{serviceName}/serviceInfos | Infos service |
+| GET | /hosting/web.json | Modèles API |
+
+### Multisite
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/{svc}/attachedDomain | Liste multisites |
+| POST | /hosting/web/{svc}/attachedDomain | Ajouter multisite |
+| GET | /hosting/web/{svc}/attachedDomain/{domain} | Détails multisite |
+| PUT | /hosting/web/{svc}/attachedDomain/{domain} | Modifier multisite |
+| DELETE | /hosting/web/{svc}/attachedDomain/{domain} | Supprimer multisite |
+
+### Bases de données
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/{svc}/database | Liste BDD |
+| POST | /hosting/web/{svc}/database | Créer BDD |
+| GET | /hosting/web/{svc}/database/{name} | Détails BDD |
+| DELETE | /hosting/web/{svc}/database/{name} | Supprimer BDD |
+| POST | /hosting/web/{svc}/database/{name}/changePassword | Changer mot de passe |
+| GET | /hosting/web/{svc}/database/{name}/dump | Liste dumps |
+| POST | /hosting/web/{svc}/database/{name}/dump | Créer dump |
+| POST | /hosting/web/{svc}/database/{name}/dump/{id}/restore | Restaurer dump |
+| POST | /hosting/web/{svc}/database/{name}/import | Importer BDD |
+| GET | /hosting/web/{svc}/databaseCreationCapabilities | Capacités création |
+
+### Utilisateurs FTP
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/{svc}/user | Liste utilisateurs |
+| POST | /hosting/web/{svc}/user | Créer utilisateur |
+| GET | /hosting/web/{svc}/user/{login} | Détails utilisateur |
+| PUT | /hosting/web/{svc}/user/{login} | Modifier utilisateur |
+| DELETE | /hosting/web/{svc}/user/{login} | Supprimer utilisateur |
+| POST | /hosting/web/{svc}/user/{login}/changePassword | Changer mot de passe |
+
+### Tâches Cron
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/{svc}/cron | Liste crons |
+| POST | /hosting/web/{svc}/cron | Créer cron |
+| GET | /hosting/web/{svc}/cron/{id} | Détails cron |
+| PUT | /hosting/web/{svc}/cron/{id} | Modifier cron |
+| DELETE | /hosting/web/{svc}/cron/{id} | Supprimer cron |
+| GET | /hosting/web/{svc}/cronAvailableLanguage | Langages disponibles |
+
+### Modules CMS
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/moduleList | Liste modules disponibles |
+| GET | /hosting/web/{svc}/module | Modules installés |
+| POST | /hosting/web/{svc}/module | Installer module |
+| DELETE | /hosting/web/{svc}/module/{id} | Supprimer module |
+
+### SSL
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/{svc}/ssl | Infos SSL |
+| POST | /hosting/web/{svc}/ssl | Commander SSL |
+| DELETE | /hosting/web/{svc}/ssl | Supprimer SSL |
+| POST | /hosting/web/{svc}/ssl/regenerate | Régénérer SSL |
+
+### CDN
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/{svc}/cdn | Infos CDN |
+| GET | /hosting/web/{svc}/cdn/domain | Domaines CDN |
+| POST | /hosting/web/{svc}/cdn/domain/{domain}/purge | Purger cache |
+| POST | /hosting/web/{svc}/cdn/terminate | Résilier CDN |
+
+### Runtimes & Envvars
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/{svc}/runtime | Liste runtimes |
+| POST | /hosting/web/{svc}/runtime | Créer runtime |
+| GET | /hosting/web/{svc}/envVar | Liste variables |
+| POST | /hosting/web/{svc}/envVar | Créer variable |
+
+### Git Integration
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/web/{svc}/website | Liste websites |
+| POST | /hosting/web/{svc}/website | Créer website |
+| POST | /hosting/web/{svc}/website/{id}/deploy | Déployer |
+| GET | /hosting/web/{svc}/key/ssh | Liste clés SSH |
+
+## 5.5 Endpoints Private Database
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /hosting/privateDatabase | Liste CloudDB |
+| GET | /hosting/privateDatabase/{svc} | Détails CloudDB |
+| PUT | /hosting/privateDatabase/{svc} | Modifier CloudDB |
+| GET | /hosting/privateDatabase/{svc}/config | Configuration |
+| POST | /hosting/privateDatabase/{svc}/config/update | Modifier config |
+| GET | /hosting/privateDatabase/{svc}/database | Liste bases |
+| GET | /hosting/privateDatabase/{svc}/user/{user} | Détails utilisateur |
+| GET | /hosting/privateDatabase/{svc}/webs | Hébergements liés |
+| GET | /hosting/privateDatabase/{svc}/log/kind | Types de logs |
+| GET | /hosting/privateDatabase/{svc}/metricsToken | Token métriques |
+
+## 5.6 Endpoints 2API (SWS)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /sws/domain/{domain} | Infos agrégées domaine |
+| GET | /sws/domain/{domain}/zone/records | Records zone agrégés |
+| GET | /sws/domains | Liste domaines agrégée |
+| GET | /sws/domains/dnssec | DNSSEC bulk |
+| GET | /sws/hosting/web/{svc} | Infos agrégées hosting |
+| GET | /sws/hosting/web/{svc}/databases | BDD agrégées |
+| GET | /sws/hosting/web/{svc}/ftp | FTP agrégé |
+
+## 5.7 Endpoints Me (Compte)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /me/contact/{contactId} | Détails contact |
+| GET | /me/task/domain | Tâches domaine |
+| GET | /me/task/domain/{id} | Détails tâche |
+| POST | /me/task/domain/{id}/accelerate | Accélérer tâche |
+| POST | /me/task/domain/{id}/cancel | Annuler tâche |
+| POST | /me/task/domain/{id}/relaunch | Relancer tâche |
+| GET | /me/order/{orderId}/status | Statut commande |
+
+## 5.8 Pagination Iceberg
+
+### Headers de requête
+```
+X-Pagination-Mode: CachedObjectList-Pages
+X-Pagination-Size: 25
+X-Pagination-Number: 1
+X-Pagination-Sort: domain
+X-Pagination-Sort-Order: ASC
+```
+
+### Headers de réponse
+```
+X-Pagination-Elements: 150 (total)
+X-Pagination-Number: 1 (page actuelle)
+X-Pagination-Size: 25 (taille page)
+```
+
+## 5.9 Types TypeScript
+
+### Domain
+```typescript
+interface Domain {
+  domain: string;
+  whoisOwner: string;
+  lastUpdate: string;
+  transferLockStatus: 'locked' | 'unlocked' | 'locking' | 'unlocking';
+  owoSupported: boolean;
+  dnssecSupported: boolean;
+  nameServerType: 'hosted' | 'external' | 'mixed' | 'parking' | 'empty';
+  offer: 'gold' | 'platinum' | 'diamond';
+}
+
+interface DomainServiceInfo {
+  domain: string;
+  serviceId: number;
+  creation: string;
+  expiration: string;
+  contactAdmin: string;
+  contactTech: string;
+  contactBilling: string;
+  status: 'ok' | 'expired' | 'restorable' | 'deleted' | 
+          'pending_delete' | 'pending_installation' | 
+          'pending_incoming_transfer' | 'pending_outgoing_transfer' | 'dispute';
+}
+
+interface NameServer {
+  id: number;
+  host: string;
+  ip?: string;
+  isUsed: boolean;
+  toDelete: boolean;
+}
+
+interface DsRecord {
+  id: number;
+  keyTag: number;
+  algorithm: number;
+  digestType: number;
+  digest: string;
+  flags: number;
+  status: 'disabled' | 'disableInProgress' | 'enabled' | 'enableInProgress';
+}
+```
+
+### Zone DNS
+```typescript
+interface DnsZone {
+  name: string;
+  hasDnsAnycast: boolean;
+  dnssecSupported: boolean;
+  lastUpdate: string;
+  nameServers: string[];
+}
+
+interface DnsRecord {
+  id: number;
+  zone: string;
+  fieldType: 'A' | 'AAAA' | 'CAA' | 'CNAME' | 'DKIM' | 'DMARC' | 
+             'MX' | 'NS' | 'SPF' | 'SRV' | 'TXT';
+  subDomain: string;
+  target: string;
+  ttl?: number;
+}
+
+interface DynHostLogin {
+  zone: string;
+  login: string;
+  subDomain: string;
+}
+```
+
+### Hosting
+```typescript
+interface Hosting {
+  serviceName: string;
+  displayName?: string;
+  offer: 'starter' | 'perso' | 'pro' | 'performance_1' | 
+         'performance_2' | 'performance_3' | 'performance_4';
+  state: 'active' | 'bloqued' | 'maintenance';
+  cluster: string;
+  datacenter: string;
+  primaryLogin: string;
+  hostingIp: string;
+  hasCdn: boolean;
+  hasHostedSsl: boolean;
+  quotaSize: { unit: 'MB' | 'GB'; value: number; };
+  quotaUsed: { unit: 'MB' | 'GB'; value: number; };
+}
+
+interface AttachedDomain {
+  domain: string;
+  path: string;
+  cdn: 'active' | 'none' | 'to_activate' | 'to_delete';
+  firewall: 'active' | 'none';
+  ssl: boolean;
+  status: 'created' | 'creating' | 'deleting' | 'updating';
+}
+
+interface HostingDatabase {
+  name: string;
+  user: string;
+  server: string;
+  port: number;
+  type: 'mysql' | 'postgresql' | 'redis';
+  version: string;
+  state: 'close' | 'ok' | 'readonly';
+  quotaSize: { unit: 'MB' | 'GB'; value: number; };
+  quotaUsed: { unit: 'MB' | 'GB'; value: number; };
+}
+
+interface HostingUser {
+  login: string;
+  home: string;
+  state: 'off' | 'rw' | 'ro';
+  isPrimaryAccount: boolean;
+  sshState: 'active' | 'none' | 'sftponly';
+}
+
+interface HostingCron {
+  id: number;
+  command: string;
+  description?: string;
+  email?: string;
+  frequency: string;
+  language: string;
+  status: 'disabled' | 'enabled' | 'suspended' | 'tooManyError';
+}
+
+interface HostingSsl {
+  status: 'created' | 'creating' | 'deleting' | 'error' | 'regenerating';
+  provider: 'COMODO' | 'LETSENCRYPT';
+  type: 'DV' | 'EV';
+}
+```
+
+### Private Database
+```typescript
+interface PrivateDatabase {
+  serviceName: string;
+  displayName?: string;
+  state: 'detached' | 'restartPending' | 'started' | 'starting' | 'stopped';
+  type: 'mysql' | 'postgresql' | 'mariadb' | 'redis';
+  version: string;
+  hostname: string;
+  port: number;
+  datacenter: string;
+  ram: { unit: 'MB' | 'GB'; value: number; };
+  quotaSize: { unit: 'MB' | 'GB'; value: number; };
+  quotaUsed: { unit: 'MB' | 'GB'; value: number; };
+}
+```
+
+================================================================================
+SECTION 6 - TRADUCTIONS
+================================================================================
+
+## 6.1 Clés Domain
+
+| Clé | FR | EN |
+|-----|----|----|
+| domains_title | Noms de domaine | Domain names |
+| domains_order | Commander | Order |
+| domains_empty | Aucun résultat | No results |
+| domains_column_domain | Nom de domaine | Domain name |
+| domains_column_domains_status | Statut | Status |
+| domains_column_domains_transfer_lock_status | Verrouillage | Lock |
+| domains_column_domains_dnssec_supported | DNSSEC | DNSSEC |
+| domains_column_domains_renewal_mode | Mode de renouvellement | Renewal mode |
+| domains_column_domains_expiration_date | Date d'expiration | Expiration date |
+| domains_status_ok | Enregistré | Registered |
+| domains_status_expired | Expiré | Expired |
+| domains_status_restorable | Restaurable | Restorable |
+| domains_status_pending_incoming_transfer | Transfert entrant | Incoming transfer |
+| domains_renewal_mode_automatic_renew | Renouvellement automatique | Automatic renewal |
+| domains_renewal_mode_manual_renew | Renouvellement manuel | Manual renewal |
+| domains_dns_type_hosted | Standard | Standard |
+| domains_dns_type_external | Personnalisé | Custom |
+| domains_dns_type_anycast | Anycast | Anycast |
+
+## 6.2 Clés Hosting
+
+| Clé | FR | EN |
+|-----|----|----|
+| hostings_title | Hébergements | Web hostings |
+| hostings_order | Commander | Order |
+| hosting_tab_multisite | Multisite | Multisite |
+| hosting_tab_ftp | FTP - SSH | FTP - SSH |
+| hosting_tab_database | Bases de données | Databases |
+| hosting_tab_cron | Tâches planifiées | Scheduled tasks |
+| hosting_tab_module | Modules en 1 clic | 1-click modules |
+| hosting_tab_ssl | Certificat SSL | SSL certificate |
+| hosting_tab_cdn | CDN | CDN |
+| hosting_tab_statistics | Statistiques | Statistics |
+| hosting_multisite_add | Ajouter un domaine | Add a domain |
+| hosting_database_add | Créer une base de données | Create a database |
+| hosting_ftp_user_add | Ajouter un utilisateur | Add a user |
+| hosting_cron_add | Ajouter une tâche planifiée | Add a scheduled task |
+| hosting_ssl_order | Commander un certificat SSL | Order an SSL certificate |
+
+## 6.3 Clés Zone DNS
+
+| Clé | FR | EN |
+|-----|----|----|
+| dns_zone_title | Zone DNS | DNS zone |
+| dns_zone_record_add | Ajouter une entrée | Add an entry |
+| dns_zone_record_edit | Modifier | Edit |
+| dns_zone_record_delete | Supprimer | Delete |
+| dns_zone_record_type | Type | Type |
+| dns_zone_record_subdomain | Sous-domaine | Subdomain |
+| dns_zone_record_target | Cible | Target |
+| dns_zone_record_ttl | TTL | TTL |
+| dns_zone_export | Exporter en fichier texte | Export as text file |
+| dns_zone_import | Importer un fichier texte | Import text file |
+| dns_zone_reset | Réinitialiser la zone DNS | Reset DNS zone |
+| dns_zone_refresh | Rafraîchir | Refresh |
+| dns_zone_history | Historique | History |
+
+## 6.4 Clés communes
+
+| Clé | FR | EN |
+|-----|----|----|
+| common_loading | Chargement en cours... | Loading... |
+| common_error | Une erreur est survenue | An error occurred |
+| common_retry | Réessayer | Retry |
+| common_cancel | Annuler | Cancel |
+| common_confirm | Confirmer | Confirm |
+| common_save | Enregistrer | Save |
+| common_delete | Supprimer | Delete |
+| common_edit | Modifier | Edit |
+| common_add | Ajouter | Add |
+| common_close | Fermer | Close |
+| common_back | Retour | Back |
+| common_search | Rechercher | Search |
+| common_filter | Filtrer | Filter |
+| common_export | Exporter | Export |
+| common_import | Importer | Import |
+| common_actions | Actions | Actions |
+| common_status | Statut | Status |
+| common_success | Opération réussie | Operation successful |
+| common_copied | Copié dans le presse-papier | Copied to clipboard |
+
+================================================================================
+SECTION 7 - RÈGLES MÉTIER
+================================================================================
+
+## 7.1 Domain - Statuts et actions
+
+| Statut | Renouvellement | Transfert | Modification DNS | Suppression |
+|--------|----------------|-----------|------------------|-------------|
+| ok | ✓ | ✓ | ✓ | ✓ |
+| expired | ✓ (prioritaire) | ✗ | ✓ | ✗ |
+| restorable | ✓ (restauration) | ✗ | ✗ | ✗ |
+| deleted | ✗ | ✗ | ✗ | ✗ |
+| pending_incoming_transfer | ✗ | ✗ | ✗ | ✗ |
+| dispute | ✗ | ✗ | ✗ | ✗ |
+
+## 7.2 Domain - Verrouillage transfert
+
+```typescript
+const canLock = (domain: Domain): boolean => {
+  return domain.transferLockStatus === 'unlocked' &&
+         !['expired', 'restorable', 'deleted', 'dispute'].includes(domain.status);
+};
+
+const canUnlock = (domain: Domain): boolean => {
+  return domain.transferLockStatus === 'locked' &&
+         domain.status === 'ok';
+};
+```
+
+## 7.3 Domain - DNSSEC
+
+```typescript
+const canEnableDnssec = (domain: Domain): boolean => {
+  return domain.dnssecSupported &&
+         domain.nameServerType === 'hosted' &&
+         domain.status === 'ok';
+};
+
+const DNSSEC_ALGORITHMS = [
+  { value: 5, label: 'RSA/SHA1' },
+  { value: 7, label: 'RSASHA1-NSEC3-SHA1' },
+  { value: 8, label: 'RSA/SHA-256' },
+  { value: 10, label: 'RSA/SHA-512' },
+  { value: 13, label: 'ECDSA Curve P-256 with SHA-256' },
+  { value: 14, label: 'ECDSA Curve P-384 with SHA-384' },
+];
+```
+
+## 7.4 Zone DNS - Types de records
+
+```typescript
+const DNS_RECORD_TYPES = [
+  { value: 'A', label: 'A', description: 'Adresse IPv4' },
+  { value: 'AAAA', label: 'AAAA', description: 'Adresse IPv6' },
+  { value: 'CAA', label: 'CAA', description: 'Certification Authority' },
+  { value: 'CNAME', label: 'CNAME', description: 'Alias' },
+  { value: 'DKIM', label: 'DKIM', description: 'DomainKeys Identified Mail' },
+  { value: 'DMARC', label: 'DMARC', description: 'Message Authentication' },
+  { value: 'MX', label: 'MX', description: 'Serveur mail' },
+  { value: 'NS', label: 'NS', description: 'Serveur DNS' },
+  { value: 'SPF', label: 'SPF', description: 'Sender Policy Framework' },
+  { value: 'SRV', label: 'SRV', description: 'Service' },
+  { value: 'TXT', label: 'TXT', description: 'Texte' },
+];
+```
+
+## 7.5 Zone DNS - Validation
+
+```typescript
+const validateSubDomain = (subDomain: string): boolean => {
+  if (!subDomain) return true;
+  const pattern = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/i;
+  return pattern.test(subDomain) && subDomain.length <= 63;
+};
+
+const validateTarget = (type: string, target: string): boolean => {
+  switch (type) {
+    case 'A':
+      return /^(\d{1,3}\.){3}\d{1,3}$/.test(target);
+    case 'AAAA':
+      return /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/.test(target);
+    case 'CNAME':
+    case 'NS':
+    case 'MX':
+      return /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\.?$/i.test(target);
+    default:
+      return true;
+  }
+};
+
+const validateTTL = (ttl: number | undefined): boolean => {
+  if (ttl === undefined) return true;
+  return ttl >= 60 && ttl <= 2147483647;
+};
+```
+
+## 7.6 Hosting - Offres et capacités
+
+```typescript
+const HOSTING_OFFERS = {
+  starter: { diskSpace: 100, databases: 0, ftpUsers: 1, multisite: 1, ssh: false },
+  perso: { diskSpace: 100, databases: 1, ftpUsers: 1, multisite: 5, ssh: false },
+  pro: { diskSpace: 250, databases: 4, ftpUsers: 5, multisite: 10, ssh: true },
+  performance_1: { diskSpace: 250, databases: 6, ftpUsers: 10, multisite: 20, ssh: true },
+};
+```
+
+## 7.7 Hosting - Validation mot de passe
+
+```typescript
+const PASSWORD_RULES = {
+  minLength: 9,
+  maxLength: 30,
+  requireLowercase: true,
+  requireUppercase: true,
+  requireNumber: true,
+  allowedChars: /^[a-zA-Z0-9]+$/,
+};
+
+const validatePassword = (password: string): { valid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  if (password.length < 9) errors.push('Minimum 9 caractères');
+  if (password.length > 30) errors.push('Maximum 30 caractères');
+  if (!/[a-z]/.test(password)) errors.push('Au moins une minuscule requise');
+  if (!/[A-Z]/.test(password)) errors.push('Au moins une majuscule requise');
+  if (!/[0-9]/.test(password)) errors.push('Au moins un chiffre requis');
+  if (!/^[a-zA-Z0-9]+$/.test(password)) errors.push('Caractères spéciaux non autorisés');
+  return { valid: errors.length === 0, errors };
+};
+```
+
+## 7.8 Hosting - Validation chemin FTP
+
+```typescript
+const validatePath = (path: string): boolean => {
+  const pattern = /^[\w./-]*$/;
+  const noParentDir = !/\.\./.test(path);
+  return pattern.test(path) && noParentDir;
+};
+```
+
+## 7.9 Hosting - Langages Cron
+
+```typescript
+const CRON_LANGUAGES = [
+  { value: 'php8.2', label: 'PHP 8.2' },
+  { value: 'php8.1', label: 'PHP 8.1' },
+  { value: 'php8.0', label: 'PHP 8.0' },
+  { value: 'php7.4', label: 'PHP 7.4' },
+  { value: 'node16', label: 'Node.js 16' },
+  { value: 'node14', label: 'Node.js 14' },
+  { value: 'python3', label: 'Python 3' },
+];
+```
+
+## 7.10 Private Database - Types
+
+```typescript
+const DATABASE_TYPES = {
+  mysql: { versions: ['5.7', '8.0'], defaultPort: 3306 },
+  mariadb: { versions: ['10.4', '10.5', '10.6', '10.11'], defaultPort: 3306 },
+  postgresql: { versions: ['12', '13', '14', '15'], defaultPort: 5432 },
+  redis: { versions: ['6.0', '7.0'], defaultPort: 6379 },
+};
+
+type GrantType = 'admin' | 'rw' | 'ro' | 'none';
+```
+
+## 7.11 Gestion des erreurs API
+
+```typescript
+const API_ERROR_CODES = {
+  400: 'Requête invalide',
+  401: 'Non authentifié - Redirection vers login',
+  403: 'Accès refusé',
+  404: 'Ressource non trouvée',
+  409: 'Conflit - Opération déjà en cours',
+  429: 'Trop de requêtes - Réessayer plus tard',
+  500: 'Erreur serveur',
+  503: 'Service temporairement indisponible',
+};
+```
+
+================================================================================
+SECTION 8 - EXEMPLES DE CODE REACT
+================================================================================
+
+## 8.1 Hook useDomain
+
+```typescript
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { v6 } from '@ovh-ux/manager-core-api';
+
+export const useDomain = ({ serviceName }: { serviceName: string }) => {
+  const queryClient = useQueryClient();
+
+  const domainQuery = useQuery({
+    queryKey: ['domain', serviceName],
+    queryFn: async () => {
+      const { data } = await v6.get<Domain>(`/domain/${serviceName}`);
+      return data;
+    },
+  });
+
+  const updateDomain = useMutation({
+    mutationFn: async (updates: Partial<Domain>) => {
+      const { data } = await v6.put<Domain>(`/domain/${serviceName}`, updates);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['domain', serviceName] });
+    },
+  });
+
+  return {
+    domain: domainQuery.data,
+    isLoading: domainQuery.isLoading,
+    error: domainQuery.error,
+    updateDomain,
+  };
+};
+```
+
+## 8.2 Composant DomainDashboardPage
+
+```typescript
+import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { OdsTabs, OdsTabsItem, OdsSpinner, OdsMessage } from '@ovhcloud/ods-react';
+import { Notifications } from '@ovh-ux/manager-react-components';
+import { useDomain } from './hooks/useDomain';
+
+export const DomainDashboardPage = () => {
+  const { productId } = useParams<{ productId: string }>();
+  const { t } = useTranslation('domain');
+  const { domain, isLoading, error } = useDomain({ serviceName: productId! });
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <OdsSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <OdsMessage type="error">{t('common_error')}</OdsMessage>;
+  }
+
+  return (
+    <div className="p-6">
+      <Notifications />
+      <h1 className="text-2xl font-bold mb-6">{domain?.domain}</h1>
+      <OdsTabs>
+        <OdsTabsItem label={t('domain_tab_information')}>
+          {/* Contenu */}
+        </OdsTabsItem>
+        <OdsTabsItem label={t('domain_tab_dns')}>
+          {/* Contenu */}
+        </OdsTabsItem>
+        <OdsTabsItem label={t('domain_tab_zone')}>
+          {/* Contenu */}
+        </OdsTabsItem>
+      </OdsTabs>
+    </div>
+  );
+};
+```
+
+## 8.3 Routes React Router
+
+```typescript
+import { RouteObject } from 'react-router-dom';
+
+export const webCloudRoutes: RouteObject[] = [
+  {
+    path: 'domain',
+    children: [
+      { index: true, element: <DomainListPage /> },
+      { path: 'onboarding', element: <DomainOnboardingPage /> },
+      {
+        path: ':productId',
+        element: <DomainDashboardPage />,
+        children: [
+          { path: 'information', element: <DomainGeneralInfo /> },
+          { path: 'dns', element: <DomainDns /> },
+          { path: 'zone', element: <DomainZone /> },
+          { path: 'dnssec', element: <DomainDnssec /> },
+          { path: 'glue', element: <DomainGlue /> },
+          { path: 'dynhost', element: <DomainDynhost /> },
+          { path: 'redirection', element: <DomainRedirection /> },
+          { path: 'tasks', element: <DomainTasks /> },
+        ],
+      },
+    ],
+  },
+  {
+    path: 'hosting',
+    children: [
+      { index: true, element: <HostingListPage /> },
+      {
+        path: ':productId',
+        element: <HostingDashboardPage />,
+        children: [
+          { path: 'multisite', element: <HostingMultisite /> },
+          { path: 'database', element: <HostingDatabase /> },
+          { path: 'ftp', element: <HostingFtp /> },
+          { path: 'cron', element: <HostingCron /> },
+          { path: 'module', element: <HostingModule /> },
+          { path: 'ssl', element: <HostingSsl /> },
+          { path: 'cdn', element: <HostingCdn /> },
+          { path: 'statistics', element: <HostingStatistics /> },
+        ],
+      },
+    ],
+  },
+  {
+    path: 'dns-zone',
+    children: [
+      { index: true, element: <DnsZoneListPage /> },
+      { path: 'new', element: <DnsZoneNewPage /> },
+      {
+        path: ':productId',
+        element: <DnsZoneDashboardPage />,
+        children: [
+          { path: 'zone', element: <DnsZoneRecords /> },
+          { path: 'dynhost', element: <DnsZoneDynhost /> },
+          { path: 'history', element: <DnsZoneHistory /> },
+          { path: 'tasks', element: <DnsZoneTasks /> },
+        ],
+      },
+    ],
+  },
+  {
+    path: 'private-database',
+    children: [
+      { index: true, element: <PrivateDatabaseListPage /> },
+      { path: 'order', element: <PrivateDatabaseOrderPage /> },
+      {
+        path: ':productId',
+        element: <PrivateDatabaseDashboardPage />,
+        children: [
+          { path: 'database', element: <PrivateDatabaseDatabases /> },
+          { path: 'user', element: <PrivateDatabaseUsers /> },
+          { path: 'whitelist', element: <PrivateDatabaseWhitelist /> },
+          { path: 'logs', element: <PrivateDatabaseLogs /> },
+          { path: 'metrics', element: <PrivateDatabaseMetrics /> },
+        ],
+      },
+    ],
+  },
+];
+```
+
+================================================================================
+FIN DU CAHIER DES CHARGES - WEB-CLOUD CORE
+================================================================================

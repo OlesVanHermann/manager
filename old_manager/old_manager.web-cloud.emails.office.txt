@@ -1,0 +1,866 @@
+# CAHIER DES CHARGES - Microsoft 365 (Web Office)
+
+## Source : old_manager_web-cloud_emails_office.tar
+
+---
+
+# 1. RÉSUMÉ EXÉCUTIF
+
+## Périmètre
+Application **web-office** du Manager OVHcloud pour la gestion des licences **Microsoft 365** (Office 365).
+
+## Objectif Fonctionnel
+- Visualiser et gérer les groupes de licences Microsoft 365
+- Gérer les utilisateurs/licences (CRUD complet)
+- Changer les mots de passe utilisateurs
+- Commander de nouvelles licences
+- Consulter la consommation (graphiques)
+
+## Utilisateurs Cibles
+Clients OVHcloud possédant des licences Microsoft 365 :
+- **PayAsYouGo (CSP1)** : Facturation à l'usage
+- **Prepaid (CSP2)** : Licences prépayées
+
+## Stack Technique
+| Technologie | Version |
+|-------------|---------|
+| React | 18.2.0 |
+| React Router | 6.16.0 |
+| React Query | 5.51.21 |
+| React Hook Form | 7.51.2 |
+| Zod | 3.24.2 |
+| ODS Components | 18.6.2 |
+| Tailwind CSS | 3.4.4 |
+| Recharts | 2.13.3 |
+| date-fns | 3.6.0 |
+| i18next | 23.8.2 |
+
+---
+
+# 2. ARCHITECTURE
+
+## Arborescence Fichiers
+
+```
+packages/manager/apps/web-office/
+├── src/
+│   ├── App.tsx
+│   ├── WebOffice.tsx
+│   ├── queryClient.ts
+│   ├── Guides.constants.ts
+│   ├── Tracking.constants.ts
+│   ├── components/
+│   │   ├── badge-status/BadgeStatus.component.tsx
+│   │   ├── breadcrumb/Breadcrumb.component.tsx
+│   │   ├── generate-password-button/GeneratePasswordButton.component.tsx
+│   │   ├── loading/Loading.component.tsx
+│   │   ├── office-service-state/OfficeServiceState.component.tsx
+│   │   └── tabs-panel/TabsPanel.component.tsx
+│   ├── data/
+│   │   ├── api/
+│   │   │   ├── ApiType.ts
+│   │   │   ├── license/api.ts, key.ts, type.ts
+│   │   │   ├── order/api.ts, key.ts, type.ts, utils.ts
+│   │   │   ├── parent-tenant/api.ts, key.ts, type.ts
+│   │   │   ├── price/api.ts, key.ts, type.ts
+│   │   │   ├── service-infos/api.ts, key.ts, type.ts
+│   │   │   ├── usage-statistics/api.ts, key.ts, type.ts
+│   │   │   ├── users/api.ts, key.ts, type.ts
+│   │   │   └── utils/apiPath.ts
+│   │   └── hooks/
+│   │       ├── license-details/useLicenseDetails.ts
+│   │       ├── licenses/useLicenses.ts
+│   │       ├── order-catalog/useOrderCatalog.ts
+│   │       ├── parent-tenant/useParentTenant.ts
+│   │       ├── service-infos/useServiceInfos.ts
+│   │       ├── user-detail/useUserDetail.ts
+│   │       └── users/useUsers.ts
+│   ├── hooks/
+│   │   ├── date-fns-locale/useDateFnsLocale.ts
+│   │   └── generate-url/useGenerateUrl.ts
+│   ├── pages/
+│   │   ├── 404.tsx
+│   │   ├── layout.tsx
+│   │   ├── dashboard/
+│   │   │   ├── Dashboard.page.tsx
+│   │   │   ├── general-information/
+│   │   │   │   ├── GeneralInformation.page.tsx
+│   │   │   │   └── update-display-name/UpdateDisplayName.modal.tsx
+│   │   │   ├── users/
+│   │   │   │   ├── Users.page.tsx
+│   │   │   │   ├── ActionButtonUsers.component.tsx
+│   │   │   │   ├── edit-users/EditUsers.modal.tsx
+│   │   │   │   ├── delete-users/DeleteUsers.modal.tsx
+│   │   │   │   ├── change-password-users/ChangePasswordUsers.modal.tsx
+│   │   │   │   ├── order-users/OrderUsers.modal.tsx
+│   │   │   │   └── order-licenses/OrderLicenses.modal.tsx
+│   │   │   └── consumption/
+│   │   │       ├── Consumption.page.tsx
+│   │   │       └── CustomTooltip.component.tsx
+│   │   ├── licenses/Licenses.page.tsx
+│   │   └── onboarding/Onboarding.page.tsx
+│   ├── routes/
+│   │   ├── routes.tsx
+│   │   └── Routes.constants.ts
+│   └── utils/
+│       ├── FormSchemas.utils.ts
+│       ├── IamAction.constants.ts
+│       ├── ServiceType.utils.ts
+│       └── form.ts
+└── public/translations/
+    ├── common/Messages_fr_FR.json
+    ├── dashboard/general-information/Messages_fr_FR.json
+    ├── dashboard/users/Messages_fr_FR.json
+    ├── dashboard/users/edit/Messages_fr_FR.json
+    ├── dashboard/users/delete/Messages_fr_FR.json
+    ├── dashboard/users/change-password/Messages_fr_FR.json
+    ├── dashboard/users/order-users/Messages_fr_FR.json
+    ├── dashboard/users/order-licenses/Messages_fr_FR.json
+    ├── dashboard/consumption/Messages_fr_FR.json
+    ├── licenses/Messages_fr_FR.json
+    └── onboarding/Messages_fr_FR.json
+```
+
+## Dépendances Manager
+
+```json
+{
+  "@ovh-ux/manager-core-api": "^0.20.1",
+  "@ovh-ux/manager-react-components": "^2.43.1",
+  "@ovh-ux/manager-react-shell-client": "^0.11.2",
+  "@ovh-ux/manager-module-order": "^0.12.2",
+  "@ovh-ux/manager-common-translations": "^0.24.3"
+}
+```
+
+---
+
+# 3. PAGES & NAVIGATION
+
+## Routes
+
+```typescript
+const urls = {
+  root: '',
+  onboarding: '/onboarding',
+  listing: '/license',
+  dashboard: '/license/:serviceName',
+  generalInformation: '/license/:serviceName',
+  users: '/license/:serviceName/users',
+  users_edit: '/license/:serviceName/users/edit',
+  users_delete: '/license/:serviceName/users/delete',
+  order_licenses: '/license/:serviceName/users/order-licenses',
+  order_users: '/license/:serviceName/users/order-users',
+  change_password: '/license/:serviceName/users/change-password',
+  consumption: '/license/:serviceName/consumption',
+};
+```
+
+## Flux Navigation
+
+```
+/onboarding (si aucune licence)
+    │
+    ▼
+/license (Liste des groupes de licences)
+    │
+    ▼
+/license/:serviceName (Dashboard)
+    ├── Onglet "Informations générales" (défaut)
+    │   └── Modal ./edit-name
+    ├── Onglet "Licences" (/users)
+    │   ├── Modal ./edit?activationEmail=xxx
+    │   ├── Modal ./delete?activationEmail=xxx
+    │   ├── Modal ./change-password?activationEmail=xxx
+    │   ├── Modal ./order-licenses (Prepaid)
+    │   └── Modal ./order-users (PayAsYouGo)
+    └── Onglet "Consommation" (/consumption)
+```
+
+## Paramètres URL
+
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| serviceName | path | ID du groupe de licences |
+| activationEmail | query | Email d'activation utilisateur |
+| licencePrepaidName | query | Nom licence prépayée (mode CSP2) |
+
+## Structure Pages
+
+### LicensesPage (Listing)
+- Datagrid listant tous les groupes de licences
+- Colonnes : serviceName, displayName, status, city, zipCode, address, phone
+- Action : clic → navigation vers dashboard
+
+### DashboardPage (Container)
+- Layout avec BaseLayout + breadcrumb + header + tabs
+- 3 onglets : Général | Licences | Consommation
+- Outlet pour pages enfants
+
+### GeneralInformationPage
+- 3 tuiles DashboardTile :
+  - Informations générales (displayName éditable, serviceName, serviceType)
+  - Statistiques (nombre licences par type)
+  - Mon offre (date création, statut, date renouvellement si prepaid)
+
+### UsersPage
+- Message téléchargement Office + lien portal.office.com
+- Datagrid utilisateurs
+- Colonnes : firstName, lastName, activationEmail, licences, status, actions
+- Bouton topbar : "Commander" (users ou licenses selon type)
+- ActionMenu par ligne : Edit, Password, Delete
+
+### ConsumptionPage
+- Sélecteur période (mois courant, dernier, 3 derniers, 12 derniers)
+- Graphique AreaChart (Recharts)
+- 2 séries : Office Business (vert), Office Pro Plus (bleu)
+- Légende avec checkboxes toggle
+
+---
+
+# 4. COMPOSANTS UI
+
+## Composants ODS Utilisés
+
+| Composant | Import | Usage |
+|-----------|--------|-------|
+| OdsBadge | @ovhcloud/ods-components/react | Statut, type licence |
+| OdsButton | @ovhcloud/ods-components/react | Actions |
+| OdsCheckbox | @ovhcloud/ods-components/react | Toggle séries graphique |
+| OdsFormField | @ovhcloud/ods-components/react | Wrapper champs |
+| OdsIcon | @ovhcloud/ods-components/react | Icônes |
+| OdsInput | @ovhcloud/ods-components/react | Champs texte |
+| OdsLink | @ovhcloud/ods-components/react | Liens externes |
+| OdsMessage | @ovhcloud/ods-components/react | Messages info/warning |
+| OdsPassword | @ovhcloud/ods-components/react | Champ mot de passe |
+| OdsQuantity | @ovhcloud/ods-components/react | Sélecteur quantité |
+| OdsRadio | @ovhcloud/ods-components/react | Choix génération mdp |
+| OdsSelect | @ovhcloud/ods-components/react | Sélecteurs |
+| OdsSkeleton | @ovhcloud/ods-components/react | Loading |
+| OdsText | @ovhcloud/ods-components/react | Textes |
+
+## Composants Manager
+
+| Composant | Import | Usage |
+|-----------|--------|-------|
+| ActionMenu | @ovh-ux/manager-react-components | Menu actions utilisateur |
+| BaseLayout | @ovh-ux/manager-react-components | Layout page |
+| Datagrid | @ovh-ux/manager-react-components | Tableaux |
+| DashboardTile | @ovh-ux/manager-react-components | Tuiles infos |
+| GuideButton | @ovh-ux/manager-react-components | Bouton guides |
+| ManagerButton | @ovh-ux/manager-react-components | Bouton avec IAM |
+| Modal | @ovh-ux/manager-react-components | Modaux |
+| Notifications | @ovh-ux/manager-react-components | Toasts |
+| Price | @ovh-ux/manager-react-components | Affichage prix |
+
+## Composants Métier
+
+### BadgeStatus
+
+```tsx
+interface BadgeStatusProps {
+  itemStatus: UserStateEnum;
+}
+
+// Mapping couleurs
+const getStatusColor = (status: UserStateEnum) => {
+  switch (status) {
+    case UserStateEnum.OK: return ODS_BADGE_COLOR.success;
+    case UserStateEnum.UNCONFIGURED: return ODS_BADGE_COLOR.warning;
+    case UserStateEnum.DELETING: return ODS_BADGE_COLOR.critical;
+    default: return ODS_BADGE_COLOR.information;
+  }
+};
+```
+
+### GeneratePasswordButton
+
+```tsx
+interface Props {
+  id: string;
+  onGenerate: (password: string) => void;
+}
+
+// Génère mot de passe aléatoire conforme aux règles
+// 8-16 chars, 1 maj, 1 min, 1 chiffre/special
+```
+
+### TabsPanel
+
+```tsx
+interface DashboardTabItemProps {
+  name: string;
+  title: string;
+  pathMatchers?: RegExp[];
+  to: string;
+}
+
+// 3 onglets : general-information, users, consumption
+```
+
+### ActionButtonUsers
+
+```tsx
+interface ActionButtonUsersProps {
+  usersItem: UserNativeType | LicensePrepaidType;
+  licenceDetail: LicenseType | LicensePrepaidType;
+}
+
+// ActionMenu avec 3 items conditionnels :
+// - Edit (toujours si status OK)
+// - Change Password (si !isVirtual)
+// - Delete (si !isVirtual)
+```
+
+---
+
+# 5. APIs & DONNÉES
+
+## Logique ServiceType
+
+```typescript
+// src/utils/ServiceType.utils.ts
+export const ServiceType = (serviceName: string): 'payAsYouGo' | 'prepaid' => {
+  // Détermine le type basé sur le format du serviceName
+  // payAsYouGo : format simple
+  // prepaid : format avec préfixe tenant
+};
+
+// Impact sur les endpoints :
+// payAsYouGo → /license/office/{serviceName}/...
+// prepaid    → /license/officePrepaid/{serviceName}/...
+```
+
+## Endpoints API
+
+### License Office (v6)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/license/office/{serviceName}/` | Détails licence PayAsYouGo |
+| GET | `/license/officePrepaid/{serviceName}/` | Détails licence Prepaid |
+| GET | `/license/office/` | Liste licences PayAsYouGo |
+| GET | `/license/officePrepaid/` | Liste licences Prepaid |
+| PUT | `/license/office/{serviceName}/` | Modifier licence |
+| PUT | `/license/officePrepaid/{serviceName}/` | Modifier licence prépayée |
+| POST | `/license/officePrepaid/{serviceName}/{activationEmail}/unconfigure` | Supprimer user prépayé |
+
+### Users (v6)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/license/office/{serviceName}/user` | Liste utilisateurs (Iceberg) |
+| GET | `/license/office/{serviceName}/user/{activationEmail}` | Détail utilisateur |
+| GET | `/license/office/{serviceName}/domain` | Domaine associé |
+| POST | `/license/office/{serviceName}/user` | Créer utilisateur |
+| POST | `/license/office/{serviceName}/user/{activationEmail}/changePassword` | Changer mdp |
+| POST | `/license/officePrepaid/{serviceName}/changePassword` | Changer mdp (prépayé) |
+| PUT | `/license/office/{serviceName}/user/{activationEmail}` | Modifier utilisateur |
+| DELETE | `/license/office/{serviceName}/user/{activationEmail}` | Supprimer utilisateur |
+
+### Parent Tenant (v6)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/license/{office\|officePrepaid}/{serviceName}/parentTenant` | Récupérer tenant |
+| PUT | `/license/{office\|officePrepaid}/{serviceName}/parentTenant` | Modifier displayName |
+
+### Service Infos (v6)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/license/{office\|officePrepaid}/{serviceName}/serviceInfos` | Infos service |
+
+### Usage Statistics (v6)
+
+| Méthode | Endpoint | Params |
+|---------|----------|--------|
+| GET | `/license/office/{serviceName}/usageStatistics` | from, to |
+| GET | `/license/officePrepaid/{serviceName}/tenantUsageStatistics` | from, to |
+
+### Price (v6)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/price/license/office/{officeName}` | Prix licence |
+
+### Order Catalog (v6)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/order/catalog/public/officePrepaid?ovhSubsidiary={sub}` | Catalogue |
+
+### 2API (AAPI)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/service?external=false&type=/license/office` | Liste globale |
+
+## Séquencement Appels
+
+### Chargement Dashboard
+
+```
+Parallèle:
+├── useParentTenant()    → GET /parentTenant
+├── useServiceInfos()    → GET /serviceInfos
+├── useLicenseDetail()   → GET /license/{type}/{serviceName}/
+└── useUsers()           → GET /user (Iceberg)
+                            OU
+                            GET /officePrepaid/ puis détails chaque licence
+```
+
+### Création Utilisateur (PayAsYouGo)
+
+```
+1. GET /domain                     → Récupérer domaine
+2. GET /price/license/office/{t}   → Afficher prix
+3. POST /user                      → Créer
+4. invalidateQueries               → Rafraîchir
+```
+
+### Changement Mot de Passe
+
+```
+POST /user/{email}/changePassword  (PayAsYouGo)
+POST /changePassword               (Prepaid)
+Body: { password?, shouldSendMail, notifyEmail? }
+```
+
+## Types TypeScript
+
+### Enums
+
+```typescript
+enum ServiceStateEnum {
+  CREATING = 'creating',
+  IN_MAINTENANCE = 'inMaintenance',
+  OK = 'ok',
+  REOPENING = 'reopening',
+  SUSPENDED = 'suspended',
+  SUSPENDING = 'suspending',
+}
+
+enum UserStateEnum {
+  CREATING = 'creating',
+  DELETING = 'deleting',
+  OK = 'ok',
+  UNCONFIGURED = 'unconfigured',
+  SUSPENDED = 'suspended',
+  SUSPENDING = 'suspending',
+  UNSUSPENDING = 'unsuspending',
+  IN_MAINTENANCE = 'inMaintenance',
+}
+
+enum LicenseEnum {
+  OFFICE_BUSINESS = 'officeBusiness',
+  OFFICE_PRO_PLUS = 'officeProPlus',
+}
+
+enum TaskStatusEnum {
+  CANCELLED = 'cancelled',
+  DOING = 'doing',
+  DONE = 'done',
+  ERROR = 'error',
+  TODO = 'todo',
+}
+
+enum RenewalTypeEnum {
+  AUTOMATIC_FORCED_PRODUCT = 'automaticForcedProduct',
+  AUTOMATIC_V2012 = 'automaticV2012',
+  AUTOMATIC_V2014 = 'automaticV2014',
+  AUTOMATIC_V2016 = 'automaticV2016',
+  AUTOMATIC_V2024 = 'automaticV2024',
+  MANUAL = 'manual',
+  ONE_SHOT = 'oneShot',
+  OPTION = 'option',
+}
+
+enum StateEnum {
+  AUTO_RENEW_IN_PROGRESS = 'autorenewInProgress',
+  EXPIRED = 'expired',
+  IN_CREATION = 'inCreation',
+  OK = 'ok',
+  PENDING_DEBT = 'pendingDebt',
+  UNPAID = 'unPaid',
+}
+```
+
+### Types Principaux
+
+```typescript
+type LicenseType = {
+  address: string;
+  city: string;
+  creationDate: string;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  serviceName: string;
+  tenantServiceName: string;
+  serviceType: string;
+  status: UserStateEnum;
+  zipCode: string;
+  iam: { id: string; urn: string };
+};
+
+type LicensePrepaidType = {
+  activationEmail: string;
+  firstName: string;
+  isVirtual: boolean;
+  lastName: string;
+  licences: LicenseEnum[];
+  serviceName: string;
+  status: UserStateEnum;
+  taskPendingId: number;
+  tenantServiceName: string;
+  usageLocation: string;
+  iam: { id: string; urn: string };
+};
+
+type UserNativeType = {
+  activationEmail: string;
+  deleteAtExpiration: boolean;
+  firstName: string;
+  isVirtual: boolean;
+  lastName: string;
+  licences: LicenseEnum[];
+  status: UserStateEnum;
+  taskPendingId: number;
+  usageLocation: string;
+  serviceName?: string;
+};
+
+type ParentTenantType = {
+  address: string;
+  city: string;
+  creationDate: string;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  serviceName: string;
+  serviceType: string;
+  status: UserStateEnum;
+  zipCode: string;
+};
+
+type OfficeLicenseServiceInfosType = {
+  canDeleteAtExpiration: boolean;
+  contactAdmin: string;
+  contactBilling: string;
+  contactTech: string;
+  creation: string;
+  domain: string;
+  engagedUpTo?: string;
+  expiration: string;
+  possibleRenewPeriod?: number[];
+  renew?: RenewType | null;
+  renewalType: RenewalTypeEnum;
+  serviceId: number;
+  status: StateEnum;
+};
+
+type UsageStatisticsData = {
+  date: string;
+  lines: {
+    endOfDayCount: number;
+    licenceType: LicenseEnum;
+    peakCount: number;
+  }[];
+};
+
+type PendingTaskType = {
+  finishDate?: string;
+  function: string;
+  id: number;
+  status: TaskStatusEnum;
+  todoDate: string;
+};
+
+type UserParamsType = {
+  activationEmail?: string;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
+};
+
+type UserOrderParamsType = {
+  domain: string;
+  firstName: string;
+  lastName: string;
+  usageLocation: OvhSubsidiary;
+  licence: string;
+  login: string;
+};
+
+type UserChangePasswordType = {
+  password?: string;
+  shouldSendMail: boolean;
+  notifyEmail?: string;
+};
+```
+
+---
+
+# 6. TRADUCTIONS
+
+## Namespaces i18n
+
+| Namespace | Fichier |
+|-----------|---------|
+| common | public/translations/common/Messages_fr_FR.json |
+| dashboard/general-information | public/translations/dashboard/general-information/Messages_fr_FR.json |
+| dashboard/users | public/translations/dashboard/users/Messages_fr_FR.json |
+| dashboard/users/edit | public/translations/dashboard/users/edit/Messages_fr_FR.json |
+| dashboard/users/delete | public/translations/dashboard/users/delete/Messages_fr_FR.json |
+| dashboard/users/change-password | public/translations/dashboard/users/change-password/Messages_fr_FR.json |
+| dashboard/users/order-users | public/translations/dashboard/users/order-users/Messages_fr_FR.json |
+| dashboard/users/order-licenses | public/translations/dashboard/users/order-licenses/Messages_fr_FR.json |
+| dashboard/consumption | public/translations/dashboard/consumption/Messages_fr_FR.json |
+| onboarding | public/translations/onboarding/Messages_fr_FR.json |
+| licenses | public/translations/licenses/Messages_fr_FR.json |
+
+## Clés Principales (FR)
+
+```json
+{
+  "common_office_title": "Mes comptes Microsoft 365",
+  "consumption": "Consommation",
+  "licences": "Licences",
+  "users": "Utilisateurs",
+  "serviceName": "ID du groupe",
+  "displayName": "Nom du groupe",
+  "payAsYouGo": "Paiement à l'utilisation",
+  "prepaid": "Prépayé",
+  "noAccountOffer": "Vous ne possedez actuellement aucune licence.",
+  "users_order_licenses": "Commander plus de licences",
+  "form_helper_login_conditions": "Votre identifiant doit contenir entre 3 et 20 caractères...",
+  "form_helper_login_condition_exception": "Il peut également contenir des points...",
+
+  "dashboard_users_table_activationEmail": "Email d'activation",
+  "dashboard_users_table_licences": "Licences",
+  "dashboard_users_table_status": "Statut",
+  "dashboard_users_download_text": "Les programmes d'installation pour PC et MAC sont disponibles sur le site de <officeLink/>.",
+  "dashboard_users_download_info": "Pour smartphones et tablettes, rendez-vous directement dans votre App Store.",
+  "dashboard_users_download_id": "Les identifiants de connexion et d'installation vous sont transmis par email lorsque vous ajoutez une nouvelle licence.",
+  "dashboard_users_status_creating": "En création",
+  "dashboard_users_status_deleting": "En suppression",
+  "dashboard_users_status_ok": "Créé",
+  "dashboard_users_status_unconfigured": "Non configuré",
+
+  "dashboard_users_edit_title": "Éditer le compte",
+  "dashboard_users_edit_message_success": "Les modifications sur l'utilisateur sont en cours. Veuillez rafraîchir la page dans quelques instants.",
+  "dashboard_users_edit_message_error": "Une erreur est survenue lors de l'édition de l'utilisateur. {{ error }}",
+
+  "dashboard_users_delete_confirm": "Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{t0}}</strong> ?",
+  "dashboard_users_delete_info1": "L'utilisateur sera supprimé immédiatement après confirmation.",
+  "dashboard_users_delete_info2": "La facturation de nos produits Office 365 étant basée sur la consommation du mois précédent, vous recevrez une dernière facture pour ce compte.",
+  "dashboard_users_delete_message_success": "Utilisateur en cours de suppression.",
+
+  "dashboard_users_change_password_radio_1": "Je génère un mot de passe aléatoire",
+  "dashboard_users_change_password_radio_2": "Je personnalise mon mot de passe",
+  "dashboard_users_change_password_label_password": "Nouveau mot de passe",
+  "dashboard_users_change_password_label_email": "Compte e-mail pour réception du mot de passe",
+  "dashboard_users_change_password_helper3": "Ne doit pas contenir l'identifiant",
+  "dashboard_users_change_password_message_success": "Votre changement de mot de passe a bien été pris en compte.",
+
+  "dashboard_users_order_users_message": "Vous serez facturé sur le nombre de licences activées dans le mois en cours.",
+  "dashboard_users_order_users_message_success": "Votre demande d'ajout d'utilisateur a bien été pris en compte.",
+
+  "dashboard_users_order_licences_title": "Commander de nouvelles licences",
+  "dashboard_users_order_licences_quantity": "Nombre",
+  "dashboard_users_order_licences_type": "Type de licence",
+  "dashboard_users_order_licences_message_1": "En validant, vous serez redirigé vers le bon de commande.",
+  "dashboard_users_order_licences_message_2": "Revenez ici une fois le paiement effectué pour configurer vos nouveaux utilisateurs.",
+
+  "dashboard_modal_update_headline": "Changer le nom du groupe",
+  "dashboard_modal_update_description": "Veuillez saisir le nouveau nom que vous souhaitez donner à votre service.",
+  "dashboard_modal_update_input_label": "Nouveau nom",
+
+  "officeBusiness_serie_name": "Licences Office Business",
+  "officeProPlus_serie_name": "Licences Office Pro Plus",
+
+  "web_office_onboarding_title": "Solutions collaboratives",
+  "web_office_onboarding_description": "Que vous soyez au bureau ou en déplacement, partagez, éditez et communiquez où que vous soyez avec l'ensemble de vos équipes !"
+}
+```
+
+## Langues Supportées
+
+FR, EN (GB), DE, ES, IT, PL, PT, CA (FR)
+
+---
+
+# 7. RÈGLES MÉTIER
+
+## Validation Formulaires
+
+### Login Utilisateur
+
+```typescript
+// Regex
+const LOGIN_REGEX = /^(?!\.)(?!.*\.\.)(?:[-_.'A-Za-z\d])+(?!\.)$/;
+
+// Règles
+// - 3-20 caractères
+// - Lettres, chiffres, - _ . '
+// - Ne commence/finit pas par .
+// - Pas de .. consécutifs
+```
+
+### Mot de Passe
+
+```typescript
+// Regex
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*([~!$%^&*\-+_=|():;"'<>,.?]|\d))[a-zA-Z\d~!$%^&*\-+_=|():;"'<>,.?]+$/;
+
+// Règles
+// - 8-16 caractères
+// - Au moins 1 minuscule
+// - Au moins 1 majuscule
+// - Au moins 1 chiffre OU caractère spécial
+// - Caractères spéciaux autorisés : ~!$%^&*_-+=|():;"'<>,.?
+// - Ne doit pas contenir le login
+```
+
+## Conditions Affichage
+
+| Condition | Comportement |
+|-----------|--------------|
+| `!tenantServiceName` | Mode PayAsYouGo → bouton "Commander utilisateurs" |
+| `tenantServiceName` | Mode Prepaid → bouton "Commander licences" |
+| `isVirtual === true` | Masque actions password/delete |
+| `status !== UserStateEnum.OK` | Désactive menu actions |
+| `serviceType === 'prepaid'` | Affiche date renouvellement |
+| `taskPendingId && isVirtual` | Affiche status CREATING |
+
+## Permissions IAM
+
+```typescript
+const IAM_ACTIONS = {
+  user: {
+    create: 'licenseOffice:apiovh:user/create',
+    delete: 'licenseOffice:apiovh:user/delete',
+    edit: 'licenseOffice:apiovh:user/edit',
+    get: 'licenseOffice:apiovh:user/get',
+    password: 'licenseOffice:apiovh:user/changePassword',
+  },
+  licencePostPaid: {
+    get: 'licenseOffice:apiovh:get',
+    edit: 'licenseOffice:apiovh:edit',
+  },
+  licencePrepaid: {
+    get: 'licenseOfficePrepaid:apiovh:get',
+    edit: 'licenseOfficePrepaid:apiovh:put',
+    changePassword: 'licenseOfficePrepaid:apiovh:changePassword',
+    unconfigure: 'licenseOfficePrepaid:apiovh:unconfigure',
+    getParentTenant: 'licenseOfficePrepaid:apiovh:parentTenant/get',
+    putParentTenant: 'licenseOfficePrepaid:apiovh:parentTenant/edit',
+  },
+};
+```
+
+## Gestion États
+
+### États Utilisateur
+
+| État | Badge | Actions |
+|------|-------|---------|
+| OK | success (vert) | Edit, Password, Delete |
+| CREATING | information (bleu) | Aucune (disabled) |
+| DELETING | critical (rouge) | Aucune (disabled) |
+| UNCONFIGURED | warning (orange) | Edit uniquement |
+
+### Graphique Consommation
+
+- Périodes disponibles : current, last, last3, last12
+- Calcul dates basé sur serviceInfos.creation
+- Séries toggleables via checkboxes
+
+## Tracking AT Internet
+
+```typescript
+// Constantes
+const UNIVERSE = 'Microsoft';
+const SUB_UNIVERSE = 'microsoft';
+const APP_NAME = 'office';
+
+// Actions trackées
+const GENERAL_INFORMATION = 'general-information';
+const LICENCES = 'licences';
+const USAGE = 'usage';
+const ORDER_OFFICE = 'order_office';
+const GUIDES = 'guides';
+const EDIT_PASSWORD = 'edit_password';
+const ORDER_ACCOUNT = 'order_account';
+const EDIT_ACCOUNT = 'edit_account';
+const DELETE_ACCOUNT = 'delete_account';
+const CONFIRM = 'confirm';
+const CANCEL = 'cancel';
+```
+
+## URLs Guides (par région)
+
+```typescript
+const WEB_OFFICE_GUIDES = {
+  DEFAULT: 'https://help.ovhcloud.com/csm/en-ie-microsoft-office365-csp1?...',
+  FR: 'https://help.ovhcloud.com/csm/fr-microsoft-office365-csp1?...',
+  DE: 'https://help.ovhcloud.com/csm/de-microsoft-office365-csp1?...',
+  // ...
+};
+
+const ORDER_URL = {
+  DEFAULT: 'https://ovhcloud.com/en-ie/collaborative-tools/microsoft-365/',
+  FR: 'https://ovhcloud.com/fr/collaborative-tools/microsoft-365/',
+  // ...
+};
+```
+
+## Invalidation Cache React Query
+
+```typescript
+// Après mutation utilisateur
+await queryClient.invalidateQueries({
+  queryKey: [
+    licencePrepaidName
+      ? getOfficeLicenseQueryKey(serviceName)
+      : getOfficeUsersQueryKey(serviceName),
+    serviceName,
+  ],
+});
+
+// Après édition détail
+await queryClient.invalidateQueries({
+  queryKey: [
+    licencePrepaidName
+      ? getOfficeLicenseDetailsQueryKey(licencePrepaidName)
+      : getOfficeUserDetailQueryKey(serviceName, activationEmail),
+  ],
+});
+```
+
+---
+
+# POINTS D'ATTENTION POUR RECODER
+
+1. **Dualité PayAsYouGo/Prepaid** : Toute la logique est conditionnée par le type. Endpoints et comportements différents.
+
+2. **Iceberg Pagination** : `/user` utilise `fetchIcebergV6` pour pagination automatique.
+
+3. **Cascade Prepaid** : Récupérer liste licences puis détails de chacune.
+
+4. **isVirtual** : Conditionne les actions disponibles sur un utilisateur.
+
+5. **Express Order** : Commande licences redirige vers express order avec URL générée dynamiquement via `@ovh-ux/manager-module-order`.
+
+6. **Génération mot de passe** : Composant custom avec copie presse-papier.
+
+7. **Graphique Recharts** : AreaChart avec gradients et légende custom.
+
+8. **IAM conditionnel** : Actions IAM diffèrent entre PostPaid et Prepaid.
+
+---
+
+# FIN DU CAHIER DES CHARGES

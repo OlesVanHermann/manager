@@ -1,0 +1,1654 @@
+# CAHIER DES CHARGES - Zimbra Email Manager
+# Source: old_manager_web-cloud_emails_zimbra.tar
+# Généré le: 2025-12-22
+
+================================================================================
+SECTION 1 - RÉSUMÉ EXÉCUTIF
+================================================================================
+
+## 1.1 Périmètre fonctionnel
+
+Application de gestion des services Zimbra OVHcloud permettant :
+- Gestion des plateformes Zimbra
+- Gestion des organisations (multi-tenant)
+- Gestion des domaines avec diagnostics DNS (MX, SPF, DKIM, SRV)
+- Gestion des comptes email (création, configuration, alias)
+- Gestion des redirections email
+- Gestion des répondeurs automatiques
+- Gestion des listes de diffusion
+- Gestion des slots/offres (Starter, Pro, Business)
+- Onboarding guidé pour nouveaux utilisateurs
+- Commande et upgrade de comptes
+
+## 1.2 Utilisateurs cibles
+
+- Administrateurs de services email OVHcloud
+- Responsables IT d'entreprise
+- Revendeurs OVHcloud
+
+## 1.3 Stack technique
+
+| Élément | Technologie |
+|---------|-------------|
+| Framework | React 18+ avec TypeScript |
+| State Management | React Query (TanStack Query) |
+| Routing | React Router DOM v6 |
+| UI Components | OVHcloud Design System (ODS) React |
+| Styling | Tailwind CSS |
+| i18n | react-i18next |
+| API Client | @ovh-ux/manager-core-api (v2/v6) |
+| Forms | react-hook-form + Zod |
+
+================================================================================
+SECTION 2 - ARCHITECTURE
+================================================================================
+
+## 2.1 Arborescence des fichiers
+
+```
+packages/manager/apps/zimbra/
+├── public/translations/                    # Fichiers i18n (26 fichiers)
+│   ├── accounts/
+│   │   ├── alias/Messages_fr_FR.json
+│   │   ├── form/Messages_fr_FR.json
+│   │   ├── order/Messages_fr_FR.json
+│   │   └── Messages_fr_FR.json
+│   ├── auto-replies/
+│   │   ├── form/Messages_fr_FR.json
+│   │   └── Messages_fr_FR.json
+│   ├── common/Messages_fr_FR.json
+│   ├── dashboard/Messages_fr_FR.json
+│   ├── domains/
+│   │   ├── addDomain/Messages_fr_FR.json
+│   │   ├── diagnostic/Messages_fr_FR.json
+│   │   ├── form/Messages_fr_FR.json
+│   │   └── Messages_fr_FR.json
+│   ├── mailing-lists/
+│   │   ├── form/Messages_fr_FR.json
+│   │   └── Messages_fr_FR.json
+│   ├── onboarding/Messages_fr_FR.json
+│   ├── organizations/
+│   │   ├── form/Messages_fr_FR.json
+│   │   └── Messages_fr_FR.json
+│   └── redirections/Messages_fr_FR.json
+├── src/
+│   ├── components/                         # Composants réutilisables
+│   │   ├── accountStatusBadge/
+│   │   ├── badgeStatus/
+│   │   ├── billingStateBadge/
+│   │   ├── breadcrumb/
+│   │   ├── error/
+│   │   ├── generatePasswordButton/
+│   │   ├── guideLink/
+│   │   ├── idLink/
+│   │   ├── inlineEmailAccountFormItem/
+│   │   ├── labelChip/
+│   │   ├── loading/
+│   │   ├── priceCard/
+│   │   ├── tabsPanel/
+│   │   └── totalPriceCard/
+│   ├── data/
+│   │   ├── api/                            # Modules API (12 modules)
+│   │   │   ├── account/
+│   │   │   │   ├── api.ts
+│   │   │   │   ├── key.ts
+│   │   │   │   ├── type.ts
+│   │   │   │   └── mocks.ts
+│   │   │   ├── alias/
+│   │   │   ├── domain/
+│   │   │   ├── mailinglist/
+│   │   │   ├── order/
+│   │   │   ├── organization/
+│   │   │   ├── platform/
+│   │   │   ├── redirection/
+│   │   │   ├── service/
+│   │   │   ├── slot/
+│   │   │   ├── task/
+│   │   │   ├── index.ts
+│   │   │   ├── type.ts
+│   │   │   └── utils.ts
+│   │   └── hooks/                          # Hooks React Query (12 modules)
+│   │       ├── account/
+│   │       ├── alias/
+│   │       ├── domain/
+│   │       ├── mailinglist/
+│   │       ├── order/
+│   │       ├── organization/
+│   │       ├── platform/
+│   │       ├── redirection/
+│   │       ├── services/
+│   │       ├── slot/
+│   │       └── task/
+│   ├── hooks/                              # Hooks utilitaires
+│   │   ├── accountsStatistics/
+│   │   ├── debouncedValue/
+│   │   ├── generateUrl/
+│   │   ├── odsModalOverflowHack/
+│   │   └── overridePage/
+│   ├── pages/
+│   │   ├── dashboard/
+│   │   │   ├── autoReplies/
+│   │   │   │   ├── add/Add.page.tsx
+│   │   │   │   ├── delete/Delete.modal.tsx
+│   │   │   │   └── AutoReplies.page.tsx
+│   │   │   ├── domains/
+│   │   │   │   ├── add/Add.page.tsx
+│   │   │   │   ├── delete/Delete.modal.tsx
+│   │   │   │   ├── diagnostics/Diagnostics.page.tsx
+│   │   │   │   ├── edit/Edit.modal.tsx
+│   │   │   │   ├── verify/Verify.page.tsx
+│   │   │   │   └── Domains.page.tsx
+│   │   │   ├── emailAccounts/
+│   │   │   │   ├── add/Add.page.tsx
+│   │   │   │   ├── cancel/Cancel.modal.tsx
+│   │   │   │   ├── delete/Delete.modal.tsx
+│   │   │   │   ├── delete-all/DeleteAll.modal.tsx
+│   │   │   │   ├── order/Order.page.tsx
+│   │   │   │   ├── settings/
+│   │   │   │   │   ├── aliases/
+│   │   │   │   │   │   ├── add/Add.modal.tsx
+│   │   │   │   │   │   ├── delete/Delete.modal.tsx
+│   │   │   │   │   │   └── Aliases.page.tsx
+│   │   │   │   │   └── Settings.layout.tsx
+│   │   │   │   ├── slots/SlotsDatagrid.component.tsx
+│   │   │   │   ├── undoCancel/UndoCancel.modal.tsx
+│   │   │   │   ├── updateOffer/UpdateOffer.page.tsx
+│   │   │   │   ├── EmailAccountForm.component.tsx
+│   │   │   │   ├── EmailAccounts.page.tsx
+│   │   │   │   └── EmailAccountsDatagrid.component.tsx
+│   │   │   ├── generalInformations/
+│   │   │   │   ├── GeneralInformations.page.tsx
+│   │   │   │   └── OngoingTasks.component.tsx
+│   │   │   ├── mailingLists/
+│   │   │   │   ├── addEdit/AddEdit.page.tsx
+│   │   │   │   └── MailingLists.page.tsx
+│   │   │   ├── organizations/
+│   │   │   │   ├── addEdit/AddEdit.modal.tsx
+│   │   │   │   ├── delete/Delete.modal.tsx
+│   │   │   │   └── Organizations.page.tsx
+│   │   │   ├── redirections/
+│   │   │   │   ├── addEdit/AddEdit.modal.tsx
+│   │   │   │   ├── delete/Delete.modal.tsx
+│   │   │   │   └── Redirections.page.tsx
+│   │   │   └── Dashboard.layout.tsx
+│   │   ├── onboarding/
+│   │   │   ├── configure/
+│   │   │   │   ├── domain/Domain.page.tsx
+│   │   │   │   ├── emailAccounts/EmailAccounts.page.tsx
+│   │   │   │   ├── organization/Organization.page.tsx
+│   │   │   │   └── Configure.layout.tsx
+│   │   │   ├── welcome/Welcome.page.tsx
+│   │   │   ├── Onboarding.page.tsx
+│   │   │   └── onboarding.constants.ts
+│   │   ├── 404.tsx
+│   │   └── layout.tsx
+│   ├── routes/
+│   │   ├── routes.tsx
+│   │   └── routes.constants.ts
+│   ├── utils/
+│   ├── constants.ts
+│   ├── guides.constants.ts
+│   ├── tracking.constants.ts
+│   └── index.tsx
+└── package.json
+```
+
+## 2.2 Patterns architecturaux
+
+| Pattern | Implémentation |
+|---------|----------------|
+| Data Fetching | React Query (useInfiniteQuery, useQuery, useMutation) |
+| Pagination | Iceberg V2 (cursor-based) |
+| Forms | react-hook-form avec Zod validation |
+| Lazy Loading | React.lazy() sur toutes les pages |
+| Error Boundary | @ovh-ux/manager-react-components ErrorBoundary |
+| Route Guards | IAM Actions via ManagerText |
+| State Pattern | targetSpec / currentState sur toutes les ressources |
+
+## 2.3 Dépendances principales
+
+```json
+{
+  "@ovh-ux/manager-core-api": "^x.x.x",
+  "@ovh-ux/manager-react-components": "^x.x.x",
+  "@ovh-ux/manager-react-shell-client": "^x.x.x",
+  "@ovh-ux/manager-common-translations": "^x.x.x",
+  "@ovhcloud/ods-components": "^x.x.x",
+  "@tanstack/react-query": "^5.x.x",
+  "react-router-dom": "^6.x.x",
+  "react-hook-form": "^7.x.x",
+  "zod": "^3.x.x",
+  "react-i18next": "^x.x.x"
+}
+```
+
+================================================================================
+SECTION 3 - PAGES & NAVIGATION
+================================================================================
+
+## 3.1 Routes et structure
+
+| Route | Composant | Type Page | Tracking Name |
+|-------|-----------|-----------|---------------|
+| `/:platformId` | GeneralInformations | dashboard | GENERAL_INFORMATIONS |
+| `/:platformId/organizations` | Organizations | listing | ORGANIZATION |
+| `/:platformId/organizations/add` | AddOrganization | popup | ADD_ORGANIZATION |
+| `/:platformId/organizations/:organizationId/edit` | AddOrganization | popup | EDIT_ORGANIZATION |
+| `/:platformId/organizations/:organizationId/delete` | DeleteOrganization | popup | DELETE_ORGANIZATION |
+| `/:platformId/domains` | Domains | listing | DOMAIN |
+| `/:platformId/domains/add` | AddDomain | funnel | ADD_DOMAIN |
+| `/:platformId/domains/:domainId/edit` | EditDomain | popup | EDIT_DOMAIN |
+| `/:platformId/domains/:domainId/delete` | DeleteDomain | popup | DELETE_DOMAIN |
+| `/:platformId/domains/:domainId/verify` | VerifyDomain | funnel | VERIFY_DOMAIN |
+| `/:platformId/domains/:domainId/diagnostics/mx` | Diagnostics | page | DOMAIN_DIAGNOSTICS_MX |
+| `/:platformId/domains/:domainId/diagnostics/spf` | Diagnostics | page | DOMAIN_DIAGNOSTICS_SPF |
+| `/:platformId/domains/:domainId/diagnostics/dkim` | Diagnostics | page | DOMAIN_DIAGNOSTICS_DKIM |
+| `/:platformId/domains/:domainId/diagnostics/srv` | Diagnostics | page | DOMAIN_DIAGNOSTICS_SRV |
+| `/:platformId/email_accounts` | EmailAccounts | listing | EMAIL_ACCOUNT |
+| `/:platformId/email_accounts/add` | AddEmailAccount | funnel | ADD_EMAIL_ACCOUNT |
+| `/:platformId/email_accounts/:accountId/delete` | DeleteEmailAccount | popup | DELETE_EMAIL_ACCOUNT |
+| `/:platformId/email_accounts/order` | OrderZimbraAccounts | funnel | ORDER_ZIMBRA_EMAIL_ACCOUNT |
+| `/:platformId/email_accounts/slots/:slotId/settings` | EmailAccountSettings | layout | EDIT_EMAIL_ACCOUNT |
+| `/:platformId/email_accounts/slots/:slotId/settings/aliases` | Aliases | listing | EMAIL_ACCOUNT_ALIAS |
+| `/:platformId/email_accounts/slots/:slotId/settings/aliases/add` | AddAlias | popup | EMAIL_ACCOUNT_ADD_ALIAS |
+| `/:platformId/email_accounts/slots/:slotId/settings/aliases/:aliasId/delete` | DeleteAlias | popup | EMAIL_ACCOUNT_DELETE_ALIAS |
+| `/:platformId/email_accounts/slots/:slotId/settings/redirections` | Redirections | listing | EMAIL_ACCOUNT_REDIRECTION |
+| `/:platformId/email_accounts/slots/:slotId/settings/redirections/add` | AddRedirection | popup | EMAIL_ACCOUNT_ADD_REDIRECTION |
+| `/:platformId/email_accounts/slots/:slotId/settings/redirections/:redirectionId/delete` | DeleteRedirection | popup | EMAIL_ACCOUNT_DELETE_REDIRECTION |
+| `/:platformId/email_accounts/slots/:slotId/settings/auto_replies` | AutoReplies | listing | EMAIL_ACCOUNT_AUTO_REPLY |
+| `/:platformId/email_accounts/slots/:slotId/settings/auto_replies/add` | AddAutoReply | funnel | EMAIL_ACCOUNT_ADD_AUTO_REPLY |
+| `/:platformId/email_accounts/slots/:slotId/settings/auto_replies/:autoReplyId/delete` | DeleteAutoReply | popup | EMAIL_ACCOUNT_DELETE_AUTO_REPLY |
+| `/:platformId/email_accounts/slots/:slotId/cancel` | CancelSlot | popup | CANCEL_SLOT |
+| `/:platformId/email_accounts/slots/:slotId/undo_cancel` | UndoCancelSlot | popup | UNDO_CANCEL_SLOT |
+| `/:platformId/email_accounts/slots/:slotId/update_offer` | UpdateOffer | funnel | UPDATE_OFFER_SLOT |
+| `/:platformId/redirections` | Redirections | listing | REDIRECTION |
+| `/:platformId/redirections/add` | AddRedirection | popup | ADD_REDIRECTION |
+| `/:platformId/redirections/:redirectionId/delete` | DeleteRedirection | popup | DELETE_REDIRECTION |
+| `/:platformId/redirections/delete_all` | DeleteRedirection | popup | EMAIL_ACCOUNT_DELETE_REDIRECTION |
+| `/:platformId/auto_replies` | AutoReplies | listing | AUTO_REPLY |
+| `/:platformId/auto_replies/add` | AddAutoReply | funnel | ADD_AUTO_REPLY |
+| `/:platformId/auto_replies/:autoReplyId/delete` | DeleteAutoReply | popup | DELETE_AUTO_REPLY |
+| `/:platformId/mailing_lists` | MailingLists | listing | MAILING_LIST |
+| `/:platformId/mailing_lists/add` | EditMailingList | funnel | ADD_MAILING_LIST |
+| `/:platformId/mailing_lists/:mailingListId/settings` | EditMailingList | funnel | EDIT_MAILING_LIST |
+| `/onboarding` | Onboarding | onboarding | ONBOARDING |
+| `/onboarding/welcome` | Welcome | onboarding | ONBOARDING_WELCOME |
+| `/onboarding/configure/:platformId/organization` | ConfigureOrganization | onboarding | ONBOARDING_CONFIGURE_ORGANIZATION |
+| `/onboarding/configure/:platformId/domain` | ConfigureDomain | onboarding | ONBOARDING_CONFIGURE_DOMAIN |
+| `/onboarding/configure/:platformId/email_accounts` | ConfigureEmailAccounts | onboarding | ONBOARDING_CONFIGURE_EMAIL_ACCOUNTS |
+| `/*` | NotFound | error | - |
+
+## 3.2 Breadcrumb
+
+Configuration via RouteHandle :
+```typescript
+type RouteHandle = {
+  isOverridePage?: boolean;
+  tracking?: {
+    pageName?: string;
+    pageType?: PageType;
+  };
+  breadcrumb?: {
+    label: string;        // Clé i18n ou ':paramName'
+    icon?: ODS_ICON_NAME;
+  };
+};
+```
+
+Exemple :
+```typescript
+handle={{
+  breadcrumb: { label: 'common:organization' },
+  tracking: { pageName: ORGANIZATION, pageType: PageType.listing }
+}}
+```
+
+## 3.3 Flux de navigation
+
+### Flux principal
+```
+/ (redirect) → /:platformId (GeneralInformations)
+                    ├── /organizations
+                    ├── /domains
+                    ├── /email_accounts
+                    ├── /redirections
+                    ├── /auto_replies
+                    └── /mailing_lists
+```
+
+### Flux onboarding
+```
+/onboarding → /onboarding/welcome
+                  └── /onboarding/configure/:platformId/organization
+                          └── /onboarding/configure/:platformId/domain
+                                  └── /onboarding/configure/:platformId/email_accounts
+                                          └── /:platformId (Dashboard)
+```
+
+### Flux création compte
+```
+/:platformId/email_accounts
+    └── /add (sélection slot + domaine)
+            └── Formulaire multi-comptes
+                    └── Retour liste avec notification succès
+```
+
+================================================================================
+SECTION 4 - COMPOSANTS UI
+================================================================================
+
+## 4.1 Composants ODS utilisés
+
+### Inputs & Forms
+```typescript
+OdsInput          // type: text, email, number, etc.
+OdsPassword       // avec masquage
+OdsSelect         // dropdown
+OdsCheckbox       // case à cocher
+OdsRadio          // bouton radio
+OdsSwitch         // toggle
+OdsSwitchItem     // item de switch
+OdsTextarea       // zone de texte
+OdsFormField      // wrapper avec label et erreur
+```
+
+### Buttons & Actions
+```typescript
+OdsButton         // variant: default, outline, ghost
+                  // color: primary, critical, neutral
+                  // icon, iconAlignment, isLoading, isDisabled
+```
+
+### Feedback & Status
+```typescript
+OdsBadge          // color: success, warning, critical, neutral, new
+                  // size: sm, md, lg
+OdsSkeleton       // loading placeholder
+OdsSpinner        // spinner de chargement
+OdsTooltip        // info-bulle
+OdsMessage        // messages d'alerte
+```
+
+### Layout
+```typescript
+OdsCard           // conteneur carte
+OdsDivider        // séparateur
+OdsTabs           // système d'onglets
+OdsTab            // onglet individuel
+OdsModal          // modale
+```
+
+### Typography & Icons
+```typescript
+OdsText           // preset: heading-4, heading-5, heading-6, paragraph
+OdsIcon           // name: ODS_ICON_NAME.*
+```
+
+## 4.2 Composants manager-react-components
+
+```typescript
+DashboardTile     // Tuile avec titre et items
+ManagerText       // Wrapper IAM avec urn et iamActions
+Links             // Lien avec icône (type: external, internal)
+Price             // Formatage prix avec devise
+ErrorBanner       // Bannière d'erreur
+ErrorBoundary     // Capture d'erreurs React
+useFormatDate     // Hook formatage dates
+```
+
+## 4.3 Composants custom de l'application
+
+### BadgeStatus
+Affiche le statut d'une ressource Zimbra.
+```typescript
+interface BadgeStatusProps {
+  status: keyof typeof ResourceStatus;
+  'data-testid'?: string;
+}
+// ResourceStatus: CREATING, READY, UPDATING, DELETING, ERROR, SUSPENDED
+// Couleurs: success (READY), warning (CREATING, UPDATING), critical (ERROR, SUSPENDED, DELETING)
+```
+
+### BillingStateBadge
+Affiche l'état de facturation d'un service.
+```typescript
+interface BillingStateBadgeProps {
+  service?: SlotService;
+  isLoading?: boolean;
+}
+// ServiceBillingState: AUTOMATIC_RENEWAL, MANUAL_RENEWAL, CANCELATION_PLANNED, CANCELED
+// Avec tooltip pour date de renouvellement/résiliation
+```
+
+### AccountStatusBadge
+Badge spécifique pour les états de compte email.
+```typescript
+// États spéciaux: BLOCKEDFORSPAM, BILLINGLOCKED
+// Avec tooltip explicatif
+```
+
+### LabelChip
+Chip cliquable pour filtrer par organisation.
+```typescript
+interface LabelChipProps {
+  id: string;      // organizationId
+  children: string; // label à afficher
+}
+// onClick: filtre la liste par organizationId
+```
+
+### TabsPanel
+Système d'onglets avec tracking.
+```typescript
+interface TabItemProps {
+  name: string;
+  trackingName: string;
+  title: ReactNode;
+  pathMatchers?: RegExp[];
+  to: string;
+  hidden?: boolean;
+  isDisabled?: boolean;
+}
+```
+
+### PriceCard
+Carte de sélection d'offre.
+```typescript
+interface PriceCardProps {
+  planCode: 'STARTER' | 'PRO' | 'BUSINESS';
+  price: order.publicOrder.Pricing;
+  locale?: string;
+  subsidiary: OvhSubsidiary;
+  isLoading: boolean;
+  isCurrentOffer: boolean;
+  isSelected?: boolean;
+  isDisabled?: boolean;
+  onSelect: () => void;
+}
+// Affiche: nom offre, badges (current, new, coming soon), features, prix
+```
+
+### TotalPriceCard
+Résumé de commande avec prix.
+```typescript
+interface TotalPriceCardProps {
+  nextBilling: order.publicOrder.Pricing;
+  total: PriceType;
+  isLoading: boolean;
+  isSending?: boolean;
+  isCurrentOffer?: boolean;
+  subsidiary: OvhSubsidiary;
+  onUpgrade?: () => void;
+}
+```
+
+### GuideLink
+Lien vers documentation avec tracking.
+```typescript
+interface GuideLinkProps {
+  label: string;
+  guide: Guide;
+}
+// Guide: { url: { DEFAULT: string, [subsidiary]: string }, tracking: string }
+```
+
+### GeneratePasswordButton
+Génération de mot de passe sécurisé.
+```typescript
+interface GeneratePasswordButtonProps {
+  id: string;
+  onGenerate: (password: string) => void;
+}
+// Génère un mot de passe conforme aux règles et le copie dans le presse-papier
+```
+
+### InlineEmailAccountFormItem
+Ligne de formulaire pour création batch de comptes.
+```typescript
+interface Props {
+  index: number;
+  onRemove: () => void;
+}
+// Champs: firstName, lastName, account@domain, password
+// Avec bouton de génération de mot de passe et suppression
+```
+
+## 4.4 Classes Tailwind récurrentes
+
+```css
+/* Grilles responsives */
+grid gap-4 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3
+
+/* Flexbox */
+flex flex-col gap-4
+flex items-center gap-8
+flex flex-1 flex-col
+
+/* Espacements */
+mb-4 mb-6 mt-4
+p-3 p-6 px-6 py-8
+
+/* Bordures et fonds */
+border-2 border-gray-300
+border-0 border-b border-solid border-gray-300
+bg-color-primary-050 border-color-primary-500
+bg-gray-100 bg-gray-200
+
+/* Texte */
+text-color-primary-500
+text-green-600 text-gray-400 text-gray-500
+
+/* ODS parts styling */
+[&::part(text)]:text-gray-500
+[&::part(skeleton)]:w-16
+[&::part(button)]:w-full
+[&::part(button)]:translate-y-1/2
+
+/* Utilitaires */
+cursor-pointer
+overflow-hidden
+min-h-16 min-w-72
+max-w-96
+```
+
+================================================================================
+SECTION 5 - APIs & DONNÉES
+================================================================================
+
+## 5.1 Configuration API
+
+### Base URL
+```typescript
+// Fonction utilitaire
+export const getApiPath = (platformId: string) => `/zimbra/platform/${platformId}/`;
+```
+
+### Clients API
+```typescript
+import { fetchIcebergV2, v2, v6 } from '@ovh-ux/manager-core-api';
+
+// v2 : API Zimbra (nouvelle)
+// v6 : API OVH classique (legacy, order, domain/zone)
+// fetchIcebergV2 : Pagination cursor-based pour listes
+```
+
+## 5.2 Endpoints API V2 (Zimbra)
+
+### Platform
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform` | Liste des plateformes Zimbra |
+
+### Account
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform/{platformId}/account` | Liste comptes (Iceberg) |
+| GET | `/zimbra/platform/{platformId}/account/{accountId}` | Détail compte |
+| POST | `/zimbra/platform/{platformId}/account` | Créer compte |
+| PUT | `/zimbra/platform/{platformId}/account/{accountId}` | Modifier compte |
+| DELETE | `/zimbra/platform/{platformId}/account/{accountId}` | Supprimer compte |
+
+### Alias
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform/{platformId}/alias` | Liste alias (Iceberg) |
+| GET | `/zimbra/platform/{platformId}/alias/{aliasId}` | Détail alias |
+| POST | `/zimbra/platform/{platformId}/alias` | Créer alias |
+| DELETE | `/zimbra/platform/{platformId}/alias/{aliasId}` | Supprimer alias |
+
+### Domain
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform/{platformId}/domain` | Liste domaines (Iceberg) |
+| GET | `/zimbra/platform/{platformId}/domain/{domainId}` | Détail domaine |
+| POST | `/zimbra/platform/{platformId}/domain` | Ajouter domaine |
+| PUT | `/zimbra/platform/{platformId}/domain/{domainId}` | Modifier domaine |
+| DELETE | `/zimbra/platform/{platformId}/domain/{domainId}` | Supprimer domaine |
+| POST | `/zimbra/platform/{platformId}/diagnostic/domain` | Diagnostic DNS |
+
+### Organization
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform/{platformId}/organization` | Liste organisations (Iceberg) |
+| GET | `/zimbra/platform/{platformId}/organization/{organizationId}` | Détail organisation |
+| POST | `/zimbra/platform/{platformId}/organization` | Créer organisation |
+| PUT | `/zimbra/platform/{platformId}/organization/{organizationId}` | Modifier organisation |
+| DELETE | `/zimbra/platform/{platformId}/organization/{organizationId}` | Supprimer organisation |
+
+### Redirection
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform/{platformId}/redirection` | Liste redirections (Iceberg) |
+| GET | `/zimbra/platform/{platformId}/redirection/{redirectionId}` | Détail redirection |
+| POST | `/zimbra/platform/{platformId}/redirection` | Créer redirection |
+| DELETE | `/zimbra/platform/{platformId}/redirection/{redirectionId}` | Supprimer redirection |
+
+### Mailing List
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform/{platformId}/mailingList` | Liste mailing lists (Iceberg) |
+| GET | `/zimbra/platform/{platformId}/mailingList/{mailingListId}` | Détail mailing list |
+| POST | `/zimbra/platform/{platformId}/mailingList` | Créer mailing list |
+| PUT | `/zimbra/platform/{platformId}/mailingList/{mailingListId}` | Modifier mailing list |
+
+### Slot
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform/{platformId}/slot` | Liste slots (Iceberg) |
+| GET | `/zimbra/platform/{platformId}/slot/{slotId}` | Détail slot |
+
+### Task
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/zimbra/platform/{platformId}/task` | Liste tâches en cours |
+| GET | `/zimbra/platform/{platformId}/task?organizationId={orgId}` | Tâches filtrées |
+
+## 5.3 Endpoints API V6 (Legacy/Order)
+
+### Domain Zone
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/domain/zone` | Liste zones DNS de l'utilisateur |
+| GET | `/domain/zone/{zoneName}` | Détail zone DNS |
+
+### Order
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/order/catalog/public/{productName}?ovhSubsidiary={sub}` | Catalogue produits |
+| GET | `/order/upgrade/zimbra/{serviceName}/{planCode}` | Simulation prix upgrade |
+| POST | `/order/upgrade/zimbra/{serviceName}/{planCode}` | Commander upgrade |
+
+### Services
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/services` | Liste services (Iceberg V6) |
+| PUT | `/services/{serviceId}` | Modifier service (billing) |
+
+## 5.4 Séquencement des appels API
+
+### Chargement initial de l'application
+```
+1. GET /zimbra/platform
+   └── Si une seule plateforme: redirect vers /:platformId
+   └── Si plusieurs: afficher sélecteur
+```
+
+### Chargement du Dashboard
+```
+1. GET /zimbra/platform/{platformId}/organization (première org, pour stats)
+2. GET /zimbra/platform/{platformId}/task (tâches en cours)
+   └── Affichage en parallèle
+```
+
+### Liste des comptes email
+```
+1. GET /zimbra/platform/{platformId}/account (Iceberg, page 1)
+2. GET /zimbra/platform/{platformId}/slot (pour slots non configurés)
+3. GET /services?resourceName=... (pour infos facturation)
+   └── Appels parallèles selon affichage (accounts ou slots)
+```
+
+### Ajout d'un domaine
+```
+1. GET /domain/zone (zones DNS disponibles)
+2. Sélection domaine par l'utilisateur
+3. POST /zimbra/platform/{platformId}/domain
+4. POST /zimbra/platform/{platformId}/diagnostic/domain (vérification)
+   └── Polling jusqu'à validation ou timeout
+```
+
+### Création de comptes email
+```
+1. GET /zimbra/platform/{platformId}/slot (slots disponibles)
+2. GET /zimbra/platform/{platformId}/domain (domaines configurés)
+3. Sélection slot et domaine
+4. POST /zimbra/platform/{platformId}/account (pour chaque compte)
+   └── Batch séquentiel si plusieurs comptes
+```
+
+### Upgrade d'offre
+```
+1. GET /order/catalog/public/zimbra?ovhSubsidiary={sub}
+2. GET /order/upgrade/zimbra/{serviceName}/{planCode} (simulation)
+3. POST /order/upgrade/zimbra/{serviceName}/{planCode} (commande)
+   └── Redirection vers paiement si nécessaire
+```
+
+### Diagnostic DNS d'un domaine
+```
+1. POST /zimbra/platform/{platformId}/diagnostic/domain
+   Body: { domains: [domainId] }
+2. Affichage des résultats MX, SPF, DKIM, SRV
+   └── Avec recommandations de configuration
+```
+
+## 5.5 Types de données
+
+### ResourceStatus (enum commun)
+```typescript
+enum ResourceStatus {
+  CREATING = 'CREATING',
+  DELETING = 'DELETING',
+  ERROR = 'ERROR',
+  READY = 'READY',
+  SUSPENDED = 'SUSPENDED',
+  UPDATING = 'UPDATING',
+}
+```
+
+### ZimbraOffer (enum)
+```typescript
+enum ZimbraOffer {
+  STARTER = 'STARTER',
+  PRO = 'PRO',
+  BUSINESS = 'BUSINESS',
+}
+```
+
+### ZimbraPlatformType
+```typescript
+interface ZimbraPlatformType {
+  id: string;
+  iam: {
+    id: string;
+    urn: string;
+  };
+}
+```
+
+### AccountType
+```typescript
+interface AccountType {
+  id: string;
+  resourceStatus: keyof typeof ResourceStatus;
+  checksum: string;
+  targetSpec: {
+    description: string;
+    domainId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    hideInGal: boolean;
+    organizationId: string;
+    offer: keyof typeof ZimbraOffer;
+    contactInformation?: {
+      profession?: string;
+      office?: string;
+      service?: string;
+      company?: string;
+      mobileNumber?: string;
+      phoneNumber?: string;
+      faxNumber?: string;
+      street?: string;
+      postcode?: string;
+      city?: string;
+      country?: string;
+    };
+  };
+  currentState: {
+    /* même structure que targetSpec */
+    lastConnectionAt?: string;
+    usedQuota?: number;
+    availableQuota?: number;
+  };
+  currentTasks: Array<{
+    id: string;
+    link: string;
+    status: string;
+    type: string;
+  }>;
+}
+
+interface AccountBodyParamsType {
+  description?: string;
+  domainId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  hideInGal?: boolean;
+  organizationId: string;
+  offer?: keyof typeof ZimbraOffer;
+  contactInformation?: { /* ... */ };
+}
+```
+
+### AliasType
+```typescript
+interface AliasType {
+  id: string;
+  resourceStatus: keyof typeof ResourceStatus;
+  checksum: string;
+  targetSpec: {
+    alias: string;
+    accountId: string;
+    organizationId: string;
+  };
+  currentState: {
+    alias: string;
+    accountId: string;
+    organizationId: string;
+    organizationLabel: string;
+  };
+  currentTasks: TaskReference[];
+}
+
+interface AliasBodyParamsType {
+  alias: string;
+  accountId: string;
+  organizationId: string;
+}
+```
+
+### DomainType
+```typescript
+interface DomainType {
+  id: string;
+  resourceStatus: keyof typeof ResourceStatus;
+  checksum: string;
+  targetSpec: {
+    organizationId: string;
+  };
+  currentState: {
+    name: string;
+    organizationId: string;
+    organizationLabel: string;
+    status: string;
+    cnameToCheck: string;
+    createdAt: string;
+    updatedAt: string;
+    accountsStatistics: AccountStatistics[];
+    expectedDNSConfig: ExpectedDNSConfig;
+  };
+  currentTasks: TaskReference[];
+}
+
+interface DomainBodyParamsType {
+  organizationId: string;
+  name: string;
+  autoConfigureMX: boolean;
+  autoConfigureSPF: boolean;
+  autoConfigureDKIM: boolean;
+  autoConfigureAutodiscover: boolean;
+  dkimEnabled?: boolean;
+}
+
+interface ExpectedDNSConfig {
+  mx?: { priority: number; target: string }[];
+  spf?: { value: string };
+  dkim?: { selector: string; publicKey: string }[];
+  srv?: { priority: number; weight: number; port: number; target: string }[];
+}
+```
+
+### OrganizationType
+```typescript
+interface OrganizationType {
+  id: string;
+  resourceStatus: keyof typeof ResourceStatus;
+  checksum: string;
+  targetSpec: {
+    label: string;
+  };
+  currentState: {
+    label: string;
+    accountsStatistics: AccountStatistics[];
+  };
+  currentTasks: TaskReference[];
+}
+
+interface OrganizationBodyParamsType {
+  label: string;
+}
+```
+
+### RedirectionType
+```typescript
+interface RedirectionType {
+  id: string;
+  resourceStatus: keyof typeof ResourceStatus;
+  checksum: string;
+  targetSpec: {
+    from: string;
+    to: string;
+    keepCopy: boolean;
+    organizationId: string;
+  };
+  currentState: {
+    from: string;
+    to: string;
+    keepCopy: boolean;
+    organizationId: string;
+    organizationLabel: string;
+  };
+  currentTasks: TaskReference[];
+}
+
+interface RedirectionBodyParamsType {
+  from: string;
+  to: string;
+  keepCopy: boolean;
+  organizationId: string;
+}
+```
+
+### MailingListType
+```typescript
+enum ReplyToChoices {
+  LIST = 'list',
+  SENDER = 'sender',
+  MAILBOX = 'another_mailbox',
+}
+
+enum ModerationChoices {
+  ALL = 'all',
+  SUBSONLY = 'subs_only',
+  NONE = 'none',
+}
+
+interface MailingListType {
+  id: string;
+  resourceStatus: keyof typeof ResourceStatus;
+  checksum: string;
+  targetSpec: {
+    email: string;
+    owner: string;
+    members: string[];
+    defaultReplyTo: ReplyToChoices;
+    moderationOption: ModerationChoices;
+    subscriberModeration: boolean;
+    language: string;
+    organizationId: string;
+  };
+  currentState: {
+    /* même structure + organizationLabel */
+  };
+  currentTasks: TaskReference[];
+}
+
+interface MailingListBodyParamsType {
+  email?: string;
+  owner?: string;
+  members?: string[];
+  defaultReplyTo?: ReplyToChoices;
+  moderationOption?: ModerationChoices;
+  subscriberModeration?: boolean;
+  language?: string;
+  organizationId?: string;
+}
+```
+
+### SlotType
+```typescript
+interface SlotType {
+  id: string;
+  resourceStatus: keyof typeof ResourceStatus;
+  checksum: string;
+  targetSpec: {
+    offer: keyof typeof ZimbraOffer;
+    organizationId: string;
+  };
+  currentState: {
+    offer: keyof typeof ZimbraOffer;
+    organizationId: string;
+    organizationLabel: string;
+  };
+  currentTasks: TaskReference[];
+}
+```
+
+### TaskType
+```typescript
+interface TaskType {
+  id: string;
+  link: string;
+  message: string;
+  progress: number;
+  resourceId: string;
+  status: 'DONE' | 'ERROR' | 'PENDING' | 'RUNNING';
+  type: string;
+  createdAt: string;
+  finishedAt?: string;
+}
+```
+
+### AccountStatistics
+```typescript
+interface AccountStatistics {
+  offer: keyof typeof ZimbraOffer;
+  configuredAccountsCount: number;
+  availableAccountsCount: number;
+}
+```
+
+### DomainDiagnosisResponse
+```typescript
+enum DomainDiagnosisStatusEnum {
+  OK = 'OK',
+  ERROR = 'ERROR',
+  PARTIAL = 'PARTIAL',
+}
+
+interface DomainDiagnosisResponse {
+  domainId: string;
+  domainName?: string;
+  status: DomainDiagnosisStatusEnum;
+  error?: DomainDiagnosisError;
+  result?: {
+    mx: DomainDiagnosisTestMXResult;
+    spf: DomainDiagnosisTestSPFResult;
+    dkim: DomainDiagnosisTestDKIMResult;
+    autodiscover: DomainDiagnosisTestSRVResult;
+  };
+  recommendations?: DomainDiagnosisRecommendations;
+}
+
+interface DomainDiagnosisTestMXResult {
+  status: 'OK' | 'ERROR' | 'WARNING';
+  errors: Array<{ code: string; message: string }>;
+  found: Array<{ priority: number; target: string }>;
+  expected: Array<{ priority: number; target: string }>;
+}
+
+// Structures similaires pour SPF, DKIM, SRV
+```
+
+### SlotService (facturation)
+```typescript
+enum ServiceBillingState {
+  AUTOMATIC_RENEWAL = 'AUTOMATIC_RENEWAL',
+  MANUAL_RENEWAL = 'MANUAL_RENEWAL',
+  CANCELATION_PLANNED = 'CANCELATION_PLANNED',
+  CANCELED = 'CANCELED',
+}
+
+interface SlotService {
+  id: number;
+  state: keyof typeof ServiceBillingState;
+  nextBillingDate: string;
+  planCode: string;
+}
+```
+
+### ZoneWithIAM (zone DNS)
+```typescript
+interface ZoneWithIAM {
+  name: string;
+  dnssecSupported: boolean;
+  hasDnsAnycast: boolean;
+  lastUpdate: string;
+  nameServers: string[];
+  iam?: {
+    id: string;
+    urn: string;
+    displayName?: string;
+    tags?: Record<string, string>;
+  };
+}
+```
+
+## 5.6 Hooks React Query
+
+### useAccounts
+```typescript
+const useAccounts = (props?: {
+  organizationId?: string;
+  domainId?: string;
+  shouldFetchAll?: boolean;
+  refetchInterval?: number;
+}) => useInfiniteQuery({
+  queryKey: ['get', 'zimbra', 'platform', platformId, 'accounts', searchParams],
+  queryFn: ({ pageParam }) => getZimbraPlatformAccounts({ platformId, pageParam, ... }),
+  getNextPageParam: (lastPage) => lastPage.cursorNext,
+  select: (data) => data.pages.flatMap((page) => page.data),
+});
+```
+
+### useDomains
+```typescript
+const useDomains = (props?: {
+  organizationId?: string;
+  domainName?: string;
+  shouldFetchAll?: boolean;
+}) => useInfiniteQuery({ /* similar */ });
+```
+
+### useOrganizations
+```typescript
+const useOrganizations = (props?: {
+  shouldFetchAll?: boolean;
+}) => useInfiniteQuery({ /* similar */ });
+```
+
+### useDomainDiagnostic
+```typescript
+const useDomainDiagnostic = ({ domainId }: { domainId: string }) => useQuery({
+  queryKey: ['get', 'zimbra', 'platform', platformId, 'domains', 'diagnostic', domainId],
+  queryFn: () => postZimbraPlatformDomainsDiagnostic(platformId, [domainId]),
+  select: (data) => data.find((d) => d.domainId === domainId),
+});
+```
+
+### usePlatform
+```typescript
+const usePlatform = () => {
+  const { platformId } = useParams();
+  const { data } = useQuery({
+    queryKey: ['get', 'zimbra', 'platform'],
+    queryFn: getZimbraPlatformList,
+  });
+  const platform = data?.find((p) => p.id === platformId);
+  return { platformId, platformUrn: platform?.iam?.urn };
+};
+```
+
+### useSlotServices
+```typescript
+const useSlotServices = () => useQuery({
+  queryKey: ['get', 'zimbra', 'slot', 'services'],
+  queryFn: getSlotServices,
+});
+// Retourne: Record<slotId, SlotService>
+```
+
+### useOrderCatalog
+```typescript
+const useOrderCatalog = ({ ovhSubsidiary, productName = 'zimbra' }) => useQuery({
+  queryKey: ['get', 'order', 'catalog', productName, ovhSubsidiary],
+  queryFn: () => getOrderCatalog({ ovhSubsidiary, productName }),
+});
+```
+
+================================================================================
+SECTION 6 - TRADUCTIONS (i18n)
+================================================================================
+
+## 6.1 Namespaces
+
+| Namespace | Chemin | Usage |
+|-----------|--------|-------|
+| common | public/translations/common/ | Labels génériques, états, boutons |
+| dashboard | public/translations/dashboard/ | Page informations générales |
+| accounts | public/translations/accounts/ | Liste comptes email |
+| accounts/form | public/translations/accounts/form/ | Formulaire création compte |
+| accounts/alias | public/translations/accounts/alias/ | Alias |
+| accounts/order | public/translations/accounts/order/ | Commande comptes |
+| domains | public/translations/domains/ | Liste domaines |
+| domains/form | public/translations/domains/form/ | Formulaire ajout domaine |
+| domains/diagnostic | public/translations/domains/diagnostic/ | Diagnostics DNS |
+| organizations | public/translations/organizations/ | Liste organisations |
+| organizations/form | public/translations/organizations/form/ | Formulaire organisation |
+| redirections | public/translations/redirections/ | Redirections |
+| auto-replies | public/translations/auto-replies/ | Répondeurs |
+| auto-replies/form | public/translations/auto-replies/form/ | Formulaire répondeur |
+| mailing-lists | public/translations/mailing-lists/ | Listes diffusion |
+| mailing-lists/form | public/translations/mailing-lists/form/ | Formulaire mailing list |
+| onboarding | public/translations/onboarding/ | Onboarding |
+
+## 6.2 Clés communes (common)
+
+```json
+{
+  "configure_now": "Configurer maintenant",
+  "configure_later": "Configurer plus tard",
+  "skip_step": "Passer cette étape",
+  "delete_success_message": "Votre demande de suppression a bien été prise en compte. Elle sera exécutée d'ici quelques instants.",
+  "delete_error_message": "Votre demande de suppression n'a pas pu aboutir. Merci de réessayer dans quelques instants. {{ error }}",
+  "cancel_slot_success_message": "Votre demande de résiliation a bien été prise en compte. Elle sera exécutée d'ici quelques instants.",
+  "cancel_slot_error_message": "Votre demande de résiliation n'a pas pu aboutir. Merci de réessayer dans quelques instants. {{ error }}",
+  "undo_cancel_slot_success_message": "Votre demande d'annulation de résiliation a bien été prise en compte. Elle sera exécutée d'ici quelques instants.",
+  "add_success_message": "Votre demande d'ajout a bien été prise en compte. Elle sera exécutée d'ici quelques instants.",
+  "add_error_message": "Votre demande d'ajout n'a pas pu aboutir. Merci de réessayer dans quelques instants. {{ error }}",
+  "edit_success_message": "Votre demande de modification a bien été prise en compte. Elle sera exécutée d'ici quelques instants.",
+  "edit_error_message": "Votre demande de modification n'a pas pu aboutir. Merci de réessayer dans quelques instants. {{ error }}",
+  "app_name": "Zimbra",
+  "webmail": "Webmail",
+  "configuration": "Configuration",
+  "organization": "Organisation",
+  "add_organization": "Ajouter une organisation",
+  "select_organization": "Sélectionner une organisation",
+  "edit_organization": "Modifier l'organisation",
+  "delete_organization": "Supprimer l'organisation",
+  "domain": "Domaine",
+  "domain_name": "Nom de domaine",
+  "alias": "Alias",
+  "add_alias": "Créer un alias",
+  "delete_alias": "Supprimer l'alias",
+  "select_domain": "Sélectionner un nom de domaine",
+  "add_domain": "Ajouter un domaine",
+  "edit_domain": "Configuration du domaine",
+  "delete_domain": "Supprimer le domaine",
+  "redirections": "Redirections",
+  "delete_redirection": "Supprimer la redirection",
+  "add_redirection": "Créer une redirection",
+  "auto_reply": "Répondeur",
+  "add_auto_reply": "Créer un répondeur",
+  "delete_auto_reply": "Supprimer un répondeur",
+  "mailing_list": "Liste de diffusion",
+  "add_mailing_list": "Créer une liste de diffusion",
+  "edit_mailing_list": "Configurer la liste de diffusion",
+  "email_account": "Compte email",
+  "add_email_account": "Créer un compte email",
+  "email_account_settings": "Paramètres du compte",
+  "delete_email_account": "Supprimer le compte",
+  "order_zimbra_accounts": "Commander des comptes Zimbra",
+  "select_slot": "Sélectionner une offre",
+  "form_at_least_one_digit": "Doit contenir au minimum un chiffre",
+  "form_at_least_one_uppercase": "Doit contenir au minimum une majuscule",
+  "form_at_least_one_special": "Doit contenir au minimum un caractère spécial",
+  "form_valid_email": "Veuillez saisir une adresse email valide",
+  "form_valid_domain": "Veuillez saisir un domaine valide",
+  "form_valid_account": "Veuillez saisir un nom de compte valide",
+  "generate_password_tooltip": "Générer un mot de passe",
+  "generated_password_tooltip": "Mot de passe copié dans le presse-papier !",
+  "service_billing_state_canceled": "Résilié",
+  "service_billing_state_cancelation_planned": "Résiliation programmée",
+  "service_billing_state_manual_renewal": "Renouvellement manuel",
+  "service_billing_state_automatic_renewal": "Renouvellement automatique",
+  "service_billing_state_cancelation_planned_tooltip": "Résiliation prévue le",
+  "service_billing_state_automatic_renewal_tooltip": "Prochaine échéance le",
+  "offer": "Offre",
+  "monthly": "Mensuel",
+  "renewal_at": "Renouvellement le {{ date }}",
+  "from": "Du",
+  "until": "Jusqu'au",
+  "name": "Nom",
+  "last_name": "Nom de famille",
+  "first_name": "Prénom",
+  "account_name": "Nom du compte",
+  "owner": "Propriétaire",
+  "diagnostics": "Diagnostics",
+  "useful_links": "Liens utiles",
+  "number_of_accounts": "Nombre de comptes",
+  "no_email_account": "Vous ne possedez actuellement aucune boite email.",
+  "cancel_slot": "Oui, résilier",
+  "cancel_slot_refuse": "Non, refuser",
+  "undo_cancel_slot": "Annuler la résiliation",
+  "cancel_slot_title": "Résilier mon service Zimbra {{ offer }}",
+  "undo_cancel_slot_title": "Réactiver le renouvellement pour mon service Zimbra {{ offer }}",
+  "upgrade_pro": "Mettre à niveau",
+  "update_offer": "Changer d'offre",
+  "update_offer_title": "Sélectionnez votre nouvelle offre",
+  "service_state_creating": "Création",
+  "service_state_deleting": "Suppression",
+  "service_state_suspended": "Suspendu",
+  "service_state_error": "Erreur",
+  "service_state_ready": "Actif",
+  "service_state_updating": "Mise à jour",
+  "account_state_blockedforspam": "Bloqué",
+  "account_state_tooltip_billinglocked": "Problème de facturation, vérifier la section facture de votre espace client",
+  "account_state_tooltip_blockedforspam": "Suspendu pour activité suspecte, contactez le support utilisateur.",
+  "paid_now": "À payer maintenant",
+  "next_billing": "Prochaine facturation",
+  "continue_order_btn": "Continuer ma commande",
+  "export_success": "Le fichier a été correctement créé.",
+  "last_connection": "Dernière connexion",
+  "quota_used": "Quota utilisé",
+  "quota_available": "Quota disponible",
+  "hide_in_gal": "Adresse cachée dans l'annuaire"
+}
+```
+
+## 6.3 Clés domaines (domains/form)
+
+```json
+{
+  "zimbra_domains_add_domain_cta_back": "Retour vers les noms de domaine",
+  "zimbra_domains_add_domain_select_title": "Sélectionner un domaine dans la liste",
+  "zimbra_domains_add_domain_input": "Saisissez votre nom de domaine",
+  "zimbra_domains_add_domain_input_title": "Saisir un nom de domaine non géré par votre compte OVHcloud",
+  "zimbra_domains_add_domain_configuration_description": "Comment voulez-vous configurer votre zone DNS ?",
+  "zimbra_domains_add_domain_configuration_choice_standard": "Configuration recommandée",
+  "zimbra_domains_add_domain_configuration_choice_standard_info": "Nous configurons votre service pour assurer le meilleur niveau de sécurité.",
+  "zimbra_domains_add_domain_configuration_choice_expert": "Configuration personnalisée",
+  "zimbra_domains_add_domain_configuration_choice_expert_info": "Vous pouvez personnaliser la configuration et choisir quand basculer vos emails vers ce service.",
+  "zimbra_domains_add_domain_configuration_expert_configure_srv": "Configurer l'enregistrement SRV automatiquement (autodiscover)",
+  "zimbra_domains_add_domain_configuration_expert_configure_mx": "Configurer l'enregistrement MX automatiquement (réception des emails)",
+  "zimbra_domains_add_domain_configuration_expert_configure_spf": "Configurer l'enregistrement SPF automatiquement",
+  "zimbra_domains_add_domain_configuration_expert_configure_dkim": "Configurer l'enregistrement DKIM automatiquement",
+  "zimbra_domains_add_domain_configuration_cname_title": "Vérification de votre domaine",
+  "zimbra_domains_add_domain_configuration_cname_description": "Pour valider que vous êtes titulaire du domaine <strong>{{domain}}</strong>, veuillez ajouter cet enregistrement DNS:",
+  "zimbra_domains_add_domain_configuration_cname_field_type": "Type d'enregistrement :",
+  "zimbra_domains_add_domain_configuration_cname_field_subdomain": "Sous domaine :",
+  "zimbra_domains_add_domain_configuration_cname_field_target": "Cible :",
+  "zimbra_domains_add_domain_warning_modification_domain": "Vous devez vous assurer que la zone DNS du domaine choisi peut être modifiée par son administrateur."
+}
+```
+
+## 6.4 Clés diagnostics DNS (domains/diagnostic)
+
+```json
+{
+  "zimbra_domain_diagnostic_cta_back": "Retour aux domaines",
+  "zimbra_domain_diagnostic_cta_refresh": "Rafraîchir",
+  "zimbra_domain_diagnostic_cta_auto_configure": "Auto-configurer",
+  "zimbra_domain_diagnostic_status": "Statut :",
+  "zimbra_domain_diagnostic_status_ok": "Configuration OK",
+  "zimbra_domain_diagnostic_status_error": "Erreur de configuration",
+  "zimbra_domain_diagnostic_status_warning": "Attention",
+  "zimbra_domain_diagnostic_status_disabled": "Désactiver",
+  "zimbra_domain_diagnostic_information_message_mx_ok": "La configuration de votre compte Zimbra sur OVHcloud est fonctionnelle...",
+  "zimbra_domain_diagnostic_information_message_mx_error": "Nous constatons une configuration MX qui ne correspond pas à celle attendue...",
+  "zimbra_domain_diagnostic_information_message_spf_ok": "Le protocole SPF est correctement configuré sur votre domaine...",
+  "zimbra_domain_diagnostic_information_message_spf_error": "Nous constatons une configuration SPF qui ne correspond pas...",
+  "zimbra_domain_diagnostic_information_message_dkim_ok": "La signature DKIM est correctement configurée...",
+  "zimbra_domain_diagnostic_information_message_dkim_error": "Nous avons détecté une configuration DKIM qui ne correspond pas...",
+  "zimbra_domain_diagnostic_information_message_dkim_disabled": "La signature DKIM n'est pas activée...",
+  "zimbra_domain_diagnostic_information_message_srv_ok": "L'autodiscover est correctement configuré sur votre domaine...",
+  "zimbra_domain_diagnostic_information_message_srv_error": "Nous constatons une configuration SRV qui ne correspond pas...",
+  "zimbra_domain_diagnostic_type": "Type :",
+  "zimbra_domain_diagnostic_field_host": "Nom/Hôte :",
+  "zimbra_domain_diagnostic_field_value": "Valeur :",
+  "zimbra_domain_diagnostic_field_priority": "Priorité :",
+  "zimbra_domain_diagnostic_field_weight": "Poids :",
+  "zimbra_domain_diagnostic_field_port": "Port :",
+  "zimbra_domain_diagnostic_field_target": "Cible :",
+  "zimbra_domain_diagnostic_dkim_enable": "Activer la signature DKIM",
+  "zimbra_domain_diagnostic_dkim_disable": "Désactiver la signature DKIM"
+}
+```
+
+## 6.5 Clés redirections
+
+```json
+{
+  "zimbra_redirections_from": "De",
+  "zimbra_redirections_to": "Vers",
+  "zimbra_redirections_account_title": "Gestion des redirections",
+  "zimbra_redirections_account_quota": "Quota de redirection",
+  "zimbra_redirections_delete_modal_content": "Souhaitez-vous supprimer la redirection ?",
+  "zimbra_redirections_add_header": "Merci de compléter les informations pour la redirection.",
+  "zimbra_redirections_add_form_input_from": "De l'adresse",
+  "zimbra_redirections_add_form_input_to": "Vers l'adresse",
+  "zimbra_redirections_add_form_input_checkbox": "Conserver une copie de l'email chez OVHcloud",
+  "zimbra_redirections_add_success_message": "Votre demande de création de redirection a bien été prise en compte...",
+  "zimbra_redirections_delete_success_message": "Votre demande de suppression de redirection a bien été prise en compte..."
+}
+```
+
+## 6.6 Clés onboarding
+
+```json
+{
+  "title": "Suite collaborative Zimbra",
+  "description": "Communiquer et collaborer en entreprise grâce à la suite Zimbra",
+  "orderButtonLabel": "Commander",
+  "moreInfoButtonLabel": "Découvrir la solution Zimbra",
+  "welcome_title": "Bienvenue sur Zimbra",
+  "welcome_description": "Souhaitez-vous configurer votre compte maintenant ?",
+  "configure_title": "Configurons ensemble votre service",
+  "configure_exit": "Quitter la configuration",
+  "configure_success_message": "Félicitations, votre service est maintenant configuré !",
+  "card_guide_category": "Tutoriel",
+  "card_guide_title_1": "Premiers pas avec l'offre Zimbra",
+  "card_guide_title_2": "Configurer son compte Zimbra",
+  "card_guide_title_3": "Maitriser le webmail Zimbra"
+}
+```
+
+================================================================================
+SECTION 7 - RÈGLES MÉTIER
+================================================================================
+
+## 7.1 Validation des formulaires
+
+### Compte email
+```typescript
+const accountSchema = z.object({
+  firstName: z.string().min(1, 'Champ requis'),
+  lastName: z.string().min(1, 'Champ requis'),
+  account: z.string()
+    .min(1, 'Champ requis')
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9.+_-]*$/, 'form_valid_account'),
+  password: z.string()
+    .min(10, 'Minimum 10 caractères')
+    .regex(/[A-Z]/, 'form_at_least_one_uppercase')
+    .regex(/[0-9]/, 'form_at_least_one_digit')
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'form_at_least_one_special'),
+  domain: z.string().min(1),
+  slotId: z.string().min(1),
+});
+```
+
+### Organisation
+```typescript
+const organizationSchema = z.object({
+  label: z.string().min(1, 'Champ requis').max(255),
+});
+```
+
+### Domaine
+```typescript
+const domainSchema = z.object({
+  name: z.string()
+    .min(1, 'Champ requis')
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}$/, 'form_valid_domain'),
+  organizationId: z.string().min(1, 'Sélection requise'),
+  autoConfigureMX: z.boolean().default(true),
+  autoConfigureSPF: z.boolean().default(true),
+  autoConfigureDKIM: z.boolean().default(true),
+  autoConfigureAutodiscover: z.boolean().default(true),
+});
+```
+
+### Redirection
+```typescript
+const redirectionSchema = z.object({
+  from: z.string().email('form_valid_email'),
+  to: z.string().email('form_valid_email'),
+  keepCopy: z.boolean().default(false),
+  organizationId: z.string().min(1),
+});
+```
+
+### Alias
+```typescript
+const aliasSchema = z.object({
+  alias: z.string()
+    .min(1, 'Champ requis')
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9.+_-]*@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/, 'form_valid_email'),
+  accountId: z.string().min(1),
+  organizationId: z.string().min(1),
+});
+```
+
+### Liste de diffusion
+```typescript
+const mailingListSchema = z.object({
+  email: z.string().email('form_valid_email'),
+  owner: z.string().email('form_valid_email'),
+  members: z.array(z.string().email()).min(1, 'Au moins un membre requis'),
+  defaultReplyTo: z.enum(['list', 'sender', 'another_mailbox']),
+  moderationOption: z.enum(['all', 'subs_only', 'none']),
+  subscriberModeration: z.boolean(),
+  language: z.string().default('FR'),
+  organizationId: z.string().min(1),
+});
+```
+
+## 7.2 États et transitions des ressources
+
+### ResourceStatus
+```
+┌─────────────┐
+│   CREATING  │ ──────────────────┐
+└──────┬──────┘                   │
+       │ (succès)                 │ (échec)
+       ▼                          ▼
+┌─────────────┐              ┌─────────────┐
+│    READY    │ ◄────────────│    ERROR    │
+└──────┬──────┘   (correction)└─────────────┘
+       │                          ▲
+       │ (modification)           │ (échec)
+       ▼                          │
+┌─────────────┐                   │
+│  UPDATING   │ ──────────────────┘
+└──────┬──────┘
+       │ (succès)
+       ▼
+┌─────────────┐
+│    READY    │
+└──────┬──────┘
+       │ (suppression)
+       ▼
+┌─────────────┐
+│  DELETING   │ ──────► (supprimé)
+└─────────────┘
+```
+
+### ServiceBillingState
+```
+┌─────────────────────┐
+│  AUTOMATIC_RENEWAL  │ ◄──────────────────┐
+└──────────┬──────────┘                    │
+           │ (désactivation auto-renew)    │ (undo cancel)
+           ▼                               │
+┌─────────────────────┐                    │
+│   MANUAL_RENEWAL    │                    │
+└──────────┬──────────┘                    │
+           │ (demande résiliation)         │
+           ▼                               │
+┌─────────────────────────┐                │
+│  CANCELATION_PLANNED    │ ───────────────┘
+└──────────┬──────────────┘
+           │ (expiration)
+           ▼
+┌─────────────────────┐
+│      CANCELED       │
+└─────────────────────┘
+```
+
+## 7.3 Règles de suppression
+
+### Domaine
+- Impossible de supprimer un domaine si des comptes email sont associés
+- Message d'erreur avec lien vers la liste des comptes à supprimer
+
+### Organisation
+- Impossible de supprimer une organisation avec des domaines associés
+- Impossible de supprimer une organisation avec des comptes associés
+
+### Compte email
+- Suppression immédiate possible
+- Les alias associés sont supprimés en cascade
+- Les redirections associées sont supprimées en cascade
+
+## 7.4 Permissions IAM
+
+```typescript
+const IAM_ACTIONS = {
+  account: {
+    get: 'zimbra:apiv2:platform/account/get',
+    create: 'zimbra:apiv2:platform/account/create',
+    edit: 'zimbra:apiv2:platform/account/edit',
+    delete: 'zimbra:apiv2:platform/account/delete',
+  },
+  alias: {
+    get: 'zimbra:apiv2:platform/alias/get',
+    create: 'zimbra:apiv2:platform/alias/create',
+    delete: 'zimbra:apiv2:platform/alias/delete',
+  },
+  domain: {
+    get: 'zimbra:apiv2:platform/domain/get',
+    create: 'zimbra:apiv2:platform/domain/create',
+    edit: 'zimbra:apiv2:platform/domain/edit',
+    delete: 'zimbra:apiv2:platform/domain/delete',
+  },
+  organization: {
+    get: 'zimbra:apiv2:platform/organization/get',
+    create: 'zimbra:apiv2:platform/organization/create',
+    edit: 'zimbra:apiv2:platform/organization/edit',
+    delete: 'zimbra:apiv2:platform/organization/delete',
+  },
+  redirection: {
+    get: 'zimbra:apiv2:platform/redirection/get',
+    create: 'zimbra:apiv2:platform/redirection/create',
+    delete: 'zimbra:apiv2:platform/redirection/delete',
+  },
+  mailingList: {
+    get: 'zimbra:apiv2:platform/mailingList/get',
+    create: 'zimbra:apiv2:platform/mailingList/create',
+    edit: 'zimbra:apiv2:platform/mailingList/edit',
+  },
+  slot: {
+    get: 'zimbra:apiv2:platform/slot/get',
+  },
+  task: {
+    get: 'zimbra:apiv2:platform/task/get',
+  },
+};
+```
+
+Utilisation avec ManagerText :
+```tsx
+<ManagerText
+  urn={platformUrn}
+  iamActions={[IAM_ACTIONS.account.get]}
+>
+  {/* Contenu protégé */}
+</ManagerText>
+```
+
+## 7.5 Offres Zimbra
+
+| Code | Label | Quota | Features |
+|------|-------|-------|----------|
+| ZIMBRA_STARTER | Starter | 5 Go | Email, Webmail |
+| ZIMBRA_PRO | Pro | 50 Go | + Calendrier, Contacts, Drive |
+| ZIMBRA_BUSINESS | Business | 100 Go | + Features avancées (coming soon) |
+
+### Règles d'upgrade
+- Starter → Pro : autorisé
+- Starter → Business : autorisé (quand disponible)
+- Pro → Business : autorisé (quand disponible)
+- Downgrade : non autorisé
+
+## 7.6 Vérification de domaine
+
+### Processus
+1. Ajout du domaine avec création CNAME attendu
+2. L'utilisateur configure le CNAME dans sa zone DNS
+3. Le système vérifie périodiquement le CNAME
+4. Timeout de 48h pour la vérification
+5. Après vérification : configuration DNS automatique ou manuelle selon choix
+
+### Enregistrement CNAME requis
+```
+Type: CNAME
+Sous-domaine: ovh-zimbra-verification-{token}
+Cible: ovh.com
+```
+
+## 7.7 Configuration DNS automatique
+
+### MX Record
+```
+Priorité: 10
+Cible: mx1.mail.ovh.net
+```
+
+### SPF Record
+```
+Type: TXT
+Valeur: v=spf1 include:mx.ovh.com ~all
+```
+
+### DKIM Record
+```
+Type: CNAME
+Sélecteur: ovhex{selector1}._domainkey
+Cible: ovhex{selector1}._domainkey.{domain}.zimbra.ovh
+```
+
+### SRV Record (Autodiscover)
+```
+Service: _autodiscover._tcp
+Priorité: 0
+Poids: 0
+Port: 443
+Cible: autodiscover.mail.ovh.net
+```
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

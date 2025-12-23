@@ -1,0 +1,920 @@
+# CAHIER DES CHARGES - AllDom Manager
+# Source: old_manager_web-cloud_alldom.tar
+# Généré le: 2025-01-21
+
+---
+
+## 1. RÉSUMÉ EXÉCUTIF
+
+### Périmètre
+Gestion des packs AllDom OVHcloud : listing, détail, résiliation et annulation de résiliation des packs de noms de domaine groupés.
+
+### Objectif fonctionnel
+Permettre aux utilisateurs de visualiser, gérer et résilier leurs packs AllDom avec la possibilité de conserver certains domaines en gestion individuelle lors de la résiliation.
+
+### Users cibles
+- Propriétaires de packs AllDom (domaines groupés avec tarif préférentiel)
+- Contacts admin/tech/billing des services AllDom
+
+### Métriques du code source
+| Métrique | Valeur |
+|----------|--------|
+| Fichiers source | 136 |
+| Endpoints API | 12 principaux |
+| Composants React | 16 |
+| Hooks custom | 8 |
+| Pages | 5 |
+| Clés i18n | 58 |
+
+---
+
+## 2. ARCHITECTURE
+
+### Arborescence fichiers
+
+```
+src/alldoms/
+├── pages/
+│   ├── layout.tsx                    # Layout principal avec tracking
+│   ├── 404.tsx                       # Page non trouvée
+│   └── service/
+│       ├── serviceList/
+│       │   └── serviceList.tsx       # Listing paginé Iceberg
+│       ├── serviceDetail/
+│       │   └── serviceDetail.tsx     # Détail pack AllDom
+│       ├── serviceTerminate/
+│       │   └── serviceTerminate.tsx  # Modal résiliation
+│       └── serviceCancelTerminate/
+│           └── serviceCancelTerminate.tsx  # Modal annulation
+├── components/
+│   ├── actionMenu/
+│   │   └── ServiceActionMenu.tsx     # Menu actions (renouveler, résilier...)
+│   ├── allDomDatagridColumns/
+│   │   ├── DatagridColumnServiceName.tsx
+│   │   ├── DatagridColumnRenewMode.tsx
+│   │   ├── DatagridColumnDate.tsx
+│   │   ├── DatagridColumnContact.tsx
+│   │   ├── DatagridColumnDomainRegisteredAuthorized.tsx
+│   │   └── DatagridColumnSkeleton.tsx
+│   ├── domainDatagridColumns/
+│   │   ├── DomainDatagridColumnDomain.tsx
+│   │   ├── DomainDatagridColumnRegisteredStatus.tsx
+│   │   ├── DomainDatagridColumnRenewMode.tsx
+│   │   └── DomainDatagridColumnDate.tsx
+│   ├── serviceDetail/
+│   │   ├── ServiceDetailInformation.tsx
+│   │   ├── ServiceDetailDomains.tsx
+│   │   └── serviceDetailSubscribing/
+│   │       ├── ServiceDetailSubscribing.component.tsx
+│   │       ├── ServiceDetailSubscribingRenewMode.tsx
+│   │       └── ServiceDetailSubscribingRenewDate.tsx
+│   ├── terminate/
+│   │   ├── steps/
+│   │   │   ├── Terminate.stepOne.tsx   # Sélection domaines
+│   │   │   └── Terminate.stepTwo.tsx   # Confirmation
+│   │   └── domainsCheckboxes/
+│   │       ├── DomainsCheckboxList.tsx
+│   │       └── DomainCheckboxItem.tsx
+│   └── loading/
+│       └── Loading.tsx
+├── hooks/
+│   ├── data/
+│   │   ├── query.tsx                 # useGetServiceInformation, useGetAllDomResource
+│   │   ├── useGetAllDom.tsx          # Combine service + domaines
+│   │   └── useGetServices.tsx        # Liste de services
+│   ├── allDomDatagrid/
+│   │   └── useAllDomDatagridColumns.tsx
+│   ├── domainDatagrid/
+│   │   └── useDomainDatagridColumns.tsx
+│   ├── useTerminateService/
+│   │   └── useTerminateService.tsx   # Mutation résiliation
+│   ├── useCancelAllDomTerminate/
+│   │   └── useCancelAllDomTerminate.tsx  # Mutation annulation
+│   ├── nichandle/
+│   │   └── useNichandle.tsx
+│   └── guide/
+│       └── useGuideUtils.tsx
+├── data/api/
+│   └── web-domains.ts                # Appels API v2/v6
+├── routes/
+│   ├── routes.tsx                    # Configuration React Router
+│   └── routes.constant.ts            # URLs constantes
+├── types/
+│   └── index.ts                      # Interfaces TypeScript
+├── enum/
+│   └── service.enum.ts               # Enums métier
+├── utils/
+│   └── utils.ts                      # Fonctions utilitaires
+├── constants.ts                      # URLs de renouvellement par région
+└── __mocks__/                        # Données de test
+    ├── alldomService.ts
+    ├── serviceInfo.ts
+    └── allDomTerminate.ts
+```
+
+### Dépendances principales
+
+```json
+{
+  "@ovh-ux/manager-core-api": "v2, v6",
+  "@ovh-ux/manager-react-components": "Datagrid, BaseLayout, Modal, ActionMenu...",
+  "@ovh-ux/manager-react-shell-client": "ShellContext, useNavigationGetUrl...",
+  "@ovhcloud/ods-react": "Card, Text, Button, Message, Divider, Spinner...",
+  "@tanstack/react-query": "useQuery, useQueries, useMutation",
+  "react-router-dom": "useParams, useNavigate, Outlet...",
+  "react-i18next": "useTranslation, Trans",
+  "punycode": "toASCII, toUnicode"
+}
+```
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Routes
+
+| Route | Composant | Type | Description |
+|-------|-----------|------|-------------|
+| `/alldoms` | ServiceList | Page | Listing paginé des packs AllDom |
+| `/alldoms/:serviceName` | ServiceDetail | Page | Détail d'un pack AllDom |
+| `/alldoms/terminate/:serviceName` | ServiceTerminate | Modal | Résiliation depuis listing |
+| `/alldoms/:serviceName/terminate` | ServiceTerminate | Modal | Résiliation depuis détail |
+| `/alldoms/terminate/cancel/:serviceName` | CancelTerminate | Modal | Annulation résiliation listing |
+| `/alldoms/:serviceName/terminate/cancel` | CancelTerminate | Modal | Annulation résiliation détail |
+
+### Configuration routes
+
+```typescript
+export const urls = {
+  alldomsRoot: '/alldoms',
+  alldomsDetail: '/alldoms/:serviceName',
+  alldomsListingTerminate: 'terminate/:serviceName',
+  alldomsDetailTerminate: 'terminate',
+  alldomsListingCancelTerminate: 'terminate/cancel/:serviceName',
+  alldomsDetailCancelTerminate: 'terminate/cancel',
+};
+```
+
+### Flux de navigation
+
+```
+/alldoms (Listing)
+    │
+    ├── Click sur nom AllDom → /alldoms/:serviceName (Détail)
+    │                              │
+    │                              ├── Action "Résilier" → Modal terminate
+    │                              └── Action "Annuler résiliation" → Modal cancel
+    │
+    ├── Action menu "Résilier" → /alldoms/terminate/:serviceName (Modal)
+    └── Action menu "Annuler" → /alldoms/terminate/cancel/:serviceName (Modal)
+```
+
+### Breadcrumb
+- Listing: `Mes packs Alldom`
+- Détail: `Mes packs Alldom > {serviceName}`
+
+### Liens externes (via useNavigationGetUrl)
+- Renouvellement: `/billing/autorenew/update?serviceId={}&serviceType=ALL_DOM`
+- Contacts: `/account/contacts/services/edit?serviceName={}&category=ALL_DOM`
+
+---
+
+## 4. COMPOSANTS UI
+
+### Page ServiceList
+
+```typescript
+// Composants utilisés
+<BaseLayout header={{ title: t('title') }} message={<Notifications />}>
+  <Datagrid
+    columns={columns}
+    items={alldomServices}
+    totalItems={allDomList?.length}
+    hasNextPage={hasNextPage}
+    onFetchNextPage={fetchNextPage}
+    sorting={sorting}
+    onSortChange={setSorting}
+    isLoading={isLoading}
+    search={{ searchInput, setSearchInput, onSearch }}
+  />
+  <Outlet />  {/* Pour les modales */}
+</BaseLayout>
+```
+
+### Colonnes Datagrid AllDom
+
+| ID | Label | Composant | Sortable |
+|----|-------|-----------|----------|
+| id | Nom du Alldom | DatagridColumnServiceName | Oui |
+| renewMode | Mode de renouvellement | DatagridColumnRenewMode | Non |
+| type | Type | DataGridTextCell | Non |
+| authorized_domain | Noms de domaine enregistrés | DatagridColumnDomainRegisteredAuthorized | Non |
+| expiration_date | Date d'expiration | DatagridColumnDate | Non |
+| nicAdmin | Contact administrateur | DatagridColumnContact | Non |
+| nicTech | Contact technique | DatagridColumnContact | Non |
+| nicBilling | Contact facturation | DatagridColumnContact | Non |
+| actions | - | ServiceActionMenu | Non |
+
+### Page ServiceDetail
+
+```typescript
+<BaseLayout
+  header={{ title: serviceName }}
+  message={<Notifications />}
+  onClickReturn={() => navigate(urls.alldomsRoot)}
+  backLinkLabel={t('back_to_list')}
+  breadcrumb={<Breadcrumb rootLabel={t('title')} appName={appConfig.rootLabel} hideRootLabel />}
+>
+  {/* Message warning si résiliation programmée */}
+  {hasTerminateAtExpirationDateAction && (
+    <Message color={MESSAGE_COLOR.warning} dismissible>
+      <Trans i18nKey="allDom_detail_page_manuel_renew_warning" />
+      <OdsLink to={cancelTerminateUrl}>Annuler la résiliation</OdsLink>
+    </Message>
+  )}
+  
+  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <ServiceDetailInformation currentState={alldomService.currentState} />
+    <ServiceDetailSubscribing alldomService={alldomService} />
+  </div>
+  
+  <ServiceDetailDomains items={alldomService.currentState.domains} />
+  <Outlet />
+</BaseLayout>
+```
+
+### Colonnes Datagrid Domaines (détail)
+
+| ID | Label | Composant |
+|----|-------|-----------|
+| domainName | Nom de domaine | DomainDatagridColumnDomain |
+| status | Statut | DomainDatagridColumnRegisteredStatus |
+| domain_renew_mode | Mode de renouvellement | DomainDatagridColumnRenewMode |
+| expiration_date | Date d'expiration | DomainDatagridColumnDate |
+
+### Modal ServiceTerminate (2 étapes)
+
+```typescript
+// Step 1: Sélection des domaines
+<Modal type={ODS_MODAL_COLOR.critical} heading={t('allDom_modal_title', { serviceName })}>
+  <Text>{t('allDom_modal_subtitle')}</Text>
+  <Text preset={TEXT_PRESET.heading6}>{t('allDom_modal_choice')}</Text>
+  
+  <input type="checkbox" id="alldomains" /> {/* Tout sélectionner */}
+  <DomainsCheckboxList services={serviceList} domainsChecked={domainsChecked} />
+  
+  <Message color={MESSAGE_COLOR.information}>
+    {t('allDom_modal_step_one_message')}
+  </Message>
+  
+  <Button variant={BUTTON_VARIANT.ghost} onClick={close}>{t('close')}</Button>
+  <Button onClick={() => setIsStepOne(false)}>{t('next')}</Button>
+</Modal>
+
+// Step 2: Confirmation
+<Modal>
+  <Text>
+    {domainsChecked.length === 0 
+      ? t('allDom_modal_step_two_no_domain_checked', { serviceName })
+      : t('allDom_modal_step_two_warning')}
+  </Text>
+  <ul>
+    {domainsChecked.map(domain => <li key={domain}>{toUnicode(domain)}</li>)}
+  </ul>
+  
+  <Button variant={BUTTON_VARIANT.ghost} onClick={() => setIsStepOne(true)}>{t('previous')}</Button>
+  <Button color={BUTTON_COLOR.critical} onClick={() => terminateService.mutate()}>
+    {t('allDom_modal_step_terminate')}
+  </Button>
+</Modal>
+```
+
+### Modal CancelTerminate
+
+```typescript
+<Modal
+  type={ODS_MODAL_COLOR.information}
+  heading={t('allDom_cancel_terminate_title', { serviceName })}
+  primaryLabel={t('confirm')}
+  secondaryLabel={t('cancel')}
+  onPrimaryButtonClick={() => cancelAllDomTerminate.mutate()}
+  onSecondaryButtonClick={() => navigate(closeUrl)}
+>
+  <Text>{t('allDom_cancel_terminate_subtitle', { serviceName })}</Text>
+</Modal>
+```
+
+### ActionMenu
+
+```typescript
+const items = [
+  { id: 1, label: 'Renouveler', href: renewUrl, target: '_blank', isDisabled: disableAction },
+  { id: 2, label: 'Configurer le renouvellement', href: billingUrl, target: '_blank', isDisabled: disableAction },
+  { id: 3, label: 'Gérer les contacts', href: handleContactUrl, target: '_blank' },
+  // Si résiliation programmée:
+  { id: 4, label: 'Annuler la résiliation', onClick: () => navigate(cancelTerminateUrl) },
+  // Sinon:
+  { id: 4, label: 'Résilier', onClick: () => navigate(terminateUrl), color: ODS_BUTTON_COLOR.critical },
+];
+```
+
+### Composants ODS utilisés
+
+| Composant | Import | Usage |
+|-----------|--------|-------|
+| Card | `@ovhcloud/ods-react` | Cartes information/abonnement |
+| Text | `@ovhcloud/ods-react` | Titres, paragraphes (TEXT_PRESET) |
+| Button | `@ovhcloud/ods-react` | Actions (BUTTON_VARIANT, BUTTON_COLOR) |
+| Message | `@ovhcloud/ods-react` | Alertes info/warning (MESSAGE_COLOR) |
+| MessageIcon | `@ovhcloud/ods-react` | Icônes dans messages |
+| Icon | `@ovhcloud/ods-react` | Icônes (ICON_NAME) |
+| Divider | `@ovhcloud/ods-react` | Séparateurs (DIVIDER_COLOR, DIVIDER_SPACING) |
+| Spinner | `@ovhcloud/ods-react` | Loading (SPINNER_SIZE) |
+| Link | `@ovhcloud/ods-react` | Liens ODS |
+
+### Composants manager-react-components
+
+| Composant | Usage |
+|-----------|-------|
+| Datagrid | Tableaux paginés |
+| DataGridTextCell | Cellules texte simple |
+| BaseLayout | Layout de page |
+| Breadcrumb | Fil d'Ariane |
+| Modal | Modales |
+| ActionMenu | Menu d'actions |
+| ErrorBanner | Affichage erreurs |
+| ErrorBoundary | Gestion erreurs routes |
+| Notifications | Système de notifications |
+| useNotifications | Hook notifications |
+| useFormatDate | Formatage dates |
+| useResourcesIcebergV2 | Pagination Iceberg |
+
+---
+
+## 5. APIs & DONNÉES
+
+### Endpoints API
+
+#### API v2 (Iceberg)
+
+| Méthode | Endpoint | Usage | Pagination |
+|---------|----------|-------|------------|
+| GET | `/domain/alldom` | Liste des packs AllDom | Iceberg headers |
+| GET | `/domain/alldom/${serviceName}` | Détail d'un pack AllDom | Non |
+
+#### API v6
+
+| Méthode | Endpoint | Usage |
+|---------|----------|-------|
+| GET | `/services?resourceName=${serviceName}&routes=${route}` | Récupérer serviceId |
+| GET | `/services/${serviceId}` | Détail service (billing, contacts...) |
+| PUT | `/services/${serviceId}` | Mettre à jour terminationPolicy |
+
+### Séquencement des appels
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ LISTING (ServiceList)                                           │
+├─────────────────────────────────────────────────────────────────┤
+│ 1. useResourcesIcebergV2 GET /domain/alldom (paginé)            │
+│    ↓                                                            │
+│ 2. Pour chaque alldom:                                          │
+│    GET /services?resourceName={name}&routes=/allDom             │
+│    ↓                                                            │
+│    GET /services/{serviceId}                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ DÉTAIL (ServiceDetail)                                          │
+├─────────────────────────────────────────────────────────────────┤
+│ useQueries parallèle:                                           │
+│   ├─ GET /services?resourceName={name}&routes=/allDom           │
+│   │  → GET /services/{serviceId}                                │
+│   └─ GET /domain/alldom/{serviceName} (v2)                      │
+│                                                                 │
+│ Pour les domaines REGISTERED:                                   │
+│   GET /services?resourceName={domain}&routes=/domain            │
+│   → GET /services/{serviceId}                                   │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ RÉSILIATION (ServiceTerminate)                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ 1. PUT /services/{alldomServiceId}                              │
+│    body: { terminationPolicy: 'terminateAtExpirationDate' }     │
+│                                                                 │
+│ 2. Promise.all pour chaque domaine sélectionné:                 │
+│    PUT /services/{domainServiceId}                              │
+│    body: { terminationPolicy: 'terminateAtExpirationDate' }     │
+│                                                                 │
+│ 3. invalidateQueries(['allDom'])                                │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ANNULATION RÉSILIATION (CancelTerminate)                        │
+├─────────────────────────────────────────────────────────────────┤
+│ 1. PUT /services/{alldomServiceId}                              │
+│    body: { terminationPolicy: 'empty' }                         │
+│                                                                 │
+│ 2. Promise.all pour domaines en mode AUTOMATIC seulement:       │
+│    PUT /services/{domainServiceId}                              │
+│    body: { terminationPolicy: 'empty' }                         │
+│                                                                 │
+│ 3. invalidateQueries(['allDom'])                                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Service API (web-domains.ts)
+
+```typescript
+import { v2, v6 } from '@ovh-ux/manager-core-api';
+
+// Récupérer les infos de service
+export const getServiceInformation = async (
+  serviceName: string,
+  serviceRoutes: string,  // '/allDom' ou '/domain'
+): Promise<TServiceInfo> => {
+  const { data: serviceNameId } = await v6.get(
+    `/services?resourceName=${serviceName}&routes=${serviceRoutes}`,
+  );
+  if (!serviceNameId) return null;
+  const { data } = await v6.get(`/services/${serviceNameId}`);
+  return data;
+};
+
+// Récupérer les domaines d'un pack AllDom
+export const getAllDomResource = async (serviceName: string) => {
+  const { data } = await v2.get<TAllDomDomains>(`/domain/alldom/${serviceName}`);
+  return data;
+};
+
+// Mettre à jour le service (résiliation ou annulation)
+export const updateService = async (
+  serviceName: string,
+  terminationPolicy: ServiceInfoUpdateEnum,  // 'empty' | 'terminateAtExpirationDate'
+  serviceRoute: ServiceRoutes,  // '/allDom' | '/domain'
+): Promise<TServiceInfo> => {
+  const { data: serviceId } = await v6.get(
+    `/services?resourceName=${serviceName}&routes=${serviceRoute}`,
+  );
+  const { data } = await v6.put(`/services/${serviceId}`, { terminationPolicy });
+  return data;
+};
+```
+
+### Types de données
+
+```typescript
+// Réponse GET /domain/alldom/{serviceName}
+interface TAllDomDomains {
+  currentState: {
+    name: string;                          // "mon-alldom"
+    type: ServiceInfoType;                 // "FRENCH" | "FRENCH+INTERNATIONAL" | "INTERNATIONAL"
+    domains: TDomainsInfo[];               // Liste des domaines
+    extensions: string[];                  // ["fr", "com", "net"]
+  };
+}
+
+interface TDomainsInfo {
+  name: string;                            // "example.fr"
+  registrationStatus: DomainRegistrationStateEnum;  // "REGISTERED" | "UNREGISTERED"
+  expiresAt?: string;                      // "2025-10-10T18:48:22+02:00"
+  extension?: string;                      // "fr"
+}
+
+// Réponse GET /services/{serviceId}
+interface TServiceInfo {
+  serviceId: number;                       // 1234567
+  billing: {
+    expirationDate: string | null;         // "2026-02-01"
+    renew?: {
+      current: {
+        mode: ServiceInfoRenewMode | null; // "automatic" | "manual"
+        nextDate: string;                  // "2024-09-25T06:40:26Z"
+      };
+    } | null;
+    lifecycle?: {
+      current: {
+        creationDate: string | null;       // "2024-09-25T06:40:26Z"
+        pendingActions: LifecycleActionsEnum[];  // ["terminateAtExpirationDate"]
+      };
+    } | null;
+  };
+  customer?: {
+    contacts: {
+      customerCode: string;                // "aa00001-ovh"
+      type: string;                        // "administrator" | "technical" | "billing"
+    }[];
+  };
+  resource: {
+    name: string;                          // "mon-alldom"
+  };
+}
+
+// Données agrégées pour l'affichage
+interface AlldomService {
+  currentState: TAllDomDomains['currentState'];
+  nicAdmin: string;
+  nicBilling: string;
+  nicTechnical: string;
+  lifecyclePendingActions: LifecycleActionsEnum[];
+  renewMode: ServiceInfoRenewMode | null;
+  expirationDate: string;
+  creationDate: string;
+  renewalDate: string;
+  serviceId: number;
+}
+```
+
+### Enums
+
+```typescript
+export enum ServiceRoutes {
+  Domain = '/domain',
+  AllDom = '/allDom',
+}
+
+export enum ServiceInfoType {
+  French = 'FRENCH',
+  FrenchInternational = 'FRENCH+INTERNATIONAL',
+  International = 'INTERNATIONAL',
+}
+
+export enum ServiceInfoRenewMode {
+  Automatic = 'automatic',
+  Manual = 'manual',
+}
+
+export enum LifecycleActionsEnum {
+  EarlyRenewal = 'earlyRenewal',
+  Terminate = 'terminate',
+  TerminateAtEngagementDate = 'terminateAtEngagementDate',
+  TerminateAtExpirationDate = 'terminateAtExpirationDate',
+}
+
+export enum ServiceInfoUpdateEnum {
+  Empty = 'empty',
+  TerminateAtEngagementDate = 'terminateAtEngagementDate',
+  TerminateAtExpirationDate = 'terminateAtExpirationDate',
+}
+
+export enum ServiceInfoContactEnum {
+  Administrator = 'administrator',
+  Technical = 'technical',
+  Billing = 'billing',
+}
+
+export enum DomainRegistrationStateEnum {
+  Registered = 'REGISTERED',
+  Unregistered = 'UNREGISTERED',
+}
+
+export enum ActionEnum {
+  All = 'all',
+  OnlyContact = 'onlycontact',
+  OnlyRenew = 'onlyrenew',
+}
+```
+
+### Hooks React Query
+
+```typescript
+// Cache keys utilisées
+const QUERY_KEYS = {
+  allDomList: ['allDom', 'domains', searchInput],
+  allDomService: ['allDom', 'service', serviceName],
+  allDomDomains: ['allDom', 'domains', serviceName],
+  serviceInfo: ['allDom', 'services', serviceName],
+  domainResource: ['allDom', 'domains', 'services', serviceName],
+  single: ['allDom', name],
+};
+
+// Invalidation après mutation
+queryClient.invalidateQueries({ queryKey: ['allDom'] });
+```
+
+---
+
+## 6. TRADUCTIONS
+
+### Clés FR (Messages_fr_FR.json)
+
+```json
+{
+  "title": "Mes packs Alldom",
+  
+  "allDom_table_header_id": "Nom du Alldom",
+  "allDom_table_header_renewMode": "Mode de renouvellement",
+  "allDom_table_header_type": "Type",
+  "allDom_table_header_registered_authorized_domain": "Noms de domaine enregistrés",
+  "allDom_table_header_nicAdmin": "Contact administrateur",
+  "allDom_table_header_nicTech": "Contact technique",
+  "allDom_table_header_nicBilling": "Contact facturation",
+  
+  "allDom_table_status_automatic": "Renouvellement automatique",
+  "allDom_table_status_manual": "Renouvellement manuel",
+  "allDom_table_status_terminate": "Résiliation programmée",
+  
+  "allDom_table_type_FRENCH": "FR",
+  "allDom_table_type_FRENCH+INTERNATIONAL": "FR + International",
+  "allDom_table_type_INTERNATIONAL": "International",
+  
+  "allDom_detail_page_information_title": "Informations générales",
+  "allDom_detail_page_domains_title": "Noms de domaine du pack",
+  "allDom_detail_page_subscribing_title": "Abonnement",
+  
+  "allDom_table_action_renew": "Renouveler",
+  "allDom_table_action_terminate": "Résilier",
+  "allDom_table_action_renewal": "Configurer le renouvellement",
+  "allDom_table_action_handle_contacts": "Gérer les contacts",
+  "allDom_table_action_cancel_terminate": "Annuler la résiliation",
+  
+  "allDom_modal_title": "Résiliation du pack {{serviceName}}",
+  "allDom_modal_subtitle": "Vous avez la possibilité de résilier tous vos services ou d'en conserver en gestion individuelle.",
+  "allDom_modal_all_my_domains": "Tous mes noms de domaine",
+  "allDom_modal_choice": "Je souhaite supprimer :",
+  "allDom_modal_step_one_message": "Les noms de domaine non supprimés ne seront plus rattachés au pack, vous ne bénéficierez plus du tarif préférentiel. Les futurs renouvellements seront effectués au prix standard.",
+  "allDom_modal_step_two_warning": "Attention, les services suivants seront résiliés :",
+  "allDom_modal_step_two_no_domain_checked": "Vous avez choisi de résilier votre pack {{serviceName}} tout en conservant vos noms de domaine.",
+  "allDom_modal_domain_already_in_terminate": "Votre nom de domaine est déjà en cours de résiliation",
+  "allDom_modal_step_terminate": "Résilier",
+  "allDom_modal_success_message": "Votre demande de résiliation a bien été prise en compte",
+  "allDom_modal_error_message": "Une erreur est survenue : {{message}}",
+  
+  "allDom_detail_page_domain_unavailable": "Ce nom de domaine n'est pas disponible.",
+  
+  "allDom_page_detail_information_general_pack": "Pack {{packName}}",
+  "allDom_page_detail_information_general_extensions": "Les extensions incluses :",
+  
+  "allDom_page_detail_subscribing_contact_title": "Contacts",
+  "allDom_page_detail_subscribing_contact_admin": "{{nic}} : Administrateur",
+  "allDom_page_detail_subscribing_contact_tech": "{{nic}} : Technique",
+  "allDom_page_detail_subscribing_contact_billing": "{{nic}} : Facturation",
+  "allDom_page_detail_subscribing_contact_creation_date": "Date de création",
+  
+  "allDom_domain_table_header_domain_name": "Nom de domaine",
+  "allDom_domain_table_header_status": "Statut",
+  "allDom_domain_table_header_expiration_date": "Date d'expiration",
+  "allDom_domain_table_registration_status_REGISTERED": "Enregistré",
+  "allDom_domain_table_registration_status_UNREGISTERED": "Non enregistré",
+  "allDom_domain_table_status_domain_unregistered": "Ce nom de domaine est déjà enregistré par un tiers",
+  
+  "allDom_detail_page_manuel_renew_warning": "Votre pack expirera le {{expirationDate}}. Les noms de domaine non résiliés inclus dans celui-ci seront <strong>renouvelés gratuitement jusqu'à l'expiration définitive de votre pack</strong>. Au-delà de cette date, vos domaines non résiliés seront facturés individuellement.",
+  "allDom_detail_page_manuel_renew_warning_link": "Annuler la résiliation du pack",
+  
+  "allDom_status_automatic": "Automatique",
+  "allDom_status_manual": "Manuel",
+  "allDom_automatic_renew": "Renouvellement prévu le",
+  "allDom_manual_renew": "Date d'expiration",
+  
+  "allDom_cancel_terminate_title": "Annuler la résiliation du service {{serviceName}}",
+  "allDom_cancel_terminate_subtitle": "Souhaitez-vous annuler la résiliation du service {{serviceName}} ?",
+  "allDom_cancel_terminate_success": "L'annulation de la résiliation de votre service {{serviceName}} a bien été prise en compte",
+  "allDom_cancel_terminate_error": "L'annulation de la résiliation de votre service {{serviceName}} a échoué"
+}
+```
+
+### Clés EN (Messages_en_GB.json)
+
+```json
+{
+  "title": "My Alldom packs",
+  
+  "allDom_table_header_id": "Alldom name",
+  "allDom_table_header_renewMode": "Renewal method",
+  "allDom_table_header_type": "Type",
+  "allDom_table_header_registered_authorized_domain": "Registered domain names",
+  "allDom_table_header_nicAdmin": "Admin contact",
+  "allDom_table_header_nicTech": "Technical contact",
+  "allDom_table_header_nicBilling": "Billing contact",
+  
+  "allDom_table_status_automatic": "Automatic renewal",
+  "allDom_table_status_manual": "Manual renewal",
+  "allDom_table_status_terminate": "Cancellation scheduled",
+  
+  "allDom_table_type_FRENCH": "EN",
+  "allDom_table_type_FRENCH+INTERNATIONAL": "FR + International",
+  "allDom_table_type_INTERNATIONAL": "International",
+  
+  "allDom_detail_page_information_title": "General information",
+  "allDom_detail_page_domains_title": "Pack domain names",
+  "allDom_detail_page_subscribing_title": "Subscription",
+  
+  "allDom_table_action_renew": "Renew",
+  "allDom_table_action_terminate": "Cancel",
+  "allDom_table_action_renewal": "Configure renewal",
+  "allDom_table_action_handle_contacts": "Manage contacts",
+  "allDom_table_action_cancel_terminate": "Undo cancellation",
+  
+  "allDom_modal_title": "Cancel the {{serviceName}} pack",
+  "allDom_modal_subtitle": "You can cancel all of your services, or you can manage them individually.",
+  "allDom_modal_all_my_domains": "All my domain names",
+  "allDom_modal_choice": "I want to delete:",
+  "allDom_modal_step_one_message": "You'll no longer benefit from the reduced price, as undeleted domain names will no longer be bundled. Future renewals will be charged at the standard price.",
+  "allDom_modal_step_two_warning": "Careful, the following services will be cancelled:",
+  "allDom_modal_step_two_no_domain_checked": "You have chosen to cancel your {{serviceName}} package but keep your domain names.",
+  "allDom_modal_domain_already_in_terminate": "Your domain name cancellation is already in progress",
+  "allDom_modal_step_terminate": "Cancel",
+  "allDom_modal_success_message": "Your cancellation request has been processed",
+  "allDom_modal_error_message": "An error has occurred: {{message}}",
+  
+  "allDom_detail_page_domain_unavailable": "This domain name is not available.",
+  
+  "allDom_page_detail_information_general_pack": "Pack {{packName}}",
+  "allDom_page_detail_information_general_extensions": "Included extensions:",
+  
+  "allDom_page_detail_subscribing_contact_title": "Contacts",
+  "allDom_page_detail_subscribing_contact_admin": "{{nic}}: Administrator",
+  "allDom_page_detail_subscribing_contact_tech": "{{nic}}: Technical",
+  "allDom_page_detail_subscribing_contact_billing": "{{nic}}: Billing",
+  "allDom_page_detail_subscribing_contact_creation_date": "Created on",
+  
+  "allDom_domain_table_header_domain_name": "Domain name",
+  "allDom_domain_table_header_status": "Status",
+  "allDom_domain_table_header_expiration_date": "Expiry date",
+  "allDom_domain_table_registration_status_REGISTERED": "Registered",
+  "allDom_domain_table_registration_status_UNREGISTERED": "Not saved",
+  "allDom_domain_table_status_domain_unregistered": "This domain name is already registered by a third party",
+  
+  "allDom_detail_page_manuel_renew_warning": "Your pack will expire on {{expirationDate}}. The uncancelled domain names included in this pack will be <strong>renewed for free until your pack expires permanently.</strong> After this date, your non-cancelled domains will be billed individually.",
+  "allDom_detail_page_manuel_renew_warning_link": "Undo pack cancellation",
+  
+  "allDom_status_automatic": "Automatic",
+  "allDom_status_manual": "Manual",
+  "allDom_automatic_renew": "Renewal due on",
+  "allDom_manual_renew": "Expiry date",
+  
+  "allDom_cancel_terminate_title": "Undo the cancellation of the {{serviceName}} service",
+  "allDom_cancel_terminate_subtitle": "Are you sure you want to undo the cancellation of the {{serviceName}} service?",
+  "allDom_cancel_terminate_success": "The cancellation of your {{serviceName}} service has been processed",
+  "allDom_cancel_terminate_error": "Unable to undo the cancellation of your {{serviceName}} service"
+}
+```
+
+---
+
+## 7. RÈGLES MÉTIER
+
+### Types de packs AllDom
+
+| Type | Description | Extensions |
+|------|-------------|------------|
+| FRENCH | Pack français | Extensions .fr uniquement |
+| FRENCH+INTERNATIONAL | Pack mixte | .fr + extensions internationales |
+| INTERNATIONAL | Pack international | Extensions internationales |
+
+### États de renouvellement
+
+| Mode | Affichage | Comportement |
+|------|-----------|--------------|
+| automatic | "Renouvellement automatique" | Prélèvement auto à la date de renouvellement |
+| manual | "Renouvellement manuel" | Expiration si pas de paiement |
+| terminate | "Résiliation programmée" | Service résilié à expiration |
+
+### Règles de résiliation
+
+1. **Résiliation du pack** : Tous les domaines du pack perdent le tarif préférentiel
+2. **Sélection des domaines** : L'utilisateur peut choisir quels domaines résilier
+3. **Domaines conservés** : Passent en facturation individuelle au prix standard
+4. **Domaines déjà en résiliation** : Checkbox désactivée avec message explicatif
+
+### Règles d'annulation de résiliation
+
+1. **Pack** : Annulation systématique (`terminationPolicy: 'empty'`)
+2. **Domaines** : Annulation uniquement pour les domaines en mode `automatic`
+3. **Domaines manuels** : Conservent le statut `terminateAtExpirationDate`
+
+### Validation des contacts
+
+```typescript
+// Affichage conditionnel du lien vers le profil
+const showProfileLink = contact === nichandle;  // Lien si c'est le user connecté
+```
+
+### Statut d'enregistrement des domaines
+
+| Statut | Affichage | Actions disponibles |
+|--------|-----------|---------------------|
+| REGISTERED | "Enregistré" | Résiliation, renouvellement |
+| UNREGISTERED | "Non enregistré" | Aucune (domaine indisponible) |
+
+### URLs de renouvellement CGI par région
+
+```typescript
+const RENEW_URL: Record<string, string> = {
+  DEFAULT: 'https://www.ovh.com/cgi-bin/order/renew.cgi?domainChooser=',
+  AU: 'https://ca.ovh.com/au/cgi-bin/order/renew.cgi?domainChooser=',
+  CA: 'https://ca.ovh.com/fr/cgi-bin/order/renew.cgi?domainChooser=',
+  FR: 'https://eu.ovh.com/fr/cgi-bin/order/renew.cgi?domainChooser=',
+  DE: 'https://www.ovh.de/cgi-bin/order/renew.cgi?domainChooser=',
+  GB: 'https://www.ovh.co.uk/cgi-bin/order/renew.cgi?domainChooser=',
+  // ... autres régions
+};
+```
+
+### Gestion des erreurs
+
+```typescript
+// Notifications success/error
+const { addError, addSuccess } = useNotifications();
+
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['allDom'] });
+  addSuccess(t('allDom_modal_success_message'));
+}
+
+onError: (error) => {
+  addError(t('allDom_modal_error_message', { message: error.message }));
+}
+```
+
+### Permissions et contacts
+
+Le menu d'actions adapte les options selon le contexte :
+
+| Contexte | Actions disponibles |
+|----------|---------------------|
+| All | Renouveler, Configurer, Contacts, Résilier/Annuler |
+| OnlyRenew | Renouveler, Configurer, Résilier/Annuler |
+| OnlyContact | Gérer les contacts |
+
+### Tracking
+
+```typescript
+// Configuration tracking
+export const LEVEL2 = { EU: { config: { level2: '84' } }, ... };
+export const UNIVERSE = 'Web';
+export const SUB_UNIVERSE = 'Web';
+export const APP_NAME = 'web-domains';
+
+// Usage dans les routes
+handle: {
+  tracking: {
+    pageName: 'listing',
+    pageType: PageType.listing,
+  },
+}
+```
+
+---
+
+## ANNEXES
+
+### Constantes importantes
+
+```typescript
+// Identifiant service pour navigation
+export const allDomManagerService = 'ALL_DOM';
+
+// URLs modales
+export const TERMINATE_URL = (serviceName?: string) =>
+  serviceName ? `terminate/${serviceName}` : 'terminate';
+export const CANCEL_TERMINATE_URL = (serviceName?: string) =>
+  serviceName ? `terminate/cancel/${serviceName}` : 'terminate/cancel';
+```
+
+### Fonctions utilitaires
+
+```typescript
+// Trouver un contact par type
+export const findContact = (
+  contacts: TServiceInfo['customer']['contacts'],
+  contactType: ServiceInfoContactEnum,
+) => {
+  const contact = contacts.find((c) => c.type === contactType);
+  return contact ? contact.customerCode : null;
+};
+
+// Vérifier si résiliation programmée
+export const hasTerminateAtExpirationDateAction = (
+  actions: LifecycleActionsEnum[],
+) => actions.includes(LifecycleActionsEnum.TerminateAtExpirationDate);
+```
+
+### Classes Tailwind récurrentes
+
+```css
+/* Layout */
+.grid.grid-cols-1.gap-6.lg:grid-cols-2
+.flex.flex-col.gap-y-2
+.flex.items-center.justify-between
+
+/* Cards */
+.w-full.p-6
+
+/* Margins */
+.mb-4, .mb-6, .mb-8
+.gap-x-6, .gap-y-2, .gap-y-3
+
+/* Text */
+.font-bold
+.text-[var(--ods-color-text)]
+.text-[var(--ods-color-warning-700)]
+
+/* Lists */
+.list-none.p-0.m-0
+```
+
+---
+
+# FIN DU CAHIER DES CHARGES

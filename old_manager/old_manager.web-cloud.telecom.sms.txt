@@ -1,0 +1,1278 @@
+# Génération du Cahier des Charges SMS
+
+Copiez-collez le bloc ci-dessous dans votre terminal :
+
+```bash
+mkdir -p /home/ubuntu/old_manager
+cp /home/ubuntu/old_manager/old_manager.web-cloud.telecom.sms.txt /home/ubuntu/old_manager/old_manager.web-cloud.telecom.sms.txt.$(date +%Y%m%dT%H%M%S) 2>/dev/null
+tee /home/ubuntu/old_manager/old_manager.web-cloud.telecom.sms.txt > /dev/null <<'CDC_EOF'
+================================================================================
+CAHIER DES CHARGES - MODULE SMS OVHcloud
+================================================================================
+Source: old_manager_web-cloud_telecom_sms.tar
+Date generation: 2025-01
+Framework origine: AngularJS (ui-router, ovh-api-services)
+Framework cible: React (TypeScript, TanStack Query)
+
+================================================================================
+1. RESUME EXECUTIF
+================================================================================
+
+1.1 PERIMETRE
+-------------
+Module de gestion SMS OVHcloud permettant :
+- Envoi de SMS unitaires et campagnes
+- Gestion des expediteurs (senders)
+- Gestion des listes de destinataires (receivers)
+- Gestion des carnets d'adresses (phonebooks)
+- Gestion des utilisateurs API
+- Options avancees (blacklist, callback, SMPP, Time2Chat)
+- Suivi et statistiques
+
+1.2 UTILISATEURS CIBLES
+-----------------------
+- Clients OVHcloud avec compte SMS
+- Administrateurs de campagnes marketing
+- Developpeurs integrant l'API SMS
+- Utilisateurs SMPP professionnels
+
+1.3 FONCTIONNALITES PRINCIPALES
+-------------------------------
+- Dashboard avec solde credits et statistiques
+- Composition et envoi de SMS
+- Creation et gestion de campagnes (batches)
+- Gestion des expediteurs avec validation
+- Import/export de contacts
+- Configuration SMPP
+- Time2Chat (SMS conversationnel)
+
+================================================================================
+2. ARCHITECTURE
+================================================================================
+
+2.1 ARBORESCENCE FICHIERS CIBLE
+-------------------------------
+apps/web-cloud/src/pages/sms/
+├── index.tsx                           # Liste des comptes SMS
+├── onboarding.tsx                      # Page onboarding
+├── [serviceName]/
+│   ├── index.tsx                       # Redirect vers dashboard
+│   ├── dashboard/
+│   │   ├── index.tsx                   # Dashboard principal
+│   │   └── credit-transfer.tsx         # Transfert credits
+│   ├── sms/
+│   │   ├── compose.tsx                 # Composer SMS
+│   │   ├── incoming.tsx                # SMS entrants
+│   │   ├── outgoing.tsx                # SMS sortants
+│   │   ├── pending.tsx                 # SMS en attente
+│   │   ├── templates/
+│   │   │   ├── index.tsx               # Liste modeles
+│   │   │   ├── add.tsx
+│   │   │   └── [name]/
+│   │   │       ├── edit.tsx
+│   │   │       └── delete.tsx
+│   │   └── hlr.tsx                     # HLR lookup
+│   ├── batches/
+│   │   ├── index.tsx                   # Liste campagnes
+│   │   ├── create.tsx                  # Creer campagne
+│   │   ├── history.tsx                 # Historique
+│   │   ├── pending.tsx                 # En attente
+│   │   └── [batchId]/
+│   │       ├── details.tsx             # Details
+│   │       ├── statistics.tsx          # Stats
+│   │       └── cancel.tsx              # Annuler
+│   ├── senders/
+│   │   ├── index.tsx                   # Liste expediteurs
+│   │   ├── add.tsx                     # Ajouter
+│   │   ├── [sender]/
+│   │   │   ├── edit.tsx
+│   │   │   ├── remove.tsx
+│   │   │   └── terminate.tsx
+│   │   ├── order-time2chat.tsx         # Commander Time2Chat
+│   │   └── [number]/
+│   │       └── configure-time2chat.tsx # Config Time2Chat
+│   ├── receivers/
+│   │   ├── index.tsx                   # Liste slots
+│   │   ├── add.tsx
+│   │   ├── [slotId]/
+│   │   │   ├── read.tsx
+│   │   │   ├── edit.tsx
+│   │   │   ├── remove.tsx
+│   │   │   └── clean.tsx
+│   ├── phonebooks/
+│   │   ├── index.tsx                   # Liste carnets
+│   │   ├── create.tsx
+│   │   ├── [bookKey]/
+│   │   │   ├── index.tsx               # Contacts
+│   │   │   ├── delete.tsx
+│   │   │   ├── contact-create.tsx
+│   │   │   ├── contact-import.tsx
+│   │   │   └── [contactId]/
+│   │   │       ├── update.tsx
+│   │   │       └── delete.tsx
+│   ├── users/
+│   │   ├── index.tsx                   # Liste users API
+│   │   ├── add.tsx
+│   │   └── [login]/
+│   │       ├── edit.tsx
+│   │       ├── remove.tsx
+│   │       ├── change-password.tsx
+│   │       ├── callback.tsx
+│   │       ├── limit.tsx
+│   │       ├── quota.tsx
+│   │       └── restrict.tsx
+│   ├── options/
+│   │   ├── index.tsx
+│   │   ├── blacklist.tsx
+│   │   ├── callback.tsx
+│   │   ├── recredit.tsx
+│   │   ├── response/
+│   │   │   ├── index.tsx
+│   │   │   ├── add.tsx
+│   │   │   ├── edit.tsx
+│   │   │   └── remove.tsx
+│   │   └── smpp-parameter/
+│   │       ├── index.tsx
+│   │       └── allowed-ips.tsx
+│   ├── order.tsx                       # Commander credits
+│   └── guides.tsx                      # Guides
+
+2.2 HOOKS ET SERVICES
+---------------------
+libs/sms/src/
+├── api/
+│   ├── sms.api.ts                      # Endpoints SMS
+│   ├── senders.api.ts
+│   ├── receivers.api.ts
+│   ├── phonebooks.api.ts
+│   ├── users.api.ts
+│   ├── batches.api.ts
+│   ├── jobs.api.ts
+│   ├── hlr.api.ts
+│   ├── templates.api.ts
+│   ├── blacklist.api.ts
+│   ├── virtual-numbers.api.ts
+│   └── smpp.api.ts
+├── hooks/
+│   ├── useSms.ts
+│   ├── useSenders.ts
+│   ├── useReceivers.ts
+│   ├── usePhonebooks.ts
+│   ├── useUsers.ts
+│   ├── useBatches.ts
+│   ├── useJobs.ts
+│   └── ...
+├── types/
+│   ├── sms.types.ts
+│   ├── sender.types.ts
+│   ├── receiver.types.ts
+│   └── ...
+└── constants/
+    ├── sms.constants.ts
+    └── guides.constants.ts
+
+2.3 DEPENDANCES
+---------------
+- @ovhcloud/manager-react-components
+- @ovhcloud/ods-react (composants ODS)
+- @tanstack/react-query
+- react-router-dom v6
+- react-i18next
+- tailwindcss
+
+================================================================================
+3. PAGES & NAVIGATION
+================================================================================
+
+3.1 ROUTES
+----------
+| Route                                          | Composant                | Description                    |
+|------------------------------------------------|--------------------------|--------------------------------|
+| /sms                                           | SmsListPage              | Liste comptes SMS              |
+| /sms/onboarding                                | SmsOnboardingPage        | Onboarding nouveau client      |
+| /sms/:serviceName                              | SmsServiceLayout         | Layout service (redirect)      |
+| /sms/:serviceName/dashboard                    | SmsDashboardPage         | Dashboard principal            |
+| /sms/:serviceName/dashboard/credit-transfer    | SmsCreditTransferPage    | Transfert credits              |
+| /sms/:serviceName/sms/compose                  | SmsComposePage           | Composer SMS                   |
+| /sms/:serviceName/sms/incoming                 | SmsIncomingPage          | SMS entrants                   |
+| /sms/:serviceName/sms/outgoing                 | SmsOutgoingPage          | SMS sortants                   |
+| /sms/:serviceName/sms/pending                  | SmsPendingPage           | SMS en attente                 |
+| /sms/:serviceName/sms/templates                | SmsTemplatesPage         | Modeles SMS                    |
+| /sms/:serviceName/sms/hlr                      | SmsHlrPage               | HLR lookup                     |
+| /sms/:serviceName/batches                      | SmsBatchesPage           | Campagnes                      |
+| /sms/:serviceName/batches/create               | SmsBatchesCreatePage     | Creer campagne                 |
+| /sms/:serviceName/batches/history              | SmsBatchesHistoryPage    | Historique                     |
+| /sms/:serviceName/batches/:batchId/details     | SmsBatchesDetailsPage    | Details campagne               |
+| /sms/:serviceName/batches/:batchId/statistics  | SmsBatchesStatsPage      | Statistiques                   |
+| /sms/:serviceName/senders                      | SmsSendersPage           | Expediteurs                    |
+| /sms/:serviceName/senders/add                  | SmsSendersAddPage        | Ajouter expediteur             |
+| /sms/:serviceName/senders/order-time2chat      | SmsOrderTime2ChatPage    | Commander Time2Chat            |
+| /sms/:serviceName/senders/:number/configure    | SmsConfigureTime2ChatPage| Configurer Time2Chat           |
+| /sms/:serviceName/receivers                    | SmsReceiversPage         | Destinataires                  |
+| /sms/:serviceName/receivers/add                | SmsReceiversAddPage      | Ajouter slot                   |
+| /sms/:serviceName/phonebooks                   | SmsPhonebooksPage        | Carnets                        |
+| /sms/:serviceName/phonebooks/create            | SmsPhonebooksCreatePage  | Creer carnet                   |
+| /sms/:serviceName/users                        | SmsUsersPage             | Utilisateurs API               |
+| /sms/:serviceName/users/add                    | SmsUsersAddPage          | Ajouter user                   |
+| /sms/:serviceName/options                      | SmsOptionsPage           | Options                        |
+| /sms/:serviceName/options/blacklist            | SmsBlacklistPage         | Blacklist                      |
+| /sms/:serviceName/options/smpp-parameter       | SmsSmppParameterPage     | Parametres SMPP                |
+| /sms/:serviceName/order                        | SmsOrderPage             | Commander credits              |
+
+3.2 NAVIGATION LATERALE (MENU)
+------------------------------
+Pour un service SMS standard :
+- Dashboard
+- SMS
+  - Composer un SMS
+  - SMS entrants
+  - SMS sortants
+  - SMS programmes
+  - Modeles
+  - HLR
+- Campagnes
+  - Creer une campagne
+  - Campagnes en cours
+  - Historique
+- Expediteurs
+- Destinataires
+- Carnets d'adresses
+- Utilisateurs API
+- Options
+  - Blacklist
+  - Callback
+  - Recredit automatique
+  - Reponses
+- Commander des credits
+
+Pour un compte SMPP :
+- Dashboard SMPP
+- Expediteurs
+- Parametres SMPP
+- Commander des credits
+
+3.3 BREADCRUMB
+--------------
+SMS > {serviceName} > {section} > {action}
+
+Exemples :
+- SMS > sms-abc123 > Dashboard
+- SMS > sms-abc123 > Expediteurs > Ajouter
+- SMS > sms-abc123 > Campagnes > Historique > Supprimer
+
+================================================================================
+4. COMPOSANTS UI
+================================================================================
+
+4.1 COMPOSANTS PAGES
+--------------------
+
+### SmsDashboardPage
+Props resolues :
+- serviceName: string
+- service: SmsAccount
+- batches: SmsBatch[]
+- isSmppAccount: boolean
+- smsFeatureAvailability: FeatureAvailability
+
+Comportement :
+- Affiche le solde de credits (creditsLeft)
+- Affiche la derniere recharge
+- Affiche les statistiques des campagnes (filtrees)
+- Actions rapides selon type de compte (standard vs SMPP)
+
+### SmsComposePage
+Props resolues :
+- serviceName: string
+- senders: SmsSender[]
+- receivers: SmsReceiver[]
+- phonebooks: SmsPhonebook[]
+- service: SmsAccount
+
+Comportement :
+- Selection expediteur (alphanumerique, virtuel, numero court)
+- Saisie message avec compteur caracteres
+- Estimation SMS (appel POST /sms/estimate)
+- Selection destinataires (manuel, liste, carnet)
+- Options : differe, classe, noStopClause
+- Envoi via POST /sms/{serviceName}/jobs ou virtualNumbers/jobs
+
+### SmsSendersPage
+Props resolues :
+- serviceName: string
+- senders: SmsSender[]
+
+Comportement :
+- Liste des expediteurs avec statut (enable/disable/pending)
+- Actions : modifier, supprimer, resilier
+- Bouton ajouter expediteur
+
+### SmsBatchesCreatePage
+Props resolues :
+- serviceName: string
+- senders: SmsSender[]
+- receivers: SmsReceiver[]
+- phonebooks: SmsPhonebook[]
+
+Comportement :
+- Wizard multi-etapes :
+  1. Choix expediteur
+  2. Composition message
+  3. Selection destinataires
+  4. Options (date, heure)
+  5. Confirmation et estimation
+- Creation via POST /sms/{serviceName}/batches
+
+4.2 COMPOSANTS PARTAGES
+-----------------------
+
+### SmsCreditsDisplay
+Props :
+- creditsLeft: number
+- creditsHoldByQuota: number
+- loading?: boolean
+
+### SmsComposition
+Props :
+- value: string
+- onChange: (value: string) => void
+- coding: '7bit' | '8bit'
+- maxLength: number
+- remainingCharacters: number
+- equivalence: number
+
+### SmsEstimate
+Props :
+- message: string
+- noStopClause: boolean
+- senderType: 'shortcode' | 'alpha' | 'virtual'
+
+### SmsServiceStatus
+Props :
+- status: 'enable' | 'disable'
+- smpp?: boolean
+
+### SmppSettings
+Props :
+- settings: SmppSettings
+- onResetPassword: () => void
+
+### SmsReceiversChoice
+Props :
+- receivers: SmsReceiver[]
+- selectedSlotIds: string[]
+- onChange: (slotIds: string[]) => void
+
+### SmsContactsChoice
+Props :
+- phonebooks: SmsPhonebook[]
+- selectedContacts: PhonebookContact[]
+- onChange: (contacts: PhonebookContact[]) => void
+
+4.3 MAPPING COMPOSANTS ODS
+--------------------------
+| Usage                    | Composant ODS                        |
+|--------------------------|--------------------------------------|
+| Boutons actions          | OdsButton                            |
+| Tableaux donnees         | OdsDatagrid / Datagrid               |
+| Formulaires              | OdsFormField, OdsInput, OdsTextarea  |
+| Messages                 | OdsMessage                           |
+| Modales                  | OdsModal                             |
+| Spinners                 | OdsSpinner                           |
+| Badges statut            | OdsBadge                             |
+| Onglets                  | OdsTabs                              |
+| Pagination               | OdsPagination                        |
+| Select                   | OdsSelect                            |
+| Checkbox                 | OdsCheckbox                          |
+| Toggle                   | OdsToggle                            |
+| Tooltip                  | OdsTooltip                           |
+| Breadcrumb               | Breadcrumb (manager-react-components)|
+| Actions menu             | ActionMenu                           |
+
+================================================================================
+5. APIs & DONNEES
+================================================================================
+
+5.1 ENDPOINTS API v6
+--------------------
+
+### SMS Core
+| Methode | Endpoint                                          | Description                    |
+|---------|---------------------------------------------------|--------------------------------|
+| GET     | /sms                                              | Liste comptes SMS              |
+| GET     | /sms.json                                         | Schema API                     |
+| GET     | /sms/{serviceName}                                | Details compte                 |
+| PUT     | /sms/{serviceName}                                | Modifier compte                |
+| GET     | /sms/{serviceName}/serviceInfos                   | Infos service                  |
+| GET     | /sms/{serviceName}/seeOffers                      | Offres disponibles             |
+| GET     | /sms/{serviceName}/document                       | Telecharger document           |
+| GET     | /sms/{serviceName}/sendersAvailableForValidation  | Expediteurs a valider          |
+| GET     | /sms/ptts                                         | Liste PTT                      |
+| POST    | /sms/estimate                                     | Estimer SMS                    |
+
+### Senders (Expediteurs)
+| Methode | Endpoint                                | Description              |
+|---------|-----------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/senders              | Liste expediteurs        |
+| GET     | /sms/{serviceName}/senders/{sender}     | Detail expediteur        |
+| POST    | /sms/{serviceName}/senders              | Creer expediteur         |
+| PUT     | /sms/{serviceName}/senders/{sender}     | Modifier expediteur      |
+| DELETE  | /sms/{serviceName}/senders/{sender}     | Supprimer expediteur     |
+
+### Receivers (Destinataires)
+| Methode | Endpoint                                        | Description              |
+|---------|-------------------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/receivers                    | Liste slots              |
+| GET     | /sms/{serviceName}/receivers/{slotId}           | Detail slot              |
+| POST    | /sms/{serviceName}/receivers                    | Creer slot               |
+| DELETE  | /sms/{serviceName}/receivers/{slotId}           | Supprimer slot           |
+| GET     | /sms/{serviceName}/receivers/{slotId}/csv       | Export CSV               |
+| POST    | /sms/{serviceName}/receivers/{slotId}/clean     | Nettoyer slot            |
+
+### Jobs (Envoi SMS)
+| Methode | Endpoint                              | Description              |
+|---------|---------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/jobs               | Liste jobs               |
+| GET     | /sms/{serviceName}/jobs/{id}          | Detail job               |
+| POST    | /sms/{serviceName}/jobs               | Envoyer SMS              |
+| DELETE  | /sms/{serviceName}/jobs/{id}          | Annuler job              |
+
+### Outgoing (SMS sortants)
+| Methode | Endpoint                                    | Description              |
+|---------|---------------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/outgoing                 | Liste SMS sortants       |
+| GET     | /sms/{serviceName}/outgoing/{id}            | Detail                   |
+| DELETE  | /sms/{serviceName}/outgoing/{id}            | Supprimer                |
+| GET     | /sms/{serviceName}/outgoing/{id}/hlr        | HLR lookup               |
+
+### Incoming (SMS entrants)
+| Methode | Endpoint                                    | Description              |
+|---------|---------------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/incoming                 | Liste SMS entrants       |
+| GET     | /sms/{serviceName}/incoming/{id}            | Detail                   |
+| DELETE  | /sms/{serviceName}/incoming/{id}            | Supprimer                |
+
+### Blacklists
+| Methode | Endpoint                                      | Description              |
+|---------|-----------------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/blacklists                 | Liste blacklist          |
+| GET     | /sms/{serviceName}/blacklists/{number}        | Detail                   |
+| DELETE  | /sms/{serviceName}/blacklists/{number}        | Supprimer                |
+
+### Phonebooks (Carnets d'adresses)
+| Methode | Endpoint                                              | Description              |
+|---------|-------------------------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/phonebooks                         | Liste carnets            |
+| GET     | /sms/{serviceName}/phonebooks/{bookKey}               | Detail carnet            |
+| POST    | /sms/{serviceName}/phonebooks                         | Creer carnet             |
+| PUT     | /sms/{serviceName}/phonebooks/{bookKey}               | Modifier carnet          |
+| DELETE  | /sms/{serviceName}/phonebooks/{bookKey}               | Supprimer carnet         |
+| GET     | /sms/{serviceName}/phonebooks/{bookKey}/export        | Exporter                 |
+| POST    | /sms/{serviceName}/phonebooks/{bookKey}/import        | Importer                 |
+
+### Phonebook Contacts
+| Methode | Endpoint                                                        | Description        |
+|---------|-----------------------------------------------------------------|--------------------|
+| GET     | /sms/{serviceName}/phonebooks/{bookKey}/phonebookContact        | Liste contacts     |
+| GET     | /sms/{serviceName}/phonebooks/{bookKey}/phonebookContact/{id}   | Detail contact     |
+| POST    | /sms/{serviceName}/phonebooks/{bookKey}/phonebookContact        | Creer contact      |
+| PUT     | /sms/{serviceName}/phonebooks/{bookKey}/phonebookContact/{id}   | Modifier contact   |
+| DELETE  | /sms/{serviceName}/phonebooks/{bookKey}/phonebookContact/{id}   | Supprimer contact  |
+
+### Templates Control
+| Methode | Endpoint                                                        | Description          |
+|---------|-----------------------------------------------------------------|----------------------|
+| GET     | /sms/{serviceName}/templatesControl                             | Liste modeles        |
+| GET     | /sms/{serviceName}/templatesControl/{name}                      | Detail modele        |
+| POST    | /sms/{serviceName}/templatesControl                             | Creer modele         |
+| PUT     | /sms/{serviceName}/templatesControl/{name}                      | Modifier modele      |
+| DELETE  | /sms/{serviceName}/templatesControl/{name}                      | Supprimer modele     |
+| POST    | /sms/{serviceName}/templatesControl/{name}/relaunchValidation   | Relancer validation  |
+
+### Users (Utilisateurs API)
+| Methode | Endpoint                                                        | Description          |
+|---------|-----------------------------------------------------------------|----------------------|
+| GET     | /sms/{serviceName}/users                                        | Liste users          |
+| GET     | /sms/{serviceName}/users/{login}                                | Detail user          |
+| POST    | /sms/{serviceName}/users                                        | Creer user           |
+| PUT     | /sms/{serviceName}/users/{login}                                | Modifier user        |
+| DELETE  | /sms/{serviceName}/users/{login}                                | Supprimer user       |
+| GET     | /sms/{serviceName}/users/{login}/document                       | Document user        |
+| GET     | /sms/{serviceName}/users/{login}/receivers/{slotId}/csv         | CSV receivers        |
+| POST    | /sms/{serviceName}/users/{login}/receivers/{slotId}/clean       | Clean receivers      |
+| GET     | /sms/{serviceName}/users/{login}/incoming/{id}                  | SMS entrant user     |
+| DELETE  | /sms/{serviceName}/users/{login}/incoming/{id}                  | Supprimer            |
+| GET     | /sms/{serviceName}/users/{login}/jobs/{id}                      | Job user             |
+| DELETE  | /sms/{serviceName}/users/{login}/jobs/{id}                      | Supprimer            |
+| GET     | /sms/{serviceName}/users/{login}/outgoing/{id}                  | SMS sortant user     |
+| DELETE  | /sms/{serviceName}/users/{login}/outgoing/{id}                  | Supprimer            |
+| GET     | /sms/{serviceName}/users/{login}/outgoing/{id}/hlr              | HLR user             |
+
+### HLR
+| Methode | Endpoint                                    | Description              |
+|---------|---------------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/hlr                      | Liste HLR                |
+| GET     | /sms/{serviceName}/hlr/{id}                 | Detail HLR               |
+| POST    | /sms/{serviceName}/hlr                      | Lancer HLR               |
+| GET     | /sms/{serviceName}/hlr/{id}/operator        | Operateur                |
+
+### Virtual Numbers
+| Methode | Endpoint                                                          | Description          |
+|---------|-------------------------------------------------------------------|----------------------|
+| GET     | /sms/virtualNumbers                                               | Liste numeros        |
+| GET     | /sms/virtualNumbers/{number}                                      | Detail numero        |
+| GET     | /sms/virtualNumbers/{number}/serviceInfos                         | Infos service        |
+| GET     | /sms/{serviceName}/virtualNumbers/{number}                        | Detail dans service  |
+| GET     | /sms/{serviceName}/virtualNumbers/{number}/incoming/{id}          | SMS entrant          |
+| POST    | /sms/{serviceName}/virtualNumbers/{number}/jobs                   | Envoyer SMS          |
+| GET     | /sms/{serviceName}/virtualNumbers/{number}/outgoing/{id}          | SMS sortant          |
+| GET     | /sms/{serviceName}/virtualNumbers/{number}/outgoing/{id}/hlr      | HLR                  |
+
+### Batches (Campagnes)
+| Methode | Endpoint                                            | Description              |
+|---------|-----------------------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/batches                          | Liste campagnes          |
+| POST    | /sms/{serviceName}/batches                          | Creer campagne           |
+| GET     | /sms/{serviceName}/batches/{batchId}                | Detail campagne          |
+| DELETE  | /sms/{serviceName}/batches/{batchId}                | Supprimer campagne       |
+| POST    | /sms/{serviceName}/batches/{batchId}/cancel         | Annuler campagne         |
+| GET     | /sms/{serviceName}/batches/{batchId}/statistics     | Statistiques             |
+
+### SMPP
+| Methode | Endpoint                                    | Description              |
+|---------|---------------------------------------------|--------------------------|
+| GET     | /sms/{serviceName}/smpp/settings            | Parametres SMPP          |
+| POST    | /sms/{serviceName}/smpp/password            | Reset password           |
+| GET     | /sms/{serviceName}/smpp/allowedIPs          | IPs autorisees           |
+| PUT     | /sms/{serviceName}/smpp/allowedIPs          | Modifier IPs             |
+
+### Time2Chat
+| Methode | Endpoint                                                            | Description          |
+|---------|---------------------------------------------------------------------|----------------------|
+| GET     | /sms/{serviceName}/virtualNumbers/{number}/time2chat/contact        | Contact info         |
+| PUT     | /sms/{serviceName}/virtualNumbers/{number}/time2chat/contact        | Modifier contact     |
+| GET     | /sms/{serviceName}/virtualNumbers/{number}/time2chat/autoResponse   | Auto-reponse         |
+| PUT     | /sms/{serviceName}/virtualNumbers/{number}/time2chat/autoResponse   | Modifier             |
+| GET     | /sms/{serviceName}/virtualNumbers/{number}/time2chat/kyc            | KYC                  |
+| PUT     | /sms/{serviceName}/virtualNumbers/{number}/time2chat/kyc            | Modifier KYC         |
+
+### Credit Transfer
+| Methode | Endpoint                                    | Description              |
+|---------|---------------------------------------------|--------------------------|
+| POST    | /sms/{serviceName}/transferCredits          | Transferer credits       |
+
+### Account (/me)
+| Methode | Endpoint                    | Description              |
+|---------|-----------------------------|--------------------------|
+| GET     | /me/document/{documentId}   | Recuperer document       |
+
+5.2 SEQUENCES D'APPELS
+----------------------
+
+### Chargement Dashboard
+1. GET /sms/{serviceName} -> service details
+2. GET /sms/{serviceName}/batches -> liste campagnes
+3. (Si SMPP) GET /sms/{serviceName}/smpp/settings -> parametres SMPP
+
+### Composition et envoi SMS
+1. GET /sms/{serviceName}/senders -> liste expediteurs
+2. GET /sms/{serviceName}/receivers -> liste slots
+3. GET /sms/{serviceName}/phonebooks -> liste carnets
+4. POST /sms/estimate -> estimation (a chaque modification)
+5. POST /sms/{serviceName}/jobs -> envoi
+
+### Ajout expediteur avec justificatif
+1. POST upload document (via ODS)
+2. POST /sms/{serviceName}/senders avec documentId
+
+### Creation campagne
+1. GET /sms/{serviceName}/senders
+2. GET /sms/{serviceName}/receivers
+3. POST /sms/estimate
+4. POST /sms/{serviceName}/batches
+
+### Statistiques campagne
+1. GET /sms/{serviceName}/batches
+2. Pour chaque batch : GET /sms/{serviceName}/batches/{batchId}/statistics
+3. Aggregation cote client
+
+5.3 TYPES TYPESCRIPT
+--------------------
+
+// === Types principaux ===
+
+interface SmsAccount {
+  name: string;
+  description: string;
+  status: 'enable' | 'disable';
+  creditsLeft: number;
+  creditsHoldByQuota: number;
+  smsResponse: number;
+  smpp: boolean;
+  channel: 'both' | 'marketing' | 'transactional';
+}
+
+interface SmsSender {
+  sender: string;
+  status: 'enable' | 'disable' | 'pending' | 'refused';
+  type: 'alpha' | 'virtual' | 'shortcode' | 'other';
+  description?: string;
+  comment?: string;
+  referer?: string;
+  validationMedia?: string;
+}
+
+interface SmsReceiver {
+  slotId: string;
+  description: string;
+  records: number;
+  datetime: string;
+}
+
+interface SmsPhonebook {
+  bookKey: string;
+  name: string;
+  phoneKey: string;
+}
+
+interface PhonebookContact {
+  id: number;
+  name: string;
+  surname: string;
+  group: string;
+  homePhone?: string;
+  homeMobile?: string;
+  workPhone?: string;
+  workMobile?: string;
+}
+
+interface SmsJob {
+  id: number;
+  message: string;
+  numberOfSms: number;
+  ptt: number;
+  receiver: string;
+  sender: string;
+  deliveryReceipt: number;
+  creationDatetime: string;
+  differedDelivery?: number;
+}
+
+interface SmsBatch {
+  id: string;
+  name: string;
+  status: 'pending' | 'sent' | 'cancelled';
+  createdAt: string;
+  startedAt?: string;
+  sentCount?: number;
+}
+
+interface SmsBatchStatistics {
+  delivered: number;
+  sent: number;
+  stoplisted: number;
+  credits: number;
+}
+
+interface SmsOutgoing {
+  id: number;
+  message: string;
+  numberOfSms: number;
+  ptt: number;
+  receiver: string;
+  sender: string;
+  deliveryReceipt: number;
+  creationDatetime: string;
+  tariffCode: string;
+  messageLength: number;
+}
+
+interface SmsIncoming {
+  id: number;
+  message: string;
+  sender: string;
+  creationDatetime: string;
+  credits: number;
+  tag?: string;
+}
+
+interface SmsTemplate {
+  name: string;
+  activity: string;
+  comment?: string;
+  datetime: string;
+  description?: string;
+  message: string;
+  status: 'enable' | 'disable' | 'pending';
+}
+
+interface SmsUser {
+  login: string;
+  alertThresholdInformations: {
+    alertEmail: string;
+    alertNumber: string;
+    alertThreshold: number;
+    support: 'both' | 'mail' | 'sms' | 'none';
+  };
+  callBack?: string;
+  ipRestrictions: string[];
+  password: string;
+  quotaInformations: {
+    quotaLeft: number;
+    quotaStatus: 'active' | 'inactive';
+  };
+  stopCallBack?: string;
+}
+
+interface SmsHlr {
+  id: number;
+  datetime: string;
+  status: string;
+  operator?: string;
+  country?: string;
+  ported: boolean;
+}
+
+interface SmppSettings {
+  host: string;
+  port: number;
+  systemId: string;
+  password?: string;
+  allowedIPs: string[];
+}
+
+interface Time2ChatContact {
+  commercialName: string;
+  phoneNumber: string;
+  website: string;
+}
+
+interface Time2ChatAutoResponse {
+  message: string;
+}
+
+interface Time2ChatKyc {
+  companyName: string;
+  brandName: string;
+  primaryUseCase: string;
+  operationalContactName: string;
+  contactEmail: string;
+}
+
+interface SmsEstimateRequest {
+  message: string;
+  noStopClause: boolean;
+  senderType: 'shortcode' | 'alpha' | 'virtual';
+}
+
+interface SmsEstimateResponse {
+  characters: number;
+  charactersClass: '7bits' | 'unicode';
+  maxCharactersPerPart: number;
+  parts: number;
+}
+
+interface SmsJobRequest {
+  charset?: 'UTF-8';
+  class?: 'phoneDisplay' | 'flash' | 'sim' | 'toolkit';
+  coding?: '7bit' | '8bit';
+  differedPeriod?: number;
+  message: string;
+  noStopClause?: boolean;
+  priority?: 'high' | 'medium' | 'low' | 'veryLow';
+  receivers?: string[];
+  receiversSlotId?: string;
+  sender?: string;
+  senderForResponse?: boolean;
+  validityPeriod?: number;
+}
+
+interface SmsBatchRequest {
+  name: string;
+  message: string;
+  sender: string;
+  receivers?: string[];
+  receiversSlotId?: string;
+  noStopClause?: boolean;
+  scheduledDatetime?: string;
+}
+
+================================================================================
+6. TRADUCTIONS
+================================================================================
+
+6.1 CLES PRINCIPALES (FR)
+-------------------------
+
+// Index / Liste
+sms_title: "SMS"
+sms_order: "Commander"
+sms_name_label: "Nom"
+sms_description_label: "Description"
+sms_channel_label: "Format de compte"
+sms_channel_both: "Standard"
+sms_channel_marketing: "SMPP marketing"
+sms_channel_transactional: "SMPP transactionnel"
+sms_status_label: "Statut"
+sms_status_label_enable: "OK"
+sms_status_label_disable: "Desactive"
+sms_view_sms_label: "Details"
+
+// Dashboard
+sms_actions: "Je veux..."
+sms_actions_send_sms: "Envoyer un SMS"
+sms_actions_credit_account: "Crediter mon compte"
+sms_actions_credit_transfer: "Transferer des credits"
+sms_actions_create_contact: "Creer un contact"
+sms_actions_create_sender: "Creer un expediteur"
+sms_actions_create_api_user: "Creer un utilisateur API"
+sms_actions_clean_contact_list: "Nettoyer la liste des contacts"
+sms_actions_create_campaign: "Creer une campagne"
+sms_actions_campaign_history: "Historique des campagnes"
+sms_actions_smpp_parameter: "Parametrer mon SMPP"
+sms_actions_order_time2chat: "Commander un numero Time2Chat"
+sms_consumed_credit_balance: "Solde de credit"
+sms_consumed_last_recharge: "Derniere recharge"
+sms_statistics: "Statistiques"
+sms_statistics_campaign_filter_today: "Aujourd'hui"
+sms_statistics_campaign_filter_last: "Derniere campagne"
+sms_statistics_campaign_filter_ten_last: "Les 10 dernieres campagnes"
+sms_statistics_campaign_filter_all: "Toutes les campagnes"
+sms_statistics_campaign_number: "Nombre de campagnes"
+sms_statistics_sent_number: "Nombre de SMS envoyes"
+sms_statistics_delivered_number: "Nombre de SMS delivres"
+sms_statistics_stop_subscribe_number: "Nombre de desabonnements"
+sms_statictics_credit_reload: "Recharger credits"
+
+// Compose
+sms_sms_compose_title: "Composer un SMS"
+sms_sms_compose_sender_label: "Expediteur"
+sms_sms_compose_sender_short_number: "Numero court permettant la reponse"
+sms_sms_compose_message_label: "Message"
+sms_sms_compose_message_placeholder: "Saisissez votre message..."
+sms_sms_compose_characters_left: "caracteres restants"
+sms_sms_compose_sms_count: "SMS"
+sms_sms_compose_receivers_label: "Destinataires"
+sms_sms_compose_receivers_placeholder: "+33612345678"
+sms_sms_compose_receivers_list: "Ajouter depuis une liste"
+sms_sms_compose_receivers_phonebook: "Ajouter depuis un carnet"
+sms_sms_compose_options_title: "Options"
+sms_sms_compose_options_no_stop: "Ne pas ajouter la mention STOP"
+sms_sms_compose_options_differed: "Envoi differe"
+sms_sms_compose_options_sender_for_response: "Permettre la reponse"
+sms_sms_compose_estimate: "Estimation"
+sms_sms_compose_estimate_credits: "credits"
+sms_sms_compose_send: "Envoyer"
+sms_sms_compose_status_success: "SMS envoye avec succes"
+sms_sms_compose_status_failed: "Echec de l'envoi du SMS"
+sms_sms_compose_status_invalid_receiver: "Destinataires invalides: {{invalidReceivers}}"
+
+// Senders
+sms_senders_title: "Expediteurs"
+sms_senders_add_title: "Ajouter un expediteur"
+sms_senders_add_sender_choice_manual: "Ajouter manuellement des expediteurs"
+sms_senders_add_sender_choice_personal: "Ajouter des expediteurs a partir de donnees personnelles"
+sms_senders_add_sender_choice_domain: "Ajouter des expediteurs a partir de vos noms de domaine OVH"
+sms_senders_add_sender_label: "Expediteur"
+sms_senders_add_sender_placeholder: "Expediteur"
+sms_senders_add_sender_error_required: "Le champ expediteur est obligatoire."
+sms_senders_add_sender_error_pattern: "Le champ expediteur doit etre compose uniquement de caracteres alphabetiques."
+sms_senders_add_sender_error_maxlength: "Le champ expediteur ne peut exceder les 11 caracteres."
+sms_senders_add_sender_description_label: "Description"
+sms_senders_add_sender_reason_label: "Courte justification"
+sms_senders_add_sender_reason_error_required: "Le champ courte justification est obligatoire."
+sms_senders_add_sender_supporting_document: "Pieces justificatives"
+sms_senders_add_sender_supporting_document_help: "Nous vous demandons un justificatif dans le cadre de notre politique de securite."
+sms_senders_add_sender_adding: "Ajout de l'expediteur..."
+sms_senders_add_sender_added: "Expediteur ajoute!"
+
+// Receivers
+sms_receivers_title: "Listes de destinataires"
+sms_receivers_add_title: "Ajouter une liste"
+sms_receivers_add_slot_label: "Nom du slot"
+sms_receivers_add_description_label: "Description"
+sms_receivers_add_file_label: "Fichier CSV"
+sms_receivers_clean_title: "Nettoyer la liste"
+sms_receivers_clean_description: "Supprime les numeros invalides de la liste"
+
+// Phonebooks
+sms_phonebooks_title: "Carnets d'adresses"
+sms_phonebooks_create_title: "Creer un carnet"
+sms_phonebooks_create_name_label: "Nom du carnet"
+sms_phonebooks_contact_create_title: "Ajouter un contact"
+sms_phonebooks_contact_import_title: "Importer des contacts"
+sms_phonebooks_contact_export_title: "Exporter les contacts"
+
+// Batches / Campaigns
+sms_batches_title: "Campagnes"
+sms_batches_create_title: "Creer une campagne"
+sms_batches_history_title: "Historique des campagnes"
+sms_batches_pending_title: "Campagnes en cours"
+sms_batches_details_title: "Details de la campagne"
+sms_batches_statistics_title: "Statistiques"
+sms_batches_cancel_title: "Annuler la campagne"
+sms_batches_delete_title: "Supprimer la campagne"
+sms_batches_status_pending: "En attente"
+sms_batches_status_sent: "Envoyee"
+sms_batches_status_cancelled: "Annulee"
+
+// Users API
+sms_users_title: "Utilisateurs API"
+sms_users_add_title: "Ajouter un utilisateur"
+sms_users_add_login_label: "Identifiant"
+sms_users_add_password_label: "Mot de passe"
+sms_users_change_password_title: "Changer le mot de passe"
+sms_users_callback_title: "URL de callback"
+sms_users_limit_title: "Limites"
+sms_users_quota_title: "Quota"
+sms_users_restrict_title: "Restrictions IP"
+
+// Options
+sms_options_title: "Options"
+sms_options_blacklist_title: "Liste noire"
+sms_options_blacklist_description: "Numeros exclus des envois"
+sms_options_callback_title: "URL de callback"
+sms_options_callback_description: "URL appelee lors d'evenements"
+sms_options_recredit_title: "Recredit automatique"
+sms_options_recredit_description: "Rechargement automatique des credits"
+sms_options_response_title: "Reponses SMS"
+sms_options_smpp_title: "Parametres SMPP"
+sms_options_smpp_host: "Hote"
+sms_options_smpp_port: "Port"
+sms_options_smpp_system_id: "System ID"
+sms_options_smpp_password: "Mot de passe"
+sms_options_smpp_allowed_ips: "IPs autorisees"
+sms_options_smpp_reset_password: "Reinitialiser le mot de passe"
+
+// Time2Chat
+sms_senders_configure_time2chat: "SMS Conversationnel : Time2Chat"
+sms_senders_configure_auto_response: "Reponses automatiques"
+sms_senders_configure_contact_info_title: "Si le client final repond 'contact' au message"
+sms_senders_configure_contact_info_label_commercial_name: "Nom commercial"
+sms_senders_configure_contact_info_label_phonenumber: "Numero de telephone"
+sms_senders_configure_contact_info_label_website: "Site internet"
+sms_senders_configure_kyc: "KYC"
+sms_senders_configure_kyc_label_company_name: "Raison sociale"
+sms_senders_configure_kyc_label_brand_name: "Marque utilisant le service"
+sms_senders_configure_kyc_label_primary_use_case: "Cas d'utilisation principal"
+sms_senders_configure_kyc_label_operational_contact_name: "Nom du contact"
+sms_senders_configure_kyc_label_contact_email: "Email du contact"
+sms_order_time2chat_title: "Commander un numero Time2Chat"
+
+// Order
+sms_order_title: "Commander des credits"
+sms_order_select_quantity: "Selectionnez une quantite"
+sms_order_summary: "Recapitulatif"
+sms_order_confirm: "Confirmer la commande"
+
+// Onboarding
+sms_onboarding_title: "SMS PRO"
+sms_onboarding_description: "L'envoi de SMS par Internet n'a jamais ete aussi simple."
+sms_onboarding_order: "Decouvrir les offres"
+sms_onboarding_guide1_title: "Gerer les credits SMS et activer la recharge automatique"
+sms_onboarding_guide2_title: "API SMS Cookbook"
+sms_onboarding_guide3_title: "Gerer les SMS avec reponse"
+
+// Common
+sms_common_action_add: "Ajouter"
+sms_common_action_edit: "Modifier"
+sms_common_action_delete: "Supprimer"
+sms_common_action_cancel: "Annuler"
+sms_common_action_confirm: "Confirmer"
+sms_common_action_save: "Enregistrer"
+sms_common_action_back: "Retour"
+sms_common_action_export: "Exporter"
+sms_common_action_import: "Importer"
+sms_common_loading: "Chargement..."
+sms_common_error: "Une erreur est survenue"
+sms_common_success: "Operation reussie"
+sms_common_empty: "Aucun element"
+
+6.2 GUIDES ET LIENS
+-------------------
+
+// URLs guides par section
+sms_guides_section_compose: "Envoi de SMS"
+sms_guides_compose_manager: "Envoyer des SMS depuis mon espace client"
+  - FR: https://docs.ovh.com/fr/sms/envoyer_des_sms_depuis_mon_espace_client/
+  - EN: https://docs.ovh.com/gb/en/sms/send_sms_messages_via_control_panel/
+  - ES: https://docs.ovh.com/es/sms/enviar-sms-desde-el-area-de-cliente/
+  - IT: https://docs.ovh.com/it/sms/inviare_sms_dallo_spazio_cliente/
+  - PL: https://docs.ovh.com/pl/sms/wysylanie-wiadomosci-sms-z-panelu-klienta/
+
+sms_guides_compose_email: "Envoyer des SMS depuis une adresse email"
+sms_guides_compose_url: "Envoyer des SMS depuis une URL (HTTP2SMS)"
+sms_guides_compose_usa: "Envoyer des SMS aux Etats-Unis"
+sms_guides_compose_campaign: "Creer une campagne SMS"
+sms_guides_compose_hlr: "Utiliser le HLR"
+
+sms_guides_section_outgoing: "Historique"
+sms_guides_outgoing_faq: "Gerer l'historique des SMS"
+
+sms_guides_section_options: "Options"
+sms_guides_options_callback: "Specifier une URL de callback"
+
+sms_guides_section_users: "Utilisateurs API"
+sms_guides_users_about: "Tout savoir sur les utilisateurs SMS"
+sms_guides_users_add: "Creer un utilisateur API"
+
+sms_guides_section_api: "API"
+sms_guides_api_cookbook: "API SMS Cookbook"
+sms_guides_api_java: "Envoyer des SMS avec Java"
+sms_guides_api_csharp: "Envoyer des SMS avec C#"
+sms_guides_api_nodejs: "Envoyer des SMS avec Node.js"
+sms_guides_api_php: "Envoyer des SMS avec PHP"
+
+sms_guides_section_smpp: "SMPP"
+sms_guides_smpp_control_panel: "Gerer SMPP depuis l'espace client"
+sms_guides_smpp_specifications: "Specifications SMPP"
+
+================================================================================
+7. REGLES METIER
+================================================================================
+
+7.1 COMPOSITION SMS
+-------------------
+
+### Encodage et taille
+- Encodage 7bit (GSM) : 160 caracteres par SMS
+- Encodage 8bit (Unicode) : 70 caracteres par SMS
+- SMS concatenes : -7 caracteres par partie (header UDH)
+
+### Clause STOP
+- Obligatoire par defaut pour les SMS commerciaux en France
+- Exceptions :
+  - Envoi via numero court (senderForResponse = true)
+  - Option noStopClause activee (usage non commercial)
+  - Option noCommercialClause activee
+
+### Types d'expediteurs
+| Type       | Format              | Reponse possible | Exemple        |
+|------------|---------------------|------------------|----------------|
+| alpha      | Alphanumerique      | Non              | "OVHcloud"     |
+| shortcode  | Numero court        | Oui              | "36007"        |
+| virtual    | Numero virtuel      | Oui              | "+33612345678" |
+| other      | Autre               | Variable         | -              |
+
+### Validation expediteur
+- Expediteur alphanumerique : max 11 caracteres, uniquement [A-Za-z0-9]
+- Justificatif requis : papier en-tete, autorisation signee, piece identite, Kbis
+- Validation manuelle : 1-2 jours ouvres (lundi-vendredi 8h-20h)
+
+### Priorites d'envoi
+- high : Priorite haute (defaut)
+- medium : Priorite moyenne
+- low : Priorite basse
+- veryLow : Priorite tres basse
+
+### Classe SMS
+- phoneDisplay : Affichage sur telephone (defaut)
+- flash : SMS flash (affichage immediat)
+- sim : Stockage SIM
+- toolkit : SIM toolkit
+
+7.2 CAMPAGNES (BATCHES)
+-----------------------
+
+### Statuts
+- pending : En attente d'envoi
+- sent : Envoyee
+- cancelled : Annulee
+
+### Statistiques
+- delivered : SMS delivres
+- sent : SMS envoyes
+- stoplisted : Desabonnements (STOP)
+
+### Filtres dashboard
+- today : Campagnes du jour
+- last : Derniere campagne
+- ten_last : 10 dernieres campagnes
+- all : Toutes les campagnes
+
+7.3 UTILISATEURS API
+--------------------
+
+### Quotas
+- quotaLeft : Credits restants pour l'utilisateur
+- quotaStatus : active | inactive
+
+### Alertes
+- alertThreshold : Seuil d'alerte (nombre de credits)
+- alertEmail : Email de notification
+- alertNumber : Numero de notification
+- support : both | mail | sms | none
+
+### Restrictions
+- ipRestrictions : Liste des IPs autorisees
+- callBack : URL de callback principale
+- stopCallBack : URL de callback pour STOP
+
+7.4 SMPP
+--------
+
+### Parametres connexion
+- host : Hote SMPP OVHcloud
+- port : Port SMPP (generalement 2775)
+- systemId : Identifiant systeme (login)
+- password : Mot de passe (affiche une seule fois)
+
+### Types de compte
+- marketing : Pour campagnes marketing
+- transactional : Pour SMS transactionnels
+
+### IPs autorisees
+- Liste blanche d'IPs pouvant se connecter
+- Modification via PUT /sms/{serviceName}/smpp/allowedIPs
+
+7.5 TIME2CHAT
+-------------
+
+### Configuration requise
+- Contact info : nom commercial, telephone, site web
+- KYC : raison sociale, marque, cas d'usage, contact
+
+### Fonctionnement
+- Mot-cle "contact" : renvoie les infos de contact
+- Auto-reponse : message apres 24h sans reponse
+- Format telephone : +33 ou 0033 suivi de 9 chiffres
+
+### Regex validation telephone
+^(\+33|0033)[1-9](?:[\s.-]?\d{2}){4}$
+
+7.6 CARNETS D'ADRESSES (PHONEBOOKS)
+-----------------------------------
+
+### Champs contact
+- name : Prenom
+- surname : Nom
+- group : Groupe (defaut: "No group")
+- homePhone : Telephone domicile
+- homeMobile : Mobile personnel
+- workPhone : Telephone bureau
+- workMobile : Mobile professionnel
+
+### Format numeros
+- Prefixe par defaut : "0033"
+- Formats acceptes : international (+33) ou local (06...)
+
+### Import/Export
+- Format CSV
+- Encodage UTF-8
+
+7.7 RECEIVERS (LISTES DESTINATAIRES)
+------------------------------------
+
+### Structure slot
+- slotId : Identifiant unique
+- description : Description de la liste
+- records : Nombre de numeros
+- datetime : Date de creation
+
+### Operations
+- Import CSV : upload fichier
+- Clean : suppression numeros invalides
+- Export CSV : telechargement
+
+7.8 HLR (HOME LOCATION REGISTER)
+--------------------------------
+
+### Informations retournees
+- operator : Operateur du numero
+- country : Pays
+- ported : Numero porte (true/false)
+- status : Statut du lookup
+
+### Disponibilite
+- Feature flag : sms:hlr
+- Conditions d'utilisation : acceptation CGU specifiques
+
+7.9 DOCUMENTS
+-------------
+
+### Generation document statistiques
+1. GET /sms/{serviceName}/document avec parametres date
+2. Retourne documentId
+3. Poll GET /me/document/{documentId} jusqu'a size > 0
+4. Telecharger via document.getUrl
+
+### Types de documents
+- wayType : outgoing | incoming
+
+================================================================================
+8. ETATS ET GESTION D'ERREURS
+================================================================================
+
+8.1 ETATS DE CHARGEMENT
+-----------------------
+- init : Chargement initial de la page
+- loading : Operation en cours
+- error : Erreur survenue
+- success : Operation reussie
+- empty : Aucune donnee
+
+8.2 CODES ERREUR COURANTS
+-------------------------
+- 400 : Bad Request - Parametres invalides
+- 401 : Unauthorized - Non authentifie
+- 403 : Forbidden - Acces refuse
+- 404 : Not Found - Ressource inexistante
+- 409 : Conflict - Conflit (doublon, etc.)
+- 429 : Too Many Requests - Rate limiting
+- 500 : Internal Server Error - Erreur serveur
+
+8.3 MESSAGES UTILISATEUR
+------------------------
+- Toast success : vert, disparait apres 5s
+- Toast error : rouge, necessite fermeture manuelle
+- Toast warning : orange, disparait apres 10s
+- Loading : spinner + texte descriptif
+
+8.4 GESTION OPTIMISTE
+---------------------
+- Mise a jour UI immediate sur action
+- Rollback en cas d'erreur API
+- Invalidation cache TanStack Query
+
+================================================================================
+9. TRACKING & ANALYTICS
+================================================================================
+
+9.1 PAGES
+---------
+- sms::index
+- sms::onboarding
+- sms::service::dashboard
+- sms::service::dashboard-smpp
+- sms::service::sms::compose
+- sms::service::batches::create
+- sms::service::batches::history
+- sms::service::senders
+- sms::service::receivers
+- sms::service::phonebooks
+- sms::service::users
+- sms::service::options
+- sms::service::order
+
+9.2 ACTIONS (trackClick)
+------------------------
+- sms::index::order
+- sms::service::dashboard::compose
+- sms::service::dashboard::add-campaign
+- sms::service::dashboard::historic-campaigns
+- sms::service::dashboard::add-receivers
+- sms::service::dashboard::add-senders
+- sms::service::dashboard::add-user
+- sms::service::dashboard::clean-receivers
+- sms::service::dashboard::credit-account
+- sms::service::dashboard::transfer-credit
+- sms::service::dashboard::order-time2chat
+- sms::service::dashboard-smpp::configure-smpp
+- sms::service::sms::compose::send
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================
+CDC_EOF
+echo "Fichier genere : /home/ubuntu/old_manager/old_manager.web-cloud.telecom.sms.txt"
+```

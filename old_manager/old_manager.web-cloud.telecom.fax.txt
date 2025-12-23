@@ -1,0 +1,882 @@
+# CAHIER DES CHARGES - Migration Fax OVHcloud Manager
+
+## Document généré le 22/12/2024
+## Source : Analyse archive old_manager_web-cloud_telecom_fax.tar
+
+---
+
+# 1. RÉSUMÉ EXÉCUTIF
+
+## 1.1 Contexte
+Migration des fonctionnalités Fax de l'ancien manager OVHcloud (AngularJS 1.x) vers le nouveau manager (React 18+).
+
+## 1.2 Périmètre
+Deux modules distincts à migrer :
+- **FreeFax** : Service fax gratuit pour particuliers (EcoFax Perso)
+- **Telephony Fax** : Service fax professionnel intégré à la téléphonie VoIP
+
+## 1.3 Volumétrie archive analysée
+- 273 fichiers JavaScript
+- 75 fichiers HTML (templates)
+- 485 fichiers JSON (traductions)
+- ~2.4 Mo total
+
+## 1.4 Stack technique actuelle
+- Framework : AngularJS 1.x
+- Routing : UI-Router (@uirouter/angularjs)
+- API Client : ovh-api-services
+- UI Kit : OUI-Kit (oui-tile, oui-spinner, oui-button, etc.)
+- i18n : angular-translate
+- Lazy Loading : ocLazyLoad
+
+## 1.5 Stack technique cible
+- Framework : React 18+
+- Routing : React Router v6
+- State/Cache : TanStack Query (React Query)
+- UI Kit : @ovhcloud/ods-components (ODS React)
+- Forms : React Hook Form + Zod
+- i18n : react-i18next
+
+---
+
+# 2. ARCHITECTURE
+
+## 2.1 Structure des modules
+
+```
+packages/manager/
+├── apps/
+│   ├── freefax/                    # Application FreeFax standalone
+│   │   └── src/
+│   │       └── index.js
+│   └── telecom/                    # Application Telecom (contient Telephony Fax)
+│       └── src/
+│           └── app/
+│               └── telecom/
+│                   └── telephony/
+│                       ├── fax/    # Module Fax principal
+│                       └── service/
+│                           └── fax/ # Services partagés fax
+├── modules/
+│   ├── freefax/                    # Module FreeFax réutilisable
+│   │   └── src/
+│   │       ├── freefaxes.module.js
+│   │       ├── freefaxes.routing.js
+│   │       └── freefax/
+│   │           ├── freefax.controller.js
+│   │           ├── freefax.html
+│   │           ├── credit/
+│   │           ├── faxConfiguration/
+│   │           ├── voicemailConfiguration/
+│   │           ├── notifications/
+│   │           └── translations/
+│   └── telecom-universe-components/
+│       └── src/
+│           └── telecom/
+│               └── voip/
+│                   └── feature/
+│                       └── line/
+│                           └── fax/
+```
+
+## 2.2 Dépendances principales
+
+```javascript
+// Services API
+OvhApiFreeFax      // API FreeFax
+OvhApiTelephony    // API Telephony (dont Fax)
+OvhApiMe           // API Utilisateur
+OvhApiOrder        // API Commandes
+
+// Services partagés
+TucToast           // Notifications toast
+TucToastError      // Gestion erreurs
+tucTelephonyBulk   // Actions bulk
+$translate         // Traductions
+
+// Composants UI
+oui-tile, oui-spinner, oui-button, oui-header
+oui-message, oui-icon, oui-select, oui-field
+tuc-editable-service-name, tuc-section-back-link
+```
+
+---
+
+# 3. PAGES & NAVIGATION
+
+## 3.1 FreeFax - Routes
+
+| Route | État UI-Router | Page | Description |
+|-------|----------------|------|-------------|
+| `/freefax` | freefaxes | Liste | Liste des services FreeFax |
+| `/freefax/:serviceName` | freefaxes.freefax | Dashboard | Tableau de bord FreeFax |
+| `/freefax/:serviceName/notifications` | freefaxes.freefax.notifications | Notifications | Gestion des notifications email |
+| `/freefax/:serviceName/voicemail` | freefaxes.freefax.voicemail-configuration | Voicemail | Configuration répondeur |
+
+### 3.1.1 Page Liste FreeFax
+- Affiche tous les services FreeFax de l'utilisateur
+- Lien vers dashboard de chaque service
+- Informations : numéro, crédits restants, statut
+
+### 3.1.2 Page Dashboard FreeFax
+Structure en sections :
+1. **Informations générales** : Numéro, statut, crédits
+2. **Configuration fax** : Qualité, en-tête, expéditeur
+3. **Configuration répondeur** : Activation, format audio, email
+4. **Notifications** : Liste des emails de notification
+5. **Commander des crédits** : Formulaire de commande
+
+## 3.2 Telephony Fax - Routes
+
+| Route | État UI-Router | Page | Description |
+|-------|----------------|------|-------------|
+| `/telephony/:billingAccount/fax/:serviceName` | telecom.telephony.billingAccount.fax | Dashboard | Accueil avec onglets |
+| `.../fax/:serviceName/management` | ...fax.dashboard.management | Gestion | Paramètres généraux |
+| `.../fax/:serviceName/consumption` | ...fax.dashboard.consumption | Consommation | Historique/stats |
+| `.../fax/:serviceName/voicemail` | ...fax.dashboard.voicemail | Répondeur | Config voicemail |
+| `.../fax/:serviceName/fax` | ...fax.dashboard.fax | Fax | Paramètres fax avancés |
+| `.../fax/:serviceName/contact` | ...fax.dashboard.contact | Coordonnées | Infos contact |
+| `.../fax/:serviceName/assist` | ...fax.dashboard.assist | Assistance | Support/aide |
+
+### 3.2.1 Structure du Dashboard Telephony Fax
+Navigation par onglets :
+- **Gestion** : Nom service, paramètres généraux
+- **Consommation** : Graphiques, historique
+- **Répondeur** : Activation, messages, config
+- **Fax** : Qualité, filtres, campagnes, domaines
+- **Coordonnées** : Informations contact
+- **Assistance** : Guides, support
+
+### 3.2.2 Sous-pages Fax (onglet Fax)
+- **Paramètres** : Qualité, en-tête, notification
+- **Filtrage** : Listes blanches/noires (numéros, TSI)
+- **Campagnes** : Envoi massif de fax
+- **Domaines personnalisés** : Domaines email custom
+- **Mot de passe** : Changement password fax
+- **Conversion VoiceFax** : Transformation service
+
+---
+
+# 4. COMPOSANTS UI
+
+## 4.1 Composants FreeFax
+
+### FreeFaxInformation
+```
+Affiche : Numéro, Crédits restants, Statut service, Date expiration
+Actions : Renouveler, Modifier nom
+```
+
+### FreeFaxConfiguration
+```
+Champs :
+- faxQuality: select (normal, high, best)
+- fromName: input text (expéditeur)
+- redirectionEmail: input email (liste)
+- faxTagLine: input text (en-tête fax)
+- fromEmail: input email
+```
+
+### FreeFaxVoicemailConfiguration
+```
+Champs :
+- activateVoiceMail: toggle boolean
+- audioFormat: select (aiff, au, flac, mp3, ogg, wav)
+- keepMessage: toggle boolean
+- doNotRecord: toggle boolean
+- password: input (4 chiffres)
+Actions : Sauvegarder, Changer mot de passe
+```
+
+### FreeFaxNotifications
+```
+Liste max 5 notifications avec :
+- email: input email
+- source: select (fax, voicemail, both)
+- type: select (html, text, attachment)
+Actions : Ajouter, Supprimer, Modifier
+```
+
+### FreeFaxCredit
+```
+Affiche : Prix par quantité, Contrats
+Champs :
+- quantity: select (10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 100000)
+Actions : Commander
+```
+
+## 4.2 Composants Telephony Fax
+
+### TelephonyFaxSettings
+```
+Champs :
+- faxQuality: select (normal, high, best)
+- faxTagLine: input text
+- fromName: input text
+- fromEmail: input email
+- mailFormat: select
+- sendingTries: number
+Actions : Sauvegarder
+```
+
+### TelephonyFaxFiltering
+```
+Sections :
+- filteringList: select (disabled, whiteList, blackList)
+- rejectAnonymous: toggle
+- whitelistedNumbers: liste éditable
+- blacklistedNumbers: liste éditable
+- whitelistedTSI: liste éditable
+- blacklistedTSI: liste éditable
+Actions : Ajouter numéro, Supprimer, Sauvegarder
+```
+
+### TelephonyFaxCampaigns
+```
+Tableau :
+- Nom campagne
+- Statut (todo, doing, done, error, stop, stopTodo, stopDoing)
+- Date création
+- Destinataires
+Actions : Créer, Démarrer, Arrêter, Supprimer, Voir détails
+```
+
+### TelephonyFaxCampaignForm
+```
+Champs :
+- name: input text
+- faxQuality: select
+- sendDate: datetime
+- sendType: select (automatic, scheduled)
+- recipientsType: select (list, document)
+- recipientsList: textarea (numéros)
+- recipientsDocId: file upload
+- documentId: file upload (PDF)
+Actions : Créer campagne
+```
+
+### TelephonyFaxPassword
+```
+Champs :
+- password: input password
+- confirmPassword: input password
+Validation : min 4 chars
+Actions : Changer mot de passe
+```
+
+### TelephonyFaxCustomDomains
+```
+Liste domaines disponibles
+Actions : Sélectionner domaine
+```
+
+## 4.3 Composants partagés (à mapper vers ODS)
+
+| Composant AngularJS | Composant ODS React |
+|---------------------|---------------------|
+| oui-tile | ods-tile |
+| oui-spinner | ods-spinner |
+| oui-button | ods-button |
+| oui-message | ods-message |
+| oui-icon | ods-icon |
+| oui-select | ods-select |
+| oui-field | ods-form-field |
+| oui-input | ods-input |
+| oui-checkbox | ods-checkbox |
+| oui-toggle | ods-toggle |
+| oui-textarea | ods-textarea |
+| oui-datagrid | ods-table |
+| oui-modal | ods-modal |
+| tuc-toast-message | ods-message (toast variant) |
+| tuc-editable-service-name | Composant custom |
+| tuc-section-back-link | ods-link + ods-icon |
+
+---
+
+# 5. APIs & DONNÉES
+
+## 5.1 API FreeFax
+
+### Endpoints
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/freefax` | Liste des services FreeFax |
+| GET | `/freefax/{serviceName}` | Détails service |
+| PUT | `/freefax/{serviceName}` | Modifier service |
+| GET | `/freefax/{serviceName}/serviceInfos` | Infos facturation |
+| PUT | `/freefax/{serviceName}/serviceInfos` | Modifier facturation |
+| GET | `/freefax/{serviceName}/mainService` | Service principal |
+| POST | `/freefax/{serviceName}/resetPassword` | Reset password email |
+| GET | `/freefax/{serviceName}/voicemail` | Config voicemail |
+| PUT | `/freefax/{serviceName}/voicemail` | Modifier voicemail |
+| GET | `/freefax/{serviceName}/voicemail/routing` | Routage voicemail |
+| POST | `/freefax/{serviceName}/voicemail/changeRouting` | Changer routage |
+| POST | `/freefax/{serviceName}/voicemail/changePassword` | Changer password |
+| GET | `/freefax/credits` | Prix crédits |
+| POST | `/freefax/credits` | Commander crédits |
+
+### Endpoints Aapi (Backend For Frontend)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/freefax/{serviceName}/details` | Détails agrégés |
+| GET | `/freefax/{serviceName}/notifications` | Liste notifications |
+| POST | `/freefax/{serviceName}/notifications` | MAJ notifications |
+
+### Modèle de données FreeFax
+
+```typescript
+interface FreeFax {
+  number: string;           // Numéro de fax
+  faxQuality: 'normal' | 'high' | 'best';
+  faxTagLine: string;       // En-tête fax
+  fromName: string;         // Nom expéditeur
+  fromEmail: string;        // Email expéditeur
+  redirectionEmail: string[]; // Emails redirection
+  faxMaxCall: number;       // Nombre essais
+  status: string;           // Statut service
+}
+
+interface FreeFaxVoicemail {
+  audioFormat: 'aiff' | 'au' | 'flac' | 'mp3' | 'ogg' | 'wav';
+  doNotRecord: boolean;
+  forcePassword: boolean;
+  fromEmail: string;
+  fromName: string;
+  fullGreetingSoundId: number;
+  greetingType: string;
+  isNewVersion: boolean;
+  keepMessage: boolean;
+  redirectionEmails: string[];
+  shortGreetingSoundId: number;
+  temporaryGreetingActivated: boolean;
+  temporaryGreetingSoundId: number;
+  unreadMessages: number;
+}
+
+interface FreeFaxNotification {
+  email: string;
+  source: 'fax' | 'voicemail' | 'both';
+  type: 'simple' | 'html' | 'attachment';
+}
+
+interface FreeFaxBalance {
+  faxs: number;    // Crédits restants
+  points: number;  // Points fidélité
+}
+```
+
+## 5.2 API Telephony Fax
+
+### Endpoints Fax
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/telephony/{billingAccount}/fax` | Liste fax du groupe |
+| GET | `/telephony/{billingAccount}/fax/{serviceName}` | Détails fax |
+| PUT | `/telephony/{billingAccount}/fax/{serviceName}` | Modifier fax |
+| GET | `/telephony/{billingAccount}/fax/{serviceName}/settings` | Paramètres |
+| PUT | `/telephony/{billingAccount}/fax/{serviceName}/settings` | Modifier paramètres |
+| POST | `/telephony/{billingAccount}/fax/{serviceName}/settings/changePassword` | Changer password |
+| POST | `/telephony/{billingAccount}/fax/{serviceName}/settings/sendFax` | Envoyer fax |
+
+### Endpoints Filtrage (Screen Lists)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/telephony/{billingAccount}/fax/{serviceName}/screenLists` | Listes filtrage |
+| POST | `/telephony/{billingAccount}/fax/{serviceName}/screenLists` | Créer liste |
+| PUT | `/telephony/{billingAccount}/fax/{serviceName}/screenLists` | Modifier liste |
+| DELETE | `/telephony/{billingAccount}/fax/{serviceName}/screenLists` | Supprimer liste |
+
+### Endpoints Campagnes
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/telephony/{billingAccount}/fax/{serviceName}/campaigns` | Liste campagnes |
+| POST | `/telephony/{billingAccount}/fax/{serviceName}/campaigns` | Créer campagne |
+| GET | `/telephony/{billingAccount}/fax/{serviceName}/campaigns/{id}` | Détails campagne |
+| DELETE | `/telephony/{billingAccount}/fax/{serviceName}/campaigns/{id}` | Supprimer |
+| GET | `/telephony/{billingAccount}/fax/{serviceName}/campaigns/{id}/detail` | Stats campagne |
+| POST | `/telephony/{billingAccount}/fax/{serviceName}/campaigns/{id}/start` | Démarrer |
+| POST | `/telephony/{billingAccount}/fax/{serviceName}/campaigns/{id}/stop` | Arrêter |
+
+### Endpoints Généraux Telephony
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/telephony` | Liste groupes facturation |
+| GET | `/telephony/{billingAccount}` | Détails groupe |
+| PUT | `/telephony/{billingAccount}` | Modifier groupe |
+| GET | `/telephony/{billingAccount}/service` | Liste services |
+| GET | `/telephony/{billingAccount}/service/{serviceName}` | Détails service |
+| GET | `/telephony/{billingAccount}/serviceInfos` | Infos facturation |
+| GET | `/telephony.json` | Schéma API |
+
+### Modèle de données Telephony Fax
+
+```typescript
+interface TelephonyFax {
+  serviceName: string;
+  billingAccount: string;
+  description: string;
+  notifications: {
+    logs: string;
+    sendReport: boolean;
+  };
+  offers: string[];
+  properties: string;
+  status: 'disabled' | 'enabled';
+}
+
+interface TelephonyFaxSettings {
+  callNumber: string;
+  countryCode: string;
+  faxMaxCall: number;
+  faxQuality: 'normal' | 'high' | 'best';
+  faxTagLine: string;
+  fromEmail: string;
+  fromName: string;
+  mailFormat: 'html' | 'text';
+  receiver: string;
+  redirectionEmail: string[];
+  rejectAnonymous: boolean;
+  sender: string;
+  sendingTries: number;
+}
+
+interface TelephonyFaxScreenLists {
+  callNumber: string;
+  countryCode: string;
+  filteringList: 'disabled' | 'whiteList' | 'blackList';
+  blacklistedNumbers: string[];
+  blacklistedTSI: string[];
+  whitelistedNumbers: string[];
+  whitelistedTSI: string[];
+}
+
+interface TelephonyFaxCampaign {
+  id: number;
+  name: string;
+  status: 'todo' | 'doing' | 'done' | 'error' | 'stop' | 'stopTodo' | 'stopDoing';
+  countFailed: number;
+  countSuccess: number;
+  countTotal: number;
+  dateEnd: string;
+  dateStart: string;
+  faxQuality: 'normal' | 'high' | 'best';
+  recipientsType: 'list' | 'document';
+  reference: string;
+  sendType: 'automatic' | 'scheduled';
+}
+
+interface TelephonyFaxCampaignDetail {
+  fax: number;
+  record: number;
+  status: string;
+  to: string;
+}
+```
+
+## 5.3 APIs Complémentaires
+
+### /me/document
+```typescript
+// Upload document pour campagnes fax
+POST /me/document
+GET /me/document/{id}
+```
+
+### /order
+```typescript
+// Commande crédits/services
+GET /order/freefax/new
+POST /order/freefax/new
+GET /order/telephony/{billingAccount}/accessories
+```
+
+### /domain
+```typescript
+// Domaines personnalisés
+GET /domain
+```
+
+---
+
+# 6. TRADUCTIONS
+
+## 6.1 Fichiers de traduction
+
+### FreeFax
+- `packages/manager/modules/freefax/src/freefax/translations/Messages_fr_FR.json`
+- `packages/manager/modules/freefax/src/freefax/translations/Messages_en_GB.json`
+- Sous-dossiers : credit, faxConfiguration, notifications, voicemailConfiguration
+
+### Telephony Fax
+- `packages/manager/apps/telecom/src/app/telecom/telephony/fax/translations/`
+- `packages/manager/apps/telecom/src/app/telecom/telephony/service/fax/settings/translations/`
+- Sous-dossiers : campaigns, filtering, password, customDomains
+
+## 6.2 Clés principales FreeFax
+
+```json
+{
+  "freefax_title": "Gestion du répondeur/fax {{serviceName}}",
+  "freefax_general_information": "Informations Générales",
+  "freefax_general_number": "Numéro",
+  "freefax_general_credit": "Crédits restants",
+  "freefax_general_credit_order": "Commander des fax",
+  "freefax_fax_configuration": "Configuration du fax",
+  "freefax_fax_configuration_quality": "Qualité",
+  "freefax_fax_configuration_quality_normal": "Normale",
+  "freefax_fax_configuration_quality_high": "Élevée",
+  "freefax_fax_configuration_quality_best": "Optimale",
+  "freefax_fax_configuration_sender": "Expéditeur",
+  "freefax_fax_configuration_header": "En-tête du fax",
+  "freefax_fax_configuration_email": "Email de réception",
+  "freefax_voicemail_configuration_title": "Configuration du répondeur",
+  "freefax_voicemail_configuration_active": "Activer le répondeur",
+  "freefax_voicemail_configuration_format": "Format audio",
+  "freefax_voicemail_configuration_keep": "Conserver les messages",
+  "freefax_voicemail_configuration_password": "Mot de passe (4 chiffres)",
+  "freefax_notifications": "Notifications",
+  "freefax_notifications_email": "Email",
+  "freefax_notifications_source": "Source",
+  "freefax_notifications_source_fax": "Fax uniquement",
+  "freefax_notifications_source_voicemail": "Répondeur uniquement",
+  "freefax_notifications_source_both": "Fax et répondeur",
+  "freefax_notifications_add": "Ajouter une notification",
+  "freefax_notifications_max": "Maximum 5 notifications",
+  "freefax_expired_error": "Service expiré",
+  "freefax_save_success": "Modifications enregistrées",
+  "freefax_save_error": "Erreur lors de la sauvegarde"
+}
+```
+
+## 6.3 Clés principales Telephony Fax
+
+```json
+{
+  "telephony_fax_tab_manage": "Gestion",
+  "telephony_fax_tab_consumption": "Consommation",
+  "telephony_fax_tab_voicemail": "Répondeur",
+  "telephony_fax_tab_fax": "Fax",
+  "telephony_fax_tab_contact": "Coordonnées",
+  "telephony_fax_tab_assist": "Assistance",
+  "telephony_fax_settings_title": "Paramètres du fax",
+  "telephony_fax_settings_quality": "Qualité d'envoi",
+  "telephony_fax_settings_header": "En-tête",
+  "telephony_fax_settings_sender": "Nom de l'expéditeur",
+  "telephony_fax_settings_email": "Email de l'expéditeur",
+  "telephony_fax_settings_tries": "Nombre d'essais",
+  "telephony_fax_filtering_title": "Filtrage des fax",
+  "telephony_fax_filtering_mode": "Mode de filtrage",
+  "telephony_fax_filtering_disabled": "Désactivé",
+  "telephony_fax_filtering_whitelist": "Liste blanche",
+  "telephony_fax_filtering_blacklist": "Liste noire",
+  "telephony_fax_filtering_reject_anonymous": "Rejeter les appels anonymes",
+  "telephony_fax_filtering_add_number": "Ajouter un numéro",
+  "telephony_fax_campaigns_title": "Campagnes de fax",
+  "telephony_fax_campaigns_name": "Nom",
+  "telephony_fax_campaigns_status": "Statut",
+  "telephony_fax_campaigns_status_todo": "À faire",
+  "telephony_fax_campaigns_status_doing": "En cours",
+  "telephony_fax_campaigns_status_done": "Terminée",
+  "telephony_fax_campaigns_status_error": "Erreur",
+  "telephony_fax_campaigns_status_stop": "Arrêtée",
+  "telephony_fax_campaigns_create": "Créer une campagne",
+  "telephony_fax_campaigns_start": "Démarrer",
+  "telephony_fax_campaigns_stop": "Arrêter",
+  "telephony_fax_campaigns_delete": "Supprimer",
+  "telephony_fax_password_title": "Mot de passe",
+  "telephony_fax_password_change": "Changer le mot de passe",
+  "telephony_fax_password_confirm": "Confirmer le mot de passe",
+  "telephony_fax_custom_domains_title": "Domaines personnalisés",
+  "telephony_fax_convert_voicefax": "Convertir en VoiceFax"
+}
+```
+
+---
+
+# 7. RÈGLES MÉTIER
+
+## 7.1 Validation
+
+### Mot de passe voicemail
+```javascript
+// Exactement 4 chiffres
+const validPassword = (val) => /^[0-9]{4}$/.test(val) || !val;
+```
+
+### Nom/Expéditeur
+```javascript
+// Caractères autorisés
+const validName = /^[\wàèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅå\s\-_']*$/;
+```
+
+### Email
+```javascript
+// Format email standard
+const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+```
+
+## 7.2 Contraintes métier
+
+### FreeFax
+- Maximum 5 notifications par service
+- Crédits disponibles : 10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 100000
+- Formats audio voicemail : aiff, au, flac, mp3, ogg, wav
+- Qualités fax : normal, high, best
+
+### Telephony Fax
+- Statuts campagne : todo, doing, done, error, stop, stopTodo, stopDoing
+- Actions campagne selon statut :
+  - Démarrage possible si : status !== 'todo' && status !== 'doing'
+  - Arrêt possible si : status !== 'stopTodo' && status !== 'stopDoing'
+- Types listes filtrage : blacklistedNumbers, blacklistedTSI, whitelistedNumbers, whitelistedTSI
+
+## 7.3 Gestion des erreurs
+
+### Code erreur 460 (service expiré)
+```javascript
+if (err.status === 460) {
+  self.error = 'freefax_expired_error';
+  // Afficher message d'expiration
+  // Désactiver les actions de modification
+}
+```
+
+### Erreurs génériques
+```javascript
+// Pattern de gestion erreur
+.catch((error) => {
+  TucToastError(error);
+  // ou
+  $translate.instant('error_message_key');
+});
+```
+
+## 7.4 Logique de navigation
+
+### FreeFax
+```javascript
+// Résolution de l'état principal
+resolve: {
+  freeFax: (OvhApiFreeFax, $stateParams) =>
+    OvhApiFreeFax.Aapi().details({ serviceName: $stateParams.serviceName }).$promise,
+  voicemailRouting: (OvhApiFreeFax, $stateParams) =>
+    OvhApiFreeFax.v6().voiceMailGetRouting({ serviceName: $stateParams.serviceName }).$promise
+}
+```
+
+### Telephony Fax
+```javascript
+// Paramètres requis
+$stateParams.billingAccount  // Groupe de facturation
+$stateParams.serviceName     // Identifiant service (numéro)
+
+// Navigation entre onglets
+$state.go('telecom.telephony.billingAccount.fax.dashboard.fax', {
+  billingAccount: $stateParams.billingAccount,
+  serviceName: $stateParams.serviceName
+});
+```
+
+## 7.5 Actions Bulk
+
+Le composant `tucTelephonyBulk` permet d'appliquer des modifications à plusieurs services simultanément :
+
+```javascript
+// Configuration bulk
+{
+  billingAccount: $stateParams.billingAccount,
+  serviceType: 'fax',
+  filterServices: (services) => services.filter(s => s.featureType === 'fax'),
+  getSelectedServices: () => [/* services sélectionnés */],
+  onApply: (services, data) => {
+    // Appliquer les modifications à chaque service
+    return $q.all(services.map(service => 
+      OvhApiTelephony.Fax().v6().setSettings({
+        billingAccount: service.billingAccount,
+        serviceName: service.serviceName
+      }, data).$promise
+    ));
+  }
+}
+```
+
+---
+
+# 8. RECOMMANDATIONS MIGRATION
+
+## 8.1 Priorité de migration
+
+1. **Phase 1 - FreeFax** (plus simple, standalone)
+   - Dashboard principal
+   - Configuration fax
+   - Configuration voicemail
+   - Notifications
+
+2. **Phase 2 - Telephony Fax Core**
+   - Dashboard avec onglets
+   - Paramètres fax
+   - Mot de passe
+
+3. **Phase 3 - Telephony Fax Avancé**
+   - Filtrage (listes blanches/noires)
+   - Campagnes fax
+   - Domaines personnalisés
+   - Conversion VoiceFax
+
+## 8.2 Points d'attention
+
+### API
+- Remplacer les endpoints Aapi par des appels API v6 multiples ou créer un BFF React
+- Gérer le cache avec React Query (staleTime, cacheTime)
+- Implémenter retry et error handling cohérents
+
+### State Management
+- Utiliser React Query pour le cache serveur
+- useState/useReducer pour l'état UI local
+- Context API pour les données partagées (billingAccount)
+
+### UI
+- Mapper tous les composants OUI-Kit vers ODS
+- Créer des composants réutilisables (ServiceHeader, SettingsForm, etc.)
+- Implémenter les modales avec ODS Modal
+
+### Forms
+- React Hook Form pour tous les formulaires
+- Zod pour la validation (règles métier documentées)
+- Gérer les états loading/error/success
+
+### i18n
+- Migrer les fichiers JSON vers format react-i18next
+- Conserver les mêmes clés pour faciliter la migration
+- Ajouter le support des pluriels si nécessaire
+
+## 8.3 Structure React proposée
+
+```
+src/
+├── pages/
+│   ├── freefax/
+│   │   ├── FreeFaxList.tsx
+│   │   ├── FreeFaxDashboard.tsx
+│   │   ├── FreeFaxNotifications.tsx
+│   │   └── FreeFaxVoicemail.tsx
+│   └── telephony-fax/
+│       ├── TelephonyFaxDashboard.tsx
+│       ├── TelephonyFaxSettings.tsx
+│       ├── TelephonyFaxFiltering.tsx
+│       ├── TelephonyFaxCampaigns.tsx
+│       └── TelephonyFaxPassword.tsx
+├── components/
+│   ├── freefax/
+│   │   ├── FreeFaxInfo.tsx
+│   │   ├── FreeFaxConfig.tsx
+│   │   ├── FreeFaxVoicemailConfig.tsx
+│   │   ├── FreeFaxNotificationList.tsx
+│   │   └── FreeFaxCreditOrder.tsx
+│   └── telephony-fax/
+│       ├── FaxSettingsForm.tsx
+│       ├── FaxFilteringForm.tsx
+│       ├── FaxCampaignTable.tsx
+│       ├── FaxCampaignForm.tsx
+│       └── FaxPasswordForm.tsx
+├── hooks/
+│   ├── useFreeFax.ts
+│   ├── useFreeFaxVoicemail.ts
+│   ├── useTelephonyFax.ts
+│   ├── useFaxCampaigns.ts
+│   └── useFaxFiltering.ts
+├── api/
+│   ├── freefax.api.ts
+│   └── telephony-fax.api.ts
+├── types/
+│   ├── freefax.types.ts
+│   └── telephony-fax.types.ts
+└── i18n/
+    ├── fr/
+    │   ├── freefax.json
+    │   └── telephony-fax.json
+    └── en/
+        ├── freefax.json
+        └── telephony-fax.json
+```
+
+---
+
+# 9. ANNEXES
+
+## 9.1 Fichiers sources clés analysés
+
+### FreeFax
+- `packages/manager/modules/freefax/src/freefaxes.routing.js`
+- `packages/manager/modules/freefax/src/freefax/freefax.controller.js`
+- `packages/manager/modules/freefax/src/freefax/freefax.html`
+- `packages/manager/modules/freefax/src/freefax/credit/freefax-credit.controller.js`
+- `packages/manager/modules/freefax/src/freefax/notifications/freefax-notifications.controller.js`
+- `packages/manager/modules/freefax/src/freefax/faxConfiguration/freefax-faxConfiguration.controller.js`
+- `packages/manager/modules/freefax/src/freefax/voicemailConfiguration/freefax-voicemailConfiguration.controller.js`
+
+### Telephony Fax
+- `packages/manager/apps/telecom/src/app/telecom/telephony/fax/fax.routing.js`
+- `packages/manager/apps/telecom/src/app/telecom/telephony/fax/fax.controller.js`
+- `packages/manager/apps/telecom/src/app/telecom/telephony/service/fax/settings/settings.controller.js`
+- `packages/manager/apps/telecom/src/app/telecom/telephony/service/fax/filtering/filtering.controller.js`
+- `packages/manager/apps/telecom/src/app/telecom/telephony/service/fax/campaigns/campaigns.controller.js`
+- `packages/manager/apps/telecom/src/app/telecom/telephony/service/fax/password/password.controller.js`
+- `packages/manager/apps/telecom/src/app/telecom/telephony/service/fax/customDomains/custom-domains.controller.js`
+
+### Services partagés
+- `packages/manager/modules/telecom-universe-components/src/telecom/voip/feature/line/fax/voip-feature-line-fax.service.js`
+
+## 9.2 Constantes métier extraites
+
+```javascript
+// Crédits FreeFax disponibles
+const DISCRETE_CREDIT = [10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 100000];
+
+// Formats audio voicemail
+const AUDIO_FORMATS = ['aiff', 'au', 'flac', 'mp3', 'ogg', 'wav'];
+
+// Maximum notifications
+const MAX_NOTIFICATIONS = 5;
+
+// Qualités fax
+const FAX_QUALITY = ['normal', 'high', 'best'];
+
+// Types listes filtrage
+const SCREEN_LIST_TYPES = [
+  'whitelistedNumbers',
+  'whitelistedTSI', 
+  'blacklistedNumbers',
+  'blacklistedTSI'
+];
+
+// Statuts campagne
+const CAMPAIGN_STATUSES = ['todo', 'doing', 'done', 'error', 'stop', 'stopTodo', 'stopDoing'];
+
+// Sources notification
+const NOTIFICATION_SOURCES = ['fax', 'voicemail', 'both'];
+
+// Types notification
+const NOTIFICATION_TYPES = ['simple', 'html', 'attachment'];
+```
+
+## 9.3 Résumé des endpoints API
+
+| Catégorie | GET | POST | PUT | DELETE | Total |
+|-----------|-----|------|-----|--------|-------|
+| FreeFax | 8 | 4 | 3 | 0 | 15 |
+| Telephony Fax | 10 | 6 | 4 | 2 | 22 |
+| Telephony (général) | 5 | 0 | 2 | 0 | 7 |
+| Me | 2 | 1 | 0 | 0 | 3 |
+| Order | 2 | 1 | 0 | 0 | 3 |
+| **TOTAL** | **27** | **12** | **9** | **2** | **50** |
+
+---
+
+# FIN DU DOCUMENT

@@ -1,0 +1,846 @@
+# CAHIER DES CHARGES - Hébergement Web OVHcloud
+
+## Source: old_manager_web-cloud_hebergement_hosting.tar
+
+---
+
+# 1. RÉSUMÉ EXÉCUTIF
+
+| Élément | Valeur |
+|---------|--------|
+| **Périmètre** | Gestion des hébergements web mutualisés OVHcloud |
+| **Utilisateurs cibles** | Clients OVHcloud avec offre hébergement web |
+| **Sources analysées** | Angular (old manager) + React (new web-hosting app) |
+| **Fichiers** | 1365 total (357 JS, 12 TSX) |
+| **Modules fonctionnels** | Dashboard, SSL, Multisite, FTP, Database, Cron, CDN, Boost, Local SEO, Modules 1-click, Managed WordPress |
+
+---
+
+# 2. ARCHITECTURE
+
+## 2.1 Structure des sources
+
+```
+packages/manager/
+├── apps/web-hosting/                    # React (New Manager)
+│   ├── src/
+│   │   ├── components/                  # Composants réutilisables
+│   │   │   ├── topBar/
+│   │   │   ├── tabsPanel/
+│   │   │   ├── tabs/
+│   │   │   ├── badgeStatus/
+│   │   │   ├── expirationDate/
+│   │   │   ├── loading/
+│   │   │   └── breadcrumb/
+│   │   ├── pages/                       # Pages
+│   │   │   ├── dashboard/
+│   │   │   │   ├── ssl/
+│   │   │   │   ├── multisite/
+│   │   │   │   ├── task/
+│   │   │   │   └── local-seo/
+│   │   │   ├── websites/
+│   │   │   ├── onboarding/
+│   │   │   └── managedWordpress/
+│   │   ├── data/
+│   │   │   ├── api/                     # Fonctions API
+│   │   │   ├── hooks/                   # React Query hooks
+│   │   │   ├── types/                   # Types TypeScript
+│   │   │   └── __mocks__/
+│   │   ├── routes/
+│   │   ├── hooks/
+│   │   └── utils/
+│   └── public/translations/             # i18n (8 langues)
+│
+├── apps/web/client/app/hosting/         # Angular (Old Manager)
+│   ├── dashboard/
+│   ├── multisite/
+│   ├── database/
+│   ├── ftp/
+│   ├── cron/
+│   ├── ssl/
+│   ├── cdn/
+│   ├── boost/
+│   ├── local-seo/
+│   ├── module/
+│   ├── runtimes/
+│   ├── envvars/
+│   ├── user-logs/
+│   ├── automated-emails/
+│   ├── general-informations/
+│   ├── statistics/
+│   ├── task/
+│   ├── indy/
+│   ├── offer/
+│   ├── onboarding/
+│   └── email/
+│
+└── modules/web-universe-components/     # Composants partagés
+    └── src/
+        ├── api/
+        ├── converter/
+        ├── duration/
+        ├── email-domain/
+        ├── exchange/
+        ├── fileChange/
+        ├── fileEditor/
+        ├── guides/
+        ├── mxplan-banner/
+        ├── order-cart/
+        ├── string/
+        ├── user/
+        └── validator/
+```
+
+## 2.2 Dépendances principales
+
+### React (web-hosting)
+- `@ovh-ux/manager-core-api` (v6, v2, aapi, fetchIcebergV2)
+- `@ovh-ux/manager-react-components`
+- `@ovhcloud/ods-components`
+- `react-router-dom`
+- `@tanstack/react-query`
+
+### Angular (web)
+- `OvhHttp` (wrapper API)
+- `iceberg` (pagination)
+- `Poll` (polling tâches)
+
+---
+
+# 3. PAGES & NAVIGATION
+
+## 3.1 Routes React (web-hosting)
+
+| Route | Component | Page Type | Description |
+|-------|-----------|-----------|-------------|
+| `/` | RootPage | - | Layout racine |
+| `/onboarding` | OnboardingPage | onboarding | Page sans service |
+| `/websites` | WebsitesPage | listing | Liste sites web |
+| `/:serviceName` | DashboardLayout | - | Dashboard hébergement |
+| `/:serviceName/ssl` | SslPage | listing | Gestion certificats SSL |
+| `/:serviceName/task` | OngoingTaskPage | listing | Tâches en cours |
+| `/:serviceName/localSeo` | LocalSeoPage | listing | Visibilité Pro |
+| `/:serviceName/localSeo/:locationId/terminate` | RemoveSeoSubscriptionPage | popup | Résilier SEO |
+| `/:serviceName/add-domain` | AddDomainPage | popup | Ajouter multisite |
+| `/:serviceName/order-domain` | OrderDomainPage | popup | Commander domaine |
+| `/:serviceName/import-ssl` | ImportSslPage | popup | Importer certificat |
+| `/:serviceName/order-sectigo` | OrderSectigoPage | popup | Commander Sectigo |
+| `/:serviceName/:domain/disable-ssl` | DisableSslPage | popup | Désactiver SSL |
+| `/:serviceName/:domain/san-ssl` | SanSslPage | popup | Domaines SAN |
+| `/managed-hosting-for-wordpress` | ManagedWordpressPage | listing | Liste WordPress managé |
+| `/managed-hosting-for-wordpress/:serviceName` | ManagedWordpressResourcePage | listing | Ressource WP |
+| `/managed-hosting-for-wordpress/:serviceName/create` | CreatePage | listing | Créer site WP |
+| `/managed-hosting-for-wordpress/:serviceName/import` | ImportPage | listing | Importer site WP |
+| `/managed-hosting-for-wordpress/:serviceName/tasks` | TasksPage | listing | Tâches WP |
+| `/managed-hosting-for-wordpress/:serviceName/delete-modal` | DeleteModal | popup | Supprimer site WP |
+
+## 3.2 Onglets Dashboard Angular
+
+| Tab ID | Clé i18n | Description |
+|--------|----------|-------------|
+| GENERAL_INFORMATIONS | `hosting_tab_GENERAL_INFORMATIONS` | Informations générales |
+| MULTISITE | `hosting_tab_MULTISITE` | Gestion domaines attachés |
+| SSL | `hosting_tab_SSL` | Certificats SSL |
+| MODULE | `hosting_tab_MODULE` | Modules en 1 clic |
+| USER_LOGS | `hosting_tab_USER_LOGS` | Statistiques et logs |
+| FTP | `hosting_tab_FTP` | FTP - SSH |
+| DATABASE | `hosting_tab_DATABASE` | Bases de données |
+| TASK | `hosting_tab_TASK` | Tâches en cours |
+| AUTOMATED_EMAILS | `hosting_tab_AUTOMATED_EMAILS` | Scripts e-mail |
+| CRON | `hosting_tab_CRON` | Tâches planifiées |
+| LOCAL_SEO | `hosting_tab_LOCAL_SEO` | Visibilité Pro |
+| BOOST | `hosting_tab_BOOST` | Booster mon offre |
+
+## 3.3 Breadcrumb
+
+```
+Web Cloud > Hébergements > {serviceName} > [Tab]
+```
+
+---
+
+# 4. COMPOSANTS UI
+
+## 4.1 Composants React
+
+| Composant | Fichier | Props | Description |
+|-----------|---------|-------|-------------|
+| TopBar | `TopBar.component.tsx` | - | Barre actions supérieure |
+| TabsPanel | `TabsPanel.component.tsx` | - | Container onglets |
+| Tabs | `Tabs.component.tsx` | - | Navigation onglets (CSS module) |
+| BadgeStatus | `BadgeStatus.component.tsx` | status | Badge état coloré |
+| ExpirationDate | `ExpirationDate.component.tsx` | date | Affichage expiration |
+| Loading | `Loading.component.tsx` | - | Spinner chargement |
+| Breadcrumb | `Breadcrumb.component.tsx` | - | Fil d'Ariane |
+
+## 4.2 Composants ODS utilisés
+
+- `ODS_ICON_NAME` - Icônes
+- `OdsButton` - Boutons
+- `OdsDatagrid` - Tableaux de données
+- `OdsInput` - Champs de saisie
+- `OdsSelect` - Listes déroulantes
+- `OdsModal` - Modales
+- `OdsSpinner` - Chargement
+- `OdsBadge` - Badges
+- `OdsMessage` - Messages/Alertes
+
+## 4.3 Composants manager-react-components
+
+- `ErrorBoundary` - Gestion erreurs
+- `CurrencyCode` - Formatage monétaire
+
+---
+
+# 5. APIs & DONNÉES
+
+## 5.1 Endpoints APIv6 - Hébergement
+
+### Hébergement principal
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web` | Liste hébergements |
+| GET | `/hosting/web/{serviceName}` | Détails hébergement |
+| PUT | `/hosting/web/{serviceName}` | Modifier hébergement |
+| GET | `/hosting/web/{serviceName}/serviceInfos` | Infos service |
+| POST | `/hosting/web/{serviceName}/terminate` | Résilier |
+| GET | `/hosting/web/{serviceName}/abuseState` | État abuse |
+| POST | `/hosting/web/{serviceName}/unblockTCPOut` | Débloquer TCP |
+| GET | `/hosting/web.json` | Modèles API |
+| GET | `/hosting/web/availableOffer` | Offres disponibles |
+| GET | `/hosting/web/offerCapabilities` | Capacités offre |
+
+### Tâches
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/tasks` | Liste tâches |
+| GET | `/hosting/web/{serviceName}/tasks/{id}` | Détails tâche |
+
+### Domaines attachés (Multisite)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/attachedDomain` | Liste domaines |
+| GET | `/hosting/web/{serviceName}/attachedDomain/{domain}` | Détails domaine |
+| POST | `/hosting/web/{serviceName}/attachedDomain` | Ajouter domaine |
+| PUT | `/hosting/web/{serviceName}/attachedDomain/{domain}` | Modifier domaine |
+| DELETE | `/hosting/web/{serviceName}/attachedDomain/{domain}` | Supprimer domaine |
+| GET | `/hosting/web/{serviceName}/attachedDomain/{domain}/digStatus` | Statut DNS |
+| POST | `/hosting/web/{serviceName}/attachedDomain/{domain}/restart` | Redémarrer vhost |
+
+### SSL
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/ssl` | Info SSL |
+| POST | `/hosting/web/{serviceName}/ssl` | Créer certificat |
+| DELETE | `/hosting/web/{serviceName}/ssl` | Supprimer SSL |
+| POST | `/hosting/web/{serviceName}/ssl/regenerate` | Régénérer SSL |
+| GET | `/hosting/web/{serviceName}/ssl/domains` | Domaines SSL |
+| POST | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | Activer SSL domaine |
+| DELETE | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | Désactiver SSL domaine |
+
+### Bases de données
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/database` | Liste BDD |
+| GET | `/hosting/web/{serviceName}/database/{name}` | Détails BDD |
+| POST | `/hosting/web/{serviceName}/database` | Créer BDD |
+| DELETE | `/hosting/web/{serviceName}/database/{name}` | Supprimer BDD |
+| POST | `/hosting/web/{serviceName}/database/{name}/dump` | Créer dump |
+| GET | `/hosting/web/{serviceName}/database/{name}/dump` | Liste dumps |
+| DELETE | `/hosting/web/{serviceName}/database/{name}/dump/{id}` | Supprimer dump |
+| POST | `/hosting/web/{serviceName}/database/{name}/restore` | Restaurer BDD |
+| POST | `/hosting/web/{serviceName}/database/{name}/import` | Importer BDD |
+| POST | `/hosting/web/{serviceName}/database/{name}/changePassword` | Changer MDP |
+| POST | `/hosting/web/{serviceName}/database/{name}/copy` | Copier BDD |
+| POST | `/hosting/web/{serviceName}/database/{name}/request` | Quota BDD |
+| GET | `/hosting/web/{serviceName}/database/{name}/metricsToken` | Token métriques |
+| GET | `/hosting/web/{serviceName}/privateDatabases` | BDD privées |
+
+### Utilisateurs FTP/SSH
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/user` | Liste utilisateurs |
+| GET | `/hosting/web/{serviceName}/user/{login}` | Détails utilisateur |
+| POST | `/hosting/web/{serviceName}/user` | Créer utilisateur |
+| PUT | `/hosting/web/{serviceName}/user/{login}` | Modifier utilisateur |
+| DELETE | `/hosting/web/{serviceName}/user/{login}` | Supprimer utilisateur |
+| POST | `/hosting/web/{serviceName}/user/{login}/changePassword` | Changer MDP |
+
+### Cron
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/cron` | Liste crons |
+| GET | `/hosting/web/{serviceName}/cron/{id}` | Détails cron |
+| POST | `/hosting/web/{serviceName}/cron` | Créer cron |
+| PUT | `/hosting/web/{serviceName}/cron/{id}` | Modifier cron |
+| DELETE | `/hosting/web/{serviceName}/cron/{id}` | Supprimer cron |
+
+### Runtimes PHP
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/runtime` | Liste runtimes |
+| GET | `/hosting/web/{serviceName}/runtime/{id}` | Détails runtime |
+| POST | `/hosting/web/{serviceName}/runtime` | Créer runtime |
+| PUT | `/hosting/web/{serviceName}/runtime/{id}` | Modifier runtime |
+| DELETE | `/hosting/web/{serviceName}/runtime/{id}` | Supprimer runtime |
+| GET | `/hosting/web/{serviceName}/runtime/availableTypes` | Types disponibles |
+
+### Variables d'environnement
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/envVar` | Liste variables |
+| POST | `/hosting/web/{serviceName}/envVar` | Créer variable |
+| PUT | `/hosting/web/{serviceName}/envVar/{key}` | Modifier variable |
+| DELETE | `/hosting/web/{serviceName}/envVar/{key}` | Supprimer variable |
+
+### CDN
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/cdn` | Info CDN |
+| POST | `/hosting/web/{serviceName}/cdn/terminate` | Résilier CDN |
+| GET | `/hosting/web/{serviceName}/cdn/serviceInfos` | Service CDN |
+| POST | `/hosting/web/{serviceName}/cdn/serviceInfosUpdate` | Update service CDN |
+| GET | `/hosting/web/{serviceName}/cdn/availableOptions` | Options CDN |
+| GET | `/hosting/web/{serviceName}/cdn/domain` | Domaines CDN |
+| GET | `/hosting/web/{serviceName}/cdn/operation` | Opérations CDN |
+| GET | `/hosting/web/{serviceName}/cdn/operation/{id}` | Détails opération |
+| POST | `/hosting/web/{serviceName}/request` | Flush cache (action: FLUSH_CACHE) |
+
+### Boost
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/hosting/web/{serviceName}/requestBoost` | Activer/Désactiver boost |
+| GET | `/hosting/web/{serviceName}/boostHistory` | Historique boost |
+| GET | `/hosting/web/{serviceName}/boostHistory/{date}` | Détails boost |
+
+### Local SEO
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/localSeo/account` | Compte SEO |
+| GET | `/hosting/web/{serviceName}/localSeo/account/{id}` | Détails compte |
+| POST | `/hosting/web/{serviceName}/localSeo/account/{id}/login` | Login SEO |
+| GET | `/hosting/web/{serviceName}/localSeo/location` | Locations |
+| GET | `/hosting/web/{serviceName}/localSeo/location/{id}` | Détails location |
+| POST | `/hosting/web/{serviceName}/localSeo/location/{id}/terminate` | Résilier location |
+
+### Modules 1-click
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/moduleList` | Liste modules disponibles |
+| GET | `/hosting/web/moduleList/{id}` | Détails module |
+| GET | `/hosting/web/{serviceName}/module` | Modules installés |
+| GET | `/hosting/web/{serviceName}/module/{id}` | Détails installation |
+| POST | `/hosting/web/{serviceName}/module` | Installer module |
+| POST | `/hosting/web/{serviceName}/module/{id}/changePassword` | Changer MDP |
+| DELETE | `/hosting/web/{serviceName}/module/{id}` | Supprimer module |
+
+### Logs et statistiques
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/ownLogs` | Logs propres |
+| GET | `/hosting/web/{serviceName}/ownLogs/{id}` | Détails logs |
+| GET | `/hosting/web/{serviceName}/ownLogs/{id}/userLogs` | Utilisateurs logs |
+| GET | `/hosting/web/{serviceName}/ownLogs/{id}/userLogs/{login}` | Détails user log |
+| POST | `/hosting/web/{serviceName}/ownLogs/{id}/userLogs` | Créer user log |
+| PUT | `/hosting/web/{serviceName}/ownLogs/{id}/userLogs/{login}` | Modifier user log |
+| DELETE | `/hosting/web/{serviceName}/ownLogs/{id}/userLogs/{login}` | Supprimer user log |
+| POST | `/hosting/web/{serviceName}/ownLogs/{id}/userLogs/{login}/changePassword` | Changer MDP |
+| GET | `/hosting/web/{serviceName}/userLogsToken` | Token logs |
+| GET | `/hosting/web/{serviceName}/metricsToken` | Token métriques |
+
+### Email hébergement
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/email` | Config email |
+| PUT | `/hosting/web/{serviceName}/email` | Modifier email |
+| POST | `/hosting/web/{serviceName}/email/request` | Request email |
+| GET | `/hosting/web/{serviceName}/email/bounces` | Bounces email |
+| GET | `/hosting/web/{serviceName}/emailOption` | Options email |
+| GET | `/hosting/web/{serviceName}/emailOption/{id}` | Détails option |
+| POST | `/hosting/web/{serviceName}/emailOption/{id}/terminate` | Résilier option |
+
+### Configuration OVH
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/ovhConfig` | Liste configs |
+| GET | `/hosting/web/{serviceName}/ovhConfig/{id}` | Détails config |
+| POST | `/hosting/web/{serviceName}/ovhConfig/{id}/changeConfiguration` | Modifier config |
+| POST | `/hosting/web/{serviceName}/ovhConfig/{id}/rollback` | Rollback config |
+
+### Snapshots FTP
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/hosting/web/{serviceName}/restoreSnapshot` | Restaurer snapshot |
+
+### Git / Websites
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/hosting/web/{serviceName}/websiteCreationCapabilities` | Capacités git |
+| GET | `/hosting/web/{serviceName}/website` | Liste sites |
+| GET | `/hosting/web/{serviceName}/website/{id}` | Détails site |
+| POST | `/hosting/web/{serviceName}/website` | Créer site |
+| PUT | `/hosting/web/{serviceName}/website/{id}` | Modifier site |
+| DELETE | `/hosting/web/{serviceName}/website/{id}` | Supprimer site |
+| GET | `/hosting/web/{serviceName}/website/{id}/deployment` | Déploiements |
+| POST | `/hosting/web/{serviceName}/website/{id}/deploy` | Déployer |
+| GET | `/hosting/web/{serviceName}/vcs/webhooks` | Webhooks VCS |
+| GET | `/hosting/web/{serviceName}/key/ssh` | Clé SSH |
+| POST | `/hosting/web/{serviceName}/key/ssh` | Générer clé SSH |
+
+## 5.2 Endpoints 2API (SWS)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/sws/hosting/web/{serviceName}` | Dashboard complet (agrégé) |
+| GET | `/sws/hosting/web/{serviceName}/domains` | Domaines paginés (count, offset, search) |
+| GET | `/sws/hosting/web/{serviceName}/databases` | BDD paginées |
+| GET | `/sws/hosting/web/{serviceName}/ftp` | FTP paginé (needUsers) |
+| GET | `/sws/hosting/web/{serviceName}/add-domain-existing` | Domaines existants pour ajout |
+| GET | `/sws/domain/{serviceName}/zone/records` | Records DNS zone |
+
+## 5.3 Endpoints APIv2 (Managed WordPress)
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/managedCMS/resource` | Liste ressources WP |
+| GET | `/managedCMS/resource/{serviceName}` | Détails ressource |
+| GET | `/managedCMS/resource/{serviceName}/website` | Sites WP (Iceberg v2) |
+| GET | `/managedCMS/resource/{serviceName}/website/{id}` | Détails site |
+| POST | `/managedCMS/resource/{serviceName}/website` | Créer/Importer site |
+| DELETE | `/managedCMS/resource/{serviceName}/website/{id}` | Supprimer site |
+| GET | `/managedCMS/resource/{serviceName}/task` | Tâches WP |
+| PUT | `/managedCMS/resource/{serviceName}/task/{id}` | Modifier tâche |
+| GET | `/managedCMS/reference/supportedPHPVersions?cms=WORDPRESS` | Versions PHP |
+| GET | `/managedCMS/reference/availableLanguages?cms=WORDPRESS` | Langues WP |
+
+## 5.4 Autres endpoints
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/domain/zone` | Zones DNS |
+| GET | `/domain/zone/{zone}/record` | Records zone |
+| GET | `/domain/zone/{zone}/serviceInfos` | Infos zone |
+| GET | `/domain/{domain}` | Détails domaine |
+| GET | `/domain/{domain}/serviceInfos` | Infos domaine |
+| GET | `/services/{serviceId}` | Service générique |
+| GET | `/order/upgrade/webHosting/{serviceName}/{planCode}` | Prix upgrade |
+| POST | `/order/upgrade/webHosting/{serviceName}/{planCode}` | Commander upgrade |
+| GET | `/order/catalog/public/webHosting` | Catalogue |
+| GET | `/order/catalog/public/cloudDB` | Catalogue CloudDB |
+| GET | `/order/cartServiceOption/webHosting/{serviceName}` | Options panier |
+| GET | `/me/order/{orderId}/status` | Statut commande |
+
+## 5.5 Types TypeScript
+
+### WebHostingType
+
+```typescript
+type WebHostingType = {
+  availableBoostOffer: {
+    offer: HostingdOffer;
+    price: { currencyCode: CurrencyCode; text: string; value: number };
+  }[];
+  boostOffer?: string;
+  cluster: string;
+  clusterIp?: string;
+  clusterIpv6?: string;
+  countriesIp: { country: HostingCountries; ip?: string; ipv6?: string }[];
+  datacenter: string;
+  defaultAttachedDomain?: string;
+  displayName?: string;
+  filer?: string;
+  hasCdn?: boolean;
+  hasHostedSsl?: boolean;
+  home: string;
+  hostingIp?: string;
+  hostingIpv6?: string;
+  iam?: { displayName?: string; id: string; urn: string };
+  lastOvhConfigScan?: string;
+  multipleSSL: boolean;
+  offer: string;
+  operatingSystem: string;
+  phpVersions: { support: PhpVersionsSupport; version: string }[];
+  primaryLogin: string;
+  quotaSize: { unit: string; value: number };
+  quotaUsed: { unit: string; value: number };
+  recommendedOffer: HostingdOffer;
+  resourceType: HostingRessourceType;
+  serviceManagementAccess: {
+    ftp: { port: number; url: string };
+    http: { port: number; url: string };
+    ssh: { port: number; url: string };
+  };
+  serviceName: string;
+  state: HostingState;
+  token?: string;
+  trafficQuotaSize?: { unit: string; value: number };
+  trafficQuotaUsed?: { unit: string; value: number };
+  updates: string[];
+};
+```
+
+### Enums
+
+```typescript
+enum HostingState { ACTIVE = 'active', BLOQUED = 'bloqued', MAINTENANCE = 'maintenance' }
+
+enum HostingRessourceType { BEST_EFFORT = 'bestEffort', CLOUD = 'cloud', DEDICATED = 'dedicated', SHARED = 'shared' }
+
+enum HostingdOffer {
+  CLOUDWEB_1, CLOUDWEB_2, CLOUDWEB_3, KS,
+  PERFORMANCE_1, PERFORMANCE_2, PERFORMANCE_3, PERFORMANCE_4,
+  PERSO, POWER_BETA_1, PRO, START
+}
+
+enum HostingCountries { BE, CA, CZ, DE, ES, FI, FR, IE, IT, LT, NL, PL, PT, UK }
+
+enum HostingDomainStatus { ACTIVE = 'active', NONE = 'none' }
+
+enum PhpVersionsSupport { BETA, END_OF_LIFE, SECURITY_FIXES, SUPPORTED }
+
+enum OngoingTaskStatus { CANCELLED, DOING, DONE, ERROR, INIT, TODO }
+```
+
+---
+
+# 6. TRADUCTIONS (i18n)
+
+## 6.1 Fichiers de traduction
+
+| Domaine | Chemin |
+|---------|--------|
+| Dashboard | `public/translations/dashboard/Messages_{locale}.json` |
+| SSL | `public/translations/ssl/Messages_{locale}.json` |
+| Common | `public/translations/common/Messages_{locale}.json` |
+| Task | `public/translations/task/Messages_{locale}.json` |
+| Local SEO | `public/translations/local-seo/Messages_{locale}.json` |
+| Onboarding | `public/translations/onboarding/Messages_{locale}.json` |
+| Managed WordPress | `public/translations/managedWordpress/Messages_{locale}.json` |
+
+## 6.2 Langues supportées
+
+- fr_FR (Français France)
+- en_GB (Anglais UK)
+- de_DE (Allemand)
+- es_ES (Espagnol)
+- it_IT (Italien)
+- pl_PL (Polonais)
+- pt_PT (Portugais)
+- fr_CA (Français Canada)
+
+## 6.3 Clés principales (FR)
+
+```json
+{
+  "hosting_tab_GENERAL_INFORMATIONS": "Informations générales",
+  "hosting_tab_MULTISITE": "Multisite",
+  "hosting_tab_SSL": "Certificats SSL",
+  "hosting_tab_MODULE": "Modules en 1 clic",
+  "hosting_tab_USER_LOGS": "Statistiques et logs",
+  "hosting_tab_FTP": "FTP - SSH",
+  "hosting_tab_DATABASE": "Bases de données",
+  "hosting_tab_TASK": "Tâches en cours",
+  "hosting_tab_AUTOMATED_EMAILS": "Scripts e-mail",
+  "hosting_tab_CRON": "Cron",
+  "hosting_tab_LOCAL_SEO": "Visibilité Pro",
+  "hosting_tab_BOOST": "Booster mon offre",
+  "hosting_dashboard_tabs_dropdown": "Plus",
+  "hosting_action_add_domain": "Ajouter un domaine",
+  "order_ssl_certificate": "Commander un certificat SSL Sectigo",
+  "import_ssl_certificate": "Import de votre propre certificat SSL",
+  "enable_ssl_certificate": "Activer le certificat SSL",
+  "enable_ssl_encrypt": "Activer SSL Let's Encrypt",
+  "disable_ssl": "Désactiver SSL",
+  "delete_ssl": "Suppression SSL",
+  "regenerate_ssl": "Régénérer SSL",
+  "cell_main_domain": "Domaine principal",
+  "cell_additional_domain": "Domaine supplémentaire (SAN)",
+  "cell_certificate_type": "Type de certificat",
+  "cell_state": "État",
+  "cell_creation_date": "Date de création",
+  "cell_expiration_date": "Date d'expiration",
+  "ssl_state_to_generate": "À générer",
+  "ssl_state_active": "Activé",
+  "LETSENCRYPT": "Let's Encrypt",
+  "SECTIGO": "Sectigo",
+  "CUSTOM": "Custom",
+  "ACTIVE": "Actif",
+  "CREATING": "En création",
+  "DELETING": "En suppression",
+  "UPDATING": "En cours de mise à jour",
+  "REGENERATING": "En regénération",
+  "IMPORTING": "En importation",
+  "EXPIRED": "Expiré",
+  "hosting_add_title": "Ajouter un domaine ou un sous-domaine",
+  "hosting_add_step1_ovh": "Ajouter un domaine enregistré chez OVHcloud",
+  "hosting_add_step1_external": "Ajouter un domaine externe",
+  "hosting_multisite_domain_configuration_home": "Dossier racine",
+  "hosting_multisite_domain_configuration_cdn": "CDN",
+  "hosting_multisite_domain_configuration_ssl": "SSL",
+  "hosting_multisite_domain_configuration_firewall": "Activer le firewall",
+  "hosting_multisite_domain_configuration_ownlog": "Logs séparés",
+  "buttons_validate": "Valider",
+  "buttons_cancel": "Annuler"
+}
+```
+
+---
+
+# 7. RÈGLES MÉTIER
+
+## 7.1 Offres hébergement
+
+| Offre | Description |
+|-------|-------------|
+| START | Offre entrée de gamme |
+| START_10_M | Offre gratuite 10 Mo |
+| HOSTING_FREE_100_M | Offre gratuite 100 Mo |
+| PERSO | Offre personnelle |
+| PRO | Offre professionnelle |
+| PERFORMANCE_1 | Performance niveau 1 |
+| PERFORMANCE_2 | Performance niveau 2 |
+| PERFORMANCE_3 | Performance niveau 3 |
+| PERFORMANCE_4 | Performance niveau 4 |
+| CLOUDWEB_1 | Cloud Web niveau 1 |
+| CLOUDWEB_2 | Cloud Web niveau 2 |
+| CLOUDWEB_3 | Cloud Web niveau 3 |
+| POWER_BETA_1 | Power (beta) |
+
+## 7.2 Types de certificats SSL
+
+| Type | Description |
+|------|-------------|
+| LETSENCRYPT | Gratuit, auto-généré, renouvelé automatiquement |
+| SECTIGO | Payant, commandé, validation DV/OV/EV |
+| CUSTOM | Importé manuellement par l'utilisateur |
+| COMODO | Legacy (ancien nom Sectigo) |
+
+## 7.3 États SSL
+
+| État | Description |
+|------|-------------|
+| ACTIVE | Certificat actif |
+| CREATING | En cours de création |
+| DELETING | En cours de suppression |
+| UPDATING | En cours de mise à jour |
+| REGENERATING | En cours de régénération |
+| IMPORTING | En cours d'importation |
+| EXPIRED | Expiré |
+
+## 7.4 Validations
+
+### Mot de passe FTP/BDD
+
+```javascript
+const passwordConditions = {
+  min: 9,
+  max: 30,
+};
+
+function isPasswordValid(password) {
+  return (
+    password &&
+    password.length >= 9 &&
+    password.length <= 30 &&
+    password.match(/.*[0-9].*/) &&    // Au moins 1 chiffre
+    password.match(/.*[a-z].*/) &&    // Au moins 1 minuscule
+    password.match(/.*[A-Z].*/) &&    // Au moins 1 majuscule
+    password.match(/^[a-zA-Z0-9]+$/)  // Alphanumérique uniquement
+  );
+}
+```
+
+### Chemin (path)
+
+```javascript
+function isPathValid(path) {
+  return /^[\w./-]*$/.test(path) && !/\.\./.test(path);
+}
+```
+
+### Nom de domaine
+
+- Pas de majuscules
+- Pas de caractères spéciaux (sauf tiret)
+- Pour SSL: max 64 caractères
+
+## 7.5 Offres non éligibles aux modules 1-click
+
+- `START_10_M`
+- `HOSTING_FREE_100_M`
+
+## 7.6 Quotas Cloud Web
+
+```javascript
+const cloudWebConfig = {
+  configurationQuota: { unit: 'GB', value: 10 },
+  unlimitedQuantity: 100000
+};
+```
+
+## 7.7 Paramètres multisite (attachedDomain)
+
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| domain | string | Nom du domaine |
+| path | string | Dossier racine |
+| cdn | string | 'active' ou 'none' |
+| ssl | boolean | SSL activé |
+| firewall | string | 'active' ou 'none' |
+| ownLog | string/null | Logs séparés |
+| runtimeId | number/null | ID runtime PHP |
+| ipLocation | string/null | Code pays pour géolocalisation |
+| bypassDNSConfiguration | boolean | Ignorer config DNS auto |
+
+## 7.8 Polling des tâches
+
+```javascript
+const pollingConfig = {
+  interval: 30000, // 30 secondes
+  namespace: 'hosting.cdn.flush.refresh',
+  successRule: { state: 'done' }
+};
+```
+
+## 7.9 Pagination Iceberg
+
+### Headers de requête
+
+```
+X-Pagination-Mode: CachedObjectList-Pages
+X-Pagination-Size: 25
+X-Pagination-Number: 1
+X-Pagination-Sort: field
+X-Pagination-Sort-Order: ASC
+```
+
+### Headers de réponse
+
+```
+X-Pagination-Elements: 150  // Total éléments
+X-Pagination-Number: 1      // Page actuelle
+X-Pagination-Size: 25       // Taille page
+```
+
+## 7.10 Tracking
+
+```javascript
+const HOSTING_BASE_TRACKING = 'web::hosting';
+const DATABASES_BASE_TRACKING = 'web::hosting::order_databases';
+const MULTISITES_BASE_TRACKING = 'web::hosting::multisites';
+const DOMAIN_BASE_TRACKING = 'web::domain::order_webhosting_Plans';
+```
+
+---
+
+# 8. SÉQUENCEMENT API
+
+## 8.1 Chargement dashboard
+
+```
+1. GET /hosting/web/{serviceName}           → Détails hébergement
+2. GET /sws/hosting/web/{serviceName}       → Dashboard agrégé (2API)
+3. GET /hosting/web/{serviceName}/tasks     → Tâches en cours
+4. [Si START_10_M] GET /domain/{serviceName}/serviceInfos → Expiration
+```
+
+## 8.2 Ajout domaine multisite
+
+```
+1. GET /domain/zone                         → Zones disponibles
+2. GET /sws/hosting/web/{sn}/add-domain-existing → Domaines existants
+3. GET /domain/zone/{zone}/record           → Vérifier conflits DNS
+4. POST /hosting/web/{sn}/attachedDomain    → Créer domaine
+5. [Si wwwNeeded] POST /hosting/web/{sn}/attachedDomain → www.domain
+6. GET /hosting/web/{sn}/tasks?function=attachedDomain/create → Poll
+```
+
+## 8.3 Activation SSL Let's Encrypt
+
+```
+1. POST /hosting/web/{sn}/attachedDomain/{domain}/ssl → Activer
+2. Poll GET /hosting/web/{sn}/ssl jusqu'à status=created
+```
+
+## 8.4 Import certificat SSL
+
+```
+1. POST /hosting/web/{sn}/ssl
+   Body: { certificate, key, chain }
+2. Poll tâches jusqu'à completion
+```
+
+## 8.5 Upgrade offre
+
+```
+1. GET /hosting/web/{sn}/serviceInfos       → serviceId
+2. GET /services/{serviceId}                → parentServiceId
+3. [Si parentServiceId=null] GET /hosting/web/availableOffer → Offres
+4. GET /order/upgrade/webHosting/{sn}/{planCode} → Prix
+5. POST /order/upgrade/webHosting/{sn}/{planCode} → Commander
+```
+
+---
+
+# 9. GESTION D'ERREURS
+
+## 9.1 Codes HTTP
+
+| Code | Action |
+|------|--------|
+| 401 | Redirection vers page login |
+| 403 | Affichage message permission |
+| 404 | Ressource non trouvée |
+| 409 | Conflit (domaine déjà attaché) |
+| 500 | Erreur serveur |
+
+## 9.2 Messages d'erreur i18n
+
+```json
+{
+  "hosting_dashboard_loading_error": "Une erreur s'est produite lors du chargement des informations.",
+  "hosting_dashboard_ssl_activation_error": "Une erreur est survenue lors de l'activation SSL. ({{error}})",
+  "hosting_dashboard_ssl_delete_error": "Une erreur est survenue lors de la suppression SSL. ({{error}})",
+  "hosting_tab_DOMAINS_configuration_add_failure": "Une erreur est survenue lors de l'ajout du domaine."
+}
+```
+
+---
+
+# 10. GUIDES ET DOCUMENTATION
+
+## 10.1 URLs guides
+
+```javascript
+const PREFIX_GUIDES = 'https://help.ovhcloud.com/csm/';
+const SUFFIX_GENERAL = '?id=kb_browse_cat&kb_id=e17b4f25551974502d4c6e78b7421955&kb_category=98441955f49801102d4ca4d466a7fdb2';
+
+const guides = {
+  FR: `${PREFIX_GUIDES}fr-documentation-web-cloud-hosting${SUFFIX_GENERAL}`,
+  EN: `${PREFIX_GUIDES}en-gb-documentation-web-cloud-hosting${SUFFIX_GENERAL}`,
+  DE: `${PREFIX_GUIDES}de-documentation-web-cloud-hosting${SUFFIX_GENERAL}`,
+  // ...
+};
+```
+
+---
+
+FIN DU CAHIER DES CHARGES

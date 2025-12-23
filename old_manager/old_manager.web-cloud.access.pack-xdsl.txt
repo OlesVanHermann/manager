@@ -1,0 +1,743 @@
+# CAHIER DES CHARGES - Module Pack-xDSL (Container & Navigation)
+# Source: old_manager_web-cloud_access.tar
+# Parent: old_manager.web-cloud.access.txt
+# Généré le: 2025-01-21
+# Framework: AngularJS 1.7.x → React 18+
+
+================================================================================
+SECTION 1 - RÉSUMÉ
+================================================================================
+
+## 1.1 Périmètre
+
+Le module pack-xdsl est le **container principal** qui englobe :
+- La page Access (mon accès)
+- La page Modem (mon modem)  
+- La page Tasks (tâches en cours)
+
+Il fournit :
+- La navigation par onglets entre les sous-pages
+- Le header avec le nom éditable de l'accès
+- Le bouton retour vers le pack
+- Le service de polling des tâches (XdslTaskPoller)
+- Les animations de transition entre pages
+
+## 1.2 Relation avec le parent
+
+```
+old_manager.web-cloud.access.txt (complet)
+└── old_manager.web-cloud.access.pack-xdsl.txt (ce fichier)
+    ├── Container & Navigation
+    ├── XdslTaskPoller service
+    └── Constantes PACK_XDSL
+```
+
+================================================================================
+SECTION 2 - FICHIERS SOURCES
+================================================================================
+
+## 2.1 Arborescence
+
+```
+telecom/pack/xdsl/
+├── index.js                          # Module definition
+├── pack-xdsl.component.js            # Composant principal
+├── pack-xdsl.controller.js           # Contrôleur (192 lignes)
+├── pack-xdsl.constant.js             # Constantes
+├── pack-xdsl.routing.js              # Routes UI-Router
+├── pack-xdsl.html                    # Template (62 lignes)
+├── xdsl-task-poller.service.js       # Service polling tâches
+└── translations/
+    └── Messages_fr_FR.json
+```
+
+## 2.2 Dépendances injectées
+
+```javascript
+// Contrôleur PackXdslCtrl
+constructor(
+  $q,
+  $state,
+  $transitions,
+  $translate,
+  OvhApiPackXdsl,          // API Pack
+  OvhApiXdsl,              // API xDSL
+  OvhApiXdslModem,         // API Modem
+  shellClient,             // Client shell OVH
+  smoothScroll,            // Scroll smooth
+  TucToast,                // Notifications
+  TucToastError            // Erreurs
+)
+```
+
+================================================================================
+SECTION 3 - ROUTES
+================================================================================
+
+## 3.1 Configuration UI-Router
+
+```javascript
+// Route container xDSL
+$stateProvider.state('telecom.packs.pack.xdsl', {
+  url: '/xdsl/:serviceName',
+  template: '<div ui-view></div>',
+  resolve: {
+    serviceName: ($transition$) => $transition$.params().serviceName,
+    lines: (OvhApiXdslLines, serviceName) => 
+      OvhApiXdslLines.v6().query({ xdslId: serviceName }).$promise,
+    breadcrumb: (serviceName) => serviceName
+  },
+  // Redirection auto vers la première ligne
+  redirectTo: (transition) => transition.injector().getAsync('lines')
+    .then((lines) => ({
+      state: 'telecom.packs.pack.xdsl.line',
+      params: { ...transition.params(), number: head(lines) }
+    }))
+});
+
+// Route ligne (affiche pack-xdsl + access)
+$stateProvider.state('telecom.packs.pack.xdsl.line', {
+  url: '/lines/:number',
+  views: {
+    '@telecom.packs': 'packXdsl',           // Container pack-xdsl
+    'xdslView@telecom.packs.pack.xdsl.line': 'packXdslAccess'  // Contenu access
+  },
+  translations: {
+    value: ['../common', '.', './access', ...],
+    format: 'json'
+  },
+  resolve: {
+    $title: ($translate, $stateParams, OvhApiXdsl) => {
+      return OvhApiXdsl.v6().get({ xdslId: $stateParams.serviceName })
+        .$promise.then((data) => 
+          $translate.instant('xdsl_page_title', { 
+            name: data.description || $stateParams.serviceName 
+          })
+        );
+    },
+    goBack: (goToPack) => goToPack,
+    lineLink: ($state, $transition$) => 
+      $state.href('telecom.packs.pack.xdsl.line', $transition$.params()),
+    modemLink: ($state, $transition$) => 
+      $state.href('telecom.packs.pack.xdsl.line.modem', $transition$.params()),
+    taskLink: ($state, $transition$) => 
+      $state.href('telecom.packs.pack.xdsl.line.tasks', $transition$.params()),
+    currentActiveLink: ($state, $transition$) => () => 
+      $state.href($state.current.name, $transition$.params()),
+    breadcrumb: () => null
+  }
+});
+```
+
+## 3.2 Paramètres de route
+
+```typescript
+interface RouteParams {
+  packName: string;      // ID du pack (ex: "pack-123456")
+  serviceName: string;   // ID xDSL (ex: "xdsl-ab12-cd34")
+  number: string;        // Numéro de ligne (ex: "0123456789")
+}
+```
+
+## 3.3 Hiérarchie des états
+
+```
+telecom.packs.pack
+└── telecom.packs.pack.xdsl                    # Container
+    └── telecom.packs.pack.xdsl.line           # Pack-xDSL + Access
+        ├── telecom.packs.pack.xdsl.line.modem # Modem
+        ├── telecom.packs.pack.xdsl.line.tasks # Tâches
+        ├── telecom.packs.pack.xdsl.line.access-diagnostic
+        ├── telecom.packs.pack.xdsl.line.access-notifications
+        ├── telecom.packs.pack.xdsl.line.access-ip
+        ├── telecom.packs.pack.xdsl.line.access-deconsolidation
+        ├── telecom.packs.pack.xdsl.line.access-comfort-exchange
+        └── ...
+```
+
+================================================================================
+SECTION 4 - CONTRÔLEUR
+================================================================================
+
+## 4.1 Propriétés
+
+```javascript
+class PackXdslCtrl {
+  // Constantes
+  animTime = 1500;           // Durée animation (ms)
+  noModemStatus = 404;       // Code HTTP si pas de modem
+
+  // États
+  loading = { init: false };
+  disabledModem = true;      // Onglet modem désactivé par défaut
+  
+  // Données
+  pack = null;               // Infos pack
+  access = null;             // Infos accès xDSL
+  content = { back: {} };    // État animation
+}
+```
+
+## 4.2 Méthodes principales
+
+### $onInit()
+```javascript
+$onInit() {
+  this.loading.init = true;
+  this.disabledModem = true;
+  
+  // Vérifie si modem existe
+  this.enableModemIfHaveOne();
+  
+  // Écoute les changements de route
+  this.$transitions.onSuccess({}, (transition) => {
+    this.updateUIForState(transition.to());
+  });
+  
+  // Charge données en parallèle
+  return this.$q.allSettled([
+    this.getPackXdsl().then((pack) => { this.pack = pack; }),
+    this.getXdsl().then((access) => { this.access = access; })
+  ]).finally(() => {
+    this.loading.init = false;
+  });
+}
+```
+
+### enableModemIfHaveOne()
+```javascript
+enableModemIfHaveOne() {
+  return this.OvhApiXdslModem.v6()
+    .get({ xdslId: this.serviceName })
+    .$promise.then(() => {
+      this.disabledModem = false;  // Modem existe, activer l'onglet
+    })
+    .catch((err) => {
+      if (err.status !== 404) {
+        this.TucToastError(err);
+      }
+      // 404 = pas de modem, onglet reste désactivé
+    });
+}
+```
+
+### isModemTabAvailable()
+```javascript
+isModemTabAvailable() {
+  // Modem tab non disponible pour SDSL
+  if (this.access.accessType !== 'sdsl') {
+    return ['active', 'migration', 'upgradeOffer'].includes(this.access.status);
+  }
+  return false;
+}
+```
+
+### updateUIForState(state)
+```javascript
+updateUIForState(state) {
+  // Animation spéciale pour SDSL
+  if (this.packName === 'sdsl') {
+    if (['line', 'modem', 'tasks'].includes(state.name.split('.').pop())) {
+      this.setAnim('anim');
+      return;
+    }
+  }
+
+  this.smoothScroll(document.body);
+
+  switch (state.name) {
+    // États avec animation inversée (sous-pages)
+    case 'telecom.packs.pack.xdsl.line.modem.wifi':
+    case 'telecom.packs.pack.xdsl.line.modem.dmz':
+    case 'telecom.packs.pack.xdsl.line.access-notifications':
+    case 'telecom.packs.pack.xdsl.line.access-diagnostic':
+    case 'telecom.packs.pack.xdsl.line.access-ip':
+    case 'telecom.packs.pack.xdsl.line.access-deconsolidation':
+    case 'telecom.packs.pack.xdsl.line.access-modem-exchange':
+    // ... autres sous-pages
+      this.setAnim('invert-anim');
+      this.getXdsl().then((xdsl) => {
+        this.content.status = xdsl.status;
+        this.content.accessType = xdsl.accessType;
+      });
+      break;
+      
+    // États principaux (onglets)
+    case 'telecom.packs.pack.xdsl.line.modem':
+    case 'telecom.packs.pack.xdsl.line.tasks':
+    case 'telecom.packs.pack.xdsl.line':
+      this.setAnim('anim');
+      this.getXdsl().then((xdsl) => {
+        this.content.status = xdsl.status;
+        this.content.accessType = xdsl.accessType;
+      });
+      break;
+      
+    default:
+      this.setAnim('anim');
+  }
+}
+```
+
+### accessDescriptionSave(newAccessDescr)
+```javascript
+accessDescriptionSave(newAccessDescr) {
+  this.loading.save = true;
+
+  return this.OvhApiXdsl.v6().put(
+    { xdslId: this.serviceName },
+    { description: newAccessDescr }
+  ).$promise.then(() => {
+    this.access.description = newAccessDescr;
+    // Met à jour le menu latéral
+    this.shellClient.ux.updateMenuSidebarItemLabel(
+      this.serviceName, 
+      newAccessDescr
+    );
+  }).catch((error) => {
+    this.TucToast.error([
+      this.instant('xdsl_rename_error', this.serviceName),
+      error.data.message
+    ].join(' '));
+    return this.$q.reject(error);
+  }).finally(() => {
+    this.loading.save = false;
+  });
+}
+```
+
+================================================================================
+SECTION 5 - SERVICE XdslTaskPoller
+================================================================================
+
+## 5.1 Description
+
+Service de polling pour surveiller l'état des tâches xDSL en cours.
+Permet d'exécuter des callbacks quand une tâche se termine.
+
+## 5.2 Code source
+
+```javascript
+import pull from 'lodash/pull';
+
+export default class XdslTaskPoller {
+  /* @ngInject */
+  constructor(OvhApiXdslTasksCurrent) {
+    this.OvhApiXdslTasksCurrent = OvhApiXdslTasksCurrent;
+    this.handlers = {};  // { taskId: [handler1, handler2, ...] }
+  }
+
+  /**
+   * Démarre le polling des tâches
+   * @param serviceName - ID de l'accès xDSL
+   * @param scope - Scope Angular pour cleanup auto
+   * @param successHandler - Callback sur succès
+   * @param errorHandler - Callback sur erreur
+   */
+  start(serviceName, scope, successHandler, errorHandler) {
+    this.successHandler = successHandler;
+    this.errorHandler = errorHandler;
+    this.lastResult = null;
+
+    return this.OvhApiXdslTasksCurrent.Aapi()
+      .poll(scope, { xdslId: serviceName })
+      .then(
+        (result) => this.handleResult(result),
+        (error) => this.errorHandler(error),
+        (pending) => this.handleResult(pending)
+      );
+  }
+
+  /**
+   * Traite le résultat du polling
+   */
+  handleResult(result) {
+    if (result.success) {
+      // Détecte les tâches terminées
+      Object.keys(this.handlers).forEach((taskId) => {
+        if (this.lastResult && 
+            this.lastResult[taskId] && 
+            !result.data[taskId]) {
+          // Tâche terminée → exécute les handlers
+          (this.handlers[taskId] || []).forEach((handler) => handler());
+        }
+      });
+
+      this.lastResult = result.data;
+      this.successHandler(result);
+    } else {
+      this.errorHandler(result);
+    }
+  }
+
+  /**
+   * Enregistre un handler pour une tâche
+   * @param taskId - ID de la tâche à surveiller
+   * @param handler - Callback à exécuter quand la tâche se termine
+   * @returns Ticket pour désenregistrement
+   */
+  register(taskId, handler) {
+    this.handlers[taskId] = this.handlers[taskId] || [];
+    this.handlers[taskId].push(handler);
+    return { taskId, handler };
+  }
+
+  /**
+   * Désenregistre un handler
+   * @param ticket - Ticket retourné par register()
+   */
+  unregister(ticket) {
+    pull(this.handlers[ticket.taskId], ticket.handler);
+  }
+}
+```
+
+## 5.3 Utilisation
+
+```javascript
+// Dans le contrôleur Access
+$onInit() {
+  // Enregistre un callback pour quand le diagnostic se termine
+  this.diagPollerTicket = this.XdslTaskPoller.register(
+    'accessDiagnosticRun',
+    () => {
+      this.$scope.loaders.accessDiagnosticLaunched = false;
+      return this.getDiagnostic();
+    }
+  );
+
+  // Enregistre un callback pour commande IP
+  this.additionalIpPollerTicket = this.XdslTaskPoller.register(
+    'pendingOrderAdditionalIpOption',
+    () => {
+      this.ordering = false;
+      return this.getIps();
+    }
+  );
+}
+
+$onDestroy() {
+  // Cleanup
+  this.XdslTaskPoller.unregister(this.diagPollerTicket);
+  this.XdslTaskPoller.unregister(this.additionalIpPollerTicket);
+}
+```
+
+## 5.4 Tâches surveillées
+
+| Task ID | Description |
+|---------|-------------|
+| `accessDiagnosticRun` | Diagnostic de ligne en cours |
+| `pendingOrderAdditionalIpOption` | Commande bloc IP en cours |
+| `changeMailSendingStatus` | Changement statut mail |
+| `accessPartToTotal` | Passage dégroupage partiel→total |
+| `pendingAddressMove` | Déménagement en cours |
+
+================================================================================
+SECTION 6 - TEMPLATE HTML
+================================================================================
+
+## 6.1 Structure
+
+```html
+<section class="telecom-pack-xdsl">
+    <!-- Loading -->
+    <div class="text-center" data-ng-if="$ctrl.loading.init">
+        <oui-spinner></oui-spinner>
+    </div>
+
+    <!-- Header + Tabs -->
+    <div data-ng-if="!$ctrl.loading.init" class="mb-4">
+        <header class="oui-header">
+            <div class="oui-header__container">
+                <div class="oui-header__content">
+                    <!-- Bouton retour (si actif) -->
+                    <oui-back-button
+                        data-on-click="::$ctrl.goBack()"
+                        data-ng-if="$ctrl.content.status === 'active'"
+                        previous-page="{{:: 'xdsl_back_to_pack' | translate }}"
+                    >
+                        <span data-ng-bind="$ctrl.pack.general.description || 
+                                           $ctrl.pack.general.packName || 
+                                           $ctrl.access.description || 
+                                           $ctrl.access.accessName"></span>
+                    </oui-back-button>
+
+                    <!-- Nom éditable -->
+                    <tuc-editable-service-name
+                        data-tuc-editable-service-name-title="$ctrl.access.description || $ctrl.access.accessName"
+                        data-tuc-editable-service-name-service-name="$ctrl.access.accessName"
+                        data-tuc-editable-service-name-title-on-save="$ctrl.accessDescriptionSave"
+                    ></tuc-editable-service-name>
+                </div>
+            </div>
+        </header>
+
+        <!-- Onglets -->
+        <oui-header-tabs>
+            <!-- Onglet Accès -->
+            <oui-header-tabs-item
+                href="{{ $ctrl.lineLink }}"
+                active="$ctrl.currentActiveLink() === $ctrl.lineLink"
+            >
+                <span data-translate="xdsl_tabs_line"></span>
+            </oui-header-tabs-item>
+            
+            <!-- Onglet Modem (conditionnel) -->
+            <oui-header-tabs-item
+                href="{{ $ctrl.modemLink }}"
+                disabled="$ctrl.disabledModem"
+                data-ng-if="$ctrl.isModemTabAvailable()"
+                active="$ctrl.currentActiveLink() === $ctrl.modemLink"
+            >
+                <span data-translate="xdsl_tabs_modem"></span>
+            </oui-header-tabs-item>
+            
+            <!-- Onglet Tâches -->
+            <oui-header-tabs-item
+                href="{{ $ctrl.taskLink }}"
+                active="$ctrl.currentActiveLink() === $ctrl.taskLink"
+            >
+                <span data-translate="xdsl_tabs_tasks"></span>
+            </oui-header-tabs-item>
+        </oui-header-tabs>
+    </div>
+
+    <!-- Toast messages -->
+    <tuc-toast-message></tuc-toast-message>
+
+    <!-- Contenu (ui-view) -->
+    <div class="ui-view-container"
+         data-ng-class="$ctrl.content.back.class"
+         data-ng-if="!$ctrl.loading.init"
+         data-ui-view="xdslView">
+    </div>
+</section>
+```
+
+## 6.2 Composants utilisés
+
+| Composant | Usage |
+|-----------|-------|
+| `<oui-spinner>` | Loading initial |
+| `<oui-back-button>` | Retour vers pack |
+| `<oui-header-tabs>` | Container onglets |
+| `<oui-header-tabs-item>` | Onglet individuel |
+| `<tuc-editable-service-name>` | Nom éditable avec crayon |
+| `<tuc-toast-message>` | Notifications toast |
+
+================================================================================
+SECTION 7 - CONSTANTES
+================================================================================
+
+## 7.1 PACK_XDSL
+
+```javascript
+export const PACK_XDSL = {
+  // Status autorisant l'onglet modem
+  availableModemTabStatus: ['active', 'migration', 'upgradeOffer'],
+  
+  // Type SDSL (pas d'onglet modem)
+  sdsl: 'sdsl'
+};
+```
+
+## 7.2 Règles métier
+
+### Onglet Modem visible si :
+```javascript
+// 1. Type d'accès != SDSL
+access.accessType !== 'sdsl'
+
+// ET 2. Status dans la liste autorisée
+['active', 'migration', 'upgradeOffer'].includes(access.status)
+
+// ET 3. Modem existe (GET /xdsl/{}/modem != 404)
+!disabledModem
+```
+
+### Bouton retour visible si :
+```javascript
+content.status === 'active'
+```
+
+================================================================================
+SECTION 8 - TRADUCTIONS
+================================================================================
+
+## 8.1 Clés i18n
+
+| Clé | FR | EN |
+|-----|----|----|
+| `xdsl_page_title` | xDSL "{{name}}" | xDSL "{{name}}" |
+| `xdsl_tabs_line` | Mon accès | My access |
+| `xdsl_tabs_modem` | Mon modem | My modem |
+| `xdsl_tabs_tasks` | Tâches | Tasks |
+| `xdsl_tabs_details` | Informations | Information |
+| `xdsl_back_to_pack` | Détail du pack | Pack details |
+| `xdsl_rename_error` | Impossible de renommer votre accès {{serviceName}}. | Cannot rename access {{serviceName}}. |
+
+================================================================================
+SECTION 9 - APIs
+================================================================================
+
+## 9.1 Endpoints utilisés
+
+### GET /pack/xdsl/{packName} (via Aapi)
+```typescript
+// Response
+interface PackXdsl {
+  general: {
+    packName: string;
+    description: string;
+  };
+  // ...autres propriétés
+}
+```
+
+### GET /xdsl/{serviceName}
+```typescript
+// Response
+interface XdslAccess {
+  accessName: string;
+  accessType: 'adsl' | 'vdsl' | 'sdsl' | 'ftth' | 'ftte' | 'ftto';
+  description: string;
+  status: 'active' | 'cancelled' | 'close' | 'deleting' | 'doing' | 
+          'migration' | 'slamming' | 'upgradeOffer';
+  // ...
+}
+```
+
+### PUT /xdsl/{serviceName}
+```typescript
+// Request
+interface UpdateXdsl {
+  description: string;
+}
+
+// Response: XdslAccess
+```
+
+### GET /xdsl/{serviceName}/modem
+```typescript
+// Response 200: Modem existe
+interface XdslModem { ... }
+
+// Response 404: Pas de modem
+```
+
+### GET /xdsl/{serviceName}/tasks/current (via Aapi - polling)
+```typescript
+// Response
+interface TasksCurrent {
+  success: boolean;
+  data: {
+    [taskFunction: string]: boolean;
+    // ex: { accessDiagnosticRun: true, pendingOrderAdditionalIpOption: false }
+  };
+}
+```
+
+================================================================================
+SECTION 10 - ANIMATIONS CSS
+================================================================================
+
+## 10.1 Classes d'animation
+
+```css
+/* Animation normale (entrée depuis la droite) */
+.ui-view-container.anim {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Animation inversée (entrée depuis la gauche - sous-pages) */
+.ui-view-container.invert-anim {
+  animation: slideInLeft 0.3s ease-out;
+}
+```
+
+## 10.2 Logique de sélection
+
+```javascript
+// Sous-pages (diagnostic, notifications, IP, etc.)
+→ invert-anim (slide depuis la gauche)
+
+// Pages principales (accès, modem, tâches)
+→ anim (slide depuis la droite)
+```
+
+================================================================================
+SECTION 11 - MAPPING REACT
+================================================================================
+
+## 11.1 Structure proposée
+
+```
+src/pages/telecom/pack/xdsl/
+├── PackXdslPage.tsx                  # Container principal
+├── PackXdslPage.module.scss          # Styles
+├── hooks/
+│   ├── usePackXdsl.ts                # Hook données pack + xDSL
+│   ├── useTaskPoller.ts              # Hook polling tâches
+│   └── useModemAvailability.ts       # Hook disponibilité modem
+├── components/
+│   ├── PackXdslHeader/               # Header avec nom éditable
+│   ├── PackXdslTabs/                 # Navigation par onglets
+│   └── AnimatedOutlet/               # Outlet avec animations
+├── context/
+│   └── PackXdslContext.tsx           # Context partagé
+└── constants.ts                      # Constantes
+```
+
+## 11.2 Composants ODS
+
+| AngularJS | React ODS |
+|-----------|-----------|
+| `<oui-spinner>` | `<OdsSpinner>` |
+| `<oui-back-button>` | `<OdsLink>` + icône |
+| `<oui-header-tabs>` | `<OdsTabs>` |
+| `<oui-header-tabs-item>` | `<OdsTabsItem>` |
+| `<tuc-editable-service-name>` | Composant custom avec `<OdsInput>` |
+| `<tuc-toast-message>` | `<OdsToaster>` |
+
+## 11.3 Hook useTaskPoller (React)
+
+```typescript
+interface TaskPollerOptions {
+  serviceName: string;
+  onTaskComplete: (taskId: string) => void;
+  interval?: number;
+}
+
+function useTaskPoller(options: TaskPollerOptions) {
+  const [tasks, setTasks] = useState<Record<string, boolean>>({});
+  const previousTasks = useRef<Record<string, boolean>>({});
+  
+  useEffect(() => {
+    const poll = async () => {
+      const result = await api.getTasksCurrent(options.serviceName);
+      
+      // Détecte les tâches terminées
+      Object.keys(previousTasks.current).forEach((taskId) => {
+        if (previousTasks.current[taskId] && !result.data[taskId]) {
+          options.onTaskComplete(taskId);
+        }
+      });
+      
+      previousTasks.current = result.data;
+      setTasks(result.data);
+    };
+    
+    const intervalId = setInterval(poll, options.interval || 5000);
+    poll(); // Initial
+    
+    return () => clearInterval(intervalId);
+  }, [options.serviceName]);
+  
+  return tasks;
+}
+```
+
+================================================================================
+FIN DU CAHIER DES CHARGES PACK-XDSL
+================================================================================
