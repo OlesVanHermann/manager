@@ -22,7 +22,6 @@ tar -cf /home/ubuntu/new_manager.core.tar \
     ./postcss.config.js \
     ./prompt_react.md \
     ./npm_install.sh \
-    ./public/favicon.svg \
     ./public/locales/en/common.json \
     ./public/locales/en/navigation.json \
     ./public/locales/fr/common.json \

@@ -1,129 +1,161 @@
-# PROMPT SVG - Generation de Maquettes SVG depuis Old Manager
+# PROMPT SVG - Generation de Maquettes SVG depuis Manager OVH
 
-## Emplacement des fichiers
+## Fichiers et chemins
 
 | Element | Valeur |
 |---------|--------|
-| **Fichier** | prompt_svg.txt |
-| **Chemin complet** | /home/ubuntu/prompt_svg.txt |
-| **Destination SVG** | /home/ubuntu/old_manager_svg/ |
+| **Prompt** | /home/ubuntu/prompt_svg.txt |
+| **Destination finale utilisateur** | /home/ubuntu/{PREFIX}_svg/{NAV1}/{NAV2}/ |
+| **Destination Claude (outputs)** | /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/ |
 
 ---
 
-## Objectif
+## ⚠️ REGLES CRITIQUES - LIRE EN PREMIER ⚠️
 
-Analyser un tar extrait de l'old_manager OVHcloud et produire une **maquette SVG haute fidelite** representant l'interface utilisateur telle qu'elle apparait dans le navigateur, permettant de visualiser la page **sans executer le code source**.
+### REGLE 0 : ZERO HALLUCINATION
+**INTERDIT ABSOLU** d'inventer des elements absents du code source.
+- Pas dans le code -> PAS dans le SVG
+- Pas dans les traductions -> PAS de label invente
+- En cas de doute -> `grep` pour verifier
+- **Chaque pixel doit etre justifiable par une ligne de code**
 
----
+### REGLE 1 : GENERATION DIRECTE OBLIGATOIRE
+**INTERDICTION** d'afficher le SVG dans la conversation.
 
-## REGLES ABSOLUES (LIRE EN PREMIER)
+| ❌ INTERDIT | ✅ OBLIGATOIRE |
+|-------------|----------------|
+| Afficher le SVG brut | Ecrire avec `tee` dans `/mnt/user-data/outputs/` |
+| "Voici le SVG, copiez-le..." | Appeler `present_files` apres generation |
+| Attendre copier-coller | Fournir lien de telechargement |
 
-### Regle 0 : ZERO HALLUCINATION
-**INTERDIT ABSOLU** d'inventer, deviner ou halluciner des elements qui n'existent pas dans le code analyse.
-- Si un element n'est pas dans le code source -> NE PAS L'AJOUTER
-- Si un label n'est pas dans les traductions -> NE PAS L'INVENTER
-- Si une colonne n'est pas dans useDatagridColumn -> NE PAS LA CREER
-- Si un bouton n'est pas dans le JSX -> NE PAS LE DESSINER
-- En cas de doute -> grep le code pour verifier AVANT d'ajouter quoi que ce soit
-- **Chaque pixel du SVG doit etre justifiable par une ligne de code source**
+**Raison** : L'utilisateur ne peut PAS copier-coller. Afficher = PERTE DE TEMPS.
 
-### Regle 1 : Fidelite au Design System OVH
-Utiliser STRICTEMENT les tokens CSS du design system.
-**JAMAIS hardcoder les couleurs** - toujours referencer les variables CSS.
-
-### Regle 2 : Dimensions standardisees
-- Largeur totale : 1440px (desktop standard)
-- Hauteur : variable selon contenu (minimum 900px)
-- Sidebar : 240px
-- Header : 60px
-- Padding content : 40px
-
-### Regle 3 : EXPOSER LES ACTIONS CACHEES (Menu ⋮)
-**OBLIGATOIRE** : Identifier et afficher TOUTES les actions cachees derriere les menus "⋮" (kebab menu / ActionMenu).
-- Chercher dans le code : `ActionMenu`, `items={[...]}`, `actions={[...]}`
-- Extraire chaque action avec son label traduit
-- Dans le SVG : afficher le menu **OUVERT** avec toutes les actions visibles
-- Mettre en evidence avec un fond leger et une fleche pointant vers le bouton ⋮
-
-**Exemple de detection dans le code :**
+### REGLE 2 : EXPOSER LES ACTIONS CACHEES (Menu ⋮)
+**OBLIGATOIRE** : Afficher TOUS les ActionMenu **OUVERTS** avec leurs actions visibles.
 ```typescript
-<ActionMenu
-  items={[
-    { label: t('action_edit'), onClick: handleEdit },
-    { label: t('action_delete'), onClick: handleDelete },
-    { label: t('action_duplicate'), onClick: handleDuplicate },
-  ]}
-/>
+// Chercher : ActionMenu, items={[...]}, actions={[...]}
+<ActionMenu items={[
+  { label: t('edit') },
+  { label: t('delete') },
+]} />
+// -> Menu OUVERT dans le SVG avec toutes les actions
 ```
 
-**Rendu SVG attendu :**
-```xml
-<!-- Bouton kebab -->
-<text x="..." y="...">⋮</text>
-<!-- Menu ouvert (dropdown) -->
-<g id="action-menu-open">
-  <rect rx="4" fill="#FFFFFF" stroke="var(--color-neutral-200)" filter="drop-shadow(...)"/>
-  <text>Modifier</text>
-  <text>Supprimer</text>
-  <text>Dupliquer</text>
-</g>
-```
+### REGLE 3 : DESIGN SYSTEM TOKENS
+**JAMAIS hardcoder les couleurs** - utiliser les variables CSS.
 
 ---
 
-## STRATEGIE D'ANALYSE (METHODOLOGIE)
+## WORKFLOW OBLIGATOIRE
 
-### Phase 1 : Extraction et preparation
-1. Extraire le tar dans `/home/claude`
-2. Lister l'arborescence pour identifier les fichiers cles
-3. Identifier le type de page (liste, detail, formulaire, dashboard)
+### Phase 1 : Detection du contexte
+```
+Input : old_manager.web-cloud.hosting.tar
+
+PREFIX = old_manager
+NAV1 = web-cloud
+NAV2 = hosting
+```
 
 ### Phase 2 : Analyse du code
-1. **layout.tsx** - Structure globale (breadcrumb, tabs, header)
-2. ***.page.tsx / index.tsx** - Contenu principal de la page
-3. **components/*.tsx** - Composants UI (topbar, datagrid, cards)
-4. **hooks/useDatagridColumn.tsx** - Colonnes des tableaux
-5. **Messages_fr_FR.json** - Traductions francaises
-6. **ActionMenu / items** - **Actions cachees a exposer**
+| Priorite | Fichier | Information |
+|----------|---------|-------------|
+| 1 | layout.tsx | Structure, breadcrumb, tabs |
+| 2 | *.page.tsx | Contenu principal |
+| 3 | components/*.tsx | Elements UI |
+| 4 | useDatagridColumn.tsx | Colonnes + ActionMenu |
+| 5 | Messages_fr_FR.json | Traductions FR |
+| 6 | styles.css | Styles specifiques |
 
 ### Phase 3 : Generation SVG
-1. SVG principal (etat par defaut) - **OBLIGATOIRE**
-2. SVG modals (si presentes dans le code) - **RECOMMANDE**
-3. SVG etats alternatifs (empty, error) - **OPTIONNEL**
+```bash
+# 1. Creer arborescence dans outputs
+mkdir -p /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}
 
-### Phase 4 : Validation
-1. Verifier que chaque element SVG correspond a du code source
-2. Verifier les traductions FR appliquees
-3. Verifier les couleurs via tokens CSS
-4. **Verifier que les ActionMenu sont affiches OUVERTS**
+# 2. Ecrire le SVG
+tee /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/{PREFIX}.{NAV1}.{NAV2}.svg << 'EOFSVG'
+<svg ...>
+</svg>
+EOFSVG
+
+# 3. Appeler present_files avec le chemin du fichier
+```
+
+### Phase 4 : Confirmation
+```
+✅ SVG genere : {PREFIX}.{NAV1}.{NAV2}.svg
+   Chemin : /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/
+   Taille : XX Ko
+   Elements : [liste]
+   ActionMenu : [actions exposees]
+```
 
 ---
 
-## Design System Tokens (OBLIGATOIRE)
+## Convention de nommage
 
-### Source des tokens
+### Noms de fichiers
+```
+{PREFIX}.{NAV1}.{NAV2}.svg                # Page principale
+{PREFIX}.{NAV1}.{NAV2}.tab-{nom}.svg      # Onglet specifique
+{PREFIX}.{NAV1}.{NAV2}.modal-{action}.svg # Modal
+{PREFIX}.{NAV1}.{NAV2}.state-{etat}.svg   # Etat (empty, error)
+```
+
+### Arborescence complete
+```
+/mnt/user-data/outputs/{PREFIX}_svg/
+  └── {NAV1}/
+      └── {NAV2}/
+          └── {PREFIX}.{NAV1}.{NAV2}.svg
+          └── {PREFIX}.{NAV1}.{NAV2}.tab-ssl.svg
+          └── {PREFIX}.{NAV1}.{NAV2}.modal-order.svg
+```
+
+### Exemple concret
+```
+Input : old_manager.web-cloud.hosting.tar
+
+Output :
+/mnt/user-data/outputs/old_manager_svg/web-cloud/hosting/
+  └── old_manager.web-cloud.hosting.svg
+  └── old_manager.web-cloud.hosting.tab-ssl.svg
+  └── old_manager.web-cloud.hosting.modal-order.svg
+```
+
+---
+
+## Design System Tokens
+
+### Source
 ```
 /home/ubuntu/aiapp/frontend/src/design-system/tokens.css
 /home/ubuntu/aiapp/frontend/src/design-system/globals.css
 ```
 
-### Couleurs principales
-
-| Token CSS | Usage |
-|-----------|-------|
-| `--color-primary-500` | Bleu OVH principal |
-| `--color-primary-100` | Bleu tres clair (selection) |
-| `--color-text` | Texte principal |
-| `--color-text-muted` | Texte secondaire |
-| `--color-bg-muted` | Background page |
-| `--color-neutral-100` | Header tableau |
-| `--color-neutral-200` | Bordures |
+### Couleurs
+| Token | Usage |
+|-------|-------|
+| `--color-primary-500` | Bleu OVH (#0050D7) |
+| `--color-primary-100` | Bleu clair selection (#E8F0FE) |
+| `--color-text` | Texte principal (#1F2937) |
+| `--color-text-muted` | Texte secondaire (#6B7280) |
+| `--color-bg-muted` | Background page (#F9FAFB) |
+| `--color-neutral-100` | Header tableau (#F3F4F6) |
+| `--color-neutral-200` | Bordures (#E5E7EB) |
 | `--color-header` | Header OVH (#000E9C) |
 | `--color-success-100/700` | Badge succes |
 | `--color-warning-100/700` | Badge warning |
 | `--color-error-100/700` | Badge erreur |
 
-### Structure SVG avec tokens
+### Dimensions
+- Largeur : 1440px
+- Header : 60px
+- Sidebar : 240px
+- Padding content : 40px
+- Hauteur : variable (min 900px)
+
+### Template SVG
 ```xml
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 {HEIGHT}" width="1440" height="{HEIGHT}">
   <defs>
@@ -154,184 +186,107 @@ Utiliser STRICTEMENT les tokens CSS du design system.
       .text-link { font-family: var(--font-family); font-size: 14px; fill: var(--color-primary-500); }
       .text-white { font-family: var(--font-family); fill: #FFFFFF; }
       .border { stroke: var(--color-neutral-200); stroke-width: 1; }
-      /* Style pour les menus d'action ouverts */
       .action-menu-dropdown { fill: #FFFFFF; stroke: var(--color-neutral-200); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
-      .action-menu-item:hover { fill: var(--color-neutral-100); }
     </style>
   </defs>
   
-  <!-- Background -->
   <rect width="1440" height="{HEIGHT}" class="bg-muted"/>
-  
-  <!-- Header OVH (60px) -->
-  <g id="header">
-    <rect width="1440" height="60" class="bg-header"/>
-  </g>
-  
-  <!-- Sidebar (240px) -->
-  <g id="sidebar" transform="translate(0, 60)">
-    <rect width="240" height="{HEIGHT-60}" class="bg-white"/>
-  </g>
-  
-  <!-- Main Content -->
-  <g id="content" transform="translate(240, 60)">
-    <!-- Contenu extrait du code -->
-  </g>
+  <g id="header"><rect width="1440" height="60" class="bg-header"/></g>
+  <g id="sidebar" transform="translate(0, 60)"><rect width="240" height="{HEIGHT-60}" class="bg-white"/></g>
+  <g id="content" transform="translate(240, 60)"><!-- Contenu --></g>
 </svg>
 ```
 
 ---
 
-## Fichiers a analyser (par ordre de priorite)
-
-| Priorite | Fichier | Information extraite |
-|----------|---------|---------------------|
-| 1 | layout.tsx | Structure, breadcrumb, tabs |
-| 2 | *.page.tsx | Contenu principal |
-| 3 | components/*.tsx | Elements UI |
-| 4 | useDatagridColumn.tsx | Colonnes tableaux + **ActionMenu** |
-| 5 | Messages_fr_FR.json | Traductions |
-| 6 | styles.css | Styles specifiques |
-
----
-
-## Convention de nommage des SVG
-```
-old_manager.{NAV1}.{NAV2}.svg                    # Page principale
-old_manager.{NAV1}.{NAV2}.tab-{nom}.svg          # Onglet specifique
-old_manager.{NAV1}.{NAV2}.modal-{action}.svg     # Modal
-old_manager.{NAV1}.{NAV2}.state-{etat}.svg       # Etat (empty, error)
-```
-
-### Exemples
-```
-old_manager.web-cloud.hosting.tab-general.svg
-old_manager.web-cloud.hosting.tab-ssl.svg
-old_manager.web-cloud.hosting.modal-order.svg
-old_manager.web-cloud.domain.svg
-old_manager.web-cloud.domain.modal-delete.svg
-```
-
----
-
-## Detection des elements dans le code
+## Detection des elements
 
 ### Boutons
 ```typescript
-// Chercher dans le JSX
 <OdsButton variant="primary" label={t('action_label')} />
-<OdsButton variant="outline" onClick={...} />
-// -> Extraire le label depuis les traductions
 ```
 
-### Datagrid / Tableaux
+### Datagrid
 ```typescript
-// Chercher useDatagridColumn ou columns definition
 const columns = [
   { id: 'name', label: t('column_name') },
-  { id: 'status', label: t('column_status'), cell: StatusBadge },
+  { id: 'status', label: t('column_status') },
 ];
-// -> Extraire chaque colonne avec son label traduit
 ```
 
 ### Tabs
 ```typescript
-// Chercher dans layout.tsx
 const tabs = [
   { name: 'general', label: t('tab_general') },
-  { name: 'settings', label: t('tab_settings') },
+  { name: 'ssl', label: t('tab_ssl') },
 ];
-// -> Lister tous les tabs, identifier l'actif
 ```
 
 ### Modals
 ```typescript
-// Chercher OdsModal, Dialog, ou useState pour modal
-const [showModal, setShowModal] = useState(false);
 <OdsModal open={showModal}>...</OdsModal>
-// -> Generer un SVG separe pour chaque modal
+// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.modal-{action}.svg
 ```
 
-### Badges / Status
+### ActionMenu (⋮) - TOUJOURS OUVERT
 ```typescript
-// Chercher OdsBadge ou StatusBadge
-<OdsBadge color="success" label={t('status_active')} />
-// -> Utiliser les tokens de couleur correspondants
+<ActionMenu items={[
+  { label: t('edit') },
+  { label: t('delete') },
+]} />
 ```
-
-### ActionMenu / Menu ⋮ (IMPORTANT)
-```typescript
-// Chercher ActionMenu, DropdownMenu, items={[...]}
-<ActionMenu
-  items={[
-    { id: 'edit', label: t('action_edit'), onClick: ... },
-    { id: 'delete', label: t('action_delete'), onClick: ... },
-    { id: 'regenerate', label: t('action_regenerate'), onClick: ... },
-  ]}
-/>
-// -> OBLIGATOIRE : Afficher le menu OUVERT dans le SVG
-// -> Lister TOUTES les actions avec leurs labels traduits
-```
-
-**Rendu SVG pour ActionMenu ouvert :**
+**Rendu SVG :**
 ```xml
-<!-- Ligne du tableau avec ActionMenu -->
-<g id="row-actions">
-  <!-- Bouton ⋮ -->
-  <text x="1150" y="250" class="text-muted" style="font-size: 18px;">⋮</text>
-  
-  <!-- Dropdown ouvert - TOUJOURS VISIBLE -->
-  <g id="dropdown-menu" transform="translate(1050, 260)">
-    <!-- Fond avec ombre -->
-    <rect width="150" height="120" rx="4" class="action-menu-dropdown"/>
-    <!-- Actions -->
-    <text x="12" y="30" class="text-body">Modifier</text>
-    <line x1="0" y1="40" x2="150" y2="40" class="border"/>
-    <text x="12" y="60" class="text-body">Regenerer</text>
-    <line x1="0" y1="70" x2="150" y2="70" class="border"/>
-    <text x="12" y="90" style="fill: var(--color-error-700);">Supprimer</text>
+<g id="action-menu-open">
+  <text>⋮</text>
+  <g id="dropdown">
+    <rect class="action-menu-dropdown" />
+    <text>Modifier</text>
+    <text>Supprimer</text>
   </g>
 </g>
 ```
 
 ---
 
-## Rapport de generation (OBLIGATOIRE)
-
-Apres analyse, produire un rapport :
+## Rapport de generation
 ```
-=== ANALYSE DU TAR ===
-Source : old_manager.{nav1}.{nav2}.tar
-Fichiers analyses : X
+=== CONTEXTE ===
+PREFIX : old_manager
+NAV1 : web-cloud
+NAV2 : hosting
 
 === ELEMENTS DETECTES ===
-- Layout : [breadcrumb, tabs, header]
-- Composants : [liste des composants trouves]
-- Colonnes Datagrid : [liste si applicable]
-- Boutons : [liste avec labels]
-- Modals : [liste si applicable]
-- **ActionMenu (⋮)** : [LISTE DE TOUTES LES ACTIONS CACHEES]
+- Breadcrumb : [...]
+- Tabs : [...]
+- Boutons : [...]
+- Colonnes : [...]
+- ActionMenu (⋮) : [TOUTES LES ACTIONS]
+- Modals : [...]
 
-=== SVG A GENERER ===
-1. [OBLIGATOIRE] old_manager.{nav1}.{nav2}.svg - Page principale (avec ActionMenu ouvert)
-2. [RECOMMANDE] old_manager.{nav1}.{nav2}.modal-xxx.svg - Modal XXX
-3. [OPTIONNEL] old_manager.{nav1}.{nav2}.state-empty.svg - Etat vide
-
-=== GENERATION ===
-[Generer les SVG dans l'ordre de priorite]
+=== SVG GENERES ===
+1. ✅ old_manager.web-cloud.hosting.svg (XX Ko)
+2. ✅ old_manager.web-cloud.hosting.modal-order.svg (XX Ko)
 ```
 
 ---
 
 ## Checklist finale
 
-Avant de livrer un SVG :
+- [ ] PREFIX detecte (old_manager / new_manager)
+- [ ] Arborescence creee dans `/mnt/user-data/outputs/`
+- [ ] SVG ecrit avec `tee` (pas affiche)
+- [ ] `present_files` appele
+- [ ] ZERO hallucination
+- [ ] Tokens CSS utilises (pas de hex hardcode)
+- [ ] ActionMenu affiches OUVERTS
+- [ ] Textes en francais
 
-- [ ] Chaque element correspond a du code source (ZERO HALLUCINATION)
-- [ ] Dimensions 1440px largeur
-- [ ] Header OVH present (60px)
-- [ ] Sidebar presente (240px)
-- [ ] Couleurs via tokens CSS (pas de hex hardcode)
-- [ ] Textes en francais (traductions appliquees)
-- [ ] **ActionMenu (⋮) affiches OUVERTS avec toutes les actions visibles**
-- [ ] Fichier SVG valide et ouvrable
+---
+
+## Anti-depassement
+
+Si SVG trop complexe (>100 Ko) :
+1. Limiter datagrids a 3-5 lignes exemple
+2. Decouper en plusieurs SVG
+3. Page principale d'abord, modals ensuite
