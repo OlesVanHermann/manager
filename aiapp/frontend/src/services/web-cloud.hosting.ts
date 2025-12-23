@@ -54,6 +54,7 @@ export interface AttachedDomain {
   firewall?: string;
   git?: boolean;
   ownLog?: string;
+  ipv6?: boolean;
   status?: string;
 }
 
@@ -171,6 +172,10 @@ export const hostingService = {
     ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `ssl-${type.toLowerCase()}`, quantity: 1 }),
   activateSslForDomain: (sn: string, domain: string) => 
     ovhPut<void>(`/hosting/web/${sn}/attachedDomain/${domain}`, { ssl: true }),
+  activateDomainSsl: (sn: string, domain: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/attachedDomain/${domain}/ssl`, {}),
+  deactivateDomainSsl: (sn: string, domain: string) => 
+    ovhDelete<void>(`/hosting/web/${sn}/attachedDomain/${domain}/ssl`),
 
   // --- CRON ---
   listCrons: (sn: string) => ovhGet<number[]>(`/hosting/web/${sn}/cron`),
@@ -207,6 +212,7 @@ export const hostingService = {
   // --- CDN ---
   getCdnInfo: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/cdn`).catch(() => null),
   flushCdnCache: (sn: string) => ovhPost<void>(`/hosting/web/${sn}/cdn/flush`, {}),
+  flushDomainCdn: (sn: string, domain: string) => ovhPost<void>(`/hosting/web/${sn}/cdn/flush`, { domain }),
   orderCdn: (sn: string, type: string) => 
     ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `cdn-${type}`, quantity: 1 }),
 

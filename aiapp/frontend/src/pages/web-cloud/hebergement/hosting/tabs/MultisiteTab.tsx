@@ -1,34 +1,29 @@
 // ============================================================
-// HOSTING TAB: MULTISITE - Domaines attachés
+// HOSTING TAB: MULTISITE - Domaines attachés (Design OVH)
 // ============================================================
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { hostingService, AttachedDomain } from "../../../../../services/web-cloud.hosting";
-import { AddDomainModal, EditDomainModal } from "../components";
+import { ToggleSwitch } from "../components/ToggleSwitch";
+import { AddDomainModal } from "../components";
+import { EditPathModal } from "../components/EditPathModal";
 
-interface Props { serviceName: string; }
+interface Props {
+  serviceName: string;
+}
 
 const PAGE_SIZE = 10;
 
 export function MultisiteTab({ serviceName }: Props) {
-  const { t } = useTranslation("web-cloud/hosting/index");
   const [domains, setDomains] = useState<AttachedDomain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
-
-  // Modals
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editDomain, setEditDomain] = useState<AttachedDomain | null>(null);
+  const [editPathDomain, setEditPathDomain] = useState<AttachedDomain | null>(null);
 
-  // Action menu
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // --- LOAD ---
   const loadDomains = useCallback(async () => {
     try {
       setLoading(true);
@@ -44,18 +39,6 @@ export function MultisiteTab({ serviceName }: Props) {
 
   useEffect(() => { loadDomains(); }, [loadDomains]);
 
-  // Close menu on click outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // --- HANDLERS ---
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadDomains();
@@ -63,27 +46,35 @@ export function MultisiteTab({ serviceName }: Props) {
   };
 
   const handleDelete = async (domain: string) => {
-    if (!confirm(t("multisite.confirmDelete", { domain }))) return;
+    if (!confirm(`Supprimer le domaine ${domain} ?`)) return;
     try {
       await hostingService.deleteAttachedDomain(serviceName, domain);
       loadDomains();
     } catch (err) {
       alert(String(err));
     }
-    setOpenMenuId(null);
   };
 
-  const handleFlushCdn = async (domain: string) => {
+  const handleToggle = async (domain: AttachedDomain, field: string, value: boolean) => {
     try {
-      await hostingService.flushDomainCdn(serviceName, domain);
-      alert("Cache CDN vidé avec succès");
+      const payload: Record<string, unknown> = {};
+      if (field === "cdn" || field === "firewall") {
+        payload[field] = value ? "active" : "none";
+      } else if (field === "ownLog") {
+        payload.ownLog = value ? domain.domain : null;
+      } else if (field === "ssl") {
+        payload.ssl = value;
+      } else {
+        payload[field] = value;
+      }
+      await hostingService.updateAttachedDomain(serviceName, domain.domain, payload);
+      loadDomains();
     } catch (err) {
       alert(String(err));
     }
-    setOpenMenuId(null);
   };
 
-  const handleRegenerateSsl = async (domain: string) => {
+  const handleRegenerateSsl = async () => {
     try {
       await hostingService.regenerateSsl(serviceName);
       alert("Régénération SSL lancée");
@@ -91,10 +82,8 @@ export function MultisiteTab({ serviceName }: Props) {
     } catch (err) {
       alert(String(err));
     }
-    setOpenMenuId(null);
   };
 
-  // --- FILTERING & PAGINATION ---
   const filteredDomains = useMemo(() => {
     if (!searchTerm) return domains;
     const term = searchTerm.toLowerCase();
@@ -107,198 +96,123 @@ export function MultisiteTab({ serviceName }: Props) {
     return filteredDomains.slice(start, start + PAGE_SIZE);
   }, [filteredDomains, currentPage]);
 
+  const startIndex = (currentPage - 1) * PAGE_SIZE + 1;
+  const endIndex = Math.min(currentPage * PAGE_SIZE, filteredDomains.length);
+
   useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
-  // --- RENDER ---
-  if (loading) {
-    return (
-      <div className="multisite-tab">
-        <div className="skeleton-block" style={{ height: "400px" }} />
-      </div>
-    );
-  }
+  const getSslType = (d: AttachedDomain): string => d.ssl ? "Let's Encrypt" : "—";
+  const isStatusOn = (d: AttachedDomain): boolean => d.status === "created" || d.status === "ok" || !d.status;
 
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="multisite-loading">Chargement des domaines...</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
     <div className="multisite-tab">
-      {/* Header */}
-      <div className="tab-header">
-        <div className="tab-actions-left">
-          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-            + {t("multisite.addDomain")}
-          </button>
-        </div>
-        <div className="tab-actions">
-          <button 
-            className="btn btn-icon-only" 
-            onClick={handleRefresh} 
-            disabled={refreshing}
-            title="Actualiser"
-          >
-            {refreshing ? "⏳" : "↻"}
-          </button>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="table-toolbar">
+      <div className="multisite-toolbar">
+        <button className="btn-refresh" onClick={handleRefresh} disabled={refreshing} title="Actualiser">
+          {refreshing ? "⏳" : "↻"}
+        </button>
         <input
           type="text"
           className="search-input"
-          placeholder={t("common.search")}
+          placeholder="Rechercher un domaine..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <span className="records-count">{domains.length} {t("multisite.domains")}</span>
+        <button className="btn-add" onClick={() => setShowAddModal(true)}>+ Ajouter</button>
+        <span className="domain-count">{domains.length} domaine(s)</span>
       </div>
 
-      {/* Table */}
       {paginatedDomains.length === 0 ? (
-        <div className="empty-state">
-          <p>{searchTerm ? t("common.noResult") : t("multisite.empty")}</p>
-          {!searchTerm && (
-            <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-              {t("multisite.addFirstDomain")}
-            </button>
-          )}
+        <div className="multisite-empty">
+          <p>{searchTerm ? "Aucun domaine trouvé" : "Aucun domaine attaché"}</p>
+          {!searchTerm && <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>Ajouter un domaine</button>}
         </div>
       ) : (
         <>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t("multisite.domain")}</th>
-                <th>{t("multisite.path")}</th>
-                <th>{t("multisite.ssl")}</th>
-                <th>{t("multisite.cdn")}</th>
-                <th>{t("multisite.firewall")}</th>
-                <th>{t("multisite.logseparate")}</th>
-                <th>{t("multisite.git")}</th>
-                <th>{t("multisite.status")}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedDomains.map(domain => (
-                <tr key={domain.domain}>
-                  <td>
-                    <a href={`https://${domain.domain}`} target="_blank" rel="noopener noreferrer" className="domain-link">
-                      {domain.domain}
-                    </a>
-                  </td>
-                  <td><code>{domain.path || "./www"}</code></td>
-                  <td>
-                    <span className={`badge ${domain.ssl ? "success" : "inactive"}`}>
-                      {domain.ssl ? "Activé" : "Inactif"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${domain.cdn ? "success" : "inactive"}`}>
-                      {domain.cdn ? "Activé" : "Inactif"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${domain.firewall ? "success" : "inactive"}`}>
-                      {domain.firewall ? "Activé" : "Inactif"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${domain.ownLog ? "success" : "inactive"}`}>
-                      {domain.ownLog ? "Activé" : "Inactif"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${domain.git ? "success" : "inactive"}`}>
-                      {domain.git ? "Activé" : "Inactif"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${domain.status === "ok" ? "success" : "warning"}`}>
-                      {domain.status === "ok" ? "OK" : domain.status}
-                    </span>
-                  </td>
-                  <td className="action-cell">
-                    <div className="action-menu-container" ref={openMenuId === domain.domain ? menuRef : null}>
-                      <button 
-                        className={`btn-action-menu ${openMenuId === domain.domain ? "active" : ""}`}
-                        onClick={() => setOpenMenuId(openMenuId === domain.domain ? null : domain.domain)}
-                      >
-                        ⋮
-                      </button>
-                      {openMenuId === domain.domain && (
-                        <div className="action-dropdown">
-                          <button onClick={() => { setEditDomain(domain); setOpenMenuId(null); }}>
-                            Modifier
-                          </button>
-                          {domain.cdn && (
-                            <button onClick={() => handleFlushCdn(domain.domain)}>
-                              Vider le cache CDN
-                            </button>
-                          )}
-                          {domain.ssl && (
-                            <button onClick={() => handleRegenerateSsl(domain.domain)}>
-                              Régénérer SSL
-                            </button>
-                          )}
-                          <button onClick={() => window.open(`https://logs.ovh.net/${serviceName}/${domain.domain}/`, "_blank")}>
-                            Voir les logs
-                          </button>
-                          <div className="dropdown-divider" />
-                          <button className="danger" onClick={() => handleDelete(domain.domain)}>
-                            Supprimer
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
+          <div className="multisite-table-wrapper">
+            <table className="multisite-table">
+              <thead>
+                <tr>
+                  <th>DOMAINE</th>
+                  <th>DOSSIER</th>
+                  <th>STATUT</th>
+                  <th>SSL</th>
+                  <th>CDN</th>
+                  <th>FIREWALL</th>
+                  <th>LOGS</th>
+                  <th>GIT</th>
+                  <th>IPV6</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginatedDomains.map(domain => {
+                  const statusOn = isStatusOn(domain);
+                  return (
+                    <tr key={domain.domain}>
+                      <td>
+                        <div className="cell-domain">
+                          <a href={`https://${domain.domain}`} target="_blank" rel="noopener noreferrer" className="domain-name">{domain.domain}</a>
+                          <button className="btn-delete" onClick={() => handleDelete(domain.domain)} title="Supprimer">×</button>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="cell-path">
+                          <span className="path-value">{domain.path || "./www"}</span>
+                          <button className="btn-edit" onClick={() => setEditPathDomain(domain)} title="Modifier">✎</button>
+                        </div>
+                      </td>
+                      <td><div className="cell-toggle"><ToggleSwitch checked={statusOn} onChange={() => {}} disabled={true} /></div></td>
+                      <td>
+                        {statusOn ? (
+                          <div className="cell-ssl">
+                            <span className="ssl-type">{getSslType(domain)}</span>
+                            {domain.ssl ? (
+                              <div className="ssl-actions">
+                                <button className="btn-ssl" onClick={handleRegenerateSsl} title="Régénérer">↺</button>
+                                <button className="btn-ssl" onClick={() => handleToggle(domain, "ssl", false)} title="Désactiver">⇄</button>
+                              </div>
+                            ) : (
+                              <button className="btn-ssl" onClick={() => handleToggle(domain, "ssl", true)} title="Activer SSL">+</button>
+                            )}
+                          </div>
+                        ) : <div className="cell-empty">—</div>}
+                      </td>
+                      <td>{statusOn ? <div className="cell-toggle"><ToggleSwitch checked={domain.cdn === "active"} onChange={(v) => handleToggle(domain, "cdn", v)} /></div> : <div className="cell-empty">—</div>}</td>
+                      <td>{statusOn ? <div className="cell-toggle"><ToggleSwitch checked={domain.firewall === "active"} onChange={(v) => handleToggle(domain, "firewall", v)} /></div> : <div className="cell-empty">—</div>}</td>
+                      <td>{statusOn ? <div className="cell-toggle"><ToggleSwitch checked={!!domain.ownLog} onChange={(v) => handleToggle(domain, "ownLog", v)} /></div> : <div className="cell-empty">—</div>}</td>
+                      <td>{statusOn ? <div className="cell-toggle"><ToggleSwitch checked={!!domain.git} onChange={() => {}} disabled={true} /></div> : <div className="cell-empty">—</div>}</td>
+                      <td>{statusOn ? <div className="cell-toggle"><ToggleSwitch checked={!!(domain as any).ipv6} onChange={(v) => handleToggle(domain, "ipv6", v)} /></div> : <div className="cell-empty">—</div>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="pagination">
-              <button 
-                className="pagination-btn" 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                ←
-              </button>
-              <span className="pagination-info">
-                {t("common.page")} {currentPage} / {totalPages}
-              </span>
-              <button 
-                className="pagination-btn" 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-              >
-                →
-              </button>
+            <div className="multisite-pagination">
+              <span className="pagination-info">Affichage {startIndex}-{endIndex} sur {filteredDomains.length}</span>
+              <div className="pagination-buttons">
+                <button className="page-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>‹</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button key={page} className={`page-btn ${page === currentPage ? "active" : ""}`} onClick={() => setCurrentPage(page)}>{page}</button>
+                ))}
+                <button className="page-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>›</button>
+              </div>
             </div>
           )}
         </>
       )}
 
-      {/* Modals */}
-      <AddDomainModal
-        serviceName={serviceName}
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSuccess={loadDomains}
-      />
+      <div className="multisite-info">
+        <h4>Multisite</h4>
+        <p>Gérez les domaines attachés à votre hébergement. Chaque domaine peut avoir son propre dossier racine, certificat SSL et configuration CDN.</p>
+      </div>
 
-      {editDomain && (
-        <EditDomainModal
-          serviceName={serviceName}
-          domain={editDomain}
-          isOpen={!!editDomain}
-          onClose={() => setEditDomain(null)}
-          onSuccess={loadDomains}
-        />
-      )}
+      <AddDomainModal serviceName={serviceName} isOpen={showAddModal} onClose={() => setShowAddModal(false)} onSuccess={loadDomains} />
+      {editPathDomain && <EditPathModal serviceName={serviceName} domain={editPathDomain} isOpen={!!editPathDomain} onClose={() => setEditPathDomain(null)} onSuccess={loadDomains} />}
     </div>
   );
 }
