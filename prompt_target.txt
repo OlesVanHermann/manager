@@ -1,0 +1,221 @@
+# PROMPT TARGET - Merge de Maquettes SVG (OLD + NEW → TARGET)
+
+## Fichiers et chemins
+
+| Element | Valeur |
+|---------|--------|
+| **Prompt** | /home/ubuntu/prompt_target.txt |
+| **Source OLD** | /mnt/user-data/uploads/old_manager_svg_{NAV1}_{NAV2}.tar |
+| **Source NEW** | /mnt/user-data/uploads/new_manager_svg_{NAV1}_{NAV2}.tar |
+| **Destination Claude (outputs)** | /mnt/user-data/outputs/target_svg/{NAV1}/{NAV2}/ |
+| **Destination finale utilisateur** | /home/ubuntu/target_svg/{NAV1}/{NAV2}/ |
+
+---
+
+## ⚠️ REGLES CRITIQUES - LIRE EN PREMIER ⚠️
+
+### REGLE 0 : PRINCIPES DE MERGE
+Le TARGET est un **merge intelligent** entre OLD et NEW :
+
+| Composant | Source | Raison |
+|-----------|--------|--------|
+| **Header OVH** | NEW | Design unifié |
+| **Sidebar gauche** | NEW | Navigation moderne |
+| **Breadcrumb (NAV1)** | NEW | UX cohérente |
+| **Page Header (NAV2)** | NEW | Titre + sous-titre |
+| **Tabs bar (NAV3)** | NEW | Structure tabs moderne |
+| **Contenu des pages** | OLD | Fonctionnalités validées |
+| **Cards/Tableaux** | OLD | Données métier |
+| **Actions/Boutons** | OLD | Logique existante |
+
+### REGLE 1 : GENERATION DIRECTE OBLIGATOIRE
+**INTERDICTION** d'afficher le SVG dans la conversation.
+
+| ❌ INTERDIT | ✅ OBLIGATOIRE |
+|-------------|----------------|
+| Afficher le SVG brut | Ecrire avec `tee` dans `/mnt/user-data/outputs/` |
+| "Voici le SVG, copiez-le..." | Appeler `present_files` apres generation |
+| Attendre copier-coller | Fournir lien de telechargement |
+
+### REGLE 2 : MAPPING FICHIERS OBLIGATOIRE
+Avant tout merge, établir le mapping OLD↔NEW :
+
+| Status | Action |
+|--------|--------|
+| 🔵 OLD + NEW existent | MERGE → target_ |
+| 🟡 OLD seul | CONVERTIR (ajouter shell NEW) → target_ |
+| 🟢 NEW seul | COPIER tel quel → target_ |
+
+### REGLE 3 : COHERENCE VISUELLE
+Le TARGET doit être visuellement cohérent :
+- Mêmes dimensions que NEW (1440px width)
+- Même positionnement du contenu
+- Adapter le contenu OLD au layout NEW si nécessaire
+
+---
+
+## WORKFLOW OBLIGATOIRE
+
+### Phase 1 : Extraction et inventaire
+```bash
+# 1. Créer workspace
+mkdir -p /home/claude/work/{old_svg,new_svg,target_svg}
+
+# 2. Extraire les archives
+tar -xf /mnt/user-data/uploads/old_manager_svg_{NAV1}_{NAV2}.tar -C /home/claude/work/old_svg
+tar -xf /mnt/user-data/uploads/new_manager_svg_{NAV1}_{NAV2}.tar -C /home/claude/work/new_svg
+
+# 3. Lister et comparer
+find /home/claude/work/old_svg -name "*.svg" | sort
+find /home/claude/work/new_svg -name "*.svg" | sort
+```
+
+### Phase 2 : Etablir le mapping
+```
+=== MAPPING OLD ↔ NEW ===
+
+🔵 CORRESPONDANCES (merge requis) :
+  old_.{page}.svg → new_.{page}.svg → target_.{page}.svg
+
+🟡 OLD SEUL (conversion requise) :
+  old_.{page}.svg → target_.{page}.svg (avec shell NEW)
+
+🟢 NEW SEUL (copie directe) :
+  new_.{page}.svg → target_.{page}.svg
+```
+
+### Phase 3 : Analyse comparative par fichier
+Pour chaque paire OLD/NEW :
+```bash
+# Identifier les zones dans OLD
+grep -E "(Card|Table|Content|g id=)" old_svg/{fichier}.svg
+
+# Identifier les zones dans NEW  
+grep -E "(sidebar|breadcrumb|tabs|header)" new_svg/{fichier}.svg
+```
+
+### Phase 4 : Generation TARGET
+```bash
+# 1. Créer arborescence outputs
+mkdir -p /mnt/user-data/outputs/target_svg/{NAV1}/{NAV2}
+
+# 2. Pour chaque fichier, générer le merge
+tee /mnt/user-data/outputs/target_svg/{NAV1}/{NAV2}/target_.{NAV1}.{NAV2}.{page}.svg << 'EOFSVG'
+<svg ...>
+  <!-- SHELL FROM NEW : Header, Sidebar, Breadcrumb, Tabs structure -->
+  <!-- CONTENT FROM OLD : Cards, Tables, Forms, Actions -->
+</svg>
+EOFSVG
+
+# 3. Appeler present_files
+```
+
+### Phase 5 : Validation
+```
+✅ TARGET généré : target_.{NAV1}.{NAV2}.{page}.svg
+   Source OLD : old_.{NAV1}.{NAV2}.{page}.svg
+   Source NEW : new_.{NAV1}.{NAV2}.{page}.svg
+   Merge : Shell NEW + Contenu OLD
+```
+
+---
+
+## Convention de nommage
+
+### Prefixes
+| Prefix | Signification |
+|--------|---------------|
+| `old_` | Manager actuel (source contenu) |
+| `new_` | Nouveau manager (source shell) |
+| `target_` | **Résultat du merge** |
+
+### Noms de fichiers TARGET
+```
+target_.{NAV1}.{NAV2}.svg                      # Page principale
+target_.{NAV1}.{NAV2}.{section}.svg            # Section (hosting, private-database)
+target_.{NAV1}.{NAV2}.{section}.tab-{nom}.svg  # Onglet spécifique
+```
+
+### Arborescence complete
+```
+/mnt/user-data/outputs/target_svg/
+  └── {NAV1}/
+      └── {NAV2}/
+          └── target_.{NAV1}.{NAV2}.{section}.svg
+          └── target_.{NAV1}.{NAV2}.{section}.tab-general.svg
+          └── target_.{NAV1}.{NAV2}.{section}.tab-ssl.svg
+```
+
+### Exemple concret
+```
+Input : 
+  old_manager_svg_web-cloud_hebergement.tar
+  new_manager_svg_web-cloud_hebergement.tar
+
+Output :
+/mnt/user-data/outputs/target_svg/web-cloud/hebergement/
+  └── target_.web-cloud.hebergement.hosting.svg
+  └── target_.web-cloud.hebergement.hosting.tab-general.svg
+  └── target_.web-cloud.hebergement.hosting.tab-ssl.svg
+  └── target_.web-cloud.hebergement.private-database.svg (copie NEW)
+```
+
+---
+
+## Rapport de merge
+
+```
+=== CONTEXTE ===
+NAV1 : {nav1}
+NAV2 : {nav2}
+
+=== MAPPING ===
+🔵 MERGE (X fichiers) :
+  - {page}.svg : OLD content + NEW shell
+  - {page}.tab-{name}.svg : OLD content + NEW shell
+  - ...
+
+🟡 OLD SEUL (X fichiers) :
+  - {page}.svg : Converti avec shell NEW
+  - ...
+
+🟢 NEW SEUL (X fichiers) :
+  - {page}.svg : Copie directe
+  - ...
+
+=== TARGETS GENERES ===
+1. ✅ target_.{NAV1}.{NAV2}.{page}.svg
+2. ✅ target_.{NAV1}.{NAV2}.{page}.tab-{name}.svg
+...
+```
+
+---
+
+## Checklist finale
+
+- [ ] Archives OLD et NEW extraites
+- [ ] Mapping OLD↔NEW établi
+- [ ] Arborescence créée dans `/mnt/user-data/outputs/target_svg/`
+- [ ] Pour chaque 🔵 : merge Shell NEW + Contenu OLD
+- [ ] Pour chaque 🟡 : conversion avec Shell NEW
+- [ ] Pour chaque 🟢 : copie directe
+- [ ] SVG écrits avec `tee` (pas affichés)
+- [ ] `present_files` appelé
+- [ ] Cohérence visuelle vérifiée
+
+---
+
+## Gestion des cas spéciaux
+
+### Contenu OLD trop large
+Si le contenu OLD dépasse la largeur main de NEW :
+1. Réduire les cards (3 → 2 colonnes si nécessaire)
+2. Ou adapter les largeurs proportionnellement
+
+### Tabs différents OLD vs NEW
+Privilégier la structure tabs de NEW, mais :
+- Si OLD a des tabs supplémentaires → les ajouter
+- Si OLD a des tabs manquants → générer target_ quand même
+
+### Styles incompatibles
+Toujours utiliser les classes CSS de NEW pour uniformité.
