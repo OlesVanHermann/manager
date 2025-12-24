@@ -5,7 +5,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, AttachedDomain } from "../../../../../../services/web-cloud.hosting";
+import { multisiteService } from "./MultisiteTab";
+import type { AttachedDomain } from "../../hosting.types";
 import { AddDomainModal, DeleteDomainWizard, FlushCdnWizard, DiagnosticModal, EditDomainWizard } from "./modals";
 import "./multisite.css";
 
@@ -78,8 +79,8 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
   const loadDomains = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await hostingService.listAttachedDomains(serviceName);
-      const data = await Promise.all(names.map(n => hostingService.getAttachedDomain(serviceName, n)));
+      const names = await multisiteService.listAttachedDomains(serviceName);
+      const data = await Promise.all(names.map(n => multisiteService.getAttachedDomain(serviceName, n)));
       
       // Transform to DomainRow with computed fields
       const rows: DomainRow[] = data.map(d => ({
@@ -133,7 +134,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
       }
       
       if (Object.keys(updates).length > 0) {
-        await hostingService.updateAttachedDomain(serviceName, domain.domain, updates);
+        await multisiteService.updateAttachedDomain(serviceName, domain.domain, updates);
         await loadDomains();
       }
     } catch (err) {
@@ -161,7 +162,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
 
   const handleRegenerateSsl = async () => {
     try {
-      await hostingService.regenerateSsl(serviceName);
+      await multisiteService.regenerateSsl(serviceName);
       alert("Régénération SSL lancée");
     } catch (err) {
       alert(String(err));

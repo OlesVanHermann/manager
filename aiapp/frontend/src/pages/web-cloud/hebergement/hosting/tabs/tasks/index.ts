@@ -1,1 +1,1 @@
-export { TasksTab as default } from './TasksTab';
+export { TasksTab as default } from './TasksTab.tsx';

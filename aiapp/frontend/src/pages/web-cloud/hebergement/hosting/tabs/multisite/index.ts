@@ -1,1 +1,1 @@
-export { MultisiteTab as default } from './MultisiteTab';
+export { MultisiteTab as default } from './MultisiteTab.tsx';

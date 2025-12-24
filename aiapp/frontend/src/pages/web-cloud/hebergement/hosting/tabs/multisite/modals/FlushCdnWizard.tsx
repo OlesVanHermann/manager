@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { multisiteService } from "../MultisiteTab";
 
 interface Props {
   serviceName: string;
@@ -62,7 +62,7 @@ export function FlushCdnWizard({ serviceName, domain, isOpen, onClose, onSuccess
     
     try {
       // Appel API pour vider le cache CDN
-      await hostingService.flushDomainCdn(serviceName, domain, selectedType, pattern);
+      await multisiteService.flushDomainCdn(serviceName, domain, selectedType, pattern);
       onSuccess();
       onClose();
     } catch (err: any) {

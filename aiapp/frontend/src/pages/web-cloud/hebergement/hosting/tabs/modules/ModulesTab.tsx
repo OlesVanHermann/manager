@@ -4,7 +4,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, Module } from "../../../../../../services/web-cloud.hosting";
+import { modulesService } from "./ModulesTab";
+import type { Module } from "../../hosting.types";
 import { InstallModuleModal, ChangePasswordModal, DeleteModuleModal } from "./modals";
 import "./modules.css";
 
@@ -99,8 +100,8 @@ export function ModulesTab({ serviceName }: Props) {
     try {
       setLoading(true);
       setError(null);
-      const ids = await hostingService.listModules(serviceName);
-      const data = await Promise.all(ids.map(id => hostingService.getModule(serviceName, id)));
+      const ids = await modulesService.listModules(serviceName);
+      const data = await Promise.all(ids.map(id => modulesService.getModule(serviceName, id)));
       const withNames: ModuleWithName[] = data.map(m => ({ ...m, name: getModuleName(m) }));
       setModules(withNames);
     } catch (err) {
@@ -127,7 +128,7 @@ export function ModulesTab({ serviceName }: Props) {
 
   const handleDeleteConfirm = async () => {
     try {
-      await hostingService.deleteModule(serviceName, deleteModal.moduleId);
+      await modulesService.deleteModule(serviceName, deleteModal.moduleId);
       setDeleteModal({ open: false, moduleId: 0, moduleName: "" });
       loadModules();
     } catch (err) {

@@ -5,7 +5,8 @@ import "./boost.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, Hosting } from "../../../../../../services/web-cloud.hosting";
+import { boostService } from "./BoostTab";
+import type { Hosting } from "../../hosting.types";
 
 interface Props { 
   serviceName: string;
@@ -32,8 +33,8 @@ export function BoostTab({ serviceName, details }: Props) {
     try {
       setLoading(true);
       const [hostingData, boostOffers] = await Promise.all([
-        details ? Promise.resolve(details) : hostingService.getHosting(serviceName),
-        hostingService.getBoostOffers(serviceName).catch(() => [])
+        details ? Promise.resolve(details) : boostService.getHosting(serviceName),
+        boostService.getBoostOffers(serviceName).catch(() => [])
       ]);
       setHosting(hostingData);
       setAvailableOffers(boostOffers);
@@ -54,7 +55,7 @@ export function BoostTab({ serviceName, details }: Props) {
     if (!selectedOffer) return;
     setActionLoading(true);
     try {
-      await hostingService.activateBoost(serviceName, selectedOffer);
+      await boostService.activateBoost(serviceName, selectedOffer);
       alert("Boost activé avec succès");
       loadData();
     } catch (err) {
@@ -68,7 +69,7 @@ export function BoostTab({ serviceName, details }: Props) {
     if (!confirm(t("boost.confirmDeactivate"))) return;
     setActionLoading(true);
     try {
-      await hostingService.deactivateBoost(serviceName);
+      await boostService.deactivateBoost(serviceName);
       alert("Boost désactivé");
       loadData();
     } catch (err) {

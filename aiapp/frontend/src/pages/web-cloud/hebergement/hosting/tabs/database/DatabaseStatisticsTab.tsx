@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../services/web-cloud.hosting";
+import { databaseService } from "./DatabaseTab";
 
 interface DatabaseStatisticsTabProps {
   serviceName: string;
@@ -34,7 +34,7 @@ export function DatabaseStatisticsTab({ serviceName }: DatabaseStatisticsTabProp
   useEffect(() => {
     const loadDatabases = async () => {
       try {
-        const dbs = await hostingService.getDatabases(serviceName);
+        const dbs = await databaseService.getDatabases(serviceName);
         setDatabases(dbs || []);
         if (dbs && dbs.length > 0) {
           setSelectedDb(dbs[0]);
@@ -51,7 +51,7 @@ export function DatabaseStatisticsTab({ serviceName }: DatabaseStatisticsTabProp
     if (!selectedDb) return;
     try {
       setLoading(true);
-      const data = await hostingService.getDatabaseStatistics(serviceName, selectedDb, period);
+      const data = await databaseService.getDatabaseStatistics(serviceName, selectedDb, period);
       setStats(data || { labels: [], values: [] });
     } catch (err) {
       console.error("[DatabaseStatisticsTab] Error:", err);

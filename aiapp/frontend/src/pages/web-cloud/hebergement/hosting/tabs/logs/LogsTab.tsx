@@ -5,7 +5,8 @@ import "./logs.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, Hosting, OwnLog } from "../../../../../../services/web-cloud.hosting";
+import { logsService } from "./LogsTab";
+import type { Hosting, OwnLog } from "../../hosting.types";
 import { UserLogsModal } from "./modals";
 
 interface Props { 
@@ -33,12 +34,12 @@ export function LogsTab({ serviceName, details }: Props) {
     try {
       setLoading(true);
       const [hostingData, logs] = await Promise.all([
-        details ? Promise.resolve(details) : hostingService.getHosting(serviceName),
-        hostingService.listOwnLogs(serviceName).catch(() => [])
+        details ? Promise.resolve(details) : logsService.getHosting(serviceName),
+        logsService.listOwnLogs(serviceName).catch(() => [])
       ]);
       setHosting(hostingData);
       if (Array.isArray(logs)) {
-        const logsData = await Promise.all(logs.map(id => hostingService.getOwnLog(serviceName, id).catch(() => null)));
+        const logsData = await Promise.all(logs.map(id => logsService.getOwnLog(serviceName, id).catch(() => null)));
         setOwnLogs(logsData.filter(Boolean) as OwnLog[]);
       }
     } catch (err) {

@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../services/web-cloud.hosting";
+import { generalService } from "./GeneralTab";
 
 interface OfferTabProps {
   serviceName: string;
@@ -43,9 +43,9 @@ export function OfferTab({ serviceName }: OfferTabProps) {
   const loadOffers = useCallback(async () => {
     try {
       setLoading(true);
-      const hosting = await hostingService.getHosting(serviceName);
+      const hosting = await generalService.getHosting(serviceName);
       setCurrentOffer(hosting.offer || "");
-      const offers = await hostingService.getAvailableOffers(serviceName);
+      const offers = await generalService.getAvailableOffers(serviceName);
       setAvailableOffers(offers || []);
     } catch (err) {
       console.error("[OfferTab] Error:", err);
@@ -81,7 +81,7 @@ export function OfferTab({ serviceName }: OfferTabProps) {
   const handleOrder = async () => {
     try {
       setOrdering(true);
-      await hostingService.orderUpgrade(serviceName, selectedOffer!.planCode, selectedDuration);
+      await generalService.orderUpgrade(serviceName, selectedOffer!.planCode, selectedDuration);
       alert(t("orderSuccess"));
     } catch (err) {
       console.error("[OfferTab] Order error:", err);

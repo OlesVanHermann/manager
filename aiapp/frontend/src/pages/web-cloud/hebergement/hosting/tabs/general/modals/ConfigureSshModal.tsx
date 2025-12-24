@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { generalService } from "../GeneralTab";
 
 interface Props {
   serviceName: string;
@@ -66,7 +66,7 @@ export function ConfigureSshModal({ serviceName, primaryLogin, currentSshState, 
     setError(null);
 
     try {
-      await hostingService.updateUser(serviceName, primaryLogin, { sshState });
+      await generalService.updateUser(serviceName, primaryLogin, { sshState });
       onSuccess();
       onClose();
     } catch (err: any) {

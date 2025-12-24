@@ -1,1 +1,1 @@
-export { BoostTab as default } from './BoostTab';
+export { BoostTab as default } from './BoostTab.tsx';

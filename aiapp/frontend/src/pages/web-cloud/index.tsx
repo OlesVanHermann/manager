@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { domainsService } from "../../services/web-cloud.domains";
 import { dnsZonesService } from "../../services/web-cloud.dns-zones";
-import { hostingService } from "../../services/web-cloud.hosting";
+import { generalService } from "./hebergement/hosting/tabs/general/GeneralTab";
 import { privateDatabaseService } from "../../services/web-cloud.private-database";
 import { emailDomainService } from "../../services/web-cloud.email-domain";
 import { emailProService } from "../../services/web-cloud.email-pro";
@@ -123,7 +123,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
       const results = await Promise.allSettled([
         domainsService.listDomains?.() ?? Promise.resolve([]),
         dnsZonesService.listZones?.() ?? Promise.resolve([]),
-        hostingService.listHostings?.() ?? Promise.resolve([]),
+        generalService.listHostings?.() ?? Promise.resolve([]),
         privateDatabaseService.listPrivateDatabases?.() ?? Promise.resolve([]),
         emailDomainService.listDomains?.() ?? Promise.resolve([]),
         emailProService.listServices?.() ?? Promise.resolve([]),

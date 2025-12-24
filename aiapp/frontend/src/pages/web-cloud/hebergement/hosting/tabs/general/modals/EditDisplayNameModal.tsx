@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { generalService } from "../GeneralTab";
 
 interface Props {
   serviceName: string;
@@ -39,7 +39,7 @@ export function EditDisplayNameModal({ serviceName, currentName, isOpen, onClose
     setError(null);
 
     try {
-      await hostingService.updateHostingInfo(serviceName, { displayName });
+      await generalService.updateHostingInfo(serviceName, { displayName });
       onSuccess();
       onClose();
     } catch (err: any) {

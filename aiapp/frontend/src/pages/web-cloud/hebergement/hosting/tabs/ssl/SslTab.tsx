@@ -7,7 +7,8 @@
 import "./ssl.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, AttachedDomain } from "../../../../../../services/web-cloud.hosting";
+import { sslService } from "./SslTab";
+import type { AttachedDomain } from "../../hosting.types";
 import { ImportSslModal } from "./modals";
 
 interface Props { serviceName: string; }
@@ -31,9 +32,9 @@ export function SslTab({ serviceName }: Props) {
       setLoading(true);
       
       // Récupérer la liste des domaines attachés
-      const domainNames = await hostingService.listAttachedDomains(serviceName);
+      const domainNames = await sslService.listAttachedDomains(serviceName);
       const domainsData = await Promise.all(
-        domainNames.map(n => hostingService.getAttachedDomain(serviceName, n))
+        domainNames.map(n => sslService.getAttachedDomain(serviceName, n))
       );
       
       setDomains(domainsData);
@@ -105,7 +106,7 @@ export function SslTab({ serviceName }: Props) {
   const handleRegenerate = async () => {
     setActionLoading(true);
     try {
-      await hostingService.regenerateSsl(serviceName);
+      await sslService.regenerateSsl(serviceName);
       alert("Régénération du certificat lancée");
       loadData();
     } catch (err) {
@@ -119,7 +120,7 @@ export function SslTab({ serviceName }: Props) {
   const handleDisableSsl = async (domain: string) => {
     setActionLoading(true);
     try {
-      await hostingService.deactivateDomainSsl(serviceName, domain);
+      await sslService.deactivateDomainSsl(serviceName, domain);
       alert("SSL désactivé pour " + domain);
       loadData();
     } catch (err) {

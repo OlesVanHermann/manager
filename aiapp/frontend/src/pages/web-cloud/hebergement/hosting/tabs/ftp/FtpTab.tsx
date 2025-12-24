@@ -4,7 +4,8 @@
 
 import "./ftp.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { hostingService, FtpUser, Hosting } from "../../../../../../services/web-cloud.hosting";
+import { ftpService } from "./FtpTab";
+import type { FtpUser, Hosting } from "../../hosting.types";
 import { CreateFtpUserModal, ChangePasswordModal, EditFtpUserModal, DeleteFtpUserModal } from "./modals";
 
 interface Props { serviceName: string; }
@@ -28,11 +29,11 @@ export function FtpTab({ serviceName }: Props) {
     try {
       setLoading(true);
       const [hostingData, userLogins] = await Promise.all([
-        hostingService.getHosting(serviceName),
-        hostingService.listFtpUsers(serviceName)
+        ftpService.getHosting(serviceName),
+        ftpService.listFtpUsers(serviceName)
       ]);
       setHosting(hostingData);
-      const usersData = await Promise.all(userLogins.map(login => hostingService.getFtpUser(serviceName, login)));
+      const usersData = await Promise.all(userLogins.map(login => ftpService.getFtpUser(serviceName, login)));
       setUsers(usersData);
     } catch (err) {
       setError(String(err));
@@ -66,14 +67,14 @@ export function FtpTab({ serviceName }: Props) {
   const handleRestore = async () => {
     setRestoreLoading(true);
     try {
-      const snapshots = await hostingService.listSnapshots(serviceName);
+      const snapshots = await ftpService.listSnapshots(serviceName);
       if (snapshots.length === 0) {
         alert("Aucune sauvegarde disponible");
         setRestoreModal(false);
         return;
       }
       if (snapshots[0]?.creationDate) {
-        await hostingService.restoreSnapshot(serviceName, snapshots[0].creationDate);
+        await ftpService.restoreSnapshot(serviceName, snapshots[0].creationDate);
         alert("Restauration lancée avec succès");
         loadData();
       }

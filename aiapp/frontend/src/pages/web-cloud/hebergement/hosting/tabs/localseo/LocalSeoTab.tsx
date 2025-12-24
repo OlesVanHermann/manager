@@ -5,7 +5,8 @@ import "./localseo.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, LocalSeoLocation } from "../../../../../../services/web-cloud.hosting";
+import { localseoService } from "./LocalSeoTab";
+import type { LocalSeoLocation } from "../../hosting.types";
 
 interface Props { serviceName: string; }
 
@@ -17,9 +18,9 @@ export function LocalSeoTab({ serviceName }: Props) {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const ids = await hostingService.listLocalSeoLocations(serviceName).catch(() => []);
+      const ids = await localseoService.listLocalSeoLocations(serviceName).catch(() => []);
       if (ids.length > 0) {
-        const data = await Promise.all(ids.map(id => hostingService.getLocalSeoLocation(serviceName, id)));
+        const data = await Promise.all(ids.map(id => localseoService.getLocalSeoLocation(serviceName, id)));
         setLocations(data);
       }
     } catch (err) {

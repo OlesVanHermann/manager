@@ -1,0 +1,364 @@
+# PROMPT SPLIT - Refactoring Services Monolithiques → Services par NAV3
+
+## A) Contexte
+
+Tu es un expert en refactoring React/TypeScript pour le projet New Manager OVHcloud.
+
+**Architecture de navigation :**
+- **NAV1** : Catégorie principale (ex: web-cloud, bare-metal, network...)
+- **NAV2** : Sous-catégorie / Produit (ex: hosting, private-database, vps...)
+- **NAV3** : Onglets fonctionnels (ex: general, ftp, ssl, cdn...)
+
+**Objectif :** Splitter un service API monolithique en services indépendants, un par NAV3.
+
+## B) Problème Typique
+```
+services/
+  {nav1}.{nav2}.ts              ← Service monolithique (500+ lignes)
+
+pages/{nav1}/{nav2}/
+  tabs/
+    {tab1}/{Tab1}Tab.tsx        ← Import du service monolithique
+    {tab2}/{Tab2}Tab.tsx        ← Import du service monolithique
+    ...
+```
+
+## C) Solution Cible
+```
+pages/{nav1}/{nav2}/
+  {nav2}.types.ts               ← Types partagés pour ce NAV2
+  tabs/
+    {tab1}/{Tab1}Tab.ts         ← Service dédié au tab
+    {tab1}/{Tab1}Tab.tsx        ← Composant (importe son service local)
+    {tab2}/{Tab2}Tab.ts         ← Service dédié au tab
+    {tab2}/{Tab2}Tab.tsx        ← Composant (importe son service local)
+    ...
+```
+
+## D) Méthodologie
+
+### PHASE 1 : ANALYSE
+
+#### 1.1 Extraire et analyser les sources
+```bash
+cd /tmp && mkdir -p analysis && cd analysis
+tar xf /mnt/user-data/uploads/{archive}.tar
+find . -name "*.ts" -o -name "*.tsx" | head -50
+```
+
+#### 1.2 Lister les méthodes API par tab
+```bash
+for tab in {tab1} {tab2} {tab3}; do
+  echo "--- $tab ---"
+  grep -roh "{serviceName}\.[a-zA-Z]*" src/.../tabs/$tab/ | sort | uniq
+done
+```
+
+#### 1.3 Lister les types importés par tab
+```bash
+for tab in {tab1} {tab2} {tab3}; do
+  echo "--- $tab ---"
+  grep -rh "from.*{service}" src/.../tabs/$tab/ | sed 's/.*{ //' | sed 's/ }.*//' | tr ',' '\n' | grep -v {serviceName} | sort | uniq
+done
+```
+
+#### 1.4 Créer la matrice de dépendances
+
+| NAV3 (Tab) | Service | Méthodes | Types |
+|------------|---------|----------|-------|
+| {tab1} | `{tab1}Service` | list, get, create, update, delete | Type1, Type2 |
+| {tab2} | `{tab2}Service` | list, get, update | Type1, Type3 |
+| ... | ... | ... | ... |
+
+### PHASE 2 : CRÉER LES NOUVEAUX FICHIERS
+
+**Règle fondamentale : Isolation totale**
+- Chaque service a SA copie des méthodes, même si dupliquées entre tabs
+- Pas de dépendance entre tabs
+- Seul le fichier types est partagé au niveau NAV2
+
+#### 2.1 Fichier types partagés
+```typescript
+// pages/{nav1}/{nav2}/{nav2}.types.ts
+
+export interface Entity1 {
+  id: string;
+  name: string;
+  // ...
+}
+
+export interface Entity2 {
+  // ...
+}
+
+// Tous les types du NAV2
+```
+
+#### 2.2 Service par tab
+```typescript
+// pages/{nav1}/{nav2}/tabs/{tab}/{Tab}Tab.ts
+
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../../services/api";
+import type { Entity1, Entity2 } from "../../{nav2}.types";
+
+const BASE = "/api/path";
+
+export const {tab}Service = {
+  // Méthodes utilisées par CE tab uniquement
+  list: (sn: string) => 
+    ovhGet<string[]>(`${BASE}/${sn}/resource`),
+
+  get: (sn: string, id: string) => 
+    ovhGet<Entity1>(`${BASE}/${sn}/resource/${id}`),
+
+  create: (sn: string, data: Partial<Entity1>) => 
+    ovhPost<void>(`${BASE}/${sn}/resource`, data),
+
+  update: (sn: string, id: string, data: Partial<Entity1>) => 
+    ovhPut<void>(`${BASE}/${sn}/resource/${id}`, data),
+
+  delete: (sn: string, id: string) => 
+    ovhDelete<void>(`${BASE}/${sn}/resource/${id}`),
+};
+
+export default {tab}Service;
+```
+
+### PHASE 3 : MODIFIER LES IMPORTS
+
+#### 3.1 Pattern de remplacement
+
+**Avant :**
+```typescript
+import { oldService, Type1, Type2 } from "../../../../../../services/{old-service}";
+```
+
+**Après :**
+```typescript
+import { {tab}Service } from "./{Tab}Tab";
+import type { Type1, Type2 } from "../../{nav2}.types";
+```
+
+#### 3.2 Script sed pour modifications en batch
+```bash
+# Remplacer l'import
+sed -i 's|import { oldService, Type1 } from ".*services/{old-service}";|import { {tab}Service } from "./{Tab}Tab";\nimport type { Type1 } from "../../{nav2}.types";|g' fichier.tsx
+
+# Remplacer les appels
+sed -i 's|oldService\.|{tab}Service.|g' fichier.tsx
+```
+
+### PHASE 4 : VÉRIFICATION
+```bash
+# Vérifier aucun import ancien restant
+grep -rn "{old-service}" src/pages/{nav1}/{nav2}/
+
+# Vérifier aucune référence oldService résiduelle
+grep -rn "oldService\." src/pages/{nav1}/{nav2}/
+
+# Build
+cd /home/ubuntu/aiapp/frontend && npm run build:dev
+```
+
+### PHASE 5 : NETTOYAGE
+```bash
+# Backup puis suppression de l'ancien service
+cp services/{old-service}.ts services/{old-service}.ts.backup.$(date +%Y%m%dT%H%M%S)
+rm services/{old-service}.ts
+```
+
+---
+
+## E) Actions Principales
+
+### --> "regenerer" (cp+tee)
+
+TOUJOURS utiliser le bloc de code Markdown.
+Fournir dans UNE SEULE fenêtre de code par script.
+La dernière version du script, TOUT le script en une fois.
+JAMAIS de "... comme avant" ou "// reste inchangé".
+Avec TOUS les commentaires # et TOUS les prompts pour chaque def.
+
+**Format :**
+```bash
+cp /chemin/fichier /chemin/fichier.$(date +%Y%m%dT%H%M%S) 2>/dev/null || true
+tee /chemin/fichier > /dev/null <<'FS'
+// Le code ENTIER ici
+// Avec TOUS les commentaires
+// JAMAIS de "..." ou de raccourcis
+FS
+```
+
+**Rappels anti-casse cp+tee :**
+- `FS` final DOIT être en début de ligne, sans espace (très important)
+- Pas de guillemets "intelligents" — garder `'FS'` avec apostrophes simples
+- Pas d'indentation avant `tee … <<'FS'` ni avant `FS`
+- Si le fichier n'existe pas, tee le crée ; s'il existe, il est écrasé
+- **ATTENTION aux délimiteurs doubles** : si le contenu contient lui-même un heredoc (ex: `<<'EOF'`), utiliser un délimiteur DIFFÉRENT pour l'enveloppe externe (ex: `SCRIPT_END`, `FILE_EOF`, `OUTER_FS`)
+
+**Exemple délimiteurs doubles - MAUVAIS :**
+```bash
+tee /chemin/script.sh > /dev/null <<'FS'
+#!/bin/bash
+cat > config.txt <<'FS'
+contenu
+FS
+FS
+```
+
+**Exemple délimiteurs doubles - BON :**
+```bash
+tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
+#!/bin/bash
+cat > config.txt <<'FS'
+contenu
+FS
+SCRIPT_END
+```
+
+### --> "patcher" (super-patch)
+
+TOUJOURS utiliser bloc de code Markdown.
+Fournir le patch dans UNE SEULE fenêtre de code par script.
+
+**Format :**
+```bash
+super-patch <<'PATCH_EOF'
+--- /chemin/fichier.tsx
++++ /chemin/fichier.tsx
+@@
+   ligne normale
+-  ancienne
++  nouvelle
+   ligne normale
+@@
+   ligne normale
+-  {isOpen && (c.details.length ? ( ... ))}
++  {isOpen && (k === "web" ? ( ... ) : ( ... ))}
+   ligne normale
+PATCH_EOF
+```
+
+**Rappels anti-casse super-patch :**
+- Délimiteur final (`PATCH_EOF`) en colonne 0, sans espace
+- TOUJOURS une ligne de contexte (sans `-/+`) AVANT et APRÈS `@@`
+- Utiliser des chemins absolus
+
+**Exemple - MAUVAIS :**
+```
+@@
+-old
++new
+PATCH_EOF
+```
+
+**Exemple - BON :**
+```
+@@
+ const x = 1;
+-old
++new
+ return x;
+PATCH_EOF
+```
+
+---
+
+## F) Conventions
+
+### Nommage
+| Élément | Convention | Exemple |
+|---------|------------|---------|
+| Service | `{tab}Service` | `ftpService`, `sslService` |
+| Fichier service | `{Tab}Tab.ts` | `FtpTab.ts`, `SslTab.ts` |
+| Fichier types | `{nav2}.types.ts` | `hosting.types.ts` |
+
+### Imports API
+```typescript
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../../services/api";
+```
+
+### Chemins relatifs (depuis tabs/{tab}/)
+| Destination | Chemin |
+|-------------|--------|
+| Types NAV2 | `../../{nav2}.types` |
+| Depuis modale | `../{Tab}Tab` pour service, `../../../{nav2}.types` pour types |
+
+---
+
+## G) Exemple Concret : web-cloud/hosting
+
+### Avant
+```
+services/
+  web-cloud.hosting.ts          ← 500 lignes, tout mélangé
+
+pages/web-cloud/hebergement/hosting/
+  tabs/
+    ftp/FtpTab.tsx              ← import { hostingService } from "services/..."
+    ssl/SslTab.tsx              ← import { hostingService } from "services/..."
+```
+
+### Après
+```
+pages/web-cloud/hebergement/hosting/
+  hosting.types.ts              ← Types partagés
+  tabs/
+    ftp/FtpTab.ts               ← ftpService (indépendant)
+    ftp/FtpTab.tsx              ← import { ftpService } from "./FtpTab"
+    ssl/SslTab.ts               ← sslService (indépendant)
+    ssl/SslTab.tsx              ← import { sslService } from "./SslTab"
+```
+
+### Matrice hosting
+
+| NAV3 | Service | Méthodes clés |
+|------|---------|---------------|
+| general | `generalService` | getHosting, updateHosting, getSsl, listAttachedDomains |
+| ftp | `ftpService` | listFtpUsers, getFtpUser, createFtpUser, changeFtpPassword |
+| ssl | `sslService` | getSsl, regenerateSsl, importSsl, orderSsl |
+| cdn | `cdnService` | getCdnInfo, flushCdn, activateCdnDomain |
+| ... | ... | ... |
+
+---
+
+## H) Checklist Finale
+
+- [ ] Analyse des dépendances complète (matrice tab→méthodes→types)
+- [ ] 1 fichier `{nav2}.types.ts` créé avec tous les types
+- [ ] 1 fichier `{Tab}Tab.ts` par NAV3 créé
+- [ ] Tous les `.tsx` modifiés (imports + appels)
+- [ ] Aucun import de l'ancien service restant
+- [ ] Aucune référence `oldService.` résiduelle
+- [ ] Build réussi (`npm run build:dev`)
+- [ ] Ancien service supprimé (avec backup)
+- [ ] Test fonctionnel sur https://manager.di2amp.com/dev/
+
+---
+
+## I) Commandes Utiles
+```bash
+# Lister tous les fichiers d'un module
+find src/pages/{nav1}/{nav2} -name "*.ts" -o -name "*.tsx" | sort
+
+# Compter les imports par type
+grep -rh "from.*service" src/pages/{nav1}/{nav2} | sort | uniq -c | sort -rn
+
+# Trouver les méthodes utilisées
+grep -roh "{serviceName}\.[a-zA-Z]*" src/pages/{nav1}/{nav2} | sort | uniq -c | sort -rn
+
+# Vérifier les dépendances croisées entre tabs
+grep -r "tabs/{other-tab}" src/pages/{nav1}/{nav2}/tabs/{tab}/
+```
+
+---
+
+## J) Workflow Chat
+
+1. **Upload** : tar sources + ce prompt
+2. **Demande** : "Applique prompt_split.txt sur {nav1}/{nav2}"
+3. **Claude analyse** : extrait, liste méthodes/types par tab, propose matrice
+4. **Validation** : "GO" pour lancer la génération
+5. **Génération** : scripts cp+tee par batch de 5
+6. **Vérification** : script check + build
+7. **Nettoyage** : suppression ancien service

@@ -3,7 +3,8 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
-import { hostingService, AttachedDomain } from "../../../../../../../services/web-cloud.hosting";
+import { generalService } from "../GeneralTab";
+import type { AttachedDomain } from "../../../hosting.types";
 
 interface Props {
   serviceName: string;
@@ -34,7 +35,7 @@ export function EditPathModal({ serviceName, domain, isOpen, onClose, onSuccess 
     setLoading(true);
     setError(null);
     try {
-      await hostingService.updateAttachedDomain(serviceName, domain.domain, { path });
+      await generalService.updateAttachedDomain(serviceName, domain.domain, { path });
       onSuccess();
       onClose();
     } catch (err) {

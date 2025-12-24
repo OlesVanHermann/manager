@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { generalService } from "../GeneralTab";
 
 interface MigrationModalProps {
   serviceName: string;
@@ -27,7 +27,7 @@ export function MigrationModal({ serviceName, isOpen, onClose, onSuccess }: Migr
       try {
         setLoading(true);
         setError(null);
-        const list = await hostingService.listHostings();
+        const list = await generalService.listHostings();
         // Exclure l'hébergement actuel
         const filtered = list.filter(h => h !== serviceName);
         setHostings(filtered);
@@ -48,7 +48,7 @@ export function MigrationModal({ serviceName, isOpen, onClose, onSuccess }: Migr
     if (!destination) return;
     try {
       setSubmitting(true);
-      await hostingService.migrateOvhOrg(serviceName, destination);
+      await generalService.migrateOvhOrg(serviceName, destination);
       onSuccess?.();
       onClose();
     } catch (err) {

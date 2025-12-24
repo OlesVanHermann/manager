@@ -1,1 +1,1 @@
-export { LogsTab as default } from './LogsTab';
+export { LogsTab as default } from './LogsTab.tsx';

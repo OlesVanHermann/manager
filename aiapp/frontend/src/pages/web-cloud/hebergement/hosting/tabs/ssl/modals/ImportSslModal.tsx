@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { sslService } from "../SslTab";
 
 interface Props {
   serviceName: string;
@@ -25,7 +25,7 @@ export function ImportSslModal({ serviceName, isOpen, onClose, onSuccess }: Prop
     setLoading(true);
     setError("");
     try {
-      await hostingService.importSsl(serviceName, certificate, privateKey, chain || undefined);
+      await sslService.importSsl(serviceName, certificate, privateKey, chain || undefined);
       onSuccess();
       onClose();
       setCertificate(""); setPrivateKey(""); setChain("");

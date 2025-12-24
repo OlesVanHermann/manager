@@ -5,7 +5,8 @@ import "./envvars.css";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, EnvVar } from "../../../../../../services/web-cloud.hosting";
+import { envvarsService } from "./EnvvarsTab";
+import type { EnvVar } from "../../hosting.types";
 import { CreateEnvvarModal, EditEnvvarModal } from "./modals";
 
 interface Props { serviceName: string; }
@@ -27,8 +28,8 @@ export function EnvvarsTab({ serviceName }: Props) {
   const loadEnvvars = useCallback(async () => {
     try {
       setLoading(true);
-      const keys = await hostingService.listEnvVars(serviceName);
-      const data = await Promise.all(keys.map(k => hostingService.getEnvVar(serviceName, k)));
+      const keys = await envvarsService.listEnvVars(serviceName);
+      const data = await Promise.all(keys.map(k => envvarsService.getEnvVar(serviceName, k)));
       setEnvvars(data);
     } catch (err) {
       setError(String(err));
@@ -42,7 +43,7 @@ export function EnvvarsTab({ serviceName }: Props) {
   const handleDelete = async (key: string) => {
     if (!confirm(t("envvars.confirmDelete", { key }))) return;
     try {
-      await hostingService.deleteEnvVar(serviceName, key);
+      await envvarsService.deleteEnvVar(serviceName, key);
       loadEnvvars();
     } catch (err) {
       alert(String(err));

@@ -1,1 +1,1 @@
-export { EmailsTab as default } from './EmailsTab';
+export { EmailsTab as default } from './EmailsTab.tsx';

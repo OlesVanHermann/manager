@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../services/web-cloud.hosting";
+import { tasksService } from "./TasksTab";
 import "./tasks.css";
 
 // ============================================================
@@ -93,9 +93,9 @@ export function TasksTab({ serviceName }: Props) {
     try {
       setLoading(true);
       setError(null);
-      const ids = await hostingService.listTasks(serviceName);
+      const ids = await tasksService.listTasks(serviceName);
       const data = await Promise.all(
-        ids.map((id) => hostingService.getTask(serviceName, id))
+        ids.map((id) => tasksService.getTask(serviceName, id))
       );
       // Tri par date de début décroissante (plus récent en premier)
       data.sort(

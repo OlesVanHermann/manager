@@ -5,7 +5,8 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, startTransition } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { hostingService, Hosting } from "../../../../services/web-cloud.hosting";
+import { generalService } from "./tabs/general/GeneralTab";
+import type { Hosting } from "./hosting.types";
 // Nav2Bar est dans le parent
 import "./styles.css";
 
@@ -98,8 +99,8 @@ export function HostingPage() {
     const load = async () => {
       try {
         setLoading(true);
-        const names = await hostingService.listHostings();
-        const data = await Promise.all(names.map(n => hostingService.getHosting(n)));
+        const names = await generalService.listHostings();
+        const data = await Promise.all(names.map(n => generalService.getHosting(n)));
         if (mounted) {
           setHostings(data);
           if (data.length > 0) {
@@ -120,7 +121,7 @@ export function HostingPage() {
   // ---------- LOAD ATTACHED DOMAINS ----------
   useEffect(() => {
     if (!selectedId) return;
-    hostingService.listAttachedDomains(selectedId)
+    generalService.listAttachedDomains(selectedId)
       .then(setAttachedDomains)
       .catch(() => setAttachedDomains([]));
   }, [selectedId]);
@@ -135,9 +136,9 @@ export function HostingPage() {
   const handleRefresh = useCallback(async () => {
     if (!selectedId) return;
     try {
-      const data = await hostingService.getHosting(selectedId);
+      const data = await generalService.getHosting(selectedId);
       setHostings(prev => prev.map(h => h.serviceName === selectedId ? data : h));
-      const domains = await hostingService.listAttachedDomains(selectedId);
+      const domains = await generalService.listAttachedDomains(selectedId);
       setAttachedDomains(domains);
     } catch {}
   }, [selectedId]);

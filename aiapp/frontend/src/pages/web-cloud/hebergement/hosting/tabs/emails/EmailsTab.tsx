@@ -5,7 +5,7 @@
 import "./emails.css";
 import { useState, useEffect, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { hostingService } from "../../../../../../services/web-cloud.hosting";
+import { emailsService } from "./EmailsTab";
 
 interface Props {
   serviceName: string;
@@ -86,7 +86,7 @@ async function fetchPrometheusData(
 ): Promise<ChartDataPoint[]> {
   try {
     // 1. Get metrics token
-    const tokenData = await hostingService.getEmailMetricsToken(serviceName);
+    const tokenData = await emailsService.getEmailMetricsToken(serviceName);
     if (!tokenData || !tokenData.token || !tokenData.endpoint) {
       console.warn("No metrics token available");
       return [];
@@ -192,7 +192,7 @@ export function EmailsTab({ serviceName }: Props) {
       setLoading(true);
       
       // Load email info
-      const info = await hostingService.getEmailQuota(serviceName).catch(() => null);
+      const info = await emailsService.getEmailQuota(serviceName).catch(() => null);
       if (info) {
         setEmailInfo({
           state: info.state === "blocked" ? "blocked" : "ok",
@@ -251,7 +251,7 @@ export function EmailsTab({ serviceName }: Props) {
   const handleChangeBounce = async () => {
     setActionLoading(true);
     try {
-      await hostingService.updateEmailBounce(serviceName, bounceEmail);
+      await emailsService.updateEmailBounce(serviceName, bounceEmail);
       await loadData();
       setShowBounceModal(false);
     } catch (err) {
@@ -265,7 +265,7 @@ export function EmailsTab({ serviceName }: Props) {
     setActionLoading(true);
     try {
       const newState = emailInfo?.state === "ok" ? "blocked" : "ok";
-      await hostingService.updateEmailState(serviceName, newState);
+      await emailsService.updateEmailState(serviceName, newState);
       await loadData();
       setShowBlockModal(false);
     } catch (err) {
@@ -278,7 +278,7 @@ export function EmailsTab({ serviceName }: Props) {
   const handlePurge = async () => {
     setActionLoading(true);
     try {
-      await hostingService.purgeEmails(serviceName);
+      await emailsService.purgeEmails(serviceName);
       await loadData();
       setShowPurgeModal(false);
     } catch (err) {
@@ -290,7 +290,7 @@ export function EmailsTab({ serviceName }: Props) {
 
   const handleShowErrors = async () => {
     try {
-      const bounces = await hostingService.getEmailBounces(serviceName).catch(() => []);
+      const bounces = await emailsService.getEmailBounces(serviceName).catch(() => []);
       setErrorsList(Array.isArray(bounces) ? bounces : []);
       setShowErrorsModal(true);
     } catch (err) {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { ftpService } from "../FtpTab";
 
 interface Props {
   serviceName: string;
@@ -29,7 +29,7 @@ export function CreateFtpUserModal({ serviceName, primaryLogin, isOpen, onClose,
     setLoading(true);
     setError("");
     try {
-      await hostingService.createFtpUser(serviceName, { 
+      await ftpService.createFtpUser(serviceName, { 
         login: fullLogin,  // Envoie le login complet avec préfixe
         password, 
         home 

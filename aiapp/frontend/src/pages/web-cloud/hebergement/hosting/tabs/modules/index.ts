@@ -1,1 +1,1 @@
-export { ModulesTab as default } from './ModulesTab';
+export { ModulesTab as default } from './ModulesTab.tsx';

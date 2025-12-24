@@ -5,7 +5,8 @@ import "./database.css";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, Database } from "../../../../../../services/web-cloud.hosting";
+import { databaseService } from "./DatabaseTab";
+import type { Database } from "../../hosting.types";
 import { CreateDatabaseModal, CopyDatabaseModal, DumpDatabaseModal, RestoreDatabaseModal, ImportSqlModal, ChangePasswordModal } from "./modals";
 
 interface Props { serviceName: string; }
@@ -31,8 +32,8 @@ export function DatabaseTab({ serviceName }: Props) {
   const loadDatabases = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await hostingService.listDatabases(serviceName);
-      const data = await Promise.all(names.map(n => hostingService.getDatabase(serviceName, n)));
+      const names = await databaseService.listDatabases(serviceName);
+      const data = await Promise.all(names.map(n => databaseService.getDatabase(serviceName, n)));
       setDatabases(data);
     } catch (err) { setError(String(err)); }
     finally { setLoading(false); }
@@ -43,7 +44,7 @@ export function DatabaseTab({ serviceName }: Props) {
   const handleDelete = async (name: string) => {
     if (!confirm(t("database.confirmDelete", { name }))) return;
     try {
-      await hostingService.deleteDatabase(serviceName, name);
+      await databaseService.deleteDatabase(serviceName, name);
       loadDatabases();
     } catch (err) { alert(String(err)); }
   };

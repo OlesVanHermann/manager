@@ -6,7 +6,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { hostingService, HostingInfo } from "../../../../../../services/web-cloud.hosting";
+import { generalService } from "./GeneralTab";
+import type { Hosting } from "../../hosting.types";
 import { 
   RestoreSnapshotModal, 
   OvhConfigModal, 
@@ -87,7 +88,7 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
   const navigate = useNavigate();
   
   // ---------- STATE ----------
-  const [hosting, setHosting] = useState<HostingInfo | null>(null);
+  const [hosting, setHosting] = useState<Hosting | null>(null);
   const [serviceInfos, setServiceInfos] = useState<ServiceInfos | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -114,7 +115,7 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
     try {
       setLoading(true);
       const [h, infos] = await Promise.all([
-        hostingService.getHostingInfo(serviceName),
+        generalService.getHosting(serviceName),
         fetch(`/api/ovh/hosting/web/${serviceName}/serviceInfos`).then(r => r.json())
       ]);
       setHosting(h);
@@ -142,9 +143,9 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
       
       // Primary FTP user
       try {
-        const users = await hostingService.listUsers(serviceName);
+        const users = await generalService.listUsers(serviceName);
         if (users.length > 0) {
-          const user = await hostingService.getUser(serviceName, users[0]);
+          const user = await generalService.getUser(serviceName, users[0]);
           if (user.isPrimaryAccount) {
             setPrimaryUser({ login: user.login, sshState: user.sshState });
           }
@@ -158,12 +159,12 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
   const loadCounts = useCallback(async () => {
     try {
       const r = await Promise.allSettled([
-        hostingService.listAttachedDomains(serviceName),
-        hostingService.listDatabases(serviceName),
-        hostingService.listUsers(serviceName),
-        hostingService.listCrons(serviceName),
+        generalService.listAttachedDomains(serviceName),
+        generalService.listDatabases(serviceName),
+        generalService.listUsers(serviceName),
+        generalService.listCrons(serviceName),
         fetch(`/api/ovh/hosting/web/${serviceName}/envVar`).then(r => r.json()),
-        hostingService.listModules(serviceName),
+        generalService.listModules(serviceName),
       ]);
       setCounts({
         attachedDomains: r[0].status === "fulfilled" ? r[0].value.length : 0,
@@ -180,7 +181,7 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
   const loadServices = useCallback(async () => {
     try {
       const [s, c] = await Promise.allSettled([
-        hostingService.getSslInfo(serviceName), 
+        generalService.getSslInfo(serviceName), 
         fetch(`/api/ovh/hosting/web/${serviceName}/cdn`).then(r => r.json())
       ]);
       if (s.status === "fulfilled") setSsl(s.value);
@@ -242,7 +243,7 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
       return;
     }
     try {
-      await hostingService.regenerateSsl(serviceName);
+      await generalService.regenerateSsl(serviceName);
       setToast({ message: "Régénération SSL lancée", type: "success" });
       loadServices();
     } catch (err: any) {

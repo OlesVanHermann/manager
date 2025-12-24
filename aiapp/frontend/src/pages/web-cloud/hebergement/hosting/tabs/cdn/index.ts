@@ -1,1 +1,1 @@
-export { CdnTab as default } from './CdnTab';
+export { CdnTab as default } from './CdnTab.tsx';

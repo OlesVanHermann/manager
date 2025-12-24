@@ -3,7 +3,8 @@
 // ============================================================
 import "./cdn.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { hostingService, Hosting } from "../../../../../../services/web-cloud.hosting";
+import { cdnService } from "./CdnTab";
+import type { Hosting } from "../../hosting.types";
 
 interface Props {
   serviceName: string;
@@ -103,7 +104,7 @@ export function CdnTab({ serviceName, details }: Props) {
       setLoading(true);
 
       // Load CDN info
-      const cdn = await hostingService.getCdnInfo(serviceName).catch(() => null);
+      const cdn = await cdnService.getCdnInfo(serviceName).catch(() => null);
       
       if (cdn) {
         setCdnInfo({
@@ -127,12 +128,12 @@ export function CdnTab({ serviceName, details }: Props) {
       }
 
       // Load domains with CDN status
-      const attachedDomains = await hostingService.getAttachedDomains(serviceName).catch(() => []);
+      const attachedDomains = await cdnService.getAttachedDomains(serviceName).catch(() => []);
       
       if (attachedDomains.length > 0) {
         const domainDetails = await Promise.all(
           attachedDomains.slice(0, 20).map(async (d: string) => {
-            const info = await hostingService.getAttachedDomainInfo(serviceName, d).catch(() => null);
+            const info = await cdnService.getAttachedDomainInfo(serviceName, d).catch(() => null);
             return {
               domain: d,
               cdn: info?.cdn === "active" ? "active" : "none",
@@ -180,7 +181,7 @@ export function CdnTab({ serviceName, details }: Props) {
   const handleFlushAll = async () => {
     setActionLoading(true);
     try {
-      await hostingService.flushCdn(serviceName);
+      await cdnService.flushCdn(serviceName);
       setShowFlushModal(false);
       alert("Cache CDN vidé avec succès");
     } catch (err) {
@@ -193,7 +194,7 @@ export function CdnTab({ serviceName, details }: Props) {
   const handleFlushDomain = async (domain: string) => {
     setActionLoading(true);
     try {
-      await hostingService.flushCdnDomain(serviceName, domain);
+      await cdnService.flushCdnDomain(serviceName, domain);
       setShowFlushDomainModal(null);
       alert(`Cache vidé pour ${domain}`);
     } catch (err) {
@@ -207,9 +208,9 @@ export function CdnTab({ serviceName, details }: Props) {
     setActionLoading(true);
     try {
       if (domain.cdn === "active") {
-        await hostingService.deactivateCdnDomain(serviceName, domain.domain);
+        await cdnService.deactivateCdnDomain(serviceName, domain.domain);
       } else {
-        await hostingService.activateCdnDomain(serviceName, domain.domain);
+        await cdnService.activateCdnDomain(serviceName, domain.domain);
       }
       await loadData();
       setShowToggleModal(null);

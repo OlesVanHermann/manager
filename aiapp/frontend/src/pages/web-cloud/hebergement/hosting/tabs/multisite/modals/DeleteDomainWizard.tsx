@@ -6,7 +6,8 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, AttachedDomain } from "../../../../../../../services/web-cloud.hosting";
+import { multisiteService } from "../MultisiteTab";
+import type { AttachedDomain } from "../../../hosting.types";
 
 interface Props {
   serviceName: string;
@@ -37,7 +38,7 @@ export function DeleteDomainWizard({ serviceName, domain, isOpen, onClose, onSuc
       setChecking(true);
       try {
         // Vérifier si www.domain existe
-        const domains = await hostingService.listAttachedDomains(serviceName);
+        const domains = await multisiteService.listAttachedDomains(serviceName);
         const hasWww = domains.includes(`www.${domain.domain}`);
         setWwwExists(hasWww);
         
@@ -69,11 +70,11 @@ export function DeleteDomainWizard({ serviceName, domain, isOpen, onClose, onSuc
     try {
       // Supprimer le domaine principal
       // bypassDNSConfiguration = !autoconfigure
-      await hostingService.deleteAttachedDomain(serviceName, domain.domain, !autoconfigure);
+      await multisiteService.deleteAttachedDomain(serviceName, domain.domain, !autoconfigure);
       
       // Si www demandé, supprimer aussi www.domain
       if (wwwNeeded && wwwExists) {
-        await hostingService.deleteAttachedDomain(serviceName, `www.${domain.domain}`, !autoconfigure);
+        await multisiteService.deleteAttachedDomain(serviceName, `www.${domain.domain}`, !autoconfigure);
       }
       
       onSuccess();

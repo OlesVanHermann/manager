@@ -1,1 +1,1 @@
-export { DatabaseTab as default } from './DatabaseTab';
+export { DatabaseTab as default } from './DatabaseTab.tsx';

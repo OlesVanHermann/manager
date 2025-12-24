@@ -5,7 +5,8 @@ import "./runtimes.css";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, Runtime } from "../../../../../../services/web-cloud.hosting";
+import { runtimesService } from "./RuntimesTab";
+import type { Runtime } from "../../hosting.types";
 import { CreateRuntimeModal, EditRuntimeModal } from "./modals";
 
 interface Props { serviceName: string; }
@@ -26,8 +27,8 @@ export function RuntimesTab({ serviceName }: Props) {
   const loadRuntimes = useCallback(async () => {
     try {
       setLoading(true);
-      const ids = await hostingService.listRuntimes(serviceName);
-      const data = await Promise.all(ids.map(id => hostingService.getRuntime(serviceName, id)));
+      const ids = await runtimesService.listRuntimes(serviceName);
+      const data = await Promise.all(ids.map(id => runtimesService.getRuntime(serviceName, id)));
       setRuntimes(data);
     } catch (err) {
       setError(String(err));
@@ -45,7 +46,7 @@ export function RuntimesTab({ serviceName }: Props) {
     }
     if (!confirm(t("runtimes.confirmDelete", { name: id }))) return;
     try {
-      await hostingService.deleteRuntime(serviceName, id);
+      await runtimesService.deleteRuntime(serviceName, id);
       loadRuntimes();
     } catch (err) {
       alert(String(err));
@@ -54,7 +55,7 @@ export function RuntimesTab({ serviceName }: Props) {
 
   const handleSetDefault = async (id: number) => {
     try {
-      await hostingService.setDefaultRuntime(serviceName, id);
+      await runtimesService.setDefaultRuntime(serviceName, id);
       loadRuntimes();
     } catch (err) {
       alert(String(err));

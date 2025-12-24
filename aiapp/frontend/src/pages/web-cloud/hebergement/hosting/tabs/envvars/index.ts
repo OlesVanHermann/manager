@@ -1,1 +1,1 @@
-export { EnvvarsTab as default } from './EnvvarsTab';
+export { EnvvarsTab as default } from './EnvvarsTab.tsx';

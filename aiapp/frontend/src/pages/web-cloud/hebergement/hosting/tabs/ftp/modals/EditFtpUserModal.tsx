@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { hostingService, FtpUser } from "../../../../../../../services/web-cloud.hosting";
+import { ftpService } from "../FtpTab";
+import type { FtpUser } from "../../../hosting.types";
 
 interface Props {
   serviceName: string;
@@ -25,7 +26,7 @@ export function EditFtpUserModal({ serviceName, user, isOpen, onClose, onSuccess
     setLoading(true);
     setError("");
     try {
-      await hostingService.updateFtpUser(serviceName, user.login, { home, sshState });
+      await ftpService.updateFtpUser(serviceName, user.login, { home, sshState });
       onSuccess();
       onClose();
     } catch (err) {

@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { sslService } from "../SslTab";
 
 interface Props {
   serviceName: string;
@@ -67,9 +67,9 @@ export function OrderSslModal({ serviceName, isOpen, onClose, onSuccess }: Props
           setLoading(false);
           return;
         }
-        await hostingService.orderSsl(serviceName, "import", certificate, privateKey, chain);
+        await sslService.orderSsl(serviceName, "import", certificate, privateKey, chain);
       } else {
-        await hostingService.orderSsl(serviceName, provider);
+        await sslService.orderSsl(serviceName, provider);
       }
       onSuccess();
       onClose();

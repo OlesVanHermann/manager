@@ -1,1 +1,1 @@
-export { CronTab as default } from './CronTab';
+export { CronTab as default } from './CronTab.tsx';

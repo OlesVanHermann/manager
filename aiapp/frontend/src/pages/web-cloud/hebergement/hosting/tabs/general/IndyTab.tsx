@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../services/web-cloud.hosting";
+import { generalService } from "./GeneralTab";
 
 interface IndyTabProps {
   serviceName: string;
@@ -28,7 +28,7 @@ export function IndyTab({ serviceName }: IndyTabProps) {
   const loadIndys = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await hostingService.getIndys(serviceName);
+      const data = await generalService.getIndys(serviceName);
       setIndys(data || []);
     } catch (err) {
       console.error("[IndyTab] Error:", err);

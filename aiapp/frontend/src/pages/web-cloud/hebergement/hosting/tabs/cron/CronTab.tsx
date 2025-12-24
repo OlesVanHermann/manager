@@ -5,7 +5,8 @@ import "./cron.css";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, Cron } from "../../../../../../services/web-cloud.hosting";
+import { cronService } from "./CronTab";
+import type { CronJob } from "../../hosting.types";
 import { CreateCronModal, EditCronModal } from "./modals";
 
 interface Props { serviceName: string; }
@@ -14,7 +15,7 @@ const PAGE_SIZE = 10;
 
 export function CronTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/web-cloud.hosting.cron");
-  const [crons, setCrons] = useState<Cron[]>([]);
+  const [crons, setCrons] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,8 +28,8 @@ export function CronTab({ serviceName }: Props) {
   const loadCrons = useCallback(async () => {
     try {
       setLoading(true);
-      const ids = await hostingService.listCrons(serviceName);
-      const data = await Promise.all(ids.map(id => hostingService.getCron(serviceName, id)));
+      const ids = await cronService.listCrons(serviceName);
+      const data = await Promise.all(ids.map(id => cronService.getCron(serviceName, id)));
       setCrons(data);
     } catch (err) {
       setError(String(err));
@@ -42,16 +43,16 @@ export function CronTab({ serviceName }: Props) {
   const handleDelete = async (id: number) => {
     if (!confirm(t("cron.confirmDelete"))) return;
     try {
-      await hostingService.deleteCron(serviceName, id);
+      await cronService.deleteCron(serviceName, id);
       loadCrons();
     } catch (err) {
       alert(String(err));
     }
   };
 
-  const handleToggleStatus = async (cron: Cron) => {
+  const handleToggleStatus = async (cron: CronJob) => {
     try {
-      await hostingService.updateCron(serviceName, cron.id, {
+      await cronService.updateCron(serviceName, cron.id, {
         status: cron.status === "enabled" ? "disabled" : "enabled"
       });
       loadCrons();

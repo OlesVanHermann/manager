@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService } from "../../../../../../services/web-cloud.hosting";
+import { generalService } from "./GeneralTab";
 
 interface StatisticsTabProps {
   serviceName: string;
@@ -34,7 +34,7 @@ export function StatisticsTab({ serviceName }: StatisticsTabProps) {
   const loadChart = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await hostingService.getStatistics(serviceName, statType, period);
+      const data = await generalService.getStatistics(serviceName, statType, period);
       setChartData(data || { labels: [], values: [] });
     } catch (err) {
       console.error("[StatisticsTab] Error:", err);

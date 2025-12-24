@@ -5,7 +5,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { hostingService, Hosting } from "../../../../services/web-cloud.hosting";
+import { generalService } from "./tabs/general/GeneralTab";
+import type { Hosting } from "./hosting.types";
 
 // ============================================================
 // INNER COMPONENT
@@ -27,8 +28,8 @@ function HostingSidebarInner() {
     
     const load = async () => {
       try {
-        const names = await hostingService.listHostings();
-        const data = await Promise.all(names.map(n => hostingService.getHosting(n)));
+        const names = await generalService.listHostings();
+        const data = await Promise.all(names.map(n => generalService.getHosting(n)));
         if (mounted) {
           setHostings(data);
           setLoading(false);

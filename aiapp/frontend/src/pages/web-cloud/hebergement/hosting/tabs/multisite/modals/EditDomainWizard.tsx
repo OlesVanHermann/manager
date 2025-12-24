@@ -6,7 +6,8 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostingService, AttachedDomain } from "../../../../../../../services/web-cloud.hosting";
+import { multisiteService } from "../MultisiteTab";
+import type { AttachedDomain } from "../../../hosting.types";
 
 interface Props {
   serviceName: string;
@@ -59,7 +60,7 @@ export function EditDomainWizard({ serviceName, domain, hasCdn, isOpen, onClose,
 
   const loadAvailableDomains = async () => {
     try {
-      const domains = await hostingService.listAttachedDomains(serviceName);
+      const domains = await multisiteService.listAttachedDomains(serviceName);
       setAvailableDomains(domains);
     } catch (err) {
       console.error("Error loading domains:", err);
@@ -68,7 +69,7 @@ export function EditDomainWizard({ serviceName, domain, hasCdn, isOpen, onClose,
 
   const checkWwwExists = async () => {
     try {
-      const domains = await hostingService.listAttachedDomains(serviceName);
+      const domains = await multisiteService.listAttachedDomains(serviceName);
       const wwwDomain = domain.domain.startsWith('www.') 
         ? domain.domain.substring(4) 
         : `www.${domain.domain}`;
@@ -98,7 +99,7 @@ export function EditDomainWizard({ serviceName, domain, hasCdn, isOpen, onClose,
       const formattedPath = formatPath(path);
       
       // Mettre à jour le domaine principal
-      await hostingService.updateAttachedDomain(serviceName, domain.domain, {
+      await multisiteService.updateAttachedDomain(serviceName, domain.domain, {
         path: formattedPath,
         ssl,
         cdn: cdn ? "ACTIVE" : "NONE",
@@ -112,7 +113,7 @@ export function EditDomainWizard({ serviceName, domain, hasCdn, isOpen, onClose,
           ? domain.domain.substring(4) 
           : `www.${domain.domain}`;
         
-        await hostingService.updateAttachedDomain(serviceName, wwwDomain, {
+        await multisiteService.updateAttachedDomain(serviceName, wwwDomain, {
           path: formattedPath,
           ssl,
           cdn: cdn ? "ACTIVE" : "NONE",

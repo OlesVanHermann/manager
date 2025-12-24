@@ -1,1 +1,1 @@
-export { LocalSeoTab as default } from './LocalSeoTab';
+export { LocalSeoTab as default } from './LocalSeoTab.tsx';

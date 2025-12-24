@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { ftpService } from "../FtpTab";
 
 interface Props {
   serviceName: string;
@@ -22,7 +22,7 @@ export function ChangePasswordModal({ serviceName, login, isOpen, onClose, onSuc
     setLoading(true);
     setError("");
     try {
-      await hostingService.changeFtpPassword(serviceName, login, password);
+      await ftpService.changeFtpPassword(serviceName, login, password);
       onSuccess();
       onClose();
       setPassword(""); setConfirm("");

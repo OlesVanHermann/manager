@@ -1,1 +1,1 @@
-export { SslTab as default } from './SslTab';
+export { SslTab as default } from './SslTab.tsx';

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { hostingService } from "../../../../../../../services/web-cloud.hosting";
+import { ftpService } from "../FtpTab";
 
 interface Props {
   serviceName: string;
@@ -19,7 +19,7 @@ export function DeleteFtpUserModal({ serviceName, login, isOpen, onClose, onSucc
     setLoading(true);
     setError("");
     try {
-      await hostingService.deleteFtpUser(serviceName, login);
+      await ftpService.deleteFtpUser(serviceName, login);
       onClose();
       onSuccess(login);  // Appeler onSuccess APRÈS onClose avec le login supprimé
     } catch (err) {
