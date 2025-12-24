@@ -1,1 +1,2 @@
-export { FtpTab as default } from './FtpTab';
+export { FtpTab } from "./FtpTab";
+export { default } from "./FtpTab";

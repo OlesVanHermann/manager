@@ -1,0 +1,488 @@
+================================================================================
+DOCUMENTATION TECHNIQUE - ONGLET EMAILS (Scripts e-mail)
+================================================================================
+Fichier SVG: target_.web-cloud.hebergement.hosting.emails.svg
+Route: /web-cloud/hebergement/hosting/emails
+Contexte: Gestion des e-mails envoyés depuis des scripts PHP/CGI/PERL
+
+================================================================================
+1. DESIGN SYSTEM - COULEURS
+================================================================================
+
+BACKGROUNDS:
+  - bg-header:      #000E9C    (bleu foncé OVH - header principal)
+  - bg-main:        #F6F6F9    (gris très clair - fond de page)
+  - bg-white:       #FFFFFF    (blanc - cards et panels)
+  - bg-primary:     #0050D7    (bleu OVH - boutons actifs)
+  - bg-neutral-100: #F3F4F6    (gris clair - headers de table)
+  - bg-info:        #DBEAFE    (bleu info clair)
+  - bg-success:     #DEF7EC    (vert success - badges actif)
+  - bg-warning:     #FEF3C7    (jaune warning)
+  - bg-error:       #FEE2E2    (rouge error)
+
+TEXTES:
+  - text-white:     #FFFFFF    (texte blanc sur fond sombre)
+  - text-muted:     #6B7280    (texte gris - labels, descriptions)
+  - text-primary:   #0050D7    (texte bleu - liens, boutons outline)
+  - text-dark:      #1F2937    (texte noir - titres, valeurs)
+
+BADGES STATUS:
+  - Actif:    bg=#DEF7EC, text=#03543F (vert)
+  - Bloqué:   bg=#FEE2E2, text=#991B1B (rouge)
+  - Warning:  bg=#FEF3C7, text=#92400E (jaune)
+
+BORDERS:
+  - border:         #E5E7EB    (stroke-width: 1)
+  - divider:        #E5E7EB    (lignes de séparation)
+
+BOUTONS:
+  - btn-outline:    stroke=#0050D7, fill=#FFFFFF (bouton secondaire)
+  - btn-primary:    fill=#0050D7 (bouton principal)
+
+================================================================================
+2. TYPOGRAPHIE
+================================================================================
+
+FONT FAMILY:
+  - Principale: 'Source Sans Pro', sans-serif
+
+TAILLES (font-size):
+  - 18px: Titre du service sélectionné (mon-site.fr)
+  - 14px: Navigation NAV1, NAV2, titres de cards
+  - 13px: Noms de services, valeurs importantes
+  - 12px: Labels, descriptions, texte courant
+  - 11px: Texte de boutons, badges, valeurs secondaires
+  - 10px: Badges status (Actif/Bloqué)
+  - 9px:  Onglets NAV3, axes du graphique
+  - 8px:  Dates sur axe X du graphique
+
+FONT WEIGHTS:
+  - 600: Titres (font-weight="600")
+  - 500: Noms de services dans la liste
+  - normal: Texte courant
+
+================================================================================
+3. STRUCTURE GÉNÉRALE - VIEWBOX
+================================================================================
+
+ViewBox: 0 0 1440 900
+Dimensions: width="1440" height="900"
+
+LAYOUT VERTICAL:
+  ┌─────────────────────────────────────────┐ y=0
+  │ NAV1 - Header principal (50px)          │
+  ├─────────────────────────────────────────┤ y=50
+  │ NAV2 - Sous-navigation (40px)           │
+  ├─────────────────────────────────────────┤ y=90
+  │                                         │
+  │ MAIN CONTENT                            │
+  │ (translate 0,90 puis 24,15)             │
+  │                                         │
+  └─────────────────────────────────────────┘ y=900
+
+================================================================================
+4. NAV1 - HEADER PRINCIPAL
+================================================================================
+
+Position: y=0, height=50px
+Background: #000E9C (bg-header)
+
+ÉLÉMENTS (de gauche à droite):
+  x=40   "Accueil"              font-size=14, opacity=0.7
+  x=110  "Public Cloud"         font-size=14, opacity=0.7
+  x=210  "Hosted Private Cloud" font-size=14, opacity=0.7
+  x=370  "Bare Metal Cloud"     font-size=14, opacity=0.7
+  x=510  "Web Cloud"            font-size=14, font-weight=600 (ACTIF)
+         └─ Indicateur actif:   rect x=505, y=46, width=75, height=3, fill=#FFFFFF
+  x=620  "Network"              font-size=14, opacity=0.7
+  x=700  "IAM / Securite"       font-size=14, opacity=0.7
+  x=810  "Licences"             font-size=14, opacity=0.7
+
+BADGE COMPTE (droite):
+  Position: x=1280, y=12
+  Container: rect width=140, height=26, rx=13, fill=rgba(255,255,255,0.2)
+  Badge OK:  rect x=1285, y=15, width=26, height=20, rx=10, fill=#DEF7EC
+             text "OK" x=1292, y=29, fill=#03543F, font-size=10
+  Username:  text "ko51027-ovh" x=1320, y=29, font-size=12
+
+================================================================================
+5. NAV2 - SOUS-NAVIGATION WEB CLOUD
+================================================================================
+
+Position: y=50, height=40px (total y=50 à y=90)
+Background: #FFFFFF
+Border bottom: line y1=89, y2=89, stroke=#E5E7EB
+
+ÉLÉMENTS (de gauche à droite):
+  x=40   "Accueil"           text-muted, font-size=14
+  x=110  "Domaines et DNS"   text-muted, font-size=14
+  x=240  "Hebergement"       text-primary, font-size=14, font-weight=600 (ACTIF)
+         └─ Indicateur:      rect x=235, y=85, width=95, height=3, fill=#0050D7
+  x=345  "Wordpress"         text-muted, font-size=14
+  x=430  "Emails et Collab"  text-muted, font-size=14
+  x=550  "VoIP"              text-muted, font-size=14
+  x=600  "Acces"             text-muted, font-size=14
+
+LIEN GUIDES (droite):
+  x=1350 "Guides"            text-primary, font-size=13
+
+================================================================================
+6. MAIN CONTENT - STRUCTURE
+================================================================================
+
+Transform: translate(0, 90) puis translate(24, 15)
+→ Offset total: x=24, y=105
+
+LAYOUT HORIZONTAL:
+  ┌────────────┬─────────────────────────────────────┐
+  │ LEFT PANEL │ RIGHT PANEL                         │
+  │ (280px)    │ (1096px)                            │
+  │            │                                     │
+  │ Liste des  │ Contenu de l'onglet                 │
+  │ services   │                                     │
+  │            │                                     │
+  └────────────┴─────────────────────────────────────┘
+
+GAP entre panels: 16px (296 - 280 = 16)
+
+================================================================================
+7. LEFT PANEL - LISTE DES SERVICES
+================================================================================
+
+Dimensions: width=280, height=780, rx=8
+Position: x=0, y=0 (dans le groupe translate)
+Background: bg-white avec border
+
+SEARCH BAR:
+  Position: x=12, y=12
+  Dimensions: width=256, height=34, rx=4
+  Background: fill=#F9FAFB, stroke=#E5E7EB
+  Placeholder: "Rechercher..." x=26, y=34, text-muted, font-size=12
+
+FILTRES:
+  Position: y=68
+  "Filtrer par statut": x=12, text-muted, font-size=11
+  "12 services": x=240, text-anchor=end, text-muted, font-size=11
+
+SERVICE ITEM (template):
+  Dimensions: width=268, height=56, rx=6
+  Position: x=6, margin entre items=6px
+
+  Structure d'un item:
+    ┌─────────────────────────────────────────┐
+    │ ○  Nom du service          [Badge]     │
+    │    Description offre                    │
+    └─────────────────────────────────────────┘
+
+  Composants:
+    - Avatar: circle cx=28, cy=+28 (relatif), r=14
+              fill=#0050D7 (sélectionné) ou #6B7280 (non sélectionné)
+              Lettre "W" centrée, text-white, font-size=10
+    - Nom: x=52, y=+20, text-dark, font-size=13, font-weight=500
+    - Description: x=52, y=+36, text-muted, font-size=11
+    - Badge status: x=210, y=+16, width=46, height=18, rx=9
+                    fill=#DEF7EC, text=#03543F, font-size=10
+
+ITEMS AFFICHÉS:
+  1. mon-site.fr (y=80, SÉLECTIONNÉ - row-selected #E8F0FE)
+     - Performance 1
+     - Badge: Actif
+  2. blog.exemple.com (y=142)
+     - Pro 2024
+     - Badge: Actif
+  3. shop.mondomaine.fr (y=204)
+     - Perso 2024
+     - Badge: Actif
+
+================================================================================
+8. RIGHT PANEL - CONTENU PRINCIPAL
+================================================================================
+
+Position: x=296, y=0
+Dimensions: width=1096, height=780, rx=8
+Background: bg-white avec border
+
+INNER CONTENT: translate(316, 0) → padding-left de 20px
+
+--------------------------------------------------------------------------------
+8.1 TITRE DU SERVICE
+--------------------------------------------------------------------------------
+Position: y=24
+Texte: "mon-site.fr"
+Style: text-dark, font-size=18, font-weight=600
+
+--------------------------------------------------------------------------------
+8.2 NAV3 - ONGLETS DU SERVICE
+--------------------------------------------------------------------------------
+Position: translate(0, 38)
+Style tabs: height=26px, rx=4, gap=4px entre onglets
+
+LISTE DES ONGLETS (x, width, label):
+  x=0    w=50   "Home"
+  x=54   w=58   "Multisite"
+  x=116  w=58   "FTP-SSH"
+  x=178  w=55   "Modules"
+  x=237  w=50   "Taches"
+  x=291  w=48   "Emails"      ← ACTIF (bg-primary, text-white)
+  x=343  w=55   "Variables"
+  x=402  w=55   "Runtimes"
+  x=461  w=35   "SSL"
+  x=500  w=38   "CDN"
+  x=542  w=42   "Boost"
+  x=588  w=38   "Logs"
+  x=630  w=38   "BDD"
+  x=672  w=62   "BDD Cloud"
+  x=738  w=40   "Cron"
+  x=782  w=38   "SEO"
+
+STYLE ONGLET INACTIF:
+  rect: btn-outline (stroke=#0050D7, fill=#FFFFFF)
+  text: text-primary, font-size=9, text-anchor=middle
+
+STYLE ONGLET ACTIF (Emails):
+  rect: bg-primary (fill=#0050D7)
+  text: text-white, font-size=9, text-anchor=middle
+
+================================================================================
+9. TAB CONTENT - EMAILS
+================================================================================
+
+Position: translate(0, 75) dans le right panel inner content
+→ Position absolue approximative: x=340, y=180
+
+--------------------------------------------------------------------------------
+9.1 CARDS - INFORMATIONS GÉNÉRALES + STATISTIQUES
+--------------------------------------------------------------------------------
+Layout: 2 cards côte à côte
+Gap: 15px (530 - 515 = 15)
+Position: translate(0, 0) dans tab content
+
+CARD 1: INFORMATIONS GÉNÉRALES
+  Position: x=0, y=0
+  Dimensions: width=515, height=140, rx=8
+  Background: bg-white avec border
+
+  Contenu:
+    TITRE:
+      Position: x=20, y=28
+      Texte: "Informations générales"
+      Style: text-dark, font-size=14, font-weight=600
+
+    LIGNE 1 - État du service:
+      Label: x=20, y=58, "État du service :", text-muted, font-size=12
+      Badge: rect x=150, y=43, width=50, height=22, rx=4, fill=#DEF7EC
+             text "actif" x=175, y=58, fill=#03543F, font-size=11, text-anchor=middle
+
+    LIGNE 2 - Rapport d'erreurs:
+      Label: x=20, y=90, "Rapport d'erreurs à :", text-muted, font-size=12
+      Bouton: rect x=150, y=75, width=160, height=26, rx=4, btn-outline
+              text "Changer le destinataire" x=230, y=92, text-primary, font-size=11
+
+    BOUTON ACTION:
+      Position: translate(20, 108)
+      rect: width=130, height=26, rx=4, btn-outline
+      text: "Bloquer l'envoi" x=65, y=17, text-primary, font-size=11, text-anchor=middle
+
+CARD 2: STATISTIQUES
+  Position: translate(530, 0)
+  Dimensions: width=526, height=140, rx=8
+  Background: bg-white avec border
+
+  Contenu:
+    TITRE:
+      Position: x=20, y=28
+      Texte: "Statistiques"
+      Style: text-dark, font-size=14, font-weight=600
+
+    LIGNE 1:
+      Label: x=20, y=58, "Total des e-mails envoyés :", text-muted, font-size=12
+      Valeur: x=200, y=58, "257", text-dark, font-size=13, font-weight=600
+
+    LIGNE 2:
+      Label: x=20, y=85, "E-mails envoyés aujourd'hui :", text-muted, font-size=12
+      Valeur: x=200, y=85, "2", text-dark, font-size=13, font-weight=600
+
+    LIGNE 3:
+      Label: x=20, y=112, "Total des e-mails en erreur :", text-muted, font-size=12
+      Valeur: x=200, y=112, "0", text-dark, font-size=13, font-weight=600
+
+    BOUTONS ACTIONS (colonne droite):
+      Position: translate(300, 45)
+      
+      Bouton 1:
+        rect: x=0, y=0, width=130, height=26, rx=4, btn-outline
+        text: "Purger les e-mails" x=65, y=17, text-primary, font-size=11
+
+      Bouton 2:
+        rect: x=0, y=35, width=130, height=26, rx=4, btn-outline
+        text: "E-mails en erreur" x=65, y=52, text-primary, font-size=11
+
+--------------------------------------------------------------------------------
+9.2 GRAPHIQUE - HISTORIQUE DES E-MAILS ENVOYÉS
+--------------------------------------------------------------------------------
+Position: translate(0, 160) dans tab content
+
+TITRE:
+  Position: x=528, y=0
+  Texte: "Historique des e-mails envoyés"
+  Style: text-dark, font-size=14, font-weight=600, text-anchor=middle
+
+ZONE GRAPHIQUE:
+  Position: translate(0, 20)
+  Dimensions implicites: ~1050x200px
+
+AXE Y (valeurs):
+  Position: x=5
+  Valeurs (de haut en bas): 14, 12, 10, 8, 6, 4, 2, 0
+  Positions y: 15, 40, 65, 90, 115, 140, 165, 190
+  Style: text-muted, font-size=9
+
+GRILLE HORIZONTALE:
+  Lignes: x1=25, x2=1050, stroke=#E5E7EB, stroke-width=0.5
+  Positions y: 10, 35, 60, 85, 110, 135, 160, 185
+
+COURBE DE DONNÉES:
+  Type: polyline
+  Style: fill=none, stroke=#0050D7, stroke-width=1.5
+  Points: Série de coordonnées (x,y) représentant les données
+  
+  Exemple de points:
+    30,165 → 60,160 → 90,163 → 120,150 → ...
+    (pic notable à 720,40 représentant un spike d'activité)
+
+AXE X (dates):
+  Position: translate(0, 190)
+  Style: text-muted, font-size=8, text-anchor=middle
+  
+  Labels (x, texte):
+    x=30   "Nov 24"
+    x=120  "Nov 27"
+    x=210  "Nov 30"
+    x=300  "Dec 3"
+    x=390  "Dec 6"
+    x=480  "Dec 9"
+    x=570  "Dec 12"
+    x=660  "Dec 15"
+    x=750  "Dec 18"
+    x=840  "Dec 21"
+    x=930  "Dec 24"
+
+LÉGENDE:
+  Position: translate(450, 235)
+  
+  Composants:
+    - Carré couleur: rect width=12, height=12, rx=2, fill=#0050D7, opacity=0.3
+    - Ligne: x1=0, y1=6, x2=12, y2=6, stroke=#0050D7, stroke-width=2
+    - Texte: "E-mails envoyés" x=20, y=10, text-muted, font-size=11
+
+--------------------------------------------------------------------------------
+9.3 INFO BANNER (en bas)
+--------------------------------------------------------------------------------
+Position: translate(0, 430) dans tab content
+Dimensions: width=1056, height=36, rx=6
+Background: fill=#E0F2FE 
+
+Icône + Texte:
+  Position: x=40, y=23
+  Texte: "ℹ Cette page ne concerne que les e-mails envoyés depuis des scripts CGI/PERL/PHP."
+  Style: fill=#0369A1, font-size=12
+
+================================================================================
+10. API ENDPOINTS
+================================================================================
+
+GET /hosting/web/{serviceName}/email
+  → Retourne: state, bounce, maxPerDay, sent, sentToday, errors
+
+PUT /hosting/web/{serviceName}/email
+  → Body: { bounce: "email@example.com" }  (changer destinataire)
+  → Body: { state: "blocked" | "ok" }      (bloquer/débloquer)
+
+POST /hosting/web/{serviceName}/email/request
+  → Body: { action: "PURGE" }              (purger la file)
+
+GET /hosting/web/{serviceName}/email/bounces
+  → Retourne: liste des e-mails en erreur
+
+GET /hosting/web/{serviceName}/metricsToken
+  → Retourne: { token, endpoint, expiry }
+
+PROMETHEUS QUERY (pour graphique):
+  URL: {endpoint}/prometheus/api/v1/query_range
+  Query: sum without(cluster, statusCode, cluster_name, datacenter, host, 
+         host_type, hw_profile, service_name, user) (
+           label_replace((mailout_sendmails_count{service_name="{serviceName}"}), 
+           "mail", "sent", "", "")
+         ) OR label_replace(vector(0), "mail", "sent", "", "")
+  Params: start, end (ISO), step=1h
+  Headers: Authorization: Bearer {token}
+
+================================================================================
+11. PROMPTS / ACTIONS
+================================================================================
+
+BOUTON "Changer le destinataire":
+  Action: Ouvre modal pour modifier l'adresse de rapport d'erreurs
+  API: PUT /hosting/web/{sn}/email { bounce: "new@email.com" }
+
+BOUTON "Bloquer l'envoi":
+  Action: Bloque l'envoi d'e-mails depuis les scripts
+  API: PUT /hosting/web/{sn}/email { state: "blocked" }
+  Note: Le bouton devient "Débloquer l'envoi" une fois bloqué
+
+BOUTON "Purger les e-mails":
+  Action: Supprime tous les e-mails en file d'attente
+  API: POST /hosting/web/{sn}/email/request { action: "PURGE" }
+  Confirmation: Modal de confirmation avant action
+
+BOUTON "E-mails en erreur":
+  Action: Affiche la liste des e-mails en bounces
+  API: GET /hosting/web/{sn}/email/bounces
+  Affichage: Modal ou page dédiée avec liste paginée
+
+================================================================================
+12. ÉTATS ALTERNATIFS
+================================================================================
+
+ÉTAT BLOQUÉ:
+  - Badge "État du service": bg=#FEE2E2, text=#991B1B, "bloqué"
+  - Bouton devient: "Débloquer l'envoi"
+
+ÉTAT AVEC ERREURS:
+  - Valeur "Total des e-mails en erreur": text-error (#DC2626) si > 0
+  - Badge warning possible sur la card Statistiques
+
+GRAPHIQUE VIDE:
+  - Message centré: "Aucune donnée disponible"
+  - Ou ligne plate à y=185 (valeur 0)
+
+================================================================================
+13. ESPACEMENTS ET MESURES CLÉS
+================================================================================
+
+ESPACEMENTS VERTICAUX:
+  - NAV1 height: 50px
+  - NAV2 height: 40px
+  - Gap NAV2 → content: 15px
+  - Gap titre service → NAV3: 14px (38-24)
+  - Gap NAV3 → tab content: 37px (75-38)
+  - Gap cards → graphique: 20px (160-140)
+  - Gap graphique → info banner: 35px (430-395 environ)
+
+ESPACEMENTS HORIZONTAUX:
+  - Page padding left: 24px
+  - Left panel width: 280px
+  - Gap panels: 16px
+  - Right panel padding: 20px
+  - Gap entre cards: 15px
+
+DIMENSIONS COMPOSANTS:
+  - Bouton standard: height=26px ou 32px, rx=4
+  - Badge status: width=46-50px, height=18-22px, rx=4 ou rx=9
+  - Card: rx=8
+  - Input/Search: height=34px, rx=4
+  - Service item: height=56px, rx=6
+
+================================================================================
+FIN DE LA DOCUMENTATION
+================================================================================

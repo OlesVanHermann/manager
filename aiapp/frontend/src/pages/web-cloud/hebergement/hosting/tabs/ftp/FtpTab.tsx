@@ -1,284 +1,320 @@
 // ============================================================
-import "./ftp.css";
-// HOSTING TAB: FTP - Accès FTP et SSH
+// HOSTING TAB: FTP-SSH
 // ============================================================
 
+import "./ftp.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { hostingService, Hosting, FtpUser } from "../../../../../../services/web-cloud.hosting";
-import { CreateFtpUserModal, ChangePasswordModal } from "./modals";
+import { hostingService, FtpUser, Hosting } from "../../../../../../services/web-cloud.hosting";
+import { CreateFtpUserModal, ChangePasswordModal, EditFtpUserModal, DeleteFtpUserModal } from "./modals";
 
-interface Props { 
-  serviceName: string; 
-  details?: Hosting;
-}
+interface Props { serviceName: string; }
 
-const PAGE_SIZE = 10;
-
-export function FtpTab({ serviceName, details }: Props) {
-  const { t } = useTranslation("web-cloud/hosting/web-cloud.hosting.ftp");
-  const [hosting, setHosting] = useState<Hosting | null>(details || null);
+export function FtpTab({ serviceName }: Props) {
+  const [hosting, setHosting] = useState<Hosting | null>(null);
   const [users, setUsers] = useState<FtpUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [passwordModal, setPasswordModal] = useState<{ open: boolean; login: string }>({ open: false, login: "" });
+  const [editModal, setEditModal] = useState<{ open: boolean; user: FtpUser | null }>({ open: false, user: null });
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; login: string }>({ open: false, login: "" });
+  const [restoreModal, setRestoreModal] = useState(false);
+  const [restoreLoading, setRestoreLoading] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [hostingData, userLogins] = await Promise.all([
-        details ? Promise.resolve(details) : hostingService.getHosting(serviceName),
+        hostingService.getHosting(serviceName),
         hostingService.listFtpUsers(serviceName)
       ]);
       setHosting(hostingData);
-      const usersData = await Promise.all(userLogins.map(u => hostingService.getFtpUser(serviceName, u)));
+      const usersData = await Promise.all(userLogins.map(login => hostingService.getFtpUser(serviceName, login)));
       setUsers(usersData);
     } catch (err) {
       setError(String(err));
     } finally {
       setLoading(false);
     }
-  }, [serviceName, details]);
+  }, [serviceName]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // --- HANDLERS ---
-  const handleDelete = async (login: string, isPrimary: boolean) => {
-    if (isPrimary) {
-      alert(t("ftp.cannotDeletePrimary"));
-      return;
-    }
-    if (!confirm(t("ftp.confirmDelete", { login }))) return;
-    try {
-      await hostingService.deleteFtpUser(serviceName, login);
-      loadData();
-    } catch (err) {
-      alert(String(err));
-    }
-  };
+  // === MISE À JOUR OPTIMISTE APRÈS SUPPRESSION ===
+  const handleDeleteSuccess = useCallback((deletedLogin: string) => {
+    // Retirer immédiatement l'utilisateur de l'état local
+    setUsers(prevUsers => prevUsers.filter(u => u.login !== deletedLogin));
+    // Pas de refresh - la mise à jour optimiste suffit
+  }, []);
 
-  const handleToggleSsh = async (user: FtpUser) => {
-    try {
-      await hostingService.updateFtpUser(serviceName, user.login, { 
-        sshState: user.sshState === "active" ? "none" : "active" 
-      });
-      loadData();
-    } catch (err) {
-      alert(String(err));
-    }
-  };
-
-  // --- FILTERING ---
+  // Filter users
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users;
     const term = searchTerm.toLowerCase();
-    return users.filter(u => u.login.toLowerCase().includes(term));
+    return users.filter(u => u.login.toLowerCase().includes(term) || u.home?.toLowerCase().includes(term));
   }, [users, searchTerm]);
 
-  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
-  const paginatedUsers = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filteredUsers.slice(start, start + PAGE_SIZE);
-  }, [filteredUsers, currentPage]);
-
-  useEffect(() => { setCurrentPage(1); }, [searchTerm]);
-
-  // --- HELPERS ---
+  // Copy to clipboard
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
+  // Restore handler
+  const handleRestore = async () => {
+    setRestoreLoading(true);
+    try {
+      const snapshots = await hostingService.listSnapshots(serviceName);
+      if (snapshots.length === 0) {
+        alert("Aucune sauvegarde disponible");
+        setRestoreModal(false);
+        return;
+      }
+      if (snapshots[0]?.creationDate) {
+        await hostingService.restoreSnapshot(serviceName, snapshots[0].creationDate);
+        alert("Restauration lancée avec succès");
+        loadData();
+      }
+    } catch (err) {
+      alert(`Erreur: ${err}`);
+    } finally {
+      setRestoreLoading(false);
+      setRestoreModal(false);
+    }
+  };
+
+  // Derived values
+  const ftpHost = hosting?.serviceManagementAccess?.ftp?.url || `ftp.${serviceName}`;
+  const sshHost = hosting?.serviceManagementAccess?.ssh?.url || ftpHost;
+  const primaryLogin = hosting?.primaryLogin || serviceName.split('.')[0];
+
   if (loading) {
     return (
       <div className="ftp-tab">
-        <div className="ftp-info-grid">
-          <div className="skeleton-block" style={{ height: "180px" }} />
-          <div className="skeleton-block" style={{ height: "180px" }} />
-        </div>
-        <div className="skeleton-block" style={{ height: "300px", marginTop: "1.5rem" }} />
+        <div className="ftp-skeleton-toolbar" />
+        <div className="ftp-skeleton-info" />
+        <div className="ftp-skeleton-table" />
       </div>
     );
   }
 
-  if (error) return <div className="error-state">{error}</div>;
-
-  const ftpServer = hosting?.cluster ? `ftp.${hosting.cluster}.hosting.ovh.net` : "-";
-  const sshServer = hosting?.cluster ? `ssh.${hosting.cluster}.hosting.ovh.net` : "-";
+  if (error) return <div className="ftp-error-state">{error}</div>;
 
   return (
     <div className="ftp-tab">
-      {/* Info tiles */}
-      <div className="ftp-info-grid">
-        {/* Tile 1: Serveur FTP */}
-        <div className="info-tile">
-          <h4>{t("ftp.server")}</h4>
-          <div className="tile-content">
-            <div className="info-row">
-              <span className="info-label">Adresse du serveur</span>
-              <div className="info-value copyable-field">
-                <code>{ftpServer}</code>
-                <button className="copy-btn" onClick={() => copyToClipboard(ftpServer)} title="Copier">📋</button>
-              </div>
+      {/* ========== TOOLBAR ========== */}
+      <div className="ftp-toolbar">
+        <button className="ftp-toolbar-refresh" onClick={loadData} title="Actualiser">↻</button>
+        <div className="ftp-search-box">
+          <input
+            type="text"
+            placeholder="Rechercher..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <button className="ftp-btn-add" onClick={() => setShowCreateModal(true)}>
+          + Ajouter un utilisateur
+        </button>
+      </div>
+
+      {/* ========== INFO BLOC 4 COLONNES ========== */}
+      <div className="ftp-info-bloc">
+        {/* COL 1: SERVEUR FTP */}
+        <div className="ftp-info-col">
+          <div className="ftp-info-theme">SERVEUR FTP</div>
+          <div className="ftp-info-row">
+            <span className="ftp-info-label">Nom du Serveur FTP</span>
+            <div className="ftp-copybox" onClick={() => copyToClipboard(ftpHost)}>
+              <span>{ftpHost}</span>
+              <span className="ftp-copy-icon">📋</span>
             </div>
-            <div className="info-row">
-              <span className="info-label">{t("ftp.port")}</span>
-              <span className="info-value">21</span>
+          </div>
+          <div className="ftp-info-row">
+            <span className="ftp-info-label">Port</span>
+            <span className="ftp-info-value">21 <span className="ftp-status-on">● ON</span></span>
+          </div>
+        </div>
+
+        <div className="ftp-info-divider" />
+
+        {/* COL 2: SERVEUR SSH/SFTP */}
+        <div className="ftp-info-col">
+          <div className="ftp-info-theme">SERVEUR SSH/SFTP</div>
+          <div className="ftp-info-row">
+            <span className="ftp-info-label">Nom du Serveur SFTP/SSH</span>
+            <div className="ftp-copybox" onClick={() => copyToClipboard(sshHost)}>
+              <span>{sshHost}</span>
+              <span className="ftp-copy-icon">📋</span>
             </div>
-            <div className="info-row">
-              <span className="info-label">{t("ftp.sftpPort")}</span>
-              <span className="info-value">22</span>
+          </div>
+          <div className="ftp-info-row">
+            <span className="ftp-info-label">Port</span>
+            <span className="ftp-info-value">22 <span className="ftp-status-on">● ON</span></span>
+          </div>
+        </div>
+
+        <div className="ftp-info-divider" />
+
+        {/* COL 3: SERVEUR REMOTE */}
+        <div className="ftp-info-col">
+          <div className="ftp-info-theme">SERVEUR REMOTE</div>
+          <div className="ftp-info-row">
+            <span className="ftp-info-label">Login principal</span>
+            <div className="ftp-copybox" onClick={() => copyToClipboard(primaryLogin)}>
+              <span>{primaryLogin}</span>
+              <span className="ftp-copy-icon">📋</span>
+            </div>
+          </div>
+          <div className="ftp-info-row">
+            <span className="ftp-info-label">Chemin du répertoire home</span>
+            <div className="ftp-copybox" onClick={() => copyToClipboard(`/home/${primaryLogin}`)}>
+              <span>/home/{primaryLogin}</span>
+              <span className="ftp-copy-icon">📋</span>
             </div>
           </div>
         </div>
 
-        {/* Tile 2: Accès FTP */}
-        <div className="info-tile">
-          <h4>Accès FTP</h4>
-          <div className="tile-content">
-            <div className="info-row">
-              <span className="info-label">Lien d'accès rapide</span>
-              <a 
-                href={`ftp://${serviceName}@${ftpServer}`} 
-                className="link-action"
-              >
-                ftp://{serviceName}@{ftpServer.substring(0, 20)}... ↗
-              </a>
-            </div>
-            <div className="info-row">
-              <span className="info-label">{t("ftp.home")}</span>
-              <code>/home/{serviceName}</code>
-            </div>
+        <div className="ftp-info-divider" />
+
+        {/* COL 4: OUTILS */}
+        <div className="ftp-info-col">
+          <div className="ftp-info-theme">OUTILS</div>
+          <div className="ftp-info-row">
+            <span className="ftp-info-label">FTP Explorer</span>
+            <a href={`https://webftp.ovhcloud.com/?hosting=${serviceName}`} target="_blank" rel="noopener noreferrer" className="ftp-link-action">
+              Ouvrir ↗
+            </a>
           </div>
-        </div>
-      </div>
-
-      {/* Header table */}
-      <div className="tab-header" style={{ marginTop: "1.5rem" }}>
-        <div>
-          <h4>Utilisateurs FTP</h4>
-        </div>
-        <div className="tab-actions">
-          <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
-            + {t("ftp.create")}
-          </button>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="table-toolbar">
-        <input
-          type="text"
-          className="search-input"
-          placeholder={t("common.search")}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <span className="records-count">{users.length} utilisateur(s)</span>
-      </div>
-
-      {/* Users table */}
-      {paginatedUsers.length === 0 ? (
-        <div className="empty-state">
-          <p>{searchTerm ? t("common.noResult") : t("ftp.empty")}</p>
-          {!searchTerm && (
-            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-              {t("ftp.createFirst")}
+          <div className="ftp-info-row">
+            <span className="ftp-info-label">Backup</span>
+            <button className="ftp-btn-restore" onClick={() => setRestoreModal(true)}>
+              Restaurer
             </button>
-          )}
+          </div>
         </div>
-      ) : (
-        <>
-          <table className="data-table">
-            <thead>
+      </div>
+
+      {/* ========== TABLE UTILISATEURS ========== */}
+      <div className="ftp-table-container">
+        <table className="ftp-table">
+          <thead>
+            <tr>
+              <th>Login</th>
+              <th>Répertoire cible</th>
+              <th>FTP (lien direct)</th>
+              <th>SFTP (lien direct)</th>
+              <th>SSH (lien direct)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.length === 0 ? (
               <tr>
-                <th>Utilisateur</th>
-                <th>{t("ftp.home")}</th>
-                <th>{t("ftp.state")}</th>
-                <th>{t("ftp.ssh")}</th>
-                <th>Actions</th>
+                <td colSpan={6} className="ftp-empty-row">
+                  {searchTerm ? "Aucun résultat" : "Aucun utilisateur FTP"}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {paginatedUsers.map(user => {
-                const isPrimary = user.isPrimaryAccount || user.login === serviceName;
+            ) : (
+              filteredUsers.map(user => {
+                const isPrimary = user.isPrimaryAccount || user.login === primaryLogin;
+                const ftpLink = `ftp://${user.login}@${ftpHost}`;
+                const sftpLink = `sftp://${user.login}@${sshHost}`;
+                const sshLink = user.sshState === "active" ? `ssh://${user.login}@${sshHost}` : null;
+
                 return (
                   <tr key={user.login}>
+                    {/* Login */}
                     <td>
-                      <span className="font-mono">{user.login}</span>
-                      {isPrimary && <span className="badge primary" style={{ marginLeft: "0.5rem" }}>{t("ftp.primary")}</span>}
-                    </td>
-                    <td><code>{user.home || `/home/${user.login}`}</code></td>
-                    <td>
-                      <span className={`badge ${user.state === "ok" ? "success" : "warning"}`}>
-                        {user.state === "ok" ? "Actif" : user.state}
+                      <span className="ftp-user-login">
+                        {user.login}
+                        {isPrimary && <span className="ftp-badge-primary">(principal)</span>}
                       </span>
-                    </td>
-                    <td>
                       <button 
-                        className={`badge-toggle ${user.sshState === "active" ? "active" : ""}`}
-                        onClick={() => handleToggleSsh(user)}
-                        title={user.sshState === "active" ? "Désactiver SSH" : "Activer SSH"}
+                        className="ftp-btn-icon" 
+                        onClick={() => setPasswordModal({ open: true, login: user.login })}
+                        title="Changer le mot de passe"
                       >
-                        {user.sshState === "active" ? "Actif" : "Désactivé"}
+                        🔑
                       </button>
                     </td>
+
+                    {/* Répertoire */}
                     <td>
-                      <div className="action-buttons">
-                        <button 
-                          className="btn-icon" 
-                          onClick={() => setPasswordModal({ open: true, login: user.login })}
-                          title={t("ftp.changePassword")}
-                        >
-                          🔑
-                        </button>
-                        <button 
-                          className="btn-icon btn-danger-icon" 
-                          onClick={() => handleDelete(user.login, isPrimary)}
-                          title={t("ftp.delete")}
-                          disabled={isPrimary}
-                        >
-                          🗑
-                        </button>
+                      <span className="ftp-user-home">{user.home || "/"}</span>
+                      <button 
+                        className="ftp-btn-icon" 
+                        onClick={() => setEditModal({ open: true, user })}
+                        title="Modifier"
+                      >
+                        ✎
+                      </button>
+                    </td>
+
+                    {/* FTP link */}
+                    <td>
+                      <div className="ftp-linkbox" onClick={() => copyToClipboard(ftpLink)}>
+                        <span className="ftp-linkbox-text">{ftpLink}</span>
+                        <span className="ftp-linkbox-copy">C</span>
                       </div>
+                    </td>
+
+                    {/* SFTP link */}
+                    <td>
+                      {user.sshState !== "none" ? (
+                        <div className="ftp-linkbox" onClick={() => copyToClipboard(sftpLink)}>
+                          <span className="ftp-linkbox-text">{sftpLink}</span>
+                          <span className="ftp-linkbox-copy">C</span>
+                        </div>
+                      ) : (
+                        <span className="ftp-cell-muted">non disponible</span>
+                      )}
+                    </td>
+
+                    {/* SSH link */}
+                    <td>
+                      {sshLink ? (
+                        <div className="ftp-linkbox" onClick={() => copyToClipboard(sshLink)}>
+                          <span className="ftp-linkbox-text">{sshLink}</span>
+                          <span className="ftp-linkbox-copy">C</span>
+                        </div>
+                      ) : (
+                        <span className="ftp-cell-muted">non disponible</span>
+                      )}
+                    </td>
+
+                    {/* Delete */}
+                    <td>
+                      {!isPrimary && (
+                        <button 
+                          className="ftp-btn-delete"
+                          onClick={() => setDeleteModal({ open: true, login: user.login })}
+                          title="Supprimer"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
 
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button 
-                className="pagination-btn" 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                ←
-              </button>
-              <span className="pagination-info">
-                {t("common.page")} {currentPage} / {totalPages}
-              </span>
-              <button 
-                className="pagination-btn" 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-              >
-                →
-              </button>
-            </div>
-          )}
-        </>
-      )}
+      {/* ========== BANNER INFO ========== */}
+      <div className="ftp-banner-info">
+        <span className="ftp-banner-icon">ℹ️</span>
+        <span>Pour vous connecter en FTP, utilisez votre login complet (ex: {primaryLogin}) et le mot de passe associé.</span>
+      </div>
 
-      {/* Modals */}
+      {/* ========== MODALS ========== */}
       <CreateFtpUserModal
         serviceName={serviceName}
+        primaryLogin={primaryLogin}
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={loadData}
@@ -287,11 +323,48 @@ export function FtpTab({ serviceName, details }: Props) {
       <ChangePasswordModal
         serviceName={serviceName}
         login={passwordModal.login}
-        type="ftp"
         isOpen={passwordModal.open}
         onClose={() => setPasswordModal({ open: false, login: "" })}
         onSuccess={loadData}
       />
+
+      <EditFtpUserModal
+        serviceName={serviceName}
+        user={editModal.user!}
+        isOpen={editModal.open}
+        onClose={() => setEditModal({ open: false, user: null })}
+        onSuccess={loadData}
+      />
+
+      <DeleteFtpUserModal
+        serviceName={serviceName}
+        login={deleteModal.login}
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, login: "" })}
+        onSuccess={handleDeleteSuccess}
+      />
+
+      {/* Modal Restore */}
+      {restoreModal && (
+        <div className="ftp-modal-overlay" onClick={() => setRestoreModal(false)}>
+          <div className="ftp-modal" onClick={e => e.stopPropagation()}>
+            <div className="ftp-modal-header">
+              <h3>Restaurer une sauvegarde</h3>
+              <button className="ftp-modal-close" onClick={() => setRestoreModal(false)}>✕</button>
+            </div>
+            <div className="ftp-modal-body">
+              <p>Voulez-vous restaurer la dernière sauvegarde disponible ?</p>
+              <p className="ftp-modal-warning">⚠️ Les fichiers actuels seront remplacés par la sauvegarde.</p>
+            </div>
+            <div className="ftp-modal-footer">
+              <button className="ftp-btn-cancel" onClick={() => setRestoreModal(false)}>Annuler</button>
+              <button className="ftp-btn-confirm" onClick={handleRestore} disabled={restoreLoading}>
+                {restoreLoading ? "Restauration..." : "Restaurer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

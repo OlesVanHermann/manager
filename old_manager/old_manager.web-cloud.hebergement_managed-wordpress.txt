@@ -1,0 +1,1017 @@
+# CAHIER DES CHARGES - Web Hosting & Managed WordPress
+
+## Source
+- **Archive**: old_manager_web-cloud_hebergement_managed-wordpress.tar
+- **Date d'analyse**: 2025-01-XX
+- **Fichiers analysés**: 215 fichiers (React + AngularJS legacy)
+
+---
+
+# 1. RÉSUMÉ EXÉCUTIF
+
+## 1.1 Périmètre fonctionnel
+
+Application de gestion des hébergements web OVHcloud couvrant :
+- **Hébergement Web classique** : Dashboard, SSL, Multisite, Local SEO, Tâches
+- **Managed WordPress** : Ressources, Sites, Création, Import, Suppression, Tâches
+
+## 1.2 Utilisateurs cibles
+
+- Clients OVHcloud possédant un hébergement web mutualisé
+- Clients avec offre "Managed Hosting for WordPress"
+
+## 1.3 Objectif
+
+Permettre la gestion complète des hébergements web et sites WordPress gérés depuis le Manager OVHcloud.
+
+---
+
+# 2. ARCHITECTURE
+
+## 2.1 Arborescence fichiers (New Manager React)
+
+```
+packages/manager/apps/web-hosting/src/
+├── App.tsx                          # Point d'entrée application
+├── index.tsx                        # Bootstrap React
+├── constants.ts                     # URLs de commande par région
+│
+├── components/                      # Composants UI réutilisables
+│   ├── badgeStatus/                 # Badge de statut coloré
+│   ├── breadcrumb/                  # Fil d'Ariane
+│   ├── expirationDate/              # Affichage date expiration
+│   ├── loading/                     # Spinner de chargement
+│   ├── tabs/                        # Onglets navigation
+│   ├── tabsPanel/                   # Panneau d'onglets
+│   └── topBar/                      # Barre d'actions supérieure
+│
+├── data/
+│   ├── api/                         # Appels API
+│   │   ├── AttachedDomain.ts        # Domaines attachés (Iceberg)
+│   │   ├── AttachedDomainDigStatus.ts # Statut DNS
+│   │   ├── dashboard.ts             # APIs dashboard hébergement
+│   │   ├── local-seo.ts             # APIs Local SEO
+│   │   ├── managedWordpress.ts      # APIs Managed WordPress
+│   │   └── ssl.ts                   # APIs certificats SSL
+│   │
+│   ├── hooks/                       # React Query hooks
+│   │   ├── managedWordpress/        # Hooks WordPress géré
+│   │   ├── ssl/                     # Hooks SSL
+│   │   ├── webHostingAttachedDomain/
+│   │   ├── webHostingDashboard/
+│   │   └── webHostingLocalSeo/
+│   │
+│   └── types/                       # Interfaces TypeScript
+│       ├── product/
+│       │   ├── domain.ts
+│       │   ├── managedWordpress/
+│       │   ├── seo.ts
+│       │   ├── service.ts
+│       │   ├── ssl.ts
+│       │   ├── webHosting.ts
+│       │   └── website.ts
+│       └── status.ts
+│
+├── pages/                           # Pages de l'application
+│   ├── 404.tsx                      # Page non trouvée
+│   ├── layout.tsx                   # Layout racine
+│   ├── onboarding/                  # Première connexion
+│   ├── websites/                    # Liste globale des sites
+│   ├── dashboard/                   # Dashboard hébergement
+│   │   ├── layout.tsx
+│   │   ├── ssl/                     # Gestion SSL
+│   │   ├── multisite/               # Gestion domaines
+│   │   ├── local-seo/               # SEO local
+│   │   └── task/                    # Tâches en cours
+│   └── managedWordpress/            # WordPress géré
+│       ├── ManagedWordpress.page.tsx
+│       └── ManagedWordpressResource/
+│           ├── myWebsites/
+│           ├── create/
+│           ├── import/
+│           ├── delete/
+│           └── tasks/
+│
+├── routes/                          # Configuration routage
+│   ├── routes.tsx
+│   ├── routes.constants.ts
+│   └── pages/
+│
+├── hooks/                           # Hooks utilitaires
+│   ├── debouncedValue/
+│   ├── generateUrl/
+│   ├── localSeo/
+│   ├── overridePage/
+│   ├── ssl/
+│   └── task/
+│
+└── utils/                           # Utilitaires
+    ├── form.ts
+    ├── formSchemas.utils.ts         # Validation Zod
+    ├── getStatusColor.ts
+    ├── queryClient.ts
+    ├── string.ts
+    ├── tracking.constants.ts
+    ├── url.ts
+    └── validator.ts
+```
+
+## 2.2 Dépendances principales
+
+| Package | Usage |
+|---------|-------|
+| `@ovh-ux/manager-core-api` | Client API (v6, v2, aapi, fetchIcebergV2) |
+| `@ovh-ux/manager-react-components` | Composants UI Manager |
+| `@ovhcloud/ods-components` | Design System OVHcloud (ODS) |
+| `@tanstack/react-query` | Gestion état serveur |
+| `react-router-dom` | Routage |
+| `react-hook-form` | Formulaires |
+| `zod` | Validation schémas |
+| `i18next` | Internationalisation |
+| `tailwindcss` | Styles utilitaires |
+
+## 2.3 Patterns architecturaux
+
+- **Feature-based structure** : Organisation par fonctionnalité
+- **Custom hooks** : Abstraction logique métier
+- **React Query** : Cache et synchronisation serveur
+- **Iceberg pagination** : Chargement progressif grandes listes
+- **Zod schemas** : Validation formulaires côté client
+
+---
+
+# 3. PAGES & NAVIGATION
+
+## 3.1 Routes définies
+
+| Route | Composant | Description |
+|-------|-----------|-------------|
+| `/` | RootPage | Layout racine |
+| `/onboarding` | OnboardingPage | Première connexion |
+| `/websites` | WebsitesPage | Liste tous les sites |
+| `/managed-hosting-for-wordpress` | ManagedWordpressPage | Liste ressources WordPress |
+| `/managed-hosting-for-wordpress/:serviceName` | ManagedWordpressResourcePage | Détail ressource |
+| `/managed-hosting-for-wordpress/:serviceName/create` | CreatePage | Créer site WordPress |
+| `/managed-hosting-for-wordpress/:serviceName/import` | ImportPage | Importer site WordPress |
+| `/managed-hosting-for-wordpress/:serviceName/tasks` | TasksPage | Tâches WordPress |
+| `/managed-hosting-for-wordpress/:serviceName/delete-modal` | DeleteModal | Modal suppression |
+| `/:serviceName` | DashboardLayout | Dashboard hébergement |
+| `/:serviceName/ssl` | SslPage | Certificats SSL |
+| `/:serviceName/task` | TaskPage | Tâches en cours |
+| `/:serviceName/import-ssl` | ImportSslPage | Importer certificat |
+| `/:serviceName/order-sectigo` | OrderSectigoPage | Commander Sectigo |
+| `/:serviceName/:domain/disable-ssl` | DisableSslPage | Désactiver SSL |
+| `/:serviceName/:domain/san-ssl` | SanSslPage | Gérer SAN SSL |
+| `/:serviceName/add-domain` | AddDomainPage | Ajouter domaine |
+| `/:serviceName/order-domain` | OrderDomainPage | Commander domaine |
+| `/:serviceName/localSeo` | LocalSeoPage | SEO local |
+| `/:serviceName/localSeo/:locationId/terminate` | RemoveSeoSubscriptionPage | Résilier SEO |
+
+## 3.2 Paramètres de route
+
+| Paramètre | Description |
+|-----------|-------------|
+| `:serviceName` | Identifiant du service (hébergement ou ressource WordPress) |
+| `:domain` | Nom de domaine attaché |
+| `:locationId` | Identifiant location SEO |
+
+## 3.3 Breadcrumb
+
+Configuration dynamique via `RouteHandle` :
+```typescript
+handle: {
+  breadcrumb: {
+    label: 'ssl' | ':serviceName' | 'managed_wordpress',
+    icon?: ODS_ICON_NAME
+  }
+}
+```
+
+## 3.4 Tracking Analytics
+
+| Constante | Page |
+|-----------|------|
+| `WORDPRESS_MANAGED` | Liste WordPress |
+| `WORDPRESS_MANAGED_SERVICE` | Détail ressource |
+| `GENERAL_INFORMATION` | Infos générales |
+| `TASKS` | Tâches |
+| `CREATE` | Création site |
+| `IMPORT` | Import site |
+| `DELETE` | Suppression |
+| `SSL` | Certificats SSL |
+| `IMPORT_SSL` | Import SSL |
+| `ORDER_SECTIGO` | Commande Sectigo |
+| `DISABLE_SSL` | Désactivation SSL |
+| `SAN_SSL` | Gestion SAN |
+| `ADD_DOMAIN` | Ajout domaine |
+| `ORDER_DOMAIN` | Commande domaine |
+| `LOCAL_SEO` | SEO local |
+| `TASK` | Tâches hébergement |
+
+---
+
+# 4. COMPOSANTS UI
+
+## 4.1 Composants ODS utilisés
+
+| Composant | Props principales | Usage |
+|-----------|-------------------|-------|
+| `OdsButton` | `label`, `variant`, `color`, `icon`, `isDisabled`, `isLoading` | Actions |
+| `OdsInput` | `type`, `value`, `hasError`, `isClearable` | Saisie texte |
+| `OdsPassword` | `value`, `hasError`, `isMasked`, `isClearable` | Saisie mot de passe |
+| `OdsSelect` | `value`, `placeholder`, `onOdsChange` | Sélection |
+| `OdsBadge` | `color`, `label` | Statut |
+| `OdsText` | `preset` | Texte formaté |
+| `OdsLink` | `href`, `label`, `icon`, `iconAlignment` | Liens |
+| `OdsFormField` | `error` | Champ formulaire |
+| `OdsMessage` | `isDismissible` | Messages info |
+
+### Variantes ODS
+
+```typescript
+// Boutons
+ODS_BUTTON_VARIANT.outline | ODS_BUTTON_VARIANT.ghost
+ODS_BUTTON_COLOR.primary | ODS_BUTTON_COLOR.critical
+
+// Texte
+ODS_TEXT_PRESET.heading1 | ODS_TEXT_PRESET.heading3 | ODS_TEXT_PRESET.paragraph | ODS_TEXT_PRESET.span
+
+// Icônes
+ODS_ICON_NAME.download | ODS_ICON_NAME.refresh | ODS_ICON_NAME.trash | ODS_ICON_NAME.externalLink
+```
+
+## 4.2 Composants Manager React
+
+| Composant | Props | Usage |
+|-----------|-------|-------|
+| `Datagrid` | `columns`, `items`, `totalItems`, `hasNextPage`, `onFetchNextPage`, `isLoading`, `topbar`, `search`, `rowSelection` | Tableaux paginés |
+| `DatagridColumn<T>` | `id`, `cell`, `label`, `isSortable`, `isSearchable` | Définition colonnes |
+| `ActionMenu` | `items`, `isCompact`, `variant` | Menu actions |
+| `ManagerButton` | `id`, `label`, `onClick`, `isDisabled`, `isLoading`, `icon`, `variant`, `color` | Bouton Manager |
+| `Links` | `href`, `label`, `type` | Liens navigation |
+| `LinkType` | `back` | Type lien retour |
+| `Notifications` | - | Zone notifications |
+| `useNotifications` | `addSuccess`, `addError` | Hook notifications |
+| `BaseLayout` | `breadcrumb`, `header` | Layout page |
+| `ErrorBoundary` | `redirectionApp`, `isPreloaderHide` | Gestion erreurs |
+| `useResourcesIcebergV2` | `route`, `queryKey` | Hook pagination Iceberg |
+
+## 4.3 Composants custom
+
+### BadgeStatus
+```typescript
+// Couleur selon statut
+const getStatusColor = (status: ResourceStatus): ODS_BADGE_COLOR => {
+  switch(status) {
+    case 'READY': return 'success';
+    case 'CREATING': return 'information';
+    case 'ERROR': return 'critical';
+    case 'DELETING': return 'warning';
+    default: return 'neutral';
+  }
+};
+```
+
+### Loading
+```typescript
+<Loading /> // Spinner centré
+```
+
+### Breadcrumb
+```typescript
+<Breadcrumb /> // Fil d'Ariane dynamique depuis routes
+```
+
+### TopBar
+```typescript
+<Topbar /> // Barre d'actions contextuelle
+```
+
+---
+
+# 5. APIs & DONNÉES
+
+## 5.1 Endpoints APIv6 (Hébergement Web)
+
+### Hébergement principal
+
+| Méthode | Endpoint | Description | Params |
+|---------|----------|-------------|--------|
+| GET | `/hosting/web/{serviceName}` | Détails hébergement | serviceName |
+| PUT | `/hosting/web/{serviceName}` | Modifier hébergement | serviceName, body: {displayName} |
+| GET | `/hosting/web/{serviceName}/serviceInfos` | Infos service | serviceName |
+
+### Domaines attachés
+
+| Méthode | Endpoint | Description | Params |
+|---------|----------|-------------|--------|
+| POST | `/hosting/web/{serviceName}/attachedDomain` | Attacher domaine | serviceName, body: TCreateAttachedDomain |
+| GET | `/hosting/web/{serviceName}/attachedDomain/{domain}/digStatus` | Statut DNS | serviceName, domain |
+
+### SSL
+
+| Méthode | Endpoint | Description | Params |
+|---------|----------|-------------|--------|
+| POST | `/hosting/web/{serviceName}/ssl` | Créer certificat | serviceName, body: {certificate?, key?, chain?} |
+| POST | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | SSL par domaine | serviceName, domain |
+| DELETE | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | Supprimer SSL domaine | serviceName, domain |
+
+### Local SEO
+
+| Méthode | Endpoint | Description | Params |
+|---------|----------|-------------|--------|
+| GET | `/hosting/web/{serviceName}/localSeo/account/{id}` | Détails compte SEO | serviceName, id |
+| POST | `/hosting/web/{serviceName}/localSeo/account/{id}/login` | Login interface SEO | serviceName, id |
+| POST | `/hosting/web/{serviceName}/localSeo/location/{locationId}/terminate` | Résilier location | serviceName, locationId |
+
+### Domaines
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/domain/zone` | Lister zones DNS |
+| GET | `/domain/{serviceName}` | Détails domaine |
+
+## 5.2 Endpoints APIv2 (Managed WordPress)
+
+### Référentiel
+
+| Méthode | Endpoint | Description | Query params |
+|---------|----------|-------------|--------------|
+| GET | `/managedCMS/reference/supportedPHPVersions` | Versions PHP | cms=WORDPRESS |
+| GET | `/managedCMS/reference/availableLanguages` | Langues disponibles | cms=WORDPRESS |
+
+### Ressources
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/managedCMS/resource` | Lister ressources |
+| GET | `/managedCMS/resource/{serviceName}` | Détails ressource |
+
+### Sites (Websites)
+
+| Méthode | Endpoint | Description | Body |
+|---------|----------|-------------|------|
+| GET | `/managedCMS/resource/{serviceName}/website` | Lister sites (Iceberg) | - |
+| GET | `/managedCMS/resource/{serviceName}/website/{websiteId}` | Détails site | - |
+| POST | `/managedCMS/resource/{serviceName}/website` | Créer/Importer site | PostCreatePayload ou PostImportPayload |
+| DELETE | `/managedCMS/resource/{serviceName}/website/{websiteId}` | Supprimer site | - |
+
+### Tâches
+
+| Méthode | Endpoint | Description | Body |
+|---------|----------|-------------|------|
+| GET | `/managedCMS/resource/{serviceName}/task` | Lister tâches | - |
+| PUT | `/managedCMS/resource/{serviceName}/task/{taskId}` | MAJ tâche import | PostImportTaskPayload |
+
+## 5.3 Endpoints 2API/AAPI
+
+| Méthode | Endpoint | Description | Query params |
+|---------|----------|-------------|--------------|
+| GET | `/sws/hosting/web/{serviceName}/add-domain-existing` | Domaines existants | tokenNeeded=true/false |
+
+## 5.4 Endpoints Iceberg (Pagination v2)
+
+| Route | Usage | PageSize |
+|-------|-------|----------|
+| `/webhosting/attachedDomain` | Liste tous domaines attachés | 15 ou 500 |
+| `/webhosting/resource/{serviceName}/certificate` | Liste certificats SSL | 25 |
+| `/managedCMS/resource/{serviceName}/website` | Liste sites WordPress | 15 ou 500 |
+
+### Pattern Iceberg
+
+```typescript
+const { data } = await fetchIcebergV2<T>({
+  route: `/managedCMS/resource/${serviceName}/website`,
+  pageSize: 15,
+  cursor: pageParam as string,
+});
+// Retourne: { data: T[], cursorNext: string | null }
+```
+
+## 5.5 Séquencement des appels
+
+### Chargement Dashboard Hébergement
+```
+1. GET /hosting/web/{serviceName}           → Infos hébergement
+2. GET /hosting/web/{serviceName}/serviceInfos → Infos service
+   (parallèle)
+```
+
+### Chargement Page SSL
+```
+1. useResourcesIcebergV2(/webhosting/resource/{serviceName}/certificate)
+   → Pagination automatique
+```
+
+### Chargement Managed WordPress
+```
+1. GET /managedCMS/resource                 → Liste ressources
+2. Si 1 seule ressource → redirect vers détail
+3. GET /managedCMS/resource/{serviceName}   → Détails ressource
+4. fetchIcebergV2(/managedCMS/resource/{serviceName}/website) → Sites
+   (parallèle avec 3)
+```
+
+### Création site WordPress
+```
+1. GET /managedCMS/reference/availableLanguages  → Options langue
+2. GET /managedCMS/reference/supportedPHPVersions → Versions PHP
+3. POST /managedCMS/resource/{serviceName}/website → Création
+4. Invalidation cache + redirect
+```
+
+### Import site WordPress
+```
+1. POST /managedCMS/resource/{serviceName}/website (avec import payload)
+2. Tâche créée en statut WAITING_USER_INPUT
+3. PUT /managedCMS/resource/{serviceName}/task/{taskId} (sélection plugins/themes)
+4. Tâche passe en RUNNING
+```
+
+## 5.6 Types de données
+
+### WebHostingType
+```typescript
+interface WebHostingType {
+  serviceName: string;
+  displayName?: string;
+  state: 'active' | 'bloqued' | 'maintenance';
+  offer: string;
+  boostOffer?: string;
+  cluster: string;
+  datacenter: string;
+  home: string;
+  primaryLogin: string;
+  hostingIp?: string;
+  hostingIpv6?: string;
+  operatingSystem: string;
+  multipleSSL: boolean;
+  hasCdn?: boolean;
+  hasHostedSsl?: boolean;
+  resourceType: 'bestEffort' | 'cloud' | 'dedicated' | 'shared';
+  quotaSize: { unit: string; value: number };
+  quotaUsed: { unit: string; value: number };
+  phpVersions: Array<{ version: string; support: 'BETA' | 'END_OF_LIFE' | 'SECURITY_FIXES' | 'SUPPORTED' }>;
+  countriesIp: Array<{ country: string; ip?: string; ipv6?: string }>;
+  serviceManagementAccess: {
+    ftp: { port: number; url: string };
+    http: { port: number; url: string };
+    ssh: { port: number; url: string };
+  };
+  iam?: { id: string; urn: string; displayName?: string };
+}
+```
+
+### ManagedWordpressResourceType
+```typescript
+interface ManagedWordpressResourceType {
+  id: string;
+  resourceStatus: ResourceStatus;
+  checksum: string;
+  iam: { id: string; urn: string; displayName: string };
+  currentState: {
+    plan: string;  // ex: "managed-cms-alpha-5"
+    createdAt: string;
+    dashboards: { wordpress: string };
+    quotas: {
+      websites: { planQuota: number; additionalQuota: number; totalQuota: number; totalUsage: number };
+      disk: { planQuotaBytes: number; totalUsageBytes: number };
+      visits: { totalAdditionalQuota: number; boosts: Array<...> };
+    };
+  };
+  currentTasks: Array<{ id: string; link: string; status: string; type: string }>;
+}
+```
+
+### ManagedWordpressWebsites
+```typescript
+interface ManagedWordpressWebsites {
+  id: string;
+  checksum: string;
+  resourceStatus: ResourceStatus;
+  iam: { id: string; urn: string; displayName?: string };
+  currentState: {
+    cms?: CmsType;
+    createdAt: string;
+    defaultFQDN?: string;
+    diskUsageBytes: number;
+    phpVersion: string;
+    import?: { checkResult: { cmsSpecific: { wordpress: { plugins: [...]; themes: [...] } } } };
+  };
+  currentTasks: Array<{ id: string; link: string; status: TaskStatus; type: string }>;
+  targetSpec?: {
+    creation?: { adminLogin: string; cms: CmsType; adminPassword?: string; phpVersion?: string; cmsSpecific?: {...} };
+    import?: { adminLogin: string; adminURL: string; cms: CmsType; cmsSpecific?: {...} };
+  };
+}
+```
+
+### SslCertificate
+```typescript
+interface SslCertificate {
+  id: string;
+  checksum: string;
+  resourceStatus: ResourceStatus;
+  currentState: {
+    mainDomain: string;
+    additionalDomains: string[];
+    certificateType: 'COMODO' | 'CUSTOM' | 'LETSENCRYPT' | 'SECTIGO';
+    state: 'ACTIVE' | 'CREATING' | 'DELETING' | 'EXPIRED' | 'IMPORTING' | 'REGENERATING';
+    createdAt: string;
+    expiredAt: string;
+  };
+  currentTasks: Array<{ id: string; link: string; status: Status; type: string }>;
+}
+```
+
+### TCreateAttachedDomain
+```typescript
+interface TCreateAttachedDomain {
+  serviceName?: string;
+  domain?: string;
+  cdn?: 'active' | 'none';
+  firewall?: 'active' | 'none';
+  ownLog?: string;
+  path?: string;
+  runtimeId?: number;
+  ssl?: boolean;
+  bypassDNSConfiguration?: boolean;
+  ipLocation?: HostingCountries;
+  wwwNeeded?: boolean;
+}
+```
+
+### PostCreatePayload (WordPress)
+```typescript
+interface PostCreatePayload {
+  targetSpec: {
+    creation: {
+      adminLogin: string;
+      adminPassword: string;
+      cms: 'WORDPRESS';
+      cmsSpecific: { wordpress: { language: string } };
+      phpVersion: string;
+    };
+  };
+}
+```
+
+### PostImportPayload (WordPress)
+```typescript
+interface PostImportPayload {
+  targetSpec: {
+    import: {
+      adminLogin: string;
+      adminPassword: string;
+      adminURL: string;
+      cms: 'WORDPRESS';
+    };
+  };
+}
+```
+
+### PostImportTaskPayload
+```typescript
+interface PostImportTaskPayload {
+  inputs: {
+    'import.cmsSpecific.wordpress.selection': {
+      plugins: Array<{ name: string; version: string; enabled?: boolean }>;
+      themes: Array<{ name: string; version: string; active?: boolean }>;
+      wholeDatabase: boolean;
+      media: boolean;
+      posts: boolean;
+      pages: boolean;
+      comments: boolean;
+      tags: boolean;
+      users: boolean;
+    };
+  };
+}
+```
+
+### Enums Status
+```typescript
+enum ResourceStatus {
+  CREATING = 'CREATING',
+  DELETING = 'DELETING',
+  ERROR = 'ERROR',
+  READY = 'READY',
+  UPDATING = 'UPDATING',
+  SUSPENDED = 'SUSPENDED',
+  DONE = 'DONE',
+}
+
+enum TaskStatus {
+  ERROR = 'ERROR',
+  PENDING = 'PENDING',
+  RUNNING = 'RUNNING',
+  SCHEDULED = 'SCHEDULED',
+}
+
+enum Status {
+  DONE = 'DONE',
+  ERROR = 'ERROR',
+  PENDING = 'PENDING',
+  RUNNING = 'RUNNING',
+  SCHEDULED = 'SCHEDULED',
+  WAITING_USER_INPUT = 'WAITING_USER_INPUT',
+}
+
+enum ServiceStatus {
+  ACTIVE = 'ACTIVE',
+  NONE = 'NONE',
+}
+
+enum CmsType {
+  WORDPRESS = 'WORDPRESS',
+}
+```
+
+---
+
+# 6. TRADUCTIONS
+
+## 6.1 Clés i18n principales (FR)
+
+### Namespace: common
+```json
+{
+  "managed_wordpress": "WordPress géré",
+  "create_website": "Créer un site",
+  "import_website": "Importer un site",
+  "delete_my_website": "Supprimer mon site",
+  "web_hosting_sites": "sites",
+  "web_hosting_status_header_resource": "Ressource",
+  "web_hosting_status_header_offer": "Offre",
+  "web_hosting_status_header_websites_installed": "Sites installés",
+  "web_hosting_status_header_fqdn": "FQDN",
+  "web_hosting_status_creating_label": "En cours de création",
+  "web_hosting_status_ready": "Prêt",
+  "web_hosting_status_creating": "En création",
+  "web_hosting_status_deleting": "En suppression",
+  "web_hosting_status_error": "Erreur",
+  "web_hosting_status_updating": "En mise à jour",
+  "web_hosting_action_import": "Importer",
+  "web_hosting_action_manage_my_sites": "Gérer mes sites",
+  "web_hosting_common_sites_backlink": "Retour à mes sites",
+  "web_hosting_common_sites_backpage": "Retour",
+  "web_hosting_common_action_continue": "Continuer",
+  "web_hosting_common_admin_email": "Email administrateur",
+  "web_hosting_common_admin_password": "Mot de passe administrateur",
+  "web_hosting_export_label": "Exporter",
+  "web_hosting_export_success": "Export réussi",
+  "web_hosting_export_download_manually": "Télécharger manuellement"
+}
+```
+
+### Namespace: ssl
+```json
+{
+  "ssl": "Certificats SSL",
+  "cell_main_domain": "Domaine principal",
+  "cell_additional_domain": "Domaines additionnels",
+  "cell_certificate_type": "Type de certificat",
+  "cell_state": "État",
+  "cell_creation_date": "Date de création",
+  "cell_expiration_date": "Date d'expiration"
+}
+```
+
+### Namespace: managedWordpress
+```json
+{
+  "web_hosting_managed_wordpress_quota_used": "{{used}} / {{total}} sites utilisés",
+  "web_hosting_managed_wordpress_create_webiste_success": "Site créé avec succès",
+  "web_hosting_managed_wordpress_create_webiste_error": "Erreur lors de la création du site",
+  "web_hosting_managed_wordpress_create_webiste_create_login": "Créer un accès administrateur",
+  "web_hosting_managed_wordpress_create_webiste_language_admin": "Langue de l'interface",
+  "web_hosting_managed_wordpress_create_webiste_select_language": "Sélectionnez une langue",
+  "web_hosting_managed_wordpress_create_webiste_php_version": "Version PHP",
+  "web_hosting_managed_wordpress_create_webiste_select_version": "Sélectionnez une version",
+  "web_hosting_managed_wordpress_import_last_php_version": "La version PHP utilisée sera {{version}}"
+}
+```
+
+### Namespace: dashboard
+```json
+{
+  "hosting_managed_wordpress_websites_description": "Gérez vos sites WordPress depuis cette interface."
+}
+```
+
+### Namespace: form (NAMESPACES.FORM)
+```json
+{
+  "mandatory_fields": "* Champs obligatoires",
+  "required_field": "Ce champ est requis",
+  "min_chars": "Minimum {{value}} caractères",
+  "max_chars": "Maximum {{value}} caractères",
+  "error_email": "Format email invalide",
+  "error_pattern": "Format invalide",
+  "error_between_min_max_chars": "Entre {{min}} et {{max}} caractères",
+  "change_password_helper1": "Le mot de passe doit respecter les critères suivants :",
+  "change_password_helper2": "Au moins 1 lettre majuscule, 1 minuscule et 1 chiffre"
+}
+```
+
+### Namespace: actions (NAMESPACES.ACTIONS)
+```json
+{
+  "create": "Créer",
+  "delete": "Supprimer",
+  "cancel": "Annuler",
+  "confirm": "Confirmer"
+}
+```
+
+### Namespace: status (NAMESPACES.STATUS)
+```json
+{
+  "status": "Statut"
+}
+```
+
+## 6.2 Traductions legacy (web-universe-components)
+
+### duration
+```json
+{
+  "duration_day_1": "1 jour",
+  "duration_day_other": "{{t0}} jours",
+  "duration_month_1": "1 mois",
+  "duration_month_other": "{{t0}} mois",
+  "duration_year_1": "1 an",
+  "duration_year_other": "{{t0}} ans"
+}
+```
+
+### guides
+```json
+{
+  "guides_core_new_window": "Nouvelle fenêtre",
+  "guide_add_subscope": "Attacher un domaine à mon hébergement",
+  "guide_domain_edit_zone": "Comment éditer ma zone DNS ?",
+  "guide_emails_emails_creation": "Création d'une adresse e-mail"
+}
+```
+
+---
+
+# 7. RÈGLES MÉTIER
+
+## 7.1 Validations formulaires
+
+### Création site WordPress
+```typescript
+const CREATE_SITE_FORM_SCHEMA = z.object({
+  adminLogin: z.string()
+    .min(1)
+    .max(60)
+    .email(),
+  adminPassword: z.string()
+    .min(8)
+    .max(30)
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
+  cmsSpecific: z.object({
+    wordpress: z.object({
+      language: z.string(),
+    }),
+  }),
+  phpVersion: z.string().min(1),
+});
+```
+
+### Import site WordPress
+```typescript
+const ADD_SITE_FORM_SCHEMA = z.object({
+  adminLogin: z.string()
+    .min(1)
+    .max(60)
+    .regex(/^[\w.@\-\s]{1,60}$/),
+  adminPassword: z.string()
+    .min(8)
+    .max(50)
+    .regex(PASSWORD_REGEX),
+  adminURL: z.string().url(),
+});
+```
+
+## 7.2 Conditions d'affichage
+
+### Sélection de lignes (Datagrid WordPress)
+```typescript
+// Une ligne est sélectionnable si status READY ou ERROR
+const isRowSelectable = (item: ManagedWordpressWebsites) =>
+  [ResourceStatus.READY, ResourceStatus.ERROR].includes(item.resourceStatus);
+```
+
+### Redirection automatique
+```typescript
+// Si 1 seule ressource WordPress, redirection vers détail
+useEffect(() => {
+  if (!isLoading && data?.length === 1) {
+    navigate(firstItemUrl);
+  }
+}, [data, isLoading]);
+```
+
+### Bouton "Gérer mes sites"
+```typescript
+// Désactivé si aucun site
+isDisabled={items.length === 0}
+```
+
+## 7.3 États et transitions
+
+### Ressource WordPress
+```
+CREATING → READY → UPDATING → READY
+                 → DELETING → (supprimé)
+                 → ERROR
+                 → SUSPENDED
+```
+
+### Tâche Import
+```
+SCHEDULED → RUNNING → WAITING_USER_INPUT → RUNNING → DONE
+                                                   → ERROR
+```
+
+### Certificat SSL
+```
+CREATING → ACTIVE → REGENERATING → ACTIVE
+                  → DELETING → (supprimé)
+                  → EXPIRED
+IMPORTING → ACTIVE
+```
+
+## 7.4 Gestion des erreurs
+
+### Pattern mutation
+```typescript
+const { mutate } = useMutation({
+  onSuccess: () => {
+    addSuccess(<OdsText>Message succès</OdsText>, true);
+  },
+  onError: () => {
+    addError(<OdsText>Message erreur</OdsText>, true);
+  },
+  onSettled: () => {
+    refetch();  // Invalider cache
+    onClose();  // Fermer modal/page
+  },
+});
+```
+
+### Invalidation cache
+```typescript
+queryClient.invalidateQueries()
+```
+
+## 7.5 Permissions et restrictions
+
+### Suppression sites WordPress
+- Seuls les sites en status `READY` ou `ERROR` peuvent être supprimés
+- Suppression multiple possible via sélection checkbox
+
+### Actions SSL
+- Import SSL : Requiert certificat + clé + chain (optionnel)
+- Commande Sectigo : Redirection vers bon de commande
+- SAN SSL : Ajout/retrait domaines supplémentaires
+
+## 7.6 URLs externes
+
+### Commande domaine
+```typescript
+const DOMAIN_ORDER_URL = {
+  EU: {
+    FR: 'https://www.ovh.com/fr/order/webcloud/',
+    // ... autres pays
+  },
+  CA: {
+    CA: 'https://ca.ovh.com/en/order/webcloud',
+    // ...
+  },
+};
+```
+
+### Interface Local SEO
+```typescript
+const LOCAL_SEO_INTERFACE = 'https://localseo.hosting.ovh.net/{lang}/app/ovh?access_token={token}';
+```
+
+### Dashboard WordPress externe
+```typescript
+// URL depuis API
+dataResourceDetails?.currentState?.dashboards?.wordpress
+```
+
+---
+
+# 8. ANNEXES
+
+## 8.1 Mapping couleurs statut
+
+```typescript
+const getStatusColor = (status: string): ODS_BADGE_COLOR => {
+  const statusColorMap: Record<string, ODS_BADGE_COLOR> = {
+    READY: 'success',
+    DONE: 'success',
+    ACTIVE: 'success',
+    CREATING: 'information',
+    UPDATING: 'information',
+    RUNNING: 'information',
+    PENDING: 'information',
+    SCHEDULED: 'information',
+    DELETING: 'warning',
+    WAITING_USER_INPUT: 'warning',
+    ERROR: 'critical',
+    EXPIRED: 'critical',
+    SUSPENDED: 'neutral',
+  };
+  return statusColorMap[status?.toUpperCase()] || 'neutral';
+};
+```
+
+## 8.2 Pattern Export CSV
+
+```typescript
+const handleExportWithExportToCsv = () => {
+  const csvConfig = mkConfig({
+    filename: 'export',
+    fieldSeparator: ',',
+    quoteStrings: true,
+    useKeysAsHeaders: true,
+  });
+  
+  const exportColumns = [
+    { id: 'field', label: 'Label', getValue: (item) => item.field },
+  ];
+  
+  const csvData = flattenData?.map((item) =>
+    exportColumns.reduce((acc, col) => ({
+      ...acc,
+      [col.label]: col.getValue(item),
+    }), {})
+  );
+  
+  const csv = generateCsv(csvConfig)(csvData);
+  download(csvConfig)(csv);
+};
+```
+
+## 8.3 Hook pagination Iceberg custom
+
+```typescript
+const getAllManagedCmsResourceWebsites = async (serviceName: string) => {
+  const allDataArray: ManagedWordpressWebsites[] = [];
+  
+  const fetchPages = async (cursor: string | null): Promise<void> => {
+    const response = await getManagedCmsResourceWebsites({
+      serviceName,
+      pageParam: cursor,
+      pageSize: 500,
+    });
+    
+    allDataArray.push(...response.data);
+    
+    if (response.cursorNext) {
+      await fetchPages(response.cursorNext);
+    }
+  };
+  
+  await fetchPages(null);
+  return { data: allDataArray };
+};
+```
+
+## 8.4 Services AngularJS legacy (référence)
+
+Les services dans `ovh-api-services` définissent les endpoints via `$resource` :
+
+```javascript
+// /hosting/web/{serviceName}
+$resource('/hosting/web/:serviceName', { serviceName: '@serviceName' }, {
+  getAttachedDomain: { url: '/hosting/web/attachedDomain', method: 'GET', isArray: true },
+  getDatabaseAvailableVersion: { url: '/hosting/web/:serviceName/databaseAvailableVersion', method: 'GET' },
+  getDatabaseCreationCapabilities: { url: '/hosting/web/:serviceName/databaseCreationCapabilities', method: 'GET', isArray: true },
+});
+
+// /hosting/web/{serviceName}/ssl
+$resource('/hosting/web/:serviceName/ssl', {}, {
+  queryDomains: { url: '/hosting/web/:serviceName/ssl/domains', method: 'GET', isArray: true },
+  regenerate: { url: '/hosting/web/:serviceName/ssl/regenerate', method: 'POST' },
+  getReport: { url: '/hosting/web/:serviceName/ssl/report', method: 'GET' },
+});
+
+// /hosting/web/{serviceName}/extraSqlPerso
+$resource('/hosting/web/:serviceName/extraSqlPerso/:name', {}, {
+  queryDatabases: { url: '/hosting/web/:serviceName/extraSqlPerso/:name/databases', method: 'GET', isArray: true },
+  getServiceInfos: { url: '/hosting/web/:serviceName/extraSqlPerso/:name/serviceInfos', method: 'GET' },
+  terminate: { url: '/hosting/web/:serviceName/extraSqlPerso/:name/terminate', method: 'POST' },
+});
+```
+
+---
+
+# FIN DU CAHIER DES CHARGES

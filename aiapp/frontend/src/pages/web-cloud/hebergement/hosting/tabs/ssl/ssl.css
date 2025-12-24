@@ -1,33 +1,602 @@
 /* ============================================================
-   SSL TAB - CSS COMPLET ISOLÉ
+   SSL TAB - CSS ISOLÉ (Target SVG exact)
+   Préfixe: .ssl-* pour isolation complète
    ============================================================ */
 
-.ssl-tab { display: flex; flex-direction: column; gap: 16px; }
-.ssl-tab .tab-header { display: flex; justify-content: space-between; align-items: center; }
+.ssl-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-.ssl-tab .ssl-status { background: #FFFFFF; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 16px; }
-.ssl-tab .ssl-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-.ssl-tab .ssl-icon.active { background: #D1FAE5; }
-.ssl-tab .ssl-icon.inactive { background: #F3F4F6; }
-.ssl-tab .ssl-info h3 { margin: 0 0 4px 0; font-size: 16px; }
-.ssl-tab .ssl-info p { margin: 0; font-size: 13px; color: #6B7280; }
+/* === SKELETONS === */
+.ssl-skeleton-toolbar {
+  height: 32px;
+  background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 50%, #E5E7EB 75%);
+  background-size: 200% 100%;
+  animation: ssl-skeleton 1.5s infinite;
+  border-radius: 4px;
+}
 
-.ssl-tab .ssl-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; background: #FFFFFF; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.ssl-tab .detail-item label { display: block; font-size: 11px; color: #6B7280; margin-bottom: 4px; }
-.ssl-tab .detail-item .value { font-size: 13px; font-weight: 500; }
+.ssl-skeleton-table {
+  height: 340px;
+  background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 50%, #E5E7EB 75%);
+  background-size: 200% 100%;
+  animation: ssl-skeleton 1.5s infinite;
+  border-radius: 8px;
+}
 
-.ssl-tab .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
-.ssl-tab .badge.success { background: #D1FAE5; color: #065F46; }
-.ssl-tab .badge.warning { background: #FEF3C7; color: #92400E; }
-.ssl-tab .badge.inactive { background: #F3F4F6; color: #6B7280; }
+@keyframes ssl-skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
-.ssl-tab .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; }
-.ssl-tab .btn-primary { background: #0050D7; color: #FFFFFF; }
-.ssl-tab .btn-secondary { background: #FFFFFF; color: #0050D7; border-color: #0050D7; }
-.ssl-tab .btn-danger { background: #DC2626; color: #FFFFFF; }
+.ssl-error-state {
+  padding: 48px;
+  text-align: center;
+  color: #991B1B;
+  background: #FEF2F2;
+  border-radius: 8px;
+}
 
-.ssl-tab .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.ssl-tab .modal { background: #FFFFFF; border-radius: 12px; max-width: 500px; width: 90%; }
-.ssl-tab .modal-header { padding: 16px 20px; border-bottom: 1px solid #E5E7EB; }
-.ssl-tab .modal-body { padding: 20px; }
-.ssl-tab .modal-footer { padding: 16px 20px; border-top: 1px solid #E5E7EB; display: flex; justify-content: flex-end; gap: 12px; }
+/* === TOOLBAR === */
+.ssl-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ssl-toolbar-refresh {
+  width: 36px;
+  height: 32px;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: #1F2937;
+  font-size: 21px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ssl-toolbar-refresh:hover {
+  background: #F3F4F6;
+}
+
+.ssl-search-box {
+  width: 220px;
+}
+
+.ssl-search-box input {
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  background: #F9FAFB;
+  font-size: 11px;
+  color: #1F2937;
+}
+
+.ssl-search-box input::placeholder {
+  color: #6B7280;
+}
+
+.ssl-search-box input:focus {
+  outline: none;
+  border-color: #0050D7;
+  background: #FFFFFF;
+}
+
+.ssl-btn-export {
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid #0050D7;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: #0050D7;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ssl-btn-export:hover {
+  background: #EBF5FF;
+}
+
+.ssl-icon-down {
+  font-size: 11px;
+}
+
+/* === TABLE 7 COLONNES === */
+.ssl-table-container {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ssl-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ssl-table thead {
+  background: #F3F4F6;
+}
+
+.ssl-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1F2937;
+  border-bottom: 1px solid #E5E7EB;
+  white-space: nowrap;
+}
+
+.ssl-table td {
+  padding: 14px;
+  font-size: 12px;
+  color: #1F2937;
+  border-bottom: 1px solid #E5E7EB;
+  vertical-align: middle;
+}
+
+.ssl-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ssl-table tbody tr:hover {
+  background: #FAFAFA;
+}
+
+.ssl-empty-row {
+  text-align: center;
+  color: #6B7280;
+  padding: 48px 16px !important;
+}
+
+/* Domain link */
+.ssl-domain-link {
+  color: #0050D7;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.ssl-domain-link:hover {
+  text-decoration: underline;
+}
+
+/* Muted cell (SAN) */
+.ssl-cell-muted {
+  color: #6B7280;
+}
+
+/* Date cell */
+.ssl-cell-date {
+  font-size: 12px;
+  color: #1F2937;
+}
+
+/* Type cell with badge + icons */
+.ssl-type-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ssl-badge-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: #DBEAFE;
+  color: #1E40AF;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.ssl-action-regenerate {
+  border: none;
+  background: transparent;
+  color: #0050D7;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.ssl-action-regenerate:hover {
+  color: #003DA8;
+}
+
+.ssl-action-regenerate:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ssl-action-import {
+  border: none;
+  background: transparent;
+  color: #0050D7;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ssl-action-import:hover {
+  color: #003DA8;
+}
+
+.ssl-action-import:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* State badge */
+.ssl-badge-state {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.ssl-badge-state.active {
+  background: #DEF7EC;
+  color: #03543F;
+}
+
+.ssl-badge-state.pending {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+/* Disable button */
+.ssl-btn-disable {
+  border: none;
+  background: transparent;
+  color: #0050D7;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.ssl-btn-disable:hover {
+  background: #EBF5FF;
+}
+
+.ssl-btn-disable:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === WARNING BOX === */
+.ssl-warning-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #FEF3C7;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.ssl-warning-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.ssl-warning-content p {
+  margin: 0;
+  font-size: 12px;
+  color: #92400E;
+  line-height: 1.5;
+}
+
+/* === MODALS === */
+.ssl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ssl-modal {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  max-width: 480px;
+  width: 90%;
+}
+
+.ssl-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.ssl-modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.ssl-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  color: #6B7280;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.ssl-modal-close:hover {
+  color: #1F2937;
+}
+
+.ssl-modal-body {
+  padding: 20px;
+}
+
+.ssl-modal-body p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #1F2937;
+  line-height: 1.5;
+}
+
+.ssl-modal-info {
+  font-size: 13px !important;
+  color: #6B7280 !important;
+}
+
+.ssl-modal-warning {
+  font-size: 13px !important;
+  color: #92400E !important;
+}
+
+.ssl-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.ssl-btn-cancel {
+  padding: 8px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: #6B7280;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ssl-btn-cancel:hover {
+  background: #F3F4F6;
+}
+
+.ssl-btn-confirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0050D7;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ssl-btn-confirm:hover {
+  background: #003DA8;
+}
+
+.ssl-btn-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ssl-btn-danger {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ssl-btn-danger:hover {
+  background: #B91C1C;
+}
+
+.ssl-btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   MODALES SSL
+   ============================================================ */
+.ssl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ssl-modal {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  max-width: 560px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.ssl-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.ssl-modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.ssl-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  color: #6B7280;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.ssl-modal-close:hover {
+  color: #1F2937;
+}
+
+.ssl-modal-body {
+  padding: 20px;
+}
+
+.ssl-modal-body p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #1F2937;
+  line-height: 1.5;
+}
+
+.ssl-modal-info {
+  font-size: 13px !important;
+  color: #6B7280 !important;
+}
+
+.ssl-modal-warning {
+  font-size: 13px !important;
+  color: #92400E !important;
+  background: #FEF3C7;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.ssl-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.ssl-form-group {
+  margin-bottom: 16px;
+}
+
+.ssl-form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.ssl-form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Monaco', monospace;
+  color: #1F2937;
+  background: #FFFFFF;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.ssl-form-textarea:focus {
+  outline: none;
+  border-color: #0050D7;
+  box-shadow: 0 0 0 3px rgba(0, 80, 215, 0.1);
+}
+
+.ssl-form-error {
+  font-size: 12px;
+  color: #DC2626;
+  margin-top: 8px;
+}
+
+.ssl-btn-cancel {
+  padding: 8px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: #6B7280;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ssl-btn-cancel:hover {
+  background: #F3F4F6;
+}
+
+.ssl-btn-confirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0050D7;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ssl-btn-confirm:hover {
+  background: #003DA8;
+}
+
+.ssl-btn-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ssl-btn-danger {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ssl-btn-danger:hover {
+  background: #B91C1C;
+}

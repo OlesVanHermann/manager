@@ -184,8 +184,23 @@ export const hostingService = {
   // --- SSL ---
   getSsl: (sn: string) => ovhGet<SslCertificate>(`/hosting/web/${sn}/ssl`).catch(() => null),
   getSslInfo: (sn: string) => ovhGet<SslInfo>(`/hosting/web/${sn}/ssl`).catch(() => null),
+  // Pour les hébergements avec multiple SSLs
+  getSslDomains: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/ssl/domains`).catch(() => []),
+  // Récupère les infos SSL de manière robuste (gère multiple SSLs)
+  getSslSafe: async (sn: string): Promise<SslCertificate | null> => {
+    try {
+      return await ovhGet<SslCertificate>(`/hosting/web/${sn}/ssl`);
+    } catch (err: any) {
+      // Si "multiple SSLs", on retourne null et on utilise les infos des domaines
+      return null;
+    }
+  },
   regenerateSsl: (sn: string) => ovhPost<void>(`/hosting/web/${sn}/ssl/regenerate`, {}),
   deleteSsl: (sn: string) => ovhDelete<void>(`/hosting/web/${sn}/ssl`),
+  generateLetsEncrypt: (sn: string) => 
+    ovhPost<void>(`/hosting/web/${sn}/ssl`, { type: 'letsEncrypt' }),
+  disableSslForDomain: (sn: string, domain: string) => 
+    ovhDelete<void>(`/hosting/web/${sn}/attachedDomain/${domain}/ssl`),
   importSsl: (sn: string, certificate: string, key: string, chain?: string) => 
     ovhPost<void>(`/hosting/web/${sn}/ssl`, { certificate, key, chain }),
   orderSsl: (sn: string, type: string, certificate?: string, key?: string, chain?: string) => {

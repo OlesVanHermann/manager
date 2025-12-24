@@ -1,139 +1,197 @@
-# CAHIER DES CHARGES - Web Hosting (Hébergement Web)
-# Source: old_manager_web-cloud_hebergement.tar
-# Généré le: 2025-12-21
+# CAHIER DES CHARGES - Web Hosting Manager
+# Source : old_manager.web-cloud.hebergement.tar
+# Généré le : 2024-12-24
+# Version : 1.0
 
----
-
+================================================================================
 ## 1. RÉSUMÉ EXÉCUTIF
+================================================================================
 
-### Périmètre fonctionnel
-Module **Web Hosting** du Manager OVHcloud - Application React/TypeScript gérant :
+### 1.1 Périmètre fonctionnel
 
-| Fonctionnalité | Description |
-|----------------|-------------|
-| **Managed WordPress** | Gestion hébergements WordPress managés (création, import, suppression) |
-| **SSL/Certificats** | Gestion certificats SSL (Let's Encrypt, Sectigo, import personnalisé) |
-| **Local SEO** | Gestion abonnements SEO local |
-| **Multisite/Domains** | Gestion domaines attachés à l'hébergement |
-| **Tasks** | Suivi des tâches en cours |
+Application de gestion des hébergements web OVHcloud permettant :
+- Gestion des hébergements web (dashboard, informations générales)
+- Gestion des certificats SSL (Let's Encrypt, Sectigo, import personnalisé)
+- Gestion des domaines attachés (multisite)
+- Gestion Local SEO (Visibilité Pro)
+- Gestion Managed WordPress (création, import, suppression de sites)
+- Suivi des tâches en cours
 
-### Utilisateurs cibles
-- Clients OVHcloud avec hébergement Web
-- Utilisateurs WordPress managé
-- Gestionnaires de certificats SSL
+### 1.2 Utilisateurs cibles
 
----
+- Clients OVHcloud disposant d'un hébergement web
+- Administrateurs de sites web
+- Développeurs/Webmasters
 
-## 2. ARCHITECTURE
+### 1.3 Stack technique
 
-### Arborescence
-```
-packages/manager/
-├── apps/web-hosting/
-│   ├── src/
-│   │   ├── components/           # Composants réutilisables
-│   │   │   ├── badgeStatus/      # Badge coloré selon statut
-│   │   │   ├── breadcrumb/       # Fil d'Ariane
-│   │   │   ├── expirationDate/   # Date expiration formatée
-│   │   │   ├── loading/          # Spinner
-│   │   │   ├── tabs/             # Navigation onglets
-│   │   │   ├── tabsPanel/        # Conteneur onglets
-│   │   │   └── topBar/           # Barre actions SSL
-│   │   ├── data/
-│   │   │   ├── api/              # Appels API (v2, v6, aapi)
-│   │   │   │   ├── AttachedDomain.ts
-│   │   │   │   ├── AttachedDomainDigStatus.ts
-│   │   │   │   ├── dashboard.ts
-│   │   │   │   ├── local-seo.ts
-│   │   │   │   ├── managedWordpress.ts
-│   │   │   │   └── ssl.ts
-│   │   │   ├── hooks/            # React Query hooks
-│   │   │   │   ├── managedWordpress/
-│   │   │   │   ├── ssl/
-│   │   │   │   ├── webHostingAttachedDomain/
-│   │   │   │   ├── webHostingDashboard/
-│   │   │   │   └── webHostingLocalSeo/
-│   │   │   └── types/            # Interfaces TypeScript
-│   │   │       ├── product/
-│   │   │       │   ├── managedWordpress/
-│   │   │       │   ├── domain.ts
-│   │   │       │   ├── seo.ts
-│   │   │       │   ├── service.ts
-│   │   │       │   ├── ssl.ts
-│   │   │       │   ├── webHosting.ts
-│   │   │       │   └── website.ts
-│   │   │       └── status.ts
-│   │   ├── hooks/                # Hooks utilitaires
-│   │   ├── pages/                # Pages par route
-│   │   │   ├── dashboard/
-│   │   │   │   ├── local-seo/
-│   │   │   │   ├── multisite/
-│   │   │   │   ├── ssl/
-│   │   │   │   └── task/
-│   │   │   ├── managedWordpress/
-│   │   │   │   └── ManagedWordpressResource/
-│   │   │   │       ├── create/
-│   │   │   │       ├── delete/
-│   │   │   │       ├── import/
-│   │   │   │       ├── myWebsites/
-│   │   │   │       └── tasks/
-│   │   │   ├── onboarding/
-│   │   │   └── websites/
-│   │   ├── routes/
-│   │   │   ├── routes.constants.ts
-│   │   │   ├── routes.tsx
-│   │   │   └── pages/
-│   │   └── utils/
-│   └── public/translations/      # i18n (8 langues)
-│       ├── common/
-│       ├── dashboard/
-│       ├── local-seo/
-│       ├── managedWordpress/
-│       ├── onboarding/
-│       ├── ssl/
-│       └── task/
-│
-└── modules/web-universe-components/  # Composants partagés AngularJS
-    └── src/
-        ├── email-domain/
-        ├── exchange/
-        └── ...
-```
-
-### Stack technique
-
-| Couche | Technologies |
-|--------|--------------|
-| Frontend | React 18, TypeScript, Tailwind CSS |
-| State | React Query (@tanstack/react-query) |
-| Routing | React Router v6 |
+| Élément | Technologie |
+|---------|-------------|
+| Framework | React 18 + TypeScript |
+| Routing | React Router DOM v6 |
+| State Management | TanStack Query (React Query) |
+| UI Components | ODS (@ovhcloud/ods-components) |
+| Styling | Tailwind CSS |
 | Forms | React Hook Form + Zod |
-| UI | ODS @ovhcloud/ods-components |
-| Manager | @ovh-ux/manager-react-components |
-| API | @ovh-ux/manager-core-api (v2, v6, aapi) |
 | i18n | react-i18next |
+| API Client | @ovh-ux/manager-core-api (v6, v2, aapi) |
 
-### Dépendances
+================================================================================
+## 2. ARCHITECTURE
+================================================================================
+
+### 2.1 Arborescence des fichiers
+
+```
+packages/manager/apps/web-hosting/
+├── public/
+│   └── translations/
+│       ├── common/Messages_*.json
+│       ├── dashboard/Messages_*.json
+│       ├── ssl/Messages_*.json
+│       ├── task/Messages_*.json
+│       ├── local-seo/Messages_*.json
+│       ├── onboarding/Messages_*.json
+│       └── managedWordpress/Messages_*.json
+└── src/
+    ├── components/
+    │   ├── breadcrumb/Breadcrumb.component.tsx
+    │   ├── topBar/TopBar.component.tsx
+    │   ├── loading/Loading.component.tsx
+    │   ├── tabsPanel/
+    │   ├── tabs/
+    │   ├── badgeStatus/
+    │   └── expirationDate/
+    ├── data/
+    │   ├── api/
+    │   │   ├── dashboard.ts
+    │   │   ├── ssl.ts
+    │   │   ├── local-seo.ts
+    │   │   ├── managedWordpress.ts
+    │   │   ├── AttachedDomain.ts
+    │   │   └── AttachedDomainDigStatus.ts
+    │   ├── hooks/
+    │   │   ├── ssl/useSsl.ts
+    │   │   ├── webHostingDashboard/useWebHostingDashboard.ts
+    │   │   ├── webHostingAttachedDomain/useWebHostingAttachedDomain.ts
+    │   │   ├── webHostingLocalSeo/useWebHostingLocalSeo.ts
+    │   │   └── managedWordpress/
+    │   │       ├── managedWordpressResource/
+    │   │       ├── managedWordpressWebsites/
+    │   │       ├── managedWordpressWebsiteDetails/
+    │   │       ├── managedWordpressResourceTasks/
+    │   │       └── managedWordpressReferenceAvailableLanguages/
+    │   └── types/
+    │       ├── status.ts
+    │       └── product/
+    │           ├── webHosting.ts
+    │           ├── ssl.ts
+    │           ├── domain.ts
+    │           ├── service.ts
+    │           ├── seo.ts
+    │           ├── website.ts
+    │           └── managedWordpress/
+    ├── pages/
+    │   ├── 404.tsx
+    │   ├── layout.tsx
+    │   ├── onboarding/Onboarding.page.tsx
+    │   ├── websites/Websites.page.tsx
+    │   ├── dashboard/
+    │   │   ├── ssl/
+    │   │   │   ├── Ssl.page.tsx
+    │   │   │   ├── add/importSsl.page.tsx
+    │   │   │   ├── add/orderSectigo.page.tsx
+    │   │   │   └── manage/
+    │   │   │       ├── disableSsl.page.tsx
+    │   │   │       └── sanSsl.page.tsx
+    │   │   ├── task/Task.page.tsx
+    │   │   ├── local-seo/
+    │   │   │   ├── LocalSeo.page.tsx
+    │   │   │   └── manage/RemoveSeoSubscription.page.tsx
+    │   │   ├── multisite/domain/AddDomain.page.tsx
+    │   │   └── OrderDomain.page.tsx
+    │   └── managedWordpress/
+    │       ├── ManagedWordpress.page.tsx
+    │       └── ManagedWordpressResource/
+    │           ├── ManagedWordpressResource.page.tsx
+    │           ├── create/Create.page.tsx
+    │           ├── import/Import.page.tsx
+    │           ├── delete/Delete.modal.tsx
+    │           ├── myWebsites/MyWebsites.page.tsx
+    │           └── tasks/Tasks.page.tsx
+    ├── routes/
+    │   ├── routes.tsx
+    │   ├── routes.constants.ts
+    │   └── pages/
+    ├── hooks/
+    │   ├── ssl/useDatagridColumn.ts
+    │   ├── useHostingUrl.ts
+    │   └── ...
+    └── utils/
+        ├── queryClient.ts
+        ├── validator.ts
+        └── tracking.constants.ts
+```
+
+### 2.2 Patterns de développement
+
+| Pattern | Description | Exemple |
+|---------|-------------|---------|
+| Custom Hook Query | Encapsulation useQuery | `useGetHostingService(serviceName)` |
+| Custom Hook Mutation | Encapsulation useMutation | `useCreateCertificate(serviceName, onSuccess, onError)` |
+| Iceberg Pagination | Pagination via headers | `useResourcesIcebergV2({ route, queryKey })` |
+| Route Params | Extraction params URL | `const { serviceName } = useParams()` |
+| Notifications | Feedback utilisateur | `const { addSuccess, addWarning } = useNotifications()` |
+
+### 2.3 Dépendances clés
+
 ```json
 {
   "@ovhcloud/ods-components": "^18.x",
-  "@ovh-ux/manager-react-components": "*",
-  "@ovh-ux/manager-core-api": "*",
+  "@ovh-ux/manager-react-components": "^1.x",
+  "@ovh-ux/manager-core-api": "^1.x",
+  "@ovh-ux/manager-react-shell-client": "^1.x",
   "@tanstack/react-query": "^5.x",
+  "react-router-dom": "^6.x",
   "react-hook-form": "^7.x",
   "zod": "^3.x",
-  "export-to-csv": "*"
+  "react-i18next": "^13.x"
 }
 ```
 
----
-
+================================================================================
 ## 3. PAGES & NAVIGATION
+================================================================================
 
-### Configuration des routes
+### 3.1 Configuration des routes
+
+| ID | Path | Composant | Type |
+|----|------|-----------|------|
+| root | `/` | RootPage | - |
+| WORDPRESS_MANAGED | `/managed-hosting-for-wordpress` | ManagedWordpressPage | listing |
+| WORDPRESS_MANAGED_SERVICE | `/managed-hosting-for-wordpress/:serviceName` | ManagedWordpressResourcePage | listing |
+| GENERAL_INFORMATION | `/managed-hosting-for-wordpress/:serviceName` | ManagedWordpressServiceGeneralInformationPage | listing |
+| DELETE | `/managed-hosting-for-wordpress/:serviceName/delete-modal` | ManagedWordpressServiceDelete | popup |
+| TASKS | `/managed-hosting-for-wordpress/:serviceName/tasks` | ManagedWordpressServiceTasksPage | listing |
+| CREATE | `/managed-hosting-for-wordpress/:serviceName/create` | ManagedWordpressServiceCreatePage | listing |
+| IMPORT | `/managed-hosting-for-wordpress/:serviceName/import` | ManagedWordpressServiceImportPage | listing |
+| WEBSITE | `/websites` | WebsitesPage | listing |
+| ONBOARDING | `/onboarding` | OnboardingPage | onboarding |
+| DASHBOARD | `/:serviceName` | DashboardLayout | - |
+| SSL | `/:serviceName/ssl` | SslPage | listing |
+| TASK | `/:serviceName/task` | OngoingTaskPage | listing |
+| IMPORT_SSL | `/:serviceName/import-ssl` | ImportSslPage | popup |
+| ORDER_SECTIGO | `/:serviceName/order-sectigo` | OrderSectigoPage | popup |
+| DISABLE_SSL | `/:serviceName/:domain/disable-ssl` | DisableSslPage | popup |
+| SAN_SSL | `/:serviceName/:domain/san-ssl` | SanSslPage | popup |
+| ADD_DOMAIN | `/:serviceName/add-domain` | AddDomainPage | popup |
+| ORDER_DOMAIN | `/:serviceName/order-domain` | OrderDomainPage | popup |
+| LOCAL_SEO | `/:serviceName/localSeo` | LocalSeoPage | listing |
+| REMOVE_SEO_SUBSCIPTION | `/:serviceName/localSeo/:locationId/terminate` | RemoveSeoSubscriptionPage | popup |
+
+### 3.2 Constantes de routes
 
 ```typescript
-// routes/routes.constants.ts
 export const subRoutes = {
   serviceName: ':serviceName',
   domain: ':domain',
@@ -165,848 +223,432 @@ export const urls = {
 };
 ```
 
-### Tableau des routes
+### 3.3 Breadcrumb
 
-| Route | Composant | Type | Tracking |
-|-------|-----------|------|----------|
-| `/` | RootPage | Layout | - |
-| `/onboarding` | OnboardingPage | Page | PageType.onboarding |
-| `/websites` | WebsitesPage | Listing | PageType.listing |
-| `/managed-hosting-for-wordpress` | ManagedWordpressPage | Listing | PageType.listing |
-| `/managed-hosting-for-wordpress/:serviceName` | ManagedWordpressResourcePage | Dashboard | PageType.listing |
-| `/managed-hosting-for-wordpress/:serviceName/create` | CreatePage | Form | PageType.listing |
-| `/managed-hosting-for-wordpress/:serviceName/import` | ImportPage | Form | PageType.listing |
-| `/managed-hosting-for-wordpress/:serviceName/tasks` | TasksPage | Listing | PageType.listing |
-| `/managed-hosting-for-wordpress/:serviceName/delete-modal` | DeleteModal | Modal | PageType.popup |
-| `/:serviceName` | DashboardLayout | Dashboard | - |
-| `/:serviceName/ssl` | SslPage | Listing | PageType.listing |
-| `/:serviceName/import-ssl` | ImportSslPage | Modal | PageType.popup |
-| `/:serviceName/order-sectigo` | OrderSectigoPage | Modal | PageType.popup |
-| `/:serviceName/:domain/disable-ssl` | DisableSslPage | Modal | PageType.popup |
-| `/:serviceName/:domain/san-ssl` | SanSslPage | Modal | PageType.popup |
-| `/:serviceName/task` | OngoingTaskPage | Listing | PageType.listing |
-| `/:serviceName/localSeo` | LocalSeoPage | Listing | PageType.listing |
-| `/:serviceName/localSeo/:locationId/terminate` | RemoveSeoSubscriptionPage | Modal | PageType.popup |
-| `/:serviceName/add-domain` | AddDomainPage | Modal | PageType.popup |
-| `/:serviceName/order-domain` | OrderDomainPage | Modal | PageType.popup |
+Structure dynamique basée sur `handle.breadcrumb` de chaque route :
+- `label` : Clé i18n ou `:paramName` pour valeur dynamique
+- `icon` : Optionnel (ODS_ICON_NAME)
 
-### Breadcrumb
-Géré automatiquement via `handle.breadcrumb` des routes avec labels i18n.
+Logique spéciale pour Managed WordPress : ajout automatique du breadcrumb parent si URL matche `/managed-hosting-for-wordpress/`.
 
----
+### 3.4 Flux de navigation
 
+```
+/ (Root)
+├── /onboarding                     (si aucun domaine attaché)
+├── /websites                       (liste des sites)
+├── /managed-hosting-for-wordpress  (liste ressources WP)
+│   └── /:serviceName               (détail ressource)
+│       ├── /create                 (création site)
+│       ├── /import                 (import site)
+│       ├── /tasks                  (tâches)
+│       └── /delete-modal           (suppression - modal)
+└── /:serviceName                   (dashboard hébergement)
+    ├── /ssl                        (certificats SSL)
+    │   ├── /import-ssl             (import - modal)
+    │   ├── /order-sectigo          (commande - modal)
+    │   └── /:domain/disable-ssl    (désactivation - modal)
+    │   └── /:domain/san-ssl        (SAN - modal)
+    ├── /task                       (tâches en cours)
+    ├── /add-domain                 (ajout domaine - modal)
+    ├── /order-domain               (commande domaine - modal)
+    └── /localSeo                   (visibilité pro)
+        └── /:locationId/terminate  (résiliation - modal)
+```
+
+================================================================================
 ## 4. COMPOSANTS UI
+================================================================================
 
-### Composants internes
+### 4.1 Composants ODS utilisés
 
-#### BadgeStatus
+| Composant | Import | Props principales |
+|-----------|--------|-------------------|
+| OdsButton | @ovhcloud/ods-components/react | label, variant, color, size, icon, onClick, isDisabled |
+| OdsSelect | @ovhcloud/ods-components/react | name, allowMultiple, onOdsChange |
+| OdsInput | @ovhcloud/ods-components/react | type, name, placeholder, onOdsChange |
+| OdsModal | @ovhcloud/ods-components/react | isOpen, isDismissible, color, onOdsClose |
+| OdsText | @ovhcloud/ods-components/react | preset (heading4, heading6, span, caption) |
+| OdsCheckbox | @ovhcloud/ods-components/react | name, isChecked, onOdsChange |
+| OdsRadio | @ovhcloud/ods-components/react | value, isChecked, onOdsChange |
+| OdsCard | @ovhcloud/ods-components/react | - |
+| OdsMessage | @ovhcloud/ods-components/react | color (warning, error, info), isDismissible |
+| OdsBreadcrumb | @ovhcloud/ods-components/react | - |
+| OdsBreadcrumbItem | @ovhcloud/ods-components/react | label, href, color, target |
+| OdsFormField | @ovhcloud/ods-components/react | - |
+| OdsLink | @ovhcloud/ods-components/react | href, label, icon, iconAlignment |
+| OdsTooltip | @ovhcloud/ods-components/react | - |
+| OdsIcon | @ovhcloud/ods-components/react | name |
+
+### 4.2 Constantes ODS utilisées
+
 ```typescript
-// components/badgeStatus/BadgeStatus.component.tsx
-type BadgeStatusProps = {
-  itemStatus: GitStatus | ResourceStatus | ServiceStatus | DnsStatus;
-  'data-testid'?: string;
-  tracking?: string;
-  href?: string;
-  isLoading?: boolean;
+// Boutons
+ODS_BUTTON_COLOR.primary
+ODS_BUTTON_VARIANT.default | outline | ghost
+ODS_BUTTON_SIZE.sm
+
+// Texte
+ODS_TEXT_PRESET.heading4 | heading6 | span | caption
+
+// Modal
+ODS_MODAL_COLOR.neutral
+
+// Messages
+ODS_MESSAGE_COLOR.warning | error | info
+
+// Icônes
+ODS_ICON_NAME.download | refresh
+
+// Liens
+ODS_LINK_COLOR.primary
+ODS_LINK_ICON_ALIGNMENT.right
+
+// Input
+ODS_INPUT_TYPE.search | text
+```
+
+### 4.3 Composants manager-react-components
+
+| Composant | Usage |
+|-----------|-------|
+| Datagrid | Tableau avec pagination, tri, colonnes personnalisées |
+| Notifications | Zone d'affichage des notifications (success, warning, error) |
+| useNotifications | Hook pour ajouter des notifications |
+| useResourcesIcebergV2 | Hook pour pagination Iceberg API v2 |
+| ErrorBoundary | Gestion des erreurs avec redirection |
+
+### 4.4 Composants custom
+
+#### Breadcrumb.component.tsx
+```typescript
+interface BreadcrumbItem {
   label?: string;
-};
+  icon?: ODS_ICON_NAME;
+  href: string;
+}
 
-// Mapping couleurs
-const getStatusColor = (status: Status) => {
-  switch (status) {
-    case GitStatus.CREATED:
-    case ResourceStatus.READY:
-    case ServiceStatus.ACTIVE:
-    case DnsStatus.CONFIGURED:
-      return ODS_BADGE_COLOR.success;
-    case GitStatus.CREATING:
-    case GitStatus.DELETING:
-    case GitStatus.DEPLOYING:
-    case GitStatus.INITIALERROR:
-    case DnsStatus.EXTERNAL:
-      return ODS_BADGE_COLOR.warning;
-    case GitStatus.DISABLED:
-    case GitStatus.ERROR:
-    case ResourceStatus.ERROR:
-    case ResourceStatus.SUSPENDED:
-    case ServiceStatus.NONE:
-      return ODS_BADGE_COLOR.critical;
-    case DnsStatus.NOT_CONFIGURED:
-      return ODS_BADGE_COLOR.neutral;
-    default:
-      return ODS_BADGE_COLOR.information;
-  }
-};
+// Props
+interface Props {
+  namespace?: string | string[];  // default: 'common'
+}
+
+// Comportement
+- Récupère le chemin via shell.navigation.getURL('web', '/hosting', {})
+- Construit les items depuis les matches de route
+- Gère le cas spécial Managed WordPress
 ```
 
-#### TopBar (SSL)
+#### TopBar.component.tsx (page SSL)
 ```typescript
-// components/topBar/TopBar.component.tsx
-// Barre d'actions pour la page SSL:
-// - Bouton "Commander certificat SSL Sectigo"
-// - Bouton "Import de votre propre certificat SSL"
-// - Zone grise avec:
-//   - Titre "Activer le certificat SSL"
-//   - Select multiple des domaines sans SSL
-//   - Bouton "Activer SSL Let's Encrypt"
+// Fonctionnalités
+- Bouton "Commander un certificat SSL Sectigo"
+- Bouton "Import de votre propre certificat SSL"
+- Section "Activer le certificat SSL" avec :
+  - Select multiple pour domaines (filtrés: ssl.status !== ACTIVE && !isDefault)
+  - Bouton "Activer SSL Let's Encrypt"
+
+// Hooks utilisés
+- useParams() -> serviceName
+- useNotifications() -> addSuccess, addWarning
+- useResourcesIcebergV2() -> liste des domaines attachés
+- useCreateDomainCertificates() -> mutation création certificats
 ```
 
-#### Loading
+#### Loading.component.tsx
 ```typescript
-// components/loading/Loading.component.tsx
-// Simple wrapper autour du spinner ODS
+// Composant simple d'indicateur de chargement
+// Utilisé avec React.Suspense
 ```
 
-#### Tabs / TabsPanel
-```typescript
-// Navigation par onglets pour le dashboard
-```
-
-### Composants ODS utilisés
+### 4.5 Patterns de formulaires
 
 ```typescript
-// Boutons & Actions
-import { OdsButton, OdsLink } from '@ovhcloud/ods-components/react';
-import {
-  ODS_BUTTON_COLOR,
-  ODS_BUTTON_SIZE,
-  ODS_BUTTON_VARIANT,
-  ODS_ICON_NAME,
-  ODS_LINK_ICON_ALIGNMENT,
-} from '@ovhcloud/ods-components';
+// Schéma Zod pour validation
+const formSchema = z.object({
+  path: z.enum(['A', 'B']),
+  domain: z.string().optional(),
+  subDomain: z.string().optional(),
+  wwwNeeded: z.boolean(),
+  folder: z.string().optional(),
+  ip: z.boolean().optional(),
+  selectedIp: z.string().optional(),
+  firewall: z.boolean().optional(),
+  logs: z.boolean().optional(),
+  domainLogs: z.string().optional(),
+  automaticConfiguration: z.boolean().optional(),
+});
 
-// Formulaires
-import {
-  OdsFormField,
-  OdsInput,
-  OdsPassword,
-  OdsSelect,
-  OdsTextarea,
-} from '@ovhcloud/ods-components/react';
-import { ODS_INPUT_TYPE } from '@ovhcloud/ods-components';
+// Utilisation React Hook Form
+const { control, handleSubmit, watch } = useForm<FormData>({
+  defaultValues: { ... },
+  resolver: zodResolver(formSchema),
+});
 
-// Affichage
-import { OdsBadge, OdsText } from '@ovhcloud/ods-components/react';
-import { ODS_TEXT_PRESET, ODS_BADGE_COLOR } from '@ovhcloud/ods-components';
+// Controller pour composants ODS
+<Controller
+  name="fieldName"
+  control={control}
+  render={({ field }) => (
+    <OdsInput {...field} onOdsChange={(e) => field.onChange(e.target.value)} />
+  )}
+/>
 ```
 
-### Composants manager-react-components
-
-```typescript
-import {
-  BaseLayout,
-  Breadcrumb,
-  Datagrid,
-  DatagridColumn,
-  ErrorBoundary,
-  Links,
-  LinkType,
-  ManagerButton,
-  Modal,
-  Notifications,
-  useNotifications,
-  useResourcesIcebergV2,
-  Badge,
-} from '@ovh-ux/manager-react-components';
-```
-
-### Classes Tailwind récurrentes
-
-```css
-/* Layout */
-.flex .flex-col .flex-wrap
-.justify-end .items-start .items-center
-.w-full .w-1/2 .w-1/3 .w-2/3
-
-/* Spacing */
-.mb-4 .mb-6 .mb-7 .mb-10
-.mt-4 .mt-6
-.ml-4 .mr-4
-.p-6
-.space-x-4 .space-y-4 .space-y-10
-.gap-4
-
-/* Background */
-.bg-gray-200
-
-/* Autres */
-.cursor-pointer
-.inline-block
-```
-
----
-
+================================================================================
 ## 5. APIs & DONNÉES
+================================================================================
 
-### Synthèse des endpoints
-
-| Catégorie | Nombre | Version |
-|-----------|--------|---------|
-| ManagedCMS (WordPress) | 9 | v2 |
-| WebHosting | 4 | v2 (Iceberg) |
-| Hosting Web | 17 | v6 |
-| Domain | 48 | v6 |
-| Email | 29 | v6 |
-| Zone DNS | 1 | v6 |
-| 2API (SWS) | 20 | 2api |
-| Me (Compte) | 4 | v6 |
-| **TOTAL** | **150** | - |
-
-### APIs ManagedCMS (WordPress) - v2
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/managedCMS/reference/availableLanguages?cms=WORDPRESS` | Langues disponibles |
-| GET | `/managedCMS/reference/supportedPHPVersions?cms=WORDPRESS` | Versions PHP |
-| GET | `/managedCMS/resource` | Liste ressources |
-| GET | `/managedCMS/resource/{serviceName}` | Détails ressource |
-| GET | `/managedCMS/resource/{serviceName}/website` | Liste sites (Iceberg) |
-| GET | `/managedCMS/resource/{serviceName}/website/{websiteId}` | Détails site |
-| POST | `/managedCMS/resource/{serviceName}/website` | Créer/Importer site |
-| DELETE | `/managedCMS/resource/{serviceName}/website/{websiteId}` | Supprimer site |
-| GET | `/managedCMS/resource/{serviceName}/task` | Liste tâches |
-| PUT | `/managedCMS/resource/{serviceName}/task/{taskId}` | MAJ tâche import |
-
-### APIs WebHosting - v2 (Iceberg)
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/webhosting/attachedDomain` | Domaines attachés (pagination) |
-| GET | `/webhosting/resource/{serviceName}/attachedDomain` | Domaines ressource |
-| GET | `/webhosting/resource/{serviceName}/certificate` | Certificats SSL |
-
-### APIs Hosting Web - v6
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/hosting/web/{serviceName}` | Infos hébergement |
-| PUT | `/hosting/web/{serviceName}` | MAJ hébergement |
-| GET | `/hosting/web/{serviceName}/serviceInfos` | Infos service |
-| GET | `/hosting/web/{serviceName}/attachedDomain` | Domaines attachés |
-| POST | `/hosting/web/{serviceName}/attachedDomain` | Ajouter domaine |
-| GET | `/hosting/web/{serviceName}/attachedDomain/{domain}/digStatus` | Statut DNS |
-| POST | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | Activer SSL |
-| DELETE | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | Désactiver SSL |
-| GET | `/hosting/web/{serviceName}/ssl` | Infos SSL |
-| POST | `/hosting/web/{serviceName}/ssl` | Import certificat |
-| GET | `/hosting/web/{serviceName}/tasks` | Tâches |
-| GET | `/hosting/web/{serviceName}/localSeo/location` | Locations SEO |
-| GET | `/hosting/web/{serviceName}/localSeo/account/{id}` | Compte SEO |
-| POST | `/hosting/web/{serviceName}/localSeo/account/{id}/login` | Login SEO |
-| POST | `/hosting/web/{serviceName}/localSeo/location/{id}/terminate` | Résiliation SEO |
-| GET | `/hosting/web/{serviceName}/emailOption` | Options email |
-
-### APIs 2API (SWS)
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/sws/hosting/web/{serviceName}/add-domain-existing?tokenNeeded={bool}` | Domaines existants |
-
-### APIs Domain/Zone
-
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/domain/zone` | Liste zones DNS |
-| GET | `/domain/{serviceName}` | Détails domaine |
-
-### Implémentation API
+### 5.1 Configuration API
 
 ```typescript
-// data/api/managedWordpress.ts
-import { fetchIcebergV2, v2 } from '@ovh-ux/manager-core-api';
+// Import des clients API
+import { v6, v2, aapi } from '@ovh-ux/manager-core-api';
 
-export const getManagedCmsSupportedPHPVersions = async () => {
-  const { data } = await v2.get<string[]>(
-    `/managedCMS/reference/supportedPHPVersions?cms=${CmsType.WORDPRESS}`,
-  );
-  return data;
-};
-
-export const getManagedCmsReferenceAvailableLanguages = async (): Promise<CmsLanguage[]> => {
-  const { data } = await v2.get<CmsLanguage[]>(
-    `/managedCMS/reference/availableLanguages?cms=${CmsType.WORDPRESS}`,
-  );
-  return data;
-};
-
-export const getManagedCmsResource = async () => {
-  const { data } = await v2.get<ManagedWordpressResourceType[]>('/managedCMS/resource');
-  return data;
-};
-
-export const getManagedCmsResourceDetails = async (serviceName: string) => {
-  const { data } = await v2.get<ManagedWordpressResourceDetailsType>(
-    `/managedCMS/resource/${serviceName}`,
-  );
-  return data;
-};
-
-export const getManagedCmsResourceWebsites = async ({
-  serviceName,
-  pageParam,
-  searchParams,
-  pageSize = 15,
-}: {
-  serviceName: string;
-  pageParam?: unknown;
-  searchParams?: string;
-  pageSize?: number;
-}) => {
-  const data = await fetchIcebergV2<ManagedWordpressWebsites>({
-    route: `/managedCMS/resource/${serviceName}/website${searchParams}`,
-    pageSize,
-    cursor: pageParam as string,
-  });
-  return data;
-};
-
-export const getManagedCmsResourceWebsiteDetails = async (
-  serviceName: string,
-  websiteId: string,
-) => {
-  const { data } = await v2.get<ManagedWordpressWebsiteDetails>(
-    `/managedCMS/resource/${serviceName}/website/${websiteId}`,
-  );
-  return data;
-};
-
-export const deleteManagedCmsResourceWebsite = async (serviceName: string, websiteId: string) => {
-  const { data } = await v2.delete<ManagedWordpressWebsiteDetails>(
-    `/managedCMS/resource/${serviceName}/website/${websiteId}`,
-  );
-  return data;
-};
-
-export const postManagedCmsResourceWebsite = async (
-  serviceName: string,
-  payload: PostImportPayload | PostCreatePayload,
-) => {
-  const { data } = await v2.post<void>(`/managedCMS/resource/${serviceName}/website`, payload);
-  return data;
-};
-
-export const putManagedCmsResourceWebsiteTasks = async (
-  serviceName: string,
-  payload: PostImportTaskPayload,
-  taskId: string,
-) => {
-  const { data } = await v2.put<ManagedWordpressResourceTask>(
-    `/managedCMS/resource/${serviceName}/task/${taskId}`,
-    payload,
-  );
-  return data;
-};
-
-export const getManagedCmsResourceWebsiteTasks = async (serviceName: string) => {
-  const { data } = await v2.get<ManagedWordpressResourceTask[]>(
-    `/managedCMS/resource/${serviceName}/task`,
-  );
-  return data;
-};
+// v6 = APIv6 standard (apiv6)
+// v2 = API v2 nouvelle génération
+// aapi = 2API/AAPI (backend for frontend)
 ```
 
-```typescript
-// data/api/ssl.ts
-import { v6 } from '@ovh-ux/manager-core-api';
+### 5.2 Endpoints Hosting Web (APIv6)
 
-export const createCertificate = async (
-  serviceName: string,
-  certificate?: string,
-  key?: string,
-  chain?: string,
-): Promise<TCertificate> => {
-  const { data } = await v6.post<TCertificate>(`/hosting/web/${serviceName}/ssl`, {
-    certificate,
-    key,
-    chain,
-  });
-  return data;
-};
+| Méthode | Endpoint | Fonction | Fichier |
+|---------|----------|----------|---------|
+| GET | `/hosting/web/{serviceName}` | getHostingService | dashboard.ts |
+| PUT | `/hosting/web/{serviceName}` | updateHostingService | dashboard.ts |
+| GET | `/hosting/web/{serviceName}/serviceInfos` | getServiceInfos | dashboard.ts |
+| POST | `/hosting/web/{serviceName}/attachedDomain` | createAttachedDomainService | dashboard.ts |
+| GET | `/hosting/web/{serviceName}/attachedDomain/{domain}/digStatus` | - | AttachedDomainDigStatus.ts |
+| GET | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | - | ssl.ts |
+| POST | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | createDomainCertificate | ssl.ts |
+| DELETE | `/hosting/web/{serviceName}/attachedDomain/{domain}/ssl` | deleteDomainCertificate | ssl.ts |
+| POST | `/hosting/web/{serviceName}/ssl` | createCertificate | ssl.ts |
+| GET | `/hosting/web/{serviceName}/ssl` | - | hosting-web-ssl.v6.service.js |
+| GET | `/hosting/web/{serviceName}/ssl/domains` | queryDomains | hosting-web-ssl.v6.service.js |
+| POST | `/hosting/web/{serviceName}/ssl/regenerate` | regenerate | hosting-web-ssl.v6.service.js |
+| GET | `/hosting/web/{serviceName}/ssl/report` | getReport | hosting-web-ssl.v6.service.js |
+| GET | `/hosting/web/{serviceName}/localSeo/account/{id}` | getHostingLocalSeoAccount | local-seo.ts |
+| POST | `/hosting/web/{serviceName}/localSeo/account/{id}/login` | hostingLocalSeoLogin | local-seo.ts |
+| GET | `/hosting/web/{serviceName}/localSeo/location` | - | LocalSeo.page.tsx |
+| POST | `/hosting/web/{serviceName}/localSeo/location/{locationId}/terminate` | hostingDeleteLocation | local-seo.ts |
+| GET | `/hosting/web/{serviceName}/tasks` | - | Task.page.tsx |
+| GET | `/hosting/web/{serviceName}/emailOption` | - | layout.tsx |
+| GET | `/hosting/web/{serviceName}/databaseAvailableVersion` | getDatabaseAvailableVersion | web.v6.service.js |
+| GET | `/hosting/web/{serviceName}/databaseCreationCapabilities` | getDatabaseCreationCapabilities | web.v6.service.js |
+| GET | `/hosting/web/attachedDomain` | getAttachedDomain | web.v6.service.js |
+| GET | `/hosting/web/moduleList` | - | web-moduleList.iceberg.service.js |
+| GET | `/domain/zone` | getDomainZone | dashboard.ts |
+| GET | `/domain/{serviceName}` | getDomainService | dashboard.ts |
 
-export const createDomainCertificate = async (
-  serviceName: string,
-  domain: string,
-): Promise<TCertificate> => {
-  const { data } = await v6.post<TCertificate>(
-    `/hosting/web/${serviceName}/attachedDomain/${domain}/ssl`,
-  );
-  return data;
-};
+### 5.3 Endpoints Managed WordPress (APIv2)
 
-export const createDomainCertificates = async (
-  serviceName: string,
-  domains: string[],
-): Promise<PromiseSettledResult<TCertificate>[]> => {
-  const results = await Promise.allSettled(
-    domains?.map((domain) => createDomainCertificate(serviceName, domain)),
-  );
-  const failed = results.find((r): r is PromiseRejectedResult => r.status === 'rejected');
-  if (failed) {
-    throw failed.reason ?? new Error('Domain certificate creation failed');
-  }
-  return results;
-};
+| Méthode | Endpoint | Fonction | Fichier |
+|---------|----------|----------|---------|
+| GET | `/managedCMS/resource` | getManagedCmsResource | managedWordpress.ts |
+| GET | `/managedCMS/resource/{serviceName}` | getManagedCmsResourceDetails | managedWordpress.ts |
+| GET | `/managedCMS/resource/{serviceName}/website` | getManagedCmsResourceWebsites | managedWordpress.ts |
+| GET | `/managedCMS/resource/{serviceName}/website/{websiteId}` | getManagedCmsResourceWebsiteDetails | managedWordpress.ts |
+| POST | `/managedCMS/resource/{serviceName}/website` | postManagedCmsResourceWebsite | managedWordpress.ts |
+| DELETE | `/managedCMS/resource/{serviceName}/website/{websiteId}` | deleteManagedCmsResourceWebsite | managedWordpress.ts |
+| GET | `/managedCMS/resource/{serviceName}/task` | getManagedCmsResourceWebsiteTasks | managedWordpress.ts |
+| PUT | `/managedCMS/resource/{serviceName}/task/{taskId}` | putManagedCmsResourceWebsiteTasks | managedWordpress.ts |
+| GET | `/managedCMS/reference/supportedPHPVersions?cms=WORDPRESS` | getManagedCmsSupportedPHPVersions | managedWordpress.ts |
+| GET | `/managedCMS/reference/availableLanguages?cms=WORDPRESS` | getManagedCmsReferenceAvailableLanguages | managedWordpress.ts |
 
-export const deleteDomainCertificate = async (
-  serviceName: string,
-  domain: string,
-): Promise<TCertificate> => {
-  const { data } = await v6.delete<TCertificate>(
-    `/hosting/web/${serviceName}/attachedDomain/${domain}/ssl`,
-  );
-  return data;
-};
+### 5.4 Endpoints Webhosting Resource (APIv2 - Iceberg)
+
+| Méthode | Endpoint | Usage |
+|---------|----------|-------|
+| GET | `/webhosting/resource/{serviceName}/certificate` | Liste certificats SSL (page SSL) |
+| GET | `/webhosting/resource/{serviceName}/attachedDomain` | Liste domaines attachés |
+
+### 5.5 Endpoints 2API (AAPI)
+
+| Méthode | Endpoint | Fonction | Fichier |
+|---------|----------|----------|---------|
+| GET | `/sws/hosting/web/{serviceName}/add-domain-existing?tokenNeeded={bool}` | getAddDomainExisting | dashboard.ts |
+
+### 5.6 Séquencement des appels API
+
+#### Page SSL (Ssl.page.tsx)
+```
+1. [PARALLEL] useResourcesIcebergV2('/webhosting/resource/{serviceName}/certificate')
+2. [PARALLEL] useResourcesIcebergV2('/webhosting/resource/{serviceName}/attachedDomain')
+3. [ON_ACTION] POST /hosting/web/{serviceName}/attachedDomain/{domain}/ssl
 ```
 
-```typescript
-// data/api/dashboard.ts
-import { aapi, v6 } from '@ovh-ux/manager-core-api';
-
-export const getHostingService = async (serviceName: string): Promise<WebHostingType> => {
-  const { data } = await v6.get<WebHostingType>(`/hosting/web/${serviceName}`);
-  return data;
-};
-
-export const getDomainZone = async (): Promise<string[]> => {
-  const { data } = await v6.get<string[]>('/domain/zone');
-  return data;
-};
-
-export const getServiceInfos = async (serviceName: string): Promise<ServiceInfosType> => {
-  const { data } = await v6.get<ServiceInfosType>(`/hosting/web/${serviceName}/serviceInfos`);
-  return data;
-};
-
-export const getDomainService = async (serviceName: string): Promise<DomainServiceType> => {
-  const { data } = await v6.get<DomainServiceType>(`/domain/${serviceName}`);
-  return data;
-};
-
-export const getAddDomainExisting = async (
-  serviceName: string,
-  path: string,
-): Promise<TExistingDomain> => {
-  const { data } = await aapi.get<TExistingDomain>(
-    `/sws/hosting/web/${serviceName}/add-domain-existing?tokenNeeded=${path === 'B'}`,
-  );
-  return data;
-};
-
-export const updateHostingService = async (
-  serviceName: string,
-  displayName: string,
-): Promise<void> =>
-  v6.put(`/hosting/web/${serviceName}`, { displayName });
-
-export const createAttachedDomainService = async ({
-  serviceName,
-  domain,
-  cdn,
-  firewall,
-  ownLog,
-  path,
-  runtimeId,
-  ssl,
-  bypassDNSConfiguration,
-  ipLocation,
-}: TCreateAttachedDomain): Promise<TAttachedDomain> => {
-  const { data } = await v6.post<TAttachedDomain>(`/hosting/web/${serviceName}/attachedDomain`, {
-    domain,
-    cdn,
-    firewall,
-    ownLog,
-    path,
-    runtimeId,
-    ssl,
-    bypassDNSConfiguration,
-    ipLocation,
-  });
-  return data;
-};
+#### Page AddDomain (AddDomain.page.tsx)
+```
+1. [MOUNT] useGetHostingService -> GET /hosting/web/{serviceName}
+2. [MOUNT] useGetDomainZone -> GET /domain/zone
+3. [STEP_1] useGetAddDomainExisting -> GET /sws/hosting/web/{serviceName}/add-domain-existing
+4. [SUBMIT] useCreateAttachedDomainsService -> POST /hosting/web/{serviceName}/attachedDomain
+   - Si wwwNeeded: 2 appels parallèles (domain + www.domain)
 ```
 
-### Hooks React Query
+#### Page Managed WordPress
+```
+1. [MOUNT] useManagedCmsResource -> GET /managedCMS/resource
+2. [SELECT] useManagedCmsResourceDetails -> GET /managedCMS/resource/{serviceName}
+3. [MOUNT] useManagedCmsResourceWebsites -> GET /managedCMS/resource/{serviceName}/website (Iceberg)
+4. [ACTION] deleteManagedCmsResourceWebsite -> DELETE /managedCMS/resource/{serviceName}/website/{websiteId}
+```
 
+### 5.7 Hooks de données
+
+#### useGetHostingService
 ```typescript
-// data/hooks/managedWordpress/managedWordpressResource/useManagedWordpressResource.ts
-export const useManagedWordpressResource = () =>
-  useQuery({
-    queryKey: ['managedCMS', 'resource'],
-    queryFn: getManagedCmsResource,
-  });
-
-// data/hooks/managedWordpress/managedWordpressResourceDetails/useManagedWordpressResourceDetails.ts
-export const useManagedWordpressResourceDetails = (serviceName: string) =>
-  useQuery({
-    queryKey: ['managedCMS', 'resource', serviceName],
-    queryFn: () => getManagedCmsResourceDetails(serviceName),
-    enabled: Boolean(serviceName),
-  });
-
-// data/hooks/ssl/useSsl.ts
-export const useCreateCertificate = (
-  serviceName: string,
-  onSuccess: () => void,
-  onError: (error: ApiError) => void,
-) => {
-  const mutation = useMutation({
-    mutationFn: ({ certificate, key, chain }) =>
-      createCertificate(serviceName, certificate, key, chain),
-    onSuccess,
-    onError,
-  });
-  return { createCertificate: mutation.mutate, ...mutation };
-};
-
-export const useCreateDomainCertificates = (
-  serviceName: string,
-  onSuccess: () => void,
-  onError: (error: ApiError) => void,
-) => {
-  const mutation = useMutation({
-    mutationFn: (domains: string[]) => createDomainCertificates(serviceName, domains),
-    onSuccess,
-    onError,
-  });
-  return { createDomainCertificates: mutation.mutate, ...mutation };
-};
-
-export const useDeleteDomainCertificate = (
-  serviceName: string,
-  onSuccess: () => void,
-  onError: (error: ApiError) => void,
-) => {
-  const mutation = useMutation({
-    mutationFn: (domain: string) => deleteDomainCertificate(serviceName, domain),
-    onSuccess,
-    onError,
-  });
-  return { deleteDomainCertificate: mutation.mutate, ...mutation };
-};
-
-// data/hooks/webHostingDashboard/useWebHostingDashboard.ts
 export const useGetHostingService = (serviceName: string) =>
   useQuery({
     queryKey: ['hosting', 'web', serviceName],
     queryFn: () => getHostingService(serviceName),
     enabled: Boolean(serviceName),
   });
+```
 
-export const useUpdateHostingService = (
+#### useCreateCertificate
+```typescript
+export const useCreateCertificate = (
   serviceName: string,
-  onSuccess?: () => void,
-  onError?: (err: Error) => void,
+  onSuccess: () => void,
+  onError: (error: ApiError) => void,
 ) => {
-  const mutation = useMutation<void, Error, { displayName?: string }>({
-    mutationFn: async ({ displayName }) => {
-      await updateHostingService(serviceName, displayName);
-    },
-    onSuccess: () => {
-      onSuccess?.();
-      void queryClient.invalidateQueries({ queryKey: ['hosting', 'web', serviceName] });
-    },
+  const mutation = useMutation({
+    mutationFn: ({ certificate, key, chain }) => 
+      createCertificate(serviceName, certificate, key, chain),
+    onSuccess,
     onError,
   });
-  return { updateHostingService: mutation.mutate, ...mutation };
+  return { createCertificate: mutation.mutate, ...mutation };
 };
 ```
 
-### Séquencement des appels
-
-**Création site WordPress:**
-```
-1. GET /managedCMS/reference/availableLanguages?cms=WORDPRESS
-2. GET /managedCMS/reference/supportedPHPVersions?cms=WORDPRESS
-3. POST /managedCMS/resource/{serviceName}/website
-   Body: {
-     targetSpec: {
-       creation: {
-         adminLogin: string,
-         adminPassword: string,
-         cms: "WORDPRESS",
-         cmsSpecific: { wordpress: { language: string } },
-         phpVersion: string
-       }
-     }
-   }
-4. [polling] GET /managedCMS/resource/{serviceName}/task
+#### useResourcesIcebergV2 (manager-react-components)
+```typescript
+const { flattenData, hasNextPage, fetchNextPage, isLoading } = useResourcesIcebergV2({
+  route: `/webhosting/resource/${serviceName}/certificate`,
+  queryKey: ['webhosting', 'resource', serviceName, 'certificate'],
+});
 ```
 
-**Import site WordPress:**
-```
-1. POST /managedCMS/resource/{serviceName}/website
-   Body: {
-     targetSpec: {
-       import: {
-         adminLogin: string,
-         adminPassword: string,
-         adminURL: string,
-         cms: "WORDPRESS"
-       }
-     }
-   }
-2. [attente status WAITING_USER_INPUT]
-3. GET /managedCMS/resource/{serviceName}/website/{websiteId}
-   -> Récupère checkResult avec plugins/themes détectés
-4. PUT /managedCMS/resource/{serviceName}/task/{taskId}
-   Body: {
-     inputs: {
-       'import.cmsSpecific.wordpress.selection': {
-         plugins: [...],
-         themes: [...],
-         wholeDatabase: boolean,
-         media: boolean,
-         posts: boolean,
-         pages: boolean,
-         comments: boolean,
-         tags: boolean,
-         users: boolean
-       }
-     }
-   }
-```
+### 5.8 Gestion du cache (Query Keys)
 
-**Activation SSL Let's Encrypt:**
-```
-1. GET /webhosting/resource/{serviceName}/attachedDomain
-   -> Filtre domaines sans SSL actif
-2. POST /hosting/web/{serviceName}/attachedDomain/{domain}/ssl
-   (pour chaque domaine sélectionné, en parallèle via Promise.allSettled)
-```
+| Pattern | Exemple |
+|---------|---------|
+| Hosting | `['hosting', 'web', serviceName]` |
+| ServiceInfos | `['hosting', 'web', serviceName, 'serviceInfos']` |
+| Domain | `['domain', serviceName]` |
+| DomainZone | `['domain', 'zone']` |
+| AttachedDomain | `['hosting', 'web', serviceName, 'attachedDomain']` |
+| AddDomainExisting | `['sws', 'hosting', 'web', serviceName, 'add-domain-existing', path]` |
+| Certificates | `['webhosting', 'resource', serviceName, 'certificate']` |
+| ManagedCMS | `['get', 'managedCMS', 'resource', serviceName, 'website', ...]` |
 
----
-
-## 6. TYPES DE DONNÉES
-
-### Types WordPress Managé
+### 5.9 Invalidation du cache
 
 ```typescript
-// data/types/product/managedWordpress/cms.ts
-export enum CmsType {
-  WORDPRESS = 'WORDPRESS',
+// Après mutation réussie
+void queryClient.invalidateQueries({
+  queryKey: ['hosting', 'web', serviceName, 'attachedDomain'],
+});
+
+// Refresh global (bouton refresh)
+queryClient.invalidateQueries().catch(console.error);
+```
+
+================================================================================
+## 6. TYPES & INTERFACES
+================================================================================
+
+### 6.1 WebHostingType
+
+```typescript
+export enum HostingState {
+  ACTIVE = 'active',
+  BLOQUED = 'bloqued',
+  MAINTENANCE = 'maintenance',
 }
 
-export type CmsLanguage = {
-  code: string;
-  name: string;
-};
+export enum HostingRessourceType {
+  BEST_EFFORT = 'bestEffort',
+  CLOUD = 'cloud',
+  DEDICATED = 'dedicated',
+  SHARED = 'shared',
+}
 
-// data/types/product/managedWordpress/import.ts
-export type PostImportPayload = {
-  targetSpec: {
-    import: {
-      adminLogin: string;
-      adminPassword: string;
-      adminURL?: string;
-      cms: CmsType.WORDPRESS;
-    };
-  };
-};
+export enum HostingdOffer {
+  CLOUDWEB_1 = 'CLOUDWEB_1',
+  CLOUDWEB_2 = 'CLOUDWEB_2',
+  CLOUDWEB_3 = 'CLOUDWEB_3',
+  KS = 'KS',
+  PERFORMANCE_1 = 'PERFORMANCE_1',
+  PERFORMANCE_2 = 'PERFORMANCE_2',
+  PERFORMANCE_3 = 'PERFORMANCE_3',
+  PERFORMANCE_4 = 'PERFORMANCE_4',
+  PERSO = 'PERSO',
+  POWER_BETA_1 = 'POWER_BETA_1',
+  PRO = 'PRO',
+  START = 'START',
+}
 
-export type PostCreatePayload = {
-  targetSpec: {
-    creation: {
-      adminLogin: string;
-      adminPassword: string;
-      adminURL?: string;
-      cms: CmsType.WORDPRESS;
-      cmsSpecific?: {
-        wordpress?: {
-          language?: string;
-          url?: string;
-        };
-      };
-      phpVersion?: string;
-    };
-  };
-};
+export enum HostingCountries {
+  BE = 'BE', CA = 'CA', CZ = 'CZ', DE = 'DE', ES = 'ES',
+  FI = 'FI', FR = 'FR', IE = 'IE', IT = 'IT', LT = 'LT',
+  NL = 'NL', PL = 'PL', PT = 'PT', UK = 'UK',
+}
 
-// data/types/product/managedWordpress/ressource.ts
-export type ManagedWordpressResourceType = {
-  id: string;
-  resourceStatus: ResourceStatus;
-  checksum: string;
-  iam: {
-    displayName: string;
-    id: string;
-    tags: Record<string, unknown>;
-    urn: string;
-  };
-  currentState: {
-    plan: string;
-    quotas: {
-      websites: {
-        planQuota: number;
-        additionalQuota: number;
-        totalQuota: number;
-        totalUsage: number;
-      };
-      disk: {
-        planQuotaBytes: number;
-        additionalQuotaBytes: number;
-        totalQuotaBytes: number;
-        totalUsageBytes: number;
-      };
-      visits: {
-        totalAdditionalQuota: number;
-        boosts: {
-          initialAmount: number;
-          currentAmount: number;
-          createdAt: string;
-          expiresAt: string;
-        }[];
-      };
-    };
-    dashboards: {
-      wordpress: string;
-    };
-    createdAt: string;
-  };
-  currentTasks: {
-    id: string;
-    link: string;
-    plan: string;
-    status: TaskStatus | string;
-    type: string;
+export enum HostingDomainStatus {
+  ACTIVE = 'active',
+  NONE = 'none',
+}
+
+export type WebHostingType = {
+  availableBoostOffer: {
+    offer: HostingdOffer;
+    price: { currencyCode: CurrencyCode; priceInUcents?: number; text: string; value: number; };
   }[];
-};
-
-export type ManagedWordpressResourceDetailsType = {
-  id: string;
-  resourceStatus: ResourceStatus;
-  checksum: string;
-  iam: {
-    displayName?: string;
-    id: string;
-    tags: Record<string, unknown>;
-    urn: string;
-  } | null;
-  currentState: {
-    plan: string;
-    createdAt: string;
-    dashboards: {
-      wordpress?: string;
-    };
-    quotas: {
-      disk: {
-        additionalQuotaBytes: number;
-        planQuotaBytes: number;
-        totalQuotaBytes: number;
-        totalUsageBytes: number;
-      };
-      visits: {
-        totalAdditionalQuota: number;
-        boosts: {
-          createdAt: string;
-          currentAmount: number;
-          expiresAt: string;
-          initialAmount: number;
-        }[];
-      };
-      websites: {
-        additionalQuota: number;
-        planQuota: number;
-        totalQuota: number;
-        totalUsage: number;
-      };
-    };
+  boostOffer?: string;
+  cluster: string;
+  clusterIp?: string;
+  clusterIpv6?: string;
+  countriesIp: { country: HostingCountries; ip?: string; ipv6?: string; }[];
+  datacenter: string;
+  defaultAttachedDomain?: string;
+  displayName?: string;
+  filer?: string;
+  hasCdn?: boolean;
+  hasHostedSsl?: boolean;
+  home: string;
+  hostingIp?: string;
+  hostingIpv6?: string;
+  iam?: { displayName?: string; id: string; tags?: { 'any-key': string; }; urn: string; };
+  lastOvhConfigScan?: string;
+  multipleSSL: boolean;
+  offer: string;
+  operatingSystem: string;
+  phpVersions: { support: PhpVersionsSupport; version: string; }[];
+  primaryLogin: string;
+  quotaSize: { unit: string; value: number; };
+  quotaUsed: { unit: string; value: number; };
+  recommendedOffer: HostingdOffer;
+  resourceType: HostingRessourceType;
+  serviceManagementAccess: {
+    ftp: { port: number; url: string; };
+    http: { port: number; url: string; };
+    ssh: { port: number; url: string; };
   };
-  currentTasks: {
-    id: string;
-    link: string;
-    status: Status;
-    type: string;
-  }[];
-};
-
-// data/types/product/managedWordpress/website.ts
-export type ManagedWordpressWebsiteDetails = {
-  id: string;
-  checksum: string;
-  iam?: {
-    displayName: string;
-    id: string;
-    tags: Record<string, unknown>;
-    urn: string;
-  };
-  currentState: {
-    cms: CmsType;
-    createdAt: string;
-    defaultFQDN: string;
-    diskUsageBytes: number;
-    import?: {
-      checkResult: {
-        cmsSpecific: {
-          wordpress: {
-            plugins: {
-              enabled: boolean;
-              name: string;
-              version: string;
-            }[];
-            themes: {
-              active: boolean;
-              name: string;
-              version: string;
-            }[];
-          };
-        };
-      };
-    };
-    phpVersion: string;
-    serviceId: string;
-  };
-  currentTasks: {
-    id: string;
-    link: string;
-    status: Status;
-    type: string;
-  }[];
-  resourceStatus: ResourceStatus;
-  targetSpec?: {
-    creation?: { ... };
-    import?: { ... };
-  };
-};
-
-// data/types/product/managedWordpress/tasks.ts
-export type PostImportTaskPayload = {
-  inputs: {
-    'import.cmsSpecific.wordpress.selection': {
-      plugins: { name: string; version: string; enabled?: boolean }[];
-      themes: { name: string; version: string; active?: boolean }[];
-      wholeDatabase: boolean;
-      media: boolean;
-      posts: boolean;
-      pages: boolean;
-      comments: boolean;
-      tags: boolean;
-      users: boolean;
-    };
-  };
-};
-
-export type ManagedWordpressResourceTask = {
-  createdAt: string;
-  errors: Array<{ message: string }>;
-  finishedAt?: string;
-  id: string;
-  link: string;
-  message: string;
-  progress: Array<{
-    name: string;
-    status: Status;
-  }>;
-  startedAt: string | null;
-  status: Status;
-  type: string;
-  updatedAt: string;
+  serviceName: string;
+  state: HostingState;
+  token?: string;
+  trafficQuotaSize?: { unit: string; value: number; };
+  trafficQuotaUsed?: { unit: string; value: number; };
+  updates: string[];
 };
 ```
 
-### Types SSL
+### 6.2 SSL Types
 
 ```typescript
-// data/types/product/ssl.ts
 export enum CertificateType {
   COMODO = 'COMODO',
   CUSTOM = 'CUSTOM',
@@ -1069,104 +711,60 @@ export type TCertificate = {
   taskId?: number;
   type: string;
 };
+
+export type AttachedDomain = {
+  currentState: {
+    fqdn: string;
+    ssl: { status: string; };
+    hosting: { serviceName: string; };
+  };
+};
 ```
 
-### Types Hosting Web
+### 6.3 Domain Types
 
 ```typescript
-// data/types/product/webHosting.ts
-export enum HostingState {
-  ACTIVE = 'active',
-  BLOQUED = 'bloqued',
-  MAINTENANCE = 'maintenance',
-}
-
-export enum HostingRessourceType {
-  BEST_EFFORT = 'bestEffort',
-  CLOUD = 'cloud',
-  DEDICATED = 'dedicated',
-  SHARED = 'shared',
-}
-
-export enum HostingdOffer {
-  CLOUDWEB_1 = 'CLOUDWEB_1',
-  CLOUDWEB_2 = 'CLOUDWEB_2',
-  CLOUDWEB_3 = 'CLOUDWEB_3',
-  KS = 'KS',
-  PERFORMANCE_1 = 'PERFORMANCE_1',
-  PERFORMANCE_2 = 'PERFORMANCE_2',
-  PERFORMANCE_3 = 'PERFORMANCE_3',
-  PERFORMANCE_4 = 'PERFORMANCE_4',
-  PERSO = 'PERSO',
-  POWER_BETA_1 = 'POWER_BETA_1',
-  PRO = 'PRO',
-  START = 'START',
-}
-
-export enum HostingDomainStatus {
-  ACTIVE = 'active',
-  NONE = 'none',
-}
-
-export type WebHostingType = {
-  availableBoostOffer: {
-    offer: HostingdOffer;
-    price: {
-      currencyCode: CurrencyCode;
-      priceInUcents?: number;
-      text: string;
-      value: number;
-    };
-  }[];
-  boostOffer?: string;
-  cluster: string;
-  clusterIp?: string;
-  clusterIpv6?: string;
-  countriesIp: {
-    country: HostingCountries;
-    ip?: string;
-    ipv6?: string;
-  }[];
-  datacenter: string;
-  defaultAttachedDomain?: string;
-  displayName?: string;
-  filer?: string;
-  hasCdn?: boolean;
-  hasHostedSsl?: boolean;
-  home: string;
-  hostingIp?: string;
-  hostingIpv6?: string;
-  iam?: {
-    displayName?: string;
-    id: string;
-    tags?: { 'any-key': string };
-    urn: string;
-  };
-  lastOvhConfigScan?: string;
-  multipleSSL: boolean;
-  offer: string;
-  operatingSystem: string;
-  phpVersions: {
-    support: PhpVersionsSupport;
-    version: string;
-  }[];
-  primaryLogin: string;
-  quotaSize: { unit: string; value: number };
-  quotaUsed: { unit: string; value: number };
-  recommendedOffer: HostingdOffer;
-  resourceType: HostingRessourceType;
-  serviceManagementAccess: {
-    ftp: { port: number; url: string };
-    http: { port: number; url: string };
-    ssh: { port: number; url: string };
-  };
-  serviceName: string;
-  state: HostingState;
-  token?: string;
-  trafficQuotaSize?: { unit: string; value: number };
-  trafficQuotaUsed?: { unit: string; value: number };
-  updates: string[];
+export type TAttachedDomain = {
+  domain: string;
+  cdn: HostingDomainStatus;
+  firewall: HostingDomainStatus;
+  ownLog?: string;
+  path: string;
+  runtimeId?: number;
+  ssl: boolean;
 };
+
+export type TCreateAttachedDomain = {
+  serviceName?: string;
+  domain: string;
+  cdn: HostingDomainStatus;
+  firewall: HostingDomainStatus;
+  ownLog?: string | null;
+  path: string;
+  runtimeId?: number;
+  ssl: boolean;
+  bypassDNSConfiguration?: boolean;
+  ipLocation?: HostingCountries;
+  wwwNeeded?: boolean;
+};
+
+export type TExistingDomain = {
+  existingDomains: string[];
+  token?: string;
+};
+```
+
+### 6.4 Task Types
+
+```typescript
+export enum OngoingTaskStatus {
+  DONE = 'done',
+  ERROR = 'error',
+  PENDING = 'pending',
+  RUNNING = 'running',
+  SCHEDULED = 'scheduled',
+  WAITING_USER_INPUT = 'waitingUserInput',
+}
 
 export type TaskDetailsType = {
   doneDate: string;
@@ -1180,80 +778,147 @@ export type TaskDetailsType = {
 };
 ```
 
-### Types Status
+### 6.5 Managed WordPress Types
 
 ```typescript
-// data/types/status.ts
-export enum ResourceStatus {
-  CREATING = 'CREATING',
-  DELETING = 'DELETING',
-  ERROR = 'ERROR',
-  READY = 'READY',
-  UPDATING = 'UPDATING',
-  SUSPENDED = 'SUSPENDED',
-  DONE = 'DONE',
+export enum CmsType {
+  WORDPRESS = 'WORDPRESS',
 }
 
-export enum ServiceStatus {
-  ACTIVE = 'ACTIVE',
-  NONE = 'NONE',
-}
+export type CmsLanguage = {
+  code: string;
+  name: string;
+};
 
-export enum GitStatus {
-  CREATED = 'CREATED',
-  CREATING = 'CREATING',
-  DELETING = 'DELETING',
-  DEPLOYING = 'DEPLOYING',
-  DISABLED = 'DISABLED',
-  ERROR = 'ERROR',
-  INITIALERROR = 'INITIAL_ERROR',
-}
+export type ManagedWordpressResourceType = {
+  serviceName: string;
+  // ... autres propriétés
+};
 
-export enum TaskStatus {
-  ERROR = 'ERROR',
-  PENDING = 'PENDING',
-  RUNNING = 'RUNNING',
-  SCHEDULED = 'SCHEDULED',
-}
+export type ManagedWordpressResourceDetailsType = {
+  serviceName: string;
+  // ... détails complets
+};
 
-export enum DomainStatus {
-  cancelled = 'cancelled',
-  doing = 'doing',
-  done = 'done',
-  init = 'init',
-  todo = 'todo',
-}
+export type ManagedWordpressWebsites = {
+  id: string;
+  fqdn: string;
+  // ... autres propriétés
+};
 
-export enum DnsStatus {
-  CONFIGURED = 'DNS_CONFIGURED',
-  EXTERNAL = 'DNS_EXTERNAL',
-  NOT_CONFIGURED = 'DNS_NOT_CONFIGURED',
-}
+export type ManagedWordpressWebsiteDetails = {
+  id: string;
+  fqdn: string;
+  // ... détails complets
+};
 
-export enum OngoingTaskStatus {
-  CANCELLED = 'cancelled',
-  DOING = 'doing',
-  DONE = 'done',
-  INIT = 'init',
-  TODO = 'todo',
+export type ManagedWordpressResourceTask = {
+  id: string;
+  type: string;
+  status: string;
+  // ... autres propriétés
+};
+
+export type PostImportPayload = {
+  // Payload pour import de site
+};
+
+export type PostCreatePayload = {
+  // Payload pour création de site
+};
+
+export type PostImportTaskPayload = {
+  // Payload pour mise à jour de tâche
+};
+```
+
+### 6.6 Service Types
+
+```typescript
+export type ServiceInfosType = {
+  // Informations de service standard OVH
+  serviceId: string;
+  serviceName: string;
+  status: string;
+  expiration: string;
+  // ...
+};
+
+export type DomainServiceType = {
+  domain: string;
+  // ...
+};
+
+export type LocalSeoAccount = {
+  id: string;
+  // ...
+};
+```
+
+================================================================================
+## 7. TRADUCTIONS
+================================================================================
+
+### 7.1 Namespaces
+
+| Namespace | Fichier | Usage |
+|-----------|---------|-------|
+| common | common/Messages_*.json | Clés communes à toute l'app |
+| dashboard | dashboard/Messages_*.json | Dashboard hébergement |
+| ssl | ssl/Messages_*.json | Page certificats SSL |
+| task | task/Messages_*.json | Tâches en cours |
+| local-seo | local-seo/Messages_*.json | Visibilité Pro |
+| onboarding | onboarding/Messages_*.json | Page d'accueil |
+| managedWordpress | managedWordpress/Messages_*.json | Managed WordPress |
+
+### 7.2 Langues supportées
+
+- fr_FR (Français France)
+- fr_CA (Français Canada)
+- en_GB (Anglais)
+- de_DE (Allemand)
+- es_ES (Espagnol)
+- it_IT (Italien)
+- pl_PL (Polonais)
+- pt_PT (Portugais)
+
+### 7.3 Clés principales - common
+
+```json
+{
+  "onboarding": "Onboarding",
+  "websites": "Sites internet",
+  "hosting": "Hébergements",
+  "managed_wordpress": "Managed hosting for WordPress",
+  "import_website": "Importer mon site",
+  "create_website": "Créer un site",
+  "delete_my_website": "Supprimer mon site",
+  "delete_my_websites": "Supprimer mes {{ number }} sites",
+  "confirmation_delete_single_site": "Êtes-vous sûr de vouloir supprimer votre site {{website}}?",
+  "confirmation_delete_multiple_sites": "Êtes-vous sûr de vouloir supprimer vos sites {{website}}?",
+  "web_hosting_header_order": "Commander",
+  "web_hosting_header_tasks": "Tâches",
+  "web_hosting_header_status": "Statut",
+  "web_hosting_header_my_websites": "Mes sites",
+  "web_hosting_export_label": "Exporter en CSV",
+  "web_hosting_export_success": "Le fichier a été correctement créé. Si le téléchargement ne démarre pas, vous pouvez le télécharger manuellement.",
+  "web_hosting_export_download_manually": "Télécharger ici",
+  "web_hosting_status_active": "Activé",
+  "web_hosting_status_done": "Terminé",
+  "web_hosting_status_running": "En cours",
+  "web_hosting_status_ready": "Activé",
+  "web_hosting_status_none": "Désactivé",
+  "web_hosting_status_error": "Erreur",
+  "web_hosting_status_creating": "En cours",
+  "web_hosting_status_deleting": "En cours de suppression",
+  "web_hosting_status_pending": "En attente",
+  "web_hosting_action_refresh": "Rafraîchir",
+  "web_hosting_common_action_continue": "Continuer",
+  "web_hosting_common_action_launch_import": "Lancer l'import"
 }
 ```
 
----
-
-## 7. TRADUCTIONS
-
-### Fichiers disponibles (8 langues)
-- Messages_fr_FR.json
-- Messages_en_GB.json
-- Messages_de_DE.json
-- Messages_es_ES.json
-- Messages_it_IT.json
-- Messages_pl_PL.json
-- Messages_pt_PT.json
-- Messages_fr_CA.json
-
-### Clés SSL (ssl/Messages_fr_FR.json)
+### 7.4 Clés principales - ssl
 
 ```json
 {
@@ -1299,257 +964,301 @@ export enum OngoingTaskStatus {
   "hosting_dashboard_ssl_activation_error": "Une erreur est survenue lors de la demande d'activation d'un certificat SSL. ({{error}})",
   "hosting_dashboard_ssl_selected_item": "Élément sélectionné",
   "hosting_dashboard_ssl_import_success": "Votre demande d'import a bien été prise en compte. Elle sera exécutée d'ici quelques instants.",
-  "hosting_dashboard_ssl_order_error": "Une erreur est survenue lors de la commande d'un certificat SSL. ({{error}})",
   "hosting_dashboard_ssl_order_success": "La commande a bien été prise en compte.",
   "hosting_dashboard_ssl_delete_success": "Votre demande de suppression a bien été prise en compte. Elle sera exécutée d'ici quelques instants.",
   "hosting_dashboard_ssl_delete_error": "Une erreur est survenue lors de la suppression d'un certificat SSL. ({{error}})",
-  "hosting_domain_name": "Nom du domaine:",
   "hosting_dashboard_ssl_regenerate_success": "La régénération a bien été prise en compte.",
-  "hosting_dashboard_ssl_regenerate_error": "Une erreur est survenue lors de la régénération d'un certificat SSL.",
-  "web_hosting_export_label": "Exporter en CSV",
-  "web_hosting_export_success": "Le fichier a été correctement créé. Si le téléchargement ne démarre pas, vous pouvez le télécharger manuellement.",
-  "web_hosting_export_download_manually": "Télécharger ici",
   "san_ssl_title": "Domaines associés au certificat SSL",
   "san_ssl_message": "Vous avez {{n}} domaines associés au certificat {{domain}} :",
   "san_ssl_copy": "Copier la liste dans le presse papier"
 }
 ```
 
-### Clés Common (common/Messages_fr_FR.json)
+### 7.5 Clés principales - dashboard
 
 ```json
 {
-  "onboarding": "Onboarding",
-  "websites": "Sites internet",
-  "hosting": "Hébergements",
-  "managed_wordpress": "Managed hosting for WordPress",
-  "import_website": "Importer mon site",
-  "create_website": "Créer un site",
-  "delete_my_website": "Supprimer mon site",
-  "delete_my_websites": "Supprimer mes {{ number }} sites",
-  "confirmation_delete_single_site": "Êtes-vous sûr de vouloir supprimer votre site {{website}}?",
-  "confirmation_delete_multiple_sites": "Êtes-vous sûr de vouloir supprimer vos sites {{website}}?",
-  "web_hosting_header_order": "Commander",
-  "web_hosting_header_guide_general_informations": "Informations générales",
-  "web_hosting_header_tasks": "Tâches",
-  "web_hosting_header_my_websites": "Mes sites",
-  "web_hosting_status_header_ssl": "SSL",
-  "web_hosting_status_header_cdn": "CDN",
-  "web_hosting_status_header_firewall": "Firewall",
-  "web_hosting_status_header_offer": "Offre",
-  "web_hosting_status_header_quota": "Quota",
-  "web_hosting_status_header_websites_installed": "Sites installés",
-  "web_hosting_status_header_serviceName": "Nom du service",
-  "web_hosting_status_header_resource": "Ressource",
-  "web_hosting_status_header_displayName": "Nom d'affichage",
-  "web_hosting_status_header_path": "Dossier racine",
-  "web_hosting_status_header_fqdn": "Nom de domaine",
-  "web_hosting_status_active": "Activé",
-  "web_hosting_status_done": "Terminé",
-  "web_hosting_status_running": "En cours",
-  "web_hosting_status_waiting_user_input": "En cours",
-  "web_hosting_status_ready": "Activé",
-  "web_hosting_status_none": "Désactivé",
-  "web_hosting_status_error": "Erreur",
-  "web_hosting_status_creating": "En cours",
-  "web_hosting_status_creating_label": "Site en cours d'installation",
-  "web_hosting_status_deleting": "En cours de suppression",
-  "web_hosting_status_pending": "En attente",
-  "web_hosting_status_scheduled": "Planifié",
-  "web_hosting_action_import": "Importer",
-  "web_hosting_action_manage_my_sites": "Gérer mes sites",
-  "web_hosting_action_refresh": "Rafraîchir",
-  "web_hosting_common_sites_backlink": "Retour vers mes sites",
-  "web_hosting_common_sites_backpage": "Retour à la page précédente",
-  "web_hosting_common_url_connexion": "URL de connexion",
-  "web_hosting_common_admin_url": "URL d'administration du site",
-  "web_hosting_common_admin_login": "Compte admin",
-  "web_hosting_common_admin_password": "Mot de passe admin",
-  "web_hosting_common_admin_email": "E-mail de l'admin",
-  "web_hosting_common_action_continue": "Continuer",
-  "web_hosting_common_plugins": "Plugins",
-  "web_hosting_common_themes": "Thèmes",
-  "web_hosting_common_medias": "Médias",
-  "web_hosting_common_database": "Base de données",
-  "web_hosting_common_posts": "Posts",
-  "web_hosting_common_pages": "Pages",
-  "web_hosting_common_comments": "Commentaires",
-  "web_hosting_common_tags": "Catégories et étiquettes",
-  "web_hosting_common_users": "Utilisateurs",
-  "web_hosting_common_action_launch_import": "Lancer l'import",
-  "web_hosting_common_creation_date": "Date de création",
-  "web_hosting_common_type_website_create": "Création du site",
-  "web_hosting_common_type_website_import": "Import du site",
-  "web_hosting_common_type_website_delete": "Suppression du site",
-  "web_hosting_common_type_website_certificate_install": "Installation du certificat SSL"
+  "hosting_tab_GENERAL_INFORMATIONS": "Informations générales",
+  "hosting_tab_MULTISITE": "Multisite",
+  "hosting_tab_SSL": "Certificats SSL",
+  "hosting_tab_MODULE": "Modules en 1 clic",
+  "hosting_tab_USER_LOGS": "Statistiques et logs",
+  "hosting_tab_FTP": "FTP - SSH",
+  "hosting_tab_DATABASE": "Bases de données",
+  "hosting_tab_TASK": "Tâches en cours",
+  "hosting_dashboard_tabs_dropdown": "Plus",
+  "hosting_action_add_domain": "Ajouter un domaine",
+  "hosting_tab_AUTOMATED_EMAILS": "Scripts e-mail",
+  "hosting_tab_CRON": "Cron",
+  "hosting_tab_LOCAL_SEO": "Visibilité Pro",
+  "hosting_tab_BOOST": "Booster mon offre",
+  "hosting_dashboard_loading_error": "Une erreur s'est produite lors du chargement des informations. Cela peut se produire lorsqu'un bloqueur de publicités est activé.",
+  "expiration_expired_date": "Expiré le <strong>{{expirationDate}}</strong>",
+  "expiration_renew_date": "Renouvellement automatique prévu le <strong>{{expirationDate}}</strong>",
+  "expiration_resiliation_date": "Résiliation prévue le <strong>{{expirationDate}}</strong>",
+  "expiration_expiration_date": "Expire le <strong>{{expirationDate}}</strong>",
+  "hosting_dashboard_add_or_order_title": "Commander ou associer un domaine",
+  "hosting_dashboard_add_or_order_step1_title": "Quelle action voulez-vous effectuer ?",
+  "hosting_dashboard_add_or_order_step1_order": "Commander un nouveau domaine",
+  "hosting_dashboard_add_or_order_step1_attach": "Associer un domaine existant",
+  "hosting_add_title": "Ajouter un domaine ou un sous-domaine",
+  "hosting_add_step1_title": "Vous allez ajouter un domaine sur votre hébergement mutualisé",
+  "hosting_add_step1_search_placeholder": "Rechercher un domaine",
+  "hosting_add_step1_ovh": "Ajouter un domaine enregistré chez OVHcloud",
+  "hosting_add_step1_external": "Ajouter un domaine externe",
+  "hosting_add_step2_mode_EXTERNAL_domain_name": "Nom du domaine",
+  "hosting_add_step2_mode_EXTERNAL_domain_name_placeholder": "sousdomaine.mondomaine.com",
+  "hosting_add_step2_mode_EXTERNAL_domain_name_www_question": "Créer également le sous domaine {{t0}}",
+  "hosting_multisite_domain_configuration_home": "Dossier racine",
+  "hosting_multisite_domain_configuration_countriesIp": "Ip du pays",
+  "hosting_multisite_domain_configuration_cdn": "CDN",
+  "hosting_multisite_domain_configuration_ssl": "SSL",
+  "hosting_multisite_domain_configuration_firewall": "Activer le firewall",
+  "hosting_multisite_domain_configuration_ownlog": "Logs séparés",
+  "hosting_add_step3_mode_OVH_autoconfigure": "Configuration automatique (recommandé)",
+  "hosting_add_step3_mode_OVH_autoconfigure_text": "La configuration automatique correspond à la création des champs A et AAAA dans la zone DNS du domaine",
+  "hosting_tab_DOMAINS_configuration_add_success_finish": "L'ajout du ou des domaines à votre hébergement mutualisé a été effectué avec succès.",
+  "hosting_tab_DOMAINS_configuration_add_failure": "Une erreur est survenue lors de l'ajout du ou des domaines à votre hébergement mutualisé."
 }
 ```
 
-### Clés WordPress Managé (managedWordpress/Messages_fr_FR.json)
-
-```json
-{
-  "web_hosting_managed_wordpress_import_before_select_element": "La sélection des éléments à importer sera disponible d'ici quelques instants. Nous vous invitons à rester sur cette page.",
-  "web_hosting_managed_wordpress_import_timeout": "Une erreur est survenue lors de l'import. Veuillez réessayer plus tard.",
-  "web_hosting_managed_wordpress_import_select_element": "Sélectionner les éléments à importer",
-  "web_hosting_managed_wordpress_import_select_element_description": "Sélectionnez les éléments à inclure lors de l'import de votre site",
-  "web_hosting_managed_wordpress_import_select_plugins_description": "Sélectionnez les plugins à importer",
-  "web_hosting_managed_wordpress_import_select_plugins_all": "Tous les plugins",
-  "web_hosting_managed_wordpress_import_select_themes_all": "Tous les thèmes",
-  "web_hosting_managed_wordpress_import_select_themes_description": "Sélectionez au moins un thème",
-  "web_hosting_managed_wordpress_import_select_medias_description": "Sélectionnez les médias à importer",
-  "web_hosting_managed_wordpress_import_select_database_description": "Choisissez les données à importer:",
-  "web_hosting_managed_wordpress_import_select_wholedatabase_select": "Toute la base de données",
-  "web_hosting_managed_wordpress_import_select_wholedatabase_description": "Importer toutes les données de la base",
-  "web_hosting_managed_wordpress_import_select_database_category_select": "Je choisis les données à importer",
-  "web_hosting_managed_wordpress_import_select_database_category_description": "Importer uniquement les données sélectionnées ci-dessous",
-  "web_hosting_managed_wordpress_import_warning_message_part_1": "Pour garantir une parfaite cohérence des données, veillez à ne plus effectuer de modifications jusqu'à la fin de l'import.",
-  "web_hosting_managed_wordpress_import_warning_message_part_2": "Conseil: activez le mode maintenance sur votre site à importer ou prenez les mesures nécessaires pour éviter toute divergence pendant l'import.",
-  "web_hosting_managed_wordpress_delete_website_success_message": "Votre demande de suppression de votre site {{website}} a bien été prise en compte. Elle sera traitée d'ici quelques instants",
-  "web_hosting_managed_wordpress_delete_websites_success_message": "Votre demande de suppression de vos sites {{website}} a bien été prise en compte. Elle sera traitée d'ici quelques instants",
-  "web_hosting_managed_wordpress_create_webiste_success": "Votre demande de création de site a bien été prise en compte. Elle sera traitée d'ici quelques instants",
-  "web_hosting_managed_wordpress_create_webiste_error": "Votre demande de création de site n'a pas pu aboutir.",
-  "web_hosting_managed_wordpress_create_webiste_language_admin": "Langue de l'admin WordPress",
-  "web_hosting_managed_wordpress_create_webiste_select_language": "Sélection de la langue",
-  "web_hosting_managed_wordpress_create_webiste_create_login": "Créer vos identifiants de connexion",
-  "web_hosting_managed_wordpress_create_webiste_php_version": "Version PHP",
-  "web_hosting_managed_wordpress_create_webiste_select_version": "Sélectionner la version",
-  "web_hosting_managed_wordpress_import_success_message_part_1": "C'est parti",
-  "web_hosting_managed_wordpress_import_success_message_part_2": "L'import de votre site a commencé. Vous pouvez suivre sa progression depuis l'onglet Tâches.",
-  "web_hosting_managed_wordpress_quota_used": "{{used}} / {{total}} sites",
-  "web_hosting_managed_wordpress_import_last_php_version": "Votre site sera installé sur un environnement utilisant PHP {{ version }} et WordPress dans sa dernière version."
-}
-```
-
----
-
+================================================================================
 ## 8. RÈGLES MÉTIER
+================================================================================
 
-### Validations formulaires
+### 8.1 Validation de domaine
 
-**Création site WordPress (Zod):**
 ```typescript
-const CREATE_SITE_FORM_SCHEMA = z.object({
-  adminLogin: z.string().email('Email invalide'),
-  adminPassword: z.string()
-    .min(8, 'Minimum 8 caractères')
-    .max(30, 'Maximum 30 caractères')
-    .regex(/[A-Z]/, 'Au moins 1 majuscule')
-    .regex(/[a-z]/, 'Au moins 1 minuscule')
-    .regex(/[0-9]/, 'Au moins 1 chiffre'),
-  cmsSpecific: z.object({
-    wordpress: z.object({
-      language: z.string().default('en_GB')
-    })
-  }),
-  phpVersion: z.string().min(1, 'Version PHP requise')
+// Règles de validation (utils/validator.ts)
+- Pas de majuscules dans le nom de domaine
+- Pas de caractères spéciaux non autorisés
+- Longueur maximale respectée (surtout si SSL)
+- Le domaine ne doit pas être déjà attaché à l'hébergement
+
+// Fonction isValidDomain
+export const isValidDomain = (domain: string): boolean => {
+  // Validation regex du format domaine
+  // ...
+};
+```
+
+### 8.2 Conditions d'activation SSL
+
+```typescript
+// Filtrage des domaines éligibles (TopBar.component.tsx)
+flattenData?.filter((item) =>
+  item?.currentState?.ssl?.status !== ServiceStatus.ACTIVE &&
+  !item?.currentState?.isDefault
+)
+
+// Règles :
+// - Le domaine ne doit pas avoir SSL déjà actif
+// - Le domaine ne doit pas être le domaine par défaut
+```
+
+### 8.3 Flux AddDomain (3 étapes)
+
+```
+Étape 0 : Choix du type de domaine
+├── Option A : Domaine OVHcloud (enregistré chez OVH)
+│   └── Affiche liste déroulante des zones DNS disponibles
+└── Option B : Domaine externe
+    └── Champ de saisie libre
+
+Étape 1 : Configuration du domaine
+├── Sous-domaine (optionnel)
+├── Dossier racine (path)
+├── Options :
+│   ├── Créer www.{domain} (wwwNeeded)
+│   ├── IP du pays (si applicable)
+│   ├── Firewall
+│   └── Logs séparés
+└── Validation des règles métier
+
+Étape 2 : Récapitulatif et confirmation
+├── Résumé de la configuration
+├── Option "Configuration automatique" (A/AAAA DNS)
+├── Instructions manuelles si externe/non-auto
+└── Bouton de validation
+```
+
+### 8.4 Création de certificats SSL multiples
+
+```typescript
+// Création parallèle si wwwNeeded (dashboard.ts)
+export const createAttachedDomainsService = async ({
+  serviceName, domain, wwwNeeded, ...rest
+}: TCreateAttachedDomain) => {
+  const promises = [
+    createAttachedDomainService({ serviceName, domain, ...rest }),
+  ];
+
+  if (wwwNeeded) {
+    promises.push(
+      createAttachedDomainService({ 
+        serviceName, 
+        domain: `www.${domain}`, 
+        ...rest 
+      }),
+    );
+  }
+
+  const results = await Promise.allSettled(promises);
+  const failed = results.find((r) => r.status === 'rejected');
+
+  if (failed) {
+    throw failed.reason ?? new Error('Domain certificate creation failed');
+  }
+
+  return results;
+};
+```
+
+### 8.5 Gestion des erreurs
+
+```typescript
+// Pattern standard de gestion d'erreur
+const { addSuccess, addWarning } = useNotifications();
+
+const mutation = useMutation({
+  mutationFn: ...,
+  onSuccess: () => {
+    addSuccess(t('success_message'), true);
+    // Invalidation du cache
+    void queryClient.invalidateQueries({ queryKey: [...] });
+  },
+  onError: (error) => {
+    addWarning(
+      t('error_message', { error: error?.response?.data?.message }),
+      true
+    );
+  },
 });
 ```
 
-**Import SSL:**
-- Certificat: obligatoire (RSA uniquement)
-- Clé privée: obligatoire (non chiffrée)
-- Chaîne de certificats: optionnel
-
-### États et transitions
-
-**ResourceStatus:**
-```
-CREATING → READY | ERROR
-READY → UPDATING → READY | ERROR
-READY → DELETING → (supprimé)
-READY → SUSPENDED
-```
-
-**TaskStatus:**
-```
-SCHEDULED → PENDING → RUNNING → DONE | ERROR
-RUNNING → WAITING_USER_INPUT → RUNNING (après PUT)
-```
-
-**ServiceStatus:**
-```
-NONE ↔ ACTIVE
-```
-
-### Conditions d'affichage
-
-**Sélection domaines pour SSL Let's Encrypt:**
-```typescript
-// Filtre les domaines éligibles
-flattenData?.filter(
-  (item) =>
-    item?.currentState?.ssl?.status !== ServiceStatus.ACTIVE &&
-    !item?.currentState?.isDefault
-)
-```
-
-**Navigation automatique WordPress:**
-```typescript
-// Si 1 seule ressource → redirection auto vers dashboard
-useEffect(() => {
-  if (!isLoading && data?.length === 1) {
-    navigate(firstItemUrl);
-  }
-}, [data, isLoading, navigate, firstItemUrl]);
-```
-
-### Quotas WordPress Managé
+### 8.6 Redirection automatique
 
 ```typescript
-quotas: {
-  websites: {
-    planQuota: number,       // Quota du plan
-    additionalQuota: number, // Quota additionnel acheté
-    totalQuota: number,      // Total disponible
-    totalUsage: number       // Actuellement utilisé
+// Layout.tsx - Redirections conditionnelles
+// Si aucun domaine attaché -> /onboarding
+{data?.length === 0 && ['/', '/websites'].includes(location.pathname) && (
+  <Navigate to="/onboarding" replace />
+)}
+
+// Si domaines présents et sur / -> /websites
+{data?.length > 0 && location.pathname === '/' && (
+  <Navigate to="/websites" />
+)}
+```
+
+### 8.7 Statuts et transitions
+
+```
+États des certificats SSL :
+CREATING   -> [ACTIVE | ERROR]
+ACTIVE     -> [REGENERATING | DELETING | EXPIRED]
+REGENERATING -> [ACTIVE | ERROR]
+DELETING   -> [supprimé]
+IMPORTING  -> [ACTIVE | ERROR]
+EXPIRED    -> [REGENERATING | DELETING]
+
+États des tâches :
+PENDING    -> [RUNNING | SCHEDULED]
+SCHEDULED  -> [RUNNING]
+RUNNING    -> [DONE | ERROR | WAITING_USER_INPUT]
+WAITING_USER_INPUT -> [RUNNING]
+DONE       -> (terminé)
+ERROR      -> (terminé avec erreur)
+```
+
+### 8.8 Export CSV
+
+```typescript
+// Pattern d'export CSV (Ssl.page.tsx)
+const handleExportWithExportToCsv = () => {
+  const csvConfig = mkConfig({
+    filename: t('ssl'),
+    fieldSeparator: ',',
+    quoteStrings: true,
+    useKeysAsHeaders: true,
+  });
+
+  const exportColumns = [
+    { id: 'mainDomain', label: t('cell_main_domain'), getValue: (item) => item?.currentState?.mainDomain },
+    { id: 'additionalDomain', label: t('cell_additional_domain'), getValue: (item) => item?.currentState?.additionalDomains?.toString() },
+    // ...
+  ];
+
+  const csvData = flattenData?.map((item) =>
+    exportColumns.reduce((acc, column) => ({
+      ...acc,
+      [column.label]: column.getValue(item),
+    }), {})
+  );
+
+  const csv = generateCsv(csvConfig)(csvData);
+  download(csvConfig)(csv);
+  addSuccess(successMessage);
+};
+```
+
+================================================================================
+## 9. ANNEXES
+================================================================================
+
+### 9.1 Mapping offres hébergement
+
+```typescript
+const OFFER_LABELS = {
+  'CLOUDWEB_1': 'Cloud Web 1',
+  'CLOUDWEB_2': 'Cloud Web 2',
+  'CLOUDWEB_3': 'Cloud Web 3',
+  'KS': 'Kimsufi 2015',
+  'PERFORMANCE_1': 'Performance 1',
+  'PERFORMANCE_2': 'Performance 2',
+  'PERFORMANCE_3': 'Performance 3',
+  'PERFORMANCE_4': 'Performance 4',
+  'PERSO': 'Perso',
+  'PRO': 'Pro',
+  'START': 'Start',
+};
+```
+
+### 9.2 URLs Auth par région
+
+```typescript
+const AUTH_URLS = {
+  EU: 'https://www.ovh.com/auth/?onsuccess=https%3A%2F%2Fwww.ovh.com%2Fmanager',
+  CA: 'https://ca.ovh.com/auth/?onsuccess=https%3A%2F%2Fca.ovh.com%2Fmanager',
+  US: 'https://us.ovhcloud.com/auth/?onsuccess=https%3A%2F%2Fus.ovhcloud.com%2Fmanager',
+};
+```
+
+### 9.3 URLs API par région
+
+```typescript
+const API_URLS = {
+  EU: {
+    apiv6: 'https://www.ovh.com/engine/apiv6',
+    api2: 'https://www.ovh.com/engine/2api-m',
+    engine: 'https://www.ovh.com/engine/api',
   },
-  disk: {
-    planQuotaBytes: number,
-    additionalQuotaBytes: number,
-    totalQuotaBytes: number,
-    totalUsageBytes: number
+  CA: {
+    apiv6: 'https://ca.ovh.com/engine/apiv6',
+    api2: 'https://ca.ovh.com/engine/2api-m',
+    engine: 'https://ca.ovh.com/engine/api',
   },
-  visits: {
-    totalAdditionalQuota: number,
-    boosts: Array<{
-      initialAmount: number,
-      currentAmount: number,
-      createdAt: string,
-      expiresAt: string
-    }>
-  }
-}
+  US: {
+    apiv6: 'https://us.ovhcloud.com/engine/apiv6',
+    api2: 'https://us.ovhcloud.com/engine/2api-m',
+    engine: 'https://us.ovhcloud.com/engine/api',
+  },
+};
 ```
 
-### Permissions
-
-- Authentification par cookies de session OVH
-- `credentials: 'include'` obligatoire sur tous les appels
-- Redirection vers `/auth/` si HTTP 401
-
-### Export CSV
+### 9.4 Tracking constants
 
 ```typescript
-// Colonnes exportées pour SSL
-const exportColumns = [
-  { id: 'mainDomain', label: 'Domaine principal' },
-  { id: 'additionalDomain', label: 'Domaine supplémentaire (SAN)' },
-  { id: 'type', label: 'Type de certificat' },
-  { id: 'state', label: 'État' },
-  { id: 'creationDate', label: 'Date de création' },
-  { id: 'expirationDate', label: 'Date d\'expiration' }
-];
-```
-
----
-
-## 9. TRACKING
-
-### Constantes de tracking
-
-```typescript
-// utils/tracking.constants.ts
 export const ADD_DOMAIN = 'add-domain';
 export const CREATE = 'create';
 export const DASHBOARD = 'dashboard';
@@ -1570,61 +1279,24 @@ export const TASKS = 'tasks';
 export const WEBSITE = 'website';
 export const WORDPRESS_MANAGED = 'wordpress-managed';
 export const WORDPRESS_MANAGED_SERVICE = 'wordpress-managed-service';
-export const DATAGRID_LINK = 'datagrid-link-';
 ```
 
-### Usage tracking
+### 9.5 Résumé couverture API
 
-```typescript
-import { useOvhTracking, PageLocation, ButtonType } from '@ovh-ux/manager-react-shell-client';
+```
+Total endpoints détectés : 109 uniques
+Total fichiers analysés : 39
 
-const { trackClick } = useOvhTracking();
-
-// Exemple clic sur badge
-trackClick({
-  location: PageLocation.datagrid,
-  buttonType: ButtonType.link,
-  actionType: 'navigation',
-  actions: [`${DATAGRID_LINK}${tracking}_${WEBSITE}`],
-});
+Par catégorie :
+- Hosting Web : 32 endpoints
+- Domain/Email : 25 endpoints
+- 2API (SWS) : 21 endpoints
+- Managed WordPress : 12 endpoints (via types)
+- Hosting PrivateDatabase : 4 endpoints
+- Me (Compte) : 5 endpoints
+- Autres : 10 endpoints
 ```
 
----
-
-## 10. NOTES DE MIGRATION
-
-### APIs prioritaires
-
-1. **Haute priorité (cœur fonctionnel):**
-   - `/managedCMS/*` - WordPress managé
-   - `/webhosting/*` - API Iceberg v2
-   - `/hosting/web/*/ssl` - Gestion SSL
-
-2. **Moyenne priorité:**
-   - `/hosting/web/*/localSeo/*` - SEO local
-   - `/hosting/web/*/attachedDomain` - Domaines attachés
-
-3. **Vérifier scope:**
-   - `/email/*` - Services email (web-universe-components)
-   - `/sws/exchange/*` - Exchange (composants partagés)
-
-### Patterns à conserver
-
-1. React Query pour state management
-2. Iceberg (fetchIcebergV2) pour pagination
-3. Zod + React Hook Form pour formulaires
-4. Invalidation cache après mutations
-5. Promise.allSettled pour opérations batch
-
-### Mapping composants ODS
-
-| Actuel | ODS |
-|--------|-----|
-| BadgeStatus | OdsBadge + getStatusColor |
-| TopBar SSL | OdsButton + OdsSelect |
-| Datagrid | manager-react-components/Datagrid |
-| Modal | manager-react-components/Modal |
-
----
-
+================================================================================
 FIN DU CAHIER DES CHARGES
+================================================================================

@@ -1,20 +1,89 @@
 // ============================================================
-import "./modules.css";
-// HOSTING TAB: MODULES - Modules en 1 clic
+// HOSTING TAB: MODULES - Modules en 1 clic (selon SVG cible)
 // ============================================================
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { hostingService, Module } from "../../../../../../services/web-cloud.hosting";
-import { InstallModuleModal, ChangePasswordModal } from "./modals";
+import { InstallModuleModal, ChangePasswordModal, DeleteModuleModal } from "./modals";
+import "./modules.css";
 
-interface Props { serviceName: string; }
+// ============================================================
+// TYPES
+// ============================================================
+
+interface Props {
+  serviceName: string;
+}
+
+interface ModuleWithName extends Module {
+  name: string;
+}
+
+// Couleurs officielles des CMS
+const MODULE_COLORS: Record<string, string> = {
+  wordpress: "#21759B",
+  prestashop: "#DF0067",
+  joomla: "#5091CD",
+  drupal: "#0678BE",
+  default: "#6B7280",
+};
+
+// Modules disponibles (selon SVG)
+const AVAILABLE_MODULES = [
+  { id: "wordpress", name: "WordPress", color: "#21759B", letter: "W", desc: "CMS le plus populaire" },
+  { id: "prestashop", name: "PrestaShop", color: "#DF0067", letter: "P", desc: "E-commerce" },
+  { id: "joomla", name: "Joomla!", color: "#5091CD", letter: "J", desc: "CMS flexible" },
+  { id: "drupal", name: "Drupal", color: "#0678BE", letter: "D", desc: "CMS enterprise" },
+];
 
 const PAGE_SIZE = 10;
 
+// ============================================================
+// HELPERS
+// ============================================================
+
+function getModuleName(mod: Module): string {
+  if (mod.moduleId === 1 || mod.path?.toLowerCase().includes("wordpress")) return "WordPress";
+  if (mod.moduleId === 2 || mod.path?.toLowerCase().includes("prestashop")) return "PrestaShop";
+  if (mod.moduleId === 3 || mod.path?.toLowerCase().includes("joomla")) return "Joomla!";
+  if (mod.moduleId === 4 || mod.path?.toLowerCase().includes("drupal")) return "Drupal";
+  return "Module";
+}
+
+function getModuleColor(name: string): string {
+  const key = name.toLowerCase().replace("!", "");
+  return MODULE_COLORS[key] || MODULE_COLORS.default;
+}
+
+function getModuleLetter(name: string): string {
+  return name.charAt(0).toUpperCase();
+}
+
+function extractDomain(targetUrl?: string): string {
+  if (!targetUrl) return "-";
+  try {
+    const url = new URL(targetUrl.startsWith("http") ? targetUrl : `https://${targetUrl}`);
+    return url.hostname;
+  } catch {
+    return targetUrl;
+  }
+}
+
+function extractFolder(path?: string): string {
+  if (!path) return "/";
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+// ============================================================
+// COMPOSANT PRINCIPAL
+// ============================================================
+
 export function ModulesTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/hosting/web-cloud.hosting.modules");
-  const [modules, setModules] = useState<Module[]>([]);
+
+  // ---------- STATE ----------
+  const [modules, setModules] = useState<ModuleWithName[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,13 +92,17 @@ export function ModulesTab({ serviceName }: Props) {
   // Modals
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [passwordModal, setPasswordModal] = useState<{ open: boolean; moduleId: number; moduleName: string }>({ open: false, moduleId: 0, moduleName: "" });
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; moduleId: number; moduleName: string }>({ open: false, moduleId: 0, moduleName: "" });
 
+  // ---------- LOAD ----------
   const loadModules = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const ids = await hostingService.listModules(serviceName);
       const data = await Promise.all(ids.map(id => hostingService.getModule(serviceName, id)));
-      setModules(data);
+      const withNames: ModuleWithName[] = data.map(m => ({ ...m, name: getModuleName(m) }));
+      setModules(withNames);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -39,23 +112,37 @@ export function ModulesTab({ serviceName }: Props) {
 
   useEffect(() => { loadModules(); }, [loadModules]);
 
-  const handleDelete = async (moduleId: number, name: string) => {
-    if (!confirm(t("modules.confirmDelete", { name }))) return;
+  // ---------- HANDLERS ----------
+  const handleRefresh = () => loadModules();
+
+  const handleOpenSite = (targetUrl?: string) => {
+    if (targetUrl) window.open(targetUrl.startsWith("http") ? targetUrl : `https://${targetUrl}`, "_blank");
+  };
+
+  const handleOpenAdmin = (mod: ModuleWithName) => {
+    const base = mod.targetUrl?.startsWith("http") ? mod.targetUrl : `https://${mod.targetUrl}`;
+    const adminPath = mod.adminFolder || (mod.name === "WordPress" ? "/wp-admin" : "/admin");
+    window.open(`${base}${adminPath}`, "_blank");
+  };
+
+  const handleDeleteConfirm = async () => {
     try {
-      await hostingService.deleteModule(serviceName, moduleId);
+      await hostingService.deleteModule(serviceName, deleteModal.moduleId);
+      setDeleteModal({ open: false, moduleId: 0, moduleName: "" });
       loadModules();
     } catch (err) {
       alert(String(err));
     }
   };
 
-  // --- FILTERING ---
+  // ---------- FILTERING & PAGINATION ----------
   const filteredModules = useMemo(() => {
     if (!searchTerm) return modules;
     const term = searchTerm.toLowerCase();
-    return modules.filter(m => 
-      m.name.toLowerCase().includes(term) || 
-      (m.targetUrl || "").toLowerCase().includes(term)
+    return modules.filter(m =>
+      m.name.toLowerCase().includes(term) ||
+      (m.targetUrl || "").toLowerCase().includes(term) ||
+      (m.path || "").toLowerCase().includes(term)
     );
   }, [modules, searchTerm]);
 
@@ -67,107 +154,128 @@ export function ModulesTab({ serviceName }: Props) {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  // ---------- RENDER LOADING ----------
+  if (loading) {
+    return (
+      <div className="modules-tab">
+        <div className="modules-toolbar">
+          <div className="skeleton-btn" style={{ width: 36, height: 36 }} />
+          <div className="skeleton-input" style={{ width: 220, height: 36 }} />
+          <div className="skeleton-btn" style={{ width: 180, height: 36 }} />
+        </div>
+        <div className="skeleton-table" style={{ height: 300 }} />
+      </div>
+    );
+  }
 
+  // ---------- RENDER ERROR ----------
+  if (error) {
+    return (
+      <div className="modules-tab">
+        <div className="error-state">
+          <span className="error-icon">⚠️</span>
+          <p>{error}</p>
+          <button className="btn btn-secondary" onClick={handleRefresh}>Réessayer</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- RENDER ----------
   return (
     <div className="modules-tab">
-      {/* Header */}
-      <div className="tab-header">
-        <div>
-          <h3>{t("modules.title")}</h3>
-          <p className="tab-description">
-            {t("modules.description")}
-          </p>
+      {/* Toolbar: Refresh + Search + Install */}
+      <div className="modules-toolbar">
+        <button className="toolbar-btn refresh-btn" onClick={handleRefresh} title={t("toolbar.refresh")}>
+          ↻
+        </button>
+        <div className="toolbar-search">
+          <input
+            type="text"
+            placeholder={t("toolbar.search")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <span className="search-icon">🔍</span>
         </div>
-        <div className="tab-actions">
-          <button className="btn btn-primary btn-sm" onClick={() => setShowInstallModal(true)}>
-            + {t("modules.install")}
-          </button>
-        </div>
+        <button className="btn btn-primary" onClick={() => setShowInstallModal(true)}>
+          + {t("toolbar.install")}
+        </button>
       </div>
 
-      {/* Guides link */}
-      <div className="guides-hint" style={{ marginBottom: "1rem" }}>
-        <span>{t("modules.guidesHelp")}</span>
-        <a href="https://help.ovhcloud.com/csm/fr-web-hosting-modules" target="_blank" rel="noopener noreferrer" className="link-action">
-          Consulter le guide ↗
-        </a>
-      </div>
-
-      {/* Search */}
-      <div className="table-toolbar">
-        <input
-          type="text"
-          className="search-input"
-          placeholder={t("common.search")}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <span className="records-count">{modules.length} {t("modules.count")}</span>
-      </div>
-
-      {/* Table */}
+      {/* Table des modules installés */}
       {paginatedModules.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📦</div>
-          <p>{searchTerm ? t("common.noResult") : t("modules.empty")}</p>
-          <p className="empty-hint">{t("modules.emptyHint")}</p>
+          <p>{searchTerm ? t("table.noResult") : t("table.empty")}</p>
+          <p className="empty-hint">{t("table.emptyHint")}</p>
           {!searchTerm && (
             <button className="btn btn-primary" onClick={() => setShowInstallModal(true)}>
-              {t("modules.installFirst")}
+              {t("toolbar.installFirst")}
             </button>
           )}
         </div>
       ) : (
-        <>
-          <table className="data-table">
+        <div className="modules-table-container">
+          <table className="modules-table">
             <thead>
               <tr>
-                <th>{t("modules.name")}</th>
-                <th>{t("modules.path")}</th>
-                <th>{t("modules.version")}</th>
-                <th>{t("modules.login")}</th>
-                <th>Actions</th>
+                <th>{t("table.module")}</th>
+                <th>{t("table.domain")}</th>
+                <th>{t("table.folder")}</th>
+                <th>{t("table.version")}</th>
+                <th>{t("table.admin")}</th>
+                <th>{t("table.status")}</th>
+                <th>{t("table.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {paginatedModules.map(mod => (
                 <tr key={mod.id}>
-                  <td className="font-medium">{mod.name}</td>
+                  {/* Module (icône + nom) */}
                   <td>
-                    <a 
-                      href={mod.targetUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="domain-link"
-                    >
-                      {mod.targetUrl || "-"}
+                    <div className="module-cell">
+                      <div className="module-icon" style={{ backgroundColor: getModuleColor(mod.name) }}>
+                        {getModuleLetter(mod.name)}
+                      </div>
+                      <span className="module-name">{mod.name}</span>
+                    </div>
+                  </td>
+                  {/* Domaine */}
+                  <td>
+                    <a href={mod.targetUrl} target="_blank" rel="noopener noreferrer" className="domain-link">
+                      {extractDomain(mod.targetUrl)}
                     </a>
                   </td>
+                  {/* Dossier */}
+                  <td className="folder-cell">{extractFolder(mod.path)}</td>
+                  {/* Version */}
                   <td>{mod.version || "-"}</td>
-                  <td className="font-mono">{mod.adminName || "-"}</td>
+                  {/* Admin */}
                   <td>
-                    <div className="action-buttons">
-                      {mod.adminFolder && (
-                        <a 
-                          href={`${mod.targetUrl}${mod.adminFolder}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-icon"
-                          title="Accéder à l'admin"
-                        >🔗</a>
-                      )}
-                      <button 
-                        className="btn-icon" 
-                        onClick={() => setPasswordModal({ open: true, moduleId: mod.id, moduleName: mod.name })}
-                        title={t("modules.changePassword")}
-                      >🔑</button>
-                      <button 
-                        className="btn-icon btn-danger-icon" 
-                        onClick={() => handleDelete(mod.id, mod.name)}
-                        title={t("modules.delete")}
-                      >🗑</button>
+                    <span className="admin-link" onClick={() => handleOpenAdmin(mod)}>
+                      {mod.adminName || "admin"}
+                    </span>
+                  </td>
+                  {/* État */}
+                  <td>
+                    <span className="status-badge status-installed">{t("table.statusInstalled")}</span>
+                  </td>
+                  {/* Actions */}
+                  <td>
+                    <div className="actions-cell">
+                      <button className="action-btn" onClick={() => handleOpenSite(mod.targetUrl)} title={t("actions.openSite")}>
+                        🌐
+                      </button>
+                      <button className="action-btn" onClick={() => handleOpenAdmin(mod)} title={t("actions.openAdmin")}>
+                        👤
+                      </button>
+                      <button className="action-btn" onClick={() => setPasswordModal({ open: true, moduleId: mod.id, moduleName: mod.name })} title={t("actions.changePassword")}>
+                        🔑
+                      </button>
+                      <button className="action-btn action-danger" onClick={() => setDeleteModal({ open: true, moduleId: mod.id, moduleName: mod.name })} title={t("actions.delete")}>
+                        🗑
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -175,15 +283,34 @@ export function ModulesTab({ serviceName }: Props) {
             </tbody>
           </table>
 
+          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="pagination">
+            <div className="table-pagination">
               <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
               <span className="pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
               <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
             </div>
           )}
-        </>
+        </div>
       )}
+
+      {/* Section: Modules disponibles */}
+      <div className="available-modules-section">
+        <h3 className="section-title">{t("available.title")}</h3>
+        <div className="available-modules-grid">
+          {AVAILABLE_MODULES.map(mod => (
+            <div key={mod.id} className="available-module-card" onClick={() => setShowInstallModal(true)}>
+              <div className="card-icon" style={{ backgroundColor: mod.color }}>
+                {mod.letter}
+              </div>
+              <div className="card-info">
+                <span className="card-name">{mod.name}</span>
+                <span className="card-desc">{t(`available.${mod.id}Desc`)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Modals */}
       <InstallModuleModal
@@ -201,6 +328,13 @@ export function ModulesTab({ serviceName }: Props) {
         isOpen={passwordModal.open}
         onClose={() => setPasswordModal({ open: false, moduleId: 0, moduleName: "" })}
         onSuccess={loadModules}
+      />
+
+      <DeleteModuleModal
+        moduleName={deleteModal.moduleName}
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, moduleId: 0, moduleName: "" })}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );
