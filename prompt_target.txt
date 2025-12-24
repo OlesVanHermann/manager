@@ -1,221 +1,375 @@
-# PROMPT TARGET - Merge de Maquettes SVG (OLD + NEW → TARGET)
+================================================================================
+PROMPT TARGET v2 - Generation SVG Manager OVH
+================================================================================
 
-## Fichiers et chemins
+##############################################################################
+# 0. RÈGLES CRITIQUES
+##############################################################################
 
-| Element | Valeur |
-|---------|--------|
-| **Prompt** | /home/ubuntu/prompt_target.txt |
-| **Source OLD** | /mnt/user-data/uploads/old_manager_svg_{NAV1}_{NAV2}.tar |
-| **Source NEW** | /mnt/user-data/uploads/new_manager_svg_{NAV1}_{NAV2}.tar |
-| **Destination Claude (outputs)** | /mnt/user-data/outputs/target_svg/{NAV1}/{NAV2}/ |
-| **Destination finale utilisateur** | /home/ubuntu/target_svg/{NAV1}/{NAV2}/ |
+### GÉNÉRATION DIRECTE
+❌ INTERDIT : Afficher le SVG dans la conversation
+✅ OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
 
----
+### FICHIERS TOUJOURS PAR PAIRE
+- target_.{route}.svg  → Le visuel
+- target_.{route}.txt  → La documentation
 
-## ⚠️ REGLES CRITIQUES - LIRE EN PREMIER ⚠️
+### DONNÉES DYNAMIQUES vs EXEMPLES
+Les SVG contiennent des EXEMPLES. Toujours documenter la source API.
+Notation: {variable} = donnée dynamique
 
-### REGLE 0 : PRINCIPES DE MERGE
-Le TARGET est un **merge intelligent** entre OLD et NEW :
+### PROMPTS COMPLÉMENTAIRES
+- prompt_target_webcloud.txt → NAV2 + NAV3 pour Web Cloud
 
-| Composant | Source | Raison |
-|-----------|--------|--------|
-| **Header OVH** | NEW | Design unifié |
-| **Sidebar gauche** | NEW | Navigation moderne |
-| **Breadcrumb (NAV1)** | NEW | UX cohérente |
-| **Page Header (NAV2)** | NEW | Titre + sous-titre |
-| **Tabs bar (NAV3)** | NEW | Structure tabs moderne |
-| **Contenu des pages** | OLD | Fonctionnalités validées |
-| **Cards/Tableaux** | OLD | Données métier |
-| **Actions/Boutons** | OLD | Logique existante |
+##############################################################################
+# 1. DESIGN SYSTEM
+##############################################################################
 
-### REGLE 1 : GENERATION DIRECTE OBLIGATOIRE
-**INTERDICTION** d'afficher le SVG dans la conversation.
+### COULEURS
+| Token           | Hex       | Usage                    |
+|-----------------|-----------|--------------------------|
+| bg-header       | #000E9C   | NAV1 header OVH          |
+| bg-main         | #F6F6F9   | Fond page                |
+| bg-white        | #FFFFFF   | Cards, panels            |
+| bg-primary      | #0050D7   | Boutons actifs, accents  |
+| bg-neutral-100  | #F3F4F6   | Inputs, cellules         |
+| bg-info         | #DBEAFE   | Bannière info            |
+| bg-success      | #DEF7EC   | Badge "Actif"            |
+| bg-error        | #FEE2E2   | Erreurs                  |
+| bg-warning      | #FEF3C7   | Warnings                 |
+| btn-disabled    | #E5E7EB   | Bouton désactivé         |
+| row-selected    | #E8F0FE   | Ligne sélectionnée       |
+| table-header    | #F9FAFB   | Header tableau           |
+| border          | #E5E7EB   | Bordures, dividers       |
 
-| ❌ INTERDIT | ✅ OBLIGATOIRE |
-|-------------|----------------|
-| Afficher le SVG brut | Ecrire avec `tee` dans `/mnt/user-data/outputs/` |
-| "Voici le SVG, copiez-le..." | Appeler `present_files` apres generation |
-| Attendre copier-coller | Fournir lien de telechargement |
+### TEXTES
+| Token           | Hex       | Usage                    |
+|-----------------|-----------|--------------------------|
+| text-white      | #FFFFFF   | Sur fond sombre          |
+| text-dark       | #1F2937   | Titres, principal        |
+| text-muted      | #6B7280   | Labels, secondaire       |
+| text-primary    | #0050D7   | Liens, actions           |
+| text-success    | #059669   | Statuts ON               |
+| text-error      | #DC2626   | Delete, erreurs          |
+| text-info       | #1E40AF   | Bannière info            |
+| text-warning    | #D97706   | Warnings                 |
 
-### REGLE 2 : MAPPING FICHIERS OBLIGATOIRE
-Avant tout merge, établir le mapping OLD↔NEW :
+### TYPOGRAPHIE (Source Sans Pro)
+| Element         | Size | Weight |
+|-----------------|------|--------|
+| NAV1/NAV2       | 14px | 400/600|
+| NAV3 tabs       | 9px  | 400    |
+| Page title      | 18px | 600    |
+| Bloc title      | 15px | 700    |
+| Theme title     | 10px | 600    |
+| Label/Value     | 11px | 400    |
+| Table header    | 11px | 600    |
+| Small           | 9px  | 400    |
 
-| Status | Action |
-|--------|--------|
-| 🔵 OLD + NEW existent | MERGE → target_ |
-| 🟡 OLD seul | CONVERTIR (ajouter shell NEW) → target_ |
-| 🟢 NEW seul | COPIER tel quel → target_ |
+### RAYONS & ESPACEMENTS
+| Element    | Value |
+|------------|-------|
+| rx-card    | 8px   |
+| rx-button  | 4px   |
+| rx-badge   | 9px   |
+| row-height | 45px  |
 
-### REGLE 3 : COHERENCE VISUELLE
-Le TARGET doit être visuellement cohérent :
-- Mêmes dimensions que NEW (1440px width)
-- Même positionnement du contenu
-- Adapter le contenu OLD au layout NEW si nécessaire
+### ICÔNES
+↻ Refresh | ↗ External | 🔑 Password | ✎ Edit | ✕ Delete
+● Status | ▼ Dropdown | ‹› Pagination | C Copy | + Add
 
----
+##############################################################################
+# 2. DIMENSIONS CANVAS
+##############################################################################
 
-## WORKFLOW OBLIGATOIRE
+Canvas: 1440x900px
 
-### Phase 1 : Extraction et inventaire
-```bash
-# 1. Créer workspace
-mkdir -p /home/claude/work/{old_svg,new_svg,target_svg}
+VERTICAL:
+| Section | Y   | H    |
+|---------|-----|------|
+| NAV1    | 0   | 50   |
+| NAV2    | 50  | 40   |
+| Content | 90  | 810  |
 
-# 2. Extraire les archives
-tar -xf /mnt/user-data/uploads/old_manager_svg_{NAV1}_{NAV2}.tar -C /home/claude/work/old_svg
-tar -xf /mnt/user-data/uploads/new_manager_svg_{NAV1}_{NAV2}.tar -C /home/claude/work/new_svg
+HORIZONTAL:
+| Section     | X    | W    |
+|-------------|------|------|
+| Margin L    | 0    | 24   |
+| Left Panel  | 24   | 280  |
+| Gap         | 304  | 16   |
+| Right Panel | 320  | 1096 |
 
-# 3. Lister et comparer
-find /home/claude/work/old_svg -name "*.svg" | sort
-find /home/claude/work/new_svg -name "*.svg" | sort
+##############################################################################
+# 3. NAV1 - HEADER OVH (commun à tous)
+##############################################################################
+
+Position: y=0, height=50px, background=#000E9C
+
+| Item                  | X    | État possible |
+|-----------------------|------|---------------|
+| Accueil               | 40   | muted/active  |
+| Public Cloud          | 110  | muted/active  |
+| Hosted Private Cloud  | 210  | muted/active  |
+| Bare Metal Cloud      | 370  | muted/active  |
+| Web Cloud             | 510  | muted/active  |
+| Network               | 620  | muted/active  |
+| IAM / Securite        | 700  | muted/active  |
+| Licences              | 810  | muted/active  |
+
+Indicateur actif: rect Wx3px, fill=#FFFFFF, y=46
+Badge utilisateur: x=1280, pill avec "OK" + {nicHandle}
+```svg
+<!-- NAV1 - Adapter l'item actif -->
+<rect width="1440" height="50" class="bg-header"/>
+<text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>
+<text x="110" y="32" class="text-white" font-size="14" opacity="0.7">Public Cloud</text>
+<text x="210" y="32" class="text-white" font-size="14" opacity="0.7">Hosted Private Cloud</text>
+<text x="370" y="32" class="text-white" font-size="14" opacity="0.7">Bare Metal Cloud</text>
+<text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+<rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
+<text x="620" y="32" class="text-white" font-size="14" opacity="0.7">Network</text>
+<text x="700" y="32" class="text-white" font-size="14" opacity="0.7">IAM / Securite</text>
+<text x="810" y="32" class="text-white" font-size="14" opacity="0.7">Licences</text>
+<rect x="1280" y="12" width="140" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
+<rect x="1285" y="15" width="26" height="20" rx="10" fill="#DEF7EC"/>
+<text x="1292" y="29" fill="#03543F" font-size="10" font-weight="600">OK</text>
+<text x="1320" y="29" class="text-white" font-size="12">{nicHandle}</text>
 ```
 
-### Phase 2 : Etablir le mapping
-```
-=== MAPPING OLD ↔ NEW ===
+##############################################################################
+# 4. SHELL TEMPLATE (structure commune)
+##############################################################################
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900">
+  <defs>
+    <style>
+      .bg-header { fill: #000E9C; }
+      .bg-main { fill: #F6F6F9; }
+      .bg-white { fill: #FFFFFF; }
+      .bg-primary { fill: #0050D7; }
+      .bg-neutral-100 { fill: #F3F4F6; }
+      .bg-info { fill: #DBEAFE; }
+      .bg-success { fill: #DEF7EC; }
+      .bg-error { fill: #FEE2E2; }
+      .bg-warning { fill: #FEF3C7; }
+      .border { stroke: #E5E7EB; stroke-width: 1; fill: none; }
+      .divider { stroke: #E5E7EB; stroke-width: 1; }
+      .btn-outline { stroke: #0050D7; stroke-width: 1; fill: #FFFFFF; }
+      .btn-primary { fill: #0050D7; }
+      .btn-disabled { fill: #E5E7EB; }
+      .row-selected { fill: #E8F0FE; }
+      .table-header { fill: #F9FAFB; }
+      .text-white { fill: #FFFFFF; font-family: 'Source Sans Pro', sans-serif; }
+      .text-dark { fill: #1F2937; font-family: 'Source Sans Pro', sans-serif; }
+      .text-muted { fill: #6B7280; font-family: 'Source Sans Pro', sans-serif; }
+      .text-primary { fill: #0050D7; font-family: 'Source Sans Pro', sans-serif; }
+      .text-success { fill: #059669; font-family: 'Source Sans Pro', sans-serif; }
+      .text-error { fill: #DC2626; font-family: 'Source Sans Pro', sans-serif; }
+      .text-info { fill: #1E40AF; font-family: 'Source Sans Pro', sans-serif; }
+      .text-warning { fill: #D97706; font-family: 'Source Sans Pro', sans-serif; }
+    </style>
+  </defs>
 
-🔵 CORRESPONDANCES (merge requis) :
-  old_.{page}.svg → new_.{page}.svg → target_.{page}.svg
+  <rect width="1440" height="900" class="bg-main"/>
 
-🟡 OLD SEUL (conversion requise) :
-  old_.{page}.svg → target_.{page}.svg (avec shell NEW)
+  <!-- NAV1 : Voir section 3 -->
 
-🟢 NEW SEUL (copie directe) :
-  new_.{page}.svg → target_.{page}.svg
-```
+  <!-- NAV2 : Voir prompt spécifique (prompt_target_webcloud.txt, etc.) -->
 
-### Phase 3 : Analyse comparative par fichier
-Pour chaque paire OLD/NEW :
-```bash
-# Identifier les zones dans OLD
-grep -E "(Card|Table|Content|g id=)" old_svg/{fichier}.svg
+  <!-- MAIN CONTENT -->
+  <g transform="translate(0, 90)">
+    <g transform="translate(24, 15)">
+      
+      <!-- LEFT PANEL -->
+      <rect x="0" y="0" width="280" height="780" rx="8" class="bg-white"/>
+      <rect x="0" y="0" width="280" height="780" rx="8" class="border"/>
+      <rect x="12" y="12" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+      <text x="26" y="34" class="text-muted" font-size="12">Rechercher...</text>
+      <text x="12" y="68" class="text-muted" font-size="11">Filtrer par statut</text>
+      <text x="240" y="68" class="text-muted" font-size="11" text-anchor="end">{serviceCount} services</text>
+      
+      <!-- Service selectionne -->
+      <rect x="6" y="80" width="268" height="56" rx="6" class="row-selected"/>
+      <circle cx="28" cy="108" r="14" fill="#0050D7"/>
+      <text x="28" y="112" class="text-white" font-size="10" text-anchor="middle">{avatar}</text>
+      <text x="52" y="100" class="text-dark" font-size="13" font-weight="500">{serviceName}</text>
+      <text x="52" y="116" class="text-muted" font-size="11">{offerName}</text>
+      <rect x="210" y="96" width="46" height="18" rx="9" fill="#DEF7EC"/>
+      <text x="233" y="109" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
 
-# Identifier les zones dans NEW  
-grep -E "(sidebar|breadcrumb|tabs|header)" new_svg/{fichier}.svg
-```
+      <!-- RIGHT PANEL -->
+      <rect x="296" y="0" width="1096" height="780" rx="8" class="bg-white"/>
+      <rect x="296" y="0" width="1096" height="780" rx="8" class="border"/>
+      
+      <g transform="translate(316, 0)">
+        <!-- HEADER PAGE -->
+        <text x="0" y="24" class="text-dark" font-size="18" font-weight="600">{serviceName}</text>
+        <text x="120" y="24" class="text-muted" font-size="12">{subtitle}</text>
+        
+        <!-- NAV3 TABS : Voir prompt spécifique -->
+        <g transform="translate(0, 38)">
+          <!-- TABS SPECIFIQUES -->
+        </g>
 
-### Phase 4 : Generation TARGET
-```bash
-# 1. Créer arborescence outputs
-mkdir -p /mnt/user-data/outputs/target_svg/{NAV1}/{NAV2}
-
-# 2. Pour chaque fichier, générer le merge
-tee /mnt/user-data/outputs/target_svg/{NAV1}/{NAV2}/target_.{NAV1}.{NAV2}.{page}.svg << 'EOFSVG'
-<svg ...>
-  <!-- SHELL FROM NEW : Header, Sidebar, Breadcrumb, Tabs structure -->
-  <!-- CONTENT FROM OLD : Cards, Tables, Forms, Actions -->
+        <!-- CONTENU PAGE -->
+        <g transform="translate(0, 75)">
+          <!-- CONTENU SPECIFIQUE -->
+        </g>
+      </g>
+    </g>
+  </g>
 </svg>
-EOFSVG
-
-# 3. Appeler present_files
 ```
 
-### Phase 5 : Validation
-```
-✅ TARGET généré : target_.{NAV1}.{NAV2}.{page}.svg
-   Source OLD : old_.{NAV1}.{NAV2}.{page}.svg
-   Source NEW : new_.{NAV1}.{NAV2}.{page}.svg
-   Merge : Shell NEW + Contenu OLD
-```
+##############################################################################
+# 5. COMPOSANTS RÉUTILISABLES
+##############################################################################
 
----
-
-## Convention de nommage
-
-### Prefixes
-| Prefix | Signification |
-|--------|---------------|
-| `old_` | Manager actuel (source contenu) |
-| `new_` | Nouveau manager (source shell) |
-| `target_` | **Résultat du merge** |
-
-### Noms de fichiers TARGET
-```
-target_.{NAV1}.{NAV2}.svg                      # Page principale
-target_.{NAV1}.{NAV2}.{section}.svg            # Section (hosting, private-database)
-target_.{NAV1}.{NAV2}.{section}.tab-{nom}.svg  # Onglet spécifique
+### TOOLBAR
+```svg
+<g transform="translate(0, 0)">
+  <rect x="0" y="0" width="32" height="32" rx="4" class="btn-outline"/>
+  <text x="16" y="22" class="text-primary" font-size="14" text-anchor="middle">↻</text>
+  
+  <rect x="40" y="0" width="180" height="32" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+  <text x="52" y="21" class="text-muted" font-size="11">{searchPlaceholder}</text>
+  
+  <rect x="228" y="0" width="150" height="32" rx="4" class="btn-outline"/>
+  <text x="303" y="21" class="text-primary" font-size="11" text-anchor="middle">+ {addLabel}</text>
+</g>
 ```
 
-### Arborescence complete
-```
-/mnt/user-data/outputs/target_svg/
-  └── {NAV1}/
-      └── {NAV2}/
-          └── target_.{NAV1}.{NAV2}.{section}.svg
-          └── target_.{NAV1}.{NAV2}.{section}.tab-general.svg
-          └── target_.{NAV1}.{NAV2}.{section}.tab-ssl.svg
-```
-
-### Exemple concret
-```
-Input : 
-  old_manager_svg_web-cloud_hebergement.tar
-  new_manager_svg_web-cloud_hebergement.tar
-
-Output :
-/mnt/user-data/outputs/target_svg/web-cloud/hebergement/
-  └── target_.web-cloud.hebergement.hosting.svg
-  └── target_.web-cloud.hebergement.hosting.tab-general.svg
-  └── target_.web-cloud.hebergement.hosting.tab-ssl.svg
-  └── target_.web-cloud.hebergement.private-database.svg (copie NEW)
-```
-
----
-
-## Rapport de merge
-
-```
-=== CONTEXTE ===
-NAV1 : {nav1}
-NAV2 : {nav2}
-
-=== MAPPING ===
-🔵 MERGE (X fichiers) :
-  - {page}.svg : OLD content + NEW shell
-  - {page}.tab-{name}.svg : OLD content + NEW shell
-  - ...
-
-🟡 OLD SEUL (X fichiers) :
-  - {page}.svg : Converti avec shell NEW
-  - ...
-
-🟢 NEW SEUL (X fichiers) :
-  - {page}.svg : Copie directe
-  - ...
-
-=== TARGETS GENERES ===
-1. ✅ target_.{NAV1}.{NAV2}.{page}.svg
-2. ✅ target_.{NAV1}.{NAV2}.{page}.tab-{name}.svg
-...
+### PAGINATION
+```svg
+<g>
+  <text x="0" y="16" class="text-muted" font-size="11">Affichage {start}-{end} sur {total}</text>
+  <text x="250" y="16" class="text-muted" font-size="11">Par page:</text>
+  <rect x="300" y="0" width="50" height="26" rx="4" stroke="#E5E7EB" fill="#FFFFFF"/>
+  <text x="318" y="17" class="text-dark" font-size="11">{perPage}</text>
+  <text x="340" y="17" class="text-muted" font-size="10">▼</text>
+  <g transform="translate(880, 0)">
+    <rect x="0" y="0" width="28" height="26" rx="4" class="btn-disabled"/>
+    <text x="14" y="17" class="text-muted" font-size="12" text-anchor="middle">‹</text>
+    <rect x="34" y="0" width="28" height="26" rx="4" class="bg-primary"/>
+    <text x="48" y="17" class="text-white" font-size="11" text-anchor="middle">1</text>
+    <rect x="68" y="0" width="28" height="26" rx="4" class="btn-outline"/>
+    <text x="82" y="17" class="text-primary" font-size="11" text-anchor="middle">2</text>
+    <rect x="102" y="0" width="28" height="26" rx="4" class="btn-outline"/>
+    <text x="116" y="17" class="text-primary" font-size="11" text-anchor="middle">3</text>
+    <rect x="136" y="0" width="28" height="26" rx="4" class="btn-outline"/>
+    <text x="150" y="17" class="text-primary" font-size="12" text-anchor="middle">›</text>
+  </g>
+</g>
 ```
 
----
+### BANNIERE INFO
+```svg
+<rect x="0" y="0" width="1056" height="40" rx="6" class="bg-info"/>
+<text x="20" y="25" class="text-info" font-size="12">{message}</text>
+```
 
-## Checklist finale
+### BANNIERE WARNING
+```svg
+<rect x="0" y="0" width="1056" height="40" rx="6" class="bg-warning"/>
+<text x="20" y="25" class="text-warning" font-size="12">{message}</text>
+```
 
-- [ ] Archives OLD et NEW extraites
-- [ ] Mapping OLD↔NEW établi
-- [ ] Arborescence créée dans `/mnt/user-data/outputs/target_svg/`
-- [ ] Pour chaque 🔵 : merge Shell NEW + Contenu OLD
-- [ ] Pour chaque 🟡 : conversion avec Shell NEW
-- [ ] Pour chaque 🟢 : copie directe
-- [ ] SVG écrits avec `tee` (pas affichés)
-- [ ] `present_files` appelé
-- [ ] Cohérence visuelle vérifiée
+### BANNIERE ERROR
+```svg
+<rect x="0" y="0" width="1056" height="40" rx="6" class="bg-error"/>
+<text x="20" y="25" class="text-error" font-size="12">{message}</text>
+```
 
----
+### INPUT COPIABLE
+```svg
+<rect x="0" y="0" width="220" height="28" rx="4" class="bg-neutral-100"/>
+<text x="10" y="18" class="text-dark" font-size="10">{value}</text>
+<text x="200" y="18" class="text-primary" font-size="14">C</text>
+```
 
-## Gestion des cas spéciaux
+### BADGE STATUT
+```svg
+<!-- Actif -->
+<rect x="0" y="0" width="46" height="18" rx="9" fill="#DEF7EC"/>
+<text x="23" y="13" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
 
-### Contenu OLD trop large
-Si le contenu OLD dépasse la largeur main de NEW :
-1. Réduire les cards (3 → 2 colonnes si nécessaire)
-2. Ou adapter les largeurs proportionnellement
+<!-- Inactif -->
+<rect x="0" y="0" width="46" height="18" rx="9" fill="#F3F4F6"/>
+<text x="23" y="13" fill="#6B7280" font-size="10" text-anchor="middle">Inactif</text>
 
-### Tabs différents OLD vs NEW
-Privilégier la structure tabs de NEW, mais :
-- Si OLD a des tabs supplémentaires → les ajouter
-- Si OLD a des tabs manquants → générer target_ quand même
+<!-- Erreur -->
+<rect x="0" y="0" width="46" height="18" rx="9" fill="#FEE2E2"/>
+<text x="23" y="13" fill="#DC2626" font-size="10" text-anchor="middle">Erreur</text>
+```
 
-### Styles incompatibles
-Toujours utiliser les classes CSS de NEW pour uniformité.
+### INDICATEUR ON/OFF
+```svg
+<!-- ON -->
+<text class="text-success" font-size="12">●</text>
+<text class="text-success" font-size="10">ON</text>
+
+<!-- OFF -->
+<text class="text-error" font-size="12">●</text>
+<text class="text-error" font-size="10">OFF</text>
+
+<!-- Non disponible -->
+<text class="text-muted" font-size="9">non disponible</text>
+```
+
+##############################################################################
+# 6. TEMPLATE DOCUMENTATION .txt
+##############################################################################
+```
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.{route}.svg
+Route:   /{nav1}/{nav2}/{section}/{tab}
+Version: v1 (YYYY-MM-DD)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                      |
+|-----------------------|---------------------------------|
+| {exemple}             | GET /path → field               |
+================================================================================
+
+# STRUCTURE PAGE
+1. TOOLBAR - Boutons [...]
+2. BLOC 1: {titre} - Dimensions, colonnes
+3. BLOC 2: {titre} - Table/Cards
+4. PAGINATION (si table)
+5. BANNIERE INFO (si besoin)
+
+# API ENDPOINTS
+GET/POST/PUT/DELETE /path/{id}
+================================================================================
+```
+
+##############################################################################
+# 7. WORKFLOW & CHECKLIST
+##############################################################################
+
+□ Shell (NAV1 + NAV2 + Left Panel)
+□ NAV3 tabs (voir prompt spécifique section)
+□ Contenu métier (blocs + tables)
+□ Pagination si table
+□ Bannière info/warning/error si besoin
+□ Documentation .txt créée
+□ Données dynamiques documentées
+
+##############################################################################
+# 8. ARBORESCENCE
+##############################################################################
+
+~/target_manager_svg/
+├── prompt_target.txt              # CE FICHIER (générique)
+├── prompt_target_webcloud.txt     # NAV2+NAV3 Web Cloud
+├── web-cloud/
+│   └── hosting/
+│       ├── target_.{route}.svg
+│       └── target_.{route}.txt
+└── {autres-nav1}/
+    └── {nav2}/
+        └── target_.{route}.svg
+

@@ -1,0 +1,760 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.hebergement.hosting.ftp-ssh.svg
+Route:   /web-cloud/hebergement/hosting/{serviceName}/ftp-ssh
+Version: v7 (2024-12-24)
+================================================================================
+
+⚠️  IMPORTANT - DONNÉES DYNAMIQUES vs STATIQUES
+================================================================================
+Ce SVG contient des EXEMPLES de données pour illustrer le design.
+Les valeurs réelles proviennent de l'API OVH.
+
+VALEURS D'EXEMPLE DANS LE SVG:
+- Hostname FTP: "ftp.cluster027.hosting.ovh.net" → API: serviceInfos.ftp.url
+- Hostname SSH: "ssh.cluster027.hosting.ovh.net" → API: serviceInfos.ssh.url  
+- Login principal: "monsite" → API: primaryLogin
+- Home directory: "/home/monsite" → API: homeDirectory
+- Domaine: "mon-site.fr" → API: serviceName
+- Utilisateurs FTP: monsite, monsite_dev, etc. → API: /hosting/{svc}/user
+
+Dans la documentation, les valeurs dynamiques sont notées {nomVariable}.
+================================================================================
+
+##############################################################################
+# 1. DESIGN SYSTEM
+##############################################################################
+
+### 1.1 COULEURS PRINCIPALES
+
+| Token              | Hex       | Usage                                    |
+|--------------------|-----------|------------------------------------------|
+| bg-header          | #000E9C   | NAV1 header principal (bleu foncé OVH)   |
+| bg-main            | #F6F6F9   | Fond général de la page                  |
+| bg-white           | #FFFFFF   | Cartes, panneaux, boutons                |
+| bg-primary         | #0050D7   | Boutons actifs, accents, liens           |
+| bg-neutral-100     | #F3F4F6   | Champs input, cellules copiables         |
+| bg-info            | #DBEAFE   | Bannière d'information                   |
+| bg-success         | #DEF7EC   | Badges statut "Actif", indicateur OK     |
+| bg-error           | #FEE2E2   | (Non utilisé dans cette version)         |
+| btn-disabled       | #E5E7EB   | Bouton pagination désactivé              |
+
+### 1.2 COULEURS TEXTE
+
+| Token              | Hex       | Usage                                    |
+|--------------------|-----------|------------------------------------------|
+| text-white         | #FFFFFF   | Texte sur fond sombre                    |
+| text-dark          | #1F2937   | Titres, texte principal                  |
+| text-muted         | #6B7280   | Labels, texte secondaire                 |
+| text-primary       | #0050D7   | Liens, actions, texte accentué           |
+| text-info          | #1E40AF   | Texte dans bannière info                 |
+| text-success       | #059669   | Indicateurs ON, statuts positifs         |
+| text-error         | #DC2626   | Icône suppression (✕)                    |
+| text-success-dark  | #03543F   | Texte badge "Actif"                      |
+
+### 1.3 BORDURES
+
+| Token              | Hex       | Usage                                    |
+|--------------------|-----------|------------------------------------------|
+| border             | #E5E7EB   | Bordures cartes, dividers, inputs        |
+| stroke-width       | 1px       | Épaisseur standard                       |
+
+### 1.4 TYPOGRAPHIE
+
+| Élément            | Font                  | Size  | Weight | Color     |
+|--------------------|-----------------------|-------|--------|-----------|
+| NAV1 items         | Source Sans Pro       | 14px  | 400    | #FFFFFF   |
+| NAV1 active        | Source Sans Pro       | 14px  | 600    | #FFFFFF   |
+| NAV2 items         | Source Sans Pro       | 14px  | 400    | #6B7280   |
+| NAV2 active        | Source Sans Pro       | 14px  | 600    | #0050D7   |
+| NAV3 tabs          | Source Sans Pro       | 9px   | 400    | #0050D7   |
+| NAV3 tab active    | Source Sans Pro       | 9px   | 400    | #FFFFFF   |
+| Titre page         | Source Sans Pro       | 18px  | 600    | #1F2937   |
+| Sous-titre         | Source Sans Pro       | 12px  | 400    | #6B7280   |
+| Titre bloc         | Source Sans Pro       | 15px  | 700    | #1F2937   |
+| Titre thème        | Source Sans Pro       | 10px  | 600    | #6B7280   |
+| Label              | Source Sans Pro       | 11px  | 400    | #6B7280   |
+| Value              | Source Sans Pro       | 11px  | 400    | #1F2937   |
+| Value link         | Source Sans Pro       | 11px  | 400    | #0050D7   |
+| Table header       | Source Sans Pro       | 11px  | 600    | #1F2937   |
+| Table cell         | Source Sans Pro       | 11px  | 400    | #1F2937   |
+| Table cell small   | Source Sans Pro       | 9-10px| 400    | varies    |
+| Pagination text    | Source Sans Pro       | 11px  | 400    | #6B7280   |
+| Bouton text        | Source Sans Pro       | 11px  | 400    | #0050D7   |
+
+### 1.5 ESPACEMENTS & RAYONS
+
+| Élément            | Valeur    | Usage                                    |
+|--------------------|-----------|------------------------------------------|
+| Border radius card | 8px       | Panneaux, blocs principaux               |
+| Border radius btn  | 4px       | Boutons, inputs, cellules table          |
+| Border radius badge| 9px       | Badges statut (pill shape)               |
+| Border radius pill | 13px      | Badge compte utilisateur NAV1            |
+| Padding card       | 20px      | Espacement interne cartes                |
+| Gap entre blocs    | 15px      | Espace vertical entre sections           |
+| Row height table   | 45px      | Hauteur ligne tableau                    |
+
+##############################################################################
+# 2. DIMENSIONS GLOBALES
+##############################################################################
+
+### 2.1 CANVAS
+
+| Propriété          | Valeur    |
+|--------------------|-----------|
+| Width              | 1440px    |
+| Height             | 900px     |
+| ViewBox            | 0 0 1440 900 |
+
+### 2.2 STRUCTURE VERTICALE
+
+| Section            | Y Start   | Height    | Y End     |
+|--------------------|-----------|-----------|-----------|
+| NAV1               | 0         | 50px      | 50        |
+| NAV2               | 50        | 40px      | 90        |
+| MAIN CONTENT       | 90        | 810px     | 900       |
+| └─ Padding top     | 90+15=105 | -         | -         |
+| └─ Left Panel      | 105       | 780px     | 885       |
+| └─ Right Panel     | 105       | 780px     | 885       |
+
+### 2.3 STRUCTURE HORIZONTALE
+
+| Section            | X Start   | Width     | X End     |
+|--------------------|-----------|-----------|-----------|
+| Margin left        | 0         | 24px      | 24        |
+| Left Panel         | 24        | 280px     | 304       |
+| Gap                | 304       | 16px      | 320       |
+| Right Panel        | 320       | 1096px    | 1416      |
+| Margin right       | 1416      | 24px      | 1440      |
+
+##############################################################################
+# 3. NAV1 - NAVIGATION PRINCIPALE (PRODUITS OVH)
+##############################################################################
+
+### 3.1 STRUCTURE
+
+Position: y=0, height=50px
+Background: #000E9C (bg-header)
+
+### 3.2 ÉLÉMENTS
+
+| Élément               | X      | Y   | Style                          |
+|-----------------------|--------|-----|--------------------------------|
+| Accueil               | 40     | 32  | opacity: 0.7                   |
+| Public Cloud          | 110    | 32  | opacity: 0.7                   |
+| Hosted Private Cloud  | 210    | 32  | opacity: 0.7                   |
+| Bare Metal Cloud      | 370    | 32  | opacity: 0.7                   |
+| **Web Cloud**         | 510    | 32  | font-weight: 600 (ACTIF)       |
+| Network               | 620    | 32  | opacity: 0.7                   |
+| IAM / Securite        | 700    | 32  | opacity: 0.7                   |
+| Licences              | 810    | 32  | opacity: 0.7                   |
+
+### 3.3 INDICATEUR ACTIF
+
+```svg
+<rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
+```
+Barre blanche sous "Web Cloud" (actif)
+
+### 3.4 BADGE UTILISATEUR (droite)
+
+Position: x=1280, y=12
+Structure:
+- Container pill: 140x26px, rx=13, fill=rgba(255,255,255,0.2)
+- Badge OK: 26x20px, rx=10, fill=#DEF7EC, text="OK" (#03543F)
+- Username: "ko51027-ovh" (#FFFFFF)
+
+##############################################################################
+# 4. NAV2 - NAVIGATION WEB CLOUD
+##############################################################################
+
+### 4.1 STRUCTURE
+
+Position: y=50, height=40px
+Background: #FFFFFF
+Border bottom: line y=89, stroke=#E5E7EB
+
+### 4.2 ÉLÉMENTS
+
+| Élément               | X      | Y   | Style                          |
+|-----------------------|--------|-----|--------------------------------|
+| Accueil               | 40     | 75  | text-muted                     |
+| Domaines et DNS       | 110    | 75  | text-muted                     |
+| **Hebergement**       | 240    | 75  | text-primary, font-weight: 600 |
+| Wordpress             | 345    | 75  | text-muted                     |
+| Emails et Collab      | 430    | 75  | text-muted                     |
+| VoIP                  | 550    | 75  | text-muted                     |
+| Acces                 | 600    | 75  | text-muted                     |
+| Guides                | 1350   | 75  | text-primary (lien)            |
+
+### 4.3 INDICATEUR ACTIF
+
+```svg
+<rect x="235" y="85" width="95" height="3" fill="#0050D7"/>
+```
+Barre bleue sous "Hebergement" (actif)
+
+##############################################################################
+# 5. LEFT PANEL - LISTE DES SERVICES
+##############################################################################
+
+### 5.1 STRUCTURE
+
+Position: x=24, y=105 (transform: translate(24, 15) dans g après y=90)
+Dimensions: 280x780px
+Background: #FFFFFF
+Border: 1px #E5E7EB, rx=8
+
+### 5.2 BARRE DE RECHERCHE
+
+Position relative: x=12, y=12
+Dimensions: 256x34px
+Background: #F9FAFB
+Border: 1px #E5E7EB, rx=4
+Placeholder: "Rechercher..." (#6B7280, 12px)
+
+### 5.3 FILTRES & COMPTEUR
+
+| Élément               | X      | Y   | Style                          |
+|-----------------------|--------|-----|--------------------------------|
+| "Filtrer par statut"  | 12     | 68  | text-muted, 11px               |
+| "12 services"         | 240    | 68  | text-muted, 11px, text-anchor: end |
+
+### 5.4 ITEMS DE SERVICE
+
+Structure item: 268x56px, rx=6, padding-left=6px
+
+#### Item 1 (SÉLECTIONNÉ)
+```
+Position: y=80
+Background: #E8F0FE (row-selected)
+├─ Avatar circle: cx=28, cy=108, r=14, fill=#0050D7
+│  └─ Letter: "W" (10px, white, centered)
+├─ Titre: "mon-site.fr" (13px, 500, #1F2937) x=52, y=100
+├─ Sous-titre: "Performance 1" (11px, #6B7280) x=52, y=116
+└─ Badge: "Actif" (46x18px, rx=9, bg=#DEF7EC, text=#03543F)
+   Position: x=210, y=96
+```
+
+#### Item 2
+```
+Position: y=142
+Background: transparent
+├─ Avatar: fill=#6B7280 (gris, non sélectionné)
+├─ Titre: "blog.exemple.com"
+├─ Sous-titre: "Pro 2024"
+└─ Badge: "Actif"
+```
+
+#### Item 3
+```
+Position: y=204
+Background: transparent
+├─ Avatar: fill=#6B7280
+├─ Titre: "shop.mondomaine.fr"
+├─ Sous-titre: "Perso 2024"
+└─ Badge: "Actif"
+```
+
+##############################################################################
+# 6. RIGHT PANEL - CONTENU PRINCIPAL
+##############################################################################
+
+### 6.1 STRUCTURE
+
+Position: x=296 (relative au groupe parent)
+Dimensions: 1096x780px
+Background: #FFFFFF
+Border: 1px #E5E7EB, rx=8
+Content padding: 20px (transform: translate(316, 0) = 296+20)
+
+### 6.2 HEADER
+
+#### Titre Principal
+Position: x=0, y=24 (dans le groupe content)
+```
+{serviceName} - 18px, font-weight: 600, #1F2937
+"({loginsList})" - 12px, #6B7280, x=120
+```
+
+**DONNÉES DYNAMIQUES:**
+- {serviceName}: Le nom de domaine/service (ex: "mon-site.fr")
+- {loginsList}: Liste des logins FTP séparés par virgule
+  Construit depuis GET /hosting/{serviceName}/user
+
+Exemple SVG: "mon-site.fr" + "(monsite, monsite_dev, monsite_staging)"
+
+**PROMPT:** Le titre affiche le nom de domaine principal suivi entre parenthèses 
+de la liste des logins FTP/SSH associés à cet hébergement.
+
+##############################################################################
+# 7. NAV3 - TABS DE L'HÉBERGEMENT
+##############################################################################
+
+### 7.1 STRUCTURE
+
+Position: transform="translate(0, 38)" dans le content group
+Style tabs: Boutons pill, height=26px, rx=4
+
+### 7.2 LISTE DES TABS
+
+| Tab          | X     | Width | État    | Background    | Text Color |
+|--------------|-------|-------|---------|---------------|------------|
+| Home         | 0     | 50    | normal  | btn-outline   | #0050D7    |
+| Multisite    | 54    | 58    | normal  | btn-outline   | #0050D7    |
+| **FTP-SSH**  | 116   | 58    | ACTIF   | #0050D7       | #FFFFFF    |
+| Modules      | 178   | 55    | normal  | btn-outline   | #0050D7    |
+| Taches       | 237   | 50    | normal  | btn-outline   | #0050D7    |
+| Emails       | 291   | 48    | normal  | btn-outline   | #0050D7    |
+| Variables    | 343   | 55    | normal  | btn-outline   | #0050D7    |
+| Runtimes     | 402   | 55    | normal  | btn-outline   | #0050D7    |
+| SSL          | 461   | 35    | normal  | btn-outline   | #0050D7    |
+| CDN          | 500   | 38    | normal  | btn-outline   | #0050D7    |
+| Boost        | 542   | 42    | normal  | btn-outline   | #0050D7    |
+| Logs         | 588   | 38    | normal  | btn-outline   | #0050D7    |
+| BDD          | 630   | 38    | normal  | btn-outline   | #0050D7    |
+| BDD Cloud    | 672   | 62    | normal  | btn-outline   | #0050D7    |
+| Cron         | 738   | 40    | normal  | btn-outline   | #0050D7    |
+| SEO          | 782   | 38    | normal  | btn-outline   | #0050D7    |
+
+### 7.3 STYLE TAB
+
+```css
+/* Normal */
+.btn-outline { 
+  stroke: #0050D7; 
+  stroke-width: 1; 
+  fill: #FFFFFF; 
+}
+
+/* Actif */
+.bg-primary { 
+  fill: #0050D7; 
+}
+```
+
+##############################################################################
+# 8. CONTENU FTP-SSH
+##############################################################################
+
+Position: transform="translate(0, 75)" après NAV3
+
+### 8.1 BOUTONS D'ACTION (TOOLBAR)
+
+Position: y=0 (relatif au contenu FTP-SSH)
+
+| Élément                    | X     | Width  | Height | Style              |
+|----------------------------|-------|--------|--------|--------------------|
+| Refresh ↻                  | 0     | 32     | 32     | btn-outline        |
+| Search input               | 40    | 180    | 32     | bg=#F9FAFB         |
+| "+ Ajouter un utilisateur" | 228   | 150    | 32     | btn-outline        |
+
+#### Bouton Refresh
+```svg
+<rect x="0" y="0" width="32" height="32" rx="4" class="btn-outline"/>
+<text x="16" y="22" class="text-primary" font-size="14" text-anchor="middle">↻</text>
+```
+
+#### Champ Recherche
+```svg
+<rect x="40" y="0" width="180" height="32" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+<text x="52" y="21" class="text-muted" font-size="11">Rechercher un utilisateur...</text>
+```
+
+#### Bouton Ajouter
+```svg
+<rect x="228" y="0" width="150" height="32" rx="4" class="btn-outline"/>
+<text x="303" y="21" class="text-primary" font-size="11" text-anchor="middle">+ Ajouter un utilisateur</text>
+```
+
+**PROMPT:** Les boutons d'action permettent de rafraîchir la liste, rechercher 
+un utilisateur par nom, et créer un nouvel utilisateur FTP/SSH.
+
+##############################################################################
+# 9. BLOC 1 - INFORMATIONS GÉNÉRALES
+##############################################################################
+
+### 9.1 STRUCTURE
+
+Position: transform="translate(0, 45)"
+Dimensions: 1056x180px (hauteur +20% vs 150px original)
+Background: #FFFFFF
+Border: 1px #E5E7EB, rx=8
+
+### 9.2 TITRE DU BLOC
+
+```svg
+<text x="20" y="24" class="title-bloc">Informations Generales</text>
+```
+Font: 15px, bold, #1F2937
+
+### 9.3 COLONNES (4 colonnes égales ~264px)
+
+Dividers verticaux:
+```svg
+<line x1="264" y1="16" x2="264" y2="164" class="divider"/>
+<line x1="528" y1="16" x2="528" y2="164" class="divider"/>
+<line x1="792" y1="16" x2="792" y2="164" class="divider"/>
+```
+
+### 9.4 COLONNE 1: SERVEUR FTP
+
+Position: transform="translate(20, 50)"
+
+| Élément                          | Y    | Style                    |
+|----------------------------------|------|--------------------------|
+| "SERVEUR FTP"                    | 0    | title-theme (10px, 600)  |
+| "Nom du Serveur FTP (host)"      | 24   | label (11px, #6B7280)    |
+| Input box                        | 32   | 220x28px, bg-neutral-100 |
+| {ftpServer}                      | 50   | value (10px, #1F2937)    |
+| Copy icon "C"                    | 50   | x=200, text-primary      |
+| "Port"                           | 85   | label                    |
+| "21"                             | 85   | value, font-weight: 600  |
+| "●" (dot)                        | 85   | text-success, 12px       |
+| {ftpStatus}                      | 85   | text-success, 10px       |
+
+**DONNÉES DYNAMIQUES:**
+- {ftpServer}: API GET /hosting/{serviceName} → serviceInfos.ftp.url
+  Exemple SVG: "ftp.cluster027.hosting.ovh.net"
+- {ftpStatus}: "ON" si FTP actif, "OFF" sinon (couleur success/error)
+
+**PROMPT:** Affiche le hostname du serveur FTP avec bouton copier, et l'état 
+du port 21 (ON = service actif en vert, OFF = désactivé en rouge).
+
+### 9.5 COLONNE 2: SERVEUR SSH/SFTP
+
+Position: transform="translate(284, 50)"
+
+| Élément                          | Y    | Style                    |
+|----------------------------------|------|--------------------------|
+| "SERVEUR SSH/SFTP"               | 0    | title-theme              |
+| "Nom du Serveur SFTP/SSH (host)" | 24   | label                    |
+| Input box                        | 32   | 220x28px                 |
+| {sshServer}                      | 50   | value (10px)             |
+| Copy icon "C"                    | 50   | x=200                    |
+| "Port"                           | 85   | label                    |
+| "22"                             | 85   | value, bold              |
+| "●" {sshStatus}                  | 85   | text-success             |
+
+**DONNÉES DYNAMIQUES:**
+- {sshServer}: API GET /hosting/{serviceName} → serviceInfos.ssh.url
+  Exemple SVG: "ssh.cluster027.hosting.ovh.net"
+- {sshStatus}: "ON" si SSH actif sur l'offre, "OFF" sinon
+
+**PROMPT:** Hostname du serveur SSH/SFTP pour connexions sécurisées. 
+Port 22 standard. SSH peut être désactivé sur certaines offres (Perso).
+
+### 9.6 COLONNE 3: SERVEUR REMOTE
+
+Position: transform="translate(548, 50)"
+
+| Élément                    | Y    | Style                    |
+|----------------------------|------|--------------------------|
+| "SERVEUR REMOTE"           | 0    | title-theme              |
+| "Login principal"          | 24   | label                    |
+| Input box                  | 32   | 180x28px                 |
+| {primaryLogin}             | 50   | value                    |
+| Copy icon                  | 50   | x=160                    |
+| "Chemin du repertoire home"| 85   | label                    |
+| Input box                  | 93   | 180x28px                 |
+| {homeDirectory}            | 111  | value                    |
+| Copy icon                  | 111  | x=160                    |
+
+**DONNÉES DYNAMIQUES:**
+- {primaryLogin}: API GET /hosting/{serviceName} → primaryLogin
+  Exemple SVG: "monsite"
+- {homeDirectory}: API GET /hosting/{serviceName} → homeDirectory
+  Exemple SVG: "/home/monsite"
+
+**PROMPT:** Login principal de l'hébergement et chemin absolu du répertoire 
+home sur le serveur. Ces valeurs sont copiables pour configuration clients FTP.
+
+### 9.7 COLONNE 4: OUTILS
+
+Position: transform="translate(812, 50)"
+
+| Élément           | Y    | Style                              |
+|-------------------|------|------------------------------------|
+| "OUTILS"          | 0    | title-theme                        |
+| "FTP Explorer"    | 24   | label                              |
+| "Ouvrir"          | 24   | value-link (x=80)                  |
+| "↗"               | 24   | text-primary, 10px (x=115)         |
+| "Backup"          | 60   | label                              |
+| Bouton Restaurer  | 44   | 90x28px, btn-outline (x=80)        |
+
+**PROMPT:** Liens rapides vers l'explorateur FTP web OVH et vers la 
+restauration de backup de l'hébergement.
+
+##############################################################################
+# 10. BLOC 2 - UTILISATEURS FTP
+##############################################################################
+
+### 10.1 STRUCTURE
+
+Position: transform="translate(0, 240)"
+Titre: "Utilisateurs FTP" (title-bloc, y=0)
+
+### 10.2 TABLE
+
+Position: transform="translate(0, 20)" (sous le titre)
+Dimensions: 1056x220px
+Background: #FFFFFF
+Border: 1px #E5E7EB, rx=8
+
+### 10.3 HEADER TABLE
+
+```svg
+<rect x="1" y="1" width="1054" height="40" rx="7" class="table-header"/>
+```
+Background: #F9FAFB
+
+| Colonne           | X     | Width (approx) | Contenu                |
+|-------------------|-------|----------------|------------------------|
+| Login             | 20    | 150            | Nom utilisateur + 🔑   |
+| Repertoire cible  | 170   | 230            | Chemin + ✎            |
+| FTP (lien direct) | 400   | 220            | URL copiable           |
+| SFTP (lien direct)| 620   | 220            | URL copiable           |
+| SSH (lien direct) | 840   | 170            | URL copiable ou "non disponible" |
+| Actions           | 1025  | 30             | ✕ (delete)             |
+
+### 10.4 STRUCTURE LIGNE (ROW)
+
+Hauteur: 45px par ligne
+Divider: line y=40 après chaque ligne (sauf dernière)
+
+#### Éléments par cellule:
+
+**Cellule Login:**
+```svg
+<text x="20" y="22" class="text-dark" font-size="11">username</text>
+<text x="65" y="22" class="text-muted" font-size="9">(principal)</text>  <!-- si principal -->
+<text x="130" y="22" class="text-primary" font-size="14">🔑</text>  <!-- change password -->
+```
+
+**Cellule Répertoire:**
+```svg
+<text x="170" y="22" class="value" font-size="10">/home/monsite/path</text>
+<text x="280" y="22" class="text-primary" font-size="14">✎</text>  <!-- edit -->
+```
+
+**Cellule Lien (FTP/SFTP/SSH) - Disponible:**
+```svg
+<rect x="400" y="6" width="195" height="24" rx="4" class="bg-neutral-100"/>
+<text x="408" y="22" class="value-link" font-size="9">ftp://user@host...:port/</text>
+<text x="580" y="22" class="icon-copy">C</text>
+```
+
+**Cellule Lien - Non disponible:**
+```svg
+<rect x="840" y="6" width="155" height="24" rx="4" class="bg-neutral-100"/>
+<text x="848" y="22" class="text-muted" font-size="9">non disponible</text>
+```
+
+**Cellule Delete:**
+```svg
+<text x="1025" y="22" class="text-error" font-size="16">✕</text>
+```
+
+### 10.5 DONNÉES DES LIGNES (EXEMPLES)
+
+⚠️ Ces données sont des EXEMPLES. Les vraies données viennent de l'API:
+   GET /hosting/{serviceName}/user → liste des utilisateurs FTP/SSH
+
+| Row | Login            | Répertoire            | FTP | SFTP | SSH           |
+|-----|------------------|-----------------------|-----|------|---------------|
+| 1   | monsite (principal)| /home/monsite       | ✓   | ✓    | ✓             |
+| 2   | monsite_dev      | /home/monsite/dev     | ✓   | ✓    | non disponible|
+| 3   | monsite_staging  | /home/monsite/staging | ✓   | ✓    | ✓             |
+| 4   | monsite_backup   | /home/monsite/backup  | ✓   | non disponible | non disponible |
+
+**DONNÉES DYNAMIQUES PAR LIGNE:**
+- {login}: user.login (le principal a user.isPrimaryAccount = true)
+- {homeDir}: user.home
+- {ftpEnabled}: toujours true (FTP disponible pour tous)
+- {sftpEnabled}: user.sshState !== "none"
+- {sshEnabled}: user.sshState === "active"
+
+**CONSTRUCTION DES LIENS:**
+- FTP:  ftp://{login}@{ftpServer}:21/
+- SFTP: sftp://{login}@{sshServer}:22/
+- SSH:  ssh://{login}@{sshServer}:22
+
+**PROMPT:** La table liste tous les utilisateurs FTP/SSH de l'hébergement.
+- 🔑 permet de changer le mot de passe de l'utilisateur
+- ✎ permet de modifier le répertoire cible
+- Les liens directs sont copiables pour configuration rapide dans FileZilla, etc.
+- "non disponible" indique que le protocole n'est pas activé pour cet utilisateur
+- ✕ supprime l'utilisateur (avec confirmation)
+
+##############################################################################
+# 11. PAGINATION
+##############################################################################
+
+### 11.1 STRUCTURE
+
+Position: transform="translate(0, 250)" (sous la table)
+
+### 11.2 ÉLÉMENTS
+
+| Élément                     | X     | Style                          |
+|-----------------------------|-------|--------------------------------|
+| "Affichage 1-4 sur 12..."   | 0     | text-muted, 11px               |
+| "Par page:"                 | 250   | text-muted, 11px               |
+| Select dropdown             | 300   | 50x26px, border=#E5E7EB        |
+| Page controls               | 880   | group de boutons               |
+
+### 11.3 DROPDOWN "PAR PAGE"
+
+```svg
+<rect x="300" y="0" width="50" height="26" rx="4" stroke="#E5E7EB" fill="#FFFFFF"/>
+<text x="318" y="17" class="text-dark" font-size="11">10</text>
+<text x="340" y="17" class="text-muted" font-size="10">▼</text>
+```
+
+### 11.4 CONTRÔLES DE PAGE
+
+Position: transform="translate(880, 0)"
+
+| Bouton | X     | Width | État      | Style           |
+|--------|-------|-------|-----------|-----------------|
+| ‹ Prev | 0     | 28    | disabled  | btn-disabled    |
+| 1      | 34    | 28    | active    | bg-primary      |
+| 2      | 68    | 28    | normal    | btn-outline     |
+| 3      | 102   | 28    | normal    | btn-outline     |
+| › Next | 136   | 28    | normal    | btn-outline     |
+
+**PROMPT:** Pagination standard avec:
+- Compteur "Affichage X-Y sur Z utilisateurs"
+- Sélecteur nombre par page (10, 25, 50)
+- Navigation par numéro de page
+- Boutons précédent/suivant (désactivé si première/dernière page)
+
+##############################################################################
+# 12. BANNIÈRE INFO
+##############################################################################
+
+### 12.1 STRUCTURE
+
+Position: transform="translate(0, 530)"
+Dimensions: 1056x40px
+Background: #DBEAFE (bg-info)
+Border radius: 6px
+
+### 12.2 CONTENU
+
+```svg
+<text x="20" y="25" class="text-info" font-size="12">
+  Le mot de passe FTP principal est le meme que celui de votre espace client OVH.
+</text>
+```
+
+**PROMPT:** Bannière informative rappelant que le mot de passe FTP principal 
+est synchronisé avec le compte OVH de l'utilisateur.
+
+##############################################################################
+# 13. ICÔNES UTILISÉES
+##############################################################################
+
+| Icône | Unicode/Char | Usage                              |
+|-------|--------------|-----------------------------------|
+| ↻     | U+21BB       | Refresh/Actualiser                |
+| ↗     | U+2197       | Lien externe                      |
+| 🔑    | U+1F511      | Changer mot de passe              |
+| ✎     | U+270E       | Éditer/Modifier                   |
+| ✕     | U+2715       | Supprimer                         |
+| ●     | U+25CF       | Indicateur statut (dot)           |
+| ▼     | U+25BC       | Dropdown arrow                    |
+| ‹     | U+2039       | Pagination précédent              |
+| ›     | U+203A       | Pagination suivant                |
+| C     | Letter       | Copy (placeholder pour icône)     |
+
+##############################################################################
+# 14. ÉTATS INTERACTIFS (DESIGN SPECS)
+##############################################################################
+
+### 14.1 BOUTONS
+
+| État     | Background  | Border      | Text        |
+|----------|-------------|-------------|-------------|
+| Normal   | #FFFFFF     | #0050D7     | #0050D7     |
+| Hover    | #F0F7FF     | #0050D7     | #0050D7     |
+| Active   | #0050D7     | #0050D7     | #FFFFFF     |
+| Disabled | #E5E7EB     | none        | #6B7280     |
+
+### 14.2 LIGNES TABLE
+
+| État     | Background  |
+|----------|-------------|
+| Normal   | transparent |
+| Hover    | #F9FAFB     |
+| Selected | #E8F0FE     |
+
+### 14.3 INPUTS
+
+| État     | Background  | Border      |
+|----------|-------------|-------------|
+| Normal   | #F9FAFB     | #E5E7EB     |
+| Focus    | #FFFFFF     | #0050D7     |
+
+##############################################################################
+# 15. RESPONSIVE NOTES
+##############################################################################
+
+Ce SVG est conçu pour un viewport fixe de 1440x900px.
+Pour une implémentation responsive en React:
+
+- Left Panel: collapsible sur mobile (< 768px)
+- NAV3 tabs: horizontal scroll ou dropdown sur mobile
+- Table: horizontal scroll ou cards sur mobile
+- Pagination: simplifiée (prev/next only) sur mobile
+
+##############################################################################
+# 16. ACCESSIBILITÉ
+##############################################################################
+
+Recommandations pour l'implémentation React:
+
+- Tous les boutons doivent avoir aria-label descriptif
+- Les icônes décoratives: aria-hidden="true"
+- Table: utiliser <th scope="col"> pour headers
+- Pagination: aria-current="page" sur page active
+- Liens copiables: feedback visuel + aria-live pour confirmation
+- Contraste: tous les textes respectent WCAG AA (4.5:1 minimum)
+
+##############################################################################
+# 17. API ENDPOINTS SUGGÉRÉS
+##############################################################################
+
+```
+GET  /hosting/{serviceName}/ftp/users          # Liste utilisateurs
+POST /hosting/{serviceName}/ftp/users          # Créer utilisateur
+PUT  /hosting/{serviceName}/ftp/users/{login}  # Modifier utilisateur
+DELETE /hosting/{serviceName}/ftp/users/{login} # Supprimer utilisateur
+PUT  /hosting/{serviceName}/ftp/users/{login}/password  # Changer MDP
+GET  /hosting/{serviceName}/ftp/server-info    # Infos serveur FTP/SSH
+```
+
+##############################################################################
+# 18. CHANGELOG
+##############################################################################
+
+v7 (2024-12-24):
+- Ajout "Wordpress" dans NAV2
+- "non disponible" en gris au lieu de rouge
+- Documentation complète
+
+v6 (2024-12-24):
+- Bloc info générales +20% hauteur (150→180px)
+- Ajout pagination table
+
+v5 (2024-12-24):
+- Icônes action: 🔑 dans Login, ✎ dans Répertoire, ✕ pour delete
+- Liens directs copiables (ftp://, sftp://, ssh://)
+- Indicateurs ● ON pour ports
+
+v4-v1: Itérations design initiales
+
+================================================================================
+FIN DE DOCUMENTATION
+================================================================================
