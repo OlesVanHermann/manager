@@ -1,5 +1,5 @@
 // ============================================================
-import "./database.css";
+import "./DatabaseTab.css";
 // HOSTING TAB: DATABASE - Bases de données
 // ============================================================
 

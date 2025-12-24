@@ -31,17 +31,17 @@ export function DeleteModuleModal({ moduleName, isOpen, onClose, onConfirm }: Pr
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="modules-modal-overlay" onClick={onClose}>
+      <div className="modules-modal-container" onClick={(e) => e.stopPropagation()}>
+        <div className="modules-modal-header">
           <h2>{t("modals.delete.title")}</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="modules-modal-close" onClick={onClose}>×</button>
         </div>
-        <div className="modal-body">
+        <div className="modules-modal-body">
           <p>{t("modals.delete.confirm", { name: moduleName })}</p>
-          <p className="modal-warning">{t("modals.delete.warning")}</p>
+          <p className="modules-modal-warning">{t("modals.delete.warning")}</p>
         </div>
-        <div className="modal-footer">
+        <div className="modules-modal-footer">
           <button className="btn btn-secondary" onClick={onClose} disabled={loading}>
             {t("common.cancel")}
           </button>

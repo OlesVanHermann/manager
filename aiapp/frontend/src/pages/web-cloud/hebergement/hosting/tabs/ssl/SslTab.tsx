@@ -4,7 +4,7 @@
 // Utilise UNIQUEMENT attachedDomain (pas /ssl qui peut échouer)
 // ============================================================
 
-import "./ssl.css";
+import "./SslTab.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { sslService } from "./SslTab";

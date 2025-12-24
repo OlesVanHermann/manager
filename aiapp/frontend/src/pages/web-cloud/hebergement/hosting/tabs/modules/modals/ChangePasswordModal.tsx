@@ -34,27 +34,27 @@ export function ChangePasswordModal({ serviceName, login, isOpen, onClose, onSuc
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="modules-modal-overlay" onClick={onClose}>
+      <div className="modules-modal-container" onClick={e => e.stopPropagation()}>
+        <div className="modules-modal-header">
           <h2>Changer le mot de passe</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="modules-modal-close" onClick={onClose}>×</button>
         </div>
-        <div className="modal-body">
+        <div className="modules-modal-body">
           <p>Utilisateur : <strong>{login}</strong></p>
-          <div className="form-group">
+          <div className="modules-form-group">
             <label>Nouveau mot de passe</label>
-            <input type="password" className="form-input" value={password} onChange={e => setPassword(e.target.value)} />
+            <input type="password" className="modules-form-input" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
-          <div className="form-group">
+          <div className="modules-form-group">
             <label>Confirmer le mot de passe</label>
-            <input type="password" className="form-input" value={confirm} onChange={e => setConfirm(e.target.value)} />
+            <input type="password" className="modules-form-input" value={confirm} onChange={e => setConfirm(e.target.value)} />
           </div>
           {password && confirm && password !== confirm && (
-            <p className="form-error">Les mots de passe ne correspondent pas</p>
+            <p className="modules-form-error">Les mots de passe ne correspondent pas</p>
           )}
         </div>
-        <div className="modal-footer">
+        <div className="modules-modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
           <button className="btn btn-primary" onClick={handleChange} disabled={loading || !password.trim() || password !== confirm}>
             {loading ? "Modification..." : "Modifier"}

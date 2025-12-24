@@ -2,7 +2,7 @@
 // HOSTING TAB: FTP-SSH
 // ============================================================
 
-import "./ftp.css";
+import "./FtpTab.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { ftpService } from "./FtpTab";
 import type { FtpUser, Hosting } from "../../hosting.types";

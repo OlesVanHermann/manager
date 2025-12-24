@@ -9,8 +9,6 @@ import { ServiceItemBadge } from "./components/ServiceItemBadge";
 import { domainsService, Domain, DomainServiceInfos } from "../../../services/web-cloud.domains";
 import { dnsZonesService, DnsZone } from "../../../services/web-cloud.dns-zones";
 import { GeneralTab, ZoneTab, DnsServersTab, RedirectionTab, DynHostTab, GlueTab, DnssecTab, TasksTab, ContactsTab } from "./tabs";
-import "../styles.css";
-import "./styles.css";
 
 // ============ ICONS ============
 

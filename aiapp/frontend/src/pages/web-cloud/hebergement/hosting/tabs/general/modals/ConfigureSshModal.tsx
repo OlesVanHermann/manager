@@ -91,7 +91,7 @@ export function ConfigureSshModal({ serviceName, primaryLogin, currentSshState, 
             {t("general.ssh.description", "Choisissez le niveau d'accès SSH pour le compte principal.")}
           </p>
 
-          <div className="info-block compact">
+          <div className="general-info-block compact">
             <label>{t("general.ssh.account", "Compte")}</label>
             <p><strong>{primaryLogin}</strong></p>
           </div>

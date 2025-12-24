@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { modulesService } from "./ModulesTab";
 import type { Module } from "../../hosting.types";
 import { InstallModuleModal, ChangePasswordModal, DeleteModuleModal } from "./modals";
-import "./modules.css";
+import "./ModulesTab.css";
 
 // ============================================================
 // TYPES
@@ -160,11 +160,11 @@ export function ModulesTab({ serviceName }: Props) {
     return (
       <div className="modules-tab">
         <div className="modules-toolbar">
-          <div className="skeleton-btn" style={{ width: 36, height: 36 }} />
-          <div className="skeleton-input" style={{ width: 220, height: 36 }} />
-          <div className="skeleton-btn" style={{ width: 180, height: 36 }} />
+          <div className="modules-skeleton-btn" style={{ width: 36, height: 36 }} />
+          <div className="modules-skeleton-input" style={{ width: 220, height: 36 }} />
+          <div className="modules-skeleton-btn" style={{ width: 180, height: 36 }} />
         </div>
-        <div className="skeleton-table" style={{ height: 300 }} />
+        <div className="modules-skeleton-table" style={{ height: 300 }} />
       </div>
     );
   }
@@ -187,10 +187,10 @@ export function ModulesTab({ serviceName }: Props) {
     <div className="modules-tab">
       {/* Toolbar: Refresh + Search + Install */}
       <div className="modules-toolbar">
-        <button className="toolbar-btn refresh-btn" onClick={handleRefresh} title={t("toolbar.refresh")}>
+        <button className="modules-toolbar-btn refresh-btn" onClick={handleRefresh} title={t("toolbar.refresh")}>
           ↻
         </button>
-        <div className="toolbar-search">
+        <div className="modules-toolbar-search">
           <input
             type="text"
             placeholder={t("toolbar.search")}
@@ -235,46 +235,46 @@ export function ModulesTab({ serviceName }: Props) {
                 <tr key={mod.id}>
                   {/* Module (icône + nom) */}
                   <td>
-                    <div className="module-cell">
-                      <div className="module-icon" style={{ backgroundColor: getModuleColor(mod.name) }}>
+                    <div className="modules-module-cell">
+                      <div className="modules-module-icon" style={{ backgroundColor: getModuleColor(mod.name) }}>
                         {getModuleLetter(mod.name)}
                       </div>
-                      <span className="module-name">{mod.name}</span>
+                      <span className="modules-module-name">{mod.name}</span>
                     </div>
                   </td>
                   {/* Domaine */}
                   <td>
-                    <a href={mod.targetUrl} target="_blank" rel="noopener noreferrer" className="domain-link">
+                    <a href={mod.targetUrl} target="_blank" rel="noopener noreferrer" className="modules-domain-link">
                       {extractDomain(mod.targetUrl)}
                     </a>
                   </td>
                   {/* Dossier */}
-                  <td className="folder-cell">{extractFolder(mod.path)}</td>
+                  <td className="modules-folder-cell">{extractFolder(mod.path)}</td>
                   {/* Version */}
                   <td>{mod.version || "-"}</td>
                   {/* Admin */}
                   <td>
-                    <span className="admin-link" onClick={() => handleOpenAdmin(mod)}>
+                    <span className="modules-admin-link" onClick={() => handleOpenAdmin(mod)}>
                       {mod.adminName || "admin"}
                     </span>
                   </td>
                   {/* État */}
                   <td>
-                    <span className="status-badge status-installed">{t("table.statusInstalled")}</span>
+                    <span className="modules-status-badge status-installed">{t("table.statusInstalled")}</span>
                   </td>
                   {/* Actions */}
                   <td>
-                    <div className="actions-cell">
-                      <button className="action-btn" onClick={() => handleOpenSite(mod.targetUrl)} title={t("actions.openSite")}>
+                    <div className="modules-actions-cell">
+                      <button className="modules-action-btn" onClick={() => handleOpenSite(mod.targetUrl)} title={t("actions.openSite")}>
                         🌐
                       </button>
-                      <button className="action-btn" onClick={() => handleOpenAdmin(mod)} title={t("actions.openAdmin")}>
+                      <button className="modules-action-btn" onClick={() => handleOpenAdmin(mod)} title={t("actions.openAdmin")}>
                         👤
                       </button>
-                      <button className="action-btn" onClick={() => setPasswordModal({ open: true, moduleId: mod.id, moduleName: mod.name })} title={t("actions.changePassword")}>
+                      <button className="modules-action-btn" onClick={() => setPasswordModal({ open: true, moduleId: mod.id, moduleName: mod.name })} title={t("actions.changePassword")}>
                         🔑
                       </button>
-                      <button className="action-btn action-danger" onClick={() => setDeleteModal({ open: true, moduleId: mod.id, moduleName: mod.name })} title={t("actions.delete")}>
+                      <button className="modules-action-btn action-danger" onClick={() => setDeleteModal({ open: true, moduleId: mod.id, moduleName: mod.name })} title={t("actions.delete")}>
                         🗑
                       </button>
                     </div>
@@ -286,27 +286,27 @@ export function ModulesTab({ serviceName }: Props) {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="table-pagination">
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
-              <span className="pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
+            <div className="modules-table-pagination">
+              <button className="modules-pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
+              <span className="modules-pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
+              <button className="modules-pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
             </div>
           )}
         </div>
       )}
 
       {/* Section: Modules disponibles */}
-      <div className="available-modules-section">
-        <h3 className="section-title">{t("available.title")}</h3>
-        <div className="available-modules-grid">
+      <div className="modules-available-section">
+        <h3 className="modules-section-title">{t("available.title")}</h3>
+        <div className="modules-available-grid">
           {AVAILABLE_MODULES.map(mod => (
-            <div key={mod.id} className="available-module-card" onClick={() => setShowInstallModal(true)}>
-              <div className="card-icon" style={{ backgroundColor: mod.color }}>
+            <div key={mod.id} className="modules-available-card" onClick={() => setShowInstallModal(true)}>
+              <div className="modules-card-icon" style={{ backgroundColor: mod.color }}>
                 {mod.letter}
               </div>
-              <div className="card-info">
-                <span className="card-name">{mod.name}</span>
-                <span className="card-desc">{t(`available.${mod.id}Desc`)}</span>
+              <div className="modules-card-info">
+                <span className="modules-card-name">{mod.name}</span>
+                <span className="modules-card-desc">{t(`available.${mod.id}Desc`)}</span>
               </div>
             </div>
           ))}

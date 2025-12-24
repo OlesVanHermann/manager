@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { multisiteService } from "./MultisiteTab";
 import type { AttachedDomain } from "../../hosting.types";
 import { AddDomainModal, DeleteDomainWizard, FlushCdnWizard, DiagnosticModal, EditDomainWizard } from "./modals";
-import "./multisite.css";
+import "./MultisiteTab.css";
 
 // ============================================================
 // TYPES
@@ -37,17 +37,17 @@ interface DomainRow extends AttachedDomain {
 function Toggle({ enabled, onChange, disabled }: { enabled: boolean; onChange?: () => void; disabled?: boolean }) {
   return (
     <button 
-      className={`ms-toggle ${enabled ? 'on' : 'off'} ${disabled ? 'disabled' : ''}`}
+      className={`multisite-toggle ${enabled ? 'on' : 'off'} ${disabled ? 'disabled' : ''}`}
       onClick={onChange}
       disabled={disabled}
     >
-      <span className="ms-toggle-knob" />
+      <span className="multisite-toggle-knob" />
     </button>
   );
 }
 
 function IconAction({ icon, title, onClick }: { icon: string; title: string; onClick?: () => void }) {
-  return <button className="ms-icon-action" onClick={onClick} title={title}>{icon}</button>;
+  return <button className="multisite-icon-action" onClick={onClick} title={title}>{icon}</button>;
 }
 
 // ============================================================
@@ -192,61 +192,61 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
   if (loading) {
     return (
       <div className="multisite-tab">
-        <div className="ms-skeleton" />
+        <div className="multisite-skeleton" />
       </div>
     );
   }
 
-  if (error) return <div className="ms-error">{error}</div>;
+  if (error) return <div className="multisite-error">{error}</div>;
 
   return (
     <div className="multisite-tab">
       {/* === TOOLBAR === */}
-      <div className="ms-toolbar">
-        <div className="ms-toolbar-left">
-          <button className="ms-btn-refresh" onClick={handleRefresh} disabled={refreshing} title="Actualiser">
+      <div className="multisite-toolbar">
+        <div className="multisite-toolbar-left">
+          <button className="multisite-btn-refresh" onClick={handleRefresh} disabled={refreshing} title="Actualiser">
             {refreshing ? "⏳" : "↻"}
           </button>
           <input
             type="text"
-            className="ms-search"
+            className="multisite-search"
             placeholder="Rechercher un domaine..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button className="ms-btn-add" onClick={() => setShowAddModal(true)}>
+          <button className="multisite-btn-add" onClick={() => setShowAddModal(true)}>
             + Ajouter
           </button>
         </div>
-        <div className="ms-toolbar-right">
-          <span className="ms-count">{domains.length} domaine(s)</span>
+        <div className="multisite-toolbar-right">
+          <span className="multisite-count">{domains.length} domaine(s)</span>
         </div>
       </div>
 
       {/* === TABLE 9 COLONNES === */}
       {paginatedDomains.length === 0 ? (
-        <div className="ms-empty">
+        <div className="multisite-empty">
           <p>{searchTerm ? "Aucun résultat" : "Aucun domaine attaché"}</p>
           {!searchTerm && (
-            <button className="ms-btn-add" onClick={() => setShowAddModal(true)}>
+            <button className="multisite-btn-add" onClick={() => setShowAddModal(true)}>
               Ajouter un premier domaine
             </button>
           )}
         </div>
       ) : (
-        <div className="ms-table-wrap">
-          <table className="ms-table">
+        <div className="multisite-table-wrap">
+          <table className="multisite-table">
             <thead>
               <tr>
-                <th className="col-domain">DOMAINE</th>
-                <th className="col-folder">DOSSIER</th>
-                <th className="col-toggle">STATUT</th>
-                <th className="col-ssl">SSL</th>
-                <th className="col-toggle">CDN</th>
-                <th className="col-toggle">FIREWALL</th>
-                <th className="col-toggle">LOGS</th>
-                <th className="col-toggle">GIT</th>
-                <th className="col-toggle">IPV6</th>
+                <th className="multisite-col-domain">DOMAINE</th>
+                <th className="multisite-col-folder">DOSSIER</th>
+                <th className="multisite-col-toggle">STATUT</th>
+                <th className="multisite-col-ssl">SSL</th>
+                <th className="multisite-col-toggle">CDN</th>
+                <th className="multisite-col-toggle">FIREWALL</th>
+                <th className="multisite-col-toggle">LOGS</th>
+                <th className="multisite-col-toggle">GIT</th>
+                <th className="multisite-col-toggle">IPV6</th>
               </tr>
             </thead>
             <tbody>
@@ -257,29 +257,29 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
                 return (
                   <tr key={domain.domain} className={isInactive ? 'inactive-row' : ''}>
                     {/* DOMAINE */}
-                    <td className="col-domain">
-                      <a href={`https://${domain.domain}`} target="_blank" rel="noopener noreferrer" className="ms-domain-link">
+                    <td className="multisite-col-domain">
+                      <a href={`https://${domain.domain}`} target="_blank" rel="noopener noreferrer" className="multisite-domain-link">
                         {domain.domain}
                       </a>
                       <IconAction icon="×" title="Supprimer" onClick={() => handleDelete(domain)} />
                     </td>
                     
                     {/* DOSSIER */}
-                    <td className="col-folder">
+                    <td className="multisite-col-folder">
                       <code>{domain.path || "./www"}</code>
                       <IconAction icon="✎" title="Modifier" onClick={() => setEditDomain(domain)} />
                     </td>
                     
                     {/* STATUT */}
-                    <td className="col-toggle">
+                    <td className="multisite-col-toggle">
                       <Toggle enabled={domain.isActive} disabled={isUpdating} />
                     </td>
                     
                     {/* SSL - vide si inactif */}
-                    <td className="col-ssl">
+                    <td className="multisite-col-ssl">
                       {!isInactive && (
                         <>
-                          <span className="ssl-type">{domain.sslType || "—"}</span>
+                          <span className="multisite-ssl-type">{domain.sslType || "—"}</span>
                           {domain.sslType && (
                             <>
                               <IconAction icon="↺" title="Régénérer" onClick={handleRegenerateSsl} />
@@ -291,7 +291,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
                     </td>
                     
                     {/* CDN - vide si inactif */}
-                    <td className="col-toggle">
+                    <td className="multisite-col-toggle">
                       {!isInactive && (
                         <Toggle 
                           enabled={domain.cdnEnabled} 
@@ -302,7 +302,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
                     </td>
                     
                     {/* FIREWALL - vide si inactif */}
-                    <td className="col-toggle">
+                    <td className="multisite-col-toggle">
                       {!isInactive && (
                         <Toggle 
                           enabled={domain.firewallEnabled} 
@@ -313,7 +313,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
                     </td>
                     
                     {/* LOGS - vide si inactif */}
-                    <td className="col-toggle">
+                    <td className="multisite-col-toggle">
                       {!isInactive && (
                         <Toggle 
                           enabled={domain.logsEnabled} 
@@ -324,7 +324,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
                     </td>
                     
                     {/* GIT - vide si inactif */}
-                    <td className="col-toggle">
+                    <td className="multisite-col-toggle">
                       {!isInactive && (
                         <Toggle 
                           enabled={domain.gitEnabled} 
@@ -334,7 +334,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
                     </td>
                     
                     {/* IPV6 - vide si inactif */}
-                    <td className="col-toggle">
+                    <td className="multisite-col-toggle">
                       {!isInactive && (
                         <Toggle 
                           enabled={domain.ipv6Enabled} 
@@ -353,7 +353,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
 
       {/* === PAGINATION === */}
       {totalPages > 1 && (
-        <div className="ms-pagination">
+        <div className="multisite-pagination">
           <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>‹</button>
           <span>Page {currentPage} / {totalPages}</span>
           <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>›</button>
@@ -361,7 +361,7 @@ export function MultisiteTab({ serviceName, hasCdn = false, hasMultipleSsl = fal
       )}
 
       {/* === INFO BOX === */}
-      <div className="ms-info-box">
+      <div className="multisite-info-box">
         <strong>Multisite</strong>
         <p>Gérez les domaines attachés à votre hébergement. Chaque domaine peut avoir son propre dossier racine, certificat SSL et configuration CDN.</p>
       </div>

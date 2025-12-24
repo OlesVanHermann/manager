@@ -1,7 +1,7 @@
 // ============================================================
 // HOSTING TAB: CDN - Content Delivery Network (Target SVG Match)
 // ============================================================
-import "./cdn.css";
+import "./CdnTab.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { cdnService } from "./CdnTab";
 import type { Hosting } from "../../hosting.types";

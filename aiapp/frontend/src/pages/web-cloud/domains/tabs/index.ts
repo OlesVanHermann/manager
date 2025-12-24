@@ -1,13 +1,15 @@
 // ============================================================
-// DOMAINS TABS - Export central
+// INDEX - Export des tabs défactorisés
 // ============================================================
 
-export { GeneralTab } from "./GeneralTab";
-export { ZoneTab } from "./ZoneTab";
-export { DnsServersTab } from "./DnsServersTab";
-export { RedirectionTab } from "./RedirectionTab";
-export { DynHostTab } from "./DynHostTab";
-export { GlueTab } from "./GlueTab";
-export { DnssecTab } from "./DnssecTab";
-export { TasksTab } from "./TasksTab";
-export { ContactsTab } from "./ContactsTab";
+export { GeneralTab } from "./general/GeneralTab.tsx";
+export { ContactsTab } from "./contacts/ContactsTab.tsx";
+export { DnsServersTab } from "./dnsservers/DnsServersTab.tsx";
+export { DnssecTab } from "./dnssec/DnssecTab.tsx";
+export { DsRecordsTab } from "./dsrecords/DsRecordsTab.tsx";
+export { DynHostTab } from "./dynhost/DynHostTab.tsx";
+export { EmailsTab } from "./emails/EmailsTab.tsx";
+export { GlueTab } from "./glue/GlueTab.tsx";
+export { RedirectionTab } from "./redirection/RedirectionTab.tsx";
+export { TasksTab } from "./tasks/TasksTab.tsx";
+export { ZoneTab } from "./zone/ZoneTab.tsx";

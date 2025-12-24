@@ -5,10 +5,10 @@ export function InstallModuleModal({ serviceName, isOpen, onClose, onSuccess }: 
   if (!isOpen) return null;
   const handleInstall = async () => { setLoading(true); try { await new Promise(r => setTimeout(r, 500)); onSuccess(); } catch {} finally { setLoading(false); } };
   return (
-    <div className="modal-overlay" onClick={onClose}><div className="modal-container" onClick={e => e.stopPropagation()}>
-      <div className="modal-header"><h2>Installer un module</h2><button className="modal-close" onClick={onClose}>×</button></div>
-      <div className="modal-body"><p>Installation de module pour {serviceName} - Fonctionnalité en cours.</p></div>
-      <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Annuler</button><button className="btn btn-primary" onClick={handleInstall} disabled={loading}>{loading ? "..." : "Installer"}</button></div>
+    <div className="modules-modal-overlay" onClick={onClose}><div className="modules-modal-container" onClick={e => e.stopPropagation()}>
+      <div className="modules-modal-header"><h2>Installer un module</h2><button className="modules-modal-close" onClick={onClose}>×</button></div>
+      <div className="modules-modal-body"><p>Installation de module pour {serviceName} - Fonctionnalité en cours.</p></div>
+      <div className="modules-modal-footer"><button className="btn btn-secondary" onClick={onClose}>Annuler</button><button className="btn btn-primary" onClick={handleInstall} disabled={loading}>{loading ? "..." : "Installer"}</button></div>
     </div></div>
   );
 }

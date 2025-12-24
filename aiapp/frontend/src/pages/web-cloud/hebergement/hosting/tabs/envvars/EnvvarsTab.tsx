@@ -1,5 +1,5 @@
 // ============================================================
-import "./envvars.css";
+import "./EnvvarsTab.css";
 // HOSTING TAB: ENVVARS - Variables d'environnement
 // ============================================================
 

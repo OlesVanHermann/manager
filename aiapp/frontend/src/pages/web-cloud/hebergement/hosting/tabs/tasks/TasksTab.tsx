@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { tasksService } from "./TasksTab";
-import "./tasks.css";
+import "./TasksTab.css";
 
 // ============================================================
 // TYPES
@@ -161,9 +161,9 @@ export function TasksTab({ serviceName }: Props) {
       <div className="tasks-tab">
         <div className="tasks-table-container">
           <div className="tasks-skeleton">
-            <div className="skeleton-row" />
-            <div className="skeleton-row" />
-            <div className="skeleton-row" />
+            <div className="tasks-skeleton-row" />
+            <div className="tasks-skeleton-row" />
+            <div className="tasks-skeleton-row" />
           </div>
         </div>
       </div>
@@ -175,7 +175,7 @@ export function TasksTab({ serviceName }: Props) {
     return (
       <div className="tasks-tab">
         <div className="tasks-error">
-          <span className="error-icon">⚠️</span>
+          <span className="tasks-error-icon">⚠️</span>
           <span>{error}</span>
         </div>
       </div>
@@ -198,7 +198,7 @@ export function TasksTab({ serviceName }: Props) {
             </thead>
             <tbody>
               <tr>
-                <td colSpan={4} className="empty-cell">
+                <td colSpan={4} className="tasks-empty-cell">
                   {t("empty")}
                 </td>
               </tr>
@@ -227,14 +227,14 @@ export function TasksTab({ serviceName }: Props) {
               const statusConfig = getStatusConfig(task.status);
               return (
                 <tr key={task.id}>
-                  <td className="task-function">{getFunctionLabel(task.function)}</td>
+                  <td className="tasks-function">{getFunctionLabel(task.function)}</td>
                   <td>
-                    <span className={`task-badge ${statusConfig.className}`}>
+                    <span className={`tasks-badge ${statusConfig.className}`}>
                       {statusConfig.label}
                     </span>
                   </td>
-                  <td className="task-date">{formatDate(task.startDate)}</td>
-                  <td className="task-date">{formatDate(task.doneDate)}</td>
+                  <td className="tasks-date">{formatDate(task.startDate)}</td>
+                  <td className="tasks-date">{formatDate(task.doneDate)}</td>
                 </tr>
               );
             })}
