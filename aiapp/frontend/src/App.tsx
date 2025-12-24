@@ -59,6 +59,7 @@ const HousingPage = lazy(() => import("./pages/bare-metal/housing"));
 const WebCloudDashboard = lazy(() => import("./pages/web-cloud"));
 const DomainsDnsPage = lazy(() => import("./pages/web-cloud/domains"));
 const HebergementPage = lazy(() => import("./pages/web-cloud/hebergement"));
+const ManagedWordPressPage = lazy(() => import("./pages/web-cloud/hebergement/managed-wordpress"));
 const EmailsPage = lazy(() => import("./pages/web-cloud/emails"));
 const TelecomPage = lazy(() => import("./pages/web-cloud/telecom"));
 const AccessPage = lazy(() => import("./pages/web-cloud/access"));
@@ -224,6 +225,7 @@ function AppContent() {
         case "web-home": return <WebCloudDashboard onNavigate={nav.handleNavigate} />;
         case "web-domains-dns": return <DomainsDnsPage />;
         case "web-hosting": return <HebergementPage />;
+        case "web-wordpress": return <ManagedWordPressPage />;
         case "web-emails": return <EmailsPage />;
         case "web-voip": return <TelecomPage />;
         case "web-access": return <AccessPage />;

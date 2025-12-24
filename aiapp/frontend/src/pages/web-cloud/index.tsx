@@ -121,21 +121,21 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
   const loadAllCounts = async () => {
     try {
       const results = await Promise.allSettled([
-        domainsService.listDomains(),
-        dnsZonesService.listZones(),
-        hostingService.listHostings(),
-        privateDatabaseService.listDatabases(),
-        emailDomainService.listDomains(),
-        emailProService.listServices(),
-        exchangeService.listOrganizations(),
-        officeService.listTenants(),
-        zimbraService.listPlatforms(),
-        voipService.listBillingAccounts(),
-        smsService.listAccounts(),
-        faxService.listServices(),
-        carrierSipService.listServices(),
-        packXdslService.listPacks(),
-        overtheboxService.listServices(),
+        domainsService.listDomains?.() ?? Promise.resolve([]),
+        dnsZonesService.listZones?.() ?? Promise.resolve([]),
+        hostingService.listHostings?.() ?? Promise.resolve([]),
+        privateDatabaseService.listPrivateDatabases?.() ?? Promise.resolve([]),
+        emailDomainService.listDomains?.() ?? Promise.resolve([]),
+        emailProService.listServices?.() ?? Promise.resolve([]),
+        exchangeService.listOrganizations?.() ?? exchangeService.listServices?.() ?? Promise.resolve([]),
+        officeService.listTenants?.() ?? officeService.listServices?.() ?? Promise.resolve([]),
+        zimbraService.listPlatforms?.() ?? zimbraService.listServices?.() ?? Promise.resolve([]),
+        voipService.listBillingAccounts?.() ?? voipService.listServices?.() ?? Promise.resolve([]),
+        smsService.listAccounts?.() ?? smsService.listServices?.() ?? Promise.resolve([]),
+        faxService.listServices?.() ?? Promise.resolve([]),
+        carrierSipService.listServices?.() ?? Promise.resolve([]),
+        packXdslService.listPacks?.() ?? packXdslService.listServices?.() ?? Promise.resolve([]),
+        overtheboxService.listServices?.() ?? Promise.resolve([]),
       ]);
 
       const getCount = (r: PromiseSettledResult<string[]>) => 

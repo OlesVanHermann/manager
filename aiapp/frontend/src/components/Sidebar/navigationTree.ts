@@ -105,6 +105,7 @@ export const universes: Universe[] = [
       { id: "web-home", i18nKey: "sections.webCloud.home" },
       { id: "web-domains-dns", i18nKey: "sections.webCloud.domainsDns" },
       { id: "web-hosting", i18nKey: "sections.webCloud.hosting" },
+      { id: "web-wordpress", i18nKey: "sections.webCloud.wordpress" },
       { id: "web-emails", i18nKey: "sections.webCloud.emails" },
       { id: "web-voip", i18nKey: "sections.webCloud.voip" },
       { id: "web-access", i18nKey: "sections.webCloud.access" },
