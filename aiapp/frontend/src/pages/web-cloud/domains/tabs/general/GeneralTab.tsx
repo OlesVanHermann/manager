@@ -1,11 +1,12 @@
 // ============================================================
 import "./GeneralTab.css";
 // TAB: GENERAL - Informations domaine layout 3 colonnes
+// TOUTES les classes CSS sont préfixées .general-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { generalService } from "./GeneralTab";
+import { generalService, formatDate, formatDateLong } from "./GeneralTab";
 import type { Domain, DomainServiceInfos } from "../../domains.types";
 import { AuthInfoModal } from "../../modals/AuthInfoModal";
 
@@ -179,68 +180,55 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
     loadExtraData();
   }, [domain]);
 
-  // ---------- HELPERS ----------
-  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-  const formatDateLong = (dateStr: string) => new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  // ---------- DERIVED VALUES ----------
+  const isLocked = details?.transferLockStatus === "locked";
+  const isLocking = details?.transferLockStatus === "locking" || details?.transferLockStatus === "unlocking";
+  const dnssecEnabled = dnssecStatus === "enabled" || dnssecStatus === "enableInProgress";
+  const dnsServerType = details?.nameServerType === "hosted" ? t("values.dnsHosted") : t("values.dnsExternal");
+  const canShowAuthInfo = !isLocked && details?.nameServerType === "hosted";
 
   // ---------- HANDLERS ----------
   const handleToggleLock = async () => {
-    if (!details) return;
-    const isLocked = details.transferLockStatus === "locked";
-    if (!confirm(isLocked ? t("security.confirmUnlock") : t("security.confirmLock"))) return;
+    if (toggling || isLocking) return;
+    setToggling(true);
     try {
-      setToggling(true);
-      if (isLocked) await generalService.unlockDomain(domain);
-      else await generalService.lockDomain(domain);
+      if (isLocked) {
+        await generalService.unlockDomain(domain);
+      } else {
+        await generalService.lockDomain(domain);
+      }
       onRefresh?.();
     } catch (err) {
-      alert(String(err));
+      console.error("Toggle lock error:", err);
     } finally {
       setToggling(false);
     }
   };
 
   const handleToggleDnssec = async () => {
+    if (dnssecToggling) return;
     setDnssecToggling(true);
-    setTimeout(() => {
-      alert(t("security.dnssecManual"));
+    try {
+      // Note: DNSSEC toggle would require additional API methods
+      // For now, redirect to DNSSEC tab
+      onTabChange?.("dnssec");
+    } finally {
       setDnssecToggling(false);
-    }, 500);
-  };
-
-  const handleGoToTasks = () => {
-    if (onTabChange) {
-      onTabChange("tasks");
-    }
-  };
-
-  const handleGoToDnsServers = () => {
-    if (onTabChange) {
-      onTabChange("dns-servers");
     }
   };
 
   const handleGoToContacts = () => {
-    if (onTabChange) {
-      onTabChange("contacts");
-    }
+    onTabChange?.("contacts");
   };
 
-  // ---------- DERIVED STATE ----------
-  const isLocked = details?.transferLockStatus === "locked";
-  const isLocking = details?.transferLockStatus === "locking" || details?.transferLockStatus === "unlocking";
-  const dnssecEnabled = dnssecStatus === "enabled" || dnssecStatus === "ENABLED";
-  const canShowAuthInfo = details?.transferLockStatus === "unlocked";
-  const dnsServerType = details?.nameServerType === "hosted" ? t("values.dnsHosted") : t("values.dnsExternal");
-
-  // ---------- RENDER LOADING ----------
+  // ---------- LOADING STATE ----------
   if (loading) {
     return (
       <div className="general-tab-v3">
         <div className="general-grid-3">
-          <div className="info-card-v3"><div className="skeleton-block" style={{height:"300px"}} /></div>
-          <div className="info-card-v3"><div className="skeleton-block" style={{height:"200px"}} /></div>
-          <div className="info-card-v3"><div className="skeleton-block" style={{height:"300px"}} /></div>
+          <div className="general-skeleton-block-v3" style={{ height: "300px" }} />
+          <div className="general-skeleton-block-v3" style={{ height: "300px" }} />
+          <div className="general-skeleton-block-v3" style={{ height: "300px" }} />
         </div>
       </div>
     );
@@ -249,179 +237,163 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
   // ---------- RENDER ----------
   return (
     <div className="general-tab-v3">
-      {/* ============ WARNING BANNER ============ */}
+      {/* ============ PENDING TASKS WARNING ============ */}
       {pendingTasks.length > 0 && (
-        <div className="warning-banner-v3">
+        <div className="general-warning-banner-v3">
           <WarningIcon />
-          <div className="warning-content">
+          <div className="general-warning-content-v3">
             <span>{t("warnings.pendingTasks", { count: pendingTasks.length })}</span>
-            <button className="btn-link" onClick={handleGoToTasks}>
-              {t("warnings.viewTasks")}
-            </button>
+            <button className="general-btn-link-v3" onClick={() => onTabChange?.("tasks")}>{t("actions.viewTasks")}</button>
           </div>
         </div>
       )}
 
-      {/* ============ ROW 1: 3 CARDS ============ */}
+      {/* ============ ROW 1: 3 COLONNES ============ */}
       <div className="general-grid-3">
         {/* ============ COL 1: INFORMATIONS ============ */}
-        <div className="info-card-v3">
-          <h3 className="card-title-v3">{t("sections.info")}</h3>
+        <div className="general-info-card-v3">
+          <h3 className="general-card-title-v3">{t("sections.info")}</h3>
 
-          <div className="info-row-v3">
-            <div className="row-label">{t("fields.status")}</div>
-            <div className="row-value-box">
-              <span className="badge-status success">{t("values.registered")}</span>
+          <div className="general-info-row-v3">
+            <div className="general-row-label-v3"><ServerIcon /> {t("fields.domain")}</div>
+            <div className="general-row-value-box-v3">
+              <span className="general-value-text-v3">{domain}</span>
             </div>
           </div>
 
-          <div className="info-row-v3">
-            <div className="row-label"><ServerIcon /> {t("fields.dnsServers")}</div>
-            <div className="row-value-box with-action">
-              <span className={`badge-status ${details?.nameServerType === "hosted" ? "success" : "info"}`}>
-                {dnsServerType}
-              </span>
-              <button className="btn-more-v3" onClick={handleGoToDnsServers} title={t("actions.viewDnsServers")}><MoreIcon /></button>
+          <div className="general-info-row-v3">
+            <div className="general-row-label-v3"><ServerIcon /> {t("fields.dnsType")}</div>
+            <div className="general-row-value-box-v3">
+              <span className="general-badge-status-v3 info">{dnsServerType}</span>
             </div>
           </div>
 
-          <div className="info-row-v3">
-            <div className="row-label">{t("fields.webHosting")}</div>
-            <div className="row-value-box with-action">
-              {linkedHosting ? (
-                <span className="value-text">{linkedHosting}</span>
+          <div className="general-info-row-v3">
+            <div className="general-row-label-v3"><MailIcon /> {t("fields.email")}</div>
+            <div className="general-row-value-box-v3">
+              {hasEmail === null ? (
+                <span className="general-value-text-v3 muted">...</span>
+              ) : hasEmail ? (
+                <span className="general-badge-status-v3 success">{t("values.emailActive")}</span>
               ) : (
-                <a href={getHostingOrderUrl()} target="_blank" rel="noopener noreferrer" className="btn-order">
-                  {t("actions.orderHosting")} <ExternalLinkIcon />
+                <a href={getEmailUrl()} target="_blank" rel="noopener noreferrer" className="general-btn-order-v3">
+                  {t("actions.orderEmail")} <ExternalLinkIcon />
                 </a>
               )}
             </div>
           </div>
 
-          <div className="info-row-v3">
-            <div className="row-label"><MailIcon /> {t("fields.email")}</div>
-            <div className="row-value-box">
-              {hasEmail === null ? (
-                <span className="value-text muted">...</span>
-              ) : hasEmail ? (
-                <span className="badge-status success">{t("values.emailActive")}</span>
-              ) : (
-                <span className="value-text muted">{t("values.noEmail")}</span>
-              )}
-            </div>
-          </div>
-
-          <div className="info-row-v3">
-            <div className="row-label"><GlobeIcon /> {t("fields.subdomains")}</div>
-            <div className="row-value-box">
+          <div className="general-info-row-v3">
+            <div className="general-row-label-v3"><GlobeIcon /> {t("fields.subdomains")}</div>
+            <div className="general-row-value-box-v3">
               {subdomains.length > 0 ? (
-                <div className="subdomains-list">
+                <div className="general-subdomains-list-v3">
                   {subdomains.slice(0, 3).map((sub) => (
-                    <span key={sub} className="subdomain-item">{sub}.{domain}</span>
+                    <span key={sub} className="general-subdomain-item-v3">{sub}.{domain}</span>
                   ))}
                   {subdomains.length > 3 && (
-                    <span className="subdomain-more">+{subdomains.length - 3} {t("values.more")}</span>
+                    <span className="general-subdomain-more-v3">+{subdomains.length - 3} {t("values.more")}</span>
                   )}
                 </div>
               ) : (
-                <span className="value-text muted">{t("values.noSubdomain")}</span>
+                <span className="general-value-text-v3 muted">{t("values.noSubdomain")}</span>
               )}
             </div>
           </div>
         </div>
 
         {/* ============ COL 2: SÉCURITÉ ============ */}
-        <div className="info-card-v3">
-          <h3 className="card-title-v3">{t("sections.security")}</h3>
+        <div className="general-info-card-v3">
+          <h3 className="general-card-title-v3">{t("sections.security")}</h3>
 
-          <div className="security-row-v3">
-            <div className="security-label-row">
+          <div className="general-security-row-v3">
+            <div className="general-security-label-row-v3">
               <span>{t("security.transferLock")}</span>
-              <span className="help-icon-v3" title={t("security.transferLockHelp")}><HelpIcon /></span>
+              <span className="general-help-icon-v3" title={t("security.transferLockHelp")}><HelpIcon /></span>
             </div>
-            <div className="security-control-v3">
-              <button className={`toggle-switch-v3 ${isLocked ? "active" : ""}`} onClick={handleToggleLock} disabled={toggling || isLocking}>
-                <span className="toggle-slider-v3" />
+            <div className="general-security-control-v3">
+              <button className={`general-toggle-switch-v3 ${isLocked ? "active" : ""}`} onClick={handleToggleLock} disabled={toggling || isLocking}>
+                <span className="general-toggle-slider-v3" />
               </button>
-              <span className={`toggle-badge ${isLocked ? "success" : "warning"}`}>
+              <span className={`general-toggle-badge-v3 ${isLocked ? "success" : "warning"}`}>
                 {toggling ? "..." : isLocked ? t("security.enabled") : t("security.disabled")}
               </span>
             </div>
           </div>
 
-          <div className="security-row-v3">
-            <div className="security-label-row">
+          <div className="general-security-row-v3">
+            <div className="general-security-label-row-v3">
               <span>{t("security.dnssec")}</span>
-              <span className="help-icon-v3" title={t("security.dnssecHelp")}><HelpIcon /></span>
+              <span className="general-help-icon-v3" title={t("security.dnssecHelp")}><HelpIcon /></span>
             </div>
-            <div className="security-control-v3">
-              <button className={`toggle-switch-v3 ${dnssecEnabled ? "active" : ""}`} onClick={handleToggleDnssec} disabled={dnssecToggling}>
-                <span className="toggle-slider-v3" />
+            <div className="general-security-control-v3">
+              <button className={`general-toggle-switch-v3 ${dnssecEnabled ? "active" : ""}`} onClick={handleToggleDnssec} disabled={dnssecToggling}>
+                <span className="general-toggle-slider-v3" />
               </button>
-              <span className={`toggle-badge ${dnssecEnabled ? "success" : "warning"}`}>
+              <span className={`general-toggle-badge-v3 ${dnssecEnabled ? "success" : "warning"}`}>
                 {dnssecToggling ? "..." : dnssecEnabled ? t("security.enabled") : t("security.disabled")}
               </span>
             </div>
           </div>
 
           {canShowAuthInfo && (
-            <div className="security-row-v3">
-              <div className="security-label-row">
+            <div className="general-security-row-v3">
+              <div className="general-security-label-row-v3">
                 <span><KeyIcon /> AUTH/INFO</span>
               </div>
-              <button className="btn-authinfo" onClick={() => setShowAuthInfo(true)}>
+              <button className="general-btn-authinfo-v3" onClick={() => setShowAuthInfo(true)}>
                 {t("actions.showAuthInfo")}
               </button>
             </div>
           )}
 
-          <div className="security-row-v3">
-            <div className="security-label-row">
+          <div className="general-security-row-v3">
+            <div className="general-security-label-row-v3">
               <span>{t("security.whois")}</span>
             </div>
-            <button className="btn-whois" onClick={handleGoToContacts}>
+            <button className="general-btn-whois-v3" onClick={handleGoToContacts}>
               {t("security.configureWhois")}
             </button>
           </div>
         </div>
 
         {/* ============ COL 3: ABONNEMENT ============ */}
-        <div className="info-card-v3">
-          <h3 className="card-title-v3">{t("sections.subscription")}</h3>
+        <div className="general-info-card-v3">
+          <h3 className="general-card-title-v3">{t("sections.subscription")}</h3>
 
           {serviceInfos && (
             <>
-              <div className="abo-row-v3 with-action">
-                <div className="abo-main">
-                  <div className="abo-label">{t("fields.renewal")}</div>
-                  <div className="abo-value highlight">{formatDate(serviceInfos.expiration)}</div>
+              <div className="general-abo-row-v3 with-action">
+                <div className="general-abo-main-v3">
+                  <div className="general-abo-label-v3">{t("fields.renewal")}</div>
+                  <div className="general-abo-value-v3 highlight">{formatDate(serviceInfos.expiration)}</div>
                 </div>
-                <a href={getAutorenewUrl(domain)} target="_blank" rel="noopener noreferrer" className="btn-more-v3"><MoreIcon /></a>
+                <a href={getAutorenewUrl(domain)} target="_blank" rel="noopener noreferrer" className="general-btn-more-v3"><MoreIcon /></a>
               </div>
 
-              <div className="abo-row-v3 with-action">
-                <div className="abo-main">
-                  <div className="abo-label"><UserIcon /> {t("fields.contacts")}</div>
-                  <div className="contacts-list-v3">
-                    <div className="contact-line"><span className="nic">{serviceInfos.contactAdmin}</span><span className="role">{t("contacts.admin")}</span></div>
-                    <div className="contact-line"><span className="nic">{serviceInfos.contactTech}</span><span className="role">{t("contacts.tech")}</span></div>
-                    <div className="contact-line"><span className="nic">{serviceInfos.contactBilling}</span><span className="role">{t("contacts.billing")}</span></div>
-                    {details?.whoisOwner && <div className="contact-line"><span className="nic">{details.whoisOwner}</span><span className="role">{t("contacts.owner")}</span></div>}
+              <div className="general-abo-row-v3 with-action">
+                <div className="general-abo-main-v3">
+                  <div className="general-abo-label-v3"><UserIcon /> {t("fields.contacts")}</div>
+                  <div className="general-contacts-list-v3">
+                    <div className="general-contact-line-v3"><span className="general-nic-v3">{serviceInfos.contactAdmin}</span><span className="general-role-v3">{t("contacts.admin")}</span></div>
+                    <div className="general-contact-line-v3"><span className="general-nic-v3">{serviceInfos.contactTech}</span><span className="general-role-v3">{t("contacts.tech")}</span></div>
+                    <div className="general-contact-line-v3"><span className="general-nic-v3">{serviceInfos.contactBilling}</span><span className="general-role-v3">{t("contacts.billing")}</span></div>
+                    {details?.whoisOwner && <div className="general-contact-line-v3"><span className="general-nic-v3">{details.whoisOwner}</span><span className="general-role-v3">{t("contacts.owner")}</span></div>}
                   </div>
                 </div>
-                <a href={getContactsUrl(domain)} target="_blank" rel="noopener noreferrer" className="btn-more-v3"><MoreIcon /></a>
+                <a href={getContactsUrl(domain)} target="_blank" rel="noopener noreferrer" className="general-btn-more-v3"><MoreIcon /></a>
               </div>
 
-              <div className="abo-row-v3">
-                <div className="abo-label"><CalendarIcon /> {t("fields.creation")}</div>
-                <div className="abo-value">{formatDateLong(serviceInfos.creation)}</div>
+              <div className="general-abo-row-v3">
+                <div className="general-abo-label-v3"><CalendarIcon /> {t("fields.creation")}</div>
+                <div className="general-abo-value-v3">{formatDateLong(serviceInfos.creation)}</div>
               </div>
 
               {details?.offer && (
-                <div className="abo-row-v3">
-                  <div className="abo-label">{t("fields.offer")}</div>
-                  <div className="row-value-box">
-                    <span className="badge-status gold">{details.offer}</span>
+                <div className="general-abo-row-v3">
+                  <div className="general-abo-label-v3">{t("fields.offer")}</div>
+                  <div className="general-row-value-box-v3">
+                    <span className="general-badge-status-v3 gold">{details.offer}</span>
                   </div>
                 </div>
               )}
@@ -431,35 +403,35 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
       </div>
 
       {/* ============ ROW 2: GUIDES + OPTIONS + CONSEILS ============ */}
-      <div className="general-grid-3 mt-6">
-        <div className="info-card-v3 compact">
-          <h3 className="card-title-v3">{t("sections.guides")}</h3>
-          <div className="accordion-item-v3" onClick={() => setGuidesOpen(!guidesOpen)}>
-            <span className="accordion-label-v3">{t("guides.title")}</span>
-            <span className={`accordion-chevron ${guidesOpen ? "open" : ""}`}><ChevronDownIcon /></span>
+      <div className="general-grid-3 general-mt-6">
+        <div className="general-info-card-v3 compact">
+          <h3 className="general-card-title-v3">{t("sections.guides")}</h3>
+          <div className="general-accordion-item-v3" onClick={() => setGuidesOpen(!guidesOpen)}>
+            <span className="general-accordion-label-v3">{t("guides.title")}</span>
+            <span className={`general-accordion-chevron-v3 ${guidesOpen ? "open" : ""}`}><ChevronDownIcon /></span>
           </div>
           {guidesOpen && (
-            <div className="accordion-content-v3">
-              <a href="https://help.ovhcloud.com/csm/fr-domains-dns-zone" target="_blank" rel="noopener noreferrer" className="guide-link-v3">{t("guides.dnsZone")} <ExternalLinkIcon /></a>
-              <a href="https://help.ovhcloud.com/csm/fr-domains-transfer-lock" target="_blank" rel="noopener noreferrer" className="guide-link-v3">{t("guides.transferLock")} <ExternalLinkIcon /></a>
-              <a href="https://help.ovhcloud.com/csm/fr-domains-dnssec" target="_blank" rel="noopener noreferrer" className="guide-link-v3">{t("guides.dnssec")} <ExternalLinkIcon /></a>
+            <div className="general-accordion-content-v3">
+              <a href="https://help.ovhcloud.com/csm/fr-domains-dns-zone" target="_blank" rel="noopener noreferrer" className="general-guide-link-v3">{t("guides.dnsZone")} <ExternalLinkIcon /></a>
+              <a href="https://help.ovhcloud.com/csm/fr-domains-transfer-lock" target="_blank" rel="noopener noreferrer" className="general-guide-link-v3">{t("guides.transferLock")} <ExternalLinkIcon /></a>
+              <a href="https://help.ovhcloud.com/csm/fr-domains-dnssec" target="_blank" rel="noopener noreferrer" className="general-guide-link-v3">{t("guides.dnssec")} <ExternalLinkIcon /></a>
             </div>
           )}
         </div>
 
-        <div className="info-card-v3 compact">
-          <h3 className="card-title-v3">{t("sections.options")}</h3>
-          <div className="option-row-v3"><span className="option-label-v3">{t("options.dnsAnycast")}</span><span className="option-value-v3 muted">{t("options.notAvailable")}</span></div>
-          <div className="option-row-v3"><span className="option-label-v3">{t("options.owo")}</span><span className={`option-value-v3 ${details?.owoSupported ? "" : "muted"}`}>{details?.owoSupported ? t("options.available") : t("options.notSupported")}</span></div>
-          <div className="option-row-v3"><span className="option-label-v3">{t("options.dnsType")}</span><span className="option-value-v3">{dnsServerType}</span></div>
+        <div className="general-info-card-v3 compact">
+          <h3 className="general-card-title-v3">{t("sections.options")}</h3>
+          <div className="general-option-row-v3"><span className="general-option-label-v3">{t("options.dnsAnycast")}</span><span className="general-option-value-v3 muted">{t("options.notAvailable")}</span></div>
+          <div className="general-option-row-v3"><span className="general-option-label-v3">{t("options.owo")}</span><span className={`general-option-value-v3 ${details?.owoSupported ? "" : "muted"}`}>{details?.owoSupported ? t("options.available") : t("options.notSupported")}</span></div>
+          <div className="general-option-row-v3"><span className="general-option-label-v3">{t("options.dnsType")}</span><span className="general-option-value-v3">{dnsServerType}</span></div>
         </div>
 
-        <div className="info-card-v3 compact highlight">
-          <h3 className="card-title-v3">{t("sections.tips")}</h3>
-          <p className="advice-intro-v3">{t("tips.intro")}</p>
-          <a href={getHostingOrderUrl()} target="_blank" rel="noopener noreferrer" className="advice-link-v3"><span>{t("tips.hosting")}</span><ChevronRightIcon /></a>
-          <a href={getExtensionUrl()} target="_blank" rel="noopener noreferrer" className="advice-link-v3"><span>{t("tips.extension")}</span><ChevronRightIcon /></a>
-          <a href={getEmailUrl()} target="_blank" rel="noopener noreferrer" className="advice-link-v3"><span>{t("tips.email")}</span><ChevronRightIcon /></a>
+        <div className="general-info-card-v3 compact highlight">
+          <h3 className="general-card-title-v3">{t("sections.tips")}</h3>
+          <p className="general-advice-intro-v3">{t("tips.intro")}</p>
+          <a href={getHostingOrderUrl()} target="_blank" rel="noopener noreferrer" className="general-advice-link-v3"><span>{t("tips.hosting")}</span><ChevronRightIcon /></a>
+          <a href={getExtensionUrl()} target="_blank" rel="noopener noreferrer" className="general-advice-link-v3"><span>{t("tips.extension")}</span><ChevronRightIcon /></a>
+          <a href={getEmailUrl()} target="_blank" rel="noopener noreferrer" className="general-advice-link-v3"><span>{t("tips.email")}</span><ChevronRightIcon /></a>
         </div>
       </div>
 

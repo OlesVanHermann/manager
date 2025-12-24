@@ -1,10 +1,11 @@
 // ============================================================
 // MODAL: AuthInfo - Affichage du code de transfert
+// Import depuis le service isolé GeneralTab
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { domainsService } from "../../../../services/web-cloud.domains";
+import { generalService } from "../tabs/general/GeneralTab";
 
 interface Props {
   domain: string;
@@ -36,7 +37,7 @@ export function AuthInfoModal({ domain, onClose }: Props) {
     const load = async () => {
       try {
         setLoading(true);
-        const code = await domainsService.getAuthInfo(domain);
+        const code = await generalService.getAuthInfo(domain);
         setAuthInfo(code);
       } catch (err) {
         setError(String(err));

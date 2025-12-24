@@ -2,13 +2,22 @@
 // DOMAINS PAGE - Liste unifiée Domaines + Zones DNS
 // ============================================================
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useDomainZoneList, DomainZoneEntry } from "./hooks/useDomainZoneList";
+import { domainsPageService } from "./domains.service";
 import { ServiceItemBadge } from "./components/ServiceItemBadge";
-import { domainsService, Domain, DomainServiceInfos } from "../../../services/web-cloud.domains";
-import { dnsZonesService, DnsZone } from "../../../services/web-cloud.dns-zones";
-import { GeneralTab, ZoneTab, DnsServersTab, RedirectionTab, DynHostTab, GlueTab, DnssecTab, TasksTab, ContactsTab } from "./tabs";
+import type { Domain, DomainServiceInfos, DnsZone } from "./domains.types";
+
+// Import direct des tabs (pas de barrel file)
+import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
+import { ZoneTab } from "./tabs/zone/ZoneTab.tsx";
+import { DnsServersTab } from "./tabs/dnsservers/DnsServersTab.tsx";
+import { RedirectionTab } from "./tabs/redirection/RedirectionTab.tsx";
+import { DynHostTab } from "./tabs/dynhost/DynHostTab.tsx";
+import { GlueTab } from "./tabs/glue/GlueTab.tsx";
+import { DnssecTab } from "./tabs/dnssec/DnssecTab.tsx";
+import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
+import { ContactsTab } from "./tabs/contacts/ContactsTab.tsx";
 
 // ============ ICONS ============
 
@@ -19,6 +28,15 @@ const GlobeIcon = () => (
 );
 
 // ============ TYPES ============
+
+type ServiceEntryType = "domain-and-zone" | "domain-only" | "zone-only";
+
+interface DomainZoneEntry {
+  id: string;
+  type: ServiceEntryType;
+  hasDomain: boolean;
+  hasZone: boolean;
+}
 
 interface TabDef {
   id: string;
@@ -48,10 +66,54 @@ export default function DomainsPage() {
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
-  const { entries, loading, error } = useDomainZoneList();
+  const [entries, setEntries] = useState<DomainZoneEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("general");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // ---------- LOAD LIST (remplace useDomainZoneList) ----------
+  const loadList = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [domains, zones] = await Promise.all([
+        domainsPageService.listDomains(),
+        domainsPageService.listZones(),
+      ]);
+
+      const domainSet = new Set(domains);
+      const zoneSet = new Set(zones);
+      const allNames = new Set([...domains, ...zones]);
+
+      const list: DomainZoneEntry[] = [];
+
+      for (const name of allNames) {
+        const hasDomain = domainSet.has(name);
+        const hasZone = zoneSet.has(name);
+
+        let type: ServiceEntryType;
+        if (hasDomain && hasZone) type = "domain-and-zone";
+        else if (hasDomain) type = "domain-only";
+        else type = "zone-only";
+
+        list.push({ id: name, type, hasDomain, hasZone });
+      }
+
+      list.sort((a, b) => a.id.localeCompare(b.id));
+      setEntries(list);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadList();
+  }, [loadList]);
 
   // ---------- SELECTED ENTRY ----------
   const selectedEntry = useMemo(
@@ -85,9 +147,9 @@ export default function DomainsPage() {
       setDetailLoading(true);
       try {
         const [domain, infos, zone] = await Promise.all([
-          selectedEntry.hasDomain ? domainsService.getDomain(selectedEntry.id) : Promise.resolve(null),
-          selectedEntry.hasDomain ? domainsService.getServiceInfos(selectedEntry.id) : Promise.resolve(null),
-          selectedEntry.hasZone ? dnsZonesService.getZone(selectedEntry.id) : Promise.resolve(null),
+          selectedEntry.hasDomain ? domainsPageService.getDomain(selectedEntry.id) : Promise.resolve(null),
+          selectedEntry.hasDomain ? domainsPageService.getServiceInfos(selectedEntry.id) : Promise.resolve(null),
+          selectedEntry.hasZone ? domainsPageService.getZone(selectedEntry.id) : Promise.resolve(null),
         ]);
         setDomainDetails(domain);
         setServiceInfos(infos);
@@ -125,6 +187,19 @@ export default function DomainsPage() {
   const availableTabs = useMemo(() => {
     if (!selectedEntry) return [];
     return ALL_TABS.filter((tab) => tab.condition(selectedEntry));
+  }, [selectedEntry]);
+
+  // ---------- REFRESH HANDLER ----------
+  const handleRefresh = useCallback(async () => {
+    if (!selectedEntry) return;
+    setDomainDetails(null);
+    setServiceInfos(null);
+    const [d, s] = await Promise.all([
+      domainsPageService.getDomain(selectedEntry.id),
+      domainsPageService.getServiceInfos(selectedEntry.id),
+    ]);
+    setDomainDetails(d);
+    setServiceInfos(s);
   }, [selectedEntry]);
 
   // ---------- RENDER LOADING ----------
@@ -183,7 +258,7 @@ export default function DomainsPage() {
 
     switch (activeTab) {
       case "general":
-        return <GeneralTab domain={selectedEntry.id} details={domainDetails || undefined} serviceInfos={serviceInfos || undefined} loading={detailLoading} onRefresh={() => { setDomainDetails(null); setServiceInfos(null); const load = async () => { const [d, s] = await Promise.all([domainsService.getDomain(selectedEntry.id), domainsService.getServiceInfos(selectedEntry.id)]); setDomainDetails(d); setServiceInfos(s); }; load(); }} onTabChange={setActiveTab} />;
+        return <GeneralTab domain={selectedEntry.id} details={domainDetails || undefined} serviceInfos={serviceInfos || undefined} loading={detailLoading} onRefresh={handleRefresh} onTabChange={setActiveTab} />;
       case "zone":
         return <ZoneTab zoneName={selectedEntry.id} />;
       case "dns-servers":
