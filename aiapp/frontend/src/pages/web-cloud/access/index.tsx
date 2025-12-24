@@ -4,8 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { packXdslService } from "../../../services/web-cloud.pack-xdsl";
-import { overtheboxService } from "../../../services/web-cloud.overthebox";
+import { accessService } from "./access.service";
 import PackXdslPage from "./pack-xdsl";
 import OverTheBoxPage from "./overthebox";
 import "../styles.css";
@@ -23,8 +22,8 @@ export default function AccessPage() {
     const loadCounts = async () => {
       try {
         const [packs, otbs] = await Promise.all([
-          packXdslService.listPacks(),
-          overtheboxService.listServices(),
+          accessService.listPacks(),
+          accessService.listOvertheboxServices(),
         ]);
         setCounts({ packXdsl: packs.length, overthebox: otbs.length });
       } catch (err) {

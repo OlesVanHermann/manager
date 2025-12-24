@@ -5,10 +5,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../shared";
-import { packXdslService, Pack } from "../../../../services/web-cloud.pack-xdsl";
+import { packXdslPageService } from "./pack-xdsl.service";
+import type { Pack } from "./pack-xdsl.types";
 import { GeneralTab, AccessTab, ServicesTab, VoipTab, TasksTab } from "./tabs";
 import "../../styles.css";
-import "./styles.css";
 
 const WifiIcon = () => (
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -28,7 +28,7 @@ export default function PackXdslPage() {
   const loadPacks = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await packXdslService.listPacks();
+      const names = await packXdslPageService.listPacks();
       const items: ServiceItem[] = names.map((name) => ({ id: name, name: name }));
       setPacks(items);
       if (items.length > 0 && !selectedPack) setSelectedPack(items[0].id);
@@ -40,7 +40,7 @@ export default function PackXdslPage() {
 
   useEffect(() => {
     if (!selectedPack) return;
-    packXdslService.getPack(selectedPack).then(setPackDetails).catch(() => setPackDetails(null));
+    packXdslPageService.getPack(selectedPack).then(setPackDetails).catch(() => setPackDetails(null));
   }, [selectedPack]);
 
   const detailTabs = [

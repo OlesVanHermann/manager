@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import * as carbonService from "../../../services/home.carbon";
-import "./styles.css";
+import "./index.css";
 
 // ============ COMPOSANT ============
 
@@ -104,14 +104,14 @@ export default function CarbonPage() {
       {/* Données carbone */}
       {loading ? (
         <div className="carbon-section">
-          <div className="loading-state">
-            <div className="spinner"></div>
+          <div className="carbon-loading-state">
+            <div className="carbon-spinner"></div>
             <p>{t('loading')}</p>
           </div>
         </div>
       ) : error ? (
         <div className="carbon-section">
-          <div className="error-banner">
+          <div className="carbon-error-banner">
             {error}
             <button onClick={loadCarbonData} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>
               {tCommon('actions.refresh')}
@@ -216,7 +216,7 @@ export default function CarbonPage() {
       ) : (
         /* Pas de données - afficher info */
         <div className="carbon-section">
-          <div className="empty-state">
+          <div className="carbon-empty-state">
             <p>{t('noData.message')}</p>
             <p className="empty-hint">{t('noData.hint')}</p>
           </div>

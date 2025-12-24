@@ -5,10 +5,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../shared";
-import { overtheboxService, OverTheBox } from "../../../../services/web-cloud.overthebox";
+import { overtheboxPageService } from "./overthebox.service";
+import type { OverTheBox } from "./overthebox.types";
 import { GeneralTab, RemotesTab, TasksTab } from "./tabs";
 import "../../styles.css";
-import "./styles.css";
 
 const BoxIcon = () => (
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -28,7 +28,7 @@ export default function OvertheboxPage() {
   const loadServices = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await overtheboxService.listServices();
+      const names = await overtheboxPageService.listServices();
       const items: ServiceItem[] = names.map((name) => ({ id: name, name: name }));
       setServices(items);
       if (items.length > 0 && !selectedService) setSelectedService(items[0].id);
@@ -40,7 +40,7 @@ export default function OvertheboxPage() {
 
   useEffect(() => {
     if (!selectedService) return;
-    overtheboxService.getService(selectedService).then(setServiceDetails).catch(() => setServiceDetails(null));
+    overtheboxPageService.getService(selectedService).then(setServiceDetails).catch(() => setServiceDetails(null));
   }, [selectedService]);
 
   const detailTabs = [

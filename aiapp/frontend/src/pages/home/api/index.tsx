@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiTab, AdvancedTab } from "./tabs";
-import "./styles.css";
+import "./index.css";
 
 // ============ TYPES ============
 
@@ -45,19 +45,19 @@ export default function Dev({ initialTab = "api" }: DevProps) {
 
   // ---------- RENDER ----------
   return (
-    <div className="dev-page">
+    <div className="api-page">
       <div className="api-header">
         <div className="api-header-content">
           <h1>{t('title')}</h1>
           <p className="api-subtitle">{t('subtitle')}</p>
         </div>
-        <a href="https://api.ovh.com/console" target="_blank" rel="noopener noreferrer" className="guides-link">
+        <a href="https://api.ovh.com/console" target="_blank" rel="noopener noreferrer" className="api-guides-link">
           {t('consoleLink')}
         </a>
       </div>
 
-      <div className="tabs-container">
-        <div className="tabs-list">
+      <div className="api-tabs-container">
+        <div className="api-tabs-list">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -70,7 +70,7 @@ export default function Dev({ initialTab = "api" }: DevProps) {
         </div>
       </div>
 
-      <div className="tab-content">
+      <div className="api-tab-content">
         {activeTab === "api" && <ApiTab />}
         {activeTab === "advanced" && <AdvancedTab />}
       </div>

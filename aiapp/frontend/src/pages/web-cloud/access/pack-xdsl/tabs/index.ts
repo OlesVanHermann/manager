@@ -1,5 +1,9 @@
-export { default as GeneralTab } from "./GeneralTab";
-export { default as AccessTab } from "./AccessTab";
-export { default as VoipTab } from "./VoipTab";
-export { default as ServicesTab } from "./ServicesTab";
-export { default as TasksTab } from "./TasksTab";
+// ============================================================
+// EXPORTS TABS PACK XDSL - Chemins isolés par tab
+// ============================================================
+
+export { GeneralTab } from "./general/GeneralTab.tsx";
+export { AccessTab } from "./access/AccessTab.tsx";
+export { VoipTab } from "./voip/VoipTab.tsx";
+export { ServicesTab } from "./services/ServicesTab.tsx";
+export { TasksTab } from "./tasks/TasksTab.tsx";

@@ -9,14 +9,14 @@ import type { OvhUser } from "../../../types/auth.types";
 import ProfileTile from "./components/ProfileTile";
 import ShortcutsTile from "./components/ShortcutsTile";
 import LastBillTile from "./components/LastBillTile";
-import EditTab from "./EditTab";
-import SecurityTab from "./SecurityTab";
-import PrivacyTab from "./PrivacyTab";
-import AdvancedTab from "./AdvancedTab";
-import { ContactsServicesTab } from "./ContactsServicesTab";
-import { ContactsRequestsTab } from "./ContactsRequestsTab";
-import { KycTab } from "./KycTab";
-import "./styles.css";
+import EditTab from "./tabs/edit/EditTab";
+import SecurityTab from "./tabs/security/SecurityTab";
+import PrivacyTab from "./tabs/privacy/PrivacyTab";
+import AdvancedTab from "./tabs/advanced/AdvancedTab";
+import { ContactsServicesTab } from "./tabs/contacts-services/ContactsServicesTab";
+import { ContactsRequestsTab } from "./tabs/contacts-requests/ContactsRequestsTab";
+import { KycTab } from "./tabs/kyc/KycTab";
+import "./index.css";
 
 // ============ TYPES ============
 
@@ -83,16 +83,16 @@ export default function AccountPage({ user, isActive, onNavigate, initialTab }: 
   // ---------- RENDER ----------
   return (
     <div className="account-page">
-      <div className="page-header">
-        <div className="page-header-content">
+      <div className="account-header">
+        <div className="account-header-content">
           <h1>{t('title')}</h1>
-          <p className="page-subtitle">{t('subtitle')}</p>
+          <p className="account-subtitle">{t('subtitle')}</p>
         </div>
-        <a href="https://help.ovhcloud.com" target="_blank" rel="noopener noreferrer" className="guides-link">{t('guides')}</a>
+        <a href="https://help.ovhcloud.com" target="_blank" rel="noopener noreferrer" className="account-guides-link">{t('guides')}</a>
       </div>
 
-      <div className="tabs-container">
-        <div className="tabs-list">
+      <div className="account-tabs-container">
+        <div className="account-tabs-list">
           {tabs.map((tab) => (
             <button key={tab.id} className={"tab-btn" + (activeTab === tab.id ? " active" : "")} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
           ))}

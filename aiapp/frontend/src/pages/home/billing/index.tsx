@@ -11,7 +11,7 @@ import {
   OrdersTab, ReferencesTab, MethodsTab, PrepaidTab,
   VouchersTab, FidelityTab, ContractsTab
 } from "./tabs";
-import "./styles.css";
+import "./index.css";
 
 interface BillingPageProps {
   isActive: boolean;
@@ -65,14 +65,14 @@ export function BillingPage({ isActive, initialTab = "services" }: BillingPagePr
   if (!credentials) {
     return (
       <div className="billing-page">
-        <div className="page-header">
-          <div className="page-header-content">
+        <div className="billing-header">
+          <div className="billing-header-content">
             <h1>{t('title')}</h1>
-            <p className="page-subtitle">{t('subtitleNoAuth')}</p>
+            <p className="billing-subtitle">{t('subtitleNoAuth')}</p>
           </div>
         </div>
         <div className="billing-content">
-          <div className="empty-state">
+          <div className="billing-empty-state">
             <LockIcon />
             <h3>{t('authRequired.title')}</h3>
             <p>{t('authRequired.description')}</p>
@@ -84,18 +84,18 @@ export function BillingPage({ isActive, initialTab = "services" }: BillingPagePr
 
   return (
     <div className="billing-page">
-      <div className="page-header">
-        <div className="page-header-content">
+      <div className="billing-header">
+        <div className="billing-header-content">
           <h1>{t('title')}</h1>
-          <p className="page-subtitle">{t('subtitle')}</p>
+          <p className="billing-subtitle">{t('subtitle')}</p>
         </div>
-        <a href="https://help.ovhcloud.com/csm/fr-billing-faq" target="_blank" rel="noopener noreferrer" className="guides-link">
+        <a href="https://help.ovhcloud.com/csm/fr-billing-faq" target="_blank" rel="noopener noreferrer" className="billing-guides-link">
           <BookIcon /> {t('guides')}
         </a>
       </div>
 
-      <div className="tabs-container">
-        <div className="tabs-list">
+      <div className="billing-tabs-container">
+        <div className="billing-tabs-list">
           {tabs.map((tab) => (
             <button key={tab.id} className={`tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
           ))}

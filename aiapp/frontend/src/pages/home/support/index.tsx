@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { TicketsTab, CreateTab, LevelTab, CommunicationsTab, BroadcastTab } from "./tabs";
-import "./styles.css";
+import "./index.css";
 
 // ============ TYPES ============
 
@@ -57,13 +57,13 @@ export default function SupportPage({ initialTab = "tickets" }: SupportPageProps
           <h1>{t('title')}</h1>
           <p className="support-subtitle">{t('subtitle')}</p>
         </div>
-        <a href="https://help.ovhcloud.com/csm/fr-support" target="_blank" rel="noopener noreferrer" className="guides-link">
+        <a href="https://help.ovhcloud.com/csm/fr-support" target="_blank" rel="noopener noreferrer" className="support-guides-link">
           {t('guides')}
         </a>
       </div>
 
-      <div className="tabs-container">
-        <div className="tabs-list">
+      <div className="support-tabs-container">
+        <div className="support-tabs-list">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -76,7 +76,7 @@ export default function SupportPage({ initialTab = "tickets" }: SupportPageProps
         </div>
       </div>
 
-      <div className="tab-content support-content">
+      <div className="support-tab-content">
         {activeTab === "tickets" && <TicketsTab />}
         {activeTab === "create" && <CreateTab />}
         {activeTab === "level" && <LevelTab />}

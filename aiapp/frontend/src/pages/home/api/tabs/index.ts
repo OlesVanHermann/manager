@@ -1,6 +1,6 @@
 // ============================================================
-// API TABS - Exports centralisés
+// API TABS - Exports (DÉFACTORISÉ)
 // ============================================================
 
-export { ApiTab } from "./ApiTab";
-export { AdvancedTab } from "./AdvancedTab";
+export { ApiTab } from "./api/ApiTab";
+export { AdvancedTab } from "./advanced/AdvancedTab";

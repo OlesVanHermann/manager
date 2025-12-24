@@ -1,9 +1,9 @@
 // ============================================================
-// SUPPORT TABS - Exports centralisés
+// SUPPORT TABS - Exports (DÉFACTORISÉ)
 // ============================================================
 
-export { TicketsTab } from "./TicketsTab";
-export { CreateTab } from "./CreateTab";
-export { LevelTab } from "./LevelTab";
-export { CommunicationsTab } from "./CommunicationsTab";
-export { BroadcastTab } from "./BroadcastTab";
+export { TicketsTab } from "./tickets/TicketsTab";
+export { CreateTab } from "./create/CreateTab";
+export { LevelTab } from "./level/LevelTab";
+export { CommunicationsTab } from "./communications/CommunicationsTab";
+export { BroadcastTab } from "./broadcast/BroadcastTab";

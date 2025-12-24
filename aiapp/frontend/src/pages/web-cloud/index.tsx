@@ -17,8 +17,7 @@ import { voipService } from "../../services/web-cloud.voip";
 import { smsService } from "../../services/web-cloud.sms";
 import { faxService } from "../../services/web-cloud.fax";
 import { carrierSipService } from "../../services/web-cloud.carrier-sip";
-import { packXdslService } from "../../services/web-cloud.pack-xdsl";
-import { overtheboxService } from "../../services/web-cloud.overthebox";
+import { webCloudDashboardService } from "./web-cloud.service";
 import "./styles.css";
 
 // ============ TYPES ============
@@ -134,8 +133,8 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
         smsService.listAccounts?.() ?? smsService.listServices?.() ?? Promise.resolve([]),
         faxService.listServices?.() ?? Promise.resolve([]),
         carrierSipService.listServices?.() ?? Promise.resolve([]),
-        packXdslService.listPacks?.() ?? packXdslService.listServices?.() ?? Promise.resolve([]),
-        overtheboxService.listServices?.() ?? Promise.resolve([]),
+        webCloudDashboardService.listPacks?.() ?? Promise.resolve([]),
+        webCloudDashboardService.listOvertheboxServices?.() ?? Promise.resolve([]),
       ]);
 
       const getCount = (r: PromiseSettledResult<string[]>) => 
