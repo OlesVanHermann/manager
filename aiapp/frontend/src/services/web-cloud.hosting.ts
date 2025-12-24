@@ -262,6 +262,14 @@ export const hostingService = {
   orderCdn: (sn: string, type: string) => 
     ovhPost<any>(`/order/cartServiceOption/webHosting/${sn}`, { planCode: `cdn-${type}`, quantity: 1 }),
 
+  // --- CDN METHODS (for CdnTab) ---
+  flushCdn: (sn: string) => ovhPost<void>(`/hosting/web/${sn}/cdn/flush`, {}),
+  flushCdnDomain: (sn: string, domain: string) => ovhPost<void>(`/hosting/web/${sn}/cdn/flush`, { domain }),
+  getAttachedDomains: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/attachedDomain`),
+  getAttachedDomainInfo: (sn: string, domain: string) => ovhGet<any>(`/hosting/web/${sn}/attachedDomain/${domain}`),
+  activateCdnDomain: (sn: string, domain: string) => ovhPut<void>(`/hosting/web/${sn}/attachedDomain/${domain}`, { cdn: "active" }),
+  deactivateCdnDomain: (sn: string, domain: string) => ovhPut<void>(`/hosting/web/${sn}/attachedDomain/${domain}`, { cdn: "none" }),
+
   // --- BOOST ---
   getBoostInfo: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/boost`).catch(() => null),
   getBoostHistory: (sn: string) => ovhGet<any[]>(`/hosting/web/${sn}/boostHistory`).catch(() => []),
@@ -282,6 +290,14 @@ export const hostingService = {
   getAutomatedEmails: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/email`),
   getEmailState: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/email`).catch(() => null),
   updateAutomatedEmails: (sn: string, data: any) => ovhPut<void>(`/hosting/web/${sn}/email`, data),
+
+  // --- EMAIL METHODS (for EmailsTab) ---
+  getEmailQuota: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/email`).catch(() => null),
+  updateEmailBounce: (sn: string, email: string) => ovhPut<void>(`/hosting/web/${sn}/email`, { bounce: email }),
+  updateEmailState: (sn: string, state: string) => ovhPut<void>(`/hosting/web/${sn}/email`, { state }),
+  purgeEmails: (sn: string) => ovhPost<void>(`/hosting/web/${sn}/email/request`, { action: "PURGE" }),
+  getEmailBounces: (sn: string) => ovhGet<string[]>(`/hosting/web/${sn}/email/bounces`).catch(() => []),
+  getEmailMetricsToken: (sn: string) => ovhGet<any>(`/hosting/web/${sn}/metricsToken`).catch(() => null),
 
   // --- SNAPSHOTS ---
   listSnapshots: async (sn: string) => {
