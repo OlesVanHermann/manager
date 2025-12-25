@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as policiesService from "./PoliciesTab";
+import * as policiesService from "./PoliciesTab.service";
 import type { IamPolicy } from "../../iam.types";
 import "./PoliciesTab.css";
 
@@ -26,7 +26,7 @@ function ShieldIcon() {
 
 /** Affiche la liste des policies IAM avec leurs permissions. */
 export default function PoliciesTab() {
-  const { t, i18n } = useTranslation("iam/index");
+  const { t, i18n } = useTranslation("iam/general/policies");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
@@ -69,7 +69,7 @@ export default function PoliciesTab() {
       <div className="policies-tab">
         <div className="policies-loading-state">
           <div className="policies-spinner"></div>
-          <p>{t("policies.loading")}</p>
+          <p>{t("loading")}</p>
         </div>
       </div>
     );
@@ -91,33 +91,33 @@ export default function PoliciesTab() {
   return (
     <div className="policies-tab">
       <div className="policies-section-intro">
-        <h2>{t("policies.title")}</h2>
-        <p>{t("policies.description")}</p>
+        <h2>{t("title")}</h2>
+        <p>{t("description")}</p>
       </div>
 
       <div className="policies-toolbar">
-        <span className="policies-result-count">{t("policies.count", { count: policies.length })}</span>
-        <button className="btn btn-primary btn-sm">{t("policies.createButton")}</button>
+        <span className="policies-result-count">{t("count", { count: policies.length })}</span>
+        <button className="btn btn-primary btn-sm">{t("createButton")}</button>
       </div>
 
       {policies.length === 0 ? (
         <div className="policies-empty-state">
           <ShieldIcon />
-          <h3>{t("policies.empty.title")}</h3>
-          <p>{t("policies.empty.description")}</p>
-          <button className="btn btn-primary">{t("policies.createButton")}</button>
+          <h3>{t("empty.title")}</h3>
+          <p>{t("empty.description")}</p>
+          <button className="btn btn-primary">{t("createButton")}</button>
         </div>
       ) : (
         <div className="policies-table-container">
           <table className="policies-table">
             <thead>
               <tr>
-                <th>{t("policies.columns.name")}</th>
-                <th>{t("policies.columns.description")}</th>
-                <th>{t("policies.columns.identities")}</th>
-                <th>{t("policies.columns.resources")}</th>
-                <th>{t("policies.columns.createdAt")}</th>
-                <th>{t("policies.columns.actions")}</th>
+                <th>{t("columns.name")}</th>
+                <th>{t("columns.description")}</th>
+                <th>{t("columns.identities")}</th>
+                <th>{t("columns.resources")}</th>
+                <th>{t("columns.createdAt")}</th>
+                <th>{t("columns.actions")}</th>
               </tr>
             </thead>
             <tbody>

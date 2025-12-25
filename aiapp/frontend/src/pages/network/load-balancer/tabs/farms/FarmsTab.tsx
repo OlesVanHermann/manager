@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { IpLoadBalancingFarm, IpLoadBalancingServer } from "../../load-balancer.types";
-import { farmsService } from "./FarmsTab";
+import { farmsService } from "./FarmsTab.service";
 import "./FarmsTab.css";
 
 interface Props { serviceName: string; }

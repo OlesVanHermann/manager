@@ -5,7 +5,7 @@ import "./CronTab.css";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { cronService } from "./CronTab";
+import { cronService } from "./CronTab.service";
 import type { CronJob } from "../../hosting.types";
 import { CreateCronModal, EditCronModal } from "./modals";
 

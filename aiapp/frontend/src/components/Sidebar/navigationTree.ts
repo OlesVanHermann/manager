@@ -39,17 +39,17 @@ export const icons: Record<string, string> = {
 // ============================================================
 
 export const universes: Universe[] = [
-  // A) HOME
+  // A) GENERAL (ex-HOME)
   {
-    id: "home",
-    i18nKey: "universes.home",
+    id: "general",
+    i18nKey: "universes.general",
     sections: [
-      { id: "home-dashboard", i18nKey: "sections.home.dashboard" },
-      { id: "home-account", i18nKey: "sections.home.account" },
-      { id: "home-billing", i18nKey: "sections.home.billing" },
-      { id: "home-support", i18nKey: "sections.home.support" },
-      { id: "home-carbon", i18nKey: "sections.home.carbon" },
-      { id: "home-api", i18nKey: "sections.home.api" },
+      { id: "general-general", i18nKey: "sections.general.general" },
+      { id: "general-account", i18nKey: "sections.general.account" },
+      { id: "general-billing", i18nKey: "sections.general.billing" },
+      { id: "general-support", i18nKey: "sections.general.support" },
+      { id: "general-carbon", i18nKey: "sections.general.carbon" },
+      { id: "general-api", i18nKey: "sections.general.api" },
     ],
   },
 

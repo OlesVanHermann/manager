@@ -5,15 +5,147 @@
 Tu es un expert en refactoring React/TypeScript pour le projet New Manager OVHcloud.
 
 **Architecture de navigation :**
-- **NAV1** : Catégorie principale (ex: web-cloud, bare-metal, network...)
-- **NAV2** : Sous-catégorie / Produit (ex: hosting, private-database, vps...)
+- **NAV1** : Catégorie principale (ex: general, web-cloud, bare-metal, network...)
+- **NAV2** : Sous-catégorie / Produit (ex: general, hosting, private-database, vps...)
 - **NAV3** : Onglets fonctionnels (ex: general, ftp, ssl, cdn...)
+
+**Convention : le 1er élément de chaque niveau s'appelle `general`**
 
 **Objectif :** DÉFACTORISER un module monolithique (services API + CSS) en modules ISOLÉS, un par NAV3.
 
 ---
 
-## B) Principe de DÉFACTORISATION (STRICT)
+## B) Arborescence Cible
+
+### Code (src/)
+
+**Convention :**
+```
+src/pages/{NAV1}/{NAV2}/
+├── {nav2}.types.ts
+├── index.tsx
+└── tabs/
+    └── {nav3}/
+        ├── {Nav3}Tab.service.ts
+        ├── {Nav3}Tab.tsx
+        └── {Nav3}Tab.css
+```
+
+**Exemple :**
+```
+src/pages/
+├── general/                              ← NAV1: general
+│   ├── general/                          ← NAV2: general (dashboard global)
+│   │   ├── general.types.ts
+│   │   ├── index.tsx
+│   │   └── tabs/
+│   │       ├── general/                  ← NAV3: general
+│   │       │   ├── GeneralTab.service.ts
+│   │       │   ├── GeneralTab.tsx
+│   │       │   └── GeneralTab.css
+│   │       ├── notifications/            ← NAV3: notifications
+│   │       │   ├── NotificationsTab.service.ts
+│   │       │   ├── NotificationsTab.tsx
+│   │       │   └── NotificationsTab.css
+│   │       └── welcome/                  ← NAV3: welcome
+│   │           ├── WelcomeTab.service.ts
+│   │           ├── WelcomeTab.tsx
+│   │           └── WelcomeTab.css
+│   └── settings/                         ← NAV2: settings
+│       ├── settings.types.ts
+│       ├── index.tsx
+│       └── tabs/
+│           ├── general/                  ← NAV3: general
+│           │   ├── GeneralTab.service.ts
+│           │   ├── GeneralTab.tsx
+│           │   └── GeneralTab.css
+│           └── preferences/              ← NAV3: preferences
+│               ├── PreferencesTab.service.ts
+│               ├── PreferencesTab.tsx
+│               └── PreferencesTab.css
+├── web-cloud/                            ← NAV1: web-cloud
+│   ├── general/                          ← NAV2: general (dashboard web-cloud)
+│   │   ├── general.types.ts
+│   │   ├── index.tsx
+│   │   └── tabs/
+│   │       └── general/
+│   │           ├── GeneralTab.service.ts
+│   │           ├── GeneralTab.tsx
+│   │           └── GeneralTab.css
+│   └── hosting/                          ← NAV2: hosting
+│       ├── hosting.types.ts
+│       ├── index.tsx
+│       └── tabs/
+│           ├── general/                  ← NAV3: general
+│           │   ├── GeneralTab.ts
+│           │   ├── GeneralTab.tsx
+│           │   └── GeneralTab.css
+│           ├── ftp/                      ← NAV3: ftp
+│           │   ├── FtpTab.service.ts
+│           │   ├── FtpTab.tsx
+│           │   └── FtpTab.css
+│           └── ssl/                      ← NAV3: ssl
+│               ├── SslTab.service.ts
+│               ├── SslTab.tsx
+│               └── SslTab.css
+```
+
+### Traductions (public/locales/)
+
+**Convention :**
+```
+public/locales/{lang}/{NAV1}/{NAV2}/
+└── {nav3}.json
+```
+
+**Exemple :**
+```
+public/locales/
+├── fr/
+│   ├── general/                          ← NAV1: general
+│   │   ├── general/                      ← NAV2: general
+│   │   │   ├── general.json              ← NAV3: general
+│   │   │   ├── notifications.json        ← NAV3: notifications
+│   │   │   └── welcome.json              ← NAV3: welcome
+│   │   └── settings/                     ← NAV2: settings
+│   │       ├── general.json              ← NAV3: general
+│   │       └── preferences.json          ← NAV3: preferences
+│   └── web-cloud/                        ← NAV1: web-cloud
+│       ├── general/                      ← NAV2: general
+│       │   └── general.json
+│       └── hosting/                      ← NAV2: hosting
+│           ├── general.json              ← NAV3: general
+│           ├── ftp.json                  ← NAV3: ftp
+│           └── ssl.json                  ← NAV3: ssl
+└── en/
+    ├── general/
+    │   ├── general/
+    │   │   ├── general.json
+    │   │   ├── notifications.json
+    │   │   └── welcome.json
+    │   └── settings/
+    │       ├── general.json
+    │       └── preferences.json
+    └── web-cloud/
+        ├── general/
+        │   └── general.json
+        └── hosting/
+            ├── general.json
+            ├── ftp.json
+            └── ssl.json
+```
+
+### Résumé
+
+| Niveau | 1er élément | Fichiers code | Fichier trad |
+|--------|-------------|---------------|--------------|
+| **NAV1** | `general` | `src/pages/general/` | `public/locales/{lang}/general/` |
+| **NAV2** | `general` | `{nav2}.types.ts` + `index.tsx` | — |
+| **NAV3** | `general` | `{Nav3}Tab.service.ts` + `.tsx` + `.css` | `{nav3}.json` |
+
+---
+
+## C) Principe de DÉFACTORISATION (STRICT)
 
 ### Définition
 
@@ -43,7 +175,7 @@ SI deux tabs ont besoin de la même fonction/style/helper :
 
 ---
 
-## C) INTERDITS ABSOLUS - JAVASCRIPT/TYPESCRIPT ❌
+## D) INTERDITS ABSOLUS - JAVASCRIPT/TYPESCRIPT ❌
 
 ### ❌ INTERDIT JS-1 : Import croisé entre tabs
 
@@ -98,7 +230,7 @@ import { HostingProvider } from "../../HostingProvider";
 
 ---
 
-## D) INTERDITS ABSOLUS - CSS/STYLES ❌
+## E) INTERDITS ABSOLUS - CSS/STYLES ❌
 
 ### ❌ INTERDIT CSS-1 : Fichier CSS partagé au niveau NAV2
 
@@ -155,7 +287,7 @@ import { StyledCard } from "../../components/StyledCard";
 
 ---
 
-## E) AUTORISÉS ✅
+## F) AUTORISÉS ✅
 
 ### ✅ AUTORISÉ 1 : Types partagés au niveau NAV2 (SEULE exception JS)
 
@@ -239,7 +371,7 @@ const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR");
 
 ---
 
-## F) Structure CSS par Tab
+## G) Structure CSS par Tab
 
 ### Convention de fichiers
 
@@ -268,344 +400,145 @@ pages/{nav1}/{nav2}/
 | ssl      | `.ssl-`         | `.ssl-certificate`, `.ssl-badge` |
 | cdn      | `.cdn-`         | `.cdn-status`, `.cdn-domain`     |
 | multisite| `.multisite-`   | `.multisite-table`, `.multisite-row` |
-| database | `.database-`    | `.database-card`, `.database-action` |
 
-### Exemple fichier CSS isolé
+---
 
-```css
-/* tabs/ftp/FtpTab.css */
+## H) Indépendance entre niveaux
 
-/* ============================================
-   STYLES ISOLÉS - FTP TAB UNIQUEMENT
-   Préfixe: .ftp-
-   ============================================ */
+| Niveau | Indépendance entre 2 éléments | Partage autorisé |
+|--------|-------------------------------|------------------|
+| **NAV1 ↔ NAV1** | ✅ **TOTALE** | Rien (sauf globaux `/services/api.ts`, `/components/ui`, `/hooks/`) |
+| **NAV2 ↔ NAV2** | ✅ **TOTALE** | Rien (sauf globaux) |
+| **NAV3 ↔ NAV3** | ✅ **TOTALE** | **UNIQUEMENT `{nav2}.types.ts`** (types = contrats API, pas de code exécutable) |
 
-/* Layout */
-.ftp-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ods-spacing-md);
+---
+
+## I) Workflow de Défactorisation
+
+### PHASE 1 : ANALYSE
+
+```bash
+# 1. Lister les méthodes du service monolithique
+grep -n "export.*function\|export.*const.*=" services/{nav1}.{nav2}.ts
+
+# 2. Lister les types
+grep -n "export.*type\|export.*interface" services/{nav1}.{nav2}.ts
+
+# 3. Lister les classes CSS utilisées
+grep -roh 'className="[^"]*"' src/pages/{nav1}/{nav2}/tabs/ | sort | uniq -c | sort -rn
+
+# 4. Identifier les imports croisés existants
+grep -rn "from.*tabs/" src/pages/{nav1}/{nav2}/tabs/
+```
+
+### PHASE 2 : CRÉATION TYPES
+
+```bash
+# Créer le fichier types partagé au niveau NAV2
+tee src/pages/{nav1}/{nav2}/{nav2}.types.ts > /dev/null <<'FILEEND'
+// Types partagés pour {nav2}
+// SEUL fichier partagé entre les tabs
+
+export interface {Nav2}Info {
+  // ...
 }
 
-.ftp-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+export interface {Tab1}Data {
+  // ...
 }
 
-/* Table */
-.ftp-table {
+export interface {Tab2}Data {
+  // ...
+}
+FILEEND
+```
+
+### PHASE 3 : CRÉATION SERVICES PAR TAB
+
+```bash
+# Pour chaque tab, créer son service isolé
+tee src/pages/{nav1}/{nav2}/tabs/{tab}/{Tab}Tab.ts > /dev/null <<'FILEEND'
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../../services/api";
+import type { {Tab}Data } from "../../{nav2}.types";
+
+// ========================================
+// SERVICE {TAB} - ISOLÉ
+// ========================================
+
+// Helpers locaux (dupliqués si nécessaire)
+const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR");
+
+// API calls
+export const {tab}Service = {
+  getAll: (serviceName: string): Promise<{Tab}Data[]> =>
+    ovhGet(`/hosting/web/${serviceName}/{tab}`),
+    
+  get: (serviceName: string, id: string): Promise<{Tab}Data> =>
+    ovhGet(`/hosting/web/${serviceName}/{tab}/${id}`),
+    
+  create: (serviceName: string, data: Partial<{Tab}Data>): Promise<void> =>
+    ovhPost(`/hosting/web/${serviceName}/{tab}`, data),
+    
+  update: (serviceName: string, id: string, data: Partial<{Tab}Data>): Promise<void> =>
+    ovhPut(`/hosting/web/${serviceName}/{tab}/${id}`, data),
+    
+  delete: (serviceName: string, id: string): Promise<void> =>
+    ovhDelete(`/hosting/web/${serviceName}/{tab}/${id}`),
+};
+FILEEND
+```
+
+### PHASE 4 : CRÉATION CSS PAR TAB
+
+```bash
+# Pour chaque tab, créer son CSS isolé
+tee src/pages/{nav1}/{nav2}/tabs/{tab}/{Tab}Tab.css > /dev/null <<'FILEEND'
+/* ========================================
+   STYLES {TAB} - ISOLÉS
+   Préfixe OBLIGATOIRE : .{tab}-
+   ======================================== */
+
+.{tab}-container {
+  padding: var(--ods-spacing-md);
+}
+
+.{tab}-card {
+  background: var(--ods-color-surface);
+  border-radius: var(--ods-radius-md);
+  padding: var(--ods-spacing-md);
+}
+
+.{tab}-table {
   width: 100%;
-  border-collapse: collapse;
 }
 
-.ftp-table-row {
-  border-bottom: 1px solid var(--ods-color-border);
-}
-
-.ftp-table-row:hover {
-  background: var(--ods-color-hover);
-}
-
-/* Status badges */
-.ftp-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.{tab}-status-badge {
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
 }
 
-.ftp-status--active {
-  background: var(--ods-color-success-light);
-  color: var(--ods-color-success);
-}
-
-.ftp-status--inactive {
-  background: var(--ods-color-error-light);
-  color: var(--ods-color-error);
-}
-
-/* Actions */
-.ftp-actions {
+.{tab}-actions {
   display: flex;
   gap: var(--ods-spacing-sm);
 }
-
-/* Modals - même préfixe */
-.ftp-modal-content {
-  padding: var(--ods-spacing-lg);
-}
-
-.ftp-modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ods-spacing-md);
-}
+FILEEND
 ```
 
-### Import dans le composant
-
-```typescript
-// tabs/ftp/FtpTab.tsx
-
-import { useState, useEffect } from "react";
-import { ftpService } from "./FtpTab";
-import type { FtpUser } from "../../hosting.types";
-import "./FtpTab.css";  // ← CSS ISOLÉ, préfixé .ftp-
-
-export function FtpTab({ serviceName }: { serviceName: string }) {
-  // ...
-  return (
-    <div className="ftp-container">
-      <div className="ftp-header">
-        {/* ... */}
-      </div>
-      <table className="ftp-table">
-        {/* ... */}
-      </table>
-    </div>
-  );
-}
-```
-
----
-
-## G) Schéma d'Architecture Complet
-
-```
-                         ┌─────────────────────┐
-                         │   /services/api.ts  │  ← GLOBAL JS
-                         └──────────┬──────────┘
-                                    │
-                         ┌──────────┴──────────┐
-                         │  /styles/global.css │  ← GLOBAL CSS
-                         │  (variables ODS)    │
-                         └──────────┬──────────┘
-                                    │
-     ┌──────────────────────────────┼──────────────────────────────┐
-     │                              │                              │
-┌────▼─────────────┐         ┌──────▼───────────┐         ┌────────▼───────┐
-│   ftp/           │         │   ssl/           │         │   cdn/         │
-│   ├─FtpTab.ts    │         │   ├─SslTab.ts    │         │   ├─CdnTab.ts  │
-│   ├─FtpTab.tsx   │         │   ├─SslTab.tsx   │         │   ├─CdnTab.tsx │
-│   └─FtpTab.css   │         │   └─SslTab.css   │         │   └─CdnTab.css │
-│      (.ftp-*)    │         │      (.ssl-*)    │         │      (.cdn-*)  │
-└────────┬─────────┘         └────────┬─────────┘         └────────┬───────┘
-         │                            │                            │
-         │     ❌ AUCUN LIEN ❌       │      ❌ AUCUN LIEN ❌      │
-         │     (ni JS ni CSS)         │      (ni JS ni CSS)        │
-         │                            │                            │
-         └────────────────────────────┼────────────────────────────┘
-                                      │
-                           ┌──────────▼──────────┐
-                           │  hosting.types.ts   │  ← SEUL PARTAGE
-                           │  (interfaces API)   │
-                           └─────────────────────┘
-```
-
----
-
-## H) Problème Typique (AVANT)
-
-```
-services/
-  web-cloud.hosting.ts              ← Service monolithique (500+ lignes)
-
-styles/
-  hosting.css                       ← CSS monolithique partagé
-
-pages/web-cloud/hebergement/hosting/
-  tabs/
-    ftp/FtpTab.tsx                  ← import { hostingService } + import "../../hosting.css"
-    ssl/SslTab.tsx                  ← import { hostingService } + import "../../hosting.css"
-    cdn/CdnTab.tsx                  ← import { hostingService } + import "../../hosting.css"
-```
-
-**Problème :** Modifier le service OU le CSS pour FTP peut casser SSL ou CDN.
-
----
-
-## I) Solution Cible (APRÈS)
-
-```
-pages/web-cloud/hebergement/hosting/
-  hosting.types.ts                  ← Types partagés (SEUL fichier commun)
-  tabs/
-    ftp/
-      FtpTab.ts                     ← ftpService ISOLÉ
-      FtpTab.tsx                    ← import { ftpService } from "./FtpTab"
-      FtpTab.css                    ← .ftp-* ISOLÉ
-    ssl/
-      SslTab.ts                     ← sslService ISOLÉ
-      SslTab.tsx                    ← import { sslService } from "./SslTab"
-      SslTab.css                    ← .ssl-* ISOLÉ
-    cdn/
-      CdnTab.ts                     ← cdnService ISOLÉ
-      CdnTab.tsx                    ← import { cdnService } from "./CdnTab"
-      CdnTab.css                    ← .cdn-* ISOLÉ
-
-services/
-  web-cloud.hosting.ts              ← SUPPRIMÉ
-
-styles/
-  hosting.css                       ← SUPPRIMÉ
-```
-
-**Résultat :** Modifier FtpTab.* n'impacte QUE FtpTab.
-
----
-
-## J) Méthodologie
-
-### PHASE 1 : ANALYSE
-
-#### 1.1 Extraire et analyser les sources
+### PHASE 5 : MODIFICATION COMPOSANTS
 
 ```bash
-cd /tmp && mkdir -p analysis && cd analysis
-tar xf /mnt/user-data/uploads/{archive}.tar
-find . -name "*.ts" -o -name "*.tsx" -o -name "*.css" | head -50
-```
-
-#### 1.2 Lister les méthodes API par tab
-
-```bash
-for tab in general ftp ssl cdn multisite database; do
-  echo "=== $tab (JS) ==="
-  grep -roh "{serviceName}\.[a-zA-Z]*" src/.../tabs/$tab/ 2>/dev/null | sort | uniq
-done
-```
-
-#### 1.3 Lister les classes CSS utilisées par tab
-
-```bash
-for tab in general ftp ssl cdn multisite database; do
-  echo "=== $tab (CSS) ==="
-  grep -roh 'className="[^"]*"' src/.../tabs/$tab/ 2>/dev/null | sort | uniq
-done
-```
-
-#### 1.4 Lister les imports CSS par tab
-
-```bash
-for tab in general ftp ssl cdn multisite database; do
-  echo "=== $tab (CSS imports) ==="
-  grep -rh "import.*\.css" src/.../tabs/$tab/ 2>/dev/null | sort | uniq
-done
-```
-
-#### 1.5 Créer la matrice de dépendances
-
-| NAV3     | Service          | Méthodes          | Classes CSS utilisées      |
-|----------|------------------|-------------------|----------------------------|
-| ftp      | ftpService       | list, create, del | .user-row, .quota-bar      |
-| ssl      | sslService       | get, regenerate   | .cert-card, .status-badge  |
-
----
-
-### PHASE 2 : CRÉER LES FICHIERS
-
-#### 2.1 Fichier types partagés (SEUL fichier commun)
-
-```typescript
-// pages/{nav1}/{nav2}/{nav2}.types.ts
-export interface HostingInfo { /* ... */ }
-export interface FtpUser { /* ... */ }
-export interface SslCertificate { /* ... */ }
-```
-
-#### 2.2 Service ISOLÉ par tab
-
-```typescript
-// pages/{nav1}/{nav2}/tabs/{tab}/{Tab}Tab.ts
-
-import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../../services/api";
-import type { Entity1 } from "../../{nav2}.types";
-
-const BASE = "/hosting/web";
-
-export const {tab}Service = {
-  list: (sn: string) => ovhGet<string[]>(`${BASE}/${sn}/resource`),
-  get: (sn: string, id: string) => ovhGet<Entity1>(`${BASE}/${sn}/resource/${id}`),
-  // ... méthodes de CE tab uniquement
-};
-
-export default {tab}Service;
-```
-
-#### 2.3 CSS ISOLÉ par tab
-
-```css
-/* pages/{nav1}/{nav2}/tabs/{tab}/{Tab}Tab.css */
-
-/* ============================================
-   STYLES ISOLÉS - {TAB} TAB UNIQUEMENT
-   Préfixe obligatoire: .{tab}-
-   ============================================ */
-
-.{tab}-container { }
-.{tab}-header { }
-.{tab}-table { }
-.{tab}-row { }
-.{tab}-status { }
-.{tab}-actions { }
-```
-
-#### 2.4 Composant avec imports isolés
-
-```typescript
-// pages/{nav1}/{nav2}/tabs/{tab}/{Tab}Tab.tsx
-
-import { useState, useEffect } from "react";
-import { {tab}Service } from "./{Tab}Tab";
-import type { Entity1 } from "../../{nav2}.types";
-import "./{Tab}Tab.css";
-
-export function {Tab}Tab({ serviceName }: Props) {
-  return (
-    <div className="{tab}-container">
-      {/* Toutes les classes préfixées .{tab}- */}
-    </div>
-  );
-}
-```
-
----
-
-### PHASE 3 : MODIFIER LES IMPORTS
-
-#### 3.1 Pattern JS
-
-**AVANT :**
-```typescript
-import { hostingService, HostingInfo } from "../../../../../../services/web-cloud.hosting";
-```
-
-**APRÈS :**
-```typescript
-import { ftpService } from "./FtpTab";
-import type { HostingInfo } from "../../hosting.types";
-```
-
-#### 3.2 Pattern CSS
-
-**AVANT :**
-```typescript
+# Modifier chaque {Tab}Tab.tsx pour utiliser les imports locaux
+# AVANT:
+import { hostingService } from "../../../../../../services/web-cloud.hosting";
 import "../../hosting.css";
-// className="hosting-card"
+
+# APRÈS:
+import { {tab}Service } from "./{Tab}Tab.service";
+import "./{Tab}Tab.css";
 ```
 
-**APRÈS :**
-```typescript
-import "./FtpTab.css";
-// className="ftp-card"
-```
-
----
-
-### PHASE 4 : VÉRIFICATION STRICTE
+### PHASE 6 : VÉRIFICATION
 
 ```bash
 # ===== TESTS D'ISOLATION JS (DOIVENT RETOURNER 0 RÉSULTAT) =====
@@ -614,13 +547,10 @@ echo "=== Test JS-1: imports croisés entre tabs ==="
 grep -rn "from.*\.\.\/.*Tab" src/pages/{nav1}/{nav2}/tabs/
 
 echo "=== Test JS-2: ancien service monolithique ==="
-grep -rn "services/{nav1}\.{nav2}" src/pages/{nav1}/{nav2}/
+grep -rn "from.*services/{nav1}\.{nav2}" src/pages/{nav1}/{nav2}/tabs/
 
-echo "=== Test JS-3: utils partagés NAV2 ==="
-grep -rn "from.*{nav2}\.\(utils\|helpers\)" src/pages/{nav1}/{nav2}/tabs/
-
-echo "=== Test JS-4: context partagé ==="
-grep -rn "{nav2}Context\|{nav2}Provider" src/pages/{nav1}/{nav2}/tabs/
+echo "=== Test JS-3: utils/helpers partagés ==="
+grep -rn "from.*{nav2}\.utils\|from.*{nav2}\.helpers" src/pages/{nav1}/{nav2}/tabs/
 
 # ===== TESTS D'ISOLATION CSS (DOIVENT RETOURNER 0 RÉSULTAT) =====
 
@@ -640,9 +570,7 @@ done
 cd /home/ubuntu/aiapp/frontend && npm run build:dev
 ```
 
----
-
-### PHASE 5 : NETTOYAGE
+### PHASE 7 : NETTOYAGE
 
 ```bash
 # Backup puis suppression des fichiers monolithiques
@@ -661,7 +589,7 @@ npm run build:dev
 
 ---
 
-## K) Actions Principales
+## J) Actions Principales
 
 ### → "regenerer" (cp+tee)
 
@@ -711,17 +639,18 @@ PATCHEND
 
 ---
 
-## L) Conventions de Nommage
+## K) Conventions de Nommage
 
 ### Fichiers
 
 | Élément          | Convention            | Exemple                      |
 |------------------|-----------------------|------------------------------|
 | Service          | `{tab}Service`        | `ftpService`, `sslService`   |
-| Fichier service  | `{Tab}Tab.ts`         | `FtpTab.ts`, `SslTab.ts`     |
+| Fichier service  | `{Tab}Tab.service.ts` | `FtpTab.service.ts`, `SslTab.service.ts` |
 | Fichier types    | `{nav2}.types.ts`     | `hosting.types.ts`           |
 | Composant        | `{Tab}Tab.tsx`        | `FtpTab.tsx`, `SslTab.tsx`   |
 | Styles           | `{Tab}Tab.css`        | `FtpTab.css`, `SslTab.css`   |
+| Traductions      | `{nav3}.json`         | `ftp.json`, `ssl.json`       |
 
 ### Classes CSS
 
@@ -744,7 +673,7 @@ import { ovhGet, ovhPost } from "../../../../../../services/api";
 import type { HostingInfo } from "../../hosting.types";
 
 // Service local
-import { ftpService } from "./FtpTab";
+import { ftpService } from "./FtpTab.service";
 
 // CSS local
 import "./FtpTab.css";
@@ -752,51 +681,7 @@ import "./FtpTab.css";
 
 ---
 
-## M) Exemple Concret : web-cloud/hosting
-
-### AVANT (Couplé)
-```
-services/
-  web-cloud.hosting.ts          ← 500 lignes JS mélangées
-
-styles/
-  hosting.css                   ← CSS partagé entre tous les tabs
-
-pages/web-cloud/hebergement/hosting/
-  tabs/
-    ftp/FtpTab.tsx              ← import hostingService + hosting.css
-    ssl/SslTab.tsx              ← import hostingService + hosting.css
-    cdn/CdnTab.tsx              ← import hostingService + hosting.css
-```
-
-### APRÈS (Défactorisé)
-```
-pages/web-cloud/hebergement/hosting/
-  hosting.types.ts              ← Types (SEUL partage)
-  tabs/
-    ftp/
-      FtpTab.ts                 ← ftpService (ISOLÉ)
-      FtpTab.tsx                ← import local
-      FtpTab.css                ← .ftp-* (ISOLÉ)
-    ssl/
-      SslTab.ts                 ← sslService (ISOLÉ)
-      SslTab.tsx                ← import local
-      SslTab.css                ← .ssl-* (ISOLÉ)
-    cdn/
-      CdnTab.ts                 ← cdnService (ISOLÉ)
-      CdnTab.tsx                ← import local
-      CdnTab.css                ← .cdn-* (ISOLÉ)
-
-services/
-  web-cloud.hosting.ts          ← SUPPRIMÉ
-
-styles/
-  hosting.css                   ← SUPPRIMÉ
-```
-
----
-
-## N) Checklist Finale
+## L) Checklist Finale
 
 ### Avant de commencer
 - [ ] Archive tar uploadée
@@ -818,6 +703,10 @@ styles/
 - [ ] `{Tab}Tab.css` créé pour CHAQUE tab
 - [ ] Toutes les classes préfixées `.{tab}-`
 - [ ] Styles dupliqués si nécessaire
+
+### Création Traductions
+- [ ] `public/locales/fr/{nav1}/{nav2}/{nav3}.json` créé pour CHAQUE tab
+- [ ] `public/locales/en/{nav1}/{nav2}/{nav3}.json` créé pour CHAQUE tab
 
 ### Modification
 - [ ] Tous les `.tsx` modifiés (imports JS)
@@ -842,7 +731,7 @@ styles/
 
 ---
 
-## O) Commandes Utiles
+## M) Commandes Utiles
 
 ```bash
 # Lister tous les fichiers d'un module
@@ -862,11 +751,14 @@ grep -r "from.*tabs/" src/pages/{nav1}/{nav2}/tabs/{tab}/ | grep -v 'from "./'
 
 # VÉRIFICATION ISOLATION CSS
 grep -r "import.*\.\..*\.css" src/pages/{nav1}/{nav2}/tabs/
+
+# Lister les traductions
+find public/locales -name "*.json" | sort
 ```
 
 ---
 
-## P) Workflow Chat
+## N) Workflow Chat
 
 1. **Upload** : tar sources + ce prompt
 2. **Demande** : "Applique prompt_split.txt sur {nav1}/{nav2}"
@@ -874,13 +766,14 @@ grep -r "import.*\.\..*\.css" src/pages/{nav1}/{nav2}/tabs/
 4. **Validation** : "GO" pour lancer la génération
 5. **Génération JS** : scripts cp+tee services par batch de 5
 6. **Génération CSS** : scripts cp+tee styles par batch de 5
-7. **Modification** : patches pour imports et classNames
-8. **Vérification** : scripts de test isolation JS + CSS + build
-9. **Nettoyage** : backup + suppression fichiers monolithiques
+7. **Génération i18n** : scripts cp+tee traductions par batch de 5
+8. **Modification** : patches pour imports et classNames
+9. **Vérification** : scripts de test isolation JS + CSS + build
+10. **Nettoyage** : backup + suppression fichiers monolithiques
 
 ---
 
-## Q) Rappel Final
+## O) Rappel Final
 
 > **DÉFACTORISATION = DUPLICATION VOLONTAIRE (JS + CSS)**
 >

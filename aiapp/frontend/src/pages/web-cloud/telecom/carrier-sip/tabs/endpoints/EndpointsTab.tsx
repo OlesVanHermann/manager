@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { Endpoint } from "../../carrier-sip.types";
-import { endpointsService } from "./EndpointsTab";
+import { endpointsService } from "./EndpointsTab.service";
 import "./EndpointsTab.css";
 
 interface Props {

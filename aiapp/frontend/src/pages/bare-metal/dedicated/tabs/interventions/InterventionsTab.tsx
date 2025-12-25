@@ -3,11 +3,12 @@
 // #  IMPORTS LOCAUX UNIQUEMENT                               #
 // #  CSS LOCAL : ./InterventionsTab.css                      #
 // #  SERVICE LOCAL : ./InterventionsTab.ts                   #
+// #  I18N LOCAL : bare-metal/dedicated/interventions         #
 // ############################################################
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { interventionsService } from "./InterventionsTab";
+import { interventionsService } from "./InterventionsTab.service";
 import type { DedicatedServerIntervention } from "../../dedicated.types";
 import "./InterventionsTab.css";
 
@@ -30,7 +31,7 @@ const formatDateTime = (date: string): string => {
 // Composant Principal
 // ============================================================
 export function InterventionsTab({ serviceName }: Props) {
-  const { t } = useTranslation("bare-metal/dedicated/index");
+  const { t } = useTranslation("bare-metal/dedicated/interventions");
   const [interventions, setInterventions] = useState<DedicatedServerIntervention[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,9 +71,9 @@ export function InterventionsTab({ serviceName }: Props) {
     <div className="dedicated-interventions-tab">
       {/* En-tête */}
       <div className="dedicated-interventions-header">
-        <h3>{t("interventions.title")}</h3>
+        <h3>{t("title")}</h3>
         <p className="dedicated-interventions-description">
-          {t("interventions.description")}
+          {t("description")}
         </p>
       </div>
 
@@ -92,14 +93,14 @@ export function InterventionsTab({ serviceName }: Props) {
               d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <p>{t("interventions.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <table className="dedicated-interventions-table">
           <thead>
             <tr>
-              <th>{t("interventions.date")}</th>
-              <th>{t("interventions.type")}</th>
+              <th>{t("date")}</th>
+              <th>{t("type")}</th>
             </tr>
           </thead>
           <tbody>

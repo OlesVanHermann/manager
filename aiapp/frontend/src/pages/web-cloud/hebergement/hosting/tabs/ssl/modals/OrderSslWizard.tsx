@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { sslService } from "../SslTab";
+import { sslService } from "../SslTab.service";
 
 interface Props {
   serviceName: string;

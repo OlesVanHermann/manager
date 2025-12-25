@@ -3,6 +3,7 @@
 // #  IMPORTS LOCAUX UNIQUEMENT                               #
 // #  CSS LOCAL : ./GeneralTab.css                            #
 // #  SERVICE LOCAL : ./GeneralTab.ts                         #
+// #  I18N LOCAL : bare-metal/dedicated/general               #
 // ############################################################
 
 import { useTranslation } from "react-i18next";
@@ -40,7 +41,7 @@ const formatDate = (date: string): string => {
 // Composant Principal
 // ============================================================
 export function GeneralTab({ serviceName, details, serviceInfos, hardware, loading }: Props) {
-  const { t } = useTranslation("bare-metal/dedicated/index");
+  const { t } = useTranslation("bare-metal/dedicated/general");
 
   // État de chargement
   if (loading) {
@@ -59,57 +60,57 @@ export function GeneralTab({ serviceName, details, serviceInfos, hardware, loadi
     <div className="dedicated-general-tab">
       {/* Section Informations Générales */}
       <section className="dedicated-general-section">
-        <h3>{t("general.title")}</h3>
+        <h3>{t("title")}</h3>
         <div className="dedicated-general-info-grid">
           <div className="dedicated-general-info-item">
-            <label>{t("general.name")}</label>
-            <span className="mono">{serviceName}</span>
+            <label>{t("name")}</label>
+            <span className="dedicated-general-mono">{serviceName}</span>
           </div>
           {details && (
             <>
               <div className="dedicated-general-info-item">
-                <label>{t("general.ip")}</label>
-                <span className="mono">{details.ip}</span>
+                <label>{t("ip")}</label>
+                <span className="dedicated-general-mono">{details.ip}</span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.reverse")}</label>
-                <span className="mono">{details.reverse}</span>
+                <label>{t("reverse")}</label>
+                <span className="dedicated-general-mono">{details.reverse}</span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.datacenter")}</label>
+                <label>{t("datacenter")}</label>
                 <span>{details.datacenter}</span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.rack")}</label>
+                <label>{t("rack")}</label>
                 <span>{details.rack}</span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.commercialRange")}</label>
+                <label>{t("commercialRange")}</label>
                 <span>{details.commercialRange}</span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.os")}</label>
+                <label>{t("os")}</label>
                 <span>{details.os}</span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.state")}</label>
-                <span className={`dedicated-general-badge ${details.state === "ok" ? "success" : "error"}`}>
+                <label>{t("state")}</label>
+                <span className={`dedicated-general-badge ${details.state === "ok" ? "dedicated-general-success" : "dedicated-general-error"}`}>
                   {details.state}
                 </span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.power")}</label>
-                <span className={`dedicated-general-badge ${details.powerState === "poweron" ? "success" : "error"}`}>
+                <label>{t("power")}</label>
+                <span className={`dedicated-general-badge ${details.powerState === "poweron" ? "dedicated-general-success" : "dedicated-general-error"}`}>
                   {details.powerState}
                 </span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.support")}</label>
-                <span className="dedicated-general-badge info">{details.supportLevel}</span>
+                <label>{t("support")}</label>
+                <span className="dedicated-general-badge dedicated-general-info">{details.supportLevel}</span>
               </div>
               <div className="dedicated-general-info-item">
-                <label>{t("general.monitoring")}</label>
-                <span className={`dedicated-general-badge ${details.monitoring ? "success" : "inactive"}`}>
+                <label>{t("monitoring")}</label>
+                <span className={`dedicated-general-badge ${details.monitoring ? "dedicated-general-success" : "dedicated-general-inactive"}`}>
                   {details.monitoring ? "✓" : "✗"}
                 </span>
               </div>
@@ -189,7 +190,7 @@ export function GeneralTab({ serviceName, details, serviceInfos, hardware, loadi
             </div>
             <div className="dedicated-general-info-item">
               <label>{t("service.autoRenew")}</label>
-              <span className={`dedicated-general-badge ${serviceInfos.renew?.automatic ? "success" : "warning"}`}>
+              <span className={`dedicated-general-badge ${serviceInfos.renew?.automatic ? "dedicated-general-success" : "dedicated-general-warning"}`}>
                 {serviceInfos.renew?.automatic ? "✓" : "✗"}
               </span>
             </div>

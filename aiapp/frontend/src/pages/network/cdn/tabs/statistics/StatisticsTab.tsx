@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CdnStats } from "../../cdn.types";
-import { statisticsService } from "./StatisticsTab";
+import { statisticsService } from "./StatisticsTab.service";
 import "./StatisticsTab.css";
 
 interface StatisticsTabProps {

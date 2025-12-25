@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { generalService } from "../GeneralTab";
+import { generalService } from "../GeneralTab.service";
 
 interface Props {
   serviceName: string;

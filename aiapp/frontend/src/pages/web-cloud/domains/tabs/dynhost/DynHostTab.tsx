@@ -5,7 +5,7 @@ import "./DynHostTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { dynHostService } from "./DynHostTab";
+import { dynHostService } from "./DynHostTab.service";
 import type { DynHostRecord, DynHostLogin } from "../../domains.types";
 
 interface Props {

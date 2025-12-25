@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { themesPluginsService } from "./ThemesPluginsTab";
+import { themesPluginsService } from "./ThemesPluginsTab.service";
 import type { ManagedWordPressTheme, ManagedWordPressPlugin } from "../../managed-wordpress.types";
 import "./ThemesPluginsTab.css";
 

@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { VrackServicesSubnet } from "../../vrack-services.types";
-import { subnetsService } from "./SubnetsTab";
+import { subnetsService } from "./SubnetsTab.service";
 import "./SubnetsTab.css";
 
 interface SubnetsTabProps {

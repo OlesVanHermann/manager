@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { servicesService } from "./ServicesTab";
+import { servicesService } from "./ServicesTab.service";
 import "./ServicesTab.css";
 
 interface Props { serviceName: string; }

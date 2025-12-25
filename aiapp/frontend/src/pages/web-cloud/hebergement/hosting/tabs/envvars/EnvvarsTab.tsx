@@ -5,7 +5,7 @@ import "./EnvvarsTab.css";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { envvarsService } from "./EnvvarsTab";
+import { envvarsService } from "./EnvvarsTab.service";
 import type { EnvVar } from "../../hosting.types";
 import { CreateEnvvarModal, EditEnvvarModal } from "./modals";
 

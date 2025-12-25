@@ -5,7 +5,7 @@ import "./DnssecTab.css";
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { dnssecService } from "./DnssecTab";
+import { dnssecService } from "./DnssecTab.service";
 import type { DnssecStatus } from "../../domains.types";
 
 interface Props {

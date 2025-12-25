@@ -5,7 +5,7 @@
 import "./EmailsTab.css";
 import { useState, useEffect, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { emailsService } from "./EmailsTab";
+import { emailsService } from "./EmailsTab.service";
 
 interface Props {
   serviceName: string;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { IpLoadBalancingFrontend } from "../../load-balancer.types";
-import { frontendsService } from "./FrontendsTab";
+import { frontendsService } from "./FrontendsTab.service";
 import "./FrontendsTab.css";
 
 interface Props { serviceName: string; }

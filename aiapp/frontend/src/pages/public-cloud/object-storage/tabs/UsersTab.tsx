@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getS3Users, formatDate } from "./UsersTab";
+import { getS3Users, formatDate } from "./UsersTab.service";
 import type { S3User } from "../object-storage.types";
 import "./UsersTab.css";
 

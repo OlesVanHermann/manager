@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 
 // Service isolé pour le chargement initial
-import { generalService } from "./tabs/general/GeneralTab.ts";
+import { generalService } from "./tabs/general/GeneralTab.service";
 import type { DedicatedCloud } from "./vmware.types";
 
 // Imports des composants TSX

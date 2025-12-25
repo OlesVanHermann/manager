@@ -1,66 +1,70 @@
 // ============================================================
-// IAM TYPES - Types partagés pour tous les tabs IAM Core
+// IAM TYPES - Types partagés pour tous les tabs IAM (SEUL PARTAGE AUTORISÉ)
 // ============================================================
 
-import type { OvhCredentials } from "../../types/auth.types";
+/** Credentials OVH pour l'authentification API. */
+export interface OvhCredentials {
+  appKey: string;
+  appSecret: string;
+  consumerKey?: string;
+}
 
-export type { OvhCredentials };
-
+/** Utilisateur IAM. */
 export interface IamUser {
   login: string;
   email: string;
-  status: "OK" | "DISABLED" | "PASSWORD_CHANGE_REQUIRED";
   creation: string;
   lastUpdate?: string;
+  status: "ok" | "disabled" | "passwordChangeRequired";
   group?: string;
   description?: string;
-  urn?: string;
 }
 
-export interface IamGroup {
-  name: string;
-  description?: string;
-  role?: string;
-  creation?: string;
-  lastUpdate?: string;
-  urn?: string;
-}
-
-export interface IamServiceAccount {
-  clientId: string;
-  name?: string;
-  description?: string;
-  identity: string;
-  flow?: string;
-}
-
+/** Policy IAM. */
 export interface IamPolicy {
   id: string;
   name: string;
   description?: string;
+  identities: string[];
+  resources: IamResource[];
+  permissions: IamPermission;
   createdAt: string;
   updatedAt?: string;
   readOnly: boolean;
-  identities?: string[];
-  resources?: Array<{ urn: string }>;
-  permissions?: { allow?: Array<{ action: string }>; except?: Array<{ action: string }> };
+  owner: string;
 }
 
+/** Ressource IAM pour une policy. */
+export interface IamResource {
+  urn: string;
+}
+
+/** Permissions IAM. */
+export interface IamPermission {
+  allow?: IamAction[];
+  deny?: IamAction[];
+  except?: IamAction[];
+}
+
+/** Action IAM. */
+export interface IamAction {
+  action: string;
+}
+
+/** Groupe de ressources IAM. */
 export interface IamResourceGroup {
   id: string;
+  urn: string;
   name: string;
-  resources?: string[];
+  owner: string;
   createdAt: string;
   updatedAt?: string;
-  owner: string;
   readOnly: boolean;
+  resources: IamGroupResource[];
 }
 
-export interface IamLog {
-  createdAt: string;
-  action: string;
-  identityUrn: string;
-  resourceUrn: string;
-  allowed: boolean;
-  policyId?: string;
+/** Ressource dans un groupe IAM. */
+export interface IamGroupResource {
+  id: string;
+  urn: string;
 }

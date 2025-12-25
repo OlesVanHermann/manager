@@ -5,7 +5,7 @@ import "./TasksTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { tasksService } from "./TasksTab";
+import { tasksService } from "./TasksTab.service";
 import type { DomainTask, ZoneTask } from "../../domains.types";
 
 // ============ TYPES ============

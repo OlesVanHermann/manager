@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { modulesService } from "./ModulesTab";
+import { modulesService } from "./ModulesTab.service";
 import type { Module } from "../../hosting.types";
 import { InstallModuleModal, ChangePasswordModal, DeleteModuleModal } from "./modals";
 import "./ModulesTab.css";

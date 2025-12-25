@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { SecurityAttack } from "../../security.types";
-import { attacksService } from "./AttacksTab";
+import { attacksService } from "./AttacksTab.service";
 import "./AttacksTab.css";
 
 interface AttacksTabProps { ipBlock: string; }

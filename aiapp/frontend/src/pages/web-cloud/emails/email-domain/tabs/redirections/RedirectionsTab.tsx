@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listRedirections, getRedirection } from "./RedirectionsTab.ts";
+import { listRedirections, getRedirection } from "./RedirectionsTab.service";
 import type { EmailRedirection } from "../../email-domain.types";
 import "./RedirectionsTab.css";
 

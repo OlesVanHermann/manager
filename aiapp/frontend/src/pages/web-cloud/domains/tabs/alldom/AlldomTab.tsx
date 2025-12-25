@@ -11,7 +11,7 @@ import {
   formatDate,
   terminateAllDom,
   cancelTermination,
-} from "./AlldomTab.ts";
+} from "./AlldomTab.service";
 import type { AllDomEntry } from "../../domains.types";
 import "./AlldomTab.css";
 

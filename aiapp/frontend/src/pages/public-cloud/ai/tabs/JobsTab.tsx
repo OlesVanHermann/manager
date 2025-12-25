@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getJobs, formatDate, getJobStatusClass } from "./JobsTab";
+import { getJobs, formatDate, getJobStatusClass } from "./JobsTab.service";
 import type { Job } from "../ai.types";
 import "./JobsTab.css";
 

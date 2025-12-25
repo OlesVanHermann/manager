@@ -5,7 +5,7 @@ import "./DsRecordsTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { dsRecordsService } from "./DsRecordsTab";
+import { dsRecordsService } from "./DsRecordsTab.service";
 import type { DsRecord, DsRecordCreate } from "../../domains.types";
 
 interface Props { domain: string; }

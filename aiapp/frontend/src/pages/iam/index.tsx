@@ -1,12 +1,16 @@
 // ============================================================
 // IAM PAGE - Identity & Access Management
 // Univers autonome - Section Accueil avec 4 tabs (NAV3)
+// IMPORTS DIRECTS (pas de barrel file)
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { IdentitiesTab, PoliciesTab, GroupsTab, LogsTab } from "./tabs";
-import "./styles.css";
+import IdentitiesTab from "./tabs/identities/IdentitiesTab";
+import PoliciesTab from "./tabs/policies/PoliciesTab";
+import GroupsTab from "./tabs/groups/GroupsTab";
+import LogsTab from "./tabs/logs/LogsTab";
+import "./IamPage.css";
 
 // ============ TYPES ============
 
@@ -27,21 +31,21 @@ const tabIdMap: Record<string, string> = {
 
 /** Page IAM avec 4 onglets: Identities, Policies, Groups, Logs. */
 export default function IamPage({ initialTab = "identities" }: IamPageProps) {
-  const { t } = useTranslation('iam/index');
+  const { t } = useTranslation("iam/general/general");
   const [activeTab, setActiveTab] = useState("identities");
 
   const tabs = [
-    { id: "identities", label: t('tabs.identities') },
-    { id: "policies", label: t('tabs.policies') },
-    { id: "groups", label: t('tabs.groups') },
-    { id: "logs", label: t('tabs.logs') },
+    { id: "identities", label: t("tabs.identities") },
+    { id: "policies", label: t("tabs.policies") },
+    { id: "groups", label: t("tabs.groups") },
+    { id: "logs", label: t("tabs.logs") },
   ];
 
   // ---------- EFFECTS ----------
   useEffect(() => {
     if (initialTab) {
       const mappedTab = tabIdMap[initialTab] || initialTab;
-      if (tabs.some((t) => t.id === mappedTab)) {
+      if (tabs.some((tab) => tab.id === mappedTab)) {
         setActiveTab(mappedTab);
       }
     }
@@ -52,11 +56,11 @@ export default function IamPage({ initialTab = "identities" }: IamPageProps) {
     <div className="iam-page">
       <div className="page-header">
         <div className="page-header-content">
-          <h1>{t('title')}</h1>
-          <p className="page-description">{t('description')}</p>
+          <h1>{t("title")}</h1>
+          <p className="page-description">{t("description")}</p>
         </div>
         <a href="https://docs.ovh.com/fr/iam/" target="_blank" rel="noopener noreferrer" className="guides-link">
-          {t('docsLink')}
+          {t("docsLink")}
         </a>
       </div>
 

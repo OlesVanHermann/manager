@@ -1,7 +1,8 @@
 // ============================================================
-// SECRET TYPES - Types partagés pour tous les tabs Secret
+// SECRET TYPES - Types partagés pour le module Secret Manager
 // ============================================================
 
+/** Informations générales d'un Secret Manager */
 export interface SecretManager {
   id: string;
   name: string;
@@ -9,28 +10,30 @@ export interface SecretManager {
   createdAt: string;
 }
 
+/** Secret stocké */
 export interface Secret {
   id: string;
   name: string;
   description?: string;
   createdAt: string;
   updatedAt: string;
-  versionsCount: number;
+  versionCount: number;
 }
 
+/** Version d'un secret */
 export interface SecretVersion {
   id: string;
   secretId: string;
-  secretName: string;
   version: number;
+  state: "enabled" | "disabled" | "destroyed";
   createdAt: string;
-  status: "enabled" | "disabled" | "destroyed";
 }
 
+/** Règle d'accès à un secret */
 export interface AccessRule {
   id: string;
-  identity: string;
-  identityType: "user" | "service_account" | "group";
+  secretId: string;
+  identityUrn: string;
   permission: "read" | "write" | "admin";
   createdAt: string;
 }

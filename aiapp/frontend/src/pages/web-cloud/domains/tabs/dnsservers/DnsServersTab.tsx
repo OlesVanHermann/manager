@@ -5,7 +5,7 @@ import "./DnsServersTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { dnsServersService } from "./DnsServersTab";
+import { dnsServersService } from "./DnsServersTab.service";
 import type { DnsServer, DnsServerInput } from "../../domains.types";
 
 interface Props {

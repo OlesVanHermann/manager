@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CdnDomain } from "../../cdn.types";
-import { domainsService } from "./DomainsTab";
+import { domainsService } from "./DomainsTab.service";
 import "./DomainsTab.css";
 
 interface DomainsTabProps {

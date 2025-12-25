@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { generalService } from "./tabs/general/GeneralTab";
+import { generalService } from "./tabs/general/GeneralTab.service";
 import type { Hosting } from "./hosting.types";
 
 // ============================================================

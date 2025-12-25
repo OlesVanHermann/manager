@@ -1,21 +1,34 @@
-// ============================================================
-// HOUSING - Page principale (défactorisée)
-// Imports DIRECTS - pas de barrel file
-// Service page ISOLÉ - pas d'import depuis les tabs
-// ============================================================
+// ############################################################
+// #  HOUSING/PAGE - COMPOSANT PAGE STRICTEMENT ISOLÉ         #
+// #  CSS LOCAL : ./HousingPage.css                           #
+// #  I18N LOCAL : bare-metal/housing/page                    #
+// #  SERVICE LOCAL : Intégré dans ce fichier                 #
+// ############################################################
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import { housingPageService } from "./housing.service";
+import { ovhApi } from "../../../services/api";
 import GeneralTab from "./tabs/general/GeneralTab.tsx";
 import TasksTab from "./tabs/tasks/TasksTab.tsx";
 import type { HousingInfo } from "./housing.types";
-import "../styles.css";
+import "./index.css";
 
+// ============================================================
+// SERVICE LOCAL - Intégré dans la page (pas de fichier séparé)
+// ============================================================
+const pageService = {
+  getHousing: (id: string): Promise<HousingInfo> =>
+    ovhApi.get<HousingInfo>(`/dedicated/housing/${id}`),
+};
+
+// ============================================================
+// Composant Principal
+// ============================================================
 export default function HousingPage() {
-  const { t } = useTranslation("bare-metal/housing/index");
+  const { t } = useTranslation("bare-metal/housing/page");
+  const { t: tCommon } = useTranslation("common");
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("id") || "";
   const [housing, setHousing] = useState<HousingInfo | null>(null);
@@ -40,7 +53,7 @@ export default function HousingPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await housingPageService.getHousing(serviceId);
+      const data = await pageService.getHousing(serviceId);
       setHousing(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -51,8 +64,8 @@ export default function HousingPage() {
 
   if (!serviceId) {
     return (
-      <div className="page-content">
-        <div className="empty-state">
+      <div className="housing-page-container">
+        <div className="housing-page-empty">
           <h2>{t("noService.title")}</h2>
         </div>
       </div>
@@ -61,16 +74,16 @@ export default function HousingPage() {
 
   if (loading) {
     return (
-      <div className="page-content">
-        <div className="loading-state">{t("loading")}</div>
+      <div className="housing-page-container">
+        <div className="housing-page-loading">{t("loading")}</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="page-content">
-        <div className="error-state">
+      <div className="housing-page-container">
+        <div className="housing-page-error">
           <p>{error}</p>
           <button className="btn btn-primary" onClick={loadHousing}>
             {t("error.retry")}
@@ -81,19 +94,21 @@ export default function HousingPage() {
   }
 
   return (
-    <div className="page-content bare-metal-page">
-      <header className="page-header">
+    <div className="housing-page-container">
+      <header className="housing-page-header">
         <h1>🏢 {housing?.name}</h1>
         {housing && (
-          <div className="service-meta">
-            <span className="meta-item">{housing.datacenter}</span>
-            <span className="meta-item">Rack: {housing.rack}</span>
-            <span className="meta-item">{housing.networkBandwidth} Mbps</span>
+          <div className="housing-page-meta">
+            <span className="housing-page-meta-item">{housing.datacenter}</span>
+            <span className="housing-page-meta-item">Rack: {housing.rack}</span>
+            <span className="housing-page-meta-item">{housing.networkBandwidth} Mbps</span>
           </div>
         )}
       </header>
-      <TabButtons />
-      <div className="tab-content">
+      <div className="housing-page-tabs">
+        <TabButtons />
+      </div>
+      <div className="housing-page-tab-content">
         {activeTab === "general" && (
           <GeneralTab serviceId={serviceId} housing={housing} onRefresh={loadHousing} />
         )}

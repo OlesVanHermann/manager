@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { metricsService } from "./MetricsTab";
+import { metricsService } from "./MetricsTab.service";
 import type { PdbMetrics, PdbMetricData } from "../../private-database.types";
 import "./MetricsTab.css";
 

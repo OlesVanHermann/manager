@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { tasksService } from "./TasksTab";
+import { tasksService } from "./TasksTab.service";
 import "./TasksTab.css";
 
 // ============================================================

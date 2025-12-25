@@ -4,7 +4,7 @@
 
 import { useTranslation } from "react-i18next";
 import type { CdnInfo } from "../../cdn.types";
-import { generalService } from "./GeneralTab";
+import { generalService } from "./GeneralTab.service";
 import "./GeneralTab.css";
 
 interface GeneralTabProps {

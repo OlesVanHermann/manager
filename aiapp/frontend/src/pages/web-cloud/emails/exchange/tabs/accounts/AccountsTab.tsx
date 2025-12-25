@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listAccounts, getAccount, formatSize, getUsagePercent, getInitials } from "./AccountsTab.ts";
+import { listAccounts, getAccount, formatSize, getUsagePercent, getInitials } from "./AccountsTab.service";
 import type { ExchangeAccount } from "../../exchange.types";
 import "./AccountsTab.css";
 

@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listUsers, getUser, getInitials, getLicenseType } from "./UsersTab.ts";
+import { listUsers, getUser, getInitials, getLicenseType } from "./UsersTab.service";
 import type { OfficeUser } from "../../office.types";
 import "./UsersTab.css";
 

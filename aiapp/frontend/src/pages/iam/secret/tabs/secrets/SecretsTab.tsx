@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as secretsService from "./SecretsTab";
+import * as secretsService from "./SecretsTab.service";
 import type { Secret } from "../../secret.types";
 import "./SecretsTab.css";
 
@@ -22,7 +22,7 @@ interface SecretsTabProps {
 
 /** Liste des secrets avec actions CRUD. */
 export default function SecretsTab({ serviceId }: SecretsTabProps) {
-  const { t } = useTranslation("iam/secret/index");
+  const { t } = useTranslation("iam/secret/secrets");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
@@ -51,7 +51,7 @@ export default function SecretsTab({ serviceId }: SecretsTabProps) {
 
   // ---------- HANDLERS ----------
   const handleDelete = async (secretId: string) => {
-    if (!confirm(t("secrets.confirmDelete"))) return;
+    if (!confirm(t("confirmDelete"))) return;
     try {
       await secretsService.deleteSecret(serviceId, secretId);
       loadSecrets();
@@ -77,9 +77,9 @@ export default function SecretsTab({ serviceId }: SecretsTabProps) {
   if (secrets.length === 0) {
     return (
       <div className="secrets-empty-state">
-        <h2>{t("secrets.empty.title")}</h2>
-        <p>{t("secrets.empty.description")}</p>
-        <button className="btn btn-primary">{t("secrets.create")}</button>
+        <h2>{t("empty.title")}</h2>
+        <p>{t("empty.description")}</p>
+        <button className="btn btn-primary">{t("create")}</button>
       </div>
     );
   }
@@ -87,17 +87,17 @@ export default function SecretsTab({ serviceId }: SecretsTabProps) {
   return (
     <div className="secrets-tab">
       <div className="secrets-toolbar">
-        <button className="btn btn-primary">{t("secrets.create")}</button>
+        <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       <table className="secrets-table">
         <thead>
           <tr>
-            <th>{t("secrets.columns.name")}</th>
-            <th>{t("secrets.columns.description")}</th>
-            <th>{t("secrets.columns.versions")}</th>
-            <th>{t("secrets.columns.updated")}</th>
-            <th>{t("secrets.columns.actions")}</th>
+            <th>{t("columns.name")}</th>
+            <th>{t("columns.description")}</th>
+            <th>{t("columns.versions")}</th>
+            <th>{t("columns.updated")}</th>
+            <th>{t("columns.actions")}</th>
           </tr>
         </thead>
         <tbody>

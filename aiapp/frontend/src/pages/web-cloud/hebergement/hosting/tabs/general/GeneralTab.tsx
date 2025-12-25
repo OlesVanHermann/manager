@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { generalService } from "./GeneralTab";
+import { generalService } from "./GeneralTab.service";
 import type { Hosting } from "../../hosting.types";
 import { 
   RestoreSnapshotModal, 

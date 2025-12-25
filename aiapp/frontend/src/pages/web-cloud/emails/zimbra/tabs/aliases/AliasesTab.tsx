@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listAliases, getAlias } from "./AliasesTab.ts";
+import { listAliases, getAlias } from "./AliasesTab.service";
 import type { ZimbraAlias } from "../../zimbra.types";
 import "./AliasesTab.css";
 

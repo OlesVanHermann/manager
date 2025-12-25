@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { SecurityFirewallRule } from "../../security.types";
-import { firewallService } from "./FirewallTab";
+import { firewallService } from "./FirewallTab.service";
 import "./FirewallTab.css";
 
 interface FirewallTabProps { ipBlock: string; }

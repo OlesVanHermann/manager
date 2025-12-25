@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getNodePools, getNodePoolStatusClass } from "./NodePoolsTab";
+import { getNodePools, getNodePoolStatusClass } from "./NodePoolsTab.service";
 import type { NodePool } from "../kubernetes.types";
 import "./NodePoolsTab.css";
 

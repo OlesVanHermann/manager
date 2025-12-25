@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { logsService } from "./LogsTab";
+import { logsService } from "./LogsTab.service";
 import type { PdbLogEntry } from "../../private-database.types";
 import "./LogsTab.css";
 

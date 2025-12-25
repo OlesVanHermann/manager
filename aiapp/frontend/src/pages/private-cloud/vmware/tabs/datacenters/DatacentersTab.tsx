@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { datacentersService } from "./DatacentersTab.ts";
+import { datacentersService } from "./DatacentersTab.service";
 import type { Datacenter } from "../../vmware.types";
 import "./DatacentersTab.css";
 export default function DatacentersTab({ serviceId }: { serviceId: string }) {

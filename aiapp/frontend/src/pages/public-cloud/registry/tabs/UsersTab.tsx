@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getUsers } from "./UsersTab";
+import { getUsers } from "./UsersTab.service";
 import type { RegistryUser } from "../registry.types";
 import "./UsersTab.css";
 

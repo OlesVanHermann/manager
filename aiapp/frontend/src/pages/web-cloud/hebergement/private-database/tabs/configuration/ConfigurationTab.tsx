@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { configurationService } from "./ConfigurationTab";
+import { configurationService } from "./ConfigurationTab.service";
 import type { PrivateDatabase, PdbConfigParam } from "../../private-database.types";
 import "./ConfigurationTab.css";
 

@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listResources, getResource } from "./ResourcesTab.ts";
+import { listResources, getResource } from "./ResourcesTab.service";
 import type { ExchangeResource } from "../../exchange.types";
 import "./ResourcesTab.css";
 

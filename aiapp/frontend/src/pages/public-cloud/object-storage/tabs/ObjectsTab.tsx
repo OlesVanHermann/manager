@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getObjects, formatSize, getFileIcon, formatDate } from "./ObjectsTab";
+import { getObjects, formatSize, getFileIcon, formatDate } from "./ObjectsTab.service";
 import type { StorageObject } from "../object-storage.types";
 import "./ObjectsTab.css";
 

@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listAccounts, getAccount, formatSize, getUsagePercent } from "./AccountsTab.ts";
+import { listAccounts, getAccount, formatSize, getUsagePercent } from "./AccountsTab.service";
 import type { EmailProAccount } from "../../email-pro.types";
 import "./AccountsTab.css";
 

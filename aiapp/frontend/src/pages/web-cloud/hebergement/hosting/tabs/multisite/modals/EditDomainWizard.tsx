@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { multisiteService } from "../MultisiteTab";
+import { multisiteService } from "../MultisiteTab.service";
 import type { AttachedDomain } from "../../../hosting.types";
 
 interface Props {

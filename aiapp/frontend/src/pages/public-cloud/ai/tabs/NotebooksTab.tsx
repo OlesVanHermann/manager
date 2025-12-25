@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getNotebooks, formatDate, getNotebookStatusClass } from "./NotebooksTab";
+import { getNotebooks, formatDate, getNotebookStatusClass } from "./NotebooksTab.service";
 import type { Notebook } from "../ai.types";
 import "./NotebooksTab.css";
 

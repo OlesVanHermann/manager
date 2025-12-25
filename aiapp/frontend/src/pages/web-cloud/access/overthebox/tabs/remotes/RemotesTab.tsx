@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { remotesService } from "./RemotesTab";
+import { remotesService } from "./RemotesTab.service";
 import type { Remote } from "../../overthebox.types";
 import "./RemotesTab.css";
 

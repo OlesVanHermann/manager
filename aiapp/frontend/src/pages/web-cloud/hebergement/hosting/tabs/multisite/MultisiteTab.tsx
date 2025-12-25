@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { multisiteService } from "./MultisiteTab";
+import { multisiteService } from "./MultisiteTab.service";
 import type { AttachedDomain } from "../../hosting.types";
 import { AddDomainModal, DeleteDomainWizard, FlushCdnWizard, DiagnosticModal, EditDomainWizard } from "./modals";
 import "./MultisiteTab.css";

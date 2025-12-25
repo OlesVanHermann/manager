@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
-import { generalService } from "../GeneralTab";
+import { generalService } from "../GeneralTab.service";
 import type { AttachedDomain } from "../../../hosting.types";
 
 interface Props {

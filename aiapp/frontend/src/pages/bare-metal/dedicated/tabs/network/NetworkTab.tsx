@@ -3,11 +3,12 @@
 // #  IMPORTS LOCAUX UNIQUEMENT                               #
 // #  CSS LOCAL : ./NetworkTab.css                            #
 // #  SERVICE LOCAL : ./NetworkTab.ts                         #
+// #  I18N LOCAL : bare-metal/dedicated/network               #
 // ############################################################
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { networkService } from "./NetworkTab";
+import { networkService } from "./NetworkTab.service";
 import type { DedicatedServerVrack } from "../../dedicated.types";
 import "./NetworkTab.css";
 
@@ -22,7 +23,7 @@ interface Props {
 // Composant Principal
 // ============================================================
 export function NetworkTab({ serviceName }: Props) {
-  const { t } = useTranslation("bare-metal/dedicated/index");
+  const { t } = useTranslation("bare-metal/dedicated/network");
   const [ips, setIps] = useState<string[]>([]);
   const [vracks, setVracks] = useState<DedicatedServerVrack[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,9 +67,9 @@ export function NetworkTab({ serviceName }: Props) {
     <div className="dedicated-network-tab">
       {/* Section IPs */}
       <section className="dedicated-network-section">
-        <h3>{t("network.ips")}</h3>
+        <h3>{t("ips")}</h3>
         {ips.length === 0 ? (
-          <p>{t("network.noIps")}</p>
+          <p>{t("noIps")}</p>
         ) : (
           <div className="dedicated-network-ip-list">
             {ips.map((ip) => (
@@ -82,24 +83,24 @@ export function NetworkTab({ serviceName }: Props) {
 
       {/* Section vRack */}
       <section className="dedicated-network-section">
-        <h3>{t("network.vrack")}</h3>
+        <h3>{t("vrack")}</h3>
         {vracks.length === 0 ? (
-          <p>{t("network.noVrack")}</p>
+          <p>{t("noVrack")}</p>
         ) : (
           <table className="dedicated-network-table">
             <thead>
               <tr>
-                <th>{t("network.vrackName")}</th>
-                <th>{t("network.vrackState")}</th>
+                <th>{t("vrackName")}</th>
+                <th>{t("vrackState")}</th>
               </tr>
             </thead>
             <tbody>
               {vracks.map((v) => (
                 <tr key={v.vrack}>
-                  <td className="mono">{v.vrack}</td>
+                  <td className="dedicated-network-mono">{v.vrack}</td>
                   <td>
                     <span
-                      className={`dedicated-network-badge ${v.state === "ok" ? "success" : "warning"}`}
+                      className={`dedicated-network-badge ${v.state === "ok" ? "dedicated-network-success" : "dedicated-network-warning"}`}
                     >
                       {v.state}
                     </span>

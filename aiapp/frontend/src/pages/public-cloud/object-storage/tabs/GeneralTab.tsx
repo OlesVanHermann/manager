@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import { formatSize } from "./GeneralTab";
+import { formatSize } from "./GeneralTab.service";
 import type { Container } from "../object-storage.types";
 import "./GeneralTab.css";
 

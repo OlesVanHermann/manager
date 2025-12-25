@@ -4,7 +4,7 @@
 
 import "./FtpTab.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { ftpService } from "./FtpTab";
+import { ftpService } from "./FtpTab.service";
 import type { FtpUser, Hosting } from "../../hosting.types";
 import { CreateFtpUserModal, ChangePasswordModal, EditFtpUserModal, DeleteFtpUserModal } from "./modals";
 

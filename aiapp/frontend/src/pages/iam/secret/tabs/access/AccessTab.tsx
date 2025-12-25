@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as accessService from "./AccessTab";
+import * as accessService from "./AccessTab.service";
 import type { AccessRule } from "../../secret.types";
 import "./AccessTab.css";
 
@@ -22,7 +22,7 @@ interface AccessTabProps {
 
 /** Gestion des règles d'accès au Secret Manager. */
 export default function AccessTab({ serviceId }: AccessTabProps) {
-  const { t } = useTranslation("iam/secret/index");
+  const { t } = useTranslation("iam/secret/access");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
@@ -51,7 +51,7 @@ export default function AccessTab({ serviceId }: AccessTabProps) {
 
   // ---------- HANDLERS ----------
   const handleRevoke = async (ruleId: string) => {
-    if (!confirm(t("access.confirmRevoke"))) return;
+    if (!confirm(t("confirmRevoke"))) return;
     try {
       await accessService.revokeAccess(serviceId, ruleId);
       loadRules();
@@ -96,23 +96,23 @@ export default function AccessTab({ serviceId }: AccessTabProps) {
   return (
     <div className="access-tab">
       <div className="access-toolbar">
-        <button className="btn btn-primary">{t("access.grant")}</button>
+        <button className="btn btn-primary">{t("grant")}</button>
       </div>
 
       {rules.length === 0 ? (
         <div className="access-empty-state">
-          <h2>{t("access.empty.title")}</h2>
-          <p>{t("access.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <table className="access-table">
           <thead>
             <tr>
-              <th>{t("access.columns.identity")}</th>
-              <th>{t("access.columns.type")}</th>
-              <th>{t("access.columns.permission")}</th>
-              <th>{t("access.columns.granted")}</th>
-              <th>{t("access.columns.actions")}</th>
+              <th>{t("columns.identity")}</th>
+              <th>{t("columns.type")}</th>
+              <th>{t("columns.permission")}</th>
+              <th>{t("columns.granted")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -128,7 +128,7 @@ export default function AccessTab({ serviceId }: AccessTabProps) {
                 <td>{getPermissionBadge(rule.permission)}</td>
                 <td>{new Date(rule.createdAt).toLocaleDateString("fr-FR")}</td>
                 <td className="access-actions">
-                  <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleRevoke(rule.id)}>{t("access.revoke")}</button>
+                  <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleRevoke(rule.id)}>{t("revoke")}</button>
                 </td>
               </tr>
             ))}

@@ -1,71 +1,77 @@
 // ============================================================
-// IAM LOGS DATA PLATFORM - Page des logs avec 3 sous-onglets
-// Access Policy | Activity | Audit
+// DBAAS-LOGS PAGE - Logs Data Platform (LDP)
+// 5 tabs: Streams | Dashboards | Indices | Inputs | Aliases
+// Service inliné - CSS isolé
 // ============================================================
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as logsService from "./dbaas-logs.service";
-import { AccessPolicyTab, ActivityTab, AuditTab } from "../logs/tabs";
+import { useSearchParams } from "react-router-dom";
+import { StreamsTab, DashboardsTab, IndicesTab, InputsTab, AliasesTab } from "./tabs";
+import "./DbaasLogsPage.css";
 
+// ============ TYPES ============
 
-type LogTab = "access-policy" | "activity" | "audit";
+type DbaasLogsTab = "streams" | "dashboards" | "indices" | "inputs" | "aliases";
+
+// ============ COMPOSANT ============
 
 export default function DbaasLogsPage() {
-  const { t } = useTranslation("iam/logs");
-  const [activeTab, setActiveTab] = useState<LogTab>("access-policy");
-  const [availability, setAvailability] = useState<Record<logsService.LogType, boolean>>({
-    "access-policy": true, activity: true, audit: true,
-  });
-  const [loading, setLoading] = useState(true);
+  const { t } = useTranslation("iam/dbaas-logs");
+  const [searchParams] = useSearchParams();
+  const serviceId = searchParams.get("id") || "";
 
-  useEffect(() => { checkAvailability(); }, []);
+  const [activeTab, setActiveTab] = useState<DbaasLogsTab>("streams");
 
-  useEffect(() => {
-    if (!loading && !availability[activeTab]) {
-      const first = (Object.keys(availability) as LogTab[]).find((k) => availability[k]);
-      if (first) setActiveTab(first);
-    }
-  }, [availability, loading]);
+  // ---------- TABS CONFIG ----------
+  const tabs: { id: DbaasLogsTab; label: string }[] = [
+    { id: "streams", label: t("tabs.streams") },
+    { id: "dashboards", label: t("tabs.dashboards") },
+    { id: "indices", label: t("tabs.indices") },
+    { id: "inputs", label: t("tabs.inputs") },
+    { id: "aliases", label: t("tabs.aliases") },
+  ];
 
-  const checkAvailability = async () => {
-    try {
-      const result = await logsService.checkAllLogsAvailability();
-      setAvailability(result);
-    } catch (err) { console.error("Error checking logs availability:", err); }
-    finally { setLoading(false); }
-  };
-
-  const availableTabs = (Object.keys(availability) as LogTab[]).filter((k) => availability[k]);
-
-  if (!loading && availableTabs.length === 0) {
+  // ---------- RENDER ----------
+  if (!serviceId) {
     return (
-      <div className="logs-page">
-        <div className="page-header"><h1>{t("title")}</h1></div>
-        <div className="empty-state"><h3>{t("noLogsAvailable.title")}</h3><p>{t("noLogsAvailable.description")}</p></div>
+      <div className="dbaaslogspage-container">
+        <div className="dbaaslogspage-empty-state">
+          <h3>{t("noService.title")}</h3>
+          <p>{t("noService.description")}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="logs-page">
-      <div className="page-header"><h1>{t("title")}</h1></div>
-      <div className="tabs-container">
-        <div className="tabs-header">
-          {availability["access-policy"] && <button className={`tab-button ${activeTab === "access-policy" ? "active" : ""}`} onClick={() => setActiveTab("access-policy")}>{t("tabs.accessPolicy")}</button>}
-          {availability.activity && <button className={`tab-button ${activeTab === "activity" ? "active" : ""}`} onClick={() => setActiveTab("activity")}>{t("tabs.activity")}</button>}
-          {availability.audit && <button className={`tab-button ${activeTab === "audit" ? "active" : ""}`} onClick={() => setActiveTab("audit")}>{t("tabs.audit")}</button>}
+    <div className="dbaaslogspage-container">
+      <div className="dbaaslogspage-header">
+        <h1>{t("title")}</h1>
+        <div className="dbaaslogspage-service-info">
+          <span>Service: {serviceId}</span>
         </div>
-        <div className="tabs-content">
-          {loading ? (
-            <div className="loading-state"><div className="spinner"></div><p>{t("loading")}</p></div>
-          ) : (
-            <>
-              {activeTab === "access-policy" && <AccessPolicyTab />}
-              {activeTab === "activity" && <ActivityTab />}
-              {activeTab === "audit" && <AuditTab />}
-            </>
-          )}
+      </div>
+
+      <div className="dbaaslogspage-tabs-container">
+        <div className="dbaaslogspage-tabs-header">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`dbaaslogspage-tab-button ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="dbaaslogspage-tabs-content">
+          {activeTab === "streams" && <StreamsTab serviceId={serviceId} />}
+          {activeTab === "dashboards" && <DashboardsTab serviceId={serviceId} />}
+          {activeTab === "indices" && <IndicesTab serviceId={serviceId} />}
+          {activeTab === "inputs" && <InputsTab serviceId={serviceId} />}
+          {activeTab === "aliases" && <AliasesTab serviceId={serviceId} />}
         </div>
       </div>
     </div>

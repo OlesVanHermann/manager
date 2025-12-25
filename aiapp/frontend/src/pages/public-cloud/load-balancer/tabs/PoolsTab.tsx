@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getPools, getPoolStatusClass } from "./PoolsTab";
+import { getPools, getPoolStatusClass } from "./PoolsTab.service";
 import type { Pool } from "../load-balancer.types";
 import "./PoolsTab.css";
 

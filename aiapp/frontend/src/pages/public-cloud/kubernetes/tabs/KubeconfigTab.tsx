@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getKubeconfig, copyToClipboard, downloadAsFile } from "./KubeconfigTab";
+import { getKubeconfig, copyToClipboard, downloadAsFile } from "./KubeconfigTab.service";
 import "./KubeconfigTab.css";
 
 interface KubeconfigTabProps {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { backupsService } from "./BackupsTab";
+import { backupsService } from "./BackupsTab.service";
 import type { ManagedWordPressBackup } from "../../managed-wordpress.types";
 import "./BackupsTab.css";
 

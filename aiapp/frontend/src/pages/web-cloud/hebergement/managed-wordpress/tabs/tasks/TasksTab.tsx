@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { tasksService } from "./TasksTab";
+import { tasksService } from "./TasksTab.service";
 import type { ManagedWordPressTask } from "../../managed-wordpress.types";
 import "./TasksTab.css";
 

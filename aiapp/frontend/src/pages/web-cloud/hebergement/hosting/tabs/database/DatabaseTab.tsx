@@ -5,7 +5,7 @@ import "./DatabaseTab.css";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { databaseService } from "./DatabaseTab";
+import { databaseService } from "./DatabaseTab.service";
 import type { Database } from "../../hosting.types";
 import { CreateDatabaseModal, CopyDatabaseModal, DumpDatabaseModal, RestoreDatabaseModal, ImportSqlModal, ChangePasswordModal } from "./modals";
 

@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CloudConnectTask } from "../../cloud-connect.types";
-import { tasksService } from "./TasksTab";
+import { tasksService } from "./TasksTab.service";
 import "./TasksTab.css";
 
 interface TasksTabProps {

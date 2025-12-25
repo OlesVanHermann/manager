@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { tasksService } from "./TasksTab";
+import { tasksService } from "./TasksTab.service";
 import type { Task } from "../../overthebox.types";
 import "./TasksTab.css";
 

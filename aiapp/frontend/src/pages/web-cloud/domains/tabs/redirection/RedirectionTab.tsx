@@ -5,7 +5,7 @@ import "./RedirectionTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { redirectionService } from "./RedirectionTab";
+import { redirectionService } from "./RedirectionTab.service";
 import type { Redirection, RedirectionCreate } from "../../domains.types";
 
 interface Props {

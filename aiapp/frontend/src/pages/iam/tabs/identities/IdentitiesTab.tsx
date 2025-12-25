@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as identitiesService from "./IdentitiesTab";
+import * as identitiesService from "./IdentitiesTab.service";
 import type { IamUser } from "../../iam.types";
 import "./IdentitiesTab.css";
 
@@ -26,7 +26,7 @@ function UserIcon() {
 
 /** Affiche la liste des utilisateurs IAM avec leur statut. */
 export default function IdentitiesTab() {
-  const { t } = useTranslation("iam/index");
+  const { t } = useTranslation("iam/general/identities");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
@@ -60,9 +60,9 @@ export default function IdentitiesTab() {
   // ---------- HELPERS ----------
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
-      OK: { label: t("identities.status.active"), className: "identities-badge-success" },
-      DISABLED: { label: t("identities.status.disabled"), className: "identities-badge-error" },
-      PASSWORD_CHANGE_REQUIRED: { label: t("identities.status.passwordChange"), className: "identities-badge-warning" },
+      OK: { label: t("status.active"), className: "identities-badge-success" },
+      DISABLED: { label: t("status.disabled"), className: "identities-badge-error" },
+      PASSWORD_CHANGE_REQUIRED: { label: t("status.passwordChange"), className: "identities-badge-warning" },
     };
     return statusMap[status] || { label: status, className: "identities-badge-neutral" };
   };
@@ -73,7 +73,7 @@ export default function IdentitiesTab() {
       <div className="identities-tab">
         <div className="identities-loading-state">
           <div className="identities-spinner"></div>
-          <p>{t("identities.loading")}</p>
+          <p>{t("loading")}</p>
         </div>
       </div>
     );
@@ -95,32 +95,32 @@ export default function IdentitiesTab() {
   return (
     <div className="identities-tab">
       <div className="identities-section-intro">
-        <h2>{t("identities.title")}</h2>
-        <p>{t("identities.description")}</p>
+        <h2>{t("title")}</h2>
+        <p>{t("description")}</p>
       </div>
 
       <div className="identities-toolbar">
-        <span className="identities-result-count">{t("identities.count", { count: users.length })}</span>
-        <button className="btn btn-primary btn-sm">{t("identities.addButton")}</button>
+        <span className="identities-result-count">{t("count", { count: users.length })}</span>
+        <button className="btn btn-primary btn-sm">{t("addButton")}</button>
       </div>
 
       {users.length === 0 ? (
         <div className="identities-empty-state">
           <UserIcon />
-          <h3>{t("identities.empty.title")}</h3>
-          <p>{t("identities.empty.description")}</p>
-          <button className="btn btn-primary">{t("identities.addButton")}</button>
+          <h3>{t("empty.title")}</h3>
+          <p>{t("empty.description")}</p>
+          <button className="btn btn-primary">{t("addButton")}</button>
         </div>
       ) : (
         <div className="identities-table-container">
           <table className="identities-table">
             <thead>
               <tr>
-                <th>{t("identities.columns.login")}</th>
-                <th>{t("identities.columns.email")}</th>
-                <th>{t("identities.columns.group")}</th>
-                <th>{t("identities.columns.status")}</th>
-                <th>{t("identities.columns.actions")}</th>
+                <th>{t("columns.login")}</th>
+                <th>{t("columns.email")}</th>
+                <th>{t("columns.group")}</th>
+                <th>{t("columns.status")}</th>
+                <th>{t("columns.actions")}</th>
               </tr>
             </thead>
             <tbody>

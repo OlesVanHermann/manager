@@ -1,13 +1,20 @@
-// ============================================================
-// BARE METAL CLOUD - Dashboard
-// ============================================================
+// ############################################################
+// #  BARE-METAL/DASHBOARD - COMPOSANT PAGE ISOLÉ             #
+// #  CSS LOCAL : ./styles.css                                #
+// #  I18N LOCAL : bare-metal/index                           #
+// #  SERVICE LOCAL : ./index.service.ts                      #
+// ############################################################
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { dashboardService } from "./index.service";
 
-import "./styles.css";
+import "./index.css";
+
+// ============================================================
+// COMPOSANT DASHBOARD
+// ============================================================
 
 export default function BareMetalDashboard() {
   const { t } = useTranslation("bare-metal/index");
@@ -17,12 +24,23 @@ export default function BareMetalDashboard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [vpsList, dedicatedList] = await Promise.all([
-          vpsService.listVps().catch(() => []),
-          dedicatedService.listServers().catch(() => []),
+        const [vpsList, dedicatedList, nashaList, netappList, housingList] = await Promise.all([
+          dashboardService.listVps().catch(() => []),
+          dashboardService.listDedicated().catch(() => []),
+          dashboardService.listNasha().catch(() => []),
+          dashboardService.listNetapp().catch(() => []),
+          dashboardService.listHousing().catch(() => []),
         ]);
-        setCounts({ vps: vpsList.length, dedicated: dedicatedList.length, nasha: 0, netapp: 0, housing: 0 });
-      } finally { setLoading(false); }
+        setCounts({
+          vps: vpsList.length,
+          dedicated: dedicatedList.length,
+          nasha: nashaList.length,
+          netapp: netappList.length,
+          housing: housingList.length,
+        });
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);
@@ -47,7 +65,7 @@ export default function BareMetalDashboard() {
             <div className="tile-icon">{svc.icon}</div>
             <div className="tile-content">
               <h3>{t(`tiles.${svc.key}`)}</h3>
-              <span className="tile-count">{loading ? '...' : svc.count}</span>
+              <span className="tile-count">{loading ? "..." : svc.count}</span>
               <p>{t(`tiles.${svc.key}Desc`)}</p>
             </div>
           </Link>

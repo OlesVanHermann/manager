@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { accessService } from "./AccessTab";
+import { accessService } from "./AccessTab.service";
 import type { XdslAccess } from "../../pack-xdsl.types";
 import "./AccessTab.css";
 

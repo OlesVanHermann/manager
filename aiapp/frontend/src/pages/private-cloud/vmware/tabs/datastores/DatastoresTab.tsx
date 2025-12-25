@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { datastoresService, formatSize, getUsagePercent, getUsageClass } from "./DatastoresTab.ts";
+import { datastoresService, formatSize, getUsagePercent, getUsageClass } from "./DatastoresTab.service";
 import type { Datastore } from "../../vmware.types";
 import "./DatastoresTab.css";
 export default function DatastoresTab({ serviceId }: { serviceId: string }) {

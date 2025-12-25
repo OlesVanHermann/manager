@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { operationsService, getOperationStateBadgeClass } from "./OperationsTab.ts";
+import { operationsService, getOperationStateBadgeClass } from "./OperationsTab.service";
 import type { Operation } from "../../vmware.types";
 import "./OperationsTab.css";
 export default function OperationsTab({ serviceId }: { serviceId: string }) {

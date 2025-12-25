@@ -3,11 +3,12 @@
 // #  IMPORTS LOCAUX UNIQUEMENT                               #
 // #  CSS LOCAL : ./TasksTab.css                              #
 // #  SERVICE LOCAL : ./TasksTab.ts                           #
+// #  I18N LOCAL : bare-metal/dedicated/tasks                 #
 // ############################################################
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { tasksService } from "./TasksTab";
+import { tasksService } from "./TasksTab.service";
 import type { DedicatedServerTask } from "../../dedicated.types";
 import "./TasksTab.css";
 
@@ -28,22 +29,22 @@ const formatDateTime = (date: string): string => {
 
 const getStatusInfo = (status: string): { className: string; icon: string } => {
   const map: Record<string, { className: string; icon: string }> = {
-    todo: { className: "warning", icon: "⏳" },
-    init: { className: "info", icon: "🔄" },
-    doing: { className: "info", icon: "🔄" },
-    done: { className: "success", icon: "✓" },
-    customerError: { className: "error", icon: "✗" },
-    ovhError: { className: "error", icon: "✗" },
-    cancelled: { className: "inactive", icon: "⊘" },
+    todo: { className: "dedicated-tasks-warning", icon: "⏳" },
+    init: { className: "dedicated-tasks-info", icon: "🔄" },
+    doing: { className: "dedicated-tasks-info", icon: "🔄" },
+    done: { className: "dedicated-tasks-success", icon: "✓" },
+    customerError: { className: "dedicated-tasks-error", icon: "✗" },
+    ovhError: { className: "dedicated-tasks-error", icon: "✗" },
+    cancelled: { className: "dedicated-tasks-inactive", icon: "⊘" },
   };
-  return map[status] || { className: "inactive", icon: "?" };
+  return map[status] || { className: "dedicated-tasks-inactive", icon: "?" };
 };
 
 // ============================================================
 // Composant Principal
 // ============================================================
 export function TasksTab({ serviceName }: Props) {
-  const { t } = useTranslation("bare-metal/dedicated/index");
+  const { t } = useTranslation("bare-metal/dedicated/tasks");
   const [tasks, setTasks] = useState<DedicatedServerTask[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -84,23 +85,23 @@ export function TasksTab({ serviceName }: Props) {
     <div className="dedicated-tasks-tab">
       {/* En-tête */}
       <div className="dedicated-tasks-header">
-        <h3>{t("tasks.title")}</h3>
+        <h3>{t("title")}</h3>
       </div>
 
       {/* Liste vide */}
       {tasks.length === 0 ? (
         <div className="dedicated-tasks-empty">
-          <p>{t("tasks.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <table className="dedicated-tasks-table">
           <thead>
             <tr>
-              <th>{t("tasks.function")}</th>
-              <th>{t("tasks.status")}</th>
-              <th>{t("tasks.started")}</th>
-              <th>{t("tasks.done")}</th>
-              <th>{t("tasks.comment")}</th>
+              <th>{t("function")}</th>
+              <th>{t("status")}</th>
+              <th>{t("started")}</th>
+              <th>{t("done")}</th>
+              <th>{t("comment")}</th>
             </tr>
           </thead>
           <tbody>
@@ -108,7 +109,7 @@ export function TasksTab({ serviceName }: Props) {
               const statusInfo = getStatusInfo(task.status);
               return (
                 <tr key={task.taskId}>
-                  <td className="mono">{task.function}</td>
+                  <td className="dedicated-tasks-mono">{task.function}</td>
                   <td>
                     <span className={`dedicated-tasks-badge ${statusInfo.className}`}>
                       {statusInfo.icon} {task.status}

@@ -1,9 +1,9 @@
 // ============================================================
-// DBAAS-LOGS TABS - Exports
+// DBAAS-LOGS TABS - Exports centralisés
 // ============================================================
 
-export { default as StreamsTab } from "./StreamsTab.tsx";
-export { default as DashboardsTab } from "./DashboardsTab.tsx";
-export { default as IndicesTab } from "./IndicesTab.tsx";
-export { default as InputsTab } from "./InputsTab.tsx";
-export { default as AliasesTab } from "./AliasesTab.tsx";
+export { default as StreamsTab } from "./streams/StreamsTab";
+export { default as DashboardsTab } from "./dashboards/DashboardsTab";
+export { default as IndicesTab } from "./indices/IndicesTab";
+export { default as InputsTab } from "./inputs/InputsTab";
+export { default as AliasesTab } from "./aliases/AliasesTab";

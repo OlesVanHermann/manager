@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { sslService } from "../SslTab";
+import { sslService } from "../SslTab.service";
 
 interface Props {
   serviceName: string;

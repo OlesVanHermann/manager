@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { usersService } from "./UsersTab.ts";
+import { usersService } from "./UsersTab.service";
 import type { User } from "../../vmware.types";
 import "./UsersTab.css";
 export default function UsersTab({ serviceId }: { serviceId: string }) {

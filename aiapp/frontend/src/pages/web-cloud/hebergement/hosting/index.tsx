@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, startTransition } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { generalService } from "./tabs/general/GeneralTab";
+import { generalService } from "./tabs/general/GeneralTab.service";
 import type { Hosting } from "./hosting.types";
 // Nav2Bar est dans le parent
 import "./styles.css";

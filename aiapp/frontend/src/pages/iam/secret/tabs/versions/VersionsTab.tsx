@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as versionsService from "./VersionsTab";
+import * as versionsService from "./VersionsTab.service";
 import type { SecretVersion } from "../../secret.types";
 import "./VersionsTab.css";
 
@@ -22,7 +22,7 @@ interface VersionsTabProps {
 
 /** Historique des versions de tous les secrets. */
 export default function VersionsTab({ serviceId }: VersionsTabProps) {
-  const { t } = useTranslation("iam/secret/index");
+  const { t } = useTranslation("iam/secret/versions");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
@@ -76,8 +76,8 @@ export default function VersionsTab({ serviceId }: VersionsTabProps) {
   if (versions.length === 0) {
     return (
       <div className="versions-empty-state">
-        <h2>{t("versions.empty.title")}</h2>
-        <p>{t("versions.empty.description")}</p>
+        <h2>{t("empty.title")}</h2>
+        <p>{t("empty.description")}</p>
       </div>
     );
   }
@@ -87,11 +87,11 @@ export default function VersionsTab({ serviceId }: VersionsTabProps) {
       <table className="versions-table">
         <thead>
           <tr>
-            <th>{t("versions.columns.secret")}</th>
-            <th>{t("versions.columns.version")}</th>
-            <th>{t("versions.columns.status")}</th>
-            <th>{t("versions.columns.created")}</th>
-            <th>{t("versions.columns.actions")}</th>
+            <th>{t("columns.secret")}</th>
+            <th>{t("columns.version")}</th>
+            <th>{t("columns.status")}</th>
+            <th>{t("columns.created")}</th>
+            <th>{t("columns.actions")}</th>
           </tr>
         </thead>
         <tbody>

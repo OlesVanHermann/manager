@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { hostsService, formatRam, getHostStateBadgeClass } from "./HostsTab.ts";
+import { hostsService, formatRam, getHostStateBadgeClass } from "./HostsTab.service";
 import type { Host } from "../../vmware.types";
 import "./HostsTab.css";
 export default function HostsTab({ serviceId }: { serviceId: string }) {

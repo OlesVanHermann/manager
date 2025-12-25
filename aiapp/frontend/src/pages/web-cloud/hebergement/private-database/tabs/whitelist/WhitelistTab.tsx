@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { whitelistService } from "./WhitelistTab";
+import { whitelistService } from "./WhitelistTab.service";
 import type { PdbWhitelist } from "../../private-database.types";
 import { AddWhitelistModal } from "../../components/AddWhitelistModal";
 import "./WhitelistTab.css";

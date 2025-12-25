@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getImages, formatSize, formatDate } from "./ImagesTab";
+import { getImages, formatSize, formatDate } from "./ImagesTab.service";
 import type { Image } from "../registry.types";
 import "./ImagesTab.css";
 

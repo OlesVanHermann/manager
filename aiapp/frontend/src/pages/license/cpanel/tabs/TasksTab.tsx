@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { Task } from "../../license.types";
-import { getTasks, formatDate, getStatusIcon } from "./TasksTab";
+import { getTasks, formatDate, getStatusIcon } from "./TasksTab.service";
 import "./TasksTab.css";
 
 // ============================================================

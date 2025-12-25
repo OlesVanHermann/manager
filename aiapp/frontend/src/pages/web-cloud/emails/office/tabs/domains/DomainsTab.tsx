@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listDomains, getDomain } from "./DomainsTab.ts";
+import { listDomains, getDomain } from "./DomainsTab.service";
 import type { OfficeDomain } from "../../office.types";
 import "./DomainsTab.css";
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { voipService } from "./VoipTab";
+import { voipService } from "./VoipTab.service";
 import type { VoipLine } from "../../pack-xdsl.types";
 import "./VoipTab.css";
 

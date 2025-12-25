@@ -5,7 +5,7 @@ import "./ZoneTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { zoneService } from "./ZoneTab";
+import { zoneService } from "./ZoneTab.service";
 import type { DnsZone, DnsRecord, DnsRecordCreate } from "../../domains.types";
 
 interface Props {

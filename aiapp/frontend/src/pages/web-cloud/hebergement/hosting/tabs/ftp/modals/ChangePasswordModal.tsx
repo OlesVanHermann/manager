@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ftpService } from "../FtpTab";
+import { ftpService } from "../FtpTab.service";
 
 interface Props {
   serviceName: string;

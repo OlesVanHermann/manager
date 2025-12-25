@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as credentialsService from "./CredentialsTab";
+import * as credentialsService from "./CredentialsTab.service";
 import type { Credential } from "../../okms.types";
 import "./CredentialsTab.css";
 
@@ -22,7 +22,7 @@ interface CredentialsTabProps {
 
 /** Gestion des credentials pour accéder à l'OKMS. */
 export default function CredentialsTab({ serviceId }: CredentialsTabProps) {
-  const { t } = useTranslation("iam/okms/index");
+  const { t } = useTranslation("iam/okms/credentials");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
@@ -51,7 +51,7 @@ export default function CredentialsTab({ serviceId }: CredentialsTabProps) {
 
   // ---------- HANDLERS ----------
   const handleRevoke = async (credentialId: string) => {
-    if (!confirm(t("credentials.confirmRevoke"))) return;
+    if (!confirm(t("confirmRevoke"))) return;
     try {
       await credentialsService.revokeCredential(serviceId, credentialId);
       loadCredentials();
@@ -103,13 +103,13 @@ export default function CredentialsTab({ serviceId }: CredentialsTabProps) {
   return (
     <div className="credentials-tab">
       <div className="credentials-toolbar">
-        <button className="btn btn-primary">{t("credentials.create")}</button>
+        <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       {credentials.length === 0 ? (
         <div className="credentials-empty-state">
-          <h2>{t("credentials.empty.title")}</h2>
-          <p>{t("credentials.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <div className="credentials-list">
@@ -124,19 +124,19 @@ export default function CredentialsTab({ serviceId }: CredentialsTabProps) {
               )}
               <div className="credentials-details">
                 <div className="credentials-detail-item">
-                  <span className="credentials-detail-label">{t("credentials.fields.id")}</span>
+                  <span className="credentials-detail-label">{t("fields.id")}</span>
                   <span className="credentials-detail-value">{credential.id}</span>
                 </div>
                 <div className="credentials-detail-item">
-                  <span className="credentials-detail-label">{t("credentials.fields.created")}</span>
+                  <span className="credentials-detail-label">{t("fields.created")}</span>
                   <span className="credentials-detail-value">{new Date(credential.createdAt).toLocaleDateString("fr-FR")}</span>
                 </div>
                 <div className="credentials-detail-item">
-                  <span className="credentials-detail-label">{t("credentials.fields.expires")}</span>
+                  <span className="credentials-detail-label">{t("fields.expires")}</span>
                   <span className="credentials-detail-value">
                     {new Date(credential.expiresAt).toLocaleDateString("fr-FR")}
                     {isExpiringSoon(credential.expiresAt) && (
-                      <span className="credentials-expiring-warning"> ⚠️ {t("credentials.expiringSoon")}</span>
+                      <span className="credentials-expiring-warning"> ⚠️ {t("expiringSoon")}</span>
                     )}
                   </span>
                 </div>
@@ -144,12 +144,12 @@ export default function CredentialsTab({ serviceId }: CredentialsTabProps) {
               <div className="credentials-actions">
                 {credential.certificatePem && (
                   <button className="btn btn-sm btn-outline" onClick={() => handleDownloadCert(credential)}>
-                    {t("credentials.downloadCert")}
+                    {t("downloadCert")}
                   </button>
                 )}
                 {credential.status === "active" && (
                   <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleRevoke(credential.id)}>
-                    {t("credentials.revoke")}
+                    {t("revoke")}
                   </button>
                 )}
               </div>

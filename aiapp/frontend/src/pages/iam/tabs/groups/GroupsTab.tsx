@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as groupsService from "./GroupsTab";
+import * as groupsService from "./GroupsTab.service";
 import type { IamResourceGroup } from "../../iam.types";
 import "./GroupsTab.css";
 
@@ -26,7 +26,7 @@ function FolderIcon() {
 
 /** Affiche la liste des groupes de ressources IAM. */
 export default function GroupsTab() {
-  const { t, i18n } = useTranslation("iam/index");
+  const { t, i18n } = useTranslation("iam/general/groups");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
@@ -69,7 +69,7 @@ export default function GroupsTab() {
       <div className="groups-tab">
         <div className="groups-loading-state">
           <div className="groups-spinner"></div>
-          <p>{t("groups.loading")}</p>
+          <p>{t("loading")}</p>
         </div>
       </div>
     );
@@ -91,32 +91,32 @@ export default function GroupsTab() {
   return (
     <div className="groups-tab">
       <div className="groups-section-intro">
-        <h2>{t("groups.title")}</h2>
-        <p>{t("groups.description")}</p>
+        <h2>{t("title")}</h2>
+        <p>{t("description")}</p>
       </div>
 
       <div className="groups-toolbar">
-        <span className="groups-result-count">{t("groups.count", { count: groups.length })}</span>
-        <button className="btn btn-primary btn-sm">{t("groups.createButton")}</button>
+        <span className="groups-result-count">{t("count", { count: groups.length })}</span>
+        <button className="btn btn-primary btn-sm">{t("createButton")}</button>
       </div>
 
       {groups.length === 0 ? (
         <div className="groups-empty-state">
           <FolderIcon />
-          <h3>{t("groups.empty.title")}</h3>
-          <p>{t("groups.empty.description")}</p>
-          <button className="btn btn-primary">{t("groups.createButton")}</button>
+          <h3>{t("empty.title")}</h3>
+          <p>{t("empty.description")}</p>
+          <button className="btn btn-primary">{t("createButton")}</button>
         </div>
       ) : (
         <div className="groups-table-container">
           <table className="groups-table">
             <thead>
               <tr>
-                <th>{t("groups.columns.name")}</th>
-                <th>{t("groups.columns.owner")}</th>
-                <th>{t("groups.columns.resources")}</th>
-                <th>{t("groups.columns.createdAt")}</th>
-                <th>{t("groups.columns.actions")}</th>
+                <th>{t("columns.name")}</th>
+                <th>{t("columns.owner")}</th>
+                <th>{t("columns.resources")}</th>
+                <th>{t("columns.createdAt")}</th>
+                <th>{t("columns.actions")}</th>
               </tr>
             </thead>
             <tbody>

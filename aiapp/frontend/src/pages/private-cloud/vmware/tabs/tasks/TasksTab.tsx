@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { tasksService, getTaskStateBadgeClass } from "./TasksTab.ts";
+import { tasksService, getTaskStateBadgeClass } from "./TasksTab.service";
 import type { Task } from "../../vmware.types";
 import "./TasksTab.css";
 export default function TasksTab({ serviceId }: { serviceId: string }) {

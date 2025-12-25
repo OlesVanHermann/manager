@@ -5,7 +5,7 @@ import "./LogsTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { logsService } from "./LogsTab";
+import { logsService } from "./LogsTab.service";
 import type { Hosting, OwnLog } from "../../hosting.types";
 import { UserLogsModal } from "./modals";
 

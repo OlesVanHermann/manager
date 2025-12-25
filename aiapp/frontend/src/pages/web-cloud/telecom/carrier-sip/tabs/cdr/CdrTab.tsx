@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CdrRecord } from "../../carrier-sip.types";
-import { cdrService } from "./CdrTab";
+import { cdrService } from "./CdrTab.service";
 import "./CdrTab.css";
 
 interface Props {

@@ -5,7 +5,7 @@ import "./BoostTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { boostService } from "./BoostTab";
+import { boostService } from "./BoostTab.service";
 import type { Hosting } from "../../hosting.types";
 
 interface Props { 

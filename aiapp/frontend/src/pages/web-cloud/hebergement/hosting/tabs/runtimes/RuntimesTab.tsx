@@ -5,7 +5,7 @@ import "./RuntimesTab.css";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { runtimesService } from "./RuntimesTab";
+import { runtimesService } from "./RuntimesTab.service";
 import type { Runtime } from "../../hosting.types";
 import { CreateRuntimeModal, EditRuntimeModal } from "./modals";
 

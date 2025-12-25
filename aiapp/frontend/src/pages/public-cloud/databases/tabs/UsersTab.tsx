@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getUsers, formatDate, getUserStatusClass } from "./UsersTab";
+import { getUsers, formatDate, getUserStatusClass } from "./UsersTab.service";
 import type { DbUser } from "../databases.types";
 import "./UsersTab.css";
 

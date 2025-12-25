@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as keysService from "./KeysTab";
+import * as keysService from "./KeysTab.service";
 import type { Key } from "../../okms.types";
 import "./KeysTab.css";
 
@@ -22,7 +22,7 @@ interface KeysTabProps {
 
 /** Liste des clés cryptographiques avec actions de gestion. */
 export default function KeysTab({ serviceId }: KeysTabProps) {
-  const { t } = useTranslation("iam/okms/index");
+  const { t } = useTranslation("iam/okms/keys");
   const { t: tCommon } = useTranslation("common");
 
   // ---------- STATE ----------
@@ -51,7 +51,7 @@ export default function KeysTab({ serviceId }: KeysTabProps) {
 
   // ---------- HANDLERS ----------
   const handleDeactivate = async (keyId: string) => {
-    if (!confirm(t("keys.confirmDeactivate"))) return;
+    if (!confirm(t("confirmDeactivate"))) return;
     try {
       await keysService.deactivateKey(serviceId, keyId);
       loadKeys();
@@ -96,9 +96,9 @@ export default function KeysTab({ serviceId }: KeysTabProps) {
   if (keys.length === 0) {
     return (
       <div className="keys-empty-state">
-        <h2>{t("keys.empty.title")}</h2>
-        <p>{t("keys.empty.description")}</p>
-        <button className="btn btn-primary">{t("keys.create")}</button>
+        <h2>{t("empty.title")}</h2>
+        <p>{t("empty.description")}</p>
+        <button className="btn btn-primary">{t("create")}</button>
       </div>
     );
   }
@@ -106,18 +106,18 @@ export default function KeysTab({ serviceId }: KeysTabProps) {
   return (
     <div className="keys-tab">
       <div className="keys-toolbar">
-        <button className="btn btn-primary">{t("keys.create")}</button>
+        <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       <table className="keys-table">
         <thead>
           <tr>
-            <th>{t("keys.columns.name")}</th>
-            <th>{t("keys.columns.type")}</th>
-            <th>{t("keys.columns.algorithm")}</th>
-            <th>{t("keys.columns.state")}</th>
-            <th>{t("keys.columns.created")}</th>
-            <th>{t("keys.columns.actions")}</th>
+            <th>{t("columns.name")}</th>
+            <th>{t("columns.type")}</th>
+            <th>{t("columns.algorithm")}</th>
+            <th>{t("columns.state")}</th>
+            <th>{t("columns.created")}</th>
+            <th>{t("columns.actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -134,7 +134,7 @@ export default function KeysTab({ serviceId }: KeysTabProps) {
               <td className="keys-actions">
                 <button className="btn btn-sm btn-outline">{tCommon("actions.view")}</button>
                 {key.state === "active" && (
-                  <button className="btn btn-sm btn-outline btn-warning" onClick={() => handleDeactivate(key.id)}>{t("keys.deactivate")}</button>
+                  <button className="btn btn-sm btn-outline btn-warning" onClick={() => handleDeactivate(key.id)}>{t("deactivate")}</button>
                 )}
               </td>
             </tr>

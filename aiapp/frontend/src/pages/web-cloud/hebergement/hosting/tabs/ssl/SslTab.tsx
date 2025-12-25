@@ -7,7 +7,7 @@
 import "./SslTab.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { sslService } from "./SslTab";
+import { sslService } from "./SslTab.service";
 import type { AttachedDomain } from "../../hosting.types";
 import { ImportSslModal } from "./modals";
 

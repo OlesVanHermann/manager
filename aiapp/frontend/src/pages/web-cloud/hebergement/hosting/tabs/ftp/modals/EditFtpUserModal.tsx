@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ftpService } from "../FtpTab";
+import { ftpService } from "../FtpTab.service";
 import type { FtpUser } from "../../../hosting.types";
 
 interface Props {

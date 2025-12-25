@@ -5,7 +5,7 @@ import "./EmailsTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { emailsService } from "./EmailsTab";
+import { emailsService } from "./EmailsTab.service";
 
 interface Props { domain: string; }
 

@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CloudConnectInterface } from "../../cloud-connect.types";
-import { interfacesService } from "./InterfacesTab";
+import { interfacesService } from "./InterfacesTab.service";
 import "./InterfacesTab.css";
 
 interface InterfacesTabProps {

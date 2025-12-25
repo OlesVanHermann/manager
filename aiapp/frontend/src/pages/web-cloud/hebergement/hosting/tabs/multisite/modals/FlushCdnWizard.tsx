@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { multisiteService } from "../MultisiteTab";
+import { multisiteService } from "../MultisiteTab.service";
 
 interface Props {
   serviceName: string;

@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
 import type { CarrierSip } from "./carrier-sip.types";
-import { generalService } from "./tabs/general/GeneralTab.ts";
+import { generalService } from "./tabs/general/GeneralTab.service";
 import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
 import { EndpointsTab } from "./tabs/endpoints/EndpointsTab.tsx";
 import { CdrTab } from "./tabs/cdr/CdrTab.tsx";

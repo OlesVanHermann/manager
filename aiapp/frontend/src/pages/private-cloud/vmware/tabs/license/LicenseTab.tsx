@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { licenseService } from "./LicenseTab.ts";
+import { licenseService } from "./LicenseTab.service";
 import type { License } from "../../vmware.types";
 import "./LicenseTab.css";
 export default function LicenseTab({ serviceId }: { serviceId: string }) {

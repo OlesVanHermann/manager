@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import * as activityService from "./ActivityTab";
+import * as activityService from "./ActivityTab.service";
 import type { LogEntry, LogSubscription } from "../../logs.types";
 import "./ActivityTab.css";
 
@@ -29,7 +29,7 @@ const LOG_LEVEL_CLASSES: Record<string, string> = {
 // ============================================================
 
 export default function ActivityTab() {
-  const { t } = useTranslation("iam/logs");
+  const { t } = useTranslation("iam/logs/activity");
   const [kinds, setKinds] = useState<string[]>([]);
   const [selectedKind, setSelectedKind] = useState("access");
   const [view, setView] = useState<"live-tail" | "data-streams">("live-tail");
@@ -80,7 +80,7 @@ export default function ActivityTab() {
       {view === "live-tail" ? (
         <LiveTail
           kind={selectedKind}
-          description={t("activity.description")}
+          description={t("description")}
           onGoToDataStreams={() => setView("data-streams")}
         />
       ) : (
@@ -104,7 +104,7 @@ interface LiveTailProps {
 }
 
 function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
-  const { t } = useTranslation("iam/logs");
+  const { t } = useTranslation("iam/logs/activity");
   const { t: tc } = useTranslation("common");
 
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -278,7 +278,7 @@ interface DataStreamsProps {
 }
 
 function DataStreams({ kind, onGoBack }: DataStreamsProps) {
-  const { t } = useTranslation("iam/logs");
+  const { t } = useTranslation("iam/logs/activity");
   const { t: tc } = useTranslation("common");
 
   const [subscriptions, setSubscriptions] = useState<LogSubscription[]>([]);

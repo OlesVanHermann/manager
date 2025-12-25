@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CdnTask } from "../../cdn.types";
-import { tasksService } from "./TasksTab";
+import { tasksService } from "./TasksTab.service";
 import "./TasksTab.css";
 
 interface TasksTabProps {

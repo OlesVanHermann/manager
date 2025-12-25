@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import { formatSize, formatDate } from "./GeneralTab";
+import { formatSize, formatDate } from "./GeneralTab.service";
 import type { Registry } from "../registry.types";
 import "./GeneralTab.css";
 

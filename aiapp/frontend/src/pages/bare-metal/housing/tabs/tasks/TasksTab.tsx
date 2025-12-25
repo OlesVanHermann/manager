@@ -3,11 +3,12 @@
 // #  IMPORTS LOCAUX UNIQUEMENT                               #
 // #  CSS LOCAL : ./TasksTab.css                              #
 // #  SERVICE LOCAL : ./TasksTab.ts                           #
+// #  I18N LOCAL : bare-metal/housing/tasks                   #
 // ############################################################
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { tasksService } from "./TasksTab";
+import { tasksService } from "./TasksTab.service";
 import type { HousingTask } from "../../housing.types";
 import "./TasksTab.css";
 
@@ -26,11 +27,21 @@ const formatDate = (date: string): string => {
   return new Date(date).toLocaleString("fr-FR");
 };
 
+const getStatusClass = (status: string): string => {
+  const map: Record<string, string> = {
+    done: "housing-tasks-done",
+    doing: "housing-tasks-doing",
+    todo: "housing-tasks-todo",
+    error: "housing-tasks-error-status",
+  };
+  return map[status] || "housing-tasks-todo";
+};
+
 // ============================================================
 // Composant Principal
 // ============================================================
 export default function TasksTab({ serviceId }: TasksTabProps) {
-  const { t } = useTranslation("bare-metal/housing/index");
+  const { t } = useTranslation("bare-metal/housing/tasks");
   const { t: tCommon } = useTranslation("common");
   const [tasks, setTasks] = useState<HousingTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +76,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
     return (
       <div className="housing-tasks-error">
         <p>{error}</p>
-        <button className="btn btn-primary" onClick={loadTasks}>
+        <button className="housing-tasks-btn housing-tasks-btn-primary" onClick={loadTasks}>
           {tCommon("actions.retry")}
         </button>
       </div>
@@ -76,8 +87,8 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
     <div className="housing-tasks-tab">
       {/* Barre d'outils */}
       <div className="housing-tasks-toolbar">
-        <h2>{t("tasks.title")}</h2>
-        <button className="btn btn-outline" onClick={loadTasks}>
+        <h2>{t("title")}</h2>
+        <button className="housing-tasks-btn housing-tasks-btn-outline" onClick={loadTasks}>
           {tCommon("actions.refresh")}
         </button>
       </div>
@@ -85,16 +96,16 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
       {/* Liste vide ou tableau */}
       {tasks.length === 0 ? (
         <div className="housing-tasks-empty">
-          <h2>{t("tasks.empty.title")}</h2>
+          <h2>{t("empty.title")}</h2>
         </div>
       ) : (
         <table className="housing-tasks-table">
           <thead>
             <tr>
-              <th>{t("tasks.columns.function")}</th>
-              <th>{t("tasks.columns.status")}</th>
-              <th>{t("tasks.columns.started")}</th>
-              <th>{t("tasks.columns.completed")}</th>
+              <th>{t("columns.function")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.started")}</th>
+              <th>{t("columns.completed")}</th>
             </tr>
           </thead>
           <tbody>
@@ -102,7 +113,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
               <tr key={task.taskId}>
                 <td>{task.function}</td>
                 <td>
-                  <span className={`housing-tasks-status-badge ${task.status}`}>
+                  <span className={`housing-tasks-status-badge ${getStatusClass(task.status)}`}>
                     {task.status}
                   </span>
                 </td>

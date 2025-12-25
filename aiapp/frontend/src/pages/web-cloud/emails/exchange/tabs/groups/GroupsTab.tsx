@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listGroups, getGroup } from "./GroupsTab.ts";
+import { listGroups, getGroup } from "./GroupsTab.service";
 import type { ExchangeGroup } from "../../exchange.types";
 import "./GroupsTab.css";
 

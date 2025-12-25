@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { securityService } from "./SecurityTab.ts";
+import { securityService } from "./SecurityTab.service";
 import type { SecurityPolicy } from "../../vmware.types";
 import "./SecurityTab.css";
 export default function SecurityTab({ serviceId }: { serviceId: string }) {

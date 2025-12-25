@@ -3,7 +3,7 @@
 // ============================================================
 import "./CdnTab.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { cdnService } from "./CdnTab";
+import { cdnService } from "./CdnTab.service";
 import type { Hosting } from "../../hosting.types";
 
 interface Props {

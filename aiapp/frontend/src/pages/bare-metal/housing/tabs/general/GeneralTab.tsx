@@ -3,6 +3,7 @@
 // #  IMPORTS LOCAUX UNIQUEMENT                               #
 // #  CSS LOCAL : ./GeneralTab.css                            #
 // #  SERVICE LOCAL : ./GeneralTab.ts                         #
+// #  I18N LOCAL : bare-metal/housing/general                 #
 // ############################################################
 
 import { useTranslation } from "react-i18next";
@@ -22,7 +23,7 @@ interface GeneralTabProps {
 // Composant Principal
 // ============================================================
 export default function GeneralTab({ serviceId, housing, onRefresh }: GeneralTabProps) {
-  const { t } = useTranslation("bare-metal/housing/index");
+  const { t } = useTranslation("bare-metal/housing/general");
   const { t: tCommon } = useTranslation("common");
 
   // État de chargement
@@ -34,8 +35,8 @@ export default function GeneralTab({ serviceId, housing, onRefresh }: GeneralTab
     <div className="housing-general-tab">
       {/* Barre d'outils */}
       <div className="housing-general-toolbar">
-        <h2>{t("general.title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>
+        <h2>{t("title")}</h2>
+        <button className="housing-general-btn housing-general-btn-outline" onClick={onRefresh}>
           {tCommon("actions.refresh")}
         </button>
       </div>
@@ -43,27 +44,27 @@ export default function GeneralTab({ serviceId, housing, onRefresh }: GeneralTab
       {/* Grille d'informations */}
       <div className="housing-general-info-grid">
         <div className="housing-general-info-card">
-          <div className="housing-general-card-title">{t("general.fields.name")}</div>
+          <div className="housing-general-card-title">{t("fields.name")}</div>
           <div className="housing-general-card-value">{housing.name}</div>
         </div>
         <div className="housing-general-info-card">
-          <div className="housing-general-card-title">{t("general.fields.datacenter")}</div>
+          <div className="housing-general-card-title">{t("fields.datacenter")}</div>
           <div className="housing-general-card-value">{housing.datacenter}</div>
         </div>
         <div className="housing-general-info-card">
-          <div className="housing-general-card-title">{t("general.fields.rack")}</div>
+          <div className="housing-general-card-title">{t("fields.rack")}</div>
           <div className="housing-general-card-value">{housing.rack}</div>
         </div>
         <div className="housing-general-info-card">
-          <div className="housing-general-card-title">{t("general.fields.bandwidth")}</div>
+          <div className="housing-general-card-title">{t("fields.bandwidth")}</div>
           <div className="housing-general-card-value">{housing.networkBandwidth} Mbps</div>
         </div>
       </div>
 
       {/* Section informations */}
       <div className="housing-general-section">
-        <h3>{t("general.info.title")}</h3>
-        <p>{t("general.info.description")}</p>
+        <h3>{t("info.title")}</h3>
+        <p>{t("info.description")}</p>
       </div>
     </div>
   );

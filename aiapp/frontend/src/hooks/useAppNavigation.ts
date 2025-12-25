@@ -35,8 +35,8 @@ export interface UseAppNavigationReturn extends NavigationState, NavigationActio
 /** Hook de gestion de la navigation de l'application. */
 export function useAppNavigation(): UseAppNavigationReturn {
   // ---------- STATE ----------
-  const [activeUniverseId, setActiveUniverseId] = useState("home");
-  const [activeSectionId, setActiveSectionId] = useState("home-dashboard");
+  const [activeUniverseId, setActiveUniverseId] = useState("general");
+  const [activeSectionId, setActiveSectionId] = useState("general-general");
   const [activeTabId, setActiveTabId] = useState<string | undefined>(undefined);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);

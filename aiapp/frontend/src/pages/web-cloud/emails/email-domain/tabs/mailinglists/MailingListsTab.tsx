@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listMailingLists, getMailingList } from "./MailingListsTab.ts";
+import { listMailingLists, getMailingList } from "./MailingListsTab.service";
 import type { EmailMailingList } from "../../email-domain.types";
 import "./MailingListsTab.css";
 

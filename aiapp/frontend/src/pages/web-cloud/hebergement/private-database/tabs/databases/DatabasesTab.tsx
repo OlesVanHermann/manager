@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { databasesService } from "./DatabasesTab";
+import { databasesService } from "./DatabasesTab.service";
 import type { PdbDatabase } from "../../private-database.types";
 import { CreatePdbDatabaseModal, ExtensionsModal } from "../../components";
 import "./DatabasesTab.css";

@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getApps, formatDate, getAppStatusClass } from "./AppsTab";
+import { getApps, formatDate, getAppStatusClass } from "./AppsTab.service";
 import type { App } from "../ai.types";
 import "./AppsTab.css";
 

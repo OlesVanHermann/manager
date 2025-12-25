@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getBackups, formatDate, formatSize, getBackupStatusClass } from "./BackupsTab";
+import { getBackups, formatDate, formatSize, getBackupStatusClass } from "./BackupsTab.service";
 import type { Backup } from "../databases.types";
 import "./BackupsTab.css";
 

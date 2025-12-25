@@ -5,7 +5,7 @@ import "./ContactsTab.css";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { contactsService } from "./ContactsTab";
+import { contactsService } from "./ContactsTab.service";
 import type { DomainServiceInfos, DomainContact } from "../../domains.types";
 
 interface Props {

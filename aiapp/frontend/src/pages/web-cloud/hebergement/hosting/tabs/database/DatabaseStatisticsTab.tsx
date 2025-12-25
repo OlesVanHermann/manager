@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { databaseService } from "./DatabaseTab";
+import { databaseService } from "./DatabaseTab.service";
 
 interface DatabaseStatisticsTabProps {
   serviceName: string;

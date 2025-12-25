@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { SecurityIpInfo } from "../../security.types";
-import { overviewService } from "./OverviewTab";
+import { overviewService } from "./OverviewTab.service";
 import "./OverviewTab.css";
 
 interface OverviewTabProps { ipBlock: string; ip: SecurityIpInfo | null; onRefresh: () => void; }

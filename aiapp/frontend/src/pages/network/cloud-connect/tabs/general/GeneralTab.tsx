@@ -4,7 +4,7 @@
 
 import { useTranslation } from "react-i18next";
 import type { CloudConnectInfo } from "../../cloud-connect.types";
-import { generalService } from "./GeneralTab";
+import { generalService } from "./GeneralTab.service";
 import "./GeneralTab.css";
 
 interface GeneralTabProps {

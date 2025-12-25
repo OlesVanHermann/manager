@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { listTasks, getTask, getStatusBadge } from "./TasksTab.ts";
+import { listTasks, getTask, getStatusBadge } from "./TasksTab.service";
 import type { EmailTask } from "../../email-domain.types";
 import "./TasksTab.css";
 

@@ -9,12 +9,12 @@ import { useTranslation } from "react-i18next";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
-import HomePage from "./pages/home";
-import ApiPage from "./pages/home/api";
-import AccountPage from "./pages/home/account";
-import BillingPage from "./pages/home/billing";
-import SupportPage from "./pages/home/support";
-import CarbonPage from "./pages/home/carbon";
+import GeneralPage from "./pages/general/general";
+import ApiPage from "./pages/general/api";
+import AccountPage from "./pages/general/account";
+import BillingPage from "./pages/general/billing";
+import SupportPage from "./pages/general/support";
+import CarbonPage from "./pages/general/carbon";
 import IamPage from "./pages/iam";
 import { PlaceholderPage } from "./pages/_placeholder";
 import { universes } from "./components/Sidebar";
@@ -148,16 +148,16 @@ function AppContent() {
 
   // ---------- CONTENT ROUTING ----------
   const renderContent = () => {
-    // HOME Universe
-    if (nav.activeUniverseId === "home") {
+    // GENERAL Universe (ex-HOME)
+    if (nav.activeUniverseId === "general") {
       switch (nav.activeSectionId) {
-        case "home-dashboard": return <HomePage onNavigate={nav.handleNavigate} />;
-        case "home-account": return <AccountPage user={user} isActive={true} onNavigate={nav.handleNavigate} initialTab={nav.activeTabId} />;
-        case "home-billing": return <BillingPage isActive={true} initialTab={nav.activeTabId} />;
-        case "home-support": return <SupportPage initialTab={nav.activeTabId} />;
-        case "home-carbon": return <CarbonPage />;
-        case "home-api": return <ApiPage initialTab={nav.activeTabId} />;
-        default: return <HomePage onNavigate={nav.handleNavigate} />;
+        case "general-general": return <GeneralPage onNavigate={nav.handleNavigate} />;
+        case "general-account": return <AccountPage user={user} isActive={true} onNavigate={nav.handleNavigate} initialTab={nav.activeTabId} />;
+        case "general-billing": return <BillingPage isActive={true} initialTab={nav.activeTabId} />;
+        case "general-support": return <SupportPage initialTab={nav.activeTabId} />;
+        case "general-carbon": return <CarbonPage />;
+        case "general-api": return <ApiPage initialTab={nav.activeTabId} />;
+        default: return <GeneralPage onNavigate={nav.handleNavigate} />;
       }
     }
 

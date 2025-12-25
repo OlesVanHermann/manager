@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { getListeners, getListenerStatusClass } from "./ListenersTab";
+import { getListeners, getListenerStatusClass } from "./ListenersTab.service";
 import type { Listener } from "../load-balancer.types";
 import "./ListenersTab.css";
 
