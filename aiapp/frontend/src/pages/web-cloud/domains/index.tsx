@@ -17,6 +17,7 @@ import { DynHostTab } from "./tabs/dynhost/DynHostTab.tsx";
 import { GlueTab } from "./tabs/glue/GlueTab.tsx";
 import { DnssecTab } from "./tabs/dnssec/DnssecTab.tsx";
 import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
+import { AlldomTab } from "./tabs/alldom/AlldomTab.tsx";
 import { ContactsTab } from "./tabs/contacts/ContactsTab.tsx";
 
 // ============ ICONS ============
@@ -56,6 +57,7 @@ const ALL_TABS: TabDef[] = [
   { id: "dnssec", labelKey: "tabs.dnssec", condition: (e) => e.hasDomain },
   { id: "contacts", labelKey: "tabs.contacts", condition: (e) => e.hasDomain },
   { id: "tasks", labelKey: "tabs.tasks", condition: () => true },
+  { id: "alldom", labelKey: "tabs.alldom", condition: () => true },
 ];
 
 // ============ COMPOSANT PRINCIPAL ============
@@ -274,6 +276,8 @@ export default function DomainsPage() {
       case "contacts":
         return <ContactsTab domain={selectedEntry.id} serviceInfos={serviceInfos || undefined} />;
       case "tasks":
+      case "alldom":
+        return <AlldomTab />;
         return <TasksTab name={selectedEntry.id} hasDomain={selectedEntry.hasDomain} hasZone={selectedEntry.hasZone} />;
       default:
         return null;

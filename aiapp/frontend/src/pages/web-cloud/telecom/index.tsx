@@ -12,7 +12,6 @@ import VoipPage from "./voip";
 import SmsPage from "./sms";
 import FaxPage from "./fax";
 import CarrierSipPage from "./carrier-sip";
-import "../styles.css";
 
 type SubSection = "voip" | "sms" | "fax" | "carrier-sip";
 

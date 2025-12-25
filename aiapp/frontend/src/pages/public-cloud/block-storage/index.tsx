@@ -9,7 +9,7 @@ import { useTabs } from "../../../lib/useTabs";
 import * as blockStorageService from "../../../services/public-cloud.block-storage";
 import GeneralTab from "./tabs/GeneralTab";
 import SnapshotsTab from "./tabs/SnapshotsTab";
-import "../styles.css";
+import "./styles.css";
 
 interface VolumeInfo {
   id: string;

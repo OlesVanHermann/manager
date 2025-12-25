@@ -167,3 +167,43 @@ export interface ZoneTask {
   creationDate?: string;
   lastUpdate?: string;
 }
+
+// ============================================================
+// ALLDOM TYPES
+// ============================================================
+
+export type AllDomType = "FRENCH" | "FRENCH+INTERNATIONAL" | "INTERNATIONAL";
+export type RenewMode = "automatic" | "manual";
+export type RegistrationStatus = "REGISTERED" | "UNREGISTERED";
+
+export interface AllDomDomain {
+  name: string;
+  registrationStatus: RegistrationStatus;
+  expiresAt?: string;
+  extension?: string;
+}
+
+export interface AllDomPack {
+  name: string;
+  type: AllDomType;
+  domains: AllDomDomain[];
+  extensions: string[];
+}
+
+export interface AllDomServiceInfo {
+  serviceId: number;
+  serviceName: string;
+  creation: string;
+  expiration: string;
+  renewMode: RenewMode | null;
+  contactAdmin: string;
+  contactTech: string;
+  contactBilling: string;
+  isTerminating: boolean;
+}
+
+export interface AllDomEntry {
+  serviceName: string;
+  pack: AllDomPack;
+  serviceInfo: AllDomServiceInfo | null;
+}

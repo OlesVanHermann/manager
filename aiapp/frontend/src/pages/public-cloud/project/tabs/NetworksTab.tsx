@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { cloudService, CloudNetwork } from "../../../../services/public-cloud";
+import * as projectService from "../../../../services/public-cloud.project";
+import type { CloudNetwork } from "../../../../services/public-cloud.project";
 
 interface Props { projectId: string; }
 
@@ -11,7 +12,7 @@ export function NetworksTab({ projectId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      try { setLoading(true); const data = await cloudService.listNetworks(projectId); setNetworks(data); }
+      try { setLoading(true); const data = await projectService.listNetworks(projectId); setNetworks(data); }
       finally { setLoading(false); }
     };
     load();

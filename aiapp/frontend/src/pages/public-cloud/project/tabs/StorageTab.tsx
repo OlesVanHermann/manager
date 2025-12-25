@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { cloudService, CloudContainer } from "../../../../services/public-cloud";
+import * as projectService from "../../../../services/public-cloud.project";
+import type { CloudContainer } from "../../../../services/public-cloud.project";
 
 interface Props { projectId: string; }
 
@@ -11,7 +12,7 @@ export function StorageTab({ projectId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      try { setLoading(true); const data = await cloudService.listContainers(projectId); setContainers(data); }
+      try { setLoading(true); const data = await projectService.listContainers(projectId); setContainers(data); }
       finally { setLoading(false); }
     };
     load();

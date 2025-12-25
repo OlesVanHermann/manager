@@ -10,7 +10,7 @@ import * as aiService from "../../../services/public-cloud.ai";
 import NotebooksTab from "./tabs/NotebooksTab";
 import JobsTab from "./tabs/JobsTab";
 import AppsTab from "./tabs/AppsTab";
-import "../styles.css";
+import "./styles.css";
 
 export default function AIPage() {
   const { t } = useTranslation("public-cloud/ai/index");

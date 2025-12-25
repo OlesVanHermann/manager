@@ -4,10 +4,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
+import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
 import { zimbraService, ZimbraService } from "../../../../services/web-cloud.zimbra";
-import { AccountsTab, DomainsTab, AliasesTab, TasksTab } from "./tabs";
-import "../../styles.css";
+import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
+import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
+import { AliasesTab } from "./tabs/aliases/AliasesTab.tsx";
+import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
 import "./styles.css";
 
 // ============ ICONS ============

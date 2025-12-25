@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { cloudService, CloudVolume } from "../../../../services/public-cloud";
+import * as projectService from "../../../../services/public-cloud.project";
+import type { CloudVolume } from "../../../../services/public-cloud.project";
 
 interface Props { projectId: string; }
 
@@ -11,7 +12,7 @@ export function VolumesTab({ projectId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      try { setLoading(true); const data = await cloudService.listVolumes(projectId); setVolumes(data); }
+      try { setLoading(true); const data = await projectService.listVolumes(projectId); setVolumes(data); }
       finally { setLoading(false); }
     };
     load();

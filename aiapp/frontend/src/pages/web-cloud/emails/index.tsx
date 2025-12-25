@@ -14,7 +14,6 @@ import EmailProPage from "./email-pro";
 import ExchangePage from "./exchange";
 import OfficePage from "./office";
 import ZimbraPage from "./zimbra";
-import "../styles.css";
 
 type SubSection = "email-domain" | "email-pro" | "exchange" | "office" | "zimbra";
 

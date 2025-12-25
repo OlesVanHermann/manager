@@ -10,7 +10,7 @@ import * as objectStorageService from "../../../services/public-cloud.object-sto
 import GeneralTab from "./tabs/GeneralTab";
 import ObjectsTab from "./tabs/ObjectsTab";
 import UsersTab from "./tabs/UsersTab";
-import "../styles.css";
+import "./styles.css";
 
 interface ContainerInfo {
   name: string;

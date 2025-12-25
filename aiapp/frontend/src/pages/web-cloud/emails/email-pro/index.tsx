@@ -4,10 +4,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
+import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
 import { emailProService, EmailProService } from "../../../../services/web-cloud.email-pro";
-import { AccountsTab, DomainsTab, TasksTab } from "./tabs";
-import "../../styles.css";
+import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
+import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
+import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
 import "./styles.css";
 
 // ============ ICONS ============

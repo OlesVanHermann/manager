@@ -4,10 +4,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
+import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
 import { smsService, SmsAccount } from "../../../../services/web-cloud.sms";
 import { OutgoingTab, IncomingTab, SendersTab } from "./tabs";
-import "../../styles.css";
 import "./styles.css";
 
 const SmsIcon = () => (

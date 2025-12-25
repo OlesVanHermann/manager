@@ -4,9 +4,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
+import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
 import { emailDomainService, EmailDomain } from "../../../../services/web-cloud.email-domain";
-import { AccountsTab, RedirectionsTab, MailingListsTab, TasksTab } from "./tabs";
+import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
+import { RedirectionsTab } from "./tabs/redirections/RedirectionsTab.tsx";
+import { MailingListsTab } from "./tabs/mailinglists/MailingListsTab.tsx";
+import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
 import "../../styles.css";
 import "./styles.css";
 

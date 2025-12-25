@@ -4,20 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { domainsService } from "../../services/web-cloud.domains";
-import { dnsZonesService } from "../../services/web-cloud.dns-zones";
-import { generalService } from "./hebergement/hosting/tabs/general/GeneralTab";
-import { privateDatabaseService } from "../../services/web-cloud.private-database";
-import { emailDomainService } from "../../services/web-cloud.email-domain";
-import { emailProService } from "../../services/web-cloud.email-pro";
-import { exchangeService } from "../../services/web-cloud.exchange";
-import { officeService } from "../../services/web-cloud.office";
-import { zimbraService } from "../../services/web-cloud.zimbra";
-import { voipService } from "../../services/web-cloud.voip";
-import { smsService } from "../../services/web-cloud.sms";
-import { faxService } from "../../services/web-cloud.fax";
-import { carrierSipService } from "../../services/web-cloud.carrier-sip";
-import { webCloudDashboardService } from "./web-cloud.service";
+import { ovhApi } from "../../services/api";
 import "./styles.css";
 
 // ============ TYPES ============
@@ -42,6 +29,18 @@ interface Counts {
   carrierSip: number;
   packXdsl: number;
   overthebox: number;
+  alldom: number;
+}
+
+// ============ API HELPERS (inline) ============
+
+async function countApi(path: string): Promise<number> {
+  try {
+    const list = await ovhApi.get<string[]>(path);
+    return list.length;
+  } catch {
+    return 0;
+  }
 }
 
 // ============ ICONS ============
@@ -109,6 +108,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
     carrierSip: 0,
     packXdsl: 0,
     overthebox: 0,
+    alldom: 0,
   });
 
   // ---------- EFFECTS ----------
@@ -119,43 +119,59 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
   // ---------- LOADERS ----------
   const loadAllCounts = async () => {
     try {
-      const results = await Promise.allSettled([
-        domainsService.listDomains?.() ?? Promise.resolve([]),
-        dnsZonesService.listZones?.() ?? Promise.resolve([]),
-        generalService.listHostings?.() ?? Promise.resolve([]),
-        privateDatabaseService.listPrivateDatabases?.() ?? Promise.resolve([]),
-        emailDomainService.listDomains?.() ?? Promise.resolve([]),
-        emailProService.listServices?.() ?? Promise.resolve([]),
-        exchangeService.listOrganizations?.() ?? exchangeService.listServices?.() ?? Promise.resolve([]),
-        officeService.listTenants?.() ?? officeService.listServices?.() ?? Promise.resolve([]),
-        zimbraService.listPlatforms?.() ?? zimbraService.listServices?.() ?? Promise.resolve([]),
-        voipService.listBillingAccounts?.() ?? voipService.listServices?.() ?? Promise.resolve([]),
-        smsService.listAccounts?.() ?? smsService.listServices?.() ?? Promise.resolve([]),
-        faxService.listServices?.() ?? Promise.resolve([]),
-        carrierSipService.listServices?.() ?? Promise.resolve([]),
-        webCloudDashboardService.listPacks?.() ?? Promise.resolve([]),
-        webCloudDashboardService.listOvertheboxServices?.() ?? Promise.resolve([]),
+      const [
+        domains,
+        dnsZones,
+        hosting,
+        privateDatabase,
+        emailDomain,
+        emailPro,
+        exchange,
+        office,
+        zimbra,
+        voip,
+        sms,
+        fax,
+        carrierSip,
+        packXdsl,
+        overthebox,
+        alldom,
+      ] = await Promise.all([
+        countApi("/domain"),
+        countApi("/domain/zone"),
+        countApi("/hosting/web"),
+        countApi("/hosting/privateDatabase"),
+        countApi("/email/domain"),
+        countApi("/email/pro"),
+        countApi("/email/exchange"),
+        countApi("/license/office"),
+        countApi("/email/zimbra"),
+        countApi("/telephony"),
+        countApi("/sms"),
+        countApi("/freefax"),
+        countApi("/telephony/spare"),
+        countApi("/pack/xdsl"),
+        countApi("/overTheBox"),
+        countApi("/allDom"),
       ]);
 
-      const getCount = (r: PromiseSettledResult<string[]>) => 
-        r.status === "fulfilled" ? r.value.length : 0;
-
       setCounts({
-        domains: getCount(results[0]),
-        dnsZones: getCount(results[1]),
-        hosting: getCount(results[2]),
-        privateDatabase: getCount(results[3]),
-        emailDomain: getCount(results[4]),
-        emailPro: getCount(results[5]),
-        exchange: getCount(results[6]),
-        office: getCount(results[7]),
-        zimbra: getCount(results[8]),
-        voip: getCount(results[9]),
-        sms: getCount(results[10]),
-        fax: getCount(results[11]),
-        carrierSip: getCount(results[12]),
-        packXdsl: getCount(results[13]),
-        overthebox: getCount(results[14]),
+        domains,
+        dnsZones,
+        hosting,
+        privateDatabase,
+        emailDomain,
+        emailPro,
+        exchange,
+        office,
+        zimbra,
+        voip,
+        sms,
+        fax,
+        carrierSip,
+        packXdsl,
+        overthebox,
+        alldom,
       });
     } catch (err) {
       console.error("[WebCloud] Error loading counts:", err);
@@ -173,7 +189,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
   const formatCount = (n: number) => (loading ? "..." : String(n));
 
   // ---------- COMPUTED ----------
-  const totalDomainsDns = counts.domains + counts.dnsZones;
+  const totalDomainsDns = counts.domains + counts.dnsZones + counts.alldom;
   const totalHebergement = counts.hosting + counts.privateDatabase;
   const totalEmails = counts.emailDomain + counts.emailPro + counts.exchange + counts.office + counts.zimbra;
   const totalTelecom = counts.voip + counts.sms + counts.fax + counts.carrierSip;
@@ -199,7 +215,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
             <div className="wc-group-arrow">→</div>
           </div>
           <div className="wc-group-detail">
-            {t("services.domains")}: {formatCount(counts.domains)} • {t("services.dnsZones")}: {formatCount(counts.dnsZones)}
+            {t("services.domains")}: {formatCount(counts.domains)} • {t("services.dnsZones")}: {formatCount(counts.dnsZones)} • AllDom: {formatCount(counts.alldom)}
           </div>
         </div>
 
@@ -229,7 +245,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
             <div className="wc-group-arrow">→</div>
           </div>
           <div className="wc-group-detail">
-            {t("services.emailDomain")}: {formatCount(counts.emailDomain)} • {t("services.emailPro")}: {formatCount(counts.emailPro)} • {t("services.exchange")}: {formatCount(counts.exchange)} • {t("services.office")}: {formatCount(counts.office)} • {t("services.zimbra")}: {formatCount(counts.zimbra)}
+            MX Plan: {formatCount(counts.emailDomain)} • Email Pro: {formatCount(counts.emailPro)} • Exchange: {formatCount(counts.exchange)} • Office: {formatCount(counts.office)} • Zimbra: {formatCount(counts.zimbra)}
           </div>
         </div>
 
@@ -244,7 +260,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
             <div className="wc-group-arrow">→</div>
           </div>
           <div className="wc-group-detail">
-            {t("services.voip")}: {formatCount(counts.voip)} • {t("services.sms")}: {formatCount(counts.sms)} • {t("services.fax")}: {formatCount(counts.fax)} • {t("services.carrierSip")}: {formatCount(counts.carrierSip)}
+            VoIP: {formatCount(counts.voip)} • SMS: {formatCount(counts.sms)} • Fax: {formatCount(counts.fax)}
           </div>
         </div>
 
@@ -259,7 +275,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
             <div className="wc-group-arrow">→</div>
           </div>
           <div className="wc-group-detail">
-            {t("services.packXdsl")}: {formatCount(counts.packXdsl)} • {t("services.overthebox")}: {formatCount(counts.overthebox)}
+            Pack xDSL: {formatCount(counts.packXdsl)} • OverTheBox: {formatCount(counts.overthebox)}
           </div>
         </div>
       </div>

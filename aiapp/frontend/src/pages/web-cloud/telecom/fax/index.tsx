@@ -4,9 +4,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
+import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
 import { faxService, FreefaxAccount } from "../../../../services/web-cloud.fax";
-import "../../styles.css";
 import "./styles.css";
 
 const FaxIcon = () => (

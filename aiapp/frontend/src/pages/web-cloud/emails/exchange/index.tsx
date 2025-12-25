@@ -4,11 +4,31 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
-import { exchangeService, ExchangeService } from "../../../../services/web-cloud.exchange";
-import { AccountsTab, DomainsTab, GroupsTab, ResourcesTab, TasksTab } from "./tabs";
-import "../../styles.css";
-import "./styles.css";
+import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
+import { ovhApi } from "../../../../services/api";
+import type { ExchangeService } from "./exchange.types";
+
+// Imports directs sans barrel file (JS-5)
+import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
+import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
+import { GroupsTab } from "./tabs/groups/GroupsTab.tsx";
+import { ResourcesTab } from "./tabs/resources/ResourcesTab.tsx";
+import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
+
+
+// ============ LOCAL API CALLS ============
+
+async function listOrganizations(): Promise<string[]> {
+  return ovhApi.get<string[]>('/email/exchange');
+}
+
+async function listServices(org: string): Promise<string[]> {
+  return ovhApi.get<string[]>(`/email/exchange/${org}/service`);
+}
+
+async function getService(org: string, service: string): Promise<ExchangeService> {
+  return ovhApi.get<ExchangeService>(`/email/exchange/${org}/service/${service}`);
+}
 
 // ============ ICONS ============
 
@@ -37,10 +57,10 @@ export default function ExchangePage() {
     try {
       setLoading(true);
       setError(null);
-      const orgList = await exchangeService.listOrganizations();
+      const orgList = await listOrganizations();
       const items: ServiceItem[] = [];
       for (const org of orgList) {
-        const services = await exchangeService.listServices(org);
+        const services = await listServices(org);
         for (const svc of services) {
           items.push({ id: `${org}/${svc}`, name: svc, type: org });
         }
@@ -64,7 +84,7 @@ export default function ExchangePage() {
   // ---------- LOAD DETAILS ----------
   useEffect(() => {
     if (!org || !service) return;
-    exchangeService.getService(org, service).then(setServiceDetails).catch(() => setServiceDetails(null));
+    getService(org, service).then(setServiceDetails).catch(() => setServiceDetails(null));
   }, [org, service]);
 
   // ---------- TABS ----------

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { cloudService, CloudSshKey } from "../../../../services/public-cloud";
+import * as projectService from "../../../../services/public-cloud.project";
+import type { CloudSshKey } from "../../../../services/public-cloud.project";
 
 interface Props { projectId: string; }
 
@@ -11,7 +12,7 @@ export function SshKeysTab({ projectId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      try { setLoading(true); const data = await cloudService.listSshKeys(projectId); setKeys(data); }
+      try { setLoading(true); const data = await projectService.listSshKeys(projectId); setKeys(data); }
       finally { setLoading(false); }
     };
     load();

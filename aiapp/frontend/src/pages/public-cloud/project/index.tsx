@@ -4,7 +4,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { cloudService, CloudProject, CloudProjectServiceInfos } from "../../../services/public-cloud";
+import * as projectService from "../../../services/public-cloud.project";
+import type { CloudProject, CloudProjectServiceInfos } from "../../../services/public-cloud.project";
 import { InstancesTab, VolumesTab, SnapshotsTab, StorageTab, NetworksTab, SshKeysTab, QuotaTab } from "./tabs";
 import "./styles.css";
 
@@ -33,13 +34,13 @@ export default function PublicCloudProjectPage() {
   const loadProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const ids = await cloudService.listProjects();
+      const ids = await projectService.listProjects();
       const list: ProjectWithDetails[] = ids.map(projectId => ({ projectId, loading: true }));
       setProjects(list);
       if (ids.length > 0 && !selected) setSelected(ids[0]);
       for (const projectId of ids) {
         try {
-          const [details, serviceInfos] = await Promise.all([cloudService.getProject(projectId), cloudService.getServiceInfos(projectId)]);
+          const [details, serviceInfos] = await Promise.all([projectService.getProject(projectId), projectService.getServiceInfos(projectId)]);
           setProjects(prev => prev.map(p => p.projectId === projectId ? { ...p, details, serviceInfos, loading: false } : p));
         } catch { setProjects(prev => prev.map(p => p.projectId === projectId ? { ...p, loading: false } : p)); }
       }

@@ -11,7 +11,7 @@ import GeneralTab from "./tabs/GeneralTab";
 import NetworkTab from "./tabs/NetworkTab";
 import SnapshotsTab from "./tabs/SnapshotsTab";
 import ConsoleTab from "./tabs/ConsoleTab";
-import "../styles.css";
+import "./styles.css";
 
 interface InstanceInfo {
   id: string;

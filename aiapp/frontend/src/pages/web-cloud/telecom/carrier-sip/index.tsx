@@ -4,10 +4,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
+import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
 import { carrierSipService, CarrierSip } from "../../../../services/web-cloud.carrier-sip";
 import { GeneralTab, EndpointsTab, CdrTab } from "./tabs";
-import "../../styles.css";
 import "./styles.css";
 
 const TrunkIcon = () => (

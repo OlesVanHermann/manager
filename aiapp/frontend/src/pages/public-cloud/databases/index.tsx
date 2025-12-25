@@ -11,7 +11,7 @@ import GeneralTab from "./tabs/GeneralTab";
 import UsersTab from "./tabs/UsersTab";
 import BackupsTab from "./tabs/BackupsTab";
 import MetricsTab from "./tabs/MetricsTab";
-import "../styles.css";
+import "./styles.css";
 
 interface DatabaseInfo { id: string; description: string; engine: string; version: string; plan: string; status: string; region: string; nodeNumber: number; flavor: string; }
 

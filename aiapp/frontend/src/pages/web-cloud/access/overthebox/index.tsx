@@ -1,69 +1,106 @@
 // ============================================================
-// OVERTHEBOX PAGE (style Hosting)
+// OVERTHEBOX PAGE - Accès Internet via OverTheBox
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
-import { overtheboxPageService } from "./overthebox.service";
-import type { OverTheBox } from "./overthebox.types";
-import { GeneralTab, RemotesTab, TasksTab } from "./tabs";
-import "../../styles.css";
+import { ServiceListPage } from "../../../../components/ServiceListPage";
+import type { ServiceItem } from "../../../../components/ServiceListPage.types";
+import { ovhApi } from "../../../../services/api";
+import type { OverTheBoxService } from "./overthebox.types";
 
-const BoxIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+// Imports directs sans barrel file (JS-5)
+import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
+import { RemotesTab } from "./tabs/remotes/RemotesTab.tsx";
+import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
+
+// ============ LOCAL API ============
+
+async function listServices(): Promise<string[]> {
+  return ovhApi.get<string[]>('/overTheBox');
+}
+
+async function getService(serviceName: string): Promise<OverTheBoxService> {
+  return ovhApi.get<OverTheBoxService>(`/overTheBox/${serviceName}`);
+}
+
+// ============ ICONS ============
+
+const OtbIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+    <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M6 14h.01M10 10h4M10 14h4" stroke="#10b981"/>
   </svg>
 );
 
-export default function OvertheboxPage() {
+// ============ COMPOSANT ============
+
+export default function OverTheBoxPage() {
   const { t } = useTranslation("web-cloud/overthebox/index");
+
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("general");
-  const [serviceDetails, setServiceDetails] = useState<OverTheBox | null>(null);
+  const [details, setDetails] = useState<OverTheBoxService | null>(null);
 
-  const loadServices = useCallback(async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await overtheboxPageService.listServices();
-      const items: ServiceItem[] = names.map((name) => ({ id: name, name: name }));
+      setError(null);
+      const names = await listServices();
+      const items: ServiceItem[] = names.map(n => ({ id: n, name: n }));
       setServices(items);
-      if (items.length > 0 && !selectedService) setSelectedService(items[0].id);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
+      if (items.length > 0 && !selected) setSelected(items[0].id);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { loadServices(); }, [loadServices]);
+  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
-    if (!selectedService) return;
-    overtheboxPageService.getService(selectedService).then(setServiceDetails).catch(() => setServiceDetails(null));
-  }, [selectedService]);
+    if (!selected) return;
+    getService(selected).then(setDetails).catch(() => setDetails(null));
+  }, [selected]);
 
-  const detailTabs = [
+  const tabs = [
     { id: "general", label: t("tabs.general") },
     { id: "remotes", label: t("tabs.remotes") },
     { id: "tasks", label: t("tabs.tasks") },
   ];
 
   return (
-    <ServiceListPage titleKey="title" descriptionKey="description" guidesUrl="https://help.ovhcloud.com/csm/fr-overthebox" i18nNamespace="web-cloud/overthebox/index" services={services} loading={loading} error={error} selectedService={selectedService} onSelectService={setSelectedService} emptyIcon={<BoxIcon />} emptyTitleKey="empty.title" emptyDescriptionKey="empty.description">
-      {selectedService && (
+    <ServiceListPage
+      titleKey="title"
+      descriptionKey="description"
+      i18nNamespace="web-cloud/overthebox/index"
+      services={services}
+      loading={loading}
+      error={error}
+      selectedService={selected}
+      onSelectService={setSelected}
+      emptyIcon={<OtbIcon />}
+      emptyTitleKey="empty.title"
+      emptyDescriptionKey="empty.description"
+    >
+      {selected && (
         <div className="detail-card">
           <div className="detail-card-header">
-            <h2>{serviceDetails?.customerDescription || selectedService}</h2>
-            {serviceDetails && <span className={`badge ${serviceDetails.status === 'active' ? 'success' : 'warning'}`}>{serviceDetails.status}</span>}
+            <h2>{selected}</h2>
+            {details && <span className={`badge ${details.status === 'active' ? 'success' : 'warning'}`}>{details.status}</span>}
           </div>
           <div className="detail-tabs">
-            {detailTabs.map((tab) => (<button key={tab.id} className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>))}
+            {tabs.map(tab => (
+              <button key={tab.id} className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
+            ))}
           </div>
           <div className="detail-tab-content">
-            {activeTab === "general" && <GeneralTab serviceName={selectedService} details={serviceDetails} />}
-            {activeTab === "remotes" && <RemotesTab serviceName={selectedService} />}
-            {activeTab === "tasks" && <TasksTab serviceName={selectedService} />}
+            {activeTab === "general" && <GeneralTab serviceName={selected} />}
+            {activeTab === "remotes" && <RemotesTab serviceName={selected} />}
+            {activeTab === "tasks" && <TasksTab serviceName={selected} />}
           </div>
         </div>
       )}

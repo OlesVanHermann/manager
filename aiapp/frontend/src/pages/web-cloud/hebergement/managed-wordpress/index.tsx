@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage } from "../../shared";
+import { ServiceListPage } from "../../../../components/ServiceListPage";
 import { managedWordPressService, ManagedWordPress } from "../../../../services/web-cloud.managed-wordpress";
 import { CreateWebsiteModal, ImportWebsiteModal, DeleteWebsiteModal } from "./components";
 import { Onboarding } from "./Onboarding";

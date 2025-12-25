@@ -10,7 +10,7 @@ import * as registryService from "../../../services/public-cloud.registry";
 import GeneralTab from "./tabs/GeneralTab";
 import ImagesTab from "./tabs/ImagesTab";
 import UsersTab from "./tabs/UsersTab";
-import "../styles.css";
+import "./styles.css";
 
 interface RegistryInfo { id: string; name: string; region: string; status: string; url: string; size: number; createdAt: string; }
 

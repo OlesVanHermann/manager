@@ -1,73 +1,112 @@
 // ============================================================
-// PACK XDSL PAGE (style Hosting)
+// PACK XDSL PAGE - Accès Internet xDSL
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../shared";
-import { packXdslPageService } from "./pack-xdsl.service";
-import type { Pack } from "./pack-xdsl.types";
-import { GeneralTab, AccessTab, ServicesTab, VoipTab, TasksTab } from "./tabs";
-import "../../styles.css";
+import { ServiceListPage } from "../../../../components/ServiceListPage";
+import type { ServiceItem } from "../../../../components/ServiceListPage.types";
+import { ovhApi } from "../../../../services/api";
+import type { PackXdslService } from "./pack-xdsl.types";
 
-const WifiIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/>
+// Imports directs sans barrel file (JS-5)
+import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
+import { AccessTab } from "./tabs/access/AccessTab.tsx";
+import { VoipTab } from "./tabs/voip/VoipTab.tsx";
+import { ServicesTab } from "./tabs/services/ServicesTab.tsx";
+import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
+
+// ============ LOCAL API ============
+
+async function listPacks(): Promise<string[]> {
+  return ovhApi.get<string[]>('/pack/xdsl');
+}
+
+async function getPack(packName: string): Promise<PackXdslService> {
+  return ovhApi.get<PackXdslService>(`/pack/xdsl/${packName}`);
+}
+
+// ============ ICONS ============
+
+const XdslIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+    <path d="M4 9h16M4 15h16" stroke="#3b82f6"/><circle cx="12" cy="12" r="3"/>
   </svg>
 );
 
+// ============ COMPOSANT ============
+
 export default function PackXdslPage() {
   const { t } = useTranslation("web-cloud/pack-xdsl/index");
-  const [packs, setPacks] = useState<ServiceItem[]>([]);
+
+  const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPack, setSelectedPack] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("general");
-  const [packDetails, setPackDetails] = useState<Pack | null>(null);
+  const [details, setDetails] = useState<PackXdslService | null>(null);
 
-  const loadPacks = useCallback(async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await packXdslPageService.listPacks();
-      const items: ServiceItem[] = names.map((name) => ({ id: name, name: name }));
-      setPacks(items);
-      if (items.length > 0 && !selectedPack) setSelectedPack(items[0].id);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
+      setError(null);
+      const names = await listPacks();
+      const items: ServiceItem[] = names.map(n => ({ id: n, name: n }));
+      setServices(items);
+      if (items.length > 0 && !selected) setSelected(items[0].id);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { loadPacks(); }, [loadPacks]);
+  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
-    if (!selectedPack) return;
-    packXdslPageService.getPack(selectedPack).then(setPackDetails).catch(() => setPackDetails(null));
-  }, [selectedPack]);
+    if (!selected) return;
+    getPack(selected).then(setDetails).catch(() => setDetails(null));
+  }, [selected]);
 
-  const detailTabs = [
+  const tabs = [
     { id: "general", label: t("tabs.general") },
     { id: "access", label: t("tabs.access") },
-    { id: "services", label: t("tabs.services") },
     { id: "voip", label: t("tabs.voip") },
+    { id: "services", label: t("tabs.services") },
     { id: "tasks", label: t("tabs.tasks") },
   ];
 
   return (
-    <ServiceListPage titleKey="title" descriptionKey="description" guidesUrl="https://help.ovhcloud.com/csm/fr-xdsl" i18nNamespace="web-cloud/pack-xdsl/index" services={packs} loading={loading} error={error} selectedService={selectedPack} onSelectService={setSelectedPack} emptyIcon={<WifiIcon />} emptyTitleKey="empty.title" emptyDescriptionKey="empty.description">
-      {selectedPack && (
+    <ServiceListPage
+      titleKey="title"
+      descriptionKey="description"
+      i18nNamespace="web-cloud/pack-xdsl/index"
+      services={services}
+      loading={loading}
+      error={error}
+      selectedService={selected}
+      onSelectService={setSelected}
+      emptyIcon={<XdslIcon />}
+      emptyTitleKey="empty.title"
+      emptyDescriptionKey="empty.description"
+    >
+      {selected && (
         <div className="detail-card">
           <div className="detail-card-header">
-            <h2>{selectedPack}</h2>
-            {packDetails && <span className="badge info">{packDetails.offerDescription}</span>}
+            <h2>{selected}</h2>
+            {details && <span className={`badge success`}>{details.offerDescription || 'xDSL'}</span>}
           </div>
           <div className="detail-tabs">
-            {detailTabs.map((tab) => (<button key={tab.id} className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>))}
+            {tabs.map(tab => (
+              <button key={tab.id} className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>
+            ))}
           </div>
           <div className="detail-tab-content">
-            {activeTab === "general" && <GeneralTab packName={selectedPack} details={packDetails} />}
-            {activeTab === "access" && <AccessTab packName={selectedPack} />}
-            {activeTab === "services" && <ServicesTab packName={selectedPack} />}
-            {activeTab === "voip" && <VoipTab packName={selectedPack} />}
-            {activeTab === "tasks" && <TasksTab packName={selectedPack} />}
+            {activeTab === "general" && <GeneralTab packName={selected} />}
+            {activeTab === "access" && <AccessTab packName={selected} />}
+            {activeTab === "voip" && <VoipTab packName={selected} />}
+            {activeTab === "services" && <ServicesTab packName={selected} />}
+            {activeTab === "tasks" && <TasksTab packName={selected} />}
           </div>
         </div>
       )}

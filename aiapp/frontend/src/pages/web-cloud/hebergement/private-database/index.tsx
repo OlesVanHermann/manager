@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage } from "../../shared";
+import { ServiceListPage } from "../../../../components/ServiceListPage";
 import { privateDatabaseService, PrivateDatabase } from "../../../../services/web-cloud.private-database";
 import { GeneralTab } from "./tabs/GeneralTab";
 import { DatabasesTab } from "./tabs/DatabasesTab";

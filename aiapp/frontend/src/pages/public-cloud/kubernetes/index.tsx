@@ -10,7 +10,7 @@ import * as k8sService from "../../../services/public-cloud.kubernetes";
 import GeneralTab from "./tabs/GeneralTab";
 import NodePoolsTab from "./tabs/NodePoolsTab";
 import KubeconfigTab from "./tabs/KubeconfigTab";
-import "../styles.css";
+import "./styles.css";
 
 interface ClusterInfo { id: string; name: string; region: string; version: string; status: string; url?: string; nodesCount: number; }
 

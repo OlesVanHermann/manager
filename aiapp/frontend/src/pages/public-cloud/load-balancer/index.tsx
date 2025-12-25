@@ -10,7 +10,7 @@ import * as lbService from "../../../services/public-cloud.load-balancer";
 import GeneralTab from "./tabs/GeneralTab";
 import ListenersTab from "./tabs/ListenersTab";
 import PoolsTab from "./tabs/PoolsTab";
-import "../styles.css";
+import "./styles.css";
 
 interface LoadBalancerInfo { id: string; name: string; region: string; status: string; vipAddress: string; flavor: string; }
 
