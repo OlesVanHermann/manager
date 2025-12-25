@@ -85,15 +85,15 @@ export function SnapshotTab({ serviceName }: Props) {
       {snapshot ? (
         <div className="snapshot-card">
           <div className="snapshot-status">
-            <div className="status-icon enabled">
+            <div className="snapshot-status-icon enabled">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
               </svg>
             </div>
-            <div className="status-text">
-              <span className="status-label">{t("snapshot.exists")}</span>
-              <span className="status-date">{new Date(snapshot.creationDate).toLocaleString()}</span>
+            <div className="snapshot-status-text">
+              <span className="snapshot-status-label">{t("snapshot.exists")}</span>
+              <span className="snapshot-status-date">{new Date(snapshot.creationDate).toLocaleString()}</span>
             </div>
           </div>
           {snapshot.description && <p className="snapshot-desc">{snapshot.description}</p>}
@@ -109,13 +109,13 @@ export function SnapshotTab({ serviceName }: Props) {
       ) : (
         <div className="snapshot-card empty">
           <div className="snapshot-status">
-            <div className="status-icon disabled">
+            <div className="snapshot-status-icon disabled">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
               </svg>
             </div>
-            <div className="status-text">
-              <span className="status-label">{t("snapshot.noSnapshot")}</span>
+            <div className="snapshot-status-text">
+              <span className="snapshot-status-label">{t("snapshot.noSnapshot")}</span>
             </div>
           </div>
           <button className="btn-primary" onClick={handleCreate} disabled={acting}>
@@ -124,7 +124,7 @@ export function SnapshotTab({ serviceName }: Props) {
         </div>
       )}
 
-      <div className="info-box">
+      <div className="snapshot-info-box">
         <h4>{t("snapshot.info")}</h4>
         <p>{t("snapshot.infoDesc")}</p>
       </div>

@@ -1,16 +1,10 @@
 // ============================================================
-// MODAL: Extensions PostgreSQL
+// MODAL: Extensions (PostgreSQL) - Private Database
 // ============================================================
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService } from "../../../../../services/web-cloud.private-database";
-
-interface Extension {
-  name: string;
-  description: string;
-  enabled: boolean;
-}
+import { apiClient } from "../../../../../services/api";
 
 interface Props {
   serviceName: string;
@@ -20,70 +14,59 @@ interface Props {
   onSuccess: () => void;
 }
 
-const COMMON_EXTENSIONS: Extension[] = [
-  { name: "postgis", description: "Support for geographic objects", enabled: false },
-  { name: "uuid-ossp", description: "Generate universally unique identifiers (UUIDs)", enabled: false },
-  { name: "hstore", description: "Key-value pair storage", enabled: false },
-  { name: "pg_trgm", description: "Text similarity measurement", enabled: false },
-  { name: "btree_gin", description: "GIN index operator classes", enabled: false },
-  { name: "btree_gist", description: "GiST index operator classes", enabled: false },
-  { name: "citext", description: "Case-insensitive character string type", enabled: false },
-  { name: "cube", description: "Multi-dimensional cube data type", enabled: false },
-  { name: "earthdistance", description: "Calculate great-circle distances", enabled: false },
-  { name: "fuzzystrmatch", description: "Fuzzy string matching", enabled: false },
-  { name: "intarray", description: "Integer array functions and operators", enabled: false },
-  { name: "ltree", description: "Hierarchical tree-like data type", enabled: false },
-  { name: "pg_stat_statements", description: "Track SQL statement statistics", enabled: false },
-  { name: "tablefunc", description: "Table-returning functions including crosstab", enabled: false },
-  { name: "unaccent", description: "Text search dictionary for unaccenting", enabled: false },
+const BASE_PATH = "/hosting/privateDatabase";
+
+const AVAILABLE_EXTENSIONS = [
+  { name: "pg_trgm", description: "Similarité de texte et recherche fuzzy" },
+  { name: "unaccent", description: "Suppression des accents" },
+  { name: "uuid-ossp", description: "Génération d'UUID" },
+  { name: "hstore", description: "Stockage clé-valeur" },
+  { name: "postgis", description: "Données géospatiales" },
+  { name: "ltree", description: "Structures hiérarchiques" },
+  { name: "pgcrypto", description: "Fonctions cryptographiques" },
 ];
 
 export function ExtensionsModal({ serviceName, databaseName, isOpen, onClose, onSuccess }: Props) {
   const { t } = useTranslation("web-cloud/private-database/index");
+  const [enabled, setEnabled] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [extensions, setExtensions] = useState<Extension[]>([]);
-  const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    loadExtensions();
-  }, [isOpen, serviceName, databaseName]);
-
-  const loadExtensions = async () => {
-    setLoading(true);
+  const loadExtensions = useCallback(async () => {
     try {
-      const enabled = await privateDatabaseService.getExtensions(serviceName, databaseName);
-      const merged = COMMON_EXTENSIONS.map(ext => ({
-        ...ext,
-        enabled: enabled?.includes(ext.name) || false,
-      }));
-      setExtensions(merged);
+      setLoading(true);
+      const extensions: string[] = await apiClient.get(
+        `${BASE_PATH}/${serviceName}/database/${databaseName}/extension`
+      );
+      setEnabled(extensions);
     } catch (err) {
-      console.error(err);
-      setExtensions(COMMON_EXTENSIONS);
+      setError(String(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, [serviceName, databaseName]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) loadExtensions();
+  }, [isOpen, loadExtensions]);
 
-  const toggleExtension = (name: string) => {
-    setExtensions(exts =>
-      exts.map(ext =>
-        ext.name === name ? { ...ext, enabled: !ext.enabled } : ext
-      )
+  const toggleExtension = (ext: string) => {
+    setEnabled(prev => 
+      prev.includes(ext) 
+        ? prev.filter(e => e !== ext)
+        : [...prev, ext]
     );
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    setError(null);
     try {
-      const toEnable = extensions.filter(e => e.enabled).map(e => e.name);
-      await privateDatabaseService.setExtensions(serviceName, databaseName, toEnable);
+      setSaving(true);
+      setError(null);
+      await apiClient.post(
+        `${BASE_PATH}/${serviceName}/database/${databaseName}/extension`,
+        { extensions: enabled }
+      );
       onSuccess();
     } catch (err) {
       setError(String(err));
@@ -92,55 +75,31 @@ export function ExtensionsModal({ serviceName, databaseName, isOpen, onClose, on
     }
   };
 
-  const filteredExtensions = extensions.filter(ext =>
-    ext.name.toLowerCase().includes(search.toLowerCase()) ||
-    ext.description.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const enabledCount = extensions.filter(e => e.enabled).length;
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content modal-lg" onClick={e => e.stopPropagation()}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{t("extensions.title")} - {databaseName}</h3>
+          <h3>{t("databases.extensionsTitle", { db: databaseName })}</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
-          {error && (
-            <div className="info-banner error">
-              <span className="info-icon">❌</span>
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="info-banner info">
-            <span className="info-icon">ℹ️</span>
-            <span>{t("extensions.description")}</span>
-          </div>
-
-          {/* Search */}
-          <div className="form-group">
-            <input
-              type="text"
-              className="form-input"
-              placeholder={t("extensions.search")}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-
-          {/* Extensions list */}
+          {error && <div className="alert alert-error">{error}</div>}
+          
           {loading ? (
             <div className="loading-spinner">{t("common.loading")}</div>
           ) : (
             <div className="extensions-list">
-              {filteredExtensions.map(ext => (
-                <div key={ext.name} className={`extension-item ${ext.enabled ? "enabled" : ""}`}>
+              {AVAILABLE_EXTENSIONS.map(ext => (
+                <div 
+                  key={ext.name} 
+                  className={`extension-item ${enabled.includes(ext.name) ? "enabled" : ""}`}
+                >
                   <label className="extension-checkbox">
                     <input
                       type="checkbox"
-                      checked={ext.enabled}
+                      checked={enabled.includes(ext.name)}
                       onChange={() => toggleExtension(ext.name)}
                     />
                     <span className="extension-name">{ext.name}</span>
@@ -152,13 +111,20 @@ export function ExtensionsModal({ serviceName, databaseName, isOpen, onClose, on
           )}
 
           <div className="extensions-summary">
-            {t("extensions.enabled", { count: enabledCount })}
+            {enabled.length} extension(s) activée(s)
           </div>
         </div>
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>{t("common.cancel")}</button>
-          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-            {saving ? t("common.saving") : t("extensions.save")}
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
+            {t("common.cancel")}
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-primary" 
+            onClick={handleSave}
+            disabled={saving || loading}
+          >
+            {saving ? t("common.saving") : t("common.save")}
           </button>
         </div>
       </div>

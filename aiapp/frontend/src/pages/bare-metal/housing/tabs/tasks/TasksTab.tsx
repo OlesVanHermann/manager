@@ -26,7 +26,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
     <div className="tasks-tab">
       <div className="tab-toolbar"><h2>{t("tasks.title")}</h2><button className="btn btn-outline" onClick={loadTasks}>{tCommon("actions.refresh")}</button></div>
       {tasks.length === 0 ? <div className="empty-state"><h2>{t("tasks.empty.title")}</h2></div> : (
-        <table className="data-table">
+        <table className="tasks-data-table">
           <thead><tr><th>{t("tasks.columns.function")}</th><th>{t("tasks.columns.status")}</th><th>{t("tasks.columns.started")}</th><th>{t("tasks.columns.completed")}</th></tr></thead>
           <tbody>{tasks.map((task) => (<tr key={task.taskId}><td>{task.function}</td><td>{getStatusBadge(task.status)}</td><td>{new Date(task.startDate).toLocaleString("fr-FR")}</td><td>{task.doneDate ? new Date(task.doneDate).toLocaleString("fr-FR") : "-"}</td></tr>))}</tbody>
         </table>

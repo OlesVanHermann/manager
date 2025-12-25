@@ -1,6 +1,8 @@
 // ============================================================
-// CREATE TAB SERVICE - Service ISOLÉ
+// CREATE TAB SERVICE - Service ISOLÉ (DÉFACTORISÉ)
 // ============================================================
+
+// ============ CONSTANTS ============
 
 export const SUPPORT_URLS = {
   comparison: "https://www.ovhcloud.com/fr/support-levels/",

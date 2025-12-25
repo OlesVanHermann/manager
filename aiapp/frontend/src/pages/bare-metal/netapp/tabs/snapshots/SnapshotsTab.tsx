@@ -22,9 +22,9 @@ export default function SnapshotsTab({ serviceId }: SnapshotsTabProps) {
     <div className="snapshots-tab">
       <div className="tab-toolbar"><h2>{t("snapshots.title")}</h2><button className="btn btn-primary">{t("snapshots.create")}</button></div>
       {snapshots.length === 0 ? (<div className="empty-state"><h2>{t("snapshots.empty.title")}</h2></div>) : (
-        <table className="data-table">
+        <table className="snapshots-data-table">
           <thead><tr><th>{t("snapshots.columns.name")}</th><th>{t("snapshots.columns.volume")}</th><th>{t("snapshots.columns.created")}</th><th>{t("snapshots.columns.actions")}</th></tr></thead>
-          <tbody>{snapshots.map((s) => (<tr key={s.id}><td className="mono">{s.name}</td><td>{s.volumeName}</td><td>{new Date(s.createdAt).toLocaleString("fr-FR")}</td><td className="item-actions"><button className="btn btn-sm btn-outline">{t("snapshots.restore")}</button><button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button></td></tr>))}</tbody>
+          <tbody>{snapshots.map((s) => (<tr key={s.id}><td className="mono">{s.name}</td><td>{s.volumeName}</td><td>{new Date(s.createdAt).toLocaleString("fr-FR")}</td><td className="snapshots-item-actions"><button className="btn btn-sm btn-outline">{t("snapshots.restore")}</button><button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button></td></tr>))}</tbody>
         </table>
       )}
     </div>

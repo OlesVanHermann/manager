@@ -57,7 +57,7 @@ export function InterventionsTab({ serviceName }: Props) {
           <p>{t("interventions.empty")}</p>
         </div>
       ) : (
-        <table className="data-table">
+        <table className="interventions-data-table">
           <thead>
             <tr>
               <th>{t("interventions.date")}</th>

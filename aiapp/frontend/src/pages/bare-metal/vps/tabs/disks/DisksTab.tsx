@@ -52,15 +52,15 @@ export function DisksTab({ serviceName }: Props) {
           <p>{t("disks.empty")}</p>
         </div>
       ) : (
-        <div className="disk-cards">
+        <div className="disks-disk-cards">
           {disks.map((disk) => (
             <div key={disk.id} className={`disk-card ${disk.type === "primary" ? "primary" : ""}`}>
-              <div className="disk-header">
+              <div className="disks-disk-header">
                 <span className={`badge ${disk.type === "primary" ? "success" : "info"}`}>{disk.type}</span>
                 <span className={`badge ${disk.state === "connected" ? "success" : "warning"}`}>{disk.state}</span>
               </div>
-              <div className="disk-size">{disk.size} GB</div>
-              <div className="disk-info">
+              <div className="disks-disk-size">{disk.size} GB</div>
+              <div className="disks-disk-info">
                 <div>
                   <label>{t("disks.name")}</label>
                   <span>{disk.name || "-"}</span>

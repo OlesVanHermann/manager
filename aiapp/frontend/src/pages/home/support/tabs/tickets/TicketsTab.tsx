@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as supportService from "../../../../../services/home.support";
+import * as ticketsService from "./TicketsTab.service";
 import { getCredentials, formatDate, SUPPORT_URLS } from "./TicketsTab.service";
 import { TicketIcon } from "./TicketsTab.icons";
 import "./TicketsTab.css";
@@ -19,7 +19,7 @@ export function TicketsTab() {
   // ---------- STATE ----------
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tickets, setTickets] = useState<supportService.SupportTicket[]>([]);
+  const [tickets, setTickets] = useState<ticketsService.SupportTicket[]>([]);
   const [filter, setFilter] = useState<"all" | "open" | "closed">("all");
 
   // ---------- EFFECTS ----------
@@ -34,7 +34,7 @@ export function TicketsTab() {
     setError(null);
 
     try {
-      const data = await supportService.getTickets(credentials, filter);
+      const data = await ticketsService.getTickets(credentials, filter);
       setTickets(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : t('errors.loadError');

@@ -1,10 +1,11 @@
 // ============================================================
-// MODAL: Importer un site WordPress existant
+// MODAL: Import Website - Managed WordPress
 // ============================================================
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { managedWordPressService } from "../../../../../services/web-cloud.managed-wordpress";
+import { apiClient } from "../../../../../services/api";
+import type { ImportWebsiteParams } from "../managed-wordpress.types";
 
 interface Props {
   serviceName: string;
@@ -13,11 +14,12 @@ interface Props {
   onSuccess: () => void;
 }
 
+const BASE_PATH = "/managedCMS/resource";
+const API_OPTIONS = { apiVersion: "v2" };
+
 export function ImportWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: Props) {
   const { t } = useTranslation("web-cloud/managed-wordpress/index");
-  const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState<ImportWebsiteParams>({
     domain: "",
     ftpUrl: "",
     ftpUser: "",
@@ -26,28 +28,25 @@ export function ImportWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
     dbUser: "",
     dbPassword: "",
   });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
 
-  if (!isOpen) return null;
+  const handleChange = (field: keyof ImportWebsiteParams, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
-  const isStep1Valid = form.domain && form.ftpUrl && form.ftpUser && form.ftpPassword;
-  const isStep2Valid = !form.dbUrl || (form.dbUrl && form.dbUser && form.dbPassword);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.domain || !formData.ftpUrl || !formData.ftpUser || !formData.ftpPassword) return;
 
-  const handleSubmit = async () => {
-    if (!isStep1Valid) return;
-    setLoading(true);
-    setError(null);
     try {
-      await managedWordPressService.importWebsite(serviceName, {
-        domain: form.domain,
-        ftpUrl: form.ftpUrl,
-        ftpUser: form.ftpUser,
-        ftpPassword: form.ftpPassword,
-        dbUrl: form.dbUrl || undefined,
-        dbUser: form.dbUser || undefined,
-        dbPassword: form.dbPassword || undefined,
-      });
+      setLoading(true);
+      setError(null);
+      await apiClient.post(`${BASE_PATH}/${serviceName}/website/import`, formData, API_OPTIONS);
       onSuccess();
+      setFormData({ domain: "", ftpUrl: "", ftpUser: "", ftpPassword: "", dbUrl: "", dbUser: "", dbPassword: "" });
+      setStep(1);
     } catch (err) {
       setError(String(err));
     } finally {
@@ -55,141 +54,82 @@ export function ImportWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content modal-lg" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>{t("import.title")}</h3>
+          <h3>{t("website.importTitle")}</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-        <div className="modal-body">
-          {error && (
-            <div className="info-banner error">
-              <span className="info-icon">❌</span>
-              <span>{error}</span>
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            {error && <div className="alert alert-error">{error}</div>}
+
+            <div className="steps-indicator">
+              <span className={`step ${step >= 1 ? "active" : ""}`}>1. Domaine</span>
+              <span className={`step ${step >= 2 ? "active" : ""}`}>2. FTP</span>
+              <span className={`step ${step >= 3 ? "active" : ""}`}>3. Base de données</span>
             </div>
-          )}
 
-          {/* Steps indicator */}
-          <div className="steps-indicator">
-            <div className={`step ${step >= 1 ? "active" : ""}`}>1. {t("import.step1")}</div>
-            <div className={`step ${step >= 2 ? "active" : ""}`}>2. {t("import.step2")}</div>
+            {step === 1 && (
+              <div className="form-group">
+                <label>{t("website.domain")} *</label>
+                <input type="text" className="form-input" value={formData.domain} onChange={e => handleChange("domain", e.target.value)} placeholder="example.com" required />
+                <span className="form-hint">{t("website.domainHint")}</span>
+              </div>
+            )}
+
+            {step === 2 && (
+              <>
+                <div className="form-group">
+                  <label>{t("import.ftpUrl")} *</label>
+                  <input type="text" className="form-input" value={formData.ftpUrl} onChange={e => handleChange("ftpUrl", e.target.value)} placeholder="ftp://ftp.example.com/www" required />
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>{t("import.ftpUser")} *</label>
+                    <input type="text" className="form-input" value={formData.ftpUser} onChange={e => handleChange("ftpUser", e.target.value)} required />
+                  </div>
+                  <div className="form-group">
+                    <label>{t("import.ftpPassword")} *</label>
+                    <input type="password" className="form-input" value={formData.ftpPassword} onChange={e => handleChange("ftpPassword", e.target.value)} required />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {step === 3 && (
+              <>
+                <div className="form-group">
+                  <label>{t("import.dbUrl")}</label>
+                  <input type="text" className="form-input" value={formData.dbUrl || ""} onChange={e => handleChange("dbUrl", e.target.value)} placeholder="mysql://host:3306/database" />
+                  <span className="form-hint">{t("import.dbOptional")}</span>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>{t("import.dbUser")}</label>
+                    <input type="text" className="form-input" value={formData.dbUser || ""} onChange={e => handleChange("dbUser", e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label>{t("import.dbPassword")}</label>
+                    <input type="password" className="form-input" value={formData.dbPassword || ""} onChange={e => handleChange("dbPassword", e.target.value)} />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-
-          {step === 1 && (
-            <>
-              <div className="form-group">
-                <label>{t("import.domain")} *</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="www.example.com"
-                  value={form.domain}
-                  onChange={e => setForm({ ...form, domain: e.target.value })}
-                />
-              </div>
-
-              <h4>{t("import.ftpAccess")}</h4>
-              <div className="form-group">
-                <label>{t("import.ftpUrl")} *</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="ftp://ftp.example.com/www"
-                  value={form.ftpUrl}
-                  onChange={e => setForm({ ...form, ftpUrl: e.target.value })}
-                />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>{t("import.ftpUser")} *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={form.ftpUser}
-                    onChange={e => setForm({ ...form, ftpUser: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>{t("import.ftpPassword")} *</label>
-                  <input
-                    type="password"
-                    className="form-input"
-                    value={form.ftpPassword}
-                    onChange={e => setForm({ ...form, ftpPassword: e.target.value })}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-
-          {step === 2 && (
-            <>
-              <div className="info-banner info">
-                <span className="info-icon">ℹ️</span>
-                <span>{t("import.dbOptional")}</span>
-              </div>
-
-              <h4>{t("import.dbAccess")}</h4>
-              <div className="form-group">
-                <label>{t("import.dbUrl")}</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="mysql://host:3306/database"
-                  value={form.dbUrl}
-                  onChange={e => setForm({ ...form, dbUrl: e.target.value })}
-                />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>{t("import.dbUser")}</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={form.dbUser}
-                    onChange={e => setForm({ ...form, dbUser: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>{t("import.dbPassword")}</label>
-                  <input
-                    type="password"
-                    className="form-input"
-                    value={form.dbPassword}
-                    onChange={e => setForm({ ...form, dbPassword: e.target.value })}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>{t("common.cancel")}</button>
-          {step === 1 && (
-            <button 
-              className="btn btn-primary" 
-              onClick={() => setStep(2)} 
-              disabled={!isStep1Valid}
-            >
-              {t("common.next")}
-            </button>
-          )}
-          {step === 2 && (
-            <>
-              <button className="btn btn-secondary" onClick={() => setStep(1)}>
-                {t("common.previous")}
-              </button>
-              <button 
-                className="btn btn-primary" 
-                onClick={handleSubmit} 
-                disabled={loading || !isStep2Valid}
-              >
-                {loading ? t("common.importing") : t("import.submit")}
-              </button>
-            </>
-          )}
-        </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>{t("common.cancel")}</button>
+            {step > 1 && <button type="button" className="btn btn-secondary" onClick={() => setStep(s => s - 1)}>← Précédent</button>}
+            {step < 3 ? (
+              <button type="button" className="btn btn-primary" onClick={() => setStep(s => s + 1)}>Suivant →</button>
+            ) : (
+              <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? t("common.importing") : t("website.import")}</button>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   );

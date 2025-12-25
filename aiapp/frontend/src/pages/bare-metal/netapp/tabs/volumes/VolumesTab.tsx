@@ -29,11 +29,11 @@ export default function VolumesTab({ serviceId }: VolumesTabProps) {
           {volumes.map((volume) => {
             const usedPercent = getUsagePercent(volume.usedSize, volume.size);
             return (
-              <div key={volume.id} className="volume-card">
-                <div className="volume-header"><div><div className="volume-name">{volume.name}</div><div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>{volume.id}</div></div><span className="volume-protocol">{volume.protocol}</span></div>
-                <div className="info-grid" style={{ marginBottom: "var(--space-3)" }}><div className="info-card"><div className="card-title">{t("volumes.fields.mountPath")}</div><div className="card-value mono" style={{ fontSize: "var(--font-size-sm)" }}>{volume.mountPath}</div></div></div>
-                <div><div className="card-title">{t("volumes.fields.usage")}</div><div className="usage-bar" style={{ marginTop: "var(--space-2)" }}><div className={`usage-fill ${getUsageClass(usedPercent)}`} style={{ width: `${usedPercent}%` }}></div></div><div className="usage-text">{formatSize(volume.usedSize)} / {formatSize(volume.size)} ({usedPercent}%)</div></div>
-                <div className="item-actions" style={{ marginTop: "var(--space-3)" }}><button className="btn btn-sm btn-outline">{tCommon("actions.edit")}</button><button className="btn btn-sm btn-outline">{t("volumes.resize")}</button><button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button></div>
+              <div key={volume.id} className="volumes-volume-card">
+                <div className="volumes-volume-header"><div><div className="volumes-volume-name">{volume.name}</div><div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>{volume.id}</div></div><span className="volumes-volume-protocol">{volume.protocol}</span></div>
+                <div className="volumes-info-grid" style={{ marginBottom: "var(--space-3)" }}><div className="volumes-info-card"><div className="volumes-card-title">{t("volumes.fields.mountPath")}</div><div className="volumes-card-value mono" style={{ fontSize: "var(--font-size-sm)" }}>{volume.mountPath}</div></div></div>
+                <div><div className="volumes-card-title">{t("volumes.fields.usage")}</div><div className="volumes-usage-bar" style={{ marginTop: "var(--space-2)" }}><div className={`usage-fill ${getUsageClass(usedPercent)}`} style={{ width: `${usedPercent}%` }}></div></div><div className="volumes-usage-text">{formatSize(volume.usedSize)} / {formatSize(volume.size)} ({usedPercent}%)</div></div>
+                <div className="volumes-item-actions" style={{ marginTop: "var(--space-3)" }}><button className="btn btn-sm btn-outline">{tCommon("actions.edit")}</button><button className="btn btn-sm btn-outline">{t("volumes.resize")}</button><button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button></div>
               </div>
             );
           })}

@@ -4,9 +4,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService, PdbUser } from "../../../../../services/web-cloud.private-database";
-import { CreatePdbUserModal } from "../components/CreatePdbUserModal";
-import { ManageGrantsModal } from "../components/ManageGrantsModal";
+import { usersService } from "./UsersTab";
+import type { PdbUser } from "../../private-database.types";
+import { CreatePdbUserModal } from "../../components/CreatePdbUserModal";
+import { ManageGrantsModal } from "../../components/ManageGrantsModal";
+import "./UsersTab.css";
 
 interface Props { serviceName: string; }
 
@@ -22,8 +24,8 @@ export function UsersTab({ serviceName }: Props) {
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await privateDatabaseService.listUsers(serviceName);
-      const data = await Promise.all(names.map(n => privateDatabaseService.getUser(serviceName, n)));
+      const names = await usersService.listUsers(serviceName);
+      const data = await Promise.all(names.map(n => usersService.getUser(serviceName, n)));
       setUsers(data);
     } catch (err) { setError(String(err)); }
     finally { setLoading(false); }
@@ -34,7 +36,7 @@ export function UsersTab({ serviceName }: Props) {
   const handleDelete = async (userName: string) => {
     if (!confirm(t("users.confirmDelete", { name: userName }))) return;
     try {
-      await privateDatabaseService.deleteUser(serviceName, userName);
+      await usersService.deleteUser(serviceName, userName);
       loadUsers();
     } catch (err) { alert(String(err)); }
   };
@@ -43,7 +45,7 @@ export function UsersTab({ serviceName }: Props) {
     const newPassword = prompt(t("users.enterNewPassword"));
     if (!newPassword) return;
     try {
-      await privateDatabaseService.changeUserPassword(serviceName, userName, newPassword);
+      await usersService.changeUserPassword(serviceName, userName, newPassword);
       alert(t("users.passwordChanged"));
     } catch (err) { alert(String(err)); }
   };
@@ -62,14 +64,14 @@ export function UsersTab({ serviceName }: Props) {
   if (error) return <div className="error-state">{error}</div>;
 
   return (
-    <div className="pdb-users-tab">
-      <div className="tab-header">
+    <div className="users-tab">
+      <div className="users-header">
         <div>
           <h3>{t("users.title")}</h3>
-          <p className="tab-description">{t("users.description")}</p>
+          <p className="users-description">{t("users.description")}</p>
         </div>
-        <div className="tab-actions">
-          <span className="records-count">{users.length} {t("users.count")}</span>
+        <div className="users-actions">
+          <span className="users-count">{users.length} {t("users.count")}</span>
           <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
             + {t("users.create")}
           </button>
@@ -77,14 +79,14 @@ export function UsersTab({ serviceName }: Props) {
       </div>
 
       {users.length === 0 ? (
-        <div className="empty-state">
+        <div className="users-empty">
           <p>{t("users.empty")}</p>
           <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
             {t("users.createFirst")}
           </button>
         </div>
       ) : (
-        <table className="data-table">
+        <table className="users-table">
           <thead>
             <tr>
               <th>{t("users.name")}</th>
@@ -99,11 +101,11 @@ export function UsersTab({ serviceName }: Props) {
                 <td className="font-mono">{user.userName}</td>
                 <td>
                   {user.databases && user.databases.length > 0 ? (
-                    <div className="grants-list">
+                    <div className="users-grants-list">
                       {user.databases.slice(0, 3).map(db => {
                         const grant = getGrantBadge(db.grantType);
                         return (
-                          <span key={db.databaseName} className={`grant-badge ${grant.class}`} title={db.databaseName}>
+                          <span key={db.databaseName} className={`users-grant-badge ${grant.class}`} title={db.databaseName}>
                             {db.databaseName}: {grant.label}
                           </span>
                         );
@@ -113,12 +115,12 @@ export function UsersTab({ serviceName }: Props) {
                       )}
                     </div>
                   ) : (
-                    <span className="text-muted">{t("users.noGrants")}</span>
+                    <span className="users-text-muted">{t("users.noGrants")}</span>
                   )}
                 </td>
                 <td>{user.creationDate ? new Date(user.creationDate).toLocaleDateString() : '-'}</td>
                 <td>
-                  <div className="action-buttons">
+                  <div className="users-action-buttons">
                     <button 
                       className="btn btn-secondary btn-sm" 
                       onClick={() => setSelectedUser(user)}

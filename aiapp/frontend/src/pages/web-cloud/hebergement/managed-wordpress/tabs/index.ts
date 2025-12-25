@@ -1,8 +1,8 @@
 // ============================================================
-// MANAGED WORDPRESS TABS - Index exports
+// EXPORTS TABS - Managed WordPress (Défactorisé)
 // ============================================================
 
-export { GeneralTab } from "./GeneralTab";
-export { ThemesPluginsTab } from "./ThemesPluginsTab";
-export { BackupsTab } from "./BackupsTab";
-export { TasksTab } from "./TasksTab";
+export { GeneralTab } from "./general/GeneralTab.tsx";
+export { BackupsTab } from "./backups/BackupsTab.tsx";
+export { ThemesPluginsTab } from "./themes-plugins/ThemesPluginsTab.tsx";
+export { TasksTab } from "./tasks/TasksTab.tsx";

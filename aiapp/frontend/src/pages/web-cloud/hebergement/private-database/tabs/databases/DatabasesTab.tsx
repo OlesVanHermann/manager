@@ -4,8 +4,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService, PdbDatabase } from "../../../../../services/web-cloud.private-database";
-import { CreatePdbDatabaseModal, ExtensionsModal } from "../components";
+import { databasesService } from "./DatabasesTab";
+import type { PdbDatabase } from "../../private-database.types";
+import { CreatePdbDatabaseModal, ExtensionsModal } from "../../components";
+import "./DatabasesTab.css";
 
 interface Props { 
   serviceName: string; 
@@ -28,9 +30,9 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
     try {
       setLoading(true);
       setError(null);
-      const names = await privateDatabaseService.listDatabases(serviceName);
+      const names = await databasesService.listDatabases(serviceName);
       const details = await Promise.all(
-        names.map(name => privateDatabaseService.getDatabase(serviceName, name))
+        names.map(name => databasesService.getDatabase(serviceName, name))
       );
       setDatabases(details);
     } catch (err) {
@@ -47,7 +49,7 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
   const handleDelete = async (databaseName: string) => {
     if (!confirm(t("databases.confirmDelete", { name: databaseName }))) return;
     try {
-      await privateDatabaseService.deleteDatabase(serviceName, databaseName);
+      await databasesService.deleteDatabase(serviceName, databaseName);
       loadDatabases();
     } catch (err) {
       alert(String(err));
@@ -57,7 +59,7 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
   const handleDump = async (databaseName: string) => {
     try {
       setDumpLoading(databaseName);
-      await privateDatabaseService.createDump(serviceName, databaseName, true);
+      await databasesService.createDump(serviceName, databaseName, true);
       alert(t("databases.dumpCreated"));
     } catch (err) {
       alert(String(err));
@@ -89,11 +91,11 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
   }
 
   return (
-    <div className="tab-panel">
-      <div className="tab-header">
+    <div className="databases-tab">
+      <div className="databases-header">
         <div>
           <h3>{t("databases.title")}</h3>
-          <p className="tab-description">{t("databases.description")}</p>
+          <p className="databases-description">{t("databases.description")}</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
           {t("databases.create")}
@@ -101,15 +103,15 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
       </div>
 
       {databases.length === 0 ? (
-        <div className="empty-state">
-          <span className="empty-icon">🗄️</span>
+        <div className="databases-empty">
+          <span className="databases-empty-icon">🗄️</span>
           <p>{t("databases.empty")}</p>
           <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
             {t("databases.createFirst")}
           </button>
         </div>
       ) : (
-        <table className="data-table">
+        <table className="databases-table">
           <thead>
             <tr>
               <th>{t("databases.name")}</th>
@@ -129,7 +131,7 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
                 </td>
                 <td>{db.usersCount ?? "-"}</td>
                 <td>
-                  <div className="action-buttons">
+                  <div className="databases-actions">
                     <button
                       className="btn btn-sm"
                       onClick={() => handleDump(db.databaseName)}
@@ -159,8 +161,8 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
         </table>
       )}
 
-      <div className="tab-footer">
-        <span className="count-label">
+      <div className="databases-footer">
+        <span className="databases-count">
           {databases.length} {t("databases.count")}
         </span>
       </div>

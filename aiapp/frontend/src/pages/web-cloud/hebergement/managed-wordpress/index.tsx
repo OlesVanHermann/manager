@@ -1,244 +1,141 @@
 // ============================================================
-// MANAGED WORDPRESS INDEX - Page principale WordPress Managé
+// MANAGED WORDPRESS - Page principale (Défactorisé)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ServiceListPage } from "../../../../components/ServiceListPage";
-import { managedWordPressService, ManagedWordPress } from "../../../../services/web-cloud.managed-wordpress";
-import { CreateWebsiteModal, ImportWebsiteModal, DeleteWebsiteModal } from "./components";
-import { Onboarding } from "./Onboarding";
-import "./styles.css";
+import { apiClient } from "../../../../services/api";
+import type { ManagedWordPress } from "./managed-wordpress.types";
+import { GeneralTab, BackupsTab, ThemesPluginsTab, TasksTab } from "./tabs";
+import { CreateWebsiteModal, ImportWebsiteModal } from "./components";
+import Onboarding from "./Onboarding";
 
-// ---------- TYPES ----------
-interface Website {
-  id: string;
-  domain: string;
-  url: string;
-  adminUrl: string;
-  state: string;
-  wordpressVersion?: string;
-}
+const BASE_PATH = "/managedCMS/resource";
+const API_OPTIONS = { apiVersion: "v2" };
 
-// ---------- COMPOSANT PRINCIPAL ----------
-export function ManagedWordPressPage() {
+// Service local pour la page principale
+const pageService = {
+  async listServices(): Promise<string[]> {
+    const response = await apiClient.get<{ serviceName: string }[]>(BASE_PATH, API_OPTIONS);
+    return response.map(r => r.serviceName);
+  },
+  async getService(serviceName: string): Promise<ManagedWordPress> {
+    return apiClient.get(`${BASE_PATH}/${serviceName}`, API_OPTIONS);
+  },
+};
+
+type TabKey = "general" | "backups" | "themes" | "tasks";
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "general", label: "Général" },
+  { key: "backups", label: "Sauvegardes" },
+  { key: "themes", label: "Thèmes & Extensions" },
+  { key: "tasks", label: "Tâches" },
+];
+
+export default function ManagedWordPressPage() {
   const { t } = useTranslation("web-cloud/managed-wordpress/index");
-  const [services, setServices] = useState<ManagedWordPress[]>([]);
+  const { serviceName: paramServiceName } = useParams<{ serviceName?: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [services, setServices] = useState<string[]>([]);
+  const [selectedService, setSelectedService] = useState<string | null>(paramServiceName || null);
+  const [details, setDetails] = useState<ManagedWordPress | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<ManagedWordPress | null>(null);
-  const [websites, setWebsites] = useState<Website[]>([]);
-  const [websitesLoading, setWebsitesLoading] = useState(false);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<TabKey>((searchParams.get("tab") as TabKey) || "general");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
-  // Modals
-  const [showCreate, setShowCreate] = useState(false);
-  const [showImport, setShowImport] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Website | null>(null);
-
-  // ---------- LOAD SERVICES ----------
   const loadServices = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await managedWordPressService.listServices();
-      const data = await Promise.all(names.map(n => managedWordPressService.getService(n)));
-      setServices(data);
-      if (data.length > 0 && !selected) {
-        setSelected(data[0]);
-      }
+      const list = await pageService.listServices();
+      setServices(list);
+      if (list.length > 0 && !selectedService) setSelectedService(list[0]);
     } catch (err) { setError(String(err)); }
     finally { setLoading(false); }
-  }, [selected]);
+  }, [selectedService]);
 
-  // ---------- LOAD WEBSITES ----------
-  const loadWebsites = useCallback(async () => {
-    if (!selected) return;
-    try {
-      setWebsitesLoading(true);
-      const sites = await managedWordPressService.listWebsites(selected.serviceName);
-      setWebsites(sites || []);
-      const taskList = await managedWordPressService.listTasks(selected.serviceName);
-      setTasks(taskList.filter(t => t.status !== "done"));
-    } catch (err) { console.error(err); setWebsites([]); }
-    finally { setWebsitesLoading(false); }
-  }, [selected]);
+  const loadDetails = useCallback(async () => {
+    if (!selectedService) return;
+    try { const data = await pageService.getService(selectedService); setDetails(data); }
+    catch (err) { console.error(err); }
+  }, [selectedService]);
 
   useEffect(() => { loadServices(); }, [loadServices]);
-  useEffect(() => { loadWebsites(); }, [selected, loadWebsites]);
+  useEffect(() => { loadDetails(); }, [loadDetails]);
+  useEffect(() => { const tab = searchParams.get("tab") as TabKey; if (tab && TABS.some(t => t.key === tab)) setActiveTab(tab); }, [searchParams]);
 
-  // ---------- HANDLERS ----------
-  const handleSuccess = () => {
-    loadWebsites();
-    setShowCreate(false);
-    setShowImport(false);
-    setDeleteTarget(null);
-  };
+  const handleTabChange = (tab: TabKey) => { setActiveTab(tab); setSearchParams({ tab }); };
+  const handleRefresh = () => { loadDetails(); };
 
-  const getStateBadge = (state: string) => {
-    const map: Record<string, { class: string; label: string }> = {
-      active: { class: "success", label: t("state.active") },
-      creating: { class: "warning", label: t("state.creating") },
-      importing: { class: "warning", label: t("state.importing") },
-      deleting: { class: "warning", label: t("state.deleting") },
-      error: { class: "error", label: t("state.error") },
-    };
-    return map[state] || { class: "inactive", label: state };
-  };
-
-  // ---------- RENDER ----------
+  // Onboarding si aucun service
   if (!loading && services.length === 0) {
-    return <Onboarding />;
+    return (
+      <>
+        <Onboarding onCreate={() => setShowCreateModal(true)} onImport={() => setShowImportModal(true)} />
+        {selectedService && (
+          <>
+            <CreateWebsiteModal serviceName={selectedService} isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onSuccess={() => { setShowCreateModal(false); loadServices(); }} />
+            <ImportWebsiteModal serviceName={selectedService} isOpen={showImportModal} onClose={() => setShowImportModal(false)} onSuccess={() => { setShowImportModal(false); loadServices(); }} />
+          </>
+        )}
+      </>
+    );
   }
 
+  const renderTab = () => {
+    if (!selectedService || !details) return null;
+    switch (activeTab) {
+      case "general": return <GeneralTab serviceName={selectedService} details={details} onRefresh={handleRefresh} />;
+      case "backups": return <BackupsTab serviceName={selectedService} />;
+      case "themes": return <ThemesPluginsTab serviceName={selectedService} />;
+      case "tasks": return <TasksTab serviceName={selectedService} />;
+      default: return null;
+    }
+  };
+
   return (
-    <ServiceListPage
-      titleKey="title"
-      descriptionKey="description"
-      guidesUrl="https://help.ovhcloud.com/csm/fr-web-hosting-wordpress"
-      i18nNamespace="web-cloud/managed-wordpress/index"
-      services={services}
-      loading={loading}
-      error={error}
-      selectedService={selected}
-      onSelectService={setSelected}
-      emptyIcon={<span style={{ fontSize: "3rem" }}>📝</span>}
-      emptyTitleKey="empty.title"
-      emptyDescriptionKey="empty.description"
-    >
-      {selected && (
-        <div className="service-detail">
-          {/* Header */}
-          <div className="detail-header">
-            <div className="detail-title-row">
-              <h2>{selected.displayName || selected.serviceName}</h2>
-              <span className={`badge ${getStateBadge(selected.state).class}`}>
-                {getStateBadge(selected.state).label}
-              </span>
-            </div>
-            <span className="service-sublabel">{selected.offer} • {selected.datacenter}</span>
-          </div>
-
-          {/* Actions */}
-          <div className="action-bar">
-            <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-              {t("actions.create")}
-            </button>
-            <button className="btn btn-secondary" onClick={() => setShowImport(true)}>
-              {t("actions.import")}
-            </button>
-            <button className="btn btn-secondary" onClick={loadWebsites}>
-              {t("actions.refresh")}
-            </button>
-          </div>
-
-          {/* Tasks en cours */}
-          {tasks.length > 0 && (
-            <div className="info-banner warning">
-              <span className="info-icon">⏳</span>
-              <span>{t("tasks.pending", { count: tasks.length })}</span>
-            </div>
-          )}
-
-          {/* Liste des sites */}
-          <div className="websites-section">
-            <h3>{t("websites.title")}</h3>
-            {websitesLoading ? (
-              <div className="loading-spinner">Chargement...</div>
-            ) : websites.length === 0 ? (
-              <div className="empty-state">
-                <p>{t("websites.empty")}</p>
-                <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-                  {t("websites.createFirst")}
-                </button>
+    <div className="hosting-page">
+      <div className="hosting-split">
+        <aside className="service-list-sidebar">
+          <div className="sidebar-search"><div className="search-input-wrapper"><span className="search-icon">🔍</span><input type="text" placeholder={t("common.search")} /></div></div>
+          <div className="sidebar-filter"><span>{services.length} site(s)</span></div>
+          <div className="service-items">
+            {services.map(svc => (
+              <div key={svc} className={`service-item ${svc === selectedService ? "selected" : ""}`} onClick={() => setSelectedService(svc)}>
+                <span className="service-icon">🌐</span>
+                <div className="service-info"><div className="service-item-name">{svc}</div><div className="service-item-type">WordPress</div></div>
               </div>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>{t("websites.domain")}</th>
-                    <th>{t("websites.version")}</th>
-                    <th>{t("websites.state")}</th>
-                    <th>{t("websites.actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {websites.map(site => (
-                    <tr key={site.id}>
-                      <td>
-                        <a href={site.url} target="_blank" rel="noopener noreferrer">{site.domain}</a>
-                      </td>
-                      <td>{site.wordpressVersion || "-"}</td>
-                      <td>
-                        <span className={`badge ${getStateBadge(site.state).class}`}>
-                          {getStateBadge(site.state).label}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="action-buttons">
-                          <a href={site.adminUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm">
-                            {t("websites.admin")}
-                          </a>
-                          <button 
-                            className="btn btn-sm btn-danger"
-                            onClick={() => setDeleteTarget(site)}
-                          >
-                            {t("websites.delete")}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+            ))}
           </div>
+        </aside>
 
-          {/* Quota */}
-          {selected.quota && (
-            <div className="quota-section">
-              <h4>{t("quota.title")}</h4>
-              <div className="quota-bar">
-                <div 
-                  className="quota-used" 
-                  style={{ width: `${(selected.quota.used / selected.quota.size) * 100}%` }}
-                />
+        <main className="hosting-main">
+          {loading ? (
+            <div className="tab-loading">Chargement...</div>
+          ) : error ? (
+            <div className="error-state">{error}</div>
+          ) : selectedService && details ? (
+            <div className="service-detail">
+              <div className="detail-header-domains">
+                <h2>{details.displayName || details.serviceName}</h2>
+                <span className={`badge ${details.state === "active" ? "success" : "warning"}`}>{details.state}</span>
               </div>
-              <span className="quota-label">
-                {(selected.quota.used / 1024 / 1024 / 1024).toFixed(2)} Go / {(selected.quota.size / 1024 / 1024 / 1024).toFixed(0)} Go
-              </span>
+              <div className="detail-header-tabs">
+                {TABS.map(tab => (
+                  <button key={tab.key} className={`tab-btn ${activeTab === tab.key ? "active" : ""}`} onClick={() => handleTabChange(tab.key)}>{tab.label}</button>
+                ))}
+              </div>
+              <div className="tab-content">{renderTab()}</div>
             </div>
+          ) : (
+            <div className="hosting-empty"><span className="empty-icon">🌐</span><h3>{t("common.selectService")}</h3></div>
           )}
-        </div>
-      )}
-
-      {/* Modals */}
-      {selected && (
-        <>
-          <CreateWebsiteModal
-            serviceName={selected.serviceName}
-            isOpen={showCreate}
-            onClose={() => setShowCreate(false)}
-            onSuccess={handleSuccess}
-          />
-          <ImportWebsiteModal
-            serviceName={selected.serviceName}
-            isOpen={showImport}
-            onClose={() => setShowImport(false)}
-            onSuccess={handleSuccess}
-          />
-          {deleteTarget && (
-            <DeleteWebsiteModal
-              serviceName={selected.serviceName}
-              website={deleteTarget}
-              isOpen={!!deleteTarget}
-              onClose={() => setDeleteTarget(null)}
-              onSuccess={handleSuccess}
-            />
-          )}
-        </>
-      )}
-    </ServiceListPage>
+        </main>
+      </div>
+    </div>
   );
 }
-
-export default ManagedWordPressPage;

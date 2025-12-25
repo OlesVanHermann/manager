@@ -61,7 +61,7 @@ export default function BackupsTab({ serviceId }: BackupsTabProps) {
         <h2>{t("backups.title")}</h2>
       </div>
 
-      <div className="info-card" style={{ marginBottom: "var(--space-4)" }}>
+      <div className="backups-info-card" style={{ marginBottom: "var(--space-4)" }}>
         <p style={{ color: "var(--color-text-secondary)" }}>{t("backups.description")}</p>
       </div>
 
@@ -71,7 +71,7 @@ export default function BackupsTab({ serviceId }: BackupsTabProps) {
           <p>{t("backups.empty.description")}</p>
         </div>
       ) : (
-        <table className="data-table">
+        <table className="backups-data-table">
           <thead>
             <tr>
               <th>{t("backups.columns.date")}</th>
@@ -82,7 +82,7 @@ export default function BackupsTab({ serviceId }: BackupsTabProps) {
             {backups.map((backup) => (
               <tr key={backup.id}>
                 <td>{new Date(backup.creationDate).toLocaleString("fr-FR")}</td>
-                <td className="item-actions">
+                <td className="backups-item-actions">
                   <button className="btn btn-sm btn-outline">{t("backups.actions.restore")}</button>
                 </td>
               </tr>

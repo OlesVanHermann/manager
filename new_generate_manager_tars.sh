@@ -453,7 +453,6 @@ echo "Création new_manager.web-cloud.core.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.core.tar \
     ./src/pages/web-cloud/index.tsx \
     ./src/pages/web-cloud/styles.css \
-    ./src/pages/web-cloud/shared \
     ./public/locales/en/web-cloud/index.json \
     ./public/locales/fr/web-cloud/index.json
 
@@ -481,12 +480,13 @@ tar -cf /home/ubuntu/new_manager.web-cloud.access.pack-xdsl.tar \
     ./public/locales/fr/web-cloud/pack-xdsl \
     $(add_if_exists ./src/services/web-cloud.pack-xdsl.ts)
 
-echo "Création new_manager.web-cloud.alldom.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.alldom.tar \
-    ./src/pages/web-cloud/alldom \
-    ./public/locales/en/web-cloud/alldom \
-    ./public/locales/fr/web-cloud/alldom \
-    $(add_if_exists ./src/services/web-cloud.alldom.ts)
+# DÉSACTIVÉ - dossier src/pages/web-cloud/alldom n'existe pas
+# echo "Création new_manager.web-cloud.alldom.tar..."
+# tar -cf /home/ubuntu/new_manager.web-cloud.alldom.tar \
+#     ./src/pages/web-cloud/alldom \
+#     ./public/locales/en/web-cloud/alldom \
+#     ./public/locales/fr/web-cloud/alldom \
+#     $(add_if_exists ./src/services/web-cloud.alldom.ts)
 
 echo "Création new_manager.web-cloud.domains.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.domains.tar \

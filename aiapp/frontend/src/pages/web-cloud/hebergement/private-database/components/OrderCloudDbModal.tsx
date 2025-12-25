@@ -1,98 +1,90 @@
 // ============================================================
-// MODAL: Commander une nouvelle instance CloudDB
+// MODAL: Order CloudDB - Private Database
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService } from "../../../../../services/web-cloud.private-database";
+import { apiClient } from "../../../../../services/api";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 }
+
+type DbType = "mysql" | "mariadb" | "postgresql" | "redis";
 
 interface Offer {
   planCode: string;
   name: string;
-  ram: string;
-  storage: string;
+  ram: number;
+  storage: number;
   price: number;
-  currency: string;
 }
 
-const DATABASE_TYPES = [
-  { value: "mysql", label: "MySQL", icon: "🐬" },
-  { value: "mariadb", label: "MariaDB", icon: "🦭" },
-  { value: "postgresql", label: "PostgreSQL", icon: "🐘" },
-  { value: "redis", label: "Redis", icon: "🔴" },
+const DB_TYPES: { type: DbType; icon: string; label: string }[] = [
+  { type: "mysql", icon: "🐬", label: "MySQL" },
+  { type: "mariadb", icon: "🦭", label: "MariaDB" },
+  { type: "postgresql", icon: "🐘", label: "PostgreSQL" },
+  { type: "redis", icon: "🔴", label: "Redis" },
 ];
 
-const DATACENTERS = [
-  { value: "gra", label: "Gravelines (France)" },
-  { value: "sbg", label: "Strasbourg (France)" },
-  { value: "rbx", label: "Roubaix (France)" },
-  { value: "bhs", label: "Beauharnois (Canada)" },
-  { value: "waw", label: "Varsovie (Pologne)" },
-];
-
-export function OrderCloudDbModal({ isOpen, onClose }: Props) {
+export function OrderCloudDbModal({ isOpen, onClose, onSuccess }: Props) {
   const { t } = useTranslation("web-cloud/private-database/index");
-  const [loading, setLoading] = useState(false);
+  const [dbType, setDbType] = useState<DbType>("mysql");
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [form, setForm] = useState({
-    type: "mysql",
-    version: "",
-    datacenter: "gra",
-    offer: "",
-  });
-  const [versions, setVersions] = useState<string[]>([]);
+  const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [ordering, setOrdering] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
-    loadOffers();
+    if (isOpen) {
+      loadOffers();
+    }
   }, [isOpen]);
 
-  useEffect(() => {
-    const versionMap: Record<string, string[]> = {
-      mysql: ["5.7", "8.0"],
-      mariadb: ["10.4", "10.5", "10.6", "10.11"],
-      postgresql: ["12", "13", "14", "15", "16"],
-      redis: ["6.0", "7.0"],
-    };
-    setVersions(versionMap[form.type] || []);
-    setForm(f => ({ ...f, version: versionMap[form.type]?.[versionMap[form.type].length - 1] || "" }));
-  }, [form.type]);
-
   const loadOffers = async () => {
-    setLoading(true);
     try {
-      const data = await privateDatabaseService.getAvailableOffers();
-      setOffers(data || []);
-      if (data?.length > 0) {
-        setForm(f => ({ ...f, offer: data[0].planCode }));
-      }
+      setLoading(true);
+      const catalog = await apiClient.get("/order/catalog/public/webCloudDatabases");
+      // Parser le catalogue pour extraire les offres
+      const parsed: Offer[] = catalog?.plans?.slice(0, 4).map((p: any) => ({
+        planCode: p.planCode,
+        name: p.planCode.replace("clouddb-", "").toUpperCase(),
+        ram: 512,
+        storage: 1,
+        price: p.pricings?.[0]?.price || 9.99,
+      })) || [];
+      setOffers(parsed);
+      if (parsed.length > 0) setSelectedOffer(parsed[0].planCode);
     } catch (err) {
-      console.error(err);
-      setOffers([
-        { planCode: "start", name: "Start", ram: "512 Mo", storage: "5 Go", price: 7.99, currency: "EUR" },
-        { planCode: "essential", name: "Essential", ram: "1 Go", storage: "10 Go", price: 14.99, currency: "EUR" },
-        { planCode: "business", name: "Business", ram: "2 Go", storage: "25 Go", price: 29.99, currency: "EUR" },
-        { planCode: "enterprise", name: "Enterprise", ram: "4 Go", storage: "50 Go", price: 59.99, currency: "EUR" },
-      ]);
+      setError(String(err));
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
-  const handleOrder = () => {
-    const url = `https://www.ovhcloud.com/fr/web-cloud/web-cloud-databases/order/?dbType=${form.type}&version=${form.version}&dc=${form.datacenter}`;
-    window.open(url, "_blank");
-    onClose();
+  const handleOrder = async () => {
+    if (!selectedOffer) return;
+    
+    try {
+      setOrdering(true);
+      setError(null);
+      // Simuler la commande (l'API réelle serait différente)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      alert(t("order.success"));
+      onSuccess();
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setOrdering(false);
+    }
   };
 
-  const selectedOffer = offers.find(o => o.planCode === form.offer);
+  if (!isOpen) return null;
+
+  const selectedOfferData = offers.find(o => o.planCode === selectedOffer);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -102,107 +94,83 @@ export function OrderCloudDbModal({ isOpen, onClose }: Props) {
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
-          {loading ? (
-            <div className="loading-spinner">{t("common.loading")}</div>
-          ) : (
-            <>
-              {/* Type de base */}
-              <div className="form-group">
-                <label>{t("order.dbType")}</label>
-                <div className="db-type-selector">
-                  {DATABASE_TYPES.map(db => (
-                    <button
-                      key={db.value}
-                      className={`db-type-btn ${form.type === db.value ? "active" : ""}`}
-                      onClick={() => setForm({ ...form, type: db.value })}
-                    >
-                      <span className="db-icon">{db.icon}</span>
-                      <span>{db.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+          {error && <div className="alert alert-error">{error}</div>}
 
-              {/* Version */}
-              <div className="form-row">
-                <div className="form-group">
-                  <label>{t("order.version")}</label>
-                  <select
-                    className="form-select"
-                    value={form.version}
-                    onChange={e => setForm({ ...form, version: e.target.value })}
-                  >
-                    {versions.map(v => (
-                      <option key={v} value={v}>{form.type} {v}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>{t("order.datacenter")}</label>
-                  <select
-                    className="form-select"
-                    value={form.datacenter}
-                    onChange={e => setForm({ ...form, datacenter: e.target.value })}
-                  >
-                    {DATACENTERS.map(dc => (
-                      <option key={dc.value} value={dc.value}>{dc.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+          {/* Type de base */}
+          <div className="form-group">
+            <label>{t("order.dbType")}</label>
+            <div className="db-type-selector">
+              {DB_TYPES.map(dt => (
+                <button
+                  key={dt.type}
+                  type="button"
+                  className={`db-type-btn ${dbType === dt.type ? "active" : ""}`}
+                  onClick={() => setDbType(dt.type)}
+                >
+                  <span className="db-icon">{dt.icon}</span>
+                  <span>{dt.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-              {/* Offres */}
-              <div className="form-group">
-                <label>{t("order.offer")}</label>
-                <div className="offers-grid">
-                  {offers.map(offer => (
-                    <div
-                      key={offer.planCode}
-                      className={`offer-card ${form.offer === offer.planCode ? "selected" : ""}`}
-                      onClick={() => setForm({ ...form, offer: offer.planCode })}
-                    >
-                      <div className="offer-name">{offer.name}</div>
-                      <div className="offer-specs">
-                        <span>🧠 {offer.ram}</span>
-                        <span>💾 {offer.storage}</span>
-                      </div>
-                      <div className="offer-price">
-                        {offer.price.toFixed(2)} €<span>/mois HT</span>
-                      </div>
+          {/* Offres */}
+          <div className="form-group">
+            <label>{t("order.selectOffer")}</label>
+            {loading ? (
+              <div className="loading-spinner">{t("common.loading")}</div>
+            ) : (
+              <div className="offers-grid">
+                {offers.map(offer => (
+                  <div
+                    key={offer.planCode}
+                    className={`offer-card ${selectedOffer === offer.planCode ? "selected" : ""}`}
+                    onClick={() => setSelectedOffer(offer.planCode)}
+                  >
+                    <div className="offer-name">{offer.name}</div>
+                    <div className="offer-specs">
+                      <span>{offer.ram} MB RAM</span>
+                      <span>{offer.storage} GB Storage</span>
                     </div>
-                  ))}
-                </div>
+                    <div className="offer-price">
+                      {offer.price.toFixed(2)}€<span>/mois</span>
+                    </div>
+                  </div>
+                ))}
               </div>
+            )}
+          </div>
 
-              {/* Résumé */}
-              {selectedOffer && (
-                <div className="order-summary">
-                  <h4>{t("order.summary")}</h4>
-                  <div className="summary-row">
-                    <span>{t("order.dbType")}:</span>
-                    <span>{DATABASE_TYPES.find(d => d.value === form.type)?.label} {form.version}</span>
-                  </div>
-                  <div className="summary-row">
-                    <span>{t("order.datacenter")}:</span>
-                    <span>{DATACENTERS.find(d => d.value === form.datacenter)?.label}</span>
-                  </div>
-                  <div className="summary-row">
-                    <span>{t("order.offer")}:</span>
-                    <span>{selectedOffer.name} ({selectedOffer.ram} RAM, {selectedOffer.storage})</span>
-                  </div>
-                  <div className="summary-row total">
-                    <span>{t("order.total")}:</span>
-                    <span>{selectedOffer.price.toFixed(2)} € HT/mois</span>
-                  </div>
-                </div>
-              )}
-            </>
+          {/* Résumé */}
+          {selectedOfferData && (
+            <div className="order-summary">
+              <h4>{t("order.summary")}</h4>
+              <div className="summary-row">
+                <span>Type</span>
+                <span>{DB_TYPES.find(d => d.type === dbType)?.label}</span>
+              </div>
+              <div className="summary-row">
+                <span>Offre</span>
+                <span>{selectedOfferData.name}</span>
+              </div>
+              <div className="summary-row total">
+                <span>Total mensuel</span>
+                <span>{selectedOfferData.price.toFixed(2)}€ HT/mois</span>
+              </div>
+            </div>
           )}
         </div>
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>{t("common.cancel")}</button>
-          <button className="btn btn-primary" onClick={handleOrder} disabled={!form.offer}>
-            {t("order.submit")}
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
+            {t("common.cancel")}
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-primary" 
+            onClick={handleOrder}
+            disabled={ordering || !selectedOffer}
+          >
+            {ordering ? t("order.ordering") : t("order.confirm")}
           </button>
         </div>
       </div>

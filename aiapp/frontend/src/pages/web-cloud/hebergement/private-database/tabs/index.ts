@@ -1,12 +1,12 @@
 // ============================================================
-// PRIVATE DATABASE TABS - Index exports
+// EXPORTS TABS - Private Database (Défactorisé)
 // ============================================================
 
-export { GeneralTab } from "./GeneralTab";
-export { DatabasesTab } from "./DatabasesTab";
-export { UsersTab } from "./UsersTab";
-export { WhitelistTab } from "./WhitelistTab";
-export { TasksTab } from "./TasksTab";
-export { MetricsTab } from "./MetricsTab";
-export { LogsTab } from "./LogsTab";
-export { ConfigurationTab } from "./ConfigurationTab";
+export { GeneralTab } from "./general/GeneralTab.tsx";
+export { DatabasesTab } from "./databases/DatabasesTab.tsx";
+export { UsersTab } from "./users/UsersTab.tsx";
+export { WhitelistTab } from "./whitelist/WhitelistTab.tsx";
+export { TasksTab } from "./tasks/TasksTab.tsx";
+export { MetricsTab } from "./metrics/MetricsTab.tsx";
+export { LogsTab } from "./logs/LogsTab.tsx";
+export { ConfigurationTab } from "./configuration/ConfigurationTab.tsx";

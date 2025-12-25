@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as communicationService from "../../../../../services/home.support.communication";
+import * as broadcastService from "./BroadcastTab.service";
 import { SUPPORT_URLS } from "./BroadcastTab.service";
 import "./BroadcastTab.css";
 
@@ -19,14 +19,14 @@ export function BroadcastTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [marketingPrefs, setMarketingPrefs] = useState<communicationService.MarketingPreferences>({
+  const [marketingPrefs, setMarketingPrefs] = useState<broadcastService.MarketingPreferences>({
     email: false,
     phone: false,
     sms: false,
     fax: false,
   });
-  const [routingRules, setRoutingRules] = useState<communicationService.NotificationRouting[]>([]);
-  const [reference, setReference] = useState<communicationService.NotificationReference | null>(null);
+  const [routingRules, setRoutingRules] = useState<broadcastService.NotificationRouting[]>([]);
+  const [reference, setReference] = useState<broadcastService.NotificationReference | null>(null);
 
   // ---------- EFFECTS ----------
   useEffect(() => { loadData(); }, []);
@@ -37,9 +37,9 @@ export function BroadcastTab() {
     setError(null);
     try {
       const [prefs, rules, ref] = await Promise.all([
-        communicationService.getMarketingPreferences(),
-        communicationService.getRoutingRules(),
-        communicationService.getNotificationReference(),
+        broadcastService.getMarketingPreferences(),
+        broadcastService.getRoutingRules(),
+        broadcastService.getNotificationReference(),
       ]);
       setMarketingPrefs(prefs);
       setRoutingRules(rules);
@@ -52,12 +52,12 @@ export function BroadcastTab() {
   };
 
   // ---------- HANDLERS ----------
-  const handleMarketingToggle = async (key: keyof communicationService.MarketingPreferences) => {
+  const handleMarketingToggle = async (key: keyof broadcastService.MarketingPreferences) => {
     const newPrefs = { ...marketingPrefs, [key]: !marketingPrefs[key] };
     setMarketingPrefs(newPrefs);
     setSaving(true);
     try {
-      await communicationService.updateMarketingPreferences(newPrefs);
+      await broadcastService.updateMarketingPreferences(newPrefs);
     } catch (err) {
       setMarketingPrefs(marketingPrefs);
       setError(err instanceof Error ? err.message : t('errors.saveError'));

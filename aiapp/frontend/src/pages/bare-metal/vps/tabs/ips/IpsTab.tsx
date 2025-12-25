@@ -45,7 +45,7 @@ export function IpsTab({ serviceName }: Props) {
     <div className="ips-tab">
       <div className="tab-header">
         <h3>{t("ips.title")}</h3>
-        <span className="records-count">{ips.length}</span>
+        <span className="ips-records-count">{ips.length}</span>
       </div>
 
       {ips.length === 0 ? (
@@ -53,7 +53,7 @@ export function IpsTab({ serviceName }: Props) {
           <p>{t("ips.empty")}</p>
         </div>
       ) : (
-        <table className="data-table">
+        <table className="ips-data-table">
           <thead>
             <tr>
               <th>{t("ips.address")}</th>

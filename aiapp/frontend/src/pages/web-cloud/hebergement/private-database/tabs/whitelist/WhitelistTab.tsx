@@ -4,8 +4,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService, PdbWhitelist } from "../../../../../services/web-cloud.private-database";
-import { AddWhitelistModal } from "../components/AddWhitelistModal";
+import { whitelistService } from "./WhitelistTab";
+import type { PdbWhitelist } from "../../private-database.types";
+import { AddWhitelistModal } from "../../components/AddWhitelistModal";
+import "./WhitelistTab.css";
 
 interface Props { serviceName: string; }
 
@@ -20,8 +22,8 @@ export function WhitelistTab({ serviceName }: Props) {
   const loadEntries = useCallback(async () => {
     try {
       setLoading(true);
-      const ips = await privateDatabaseService.listWhitelist(serviceName);
-      const data = await Promise.all(ips.map(ip => privateDatabaseService.getWhitelistEntry(serviceName, ip)));
+      const ips = await whitelistService.listWhitelist(serviceName);
+      const data = await Promise.all(ips.map(ip => whitelistService.getWhitelistEntry(serviceName, ip)));
       setEntries(data);
     } catch (err) { setError(String(err)); }
     finally { setLoading(false); }
@@ -32,7 +34,7 @@ export function WhitelistTab({ serviceName }: Props) {
   const handleDelete = async (ip: string) => {
     if (!confirm(t("whitelist.confirmDelete", { ip }))) return;
     try {
-      await privateDatabaseService.deleteWhitelistEntry(serviceName, ip);
+      await whitelistService.deleteWhitelistEntry(serviceName, ip);
       loadEntries();
     } catch (err) { alert(String(err)); }
   };
@@ -41,14 +43,14 @@ export function WhitelistTab({ serviceName }: Props) {
   if (error) return <div className="error-state">{error}</div>;
 
   return (
-    <div className="pdb-whitelist-tab">
-      <div className="tab-header">
+    <div className="whitelist-tab">
+      <div className="whitelist-header">
         <div>
           <h3>{t("whitelist.title")}</h3>
-          <p className="tab-description">{t("whitelist.description")}</p>
+          <p className="whitelist-description">{t("whitelist.description")}</p>
         </div>
-        <div className="tab-actions">
-          <span className="records-count">{entries.length} {t("whitelist.count")}</span>
+        <div className="whitelist-actions">
+          <span className="whitelist-count">{entries.length} {t("whitelist.count")}</span>
           <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
             + {t("whitelist.add")}
           </button>
@@ -56,8 +58,8 @@ export function WhitelistTab({ serviceName }: Props) {
       </div>
 
       {/* Info aide */}
-      <div className="info-banner">
-        <span className="info-icon">ℹ</span>
+      <div className="whitelist-info-banner">
+        <span className="whitelist-info-icon">ℹ</span>
         <div>
           <p>{t("whitelist.info")}</p>
           <p style={{ marginTop: 'var(--space-2)' }}>
@@ -68,14 +70,14 @@ export function WhitelistTab({ serviceName }: Props) {
       </div>
 
       {entries.length === 0 ? (
-        <div className="empty-state">
+        <div className="whitelist-empty">
           <p>{t("whitelist.empty")}</p>
           <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
             {t("whitelist.addFirst")}
           </button>
         </div>
       ) : (
-        <table className="data-table">
+        <table className="whitelist-table">
           <thead>
             <tr>
               <th>{t("whitelist.ip")}</th>
@@ -95,7 +97,7 @@ export function WhitelistTab({ serviceName }: Props) {
                   <div className="whitelist-options">
                     {entry.service && <span className="badge success">Service</span>}
                     {entry.sftp && <span className="badge info">SFTP</span>}
-                    {!entry.service && !entry.sftp && <span className="text-muted">-</span>}
+                    {!entry.service && !entry.sftp && <span className="whitelist-text-muted">-</span>}
                   </div>
                 </td>
                 <td>

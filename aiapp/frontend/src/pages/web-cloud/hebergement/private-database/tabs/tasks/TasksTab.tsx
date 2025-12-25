@@ -4,13 +4,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { privateDatabaseService, PdbTask } from "../../../../../services/web-cloud.private-database";
+import { tasksService } from "./TasksTab";
+import type { PdbTask } from "../../private-database.types";
+import "./TasksTab.css";
 
 interface Props { serviceName: string; }
 
 const POLL_INTERVAL = 30000;
 
-/** Onglet Tâches en cours CloudDB. */
 export function TasksTab({ serviceName }: Props) {
   const { t } = useTranslation("web-cloud/private-database/index");
   const [tasks, setTasks] = useState<PdbTask[]>([]);
@@ -21,8 +22,8 @@ export function TasksTab({ serviceName }: Props) {
   const loadTasks = useCallback(async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
-      const ids = await privateDatabaseService.listTasks(serviceName);
-      const data = await Promise.all(ids.slice(0, 50).map(id => privateDatabaseService.getTask(serviceName, id)));
+      const ids = await tasksService.listTasks(serviceName);
+      const data = await Promise.all(ids.slice(0, 50).map(id => tasksService.getTask(serviceName, id)));
       data.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
       setTasks(data);
     } catch (err) { setError(String(err)); }
@@ -62,27 +63,19 @@ export function TasksTab({ serviceName }: Props) {
   if (error) return <div className="error-state">{error}</div>;
 
   return (
-    <div className="pdb-tasks-tab">
-      <div className="tab-header">
-        <div>
-          <h3>{t("tasks.title")}</h3>
-        </div>
-        <div className="tab-actions">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-            />
+    <div className="tasks-tab">
+      <div className="tasks-header">
+        <h3>{t("tasks.title")}</h3>
+        <div className="tasks-actions">
+          <label className="tasks-checkbox-label">
+            <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
             {t("tasks.autoRefresh")}
           </label>
-          <button className="btn-icon" onClick={() => loadTasks()} title={t("tasks.refresh")}>
-            ↻
-          </button>
+          <button className="btn-icon" onClick={() => loadTasks()} title={t("tasks.refresh")}>↻</button>
         </div>
       </div>
 
-      <table className="data-table">
+      <table className="tasks-table">
         <thead>
           <tr>
             <th>{t("tasks.function")}</th>
@@ -93,11 +86,7 @@ export function TasksTab({ serviceName }: Props) {
         </thead>
         <tbody>
           {tasks.length === 0 ? (
-            <tr>
-              <td colSpan={4} className="text-center text-muted" style={{ padding: 'var(--space-8)' }}>
-                {t("tasks.empty")}
-              </td>
-            </tr>
+            <tr><td colSpan={4} className="tasks-empty">{t("tasks.empty")}</td></tr>
           ) : (
             tasks.map(task => (
               <tr key={task.id}>

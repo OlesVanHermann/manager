@@ -41,11 +41,11 @@ export default function AccessesTab({ serviceId }: AccessesTabProps) {
       {accesses.length === 0 ? (
         <div className="empty-state"><h2>{t("accesses.empty.title")}</h2><p>{t("accesses.empty.description")}</p></div>
       ) : (
-        <table className="data-table">
+        <table className="accesses-data-table">
           <thead><tr><th>{t("accesses.columns.ip")}</th><th>{t("accesses.columns.partition")}</th><th>{t("accesses.columns.type")}</th><th>{t("accesses.columns.description")}</th><th>{t("accesses.columns.actions")}</th></tr></thead>
           <tbody>
             {accesses.map((access, idx) => (
-              <tr key={idx}><td className="mono">{access.ip}</td><td>{access.partitionName}</td><td>{getTypeBadge(access.type)}</td><td>{access.aclDescription || "-"}</td><td className="item-actions"><button className="btn btn-sm btn-outline btn-danger" onClick={() => handleDelete(access.partitionName, access.ip)}>{tCommon("actions.delete")}</button></td></tr>
+              <tr key={idx}><td className="mono">{access.ip}</td><td>{access.partitionName}</td><td>{getTypeBadge(access.type)}</td><td>{access.aclDescription || "-"}</td><td className="accesses-item-actions"><button className="btn btn-sm btn-outline btn-danger" onClick={() => handleDelete(access.partitionName, access.ip)}>{tCommon("actions.delete")}</button></td></tr>
             ))}
           </tbody>
         </table>

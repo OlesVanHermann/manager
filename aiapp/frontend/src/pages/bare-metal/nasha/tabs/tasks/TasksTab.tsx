@@ -35,7 +35,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
       {tasks.length === 0 ? (
         <div className="empty-state"><h2>{t("tasks.empty.title")}</h2><p>{t("tasks.empty.description")}</p></div>
       ) : (
-        <table className="data-table">
+        <table className="tasks-data-table">
           <thead><tr><th>{t("tasks.columns.operation")}</th><th>{t("tasks.columns.partition")}</th><th>{t("tasks.columns.status")}</th><th>{t("tasks.columns.started")}</th><th>{t("tasks.columns.completed")}</th></tr></thead>
           <tbody>
             {tasks.map((task) => (

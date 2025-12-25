@@ -50,25 +50,25 @@ export function NetworkTab({ serviceName }: Props) {
 
   return (
     <div className="network-tab">
-      <section className="info-section">
+      <section className="network-info-section">
         <h3>{t("network.ips")}</h3>
         {ips.length === 0 ? (
           <p>{t("network.noIps")}</p>
         ) : (
-          <div className="ip-list">
+          <div className="network-ip-list">
             {ips.map((ip) => (
-              <span key={ip} className="ip-badge font-mono">{ip}</span>
+              <span key={ip} className="network-ip-badge font-mono">{ip}</span>
             ))}
           </div>
         )}
       </section>
 
-      <section className="info-section">
+      <section className="network-info-section">
         <h3>{t("network.vrack")}</h3>
         {vracks.length === 0 ? (
           <p>{t("network.noVrack")}</p>
         ) : (
-          <table className="data-table">
+          <table className="network-data-table">
             <thead>
               <tr>
                 <th>{t("network.vrackName")}</th>

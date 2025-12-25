@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as communicationService from "../../../../../services/home.support.communication";
+import * as communicationsService from "./CommunicationsTab.service";
 import { formatDate, SUPPORT_URLS } from "./CommunicationsTab.service";
 import { MailIcon } from "./CommunicationsTab.icons";
 import "./CommunicationsTab.css";
@@ -19,8 +19,8 @@ export function CommunicationsTab() {
   // ---------- STATE ----------
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<communicationService.NotificationHistory[]>([]);
-  const [contactMeans, setContactMeans] = useState<communicationService.ContactMean[]>([]);
+  const [notifications, setNotifications] = useState<communicationsService.NotificationHistory[]>([]);
+  const [contactMeans, setContactMeans] = useState<communicationsService.ContactMean[]>([]);
 
   // ---------- EFFECTS ----------
   useEffect(() => { loadData(); }, []);
@@ -31,8 +31,8 @@ export function CommunicationsTab() {
     setError(null);
     try {
       const [notifs, contacts] = await Promise.all([
-        communicationService.getNotificationHistory(50),
-        communicationService.getContactMeans(),
+        communicationsService.getNotificationHistory(50),
+        communicationsService.getContactMeans(),
       ]);
       setNotifications(notifs);
       setContactMeans(contacts);

@@ -67,7 +67,7 @@ export function TasksTab({ serviceName }: Props) {
           <p>{t("tasks.empty")}</p>
         </div>
       ) : (
-        <table className="data-table">
+        <table className="tasks-data-table">
           <thead>
             <tr>
               <th>{t("tasks.function")}</th>

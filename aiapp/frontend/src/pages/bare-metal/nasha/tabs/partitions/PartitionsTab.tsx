@@ -40,17 +40,17 @@ export default function PartitionsTab({ serviceId }: PartitionsTabProps) {
       ) : (
         <div className="partitions-list">
           {partitions.map((partition) => (
-            <div key={partition.partitionName} className="partition-card">
-              <div className="partition-header">
-                <div><div className="partition-name">{partition.partitionName}</div>{partition.partitionDescription && <div style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-secondary)" }}>{partition.partitionDescription}</div>}</div>
-                <span className="partition-protocol">{partition.protocol}</span>
+            <div key={partition.partitionName} className="partitions-partition-card">
+              <div className="partitions-partition-header">
+                <div><div className="partitions-partition-name">{partition.partitionName}</div>{partition.partitionDescription && <div style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-secondary)" }}>{partition.partitionDescription}</div>}</div>
+                <span className="partitions-partition-protocol">{partition.protocol}</span>
               </div>
-              <div className="info-grid" style={{ marginBottom: 0 }}>
-                <div className="info-card"><div className="card-title">{t("partitions.fields.size")}</div><div className="card-value">{formatSize(partition.size)}</div></div>
-                <div className="info-card"><div className="card-title">{t("partitions.fields.snapshots")}</div><div className="card-value">{formatSize(partition.usedBySnapshots)}</div></div>
-                <div className="info-card"><div className="card-title">{t("partitions.fields.path")}</div><div className="card-value mono" style={{ fontSize: "var(--font-size-sm)" }}>/export/{partition.partitionName}</div></div>
+              <div className="partitions-info-grid" style={{ marginBottom: 0 }}>
+                <div className="partitions-info-card"><div className="partitions-card-title">{t("partitions.fields.size")}</div><div className="partitions-card-value">{formatSize(partition.size)}</div></div>
+                <div className="partitions-info-card"><div className="partitions-card-title">{t("partitions.fields.snapshots")}</div><div className="partitions-card-value">{formatSize(partition.usedBySnapshots)}</div></div>
+                <div className="partitions-info-card"><div className="partitions-card-title">{t("partitions.fields.path")}</div><div className="partitions-card-value mono" style={{ fontSize: "var(--font-size-sm)" }}>/export/{partition.partitionName}</div></div>
               </div>
-              <div className="item-actions" style={{ marginTop: "var(--space-3)" }}>
+              <div className="partitions-item-actions" style={{ marginTop: "var(--space-3)" }}>
                 <button className="btn btn-sm btn-outline">{tCommon("actions.edit")}</button>
                 <button className="btn btn-sm btn-outline">{t("partitions.resize")}</button>
                 <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleDelete(partition.partitionName)}>{tCommon("actions.delete")}</button>

@@ -69,13 +69,13 @@ export function IpmiTab({ serviceName }: Props) {
       ) : (
         <>
           <div className="ipmi-features">
-            <div className="feature-item">
+            <div className="ipmi-feature-item">
               <label>KVM over IP</label>
               <span className={`badge ${ipmi.supportedFeatures?.kvmoverip ? "success" : "inactive"}`}>
                 {ipmi.supportedFeatures?.kvmoverip ? t("ipmi.supported") : t("ipmi.notSupported")}
               </span>
             </div>
-            <div className="feature-item">
+            <div className="ipmi-feature-item">
               <label>Serial over LAN</label>
               <span className={`badge ${ipmi.supportedFeatures?.serialOverLanUrl ? "success" : "inactive"}`}>
                 {ipmi.supportedFeatures?.serialOverLanUrl ? t("ipmi.supported") : t("ipmi.notSupported")}
@@ -97,7 +97,7 @@ export function IpmiTab({ serviceName }: Props) {
           </div>
 
           {sessionUrl && (
-            <div className="session-url">
+            <div className="ipmi-session-url">
               <label>{t("ipmi.sessionUrl")}</label>
               <a href={sessionUrl} target="_blank" rel="noopener noreferrer">{t("ipmi.openSession")}</a>
             </div>
@@ -105,7 +105,7 @@ export function IpmiTab({ serviceName }: Props) {
         </>
       )}
 
-      <div className="info-box">
+      <div className="ipmi-info-box">
         <h4>{t("ipmi.whatIs")}</h4>
         <p>{t("ipmi.explanation")}</p>
       </div>

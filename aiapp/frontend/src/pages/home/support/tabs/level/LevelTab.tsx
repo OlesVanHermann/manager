@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as accountService from "../../../../../services/home.account";
+import * as levelService from "./LevelTab.service";
 import { getCredentials, SUPPORT_URLS } from "./LevelTab.service";
 import "./LevelTab.css";
 
@@ -48,7 +48,7 @@ export function LevelTab() {
     const credentials = getCredentials();
     if (!credentials) { setError(t('errors.notAuthenticated')); setLoading(false); return; }
     try {
-      const level = await accountService.getSupportLevel(credentials);
+      const level = await levelService.getSupportLevel(credentials);
       const normalizedLevel = level.level?.toLowerCase().replace("-accredited", "") || "standard";
       setCurrentLevel(normalizedLevel);
     } catch { setCurrentLevel("standard"); }

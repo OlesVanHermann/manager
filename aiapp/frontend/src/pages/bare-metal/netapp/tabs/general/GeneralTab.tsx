@@ -9,12 +9,12 @@ export default function GeneralTab({ serviceId, netapp, onRefresh }: GeneralTabP
   return (
     <div className="general-tab">
       <div className="tab-toolbar"><h2>{t("general.title")}</h2><button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button></div>
-      <div className="info-grid">
-        <div className="info-card"><div className="card-title">{t("general.fields.id")}</div><div className="card-value mono">{netapp.id}</div></div>
-        <div className="info-card"><div className="card-title">{t("general.fields.name")}</div><div className="card-value">{netapp.name}</div></div>
-        <div className="info-card"><div className="card-title">{t("general.fields.region")}</div><div className="card-value">{netapp.region}</div></div>
-        <div className="info-card"><div className="card-title">{t("general.fields.performance")}</div><div className="card-value">{netapp.performanceLevel}</div></div>
-        <div className="info-card"><div className="card-title">{t("general.fields.created")}</div><div className="card-value">{new Date(netapp.createdAt).toLocaleDateString("fr-FR")}</div></div>
+      <div className="general-info-grid">
+        <div className="general-info-card"><div className="general-card-title">{t("general.fields.id")}</div><div className="general-card-value mono">{netapp.id}</div></div>
+        <div className="general-info-card"><div className="general-card-title">{t("general.fields.name")}</div><div className="general-card-value">{netapp.name}</div></div>
+        <div className="general-info-card"><div className="general-card-title">{t("general.fields.region")}</div><div className="general-card-value">{netapp.region}</div></div>
+        <div className="general-info-card"><div className="general-card-title">{t("general.fields.performance")}</div><div className="general-card-value">{netapp.performanceLevel}</div></div>
+        <div className="general-info-card"><div className="general-card-title">{t("general.fields.created")}</div><div className="general-card-value">{new Date(netapp.createdAt).toLocaleDateString("fr-FR")}</div></div>
       </div>
     </div>
   );

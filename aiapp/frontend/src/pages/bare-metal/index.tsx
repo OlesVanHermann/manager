@@ -5,8 +5,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { vpsService } from "../../services/bare-metal.vps";
-import { dedicatedService } from "../../services/bare-metal.dedicated";
+import { dashboardService } from "./index.service";
+
 import "./styles.css";
 
 export default function BareMetalDashboard() {
