@@ -1,22 +1,18 @@
 // ============================================================
 // TASKS TAB - Historique des tâches Metrics
 // ============================================================
+// ⚠️ DÉFACTORISÉ : Imports locaux uniquement
+// ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as metricsService from "../../../../services/iam.metrics";
+import * as tasksService from "./TasksTab";
+import type { Task } from "../metrics.types";
+import "./TasksTab.css";
 
 // ============================================================
 // TYPES
 // ============================================================
-
-interface Task {
-  id: number;
-  function: string;
-  status: "done" | "doing" | "todo" | "error" | "cancelled";
-  startDate?: string;
-  doneDate?: string;
-}
 
 interface TasksTabProps {
   serviceId: string;
@@ -46,7 +42,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await metricsService.getTasks(serviceId);
+      const data = await tasksService.getTasks(serviceId);
       setTasks(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
@@ -56,17 +52,6 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
   };
 
   // ---------- HELPERS ----------
-  const getStatusIcon = (status: Task["status"]) => {
-    const icons: Record<string, string> = {
-      done: "✅",
-      doing: "⏳",
-      todo: "📋",
-      error: "❌",
-      cancelled: "🚫",
-    };
-    return icons[status] || "❓";
-  };
-
   const getStatusBadge = (status: Task["status"]) => {
     const classes: Record<string, string> = {
       done: "badge-success",
@@ -75,22 +60,17 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
       error: "badge-error",
       cancelled: "badge-secondary",
     };
-    return <span className={`status-badge ${classes[status]}`}>{t(`tasks.status.${status}`)}</span>;
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleString("fr-FR");
+    return <span className={`tasks-status-badge ${classes[status]}`}>{t(`tasks.status.${status}`)}</span>;
   };
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="loading-state">{tCommon("loading")}</div>;
+    return <div className="tasks-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="error-state">
+      <div className="tasks-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadTasks}>{tCommon("actions.retry")}</button>
       </div>
@@ -99,7 +79,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
 
   if (tasks.length === 0) {
     return (
-      <div className="empty-state">
+      <div className="tasks-empty-state">
         <h2>{t("tasks.empty.title")}</h2>
         <p>{t("tasks.empty.description")}</p>
       </div>
@@ -108,23 +88,23 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
 
   return (
     <div className="tasks-tab">
-      <div className="tab-toolbar">
+      <div className="tasks-toolbar">
         <h2>{t("tasks.title")}</h2>
         <button className="btn btn-outline" onClick={loadTasks}>{tCommon("actions.refresh")}</button>
       </div>
 
       <div className="tasks-list">
         {tasks.map((task) => (
-          <div key={task.id} className="task-item">
-            <span className="task-icon">{getStatusIcon(task.status)}</span>
-            <div className="task-info">
-              <div className="task-name">{task.function}</div>
-              <div className="task-date">
-                {task.startDate && <span>{t("tasks.started")}: {formatDate(task.startDate)}</span>}
-                {task.doneDate && <span> • {t("tasks.completed")}: {formatDate(task.doneDate)}</span>}
+          <div key={task.id} className="tasks-item">
+            <span className="tasks-icon">{tasksService.getStatusIcon(task.status)}</span>
+            <div className="tasks-info">
+              <div className="tasks-name">{task.function}</div>
+              <div className="tasks-date">
+                {task.startDate && <span>{t("tasks.started")}: {tasksService.formatDateTime(task.startDate)}</span>}
+                {task.doneDate && <span> • {t("tasks.completed")}: {tasksService.formatDateTime(task.doneDate)}</span>}
               </div>
             </div>
-            <div className="task-status">{getStatusBadge(task.status)}</div>
+            <div className="tasks-status">{getStatusBadge(task.status)}</div>
           </div>
         ))}
       </div>

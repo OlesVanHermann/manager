@@ -6,28 +6,11 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import * as metricsService from "../../../services/iam.metrics";
-import GeneralTab from "./tabs/GeneralTab";
-import TokensTab from "./tabs/TokensTab";
-import TasksTab from "./tabs/TasksTab";
-import "./styles.css";
-
-// ============================================================
-// TYPES
-// ============================================================
-
-interface MetricsServiceInfo {
-  serviceName: string;
-  displayName?: string;
-  region: string;
-  type: string;
-  status: string;
-  quota: {
-    current: number;
-    max: number;
-  };
-  createdAt: string;
-}
+import * as metricsService from "./metrics.service";
+import type { MetricsService } from "./metrics.types";
+import GeneralTab from "./tabs/GeneralTab.tsx";
+import TokensTab from "./tabs/TokensTab.tsx";
+import TasksTab from "./tabs/TasksTab.tsx";
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -40,7 +23,7 @@ export default function MetricsPage() {
   const serviceId = searchParams.get("id") || "";
 
   // ---------- STATE ----------
-  const [info, setInfo] = useState<MetricsServiceInfo | null>(null);
+  const [info, setInfo] = useState<MetricsService | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,5 +1,9 @@
-export { GeneralTab } from './GeneralTab';
-export { NetworkTab } from './NetworkTab';
-export { IpmiTab } from './IpmiTab';
-export { InterventionsTab } from './InterventionsTab';
-export { TasksTab } from './TasksTab';
+// ============================================================
+// DEDICATED TABS - Exports centralisés
+// ============================================================
+
+export { GeneralTab } from "./general/GeneralTab.tsx";
+export { NetworkTab } from "./network/NetworkTab.tsx";
+export { IpmiTab } from "./ipmi/IpmiTab.tsx";
+export { InterventionsTab } from "./interventions/InterventionsTab.tsx";
+export { TasksTab } from "./tasks/TasksTab.tsx";

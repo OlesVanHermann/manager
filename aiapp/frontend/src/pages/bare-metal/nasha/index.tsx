@@ -1,35 +1,16 @@
-// ============================================================
-// NASHA - NAS-HA OVHcloud
-// ============================================================
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import * as nashaService from "../../../services/bare-metal.nasha";
-import GeneralTab from "./tabs/GeneralTab";
-import PartitionsTab from "./tabs/PartitionsTab";
-import SnapshotsTab from "./tabs/SnapshotsTab";
-import AccessesTab from "./tabs/AccessesTab";
-import TasksTab from "./tabs/TasksTab";
+import { generalService } from "./tabs/general/GeneralTab";
+import { GeneralTab, PartitionsTab, SnapshotsTab, AccessesTab, TasksTab } from "./tabs";
+import type { NashaInfo } from "./nasha.types";
 import "./styles.css";
-
-interface NashaInfo {
-  serviceName: string;
-  customName?: string;
-  datacenter: string;
-  ip: string;
-  zpoolSize: number;
-  zpoolCapacity: number;
-  monitored: boolean;
-  status: string;
-}
 
 export default function NashaPage() {
   const { t } = useTranslation("bare-metal/nasha/index");
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("id") || "";
-
   const [nasha, setNasha] = useState<NashaInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,22 +24,12 @@ export default function NashaPage() {
   ];
   const { activeTab, TabButtons } = useTabs(tabs, "general");
 
-  useEffect(() => {
-    if (!serviceId) { setLoading(false); return; }
-    loadNasha();
-  }, [serviceId]);
+  useEffect(() => { if (serviceId) loadNasha(); else setLoading(false); }, [serviceId]);
 
   const loadNasha = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await nashaService.getNasha(serviceId);
-      setNasha(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur inconnue");
-    } finally {
-      setLoading(false);
-    }
+    try { setLoading(true); setError(null); const data = await generalService.getNasha(serviceId); setNasha(data); }
+    catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
+    finally { setLoading(false); }
   };
 
   const getStatusBadge = (status: string) => {
@@ -66,10 +37,7 @@ export default function NashaPage() {
     return <span className={`status-badge ${classes[status] || ""}`}>{t(`status.${status}`)}</span>;
   };
 
-  if (!serviceId) {
-    return <div className="page-content"><div className="empty-state"><h2>{t("noService.title")}</h2><p>{t("noService.description")}</p></div></div>;
-  }
-
+  if (!serviceId) return <div className="page-content"><div className="empty-state"><h2>{t("noService.title")}</h2></div></div>;
   if (loading) return <div className="page-content"><div className="loading-state">{t("loading")}</div></div>;
   if (error) return <div className="page-content"><div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadNasha}>{t("error.retry")}</button></div></div>;
 
@@ -77,17 +45,9 @@ export default function NashaPage() {
     <div className="page-content nasha-page">
       <header className="page-header">
         <h1>💾 {nasha?.customName || nasha?.serviceName}</h1>
-        {nasha && (
-          <div className="service-meta">
-            <span className="meta-item">Datacenter: {nasha.datacenter}</span>
-            <span className="meta-item">IP: {nasha.ip}</span>
-            {getStatusBadge(nasha.status)}
-          </div>
-        )}
+        {nasha && <div className="service-meta"><span className="meta-item">Datacenter: {nasha.datacenter}</span><span className="meta-item">IP: {nasha.ip}</span>{getStatusBadge(nasha.status)}</div>}
       </header>
-
       <TabButtons />
-
       <div className="tab-content">
         {activeTab === "general" && <GeneralTab serviceId={serviceId} nasha={nasha} onRefresh={loadNasha} />}
         {activeTab === "partitions" && <PartitionsTab serviceId={serviceId} />}

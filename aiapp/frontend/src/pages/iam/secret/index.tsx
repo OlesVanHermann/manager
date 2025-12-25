@@ -6,100 +6,45 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import * as secretService from "../../../services/iam.secret";
-import SecretsTab from "./tabs/SecretsTab";
-import VersionsTab from "./tabs/VersionsTab";
-import AccessTab from "./tabs/AccessTab";
-import "./styles.css";
+import * as secretService from "./secret.service";
+import type { SecretManager } from "./secret.types";
+import SecretsTab from "./tabs/SecretsTab.tsx";
+import VersionsTab from "./tabs/VersionsTab.tsx";
+import AccessTab from "./tabs/AccessTab.tsx";
 
-// ============================================================
-// TYPES
-// ============================================================
-
-interface SecretManagerInfo {
-  id: string;
-  name: string;
-  region: string;
-  createdAt: string;
-}
-
-// ============================================================
-// COMPOSANT PRINCIPAL
-// ============================================================
-
-/** Page de gestion d'un Secret Manager OVHcloud. Affiche les secrets, versions et accès. */
 export default function SecretManagerPage() {
   const { t } = useTranslation("iam/secret/index");
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("id") || "";
 
-  // ---------- STATE ----------
-  const [info, setInfo] = useState<SecretManagerInfo | null>(null);
+  const [info, setInfo] = useState<SecretManager | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ---------- TABS ----------
   const tabs = [
     { id: "secrets", label: t("tabs.secrets") },
     { id: "versions", label: t("tabs.versions") },
     { id: "access", label: t("tabs.access") },
   ];
-  const { activeTab, setActiveTab, TabButtons } = useTabs(tabs, "secrets");
+  const { activeTab, TabButtons } = useTabs(tabs, "secrets");
 
-  // ---------- EFFECTS ----------
   useEffect(() => {
-    if (!serviceId) {
-      setLoading(false);
-      return;
-    }
+    if (!serviceId) { setLoading(false); return; }
     loadInfo();
   }, [serviceId]);
 
-  // ---------- LOADERS ----------
   const loadInfo = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true); setError(null);
       const data = await secretService.getSecretManager(serviceId);
       setInfo(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur inconnue");
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err instanceof Error ? err.message : "Erreur inconnue"); }
+    finally { setLoading(false); }
   };
 
-  // ---------- RENDER ----------
-  if (!serviceId) {
-    return (
-      <div className="page-content">
-        <div className="empty-state">
-          <h2>{t("noService.title")}</h2>
-          <p>{t("noService.description")}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="page-content">
-        <div className="loading-state">{t("loading")}</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="page-content">
-        <div className="error-state">
-          <h2>{t("error.title")}</h2>
-          <p>{error}</p>
-          <button className="btn btn-primary" onClick={loadInfo}>{t("error.retry")}</button>
-        </div>
-      </div>
-    );
-  }
+  if (!serviceId) return <div className="page-content"><div className="empty-state"><h2>{t("noService.title")}</h2><p>{t("noService.description")}</p></div></div>;
+  if (loading) return <div className="page-content"><div className="loading-state">{t("loading")}</div></div>;
+  if (error) return <div className="page-content"><div className="error-state"><h2>{t("error.title")}</h2><p>{error}</p><button className="btn btn-primary" onClick={loadInfo}>{t("error.retry")}</button></div></div>;
 
   return (
     <div className="page-content secret-manager-page">
@@ -112,9 +57,7 @@ export default function SecretManagerPage() {
           </div>
         )}
       </header>
-
       <TabButtons />
-
       <div className="tab-content">
         {activeTab === "secrets" && <SecretsTab serviceId={serviceId} />}
         {activeTab === "versions" && <VersionsTab serviceId={serviceId} />}

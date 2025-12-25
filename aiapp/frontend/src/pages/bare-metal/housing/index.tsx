@@ -1,23 +1,16 @@
-// ============================================================
-// HOUSING - Colocation OVHcloud
-// ============================================================
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import * as housingService from "../../../services/bare-metal.housing";
-import GeneralTab from "./tabs/GeneralTab";
-import TasksTab from "./tabs/TasksTab";
+import { generalService } from "./tabs/general/GeneralTab";
+import { GeneralTab, TasksTab } from "./tabs";
+import type { HousingInfo } from "./housing.types";
 import "../styles.css";
-
-interface HousingInfo { name: string; datacenter: string; rack: string; networkBandwidth: number; }
 
 export default function HousingPage() {
   const { t } = useTranslation("bare-metal/housing/index");
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("id") || "";
-
   const [housing, setHousing] = useState<HousingInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,13 +21,10 @@ export default function HousingPage() {
   ];
   const { activeTab, TabButtons } = useTabs(tabs, "general");
 
-  useEffect(() => {
-    if (!serviceId) { setLoading(false); return; }
-    loadHousing();
-  }, [serviceId]);
+  useEffect(() => { if (serviceId) loadHousing(); else setLoading(false); }, [serviceId]);
 
   const loadHousing = async () => {
-    try { setLoading(true); setError(null); const data = await housingService.getHousing(serviceId); setHousing(data); }
+    try { setLoading(true); setError(null); const data = await generalService.getHousing(serviceId); setHousing(data); }
     catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
     finally { setLoading(false); }
   };
@@ -47,13 +37,7 @@ export default function HousingPage() {
     <div className="page-content bare-metal-page">
       <header className="page-header">
         <h1>🏢 {housing?.name}</h1>
-        {housing && (
-          <div className="service-meta">
-            <span className="meta-item">{housing.datacenter}</span>
-            <span className="meta-item">Rack: {housing.rack}</span>
-            <span className="meta-item">{housing.networkBandwidth} Mbps</span>
-          </div>
-        )}
+        {housing && <div className="service-meta"><span className="meta-item">{housing.datacenter}</span><span className="meta-item">Rack: {housing.rack}</span><span className="meta-item">{housing.networkBandwidth} Mbps</span></div>}
       </header>
       <TabButtons />
       <div className="tab-content">

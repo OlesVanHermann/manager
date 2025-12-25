@@ -1,4 +1,8 @@
-export { default as GeneralTab } from "./GeneralTab";
-export { default as VolumesTab } from "./VolumesTab";
-export { default as SnapshotsTab } from "./SnapshotsTab";
-export { default as TasksTab } from "./TasksTab";
+// ============================================================
+// NETAPP TABS - Exports centralisés
+// ============================================================
+
+export { default as GeneralTab } from "./general/GeneralTab.tsx";
+export { default as VolumesTab } from "./volumes/VolumesTab.tsx";
+export { default as SnapshotsTab } from "./snapshots/SnapshotsTab.tsx";
+export { default as TasksTab } from "./tasks/TasksTab.tsx";
