@@ -1,33 +1,24 @@
-// ============================================================
-// VMWARE - VMware on OVHcloud (Dedicated Cloud)
-// ============================================================
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import * as vmwareService from "../../../services/private-cloud.vmware";
-import GeneralTab from "./tabs/GeneralTab";
-import DatacentersTab from "./tabs/DatacentersTab";
-import HostsTab from "./tabs/HostsTab";
-import DatastoresTab from "./tabs/DatastoresTab";
-import UsersTab from "./tabs/UsersTab";
-import SecurityTab from "./tabs/SecurityTab";
-import LicenseTab from "./tabs/LicenseTab";
-import OperationsTab from "./tabs/OperationsTab";
-import TasksTab from "./tabs/TasksTab";
-import "../styles.css";
 
-interface DedicatedCloud {
-  serviceName: string;
-  description?: string;
-  location: string;
-  managementInterface: string;
-  version: string;
-  state: string;
-  commercialRange: string;
-  billingType: string;
-}
+// Service isolé pour le chargement initial
+import { generalService } from "./tabs/general/GeneralTab.ts";
+import type { DedicatedCloud } from "./vmware.types";
+
+// Imports des composants TSX
+import GeneralTab from "./tabs/general/GeneralTab.tsx";
+import DatacentersTab from "./tabs/datacenters/DatacentersTab.tsx";
+import HostsTab from "./tabs/hosts/HostsTab.tsx";
+import DatastoresTab from "./tabs/datastores/DatastoresTab.tsx";
+import UsersTab from "./tabs/users/UsersTab.tsx";
+import SecurityTab from "./tabs/security/SecurityTab.tsx";
+import LicenseTab from "./tabs/license/LicenseTab.tsx";
+import OperationsTab from "./tabs/operations/OperationsTab.tsx";
+import TasksTab from "./tabs/tasks/TasksTab.tsx";
+
+import "./vmware.css";
 
 export default function VmwarePage() {
   const { t } = useTranslation("private-cloud/vmware/index");
@@ -54,7 +45,7 @@ export default function VmwarePage() {
   useEffect(() => { if (!serviceId) { setLoading(false); return; } loadService(); }, [serviceId]);
 
   const loadService = async () => {
-    try { setLoading(true); setError(null); const data = await vmwareService.getService(serviceId); setService(data); }
+    try { setLoading(true); setError(null); const data = await generalService.getService(serviceId); setService(data); }
     catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
     finally { setLoading(false); }
   };
@@ -69,14 +60,14 @@ export default function VmwarePage() {
   if (error) return <div className="page-content"><div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadService}>{t("error.retry")}</button></div></div>;
 
   return (
-    <div className="page-content private-cloud-page">
-      <header className="page-header">
+    <div className="page-content vmware-page">
+      <header className="vmware-page-header">
         <h1>🖥️ {service?.description || service?.serviceName}</h1>
         {service && (
-          <div className="service-meta">
-            <span className="meta-item">Location: {service.location}</span>
-            <span className="meta-item">Version: {service.version}</span>
-            <span className="meta-item">Gamme: {service.commercialRange}</span>
+          <div className="vmware-service-meta">
+            <span className="vmware-meta-item">Location: {service.location}</span>
+            <span className="vmware-meta-item">Version: {service.version}</span>
+            <span className="vmware-meta-item">Gamme: {service.commercialRange}</span>
             {getStateBadge(service.state)}
           </div>
         )}

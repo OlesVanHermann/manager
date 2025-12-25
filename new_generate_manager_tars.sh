@@ -242,7 +242,6 @@ tar -cf /home/ubuntu/new_manager.iam.secret.tar \
 echo "Création new_manager.license.core.tar..."
 tar -cf /home/ubuntu/new_manager.license.core.tar \
     ./src/pages/license/index.tsx \
-    ./src/pages/license/styles.css \
     ./public/locales/en/license/index.json \
     ./public/locales/fr/license/index.json \
     $(add_if_exists ./src/services/license.ts)

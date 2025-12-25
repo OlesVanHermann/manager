@@ -1,34 +1,27 @@
 // ============================================================
-// TASKS TAB - Historique des tâches licence (réutilisable)
+// DIRECTADMIN TASKS TAB - Composant isolé
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as licenseService from "../../../../services/license";
+import type { Task } from "../../license.types";
+import { getTasks, formatDate, getStatusIcon } from "./TasksTab";
+import "./TasksTab.css";
 
 // ============================================================
 // TYPES
 // ============================================================
 
-interface Task {
-  id: number;
-  action: string;
-  status: "done" | "doing" | "todo" | "error" | "cancelled";
-  startDate?: string;
-  doneDate?: string;
-}
-
 interface TasksTabProps {
   licenseId: string;
-  licenseType: string;
 }
 
 // ============================================================
 // COMPOSANT
 // ============================================================
 
-/** Historique des tâches d'une licence. */
-export default function TasksTab({ licenseId, licenseType }: TasksTabProps) {
+/** Historique des tâches d'une licence DirectAdmin. */
+export default function TasksTab({ licenseId }: TasksTabProps) {
   const { t } = useTranslation("license/index");
   const { t: tCommon } = useTranslation("common");
 
@@ -47,7 +40,7 @@ export default function TasksTab({ licenseId, licenseType }: TasksTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await licenseService.getTasks(licenseType, licenseId);
+      const data = await getTasks(licenseId);
       setTasks(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
@@ -57,18 +50,7 @@ export default function TasksTab({ licenseId, licenseType }: TasksTabProps) {
   };
 
   // ---------- HELPERS ----------
-  const getStatusIcon = (status: Task["status"]) => {
-    const icons: Record<string, string> = {
-      done: "✅",
-      doing: "⏳",
-      todo: "📋",
-      error: "❌",
-      cancelled: "🚫",
-    };
-    return icons[status] || "❓";
-  };
-
-  const getStatusBadge = (status: Task["status"]) => {
+  const getStatusBadgeClass = (status: Task["status"]) => {
     const classes: Record<string, string> = {
       done: "badge-success",
       doing: "badge-info",
@@ -76,12 +58,7 @@ export default function TasksTab({ licenseId, licenseType }: TasksTabProps) {
       error: "badge-error",
       cancelled: "badge-secondary",
     };
-    return <span className={`status-badge ${classes[status]}`}>{t(`tasks.status.${status}`)}</span>;
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleString("fr-FR");
+    return classes[status] || "";
   };
 
   // ---------- RENDER ----------
@@ -98,45 +75,45 @@ export default function TasksTab({ licenseId, licenseType }: TasksTabProps) {
     );
   }
 
-  if (tasks.length === 0) {
-    return (
-      <div className="empty-state">
-        <h2>{t("tasks.empty.title")}</h2>
-        <p>{t("tasks.empty.description")}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="tasks-tab">
-      <div className="tab-toolbar">
+    <div className="directadmin-tasks-tab">
+      <div className="directadmin-tasks-toolbar">
         <h2>{t("tasks.title")}</h2>
         <button className="btn btn-outline" onClick={loadTasks}>{tCommon("actions.refresh")}</button>
       </div>
 
-      <table className="license-table">
-        <thead>
-          <tr>
-            <th>{t("tasks.columns.action")}</th>
-            <th>{t("tasks.columns.status")}</th>
-            <th>{t("tasks.columns.started")}</th>
-            <th>{t("tasks.columns.completed")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.map((task) => (
-            <tr key={task.id}>
-              <td>
-                <span style={{ marginRight: "var(--space-2)" }}>{getStatusIcon(task.status)}</span>
-                {task.action}
-              </td>
-              <td>{getStatusBadge(task.status)}</td>
-              <td>{formatDate(task.startDate)}</td>
-              <td>{formatDate(task.doneDate)}</td>
+      {tasks.length === 0 ? (
+        <div className="directadmin-tasks-empty">
+          <p>{t("tasks.empty")}</p>
+        </div>
+      ) : (
+        <table className="directadmin-tasks-table">
+          <thead>
+            <tr>
+              <th>{t("tasks.columns.id")}</th>
+              <th>{t("tasks.columns.action")}</th>
+              <th>{t("tasks.columns.status")}</th>
+              <th>{t("tasks.columns.startDate")}</th>
+              <th>{t("tasks.columns.doneDate")}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {tasks.map((task) => (
+              <tr key={task.id}>
+                <td>{task.id}</td>
+                <td>{task.action}</td>
+                <td>
+                  <span className={`directadmin-tasks-status-badge ${getStatusBadgeClass(task.status)}`}>
+                    {getStatusIcon(task.status)} {t(`tasks.status.${task.status}`)}
+                  </span>
+                </td>
+                <td>{formatDate(task.startDate)}</td>
+                <td>{formatDate(task.doneDate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

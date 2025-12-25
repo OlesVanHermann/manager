@@ -6,19 +6,16 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import * as vrackServicesService from "../../../services/network.vrack-services";
-import GeneralTab from "./tabs/GeneralTab";
-import SubnetsTab from "./tabs/SubnetsTab";
-import EndpointsTab from "./tabs/EndpointsTab";
-import "../styles.css";
+import { ovhGet } from "../../../services/api";
+import type { VrackServicesInfo } from "./vrack-services.types";
 
-interface VrackServicesInfo {
-  id: string;
-  displayName?: string;
-  productStatus: string;
-  region: string;
-  createdAt: string;
-}
+// Imports isolés par tab (sous-dossiers)
+import GeneralTab from "./tabs/general/GeneralTab.tsx";
+import SubnetsTab from "./tabs/subnets/SubnetsTab.tsx";
+import EndpointsTab from "./tabs/endpoints/EndpointsTab.tsx";
+
+// CSS local pour la page
+import "./VrackServicesPage.css";
 
 export default function VrackServicesPage() {
   const { t } = useTranslation("network/vrack-services/index");
@@ -37,39 +34,95 @@ export default function VrackServicesPage() {
   const { activeTab, TabButtons } = useTabs(tabs, "general");
 
   useEffect(() => {
-    if (!serviceId) { setLoading(false); return; }
+    if (!serviceId) {
+      setLoading(false);
+      return;
+    }
     loadService();
   }, [serviceId]);
 
   const loadService = async () => {
-    try { setLoading(true); setError(null); const data = await vrackServicesService.getService(serviceId); setService(data); }
-    catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
-    finally { setLoading(false); }
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await ovhGet<VrackServicesInfo>(`/vrackServices/${serviceId}`);
+      setService(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getStatusBadge = (status: string) => {
-    const classes: Record<string, string> = { READY: "badge-success", CREATING: "badge-warning", ERROR: "badge-error" };
-    return <span className={`status-badge ${classes[status] || ""}`}>{status}</span>;
+  const getStatusBadgeClass = (status: string): string => {
+    const classes: Record<string, string> = {
+      READY: "vrackservices-badge-success",
+      CREATING: "vrackservices-badge-warning",
+      ERROR: "vrackservices-badge-error",
+      DELETING: "vrackservices-badge-error",
+    };
+    return classes[status] || "";
   };
 
-  if (!serviceId) return <div className="page-content"><div className="empty-state"><h2>{t("noService.title")}</h2></div></div>;
-  if (loading) return <div className="page-content"><div className="loading-state">{t("loading")}</div></div>;
-  if (error) return <div className="page-content"><div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadService}>{t("error.retry")}</button></div></div>;
+  if (!serviceId) {
+    return (
+      <div className="vrackservices-page">
+        <div className="vrackservices-empty">
+          <h2>{t("noService.title")}</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="vrackservices-page">
+        <div className="vrackservices-loading">{t("loading")}</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="vrackservices-page">
+        <div className="vrackservices-error">
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={loadService}>
+            {t("error.retry")}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="page-content network-page">
-      <header className="page-header">
+    <div className="vrackservices-page">
+      <header className="vrackservices-header">
         <h1>🌐 {service?.displayName || service?.id}</h1>
         {service && (
-          <div className="service-meta">
-            <span className="meta-item">Région: {service.region}</span>
-            {getStatusBadge(service.productStatus)}
+          <div className="vrackservices-meta">
+            <span className="vrackservices-meta-item">
+              Région: {service.region}
+            </span>
+            <span
+              className={`vrackservices-status-badge ${getStatusBadgeClass(service.productStatus)}`}
+            >
+              {service.productStatus}
+            </span>
           </div>
         )}
       </header>
+
       <TabButtons />
-      <div className="tab-content">
-        {activeTab === "general" && <GeneralTab serviceId={serviceId} service={service} onRefresh={loadService} />}
+
+      <div className="vrackservices-tab-content">
+        {activeTab === "general" && (
+          <GeneralTab
+            serviceId={serviceId}
+            service={service}
+            onRefresh={loadService}
+          />
+        )}
         {activeTab === "subnets" && <SubnetsTab serviceId={serviceId} />}
         {activeTab === "endpoints" && <EndpointsTab serviceId={serviceId} />}
       </div>

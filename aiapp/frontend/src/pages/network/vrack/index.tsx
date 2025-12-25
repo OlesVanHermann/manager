@@ -1,15 +1,12 @@
-// ============================================================
-// VRACK - Page principale
-// ============================================================
-
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { networkService, Vrack, VrackServiceInfos } from "../../../services/network";
-import { ServicesTab, TasksTab } from "./tabs";
-import "./styles.css";
+import { ovhGet } from "../../../services/api";
+import type { Vrack, VrackServiceInfos, VrackWithDetails } from "./vrack.types";
+import ServicesTab from "./tabs/services/ServicesTab.tsx";
+import TasksTab from "./tabs/tasks/TasksTab.tsx";
+import "./VrackPage.css";
 
 interface Tab { id: string; labelKey: string; }
-interface VrackWithDetails { name: string; details?: Vrack; serviceInfos?: VrackServiceInfos; loading: boolean; }
 
 export default function VrackPage() {
   const { t } = useTranslation("network/vrack/index");
@@ -20,21 +17,18 @@ export default function VrackPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const tabs: Tab[] = [
-    { id: "services", labelKey: "tabs.services" },
-    { id: "tasks", labelKey: "tabs.tasks" },
-  ];
+  const tabs: Tab[] = [{ id: "services", labelKey: "tabs.services" }, { id: "tasks", labelKey: "tabs.tasks" }];
 
   const loadVracks = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await networkService.listVracks();
+      const names = await ovhGet<string[]>("/vrack");
       const list: VrackWithDetails[] = names.map(name => ({ name, loading: true }));
       setVracks(list);
       if (names.length > 0 && !selected) setSelected(names[0]);
       for (const name of names) {
         try {
-          const [details, serviceInfos] = await Promise.all([networkService.getVrack(name), networkService.getVrackServiceInfos(name)]);
+          const [details, serviceInfos] = await Promise.all([ovhGet<Vrack>(`/vrack/${name}`), ovhGet<VrackServiceInfos>(`/vrack/${name}/serviceInfos`)]);
           setVracks(prev => prev.map(v => v.name === name ? { ...v, details, serviceInfos, loading: false } : v));
         } catch { setVracks(prev => prev.map(v => v.name === name ? { ...v, loading: false } : v)); }
       }

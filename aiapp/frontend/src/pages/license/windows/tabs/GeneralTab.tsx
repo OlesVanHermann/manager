@@ -1,21 +1,14 @@
 // ============================================================
-// GENERAL TAB - Informations licence Windows
+// WINDOWS GENERAL TAB - Composant isolé
 // ============================================================
 
 import { useTranslation } from "react-i18next";
+import type { WindowsLicense } from "../windows.types";
+import "./GeneralTab.css";
 
 // ============================================================
 // TYPES
 // ============================================================
-
-interface WindowsLicense {
-  id: string;
-  ip: string;
-  version: string;
-  sqlVersion?: string;
-  status: string;
-  createdAt: string;
-}
 
 interface GeneralTabProps {
   licenseId: string;
@@ -37,46 +30,46 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
   }
 
   return (
-    <div className="general-tab">
-      <div className="tab-toolbar">
+    <div className="windows-general-tab">
+      <div className="windows-general-toolbar">
         <h2>{t("windows.general.title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button>
+        <button className="btn btn-outline" onClick={onRefresh}>
+          {tCommon("actions.refresh")}
+        </button>
       </div>
 
-      <div className="license-info-card">
-        <div className="info-grid">
-          <div className="info-item">
-            <span className="info-label">{t("windows.general.fields.id")}</span>
-            <span className="info-value mono">{license.id}</span>
+      <div className="windows-general-info-card">
+        <div className="windows-general-info-grid">
+          <div className="windows-general-info-item">
+            <span className="windows-general-info-label">{t("windows.general.fields.id")}</span>
+            <span className="windows-general-info-value mono">{license.id}</span>
           </div>
-
-          <div className="info-item">
-            <span className="info-label">{t("windows.general.fields.ip")}</span>
-            <span className="info-value mono">{license.ip}</span>
+          <div className="windows-general-info-item">
+            <span className="windows-general-info-label">{t("windows.general.fields.ip")}</span>
+            <span className="windows-general-info-value mono">{license.ip}</span>
           </div>
-
-          <div className="info-item">
-            <span className="info-label">{t("windows.general.fields.version")}</span>
-            <span className="info-value">{license.version}</span>
+          <div className="windows-general-info-item">
+            <span className="windows-general-info-label">{t("windows.general.fields.version")}</span>
+            <span className="windows-general-info-value">{license.version}</span>
           </div>
-
           {license.sqlVersion && (
-            <div className="info-item">
-              <span className="info-label">{t("windows.general.fields.sqlVersion")}</span>
-              <span className="info-value">{license.sqlVersion}</span>
+            <div className="windows-general-info-item">
+              <span className="windows-general-info-label">{t("windows.general.fields.sqlVersion")}</span>
+              <span className="windows-general-info-value">{license.sqlVersion}</span>
             </div>
           )}
-
-          <div className="info-item">
-            <span className="info-label">{t("windows.general.fields.created")}</span>
-            <span className="info-value">{new Date(license.createdAt).toLocaleDateString("fr-FR")}</span>
+          <div className="windows-general-info-item">
+            <span className="windows-general-info-label">{t("windows.general.fields.created")}</span>
+            <span className="windows-general-info-value">
+              {new Date(license.createdAt).toLocaleDateString("fr-FR")}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="license-info-card">
+      <div className="windows-general-info-card">
         <h3>{t("windows.general.actions.title")}</h3>
-        <div className="license-actions" style={{ marginTop: "var(--space-3)" }}>
+        <div className="windows-general-actions">
           <button className="btn btn-outline">{t("windows.general.actions.changeIp")}</button>
           <button className="btn btn-outline">{t("windows.general.actions.upgrade")}</button>
           <button className="btn btn-outline btn-danger">{t("windows.general.actions.terminate")}</button>
