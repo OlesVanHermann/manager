@@ -7,10 +7,10 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import * as dbService from "../../../services/public-cloud.databases";
-import GeneralTab from "./tabs/GeneralTab";
-import UsersTab from "./tabs/UsersTab";
-import BackupsTab from "./tabs/BackupsTab";
-import MetricsTab from "./tabs/MetricsTab";
+import GeneralTab from "./tabs/GeneralTab.tsx";
+import UsersTab from "./tabs/UsersTab.tsx";
+import BackupsTab from "./tabs/BackupsTab.tsx";
+import MetricsTab from "./tabs/MetricsTab.tsx";
 import "./styles.css";
 
 interface DatabaseInfo { id: string; description: string; engine: string; version: string; plan: string; status: string; region: string; nodeNumber: number; flavor: string; }

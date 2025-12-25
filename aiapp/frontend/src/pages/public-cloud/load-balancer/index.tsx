@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import * as lbService from "../../../services/public-cloud.load-balancer";
-import GeneralTab from "./tabs/GeneralTab";
-import ListenersTab from "./tabs/ListenersTab";
-import PoolsTab from "./tabs/PoolsTab";
+import GeneralTab from "./tabs/GeneralTab.tsx";
+import ListenersTab from "./tabs/ListenersTab.tsx";
+import PoolsTab from "./tabs/PoolsTab.tsx";
 import "./styles.css";
 
 interface LoadBalancerInfo { id: string; name: string; region: string; status: string; vipAddress: string; flavor: string; }

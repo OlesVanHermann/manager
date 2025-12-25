@@ -1,7 +1,7 @@
 // ============================================================
-// IAM LOGS TABS - Exports
+// LOGS TABS - Index des onglets défactorisés
 // ============================================================
 
-export { AccessPolicyTab } from "./AccessPolicyTab";
-export { ActivityTab } from "./ActivityTab";
-export { AuditTab } from "./AuditTab";
+export { default as AccessPolicyTab } from "./accesspolicy/AccessPolicyTab.tsx";
+export { default as ActivityTab } from "./activity/ActivityTab.tsx";
+export { default as AuditTab } from "./audit/AuditTab.tsx";

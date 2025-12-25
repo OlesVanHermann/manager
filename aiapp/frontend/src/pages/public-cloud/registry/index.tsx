@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import * as registryService from "../../../services/public-cloud.registry";
-import GeneralTab from "./tabs/GeneralTab";
-import ImagesTab from "./tabs/ImagesTab";
-import UsersTab from "./tabs/UsersTab";
+import GeneralTab from "./tabs/GeneralTab.tsx";
+import ImagesTab from "./tabs/ImagesTab.tsx";
+import UsersTab from "./tabs/UsersTab.tsx";
 import "./styles.css";
 
 interface RegistryInfo { id: string; name: string; region: string; status: string; url: string; size: number; createdAt: string; }

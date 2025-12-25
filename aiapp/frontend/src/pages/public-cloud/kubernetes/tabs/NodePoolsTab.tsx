@@ -1,9 +1,17 @@
+// ============================================================
+// PUBLIC-CLOUD / KUBERNETES / NODEPOOLS - Composant ISOLÉ
+// ============================================================
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as k8sService from "../../../../services/public-cloud.kubernetes";
+import { getNodePools, getNodePoolStatusClass } from "./NodePoolsTab";
+import type { NodePool } from "../kubernetes.types";
+import "./NodePoolsTab.css";
 
-interface NodePool { id: string; name: string; flavor: string; desiredNodes: number; currentNodes: number; minNodes: number; maxNodes: number; autoscale: boolean; status: string; }
-interface NodePoolsTabProps { projectId: string; clusterId: string; }
+interface NodePoolsTabProps {
+  projectId: string;
+  clusterId: string;
+}
 
 export default function NodePoolsTab({ projectId, clusterId }: NodePoolsTabProps) {
   const { t } = useTranslation("public-cloud/kubernetes/index");
@@ -12,40 +20,80 @@ export default function NodePoolsTab({ projectId, clusterId }: NodePoolsTabProps
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { loadPools(); }, [projectId, clusterId]);
+  useEffect(() => {
+    loadPools();
+  }, [projectId, clusterId]);
 
   const loadPools = async () => {
-    try { setLoading(true); setError(null); const data = await k8sService.getNodePools(projectId, clusterId); setPools(data); }
-    catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
-    finally { setLoading(false); }
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getNodePools(projectId, clusterId);
+      setPools(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getStatusBadge = (status: string) => {
-    const classes: Record<string, string> = { READY: "badge-success", INSTALLING: "badge-warning", ERROR: "badge-error", DELETING: "badge-secondary" };
-    return <span className={`status-badge ${classes[status] || ""}`}>{status}</span>;
-  };
+  if (loading) {
+    return <div className="nodepools-loading">{tCommon("loading")}</div>;
+  }
 
-  if (loading) return <div className="loading-state">{tCommon("loading")}</div>;
-  if (error) return <div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadPools}>{tCommon("actions.retry")}</button></div>;
+  if (error) {
+    return (
+      <div className="nodepools-error">
+        <p>{error}</p>
+        <button className="btn btn-primary" onClick={loadPools}>
+          {tCommon("actions.retry")}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="nodepools-tab">
-      <div className="tab-toolbar"><h2>{t("nodepools.title")}</h2><button className="btn btn-primary">{t("nodepools.add")}</button></div>
+      <div className="nodepools-toolbar">
+        <h2>{t("nodepools.title")}</h2>
+        <button className="btn btn-primary">{t("nodepools.add")}</button>
+      </div>
+
       {pools.length === 0 ? (
-        <div className="empty-state"><h2>{t("nodepools.empty.title")}</h2><p>{t("nodepools.empty.description")}</p></div>
+        <div className="nodepools-empty">
+          <h2>{t("nodepools.empty.title")}</h2>
+          <p>{t("nodepools.empty.description")}</p>
+        </div>
       ) : (
         <div className="nodepools-list">
           {pools.map((pool) => (
-            <div key={pool.id} className="nodepool-card">
-              <div className="nodepool-header">
-                <div><div className="nodepool-name">{pool.name}</div><span style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-secondary)" }}>{pool.flavor}</span></div>
-                {getStatusBadge(pool.status)}
+            <div key={pool.id} className="nodepools-card">
+              <div className="nodepools-header">
+                <div>
+                  <div className="nodepools-name">{pool.name}</div>
+                  <span className="nodepools-flavor">{pool.flavor}</span>
+                </div>
+                <span className={`nodepools-status-badge ${getNodePoolStatusClass(pool.status)}`}>
+                  {pool.status}
+                </span>
               </div>
-              <div className="info-grid" style={{ marginBottom: 0 }}>
-                <div className="info-card"><div className="card-title">{t("nodepools.fields.nodes")}</div><div className="card-value">{pool.currentNodes} / {pool.desiredNodes}</div></div>
-                <div className="info-card"><div className="card-title">{t("nodepools.fields.autoscale")}</div><div className="card-value">{pool.autoscale ? `${pool.minNodes} - ${pool.maxNodes}` : t("nodepools.disabled")}</div></div>
+
+              <div className="nodepools-info-grid">
+                <div className="nodepools-info-item">
+                  <div className="nodepools-info-title">{t("nodepools.fields.nodes")}</div>
+                  <div className="nodepools-info-value">
+                    {pool.currentNodes} / {pool.desiredNodes}
+                  </div>
+                </div>
+                <div className="nodepools-info-item">
+                  <div className="nodepools-info-title">{t("nodepools.fields.autoscale")}</div>
+                  <div className="nodepools-info-value">
+                    {pool.autoscale ? `${pool.minNodes} - ${pool.maxNodes}` : t("nodepools.disabled")}
+                  </div>
+                </div>
               </div>
-              <div className="item-actions" style={{ marginTop: "var(--space-3)" }}>
+
+              <div className="nodepools-actions">
                 <button className="btn btn-sm btn-outline">{t("nodepools.actions.scale")}</button>
                 <button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button>
               </div>

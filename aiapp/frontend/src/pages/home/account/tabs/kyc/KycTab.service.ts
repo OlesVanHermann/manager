@@ -1,5 +1,5 @@
 // ============================================================
-// KYC TAB SERVICE - Service ISOLÉ (DÉFACTORISÉ)
+// KYC TAB SERVICE - Service ISOLÉ pour la vérification d'identité
 // ============================================================
 
 import { ovhGet, ovhPost } from "../../../../../services/api";
@@ -22,10 +22,34 @@ export interface KycDocument {
   status: "pending" | "validated" | "rejected";
 }
 
-// ============ HELPERS ============
+export interface FraudStatus {
+  status: "ok" | "required" | "pending" | "refused" | "none" | "open" | "closed";
+}
+
+export interface UploadLink {
+  url: string;
+  method: string;
+  headers?: Record<string, string>;
+}
+
+export interface InitProcedureResponse {
+  uploadLinks: UploadLink[];
+}
+
+// ============ HELPERS LOCAUX ============
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
 export function getStatusLabel(status: string): string {
@@ -37,8 +61,37 @@ export function getStatusLabel(status: string): string {
     open: "En cours",
     pending: "En attente",
     refused: "Refusée",
+    required: "Requise",
+    none: "Non requise",
+    closed: "Terminée",
   };
   return labels[status] || status;
+}
+
+// ============ FRAUD STATUS API ============
+
+export async function getFraudStatus(): Promise<FraudStatus> {
+  try {
+    return await ovhGet<FraudStatus>("/me/procedure/fraud");
+  } catch {
+    return { status: "none" };
+  }
+}
+
+export async function initFraudProcedure(numberOfDocuments: number): Promise<InitProcedureResponse> {
+  return ovhPost<InitProcedureResponse>("/me/procedure/fraud", { numberOfDocuments });
+}
+
+export async function uploadDocument(uploadLink: UploadLink, file: File): Promise<void> {
+  await fetch(uploadLink.url, {
+    method: uploadLink.method || "PUT",
+    headers: uploadLink.headers,
+    body: file,
+  });
+}
+
+export async function finalizeFraudProcedure(): Promise<void> {
+  await ovhPost("/me/procedure/fraud/finalize", {});
 }
 
 // ============ KYC PROCEDURES API ============
@@ -69,46 +122,4 @@ export async function getProcedures(): Promise<KycProcedure[]> {
 
 export async function createProcedure(): Promise<KycProcedure> {
   return ovhPost<KycProcedure>("/me/procedure/identity", {});
-}
-
-// ============ FRAUD STATUS API ============
-
-export interface FraudStatus {
-  status: "ok" | "required" | "pending" | "refused";
-}
-
-export interface UploadLink {
-  url: string;
-  method: string;
-  headers?: Record<string, string>;
-}
-
-export interface InitProcedureResponse {
-  uploadLinks: UploadLink[];
-}
-
-export async function getFraudStatus(): Promise<FraudStatus> {
-  try {
-    return await ovhGet<FraudStatus>("/me/procedure/fraud");
-  } catch {
-    return { status: "ok" };
-  }
-}
-
-export async function initFraudProcedure(numberOfDocuments: number): Promise<InitProcedureResponse> {
-  return ovhPost<InitProcedureResponse>("/me/procedure/fraud", { numberOfDocuments });
-}
-
-export async function uploadDocument(uploadLink: UploadLink, file: File): Promise<void> {
-  const formData = new FormData();
-  formData.append("file", file);
-  await fetch(uploadLink.url, {
-    method: uploadLink.method || "PUT",
-    headers: uploadLink.headers,
-    body: file,
-  });
-}
-
-export async function finalizeFraudProcedure(): Promise<void> {
-  await ovhPost("/me/procedure/fraud/finalize", {});
 }

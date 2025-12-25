@@ -1,16 +1,16 @@
 // ============================================================
-// SECRET MANAGER - Gestion des secrets OVHcloud
+// SECRET MANAGER - Gestion des secrets OVHcloud (DÉFACTORISÉ)
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import * as secretService from "./secret.service";
+import { ovhGet } from "../../../services/api";
 import type { SecretManager } from "./secret.types";
-import SecretsTab from "./tabs/SecretsTab.tsx";
-import VersionsTab from "./tabs/VersionsTab.tsx";
-import AccessTab from "./tabs/AccessTab.tsx";
+import SecretsTab from "./tabs/secrets/SecretsTab.tsx";
+import VersionsTab from "./tabs/versions/VersionsTab.tsx";
+import AccessTab from "./tabs/access/AccessTab.tsx";
 
 export default function SecretManagerPage() {
   const { t } = useTranslation("iam/secret/index");
@@ -36,7 +36,7 @@ export default function SecretManagerPage() {
   const loadInfo = async () => {
     try {
       setLoading(true); setError(null);
-      const data = await secretService.getSecretManager(serviceId);
+      const data = await ovhGet<SecretManager>(`/secretManager/${serviceId}`);
       setInfo(data);
     } catch (err) { setError(err instanceof Error ? err.message : "Erreur inconnue"); }
     finally { setLoading(false); }

@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import * as objectStorageService from "../../../services/public-cloud.object-storage";
-import GeneralTab from "./tabs/GeneralTab";
-import ObjectsTab from "./tabs/ObjectsTab";
-import UsersTab from "./tabs/UsersTab";
+import GeneralTab from "./tabs/GeneralTab.tsx";
+import ObjectsTab from "./tabs/ObjectsTab.tsx";
+import UsersTab from "./tabs/UsersTab.tsx";
 import "./styles.css";
 
 interface ContainerInfo {

@@ -7,8 +7,8 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import * as blockStorageService from "../../../services/public-cloud.block-storage";
-import GeneralTab from "./tabs/GeneralTab";
-import SnapshotsTab from "./tabs/SnapshotsTab";
+import GeneralTab from "./tabs/GeneralTab.tsx";
+import SnapshotsTab from "./tabs/SnapshotsTab.tsx";
 import "./styles.css";
 
 interface VolumeInfo {

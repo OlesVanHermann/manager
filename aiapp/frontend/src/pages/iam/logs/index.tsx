@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../contexts/AuthContext";
-import * as logsService from "../../../services/iam.logs";
+import * as logsService from "./logs.service";
 import { AccessPolicyTab, ActivityTab, AuditTab } from "./tabs";
 import "./styles.css";
 

@@ -1,13 +1,15 @@
 // ============================================================
-// CARRIER SIP PAGE - Trunk SIP (style Hosting)
+// CARRIER SIP PAGE - Trunk SIP (défactorisé)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
-import { carrierSipService, CarrierSip } from "../../../../services/web-cloud.carrier-sip";
-import { GeneralTab, EndpointsTab, CdrTab } from "./tabs";
-import "./styles.css";
+import type { CarrierSip } from "./carrier-sip.types";
+import { generalService } from "./tabs/general/GeneralTab.ts";
+import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
+import { EndpointsTab } from "./tabs/endpoints/EndpointsTab.tsx";
+import { CdrTab } from "./tabs/cdr/CdrTab.tsx";
 
 const TrunkIcon = () => (
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -16,7 +18,7 @@ const TrunkIcon = () => (
 );
 
 export default function CarrierSipPage() {
-  const { t } = useTranslation("web-cloud/carrier-sip/index");
+  const { t } = useTranslation("web-cloud/telecom/carrier-sip/index");
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,27 +29,37 @@ export default function CarrierSipPage() {
   const loadServices = useCallback(async () => {
     try {
       setLoading(true);
-      const billingAccounts = await carrierSipService.listServices();
+      const billingAccounts = await generalService.listServices();
       const items: ServiceItem[] = [];
       for (const ba of billingAccounts) {
-        const carriers = await carrierSipService.listCarrierSip(ba);
+        const carriers = await generalService.listCarrierSip(ba);
         for (const c of carriers) {
           items.push({ id: `${ba}/${c}`, name: c, type: ba });
         }
       }
       setServices(items);
-      if (items.length > 0 && !selectedService) setSelectedService(items[0].id);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
+      if (items.length > 0 && !selectedService) {
+        setSelectedService(items[0].id);
+      }
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { loadServices(); }, [loadServices]);
+  useEffect(() => {
+    loadServices();
+  }, [loadServices]);
 
-  const [billingAccount, serviceName] = selectedService?.split('/') || [null, null];
+  const [billingAccount, serviceName] = selectedService?.split("/") || [null, null];
 
   useEffect(() => {
     if (!billingAccount || !serviceName) return;
-    carrierSipService.getCarrierSip(billingAccount, serviceName).then(setServiceDetails).catch(() => setServiceDetails(null));
+    generalService
+      .getCarrierSip(billingAccount, serviceName)
+      .then(setServiceDetails)
+      .catch(() => setServiceDetails(null));
   }, [billingAccount, serviceName]);
 
   const detailTabs = [
@@ -57,20 +69,51 @@ export default function CarrierSipPage() {
   ];
 
   return (
-    <ServiceListPage titleKey="title" descriptionKey="description" guidesUrl="https://help.ovhcloud.com/csm/fr-carrier-sip" i18nNamespace="web-cloud/carrier-sip/index" services={services} loading={loading} error={error} selectedService={selectedService} onSelectService={setSelectedService} emptyIcon={<TrunkIcon />} emptyTitleKey="empty.title" emptyDescriptionKey="empty.description">
+    <ServiceListPage
+      titleKey="title"
+      descriptionKey="description"
+      guidesUrl="https://help.ovhcloud.com/csm/fr-carrier-sip"
+      i18nNamespace="web-cloud/telecom/carrier-sip/index"
+      services={services}
+      loading={loading}
+      error={error}
+      selectedService={selectedService}
+      onSelectService={setSelectedService}
+      emptyIcon={<TrunkIcon />}
+      emptyTitleKey="empty.title"
+      emptyDescriptionKey="empty.description"
+    >
       {selectedService && billingAccount && serviceName && (
         <div className="detail-card">
           <div className="detail-card-header">
             <h2>{serviceName}</h2>
-            {serviceDetails && <span className={`badge ${serviceDetails.status === 'enabled' ? 'success' : 'warning'}`}>{serviceDetails.currentCalls}/{serviceDetails.maxCalls} appels</span>}
+            {serviceDetails && (
+              <span className={`badge ${serviceDetails.status === "enabled" ? "success" : "warning"}`}>
+                {serviceDetails.currentCalls}/{serviceDetails.maxCalls} appels
+              </span>
+            )}
           </div>
           <div className="detail-tabs">
-            {detailTabs.map((tab) => (<button key={tab.id} className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>))}
+            {detailTabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
           <div className="detail-tab-content">
-            {activeTab === "general" && <GeneralTab billingAccount={billingAccount} serviceName={serviceName} details={serviceDetails} />}
-            {activeTab === "endpoints" && <EndpointsTab billingAccount={billingAccount} serviceName={serviceName} />}
-            {activeTab === "cdr" && <CdrTab billingAccount={billingAccount} serviceName={serviceName} />}
+            {activeTab === "general" && (
+              <GeneralTab billingAccount={billingAccount} serviceName={serviceName} details={serviceDetails} />
+            )}
+            {activeTab === "endpoints" && (
+              <EndpointsTab billingAccount={billingAccount} serviceName={serviceName} />
+            )}
+            {activeTab === "cdr" && (
+              <CdrTab billingAccount={billingAccount} serviceName={serviceName} />
+            )}
           </div>
         </div>
       )}

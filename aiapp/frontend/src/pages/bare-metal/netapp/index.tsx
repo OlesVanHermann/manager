@@ -3,7 +3,10 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import { generalService } from "./tabs/general/GeneralTab";
-import { GeneralTab, VolumesTab, SnapshotsTab, TasksTab } from "./tabs";
+import GeneralTab from "./tabs/general/GeneralTab.tsx";
+import VolumesTab from "./tabs/volumes/VolumesTab.tsx";
+import SnapshotsTab from "./tabs/snapshots/SnapshotsTab.tsx";
+import TasksTab from "./tabs/tasks/TasksTab.tsx";
 import type { NetAppInfo } from "./netapp.types";
 import "./styles.css";
 

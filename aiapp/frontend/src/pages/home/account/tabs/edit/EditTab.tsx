@@ -1,27 +1,25 @@
+// ============================================================
+// EDIT TAB - Édition du profil utilisateur
+// Styles: ./EditTab.css (préfixe .edit-)
+// Service: ./EditTab.service.ts (ISOLÉ)
+// ============================================================
+
 import "./EditTab.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import type { OvhUser, OvhCredentials } from "../../../../../types/auth.types";
-import * as accountService from "./EditTab.service";
+import type { OvhUser } from "../../../../../types/auth.types";
+import * as editService from "./EditTab.service";
 
-interface ProfileEditTabProps {
+// ============ TYPES LOCAUX ============
+
+interface EditTabProps {
   user: OvhUser | null;
 }
 
-const STORAGE_KEY = "ovh_credentials";
+// ============ COMPOSANT ============
 
-function getCredentials(): OvhCredentials | null {
-  const stored = sessionStorage.getItem(STORAGE_KEY);
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return null;
-  }
-}
-
-export default function ProfileEditTab({ user }: ProfileEditTabProps) {
-  const { t } = useTranslation('home/account/edit');
+export default function EditTab({ user }: EditTabProps) {
+  const { t } = useTranslation("home/account/edit");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -61,18 +59,12 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const credentials = getCredentials();
-    if (!credentials) {
-      setError(t('errors.notAuthenticated'));
-      return;
-    }
-
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      await editService.updateProfile(credentials, {
+      await editService.updateProfile({
         firstname: formData.firstname,
         name: formData.name,
         phone: formData.phone || undefined,
@@ -80,9 +72,9 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
         city: formData.city || undefined,
         zip: formData.zip || undefined,
       });
-      setSuccess(t('success'));
+      setSuccess(t("success"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('errors.updateFailed'));
+      setError(err instanceof Error ? err.message : t("errors.updateFailed"));
     } finally {
       setLoading(false);
     }
@@ -107,22 +99,23 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
   };
 
   return (
-    <div className="tab-content profile-edit-tab">
-      <div className="profile-edit-header">
-        <h2>{t('title')}</h2>
-        <p>{t('description')}</p>
+    <div className="edit-content">
+      <div className="edit-header">
+        <h2>{t("title")}</h2>
+        <p>{t("description")}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="profile-edit-form">
+      <form onSubmit={handleSubmit} className="edit-form">
+        {/* Section Identité */}
         <div className="edit-section">
-          <h3>{t('sections.identity')}</h3>
-          
-          <div className="form-row">
+          <h3>{t("sections.identity")}</h3>
+
+          <div className="edit-form-row">
             <div className="edit-form-group">
-              <label htmlFor="firstname">{t('fields.firstname')} *</label>
+              <label htmlFor="edit-firstname">{t("fields.firstname")} *</label>
               <input
                 type="text"
-                id="firstname"
+                id="edit-firstname"
                 name="firstname"
                 value={formData.firstname}
                 onChange={handleChange}
@@ -130,10 +123,10 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
               />
             </div>
             <div className="edit-form-group">
-              <label htmlFor="name">{t('fields.name')} *</label>
+              <label htmlFor="edit-name">{t("fields.name")} *</label>
               <input
                 type="text"
-                id="name"
+                id="edit-name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
@@ -143,23 +136,23 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
           </div>
 
           <div className="edit-form-group">
-            <label htmlFor="email">{t('fields.email')}</label>
+            <label htmlFor="edit-email">{t("fields.email")}</label>
             <input
               type="email"
-              id="email"
+              id="edit-email"
               name="email"
               value={formData.email}
               disabled
-              className="input-disabled"
+              className="edit-input-disabled"
             />
-            <small>{t('hints.emailDisabled')}</small>
+            <small>{t("hints.emailDisabled")}</small>
           </div>
 
           <div className="edit-form-group">
-            <label htmlFor="phone">{t('fields.phone')}</label>
+            <label htmlFor="edit-phone">{t("fields.phone")}</label>
             <input
               type="tel"
-              id="phone"
+              id="edit-phone"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
@@ -168,14 +161,15 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
           </div>
         </div>
 
+        {/* Section Adresse */}
         <div className="edit-section">
-          <h3>{t('sections.address')}</h3>
+          <h3>{t("sections.address")}</h3>
 
           <div className="edit-form-group">
-            <label htmlFor="address">{t('fields.address')}</label>
+            <label htmlFor="edit-address">{t("fields.address")}</label>
             <input
               type="text"
-              id="address"
+              id="edit-address"
               name="address"
               value={formData.address}
               onChange={handleChange}
@@ -183,12 +177,12 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
             />
           </div>
 
-          <div className="form-row">
+          <div className="edit-form-row">
             <div className="edit-form-group">
-              <label htmlFor="zip">{t('fields.zip')}</label>
+              <label htmlFor="edit-zip">{t("fields.zip")}</label>
               <input
                 type="text"
-                id="zip"
+                id="edit-zip"
                 name="zip"
                 value={formData.zip}
                 onChange={handleChange}
@@ -196,10 +190,10 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
               />
             </div>
             <div className="edit-form-group">
-              <label htmlFor="city">{t('fields.city')}</label>
+              <label htmlFor="edit-city">{t("fields.city")}</label>
               <input
                 type="text"
-                id="city"
+                id="edit-city"
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
@@ -209,49 +203,51 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
           </div>
 
           <div className="edit-form-group">
-            <label htmlFor="country">{t('fields.country')}</label>
+            <label htmlFor="edit-country">{t("fields.country")}</label>
             <input
               type="text"
-              id="country"
+              id="edit-country"
               name="country"
               value={formData.country}
               disabled
-              className="input-disabled"
+              className="edit-input-disabled"
             />
-            <small>{t('hints.countryDisabled')}</small>
+            <small>{t("hints.countryDisabled")}</small>
           </div>
         </div>
 
+        {/* Section Préférences */}
         <div className="edit-section">
-          <h3>{t('sections.preferences')}</h3>
+          <h3>{t("sections.preferences")}</h3>
 
           <div className="edit-form-group">
-            <label htmlFor="language">{t('fields.language')}</label>
+            <label htmlFor="edit-language">{t("fields.language")}</label>
             <input
               type="text"
-              id="language"
+              id="edit-language"
               name="language"
               value={formData.language}
               disabled
-              className="input-disabled"
+              className="edit-input-disabled"
             />
-            <small>{t('hints.languageDisabled')}</small>
+            <small>{t("hints.languageDisabled")}</small>
           </div>
 
           <div className="edit-form-group">
-            <label>{t('fields.nichandle')}</label>
+            <label>{t("fields.nichandle")}</label>
             <input
               type="text"
               value={user?.nichandle || ""}
               disabled
-              className="input-disabled"
+              className="edit-input-disabled"
             />
-            <small>{t('hints.nichandleDisabled')}</small>
+            <small>{t("hints.nichandleDisabled")}</small>
           </div>
         </div>
 
+        {/* Messages */}
         {error && (
-          <div className="form-message error">
+          <div className="edit-message edit-message-error">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
@@ -260,7 +256,7 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
         )}
 
         {success && (
-          <div className="form-message success">
+          <div className="edit-message edit-message-success">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -268,12 +264,22 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
           </div>
         )}
 
-        <div className="form-actions">
-          <button type="button" className="btn btn-secondary" onClick={handleReset} disabled={loading}>
-            {t('buttons.reset')}
+        {/* Actions */}
+        <div className="edit-actions">
+          <button
+            type="button"
+            className="edit-btn edit-btn-secondary"
+            onClick={handleReset}
+            disabled={loading}
+          >
+            {t("buttons.reset")}
           </button>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? t('buttons.saving') : t('buttons.save')}
+          <button
+            type="submit"
+            className="edit-btn edit-btn-primary"
+            disabled={loading}
+          >
+            {loading ? t("buttons.saving") : t("buttons.save")}
           </button>
         </div>
       </form>

@@ -1,5 +1,5 @@
 // ============================================================
-// CONTACTS SERVICES TAB SERVICE - Service ISOLÉ (DÉFACTORISÉ)
+// CONTACTS SERVICES TAB SERVICE - Service ISOLÉ
 // ============================================================
 
 import { ovhGet, ovhPost } from "../../../../../services/api";
@@ -11,6 +11,7 @@ export interface ServiceContact {
   contactBilling: string;
   contactTech: string;
   serviceName: string;
+  serviceType?: string;
 }
 
 export interface ContactChangeTask {
@@ -23,10 +24,20 @@ export interface ContactChangeTask {
   creationDate: string;
 }
 
-// ============ HELPERS ============
+export interface ContactChangeRequest {
+  contactAdmin?: string;
+  contactTech?: string;
+  contactBilling?: string;
+}
+
+// ============ HELPERS LOCAUX ============
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function getContactTypeLabel(type: string): string {
@@ -34,12 +45,16 @@ export function getContactTypeLabel(type: string): string {
     admin: "Administrateur",
     billing: "Facturation",
     tech: "Technique",
+    contactAdmin: "Administrateur",
+    contactBilling: "Facturation",
+    contactTech: "Technique",
   };
   return labels[type] || type;
 }
 
 // ============ CONTACTS API ============
 
+/** Récupère la liste des services avec leurs contacts */
 export async function getServiceContacts(): Promise<ServiceContact[]> {
   try {
     const serviceNames = await ovhGet<string[]>("/me/contact");
@@ -59,15 +74,22 @@ export async function getServiceContacts(): Promise<ServiceContact[]> {
   }
 }
 
-export async function changeContact(serviceName: string, contactType: string, newContact: string): Promise<ContactChangeTask> {
+/** Initie un changement de contact pour un service */
+export async function initiateContactChange(
+  serviceName: string,
+  request: ContactChangeRequest
+): Promise<ContactChangeTask> {
+  return ovhPost<ContactChangeTask>(`/me/contact/${encodeURIComponent(serviceName)}/change`, request);
+}
+
+/** Change un contact spécifique pour un service */
+export async function changeContact(
+  serviceName: string,
+  contactType: string,
+  newContact: string
+): Promise<ContactChangeTask> {
   return ovhPost<ContactChangeTask>(`/me/contact/${encodeURIComponent(serviceName)}/change`, {
     contactType,
     contactNic: newContact,
   });
-}
-
-// ============ ALIASES ============
-
-export async function initiateContactChange(serviceName: string, contactType: string, newContact: string): Promise<ContactChangeTask> {
-  return changeContact(serviceName, contactType, newContact);
 }

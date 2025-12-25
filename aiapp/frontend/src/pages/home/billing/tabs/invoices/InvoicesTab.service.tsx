@@ -1,10 +1,10 @@
 // ============================================================
-// INVOICES TAB SERVICE - Service ISOLÉ
+// INVOICES TAB SERVICE - Service ISOLÉ (DÉFACTORISÉ)
 // ============================================================
 
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { FileTextIcon, FileIcon } from "../../icons";
+import { FileTextIcon, FileIcon } from "./InvoicesTab.icons";
 
 // ============ CONSTANTES ============
 export const MIN_YEAR = 2020;
@@ -162,15 +162,15 @@ export function PeriodToolbar({ year, startMonth, endMonth, canGoPrevious, canGo
     <div className="invoices-toolbar">
       <div className="invoices-toolbar-left">
         <span className="invoices-year-label">{year}</span>
-        <button className="btn invoices-year-nav-btn" onClick={goToPrevious} disabled={!canGoPrevious} title={t('invoices.nav.previous')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button className="invoices-btn invoices-year-nav-btn" onClick={goToPrevious} disabled={!canGoPrevious} title={t('invoices.nav.previous')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
         <select className="invoices-period-select invoices-month-select" value={startMonth} onChange={(e) => handleStartMonthChange(Number(e.target.value))}>{MONTHS_SHORT.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}</select>
         <span className="invoices-date-separator">→</span>
         <select className="invoices-period-select invoices-month-select" value={endMonth} onChange={(e) => handleEndMonthChange(Number(e.target.value))}>{MONTHS_SHORT.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}</select>
-        <button className="btn invoices-year-nav-btn" onClick={goToNext} disabled={!canGoNext} title={t('invoices.nav.next')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
-        {showReset && <button className="btn invoices-reset-btn" onClick={resetToAnchor} title={t('invoices.nav.reset')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>}
+        <button className="invoices-btn invoices-year-nav-btn" onClick={goToNext} disabled={!canGoNext} title={t('invoices.nav.next')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        {showReset && <button className="invoices-btn invoices-reset-btn" onClick={resetToAnchor} title={t('invoices.nav.reset')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>}
       </div>
       <div className="invoices-toolbar-right">
-        {allLoaded && totalCount > 0 && (<><button className="btn btn-sm btn-secondary invoices-export-btn" onClick={onExportCSV} title={t('invoices.export.csv')}><FileTextIcon /> CSV</button><button className="btn btn-sm btn-secondary invoices-export-btn" onClick={onExportPDF} title={t('invoices.export.pdf')}><FileIcon /> PDF</button></>)}
+        {allLoaded && totalCount > 0 && (<><button className="invoices-btn invoices-btn-sm invoices-btn-secondary invoices-export-btn" onClick={onExportCSV} title={t('invoices.export.csv')}><FileTextIcon /> CSV</button><button className="invoices-btn invoices-btn-sm invoices-btn-secondary invoices-export-btn" onClick={onExportPDF} title={t('invoices.export.pdf')}><FileIcon /> PDF</button></>)}
         <span className="invoices-result-count">{loadingIds ? tCommon('loading') : t(countLabelKey, { loaded: loadedCount, total: totalCount })}</span>
       </div>
     </div>

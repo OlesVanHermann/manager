@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import * as aiService from "../../../services/public-cloud.ai";
-import NotebooksTab from "./tabs/NotebooksTab";
-import JobsTab from "./tabs/JobsTab";
-import AppsTab from "./tabs/AppsTab";
+import NotebooksTab from "./tabs/NotebooksTab.tsx";
+import JobsTab from "./tabs/JobsTab.tsx";
+import AppsTab from "./tabs/AppsTab.tsx";
 import "./styles.css";
 
 export default function AIPage() {

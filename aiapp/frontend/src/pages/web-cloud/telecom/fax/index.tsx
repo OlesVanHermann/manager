@@ -1,82 +1,157 @@
 // ============================================================
-// FAX PAGE - FreeFax (style Hosting)
+// FAX PAGE - Composant avec imports LOCAUX
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
-import { faxService, FreefaxAccount } from "../../../../services/web-cloud.fax";
-import "./styles.css";
-
-const FaxIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659"/>
-  </svg>
-);
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { faxService } from './fax.service';
+import type { FreefaxAccount } from './fax.types';
+import './fax.css';
 
 export default function FaxPage() {
-  const { t } = useTranslation("web-cloud/fax/index");
-  const [faxes, setFaxes] = useState<ServiceItem[]>([]);
+  const { t } = useTranslation('web-cloud/fax/index');
+  const { serviceName } = useParams<{ serviceName: string }>();
+  const [fax, setFax] = useState<FreefaxAccount | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedFax, setSelectedFax] = useState<string | null>(null);
-  const [faxDetails, setFaxDetails] = useState<FreefaxAccount | null>(null);
-
-  const loadFaxes = useCallback(async () => {
-    try {
-      setLoading(true);
-      const names = await faxService.listFreefax();
-      const items: ServiceItem[] = names.map((name) => ({ id: name, name: name, type: "Freefax" }));
-      setFaxes(items);
-      if (items.length > 0 && !selectedFax) setSelectedFax(items[0].id);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { loadFaxes(); }, [loadFaxes]);
 
   useEffect(() => {
-    if (!selectedFax) return;
-    faxService.getFreefax(selectedFax).then(setFaxDetails).catch(() => setFaxDetails(null));
-  }, [selectedFax]);
+    const load = async () => {
+      if (!serviceName) return;
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await faxService.getFreefax(serviceName);
+        setFax(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [serviceName]);
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <div className="breadcrumb">
+            <Link to="/web-cloud">{t('breadcrumb.webCloud')}</Link>
+            <span>/</span>
+            <Link to="/web-cloud/telecom">{t('breadcrumb.telecom')}</Link>
+            <span>/</span>
+            <span>{t('breadcrumb.fax')}</span>
+          </div>
+          <h1>{t('title')}</h1>
+        </div>
+        <div className="tab-loading">
+          <div className="skeleton-block" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <h1>{t('title')}</h1>
+        </div>
+        <div className="alert alert-error">{error}</div>
+      </div>
+    );
+  }
+
+  if (!fax) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <h1>{t('title')}</h1>
+        </div>
+        <div className="fax-empty">
+          <p>{t('empty')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Helper pour la qualité
+  const getQualityLabel = (quality: FreefaxAccount['faxQuality']): string => {
+    const labels: Record<FreefaxAccount['faxQuality'], string> = {
+      best: 'Optimale',
+      high: 'Haute',
+      normal: 'Normale',
+    };
+    return labels[quality] || quality;
+  };
 
   return (
-    <ServiceListPage titleKey="title" descriptionKey="description" guidesUrl="https://help.ovhcloud.com/csm/fr-fax" i18nNamespace="web-cloud/fax/index" services={faxes} loading={loading} error={error} selectedService={selectedFax} onSelectService={setSelectedFax} emptyIcon={<FaxIcon />} emptyTitleKey="empty.title" emptyDescriptionKey="empty.description">
-      {selectedFax && (
-        <div className="detail-card">
-          <div className="detail-card-header">
-            <h2>{selectedFax}</h2>
-            <span className="badge success">Freefax</span>
+    <div className="page-container fax-page">
+      <div className="page-header">
+        <div className="breadcrumb">
+          <Link to="/web-cloud">{t('breadcrumb.webCloud')}</Link>
+          <span>/</span>
+          <Link to="/web-cloud/telecom">{t('breadcrumb.telecom')}</Link>
+          <span>/</span>
+          <span>{t('breadcrumb.fax')}</span>
+        </div>
+        <h1>{t('title')}</h1>
+      </div>
+
+      <div className="fax-info-card">
+        <div className="fax-header">
+          <div className="fax-icon">📠</div>
+          <div className="fax-title">
+            <h3>{fax.number}</h3>
+            <p>{fax.fromName || t('noName')}</p>
           </div>
-          <div className="detail-tab-content">
-            <div className="fax-info-card">
-              <div className="fax-header">
-                <div className="fax-icon">📠</div>
-                <div className="fax-title">
-                  <h3>{selectedFax}</h3>
-                  <p>{faxDetails?.fromName || t("details.noName")}</p>
-                </div>
-              </div>
-              <div className="info-grid">
-                <div className="info-item"><label>{t("details.number")}</label><span className="font-mono">{selectedFax}</span></div>
-                <div className="info-item"><label>{t("details.fromEmail")}</label><span>{faxDetails?.fromEmail || '-'}</span></div>
-                <div className="info-item"><label>{t("details.quality")}</label><span className="badge info">{faxDetails?.faxQuality || 'normal'}</span></div>
-                <div className="info-item"><label>{t("details.maxCall")}</label><span>{faxDetails?.faxMaxCall || 1}</span></div>
-              </div>
-              {faxDetails?.redirectionEmail && faxDetails.redirectionEmail.length > 0 && (
-                <div className="settings-section">
-                  <h4>{t("details.redirections")}</h4>
-                  <div className="settings-grid">
-                    {faxDetails.redirectionEmail.map((email, i) => (
-                      <div key={i} className="setting-item"><label>Email {i + 1}</label><span>{email}</span></div>
-                    ))}
-                  </div>
-                </div>
-              )}
+        </div>
+
+        <div className="fax-info-grid">
+          <div className="fax-info-item">
+            <label>{t('fields.number')}</label>
+            <span className="fax-mono">{fax.number}</span>
+          </div>
+          <div className="fax-info-item">
+            <label>{t('fields.fromName')}</label>
+            <span>{fax.fromName || '-'}</span>
+          </div>
+          <div className="fax-info-item">
+            <label>{t('fields.fromEmail')}</label>
+            <span className="fax-mono">{fax.fromEmail || '-'}</span>
+          </div>
+          <div className="fax-info-item">
+            <label>{t('fields.redirectionEmail')}</label>
+            <span className="fax-mono">
+              {fax.redirectionEmail.length > 0
+                ? fax.redirectionEmail.join(', ')
+                : '-'}
+            </span>
+          </div>
+        </div>
+
+        <div className="fax-settings-section">
+          <h4>{t('settings.title')}</h4>
+          <div className="fax-settings-grid">
+            <div className="fax-setting-item">
+              <label>{t('settings.quality')}</label>
+              <span className={`fax-quality-badge fax-quality-${fax.faxQuality}`}>
+                {getQualityLabel(fax.faxQuality)}
+              </span>
+            </div>
+            <div className="fax-setting-item">
+              <label>{t('settings.maxCall')}</label>
+              <span>{fax.faxMaxCall}</span>
+            </div>
+            <div className="fax-setting-item">
+              <label>{t('settings.tagLine')}</label>
+              <span>{fax.faxTagLine || '-'}</span>
             </div>
           </div>
         </div>
-      )}
-    </ServiceListPage>
+      </div>
+    </div>
   );
 }

@@ -1,11 +1,18 @@
 // ============================================================
-// VPS - Page principale (DÉFACTORISÉ)
+// VPS - Page principale (défactorisée)
+// Imports DIRECTS - pas de barrel file
+// Service page ISOLÉ - pas d'import depuis les tabs
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { generalService } from "./tabs/general/GeneralTab";
-import { GeneralTab, IpsTab, DisksTab, SnapshotTab, BackupsTab, TasksTab } from "./tabs";
+import { vpsPageService } from "./vps.service";
+import GeneralTab from "./tabs/general/GeneralTab.tsx";
+import IpsTab from "./tabs/ips/IpsTab.tsx";
+import DisksTab from "./tabs/disks/DisksTab.tsx";
+import SnapshotTab from "./tabs/snapshot/SnapshotTab.tsx";
+import BackupsTab from "./tabs/backups/BackupsTab.tsx";
+import TasksTab from "./tabs/tasks/TasksTab.tsx";
 import type { Vps, VpsServiceInfos } from "./vps.types";
 import "./styles.css";
 
@@ -20,6 +27,17 @@ interface VpsWithDetails {
   serviceInfos?: VpsServiceInfos;
   loading: boolean;
 }
+
+// Helper LOCAL - dupliqué volontairement (défactorisation)
+const getStateClass = (state?: string): string => {
+  const map: Record<string, string> = {
+    running: "running",
+    stopped: "stopped",
+    rebooting: "warning",
+    rescued: "rescue",
+  };
+  return map[state || ""] || "";
+};
 
 export default function VpsPage() {
   const { t } = useTranslation("bare-metal/vps/index");
@@ -42,7 +60,7 @@ export default function VpsPage() {
   const loadVps = useCallback(async () => {
     try {
       setLoading(true);
-      const names = await generalService.listVps();
+      const names = await vpsPageService.listVps();
       const list: VpsWithDetails[] = names.map((name) => ({ name, loading: true }));
       setVpsList(list);
       if (names.length > 0 && !selected) setSelected(names[0]);
@@ -53,14 +71,18 @@ export default function VpsPage() {
           batch.map(async (name) => {
             try {
               const [details, serviceInfos] = await Promise.all([
-                generalService.getVps(name),
-                generalService.getServiceInfos(name),
+                vpsPageService.getVps(name),
+                vpsPageService.getServiceInfos(name),
               ]);
               setVpsList((prev) =>
-                prev.map((v) => (v.name === name ? { ...v, details, serviceInfos, loading: false } : v))
+                prev.map((v) =>
+                  v.name === name ? { ...v, details, serviceInfos, loading: false } : v
+                )
               );
             } catch {
-              setVpsList((prev) => prev.map((v) => (v.name === name ? { ...v, loading: false } : v)));
+              setVpsList((prev) =>
+                prev.map((v) => (v.name === name ? { ...v, loading: false } : v))
+              );
             }
           })
         );
@@ -74,7 +96,9 @@ export default function VpsPage() {
     loadVps();
   }, []);
 
-  const filtered = vpsList.filter((v) => v.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filtered = vpsList.filter((v) =>
+    v.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   const current = vpsList.find((v) => v.name === selected);
 
   const handleAction = async (action: "reboot" | "start" | "stop" | "rescue") => {
@@ -88,10 +112,14 @@ export default function VpsPage() {
     if (!confirm(messages[action])) return;
     try {
       setActing(true);
-      if (action === "reboot") await generalService.reboot(selected);
-      else if (action === "start") await generalService.start(selected);
-      else if (action === "stop") await generalService.stop(selected);
-      else if (action === "rescue") await generalService.setRescueMode(selected, current.details?.netbootMode !== "rescue");
+      if (action === "reboot") await vpsPageService.reboot(selected);
+      else if (action === "start") await vpsPageService.start(selected);
+      else if (action === "stop") await vpsPageService.stop(selected);
+      else if (action === "rescue")
+        await vpsPageService.setRescueMode(
+          selected,
+          current.details?.netbootMode !== "rescue"
+        );
       setTimeout(loadVps, 2000);
     } finally {
       setActing(false);
@@ -102,7 +130,14 @@ export default function VpsPage() {
     if (!selected || !current) return null;
     switch (activeTab) {
       case "general":
-        return <GeneralTab serviceName={selected} details={current.details} serviceInfos={current.serviceInfos} loading={current.loading} />;
+        return (
+          <GeneralTab
+            serviceName={selected}
+            details={current.details}
+            serviceInfos={current.serviceInfos}
+            loading={current.loading}
+          />
+        );
       case "ips":
         return <IpsTab serviceName={selected} />;
       case "disks":
@@ -116,11 +151,6 @@ export default function VpsPage() {
       default:
         return null;
     }
-  };
-
-  const getStateClass = (state?: string) => {
-    const map: Record<string, string> = { running: "running", stopped: "stopped", rebooting: "warning", rescued: "rescue" };
-    return map[state || ""] || "";
   };
 
   return (
@@ -155,7 +185,11 @@ export default function VpsPage() {
                 <div className={`vps-status-dot ${getStateClass(v.details?.state)}`} />
                 <div className="vps-info">
                   <span className="vps-name">{v.details?.displayName || v.name}</span>
-                  {v.details && <span className="vps-meta">{v.details.model?.name} | {v.details.zone}</span>}
+                  {v.details && (
+                    <span className="vps-meta">
+                      {v.details.model?.name} | {v.details.zone}
+                    </span>
+                  )}
                 </div>
               </button>
             ))
@@ -172,29 +206,34 @@ export default function VpsPage() {
                 {current.details && (
                   <p className="page-description">
                     {current.details.model?.name} | {current.details.zone} |{" "}
-                    <span className={`state-text ${getStateClass(current.details.state)}`}>{current.details.state}</span>
+                    <span className={`state-text ${getStateClass(current.details.state)}`}>
+                      {current.details.state}
+                    </span>
                   </p>
                 )}
               </div>
               <div className="header-actions">
-                <button className="btn-action" onClick={() => handleAction("reboot")} disabled={acting || current.details?.state === "stopped"}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                  </svg>
+                <button
+                  className="btn-action"
+                  onClick={() => handleAction("reboot")}
+                  disabled={acting || current.details?.state === "stopped"}
+                >
                   {t("actions.reboot")}
                 </button>
                 {current.details?.state === "stopped" ? (
-                  <button className="btn-action success" onClick={() => handleAction("start")} disabled={acting}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
-                    </svg>
+                  <button
+                    className="btn-action success"
+                    onClick={() => handleAction("start")}
+                    disabled={acting}
+                  >
                     {t("actions.start")}
                   </button>
                 ) : (
-                  <button className="btn-action danger" onClick={() => handleAction("stop")} disabled={acting}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.5 7.5a3 3 0 013-3h9a3 3 0 013 3v9a3 3 0 01-3 3h-9a3 3 0 01-3-3v-9z" clipRule="evenodd" />
-                    </svg>
+                  <button
+                    className="btn-action danger"
+                    onClick={() => handleAction("stop")}
+                    disabled={acting}
+                  >
                     {t("actions.stop")}
                   </button>
                 )}
@@ -203,15 +242,12 @@ export default function VpsPage() {
                   onClick={() => handleAction("rescue")}
                   disabled={acting}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.712 4.33a9.027 9.027 0 011.652 1.306c.51.51.944 1.064 1.306 1.652M16.712 4.33l-3.448 4.138m3.448-4.138a9.014 9.014 0 00-9.424 0M19.67 7.288l-4.138 3.448m4.138-3.448a9.014 9.014 0 010 9.424m-4.138-5.976a3.736 3.736 0 00-.88-1.388 3.737 3.737 0 00-1.388-.88m2.268 2.268a3.765 3.765 0 010 2.528m-2.268-4.796a3.765 3.765 0 00-2.528 0m4.796 4.796c-.181.506-.475.982-.88 1.388a3.736 3.736 0 01-1.388.88m2.268-2.268l4.138 3.448m0 0a9.027 9.027 0 01-1.306 1.652c-.51.51-1.064.944-1.652 1.306m0 0l-3.448-4.138m3.448 4.138a9.014 9.014 0 01-9.424 0m5.976-4.138a3.765 3.765 0 01-2.528 0m0 0a3.736 3.736 0 01-1.388-.88 3.737 3.737 0 01-.88-1.388m2.268 2.268L7.288 19.67m0 0a9.024 9.024 0 01-1.652-1.306 9.027 9.027 0 01-1.306-1.652m0 0l4.138-3.448M4.33 16.712a9.014 9.014 0 010-9.424m4.138 5.976a3.765 3.765 0 010-2.528m0 0c.181-.506.475-.982.88-1.388a3.736 3.736 0 011.388-.88M7.288 4.33l3.448 4.138m0 0a3.765 3.765 0 012.528 0m-2.528 0L7.288 4.33" />
-                  </svg>
-                  {current.details?.netbootMode === "rescue" ? t("actions.exitRescue") : t("actions.rescue")}
+                  {current.details?.netbootMode === "rescue"
+                    ? t("actions.exitRescue")
+                    : t("actions.rescue")}
                 </button>
                 <button className="btn-refresh" onClick={loadVps}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                  </svg>
+                  ↻
                 </button>
               </div>
             </header>
@@ -232,9 +268,6 @@ export default function VpsPage() {
           </>
         ) : (
           <div className="no-selection">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7" />
-            </svg>
             <p>{t("selectVps")}</p>
           </div>
         )}

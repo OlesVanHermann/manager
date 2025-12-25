@@ -1,9 +1,16 @@
+// ============================================================
+// PUBLIC-CLOUD / AI / APPS - Composant ISOLÉ
+// ============================================================
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as aiService from "../../../../services/public-cloud.ai";
+import { getApps, formatDate, getAppStatusClass } from "./AppsTab";
+import type { App } from "../ai.types";
+import "./AppsTab.css";
 
-interface App { id: string; name?: string; image: string; status: string; url?: string; replicas: number; createdAt: string; }
-interface AppsTabProps { projectId: string; }
+interface AppsTabProps {
+  projectId: string;
+}
 
 export default function AppsTab({ projectId }: AppsTabProps) {
   const { t } = useTranslation("public-cloud/ai/index");
@@ -12,33 +19,89 @@ export default function AppsTab({ projectId }: AppsTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { loadApps(); }, [projectId]);
+  useEffect(() => {
+    loadApps();
+  }, [projectId]);
 
   const loadApps = async () => {
-    try { setLoading(true); setError(null); const data = await aiService.getApps(projectId); setApps(data); }
-    catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
-    finally { setLoading(false); }
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getApps(projectId);
+      setApps(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getStatusBadge = (status: string) => {
-    const classes: Record<string, string> = { RUNNING: "badge-success", SCALING: "badge-info", STOPPED: "badge-secondary", ERROR: "badge-error" };
-    return <span className={`status-badge ${classes[status] || ""}`}>{status}</span>;
-  };
+  if (loading) {
+    return <div className="apps-loading">{tCommon("loading")}</div>;
+  }
 
-  if (loading) return <div className="loading-state">{tCommon("loading")}</div>;
-  if (error) return <div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadApps}>{tCommon("actions.retry")}</button></div>;
+  if (error) {
+    return (
+      <div className="apps-error">
+        <p>{error}</p>
+        <button className="btn btn-primary" onClick={loadApps}>
+          {tCommon("actions.retry")}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="apps-tab">
-      <div className="tab-toolbar"><h2>{t("apps.title")}</h2><button className="btn btn-primary">{t("apps.create")}</button></div>
+      <div className="apps-toolbar">
+        <h2>{t("apps.title")}</h2>
+        <button className="btn btn-primary">{t("apps.create")}</button>
+      </div>
+
       {apps.length === 0 ? (
-        <div className="empty-state"><h2>{t("apps.empty.title")}</h2><p>{t("apps.empty.description")}</p></div>
+        <div className="apps-empty">
+          <h2>{t("apps.empty.title")}</h2>
+          <p>{t("apps.empty.description")}</p>
+        </div>
       ) : (
-        <table className="data-table">
-          <thead><tr><th>{t("apps.columns.name")}</th><th>{t("apps.columns.replicas")}</th><th>{t("apps.columns.status")}</th><th>{t("apps.columns.actions")}</th></tr></thead>
+        <table className="apps-table">
+          <thead>
+            <tr>
+              <th>{t("apps.columns.name")}</th>
+              <th>{t("apps.columns.replicas")}</th>
+              <th>{t("apps.columns.status")}</th>
+              <th>{t("apps.columns.actions")}</th>
+            </tr>
+          </thead>
           <tbody>
             {apps.map((app) => (
-              <tr key={app.id}><td>{app.name || app.id}</td><td>{app.replicas}</td><td>{getStatusBadge(app.status)}</td><td className="item-actions">{app.url && <a href={app.url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary">{t("apps.actions.open")}</a>}<button className="btn btn-sm btn-outline">{t("apps.actions.scale")}</button><button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button></td></tr>
+              <tr key={app.id}>
+                <td>{app.name || app.id}</td>
+                <td className="apps-replicas">{app.replicas}</td>
+                <td>
+                  <span className={`apps-status-badge ${getAppStatusClass(app.status)}`}>
+                    {app.status}
+                  </span>
+                </td>
+                <td className="apps-actions">
+                  {app.url && (
+                    <a
+                      href={app.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm btn-primary"
+                    >
+                      {t("apps.actions.open")}
+                    </a>
+                  )}
+                  <button className="btn btn-sm btn-outline">
+                    {t("apps.actions.scale")}
+                  </button>
+                  <button className="btn btn-sm btn-outline btn-danger">
+                    {tCommon("actions.delete")}
+                  </button>
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>

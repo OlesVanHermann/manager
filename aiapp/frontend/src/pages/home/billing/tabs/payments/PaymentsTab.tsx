@@ -5,8 +5,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import * as paymentsService from "./PaymentsTab.service";
-import type { TabProps } from "../../../billing.types";
-import { DownloadIcon, ExternalIcon, CheckIcon } from "../../icons";
+import type { TabProps } from "../../billing.types";
+import { DownloadIcon, ExternalIcon, CheckIcon } from "./PaymentsTab.icons";
 import { BATCH_SIZE, VALID_WINDOW_SIZES, usePeriodNavigation, PeriodToolbar, formatDate, formatAmount, formatDateISO } from "./PaymentsTab.service";
 import "./PaymentsTab.css";
 

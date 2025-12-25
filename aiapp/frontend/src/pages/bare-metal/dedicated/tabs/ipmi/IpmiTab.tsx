@@ -1,6 +1,9 @@
-// ============================================================
-// DEDICATED TAB ISOLÉ : IpmiTab
-// ============================================================
+// ############################################################
+// #  DEDICATED/IPMI - COMPOSANT STRICTEMENT ISOLÉ            #
+// #  IMPORTS LOCAUX UNIQUEMENT                               #
+// #  CSS LOCAL : ./IpmiTab.css                               #
+// #  SERVICE LOCAL : ./IpmiTab.ts                            #
+// ############################################################
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,10 +11,16 @@ import { ipmiService } from "./IpmiTab";
 import type { DedicatedServerIpmi } from "../../dedicated.types";
 import "./IpmiTab.css";
 
+// ============================================================
+// Types LOCAUX à ce composant
+// ============================================================
 interface Props {
   serviceName: string;
 }
 
+// ============================================================
+// Composant Principal
+// ============================================================
 export function IpmiTab({ serviceName }: Props) {
   const { t } = useTranslation("bare-metal/dedicated/index");
   const { t: tCommon } = useTranslation("common");
@@ -20,6 +29,7 @@ export function IpmiTab({ serviceName }: Props) {
   const [sessionLoading, setSessionLoading] = useState(false);
   const [sessionUrl, setSessionUrl] = useState<string | null>(null);
 
+  // Chargement des données IPMI
   useEffect(() => {
     const load = async () => {
       try {
@@ -35,6 +45,7 @@ export function IpmiTab({ serviceName }: Props) {
     load();
   }, [serviceName]);
 
+  // Démarrage d'une session IPMI
   const startSession = async (type: "kvmipHtml5URL" | "serialOverLanURL") => {
     try {
       setSessionLoading(true);
@@ -45,67 +56,93 @@ export function IpmiTab({ serviceName }: Props) {
     }
   };
 
+  // État de chargement
   if (loading) {
     return (
-      <div className="ipmi-tab">
-        <div className="tab-loading">
-          <div className="skeleton-block" />
+      <div className="dedicated-ipmi-tab">
+        <div className="dedicated-ipmi-loading">
+          <div className="dedicated-ipmi-skeleton" style={{ width: "60%" }} />
+          <div className="dedicated-ipmi-skeleton" style={{ width: "40%" }} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="ipmi-tab">
-      <div className="tab-header">
+    <div className="dedicated-ipmi-tab">
+      {/* En-tête */}
+      <div className="dedicated-ipmi-header">
         <h3>{t("ipmi.title")}</h3>
-        <p className="tab-description">{t("ipmi.description")}</p>
+        <p className="dedicated-ipmi-description">{t("ipmi.description")}</p>
       </div>
 
+      {/* IPMI non disponible */}
       {!ipmi || !ipmi.activated ? (
-        <div className="empty-state">
+        <div className="dedicated-ipmi-empty">
           <p>{t("ipmi.notAvailable")}</p>
         </div>
       ) : (
         <>
-          <div className="ipmi-features">
-            <div className="ipmi-feature-item">
+          {/* Fonctionnalités supportées */}
+          <div className="dedicated-ipmi-features">
+            <div className="dedicated-ipmi-feature-item">
               <label>KVM over IP</label>
-              <span className={`badge ${ipmi.supportedFeatures?.kvmoverip ? "success" : "inactive"}`}>
-                {ipmi.supportedFeatures?.kvmoverip ? t("ipmi.supported") : t("ipmi.notSupported")}
+              <span
+                className={`dedicated-ipmi-badge ${ipmi.supportedFeatures?.kvmoverip ? "success" : "inactive"}`}
+              >
+                {ipmi.supportedFeatures?.kvmoverip
+                  ? t("ipmi.supported")
+                  : t("ipmi.notSupported")}
               </span>
             </div>
-            <div className="ipmi-feature-item">
+            <div className="dedicated-ipmi-feature-item">
               <label>Serial over LAN</label>
-              <span className={`badge ${ipmi.supportedFeatures?.serialOverLanUrl ? "success" : "inactive"}`}>
-                {ipmi.supportedFeatures?.serialOverLanUrl ? t("ipmi.supported") : t("ipmi.notSupported")}
+              <span
+                className={`dedicated-ipmi-badge ${ipmi.supportedFeatures?.serialOverLanUrl ? "success" : "inactive"}`}
+              >
+                {ipmi.supportedFeatures?.serialOverLanUrl
+                  ? t("ipmi.supported")
+                  : t("ipmi.notSupported")}
               </span>
             </div>
           </div>
 
-          <div className="ipmi-actions">
+          {/* Boutons d'action */}
+          <div className="dedicated-ipmi-actions">
             {ipmi.supportedFeatures?.kvmoverip && (
-              <button className="btn-primary" onClick={() => startSession("kvmipHtml5URL")} disabled={sessionLoading}>
+              <button
+                className="btn-primary"
+                onClick={() => startSession("kvmipHtml5URL")}
+                disabled={sessionLoading}
+              >
                 {sessionLoading ? tCommon("loading") : t("ipmi.launchKvm")}
               </button>
             )}
             {ipmi.supportedFeatures?.serialOverLanUrl && (
-              <button className="btn-secondary" onClick={() => startSession("serialOverLanURL")} disabled={sessionLoading}>
+              <button
+                className="btn-secondary"
+                onClick={() => startSession("serialOverLanURL")}
+                disabled={sessionLoading}
+              >
                 {sessionLoading ? tCommon("loading") : t("ipmi.launchSol")}
               </button>
             )}
           </div>
 
+          {/* URL de session */}
           {sessionUrl && (
-            <div className="ipmi-session-url">
+            <div className="dedicated-ipmi-session-url">
               <label>{t("ipmi.sessionUrl")}</label>
-              <a href={sessionUrl} target="_blank" rel="noopener noreferrer">{t("ipmi.openSession")}</a>
+              <a href={sessionUrl} target="_blank" rel="noopener noreferrer">
+                {t("ipmi.openSession")}
+              </a>
             </div>
           )}
         </>
       )}
 
-      <div className="ipmi-info-box">
+      {/* Boîte d'information */}
+      <div className="dedicated-ipmi-info-box">
         <h4>{t("ipmi.whatIs")}</h4>
         <p>{t("ipmi.explanation")}</p>
       </div>

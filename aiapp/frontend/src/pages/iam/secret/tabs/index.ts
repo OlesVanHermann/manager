@@ -1,7 +1,7 @@
 // ============================================================
-// SECRET MANAGER TABS - Exports
+// SECRET TABS - Index des onglets défactorisés
 // ============================================================
 
-export { default as SecretsTab } from "./SecretsTab";
-export { default as VersionsTab } from "./VersionsTab";
-export { default as AccessTab } from "./AccessTab";
+export { default as SecretsTab } from "./secrets/SecretsTab.tsx";
+export { default as VersionsTab } from "./versions/VersionsTab.tsx";
+export { default as AccessTab } from "./access/AccessTab.tsx";

@@ -1,76 +1,120 @@
 // ============================================================
-// TÉLÉCOM - Page groupe avec sous-navigation
+// TELECOM INDEX PAGE - Service LOCAL (défactorisé)
 // ============================================================
 
-import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { voipService } from "../../../services/web-cloud.voip";
-import { smsService } from "../../../services/web-cloud.sms";
-import { faxService } from "../../../services/web-cloud.fax";
-import { carrierSipService } from "../../../services/web-cloud.carrier-sip";
-import VoipPage from "./voip";
-import SmsPage from "./sms";
-import FaxPage from "./fax";
-import CarrierSipPage from "./carrier-sip";
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ovhApi } from '../../../services/api';
 
-type SubSection = "voip" | "sms" | "fax" | "carrier-sip";
+// ============================================================
+// SERVICE LOCAL - Plus d'import depuis /services/web-cloud.*
+// ============================================================
+const telecomIndexService = {
+  async listVoipAccounts(): Promise<string[]> {
+    return ovhApi.get<string[]>('/telephony').catch(() => []);
+  },
+  async listSmsAccounts(): Promise<string[]> {
+    return ovhApi.get<string[]>('/sms').catch(() => []);
+  },
+  async listFaxServices(): Promise<string[]> {
+    return ovhApi.get<string[]>('/freefax').catch(() => []);
+  },
+};
 
-/** Page groupe Télécom avec sous-navigation. */
-export default function TelecomPage() {
-  const { t } = useTranslation("web-cloud/telecom/index");
+interface TelecomCounts {
+  voip: number;
+  sms: number;
+  fax: number;
+}
 
-  const [activeSection, setActiveSection] = useState<SubSection>("voip");
-  const [counts, setCounts] = useState({ voip: 0, sms: 0, fax: 0, carrierSip: 0 });
+export default function TelecomIndexPage() {
+  const { t } = useTranslation('web-cloud/telecom/index');
+  const [counts, setCounts] = useState<TelecomCounts>({ voip: 0, sms: 0, fax: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadCounts = async () => {
+    const load = async () => {
       try {
-        const [voips, smss, faxes, sips] = await Promise.all([
-          voipService.listBillingAccounts(),
-          smsService.listAccounts(),
-          faxService.listServices(),
-          carrierSipService.listServices(),
+        setLoading(true);
+        const [voipList, smsList, faxList] = await Promise.all([
+          telecomIndexService.listVoipAccounts(),
+          telecomIndexService.listSmsAccounts(),
+          telecomIndexService.listFaxServices(),
         ]);
         setCounts({
-          voip: voips.length,
-          sms: smss.length,
-          fax: faxes.length,
-          carrierSip: sips.length,
+          voip: voipList.length,
+          sms: smsList.length,
+          fax: faxList.length,
         });
-      } catch (err) {
-        console.error("Failed to load counts:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    loadCounts();
+    load();
   }, []);
 
-  const sections: { id: SubSection; labelKey: string; count: number }[] = [
-    { id: "voip", labelKey: "sections.voip", count: counts.voip },
-    { id: "sms", labelKey: "sections.sms", count: counts.sms },
-    { id: "fax", labelKey: "sections.fax", count: counts.fax },
-    { id: "carrier-sip", labelKey: "sections.carrierSip", count: counts.carrierSip },
+  const categories = [
+    {
+      id: 'voip',
+      icon: '📞',
+      title: t('categories.voip.title'),
+      description: t('categories.voip.description'),
+      count: counts.voip,
+      link: '/web-cloud/telecom/voip',
+    },
+    {
+      id: 'sms',
+      icon: '💬',
+      title: t('categories.sms.title'),
+      description: t('categories.sms.description'),
+      count: counts.sms,
+      link: '/web-cloud/telecom/sms',
+    },
+    {
+      id: 'fax',
+      icon: '📠',
+      title: t('categories.fax.title'),
+      description: t('categories.fax.description'),
+      count: counts.fax,
+      link: '/web-cloud/telecom/fax',
+    },
   ];
 
   return (
-    <div className="service-list-page">
-      <div className="sub-nav">
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            className={`sub-nav-item ${activeSection === section.id ? "active" : ""}`}
-            onClick={() => setActiveSection(section.id)}
-          >
-            {t(section.labelKey)}
-            <span className="count">{section.count}</span>
-          </button>
-        ))}
+    <div className="page-container">
+      <div className="page-header">
+        <div className="breadcrumb">
+          <Link to="/web-cloud">{t('breadcrumb.webCloud')}</Link>
+          <span>/</span>
+          <span>{t('breadcrumb.telecom')}</span>
+        </div>
+        <h1>{t('title')}</h1>
+        <p className="page-description">{t('description')}</p>
       </div>
-      <div style={{ flex: 1, overflow: "auto" }}>
-        {activeSection === "voip" && <VoipPage />}
-        {activeSection === "sms" && <SmsPage />}
-        {activeSection === "fax" && <FaxPage />}
-        {activeSection === "carrier-sip" && <CarrierSipPage />}
-      </div>
+
+      {loading ? (
+        <div className="tab-loading">
+          <div className="skeleton-block" />
+          <div className="skeleton-block" />
+        </div>
+      ) : (
+        <div className="category-cards">
+          {categories.map(cat => (
+            <Link key={cat.id} to={cat.link} className="category-card">
+              <div className="category-icon">{cat.icon}</div>
+              <div className="category-info">
+                <h3>{cat.title}</h3>
+                <p>{cat.description}</p>
+              </div>
+              <div className="category-count">
+                <span className="count-value">{cat.count}</span>
+                <span className="count-label">{t('services')}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

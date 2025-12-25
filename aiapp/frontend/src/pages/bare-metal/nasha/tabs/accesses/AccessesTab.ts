@@ -1,6 +1,7 @@
-// ============================================================
-// NASHA SERVICE ISOLÉ : AccessesTab
-// ============================================================
+// ############################################################
+// #  NASHA/ACCESSES - SERVICE STRICTEMENT ISOLÉ              #
+// #  AUCUN IMPORT DEPUIS UN AUTRE TAB                        #
+// ############################################################
 
 import { ovhApi } from "../../../../../services/api";
 import type { NashaAccess } from "../../nasha.types";

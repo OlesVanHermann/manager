@@ -1,10 +1,10 @@
 // ============================================================
-// PAYMENTS TAB SERVICE - Service ISOLÉ
+// PAYMENTS TAB SERVICE - Service ISOLÉ (DÉFACTORISÉ)
 // ============================================================
 
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { FileTextIcon, FileIcon } from "../../icons";
+import { FileTextIcon, FileIcon } from "./PaymentsTab.icons";
 
 // ============ CONSTANTES ============
 export const MIN_YEAR = 2020;
@@ -72,6 +72,12 @@ export interface PeriodNavigation {
   getDateRangeISO: () => { from: string; to: string };
   isAutoFallback: boolean; fallbackIndex: number;
   applyFallback: () => void; setAnchor: () => void; disableAutoFallback: () => void;
+}
+
+export interface PaymentInfo {
+  paymentType: string;
+  publicLabel?: string;
+  description?: string | null;
 }
 
 // ============ HOOK ============
@@ -162,15 +168,15 @@ export function PeriodToolbar({ year, startMonth, endMonth, canGoPrevious, canGo
     <div className="payments-toolbar">
       <div className="payments-toolbar-left">
         <span className="payments-year-label">{year}</span>
-        <button className="btn payments-year-nav-btn" onClick={goToPrevious} disabled={!canGoPrevious} title={t('invoices.nav.previous')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button className="payments-btn payments-year-nav-btn" onClick={goToPrevious} disabled={!canGoPrevious} title={t('invoices.nav.previous')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
         <select className="payments-period-select payments-month-select" value={startMonth} onChange={(e) => handleStartMonthChange(Number(e.target.value))}>{MONTHS_SHORT.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}</select>
         <span className="payments-date-separator">→</span>
         <select className="payments-period-select payments-month-select" value={endMonth} onChange={(e) => handleEndMonthChange(Number(e.target.value))}>{MONTHS_SHORT.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}</select>
-        <button className="btn payments-year-nav-btn" onClick={goToNext} disabled={!canGoNext} title={t('invoices.nav.next')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
-        {showReset && <button className="btn payments-reset-btn" onClick={resetToAnchor} title={t('invoices.nav.reset')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>}
+        <button className="payments-btn payments-year-nav-btn" onClick={goToNext} disabled={!canGoNext} title={t('invoices.nav.next')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        {showReset && <button className="payments-btn payments-reset-btn" onClick={resetToAnchor} title={t('invoices.nav.reset')}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>}
       </div>
       <div className="payments-toolbar-right">
-        {allLoaded && totalCount > 0 && (<><button className="btn btn-sm btn-secondary payments-export-btn" onClick={onExportCSV} title={t('invoices.export.csv')}><FileTextIcon /> CSV</button><button className="btn btn-sm btn-secondary payments-export-btn" onClick={onExportPDF} title={t('invoices.export.pdf')}><FileIcon /> PDF</button></>)}
+        {allLoaded && totalCount > 0 && (<><button className="payments-btn payments-btn-sm payments-btn-secondary payments-export-btn" onClick={onExportCSV} title={t('invoices.export.csv')}><FileTextIcon /> CSV</button><button className="payments-btn payments-btn-sm payments-btn-secondary payments-export-btn" onClick={onExportPDF} title={t('invoices.export.pdf')}><FileIcon /> PDF</button></>)}
         <span className="payments-result-count">{loadingIds ? tCommon('loading') : t(countLabelKey, { loaded: loadedCount, total: totalCount })}</span>
       </div>
     </div>
@@ -184,7 +190,7 @@ export interface Deposit {
   date: string;
   amount: { currencyCode: string; text: string; value: number };
   orderId: number;
-  paymentInfo?: { paymentType: string; publicLabel?: string; description?: string | null };
+  paymentInfo?: PaymentInfo;
   url: string;
   pdfUrl: string;
 }

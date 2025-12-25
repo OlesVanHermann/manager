@@ -5,9 +5,9 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as logsService from "../../../services/iam.logs";
+import * as logsService from "./dbaas-logs.service";
 import { AccessPolicyTab, ActivityTab, AuditTab } from "../logs/tabs";
-import "../logs/styles.css";
+
 
 type LogTab = "access-policy" | "activity" | "audit";
 

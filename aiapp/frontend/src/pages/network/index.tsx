@@ -5,24 +5,29 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { networkService } from "../../services/network";
-import "./styles.css";
+import { loadAllCounts, NetworkCounts } from "./NetworkDashboard";
+import "./NetworkDashboard.css";
 
 export default function NetworkDashboard() {
   const { t } = useTranslation("network/index");
-  const [counts, setCounts] = useState({ ips: 0, vracks: 0, lbs: 0, cdn: 0, cloudConnect: 0, vrackServices: 0 });
+  const [counts, setCounts] = useState<NetworkCounts>({
+    ips: 0,
+    vracks: 0,
+    lbs: 0,
+    cdn: 0,
+    cloudConnect: 0,
+    vrackServices: 0
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [ips, vracks, lbs] = await Promise.all([
-          networkService.listIps().catch(() => []),
-          networkService.listVracks().catch(() => []),
-          networkService.listLoadBalancers().catch(() => []),
-        ]);
-        setCounts({ ips: ips.length, vracks: vracks.length, lbs: lbs.length, cdn: 0, cloudConnect: 0, vrackServices: 0 });
-      } finally { setLoading(false); }
+        const data = await loadAllCounts();
+        setCounts(data);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);
@@ -39,17 +44,19 @@ export default function NetworkDashboard() {
 
   return (
     <div className="network-dashboard">
-      <header className="dashboard-header">
+      <header className="network-dashboard-header">
         <h1>{t("title")}</h1>
         <p>{t("description")}</p>
       </header>
-      <div className="dashboard-tiles">
+      <div className="network-dashboard-tiles">
         {services.map((svc) => (
-          <Link key={svc.key} to={svc.path} className="dashboard-tile">
-            <div className="tile-icon">{svc.icon}</div>
-            <div className="tile-content">
+          <Link key={svc.key} to={svc.path} className="network-dashboard-tile">
+            <div className="network-dashboard-tile-icon">{svc.icon}</div>
+            <div className="network-dashboard-tile-content">
               <h3>{t(`tiles.${svc.key}`)}</h3>
-              <span className="tile-count">{loading ? '...' : svc.count}</span>
+              <span className={`network-dashboard-tile-count ${loading ? "loading" : ""}`}>
+                {loading ? "..." : svc.count}
+              </span>
               <p>{t(`tiles.${svc.key}Desc`)}</p>
             </div>
           </Link>

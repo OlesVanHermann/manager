@@ -1,71 +1,155 @@
 // ============================================================
-// SMS PAGE (style Hosting)
+// SMS PAGE - Imports depuis tabs ISOLÉS
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
-import { smsService, SmsAccount } from "../../../../services/web-cloud.sms";
-import { OutgoingTab, IncomingTab, SendersTab } from "./tabs";
-import "./styles.css";
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ovhApi } from '../../../../services/api';
+import type { SmsAccount } from './sms.types';
 
-const SmsIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/>
-  </svg>
-);
+// Imports ISOLÉS - chaque tab depuis son dossier
+import { OutgoingTab } from './tabs/outgoing/OutgoingTab';
+import { IncomingTab } from './tabs/incoming/IncomingTab';
+import { SendersTab } from './tabs/senders/SendersTab';
+
+// ============================================================
+// SERVICE LOCAL - Pour le compte SMS uniquement
+// ============================================================
+const smsIndexService = {
+  async listSmsAccounts(): Promise<string[]> {
+    return ovhApi.get<string[]>('/sms');
+  },
+  async getSmsAccount(serviceName: string): Promise<SmsAccount> {
+    return ovhApi.get<SmsAccount>(`/sms/${serviceName}`);
+  },
+};
+
+type TabId = 'outgoing' | 'incoming' | 'senders';
 
 export default function SmsPage() {
-  const { t } = useTranslation("web-cloud/sms/index");
-  const [accounts, setAccounts] = useState<ServiceItem[]>([]);
+  const { t } = useTranslation('web-cloud/sms/index');
+  const { serviceName } = useParams<{ serviceName: string }>();
+  const [account, setAccount] = useState<SmsAccount | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("outgoing");
-  const [accountDetails, setAccountDetails] = useState<SmsAccount | null>(null);
-
-  const loadAccounts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const names = await smsService.listAccounts();
-      const items: ServiceItem[] = names.map((name) => ({ id: name, name: name }));
-      setAccounts(items);
-      if (items.length > 0 && !selectedAccount) setSelectedAccount(items[0].id);
-    } catch (err) { setError(String(err)); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { loadAccounts(); }, [loadAccounts]);
+  const [activeTab, setActiveTab] = useState<TabId>('outgoing');
 
   useEffect(() => {
-    if (!selectedAccount) return;
-    smsService.getAccount(selectedAccount).then(setAccountDetails).catch(() => setAccountDetails(null));
-  }, [selectedAccount]);
+    const load = async () => {
+      if (!serviceName) return;
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await smsIndexService.getSmsAccount(serviceName);
+        setAccount(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [serviceName]);
 
-  const detailTabs = [
-    { id: "outgoing", label: t("tabs.outgoing") },
-    { id: "incoming", label: t("tabs.incoming") },
-    { id: "senders", label: t("tabs.senders") },
+  const tabs: { id: TabId; label: string }[] = [
+    { id: 'outgoing', label: t('tabs.outgoing') },
+    { id: 'incoming', label: t('tabs.incoming') },
+    { id: 'senders', label: t('tabs.senders') },
   ];
 
-  return (
-    <ServiceListPage titleKey="title" descriptionKey="description" guidesUrl="https://help.ovhcloud.com/csm/fr-sms" i18nNamespace="web-cloud/sms/index" services={accounts} loading={loading} error={error} selectedService={selectedAccount} onSelectService={setSelectedAccount} emptyIcon={<SmsIcon />} emptyTitleKey="empty.title" emptyDescriptionKey="empty.description">
-      {selectedAccount && (
-        <div className="detail-card">
-          <div className="detail-card-header">
-            <h2>{selectedAccount}</h2>
-            {accountDetails && <span className="badge success">{accountDetails.creditsLeft} crédits</span>}
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <div className="breadcrumb">
+            <Link to="/web-cloud">{t('breadcrumb.webCloud')}</Link>
+            <span>/</span>
+            <Link to="/web-cloud/telecom">{t('breadcrumb.telecom')}</Link>
+            <span>/</span>
+            <span>{t('breadcrumb.sms')}</span>
           </div>
-          <div className="detail-tabs">
-            {detailTabs.map((tab) => (<button key={tab.id} className={`detail-tab-btn ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>))}
-          </div>
-          <div className="detail-tab-content">
-            {activeTab === "outgoing" && <OutgoingTab accountName={selectedAccount} />}
-            {activeTab === "incoming" && <IncomingTab accountName={selectedAccount} />}
-            {activeTab === "senders" && <SendersTab accountName={selectedAccount} />}
-          </div>
+          <h1>{t('title')}</h1>
         </div>
-      )}
-    </ServiceListPage>
+        <div className="tab-loading">
+          <div className="skeleton-block" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <h1>{t('title')}</h1>
+        </div>
+        <div className="alert alert-error">{error}</div>
+      </div>
+    );
+  }
+
+  if (!account || !serviceName) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <h1>{t('title')}</h1>
+        </div>
+        <div className="empty-state">
+          <p>{t('empty')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case 'outgoing':
+        return <OutgoingTab accountName={serviceName} />;
+      case 'incoming':
+        return <IncomingTab accountName={serviceName} />;
+      case 'senders':
+        return <SendersTab accountName={serviceName} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <div className="breadcrumb">
+          <Link to="/web-cloud">{t('breadcrumb.webCloud')}</Link>
+          <span>/</span>
+          <Link to="/web-cloud/telecom">{t('breadcrumb.telecom')}</Link>
+          <span>/</span>
+          <span>{t('breadcrumb.sms')}</span>
+        </div>
+        <h1>{account.name}</h1>
+        <p className="page-description">{account.description || t('noDescription')}</p>
+      </div>
+
+      <div className="credits-display">
+        <span className="credits-value">{account.creditsLeft}</span>
+        <span className="credits-label">{t('credits')}</span>
+      </div>
+
+      <div className="tabs-container">
+        <div className="tabs-nav">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="tab-content">
+          {renderTab()}
+        </div>
+      </div>
+    </div>
   );
 }

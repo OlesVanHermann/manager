@@ -1,0 +1,63 @@
+// ============================================================
+// GENERAL TAB - Composant ISOLÉ (défactorisé)
+// ============================================================
+
+import { useTranslation } from "react-i18next";
+import type { CarrierSip } from "../../carrier-sip.types";
+import "./GeneralTab.css";
+
+interface Props {
+  billingAccount: string;
+  serviceName: string;
+  details: CarrierSip | null;
+}
+
+export function GeneralTab({ billingAccount, serviceName, details }: Props) {
+  const { t } = useTranslation("web-cloud/telecom/carrier-sip/index");
+  const percent = details ? Math.round((details.currentCalls / details.maxCalls) * 100) : 0;
+
+  return (
+    <div className="general-tab">
+      <div className="general-tab-header">
+        <div>
+          <h3>{t("general.title")}</h3>
+        </div>
+      </div>
+
+      <div className={`general-trunk-card ${details?.status === "enabled" ? "active" : ""}`}>
+        <div className="general-trunk-status">
+          <div className="general-trunk-icon">📡</div>
+          <div className="general-trunk-info">
+            <h3>{serviceName}</h3>
+            <p>{details?.description || t("general.noDescription")}</p>
+            <div className="general-calls-indicator">
+              <div className="general-calls-bar">
+                <div className="general-calls-fill" style={{ width: `${percent}%` }} />
+              </div>
+              <span className="general-calls-text">
+                {details?.currentCalls || 0} / {details?.maxCalls || 0} appels
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section className="general-info-section">
+        <div className="general-info-grid">
+          <div className="general-info-item">
+            <label>{t("general.billingAccount")}</label>
+            <span className="font-mono">{billingAccount}</span>
+          </div>
+          <div className="general-info-item">
+            <label>{t("general.status")}</label>
+            <span className={`badge ${details?.status === "enabled" ? "success" : "warning"}`}>
+              {details?.status || "-"}
+            </span>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default GeneralTab;

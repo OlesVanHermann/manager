@@ -9,7 +9,7 @@ import LogsPage from "../logs";
 // ============ COMPOSANT ============
 
 /** Tab Logs qui intègre la page complète avec les 3 sous-onglets. */
-export function LogsTab() {
+export default function LogsTab() {
   const { credentials } = useAuth();
 
   if (!credentials) {

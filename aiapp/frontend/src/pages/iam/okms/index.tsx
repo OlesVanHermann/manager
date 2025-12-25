@@ -8,8 +8,8 @@ import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import * as okmsService from "./okms.service";
 import type { OkmsInfo } from "./okms.types";
-import KeysTab from "./tabs/KeysTab.tsx";
-import CredentialsTab from "./tabs/CredentialsTab.tsx";
+import KeysTab from "./tabs/keys/KeysTab.tsx";
+import CredentialsTab from "./tabs/credentials/CredentialsTab.tsx";
 
 export default function OkmsPage() {
   const { t } = useTranslation("iam/okms/index");

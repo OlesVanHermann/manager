@@ -1,13 +1,13 @@
-// ============================================================
-// NASHA SERVICE ISOLÉ : SnapshotsTab
-// ============================================================
+// ############################################################
+// #  NASHA/SNAPSHOTS - SERVICE STRICTEMENT ISOLÉ             #
+// #  AUCUN IMPORT DEPUIS UN AUTRE TAB                        #
+// ############################################################
 
 import { ovhApi } from "../../../../../services/api";
 import type { NashaSnapshot } from "../../nasha.types";
 
 class SnapshotsService {
   async getSnapshots(serviceName: string): Promise<NashaSnapshot[]> {
-    // Get all partitions first, then snapshots for each
     const partitions = await ovhApi.get<string[]>(`/dedicated/nasha/${serviceName}/partition`);
     const allSnapshots: NashaSnapshot[] = [];
     for (const partitionName of partitions) {

@@ -1,6 +1,9 @@
-// ============================================================
-// DEDICATED TAB ISOLÉ : NetworkTab
-// ============================================================
+// ############################################################
+// #  DEDICATED/NETWORK - COMPOSANT STRICTEMENT ISOLÉ         #
+// #  IMPORTS LOCAUX UNIQUEMENT                               #
+// #  CSS LOCAL : ./NetworkTab.css                            #
+// #  SERVICE LOCAL : ./NetworkTab.ts                         #
+// ############################################################
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,16 +11,23 @@ import { networkService } from "./NetworkTab";
 import type { DedicatedServerVrack } from "../../dedicated.types";
 import "./NetworkTab.css";
 
+// ============================================================
+// Types LOCAUX à ce composant
+// ============================================================
 interface Props {
   serviceName: string;
 }
 
+// ============================================================
+// Composant Principal
+// ============================================================
 export function NetworkTab({ serviceName }: Props) {
   const { t } = useTranslation("bare-metal/dedicated/index");
   const [ips, setIps] = useState<string[]>([]);
   const [vracks, setVracks] = useState<DedicatedServerVrack[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Chargement des données réseau
   useEffect(() => {
     const load = async () => {
       try {
@@ -28,7 +38,9 @@ export function NetworkTab({ serviceName }: Props) {
         ]);
         setIps(ipList);
         if (vrackList.length > 0) {
-          const vrackDetails = await Promise.all(vrackList.map((v) => networkService.getVrack(serviceName, v)));
+          const vrackDetails = await Promise.all(
+            vrackList.map((v) => networkService.getVrack(serviceName, v))
+          );
           setVracks(vrackDetails);
         }
       } finally {
@@ -38,37 +50,43 @@ export function NetworkTab({ serviceName }: Props) {
     load();
   }, [serviceName]);
 
+  // État de chargement
   if (loading) {
     return (
-      <div className="network-tab">
-        <div className="tab-loading">
-          <div className="skeleton-block" />
+      <div className="dedicated-network-tab">
+        <div className="dedicated-network-loading">
+          <div className="dedicated-network-skeleton" style={{ width: "60%" }} />
+          <div className="dedicated-network-skeleton" style={{ width: "80%" }} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="network-tab">
-      <section className="network-info-section">
+    <div className="dedicated-network-tab">
+      {/* Section IPs */}
+      <section className="dedicated-network-section">
         <h3>{t("network.ips")}</h3>
         {ips.length === 0 ? (
           <p>{t("network.noIps")}</p>
         ) : (
-          <div className="network-ip-list">
+          <div className="dedicated-network-ip-list">
             {ips.map((ip) => (
-              <span key={ip} className="network-ip-badge font-mono">{ip}</span>
+              <span key={ip} className="dedicated-network-ip-badge">
+                {ip}
+              </span>
             ))}
           </div>
         )}
       </section>
 
-      <section className="network-info-section">
+      {/* Section vRack */}
+      <section className="dedicated-network-section">
         <h3>{t("network.vrack")}</h3>
         {vracks.length === 0 ? (
           <p>{t("network.noVrack")}</p>
         ) : (
-          <table className="network-data-table">
+          <table className="dedicated-network-table">
             <thead>
               <tr>
                 <th>{t("network.vrackName")}</th>
@@ -78,9 +96,13 @@ export function NetworkTab({ serviceName }: Props) {
             <tbody>
               {vracks.map((v) => (
                 <tr key={v.vrack}>
-                  <td className="font-mono">{v.vrack}</td>
+                  <td className="mono">{v.vrack}</td>
                   <td>
-                    <span className={`badge ${v.state === "ok" ? "success" : "warning"}`}>{v.state}</span>
+                    <span
+                      className={`dedicated-network-badge ${v.state === "ok" ? "success" : "warning"}`}
+                    >
+                      {v.state}
+                    </span>
                   </td>
                 </tr>
               ))}

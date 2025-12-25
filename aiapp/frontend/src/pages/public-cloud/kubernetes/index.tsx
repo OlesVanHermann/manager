@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
 import * as k8sService from "../../../services/public-cloud.kubernetes";
-import GeneralTab from "./tabs/GeneralTab";
-import NodePoolsTab from "./tabs/NodePoolsTab";
-import KubeconfigTab from "./tabs/KubeconfigTab";
+import GeneralTab from "./tabs/GeneralTab.tsx";
+import NodePoolsTab from "./tabs/NodePoolsTab.tsx";
+import KubeconfigTab from "./tabs/KubeconfigTab.tsx";
 import "./styles.css";
 
 interface ClusterInfo { id: string; name: string; region: string; version: string; status: string; url?: string; nodesCount: number; }

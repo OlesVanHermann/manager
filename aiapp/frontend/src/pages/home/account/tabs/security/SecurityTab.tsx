@@ -1,44 +1,65 @@
+// ============================================================
+// SECURITY TAB - Gestion de la sécurité du compte
+// Styles: ./SecurityTab.css (préfixe .security-)
+// Service: ./SecurityTab.service.ts (ISOLÉ)
+// Hook: ./SecurityTab.hooks.ts (ISOLÉ)
+// Sections: ./SecurityTab.sections.tsx (ISOLÉ)
+// Modals: ./SecurityTab.modals.tsx (ISOLÉ)
+// ============================================================
+
 import "./SecurityTab.css";
 import { useTranslation } from "react-i18next";
-import { useSecurityData, PasswordSection, TwoFactorSection, IpRestrictionsSection, SecurityModals } from "../../security";
+import { useSecurityData } from "./SecurityTab.hooks";
+import { PasswordSection, TwoFactorSection, IpRestrictionsSection } from "./SecurityTab.sections";
+import { SecurityModals } from "./SecurityTab.modals";
+
+// ============ COMPOSANT ============
 
 export default function SecurityTab() {
-  const { t } = useTranslation('home/account/security');
-  const { t: tCommon } = useTranslation('common');
+  const { t } = useTranslation("home/account/security");
+  const { t: tCommon } = useTranslation("common");
   const { state, modal, actions } = useSecurityData();
 
+  // ---------- LOADING ----------
   if (state.loading) {
     return (
       <div className="security-tab">
-        <div className="security-loading-state">
+        <div className="security-loading">
           <div className="security-spinner"></div>
-          <p>{t('loading')}</p>
+          <p>{t("loading")}</p>
         </div>
       </div>
     );
   }
 
+  // ---------- ERROR ----------
   if (state.error) {
     return (
       <div className="security-tab">
-        <div className="error-state">
+        <div className="security-error">
           <p>{t(`errors.${state.error}`, { defaultValue: state.error })}</p>
-          <button onClick={actions.loadSecurityData} className="btn btn-primary">{tCommon('actions.refresh')}</button>
+          <button onClick={actions.loadSecurityData} className="security-btn security-btn-primary">
+            {tCommon("actions.refresh")}
+          </button>
         </div>
       </div>
     );
   }
 
+  // ---------- RENDER ----------
   return (
     <div className="security-tab">
       <PasswordSection onOpenModal={actions.openModal} />
+
       <TwoFactorSection status={state.status} onOpenModal={actions.openModal} />
-      <IpRestrictionsSection 
-        ipRestrictions={state.ipRestrictions} 
-        ipDefaultRule={state.ipDefaultRule} 
+
+      <IpRestrictionsSection
+        ipRestrictions={state.ipRestrictions}
+        ipDefaultRule={state.ipDefaultRule}
         onOpenModal={actions.openModal}
         onDeleteIp={actions.deleteIpRestriction}
       />
+
       <SecurityModals
         modal={modal}
         onClose={actions.closeModal}

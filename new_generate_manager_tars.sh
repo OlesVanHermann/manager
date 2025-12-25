@@ -183,9 +183,6 @@ tar -cf /home/ubuntu/new_manager.home.support.tar \
 echo "Création new_manager.iam.core.tar..."
 tar -cf /home/ubuntu/new_manager.iam.core.tar \
     ./src/pages/iam/index.tsx \
-    ./src/pages/iam/styles.css \
-    ./src/pages/iam/utils.tsx \
-    ./src/pages/iam/components \
     ./src/pages/iam/tabs \
     ./public/locales/en/iam/index.json \
     ./public/locales/en/iam/identities.json \
@@ -281,7 +278,6 @@ tar -cf /home/ubuntu/new_manager.license.windows.tar \
 echo "Création new_manager.network.core.tar..."
 tar -cf /home/ubuntu/new_manager.network.core.tar \
     ./src/pages/network/index.tsx \
-    ./src/pages/network/styles.css \
     ./public/locales/en/network/index.json \
     ./public/locales/fr/network/index.json \
     $(add_if_exists ./src/services/network.ts)
@@ -465,8 +461,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.access.tar \
 echo "Création new_manager.web-cloud.access.overthebox.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.access.overthebox.tar \
     ./src/pages/web-cloud/access/overthebox \
-    ./public/locales/en/web-cloud/access/overthebox \
-    ./public/locales/fr/web-cloud/access/overthebox \
     ./public/locales/en/web-cloud/overthebox \
     ./public/locales/fr/web-cloud/overthebox \
     $(add_if_exists ./src/services/web-cloud.overthebox.ts)
@@ -474,8 +468,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.access.overthebox.tar \
 echo "Création new_manager.web-cloud.access.pack-xdsl.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.access.pack-xdsl.tar \
     ./src/pages/web-cloud/access/pack-xdsl \
-    ./public/locales/en/web-cloud/access/pack-xdsl \
-    ./public/locales/fr/web-cloud/access/pack-xdsl \
     ./public/locales/en/web-cloud/pack-xdsl \
     ./public/locales/fr/web-cloud/pack-xdsl \
     $(add_if_exists ./src/services/web-cloud.pack-xdsl.ts)
@@ -493,10 +485,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.domains.tar \
     ./src/pages/web-cloud/domains \
     ./public/locales/en/web-cloud/domains \
     ./public/locales/fr/web-cloud/domains \
-    ./public/locales/en/web-cloud/domains-dns \
-    ./public/locales/fr/web-cloud/domains-dns \
-    ./public/locales/en/web-cloud/dns-zones \
-    ./public/locales/fr/web-cloud/dns-zones \
     $(add_if_exists ./src/services/web-cloud.domains.ts) \
     $(add_if_exists ./src/services/web-cloud.dns-zones.ts)
 
@@ -509,8 +497,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.emails.tar \
 echo "Création new_manager.web-cloud.emails.email-domain.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.email-domain.tar \
     ./src/pages/web-cloud/emails/email-domain \
-    ./public/locales/en/web-cloud/emails/email-domain \
-    ./public/locales/fr/web-cloud/emails/email-domain \
     ./public/locales/en/web-cloud/email-domain \
     ./public/locales/fr/web-cloud/email-domain \
     $(add_if_exists ./src/services/web-cloud.email-domain.ts)
@@ -518,8 +504,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.emails.email-domain.tar \
 echo "Création new_manager.web-cloud.emails.email-pro.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.email-pro.tar \
     ./src/pages/web-cloud/emails/email-pro \
-    ./public/locales/en/web-cloud/emails/email-pro \
-    ./public/locales/fr/web-cloud/emails/email-pro \
     ./public/locales/en/web-cloud/email-pro \
     ./public/locales/fr/web-cloud/email-pro \
     $(add_if_exists ./src/services/web-cloud.email-pro.ts)
@@ -527,8 +511,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.emails.email-pro.tar \
 echo "Création new_manager.web-cloud.emails.exchange.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.exchange.tar \
     ./src/pages/web-cloud/emails/exchange \
-    ./public/locales/en/web-cloud/emails/exchange \
-    ./public/locales/fr/web-cloud/emails/exchange \
     ./public/locales/en/web-cloud/exchange \
     ./public/locales/fr/web-cloud/exchange \
     $(add_if_exists ./src/services/web-cloud.exchange.ts)
@@ -536,8 +518,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.emails.exchange.tar \
 echo "Création new_manager.web-cloud.emails.office.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.office.tar \
     ./src/pages/web-cloud/emails/office \
-    ./public/locales/en/web-cloud/emails/office \
-    ./public/locales/fr/web-cloud/emails/office \
     ./public/locales/en/web-cloud/office \
     ./public/locales/fr/web-cloud/office \
     $(add_if_exists ./src/services/web-cloud.office.ts)
@@ -545,8 +525,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.emails.office.tar \
 echo "Création new_manager.web-cloud.emails.zimbra.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.zimbra.tar \
     ./src/pages/web-cloud/emails/zimbra \
-    ./public/locales/en/web-cloud/emails/zimbra \
-    ./public/locales/fr/web-cloud/emails/zimbra \
     ./public/locales/en/web-cloud/zimbra \
     ./public/locales/fr/web-cloud/zimbra \
     $(add_if_exists ./src/services/web-cloud.zimbra.ts)
@@ -561,8 +539,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.hosting.tar \
     ./src/pages/web-cloud/hebergement/hosting \
     ./public/locales/en/web-cloud/hosting \
     ./public/locales/fr/web-cloud/hosting \
-    ./public/locales/en/web-cloud/hebergement \
-    ./public/locales/fr/web-cloud/hebergement \
     $(add_if_exists ./src/services/web-cloud.hosting.ts)
 
 echo "Création new_manager.web-cloud.hebergement.managed-wordpress.tar..."
@@ -588,17 +564,11 @@ tar -cf /home/ubuntu/new_manager.web-cloud.telecom.tar \
 echo "Création new_manager.web-cloud.telecom.carrier-sip.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.telecom.carrier-sip.tar \
     ./src/pages/web-cloud/telecom/carrier-sip \
-    ./public/locales/en/web-cloud/telecom/carrier-sip \
-    ./public/locales/fr/web-cloud/telecom/carrier-sip \
-    ./public/locales/en/web-cloud/carrier-sip \
-    ./public/locales/fr/web-cloud/carrier-sip \
     $(add_if_exists ./src/services/web-cloud.carrier-sip.ts)
 
 echo "Création new_manager.web-cloud.telecom.fax.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.telecom.fax.tar \
     ./src/pages/web-cloud/telecom/fax \
-    ./public/locales/en/web-cloud/telecom/fax \
-    ./public/locales/fr/web-cloud/telecom/fax \
     ./public/locales/en/web-cloud/fax \
     ./public/locales/fr/web-cloud/fax \
     $(add_if_exists ./src/services/web-cloud.fax.ts)
@@ -606,8 +576,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.telecom.fax.tar \
 echo "Création new_manager.web-cloud.telecom.sms.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.telecom.sms.tar \
     ./src/pages/web-cloud/telecom/sms \
-    ./public/locales/en/web-cloud/telecom/sms \
-    ./public/locales/fr/web-cloud/telecom/sms \
     ./public/locales/en/web-cloud/sms \
     ./public/locales/fr/web-cloud/sms \
     $(add_if_exists ./src/services/web-cloud.sms.ts)
@@ -615,8 +583,6 @@ tar -cf /home/ubuntu/new_manager.web-cloud.telecom.sms.tar \
 echo "Création new_manager.web-cloud.telecom.voip.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.telecom.voip.tar \
     ./src/pages/web-cloud/telecom/voip \
-    ./public/locales/en/web-cloud/telecom/voip \
-    ./public/locales/fr/web-cloud/telecom/voip \
     ./public/locales/en/web-cloud/voip \
     ./public/locales/fr/web-cloud/voip \
     $(add_if_exists ./src/services/web-cloud.voip.ts)

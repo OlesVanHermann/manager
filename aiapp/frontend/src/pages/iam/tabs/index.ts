@@ -1,8 +1,8 @@
 // ============================================================
-// IAM TABS - Exports centralisés
+// IAM TABS - Index des onglets défactorisés
 // ============================================================
 
-export { IdentitiesTab } from "./IdentitiesTab";
-export { PoliciesTab } from "./PoliciesTab";
-export { GroupsTab } from "./GroupsTab";
-export { LogsTab } from "./LogsTab";
+export { default as IdentitiesTab } from "./identities/IdentitiesTab.tsx";
+export { default as PoliciesTab } from "./policies/PoliciesTab.tsx";
+export { default as GroupsTab } from "./groups/GroupsTab.tsx";
+export { default as LogsTab } from "./LogsTab.tsx";

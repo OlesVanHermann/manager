@@ -1,9 +1,14 @@
+// ============================================================
+// SERVICES TAB - Composant ISOLÉ (DÉFACTORISÉ)
+// ============================================================
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import * as billingServicesService from "./ServicesTab.service";
+import { formatDate } from "./ServicesTab.helpers";
+import { ServerIcon } from "./ServicesTab.icons";
+import type { TabProps } from "../../billing.types";
 import "./ServicesTab.css";
-import { TabProps, formatDate } from "../../utils";
-import { ServerIcon } from "../../icons";
 
 export function ServicesTab({ credentials }: TabProps) {
   const { t } = useTranslation('home/billing/tabs');
@@ -41,42 +46,76 @@ export function ServicesTab({ credentials }: TabProps) {
     return true;
   });
 
-  if (loading) return <div className="tab-panel"><div className="loading-state"><div className="spinner"></div><p>{t('services.loading')}</p></div></div>;
-  if (error) return <div className="tab-panel"><div className="error-banner">{error}<button onClick={loadServices} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
+  if (loading) {
+    return (
+      <div className="services-tab-panel">
+        <div className="services-loading-state">
+          <div className="services-spinner"></div>
+          <p>{t('services.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="services-tab-panel">
+        <div className="services-error-banner">
+          {error}
+          <button onClick={loadServices} className="services-btn services-btn-sm services-btn-secondary" style={{ marginLeft: "1rem" }}>
+            {tCommon('actions.refresh')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="tab-panel">
-      <div className="toolbar">
-        <div className="toolbar-left">
-          <select className="period-select" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
+    <div className="services-tab-panel">
+      <div className="services-toolbar">
+        <div className="services-toolbar-left">
+          <select className="services-period-select" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
             <option value="all">{t('services.filters.all')}</option>
             <option value="expiring">{t('services.filters.expiringSoon')}</option>
             <option value="autorenew">{t('services.filters.autoRenew')}</option>
           </select>
-          <span className="result-count">{t('services.count', { count: filteredServices.length })}</span>
+          <span className="services-result-count">{t('services.count', { count: filteredServices.length })}</span>
         </div>
       </div>
+
       {filteredServices.length === 0 ? (
-        <div className="empty-state"><ServerIcon /><h3>{t('services.empty.title')}</h3><p>{t('services.empty.description')}</p></div>
+        <div className="services-empty-state">
+          <ServerIcon />
+          <h3>{t('services.empty.title')}</h3>
+          <p>{t('services.empty.description')}</p>
+        </div>
       ) : (
-        <div className="table-container">
-          <table className="data-table">
-            <thead><tr><th>{t('columns.service')}</th><th>{t('columns.type')}</th><th>{t('services.expiration')}</th><th>{t('services.renewal')}</th><th>{t('columns.actions')}</th></tr></thead>
+        <div className="services-table-container">
+          <table className="services-data-table">
+            <thead>
+              <tr>
+                <th>{t('columns.service')}</th>
+                <th>{t('columns.type')}</th>
+                <th>{t('services.expiration')}</th>
+                <th>{t('services.renewal')}</th>
+                <th>{t('columns.actions')}</th>
+              </tr>
+            </thead>
             <tbody>
               {filteredServices.map((s: any) => (
                 <tr key={s.serviceId}>
-                  <td className="service-name">{s.resource?.displayName || s.resource?.name || s.serviceId}</td>
+                  <td className="services-service-name">{s.resource?.displayName || s.resource?.name || s.serviceId}</td>
                   <td>{s.resource?.product?.name || s.route?.path || "-"}</td>
                   <td>{s.expiration ? formatDate(s.expiration) : "-"}</td>
                   <td>
                     {s.renew?.automatic ? (
-                      <span className="status-badge badge-success">{t('services.renewal.auto')}</span>
+                      <span className="services-status-badge services-badge-success">{t('services.renewal.auto')}</span>
                     ) : (
-                      <span className="status-badge badge-warning">{t('services.renewal.manual')}</span>
+                      <span className="services-status-badge services-badge-warning">{t('services.renewal.manual')}</span>
                     )}
                   </td>
-                  <td className="actions-cell">
-                    <button className="btn btn-outline btn-sm">{t('actions.manage')}</button>
+                  <td className="services-actions-cell">
+                    <button className="services-btn services-btn-outline services-btn-sm">{t('actions.manage')}</button>
                   </td>
                 </tr>
               ))}

@@ -13,9 +13,9 @@ import EditTab from "./tabs/edit/EditTab";
 import SecurityTab from "./tabs/security/SecurityTab";
 import PrivacyTab from "./tabs/privacy/PrivacyTab";
 import AdvancedTab from "./tabs/advanced/AdvancedTab";
-import { ContactsServicesTab } from "./tabs/contacts-services/ContactsServicesTab";
+import ContactsServicesTab from "./tabs/contacts-services/ContactsServicesTab";
 import { ContactsRequestsTab } from "./tabs/contacts-requests/ContactsRequestsTab";
-import { KycTab } from "./tabs/kyc/KycTab";
+import KycTab from "./tabs/kyc/KycTab";
 import "./index.css";
 
 // ============ TYPES ============
