@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../services/home.billing";
+import * as lastBillService from "./LastBillTile.service";
 import type { OvhCredentials } from "../../../../types/auth.types";
 
 const STORAGE_KEY = "ovh_credentials";
@@ -12,7 +12,7 @@ interface LastBillTileProps {
 export default function LastBillTile({ onViewBill }: LastBillTileProps) {
   const { t } = useTranslation('home/account/index');
   const { t: tCommon } = useTranslation('common');
-  const [bill, setBill] = useState<billingService.Bill | null>(null);
+  const [bill, setBill] = useState<lastBillService.Bill | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +39,7 @@ export default function LastBillTile({ onViewBill }: LastBillTileProps) {
     }
 
     try {
-      const bills = await billingService.getBills(credentials, { limit: 1 });
+      const bills = await lastBillService.getBills(credentials, { limit: 1 });
       if (bills.length > 0) {
         setBill(bills[0]);
       }

@@ -3,13 +3,13 @@
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import type * as notificationsService from "../../../services/home.notifications";
+import type * as homeService from "../home.service";
 import type { UserInfo } from "../utils";
 
 // ============ TYPES ============
 
 interface DashboardAlertsProps {
-  alerts: notificationsService.DashboardAlerts | null;
+  alerts: homeService.DashboardAlerts | null;
   user: UserInfo | null;
   debtAmount: number;
   loadingBilling: boolean;

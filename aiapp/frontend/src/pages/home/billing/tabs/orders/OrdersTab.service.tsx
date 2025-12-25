@@ -176,3 +176,39 @@ export function PeriodToolbar({ year, startMonth, endMonth, canGoPrevious, canGo
     </div>
   );
 }
+
+// ============ ORDERS API ============
+
+import { ovhGet } from "../../../../../services/api";
+
+export interface Order {
+  orderId: number;
+  date: string;
+  expirationDate: string;
+  password: string;
+  pdfUrl: string;
+  priceWithTax: { currencyCode: string; text: string; value: number };
+  priceWithoutTax: { currencyCode: string; text: string; value: number };
+  tax: { currencyCode: string; text: string; value: number };
+  url: string;
+}
+
+export interface OrderStatus {
+  status: "cancelled" | "cancelling" | "checking" | "delivered" | "delivering" | "documentsRequested" | "notPaid" | "unknown";
+}
+
+export async function getOrderIds(options?: { "date.from"?: string; "date.to"?: string }): Promise<number[]> {
+  const params = new URLSearchParams();
+  if (options?.["date.from"]) params.append("date.from", options["date.from"]);
+  if (options?.["date.to"]) params.append("date.to", options["date.to"]);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return ovhGet<number[]>(`/me/order${query}`);
+}
+
+export async function getOrder(orderId: number): Promise<Order> {
+  return ovhGet<Order>(`/me/order/${orderId}`);
+}
+
+export async function getOrderStatus(orderId: number): Promise<OrderStatus> {
+  return ovhGet<OrderStatus>(`/me/order/${orderId}/status`);
+}

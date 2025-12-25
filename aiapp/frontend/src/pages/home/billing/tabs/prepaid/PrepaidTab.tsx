@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../services/home.billing";
-import { TabProps, formatDate, isNotFoundError } from "../utils";
-import { WalletIcon } from "../icons";
+import * as prepaidService from "./PrepaidTab.service";
+import "./PrepaidTab.css";
+import { TabProps, formatDate, isNotFoundError } from "../../utils";
+import { WalletIcon } from "../../icons";
 
 export function PrepaidTab({ credentials }: TabProps) {
   const { t } = useTranslation('home/billing/tabs');
   const { t: tCommon } = useTranslation('common');
-  const [account, setAccount] = useState<billingService.OvhAccount | null>(null);
-  const [movements, setMovements] = useState<billingService.OvhAccountMovement[]>([]);
+  const [account, setAccount] = useState<prepaidService.OvhAccount | null>(null);
+  const [movements, setMovements] = useState<prepaidService.OvhAccountMovement[]>([]);
   const [loading, setLoading] = useState(true);
   const [notAvailable, setNotAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,9 +21,9 @@ export function PrepaidTab({ credentials }: TabProps) {
     setError(null);
     setNotAvailable(false);
     try {
-      const acc = await billingService.getOvhAccount(credentials);
+      const acc = await prepaidService.getOvhAccount(credentials);
       setAccount(acc);
-      const mvts = await billingService.getOvhAccountMovements(credentials);
+      const mvts = await prepaidService.getOvhAccountMovements(credentials);
       setMovements(mvts);
     } catch (err) {
       if (isNotFoundError(err)) { setNotAvailable(true); }

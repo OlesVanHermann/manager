@@ -1,11 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { IconNetwork } from "./SecurityIcons";
 import type { ModalType } from "./useSecurityData";
-import type * as securityService from "../../../../services/home.account.security";
+import type * as securityService from "../tabs/security/SecurityTab.service";
 
 interface IpRestrictionsSectionProps {
-  ipRestrictions: securityService.IpRestriction[];
-  ipDefaultRule: securityService.IpDefaultRule | null;
+  ipRestrictions: securityTabService.IpRestriction[];
+  ipDefaultRule: securityTabService.IpDefaultRule | null;
   onOpenModal: (type: ModalType) => void;
   onDeleteIp: (id: number) => void;
 }

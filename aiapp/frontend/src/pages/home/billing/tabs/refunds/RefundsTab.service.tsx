@@ -176,3 +176,43 @@ export function PeriodToolbar({ year, startMonth, endMonth, canGoPrevious, canGo
     </div>
   );
 }
+
+// ============ TYPES API ============
+
+export interface Credit {
+  refundId: string;
+  date: string;
+  amount: { currencyCode: string; text: string; value: number };
+  orderId?: number;
+  originalBillId?: string;
+  pdfUrl: string;
+  url: string;
+}
+
+// ============ REFUNDS API ============
+
+import { ovhGet } from "../../../../../services/api";
+
+export async function getRefundIds(options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
+  const params = new URLSearchParams();
+  if (options?.["date.from"]) params.append("date.from", options["date.from"]);
+  if (options?.["date.to"]) params.append("date.to", options["date.to"]);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return ovhGet<string[]>(`/me/refund${query}`);
+}
+
+export async function getRefund(refundId: string): Promise<Credit> {
+  return ovhGet<Credit>(`/me/refund/${encodeURIComponent(refundId)}`);
+}
+
+export async function getRefunds(options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Credit[]> {
+  const refundIds = await getRefundIds(options);
+  const idsToFetch = options?.limit ? refundIds.slice(0, options.limit) : refundIds;
+  const credits: Credit[] = [];
+  for (let i = 0; i < idsToFetch.length; i += BATCH_SIZE) {
+    const batch = idsToFetch.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(batch.map((id) => getRefund(id).catch(() => null)));
+    credits.push(...results.filter((c): c is Credit => c !== null));
+  }
+  return credits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}

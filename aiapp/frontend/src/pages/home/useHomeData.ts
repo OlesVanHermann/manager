@@ -5,9 +5,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { isAuthenticated, redirectToAuth } from "../../services/api";
-import * as servicesService from "../../services/home.billing.services";
-import * as billingService from "../../services/home.billing";
-import * as notificationsService from "../../services/home.notifications";
+import * as homeService from "./home.service";
+
+
 
 // ============ TYPES ============
 
@@ -24,10 +24,10 @@ export interface ErrorState {
 }
 
 export interface HomeData {
-  services: servicesService.ServiceSummary | null;
-  lastBill: billingService.Bill | null;
+  services: homeService.ServiceSummary | null;
+  lastBill: homeService.Bill | null;
   debtAmount: number;
-  alerts: notificationsService.DashboardAlerts | null;
+  alerts: homeService.DashboardAlerts | null;
   loading: LoadingState;
   errors: ErrorState;
   loadServices: () => Promise<void>;
@@ -42,10 +42,10 @@ export function useHomeData(): HomeData {
   const { t } = useTranslation('home/dashboard');
 
   // ---------- STATE ----------
-  const [services, setServices] = useState<servicesService.ServiceSummary | null>(null);
-  const [lastBill, setLastBill] = useState<billingService.Bill | null>(null);
+  const [services, setServices] = useState<homeService.ServiceSummary | null>(null);
+  const [lastBill, setLastBill] = useState<homeService.Bill | null>(null);
   const [debtAmount, setDebtAmount] = useState(0);
-  const [alerts, setAlerts] = useState<notificationsService.DashboardAlerts | null>(null);
+  const [alerts, setAlerts] = useState<homeService.DashboardAlerts | null>(null);
 
   const [loading, setLoading] = useState<LoadingState>({
     services: true,
@@ -64,7 +64,7 @@ export function useHomeData(): HomeData {
     setLoading((prev) => ({ ...prev, services: true }));
     setErrors((prev) => ({ ...prev, services: null }));
     try {
-      const data = await servicesService.getServicesSummary();
+      const data = await homeService.getServicesSummary();
       setServices(data);
     } catch (err) {
       setErrors((prev) => ({ ...prev, services: t('errors.servicesLoad') }));
@@ -78,8 +78,8 @@ export function useHomeData(): HomeData {
     setErrors((prev) => ({ ...prev, billing: null }));
     try {
       const [bills, debt] = await Promise.all([
-        billingService.getBills({ limit: 1 }),
-        billingService.getDebtAccount().catch(() => null),
+        homeService.getBills({ limit: 1 }),
+        homeService.getDebtAccount().catch(() => null),
       ]);
       setLastBill(bills.length > 0 ? bills[0] : null);
       setDebtAmount(debt?.dueAmount?.value || 0);
@@ -94,7 +94,7 @@ export function useHomeData(): HomeData {
     setLoading((prev) => ({ ...prev, alerts: true }));
     setErrors((prev) => ({ ...prev, alerts: null }));
     try {
-      const data = await notificationsService.getDashboardAlerts();
+      const data = await homeService.getDashboardAlerts();
       setAlerts(data);
     } catch (err) {
       setAlerts(null);

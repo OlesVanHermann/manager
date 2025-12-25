@@ -176,3 +176,45 @@ export function PeriodToolbar({ year, startMonth, endMonth, canGoPrevious, canGo
     </div>
   );
 }
+
+// ============ TYPES API ============
+
+export interface Bill {
+  billId: string;
+  date: string;
+  orderId: number;
+  password: string;
+  pdfUrl: string;
+  priceWithTax: { currencyCode: string; text: string; value: number };
+  priceWithoutTax: { currencyCode: string; text: string; value: number };
+  tax: { currencyCode: string; text: string; value: number };
+  url: string;
+}
+
+// ============ BILLS API ============
+
+import { ovhGet } from "../../../../../services/api";
+
+export async function getBillIds(options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
+  const params = new URLSearchParams();
+  if (options?.["date.from"]) params.append("date.from", options["date.from"]);
+  if (options?.["date.to"]) params.append("date.to", options["date.to"]);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return ovhGet<string[]>(`/me/bill${query}`);
+}
+
+export async function getBill(billId: string): Promise<Bill> {
+  return ovhGet<Bill>(`/me/bill/${encodeURIComponent(billId)}`);
+}
+
+export async function getBills(options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Bill[]> {
+  const billIds = await getBillIds(options);
+  const idsToFetch = options?.limit ? billIds.slice(0, options.limit) : billIds;
+  const bills: Bill[] = [];
+  for (let i = 0; i < idsToFetch.length; i += BATCH_SIZE) {
+    const batch = idsToFetch.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(batch.map((id) => getBill(id).catch(() => null)));
+    bills.push(...results.filter((b): b is Bill => b !== null));
+  }
+  return bills.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}

@@ -176,3 +176,43 @@ export function PeriodToolbar({ year, startMonth, endMonth, canGoPrevious, canGo
     </div>
   );
 }
+
+// ============ TYPES API ============
+
+export interface Deposit {
+  depositId: string;
+  date: string;
+  amount: { currencyCode: string; text: string; value: number };
+  orderId: number;
+  paymentInfo?: { paymentType: string; publicLabel?: string; description?: string | null };
+  url: string;
+  pdfUrl: string;
+}
+
+// ============ DEPOSITS API ============
+
+import { ovhGet } from "../../../../../services/api";
+
+export async function getDepositIds(options?: { "date.from"?: string; "date.to"?: string }): Promise<string[]> {
+  const params = new URLSearchParams();
+  if (options?.["date.from"]) params.append("date.from", options["date.from"]);
+  if (options?.["date.to"]) params.append("date.to", options["date.to"]);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return ovhGet<string[]>(`/me/deposit${query}`);
+}
+
+export async function getDeposit(depositId: string): Promise<Deposit> {
+  return ovhGet<Deposit>(`/me/deposit/${encodeURIComponent(depositId)}`);
+}
+
+export async function getDeposits(options?: { "date.from"?: string; "date.to"?: string; limit?: number }): Promise<Deposit[]> {
+  const depositIds = await getDepositIds(options);
+  const idsToFetch = options?.limit ? depositIds.slice(0, options.limit) : depositIds;
+  const deposits: Deposit[] = [];
+  for (let i = 0; i < idsToFetch.length; i += BATCH_SIZE) {
+    const batch = idsToFetch.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(batch.map((id) => getDeposit(id).catch(() => null)));
+    deposits.push(...results.filter((d): d is Deposit => d !== null));
+  }
+  return deposits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}

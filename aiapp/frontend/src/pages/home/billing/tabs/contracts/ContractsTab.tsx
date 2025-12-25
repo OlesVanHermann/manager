@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as agreementsService from "../../../../services/home.billing.agreements";
-import { TabProps, formatDateLong } from "../utils";
-import { DownloadIcon, ContractIcon } from "../icons";
+import * as contractsService from "./ContractsTab.service";
+import "./ContractsTab.css";
+import { TabProps, formatDateLong } from "../../utils";
+import { DownloadIcon, ContractIcon } from "../../icons";
 
 export function ContractsTab({ credentials }: TabProps) {
   const { t } = useTranslation('home/billing/tabs');
   const { t: tCommon } = useTranslation('common');
-  const [agreements, setAgreements] = useState<agreementsService.AgreementDetails[]>([]);
+  const [agreements, setAgreements] = useState<contractsService.AgreementDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<number | null>(null);
@@ -18,7 +19,7 @@ export function ContractsTab({ credentials }: TabProps) {
     setLoading(true);
     setError(null);
     try {
-      const data = await agreementsService.getAllAgreements(credentials);
+      const data = await contractsService.getAllAgreements(credentials);
       setAgreements(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.loadError'));
@@ -30,7 +31,7 @@ export function ContractsTab({ credentials }: TabProps) {
   const handleAccept = async (id: number) => {
     setAcceptingId(id);
     try {
-      await agreementsService.acceptAgreement(credentials, id);
+      await contractsService.acceptAgreement(credentials, id);
       await loadAgreements();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('contracts.errors.acceptError'));

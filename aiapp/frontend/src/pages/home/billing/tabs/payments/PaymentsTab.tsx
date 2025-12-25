@@ -4,13 +4,13 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../../services/home.billing";
+import * as paymentsService from "./PaymentsTab.service";
 import type { TabProps } from "../../../billing.types";
 import { DownloadIcon, ExternalIcon, CheckIcon } from "../../icons";
 import { BATCH_SIZE, VALID_WINDOW_SIZES, usePeriodNavigation, PeriodToolbar, formatDate, formatAmount, formatDateISO } from "./PaymentsTab.service";
 import "./PaymentsTab.css";
 
-interface DepositRow { depositId: string; loaded: boolean; details?: billingService.Deposit; }
+interface DepositRow { depositId: string; loaded: boolean; details?: paymentsService.Deposit; }
 
 export function PaymentsTab({ credentials }: TabProps) {
   const { t, i18n } = useTranslation('home/billing/tabs');
@@ -24,7 +24,7 @@ export function PaymentsTab({ credentials }: TabProps) {
     fidelityAccount: t('payments.methods.fidelityAccount'), ovhAccount: t('payments.methods.ovhAccount'),
     voucher: t('payments.methods.voucher'),
   };
-  const formatPayment = (info: billingService.PaymentInfo | undefined): string => {
+  const formatPayment = (info: paymentsService.PaymentInfo | undefined): string => {
     if (!info) return "-";
     const label = PAYMENT_LABELS[info.paymentType] || info.paymentType;
     if (info.publicLabel) return `${label} (${info.publicLabel})`;
@@ -40,7 +40,7 @@ export function PaymentsTab({ credentials }: TabProps) {
 
   const loadBatch = useCallback(async (ids: string[]): Promise<number> => {
     if (abortRef.current) return 0;
-    const results = await Promise.all(ids.map(async (id) => { try { const details = await billingService.getDeposit(id); return { id, details, success: true }; } catch { return { id, details: null, success: false }; } }));
+    const results = await Promise.all(ids.map(async (id) => { try { const details = await paymentsService.getDeposit(id); return { id, details, success: true }; } catch { return { id, details: null, success: false }; } }));
     if (abortRef.current) return 0;
     setDeposits((prev) => { const next = new Map(prev); for (const r of results) { if (r.success && r.details) next.set(r.id, { depositId: r.id, loaded: true, details: r.details }); else next.set(r.id, { depositId: r.id, loaded: true }); } return next; });
     return results.length;
@@ -56,7 +56,7 @@ export function PaymentsTab({ credentials }: TabProps) {
     setLoadingIds(true); setError(null); setLoadedCount(0); setDeposits(new Map()); setDepositIds([]);
     try {
       const { from, to } = nav.getDateRangeISO();
-      const ids = await billingService.getDepositIds({ "date.from": from, "date.to": to });
+      const ids = await paymentsService.getDepositIds({ "date.from": from, "date.to": to });
       if (ids.length === 0 && nav.isAutoFallback && nav.fallbackIndex < VALID_WINDOW_SIZES.length - 1) { setLoadingIds(false); nav.applyFallback(); return; }
       if (nav.isAutoFallback) nav.setAnchor();
       const sortedIds = [...ids].sort((a, b) => b.localeCompare(a)); setDepositIds(sortedIds);

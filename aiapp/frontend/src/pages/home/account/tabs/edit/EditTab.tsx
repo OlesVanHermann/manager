@@ -2,7 +2,7 @@ import "./EditTab.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { OvhUser, OvhCredentials } from "../../../../../types/auth.types";
-import * as accountService from "../../../../../services/home.account";
+import * as accountService from "./EditTab.service";
 
 interface ProfileEditTabProps {
   user: OvhUser | null;
@@ -72,7 +72,7 @@ export default function ProfileEditTab({ user }: ProfileEditTabProps) {
     setSuccess(null);
 
     try {
-      await accountService.updateProfile(credentials, {
+      await editService.updateProfile(credentials, {
         firstname: formData.firstname,
         name: formData.name,
         phone: formData.phone || undefined,

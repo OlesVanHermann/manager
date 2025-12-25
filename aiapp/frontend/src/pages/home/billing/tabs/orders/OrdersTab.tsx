@@ -4,13 +4,13 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import * as ordersService from "../../../../../services/home.billing.orders";
+import * as ordersTabService from "./OrdersTab.service";
 import type { TabProps } from "../../../billing.types";
 import { DownloadIcon, ExternalIcon, CartIcon } from "../../icons";
 import { BATCH_SIZE, VALID_WINDOW_SIZES, usePeriodNavigation, PeriodToolbar, formatDate, formatAmount, formatDateISO } from "./OrdersTab.service";
 import "./OrdersTab.css";
 
-interface OrderRow { orderId: number; loaded: boolean; details?: ordersService.OrderWithStatus; }
+interface OrderRow { orderId: number; loaded: boolean; details?: ordersTabService.OrderWithStatus; }
 
 export function OrdersTab({ credentials }: TabProps) {
   const { t, i18n } = useTranslation('home/billing/tabs');
@@ -41,10 +41,10 @@ export function OrdersTab({ credentials }: TabProps) {
     const results = await Promise.all(ids.map(async (id) => {
       try {
         const [order, status] = await Promise.all([
-          ordersService.getOrder(credentials, id),
-          ordersService.getOrderStatus(credentials, id).catch(() => ({ status: "unknown" as const })),
+          ordersTabService.getOrder(credentials, id),
+          ordersTabService.getOrderStatus(credentials, id).catch(() => ({ status: "unknown" as const })),
         ]);
-        const details: ordersService.OrderWithStatus = { ...order, status: status.status };
+        const details: ordersTabService.OrderWithStatus = { ...order, status: status.status };
         return { id, details, success: true };
       } catch { return { id, details: null, success: false }; }
     }));
@@ -63,7 +63,7 @@ export function OrdersTab({ credentials }: TabProps) {
     setLoadingIds(true); setError(null); setLoadedCount(0); setOrders(new Map()); setOrderIds([]);
     try {
       const { from, to } = nav.getDateRangeISO();
-      const ids = await ordersService.getOrderIds(credentials, { "date.from": from, "date.to": to });
+      const ids = await ordersTabService.getOrderIds(credentials, { "date.from": from, "date.to": to });
       if (ids.length === 0 && nav.isAutoFallback && nav.fallbackIndex < VALID_WINDOW_SIZES.length - 1) { setLoadingIds(false); nav.applyFallback(); return; }
       if (nav.isAutoFallback) nav.setAnchor();
       const sortedIds = [...ids].sort((a, b) => b - a); setOrderIds(sortedIds);

@@ -4,13 +4,13 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../../services/home.billing";
+import * as refundsService from "./RefundsTab.service";
 import type { TabProps } from "../../../billing.types";
 import { DownloadIcon, ExternalIcon, CheckIcon } from "../../icons";
 import { BATCH_SIZE, VALID_WINDOW_SIZES, usePeriodNavigation, PeriodToolbar, formatDate, formatAmount, formatDateISO } from "./RefundsTab.service";
 import "./RefundsTab.css";
 
-interface RefundRow { refundId: string; loaded: boolean; details?: billingService.Credit; }
+interface RefundRow { refundId: string; loaded: boolean; details?: refundsService.Credit; }
 
 export function RefundsTab({ credentials }: TabProps) {
   const { t, i18n } = useTranslation('home/billing/tabs');
@@ -27,7 +27,7 @@ export function RefundsTab({ credentials }: TabProps) {
 
   const loadBatch = useCallback(async (ids: string[]): Promise<number> => {
     if (abortRef.current) return 0;
-    const results = await Promise.all(ids.map(async (id) => { try { const details = await billingService.getRefund(id); return { id, details, success: true }; } catch { return { id, details: null, success: false }; } }));
+    const results = await Promise.all(ids.map(async (id) => { try { const details = await refundsService.getRefund(id); return { id, details, success: true }; } catch { return { id, details: null, success: false }; } }));
     if (abortRef.current) return 0;
     setRefunds((prev) => { const next = new Map(prev); for (const r of results) { if (r.success && r.details) next.set(r.id, { refundId: r.id, loaded: true, details: r.details }); else next.set(r.id, { refundId: r.id, loaded: true }); } return next; });
     return results.length;
@@ -43,7 +43,7 @@ export function RefundsTab({ credentials }: TabProps) {
     setLoadingIds(true); setError(null); setLoadedCount(0); setRefunds(new Map()); setRefundIds([]);
     try {
       const { from, to } = nav.getDateRangeISO();
-      const ids = await billingService.getRefundIds({ "date.from": from, "date.to": to });
+      const ids = await refundsService.getRefundIds({ "date.from": from, "date.to": to });
       if (ids.length === 0 && nav.isAutoFallback && nav.fallbackIndex < VALID_WINDOW_SIZES.length - 1) { setLoadingIds(false); nav.applyFallback(); return; }
       if (nav.isAutoFallback) nav.setAnchor();
       const sortedIds = [...ids].sort((a, b) => b.localeCompare(a)); setRefundIds(sortedIds);

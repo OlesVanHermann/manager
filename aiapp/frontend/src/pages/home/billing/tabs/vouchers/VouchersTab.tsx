@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../services/home.billing";
-import { TabProps, formatDate, isNotFoundError } from "../utils";
-import { GiftIcon } from "../icons";
+import * as vouchersService from "./VouchersTab.service";
+import "./VouchersTab.css";
+import { TabProps, formatDate, isNotFoundError } from "../../utils";
+import { GiftIcon } from "../../icons";
 
 export function VouchersTab({ credentials }: TabProps) {
   const { t } = useTranslation('home/billing/tabs');
   const { t: tCommon } = useTranslation('common');
-  const [vouchers, setVouchers] = useState<billingService.VoucherAccount[]>([]);
+  const [vouchers, setVouchers] = useState<vouchersService.VoucherAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [notAvailable, setNotAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +20,7 @@ export function VouchersTab({ credentials }: TabProps) {
     setError(null);
     setNotAvailable(false);
     try {
-      const data = await billingService.getVoucherAccounts(credentials);
+      const data = await vouchersService.getVoucherAccounts(credentials);
       setVouchers(data);
     } catch (err) {
       if (isNotFoundError(err)) { setNotAvailable(true); }

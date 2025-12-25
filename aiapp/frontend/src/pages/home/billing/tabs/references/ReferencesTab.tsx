@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../services/home.billing";
-import { TabProps, formatDateLong, formatDateInput, isNotFoundError } from "../utils";
-import { EditIcon, PauseIcon, PlayIcon, TagIcon } from "../icons";
+import * as referencesService from "./ReferencesTab.service";
+import "./ReferencesTab.css";
+import { TabProps, formatDateLong, formatDateInput, isNotFoundError } from "../../utils";
+import { EditIcon, PauseIcon, PlayIcon, TagIcon } from "../../icons";
 
 export function ReferencesTab({ credentials }: TabProps) {
   const { t } = useTranslation('home/billing/tabs');
   const { t: tCommon } = useTranslation('common');
-  const [references, setReferences] = useState<billingService.PurchaseOrder[]>([]);
+  const [references, setReferences] = useState<referencesService.PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editingRef, setEditingRef] = useState<billingService.PurchaseOrder | null>(null);
+  const [editingRef, setEditingRef] = useState<referencesService.PurchaseOrder | null>(null);
   const [formData, setFormData] = useState({ reference: "", startDate: "", endDate: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -21,7 +22,7 @@ export function ReferencesTab({ credentials }: TabProps) {
     setLoading(true);
     setError(null);
     try {
-      const data = await billingService.getPurchaseOrders();
+      const data = await referencesService.getPurchaseOrders();
       setReferences(data);
     } catch (err) {
       if (isNotFoundError(err)) { setReferences([]); }
@@ -31,7 +32,7 @@ export function ReferencesTab({ credentials }: TabProps) {
     }
   };
 
-  const getDisplayStatus = (ref: billingService.PurchaseOrder): "actif" | "inactif" | "desactivate" => {
+  const getDisplayStatus = (ref: referencesService.PurchaseOrder): "actif" | "inactif" | "desactivate" => {
     if (!ref.active) return "desactivate";
     const now = new Date();
     const start = new Date(ref.startDate);
@@ -59,7 +60,7 @@ export function ReferencesTab({ credentials }: TabProps) {
     setShowForm(true);
   };
 
-  const openEditForm = (ref: billingService.PurchaseOrder) => {
+  const openEditForm = (ref: referencesService.PurchaseOrder) => {
     setEditingRef(ref);
     setFormData({ reference: ref.reference, startDate: formatDateInput(ref.startDate), endDate: ref.endDate ? formatDateInput(ref.endDate) : "" });
     setShowForm(true);
@@ -70,9 +71,9 @@ export function ReferencesTab({ credentials }: TabProps) {
     setSubmitting(true);
     try {
       if (editingRef) {
-        await billingService.updatePurchaseOrder(editingRef.id, { reference: formData.reference, startDate: formData.startDate, endDate: formData.endDate || undefined });
+        await referencesService.updatePurchaseOrder(editingRef.id, { reference: formData.reference, startDate: formData.startDate, endDate: formData.endDate || undefined });
       } else {
-        await billingService.createPurchaseOrder({ reference: formData.reference, startDate: formData.startDate, endDate: formData.endDate || undefined });
+        await referencesService.createPurchaseOrder({ reference: formData.reference, startDate: formData.startDate, endDate: formData.endDate || undefined });
       }
       setShowForm(false);
       await loadReferences();
@@ -83,9 +84,9 @@ export function ReferencesTab({ credentials }: TabProps) {
     }
   };
 
-  const toggleStatus = async (ref: billingService.PurchaseOrder) => {
+  const toggleStatus = async (ref: referencesService.PurchaseOrder) => {
     try {
-      await billingService.updatePurchaseOrder(ref.id, { active: !ref.active });
+      await referencesService.updatePurchaseOrder(ref.id, { active: !ref.active });
       await loadReferences();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('references.errors.statusError'));

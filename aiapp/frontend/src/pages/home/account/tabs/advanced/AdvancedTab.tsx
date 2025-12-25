@@ -2,7 +2,7 @@ import "./AdvancedTab.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { OvhCredentials } from "../../../../../types/auth.types";
-import * as accountService from "../../../../../services/home.account";
+import * as accountService from "./AdvancedTab.service";
 
 const STORAGE_KEY = "ovh_credentials";
 
@@ -44,8 +44,8 @@ export default function AdvancedTab() {
 
     try {
       const [betaPref, devMode] = await Promise.all([
-        accountService.getBetaPreference(credentials).catch(() => false),
-        accountService.getDeveloperMode(credentials).catch(() => ({ enabled: false })),
+        advancedService.getBetaPreference(credentials).catch(() => false),
+        advancedService.getDeveloperMode(credentials).catch(() => ({ enabled: false })),
       ]);
       setBetaEnabled(betaPref);
       setDeveloperMode(devMode.enabled);
@@ -74,7 +74,7 @@ export default function AdvancedTab() {
     setError(null);
 
     try {
-      await accountService.setBetaPreference(credentials, enabled);
+      await advancedService.setBetaPreference(credentials, enabled);
       setBetaEnabled(enabled);
       showSuccess(t('success.preferencesSaved'));
     } catch {
@@ -93,7 +93,7 @@ export default function AdvancedTab() {
     setError(null);
 
     try {
-      await accountService.updateDeveloperMode(credentials, enabled);
+      await advancedService.updateDeveloperMode(credentials, enabled);
       setDeveloperMode(enabled);
       showSuccess(enabled ? t('success.devModeEnabled') : t('success.devModeDisabled'));
     } catch {

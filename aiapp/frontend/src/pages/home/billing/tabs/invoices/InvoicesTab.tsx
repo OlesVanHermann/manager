@@ -4,13 +4,13 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../../services/home.billing";
+import * as invoicesService from "./InvoicesTab.service";
 import type { TabProps } from "../../../billing.types";
 import { DownloadIcon, ExternalIcon, CheckIcon } from "../../icons";
 import { BATCH_SIZE, VALID_WINDOW_SIZES, usePeriodNavigation, PeriodToolbar, formatDate, formatAmount, formatDateISO } from "./InvoicesTab.service";
 import "./InvoicesTab.css";
 
-interface BillRow { billId: string; loaded: boolean; details?: billingService.Bill; }
+interface BillRow { billId: string; loaded: boolean; details?: invoicesService.Bill; }
 
 export function InvoicesTab({ credentials }: TabProps) {
   const { t, i18n } = useTranslation('home/billing/tabs');
@@ -27,7 +27,7 @@ export function InvoicesTab({ credentials }: TabProps) {
 
   const loadBatch = useCallback(async (ids: string[]): Promise<number> => {
     if (abortRef.current) return 0;
-    const results = await Promise.all(ids.map(async (id) => { try { const details = await billingService.getBill(id); return { id, details, success: true }; } catch { return { id, details: null, success: false }; } }));
+    const results = await Promise.all(ids.map(async (id) => { try { const details = await invoicesService.getBill(id); return { id, details, success: true }; } catch { return { id, details: null, success: false }; } }));
     if (abortRef.current) return 0;
     setBills((prev) => { const next = new Map(prev); for (const r of results) { if (r.success && r.details) next.set(r.id, { billId: r.id, loaded: true, details: r.details }); else next.set(r.id, { billId: r.id, loaded: true }); } return next; });
     return results.length;
@@ -43,7 +43,7 @@ export function InvoicesTab({ credentials }: TabProps) {
     setLoadingIds(true); setError(null); setLoadedCount(0); setBills(new Map()); setBillIds([]);
     try {
       const { from, to } = nav.getDateRangeISO();
-      const ids = await billingService.getBillIds({ "date.from": from, "date.to": to });
+      const ids = await invoicesService.getBillIds({ "date.from": from, "date.to": to });
       if (ids.length === 0 && nav.isAutoFallback && nav.fallbackIndex < VALID_WINDOW_SIZES.length - 1) { setLoadingIds(false); nav.applyFallback(); return; }
       if (nav.isAutoFallback) nav.setAnchor();
       const sortedIds = [...ids].sort((a, b) => b.localeCompare(a)); setBillIds(sortedIds);

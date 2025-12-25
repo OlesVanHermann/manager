@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { IconSms, IconTotp, IconKey, IconBackup, IconCheck } from "./SecurityIcons";
 import type { ModalType } from "./useSecurityData";
-import type * as securityService from "../../../../services/home.account.security";
+import type * as securityService from "../tabs/security/SecurityTab.service";
 
 interface TwoFactorSectionProps {
-  status: securityService.TwoFactorStatus | null;
+  status: securityTabService.TwoFactorStatus | null;
   onOpenModal: (type: ModalType, targetId?: number) => void;
 }
 

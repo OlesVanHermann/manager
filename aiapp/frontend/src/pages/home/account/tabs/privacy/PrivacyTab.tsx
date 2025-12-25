@@ -2,7 +2,7 @@ import "./PrivacyTab.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { OvhCredentials } from "../../../../../types/auth.types";
-import * as accountService from "../../../../../services/home.account";
+import * as accountService from "./PrivacyTab.service";
 
 const STORAGE_KEY = "ovh_credentials";
 
@@ -19,8 +19,8 @@ export default function GdprTab() {
   const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [capabilities, setCapabilities] = useState<accountService.PrivacyCapabilities | null>(null);
-  const [requests, setRequests] = useState<accountService.PrivacyRequest[]>([]);
+  const [capabilities, setCapabilities] = useState<privacyService.PrivacyCapabilities | null>(null);
+  const [requests, setRequests] = useState<privacyService.PrivacyRequest[]>([]);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
@@ -35,10 +35,10 @@ export default function GdprTab() {
     setLoading(true);
     setError(null);
     try {
-      let caps: accountService.PrivacyCapabilities = { canRequestErasure: true };
-      let reqs: accountService.PrivacyRequest[] = [];
-      try { caps = await accountService.getPrivacyCapabilities(credentials); } catch { caps = { canRequestErasure: true }; }
-      try { reqs = await accountService.getAllPrivacyRequests(credentials); } catch { reqs = []; }
+      let caps: privacyService.PrivacyCapabilities = { canRequestErasure: true };
+      let reqs: privacyService.PrivacyRequest[] = [];
+      try { caps = await privacyService.getPrivacyCapabilities(credentials); } catch { caps = { canRequestErasure: true }; }
+      try { reqs = await privacyService.getAllPrivacyRequests(credentials); } catch { reqs = []; }
       setCapabilities(caps);
       setRequests(reqs);
     } catch (err) {
@@ -57,7 +57,7 @@ export default function GdprTab() {
     setModalLoading(true);
     setModalError(null);
     try {
-      const request = await accountService.createErasureRequest(credentials);
+      const request = await privacyService.createErasureRequest(credentials);
       setPendingRequestId(String(request.id));
       setActiveModal("confirm");
       await loadGdprData();
@@ -72,7 +72,7 @@ export default function GdprTab() {
     const credentials = getCredentials();
     if (!credentials) return;
     try {
-      await accountService.sendErasureConfirmationEmail(credentials, requestId);
+      await privacyService.sendErasureConfirmationEmail(credentials, requestId);
       setModalError(t('modal.emailSent'));
     } catch (err) {
       setModalError(err instanceof Error ? err.message : tCommon('error.generic'));
@@ -85,7 +85,7 @@ export default function GdprTab() {
     setModalLoading(true);
     setModalError(null);
     try {
-      await accountService.confirmErasure(credentials, pendingRequestId, confirmCode);
+      await privacyService.confirmErasure(credentials, pendingRequestId, confirmCode);
       await loadGdprData();
       closeModal();
     } catch (err) {
@@ -99,7 +99,7 @@ export default function GdprTab() {
     const credentials = getCredentials();
     if (!credentials) return;
     try {
-      await accountService.cancelErasureRequest(credentials, requestId);
+      await privacyService.cancelErasureRequest(credentials, requestId);
       await loadGdprData();
     } catch (err) {
       setError(err instanceof Error ? err.message : tCommon('error.generic'));

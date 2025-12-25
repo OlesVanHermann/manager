@@ -1,18 +1,15 @@
 // ============================================================
-// BILLING TABS - Exports (DÉFACTORISÉ Phase 1 complet)
+// BILLING TABS - Exports (DÉFACTORISÉ)
 // ============================================================
 
-// Tabs défactorisés (depuis sous-dossiers)
 export { InvoicesTab } from "./invoices/InvoicesTab";
 export { OrdersTab } from "./orders/OrdersTab";
 export { PaymentsTab } from "./payments/PaymentsTab";
 export { RefundsTab } from "./refunds/RefundsTab";
-
-// Tabs sans shared/ (à défactoriser en Phase 2)
-export { ContractsTab } from "./ContractsTab";
-export { FidelityTab } from "./FidelityTab";
-export { MethodsTab } from "./MethodsTab";
-export { PrepaidTab } from "./PrepaidTab";
-export { ReferencesTab } from "./ReferencesTab";
-export { ServicesTab } from "./ServicesTab";
-export { VouchersTab } from "./VouchersTab";
+export { ContractsTab } from "./contracts/ContractsTab";
+export { FidelityTab } from "./fidelity/FidelityTab";
+export { MethodsTab } from "./methods/MethodsTab";
+export { PrepaidTab } from "./prepaid/PrepaidTab";
+export { ReferencesTab } from "./references/ReferencesTab";
+export { ServicesTab } from "./services/ServicesTab";
+export { VouchersTab } from "./vouchers/VouchersTab";

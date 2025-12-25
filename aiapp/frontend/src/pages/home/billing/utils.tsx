@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { getCredentials } from "../../../services/api";
-import type { OvhCredentials } from "../../../services/home.billing";
+import type { OvhCredentials } from "../../../types/auth.types";
 
 export interface TabProps {
   credentials: OvhCredentials;

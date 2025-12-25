@@ -6,12 +6,12 @@ import "./ContactsServicesTab.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getCredentials } from "../../../../../services/api";
-import * as contactsService from "../../../../../services/home.account.contacts";
+import * as contactsServicesService from "./ContactsServicesTab.service";
 
 // ============ TYPES ============
 
 interface ModalState {
-  service: contactsService.ServiceContact | null;
+  service: contactsServicesService.ServiceContact | null;
 }
 
 type ContactType = "contactAdmin" | "contactTech" | "contactBilling";
@@ -26,7 +26,7 @@ export function ContactsServicesTab() {
   // ---------- STATE ----------
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [services, setServices] = useState<contactsService.ServiceContact[]>([]);
+  const [services, setServices] = useState<contactsServicesService.ServiceContact[]>([]);
   const [modal, setModal] = useState<ModalState>({ service: null });
   const [selectedType, setSelectedType] = useState<ContactType>("contactAdmin");
   const [newNic, setNewNic] = useState("");
@@ -44,7 +44,7 @@ export function ContactsServicesTab() {
     try {
       const creds = getCredentials();
       if (!creds) { setError(t('errors.authRequired')); return; }
-      const data = await contactsService.getServiceContacts(creds);
+      const data = await contactsServicesService.getServiceContacts(creds);
       setServices(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.loadError'));
@@ -63,10 +63,10 @@ export function ContactsServicesTab() {
       const creds = getCredentials();
       if (!creds) throw new Error(t('errors.authRequired'));
       
-      const contactRequest: contactsService.ContactChangeRequest = {};
+      const contactRequest: contactsServicesService.ContactChangeRequest = {};
       contactRequest[selectedType] = newNic.trim();
       
-      await contactsService.initiateContactChange(creds, modal.service.serviceName, contactRequest);
+      await contactsServicesService.initiateContactChange(creds, modal.service.serviceName, contactRequest);
       setSuccessMessage(t('modal.success'));
       setNewNic("");
     } catch (err) {
@@ -76,7 +76,7 @@ export function ContactsServicesTab() {
     }
   };
 
-  const openModal = (service: contactsService.ServiceContact) => {
+  const openModal = (service: contactsServicesService.ServiceContact) => {
     setModal({ service });
     setSelectedType("contactAdmin");
     setNewNic("");
@@ -103,7 +103,7 @@ export function ContactsServicesTab() {
     return map[type];
   };
 
-  const getCurrentContact = (service: contactsService.ServiceContact, type: ContactType): string => {
+  const getCurrentContact = (service: contactsServicesService.ServiceContact, type: ContactType): string => {
     const map: Record<ContactType, string> = {
       contactAdmin: service.contactAdmin,
       contactTech: service.contactTech,

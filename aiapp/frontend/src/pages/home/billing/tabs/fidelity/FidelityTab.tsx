@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../services/home.billing";
-import { TabProps, formatDate, isNotFoundError } from "../utils";
-import { StarIcon } from "../icons";
+import * as fidelityService from "./FidelityTab.service";
+import "./FidelityTab.css";
+import { TabProps, formatDate, isNotFoundError } from "../../utils";
+import { StarIcon } from "../../icons";
 
 export function FidelityTab({ credentials }: TabProps) {
   const { t } = useTranslation('home/billing/tabs');
   const { t: tCommon } = useTranslation('common');
-  const [account, setAccount] = useState<billingService.FidelityAccount | null>(null);
-  const [movements, setMovements] = useState<billingService.FidelityMovement[]>([]);
+  const [account, setAccount] = useState<fidelityService.FidelityAccount | null>(null);
+  const [movements, setMovements] = useState<fidelityService.FidelityMovement[]>([]);
   const [loading, setLoading] = useState(true);
   const [notAvailable, setNotAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,9 +21,9 @@ export function FidelityTab({ credentials }: TabProps) {
     setError(null);
     setNotAvailable(false);
     try {
-      const acc = await billingService.getFidelityAccount(credentials);
+      const acc = await fidelityService.getFidelityAccount(credentials);
       setAccount(acc);
-      const mvts = await billingService.getFidelityMovements(credentials);
+      const mvts = await fidelityService.getFidelityMovements(credentials);
       setMovements(mvts);
     } catch (err) {
       if (isNotFoundError(err)) { setNotAvailable(true); }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { OvhCredentials } from "../../../../types/auth.types";
-import * as securityService from "../../../../services/home.account.security";
+import * as securityTabService from "../tabs/security/SecurityTab.service";
 
 const STORAGE_KEY = "ovh_credentials";
 
@@ -15,9 +15,9 @@ export type ModalType = "sms" | "totp" | "u2f" | "backup" | "ip" | "password" | 
 export interface SecurityState {
   loading: boolean;
   error: string | null;
-  status: securityService.TwoFactorStatus | null;
-  ipRestrictions: securityService.IpRestriction[];
-  ipDefaultRule: securityService.IpDefaultRule | null;
+  status: securityTabService.TwoFactorStatus | null;
+  ipRestrictions: securityTabService.IpRestriction[];
+  ipDefaultRule: securityTabService.IpDefaultRule | null;
 }
 
 export interface ModalState {
@@ -25,7 +25,7 @@ export interface ModalState {
   modalLoading: boolean;
   modalError: string | null;
   modalSuccess: string | null;
-  totpSecret: securityService.TotpSecret | null;
+  totpSecret: securityTabService.TotpSecret | null;
   formData: Record<string, string>;
   deleteTargetId: number | null;
   smsStep: "phone" | "code";
@@ -62,9 +62,9 @@ export function useSecurityData() {
     setState(s => ({ ...s, loading: true, error: null }));
     try {
       const [twoFactorStatus, restrictions, defaultRule] = await Promise.all([
-        securityService.getTwoFactorStatus(credentials),
-        securityService.getIpRestrictions(credentials),
-        securityService.getIpDefaultRule(credentials),
+        securityTabService.getTwoFactorStatus(credentials),
+        securityTabService.getIpRestrictions(credentials),
+        securityTabService.getIpDefaultRule(credentials),
       ]);
       setState({ loading: false, error: null, status: twoFactorStatus, ipRestrictions: restrictions, ipDefaultRule: defaultRule });
     } catch (err) {
@@ -86,7 +86,7 @@ export function useSecurityData() {
   const setModalError = (v: string | null) => setModal(m => ({ ...m, modalError: v }));
   const setModalSuccess = (v: string | null) => setModal(m => ({ ...m, modalSuccess: v }));
   const setFormData = (v: Record<string, string>) => setModal(m => ({ ...m, formData: v }));
-  const setTotpSecret = (v: securityService.TotpSecret | null) => setModal(m => ({ ...m, totpSecret: v }));
+  const setTotpSecret = (v: securityTabService.TotpSecret | null) => setModal(m => ({ ...m, totpSecret: v }));
   const setSmsStep = (v: "phone" | "code") => setModal(m => ({ ...m, smsStep: v }));
   const setPendingSmsId = (v: number | null) => setModal(m => ({ ...m, pendingSmsId: v }));
 
@@ -96,7 +96,7 @@ export function useSecurityData() {
     if (!credentials) return;
     setModalLoading(true); setModalError(null); setModalSuccess(null);
     try {
-      await securityService.changePassword(credentials);
+      await securityTabService.changePassword(credentials);
       setModalSuccess("passwordEmailSent");
     } catch (err) {
       setModalError(err instanceof Error ? err.message : "error");
@@ -108,9 +108,9 @@ export function useSecurityData() {
     if (!credentials || !phone) return;
     setModalLoading(true); setModalError(null); setModalSuccess(null);
     try {
-      const smsEntry = await securityService.addSms(credentials, phone);
+      const smsEntry = await securityTabService.addSms(credentials, phone);
       setPendingSmsId(smsEntry.id);
-      await securityService.sendSmsCode(credentials, smsEntry.id);
+      await securityTabService.sendSmsCode(credentials, smsEntry.id);
       setSmsStep("code");
       setModalSuccess("smsSent");
     } catch (err) {
@@ -123,7 +123,7 @@ export function useSecurityData() {
     if (!credentials || modal.pendingSmsId === null || !code) return;
     setModalLoading(true); setModalError(null);
     try {
-      await securityService.validateSms(credentials, modal.pendingSmsId, code);
+      await securityTabService.validateSms(credentials, modal.pendingSmsId, code);
       await loadSecurityData();
       closeModal();
     } catch (err) {
@@ -136,7 +136,7 @@ export function useSecurityData() {
     if (!credentials || modal.pendingSmsId === null) return;
     setModalLoading(true); setModalError(null); setModalSuccess(null);
     try {
-      await securityService.sendSmsCode(credentials, modal.pendingSmsId);
+      await securityTabService.sendSmsCode(credentials, modal.pendingSmsId);
       setModalSuccess("codeResent");
     } catch (err) {
       setModalError(err instanceof Error ? err.message : "error");
@@ -148,7 +148,7 @@ export function useSecurityData() {
     if (!credentials || modal.deleteTargetId === null) return;
     setModalLoading(true); setModalError(null);
     try {
-      await securityService.deleteSms(credentials, modal.deleteTargetId);
+      await securityTabService.deleteSms(credentials, modal.deleteTargetId);
       await loadSecurityData();
       closeModal();
     } catch (err) {
@@ -162,10 +162,10 @@ export function useSecurityData() {
     setModalLoading(true); setModalError(null);
     try {
       if (!modal.totpSecret) {
-        const secret = await securityService.addTotp(credentials);
+        const secret = await securityTabService.addTotp(credentials);
         setTotpSecret(secret);
       } else if (code) {
-        await securityService.validateTotp(credentials, modal.totpSecret.id, code);
+        await securityTabService.validateTotp(credentials, modal.totpSecret.id, code);
         await loadSecurityData();
         closeModal();
       }
@@ -179,7 +179,7 @@ export function useSecurityData() {
     if (!credentials || modal.deleteTargetId === null) return;
     setModalLoading(true); setModalError(null);
     try {
-      await securityService.deleteTotp(credentials, modal.deleteTargetId);
+      await securityTabService.deleteTotp(credentials, modal.deleteTargetId);
       await loadSecurityData();
       closeModal();
     } catch (err) {
@@ -192,7 +192,7 @@ export function useSecurityData() {
     if (!credentials) return;
     setModalLoading(true); setModalError(null);
     try {
-      const challenge = await securityService.addU2f(credentials);
+      const challenge = await securityTabService.addU2f(credentials);
       setModalSuccess("u2fCreated");
       await loadSecurityData();
     } catch (err) {
@@ -205,7 +205,7 @@ export function useSecurityData() {
     if (!credentials || modal.deleteTargetId === null) return;
     setModalLoading(true); setModalError(null);
     try {
-      await securityService.deleteU2f(credentials, modal.deleteTargetId);
+      await securityTabService.deleteU2f(credentials, modal.deleteTargetId);
       await loadSecurityData();
       closeModal();
     } catch (err) {
@@ -218,7 +218,7 @@ export function useSecurityData() {
     if (!credentials) return;
     setModalLoading(true); setModalError(null);
     try {
-      const result = await securityService.generateBackupCodes(credentials);
+      const result = await securityTabService.generateBackupCodes(credentials);
       setFormData({ ...modal.formData, codes: result.codes.join("\n") });
     } catch (err) {
       setModalError(err instanceof Error ? err.message : "error");
@@ -230,7 +230,7 @@ export function useSecurityData() {
     if (!credentials || !code) return;
     setModalLoading(true); setModalError(null);
     try {
-      await securityService.validateBackupCodes(credentials, code);
+      await securityTabService.validateBackupCodes(credentials, code);
       await loadSecurityData();
       closeModal();
     } catch (err) {
@@ -243,7 +243,7 @@ export function useSecurityData() {
     if (!credentials || !code) return;
     setModalLoading(true); setModalError(null);
     try {
-      await securityService.disableBackupCodes(credentials, code);
+      await securityTabService.disableBackupCodes(credentials, code);
       await loadSecurityData();
       closeModal();
     } catch (err) {
@@ -256,7 +256,7 @@ export function useSecurityData() {
     if (!credentials || !ip) return;
     setModalLoading(true); setModalError(null);
     try {
-      await securityService.addIpRestriction(credentials, ip, rule, warning);
+      await securityTabService.addIpRestriction(credentials, ip, rule, warning);
       await loadSecurityData();
       closeModal();
     } catch (err) {
@@ -268,7 +268,7 @@ export function useSecurityData() {
     const credentials = getCredentials();
     if (!credentials) return;
     try {
-      await securityService.deleteIpRestriction(credentials, id);
+      await securityTabService.deleteIpRestriction(credentials, id);
       await loadSecurityData();
     } catch (err) {
       setState(s => ({ ...s, error: err instanceof Error ? err.message : "error" }));

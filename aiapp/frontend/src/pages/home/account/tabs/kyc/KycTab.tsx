@@ -5,7 +5,7 @@ import "./KycTab.css";
 
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import * as proceduresService from "../../../../../services/home.account.procedures";
+import * as kycService from "./KycTab.service";
 
 // ============ TYPES ============
 
@@ -29,7 +29,7 @@ export function KycTab() {
   // ---------- STATE ----------
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<proceduresService.FraudStatus | null>(null);
+  const [status, setStatus] = useState<kycService.FraudStatus | null>(null);
   const [step, setStep] = useState<UploadStep>("status");
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -43,7 +43,7 @@ export function KycTab() {
     setLoading(true);
     setError(null);
     try {
-      const data = await proceduresService.getFraudStatus();
+      const data = await kycService.getFraudStatus();
       setStatus(data);
     } catch (err) {
       setStatus({ status: "none" });
@@ -99,7 +99,7 @@ export function KycTab() {
 
     try {
       // 1. Initier la procédure et obtenir les liens d'upload
-      const { uploadLinks } = await proceduresService.initFraudProcedure(selectedFiles.length);
+      const { uploadLinks } = await kycService.initFraudProcedure(selectedFiles.length);
 
       // 2. Uploader chaque fichier
       for (let i = 0; i < selectedFiles.length; i++) {
@@ -109,7 +109,7 @@ export function KycTab() {
           throw new Error(t('upload.errors.noLink'));
         }
         try {
-          await proceduresService.uploadDocument(link, sf.file);
+          await kycService.uploadDocument(link, sf.file);
           setSelectedFiles(prev => {
             const updated = [...prev];
             updated[i] = { ...updated[i], uploaded: true };
@@ -127,7 +127,7 @@ export function KycTab() {
       }
 
       // 3. Finaliser la procédure
-      await proceduresService.finalizeFraudProcedure();
+      await kycService.finalizeFraudProcedure();
       setStep("done");
       await loadStatus();
     } catch (err) {

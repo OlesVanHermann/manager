@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as servicesService from "../../../../services/home.billing.services";
-import { TabProps, formatDate } from "../utils";
-import { ServerIcon } from "../icons";
+import * as billingServicesService from "./ServicesTab.service";
+import "./ServicesTab.css";
+import { TabProps, formatDate } from "../../utils";
+import { ServerIcon } from "../../icons";
 
 export function ServicesTab({ credentials }: TabProps) {
   const { t } = useTranslation('home/billing/tabs');
@@ -18,7 +19,7 @@ export function ServicesTab({ credentials }: TabProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await servicesService.getBillingServices(credentials);
+      const response = await billingServicesService.getBillingServices(credentials);
       const data = Array.isArray(response) ? response : (response?.data || []);
       setServices(data);
     } catch (err) {

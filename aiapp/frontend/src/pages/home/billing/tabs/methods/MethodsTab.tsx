@@ -4,15 +4,16 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as billingService from "../../../../services/home.billing";
-import { TabProps, formatDateMonth } from "../utils";
-import { CardIcon, VisaIcon, MastercardIcon, AmexIcon, BankIcon, PaypalIcon, TrashIcon, StarIcon } from "../icons";
+import * as methodsService from "./MethodsTab.service";
+import "./MethodsTab.css";
+import { TabProps, formatDateMonth } from "../../utils";
+import { CardIcon, VisaIcon, MastercardIcon, AmexIcon, BankIcon, PaypalIcon, TrashIcon, StarIcon } from "../../icons";
 
 // ============ TYPES ============
 
 interface ModalState {
   type: "add" | "delete" | "setDefault" | null;
-  method: billingService.PaymentMethod | null;
+  method: methodsService.PaymentMethod | null;
 }
 
 // ============ COMPOSANT ============
@@ -23,7 +24,7 @@ export function MethodsTab({ credentials }: TabProps) {
   const { t: tCommon } = useTranslation('common');
 
   // ---------- STATE ----------
-  const [methods, setMethods] = useState<billingService.PaymentMethod[]>([]);
+  const [methods, setMethods] = useState<methodsService.PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ type: null, method: null });
@@ -39,7 +40,7 @@ export function MethodsTab({ credentials }: TabProps) {
     setLoading(true);
     setError(null);
     try {
-      const data = await billingService.getPaymentMethods(credentials);
+      const data = await methodsService.getPaymentMethods(credentials);
       setMethods(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.loadError'));
@@ -54,7 +55,7 @@ export function MethodsTab({ credentials }: TabProps) {
     setActionLoading(true);
     setActionError(null);
     try {
-      await billingService.deletePaymentMethod(modal.method.paymentMethodId);
+      await methodsService.deletePaymentMethod(modal.method.paymentMethodId);
       closeModal();
       await loadMethods();
     } catch (err) {
@@ -69,7 +70,7 @@ export function MethodsTab({ credentials }: TabProps) {
     setActionLoading(true);
     setActionError(null);
     try {
-      await billingService.setDefaultPaymentMethod(modal.method.paymentMethodId);
+      await methodsService.setDefaultPaymentMethod(modal.method.paymentMethodId);
       closeModal();
       await loadMethods();
     } catch (err) {
@@ -84,7 +85,7 @@ export function MethodsTab({ credentials }: TabProps) {
     setActionError(null);
     try {
       const callbackUrl = window.location.href;
-      const result = await billingService.createPaymentMethod({
+      const result = await methodsService.createPaymentMethod({
         paymentType: addType,
         callbackUrl,
         default: methods.length === 0,
@@ -101,7 +102,7 @@ export function MethodsTab({ credentials }: TabProps) {
     }
   };
 
-  const openModal = (type: "add" | "delete" | "setDefault", method?: billingService.PaymentMethod) => {
+  const openModal = (type: "add" | "delete" | "setDefault", method?: methodsService.PaymentMethod) => {
     setModal({ type, method: method || null });
     setActionError(null);
   };

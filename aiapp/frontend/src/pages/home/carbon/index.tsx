@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as carbonService from "../../../services/home.carbon";
+import * as carbonPageService from "./carbon.service";
 import "./index.css";
 
 // ============ COMPOSANT ============
@@ -17,7 +17,7 @@ export default function CarbonPage() {
   // ---------- STATE ----------
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [summary, setSummary] = useState<carbonService.CarbonSummary | null>(null);
+  const [summary, setSummary] = useState<carbonPageService.CarbonSummary | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
   // ---------- EFFECTS ----------
@@ -28,7 +28,7 @@ export default function CarbonPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await carbonService.getAccountCarbonFootprint();
+      const data = await carbonPageService.getAccountCarbonFootprint();
       setSummary(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.loadError'));
@@ -39,7 +39,7 @@ export default function CarbonPage() {
 
   // ---------- HANDLERS ----------
   const handleDownload = async () => {
-    const blob = await carbonService.downloadCarbonReport();
+    const blob = await carbonPageService.downloadCarbonReport();
     if (blob) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

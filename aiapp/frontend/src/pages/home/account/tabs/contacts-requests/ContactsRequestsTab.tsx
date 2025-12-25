@@ -6,13 +6,13 @@ import "./ContactsRequestsTab.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getCredentials } from "../../../../../services/api";
-import * as contactsService from "../../../../../services/home.account.contacts";
+import * as contactsRequestsService from "./ContactsRequestsTab.service";
 
 // ============ TYPES ============
 
 interface ModalState {
   type: "accept" | "refuse" | null;
-  request: contactsService.ContactChange | null;
+  request: contactsRequestsService.ContactChange | null;
 }
 
 // ============ COMPOSANT ============
@@ -25,7 +25,7 @@ export function ContactsRequestsTab() {
   // ---------- STATE ----------
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [requests, setRequests] = useState<contactsService.ContactChange[]>([]);
+  const [requests, setRequests] = useState<contactsRequestsService.ContactChange[]>([]);
   const [filter, setFilter] = useState<"pending" | "all">("pending");
   const [modal, setModal] = useState<ModalState>({ type: null, request: null });
   const [token, setToken] = useState("");
@@ -42,7 +42,7 @@ export function ContactsRequestsTab() {
     try {
       const creds = getCredentials();
       if (!creds) { setError(t('errors.authRequired')); return; }
-      const data = await contactsService.getContactChanges(creds);
+      const data = await contactsRequestsService.getContactChanges(creds);
       setRequests(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.loadError'));
@@ -59,7 +59,7 @@ export function ContactsRequestsTab() {
     try {
       const creds = getCredentials();
       if (!creds) throw new Error(t('errors.authRequired'));
-      await contactsService.acceptContactChange(creds, modal.request.id, token.trim());
+      await contactsRequestsService.acceptContactChange(creds, modal.request.id, token.trim());
       setModal({ type: null, request: null });
       setToken("");
       await loadRequests();
@@ -77,7 +77,7 @@ export function ContactsRequestsTab() {
     try {
       const creds = getCredentials();
       if (!creds) throw new Error(t('errors.authRequired'));
-      await contactsService.refuseContactChange(creds, modal.request.id, token.trim());
+      await contactsRequestsService.refuseContactChange(creds, modal.request.id, token.trim());
       setModal({ type: null, request: null });
       setToken("");
       await loadRequests();
@@ -88,7 +88,7 @@ export function ContactsRequestsTab() {
     }
   };
 
-  const openModal = (type: "accept" | "refuse", request: contactsService.ContactChange) => {
+  const openModal = (type: "accept" | "refuse", request: contactsRequestsService.ContactChange) => {
     setModal({ type, request });
     setToken("");
     setActionError(null);
