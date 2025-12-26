@@ -14,7 +14,7 @@ interface ImagesTabProps {
 }
 
 export default function ImagesTab({ projectId, registryId }: ImagesTabProps) {
-  const { t } = useTranslation("public-cloud/registry/index");
+  const { t } = useTranslation("public-cloud/registry/images");
   const { t: tCommon } = useTranslation("common");
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,23 +55,23 @@ export default function ImagesTab({ projectId, registryId }: ImagesTabProps) {
   return (
     <div className="images-tab">
       <div className="images-toolbar">
-        <h2>{t("images.title")}</h2>
+        <h2>{t("title")}</h2>
       </div>
 
       {images.length === 0 ? (
         <div className="images-empty">
-          <h2>{t("images.empty.title")}</h2>
-          <p>{t("images.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <table className="images-table">
           <thead>
             <tr>
-              <th>{t("images.columns.name")}</th>
-              <th>{t("images.columns.tags")}</th>
-              <th>{t("images.columns.size")}</th>
-              <th>{t("images.columns.updated")}</th>
-              <th>{t("images.columns.actions")}</th>
+              <th>{t("columns.name")}</th>
+              <th>{t("columns.tags")}</th>
+              <th>{t("columns.size")}</th>
+              <th>{t("columns.updated")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -82,7 +82,7 @@ export default function ImagesTab({ projectId, registryId }: ImagesTabProps) {
                 <td className="images-size">{formatSize(image.size)}</td>
                 <td>{formatDate(image.updatedAt)}</td>
                 <td className="images-actions">
-                  <button className="btn btn-sm btn-outline">{t("images.actions.tags")}</button>
+                  <button className="btn btn-sm btn-outline">{t("actions.tags")}</button>
                   <button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button>
                 </td>
               </tr>

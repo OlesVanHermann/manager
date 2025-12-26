@@ -15,7 +15,7 @@ interface BackupsTabProps {
 }
 
 export default function BackupsTab({ projectId, engine, serviceId }: BackupsTabProps) {
-  const { t } = useTranslation("public-cloud/databases/index");
+  const { t } = useTranslation("public-cloud/databases/backups");
   const { t: tCommon } = useTranslation("common");
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,22 +56,22 @@ export default function BackupsTab({ projectId, engine, serviceId }: BackupsTabP
   return (
     <div className="backups-tab">
       <div className="backups-toolbar">
-        <h2>{t("backups.title")}</h2>
-        <button className="btn btn-primary">{t("backups.create")}</button>
+        <h2>{t("title")}</h2>
+        <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       {backups.length === 0 ? (
         <div className="backups-empty">
-          <h2>{t("backups.empty.title")}</h2>
+          <h2>{t("empty.title")}</h2>
         </div>
       ) : (
         <table className="backups-table">
           <thead>
             <tr>
-              <th>{t("backups.columns.date")}</th>
-              <th>{t("backups.columns.size")}</th>
-              <th>{t("backups.columns.status")}</th>
-              <th>{t("backups.columns.actions")}</th>
+              <th>{t("columns.date")}</th>
+              <th>{t("columns.size")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -86,7 +86,7 @@ export default function BackupsTab({ projectId, engine, serviceId }: BackupsTabP
                 </td>
                 <td className="backups-actions">
                   <button className="btn btn-sm btn-outline">
-                    {t("backups.actions.restore")}
+                    {t("actions.restore")}
                   </button>
                   <button className="btn btn-sm btn-outline btn-danger">
                     {tCommon("actions.delete")}

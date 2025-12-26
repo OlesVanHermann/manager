@@ -13,7 +13,7 @@ interface UsersTabProps {
 }
 
 export default function UsersTab({ projectId }: UsersTabProps) {
-  const { t } = useTranslation("public-cloud/object-storage/index");
+  const { t } = useTranslation("public-cloud/object-storage/users");
   const { t: tCommon } = useTranslation("common");
   const [users, setUsers] = useState<S3User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,27 +54,27 @@ export default function UsersTab({ projectId }: UsersTabProps) {
   return (
     <div className="users-tab">
       <div className="users-toolbar">
-        <h2>{t("users.title")}</h2>
-        <button className="btn btn-primary">{t("users.create")}</button>
+        <h2>{t("title")}</h2>
+        <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       <div className="users-description-card">
-        <p className="users-description">{t("users.description")}</p>
+        <p className="users-description">{t("description")}</p>
       </div>
 
       {users.length === 0 ? (
         <div className="users-empty">
-          <h2>{t("users.empty.title")}</h2>
-          <p>{t("users.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <table className="users-table">
           <thead>
             <tr>
-              <th>{t("users.columns.username")}</th>
-              <th>{t("users.columns.description")}</th>
-              <th>{t("users.columns.created")}</th>
-              <th>{t("users.columns.actions")}</th>
+              <th>{t("columns.username")}</th>
+              <th>{t("columns.description")}</th>
+              <th>{t("columns.created")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -85,7 +85,7 @@ export default function UsersTab({ projectId }: UsersTabProps) {
                 <td>{formatDate(user.createdAt)}</td>
                 <td className="users-actions">
                   <button className="btn btn-sm btn-outline">
-                    {t("users.actions.credentials")}
+                    {t("actions.credentials")}
                   </button>
                   <button className="btn btn-sm btn-outline btn-danger">
                     {tCommon("actions.delete")}

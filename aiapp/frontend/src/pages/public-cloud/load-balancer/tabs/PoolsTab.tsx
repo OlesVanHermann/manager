@@ -14,7 +14,7 @@ interface PoolsTabProps {
 }
 
 export default function PoolsTab({ projectId, lbId }: PoolsTabProps) {
-  const { t } = useTranslation("public-cloud/load-balancer/index");
+  const { t } = useTranslation("public-cloud/load-balancer/pools");
   const { t: tCommon } = useTranslation("common");
   const [pools, setPools] = useState<Pool[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,25 +55,25 @@ export default function PoolsTab({ projectId, lbId }: PoolsTabProps) {
   return (
     <div className="pools-tab">
       <div className="pools-toolbar">
-        <h2>{t("pools.title")}</h2>
-        <button className="btn btn-primary">{t("pools.add")}</button>
+        <h2>{t("title")}</h2>
+        <button className="btn btn-primary">{t("add")}</button>
       </div>
 
       {pools.length === 0 ? (
         <div className="pools-empty">
-          <h2>{t("pools.empty.title")}</h2>
-          <p>{t("pools.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <table className="pools-table">
           <thead>
             <tr>
-              <th>{t("pools.columns.name")}</th>
-              <th>{t("pools.columns.protocol")}</th>
-              <th>{t("pools.columns.algorithm")}</th>
-              <th>{t("pools.columns.members")}</th>
-              <th>{t("pools.columns.status")}</th>
-              <th>{t("pools.columns.actions")}</th>
+              <th>{t("columns.name")}</th>
+              <th>{t("columns.protocol")}</th>
+              <th>{t("columns.algorithm")}</th>
+              <th>{t("columns.members")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -89,7 +89,7 @@ export default function PoolsTab({ projectId, lbId }: PoolsTabProps) {
                   </span>
                 </td>
                 <td className="pools-actions">
-                  <button className="btn btn-sm btn-outline">{t("pools.actions.members")}</button>
+                  <button className="btn btn-sm btn-outline">{t("actions.members")}</button>
                   <button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button>
                 </td>
               </tr>

@@ -28,7 +28,7 @@ const voipIndexService = {
 type TabId = 'lines' | 'numbers' | 'voicemails';
 
 export default function VoipPage() {
-  const { t } = useTranslation('web-cloud/voip/index');
+  const { t } = useTranslation('web-cloud/telecom/voip/index');
   const { serviceName } = useParams<{ serviceName: string }>();
   const [account, setAccount] = useState<TelephonyBillingAccount | null>(null);
   const [loading, setLoading] = useState(true);

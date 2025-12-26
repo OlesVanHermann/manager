@@ -14,7 +14,7 @@ interface ListenersTabProps {
 }
 
 export default function ListenersTab({ projectId, lbId }: ListenersTabProps) {
-  const { t } = useTranslation("public-cloud/load-balancer/index");
+  const { t } = useTranslation("public-cloud/load-balancer/listeners");
   const { t: tCommon } = useTranslation("common");
   const [listeners, setListeners] = useState<Listener[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,24 +55,24 @@ export default function ListenersTab({ projectId, lbId }: ListenersTabProps) {
   return (
     <div className="listeners-tab">
       <div className="listeners-toolbar">
-        <h2>{t("listeners.title")}</h2>
-        <button className="btn btn-primary">{t("listeners.add")}</button>
+        <h2>{t("title")}</h2>
+        <button className="btn btn-primary">{t("add")}</button>
       </div>
 
       {listeners.length === 0 ? (
         <div className="listeners-empty">
-          <h2>{t("listeners.empty.title")}</h2>
-          <p>{t("listeners.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <table className="listeners-table">
           <thead>
             <tr>
-              <th>{t("listeners.columns.name")}</th>
-              <th>{t("listeners.columns.protocol")}</th>
-              <th>{t("listeners.columns.port")}</th>
-              <th>{t("listeners.columns.status")}</th>
-              <th>{t("listeners.columns.actions")}</th>
+              <th>{t("columns.name")}</th>
+              <th>{t("columns.protocol")}</th>
+              <th>{t("columns.port")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>

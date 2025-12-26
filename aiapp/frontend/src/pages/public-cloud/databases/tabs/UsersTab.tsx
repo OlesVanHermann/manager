@@ -15,7 +15,7 @@ interface UsersTabProps {
 }
 
 export default function UsersTab({ projectId, engine, serviceId }: UsersTabProps) {
-  const { t } = useTranslation("public-cloud/databases/index");
+  const { t } = useTranslation("public-cloud/databases/users");
   const { t: tCommon } = useTranslation("common");
   const [users, setUsers] = useState<DbUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,22 +56,22 @@ export default function UsersTab({ projectId, engine, serviceId }: UsersTabProps
   return (
     <div className="users-tab">
       <div className="users-toolbar">
-        <h2>{t("users.title")}</h2>
-        <button className="btn btn-primary">{t("users.add")}</button>
+        <h2>{t("title")}</h2>
+        <button className="btn btn-primary">{t("add")}</button>
       </div>
 
       {users.length === 0 ? (
         <div className="users-empty">
-          <h2>{t("users.empty.title")}</h2>
+          <h2>{t("empty.title")}</h2>
         </div>
       ) : (
         <table className="users-table">
           <thead>
             <tr>
-              <th>{t("users.columns.username")}</th>
-              <th>{t("users.columns.status")}</th>
-              <th>{t("users.columns.created")}</th>
-              <th>{t("users.columns.actions")}</th>
+              <th>{t("columns.username")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.created")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -86,7 +86,7 @@ export default function UsersTab({ projectId, engine, serviceId }: UsersTabProps
                 <td>{formatDate(user.createdAt)}</td>
                 <td className="users-actions">
                   <button className="btn btn-sm btn-outline">
-                    {t("users.actions.resetPassword")}
+                    {t("actions.resetPassword")}
                   </button>
                   <button className="btn btn-sm btn-outline btn-danger">
                     {tCommon("actions.delete")}

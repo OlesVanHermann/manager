@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { GeneralTab } from './tabs/general/GeneralTab';
 
 export default function FaxPage() {
-  const { t } = useTranslation('web-cloud/fax/index');
+  const { t } = useTranslation('web-cloud/telecom/fax/index');
   const { serviceName } = useParams<{ serviceName: string }>();
   const [activeTab] = useState<'general'>('general');
 

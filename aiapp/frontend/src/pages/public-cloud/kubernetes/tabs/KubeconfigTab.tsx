@@ -13,7 +13,7 @@ interface KubeconfigTabProps {
 }
 
 export default function KubeconfigTab({ projectId, clusterId }: KubeconfigTabProps) {
-  const { t } = useTranslation("public-cloud/kubernetes/index");
+  const { t } = useTranslation("public-cloud/kubernetes/kubeconfig");
   const [kubeconfig, setKubeconfig] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -47,15 +47,15 @@ export default function KubeconfigTab({ projectId, clusterId }: KubeconfigTabPro
   return (
     <div className="kubeconfig-tab">
       <div className="kubeconfig-toolbar">
-        <h2>{t("kubeconfig.title")}</h2>
+        <h2>{t("title")}</h2>
       </div>
 
       <div className="kubeconfig-card">
-        <p className="kubeconfig-description">{t("kubeconfig.description")}</p>
+        <p className="kubeconfig-description">{t("description")}</p>
 
         {!kubeconfig ? (
           <button className="btn btn-primary" onClick={loadKubeconfig} disabled={loading}>
-            {loading ? t("kubeconfig.generating") : t("kubeconfig.generate")}
+            {loading ? t("generating") : t("generate")}
           </button>
         ) : (
           <>
@@ -66,13 +66,13 @@ export default function KubeconfigTab({ projectId, clusterId }: KubeconfigTabPro
             </div>
             <div className="kubeconfig-actions">
               <button className="btn btn-outline" onClick={handleCopy}>
-                {copied ? "✓ Copié!" : t("kubeconfig.copy")}
+                {copied ? "✓ Copié!" : t("copy")}
               </button>
               <button className="btn btn-outline" onClick={handleDownload}>
-                {t("kubeconfig.download")}
+                {t("download")}
               </button>
               <button className="btn btn-outline" onClick={loadKubeconfig}>
-                {t("kubeconfig.regenerate")}
+                {t("regenerate")}
               </button>
             </div>
           </>
@@ -80,8 +80,8 @@ export default function KubeconfigTab({ projectId, clusterId }: KubeconfigTabPro
       </div>
 
       <div className="kubeconfig-usage-card">
-        <h3>{t("kubeconfig.usage.title")}</h3>
-        <p className="kubeconfig-usage-description">{t("kubeconfig.usage.description")}</p>
+        <h3>{t("usage.title")}</h3>
+        <p className="kubeconfig-usage-description">{t("usage.description")}</p>
         <div className="kubeconfig-box">
           export KUBECONFIG=./kubeconfig.yaml && kubectl get nodes
         </div>

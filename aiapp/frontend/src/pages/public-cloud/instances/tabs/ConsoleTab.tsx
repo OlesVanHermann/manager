@@ -6,7 +6,7 @@ import "./ConsoleTab.css";
 interface ConsoleTabProps { projectId: string; instanceId: string; }
 
 export default function ConsoleTab({ projectId, instanceId }: ConsoleTabProps) {
-  const { t } = useTranslation("public-cloud/instances/index");
+  const { t } = useTranslation("public-cloud/instances/console");
   const [consoleUrl, setConsoleUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,22 +25,22 @@ export default function ConsoleTab({ projectId, instanceId }: ConsoleTabProps) {
 
   return (
     <div className="console-tab">
-      <div className="tab-toolbar"><h2>{t("console.title")}</h2></div>
-      <div className="info-card">
-        <h3>{t("console.vnc.title")}</h3>
-        <p style={{ color: "var(--color-text-secondary)", marginTop: "var(--space-2)", marginBottom: "var(--space-3)" }}>{t("console.vnc.description")}</p>
-        <button className="btn btn-primary" onClick={openConsole} disabled={loading}>{loading ? t("console.vnc.loading") : t("console.vnc.open")}</button>
+      <div className="console-toolbar"><h2>{t("title")}</h2></div>
+      <div className="console-info-card">
+        <h3>{t("vnc.title")}</h3>
+        <p className="console-description">{t("vnc.description")}</p>
+        <button className="btn btn-primary" onClick={openConsole} disabled={loading}>{loading ? t("vnc.loading") : t("vnc.open")}</button>
         {consoleUrl && (
           <div style={{ marginTop: "var(--space-3)" }}>
-            <p style={{ fontSize: "var(--font-size-sm)", color: "var(--color-text-secondary)" }}>{t("console.vnc.urlLabel")}</p>
-            <div className="kubeconfig-box" style={{ wordBreak: "break-all" }}>{consoleUrl}</div>
+            <p className="console-url-label">{t("vnc.urlLabel")}</p>
+            <div className="console-code-box">{consoleUrl}</div>
           </div>
         )}
       </div>
-      <div className="info-card" style={{ marginTop: "var(--space-4)" }}>
-        <h3>{t("console.serial.title")}</h3>
-        <p style={{ color: "var(--color-text-secondary)", marginTop: "var(--space-2)", marginBottom: "var(--space-3)" }}>{t("console.serial.description")}</p>
-        <button className="btn btn-outline">{t("console.serial.open")}</button>
+      <div className="console-info-card" style={{ marginTop: "var(--space-4)" }}>
+        <h3>{t("serial.title")}</h3>
+        <p className="console-description">{t("serial.description")}</p>
+        <button className="btn btn-outline">{t("serial.open")}</button>
       </div>
     </div>
   );

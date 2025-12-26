@@ -28,7 +28,7 @@ const smsIndexService = {
 type TabId = 'outgoing' | 'incoming' | 'senders';
 
 export default function SmsPage() {
-  const { t } = useTranslation('web-cloud/sms/index');
+  const { t } = useTranslation('web-cloud/telecom/sms/index');
   const { serviceName } = useParams<{ serviceName: string }>();
   const [account, setAccount] = useState<SmsAccount | null>(null);
   const [loading, setLoading] = useState(true);

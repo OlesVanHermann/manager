@@ -7,7 +7,7 @@ import "./StorageTab.css";
 interface Props { projectId: string; }
 
 export function StorageTab({ projectId }: Props) {
-  const { t } = useTranslation("public-cloud/project/index");
+  const { t } = useTranslation("public-cloud/project/storage");
   const [containers, setContainers] = useState<CloudContainer[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,25 +26,25 @@ export function StorageTab({ projectId }: Props) {
     return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="storage-loading"><div className="storage-skeleton-block" /></div>;
 
   return (
     <div className="storage-tab">
-      <div className="tab-header"><h3>{t("storage.title")}</h3><span className="records-count">{containers.length}</span></div>
-      {containers.length === 0 ? (<div className="empty-state"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg><p>{t("storage.empty")}</p></div>) : (
-        <div className="container-cards">
+      <div className="storage-header"><h3>{t("title")}</h3><span className="storage-count">{containers.length}</span></div>
+      {containers.length === 0 ? (<div className="storage-empty-state"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg><p>{t("empty")}</p></div>) : (
+        <div className="storage-container-cards">
           {containers.map(c => (
-            <div key={c.id} className={`container-card ${c.archive ? 'archive' : ''}`}>
-              <div className="container-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg></div>
+            <div key={c.id} className={`storage-container-card ${c.archive ? 'storage-archive' : ''}`}>
+              <div className="storage-container-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg></div>
               <h4>{c.name}</h4>
-              <div className="container-meta">
-                <span className={`badge ${c.containerType === 'public' ? 'warning' : c.containerType === 'static' ? 'info' : 'success'}`}>{c.containerType}</span>
-                {c.archive && <span className="badge inactive">Archive</span>}
+              <div className="storage-container-meta">
+                <span className={`storage-badge ${c.containerType === 'public' ? 'storage-badge-warning' : c.containerType === 'static' ? 'storage-badge-info' : 'storage-badge-success'}`}>{c.containerType}</span>
+                {c.archive && <span className="storage-badge storage-badge-inactive">Archive</span>}
               </div>
-              <div className="container-stats">
-                <div><label>{t("storage.objects")}</label><span>{c.storedObjects}</span></div>
-                <div><label>{t("storage.size")}</label><span>{formatSize(c.storedBytes)}</span></div>
-                <div><label>{t("storage.region")}</label><span>{c.region}</span></div>
+              <div className="storage-container-stats">
+                <div><label>{t("objects")}</label><span>{c.storedObjects}</span></div>
+                <div><label>{t("size")}</label><span>{formatSize(c.storedBytes)}</span></div>
+                <div><label>{t("region")}</label><span>{c.region}</span></div>
               </div>
             </div>
           ))}

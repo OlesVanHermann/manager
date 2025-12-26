@@ -12,40 +12,40 @@ interface MetricsTabProps {
 }
 
 export default function MetricsTab({ projectId, engine, serviceId }: MetricsTabProps) {
-  const { t } = useTranslation("public-cloud/databases/index");
+  const { t } = useTranslation("public-cloud/databases/metrics");
 
   return (
     <div className="metrics-tab">
       <div className="metrics-toolbar">
-        <h2>{t("metrics.title")}</h2>
+        <h2>{t("title")}</h2>
       </div>
 
       <div className="metrics-stats-card">
-        <h3>{t("metrics.current")}</h3>
+        <h3>{t("current")}</h3>
         <div className="metrics-stats-grid">
           <div className="metrics-stat-item">
             <div className="metrics-stat-value">--</div>
-            <div className="metrics-stat-label">{t("metrics.fields.cpu")}</div>
+            <div className="metrics-stat-label">{t("fields.cpu")}</div>
           </div>
           <div className="metrics-stat-item">
             <div className="metrics-stat-value">--</div>
-            <div className="metrics-stat-label">{t("metrics.fields.memory")}</div>
+            <div className="metrics-stat-label">{t("fields.memory")}</div>
           </div>
           <div className="metrics-stat-item">
             <div className="metrics-stat-value">--</div>
-            <div className="metrics-stat-label">{t("metrics.fields.storage")}</div>
+            <div className="metrics-stat-label">{t("fields.storage")}</div>
           </div>
           <div className="metrics-stat-item">
             <div className="metrics-stat-value">--</div>
-            <div className="metrics-stat-label">{t("metrics.fields.connections")}</div>
+            <div className="metrics-stat-label">{t("fields.connections")}</div>
           </div>
         </div>
       </div>
 
       <div className="metrics-graph-card">
-        <h3>{t("metrics.graph.title")}</h3>
+        <h3>{t("graph.title")}</h3>
         <div className="metrics-graph-placeholder">
-          <p>{t("metrics.graph.placeholder")}</p>
+          <p>{t("graph.placeholder")}</p>
         </div>
       </div>
     </div>

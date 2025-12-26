@@ -14,7 +14,7 @@ interface NodePoolsTabProps {
 }
 
 export default function NodePoolsTab({ projectId, clusterId }: NodePoolsTabProps) {
-  const { t } = useTranslation("public-cloud/kubernetes/index");
+  const { t } = useTranslation("public-cloud/kubernetes/nodepools");
   const { t: tCommon } = useTranslation("common");
   const [pools, setPools] = useState<NodePool[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,14 +55,14 @@ export default function NodePoolsTab({ projectId, clusterId }: NodePoolsTabProps
   return (
     <div className="nodepools-tab">
       <div className="nodepools-toolbar">
-        <h2>{t("nodepools.title")}</h2>
-        <button className="btn btn-primary">{t("nodepools.add")}</button>
+        <h2>{t("title")}</h2>
+        <button className="btn btn-primary">{t("add")}</button>
       </div>
 
       {pools.length === 0 ? (
         <div className="nodepools-empty">
-          <h2>{t("nodepools.empty.title")}</h2>
-          <p>{t("nodepools.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <div className="nodepools-list">
@@ -80,21 +80,21 @@ export default function NodePoolsTab({ projectId, clusterId }: NodePoolsTabProps
 
               <div className="nodepools-info-grid">
                 <div className="nodepools-info-item">
-                  <div className="nodepools-info-title">{t("nodepools.fields.nodes")}</div>
+                  <div className="nodepools-info-title">{t("fields.nodes")}</div>
                   <div className="nodepools-info-value">
                     {pool.currentNodes} / {pool.desiredNodes}
                   </div>
                 </div>
                 <div className="nodepools-info-item">
-                  <div className="nodepools-info-title">{t("nodepools.fields.autoscale")}</div>
+                  <div className="nodepools-info-title">{t("fields.autoscale")}</div>
                   <div className="nodepools-info-value">
-                    {pool.autoscale ? `${pool.minNodes} - ${pool.maxNodes}` : t("nodepools.disabled")}
+                    {pool.autoscale ? `${pool.minNodes} - ${pool.maxNodes}` : t("disabled")}
                   </div>
                 </div>
               </div>
 
               <div className="nodepools-actions">
-                <button className="btn btn-sm btn-outline">{t("nodepools.actions.scale")}</button>
+                <button className="btn btn-sm btn-outline">{t("actions.scale")}</button>
                 <button className="btn btn-sm btn-outline btn-danger">{tCommon("actions.delete")}</button>
               </div>
             </div>

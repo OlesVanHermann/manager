@@ -15,7 +15,7 @@ interface ObjectsTabProps {
 }
 
 export default function ObjectsTab({ projectId, region, containerId }: ObjectsTabProps) {
-  const { t } = useTranslation("public-cloud/object-storage/index");
+  const { t } = useTranslation("public-cloud/object-storage/objects");
   const { t: tCommon } = useTranslation("common");
   const [objects, setObjects] = useState<StorageObject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,33 +68,33 @@ export default function ObjectsTab({ projectId, region, containerId }: ObjectsTa
     <div className="objects-tab">
       <div className="objects-toolbar">
         <div className="objects-toolbar-left">
-          <h2>{t("objects.title")}</h2>
+          <h2>{t("title")}</h2>
           {prefix && <span className="objects-prefix">/{prefix}</span>}
         </div>
         <div className="objects-toolbar-right">
           {prefix && (
             <button className="btn btn-outline" onClick={goBack}>
-              ← {t("objects.back")}
+              ← {t("back")}
             </button>
           )}
-          <button className="btn btn-primary">{t("objects.upload")}</button>
+          <button className="btn btn-primary">{t("upload")}</button>
         </div>
       </div>
 
       {objects.length === 0 ? (
         <div className="objects-empty">
-          <h2>{t("objects.empty.title")}</h2>
-          <p>{t("objects.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <table className="objects-table">
           <thead>
             <tr>
-              <th>{t("objects.columns.name")}</th>
-              <th>{t("objects.columns.size")}</th>
-              <th>{t("objects.columns.type")}</th>
-              <th>{t("objects.columns.modified")}</th>
-              <th>{t("objects.columns.actions")}</th>
+              <th>{t("columns.name")}</th>
+              <th>{t("columns.size")}</th>
+              <th>{t("columns.type")}</th>
+              <th>{t("columns.modified")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -117,12 +117,12 @@ export default function ObjectsTab({ projectId, region, containerId }: ObjectsTa
                     )}
                   </td>
                   <td className="objects-size">{isFolder ? "-" : formatSize(obj.size)}</td>
-                  <td>{isFolder ? t("objects.folder") : obj.contentType}</td>
+                  <td>{isFolder ? t("folder") : obj.contentType}</td>
                   <td>{formatDate(obj.lastModified)}</td>
                   <td className="objects-actions">
                     {!isFolder && (
                       <button className="btn btn-sm btn-outline">
-                        {t("objects.actions.download")}
+                        {t("actions.download")}
                       </button>
                     )}
                     <button className="btn btn-sm btn-outline btn-danger">

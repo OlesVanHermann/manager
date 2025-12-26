@@ -7,7 +7,7 @@ import "./QuotaTab.css";
 interface Props { projectId: string; }
 
 export function QuotaTab({ projectId }: Props) {
-  const { t } = useTranslation("public-cloud/project/index");
+  const { t } = useTranslation("public-cloud/project/quota");
   const [quotas, setQuotas] = useState<CloudQuota[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,27 +29,27 @@ export function QuotaTab({ projectId }: Props) {
     );
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="quota-loading"><div className="quota-skeleton-block" /></div>;
 
   return (
     <div className="quota-tab">
-      <div className="tab-header"><h3>{t("quota.title")}</h3><p className="tab-description">{t("quota.description")}</p></div>
-      {quotas.length === 0 ? (<div className="empty-state"><p>{t("quota.empty")}</p></div>) : (
+      <div className="quota-header"><h3>{t("title")}</h3><p className="quota-description">{t("description")}</p></div>
+      {quotas.length === 0 ? (<div className="quota-empty-state"><p>{t("empty")}</p></div>) : (
         <div className="quota-regions">
           {quotas.map(q => (
             <div key={q.region} className="quota-region">
               <h4>{q.region}</h4>
               <div className="quota-grid">
                 <div className="quota-section">
-                  <h5>{t("quota.instances")}</h5>
-                  <QuotaBar used={q.instance.usedInstances} max={q.instance.maxInstances} label={t("quota.instanceCount")} />
-                  <QuotaBar used={q.instance.usedCores} max={q.instance.maxCores} label={t("quota.cores")} />
-                  <QuotaBar used={Math.round(q.instance.usedRAM / 1024)} max={Math.round(q.instance.maxRam / 1024)} label={t("quota.ram")} />
+                  <h5>{t("instances")}</h5>
+                  <QuotaBar used={q.instance.usedInstances} max={q.instance.maxInstances} label={t("instanceCount")} />
+                  <QuotaBar used={q.instance.usedCores} max={q.instance.maxCores} label={t("cores")} />
+                  <QuotaBar used={Math.round(q.instance.usedRAM / 1024)} max={Math.round(q.instance.maxRam / 1024)} label={t("ram")} />
                 </div>
                 <div className="quota-section">
-                  <h5>{t("quota.volumes")}</h5>
-                  <QuotaBar used={q.volume.volumeCount} max={q.volume.maxVolumeCount} label={t("quota.volumeCount")} />
-                  <QuotaBar used={q.volume.usedGigabytes} max={q.volume.maxGigabytes} label={t("quota.storage")} />
+                  <h5>{t("volumes")}</h5>
+                  <QuotaBar used={q.volume.volumeCount} max={q.volume.maxVolumeCount} label={t("volumeCount")} />
+                  <QuotaBar used={q.volume.usedGigabytes} max={q.volume.maxGigabytes} label={t("storage")} />
                 </div>
               </div>
             </div>

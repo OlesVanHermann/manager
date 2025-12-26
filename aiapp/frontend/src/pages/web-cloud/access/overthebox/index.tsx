@@ -9,12 +9,9 @@ import type { ServiceItem } from "../../../../components/ServiceListPage.types";
 import { ovhApi } from "../../../../services/api";
 import type { OverTheBoxService } from "./overthebox.types";
 
-// Imports directs sans barrel file (JS-5)
 import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
 import { RemotesTab } from "./tabs/remotes/RemotesTab.tsx";
 import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
-
-// ============ LOCAL API ============
 
 async function listServices(): Promise<string[]> {
   return ovhApi.get<string[]>('/overTheBox');
@@ -24,18 +21,14 @@ async function getService(serviceName: string): Promise<OverTheBoxService> {
   return ovhApi.get<OverTheBoxService>(`/overTheBox/${serviceName}`);
 }
 
-// ============ ICONS ============
-
 const OtbIcon = () => (
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
     <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M6 14h.01M10 10h4M10 14h4" stroke="#10b981"/>
   </svg>
 );
 
-// ============ COMPOSANT ============
-
 export default function OverTheBoxPage() {
-  const { t } = useTranslation("web-cloud/overthebox/index");
+  const { t } = useTranslation("web-cloud/access/overthebox/index");
 
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +69,7 @@ export default function OverTheBoxPage() {
     <ServiceListPage
       titleKey="title"
       descriptionKey="description"
-      i18nNamespace="web-cloud/overthebox/index"
+      i18nNamespace="web-cloud/access/overthebox/index"
       services={services}
       loading={loading}
       error={error}

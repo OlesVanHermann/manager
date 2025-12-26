@@ -9,14 +9,11 @@ import type { ServiceItem } from "../../../../components/ServiceListPage.types";
 import { ovhApi } from "../../../../services/api";
 import type { PackXdslService } from "./pack-xdsl.types";
 
-// Imports directs sans barrel file (JS-5)
 import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
 import { AccessTab } from "./tabs/access/AccessTab.tsx";
 import { VoipTab } from "./tabs/voip/VoipTab.tsx";
 import { ServicesTab } from "./tabs/services/ServicesTab.tsx";
 import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
-
-// ============ LOCAL API ============
 
 async function listPacks(): Promise<string[]> {
   return ovhApi.get<string[]>('/pack/xdsl');
@@ -26,18 +23,14 @@ async function getPack(packName: string): Promise<PackXdslService> {
   return ovhApi.get<PackXdslService>(`/pack/xdsl/${packName}`);
 }
 
-// ============ ICONS ============
-
 const XdslIcon = () => (
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
     <path d="M4 9h16M4 15h16" stroke="#3b82f6"/><circle cx="12" cy="12" r="3"/>
   </svg>
 );
 
-// ============ COMPOSANT ============
-
 export default function PackXdslPage() {
-  const { t } = useTranslation("web-cloud/pack-xdsl/index");
+  const { t } = useTranslation("web-cloud/access/pack-xdsl/index");
 
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +73,7 @@ export default function PackXdslPage() {
     <ServiceListPage
       titleKey="title"
       descriptionKey="description"
-      i18nNamespace="web-cloud/pack-xdsl/index"
+      i18nNamespace="web-cloud/access/pack-xdsl/index"
       services={services}
       loading={loading}
       error={error}
