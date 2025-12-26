@@ -1,39 +1,44 @@
 // ============================================================
-// CLOUD CONNECT General Tab - Service isolé
+// CLOUD CONNECT General Tab - Service STRICTEMENT isolé
+// NE JAMAIS importer depuis un autre tab
 // ============================================================
-// Ce tab reçoit les données via props, pas d'appels API directs
 
 import { ovhPut } from "../../../../../services/api";
 import type { CloudConnectInfo } from "../../cloud-connect.types";
 
+// ==================== HELPERS LOCAUX (DUPLIQUÉS - ISOLATION) ====================
+
+function formatBandwidth(mbps: number): string {
+  return mbps >= 1000 ? `${mbps / 1000} Gbps` : `${mbps} Mbps`;
+}
+
+function getStatusBadgeClass(status: string): string {
+  const classes: Record<string, string> = {
+    active: "cloudconnect-general-badge-success",
+    init: "cloudconnect-general-badge-warning",
+    disabled: "cloudconnect-general-badge-error",
+  };
+  return classes[status] || "";
+}
+
+function formatDate(d: string): string {
+  return new Date(d).toLocaleDateString("fr-FR");
+}
+
 // ==================== ACTIONS ====================
 
-export async function updateDescription(
+async function updateDescription(
   uuid: string,
   description: string
 ): Promise<CloudConnectInfo> {
   return ovhPut<CloudConnectInfo>(`/ovhCloudConnect/${uuid}`, { description });
 }
 
-// ==================== HELPERS (DUPLIQUÉS - ISOLATION) ====================
-
-export function formatBandwidth(mbps: number): string {
-  return mbps >= 1000 ? `${mbps / 1000} Gbps` : `${mbps} Mbps`;
-}
-
-export function getStatusBadgeClass(status: string): string {
-  const classes: Record<string, string> = {
-    active: "badge-success",
-    init: "badge-warning",
-    disabled: "badge-error",
-  };
-  return classes[status] || "";
-}
-
 // ==================== SERVICE OBJECT ====================
 
-export const generalService = {
+export const cloudconnectGeneralService = {
   updateDescription,
   formatBandwidth,
   getStatusBadgeClass,
+  formatDate,
 };

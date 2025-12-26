@@ -1,11 +1,12 @@
 // ============================================================
-// VRACK SERVICES Subnets Tab - Composant isolé
+// VRACK SERVICES Subnets Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .vrackservices-subnets-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { VrackServicesSubnet } from "../../vrack-services.types";
-import { subnetsService } from "./SubnetsTab.service";
+import { vrackservicesSubnetsService } from "./SubnetsTab.service";
 import "./SubnetsTab.css";
 
 interface SubnetsTabProps {
@@ -27,7 +28,7 @@ export default function SubnetsTab({ serviceId }: SubnetsTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await subnetsService.getSubnets(serviceId);
+      const data = await vrackservicesSubnetsService.getSubnets(serviceId);
       setSubnets(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -38,7 +39,7 @@ export default function SubnetsTab({ serviceId }: SubnetsTabProps) {
 
   const handleDelete = async (subnetId: string) => {
     try {
-      await subnetsService.deleteSubnet(serviceId, subnetId);
+      await vrackservicesSubnetsService.deleteSubnet(serviceId, subnetId);
       loadSubnets();
     } catch (err) {
       console.error("Erreur suppression:", err);
@@ -46,12 +47,12 @@ export default function SubnetsTab({ serviceId }: SubnetsTabProps) {
   };
 
   if (loading) {
-    return <div className="subnets-loading">{tCommon("loading")}</div>;
+    return <div className="vrackservices-subnets-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="subnets-error">
+      <div className="vrackservices-subnets-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadSubnets}>
           {tCommon("actions.retry")}
@@ -61,19 +62,19 @@ export default function SubnetsTab({ serviceId }: SubnetsTabProps) {
   }
 
   return (
-    <div className="subnets-tab">
-      <div className="subnets-toolbar">
+    <div className="vrackservices-subnets-tab">
+      <div className="vrackservices-subnets-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       {subnets.length === 0 ? (
-        <div className="subnets-empty">
+        <div className="vrackservices-subnets-empty">
           <h2>{t("empty.title")}</h2>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <table className="subnets-table">
+        <table className="vrackservices-subnets-table">
           <thead>
             <tr>
               <th>{t("columns.name")}</th>
@@ -86,18 +87,18 @@ export default function SubnetsTab({ serviceId }: SubnetsTabProps) {
             {subnets.map((subnet) => (
               <tr key={subnet.id}>
                 <td>
-                  <span className="subnets-name">
+                  <span className="vrackservices-subnets-name">
                     {subnet.displayName || subnet.id}
                   </span>
                 </td>
                 <td>
-                  <span className="subnets-cidr">{subnet.cidr}</span>
+                  <span className="vrackservices-subnets-cidr">{subnet.cidr}</span>
                 </td>
                 <td>
-                  <span className="subnets-vlan">{subnet.vlan ?? "-"}</span>
+                  <span className="vrackservices-subnets-vlan">{subnet.vlan ?? "-"}</span>
                 </td>
                 <td>
-                  <div className="subnets-actions">
+                  <div className="vrackservices-subnets-actions">
                     <button className="btn btn-sm btn-outline">
                       {tCommon("actions.edit")}
                     </button>

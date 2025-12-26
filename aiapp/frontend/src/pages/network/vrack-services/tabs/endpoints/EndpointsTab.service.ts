@@ -1,19 +1,34 @@
 // ============================================================
-// VRACK SERVICES Endpoints Tab - Service isolé
+// VRACK SERVICES Endpoints Tab - Service STRICTEMENT isolé
+// NE JAMAIS importer depuis un autre tab
 // ============================================================
 
 import { ovhGet, ovhPost, ovhDelete } from "../../../../../services/api";
 import type { VrackServicesEndpoint } from "../../vrack-services.types";
 
+// ==================== HELPERS LOCAUX (DUPLIQUÉS - ISOLATION) ====================
+
+function formatUrn(urn: string): string {
+  // Tronquer l'URN pour l'affichage si trop long
+  if (urn.length > 60) {
+    return urn.substring(0, 30) + "..." + urn.substring(urn.length - 20);
+  }
+  return urn;
+}
+
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString("fr-FR");
+}
+
 // ==================== API CALLS ====================
 
-export async function getEndpoints(id: string): Promise<VrackServicesEndpoint[]> {
+async function getEndpoints(id: string): Promise<VrackServicesEndpoint[]> {
   return ovhGet<VrackServicesEndpoint[]>(`/vrackServices/${id}/endpoint`).catch(
     () => []
   );
 }
 
-export async function getEndpoint(
+async function getEndpoint(
   id: string,
   endpointId: string
 ): Promise<VrackServicesEndpoint> {
@@ -22,36 +37,27 @@ export async function getEndpoint(
   );
 }
 
-export async function createEndpoint(
+async function createEndpoint(
   id: string,
   data: { managedServiceUrn: string; displayName?: string }
 ): Promise<VrackServicesEndpoint> {
   return ovhPost<VrackServicesEndpoint>(`/vrackServices/${id}/endpoint`, data);
 }
 
-export async function deleteEndpoint(
+async function deleteEndpoint(
   id: string,
   endpointId: string
 ): Promise<void> {
   return ovhDelete<void>(`/vrackServices/${id}/endpoint/${endpointId}`);
 }
 
-// ==================== HELPERS (DUPLIQUÉS - ISOLATION) ====================
-
-export function formatUrn(urn: string): string {
-  // Tronquer l'URN pour l'affichage si trop long
-  if (urn.length > 60) {
-    return urn.substring(0, 30) + "..." + urn.substring(urn.length - 20);
-  }
-  return urn;
-}
-
 // ==================== SERVICE OBJECT ====================
 
-export const endpointsService = {
+export const vrackservicesEndpointsService = {
   getEndpoints,
   getEndpoint,
   createEndpoint,
   deleteEndpoint,
   formatUrn,
+  formatDate,
 };

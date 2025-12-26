@@ -1,11 +1,12 @@
 // ============================================================
-// VRACK SERVICES Endpoints Tab - Composant isolé
+// VRACK SERVICES Endpoints Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .vrackservices-endpoints-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { VrackServicesEndpoint } from "../../vrack-services.types";
-import { endpointsService } from "./EndpointsTab.service";
+import { vrackservicesEndpointsService } from "./EndpointsTab.service";
 import "./EndpointsTab.css";
 
 interface EndpointsTabProps {
@@ -27,7 +28,7 @@ export default function EndpointsTab({ serviceId }: EndpointsTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await endpointsService.getEndpoints(serviceId);
+      const data = await vrackservicesEndpointsService.getEndpoints(serviceId);
       setEndpoints(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -38,7 +39,7 @@ export default function EndpointsTab({ serviceId }: EndpointsTabProps) {
 
   const handleDelete = async (endpointId: string) => {
     try {
-      await endpointsService.deleteEndpoint(serviceId, endpointId);
+      await vrackservicesEndpointsService.deleteEndpoint(serviceId, endpointId);
       loadEndpoints();
     } catch (err) {
       console.error("Erreur suppression:", err);
@@ -46,12 +47,12 @@ export default function EndpointsTab({ serviceId }: EndpointsTabProps) {
   };
 
   if (loading) {
-    return <div className="endpoints-loading">{tCommon("loading")}</div>;
+    return <div className="vrackservices-endpoints-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="endpoints-error">
+      <div className="vrackservices-endpoints-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadEndpoints}>
           {tCommon("actions.retry")}
@@ -61,19 +62,19 @@ export default function EndpointsTab({ serviceId }: EndpointsTabProps) {
   }
 
   return (
-    <div className="endpoints-tab">
-      <div className="endpoints-toolbar">
+    <div className="vrackservices-endpoints-tab">
+      <div className="vrackservices-endpoints-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       {endpoints.length === 0 ? (
-        <div className="endpoints-empty">
+        <div className="vrackservices-endpoints-empty">
           <h2>{t("empty.title")}</h2>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <table className="endpoints-table">
+        <table className="vrackservices-endpoints-table">
           <thead>
             <tr>
               <th>{t("columns.name")}</th>
@@ -85,17 +86,17 @@ export default function EndpointsTab({ serviceId }: EndpointsTabProps) {
             {endpoints.map((endpoint) => (
               <tr key={endpoint.id}>
                 <td>
-                  <span className="endpoints-name">
+                  <span className="vrackservices-endpoints-name">
                     {endpoint.displayName || endpoint.id}
                   </span>
                 </td>
                 <td>
-                  <span className="endpoints-urn">
+                  <span className="vrackservices-endpoints-urn">
                     {endpoint.managedServiceUrn}
                   </span>
                 </td>
                 <td>
-                  <div className="endpoints-actions">
+                  <div className="vrackservices-endpoints-actions">
                     <button
                       className="btn btn-sm btn-outline btn-danger"
                       onClick={() => handleDelete(endpoint.id)}

@@ -1,12 +1,24 @@
 // ============================================================
-// IP - Page principale
+// IP - Page principale (SANS dépendance à IpPage.ts)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { listIps, getIp } from "./IpPage";
+import { ovhGet } from "../../../services/api";
 import type { IpBlock } from "./ip.types";
 import "./IpPage.css";
+
+// ==================== API CALLS LOCAUX ====================
+
+async function listIps(): Promise<string[]> {
+  return ovhGet<string[]>("/ip");
+}
+
+async function getIp(ip: string): Promise<IpBlock> {
+  return ovhGet<IpBlock>(`/ip/${encodeURIComponent(ip)}`);
+}
+
+// ==================== COMPOSANT ====================
 
 export default function IpPage() {
   const { t } = useTranslation("network/ip/page");

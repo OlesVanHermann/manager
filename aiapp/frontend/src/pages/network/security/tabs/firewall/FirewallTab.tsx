@@ -1,11 +1,12 @@
 // ============================================================
-// SECURITY Firewall Tab - Composant isolé
+// SECURITY Firewall Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .security-firewall-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { SecurityFirewallRule } from "../../security.types";
-import { firewallService } from "./FirewallTab.service";
+import { securityFirewallService } from "./FirewallTab.service";
 import "./FirewallTab.css";
 
 interface FirewallTabProps {
@@ -27,7 +28,7 @@ export default function FirewallTab({ ipBlock }: FirewallTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await firewallService.getFirewallRules(ipBlock);
+      const data = await securityFirewallService.getFirewallRules(ipBlock);
       setRules(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -37,12 +38,12 @@ export default function FirewallTab({ ipBlock }: FirewallTabProps) {
   };
 
   if (loading) {
-    return <div className="firewall-loading">{tCommon("loading")}</div>;
+    return <div className="security-firewall-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="firewall-error">
+      <div className="security-firewall-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadRules}>
           {tCommon("actions.retry")}
@@ -52,19 +53,19 @@ export default function FirewallTab({ ipBlock }: FirewallTabProps) {
   }
 
   return (
-    <div className="firewall-tab">
-      <div className="firewall-toolbar">
+    <div className="security-firewall-tab">
+      <div className="security-firewall-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-primary">{t("addRule")}</button>
       </div>
 
       {rules.length === 0 ? (
-        <div className="firewall-empty">
+        <div className="security-firewall-empty">
           <h2>{t("empty.title")}</h2>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <table className="firewall-table">
+        <table className="security-firewall-table">
           <thead>
             <tr>
               <th>#</th>
@@ -78,23 +79,23 @@ export default function FirewallTab({ ipBlock }: FirewallTabProps) {
           <tbody>
             {rules.map((rule) => (
               <tr key={rule.sequence}>
-                <td className="firewall-sequence">{rule.sequence}</td>
+                <td className="security-firewall-sequence">{rule.sequence}</td>
                 <td>
                   <span
-                    className={`firewall-status-badge ${firewallService.getActionBadgeClass(rule.action)}`}
+                    className={`security-firewall-status-badge ${securityFirewallService.getActionBadgeClass(rule.action)}`}
                   >
                     {rule.action}
                   </span>
                 </td>
                 <td>{rule.protocol}</td>
-                <td className="firewall-address">
+                <td className="security-firewall-address">
                   {rule.source || "*"}:{rule.sourcePort || "*"}
                 </td>
-                <td className="firewall-address">
+                <td className="security-firewall-address">
                   {rule.destination || "*"}:{rule.destinationPort || "*"}
                 </td>
                 <td>
-                  <div className="firewall-actions">
+                  <div className="security-firewall-actions">
                     <button className="btn btn-sm btn-outline btn-danger">
                       {tCommon("actions.delete")}
                     </button>

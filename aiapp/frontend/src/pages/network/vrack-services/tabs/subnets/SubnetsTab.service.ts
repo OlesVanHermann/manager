@@ -1,33 +1,44 @@
 // ============================================================
-// VRACK SERVICES Subnets Tab - Service isolé
+// VRACK SERVICES Subnets Tab - Service STRICTEMENT isolé
+// NE JAMAIS importer depuis un autre tab
 // ============================================================
 
 import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../services/api";
 import type { VrackServicesSubnet } from "../../vrack-services.types";
 
+// ==================== HELPERS LOCAUX (DUPLIQUÉS - ISOLATION) ====================
+
+function formatCidr(cidr: string): string {
+  return cidr;
+}
+
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString("fr-FR");
+}
+
 // ==================== API CALLS ====================
 
-export async function getSubnets(id: string): Promise<VrackServicesSubnet[]> {
+async function getSubnets(id: string): Promise<VrackServicesSubnet[]> {
   return ovhGet<VrackServicesSubnet[]>(`/vrackServices/${id}/subnet`).catch(
     () => []
   );
 }
 
-export async function getSubnet(
+async function getSubnet(
   id: string,
   subnetId: string
 ): Promise<VrackServicesSubnet> {
   return ovhGet<VrackServicesSubnet>(`/vrackServices/${id}/subnet/${subnetId}`);
 }
 
-export async function createSubnet(
+async function createSubnet(
   id: string,
   data: { cidr: string; displayName?: string; vlan?: number }
 ): Promise<VrackServicesSubnet> {
   return ovhPost<VrackServicesSubnet>(`/vrackServices/${id}/subnet`, data);
 }
 
-export async function updateSubnet(
+async function updateSubnet(
   id: string,
   subnetId: string,
   data: { displayName?: string }
@@ -38,23 +49,18 @@ export async function updateSubnet(
   );
 }
 
-export async function deleteSubnet(id: string, subnetId: string): Promise<void> {
+async function deleteSubnet(id: string, subnetId: string): Promise<void> {
   return ovhDelete<void>(`/vrackServices/${id}/subnet/${subnetId}`);
-}
-
-// ==================== HELPERS (DUPLIQUÉS - ISOLATION) ====================
-
-export function formatCidr(cidr: string): string {
-  return cidr;
 }
 
 // ==================== SERVICE OBJECT ====================
 
-export const subnetsService = {
+export const vrackservicesSubnetsService = {
   getSubnets,
   getSubnet,
   createSubnet,
   updateSubnet,
   deleteSubnet,
   formatCidr,
+  formatDate,
 };

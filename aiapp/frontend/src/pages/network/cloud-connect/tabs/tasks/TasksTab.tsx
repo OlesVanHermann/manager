@@ -1,11 +1,12 @@
 // ============================================================
-// CLOUD CONNECT Tasks Tab - Composant isolé
+// CLOUD CONNECT Tasks Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .cloudconnect-tasks-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CloudConnectTask } from "../../cloud-connect.types";
-import { tasksService } from "./TasksTab.service";
+import { cloudconnectTasksService } from "./TasksTab.service";
 import "./TasksTab.css";
 
 interface TasksTabProps {
@@ -27,7 +28,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await tasksService.getTasks(serviceId);
+      const data = await cloudconnectTasksService.getTasks(serviceId);
       setTasks(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -37,12 +38,12 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
   };
 
   if (loading) {
-    return <div className="tasks-loading">{tCommon("loading")}</div>;
+    return <div className="cloudconnect-tasks-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="tasks-error">
+      <div className="cloudconnect-tasks-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadTasks}>
           {tCommon("actions.retry")}
@@ -52,8 +53,8 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
   }
 
   return (
-    <div className="tasks-tab">
-      <div className="tasks-toolbar">
+    <div className="cloudconnect-tasks-tab">
+      <div className="cloudconnect-tasks-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={loadTasks}>
           {tCommon("actions.refresh")}
@@ -61,11 +62,11 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
       </div>
 
       {tasks.length === 0 ? (
-        <div className="tasks-empty">
+        <div className="cloudconnect-tasks-empty">
           <h2>{t("empty.title")}</h2>
         </div>
       ) : (
-        <table className="tasks-table">
+        <table className="cloudconnect-tasks-table">
           <thead>
             <tr>
               <th>{t("columns.function")}</th>
@@ -78,23 +79,23 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
             {tasks.map((task) => (
               <tr key={task.id}>
                 <td>
-                  <span className="tasks-function">{task.function}</span>
+                  <span className="cloudconnect-tasks-function">{task.function}</span>
                 </td>
                 <td>
                   <span
-                    className={`tasks-status-badge ${tasksService.getStatusBadgeClass(task.status)}`}
+                    className={`cloudconnect-tasks-status-badge ${cloudconnectTasksService.getStatusBadgeClass(task.status)}`}
                   >
                     {task.status}
                   </span>
                 </td>
                 <td>
-                  <span className="tasks-date">
-                    {tasksService.formatDate(task.startDate)}
+                  <span className="cloudconnect-tasks-date">
+                    {cloudconnectTasksService.formatDate(task.startDate)}
                   </span>
                 </td>
                 <td>
-                  <span className="tasks-date">
-                    {task.doneDate ? tasksService.formatDate(task.doneDate) : "-"}
+                  <span className="cloudconnect-tasks-date">
+                    {task.doneDate ? cloudconnectTasksService.formatDate(task.doneDate) : "-"}
                   </span>
                 </td>
               </tr>

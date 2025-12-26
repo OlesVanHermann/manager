@@ -1,13 +1,35 @@
 // ============================================================
-// CDN Statistics Tab - Service isolé
+// CDN Statistics Tab - Service STRICTEMENT isolé
+// NE JAMAIS importer depuis un autre tab
 // ============================================================
 
 import { ovhGet } from "../../../../../services/api";
 import type { CdnStats } from "../../cdn.types";
 
+// ==================== HELPERS LOCAUX (DUPLIQUÉS - ISOLATION) ====================
+
+function formatNumber(num: number): string {
+  return new Intl.NumberFormat("fr-FR").format(num);
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes >= 1e12) return `${(bytes / 1e12).toFixed(2)} TB`;
+  if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(2)} GB`;
+  if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(2)} MB`;
+  return `${bytes} B`;
+}
+
+function formatPercent(value: number): string {
+  return `${value.toFixed(1)}%`;
+}
+
+function formatDate(d: string): string {
+  return new Date(d).toLocaleDateString("fr-FR");
+}
+
 // ==================== API CALLS ====================
 
-export async function getStatistics(serviceName: string): Promise<CdnStats> {
+async function getStatistics(serviceName: string): Promise<CdnStats> {
   // Note: L'API OVH CDN statistics retourne des données complexes
   // Ici on simule/agrège pour l'affichage
   try {
@@ -25,7 +47,7 @@ export async function getStatistics(serviceName: string): Promise<CdnStats> {
   }
 }
 
-export async function getDetailedStats(
+async function getDetailedStats(
   serviceName: string,
   period: "day" | "week" | "month"
 ): Promise<{ timestamp: string; requests: number; bandwidth: number }[]> {
@@ -33,29 +55,13 @@ export async function getDetailedStats(
   return ovhGet(`/cdn/dedicated/${serviceName}/statistics?period=${period}`);
 }
 
-// ==================== HELPERS (DUPLIQUÉS - ISOLATION) ====================
-
-export function formatNumber(num: number): string {
-  return new Intl.NumberFormat("fr-FR").format(num);
-}
-
-export function formatBytes(bytes: number): string {
-  if (bytes >= 1e12) return `${(bytes / 1e12).toFixed(2)} TB`;
-  if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(2)} GB`;
-  if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(2)} MB`;
-  return `${bytes} B`;
-}
-
-export function formatPercent(value: number): string {
-  return `${value.toFixed(1)}%`;
-}
-
 // ==================== SERVICE OBJECT ====================
 
-export const statisticsService = {
+export const cdnStatisticsService = {
   getStatistics,
   getDetailedStats,
   formatNumber,
   formatBytes,
   formatPercent,
+  formatDate,
 };

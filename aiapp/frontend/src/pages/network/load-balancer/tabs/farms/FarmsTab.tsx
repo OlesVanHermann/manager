@@ -1,11 +1,12 @@
 // ============================================================
-// LOAD BALANCER Farms Tab - Composant isolé
+// LOAD BALANCER Farms Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .lb-farms-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { IpLoadBalancingFarm, IpLoadBalancingServer } from "../../load-balancer.types";
-import { farmsService } from "./FarmsTab.service";
+import { lbFarmsService } from "./FarmsTab.service";
 import "./FarmsTab.css";
 
 interface FarmsTabProps {
@@ -22,7 +23,7 @@ export function FarmsTab({ serviceName }: FarmsTabProps) {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await farmsService.getAllFarms(serviceName);
+        const data = await lbFarmsService.getAllFarms(serviceName);
         setFarms(data);
       } finally {
         setLoading(false);
@@ -38,7 +39,7 @@ export function FarmsTab({ serviceName }: FarmsTabProps) {
     }
     setExpandedFarm(farmId);
     try {
-      const servers = await farmsService.getServersForFarm(serviceName, farmId);
+      const servers = await lbFarmsService.getServersForFarm(serviceName, farmId);
       setFarms((prev) =>
         prev.map((f) => (f.farmId === farmId ? { ...f, servers } : f))
       );
@@ -49,44 +50,44 @@ export function FarmsTab({ serviceName }: FarmsTabProps) {
 
   if (loading) {
     return (
-      <div className="farms-loading">
+      <div className="lb-farms-loading">
         <div className="skeleton-block" />
       </div>
     );
   }
 
   return (
-    <div className="farms-tab">
-      <div className="farms-header">
+    <div className="lb-farms-tab">
+      <div className="lb-farms-header">
         <h3>{t("title")}</h3>
-        <span className="farms-count">{farms.length}</span>
+        <span className="lb-farms-count">{farms.length}</span>
       </div>
 
       {farms.length === 0 ? (
-        <div className="farms-empty">
+        <div className="lb-farms-empty">
           <p>{t("empty")}</p>
         </div>
       ) : (
-        <div className="farms-list">
+        <div className="lb-farms-list">
           {farms.map((farm) => (
             <div
               key={farm.farmId}
-              className={`farms-card ${expandedFarm === farm.farmId ? "expanded" : ""}`}
+              className={`lb-farms-card ${expandedFarm === farm.farmId ? "lb-farms-expanded" : ""}`}
             >
               <div
-                className="farms-card-header"
+                className="lb-farms-card-header"
                 onClick={() => loadServers(farm.farmId)}
               >
-                <div className="farms-card-info">
+                <div className="lb-farms-card-info">
                   <h4>{farm.displayName || `Farm #${farm.farmId}`}</h4>
-                  <div className="farms-card-meta">
-                    <span className="farms-badge info">{farm.zone}</span>
-                    <span className="farms-badge secondary">{farm.balance}</span>
+                  <div className="lb-farms-card-meta">
+                    <span className="lb-farms-badge lb-farms-badge-info">{farm.zone}</span>
+                    <span className="lb-farms-badge lb-farms-badge-secondary">{farm.balance}</span>
                     {farm.port && <span>:{farm.port}</span>}
                   </div>
                 </div>
                 <svg
-                  className="farms-chevron"
+                  className="lb-farms-chevron"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -102,11 +103,11 @@ export function FarmsTab({ serviceName }: FarmsTabProps) {
               </div>
 
               {expandedFarm === farm.farmId && farm.servers && (
-                <div className="farms-servers">
+                <div className="lb-farms-servers">
                   {farm.servers.length === 0 ? (
-                    <p className="farms-no-servers">{t("noServers")}</p>
+                    <p className="lb-farms-no-servers">{t("noServers")}</p>
                   ) : (
-                    <table className="farms-servers-table">
+                    <table className="lb-farms-servers-table">
                       <thead>
                         <tr>
                           <th>{t("address")}</th>
@@ -119,12 +120,12 @@ export function FarmsTab({ serviceName }: FarmsTabProps) {
                       <tbody>
                         {farm.servers.map((s) => (
                           <tr key={s.serverId}>
-                            <td className="farms-server-address">{s.address}</td>
+                            <td className="lb-farms-server-address">{s.address}</td>
                             <td>{s.port || "-"}</td>
                             <td>{s.weight || "-"}</td>
                             <td>
                               <span
-                                className={`farms-server-status ${s.status === "active" ? "success" : "inactive"}`}
+                                className={`lb-farms-server-status ${s.status === "active" ? "lb-farms-status-success" : "lb-farms-status-inactive"}`}
                               >
                                 {s.status}
                               </span>

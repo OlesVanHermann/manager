@@ -1,11 +1,12 @@
 // ============================================================
-// SECURITY Attacks Tab - Composant isolé
+// SECURITY Attacks Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .security-attacks-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { SecurityAttack } from "../../security.types";
-import { attacksService } from "./AttacksTab.service";
+import { securityAttacksService } from "./AttacksTab.service";
 import "./AttacksTab.css";
 
 interface AttacksTabProps {
@@ -27,7 +28,7 @@ export default function AttacksTab({ ipBlock }: AttacksTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await attacksService.getAttacks(ipBlock);
+      const data = await securityAttacksService.getAttacks(ipBlock);
       setAttacks(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -37,12 +38,12 @@ export default function AttacksTab({ ipBlock }: AttacksTabProps) {
   };
 
   if (loading) {
-    return <div className="attacks-loading">{tCommon("loading")}</div>;
+    return <div className="security-attacks-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="attacks-error">
+      <div className="security-attacks-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadAttacks}>
           {tCommon("actions.retry")}
@@ -52,8 +53,8 @@ export default function AttacksTab({ ipBlock }: AttacksTabProps) {
   }
 
   return (
-    <div className="attacks-tab">
-      <div className="attacks-toolbar">
+    <div className="security-attacks-tab">
+      <div className="security-attacks-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={loadAttacks}>
           {tCommon("actions.refresh")}
@@ -61,34 +62,34 @@ export default function AttacksTab({ ipBlock }: AttacksTabProps) {
       </div>
 
       {attacks.length === 0 ? (
-        <div className="attacks-empty">
+        <div className="security-attacks-empty">
           <h2>{t("empty.title")}</h2>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <div className="attacks-timeline">
+        <div className="security-attacks-timeline">
           {attacks.map((attack) => (
             <div
               key={attack.id}
-              className={`attacks-item ${!attack.endDate ? "ongoing" : ""}`}
+              className={`security-attacks-item ${!attack.endDate ? "security-attacks-ongoing" : ""}`}
             >
-              <span className="attacks-icon">
+              <span className="security-attacks-icon">
                 {!attack.endDate ? "⚠️" : "✅"}
               </span>
-              <div className="attacks-info">
-                <div className="attacks-type">{attack.type}</div>
-                <div className="attacks-details">
+              <div className="security-attacks-info">
+                <div className="security-attacks-type">{attack.type}</div>
+                <div className="security-attacks-details">
                   {t("target")}: {attack.ipAttack}
                 </div>
               </div>
-              <div className="attacks-time">
-                <div>{attacksService.formatDate(attack.startDate)}</div>
+              <div className="security-attacks-time">
+                <div>{securityAttacksService.formatDate(attack.startDate)}</div>
                 {attack.endDate ? (
-                  <div style={{ color: "var(--color-success-500)" }}>
+                  <div className="security-attacks-status-mitigated">
                     {t("mitigated")}
                   </div>
                 ) : (
-                  <div style={{ color: "var(--color-error-500)" }}>
+                  <div className="security-attacks-status-ongoing">
                     {t("ongoing")}
                   </div>
                 )}

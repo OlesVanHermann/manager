@@ -1,11 +1,12 @@
 // ============================================================
-// CDN Domains Tab - Composant isolé
+// CDN Domains Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .cdn-domains-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CdnDomain } from "../../cdn.types";
-import { domainsService } from "./DomainsTab.service";
+import { cdnDomainsService } from "./DomainsTab.service";
 import "./DomainsTab.css";
 
 interface DomainsTabProps {
@@ -27,7 +28,7 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await domainsService.getDomains(serviceId);
+      const data = await cdnDomainsService.getDomains(serviceId);
       setDomains(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -38,7 +39,7 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
 
   const handleDelete = async (domain: string) => {
     try {
-      await domainsService.deleteDomain(serviceId, domain);
+      await cdnDomainsService.deleteDomain(serviceId, domain);
       loadDomains();
     } catch (err) {
       console.error("Erreur suppression:", err);
@@ -47,19 +48,19 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
 
   const handlePurge = async (domain: string) => {
     try {
-      await domainsService.purgeDomain(serviceId, domain);
+      await cdnDomainsService.purgeDomain(serviceId, domain);
     } catch (err) {
       console.error("Erreur purge:", err);
     }
   };
 
   if (loading) {
-    return <div className="domains-loading">{tCommon("loading")}</div>;
+    return <div className="cdn-domains-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="domains-error">
+      <div className="cdn-domains-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadDomains}>
           {tCommon("actions.retry")}
@@ -69,19 +70,19 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
   }
 
   return (
-    <div className="domains-tab">
-      <div className="domains-toolbar">
+    <div className="cdn-domains-tab">
+      <div className="cdn-domains-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-primary">{t("add")}</button>
       </div>
 
       {domains.length === 0 ? (
-        <div className="domains-empty">
+        <div className="cdn-domains-empty">
           <h2>{t("empty.title")}</h2>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <table className="domains-table">
+        <table className="cdn-domains-table">
           <thead>
             <tr>
               <th>{t("columns.domain")}</th>
@@ -94,20 +95,20 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
             {domains.map((domain) => (
               <tr key={domain.domain}>
                 <td>
-                  <span className="domains-domain-name">{domain.domain}</span>
+                  <span className="cdn-domains-domain-name">{domain.domain}</span>
                 </td>
                 <td>
-                  <span className="domains-cname">{domain.cname}</span>
+                  <span className="cdn-domains-cname">{domain.cname}</span>
                 </td>
                 <td>
                   <span
-                    className={`domains-status-badge ${domainsService.getStatusBadgeClass(domain.status)}`}
+                    className={`cdn-domains-status-badge ${cdnDomainsService.getStatusBadgeClass(domain.status)}`}
                   >
                     {domain.status}
                   </span>
                 </td>
                 <td>
-                  <div className="domains-actions">
+                  <div className="cdn-domains-actions">
                     <button className="btn btn-sm btn-outline">
                       {t("actions.configure")}
                     </button>

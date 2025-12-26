@@ -1,11 +1,12 @@
 // ============================================================
-// CDN Statistics Tab - Composant isolé
+// CDN Statistics Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .cdn-statistics-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CdnStats } from "../../cdn.types";
-import { statisticsService } from "./StatisticsTab.service";
+import { cdnStatisticsService } from "./StatisticsTab.service";
 import "./StatisticsTab.css";
 
 interface StatisticsTabProps {
@@ -27,7 +28,7 @@ export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await statisticsService.getStatistics(serviceId);
+      const data = await cdnStatisticsService.getStatistics(serviceId);
       setStats(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -37,12 +38,12 @@ export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
   };
 
   if (loading) {
-    return <div className="statistics-loading">{tCommon("loading")}</div>;
+    return <div className="cdn-statistics-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="statistics-error">
+      <div className="cdn-statistics-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadStats}>
           {tCommon("actions.retry")}
@@ -52,8 +53,8 @@ export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
   }
 
   return (
-    <div className="statistics-tab">
-      <div className="statistics-toolbar">
+    <div className="cdn-statistics-tab">
+      <div className="cdn-statistics-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={loadStats}>
           {tCommon("actions.refresh")}
@@ -61,32 +62,32 @@ export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
       </div>
 
       {stats && (
-        <div className="statistics-card">
+        <div className="cdn-statistics-card">
           <h3>{t("last30days")}</h3>
-          <div className="statistics-grid">
-            <div className="statistics-item">
-              <div className="statistics-value">
-                {statisticsService.formatNumber(stats.requests)}
+          <div className="cdn-statistics-grid">
+            <div className="cdn-statistics-item">
+              <div className="cdn-statistics-value">
+                {cdnStatisticsService.formatNumber(stats.requests)}
               </div>
-              <div className="statistics-label">{t("fields.requests")}</div>
+              <div className="cdn-statistics-label">{t("fields.requests")}</div>
             </div>
-            <div className="statistics-item">
-              <div className="statistics-value">
-                {statisticsService.formatBytes(stats.bandwidth)}
+            <div className="cdn-statistics-item">
+              <div className="cdn-statistics-value">
+                {cdnStatisticsService.formatBytes(stats.bandwidth)}
               </div>
-              <div className="statistics-label">{t("fields.bandwidth")}</div>
+              <div className="cdn-statistics-label">{t("fields.bandwidth")}</div>
             </div>
-            <div className="statistics-item">
-              <div className="statistics-value">{stats.cacheHitRate}%</div>
-              <div className="statistics-label">{t("fields.cacheHit")}</div>
+            <div className="cdn-statistics-item">
+              <div className="cdn-statistics-value">{stats.cacheHitRate}%</div>
+              <div className="cdn-statistics-label">{t("fields.cacheHit")}</div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="statistics-card">
+      <div className="cdn-statistics-card">
         <h3>{t("graph.title")}</h3>
-        <div className="statistics-graph-placeholder">
+        <div className="cdn-statistics-graph-placeholder">
           <p>{t("graph.placeholder")}</p>
         </div>
       </div>

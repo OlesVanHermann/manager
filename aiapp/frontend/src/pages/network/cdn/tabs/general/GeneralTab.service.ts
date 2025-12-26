@@ -1,28 +1,35 @@
 // ============================================================
-// CDN General Tab - Service isolé
+// CDN General Tab - Service STRICTEMENT isolé
+// NE JAMAIS importer depuis un autre tab
 // ============================================================
-// Ce tab reçoit les données via props, pas d'appels API directs
-// Les actions sont gérées localement
 
 import { ovhPost } from "../../../../../services/api";
 import type { CdnInfo } from "../../cdn.types";
 
+// ==================== HELPERS LOCAUX ====================
+// Dupliqués volontairement pour isolation totale
+
+const formatDate = (d: string): string => {
+  return new Date(d).toLocaleDateString("fr-FR");
+};
+
 // ==================== ACTIONS ====================
 
-export async function purgeCache(serviceName: string, domain?: string): Promise<void> {
+async function purgeCache(serviceName: string, domain?: string): Promise<void> {
   const path = domain
     ? `/cdn/dedicated/${serviceName}/domains/${domain}/cache`
     : `/cdn/dedicated/${serviceName}/cache`;
   return ovhPost<void>(path, { flush: true });
 }
 
-export async function flushAll(serviceName: string): Promise<void> {
+async function flushAll(serviceName: string): Promise<void> {
   return ovhPost<void>(`/cdn/dedicated/${serviceName}/flush`, {});
 }
 
 // ==================== SERVICE OBJECT ====================
 
-export const generalService = {
+export const cdnGeneralService = {
   purgeCache,
   flushAll,
+  formatDate,
 };

@@ -1,11 +1,12 @@
 // ============================================================
-// CLOUD CONNECT Interfaces Tab - Composant isolé
+// CLOUD CONNECT Interfaces Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .cloudconnect-interfaces-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CloudConnectInterface } from "../../cloud-connect.types";
-import { interfacesService } from "./InterfacesTab.service";
+import { cloudconnectInterfacesService } from "./InterfacesTab.service";
 import "./InterfacesTab.css";
 
 interface InterfacesTabProps {
@@ -27,7 +28,7 @@ export default function InterfacesTab({ serviceId }: InterfacesTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await interfacesService.getInterfaces(serviceId);
+      const data = await cloudconnectInterfacesService.getInterfaces(serviceId);
       setInterfaces(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -37,12 +38,12 @@ export default function InterfacesTab({ serviceId }: InterfacesTabProps) {
   };
 
   if (loading) {
-    return <div className="interfaces-loading">{tCommon("loading")}</div>;
+    return <div className="cloudconnect-interfaces-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="interfaces-error">
+      <div className="cloudconnect-interfaces-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadInterfaces}>
           {tCommon("actions.retry")}
@@ -52,17 +53,17 @@ export default function InterfacesTab({ serviceId }: InterfacesTabProps) {
   }
 
   return (
-    <div className="interfaces-tab">
-      <div className="interfaces-toolbar">
+    <div className="cloudconnect-interfaces-tab">
+      <div className="cloudconnect-interfaces-toolbar">
         <h2>{t("title")}</h2>
       </div>
 
       {interfaces.length === 0 ? (
-        <div className="interfaces-empty">
+        <div className="cloudconnect-interfaces-empty">
           <h2>{t("empty.title")}</h2>
         </div>
       ) : (
-        <table className="interfaces-table">
+        <table className="cloudconnect-interfaces-table">
           <thead>
             <tr>
               <th>{t("columns.id")}</th>
@@ -75,23 +76,23 @@ export default function InterfacesTab({ serviceId }: InterfacesTabProps) {
             {interfaces.map((iface) => (
               <tr key={iface.id}>
                 <td>
-                  <span className="interfaces-id">Interface #{iface.id}</span>
+                  <span className="cloudconnect-interfaces-id">Interface #{iface.id}</span>
                 </td>
                 <td>
                   <span
-                    className={`interfaces-status-badge ${interfacesService.getStatusBadgeClass(iface.status)}`}
+                    className={`cloudconnect-interfaces-status-badge ${cloudconnectInterfacesService.getStatusBadgeClass(iface.status)}`}
                   >
                     {iface.status}
                   </span>
                 </td>
                 <td>
-                  <span className="interfaces-light-status">
-                    {interfacesService.getLightStatusIcon(iface.lightStatus)}{" "}
+                  <span className="cloudconnect-interfaces-light-status">
+                    {cloudconnectInterfacesService.getLightStatusIcon(iface.lightStatus)}{" "}
                     {iface.lightStatus}
                   </span>
                 </td>
                 <td>
-                  <div className="interfaces-actions">
+                  <div className="cloudconnect-interfaces-actions">
                     <button className="btn btn-sm btn-outline">
                       {t("actions.statistics")}
                     </button>

@@ -1,11 +1,12 @@
 // ============================================================
-// CDN Tasks Tab - Composant isolé
+// CDN Tasks Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .cdn-tasks-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CdnTask } from "../../cdn.types";
-import { tasksService } from "./TasksTab.service";
+import { cdnTasksService } from "./TasksTab.service";
 import "./TasksTab.css";
 
 interface TasksTabProps {
@@ -27,7 +28,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
     try {
       setLoading(true);
       setError(null);
-      const data = await tasksService.getTasks(serviceId);
+      const data = await cdnTasksService.getTasks(serviceId);
       setTasks(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
@@ -37,12 +38,12 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
   };
 
   if (loading) {
-    return <div className="tasks-loading">{tCommon("loading")}</div>;
+    return <div className="cdn-tasks-loading">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="tasks-error">
+      <div className="cdn-tasks-error">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadTasks}>
           {tCommon("actions.retry")}
@@ -52,8 +53,8 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
   }
 
   return (
-    <div className="tasks-tab">
-      <div className="tasks-toolbar">
+    <div className="cdn-tasks-tab">
+      <div className="cdn-tasks-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={loadTasks}>
           {tCommon("actions.refresh")}
@@ -61,11 +62,11 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
       </div>
 
       {tasks.length === 0 ? (
-        <div className="tasks-empty">
+        <div className="cdn-tasks-empty">
           <h2>{t("empty.title")}</h2>
         </div>
       ) : (
-        <table className="tasks-table">
+        <table className="cdn-tasks-table">
           <thead>
             <tr>
               <th>{t("columns.function")}</th>
@@ -78,23 +79,23 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
             {tasks.map((task) => (
               <tr key={task.id}>
                 <td>
-                  <span className="tasks-function">{task.function}</span>
+                  <span className="cdn-tasks-function">{task.function}</span>
                 </td>
                 <td>
                   <span
-                    className={`tasks-status-badge ${tasksService.getStatusBadgeClass(task.status)}`}
+                    className={`cdn-tasks-status-badge ${cdnTasksService.getStatusBadgeClass(task.status)}`}
                   >
                     {task.status}
                   </span>
                 </td>
                 <td>
-                  <span className="tasks-date">
-                    {tasksService.formatDate(task.startDate)}
+                  <span className="cdn-tasks-date">
+                    {cdnTasksService.formatDate(task.startDate)}
                   </span>
                 </td>
                 <td>
-                  <span className="tasks-date">
-                    {task.doneDate ? tasksService.formatDate(task.doneDate) : "-"}
+                  <span className="cdn-tasks-date">
+                    {task.doneDate ? cdnTasksService.formatDate(task.doneDate) : "-"}
                   </span>
                 </td>
               </tr>

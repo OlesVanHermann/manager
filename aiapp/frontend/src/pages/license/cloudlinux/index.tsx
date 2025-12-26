@@ -6,13 +6,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { CloudLinuxLicense } from "./cloudlinux.types";
-import { getCloudLinuxLicense } from "./tabs/GeneralTab";
-import GeneralTab from "./tabs/GeneralTab";
-import TasksTab from "./tabs/TasksTab";
-
-// ============================================================
-// STYLES INLINE (ISOLÉS)
-// ============================================================
+import { getCloudLinuxLicense } from "./tabs/general/GeneralTab.service";
+import GeneralTab from "./tabs/general/GeneralTab";
+import TasksTab from "./tabs/tasks/TasksTab";
 
 const styles = {
   page: { padding: "var(--space-4)" },
@@ -24,66 +20,32 @@ const styles = {
   tabActive: { color: "var(--color-primary-500)", borderBottomColor: "var(--color-primary-500)" },
 } as const;
 
-// ============================================================
-// COMPOSANT
-// ============================================================
-
 export default function CloudLinuxLicensePage() {
   const { licenseId } = useParams<{ licenseId: string }>();
   const { t } = useTranslation("license/index");
   const { t: tCommon } = useTranslation("common");
-
   const [license, setLicense] = useState<CloudLinuxLicense | null>(null);
   const [activeTab, setActiveTab] = useState("general");
   const [loading, setLoading] = useState(true);
 
   const loadLicense = async () => {
     if (!licenseId) return;
-    try {
-      setLoading(true);
-      const data = await getCloudLinuxLicense(licenseId);
-      setLicense(data);
-    } finally {
-      setLoading(false);
-    }
+    try { setLoading(true); const data = await getCloudLinuxLicense(licenseId); setLicense(data); } finally { setLoading(false); }
   };
-
-  useEffect(() => {
-    loadLicense();
-  }, [licenseId]);
-
-  if (loading) {
-    return <div className="loading-state">{tCommon("loading")}</div>;
-  }
+  useEffect(() => { loadLicense(); }, [licenseId]);
+  if (loading) { return <div className="loading-state">{tCommon("loading")}</div>; }
 
   return (
     <div style={styles.page}>
       <div style={styles.header}>
         <h1 style={styles.title}>CloudLinux - {licenseId}</h1>
-        <div style={styles.meta}>
-          <span>IP: {license?.ip}</span>
-          <span>Version: {license?.version}</span>
-        </div>
+        <div style={styles.meta}><span>IP: {license?.ip}</span><span>Version: {license?.version}</span></div>
       </div>
-
       <div style={styles.tabs}>
-        <button
-          style={{ ...styles.tab, ...(activeTab === "general" ? styles.tabActive : {}) }}
-          onClick={() => setActiveTab("general")}
-        >
-          {t("tabs.general")}
-        </button>
-        <button
-          style={{ ...styles.tab, ...(activeTab === "tasks" ? styles.tabActive : {}) }}
-          onClick={() => setActiveTab("tasks")}
-        >
-          {t("tabs.tasks")}
-        </button>
+        <button style={{ ...styles.tab, ...(activeTab === "general" ? styles.tabActive : {}) }} onClick={() => setActiveTab("general")}>{t("tabs.general")}</button>
+        <button style={{ ...styles.tab, ...(activeTab === "tasks" ? styles.tabActive : {}) }} onClick={() => setActiveTab("tasks")}>{t("tabs.tasks")}</button>
       </div>
-
-      {activeTab === "general" && (
-        <GeneralTab licenseId={licenseId!} license={license} onRefresh={loadLicense} />
-      )}
+      {activeTab === "general" && <GeneralTab licenseId={licenseId!} license={license} onRefresh={loadLicense} />}
       {activeTab === "tasks" && <TasksTab licenseId={licenseId!} />}
     </div>
   );

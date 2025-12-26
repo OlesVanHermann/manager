@@ -1,11 +1,12 @@
 // ============================================================
-// LOAD BALANCER Frontends Tab - Composant isolé
+// LOAD BALANCER Frontends Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .lb-frontends-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { IpLoadBalancingFrontend } from "../../load-balancer.types";
-import { frontendsService } from "./FrontendsTab.service";
+import { lbFrontendsService } from "./FrontendsTab.service";
 import "./FrontendsTab.css";
 
 interface FrontendsTabProps {
@@ -21,7 +22,7 @@ export function FrontendsTab({ serviceName }: FrontendsTabProps) {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await frontendsService.getAllFrontends(serviceName);
+        const data = await lbFrontendsService.getAllFrontends(serviceName);
         setFrontends(data);
       } finally {
         setLoading(false);
@@ -32,25 +33,25 @@ export function FrontendsTab({ serviceName }: FrontendsTabProps) {
 
   if (loading) {
     return (
-      <div className="frontends-loading">
+      <div className="lb-frontends-loading">
         <div className="skeleton-block" />
       </div>
     );
   }
 
   return (
-    <div className="frontends-tab">
-      <div className="frontends-header">
+    <div className="lb-frontends-tab">
+      <div className="lb-frontends-header">
         <h3>{t("title")}</h3>
-        <span className="frontends-count">{frontends.length}</span>
+        <span className="lb-frontends-count">{frontends.length}</span>
       </div>
 
       {frontends.length === 0 ? (
-        <div className="frontends-empty">
+        <div className="lb-frontends-empty">
           <p>{t("empty")}</p>
         </div>
       ) : (
-        <table className="frontends-table">
+        <table className="lb-frontends-table">
           <thead>
             <tr>
               <th>{t("name")}</th>
@@ -64,16 +65,16 @@ export function FrontendsTab({ serviceName }: FrontendsTabProps) {
           <tbody>
             {frontends.map((f) => (
               <tr key={f.frontendId}>
-                <td className="frontends-name">
+                <td className="lb-frontends-name">
                   {f.displayName || `Frontend #${f.frontendId}`}
                 </td>
                 <td>
-                  <span className="frontends-badge info">{f.zone}</span>
+                  <span className="lb-frontends-badge lb-frontends-badge-info">{f.zone}</span>
                 </td>
-                <td className="frontends-port">{f.port}</td>
+                <td className="lb-frontends-port">{f.port}</td>
                 <td>
                   {f.ssl ? (
-                    <span className="frontends-badge success">SSL</span>
+                    <span className="lb-frontends-badge lb-frontends-badge-success">SSL</span>
                   ) : (
                     "-"
                   )}
@@ -81,7 +82,7 @@ export function FrontendsTab({ serviceName }: FrontendsTabProps) {
                 <td>{f.defaultFarmId || "-"}</td>
                 <td>
                   <span
-                    className={`frontends-badge ${f.disabled ? "inactive" : "success"}`}
+                    className={`lb-frontends-badge ${f.disabled ? "lb-frontends-badge-inactive" : "lb-frontends-badge-success"}`}
                   >
                     {f.disabled ? t("disabled") : t("enabled")}
                   </span>

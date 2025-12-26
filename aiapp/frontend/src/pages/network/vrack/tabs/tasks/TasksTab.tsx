@@ -1,11 +1,12 @@
 // ============================================================
-// VRACK Tasks Tab - Composant isolé
+// VRACK Tasks Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .vrack-tasks-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { VrackTask } from "../../vrack.types";
-import { tasksService } from "./TasksTab.service";
+import { vrackTasksService } from "./TasksTab.service";
 import "./TasksTab.css";
 
 interface TasksTabProps {
@@ -21,7 +22,7 @@ export function TasksTab({ serviceName }: TasksTabProps) {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await tasksService.getAllTasks(serviceName);
+        const data = await vrackTasksService.getAllTasks(serviceName);
         setTasks(data);
       } finally {
         setLoading(false);
@@ -32,24 +33,24 @@ export function TasksTab({ serviceName }: TasksTabProps) {
 
   if (loading) {
     return (
-      <div className="tasks-loading">
+      <div className="vrack-tasks-loading">
         <div className="skeleton-block" />
       </div>
     );
   }
 
   return (
-    <div className="tasks-tab">
-      <div className="tasks-header">
+    <div className="vrack-tasks-tab">
+      <div className="vrack-tasks-header">
         <h3>{t("title")}</h3>
       </div>
 
       {tasks.length === 0 ? (
-        <div className="tasks-empty">
+        <div className="vrack-tasks-empty">
           <p>{t("empty")}</p>
         </div>
       ) : (
-        <table className="tasks-table">
+        <table className="vrack-tasks-table">
           <thead>
             <tr>
               <th>{t("function")}</th>
@@ -61,19 +62,19 @@ export function TasksTab({ serviceName }: TasksTabProps) {
           <tbody>
             {tasks.map((task) => (
               <tr key={task.id}>
-                <td className="tasks-function">{task.function}</td>
-                <td className="tasks-target">
+                <td className="vrack-tasks-function">{task.function}</td>
+                <td className="vrack-tasks-target">
                   {task.targetDomain || task.serviceName || "-"}
                 </td>
                 <td>
                   <span
-                    className={`tasks-status-badge ${tasksService.getStatusBadgeClass(task.status)}`}
+                    className={`vrack-tasks-status-badge ${vrackTasksService.getStatusBadgeClass(task.status)}`}
                   >
                     {task.status}
                   </span>
                 </td>
-                <td className="tasks-date">
-                  {tasksService.formatDate(task.lastUpdate)}
+                <td className="vrack-tasks-date">
+                  {vrackTasksService.formatDate(task.lastUpdate)}
                 </td>
               </tr>
             ))}

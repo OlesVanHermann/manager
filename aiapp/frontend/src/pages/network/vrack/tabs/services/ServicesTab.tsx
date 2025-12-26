@@ -1,10 +1,11 @@
 // ============================================================
-// VRACK Services Tab - Composant isolé
+// VRACK Services Tab - Composant STRICTEMENT isolé
+// Préfixe CSS: .vrack-services-
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { servicesService } from "./ServicesTab.service";
+import { vrackServicesService } from "./ServicesTab.service";
 import "./ServicesTab.css";
 
 interface ServicesTabProps {
@@ -22,7 +23,7 @@ export function ServicesTab({ serviceName }: ServicesTabProps) {
     const load = async () => {
       try {
         setLoading(true);
-        const list = await servicesService.getAllServices(serviceName);
+        const list = await vrackServicesService.getAllServices(serviceName);
         setServices(list);
       } finally {
         setLoading(false);
@@ -84,7 +85,7 @@ export function ServicesTab({ serviceName }: ServicesTabProps) {
 
   if (loading) {
     return (
-      <div className="services-loading">
+      <div className="vrack-services-loading">
         <div className="skeleton-block" />
       </div>
     );
@@ -93,28 +94,28 @@ export function ServicesTab({ serviceName }: ServicesTabProps) {
   const totalServices = services.reduce((acc, s) => acc + s.items.length, 0);
 
   return (
-    <div className="services-tab">
-      <div className="services-header">
+    <div className="vrack-services-tab">
+      <div className="vrack-services-header">
         <h3>{t("title")}</h3>
-        <span className="services-count">{totalServices}</span>
+        <span className="vrack-services-count">{totalServices}</span>
       </div>
 
       {services.length === 0 ? (
-        <div className="services-empty">
+        <div className="vrack-services-empty">
           <p>{t("empty")}</p>
         </div>
       ) : (
-        <div className="services-groups">
+        <div className="vrack-services-groups">
           {services.map((group) => (
-            <div key={group.type} className="services-group">
-              <div className="services-group-header">
-                <div className="services-group-icon">{getTypeIcon(group.type)}</div>
+            <div key={group.type} className="vrack-services-group">
+              <div className="vrack-services-group-header">
+                <div className="vrack-services-group-icon">{getTypeIcon(group.type)}</div>
                 <h4>{t(`types.${group.type}`)}</h4>
-                <span className="services-group-badge">{group.items.length}</span>
+                <span className="vrack-services-group-badge">{group.items.length}</span>
               </div>
-              <div className="services-group-items">
+              <div className="vrack-services-group-items">
                 {group.items.map((item) => (
-                  <div key={item} className="services-item">
+                  <div key={item} className="vrack-services-item">
                     {item}
                   </div>
                 ))}
