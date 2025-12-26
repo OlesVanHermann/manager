@@ -48,8 +48,8 @@ export function MetricsTab({ serviceName }: Props) {
     );
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="privdb-metrics-loading"><div className="privdb-metrics-skeleton" /></div>;
+  if (error) return <div className="privdb-metrics-error">{error}</div>;
 
   return (
     <div className="metrics-tab">
@@ -59,12 +59,12 @@ export function MetricsTab({ serviceName }: Props) {
           <p className="metrics-description">{t("metrics.description")}</p>
         </div>
         <div className="metrics-actions">
-          <select className="form-select" value={period} onChange={(e) => setPeriod(e.target.value as Period)}>
+          <select className="privdb-metrics-select" value={period} onChange={(e) => setPeriod(e.target.value as Period)}>
             <option value="day">{t("metrics.day")}</option>
             <option value="week">{t("metrics.week")}</option>
             <option value="month">{t("metrics.month")}</option>
           </select>
-          <button className="btn btn-secondary btn-sm" onClick={loadMetrics}>↻ {t("metrics.refresh")}</button>
+          <button className="privdb-metrics-btn-secondary-sm" onClick={loadMetrics}>↻ {t("metrics.refresh")}</button>
         </div>
       </div>
 

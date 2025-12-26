@@ -69,8 +69,8 @@ export function DatabaseTab({ serviceName }: Props) {
     return `${quota.value} ${quota.unit}`;
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="wh-database-loading"><div className="wh-database-skeleton" style={{ height: "400px" }} /></div>;
+  if (error) return <div className="wh-database-error">{error}</div>;
 
   return (
     <div className="database-tab">
@@ -113,7 +113,7 @@ export function DatabaseTab({ serviceName }: Props) {
         <div className="empty-state">
           <p>{searchTerm ? t("common.noResult") : t("database.empty")}</p>
           {!searchTerm && (
-            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+            <button className="wh-database-btn-primary" onClick={() => setShowCreateModal(true)}>
               {t("database.createFirst")}
             </button>
           )}

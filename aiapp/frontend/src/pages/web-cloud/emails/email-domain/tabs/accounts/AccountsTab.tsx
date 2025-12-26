@@ -34,8 +34,8 @@ export function AccountsTab({ domain }: Props) {
     load();
   }, [domain]);
 
-  if (loading && accounts.length === 0) return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading && accounts.length === 0) return <div className="emaildomain-accounts-loading"><div className="emaildomain-accounts-skeleton" /><div className="emaildomain-accounts-skeleton" /></div>;
+  if (error) return <div className="emaildomain-accounts-error">{error}</div>;
 
   return (
     <div className="emaildomain-accounts-tab">
@@ -73,7 +73,7 @@ export function AccountsTab({ domain }: Props) {
                     <div className="emaildomain-accounts-usage-text">{formatSize(a.size)} / {formatSize(a.quota)} ({percent}%)</div>
                   </div>
                   <div className="emaildomain-accounts-meta">
-                    <span className={`badge ${a.isBlocked ? 'error' : 'success'}`}>{a.isBlocked ? '✗ Bloqué' : '✓ Actif'}</span>
+                    <span className={`emaildomain-accounts-badge ${a.isBlocked ? 'error' : 'success'}`}>{a.isBlocked ? '✗ Bloqué' : '✓ Actif'}</span>
                   </div>
                 </div>
               </div>

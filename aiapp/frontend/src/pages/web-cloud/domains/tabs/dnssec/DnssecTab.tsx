@@ -78,8 +78,8 @@ export function DnssecTab({ domain }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" style={{ height: "200px" }} />
+      <div className="dnssec-loading">
+        <div className="dnssec-skeleton" style={{ height: "200px" }} />
       </div>
     );
   }
@@ -90,14 +90,14 @@ export function DnssecTab({ domain }: Props) {
 
   return (
     <div className="dnssec-tab">
-      <div className="tab-header">
+      <div className="dnssec-header">
         <div>
           <h3>{t("dnssec.title")}</h3>
-          <p className="tab-description">{t("dnssec.description")}</p>
+          <p className="dnssec-description">{t("dnssec.description")}</p>
         </div>
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="dnssec-error-banner">{error}</div>}
 
       <div className={`dnssec-status-card ${isEnabled ? "enabled" : "disabled"}`}>
         <div className="dnssec-icon">
@@ -133,7 +133,7 @@ export function DnssecTab({ domain }: Props) {
         )}
       </div>
 
-      <div className="info-box">
+      <div className="dnssec-info-box">
         <h4>{t("dnssec.info")}</h4>
         <p>{t("dnssec.infoDesc")}</p>
       </div>

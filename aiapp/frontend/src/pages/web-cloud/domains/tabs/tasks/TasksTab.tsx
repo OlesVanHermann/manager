@@ -161,19 +161,19 @@ export function TasksTab({ name, hasDomain, hasZone }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
-        <div className="skeleton-block" />
+      <div className="dtasks-loading">
+        <div className="dtasks-skeleton" />
+        <div className="dtasks-skeleton" />
       </div>
     );
   }
 
   return (
     <div className="tasks-tab">
-      <div className="tab-header">
+      <div className="dtasks-header">
         <div>
           <h3>{t("title")}</h3>
-          <p className="tab-description">{t("description")}</p>
+          <p className="dtasks-description">{t("description")}</p>
         </div>
         <div className="tab-header-actions">
           <button className="btn-secondary" onClick={loadTasks}>
@@ -204,10 +204,10 @@ export function TasksTab({ name, hasDomain, hasZone }: Props) {
       </div>
 
       {filteredTasks.length === 0 ? (
-        <div className="empty-state">
+        <div className="dtasks-empty">
           <CheckIcon />
           <h3>{t("empty")}</h3>
-          <p className="hint">{t("emptyHint")}</p>
+          <p className="dtasks-hint">{t("emptyHint")}</p>
         </div>
       ) : (
         <div className="tasks-list">

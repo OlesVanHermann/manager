@@ -132,7 +132,7 @@ export function ManageGrantsModal({ serviceName, user, isOpen, onClose, onSucces
           </button>
           <button 
             type="button" 
-            className="btn btn-primary" 
+            className="privdb-modal-btn-primary" 
             onClick={handleSave}
             disabled={saving || loading}
           >

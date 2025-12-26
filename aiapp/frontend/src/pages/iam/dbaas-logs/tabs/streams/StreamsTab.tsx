@@ -39,36 +39,36 @@ export default function StreamsTab({ serviceId }: StreamsTabProps) {
     catch (err) { alert(err instanceof Error ? err.message : "Erreur"); }
   };
 
-  if (loading) return <div className="streams-loading-state">{tCommon("loading")}</div>;
-  if (error) return <div className="streams-error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadStreams}>{tCommon("actions.retry")}</button></div>;
+  if (loading) return <div className="dbaas-logs-streams-loading-state">{tCommon("loading")}</div>;
+  if (error) return <div className="dbaas-logs-streams-error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadStreams}>{tCommon("actions.retry")}</button></div>;
 
   return (
-    <div className="streams-tab">
-      <div className="streams-toolbar">
+    <div className="dbaas-logs-streams-tab">
+      <div className="dbaas-logs-streams-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-primary">{t("create")}</button>
       </div>
       {streams.length === 0 ? (
-        <div className="streams-empty-state"><h2>{t("empty.title")}</h2><p>{t("empty.description")}</p></div>
+        <div className="dbaas-logs-streams-empty-state"><h2>{t("empty.title")}</h2><p>{t("empty.description")}</p></div>
       ) : (
-        <div className="streams-list">
+        <div className="dbaas-logs-streams-list">
           {streams.map((stream) => (
-            <div key={stream.streamId} className="streams-card">
-              <div className="streams-card-header">
+            <div key={stream.streamId} className="dbaas-logs-streams-card">
+              <div className="dbaas-logs-streams-card-header">
                 <div>
-                  <div className="streams-title">{stream.title}</div>
-                  <div className="streams-id">{stream.streamId}</div>
+                  <div className="dbaas-logs-streams-title">{stream.title}</div>
+                  <div className="dbaas-logs-streams-id">{stream.streamId}</div>
                 </div>
-                <div className="streams-actions">
+                <div className="dbaas-logs-streams-actions">
                   <button className="btn btn-sm btn-outline">{tCommon("actions.edit")}</button>
                   <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleDelete(stream.streamId)}>{tCommon("actions.delete")}</button>
                 </div>
               </div>
-              {stream.description && <p className="streams-description">{stream.description}</p>}
-              <div className="streams-details">
-                <div className="streams-detail-item"><span className="streams-detail-label">{t("fields.indexing")}</span><span className="streams-detail-value">{stream.indexingEnabled ? "✅ Activé" : "❌ Désactivé"}</span></div>
-                <div className="streams-detail-item"><span className="streams-detail-label">{t("fields.websocket")}</span><span className="streams-detail-value">{stream.webSocketEnabled ? "✅ Activé" : "❌ Désactivé"}</span></div>
-                <div className="streams-detail-item"><span className="streams-detail-label">{t("fields.created")}</span><span className="streams-detail-value">{new Date(stream.createdAt).toLocaleDateString("fr-FR")}</span></div>
+              {stream.description && <p className="dbaas-logs-streams-description">{stream.description}</p>}
+              <div className="dbaas-logs-streams-details">
+                <div className="dbaas-logs-streams-detail-item"><span className="dbaas-logs-streams-detail-label">{t("fields.indexing")}</span><span className="dbaas-logs-streams-detail-value">{stream.indexingEnabled ? "✅ Activé" : "❌ Désactivé"}</span></div>
+                <div className="dbaas-logs-streams-detail-item"><span className="dbaas-logs-streams-detail-label">{t("fields.websocket")}</span><span className="dbaas-logs-streams-detail-value">{stream.webSocketEnabled ? "✅ Activé" : "❌ Désactivé"}</span></div>
+                <div className="dbaas-logs-streams-detail-item"><span className="dbaas-logs-streams-detail-label">{t("fields.created")}</span><span className="dbaas-logs-streams-detail-value">{new Date(stream.createdAt).toLocaleDateString("fr-FR")}</span></div>
               </div>
             </div>
           ))}

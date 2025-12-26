@@ -258,10 +258,10 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
   // ---------- RENDER LOADING ----------
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
-        <div className="skeleton-block" />
-        <div className="skeleton-block" />
+      <div className="redir-loading">
+        <div className="redir-skeleton" />
+        <div className="redir-skeleton" />
+        <div className="redir-skeleton" />
       </div>
     );
   }
@@ -270,10 +270,10 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
   if (notSupported) {
     return (
       <div className="redirections-tab">
-        <div className="tab-header">
+        <div className="redir-header">
           <div>
             <h3>{t("title")}</h3>
-            <p className="tab-description">{t("description")}</p>
+            <p className="redir-description">{t("description")}</p>
           </div>
         </div>
 
@@ -285,7 +285,7 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
           </div>
         </div>
 
-        <div className="info-box">
+        <div className="redir-info-box">
           <h4>{t("info")}</h4>
           <p>{t("infoDesc")}</p>
         </div>
@@ -297,10 +297,10 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
   return (
     <div className="redirections-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="redir-header">
         <div>
           <h3>{t("title")}</h3>
-          <p className="tab-description">{t("description")}</p>
+          <p className="redir-description">{t("description")}</p>
         </div>
         <div className="tab-header-actions">
           <button className="btn-primary" onClick={openCreateModal}>
@@ -310,16 +310,16 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
       </div>
 
       {/* Error */}
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="redir-error-banner">{error}</div>}
 
       {/* Empty state */}
       {redirections.length === 0 && !error ? (
-        <div className="empty-state">
+        <div className="redir-empty">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
           </svg>
           <h3>{t("empty")}</h3>
-          <p className="hint">{t("emptyHint")}</p>
+          <p className="redir-hint">{t("emptyHint")}</p>
           <button className="btn-primary" onClick={openCreateModal}>
             <PlusIcon /> {t("add")}
           </button>
@@ -333,8 +333,8 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
                 <span className={`redirection-type ${getTypeBadgeClass(redir.type)}`}>
                   {getTypeLabel(redir.type)}
                 </span>
-                <div className="card-actions">
-                  <button className="btn-icon" onClick={() => openEditModal(redir)} title={t("edit")}>
+                <div className="redir-card-actions">
+                  <button className="redir-btn-icon" onClick={() => openEditModal(redir)} title={t("edit")}>
                     <EditIcon />
                   </button>
                   <button className="btn-icon btn-icon-danger" onClick={() => handleDeleteClick(redir)} title={t("delete")}>
@@ -343,9 +343,9 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
                 </div>
               </div>
               <div className="redirection-flow">
-                <span className="from">{redir.subDomain || "@"}.{domain}</span>
-                <span className="arrow"><ArrowIcon /></span>
-                <span className="to">{redir.target}</span>
+                <span className="redir-from">{redir.subDomain || "@"}.{domain}</span>
+                <span className="redir-arrow"><ArrowIcon /></span>
+                <span className="redir-to">{redir.target}</span>
               </div>
               {redir.title && <div className="redirection-meta"><strong>{t("metaTitle")}:</strong> {redir.title}</div>}
               {redir.keywords && <div className="redirection-meta"><strong>{t("metaKeywords")}:</strong> {redir.keywords}</div>}
@@ -355,35 +355,35 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
       )}
 
       {/* Info box */}
-      <div className="info-box">
+      <div className="redir-info-box">
         <h4>{t("info")}</h4>
         <p>{t("infoDesc")}</p>
       </div>
 
       {/* Modal Create/Edit */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="redir-modal-overlay" onClick={closeModal}>
+          <div className="redir-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="redir-modal-header">
               <h3>{modalMode === 'create' ? t("modalTitleCreate") : t("modalTitleEdit")}</h3>
-              <button className="btn-icon" onClick={closeModal}><CloseIcon /></button>
+              <button className="redir-btn-icon" onClick={closeModal}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
-              {formError && <div className="form-error">{formError}</div>}
-              <div className="form-group">
+            <div className="redir-modal-body">
+              {formError && <div className="redir-form-error">{formError}</div>}
+              <div className="redir-form-group">
                 <label>{t("type")}</label>
                 <select
                   value={formData.type}
                   onChange={(e) => handleFormChange('type', e.target.value)}
                   disabled={modalMode === 'edit'}
-                  className="form-input"
+                  className="redir-input"
                 >
                   {REDIRECTION_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>{t(type.labelKey)}</option>
                   ))}
                 </select>
               </div>
-              <div className="form-group">
+              <div className="redir-form-group">
                 <label>{t("subdomain")}</label>
                 <div className="input-with-suffix">
                   <input
@@ -391,47 +391,47 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
                     value={formData.subDomain}
                     onChange={(e) => handleFormChange('subDomain', e.target.value)}
                     placeholder="www"
-                    className="form-input"
+                    className="redir-input"
                     disabled={modalMode === 'edit'}
                   />
                   <span className="input-suffix">.{domain}</span>
                 </div>
                 <small className="form-hint">{t("subdomainHint")}</small>
               </div>
-              <div className="form-group">
+              <div className="redir-form-group">
                 <label>{t("target")} *</label>
                 <input
                   type="text"
                   value={formData.target}
                   onChange={(e) => handleFormChange('target', e.target.value)}
                   placeholder="https://example.com"
-                  className="form-input"
+                  className="redir-input"
                   required
                 />
               </div>
               {formData.type === 'invisible' && (
                 <>
-                  <div className="form-group">
+                  <div className="redir-form-group">
                     <label>{t("metaTitle")}</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => handleFormChange('title', e.target.value)}
                       placeholder={t("metaTitlePlaceholder")}
-                      className="form-input"
+                      className="redir-input"
                     />
                   </div>
-                  <div className="form-group">
+                  <div className="redir-form-group">
                     <label>{t("metaKeywords")}</label>
                     <input
                       type="text"
                       value={formData.keywords}
                       onChange={(e) => handleFormChange('keywords', e.target.value)}
                       placeholder={t("metaKeywordsPlaceholder")}
-                      className="form-input"
+                      className="redir-input"
                     />
                   </div>
-                  <div className="form-group">
+                  <div className="redir-form-group">
                     <label>{t("metaDescription")}</label>
                     <textarea
                       value={formData.description}
@@ -444,7 +444,7 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
                 </>
               )}
             </div>
-            <div className="modal-footer">
+            <div className="redir-modal-footer">
               <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
               <button className="btn-primary" onClick={handleSave} disabled={saving}>
                 {saving ? tCommon("loading") : tCommon("actions.save")}
@@ -456,19 +456,19 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
 
       {/* Modal Delete Confirm */}
       {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="redir-modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="redir-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="redir-modal-header">
               <h3>{t("confirmDeleteTitle")}</h3>
-              <button className="btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
+              <button className="redir-btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
+            <div className="redir-modal-body">
               <p>{t("confirmDeleteMessage")}</p>
               <div className="delete-preview">
                 <strong>{deleteConfirm.subDomain || "@"}.{domain}</strong> → {deleteConfirm.target}
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="redir-modal-footer">
               <button className="btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
               <button className="btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>
                 {deleting ? tCommon("loading") : tCommon("actions.delete")}

@@ -27,7 +27,7 @@ export function DomainsTab({ serviceId }: Props) {
     load();
   }, [serviceId]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="zimbra-domains-loading"><div className="zimbra-domains-skeleton" /></div>;
 
   return (
     <div className="zimbra-domains-tab">

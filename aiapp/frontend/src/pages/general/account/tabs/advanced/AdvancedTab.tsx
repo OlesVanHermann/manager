@@ -1,6 +1,6 @@
 // ============================================================
 // ADVANCED TAB - Paramètres avancés du compte
-// Styles: ./AdvancedTab.css (préfixe .advanced-)
+// Styles: ./AdvancedTab.css (préfixe .account-advanced-)
 // Service: ./AdvancedTab.ts (ISOLÉ)
 // ============================================================
 
@@ -127,9 +127,9 @@ export function AdvancedTab() {
   // ---------- LOADING ----------
   if (loading) {
     return (
-      <div className="advanced-content">
-        <div className="advanced-loading">
-          <div className="advanced-spinner"></div>
+      <div className="account-advanced-content">
+        <div className="account-advanced-loading">
+          <div className="account-advanced-spinner"></div>
           <p>{tCommon("loading")}</p>
         </div>
       </div>
@@ -138,78 +138,78 @@ export function AdvancedTab() {
 
   // ---------- RENDER ----------
   return (
-    <div className="advanced-content">
-      {successMessage && <div className="advanced-success-banner">{successMessage}</div>}
-      {error && <div className="advanced-error-banner">{error}</div>}
+    <div className="account-advanced-content">
+      {successMessage && <div className="account-advanced-success-banner">{successMessage}</div>}
+      {error && <div className="account-advanced-error-banner">{error}</div>}
 
       {/* Section Beta */}
-      <div className="advanced-section">
+      <div className="account-advanced-section">
         <h2>{t("beta.title")}</h2>
-        <div className="advanced-box">
+        <div className="account-advanced-box">
           {savingBeta ? (
-            <div className="advanced-spinner advanced-spinner-sm"></div>
+            <div className="account-advanced-spinner advanced-spinner-sm"></div>
           ) : (
-            <label className="advanced-checkbox-container">
+            <label className="account-advanced-checkbox-container">
               <input
                 type="checkbox"
                 checked={betaEnabled}
                 onChange={(e) => handleBetaChange(e.target.checked)}
                 disabled={savingBeta}
               />
-              <span className="advanced-checkmark"></span>
-              <span className="advanced-checkbox-label">{t("beta.enableLabel")}</span>
+              <span className="account-advanced-checkmark"></span>
+              <span className="account-advanced-checkbox-label">{t("beta.enableLabel")}</span>
             </label>
           )}
         </div>
       </div>
 
       {/* Section Développeur */}
-      <div className="advanced-section">
+      <div className="account-advanced-section">
         <h2>{t("developer.title")}</h2>
 
-        <div className="advanced-features-grid">
-          <div className="advanced-feature-card">
-            <div className="advanced-feature-icon">
+        <div className="account-advanced-features-grid">
+          <div className="account-advanced-feature-card">
+            <div className="account-advanced-feature-icon">
               <IconDesktop />
             </div>
             <p>{t("developer.features.openSource")}</p>
           </div>
-          <div className="advanced-feature-card">
-            <div className="advanced-feature-icon">
+          <div className="account-advanced-feature-card">
+            <div className="account-advanced-feature-icon">
               <IconPuzzle />
             </div>
             <p>{t("developer.features.components")}</p>
           </div>
-          <div className="advanced-feature-card">
-            <div className="advanced-feature-icon">
+          <div className="account-advanced-feature-card">
+            <div className="account-advanced-feature-icon">
               <IconCode />
             </div>
             <p>{t("developer.features.apiConsole")}</p>
           </div>
         </div>
 
-        <div className="advanced-box">
-          <label className="advanced-toggle-container">
-            <div className="advanced-toggle-switch">
+        <div className="account-advanced-box">
+          <label className="account-advanced-toggle-container">
+            <div className="account-advanced-toggle-switch">
               <input
                 type="checkbox"
                 checked={developerMode}
                 onChange={(e) => handleDeveloperModeChange(e.target.checked)}
                 disabled={savingDev}
               />
-              <span className="advanced-toggle-slider"></span>
+              <span className="account-advanced-toggle-slider"></span>
             </div>
-            <span className="advanced-toggle-label">
+            <span className="account-advanced-toggle-label">
               {savingDev ? t("developer.saving") : t("developer.modeLabel")}
             </span>
           </label>
         </div>
 
         <h3>{t("developer.joinUs")}</h3>
-        <ul className="advanced-links-list">
+        <ul className="account-advanced-links-list">
           <li>
             <a href="https://github.com/ovh" target="_blank" rel="noopener noreferrer">
-              <span className="advanced-link-icon">
+              <span className="account-advanced-link-icon">
                 <IconGithub />
               </span>
               https://github.com/ovh
@@ -217,7 +217,7 @@ export function AdvancedTab() {
           </li>
           <li>
             <a href="https://github.com/ovh/manager/discussions" target="_blank" rel="noopener noreferrer">
-              <span className="advanced-link-icon">
+              <span className="account-advanced-link-icon">
                 <IconChat />
               </span>
               https://github.com/ovh/manager/discussions

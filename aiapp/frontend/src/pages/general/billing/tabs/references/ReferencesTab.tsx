@@ -52,10 +52,10 @@ export function ReferencesTab({ credentials }: TabProps) {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "actif": return <span className="references-badge references-badge-success">{t("references.status.active")}</span>;
-      case "inactif": return <span className="references-badge references-badge-warning">{t("references.status.inactive")}</span>;
-      case "desactivate": return <span className="references-badge references-badge-error">{t("references.status.disabled")}</span>;
-      default: return <span className="references-badge">{status}</span>;
+      case "actif": return <span className="billing-references-badge references-badge-success">{t("references.status.active")}</span>;
+      case "inactif": return <span className="billing-references-badge references-badge-warning">{t("references.status.inactive")}</span>;
+      case "desactivate": return <span className="billing-references-badge references-badge-error">{t("references.status.disabled")}</span>;
+      default: return <span className="billing-references-badge">{status}</span>;
     }
   };
 
@@ -100,9 +100,9 @@ export function ReferencesTab({ credentials }: TabProps) {
 
   if (loading) {
     return (
-      <div className="references-panel">
-        <div className="references-loading-state">
-          <div className="references-spinner"></div>
+      <div className="billing-references-panel">
+        <div className="billing-references-loading-state">
+          <div className="billing-references-spinner"></div>
           <p>{t("references.loading")}</p>
         </div>
       </div>
@@ -111,10 +111,10 @@ export function ReferencesTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="references-panel">
-        <div className="references-error-banner">
+      <div className="billing-references-panel">
+        <div className="billing-references-error-banner">
           {error}
-          <button onClick={loadReferences} className="references-btn references-btn-secondary references-btn-sm" style={{ marginLeft: "1rem" }}>
+          <button onClick={loadReferences} className="billing-references-btn references-btn-secondary references-btn-sm" style={{ marginLeft: "1rem" }}>
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -123,52 +123,52 @@ export function ReferencesTab({ credentials }: TabProps) {
   }
 
   return (
-    <div className="references-panel">
-      <div className="references-section-description">
+    <div className="billing-references-panel">
+      <div className="billing-references-section-description">
         <p>{t("references.description")}</p>
       </div>
 
       {showForm && (
-        <div className="references-form-card">
+        <div className="billing-references-form-card">
           <h4>{editingRef ? t("references.modal.editTitle") : t("references.modal.addTitle")}</h4>
           <form onSubmit={handleSubmit}>
-            <div className="references-form-group">
+            <div className="billing-references-form-group">
               <label>{t("references.modal.referenceLabel")} *</label>
-              <input type="text" value={formData.reference} onChange={(e) => setFormData({ ...formData, reference: e.target.value })} required className="references-form-input" placeholder={t("references.modal.referencePlaceholder")} />
+              <input type="text" value={formData.reference} onChange={(e) => setFormData({ ...formData, reference: e.target.value })} required className="billing-references-form-input" placeholder={t("references.modal.referencePlaceholder")} />
             </div>
-            <div className="references-form-row">
-              <div className="references-form-group">
+            <div className="billing-references-form-row">
+              <div className="billing-references-form-group">
                 <label>{t("references.startDate")} *</label>
-                <input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} required className="references-form-input" />
+                <input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} required className="billing-references-form-input" />
               </div>
-              <div className="references-form-group">
-                <label>{t("references.endDate")} <span className="references-optional">({t("references.optional")})</span></label>
-                <input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className="references-form-input" />
+              <div className="billing-references-form-group">
+                <label>{t("references.endDate")} <span className="billing-references-optional">({t("references.optional")})</span></label>
+                <input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className="billing-references-form-input" />
               </div>
             </div>
-            <div className="references-form-actions">
-              <button type="button" onClick={() => setShowForm(false)} className="references-btn references-btn-secondary">{tCommon("actions.cancel")}</button>
-              <button type="submit" disabled={submitting} className="references-btn references-btn-primary">{submitting ? t("references.saving") : (editingRef ? tCommon("actions.edit") : tCommon("actions.create"))}</button>
+            <div className="billing-references-form-actions">
+              <button type="button" onClick={() => setShowForm(false)} className="billing-references-btn references-btn-secondary">{tCommon("actions.cancel")}</button>
+              <button type="submit" disabled={submitting} className="billing-references-btn references-btn-primary">{submitting ? t("references.saving") : (editingRef ? tCommon("actions.edit") : tCommon("actions.create"))}</button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="references-toolbar">
-        <span className="references-result-count">{t("references.count", { count: references.length })}</span>
-        {!showForm && <button className="references-btn references-btn-primary references-btn-sm" onClick={openCreateForm}>{references.length > 0 ? t("references.addButton") : t("references.createButton")}</button>}
+      <div className="billing-references-toolbar">
+        <span className="billing-references-result-count">{t("references.count", { count: references.length })}</span>
+        {!showForm && <button className="billing-references-btn references-btn-primary references-btn-sm" onClick={openCreateForm}>{references.length > 0 ? t("references.addButton") : t("references.createButton")}</button>}
       </div>
 
       {references.length === 0 ? (
-        <div className="references-empty-state">
+        <div className="billing-references-empty-state">
           <TagIcon />
           <h3>{t("references.empty.title")}</h3>
           <p>{t("references.empty.description")}</p>
-          {!showForm && <button className="references-btn references-btn-primary" onClick={openCreateForm}>{t("references.createButton")}</button>}
+          {!showForm && <button className="billing-references-btn references-btn-primary" onClick={openCreateForm}>{t("references.createButton")}</button>}
         </div>
       ) : (
-        <div className="references-table-container">
-          <table className="references-table">
+        <div className="billing-references-table-container">
+          <table className="billing-references-table">
             <thead>
               <tr>
                 <th>{t("columns.reference")}</th>
@@ -182,14 +182,14 @@ export function ReferencesTab({ credentials }: TabProps) {
             <tbody>
               {references.map((r) => (
                 <tr key={r.id}>
-                  <td><span className="references-ref-badge">{r.reference}</span></td>
+                  <td><span className="billing-references-ref-badge">{r.reference}</span></td>
                   <td>{formatDateLong(r.creationDate)}</td>
                   <td>{formatDateLong(r.startDate)}</td>
                   <td>{r.endDate ? formatDateLong(r.endDate) : "-"}</td>
                   <td>{getStatusBadge(getDisplayStatus(r))}</td>
-                  <td className="references-actions-cell">
-                    <button className="references-action-btn" title={tCommon("actions.edit")} onClick={() => openEditForm(r)}><EditIcon /></button>
-                    <button className="references-action-btn" title={r.active ? t("references.deactivate") : t("references.reactivate")} onClick={() => toggleStatus(r)}>{r.active ? <PauseIcon /> : <PlayIcon />}</button>
+                  <td className="billing-references-actions-cell">
+                    <button className="billing-references-action-btn" title={tCommon("actions.edit")} onClick={() => openEditForm(r)}><EditIcon /></button>
+                    <button className="billing-references-action-btn" title={r.active ? t("references.deactivate") : t("references.reactivate")} onClick={() => toggleStatus(r)}>{r.active ? <PauseIcon /> : <PlayIcon />}</button>
                   </td>
                 </tr>
               ))}

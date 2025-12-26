@@ -108,51 +108,51 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
       </section>
 
       {/* Informations générales */}
-      <section className="general-info-section">
+      <section className="privdb-general-info-section">
         <h4>{t("general.title")}</h4>
-        <div className="general-info-grid">
-          <div className="general-info-item">
+        <div className="privdb-general-info-grid">
+          <div className="privdb-general-info-item">
             <label>{t("general.serviceName")}</label>
-            <span className="font-mono">{details.serviceName}</span>
+            <span className="privdb-general-font-mono">{details.serviceName}</span>
           </div>
-          <div className="general-info-item">
+          <div className="privdb-general-info-item">
             <label>{t("general.type")}</label>
             <span>{details.type} {details.version}</span>
           </div>
-          <div className="general-info-item">
+          <div className="privdb-general-info-item">
             <label>{t("general.offer")}</label>
             <span>{details.offer}</span>
           </div>
-          <div className="general-info-item">
+          <div className="privdb-general-info-item">
             <label>{t("general.hostname")}</label>
             <span className="font-mono general-copyable">
               {details.hostname}
               <button className="general-copy-btn" onClick={() => navigator.clipboard.writeText(details.hostname)}>📋</button>
             </span>
           </div>
-          <div className="general-info-item">
+          <div className="privdb-general-info-item">
             <label>{t("general.port")}</label>
-            <span className="font-mono">{details.port}</span>
+            <span className="privdb-general-font-mono">{details.port}</span>
           </div>
           {details.hostnameFtp && (
-            <div className="general-info-item">
+            <div className="privdb-general-info-item">
               <label>{t("general.hostnameFtp")}</label>
-              <span className="font-mono">{details.hostnameFtp}:{details.portFtp}</span>
+              <span className="privdb-general-font-mono">{details.hostnameFtp}:{details.portFtp}</span>
             </div>
           )}
-          <div className="general-info-item">
+          <div className="privdb-general-info-item">
             <label>{t("general.datacenter")}</label>
             <span>{details.datacenter || 'EU'}</span>
           </div>
-          <div className="general-info-item">
+          <div className="privdb-general-info-item">
             <label>{t("general.infrastructure")}</label>
-            <span className="badge info">{details.infrastructure || 'docker'}</span>
+            <span className="privdb-general-badge info">{details.infrastructure || 'docker'}</span>
           </div>
         </div>
       </section>
 
       {/* Ressources */}
-      <section className="general-info-section">
+      <section className="privdb-general-info-section">
         <h4>{t("general.resources")}</h4>
         
         {/* Espace disque */}
@@ -172,15 +172,15 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
           <span className="general-quota-percent">{getQuotaPercent()}% utilisé</span>
         </div>
 
-        <div className="general-info-grid" style={{ marginTop: 'var(--space-4)' }}>
+        <div className="privdb-general-info-grid" style={{ marginTop: 'var(--space-4)' }}>
           {details.ram && (
-            <div className="general-info-item">
+            <div className="privdb-general-info-item">
               <label>{t("general.ram")}</label>
               <span>{details.ram.value} {details.ram.unit}</span>
             </div>
           )}
           {details.cpu && (
-            <div className="general-info-item">
+            <div className="privdb-general-info-item">
               <label>{t("general.cpu")}</label>
               <span>{details.cpu} vCore(s)</span>
             </div>
@@ -190,20 +190,20 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
 
       {/* Informations service */}
       {serviceInfos && (
-        <section className="general-info-section">
+        <section className="privdb-general-info-section">
           <h4>{t("general.serviceInfo")}</h4>
-          <div className="general-info-grid">
-            <div className="general-info-item">
+          <div className="privdb-general-info-grid">
+            <div className="privdb-general-info-item">
               <label>{t("general.creation")}</label>
               <span>{formatDate(serviceInfos.creation)}</span>
             </div>
-            <div className="general-info-item">
+            <div className="privdb-general-info-item">
               <label>{t("general.expiration")}</label>
               <span>{formatDate(serviceInfos.expiration)}</span>
             </div>
-            <div className="general-info-item">
+            <div className="privdb-general-info-item">
               <label>{t("general.autoRenew")}</label>
-              <span className={`badge ${serviceInfos.renew?.automatic ? 'success' : 'warning'}`}>
+              <span className={`privdb-general-badge ${serviceInfos.renew?.automatic ? 'success' : 'warning'}`}>
                 {serviceInfos.renew?.automatic ? 'Activé' : 'Désactivé'}
               </span>
             </div>
@@ -214,8 +214,8 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
       {/* Connexion info */}
       <section className="general-connection-section">
         <h4>{t("general.connectionInfo")}</h4>
-        <div className="general-info-banner">
-          <span className="general-info-icon">ℹ</span>
+        <div className="privdb-general-info-banner">
+          <span className="privdb-general-info-icon">ℹ</span>
           <div>
             <p><strong>Chaîne de connexion:</strong></p>
             <code className="general-connection-string">

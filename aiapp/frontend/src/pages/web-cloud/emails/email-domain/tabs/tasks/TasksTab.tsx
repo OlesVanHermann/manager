@@ -30,8 +30,8 @@ export function TasksTab({ domain }: Props) {
     load();
   }, [domain]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="emaildomain-tasks-loading"><div className="emaildomain-tasks-skeleton" /></div>;
+  if (error) return <div className="emaildomain-tasks-error">{error}</div>;
 
   return (
     <div className="emaildomain-tasks-tab">
@@ -51,8 +51,8 @@ export function TasksTab({ domain }: Props) {
               const s = getStatusBadge(task.status);
               return (
                 <tr key={task.id}>
-                  <td className="font-mono">{task.action}</td>
-                  <td><span className={`badge ${s.cls}`}>{s.icon} {task.status}</span></td>
+                  <td className="emaildomain-tasks-font-mono">{task.action}</td>
+                  <td><span className={`emaildomain-tasks-badge ${s.cls}`}>{s.icon} {task.status}</span></td>
                   <td>{new Date(task.date).toLocaleString('fr-FR')}</td>
                 </tr>
               );

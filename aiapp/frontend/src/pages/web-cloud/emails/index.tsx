@@ -4,11 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { emailDomainService } from "../../../services/web-cloud.email-domain";
-import { emailProService } from "../../../services/web-cloud.email-pro";
-import { exchangeService } from "../../../services/web-cloud.exchange";
-import { officeService } from "../../../services/web-cloud.office";
-import { zimbraService } from "../../../services/web-cloud.zimbra";
+import { emailsPageService, EmailsCounts } from "./emailsPage.service";
 import EmailDomainPage from "./email-domain";
 import EmailProPage from "./email-pro";
 import ExchangePage from "./exchange";
@@ -22,30 +18,12 @@ export default function EmailsPage() {
   const { t } = useTranslation("web-cloud/emails/index");
 
   const [activeSection, setActiveSection] = useState<SubSection>("email-domain");
-  const [counts, setCounts] = useState({ emailDomain: 0, emailPro: 0, exchange: 0, office: 0, zimbra: 0 });
+  const [counts, setCounts] = useState<EmailsCounts>({ emailDomain: 0, emailPro: 0, exchange: 0, office: 0, zimbra: 0 });
 
   useEffect(() => {
-    const loadCounts = async () => {
-      try {
-        const [emailDomains, emailPros, exchanges, offices, zimbras] = await Promise.all([
-          emailDomainService.listDomains(),
-          emailProService.listServices(),
-          exchangeService.listOrganizations(),
-          officeService.listTenants(),
-          zimbraService.listPlatforms(),
-        ]);
-        setCounts({
-          emailDomain: emailDomains.length,
-          emailPro: emailPros.length,
-          exchange: exchanges.length,
-          office: offices.length,
-          zimbra: zimbras.length,
-        });
-      } catch (err) {
-        console.error("Failed to load counts:", err);
-      }
-    };
-    loadCounts();
+    emailsPageService.loadAllCounts()
+      .then(setCounts)
+      .catch((err) => console.error("Failed to load counts:", err));
   }, []);
 
   const sections: { id: SubSection; labelKey: string; count: number }[] = [

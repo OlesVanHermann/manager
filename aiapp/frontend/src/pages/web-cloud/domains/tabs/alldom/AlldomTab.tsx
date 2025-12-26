@@ -95,7 +95,7 @@ export function AlldomTab() {
 
   // Error
   if (error) {
-    return <div className="error-state">{error}</div>;
+    return <div className="alldom-error">{error}</div>;
   }
 
   // Empty
@@ -139,7 +139,7 @@ export function AlldomTab() {
           <div className="domains-alldom-info">
             <div className="domains-alldom-info-header">
               <h4>{selected.serviceName}</h4>
-              <span className="badge info">{getTypeLabel(selected.pack.type)}</span>
+              <span className="alldom-badge info">{getTypeLabel(selected.pack.type)}</span>
             </div>
             <div className="domains-alldom-info-grid">
               <div className="domains-alldom-info-item">
@@ -168,7 +168,7 @@ export function AlldomTab() {
                 </div>
                 <div className="domains-alldom-info-item">
                   <label>{t("alldom.renewMode")}</label>
-                  <span className={`badge ${selected.serviceInfo.renewMode === 'automatic' ? 'success' : 'warning'}`}>
+                  <span className={`alldom-badge ${selected.serviceInfo.renewMode === 'automatic' ? 'success' : 'warning'}`}>
                     {selected.serviceInfo.renewMode === 'automatic' ? t("alldom.automatic") : t("alldom.manual")}
                   </span>
                 </div>
@@ -203,9 +203,9 @@ export function AlldomTab() {
               <tbody>
                 {filteredDomains.map(d => (
                   <tr key={d.name}>
-                    <td className="font-mono">{d.name}</td>
+                    <td className="alldom-font-mono">{d.name}</td>
                     <td>
-                      <span className={`badge ${d.registrationStatus === 'REGISTERED' ? 'success' : 'inactive'}`}>
+                      <span className={`alldom-badge ${d.registrationStatus === 'REGISTERED' ? 'success' : 'inactive'}`}>
                         {d.registrationStatus === 'REGISTERED' ? '✓' : '○'} {d.registrationStatus}
                       </span>
                     </td>
@@ -219,7 +219,7 @@ export function AlldomTab() {
           {/* Actions */}
           {!selected.serviceInfo?.isTerminating && (
             <div className="domains-alldom-actions">
-              <button className="btn btn-danger" onClick={handleTerminate}>
+              <button className="alldom-btn-danger" onClick={handleTerminate}>
                 {t("alldom.terminate")}
               </button>
             </div>

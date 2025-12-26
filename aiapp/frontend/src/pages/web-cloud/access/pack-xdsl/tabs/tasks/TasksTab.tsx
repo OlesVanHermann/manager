@@ -34,11 +34,11 @@ export function TasksTab({ packName }: Props) {
       error: { cls: 'error', icon: '✗' }
     };
     const s = map[status] || { cls: 'inactive', icon: '?' };
-    return <span className={`badge ${s.cls}`}>{s.icon} {status}</span>;
+    return <span className={`xdsl-tasks-badge ${s.cls}`}>{s.icon} {status}</span>;
   };
 
   if (loading) {
-    return <div className="tab-loading"><div className="skeleton-block" /></div>;
+    return <div className="xdsl-tasks-loading"><div className="xdsl-tasks-skeleton" /></div>;
   }
 
   return (

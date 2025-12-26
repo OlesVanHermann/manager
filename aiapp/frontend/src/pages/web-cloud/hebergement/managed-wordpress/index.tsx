@@ -116,9 +116,9 @@ export default function ManagedWordPressPage() {
 
         <main className="hosting-main">
           {loading ? (
-            <div className="tab-loading">Chargement...</div>
+            <div className="mwp-page-loading">Chargement...</div>
           ) : error ? (
-            <div className="error-state">{error}</div>
+            <div className="mwp-page-error">{error}</div>
           ) : selectedService && details ? (
             <div className="service-detail">
               <div className="detail-header-domains">

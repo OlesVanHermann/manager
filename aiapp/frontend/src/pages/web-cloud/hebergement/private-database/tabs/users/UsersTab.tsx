@@ -60,8 +60,8 @@ export function UsersTab({ serviceName }: Props) {
     return map[grant] || map.none;
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="privdb-users-loading"><div className="privdb-users-skeleton" /></div>;
+  if (error) return <div className="privdb-users-error">{error}</div>;
 
   return (
     <div className="users-tab">
@@ -72,7 +72,7 @@ export function UsersTab({ serviceName }: Props) {
         </div>
         <div className="users-actions">
           <span className="users-count">{users.length} {t("users.count")}</span>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
+          <button className="privdb-users-btn-primary-sm" onClick={() => setShowCreateModal(true)}>
             + {t("users.create")}
           </button>
         </div>
@@ -81,7 +81,7 @@ export function UsersTab({ serviceName }: Props) {
       {users.length === 0 ? (
         <div className="users-empty">
           <p>{t("users.empty")}</p>
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+          <button className="privdb-users-btn-primary" onClick={() => setShowCreateModal(true)}>
             {t("users.createFirst")}
           </button>
         </div>
@@ -98,7 +98,7 @@ export function UsersTab({ serviceName }: Props) {
           <tbody>
             {users.map(user => (
               <tr key={user.userName}>
-                <td className="font-mono">{user.userName}</td>
+                <td className="privdb-users-font-mono">{user.userName}</td>
                 <td>
                   {user.databases && user.databases.length > 0 ? (
                     <div className="users-grants-list">
@@ -111,7 +111,7 @@ export function UsersTab({ serviceName }: Props) {
                         );
                       })}
                       {user.databases.length > 3 && (
-                        <span className="badge inactive">+{user.databases.length - 3}</span>
+                        <span className="privdb-users-badge inactive">+{user.databases.length - 3}</span>
                       )}
                     </div>
                   ) : (
@@ -122,19 +122,19 @@ export function UsersTab({ serviceName }: Props) {
                 <td>
                   <div className="users-action-buttons">
                     <button 
-                      className="btn btn-secondary btn-sm" 
+                      className="privdb-users-btn-secondary-sm" 
                       onClick={() => setSelectedUser(user)}
                     >
                       {t("users.manageGrants")}
                     </button>
                     <button 
-                      className="btn btn-secondary btn-sm" 
+                      className="privdb-users-btn-secondary-sm" 
                       onClick={() => handleChangePassword(user.userName)}
                     >
                       {t("users.changePassword")}
                     </button>
                     <button 
-                      className="btn-icon btn-danger-icon" 
+                      className="privdb-users-btn-icon-danger" 
                       onClick={() => handleDelete(user.userName)}
                       title={t("users.delete")}
                     >

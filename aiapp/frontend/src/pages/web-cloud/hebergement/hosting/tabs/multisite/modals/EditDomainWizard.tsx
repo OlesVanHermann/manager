@@ -352,7 +352,7 @@ export function EditDomainWizard({ serviceName, domain, hasCdn, isOpen, onClose,
         <div className="modal-footer">
           <button 
             type="button" 
-            className="btn btn-secondary" 
+            className="wh-modal-btn-secondary" 
             onClick={step === 1 ? onClose : () => setStep(1)}
             disabled={loading}
           >
@@ -362,7 +362,7 @@ export function EditDomainWizard({ serviceName, domain, hasCdn, isOpen, onClose,
           {step === 1 ? (
             <button 
               type="button" 
-              className="btn btn-primary" 
+              className="wh-modal-btn-primary" 
               onClick={() => setStep(2)}
               disabled={!isPathValid(path)}
             >
@@ -371,7 +371,7 @@ export function EditDomainWizard({ serviceName, domain, hasCdn, isOpen, onClose,
           ) : (
             <button 
               type="button" 
-              className="btn btn-primary" 
+              className="wh-modal-btn-primary" 
               onClick={handleSubmit}
               disabled={loading}
             >

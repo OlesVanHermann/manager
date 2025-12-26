@@ -79,24 +79,24 @@ export function CronTab({ serviceName }: Props) {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="wh-cron-loading"><div className="wh-cron-skeleton" style={{ height: "400px" }} /></div>;
+  if (error) return <div className="wh-cron-error">{error}</div>;
 
   return (
     <div className="cron-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="wh-cron-header">
         <div>
           <h3>{t("cron.title")}</h3>
-          <p className="tab-description">
+          <p className="wh-cron-description">
             {t("cron.description")} 
-            <a href="https://help.ovhcloud.com/csm/fr-web-hosting-cron" target="_blank" rel="noopener noreferrer" className="link-action" style={{ marginLeft: "0.5rem" }}>
+            <a href="https://help.ovhcloud.com/csm/fr-web-hosting-cron" target="_blank" rel="noopener noreferrer" className="wh-cron-link-action" style={{ marginLeft: "0.5rem" }}>
               Consulter le guide ↗
             </a>
           </p>
         </div>
-        <div className="tab-actions">
-          <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
+        <div className="wh-cron-actions">
+          <button className="wh-cron-btn-primary-sm" onClick={() => setShowCreateModal(true)}>
             + {t("cron.create")}
           </button>
         </div>
@@ -116,17 +116,17 @@ export function CronTab({ serviceName }: Props) {
 
       {/* Table */}
       {paginatedCrons.length === 0 ? (
-        <div className="empty-state">
+        <div className="wh-cron-empty">
           <p>{searchTerm ? t("common.noResult") : t("cron.empty")}</p>
           {!searchTerm && (
-            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+            <button className="wh-cron-btn-primary" onClick={() => setShowCreateModal(true)}>
               {t("cron.createFirst")}
             </button>
           )}
         </div>
       ) : (
         <>
-          <table className="data-table">
+          <table className="wh-cron-table">
             <thead>
               <tr>
                 <th>{t("cron.command")}</th>
@@ -158,12 +158,12 @@ export function CronTab({ serviceName }: Props) {
                   <td>
                     <div className="action-buttons">
                       <button 
-                        className="btn-icon" 
+                        className="wh-cron-btn-icon" 
                         onClick={() => setEditCron(cron)}
                         title={t("cron.edit")}
                       >✏️</button>
                       <button 
-                        className="btn-icon btn-danger-icon" 
+                        className="wh-cron-btn-icon-danger" 
                         onClick={() => handleDelete(cron.id)}
                         title={t("cron.delete")}
                       >🗑</button>
@@ -175,10 +175,10 @@ export function CronTab({ serviceName }: Props) {
           </table>
 
           {totalPages > 1 && (
-            <div className="pagination">
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
-              <span className="pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
+            <div className="wh-cron-pagination">
+              <button className="wh-cron-pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
+              <span className="wh-cron-pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
+              <button className="wh-cron-pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
             </div>
           )}
         </>

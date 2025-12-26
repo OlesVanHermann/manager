@@ -5,7 +5,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
-import { emailProService, EmailProService } from "../../../../services/web-cloud.email-pro";
+import { emailProPageService } from "./emailProPage.service";
+import type { EmailProService } from "./email-pro.types";
 import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
 import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
 import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
@@ -37,7 +38,7 @@ export default function EmailProPage() {
     try {
       setLoading(true);
       setError(null);
-      const names = await emailProService.listServices();
+      const names = await emailProPageService.listServices();
       const items: ServiceItem[] = names.map((name) => ({ id: name, name: name }));
       setServices(items);
       if (items.length > 0 && !selectedService) {
@@ -55,7 +56,7 @@ export default function EmailProPage() {
   // ---------- LOAD DETAILS ----------
   useEffect(() => {
     if (!selectedService) return;
-    emailProService.getService(selectedService).then(setServiceDetails).catch(() => setServiceDetails(null));
+    emailProPageService.getService(selectedService).then(setServiceDetails).catch(() => setServiceDetails(null));
   }, [selectedService]);
 
   // ---------- TABS ----------

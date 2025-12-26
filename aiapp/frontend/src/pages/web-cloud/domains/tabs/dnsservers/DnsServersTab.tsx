@@ -177,9 +177,9 @@ export function DnsServersTab({ domain }: Props) {
   // ---------- RENDER LOADING ----------
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
-        <div className="skeleton-block" />
+      <div className="dnsservers-loading">
+        <div className="dnsservers-skeleton" />
+        <div className="dnsservers-skeleton" />
       </div>
     );
   }
@@ -188,10 +188,10 @@ export function DnsServersTab({ domain }: Props) {
   return (
     <div className="dns-servers-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="dnsservers-header">
         <div>
           <h3>{t("dnsServers.title")}</h3>
-          <p className="tab-description">{t("dnsServers.description")}</p>
+          <p className="dnsservers-description">{t("dnsServers.description")}</p>
         </div>
         <div className="tab-header-actions">
           <button className="btn-secondary" onClick={openEditModal}>
@@ -201,11 +201,11 @@ export function DnsServersTab({ domain }: Props) {
       </div>
 
       {/* Error */}
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="dnsservers-error-banner">{error}</div>}
 
       {/* Empty state */}
       {servers.length === 0 && !error ? (
-        <div className="empty-state">
+        <div className="dnsservers-empty">
           <ServerIcon />
           <h3>{t("dnsServers.empty")}</h3>
         </div>
@@ -220,7 +220,7 @@ export function DnsServersTab({ domain }: Props) {
               <div className="dns-server-info">
                 <h4>{server.host}</h4>
                 {server.ip && <p>IP: {server.ip}</p>}
-                {!server.isUsed && <span className="badge badge-warning">{t("dnsServers.notUsed")}</span>}
+                {!server.isUsed && <span className="dnsservers-badge badge-warning">{t("dnsServers.notUsed")}</span>}
               </div>
             </div>
           ))}
@@ -228,27 +228,27 @@ export function DnsServersTab({ domain }: Props) {
       )}
 
       {/* Info box */}
-      <div className="info-box">
+      <div className="dnsservers-info-box">
         <h4>{t("dnsServers.info")}</h4>
         <p>{t("dnsServers.infoDesc")}</p>
       </div>
 
       {/* Modal Edit */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="dnsservers-modal-overlay" onClick={closeModal}>
+          <div className="dnsservers-modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="dnsservers-modal-header">
               <h3>{t("dnsServers.modalTitle")}</h3>
-              <button className="btn-icon" onClick={closeModal}><CloseIcon /></button>
+              <button className="dnsservers-btn-icon" onClick={closeModal}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
+            <div className="dnsservers-modal-body">
               {/* Warning */}
               <div className="warning-box">
                 <WarningIcon />
                 <p>{t("dnsServers.warning")}</p>
               </div>
 
-              {formError && <div className="form-error">{formError}</div>}
+              {formError && <div className="dnsservers-form-error">{formError}</div>}
 
               <div className="dns-servers-form">
                 <div className="form-header-row">
@@ -296,7 +296,7 @@ export function DnsServersTab({ domain }: Props) {
                 <p>{t("dnsServers.formHint")}</p>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="dnsservers-modal-footer">
               <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
               <button className="btn-primary" onClick={handleSave} disabled={saving}>
                 {saving ? tCommon("loading") : tCommon("actions.save")}

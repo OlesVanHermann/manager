@@ -82,9 +82,9 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
 
   if (error) {
     return (
-      <div className="error-state">
+      <div className="privdb-databases-error">
         <p>{error}</p>
-        <button className="btn btn-primary" onClick={loadDatabases}>
+        <button className="privdb-databases-btn-primary" onClick={loadDatabases}>
           {t("common.retry")}
         </button>
       </div>
@@ -98,7 +98,7 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
           <h3>{t("databases.title")}</h3>
           <p className="databases-description">{t("databases.description")}</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+        <button className="privdb-databases-btn-primary" onClick={() => setShowCreateModal(true)}>
           {t("databases.create")}
         </button>
       </div>
@@ -107,7 +107,7 @@ export function DatabasesTab({ serviceName, dbType }: Props) {
         <div className="databases-empty">
           <span className="databases-empty-icon">🗄️</span>
           <p>{t("databases.empty")}</p>
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+          <button className="privdb-databases-btn-primary" onClick={() => setShowCreateModal(true)}>
             {t("databases.createFirst")}
           </button>
         </div>

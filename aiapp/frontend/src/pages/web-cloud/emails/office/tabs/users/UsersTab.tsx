@@ -27,7 +27,7 @@ export function UsersTab({ tenantId }: Props) {
     load();
   }, [tenantId]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /></div>;
+  if (loading) return <div className="office-users-loading"><div className="office-users-skeleton" /><div className="office-users-skeleton" /></div>;
 
   return (
     <div className="office-users-tab">

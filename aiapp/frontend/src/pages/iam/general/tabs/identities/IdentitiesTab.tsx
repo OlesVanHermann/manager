@@ -14,7 +14,7 @@ import "./IdentitiesTab.css";
 
 function UserIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="identities-empty-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="iam-identities-empty-icon">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
     </svg>
   );
@@ -60,19 +60,19 @@ export default function IdentitiesTab() {
   // ---------- HELPERS ----------
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
-      OK: { label: t("status.active"), className: "identities-badge-success" },
-      DISABLED: { label: t("status.disabled"), className: "identities-badge-error" },
-      PASSWORD_CHANGE_REQUIRED: { label: t("status.passwordChange"), className: "identities-badge-warning" },
+      OK: { label: t("status.active"), className: "iam-identities-badge-success" },
+      DISABLED: { label: t("status.disabled"), className: "iam-identities-badge-error" },
+      PASSWORD_CHANGE_REQUIRED: { label: t("status.passwordChange"), className: "iam-identities-badge-warning" },
     };
-    return statusMap[status] || { label: status, className: "identities-badge-neutral" };
+    return statusMap[status] || { label: status, className: "iam-identities-badge-neutral" };
   };
 
   // ---------- RENDER ----------
   if (loading) {
     return (
-      <div className="identities-tab">
-        <div className="identities-loading-state">
-          <div className="identities-spinner"></div>
+      <div className="iam-identities-tab">
+        <div className="iam-identities-loading-state">
+          <div className="iam-identities-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
@@ -81,8 +81,8 @@ export default function IdentitiesTab() {
 
   if (error) {
     return (
-      <div className="identities-tab">
-        <div className="identities-error-banner">
+      <div className="iam-identities-tab">
+        <div className="iam-identities-error-banner">
           <span>{error}</span>
           <button onClick={loadUsers} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>
             {tCommon("actions.refresh")}
@@ -93,27 +93,27 @@ export default function IdentitiesTab() {
   }
 
   return (
-    <div className="identities-tab">
-      <div className="identities-section-intro">
+    <div className="iam-identities-tab">
+      <div className="iam-identities-section-intro">
         <h2>{t("title")}</h2>
         <p>{t("description")}</p>
       </div>
 
-      <div className="identities-toolbar">
-        <span className="identities-result-count">{t("count", { count: users.length })}</span>
+      <div className="iam-identities-toolbar">
+        <span className="iam-identities-result-count">{t("count", { count: users.length })}</span>
         <button className="btn btn-primary btn-sm">{t("addButton")}</button>
       </div>
 
       {users.length === 0 ? (
-        <div className="identities-empty-state">
+        <div className="iam-identities-empty-state">
           <UserIcon />
           <h3>{t("empty.title")}</h3>
           <p>{t("empty.description")}</p>
           <button className="btn btn-primary">{t("addButton")}</button>
         </div>
       ) : (
-        <div className="identities-table-container">
-          <table className="identities-table">
+        <div className="iam-identities-table-container">
+          <table className="iam-identities-table">
             <thead>
               <tr>
                 <th>{t("columns.login")}</th>
@@ -134,7 +134,7 @@ export default function IdentitiesTab() {
                     <td>
                       <span className={`identities-badge ${status.className}`}>{status.label}</span>
                     </td>
-                    <td className="identities-actions-cell">
+                    <td className="iam-identities-actions-cell">
                       <button className="btn btn-outline btn-sm">{t("actions.edit")}</button>
                     </td>
                   </tr>

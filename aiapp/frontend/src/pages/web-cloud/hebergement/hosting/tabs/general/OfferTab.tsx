@@ -151,7 +151,7 @@ export function OfferTab({ serviceName }: OfferTabProps) {
                   {offer.planCode === currentOffer && (
                     <span className="badge badge-info">{t("currentOffer")}</span>
                   )}
-                  <button className="btn btn-primary">{t("selectOffer")}</button>
+                  <button className="wh-general-btn-primary">{t("selectOffer")}</button>
                 </div>
               ))}
             </div>

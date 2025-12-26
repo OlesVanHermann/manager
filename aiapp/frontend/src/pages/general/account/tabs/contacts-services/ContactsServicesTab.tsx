@@ -1,6 +1,6 @@
 // ============================================================
 // CONTACTS SERVICES TAB - Liste des contacts par service
-// Styles: ./ContactsServicesTab.css (préfixe .contacts-services-)
+// Styles: ./ContactsServicesTab.css (préfixe .account-contacts-services-)
 // Service: ./ContactsServicesTab.ts (ISOLÉ)
 // ============================================================
 
@@ -103,9 +103,9 @@ export function ContactsServicesTab() {
   // ---------- LOADING ----------
   if (loading) {
     return (
-      <div className="contacts-services-content">
-        <div className="contacts-services-loading">
-          <div className="contacts-services-spinner"></div>
+      <div className="account-contacts-services-content">
+        <div className="account-contacts-services-loading">
+          <div className="account-contacts-services-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
@@ -115,10 +115,10 @@ export function ContactsServicesTab() {
   // ---------- ERROR ----------
   if (error) {
     return (
-      <div className="contacts-services-content">
-        <div className="contacts-services-error-banner">
+      <div className="account-contacts-services-content">
+        <div className="account-contacts-services-error-banner">
           {error}
-          <button onClick={loadServices} className="contacts-services-btn contacts-services-btn-secondary contacts-services-btn-sm">
+          <button onClick={loadServices} className="account-contacts-services-btn contacts-services-btn-secondary contacts-services-btn-sm">
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -128,21 +128,21 @@ export function ContactsServicesTab() {
 
   // ---------- RENDER ----------
   return (
-    <div className="contacts-services-content">
-      <div className="contacts-services-header">
+    <div className="account-contacts-services-content">
+      <div className="account-contacts-services-header">
         <h2>{t("title")}</h2>
         <p>{t("description")}</p>
       </div>
 
       {services.length === 0 ? (
-        <div className="contacts-services-empty-state">
+        <div className="account-contacts-services-empty-state">
           <p>{t("empty")}</p>
         </div>
       ) : (
         <>
-          <p className="contacts-services-count">{t("count", { count: services.length })}</p>
-          <div className="contacts-services-table-container">
-            <table className="contacts-services-table">
+          <p className="account-contacts-services-count">{t("count", { count: services.length })}</p>
+          <div className="account-contacts-services-table-container">
+            <table className="account-contacts-services-table">
               <thead>
                 <tr>
                   <th>{t("columns.service")}</th>
@@ -156,21 +156,21 @@ export function ContactsServicesTab() {
               <tbody>
                 {services.map((service, idx) => (
                   <tr key={idx}>
-                    <td className="contacts-services-service-name">{service.serviceName}</td>
+                    <td className="account-contacts-services-service-name">{service.serviceName}</td>
                     <td>{service.serviceType || "-"}</td>
                     <td>
-                      <code className="contacts-services-contact-code">{service.contactAdmin}</code>
+                      <code className="account-contacts-services-contact-code">{service.contactAdmin}</code>
                     </td>
                     <td>
-                      <code className="contacts-services-contact-code">{service.contactTech}</code>
+                      <code className="account-contacts-services-contact-code">{service.contactTech}</code>
                     </td>
                     <td>
-                      <code className="contacts-services-contact-code">{service.contactBilling}</code>
+                      <code className="account-contacts-services-contact-code">{service.contactBilling}</code>
                     </td>
                     <td>
                       <button
                         onClick={() => openModal(service)}
-                        className="contacts-services-btn contacts-services-btn-outline contacts-services-btn-sm"
+                        className="account-contacts-services-btn contacts-services-btn-outline contacts-services-btn-sm"
                       >
                         {t("actions.changeContact")}
                       </button>
@@ -185,12 +185,12 @@ export function ContactsServicesTab() {
 
       {/* Modal changement de contact */}
       {modal.service && (
-        <div className="contacts-services-modal-overlay" onClick={closeModal}>
-          <div className="contacts-services-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="account-contacts-services-modal-overlay" onClick={closeModal}>
+          <div className="account-contacts-services-modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>{t("modal.title")}</h3>
-            <p className="contacts-services-modal-description">{t("modal.description")}</p>
+            <p className="account-contacts-services-modal-description">{t("modal.description")}</p>
 
-            <div className="contacts-services-modal-service-info">
+            <div className="account-contacts-services-modal-service-info">
               <p>
                 <strong>{t("columns.service")}:</strong> {modal.service.serviceName}
               </p>
@@ -199,10 +199,10 @@ export function ContactsServicesTab() {
               </p>
             </div>
 
-            <div className="contacts-services-form-group">
+            <div className="account-contacts-services-form-group">
               <label>{t("modal.contactTypeLabel")}</label>
               <select
-                className="contacts-services-select"
+                className="account-contacts-services-select"
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value as ContactType)}
                 disabled={actionLoading}
@@ -211,40 +211,40 @@ export function ContactsServicesTab() {
                 <option value="contactTech">{t("contactTypes.tech")}</option>
                 <option value="contactBilling">{t("contactTypes.billing")}</option>
               </select>
-              <p className="contacts-services-form-hint">
+              <p className="account-contacts-services-form-hint">
                 {t("modal.currentContact")}:{" "}
                 <code>{getCurrentContact(modal.service, selectedType)}</code>
               </p>
             </div>
 
-            <div className="contacts-services-form-group">
-              <label htmlFor="contacts-services-newNic">{t("modal.newNicLabel")}</label>
+            <div className="account-contacts-services-form-group">
+              <label htmlFor="account-contacts-services-newNic">{t("modal.newNicLabel")}</label>
               <input
                 type="text"
-                id="contacts-services-newNic"
-                className="contacts-services-input"
+                id="account-contacts-services-newNic"
+                className="account-contacts-services-input"
                 value={newNic}
                 onChange={(e) => setNewNic(e.target.value)}
                 placeholder={t("modal.newNicPlaceholder")}
                 disabled={actionLoading}
               />
-              <p className="contacts-services-form-hint">{t("modal.newNicHint")}</p>
+              <p className="account-contacts-services-form-hint">{t("modal.newNicHint")}</p>
             </div>
 
-            {actionError && <div className="contacts-services-error-banner">{actionError}</div>}
-            {successMessage && <div className="contacts-services-success-banner">{successMessage}</div>}
+            {actionError && <div className="account-contacts-services-error-banner">{actionError}</div>}
+            {successMessage && <div className="account-contacts-services-success-banner">{successMessage}</div>}
 
-            <div className="contacts-services-modal-actions">
+            <div className="account-contacts-services-modal-actions">
               <button
                 onClick={closeModal}
-                className="contacts-services-btn contacts-services-btn-secondary"
+                className="account-contacts-services-btn contacts-services-btn-secondary"
                 disabled={actionLoading}
               >
                 {tCommon("actions.cancel")}
               </button>
               <button
                 onClick={handleInitiateChange}
-                className="contacts-services-btn contacts-services-btn-primary"
+                className="account-contacts-services-btn contacts-services-btn-primary"
                 disabled={actionLoading || !newNic.trim()}
               >
                 {actionLoading ? tCommon("loading") : t("modal.submitButton")}

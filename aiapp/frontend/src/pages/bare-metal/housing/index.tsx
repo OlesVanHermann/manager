@@ -14,7 +14,7 @@ import { ovhApi } from "../../../services/api";
 import GeneralTab from "./tabs/general/GeneralTab.tsx";
 import TasksTab from "./tabs/tasks/TasksTab.tsx";
 import type { HousingInfo } from "./housing.types";
-import "./index.css";
+import "./HousingPage.css";
 
 // ============================================================
 // SERVICE LOCAL - Intégré dans la page (pas de fichier séparé)

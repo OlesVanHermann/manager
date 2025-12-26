@@ -68,7 +68,7 @@ export function CreatePdbDatabaseModal({ serviceName, isOpen, onClose, onSuccess
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               {t("common.cancel")}
             </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="privdb-modal-btn-primary" disabled={loading}>
               {loading ? t("common.creating") : t("databases.create")}
             </button>
           </div>

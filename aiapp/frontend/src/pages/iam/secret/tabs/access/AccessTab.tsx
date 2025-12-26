@@ -81,12 +81,12 @@ export default function AccessTab({ serviceId }: AccessTabProps) {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="access-loading-state">{tCommon("loading")}</div>;
+    return <div className="secret-access-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="access-error-state">
+      <div className="secret-access-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadRules}>{tCommon("actions.retry")}</button>
       </div>
@@ -94,18 +94,18 @@ export default function AccessTab({ serviceId }: AccessTabProps) {
   }
 
   return (
-    <div className="access-tab">
-      <div className="access-toolbar">
+    <div className="secret-access-tab">
+      <div className="secret-access-toolbar">
         <button className="btn btn-primary">{t("grant")}</button>
       </div>
 
       {rules.length === 0 ? (
-        <div className="access-empty-state">
+        <div className="secret-access-empty-state">
           <h2>{t("empty.title")}</h2>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <table className="access-table">
+        <table className="secret-access-table">
           <thead>
             <tr>
               <th>{t("columns.identity")}</th>
@@ -119,15 +119,15 @@ export default function AccessTab({ serviceId }: AccessTabProps) {
             {rules.map((rule) => (
               <tr key={rule.id}>
                 <td>
-                  <div className="access-identity">
-                    <span className="access-identity-icon">{getIdentityIcon(rule.identityType)}</span>
-                    <span className="access-identity-name">{rule.identity}</span>
+                  <div className="secret-access-identity">
+                    <span className="secret-access-identity-icon">{getIdentityIcon(rule.identityType)}</span>
+                    <span className="secret-access-identity-name">{rule.identity}</span>
                   </div>
                 </td>
                 <td>{t(`access.types.${rule.identityType}`)}</td>
                 <td>{getPermissionBadge(rule.permission)}</td>
                 <td>{new Date(rule.createdAt).toLocaleDateString("fr-FR")}</td>
-                <td className="access-actions">
+                <td className="secret-access-actions">
                   <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleRevoke(rule.id)}>{t("revoke")}</button>
                 </td>
               </tr>

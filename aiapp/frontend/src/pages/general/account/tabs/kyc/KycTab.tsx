@@ -1,6 +1,6 @@
 // ============================================================
 // KYC TAB - Vérification d'identité avec upload de documents
-// Styles: ./KycTab.css (préfixe .kyc-)
+// Styles: ./KycTab.css (préfixe .account-kyc-)
 // Service: ./KycTab.service.ts (ISOLÉ)
 // ============================================================
 
@@ -147,23 +147,23 @@ export function KycTab() {
   // ---------- HELPERS ----------
   const getStatusBadgeClass = (statusVal: string) => {
     const map: Record<string, string> = {
-      required: "kyc-badge-warning",
-      pending: "kyc-badge-info",
-      open: "kyc-badge-info",
-      closed: "kyc-badge-success",
-      none: "kyc-badge-neutral",
-      ok: "kyc-badge-success",
-      refused: "kyc-badge-error",
+      required: "account-kyc-badge-warning",
+      pending: "account-kyc-badge-info",
+      open: "account-kyc-badge-info",
+      closed: "account-kyc-badge-success",
+      none: "account-kyc-badge-neutral",
+      ok: "account-kyc-badge-success",
+      refused: "account-kyc-badge-error",
     };
-    return map[statusVal] || "kyc-badge-neutral";
+    return map[statusVal] || "account-kyc-badge-neutral";
   };
 
   // ---------- LOADING ----------
   if (loading) {
     return (
-      <div className="kyc-content">
-        <div className="kyc-loading">
-          <div className="kyc-spinner"></div>
+      <div className="account-kyc-content">
+        <div className="account-kyc-loading">
+          <div className="account-kyc-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
@@ -173,10 +173,10 @@ export function KycTab() {
   // ---------- ERROR ----------
   if (error) {
     return (
-      <div className="kyc-content">
-        <div className="kyc-error">
+      <div className="account-kyc-content">
+        <div className="account-kyc-error">
           <p>{error}</p>
-          <button onClick={loadStatus} className="kyc-btn kyc-btn-primary">
+          <button onClick={loadStatus} className="account-kyc-btn kyc-btn-primary">
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -188,51 +188,51 @@ export function KycTab() {
   const currentStatus = status?.status || "none";
 
   return (
-    <div className="kyc-content">
-      <div className="kyc-header">
+    <div className="account-kyc-content">
+      <div className="account-kyc-header">
         <h2>{t("title")}</h2>
         <p>{t("description")}</p>
       </div>
 
       {/* Status Card */}
-      <div className="kyc-status-card">
-        <div className="kyc-status-header">
+      <div className="account-kyc-status-card">
+        <div className="account-kyc-status-header">
           <span className={`kyc-badge ${getStatusBadgeClass(currentStatus)}`}>
             {t(`status.${currentStatus}.label`, { defaultValue: kycService.getStatusLabel(currentStatus) })}
           </span>
         </div>
-        <p className="kyc-status-description">
+        <p className="account-kyc-status-description">
           {t(`status.${currentStatus}.description`, { defaultValue: "" })}
         </p>
 
         {/* Step: status */}
         {step === "status" && currentStatus === "required" && (
-          <button onClick={handleStartUpload} className="kyc-btn kyc-btn-primary">
+          <button onClick={handleStartUpload} className="account-kyc-btn kyc-btn-primary">
             {t("upload.startButton")}
           </button>
         )}
 
         {step === "status" && currentStatus === "pending" && (
-          <p className="kyc-status-notice">{t("pending.processingTime")}</p>
+          <p className="account-kyc-status-notice">{t("pending.processingTime")}</p>
         )}
 
         {step === "status" && currentStatus === "none" && (
-          <p className="kyc-status-notice">{t("none.futureNotice")}</p>
+          <p className="account-kyc-status-notice">{t("none.futureNotice")}</p>
         )}
 
         {/* Step: select */}
         {step === "select" && (
-          <div className="kyc-upload-section">
-            <h4 className="kyc-upload-title">{t("upload.selectTitle")}</h4>
+          <div className="account-kyc-upload-section">
+            <h4 className="account-kyc-upload-title">{t("upload.selectTitle")}</h4>
 
             <div
-              className="kyc-drop-zone"
+              className="account-kyc-drop-zone"
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
               onClick={() => fileInputRef.current?.click()}
             >
-              <p className="kyc-drop-zone-text">{t("upload.dropZone")}</p>
-              <p className="kyc-drop-zone-hint">{t("upload.formats")}</p>
+              <p className="account-kyc-drop-zone-text">{t("upload.dropZone")}</p>
+              <p className="account-kyc-drop-zone-hint">{t("upload.formats")}</p>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -244,21 +244,21 @@ export function KycTab() {
             </div>
 
             {selectedFiles.length > 0 && (
-              <div className="kyc-files-list">
+              <div className="account-kyc-files-list">
                 {selectedFiles.map((sf, idx) => (
-                  <div key={idx} className="kyc-file-item">
+                  <div key={idx} className="account-kyc-file-item">
                     {sf.preview ? (
-                      <img src={sf.preview} alt="" className="kyc-file-preview" />
+                      <img src={sf.preview} alt="" className="account-kyc-file-preview" />
                     ) : (
-                      <div className="kyc-file-placeholder">PDF</div>
+                      <div className="account-kyc-file-placeholder">PDF</div>
                     )}
-                    <div className="kyc-file-info">
-                      <p className="kyc-file-name">{sf.file.name}</p>
-                      <p className="kyc-file-size">{kycService.formatFileSize(sf.file.size)}</p>
+                    <div className="account-kyc-file-info">
+                      <p className="account-kyc-file-name">{sf.file.name}</p>
+                      <p className="account-kyc-file-size">{kycService.formatFileSize(sf.file.size)}</p>
                     </div>
-                    {sf.uploaded && <span className="kyc-badge kyc-badge-success kyc-badge-sm">✓</span>}
-                    {sf.error && <span className="kyc-badge kyc-badge-error kyc-badge-sm">✗</span>}
-                    <button onClick={() => handleRemoveFile(idx)} className="kyc-btn kyc-btn-secondary kyc-btn-sm">
+                    {sf.uploaded && <span className="account-kyc-badge kyc-badge-success kyc-badge-sm">✓</span>}
+                    {sf.error && <span className="account-kyc-badge kyc-badge-error kyc-badge-sm">✗</span>}
+                    <button onClick={() => handleRemoveFile(idx)} className="account-kyc-btn kyc-btn-secondary kyc-btn-sm">
                       {tCommon("actions.delete")}
                     </button>
                   </div>
@@ -266,15 +266,15 @@ export function KycTab() {
               </div>
             )}
 
-            {uploadError && <div className="kyc-error-banner">{uploadError}</div>}
+            {uploadError && <div className="account-kyc-error-banner">{uploadError}</div>}
 
-            <div className="kyc-upload-actions">
-              <button onClick={handleCancel} className="kyc-btn kyc-btn-secondary">
+            <div className="account-kyc-upload-actions">
+              <button onClick={handleCancel} className="account-kyc-btn kyc-btn-secondary">
                 {tCommon("actions.cancel")}
               </button>
               <button
                 onClick={handleSubmitDocuments}
-                className="kyc-btn kyc-btn-primary"
+                className="account-kyc-btn kyc-btn-primary"
                 disabled={selectedFiles.length === 0}
               >
                 {t("upload.submitButton")} ({selectedFiles.length})
@@ -285,21 +285,21 @@ export function KycTab() {
 
         {/* Step: uploading */}
         {step === "uploading" && (
-          <div className="kyc-progress-section">
-            <h4 className="kyc-progress-title">{t("upload.uploading")}</h4>
-            <div className="kyc-progress-bar">
-              <div className="kyc-progress-fill" style={{ width: `${uploadProgress}%` }}></div>
+          <div className="account-kyc-progress-section">
+            <h4 className="account-kyc-progress-title">{t("upload.uploading")}</h4>
+            <div className="account-kyc-progress-bar">
+              <div className="account-kyc-progress-fill" style={{ width: `${uploadProgress}%` }}></div>
             </div>
-            <p className="kyc-progress-text">{Math.round(uploadProgress)}%</p>
+            <p className="account-kyc-progress-text">{Math.round(uploadProgress)}%</p>
           </div>
         )}
 
         {/* Step: done */}
         {step === "done" && (
-          <div className="kyc-success-section">
-            <h4 className="kyc-success-title">{t("upload.successTitle")}</h4>
-            <p className="kyc-success-message">{t("upload.successMessage")}</p>
-            <button onClick={() => setStep("status")} className="kyc-btn kyc-btn-primary">
+          <div className="account-kyc-success-section">
+            <h4 className="account-kyc-success-title">{t("upload.successTitle")}</h4>
+            <p className="account-kyc-success-message">{t("upload.successMessage")}</p>
+            <button onClick={() => setStep("status")} className="account-kyc-btn kyc-btn-primary">
               {tCommon("actions.close")}
             </button>
           </div>
@@ -307,14 +307,14 @@ export function KycTab() {
       </div>
 
       {/* Info Box */}
-      <div className="kyc-info-box">
-        <h4 className="kyc-info-title">{t("info.title")}</h4>
-        <p className="kyc-info-description">{t("info.description")}</p>
+      <div className="account-kyc-info-box">
+        <h4 className="account-kyc-info-title">{t("info.title")}</h4>
+        <p className="account-kyc-info-description">{t("info.description")}</p>
         <a
           href="https://www.ovhcloud.com/fr/terms-and-conditions/privacy-policy/"
           target="_blank"
           rel="noopener noreferrer"
-          className="kyc-info-link"
+          className="account-kyc-info-link"
         >
           {t("info.privacyLink")}
         </a>

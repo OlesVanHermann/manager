@@ -40,16 +40,16 @@ export function LocalSeoTab({ serviceName }: Props) {
     window.open(`https://www.ovhcloud.com/fr/web-hosting/options/visibility-pro/check/`, "_blank");
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "300px" }} /></div>;
+  if (loading) return <div className="wh-localseo-loading"><div className="wh-localseo-skeleton" style={{ height: "300px" }} /></div>;
 
   // Si pas d'abonnement, afficher la promo
   if (locations.length === 0) {
     return (
       <div className="localseo-tab">
-        <div className="tab-header">
+        <div className="wh-localseo-header">
           <div>
             <h3>{t("localSeo.title")}</h3>
-            <p className="tab-description">{t("localSeo.description")}</p>
+            <p className="wh-localseo-description">{t("localSeo.description")}</p>
           </div>
         </div>
 
@@ -79,10 +79,10 @@ export function LocalSeoTab({ serviceName }: Props) {
             </div>
 
             <div className="promo-actions">
-              <button className="btn btn-primary" onClick={handleOrder}>
+              <button className="wh-localseo-btn-primary" onClick={handleOrder}>
                 {t("localSeo.order")}
               </button>
-              <button className="btn btn-secondary" onClick={handleTest}>
+              <button className="wh-localseo-btn-secondary" onClick={handleTest}>
                 Tester ma visibilité
               </button>
             </div>
@@ -100,19 +100,19 @@ export function LocalSeoTab({ serviceName }: Props) {
   // Si abonnement actif, afficher la liste des établissements
   return (
     <div className="localseo-tab">
-      <div className="tab-header">
+      <div className="wh-localseo-header">
         <div>
           <h3>{t("localSeo.title")}</h3>
-          <p className="tab-description">{t("localSeo.description")}</p>
+          <p className="wh-localseo-description">{t("localSeo.description")}</p>
         </div>
-        <div className="tab-actions">
-          <button className="btn btn-primary btn-sm" onClick={handleOrder}>
+        <div className="wh-localseo-actions">
+          <button className="wh-localseo-btn-primary-sm" onClick={handleOrder}>
             + {t("localSeo.order")}
           </button>
         </div>
       </div>
 
-      <table className="data-table">
+      <table className="wh-localseo-table">
         <thead>
           <tr>
             <th>{t("localSeo.location")}</th>
@@ -126,11 +126,11 @@ export function LocalSeoTab({ serviceName }: Props) {
         <tbody>
           {locations.map(loc => (
             <tr key={loc.id}>
-              <td className="font-medium">{loc.name || loc.id}</td>
+              <td className="wh-localseo-font-medium">{loc.name || loc.id}</td>
               <td>{loc.offer || "Standard"}</td>
               <td>{loc.country || "FR"}</td>
               <td>
-                <span className={`badge ${loc.status === "active" ? "success" : "warning"}`}>
+                <span className={`wh-localseo-badge ${loc.status === "active" ? "success" : "warning"}`}>
                   {loc.status === "active" ? "Actif" : loc.status}
                 </span>
               </td>
@@ -141,7 +141,7 @@ export function LocalSeoTab({ serviceName }: Props) {
                     href={`https://www.ovhcloud.com/manager/#/web/hosting/${serviceName}/local-seo/${loc.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-icon"
+                    className="wh-localseo-btn-icon"
                     title={t("localSeo.manage")}
                   >🔗</a>
                 </div>

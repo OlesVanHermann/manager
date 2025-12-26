@@ -240,17 +240,17 @@ export function ZoneTab({ zoneName }: Props) {
   if (view === "history") {
     return (
       <div className="zone-tab">
-        <div className="tab-header">
+        <div className="zone-header">
           <div>
             <h3>{t("history.title")}</h3>
-            <p className="tab-description">{t("history.description")}</p>
+            <p className="zone-description">{t("history.description")}</p>
           </div>
           <button className="btn-secondary" onClick={() => setView("records")}>← {t("zone.backToRecords")}</button>
         </div>
         {historyLoading ? (
-          <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /></div>
+          <div className="zone-loading"><div className="zone-skeleton" /><div className="zone-skeleton" /></div>
         ) : history.length === 0 ? (
-          <div className="empty-state"><p>{t("history.empty")}</p></div>
+          <div className="zone-empty"><p>{t("history.empty")}</p></div>
         ) : (
           <div className="history-timeline">
             {history.map((date, index) => (
@@ -259,7 +259,7 @@ export function ZoneTab({ zoneName }: Props) {
                 <div className="history-content">
                   <div className="history-info">
                     <div className="history-date">{formatDate(date)}</div>
-                    {index === 0 && <span className="badge success">{t("history.current")}</span>}
+                    {index === 0 && <span className="zone-badge success">{t("history.current")}</span>}
                   </div>
                   {index > 0 && (
                     <button className="btn-secondary btn-sm" onClick={() => handleRestore(date)} disabled={restoring === date}>
@@ -271,24 +271,24 @@ export function ZoneTab({ zoneName }: Props) {
             ))}
           </div>
         )}
-        <div className="info-box"><h4>{t("history.info")}</h4><p>{t("history.infoDesc")}</p></div>
+        <div className="zone-info-box"><h4>{t("history.info")}</h4><p>{t("history.infoDesc")}</p></div>
       </div>
     );
   }
 
   // ---------- RENDER LOADING ----------
   if (loading && records.length === 0) {
-    return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /><div className="skeleton-block" /></div>;
+    return <div className="zone-loading"><div className="zone-skeleton" /><div className="zone-skeleton" /><div className="zone-skeleton" /></div>;
   }
 
   // ---------- RENDER RECORDS VIEW ----------
   return (
     <div className="zone-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="zone-header">
         <div>
           <h3>{t("zone.title")}</h3>
-          <p className="tab-description">{t("zone.description")}</p>
+          <p className="zone-description">{t("zone.description")}</p>
         </div>
         <div className="tab-header-actions">
           <button className="btn-secondary" onClick={handleShowHistory}>📜 {t("zone.history")}</button>
@@ -317,11 +317,11 @@ export function ZoneTab({ zoneName }: Props) {
       </div>
 
       {/* Error */}
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="zone-error-banner">{error}</div>}
 
       {/* Records table */}
       {filteredRecords.length === 0 && !loading ? (
-        <div className="empty-state">
+        <div className="zone-empty">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="48" height="48">
             <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
           </svg>
@@ -329,7 +329,7 @@ export function ZoneTab({ zoneName }: Props) {
           <button className="btn-primary" onClick={openCreateModal}><PlusIcon /> {t("zone.addRecord")}</button>
         </div>
       ) : (
-        <table className="data-table">
+        <table className="zone-table">
           <thead>
             <tr>
               <th>{t("zone.type")}</th>
@@ -343,11 +343,11 @@ export function ZoneTab({ zoneName }: Props) {
             {filteredRecords.map((record) => (
               <tr key={record.id}>
                 <td><span className={`record-type type-${record.fieldType.toLowerCase()}`}>{record.fieldType}</span></td>
-                <td className="font-mono">{record.subDomain || "@"}</td>
+                <td className="zone-font-mono">{record.subDomain || "@"}</td>
                 <td className="font-mono target-cell" title={record.target}>{record.target}</td>
                 <td>{record.ttl}s</td>
                 <td className="actions-cell">
-                  <button className="btn-icon" onClick={() => openEditModal(record)} title={t("zone.edit")}><EditIcon /></button>
+                  <button className="zone-btn-icon" onClick={() => openEditModal(record)} title={t("zone.edit")}><EditIcon /></button>
                   <button className="btn-icon btn-icon-danger" onClick={() => handleDeleteClick(record)} title={t("zone.delete")}><TrashIcon /></button>
                 </td>
               </tr>
@@ -358,34 +358,34 @@ export function ZoneTab({ zoneName }: Props) {
 
       {/* Modal Create/Edit */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="zone-modal-overlay" onClick={closeModal}>
+          <div className="zone-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="zone-modal-header">
               <h3>{modalMode === "create" ? t("zone.modalTitleCreate") : t("zone.modalTitleEdit")}</h3>
-              <button className="btn-icon" onClick={closeModal}><CloseIcon /></button>
+              <button className="zone-btn-icon" onClick={closeModal}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="zone-modal-body">
+              <div className="zone-form-group">
                 <label>{t("zone.type")}</label>
-                <select value={formData.fieldType} onChange={(e) => handleFormChange("fieldType", e.target.value)} disabled={modalMode === "edit"} className="form-input">
+                <select value={formData.fieldType} onChange={(e) => handleFormChange("fieldType", e.target.value)} disabled={modalMode === "edit"} className="zone-input">
                   {RECORD_TYPES.map((type) => (<option key={type} value={type}>{type}</option>))}
                 </select>
               </div>
-              <div className="form-group">
+              <div className="zone-form-group">
                 <label>{t("zone.subdomain")}</label>
                 <div className="input-with-suffix">
-                  <input type="text" value={formData.subDomain} onChange={(e) => handleFormChange("subDomain", e.target.value)} placeholder="www" className="form-input" />
+                  <input type="text" value={formData.subDomain} onChange={(e) => handleFormChange("subDomain", e.target.value)} placeholder="www" className="zone-input" />
                   <span className="input-suffix">.{zoneName}</span>
                 </div>
                 <small className="form-hint">{t("zone.subdomainHint")}</small>
               </div>
-              <div className="form-group">
+              <div className="zone-form-group">
                 <label>{t("zone.target")} *</label>
-                <input type="text" value={formData.target} onChange={(e) => handleFormChange("target", e.target.value)} placeholder={formData.fieldType === "A" ? "192.168.1.1" : formData.fieldType === "CNAME" ? "example.com." : ""} className="form-input" required />
+                <input type="text" value={formData.target} onChange={(e) => handleFormChange("target", e.target.value)} placeholder={formData.fieldType === "A" ? "192.168.1.1" : formData.fieldType === "CNAME" ? "example.com." : ""} className="zone-input" required />
               </div>
-              <div className="form-group">
+              <div className="zone-form-group">
                 <label>{t("zone.ttl")}</label>
-                <select value={formData.ttl} onChange={(e) => handleFormChange("ttl", Number(e.target.value))} className="form-input">
+                <select value={formData.ttl} onChange={(e) => handleFormChange("ttl", Number(e.target.value))} className="zone-input">
                   <option value={60}>60s (1 min)</option>
                   <option value={300}>300s (5 min)</option>
                   <option value={600}>600s (10 min)</option>
@@ -394,7 +394,7 @@ export function ZoneTab({ zoneName }: Props) {
                 </select>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="zone-modal-footer">
               <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
               <button className="btn-primary" onClick={handleSave} disabled={saving}>{saving ? tCommon("loading") : tCommon("actions.save")}</button>
             </div>
@@ -404,19 +404,19 @@ export function ZoneTab({ zoneName }: Props) {
 
       {/* Modal Delete Confirm */}
       {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="zone-modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="zone-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="zone-modal-header">
               <h3>{t("zone.confirmDeleteTitle")}</h3>
-              <button className="btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
+              <button className="zone-btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
+            <div className="zone-modal-body">
               <p>{t("zone.confirmDeleteMessage")}</p>
               <div className="delete-preview">
                 <strong>{deleteConfirm.fieldType}</strong> {deleteConfirm.subDomain || "@"}.{zoneName} → {deleteConfirm.target}
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="zone-modal-footer">
               <button className="btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
               <button className="btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>{deleting ? tCommon("loading") : tCommon("actions.delete")}</button>
             </div>

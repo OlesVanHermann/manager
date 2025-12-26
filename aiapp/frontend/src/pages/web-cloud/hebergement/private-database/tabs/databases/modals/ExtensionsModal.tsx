@@ -120,7 +120,7 @@ export function ExtensionsModal({ serviceName, databaseName, isOpen, onClose, on
           </button>
           <button 
             type="button" 
-            className="btn btn-primary" 
+            className="privdb-modal-btn-primary" 
             onClick={handleSave}
             disabled={saving || loading}
           >

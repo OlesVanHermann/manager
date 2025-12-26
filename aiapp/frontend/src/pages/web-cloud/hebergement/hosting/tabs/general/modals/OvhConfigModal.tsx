@@ -36,8 +36,8 @@ export function OvhConfigModal({ serviceName, isOpen, onClose, onSuccess }: Prop
           <p className="text-muted">Fonctionnalité en cours d'implémentation.</p>
         </div>
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={handleSave} disabled={loading}>
+          <button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="wh-modal-btn-primary" onClick={handleSave} disabled={loading}>
             {loading ? "Enregistrement..." : "Enregistrer"}
           </button>
         </div>

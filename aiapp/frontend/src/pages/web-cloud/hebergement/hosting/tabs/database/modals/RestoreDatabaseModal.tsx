@@ -8,7 +8,7 @@ export function RestoreDatabaseModal({ serviceName, databaseName, isOpen, onClos
     <div className="modal-overlay" onClick={onClose}><div className="modal-container" onClick={e => e.stopPropagation()}>
       <div className="modal-header"><h2>Restaurer la base de données</h2><button className="modal-close" onClick={onClose}>×</button></div>
       <div className="modal-body"><p>Restaurer {databaseName} - Fonctionnalité en cours.</p></div>
-      <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Annuler</button><button className="btn btn-primary" onClick={handleRestore} disabled={loading}>{loading ? "..." : "Restaurer"}</button></div>
+      <div className="modal-footer"><button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button><button className="wh-modal-btn-primary" onClick={handleRestore} disabled={loading}>{loading ? "..." : "Restaurer"}</button></div>
     </div></div>
   );
 }

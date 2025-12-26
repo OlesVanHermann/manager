@@ -29,7 +29,7 @@ export function TasksTab({ org, service }: Props) {
     load();
   }, [org, service]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="exchange-tasks-loading"><div className="exchange-tasks-skeleton" /></div>;
 
   return (
     <div className="exchange-tasks-tab">
@@ -44,8 +44,8 @@ export function TasksTab({ org, service }: Props) {
               const s = getStatusBadge(task.status);
               return (
                 <tr key={task.id}>
-                  <td className="font-mono">{task.function}</td>
-                  <td><span className={`badge ${s.cls}`}>{s.icon} {task.status}</span></td>
+                  <td className="exchange-tasks-font-mono">{task.function}</td>
+                  <td><span className={`exchange-tasks-badge ${s.cls}`}>{s.icon} {task.status}</span></td>
                   <td>{new Date(task.todoDate).toLocaleString('fr-FR')}</td>
                 </tr>
               );

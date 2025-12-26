@@ -19,8 +19,63 @@ import NodesTab from "./tabs/nodes/NodesTab";
 import IpsTab from "./tabs/ips/IpsTab";
 import TasksTab from "./tabs/tasks/TasksTab";
 
-// CSS isolé pour la page (pas de CSS partagé NAV1)
-import "./nutanix.css";
+/* ============================================================
+   STYLES INLINE - Page container (anciennement nutanix.css)
+   ============================================================ */
+const pageStyles = `
+.nutanix-page {
+  padding: var(--space-4);
+}
+
+.nutanix-page-header {
+  margin-bottom: var(--space-4);
+}
+
+.nutanix-page-header h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.nutanix-service-meta {
+  display: flex;
+  gap: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nutanix-empty-state {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-secondary);
+}
+
+.nutanix-empty-state h2 {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+}
+
+.nutanix-loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-8);
+  color: var(--color-text-secondary);
+}
+
+.nutanix-error-state {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-error-500);
+}
+
+.nutanix-error-state button {
+  margin-top: var(--space-4);
+}
+`;
 
 export default function NutanixPage() {
   const { t } = useTranslation("private-cloud/nutanix/index");
@@ -74,6 +129,7 @@ export default function NutanixPage() {
   if (!serviceId) {
     return (
       <div className="page-content">
+        <style>{pageStyles}</style>
         <div className="nutanix-empty-state">
           <h2>{t("noService.title")}</h2>
         </div>
@@ -84,6 +140,7 @@ export default function NutanixPage() {
   if (loading) {
     return (
       <div className="page-content">
+        <style>{pageStyles}</style>
         <div className="nutanix-loading-state">{t("loading")}</div>
       </div>
     );
@@ -92,6 +149,7 @@ export default function NutanixPage() {
   if (error) {
     return (
       <div className="page-content">
+        <style>{pageStyles}</style>
         <div className="nutanix-error-state">
           <p>{error}</p>
           <button className="btn btn-primary" onClick={loadCluster}>
@@ -104,6 +162,7 @@ export default function NutanixPage() {
 
   return (
     <div className="page-content nutanix-page">
+      <style>{pageStyles}</style>
       <header className="nutanix-page-header">
         <h1>🔷 {cluster?.targetSpec?.name || cluster?.serviceName}</h1>
         {cluster && (

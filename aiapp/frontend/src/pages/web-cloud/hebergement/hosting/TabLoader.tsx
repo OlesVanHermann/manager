@@ -44,7 +44,7 @@ class TabErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState>
           <h3>Erreur de chargement</h3>
           <p>L'onglet <strong>{this.props.tabId}</strong> n'a pas pu être chargé.</p>
           <p className="tab-error-detail">{this.state.error?.message}</p>
-          <button className="btn btn-primary" onClick={this.handleRetry}>
+          <button className="wh-btn-primary" onClick={this.handleRetry}>
             Réessayer
           </button>
         </div>

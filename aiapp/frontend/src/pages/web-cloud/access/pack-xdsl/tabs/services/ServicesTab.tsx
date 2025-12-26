@@ -37,7 +37,7 @@ export function ServicesTab({ packName }: Props) {
   };
 
   if (loading) {
-    return <div className="tab-loading"><div className="skeleton-block" /></div>;
+    return <div className="xdsl-services-loading"><div className="xdsl-services-skeleton" /></div>;
   }
 
   return (
@@ -59,7 +59,7 @@ export function ServicesTab({ packName }: Props) {
               <div className={`services-icon ${s.type}`}>{getIcon(s.type)}</div>
               <h4>{s.name}</h4>
               <p className="services-usage">{s.used} / {s.total} utilisé(s)</p>
-              <span className="badge info">{s.type}</span>
+              <span className="xdsl-services-badge info">{s.type}</span>
             </div>
           ))}
         </div>

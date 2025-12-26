@@ -42,15 +42,15 @@ export function GeneralTab({ billingAccount, serviceName, details }: Props) {
         </div>
       </div>
 
-      <section className="general-info-section">
-        <div className="general-info-grid">
-          <div className="general-info-item">
+      <section className="csip-general-info-section">
+        <div className="csip-general-info-grid">
+          <div className="csip-general-info-item">
             <label>{t("billingAccount")}</label>
-            <span className="font-mono">{billingAccount}</span>
+            <span className="csip-general-font-mono">{billingAccount}</span>
           </div>
-          <div className="general-info-item">
+          <div className="csip-general-info-item">
             <label>{t("status")}</label>
-            <span className={`badge ${details?.status === "enabled" ? "success" : "warning"}`}>
+            <span className={`csip-general-badge ${details?.status === "enabled" ? "success" : "warning"}`}>
               {details?.status || "-"}
             </span>
           </div>

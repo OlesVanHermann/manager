@@ -27,7 +27,7 @@ export function AliasesTab({ serviceId }: Props) {
     load();
   }, [serviceId]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="zimbra-aliases-loading"><div className="zimbra-aliases-skeleton" /></div>;
 
   return (
     <div className="zimbra-aliases-tab">

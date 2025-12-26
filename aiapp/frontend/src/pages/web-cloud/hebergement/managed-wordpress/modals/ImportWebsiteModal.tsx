@@ -124,9 +124,9 @@ export function ImportWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
             <button type="button" className="btn btn-secondary" onClick={onClose}>{t("common.cancel")}</button>
             {step > 1 && <button type="button" className="btn btn-secondary" onClick={() => setStep(s => s - 1)}>← Précédent</button>}
             {step < 3 ? (
-              <button type="button" className="btn btn-primary" onClick={() => setStep(s => s + 1)}>Suivant →</button>
+              <button type="button" className="mwp-modal-btn-primary" onClick={() => setStep(s => s + 1)}>Suivant →</button>
             ) : (
-              <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? t("common.importing") : t("website.import")}</button>
+              <button type="submit" className="mwp-modal-btn-primary" disabled={loading}>{loading ? t("common.importing") : t("website.import")}</button>
             )}
           </div>
         </form>

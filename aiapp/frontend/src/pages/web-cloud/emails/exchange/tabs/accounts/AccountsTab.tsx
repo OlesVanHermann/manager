@@ -33,7 +33,7 @@ export function AccountsTab({ org, service }: Props) {
     load();
   }, [org, service]);
 
-  if (loading && accounts.length === 0) return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /></div>;
+  if (loading && accounts.length === 0) return <div className="exchange-accounts-loading"><div className="exchange-accounts-skeleton" /><div className="exchange-accounts-skeleton" /></div>;
 
   return (
     <div className="exchange-accounts-tab">

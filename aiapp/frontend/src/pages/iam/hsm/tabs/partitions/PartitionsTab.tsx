@@ -63,12 +63,12 @@ export default function PartitionsTab({ serviceId }: PartitionsTabProps) {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="partitions-loading-state">{tCommon("loading")}</div>;
+    return <div className="hsm-partitions-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="partitions-error-state">
+      <div className="hsm-partitions-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadPartitions}>{tCommon("actions.retry")}</button>
       </div>
@@ -77,7 +77,7 @@ export default function PartitionsTab({ serviceId }: PartitionsTabProps) {
 
   if (partitions.length === 0) {
     return (
-      <div className="partitions-empty-state">
+      <div className="hsm-partitions-empty-state">
         <h2>{t("empty.title")}</h2>
         <p>{t("empty.description")}</p>
       </div>
@@ -85,13 +85,13 @@ export default function PartitionsTab({ serviceId }: PartitionsTabProps) {
   }
 
   return (
-    <div className="partitions-tab">
-      <div className="partitions-toolbar">
+    <div className="hsm-partitions-tab">
+      <div className="hsm-partitions-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={loadPartitions}>{tCommon("actions.refresh")}</button>
       </div>
 
-      <table className="partitions-table">
+      <table className="hsm-partitions-table">
         <thead>
           <tr>
             <th>{t("columns.name")}</th>
@@ -108,20 +108,20 @@ export default function PartitionsTab({ serviceId }: PartitionsTabProps) {
             return (
               <tr key={partition.id}>
                 <td>
-                  <div className="partitions-name">{partition.name}</div>
+                  <div className="hsm-partitions-name">{partition.name}</div>
                 </td>
-                <td className="partitions-serial">{partition.serialNumber}</td>
+                <td className="hsm-partitions-serial">{partition.serialNumber}</td>
                 <td>{getStateBadge(partition.state)}</td>
                 <td style={{ minWidth: "150px" }}>
-                  <div className="partitions-usage-bar">
+                  <div className="hsm-partitions-usage-bar">
                     <div className={`partitions-usage-fill ${partitionsService.getUsageClass(usagePercent)}`} style={{ width: `${usagePercent}%` }}></div>
                   </div>
-                  <div className="partitions-usage-text">
+                  <div className="hsm-partitions-usage-text">
                     {partitionsService.formatBytes(partition.usedStorage)} / {partitionsService.formatBytes(partition.totalStorage)} ({usagePercent}%)
                   </div>
                 </td>
                 <td>{partition.objectCount}</td>
-                <td className="partitions-actions">
+                <td className="hsm-partitions-actions">
                   <button className="btn btn-sm btn-outline">{tCommon("actions.view")}</button>
                 </td>
               </tr>

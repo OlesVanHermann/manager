@@ -95,9 +95,9 @@ export default function TelecomIndexPage() {
       </div>
 
       {loading ? (
-        <div className="tab-loading">
-          <div className="skeleton-block" />
-          <div className="skeleton-block" />
+        <div className="telecom-page-loading">
+          <div className="telecom-page-skeleton" />
+          <div className="telecom-page-skeleton" />
         </div>
       ) : (
         <div className="category-cards">

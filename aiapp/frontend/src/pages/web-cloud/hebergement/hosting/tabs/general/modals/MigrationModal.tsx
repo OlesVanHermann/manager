@@ -95,11 +95,11 @@ export function MigrationModal({ serviceName, isOpen, onClose, onSuccess }: Migr
         </div>
 
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
+          <button className="wh-modal-btn-secondary" onClick={onClose}>
             {t("cancel")}
           </button>
           <button 
-            className="btn btn-primary"
+            className="wh-modal-btn-primary"
             onClick={handleSubmit}
             disabled={loading || submitting || !destination || hostings.length === 0}
           >

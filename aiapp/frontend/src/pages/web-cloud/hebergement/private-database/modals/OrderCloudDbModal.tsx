@@ -166,7 +166,7 @@ export function OrderCloudDbModal({ isOpen, onClose, onSuccess }: Props) {
           </button>
           <button 
             type="button" 
-            className="btn btn-primary" 
+            className="privdb-modal-btn-primary" 
             onClick={handleOrder}
             disabled={ordering || !selectedOffer}
           >

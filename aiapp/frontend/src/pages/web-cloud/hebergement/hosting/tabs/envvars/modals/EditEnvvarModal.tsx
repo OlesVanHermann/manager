@@ -8,7 +8,7 @@ export function EditEnvvarModal({ serviceName, envvarKey, isOpen, onClose, onSuc
     <div className="modal-overlay" onClick={onClose}><div className="modal-container" onClick={e => e.stopPropagation()}>
       <div className="modal-header"><h2>Modifier la variable</h2><button className="modal-close" onClick={onClose}>×</button></div>
       <div className="modal-body"><p>Modification {envvarKey} - Fonctionnalité en cours.</p></div>
-      <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Annuler</button><button className="btn btn-primary" onClick={handleSave} disabled={loading}>{loading ? "..." : "Enregistrer"}</button></div>
+      <div className="modal-footer"><button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button><button className="wh-modal-btn-primary" onClick={handleSave} disabled={loading}>{loading ? "..." : "Enregistrer"}</button></div>
     </div></div>
   );
 }

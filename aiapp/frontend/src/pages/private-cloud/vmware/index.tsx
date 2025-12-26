@@ -18,7 +18,16 @@ import LicenseTab from "./tabs/license/LicenseTab.tsx";
 import OperationsTab from "./tabs/operations/OperationsTab.tsx";
 import TasksTab from "./tabs/tasks/TasksTab.tsx";
 
-import "./vmware.css";
+/* ============================================================
+   STYLES INLINE - Page container (anciennement vmware.css)
+   ============================================================ */
+const pageStyles = `
+.vmware-page { padding: var(--space-4); }
+.vmware-page-header { margin-bottom: var(--space-4); }
+.vmware-page-header h1 { font-size: var(--font-size-2xl); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); margin: 0 0 var(--space-2) 0; }
+.vmware-service-meta { display: flex; gap: var(--space-4); color: var(--color-text-secondary); font-size: var(--font-size-sm); align-items: center; flex-wrap: wrap; }
+.vmware-meta-item { display: inline-flex; align-items: center; }
+`;
 
 export default function VmwarePage() {
   const { t } = useTranslation("private-cloud/vmware/index");
@@ -55,12 +64,13 @@ export default function VmwarePage() {
     return <span className={`status-badge ${classes[state] || ""}`}>{t(`states.${state}`)}</span>;
   };
 
-  if (!serviceId) return <div className="page-content"><div className="empty-state"><h2>{t("noService.title")}</h2><p>{t("noService.description")}</p></div></div>;
-  if (loading) return <div className="page-content"><div className="loading-state">{t("loading")}</div></div>;
-  if (error) return <div className="page-content"><div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadService}>{t("error.retry")}</button></div></div>;
+  if (!serviceId) return <div className="page-content"><style>{pageStyles}</style><div className="empty-state"><h2>{t("noService.title")}</h2><p>{t("noService.description")}</p></div></div>;
+  if (loading) return <div className="page-content"><style>{pageStyles}</style><div className="loading-state">{t("loading")}</div></div>;
+  if (error) return <div className="page-content"><style>{pageStyles}</style><div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadService}>{t("error.retry")}</button></div></div>;
 
   return (
     <div className="page-content vmware-page">
+      <style>{pageStyles}</style>
       <header className="vmware-page-header">
         <h1>🖥️ {service?.description || service?.serviceName}</h1>
         {service && (

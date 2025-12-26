@@ -176,9 +176,9 @@ export function GlueTab({ domain }: Props) {
   // ---------- RENDER LOADING ----------
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
-        <div className="skeleton-block" />
+      <div className="glue-loading">
+        <div className="glue-skeleton" />
+        <div className="glue-skeleton" />
       </div>
     );
   }
@@ -187,10 +187,10 @@ export function GlueTab({ domain }: Props) {
   return (
     <div className="glue-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="glue-header">
         <div>
           <h3>{t("glue.title")}</h3>
-          <p className="tab-description">{t("glue.description")}</p>
+          <p className="glue-description">{t("glue.description")}</p>
         </div>
         <div className="tab-header-actions">
           <button className="btn-primary" onClick={openCreateModal}>
@@ -200,16 +200,16 @@ export function GlueTab({ domain }: Props) {
       </div>
 
       {/* Error */}
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="glue-error-banner">{error}</div>}
 
       {/* Empty state */}
       {records.length === 0 && !error ? (
-        <div className="empty-state">
+        <div className="glue-empty">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
             <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
           </svg>
           <h3>{t("glue.empty")}</h3>
-          <p className="hint">{t("glue.emptyHint")}</p>
+          <p className="glue-hint">{t("glue.emptyHint")}</p>
           <button className="btn-primary" onClick={openCreateModal}>
             <PlusIcon /> {t("glue.add")}
           </button>
@@ -221,8 +221,8 @@ export function GlueTab({ domain }: Props) {
             <div key={record.host} className="glue-card">
               <div className="glue-header">
                 <h4>{record.host}</h4>
-                <div className="card-actions">
-                  <button className="btn-icon" onClick={() => openEditModal(record)} title={t("glue.edit")}>
+                <div className="glue-card-actions">
+                  <button className="glue-btn-icon" onClick={() => openEditModal(record)} title={t("glue.edit")}>
                     <EditIcon />
                   </button>
                   <button className="btn-icon btn-icon-danger" onClick={() => handleDeleteClick(record)} title={t("glue.delete")}>
@@ -244,22 +244,22 @@ export function GlueTab({ domain }: Props) {
       )}
 
       {/* Info box */}
-      <div className="info-box">
+      <div className="glue-info-box">
         <h4>{t("glue.info")}</h4>
         <p>{t("glue.infoDesc")}</p>
       </div>
 
       {/* Modal Create/Edit */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="glue-modal-overlay" onClick={closeModal}>
+          <div className="glue-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="glue-modal-header">
               <h3>{formData.isEdit ? t("glue.modalTitleEdit") : t("glue.modalTitleCreate")}</h3>
-              <button className="btn-icon" onClick={closeModal}><CloseIcon /></button>
+              <button className="glue-btn-icon" onClick={closeModal}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
-              {formError && <div className="form-error">{formError}</div>}
-              <div className="form-group">
+            <div className="glue-modal-body">
+              {formError && <div className="glue-form-error">{formError}</div>}
+              <div className="glue-form-group">
                 <label>{t("glue.hostname")} *</label>
                 <div className="input-with-suffix">
                   <input
@@ -267,35 +267,35 @@ export function GlueTab({ domain }: Props) {
                     value={formData.host.replace(`.${domain}`, '')}
                     onChange={(e) => handleFormChange('host', e.target.value)}
                     placeholder="ns1"
-                    className="form-input"
+                    className="glue-input"
                     disabled={formData.isEdit}
                   />
                   <span className="input-suffix">.{domain}</span>
                 </div>
               </div>
-              <div className="form-group">
+              <div className="glue-form-group">
                 <label>{t("glue.ipv4")}</label>
                 <input
                   type="text"
                   value={formData.ipv4}
                   onChange={(e) => handleFormChange('ipv4', e.target.value)}
                   placeholder="192.0.2.1"
-                  className="form-input"
+                  className="glue-input"
                 />
               </div>
-              <div className="form-group">
+              <div className="glue-form-group">
                 <label>{t("glue.ipv6")}</label>
                 <input
                   type="text"
                   value={formData.ipv6}
                   onChange={(e) => handleFormChange('ipv6', e.target.value)}
                   placeholder="2001:db8::1"
-                  className="form-input"
+                  className="glue-input"
                 />
               </div>
               <small className="form-hint">{t("glue.ipHint")}</small>
             </div>
-            <div className="modal-footer">
+            <div className="glue-modal-footer">
               <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
               <button className="btn-primary" onClick={handleSave} disabled={saving}>
                 {saving ? tCommon("loading") : tCommon("actions.save")}
@@ -307,19 +307,19 @@ export function GlueTab({ domain }: Props) {
 
       {/* Modal Delete Confirm */}
       {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="glue-modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="glue-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="glue-modal-header">
               <h3>{t("glue.confirmDeleteTitle")}</h3>
-              <button className="btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
+              <button className="glue-btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
+            <div className="glue-modal-body">
               <p>{t("glue.confirmDeleteMessage")}</p>
               <div className="delete-preview">
                 <strong>{deleteConfirm.host}</strong>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="glue-modal-footer">
               <button className="btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
               <button className="btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>
                 {deleting ? tCommon("loading") : tCommon("actions.delete")}

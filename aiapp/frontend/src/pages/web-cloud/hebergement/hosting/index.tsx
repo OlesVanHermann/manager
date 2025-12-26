@@ -62,7 +62,7 @@ function CloudDbTab() {
           Gérez vos bases de données cloud privées (MySQL, PostgreSQL, MariaDB, Redis).
         </p>
         <button 
-          className="btn btn-primary"
+          className="wh-btn-primary"
           onClick={() => navigate("/web-cloud/private-database")}
         >
           Accéder aux Cloud Databases
@@ -184,7 +184,7 @@ export function HostingPage() {
     if (!TabComponent) return <div className="tab-error">Tab "{activeTab}" not found</div>;
 
     return (
-      <Suspense fallback={<div className="tab-loading">Chargement...</div>}>
+      <Suspense fallback={<div className="hosting-page-loading">Chargement...</div>}>
         <TabComponent 
           serviceName={selected.serviceName}
           details={selected}

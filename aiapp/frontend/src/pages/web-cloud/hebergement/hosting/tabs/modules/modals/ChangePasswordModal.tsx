@@ -55,8 +55,8 @@ export function ChangePasswordModal({ serviceName, login, isOpen, onClose, onSuc
           )}
         </div>
         <div className="modules-modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={handleChange} disabled={loading || !password.trim() || password !== confirm}>
+          <button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="wh-modal-btn-primary" onClick={handleChange} disabled={loading || !password.trim() || password !== confirm}>
             {loading ? "Modification..." : "Modifier"}
           </button>
         </div>

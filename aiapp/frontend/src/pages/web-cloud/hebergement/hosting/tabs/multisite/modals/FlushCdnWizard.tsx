@@ -200,7 +200,7 @@ export function FlushCdnWizard({ serviceName, domain, isOpen, onClose, onSuccess
         <div className="modal-footer">
           <button 
             type="button" 
-            className="btn btn-secondary" 
+            className="wh-modal-btn-secondary" 
             onClick={step === 1 ? onClose : () => setStep(1)}
             disabled={loading}
           >
@@ -210,7 +210,7 @@ export function FlushCdnWizard({ serviceName, domain, isOpen, onClose, onSuccess
           {step === 1 ? (
             <button 
               type="button" 
-              className="btn btn-primary" 
+              className="wh-modal-btn-primary" 
               onClick={() => setStep(2)}
               disabled={!canProceed()}
             >
@@ -219,7 +219,7 @@ export function FlushCdnWizard({ serviceName, domain, isOpen, onClose, onSuccess
           ) : (
             <button 
               type="button" 
-              className="btn btn-primary" 
+              className="wh-modal-btn-primary" 
               onClick={handleFlush}
               disabled={loading}
             >

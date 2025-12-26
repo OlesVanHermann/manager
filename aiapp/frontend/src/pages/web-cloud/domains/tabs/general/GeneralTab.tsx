@@ -251,24 +251,24 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
       {/* ============ ROW 1: 3 COLONNES ============ */}
       <div className="general-grid-3">
         {/* ============ COL 1: INFORMATIONS ============ */}
-        <div className="general-info-card-v3">
+        <div className="dom-general-info-card-v3">
           <h3 className="general-card-title-v3">{t("sections.info")}</h3>
 
-          <div className="general-info-row-v3">
+          <div className="dom-general-info-row-v3">
             <div className="general-row-label-v3"><ServerIcon /> {t("fields.domain")}</div>
             <div className="general-row-value-box-v3">
               <span className="general-value-text-v3">{domain}</span>
             </div>
           </div>
 
-          <div className="general-info-row-v3">
+          <div className="dom-general-info-row-v3">
             <div className="general-row-label-v3"><ServerIcon /> {t("fields.dnsType")}</div>
             <div className="general-row-value-box-v3">
               <span className="general-badge-status-v3 info">{dnsServerType}</span>
             </div>
           </div>
 
-          <div className="general-info-row-v3">
+          <div className="dom-general-info-row-v3">
             <div className="general-row-label-v3"><MailIcon /> {t("fields.email")}</div>
             <div className="general-row-value-box-v3">
               {hasEmail === null ? (
@@ -283,7 +283,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
             </div>
           </div>
 
-          <div className="general-info-row-v3">
+          <div className="dom-general-info-row-v3">
             <div className="general-row-label-v3"><GlobeIcon /> {t("fields.subdomains")}</div>
             <div className="general-row-value-box-v3">
               {subdomains.length > 0 ? (
@@ -303,7 +303,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
         </div>
 
         {/* ============ COL 2: SÉCURITÉ ============ */}
-        <div className="general-info-card-v3">
+        <div className="dom-general-info-card-v3">
           <h3 className="general-card-title-v3">{t("sections.security")}</h3>
 
           <div className="general-security-row-v3">
@@ -358,7 +358,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
         </div>
 
         {/* ============ COL 3: ABONNEMENT ============ */}
-        <div className="general-info-card-v3">
+        <div className="dom-general-info-card-v3">
           <h3 className="general-card-title-v3">{t("sections.subscription")}</h3>
 
           {serviceInfos && (
@@ -404,7 +404,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
 
       {/* ============ ROW 2: GUIDES + OPTIONS + CONSEILS ============ */}
       <div className="general-grid-3 general-mt-6">
-        <div className="general-info-card-v3 compact">
+        <div className="dom-general-info-card-v3 compact">
           <h3 className="general-card-title-v3">{t("sections.guides")}</h3>
           <div className="general-accordion-item-v3" onClick={() => setGuidesOpen(!guidesOpen)}>
             <span className="general-accordion-label-v3">{t("guides.title")}</span>
@@ -419,14 +419,14 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
           )}
         </div>
 
-        <div className="general-info-card-v3 compact">
+        <div className="dom-general-info-card-v3 compact">
           <h3 className="general-card-title-v3">{t("sections.options")}</h3>
           <div className="general-option-row-v3"><span className="general-option-label-v3">{t("options.dnsAnycast")}</span><span className="general-option-value-v3 muted">{t("options.notAvailable")}</span></div>
           <div className="general-option-row-v3"><span className="general-option-label-v3">{t("options.owo")}</span><span className={`general-option-value-v3 ${details?.owoSupported ? "" : "muted"}`}>{details?.owoSupported ? t("options.available") : t("options.notSupported")}</span></div>
           <div className="general-option-row-v3"><span className="general-option-label-v3">{t("options.dnsType")}</span><span className="general-option-value-v3">{dnsServerType}</span></div>
         </div>
 
-        <div className="general-info-card-v3 compact highlight">
+        <div className="dom-general-info-card-v3 compact highlight">
           <h3 className="general-card-title-v3">{t("sections.tips")}</h3>
           <p className="general-advice-intro-v3">{t("tips.intro")}</p>
           <a href={getHostingOrderUrl()} target="_blank" rel="noopener noreferrer" className="general-advice-link-v3"><span>{t("tips.hosting")}</span><ChevronRightIcon /></a>

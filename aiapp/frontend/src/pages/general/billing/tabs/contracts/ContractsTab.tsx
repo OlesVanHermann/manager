@@ -47,18 +47,18 @@ export function ContractsTab({ credentials }: TabProps) {
 
   const getStatusBadge = (agreed: string) => {
     switch (agreed) {
-      case "ok": return <span className="contracts-badge contracts-badge-success">{t("contracts.status.accepted")}</span>;
-      case "todo": return <span className="contracts-badge contracts-badge-warning">{t("contracts.status.toSign")}</span>;
-      case "ko": return <span className="contracts-badge contracts-badge-error">{t("contracts.status.refused")}</span>;
-      default: return <span className="contracts-badge">{agreed}</span>;
+      case "ok": return <span className="billing-contracts-badge contracts-badge-success">{t("contracts.status.accepted")}</span>;
+      case "todo": return <span className="billing-contracts-badge contracts-badge-warning">{t("contracts.status.toSign")}</span>;
+      case "ko": return <span className="billing-contracts-badge contracts-badge-error">{t("contracts.status.refused")}</span>;
+      default: return <span className="billing-contracts-badge">{agreed}</span>;
     }
   };
 
   if (loading) {
     return (
-      <div className="contracts-panel">
-        <div className="contracts-loading-state">
-          <div className="contracts-spinner"></div>
+      <div className="billing-contracts-panel">
+        <div className="billing-contracts-loading-state">
+          <div className="billing-contracts-spinner"></div>
           <p>{t("contracts.loading")}</p>
         </div>
       </div>
@@ -67,10 +67,10 @@ export function ContractsTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="contracts-panel">
-        <div className="contracts-error-banner">
+      <div className="billing-contracts-panel">
+        <div className="billing-contracts-error-banner">
           {error}
-          <button onClick={loadAgreements} className="contracts-btn contracts-btn-secondary contracts-btn-sm" style={{ marginLeft: "1rem" }}>
+          <button onClick={loadAgreements} className="billing-contracts-btn contracts-btn-secondary contracts-btn-sm" style={{ marginLeft: "1rem" }}>
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -82,32 +82,32 @@ export function ContractsTab({ credentials }: TabProps) {
   const acceptedAgreements = agreements.filter(a => a.agreed === "ok");
 
   return (
-    <div className="contracts-panel">
-      <div className="contracts-toolbar">
-        <span className="contracts-result-count">{t("contracts.count", { count: agreements.length })}</span>
+    <div className="billing-contracts-panel">
+      <div className="billing-contracts-toolbar">
+        <span className="billing-contracts-result-count">{t("contracts.count", { count: agreements.length })}</span>
       </div>
 
       {pendingAgreements.length > 0 && (
-        <div className="contracts-section">
-          <h4 className="contracts-section-title">
-            <span className="contracts-warning-icon">⚠</span>
+        <div className="billing-contracts-section">
+          <h4 className="billing-contracts-section-title">
+            <span className="billing-contracts-warning-icon">⚠</span>
             {t("contracts.pendingSection", { count: pendingAgreements.length })}
           </h4>
-          <div className="contracts-list">
+          <div className="billing-contracts-list">
             {pendingAgreements.map((a) => (
-              <div key={a.id} className="contracts-card contracts-pending">
-                <div className="contracts-info">
-                  <h5 className="contracts-name">{a.contract?.name || `${t("contracts.contractNumber")} #${a.contractId}`}</h5>
-                  <p className="contracts-date">{t("columns.date")} : {formatDateLong(a.date)}</p>
+              <div key={a.id} className="billing-contracts-card contracts-pending">
+                <div className="billing-contracts-info">
+                  <h5 className="billing-contracts-name">{a.contract?.name || `${t("contracts.contractNumber")} #${a.contractId}`}</h5>
+                  <p className="billing-contracts-date">{t("columns.date")} : {formatDateLong(a.date)}</p>
                   {getStatusBadge(a.agreed)}
                 </div>
-                <div className="contracts-actions">
+                <div className="billing-contracts-actions">
                   {a.contract?.pdf && (
-                    <a href={a.contract.pdf} target="_blank" rel="noopener noreferrer" className="contracts-btn contracts-btn-secondary contracts-btn-sm">
+                    <a href={a.contract.pdf} target="_blank" rel="noopener noreferrer" className="billing-contracts-btn contracts-btn-secondary contracts-btn-sm">
                       <DownloadIcon /> PDF
                     </a>
                   )}
-                  <button className="contracts-btn contracts-btn-primary contracts-btn-sm" onClick={() => handleAccept(a.id)} disabled={acceptingId === a.id}>
+                  <button className="billing-contracts-btn contracts-btn-primary contracts-btn-sm" onClick={() => handleAccept(a.id)} disabled={acceptingId === a.id}>
                     {acceptingId === a.id ? t("contracts.accepting") : t("contracts.accept")}
                   </button>
                 </div>
@@ -118,10 +118,10 @@ export function ContractsTab({ credentials }: TabProps) {
       )}
 
       {acceptedAgreements.length > 0 && (
-        <div className="contracts-section">
-          <h4 className="contracts-section-title">{t("contracts.acceptedSection", { count: acceptedAgreements.length })}</h4>
-          <div className="contracts-table-container">
-            <table className="contracts-table">
+        <div className="billing-contracts-section">
+          <h4 className="billing-contracts-section-title">{t("contracts.acceptedSection", { count: acceptedAgreements.length })}</h4>
+          <div className="billing-contracts-table-container">
+            <table className="billing-contracts-table">
               <thead>
                 <tr>
                   <th>{t("columns.contract")}</th>
@@ -133,12 +133,12 @@ export function ContractsTab({ credentials }: TabProps) {
               <tbody>
                 {acceptedAgreements.map((a) => (
                   <tr key={a.id}>
-                    <td><span className="contracts-name-cell">{a.contract?.name || `${t("contracts.contractNumber")} #${a.contractId}`}</span></td>
+                    <td><span className="billing-contracts-name-cell">{a.contract?.name || `${t("contracts.contractNumber")} #${a.contractId}`}</span></td>
                     <td>{formatDateLong(a.date)}</td>
                     <td>{getStatusBadge(a.agreed)}</td>
-                    <td className="contracts-actions-cell">
+                    <td className="billing-contracts-actions-cell">
                       {a.contract?.pdf && (
-                        <a href={a.contract.pdf} target="_blank" rel="noopener noreferrer" className="contracts-action-btn" title={t("actions.downloadPdf")}>
+                        <a href={a.contract.pdf} target="_blank" rel="noopener noreferrer" className="billing-contracts-action-btn" title={t("actions.downloadPdf")}>
                           <DownloadIcon />
                         </a>
                       )}
@@ -152,7 +152,7 @@ export function ContractsTab({ credentials }: TabProps) {
       )}
 
       {agreements.length === 0 && (
-        <div className="contracts-empty-state">
+        <div className="billing-contracts-empty-state">
           <ContractIcon />
           <h3>{t("contracts.empty.title")}</h3>
           <p>{t("contracts.empty.description")}</p>

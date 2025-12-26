@@ -26,7 +26,7 @@ export function TerminateModal({ serviceName, isOpen, onClose }: Props) {
           </p>
         </div>
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Fermer</button>
+          <button className="wh-modal-btn-secondary" onClick={onClose}>Fermer</button>
         </div>
       </div>
     </div>

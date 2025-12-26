@@ -28,7 +28,7 @@ export function DomainsTab({ org, service }: Props) {
     load();
   }, [org, service]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="exchange-domains-loading"><div className="exchange-domains-skeleton" /></div>;
 
   return (
     <div className="exchange-domains-tab">
@@ -44,9 +44,9 @@ export function DomainsTab({ org, service }: Props) {
                 {d.main && <span className="exchange-domains-main-badge">Principal</span>}
               </div>
               <div className="exchange-domains-checks">
-                <div className={`exchange-domains-check ${d.state === 'ok' ? 'valid' : 'invalid'}`}><span className="icon">{d.state === 'ok' ? '✓' : '✗'}</span> État: {d.state}</div>
-                <div className={`exchange-domains-check ${d.mxIsValid ? 'valid' : 'invalid'}`}><span className="icon">{d.mxIsValid ? '✓' : '✗'}</span> MX</div>
-                <div className={`exchange-domains-check ${d.srvIsValid ? 'valid' : 'invalid'}`}><span className="icon">{d.srvIsValid ? '✓' : '✗'}</span> SRV</div>
+                <div className={`exchange-domains-check ${d.state === 'ok' ? 'valid' : 'invalid'}`}><span className="exchange-domains-icon">{d.state === 'ok' ? '✓' : '✗'}</span> État: {d.state}</div>
+                <div className={`exchange-domains-check ${d.mxIsValid ? 'valid' : 'invalid'}`}><span className="exchange-domains-icon">{d.mxIsValid ? '✓' : '✗'}</span> MX</div>
+                <div className={`exchange-domains-check ${d.srvIsValid ? 'valid' : 'invalid'}`}><span className="exchange-domains-icon">{d.srvIsValid ? '✓' : '✗'}</span> SRV</div>
               </div>
             </div>
           ))}

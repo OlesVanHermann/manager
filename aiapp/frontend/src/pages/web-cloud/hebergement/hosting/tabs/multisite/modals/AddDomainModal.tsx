@@ -65,8 +65,8 @@ export function AddDomainModal({ serviceName, isOpen, onClose, onSuccess }: Prop
           </div>
         </div>
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={handleAdd} disabled={loading || !domain.trim()}>
+          <button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="wh-modal-btn-primary" onClick={handleAdd} disabled={loading || !domain.trim()}>
             {loading ? "Ajout..." : "Ajouter"}
           </button>
         </div>

@@ -28,7 +28,7 @@ export function GeneralTab({ packName, details }: Props) {
             <>
               <div className="general-xdsl-info-item">
                 <label>{t("offer")}</label>
-                <span className="badge info">{details.offerDescription}</span>
+                <span className="xdsl-general-badge info">{details.offerDescription}</span>
               </div>
               <div className="general-xdsl-info-item">
                 <label>{t("fields.description")}</label>
@@ -36,7 +36,7 @@ export function GeneralTab({ packName, details }: Props) {
               </div>
               <div className="general-xdsl-info-item">
                 <label>{t("legacy")}</label>
-                <span className={`badge ${details.capabilities?.isLegacyOffer ? 'warning' : 'success'}`}>
+                <span className={`xdsl-general-badge ${details.capabilities?.isLegacyOffer ? 'warning' : 'success'}`}>
                   {details.capabilities?.isLegacyOffer ? 'Oui' : 'Non'}
                 </span>
               </div>

@@ -54,15 +54,15 @@ export function LogsTab({ serviceName, details }: Props) {
   const statsUrl = hosting?.cluster ? `https://logs.ovh.net/${serviceName}/` : null;
   const logsUrl = hosting?.cluster ? `https://logs.ovh.net/${serviceName}/logs/` : null;
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
+  if (loading) return <div className="wh-logs-loading"><div className="wh-logs-skeleton" style={{ height: "400px" }} /></div>;
 
   return (
     <div className="logs-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="wh-logs-header">
         <div>
           <h3>{t("logs.title")}</h3>
-          <p className="tab-description">{t("logs.description")}</p>
+          <p className="wh-logs-description">{t("logs.description")}</p>
         </div>
       </div>
 
@@ -87,10 +87,10 @@ export function LogsTab({ serviceName, details }: Props) {
         <div className="stats-content">
           {/* Filters */}
           <div className="stats-filters">
-            <div className="filter-group">
+            <div className="wh-logs-filter-group">
               <label>{t("logs.type")} :</label>
               <select 
-                className="form-select"
+                className="wh-logs-select"
                 value={statsType}
                 onChange={(e) => setStatsType(e.target.value)}
               >
@@ -100,10 +100,10 @@ export function LogsTab({ serviceName, details }: Props) {
               </select>
             </div>
 
-            <div className="filter-group">
+            <div className="wh-logs-filter-group">
               <label>{t("logs.period")} :</label>
               <select 
-                className="form-select"
+                className="wh-logs-select"
                 value={statsPeriod}
                 onChange={(e) => setStatsPeriod(e.target.value)}
               >
@@ -119,17 +119,17 @@ export function LogsTab({ serviceName, details }: Props) {
             <h4 className="chart-title">Requêtes HTTP - Dernière semaine</h4>
             <div className="chart-placeholder">
               <div className="chart-bars">
-                <div className="bar" style={{ height: "60%" }}><span>Lun</span></div>
-                <div className="bar" style={{ height: "75%" }}><span>Mar</span></div>
-                <div className="bar" style={{ height: "90%" }}><span>Mer</span></div>
-                <div className="bar" style={{ height: "65%" }}><span>Jeu</span></div>
-                <div className="bar" style={{ height: "80%" }}><span>Ven</span></div>
-                <div className="bar" style={{ height: "95%" }}><span>Sam</span></div>
-                <div className="bar" style={{ height: "45%" }}><span>Dim</span></div>
+                <div className="wh-logs-bar" style={{ height: "60%" }}><span>Lun</span></div>
+                <div className="wh-logs-bar" style={{ height: "75%" }}><span>Mar</span></div>
+                <div className="wh-logs-bar" style={{ height: "90%" }}><span>Mer</span></div>
+                <div className="wh-logs-bar" style={{ height: "65%" }}><span>Jeu</span></div>
+                <div className="wh-logs-bar" style={{ height: "80%" }}><span>Ven</span></div>
+                <div className="wh-logs-bar" style={{ height: "95%" }}><span>Sam</span></div>
+                <div className="wh-logs-bar" style={{ height: "45%" }}><span>Dim</span></div>
               </div>
             </div>
             {statsUrl && (
-              <a href={statsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" style={{ marginTop: "1rem" }}>
+              <a href={statsUrl} target="_blank" rel="noopener noreferrer" className="wh-logs-btn-secondary-sm" style={{ marginTop: "1rem" }}>
                 {t("logs.viewStats")} ↗
               </a>
             )}
@@ -140,13 +140,13 @@ export function LogsTab({ serviceName, details }: Props) {
       {/* LOGS TAB */}
       {activeSubTab === "logs" && (
         <div className="logs-content">
-          <div className="tab-actions" style={{ marginBottom: "1rem" }}>
-            <button className="btn btn-secondary btn-sm" onClick={() => setShowUserLogsModal(true)}>
+          <div className="wh-logs-actions" style={{ marginBottom: "1rem" }}>
+            <button className="wh-logs-btn-secondary-sm" onClick={() => setShowUserLogsModal(true)}>
               {t("logs.manageUsers")}
             </button>
           </div>
 
-          <table className="data-table">
+          <table className="wh-logs-table">
             <thead>
               <tr>
                 <th>Utilisateur</th>
@@ -159,15 +159,15 @@ export function LogsTab({ serviceName, details }: Props) {
             <tbody>
               {/* Logs principaux */}
               <tr>
-                <td className="font-medium">{serviceName}</td>
+                <td className="wh-logs-font-medium">{serviceName}</td>
                 <td>Logs principaux</td>
                 <td>
-                  <a href={logsUrl || "#"} target="_blank" rel="noopener noreferrer" className="link-action">
+                  <a href={logsUrl || "#"} target="_blank" rel="noopener noreferrer" className="wh-logs-link-action">
                     Accéder aux logs ↗
                   </a>
                 </td>
                 <td>
-                  <a href={statsUrl || "#"} target="_blank" rel="noopener noreferrer" className="link-action">
+                  <a href={statsUrl || "#"} target="_blank" rel="noopener noreferrer" className="wh-logs-link-action">
                     Accéder aux stats ↗
                   </a>
                 </td>
@@ -181,12 +181,12 @@ export function LogsTab({ serviceName, details }: Props) {
                   <td>{log.login}</td>
                   <td>{log.description || "Logs personnalisés"}</td>
                   <td>
-                    <a href={`${logsUrl}${log.login}/`} target="_blank" rel="noopener noreferrer" className="link-action">
+                    <a href={`${logsUrl}${log.login}/`} target="_blank" rel="noopener noreferrer" className="wh-logs-link-action">
                       Accéder aux logs ↗
                     </a>
                   </td>
                   <td>
-                    <a href={`${statsUrl}${log.login}/`} target="_blank" rel="noopener noreferrer" className="link-action">
+                    <a href={`${statsUrl}${log.login}/`} target="_blank" rel="noopener noreferrer" className="wh-logs-link-action">
                       Accéder aux stats ↗
                     </a>
                   </td>

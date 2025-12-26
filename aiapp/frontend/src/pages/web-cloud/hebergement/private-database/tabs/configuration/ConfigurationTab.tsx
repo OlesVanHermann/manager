@@ -44,8 +44,8 @@ export function ConfigurationTab({ serviceName, details }: Props) {
     return <input type="text" className={cls} value={value} onChange={(e) => handleChange(param.key, e.target.value)} />;
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="privdb-configuration-loading"><div className="privdb-configuration-skeleton" /></div>;
+  if (error) return <div className="privdb-configuration-error">{error}</div>;
 
   const basicParams = config.filter(p => !p.key.startsWith("innodb_") && !p.key.startsWith("tmp_"));
   const advancedParams = config.filter(p => p.key.startsWith("innodb_") || p.key.startsWith("tmp_"));
@@ -56,8 +56,8 @@ export function ConfigurationTab({ serviceName, details }: Props) {
       <div className="configuration-header">
         <div><h3>{t("configuration.title")}</h3><p className="configuration-description">{t("configuration.description")}</p></div>
         <div className="configuration-actions">
-          {hasModifications && (<><button className="btn btn-secondary btn-sm" onClick={() => setModified({})}>Annuler</button>
-            <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving}>{saving ? "Sauvegarde..." : `Appliquer (${Object.keys(modified).length})`}</button></>)}
+          {hasModifications && (<><button className="privdb-configuration-btn-secondary-sm" onClick={() => setModified({})}>Annuler</button>
+            <button className="privdb-configuration-btn-primary-sm" onClick={handleSave} disabled={saving}>{saving ? "Sauvegarde..." : `Appliquer (${Object.keys(modified).length})`}</button></>)}
         </div>
       </div>
 
@@ -112,7 +112,7 @@ export function ConfigurationTab({ serviceName, details }: Props) {
       )}
 
       <div className="configuration-footer">
-        <button className="btn btn-danger btn-sm" onClick={() => { if(confirm(t("configuration.confirmResetAll"))) { const d: Record<string,string> = {}; config.forEach(p => d[p.key] = p.defaultValue); setModified(d); } }}>
+        <button className="privdb-configuration-btn-danger-sm" onClick={() => { if(confirm(t("configuration.confirmResetAll"))) { const d: Record<string,string> = {}; config.forEach(p => d[p.key] = p.defaultValue); setModified(d); } }}>
           ↺ {t("configuration.resetAll")}
         </button>
       </div>

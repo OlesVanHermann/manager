@@ -9,7 +9,7 @@ import IdentitiesTab from "./tabs/identities/IdentitiesTab";
 import PoliciesTab from "./tabs/policies/PoliciesTab";
 import GroupsTab from "./tabs/groups/GroupsTab";
 import LogsTab from "./tabs/logs/LogsTab";
-import "./GeneralPage.css";
+import "./IamGeneralPage.css";
 
 interface IamGeneralPageProps {
   initialTab?: string;
@@ -43,19 +43,19 @@ export default function IamGeneralPage({ initialTab = "identities" }: IamGeneral
   }, [initialTab]);
 
   return (
-    <div className="general-page">
-      <div className="general-page-header">
-        <div className="general-page-header-content">
+    <div className="iam-general-page">
+      <div className="iam-general-page-header">
+        <div className="iam-general-page-header-content">
           <h1>{t("title")}</h1>
-          <p className="general-page-description">{t("description")}</p>
+          <p className="iam-general-page-description">{t("description")}</p>
         </div>
-        <a href="https://docs.ovh.com/fr/iam/" target="_blank" rel="noopener noreferrer" className="general-guides-link">
+        <a href="https://docs.ovh.com/fr/iam/" target="_blank" rel="noopener noreferrer" className="iam-general-page-guides-link">
           {t("docsLink")}
         </a>
       </div>
 
-      <div className="general-tabs-container">
-        <nav className="general-tabs-list">
+      <div className="iam-general-page-tabs-container">
+        <nav className="iam-general-page-tabs-list">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -68,7 +68,7 @@ export default function IamGeneralPage({ initialTab = "identities" }: IamGeneral
         </nav>
       </div>
 
-      <div className="general-content">
+      <div className="iam-general-page-content">
         {activeTab === "identities" && <IdentitiesTab />}
         {activeTab === "policies" && <PoliciesTab />}
         {activeTab === "groups" && <GroupsTab />}

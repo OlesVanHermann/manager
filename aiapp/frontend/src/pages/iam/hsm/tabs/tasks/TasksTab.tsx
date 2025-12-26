@@ -65,12 +65,12 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="tasks-loading-state">{tCommon("loading")}</div>;
+    return <div className="hsm-tasks-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="tasks-error-state">
+      <div className="hsm-tasks-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadTasks}>{tCommon("actions.retry")}</button>
       </div>
@@ -79,7 +79,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
 
   if (tasks.length === 0) {
     return (
-      <div className="tasks-empty-state">
+      <div className="hsm-tasks-empty-state">
         <h2>{t("empty.title")}</h2>
         <p>{t("empty.description")}</p>
       </div>
@@ -87,25 +87,25 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
   }
 
   return (
-    <div className="tasks-tab">
-      <div className="tasks-toolbar">
+    <div className="hsm-tasks-tab">
+      <div className="hsm-tasks-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={loadTasks}>{tCommon("actions.refresh")}</button>
       </div>
 
-      <div className="tasks-list">
+      <div className="hsm-tasks-list">
         {tasks.map((task) => (
-          <div key={task.id} className="tasks-item">
-            <span className="tasks-icon">{tasksService.getStatusIcon(task.status)}</span>
-            <div className="tasks-info">
-              <div className="tasks-name">{task.function}</div>
-              <div className="tasks-date">
+          <div key={task.id} className="hsm-tasks-item">
+            <span className="hsm-tasks-icon">{tasksService.getStatusIcon(task.status)}</span>
+            <div className="hsm-tasks-info">
+              <div className="hsm-tasks-name">{task.function}</div>
+              <div className="hsm-tasks-date">
                 {task.startDate && <span>{t("started")}: {tasksService.formatDateTime(task.startDate)}</span>}
                 {task.doneDate && <span> • {t("completed")}: {tasksService.formatDateTime(task.doneDate)}</span>}
               </div>
-              {task.comment && <div className="tasks-comment">{task.comment}</div>}
+              {task.comment && <div className="hsm-tasks-comment">{task.comment}</div>}
             </div>
-            <div className="tasks-status">{getStatusBadge(task.status)}</div>
+            <div className="hsm-tasks-status">{getStatusBadge(task.status)}</div>
           </div>
         ))}
       </div>

@@ -27,7 +27,7 @@ export function AccountsTab({ serviceId }: Props) {
     load();
   }, [serviceId]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /></div>;
+  if (loading) return <div className="zimbra-accounts-loading"><div className="zimbra-accounts-skeleton" /><div className="zimbra-accounts-skeleton" /></div>;
 
   return (
     <div className="zimbra-accounts-tab">

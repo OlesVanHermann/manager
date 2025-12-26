@@ -71,8 +71,8 @@ export default function SmsPage() {
           </div>
           <h1>{t('title')}</h1>
         </div>
-        <div className="tab-loading">
-          <div className="skeleton-block" />
+        <div className="sms-page-loading">
+          <div className="sms-page-skeleton" />
         </div>
       </div>
     );

@@ -32,8 +32,8 @@ export function VoicemailsTab({ billingAccount }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
+      <div className="voip-voicemails-loading">
+        <div className="voip-voicemails-skeleton" />
       </div>
     );
   }

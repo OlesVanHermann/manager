@@ -28,7 +28,7 @@ export function GroupsTab({ org, service }: Props) {
     load();
   }, [org, service]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="exchange-groups-loading"><div className="exchange-groups-skeleton" /></div>;
 
   return (
     <div className="exchange-groups-tab">
@@ -43,8 +43,8 @@ export function GroupsTab({ org, service }: Props) {
               <h4>{g.displayName}</h4>
               <p className="exchange-groups-email">{g.mailingListAddress}</p>
               <div className="exchange-groups-meta">
-                <span className={`badge ${g.state === 'ok' ? 'success' : 'warning'}`}>{g.state}</span>
-                <span className="badge info">{g.memberCount || g.members?.length || 0} membres</span>
+                <span className={`exchange-groups-badge ${g.state === 'ok' ? 'success' : 'warning'}`}>{g.state}</span>
+                <span className="exchange-groups-badge info">{g.memberCount || g.members?.length || 0} membres</span>
               </div>
             </div>
           ))}

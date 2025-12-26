@@ -1,6 +1,6 @@
 // ============================================================
 // CONTACTS REQUESTS TAB - Demandes de changement de contacts
-// Styles: ./ContactsRequestsTab.css (préfixe .contacts-requests-)
+// Styles: ./ContactsRequestsTab.css (préfixe .account-contacts-requests-)
 // Service: ./ContactsRequestsTab.ts (ISOLÉ)
 // ============================================================
 
@@ -109,13 +109,13 @@ export function ContactsRequestsTab() {
 
   const getStatusBadge = (state: string) => {
     const map: Record<string, { label: string; className: string }> = {
-      todo: { label: t('status.todo'), className: "contacts-requests-badge-warning" },
-      doing: { label: t('status.doing'), className: "contacts-requests-badge-info" },
-      done: { label: t('status.done'), className: "contacts-requests-badge-success" },
-      refused: { label: t('status.refused'), className: "contacts-requests-badge-error" },
-      validatingByCustomers: { label: t('status.validating'), className: "contacts-requests-badge-warning" },
+      todo: { label: t('status.todo'), className: "account-contacts-requests-badge-warning" },
+      doing: { label: t('status.doing'), className: "account-contacts-requests-badge-info" },
+      done: { label: t('status.done'), className: "account-contacts-requests-badge-success" },
+      refused: { label: t('status.refused'), className: "account-contacts-requests-badge-error" },
+      validatingByCustomers: { label: t('status.validating'), className: "account-contacts-requests-badge-warning" },
     };
-    return map[state] || { label: state, className: "contacts-requests-badge-neutral" };
+    return map[state] || { label: state, className: "account-contacts-requests-badge-neutral" };
   };
 
   const getContactTypeName = (type: string) => {
@@ -134,30 +134,30 @@ export function ContactsRequestsTab() {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="contacts-requests-container"><div className="contacts-requests-loading-state"><div className="contacts-requests-spinner"></div><p>{t('loading')}</p></div></div>;
+    return <div className="account-contacts-requests-container"><div className="account-contacts-requests-loading-state"><div className="account-contacts-requests-spinner"></div><p>{t('loading')}</p></div></div>;
   }
 
   if (error) {
-    return <div className="contacts-requests-container"><div className="contacts-requests-error-banner">{error}<button onClick={loadRequests} className="contacts-requests-btn contacts-requests-btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
+    return <div className="account-contacts-requests-container"><div className="account-contacts-requests-error-banner">{error}<button onClick={loadRequests} className="account-contacts-requests-btn contacts-requests-btn-secondary" style={{ marginLeft: "1rem" }}>{tCommon('actions.refresh')}</button></div></div>;
   }
 
   return (
-    <div className="contacts-requests-container">
-      <div className="contacts-requests-header">
+    <div className="account-contacts-requests-container">
+      <div className="account-contacts-requests-header">
         <h2>{t('title')}</h2>
         <p>{t('description')}</p>
       </div>
 
-      <div className="contacts-requests-filter-bar">
-        <button className={"contacts-requests-filter-btn" + (filter === "pending" ? " active" : "")} onClick={() => setFilter("pending")}>{t('filters.pending')} ({pendingCount})</button>
-        <button className={"contacts-requests-filter-btn" + (filter === "all" ? " active" : "")} onClick={() => setFilter("all")}>{t('filters.all')} ({requests.length})</button>
+      <div className="account-contacts-requests-filter-bar">
+        <button className={"account-contacts-requests-filter-btn" + (filter === "pending" ? " active" : "")} onClick={() => setFilter("pending")}>{t('filters.pending')} ({pendingCount})</button>
+        <button className={"account-contacts-requests-filter-btn" + (filter === "all" ? " active" : "")} onClick={() => setFilter("all")}>{t('filters.all')} ({requests.length})</button>
       </div>
 
       {filteredRequests.length === 0 ? (
-        <div className="contacts-requests-empty-state"><p>{filter === "pending" ? t('empty.pending') : t('empty.all')}</p></div>
+        <div className="account-contacts-requests-empty-state"><p>{filter === "pending" ? t('empty.pending') : t('empty.all')}</p></div>
       ) : (
-        <div className="contacts-requests-table-container">
-          <table className="contacts-requests-table">
+        <div className="account-contacts-requests-table-container">
+          <table className="account-contacts-requests-table">
             <thead>
               <tr>
                 <th>{t('columns.service')}</th>
@@ -175,17 +175,17 @@ export function ContactsRequestsTab() {
                 const canAct = pendingStates.includes(req.state);
                 return (
                   <tr key={req.id}>
-                    <td className="contacts-requests-service-name">{req.serviceDomain}</td>
+                    <td className="account-contacts-requests-service-name">{req.serviceDomain}</td>
                     <td>{getContactTypeName(req.type)}</td>
-                    <td><code className="contacts-requests-contact-code">{req.from}</code></td>
-                    <td><code className="contacts-requests-contact-code">{req.to}</code></td>
+                    <td><code className="account-contacts-requests-contact-code">{req.from}</code></td>
+                    <td><code className="account-contacts-requests-contact-code">{req.to}</code></td>
                     <td>{formatDate(req.askDate)}</td>
-                    <td><span className={"contacts-requests-badge " + status.className}>{status.label}</span></td>
+                    <td><span className={"account-contacts-requests-badge " + status.className}>{status.label}</span></td>
                     <td>
                       {canAct && (
-                        <div className="contacts-requests-actions">
-                          <button onClick={() => openModal("accept", req)} className="contacts-requests-btn contacts-requests-btn-success">{t('actions.accept')}</button>
-                          <button onClick={() => openModal("refuse", req)} className="contacts-requests-btn contacts-requests-btn-secondary">{t('actions.refuse')}</button>
+                        <div className="account-contacts-requests-actions">
+                          <button onClick={() => openModal("accept", req)} className="account-contacts-requests-btn contacts-requests-btn-success">{t('actions.accept')}</button>
+                          <button onClick={() => openModal("refuse", req)} className="account-contacts-requests-btn contacts-requests-btn-secondary">{t('actions.refuse')}</button>
                         </div>
                       )}
                     </td>
@@ -199,35 +199,35 @@ export function ContactsRequestsTab() {
 
       {/* Modale Accept/Refuse avec token */}
       {modal.type && modal.request && (
-        <div className="contacts-requests-modal-overlay" onClick={closeModal}>
-          <div className="contacts-requests-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="account-contacts-requests-modal-overlay" onClick={closeModal}>
+          <div className="account-contacts-requests-modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>{modal.type === "accept" ? t('modal.acceptTitle') : t('modal.refuseTitle')}</h3>
             <p>{t('modal.description')}</p>
-            <div className="contacts-requests-modal-info">
+            <div className="account-contacts-requests-modal-info">
               <p><strong>{t('columns.service')}:</strong> {modal.request.serviceDomain}</p>
               <p><strong>{t('columns.contactType')}:</strong> {getContactTypeName(modal.request.type)}</p>
               <p><strong>{t('columns.from')}:</strong> <code>{modal.request.from}</code> → <strong>{t('columns.to')}:</strong> <code>{modal.request.to}</code></p>
             </div>
-            <div className="contacts-requests-form-group">
-              <label htmlFor="contacts-requests-token">{t('modal.tokenLabel')}</label>
+            <div className="account-contacts-requests-form-group">
+              <label htmlFor="account-contacts-requests-token">{t('modal.tokenLabel')}</label>
               <input
                 type="text"
-                id="contacts-requests-token"
-                className="contacts-requests-input"
+                id="account-contacts-requests-token"
+                className="account-contacts-requests-input"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder={t('modal.tokenPlaceholder')}
                 disabled={actionLoading}
                 autoFocus
               />
-              <p className="contacts-requests-form-hint">{t('modal.tokenHint')}</p>
+              <p className="account-contacts-requests-form-hint">{t('modal.tokenHint')}</p>
             </div>
-            {actionError && <div className="contacts-requests-error-banner">{actionError}</div>}
-            <div className="contacts-requests-modal-actions">
-              <button onClick={closeModal} className="contacts-requests-btn contacts-requests-btn-secondary" disabled={actionLoading}>{tCommon('actions.cancel')}</button>
+            {actionError && <div className="account-contacts-requests-error-banner">{actionError}</div>}
+            <div className="account-contacts-requests-modal-actions">
+              <button onClick={closeModal} className="account-contacts-requests-btn contacts-requests-btn-secondary" disabled={actionLoading}>{tCommon('actions.cancel')}</button>
               <button
                 onClick={modal.type === "accept" ? handleAccept : handleRefuse}
-                className={modal.type === "accept" ? "contacts-requests-btn contacts-requests-btn-success" : "contacts-requests-btn contacts-requests-btn-danger"}
+                className={modal.type === "accept" ? "account-contacts-requests-btn contacts-requests-btn-success" : "account-contacts-requests-btn contacts-requests-btn-danger"}
                 disabled={actionLoading || !token.trim()}
               >
                 {actionLoading ? tCommon('loading') : modal.type === "accept" ? t('actions.accept') : t('actions.refuse')}

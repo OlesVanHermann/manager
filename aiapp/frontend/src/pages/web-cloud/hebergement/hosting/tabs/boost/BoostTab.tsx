@@ -83,22 +83,22 @@ export function BoostTab({ serviceName, details }: Props) {
     return new Date(date).toLocaleDateString("fr-FR");
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
+  if (loading) return <div className="wh-boost-loading"><div className="wh-boost-skeleton" style={{ height: "400px" }} /></div>;
 
   const isBoostActive = !!hosting?.boostOffer;
 
   return (
     <div className="boost-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="wh-boost-header">
         <div>
           <h3>{t("boost.title")}</h3>
-          <p className="tab-description">{t("boost.description")}</p>
+          <p className="wh-boost-description">{t("boost.description")}</p>
         </div>
-        <div className="tab-actions">
+        <div className="wh-boost-actions">
           {isBoostActive ? (
             <button 
-              className="btn btn-danger btn-sm" 
+              className="wh-boost-btn-danger-sm" 
               onClick={handleDeactivateBoost}
               disabled={actionLoading}
             >
@@ -106,7 +106,7 @@ export function BoostTab({ serviceName, details }: Props) {
             </button>
           ) : (
             <button 
-              className="btn btn-primary" 
+              className="wh-boost-btn-primary" 
               onClick={handleActivateBoost}
               disabled={actionLoading || !selectedOffer}
             >
@@ -144,15 +144,15 @@ export function BoostTab({ serviceName, details }: Props) {
                 <span>{t("boost.featurePriority")}</span>
               </div>
             </div>
-            <div className="info-banner warning" style={{ marginTop: "1rem" }}>
-              <span className="info-icon">ℹ️</span>
+            <div className="wh-boost-info-banner warning" style={{ marginTop: "1rem" }}>
+              <span className="wh-boost-info-icon">ℹ️</span>
               <span>{t("boost.noteDesc")}</span>
             </div>
           </div>
           <div className="boost-selector">
             <label>Choisir une offre Boost</label>
             <select 
-              className="form-select"
+              className="wh-boost-select"
               value={selectedOffer}
               onChange={(e) => setSelectedOffer(e.target.value)}
             >
@@ -168,7 +168,7 @@ export function BoostTab({ serviceName, details }: Props) {
       {/* Historique */}
       <div className="boost-history" style={{ marginTop: "2rem" }}>
         <h4>Historique des boosts</h4>
-        <table className="data-table">
+        <table className="wh-boost-table">
           <thead>
             <tr>
               <th>Compte</th>
@@ -180,20 +180,20 @@ export function BoostTab({ serviceName, details }: Props) {
           <tbody>
             {isBoostActive && (
               <tr>
-                <td className="font-medium">{serviceName}</td>
+                <td className="wh-boost-font-medium">{serviceName}</td>
                 <td>{hosting?.offer || "-"}</td>
                 <td>
-                  <span className="badge success">{hosting?.boostOffer}</span>
+                  <span className="wh-boost-badge success">{hosting?.boostOffer}</span>
                 </td>
                 <td>En cours</td>
               </tr>
             )}
             {!isBoostActive && (
               <tr>
-                <td className="font-medium">{serviceName}</td>
+                <td className="wh-boost-font-medium">{serviceName}</td>
                 <td>{hosting?.offer || "-"}</td>
                 <td>
-                  <span className="badge inactive">Désactivé</span>
+                  <span className="wh-boost-badge inactive">Désactivé</span>
                 </td>
                 <td>-</td>
               </tr>

@@ -29,8 +29,8 @@ export function RedirectionsTab({ domain }: Props) {
     load();
   }, [domain]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="emaildomain-redirections-loading"><div className="emaildomain-redirections-skeleton" /></div>;
+  if (error) return <div className="emaildomain-redirections-error">{error}</div>;
 
   return (
     <div className="emaildomain-redirections-tab">
@@ -52,12 +52,12 @@ export function RedirectionsTab({ domain }: Props) {
           {redirections.map(r => (
             <div key={r.id} className="emaildomain-redirections-card">
               <div className="emaildomain-redirections-flow">
-                <span className="from">{r.from}</span>
-                <span className="arrow">→</span>
-                <span className="to">{r.to}</span>
+                <span className="emaildomain-redirections-from">{r.from}</span>
+                <span className="emaildomain-redirections-arrow">→</span>
+                <span className="emaildomain-redirections-to">{r.to}</span>
               </div>
               <div className="emaildomain-redirections-meta">
-                <span className={`badge ${r.localCopy ? 'info' : 'inactive'}`}>{r.localCopy ? '📋 Copie locale' : 'Pas de copie'}</span>
+                <span className={`emaildomain-redirections-badge ${r.localCopy ? 'info' : 'inactive'}`}>{r.localCopy ? '📋 Copie locale' : 'Pas de copie'}</span>
               </div>
             </div>
           ))}

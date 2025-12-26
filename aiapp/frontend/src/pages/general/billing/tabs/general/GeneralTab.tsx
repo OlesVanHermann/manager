@@ -48,9 +48,9 @@ export function GeneralTab({ credentials }: TabProps) {
 
   if (loading) {
     return (
-      <div className="general-tab-panel">
-        <div className="general-loading-state">
-          <div className="general-spinner"></div>
+      <div className="billing-general-tab-panel">
+        <div className="billing-general-loading-state">
+          <div className="billing-general-spinner"></div>
           <p>{t('services.loading')}</p>
         </div>
       </div>
@@ -59,10 +59,10 @@ export function GeneralTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="general-tab-panel">
-        <div className="general-error-banner">
+      <div className="billing-general-tab-panel">
+        <div className="billing-general-error-banner">
           {error}
-          <button onClick={loadServices} className="general-btn general-btn-sm general-btn-secondary" style={{ marginLeft: "1rem" }}>
+          <button onClick={loadServices} className="billing-general-btn general-btn-sm general-btn-secondary" style={{ marginLeft: "1rem" }}>
             {tCommon('actions.refresh')}
           </button>
         </div>
@@ -71,27 +71,27 @@ export function GeneralTab({ credentials }: TabProps) {
   }
 
   return (
-    <div className="general-tab-panel">
-      <div className="general-toolbar">
-        <div className="general-toolbar-left">
-          <select className="general-period-select" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
+    <div className="billing-general-tab-panel">
+      <div className="billing-general-toolbar">
+        <div className="billing-general-toolbar-left">
+          <select className="billing-general-period-select" value={filter} onChange={(e) => setFilter(e.target.value as any)}>
             <option value="all">{t('services.filters.all')}</option>
             <option value="expiring">{t('services.filters.expiringSoon')}</option>
             <option value="autorenew">{t('services.filters.autoRenew')}</option>
           </select>
-          <span className="general-result-count">{t('services.count', { count: filteredServices.length })}</span>
+          <span className="billing-general-result-count">{t('services.count', { count: filteredServices.length })}</span>
         </div>
       </div>
 
       {filteredServices.length === 0 ? (
-        <div className="general-empty-state">
+        <div className="billing-general-empty-state">
           <ServerIcon />
           <h3>{t('services.empty.title')}</h3>
           <p>{t('services.empty.description')}</p>
         </div>
       ) : (
-        <div className="general-table-container">
-          <table className="general-data-table">
+        <div className="billing-general-table-container">
+          <table className="billing-general-data-table">
             <thead>
               <tr>
                 <th>{t('columns.service')}</th>
@@ -104,18 +104,18 @@ export function GeneralTab({ credentials }: TabProps) {
             <tbody>
               {filteredServices.map((s: any) => (
                 <tr key={s.serviceId}>
-                  <td className="general-service-name">{s.resource?.displayName || s.resource?.name || s.serviceId}</td>
+                  <td className="billing-general-service-name">{s.resource?.displayName || s.resource?.name || s.serviceId}</td>
                   <td>{s.resource?.product?.name || s.route?.path || "-"}</td>
                   <td>{s.expiration ? formatDate(s.expiration) : "-"}</td>
                   <td>
                     {s.renew?.automatic ? (
-                      <span className="general-status-badge general-badge-success">{t('services.renewal.auto')}</span>
+                      <span className="billing-general-status-badge general-badge-success">{t('services.renewal.auto')}</span>
                     ) : (
-                      <span className="general-status-badge general-badge-warning">{t('services.renewal.manual')}</span>
+                      <span className="billing-general-status-badge general-badge-warning">{t('services.renewal.manual')}</span>
                     )}
                   </td>
-                  <td className="general-actions-cell">
-                    <button className="general-btn general-btn-outline general-btn-sm">{t('actions.manage')}</button>
+                  <td className="billing-general-actions-cell">
+                    <button className="billing-general-btn general-btn-outline general-btn-sm">{t('actions.manage')}</button>
                   </td>
                 </tr>
               ))}

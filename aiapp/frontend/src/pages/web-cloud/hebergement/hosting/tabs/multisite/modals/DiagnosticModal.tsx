@@ -137,7 +137,7 @@ export function DiagnosticModal({ serviceName, diagnostic, isOpen, onClose }: Pr
 
         {/* Footer */}
         <div className="modal-footer">
-          <button type="button" className="btn btn-primary" onClick={onClose}>
+          <button type="button" className="wh-modal-btn-primary" onClick={onClose}>
             {t("common.close", "Fermer")}
           </button>
         </div>

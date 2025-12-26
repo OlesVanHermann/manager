@@ -8,7 +8,7 @@ export function DumpDatabaseModal({ serviceName, databaseName, isOpen, onClose, 
     <div className="modal-overlay" onClick={onClose}><div className="modal-container" onClick={e => e.stopPropagation()}>
       <div className="modal-header"><h2>Exporter la base de données</h2><button className="modal-close" onClick={onClose}>×</button></div>
       <div className="modal-body"><p>Export de {databaseName} - Fonctionnalité en cours.</p></div>
-      <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Annuler</button><button className="btn btn-primary" onClick={handleDump} disabled={loading}>{loading ? "..." : "Exporter"}</button></div>
+      <div className="modal-footer"><button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button><button className="wh-modal-btn-primary" onClick={handleDump} disabled={loading}>{loading ? "..." : "Exporter"}</button></div>
     </div></div>
   );
 }

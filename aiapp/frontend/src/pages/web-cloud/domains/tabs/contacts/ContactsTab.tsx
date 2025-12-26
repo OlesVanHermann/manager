@@ -118,10 +118,10 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
 
   return (
     <div className="contacts-tab">
-      <div className="tab-header">
+      <div className="contacts-header">
         <div>
           <h3>{t("title")}</h3>
-          <p className="tab-description">{t("description")}</p>
+          <p className="contacts-description">{t("description")}</p>
         </div>
         <div className="tab-header-actions">
           <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="btn-primary">
@@ -164,7 +164,7 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
         })}
       </div>
 
-      <div className="info-box">
+      <div className="contacts-info-box">
         <p>{t("info")}</p>
       </div>
     </div>

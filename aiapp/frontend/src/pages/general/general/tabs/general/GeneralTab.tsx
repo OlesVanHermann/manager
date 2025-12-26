@@ -2,7 +2,7 @@
 // GENERAL TAB - Dashboard accueil OVHcloud (style Hub)
 // NAV1: general / NAV2: general / NAV3: general
 // ISOLÉ - Aucune dépendance vers d'autres tabs
-// Préfixe CSS: .general-
+// Préfixe CSS: .general-general-
 // ============================================================
 
 import { useTranslation } from "react-i18next";
@@ -34,14 +34,14 @@ function GeneralAlerts({ alerts, user, debtAmount, loadingBilling, onNavigate }:
   return (
     <>
       {/* Welcome */}
-      <div className="general-dashboard-welcome">
-        <div className="general-welcome-content">
+      <div className="general-general-dashboard-welcome">
+        <div className="general-general-welcome-content">
           <h1>{t('welcome.greeting', { name: user?.firstname || '' })}</h1>
-          <p className="general-welcome-subtitle">{t('welcome.subtitle')}</p>
+          <p className="general-general-welcome-subtitle">{t('welcome.subtitle')}</p>
         </div>
         {user?.isTrusted && (
           <span className="badge badge-success general-trusted-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="general-badge-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="general-general-badge-icon">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
             </svg>
             {t('welcome.securedAccount')}
@@ -51,10 +51,10 @@ function GeneralAlerts({ alerts, user, debtAmount, loadingBilling, onNavigate }:
 
       {/* Alerte dette */}
       {!loadingBilling && debtAmount > 0 && (
-        <div className="general-debt-alert">
-          <span className="general-debt-icon">⚠️</span>
-          <span className="general-debt-message" dangerouslySetInnerHTML={{ __html: t('debt.message', { amount: debtAmount.toFixed(2) }) }} />
-          <button className="general-debt-pay-btn" onClick={() => onNavigate("general-billing", { tab: "payments" })}>
+        <div className="general-general-debt-alert">
+          <span className="general-general-debt-icon">⚠️</span>
+          <span className="general-general-debt-message" dangerouslySetInnerHTML={{ __html: t('debt.message', { amount: debtAmount.toFixed(2) }) }} />
+          <button className="general-general-debt-pay-btn" onClick={() => onNavigate("general-general-billing", { tab: "payments" })}>
             {t('debt.payButton')}
           </button>
         </div>
@@ -94,12 +94,12 @@ export function GeneralTab({ onNavigate }: HomeProps) {
 
   const handleServiceClick = (serviceType: string) => {
     const filterType = SERVICE_TYPE_MAP[serviceType] || serviceType;
-    handleNavigate("general-billing", { serviceType: filterType, tab: "services" });
+    handleNavigate("general-general-billing", { serviceType: filterType, tab: "services" });
   };
 
   // ---------- RENDER ----------
   return (
-    <div className="general-container">
+    <div className="general-general-container">
       <GeneralAlerts
         alerts={alerts}
         user={user}
@@ -109,9 +109,9 @@ export function GeneralTab({ onNavigate }: HomeProps) {
       />
 
       {/* Layout 2 colonnes */}
-      <div className="general-dashboard-grid">
+      <div className="general-general-dashboard-grid">
         {/* Colonne gauche - Services */}
-        <div className="general-dashboard-main">
+        <div className="general-general-dashboard-main">
           {/* Services */}
           <Tile
             title={services ? t('services.titleWithCount', { count: services.total }) : t('services.title')}
@@ -119,27 +119,27 @@ export function GeneralTab({ onNavigate }: HomeProps) {
             error={errors.services}
             onRetry={loadServices}
             skeleton={<SkeletonServicesGrid count={6} />}
-            className="general-tile-services"
+            className="general-general-tile-services"
           >
             {services && services.types.length > 0 ? (
-              <div className="general-services-grid">
+              <div className="general-general-services-grid">
                 {services.types.map((service) => (
-                  <button key={service.type} className="general-service-card" onClick={() => handleServiceClick(service.type)}>
-                    <div className="general-service-icon-wrapper">
-                      <ServiceIcon serviceType={service.type} size={32} className="general-service-icon" />
+                  <button key={service.type} className="general-general-service-card" onClick={() => handleServiceClick(service.type)}>
+                    <div className="general-general-service-icon-wrapper">
+                      <ServiceIcon serviceType={service.type} size={32} className="general-general-service-icon" />
                     </div>
-                    <div className="general-service-info">
-                      <span className="general-service-name">{service.type}</span>
-                      <span className="general-service-count">{t('services.serviceCount', { count: service.count })}</span>
+                    <div className="general-general-service-info">
+                      <span className="general-general-service-name">{service.type}</span>
+                      <span className="general-general-service-count">{t('services.serviceCount', { count: service.count })}</span>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="general-service-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="general-general-service-arrow">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg>
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="general-empty-state">
+              <div className="general-general-empty-state">
                 <p>{t('services.empty')}</p>
                 <a href="https://www.ovhcloud.com/fr/order/" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
                   {t('services.orderButton')}
@@ -149,28 +149,28 @@ export function GeneralTab({ onNavigate }: HomeProps) {
           </Tile>
 
           {/* Actions rapides */}
-          <div className="general-quick-actions-section">
-            <h3 className="general-section-title">{t('quickActions.title')}</h3>
-            <div className="general-quick-actions">
-              <button className="general-action-card" onClick={() => handleNavigate("general-billing", { tab: "invoices" })}>
+          <div className="general-general-quick-actions-section">
+            <h3 className="general-general-section-title">{t('quickActions.title')}</h3>
+            <div className="general-general-quick-actions">
+              <button className="general-general-action-card" onClick={() => handleNavigate("general-general-billing", { tab: "invoices" })}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>
                 <span>{t('quickActions.invoices')}</span>
               </button>
-              <button className="general-action-card" onClick={() => handleNavigate("general-account")}>
+              <button className="general-general-action-card" onClick={() => handleNavigate("general-general-account")}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
                 <span>{t('quickActions.account')}</span>
               </button>
-              <button className="general-action-card" onClick={() => handleNavigate("general-support")}>
+              <button className="general-general-action-card" onClick={() => handleNavigate("general-general-support")}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
                 </svg>
                 <span>{t('quickActions.support')}</span>
               </button>
-              <a href="https://www.ovhcloud.com/fr/order/" target="_blank" rel="noopener noreferrer" className="general-action-card general-action-highlight">
+              <a href="https://www.ovhcloud.com/fr/order/" target="_blank" rel="noopener noreferrer" className="general-general-action-card general-action-highlight">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
@@ -181,7 +181,7 @@ export function GeneralTab({ onNavigate }: HomeProps) {
         </div>
 
         {/* Colonne droite - Infos */}
-        <div className="general-dashboard-sidebar">
+        <div className="general-general-dashboard-sidebar">
           {/* Dernière facture */}
           <Tile
             title={t('lastBill.title')}
@@ -189,45 +189,45 @@ export function GeneralTab({ onNavigate }: HomeProps) {
             error={errors.billing}
             onRetry={loadBilling}
             skeleton={<SkeletonBillCard />}
-            className="general-tile-bill"
+            className="general-general-tile-bill"
           >
             {lastBill ? (
-              <div className="general-bill-content">
-                <div className="general-bill-header">
-                  <span className="general-bill-id">{lastBill.billId}</span>
-                  <span className="general-bill-amount">{lastBill.priceWithTax.text}</span>
+              <div className="general-general-bill-content">
+                <div className="general-general-bill-header">
+                  <span className="general-general-bill-id">{lastBill.billId}</span>
+                  <span className="general-general-bill-amount">{lastBill.priceWithTax.text}</span>
                 </div>
-                <span className="general-bill-date">{formatDate(lastBill.date)}</span>
-                <div className="general-bill-actions">
+                <span className="general-general-bill-date">{formatDate(lastBill.date)}</span>
+                <div className="general-general-bill-actions">
                   <a href={lastBill.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary">
                     {t('lastBill.downloadPdf')}
                   </a>
-                  <button className="btn btn-sm btn-outline" onClick={() => handleNavigate("general-billing", { tab: "invoices" })}>
+                  <button className="btn btn-sm btn-outline" onClick={() => handleNavigate("general-general-billing", { tab: "invoices" })}>
                     {t('lastBill.viewAll')}
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="general-empty-text">{t('lastBill.empty')}</p>
+              <p className="general-general-empty-text">{t('lastBill.empty')}</p>
             )}
           </Tile>
 
           {/* Suivi commande */}
           {alerts?.lastOrder && (
-            <Tile title={t('lastOrder.title')} className="general-tile-order">
-              <div className="general-order-content">
-                <div className="general-order-header">
-                  <span className="general-order-id">#{alerts.lastOrder.order.orderId}</span>
-                  <span className="general-order-status">{alerts.lastOrder.order.status}</span>
+            <Tile title={t('lastOrder.title')} className="general-general-tile-order">
+              <div className="general-general-order-content">
+                <div className="general-general-order-header">
+                  <span className="general-general-order-id">#{alerts.lastOrder.order.orderId}</span>
+                  <span className="general-general-order-status">{alerts.lastOrder.order.status}</span>
                 </div>
-                <div className="general-order-details">
-                  <span className="general-order-date">{formatDateShort(alerts.lastOrder.order.date)}</span>
-                  <span className="general-order-amount">{alerts.lastOrder.order.priceWithTax.text}</span>
+                <div className="general-general-order-details">
+                  <span className="general-general-order-date">{formatDateShort(alerts.lastOrder.order.date)}</span>
+                  <span className="general-general-order-amount">{alerts.lastOrder.order.priceWithTax.text}</span>
                 </div>
                 {alerts.lastOrder.tracking?.progress !== undefined && (
-                  <div className="general-order-progress">
-                    <div className="general-progress-bar">
-                      <div className="general-progress-fill" style={{ width: `${alerts.lastOrder.tracking.progress}%` }} />
+                  <div className="general-general-order-progress">
+                    <div className="general-general-progress-bar">
+                      <div className="general-general-progress-fill" style={{ width: `${alerts.lastOrder.tracking.progress}%` }} />
                     </div>
                   </div>
                 )}
@@ -237,14 +237,14 @@ export function GeneralTab({ onNavigate }: HomeProps) {
 
           {/* Notifications */}
           {alerts?.notifications && alerts.notifications.length > 0 && (
-            <Tile title={t('notifications.title')} className="general-tile-notifications">
-              <div className="general-notifications-list">
+            <Tile title={t('notifications.title')} className="general-general-tile-notifications">
+              <div className="general-general-notifications-list">
                 {alerts.notifications.slice(0, 3).map((notif) => (
                   <div key={notif.id} className={`general-notification-item general-notification-${notif.level}`}>
-                    <span className="general-notification-dot" />
-                    <div className="general-notification-content">
-                      <span className="general-notification-subject">{notif.subject}</span>
-                      <span className="general-notification-date">{formatDateShort(notif.date)}</span>
+                    <span className="general-general-notification-dot" />
+                    <div className="general-general-notification-content">
+                      <span className="general-general-notification-subject">{notif.subject}</span>
+                      <span className="general-general-notification-date">{formatDateShort(notif.date)}</span>
                     </div>
                   </div>
                 ))}
@@ -254,16 +254,16 @@ export function GeneralTab({ onNavigate }: HomeProps) {
 
           {/* Support */}
           {alerts?.openTickets && alerts.openTickets.length > 0 && (
-            <Tile title={t('openTickets.title')} className="general-tile-support">
-              <div className="general-support-list">
+            <Tile title={t('openTickets.title')} className="general-general-tile-support">
+              <div className="general-general-support-list">
                 {alerts.openTickets.slice(0, 3).map((ticket) => (
-                  <div key={ticket.ticketId} className="general-support-ticket">
-                    <span className="general-ticket-subject">{ticket.subject}</span>
-                    <span className="general-ticket-date">{formatDateShort(ticket.creationDate)}</span>
+                  <div key={ticket.ticketId} className="general-general-support-ticket">
+                    <span className="general-general-ticket-subject">{ticket.subject}</span>
+                    <span className="general-general-ticket-date">{formatDateShort(ticket.creationDate)}</span>
                   </div>
                 ))}
               </div>
-              <a href="https://help.ovhcloud.com/csm" className="general-tile-link" target="_blank" rel="noopener noreferrer">
+              <a href="https://help.ovhcloud.com/csm" className="general-general-tile-link" target="_blank" rel="noopener noreferrer">
                 {t('openTickets.viewAll')} →
               </a>
             </Tile>

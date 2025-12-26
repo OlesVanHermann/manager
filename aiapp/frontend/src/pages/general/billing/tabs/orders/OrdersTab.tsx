@@ -185,9 +185,9 @@ export function OrdersTab({ credentials }: TabProps) {
 
   if (loading) {
     return (
-      <div className="orders-tab-panel">
-        <div className="orders-loading-state">
-          <div className="orders-spinner"></div>
+      <div className="billing-orders-tab-panel">
+        <div className="billing-orders-loading-state">
+          <div className="billing-orders-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
@@ -196,10 +196,10 @@ export function OrdersTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="orders-tab-panel">
-        <div className="orders-error-banner">
+      <div className="billing-orders-tab-panel">
+        <div className="billing-orders-error-banner">
           {error}
-          <button onClick={loadOrders} className="orders-btn orders-btn-sm orders-btn-secondary" style={{ marginLeft: "1rem" }}>
+          <button onClick={loadOrders} className="billing-orders-btn orders-btn-sm orders-btn-secondary" style={{ marginLeft: "1rem" }}>
             {tCommon("actions.retry")}
           </button>
         </div>
@@ -208,53 +208,53 @@ export function OrdersTab({ credentials }: TabProps) {
   }
 
   return (
-    <div className="orders-tab-panel">
-      <div className="orders-toolbar">
-        <div className="orders-toolbar-left">
-          <span className="orders-year-label">{nav.year}</span>
-          <button className="orders-btn orders-nav-btn" onClick={nav.goToPrevious} disabled={!nav.canGoPrevious} title={t("nav.previous")}>
+    <div className="billing-orders-tab-panel">
+      <div className="billing-orders-toolbar">
+        <div className="billing-orders-toolbar-left">
+          <span className="billing-orders-year-label">{nav.year}</span>
+          <button className="billing-orders-btn orders-nav-btn" onClick={nav.goToPrevious} disabled={!nav.canGoPrevious} title={t("nav.previous")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <select className="orders-period-select" value={nav.startMonth} onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}>
+          <select className="billing-orders-period-select" value={nav.startMonth} onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}>
             {MONTHS_SHORT.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}
           </select>
-          <span className="orders-date-separator">→</span>
-          <select className="orders-period-select" value={nav.endMonth} onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}>
+          <span className="billing-orders-date-separator">→</span>
+          <select className="billing-orders-period-select" value={nav.endMonth} onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}>
             {MONTHS_SHORT.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}
           </select>
-          <button className="orders-btn orders-nav-btn" onClick={nav.goToNext} disabled={!nav.canGoNext} title={t("nav.next")}>
+          <button className="billing-orders-btn orders-nav-btn" onClick={nav.goToNext} disabled={!nav.canGoNext} title={t("nav.next")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
           {nav.showReset && (
-            <button className="orders-btn orders-reset-btn" onClick={nav.resetToAnchor} title={t("nav.reset")}>
+            <button className="billing-orders-btn orders-reset-btn" onClick={nav.resetToAnchor} title={t("nav.reset")}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
           )}
         </div>
-        <div className="orders-toolbar-right">
+        <div className="billing-orders-toolbar-right">
           {orders.length > 0 && (
             <>
-              <button className="orders-btn orders-btn-sm orders-btn-secondary" onClick={exportCSV} title={t("export.csv")}>
+              <button className="billing-orders-btn orders-btn-sm orders-btn-secondary" onClick={exportCSV} title={t("export.csv")}>
                 <FileTextIcon /> CSV
               </button>
-              <button className="orders-btn orders-btn-sm orders-btn-secondary" onClick={exportPDF} title={t("export.pdf")}>
+              <button className="billing-orders-btn orders-btn-sm orders-btn-secondary" onClick={exportPDF} title={t("export.pdf")}>
                 <FileIcon /> PDF
               </button>
             </>
           )}
-          <span className="orders-result-count">{t("count", { count: orders.length })}</span>
+          <span className="billing-orders-result-count">{t("count", { count: orders.length })}</span>
         </div>
       </div>
 
       {orders.length === 0 ? (
-        <div className="orders-empty-state">
+        <div className="billing-orders-empty-state">
           <ShoppingCartIcon />
           <h3>{t("empty.title")}</h3>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <div className="orders-table-container">
-          <table className="orders-data-table">
+        <div className="billing-orders-table-container">
+          <table className="billing-orders-data-table">
             <thead>
               <tr>
                 <th>{t("columns.id")}</th>
@@ -269,15 +269,15 @@ export function OrdersTab({ credentials }: TabProps) {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.orderId}>
-                  <td className="orders-order-id">{order.orderId}</td>
+                  <td className="billing-orders-order-id">{order.orderId}</td>
                   <td>{ordersService.formatDate(order.date)}</td>
                   <td>{order.priceWithoutTax.text}</td>
                   <td>{order.tax.text}</td>
-                  <td className="orders-amount-ttc">{order.priceWithTax.text}</td>
+                  <td className="billing-orders-amount-ttc">{order.priceWithTax.text}</td>
                   <td>{order.expirationDate ? ordersService.formatDate(order.expirationDate) : "-"}</td>
-                  <td className="orders-actions-cell">
+                  <td className="billing-orders-actions-cell">
                     {order.pdfUrl && (
-                      <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="orders-btn orders-btn-outline orders-btn-sm">
+                      <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="billing-orders-btn orders-btn-outline orders-btn-sm">
                         PDF
                       </a>
                     )}

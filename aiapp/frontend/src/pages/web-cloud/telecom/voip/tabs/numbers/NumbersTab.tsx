@@ -32,8 +32,8 @@ export function NumbersTab({ billingAccount }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
+      <div className="voip-numbers-loading">
+        <div className="voip-numbers-skeleton" />
       </div>
     );
   }

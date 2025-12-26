@@ -173,10 +173,10 @@ export function ModulesTab({ serviceName }: Props) {
   if (error) {
     return (
       <div className="modules-tab">
-        <div className="error-state">
+        <div className="wh-modules-error">
           <span className="error-icon">⚠️</span>
           <p>{error}</p>
-          <button className="btn btn-secondary" onClick={handleRefresh}>Réessayer</button>
+          <button className="wh-modules-btn-secondary" onClick={handleRefresh}>Réessayer</button>
         </div>
       </div>
     );
@@ -199,19 +199,19 @@ export function ModulesTab({ serviceName }: Props) {
           />
           <span className="search-icon">🔍</span>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowInstallModal(true)}>
+        <button className="wh-modules-btn-primary" onClick={() => setShowInstallModal(true)}>
           + {t("toolbar.install")}
         </button>
       </div>
 
       {/* Table des modules installés */}
       {paginatedModules.length === 0 ? (
-        <div className="empty-state">
+        <div className="wh-modules-empty">
           <div className="empty-icon">📦</div>
           <p>{searchTerm ? t("table.noResult") : t("table.empty")}</p>
           <p className="empty-hint">{t("table.emptyHint")}</p>
           {!searchTerm && (
-            <button className="btn btn-primary" onClick={() => setShowInstallModal(true)}>
+            <button className="wh-modules-btn-primary" onClick={() => setShowInstallModal(true)}>
               {t("toolbar.installFirst")}
             </button>
           )}

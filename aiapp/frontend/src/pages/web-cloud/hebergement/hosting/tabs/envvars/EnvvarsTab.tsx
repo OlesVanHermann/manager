@@ -65,19 +65,19 @@ export function EnvvarsTab({ serviceName }: Props) {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="wh-envvars-loading"><div className="wh-envvars-skeleton" style={{ height: "400px" }} /></div>;
+  if (error) return <div className="wh-envvars-error">{error}</div>;
 
   return (
     <div className="envvars-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="wh-envvars-header">
         <div>
           <h3>{t("envvars.title")}</h3>
-          <p className="tab-description">{t("envvars.description")}</p>
+          <p className="wh-envvars-description">{t("envvars.description")}</p>
         </div>
-        <div className="tab-actions">
-          <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
+        <div className="wh-envvars-actions">
+          <button className="wh-envvars-btn-primary-sm" onClick={() => setShowCreateModal(true)}>
             + {t("envvars.create")}
           </button>
         </div>
@@ -97,19 +97,19 @@ export function EnvvarsTab({ serviceName }: Props) {
 
       {/* Table */}
       {paginatedEnvvars.length === 0 ? (
-        <div className="empty-state">
+        <div className="wh-envvars-empty">
           <div className="empty-icon">🔧</div>
           <p>{searchTerm ? t("common.noResult") : t("envvars.empty")}</p>
           <p className="empty-hint">{t("envvars.emptyHint")}</p>
           {!searchTerm && (
-            <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+            <button className="wh-envvars-btn-primary" onClick={() => setShowCreateModal(true)}>
               {t("envvars.createFirst")}
             </button>
           )}
         </div>
       ) : (
         <>
-          <table className="data-table">
+          <table className="wh-envvars-table">
             <thead>
               <tr>
                 <th>{t("envvars.key")}</th>
@@ -129,12 +129,12 @@ export function EnvvarsTab({ serviceName }: Props) {
                   <td>
                     <div className="action-buttons">
                       <button 
-                        className="btn-icon" 
+                        className="wh-envvars-btn-icon" 
                         onClick={() => setEditEnvvar(env)}
                         title={t("envvars.edit")}
                       >✏️</button>
                       <button 
-                        className="btn-icon btn-danger-icon" 
+                        className="wh-envvars-btn-icon-danger" 
                         onClick={() => handleDelete(env.key)}
                         title={t("envvars.delete")}
                       >🗑</button>
@@ -146,10 +146,10 @@ export function EnvvarsTab({ serviceName }: Props) {
           </table>
 
           {totalPages > 1 && (
-            <div className="pagination">
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
-              <span className="pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
+            <div className="wh-envvars-pagination">
+              <button className="wh-envvars-pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
+              <span className="wh-envvars-pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
+              <button className="wh-envvars-pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
             </div>
           )}
         </>

@@ -17,11 +17,11 @@ const POLL_INTERVAL = 5000;
 const MAX_LOGS = 500;
 
 const LOG_LEVEL_CLASSES: Record<string, string> = {
-  error: "activity-log-error",
-  warn: "activity-log-warn",
-  warning: "activity-log-warn",
-  info: "activity-log-info",
-  debug: "activity-log-debug",
+  error: "logs-activity-log-error",
+  warn: "logs-activity-log-warn",
+  warning: "logs-activity-log-warn",
+  info: "logs-activity-log-info",
+  debug: "logs-activity-log-debug",
 };
 
 // ============================================================
@@ -55,21 +55,21 @@ export default function ActivityTab() {
 
   if (loading) {
     return (
-      <div className="activity-tab">
-        <div className="activity-loading-state"><div className="spinner"></div></div>
+      <div className="logs-activity-tab">
+        <div className="logs-activity-loading-state"><div className="spinner"></div></div>
       </div>
     );
   }
 
   return (
-    <div className="activity-tab">
+    <div className="logs-activity-tab">
       {kinds.length > 1 && (
-        <div className="activity-kind-selector">
+        <div className="logs-activity-kind-selector">
           <label>{t("kindSelector.label")}</label>
           <select
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
-            className="activity-kind-select"
+            className="logs-activity-kind-select"
           >
             {kinds.map((kind) => (
               <option key={kind} value={kind}>{kind}</option>
@@ -185,29 +185,29 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
 
   const renderLog = (log: LogEntry, idx: number) => {
     const level = log.level || "info";
-    const cls = LOG_LEVEL_CLASSES[level.toLowerCase()] || "activity-log-info";
+    const cls = LOG_LEVEL_CLASSES[level.toLowerCase()] || "logs-activity-log-info";
     const time = log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : "";
     return (
-      <div key={idx} className="activity-log-entry">
-        <span className="activity-log-time">{time}</span>
+      <div key={idx} className="logs-activity-log-entry">
+        <span className="logs-activity-log-time">{time}</span>
         <span className={`activity-log-level ${cls}`}>{level.toUpperCase()}</span>
-        <span className="activity-log-message">{log.message || JSON.stringify(log)}</span>
+        <span className="logs-activity-log-message">{log.message || JSON.stringify(log)}</span>
       </div>
     );
   };
 
   return (
-    <div className="activity-live-tail">
-      <div className="activity-live-tail-header">
-        <p className="activity-live-tail-description">{description}</p>
+    <div className="logs-activity-live-tail">
+      <div className="logs-activity-live-tail-header">
+        <p className="logs-activity-live-tail-description">{description}</p>
         <div>
           <button className="btn btn-secondary btn-sm" onClick={onGoToDataStreams}>
             {t("liveTail.dataStreams")}
           </button>
         </div>
       </div>
-      <div className="activity-live-tail-toolbar">
-        <div className="activity-toolbar-left">
+      <div className="logs-activity-live-tail-toolbar">
+        <div className="logs-activity-toolbar-left">
           <button
             className={`btn btn-sm ${isPolling ? "btn-success" : "btn-secondary"}`}
             onClick={togglePolling}
@@ -216,7 +216,7 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
           </button>
           <button className="btn btn-outline btn-sm" onClick={refresh}>{tc("actions.refresh")}</button>
           <button className="btn btn-outline btn-sm" onClick={clearLogs}>{t("liveTail.clear")}</button>
-          <label className="activity-checkbox-label">
+          <label className="logs-activity-checkbox-label">
             <input
               type="checkbox"
               checked={autoScroll}
@@ -225,31 +225,31 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
             {t("liveTail.autoScroll")}
           </label>
         </div>
-        <div className="activity-toolbar-right">
+        <div className="logs-activity-toolbar-right">
           <input
             type="text"
-            className="activity-filter-input"
+            className="logs-activity-filter-input"
             placeholder={t("liveTail.filterPlaceholder")}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
-          <span className="activity-log-count">{filteredLogs.length} logs</span>
+          <span className="logs-activity-log-count">{filteredLogs.length} logs</span>
         </div>
       </div>
       {loading && logs.length === 0 ? (
-        <div className="activity-loading-state">
+        <div className="logs-activity-loading-state">
           <div className="spinner"></div>
           <p>{t("liveTail.loading")}</p>
         </div>
       ) : error ? (
-        <div className="activity-error-banner">
+        <div className="logs-activity-error-banner">
           <span>{error}</span>
           <button onClick={refresh} className="btn btn-sm btn-secondary">{tc("actions.retry")}</button>
         </div>
       ) : (
-        <div className="activity-log-container">
+        <div className="logs-activity-log-container">
           {filteredLogs.length === 0 ? (
-            <div className="activity-empty-logs"><p>{t("liveTail.noLogs")}</p></div>
+            <div className="logs-activity-empty-logs"><p>{t("liveTail.noLogs")}</p></div>
           ) : (
             <>
               {filteredLogs.map(renderLog)}
@@ -259,8 +259,8 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
         </div>
       )}
       {isPolling && (
-        <div className="activity-polling-indicator">
-          <span className="activity-pulse"></span>
+        <div className="logs-activity-polling-indicator">
+          <span className="logs-activity-pulse"></span>
           {t("liveTail.polling")}
         </div>
       )}
@@ -325,35 +325,35 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
     });
 
   return (
-    <div className="activity-data-streams">
-      <div className="activity-data-streams-header">
+    <div className="logs-activity-data-streams">
+      <div className="logs-activity-data-streams-header">
         <button className="btn btn-secondary btn-sm" onClick={onGoBack}>
           ← {t("dataStreams.back")}
         </button>
         <h3>{t("dataStreams.title")}</h3>
       </div>
-      <div className="activity-data-streams-description">
+      <div className="logs-activity-data-streams-description">
         <p>{t("dataStreams.description")}</p>
       </div>
       {loading ? (
-        <div className="activity-loading-state">
+        <div className="logs-activity-loading-state">
           <div className="spinner"></div>
           <p>{t("dataStreams.loading")}</p>
         </div>
       ) : error ? (
-        <div className="activity-error-banner">
+        <div className="logs-activity-error-banner">
           <span>{error}</span>
           <button onClick={loadSubscriptions} className="btn btn-sm btn-secondary">
             {tc("actions.retry")}
           </button>
         </div>
       ) : subscriptions.length === 0 ? (
-        <div className="activity-empty-state">
+        <div className="logs-activity-empty-state">
           <h4>{t("dataStreams.empty.title")}</h4>
           <p>{t("dataStreams.empty.description")}</p>
         </div>
       ) : (
-        <table className="activity-table">
+        <table className="logs-activity-table">
           <thead>
             <tr>
               <th>{t("dataStreams.columns.streamId")}</th>
@@ -366,7 +366,7 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
           <tbody>
             {subscriptions.map((sub) => (
               <tr key={sub.subscriptionId}>
-                <td className="activity-text-mono">{sub.streamId}</td>
+                <td className="logs-activity-text-mono">{sub.streamId}</td>
                 <td>{sub.serviceName}</td>
                 <td><span className="badge badge-neutral">{sub.kind}</span></td>
                 <td>{formatDate(sub.createdAt)}</td>
@@ -388,7 +388,7 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
           </tbody>
         </table>
       )}
-      <div className="activity-data-streams-footer">
+      <div className="logs-activity-data-streams-footer">
         <button className="btn btn-outline btn-sm" onClick={loadSubscriptions}>
           {tc("actions.refresh")}
         </button>

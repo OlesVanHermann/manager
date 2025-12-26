@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import * as projectService from "../../services/public-cloud.project";
+import { listProjects, listInstances, listVolumes, listContainers } from "./PublicCloudDashboard.service";
 import "./styles.css";
 
 export default function PublicCloudDashboard() {
@@ -16,13 +16,13 @@ export default function PublicCloudDashboard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const projectIds = await projectService.listProjects().catch(() => []);
+        const projectIds = await listProjects().catch(() => []);
         let instances = 0, volumes = 0, containers = 0;
         for (const projectId of projectIds.slice(0, 5)) {
           const [inst, vol, cont] = await Promise.all([
-            projectService.listInstances(projectId).catch(() => []),
-            projectService.listVolumes(projectId).catch(() => []),
-            projectService.listContainers(projectId).catch(() => []),
+            listInstances(projectId).catch(() => []),
+            listVolumes(projectId).catch(() => []),
+            listContainers(projectId).catch(() => []),
           ]);
           instances += inst.length;
           volumes += vol.length;

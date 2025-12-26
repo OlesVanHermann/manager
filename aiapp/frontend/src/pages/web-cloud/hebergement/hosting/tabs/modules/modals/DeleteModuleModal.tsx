@@ -42,10 +42,10 @@ export function DeleteModuleModal({ moduleName, isOpen, onClose, onConfirm }: Pr
           <p className="modules-modal-warning">{t("modals.delete.warning")}</p>
         </div>
         <div className="modules-modal-footer">
-          <button className="btn btn-secondary" onClick={onClose} disabled={loading}>
+          <button className="wh-modal-btn-secondary" onClick={onClose} disabled={loading}>
             {t("common.cancel")}
           </button>
-          <button className="btn btn-danger" onClick={handleConfirm} disabled={loading}>
+          <button className="wh-modal-btn-danger" onClick={handleConfirm} disabled={loading}>
             {loading ? t("modals.delete.deleting") : t("common.delete")}
           </button>
         </div>

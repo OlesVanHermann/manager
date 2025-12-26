@@ -27,7 +27,7 @@ export function DomainsTab({ serviceName }: Props) {
     load();
   }, [serviceName]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="emailpro-domains-loading"><div className="emailpro-domains-skeleton" /></div>;
 
   return (
     <div className="emailpro-domains-tab">
@@ -41,12 +41,12 @@ export function DomainsTab({ serviceName }: Props) {
             <div key={d.name} className={`emailpro-domains-card ${d.domainValidated ? 'validated' : 'pending'}`}>
               <div className="emailpro-domains-header">
                 <h4>{d.name}</h4>
-                <span className={`badge ${d.state === 'ok' ? 'success' : 'warning'}`}>{d.state}</span>
+                <span className={`emailpro-domains-badge ${d.state === 'ok' ? 'success' : 'warning'}`}>{d.state}</span>
               </div>
               <div className="emailpro-domains-checks">
-                <div className={`emailpro-domains-check ${d.domainValidated ? 'valid' : 'invalid'}`}><span className="icon">{d.domainValidated ? '✓' : '✗'}</span> Domaine validé</div>
-                <div className={`emailpro-domains-check ${d.mxIsValid ? 'valid' : 'invalid'}`}><span className="icon">{d.mxIsValid ? '✓' : '✗'}</span> MX configuré</div>
-                <div className={`emailpro-domains-check ${d.srvIsValid ? 'valid' : 'invalid'}`}><span className="icon">{d.srvIsValid ? '✓' : '✗'}</span> SRV configuré</div>
+                <div className={`emailpro-domains-check ${d.domainValidated ? 'valid' : 'invalid'}`}><span className="emailpro-domains-icon">{d.domainValidated ? '✓' : '✗'}</span> Domaine validé</div>
+                <div className={`emailpro-domains-check ${d.mxIsValid ? 'valid' : 'invalid'}`}><span className="emailpro-domains-icon">{d.mxIsValid ? '✓' : '✗'}</span> MX configuré</div>
+                <div className={`emailpro-domains-check ${d.srvIsValid ? 'valid' : 'invalid'}`}><span className="emailpro-domains-icon">{d.srvIsValid ? '✓' : '✗'}</span> SRV configuré</div>
               </div>
             </div>
           ))}

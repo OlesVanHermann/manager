@@ -4,6 +4,6 @@ export function DownloadLogsModal({ serviceName, isOpen, onClose, onSuccess }: P
   const [loading, setLoading] = useState(false);
   if (!isOpen) return null;
   const handleDownload = async () => { setLoading(true); try { await new Promise(r => setTimeout(r, 500)); onSuccess(); } catch {} finally { setLoading(false); } };
-  return (<div className="modal-overlay" onClick={onClose}><div className="modal-container" onClick={e => e.stopPropagation()}><div className="modal-header"><h2>Télécharger les logs</h2><button className="modal-close" onClick={onClose}>×</button></div><div className="modal-body"><p>Téléchargement logs pour {serviceName} - Fonctionnalité en cours.</p></div><div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Annuler</button><button className="btn btn-primary" onClick={handleDownload} disabled={loading}>{loading ? "..." : "Télécharger"}</button></div></div></div>);
+  return (<div className="modal-overlay" onClick={onClose}><div className="modal-container" onClick={e => e.stopPropagation()}><div className="modal-header"><h2>Télécharger les logs</h2><button className="modal-close" onClick={onClose}>×</button></div><div className="modal-body"><p>Téléchargement logs pour {serviceName} - Fonctionnalité en cours.</p></div><div className="modal-footer"><button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button><button className="wh-modal-btn-primary" onClick={handleDownload} disabled={loading}>{loading ? "..." : "Télécharger"}</button></div></div></div>);
 }
 export default DownloadLogsModal;

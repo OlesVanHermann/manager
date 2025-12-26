@@ -2,7 +2,7 @@
 // LEVEL TAB - Niveaux de support
 // NAV1: general / NAV2: support / NAV3: level
 // ISOLÉ - Aucune dépendance vers d'autres tabs
-// Préfixe CSS: .level-
+// Préfixe CSS: .support-level-
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -92,9 +92,9 @@ export function LevelTab() {
 
   if (loading) {
     return (
-      <div className="level-tab">
-        <div className="level-loading-state">
-          <div className="level-spinner"></div>
+      <div className="support-level-tab">
+        <div className="support-level-loading-state">
+          <div className="support-level-spinner"></div>
           <p>{t("level.loading")}</p>
         </div>
       </div>
@@ -103,10 +103,10 @@ export function LevelTab() {
 
   if (error) {
     return (
-      <div className="level-tab">
-        <div className="level-error-state">
+      <div className="support-level-tab">
+        <div className="support-level-error-state">
           <p>{error}</p>
-          <button onClick={loadSupportLevel} className="level-btn level-btn-primary">
+          <button onClick={loadSupportLevel} className="support-level-btn level-btn-primary">
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -121,59 +121,59 @@ export function LevelTab() {
   const currentLevelInfo = levels.find((l) => l.isCurrent);
 
   return (
-    <div className="level-tab">
-      <div className="level-header">
+    <div className="support-level-tab">
+      <div className="support-level-header">
         <h2>{t("level.title")}</h2>
         <p>{t("level.subtitle")}</p>
         <a
           href={SUPPORT_URLS.comparison}
           target="_blank"
           rel="noopener noreferrer"
-          className="level-comparison-link"
+          className="support-level-comparison-link"
         >
           {t("level.comparison")}
         </a>
       </div>
 
       {currentLevelInfo && (
-        <div className="level-current-banner">
-          <div className="level-current-info">
-            <span className="level-current-label">{t("level.currentLevel")}</span>
-            <span className="level-current-name">{currentLevelInfo.name}</span>
+        <div className="support-level-current-banner">
+          <div className="support-level-current-info">
+            <span className="support-level-current-label">{t("level.currentLevel")}</span>
+            <span className="support-level-current-name">{currentLevelInfo.name}</span>
           </div>
-          <span className="level-badge level-badge-primary">{t("level.active")}</span>
+          <span className="support-level-badge level-badge-primary">{t("level.active")}</span>
         </div>
       )}
 
-      <div className="level-grid">
+      <div className="support-level-grid">
         {levels.map((level) => (
-          <div key={level.id} className={`level-card ${level.isCurrent ? "level-current" : ""}`}>
-            <div className="level-card-header">
+          <div key={level.id} className={`level-card ${level.isCurrent ? "support-level-current" : ""}`}>
+            <div className="support-level-card-header">
               <h3>{level.name}</h3>
               {level.isCurrent && (
-                <span className="level-badge level-badge-success">{t("level.current")}</span>
+                <span className="support-level-badge level-badge-success">{t("level.current")}</span>
               )}
             </div>
-            <p className="level-description">{level.description}</p>
-            <div className="level-price">{level.price}</div>
-            <ul className="level-features">
+            <p className="support-level-description">{level.description}</p>
+            <div className="support-level-price">{level.price}</div>
+            <ul className="support-level-features">
               {level.features.map((feature, idx) => (
                 <li key={idx}>{feature}</li>
               ))}
             </ul>
-            <div className="level-actions">
+            <div className="support-level-actions">
               {level.isCurrent ? (
-                <button className="level-btn level-btn-secondary" disabled>
+                <button className="support-level-btn level-btn-secondary" disabled>
                   {t("level.currentButton")}
                 </button>
               ) : level.actionType === "included" ? (
-                <span className="level-included-text">{t("level.includedDefault")}</span>
+                <span className="support-level-included-text">{t("level.includedDefault")}</span>
               ) : (
                 <a
                   href={SUPPORT_URLS.comparison}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="level-btn level-btn-primary"
+                  className="support-level-btn level-btn-primary"
                 >
                   {t("level.learnMore")}
                 </a>
@@ -183,14 +183,14 @@ export function LevelTab() {
         ))}
       </div>
 
-      <div className="level-contact">
+      <div className="support-level-contact">
         <h3>{t("level.needHelp")}</h3>
         <p>{t("level.contactSales")}</p>
         <a
           href={SUPPORT_URLS.contact}
           target="_blank"
           rel="noopener noreferrer"
-          className="level-btn level-btn-secondary"
+          className="support-level-btn level-btn-secondary"
         >
           {t("level.contactButton")}
         </a>

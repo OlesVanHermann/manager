@@ -27,7 +27,7 @@ export function AccessTab({ packName }: Props) {
   }, [packName]);
 
   if (loading) {
-    return <div className="tab-loading"><div className="skeleton-block" /></div>;
+    return <div className="xdsl-access-loading"><div className="xdsl-access-skeleton" /></div>;
   }
 
   return (

@@ -1,6 +1,6 @@
 // ============================================================
 // PRIVACY TAB - Gestion RGPD et vie privée
-// Styles: ./PrivacyTab.css (préfixe .privacy-)
+// Styles: ./PrivacyTab.css (préfixe .account-privacy-)
 // Service: ./PrivacyTab.service.ts (ISOLÉ)
 // ============================================================
 
@@ -119,26 +119,26 @@ export function PrivacyTab() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <span className="privacy-badge privacy-badge-success">{t("status.completed")}</span>;
+        return <span className="account-privacy-badge privacy-badge-success">{t("status.completed")}</span>;
       case "in_progress":
-        return <span className="privacy-badge privacy-badge-info">{t("status.inProgress")}</span>;
+        return <span className="account-privacy-badge privacy-badge-info">{t("status.inProgress")}</span>;
       case "cancelled":
-        return <span className="privacy-badge privacy-badge-secondary">{t("status.cancelled")}</span>;
+        return <span className="account-privacy-badge privacy-badge-secondary">{t("status.cancelled")}</span>;
       case "blocked":
-        return <span className="privacy-badge privacy-badge-danger">{t("status.blocked")}</span>;
+        return <span className="account-privacy-badge privacy-badge-danger">{t("status.blocked")}</span>;
       case "confirm_verification_code":
-        return <span className="privacy-badge privacy-badge-warning">{t("status.pending")}</span>;
+        return <span className="account-privacy-badge privacy-badge-warning">{t("status.pending")}</span>;
       default:
-        return <span className="privacy-badge privacy-badge-secondary">{status}</span>;
+        return <span className="account-privacy-badge privacy-badge-secondary">{status}</span>;
     }
   };
 
   // ---------- LOADING ----------
   if (loading) {
     return (
-      <div className="privacy-content">
-        <div className="privacy-loading">
-          <div className="privacy-spinner"></div>
+      <div className="account-privacy-content">
+        <div className="account-privacy-loading">
+          <div className="account-privacy-spinner"></div>
           <p>{tCommon("loading")}</p>
         </div>
       </div>
@@ -148,10 +148,10 @@ export function PrivacyTab() {
   // ---------- ERROR ----------
   if (error) {
     return (
-      <div className="privacy-content">
-        <div className="privacy-error">
+      <div className="account-privacy-content">
+        <div className="account-privacy-error">
           <p>{error}</p>
-          <button onClick={loadPrivacyData} className="privacy-btn privacy-btn-primary">
+          <button onClick={loadPrivacyData} className="account-privacy-btn privacy-btn-primary">
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -168,29 +168,29 @@ export function PrivacyTab() {
   );
 
   return (
-    <div className="privacy-content">
-      <div className="privacy-header">
+    <div className="account-privacy-content">
+      <div className="account-privacy-header">
         <h2>{t("title")}</h2>
         <p>{t("description")}</p>
       </div>
 
       {/* Section Droits */}
-      <div className="privacy-section">
+      <div className="account-privacy-section">
         <h3>{t("rights.title")}</h3>
-        <div className="privacy-rights-grid">
-          <div className="privacy-right-card">
+        <div className="account-privacy-rights-grid">
+          <div className="account-privacy-right-card">
             <h4>{t("rights.access.title")}</h4>
             <p>{t("rights.access.description")}</p>
           </div>
-          <div className="privacy-right-card">
+          <div className="account-privacy-right-card">
             <h4>{t("rights.rectification.title")}</h4>
             <p>{t("rights.rectification.description")}</p>
           </div>
-          <div className="privacy-right-card">
+          <div className="account-privacy-right-card">
             <h4>{t("rights.erasure.title")}</h4>
             <p>{t("rights.erasure.description")}</p>
           </div>
-          <div className="privacy-right-card">
+          <div className="account-privacy-right-card">
             <h4>{t("rights.portability.title")}</h4>
             <p>{t("rights.portability.description")}</p>
           </div>
@@ -198,23 +198,23 @@ export function PrivacyTab() {
       </div>
 
       {/* Section Demandes */}
-      <div className="privacy-section">
+      <div className="account-privacy-section">
         <h3>{t("requests.title")}</h3>
 
         {pendingRequests.length > 0 && (
-          <div className="privacy-requests-pending">
+          <div className="account-privacy-requests-pending">
             <h4>{t("requests.pending")}</h4>
             {pendingRequests.map((request) => (
-              <div key={request.id} className="privacy-request-card privacy-request-pending">
-                <div className="privacy-request-info">
-                  <span className="privacy-request-date">{privacyService.formatDate(request.creationDate)}</span>
+              <div key={request.id} className="account-privacy-request-card privacy-request-pending">
+                <div className="account-privacy-request-info">
+                  <span className="account-privacy-request-date">{privacyService.formatDate(request.creationDate)}</span>
                   {getStatusBadge(request.status)}
                 </div>
-                <div className="privacy-request-actions">
+                <div className="account-privacy-request-actions">
                   {request.status === "confirm_verification_code" && (
                     <>
                       <button
-                        className="privacy-btn privacy-btn-primary privacy-btn-sm"
+                        className="account-privacy-btn privacy-btn-primary privacy-btn-sm"
                         onClick={() => {
                           setPendingRequestId(String(request.id));
                           openModal("confirm");
@@ -223,7 +223,7 @@ export function PrivacyTab() {
                         {tCommon("actions.confirm")}
                       </button>
                       <button
-                        className="privacy-btn privacy-btn-secondary privacy-btn-sm"
+                        className="account-privacy-btn privacy-btn-secondary privacy-btn-sm"
                         onClick={() => handleSendConfirmationEmail(String(request.id))}
                       >
                         {t("requests.resendEmail")}
@@ -231,7 +231,7 @@ export function PrivacyTab() {
                     </>
                   )}
                   <button
-                    className="privacy-btn privacy-btn-danger privacy-btn-sm"
+                    className="account-privacy-btn privacy-btn-danger privacy-btn-sm"
                     onClick={() => handleCancelRequest(String(request.id))}
                   >
                     {tCommon("actions.cancel")}
@@ -243,12 +243,12 @@ export function PrivacyTab() {
         )}
 
         {pastRequests.length > 0 && (
-          <div className="privacy-requests-history">
+          <div className="account-privacy-requests-history">
             <h4>{t("requests.history")}</h4>
             {pastRequests.map((request) => (
-              <div key={request.id} className="privacy-request-card">
-                <div className="privacy-request-info">
-                  <span className="privacy-request-date">{privacyService.formatDate(request.creationDate)}</span>
+              <div key={request.id} className="account-privacy-request-card">
+                <div className="account-privacy-request-info">
+                  <span className="account-privacy-request-date">{privacyService.formatDate(request.creationDate)}</span>
                   {getStatusBadge(request.status)}
                 </div>
               </div>
@@ -256,13 +256,13 @@ export function PrivacyTab() {
           </div>
         )}
 
-        <div className="privacy-erasure-action">
+        <div className="account-privacy-erasure-action">
           {capabilities?.canRequestErasure !== false ? (
             <>
-              <p className="privacy-warning-text">
+              <p className="account-privacy-warning-text">
                 <strong>{t("erasure.warning")}</strong>
               </p>
-              <button className="privacy-btn privacy-btn-danger" onClick={() => openModal("erasure")}>
+              <button className="account-privacy-btn privacy-btn-danger" onClick={() => openModal("erasure")}>
                 {t("erasure.requestButton")}
               </button>
             </>
@@ -273,9 +273,9 @@ export function PrivacyTab() {
       </div>
 
       {/* Section En savoir plus */}
-      <div className="privacy-section">
+      <div className="account-privacy-section">
         <h3>{t("learnMore.title")}</h3>
-        <div className="privacy-links">
+        <div className="account-privacy-links">
           <a
             href="https://www.ovhcloud.com/fr/terms-and-conditions/privacy-policy/"
             target="_blank"
@@ -288,20 +288,20 @@ export function PrivacyTab() {
 
       {/* Modal Demande d'effacement */}
       {activeModal === "erasure" && (
-        <div className="privacy-modal-overlay" onClick={closeModal}>
-          <div className="privacy-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="privacy-modal-close" onClick={closeModal}>
+        <div className="account-privacy-modal-overlay" onClick={closeModal}>
+          <div className="account-privacy-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="account-privacy-modal-close" onClick={closeModal}>
               ×
             </button>
             <h3>{t("modal.confirmRequest.title")}</h3>
             <p>{t("modal.confirmRequest.description")}</p>
-            {modalError && <p className="privacy-modal-error">{modalError}</p>}
-            <div className="privacy-modal-actions">
-              <button className="privacy-btn privacy-btn-secondary" onClick={closeModal}>
+            {modalError && <p className="account-privacy-modal-error">{modalError}</p>}
+            <div className="account-privacy-modal-actions">
+              <button className="account-privacy-btn privacy-btn-secondary" onClick={closeModal}>
                 {tCommon("actions.cancel")}
               </button>
               <button
-                className="privacy-btn privacy-btn-danger"
+                className="account-privacy-btn privacy-btn-danger"
                 onClick={handleCreateErasureRequest}
                 disabled={modalLoading}
               >
@@ -314,9 +314,9 @@ export function PrivacyTab() {
 
       {/* Modal Confirmation code */}
       {activeModal === "confirm" && (
-        <div className="privacy-modal-overlay" onClick={closeModal}>
-          <div className="privacy-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="privacy-modal-close" onClick={closeModal}>
+        <div className="account-privacy-modal-overlay" onClick={closeModal}>
+          <div className="account-privacy-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="account-privacy-modal-close" onClick={closeModal}>
               ×
             </button>
             <h3>{t("modal.enterCode.title")}</h3>
@@ -327,19 +327,19 @@ export function PrivacyTab() {
               value={confirmCode}
               onChange={(e) => setConfirmCode(e.target.value)}
             />
-            {modalError && <p className="privacy-modal-error">{modalError}</p>}
-            <div className="privacy-modal-actions">
-              <button className="privacy-btn privacy-btn-secondary" onClick={closeModal}>
+            {modalError && <p className="account-privacy-modal-error">{modalError}</p>}
+            <div className="account-privacy-modal-actions">
+              <button className="account-privacy-btn privacy-btn-secondary" onClick={closeModal}>
                 {tCommon("actions.cancel")}
               </button>
               <button
-                className="privacy-btn privacy-btn-secondary"
+                className="account-privacy-btn privacy-btn-secondary"
                 onClick={() => pendingRequestId && handleSendConfirmationEmail(pendingRequestId)}
               >
                 {t("requests.resendEmail")}
               </button>
               <button
-                className="privacy-btn privacy-btn-danger"
+                className="account-privacy-btn privacy-btn-danger"
                 onClick={handleConfirmErasure}
                 disabled={modalLoading || !confirmCode}
               >

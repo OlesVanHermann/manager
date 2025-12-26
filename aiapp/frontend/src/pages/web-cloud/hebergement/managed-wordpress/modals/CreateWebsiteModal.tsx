@@ -97,7 +97,7 @@ export function CreateWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>{t("common.cancel")}</button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? t("common.creating") : t("website.create")}</button>
+            <button type="submit" className="mwp-modal-btn-primary" disabled={loading}>{loading ? t("common.creating") : t("website.create")}</button>
           </div>
         </form>
       </div>

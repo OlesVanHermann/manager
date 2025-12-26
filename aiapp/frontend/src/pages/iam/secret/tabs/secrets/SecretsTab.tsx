@@ -62,12 +62,12 @@ export default function SecretsTab({ serviceId }: SecretsTabProps) {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="secrets-loading-state">{tCommon("loading")}</div>;
+    return <div className="secret-secrets-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="secrets-error-state">
+      <div className="secret-secrets-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadSecrets}>{tCommon("actions.retry")}</button>
       </div>
@@ -76,7 +76,7 @@ export default function SecretsTab({ serviceId }: SecretsTabProps) {
 
   if (secrets.length === 0) {
     return (
-      <div className="secrets-empty-state">
+      <div className="secret-secrets-empty-state">
         <h2>{t("empty.title")}</h2>
         <p>{t("empty.description")}</p>
         <button className="btn btn-primary">{t("create")}</button>
@@ -85,12 +85,12 @@ export default function SecretsTab({ serviceId }: SecretsTabProps) {
   }
 
   return (
-    <div className="secrets-tab">
-      <div className="secrets-toolbar">
+    <div className="secret-secrets-tab">
+      <div className="secret-secrets-toolbar">
         <button className="btn btn-primary">{t("create")}</button>
       </div>
 
-      <table className="secrets-table">
+      <table className="secret-secrets-table">
         <thead>
           <tr>
             <th>{t("columns.name")}</th>
@@ -103,11 +103,11 @@ export default function SecretsTab({ serviceId }: SecretsTabProps) {
         <tbody>
           {secrets.map((secret) => (
             <tr key={secret.id}>
-              <td className="secrets-name">{secret.name}</td>
+              <td className="secret-secrets-name">{secret.name}</td>
               <td>{secret.description || "-"}</td>
               <td>{secret.versionsCount}</td>
               <td>{new Date(secret.updatedAt).toLocaleDateString("fr-FR")}</td>
-              <td className="secrets-actions">
+              <td className="secret-secrets-actions">
                 <button className="btn btn-sm btn-outline">{tCommon("actions.view")}</button>
                 <button className="btn btn-sm btn-outline" onClick={() => handleDelete(secret.id)}>{tCommon("actions.delete")}</button>
               </td>

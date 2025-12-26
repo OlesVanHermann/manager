@@ -185,9 +185,9 @@ export function RefundsTab({ credentials }: TabProps) {
 
   if (loading) {
     return (
-      <div className="refunds-tab-panel">
-        <div className="refunds-loading-state">
-          <div className="refunds-spinner"></div>
+      <div className="billing-refunds-tab-panel">
+        <div className="billing-refunds-loading-state">
+          <div className="billing-refunds-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
@@ -196,10 +196,10 @@ export function RefundsTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="refunds-tab-panel">
-        <div className="refunds-error-banner">
+      <div className="billing-refunds-tab-panel">
+        <div className="billing-refunds-error-banner">
           {error}
-          <button onClick={loadRefunds} className="refunds-btn refunds-btn-sm refunds-btn-secondary" style={{ marginLeft: "1rem" }}>
+          <button onClick={loadRefunds} className="billing-refunds-btn refunds-btn-sm refunds-btn-secondary" style={{ marginLeft: "1rem" }}>
             {tCommon("actions.retry")}
           </button>
         </div>
@@ -208,53 +208,53 @@ export function RefundsTab({ credentials }: TabProps) {
   }
 
   return (
-    <div className="refunds-tab-panel">
-      <div className="refunds-toolbar">
-        <div className="refunds-toolbar-left">
-          <span className="refunds-year-label">{nav.year}</span>
-          <button className="refunds-btn refunds-nav-btn" onClick={nav.goToPrevious} disabled={!nav.canGoPrevious} title={t("nav.previous")}>
+    <div className="billing-refunds-tab-panel">
+      <div className="billing-refunds-toolbar">
+        <div className="billing-refunds-toolbar-left">
+          <span className="billing-refunds-year-label">{nav.year}</span>
+          <button className="billing-refunds-btn refunds-nav-btn" onClick={nav.goToPrevious} disabled={!nav.canGoPrevious} title={t("nav.previous")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <select className="refunds-period-select" value={nav.startMonth} onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}>
+          <select className="billing-refunds-period-select" value={nav.startMonth} onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}>
             {MONTHS_SHORT.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}
           </select>
-          <span className="refunds-date-separator">→</span>
-          <select className="refunds-period-select" value={nav.endMonth} onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}>
+          <span className="billing-refunds-date-separator">→</span>
+          <select className="billing-refunds-period-select" value={nav.endMonth} onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}>
             {MONTHS_SHORT.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}
           </select>
-          <button className="refunds-btn refunds-nav-btn" onClick={nav.goToNext} disabled={!nav.canGoNext} title={t("nav.next")}>
+          <button className="billing-refunds-btn refunds-nav-btn" onClick={nav.goToNext} disabled={!nav.canGoNext} title={t("nav.next")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
           {nav.showReset && (
-            <button className="refunds-btn refunds-reset-btn" onClick={nav.resetToAnchor} title={t("nav.reset")}>
+            <button className="billing-refunds-btn refunds-reset-btn" onClick={nav.resetToAnchor} title={t("nav.reset")}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
           )}
         </div>
-        <div className="refunds-toolbar-right">
+        <div className="billing-refunds-toolbar-right">
           {refunds.length > 0 && (
             <>
-              <button className="refunds-btn refunds-btn-sm refunds-btn-secondary" onClick={exportCSV} title={t("export.csv")}>
+              <button className="billing-refunds-btn refunds-btn-sm refunds-btn-secondary" onClick={exportCSV} title={t("export.csv")}>
                 <FileTextIcon /> CSV
               </button>
-              <button className="refunds-btn refunds-btn-sm refunds-btn-secondary" onClick={exportPDF} title={t("export.pdf")}>
+              <button className="billing-refunds-btn refunds-btn-sm refunds-btn-secondary" onClick={exportPDF} title={t("export.pdf")}>
                 <FileIcon /> PDF
               </button>
             </>
           )}
-          <span className="refunds-result-count">{t("count", { count: refunds.length })}</span>
+          <span className="billing-refunds-result-count">{t("count", { count: refunds.length })}</span>
         </div>
       </div>
 
       {refunds.length === 0 ? (
-        <div className="refunds-empty-state">
+        <div className="billing-refunds-empty-state">
           <FileTextIcon />
           <h3>{t("empty.title")}</h3>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <div className="refunds-table-container">
-          <table className="refunds-data-table">
+        <div className="billing-refunds-table-container">
+          <table className="billing-refunds-data-table">
             <thead>
               <tr>
                 <th>{t("columns.id")}</th>
@@ -269,15 +269,15 @@ export function RefundsTab({ credentials }: TabProps) {
             <tbody>
               {refunds.map((refund) => (
                 <tr key={refund.refundId}>
-                  <td className="refunds-refund-id">{refund.refundId}</td>
+                  <td className="billing-refunds-refund-id">{refund.refundId}</td>
                   <td>{refundsService.formatDate(refund.date)}</td>
                   <td>{refund.priceWithoutTax.text}</td>
                   <td>{refund.tax.text}</td>
-                  <td className="refunds-amount-ttc">{refund.priceWithTax.text}</td>
+                  <td className="billing-refunds-amount-ttc">{refund.priceWithTax.text}</td>
                   <td>{refund.originalBillId || "-"}</td>
-                  <td className="refunds-actions-cell">
+                  <td className="billing-refunds-actions-cell">
                     {refund.pdfUrl && (
-                      <a href={refund.pdfUrl} target="_blank" rel="noopener noreferrer" className="refunds-btn refunds-btn-outline refunds-btn-sm">
+                      <a href={refund.pdfUrl} target="_blank" rel="noopener noreferrer" className="billing-refunds-btn refunds-btn-outline refunds-btn-sm">
                         PDF
                       </a>
                     )}

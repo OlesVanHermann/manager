@@ -32,8 +32,8 @@ export function SendersTab({ accountName }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
+      <div className="sms-senders-loading">
+        <div className="sms-senders-skeleton" />
       </div>
     );
   }
@@ -79,7 +79,7 @@ export function SendersTab({ accountName }: Props) {
                 </span>
               </div>
               <p className="senders-comment">{sender.comment || '-'}</p>
-              <span className={`badge ${getStatusBadge(sender.status)}`}>
+              <span className={`sms-senders-badge ${getStatusBadge(sender.status)}`}>
                 {sender.status}
               </span>
             </div>

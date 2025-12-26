@@ -179,19 +179,19 @@ export function PaymentsTab({ credentials }: TabProps) {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case "PAID": return "payments-badge-success";
-      case "PENDING": return "payments-badge-warning";
-      case "CANCELLED": return "payments-badge-neutral";
-      case "FAILED": return "payments-badge-error";
-      default: return "payments-badge-neutral";
+      case "PAID": return "billing-payments-badge-success";
+      case "PENDING": return "billing-payments-badge-warning";
+      case "CANCELLED": return "billing-payments-badge-neutral";
+      case "FAILED": return "billing-payments-badge-error";
+      default: return "billing-payments-badge-neutral";
     }
   };
 
   if (loading) {
     return (
-      <div className="payments-tab-panel">
-        <div className="payments-loading-state">
-          <div className="payments-spinner"></div>
+      <div className="billing-payments-tab-panel">
+        <div className="billing-payments-loading-state">
+          <div className="billing-payments-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
@@ -200,10 +200,10 @@ export function PaymentsTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="payments-tab-panel">
-        <div className="payments-error-banner">
+      <div className="billing-payments-tab-panel">
+        <div className="billing-payments-error-banner">
           {error}
-          <button onClick={loadPayments} className="payments-btn payments-btn-sm payments-btn-secondary" style={{ marginLeft: "1rem" }}>
+          <button onClick={loadPayments} className="billing-payments-btn payments-btn-sm payments-btn-secondary" style={{ marginLeft: "1rem" }}>
             {tCommon("actions.retry")}
           </button>
         </div>
@@ -212,48 +212,48 @@ export function PaymentsTab({ credentials }: TabProps) {
   }
 
   return (
-    <div className="payments-tab-panel">
-      <div className="payments-toolbar">
-        <div className="payments-toolbar-left">
-          <span className="payments-year-label">{nav.year}</span>
-          <button className="payments-btn payments-nav-btn" onClick={nav.goToPrevious} disabled={!nav.canGoPrevious} title={t("nav.previous")}>
+    <div className="billing-payments-tab-panel">
+      <div className="billing-payments-toolbar">
+        <div className="billing-payments-toolbar-left">
+          <span className="billing-payments-year-label">{nav.year}</span>
+          <button className="billing-payments-btn payments-nav-btn" onClick={nav.goToPrevious} disabled={!nav.canGoPrevious} title={t("nav.previous")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <select className="payments-period-select" value={nav.startMonth} onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}>
+          <select className="billing-payments-period-select" value={nav.startMonth} onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}>
             {MONTHS_SHORT.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}
           </select>
-          <span className="payments-date-separator">→</span>
-          <select className="payments-period-select" value={nav.endMonth} onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}>
+          <span className="billing-payments-date-separator">→</span>
+          <select className="billing-payments-period-select" value={nav.endMonth} onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}>
             {MONTHS_SHORT.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}
           </select>
-          <button className="payments-btn payments-nav-btn" onClick={nav.goToNext} disabled={!nav.canGoNext} title={t("nav.next")}>
+          <button className="billing-payments-btn payments-nav-btn" onClick={nav.goToNext} disabled={!nav.canGoNext} title={t("nav.next")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
           {nav.showReset && (
-            <button className="payments-btn payments-reset-btn" onClick={nav.resetToAnchor} title={t("nav.reset")}>
+            <button className="billing-payments-btn payments-reset-btn" onClick={nav.resetToAnchor} title={t("nav.reset")}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
           )}
         </div>
-        <div className="payments-toolbar-right">
+        <div className="billing-payments-toolbar-right">
           {payments.length > 0 && (
-            <button className="payments-btn payments-btn-sm payments-btn-secondary" onClick={exportCSV} title={t("export.csv")}>
+            <button className="billing-payments-btn payments-btn-sm payments-btn-secondary" onClick={exportCSV} title={t("export.csv")}>
               <FileTextIcon /> CSV
             </button>
           )}
-          <span className="payments-result-count">{t("count", { count: payments.length })}</span>
+          <span className="billing-payments-result-count">{t("count", { count: payments.length })}</span>
         </div>
       </div>
 
       {payments.length === 0 ? (
-        <div className="payments-empty-state">
+        <div className="billing-payments-empty-state">
           <CreditCardIcon />
           <h3>{t("empty.title")}</h3>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <div className="payments-table-container">
-          <table className="payments-data-table">
+        <div className="billing-payments-table-container">
+          <table className="billing-payments-data-table">
             <thead>
               <tr>
                 <th>{t("columns.id")}</th>
@@ -267,9 +267,9 @@ export function PaymentsTab({ credentials }: TabProps) {
             <tbody>
               {payments.map((payment) => (
                 <tr key={payment.paymentId}>
-                  <td className="payments-payment-id">{payment.paymentId}</td>
+                  <td className="billing-payments-payment-id">{payment.paymentId}</td>
                   <td>{paymentsService.formatDate(payment.date)}</td>
-                  <td className="payments-amount">{payment.amount.text}</td>
+                  <td className="billing-payments-amount">{payment.amount.text}</td>
                   <td>{payment.paymentType}</td>
                   <td>
                     <span className={`payments-status-badge ${getStatusBadgeClass(payment.status)}`}>

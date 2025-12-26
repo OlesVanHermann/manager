@@ -130,10 +130,10 @@ export function ConfigureSshModal({ serviceName, primaryLogin, currentSshState, 
         </div>
 
         <div className="modal-footer">
-          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>
+          <button type="button" className="wh-modal-btn-secondary" onClick={onClose} disabled={loading}>
             {t("common.cancel", "Annuler")}
           </button>
-          <button type="button" className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
+          <button type="button" className="wh-modal-btn-primary" onClick={handleSubmit} disabled={loading}>
             {loading ? <><span className="spinner-small" /> {t("common.saving", "Enregistrement...")}</> : t("common.save", "Enregistrer")}
           </button>
         </div>

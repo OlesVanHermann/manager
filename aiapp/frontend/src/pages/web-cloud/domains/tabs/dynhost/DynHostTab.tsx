@@ -264,9 +264,9 @@ export function DynHostTab({ zoneName }: Props) {
   // ---------- RENDER LOADING ----------
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
-        <div className="skeleton-block" />
+      <div className="dynhost-loading">
+        <div className="dynhost-skeleton" />
+        <div className="dynhost-skeleton" />
       </div>
     );
   }
@@ -275,10 +275,10 @@ export function DynHostTab({ zoneName }: Props) {
   return (
     <div className="dynhost-tab">
       {/* Header with view toggle */}
-      <div className="tab-header">
+      <div className="dynhost-header">
         <div>
           <h3>{t("dynhost.title")}</h3>
-          <p className="tab-description">{t("dynhost.description")}</p>
+          <p className="dynhost-description">{t("dynhost.description")}</p>
         </div>
         <div className="tab-header-actions">
           <div className="view-toggle">
@@ -297,18 +297,18 @@ export function DynHostTab({ zoneName }: Props) {
         </div>
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="dynhost-error-banner">{error}</div>}
 
       {/* RECORDS VIEW */}
       {activeView === "records" && (
         <>
           {records.length === 0 ? (
-            <div className="empty-state">
+            <div className="dynhost-empty">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
                 <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
               </svg>
               <h3>{t("dynhost.empty")}</h3>
-              <p className="hint">{t("dynhost.emptyHint")}</p>
+              <p className="dynhost-hint">{t("dynhost.emptyHint")}</p>
               <button className="btn-primary" onClick={openCreateModal}><PlusIcon /> {t("dynhost.add")}</button>
             </div>
           ) : (
@@ -317,8 +317,8 @@ export function DynHostTab({ zoneName }: Props) {
                 <div key={record.id} className="dynhost-card">
                   <div className="dynhost-header">
                     <h4>{record.subDomain || "@"}.{zoneName}</h4>
-                    <div className="card-actions">
-                      <button className="btn-icon" onClick={() => openEditModal(record)} title={t("dynhost.edit")}><EditIcon /></button>
+                    <div className="dynhost-card-actions">
+                      <button className="dynhost-btn-icon" onClick={() => openEditModal(record)} title={t("dynhost.edit")}><EditIcon /></button>
                       <button className="btn-icon btn-icon-danger" onClick={() => setDeleteConfirm(record)} title={t("dynhost.delete")}><TrashIcon /></button>
                     </div>
                   </div>
@@ -337,12 +337,12 @@ export function DynHostTab({ zoneName }: Props) {
       {activeView === "logins" && (
         <>
           {loginsLoading ? (
-            <div className="tab-loading"><div className="skeleton-block" /></div>
+            <div className="dynhost-loading"><div className="dynhost-skeleton" /></div>
           ) : logins.length === 0 ? (
-            <div className="empty-state">
+            <div className="dynhost-empty">
               <UserIcon />
               <h3>{t("dynhost.noLogins")}</h3>
-              <p className="hint">{t("dynhost.loginsHint")}</p>
+              <p className="dynhost-hint">{t("dynhost.loginsHint")}</p>
               <button className="btn-primary" onClick={openLoginModal}><PlusIcon /> {t("dynhost.addLogin")}</button>
             </div>
           ) : (
@@ -351,7 +351,7 @@ export function DynHostTab({ zoneName }: Props) {
                 <div key={login.login} className="dynhost-card">
                   <div className="dynhost-header">
                     <h4><UserIcon /> {login.login}</h4>
-                    <div className="card-actions">
+                    <div className="dynhost-card-actions">
                       <button className="btn-icon btn-icon-danger" onClick={() => setDeleteLoginConfirm(login)} title={t("dynhost.delete")}><TrashIcon /></button>
                     </div>
                   </div>
@@ -367,34 +367,34 @@ export function DynHostTab({ zoneName }: Props) {
       )}
 
       {/* Info box */}
-      <div className="info-box">
+      <div className="dynhost-info-box">
         <h4>{t("dynhost.info")}</h4>
         <p>{t("dynhost.infoDesc")}</p>
       </div>
 
       {/* Record Modal */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="dynhost-modal-overlay" onClick={closeModal}>
+          <div className="dynhost-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="dynhost-modal-header">
               <h3>{modalMode === "create" ? t("dynhost.modalTitleCreate") : t("dynhost.modalTitleEdit")}</h3>
-              <button className="btn-icon" onClick={closeModal}><CloseIcon /></button>
+              <button className="dynhost-btn-icon" onClick={closeModal}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
-              {formError && <div className="form-error">{formError}</div>}
-              <div className="form-group">
+            <div className="dynhost-modal-body">
+              {formError && <div className="dynhost-form-error">{formError}</div>}
+              <div className="dynhost-form-group">
                 <label>{t("dynhost.subdomain")}</label>
                 <div className="input-with-suffix">
-                  <input type="text" value={formData.subDomain} onChange={(e) => handleFormChange("subDomain", e.target.value)} placeholder="home" className="form-input" disabled={modalMode === "edit"} />
+                  <input type="text" value={formData.subDomain} onChange={(e) => handleFormChange("subDomain", e.target.value)} placeholder="home" className="dynhost-input" disabled={modalMode === "edit"} />
                   <span className="input-suffix">.{zoneName}</span>
                 </div>
               </div>
-              <div className="form-group">
+              <div className="dynhost-form-group">
                 <label>{t("dynhost.ip")} *</label>
-                <input type="text" value={formData.ip} onChange={(e) => handleFormChange("ip", e.target.value)} placeholder="192.168.1.1" className="form-input" required />
+                <input type="text" value={formData.ip} onChange={(e) => handleFormChange("ip", e.target.value)} placeholder="192.168.1.1" className="dynhost-input" required />
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="dynhost-modal-footer">
               <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
               <button className="btn-primary" onClick={handleSave} disabled={saving}>{saving ? tCommon("loading") : tCommon("actions.save")}</button>
             </div>
@@ -404,32 +404,32 @@ export function DynHostTab({ zoneName }: Props) {
 
       {/* Login Modal */}
       {loginModalOpen && (
-        <div className="modal-overlay" onClick={closeLoginModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="dynhost-modal-overlay" onClick={closeLoginModal}>
+          <div className="dynhost-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="dynhost-modal-header">
               <h3>{t("dynhost.addLogin")}</h3>
-              <button className="btn-icon" onClick={closeLoginModal}><CloseIcon /></button>
+              <button className="dynhost-btn-icon" onClick={closeLoginModal}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
-              {loginFormError && <div className="form-error">{loginFormError}</div>}
-              <div className="form-group">
+            <div className="dynhost-modal-body">
+              {loginFormError && <div className="dynhost-form-error">{loginFormError}</div>}
+              <div className="dynhost-form-group">
                 <label>{t("dynhost.loginSuffix")} *</label>
                 <div className="input-with-prefix">
                   <span className="input-prefix">{zoneName}-</span>
-                  <input type="text" value={loginForm.loginSuffix} onChange={(e) => handleLoginFormChange("loginSuffix", e.target.value)} placeholder="user1" className="form-input" />
+                  <input type="text" value={loginForm.loginSuffix} onChange={(e) => handleLoginFormChange("loginSuffix", e.target.value)} placeholder="user1" className="dynhost-input" />
                 </div>
               </div>
-              <div className="form-group">
+              <div className="dynhost-form-group">
                 <label>{t("dynhost.password")} *</label>
-                <input type="password" value={loginForm.password} onChange={(e) => handleLoginFormChange("password", e.target.value)} className="form-input" />
+                <input type="password" value={loginForm.password} onChange={(e) => handleLoginFormChange("password", e.target.value)} className="dynhost-input" />
               </div>
-              <div className="form-group">
+              <div className="dynhost-form-group">
                 <label>{t("dynhost.subdomain")}</label>
-                <input type="text" value={loginForm.subDomain} onChange={(e) => handleLoginFormChange("subDomain", e.target.value)} placeholder="* (tous)" className="form-input" />
+                <input type="text" value={loginForm.subDomain} onChange={(e) => handleLoginFormChange("subDomain", e.target.value)} placeholder="* (tous)" className="dynhost-input" />
                 <small className="form-hint">{t("dynhost.subdomainLoginHint")}</small>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="dynhost-modal-footer">
               <button className="btn-secondary" onClick={closeLoginModal}>{tCommon("actions.cancel")}</button>
               <button className="btn-primary" onClick={handleSaveLogin} disabled={savingLogin}>{savingLogin ? tCommon("loading") : tCommon("actions.save")}</button>
             </div>
@@ -439,17 +439,17 @@ export function DynHostTab({ zoneName }: Props) {
 
       {/* Delete Record Confirm */}
       {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="dynhost-modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="dynhost-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="dynhost-modal-header">
               <h3>{t("dynhost.confirmDeleteTitle")}</h3>
-              <button className="btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
+              <button className="dynhost-btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
+            <div className="dynhost-modal-body">
               <p>{t("dynhost.confirmDeleteMessage")}</p>
               <div className="delete-preview"><strong>{deleteConfirm.subDomain || "@"}.{zoneName}</strong> → {deleteConfirm.ip}</div>
             </div>
-            <div className="modal-footer">
+            <div className="dynhost-modal-footer">
               <button className="btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
               <button className="btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>{deleting ? tCommon("loading") : tCommon("actions.delete")}</button>
             </div>
@@ -459,17 +459,17 @@ export function DynHostTab({ zoneName }: Props) {
 
       {/* Delete Login Confirm */}
       {deleteLoginConfirm && (
-        <div className="modal-overlay" onClick={() => setDeleteLoginConfirm(null)}>
-          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="dynhost-modal-overlay" onClick={() => setDeleteLoginConfirm(null)}>
+          <div className="dynhost-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="dynhost-modal-header">
               <h3>{t("dynhost.confirmDeleteLoginTitle")}</h3>
-              <button className="btn-icon" onClick={() => setDeleteLoginConfirm(null)}><CloseIcon /></button>
+              <button className="dynhost-btn-icon" onClick={() => setDeleteLoginConfirm(null)}><CloseIcon /></button>
             </div>
-            <div className="modal-body">
+            <div className="dynhost-modal-body">
               <p>{t("dynhost.confirmDeleteLoginMessage")}</p>
               <div className="delete-preview"><strong>{deleteLoginConfirm.login}</strong></div>
             </div>
-            <div className="modal-footer">
+            <div className="dynhost-modal-footer">
               <button className="btn-secondary" onClick={() => setDeleteLoginConfirm(null)}>{tCommon("actions.cancel")}</button>
               <button className="btn-danger" onClick={handleDeleteLoginConfirm} disabled={deleting}>{deleting ? tCommon("loading") : tCommon("actions.delete")}</button>
             </div>

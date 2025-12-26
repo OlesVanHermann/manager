@@ -28,7 +28,7 @@ export function ResourcesTab({ org, service }: Props) {
     load();
   }, [org, service]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="exchange-resources-loading"><div className="exchange-resources-skeleton" /></div>;
 
   return (
     <div className="exchange-resources-tab">
@@ -43,8 +43,8 @@ export function ResourcesTab({ org, service }: Props) {
               <h4>{r.displayName}</h4>
               <p className="exchange-resources-email">{r.resourceEmailAddress}</p>
               <div className="exchange-resources-meta">
-                <span className={`badge ${r.state === 'ok' ? 'success' : 'warning'}`}>{r.state}</span>
-                {r.capacity && <span className="badge info">{r.capacity} places</span>}
+                <span className={`exchange-resources-badge ${r.state === 'ok' ? 'success' : 'warning'}`}>{r.state}</span>
+                {r.capacity && <span className="exchange-resources-badge info">{r.capacity} places</span>}
               </div>
             </div>
           ))}

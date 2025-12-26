@@ -51,15 +51,15 @@ function Modal({
   if (!isOpen) return null;
   
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="wh-cdn-modal-overlay" onClick={onClose}>
+      <div className="wh-cdn-modal-container" onClick={e => e.stopPropagation()}>
+        <div className="wh-cdn-modal-header">
           <h3>{title}</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="wh-cdn-modal-close" onClick={onClose}>×</button>
         </div>
-        <div className="modal-body">{children}</div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose} disabled={loading}>
+        <div className="wh-cdn-modal-body">{children}</div>
+        <div className="wh-cdn-modal-footer">
+          <button className="wh-cdn-btn-secondary" onClick={onClose} disabled={loading}>
             Annuler
           </button>
           {onConfirm && (
@@ -265,7 +265,7 @@ export function CdnTab({ serviceName, details }: Props) {
               }}
             />
           </div>
-          <button className="btn btn-primary">
+          <button className="wh-cdn-btn-primary">
             + Ajouter un domaine
           </button>
         </div>
@@ -278,26 +278,26 @@ export function CdnTab({ serviceName, details }: Props) {
       <div className="cdn-cards">
         {/* CARD 1: État du CDN */}
         <div className="cdn-card">
-          <h4 className="card-title">État du CDN</h4>
+          <h4 className="wh-cdn-card-title">État du CDN</h4>
           
-          <div className="card-row">
-            <span className="card-label">Type de CDN :</span>
-            <span className="card-value">{cdnInfo?.type || "CDN Basic"}</span>
+          <div className="wh-cdn-card-row">
+            <span className="wh-cdn-card-label">Type de CDN :</span>
+            <span className="wh-cdn-card-value">{cdnInfo?.type || "CDN Basic"}</span>
           </div>
 
-          <div className="card-row">
-            <span className="card-label">État :</span>
-            <span className={`badge ${cdnInfo?.status === "active" ? "success" : "error"}`}>
+          <div className="wh-cdn-card-row">
+            <span className="wh-cdn-card-label">État :</span>
+            <span className={`wh-cdn-badge ${cdnInfo?.status === "active" ? "success" : "error"}`}>
               {cdnInfo?.status === "active" ? "Actif" : "Inactif"}
             </span>
           </div>
 
-          <div className="card-row">
-            <span className="card-label">Domaines couverts :</span>
-            <span className="card-value">{activeDomains} domaines</span>
+          <div className="wh-cdn-card-row">
+            <span className="wh-cdn-card-label">Domaines couverts :</span>
+            <span className="wh-cdn-card-value">{activeDomains} domaines</span>
           </div>
 
-          <div className="card-buttons">
+          <div className="wh-cdn-card-buttons">
             <button className="btn btn-outline btn-sm" onClick={() => setShowFlushModal(true)}>
               Vider le cache
             </button>
@@ -309,21 +309,21 @@ export function CdnTab({ serviceName, details }: Props) {
 
         {/* CARD 2: Statistiques CDN */}
         <div className="cdn-card">
-          <h4 className="card-title">Statistiques CDN</h4>
+          <h4 className="wh-cdn-card-title">Statistiques CDN</h4>
           
-          <div className="card-row">
-            <span className="card-label">Requêtes servies (24h) :</span>
-            <span className="card-value">{cdnInfo?.requests24h?.toLocaleString() || 0}</span>
+          <div className="wh-cdn-card-row">
+            <span className="wh-cdn-card-label">Requêtes servies (24h) :</span>
+            <span className="wh-cdn-card-value">{cdnInfo?.requests24h?.toLocaleString() || 0}</span>
           </div>
 
-          <div className="card-row">
-            <span className="card-label">Taux de cache hit :</span>
-            <span className="card-value">{cdnInfo?.cacheHitRate || 0}%</span>
+          <div className="wh-cdn-card-row">
+            <span className="wh-cdn-card-label">Taux de cache hit :</span>
+            <span className="wh-cdn-card-value">{cdnInfo?.cacheHitRate || 0}%</span>
           </div>
 
-          <div className="card-row">
-            <span className="card-label">Bande passante économisée :</span>
-            <span className="card-value">{cdnInfo?.bandwidthSaved || "0 Go"}</span>
+          <div className="wh-cdn-card-row">
+            <span className="wh-cdn-card-label">Bande passante économisée :</span>
+            <span className="wh-cdn-card-value">{cdnInfo?.bandwidthSaved || "0 Go"}</span>
           </div>
         </div>
       </div>
@@ -348,7 +348,7 @@ export function CdnTab({ serviceName, details }: Props) {
                   <span className="domain-link">{domain.domain}</span>
                 </td>
                 <td>
-                  <span className={`badge ${domain.cdn === "active" ? "success" : "error"}`}>
+                  <span className={`wh-cdn-badge ${domain.cdn === "active" ? "success" : "error"}`}>
                     {domain.cdn === "active" ? "Activé" : "Désactivé"}
                   </span>
                 </td>
@@ -367,7 +367,7 @@ export function CdnTab({ serviceName, details }: Props) {
                       🗑️
                     </button>
                   ) : (
-                    <span className="text-muted">-</span>
+                    <span className="wh-cdn-text-muted">-</span>
                   )}
                 </td>
                 <td>
@@ -380,7 +380,7 @@ export function CdnTab({ serviceName, details }: Props) {
                       ⚙️
                     </button>
                   ) : (
-                    <span className="text-muted">-</span>
+                    <span className="wh-cdn-text-muted">-</span>
                   )}
                 </td>
                 <td>
@@ -411,10 +411,10 @@ export function CdnTab({ serviceName, details }: Props) {
       {/* PAGINATION */}
       {totalPages > 0 && (
         <div className="cdn-pagination">
-          <span className="pagination-info">Page {currentPage}/{totalPages || 1}</span>
+          <span className="wh-cdn-pagination-info">Page {currentPage}/{totalPages || 1}</span>
           <div className="pagination-buttons">
             <button
-              className="pagination-btn"
+              className="wh-cdn-pagination-btn"
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
@@ -434,7 +434,7 @@ export function CdnTab({ serviceName, details }: Props) {
               );
             })}
             <button
-              className="pagination-btn"
+              className="wh-cdn-pagination-btn"
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
@@ -477,9 +477,9 @@ export function CdnTab({ serviceName, details }: Props) {
         title="Configurer le cache"
       >
         <p>Configuration du cache pour <strong>{showConfigModal}</strong></p>
-        <div className="form-group" style={{ marginTop: "16px" }}>
+        <div className="wh-cdn-form-group" style={{ marginTop: "16px" }}>
           <label>Type de cache :</label>
-          <select className="form-select">
+          <select className="wh-cdn-select">
             <option value="standard">Standard</option>
             <option value="aggressive">Agressif</option>
             <option value="disabled">Désactivé</option>

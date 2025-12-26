@@ -37,9 +37,9 @@ export function VouchersTab({ credentials }: TabProps) {
 
   if (loading) {
     return (
-      <div className="vouchers-panel">
-        <div className="vouchers-loading-state">
-          <div className="vouchers-spinner"></div>
+      <div className="billing-vouchers-panel">
+        <div className="billing-vouchers-loading-state">
+          <div className="billing-vouchers-spinner"></div>
           <p>{tCommon("loading")}</p>
         </div>
       </div>
@@ -48,23 +48,23 @@ export function VouchersTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="vouchers-panel">
-        <div className="vouchers-error-banner">{error}</div>
+      <div className="billing-vouchers-panel">
+        <div className="billing-vouchers-error-banner">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="vouchers-panel">
+    <div className="billing-vouchers-panel">
       {notAvailable || vouchers.length === 0 ? (
-        <div className="vouchers-empty-state">
+        <div className="billing-vouchers-empty-state">
           <GiftIcon />
           <h3>{t("vouchers.empty.title")}</h3>
           <p>{t("vouchers.empty.description")}</p>
         </div>
       ) : (
-        <div className="vouchers-table-container">
-          <table className="vouchers-table">
+        <div className="billing-vouchers-table-container">
+          <table className="billing-vouchers-table">
             <thead>
               <tr>
                 <th>{t("columns.code")}</th>
@@ -76,8 +76,8 @@ export function VouchersTab({ credentials }: TabProps) {
             <tbody>
               {vouchers.map((v) => (
                 <tr key={v.voucherAccount}>
-                  <td className="vouchers-ref-cell"><span className="vouchers-ref-badge">{v.voucherAccount}</span></td>
-                  <td className="vouchers-amount-cell">{v.balance.text}</td>
+                  <td className="billing-vouchers-ref-cell"><span className="billing-vouchers-ref-badge">{v.voucherAccount}</span></td>
+                  <td className="billing-vouchers-amount-cell">{v.balance.text}</td>
                   <td>{formatDate(v.creationDate)}</td>
                   <td>{formatDate(v.lastUpdate)}</td>
                 </tr>

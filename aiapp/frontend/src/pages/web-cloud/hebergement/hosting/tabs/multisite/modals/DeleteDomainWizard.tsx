@@ -186,7 +186,7 @@ export function DeleteDomainWizard({ serviceName, domain, isOpen, onClose, onSuc
         <div className="modal-footer">
           <button 
             type="button" 
-            className="btn btn-secondary" 
+            className="wh-modal-btn-secondary" 
             onClick={onClose}
             disabled={loading}
           >
@@ -194,7 +194,7 @@ export function DeleteDomainWizard({ serviceName, domain, isOpen, onClose, onSuc
           </button>
           <button 
             type="button" 
-            className="btn btn-danger" 
+            className="wh-modal-btn-danger" 
             onClick={handleDelete}
             disabled={loading || checking}
           >

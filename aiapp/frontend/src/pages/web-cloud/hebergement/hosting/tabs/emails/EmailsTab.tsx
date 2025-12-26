@@ -52,15 +52,15 @@ function Modal({
   if (!isOpen) return null;
   
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="wh-emails-modal-overlay" onClick={onClose}>
+      <div className="wh-emails-modal-container" onClick={e => e.stopPropagation()}>
+        <div className="wh-emails-modal-header">
           <h3>{title}</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="wh-emails-modal-close" onClick={onClose}>×</button>
         </div>
-        <div className="modal-body">{children}</div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose} disabled={loading}>
+        <div className="wh-emails-modal-body">{children}</div>
+        <div className="wh-emails-modal-footer">
+          <button className="wh-emails-btn-secondary" onClick={onClose} disabled={loading}>
             Annuler
           </button>
           {onConfirm && (
@@ -324,23 +324,23 @@ export function EmailsTab({ serviceName }: Props) {
       <div className="emails-cards">
         {/* CARD 1: Informations générales */}
         <div className="emails-card">
-          <h4 className="card-title">Informations générales</h4>
+          <h4 className="wh-emails-card-title">Informations générales</h4>
           
-          <div className="card-row">
-            <span className="card-label">État du service :</span>
-            <span className={`badge ${isBlocked ? "error" : "success"}`}>
+          <div className="wh-emails-card-row">
+            <span className="wh-emails-card-label">État du service :</span>
+            <span className={`wh-emails-badge ${isBlocked ? "error" : "success"}`}>
               {isBlocked ? "bloqué" : "actif"}
             </span>
           </div>
 
-          <div className="card-row">
-            <span className="card-label">Rapport d'erreurs à :</span>
+          <div className="wh-emails-card-row">
+            <span className="wh-emails-card-label">Rapport d'erreurs à :</span>
             <button className="btn btn-outline btn-sm" onClick={() => setShowBounceModal(true)}>
               Changer le destinataire
             </button>
           </div>
 
-          <div className="card-actions">
+          <div className="wh-emails-card-actions">
             <button 
               className="btn btn-outline"
               onClick={() => setShowBlockModal(true)}
@@ -352,26 +352,26 @@ export function EmailsTab({ serviceName }: Props) {
 
         {/* CARD 2: Statistiques */}
         <div className="emails-card">
-          <h4 className="card-title">Statistiques</h4>
+          <h4 className="wh-emails-card-title">Statistiques</h4>
           
-          <div className="card-row">
-            <span className="card-label">Total des e-mails envoyés :</span>
-            <span className="card-value">{emailInfo?.total?.toLocaleString() || 0}</span>
+          <div className="wh-emails-card-row">
+            <span className="wh-emails-card-label">Total des e-mails envoyés :</span>
+            <span className="wh-emails-card-value">{emailInfo?.total?.toLocaleString() || 0}</span>
           </div>
 
-          <div className="card-row">
-            <span className="card-label">E-mails envoyés aujourd'hui :</span>
-            <span className="card-value">{emailInfo?.sentToday || 0}</span>
+          <div className="wh-emails-card-row">
+            <span className="wh-emails-card-label">E-mails envoyés aujourd'hui :</span>
+            <span className="wh-emails-card-value">{emailInfo?.sentToday || 0}</span>
           </div>
 
-          <div className="card-row">
-            <span className="card-label">Total des e-mails en erreur :</span>
+          <div className="wh-emails-card-row">
+            <span className="wh-emails-card-label">Total des e-mails en erreur :</span>
             <span className={`card-value ${(emailInfo?.errors || 0) > 0 ? "text-error" : ""}`}>
               {emailInfo?.errors || 0}
             </span>
           </div>
 
-          <div className="card-actions-right">
+          <div className="wh-emails-card-actions-right">
             <button className="btn btn-outline btn-sm" onClick={() => setShowPurgeModal(true)}>
               Purger les e-mails
             </button>
@@ -445,8 +445,8 @@ export function EmailsTab({ serviceName }: Props) {
       </div>
 
       {/* INFO BANNER */}
-      <div className="info-banner">
-        <span className="info-icon">ℹ</span>
+      <div className="wh-emails-info-banner">
+        <span className="wh-emails-info-icon">ℹ</span>
         <span>Cette page ne concerne que les e-mails envoyés depuis des scripts CGI/PERL/PHP.</span>
       </div>
 
@@ -459,11 +459,11 @@ export function EmailsTab({ serviceName }: Props) {
         confirmText="Enregistrer"
         loading={actionLoading}
       >
-        <div className="form-group">
+        <div className="wh-emails-form-group">
           <label>Adresse e-mail de rapport d'erreurs :</label>
           <input
             type="email"
-            className="form-input"
+            className="wh-emails-input"
             value={bounceEmail}
             onChange={e => setBounceEmail(e.target.value)}
             placeholder="email@exemple.com"
@@ -509,7 +509,7 @@ export function EmailsTab({ serviceName }: Props) {
         title="E-mails en erreur"
       >
         {errorsList.length === 0 ? (
-          <p className="text-muted">Aucun e-mail en erreur.</p>
+          <p className="wh-emails-text-muted">Aucun e-mail en erreur.</p>
         ) : (
           <ul className="errors-list">
             {errorsList.map((err, i) => (

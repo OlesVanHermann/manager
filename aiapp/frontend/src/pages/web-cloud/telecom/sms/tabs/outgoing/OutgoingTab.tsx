@@ -39,9 +39,9 @@ export function OutgoingTab({ accountName }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
-        <div className="skeleton-block" />
+      <div className="sms-outgoing-loading">
+        <div className="sms-outgoing-skeleton" />
+        <div className="sms-outgoing-skeleton" />
       </div>
     );
   }

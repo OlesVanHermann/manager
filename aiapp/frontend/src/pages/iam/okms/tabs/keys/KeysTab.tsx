@@ -81,12 +81,12 @@ export default function KeysTab({ serviceId }: KeysTabProps) {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="keys-loading-state">{tCommon("loading")}</div>;
+    return <div className="okms-keys-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="keys-error-state">
+      <div className="okms-keys-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadKeys}>{tCommon("actions.retry")}</button>
       </div>
@@ -95,7 +95,7 @@ export default function KeysTab({ serviceId }: KeysTabProps) {
 
   if (keys.length === 0) {
     return (
-      <div className="keys-empty-state">
+      <div className="okms-keys-empty-state">
         <h2>{t("empty.title")}</h2>
         <p>{t("empty.description")}</p>
         <button className="btn btn-primary">{t("create")}</button>
@@ -104,12 +104,12 @@ export default function KeysTab({ serviceId }: KeysTabProps) {
   }
 
   return (
-    <div className="keys-tab">
-      <div className="keys-toolbar">
+    <div className="okms-keys-tab">
+      <div className="okms-keys-toolbar">
         <button className="btn btn-primary">{t("create")}</button>
       </div>
 
-      <table className="keys-table">
+      <table className="okms-keys-table">
         <thead>
           <tr>
             <th>{t("columns.name")}</th>
@@ -124,14 +124,14 @@ export default function KeysTab({ serviceId }: KeysTabProps) {
           {keys.map((key) => (
             <tr key={key.id}>
               <td>
-                <div className="keys-name">{key.name}</div>
-                <div className="keys-id">{key.id}</div>
+                <div className="okms-keys-name">{key.name}</div>
+                <div className="okms-keys-id">{key.id}</div>
               </td>
               <td>{getTypeBadge(key.type)}</td>
               <td>{key.algorithm} ({key.size} bits)</td>
               <td>{getStateBadge(key.state)}</td>
               <td>{new Date(key.createdAt).toLocaleDateString("fr-FR")}</td>
-              <td className="keys-actions">
+              <td className="okms-keys-actions">
                 <button className="btn btn-sm btn-outline">{tCommon("actions.view")}</button>
                 {key.state === "active" && (
                   <button className="btn btn-sm btn-outline btn-warning" onClick={() => handleDeactivate(key.id)}>{t("deactivate")}</button>

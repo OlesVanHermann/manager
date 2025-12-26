@@ -88,12 +88,12 @@ export default function CredentialsTab({ serviceId }: CredentialsTabProps) {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="credentials-loading-state">{tCommon("loading")}</div>;
+    return <div className="okms-credentials-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="credentials-error-state">
+      <div className="okms-credentials-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadCredentials}>{tCommon("actions.retry")}</button>
       </div>
@@ -101,47 +101,47 @@ export default function CredentialsTab({ serviceId }: CredentialsTabProps) {
   }
 
   return (
-    <div className="credentials-tab">
-      <div className="credentials-toolbar">
+    <div className="okms-credentials-tab">
+      <div className="okms-credentials-toolbar">
         <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       {credentials.length === 0 ? (
-        <div className="credentials-empty-state">
+        <div className="okms-credentials-empty-state">
           <h2>{t("empty.title")}</h2>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <div className="credentials-list">
+        <div className="okms-credentials-list">
           {credentials.map((credential) => (
-            <div key={credential.id} className="credentials-card">
-              <div className="credentials-card-header">
-                <span className="credentials-name">{credential.name}</span>
+            <div key={credential.id} className="okms-credentials-card">
+              <div className="okms-credentials-card-header">
+                <span className="okms-credentials-name">{credential.name}</span>
                 {getStatusBadge(credential.status)}
               </div>
               {credential.description && (
-                <p className="credentials-description">{credential.description}</p>
+                <p className="okms-credentials-description">{credential.description}</p>
               )}
-              <div className="credentials-details">
-                <div className="credentials-detail-item">
-                  <span className="credentials-detail-label">{t("fields.id")}</span>
-                  <span className="credentials-detail-value">{credential.id}</span>
+              <div className="okms-credentials-details">
+                <div className="okms-credentials-detail-item">
+                  <span className="okms-credentials-detail-label">{t("fields.id")}</span>
+                  <span className="okms-credentials-detail-value">{credential.id}</span>
                 </div>
-                <div className="credentials-detail-item">
-                  <span className="credentials-detail-label">{t("fields.created")}</span>
-                  <span className="credentials-detail-value">{new Date(credential.createdAt).toLocaleDateString("fr-FR")}</span>
+                <div className="okms-credentials-detail-item">
+                  <span className="okms-credentials-detail-label">{t("fields.created")}</span>
+                  <span className="okms-credentials-detail-value">{new Date(credential.createdAt).toLocaleDateString("fr-FR")}</span>
                 </div>
-                <div className="credentials-detail-item">
-                  <span className="credentials-detail-label">{t("fields.expires")}</span>
-                  <span className="credentials-detail-value">
+                <div className="okms-credentials-detail-item">
+                  <span className="okms-credentials-detail-label">{t("fields.expires")}</span>
+                  <span className="okms-credentials-detail-value">
                     {new Date(credential.expiresAt).toLocaleDateString("fr-FR")}
                     {isExpiringSoon(credential.expiresAt) && (
-                      <span className="credentials-expiring-warning"> ⚠️ {t("expiringSoon")}</span>
+                      <span className="okms-credentials-expiring-warning"> ⚠️ {t("expiringSoon")}</span>
                     )}
                   </span>
                 </div>
               </div>
-              <div className="credentials-actions">
+              <div className="okms-credentials-actions">
                 {credential.certificatePem && (
                   <button className="btn btn-sm btn-outline" onClick={() => handleDownloadCert(credential)}>
                     {t("downloadCert")}

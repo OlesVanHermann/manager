@@ -39,8 +39,8 @@ export function IncomingTab({ accountName }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
+      <div className="sms-incoming-loading">
+        <div className="sms-incoming-skeleton" />
       </div>
     );
   }

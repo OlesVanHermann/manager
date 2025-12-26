@@ -68,27 +68,27 @@ export function RuntimesTab({ serviceName }: Props) {
     return runtimes.slice(start, start + PAGE_SIZE);
   }, [runtimes, currentPage]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" style={{ height: "400px" }} /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="wh-runtimes-loading"><div className="wh-runtimes-skeleton" style={{ height: "400px" }} /></div>;
+  if (error) return <div className="wh-runtimes-error">{error}</div>;
 
   return (
     <div className="runtimes-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="wh-runtimes-header">
         <div>
           <h3>{t("runtimes.title")}</h3>
-          <p className="tab-description">{t("runtimes.description")}</p>
+          <p className="wh-runtimes-description">{t("runtimes.description")}</p>
         </div>
-        <div className="tab-actions">
-          <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
+        <div className="wh-runtimes-actions">
+          <button className="wh-runtimes-btn-primary-sm" onClick={() => setShowCreateModal(true)}>
             + {t("runtimes.create")}
           </button>
         </div>
       </div>
 
       {/* Info banner */}
-      <div className="info-banner" style={{ marginBottom: "1rem" }}>
-        <span className="info-icon">ℹ️</span>
+      <div className="wh-runtimes-info-banner" style={{ marginBottom: "1rem" }}>
+        <span className="wh-runtimes-info-icon">ℹ️</span>
         <span>{t("runtimes.infoDesc")}</span>
       </div>
 
@@ -99,15 +99,15 @@ export function RuntimesTab({ serviceName }: Props) {
 
       {/* Table */}
       {paginatedRuntimes.length === 0 ? (
-        <div className="empty-state">
+        <div className="wh-runtimes-empty">
           <p>{t("runtimes.empty")}</p>
-          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+          <button className="wh-runtimes-btn-primary" onClick={() => setShowCreateModal(true)}>
             {t("runtimes.createFirst")}
           </button>
         </div>
       ) : (
         <>
-          <table className="data-table">
+          <table className="wh-runtimes-table">
             <thead>
               <tr>
                 <th>{t("runtimes.name")}</th>
@@ -121,22 +121,22 @@ export function RuntimesTab({ serviceName }: Props) {
             <tbody>
               {paginatedRuntimes.map(runtime => (
                 <tr key={runtime.id}>
-                  <td className="font-medium">
+                  <td className="wh-runtimes-font-medium">
                     {runtime.name || `runtime-${runtime.id}`}
                     {runtime.isDefault && (
-                      <span className="badge primary" style={{ marginLeft: "0.5rem" }}>{t("runtimes.default")}</span>
+                      <span className="wh-runtimes-badge primary" style={{ marginLeft: "0.5rem" }}>{t("runtimes.default")}</span>
                     )}
                   </td>
                   <td>{runtime.type || "PHP"}</td>
                   <td>
                     <code>{runtime.phpVersion || "-"}</code>
                     {runtime.phpVersion && parseFloat(runtime.phpVersion) < 8.0 && (
-                      <span className="badge warning" style={{ marginLeft: "0.5rem" }}>⚠️</span>
+                      <span className="wh-runtimes-badge warning" style={{ marginLeft: "0.5rem" }}>⚠️</span>
                     )}
                   </td>
                   <td><code>{runtime.publicDir || "/public"}</code></td>
                   <td>
-                    <span className={`badge ${runtime.status === "ok" ? "success" : "warning"}`}>
+                    <span className={`wh-runtimes-badge ${runtime.status === "ok" ? "success" : "warning"}`}>
                       {runtime.status === "ok" ? "Actif" : runtime.status}
                     </span>
                   </td>
@@ -144,18 +144,18 @@ export function RuntimesTab({ serviceName }: Props) {
                     <div className="action-buttons">
                       {!runtime.isDefault && (
                         <button 
-                          className="btn-icon" 
+                          className="wh-runtimes-btn-icon" 
                           onClick={() => handleSetDefault(runtime.id)}
                           title={t("runtimes.setDefault")}
                         >⭐</button>
                       )}
                       <button 
-                        className="btn-icon" 
+                        className="wh-runtimes-btn-icon" 
                         onClick={() => setEditRuntime(runtime)}
                         title={t("runtimes.edit")}
                       >✏️</button>
                       <button 
-                        className="btn-icon btn-danger-icon" 
+                        className="wh-runtimes-btn-icon-danger" 
                         onClick={() => handleDelete(runtime.id, runtime.isDefault || false)}
                         title={t("runtimes.delete")}
                         disabled={runtime.isDefault}
@@ -168,10 +168,10 @@ export function RuntimesTab({ serviceName }: Props) {
           </table>
 
           {totalPages > 1 && (
-            <div className="pagination">
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
-              <span className="pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
+            <div className="wh-runtimes-pagination">
+              <button className="wh-runtimes-pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
+              <span className="wh-runtimes-pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
+              <button className="wh-runtimes-pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
             </div>
           )}
         </>

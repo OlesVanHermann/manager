@@ -217,7 +217,7 @@ export function OrderSslModal({ serviceName, isOpen, onClose, onSuccess }: Props
         <div className="modal-footer">
           <button 
             type="button" 
-            className="btn btn-secondary" 
+            className="wh-modal-btn-secondary" 
             onClick={step === 1 ? onClose : () => setStep(1)}
             disabled={loading}
           >
@@ -227,7 +227,7 @@ export function OrderSslModal({ serviceName, isOpen, onClose, onSuccess }: Props
           {step === 1 ? (
             <button 
               type="button" 
-              className="btn btn-primary" 
+              className="wh-modal-btn-primary" 
               onClick={() => setStep(2)}
               disabled={!canProceed()}
             >
@@ -236,7 +236,7 @@ export function OrderSslModal({ serviceName, isOpen, onClose, onSuccess }: Props
           ) : (
             <button 
               type="button" 
-              className="btn btn-primary" 
+              className="wh-modal-btn-primary" 
               onClick={handleSubmit}
               disabled={loading}
             >

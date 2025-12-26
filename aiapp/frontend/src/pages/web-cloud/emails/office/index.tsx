@@ -5,7 +5,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
-import { officeService, OfficeTenant } from "../../../../services/web-cloud.office";
+import { officePageService } from "./officePage.service";
+import type { OfficeTenant } from "./office.types";
 import { UsersTab } from "./tabs/users/UsersTab.tsx";
 import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
 import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
@@ -37,7 +38,7 @@ export default function OfficePage() {
     try {
       setLoading(true);
       setError(null);
-      const names = await officeService.listTenants();
+      const names = await officePageService.listTenants();
       const items: ServiceItem[] = names.map((name) => ({ id: name, name: name }));
       setTenants(items);
       if (items.length > 0 && !selectedTenant) {
@@ -55,7 +56,7 @@ export default function OfficePage() {
   // ---------- LOAD DETAILS ----------
   useEffect(() => {
     if (!selectedTenant) return;
-    officeService.getTenant(selectedTenant).then(setTenantDetails).catch(() => setTenantDetails(null));
+    officePageService.getTenant(selectedTenant).then(setTenantDetails).catch(() => setTenantDetails(null));
   }, [selectedTenant]);
 
   // ---------- TABS ----------

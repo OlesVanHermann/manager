@@ -40,9 +40,9 @@ export function PrepaidTab({ credentials }: TabProps) {
 
   if (loading) {
     return (
-      <div className="prepaid-tab-panel">
-        <div className="prepaid-loading-state">
-          <div className="prepaid-spinner"></div>
+      <div className="billing-prepaid-tab-panel">
+        <div className="billing-prepaid-loading-state">
+          <div className="billing-prepaid-spinner"></div>
           <p>{tCommon('loading')}</p>
         </div>
       </div>
@@ -51,16 +51,16 @@ export function PrepaidTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="prepaid-tab-panel">
-        <div className="prepaid-error-banner">{error}</div>
+      <div className="billing-prepaid-tab-panel">
+        <div className="billing-prepaid-error-banner">{error}</div>
       </div>
     );
   }
 
   if (notAvailable) {
     return (
-      <div className="prepaid-tab-panel">
-        <div className="prepaid-empty-state">
+      <div className="billing-prepaid-tab-panel">
+        <div className="billing-prepaid-empty-state">
           <WalletIcon />
           <h3>{t('prepaid.notAvailable.title')}</h3>
           <p>{t('prepaid.notAvailable.description')}</p>
@@ -70,12 +70,12 @@ export function PrepaidTab({ credentials }: TabProps) {
   }
 
   return (
-    <div className="prepaid-tab-panel">
-      <div className="prepaid-card">
+    <div className="billing-prepaid-tab-panel">
+      <div className="billing-prepaid-card">
         <h3>{t('prepaid.balance')}</h3>
-        <div className="prepaid-amount">{account?.balance.text || "0,00 EUR"}</div>
+        <div className="billing-prepaid-amount">{account?.balance.text || "0,00 EUR"}</div>
         {account?.alertThreshold !== undefined && (
-          <p className="prepaid-threshold">
+          <p className="billing-prepaid-threshold">
             {t('prepaid.alertThreshold')}: {account.alertThreshold} {account.balance.currencyCode}
           </p>
         )}
@@ -84,12 +84,12 @@ export function PrepaidTab({ credentials }: TabProps) {
       <h4>{t('prepaid.movementsHistory')}</h4>
 
       {movements.length === 0 ? (
-        <div className="prepaid-empty-state prepaid-empty-small">
+        <div className="billing-prepaid-empty-state prepaid-empty-small">
           <p>{t('prepaid.noMovements')}</p>
         </div>
       ) : (
-        <div className="prepaid-table-container">
-          <table className="prepaid-data-table">
+        <div className="billing-prepaid-table-container">
+          <table className="billing-prepaid-data-table">
             <thead>
               <tr>
                 <th>{t('columns.date')}</th>
@@ -103,7 +103,7 @@ export function PrepaidTab({ credentials }: TabProps) {
                 <tr key={m.movementId}>
                   <td>{formatDate(m.date)}</td>
                   <td>{m.description}</td>
-                  <td className={m.amount.value >= 0 ? "prepaid-amount-positive" : "prepaid-amount-negative"}>
+                  <td className={m.amount.value >= 0 ? "billing-prepaid-amount-positive" : "billing-prepaid-amount-negative"}>
                     {m.amount.text}
                   </td>
                   <td>{m.balance.text}</td>

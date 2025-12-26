@@ -26,11 +26,11 @@ export function GeneralTab({ serviceName, details }: Props) {
             <h3>{details?.customerDescription || serviceName}</h3>
             <p>{t("serviceName")}: {serviceName}</p>
             <div className="general-otb-device-meta">
-              <span className={`badge ${details?.status === 'active' ? 'success' : 'error'}`}>
+              <span className={`otb-general-badge ${details?.status === 'active' ? 'success' : 'error'}`}>
                 {details?.status || 'unknown'}
               </span>
               {details?.systemVersion && (
-                <span className="badge info">v{details.systemVersion}</span>
+                <span className="otb-general-badge info">v{details.systemVersion}</span>
               )}
             </div>
           </div>

@@ -4,11 +4,19 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import * as projectService from "../../../services/public-cloud.project";
-import type { CloudProject, CloudProjectServiceInfos } from "../../../services/public-cloud.project";
-import { InstancesTab, VolumesTab, SnapshotsTab, StorageTab, NetworksTab, SshKeysTab, QuotaTab } from "./tabs";
+import { listProjects, getProject, getServiceInfos } from "./tabs/InstancesTab.service";
+import InstancesTab from "./tabs/InstancesTab";
+import VolumesTab from "./tabs/VolumesTab";
+import SnapshotsTab from "./tabs/SnapshotsTab";
+import StorageTab from "./tabs/StorageTab";
+import NetworksTab from "./tabs/NetworksTab";
+import SshKeysTab from "./tabs/SshKeysTab";
+import QuotaTab from "./tabs/QuotaTab";
+import "./ProjectPage.css";
 
 interface Tab { id: string; labelKey: string; }
+interface CloudProject { projectId: string; projectName: string; description: string; status: string; }
+interface CloudProjectServiceInfos { serviceId: number; status: string; }
 interface ProjectWithDetails { projectId: string; details?: CloudProject; serviceInfos?: CloudProjectServiceInfos; loading: boolean; }
 
 export default function PublicCloudProjectPage() {
@@ -33,26 +41,23 @@ export default function PublicCloudProjectPage() {
   const loadProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const ids = await projectService.listProjects();
-      const list: ProjectWithDetails[] = ids.map(projectId => ({ projectId, loading: true }));
+      const ids = await listProjects();
+      const list: ProjectWithDetails[] = ids.map((projectId) => ({ projectId, loading: true }));
       setProjects(list);
       if (ids.length > 0 && !selected) setSelected(ids[0]);
       for (const projectId of ids) {
         try {
-          const [details, serviceInfos] = await Promise.all([projectService.getProject(projectId), projectService.getServiceInfos(projectId)]);
-          setProjects(prev => prev.map(p => p.projectId === projectId ? { ...p, details, serviceInfos, loading: false } : p));
-        } catch { setProjects(prev => prev.map(p => p.projectId === projectId ? { ...p, loading: false } : p)); }
+          const [details, serviceInfos] = await Promise.all([getProject(projectId), getServiceInfos(projectId)]);
+          setProjects((prev) => prev.map((p) => p.projectId === projectId ? { ...p, details, serviceInfos, loading: false } : p));
+        } catch { setProjects((prev) => prev.map((p) => p.projectId === projectId ? { ...p, loading: false } : p)); }
       }
     } finally { setLoading(false); }
   }, [selected]);
 
   useEffect(() => { loadProjects(); }, []);
 
-  const filtered = projects.filter(p => 
-    p.projectId.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.details?.projectName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const current = projects.find(p => p.projectId === selected);
+  const filtered = projects.filter((p) => p.projectId.toLowerCase().includes(searchQuery.toLowerCase()) || p.details?.projectName?.toLowerCase().includes(searchQuery.toLowerCase()));
+  const current = projects.find((p) => p.projectId === selected);
 
   const renderTab = () => {
     if (!selected) return null;
@@ -69,7 +74,7 @@ export default function PublicCloudProjectPage() {
   };
 
   return (
-    <div className="cloud-project-page">
+    <div className="project-page">
       <aside className="project-sidebar">
         <div className="sidebar-header"><h2>{t("title")}</h2><span className="count-badge">{projects.length}</span></div>
         <div className="sidebar-search"><input type="text" placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
@@ -77,7 +82,7 @@ export default function PublicCloudProjectPage() {
           {loading && projects.length === 0 ? (<div className="loading-state"><div className="skeleton-item" /></div>) : filtered.length === 0 ? (<div className="empty-state">{tCommon("empty.title")}</div>) : (
             filtered.map((p) => (
               <button key={p.projectId} className={`project-item ${selected === p.projectId ? "active" : ""}`} onClick={() => setSelected(p.projectId)}>
-                <div className={`project-status-dot ${p.details?.status === 'ok' ? 'running' : 'warning'}`} />
+                <div className={`project-status-dot ${p.details?.status === "ok" ? "running" : "warning"}`} />
                 <div className="project-info">
                   <span className="project-name">{p.details?.projectName || p.projectId.slice(0, 8)}</span>
                   <span className="project-id">{p.projectId.slice(0, 8)}...</span>
@@ -93,7 +98,7 @@ export default function PublicCloudProjectPage() {
             <header className="page-header">
               <div>
                 <h1>{current.details?.projectName || selected}</h1>
-                <p className="page-description">{current.details?.description || t("noDescription")} | <span className={`state-text ${current.details?.status === 'ok' ? 'running' : 'warning'}`}>{current.details?.status}</span></p>
+                <p className="page-description">{current.details?.description || t("noDescription")} | <span className={`state-text ${current.details?.status === "ok" ? "running" : "warning"}`}>{current.details?.status}</span></p>
               </div>
               <button className="btn-refresh" onClick={loadProjects}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>{tCommon("actions.refresh")}</button>
             </header>

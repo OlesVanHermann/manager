@@ -29,8 +29,8 @@ export function MailingListsTab({ domain }: Props) {
     load();
   }, [domain]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="emaildomain-mailinglists-loading"><div className="emaildomain-mailinglists-skeleton" /></div>;
+  if (error) return <div className="emaildomain-mailinglists-error">{error}</div>;
 
   return (
     <div className="emaildomain-mailinglists-tab">

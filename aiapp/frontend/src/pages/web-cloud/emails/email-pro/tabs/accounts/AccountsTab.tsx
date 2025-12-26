@@ -32,7 +32,7 @@ export function AccountsTab({ serviceName }: Props) {
     load();
   }, [serviceName]);
 
-  if (loading && accounts.length === 0) return <div className="tab-loading"><div className="skeleton-block" /><div className="skeleton-block" /></div>;
+  if (loading && accounts.length === 0) return <div className="emailpro-accounts-loading"><div className="emailpro-accounts-skeleton" /><div className="emailpro-accounts-skeleton" /></div>;
 
   return (
     <div className="emailpro-accounts-tab">
@@ -57,7 +57,7 @@ export function AccountsTab({ serviceName }: Props) {
               <div key={a.primaryEmailAddress} className={`emailpro-accounts-card ${a.state !== 'ok' ? 'suspended' : ''}`}>
                 <div className="emailpro-accounts-header">
                   <h4>{a.primaryEmailAddress}</h4>
-                  <span className={`badge ${a.state === 'ok' ? 'success' : 'warning'}`}>{a.state}</span>
+                  <span className={`emailpro-accounts-badge ${a.state === 'ok' ? 'success' : 'warning'}`}>{a.state}</span>
                 </div>
                 <div className="emailpro-accounts-name">{a.displayName || `${a.firstName} ${a.lastName}`}</div>
                 <div className="emailpro-accounts-quota">
@@ -65,8 +65,8 @@ export function AccountsTab({ serviceName }: Props) {
                   <div className="emailpro-accounts-quota-text"><span>{formatSize(a.currentUsage)}</span><span>{formatSize(a.quota)}</span></div>
                 </div>
                 <div className="emailpro-accounts-meta">
-                  <span className={`badge ${a.configured ? 'success' : 'inactive'}`}>{a.configured ? '✓ Configuré' : 'Non configuré'}</span>
-                  {a.spamDetected && <span className="badge error">⚠ Spam détecté</span>}
+                  <span className={`emailpro-accounts-badge ${a.configured ? 'success' : 'inactive'}`}>{a.configured ? '✓ Configuré' : 'Non configuré'}</span>
+                  {a.spamDetected && <span className="emailpro-accounts-badge error">⚠ Spam détecté</span>}
                 </div>
               </div>
             );

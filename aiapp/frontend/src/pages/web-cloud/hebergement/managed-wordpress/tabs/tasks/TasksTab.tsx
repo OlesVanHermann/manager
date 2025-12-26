@@ -27,8 +27,8 @@ export function TasksTab({ serviceName }: Props) {
   const formatDate = (d?: string) => d ? new Date(d).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
   const formatFunction = (fn: string) => ({ "wordpress/install": "Installation WordPress", "wordpress/update": "Mise à jour WordPress", "plugin/update": "Mise à jour extension", "theme/update": "Mise à jour thème", "backup/create": "Création sauvegarde", "backup/restore": "Restauration sauvegarde", "cache/flush": "Vidage cache" }[fn] || fn);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="mwp-tasks-loading"><div className="mwp-tasks-skeleton" /></div>;
+  if (error) return <div className="mwp-tasks-error">{error}</div>;
 
   return (
     <div className="tasks-tab">
@@ -36,7 +36,7 @@ export function TasksTab({ serviceName }: Props) {
         <h3>{t("tasks.title")}</h3>
         <div className="tasks-actions">
           <label className="tasks-checkbox-label"><input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)} /> {t("tasks.autoRefresh")}</label>
-          <button className="btn-icon" onClick={() => loadTasks()} title={t("tasks.refresh")}>↻</button>
+          <button className="mwp-tasks-btn-icon" onClick={() => loadTasks()} title={t("tasks.refresh")}>↻</button>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export function TasksTab({ serviceName }: Props) {
             {tasks.map(task => (
               <tr key={task.id}>
                 <td>{formatFunction(task.function)}</td>
-                <td><span className={`badge ${getStatusBadge(task.status).class}`}>{getStatusBadge(task.status).label}</span></td>
+                <td><span className={`mwp-tasks-badge ${getStatusBadge(task.status).class}`}>{getStatusBadge(task.status).label}</span></td>
                 <td>{formatDate(task.startDate)}</td>
                 <td>{formatDate(task.doneDate)}</td>
               </tr>

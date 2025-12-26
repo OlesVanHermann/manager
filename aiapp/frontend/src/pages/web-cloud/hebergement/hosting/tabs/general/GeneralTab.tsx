@@ -281,86 +281,86 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
       {/* ========== BLOC 1: WEB ========== */}
-      <div className="general-info-bloc">
+      <div className="wh-general-info-bloc">
         <h3 className="general-bloc-title">Web</h3>
         <div className="general-bloc-grid">
           <div className="general-bloc-dividers"><span/><span/><span/><span/></div>
           
           <div className="general-theme-col">
             <div className="general-theme-title">STOCKAGE</div>
-            <div className="general-info-line">
-              <span className="lbl">Espace disque</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Espace disque</span>
               <div className="general-progress-wrap">
                 <div className="general-progress-bar"><div className="general-progress-fill" style={{ width: `${Math.min(quota.pct, 100)}%` }}/></div>
                 <span className="general-progress-txt">{quota.text}</span>
               </div>
               <Btn label="Augmenter" onClick={() => navigate("/home/billing/services")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Sites web</span>
-              <span className="val">{counts.attachedDomains} / 500</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Sites web</span>
+              <span className="wh-general-val">{counts.attachedDomains} / 500</span>
               <Btn label="Gérer" onClick={() => goToTab("multisite")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Modules</span>
-              <span className="val">{counts.modules}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Modules</span>
+              <span className="wh-general-val">{counts.modules}</span>
               <Btn label="Gérer" onClick={() => goToTab("modules")} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">CONFIGURATION PHP</div>
-            <div className="general-info-line"><span className="lbl">Moteur</span><span className="val">PHP</span></div>
-            <div className="general-info-line">
-              <span className="lbl">Version</span>
-              <span className="val">{phpVersion}</span>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Moteur</span><span className="wh-general-val">PHP</span></div>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Version</span>
+              <span className="wh-general-val">{phpVersion}</span>
               <Btn label="Changer" onClick={() => setShowConfigModal(true)} />
             </div>
-            <div className="general-info-line"><span className="lbl">Environnement</span><span className="val">production</span></div>
-            <div className="general-info-line">
-              <span className="lbl">.ovhconfig</span>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Environnement</span><span className="wh-general-val">production</span></div>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">.ovhconfig</span>
               <Btn label="Modifier" onClick={() => setShowConfigModal(true)} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">LOGS & STATISTIQUES</div>
-            <div className="general-info-line">
-              <span className="lbl">Logs temps réel</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Logs temps réel</span>
               <Btn label="Accéder" onClick={() => goToTab("logs")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Statistiques</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Statistiques</span>
               <Btn label="Voir" onClick={() => window.open(`https://logs.ovh.net/${serviceName}/`, '_blank')} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">SAUVEGARDE</div>
-            <div className="general-info-line">
-              <span className="lbl">Dernière</span>
-              <span className="val">{formatDateTime(lastBackupDate)}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Dernière</span>
+              <span className="wh-general-val">{formatDateTime(lastBackupDate)}</span>
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Restauration</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Restauration</span>
               <Btn label="Restaurer" onClick={() => setShowRestoreModal(true)} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">PERFORMANCE</div>
-            <div className="general-info-line">
-              <span className="lbl">Boost</span>
-              <span className="val">{boostEnabled ? "Activé" : "Désactivé"}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Boost</span>
+              <span className="wh-general-val">{boostEnabled ? "Activé" : "Désactivé"}</span>
               <Btn label={boostEnabled ? "Gérer" : "Activer"} onClick={() => goToTab("boost")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">CDN</span>
-              <span className="val">{cdnType}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">CDN</span>
+              <span className="wh-general-val">{cdnType}</span>
               <Btn label="Gérer" onClick={() => goToTab("cdn")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Cache</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Cache</span>
               <Btn label="Vider" onClick={handleFlushCache} />
             </div>
           </div>
@@ -368,65 +368,65 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
       </div>
 
       {/* ========== BLOC 2: EXPERT ========== */}
-      <div className="general-info-bloc">
+      <div className="wh-general-info-bloc">
         <h3 className="general-bloc-title">Expert</h3>
         <div className="general-bloc-grid">
           <div className="general-bloc-dividers"><span/><span/><span/><span/></div>
           
           <div className="general-theme-col">
             <div className="general-theme-title">ACCÈS</div>
-            <div className="general-info-line">
-              <span className="lbl">SSH</span>
-              <span className="val">{sshEnabled ? "Activé" : "Désactivé"}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">SSH</span>
+              <span className="wh-general-val">{sshEnabled ? "Activé" : "Désactivé"}</span>
               <Btn label="Configurer" onClick={() => setShowSshModal(true)} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Comptes FTP</span>
-              <span className="val">{counts.ftpUsers}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Comptes FTP</span>
+              <span className="wh-general-val">{counts.ftpUsers}</span>
               <Btn label="Gérer" onClick={() => goToTab("ftp")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Accès HTTP</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Accès HTTP</span>
               <Btn label="Accéder" onClick={() => window.open(`https://${hosting.cluster}.hosting.ovh.net/`, '_blank')} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">BASES DE DONNÉES</div>
-            <div className="general-info-line">
-              <span className="lbl">Bases MySQL</span>
-              <span className="val">{counts.databases} / 5</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Bases MySQL</span>
+              <span className="wh-general-val">{counts.databases} / 5</span>
               <Btn label="Gérer" onClick={() => goToTab("database")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">phpMyAdmin</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">phpMyAdmin</span>
               <Btn label="Accéder" onClick={() => window.open('https://phpmyadmin.ovh.net/', '_blank')} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">TÂCHES PLANIFIÉES</div>
-            <div className="general-info-line">
-              <span className="lbl">Tâches Cron</span>
-              <span className="val">{counts.crons} actives</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Tâches Cron</span>
+              <span className="wh-general-val">{counts.crons} actives</span>
               <Btn label="Gérer" onClick={() => goToTab("cron")} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">VARIABLES</div>
-            <div className="general-info-line">
-              <span className="lbl">Environnement</span>
-              <span className="val">{counts.envVars} définies</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Environnement</span>
+              <span className="wh-general-val">{counts.envVars} définies</span>
               <Btn label="Gérer" onClick={() => goToTab("envvars")} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">RUNTIMES</div>
-            <div className="general-info-line">
-              <span className="lbl">Node.js</span>
-              <span className="val">18.x</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Node.js</span>
+              <span className="wh-general-val">18.x</span>
               <Btn label="Configurer" onClick={() => goToTab("runtimes")} />
             </div>
           </div>
@@ -434,27 +434,27 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
       </div>
 
       {/* ========== BLOC 3: GENERAL ========== */}
-      <div className="general-info-bloc">
+      <div className="wh-general-info-bloc">
         <h3 className="general-bloc-title">General</h3>
         <div className="general-bloc-grid">
           <div className="general-bloc-dividers"><span/><span/><span/><span/></div>
           
           <div className="general-theme-col">
             <div className="general-theme-title">INFRASTRUCTURE</div>
-            <div className="general-info-line"><span className="lbl">Datacenter</span><span className="val">{hosting.datacenter || "-"}</span></div>
-            <div className="general-info-line"><span className="lbl">Cluster</span><span className="val">{hosting.cluster || "-"}</span></div>
-            <div className="general-info-line"><span className="lbl">Filer</span><span className="val">{(hosting as any).filer || "-"}</span></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Datacenter</span><span className="wh-general-val">{hosting.datacenter || "-"}</span></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Cluster</span><span className="wh-general-val">{hosting.cluster || "-"}</span></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Filer</span><span className="wh-general-val">{(hosting as any).filer || "-"}</span></div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">RÉSEAU</div>
-            <div className="general-info-line">
-              <span className="lbl">IPv4</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">IPv4</span>
               <span className="val ip-field">{hosting.hostingIp || "-"}</span>
               <IconBtn icon="📋" title="Copier" onClick={() => copyToClipboard(hosting.hostingIp || "")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">IPv6</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">IPv6</span>
               <span className="val ip-field">{hosting.hostingIpv6 || "-"}</span>
               <IconBtn icon="📋" title="Copier" onClick={() => copyToClipboard(hosting.hostingIpv6 || "")} />
             </div>
@@ -462,24 +462,24 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
 
           <div className="general-theme-col">
             <div className="general-theme-title">SÉCURITÉ</div>
-            <div className="general-info-line">
-              <span className="lbl">SSL</span>
-              <span className="val">{sslProvider}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">SSL</span>
+              <span className="wh-general-val">{sslProvider}</span>
               <Btn label="Changer" onClick={() => setShowOrderSslModal(true)} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Firewall</span>
-              <span className="val">Activé</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Firewall</span>
+              <span className="wh-general-val">Activé</span>
               <Btn label="Configurer" onClick={() => goToTab("multisite")} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">EMAILS</div>
-            <div className="general-info-line"><span className="lbl">Comptes</span><span className="val">- / 100</span><Btn label="Gérer" onClick={() => goToTab("emails")} /></div>
-            <div className="general-info-line"><span className="lbl">Alias</span><span className="val">-</span><Btn label="Gérer" onClick={() => goToTab("emails")} /></div>
-            <div className="general-info-line"><span className="lbl">Redirections</span><span className="val">-</span><Btn label="Gérer" onClick={() => goToTab("emails")} /></div>
-            <div className="general-info-line"><span className="lbl">Mailing lists</span><span className="val">-</span><Btn label="Gérer" onClick={() => goToTab("emails")} /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Comptes</span><span className="wh-general-val">- / 100</span><Btn label="Gérer" onClick={() => goToTab("emails")} /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Alias</span><span className="wh-general-val">-</span><Btn label="Gérer" onClick={() => goToTab("emails")} /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Redirections</span><span className="wh-general-val">-</span><Btn label="Gérer" onClick={() => goToTab("emails")} /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Mailing lists</span><span className="wh-general-val">-</span><Btn label="Gérer" onClick={() => goToTab("emails")} /></div>
           </div>
 
           <div className="general-theme-col"></div>
@@ -487,66 +487,66 @@ export function GeneralTab({ serviceName, onTabChange, onRefresh }: Props) {
       </div>
 
       {/* ========== BLOC 4: FACTURATION ========== */}
-      <div className="general-info-bloc">
+      <div className="wh-general-info-bloc">
         <h3 className="general-bloc-title">Facturation</h3>
         <div className="general-bloc-grid">
           <div className="general-bloc-dividers"><span/><span/><span/><span/></div>
           
           <div className="general-theme-col">
             <div className="general-theme-title">SERVICE</div>
-            <div className="general-info-line"><span className="lbl">État</span><span className="val status-ok">{hosting.state === "active" ? "Actif" : hosting.state}</span></div>
-            <div className="general-info-line">
-              <span className="lbl">Expiration</span>
-              <span className="val">{formatDate(serviceInfos?.expiration)}</span>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">État</span><span className="val status-ok">{hosting.state === "active" ? "Actif" : hosting.state}</span></div>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Expiration</span>
+              <span className="wh-general-val">{formatDate(serviceInfos?.expiration)}</span>
               <Btn label="Renouveler" onClick={() => navigate("/home/billing/services")} />
             </div>
-            <div className="general-info-line"><span className="lbl">Création</span><span className="val">{formatDate(serviceInfos?.creation)}</span></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Création</span><span className="wh-general-val">{formatDate(serviceInfos?.creation)}</span></div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">OFFRE</div>
-            <div className="general-info-line">
-              <span className="lbl">Formule</span>
-              <span className="val">{hosting.offer || "-"}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Formule</span>
+              <span className="wh-general-val">{hosting.offer || "-"}</span>
               <Btn label="Changer" onClick={() => navigate("/home/billing/services")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Nom affiché</span>
-              <span className="val">{hosting.displayName || serviceName}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Nom affiché</span>
+              <span className="wh-general-val">{hosting.displayName || serviceName}</span>
               <Btn label="Modifier" onClick={() => setShowEditNameModal(true)} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">CONTACTS</div>
-            <div className="general-info-line"><span className="lbl">Admin</span><span className="val">{serviceInfos?.contactAdmin || "-"}</span><Btn label="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
-            <div className="general-info-line"><span className="lbl">Technique</span><span className="val">{serviceInfos?.contactTech || "-"}</span><Btn label="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
-            <div className="general-info-line"><span className="lbl">Facturation</span><span className="val">{serviceInfos?.contactBilling || "-"}</span><Btn label="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Admin</span><span className="wh-general-val">{serviceInfos?.contactAdmin || "-"}</span><Btn label="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Technique</span><span className="wh-general-val">{serviceInfos?.contactTech || "-"}</span><Btn label="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Facturation</span><span className="wh-general-val">{serviceInfos?.contactBilling || "-"}</span><Btn label="Modifier" onClick={() => navigate("/home/account/contacts")} /></div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">PAIEMENT</div>
-            <div className="general-info-line">
-              <span className="lbl">Renouvellement</span>
-              <span className="val">{renewAuto ? "Auto" : "Manuel"}</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Renouvellement</span>
+              <span className="wh-general-val">{renewAuto ? "Auto" : "Manuel"}</span>
               <Btn label="Configurer" onClick={() => navigate("/home/billing/services")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Moyen</span>
-              <span className="val">CB •••• 4242</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Moyen</span>
+              <span className="wh-general-val">CB •••• 4242</span>
               <Btn label="Modifier" onClick={() => navigate("/home/billing/payment-methods")} />
             </div>
-            <div className="general-info-line">
-              <span className="lbl">Factures</span>
+            <div className="wh-general-info-line">
+              <span className="wh-general-lbl">Factures</span>
               <Btn label="Voir" onClick={() => navigate("/home/billing/invoices")} />
             </div>
           </div>
 
           <div className="general-theme-col">
             <div className="general-theme-title">RÉSILIATION</div>
-            <div className="general-info-line"><span className="lbl">Domaine</span><Btn label="Résilier" onClick={() => navigate("/home/billing/services")} danger /></div>
-            <div className="general-info-line"><span className="lbl">Hébergement</span><Btn label="Résilier" onClick={() => setShowTerminateModal(true)} danger /></div>
-            <div className="general-info-line"><span className="lbl">Tous les services</span><Btn label="Supprimer" onClick={() => setShowTerminateModal(true)} danger /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Domaine</span><Btn label="Résilier" onClick={() => navigate("/home/billing/services")} danger /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Hébergement</span><Btn label="Résilier" onClick={() => setShowTerminateModal(true)} danger /></div>
+            <div className="wh-general-info-line"><span className="wh-general-lbl">Tous les services</span><Btn label="Supprimer" onClick={() => setShowTerminateModal(true)} danger /></div>
           </div>
         </div>
       </div>

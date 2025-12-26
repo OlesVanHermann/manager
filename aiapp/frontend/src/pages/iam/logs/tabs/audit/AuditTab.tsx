@@ -17,11 +17,11 @@ const POLL_INTERVAL = 5000;
 const MAX_LOGS = 500;
 
 const LOG_LEVEL_CLASSES: Record<string, string> = {
-  error: "audit-log-error",
-  warn: "audit-log-warn",
-  warning: "audit-log-warn",
-  info: "audit-log-info",
-  debug: "audit-log-debug",
+  error: "logs-audit-log-error",
+  warn: "logs-audit-log-warn",
+  warning: "logs-audit-log-warn",
+  info: "logs-audit-log-info",
+  debug: "logs-audit-log-debug",
 };
 
 // ============================================================
@@ -55,21 +55,21 @@ export default function AuditTab() {
 
   if (loading) {
     return (
-      <div className="audit-tab">
-        <div className="audit-loading-state"><div className="spinner"></div></div>
+      <div className="logs-audit-tab">
+        <div className="logs-audit-loading-state"><div className="spinner"></div></div>
       </div>
     );
   }
 
   return (
-    <div className="audit-tab">
+    <div className="logs-audit-tab">
       {kinds.length > 1 && (
-        <div className="audit-kind-selector">
+        <div className="logs-audit-kind-selector">
           <label>{t("kindSelector.label")}</label>
           <select
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
-            className="audit-kind-select"
+            className="logs-audit-kind-select"
           >
             {kinds.map((kind) => (
               <option key={kind} value={kind}>{kind}</option>
@@ -185,29 +185,29 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
 
   const renderLog = (log: LogEntry, idx: number) => {
     const level = log.level || "info";
-    const cls = LOG_LEVEL_CLASSES[level.toLowerCase()] || "audit-log-info";
+    const cls = LOG_LEVEL_CLASSES[level.toLowerCase()] || "logs-audit-log-info";
     const time = log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : "";
     return (
-      <div key={idx} className="audit-log-entry">
-        <span className="audit-log-time">{time}</span>
+      <div key={idx} className="logs-audit-log-entry">
+        <span className="logs-audit-log-time">{time}</span>
         <span className={`audit-log-level ${cls}`}>{level.toUpperCase()}</span>
-        <span className="audit-log-message">{log.message || JSON.stringify(log)}</span>
+        <span className="logs-audit-log-message">{log.message || JSON.stringify(log)}</span>
       </div>
     );
   };
 
   return (
-    <div className="audit-live-tail">
-      <div className="audit-live-tail-header">
-        <p className="audit-live-tail-description">{description}</p>
+    <div className="logs-audit-live-tail">
+      <div className="logs-audit-live-tail-header">
+        <p className="logs-audit-live-tail-description">{description}</p>
         <div>
           <button className="btn btn-secondary btn-sm" onClick={onGoToDataStreams}>
             {t("liveTail.dataStreams")}
           </button>
         </div>
       </div>
-      <div className="audit-live-tail-toolbar">
-        <div className="audit-toolbar-left">
+      <div className="logs-audit-live-tail-toolbar">
+        <div className="logs-audit-toolbar-left">
           <button
             className={`btn btn-sm ${isPolling ? "btn-success" : "btn-secondary"}`}
             onClick={togglePolling}
@@ -216,7 +216,7 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
           </button>
           <button className="btn btn-outline btn-sm" onClick={refresh}>{tc("actions.refresh")}</button>
           <button className="btn btn-outline btn-sm" onClick={clearLogs}>{t("liveTail.clear")}</button>
-          <label className="audit-checkbox-label">
+          <label className="logs-audit-checkbox-label">
             <input
               type="checkbox"
               checked={autoScroll}
@@ -225,31 +225,31 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
             {t("liveTail.autoScroll")}
           </label>
         </div>
-        <div className="audit-toolbar-right">
+        <div className="logs-audit-toolbar-right">
           <input
             type="text"
-            className="audit-filter-input"
+            className="logs-audit-filter-input"
             placeholder={t("liveTail.filterPlaceholder")}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
-          <span className="audit-log-count">{filteredLogs.length} logs</span>
+          <span className="logs-audit-log-count">{filteredLogs.length} logs</span>
         </div>
       </div>
       {loading && logs.length === 0 ? (
-        <div className="audit-loading-state">
+        <div className="logs-audit-loading-state">
           <div className="spinner"></div>
           <p>{t("liveTail.loading")}</p>
         </div>
       ) : error ? (
-        <div className="audit-error-banner">
+        <div className="logs-audit-error-banner">
           <span>{error}</span>
           <button onClick={refresh} className="btn btn-sm btn-secondary">{tc("actions.retry")}</button>
         </div>
       ) : (
-        <div className="audit-log-container">
+        <div className="logs-audit-log-container">
           {filteredLogs.length === 0 ? (
-            <div className="audit-empty-logs"><p>{t("liveTail.noLogs")}</p></div>
+            <div className="logs-audit-empty-logs"><p>{t("liveTail.noLogs")}</p></div>
           ) : (
             <>
               {filteredLogs.map(renderLog)}
@@ -259,8 +259,8 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
         </div>
       )}
       {isPolling && (
-        <div className="audit-polling-indicator">
-          <span className="audit-pulse"></span>
+        <div className="logs-audit-polling-indicator">
+          <span className="logs-audit-pulse"></span>
           {t("liveTail.polling")}
         </div>
       )}
@@ -325,35 +325,35 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
     });
 
   return (
-    <div className="audit-data-streams">
-      <div className="audit-data-streams-header">
+    <div className="logs-audit-data-streams">
+      <div className="logs-audit-data-streams-header">
         <button className="btn btn-secondary btn-sm" onClick={onGoBack}>
           ← {t("dataStreams.back")}
         </button>
         <h3>{t("dataStreams.title")}</h3>
       </div>
-      <div className="audit-data-streams-description">
+      <div className="logs-audit-data-streams-description">
         <p>{t("dataStreams.description")}</p>
       </div>
       {loading ? (
-        <div className="audit-loading-state">
+        <div className="logs-audit-loading-state">
           <div className="spinner"></div>
           <p>{t("dataStreams.loading")}</p>
         </div>
       ) : error ? (
-        <div className="audit-error-banner">
+        <div className="logs-audit-error-banner">
           <span>{error}</span>
           <button onClick={loadSubscriptions} className="btn btn-sm btn-secondary">
             {tc("actions.retry")}
           </button>
         </div>
       ) : subscriptions.length === 0 ? (
-        <div className="audit-empty-state">
+        <div className="logs-audit-empty-state">
           <h4>{t("dataStreams.empty.title")}</h4>
           <p>{t("dataStreams.empty.description")}</p>
         </div>
       ) : (
-        <table className="audit-table">
+        <table className="logs-audit-table">
           <thead>
             <tr>
               <th>{t("dataStreams.columns.streamId")}</th>
@@ -366,7 +366,7 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
           <tbody>
             {subscriptions.map((sub) => (
               <tr key={sub.subscriptionId}>
-                <td className="audit-text-mono">{sub.streamId}</td>
+                <td className="logs-audit-text-mono">{sub.streamId}</td>
                 <td>{sub.serviceName}</td>
                 <td><span className="badge badge-neutral">{sub.kind}</span></td>
                 <td>{formatDate(sub.createdAt)}</td>
@@ -388,7 +388,7 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
           </tbody>
         </table>
       )}
-      <div className="audit-data-streams-footer">
+      <div className="logs-audit-data-streams-footer">
         <button className="btn btn-outline btn-sm" onClick={loadSubscriptions}>
           {tc("actions.refresh")}
         </button>

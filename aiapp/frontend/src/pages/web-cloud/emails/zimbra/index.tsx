@@ -5,7 +5,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
-import { zimbraService, ZimbraService } from "../../../../services/web-cloud.zimbra";
+import { zimbraPageService } from "./zimbraPage.service";
+import type { ZimbraService } from "./zimbra.types";
 import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
 import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
 import { AliasesTab } from "./tabs/aliases/AliasesTab.tsx";
@@ -38,7 +39,7 @@ export default function ZimbraPage() {
     try {
       setLoading(true);
       setError(null);
-      const names = await zimbraService.listServices();
+      const names = await zimbraPageService.listServices();
       const items: ServiceItem[] = names.map((name) => ({ id: name, name: name }));
       setServices(items);
       if (items.length > 0 && !selectedService) {
@@ -56,7 +57,7 @@ export default function ZimbraPage() {
   // ---------- LOAD DETAILS ----------
   useEffect(() => {
     if (!selectedService) return;
-    zimbraService.getService(selectedService).then(setServiceDetails).catch(() => setServiceDetails(null));
+    zimbraPageService.getService(selectedService).then(setServiceDetails).catch(() => setServiceDetails(null));
   }, [selectedService]);
 
   // ---------- TABS ----------

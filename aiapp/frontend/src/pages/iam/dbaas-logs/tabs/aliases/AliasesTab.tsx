@@ -34,23 +34,23 @@ export default function AliasesTab({ serviceId }: AliasesTabProps) {
     catch (err) { alert(err instanceof Error ? err.message : "Erreur"); }
   };
 
-  if (loading) return <div className="aliases-loading-state">{tCommon("loading")}</div>;
-  if (error) return <div className="aliases-error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadAliases}>{tCommon("actions.retry")}</button></div>;
+  if (loading) return <div className="dbaas-logs-aliases-loading-state">{tCommon("loading")}</div>;
+  if (error) return <div className="dbaas-logs-aliases-error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadAliases}>{tCommon("actions.retry")}</button></div>;
 
   return (
-    <div className="aliases-tab">
-      <div className="aliases-toolbar"><h2>{t("title")}</h2><button className="btn btn-primary">{t("create")}</button></div>
+    <div className="dbaas-logs-aliases-tab">
+      <div className="dbaas-logs-aliases-toolbar"><h2>{t("title")}</h2><button className="btn btn-primary">{t("create")}</button></div>
       {aliases.length === 0 ? (
-        <div className="aliases-empty-state"><h2>{t("empty.title")}</h2><p>{t("empty.description")}</p></div>
+        <div className="dbaas-logs-aliases-empty-state"><h2>{t("empty.title")}</h2><p>{t("empty.description")}</p></div>
       ) : (
-        <table className="aliases-table">
+        <table className="dbaas-logs-aliases-table">
           <thead><tr><th>{t("columns.name")}</th><th>{t("columns.description")}</th><th>{t("columns.indices")}</th><th>{t("columns.streams")}</th><th>{t("columns.actions")}</th></tr></thead>
           <tbody>
             {aliases.map((a) => (
               <tr key={a.aliasId}>
-                <td><div className="aliases-name">{a.name}</div></td>
+                <td><div className="dbaas-logs-aliases-name">{a.name}</div></td>
                 <td>{a.description || "-"}</td><td>{a.indexIds.length}</td><td>{a.streamIds.length}</td>
-                <td className="aliases-actions"><button className="btn btn-sm btn-outline">{tCommon("actions.edit")}</button><button className="btn btn-sm btn-outline btn-danger" onClick={() => handleDelete(a.aliasId)}>{tCommon("actions.delete")}</button></td>
+                <td className="dbaas-logs-aliases-actions"><button className="btn btn-sm btn-outline">{tCommon("actions.edit")}</button><button className="btn btn-sm btn-outline btn-danger" onClick={() => handleDelete(a.aliasId)}>{tCommon("actions.delete")}</button></td>
               </tr>
             ))}
           </tbody>

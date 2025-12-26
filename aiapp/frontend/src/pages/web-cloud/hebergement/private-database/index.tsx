@@ -187,9 +187,9 @@ export default function PrivateDatabasePage() {
         {/* Main content */}
         <main className="hosting-main">
           {loading ? (
-            <div className="tab-loading">Chargement...</div>
+            <div className="privdb-page-loading">Chargement...</div>
           ) : error ? (
-            <div className="error-state">{error}</div>
+            <div className="privdb-page-error">{error}</div>
           ) : selectedService && details ? (
             <div className="service-detail">
               {/* Header */}

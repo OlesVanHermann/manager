@@ -40,9 +40,9 @@ export function FidelityTab({ credentials }: TabProps) {
 
   if (loading) {
     return (
-      <div className="fidelity-tab-panel">
-        <div className="fidelity-loading-state">
-          <div className="fidelity-spinner"></div>
+      <div className="billing-fidelity-tab-panel">
+        <div className="billing-fidelity-loading-state">
+          <div className="billing-fidelity-spinner"></div>
           <p>{tCommon('loading')}</p>
         </div>
       </div>
@@ -51,16 +51,16 @@ export function FidelityTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="fidelity-tab-panel">
-        <div className="fidelity-error-banner">{error}</div>
+      <div className="billing-fidelity-tab-panel">
+        <div className="billing-fidelity-error-banner">{error}</div>
       </div>
     );
   }
 
   if (notAvailable) {
     return (
-      <div className="fidelity-tab-panel">
-        <div className="fidelity-empty-state">
+      <div className="billing-fidelity-tab-panel">
+        <div className="billing-fidelity-empty-state">
           <StarIcon />
           <h3>{t('fidelity.notAvailable.title')}</h3>
           <p>{t('fidelity.notAvailable.description')}</p>
@@ -70,17 +70,17 @@ export function FidelityTab({ credentials }: TabProps) {
   }
 
   return (
-    <div className="fidelity-tab-panel">
-      <div className="fidelity-points-card">
+    <div className="billing-fidelity-tab-panel">
+      <div className="billing-fidelity-points-card">
         <h3>{t('fidelity.myPoints')}</h3>
-        <div className="fidelity-points-amount">{account?.balance || 0} {t('fidelity.points')}</div>
-        <p className="fidelity-points-info">{t('fidelity.info')}</p>
+        <div className="billing-fidelity-points-amount">{account?.balance || 0} {t('fidelity.points')}</div>
+        <p className="billing-fidelity-points-info">{t('fidelity.info')}</p>
         {account?.canBeCredited && (
           <a 
             href="https://www.ovh.com/fr/order/express/#/express/review?products=~(~(planCode~'fidelity~quantity~1))" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="fidelity-btn fidelity-btn-white"
+            className="billing-fidelity-btn fidelity-btn-white"
           >
             {t('fidelity.usePoints')}
           </a>
@@ -90,12 +90,12 @@ export function FidelityTab({ credentials }: TabProps) {
       <h4>{t('fidelity.history')}</h4>
 
       {movements.length === 0 ? (
-        <div className="fidelity-empty-state fidelity-empty-small">
+        <div className="billing-fidelity-empty-state fidelity-empty-small">
           <p>{t('fidelity.noHistory')}</p>
         </div>
       ) : (
-        <div className="fidelity-table-container">
-          <table className="fidelity-data-table">
+        <div className="billing-fidelity-table-container">
+          <table className="billing-fidelity-data-table">
             <thead>
               <tr>
                 <th>{t('columns.date')}</th>
@@ -110,10 +110,10 @@ export function FidelityTab({ credentials }: TabProps) {
                 <tr key={m.movementId}>
                   <td>{formatDate(m.date)}</td>
                   <td>{m.description}</td>
-                  <td className="fidelity-amount-positive">
+                  <td className="billing-fidelity-amount-positive">
                     {m.previousBalance < m.balance ? `${m.amount} pts` : "-"}
                   </td>
-                  <td className="fidelity-amount-negative">
+                  <td className="billing-fidelity-amount-negative">
                     {m.previousBalance >= m.balance ? `${Math.abs(m.amount)} pts` : "-"}
                   </td>
                   <td>{m.balance} pts</td>

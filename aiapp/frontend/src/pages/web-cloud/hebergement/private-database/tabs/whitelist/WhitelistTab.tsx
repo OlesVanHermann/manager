@@ -39,8 +39,8 @@ export function WhitelistTab({ serviceName }: Props) {
     } catch (err) { alert(String(err)); }
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="privdb-whitelist-loading"><div className="privdb-whitelist-skeleton" /></div>;
+  if (error) return <div className="privdb-whitelist-error">{error}</div>;
 
   return (
     <div className="whitelist-tab">
@@ -51,7 +51,7 @@ export function WhitelistTab({ serviceName }: Props) {
         </div>
         <div className="whitelist-actions">
           <span className="whitelist-count">{entries.length} {t("whitelist.count")}</span>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
+          <button className="privdb-whitelist-btn-primary-sm" onClick={() => setShowAddModal(true)}>
             + {t("whitelist.add")}
           </button>
         </div>
@@ -72,7 +72,7 @@ export function WhitelistTab({ serviceName }: Props) {
       {entries.length === 0 ? (
         <div className="whitelist-empty">
           <p>{t("whitelist.empty")}</p>
-          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+          <button className="privdb-whitelist-btn-primary" onClick={() => setShowAddModal(true)}>
             {t("whitelist.addFirst")}
           </button>
         </div>
@@ -91,24 +91,24 @@ export function WhitelistTab({ serviceName }: Props) {
           <tbody>
             {entries.map(entry => (
               <tr key={entry.ip}>
-                <td className="font-mono">{entry.ip}</td>
+                <td className="privdb-whitelist-font-mono">{entry.ip}</td>
                 <td>{entry.name || '-'}</td>
                 <td>
                   <div className="whitelist-options">
-                    {entry.service && <span className="badge success">Service</span>}
-                    {entry.sftp && <span className="badge info">SFTP</span>}
+                    {entry.service && <span className="privdb-whitelist-badge success">Service</span>}
+                    {entry.sftp && <span className="privdb-whitelist-badge info">SFTP</span>}
                     {!entry.service && !entry.sftp && <span className="whitelist-text-muted">-</span>}
                   </div>
                 </td>
                 <td>
-                  <span className={`badge ${entry.status === 'ok' ? 'success' : 'warning'}`}>
+                  <span className={`privdb-whitelist-badge ${entry.status === 'ok' ? 'success' : 'warning'}`}>
                     {entry.status === 'ok' ? 'Actif' : entry.status || 'En attente'}
                   </span>
                 </td>
                 <td>{entry.creationDate ? new Date(entry.creationDate).toLocaleDateString() : '-'}</td>
                 <td>
                   <button 
-                    className="btn-icon btn-danger-icon" 
+                    className="privdb-whitelist-btn-icon-danger" 
                     onClick={() => handleDelete(entry.ip)}
                     title={t("whitelist.delete")}
                   >

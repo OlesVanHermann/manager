@@ -35,7 +35,7 @@ export function CdrTab({ billingAccount, serviceName }: Props) {
   if (loading) {
     return (
       <div className="cdr-loading">
-        <div className="skeleton-block" />
+        <div className="csip-cdr-skeleton" />
       </div>
     );
   }
@@ -79,8 +79,8 @@ export function CdrTab({ billingAccount, serviceName }: Props) {
           <tbody>
             {records.map((r) => (
               <tr key={r.id}>
-                <td className="font-mono">{r.caller}</td>
-                <td className="font-mono">{r.callee}</td>
+                <td className="csip-cdr-font-mono">{r.caller}</td>
+                <td className="csip-cdr-font-mono">{r.callee}</td>
                 <td className="cdr-duration">{cdrService.formatDuration(r.duration)}</td>
                 <td>{cdrService.formatDate(r.startDate)}</td>
                 <td>

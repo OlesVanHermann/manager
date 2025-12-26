@@ -51,8 +51,8 @@ export function LogsTab({ serviceName }: Props) {
     a.download = `logs_${serviceName}_${new Date().toISOString().slice(0,10)}.txt`; a.click();
   };
 
-  if (loading && logs.length === 0) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading && logs.length === 0) return <div className="privdb-logs-loading"><div className="privdb-logs-skeleton" /></div>;
+  if (error) return <div className="privdb-logs-error">{error}</div>;
 
   return (
     <div className="logs-tab">
@@ -62,7 +62,7 @@ export function LogsTab({ serviceName }: Props) {
           <button className={`btn btn-sm ${streaming ? "btn-primary" : "btn-secondary"}`} onClick={() => setStreaming(!streaming)}>
             {streaming ? "⏸ Pause" : "▶ Stream"}
           </button>
-          <button className="btn btn-secondary btn-sm" onClick={loadLogs}>↻ {t("logs.refresh")}</button>
+          <button className="privdb-logs-btn-secondary-sm" onClick={loadLogs}>↻ {t("logs.refresh")}</button>
         </div>
       </div>
 
@@ -70,8 +70,8 @@ export function LogsTab({ serviceName }: Props) {
 
       <div className="logs-toolbar">
         <div className="logs-toolbar-left">
-          <input type="text" className="form-input" placeholder={t("logs.search")} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          <select className="form-select" value={filter} onChange={(e) => setFilter(e.target.value as LogLevel)}>
+          <input type="text" className="privdb-logs-input" placeholder={t("logs.search")} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <select className="privdb-logs-select" value={filter} onChange={(e) => setFilter(e.target.value as LogLevel)}>
             <option value="all">{t("logs.allLevels")}</option>
             <option value="error">{t("logs.errorOnly")}</option>
             <option value="warning">{t("logs.warningOnly")}</option>
@@ -80,8 +80,8 @@ export function LogsTab({ serviceName }: Props) {
         </div>
         <div className="logs-toolbar-right">
           <label className="logs-checkbox-label"><input type="checkbox" checked={autoScroll} onChange={(e) => setAutoScroll(e.target.checked)} /> {t("logs.autoScroll")}</label>
-          <button className="btn btn-secondary btn-sm" onClick={handleExport}>📥 {t("logs.export")}</button>
-          <button className="btn btn-secondary btn-sm" onClick={() => setLogs([])}>🗑 {t("logs.clear")}</button>
+          <button className="privdb-logs-btn-secondary-sm" onClick={handleExport}>📥 {t("logs.export")}</button>
+          <button className="privdb-logs-btn-secondary-sm" onClick={() => setLogs([])}>🗑 {t("logs.clear")}</button>
         </div>
       </div>
 

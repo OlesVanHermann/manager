@@ -16,7 +16,7 @@ import SnapshotTab from "./tabs/snapshot/SnapshotTab.tsx";
 import BackupsTab from "./tabs/backups/BackupsTab.tsx";
 import TasksTab from "./tabs/tasks/TasksTab.tsx";
 import type { Vps, VpsServiceInfos, VpsTask } from "./vps.types";
-import "./index.css";
+import "./VpsPage.css";
 
 // ============================================================
 // SERVICE LOCAL - Intégré dans la page (pas de fichier séparé)

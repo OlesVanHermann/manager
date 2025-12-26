@@ -61,12 +61,12 @@ export default function VersionsTab({ serviceId }: VersionsTabProps) {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="versions-loading-state">{tCommon("loading")}</div>;
+    return <div className="secret-versions-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="versions-error-state">
+      <div className="secret-versions-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadVersions}>{tCommon("actions.retry")}</button>
       </div>
@@ -75,7 +75,7 @@ export default function VersionsTab({ serviceId }: VersionsTabProps) {
 
   if (versions.length === 0) {
     return (
-      <div className="versions-empty-state">
+      <div className="secret-versions-empty-state">
         <h2>{t("empty.title")}</h2>
         <p>{t("empty.description")}</p>
       </div>
@@ -83,8 +83,8 @@ export default function VersionsTab({ serviceId }: VersionsTabProps) {
   }
 
   return (
-    <div className="versions-tab">
-      <table className="versions-table">
+    <div className="secret-versions-tab">
+      <table className="secret-versions-table">
         <thead>
           <tr>
             <th>{t("columns.secret")}</th>
@@ -97,11 +97,11 @@ export default function VersionsTab({ serviceId }: VersionsTabProps) {
         <tbody>
           {versions.map((version) => (
             <tr key={version.id}>
-              <td className="versions-secret-name">{version.secretName}</td>
-              <td className="versions-number">v{version.version}</td>
+              <td className="secret-versions-secret-name">{version.secretName}</td>
+              <td className="secret-versions-number">v{version.version}</td>
               <td>{getStatusBadge(version.status)}</td>
               <td>{new Date(version.createdAt).toLocaleDateString("fr-FR")}</td>
-              <td className="versions-actions">
+              <td className="secret-versions-actions">
                 <button className="btn btn-sm btn-outline">{tCommon("actions.view")}</button>
               </td>
             </tr>

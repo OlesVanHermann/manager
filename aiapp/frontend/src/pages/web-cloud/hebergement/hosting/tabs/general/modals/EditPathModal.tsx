@@ -67,8 +67,8 @@ export function EditPathModal({ serviceName, domain, isOpen, onClose, onSuccess 
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>Annuler</button>
-            <button type="submit" className="btn btn-primary" disabled={loading || !path}>{loading ? "..." : "Enregistrer"}</button>
+            <button type="button" className="wh-modal-btn-secondary" onClick={onClose} disabled={loading}>Annuler</button>
+            <button type="submit" className="wh-modal-btn-primary" disabled={loading || !path}>{loading ? "..." : "Enregistrer"}</button>
           </div>
         </form>
       </div>

@@ -66,7 +66,7 @@ export function DatabaseStatisticsTab({ serviceName }: DatabaseStatisticsTabProp
   return (
     <div className="database-statistics-tab">
       <div className="filters-box">
-        <div className="filter-group">
+        <div className="wh-database-filter-group">
           <label>{t("filters.database")}</label>
           <select 
             value={selectedDb} 
@@ -78,7 +78,7 @@ export function DatabaseStatisticsTab({ serviceName }: DatabaseStatisticsTabProp
             ))}
           </select>
         </div>
-        <div className="filter-group">
+        <div className="wh-database-filter-group">
           <label>{t("filters.period")}</label>
           <select value={period} onChange={(e) => setPeriod(e.target.value as Period)}>
             {PERIODS.map(p => (

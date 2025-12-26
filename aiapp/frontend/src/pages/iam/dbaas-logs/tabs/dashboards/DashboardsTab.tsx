@@ -34,23 +34,23 @@ export default function DashboardsTab({ serviceId }: DashboardsTabProps) {
     catch (err) { alert(err instanceof Error ? err.message : "Erreur"); }
   };
 
-  if (loading) return <div className="dashboards-loading-state">{tCommon("loading")}</div>;
-  if (error) return <div className="dashboards-error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadDashboards}>{tCommon("actions.retry")}</button></div>;
+  if (loading) return <div className="dbaas-logs-dashboards-loading-state">{tCommon("loading")}</div>;
+  if (error) return <div className="dbaas-logs-dashboards-error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadDashboards}>{tCommon("actions.retry")}</button></div>;
 
   return (
-    <div className="dashboards-tab">
-      <div className="dashboards-toolbar"><h2>{t("title")}</h2><button className="btn btn-primary">{t("create")}</button></div>
+    <div className="dbaas-logs-dashboards-tab">
+      <div className="dbaas-logs-dashboards-toolbar"><h2>{t("title")}</h2><button className="btn btn-primary">{t("create")}</button></div>
       {dashboards.length === 0 ? (
-        <div className="dashboards-empty-state"><h2>{t("empty.title")}</h2><p>{t("empty.description")}</p></div>
+        <div className="dbaas-logs-dashboards-empty-state"><h2>{t("empty.title")}</h2><p>{t("empty.description")}</p></div>
       ) : (
-        <table className="dashboards-table">
+        <table className="dbaas-logs-dashboards-table">
           <thead><tr><th>{t("columns.title")}</th><th>{t("columns.description")}</th><th>{t("columns.editable")}</th><th>{t("columns.updated")}</th><th>{t("columns.actions")}</th></tr></thead>
           <tbody>
             {dashboards.map((d) => (
               <tr key={d.dashboardId}>
-                <td><div className="dashboards-title">{d.title}</div><div className="dashboards-id">{d.dashboardId}</div></td>
+                <td><div className="dbaas-logs-dashboards-title">{d.title}</div><div className="dbaas-logs-dashboards-id">{d.dashboardId}</div></td>
                 <td>{d.description || "-"}</td><td>{d.isEditable ? "✅" : "🔒"}</td><td>{new Date(d.updatedAt).toLocaleDateString("fr-FR")}</td>
-                <td className="dashboards-actions"><button className="btn btn-sm btn-outline">{t("open")}</button>{d.isEditable && <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleDelete(d.dashboardId)}>{tCommon("actions.delete")}</button>}</td>
+                <td className="dbaas-logs-dashboards-actions"><button className="btn btn-sm btn-outline">{t("open")}</button>{d.isEditable && <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleDelete(d.dashboardId)}>{tCommon("actions.delete")}</button>}</td>
               </tr>
             ))}
           </tbody>

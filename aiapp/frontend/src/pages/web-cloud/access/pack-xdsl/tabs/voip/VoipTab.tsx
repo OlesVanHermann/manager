@@ -27,7 +27,7 @@ export function VoipTab({ packName }: Props) {
   }, [packName]);
 
   if (loading) {
-    return <div className="tab-loading"><div className="skeleton-block" /></div>;
+    return <div className="xdsl-voip-loading"><div className="xdsl-voip-skeleton" /></div>;
   }
 
   return (
@@ -50,7 +50,7 @@ export function VoipTab({ packName }: Props) {
               <div className="voip-info">
                 <h4>{l.number}</h4>
                 <p>{l.description || l.serviceName}</p>
-                <span className={`badge ${l.status === 'active' ? 'success' : 'warning'}`}>
+                <span className={`xdsl-voip-badge ${l.status === 'active' ? 'success' : 'warning'}`}>
                   {l.status}
                 </span>
               </div>

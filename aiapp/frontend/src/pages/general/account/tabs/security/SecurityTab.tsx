@@ -1,11 +1,6 @@
 // ============================================================
 // SECURITY TAB - Gestion de la sécurité du compte
-// Styles: ./SecurityTab.css (préfixe .security-)
-// Service: ./SecurityTab.service.ts (ISOLÉ)
-// Hook: ./SecurityTab.hooks.ts (ISOLÉ)
-// Sections: ./SecurityTab.sections.tsx (ISOLÉ)
-// Modals: ./SecurityTab.modals.tsx (ISOLÉ)
-// Icons: ./SecurityTab.icons.tsx (ISOLÉ)
+// Styles: ./SecurityTab.css (préfixe .account-security-)
 // ============================================================
 
 import "./SecurityTab.css";
@@ -14,32 +9,28 @@ import { useSecurityData } from "./SecurityTab.hooks";
 import { PasswordSection, TwoFactorSection, IpRestrictionsSection } from "./SecurityTab.sections";
 import { SecurityModals } from "./SecurityTab.modals";
 
-// ============ COMPOSANT ============
-
 export function SecurityTab() {
   const { t } = useTranslation("general/account/security");
   const { t: tCommon } = useTranslation("common");
   const { state, modal, actions } = useSecurityData();
 
-  // ---------- LOADING ----------
   if (state.loading) {
     return (
-      <div className="security-tab">
-        <div className="security-loading">
-          <div className="security-spinner"></div>
+      <div className="account-security-tab">
+        <div className="account-security-loading">
+          <div className="account-security-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
     );
   }
 
-  // ---------- ERROR ----------
   if (state.error) {
     return (
-      <div className="security-tab">
-        <div className="security-error">
+      <div className="account-security-tab">
+        <div className="account-security-error">
           <p>{t(`errors.${state.error}`, { defaultValue: state.error })}</p>
-          <button onClick={actions.loadSecurityData} className="security-btn security-btn-primary">
+          <button onClick={actions.loadSecurityData} className="account-security-btn account-security-btn-primary">
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -47,20 +38,16 @@ export function SecurityTab() {
     );
   }
 
-  // ---------- RENDER ----------
   return (
-    <div className="security-tab">
+    <div className="account-security-tab">
       <PasswordSection onOpenModal={actions.openModal} />
-
       <TwoFactorSection status={state.status} onOpenModal={actions.openModal} />
-
       <IpRestrictionsSection
         ipRestrictions={state.ipRestrictions}
         ipDefaultRule={state.ipDefaultRule}
         onOpenModal={actions.openModal}
         onDeleteIp={actions.deleteIpRestriction}
       />
-
       <SecurityModals
         modal={modal}
         onClose={actions.closeModal}

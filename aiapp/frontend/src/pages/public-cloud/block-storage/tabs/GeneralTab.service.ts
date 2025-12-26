@@ -26,3 +26,22 @@ export function formatVolumeSize(sizeGB: number): string {
 }
 
 export const generalService = { getVolume, attachVolume, detachVolume, resizeVolume, deleteVolume, formatVolumeSize };
+
+// ======================== Helpers (DUPLIQUÉS - isolation) ========================
+
+export function formatSize(sizeGB: number): string {
+  if (sizeGB >= 1000) {
+    return `${(sizeGB / 1000).toFixed(2)} TB`;
+  }
+  return `${sizeGB} GB`;
+}
+
+export function getGeneralStatusClass(status: string): string {
+  const classes: Record<string, string> = {
+    available: "general-badge-success",
+    "in-use": "general-badge-info",
+    creating: "general-badge-warning",
+    error: "general-badge-error",
+  };
+  return classes[status] || "";
+}

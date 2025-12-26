@@ -77,12 +77,12 @@ export default function TokensTab({ serviceId }: TokensTabProps) {
 
   // ---------- RENDER ----------
   if (loading) {
-    return <div className="tokens-loading-state">{tCommon("loading")}</div>;
+    return <div className="metrics-tokens-loading-state">{tCommon("loading")}</div>;
   }
 
   if (error) {
     return (
-      <div className="tokens-error-state">
+      <div className="metrics-tokens-error-state">
         <p>{error}</p>
         <button className="btn btn-primary" onClick={loadTokens}>{tCommon("actions.retry")}</button>
       </div>
@@ -90,19 +90,19 @@ export default function TokensTab({ serviceId }: TokensTabProps) {
   }
 
   return (
-    <div className="tokens-tab">
-      <div className="tokens-toolbar">
+    <div className="metrics-tokens-tab">
+      <div className="metrics-tokens-toolbar">
         <h2>{t("title")}</h2>
         <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       {tokens.length === 0 ? (
-        <div className="tokens-empty-state">
+        <div className="metrics-tokens-empty-state">
           <h2>{t("empty.title")}</h2>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <table className="tokens-table">
+        <table className="metrics-tokens-table">
           <thead>
             <tr>
               <th>{t("columns.description")}</th>
@@ -119,20 +119,20 @@ export default function TokensTab({ serviceId }: TokensTabProps) {
                 <td>{token.description || "-"}</td>
                 <td>{getTypeBadge(token.type)}</td>
                 <td>
-                  <span className="tokens-value">
+                  <span className="metrics-tokens-value">
                     {token.access.substring(0, 20)}...
-                    <button className="tokens-copy-btn" onClick={() => handleCopy(token.access)} title={t("copy")}>📋</button>
+                    <button className="metrics-tokens-copy-btn" onClick={() => handleCopy(token.access)} title={t("copy")}>📋</button>
                   </span>
                 </td>
                 <td>
                   {token.isRevoked ? (
-                    <span className="tokens-status-badge badge-error">{t("status.revoked")}</span>
+                    <span className="metrics-tokens-status-badge badge-error">{t("status.revoked")}</span>
                   ) : (
-                    <span className="tokens-status-badge badge-success">{t("status.active")}</span>
+                    <span className="metrics-tokens-status-badge badge-success">{t("status.active")}</span>
                   )}
                 </td>
                 <td>{new Date(token.createdAt).toLocaleDateString("fr-FR")}</td>
-                <td className="tokens-actions">
+                <td className="metrics-tokens-actions">
                   {!token.isRevoked && (
                     <button className="btn btn-sm btn-outline btn-danger" onClick={() => handleRevoke(token.id)}>{t("revoke")}</button>
                   )}

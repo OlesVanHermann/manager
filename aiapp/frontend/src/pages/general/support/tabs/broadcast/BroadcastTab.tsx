@@ -2,7 +2,7 @@
 // BROADCAST TAB - Paramètres de diffusion
 // NAV1: general / NAV2: support / NAV3: broadcast
 // ISOLÉ - Aucune dépendance vers d'autres tabs
-// Préfixe CSS: .broadcast-
+// Préfixe CSS: .support-broadcast-
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -68,9 +68,9 @@ export function BroadcastTab() {
 
   if (loading) {
     return (
-      <div className="broadcast-container">
-        <div className="broadcast-loading-state">
-          <div className="broadcast-spinner"></div>
+      <div className="support-broadcast-container">
+        <div className="support-broadcast-loading-state">
+          <div className="support-broadcast-spinner"></div>
           <p>{tCommon("loading")}</p>
         </div>
       </div>
@@ -79,10 +79,10 @@ export function BroadcastTab() {
 
   if (error) {
     return (
-      <div className="broadcast-container">
-        <div className="broadcast-error-banner">
+      <div className="support-broadcast-container">
+        <div className="support-broadcast-error-banner">
           {error}
-          <button onClick={loadData} className="broadcast-btn broadcast-btn-secondary broadcast-btn-sm">
+          <button onClick={loadData} className="support-broadcast-btn broadcast-btn-secondary broadcast-btn-sm">
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -91,33 +91,33 @@ export function BroadcastTab() {
   }
 
   return (
-    <div className="broadcast-container">
-      <div className="broadcast-header">
+    <div className="support-broadcast-container">
+      <div className="support-broadcast-header">
         <h2>{t("broadcast.title")}</h2>
         <p>{t("broadcast.subtitle")}</p>
       </div>
 
       {/* ----- PRÉFÉRENCES MARKETING ----- */}
-      <div className="broadcast-section">
-        <h3 className="broadcast-section-title">
+      <div className="support-broadcast-section">
+        <h3 className="support-broadcast-section-title">
           {t("broadcast.marketing.title")}
-          {saving && <span className="broadcast-saving-indicator">({t("broadcast.saving")})</span>}
+          {saving && <span className="support-broadcast-saving-indicator">({t("broadcast.saving")})</span>}
         </h3>
-        <div className="broadcast-preferences-list">
+        <div className="support-broadcast-preferences-list">
           {(["email", "phone", "sms"] as const).map((key) => (
-            <div key={key} className="broadcast-preference-item">
-              <div className="broadcast-preference-info">
+            <div key={key} className="support-broadcast-preference-item">
+              <div className="support-broadcast-preference-info">
                 <h4>{t(`broadcast.marketing.${key}.title`)}</h4>
                 <p>{t(`broadcast.marketing.${key}.description`)}</p>
               </div>
-              <label className="broadcast-toggle-switch">
+              <label className="support-broadcast-toggle-switch">
                 <input
                   type="checkbox"
                   checked={marketingPrefs[key]}
                   onChange={() => handleMarketingToggle(key)}
                   disabled={saving}
                 />
-                <span className="broadcast-toggle-slider"></span>
+                <span className="support-broadcast-toggle-slider"></span>
               </label>
             </div>
           ))}
@@ -125,34 +125,34 @@ export function BroadcastTab() {
       </div>
 
       {/* ----- RÈGLES DE ROUTAGE ----- */}
-      <div className="broadcast-section">
-        <h3 className="broadcast-section-title">
+      <div className="support-broadcast-section">
+        <h3 className="support-broadcast-section-title">
           {t("broadcast.routing.title")} ({routingRules.length})
         </h3>
 
         {routingRules.length === 0 ? (
-          <div className="broadcast-routing-empty">
+          <div className="support-broadcast-routing-empty">
             <p>{t("broadcast.routing.empty")}</p>
             <a
               href={SUPPORT_URLS.communicationSettings}
               target="_blank"
               rel="noopener noreferrer"
-              className="broadcast-btn broadcast-btn-primary broadcast-btn-sm"
+              className="support-broadcast-btn broadcast-btn-primary broadcast-btn-sm"
             >
               {t("broadcast.routing.configure")}
             </a>
           </div>
         ) : (
-          <div className="broadcast-routing-list">
+          <div className="support-broadcast-routing-list">
             {routingRules.map((rule) => (
-              <div key={rule.id} className="broadcast-routing-item">
-                <div className="broadcast-routing-header">
+              <div key={rule.id} className="support-broadcast-routing-item">
+                <div className="support-broadcast-routing-header">
                   <h4>{rule.name}</h4>
-                  <span className={`broadcast-badge ${rule.active ? "broadcast-badge-success" : "broadcast-badge-neutral"}`}>
+                  <span className={`broadcast-badge ${rule.active ? "support-broadcast-badge-success" : "support-broadcast-badge-neutral"}`}>
                     {rule.active ? t("broadcast.routing.active") : t("broadcast.routing.inactive")}
                   </span>
                 </div>
-                <p className="broadcast-routing-meta">
+                <p className="support-broadcast-routing-meta">
                   {t("broadcast.routing.rulesCount", { count: rule.rules.length })} •{" "}
                   {t("broadcast.routing.createdAt")} {new Date(rule.createdAt).toLocaleDateString("fr-FR")}
                 </p>
@@ -162,7 +162,7 @@ export function BroadcastTab() {
               href={SUPPORT_URLS.communicationSettings}
               target="_blank"
               rel="noopener noreferrer"
-              className="broadcast-routing-link"
+              className="support-broadcast-routing-link"
             >
               {t("broadcast.routing.manage")} →
             </a>
@@ -172,15 +172,15 @@ export function BroadcastTab() {
 
       {/* ----- RÉFÉRENCE ----- */}
       {reference && (reference.categories.length > 0 || reference.priorities.length > 0) && (
-        <div className="broadcast-section broadcast-reference-section">
-          <h3 className="broadcast-section-title">{t("broadcast.reference.title")}</h3>
-          <div className="broadcast-reference-grid">
+        <div className="support-broadcast-section broadcast-reference-section">
+          <h3 className="support-broadcast-section-title">{t("broadcast.reference.title")}</h3>
+          <div className="support-broadcast-reference-grid">
             {reference.categories.length > 0 && (
-              <div className="broadcast-reference-group">
+              <div className="support-broadcast-reference-group">
                 <h4>{t("broadcast.reference.categories")}</h4>
-                <div className="broadcast-reference-chips">
+                <div className="support-broadcast-reference-chips">
                   {reference.categories.map((c) => (
-                    <span key={c.id} className="broadcast-badge broadcast-badge-neutral">
+                    <span key={c.id} className="support-broadcast-badge broadcast-badge-neutral">
                       {c.name}
                     </span>
                   ))}
@@ -188,11 +188,11 @@ export function BroadcastTab() {
               </div>
             )}
             {reference.priorities.length > 0 && (
-              <div className="broadcast-reference-group">
+              <div className="support-broadcast-reference-group">
                 <h4>{t("broadcast.reference.priorities")}</h4>
-                <div className="broadcast-reference-chips">
+                <div className="support-broadcast-reference-chips">
                   {reference.priorities.map((p) => (
-                    <span key={p.id} className="broadcast-badge broadcast-badge-neutral">
+                    <span key={p.id} className="support-broadcast-badge broadcast-badge-neutral">
                       {p.name}
                     </span>
                   ))}
@@ -203,8 +203,8 @@ export function BroadcastTab() {
         </div>
       )}
 
-      <div className="broadcast-footer">
-        <p className="broadcast-note">{t("broadcast.securityNote")}</p>
+      <div className="support-broadcast-footer">
+        <p className="support-broadcast-note">{t("broadcast.securityNote")}</p>
       </div>
     </div>
   );

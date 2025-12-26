@@ -37,8 +37,8 @@ export function RestoreSnapshotModal({ serviceName, isOpen, onClose, onSuccess }
           <p className="text-muted">Fonctionnalité en cours d'implémentation.</p>
         </div>
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>Annuler</button>
-          <button className="btn btn-primary" onClick={handleRestore} disabled={loading}>
+          <button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="wh-modal-btn-primary" onClick={handleRestore} disabled={loading}>
             {loading ? "Restauration..." : "Restaurer"}
           </button>
         </div>

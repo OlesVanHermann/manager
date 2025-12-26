@@ -32,9 +32,9 @@ export function LinesTab({ billingAccount }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
-        <div className="skeleton-block" />
+      <div className="voip-lines-loading">
+        <div className="voip-lines-skeleton" />
+        <div className="voip-lines-skeleton" />
       </div>
     );
   }
@@ -79,7 +79,7 @@ export function LinesTab({ billingAccount }: Props) {
                 <h4>{line.serviceName}</h4>
                 <p>{line.description || t('noDescription')}</p>
                 <div className="lines-meta">
-                  <span className="badge info">{line.serviceType}</span>
+                  <span className="voip-lines-badge info">{line.serviceType}</span>
                   <span className="badge">{line.simultaneousLines} appels</span>
                 </div>
               </div>

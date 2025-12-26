@@ -42,8 +42,8 @@ export function GeneralTab({ serviceName }: Props) {
 
   if (loading) {
     return (
-      <div className="tab-loading">
-        <div className="skeleton-block" />
+      <div className="fax-general-loading">
+        <div className="fax-general-skeleton" />
       </div>
     );
   }

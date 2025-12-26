@@ -1,6 +1,6 @@
 // ============================================================
 // GENERAL TAB - Édition du profil utilisateur
-// Styles: ./GeneralTab.css (préfixe .general-)
+// Styles: ./GeneralTab.css (préfixe .account-general-)
 // Service: ./GeneralTab.service.ts (ISOLÉ)
 // Types: ../../account.types.ts (niveau NAV2 uniquement)
 // ============================================================
@@ -100,34 +100,34 @@ export function GeneralTab({ user }: GeneralTabProps) {
   };
 
   return (
-    <div className="general-content">
-      <div className="general-header">
+    <div className="account-general-content">
+      <div className="account-general-header">
         <h2>{t("title")}</h2>
         <p>{t("description")}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="general-form">
+      <form onSubmit={handleSubmit} className="account-general-form">
         {/* Section Identité */}
-        <div className="general-section">
+        <div className="account-general-section">
           <h3>{t("sections.identity")}</h3>
 
-          <div className="general-form-row">
-            <div className="general-form-group">
-              <label htmlFor="general-firstname">{t("fields.firstname")} *</label>
+          <div className="account-general-form-row">
+            <div className="account-general-form-group">
+              <label htmlFor="account-general-firstname">{t("fields.firstname")} *</label>
               <input
                 type="text"
-                id="general-firstname"
+                id="account-general-firstname"
                 name="firstname"
                 value={formData.firstname}
                 onChange={handleChange}
                 required
               />
             </div>
-            <div className="general-form-group">
-              <label htmlFor="general-name">{t("fields.name")} *</label>
+            <div className="account-general-form-group">
+              <label htmlFor="account-general-name">{t("fields.name")} *</label>
               <input
                 type="text"
-                id="general-name"
+                id="account-general-name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
@@ -136,24 +136,24 @@ export function GeneralTab({ user }: GeneralTabProps) {
             </div>
           </div>
 
-          <div className="general-form-group">
-            <label htmlFor="general-email">{t("fields.email")}</label>
+          <div className="account-general-form-group">
+            <label htmlFor="account-general-email">{t("fields.email")}</label>
             <input
               type="email"
-              id="general-email"
+              id="account-general-email"
               name="email"
               value={formData.email}
               disabled
-              className="general-input-disabled"
+              className="account-general-input-disabled"
             />
             <small>{t("hints.emailDisabled")}</small>
           </div>
 
-          <div className="general-form-group">
-            <label htmlFor="general-phone">{t("fields.phone")}</label>
+          <div className="account-general-form-group">
+            <label htmlFor="account-general-phone">{t("fields.phone")}</label>
             <input
               type="tel"
-              id="general-phone"
+              id="account-general-phone"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
@@ -163,14 +163,14 @@ export function GeneralTab({ user }: GeneralTabProps) {
         </div>
 
         {/* Section Adresse */}
-        <div className="general-section">
+        <div className="account-general-section">
           <h3>{t("sections.address")}</h3>
 
-          <div className="general-form-group">
-            <label htmlFor="general-address">{t("fields.address")}</label>
+          <div className="account-general-form-group">
+            <label htmlFor="account-general-address">{t("fields.address")}</label>
             <input
               type="text"
-              id="general-address"
+              id="account-general-address"
               name="address"
               value={formData.address}
               onChange={handleChange}
@@ -178,23 +178,23 @@ export function GeneralTab({ user }: GeneralTabProps) {
             />
           </div>
 
-          <div className="general-form-row">
-            <div className="general-form-group">
-              <label htmlFor="general-zip">{t("fields.zip")}</label>
+          <div className="account-general-form-row">
+            <div className="account-general-form-group">
+              <label htmlFor="account-general-zip">{t("fields.zip")}</label>
               <input
                 type="text"
-                id="general-zip"
+                id="account-general-zip"
                 name="zip"
                 value={formData.zip}
                 onChange={handleChange}
                 placeholder="75001"
               />
             </div>
-            <div className="general-form-group">
-              <label htmlFor="general-city">{t("fields.city")}</label>
+            <div className="account-general-form-group">
+              <label htmlFor="account-general-city">{t("fields.city")}</label>
               <input
                 type="text"
-                id="general-city"
+                id="account-general-city"
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
@@ -203,44 +203,44 @@ export function GeneralTab({ user }: GeneralTabProps) {
             </div>
           </div>
 
-          <div className="general-form-group">
-            <label htmlFor="general-country">{t("fields.country")}</label>
+          <div className="account-general-form-group">
+            <label htmlFor="account-general-country">{t("fields.country")}</label>
             <input
               type="text"
-              id="general-country"
+              id="account-general-country"
               name="country"
               value={formData.country}
               disabled
-              className="general-input-disabled"
+              className="account-general-input-disabled"
             />
             <small>{t("hints.countryDisabled")}</small>
           </div>
         </div>
 
         {/* Section Préférences */}
-        <div className="general-section">
+        <div className="account-general-section">
           <h3>{t("sections.preferences")}</h3>
 
-          <div className="general-form-group">
-            <label htmlFor="general-language">{t("fields.language")}</label>
+          <div className="account-general-form-group">
+            <label htmlFor="account-general-language">{t("fields.language")}</label>
             <input
               type="text"
-              id="general-language"
+              id="account-general-language"
               name="language"
               value={formData.language}
               disabled
-              className="general-input-disabled"
+              className="account-general-input-disabled"
             />
             <small>{t("hints.languageDisabled")}</small>
           </div>
 
-          <div className="general-form-group">
+          <div className="account-general-form-group">
             <label>{t("fields.nichandle")}</label>
             <input
               type="text"
               value={user?.nichandle || ""}
               disabled
-              className="general-input-disabled"
+              className="account-general-input-disabled"
             />
             <small>{t("hints.nichandleDisabled")}</small>
           </div>
@@ -248,7 +248,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
 
         {/* Messages */}
         {error && (
-          <div className="general-message general-message-error">
+          <div className="account-general-message general-message-error">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
@@ -257,7 +257,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
         )}
 
         {success && (
-          <div className="general-message general-message-success">
+          <div className="account-general-message general-message-success">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -266,10 +266,10 @@ export function GeneralTab({ user }: GeneralTabProps) {
         )}
 
         {/* Actions */}
-        <div className="general-actions">
+        <div className="account-general-actions">
           <button
             type="button"
-            className="general-btn general-btn-secondary"
+            className="account-general-btn general-btn-secondary"
             onClick={handleReset}
             disabled={loading}
           >
@@ -277,7 +277,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
           </button>
           <button
             type="submit"
-            className="general-btn general-btn-primary"
+            className="account-general-btn general-btn-primary"
             disabled={loading}
           >
             {loading ? t("buttons.saving") : t("buttons.save")}

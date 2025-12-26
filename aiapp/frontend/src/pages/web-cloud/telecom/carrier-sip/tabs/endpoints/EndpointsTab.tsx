@@ -34,7 +34,7 @@ export function EndpointsTab({ billingAccount, serviceName }: Props) {
   if (loading) {
     return (
       <div className="endpoints-loading">
-        <div className="skeleton-block" />
+        <div className="csip-endpoints-skeleton" />
       </div>
     );
   }
@@ -58,7 +58,7 @@ export function EndpointsTab({ billingAccount, serviceName }: Props) {
             <div key={e.id} className={`endpoints-card ${e.status === "active" ? "active" : ""}`}>
               <div className="endpoints-card-header">
                 <h4>{e.ip}</h4>
-                <span className={`badge ${e.status === "active" ? "success" : "inactive"}`}>
+                <span className={`csip-endpoints-badge ${e.status === "active" ? "success" : "inactive"}`}>
                   {e.status}
                 </span>
               </div>

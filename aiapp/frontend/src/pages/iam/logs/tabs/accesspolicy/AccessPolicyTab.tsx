@@ -17,11 +17,11 @@ const POLL_INTERVAL = 5000;
 const MAX_LOGS = 500;
 
 const LOG_LEVEL_CLASSES: Record<string, string> = {
-  error: "accesspolicy-log-error",
-  warn: "accesspolicy-log-warn",
-  warning: "accesspolicy-log-warn",
-  info: "accesspolicy-log-info",
-  debug: "accesspolicy-log-debug",
+  error: "logs-accesspolicy-log-error",
+  warn: "logs-accesspolicy-log-warn",
+  warning: "logs-accesspolicy-log-warn",
+  info: "logs-accesspolicy-log-info",
+  debug: "logs-accesspolicy-log-debug",
 };
 
 // ============================================================
@@ -55,21 +55,21 @@ export default function AccessPolicyTab() {
 
   if (loading) {
     return (
-      <div className="accesspolicy-tab">
-        <div className="accesspolicy-loading-state"><div className="spinner"></div></div>
+      <div className="logs-accesspolicy-tab">
+        <div className="logs-accesspolicy-loading-state"><div className="spinner"></div></div>
       </div>
     );
   }
 
   return (
-    <div className="accesspolicy-tab">
+    <div className="logs-accesspolicy-tab">
       {kinds.length > 1 && (
-        <div className="accesspolicy-kind-selector">
+        <div className="logs-accesspolicy-kind-selector">
           <label>{t("kindSelector.label")}</label>
           <select
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
-            className="accesspolicy-kind-select"
+            className="logs-accesspolicy-kind-select"
           >
             {kinds.map((kind) => (
               <option key={kind} value={kind}>{kind}</option>
@@ -185,29 +185,29 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
 
   const renderLog = (log: LogEntry, idx: number) => {
     const level = log.level || "info";
-    const cls = LOG_LEVEL_CLASSES[level.toLowerCase()] || "accesspolicy-log-info";
+    const cls = LOG_LEVEL_CLASSES[level.toLowerCase()] || "logs-accesspolicy-log-info";
     const time = log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : "";
     return (
       <div key={idx} className={`accesspolicy-log-entry`}>
-        <span className="accesspolicy-log-time">{time}</span>
+        <span className="logs-accesspolicy-log-time">{time}</span>
         <span className={`accesspolicy-log-level ${cls}`}>{level.toUpperCase()}</span>
-        <span className="accesspolicy-log-message">{log.message || JSON.stringify(log)}</span>
+        <span className="logs-accesspolicy-log-message">{log.message || JSON.stringify(log)}</span>
       </div>
     );
   };
 
   return (
-    <div className="accesspolicy-live-tail">
-      <div className="accesspolicy-live-tail-header">
-        <p className="accesspolicy-live-tail-description">{description}</p>
+    <div className="logs-accesspolicy-live-tail">
+      <div className="logs-accesspolicy-live-tail-header">
+        <p className="logs-accesspolicy-live-tail-description">{description}</p>
         <div>
           <button className="btn btn-secondary btn-sm" onClick={onGoToDataStreams}>
             {t("liveTail.dataStreams")}
           </button>
         </div>
       </div>
-      <div className="accesspolicy-live-tail-toolbar">
-        <div className="accesspolicy-toolbar-left">
+      <div className="logs-accesspolicy-live-tail-toolbar">
+        <div className="logs-accesspolicy-toolbar-left">
           <button
             className={`btn btn-sm ${isPolling ? "btn-success" : "btn-secondary"}`}
             onClick={togglePolling}
@@ -216,7 +216,7 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
           </button>
           <button className="btn btn-outline btn-sm" onClick={refresh}>{tc("actions.refresh")}</button>
           <button className="btn btn-outline btn-sm" onClick={clearLogs}>{t("liveTail.clear")}</button>
-          <label className="accesspolicy-checkbox-label">
+          <label className="logs-accesspolicy-checkbox-label">
             <input
               type="checkbox"
               checked={autoScroll}
@@ -225,31 +225,31 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
             {t("liveTail.autoScroll")}
           </label>
         </div>
-        <div className="accesspolicy-toolbar-right">
+        <div className="logs-accesspolicy-toolbar-right">
           <input
             type="text"
-            className="accesspolicy-filter-input"
+            className="logs-accesspolicy-filter-input"
             placeholder={t("liveTail.filterPlaceholder")}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
-          <span className="accesspolicy-log-count">{filteredLogs.length} logs</span>
+          <span className="logs-accesspolicy-log-count">{filteredLogs.length} logs</span>
         </div>
       </div>
       {loading && logs.length === 0 ? (
-        <div className="accesspolicy-loading-state">
+        <div className="logs-accesspolicy-loading-state">
           <div className="spinner"></div>
           <p>{t("liveTail.loading")}</p>
         </div>
       ) : error ? (
-        <div className="accesspolicy-error-banner">
+        <div className="logs-accesspolicy-error-banner">
           <span>{error}</span>
           <button onClick={refresh} className="btn btn-sm btn-secondary">{tc("actions.retry")}</button>
         </div>
       ) : (
-        <div className="accesspolicy-log-container">
+        <div className="logs-accesspolicy-log-container">
           {filteredLogs.length === 0 ? (
-            <div className="accesspolicy-empty-logs"><p>{t("liveTail.noLogs")}</p></div>
+            <div className="logs-accesspolicy-empty-logs"><p>{t("liveTail.noLogs")}</p></div>
           ) : (
             <>
               {filteredLogs.map(renderLog)}
@@ -259,8 +259,8 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
         </div>
       )}
       {isPolling && (
-        <div className="accesspolicy-polling-indicator">
-          <span className="accesspolicy-pulse"></span>
+        <div className="logs-accesspolicy-polling-indicator">
+          <span className="logs-accesspolicy-pulse"></span>
           {t("liveTail.polling")}
         </div>
       )}
@@ -325,35 +325,35 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
     });
 
   return (
-    <div className="accesspolicy-data-streams">
-      <div className="accesspolicy-data-streams-header">
+    <div className="logs-accesspolicy-data-streams">
+      <div className="logs-accesspolicy-data-streams-header">
         <button className="btn btn-secondary btn-sm" onClick={onGoBack}>
           ← {t("dataStreams.back")}
         </button>
         <h3>{t("dataStreams.title")}</h3>
       </div>
-      <div className="accesspolicy-data-streams-description">
+      <div className="logs-accesspolicy-data-streams-description">
         <p>{t("dataStreams.description")}</p>
       </div>
       {loading ? (
-        <div className="accesspolicy-loading-state">
+        <div className="logs-accesspolicy-loading-state">
           <div className="spinner"></div>
           <p>{t("dataStreams.loading")}</p>
         </div>
       ) : error ? (
-        <div className="accesspolicy-error-banner">
+        <div className="logs-accesspolicy-error-banner">
           <span>{error}</span>
           <button onClick={loadSubscriptions} className="btn btn-sm btn-secondary">
             {tc("actions.retry")}
           </button>
         </div>
       ) : subscriptions.length === 0 ? (
-        <div className="accesspolicy-empty-state">
+        <div className="logs-accesspolicy-empty-state">
           <h4>{t("dataStreams.empty.title")}</h4>
           <p>{t("dataStreams.empty.description")}</p>
         </div>
       ) : (
-        <table className="accesspolicy-table">
+        <table className="logs-accesspolicy-table">
           <thead>
             <tr>
               <th>{t("dataStreams.columns.streamId")}</th>
@@ -366,7 +366,7 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
           <tbody>
             {subscriptions.map((sub) => (
               <tr key={sub.subscriptionId}>
-                <td className="accesspolicy-text-mono">{sub.streamId}</td>
+                <td className="logs-accesspolicy-text-mono">{sub.streamId}</td>
                 <td>{sub.serviceName}</td>
                 <td><span className="badge badge-neutral">{sub.kind}</span></td>
                 <td>{formatDate(sub.createdAt)}</td>
@@ -388,7 +388,7 @@ function DataStreams({ kind, onGoBack }: DataStreamsProps) {
           </tbody>
         </table>
       )}
-      <div className="accesspolicy-data-streams-footer">
+      <div className="logs-accesspolicy-data-streams-footer">
         <button className="btn btn-outline btn-sm" onClick={loadSubscriptions}>
           {tc("actions.refresh")}
         </button>

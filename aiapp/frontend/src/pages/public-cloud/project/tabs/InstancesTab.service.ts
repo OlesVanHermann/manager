@@ -18,3 +18,36 @@ export async function rebootInstance(projectId: string, instanceId: string, type
 }
 
 export const instancesService = { listInstances, startInstance, stopInstance, rebootInstance };
+
+// ======================== Project API (pour index.tsx) ========================
+
+export async function listProjects(): Promise<string[]> {
+  return ovhGet<string[]>("/cloud/project");
+}
+
+export async function getProject(projectId: string): Promise<CloudProject> {
+  return ovhGet<CloudProject>(`/cloud/project/${projectId}`);
+}
+
+export async function getServiceInfos(projectId: string): Promise<CloudProjectServiceInfos> {
+  return ovhGet<CloudProjectServiceInfos>(`/cloud/project/${projectId}/serviceInfos`);
+}
+
+interface CloudProject {
+  projectId: string;
+  projectName: string;
+  description: string;
+  planCode: string;
+  status: "creating" | "deleted" | "deleting" | "ok" | "suspended";
+  creationDate: string;
+}
+
+interface CloudProjectServiceInfos {
+  serviceId: number;
+  creation: string;
+  expiration: string;
+  contactAdmin: string;
+  contactTech: string;
+  contactBilling: string;
+  status: string;
+}

@@ -89,9 +89,9 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
   return (
     <div className="general-tab">
       <div className="general-quick-actions">
-        <a href={`${details.url}/wp-admin`} target="_blank" rel="noopener noreferrer" className="btn btn-primary">📝 {t("general.accessAdmin")}</a>
-        <a href={details.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">🌐 {t("general.visitSite")}</a>
-        <button className="btn btn-secondary" onClick={handleFlushCache} disabled={actionLoading === "cache"}>
+        <a href={`${details.url}/wp-admin`} target="_blank" rel="noopener noreferrer" className="mwp-general-btn-primary">📝 {t("general.accessAdmin")}</a>
+        <a href={details.url} target="_blank" rel="noopener noreferrer" className="mwp-general-btn-secondary">🌐 {t("general.visitSite")}</a>
+        <button className="mwp-general-btn-secondary" onClick={handleFlushCache} disabled={actionLoading === "cache"}>
           {actionLoading === "cache" ? "..." : "🗑️"} {t("general.flushCache")}
         </button>
       </div>
@@ -99,38 +99,38 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
       <div className="general-grid-2col">
         <section className="general-card">
           <h4>{t("general.wpInfo")}</h4>
-          <div className="general-info-row">
-            <span className="general-info-label">{t("general.state")}</span>
-            <span className="general-info-value"><span className={`badge ${getStateBadge(details.state).class}`}>{getStateBadge(details.state).label}</span></span>
+          <div className="mwp-general-info-row">
+            <span className="mwp-general-info-label">{t("general.state")}</span>
+            <span className="mwp-general-info-value"><span className={`mwp-general-badge ${getStateBadge(details.state).class}`}>{getStateBadge(details.state).label}</span></span>
           </div>
-          <div className="general-info-row">
-            <span className="general-info-label">{t("general.wpVersion")}</span>
-            <span className="general-info-value">
+          <div className="mwp-general-info-row">
+            <span className="mwp-general-info-label">{t("general.wpVersion")}</span>
+            <span className="mwp-general-info-value">
               WordPress {details.wpVersion || details.wordpressVersion}
-              {details.updateAvailable && <button className="btn btn-sm btn-warning" onClick={handleUpdateWordPress} disabled={actionLoading === "update"}>{actionLoading === "update" ? "..." : "⬆️"} Mettre à jour</button>}
+              {details.updateAvailable && <button className="mwp-general-btn-warning-sm" onClick={handleUpdateWordPress} disabled={actionLoading === "update"}>{actionLoading === "update" ? "..." : "⬆️"} Mettre à jour</button>}
             </span>
           </div>
-          <div className="general-info-row">
-            <span className="general-info-label">{t("general.phpVersion")}</span>
-            <span className="general-info-value">PHP {details.phpVersion || "8.1"}</span>
+          <div className="mwp-general-info-row">
+            <span className="mwp-general-info-label">{t("general.phpVersion")}</span>
+            <span className="mwp-general-info-value">PHP {details.phpVersion || "8.1"}</span>
           </div>
-          <div className="general-info-row">
-            <span className="general-info-label">{t("general.url")}</span>
-            <span className="general-info-value general-copyable">
+          <div className="mwp-general-info-row">
+            <span className="mwp-general-info-label">{t("general.url")}</span>
+            <span className="mwp-general-info-value general-copyable">
               <a href={details.url} target="_blank" rel="noopener noreferrer">{details.url}</a>
               <button className="general-copy-btn" onClick={() => copyToClipboard(details.url)} title="Copier">📋</button>
             </span>
           </div>
-          <div className="general-info-row">
-            <span className="general-info-label">{t("general.adminUser")}</span>
-            <span className="general-info-value general-copyable">
+          <div className="mwp-general-info-row">
+            <span className="mwp-general-info-label">{t("general.adminUser")}</span>
+            <span className="mwp-general-info-value general-copyable">
               <code>{details.adminUser || "admin"}</code>
               <button className="general-copy-btn" onClick={() => copyToClipboard(details.adminUser || "admin")} title="Copier">📋</button>
             </span>
           </div>
-          <div className="general-info-row">
-            <span className="general-info-label">{t("general.adminPassword")}</span>
-            <span className="general-info-value">
+          <div className="mwp-general-info-row">
+            <span className="mwp-general-info-label">{t("general.adminPassword")}</span>
+            <span className="mwp-general-info-value">
               <button className="btn btn-sm btn-secondary" onClick={handleResetPassword} disabled={actionLoading === "password"}>
                 {actionLoading === "password" ? "..." : "🔑"} {t("general.resetPassword")}
               </button>
@@ -140,13 +140,13 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
 
         <section className="general-card">
           <h4>{t("general.technicalInfo")}</h4>
-          <div className="general-info-row"><span className="general-info-label">{t("general.offer")}</span><span className="general-info-value"><strong>{details.offer || "WordPress Standard"}</strong></span></div>
-          <div className="general-info-row"><span className="general-info-label">{t("general.datacenter")}</span><span className="general-info-value">{details.datacenter || "-"}</span></div>
-          <div className="general-info-row"><span className="general-info-label">{t("general.ssl")}</span><span className="general-info-value"><span className={`badge ${details.sslEnabled ? "success" : "inactive"}`}>{details.sslEnabled ? "Actif (Let's Encrypt)" : "Non activé"}</span></span></div>
-          <div className="general-info-row"><span className="general-info-label">{t("general.cdn")}</span><span className="general-info-value"><span className={`badge ${details.cdnEnabled ? "success" : "inactive"}`}>{details.cdnEnabled ? "Actif" : "Non activé"}</span></span></div>
-          <div className="general-info-row"><span className="general-info-label">{t("general.autoUpdate")}</span><span className="general-info-value"><span className={`badge ${details.autoUpdate ? "success" : "warning"}`}>{details.autoUpdate ? "Activé" : "Désactivé"}</span></span></div>
-          <div className="general-info-row"><span className="general-info-label">{t("general.creation")}</span><span className="general-info-value">{formatDate(serviceInfos?.creation)}</span></div>
-          <div className="general-info-row"><span className="general-info-label">{t("general.expiration")}</span><span className="general-info-value">{formatDate(serviceInfos?.expiration)}</span></div>
+          <div className="mwp-general-info-row"><span className="mwp-general-info-label">{t("general.offer")}</span><span className="mwp-general-info-value"><strong>{details.offer || "WordPress Standard"}</strong></span></div>
+          <div className="mwp-general-info-row"><span className="mwp-general-info-label">{t("general.datacenter")}</span><span className="mwp-general-info-value">{details.datacenter || "-"}</span></div>
+          <div className="mwp-general-info-row"><span className="mwp-general-info-label">{t("general.ssl")}</span><span className="mwp-general-info-value"><span className={`mwp-general-badge ${details.sslEnabled ? "success" : "inactive"}`}>{details.sslEnabled ? "Actif (Let's Encrypt)" : "Non activé"}</span></span></div>
+          <div className="mwp-general-info-row"><span className="mwp-general-info-label">{t("general.cdn")}</span><span className="mwp-general-info-value"><span className={`mwp-general-badge ${details.cdnEnabled ? "success" : "inactive"}`}>{details.cdnEnabled ? "Actif" : "Non activé"}</span></span></div>
+          <div className="mwp-general-info-row"><span className="mwp-general-info-label">{t("general.autoUpdate")}</span><span className="mwp-general-info-value"><span className={`mwp-general-badge ${details.autoUpdate ? "success" : "warning"}`}>{details.autoUpdate ? "Activé" : "Désactivé"}</span></span></div>
+          <div className="mwp-general-info-row"><span className="mwp-general-info-label">{t("general.creation")}</span><span className="mwp-general-info-value">{formatDate(serviceInfos?.creation)}</span></div>
+          <div className="mwp-general-info-row"><span className="mwp-general-info-label">{t("general.expiration")}</span><span className="mwp-general-info-value">{formatDate(serviceInfos?.expiration)}</span></div>
         </section>
       </div>
 
@@ -154,7 +154,7 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
         <h4>{t("general.dangerZone")}</h4>
         <div className="general-danger-content">
           <div><strong>{t("general.deleteInstance")}</strong><p>{t("general.deleteWarning")}</p></div>
-          <button className="btn btn-danger" onClick={handleDelete} disabled={actionLoading === "delete"}>{actionLoading === "delete" ? "..." : "🗑️"} {t("general.delete")}</button>
+          <button className="mwp-general-btn-danger" onClick={handleDelete} disabled={actionLoading === "delete"}>{actionLoading === "delete" ? "..." : "🗑️"} {t("general.delete")}</button>
         </div>
       </section>
     </div>

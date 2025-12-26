@@ -48,7 +48,7 @@ export function TasksTab({ serviceName }: Props) {
       cancelled: { class: 'inactive', label: 'Annulé' },
     };
     const s = map[status] || { class: 'inactive', label: status };
-    return <span className={`badge ${s.class}`}>{s.label}</span>;
+    return <span className={`privdb-tasks-badge ${s.class}`}>{s.label}</span>;
   };
 
   const formatDate = (dateStr?: string) => {
@@ -59,8 +59,8 @@ export function TasksTab({ serviceName }: Props) {
     });
   };
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
-  if (error) return <div className="error-state">{error}</div>;
+  if (loading) return <div className="privdb-tasks-loading"><div className="privdb-tasks-skeleton" /></div>;
+  if (error) return <div className="privdb-tasks-error">{error}</div>;
 
   return (
     <div className="tasks-tab">
@@ -71,7 +71,7 @@ export function TasksTab({ serviceName }: Props) {
             <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />
             {t("tasks.autoRefresh")}
           </label>
-          <button className="btn-icon" onClick={() => loadTasks()} title={t("tasks.refresh")}>↻</button>
+          <button className="privdb-tasks-btn-icon" onClick={() => loadTasks()} title={t("tasks.refresh")}>↻</button>
         </div>
       </div>
 
@@ -90,7 +90,7 @@ export function TasksTab({ serviceName }: Props) {
           ) : (
             tasks.map(task => (
               <tr key={task.id}>
-                <td className="font-mono">{task.function}</td>
+                <td className="privdb-tasks-font-mono">{task.function}</td>
                 <td>{getStatusBadge(task.status)}</td>
                 <td>{formatDate(task.startDate)}</td>
                 <td>{formatDate(task.doneDate)}</td>

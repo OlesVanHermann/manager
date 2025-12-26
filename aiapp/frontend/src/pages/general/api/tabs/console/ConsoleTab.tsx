@@ -2,7 +2,7 @@
 // CONSOLE TAB - Console de test API OVH
 // NAV1: general / NAV2: api / NAV3: console
 // ISOLÉ - Aucune dépendance vers d'autres tabs
-// Préfixe CSS: .console-
+// Préfixe CSS: .api-console-
 // ============================================================
 
 import { useState } from "react";
@@ -72,10 +72,10 @@ export function ConsoleTab() {
 
   // ---------- RENDER ----------
   return (
-    <div className="console-tab">
-      <div className="console-tester">
-        <div className="console-input-row">
-          <select value={apiMethod} onChange={(e) => setApiMethod(e.target.value)} className="console-method">
+    <div className="api-console-tab">
+      <div className="api-console-tester">
+        <div className="api-console-input-row">
+          <select value={apiMethod} onChange={(e) => setApiMethod(e.target.value)} className="api-console-method">
             <option value="GET">GET</option>
             <option value="POST">POST</option>
             <option value="PUT">PUT</option>
@@ -86,7 +86,7 @@ export function ConsoleTab() {
             value={apiPath}
             onChange={(e) => setApiPath(e.target.value)}
             placeholder="/me"
-            className="console-path"
+            className="api-console-path"
           />
           <button onClick={testApi} disabled={apiLoading} className="btn btn-primary">
             {apiLoading ? "..." : t('api.execute')}
@@ -94,19 +94,19 @@ export function ConsoleTab() {
         </div>
 
         {(apiMethod === "POST" || apiMethod === "PUT") && (
-          <div className="console-body-section">
+          <div className="api-console-body-section">
             <label>{t('api.requestBody')}</label>
             <textarea
               value={apiBody}
               onChange={(e) => setApiBody(e.target.value)}
               placeholder='{"key": "value"}'
-              className="console-body"
+              className="api-console-body"
               rows={4}
             />
           </div>
         )}
 
-        <div className="console-shortcuts">
+        <div className="api-console-shortcuts">
           <span>{t('api.shortcuts')}:</span>
           <button onClick={() => setApiPath("/me")}>/me</button>
           <button onClick={() => setApiPath("/me/bill")}>/me/bill</button>
@@ -119,37 +119,37 @@ export function ConsoleTab() {
           <button onClick={() => setApiPath("/me/payment/method")}>/me/payment/method</button>
         </div>
 
-        {apiError && <div className="console-error">{apiError}</div>}
+        {apiError && <div className="api-console-error">{apiError}</div>}
 
         {apiResponse && (
-          <div className="console-response-section">
-            <div className="console-response-header">
+          <div className="api-console-response-section">
+            <div className="api-console-response-header">
               <span>{t('api.response')}</span>
               <button className="btn btn-sm btn-outline" onClick={() => navigator.clipboard.writeText(apiResponse)}>{t('api.copy')}</button>
             </div>
-            <pre className="console-response">{apiResponse}</pre>
+            <pre className="api-console-response">{apiResponse}</pre>
           </div>
         )}
       </div>
 
       {history.length > 0 && (
-        <div className="console-history">
+        <div className="api-console-history">
           <h4>{t('api.recentHistory')}</h4>
-          <div className="console-history-list">
+          <div className="api-console-history-list">
             {history.map((item, idx) => (
-              <div key={idx} className="console-history-item" onClick={() => { setApiMethod(item.method); setApiPath(item.path); }}>
+              <div key={idx} className="api-console-history-item" onClick={() => { setApiMethod(item.method); setApiPath(item.path); }}>
                 <span className={`console-method-badge console-method-${item.method.toLowerCase()}`}>{item.method}</span>
-                <span className="console-history-path">{item.path}</span>
-                <span className={`console-status-badge ${item.status < 400 ? "console-badge-success" : "console-badge-error"}`}>{item.status}</span>
+                <span className="api-console-history-path">{item.path}</span>
+                <span className={`console-status-badge ${item.status < 400 ? "api-console-badge-success" : "api-console-badge-error"}`}>{item.status}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div className="console-docs">
+      <div className="api-console-docs">
         <h4>{t('api.documentation')}</h4>
-        <div className="console-docs-links">
+        <div className="api-console-docs-links">
           <a href="https://api.ovh.com/console/" target="_blank" rel="noopener noreferrer">{t('api.links.console')}</a>
           <a href="https://docs.ovh.com/fr/api/" target="_blank" rel="noopener noreferrer">{t('api.links.docs')}</a>
           <a href="https://api.ovh.com/1.0/me.json" target="_blank" rel="noopener noreferrer">{t('api.links.schema')}</a>

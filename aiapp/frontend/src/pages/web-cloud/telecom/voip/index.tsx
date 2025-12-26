@@ -71,8 +71,8 @@ export default function VoipPage() {
           </div>
           <h1>{t('title')}</h1>
         </div>
-        <div className="tab-loading">
-          <div className="skeleton-block" />
+        <div className="voip-page-loading">
+          <div className="voip-page-skeleton" />
         </div>
       </div>
     );

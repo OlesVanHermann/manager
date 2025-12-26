@@ -28,7 +28,7 @@ export function TasksTab({ serviceName }: Props) {
     load();
   }, [serviceName]);
 
-  if (loading) return <div className="tab-loading"><div className="skeleton-block" /></div>;
+  if (loading) return <div className="emailpro-tasks-loading"><div className="emailpro-tasks-skeleton" /></div>;
 
   return (
     <div className="emailpro-tasks-tab">
@@ -43,8 +43,8 @@ export function TasksTab({ serviceName }: Props) {
               const s = getStatusBadge(task.status);
               return (
                 <tr key={task.id}>
-                  <td className="font-mono">{task.function}</td>
-                  <td><span className={`badge ${s.cls}`}>{s.icon} {task.status}</span></td>
+                  <td className="emailpro-tasks-font-mono">{task.function}</td>
+                  <td><span className={`emailpro-tasks-badge ${s.cls}`}>{s.icon} {task.status}</span></td>
                   <td>{new Date(task.todoDate).toLocaleString('fr-FR')}</td>
                 </tr>
               );

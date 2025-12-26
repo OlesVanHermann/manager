@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
-import { ovhApi } from "../../../../services/api";
+import { exchangePageService } from "./exchangePage.service";
 import type { ExchangeService } from "./exchange.types";
 
 // Imports directs sans barrel file (JS-5)
@@ -14,21 +14,6 @@ import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
 import { GroupsTab } from "./tabs/groups/GroupsTab.tsx";
 import { ResourcesTab } from "./tabs/resources/ResourcesTab.tsx";
 import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
-
-
-// ============ LOCAL API CALLS ============
-
-async function listOrganizations(): Promise<string[]> {
-  return ovhApi.get<string[]>('/email/exchange');
-}
-
-async function listServices(org: string): Promise<string[]> {
-  return ovhApi.get<string[]>(`/email/exchange/${org}/service`);
-}
-
-async function getService(org: string, service: string): Promise<ExchangeService> {
-  return ovhApi.get<ExchangeService>(`/email/exchange/${org}/service/${service}`);
-}
 
 // ============ ICONS ============
 
@@ -57,10 +42,10 @@ export default function ExchangePage() {
     try {
       setLoading(true);
       setError(null);
-      const orgList = await listOrganizations();
+      const orgList = await exchangePageService.listOrganizations();
       const items: ServiceItem[] = [];
       for (const org of orgList) {
-        const services = await listServices(org);
+        const services = await exchangePageService.listServices(org);
         for (const svc of services) {
           items.push({ id: `${org}/${svc}`, name: svc, type: org });
         }
@@ -84,7 +69,7 @@ export default function ExchangePage() {
   // ---------- LOAD DETAILS ----------
   useEffect(() => {
     if (!org || !service) return;
-    getService(org, service).then(setServiceDetails).catch(() => setServiceDetails(null));
+    exchangePageService.getService(org, service).then(setServiceDetails).catch(() => setServiceDetails(null));
   }, [org, service]);
 
   // ---------- TABS ----------

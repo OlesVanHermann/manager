@@ -184,9 +184,9 @@ export function InvoicesTab({ credentials }: TabProps) {
 
   if (loading) {
     return (
-      <div className="invoices-tab-panel">
-        <div className="invoices-loading-state">
-          <div className="invoices-spinner"></div>
+      <div className="billing-invoices-tab-panel">
+        <div className="billing-invoices-loading-state">
+          <div className="billing-invoices-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
@@ -195,10 +195,10 @@ export function InvoicesTab({ credentials }: TabProps) {
 
   if (error) {
     return (
-      <div className="invoices-tab-panel">
-        <div className="invoices-error-banner">
+      <div className="billing-invoices-tab-panel">
+        <div className="billing-invoices-error-banner">
           {error}
-          <button onClick={loadBills} className="invoices-btn invoices-btn-sm invoices-btn-secondary" style={{ marginLeft: "1rem" }}>
+          <button onClick={loadBills} className="billing-invoices-btn invoices-btn-sm invoices-btn-secondary" style={{ marginLeft: "1rem" }}>
             {tCommon("actions.retry")}
           </button>
         </div>
@@ -207,53 +207,53 @@ export function InvoicesTab({ credentials }: TabProps) {
   }
 
   return (
-    <div className="invoices-tab-panel">
-      <div className="invoices-toolbar">
-        <div className="invoices-toolbar-left">
-          <span className="invoices-year-label">{nav.year}</span>
-          <button className="invoices-btn invoices-nav-btn" onClick={nav.goToPrevious} disabled={!nav.canGoPrevious} title={t("nav.previous")}>
+    <div className="billing-invoices-tab-panel">
+      <div className="billing-invoices-toolbar">
+        <div className="billing-invoices-toolbar-left">
+          <span className="billing-invoices-year-label">{nav.year}</span>
+          <button className="billing-invoices-btn invoices-nav-btn" onClick={nav.goToPrevious} disabled={!nav.canGoPrevious} title={t("nav.previous")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <select className="invoices-period-select" value={nav.startMonth} onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}>
+          <select className="billing-invoices-period-select" value={nav.startMonth} onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}>
             {MONTHS_SHORT.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}
           </select>
-          <span className="invoices-date-separator">→</span>
-          <select className="invoices-period-select" value={nav.endMonth} onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}>
+          <span className="billing-invoices-date-separator">→</span>
+          <select className="billing-invoices-period-select" value={nav.endMonth} onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}>
             {MONTHS_SHORT.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}
           </select>
-          <button className="invoices-btn invoices-nav-btn" onClick={nav.goToNext} disabled={!nav.canGoNext} title={t("nav.next")}>
+          <button className="billing-invoices-btn invoices-nav-btn" onClick={nav.goToNext} disabled={!nav.canGoNext} title={t("nav.next")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
           {nav.showReset && (
-            <button className="invoices-btn invoices-reset-btn" onClick={nav.resetToAnchor} title={t("nav.reset")}>
+            <button className="billing-invoices-btn invoices-reset-btn" onClick={nav.resetToAnchor} title={t("nav.reset")}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
           )}
         </div>
-        <div className="invoices-toolbar-right">
+        <div className="billing-invoices-toolbar-right">
           {bills.length > 0 && (
             <>
-              <button className="invoices-btn invoices-btn-sm invoices-btn-secondary" onClick={exportCSV} title={t("export.csv")}>
+              <button className="billing-invoices-btn invoices-btn-sm invoices-btn-secondary" onClick={exportCSV} title={t("export.csv")}>
                 <FileTextIcon /> CSV
               </button>
-              <button className="invoices-btn invoices-btn-sm invoices-btn-secondary" onClick={exportPDF} title={t("export.pdf")}>
+              <button className="billing-invoices-btn invoices-btn-sm invoices-btn-secondary" onClick={exportPDF} title={t("export.pdf")}>
                 <FileIcon /> PDF
               </button>
             </>
           )}
-          <span className="invoices-result-count">{t("count", { count: bills.length })}</span>
+          <span className="billing-invoices-result-count">{t("count", { count: bills.length })}</span>
         </div>
       </div>
 
       {bills.length === 0 ? (
-        <div className="invoices-empty-state">
+        <div className="billing-invoices-empty-state">
           <FileTextIcon />
           <h3>{t("empty.title")}</h3>
           <p>{t("empty.description")}</p>
         </div>
       ) : (
-        <div className="invoices-table-container">
-          <table className="invoices-data-table">
+        <div className="billing-invoices-table-container">
+          <table className="billing-invoices-data-table">
             <thead>
               <tr>
                 <th>{t("columns.id")}</th>
@@ -267,14 +267,14 @@ export function InvoicesTab({ credentials }: TabProps) {
             <tbody>
               {bills.map((bill) => (
                 <tr key={bill.billId}>
-                  <td className="invoices-bill-id">{bill.billId}</td>
+                  <td className="billing-invoices-bill-id">{bill.billId}</td>
                   <td>{invoicesService.formatDate(bill.date)}</td>
                   <td>{bill.priceWithoutTax.text}</td>
                   <td>{bill.tax.text}</td>
-                  <td className="invoices-amount-ttc">{bill.priceWithTax.text}</td>
-                  <td className="invoices-actions-cell">
+                  <td className="billing-invoices-amount-ttc">{bill.priceWithTax.text}</td>
+                  <td className="billing-invoices-actions-cell">
                     {bill.pdfUrl && (
-                      <a href={bill.pdfUrl} target="_blank" rel="noopener noreferrer" className="invoices-btn invoices-btn-outline invoices-btn-sm">
+                      <a href={bill.pdfUrl} target="_blank" rel="noopener noreferrer" className="billing-invoices-btn invoices-btn-outline invoices-btn-sm">
                         PDF
                       </a>
                     )}

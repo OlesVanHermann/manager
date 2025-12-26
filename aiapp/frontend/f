@@ -1,40 +1,409 @@
-# Script de correction - exécuter depuis /home/ubuntu/aiapp/frontend
+#!/bin/bash
+# ============================================================
+# FIX I18N - Ajout des 28 clés manquantes
+# ============================================================
 
-BACKUP_TS=$(date +%Y%m%dT%H%M%S)
-SRC_DIR="/tmp/files"
+cd /home/ubuntu/aiapp/frontend
 
-for PRODUCT in cpanel plesk directadmin windows sqlserver virtuozzo cloudlinux; do
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "  $PRODUCT"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  
-  for TAB in general tasks; do
-    TARGET_DIR="src/pages/license/$PRODUCT/tabs/$TAB"
-    SOURCE_DIR="$SRC_DIR/$PRODUCT/$TAB"
-    
-    if [ -d "$SOURCE_DIR" ]; then
-      for FILE in "$SOURCE_DIR"/*; do
-        if [ -f "$FILE" ]; then
-          FILENAME=$(basename "$FILE")
-          TARGET="$TARGET_DIR/$FILENAME"
-          
-          # Backup
-          if [ -f "$TARGET" ]; then
-            cp "$TARGET" "$TARGET.$BACKUP_TS"
-            echo "  📋 Backup: $FILENAME"
-          fi
-          
-          # Install
-          cp "$FILE" "$TARGET"
-          echo "  ✅ Installé: $FILENAME"
-        fi
-      done
-    fi
-  done
-done
+echo "=== Correction des clés i18n manquantes ==="
+
+# ============================================================
+# 1. web-cloud/access/overthebox/general.json
+# ============================================================
+echo "--- overthebox/general ---"
+
+# FR
+cat > /tmp/patch-overthebox-general-fr.json <<'JSONEND'
+{
+  "serviceName": "Nom du service",
+  "releaseChannel": "Canal de mise à jour",
+  "tunnelMode": "Mode tunnel"
+}
+JSONEND
+
+# EN
+cat > /tmp/patch-overthebox-general-en.json <<'JSONEND'
+{
+  "serviceName": "Service name",
+  "releaseChannel": "Release channel",
+  "tunnelMode": "Tunnel mode"
+}
+JSONEND
+
+# Merge FR
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/fr/web-cloud/access/overthebox/general.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-overthebox-general-fr.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/fr/web-cloud/access/overthebox/general.json', JSON.stringify(merged, null, 2) + '\n');
+"
+
+# Merge EN
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/en/web-cloud/access/overthebox/general.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-overthebox-general-en.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/en/web-cloud/access/overthebox/general.json', JSON.stringify(merged, null, 2) + '\n');
+"
+echo "✅ overthebox/general.json"
+
+# ============================================================
+# 2. web-cloud/access/overthebox/remotes.json
+# ============================================================
+echo "--- overthebox/remotes ---"
+
+# FR
+cat > /tmp/patch-overthebox-remotes-fr.json <<'JSONEND'
+{
+  "ip": "Adresse IP",
+  "port": "Port",
+  "lastSeen": "Dernière connexion"
+}
+JSONEND
+
+# EN
+cat > /tmp/patch-overthebox-remotes-en.json <<'JSONEND'
+{
+  "ip": "IP Address",
+  "port": "Port",
+  "lastSeen": "Last seen"
+}
+JSONEND
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/fr/web-cloud/access/overthebox/remotes.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-overthebox-remotes-fr.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/fr/web-cloud/access/overthebox/remotes.json', JSON.stringify(merged, null, 2) + '\n');
+"
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/en/web-cloud/access/overthebox/remotes.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-overthebox-remotes-en.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/en/web-cloud/access/overthebox/remotes.json', JSON.stringify(merged, null, 2) + '\n');
+"
+echo "✅ overthebox/remotes.json"
+
+# ============================================================
+# 3. web-cloud/access/pack-xdsl/access.json
+# ============================================================
+echo "--- pack-xdsl/access ---"
+
+# FR
+cat > /tmp/patch-packxdsl-access-fr.json <<'JSONEND'
+{
+  "empty": "Aucun accès configuré",
+  "fields": {
+    "ipv4": "Adresse IPv4",
+    "ipv6": "Adresse IPv6"
+  }
+}
+JSONEND
+
+# EN
+cat > /tmp/patch-packxdsl-access-en.json <<'JSONEND'
+{
+  "empty": "No access configured",
+  "fields": {
+    "ipv4": "IPv4 Address",
+    "ipv6": "IPv6 Address"
+  }
+}
+JSONEND
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/fr/web-cloud/access/pack-xdsl/access.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-packxdsl-access-fr.json', 'utf8'));
+const merged = JSON.parse(JSON.stringify(existing));
+Object.keys(patch).forEach(k => {
+  if (typeof patch[k] === 'object' && !Array.isArray(patch[k])) {
+    merged[k] = { ...(merged[k] || {}), ...patch[k] };
+  } else {
+    merged[k] = patch[k];
+  }
+});
+fs.writeFileSync('public/locales/fr/web-cloud/access/pack-xdsl/access.json', JSON.stringify(merged, null, 2) + '\n');
+"
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/en/web-cloud/access/pack-xdsl/access.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-packxdsl-access-en.json', 'utf8'));
+const merged = JSON.parse(JSON.stringify(existing));
+Object.keys(patch).forEach(k => {
+  if (typeof patch[k] === 'object' && !Array.isArray(patch[k])) {
+    merged[k] = { ...(merged[k] || {}), ...patch[k] };
+  } else {
+    merged[k] = patch[k];
+  }
+});
+fs.writeFileSync('public/locales/en/web-cloud/access/pack-xdsl/access.json', JSON.stringify(merged, null, 2) + '\n');
+"
+echo "✅ pack-xdsl/access.json"
+
+# ============================================================
+# 4. web-cloud/access/pack-xdsl/general.json
+# ============================================================
+echo "--- pack-xdsl/general ---"
+
+# FR
+cat > /tmp/patch-packxdsl-general-fr.json <<'JSONEND'
+{
+  "packName": "Nom du pack",
+  "offer": "Offre",
+  "fields": {
+    "description": "Description"
+  },
+  "legacy": "Pack legacy",
+  "tips": "Conseils",
+  "tipsDesc": "Consultez nos guides pour optimiser votre connexion"
+}
+JSONEND
+
+# EN
+cat > /tmp/patch-packxdsl-general-en.json <<'JSONEND'
+{
+  "packName": "Pack name",
+  "offer": "Offer",
+  "fields": {
+    "description": "Description"
+  },
+  "legacy": "Legacy pack",
+  "tips": "Tips",
+  "tipsDesc": "Check our guides to optimize your connection"
+}
+JSONEND
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/fr/web-cloud/access/pack-xdsl/general.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-packxdsl-general-fr.json', 'utf8'));
+const merged = JSON.parse(JSON.stringify(existing));
+Object.keys(patch).forEach(k => {
+  if (typeof patch[k] === 'object' && !Array.isArray(patch[k])) {
+    merged[k] = { ...(merged[k] || {}), ...patch[k] };
+  } else {
+    merged[k] = patch[k];
+  }
+});
+fs.writeFileSync('public/locales/fr/web-cloud/access/pack-xdsl/general.json', JSON.stringify(merged, null, 2) + '\n');
+"
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/en/web-cloud/access/pack-xdsl/general.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-packxdsl-general-en.json', 'utf8'));
+const merged = JSON.parse(JSON.stringify(existing));
+Object.keys(patch).forEach(k => {
+  if (typeof patch[k] === 'object' && !Array.isArray(patch[k])) {
+    merged[k] = { ...(merged[k] || {}), ...patch[k] };
+  } else {
+    merged[k] = patch[k];
+  }
+});
+fs.writeFileSync('public/locales/en/web-cloud/access/pack-xdsl/general.json', JSON.stringify(merged, null, 2) + '\n');
+"
+echo "✅ pack-xdsl/general.json"
+
+# ============================================================
+# 5. web-cloud/access/pack-xdsl/tasks.json
+# ============================================================
+echo "--- pack-xdsl/tasks ---"
+
+# FR
+cat > /tmp/patch-packxdsl-tasks-fr.json <<'JSONEND'
+{
+  "function": "Fonction"
+}
+JSONEND
+
+# EN
+cat > /tmp/patch-packxdsl-tasks-en.json <<'JSONEND'
+{
+  "function": "Function"
+}
+JSONEND
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/fr/web-cloud/access/pack-xdsl/tasks.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-packxdsl-tasks-fr.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/fr/web-cloud/access/pack-xdsl/tasks.json', JSON.stringify(merged, null, 2) + '\n');
+"
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/en/web-cloud/access/pack-xdsl/tasks.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-packxdsl-tasks-en.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/en/web-cloud/access/pack-xdsl/tasks.json', JSON.stringify(merged, null, 2) + '\n');
+"
+echo "✅ pack-xdsl/tasks.json"
+
+# ============================================================
+# 6. web-cloud/telecom/fax/general.json
+# ============================================================
+echo "--- telecom/fax/general ---"
+
+# FR
+cat > /tmp/patch-fax-general-fr.json <<'JSONEND'
+{
+  "empty": "Aucun fax configuré",
+  "noName": "Sans nom",
+  "fields": {
+    "number": "Numéro",
+    "fromName": "Nom expéditeur",
+    "fromEmail": "Email expéditeur",
+    "redirectionEmail": "Email de redirection"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "quality": "Qualité",
+    "maxCall": "Appels max",
+    "tagLine": "Ligne d'en-tête"
+  }
+}
+JSONEND
+
+# EN
+cat > /tmp/patch-fax-general-en.json <<'JSONEND'
+{
+  "empty": "No fax configured",
+  "noName": "No name",
+  "fields": {
+    "number": "Number",
+    "fromName": "Sender name",
+    "fromEmail": "Sender email",
+    "redirectionEmail": "Redirection email"
+  },
+  "settings": {
+    "title": "Settings",
+    "quality": "Quality",
+    "maxCall": "Max calls",
+    "tagLine": "Header line"
+  }
+}
+JSONEND
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/fr/web-cloud/telecom/fax/general.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-fax-general-fr.json', 'utf8'));
+const merged = JSON.parse(JSON.stringify(existing));
+Object.keys(patch).forEach(k => {
+  if (typeof patch[k] === 'object' && !Array.isArray(patch[k])) {
+    merged[k] = { ...(merged[k] || {}), ...patch[k] };
+  } else {
+    merged[k] = patch[k];
+  }
+});
+fs.writeFileSync('public/locales/fr/web-cloud/telecom/fax/general.json', JSON.stringify(merged, null, 2) + '\n');
+"
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/en/web-cloud/telecom/fax/general.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-fax-general-en.json', 'utf8'));
+const merged = JSON.parse(JSON.stringify(existing));
+Object.keys(patch).forEach(k => {
+  if (typeof patch[k] === 'object' && !Array.isArray(patch[k])) {
+    merged[k] = { ...(merged[k] || {}), ...patch[k] };
+  } else {
+    merged[k] = patch[k];
+  }
+});
+fs.writeFileSync('public/locales/en/web-cloud/telecom/fax/general.json', JSON.stringify(merged, null, 2) + '\n');
+"
+echo "✅ telecom/fax/general.json"
+
+# ============================================================
+# 7. web-cloud/telecom/voip/lines.json
+# ============================================================
+echo "--- telecom/voip/lines ---"
+
+# FR
+cat > /tmp/patch-voip-lines-fr.json <<'JSONEND'
+{
+  "noDescription": "Aucune description"
+}
+JSONEND
+
+# EN
+cat > /tmp/patch-voip-lines-en.json <<'JSONEND'
+{
+  "noDescription": "No description"
+}
+JSONEND
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/fr/web-cloud/telecom/voip/lines.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-voip-lines-fr.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/fr/web-cloud/telecom/voip/lines.json', JSON.stringify(merged, null, 2) + '\n');
+"
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/en/web-cloud/telecom/voip/lines.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-voip-lines-en.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/en/web-cloud/telecom/voip/lines.json', JSON.stringify(merged, null, 2) + '\n');
+"
+echo "✅ telecom/voip/lines.json"
+
+# ============================================================
+# 8. web-cloud/telecom/voip/voicemails.json
+# ============================================================
+echo "--- telecom/voip/voicemails ---"
+
+# FR
+cat > /tmp/patch-voip-voicemails-fr.json <<'JSONEND'
+{
+  "noDescription": "Aucune description"
+}
+JSONEND
+
+# EN
+cat > /tmp/patch-voip-voicemails-en.json <<'JSONEND'
+{
+  "noDescription": "No description"
+}
+JSONEND
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/fr/web-cloud/telecom/voip/voicemails.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-voip-voicemails-fr.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/fr/web-cloud/telecom/voip/voicemails.json', JSON.stringify(merged, null, 2) + '\n');
+"
+
+node -e "
+const fs = require('fs');
+const existing = JSON.parse(fs.readFileSync('public/locales/en/web-cloud/telecom/voip/voicemails.json', 'utf8'));
+const patch = JSON.parse(fs.readFileSync('/tmp/patch-voip-voicemails-en.json', 'utf8'));
+const merged = { ...existing, ...patch };
+fs.writeFileSync('public/locales/en/web-cloud/telecom/voip/voicemails.json', JSON.stringify(merged, null, 2) + '\n');
+"
+echo "✅ telecom/voip/voicemails.json"
+
+# ============================================================
+# Nettoyage
+# ============================================================
+rm -f /tmp/patch-*.json
 
 echo ""
-echo "✅ Installation terminée!"
+echo "=============================================="
+echo "=== ✅ 28 clés i18n ajoutées ==="
+echo "=============================================="
 echo ""
-echo "🔍 Vérification isolation CSS..."
-grep -rn 'className="btn\|className="loading-state' src/pages/license/*/tabs/ 2>/dev/null | wc -l | xargs -I {} echo "  Classes génériques restantes: {}"
+echo "Vérification:"
+echo "  node scripts/check-i18n.cjs"

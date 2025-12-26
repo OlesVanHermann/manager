@@ -2,7 +2,7 @@
 // GENERAL TAB - Liste des tickets support
 // NAV1: general / NAV2: support / NAV3: general
 // ISOLÉ - Aucune dépendance vers d'autres tabs
-// Préfixe CSS: .general-
+// Préfixe CSS: .support-general-
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -51,27 +51,27 @@ export function GeneralTab() {
 
   const getStateBadge = (state: string) => {
     const stateMap: Record<string, { label: string; className: string }> = {
-      open: { label: t("tickets.states.open"), className: "general-badge-success" },
-      closed: { label: t("tickets.states.closed"), className: "general-badge-neutral" },
-      unknown: { label: t("tickets.states.unknown"), className: "general-badge-neutral" },
+      open: { label: t("tickets.states.open"), className: "support-general-badge-success" },
+      closed: { label: t("tickets.states.closed"), className: "support-general-badge-neutral" },
+      unknown: { label: t("tickets.states.unknown"), className: "support-general-badge-neutral" },
     };
-    return stateMap[state] || { label: state, className: "general-badge-neutral" };
+    return stateMap[state] || { label: state, className: "support-general-badge-neutral" };
   };
 
   const getTypeBadge = (type: string) => {
     const typeMap: Record<string, { label: string; className: string }> = {
-      assistance: { label: t("tickets.types.assistance"), className: "general-badge-info" },
-      billing: { label: t("tickets.types.billing"), className: "general-badge-warning" },
-      incident: { label: t("tickets.types.incident"), className: "general-badge-error" },
+      assistance: { label: t("tickets.types.assistance"), className: "support-general-badge-info" },
+      billing: { label: t("tickets.types.billing"), className: "support-general-badge-warning" },
+      incident: { label: t("tickets.types.incident"), className: "support-general-badge-error" },
     };
-    return typeMap[type] || { label: type, className: "general-badge-neutral" };
+    return typeMap[type] || { label: type, className: "support-general-badge-neutral" };
   };
 
   if (loading) {
     return (
-      <div className="general-container">
-        <div className="general-loading-state">
-          <div className="general-spinner"></div>
+      <div className="support-general-container">
+        <div className="support-general-loading-state">
+          <div className="support-general-spinner"></div>
           <p>{t("tickets.loading")}</p>
         </div>
       </div>
@@ -80,10 +80,10 @@ export function GeneralTab() {
 
   if (error) {
     return (
-      <div className="general-container">
-        <div className="general-error-banner">
+      <div className="support-general-container">
+        <div className="support-general-error-banner">
           <span>{error}</span>
-          <button onClick={loadTickets} className="general-btn general-btn-secondary">
+          <button onClick={loadTickets} className="support-general-btn general-btn-secondary">
             {tCommon("actions.refresh")}
           </button>
         </div>
@@ -92,10 +92,10 @@ export function GeneralTab() {
   }
 
   return (
-    <div className="general-container">
-      <div className="general-filter-bar">
+    <div className="support-general-container">
+      <div className="support-general-filter-bar">
         <select
-          className="general-filter-select"
+          className="support-general-filter-select"
           value={filter}
           onChange={(e) => setFilter(e.target.value as "all" | "open" | "closed")}
         >
@@ -103,19 +103,19 @@ export function GeneralTab() {
           <option value="open">{t("tickets.filters.open")}</option>
           <option value="closed">{t("tickets.filters.closed")}</option>
         </select>
-        <span className="general-result-count">
+        <span className="support-general-result-count">
           {t("tickets.count", { count: tickets.length })}
         </span>
       </div>
 
       {tickets.length === 0 ? (
-        <div className="general-empty-state">
+        <div className="support-general-empty-state">
           <TicketIcon />
           <h3>{t("tickets.empty.title")}</h3>
           <p>{t("tickets.empty.description")}</p>
         </div>
       ) : (
-        <table className="general-table">
+        <table className="support-general-table">
           <thead>
             <tr>
               <th>{t("tickets.columns.ticketNumber")}</th>
@@ -133,9 +133,9 @@ export function GeneralTab() {
               return (
                 <tr key={ticket.ticketId}>
                   <td>
-                    <span className="general-ticket-number">#{ticket.ticketNumber}</span>
+                    <span className="support-general-ticket-number">#{ticket.ticketNumber}</span>
                   </td>
-                  <td className="general-subject-cell">{ticket.subject}</td>
+                  <td className="support-general-subject-cell">{ticket.subject}</td>
                   <td>{ticket.serviceName || "-"}</td>
                   <td>
                     <span className={`general-badge ${type.className}`}>{type.label}</span>
@@ -144,9 +144,9 @@ export function GeneralTab() {
                     <span className={`general-badge ${state.className}`}>{state.label}</span>
                   </td>
                   <td>
-                    <div className="general-update-info">
+                    <div className="support-general-update-info">
                       <span>{formatDate(ticket.updateDate)}</span>
-                      <span className="general-last-from">
+                      <span className="support-general-last-from">
                         {ticket.lastMessageFrom === "support"
                           ? t("tickets.lastFrom.support")
                           : t("tickets.lastFrom.you")}
@@ -160,12 +160,12 @@ export function GeneralTab() {
         </table>
       )}
 
-      <div className="general-table-actions">
+      <div className="support-general-table-actions">
         <a
           href={SUPPORT_URLS.helpCenter}
           target="_blank"
           rel="noopener noreferrer"
-          className="general-btn general-btn-secondary"
+          className="support-general-btn general-btn-secondary"
         >
           {t("tickets.helpCenter")}
         </a>

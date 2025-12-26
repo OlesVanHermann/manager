@@ -1,28 +1,17 @@
 // ============================================================
-// INSTANCES - Compute VMs OVHcloud Public Cloud
+// INSTANCES - Public Cloud Compute Instances OVHcloud
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import GeneralTab from "./tabs/GeneralTab.tsx";
-import NetworkTab from "./tabs/NetworkTab.tsx";
-import SnapshotsTab from "./tabs/SnapshotsTab.tsx";
-import ConsoleTab from "./tabs/ConsoleTab.tsx";
-
-interface InstanceInfo {
-  id: string;
-  name: string;
-  flavorId: string;
-  flavorName: string;
-  imageId: string;
-  imageName: string;
-  region: string;
-  status: string;
-  created: string;
-  ipAddresses: { ip: string; type: string; version: number }[];
-}
+import { getInstance } from "./tabs/GeneralTab.service";
+import type { Instance } from "./instances.types";
+import GeneralTab from "./tabs/GeneralTab";
+import NetworkTab from "./tabs/NetworkTab";
+import SnapshotsTab from "./tabs/SnapshotsTab";
+import ConsoleTab from "./tabs/ConsoleTab";
 
 export default function InstancesPage() {
   const { t } = useTranslation("public-cloud/instances/index");
@@ -30,7 +19,7 @@ export default function InstancesPage() {
   const projectId = searchParams.get("projectId") || "";
   const instanceId = searchParams.get("id") || "";
 
-  const [instance, setInstance] = useState<InstanceInfo | null>(null);
+  const [instance, setInstance] = useState<Instance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,26 +32,64 @@ export default function InstancesPage() {
   const { activeTab, TabButtons } = useTabs(tabs, "general");
 
   useEffect(() => {
-    if (!projectId || !instanceId) { setLoading(false); return; }
+    if (!projectId || !instanceId) {
+      setLoading(false);
+      return;
+    }
     loadInstance();
   }, [projectId, instanceId]);
 
   const loadInstance = async () => {
-    try { setLoading(true); setError(null); const data = await instancesService.getInstance(projectId, instanceId); setInstance(data); }
-    catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
-    finally { setLoading(false); }
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getInstance(projectId, instanceId);
+      setInstance(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
-    const classes: Record<string, string> = { ACTIVE: "badge-success", BUILD: "badge-warning", SHUTOFF: "badge-secondary", ERROR: "badge-error", REBOOT: "badge-info", RESCUE: "badge-warning" };
+    const classes: Record<string, string> = {
+      ACTIVE: "badge-success",
+      BUILD: "badge-warning",
+      ERROR: "badge-error",
+      STOPPED: "badge-secondary",
+    };
     return <span className={`status-badge ${classes[status] || ""}`}>{status}</span>;
   };
 
-  const getPublicIp = () => instance?.ipAddresses.find(ip => ip.type === "public" && ip.version === 4)?.ip || "-";
+  if (!projectId || !instanceId) {
+    return (
+      <div className="page-content">
+        <div className="empty-state">
+          <h2>{t("noService.title")}</h2>
+        </div>
+      </div>
+    );
+  }
 
-  if (!projectId || !instanceId) return <div className="page-content"><div className="empty-state"><h2>{t("noService.title")}</h2></div></div>;
-  if (loading) return <div className="page-content"><div className="loading-state">{t("loading")}</div></div>;
-  if (error) return <div className="page-content"><div className="error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadInstance}>{t("error.retry")}</button></div></div>;
+  if (loading) {
+    return (
+      <div className="page-content">
+        <div className="loading-state">{t("loading")}</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-content">
+        <div className="error-state">
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={loadInstance}>{t("error.retry")}</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-content public-cloud-page">
@@ -71,8 +98,7 @@ export default function InstancesPage() {
         {instance && (
           <div className="service-meta">
             <span className="meta-item">{instance.region}</span>
-            <span className="meta-item">{instance.flavorName}</span>
-            <span className="meta-item">{getPublicIp()}</span>
+            <span className="meta-item">{instance.flavorId}</span>
             {getStatusBadge(instance.status)}
           </div>
         )}

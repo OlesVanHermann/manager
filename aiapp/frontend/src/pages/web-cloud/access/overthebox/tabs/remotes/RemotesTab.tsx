@@ -27,7 +27,7 @@ export function RemotesTab({ serviceName }: Props) {
   }, [serviceName]);
 
   if (loading) {
-    return <div className="tab-loading"><div className="skeleton-block" /></div>;
+    return <div className="otb-remotes-loading"><div className="otb-remotes-skeleton" /></div>;
   }
 
   return (
@@ -48,7 +48,7 @@ export function RemotesTab({ serviceName }: Props) {
             <div key={r.remoteId} className={`remotes-card ${r.status === 'active' ? 'active' : 'inactive'}`}>
               <div className="remotes-card-header">
                 <h4>{r.remoteId}</h4>
-                <span className={`badge ${r.status === 'active' ? 'success' : 'inactive'}`}>
+                <span className={`otb-remotes-badge ${r.status === 'active' ? 'success' : 'inactive'}`}>
                   {r.status}
                 </span>
               </div>

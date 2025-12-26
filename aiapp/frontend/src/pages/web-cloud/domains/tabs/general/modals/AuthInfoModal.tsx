@@ -69,7 +69,7 @@ export function AuthInfoModal({ domain, onClose }: Props) {
 
         <div className="modal-body">
           {loading ? (
-            <div className="skeleton-block" style={{ height: "60px" }} />
+            <div className="dom-authinfo-skeleton" style={{ height: "60px" }} />
           ) : error ? (
             <div className="error-message">{t("authInfo.error")}</div>
           ) : (

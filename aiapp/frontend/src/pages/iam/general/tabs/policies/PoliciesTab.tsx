@@ -14,7 +14,7 @@ import "./PoliciesTab.css";
 
 function ShieldIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="policies-empty-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="iam-policies-empty-icon">
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
     </svg>
   );
@@ -66,9 +66,9 @@ export default function PoliciesTab() {
   // ---------- RENDER ----------
   if (loading) {
     return (
-      <div className="policies-tab">
-        <div className="policies-loading-state">
-          <div className="policies-spinner"></div>
+      <div className="iam-policies-tab">
+        <div className="iam-policies-loading-state">
+          <div className="iam-policies-spinner"></div>
           <p>{t("loading")}</p>
         </div>
       </div>
@@ -77,8 +77,8 @@ export default function PoliciesTab() {
 
   if (error) {
     return (
-      <div className="policies-tab">
-        <div className="policies-error-banner">
+      <div className="iam-policies-tab">
+        <div className="iam-policies-error-banner">
           <span>{error}</span>
           <button onClick={loadPolicies} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>
             {tCommon("actions.refresh")}
@@ -89,27 +89,27 @@ export default function PoliciesTab() {
   }
 
   return (
-    <div className="policies-tab">
-      <div className="policies-section-intro">
+    <div className="iam-policies-tab">
+      <div className="iam-policies-section-intro">
         <h2>{t("title")}</h2>
         <p>{t("description")}</p>
       </div>
 
-      <div className="policies-toolbar">
-        <span className="policies-result-count">{t("count", { count: policies.length })}</span>
+      <div className="iam-policies-toolbar">
+        <span className="iam-policies-result-count">{t("count", { count: policies.length })}</span>
         <button className="btn btn-primary btn-sm">{t("createButton")}</button>
       </div>
 
       {policies.length === 0 ? (
-        <div className="policies-empty-state">
+        <div className="iam-policies-empty-state">
           <ShieldIcon />
           <h3>{t("empty.title")}</h3>
           <p>{t("empty.description")}</p>
           <button className="btn btn-primary">{t("createButton")}</button>
         </div>
       ) : (
-        <div className="policies-table-container">
-          <table className="policies-table">
+        <div className="iam-policies-table-container">
+          <table className="iam-policies-table">
             <thead>
               <tr>
                 <th>{t("columns.name")}</th>
@@ -124,10 +124,10 @@ export default function PoliciesTab() {
               {policies.map((policy) => (
                 <tr key={policy.id}>
                   <td>
-                    <div className="policies-name-cell">
+                    <div className="iam-policies-name-cell">
                       <strong>{policy.name}</strong>
                       {policy.readOnly && (
-                        <span className="policies-badge policies-badge-neutral">{t("common.readOnly")}</span>
+                        <span className="iam-policies-badge policies-badge-neutral">{t("common.readOnly")}</span>
                       )}
                     </div>
                   </td>
@@ -135,7 +135,7 @@ export default function PoliciesTab() {
                   <td>{policy.identities?.length || 0}</td>
                   <td>{policy.resources?.length || 0}</td>
                   <td>{formatDate(policy.createdAt)}</td>
-                  <td className="policies-actions-cell">
+                  <td className="iam-policies-actions-cell">
                     <button className="btn btn-outline btn-sm">{t("actions.edit")}</button>
                   </td>
                 </tr>

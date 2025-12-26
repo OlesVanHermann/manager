@@ -33,25 +33,25 @@ export default function InputsTab({ serviceId }: InputsTabProps) {
     return <span className={`inputs-status-badge ${classes[status]}`}>{t(`inputs.status.${status}`)}</span>;
   };
 
-  if (loading) return <div className="inputs-loading-state">{tCommon("loading")}</div>;
-  if (error) return <div className="inputs-error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadInputs}>{tCommon("actions.retry")}</button></div>;
+  if (loading) return <div className="dbaas-logs-inputs-loading-state">{tCommon("loading")}</div>;
+  if (error) return <div className="dbaas-logs-inputs-error-state"><p>{error}</p><button className="btn btn-primary" onClick={loadInputs}>{tCommon("actions.retry")}</button></div>;
 
   return (
-    <div className="inputs-tab">
-      <div className="inputs-toolbar"><h2>{t("title")}</h2><button className="btn btn-primary">{t("create")}</button></div>
+    <div className="dbaas-logs-inputs-tab">
+      <div className="dbaas-logs-inputs-toolbar"><h2>{t("title")}</h2><button className="btn btn-primary">{t("create")}</button></div>
       {inputs.length === 0 ? (
-        <div className="inputs-empty-state"><h2>{t("empty.title")}</h2><p>{t("empty.description")}</p></div>
+        <div className="dbaas-logs-inputs-empty-state"><h2>{t("empty.title")}</h2><p>{t("empty.description")}</p></div>
       ) : (
-        <table className="inputs-table">
+        <table className="dbaas-logs-inputs-table">
           <thead><tr><th>{t("columns.title")}</th><th>{t("columns.endpoint")}</th><th>{t("columns.ssl")}</th><th>{t("columns.status")}</th><th>{t("columns.actions")}</th></tr></thead>
           <tbody>
             {inputs.map((inp) => (
               <tr key={inp.inputId}>
-                <td><div className="inputs-title">{inp.title}</div>{inp.description && <div className="inputs-desc">{inp.description}</div>}</td>
-                <td><code className="inputs-endpoint">{inp.publicAddress}:{inp.exposedPort}</code></td>
+                <td><div className="dbaas-logs-inputs-title">{inp.title}</div>{inp.description && <div className="dbaas-logs-inputs-desc">{inp.description}</div>}</td>
+                <td><code className="dbaas-logs-inputs-endpoint">{inp.publicAddress}:{inp.exposedPort}</code></td>
                 <td>{inp.sslEnabled ? "🔒 SSL" : "❌"}</td>
                 <td>{getStatusBadge(inp.status)}</td>
-                <td className="inputs-actions"><button className="btn btn-sm btn-outline">{tCommon("actions.edit")}</button></td>
+                <td className="dbaas-logs-inputs-actions"><button className="btn btn-sm btn-outline">{tCommon("actions.edit")}</button></td>
               </tr>
             ))}
           </tbody>

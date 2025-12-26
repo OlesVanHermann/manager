@@ -8,7 +8,7 @@ export function ImportSqlModal({ serviceName, databaseName, isOpen, onClose, onS
     <div className="modal-overlay" onClick={onClose}><div className="modal-container" onClick={e => e.stopPropagation()}>
       <div className="modal-header"><h2>Importer SQL</h2><button className="modal-close" onClick={onClose}>×</button></div>
       <div className="modal-body"><p>Importer dans {databaseName} - Fonctionnalité en cours.</p></div>
-      <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Annuler</button><button className="btn btn-primary" onClick={handleImport} disabled={loading}>{loading ? "..." : "Importer"}</button></div>
+      <div className="modal-footer"><button className="wh-modal-btn-secondary" onClick={onClose}>Annuler</button><button className="wh-modal-btn-primary" onClick={handleImport} disabled={loading}>{loading ? "..." : "Importer"}</button></div>
     </div></div>
   );
 }

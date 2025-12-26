@@ -5,7 +5,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ServiceListPage, ServiceItem } from "../../../../components/ServiceListPage";
-import { emailDomainService, EmailDomain } from "../../../../services/web-cloud.email-domain";
+import { emailDomainPageService } from "./emailDomainPage.service";
+import type { EmailDomain } from "./email-domain.types";
 import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
 import { RedirectionsTab } from "./tabs/redirections/RedirectionsTab.tsx";
 import { MailingListsTab } from "./tabs/mailinglists/MailingListsTab.tsx";
@@ -38,7 +39,7 @@ export default function EmailDomainPage() {
     try {
       setLoading(true);
       setError(null);
-      const domainNames = await emailDomainService.listDomains();
+      const domainNames = await emailDomainPageService.listDomains();
       const items: ServiceItem[] = domainNames.map((name) => ({ id: name, name: name }));
       setDomains(items);
       if (items.length > 0 && !selectedDomain) {
@@ -56,7 +57,7 @@ export default function EmailDomainPage() {
   // ---------- LOAD DETAILS ----------
   useEffect(() => {
     if (!selectedDomain) return;
-    emailDomainService.getDomain(selectedDomain).then(setDomainDetails).catch(() => setDomainDetails(null));
+    emailDomainPageService.getDomain(selectedDomain).then(setDomainDetails).catch(() => setDomainDetails(null));
   }, [selectedDomain]);
 
   // ---------- TABS ----------
