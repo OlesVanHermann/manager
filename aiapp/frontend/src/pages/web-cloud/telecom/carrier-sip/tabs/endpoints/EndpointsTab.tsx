@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function EndpointsTab({ billingAccount, serviceName }: Props) {
-  const { t } = useTranslation("web-cloud/telecom/carrier-sip/index");
+  const { t } = useTranslation("web-cloud/telecom/carrier-sip/endpoints");
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,14 +43,14 @@ export function EndpointsTab({ billingAccount, serviceName }: Props) {
     <div className="endpoints-tab">
       <div className="endpoints-tab-header">
         <div>
-          <h3>{t("endpoints.title")}</h3>
-          <p className="endpoints-tab-description">{t("endpoints.description")}</p>
+          <h3>{t("title")}</h3>
+          <p className="endpoints-tab-description">{t("description")}</p>
         </div>
       </div>
 
       {endpoints.length === 0 ? (
         <div className="endpoints-empty-state">
-          <p>{t("endpoints.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <div className="endpoints-cards">
@@ -63,9 +63,9 @@ export function EndpointsTab({ billingAccount, serviceName }: Props) {
                 </span>
               </div>
               <div className="endpoints-card-info">
-                <label>{t("endpoints.priority")}</label>
+                <label>{t("priority")}</label>
                 <span>{e.priority}</span>
-                <label>{t("endpoints.weight")}</label>
+                <label>{t("weight")}</label>
                 <span>{e.weight}</span>
               </div>
             </div>

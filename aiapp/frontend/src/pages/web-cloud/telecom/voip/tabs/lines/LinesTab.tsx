@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { linesService } from './LinesTab';
+import { linesService } from './LinesTab.service';
 import type { TelephonyLine } from '../../voip.types';
 import './LinesTab.css';
 
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function LinesTab({ billingAccount }: Props) {
-  const { t } = useTranslation('web-cloud/voip/index');
+  const { t } = useTranslation('web-cloud/telecom/voip/lines');
   const [lines, setLines] = useState<TelephonyLine[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +45,7 @@ export function LinesTab({ billingAccount }: Props) {
     <div className="lines-tab">
       <div className="lines-header">
         <div>
-          <h3>{t('lines.title')}</h3>
+          <h3>{t('title')}</h3>
         </div>
         <span className="lines-count">{lines.length}</span>
       </div>
@@ -63,7 +63,7 @@ export function LinesTab({ billingAccount }: Props) {
 
       {lines.length === 0 ? (
         <div className="lines-empty">
-          <p>{t('lines.empty')}</p>
+          <p>{t('empty')}</p>
         </div>
       ) : (
         <div className="lines-cards">
@@ -77,7 +77,7 @@ export function LinesTab({ billingAccount }: Props) {
               </div>
               <div className="lines-info">
                 <h4>{line.serviceName}</h4>
-                <p>{line.description || t('lines.noDescription')}</p>
+                <p>{line.description || t('noDescription')}</p>
                 <div className="lines-meta">
                   <span className="badge info">{line.serviceType}</span>
                   <span className="badge">{line.simultaneousLines} appels</span>

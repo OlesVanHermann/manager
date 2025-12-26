@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sendersService } from './SendersTab';
+import { sendersService } from './SendersTab.service';
 import type { SmsSender } from '../../sms.types';
 import './SendersTab.css';
 
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function SendersTab({ accountName }: Props) {
-  const { t } = useTranslation('web-cloud/sms/index');
+  const { t } = useTranslation('web-cloud/telecom/sms/senders');
   const [senders, setSenders] = useState<SmsSender[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,14 +56,14 @@ export function SendersTab({ accountName }: Props) {
     <div className="senders-tab">
       <div className="senders-header">
         <div>
-          <h3>{t('senders.title')}</h3>
+          <h3>{t('title')}</h3>
         </div>
         <span className="senders-count">{senders.length}</span>
       </div>
 
       {senders.length === 0 ? (
         <div className="senders-empty">
-          <p>{t('senders.empty')}</p>
+          <p>{t('empty')}</p>
         </div>
       ) : (
         <div className="senders-cards">

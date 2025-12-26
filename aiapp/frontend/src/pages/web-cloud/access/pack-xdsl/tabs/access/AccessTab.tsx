@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function AccessTab({ packName }: Props) {
-  const { t } = useTranslation("web-cloud/pack-xdsl/index");
+  const { t } = useTranslation("web-cloud/access/pack-xdsl/access");
   const [accesses, setAccesses] = useState<XdslAccess[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,12 +34,12 @@ export function AccessTab({ packName }: Props) {
     <div className="access-container">
       <div className="access-header">
         <div>
-          <h3>{t("access.title")}</h3>
+          <h3>{t("title")}</h3>
         </div>
       </div>
       {accesses.length === 0 ? (
         <div className="access-empty">
-          <p>{t("access.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         accesses.map(a => (
@@ -56,13 +56,13 @@ export function AccessTab({ packName }: Props) {
             <div className="access-ips">
               {a.ipv4 && (
                 <div className="access-ip-item">
-                  <label>IPv4</label>
+                  <label>{t("fields.ipv4")}</label>
                   <span>{a.ipv4}</span>
                 </div>
               )}
               {a.ipv6 && (
                 <div className="access-ip-item">
-                  <label>IPv6</label>
+                  <label>{t("fields.ipv6")}</label>
                   <span>{a.ipv6}</span>
                 </div>
               )}

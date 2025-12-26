@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function RemotesTab({ serviceName }: Props) {
-  const { t } = useTranslation("web-cloud/overthebox/index");
+  const { t } = useTranslation("web-cloud/access/overthebox/remotes");
   const [remotes, setRemotes] = useState<Remote[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,13 +34,13 @@ export function RemotesTab({ serviceName }: Props) {
     <div className="remotes-container">
       <div className="remotes-header">
         <div>
-          <h3>{t("remotes.title")}</h3>
-          <p className="remotes-description">{t("remotes.description")}</p>
+          <h3>{t("title")}</h3>
+          <p className="remotes-description">{t("description")}</p>
         </div>
       </div>
       {remotes.length === 0 ? (
         <div className="remotes-empty">
-          <p>{t("remotes.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <div className="remotes-cards">
@@ -53,11 +53,11 @@ export function RemotesTab({ serviceName }: Props) {
                 </span>
               </div>
               <div className="remotes-card-info">
-                <label>{t("remotes.ip")}</label>
+                <label>{t("ip")}</label>
                 <span>{r.publicIp || '-'}</span>
-                <label>{t("remotes.port")}</label>
+                <label>{t("port")}</label>
                 <span>{r.exposedPort}</span>
-                <label>{t("remotes.lastSeen")}</label>
+                <label>{t("lastSeen")}</label>
                 <span>{r.lastSeen ? new Date(r.lastSeen).toLocaleString('fr-FR') : '-'}</span>
               </div>
             </div>

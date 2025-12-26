@@ -8,13 +8,13 @@ interface Props {
 }
 
 export function GeneralTab({ serviceName, details }: Props) {
-  const { t } = useTranslation("web-cloud/overthebox/index");
+  const { t } = useTranslation("web-cloud/access/overthebox/general");
 
   return (
     <div className="general-otb-container">
       <div className="general-otb-header">
         <div>
-          <h3>{t("general.title")}</h3>
+          <h3>{t("title")}</h3>
         </div>
       </div>
       <div className={`general-otb-device-card ${details?.status === 'active' ? 'online' : 'offline'}`}>
@@ -24,7 +24,7 @@ export function GeneralTab({ serviceName, details }: Props) {
           </div>
           <div className="general-otb-device-info">
             <h3>{details?.customerDescription || serviceName}</h3>
-            <p>{t("general.serviceName")}: {serviceName}</p>
+            <p>{t("serviceName")}: {serviceName}</p>
             <div className="general-otb-device-meta">
               <span className={`badge ${details?.status === 'active' ? 'success' : 'error'}`}>
                 {details?.status || 'unknown'}
@@ -39,11 +39,11 @@ export function GeneralTab({ serviceName, details }: Props) {
       <section className="general-otb-info-section">
         <div className="general-otb-info-grid">
           <div className="general-otb-info-item">
-            <label>{t("general.releaseChannel")}</label>
+            <label>{t("releaseChannel")}</label>
             <span className="badge">{details?.releaseChannel || '-'}</span>
           </div>
           <div className="general-otb-info-item">
-            <label>{t("general.tunnelMode")}</label>
+            <label>{t("tunnelMode")}</label>
             <span>{details?.tunnelMode || '-'}</span>
           </div>
         </div>

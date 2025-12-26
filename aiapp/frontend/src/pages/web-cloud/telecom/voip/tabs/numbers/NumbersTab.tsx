@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { numbersService } from './NumbersTab';
+import { numbersService } from './NumbersTab.service';
 import type { TelephonyNumber } from '../../voip.types';
 import './NumbersTab.css';
 
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function NumbersTab({ billingAccount }: Props) {
-  const { t } = useTranslation('web-cloud/voip/index');
+  const { t } = useTranslation('web-cloud/telecom/voip/numbers');
   const [numbers, setNumbers] = useState<TelephonyNumber[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,14 +42,14 @@ export function NumbersTab({ billingAccount }: Props) {
     <div className="numbers-tab">
       <div className="numbers-header">
         <div>
-          <h3>{t('numbers.title')}</h3>
+          <h3>{t('title')}</h3>
         </div>
         <span className="numbers-count">{numbers.length}</span>
       </div>
 
       {numbers.length === 0 ? (
         <div className="numbers-empty">
-          <p>{t('numbers.empty')}</p>
+          <p>{t('empty')}</p>
         </div>
       ) : (
         <div className="numbers-cards">

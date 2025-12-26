@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function TasksTab({ packName }: Props) {
-  const { t } = useTranslation("web-cloud/pack-xdsl/index");
+  const { t } = useTranslation("web-cloud/access/pack-xdsl/tasks");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,20 +45,20 @@ export function TasksTab({ packName }: Props) {
     <div className="tasks-xdsl-container">
       <div className="tasks-xdsl-header">
         <div>
-          <h3>{t("tasks.title")}</h3>
+          <h3>{t("title")}</h3>
         </div>
       </div>
       {tasks.length === 0 ? (
         <div className="tasks-xdsl-empty">
-          <p>{t("tasks.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <table className="tasks-xdsl-table">
           <thead>
             <tr>
-              <th>{t("tasks.function")}</th>
-              <th>{t("tasks.status")}</th>
-              <th>{t("tasks.date")}</th>
+              <th>{t("function")}</th>
+              <th>{t("status")}</th>
+              <th>{t("date")}</th>
             </tr>
           </thead>
           <tbody>

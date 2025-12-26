@@ -13,14 +13,14 @@ interface Props {
 }
 
 export function GeneralTab({ billingAccount, serviceName, details }: Props) {
-  const { t } = useTranslation("web-cloud/telecom/carrier-sip/index");
+  const { t } = useTranslation("web-cloud/telecom/carrier-sip/general");
   const percent = details ? Math.round((details.currentCalls / details.maxCalls) * 100) : 0;
 
   return (
     <div className="general-tab">
       <div className="general-tab-header">
         <div>
-          <h3>{t("general.title")}</h3>
+          <h3>{t("title")}</h3>
         </div>
       </div>
 
@@ -29,7 +29,7 @@ export function GeneralTab({ billingAccount, serviceName, details }: Props) {
           <div className="general-trunk-icon">📡</div>
           <div className="general-trunk-info">
             <h3>{serviceName}</h3>
-            <p>{details?.description || t("general.noDescription")}</p>
+            <p>{details?.description || t("noDescription")}</p>
             <div className="general-calls-indicator">
               <div className="general-calls-bar">
                 <div className="general-calls-fill" style={{ width: `${percent}%` }} />
@@ -45,11 +45,11 @@ export function GeneralTab({ billingAccount, serviceName, details }: Props) {
       <section className="general-info-section">
         <div className="general-info-grid">
           <div className="general-info-item">
-            <label>{t("general.billingAccount")}</label>
+            <label>{t("billingAccount")}</label>
             <span className="font-mono">{billingAccount}</span>
           </div>
           <div className="general-info-item">
-            <label>{t("general.status")}</label>
+            <label>{t("status")}</label>
             <span className={`badge ${details?.status === "enabled" ? "success" : "warning"}`}>
               {details?.status || "-"}
             </span>

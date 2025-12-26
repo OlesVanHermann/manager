@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function VoipTab({ packName }: Props) {
-  const { t } = useTranslation("web-cloud/pack-xdsl/index");
+  const { t } = useTranslation("web-cloud/access/pack-xdsl/voip");
   const [lines, setLines] = useState<VoipLine[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,13 +34,13 @@ export function VoipTab({ packName }: Props) {
     <div className="voip-container">
       <div className="voip-header">
         <div>
-          <h3>{t("voip.title")}</h3>
+          <h3>{t("title")}</h3>
         </div>
         <span className="voip-records-count">{lines.length}</span>
       </div>
       {lines.length === 0 ? (
         <div className="voip-empty">
-          <p>{t("voip.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <div className="voip-line-cards">

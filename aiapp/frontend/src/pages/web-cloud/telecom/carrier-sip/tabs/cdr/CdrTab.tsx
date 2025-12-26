@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function CdrTab({ billingAccount, serviceName }: Props) {
-  const { t } = useTranslation("web-cloud/telecom/carrier-sip/index");
+  const { t } = useTranslation("web-cloud/telecom/carrier-sip/cdr");
   const [records, setRecords] = useState<CdrRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,8 +44,8 @@ export function CdrTab({ billingAccount, serviceName }: Props) {
     <div className="cdr-tab">
       <div className="cdr-tab-header">
         <div>
-          <h3>{t("cdr.title")}</h3>
-          <p className="cdr-tab-description">{t("cdr.description")}</p>
+          <h3>{t("title")}</h3>
+          <p className="cdr-tab-description">{t("description")}</p>
         </div>
         <span className="cdr-records-count">{records.length}</span>
       </div>
@@ -63,17 +63,17 @@ export function CdrTab({ billingAccount, serviceName }: Props) {
 
       {records.length === 0 ? (
         <div className="cdr-empty-state">
-          <p>{t("cdr.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <table className="data-table cdr-table">
           <thead>
             <tr>
-              <th>{t("cdr.caller")}</th>
-              <th>{t("cdr.callee")}</th>
-              <th>{t("cdr.duration")}</th>
-              <th>{t("cdr.date")}</th>
-              <th>{t("cdr.status")}</th>
+              <th>{t("caller")}</th>
+              <th>{t("callee")}</th>
+              <th>{t("duration")}</th>
+              <th>{t("date")}</th>
+              <th>{t("status")}</th>
             </tr>
           </thead>
           <tbody>

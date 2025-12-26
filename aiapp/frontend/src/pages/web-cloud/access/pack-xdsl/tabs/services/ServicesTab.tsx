@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function ServicesTab({ packName }: Props) {
-  const { t } = useTranslation("web-cloud/pack-xdsl/index");
+  const { t } = useTranslation("web-cloud/access/pack-xdsl/services");
   const [services, setServices] = useState<PackService[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,13 +44,13 @@ export function ServicesTab({ packName }: Props) {
     <div className="services-container">
       <div className="services-header">
         <div>
-          <h3>{t("services.title")}</h3>
+          <h3>{t("title")}</h3>
         </div>
         <span className="services-records-count">{services.length}</span>
       </div>
       {services.length === 0 ? (
         <div className="services-empty">
-          <p>{t("services.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <div className="services-cards">

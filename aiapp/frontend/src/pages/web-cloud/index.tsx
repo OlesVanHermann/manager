@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ovhApi } from "../../services/api";
-import "./styles.css";
+import "./index.css";
 
 // ============ TYPES ============
 

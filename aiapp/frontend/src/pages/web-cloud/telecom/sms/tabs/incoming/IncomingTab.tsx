@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { incomingService } from './IncomingTab';
+import { incomingService } from './IncomingTab.service';
 import type { SmsIncoming } from '../../sms.types';
 import './IncomingTab.css';
 
@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function IncomingTab({ accountName }: Props) {
-  const { t } = useTranslation('web-cloud/sms/index');
+  const { t } = useTranslation('web-cloud/telecom/sms/incoming');
   const [messages, setMessages] = useState<SmsIncoming[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,14 +49,14 @@ export function IncomingTab({ accountName }: Props) {
     <div className="incoming-tab">
       <div className="incoming-header">
         <div>
-          <h3>{t('incoming.title')}</h3>
+          <h3>{t('title')}</h3>
         </div>
         <span className="incoming-count">{messages.length}</span>
       </div>
 
       {messages.length === 0 ? (
         <div className="incoming-empty">
-          <p>{t('incoming.empty')}</p>
+          <p>{t('empty')}</p>
         </div>
       ) : (
         <div className="incoming-cards">

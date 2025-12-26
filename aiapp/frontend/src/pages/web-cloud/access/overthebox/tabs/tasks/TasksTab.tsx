@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function TasksTab({ serviceName }: Props) {
-  const { t } = useTranslation("web-cloud/overthebox/index");
+  const { t } = useTranslation("web-cloud/access/overthebox/tasks");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,20 +45,20 @@ export function TasksTab({ serviceName }: Props) {
     <div className="tasks-otb-container">
       <div className="tasks-otb-header">
         <div>
-          <h3>{t("tasks.title")}</h3>
+          <h3>{t("title")}</h3>
         </div>
       </div>
       {tasks.length === 0 ? (
         <div className="tasks-otb-empty">
-          <p>{t("tasks.empty")}</p>
+          <p>{t("empty")}</p>
         </div>
       ) : (
         <table className="tasks-otb-table">
           <thead>
             <tr>
-              <th>{t("tasks.name")}</th>
-              <th>{t("tasks.status")}</th>
-              <th>{t("tasks.date")}</th>
+              <th>{t("name")}</th>
+              <th>{t("status")}</th>
+              <th>{t("date")}</th>
             </tr>
           </thead>
           <tbody>

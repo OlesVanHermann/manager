@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { accessService } from "./access.service";
 import PackXdslPage from "./pack-xdsl";
 import OverTheBoxPage from "./overthebox";
+import "./index.css";
 
 type SubSection = "pack-xdsl" | "overthebox";
 
