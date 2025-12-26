@@ -1,14 +1,14 @@
 // ============================================================
-// DIRECTADMIN GENERAL TAB - Composant isolé
+// DIRECTADMIN GENERAL TAB - Composant STRICTEMENT isolé
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import type { DirectAdminLicense } from "../../directadmin.types";
+import type { DirectadminLicense } from "../../directadmin.types";
 import "./GeneralTab.css";
 
 interface GeneralTabProps {
   licenseId: string;
-  license: DirectAdminLicense | null;
+  license: DirectadminLicense | null;
   onRefresh: () => void;
 }
 
@@ -24,7 +24,9 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
     <div className="directadmin-general-tab">
       <div className="directadmin-general-toolbar">
         <h2>{t("title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button>
+        <button className="directadmin-general-btn directadmin-general-btn-outline" onClick={onRefresh}>
+          {tCommon("actions.refresh")}
+        </button>
       </div>
       <div className="directadmin-general-info-card">
         <div className="directadmin-general-info-grid">
@@ -53,8 +55,8 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
       <div className="directadmin-general-info-card">
         <h3>{t("actions.title")}</h3>
         <div className="directadmin-general-actions">
-          <button className="btn btn-outline">{t("actions.changeIp")}</button>
-          <button className="btn btn-outline btn-danger">{t("actions.terminate")}</button>
+          <button className="directadmin-general-btn directadmin-general-btn-outline">{t("actions.changeIp")}</button>
+          <button className="directadmin-general-btn directadmin-general-btn-outline directadmin-general-btn-danger">{t("actions.terminate")}</button>
         </div>
       </div>
     </div>

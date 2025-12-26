@@ -10,7 +10,6 @@ import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
 import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
 import { AliasesTab } from "./tabs/aliases/AliasesTab.tsx";
 import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
-import "./styles.css";
 
 // ============ ICONS ============
 

@@ -1,5 +1,5 @@
 // ============================================================
-// WINDOWS GENERAL TAB - Composant isolé
+// WINDOWS GENERAL TAB - Composant STRICTEMENT isolé
 // ============================================================
 
 import { useTranslation } from "react-i18next";
@@ -24,7 +24,9 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
     <div className="windows-general-tab">
       <div className="windows-general-toolbar">
         <h2>{t("title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button>
+        <button className="windows-general-btn windows-general-btn-outline" onClick={onRefresh}>
+          {tCommon("actions.refresh")}
+        </button>
       </div>
       <div className="windows-general-info-card">
         <div className="windows-general-info-grid">
@@ -40,12 +42,10 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
             <span className="windows-general-info-label">{t("fields.version")}</span>
             <span className="windows-general-info-value">{license.version}</span>
           </div>
-          {license.sqlVersion && (
-            <div className="windows-general-info-item">
-              <span className="windows-general-info-label">{t("fields.sqlVersion")}</span>
-              <span className="windows-general-info-value">{license.sqlVersion}</span>
-            </div>
-          )}
+          <div className="windows-general-info-item">
+            <span className="windows-general-info-label">{t("fields.sqlVersion")}</span>
+            <span className="windows-general-info-value">{license.sqlVersion || "-"}</span>
+          </div>
           <div className="windows-general-info-item">
             <span className="windows-general-info-label">{t("fields.created")}</span>
             <span className="windows-general-info-value">{new Date(license.createdAt).toLocaleDateString("fr-FR")}</span>
@@ -55,9 +55,8 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
       <div className="windows-general-info-card">
         <h3>{t("actions.title")}</h3>
         <div className="windows-general-actions">
-          <button className="btn btn-outline">{t("actions.changeIp")}</button>
-          <button className="btn btn-outline">{t("actions.upgrade")}</button>
-          <button className="btn btn-outline btn-danger">{t("actions.terminate")}</button>
+          <button className="windows-general-btn windows-general-btn-outline">{t("actions.changeIp")}</button>
+          <button className="windows-general-btn windows-general-btn-outline windows-general-btn-danger">{t("actions.terminate")}</button>
         </div>
       </div>
     </div>

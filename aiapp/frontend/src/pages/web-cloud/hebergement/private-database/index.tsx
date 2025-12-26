@@ -17,7 +17,7 @@ import {
   LogsTab, 
   ConfigurationTab 
 } from "./tabs";
-import { OrderCloudDbModal } from "./components";
+import { OrderCloudDbModal } from "./modals/OrderCloudDbModal";
 import Onboarding from "./Onboarding";
 
 const BASE_PATH = "/hosting/privateDatabase";

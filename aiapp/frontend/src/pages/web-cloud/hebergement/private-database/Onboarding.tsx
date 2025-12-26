@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { OrderCloudDbModal } from "./components";
+import { OrderCloudDbModal } from "./modals/OrderCloudDbModal";
 
 export function Onboarding() {
   const { t } = useTranslation("web-cloud/private-database/index");

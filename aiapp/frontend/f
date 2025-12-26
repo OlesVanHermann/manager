@@ -1,60 +1,40 @@
-#!/bin/bash
-# ============================================================
-# CLEANUP - Suppression des fichiers backup
-# Exécuter depuis: /home/ubuntu/aiapp/frontend/
-# ============================================================
+# Script de correction - exécuter depuis /home/ubuntu/aiapp/frontend
 
-echo "🧹 CLEANUP - Suppression des fichiers backup"
+BACKUP_TS=$(date +%Y%m%dT%H%M%S)
+SRC_DIR="/tmp/files"
 
-# Fichiers .bak dans src/
-echo ""
-echo "=== Fichiers .bak dans src/ ==="
-find src/pages/web-cloud -name "*.bak" -type f 2>/dev/null
-echo ""
-read -p "Supprimer ces fichiers .bak ? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    find src/pages/web-cloud -name "*.bak" -type f -delete
-    echo "  ✅ Fichiers .bak supprimés"
-fi
-
-# Dossiers .backup.* dans public/locales/
-echo ""
-echo "=== Dossiers .backup.* dans public/locales/ ==="
-find public/locales -type d -name "*.backup.*" 2>/dev/null
-echo ""
-read -p "Supprimer ces dossiers backup ? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    find public/locales -type d -name "*.backup.*" -exec rm -rf {} + 2>/dev/null
-    echo "  ✅ Dossiers backup supprimés"
-fi
-
-# Fichiers index.service.ts.* (anciens backups)
-echo ""
-echo "=== Fichiers index.service.ts.* ==="
-find src/pages/web-cloud -name "index.service.ts.*" -type f 2>/dev/null
-echo ""
-read -p "Supprimer ces backups de service ? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    find src/pages/web-cloud -name "index.service.ts.*" -type f -delete
-    echo "  ✅ Backups service supprimés"
-fi
-
-# Fichiers fax.css.* (backup)
-echo ""
-echo "=== Fichiers fax.css.* ==="
-find src/pages/web-cloud -name "fax.css.*" -type f 2>/dev/null
-echo ""
-read -p "Supprimer ces backups CSS ? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    find src/pages/web-cloud -name "fax.css.*" -type f -delete
-    echo "  ✅ Backups CSS supprimés"
-fi
+for PRODUCT in cpanel plesk directadmin windows sqlserver virtuozzo cloudlinux; do
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "  $PRODUCT"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  
+  for TAB in general tasks; do
+    TARGET_DIR="src/pages/license/$PRODUCT/tabs/$TAB"
+    SOURCE_DIR="$SRC_DIR/$PRODUCT/$TAB"
+    
+    if [ -d "$SOURCE_DIR" ]; then
+      for FILE in "$SOURCE_DIR"/*; do
+        if [ -f "$FILE" ]; then
+          FILENAME=$(basename "$FILE")
+          TARGET="$TARGET_DIR/$FILENAME"
+          
+          # Backup
+          if [ -f "$TARGET" ]; then
+            cp "$TARGET" "$TARGET.$BACKUP_TS"
+            echo "  📋 Backup: $FILENAME"
+          fi
+          
+          # Install
+          cp "$FILE" "$TARGET"
+          echo "  ✅ Installé: $FILENAME"
+        fi
+      done
+    fi
+  done
+done
 
 echo ""
-echo "============================================================"
-echo "✅ CLEANUP TERMINÉ"
-echo "============================================================"
+echo "✅ Installation terminée!"
+echo ""
+echo "🔍 Vérification isolation CSS..."
+grep -rn 'className="btn\|className="loading-state' src/pages/license/*/tabs/ 2>/dev/null | wc -l | xargs -I {} echo "  Classes génériques restantes: {}"

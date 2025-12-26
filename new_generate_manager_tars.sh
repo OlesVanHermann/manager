@@ -158,6 +158,13 @@ tar -cf /home/ubuntu/new_manager.bare-metal.vps.tar \
     $(add_if_exists ./public/locales/fr/bare-metal/vps) \
     $(add_if_exists ./src/services/bare-metal.vps.ts)
 
+echo "Création new_manager.bare-metal.tar..."
+tar -cf /home/ubuntu/new_manager.bare-metal.tar \
+    ./src/pages/bare-metal \
+    $(add_if_exists ./public/locales/en/bare-metal) \
+    $(add_if_exists ./public/locales/fr/bare-metal) \
+    $(find ./src/services -maxdepth 1 -name "bare-metal*.ts" 2>/dev/null)
+
 # ============================================================
 # GENERAL (NAV1 - anciennement HOME)
 # ============================================================
@@ -215,6 +222,13 @@ tar -cf /home/ubuntu/new_manager.general.support.tar \
     $(add_if_exists ./public/locales/en/general/support) \
     $(add_if_exists ./public/locales/fr/general/support) \
     $(add_if_exists ./src/services/general.support.ts)
+
+echo "Création new_manager.general.tar..."
+tar -cf /home/ubuntu/new_manager.general.tar \
+    ./src/pages/general \
+    $(add_if_exists ./public/locales/en/general) \
+    $(add_if_exists ./public/locales/fr/general) \
+    $(find ./src/services -maxdepth 1 -name "general*.ts" 2>/dev/null)
 
 # ============================================================
 # IAM
@@ -282,6 +296,13 @@ tar -cf /home/ubuntu/new_manager.iam.secret.tar \
     $(add_if_exists ./public/locales/fr/iam/secret) \
     $(add_if_exists ./src/services/iam.secret.ts)
 
+echo "Création new_manager.iam.tar..."
+tar -cf /home/ubuntu/new_manager.iam.tar \
+    ./src/pages/iam \
+    $(add_if_exists ./public/locales/en/iam) \
+    $(add_if_exists ./public/locales/fr/iam) \
+    $(find ./src/services -maxdepth 1 -name "iam*.ts" 2>/dev/null)
+
 # ============================================================
 # LICENSE
 # ============================================================
@@ -334,6 +355,13 @@ tar -cf /home/ubuntu/new_manager.license.windows.tar \
     $(add_if_exists ./src/pages/license/windows) \
     $(add_if_exists ./public/locales/en/license/windows) \
     $(add_if_exists ./public/locales/fr/license/windows)
+
+echo "Création new_manager.license.tar..."
+tar -cf /home/ubuntu/new_manager.license.tar \
+    ./src/pages/license \
+    $(add_if_exists ./public/locales/en/license) \
+    $(add_if_exists ./public/locales/fr/license) \
+    $(find ./src/services -maxdepth 1 -name "license*.ts" 2>/dev/null)
 
 # ============================================================
 # NETWORK
@@ -403,6 +431,13 @@ tar -cf /home/ubuntu/new_manager.network.vrack-services.tar \
     $(add_if_exists ./public/locales/fr/network/vrack-services) \
     $(add_if_exists ./src/services/network.vrack-services.ts)
 
+echo "Création new_manager.network.tar..."
+tar -cf /home/ubuntu/new_manager.network.tar \
+    ./src/pages/network \
+    $(add_if_exists ./public/locales/en/network) \
+    $(add_if_exists ./public/locales/fr/network) \
+    $(find ./src/services -maxdepth 1 -name "network*.ts" 2>/dev/null)
+
 # ============================================================
 # PRIVATE-CLOUD
 # ============================================================
@@ -459,6 +494,13 @@ tar -cf /home/ubuntu/new_manager.private-cloud.vmware.tar \
     $(add_if_exists ./public/locales/en/private-cloud/vmware) \
     $(add_if_exists ./public/locales/fr/private-cloud/vmware) \
     $(add_if_exists ./src/services/private-cloud.vmware.ts)
+
+echo "Création new_manager.private-cloud.tar..."
+tar -cf /home/ubuntu/new_manager.private-cloud.tar \
+    ./src/pages/private-cloud \
+    $(add_if_exists ./public/locales/en/private-cloud) \
+    $(add_if_exists ./public/locales/fr/private-cloud) \
+    $(find ./src/services -maxdepth 1 -name "private-cloud*.ts" 2>/dev/null)
 
 # ============================================================
 # PUBLIC-CLOUD
@@ -544,6 +586,13 @@ tar -cf /home/ubuntu/new_manager.public-cloud.registry.tar \
     $(add_if_exists ./public/locales/fr/public-cloud/registry) \
     $(add_if_exists ./src/services/public-cloud.registry.ts)
 
+echo "Création new_manager.public-cloud.tar..."
+tar -cf /home/ubuntu/new_manager.public-cloud.tar \
+    ./src/pages/public-cloud \
+    $(add_if_exists ./public/locales/en/public-cloud) \
+    $(add_if_exists ./public/locales/fr/public-cloud) \
+    $(find ./src/services -maxdepth 1 -name "public-cloud*.ts" 2>/dev/null)
+
 # ============================================================
 # WEB-CLOUD
 # ============================================================
@@ -568,9 +617,9 @@ fi
 
 echo "Création new_manager.web-cloud.access.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.access.tar \
-    $(add_if_exists ./src/pages/web-cloud/access/index.tsx) \
-    $(add_if_exists ./public/locales/en/web-cloud/access/index.json) \
-    $(add_if_exists ./public/locales/fr/web-cloud/access/index.json)
+    $(find ./src/pages/web-cloud/access -maxdepth 1 -type f 2>/dev/null) \
+    $(add_if_exists ./public/locales/en/web-cloud/access) \
+    $(add_if_exists ./public/locales/fr/web-cloud/access)
 
 echo "Création new_manager.web-cloud.access.overthebox.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.access.overthebox.tar \
@@ -596,9 +645,9 @@ tar -cf /home/ubuntu/new_manager.web-cloud.domains.tar \
 
 echo "Création new_manager.web-cloud.emails.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.tar \
-    $(add_if_exists ./src/pages/web-cloud/emails/index.tsx) \
-    $(add_if_exists ./public/locales/en/web-cloud/emails/index.json) \
-    $(add_if_exists ./public/locales/fr/web-cloud/emails/index.json)
+    $(find ./src/pages/web-cloud/emails -maxdepth 1 -type f 2>/dev/null) \
+    $(add_if_exists ./public/locales/en/web-cloud/emails) \
+    $(add_if_exists ./public/locales/fr/web-cloud/emails)
 
 echo "Création new_manager.web-cloud.emails.email-domain.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.email-domain.tar \
@@ -637,8 +686,9 @@ tar -cf /home/ubuntu/new_manager.web-cloud.emails.zimbra.tar \
 
 echo "Création new_manager.web-cloud.hebergement.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.tar \
-    $(add_if_exists ./src/pages/web-cloud/hebergement/index.tsx) \
-    $(add_if_exists ./src/pages/web-cloud/hebergement/styles.css)
+    $(find ./src/pages/web-cloud/hebergement -maxdepth 1 -type f 2>/dev/null) \
+    $(add_if_exists ./public/locales/en/web-cloud/hebergement) \
+    $(add_if_exists ./public/locales/fr/web-cloud/hebergement)
 
 echo "Création new_manager.web-cloud.hebergement.hosting.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.hosting.tar \
@@ -663,9 +713,9 @@ tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.private-database.tar \
 
 echo "Création new_manager.web-cloud.telecom.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.telecom.tar \
-    $(add_if_exists ./src/pages/web-cloud/telecom/index.tsx) \
-    $(add_if_exists ./public/locales/en/web-cloud/telecom/index.json) \
-    $(add_if_exists ./public/locales/fr/web-cloud/telecom/index.json)
+    $(find ./src/pages/web-cloud/telecom -maxdepth 1 -type f 2>/dev/null) \
+    $(add_if_exists ./public/locales/en/web-cloud/telecom) \
+    $(add_if_exists ./public/locales/fr/web-cloud/telecom)
 
 echo "Création new_manager.web-cloud.telecom.carrier-sip.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.telecom.carrier-sip.tar \
@@ -694,6 +744,13 @@ tar -cf /home/ubuntu/new_manager.web-cloud.telecom.voip.tar \
     $(add_if_exists ./public/locales/en/web-cloud/voip) \
     $(add_if_exists ./public/locales/fr/web-cloud/voip) \
     $(add_if_exists ./src/services/web-cloud.voip.ts)
+
+echo "Création new_manager.web-cloud.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.tar \
+    ./src/pages/web-cloud \
+    $(add_if_exists ./public/locales/en/web-cloud) \
+    $(add_if_exists ./public/locales/fr/web-cloud) \
+    $(find ./src/services -maxdepth 1 -name "web-cloud*.ts" 2>/dev/null)
 
 # ============================================================
 # RÉSUMÉ

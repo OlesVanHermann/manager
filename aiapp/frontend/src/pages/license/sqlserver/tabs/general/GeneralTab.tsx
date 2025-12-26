@@ -1,14 +1,14 @@
 // ============================================================
-// SQLSERVER GENERAL TAB - Composant isolé
+// SQLSERVER GENERAL TAB - Composant STRICTEMENT isolé
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import type { SqlServerLicense } from "../../sqlserver.types";
+import type { SqlserverLicense } from "../../sqlserver.types";
 import "./GeneralTab.css";
 
 interface GeneralTabProps {
   licenseId: string;
-  license: SqlServerLicense | null;
+  license: SqlserverLicense | null;
   onRefresh: () => void;
 }
 
@@ -24,7 +24,9 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
     <div className="sqlserver-general-tab">
       <div className="sqlserver-general-toolbar">
         <h2>{t("title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button>
+        <button className="sqlserver-general-btn sqlserver-general-btn-outline" onClick={onRefresh}>
+          {tCommon("actions.refresh")}
+        </button>
       </div>
       <div className="sqlserver-general-info-card">
         <div className="sqlserver-general-info-grid">
@@ -49,8 +51,8 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
       <div className="sqlserver-general-info-card">
         <h3>{t("actions.title")}</h3>
         <div className="sqlserver-general-actions">
-          <button className="btn btn-outline">{t("actions.changeIp")}</button>
-          <button className="btn btn-outline btn-danger">{t("actions.terminate")}</button>
+          <button className="sqlserver-general-btn sqlserver-general-btn-outline">{t("actions.changeIp")}</button>
+          <button className="sqlserver-general-btn sqlserver-general-btn-outline sqlserver-general-btn-danger">{t("actions.terminate")}</button>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // ============================================================
-// CPANEL GENERAL TAB - Composant isolé
+// CPANEL GENERAL TAB - Composant STRICTEMENT isolé
 // ============================================================
 
 import { useTranslation } from "react-i18next";
@@ -24,7 +24,9 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
     <div className="cpanel-general-tab">
       <div className="cpanel-general-toolbar">
         <h2>{t("title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button>
+        <button className="cpanel-general-btn cpanel-general-btn-outline" onClick={onRefresh}>
+          {tCommon("actions.refresh")}
+        </button>
       </div>
       <div className="cpanel-general-info-card">
         <div className="cpanel-general-info-grid">
@@ -49,8 +51,8 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
       <div className="cpanel-general-info-card">
         <h3>{t("actions.title")}</h3>
         <div className="cpanel-general-actions">
-          <button className="btn btn-outline">{t("actions.changeIp")}</button>
-          <button className="btn btn-outline btn-danger">{t("actions.terminate")}</button>
+          <button className="cpanel-general-btn cpanel-general-btn-outline">{t("actions.changeIp")}</button>
+          <button className="cpanel-general-btn cpanel-general-btn-outline cpanel-general-btn-danger">{t("actions.terminate")}</button>
         </div>
       </div>
     </div>

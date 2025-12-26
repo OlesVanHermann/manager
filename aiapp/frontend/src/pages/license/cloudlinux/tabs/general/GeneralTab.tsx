@@ -1,14 +1,14 @@
 // ============================================================
-// CLOUDLINUX GENERAL TAB - Composant isolé
+// CLOUDLINUX GENERAL TAB - Composant STRICTEMENT isolé
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import type { CloudLinuxLicense } from "../../cloudlinux.types";
+import type { CloudlinuxLicense } from "../../cloudlinux.types";
 import "./GeneralTab.css";
 
 interface GeneralTabProps {
   licenseId: string;
-  license: CloudLinuxLicense | null;
+  license: CloudlinuxLicense | null;
   onRefresh: () => void;
 }
 
@@ -24,7 +24,9 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
     <div className="cloudlinux-general-tab">
       <div className="cloudlinux-general-toolbar">
         <h2>{t("title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button>
+        <button className="cloudlinux-general-btn cloudlinux-general-btn-outline" onClick={onRefresh}>
+          {tCommon("actions.refresh")}
+        </button>
       </div>
       <div className="cloudlinux-general-info-card">
         <div className="cloudlinux-general-info-grid">
@@ -49,8 +51,8 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
       <div className="cloudlinux-general-info-card">
         <h3>{t("actions.title")}</h3>
         <div className="cloudlinux-general-actions">
-          <button className="btn btn-outline">{t("actions.changeIp")}</button>
-          <button className="btn btn-outline btn-danger">{t("actions.terminate")}</button>
+          <button className="cloudlinux-general-btn cloudlinux-general-btn-outline">{t("actions.changeIp")}</button>
+          <button className="cloudlinux-general-btn cloudlinux-general-btn-outline cloudlinux-general-btn-danger">{t("actions.terminate")}</button>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // ============================================================
-// PLESK GENERAL TAB - Composant isolé
+// PLESK GENERAL TAB - Composant STRICTEMENT isolé
 // ============================================================
 
 import { useTranslation } from "react-i18next";
@@ -24,7 +24,9 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
     <div className="plesk-general-tab">
       <div className="plesk-general-toolbar">
         <h2>{t("title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button>
+        <button className="plesk-general-btn plesk-general-btn-outline" onClick={onRefresh}>
+          {tCommon("actions.refresh")}
+        </button>
       </div>
       <div className="plesk-general-info-card">
         <div className="plesk-general-info-grid">
@@ -41,7 +43,7 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
             <span className="plesk-general-info-value">{license.version}</span>
           </div>
           <div className="plesk-general-info-item">
-            <span className="plesk-general-info-label">{t("fields.domains")}</span>
+            <span className="plesk-general-info-label">{t("fields.domainNumber")}</span>
             <span className="plesk-general-info-value">{license.domainNumber}</span>
           </div>
           <div className="plesk-general-info-item">
@@ -53,9 +55,8 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
       <div className="plesk-general-info-card">
         <h3>{t("actions.title")}</h3>
         <div className="plesk-general-actions">
-          <button className="btn btn-outline">{t("actions.changeIp")}</button>
-          <button className="btn btn-outline">{t("actions.changeDomains")}</button>
-          <button className="btn btn-outline btn-danger">{t("actions.terminate")}</button>
+          <button className="plesk-general-btn plesk-general-btn-outline">{t("actions.changeIp")}</button>
+          <button className="plesk-general-btn plesk-general-btn-outline plesk-general-btn-danger">{t("actions.terminate")}</button>
         </div>
       </div>
     </div>

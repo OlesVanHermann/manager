@@ -8,7 +8,8 @@ import { useTranslation } from "react-i18next";
 import { apiClient } from "../../../../services/api";
 import type { ManagedWordPress } from "./managed-wordpress.types";
 import { GeneralTab, BackupsTab, ThemesPluginsTab, TasksTab } from "./tabs";
-import { CreateWebsiteModal, ImportWebsiteModal } from "./components";
+import { CreateWebsiteModal } from "./modals/CreateWebsiteModal";
+import { ImportWebsiteModal } from "./modals/ImportWebsiteModal";
 import Onboarding from "./Onboarding";
 
 const BASE_PATH = "/managedCMS/resource";

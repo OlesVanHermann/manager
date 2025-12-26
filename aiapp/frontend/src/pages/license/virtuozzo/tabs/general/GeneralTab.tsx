@@ -1,5 +1,5 @@
 // ============================================================
-// VIRTUOZZO GENERAL TAB - Composant isolé
+// VIRTUOZZO GENERAL TAB - Composant STRICTEMENT isolé
 // ============================================================
 
 import { useTranslation } from "react-i18next";
@@ -24,7 +24,9 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
     <div className="virtuozzo-general-tab">
       <div className="virtuozzo-general-toolbar">
         <h2>{t("title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>{tCommon("actions.refresh")}</button>
+        <button className="virtuozzo-general-btn virtuozzo-general-btn-outline" onClick={onRefresh}>
+          {tCommon("actions.refresh")}
+        </button>
       </div>
       <div className="virtuozzo-general-info-card">
         <div className="virtuozzo-general-info-grid">
@@ -41,7 +43,7 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
             <span className="virtuozzo-general-info-value">{license.version}</span>
           </div>
           <div className="virtuozzo-general-info-item">
-            <span className="virtuozzo-general-info-label">{t("fields.containers")}</span>
+            <span className="virtuozzo-general-info-label">{t("fields.containerNumber")}</span>
             <span className="virtuozzo-general-info-value">{license.containerNumber}</span>
           </div>
           <div className="virtuozzo-general-info-item">
@@ -53,8 +55,8 @@ export default function GeneralTab({ licenseId, license, onRefresh }: GeneralTab
       <div className="virtuozzo-general-info-card">
         <h3>{t("actions.title")}</h3>
         <div className="virtuozzo-general-actions">
-          <button className="btn btn-outline">{t("actions.changeIp")}</button>
-          <button className="btn btn-outline btn-danger">{t("actions.terminate")}</button>
+          <button className="virtuozzo-general-btn virtuozzo-general-btn-outline">{t("actions.changeIp")}</button>
+          <button className="virtuozzo-general-btn virtuozzo-general-btn-outline virtuozzo-general-btn-danger">{t("actions.terminate")}</button>
         </div>
       </div>
     </div>

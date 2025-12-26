@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { generalService, formatDate, formatDateLong } from "./GeneralTab.service";
 import type { Domain, DomainServiceInfos } from "../../domains.types";
-import { AuthInfoModal } from "../../modals/AuthInfoModal";
+import { AuthInfoModal } from "./modals/AuthInfoModal";
 
 interface Props {
   domain: string;

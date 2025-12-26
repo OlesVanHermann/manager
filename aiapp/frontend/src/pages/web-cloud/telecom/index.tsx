@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ovhApi } from '../../../services/api';
+import './index.css';
 
 // ============================================================
 // SERVICE LOCAL - Plus d'import depuis /services/web-cloud.*

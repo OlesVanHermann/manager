@@ -6,8 +6,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { usersService } from "./UsersTab.service";
 import type { PdbUser } from "../../private-database.types";
-import { CreatePdbUserModal } from "../../components/CreatePdbUserModal";
-import { ManageGrantsModal } from "../../components/ManageGrantsModal";
+import { CreatePdbUserModal } from "./modals/CreatePdbUserModal";
+import { ManageGrantsModal } from "./modals/ManageGrantsModal";
 import "./UsersTab.css";
 
 interface Props { serviceName: string; }

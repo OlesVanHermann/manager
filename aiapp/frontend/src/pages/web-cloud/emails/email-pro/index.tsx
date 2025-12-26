@@ -9,7 +9,6 @@ import { emailProService, EmailProService } from "../../../../services/web-cloud
 import { AccountsTab } from "./tabs/accounts/AccountsTab.tsx";
 import { DomainsTab } from "./tabs/domains/DomainsTab.tsx";
 import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
-import "./styles.css";
 
 // ============ ICONS ============
 
