@@ -18,7 +18,7 @@ import EndpointsTab from "./tabs/endpoints/EndpointsTab.tsx";
 import "./VrackServicesPage.css";
 
 export default function VrackServicesPage() {
-  const { t } = useTranslation("network/vrack-services/index");
+  const { t } = useTranslation("network/vrack-services/page");
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("id") || "";
 

@@ -13,7 +13,7 @@ interface SubnetsTabProps {
 }
 
 export default function SubnetsTab({ serviceId }: SubnetsTabProps) {
-  const { t } = useTranslation("network/vrack-services/index");
+  const { t } = useTranslation("network/vrack-services/subnets");
   const { t: tCommon } = useTranslation("common");
   const [subnets, setSubnets] = useState<VrackServicesSubnet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,23 +63,23 @@ export default function SubnetsTab({ serviceId }: SubnetsTabProps) {
   return (
     <div className="subnets-tab">
       <div className="subnets-toolbar">
-        <h2>{t("subnets.title")}</h2>
-        <button className="btn btn-primary">{t("subnets.create")}</button>
+        <h2>{t("title")}</h2>
+        <button className="btn btn-primary">{t("create")}</button>
       </div>
 
       {subnets.length === 0 ? (
         <div className="subnets-empty">
-          <h2>{t("subnets.empty.title")}</h2>
-          <p>{t("subnets.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <table className="subnets-table">
           <thead>
             <tr>
-              <th>{t("subnets.columns.name")}</th>
-              <th>{t("subnets.columns.cidr")}</th>
-              <th>{t("subnets.columns.vlan")}</th>
-              <th>{t("subnets.columns.actions")}</th>
+              <th>{t("columns.name")}</th>
+              <th>{t("columns.cidr")}</th>
+              <th>{t("columns.vlan")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>

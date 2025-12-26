@@ -13,7 +13,7 @@ interface DomainsTabProps {
 }
 
 export default function DomainsTab({ serviceId }: DomainsTabProps) {
-  const { t } = useTranslation("network/cdn/index");
+  const { t } = useTranslation("network/cdn/domains");
   const { t: tCommon } = useTranslation("common");
   const [domains, setDomains] = useState<CdnDomain[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,23 +71,23 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
   return (
     <div className="domains-tab">
       <div className="domains-toolbar">
-        <h2>{t("domains.title")}</h2>
-        <button className="btn btn-primary">{t("domains.add")}</button>
+        <h2>{t("title")}</h2>
+        <button className="btn btn-primary">{t("add")}</button>
       </div>
 
       {domains.length === 0 ? (
         <div className="domains-empty">
-          <h2>{t("domains.empty.title")}</h2>
-          <p>{t("domains.empty.description")}</p>
+          <h2>{t("empty.title")}</h2>
+          <p>{t("empty.description")}</p>
         </div>
       ) : (
         <table className="domains-table">
           <thead>
             <tr>
-              <th>{t("domains.columns.domain")}</th>
-              <th>{t("domains.columns.cname")}</th>
-              <th>{t("domains.columns.status")}</th>
-              <th>{t("domains.columns.actions")}</th>
+              <th>{t("columns.domain")}</th>
+              <th>{t("columns.cname")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -109,13 +109,13 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
                 <td>
                   <div className="domains-actions">
                     <button className="btn btn-sm btn-outline">
-                      {t("domains.actions.configure")}
+                      {t("actions.configure")}
                     </button>
                     <button
                       className="btn btn-sm btn-outline"
                       onClick={() => handlePurge(domain.domain)}
                     >
-                      {t("domains.actions.purge")}
+                      {t("actions.purge")}
                     </button>
                     <button
                       className="btn btn-sm btn-outline btn-danger"

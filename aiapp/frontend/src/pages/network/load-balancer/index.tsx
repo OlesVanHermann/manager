@@ -9,7 +9,7 @@ import "./LoadBalancerPage.css";
 interface Tab { id: string; labelKey: string; }
 
 export default function LoadBalancerPage() {
-  const { t } = useTranslation("network/load-balancer/index");
+  const { t } = useTranslation("network/load-balancer/page");
   const { t: tCommon } = useTranslation("common");
   const [lbs, setLbs] = useState<LbWithDetails[]>([]);
   const [selected, setSelected] = useState<string | null>(null);

@@ -18,7 +18,7 @@ export default function GeneralTab({
   service,
   onRefresh,
 }: GeneralTabProps) {
-  const { t } = useTranslation("network/cloud-connect/index");
+  const { t } = useTranslation("network/cloud-connect/general");
   const { t: tCommon } = useTranslation("common");
 
   if (!service) {
@@ -28,7 +28,7 @@ export default function GeneralTab({
   return (
     <div className="general-tab">
       <div className="general-toolbar">
-        <h2>{t("general.title")}</h2>
+        <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={onRefresh}>
           {tCommon("actions.refresh")}
         </button>
@@ -36,21 +36,21 @@ export default function GeneralTab({
 
       <div className="general-info-grid">
         <div className="general-info-card">
-          <div className="general-card-title">{t("general.fields.uuid")}</div>
+          <div className="general-card-title">{t("fields.uuid")}</div>
           <div className="general-card-value mono">{service.uuid}</div>
         </div>
         <div className="general-info-card">
-          <div className="general-card-title">{t("general.fields.pop")}</div>
+          <div className="general-card-title">{t("fields.pop")}</div>
           <div className="general-card-value">{service.pop}</div>
         </div>
         <div className="general-info-card">
-          <div className="general-card-title">{t("general.fields.bandwidth")}</div>
+          <div className="general-card-title">{t("fields.bandwidth")}</div>
           <div className="general-card-value">
             {generalService.formatBandwidth(service.bandwidth)}
           </div>
         </div>
         <div className="general-info-card">
-          <div className="general-card-title">{t("general.fields.portSpeed")}</div>
+          <div className="general-card-title">{t("fields.portSpeed")}</div>
           <div className="general-card-value">
             {generalService.formatBandwidth(service.portSpeed)}
           </div>
@@ -58,25 +58,25 @@ export default function GeneralTab({
       </div>
 
       <div className="general-info-card general-connection-section">
-        <h3>{t("general.connection.title")}</h3>
+        <h3>{t("connection.title")}</h3>
         <div className="general-connection-line">
           <div className="general-endpoint">
             <div className="general-endpoint-label">
-              {t("general.connection.yourDC")}
+              {t("connection.yourDC")}
             </div>
             <div className="general-endpoint-value">Your datacenter</div>
           </div>
           <div className="general-connector">⟷</div>
           <div className="general-endpoint">
             <div className="general-endpoint-label">
-              {t("general.connection.pop")}
+              {t("connection.pop")}
             </div>
             <div className="general-endpoint-value">{service.pop}</div>
           </div>
           <div className="general-connector">⟷</div>
           <div className="general-endpoint">
             <div className="general-endpoint-label">
-              {t("general.connection.ovh")}
+              {t("connection.ovh")}
             </div>
             <div className="general-endpoint-value">OVHcloud Network</div>
           </div>

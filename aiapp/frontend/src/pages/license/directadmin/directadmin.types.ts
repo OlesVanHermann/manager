@@ -1,5 +1,5 @@
 // ============================================================
-// DIRECTADMIN TYPES - Types spécifiques DirectAdmin
+// DIRECTADMIN TYPES - Types spécifiques DirectAdmin (ISOLÉS)
 // ============================================================
 
 export interface DirectAdminLicense {
@@ -9,4 +9,13 @@ export interface DirectAdminLicense {
   os: string;
   status: string;
   createdAt: string;
+}
+
+/** Type Task DUPLIQUÉ pour isolation totale */
+export interface Task {
+  id: number;
+  action: string;
+  status: "done" | "doing" | "todo" | "error" | "cancelled";
+  startDate?: string;
+  doneDate?: string;
 }

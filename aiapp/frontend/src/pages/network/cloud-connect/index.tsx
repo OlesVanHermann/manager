@@ -18,7 +18,7 @@ import TasksTab from "./tabs/tasks/TasksTab.tsx";
 import "./CloudConnectPage.css";
 
 export default function CloudConnectPage() {
-  const { t } = useTranslation("network/cloud-connect/index");
+  const { t } = useTranslation("network/cloud-connect/page");
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("id") || "";
 

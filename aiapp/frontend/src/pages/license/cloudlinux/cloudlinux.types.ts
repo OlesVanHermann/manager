@@ -1,5 +1,5 @@
 // ============================================================
-// CLOUDLINUX TYPES - Types spécifiques CloudLinux
+// CLOUDLINUX TYPES - Types spécifiques CloudLinux (ISOLÉS)
 // ============================================================
 
 export interface CloudLinuxLicense {
@@ -8,4 +8,13 @@ export interface CloudLinuxLicense {
   version: string;
   status: string;
   createdAt: string;
+}
+
+/** Type Task DUPLIQUÉ pour isolation totale */
+export interface Task {
+  id: number;
+  action: string;
+  status: "done" | "doing" | "todo" | "error" | "cancelled";
+  startDate?: string;
+  doneDate?: string;
 }

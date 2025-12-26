@@ -13,7 +13,7 @@ interface InterfacesTabProps {
 }
 
 export default function InterfacesTab({ serviceId }: InterfacesTabProps) {
-  const { t } = useTranslation("network/cloud-connect/index");
+  const { t } = useTranslation("network/cloud-connect/interfaces");
   const { t: tCommon } = useTranslation("common");
   const [interfaces, setInterfaces] = useState<CloudConnectInterface[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,21 +54,21 @@ export default function InterfacesTab({ serviceId }: InterfacesTabProps) {
   return (
     <div className="interfaces-tab">
       <div className="interfaces-toolbar">
-        <h2>{t("interfaces.title")}</h2>
+        <h2>{t("title")}</h2>
       </div>
 
       {interfaces.length === 0 ? (
         <div className="interfaces-empty">
-          <h2>{t("interfaces.empty.title")}</h2>
+          <h2>{t("empty.title")}</h2>
         </div>
       ) : (
         <table className="interfaces-table">
           <thead>
             <tr>
-              <th>{t("interfaces.columns.id")}</th>
-              <th>{t("interfaces.columns.status")}</th>
-              <th>{t("interfaces.columns.light")}</th>
-              <th>{t("interfaces.columns.actions")}</th>
+              <th>{t("columns.id")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.light")}</th>
+              <th>{t("columns.actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -93,7 +93,7 @@ export default function InterfacesTab({ serviceId }: InterfacesTabProps) {
                 <td>
                   <div className="interfaces-actions">
                     <button className="btn btn-sm btn-outline">
-                      {t("interfaces.actions.statistics")}
+                      {t("actions.statistics")}
                     </button>
                   </div>
                 </td>

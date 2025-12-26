@@ -10,7 +10,7 @@ import FirewallTab from "./tabs/firewall/FirewallTab.tsx";
 import "./SecurityPage.css";
 
 export default function SecurityPage() {
-  const { t } = useTranslation("network/security/index");
+  const { t } = useTranslation("network/security/page");
   const [searchParams] = useSearchParams();
   const ipBlock = searchParams.get("id") || "";
   const [ip, setIp] = useState<SecurityIpInfo | null>(null);

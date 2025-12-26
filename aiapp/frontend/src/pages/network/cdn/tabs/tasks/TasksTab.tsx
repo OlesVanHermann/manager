@@ -13,7 +13,7 @@ interface TasksTabProps {
 }
 
 export default function TasksTab({ serviceId }: TasksTabProps) {
-  const { t } = useTranslation("network/cdn/index");
+  const { t } = useTranslation("network/cdn/tasks");
   const { t: tCommon } = useTranslation("common");
   const [tasks, setTasks] = useState<CdnTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +54,7 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
   return (
     <div className="tasks-tab">
       <div className="tasks-toolbar">
-        <h2>{t("tasks.title")}</h2>
+        <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={loadTasks}>
           {tCommon("actions.refresh")}
         </button>
@@ -62,16 +62,16 @@ export default function TasksTab({ serviceId }: TasksTabProps) {
 
       {tasks.length === 0 ? (
         <div className="tasks-empty">
-          <h2>{t("tasks.empty.title")}</h2>
+          <h2>{t("empty.title")}</h2>
         </div>
       ) : (
         <table className="tasks-table">
           <thead>
             <tr>
-              <th>{t("tasks.columns.function")}</th>
-              <th>{t("tasks.columns.status")}</th>
-              <th>{t("tasks.columns.started")}</th>
-              <th>{t("tasks.columns.completed")}</th>
+              <th>{t("columns.function")}</th>
+              <th>{t("columns.status")}</th>
+              <th>{t("columns.started")}</th>
+              <th>{t("columns.completed")}</th>
             </tr>
           </thead>
           <tbody>

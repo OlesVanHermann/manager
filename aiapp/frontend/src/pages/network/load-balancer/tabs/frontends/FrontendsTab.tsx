@@ -1,41 +1,91 @@
+// ============================================================
+// LOAD BALANCER Frontends Tab - Composant isolé
+// ============================================================
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { IpLoadBalancingFrontend } from "../../load-balancer.types";
 import { frontendsService } from "./FrontendsTab.service";
 import "./FrontendsTab.css";
 
-interface Props { serviceName: string; }
+interface FrontendsTabProps {
+  serviceName: string;
+}
 
-export function FrontendsTab({ serviceName }: Props) {
-  const { t } = useTranslation("network/load-balancer/index");
+export function FrontendsTab({ serviceName }: FrontendsTabProps) {
+  const { t } = useTranslation("network/load-balancer/frontends");
   const [frontends, setFrontends] = useState<IpLoadBalancingFrontend[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      try { setLoading(true); const data = await frontendsService.getAllFrontends(serviceName); setFrontends(data); }
-      finally { setLoading(false); }
+      try {
+        setLoading(true);
+        const data = await frontendsService.getAllFrontends(serviceName);
+        setFrontends(data);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [serviceName]);
 
-  if (loading) return <div className="frontends-loading"><div className="skeleton-block" /></div>;
+  if (loading) {
+    return (
+      <div className="frontends-loading">
+        <div className="skeleton-block" />
+      </div>
+    );
+  }
 
   return (
     <div className="frontends-tab">
-      <div className="frontends-header"><h3>{t("frontends.title")}</h3><span className="frontends-count">{frontends.length}</span></div>
-      {frontends.length === 0 ? (<div className="frontends-empty"><p>{t("frontends.empty")}</p></div>) : (
+      <div className="frontends-header">
+        <h3>{t("title")}</h3>
+        <span className="frontends-count">{frontends.length}</span>
+      </div>
+
+      {frontends.length === 0 ? (
+        <div className="frontends-empty">
+          <p>{t("empty")}</p>
+        </div>
+      ) : (
         <table className="frontends-table">
-          <thead><tr><th>{t("frontends.name")}</th><th>{t("frontends.zone")}</th><th>{t("frontends.port")}</th><th>{t("frontends.ssl")}</th><th>{t("frontends.farm")}</th><th>{t("frontends.status")}</th></tr></thead>
+          <thead>
+            <tr>
+              <th>{t("name")}</th>
+              <th>{t("zone")}</th>
+              <th>{t("port")}</th>
+              <th>{t("ssl")}</th>
+              <th>{t("farm")}</th>
+              <th>{t("status")}</th>
+            </tr>
+          </thead>
           <tbody>
-            {frontends.map(f => (
+            {frontends.map((f) => (
               <tr key={f.frontendId}>
-                <td className="frontends-name">{f.displayName || `Frontend #${f.frontendId}`}</td>
-                <td><span className="frontends-badge info">{f.zone}</span></td>
+                <td className="frontends-name">
+                  {f.displayName || `Frontend #${f.frontendId}`}
+                </td>
+                <td>
+                  <span className="frontends-badge info">{f.zone}</span>
+                </td>
                 <td className="frontends-port">{f.port}</td>
-                <td>{f.ssl ? <span className="frontends-badge success">SSL</span> : "-"}</td>
+                <td>
+                  {f.ssl ? (
+                    <span className="frontends-badge success">SSL</span>
+                  ) : (
+                    "-"
+                  )}
+                </td>
                 <td>{f.defaultFarmId || "-"}</td>
-                <td><span className={`frontends-badge ${f.disabled ? "inactive" : "success"}`}>{f.disabled ? t("frontends.disabled") : t("frontends.enabled")}</span></td>
+                <td>
+                  <span
+                    className={`frontends-badge ${f.disabled ? "inactive" : "success"}`}
+                  >
+                    {f.disabled ? t("disabled") : t("enabled")}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -44,4 +94,5 @@ export function FrontendsTab({ serviceName }: Props) {
     </div>
   );
 }
+
 export default FrontendsTab;

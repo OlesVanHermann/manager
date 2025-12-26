@@ -13,7 +13,7 @@ interface StatisticsTabProps {
 }
 
 export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
-  const { t } = useTranslation("network/cdn/index");
+  const { t } = useTranslation("network/cdn/statistics");
   const { t: tCommon } = useTranslation("common");
   const [stats, setStats] = useState<CdnStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +54,7 @@ export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
   return (
     <div className="statistics-tab">
       <div className="statistics-toolbar">
-        <h2>{t("statistics.title")}</h2>
+        <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={loadStats}>
           {tCommon("actions.refresh")}
         </button>
@@ -62,32 +62,32 @@ export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
 
       {stats && (
         <div className="statistics-card">
-          <h3>{t("statistics.last30days")}</h3>
+          <h3>{t("last30days")}</h3>
           <div className="statistics-grid">
             <div className="statistics-item">
               <div className="statistics-value">
                 {statisticsService.formatNumber(stats.requests)}
               </div>
-              <div className="statistics-label">{t("statistics.fields.requests")}</div>
+              <div className="statistics-label">{t("fields.requests")}</div>
             </div>
             <div className="statistics-item">
               <div className="statistics-value">
                 {statisticsService.formatBytes(stats.bandwidth)}
               </div>
-              <div className="statistics-label">{t("statistics.fields.bandwidth")}</div>
+              <div className="statistics-label">{t("fields.bandwidth")}</div>
             </div>
             <div className="statistics-item">
               <div className="statistics-value">{stats.cacheHitRate}%</div>
-              <div className="statistics-label">{t("statistics.fields.cacheHit")}</div>
+              <div className="statistics-label">{t("fields.cacheHit")}</div>
             </div>
           </div>
         </div>
       )}
 
       <div className="statistics-card">
-        <h3>{t("statistics.graph.title")}</h3>
+        <h3>{t("graph.title")}</h3>
         <div className="statistics-graph-placeholder">
-          <p>{t("statistics.graph.placeholder")}</p>
+          <p>{t("graph.placeholder")}</p>
         </div>
       </div>
     </div>

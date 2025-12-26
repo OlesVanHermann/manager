@@ -18,7 +18,7 @@ export default function GeneralTab({
   service,
   onRefresh,
 }: GeneralTabProps) {
-  const { t } = useTranslation("network/vrack-services/index");
+  const { t } = useTranslation("network/vrack-services/general");
   const { t: tCommon } = useTranslation("common");
 
   if (!service) {
@@ -28,7 +28,7 @@ export default function GeneralTab({
   return (
     <div className="general-tab">
       <div className="general-toolbar">
-        <h2>{t("general.title")}</h2>
+        <h2>{t("title")}</h2>
         <button className="btn btn-outline" onClick={onRefresh}>
           {tCommon("actions.refresh")}
         </button>
@@ -36,21 +36,21 @@ export default function GeneralTab({
 
       <div className="general-info-grid">
         <div className="general-info-card">
-          <div className="general-card-title">{t("general.fields.id")}</div>
+          <div className="general-card-title">{t("fields.id")}</div>
           <div className="general-card-value mono">{service.id}</div>
         </div>
         <div className="general-info-card">
-          <div className="general-card-title">{t("general.fields.name")}</div>
+          <div className="general-card-title">{t("fields.name")}</div>
           <div className="general-card-value">
             {service.displayName || "-"}
           </div>
         </div>
         <div className="general-info-card">
-          <div className="general-card-title">{t("general.fields.region")}</div>
+          <div className="general-card-title">{t("fields.region")}</div>
           <div className="general-card-value">{service.region}</div>
         </div>
         <div className="general-info-card">
-          <div className="general-card-title">{t("general.fields.created")}</div>
+          <div className="general-card-title">{t("fields.created")}</div>
           <div className="general-card-value">
             {generalService.formatDate(service.createdAt)}
           </div>

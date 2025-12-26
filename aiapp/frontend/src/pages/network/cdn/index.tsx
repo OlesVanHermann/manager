@@ -19,7 +19,7 @@ import TasksTab from "./tabs/tasks/TasksTab.tsx";
 import "./CdnPage.css";
 
 export default function CdnPage() {
-  const { t } = useTranslation("network/cdn/index");
+  const { t } = useTranslation("network/cdn/page");
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("id") || "";
 

@@ -9,7 +9,7 @@ import type { IpBlock } from "./ip.types";
 import "./IpPage.css";
 
 export default function IpPage() {
-  const { t } = useTranslation("network/ip/index");
+  const { t } = useTranslation("network/ip/page");
   const { t: tCommon } = useTranslation("common");
   const [ips, setIps] = useState<{ ip: string; details?: IpBlock; loading: boolean }[]>([]);
   const [loading, setLoading] = useState(true);

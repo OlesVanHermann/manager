@@ -9,7 +9,7 @@ import "./VrackPage.css";
 interface Tab { id: string; labelKey: string; }
 
 export default function VrackPage() {
-  const { t } = useTranslation("network/vrack/index");
+  const { t } = useTranslation("network/vrack/page");
   const { t: tCommon } = useTranslation("common");
   const [vracks, setVracks] = useState<VrackWithDetails[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
