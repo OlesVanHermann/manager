@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as instancesService from "../../../../services/public-cloud.instances";
+import * as generalService from "./GeneralTab.service";
+import "./GeneralTab.css";
 
 interface InstanceInfo { id: string; name: string; flavorId: string; flavorName: string; imageId: string; imageName: string; region: string; status: string; created: string; ipAddresses: { ip: string; type: string; version: number }[]; }
 interface GeneralTabProps { projectId: string; instanceId: string; instance: InstanceInfo | null; onRefresh: () => void; }
@@ -16,7 +17,7 @@ export default function GeneralTab({ projectId, instanceId, instance, onRefresh 
     if (!confirm(t(`general.actions.confirm.${action}`))) return;
     try {
       setActionLoading(action);
-      await instancesService.instanceAction(projectId, instanceId, action);
+      await generalService.instanceAction(projectId, instanceId, action);
       setTimeout(onRefresh, 2000);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Erreur");

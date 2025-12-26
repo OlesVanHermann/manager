@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as projectService from "../../../../services/public-cloud.project";
-import type { CloudSnapshot } from "../../../../services/public-cloud.project";
+import * as snapshotsService from "./SnapshotsTab.service";
+import type { CloudSnapshot } from "../project.types";
+import "./SnapshotsTab.css";
 
 interface Props { projectId: string; }
 
@@ -12,7 +13,7 @@ export function SnapshotsTab({ projectId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      try { setLoading(true); const data = await projectService.listSnapshots(projectId); setSnapshots(data); }
+      try { setLoading(true); const data = await snapshotsService.listSnapshots(projectId); setSnapshots(data); }
       finally { setLoading(false); }
     };
     load();

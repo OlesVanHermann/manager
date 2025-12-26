@@ -1,8 +1,8 @@
-// ============================================================
-// VRACK General Tab - Composant STRICTEMENT isolé
-// Préfixe CSS: .vrack-general-
-// ============================================================
-
+/**
+ * VRACK General Tab - Composant STRICTEMENT isolé
+ * NAV1: network | NAV2: vrack | NAV3: general
+ * ISOLATION: Ce composant n'importe RIEN d'autres tabs
+ */
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { Vrack, VrackServiceInfos } from "../../vrack.types";
@@ -56,7 +56,7 @@ export default function GeneralTab({ serviceName }: GeneralTabProps) {
       <div className="vrack-general-info-grid">
         <div className="vrack-general-info-card">
           <div className="vrack-general-card-title">{t("fields.name")}</div>
-          <div className="vrack-general-card-value mono">{vrack.name}</div>
+          <div className="vrack-general-card-value-mono">{vrack.name}</div>
         </div>
         <div className="vrack-general-info-card vrack-general-description-card">
           <div className="vrack-general-card-title">{t("fields.description")}</div>

@@ -1,8 +1,8 @@
-// ============================================================
-// SECURITY Overview Tab - Composant STRICTEMENT isolé
-// Préfixe CSS: .security-overview-
-// ============================================================
-
+/**
+ * SECURITY Overview Tab - Composant STRICTEMENT isolé
+ * NAV1: network | NAV2: security | NAV3: overview
+ * ISOLATION: Ce composant n'importe RIEN d'autres tabs
+ */
 import { useTranslation } from "react-i18next";
 import type { SecurityIpInfo } from "../../security.types";
 import { securityOverviewService } from "./OverviewTab.service";
@@ -34,7 +34,7 @@ export default function OverviewTab({ ipBlock, ip, onRefresh }: OverviewTabProps
       <div className="security-overview-info-grid">
         <div className="security-overview-info-card">
           <div className="security-overview-card-title">{t("fields.ip")}</div>
-          <div className="security-overview-card-value mono">{ip.ip}</div>
+          <div className="security-overview-card-value-mono">{ip.ip}</div>
         </div>
         <div className="security-overview-info-card">
           <div className="security-overview-card-title">{t("fields.type")}</div>

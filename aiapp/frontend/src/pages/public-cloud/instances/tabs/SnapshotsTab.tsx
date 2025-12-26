@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as instancesService from "../../../../services/public-cloud.instances";
+import * as snapshotsService from "./SnapshotsTab.service";
+import "./SnapshotsTab.css";
 
 interface Snapshot { id: string; name: string; status: string; size: number; createdAt: string; }
 interface SnapshotsTabProps { projectId: string; instanceId: string; }
@@ -15,7 +16,7 @@ export default function SnapshotsTab({ projectId, instanceId }: SnapshotsTabProp
   useEffect(() => { loadSnapshots(); }, [projectId, instanceId]);
 
   const loadSnapshots = async () => {
-    try { setLoading(true); setError(null); const data = await instancesService.getSnapshots(projectId, instanceId); setSnapshots(data); }
+    try { setLoading(true); setError(null); const data = await snapshotsService.getSnapshots(projectId, instanceId); setSnapshots(data); }
     catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
     finally { setLoading(false); }
   };
@@ -31,7 +32,7 @@ export default function SnapshotsTab({ projectId, instanceId }: SnapshotsTabProp
     const name = prompt(t("snapshots.promptName"));
     if (!name) return;
     try {
-      await instancesService.createSnapshot(projectId, instanceId, name);
+      await snapshotsService.createSnapshot(projectId, instanceId, name);
       loadSnapshots();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Erreur");

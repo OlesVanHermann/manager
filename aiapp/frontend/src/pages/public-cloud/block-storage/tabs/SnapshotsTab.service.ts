@@ -1,0 +1,21 @@
+import { ovhGet, ovhPost, ovhDelete } from "../../../../services/api";
+import type { VolumeSnapshot } from "../block-storage.types";
+
+export async function getVolumeSnapshots(projectId: string, volumeId: string): Promise<VolumeSnapshot[]> {
+  return ovhGet<VolumeSnapshot[]>(`/cloud/project/${projectId}/volume/snapshot`).catch(() => []);
+}
+
+export async function createVolumeSnapshot(projectId: string, volumeId: string, name: string): Promise<void> {
+  return ovhPost(`/cloud/project/${projectId}/volume/${volumeId}/snapshot`, { name });
+}
+
+export async function deleteSnapshot(projectId: string, snapshotId: string): Promise<void> {
+  return ovhDelete(`/cloud/project/${projectId}/volume/snapshot/${snapshotId}`);
+}
+
+export function getSnapshotStatusClass(status: string): string {
+  const classes: Record<string, string> = { available: "badge-success", creating: "badge-warning", error: "badge-error" };
+  return classes[status] || "";
+}
+
+export const snapshotsService = { getVolumeSnapshots, createVolumeSnapshot, deleteSnapshot, getSnapshotStatusClass };

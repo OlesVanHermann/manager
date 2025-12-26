@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import "./NetworkTab.css";
 
 interface InstanceInfo { id: string; name: string; flavorId: string; flavorName: string; imageId: string; imageName: string; region: string; status: string; created: string; ipAddresses: { ip: string; type: string; version: number }[]; }
 interface NetworkTabProps { projectId: string; instanceId: string; instance: InstanceInfo | null; }

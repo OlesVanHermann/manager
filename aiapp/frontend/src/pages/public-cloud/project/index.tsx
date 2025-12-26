@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import * as projectService from "../../../services/public-cloud.project";
 import type { CloudProject, CloudProjectServiceInfos } from "../../../services/public-cloud.project";
 import { InstancesTab, VolumesTab, SnapshotsTab, StorageTab, NetworksTab, SshKeysTab, QuotaTab } from "./tabs";
-import "./styles.css";
 
 interface Tab { id: string; labelKey: string; }
 interface ProjectWithDetails { projectId: string; details?: CloudProject; serviceInfos?: CloudProjectServiceInfos; loading: boolean; }

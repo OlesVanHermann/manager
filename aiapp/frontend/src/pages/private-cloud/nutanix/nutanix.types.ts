@@ -1,5 +1,6 @@
 // ============================================================
 // NUTANIX TYPES - Types partagés pour tous les tabs Nutanix
+// SEUL fichier partagé entre les tabs (types = contrats API)
 // ============================================================
 
 export interface NutanixCluster {
@@ -15,13 +16,18 @@ export interface NutanixNode {
   nodeId: string;
   name: string;
   status: string;
-  model: string;
-  serialNumber: string;
+  ahvIp?: string;
+  cvmIp?: string;
+  server?: {
+    brand: string;
+    model: string;
+  };
 }
 
 export interface NutanixIp {
   ip: string;
   type: string;
+  status: string;
   description?: string;
 }
 

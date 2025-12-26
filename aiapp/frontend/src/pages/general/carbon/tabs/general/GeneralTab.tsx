@@ -1,5 +1,6 @@
 // ============================================================
-// CARBON PAGE - Calculatrice empreinte carbone OVHcloud
+// CARBON > GENERAL TAB - Calculatrice empreinte carbone OVHcloud
+// Préfixe CSS : .general-
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -68,34 +69,34 @@ export function GeneralTab() {
   // ---------- RENDER ----------
   return (
     <div className="general-container">
-      <div className="page-header">
+      <div className="general-page-header">
         <h1>{t('title')}</h1>
-        <p className="page-description">{t('description')}</p>
+        <p className="general-page-description">{t('description')}</p>
       </div>
 
       {/* Section explicative */}
-      <div className="carbon-section">
+      <div className="general-section">
         <h2>{t('composition.title')}</h2>
         <p>{t('composition.intro')}</p>
         
-        <div className="carbon-formula">
-          <div className="formula-item">
-            <div className="formula-icon">🏭</div>
+        <div className="general-formula">
+          <div className="general-formula-item">
+            <div className="general-formula-icon">🏭</div>
             <span>{t('composition.manufacturing')}</span>
           </div>
-          <span className="formula-operator">+</span>
-          <div className="formula-item">
-            <div className="formula-icon">⚡</div>
+          <span className="general-formula-operator">+</span>
+          <div className="general-formula-item">
+            <div className="general-formula-icon">⚡</div>
             <span>{t('composition.electricity')}</span>
           </div>
-          <span className="formula-operator">+</span>
-          <div className="formula-item">
-            <div className="formula-icon">⚙️</div>
+          <span className="general-formula-operator">+</span>
+          <div className="general-formula-item">
+            <div className="general-formula-icon">⚙️</div>
             <span>{t('composition.operations')}</span>
           </div>
-          <span className="formula-operator">=</span>
-          <div className="formula-item result">
-            <div className="formula-icon">🌍</div>
+          <span className="general-formula-operator">=</span>
+          <div className="general-formula-item general-result">
+            <div className="general-formula-icon">🌍</div>
             <span>{t('composition.emissions')}</span>
           </div>
         </div>
@@ -103,15 +104,15 @@ export function GeneralTab() {
 
       {/* Données carbone */}
       {loading ? (
-        <div className="carbon-section">
-          <div className="carbon-loading-state">
-            <div className="carbon-spinner"></div>
+        <div className="general-section">
+          <div className="general-loading-state">
+            <div className="general-spinner"></div>
             <p>{t('loading')}</p>
           </div>
         </div>
       ) : error ? (
-        <div className="carbon-section">
-          <div className="carbon-error-banner">
+        <div className="general-section">
+          <div className="general-error-banner">
             {error}
             <button onClick={loadCarbonData} className="btn btn-sm btn-secondary" style={{ marginLeft: "1rem" }}>
               {tCommon('actions.refresh')}
@@ -121,56 +122,56 @@ export function GeneralTab() {
       ) : summary ? (
         <>
           {/* Résumé global */}
-          <div className="carbon-section carbon-summary-card">
-            <div className="summary-header">
+          <div className="general-section general-summary-card">
+            <div className="general-summary-header">
               <h2>{t('summary.title')}</h2>
-              <span className="period-badge">
+              <span className="general-period-badge">
                 {formatDate(summary.period.from)} - {formatDate(summary.period.to)}
               </span>
             </div>
 
-            <div className="carbon-total">
-              <span className="total-value">{formatCO2(summary.totalCO2eKg)}</span>
-              <span className="total-label">CO₂e</span>
+            <div className="general-total">
+              <span className="general-total-value">{formatCO2(summary.totalCO2eKg)}</span>
+              <span className="general-total-label">CO₂e</span>
             </div>
 
-            <p className="services-count">{t('summary.servicesCount', { count: summary.totalServices })}</p>
+            <p className="general-services-count">{t('summary.servicesCount', { count: summary.totalServices })}</p>
 
             {/* Graphique barres */}
-            <div className="carbon-breakdown">
+            <div className="general-breakdown">
               <h3>{t('summary.breakdown')}</h3>
-              <div className="breakdown-bars">
-                <div className="bar-item">
-                  <div className="bar-label">
+              <div className="general-breakdown-bars">
+                <div className="general-bar-item">
+                  <div className="general-bar-label">
                     <span>🏭 {t('composition.manufacturing')}</span>
                     <span>{formatCO2(summary.byCategory.manufacturing)} ({getPercentage(summary.byCategory.manufacturing, summary.totalCO2eKg)}%)</span>
                   </div>
-                  <div className="bar-track">
-                    <div className="bar-fill manufacturing" style={{ width: getPercentage(summary.byCategory.manufacturing, summary.totalCO2eKg) + "%" }}></div>
+                  <div className="general-bar-track">
+                    <div className="general-bar-fill general-manufacturing" style={{ width: getPercentage(summary.byCategory.manufacturing, summary.totalCO2eKg) + "%" }}></div>
                   </div>
                 </div>
-                <div className="bar-item">
-                  <div className="bar-label">
+                <div className="general-bar-item">
+                  <div className="general-bar-label">
                     <span>⚡ {t('composition.electricity')}</span>
                     <span>{formatCO2(summary.byCategory.electricity)} ({getPercentage(summary.byCategory.electricity, summary.totalCO2eKg)}%)</span>
                   </div>
-                  <div className="bar-track">
-                    <div className="bar-fill electricity" style={{ width: getPercentage(summary.byCategory.electricity, summary.totalCO2eKg) + "%" }}></div>
+                  <div className="general-bar-track">
+                    <div className="general-bar-fill general-electricity" style={{ width: getPercentage(summary.byCategory.electricity, summary.totalCO2eKg) + "%" }}></div>
                   </div>
                 </div>
-                <div className="bar-item">
-                  <div className="bar-label">
+                <div className="general-bar-item">
+                  <div className="general-bar-label">
                     <span>⚙️ {t('composition.operations')}</span>
                     <span>{formatCO2(summary.byCategory.operations)} ({getPercentage(summary.byCategory.operations, summary.totalCO2eKg)}%)</span>
                   </div>
-                  <div className="bar-track">
-                    <div className="bar-fill operations" style={{ width: getPercentage(summary.byCategory.operations, summary.totalCO2eKg) + "%" }}></div>
+                  <div className="general-bar-track">
+                    <div className="general-bar-fill general-operations" style={{ width: getPercentage(summary.byCategory.operations, summary.totalCO2eKg) + "%" }}></div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="carbon-actions">
+            <div className="general-actions">
               <button onClick={() => setShowDetails(!showDetails)} className="btn btn-secondary">
                 {showDetails ? t('actions.hideDetails') : t('actions.showDetails')}
               </button>
@@ -182,10 +183,10 @@ export function GeneralTab() {
 
           {/* Détails par service */}
           {showDetails && summary.services.length > 0 && (
-            <div className="carbon-section">
+            <div className="general-section">
               <h3>{t('details.title')}</h3>
-              <div className="services-table-container">
-                <table className="services-table">
+              <div className="general-table-container">
+                <table className="general-table">
                   <thead>
                     <tr>
                       <th>{t('details.service')}</th>
@@ -199,7 +200,7 @@ export function GeneralTab() {
                   <tbody>
                     {summary.services.map((svc, idx) => (
                       <tr key={idx}>
-                        <td className="service-name">{svc.serviceName}</td>
+                        <td className="general-service-name">{svc.serviceName}</td>
                         <td>{svc.serviceType}</td>
                         <td>{formatCO2(svc.breakdown.manufacturing)}</td>
                         <td>{formatCO2(svc.breakdown.electricity)}</td>
@@ -215,19 +216,19 @@ export function GeneralTab() {
         </>
       ) : (
         /* Pas de données - afficher info */
-        <div className="carbon-section">
-          <div className="carbon-empty-state">
+        <div className="general-section">
+          <div className="general-empty-state">
             <p>{t('noData.message')}</p>
-            <p className="empty-hint">{t('noData.hint')}</p>
+            <p className="general-empty-hint">{t('noData.hint')}</p>
           </div>
         </div>
       )}
 
       {/* Info méthodologie */}
-      <div className="carbon-section">
+      <div className="general-section">
         <h2>{t('methodology.title')}</h2>
         <p>{t('methodology.description')}</p>
-        <ul className="carbon-list">
+        <ul className="general-list">
           <li dangerouslySetInnerHTML={{ __html: t('services.baremetal') }} />
           <li dangerouslySetInnerHTML={{ __html: t('services.hpc') }} />
           <li dangerouslySetInnerHTML={{ __html: t('services.publicCloud') }} />
@@ -236,10 +237,10 @@ export function GeneralTab() {
       </div>
 
       {/* Lien documentation */}
-      <div className="carbon-section carbon-info">
+      <div className="general-section general-info">
         <h3>{t('info.title')}</h3>
         <p>{t('info.description')}</p>
-        <a href="https://corporate.ovhcloud.com/fr/sustainability/environment/" target="_blank" rel="noopener noreferrer" className="info-link">
+        <a href="https://corporate.ovhcloud.com/fr/sustainability/environment/" target="_blank" rel="noopener noreferrer" className="general-info-link">
           {t('info.learnMore')}
         </a>
       </div>

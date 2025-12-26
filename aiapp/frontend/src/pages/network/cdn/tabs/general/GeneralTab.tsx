@@ -1,81 +1,82 @@
-// ============================================================
-// CDN General Tab - Composant STRICTEMENT isolé
-// Préfixe CSS: .cdn-general-
-// ============================================================
-
+/**
+ * CDN General Tab - Composant principal
+ * NAV1: network | NAV2: cdn | NAV3: general
+ * ISOLATION: Ce composant n'importe RIEN d'autres tabs
+ */
 import { useTranslation } from "react-i18next";
 import type { CdnInfo } from "../../cdn.types";
 import { cdnGeneralService } from "./GeneralTab.service";
 import "./GeneralTab.css";
 
 interface GeneralTabProps {
-  serviceId: string;
+  serviceName: string;
   cdn: CdnInfo | null;
-  onRefresh: () => void;
+  loading: boolean;
+  error: string | null;
 }
 
-export default function GeneralTab({ serviceId, cdn, onRefresh }: GeneralTabProps) {
+export function GeneralTab({ serviceName, cdn, loading, error }: GeneralTabProps) {
   const { t } = useTranslation("network/cdn/general");
-  const { t: tCommon } = useTranslation("common");
 
-  if (!cdn) {
-    return <div className="cdn-general-loading">{tCommon("loading")}</div>;
+  if (loading) {
+    return <div className="cdn-general-loading">{t("loading")}</div>;
   }
 
-  const handlePurgeCache = async () => {
-    try {
-      await cdnGeneralService.purgeCache(cdn.serviceName);
-      onRefresh();
-    } catch (err) {
-      console.error("Erreur purge cache:", err);
-    }
-  };
+  if (error) {
+    return <div className="cdn-general-error">{error}</div>;
+  }
 
-  const handleFlushAll = async () => {
-    try {
-      await cdnGeneralService.flushAll(cdn.serviceName);
-      onRefresh();
-    } catch (err) {
-      console.error("Erreur flush all:", err);
-    }
-  };
+  if (!cdn) {
+    return <div className="cdn-general-error">{t("notFound")}</div>;
+  }
 
   return (
-    <div className="cdn-general-tab">
-      <div className="cdn-general-toolbar">
-        <h2>{t("title")}</h2>
-        <button className="btn btn-outline" onClick={onRefresh}>
-          {tCommon("actions.refresh")}
-        </button>
-      </div>
-
+    <div className="cdn-general-container">
       <div className="cdn-general-info-grid">
         <div className="cdn-general-info-card">
-          <div className="cdn-general-card-title">{t("fields.serviceName")}</div>
-          <div className="cdn-general-card-value mono">{cdn.serviceName}</div>
+          <div className="cdn-general-card-title">{t("serviceName")}</div>
+          <div className="cdn-general-card-value-mono">{cdn.serviceName}</div>
         </div>
+
         <div className="cdn-general-info-card">
-          <div className="cdn-general-card-title">{t("fields.offer")}</div>
-          <div className="cdn-general-card-value">{cdn.offer}</div>
+          <div className="cdn-general-card-title">{t("anycast")}</div>
+          <div className="cdn-general-card-value-mono">{cdn.anycast}</div>
         </div>
+
         <div className="cdn-general-info-card">
-          <div className="cdn-general-card-title">{t("fields.anycast")}</div>
-          <div className="cdn-general-card-value mono">{cdn.anycast}</div>
+          <div className="cdn-general-card-title">{t("offer")}</div>
+          <div className="cdn-general-card-value">{cdn.offer || "-"}</div>
+        </div>
+
+        <div className="cdn-general-info-card">
+          <div className="cdn-general-card-title">{t("status")}</div>
+          <div className="cdn-general-card-value">{cdn.status}</div>
         </div>
       </div>
 
-      <div className="cdn-general-info-card cdn-general-config-section">
-        <h3>{t("config.title")}</h3>
-        <p className="cdn-general-config-description">{t("config.description")}</p>
-        <div className="cdn-general-actions">
-          <button className="btn btn-outline" onClick={handlePurgeCache}>
-            {t("config.purgeCache")}
-          </button>
-          <button className="btn btn-outline" onClick={handleFlushAll}>
-            {t("config.flushAll")}
-          </button>
+      <div className="cdn-general-section">
+        <h3 className="cdn-general-section-title">{t("configuration")}</h3>
+        <div className="cdn-general-config-list">
+          <div className="cdn-general-config-item">
+            <div>
+              <div className="cdn-general-config-label">{t("cacheRule")}</div>
+              <div className="cdn-general-config-description">{t("cacheRuleDesc")}</div>
+            </div>
+            <div className="cdn-general-config-value">{cdn.cacheRuleEnabled ? t("enabled") : t("disabled")}</div>
+          </div>
         </div>
+      </div>
+
+      <div className="cdn-general-actions">
+        <button className="btn btn-primary" onClick={() => cdnGeneralService.refreshCdn(serviceName)}>
+          {t("refresh")}
+        </button>
+        <button className="btn btn-outline" onClick={() => cdnGeneralService.flushCache(serviceName)}>
+          {t("flushCache")}
+        </button>
       </div>
     </div>
   );
 }
+
+export default GeneralTab;

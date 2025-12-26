@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as blockStorageService from "../../../../services/public-cloud.block-storage";
+import * as snapshotsService from "./SnapshotsTab.service";
+import "./SnapshotsTab.css";
 
 interface VolumeSnapshot { id: string; name: string; description?: string; size: number; status: string; createdAt: string; }
 interface SnapshotsTabProps { projectId: string; volumeId: string; }
@@ -15,7 +16,7 @@ export default function SnapshotsTab({ projectId, volumeId }: SnapshotsTabProps)
   useEffect(() => { loadSnapshots(); }, [projectId, volumeId]);
 
   const loadSnapshots = async () => {
-    try { setLoading(true); setError(null); const data = await blockStorageService.getVolumeSnapshots(projectId, volumeId); setSnapshots(data); }
+    try { setLoading(true); setError(null); const data = await snapshotsService.getVolumeSnapshots(projectId, volumeId); setSnapshots(data); }
     catch (err) { setError(err instanceof Error ? err.message : "Erreur"); }
     finally { setLoading(false); }
   };
@@ -29,7 +30,7 @@ export default function SnapshotsTab({ projectId, volumeId }: SnapshotsTabProps)
     const name = prompt(t("snapshots.promptName"));
     if (!name) return;
     try {
-      await blockStorageService.createVolumeSnapshot(projectId, volumeId, name);
+      await snapshotsService.createVolumeSnapshot(projectId, volumeId, name);
       loadSnapshots();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Erreur");

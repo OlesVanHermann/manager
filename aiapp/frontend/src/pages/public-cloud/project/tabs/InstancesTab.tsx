@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as projectService from "../../../../services/public-cloud.project";
-import type { CloudInstance } from "../../../../services/public-cloud.project";
+import * as instancesService from "./InstancesTab.service";
+import type { CloudInstance } from "../project.types";
+import "./InstancesTab.css";
 
 interface Props { projectId: string; }
 
@@ -13,7 +14,7 @@ export function InstancesTab({ projectId }: Props) {
   const [acting, setActing] = useState<string | null>(null);
 
   const loadInstances = async () => {
-    try { setLoading(true); const data = await projectService.listInstances(projectId); setInstances(data); }
+    try { setLoading(true); const data = await instancesService.listInstances(projectId); setInstances(data); }
     finally { setLoading(false); }
   };
 
@@ -22,9 +23,9 @@ export function InstancesTab({ projectId }: Props) {
   const handleAction = async (instanceId: string, action: 'reboot' | 'start' | 'stop') => {
     try {
       setActing(instanceId);
-      if (action === 'reboot') await projectService.rebootInstance(projectId, instanceId, 'soft');
-      else if (action === 'start') await projectService.startInstance(projectId, instanceId);
-      else if (action === 'stop') await projectService.stopInstance(projectId, instanceId);
+      if (action === 'reboot') await instancesService.rebootInstance(projectId, instanceId, 'soft');
+      else if (action === 'start') await instancesService.startInstance(projectId, instanceId);
+      else if (action === 'stop') await instancesService.stopInstance(projectId, instanceId);
       setTimeout(loadInstances, 2000);
     } finally { setActing(null); }
   };

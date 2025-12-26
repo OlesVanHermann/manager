@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import "./GeneralTab.css";
 
 interface VolumeInfo { id: string; name: string; description?: string; region: string; size: number; type: string; status: string; bootable: boolean; attachedTo?: string[]; createdAt: string; }
 interface GeneralTabProps { projectId: string; volumeId: string; volume: VolumeInfo | null; onRefresh: () => void; }

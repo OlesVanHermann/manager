@@ -6,12 +6,10 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useTabs } from "../../../lib/useTabs";
-import * as instancesService from "../../../services/public-cloud.instances";
 import GeneralTab from "./tabs/GeneralTab.tsx";
 import NetworkTab from "./tabs/NetworkTab.tsx";
 import SnapshotsTab from "./tabs/SnapshotsTab.tsx";
 import ConsoleTab from "./tabs/ConsoleTab.tsx";
-import "./styles.css";
 
 interface InstanceInfo {
   id: string;

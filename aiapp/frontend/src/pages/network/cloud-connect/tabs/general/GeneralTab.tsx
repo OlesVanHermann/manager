@@ -1,8 +1,8 @@
-// ============================================================
-// CLOUD CONNECT General Tab - Composant STRICTEMENT isolé
-// Préfixe CSS: .cloudconnect-general-
-// ============================================================
-
+/**
+ * CLOUD CONNECT General Tab - Composant STRICTEMENT isolé
+ * NAV1: network | NAV2: cloud-connect | NAV3: general
+ * ISOLATION: Ce composant n'importe RIEN d'autres tabs
+ */
 import { useTranslation } from "react-i18next";
 import type { CloudConnectInfo } from "../../cloud-connect.types";
 import { cloudconnectGeneralService } from "./GeneralTab.service";
@@ -38,7 +38,7 @@ export default function GeneralTab({
       <div className="cloudconnect-general-info-grid">
         <div className="cloudconnect-general-info-card">
           <div className="cloudconnect-general-card-title">{t("fields.uuid")}</div>
-          <div className="cloudconnect-general-card-value mono">{service.uuid}</div>
+          <div className="cloudconnect-general-card-value-mono">{service.uuid}</div>
         </div>
         <div className="cloudconnect-general-info-card">
           <div className="cloudconnect-general-card-title">{t("fields.pop")}</div>

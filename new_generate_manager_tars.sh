@@ -8,14 +8,44 @@ cd /home/ubuntu/aiapp/frontend
 rm -f /home/ubuntu/new_manager.*.tar
 
 # ============================================================
-# FONCTION HELPER pour construire les arguments tar
+# FONCTIONS HELPER pour construire les arguments tar
 # ============================================================
+
 # Ajoute un chemin seulement s'il existe
 add_if_exists() {
     local path="$1"
     if [ -e "$path" ]; then
         echo "$path"
     fi
+}
+
+# Récupérer tous les fichiers DIRECTS d'un NAV1 (pas les sous-dossiers)
+get_direct_files() {
+    local nav1="$1"
+    find "./src/pages/${nav1}" -maxdepth 1 -type f 2>/dev/null | tr '\n' ' '
+}
+
+# Récupérer les dossiers UTILITAIRES d'un NAV1 (pas les NAV2)
+# Un dossier utilitaire = components, shared, hooks, utils, tabs à la racine
+# Un NAV2 = dossier avec index.tsx dedans
+get_utility_dirs() {
+    local nav1="$1"
+    for dir in "./src/pages/${nav1}/"*/; do
+        if [ -d "$dir" ]; then
+            local dirname=$(basename "$dir")
+            # Exclure les NAV2 (dossiers avec index.tsx)
+            if [ ! -f "${dir}index.tsx" ]; then
+                echo "$dir"
+            fi
+        fi
+    done | tr '\n' ' '
+}
+
+# Récupérer les locales directes d'un NAV1 (fichiers .json à la racine, pas les sous-dossiers)
+get_core_locales() {
+    local nav1="$1"
+    find "./public/locales/en/${nav1}" -maxdepth 1 -type f -name "*.json" 2>/dev/null | tr '\n' ' '
+    find "./public/locales/fr/${nav1}" -maxdepth 1 -type f -name "*.json" 2>/dev/null | tr '\n' ' '
 }
 
 # ============================================================
@@ -77,10 +107,10 @@ tar -cf /home/ubuntu/new_manager.all.tar .
 
 echo "Création new_manager.bare-metal.core.tar..."
 tar -cf /home/ubuntu/new_manager.bare-metal.core.tar \
-    ./src/pages/bare-metal/index.tsx \
-    $(add_if_exists ./src/pages/bare-metal/styles.css) \
-    $(add_if_exists ./public/locales/en/bare-metal/index.json) \
-    $(add_if_exists ./public/locales/fr/bare-metal/index.json)
+    $(get_direct_files bare-metal) \
+    $(get_utility_dirs bare-metal) \
+    $(get_core_locales bare-metal) \
+    $(add_if_exists ./src/services/bare-metal.ts)
 
 echo "Création new_manager.bare-metal.general.tar..."
 if [ -e ./src/pages/bare-metal/general ] || [ -e ./public/locales/en/bare-metal/general ]; then
@@ -134,16 +164,10 @@ tar -cf /home/ubuntu/new_manager.bare-metal.vps.tar \
 
 echo "Création new_manager.general.core.tar..."
 tar -cf /home/ubuntu/new_manager.general.core.tar \
-    ./src/pages/general/index.tsx \
-    $(add_if_exists ./src/pages/general/styles.css) \
-    $(add_if_exists ./src/pages/general/useHomeData.ts) \
-    $(add_if_exists ./src/pages/general/useGeneralData.ts) \
-    $(add_if_exists ./src/pages/general/utils.ts) \
-    $(add_if_exists ./src/pages/general/components) \
-    $(add_if_exists ./public/locales/en/general/index.json) \
-    $(add_if_exists ./public/locales/en/general/dashboard.json) \
-    $(add_if_exists ./public/locales/fr/general/index.json) \
-    $(add_if_exists ./public/locales/fr/general/dashboard.json) \
+    $(get_direct_files general) \
+    $(get_utility_dirs general) \
+    $(get_core_locales general) \
+    $(add_if_exists ./src/services/general.ts) \
     $(add_if_exists ./src/services/general.notifications.ts)
 
 echo "Création new_manager.general.general.tar..."
@@ -198,14 +222,9 @@ tar -cf /home/ubuntu/new_manager.general.support.tar \
 
 echo "Création new_manager.iam.core.tar..."
 tar -cf /home/ubuntu/new_manager.iam.core.tar \
-    ./src/pages/iam/index.tsx \
-    $(add_if_exists ./src/pages/iam/IamPage.css) \
-    $(add_if_exists ./src/pages/iam/iam.types.ts) \
-    $(add_if_exists ./src/pages/iam/tabs) \
-    $(add_if_exists ./public/locales/en/iam/index.json) \
-    $(add_if_exists ./public/locales/en/iam/identities.json) \
-    $(add_if_exists ./public/locales/fr/iam/index.json) \
-    $(add_if_exists ./public/locales/fr/iam/identities.json) \
+    $(get_direct_files iam) \
+    $(get_utility_dirs iam) \
+    $(get_core_locales iam) \
     $(add_if_exists ./src/services/iam.ts)
 
 echo "Création new_manager.iam.general.tar..."
@@ -269,66 +288,52 @@ tar -cf /home/ubuntu/new_manager.iam.secret.tar \
 
 echo "Création new_manager.license.core.tar..."
 tar -cf /home/ubuntu/new_manager.license.core.tar \
-    ./src/pages/license/index.tsx \
-    $(add_if_exists ./public/locales/en/license/index.json) \
-    $(add_if_exists ./public/locales/fr/license/index.json) \
+    $(get_direct_files license) \
+    $(get_utility_dirs license) \
+    $(get_core_locales license) \
     $(add_if_exists ./src/services/license.ts)
 
 echo "Création new_manager.license.cloudlinux.tar..."
-if [ -e ./src/pages/license/cloudlinux ]; then
-    tar -cf /home/ubuntu/new_manager.license.cloudlinux.tar \
-        ./src/pages/license/cloudlinux
-else
-    echo "Skip new_manager.license.cloudlinux.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.license.cloudlinux.tar \
+    $(add_if_exists ./src/pages/license/cloudlinux) \
+    $(add_if_exists ./public/locales/en/license/cloudlinux) \
+    $(add_if_exists ./public/locales/fr/license/cloudlinux)
 
 echo "Création new_manager.license.cpanel.tar..."
-if [ -e ./src/pages/license/cpanel ]; then
-    tar -cf /home/ubuntu/new_manager.license.cpanel.tar \
-        ./src/pages/license/cpanel
-else
-    echo "Skip new_manager.license.cpanel.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.license.cpanel.tar \
+    $(add_if_exists ./src/pages/license/cpanel) \
+    $(add_if_exists ./public/locales/en/license/cpanel) \
+    $(add_if_exists ./public/locales/fr/license/cpanel)
 
 echo "Création new_manager.license.directadmin.tar..."
-if [ -e ./src/pages/license/directadmin ]; then
-    tar -cf /home/ubuntu/new_manager.license.directadmin.tar \
-        ./src/pages/license/directadmin
-else
-    echo "Skip new_manager.license.directadmin.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.license.directadmin.tar \
+    $(add_if_exists ./src/pages/license/directadmin) \
+    $(add_if_exists ./public/locales/en/license/directadmin) \
+    $(add_if_exists ./public/locales/fr/license/directadmin)
 
 echo "Création new_manager.license.plesk.tar..."
-if [ -e ./src/pages/license/plesk ]; then
-    tar -cf /home/ubuntu/new_manager.license.plesk.tar \
-        ./src/pages/license/plesk
-else
-    echo "Skip new_manager.license.plesk.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.license.plesk.tar \
+    $(add_if_exists ./src/pages/license/plesk) \
+    $(add_if_exists ./public/locales/en/license/plesk) \
+    $(add_if_exists ./public/locales/fr/license/plesk)
 
 echo "Création new_manager.license.sqlserver.tar..."
-if [ -e ./src/pages/license/sqlserver ]; then
-    tar -cf /home/ubuntu/new_manager.license.sqlserver.tar \
-        ./src/pages/license/sqlserver
-else
-    echo "Skip new_manager.license.sqlserver.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.license.sqlserver.tar \
+    $(add_if_exists ./src/pages/license/sqlserver) \
+    $(add_if_exists ./public/locales/en/license/sqlserver) \
+    $(add_if_exists ./public/locales/fr/license/sqlserver)
 
 echo "Création new_manager.license.virtuozzo.tar..."
-if [ -e ./src/pages/license/virtuozzo ]; then
-    tar -cf /home/ubuntu/new_manager.license.virtuozzo.tar \
-        ./src/pages/license/virtuozzo
-else
-    echo "Skip new_manager.license.virtuozzo.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.license.virtuozzo.tar \
+    $(add_if_exists ./src/pages/license/virtuozzo) \
+    $(add_if_exists ./public/locales/en/license/virtuozzo) \
+    $(add_if_exists ./public/locales/fr/license/virtuozzo)
 
 echo "Création new_manager.license.windows.tar..."
-if [ -e ./src/pages/license/windows ]; then
-    tar -cf /home/ubuntu/new_manager.license.windows.tar \
-        ./src/pages/license/windows
-else
-    echo "Skip new_manager.license.windows.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.license.windows.tar \
+    $(add_if_exists ./src/pages/license/windows) \
+    $(add_if_exists ./public/locales/en/license/windows) \
+    $(add_if_exists ./public/locales/fr/license/windows)
 
 # ============================================================
 # NETWORK
@@ -336,10 +341,9 @@ fi
 
 echo "Création new_manager.network.core.tar..."
 tar -cf /home/ubuntu/new_manager.network.core.tar \
-    ./src/pages/network/index.tsx \
-    $(add_if_exists ./src/pages/network/styles.css) \
-    $(add_if_exists ./public/locales/en/network/index.json) \
-    $(add_if_exists ./public/locales/fr/network/index.json) \
+    $(get_direct_files network) \
+    $(get_utility_dirs network) \
+    $(get_core_locales network) \
     $(add_if_exists ./src/services/network.ts)
 
 echo "Création new_manager.network.general.tar..."
@@ -405,10 +409,9 @@ tar -cf /home/ubuntu/new_manager.network.vrack-services.tar \
 
 echo "Création new_manager.private-cloud.core.tar..."
 tar -cf /home/ubuntu/new_manager.private-cloud.core.tar \
-    ./src/pages/private-cloud/index.tsx \
-    $(add_if_exists ./src/pages/private-cloud/styles.css) \
-    $(add_if_exists ./public/locales/en/private-cloud/index.json) \
-    $(add_if_exists ./public/locales/fr/private-cloud/index.json) \
+    $(get_direct_files private-cloud) \
+    $(get_utility_dirs private-cloud) \
+    $(get_core_locales private-cloud) \
     $(add_if_exists ./src/services/private-cloud.ts)
 
 echo "Création new_manager.private-cloud.general.tar..."
@@ -423,12 +426,11 @@ else
 fi
 
 echo "Création new_manager.private-cloud.managed-baremetal.tar..."
-if [ -e ./src/pages/private-cloud/managed-baremetal ]; then
-    tar -cf /home/ubuntu/new_manager.private-cloud.managed-baremetal.tar \
-        ./src/pages/private-cloud/managed-baremetal
-else
-    echo "Skip new_manager.private-cloud.managed-baremetal.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.private-cloud.managed-baremetal.tar \
+    $(add_if_exists ./src/pages/private-cloud/managed-baremetal) \
+    $(add_if_exists ./public/locales/en/private-cloud/managed-baremetal) \
+    $(add_if_exists ./public/locales/fr/private-cloud/managed-baremetal) \
+    $(add_if_exists ./src/services/private-cloud.managed-baremetal.ts)
 
 echo "Création new_manager.private-cloud.nutanix.tar..."
 tar -cf /home/ubuntu/new_manager.private-cloud.nutanix.tar \
@@ -438,20 +440,18 @@ tar -cf /home/ubuntu/new_manager.private-cloud.nutanix.tar \
     $(add_if_exists ./src/services/private-cloud.nutanix.ts)
 
 echo "Création new_manager.private-cloud.sap.tar..."
-if [ -e ./src/pages/private-cloud/sap ]; then
-    tar -cf /home/ubuntu/new_manager.private-cloud.sap.tar \
-        ./src/pages/private-cloud/sap
-else
-    echo "Skip new_manager.private-cloud.sap.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.private-cloud.sap.tar \
+    $(add_if_exists ./src/pages/private-cloud/sap) \
+    $(add_if_exists ./public/locales/en/private-cloud/sap) \
+    $(add_if_exists ./public/locales/fr/private-cloud/sap) \
+    $(add_if_exists ./src/services/private-cloud.sap.ts)
 
 echo "Création new_manager.private-cloud.veeam.tar..."
-if [ -e ./src/pages/private-cloud/veeam ]; then
-    tar -cf /home/ubuntu/new_manager.private-cloud.veeam.tar \
-        ./src/pages/private-cloud/veeam
-else
-    echo "Skip new_manager.private-cloud.veeam.tar (dossier inexistant)"
-fi
+tar -cf /home/ubuntu/new_manager.private-cloud.veeam.tar \
+    $(add_if_exists ./src/pages/private-cloud/veeam) \
+    $(add_if_exists ./public/locales/en/private-cloud/veeam) \
+    $(add_if_exists ./public/locales/fr/private-cloud/veeam) \
+    $(add_if_exists ./src/services/private-cloud.veeam.ts)
 
 echo "Création new_manager.private-cloud.vmware.tar..."
 tar -cf /home/ubuntu/new_manager.private-cloud.vmware.tar \
@@ -466,11 +466,9 @@ tar -cf /home/ubuntu/new_manager.private-cloud.vmware.tar \
 
 echo "Création new_manager.public-cloud.core.tar..."
 tar -cf /home/ubuntu/new_manager.public-cloud.core.tar \
-    ./src/pages/public-cloud/index.tsx \
-    $(add_if_exists ./src/pages/public-cloud/styles.css) \
-    $(add_if_exists ./src/pages/public-cloud/shared) \
-    $(add_if_exists ./public/locales/en/public-cloud/index.json) \
-    $(add_if_exists ./public/locales/fr/public-cloud/index.json) \
+    $(get_direct_files public-cloud) \
+    $(get_utility_dirs public-cloud) \
+    $(get_core_locales public-cloud) \
     $(add_if_exists ./src/services/public-cloud.ts)
 
 echo "Création new_manager.public-cloud.general.tar..."
@@ -552,10 +550,10 @@ tar -cf /home/ubuntu/new_manager.public-cloud.registry.tar \
 
 echo "Création new_manager.web-cloud.core.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.core.tar \
-    ./src/pages/web-cloud/index.tsx \
-    $(add_if_exists ./src/pages/web-cloud/styles.css) \
-    $(add_if_exists ./public/locales/en/web-cloud/index.json) \
-    $(add_if_exists ./public/locales/fr/web-cloud/index.json)
+    $(get_direct_files web-cloud) \
+    $(get_utility_dirs web-cloud) \
+    $(get_core_locales web-cloud) \
+    $(add_if_exists ./src/services/web-cloud.ts)
 
 echo "Création new_manager.web-cloud.general.tar..."
 if [ -e ./src/pages/web-cloud/general ] || [ -e ./public/locales/en/web-cloud/general ]; then
@@ -672,6 +670,8 @@ tar -cf /home/ubuntu/new_manager.web-cloud.telecom.tar \
 echo "Création new_manager.web-cloud.telecom.carrier-sip.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.telecom.carrier-sip.tar \
     $(add_if_exists ./src/pages/web-cloud/telecom/carrier-sip) \
+    $(add_if_exists ./public/locales/en/web-cloud/telecom/carrier-sip) \
+    $(add_if_exists ./public/locales/fr/web-cloud/telecom/carrier-sip) \
     $(add_if_exists ./src/services/web-cloud.carrier-sip.ts)
 
 echo "Création new_manager.web-cloud.telecom.fax.tar..."

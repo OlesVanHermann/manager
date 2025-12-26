@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import * as projectService from "../../../../services/public-cloud.project";
-import type { CloudQuota } from "../../../../services/public-cloud.project";
+import * as quotaService from "./QuotaTab.service";
+import type { CloudQuota } from "../project.types";
+import "./QuotaTab.css";
 
 interface Props { projectId: string; }
 
@@ -12,7 +13,7 @@ export function QuotaTab({ projectId }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      try { setLoading(true); const data = await projectService.getQuota(projectId); setQuotas(data); }
+      try { setLoading(true); const data = await quotaService.getQuota(projectId); setQuotas(data); }
       finally { setLoading(false); }
     };
     load();

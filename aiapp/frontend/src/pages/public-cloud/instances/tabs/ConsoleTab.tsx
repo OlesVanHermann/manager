@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as instancesService from "../../../../services/public-cloud.instances";
+import * as consoleService from "./ConsoleTab.service";
+import "./ConsoleTab.css";
 
 interface ConsoleTabProps { projectId: string; instanceId: string; }
 
@@ -12,7 +13,7 @@ export default function ConsoleTab({ projectId, instanceId }: ConsoleTabProps) {
   const openConsole = async () => {
     try {
       setLoading(true);
-      const url = await instancesService.getConsoleUrl(projectId, instanceId);
+      const url = await consoleService.getConsoleUrl(projectId, instanceId);
       setConsoleUrl(url);
       window.open(url, "_blank", "width=1024,height=768");
     } catch (err) {

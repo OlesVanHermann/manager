@@ -1,8 +1,8 @@
-// ============================================================
-// CDN Statistics Tab - Composant STRICTEMENT isolé
-// Préfixe CSS: .cdn-statistics-
-// ============================================================
-
+/**
+ * CDN Statistics Tab - Composant STRICTEMENT isolé
+ * NAV1: network | NAV2: cdn | NAV3: statistics
+ * ISOLATION: Ce composant n'importe RIEN d'autres tabs
+ */
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { CdnStats } from "../../cdn.types";
@@ -19,10 +19,11 @@ export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
   const [stats, setStats] = useState<CdnStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<"day" | "week" | "month">("month");
 
   useEffect(() => {
     loadStats();
-  }, [serviceId]);
+  }, [serviceId, period]);
 
   const loadStats = async () => {
     try {
@@ -56,6 +57,26 @@ export default function StatisticsTab({ serviceId }: StatisticsTabProps) {
     <div className="cdn-statistics-tab">
       <div className="cdn-statistics-toolbar">
         <h2>{t("title")}</h2>
+        <div className="cdn-statistics-period-selector">
+          <button
+            className={`cdn-statistics-period-btn ${period === "day" ? "cdn-statistics-period-btn-active" : ""}`}
+            onClick={() => setPeriod("day")}
+          >
+            {t("period.day")}
+          </button>
+          <button
+            className={`cdn-statistics-period-btn ${period === "week" ? "cdn-statistics-period-btn-active" : ""}`}
+            onClick={() => setPeriod("week")}
+          >
+            {t("period.week")}
+          </button>
+          <button
+            className={`cdn-statistics-period-btn ${period === "month" ? "cdn-statistics-period-btn-active" : ""}`}
+            onClick={() => setPeriod("month")}
+          >
+            {t("period.month")}
+          </button>
+        </div>
         <button className="btn btn-outline" onClick={loadStats}>
           {tCommon("actions.refresh")}
         </button>

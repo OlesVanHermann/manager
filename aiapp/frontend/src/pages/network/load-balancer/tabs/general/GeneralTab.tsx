@@ -1,8 +1,8 @@
-// ============================================================
-// LOAD BALANCER General Tab - Composant STRICTEMENT isolé
-// Préfixe CSS: .lb-general-
-// ============================================================
-
+/**
+ * LOAD BALANCER General Tab - Composant STRICTEMENT isolé
+ * NAV1: network | NAV2: load-balancer | NAV3: general
+ * ISOLATION: Ce composant n'importe RIEN d'autres tabs
+ */
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { IpLoadBalancing, IpLoadBalancingServiceInfos } from "../../load-balancer.types";
@@ -56,7 +56,7 @@ export default function GeneralTab({ serviceName }: GeneralTabProps) {
       <div className="lb-general-info-grid">
         <div className="lb-general-info-card">
           <div className="lb-general-card-title">{t("fields.serviceName")}</div>
-          <div className="lb-general-card-value mono">{lb.serviceName}</div>
+          <div className="lb-general-card-value-mono">{lb.serviceName}</div>
         </div>
         <div className="lb-general-info-card">
           <div className="lb-general-card-title">{t("fields.displayName")}</div>
@@ -64,7 +64,7 @@ export default function GeneralTab({ serviceName }: GeneralTabProps) {
         </div>
         <div className="lb-general-info-card">
           <div className="lb-general-card-title">{t("fields.ip")}</div>
-          <div className="lb-general-card-value mono">{lb.ipLoadbalancing}</div>
+          <div className="lb-general-card-value-mono">{lb.ipLoadbalancing}</div>
         </div>
         <div className="lb-general-info-card">
           <div className="lb-general-card-title">{t("fields.offer")}</div>
