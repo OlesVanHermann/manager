@@ -1,8 +1,9 @@
 // ############################################################
 // #  BARE-METAL/DASHBOARD - COMPOSANT PAGE ISOLÉ             #
-// #  CSS LOCAL : ./styles.css                                #
+// #  CSS LOCAL : ./index.css                                 #
 // #  I18N LOCAL : bare-metal/index                           #
 // #  SERVICE LOCAL : ./index.service.ts                      #
+// #  CLASSES CSS : .bare-metal-dashboard-*                   #
 // ############################################################
 
 import { useState, useEffect } from "react";
@@ -55,17 +56,17 @@ export default function BareMetalDashboard() {
 
   return (
     <div className="bare-metal-dashboard">
-      <header className="dashboard-header">
+      <header className="bare-metal-dashboard-header">
         <h1>{t("title")}</h1>
         <p>{t("description")}</p>
       </header>
-      <div className="dashboard-tiles">
+      <div className="bare-metal-dashboard-tiles">
         {services.map((svc) => (
-          <Link key={svc.key} to={svc.path} className="dashboard-tile">
-            <div className="tile-icon">{svc.icon}</div>
-            <div className="tile-content">
+          <Link key={svc.key} to={svc.path} className="bare-metal-dashboard-tile">
+            <div className="bare-metal-dashboard-tile-icon">{svc.icon}</div>
+            <div className="bare-metal-dashboard-tile-content">
               <h3>{t(`tiles.${svc.key}`)}</h3>
-              <span className="tile-count">{loading ? "..." : svc.count}</span>
+              <span className="bare-metal-dashboard-tile-count">{loading ? "..." : svc.count}</span>
               <p>{t(`tiles.${svc.key}Desc`)}</p>
             </div>
           </Link>

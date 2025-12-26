@@ -1,8 +1,9 @@
 // ############################################################
 // #  VPS/PAGE - COMPOSANT PAGE STRICTEMENT ISOLÉ             #
-// #  CSS LOCAL : ./VpsPage.css                               #
+// #  CSS LOCAL : ./index.css                                 #
 // #  I18N LOCAL : bare-metal/vps/page                        #
 // #  SERVICE LOCAL : Intégré dans ce fichier                 #
+// #  CLASSES CSS : .vps-page-*                               #
 // ############################################################
 
 import { useState, useEffect, useCallback } from "react";
@@ -186,11 +187,11 @@ export default function VpsPage() {
   return (
     <div className="vps-page-container">
       <aside className="vps-page-sidebar">
-        <div className="sidebar-header">
+        <div className="vps-page-sidebar-header">
           <h2>{t("title")}</h2>
-          <span className="count-badge">{vpsList.length}</span>
+          <span className="vps-page-count-badge">{vpsList.length}</span>
         </div>
-        <div className="sidebar-search">
+        <div className="vps-page-sidebar-search">
           <input
             type="text"
             placeholder={t("searchPlaceholder")}
@@ -282,11 +283,11 @@ export default function VpsPage() {
               </div>
             </header>
             <div className="vps-page-tabs-container">
-              <div className="tabs-list">
+              <div className="vps-page-tabs-list">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+                    className={`vps-page-tab-btn ${activeTab === tab.id ? "vps-page-tab-active" : ""}`}
                     onClick={() => setActiveTab(tab.id)}
                   >
                     {t(tab.labelKey)}

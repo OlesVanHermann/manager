@@ -1,5 +1,6 @@
 // ============================================================
 // SECURITY TAB HOOKS - Hook ISOLÉ pour les données sécurité
+// Import UNIQUEMENT depuis ./SecurityTab.service (local)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";

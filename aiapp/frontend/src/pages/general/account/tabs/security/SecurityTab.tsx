@@ -5,6 +5,7 @@
 // Hook: ./SecurityTab.hooks.ts (ISOLÉ)
 // Sections: ./SecurityTab.sections.tsx (ISOLÉ)
 // Modals: ./SecurityTab.modals.tsx (ISOLÉ)
+// Icons: ./SecurityTab.icons.tsx (ISOLÉ)
 // ============================================================
 
 import "./SecurityTab.css";

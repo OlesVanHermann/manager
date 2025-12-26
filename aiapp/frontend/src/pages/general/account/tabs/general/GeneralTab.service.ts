@@ -1,5 +1,6 @@
 // ============================================================
 // GENERAL TAB SERVICE - Service ISOLÉ pour l'édition du profil
+// Import UNIQUEMENT depuis ../../account.types (niveau NAV2)
 // ============================================================
 
 import { ovhGet, ovhPut } from "../../../../../services/api";

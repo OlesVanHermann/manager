@@ -1,13 +1,17 @@
 // ============================================================
 // DBAAS-LOGS PAGE - Logs Data Platform (LDP)
 // 5 tabs: Streams | Dashboards | Indices | Inputs | Aliases
-// Service inliné - CSS isolé
+// Service inliné - CSS isolé - IMPORTS DIRECTS (pas de barrel)
 // ============================================================
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { StreamsTab, DashboardsTab, IndicesTab, InputsTab, AliasesTab } from "./tabs";
+import StreamsTab from "./tabs/streams/StreamsTab";
+import DashboardsTab from "./tabs/dashboards/DashboardsTab";
+import IndicesTab from "./tabs/indices/IndicesTab";
+import InputsTab from "./tabs/inputs/InputsTab";
+import AliasesTab from "./tabs/aliases/AliasesTab";
 import "./DbaasLogsPage.css";
 
 // ============ TYPES ============

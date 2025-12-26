@@ -1,5 +1,6 @@
 // ============================================================
 // SECURITY TAB SERVICE - Service ISOLÉ (DÉFACTORISÉ)
+// Import UNIQUEMENT depuis /services/api (global autorisé)
 // ============================================================
 
 import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../services/api";

@@ -1,9 +1,15 @@
 // ============================================================
 // CARBON TYPES - Types partagés entre les tabs carbon
 // SEUL fichier partagé autorisé au niveau NAV2
+// Types AUTONOMES - Pas d'import externe
 // ============================================================
 
-import type { OvhCredentials } from "../../../types/auth.types";
+// ============ CREDENTIALS (internalisé) ============
+
+export interface OvhCredentials {
+  nichandle: string;
+  password: string;
+}
 
 // ============ TAB PROPS ============
 

@@ -1,11 +1,12 @@
 // ============================================================
 // SECURITY TAB SECTIONS - Sous-composants ISOLÉS
+// Import UNIQUEMENT depuis fichiers locaux ./SecurityTab.*
 // ============================================================
 
 import { useTranslation } from "react-i18next";
 import { IconPassword, IconSms, IconTotp, IconKey, IconBackup, IconNetwork, IconCheck } from "./SecurityTab.icons";
 import type { ModalType } from "./SecurityTab.hooks";
-import type * as securityService from "./SecurityTab";
+import type * as securityService from "./SecurityTab.service";
 
 // ============ HELPERS LOCAUX ============
 

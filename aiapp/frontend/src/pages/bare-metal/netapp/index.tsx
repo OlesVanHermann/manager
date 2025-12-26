@@ -1,8 +1,9 @@
 // ############################################################
 // #  NETAPP/PAGE - COMPOSANT PAGE STRICTEMENT ISOLÉ          #
-// #  CSS LOCAL : ./NetappPage.css                            #
+// #  CSS LOCAL : ./index.css                                 #
 // #  I18N LOCAL : bare-metal/netapp/page                     #
 // #  SERVICE LOCAL : Intégré dans ce fichier                 #
+// #  CLASSES CSS : .netapp-page-*                            #
 // ############################################################
 
 import { useState, useEffect } from "react";
@@ -101,7 +102,7 @@ export default function NetAppPage() {
       <div className="netapp-page-container">
         <div className="netapp-page-error">
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={loadNetApp}>
+          <button className="netapp-page-btn-primary" onClick={loadNetApp}>
             {t("error.retry")}
           </button>
         </div>

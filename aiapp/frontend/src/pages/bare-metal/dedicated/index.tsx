@@ -1,8 +1,9 @@
 // ############################################################
 // #  DEDICATED/PAGE - COMPOSANT PAGE STRICTEMENT ISOLÉ       #
-// #  CSS LOCAL : ./DedicatedPage.css                         #
+// #  CSS LOCAL : ./index.css                                 #
 // #  I18N LOCAL : bare-metal/dedicated/page                  #
 // #  SERVICE LOCAL : Intégré dans ce fichier                 #
+// #  CLASSES CSS : .dedicated-page-*                         #
 // ############################################################
 
 import { useState, useEffect, useCallback } from "react";
@@ -168,11 +169,11 @@ export default function DedicatedPage() {
   return (
     <div className="dedicated-page-container">
       <aside className="dedicated-page-sidebar">
-        <div className="sidebar-header">
+        <div className="dedicated-page-sidebar-header">
           <h2>{t("title")}</h2>
-          <span className="count-badge">{servers.length}</span>
+          <span className="dedicated-page-count-badge">{servers.length}</span>
         </div>
-        <div className="sidebar-search">
+        <div className="dedicated-page-sidebar-search">
           <input
             type="text"
             placeholder={t("searchPlaceholder")}
@@ -238,11 +239,11 @@ export default function DedicatedPage() {
               </div>
             </header>
             <div className="dedicated-page-tabs-container">
-              <div className="tabs-list">
+              <div className="dedicated-page-tabs-list">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+                    className={`dedicated-page-tab-btn ${activeTab === tab.id ? "dedicated-page-tab-active" : ""}`}
                     onClick={() => setActiveTab(tab.id)}
                   >
                     {t(tab.labelKey)}

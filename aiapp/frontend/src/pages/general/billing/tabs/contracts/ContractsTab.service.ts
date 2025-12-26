@@ -1,8 +1,9 @@
 // ============================================================
 // CONTRACTS TAB SERVICE - Service ISOLÉ (DÉFACTORISÉ)
+// Import UNIQUEMENT depuis ../../billing.types (niveau NAV2)
 // ============================================================
 
-import type { OvhCredentials } from "../../../../../types/auth.types";
+import type { OvhCredentials } from "../../billing.types";
 
 const API_BASE = "/api/ovh";
 const STORAGE_KEY = "ovh_credentials";
@@ -46,8 +47,8 @@ async function ovhRequest<T>(credentials: OvhCredentials, method: string, path: 
   const url = `${API_BASE}${path}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "X-Ovh-App-Key": credentials.appKey,
-    "X-Ovh-App-Secret": credentials.appSecret,
+    "X-Ovh-App-Key": credentials.appKey || "",
+    "X-Ovh-App-Secret": credentials.appSecret || "",
   };
   if (credentials.consumerKey) headers["X-Ovh-Consumer-Key"] = credentials.consumerKey;
 

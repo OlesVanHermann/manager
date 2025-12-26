@@ -1,8 +1,9 @@
 // ############################################################
 // #  NASHA/PAGE - COMPOSANT PAGE STRICTEMENT ISOLÉ           #
-// #  CSS LOCAL : ./NashaPage.css                             #
+// #  CSS LOCAL : ./index.css                                 #
 // #  I18N LOCAL : bare-metal/nasha/page                      #
 // #  SERVICE LOCAL : Intégré dans ce fichier                 #
+// #  CLASSES CSS : .nasha-page-*                             #
 // ############################################################
 
 import { useState, useEffect } from "react";
@@ -104,7 +105,7 @@ export default function NashaPage() {
       <div className="nasha-page-container">
         <div className="nasha-page-error">
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={loadNasha}>
+          <button className="nasha-page-btn-primary" onClick={loadNasha}>
             {t("error.retry")}
           </button>
         </div>

@@ -1,8 +1,9 @@
 // ############################################################
 // #  HOUSING/PAGE - COMPOSANT PAGE STRICTEMENT ISOLÉ         #
-// #  CSS LOCAL : ./HousingPage.css                           #
+// #  CSS LOCAL : ./index.css                                 #
 // #  I18N LOCAL : bare-metal/housing/page                    #
 // #  SERVICE LOCAL : Intégré dans ce fichier                 #
+// #  CLASSES CSS : .housing-page-*                           #
 // ############################################################
 
 import { useState, useEffect } from "react";
@@ -85,7 +86,7 @@ export default function HousingPage() {
       <div className="housing-page-container">
         <div className="housing-page-error">
           <p>{error}</p>
-          <button className="btn btn-primary" onClick={loadHousing}>
+          <button className="housing-page-btn-primary" onClick={loadHousing}>
             {t("error.retry")}
           </button>
         </div>

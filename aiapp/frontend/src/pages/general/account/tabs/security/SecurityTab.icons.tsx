@@ -1,5 +1,6 @@
 // ============================================================
 // SECURITY TAB ICONS - Icônes ISOLÉES pour le tab sécurité
+// Aucun import externe - Composants SVG autonomes
 // ============================================================
 
 export const IconPassword = () => (

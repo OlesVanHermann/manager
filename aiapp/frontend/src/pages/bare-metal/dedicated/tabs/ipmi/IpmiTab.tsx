@@ -2,8 +2,9 @@
 // #  DEDICATED/IPMI - COMPOSANT STRICTEMENT ISOLÉ            #
 // #  IMPORTS LOCAUX UNIQUEMENT                               #
 // #  CSS LOCAL : ./IpmiTab.css                               #
-// #  SERVICE LOCAL : ./IpmiTab.ts                            #
+// #  SERVICE LOCAL : ./IpmiTab.service.ts                    #
 // #  I18N LOCAL : bare-metal/dedicated/ipmi                  #
+// #  CLASSES CSS : .dedicated-ipmi-*                         #
 // ############################################################
 
 import { useState, useEffect } from "react";
@@ -112,7 +113,7 @@ export function IpmiTab({ serviceName }: Props) {
           <div className="dedicated-ipmi-actions">
             {ipmi.supportedFeatures?.kvmoverip && (
               <button
-                className="btn-primary"
+                className="dedicated-ipmi-btn-primary"
                 onClick={() => startSession("kvmipHtml5URL")}
                 disabled={sessionLoading}
               >
@@ -121,7 +122,7 @@ export function IpmiTab({ serviceName }: Props) {
             )}
             {ipmi.supportedFeatures?.serialOverLanUrl && (
               <button
-                className="btn-secondary"
+                className="dedicated-ipmi-btn-secondary"
                 onClick={() => startSession("serialOverLanURL")}
                 disabled={sessionLoading}
               >

@@ -1,14 +1,41 @@
 // ============================================================
 // ACCOUNT TYPES - Types partagés entre les tabs account
 // SEUL fichier partagé autorisé au niveau NAV2
+// Types AUTONOMES - Pas d'import externe
 // ============================================================
 
-import type { OvhCredentials } from "../../../types/auth.types";
+// ============ CREDENTIALS (internalisé) ============
+
+export interface OvhCredentials {
+  nichandle: string;
+  password: string;
+}
+
+export interface OvhUser {
+  nichandle: string;
+  email: string;
+  firstname: string;
+  name: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  zip?: string;
+  country: string;
+  language: string;
+  currency?: { code: string; symbol: string };
+  legalform?: "individual" | "corporation" | "association" | "other";
+  ovhSubsidiary?: string;
+  ovhCompany?: string;
+  state?: "complete" | "incomplete";
+  customerCode?: string;
+  supportLevel?: { level: string };
+}
 
 // ============ TAB PROPS ============
 
 export interface TabProps {
   credentials: OvhCredentials;
+  user?: OvhUser | null;
 }
 
 // ============ USER / ME ============
@@ -145,4 +172,41 @@ export interface ApiApplication {
   name: string;
   description: string;
   status: "active" | "blocked";
+}
+
+// ============ SECURITY ============
+
+export interface SecurityInfo {
+  lastPasswordChangeDate?: string;
+  lastLoginDate?: string;
+  permanentCookies: boolean;
+}
+
+export interface TotpStatus {
+  isTotpEnabled: boolean;
+  backupCodesGenerated?: boolean;
+  lastModificationDate?: string;
+}
+
+export interface U2fKey {
+  id: string;
+  label: string;
+  creationDate: string;
+  lastUseDate?: string;
+}
+
+export interface IpRestriction {
+  id: number;
+  ip: string;
+  rule: "accept" | "deny";
+  warning: boolean;
+}
+
+export interface SessionInfo {
+  sessionId: string;
+  creationDate: string;
+  lastActivity: string;
+  userAgent: string;
+  ip: string;
+  current: boolean;
 }

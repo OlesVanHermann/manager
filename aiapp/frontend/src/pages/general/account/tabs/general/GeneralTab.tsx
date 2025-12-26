@@ -1,13 +1,14 @@
 // ============================================================
 // GENERAL TAB - Édition du profil utilisateur
 // Styles: ./GeneralTab.css (préfixe .general-)
-// Service: ./GeneralTab.ts (ISOLÉ)
+// Service: ./GeneralTab.service.ts (ISOLÉ)
+// Types: ../../account.types.ts (niveau NAV2 uniquement)
 // ============================================================
 
 import "./GeneralTab.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import type { OvhUser } from "../../../../../types/auth.types";
+import type { OvhUser } from "../../account.types";
 import * as generalService from "./GeneralTab.service";
 
 // ============ TYPES LOCAUX ============
