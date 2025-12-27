@@ -1,0 +1,182 @@
+# CAHIER DES CHARGES - old_manager.telecom.telephony
+# Page principale : Liste des groupes de facturation VoIP
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page principale du module Telephonie/VoIP affichant la liste des groupes de facturation (billingAccounts) de l'utilisateur.
+
+### Objectif fonctionnel
+Permettre a l'utilisateur de visualiser tous ses groupes de facturation telephonique et d'acceder aux details de chacun.
+
+### Users cibles
+- Clients OVHcloud avec services VoIP
+- Administrateurs de flottes telephoniques
+- Revendeurs telecom
+
+---
+
+## 2. ARCHITECTURE
+
+### Arborescence fichiers source
+```
+telecom/telephony/
+├── telephony.module.js
+├── telephony.routing.js
+├── telephony.controller.js
+├── telephony.component.js
+├── telephony.html
+├── telecom-telephony.less
+└── translations/Messages_fr_FR.json
+```
+
+### Patterns utilises
+- ListLayoutHelper (manager-ng-layout-helpers)
+- Composant AngularJS telecomTelephony
+- Iceberg pagination
+
+### Dependances
+- @ovh-ux/manager-ng-layout-helpers
+- OvhApiTelephonyService
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Route
+- State: `telecom.telephony.index`
+- URL: `/telephony?${ListLayoutHelper.urlQueryParams}`
+
+### Breadcrumb
+VoIP
+
+### Params URL
+- ListLayoutHelper.urlQueryParams (pagination, sort, filter)
+
+### Flux navigation
+1. Si aucun service -> Redirection vers `telecom.telephony.onboarding`
+2. Clic sur ligne -> `telecom.telephony.billingAccount`
+3. Clic "Voir services" -> `telecom.telephony.billingAccount.services`
+4. Clic "Commander" -> Ouvre https://www.ovhtelecom.fr/telephonie/voip/
+
+---
+
+## 4. COMPOSANTS UI
+
+### Datagrid (liste principale)
+| Colonne | Cle traduction | Propriete |
+|---------|----------------|-----------|
+| Groupe de facturation | telephony_billing_account_label | billingAccount |
+| Description | telephony_description_label | description |
+| Services | telephony_num_service_label | numServices |
+| Hors forfait | telephony_current_outplan_label | currentOutplan |
+| Depot de garantie | telephony_security_deposit_label | securityDeposit |
+| Statut | telephony_status_label | status |
+| Actions | telephony_table_header_action | - |
+
+### Statuts possibles
+| Valeur | Label FR |
+|--------|----------|
+| closed | Cloture |
+| deleted | Supprime |
+| enabled | OK |
+| expired | Expire |
+
+### Bouton Commander
+- Label: "Commander"
+- Cle: telephony_order
+- Action: Ouvre URL externe
+
+### Menu Actions (par ligne)
+- Voir details -> getBillingAccountLink
+- Voir services -> getBillingAccountServicesLink
+- Gerer reversements -> goToTelephonyRepayments
+
+---
+
+## 5. APIs & DONNEES
+
+### Endpoints
+
+#### Liste des billingAccounts
+```
+GET /telephony
+Headers: X-Pagination-Mode: CachedObjectList-Pages
+Response: Array<string> (billingAccount IDs)
+```
+
+#### Detail d'un billingAccount
+```
+GET /telephony/{billingAccount}
+Response: {
+  billingAccount: string,
+  description: string,
+  status: "closed" | "deleted" | "enabled" | "expired",
+  currentOutplan: number,
+  securityDeposit: number
+}
+```
+
+#### Services d'un billingAccount
+```
+GET /telephony/{billingAccount}/service
+Response: Array<string> (serviceNames)
+```
+
+### Iceberg Pattern
+```javascript
+iceberg('/telephony')
+  .query()
+  .expand('CachedObjectList-Pages')
+  .execute()
+```
+
+### Sequencement
+1. GET /telephony (liste IDs)
+2. Pour chaque ID: GET /telephony/{billingAccount} (details)
+3. Pour chaque ID: GET /telephony/{billingAccount}/service (count services)
+
+---
+
+## 6. TRADUCTIONS
+
+### Cles i18n (FR)
+| Cle | Valeur FR |
+|-----|-----------|
+| telephony_breadcrumb | VoIP |
+| telephony_title | VoIP |
+| telephony_order | Commander |
+| telephony_page_title | Ma Telephonie "{{name}}" |
+| telephony_default_title | Ma Telephonie |
+| telephony_billing_account_label | Groupe de facturation |
+| telephony_description_label | Description |
+| telephony_num_service_label | Services |
+| telephony_current_outplan_label | Hors forfait |
+| telephony_security_deposit_label | Depot de garantie |
+| telephony_status_label | Statut |
+| telephony_status_label_closed | Cloture |
+| telephony_status_label_deleted | Supprime |
+| telephony_status_label_enabled | OK |
+| telephony_status_label_expired | Expire |
+| telephony_view_billing_account_label | Detail du groupe de facturation |
+| telephony_view_billing_account_service_services | Voir les services |
+| telephony_table_header_action | Actions |
+| telephony_table_action_item_telephony_repayments | Gerer mes reversements |
+
+---
+
+## 7. REGLES METIER
+
+### Conditions d'acces
+- Utilisateur connecte avec au moins un service telephonie
+
+### Redirection automatique
+- Si resources.data.length === 0 -> telecom.telephony.onboarding
+
+### Formatage
+- currentOutplan: Affiche en euros
+- securityDeposit: Affiche en euros
+- status: Badge colore selon etat
+
+### Tracking Analytics
+- Event: telecom::telephony::index::order (clic Commander)
