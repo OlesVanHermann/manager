@@ -10,6 +10,16 @@
 
 ---
 
+## Arborescence NAV1 existante
+
+| NAV1 | Description | Exemples NAV2 |
+|------|-------------|---------------|
+| `home` | Espace client, compte, facturation | account, billing, support, carbon |
+| `web-cloud` | Hebergement web, bases de donnees | hebergement, private-database |
+| `bare-metal` | Serveurs dedies, Private Cloud | dedicated, nutanix |
+
+---
+
 ## ⚠️ REGLES CRITIQUES - LIRE EN PREMIER ⚠️
 
 ### REGLE 0 : ZERO HALLUCINATION
@@ -94,22 +104,58 @@ EOFSVG
 
 ## Convention de nommage
 
-### Noms de fichiers
-```
-{PREFIX}.{NAV1}.{NAV2}.svg                # Page principale
-{PREFIX}.{NAV1}.{NAV2}.tab-{nom}.svg      # Onglet specifique
-{PREFIX}.{NAV1}.{NAV2}.modal-{action}.svg # Modal
-{PREFIX}.{NAV1}.{NAV2}.state-{etat}.svg   # Etat (empty, error)
-```
+### Patterns de fichiers SVG
+
+| Pattern | Usage | Exemple |
+|---------|-------|---------|
+| `{PREFIX}.{NAV1}.{NAV2}.svg` | Page principale / dashboard | `old_manager.home.billing.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.tab-{nom}.svg` | Onglet specifique | `old_manager.web-cloud.hebergement.tab-ssl.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.modal-{action}.svg` | Modal / dialog | `old_manager.home.billing.modal-terminate.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.list-{nom}.svg` | Liste d'elements | `old_manager.web-cloud.hebergement.list-hostings.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.{nom}-detail.svg` | Page de detail | `old_manager.home.support.ticket-detail.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.onboarding.svg` | Page onboarding / empty state | `old_manager.web-cloud.hebergement.onboarding.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.state-{etat}.svg` | Etat specifique (empty, error, loading) | `old_manager.web-cloud.hosting.state-empty.svg` |
 
 ### Arborescence complete
 ```
 /mnt/user-data/outputs/{PREFIX}_svg/
-  └── {NAV1}/
-      └── {NAV2}/
-          └── {PREFIX}.{NAV1}.{NAV2}.svg
-          └── {PREFIX}.{NAV1}.{NAV2}.tab-ssl.svg
-          └── {PREFIX}.{NAV1}.{NAV2}.modal-order.svg
+  ├── home/
+  │   ├── account/
+  │   │   ├── old_manager.home.account.svg
+  │   │   ├── old_manager.home.account.tab-infos.svg
+  │   │   ├── old_manager.home.account.tab-security.svg
+  │   │   ├── old_manager.home.account.modal-2fa-totp.svg
+  │   │   └── old_manager.home.account.modal-change-password.svg
+  │   ├── billing/
+  │   │   ├── old_manager.home.billing.svg
+  │   │   ├── old_manager.home.billing.tab-history.svg
+  │   │   ├── old_manager.home.billing.tab-autorenew.svg
+  │   │   ├── old_manager.home.billing.modal-terminate.svg
+  │   │   └── old_manager.home.billing.modal-export-csv.svg
+  │   └── support/
+  │       ├── old_manager.home.support.svg
+  │       ├── old_manager.home.support.ticket-detail.svg
+  │       ├── old_manager.home.support.modal-new-ticket.svg
+  │       └── old_manager.home.support.modal-close-ticket.svg
+  ├── web-cloud/
+  │   ├── hebergement/
+  │   │   ├── old_manager.web-cloud.hebergement.svg
+  │   │   ├── old_manager.web-cloud.hebergement.list-hostings.svg
+  │   │   ├── old_manager.web-cloud.hebergement.onboarding.svg
+  │   │   ├── old_manager.web-cloud.hebergement.tab-general.svg
+  │   │   ├── old_manager.web-cloud.hebergement.tab-multisite.svg
+  │   │   └── old_manager.web-cloud.hebergement.tab-database.svg
+  │   └── private-database/
+  │       ├── old_manager.web-cloud.private-database.svg
+  │       ├── old_manager.web-cloud.private-database.onboarding.svg
+  │       ├── old_manager.web-cloud.private-database.tab-user.svg
+  │       ├── old_manager.web-cloud.private-database.modal-add-user.svg
+  │       └── old_manager.web-cloud.private-database.modal-oom.svg
+  └── bare-metal/
+      └── dedicated/
+          ├── old_manager.bare-metal.dedicated.svg
+          ├── old_manager.bare-metal.dedicated.tab-operations.svg
+          └── old_manager.bare-metal.dedicated.modal-terminate.svg
 ```
 
 ### Exemple concret
@@ -118,8 +164,11 @@ Input : old_manager.web-cloud.hosting.tar
 
 Output :
 /mnt/user-data/outputs/old_manager_svg/web-cloud/hosting/
-  └── old_manager.web-cloud.hosting.svg
-  └── old_manager.web-cloud.hosting.tab-ssl.svg
+  ├── old_manager.web-cloud.hosting.svg
+  ├── old_manager.web-cloud.hosting.list-hostings.svg
+  ├── old_manager.web-cloud.hosting.onboarding.svg
+  ├── old_manager.web-cloud.hosting.tab-ssl.svg
+  ├── old_manager.web-cloud.hosting.tab-database.svg
   └── old_manager.web-cloud.hosting.modal-order.svg
 ```
 
@@ -247,6 +296,28 @@ const tabs = [
 </g>
 ```
 
+### Onboarding / Empty State
+```typescript
+<Onboarding ... />
+// ou
+{data.length === 0 && <EmptyState />}
+// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.onboarding.svg
+```
+
+### Page de detail
+```typescript
+// Route : /support/tickets/:ticketId
+<TicketDetail ticket={ticket} />
+// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.ticket-detail.svg
+```
+
+### Liste / Listing
+```typescript
+// Page qui liste plusieurs ressources avant selection
+<HostingList hostings={hostings} />
+// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.list-hostings.svg
+```
+
 ---
 
 ## Rapport de generation
@@ -263,10 +334,16 @@ NAV2 : hosting
 - Colonnes : [...]
 - ActionMenu (⋮) : [TOUTES LES ACTIONS]
 - Modals : [...]
+- Onboarding : [oui/non]
+- Pages detail : [...]
+- Listes : [...]
 
 === SVG GENERES ===
 1. ✅ old_manager.web-cloud.hosting.svg (XX Ko)
-2. ✅ old_manager.web-cloud.hosting.modal-order.svg (XX Ko)
+2. ✅ old_manager.web-cloud.hosting.list-hostings.svg (XX Ko)
+3. ✅ old_manager.web-cloud.hosting.onboarding.svg (XX Ko)
+4. ✅ old_manager.web-cloud.hosting.tab-ssl.svg (XX Ko)
+5. ✅ old_manager.web-cloud.hosting.modal-order.svg (XX Ko)
 ```
 
 ---
@@ -274,6 +351,8 @@ NAV2 : hosting
 ## Checklist finale
 
 - [ ] PREFIX detecte (old_manager / new_manager)
+- [ ] NAV1 identifie (home / web-cloud / bare-metal)
+- [ ] NAV2 identifie
 - [ ] Arborescence creee dans `/mnt/user-data/outputs/`
 - [ ] SVG ecrit avec `tee` (pas affiche)
 - [ ] `present_files` appele
@@ -281,6 +360,9 @@ NAV2 : hosting
 - [ ] Tokens CSS utilises (pas de hex hardcode)
 - [ ] ActionMenu affiches OUVERTS
 - [ ] Textes en francais
+- [ ] Onboarding genere si present
+- [ ] Pages detail generees si presentes
+- [ ] Listes generees si presentes
 
 ---
 
