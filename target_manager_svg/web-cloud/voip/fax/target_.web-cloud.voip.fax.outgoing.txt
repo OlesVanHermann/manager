@@ -1,0 +1,155 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.outgoing.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/fax/{serviceName}/outgoing
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Fax | NAV4=Envoyes
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Liste des fax envoyes avec suivi statut, tentatives et cout.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972101234            | GET /telephony/{ba}/fax/{sn} → serviceName              |
+| Fax Pro                  | GET /telephony/{ba}/fax/{sn} → description              |
+| 28/12/2024 11:00         | GET /telephony/{ba}/fax/{sn}/outgoing → dateTime        |
+| +33 1 23 45 67 89        | outgoing[].destination                                  |
+| 2                        | outgoing[].pages                                        |
+| 00:32                    | outgoing[].duration (format mm:ss)                      |
+| 1/3                      | outgoing[].attempts / maxAttempts                       |
+| Envoye/Echec/En cours    | outgoing[].status                                       |
+| 2 credits                | outgoing[].credits                                      |
+| 24                       | count(outgoing) ce mois                                 |
+| 67                       | sum(outgoing[].pages) ce mois                           |
+| 95.8%                    | success rate                                            |
+| 58                       | sum(outgoing[].credits) ce mois                         |
+| 3,45 € HT                | cost total                                              |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Barre recherche
+   - Liste des fax avec statut
+
+2. RIGHT PANEL (1096px)
+   - Header: Numero + Description
+   - NAV4 tabs: General | Envoi | Campagnes | Recus | [Envoyes] | Consommation | Messagerie | Filtrage
+
+   - TOOLBAR:
+     * Bouton refresh
+     * Recherche
+     * Filtre periode (dropdown)
+     * Filtre statut (dropdown)
+     * Bouton Export CSV
+
+   - TABLE FAX ENVOYES (1056x330):
+     * Colonnes: Date | Destinataire | Pages | Duree | Tentatives | Statut | Cout | Actions
+     * Actions: Voir, Reessayer (si echec)
+     * Ligne echec: fond rouge pale
+     * Ligne en cours: fond jaune pale
+
+   - PAGINATION
+
+   - BLOC: Resume du mois (1056x100)
+     * Total fax envoyes, Pages transmises, Taux reussite, Credits utilises, Cout total
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste fax envoyes
+GET /telephony/{billingAccount}/fax/{serviceName}/outgoing
+Query: { dateTime.from, dateTime.to, status }
+Response: [{
+  id, dateTime, destination, pages, duration, attempts, maxAttempts,
+  status, credits, cost
+}]
+
+### Detail fax
+GET /telephony/{billingAccount}/fax/{serviceName}/outgoing/{id}
+Response: { ... + history[] }
+
+### Reessayer envoi
+POST /telephony/{billingAccount}/fax/{serviceName}/outgoing/{id}/retry
+
+### Export liste
+GET /telephony/{billingAccount}/fax/{serviceName}/outgoing/export
+Query: { dateTime.from, dateTime.to, format: 'csv' }
+
+================================================================================
+
+## STATUTS FAX ENVOYE
+
+| Statut   | Badge  | Description                    |
+|----------|--------|--------------------------------|
+| Envoye   | Vert   | Fax transmis avec succes       |
+| Echec    | Rouge  | Echec apres toutes tentatives  |
+| En cours | Orange | Envoi ou tentatives en cours   |
+| Annule   | Gris   | Annule par utilisateur         |
+
+================================================================================
+
+## FILTRES
+
+### Periode
+| Option        | Description           |
+|---------------|-----------------------|
+| Ce mois       | Mois en cours         |
+| 7 derniers j  | 7 derniers jours      |
+| 30 derniers j | 30 derniers jours     |
+| Personnalise  | Date debut / fin      |
+
+### Statut
+| Option      | Description              |
+|-------------|--------------------------|
+| Tous        | Tous les statuts         |
+| Envoyes     | Succes seulement         |
+| Echecs      | Echecs seulement         |
+| En cours    | En attente / tentative   |
+
+================================================================================
+
+## ACTIONS
+
+| Action        | API                                              |
+|---------------|--------------------------------------------------|
+| Voir          | GET .../outgoing/{id}                            |
+| Reessayer     | POST .../outgoing/{id}/retry                     |
+| Export CSV    | GET .../outgoing/export                          |
+| Refresh       | GET .../outgoing (reload)                        |
+
+================================================================================
+
+## REGLES METIER
+
+- 3 tentatives automatiques en cas d'echec
+- Delai entre tentatives: 5 min, 15 min, 30 min
+- Fax en cours: statut mis a jour en temps reel
+- Credits debites apres succes uniquement
+- Historique conserve 90 jours
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxOutgoingTab (container)
+- OutgoingFaxTable (tableau pagine)
+- FaxStatusBadge
+- FaxRetryButton
+- FaxViewButton
+- PeriodFilter
+- StatusFilter
+- OutgoingSummaryCard
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

@@ -1,0 +1,101 @@
+# Cahier des Charges : telecom/sms - Modal Resilier numero virtuel
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de confirmation de resiliation d'un numero virtuel SMS.
+
+### Objectif fonctionnel
+- Confirmer la resiliation d'un numero virtuel
+- Informer de la date de fin
+- Avertir des consequences
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec warning + confirmation
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal Header
+| Element | Description |
+|---------|-------------|
+| Titre | Resilier le numero virtuel |
+| Bouton fermer | X en haut a droite |
+
+### Alerte Warning
+| Type | Message |
+|------|---------|
+| Warning | La resiliation prendra effet a la fin de la periode de facturation en cours. Vous ne pourrez plus recevoir de SMS sur ce numero. |
+
+### Info numero
+| Element | Description |
+|---------|-------------|
+| Label | Numero a resilier |
+| Valeur | +33 6 12 34 56 78 (fond gris) |
+
+### Date de fin
+| Element | Description |
+|---------|-------------|
+| Texte | Date de fin : 31/01/2026 |
+| Note | Apres cette date, le numero sera libere et pourra etre reassigne. |
+
+### Confirmation
+| Element | Type | Description |
+|---------|------|-------------|
+| Checkbox | Checkbox | Je confirme vouloir resilier ce numero virtuel |
+| Fond | Danger light | Zone rouge pour attirer attention |
+
+### Boutons
+| Bouton | Type | Action |
+|--------|------|--------|
+| Annuler | Secondary | Ferme la modal |
+| Resilier | Danger | Execute la resiliation |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoint
+```
+POST /sms/{serviceName}/virtualNumbers/{number}/terminate
+    Body: { confirmTermination: true }
+    Response: { terminationDate, taskId }
+
+GET /sms/{serviceName}/virtualNumbers/{number}
+    Response: {
+      number: "+33612345678",
+      expirationDate: "2026-01-31",
+      status: "active"
+    }
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "sms_sender_terminate_title": "Resilier le numero virtuel",
+  "sms_sender_terminate_warning": "La resiliation prendra effet a la fin de la periode de facturation en cours. Vous ne pourrez plus recevoir de SMS sur ce numero.",
+  "sms_sender_terminate_number": "Numero a resilier",
+  "sms_sender_terminate_end_date": "Date de fin :",
+  "sms_sender_terminate_note": "Apres cette date, le numero sera libere et pourra etre reassigne.",
+  "sms_sender_terminate_confirm": "Je confirme vouloir resilier ce numero virtuel",
+  "sms_sender_terminate_cancel": "Annuler",
+  "sms_sender_terminate_submit": "Resilier"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Resiliation effective en fin de periode
+- Numero non recuperable apres liberation
+- SMS entrants bloques a la date de fin
+- Confirmation checkbox obligatoire
+- Bouton desactive sans confirmation

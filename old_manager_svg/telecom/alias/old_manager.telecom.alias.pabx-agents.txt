@@ -1,0 +1,118 @@
+# Cahier des Charges : telecom/alias - PABX Agents
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion des agents du PABX (operateurs).
+
+### Objectif fonctionnel
+- Ajouter des agents a une file
+- Configurer les parametres par agent
+- Gerer le statut des agents
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec liste agents + configuration
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Agents |
+| Bouton | + Ajouter un agent |
+
+### Liste agents
+| Colonne | Description |
+|---------|-------------|
+| Ordre | Position dans la file |
+| Numero | Numero de l'agent |
+| Statut | Actif/Inactif |
+| Timeout | Delai sonnerie |
+| Wrap-up | Temps de repos |
+| Actions | Modifier / Supprimer |
+
+### Statut agent
+| Statut | Badge | Description |
+|--------|-------|-------------|
+| available | Vert | Disponible |
+| inAQueue | Bleu | En appel |
+| loggedOut | Gris | Deconnecte |
+
+### Formulaire agent
+| Champ | Type | Description |
+|-------|------|-------------|
+| Numero | Input + recherche | Selection ligne |
+| Timeout | Number (s) | Delai sonnerie |
+| Wrap-up | Number (s) | Temps repos |
+| Simultanes | Number | Appels simultanes |
+
+### Controles ordre
+| Element | Description |
+|---------|-------------|
+| Fleches | Monter/Descendre |
+| Drag | Glisser-deposer |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Enregistrer | Primary | Sauvegarde |
+| Annuler | Default | Annule |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent/{agentId}
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent/{agentId}
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent/{agentId}
+```
+
+### Modele Agent
+```typescript
+interface OvhPabxHuntingAgent {
+  agentId: number;
+  number: string;
+  position: number;
+  status: 'available' | 'inAQueue' | 'loggedOut';
+  timeout: number;
+  wrapUpTime: number;
+  simultaneousLines: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_pabx_agents_title": "Agents",
+  "alias_pabx_agents_add": "Ajouter un agent",
+  "alias_pabx_agents_number": "Numero",
+  "alias_pabx_agents_status": "Statut",
+  "alias_pabx_agents_timeout": "Timeout",
+  "alias_pabx_agents_wrapup": "Temps de repos",
+  "alias_pabx_agents_simultaneous": "Lignes simultanees",
+  "alias_pabx_agents_available": "Disponible",
+  "alias_pabx_agents_busy": "En appel",
+  "alias_pabx_agents_offline": "Deconnecte"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Ordre determine la priorite
+- Timeout min: 5 secondes
+- Wrap-up max: 300 secondes
+- Agent doit etre une ligne VoIP valide

@@ -1,0 +1,168 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.carrier-sip.endpoints.svg
+Route:   /web-cloud/voip/carrier-sip/{serviceName}/endpoints
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Carrier SIP | NAV4=Endpoints
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des endpoints SIP (points de terminaison) pour un trunk Carrier SIP.
+Liste, ajout, modification et suppression des endpoints avec configuration globale.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| endpoint-001             | GET /telephony/{ba}/carrierSip/{sn}/endpoints → id      |
+| 192.168.1.100            | endpoints[].ip                                          |
+| sip.entreprise.com       | endpoints[].hostname                                    |
+| 5060                     | endpoints[].port                                        |
+| UDP/TLS/TCP              | endpoints[].protocol                                    |
+| G.711, G.729             | endpoints[].codecs[]                                    |
+| En ligne/Hors ligne      | endpoints[].status                                      |
+| Il y a 2 min             | endpoints[].lastActivity (format relatif)               |
+| 5 endpoints              | endpoints.length                                        |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Barre recherche
+   - NAV3 tabs: Lignes | Numéros | Fax | [Carrier SIP]
+   - Liste des trunks avec statut
+   - Pagination
+
+2. RIGHT PANEL (1096px)
+   - Header: Service Name + Description
+   - NAV4 tabs: Général | [Endpoints] | CDR | Paramètres
+
+   - TOOLBAR:
+     * Bouton refresh
+     * Recherche endpoint
+     * Bouton + Ajouter endpoint
+
+   - TABLE ENDPOINTS (1040x300):
+     * Colonnes: ID | IP/Host | Port | Protocole | Codecs | Statut | Dernière activité | Actions
+     * Ligne erreur: fond rouge pâle
+     * Ligne warning: fond jaune pâle
+     * Actions: Modifier (✎), Supprimer (✕)
+
+   - PAGINATION
+
+   - BLOC: Configuration SIP globale (1040x100)
+     * Protocole par défaut (dropdown)
+     * Codec préféré (dropdown)
+     * DTMF mode (dropdown)
+     * Max sessions simultanées (input)
+     * Timeout (input)
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste endpoints
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/endpoints
+Response: [{
+  id, ip, hostname, port, protocol, codecs[], status, lastActivity
+}]
+
+### Créer endpoint
+POST /telephony/{billingAccount}/carrierSip/{serviceName}/endpoints
+Body: {
+  ip, hostname, port, protocol, codecs[]
+}
+
+### Modifier endpoint
+PUT /telephony/{billingAccount}/carrierSip/{serviceName}/endpoints/{id}
+Body: {
+  ip, hostname, port, protocol, codecs[]
+}
+
+### Supprimer endpoint
+DELETE /telephony/{billingAccount}/carrierSip/{serviceName}/endpoints/{id}
+
+### Configuration globale
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/settings
+PUT /telephony/{billingAccount}/carrierSip/{serviceName}/settings
+Body: {
+  defaultProtocol, preferredCodec, dtmfMode, maxConcurrent, timeout
+}
+
+================================================================================
+
+## STATUTS ENDPOINT
+
+| Statut      | Badge     | Couleur fond ligne | Description               |
+|-------------|-----------|-------------------|---------------------------|
+| En ligne    | Vert      | Blanc             | Endpoint opérationnel     |
+| Hors ligne  | Rouge     | #FEF2F2           | Endpoint non joignable    |
+| Dégradé     | Orange    | #FFFBEB           | Problèmes intermittents   |
+| Maintenance | Gris      | #F3F4F6           | Maintenance planifiée     |
+
+================================================================================
+
+## PROTOCOLES SUPPORTES
+
+| Protocole | Port par défaut | Description                    |
+|-----------|-----------------|--------------------------------|
+| UDP       | 5060            | Standard, pas de chiffrement   |
+| TCP       | 5060            | Fiable, pas de chiffrement     |
+| TLS       | 5061            | Chiffré, recommandé production |
+| WSS       | 443             | WebSocket sécurisé             |
+
+================================================================================
+
+## CODECS SUPPORTES
+
+| Codec    | Bande passante | Qualité | Usage                      |
+|----------|----------------|---------|----------------------------|
+| G.711a   | 64 kbps        | Haute   | Réseaux locaux, qualité    |
+| G.711u   | 64 kbps        | Haute   | Standard Amérique Nord     |
+| G.729    | 8 kbps         | Moyenne | WAN, économie bande        |
+| G.722    | 64 kbps        | HD      | VoIP HD                    |
+| Opus     | Variable       | HD      | WebRTC, moderne            |
+
+================================================================================
+
+## ACTIONS
+
+| Bouton            | API                                                          |
+|-------------------|--------------------------------------------------------------|
+| Refresh           | GET /telephony/{ba}/carrierSip/{sn}/endpoints                |
+| + Ajouter         | → Modal création endpoint                                    |
+| Modifier (✎)      | → Modal édition endpoint                                     |
+| Supprimer (✕)     | DELETE .../endpoints/{id} + confirmation                     |
+| Appliquer config  | PUT /telephony/{ba}/carrierSip/{sn}/settings                 |
+
+================================================================================
+
+## REGLES METIER
+
+- Maximum 10 endpoints par trunk (selon offre)
+- IP ou hostname requis (pas les deux)
+- Port doit être entre 1024 et 65535
+- Au moins un codec requis
+- Suppression impossible si dernier endpoint actif
+- Configuration globale appliquée aux nouveaux endpoints
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- EndpointsTab (container)
+- EndpointsTable (table paginée)
+- EndpointStatusBadge
+- EndpointCreateModal
+- EndpointEditModal
+- EndpointDeleteConfirmModal
+- SipConfigForm
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

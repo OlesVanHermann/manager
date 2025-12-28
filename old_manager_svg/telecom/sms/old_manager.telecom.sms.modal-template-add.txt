@@ -1,0 +1,121 @@
+# Cahier des Charges : telecom/sms - Modal Ajouter modele de message
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de creation d'un modele de message SMS.
+
+### Objectif fonctionnel
+- Creer un modele reutilisable
+- Definir les variables dynamiques
+- Soumettre a validation
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec formulaire multi-champs
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal Header
+| Element | Description |
+|---------|-------------|
+| Titre | Ajouter un modele de message |
+| Bouton fermer | X en haut a droite |
+
+### Alerte Info
+| Type | Message |
+|------|---------|
+| Info | Les modeles sont obligatoires pour envoyer des SMS vers les Etats-Unis. |
+| Info | Delimitez les variables avec le caractere #. |
+
+### Formulaire
+| Champ | Type | Description |
+|-------|------|-------------|
+| Nom du modele | Input | Ex: Code de verification, Alerte serveur... |
+| Type de message | Radio | Transactionnel, Alerte, Authentification |
+| Contenu du message | Textarea | Corps du message avec variables |
+
+### Types de message
+| Type | Description |
+|------|-------------|
+| Transactionnel | Confirmation commande, livraison |
+| Alerte | Notifications urgentes |
+| Authentification | Codes OTP, 2FA |
+
+### Aide variables
+| Element | Description |
+|---------|-------------|
+| Detection | Variables detectees : #CODE#, #MINUTES# |
+| Note | Le modele sera soumis a validation avant activation (24-48h). |
+
+### CGU
+| Element | Description |
+|---------|-------------|
+| Checkbox | J'accepte les conditions d'utilisation des modeles SMS |
+
+### Boutons
+| Bouton | Type | Action |
+|--------|------|--------|
+| Annuler | Secondary | Ferme la modal |
+| Soumettre | Primary | Envoie pour validation |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoint
+```
+POST /sms/{serviceName}/templates
+    Body: {
+      name: "Code de verification",
+      type: "authentication",
+      content: "Your verification code is #CODE#. This code expires in #MINUTES# minutes.",
+      acceptTerms: true
+    }
+    Response: { templateId, status: "pending_validation" }
+```
+
+### Statuts modele
+| Statut | Description |
+|--------|-------------|
+| pending_validation | En attente de validation |
+| validated | Valide et utilisable |
+| rejected | Refuse (raison fournie) |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "sms_template_add_title": "Ajouter un modele de message",
+  "sms_template_add_info_us": "Les modeles sont obligatoires pour envoyer des SMS vers les Etats-Unis.",
+  "sms_template_add_info_vars": "Delimitez les variables avec le caractere #.",
+  "sms_template_add_name": "Nom du modele",
+  "sms_template_add_name_placeholder": "Ex: Code de verification, Alerte serveur...",
+  "sms_template_add_type": "Type de message",
+  "sms_template_add_type_transactional": "Transactionnel",
+  "sms_template_add_type_alert": "Alerte",
+  "sms_template_add_type_auth": "Authentification",
+  "sms_template_add_content": "Contenu du message",
+  "sms_template_add_vars_detected": "Variables detectees :",
+  "sms_template_add_validation_note": "Le modele sera soumis a validation avant activation (24-48h).",
+  "sms_template_add_terms": "J'accepte les conditions d'utilisation des modeles SMS",
+  "sms_template_add_cancel": "Annuler",
+  "sms_template_add_submit": "Soumettre"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Variables delimitees par # (ex: #CODE#)
+- Modele obligatoire pour envois US (10DLC)
+- Validation manuelle 24-48h
+- Type determine les restrictions
+- CGU obligatoires pour soumettre

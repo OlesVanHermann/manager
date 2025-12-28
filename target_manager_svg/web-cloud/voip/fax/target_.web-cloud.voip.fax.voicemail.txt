@@ -1,0 +1,161 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.voicemail.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/fax/{serviceName}/voicemail
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Fax | NAV4=Messagerie
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion du repondeur fax (messagerie vocale). Configuration, ecoute
+des messages et parametrage des options.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972101234            | GET /telephony/{ba}/fax/{sn} → serviceName              |
+| Fax Pro                  | GET /telephony/{ba}/fax/{sn} → description              |
+| Active/Inactive          | GET /telephony/{ba}/fax/{sn}/voicemail → enabled        |
+| 3                        | voicemail → unreadCount                                 |
+| 12 / 50                  | voicemail → messageCount / maxMessages                  |
+| 24%                      | voicemail → usedPercent                                 |
+| contact@entreprise.com   | voicemail → notificationEmail                           |
+| Personnalisee/Standard   | voicemail → greetingType                                |
+| 5 sonneries              | voicemail → ringCount                                   |
+| 3 minutes                | voicemail → maxDuration                                 |
+| 30 jours                 | voicemail → retention                                   |
+| ****                     | voicemail → pin (masque)                                |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Barre recherche
+   - Liste des fax avec statut
+
+2. RIGHT PANEL (1096px)
+   - Header: Numero + Description
+   - NAV4 tabs: General | Envoi | Campagnes | Recus | Envoyes | Consommation | [Messagerie] | Filtrage
+
+   - CARDS NAVIGATION (4x):
+     * Activation, Options, Gestion des messages, Annonce personnalisee
+
+   - BLOC: Etat du repondeur (515x180)
+     * Toggle statut (Active/Inactive)
+     * Messages non lus (compteur)
+     * Capacite utilisee (X / Y)
+     * Espace (pourcentage)
+
+   - BLOC: Derniers messages (515x180)
+     * Liste 3 derniers messages
+     * Messages non lus: fond jaune pale
+     * Action: Ecouter
+
+   - BLOC: Options actuelles (1056x200)
+     * 5 colonnes: Notification | Annonce | Messages | Acces | Actions
+     * Email notification, joindre audio
+     * Type annonce, sonneries
+     * Duree max, conservation
+     * Code PIN, acces distant
+     * Boutons: Modifier options, Gerer messages
+
+   - BLOC: Statistiques du mois (1056x120)
+     * Messages recus, ecoutes, supprimes, duree totale, espace utilise
+
+================================================================================
+
+## API ENDPOINTS
+
+### Configuration messagerie
+GET /telephony/{billingAccount}/fax/{serviceName}/voicemail
+Response: {
+  enabled, unreadCount, messageCount, maxMessages, usedPercent,
+  notificationEmail, attachAudio, greetingType, ringCount,
+  maxDuration, retention, remoteAccess
+}
+
+PUT /telephony/{billingAccount}/fax/{serviceName}/voicemail
+Body: { enabled, notificationEmail, attachAudio, ringCount, ... }
+
+### Liste messages
+GET /telephony/{billingAccount}/fax/{serviceName}/voicemail/messages
+Response: [{
+  id, dateTime, caller, duration, status (read|unread)
+}]
+
+### Ecouter message
+GET /telephony/{billingAccount}/fax/{serviceName}/voicemail/messages/{id}/audio
+Response: Audio stream (MP3)
+
+### Supprimer message
+DELETE /telephony/{billingAccount}/fax/{serviceName}/voicemail/messages/{id}
+
+### Modifier PIN
+POST /telephony/{billingAccount}/fax/{serviceName}/voicemail/changePin
+Body: { currentPin, newPin }
+
+### Annonce personnalisee
+POST /telephony/{billingAccount}/fax/{serviceName}/voicemail/greeting
+Body: multipart (audio file)
+
+================================================================================
+
+## OPTIONS MESSAGERIE
+
+### Notification
+| Option          | Description                    |
+|-----------------|--------------------------------|
+| Email           | Adresse notification           |
+| Joindre audio   | MP3/WAV en PJ                  |
+
+### Annonce
+| Type          | Description                      |
+|---------------|----------------------------------|
+| Standard      | Annonce OVH par defaut           |
+| Personnalisee | Fichier audio custom             |
+
+### Messages
+| Option        | Valeurs                          |
+|---------------|----------------------------------|
+| Duree max     | 1-5 minutes                      |
+| Conservation  | 7, 14, 30, 60, 90 jours          |
+
+### Acces
+| Option        | Description                      |
+|---------------|----------------------------------|
+| Code PIN      | 4 chiffres                       |
+| Acces distant | Consultation depuis exterieur    |
+
+================================================================================
+
+## REGLES METIER
+
+- PIN: 4 chiffres obligatoires
+- Annonce personnalisee: MP3/WAV max 2 Mo, 2 min
+- Capacite: 50 messages max par defaut
+- Messages non lus: fond jaune pale dans liste
+- Conservation: suppression auto apres delai
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxVoicemailTab (container)
+- VoicemailStatusCard (etat)
+- RecentMessagesCard (derniers messages)
+- VoicemailOptionsCard (configuration)
+- VoicemailStatsCard (statistiques)
+- AudioPlayer (lecture message)
+- VoicemailSettingsModal
+- ChangePinModal
+- UploadGreetingModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================
