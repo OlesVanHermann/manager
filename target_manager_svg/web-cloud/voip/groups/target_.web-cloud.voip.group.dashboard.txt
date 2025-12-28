@@ -1,0 +1,102 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.group.dashboard.svg
+Route:   /web-cloud/voip/groups/{billingAccount}
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Dashboard du groupe VoIP affichant un résumé des statistiques d'appels,
+consommation, crédit et derniers appels. Vue après sélection d'un groupe.
+
+================================================================================
+
+## STRUCTURE PAGE
+
+### NAV1 (y=0, h=50)
+- Web Cloud actif
+
+### NAV2 (y=50, h=40)  
+- VoIP actif
+
+### LEFT PANEL (x=24, y=105, w=280)
+- NAV3 Tabs: [Lignes] | Numéros | Fax | Abrégés
+- Recherche service
+- Liste des lignes du groupe (si tab Lignes actif)
+
+### RIGHT PANEL (x=320, y=105, w=1096)
+- Breadcrumb: ← Retour aux groupes
+- Header: Nom groupe + billingAccount
+- NAV4 Tabs: [Dashboard] | Services | Répertoire | Facturation | Administration
+- Contenu Dashboard
+
+================================================================================
+
+## DONNÉES DYNAMIQUES
+
+| Élément SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| Appels aujourd'hui    | GET /telephony/{ba}/historyConsumption        |
+| Durée moyenne         | Calculé depuis historyConsumption             |
+| Consommation mois     | GET /telephony/{ba}/historyConsumption        |
+| Crédit disponible     | GET /telephony/{ba} → currentOutplan          |
+| Derniers appels       | GET /telephony/{ba}/historyConsumption (last) |
+| Relevés               | GET /telephony/{ba}/historyRepaymentConsumption|
+| Liste lignes          | GET /telephony/{ba}/line                      |
+
+================================================================================
+
+## CONTENU DASHBOARD
+
+### Bloc Statistiques (4 cards)
+1. Appels aujourd'hui: nombre + évolution vs hier
+2. Durée moyenne: mm:ss
+3. Consommation mois: montant / budget
+4. Crédit disponible: montant + bouton recharger
+
+### Bloc Derniers appels (table)
+Colonnes: Date/Heure | Ligne | Destination | Durée | Type | Coût
+- Type: badge Sortant (vert) ou Entrant (bleu)
+- Lien "Voir tout →" vers historique complet
+
+### Bloc Derniers relevés (3 cards)
+- Mois précédents avec montant total
+- Lien téléchargement PDF
+
+================================================================================
+
+## NAV3 - TABS LEFT PANEL
+
+| Tab     | Actif | Route                              |
+|---------|-------|-----------------------------------|
+| Lignes  | ●     | /groups/{ba}/lines                |
+| Numéros |       | /groups/{ba}/numbers              |
+| Fax     |       | /groups/{ba}/fax                  |
+| Abrégés |       | /groups/{ba}/abbreviated          |
+
+================================================================================
+
+## NAV4 - TABS RIGHT PANEL
+
+| Tab            | Actif | Route                        |
+|----------------|-------|------------------------------|
+| Dashboard      | ●     | /groups/{ba}                 |
+| Services       |       | /groups/{ba}/services        |
+| Répertoire     |       | /groups/{ba}/phonebook       |
+| Facturation    |       | /groups/{ba}/billing         |
+| Administration |       | /groups/{ba}/admin           |
+
+================================================================================
+
+## ACTIONS
+
+| Action          | Déclencheur     | API/Navigation                    |
+|-----------------|-----------------|-----------------------------------|
+| Retour groupes  | Breadcrumb      | /web-cloud/voip                   |
+| Recharger crédit| Bouton card     | Modal POST /telephony/{ba}/credit |
+| Voir tout appels| Lien table      | /groups/{ba}/consumption          |
+| Télécharger PDF | Icône relevé    | GET /telephony/{ba}/document/{id} |
+
+================================================================================

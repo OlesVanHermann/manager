@@ -1,0 +1,110 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.group.billing.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/billing
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Page de facturation du groupe VoIP avec vue sur le crédit, la consommation
+mensuelle et le détail par type d'appel.
+
+================================================================================
+
+## STRUCTURE PAGE
+
+### NAV4 Tabs
+- Dashboard | Services | Répertoire | [Facturation] | Administration
+
+### NAV5 Sous-tabs
+- [Consommation] | Factures | Crédit
+
+### Contenu (tab Consommation)
+- Card crédit disponible
+- Card consommation du mois
+- Card évolution mensuelle
+- Table détail consommation
+- Actions export
+
+================================================================================
+
+## DONNÉES DYNAMIQUES
+
+| Élément SVG          | Source API                                |
+|----------------------|-------------------------------------------|
+| Crédit disponible    | GET /telephony/{ba} → currentOutplan      |
+| Seuil alerte         | GET /telephony/{ba} → creditThreshold     |
+| Conso mois           | GET /telephony/{ba}/historyConsumption    |
+| Détail par type      | GET /telephony/{ba}/historyConsumption    |
+| Évolution            | Calcul depuis historyConsumption          |
+
+================================================================================
+
+## CARDS HEADER
+
+### Card Crédit (fond bleu info)
+- Montant crédit disponible
+- Seuil d'alerte paramétré
+- Bouton "+ Recharger"
+
+### Card Consommation mois
+- Montant consommé
+- Budget mensuel
+- Barre progression %
+
+### Card Évolution
+- % variation vs mois précédent
+- Mini graphique tendance
+
+================================================================================
+
+## TABLE DÉTAIL CONSOMMATION
+
+| Colonne      | Description                    |
+|--------------|--------------------------------|
+| Type         | Nationaux fixe, Mobiles, International |
+| Appels       | Nombre total appels            |
+| Durée totale | HH:mm format                   |
+| Coût HT      | Montant hors taxes             |
+| Coût TTC     | Montant TTC                    |
+| % du total   | Barre proportion + %           |
+
+### Ligne Total
+- Somme de toutes les colonnes
+- Fond gris
+
+================================================================================
+
+## NAV5 - SOUS-TABS FACTURATION
+
+| Tab          | Contenu                              |
+|--------------|--------------------------------------|
+| Consommation | Détail conso actuelle (ce SVG)       |
+| Factures     | Historique factures PDF              |
+| Crédit       | Gestion rechargement crédit          |
+
+================================================================================
+
+## ACTIONS
+
+| Action        | Déclencheur     | API                              |
+|---------------|-----------------|----------------------------------|
+| Recharger     | Bouton card     | Modal rechargement               |
+| Exporter CSV  | Bouton export   | GET /telephony/{ba}/historyConsumption?format=csv |
+| Exporter PDF  | Bouton export   | GET /telephony/{ba}/document     |
+
+================================================================================
+
+## TYPES D'APPELS
+
+| Type                  | Code API        |
+|-----------------------|-----------------|
+| Appels nationaux fixe | national        |
+| Appels mobiles        | mobile          |
+| Appels internationaux | international   |
+| Numéros spéciaux      | special         |
+| Appels entrants       | incoming        |
+
+================================================================================

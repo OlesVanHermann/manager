@@ -1,0 +1,104 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.general.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/fax/{serviceName}
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Page générale d'un service fax VoIP. Statistiques rapides, informations
+du fax, notifications et derniers fax envoyés/reçus.
+
+================================================================================
+
+## STRUCTURE PAGE
+
+### NAV3 (Left Panel)
+- Lignes | Numéros | [Fax] | Abrégés
+
+### NAV4 Tabs (Right Panel)
+- [Général] | Envoyés | Reçus | Campagnes | Conso | Options
+
+### Contenu
+- Cards statistiques (4)
+- Bloc Informations du fax
+- Bloc Notifications
+- Bloc Derniers fax
+
+================================================================================
+
+## DONNÉES DYNAMIQUES
+
+| Élément SVG          | Source API                                 |
+|----------------------|--------------------------------------------|
+| Fax envoyés          | GET /telephony/{ba}/fax/{sn}/statistics → sentCount |
+| Fax reçus            | statistics.receivedCount                   |
+| Pages totales        | statistics.totalPages                      |
+| Crédit restant       | GET /telephony/{ba}/fax/{sn}/credits       |
+| Description          | GET /telephony/{ba}/fax/{sn} → description |
+| Email notification   | fax.mailNotify                             |
+| Format attachment    | fax.attachmentFormat                       |
+| Derniers fax         | GET /telephony/{ba}/fax/{sn}/campaigns + incoming |
+
+================================================================================
+
+## CARDS STATISTIQUES
+
+| Card           | Source          | Couleur  |
+|----------------|-----------------|----------|
+| Fax envoyés    | sentCount       | Orange   |
+| Fax reçus      | receivedCount   | Vert     |
+| Pages totales  | totalPages      | Bleu     |
+| Crédit restant | credits.balance | Gris     |
+
+================================================================================
+
+## INFORMATIONS FAX
+
+| Champ             | Type    | Valeurs                    |
+|-------------------|---------|----------------------------|
+| Numéro de fax     | Text    | +33 X XX XX XX XX (copy)   |
+| Description       | Input   | Texte libre                |
+| Qualité défaut    | Select  | Normale, Haute, Super-Haute|
+| Format papier     | Select  | A4, Letter, Legal          |
+
+================================================================================
+
+## NOTIFICATIONS
+
+| Paramètre            | Type    | Description                |
+|----------------------|---------|----------------------------|
+| Email réception      | Toggle  | Recevoir fax par email     |
+| Adresse email        | Input   | Email destination          |
+| Format pièce jointe  | Select  | PDF, TIFF, Both            |
+| Notification échec   | Toggle  | Alerter si échec envoi     |
+
+================================================================================
+
+## TABLE DERNIERS FAX
+
+| Colonne      | Description                    |
+|--------------|--------------------------------|
+| Date         | Date/heure envoi ou réception  |
+| Type         | Badge Envoyé/Reçu              |
+| Correspondant| Numéro fax correspondant       |
+| Pages        | Nombre de pages                |
+| Statut       | Badge Réussi/Échec/En cours    |
+| Actions      | 👁 Voir, 📥 Télécharger        |
+
+================================================================================
+
+## API
+
+| Action        | Méthode | Endpoint                       |
+|---------------|---------|--------------------------------|
+| Info fax      | GET     | /telephony/{ba}/fax/{sn}       |
+| Modifier      | PUT     | /telephony/{ba}/fax/{sn}       |
+| Statistics    | GET     | /telephony/{ba}/fax/{sn}/statistics |
+| Crédits       | GET     | /telephony/{ba}/fax/{sn}/credits |
+| Fax envoyés   | GET     | /telephony/{ba}/fax/{sn}/campaigns |
+| Fax reçus     | GET     | /telephony/{ba}/fax/{sn}/screenLists |
+
+================================================================================

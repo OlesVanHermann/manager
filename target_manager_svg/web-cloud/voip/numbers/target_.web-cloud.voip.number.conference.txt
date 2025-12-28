@@ -1,0 +1,124 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.conference.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/numbers/{serviceName}/conference
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration d'une salle de conférence audio VoIP. Paramètres d'accès,
+codes PIN et options de la conférence.
+
+================================================================================
+
+## STRUCTURE PAGE
+
+### NAV4 Tabs
+- Général | [Configuration] | Statistiques | Options
+
+### Contenu
+- Cards statut temps réel (3)
+- Bloc Accès à la conférence
+- Bloc Paramètres de la conférence
+- Bloc Invitation
+
+================================================================================
+
+## DONNÉES DYNAMIQUES
+
+| Élément SVG          | Source API                                 |
+|----------------------|--------------------------------------------|
+| Statut               | GET /telephony/{ba}/number/{sn}/conference → status |
+| Participants actuels | conference.currentParticipants             |
+| Capacité             | conference.maxParticipants                 |
+| Conférences mois     | conference.monthlyStats                    |
+| Code participant     | conference.pin                             |
+| Code modérateur      | conference.moderatorPin                    |
+| Annonce entrée       | conference.announceEnabled                 |
+| Musique attente      | conference.musicOnHold                     |
+| Enregistrement       | conference.recordEnabled                   |
+
+================================================================================
+
+## CARDS STATUT
+
+| Card              | Source                    | Couleur  |
+|-------------------|---------------------------|----------|
+| Statut actuel     | status + participants     | Gris     |
+| Capacité          | maxParticipants           | Gris     |
+| Conférences mois  | monthlyStats              | Gris     |
+
+### Statuts conférence
+| Statut   | Badge     | Description           |
+|----------|-----------|----------------------|
+| Active   | Vert      | Conférence en cours  |
+| Inactive | Gris      | Aucun participant    |
+
+================================================================================
+
+## ACCÈS À LA CONFÉRENCE
+
+| Champ              | Format        | Copiable |
+|--------------------|---------------|----------|
+| Numéro d'accès     | +33 X XX XX XX| Oui      |
+| Code participant   | 4 chiffres    | Oui      |
+| Code modérateur    | 4 chiffres    | Oui      |
+
+### Actions codes PIN
+- Régénérer: POST /telephony/{ba}/number/{sn}/conference/generatePin
+- Le code modérateur donne des droits supplémentaires (mute, kick)
+
+================================================================================
+
+## PARAMÈTRES CONFÉRENCE
+
+| Paramètre                   | Type    | Valeurs                 |
+|-----------------------------|---------|-------------------------|
+| Annonce entrée/sortie       | Toggle  | Activé/Désactivé        |
+| Type d'annonce              | Select  | Bip, Nom, Aucun         |
+| Musique d'attente           | Toggle  | Activé/Désactivé        |
+| Musique                     | Select  | Classique, Jazz, Custom |
+| Enregistrement auto         | Toggle  | Activé/Désactivé (payant)|
+| Modérateur requis           | Toggle  | Oui/Non                 |
+
+================================================================================
+
+## INVITATION
+
+Bloc pré-formaté avec:
+- Numéro d'accès
+- Code participant
+- Code modérateur
+- Capacité
+
+Action: Bouton "Envoyer invitation" ouvre modal email
+
+================================================================================
+
+## API
+
+| Action           | Méthode | Endpoint                                 |
+|------------------|---------|------------------------------------------|
+| Config conf      | GET     | /telephony/{ba}/number/{sn}/conference   |
+| Modifier         | PUT     | /telephony/{ba}/number/{sn}/conference   |
+| Générer PIN      | POST    | .../conference/generatePin               |
+| Participants     | GET     | .../conference/participants              |
+| Kick participant | DELETE  | .../conference/participants/{id}         |
+| Mute participant | PUT     | .../conference/participants/{id}/mute    |
+
+================================================================================
+
+## DROITS MODÉRATEUR
+
+| Action              | Participant | Modérateur |
+|---------------------|-------------|------------|
+| Rejoindre           | ✓           | ✓          |
+| Parler              | ✓           | ✓          |
+| Muter autres        | ✗           | ✓          |
+| Exclure participant | ✗           | ✓          |
+| Verrouiller salle   | ✗           | ✓          |
+| Terminer conférence | ✗           | ✓          |
+
+================================================================================

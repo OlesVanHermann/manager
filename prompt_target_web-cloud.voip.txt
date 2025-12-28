@@ -1,0 +1,720 @@
+================================================================================
+PROMPT TARGET - Web Cloud > VoIP
+================================================================================
+
+| Element                            | Valeur                                           |
+|------------------------------------|--------------------------------------------------|
+| **Prompt**                         | /home/ubuntu/prompt_target_web-cloud.voip.txt    |
+| **Destination finale utilisateur** | /home/ubuntu/target_svg/web-cloud/voip/          |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_svg/web-cloud/voip/|
+
+Version: v2 (2025-12-28)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+❌ INTERDIT : Afficher le SVG dans la conversation
+✅ OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. ARBORESCENCE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Web Cloud
+│
+└── NAV2: VoIP
+    │
+    ├── /web-cloud/voip (INDEX)
+    │   │
+    │   │   LEFT: Liste groupes
+    │   │   RIGHT: Détails groupe sélectionné
+    │   │
+    │   └── NAV4: [Infos générales] | Facturation | Administration
+    │       │
+    │       └── ACTIONS: [✎ Renommer] [+ Commander] [↗ Factures] [× Résilier]
+    │
+    └── /web-cloud/voip/groups/{billingAccount} (DANS LE GROUPE)
+        │
+        ├── NAV3: [Lignes] | Numéros | Fax | Abrégés
+        │   │
+        │   ├── Lignes (/lines/{serviceName})
+        │   │   │
+        │   │   ├── NAV4: [Général] | Téléphone | Appels | Transferts | Messagerie | Conso | Options
+        │   │   │   │
+        │   │   │   ├── Général
+        │   │   │   │   └── ACTIONS: [✎ Renommer] [🔑 MDP SIP] [↻ Reset] [⇄ Offre] [× Résilier]
+        │   │   │   │
+        │   │   │   ├── Téléphone
+        │   │   │   │   └── ACTIONS: [↻ Reboot] [⚙ Config] [🔑 MDP admin]
+        │   │   │   │
+        │   │   │   ├── Appels
+        │   │   │   │   ├── NAV5: [Historique] | Filtrage entrant | Filtrage sortant
+        │   │   │   │   └── ACTIONS: [+ Ajouter règle] [× Supprimer]
+        │   │   │   │
+        │   │   │   ├── Transferts
+        │   │   │   │   ├── NAV5: [Inconditionnel] | Occupation | Non-réponse
+        │   │   │   │   └── ACTIONS: [✎ Configurer] [× Désactiver]
+        │   │   │   │
+        │   │   │   ├── Messagerie
+        │   │   │   │   ├── NAV5: [Options] | Messages | Annonce
+        │   │   │   │   └── ACTIONS: [🔑 MDP] [📥 Télécharger] [× Supprimer msg]
+        │   │   │   │
+        │   │   │   ├── Consommation
+        │   │   │   │   └── ACTIONS: [📥 Exporter CSV] [↻ Rafraîchir]
+        │   │   │   │
+        │   │   │   └── Options
+        │   │   │       └── ACTIONS: [Toggle Click2Call] [Toggle Simultané] [Toggle Interception]
+        │   │   │
+        │   │   └── Touches programmables (/phone/keys)
+        │   │       └── ACTIONS: [✎ Configurer touche] [↻ Reset touches]
+        │   │
+        │   ├── Numéros (/numbers/{serviceName})
+        │   │   │
+        │   │   └── NAV4: [Général] | Configuration | Portabilité | Statistiques
+        │   │       │
+        │   │       ├── Général
+        │   │       │   └── ACTIONS: [✎ Renommer] [⇄ Changer type] [↗ Convertir ligne] [× Résilier]
+        │   │       │
+        │   │       ├── Configuration
+        │   │       │   ├── NAV5 (selon type):
+        │   │       │   │   ├── Redirection: [Destination]
+        │   │       │   │   ├── File d'attente: [Membres] | Stratégie | Musique
+        │   │       │   │   ├── SVI: [Menu] | Entrées | Sons
+        │   │       │   │   └── Conférence: [Paramètres] | PIN | Participants
+        │   │       │   └── ACTIONS: [+ Ajouter dest] [✎ Modifier] [× Supprimer]
+        │   │       │
+        │   │       ├── Portabilité
+        │   │       │   └── ACTIONS: [+ Nouvelle demande] [📥 Télécharger mandat]
+        │   │       │
+        │   │       └── Statistiques
+        │   │           └── ACTIONS: [📥 Exporter] [↻ Rafraîchir]
+        │   │
+        │   ├── Fax (/fax/{serviceName})
+        │   │   │
+        │   │   └── NAV4: [Général] | Envoi | Campagnes | Reçus | Envoyés | Conso | Messagerie | Filtrage
+        │   │       │
+        │   │       ├── Général
+        │   │       │   └── ACTIONS: [✎ Renommer] [🔑 MDP] [⚙ Notifications] [× Résilier]
+        │   │       │
+        │   │       ├── Envoi
+        │   │       │   └── ACTIONS: [📤 Envoyer fax]
+        │   │       │
+        │   │       ├── Campagnes
+        │   │       │   └── ACTIONS: [+ Nouvelle campagne] [▶ Démarrer] [⏸ Pause] [× Supprimer]
+        │   │       │
+        │   │       ├── Reçus
+        │   │       │   └── ACTIONS: [📥 Télécharger] [× Supprimer]
+        │   │       │
+        │   │       ├── Envoyés
+        │   │       │   └── ACTIONS: [📥 Télécharger] [↻ Renvoyer] [× Supprimer]
+        │   │       │
+        │   │       ├── Consommation
+        │   │       │   └── ACTIONS: [📥 Exporter CSV]
+        │   │       │
+        │   │       ├── Messagerie (si voicefax)
+        │   │       │   ├── NAV5: [Options] | Messages | Annonce
+        │   │       │   └── ACTIONS: [🔑 MDP] [📥 Télécharger]
+        │   │       │
+        │   │       └── Filtrage
+        │   │           └── ACTIONS: [+ Ajouter règle] [× Supprimer]
+        │   │
+        │   └── Abrégés (/abbreviated)
+        │       │
+        │       └── (Pas de NAV4 - vue table unique)
+        │           └── ACTIONS: [+ Ajouter] [📥 Importer CSV] [📤 Exporter] [✎ Modifier] [× Supprimer]
+        │
+        └── Dashboard groupe (/groups/{billingAccount})
+            │
+            └── NAV4: [Dashboard] | Services | Répertoire | Facturation | Administration
+                │
+                ├── Dashboard
+                │   └── ACTIONS: [→ Gérer services] [+ Commander]
+                │
+                ├── Services (vue résumé)
+                │   └── ACTIONS: [→ Voir lignes] [→ Voir numéros] [→ Voir fax]
+                │
+                ├── Répertoire (/phonebook)
+                │   └── ACTIONS: [+ Ajouter contact] [📥 Importer] [📤 Exporter] [× Supprimer]
+                │
+                ├── Facturation (/billing)
+                │   ├── NAV5: [Consommation] | Factures | Crédit
+                │   └── ACTIONS: [📥 Télécharger facture] [+ Recharger crédit]
+                │
+                └── Administration (/admin)
+                    ├── NAV5: [Paramètres] | Contacts | Sécurité
+                    └── ACTIONS: [✎ Modifier] [⚙ Configurer]
+```
+
+### RÉCAPITULATIF NIVEAUX NAV
+
+| Niveau | Visuel | Position | Exemples VoIP |
+|--------|--------|----------|---------------|
+| **NAV1** | Header bleu 50px | y=0 | Web Cloud |
+| **NAV2** | Sous-header blanc 40px | y=50 | VoIP |
+| **NAV3** | Tabs left panel | y=50 dans left panel | Lignes, Numéros, Fax, Abrégés |
+| **NAV4** | Tabs right panel | y=35 dans right panel | Général, Téléphone, Appels... |
+| **NAV5** | Sous-tabs right panel | y=70 dans right panel | Filtrage entrant/sortant |
+| **ACTIONS** | Boutons header + inline | Variable | ✎ 🔑 ⇄ × + ↻ |
+
+##############################################################################
+# 2. NAV1 - HEADER OVH
+##############################################################################
+
+Item actif: "Web Cloud" (x=510)
+
+```svg
+<!-- NAV1 - Web Cloud actif -->
+<rect width="1440" height="50" class="bg-header"/>
+<text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>
+<text x="110" y="32" class="text-white" font-size="14" opacity="0.7">Public Cloud</text>
+<text x="210" y="32" class="text-white" font-size="14" opacity="0.7">Hosted Private Cloud</text>
+<text x="370" y="32" class="text-white" font-size="14" opacity="0.7">Bare Metal Cloud</text>
+<text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+<rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
+<text x="620" y="32" class="text-white" font-size="14" opacity="0.7">Network</text>
+<text x="700" y="32" class="text-white" font-size="14" opacity="0.7">IAM / Securite</text>
+<text x="810" y="32" class="text-white" font-size="14" opacity="0.7">Licences</text>
+<rect x="1280" y="12" width="140" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
+<rect x="1285" y="15" width="26" height="20" rx="10" fill="#DEF7EC"/>
+<text x="1292" y="29" fill="#03543F" font-size="10" font-weight="600">OK</text>
+<text x="1320" y="29" class="text-white" font-size="12">{nicHandle}</text>
+```
+
+##############################################################################
+# 3. NAV2 - SOUS-MENU WEB CLOUD
+##############################################################################
+
+Position: y=50, height=40px, background=#FFFFFF
+Items: Accueil | Domaines & DNS | Hebergement | Emails & Collab | [VoIP] | Acces
+
+| Item            | X    | État    |
+|-----------------|------|---------|
+| Accueil         | 40   | muted   |
+| Domaines & DNS  | 110  | muted   |
+| Hebergement     | 240  | muted   |
+| Emails & Collab | 360  | muted   |
+| VoIP            | 480  | ACTIF   |
+| Acces           | 530  | muted   |
+| Guides          | 1350 | link    |
+
+Indicateur actif: rect Wx3px, fill=#0050D7, y=85
+
+```svg
+<!-- NAV2 - VoIP actif -->
+<rect x="0" y="50" width="1440" height="40" class="bg-white"/>
+<line x1="0" y1="89" x2="1440" y2="89" stroke="#E5E7EB"/>
+<text x="40" y="75" class="text-muted" font-size="14">Accueil</text>
+<text x="110" y="75" class="text-muted" font-size="14">Domaines & DNS</text>
+<text x="240" y="75" class="text-muted" font-size="14">Hebergement</text>
+<text x="360" y="75" class="text-muted" font-size="14">Emails & Collab</text>
+<text x="480" y="75" class="text-primary" font-size="14" font-weight="600">VoIP</text>
+<rect x="475" y="85" width="40" height="3" fill="#0050D7"/>
+<text x="530" y="75" class="text-muted" font-size="14">Acces</text>
+<text x="1350" y="75" class="text-primary" font-size="13">📖 Guides</text>
+```
+
+##############################################################################
+# 4. NAV3 - TABS LEFT PANEL (dans un groupe)
+##############################################################################
+
+Position: Dans left panel, y=50, height=28px
+Visible uniquement après entrée dans un groupe
+
+```svg
+<!-- NAV3 - Tabs type service (Lignes actif) -->
+<g transform="translate(0, 50)">
+  <rect x="0" y="0" width="280" height="28" fill="#F9FAFB"/>
+  <line x1="0" y1="27" x2="280" y2="27" stroke="#E5E7EB"/>
+  <!-- Tab actif -->
+  <rect x="0" y="0" width="70" height="28" fill="#0050D7"/>
+  <text x="35" y="18" class="text-white" font-size="11" text-anchor="middle">Lignes</text>
+  <!-- Tabs inactifs -->
+  <text x="105" y="18" class="text-muted" font-size="11" text-anchor="middle">Numéros</text>
+  <text x="175" y="18" class="text-muted" font-size="11" text-anchor="middle">Fax</text>
+  <text x="245" y="18" class="text-muted" font-size="11" text-anchor="middle">Abrégés</text>
+</g>
+```
+
+### Variantes NAV3
+
+| Tab actif | Fichiers concernés |
+|-----------|-------------------|
+| Lignes | target_.web-cloud.voip.line.*.svg |
+| Numéros | target_.web-cloud.voip.number.*.svg |
+| Fax | target_.web-cloud.voip.fax.*.svg |
+| Abrégés | target_.web-cloud.voip.abbreviated.svg |
+
+##############################################################################
+# 5. NAV4 - TABS SERVICE (right panel)
+##############################################################################
+
+Position: Dans right panel, y=35, height=30px
+
+### 5.1 NAV4 - Index (liste groupes)
+```svg
+<!-- NAV4 - Infos générales actif -->
+<g transform="translate(0, 35)">
+  <rect x="0" y="0" width="110" height="30" rx="4" class="bg-primary"/>
+  <text x="55" y="20" class="text-white" font-size="11" text-anchor="middle">Infos générales</text>
+  <rect x="118" y="0" width="90" height="30" rx="4" class="btn-outline"/>
+  <text x="163" y="20" class="text-primary" font-size="11" text-anchor="middle">Facturation</text>
+  <rect x="216" y="0" width="100" height="30" rx="4" class="btn-outline"/>
+  <text x="266" y="20" class="text-primary" font-size="11" text-anchor="middle">Administration</text>
+</g>
+```
+
+### 5.2 NAV4 - Ligne
+```svg
+<!-- NAV4 - Général actif -->
+<g transform="translate(0, 35)">
+  <rect x="0" y="0" width="70" height="30" rx="4" class="bg-primary"/>
+  <text x="35" y="20" class="text-white" font-size="11" text-anchor="middle">Général</text>
+  <rect x="78" y="0" width="80" height="30" rx="4" class="btn-outline"/>
+  <text x="118" y="20" class="text-primary" font-size="11" text-anchor="middle">Téléphone</text>
+  <rect x="166" y="0" width="60" height="30" rx="4" class="btn-outline"/>
+  <text x="196" y="20" class="text-primary" font-size="11" text-anchor="middle">Appels</text>
+  <rect x="234" y="0" width="75" height="30" rx="4" class="btn-outline"/>
+  <text x="271" y="20" class="text-primary" font-size="11" text-anchor="middle">Transferts</text>
+  <rect x="317" y="0" width="80" height="30" rx="4" class="btn-outline"/>
+  <text x="357" y="20" class="text-primary" font-size="11" text-anchor="middle">Messagerie</text>
+  <rect x="405" y="0" width="60" height="30" rx="4" class="btn-outline"/>
+  <text x="435" y="20" class="text-primary" font-size="11" text-anchor="middle">Conso</text>
+  <rect x="473" y="0" width="65" height="30" rx="4" class="btn-outline"/>
+  <text x="505" y="20" class="text-primary" font-size="11" text-anchor="middle">Options</text>
+</g>
+```
+
+### 5.3 NAV4 - Numéro
+```svg
+<!-- NAV4 - Général actif -->
+<g transform="translate(0, 35)">
+  <rect x="0" y="0" width="70" height="30" rx="4" class="bg-primary"/>
+  <text x="35" y="20" class="text-white" font-size="11" text-anchor="middle">Général</text>
+  <rect x="78" y="0" width="95" height="30" rx="4" class="btn-outline"/>
+  <text x="125" y="20" class="text-primary" font-size="11" text-anchor="middle">Configuration</text>
+  <rect x="181" y="0" width="80" height="30" rx="4" class="btn-outline"/>
+  <text x="221" y="20" class="text-primary" font-size="11" text-anchor="middle">Portabilité</text>
+  <rect x="269" y="0" width="80" height="30" rx="4" class="btn-outline"/>
+  <text x="309" y="20" class="text-primary" font-size="11" text-anchor="middle">Statistiques</text>
+</g>
+```
+
+### 5.4 NAV4 - Fax
+```svg
+<!-- NAV4 - Général actif -->
+<g transform="translate(0, 35)">
+  <rect x="0" y="0" width="65" height="30" rx="4" class="bg-primary"/>
+  <text x="32" y="20" class="text-white" font-size="11" text-anchor="middle">Général</text>
+  <rect x="73" y="0" width="50" height="30" rx="4" class="btn-outline"/>
+  <text x="98" y="20" class="text-primary" font-size="11" text-anchor="middle">Envoi</text>
+  <rect x="131" y="0" width="75" height="30" rx="4" class="btn-outline"/>
+  <text x="168" y="20" class="text-primary" font-size="11" text-anchor="middle">Campagnes</text>
+  <rect x="214" y="0" width="55" height="30" rx="4" class="btn-outline"/>
+  <text x="241" y="20" class="text-primary" font-size="11" text-anchor="middle">Reçus</text>
+  <rect x="277" y="0" width="60" height="30" rx="4" class="btn-outline"/>
+  <text x="307" y="20" class="text-primary" font-size="11" text-anchor="middle">Envoyés</text>
+  <rect x="345" y="0" width="55" height="30" rx="4" class="btn-outline"/>
+  <text x="372" y="20" class="text-primary" font-size="11" text-anchor="middle">Conso</text>
+  <rect x="408" y="0" width="75" height="30" rx="4" class="btn-outline"/>
+  <text x="445" y="20" class="text-primary" font-size="11" text-anchor="middle">Messagerie</text>
+  <rect x="491" y="0" width="60" height="30" rx="4" class="btn-outline"/>
+  <text x="521" y="20" class="text-primary" font-size="11" text-anchor="middle">Filtrage</text>
+</g>
+```
+
+### 5.5 NAV4 - Dashboard Groupe
+```svg
+<!-- NAV4 - Dashboard actif -->
+<g transform="translate(0, 35)">
+  <rect x="0" y="0" width="80" height="30" rx="4" class="bg-primary"/>
+  <text x="40" y="20" class="text-white" font-size="11" text-anchor="middle">Dashboard</text>
+  <rect x="88" y="0" width="65" height="30" rx="4" class="btn-outline"/>
+  <text x="120" y="20" class="text-primary" font-size="11" text-anchor="middle">Services</text>
+  <rect x="161" y="0" width="75" height="30" rx="4" class="btn-outline"/>
+  <text x="198" y="20" class="text-primary" font-size="11" text-anchor="middle">Répertoire</text>
+  <rect x="244" y="0" width="80" height="30" rx="4" class="btn-outline"/>
+  <text x="284" y="20" class="text-primary" font-size="11" text-anchor="middle">Facturation</text>
+  <rect x="332" y="0" width="95" height="30" rx="4" class="btn-outline"/>
+  <text x="379" y="20" class="text-primary" font-size="11" text-anchor="middle">Administration</text>
+</g>
+```
+
+##############################################################################
+# 6. NAV5 - SOUS-TABS (si nécessaire)
+##############################################################################
+
+Position: Dans right panel, y=70, height=26px
+Utilisé pour sous-fonctionnalités (Appels > Filtrage entrant/sortant, etc.)
+
+```svg
+<!-- NAV5 - Sous-onglets -->
+<g transform="translate(0, 70)">
+  <rect x="0" y="0" width="100" height="26" rx="4" fill="#E8F0FE"/>
+  <text x="50" y="17" class="text-primary" font-size="10" text-anchor="middle">Historique</text>
+  <text x="150" y="17" class="text-muted" font-size="10" text-anchor="middle">Filtrage entrant</text>
+  <text x="260" y="17" class="text-muted" font-size="10" text-anchor="middle">Filtrage sortant</text>
+</g>
+```
+
+### Écrans avec NAV5
+
+| Écran | NAV5 Tabs |
+|-------|-----------|
+| Ligne > Appels | Historique, Filtrage entrant, Filtrage sortant |
+| Ligne > Transferts | Inconditionnel, Occupation, Non-réponse |
+| Ligne > Messagerie | Options, Messages, Annonce |
+| Numéro > Configuration (File) | Membres, Stratégie, Musique |
+| Numéro > Configuration (SVI) | Menu, Entrées, Sons |
+| Fax > Messagerie | Options, Messages, Annonce |
+| Groupe > Facturation | Consommation, Factures, Crédit |
+| Groupe > Administration | Paramètres, Contacts, Sécurité |
+
+##############################################################################
+# 7. ACTIONS - ICÔNES & BOUTONS
+##############################################################################
+
+### 7.1 Actions Header Service
+Position: Aligné à droite du titre service
+
+```svg
+<!-- Actions header -->
+<g transform="translate(900, 10)">
+  <text x="0" y="16" class="icon-action" title="Renommer">✎</text>
+  <text x="30" y="16" class="icon-action" title="Mot de passe">🔑</text>
+  <text x="60" y="16" class="icon-action" title="Changer offre">⇄</text>
+  <text x="90" y="16" fill="#DC2626" font-size="16" title="Résilier">×</text>
+</g>
+```
+
+### 7.2 Actions Inline (dans blocs/tables)
+
+| Icône | Code | Action | Couleur |
+|-------|------|--------|---------|
+| ✎ | `&#x270E;` | Modifier/Renommer | text-primary |
+| 🔑 | emoji | Mot de passe | text-primary |
+| ↻ | `&#x21BB;` | Rafraîchir/Reset | text-primary |
+| ⇄ | `&#x21C4;` | Changer/Échanger | text-primary |
+| ↗ | `&#x2197;` | Lien externe/Convertir | text-primary |
+| ⚙ | emoji | Configurer | text-primary |
+| + | `+` | Ajouter | text-primary |
+| × | `&#x00D7;` | Supprimer/Résilier | text-error (#DC2626) |
+| C | `C` | Copier | text-primary |
+| 📥 | emoji | Télécharger | text-primary |
+| 📤 | emoji | Exporter/Envoyer | text-primary |
+| ▶ | `&#x25B6;` | Démarrer | text-success |
+| ⏸ | emoji | Pause | text-warning |
+
+### 7.3 Boutons Actions
+
+```svg
+<!-- Bouton primaire -->
+<rect x="0" y="0" width="120" height="32" rx="4" class="bg-primary"/>
+<text x="60" y="21" class="text-white" font-size="11" text-anchor="middle">+ Commander</text>
+
+<!-- Bouton outline -->
+<rect x="0" y="0" width="100" height="32" rx="4" class="btn-outline"/>
+<text x="50" y="21" class="text-primary" font-size="11" text-anchor="middle">↗ Factures</text>
+
+<!-- Bouton danger -->
+<rect x="0" y="0" width="80" height="32" rx="4" fill="#FEE2E2" stroke="#DC2626"/>
+<text x="40" y="21" fill="#DC2626" font-size="11" text-anchor="middle">× Résilier</text>
+```
+
+##############################################################################
+# 8. STRUCTURE PAGES PAR TYPE
+##############################################################################
+
+### 8.1 INDEX (Liste groupes)
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ NAV1: Web Cloud                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV2: VoIP                                                                  │
+├─────────────────────────────┬───────────────────────────────────────────────┤
+│ LEFT PANEL                  │ RIGHT PANEL                                   │
+│                             │                                               │
+│ 🔍 Rechercher...            │ {billingAccount}                    [✎] [×]  │
+│ Filtrer ▾        {n} groupes│                                               │
+│ ────────────────────────────│ NAV4: [Infos] | Facturation | Admin           │
+│                             │ ─────────────────────────────────────────     │
+│ ┌──────────────────────┬──┐ │                                               │
+│ │[●] abc123-ovh  [Actif]│→ │ │ ┌─────────────────────────────────────────┐  │
+│ │    Mon entreprise     │  │ │ │ Services                                │  │
+│ │    📞4 📱2 📠1        │  │ │ │ 📞 Lignes │ 📱 Numéros │ 📠 Fax │ 🔢 Abr│  │
+│ └──────────────────────┴──┘ │ └─────────────────────────────────────────┘  │
+│                             │                                               │
+│ ┌──────────────────────┬──┐ │ ┌─────────────────────────────────────────┐  │
+│ │[ ] xyz987-ovh  [Actif]│→ │ │ │ Informations groupe                     │  │
+│ │    Agence Paris       │  │ │ │ IDENTIFICATION │ FACTURATION │ CONTACTS │  │
+│ │    📞2 📱1 📠0        │  │ │ └─────────────────────────────────────────┘  │
+│ └──────────────────────┴──┘ │                                               │
+│                             │ [→ Gérer les services de ce groupe]           │
+└─────────────────────────────┴───────────────────────────────────────────────┘
+```
+
+### 8.2 DANS GROUPE (Liste services)
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ NAV1: Web Cloud                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV2: VoIP                                                                  │
+├─────────────────────────────┬───────────────────────────────────────────────┤
+│ LEFT PANEL                  │ RIGHT PANEL                                   │
+│                             │                                               │
+│ ← abc123-ovh           [⚙] │ +33 1 23 45 67 89                    [✎] [×]  │
+│   Mon entreprise            │ Poste Accueil                                 │
+│ ────────────────────────────│                                               │
+│ NAV3: [Lignes] Num Fax Abr  │ NAV4: [Général] Tél Appels Transf Msg Conso  │
+│ ────────────────────────────│ ─────────────────────────────────────────     │
+│ 🔍 Rechercher...            │                                               │
+│ Filtrer ▾       {n} lignes  │ ┌─────────────────────────────────────────┐  │
+│ ────────────────────────────│ │ Informations                            │  │
+│                             │ │ LIGNE │ OFFRE │ TÉLÉPHONE               │  │
+│ [●] +33 1 23 45 67 89[Actif]│ └─────────────────────────────────────────┘  │
+│     Poste Accueil           │                                               │
+│     VoIP Pro                │ ┌─────────────────────────────────────────┐  │
+│                             │ │ Derniers enregistrements SIP        [↻] │  │
+│ [ ] +33 1 23 45 67 90[Actif]│ │ Date │ État │ IP                        │  │
+│     Poste Direction         │ └─────────────────────────────────────────┘  │
+│     VoIP Pro                │                                               │
+│                             │ ┌─────────────────────────────────────────┐  │
+│                             │ │ Facturation                             │  │
+│                             │ │ État │ Expiration │ Création            │  │
+│                             │ └─────────────────────────────────────────┘  │
+└─────────────────────────────┴───────────────────────────────────────────────┘
+```
+
+### 8.3 AVEC NAV5 (Sous-onglets)
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ NAV1: Web Cloud                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV2: VoIP                                                                  │
+├─────────────────────────────┬───────────────────────────────────────────────┤
+│ LEFT PANEL                  │ RIGHT PANEL                                   │
+│                             │                                               │
+│ ← abc123-ovh           [⚙] │ +33 1 23 45 67 89                    [✎] [×]  │
+│   Mon entreprise            │ Poste Accueil                                 │
+│ ────────────────────────────│                                               │
+│ NAV3: [Lignes] Num Fax Abr  │ NAV4: Général Tél [Appels] Transf Msg Conso  │
+│ ────────────────────────────│ ─────────────────────────────────────────     │
+│ 🔍 Rechercher...            │ NAV5: [Historique] Filtrage ent. Filtrage sor.│
+│                             │ ─────────────────────────────────────────     │
+│ [●] +33 1 23 45 67 89[Actif]│                                               │
+│     Poste Accueil           │ ┌─────────────────────────────────────────┐  │
+│                             │ │ Historique des appels              [📥] │  │
+│ [ ] +33 1 23 45 67 90[Actif]│ ├─────────────────────────────────────────┤  │
+│     Poste Direction         │ │ Date │ Type │ Numéro │ Durée │ Coût    │  │
+│                             │ │ ...  │ ...  │ ...    │ ...   │ ...     │  │
+│                             │ └─────────────────────────────────────────┘  │
+│                             │                                    < 1 2 3 > │
+└─────────────────────────────┴───────────────────────────────────────────────┘
+```
+
+##############################################################################
+# 9. APIs & DONNÉES
+##############################################################################
+
+### 9.1 APIs Groupe
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /telephony                            | Liste billingAccounts |
+| GET     | /telephony/{billingAccount}           | Détails groupe        |
+| GET     | /telephony/{billingAccount}/serviceInfos | Infos facturation  |
+| GET     | /telephony/{billingAccount}/line      | Liste lignes          |
+| GET     | /telephony/{billingAccount}/number    | Liste numéros         |
+| GET     | /telephony/{billingAccount}/fax       | Liste fax             |
+| PUT     | /telephony/{billingAccount}           | Modifier groupe       |
+| DELETE  | /telephony/{billingAccount}           | Résilier groupe       |
+
+### 9.2 APIs Ligne
+| Méthode | Endpoint                                        | Description         |
+|---------|-------------------------------------------------|---------------------|
+| GET     | /telephony/{ba}/line/{sn}                       | Détails ligne       |
+| GET     | /telephony/{ba}/line/{sn}/phone                 | Téléphone associé   |
+| GET     | /telephony/{ba}/line/{sn}/lastRegistrations     | Enregistrements SIP |
+| GET     | /telephony/{ba}/line/{sn}/options               | Options ligne       |
+| GET     | /telephony/{ba}/line/{sn}/calls                 | Historique appels   |
+| PUT     | /telephony/{ba}/line/{sn}                       | Modifier ligne      |
+| POST    | /telephony/{ba}/line/{sn}/changePassword        | Changer MDP SIP     |
+| POST    | /telephony/{ba}/line/{sn}/phone/reboot          | Reboot téléphone    |
+| DELETE  | /telephony/{ba}/line/{sn}                       | Résilier ligne      |
+
+### 9.3 APIs Numéro
+| Méthode | Endpoint                                        | Description         |
+|---------|-------------------------------------------------|---------------------|
+| GET     | /telephony/{ba}/number/{sn}                     | Détails numéro      |
+| GET     | /telephony/{ba}/number/{sn}/serviceInfos        | Infos facturation   |
+| GET     | /telephony/{ba}/easyHunting/{sn}                | Config hunting      |
+| GET     | /telephony/{ba}/ovhPabx/{sn}                    | Config SVI/PABX     |
+| PUT     | /telephony/{ba}/number/{sn}                     | Modifier numéro     |
+| PUT     | /telephony/{ba}/number/{sn}/changeFeatureType   | Changer type        |
+| POST    | /telephony/{ba}/number/{sn}/convertToLine       | Convertir en ligne  |
+| DELETE  | /telephony/{ba}/number/{sn}                     | Résilier numéro     |
+
+### 9.4 APIs Fax
+| Méthode | Endpoint                                        | Description         |
+|---------|-------------------------------------------------|---------------------|
+| GET     | /telephony/{ba}/fax/{sn}                        | Détails fax         |
+| GET     | /telephony/{ba}/fax/{sn}/campaigns              | Liste campagnes     |
+| GET     | /telephony/{ba}/fax/{sn}/campaigns/{id}/detail  | Détail campagne     |
+| POST    | /telephony/{ba}/fax/{sn}/campaigns              | Créer campagne      |
+| PUT     | /telephony/{ba}/fax/{sn}                        | Modifier fax        |
+| POST    | /telephony/{ba}/fax/{sn}/changePassword         | Changer MDP         |
+| DELETE  | /telephony/{ba}/fax/{sn}                        | Résilier fax        |
+
+### 9.5 APIs Numéros abrégés
+| Méthode | Endpoint                                          | Description       |
+|---------|---------------------------------------------------|-------------------|
+| GET     | /telephony/{ba}/abbreviatedNumber                 | Liste abrégés     |
+| POST    | /telephony/{ba}/abbreviatedNumber                 | Créer abrégé      |
+| PUT     | /telephony/{ba}/abbreviatedNumber/{abbrev}        | Modifier          |
+| DELETE  | /telephony/{ba}/abbreviatedNumber/{abbrev}        | Supprimer         |
+
+##############################################################################
+# 10. VARIABLES DYNAMIQUES
+##############################################################################
+
+| Variable         | Source API                                     |
+|------------------|------------------------------------------------|
+| {billingAccount} | /telephony → item                              |
+| {description}    | /telephony/{ba} → description                  |
+| {nicHandle}      | Session utilisateur                            |
+| {lines}          | /telephony/{ba}/line → count                   |
+| {numbers}        | /telephony/{ba}/number → count                 |
+| {fax}            | /telephony/{ba}/fax → count                    |
+| {serviceName}    | /telephony/{ba}/line/{sn} → serviceName        |
+| {offerType}      | /telephony/{ba}/line/{sn} → offerType          |
+| {phoneModel}     | /telephony/{ba}/line/{sn}/phone → brand+model  |
+| {macAddress}     | /telephony/{ba}/line/{sn}/phone → macAddress   |
+| {status}         | /telephony/{ba}/serviceInfos → status          |
+| {credit}         | /telephony/{ba} → creditThreshold              |
+
+##############################################################################
+# 11. ARBORESCENCE FICHIERS TARGET
+##############################################################################
+
+```
+/home/ubuntu/target_svg/web-cloud/voip/
+│
+├── target_.web-cloud.voip.index.svg
+├── target_.web-cloud.voip.index.txt
+│
+├── groups/
+│   ├── target_.web-cloud.voip.group.dashboard.svg
+│   ├── target_.web-cloud.voip.group.dashboard.txt
+│   ├── target_.web-cloud.voip.group.services.svg
+│   ├── target_.web-cloud.voip.group.services.txt
+│   ├── target_.web-cloud.voip.group.phonebook.svg
+│   ├── target_.web-cloud.voip.group.phonebook.txt
+│   ├── target_.web-cloud.voip.group.billing.svg
+│   ├── target_.web-cloud.voip.group.billing.txt
+│   ├── target_.web-cloud.voip.group.admin.svg
+│   └── target_.web-cloud.voip.group.admin.txt
+│
+├── lines/
+│   ├── target_.web-cloud.voip.line.general.svg
+│   ├── target_.web-cloud.voip.line.general.txt
+│   ├── target_.web-cloud.voip.line.phone.svg
+│   ├── target_.web-cloud.voip.line.phone.txt
+│   ├── target_.web-cloud.voip.line.calls.svg
+│   ├── target_.web-cloud.voip.line.calls.txt
+│   ├── target_.web-cloud.voip.line.calls.filtering-in.svg
+│   ├── target_.web-cloud.voip.line.calls.filtering-in.txt
+│   ├── target_.web-cloud.voip.line.calls.filtering-out.svg
+│   ├── target_.web-cloud.voip.line.calls.filtering-out.txt
+│   ├── target_.web-cloud.voip.line.forward.svg
+│   ├── target_.web-cloud.voip.line.forward.txt
+│   ├── target_.web-cloud.voip.line.voicemail.svg
+│   ├── target_.web-cloud.voip.line.voicemail.txt
+│   ├── target_.web-cloud.voip.line.consumption.svg
+│   ├── target_.web-cloud.voip.line.consumption.txt
+│   ├── target_.web-cloud.voip.line.options.svg
+│   └── target_.web-cloud.voip.line.options.txt
+│
+├── numbers/
+│   ├── target_.web-cloud.voip.number.general.svg
+│   ├── target_.web-cloud.voip.number.general.txt
+│   ├── target_.web-cloud.voip.number.config.redirect.svg
+│   ├── target_.web-cloud.voip.number.config.redirect.txt
+│   ├── target_.web-cloud.voip.number.config.queue.svg
+│   ├── target_.web-cloud.voip.number.config.queue.txt
+│   ├── target_.web-cloud.voip.number.config.ivr.svg
+│   ├── target_.web-cloud.voip.number.config.ivr.txt
+│   ├── target_.web-cloud.voip.number.config.conference.svg
+│   ├── target_.web-cloud.voip.number.config.conference.txt
+│   ├── target_.web-cloud.voip.number.portability.svg
+│   ├── target_.web-cloud.voip.number.portability.txt
+│   ├── target_.web-cloud.voip.number.stats.svg
+│   └── target_.web-cloud.voip.number.stats.txt
+│
+├── fax/
+│   ├── target_.web-cloud.voip.fax.general.svg
+│   ├── target_.web-cloud.voip.fax.general.txt
+│   ├── target_.web-cloud.voip.fax.send.svg
+│   ├── target_.web-cloud.voip.fax.send.txt
+│   ├── target_.web-cloud.voip.fax.campaigns.svg
+│   ├── target_.web-cloud.voip.fax.campaigns.txt
+│   ├── target_.web-cloud.voip.fax.incoming.svg
+│   ├── target_.web-cloud.voip.fax.incoming.txt
+│   ├── target_.web-cloud.voip.fax.outgoing.svg
+│   ├── target_.web-cloud.voip.fax.outgoing.txt
+│   ├── target_.web-cloud.voip.fax.consumption.svg
+│   ├── target_.web-cloud.voip.fax.consumption.txt
+│   ├── target_.web-cloud.voip.fax.voicemail.svg
+│   ├── target_.web-cloud.voip.fax.voicemail.txt
+│   ├── target_.web-cloud.voip.fax.filtering.svg
+│   └── target_.web-cloud.voip.fax.filtering.txt
+│
+└── abbreviated/
+    ├── target_.web-cloud.voip.abbreviated.svg
+    └── target_.web-cloud.voip.abbreviated.txt
+```
+
+TOTAL: ~40 fichiers SVG + ~40 fichiers TXT = ~80 fichiers
+
+##############################################################################
+# 12. WORKFLOW GÉNÉRATION
+##############################################################################
+
+Pour chaque écran:
+□ Lire prompt_target.txt (design system)
+□ Lire ce fichier (NAV, APIs)
+□ Consulter old_manager correspondant si dispo
+□ Générer SVG avec shell template + NAV appropriées
+□ Générer TXT documentation
+□ Sauvegarder dans /mnt/user-data/outputs/target_svg/web-cloud/voip/
+
+### Ordre de génération recommandé
+
+**Phase 1 - Structure principale**
+1. target_.web-cloud.voip.index
+2. target_.web-cloud.voip.group.dashboard
+3. target_.web-cloud.voip.line.general
+4. target_.web-cloud.voip.number.general
+5. target_.web-cloud.voip.fax.general
+6. target_.web-cloud.voip.abbreviated
+
+**Phase 2 - Lignes (détails)**
+7. target_.web-cloud.voip.line.phone
+8. target_.web-cloud.voip.line.calls
+9. target_.web-cloud.voip.line.forward
+10. target_.web-cloud.voip.line.voicemail
+11. target_.web-cloud.voip.line.consumption
+12. target_.web-cloud.voip.line.options
+
+**Phase 3 - Numéros (configurations)**
+13-16. target_.web-cloud.voip.number.config.*
+
+**Phase 4 - Fax + Groupe**
+17+. Reste des fichiers
+
+================================================================================
+FIN PROMPT TARGET WEB CLOUD > VOIP
+================================================================================

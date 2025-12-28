@@ -1,0 +1,111 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.ivr.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/numbers/{serviceName}/ivr
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration d'un serveur vocal interactif (IVR/SVI). Menu téléphonique
+avec choix par touches et actions associées.
+
+================================================================================
+
+## STRUCTURE PAGE
+
+### NAV4 Tabs
+- Général | [Configuration] | Statistiques | Options
+
+### Contenu
+- Bloc Annonce d'accueil
+- Table Menu interactif
+- Bloc Comportement par défaut
+
+================================================================================
+
+## DONNÉES DYNAMIQUES
+
+| Élément SVG          | Source API                                 |
+|----------------------|--------------------------------------------|
+| Annonce accueil      | GET /telephony/{ba}/number/{sn}/ovhPabx → greetSound |
+| Menu entries         | GET /telephony/{ba}/number/{sn}/ovhPabx/menu/{menuId}/entry |
+| Timeout              | ovhPabx.menu.timeout                       |
+| Invalid action       | ovhPabx.menu.invalidAction                 |
+
+================================================================================
+
+## ANNONCE D'ACCUEIL
+
+| Champ           | Description                    |
+|-----------------|--------------------------------|
+| Fichier         | Nom du fichier audio           |
+| Durée           | Durée en secondes              |
+| Date modif      | Dernière modification          |
+| Actions         | Écouter, Remplacer             |
+
+### Format audio accepté
+- MP3, WAV, OGG
+- Max 60 secondes
+- Max 5 Mo
+
+================================================================================
+
+## TABLE MENU INTERACTIF
+
+| Colonne     | Description                         |
+|-------------|-------------------------------------|
+| Touche      | 0-9, *, #                           |
+| Description | Label de l'option                   |
+| Action      | Type d'action (badge couleur)       |
+| Destination | Cible de l'action                   |
+| Actions     | ✎ Modifier, ✕ Supprimer            |
+
+### Types d'actions
+| Action     | Badge    | Description                   |
+|------------|----------|-------------------------------|
+| Rediriger  | Bleu     | Transfert vers numéro         |
+| File attente| Jaune   | Vers queue                    |
+| Sous-menu  | Violet   | Vers autre menu IVR           |
+| Messagerie | Orange   | Vers voicemail                |
+| Rejouer    | Gris     | Rejoue l'annonce              |
+| Raccrocher | Rouge    | Termine l'appel               |
+
+================================================================================
+
+## COMPORTEMENT PAR DÉFAUT
+
+| Paramètre        | Type    | Valeurs                    |
+|------------------|---------|----------------------------|
+| Timeout          | Select  | 5-30 secondes              |
+| Action timeout   | Select  | Rediriger, Rejouer, Raccrocher |
+| Action invalide  | Select  | Rejouer, Rediriger         |
+| Max erreurs      | Select  | 1-5                        |
+
+================================================================================
+
+## API
+
+| Action           | Méthode | Endpoint                           |
+|------------------|---------|-----------------------------------|
+| Config IVR       | GET     | /telephony/{ba}/number/{sn}/ovhPabx |
+| Modifier IVR     | PUT     | /telephony/{ba}/number/{sn}/ovhPabx |
+| Menus            | GET     | .../ovhPabx/menu                    |
+| Entries          | GET     | .../ovhPabx/menu/{id}/entry         |
+| Ajouter entry    | POST    | .../ovhPabx/menu/{id}/entry         |
+| Modifier entry   | PUT     | .../ovhPabx/menu/{id}/entry/{eid}   |
+| Supprimer entry  | DELETE  | .../ovhPabx/menu/{id}/entry/{eid}   |
+| Upload son       | POST    | .../ovhPabx/sound (multipart)       |
+
+================================================================================
+
+## TOUCHES SPÉCIALES
+
+| Touche | Usage recommandé            |
+|--------|-----------------------------|
+| 0      | Opérateur / Répéter menu    |
+| *      | Retour menu précédent       |
+| #      | Confirmer choix             |
+
+================================================================================

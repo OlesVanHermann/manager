@@ -1,0 +1,102 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.index.svg
+Route:   /web-cloud/voip
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Page d'index du module VoIP listant tous les groupes de facturation téléphonie.
+Vue master/detail avec liste des groupes à gauche et détails du groupe sélectionné à droite.
+
+================================================================================
+
+## STRUCTURE PAGE
+
+### NAV1 (y=0, h=50)
+- Web Cloud actif (x=510, indicateur blanc)
+
+### NAV2 (y=50, h=40)  
+- VoIP actif (x=480, indicateur bleu #0050D7)
+
+### LEFT PANEL (x=24, y=105, w=280)
+- Recherche: input "Rechercher un groupe..."
+- Compteur: "{n} groupes"
+- Liste groupes: avatar V + nom + billingAccount + badge statut
+- Bouton: "+ Commander un groupe"
+
+### RIGHT PANEL (x=320, y=105, w=1096)
+- Header: Nom groupe + billingAccount + actions (Renommer, Commander)
+- NAV4 Tabs: [Infos générales] | Facturation | Administration
+- Contenu selon tab actif
+
+================================================================================
+
+## DONNÉES DYNAMIQUES
+
+| Élément SVG          | Source API                              |
+|----------------------|-----------------------------------------|
+| Liste groupes        | GET /telephony                          |
+| {billingAccount}     | /telephony → item                       |
+| {description}        | GET /telephony/{ba} → description       |
+| {status}             | GET /telephony/{ba}/serviceInfos → status|
+| {creditThreshold}    | GET /telephony/{ba} → creditThreshold   |
+| Nb lignes            | GET /telephony/{ba}/line → count        |
+| Nb numéros           | GET /telephony/{ba}/number → count      |
+| Nb fax               | GET /telephony/{ba}/fax → count         |
+| Nb abrégés           | GET /telephony/{ba}/abbreviatedNumber → count |
+| Consommation mois    | GET /telephony/{ba}/historyConsumption  |
+
+================================================================================
+
+## NAV4 TABS - INFOS GÉNÉRALES (actif)
+
+### Bloc "Informations du groupe"
+- Identifiant: billingAccount
+- Description: texte libre
+- Créé le: date création
+- Statut: badge Actif/Suspendu
+- Seuil alerte crédit: montant €
+- Crédit restant: montant €
+
+### Bloc "Résumé services"
+4 cards cliquables:
+- Lignes téléphoniques → /web-cloud/voip/groups/{ba}/lines
+- Numéros → /web-cloud/voip/groups/{ba}/numbers  
+- Fax → /web-cloud/voip/groups/{ba}/fax
+- Numéros abrégés → /web-cloud/voip/groups/{ba}/abbreviated
+
+### Bloc "Actions rapides"
+- Voir les factures → /web-cloud/voip/groups/{ba}/billing
+- Recharger crédit → modal rechargement
+- Répertoire → /web-cloud/voip/groups/{ba}/phonebook
+
+### Bloc "Consommation du mois"
+- Barre progression: consommé / budget
+- Détails: nationaux, mobiles, international
+
+================================================================================
+
+## ACTIONS
+
+| Action           | Déclencheur          | API                              |
+|------------------|----------------------|----------------------------------|
+| Renommer         | Bouton header        | PUT /telephony/{ba}              |
+| Commander groupe | Bouton primary       | Redirect /order/telephony        |
+| Gérer services   | Click card           | Navigation interne               |
+| Voir factures    | Bouton action        | Navigation /billing              |
+| Recharger crédit | Bouton action        | POST /telephony/{ba}/creditThreshold |
+
+================================================================================
+
+## COMPOSANTS UTILISÉS
+
+- Shell template (NAV1 + NAV2 + panels)
+- Badge statut (Actif vert, Suspendu gris)
+- Card service (fond #F9FAFB, lien "Gérer →")
+- Barre progression (fond gris, fill bleu)
+- Bouton outline, Bouton primary
+
+================================================================================
