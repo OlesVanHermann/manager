@@ -3,103 +3,146 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.general.svg
 Route:   /web-cloud/voip/groups/{billingAccount}/lines/{serviceName}
-Version: v1 (2025-12-28)
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Lignes | NAV4=General
+Version: v2 (2025-12-28)
 ================================================================================
 
-## DESCRIPTION
+## DONNEES DYNAMIQUES
 
-Page générale d'une ligne téléphonique VoIP affichant les informations
-principales, les identifiants SIP et les fonctionnalités actives.
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| ab12345-ovh-1            | GET /telephony → billingAccount                         |
+| 0033972123456            | GET /telephony/{ba}/line → serviceName                  |
+| Ligne SIP Pro            | GET /telephony/{ba}/line/{sn} → offerDescription        |
+| Actif/Inactif            | GET /telephony/{ba}/line/{sn}/serviceInfos → status     |
+| SIP/MGCP/Trunk           | GET /telephony/{ba}/line/{sn} → infrastructure          |
+| 3                        | GET /telephony/{ba}/line/{sn} → simultaneousLines       |
+| sip.ovh.net              | GET /telephony/{ba}/line/{sn} → domain                  |
+| Francais                 | GET /telephony/{ba}/line/{sn}/options → language        |
+| Cisco CP8851             | GET /telephony/{ba}/line/{sn}/phone → brand + model     |
+| AA:BB:CC:DD:EE:FF        | GET /telephony/{ba}/line/{sn}/phone → macAddress        |
+| 192.168.1.42             | GET /telephony/{ba}/line/{sn}/phone → ip                |
+| 14.1.1                   | GET /telephony/{ba}/line/{sn}/phone → firmware          |
+| 28/12/2025 14:32         | GET /telephony/{ba}/line/{sn}/lastRegistrations → datetime |
+| 82.64.123.45             | GET /telephony/{ba}/line/{sn}/lastRegistrations → ip    |
+| Enregistre               | GET /telephony/{ba}/line/{sn}/lastRegistrations → status |
 
 ================================================================================
 
 ## STRUCTURE PAGE
 
-### NAV3 (Left Panel)
-- [Lignes] | Numéros | Fax | Abrégés
+1. LEFT PANEL (280px)
+   - Barre recherche
+   - NAV3 tabs: [Lignes] | Numeros | Fax | Abreges
+   - Selecteur groupe (dropdown)
+   - Liste des lignes avec statut (badge)
+   - Pagination
 
-### NAV4 Tabs (Right Panel)
-- [Général] | Téléphone | Appels | Transferts | Messagerie | Conso | Options
+2. RIGHT PANEL (1096px)
+   - Header: Numero + Type + Actions (Renommer, MDP SIP, Resilier)
+   - NAV4 tabs: [General] | Telephone | Appels | Transferts | Messagerie | Conso | Options
 
-### Contenu
-- Breadcrumb vers groupe
-- Header: numéro + description + badge statut + actions
-- Bloc Informations ligne
-- Bloc Identifiants SIP
-- Bloc Fonctionnalités actives
-- Zone danger (résiliation)
+   - BLOC 1: Informations generales (520x200)
+     * Numero (+ copier)
+     * Offre
+     * Canaux simultanes
+     * Type (SIP/MGCP/Trunk)
+     * Domaine SIP (+ editer)
+     * Langue (+ editer)
+     * Statut (badge)
 
-================================================================================
+   - BLOC 2: Telephone associe (520x200)
+     * Modele
+     * Adresse MAC (+ copier)
+     * Adresse IP
+     * Firmware
+     * Dernier enregistrement
+     * Actions: Reboot | Configurer | MDP Admin
 
-## DONNÉES DYNAMIQUES
+   - BLOC 3: Derniers enregistrements SIP (1056x180)
+     * Table: Date | IP Source | User Agent | Statut
+     * Bouton rafraichir
 
-| Élément SVG        | Source API                              |
-|--------------------|-----------------------------------------|
-| Numéro             | serviceName                             |
-| Description        | GET /telephony/{ba}/line/{sn} → description |
-| Statut             | GET /telephony/{ba}/line/{sn}/serviceInfos → status |
-| Type offre         | offerType                               |
-| Date activation    | serviceInfos.creation                   |
-| Renouvellement     | serviceInfos.expiration                 |
-| Engagement         | serviceInfos.engagedUpTo                |
-| Login SIP          | serviceName                             |
-| Mot de passe SIP   | (masqué, régénérable)                   |
-| Domaine SIP        | GET /telephony/{ba}/line/{sn} → domain  |
+   - BLOC 4: Actions rapides (1056x100)
+     * Changer d'offre
+     * Convertir en numero
+     * Softphone
+     * Restrictions IP
 
-================================================================================
-
-## BLOC INFORMATIONS LIGNE
-
-| Champ          | Éditable | Type      |
-|----------------|----------|-----------|
-| Numéro         | Non      | Copiable  |
-| Description    | Oui      | Input     |
-| Type d'offre   | Non      | Text      |
-| Date activation| Non      | Date      |
-| Renouvellement | Non      | Date      |
-| Engagement     | Non      | Text      |
+   - BANNIERE WARNING (conditionnelle si MGCP)
 
 ================================================================================
 
-## BLOC IDENTIFIANTS SIP
+## API ENDPOINTS
 
-| Champ          | Actions                          |
-|----------------|----------------------------------|
-| Login SIP      | Copier                           |
-| Mot de passe   | Afficher/Masquer, Régénérer      |
-| Domaine SIP    | Copier                           |
+### Liste lignes (left panel)
+GET /telephony
+GET /telephony/{billingAccount}/line
 
-### Régénération mot de passe
-- Bouton: 🔑 Régénérer
-- API: POST /telephony/{ba}/line/{sn}/changePassword
-- Confirmation requise
+### Details ligne
+GET /telephony/{billingAccount}/line/{serviceName}
+Response: {
+  serviceName, description, offerType, simultaneousLines,
+  infrastructure (sip|mgcp|trunk), domain
+}
 
-================================================================================
+### Options ligne
+GET /telephony/{billingAccount}/line/{serviceName}/options
+Response: { language, displayNumber, click2Call... }
 
-## BLOC FONCTIONNALITÉS
+### Telephone associe
+GET /telephony/{billingAccount}/line/{serviceName}/phone
+Response: { brand, model, macAddress, ip, firmware, phoneKey[] }
 
-| Feature         | Lien                    | Badge              |
-|-----------------|-------------------------|--------------------|
-| Messagerie      | /line/{sn}/voicemail    | Activée / Désactivée |
-| Renvoi d'appel  | /line/{sn}/forward      | Configuré / Non    |
-| Filtrage appels | /line/{sn}/calls        | N règles actives   |
-| Click-to-Call   | /line/{sn}/options      | Activé / Désactivé |
+### Derniers enregistrements
+GET /telephony/{billingAccount}/line/{serviceName}/lastRegistrations
+Response: [{ datetime, ip, userAgent, status }]
 
-================================================================================
-
-## ACTIONS HEADER
-
-| Action       | Bouton      | API                           |
-|--------------|-------------|-------------------------------|
-| Renommer     | ✎ Renommer  | PUT /telephony/{ba}/line/{sn} |
-| Changer offre| ⇄ Changer   | POST /telephony/{ba}/line/{sn}/changeOffer |
+### Service infos
+GET /telephony/{billingAccount}/line/{serviceName}/serviceInfos
+Response: { status, creation, expiration, renew... }
 
 ================================================================================
 
-## ZONE DANGER
+## ACTIONS
 
-- Bouton: "× Résilier la ligne"
-- API: DELETE /telephony/{ba}/line/{sn}
-- Modal confirmation avec période de rétractation
+| Bouton           | API                                                    |
+|------------------|--------------------------------------------------------|
+| Renommer         | PUT /telephony/{ba}/line/{sn} { description }          |
+| MDP SIP          | POST /telephony/{ba}/line/{sn}/changePassword          |
+| Resilier         | DELETE /telephony/{ba}/line/{sn}                       |
+| Reboot telephone | POST /telephony/{ba}/line/{sn}/phone/reboot            |
+| Configurer       | → NAV4 Telephone                                       |
+| MDP Admin        | POST /telephony/{ba}/line/{sn}/phone/changePhoneConfig |
+| Changer offre    | → Modal offerChange                                    |
+| Convertir        | POST /telephony/{ba}/line/{sn}/convertToNumber         |
+| Softphone        | → Page softphone                                       |
+| Restrictions IP  | → Page restrictions                                    |
+| Domaine SIP      | PUT /telephony/{ba}/line/{sn} { domain }               |
+| Langue           | PUT /telephony/{ba}/line/{sn}/options { language }     |
 
+================================================================================
+
+## REGLES METIER
+
+- Bandeau warning si infrastructure === 'mgcp' (deprecie)
+- Bandeau info si resiliation planifiee (serviceInfos.status === 'pendingDelete')
+- Canaux simultanes: 1-10 selon offre
+- Telephone associe: peut etre null si ligne sans telephone
+- Badge statut: Actif (vert), Inactif (gris), Deprecie (orange)
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LinesList (left panel)
+- LineGeneralTab (right panel)
+- LineInfoCard (bloc 1)
+- PhoneInfoCard (bloc 2)
+- RegistrationsTable (bloc 3)
+- QuickActionsGrid (bloc 4)
+- WarningBanner (conditionnel)
+
+================================================================================
+FIN DOCUMENTATION
 ================================================================================

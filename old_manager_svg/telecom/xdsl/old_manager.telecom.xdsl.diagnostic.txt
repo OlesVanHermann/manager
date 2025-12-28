@@ -1,0 +1,128 @@
+# Cahier des Charges : telecom/xdsl - Diagnostic de ligne
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Outil de diagnostic complet de la ligne xDSL.
+
+### Objectif fonctionnel
+- Lancer un diagnostic automatique
+- Afficher le rapport de ligne
+- Proposer des solutions aux problemes
+
+---
+
+## 2. LAYOUT
+
+### Structure avec rapport et assistant
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | Retour a mon acces |
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Diagnostic de votre ligne |
+| Identifiant | xdsl-ab12345-1 |
+
+### Bouton lancement
+| Element | Description |
+|---------|-------------|
+| Bouton | Lancer un diagnostic |
+
+### Carte rapport
+| Element | Description |
+|---------|-------------|
+| Titre | Rapport de ligne |
+| Horodatage | Heure du diagnostic |
+
+### Cartes status (grille 3x2)
+| Test | Etat | Couleur |
+|------|------|---------|
+| Incident OVHcloud | Aucun incident | Vert |
+| Statut connexion | Equipement connecte | Vert |
+| Passerelle LNS | Equipement actif | Vert |
+| Reponse aux pings | Repond correctement | Vert |
+| Synchronisation | Ligne synchronisee | Vert |
+| Test de la ligne | Probleme cote client | Orange |
+
+### Section details ligne
+| Champ | Valeur |
+|-------|--------|
+| Profil actuel | SDSL_2M |
+| Profil propose | SDSL_2M |
+| Debit descendant | 2048 kbps |
+| Debit montant | 2048 kbps |
+| Attenuation | 32.5 dB |
+| Marge de bruit | 6.2 dB |
+
+### Assistant resolution
+| Element | Description |
+|---------|-------------|
+| Titre | Assistant de resolution de problemes |
+| Question | Selectionnez votre probleme |
+| Options radio | Liste des problemes courants |
+| Bouton | Lancer l'assistant |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+POST /xdsl/{serviceName}/diagnostic
+    Response: {
+      timestamp, results: [{
+        name, status, message
+      }]
+    }
+
+GET /xdsl/{serviceName}/lines/{number}/diagnostic
+    Response: { profile, debit, attenuation, snr }
+```
+
+### Status possibles
+| Status | Couleur | Description |
+|--------|---------|-------------|
+| ok | Vert | Test reussi |
+| warning | Orange | Anomalie detectee |
+| error | Rouge | Probleme grave |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "xdsl_diag_title": "Diagnostic de votre ligne",
+  "xdsl_diag_launch": "Lancer un diagnostic",
+  "xdsl_diag_report": "Rapport de ligne",
+  "xdsl_diag_time": "Heure du diagnostic",
+  "xdsl_diag_incident": "Incident OVHcloud",
+  "xdsl_diag_connection": "Statut de connexion",
+  "xdsl_diag_lns": "Passerelle LNS",
+  "xdsl_diag_ping": "Reponse aux pings",
+  "xdsl_diag_sync": "Synchronisation ligne",
+  "xdsl_diag_test": "Test de la ligne",
+  "xdsl_diag_details": "Details de la ligne",
+  "xdsl_diag_profile": "Profil de connexion actuel",
+  "xdsl_diag_suggested": "Profil propose",
+  "xdsl_diag_wizard": "Assistant de resolution de problemes",
+  "xdsl_diag_launch_wizard": "Lancer l'assistant"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Diagnostic prend 30-60 secondes
+- Resultats caches 5 minutes
+- Assistant guide selon symptomes
+- Support si echec apres 3 essais
