@@ -3,98 +3,167 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.phone.svg
 Route:   /web-cloud/voip/groups/{billingAccount}/lines/{serviceName}/phone
-Version: v1 (2025-12-28)
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Lignes | NAV4=Telephone
+Version: v2 (2025-12-28)
 ================================================================================
 
-## DESCRIPTION
+## DONNEES DYNAMIQUES
 
-Page de gestion du téléphone physique associé à la ligne VoIP. Affiche les
-informations matérielles, le statut de connexion et les actions de maintenance.
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Cisco CP8851             | GET /telephony/{ba}/line/{sn}/phone → brand + model     |
+| Cisco                    | GET /telephony/{ba}/line/{sn}/phone → brand             |
+| AA:BB:CC:DD:EE:FF        | GET /telephony/{ba}/line/{sn}/phone → macAddress        |
+| 14.1.1                   | GET /telephony/{ba}/line/{sn}/phone → softwareVersion   |
+| 192.168.1.42             | GET /telephony/{ba}/line/{sn}/phone → ip                |
+| SIP                      | GET /telephony/{ba}/line/{sn}/phone → protocol          |
+| Connecte                 | GET /telephony/{ba}/line/{sn}/phone → status            |
+| 28/12/2025 14:32         | GET /telephony/{ba}/line/{sn}/phone → lastRegistration  |
+| 10                       | GET /telephony/{ba}/line/{sn}/phone → maxLine           |
+| SpeedDial/BLF/Line       | GET /telephony/{ba}/line/{sn}/phone/functionKey → function |
+| 0033612345678            | GET /telephony/{ba}/line/{sn}/phone/functionKey → parameter |
+| Support                  | GET /telephony/{ba}/line/{sn}/phone/functionKey → label |
 
 ================================================================================
 
 ## STRUCTURE PAGE
 
-### NAV4 Tabs
-- Général | [Téléphone] | Appels | Transferts | Messagerie | Conso | Options
+1. LEFT PANEL (280px)
+   - Barre recherche
+   - NAV3 tabs: [Lignes] | Numeros | Fax | Abreges
+   - Selecteur groupe (dropdown)
+   - Liste des lignes avec statut (badge)
+   - Pagination
 
-### Contenu
-- Bannière info statut connexion
-- Bloc Téléphone associé (image + infos)
-- Bloc Actions (reboot, config, mdp, interface)
-- Bloc Touches programmables
-- Bloc Historique provisioning
+2. RIGHT PANEL (1096px)
+   - Header: Numero + Type + Actions (Reboot, MDP Admin)
+   - NAV4 tabs: General | [Telephone] | Appels | Transferts | Messagerie | Conso | Options
+
+   - BLOC 1: Informations telephone (1056x160)
+     * Image placeholder telephone
+     * Col 1: Modele, Marque, MAC (+ copier), Firmware
+     * Col 2: IP, Protocole, Statut (badge), Derniere connexion
+     * Col 3: Nb touches, Ecran, PoE
+
+   - BLOC 2: Touches programmables (1056x200)
+     * Table: Touche | Fonction (badge) | Valeur | Label | Actions
+     * Fonctions: SpeedDial (bleu), BLF (orange), Line (vert)
+     * Lignes non configurees groupees
+
+   - BLOC 3: Configuration avancee (1056x100)
+     * Codecs audio
+     * Plug & Phone
+     * Carnets contacts
+     * Mise a jour firmware
+     * Detacher (danger)
+
+   - BLOC 4: Commander (1056x80, fond bleu)
+     * Commander telephone
+     * Commander accessoires
+     * Changer telephone
 
 ================================================================================
 
-## DONNÉES DYNAMIQUES
+## API ENDPOINTS
 
-| Élément SVG       | Source API                                   |
-|-------------------|----------------------------------------------|
-| Marque/Modèle     | GET /telephony/{ba}/line/{sn}/phone → brand+model |
-| Adresse MAC       | phone.macAddress                             |
-| Adresse IP        | phone.ip (si disponible)                     |
-| Firmware          | phone.softwareVersion                        |
-| Statut connexion  | phone.status (registered/unregistered)       |
-| Dernière activité | phone.lastRegistration                       |
-| Touches           | GET /telephony/{ba}/line/{sn}/phone/functionKey |
-| Historique        | GET /telephony/{ba}/line/{sn}/phone/adminPassword (logs) |
+### Telephone associe
+GET /telephony/{billingAccount}/line/{serviceName}/phone
+Response: {
+  brand, model, macAddress, ip, softwareVersion, protocol,
+  status (registered|unregistered), lastRegistration, maxLine
+}
 
-================================================================================
+### Touches programmables
+GET /telephony/{billingAccount}/line/{serviceName}/phone/functionKey
+Response: [{ keyNum, function, parameter, label }]
 
-## BLOC TÉLÉPHONE ASSOCIÉ
+PUT /telephony/{billingAccount}/line/{serviceName}/phone/functionKey/{keyNum}
+Body: { function, parameter, label }
 
-| Information      | Format                    |
-|------------------|---------------------------|
-| Marque/Modèle    | "Yealink T46U"            |
-| MAC Address      | XX:XX:XX:XX:XX:XX         |
-| IP Address       | 192.168.x.x               |
-| Firmware         | vXX.XX.X.XX               |
-| Statut firmware  | Badge "À jour" / "Mise à jour dispo" |
-| Statut connexion | ● Connecté / ○ Déconnecté |
+DELETE /telephony/{billingAccount}/line/{serviceName}/phone/functionKey/{keyNum}
+
+### Actions telephone
+POST /telephony/{billingAccount}/line/{serviceName}/phone/reboot
+
+POST /telephony/{billingAccount}/line/{serviceName}/phone/resetConfig
+
+GET /telephony/{billingAccount}/line/{serviceName}/phone/adminPassword
+Response: { password }
+
+POST /telephony/{billingAccount}/line/{serviceName}/phone/changePhoneConfig
+Body: { codec, ... }
+
+### Commandes
+POST /order/telephony/{billingAccount}/line/{serviceName}/phone
+POST /order/telephony/{billingAccount}/line/{serviceName}/accessories
 
 ================================================================================
 
 ## ACTIONS
 
-| Action           | Bouton              | API                                    |
-|------------------|---------------------|----------------------------------------|
-| Redémarrer       | ↻ Redémarrer        | POST /telephony/{ba}/line/{sn}/phone/reboot |
-| Reconfigurer     | ⚙ Reconfigurer      | POST /telephony/{ba}/line/{sn}/phone/resetConfig |
-| MDP Admin        | 🔑 Mot de passe     | GET /telephony/{ba}/line/{sn}/phone/adminPassword |
-| Interface web    | ↗ Interface web     | Lien externe http://{ip}               |
+| Bouton              | API                                                      |
+|---------------------|----------------------------------------------------------|
+| Reboot              | POST /telephony/{ba}/line/{sn}/phone/reboot              |
+| MDP Admin           | GET /telephony/{ba}/line/{sn}/phone/adminPassword        |
+| Configurer touche   | PUT /telephony/{ba}/line/{sn}/phone/functionKey/{n}      |
+| Supprimer touche    | DELETE /telephony/{ba}/line/{sn}/phone/functionKey/{n}   |
+| Codecs audio        | → Modal codecs                                           |
+| Plug & Phone        | → Modal auto-provisioning                                |
+| Carnets contacts    | → Page phonebook                                         |
+| Mise a jour         | POST /telephony/{ba}/line/{sn}/phone/refreshScreen       |
+| Detacher            | DELETE /telephony/{ba}/line/{sn}/phone                   |
+| Commander telephone | → Wizard order                                           |
+| Commander accessoires| → Wizard order                                          |
+| Changer telephone   | → Wizard change                                          |
 
 ================================================================================
 
-## TOUCHES PROGRAMMABLES
+## TYPES DE TOUCHES
 
-| Type touche | Description                    |
-|-------------|--------------------------------|
-| BLF         | Supervision ligne (présence)   |
-| Speed dial  | Numérotation rapide            |
-| Parking     | Parcage d'appel                |
-| Transfer    | Transfert vers numéro          |
-| DTMF        | Envoi de codes DTMF            |
-
-### Configuration
-- Lien "Configurer →" vers page dédiée
-- Affichage grille 5 touches max sur cette vue
-- Page complète pour 10+ touches
+| Fonction   | Badge    | Description                          |
+|------------|----------|--------------------------------------|
+| SpeedDial  | Bleu     | Numerotation rapide                  |
+| BLF        | Orange   | Busy Lamp Field (supervision)        |
+| Line       | Vert     | Ligne principale/secondaire          |
+| Park       | Gris     | Parcage d'appel                      |
+| Intercom   | Violet   | Interphone                           |
+| Transfer   | Jaune    | Transfert d'appel                    |
+| DTMF       | Gris     | Envoi codes DTMF                     |
 
 ================================================================================
 
-## HISTORIQUE PROVISIONING
+## MARQUES SUPPORTEES
 
-| Colonne | Description              |
-|---------|--------------------------|
-| Date    | Date/heure action        |
-| Action  | Type opération           |
-| Statut  | Badge Succès/Échec       |
+| Marque   | Modeles courants                    |
+|----------|-------------------------------------|
+| Cisco    | CP8851, CP8841, CP7841, CP6861     |
+| Yealink  | T46U, T46S, T42U, T33G             |
+| Polycom  | VVX450, VVX350, VVX250             |
+| Gigaset  | Maxwell 10, Maxwell 3              |
 
-Actions possibles:
-- Configuration automatique
-- Mise à jour firmware
-- Reset configuration
-- Changement mot de passe
+================================================================================
 
+## REGLES METIER
+
+- Telephone peut etre null (ligne sans telephone physique)
+- Statut: registered (vert), unregistered (rouge), unknown (gris)
+- Firmware: badge "A jour" (vert) ou "Maj dispo" (orange)
+- Touches: max 10 par telephone (selon modele)
+- Detacher: confirmation requise, action irreversible
+- PoE: info materielle, non modifiable
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- PhoneInfoCard (bloc 1)
+- FunctionKeysTable (bloc 2)
+- PhoneAdvancedConfig (bloc 3)
+- PhoneOrderBanner (bloc 4)
+- FunctionKeyEditModal
+- PhoneRebootModal
+- PhoneDetachConfirmModal
+
+================================================================================
+FIN DOCUMENTATION
 ================================================================================

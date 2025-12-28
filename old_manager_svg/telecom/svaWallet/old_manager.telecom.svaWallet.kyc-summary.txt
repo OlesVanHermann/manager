@@ -1,0 +1,145 @@
+# Cahier des Charges : telecom/svaWallet - KYC Recapitulatif
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page recapitulative du dossier KYC pour portefeuille SVA.
+
+### Objectif fonctionnel
+- Afficher la synthese du dossier KYC
+- Visualiser les statuts de validation
+- Acceder aux modifications par section
+- Identifier les elements manquants
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec cartes recap par section
+
+---
+
+## 3. COMPOSANTS UI
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Portefeuille SVA - Recapitulatif KYC |
+| Description | Synthese de votre dossier de verification d'identite. |
+
+### Alerte succes
+| Type | Message |
+|------|---------|
+| Success | Votre IBAN a ete mis a jour avec succes. |
+
+### Carte Identite de l'entreprise
+| Champ | Valeur exemple |
+|-------|----------------|
+| Raison sociale | MA SOCIETE SAS |
+| SIRET | 12345678901234 |
+| Forme juridique | SAS |
+| Adresse | 10 rue de la Paix, 75001 Paris, France |
+| Lien | Modifier -> |
+
+### Carte Compte bancaire
+| Champ | Valeur exemple |
+|-------|----------------|
+| Titulaire | MA SOCIETE SAS |
+| IBAN | FR76 1234 5678 9012 3456 7890 123 |
+| Lien | Modifier -> |
+
+### Carte Beneficiaires effectifs
+| Element | Description |
+|---------|-------------|
+| Checkbox info | Le representant legal est beneficiaire effectif |
+| Liste | Noms des beneficiaires avec date et nationalite |
+
+### Carte Documents justificatifs
+| Document | Statut |
+|----------|--------|
+| Piece d'identite | Badge Valide |
+| Extrait Kbis | Badge En attente |
+| RIB | Badge Valide |
+| Justificatif de domicile | Non fourni + lien Televerser |
+
+### Badges Statut
+| Statut | Couleur |
+|--------|---------|
+| Valide | Vert |
+| En attente | Jaune |
+| Non fourni | Gris |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoint
+```
+GET /svaWallet/{walletId}/kyc/summary
+    Response: {
+      identity: {
+        legalName: "MA SOCIETE SAS",
+        siret: "12345678901234",
+        legalForm: "SAS",
+        address: "10 rue de la Paix, 75001 Paris, France"
+      },
+      bankAccount: {
+        accountHolder: "MA SOCIETE SAS",
+        iban: "FR76123456789012345678901xx"
+      },
+      beneficiaries: [
+        { name: "Jean DUPONT", birthDate: "1975-03-15", nationality: "France", isLegalRep: true },
+        { name: "Marie MARTIN", birthDate: "1980-08-22", nationality: "France", isLegalRep: false }
+      ],
+      documents: {
+        idCard: { status: "validated" },
+        kbis: { status: "pending" },
+        rib: { status: "validated" },
+        proofAddress: { status: "not_provided" }
+      },
+      overallStatus: "pending"
+    }
+```
+
+### Statuts KYC
+| Statut | Description |
+|--------|-------------|
+| incomplete | Dossier incomplet |
+| pending | En cours de validation |
+| validated | Dossier valide |
+| rejected | Dossier refuse |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "sva_kyc_summary_title": "Recapitulatif KYC",
+  "sva_kyc_summary_desc": "Synthese de votre dossier de verification d'identite.",
+  "sva_kyc_summary_iban_updated": "Votre IBAN a ete mis a jour avec succes.",
+  "sva_kyc_summary_identity": "Identite de l'entreprise",
+  "sva_kyc_summary_bank": "Compte bancaire",
+  "sva_kyc_summary_beneficiaries": "Beneficiaires effectifs",
+  "sva_kyc_summary_documents": "Documents justificatifs",
+  "sva_kyc_summary_legal_name": "Raison sociale",
+  "sva_kyc_summary_siret": "SIRET",
+  "sva_kyc_summary_legal_form": "Forme juridique",
+  "sva_kyc_summary_address": "Adresse",
+  "sva_kyc_summary_holder": "Titulaire",
+  "sva_kyc_summary_iban": "IBAN",
+  "sva_kyc_summary_modify": "Modifier",
+  "sva_kyc_summary_legal_rep_beneficiary": "Le representant legal est beneficiaire effectif",
+  "sva_kyc_summary_upload": "Televerser"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Synthese read-only avec liens vers editions
+- Statut global = minimum des statuts individuels
+- Dossier valide = tous documents valides
+- Reversements actives apres validation complete
+- Mise a jour en temps reel des statuts

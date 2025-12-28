@@ -3,103 +3,143 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.calls.svg
 Route:   /web-cloud/voip/groups/{billingAccount}/lines/{serviceName}/calls
-Version: v1 (2025-12-28)
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Lignes | NAV4=Appels | NAV5=Historique
+Version: v2 (2025-12-28)
 ================================================================================
 
-## DESCRIPTION
+## DONNEES DYNAMIQUES
 
-Historique des appels de la ligne VoIP avec filtres, statistiques et
-export. Affiche les appels entrants, sortants et manqués.
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 247                      | GET /telephony/{ba}/line/{sn}/calls → count             |
+| 156                      | filter(calls, type='outgoing').length                   |
+| 82                       | filter(calls, type='incoming').length                   |
+| 9                        | filter(calls, status='missed').length                   |
+| 28/12/2025 11:42         | calls[].dateTime                                        |
+| Sortant/Entrant          | calls[].type (outgoing/incoming)                        |
+| +33 6 12 34 56 78        | calls[].destination                                     |
+| Martin Jean              | phonebook lookup(destination)                           |
+| 5:23                     | calls[].duration (format mm:ss)                         |
+| Abouti/Manque            | calls[].status                                          |
+| 0,12 €                   | calls[].price                                           |
 
 ================================================================================
 
 ## STRUCTURE PAGE
 
-### NAV4 Tabs
-- Général | Téléphone | [Appels] | Transferts | Messagerie | Conso | Options
+1. LEFT PANEL (280px)
+   - Barre recherche
+   - NAV3 tabs: [Lignes] | Numeros | Fax | Abreges
+   - Selecteur groupe (dropdown)
+   - Liste des lignes avec statut (badge)
+   - Pagination
 
-### NAV5 Sous-tabs
-- [Historique] | Filtrage entrant | Filtrage sortant
+2. RIGHT PANEL (1096px)
+   - Header: Numero + Type
+   - NAV4 tabs: General | Telephone | [Appels] | Transferts | Messagerie | Conso | Options
+   - NAV5 sub-tabs: [Historique] | Filtrage entrant | Filtrage sortant | Restrictions
 
-### Contenu
-- Toolbar: Refresh, Filtres type/période, Export
-- Cards statistiques (4)
-- Table historique appels
-- Pagination
+   - TOOLBAR:
+     * Bouton refresh
+     * Dropdown type (Tous/Sortants/Entrants/Manques)
+     * Dropdown periode (7 jours/30 jours/Personnalise)
+     * Bouton Export CSV
+
+   - STATS CARDS (4x):
+     * Appels totaux (gris)
+     * Appels sortants (vert) ↗
+     * Appels entrants (bleu) ↙
+     * Appels manques (rouge)
+
+   - TABLE HISTORIQUE (1040x400):
+     * Colonnes: Date/Heure | Type | Correspondant | Duree | Statut | Cout | Actions
+     * Ligne manquee: fond jaune pale
+     * Action: Rappeler
+
+   - PAGINATION
 
 ================================================================================
 
-## DONNÉES DYNAMIQUES
+## API ENDPOINTS
 
-| Élément SVG        | Source API                                  |
-|--------------------|---------------------------------------------|
-| Historique appels  | GET /telephony/{ba}/line/{sn}/calls         |
-| Stats totaux       | Calcul depuis calls                         |
-| Détail appel       | calls[].{date,type,destination,duration...} |
-| Correspondant nom  | Lookup phonebook ou répertoire              |
+### Historique appels
+GET /telephony/{billingAccount}/line/{serviceName}/calls
+Query: { dateTime.from, dateTime.to }
+Response: [{
+  id, dateTime, type (outgoing|incoming),
+  destination, duration, status, price, priceUnit
+}]
+
+### Export CSV
+GET /telephony/{billingAccount}/line/{serviceName}/calls/export
+Response: CSV file download
+
+### Click2Call (rappeler)
+POST /telephony/{billingAccount}/line/{serviceName}/click2Call
+Body: { calledNumber }
+
+================================================================================
+
+## NAV5 SUB-TABS
+
+| Tab              | Description                      | SVG associe                          |
+|------------------|----------------------------------|--------------------------------------|
+| Historique       | Liste des appels (ce SVG)        | target_.web-cloud.voip.line.calls.svg |
+| Filtrage entrant | Liste blanche/noire entrant      | target_.web-cloud.voip.line.calls.filtering-in.svg |
+| Filtrage sortant | Liste blanche/noire sortant      | target_.web-cloud.voip.line.calls.filtering-out.svg |
+| Restrictions     | Bloquer types numeros            | target_.web-cloud.voip.line.calls.restrictions.svg |
+
+================================================================================
+
+## BADGES TYPE APPEL
+
+| Type     | Couleur | CSS                |
+|----------|---------|--------------------|
+| Sortant  | Vert    | fill: #DEF7EC      |
+| Entrant  | Bleu    | fill: #DBEAFE      |
+
+================================================================================
+
+## BADGES STATUT
+
+| Statut   | Couleur | Indicateur         |
+|----------|---------|--------------------|
+| Abouti   | Vert    | ● text-success     |
+| Manque   | Rouge   | ● text-error       |
+| Occupe   | Orange  | ● text-warning     |
+| Rejete   | Gris    | ● text-muted       |
 
 ================================================================================
 
 ## FILTRES
 
-| Filtre     | Valeurs                                    |
-|------------|--------------------------------------------|
-| Type       | Tous, Sortants, Entrants, Manqués          |
-| Période    | Aujourd'hui, 7 jours, 30 jours, Personnalisé |
+| Filtre   | Options                                    |
+|----------|--------------------------------------------|
+| Type     | Tous les types, Sortants, Entrants, Manques |
+| Periode  | Aujourd'hui, 7 derniers jours, 30 jours, Personnalise |
 
 ================================================================================
 
-## CARDS STATISTIQUES
+## REGLES METIER
 
-| Card            | Couleur   | Valeur               |
-|-----------------|-----------|----------------------|
-| Appels totaux   | Gris      | Somme tous appels    |
-| Appels sortants | Vert      | Type = outgoing      |
-| Appels entrants | Bleu      | Type = incoming      |
-| Appels manqués  | Rouge     | Status = missed      |
-
-================================================================================
-
-## TABLE HISTORIQUE
-
-| Colonne      | Source                   | Format            |
-|--------------|--------------------------|-------------------|
-| Date/Heure   | call.dateTime            | DD/MM/YYYY HH:mm  |
-| Type         | call.type                | Badge Sortant/Entrant |
-| Correspondant| call.destination + lookup| Numéro + Nom      |
-| Durée        | call.duration            | mm:ss             |
-| Statut       | call.status              | ● Abouti/Manqué   |
-| Coût         | call.price               | X,XX €            |
+- Historique conserve 90 jours par defaut
+- Cout: gratuit pour internes (0,00 €), tarif selon destination
+- Correspondant: lookup dans phonebook du groupe
+- Ligne manquee: mise en evidence avec fond jaune pale
+- Click2Call: rappel depuis l'interface web
 
 ================================================================================
 
-## NAV5 - SOUS-TABS APPELS
+## COMPOSANTS REACT
 
-| Tab              | Contenu                          |
-|------------------|----------------------------------|
-| Historique       | Ce SVG - liste appels            |
-| Filtrage entrant | Règles blocage appels entrants   |
-| Filtrage sortant | Restrictions appels sortants     |
-
-================================================================================
-
-## ACTIONS
-
-| Action      | Déclencheur     | API/Résultat              |
-|-------------|-----------------|---------------------------|
-| Refresh     | Bouton ↻        | Recharger liste           |
-| Filtrer     | Dropdowns       | Filtrage client-side      |
-| Export CSV  | Bouton export   | Téléchargement fichier    |
+- CallHistoryTab (container)
+- CallStatsCards (4 cards)
+- CallHistoryTable (table paginee)
+- CallTypeFilter (dropdown)
+- CallPeriodFilter (dropdown)
+- CallExportButton
+- CallRowActions (rappeler)
 
 ================================================================================
-
-## STATUTS APPELS
-
-| Statut   | Badge        | Signification           |
-|----------|--------------|-------------------------|
-| Abouti   | ● vert       | Appel connecté          |
-| Manqué   | ● rouge      | Non décroché            |
-| Occupé   | ● orange     | Ligne occupée           |
-| Rejeté   | ● gris       | Refusé par filtrage     |
-
+FIN DOCUMENTATION
 ================================================================================
