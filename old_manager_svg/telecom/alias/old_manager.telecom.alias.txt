@@ -1,0 +1,126 @@
+================================================================================
+CAHIER DES CHARGES - OLD MANAGER
+================================================================================
+Composant : telecom.alias
+Fichier   : old_manager.telecom.alias.txt
+SVG       : old_manager.telecom.alias.svg
+Date      : 2025-01-XX
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+### Perimetre fonctionnel
+Page principale de gestion des numeros alias (numeros virtuels) dans l'univers 
+Telecom OVHcloud. Un alias est un numero sans forfait ni materiel qui permet 
+de mettre en place des strategies d'appels (redirection, file d'attente, SVI, 
+conference).
+
+### Objectif
+Permettre aux utilisateurs de :
+- Visualiser et gerer leurs numeros alias
+- Configurer le type de service (redirection, conference, SVI, etc.)
+- Acceder aux sous-modules de configuration specifiques
+- Commander de nouveaux numeros
+
+### Users cibles
+- Entreprises avec standards telephoniques
+- Utilisateurs de conferences telephoniques
+- Gestionnaires de centres d'appels
+
+--------------------------------------------------------------------------------
+
+## 2. ARCHITECTURE
+
+### Arborescence des fichiers sources
+packages/manager/apps/telecom/src/app/telecom/telephony/alias/
+├── alias.controller.js
+├── alias.html
+├── alias.module.js
+├── alias.routing.js
+├── index.js
+├── translations/
+├── configuration/
+├── consumption/
+├── dashboard/
+├── portability/
+├── special/
+└── svaGenerator/
+
+### Framework et patterns
+- Framework : AngularJS 1.x
+- Routing : ui-router avec etats imbriques
+- API : ovh-api-services (OvhApiTelephonyNumber)
+
+--------------------------------------------------------------------------------
+
+## 3. PAGES & NAVIGATION
+
+### Routes principales
+| Etat | URL | Description |
+|------|-----|-------------|
+| telecom.telephony.billingAccount.alias | /alias | Conteneur |
+| ...alias.dashboard | /alias/:serviceName | Dashboard |
+| ...alias.configuration | /configuration | Configuration |
+| ...alias.consumption | /consumption | Consommation |
+| ...alias.portability | /portability | Portabilite |
+
+### Parametres de route
+- billingAccount : Groupe de facturation
+- serviceName : Numero alias (ex: 0033972101234)
+
+--------------------------------------------------------------------------------
+
+## 4. COMPOSANTS UI
+
+### Composants ODS/OUI utilises
+| Composant | Usage |
+|-----------|-------|
+| oui-tile | Tuiles dashboard |
+| oui-datagrid | Listes |
+| oui-action-menu | Actions contextuelles |
+| oui-field | Champs formulaire |
+| oui-select | Selecteurs |
+
+--------------------------------------------------------------------------------
+
+## 5. APIs & DONNEES
+
+### Endpoints principaux
+GET /telephony/:billingAccount/number/:serviceName
+Response: {
+  serviceName: string,
+  description: string,
+  featureType: string,
+  partOfPool: string,
+  serviceType: string
+}
+
+### Types de configuration (featureType)
+| Type | Description |
+|------|-------------|
+| redirect | Redirection simple |
+| conference | Conference |
+| cloudIvr | SVI Cloud |
+| easyHunting | File d'attente |
+| contactCenterSolution | CCS |
+
+--------------------------------------------------------------------------------
+
+## 6. TRADUCTIONS (FR)
+
+telephony_alias_breadcrumb = "Numeros"
+telephony_alias_page_title = "Numero \"{{name}}\""
+telephony_alias_dashboard = "Tableau de bord"
+telephony_alias_configuration = "Configuration"
+
+--------------------------------------------------------------------------------
+
+## 7. REGLES METIER
+
+### Affichage conditionnel
+- Dashboard adapte selon featureType
+- Actions disponibles selon serviceType
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

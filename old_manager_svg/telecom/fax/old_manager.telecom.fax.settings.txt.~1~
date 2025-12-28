@@ -1,0 +1,269 @@
+# CAHIER DES CHARGES - Freefax Configuration (Settings)
+# Fichier : old_manager.telecom.fax.settings.txt
+# Source : packages/manager/modules/freefax/src/freefax/faxConfiguration/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Formulaire de configuration des parametres d'envoi de fax integre dans le dashboard Freefax.
+
+### Objectif fonctionnel
+- Configurer l'expediteur (nom et email)
+- Definir la qualite d'envoi par defaut
+- Configurer le nombre de tentatives maximum
+- Personnaliser l'entete des fax
+- Generer un nouveau mot de passe d'acces
+
+### Emplacement
+Tile "Configuration du fax" dans le dashboard (colonne droite)
+
+---
+
+## 2. COMPOSANTS UI
+
+### 2.1 Mode Lecture
+
+#### Structure
+```
++---------------------------------------+
+| Configuration du fax                  |
++---------------------------------------+
+| Expediteur         : John Doe         |
+| Mail expediteur    : john@example.com |
+| Qualite par defaut : Normale          |
+| Tentatives max.    : 3                |
+| Entete des fax     : Mon Entreprise   |
+|                                       |
+| [        Editer        ]              |
++---------------------------------------+
+```
+
+#### Items affiches
+| Label | Property | Format |
+|-------|----------|--------|
+| Expediteur | freeFax.fromName | string |
+| Mail de l'expediteur | freeFax.fromEmail | string |
+| Qualite par defaut | freeFax.faxQuality | Traduit (normal→Normale, high→Elevee, best→Optimale) |
+| Tentatives max. d'envoi | freeFax.faxMaxCall | number |
+| Entete des fax | freeFax.faxTagLine | string |
+
+#### Bouton
+- Texte : "Editer"
+- Style : `btn btn-default btn-block`
+- Action : `FaxConfCtrl.enterEditMode()`
+
+---
+
+### 2.2 Mode Edition
+
+#### Structure
+```
++---------------------------------------+
+| Configuration du fax                  |
++---------------------------------------+
+| Les champs * sont obligatoires        |
+|                                       |
+| Expediteur *                          |
+| [________________________]            |
+|                                       |
+| Mail de l'expediteur *                |
+| [________________________]            |
+|                                       |
+| Qualite par defaut *                  |
+| [v Normale            ]               |
+|                                       |
+| Tentatives max. d'envoi *             |
+| [v 3                  ]               |
+|                                       |
+| Entete des fax *                      |
+| [________________________]            |
+|                                       |
+| [Valider] [Annuler] (o)              |
++---------------------------------------+
+```
+
+#### Champs du formulaire
+
+| Champ | HTML | Name | Type | Validation | ng-model |
+|-------|------|------|------|------------|----------|
+| Expediteur | input | expeditor | text | required, maxlength="50" | freeFax.fromName |
+| Mail expediteur | input | expeditorMail | email | required, email, maxlength="50" | freeFax.fromEmail |
+| Qualite | select | quality | - | required | freeFax.faxQuality |
+| Tentatives max | select | maxRequests | - | required | freeFax.faxMaxCall |
+| Entete | input | faxHeader | text | required, maxlength="50" | freeFax.faxTagLine |
+
+#### Options Select Qualite
+```javascript
+qualityOptions = [
+  { value: 'normal', label: 'Normale' },
+  { value: 'high', label: 'Elevee' },
+  { value: 'best', label: 'Optimale' }
+]
+```
+
+#### Options Select Tentatives
+```javascript
+maxRequestsOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+```
+
+#### Boutons
+- "Valider" : type="submit", disabled si form invalid ou loading
+- "Annuler" : type="reset", appelle cancelEditMode()
+- Spinner : affiche si loading
+
+---
+
+### 2.3 Section Mot de Passe (dans meme tile)
+
+#### Structure
+```
+| Obtenir un nouveau mot de passe       |
+| [Generer] (o)                         |
+| Nouveau mot de passe : ******         |
+```
+
+#### Comportement
+- Bouton "Generer" → confirm dialog → appel API
+- Spinner pendant generation
+- Affichage mot de passe avec toggle show/hide
+- passwordDisplay : "*****" ou mot de passe reel
+
+---
+
+## 3. API
+
+### PUT /freeFax/{serviceName}
+- Methode : saveConfiguration()
+- Body :
+```typescript
+{
+  faxMaxCall: number;      // 1-9
+  faxQuality: string;      // 'normal' | 'high' | 'best'
+  faxTagLine: string;      // max 50 chars
+  fromEmail: string;       // email valide
+  fromName: string;        // max 50 chars
+}
+```
+
+### POST /freeFax/{serviceName}/resetPassword
+- Methode : generatePassword()
+- Body : null
+- Response : `{ value: string }`
+
+---
+
+## 4. CONTROLLER (freefax-faxConfiguration.controller.js)
+
+### Variables
+```javascript
+this.editMode = false;
+this.validator = tucValidator;
+this.showFreeFaxHeaderTips = false;
+this.passwordDisplay = '*****';
+this.showPassword = false;
+this.generatedPassword = null;
+this.generatingPassword = false;
+this.loading = false;
+```
+
+### Methodes
+| Methode | Description |
+|---------|-------------|
+| enterEditMode() | Sauvegarde donnees, active edition |
+| cancelEditMode() | Restaure donnees, desactive edition |
+| submit() | Sauvegarde via API |
+| generatePassword() | Genere nouveau password |
+| togglePassword() | Bascule affichage password |
+
+### Sauvegarde/Restauration
+```javascript
+function saveFormData() {
+  savedModelData.fromEmail = $scope.freeFax.fromEmail;
+  savedModelData.faxQuality = $scope.freeFax.faxQuality;
+  savedModelData.faxTagLine = $scope.freeFax.faxTagLine;
+  savedModelData.faxMaxCall = $scope.freeFax.faxMaxCall;
+  savedModelData.fromName = $scope.freeFax.fromName;
+}
+
+function restoreFormData() {
+  // Inverse de saveFormData
+}
+```
+
+---
+
+## 5. VALIDATIONS
+
+### Regex/Patterns
+| Champ | Validation |
+|-------|------------|
+| fromName | required, max 50 chars |
+| fromEmail | required, email format (tucValidator.isEmail) |
+| faxTagLine | required, 1-50 chars |
+| faxMaxCall | required, 1-9 |
+| faxQuality | required, enum |
+
+### Messages d'erreur
+```
+freefax_expeditor_form_error = "Le champ ne doit pas etre vide"
+freefax_expeditor_mail_form_error = "Le champ doit etre une adresse email valide"
+freefax_header_form_error = "Le champ doit contenir de 1 a 50 caracteres"
+```
+
+---
+
+## 6. TILE AIDE ENTETE
+
+### Variables disponibles
+| Variable | Description |
+|----------|-------------|
+| \| | Separe le texte en multiples colonnes de taille egale |
+| %%i | Identifiant de la tache |
+| %%j | Nom de la piece jointe |
+| %%l | Fax emission Id. Si vide : numero de fax |
+| %%m | Mail de l'expediteur |
+| %%n | Numero de fax |
+| %%p | Numero de page pour la session |
+| %%P | Numero de page de la tache |
+| %%r | Fax reception Id du destinataire |
+| %%t | Nombre de pages total de la session |
+| %%T | Nombre de pages total de la tache |
+| %%d | Nom du destinataire |
+
+---
+
+## 7. TRADUCTIONS
+
+```
+freefax_fax_configuration = "Configuration du fax"
+freefax_expeditor = "Expediteur"
+freefax_expeditor_mail = "Mail de l'expediteur"
+freefax_quality = "Qualite par defaut"
+freefax_quality_normal = "Normale"
+freefax_quality_high = "Elevee"
+freefax_quality_best = "Optimale"
+freefax_max_try = "Tentatives max. d'envoi"
+freefax_header = "Entete des fax"
+freefax_header_help = "Aide entete des fax"
+freefax_edit = "Editer"
+freefax_cancel = "Annuler"
+freefax_submit = "Valider"
+freefax_required_fields = "Les champs marques d'un asterisque sont obligatoires."
+freefax_reset_password = "Obtenir un nouveau mot de passe"
+freefax_reset_password_btn = "Generer"
+freefax_reset_password_confirm = "Etes-vous sur de vouloir generer un nouveau mot de passe ?"
+```
+
+---
+
+## 8. MAPPING ODS REACT
+
+| Angular | ODS React |
+|---------|-----------|
+| input.form-control | OdsInput |
+| select.form-control | OdsSelect |
+| .has-error | OdsInput error={true} |
+| .help-block | OdsFormField helper |
+| btn btn-primary | OdsButton variant="default" |
+| btn btn-default | OdsButton variant="outline" |
+| oui-spinner size="s" | OdsSpinner size="sm" |

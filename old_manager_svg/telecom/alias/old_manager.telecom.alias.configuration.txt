@@ -1,0 +1,97 @@
+================================================================================
+CAHIER DES CHARGES - OLD MANAGER
+================================================================================
+Composant : telecom.alias.configuration
+Fichier   : old_manager.telecom.alias.configuration.txt
+SVG       : old_manager.telecom.alias.configuration.svg
+Date      : 2025-01-XX
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+### Perimetre fonctionnel
+Configuration des numeros alias selon leur type : redirection, conference,
+SVI, file d'attente (easyHunting), centre d'appels (CCS).
+
+### Objectif
+- Configurer les redirections d'appels
+- Gerer les files d'attente et agents
+- Configurer les SVI (menus vocaux)
+- Parametrer les conferences
+
+--------------------------------------------------------------------------------
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+alias/configuration/
+├── redirect/           # Redirection simple
+├── conference/         # Salles de conference
+├── cloudIvr/          # SVI Cloud
+├── svi/               # SVI VXML
+├── easyHunting/       # File d'attente
+│   ├── agents/
+│   ├── queues/
+│   └── scheduler/
+└── contactCenterSolution/
+
+--------------------------------------------------------------------------------
+
+## 3. PAGES & NAVIGATION
+
+### Routes par type
+| featureType | Route | Description |
+|-------------|-------|-------------|
+| redirect | .redirect | Config redirection |
+| conference | .conference | Salles conference |
+| cloudIvr | .cloudIvr | SVI Cloud |
+| easyHunting | .easyHunting | Files d'attente |
+
+--------------------------------------------------------------------------------
+
+## 4. COMPOSANTS UI
+
+### Configuration easyHunting
+- oui-datagrid : Liste agents/files
+- oui-calendar : Plages horaires
+- oui-stepper : Wizard configuration
+
+--------------------------------------------------------------------------------
+
+## 5. APIs & DONNEES
+
+### Changement de type
+POST /telephony/:billingAccount/number/:serviceName/changeFeatureType
+Body: { featureType: string }
+
+### Hunting
+GET /telephony/:billingAccount/easyHunting/:serviceName/hunting/queue
+GET /telephony/:billingAccount/easyHunting/:serviceName/hunting/agent
+
+### Strategies hunting
+- ringAll : Sonne tous les agents
+- random : Agent aleatoire
+- sequential : Un par un
+
+--------------------------------------------------------------------------------
+
+## 6. TRADUCTIONS (FR)
+
+telephony_alias_config_redirect = "Redirection"
+telephony_alias_config_conference = "Conference"
+telephony_alias_config_hunting = "File d'attente"
+telephony_alias_config_agents = "Agents"
+telephony_alias_config_queues = "Files"
+
+--------------------------------------------------------------------------------
+
+## 7. REGLES METIER
+
+### Limites easyHunting
+- Max 50 agents par file
+- Max 10 files par alias
+- Strategies : ringAll, random, sequential, cumulationByAgentOrder
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

@@ -1,0 +1,232 @@
+# CAHIER DES CHARGES - Freefax Dashboard
+# Fichier : old_manager.telecom.fax.dashboard.txt
+# Source : packages/manager/modules/freefax/src/freefax/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page dashboard d'un service Freefax specifique affichant les informations generales, la configuration du fax et permettant de commander des credits.
+
+### Objectif fonctionnel
+- Afficher les informations du service (domaine, numero, credits restants, points)
+- Configurer les parametres d'envoi de fax
+- Commander des credits supplementaires
+- Naviguer vers les notifications et la configuration du repondeur
+
+### Route
+`freefaxes.freefax` → `/freefax/:serviceName`
+
+---
+
+## 2. LAYOUT
+
+### Structure
+```
++--------------------------------------------------+
+| Header: Gestion du repondeur/fax {serviceName}   |
++--------------------------------------------------+
+| Toast Message Area                               |
++------------------------+-------------------------+
+| Col 6                  | Col 6                   |
+| +--------------------+ | +---------------------+ |
+| | Infos Generales    | | | Config du fax       | |
+| | - Domaine          | | | - Expediteur        | |
+| | - Offre            | | | - Mail              | |
+| | - Numero           | | | - Qualite           | |
+| | - Faxs restants    | | | - Tentatives        | |
+| | - Points           | | | - Entete            | |
+| | - Notifications    | | | [Editer]            | |
+| | - Repondeur        | | +---------------------+ |
+| +--------------------+ |                         |
+| +--------------------+ | +---------------------+ |
+| | Commander des fax  | | | Aide entete fax     | |
+| | [Select quantite]  | | | Variables: |,%%i... | |
+| | Prix TTC           | | +---------------------+ |
+| | [Commander]        | |                         |
+| +--------------------+ |                         |
++------------------------+-------------------------+
+```
+
+### Responsive
+- Desktop : 2 colonnes (col-md-6)
+- Tablet/Mobile : 1 colonne (stack vertical)
+
+---
+
+## 3. COMPOSANTS UI DETAILLES
+
+### 3.1 Tile Informations Generales
+
+#### Donnees affichees
+| Label | Source | Format |
+|-------|--------|--------|
+| Nom de domaine | freeFax.domain | string ou "(Domaine expire)" |
+| Offre | Fixe | "EcoFax Perso" |
+| Numero de ligne | freeFax.number | string |
+| Nombre de faxs restants | freeFax.faxs | number |
+| Mes points | freeFax.points | number |
+| Notifications | freeFax.voicemail.redirectionEmails.length | Bouton lien |
+| Repondeur | freeFax.voicemailActive | Bouton lien |
+
+#### Bouton Notifications
+- Texte : "Aucun suivi" (0) ou "X suivi(s)" (1+)
+- Style : `oui-button_secondary oui-button_block oui-button_icon-right`
+- Icone : `oui-icon-chevron-right`
+- Action : `ui-sref="freefaxes.freefax.notifications"`
+
+#### Bouton Repondeur
+- Texte : "Repondeur actif" ou "Repondeur inactif"
+- Style : idem notifications
+- Action : `ui-sref="freefaxes.freefax.voicemail-configuration"`
+
+---
+
+### 3.2 Tile Commander des fax
+
+#### Etat initial (orderDone = false)
+- Label : "Quantite de fax a commander"
+- Select options : 10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 100000
+- Affichage prix : "{fax} Fax ({quantity} unites) / {price} TTC"
+- Note : quantity = fax * 2 (conversion unites)
+- Spinner : pendant chargement prix
+- Contrats : `<ovh-contracts-summary>` si contracts.length > 0
+- Bouton : "Generer le bon de commande" (disabled si contrats non acceptes)
+
+#### Etat apres commande (orderDone = true)
+- Spinner pendant traitement
+- Message : "Votre bon de commande de {amount} fax, soit {quantity} unites, pour un montant de {total} TTC est disponible."
+- Lien : "Regler votre commande" → bill.url (target="_blank")
+
+---
+
+### 3.3 Tile Configuration du fax
+
+#### Mode lecture (editMode = false)
+| Label | Property |
+|-------|----------|
+| Expediteur | freeFax.fromName |
+| Mail de l'expediteur | freeFax.fromEmail |
+| Qualite par defaut | Traduit : freefax_quality_{faxQuality} |
+| Tentatives max. d'envoi | freeFax.faxMaxCall |
+| Entete des fax | freeFax.faxTagLine |
+
+- Bouton "Editer" → enterEditMode()
+
+#### Mode edition (editMode = true)
+| Champ | Type | Name | Validation |
+|-------|------|------|------------|
+| Expediteur | input text | expeditor | required, max 50 |
+| Mail expediteur | input email | expeditorMail | required, email, max 50 |
+| Qualite | select | quality | required |
+| Tentatives max | select | maxRequests | required, 1-9 |
+| Entete | input text | faxHeader | required, max 50 |
+
+- Options qualite : normal (Normale), high (Elevee), best (Optimale)
+- Options tentatives : 1, 2, 3, 4, 5, 6, 7, 8, 9
+- Boutons : "Valider" (submit), "Annuler" (reset)
+- Spinner pendant sauvegarde
+
+---
+
+### 3.4 Tile Aide entete des fax
+
+| Variable | Description |
+|----------|-------------|
+| \| | Separe le texte en multiples colonnes de taille egale |
+| %%i | Identifiant de la tache |
+| %%j | Nom de la piece jointe |
+| %%l | Fax emission Id. Si vide : numero de fax |
+| %%m | Mail de l'expediteur |
+| %%n | Numero de fax |
+| %%p | Numero de page pour la session |
+| %%P | Numero de page de la tache |
+| %%r | Fax reception Id du destinataire |
+| %%t | Nombre de pages total de la session |
+| %%T | Nombre de pages total de la tache |
+| %%d | Nom du destinataire |
+
+---
+
+## 4. APIs UTILISEES
+
+### Chargement initial
+```
+1. GET 2API /freefax/{serviceName}/details
+   → domain, number, faxs, points, voicemail.redirectionEmails
+
+2. GET v6 /freeFax/{serviceName}/voicemail/routing
+   → { value: 'fax' | 'voicemail' }
+   → voicemailActive = (value === 'voicemail')
+```
+
+### Sauvegarde configuration
+```
+PUT v6 /freeFax/{serviceName}
+Body: { faxMaxCall, faxQuality, faxTagLine, fromEmail, fromName }
+```
+
+### Generation mot de passe
+```
+POST v6 /freeFax/{serviceName}/resetPassword
+Response: { value: string } // nouveau password
+```
+
+### Commande credits
+```
+1. GET v6 /order/freefax/new?quantity={quantity}
+   → prices, details[0].quantity, contracts
+
+2. POST v6 /order/freefax/new
+   Body: { quantity }
+   → url, orderId, prices, details
+```
+
+---
+
+## 5. GESTION D'ETATS
+
+### Loading
+- Variable : `$scope.loading`
+- Affichage : Spinner centre dans chaque tile
+
+### Erreur 460 (service expire)
+- Variable : `FreeFax.error`
+- Affichage : Message warning pleine largeur
+
+### Mode edition fax
+- Variable : `FaxConfCtrl.editMode`
+- Toggle : enterEditMode() / cancelEditMode()
+
+### Commande en cours
+- Variable : `Credit.orderDone`
+- Affichage : Spinner puis lien bon de commande
+
+---
+
+## 6. TRADUCTIONS SPECIFIQUES
+
+```
+freefax_title = "Gestion du repondeur/fax {{serviceName}}"
+freefax_general_information = "Informations Generales"
+freefax_fax_configuration = "Configuration du fax"
+freefax_general_credit = "Commander des fax"
+freefax_header_help = "Aide entete des fax"
+freefax_expired_error = "Service expire"
+freefax_detail_error = "Oups ! Nous n'avons pas pu recuperer les information de votre freefax."
+```
+
+---
+
+## 7. MAPPING ODS REACT
+
+| Element | ODS React |
+|---------|-----------|
+| oui-tile | OdsCard |
+| oui-tile__title | OdsText variant="heading-4" |
+| oui-tile__item | OdsCard content item |
+| oui-spinner | OdsSpinner |
+| oui-message_warning | OdsMessage color="warning" |
+| btn btn-default | OdsButton variant="outline" |
+| btn btn-primary | OdsButton variant="default" |
+| form-control | OdsInput / OdsSelect |
+| oui-button_icon-right | OdsButton icon="chevron-right" iconPosition="end" |

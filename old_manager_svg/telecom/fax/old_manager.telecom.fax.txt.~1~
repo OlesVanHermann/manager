@@ -1,0 +1,488 @@
+# CAHIER DES CHARGES - Freefax (Liste + Dashboard)
+# Fichier : old_manager.telecom.fax.txt
+# Source : packages/manager/modules/freefax
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Module de gestion des services Freefax (EcoFax Perso) OVHcloud permettant d'envoyer et recevoir des fax via email.
+
+### Objectif fonctionnel
+- Lister les services Freefax du compte client
+- Gerer la configuration d'envoi de fax (expediteur, qualite, entete)
+- Commander des credits fax supplementaires
+- Configurer le repondeur vocal associe
+- Gerer les notifications email
+
+### Users cibles
+Clients OVHcloud disposant d'un service Freefax (EcoFax Perso)
+
+---
+
+## 2. ARCHITECTURE
+
+### Arborescence fichiers source
+```
+packages/manager/modules/freefax/src/
+├── translations/Messages_fr_FR.json
+├── freefaxes.html                    # Liste des freefax
+├── freefaxes.controller.js           # Controller liste (Iceberg)
+├── onboarding/
+│   ├── onboarding.html
+│   ├── constants.js
+│   └── translations/Messages_fr_FR.json
+└── freefax/
+    ├── freefax.html                  # Dashboard principal
+    ├── freefax.controller.js
+    ├── freefax.component.js
+    ├── index.js                      # Routing
+    ├── translations/Messages_fr_FR.json
+    ├── information/freeFax-information.html
+    ├── credit/
+    │   ├── freefax-credit.html
+    │   ├── freefax-credit.controller.js
+    │   └── freefax-credit.constants.js
+    ├── faxConfiguration/
+    │   ├── freefax-faxConfiguration.html
+    │   └── freefax-faxConfiguration.controller.js
+    ├── voicemailConfiguration/
+    │   ├── freefax-voicemailConfiguration.html
+    │   ├── freefax-voicemailConfiguration.controller.js
+    │   ├── freefax-voicemailConfiguration.constants.js
+    │   └── translations/Messages_fr_FR.json
+    └── notifications/
+        ├── freefax-notifications.html
+        ├── freefax-notifications.controller.js
+        ├── freefax-notifications.factory.js
+        ├── freefax-notifications.constants.js
+        └── translations/Messages_fr_FR.json
+```
+
+### Patterns utilises
+- AngularJS 1.x avec UI-Router
+- ListLayoutHelper pour pagination Iceberg
+- OvhApiFreeFax (service API abstrait)
+- Lazy loading avec ocLazyLoad
+
+### Dependances
+- @ovh-ux/manager-ng-layout-helpers (ListLayoutHelper)
+- @ovh-ux/manager-core
+- ovh-api-services (OvhApiFreeFax)
+- ui.router, oc.lazyLoad
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Routes
+
+| State | URL | Description |
+|-------|-----|-------------|
+| freefaxes | /freefax | Liste des freefax |
+| freefaxes.onboarding | /onboarding | Page onboarding (aucun service) |
+| freefaxes.freefax | /:serviceName | Dashboard d'un freefax |
+| freefaxes.freefax.notifications | /notifications | Gestion notifications |
+| freefaxes.freefax.voicemail-configuration | /voicemail | Config repondeur |
+
+### Breadcrumb
+```
+Telecom > Fax > [serviceName]
+```
+
+### Flux navigation
+1. Liste freefax → Clic sur numero → Dashboard
+2. Dashboard → Notifications (lien tile) → Page notifications
+3. Dashboard → Repondeur (lien tile) → Page voicemail
+4. Dashboard → Edition inline (bouton Editer dans tile)
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 Liste Freefax (freefaxes.html)
+
+#### Header
+- Composant : `<oui-header heading="Fax">`
+
+#### Datagrid
+- Composant : `<oui-datagrid>` avec pagination Iceberg
+- ID : `dg-freefaxes`
+- Colonnes :
+  | Colonne | Property | Filtrable | Triable | Searchable |
+  |---------|----------|-----------|---------|------------|
+  | Numero | number | Oui | Oui | Oui |
+  | Expediteur | fromName | Oui | Oui | Non |
+  | Mail expediteur | fromEmail | Oui | Oui | Non |
+
+#### Topbar
+- Bouton "Commander" (variant secondary) → lien externe ordre
+
+#### Action Menu
+- "Detail du fax" → navigation vers dashboard
+
+---
+
+### 4.2 Dashboard (freefax.html)
+
+#### Layout
+- 2 colonnes : `col-md-6` + `col-md-6`
+- Header : `<oui-header heading="Gestion du repondeur/fax {{serviceName}}">`
+
+#### Tile Informations Generales (colonne gauche)
+- Composant : `<div class="oui-tile">`
+- Items :
+  | Label | Valeur | Type |
+  |-------|--------|------|
+  | Nom de domaine | freeFax.domain | Texte (ou "Domaine expire") |
+  | Offre | EcoFax Perso | Fixe |
+  | Numero de ligne | freeFax.number | Texte |
+  | Nombre de faxs restants | freeFax.faxs | Nombre |
+  | Mes points | freeFax.points | Nombre |
+  | Notifications | Lien "X suivi(s)" | Bouton → state notifications |
+  | Repondeur | Lien "actif/inactif" | Bouton → state voicemail |
+
+#### Tile Commander des fax (colonne gauche)
+- Select quantite : [10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 100000]
+- Affichage prix : "X Fax (Y unites) / Z EUR TTC"
+- Contrats : `<ovh-contracts-summary>`
+- Bouton : "Generer le bon de commande"
+- Apres commande : Lien "Regler votre commande" (nouvel onglet)
+
+#### Tile Configuration du fax (colonne droite)
+- Mode lecture :
+  | Label | Property |
+  |-------|----------|
+  | Expediteur | freeFax.fromName |
+  | Mail expediteur | freeFax.fromEmail |
+  | Qualite par defaut | freeFax.faxQuality (traduit) |
+  | Tentatives max. envoi | freeFax.faxMaxCall |
+  | Entete des fax | freeFax.faxTagLine |
+- Bouton "Editer" → bascule mode edition
+
+- Mode edition :
+  | Champ | Type | Validation |
+  |-------|------|------------|
+  | Expediteur | input text | required, max 50 |
+  | Mail expediteur | input email | required, email valide, max 50 |
+  | Qualite | select | normal/high/best |
+  | Tentatives max | select | 1-9 |
+  | Entete | input text | required, max 50 |
+- Boutons : "Valider" (submit), "Annuler" (reset)
+- Spinner pendant sauvegarde
+
+#### Tile Aide entete des fax (colonne droite)
+- Liste variables :
+  | Variable | Description |
+  |----------|-------------|
+  | \| | Separe le texte en colonnes |
+  | %%i | Identifiant de la tache |
+  | %%j | Nom de la piece jointe |
+  | %%l | Fax emission Id |
+  | %%m | Mail de l'expediteur |
+  | %%n | Numero de fax |
+  | %%p | Numero de page session |
+  | %%P | Numero de page tache |
+  | %%r | Fax reception Id destinataire |
+  | %%t | Nombre pages total session |
+  | %%T | Nombre pages total tache |
+  | %%d | Nom du destinataire |
+
+#### Message erreur (si service expire)
+- Composant : `<div class="oui-message oui-message_warning">`
+- Code erreur 460 → "Service expire"
+
+---
+
+## 5. APIs & DONNEES
+
+### 5.1 API v6 (apiv6)
+
+#### GET /freeFax
+- Usage : Liste des services freefax (Iceberg)
+- Headers pagination : X-Pagination-Mode, X-Pagination-Size, X-Pagination-Number
+- Response : Array de serviceName strings
+
+#### GET /freeFax/{serviceName}
+- Usage : Details du service
+- Response :
+```typescript
+interface FreeFax {
+  number: string;
+  fromName: string;
+  fromEmail: string;
+  faxQuality: 'normal' | 'high' | 'best';
+  faxMaxCall: number; // 1-9
+  faxTagLine: string;
+}
+```
+
+#### PUT /freeFax/{serviceName}
+- Usage : Sauvegarder configuration fax
+- Body :
+```typescript
+{
+  faxMaxCall: number;
+  faxQuality: 'normal' | 'high' | 'best';
+  faxTagLine: string;
+  fromEmail: string;
+  fromName: string;
+}
+```
+
+#### POST /freeFax/{serviceName}/resetPassword
+- Usage : Generer nouveau mot de passe
+- Response : `{ value: string }` (nouveau password)
+
+#### GET /freeFax/{serviceName}/voicemail
+- Usage : Configuration voicemail
+- Response :
+```typescript
+interface VoiceMail {
+  audioFormat: 'aiff' | 'au' | 'flac' | 'mp3' | 'ogg' | 'wav';
+  forcePassword: boolean;
+  fromEmail: string;
+  fromName: string;
+  keepMessage: boolean;
+}
+```
+
+#### PUT /freeFax/{serviceName}/voicemail
+- Usage : Mettre a jour voicemail
+- Body : VoiceMail (sans password)
+
+#### GET /freeFax/{serviceName}/voicemail/routing
+- Usage : Obtenir routing actuel
+- Response : `{ value: 'fax' | 'voicemail' }`
+
+#### POST /freeFax/{serviceName}/voicemail/routing
+- Usage : Changer routing
+- Body : `{ routing: 'fax' | 'voicemail' }`
+
+#### POST /freeFax/{serviceName}/voicemail/changePassword
+- Usage : Changer mot de passe voicemail
+- Body : `{ password: string }` (4 chiffres)
+
+#### GET /freeFax.json
+- Usage : Schema API (enumerations)
+- Utilise pour : telephony.ServiceVoicemailMailOptionEnum
+
+#### GET /order/freefax/new?quantity={quantity}
+- Usage : Obtenir prix pour commande credits
+- Response :
+```typescript
+{
+  prices: { withTax: { text: string } };
+  details: [{ quantity: number }];
+  contracts: Contract[];
+}
+```
+
+#### POST /order/freefax/new
+- Usage : Commander credits
+- Body : `{ quantity: number }`
+- Response :
+```typescript
+{
+  url: string; // URL bon de commande
+  orderId: number;
+  prices: { withTax: { text: string } };
+  details: [{ quantity: number }];
+}
+```
+
+### 5.2 2API (AAPI)
+
+#### GET /freefax/{serviceName}/details
+- Usage : Details agreges du freefax
+- Response :
+```typescript
+{
+  domain: string;
+  number: string;
+  faxs: number; // credits restants
+  points: number;
+  voicemail: {
+    redirectionEmails: string[];
+  };
+}
+```
+
+#### GET /freefax/{serviceName}/notifications
+- Usage : Liste des notifications
+- Response :
+```typescript
+Array<{
+  email: string;
+  type: 'simple' | 'attachment';
+  source: 'fax' | 'voicemail' | 'both';
+}>
+```
+
+#### PUT /freefax/{serviceName}/notifications
+- Usage : Mettre a jour toutes les notifications
+- Body : `{ notifications: Notification[] }`
+
+### 5.3 Sequencement
+
+#### Chargement dashboard
+1. OvhApiFreeFax.Aapi().details() → infos generales
+2. OvhApiFreeFax.v6().voiceMailGetRouting() → statut repondeur
+3. Parallel : affichage tiles
+
+#### Sauvegarde configuration fax
+1. OvhApiFreeFax.v6().saveConfiguration()
+2. Sortie mode edition
+
+#### Commande credits
+1. OvhApiFreeFax.v6().getPrice() → prix et contrats
+2. Affichage contrats
+3. OvhApiFreeFax.v6().orderCredits() → bon de commande
+4. Affichage lien paiement
+
+---
+
+## 6. TRADUCTIONS (FR)
+
+### Liste
+```
+freefaxes_title = "Fax"
+freefaxes_order = "Commander"
+freefaxes_number_label = "Numero"
+freefaxes_from_name_label = "Expediteur"
+freefaxes_from_email_label = "Mail de l'expediteur"
+freefaxes_view_freefax_label = "Detail du fax"
+```
+
+### Dashboard
+```
+freefax_title = "Gestion du repondeur/fax {{serviceName}}"
+freefax_general_information = "Informations Generales"
+freefax_fax_configuration = "Configuration du fax"
+freefax_domain = "Nom de domaine"
+freefax_domain_expired = "(Domaine expire)"
+freefax_offer = "Offre"
+freefax_offer_ecofax_perso = "EcoFax Perso"
+freefax_line = "Numero de ligne"
+freefax_fax_remaining = "Nombre de faxs restants"
+freefax_point_remaining = "Mes points"
+freefax_voicemail = "Repondeur"
+freefax_voicemail_active = "Repondeur actif"
+freefax_voicemail_inactive = "Repondeur inactif"
+freefax_notifications = "Notifications"
+freefax_notif_show_none = "Aucun suivi"
+freefax_notif_show_one_or_many = "{{count}} suivi(s)"
+```
+
+### Configuration
+```
+freefax_expeditor = "Expediteur"
+freefax_expeditor_mail = "Mail de l'expediteur"
+freefax_quality = "Qualite par defaut"
+freefax_quality_normal = "Normale"
+freefax_quality_high = "Elevee"
+freefax_quality_best = "Optimale"
+freefax_max_try = "Tentatives max. d'envoi"
+freefax_header = "Entete des fax"
+freefax_header_help = "Aide entete des fax"
+freefax_edit = "Editer"
+freefax_cancel = "Annuler"
+freefax_submit = "Valider"
+freefax_required_fields = "Les champs marques d'un asterisque sont obligatoires."
+freefax_expeditor_form_error = "Le champ ne doit pas etre vide"
+freefax_expeditor_mail_form_error = "Le champ doit etre une adresse email valide"
+freefax_header_form_error = "Le champ doit contenir de 1 a 50 caracteres"
+```
+
+### Credits
+```
+freefax_general_credit = "Commander des fax"
+freefax_credit_add_label = "Quantite de fax a commander"
+freefax_credit_generate_order = "Generer le bon de commande"
+freefax_credit_billing = "Regler votre commande"
+freefax_credit_unit = "{{fax}} Fax ({{quantity}} unites)"
+freefax_credit_ttc = "TTC"
+freefax_credit_loaded = "Votre bon de commande de {{amount}} fax, soit {{quantity}} unites, pour un montant de {{total}} TTC est disponible. Cliquez sur le lien ci-dessous pour valider votre commande."
+```
+
+### Mot de passe
+```
+freefax_reset_password = "Obtenir un nouveau mot de passe"
+freefax_reset_password_btn = "Generer"
+freefax_reset_password_confirm = "Etes-vous sur de vouloir generer un nouveau mot de passe ?"
+```
+
+### Variables entete
+```
+freefax_header_variable_column_description = "Separe le texte en multiples colonnes de taille egale"
+freefax_header_variable_task_identifier_description = "Identifiant de la tache"
+freefax_header_variable_attachment_name_description = "Nom de la piece jointe"
+freefax_header_variable_emission_id_description = "Fax emission Id. Si vide : numero de fax"
+freefax_header_variable_expeditor_email_description = "Mail de l'expediteur"
+freefax_header_variable_fax_number_description = "Numero de fax"
+freefax_header_variable_session_page_number_description = "Numero de page pour la session"
+freefax_header_variable_task_page_number_description = "Numero de page de la tache"
+freefax_header_variable_recipient_id_description = "Fax reception Id du destinataire"
+freefax_header_variable_session_page_amount_description = "Nombre de pages total de la session"
+freefax_header_variable_task_page_amount_description = "Nombre de pages total de la tache"
+freefax_header_variable_expeditor_name_description = "Nom du destinataire"
+```
+
+### Erreurs
+```
+freefax_detail_error = "Oups ! Nous n'avons pas pu recuperer les information de votre freefax."
+freefax_expired_error = "Service expire"
+freefax_notif_read_error = "Oups ! Nous n'avons pas pu recuperer les notifications."
+freefax_notif_save_error = "Oups ! Nous n'avons pas pu sauvegarder la notification."
+freefax_notif_save_success = "Vos notifications ont ete mises a jour."
+```
+
+---
+
+## 7. REGLES METIER
+
+### Validations
+
+| Champ | Regle |
+|-------|-------|
+| fromName | Obligatoire, max 50 caracteres |
+| fromEmail | Obligatoire, format email valide, max 50 caracteres |
+| faxTagLine | Obligatoire, 1-50 caracteres |
+| faxMaxCall | Entier 1-9 |
+| faxQuality | Enum: normal, high, best |
+
+### Constantes
+
+```javascript
+DISCRETE_CREDIT = [10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 100000]
+MAX_NOTIFICATIONS = 5
+AUDIO_FORMAT = ['aiff', 'au', 'flac', 'mp3', 'ogg', 'wav']
+```
+
+### Etats
+
+| Etat | Condition | Affichage |
+|------|-----------|-----------|
+| Loading | $scope.loading = true | Spinner centre |
+| Service expire | response.status === 460 | Message warning |
+| Mode edition | editMode = true | Formulaire editable |
+| Commande en cours | orderDone = true | Spinner puis lien |
+
+### Permissions
+- Lecture : tous utilisateurs authentifies
+- Ecriture : proprietaire du service uniquement
+
+---
+
+## 8. MAPPING ODS REACT
+
+| Composant Angular | Equivalent ODS React |
+|-------------------|---------------------|
+| oui-header | OdsText variant="heading |
+| oui-tile | OdsCard |
+| oui-datagrid | OdsTable ou Datagrid |
+| oui-spinner | OdsSpinner |
+| oui-button | OdsButton |
+| oui-message | OdsMessage |
+| oui-action-menu | OdsPopover + OdsButton |
+| form-control | OdsInput / OdsSelect |
+| checkbox | OdsCheckbox |

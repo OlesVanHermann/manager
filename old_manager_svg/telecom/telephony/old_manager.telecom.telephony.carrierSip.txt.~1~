@@ -1,0 +1,133 @@
+# CAHIER DES CHARGES - old_manager.telecom.telephony.carrierSip
+# Page Carrier SIP (Trunk SIP operateur)
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion des trunks Carrier SIP pour interconnexion operateur.
+
+### Objectif fonctionnel
+Administrer les trunks SIP haute capacite: endpoints, CDR, parametres.
+
+### Users cibles
+- Operateurs telecom
+- Integrateurs SIP
+- Entreprises avec gros volumes d'appels
+
+---
+
+## 2. ARCHITECTURE
+
+### Arborescence fichiers source
+```
+telecom/telephony/carrierSip/
+├── index.js
+└── dashboard/
+    ├── dashboard.module.js
+    ├── dashboard.routing.js
+    ├── cdr/
+    ├── endpoints/
+    └── translations/
+```
+
+### Sous-modules
+| Module | Description |
+|--------|-------------|
+| dashboard | Vue principale |
+| cdr | Call Detail Records |
+| endpoints | Points de terminaison SIP |
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Route
+- State: `telecom.telephony.billingAccount.carrierSip.dashboard`
+- URL: `/telephony/{billingAccount}/carrierSip/{serviceName}`
+
+### Breadcrumb
+VoIP > {billingAccount} > Carrier SIP > {serviceName}
+
+### Onglets
+| Onglet | State | Description |
+|--------|-------|-------------|
+| Dashboard | .dashboard | Vue generale |
+| CDR | .cdr | Historique appels |
+| Endpoints | .endpoints | Points SIP |
+
+---
+
+## 4. COMPOSANTS UI
+
+### Header Service
+- Nom du service carrierSip
+- Statut
+- Lien facturation
+
+### Tiles Information
+- Cluster details
+- Settings
+- Service infos
+
+---
+
+## 5. APIs & DONNEES
+
+### Endpoints
+
+#### Information Carrier SIP
+```
+GET /telephony/{billingAccount}/carrierSip/{serviceName}
+Response: {
+  serviceName: string,
+  description: string,
+  maxCalls: number,
+  ...
+}
+```
+
+#### Details cluster
+```
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/clusterDetails
+Response: {
+  displayName: string,
+  spiRegion: string,
+  technicalRegion: string,
+  ...
+}
+```
+
+#### CDR (Call Detail Records)
+```
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/cdrs
+Response: Array<CDR>
+```
+
+#### Endpoints SIP
+```
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/endpoints
+Response: Array<string> (endpoint IDs)
+```
+
+---
+
+## 6. TRADUCTIONS
+
+### Cles i18n (FR)
+| Cle | Valeur FR |
+|-----|-----------|
+| telephony_carrier_sip_breadcrumb | Lignes |
+| telephony_carrier_sip_cdr_breadcrumb | CDR |
+| telephony_carrier_sip_endpoints_breadcrumb | SIP Endpoints |
+
+---
+
+## 7. REGLES METIER
+
+### Specificites Carrier SIP
+- Service haute capacite
+- Configuration IP/ports specifique
+- CDR detailles pour facturation
+
+### Gestion erreurs
+- 404/500 sur clusterDetails: afficher objet vide

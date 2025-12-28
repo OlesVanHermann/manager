@@ -1,0 +1,241 @@
+# CAHIER DES CHARGES - Freefax Configuration Voicemail
+# Fichier : old_manager.telecom.fax.voicemail.txt
+# Source : packages/manager/modules/freefax/src/freefax/voicemailConfiguration/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de configuration du repondeur vocal associe a un service Freefax.
+
+### Objectif fonctionnel
+- Activer/desactiver le repondeur
+- Configurer le mot de passe d'acces (4 chiffres)
+- Definir l'expediteur des notifications
+- Choisir le format audio des messages
+- Gerer la suppression automatique des messages
+
+### Route
+`freefaxes.freefax.voicemail-configuration` → `/freefax/:serviceName/voicemail`
+
+---
+
+## 2. LAYOUT
+
+### Structure
+```
++--------------------------------------------------+
+| < Retour                                         |
+| Configuration du repondeur                       |
++--------------------------------------------------+
+| Toast Message Area                               |
++--------------------------------------------------+
+| Col 8                                            |
+| +----------------------------------------------+ |
+| | Parametres du repondeur                      | |
+| |                                              | |
+| | [ ] Activer le repondeur                     | |
+| | [ ] Supprimer auto. apres envoi              | |
+| |                                              | |
+| | Mot de passe (4 chiffres)                    | |
+| | [____] [____]                                | |
+| |                                              | |
+| | [ ] Toujours demander le mot de passe        | |
+| |                                              | |
+| | Nom de l'expediteur                          | |
+| | [_______________________________]            | |
+| |                                              | |
+| | Email de l'expediteur                        | |
+| | [_______________________________]            | |
+| |                                              | |
+| | Format audio                                 | |
+| | [v mp3                        ]              | |
+| |                                              | |
+| | [Editer] ou [Valider] [Annuler] (o)         | |
+| +----------------------------------------------+ |
++--------------------------------------------------+
+```
+
+---
+
+## 3. COMPOSANTS UI
+
+### 3.1 Header
+- Lien retour : `<tuc-section-back-link>` → `freefaxes.freefax`
+- Titre : "Configuration du repondeur"
+
+### 3.2 Formulaire
+
+#### Checkboxes
+| Checkbox | ng-model | Inversion |
+|----------|----------|-----------|
+| Activer le repondeur | voiceMail.activateVoiceMail | Non |
+| Supprimer auto. apres envoi | voiceMail.keepMessage | Oui (true-value="false") |
+| Toujours demander mot de passe | voiceMail.forcePassword | Oui (true-value="false") |
+
+#### Champs mot de passe
+| Champ | Name | Type | Validation |
+|-------|------|------|------------|
+| Password | voicemailPassword | password | maxlength="4", regex /^[0-9]{4}$/ |
+| Confirmation | voicemailPasswordConfirm | password | idem + match |
+
+- Mode lecture : affiche "****"
+- Mode edition : 2 inputs password
+
+#### Champs texte
+| Champ | Name | Type | Validation | ng-model |
+|-------|------|------|------------|----------|
+| Nom expediteur | fromName | text | maxlength="50", regex nom | voiceMail.fromName |
+| Email expediteur | fromEmail | email | email format | voiceMail.fromEmail |
+
+#### Select format audio
+- Options : aiff, au, flac, mp3, ogg, wav
+- ng-model : voiceMail.audioFormat
+
+#### Boutons
+- Mode lecture : "Editer"
+- Mode edition : "Valider", "Annuler"
+- Spinner pendant sauvegarde
+
+---
+
+## 4. APIs
+
+### GET /freeFax/{serviceName}/voicemail
+- Response :
+```typescript
+interface VoiceMail {
+  audioFormat: 'aiff' | 'au' | 'flac' | 'mp3' | 'ogg' | 'wav';
+  forcePassword: boolean;
+  fromEmail: string;
+  fromName: string;
+  keepMessage: boolean;
+}
+```
+
+### PUT /freeFax/{serviceName}/voicemail
+- Body :
+```typescript
+{
+  audioFormat: string;
+  forcePassword: boolean;
+  fromEmail: string;
+  fromName: string;
+  keepMessage: boolean;
+}
+```
+
+### GET /freeFax/{serviceName}/voicemail/routing
+- Response : `{ value: 'fax' | 'voicemail' }`
+
+### POST /freeFax/{serviceName}/voicemail/routing
+- Body : `{ routing: 'fax' | 'voicemail' }`
+
+### POST /freeFax/{serviceName}/voicemail/changePassword
+- Body : `{ password: string }` (4 chiffres)
+
+---
+
+## 5. CONTROLLER (freefax-voicemailConfiguration.controller.js)
+
+### Variables
+```javascript
+self.serviceName = $stateParams.serviceName;
+self.loading = true;
+self.editMode = false;
+self.audioFormatList = [];
+self.voiceMail = null;
+self.password = ['', ''];
+self.savedConf = null;
+let initialActivateVoiceMail;
+```
+
+### Constantes
+```javascript
+FREEFAX_AUDIO_FORMAT = ['aiff', 'au', 'flac', 'mp3', 'ogg', 'wav'];
+```
+
+### Methodes
+| Methode | Description |
+|---------|-------------|
+| init() | Charge config voicemail + routing |
+| enterEditMode() | Sauvegarde JSON, active edition |
+| cancelEditMode() | Restaure JSON, desactive edition |
+| saveConfiguration(conf) | Sauvegarde config + password si change |
+| save(conf) | PUT voicemail + POST routing si change |
+| changePassword(newPassword) | POST changePassword |
+| validPassword(val) | Regex /^[0-9]{4}$/ ou vide |
+| validName(val) | Regex caracteres autorises |
+| checkPassword() | Verifie match + validite |
+
+### Validation nom
+```javascript
+/^[\wàèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅå\s\-_']*$/
+```
+
+### Sequencement sauvegarde
+```
+1. PUT /freeFax/{serviceName}/voicemail (config)
+2. Si routing change: POST /freeFax/{serviceName}/voicemail/routing
+3. Si password saisi: POST /freeFax/{serviceName}/voicemail/changePassword
+4. Promise.all([...tasks])
+5. Toast success + reload
+```
+
+---
+
+## 6. GESTION D'ETATS
+
+### Loading
+- Variable : `VoicemailConf.loading`
+- Spinner affiche pendant chargement/sauvegarde
+
+### Mode edition
+- Variable : `VoicemailConf.editMode`
+- Mode lecture : champs en texte
+- Mode edition : champs editables
+
+### Erreur password
+- Condition : password[0] !== password[1] ou format invalide
+- Style : classe has-error sur form-group
+- Message : "Mot de passe incorrect"
+
+---
+
+## 7. TRADUCTIONS
+
+```
+freefax_voicemail_configuration_title = "Configuration du repondeur"
+freefax_voicemail_parameters = "Parametres du repondeur"
+freefax_voicemail_activation = "Activer le repondeur"
+freefax_voicemail_password = "Mot de passe (4 chiffres)"
+freefax_voicemail_change_password = "Changer le mot de passe"
+freefax_voicemail_change_password_confirm = "Confirmer"
+freefax_voicemail_always_ask_password = "Toujours demander le mot de passe"
+freefax_voicemail_sender_name = "Nom de l'expediteur"
+freefax_voicemail_sender_email = "Email de l'expediteur"
+freefax_voicemail_keep_messages = "Supprimer automatiquement le message apres l'envoi"
+freefax_voicemail_audio_format = "Recevoir les messages audio au format"
+freefax_voicemail_success = "Configuration mise a jour"
+freefax_voicemail_bad_password = "Mot de passe incorrect"
+freefax_voicemail_edit = "Editer"
+freefax_voicemail_submit = "Valider"
+freefax_voicemail_cancel = "Annuler"
+```
+
+---
+
+## 8. MAPPING ODS REACT
+
+| Angular | ODS React |
+|---------|-----------|
+| tuc-section-back-link | OdsLink icon="arrow-left" |
+| checkbox | OdsCheckbox |
+| input[type=password] | OdsInput type="password" |
+| input[type=text] | OdsInput |
+| input[type=email] | OdsInput type="email" |
+| select | OdsSelect |
+| btn btn-primary | OdsButton variant="default" |
+| btn btn-default | OdsButton variant="outline" |
+| oui-spinner | OdsSpinner |
+| has-error | OdsInput error={true} |
+| widget-presentation | OdsCard |

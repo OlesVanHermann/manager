@@ -1,0 +1,845 @@
+# PROMPT RESUME - Generation de Cahier des Charges depuis Old Manager
+
+## Fichiers et chemins
+
+| Element | Valeur |
+|---------|--------|
+| **Prompt** | /home/ubuntu/prompt_svg2txt.txt |
+| **Destination finale utilisateur** | /home/ubuntu/old_manager_svg/{NAV1}/{NAV2}/ |
+| **Destination Claude (outputs)** | /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/ |
+| **Script verification APIs** | /home/ubuntu/old_manager/check_api_coverage.py |
+
+---
+
+## Arborescence NAV1 existante
+
+| NAV1 | Description | Exemples NAV2 |
+|------|-------------|---------------|
+| `home` | Espace client, compte, facturation | account, billing, support, carbon, catalog, hub, iam, procedures, changelog, restricted |
+| `web-cloud` | Hebergement web, bases de donnees | domain, domains, dns-zone, email, email-exchange, email-mxplan, hebergement, hosting, managed-wordpress, ongoing-operations, private-database |
+| `bare-metal` | Serveurs dedies, Private Cloud | cda, cdn, dedicated, dedicated-cloud, housing, ip, license, load-balancer, nas-ha, nasha, netapp, network-security, nutanix, vps, vrack |
+| `public-cloud` | Infrastructure cloud | ai-*, billing, block-storage, cold-archive, databases, gateway, instances, kubernetes, load-balancer, network, object-storage, private-network, private-registry, project, public-ip, qpu, quantum, quota, rancher, registry, ssh-keys, users, volume-backup, volume-snapshot, vouchers |
+| `network` | Reseau et connectivite | cdn, cloud-connect, ip, load-balancer, security, vrack, vrack-services |
+| `telecom` | Telephonie et internet | alias, fax, line, modem, orders, pack, telephony, xdsl |
+| `iam` | Identite et acces | api-keys, conditions, dashboard, groups, identities, kms, logs, policies, secret-manager, service-accounts, sso, tag-manager, users, components |
+| `billing` | Facturation standalone | invoices, services, orders, payment-methods, auto-renew, history, credits |
+| `dedicated` | Serveurs dedies legacy | dashboard, backup, network, ipmi, secondary-dns, intervention, firewall, monitoring |
+| `vps` | VPS legacy | dashboard, backups, snapshots, monitoring, secondary-dns |
+| `support` | Support client | tickets, guides, create-ticket, ticket-detail, status |
+| `signup` | Inscription | account-type, account-details, settings, company-search |
+
+---
+
+## ⚠️ REGLES CRITIQUES - LIRE EN PREMIER ⚠️
+
+### REGLE 0 : ZERO HALLUCINATION
+**INTERDIT ABSOLU** d'inventer des elements absents du code source.
+- Pas dans le code -> PAS dans le TXT
+- Pas dans les traductions -> PAS de label invente
+- En cas de doute -> `grep` pour verifier
+- **Chaque element doit etre justifiable par une ligne de code**
+
+### REGLE 1 : GENERATION DIRECTE OBLIGATOIRE
+**INTERDICTION** d'afficher le contenu dans la conversation.
+
+| ❌ INTERDIT | ✅ OBLIGATOIRE |
+|-------------|----------------|
+| Afficher le TXT brut | Ecrire avec `tee` dans `/mnt/user-data/outputs/` |
+| "Voici le cahier, copiez-le..." | Appeler `present_files` apres generation |
+| Attendre copier-coller | Fournir lien de telechargement |
+
+**Raison** : L'utilisateur ne peut PAS copier-coller. Afficher = PERTE DE TEMPS.
+
+### REGLE 2 : PARALLELISME SVG ↔ TXT
+**OBLIGATOIRE** : Pour chaque SVG, un TXT correspondant avec le MEME nom.
+
+```
+old_manager.{NAV1}.{NAV2}.svg           -> old_manager.{NAV1}.{NAV2}.txt
+old_manager.{NAV1}.{NAV2}.tab-xxx.svg   -> old_manager.{NAV1}.{NAV2}.tab-xxx.txt
+old_manager.{NAV1}.{NAV2}.modal-xxx.svg -> old_manager.{NAV1}.{NAV2}.modal-xxx.txt
+```
+
+### REGLE 3 : MEME REPERTOIRE QUE LES SVG
+Les TXT doivent etre dans le MEME dossier que les SVG correspondants.
+
+---
+
+## Objectif
+
+Analyser un tar extrait de l'old_manager OVHcloud et produire un **cahier des charges complet** permettant de recoder la fonctionnalite dans le new_manager **sans jamais rouvrir le code source original**.
+
+---
+
+## Convention de nommage
+
+### Patterns de fichiers TXT (identiques aux SVG)
+
+| Pattern | Usage | Exemple |
+|---------|-------|---------|
+| `{PREFIX}.{NAV1}.{NAV2}.txt` | Page principale / dashboard | `old_manager.home.billing.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.tab-{nom}.txt` | Onglet specifique | `old_manager.web-cloud.hebergement.tab-ssl.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.modal-{action}.txt` | Modal / dialog | `old_manager.home.billing.modal-terminate.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.list-{nom}.txt` | Liste d'elements | `old_manager.web-cloud.hebergement.list-hostings.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.{nom}-detail.txt` | Page de detail | `old_manager.home.support.ticket-detail.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.onboarding.txt` | Page onboarding / empty state | `old_manager.web-cloud.hebergement.onboarding.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.state-{etat}.txt` | Etat specifique (empty, error, loading) | `old_manager.web-cloud.hosting.state-empty.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.create.txt` | Page de creation | `old_manager.public-cloud.kubernetes.create.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.{nom}.txt.~1~` | Variante alternative #1 | `old_manager.bare-metal.vps.dashboard.txt.~1~` |
+| `{PREFIX}.{NAV1}.{NAV2}.{nom}.txt.~2~` | Variante alternative #2 | `old_manager.bare-metal.vps.dashboard.txt.~2~` |
+
+### Arborescence complete (exemple)
+```
+/mnt/user-data/outputs/old_manager_svg/
+  ├── home/
+  │   ├── account/
+  │   │   ├── old_manager.home.account.svg
+  │   │   ├── old_manager.home.account.txt              ← CAHIER DES CHARGES
+  │   │   ├── old_manager.home.account.tab-infos.svg
+  │   │   ├── old_manager.home.account.tab-infos.txt    ← CAHIER DES CHARGES
+  │   │   ├── old_manager.home.account.tab-security.svg
+  │   │   ├── old_manager.home.account.tab-security.txt ← CAHIER DES CHARGES
+  │   │   ├── old_manager.home.account.modal-2fa-totp.svg
+  │   │   ├── old_manager.home.account.modal-2fa-totp.txt ← CAHIER DES CHARGES
+  │   │   └── ...
+  │   ├── billing/
+  │   │   ├── old_manager.home.billing.svg
+  │   │   ├── old_manager.home.billing.txt
+  │   │   └── ...
+  │   └── support/
+  │       ├── old_manager.home.support.svg
+  │       ├── old_manager.home.support.txt
+  │       ├── old_manager.home.support.ticket-detail.svg
+  │       ├── old_manager.home.support.ticket-detail.txt
+  │       └── ...
+  ├── public-cloud/
+  │   ├── kubernetes/
+  │   │   ├── old_manager.public-cloud.kubernetes.svg
+  │   │   ├── old_manager.public-cloud.kubernetes.txt
+  │   │   ├── old_manager.public-cloud.kubernetes.onboarding.svg
+  │   │   ├── old_manager.public-cloud.kubernetes.onboarding.txt
+  │   │   ├── old_manager.public-cloud.kubernetes.create.svg
+  │   │   ├── old_manager.public-cloud.kubernetes.create.txt
+  │   │   ├── old_manager.public-cloud.kubernetes.tab-nodepools.svg
+  │   │   ├── old_manager.public-cloud.kubernetes.tab-nodepools.txt
+  │   │   ├── old_manager.public-cloud.kubernetes.modal-add-nodepool.svg
+  │   │   ├── old_manager.public-cloud.kubernetes.modal-add-nodepool.txt
+  │   │   └── ...
+  │   └── ...
+  └── ...
+```
+
+---
+
+## WORKFLOW OBLIGATOIRE
+
+### Phase 1 : Detection du contexte
+```
+Input : old_manager.web-cloud.hosting.tar
+
+PREFIX = old_manager
+NAV1 = web-cloud
+NAV2 = hosting
+```
+
+### Phase 2 : Analyse du code
+| Priorite | Fichier | Information |
+|----------|---------|-------------|
+| 1 | layout.tsx | Structure, breadcrumb, tabs |
+| 2 | *.page.tsx | Contenu principal |
+| 3 | components/*.tsx | Elements UI |
+| 4 | useDatagridColumn.tsx | Colonnes + ActionMenu |
+| 5 | Messages_fr_FR.json | Traductions FR |
+| 6 | styles.css | Styles specifiques |
+| 7 | *.service.js | Vrais endpoints API |
+| 8 | api/*.ts | Hooks et appels API |
+
+### Phase 3 : Verification APIs (OBLIGATOIRE)
+```bash
+# Lancer le script sur le repertoire extrait
+python3 /home/ubuntu/old_manager/check_api_coverage.py /tmp/old_manager_analysis
+```
+
+### Phase 4 : Generation TXT
+```bash
+# 1. Creer arborescence dans outputs (meme que SVG)
+mkdir -p /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}
+
+# 2. Ecrire le TXT
+tee /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/{PREFIX}.{NAV1}.{NAV2}.txt << 'CDC_EOF'
+# Contenu du cahier des charges
+CDC_EOF
+
+# 3. Appeler present_files avec le chemin du fichier
+```
+
+### Phase 5 : Confirmation
+```
+✅ TXT genere : {PREFIX}.{NAV1}.{NAV2}.txt
+   Chemin : /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/
+   Taille : XX Ko
+   Sections : [liste des 7 sections]
+   APIs documentees : [nombre]
+   SVG correspondant : [oui/non]
+```
+
+---
+
+## Methodologie d'analyse
+
+### 1) FRONTEND
+
+**Look & Feel :**
+- Layout general (grilles, colonnes, espacements)
+- Hierarchie visuelle (titres, sections, cartes)
+- Etats visuels (loading, error, empty, success)
+
+**UX :**
+- Parcours utilisateur (navigation entre pages)
+- Flux modaux (ouverture, etapes, fermeture)
+- Feedback utilisateur (notifications, messages, spinners)
+
+**Design System :**
+- Composants ODS utilises (@ovhcloud/ods-react)
+- Composants manager-react-components utilises
+- Classes Tailwind recurrentes
+- Tokens CSS (couleurs, espacements)
+
+**Ergonomie :**
+- Actions disponibles par contexte (menus, boutons)
+- Tri, filtres, recherche, pagination
+- Responsive / breakpoints
+
+---
+
+### 2) BACKEND (APIs)
+
+**Endpoints utilises :**
+- Liste exhaustive des routes API (GET, POST, PUT, DELETE)
+- Version API (v6, v2, 2API, Engine)
+- Parametres requis et optionnels
+
+**Sequencement :**
+- Ordre des appels (sequentiel vs parallele)
+- Dependances entre appels (ex: recuperer serviceId avant update)
+- Batch / Promise.all patterns
+
+**Types de donnees :**
+- Interfaces TypeScript (request/response)
+- Enums et constantes metier
+- Structures imbriquees
+
+**Patterns de detection API dans le code :**
+
+| Pattern | Framework | Exemple |
+|---------|-----------|---------|
+| OvhHttp.get/post/put/delete | AngularJS | OvhHttp.get('/domain/{serviceName}') |
+| $http.get/post/put/delete | AngularJS | $http.get('/me/contact') |
+| v2.get/post/put/delete | React | v2.get('/domain/alldom/{serviceName}') |
+| v6.get/post/put/delete | React | v6.get('/services/{serviceId}') |
+| useResourcesIcebergV2 | React | Pagination Iceberg |
+| rootPath: 'apiv6' | AngularJS | API v6 standard |
+| rootPath: '2api' | AngularJS | API 2API/AAPI |
+
+---
+
+### 3) FRONTEND - BACKEND
+
+**Hooks de donnees :**
+- useQuery / useQueries (lecture)
+- useMutation (ecriture)
+- Cache keys et invalidation
+
+**Declencheurs :**
+- Au montage (useEffect, queryFn)
+- Sur action utilisateur (onClick, onSubmit)
+- Sur navigation (route params)
+
+**Gestion d'etats :**
+- Loading states
+- Error handling (401 - redirect auth, autres - affichage)
+- Optimistic updates
+
+---
+
+## Verification des APIs (OBLIGATOIRE)
+
+### Script check_api_coverage.py
+
+**Emplacement :** /home/ubuntu/old_manager/check_api_coverage.py
+
+**Usage :**
+```bash
+# Un seul repertoire
+python3 /home/ubuntu/old_manager/check_api_coverage.py /tmp/old_manager_analysis
+
+# Plusieurs repertoires
+python3 /home/ubuntu/old_manager/check_api_coverage.py /tmp/dir1 /tmp/dir2
+
+# Sortie Markdown
+python3 /home/ubuntu/old_manager/check_api_coverage.py /tmp/dir --markdown
+```
+
+**Sortie :**
+- Rapport texte avec endpoints par categorie
+- JSON detaille dans /tmp/api_coverage.json
+- Total endpoints et fichiers analyses
+
+**Categories automatiques :**
+- Domain : /domain/*
+- Zone DNS : /domain/zone/*
+- AllDom : /allDom/*, /alldom/*
+- Services (2API) : /services/*
+- Me (Compte) : /me/*
+- 2API (SWS) : /sws/*
+
+### Patterns de detection API - MISE A JOUR
+
+**Probleme :**
+Les controllers Angular appellent des services abstraits (Domain.xxx(), OvhApiDomain.v6().xxx()).
+Les vrais endpoints REST sont dans les fichiers de service (Domain.service.js, etc.)
+
+**Solution : Chercher les vrais endpoints**
+
+**Patterns prioritaires (vrais endpoints REST)** :
+
+| Pattern | Exemple | Resultat |
+|---------|---------|----------|
+| URL directe dans OvhHttp | OvhHttp.get('/domain/{domain}') | /domain/{domain} |
+| URL directe dans $http | $http.post('/domain/zone/{zone}/refresh') | /domain/zone/{zone}/refresh |
+| Template literal | \`/domain/zone/\${zoneName}/record\` | /domain/zone/{zone}/record |
+| rootPath + path | rootPath: 'apiv6', path: '/domain' | apiv6: /domain |
+
+**Fichiers sources a inclure dans le tar** :
+
+Pour avoir les vrais endpoints, le tar DOIT inclure :
+- packages/manager/modules/web-universe-components/src/domain/Domain.service.js
+- packages/manager/modules/web-universe-components/src/zone/Zone.service.js
+- Tout fichier *.service.js ou *Api.js
+
+**Grep recommande pour extraction** :
+```bash
+# Vrais endpoints (URLs directes)
+grep -rhnE "['\"]/[a-z]+/[^'\"]*['\"]" --include="*.js" | grep -iE "domain|zone|me/|service"
+
+# Dans les services
+grep -rhnE "(get|post|put|delete)\s*\(\s*['\"\`]/" --include="*.service.js"
+
+# Template literals
+grep -rhnE "\`/[a-z]+/" --include="*.js"
+```
+
+### Workflow de verification
+
+1. Extraire le tar dans /tmp
+2. Lancer le script sur le repertoire extrait
+3. Analyser le rapport genere
+4. Comparer avec les APIs documentees dans le cahier
+5. Identifier les manques (trouvees mais non documentees)
+6. Identifier les orphelines (documentees mais non trouvees)
+
+### Checklist de verification API
+
+- [ ] Script check_api_coverage.py lance
+- [ ] Toutes les APIs trouvees sont documentees
+- [ ] Aucune API documentee absente du code
+- [ ] Methodes HTTP correctes (GET/POST/PUT/DELETE)
+- [ ] Version API correcte (apiv6/2api/apiv2)
+- [ ] Sequencement documente pour les appels dependants
+
+---
+
+## Structure du Cahier des Charges (7 sections)
+
+| # | Section | Contenu |
+|---|---------|---------|
+| 1 | **RESUME EXECUTIF** | Perimetre, objectif fonctionnel, users cibles |
+| 2 | **ARCHITECTURE** | Arborescence fichiers, patterns, dependances |
+| 3 | **PAGES & NAVIGATION** | Routes, params, breadcrumb, flux |
+| 4 | **COMPOSANTS UI** | Liste avec props, comportement, ODS mapping |
+| 5 | **APIs & DONNEES** | Endpoints, sequences, types complets |
+| 6 | **TRADUCTIONS** | Cles i18n avec valeurs FR (et EN si dispo) |
+| 7 | **REGLES METIER** | Validations, conditions, etats, permissions |
+
+---
+
+## Format de sortie
+
+**Nom du fichier :** Identique au SVG correspondant, extension .txt
+```
+old_manager.<NAV1>.<NAV2>.svg           ->  old_manager.<NAV1>.<NAV2>.txt
+old_manager.<NAV1>.<NAV2>.tab-xxx.svg   ->  old_manager.<NAV1>.<NAV2>.tab-xxx.txt
+old_manager.<NAV1>.<NAV2>.modal-xxx.svg ->  old_manager.<NAV1>.<NAV2>.modal-xxx.txt
+```
+
+**Exemples :**
+```
+old_manager.web-cloud.domains.svg           ->  old_manager.web-cloud.domains.txt
+old_manager.web-cloud.hosting.tab-ssl.svg   ->  old_manager.web-cloud.hosting.tab-ssl.txt
+old_manager.home.billing.modal-terminate.svg ->  old_manager.home.billing.modal-terminate.txt
+old_manager.public-cloud.kubernetes.create.svg -> old_manager.public-cloud.kubernetes.create.txt
+```
+
+**Destination :**
+```
+/mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/
+```
+(Meme repertoire que les SVG)
+
+---
+
+## Generation et modification de fichiers
+
+### Choix de methode
+
+| Situation | Methode |
+|-----------|---------|
+| Nouveau fichier | cp+tee |
+| Fichier existant, petite modif | super-patch |
+| Fichier existant, gros changements | cp+tee (reecriture complete) |
+
+---
+
+### Creer un nouveau fichier avec cp+tee
+```bash
+mkdir -p /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}
+cp /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt.$(date +%Y%m%dT%H%M%S) || true
+tee /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt > /dev/null <<'CDC_EOF'
+# Contenu COMPLET du cahier des charges
+# JAMAIS de "... comme avant"
+# JAMAIS de sections tronquees
+CDC_EOF
+```
+
+**Regle CRITIQUE :** Le `cp` est OBLIGATOIRE meme si le fichier n'existe pas. La commande peut echouer (`|| true`), ce n'est pas grave. Cela garantit une sauvegarde systematique si le fichier existe.
+
+**Rappels anti-casse cp+tee :**
+- Delimiteur final (CDC_EOF, EOF, etc.) en debut de ligne, colonne 0, sans espace
+- Pas de guillemets intelligents - utiliser 'CDC_EOF' avec apostrophes simples ASCII
+- Pas d'indentation avant tee ... <<'CDC_EOF' ni avant le delimiteur final
+- Si le fichier n'existe pas, tee le cree ; s'il existe, il est ecrase
+- **ATTENTION aux delimiteurs doubles** : si le contenu genere contient lui-meme un heredoc (ex: un script bash avec `<<'EOF'`), utiliser un delimiteur DIFFERENT pour l'enveloppe externe (ex: `CDC_EOF`, `MODULE_END`, `OUTER_DELIM`)
+
+**Exemples de conflits de delimiteurs :**
+
+MAUVAIS (EOF dans EOF) :
+```bash
+tee /chemin/script.sh > /dev/null <<'EOF'
+#!/bin/bash
+cat > config.txt <<'EOF'   # <-- CONFLIT ! Le shell ferme le heredoc ici
+contenu
+EOF
+EOF
+```
+
+BON (delimiteurs differents) :
+```bash
+tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
+#!/bin/bash
+cat > config.txt <<'EOF'
+contenu
+EOF
+SCRIPT_END
+```
+
+---
+
+### Modifier un fichier existant avec super-patch
+```bash
+super-patch <<'PATCH_EOF'
+--- /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt
++++ /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt
+@@
+ ligne de contexte avant (sans +/-)
+-ancienne ligne a supprimer
++nouvelle ligne a ajouter
+ ligne de contexte apres (sans +/-)
+PATCH_EOF
+```
+
+**Rappels anti-casse super-patch :**
+- Delimiteur final colonne 0, sans espace
+- TOUJOURS au moins une ligne de contexte (sans -/+) avant ET apres chaque bloc @@
+- Utiliser des chemins absolus
+- Le contexte doit correspondre EXACTEMENT au fichier existant
+- **ATTENTION aux delimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
+
+---
+
+## Criteres de qualite
+
+Le cahier des charges est **complet** si un developpeur peut :
+- [ ] Recreer toutes les pages sans voir l'original
+- [ ] Implementer tous les appels API correctement
+- [ ] Reproduire le comportement UX identique
+- [ ] Utiliser les bons composants ODS
+- [ ] Appliquer les traductions exactes
+- [ ] Comprendre le sequencement des appels API
+- [ ] Gerer tous les etats (loading, error, empty, success)
+
+**Criteres specifiques APIs :**
+- [ ] Script check_api_coverage.py lance sur le tar
+- [ ] 100% des APIs trouvees sont dans le cahier
+- [ ] Methodes HTTP verifiees (GET vs POST vs PUT vs DELETE)
+- [ ] Version API verifiee (apiv6 vs 2api vs apiv2)
+
+---
+
+## Workflow complet
+
+1. **RECEVOIR** le tar uploade
+2. **EXTRAIRE** dans /tmp pour analyse
+3. **IDENTIFIER** : PREFIX, NAV1, NAV2 depuis le nom du tar
+4. **LISTER** les SVG existants dans old_manager_svg/{NAV1}/{NAV2}/
+5. **VERIFIER APIs** : lancer check_api_coverage.py (OBLIGATOIRE)
+6. **ANALYSER** : pages, composants, hooks, APIs, types, traductions
+7. **REDIGER** le cahier des charges (7 sections) pour CHAQUE SVG
+8. **COMPARER** APIs script vs cahier (aucun oubli)
+9. **PROPOSER** la structure au user pour validation
+10. **ATTENDRE** confirmation avant generation
+11. **GENERER** avec cp+tee apres GO explicite dans le MEME repertoire que les SVG
+12. **APPELER** present_files pour fournir les liens
+
+---
+
+## Regles absolues
+
+- **NE JAMAIS** generer de code sans validation prealable
+- **NE JAMAIS** tronquer le contenu avec "..." ou "comme avant"
+- **TOUJOURS** utiliser des chemins absolus
+- **TOUJOURS** proposer avant de pousser
+- **TOUJOURS** verifier les delimiteurs pour eviter les conflits
+- **TOUJOURS** lancer check_api_coverage.py avant de finaliser
+- **TOUJOURS** placer les TXT dans le MEME repertoire que les SVG
+- **TOUJOURS** nommer les TXT de maniere identique aux SVG (sauf extension)
+
+---
+
+## Rapport de generation
+```
+=== CONTEXTE ===
+PREFIX : old_manager
+NAV1 : web-cloud
+NAV2 : hosting
+
+=== SVG EXISTANTS ===
+1. old_manager.web-cloud.hosting.svg
+2. old_manager.web-cloud.hosting.onboarding.svg
+3. old_manager.web-cloud.hosting.tab-multisite.svg
+4. old_manager.web-cloud.hosting.tab-database.svg
+5. old_manager.web-cloud.hosting.modal-add-multisite.svg
+...
+
+=== TXT A GENERER ===
+1. ✅ old_manager.web-cloud.hosting.txt (XX Ko) - 7 sections, YY APIs
+2. ✅ old_manager.web-cloud.hosting.onboarding.txt (XX Ko)
+3. ✅ old_manager.web-cloud.hosting.tab-multisite.txt (XX Ko)
+4. ✅ old_manager.web-cloud.hosting.tab-database.txt (XX Ko)
+5. ✅ old_manager.web-cloud.hosting.modal-add-multisite.txt (XX Ko)
+...
+
+=== VERIFICATION APIs ===
+- APIs trouvees par script : ZZ
+- APIs documentees dans TXT : ZZ
+- Manquantes : 0
+- Orphelines : 0
+```
+
+---
+
+## Checklist finale
+
+- [ ] PREFIX detecte (old_manager / new_manager)
+- [ ] NAV1 identifie (home / web-cloud / bare-metal / public-cloud / network / telecom / iam / ...)
+- [ ] NAV2 identifie
+- [ ] SVG existants listes dans old_manager_svg/{NAV1}/{NAV2}/
+- [ ] Arborescence creee dans `/mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/`
+- [ ] TXT ecrits avec `tee` (pas affiches)
+- [ ] TXT dans le MEME repertoire que les SVG
+- [ ] Nommage TXT identique aux SVG (sauf extension)
+- [ ] `present_files` appele
+- [ ] ZERO hallucination
+- [ ] check_api_coverage.py lance
+- [ ] Textes en francais
+- [ ] 7 sections presentes dans chaque TXT principal
+- [ ] Variantes .~1~ .~2~ traitees si necessaire
+
+---
+
+## Script check_api_coverage.py (code complet)
+
+```python
+#!/usr/bin/env python3
+"""
+OVHcloud API Coverage Checker
+Extrait tous les appels API des fichiers source et verifie la couverture.
+
+Usage:
+    python check_api_coverage.py <tar_extract_dir> [--cahier <cahier_file>]
+    python check_api_coverage.py /tmp/old_manager_domains /tmp/old_manager_alldom
+"""
+
+import os
+import re
+import sys
+import json
+from pathlib import Path
+from collections import defaultdict
+from typing import Dict, List, Set, Tuple
+
+# Patterns pour detecter les appels API
+API_PATTERNS = {
+    # AngularJS patterns
+    'ovhhttp_get': re.compile(r"OvhHttp\.get\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
+    'ovhhttp_post': re.compile(r"OvhHttp\.post\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
+    'ovhhttp_put': re.compile(r"OvhHttp\.put\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
+    'ovhhttp_delete': re.compile(r"OvhHttp\.delete\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
+    
+    # AngularJS $http
+    'http_get': re.compile(r"\$http\.get\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
+    'http_post': re.compile(r"\$http\.post\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
+    'http_put': re.compile(r"\$http\.put\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
+    'http_delete': re.compile(r"\$http\.delete\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
+    
+    # Template literals avec $http
+    'http_template': re.compile(r"\$http\.(get|post|put|delete)\s*\(\s*`([^`]+)`"),
+    
+    # React/TypeScript patterns (manager-core-api)
+    'v2_get': re.compile(r"v2\.get\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
+    'v2_post': re.compile(r"v2\.post\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
+    'v2_put': re.compile(r"v2\.put\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
+    'v2_delete': re.compile(r"v2\.delete\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
+    'v6_get': re.compile(r"v6\.get\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
+    'v6_post': re.compile(r"v6\.post\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
+    'v6_put': re.compile(r"v6\.put\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
+    'v6_delete': re.compile(r"v6\.delete\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
+    
+    # Iceberg pattern
+    'iceberg': re.compile(r"useResourcesIcebergV2[^{]*route:\s*[`'\"]([^`'\"]+)[`'\"]"),
+    
+    # Generic fetch patterns
+    'fetch_api': re.compile(r"fetch\s*\(\s*[`'\"]([^`'\"]*(?:api|engine)[^`'\"]*)[`'\"]"),
+    
+    # rootPath indicators
+    'rootpath_apiv6': re.compile(r"rootPath:\s*['\"]apiv6['\"]"),
+    'rootpath_2api': re.compile(r"rootPath:\s*['\"]2api['\"]"),
+    
+    # URL patterns in strings (backup)
+    'url_domain': re.compile(r"[`'\"]/(domain|allDom|alldom)[^`'\"]*[`'\"]"),
+    'url_services': re.compile(r"[`'\"]/services[^`'\"]*[`'\"]"),
+    'url_me': re.compile(r"[`'\"]/me[^`'\"]*[`'\"]"),
+    'url_sws': re.compile(r"[`'\"]/sws[^`'\"]*[`'\"]"),
+}
+
+# Extensions a scanner
+SCAN_EXTENSIONS = {'.js', '.ts', '.tsx', '.jsx'}
+
+
+def extract_apis_from_file(filepath: Path) -> Dict[str, List[Tuple[str, int]]]:
+    """Extrait tous les appels API d un fichier."""
+    results = defaultdict(list)
+    
+    try:
+        content = filepath.read_text(encoding='utf-8', errors='ignore')
+    except Exception as e:
+        print(f"  [WARN] Cannot read {filepath}: {e}", file=sys.stderr)
+        return results
+    
+    lines = content.split('\n')
+    
+    for pattern_name, pattern in API_PATTERNS.items():
+        for i, line in enumerate(lines, 1):
+            matches = pattern.findall(line)
+            for match in matches:
+                if isinstance(match, tuple):
+                    endpoint = match[1] if len(match) > 1 else match[0]
+                else:
+                    endpoint = match
+                
+                endpoint = endpoint.strip()
+                if endpoint and not endpoint.startswith('$') and len(endpoint) > 1:
+                    results[pattern_name].append((endpoint, i))
+    
+    return results
+
+
+def normalize_endpoint(endpoint: str) -> str:
+    """Normalise un endpoint pour comparaison."""
+    endpoint = re.sub(r'\$\{[^}]+\}', '{param}', endpoint)
+    endpoint = re.sub(r'\$[a-zA-Z_][a-zA-Z0-9_]*', '{param}', endpoint)
+    endpoint = re.sub(r':[a-zA-Z_][a-zA-Z0-9_]*', '{param}', endpoint)
+    endpoint = endpoint.split('?')[0]
+    endpoint = '/' + endpoint.strip('/') if endpoint else '/'
+    return endpoint
+
+
+def categorize_endpoint(endpoint: str) -> str:
+    """Categorise un endpoint par domaine fonctionnel."""
+    normalized = endpoint.lower()
+    
+    if '/domain/zone' in normalized:
+        return 'Zone DNS'
+    elif '/domain/alldom' in normalized or '/alldom' in normalized:
+        return 'AllDom'
+    elif '/domain' in normalized:
+        return 'Domain'
+    elif '/services' in normalized:
+        return 'Services (2API)'
+    elif '/me/' in normalized or normalized == '/me':
+        return 'Me (Compte)'
+    elif '/sws/' in normalized:
+        return '2API (SWS)'
+    elif '/hosting' in normalized:
+        return 'Hosting'
+    elif '/email' in normalized:
+        return 'Email'
+    else:
+        return 'Autre'
+
+
+def scan_directory(base_path: Path) -> Dict[str, Dict]:
+    """Scan recursif d un repertoire."""
+    all_apis = defaultdict(lambda: {'endpoints': set(), 'files': [], 'methods': set()})
+    
+    for filepath in base_path.rglob('*'):
+        if filepath.suffix not in SCAN_EXTENSIONS:
+            continue
+        if 'node_modules' in str(filepath) or '__mocks__' in str(filepath):
+            continue
+        
+        file_apis = extract_apis_from_file(filepath)
+        
+        for pattern_name, matches in file_apis.items():
+            method = 'GET'
+            if 'post' in pattern_name:
+                method = 'POST'
+            elif 'put' in pattern_name:
+                method = 'PUT'
+            elif 'delete' in pattern_name:
+                method = 'DELETE'
+            
+            for endpoint, line_num in matches:
+                normalized = normalize_endpoint(endpoint)
+                category = categorize_endpoint(normalized)
+                
+                all_apis[category]['endpoints'].add(normalized)
+                all_apis[category]['methods'].add(method)
+                all_apis[category]['files'].append({
+                    'file': str(filepath.relative_to(base_path)),
+                    'line': line_num,
+                    'endpoint': endpoint,
+                    'normalized': normalized,
+                    'method': method,
+                    'pattern': pattern_name
+                })
+    
+    return all_apis
+
+
+def generate_report(apis: Dict[str, Dict], output_format: str = 'text') -> str:
+    """Genere un rapport des APIs trouvees."""
+    lines = []
+    
+    lines.append("=" * 70)
+    lines.append("RAPPORT D EXTRACTION DES APIS")
+    lines.append("=" * 70)
+    lines.append("")
+    
+    total_endpoints = 0
+    total_files = 0
+    
+    for category in sorted(apis.keys()):
+        data = apis[category]
+        endpoints = sorted(data['endpoints'])
+        files = data['files']
+        methods = sorted(data['methods'])
+        
+        total_endpoints += len(endpoints)
+        total_files += len(set(f['file'] for f in files))
+        
+        lines.append(f"\n## {category} ({len(endpoints)} endpoints)")
+        lines.append("-" * 50)
+        lines.append(f"Methodes: {', '.join(methods)}")
+        lines.append("")
+        
+        endpoint_details = defaultdict(list)
+        for f in files:
+            endpoint_details[f['normalized']].append(f)
+        
+        for endpoint in endpoints:
+            details = endpoint_details.get(endpoint, [])
+            methods_used = sorted(set(d['method'] for d in details))
+            files_using = sorted(set(d['file'] for d in details))
+            
+            lines.append(f"  {' '.join(methods_used):12} {endpoint}")
+            for file in files_using[:3]:
+                lines.append(f"               -> {file}")
+            if len(files_using) > 3:
+                lines.append(f"               -> ... (+{len(files_using)-3} autres)")
+    
+    lines.append("")
+    lines.append("=" * 70)
+    lines.append(f"TOTAL: {total_endpoints} endpoints uniques dans {total_files} fichiers")
+    lines.append("=" * 70)
+    
+    return '\n'.join(lines)
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python check_api_coverage.py <dir1> [dir2] ... [--markdown]")
+        print("Example: python check_api_coverage.py /tmp/old_manager_domains")
+        sys.exit(1)
+    
+    dirs = []
+    markdown_output = False
+    
+    for arg in sys.argv[1:]:
+        if arg == '--markdown':
+            markdown_output = True
+        elif os.path.isdir(arg):
+            dirs.append(Path(arg))
+        else:
+            print(f"[WARN] Not a directory: {arg}", file=sys.stderr)
+    
+    if not dirs:
+        print("Error: No valid directories provided")
+        sys.exit(1)
+    
+    all_apis = defaultdict(lambda: {'endpoints': set(), 'files': [], 'methods': set()})
+    
+    for dir_path in dirs:
+        print(f"Scanning: {dir_path}", file=sys.stderr)
+        dir_apis = scan_directory(dir_path)
+        
+        for category, data in dir_apis.items():
+            all_apis[category]['endpoints'].update(data['endpoints'])
+            all_apis[category]['files'].extend(data['files'])
+            all_apis[category]['methods'].update(data['methods'])
+    
+    print(generate_report(all_apis))
+    
+    json_output = {}
+    for category, data in all_apis.items():
+        json_output[category] = {
+            'endpoints': sorted(data['endpoints']),
+            'methods': sorted(data['methods']),
+            'file_count': len(set(f['file'] for f in data['files']))
+        }
+    
+    json_path = Path('/tmp/api_coverage.json')
+    json_path.write_text(json.dumps(json_output, indent=2))
+    print(f"\nJSON output: {json_path}", file=sys.stderr)
+
+
+if __name__ == '__main__':
+    main()
+```
+
+Pour installer le script :
+```bash
+mkdir -p /home/ubuntu/old_manager
+cat > /home/ubuntu/old_manager/check_api_coverage.py << 'SCRIPT_END'
+# Coller le code ci-dessus
+SCRIPT_END
+chmod +x /home/ubuntu/old_manager/check_api_coverage.py
+```
