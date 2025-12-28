@@ -1,0 +1,161 @@
+# CAHIER DES CHARGES - Service voipTimeCondition
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/time-condition.service.js
+
+## 1. IDENTIFICATION
+- Service: voipTimeCondition
+- Type: Service AngularJS
+- Fichier source: time-condition.service.js
+- Usage: Service central pour la gestion des plages horaires (API calls, helpers, grouping)
+
+## 2. DESCRIPTION FONCTIONNELLE
+Service fournissant les méthodes utilitaires pour :
+- Accéder aux ressources API selon le type de feature (SIP, EasyHunting, OvhPabx)
+- Parser et convertir les formats de temps
+- Grouper les conditions temporelles pour l'affichage
+
+## 3. RESSOURCES API PAR TYPE DE FEATURE
+
+### SIP
+timeConditionResources.sip = {
+  init: OvhApiTelephony.TimeCondition().v6().getOptions,
+  save: OvhApiTelephony.TimeCondition().v6().setOptions,
+  condition: OvhApiTelephony.TimeCondition().Condition().v6()
+}
+
+### EasyHunting
+timeConditionResources.easyHunting = {
+  init: OvhApiTelephony.EasyHunting().TimeConditions().v6().get,
+  save: OvhApiTelephony.EasyHunting().TimeConditions().v6().save,
+  condition: OvhApiTelephony.EasyHunting().TimeConditions().Conditions().v6()
+}
+
+### OvhPabx
+timeConditionResources.ovhPabx = {
+  condition: OvhApiTelephony.OvhPabx().Dialplan().Extension().ConditionTime().v6()
+}
+
+## 4. ENDPOINTS API DÉDUITS
+
+### SIP
+| Méthode | Endpoint |
+|---------|----------|
+| GET | /telephony/{billingAccount}/timeCondition/{serviceName}/options |
+| PUT | /telephony/{billingAccount}/timeCondition/{serviceName}/options |
+| GET | /telephony/{billingAccount}/timeCondition/{serviceName}/condition |
+| GET | /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id} |
+| POST | /telephony/{billingAccount}/timeCondition/{serviceName}/condition |
+| PUT | /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id} |
+| DELETE | /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id} |
+
+### EasyHunting
+| Méthode | Endpoint |
+|---------|----------|
+| GET | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions |
+| PUT | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions |
+| GET | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions |
+| GET | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions/{conditionId} |
+| POST | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions |
+| PUT | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions/{conditionId} |
+| DELETE | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions/{conditionId} |
+
+### OvhPabx
+| Méthode | Endpoint |
+|---------|----------|
+| GET | /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime |
+| GET | /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime/{conditionId} |
+| POST | /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime |
+| PUT | /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime/{conditionId} |
+| DELETE | /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime/{conditionId} |
+
+## 5. MÉTHODES - HELPERS TEMPS SIP
+
+### getSipTime(time, isEnd)
+Convertit HH:MM:SS vers HHMM pour l'API SIP.
+Si isEnd=true, ajoute 1 minute (car l'API SIP utilise des bornes exclusives).
+
+Exemple:
+- getSipTime('08:30:00') -> '0830'
+- getSipTime('17:29:59', true) -> '1730'
+
+### parseSipTime(timeStr, modulo)
+Convertit HHMM vers HH:MM:SS depuis l'API SIP.
+Si modulo=true, soustrait pour obtenir la borne inclusive.
+
+Exemple:
+- parseSipTime('0830') -> '08:30:00'
+- parseSipTime('1730', true) -> '17:29:59'
+
+### parseTime(timeStr)
+Ajuste les heures de fin pour les multiples de 15 minutes.
+Soustrait 1 seconde si les minutes sont un multiple de 15.
+
+## 6. MÉTHODES - ACCÈS RESSOURCES
+
+### getAvailableSlotsCount(featureType)
+Retourne le nombre de slots disponibles selon le type:
+- sip: 3
+- easyHunting: 3
+- ovhPabx: 0
+
+### getResource(resourceType, featureType)
+Retourne la ressource API pour un type donné.
+resourceType: 'init', 'save', 'condition'
+
+### getResourceCallParams(timeCondition)
+Retourne les paramètres d'appel API:
+{
+  billingAccount: timeCondition.billingAccount,
+  serviceName: timeCondition.serviceName,
+  // Si ovhPabx:
+  dialplanId: timeCondition.dialplanId,
+  extensionId: timeCondition.extensionId
+}
+
+### getConditionResourceCallParams(conditionObject, conditionId)
+Retourne les paramètres pour les appels condition avec l'ID.
+Note: SIP utilise 'id', les autres utilisent 'conditionId'.
+
+### getResourceCallActionParams(timeCondition)
+Retourne les paramètres pour les actions save:
+{
+  slot1Type: 'number',
+  slot1Number: '+33123456789',
+  slot2Type: 'voicemail',
+  slot2Number: '...',
+  // SIP:
+  status: 'enabled' | 'disabled',
+  timeout: 45
+  // EasyHunting:
+  enable: true | false
+}
+
+### getConditionResourceCallActionParams(condition)
+Retourne les paramètres pour les actions condition:
+{
+  // SIP: hourBegin, hourEnd, day
+  // Autres: timeFrom, timeTo, weekDay
+  policy: 'available' | 'slot1' | 'slot2' | 'slot3'  // (sauf ovhPabx)
+}
+
+## 7. MÉTHODES - GROUPEMENT
+
+### createGroupCondition(days, groupedConditionSlots)
+Crée un objet groupe pour l'affichage:
+{
+  days: ['monday', 'tuesday'],
+  slots: [{ condition, conditions }],
+  getDisplayedText()  // Retourne "Lu - Ma : de 08:30 à 17:30"
+}
+
+### groupTimeConditions(conditions)
+Groupe les conditions par jours et plages horaires similaires.
+1. Groupe par timeFrom/timeTo
+2. Groupe par jours
+3. Retourne des objets groupe avec getDisplayedText()
+
+## 8. DÉPENDANCES
+- $q, $translate
+- OvhApiTelephony
+- lodash (every, filter, get, head, isEmpty, last, map, orderBy, padStart, set, uniq)
+- moment.js

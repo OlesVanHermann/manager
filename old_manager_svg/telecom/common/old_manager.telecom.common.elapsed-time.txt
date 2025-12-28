@@ -1,0 +1,76 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.common.elapsed-time
+================================================================================
+
+1. IDENTIFICATION
+-----------------
+Chemin     : telecom/common
+Composant  : Temps ecoule
+Type       : Directive affichage temps
+Framework  : AngularJS 1.7.x
+Module     : telecom-universe-components
+
+2. DESCRIPTION FONCTIONNELLE
+----------------------------
+Directive affichant le temps ecoule depuis une date donnee.
+Mise a jour automatique en temps reel (toutes les secondes).
+Affichage adaptatif selon la duree (secondes, minutes, heures, jours).
+
+3. STRUCTURE UI
+---------------
+Formats d affichage selon duree :
++------------------------------------------------------------------+
+| Moins d 1 minute :    "45 sec."                                  |
+| Moins d 1 heure :     "12 min 45 s"                              |
+| Moins d 1 jour :      "3 h 12 min 45 s"                          |
+| Plus d 1 jour :       "2 jours et 5 heures"                      |
++------------------------------------------------------------------+
+
+4. ATTRIBUTS DIRECTIVE
+----------------------
+| Attribut | Type   | Requis | Description                       |
+|----------|--------|--------|-----------------------------------|
+| from     | Date   | Oui    | Date de depart pour le calcul     |
+
+5. FORMATS AFFICHAGE
+--------------------
+| Condition        | Format                        | Exemple           |
+|------------------|-------------------------------|-------------------|
+| < 1 minute       | {{ seconds }} sec.            | 45 sec.           |
+| < 1 heure        | {{ min }} min {{ sec }} s     | 12 min 45 s       |
+| < 1 jour         | {{ h }} h {{ min }} min {{ s }}| 3 h 12 min 45 s  |
+| >= 1 jour        | {{ days }} jours et {{ h }} h | 2 jours et 5 h    |
+
+6. FONCTIONNEMENT TECHNIQUE
+---------------------------
+- Utilise moment.js pour les calculs de temps
+- Service TucElapsedTimePeriodicUpdater pour mise a jour partagee
+- Evite les boucles Angular multiples en centralisant le refresh
+- Synchronisation de toutes les directives elapsed-time
+
+7. COMPOSANTS UTILISES
+----------------------
+- moment.js : Manipulation dates
+- TucElapsedTimePeriodicUpdater : Service de mise a jour periodique
+
+8. TRADUCTIONS FR
+-----------------
+elapsed_time_days: "{{ days }} jours et {{ hours }} heures"
+elapsed_time_hours: "{{ hours }} h {{ minutes }} min {{ seconds }} s"
+elapsed_time_minutes: "{{ minutes }} min {{ seconds }} s"
+elapsed_time_seconds: "{{ seconds }} sec."
+
+9. EXEMPLE D UTILISATION
+------------------------
+<tuc-elapsed-time from="$ctrl.startDate"></tuc-elapsed-time>
+
+10. CAS D USAGE
+---------------
+- Duree d un appel en cours
+- Temps depuis derniere synchronisation
+- Uptime d un service
+- Duree d une tache en cours
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

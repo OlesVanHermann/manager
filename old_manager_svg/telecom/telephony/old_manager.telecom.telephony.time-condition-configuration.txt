@@ -1,0 +1,144 @@
+# CAHIER DES CHARGES - Service Configuration Export/Import
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/service/time-condition-configuration/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Service AngularJS pour exporter et importer la configuration des conditions temporelles au format JSON.
+
+### Objectif fonctionnel
+- Exporter la configuration actuelle dans un fichier JSON telechargeable
+- Importer une configuration depuis un fichier JSON uploade
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| time-condition-configuration.service.js | Service voipTimeConditionConfiguration |
+| index.js | Module AngularJS |
+
+### Dependances
+- $http, $q, $timeout
+- coreConfig (infos utilisateur)
+- OvhApiMe.Document (upload/download fichiers)
+- moment.js (timestamp fichier)
+
+---
+
+## 3. APIs & DONNEES
+
+### Export
+```javascript
+exportConfiguration(data) {
+  return coreConfig.getUser().then(me => {
+    // Generer nom fichier: nichandle_YYYY_MM_DD_HHmmss_SSS.json
+    const fileName = `${me.nichandle}_${moment().format('YYYY_MM_DD_HHmmss_SSS')}.json`;
+    const jsonData = JSON.stringify(data);
+    
+    // Creer Blob et telecharger
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    
+    if (window.navigator.msSaveOrOpenBlob) {
+      // IE/Edge
+      window.navigator.msSaveBlob(blob, fileName);
+    } else {
+      // Chrome/Firefox/Safari
+      const downloadLink = document.createElement('a');
+      downloadLink.href = window.URL.createObjectURL(blob);
+      downloadLink.download = fileName;
+      downloadLink.target = '_blank';
+      downloadLink.style = 'visibility:hidden';
+      
+      document.body.appendChild(downloadLink);
+      $timeout(() => {
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      });
+    }
+  });
+}
+```
+
+### Import
+```javascript
+importConfiguration(file) {
+  // 1. Upload fichier vers /me/document
+  return OvhApiMe.Document().v6().upload(file.name, file)
+    .then(doc => {
+      // 2. Recuperer URL de telechargement
+      return OvhApiMe.Document().v6().get({ id: doc.id }).$promise;
+    })
+    .then(newDoc => {
+      // 3. Telecharger et parser le JSON
+      return $http.get(newDoc.getUrl);
+    })
+    .then(data => data)
+    .catch(error => $q.reject(error));
+}
+```
+
+### Endpoints utilises
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | /me/document | Upload fichier |
+| GET | /me/document/{id} | Recuperer infos document |
+| GET | {getUrl} | Telecharger contenu fichier |
+
+---
+
+## 4. FORMAT FICHIER JSON
+
+### Structure exportee
+```json
+{
+  "featureType": "sip",
+  "enable": true,
+  "timeout": 45,
+  "slots": [
+    {
+      "name": "slot1",
+      "type": "voicemail",
+      "number": "0033123456789"
+    },
+    {
+      "name": "unavailable",
+      "type": "number",
+      "number": "+33987654321"
+    }
+  ],
+  "conditions": [
+    {
+      "weekDay": "monday",
+      "timeFrom": "08:30:00",
+      "timeTo": "12:29:59",
+      "policy": "available"
+    },
+    {
+      "weekDay": "monday",
+      "timeFrom": "14:00:00",
+      "timeTo": "17:59:59",
+      "policy": "available"
+    }
+  ]
+}
+```
+
+---
+
+## 5. REGLES METIER
+
+### Nommage fichier export
+- Format: `{nichandle}_{YYYY_MM_DD_HHmmss_SSS}.json`
+- Exemple: `ab12345-ovh_2024_01_15_143022_456.json`
+
+### Compatibilite navigateurs
+- Support IE/Edge via msSaveOrOpenBlob
+- Support Chrome/Firefox/Safari via createElement('a')
+
+### Validation import
+- Le fichier doit etre un JSON valide
+- La structure doit correspondre au format attendu
+- Les conditions importees remplacent les existantes

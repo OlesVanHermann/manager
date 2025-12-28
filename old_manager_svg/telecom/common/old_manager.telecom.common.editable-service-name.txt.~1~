@@ -1,0 +1,97 @@
+================================================================================
+COMPOSANT : editable-service-name
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (directive)
+SOURCE: packages/manager/modules/telecom-universe-components/src/editable-service-name/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Composant permettant d'éditer le nom d'affichage d'un service directement 
+depuis le titre de la page. Affiche le nom actuel avec un bouton crayon,
+et passe en mode édition inline au clic.
+
+Cas d'usage :
+- Renommer un service téléphonie
+- Modifier le nom d'affichage d'une ligne SIP
+- Personnaliser le libellé d'un pack xDSL
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+Mode lecture :
+┌─────────────────────────────────────────────────────────────────┐
+│  [H1] Mon Service Téléphonie  [🖊️]                              │
+│  [H2] 0033912345678 | Pack Pro                                  │
+└─────────────────────────────────────────────────────────────────┘
+
+Mode édition :
+┌─────────────────────────────────────────────────────────────────┐
+│  [Label] Veuillez insérer le nouveau nom de ce service         │
+│  ┌──────────────────────────────────┐ [✓] [✗]                   │
+│  │ Mon Nouveau Nom                  │                           │
+│  └──────────────────────────────────┘                           │
+│  [H2] 0033912345678 | Pack Pro                                  │
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. PROPRIETES (BINDINGS)
+================================================================================
+| Propriété            | Type     | Direction | Description                    |
+|----------------------|----------|-----------|--------------------------------|
+| title                | string   | =         | Nom actuel du service (H1)     |
+| serviceName          | string   | @         | Identifiant technique (H2)     |
+| serviceNameAppendix  | string   | @         | Suffixe optionnel (ex: "| Pack")|
+| disabled             | boolean  | =         | Désactive le bouton d'édition  |
+| maxlength            | number   | @         | Longueur max du nom (défaut: ∞)|
+| onSave               | function | &         | Callback sauvegarde            |
+| onEditStart          | function | &         | Callback début édition         |
+| onEditCancel         | function | &         | Callback annulation            |
+
+================================================================================
+4. VALIDATION
+================================================================================
+- Pattern : /^[^<>]+$/ (interdit < et > pour éviter XSS)
+- Maxlength : configurable via attribut
+- Champs requis implicite (bouton submit désactivé si vide)
+
+================================================================================
+5. TRADUCTIONS (FR)
+================================================================================
+tuc_editableServiceName_change    : "Changer le nom du service"
+tuc_editableServiceName_label     : "Veuillez insérer le nouveau nom de ce service"
+tuc_editableServiceName_confirm   : "Confirmer"
+tuc_editableServiceName_cancel    : "Annuler"
+
+================================================================================
+6. CLASSES CSS
+================================================================================
+.oui-header__title       : Style titre H1
+.oui-header__description : Style sous-titre H2
+.btn-editable            : Bouton crayon/validation/annulation
+.service-name-edit-input : Input d'édition
+.oui-icon-pen_concept    : Icône crayon
+.oui-icon-success        : Icône validation (check)
+.oui-icon-close          : Icône annulation (croix)
+
+================================================================================
+7. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface EditableServiceNameProps {
+  title: string;
+  serviceName: string;
+  serviceNameAppendix?: string;
+  disabled?: boolean;
+  maxLength?: number;
+  onSave: (newName: string) => Promise<void>;
+  onEditStart?: () => void;
+  onEditCancel?: () => void;
+}
+
+================================================================================
+8. API UTILISEE
+================================================================================
+Aucune API directe - le composant délègue la sauvegarde via callback onSave().
+L'API appelée dépend du contexte d'utilisation (telephony, pack, sms, etc.)

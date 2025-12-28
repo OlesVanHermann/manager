@@ -1,0 +1,140 @@
+# CAHIER DES CHARGES - Factory Condition (Plage Horaire)
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/condition/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Factory AngularJS representant une condition temporelle (plage horaire) avec jour, heures et politique de redirection.
+
+### Objectif fonctionnel
+- Modeliser une plage horaire (ex: Lundi 08:30-12:00 -> available)
+- Gerer le cycle de vie (creation, edition, suppression)
+- Convertir entre formats API (SIP vs EasyHunting)
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| condition.factory.js | Factory VoipTimeConditionCondition |
+| index.js | Module AngularJS |
+| translations/Messages_fr_FR.json | Traductions FR |
+
+### Dependances
+- lodash (upperFirst, get, isEqual, now, random)
+- moment.js
+- voipTimeCondition (service parent)
+- VOIP_TIMECONDITION_ORDERED_DAYS (constante)
+
+---
+
+## 3. MODELE DE DONNEES
+
+### Attributs obligatoires
+| Attribut | Type | Description |
+|----------|------|-------------|
+| billingAccount | string | Compte de facturation |
+| serviceName | string | Nom du service |
+| featureType | string | 'sip', 'easyHunting', 'ovhPabx' |
+
+### Attributs optionnels (ovhPabx)
+| Attribut | Type | Description |
+|----------|------|-------------|
+| dialplanId | number | ID du dialplan |
+| extensionId | number | ID de l'extension |
+
+### Attributs condition
+| Attribut | Type | Defaut | Description |
+|----------|------|--------|-------------|
+| conditionId | string/number | tmp_xxx | ID unique |
+| weekDay | string | 'monday' | Jour de la semaine |
+| timeFrom | string | '08:30:00' | Heure de debut |
+| timeTo | string | '17:29:59' | Heure de fin |
+| policy | string | 'available' | Politique de redirection |
+| state | string | 'OK' | Etat (OK, DRAFT, TO_CREATE, TO_DELETE) |
+
+---
+
+## 4. APIs & DONNEES
+
+### Methodes CRUD
+```javascript
+condition.create()  // POST -> API
+condition.save()    // PUT -> API
+condition.remove()  // DELETE -> API
+```
+
+### Conversion formats
+**SIP (hourBegin/hourEnd en HHMM):**
+```javascript
+// API -> Model
+timeFrom = parseSipTime("0830") // -> "08:30:00"
+timeTo = parseSipTime("1730", true) // -> "17:29:59"
+
+// Model -> API
+hourBegin = getSipTime("08:30:00") // -> "0830"
+hourEnd = getSipTime("17:29:59", true) // -> "1730"
+```
+
+**EasyHunting/OvhPabx (timeFrom/timeTo en HH:mm:ss):**
+```javascript
+// Utilisation directe sans conversion
+```
+
+---
+
+## 5. TRADUCTIONS (FR)
+
+```json
+{
+  "voip_time_condition_condition_add_popover_title": "Ajouter une plage horaire",
+  "voip_time_condition_condition_edit_popover_title": "Modifier une plage horaire",
+  "voip_time_condition_condition_popover_days": "Jour de la semaine",
+  "voip_time_condition_condition_popover_days_monday": "Lundi",
+  "voip_time_condition_condition_popover_days_tuesday": "Mardi",
+  "voip_time_condition_condition_popover_days_wednesday": "Mercredi",
+  "voip_time_condition_condition_popover_days_thursday": "Jeudi",
+  "voip_time_condition_condition_popover_days_friday": "Vendredi",
+  "voip_time_condition_condition_popover_days_saturday": "Samedi",
+  "voip_time_condition_condition_popover_days_sunday": "Dimanche",
+  "voip_time_condition_condition_popover_repeater": "Repeter",
+  "voip_time_condition_condition_popover_days_repeat_weekDays": "Seulement les jours de la semaine",
+  "voip_time_condition_condition_popover_days_repeat_weekendDays": "Seulement les week-ends",
+  "voip_time_condition_condition_popover_policy": "Rediriger les appels vers",
+  "voip_time_condition_condition_popover_time_slot": "Plage horaire",
+  "voip_time_condition_condition_popover_time_slot_from": "De",
+  "voip_time_condition_condition_popover_time_slot_to": "a",
+  "voip_time_condition_condition_popover_time_slot_overlap": "Cette plage horaire est en conflit avec une autre !",
+  "voip_time_condition_condition_popover_delete": "Suppression",
+  "voip_time_condition_condition_popover_delete_confirm": "Etes-vous certain de vouloir supprimer cette plage horaire ?"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+### Edition
+```javascript
+condition.startEdition() // Sauvegarde etat initial
+condition.stopEdition(cancel) // Restaure si cancel=true
+condition.hasChange(property, fromOriginal) // Detecte modifications
+```
+
+### Clone
+```javascript
+condition.clone() // Copie sans conditionId (pour duplication)
+```
+
+### Conversion moment.js
+```javascript
+condition.getTimeMoment('from') // moment() avec jour + heure debut
+condition.getTimeMoment('to')   // moment() avec jour + heure fin
+condition.toFullCalendarEvent() // {id, start, end, allDay}
+```
+
+### Gestion des IDs temporaires
+- Nouvelles conditions: conditionId = "tmp_" + random(now())
+- Apres creation API: conditionId = id retourne par l'API

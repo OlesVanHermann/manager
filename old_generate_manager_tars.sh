@@ -4,21 +4,8 @@ set -e
 echo "=== Génération des tars old_manager ==="
 cd /home/ubuntu/manager
 
-# Suppression des anciens tars (UNIQUEMENT old_manager)
 rm -f /home/ubuntu/old_manager.*.tar
 
-# ============================================================
-# FONCTION HELPER pour construire les arguments tar
-# ============================================================
-# Ajoute un chemin seulement s'il existe
-add_if_exists() {
-    local path="$1"
-    if [ -e "$path" ]; then
-        echo "$path"
-    fi
-}
-
-# Exclusions communes
 EXCLUDES="--exclude=node_modules --exclude=.git --exclude=dist --exclude=coverage --exclude=*.lock --exclude=yarn.lock --exclude=package-lock.json --exclude=*.map --exclude=.cache"
 
 # ============================================================
@@ -55,7 +42,7 @@ tar -cf /home/ubuntu/old_manager.core.tar \
     ./package.json \
     ./turbo.json \
     ./scripts \
-    $(add_if_exists ./ng-ovh-api-wrappers) \
+    ./ng-ovh-api-wrappers \
     ./ovh-api-services/src/index.js \
     ./ovh-api-services/src/ovh-api-services.module.js \
     ./ovh-api-services/package.json
@@ -71,7 +58,7 @@ tar -cf /home/ubuntu/old_manager.login.tar \
     ./packages/manager/apps/account-creation \
     ./packages/manager/modules/mfa-enrollment
 
-echo "Création old_manager.placeholder.tar (vide)..."
+echo "Création old_manager.placeholder.tar..."
 tar -cf /home/ubuntu/old_manager.placeholder.tar --files-from /dev/null
 
 echo "Création old_manager.all.tar..."
@@ -118,8 +105,8 @@ tar -cf /home/ubuntu/old_manager.bare-metal.nasha.tar \
     ./packages/manager/apps/nasha \
     ./packages/manager/modules/nasha \
     ./packages/manager/modules/bm-server-components \
-    $(add_if_exists ./ovh-api-services/src/api/vrack/nasha) \
-    $(add_if_exists ./ovh-api-services/src/api/order/dedicated/nasha)
+    ./ovh-api-services/src/api/vrack/nasha \
+    ./ovh-api-services/src/api/order/dedicated/nasha
 
 echo "Création old_manager.bare-metal.netapp.tar..."
 tar -cf /home/ubuntu/old_manager.bare-metal.netapp.tar \
@@ -135,7 +122,7 @@ tar -cf /home/ubuntu/old_manager.bare-metal.vps.tar \
     ./ovh-api-services/src/api/vps
 
 # ============================================================
-# GENERAL (ex-HOME)
+# GENERAL
 # ============================================================
 
 echo "Création old_manager.general.tar..."
@@ -150,8 +137,8 @@ tar -cf /home/ubuntu/old_manager.general.tar $EXCLUDES \
     ./packages/manager/modules/account \
     ./packages/manager/modules/billing \
     ./packages/manager/modules/billing-components \
-    $(add_if_exists ./packages/manager/modules/carbon-calculator) \
-    $(add_if_exists ./packages/manager/modules/support) \
+    ./packages/manager/modules/carbon-calculator \
+    ./packages/manager/modules/support \
     ./ovh-api-services/src/api/me \
     ./ovh-api-services/src/api/billing \
     ./ovh-api-services/src/api/order \
@@ -161,9 +148,9 @@ echo "Création old_manager.general.core.tar..."
 tar -cf /home/ubuntu/old_manager.general.core.tar \
     ./packages/manager/apps/hub \
     ./packages/manager/apps/catalog \
-    $(add_if_exists ./packages/manager/apps/cda) \
-    $(add_if_exists ./packages/manager/modules/cda) \
-    $(add_if_exists ./packages/manager/apps/restricted)
+    ./packages/manager/apps/cda \
+    ./packages/manager/modules/cda \
+    ./packages/manager/apps/restricted
 
 echo "Création old_manager.general.general.tar..."
 tar -cf /home/ubuntu/old_manager.general.general.tar \
@@ -175,7 +162,7 @@ tar -cf /home/ubuntu/old_manager.general.account.tar \
     ./packages/manager/apps/account \
     ./packages/manager/modules/account \
     ./packages/manager/apps/procedures \
-    $(add_if_exists ./packages/manager/modules/trusted-nic) \
+    ./packages/manager/modules/trusted-nic \
     ./ovh-api-services/src/api/me
 
 echo "Création old_manager.general.api.tar..."
@@ -187,25 +174,25 @@ tar -cf /home/ubuntu/old_manager.general.billing.tar \
     ./packages/manager/apps/billing \
     ./packages/manager/modules/billing \
     ./packages/manager/modules/billing-components \
-    $(add_if_exists ./packages/manager/modules/billing-informations) \
-    $(add_if_exists ./packages/manager/modules/new-billing) \
+    ./packages/manager/modules/billing-informations \
+    ./packages/manager/modules/new-billing \
     ./packages/manager/apps/order-tracking \
-    $(add_if_exists ./packages/manager/modules/ng-ovh-order-tracking) \
-    $(add_if_exists ./packages/manager/modules/order) \
+    ./packages/manager/modules/ng-ovh-order-tracking \
+    ./packages/manager/modules/order \
     ./ovh-api-services/src/api/billing \
     ./ovh-api-services/src/api/order \
-    $(add_if_exists ./ovh-api-services/src/api/me/billing)
+    ./ovh-api-services/src/api/me/billing
 
 echo "Création old_manager.general.carbon.tar..."
 tar -cf /home/ubuntu/old_manager.general.carbon.tar \
     ./packages/manager/apps/carbon-calculator \
-    $(add_if_exists ./packages/manager/modules/carbon-calculator)
+    ./packages/manager/modules/carbon-calculator
 
 echo "Création old_manager.general.support.tar..."
 tar -cf /home/ubuntu/old_manager.general.support.tar \
     ./packages/manager/apps/support \
-    $(add_if_exists ./packages/manager/modules/support) \
-    $(add_if_exists ./packages/manager/apps/communication) \
+    ./packages/manager/modules/support \
+    ./packages/manager/apps/communication \
     ./ovh-api-services/src/api/support
 
 # ============================================================
@@ -214,30 +201,31 @@ tar -cf /home/ubuntu/old_manager.general.support.tar \
 
 echo "Création old_manager.iam.tar..."
 tar -cf /home/ubuntu/old_manager.iam.tar $EXCLUDES \
-    $(add_if_exists ./packages/manager/apps/iam) \
-    $(add_if_exists ./packages/manager/apps/identity-access-management) \
-    $(add_if_exists ./packages/manager/modules/iam) \
+    ./packages/manager/apps/iam \
+    ./packages/manager/apps/identity-access-management \
+    ./packages/manager/modules/iam \
     ./packages/manager/apps/dbaas-logs \
     ./packages/manager/modules/dbaas-logs \
-    $(add_if_exists ./packages/manager/apps/log-to-customer) \
-    $(add_if_exists ./packages/manager/modules/log-to-customer) \
-    $(add_if_exists ./packages/manager/apps/okms) \
-    $(add_if_exists ./packages/manager/modules/okms) \
+    ./packages/manager/modules/log-to-customer \
+    ./packages/manager/apps/okms \
+    ./packages/manager/apps/metrics \
+    ./packages/manager/modules/metrics \
     ./ovh-api-services/src/api/dbaas \
-    $(add_if_exists ./ovh-api-services/src/api/me/accessRestriction)
+    ./ovh-api-services/src/api/metrics \
+    ./ovh-api-services/src/api/me/accessRestriction
 
 echo "Création old_manager.iam.core.tar..."
 tar -cf /home/ubuntu/old_manager.iam.core.tar \
-    $(add_if_exists ./packages/manager/apps/iam) \
-    $(add_if_exists ./packages/manager/apps/identity-access-management) \
-    $(add_if_exists ./packages/manager/modules/iam)
+    ./packages/manager/apps/iam \
+    ./packages/manager/apps/identity-access-management \
+    ./packages/manager/modules/iam
 
 echo "Création old_manager.iam.general.tar..."
 tar -cf /home/ubuntu/old_manager.iam.general.tar \
-    $(add_if_exists ./packages/manager/apps/iam) \
-    $(add_if_exists ./packages/manager/apps/identity-access-management) \
-    $(add_if_exists ./packages/manager/modules/iam) \
-    $(add_if_exists ./ovh-api-services/src/api/me/accessRestriction)
+    ./packages/manager/apps/iam \
+    ./packages/manager/apps/identity-access-management \
+    ./packages/manager/modules/iam \
+    ./ovh-api-services/src/api/me/accessRestriction
 
 echo "Création old_manager.iam.dbaas-logs.tar..."
 tar -cf /home/ubuntu/old_manager.iam.dbaas-logs.tar \
@@ -245,29 +233,27 @@ tar -cf /home/ubuntu/old_manager.iam.dbaas-logs.tar \
     ./packages/manager/modules/dbaas-logs \
     ./ovh-api-services/src/api/dbaas
 
-echo "Création old_manager.iam.hsm.tar (vide - nouveau service)..."
+echo "Création old_manager.iam.hsm.tar..."
 tar -cf /home/ubuntu/old_manager.iam.hsm.tar --files-from /dev/null
 
 echo "Création old_manager.iam.logs.tar..."
 tar -cf /home/ubuntu/old_manager.iam.logs.tar \
-    $(add_if_exists ./packages/manager/apps/log-to-customer) \
-    $(add_if_exists ./packages/manager/modules/log-to-customer) \
+    ./packages/manager/modules/log-to-customer \
     ./packages/manager/apps/dbaas-logs \
     ./packages/manager/modules/dbaas-logs \
     ./ovh-api-services/src/api/dbaas
 
 echo "Création old_manager.iam.metrics.tar..."
 tar -cf /home/ubuntu/old_manager.iam.metrics.tar \
-    $(add_if_exists ./packages/manager/apps/dbaas-logs) \
-    $(add_if_exists ./packages/manager/modules/dbaas-logs) \
-    ./ovh-api-services/src/api/dbaas
+    ./packages/manager/apps/metrics \
+    ./packages/manager/modules/metrics \
+    ./ovh-api-services/src/api/metrics
 
 echo "Création old_manager.iam.okms.tar..."
 tar -cf /home/ubuntu/old_manager.iam.okms.tar \
-    $(add_if_exists ./packages/manager/apps/okms) \
-    $(add_if_exists ./packages/manager/modules/okms)
+    ./packages/manager/apps/okms
 
-echo "Création old_manager.iam.secret.tar (vide - nouveau service)..."
+echo "Création old_manager.iam.secret.tar..."
 tar -cf /home/ubuntu/old_manager.iam.secret.tar --files-from /dev/null
 
 # ============================================================
@@ -330,45 +316,42 @@ tar -cf /home/ubuntu/old_manager.network.tar $EXCLUDES \
     ./packages/manager/apps/ips \
     ./packages/manager/apps/iplb \
     ./packages/manager/apps/cloud-connect \
-    $(add_if_exists ./packages/manager/apps/cdn) \
     ./packages/manager/modules/vrack \
-    $(add_if_exists ./packages/manager/modules/iplb) \
+    ./packages/manager/modules/iplb \
+    ./packages/manager/modules/cloud-connect \
+    ./packages/manager/modules/network-common \
     ./ovh-api-services/src/api/vrack \
     ./ovh-api-services/src/api/ip \
-    $(add_if_exists ./ovh-api-services/src/api/cdn) \
-    $(add_if_exists ./ovh-api-services/src/api/cloudConnect)
+    ./ovh-api-services/src/api/cdn \
+    ./ovh-api-services/src/api/ipLoadBalancing
 
 echo "Création old_manager.network.core.tar..."
 tar -cf /home/ubuntu/old_manager.network.core.tar \
-    ./packages/manager/apps/vrack \
+    ./packages/manager/modules/network-common \
     ./packages/manager/modules/vrack \
     ./ovh-api-services/src/api/vrack \
     ./ovh-api-services/src/api/ip
 
 echo "Création old_manager.network.cdn.tar..."
 tar -cf /home/ubuntu/old_manager.network.cdn.tar \
-    $(add_if_exists ./packages/manager/apps/cdn) \
-    $(add_if_exists ./packages/manager/modules/cdn) \
     ./packages/manager/apps/dedicated \
-    $(add_if_exists ./ovh-api-services/src/api/cdn)
+    ./ovh-api-services/src/api/cdn
 
 echo "Création old_manager.network.cloud-connect.tar..."
 tar -cf /home/ubuntu/old_manager.network.cloud-connect.tar \
     ./packages/manager/apps/cloud-connect \
-    $(add_if_exists ./packages/manager/modules/cloud-connect) \
-    $(add_if_exists ./ovh-api-services/src/api/cloudConnect)
+    ./packages/manager/modules/cloud-connect
 
 echo "Création old_manager.network.ip.tar..."
 tar -cf /home/ubuntu/old_manager.network.ip.tar \
     ./packages/manager/apps/ips \
-    $(add_if_exists ./packages/manager/modules/ips) \
     ./ovh-api-services/src/api/ip
 
 echo "Création old_manager.network.load-balancer.tar..."
 tar -cf /home/ubuntu/old_manager.network.load-balancer.tar \
     ./packages/manager/apps/iplb \
-    $(add_if_exists ./packages/manager/modules/iplb) \
-    $(add_if_exists ./ovh-api-services/src/api/ipLoadbalancing)
+    ./packages/manager/modules/iplb \
+    ./ovh-api-services/src/api/ipLoadBalancing
 
 echo "Création old_manager.network.security.tar..."
 tar -cf /home/ubuntu/old_manager.network.security.tar \
@@ -385,7 +368,6 @@ tar -cf /home/ubuntu/old_manager.network.vrack.tar \
 echo "Création old_manager.network.vrack-services.tar..."
 tar -cf /home/ubuntu/old_manager.network.vrack-services.tar \
     ./packages/manager/apps/vrack-services \
-    $(add_if_exists ./packages/manager/modules/vrack-services) \
     ./ovh-api-services/src/api/vrack
 
 # ============================================================
@@ -396,13 +378,13 @@ echo "Création old_manager.private-cloud.tar..."
 tar -cf /home/ubuntu/old_manager.private-cloud.tar $EXCLUDES \
     ./packages/manager/apps/dedicated \
     ./packages/manager/apps/nutanix \
-    $(add_if_exists ./packages/manager/apps/veeam-backup) \
-    $(add_if_exists ./packages/manager/apps/veeam-enterprise) \
-    $(add_if_exists ./packages/manager/apps/hpc-vmware-managed-vcd) \
+    ./packages/manager/apps/veeam-backup \
+    ./packages/manager/apps/veeam-enterprise \
     ./packages/manager/modules/nutanix \
-    $(add_if_exists ./packages/manager/modules/veeam-backup) \
-    $(add_if_exists ./packages/manager/modules/veeam-enterprise) \
-    ./ovh-api-services/src/api/dedicatedCloud
+    ./packages/manager/modules/veeam-enterprise \
+    ./ovh-api-services/src/api/dedicatedCloud \
+    ./ovh-api-services/src/api/veeam \
+    ./ovh-api-services/src/api/veeamEnterprise
 
 echo "Création old_manager.private-cloud.core.tar..."
 tar -cf /home/ubuntu/old_manager.private-cloud.core.tar \
@@ -430,22 +412,23 @@ tar -cf /home/ubuntu/old_manager.private-cloud.nutanix.tar \
 echo "Création old_manager.private-cloud.sap.tar..."
 tar -cf /home/ubuntu/old_manager.private-cloud.sap.tar \
     ./packages/manager/apps/dedicated \
-    $(add_if_exists ./packages/manager/apps/hpc-vmware-managed-vcd) \
+    ./packages/manager/apps/sap-features-hub \
     ./ovh-api-services/src/api/dedicatedCloud
 
 echo "Création old_manager.private-cloud.veeam.tar..."
 tar -cf /home/ubuntu/old_manager.private-cloud.veeam.tar \
-    $(add_if_exists ./packages/manager/apps/veeam-backup) \
-    $(add_if_exists ./packages/manager/apps/veeam-enterprise) \
-    $(add_if_exists ./packages/manager/modules/veeam-backup) \
-    $(add_if_exists ./packages/manager/modules/veeam-enterprise) \
-    ./packages/manager/apps/dedicated \
-    ./ovh-api-services/src/api/dedicatedCloud
+    ./packages/manager/apps/veeam-backup \
+    ./packages/manager/apps/veeam-enterprise \
+    ./packages/manager/modules/veeam-enterprise \
+    ./ovh-api-services/src/api/veeam \
+    ./ovh-api-services/src/api/veeamEnterprise
 
 echo "Création old_manager.private-cloud.vmware.tar..."
 tar -cf /home/ubuntu/old_manager.private-cloud.vmware.tar \
     ./packages/manager/apps/dedicated \
-    $(add_if_exists ./packages/manager/apps/hpc-vmware-managed-vcd) \
+    ./packages/manager/apps/hpc-vmware-vsphere \
+    ./packages/manager/apps/hpc-vmware-public-vcf-aas \
+    ./packages/manager/modules/vcd-api \
     ./ovh-api-services/src/api/dedicatedCloud
 
 # ============================================================
@@ -454,10 +437,12 @@ tar -cf /home/ubuntu/old_manager.private-cloud.vmware.tar \
 
 echo "Création old_manager.public-cloud.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.tar $EXCLUDES \
+    ./packages/manager/apps/pci \
     ./packages/manager/apps/pci-ai-endpoints \
     ./packages/manager/apps/pci-ai-tools \
     ./packages/manager/apps/pci-billing \
     ./packages/manager/apps/pci-block-storage \
+    ./packages/manager/apps/pci-cold-archive \
     ./packages/manager/apps/pci-databases-analytics \
     ./packages/manager/apps/pci-gateway \
     ./packages/manager/apps/pci-instances \
@@ -468,26 +453,26 @@ tar -cf /home/ubuntu/old_manager.public-cloud.tar $EXCLUDES \
     ./packages/manager/apps/pci-private-registry \
     ./packages/manager/apps/pci-public-ip \
     ./packages/manager/apps/pci-quota \
+    ./packages/manager/apps/pci-rancher \
     ./packages/manager/apps/pci-ssh-keys \
     ./packages/manager/apps/pci-users \
-    ./packages/manager/apps/pci-vouchers \
     ./packages/manager/apps/pci-volume-backup \
     ./packages/manager/apps/pci-volume-snapshot \
-    $(add_if_exists ./packages/manager/apps/pci-rancher) \
+    ./packages/manager/apps/pci-vouchers \
+    ./packages/manager/apps/public-cloud \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
-    ./ovh-api-services/src/api/cloud
+    ./packages/manager/modules/pci \
+    ./ovh-api-services/src/api/cloud \
+    ./ovh-api-services/src/api/kube
 
 echo "Création old_manager.public-cloud.core.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.core.tar \
     ./packages/manager/apps/pci \
-    $(add_if_exists ./packages/manager/apps/pci-billing) \
-    $(add_if_exists ./packages/manager/apps/pci-quota) \
-    $(add_if_exists ./packages/manager/apps/pci-users) \
-    $(add_if_exists ./packages/manager/apps/pci-vouchers) \
-    $(add_if_exists ./packages/manager/apps/pci-rancher) \
+    ./packages/manager/apps/public-cloud \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
+    ./packages/manager/modules/pci \
     ./ovh-api-services/src/api/cloud
 
 echo "Création old_manager.public-cloud.ai.tar..."
@@ -510,6 +495,7 @@ tar -cf /home/ubuntu/old_manager.public-cloud.block-storage.tar \
 echo "Création old_manager.public-cloud.databases.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.databases.tar \
     ./packages/manager/apps/pci-databases-analytics \
+    ./packages/manager/apps/pci-dataplatform \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
     ./ovh-api-services/src/api/cloud
@@ -518,6 +504,7 @@ echo "Création old_manager.public-cloud.instances.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.instances.tar \
     ./packages/manager/apps/pci-instances \
     ./packages/manager/apps/pci-ssh-keys \
+    ./packages/manager/apps/pci-users \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
     ./ovh-api-services/src/api/cloud
@@ -525,13 +512,16 @@ tar -cf /home/ubuntu/old_manager.public-cloud.instances.tar \
 echo "Création old_manager.public-cloud.kubernetes.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.kubernetes.tar \
     ./packages/manager/apps/pci-kubernetes \
+    ./packages/manager/apps/pci-rancher \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
-    ./ovh-api-services/src/api/cloud
+    ./ovh-api-services/src/api/cloud \
+    ./ovh-api-services/src/api/kube
 
 echo "Création old_manager.public-cloud.load-balancer.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.load-balancer.tar \
     ./packages/manager/apps/pci-load-balancer \
+    ./packages/manager/apps/pci-gateway \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
     ./ovh-api-services/src/api/cloud
@@ -539,7 +529,7 @@ tar -cf /home/ubuntu/old_manager.public-cloud.load-balancer.tar \
 echo "Création old_manager.public-cloud.object-storage.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.object-storage.tar \
     ./packages/manager/apps/pci-object-storage \
-    $(add_if_exists ./packages/manager/apps/pci-cold-archive) \
+    ./packages/manager/apps/pci-cold-archive \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
     ./ovh-api-services/src/api/cloud
@@ -547,11 +537,12 @@ tar -cf /home/ubuntu/old_manager.public-cloud.object-storage.tar \
 echo "Création old_manager.public-cloud.project.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.project.tar \
     ./packages/manager/apps/pci \
-    $(add_if_exists ./packages/manager/apps/pci-billing) \
-    $(add_if_exists ./packages/manager/apps/pci-quota) \
-    $(add_if_exists ./packages/manager/apps/pci-users) \
-    $(add_if_exists ./packages/manager/apps/pci-vouchers) \
-    $(add_if_exists ./packages/manager/apps/pci-rancher) \
+    ./packages/manager/apps/pci-billing \
+    ./packages/manager/apps/pci-quota \
+    ./packages/manager/apps/pci-users \
+    ./packages/manager/apps/pci-vouchers \
+    ./packages/manager/apps/pci-contacts \
+    ./packages/manager/apps/pci-savings-plan \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
     ./ovh-api-services/src/api/cloud
@@ -559,6 +550,7 @@ tar -cf /home/ubuntu/old_manager.public-cloud.project.tar \
 echo "Création old_manager.public-cloud.registry.tar..."
 tar -cf /home/ubuntu/old_manager.public-cloud.registry.tar \
     ./packages/manager/apps/pci-private-registry \
+    ./packages/manager/apps/pci-workflow \
     ./packages/manager/modules/pci-universe-components \
     ./packages/manager/modules/manager-pci-common \
     ./ovh-api-services/src/api/cloud
@@ -573,24 +565,40 @@ tar -cf /home/ubuntu/old_manager.web-cloud.tar $EXCLUDES \
     ./packages/manager/apps/web-domains \
     ./packages/manager/apps/web-hosting \
     ./packages/manager/apps/web-office \
-    $(add_if_exists ./packages/manager/apps/web-ongoing-operations) \
+    ./packages/manager/apps/web-ongoing-operations \
     ./packages/manager/apps/email-domain \
     ./packages/manager/apps/email-pro \
     ./packages/manager/apps/exchange \
     ./packages/manager/apps/zimbra \
     ./packages/manager/apps/telecom \
-    $(add_if_exists ./packages/manager/apps/telecom-dashboard) \
+    ./packages/manager/apps/telecom-dashboard \
+    ./packages/manager/apps/telecom-task \
     ./packages/manager/apps/overthebox \
     ./packages/manager/apps/sms \
     ./packages/manager/apps/freefax \
     ./packages/manager/apps/carrier-sip \
     ./packages/manager/modules/web-universe-components \
     ./packages/manager/modules/telecom-universe-components \
+    ./packages/manager/modules/sms \
+    ./packages/manager/modules/email-domain \
+    ./packages/manager/modules/emailpro \
+    ./packages/manager/modules/exchange \
+    ./packages/manager/modules/overthebox \
+    ./packages/manager/modules/freefax \
+    ./packages/manager/modules/carrier-sip \
+    ./packages/manager/modules/telecom-dashboard \
+    ./packages/manager/modules/telecom-styles \
+    ./packages/manager/modules/telecom-task \
+    ./packages/components/ng-ovh-line-diagnostics \
     ./ovh-api-services/src/api/domain \
     ./ovh-api-services/src/api/hosting \
     ./ovh-api-services/src/api/email \
     ./ovh-api-services/src/api/telephony \
-    ./ovh-api-services/src/api/sms
+    ./ovh-api-services/src/api/sms \
+    ./ovh-api-services/src/api/freeFax \
+    ./ovh-api-services/src/api/pack \
+    ./ovh-api-services/src/api/xdsl \
+    ./ovh-api-services/src/api/overTheBox
 
 echo "Création old_manager.web-cloud.core.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.core.tar \
@@ -599,17 +607,24 @@ tar -cf /home/ubuntu/old_manager.web-cloud.core.tar \
     ./ovh-api-services/src/api/domain \
     ./ovh-api-services/src/api/hosting
 
+# --- ACCESS ---
+
 echo "Création old_manager.web-cloud.access.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.access.tar \
     ./packages/manager/apps/telecom \
+    ./packages/manager/apps/overthebox \
     ./packages/manager/modules/telecom-universe-components \
+    ./packages/manager/modules/overthebox \
+    ./packages/components/ng-ovh-line-diagnostics \
     ./ovh-api-services/src/api/pack \
-    ./ovh-api-services/src/api/xdsl
+    ./ovh-api-services/src/api/xdsl \
+    ./ovh-api-services/src/api/overTheBox \
+    ./ovh-api-services/src/api/connectivity
 
 echo "Création old_manager.web-cloud.access.overthebox.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.access.overthebox.tar \
     ./packages/manager/apps/overthebox \
-    $(add_if_exists ./packages/manager/modules/overthebox) \
+    ./packages/manager/modules/overthebox \
     ./packages/manager/modules/telecom-universe-components \
     ./ovh-api-services/src/api/overTheBox
 
@@ -617,18 +632,22 @@ echo "Création old_manager.web-cloud.access.pack-xdsl.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.access.pack-xdsl.tar \
     ./packages/manager/apps/telecom \
     ./packages/manager/modules/telecom-universe-components \
+    ./packages/components/ng-ovh-line-diagnostics \
     ./ovh-api-services/src/api/pack \
     ./ovh-api-services/src/api/xdsl \
-    $(add_if_exists ./ovh-api-services/src/api/connectivity)
+    ./ovh-api-services/src/api/connectivity
+
+# --- DOMAINS ---
 
 echo "Création old_manager.web-cloud.domains.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.domains.tar \
     ./packages/manager/apps/web/client/app/domain \
     ./packages/manager/apps/web/client/app/domains \
-    $(add_if_exists ./packages/manager/apps/web/client/app/domain-operation) \
+    ./packages/manager/apps/web/client/app/domain-operation \
     ./packages/manager/apps/web/client/app/dns-zone \
     ./packages/manager/apps/web/client/app/components \
-    $(add_if_exists ./packages/manager/apps/web-ongoing-operations) \
+    ./packages/manager/apps/web-domains \
+    ./packages/manager/apps/web-ongoing-operations \
     ./packages/manager/modules/web-universe-components \
     ./ovh-api-services/src/api/domain
 
@@ -639,46 +658,61 @@ tar -cf /home/ubuntu/old_manager.web-cloud.domains.alldom.tar \
     ./packages/manager/modules/web-universe-components \
     ./ovh-api-services/src/api/domain
 
+# --- EMAILS ---
+
 echo "Création old_manager.web-cloud.emails.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.tar \
-    ./packages/manager/apps/web \
+    ./packages/manager/apps/email-domain \
+    ./packages/manager/apps/email-pro \
+    ./packages/manager/apps/exchange \
+    ./packages/manager/apps/web-office \
+    ./packages/manager/apps/zimbra \
+    ./packages/manager/modules/email-domain \
+    ./packages/manager/modules/emailpro \
+    ./packages/manager/modules/exchange \
     ./packages/manager/modules/web-universe-components \
     ./ovh-api-services/src/api/email
 
 echo "Création old_manager.web-cloud.emails.email-domain.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.email-domain.tar \
     ./packages/manager/apps/email-domain \
-    $(add_if_exists ./packages/manager/modules/email-domain) \
+    ./packages/manager/modules/email-domain \
     ./packages/manager/modules/web-universe-components \
-    $(add_if_exists ./ovh-api-services/src/api/email/domain)
+    ./ovh-api-services/src/api/email/domain
 
 echo "Création old_manager.web-cloud.emails.email-pro.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.email-pro.tar \
     ./packages/manager/apps/email-pro \
-    $(add_if_exists ./packages/manager/modules/emailpro) \
+    ./packages/manager/modules/emailpro \
     ./packages/manager/modules/web-universe-components \
     ./ovh-api-services/src/api/email
 
 echo "Création old_manager.web-cloud.emails.exchange.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.exchange.tar \
     ./packages/manager/apps/exchange \
-    $(add_if_exists ./packages/manager/modules/exchange) \
+    ./packages/manager/modules/exchange \
     ./packages/manager/modules/web-universe-components \
-    $(add_if_exists ./ovh-api-services/src/api/email/exchange)
+    ./ovh-api-services/src/api/email/exchange
 
 echo "Création old_manager.web-cloud.emails.office.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.office.tar \
     ./packages/manager/apps/web-office \
-    ./packages/manager/modules/web-universe-components
+    ./packages/manager/modules/web-universe-components \
+    ./ovh-api-services/src/api/msServices
 
 echo "Création old_manager.web-cloud.emails.zimbra.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.emails.zimbra.tar \
     ./packages/manager/apps/zimbra \
-    ./packages/manager/modules/web-universe-components
+    ./packages/manager/modules/web-universe-components \
+    ./ovh-api-services/src/api/email
+
+# --- HEBERGEMENT ---
 
 echo "Création old_manager.web-cloud.hebergement.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.hebergement.tar \
     ./packages/manager/apps/web-hosting \
+    ./packages/manager/apps/web/client/app/hosting \
+    ./packages/manager/apps/web/client/app/private-database \
     ./packages/manager/modules/web-universe-components \
     ./ovh-api-services/src/api/hosting
 
@@ -703,42 +737,49 @@ tar -cf /home/ubuntu/old_manager.web-cloud.hebergement.private-database.tar \
     ./packages/manager/modules/web-universe-components \
     ./ovh-api-services/src/api/hosting/privateDatabase
 
+# --- TELECOM ---
+
 echo "Création old_manager.web-cloud.telecom.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.tar \
     ./packages/manager/apps/telecom \
-    $(add_if_exists ./packages/manager/apps/telecom-dashboard) \
-    $(add_if_exists ./packages/manager/modules/telecom-dashboard) \
-    $(add_if_exists ./packages/manager/modules/telecom-styles) \
+    ./packages/manager/apps/telecom-dashboard \
+    ./packages/manager/apps/telecom-task \
+    ./packages/manager/apps/sms \
+    ./packages/manager/apps/freefax \
+    ./packages/manager/apps/carrier-sip \
     ./packages/manager/modules/telecom-universe-components \
-    $(add_if_exists ./packages/manager/modules/telecom-task) \
-    $(add_if_exists ./packages/manager/apps/telecom-task) \
-    ./ovh-api-services/src/api/telephony
+    ./packages/manager/modules/telecom-dashboard \
+    ./packages/manager/modules/telecom-styles \
+    ./packages/manager/modules/telecom-task \
+    ./packages/manager/modules/sms \
+    ./packages/manager/modules/freefax \
+    ./packages/manager/modules/carrier-sip \
+    ./packages/components/ng-ovh-line-diagnostics \
+    ./ovh-api-services/src/api/telephony \
+    ./ovh-api-services/src/api/sms \
+    ./ovh-api-services/src/api/freeFax
 
 echo "Création old_manager.web-cloud.telecom.carrier-sip.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.carrier-sip.tar \
     ./packages/manager/apps/carrier-sip \
-    $(add_if_exists ./packages/manager/modules/carrier-sip) \
+    ./packages/manager/modules/carrier-sip \
     ./packages/manager/modules/telecom-universe-components \
-    $(add_if_exists ./ovh-api-services/src/api/telephony/carrierSip)
+    ./ovh-api-services/src/api/telephony/carrierSip
 
 echo "Création old_manager.web-cloud.telecom.fax.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.fax.tar \
     ./packages/manager/apps/freefax \
-    $(add_if_exists ./packages/manager/modules/freefax) \
-    $(add_if_exists ./packages/manager/apps/telecom/src/app/telecom/telephony/fax) \
-    $(add_if_exists ./packages/manager/apps/telecom/src/app/telecom/telephony/service/fax) \
-    $(add_if_exists ./packages/manager/apps/telecom/src/app/telecom/telephony/line/fax) \
-    $(add_if_exists ./packages/manager/apps/telecom/src/components/telecom/telephony/group/fax) \
-    $(add_if_exists ./packages/manager/apps/telecom/src/app/telecom/pack/slots/voipEcoFax) \
-    $(add_if_exists ./packages/manager/apps/telecom/src/app/telecom/telephony/billingAccount/convertToVoicefax) \
+    ./packages/manager/apps/telecom \
+    ./packages/manager/modules/freefax \
     ./packages/manager/modules/telecom-universe-components \
-    $(add_if_exists ./ovh-api-services/src/api/freeFax) \
-    $(add_if_exists ./ovh-api-services/src/api/telephony/fax)
+    ./packages/components/ng-ovh-line-diagnostics \
+    ./ovh-api-services/src/api/freeFax \
+    ./ovh-api-services/src/api/telephony/fax
 
 echo "Création old_manager.web-cloud.telecom.sms.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.sms.tar \
     ./packages/manager/apps/sms \
-    $(add_if_exists ./packages/manager/modules/sms) \
+    ./packages/manager/modules/sms \
     ./packages/manager/modules/telecom-universe-components \
     ./ovh-api-services/src/api/sms
 
@@ -746,6 +787,7 @@ echo "Création old_manager.web-cloud.telecom.voip.tar..."
 tar -cf /home/ubuntu/old_manager.web-cloud.telecom.voip.tar \
     ./packages/manager/apps/telecom \
     ./packages/manager/modules/telecom-universe-components \
+    ./packages/components/ng-ovh-line-diagnostics \
     ./ovh-api-services/src/api/telephony
 
 # ============================================================
@@ -754,5 +796,5 @@ tar -cf /home/ubuntu/old_manager.web-cloud.telecom.voip.tar \
 
 echo ""
 echo "=== Tars old_manager créés ==="
-ls -lh /home/ubuntu/old_manager.*.tar | wc -l
+ls -1 /home/ubuntu/old_manager.*.tar | wc -l
 ls -lh /home/ubuntu/old_manager.*.tar

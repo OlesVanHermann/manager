@@ -1,0 +1,158 @@
+# CAHIER DES CHARGES - Composant TimeCondition Condition Edit
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/condition/edit/
+
+## 1. IDENTIFICATION
+- Composant: voipTimeConditionConditionCtrl
+- Type: Controller AngularJS (popover)
+- Fichier source: edit.controller.js, edit.html
+- Usage: Modal d'édition d'une condition temporelle (plage horaire)
+
+## 2. DESCRIPTION FONCTIONNELLE
+Popover à 2 pages permettant de créer/modifier une plage horaire :
+- Page 1 : Configuration (jour, répéteur, politique, heures)
+- Page 2 : Sélection (jours à répéter, politique, confirmation suppression)
+
+## 3. STRUCTURE DU POPOVER - PAGE 1
+[Header] "Ajouter une plage horaire" / "Modifier une plage horaire"
+
+[Section]
+  [Label] Jour de la semaine
+  [Valeur] Lundi / Mardi / ...
+
+  [Bouton] Répéter -> [Page 2: repeater]
+  [Valeur] "Tous les jours de la semaine" / "Tout le week-end" / etc.
+
+  [Bouton] Rediriger les appels vers -> [Page 2: policy]
+  [Composant voip-time-condition-slot] Affiche le slot actif
+
+  [Label] Plage horaire
+  [oui-timepicker] De: HH:MM
+  [oui-timepicker] à: HH:MM
+
+  [Alert Danger si overlap] "Cette plage horaire est en conflit avec une autre !"
+
+[Footer]
+  [Bouton Primary] Ajouter / Modifier
+  [Bouton Secondary] Supprimer (si édition)
+  [Bouton Secondary] Annuler
+
+## 4. STRUCTURE DU POPOVER - PAGE 2
+
+[Header] [Retour] Répéter / Rediriger les appels vers / Suppression
+
+[Si rightPage === 'repeater']
+  [Checkbox] Tous les lundis
+  [Checkbox] Tous les mardis
+  [Checkbox] Tous les mercredis
+  [Checkbox] Tous les jeudis
+  [Checkbox] Tous les vendredis
+  ----------------------------
+  [Checkbox] Tous les samedis
+  [Checkbox] Tous les dimanches
+  ----------------------------
+  [Checkbox] Seulement les jours de la semaine
+  [Checkbox] Seulement les week-ends
+
+[Si rightPage === 'policy']
+  [Radio Group] Pour chaque slot (sauf unavailable)
+    ( ) [voip-time-condition-slot] Horaires d'ouverture
+    ( ) [voip-time-condition-slot] Créneau 1
+    ( ) [voip-time-condition-slot] Créneau 2
+    ( ) [voip-time-condition-slot] Créneau 3
+
+[Si rightPage === 'delete']
+  [Texte] "Êtes-vous certain de vouloir supprimer cette plage horaire ?"
+  [Bouton Primary] Confirmer
+  [Bouton Secondary] Annuler
+
+## 5. CONTROLLER - PROPRIÉTÉS
+self.loading = { init: false }
+self.popoverStatus = { move: false, rightPage: null }
+self.model = { timeFrom: null, timeTo: null }
+self.repeatToDays = []  // Jours sélectionnés pour répétition
+self.repeaterChoices = [
+  { name: 'monday', id: 0, active: false },
+  { name: 'tuesday', id: 1, active: false },
+  { name: 'wednesday', id: 2, active: false },
+  { name: 'thursday', id: 3, active: false },
+  { name: 'friday', id: 4, active: false },
+  { name: 'saturday', id: 5, active: false },
+  { name: 'sunday', id: 6, active: false },
+  { name: 'weekDays', id: 7, active: false },
+  { name: 'weekendDays', id: 8, active: false }
+]
+self.timeCondition = null  // Instance parent
+self.condition = null      // Condition en édition
+self.fcEvent = null        // Événement FullCalendar
+self.activeSlot = null     // Slot actif selon policy
+self.overlapDetected = false
+
+## 6. CONTROLLER - MÉTHODES
+| Méthode | Description |
+|---------|-------------|
+| isConditionValid() | Vérifie pas de chevauchement avec autres conditions |
+| onRepeaterBtnClick() | Ouvre la page de répétition |
+| updateRepeaterChoices(active, day) | Met à jour les jours sélectionnés |
+| moveBackward() | Retour à la page 1, calcule le label de répétition |
+| onPolicyBtnClick() | Ouvre la page de sélection de politique |
+| onSlotTypeChange() | Change la politique et le slot actif |
+| onTimeFromChange(value) | Met à jour l'heure de début |
+| onTimeToChange(value) | Met à jour l'heure de fin |
+| onDeleteConfirmBtnClick() | Confirme la suppression |
+| onValidateBtnClick() | Valide la condition + répétitions |
+| onCancelBtnClick() | Annule et ferme |
+| onDeleteBtnClick() | Ouvre la page de confirmation |
+
+## 7. LOGIQUE DE CHEVAUCHEMENT
+Pour chaque condition du même jour (sauf celle en édition) :
+- Vérifie si timeFrom est entre condition.from et condition.to
+- Vérifie si timeTo est entre condition.from et condition.to
+- Ignore les conditions en état TO_DELETE
+- Si chevauchement détecté: overlapDetected = true, validation bloquée
+
+## 8. LOGIQUE DE RÉPÉTITION
+Quand l'utilisateur valide avec des jours répétés :
+1. La condition actuelle est sauvegardée pour son jour
+2. Pour chaque jour coché (sauf le jour actuel) :
+   - Clone de la condition
+   - Modification du weekDay
+   - État = 'TO_CREATE'
+3. Callback vers le parent pour rafraîchir le calendrier
+
+## 9. TRADUCTIONS FR
+voip_time_condition_condition_add_popover_title = "Ajouter une plage horaire"
+voip_time_condition_condition_edit_popover_title = "Modifier une plage horaire"
+voip_time_condition_condition_popover_days = "Jour de la semaine"
+voip_time_condition_condition_popover_days_monday = "Lundi"
+voip_time_condition_condition_popover_days_tuesday = "Mardi"
+voip_time_condition_condition_popover_days_wednesday = "Mercredi"
+voip_time_condition_condition_popover_days_thursday = "Jeudi"
+voip_time_condition_condition_popover_days_friday = "Vendredi"
+voip_time_condition_condition_popover_days_saturday = "Samedi"
+voip_time_condition_condition_popover_days_sunday = "Dimanche"
+voip_time_condition_condition_popover_repeater = "Répéter"
+voip_time_condition_condition_popover_days_repeat_monday = "Tous les lundis"
+voip_time_condition_condition_popover_days_repeat_tuesday = "Tous les mardis"
+voip_time_condition_condition_popover_days_repeat_wednesday = "Tous les mercredis"
+voip_time_condition_condition_popover_days_repeat_thursday = "Tous les jeudis"
+voip_time_condition_condition_popover_days_repeat_friday = "Tous les vendredis"
+voip_time_condition_condition_popover_days_repeat_saturday = "Tous les samedis"
+voip_time_condition_condition_popover_days_repeat_sunday = "Tous les dimanches"
+voip_time_condition_condition_popover_days_repeat_weekDays = "Seulement les jours de la semaine"
+voip_time_condition_condition_popover_days_repeat_weekendDays = "Seulement les week-ends"
+voip_time_condition_condition_popover_days_repeat_weekDays_label = "Tous les jours de la semaine"
+voip_time_condition_condition_popover_days_repeat_weekendDays_label = "Tout le week-end"
+voip_time_condition_condition_popover_days_repeat_allDays_label = "Tous les jours"
+voip_time_condition_condition_popover_policy = "Rediriger les appels vers"
+voip_time_condition_condition_popover_time_slot = "Plage horaire"
+voip_time_condition_condition_popover_time_slot_from = "De"
+voip_time_condition_condition_popover_time_slot_to = "à"
+voip_time_condition_condition_popover_time_slot_overlap = "Cette plage horaire est en conflit avec une autre !"
+voip_time_condition_condition_popover_delete = "Suppression"
+voip_time_condition_condition_popover_delete_confirm = "Êtes-vous certain de vouloir supprimer cette plage horaire ?"
+
+## 10. DÉPENDANCES
+- moment.js
+- oui-timepicker, oui-checkbox, oui-button (ODS)
+- voip-time-condition-slot (composant)

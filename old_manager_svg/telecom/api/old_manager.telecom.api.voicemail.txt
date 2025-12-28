@@ -1,0 +1,90 @@
+================================================================================
+SERVICE API : OvhApiTelephonyVoicemail
+================================================================================
+NAV1: telecom
+NAV2: api
+TYPE: Service API ($resource)
+SOURCE: ovh-api-services/src/api/telephony/voicemail/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Service AngularJS pour la gestion des messageries vocales (voicemail).
+Permet de configurer les paramètres, mots de passe et messages d'accueil.
+
+================================================================================
+2. ENDPOINTS
+================================================================================
+Base : /telephony/{billingAccount}/voicemail/{serviceName}
+
+| Méthode | Endpoint                           | Description                  |
+|---------|-----------------------------------|------------------------------|
+| GET     | /                                 | Détails du voicemail         |
+| GET     | / (batch)                         | Liste batch                  |
+| GET     | /settings                         | Paramètres actuels           |
+| PUT     | /settings                         | Modifier les paramètres      |
+| POST    | /settings/changePassword          | Changer le mot de passe      |
+| GET     | /settings/routing                 | Options de routage           |
+| PUT     | /settings/routing                 | Modifier le routage          |
+
+================================================================================
+3. SOUS-RESSOURCES
+================================================================================
+Directories (/directories) :
+- GET    : Liste des messages
+- GET    /{id} : Détail d'un message
+- DELETE /{id} : Supprimer un message
+- POST   /{id}/download : Télécharger
+
+Greetings (/greetings) :
+- GET    : Liste des annonces
+- POST   : Créer une annonce
+- GET    /{id} : Détail d'une annonce
+- DELETE /{id} : Supprimer une annonce
+- POST   /{id}/download : Télécharger
+
+================================================================================
+4. PARAMETRES SETTINGS
+================================================================================
+{
+  annouceMessage: string,      // Message d'annonce
+  audioFormat: 'wav'|'mp3',    // Format audio
+  doNotRecord: boolean,        // Ne pas enregistrer
+  forcePassword: boolean,      // Forcer mot de passe
+  fromEmail: string,           // Email expéditeur
+  fromEmailOnNewMessage: boolean,
+  keepMessage: boolean,        // Conserver les messages
+  redirectionEmails: string[], // Emails de redirection
+  transcription: boolean       // Transcription vocale
+}
+
+================================================================================
+5. CACHE
+================================================================================
+- OvhApiTelephonyVoicemailV6 : Cache des requêtes GET
+- OvhApiTelephonyVoicemailV6Query : Cache des listes
+- Invalidation automatique sur PUT/POST/DELETE
+
+================================================================================
+6. EXEMPLE REACT QUERY
+================================================================================
+const useVoicemailSettings = (billingAccount: string, serviceName: string) => {
+  return useQuery({
+    queryKey: ['voicemail', billingAccount, serviceName, 'settings'],
+    queryFn: () => api.get(
+      `/telephony/${billingAccount}/voicemail/${serviceName}/settings`
+    )
+  });
+};
+
+const useUpdateVoicemailSettings = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ billingAccount, serviceName, settings }) =>
+      api.put(
+        `/telephony/${billingAccount}/voicemail/${serviceName}/settings`,
+        settings
+      ),
+    onSuccess: () => queryClient.invalidateQueries(['voicemail'])
+  });
+};

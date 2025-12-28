@@ -1,0 +1,112 @@
+================================================================================
+SERVICE API : OvhApiSms
+================================================================================
+NAV1: telecom
+NAV2: api
+TYPE: Service API ($resource)
+SOURCE: ovh-api-services/src/api/sms/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Service AngularJS pour la gestion des comptes SMS OVH.
+Permet d'envoyer des SMS, gérer les contacts, blacklists, et expéditeurs.
+
+================================================================================
+2. ENDPOINTS PRINCIPAUX
+================================================================================
+Base : /sms/{serviceName}
+
+| Méthode | Endpoint           | Description                        |
+|---------|--------------------|-----------------------------------|
+| GET     | /                  | Liste des comptes SMS             |
+| GET     | /{serviceName}     | Détails d'un compte               |
+| PUT     | /{serviceName}     | Modifier un compte                |
+| GET     | /seeOffers         | Voir les offres disponibles       |
+| GET     | /document          | Télécharger un document           |
+
+================================================================================
+3. SOUS-SERVICES
+================================================================================
+Jobs (/jobs) - Envoi de SMS :
+- POST   : Envoyer un SMS
+- GET    : Liste des envois
+- GET    /{id} : Détail d'un envoi
+
+Outgoing (/outgoing) - SMS sortants :
+- GET    : Historique des SMS envoyés
+- GET    /{id} : Détail d'un SMS
+- DELETE /{id} : Supprimer de l'historique
+
+Incoming (/incoming) - SMS reçus :
+- GET    : Liste des SMS reçus
+- GET    /{id} : Détail d'un SMS
+- DELETE /{id} : Supprimer
+
+Senders (/senders) - Expéditeurs :
+- GET    : Liste des expéditeurs
+- POST   : Créer un expéditeur
+- DELETE /{sender} : Supprimer
+- POST   /{sender}/validate : Valider
+
+Receivers (/receivers) - Listes de contacts :
+- GET    : Listes de diffusion
+- POST   : Créer une liste
+- GET    /{slotId} : Détail
+- PUT    /{slotId} : Modifier
+- DELETE /{slotId} : Supprimer
+- GET    /{slotId}/csv : Export CSV
+
+Blacklists (/blacklists) :
+- GET    : Liste des numéros bloqués
+- POST   : Ajouter un numéro
+- DELETE /{number} : Supprimer
+
+================================================================================
+4. STRUCTURE ENVOI SMS (jobs)
+================================================================================
+{
+  message: string,              // Contenu du message
+  receivers: string[],          // Liste des destinataires
+  sender: string,               // Expéditeur
+  senderForResponse: boolean,   // Permettre réponse
+  noStopClause: boolean,        // Sans mention STOP
+  priority: 'high'|'medium'|'low',
+  validityPeriod: number,       // Durée de validité (minutes)
+  coding: '7bit'|'8bit',
+  differedPeriod: number,       // Envoi différé (minutes)
+  tag: string                   // Tag de suivi
+}
+
+================================================================================
+5. CACHE
+================================================================================
+- OvhApiSmsV6 : Cache des requêtes GET
+- OvhApiSmsV6Query : Cache des listes
+- Invalidation sur PUT/POST/DELETE
+
+================================================================================
+6. EXEMPLE REACT QUERY
+================================================================================
+// Envoyer un SMS
+const useSendSms = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ serviceName, message, receivers, sender }) =>
+      api.post(`/sms/${serviceName}/jobs`, {
+        message,
+        receivers,
+        sender,
+        noStopClause: false
+      }),
+    onSuccess: () => queryClient.invalidateQueries(['sms', 'jobs'])
+  });
+};
+
+// Historique des SMS
+const useSmsHistory = (serviceName: string) => {
+  return useQuery({
+    queryKey: ['sms', serviceName, 'outgoing'],
+    queryFn: () => api.get(`/sms/${serviceName}/outgoing`)
+  });
+};

@@ -1,0 +1,89 @@
+================================================================================
+COMPOSANT : ip-address (ipAddress)
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Service utilitaire
+SOURCE: packages/manager/modules/telecom-universe-components/src/ipAddress/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Service utilitaire pour la validation et la manipulation d'adresses IP.
+Supporte IPv4 et IPv6 avec notation CIDR.
+
+Cas d'usage :
+- Validation de configuration réseau
+- Configuration de règles ACL
+- Paramétrage SIP trunk
+
+================================================================================
+2. METHODES DISPONIBLES
+================================================================================
+| Méthode           | Description                                      |
+|-------------------|--------------------------------------------------|
+| isValidIpv4(ip)   | Vérifie si l'IP est une IPv4 valide              |
+| isValidIpv6(ip)   | Vérifie si l'IP est une IPv6 valide              |
+| isValidIp(ip)     | Vérifie si l'IP est valide (v4 ou v6)            |
+| isValidCidr(cidr) | Vérifie si la notation CIDR est valide           |
+| expandIpv6(ip)    | Étend une IPv6 abrégée en forme complète         |
+| compressIpv6(ip)  | Compresse une IPv6 en forme abrégée              |
+
+================================================================================
+3. FORMATS SUPPORTES
+================================================================================
+IPv4 :
+- 192.168.1.1
+- 10.0.0.0/8
+
+IPv6 :
+- 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+- 2001:db8:85a3::8a2e:370:7334 (abrégé)
+- ::1 (loopback)
+- 2001:db8::/32 (CIDR)
+
+================================================================================
+4. REGEX DE VALIDATION
+================================================================================
+IPv4 :
+/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+
+IPv6 :
+/^(?:[A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}$|^::(?:[A-Fa-f0-9]{1,4}:){0,5}[A-Fa-f0-9]{1,4}$/
+
+CIDR IPv4 :
+/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$/
+
+================================================================================
+5. EXEMPLE D'UTILISATION ANGULARJS
+================================================================================
+angular.module('app').controller('MyCtrl', function(TucIpAddress) {
+  this.validateEndpoint = function(ip) {
+    if (!TucIpAddress.isValidIp(ip)) {
+      throw new Error('Adresse IP invalide');
+    }
+  };
+});
+
+================================================================================
+6. EXEMPLE D'INTEGRATION REACT
+================================================================================
+// Utiliser une librairie comme ip-address ou ipaddr.js
+import { Address4, Address6 } from 'ip-address';
+
+function isValidIp(ip: string): boolean {
+  try {
+    new Address4(ip);
+    return true;
+  } catch {
+    try {
+      new Address6(ip);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+// Ou validation simple avec regex
+const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;

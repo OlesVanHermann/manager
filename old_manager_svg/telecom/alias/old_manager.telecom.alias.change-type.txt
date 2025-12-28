@@ -1,0 +1,113 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.alias.change-type
+================================================================================
+Page : Changement de type de configuration d'un numero alias
+NAV1 : telecom
+NAV2 : alias
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+Permet de modifier le type de configuration d'un numero alias telephonique.
+Deux modes disponibles : Simple (redirect, CCS, cloudIvr, conference) et
+Expert (svi, CCS Expert). Le changement de type entraine la perte de la
+configuration actuelle.
+
+Utilisateurs cibles : Administrateurs telephonie VoIP
+Impact : Perte configuration actuelle si changement de type
+
+--------------------------------------------------------------------------------
+## 2. ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Fichiers sources :
+- Controller : alias/changeType/change-type.controller.js (305 lignes)
+- Template : alias/changeType/change-type.html
+- Routing : alias/changeType/change-type.routing.js
+- Modal confirmation : alias/changeType/confirm/
+
+Dependances :
+- OvhApiTelephony.Number() : API numeros
+- tucVoipServiceAlias : Service alias
+- tucTelephonyBulk : Actions groupees
+
+--------------------------------------------------------------------------------
+## 3. PAGES & NAVIGATION
+--------------------------------------------------------------------------------
+
+Route : telecom.telephony.billingAccount.alias.configuration.changeType
+URL : /telecom/telephony/{billingAccount}/alias/{serviceName}/configuration/changeType
+Params :
+  - billingAccount : Identifiant groupe facturation
+  - serviceName : Numero alias
+
+Breadcrumb : Telecom > Telephonie > [Groupe] > [Alias] > Configuration > Type
+
+--------------------------------------------------------------------------------
+## 4. COMPOSANTS UI
+--------------------------------------------------------------------------------
+
+Section Mode Simple :
+- Radio buttons : redirect, contactCenterSolution, cloudIvr, conference
+- Description de chaque option
+
+Section Mode Expert :
+- Radio buttons : svi, contactCenterSolutionExpert
+- Description de chaque option
+
+Modal confirmation :
+- Declenchee si featureType actuel != "empty"
+- Avertissement perte configuration
+- Boutons : Annuler / Confirmer
+
+Bouton validation :
+- Desactive si meme type selectionne
+- Action bulk disponible
+
+--------------------------------------------------------------------------------
+## 5. APIs & DONNEES
+--------------------------------------------------------------------------------
+
+### API Lecture
+
+GET /telephony/{billingAccount}/number/{serviceName}
+  -> Recupere featureType actuel
+
+### API Ecriture
+
+POST /telephony/{billingAccount}/number/{serviceName}/changeFeatureType
+  Body : { featureType: "redirect|contactCenterSolution|cloudIvr|conference|svi|contactCenterSolutionExpert" }
+
+--------------------------------------------------------------------------------
+## 6. TRADUCTIONS (FR)
+--------------------------------------------------------------------------------
+
+telephony_alias_change_type_title : "Configuration du numero"
+telephony_alias_change_type_ok : "Fonctionnalite changee avec succes"
+telephony_alias_config_change_type_confirm_title : "Confirmation"
+telephony_alias_config_change_type_confirm_text : "En changeant de type de configuration, vous perdrez la totalite de votre configuration actuelle"
+
+--------------------------------------------------------------------------------
+## 7. REGLES METIER
+--------------------------------------------------------------------------------
+
+Options simples :
+- redirect : Redirection simple
+- contactCenterSolution : Centre de contact
+- cloudIvr : Serveur vocal interactif cloud
+- conference : Conference telephonique
+
+Options expert :
+- svi : Serveur vocal interactif avance
+- contactCenterSolutionExpert : CCS mode expert
+
+Validation :
+- Nouveau type != type actuel
+- Modal confirmation si featureType != "empty"
+
+Bulk action supportee :
+- Meme type pour tous les alias selectionnes
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

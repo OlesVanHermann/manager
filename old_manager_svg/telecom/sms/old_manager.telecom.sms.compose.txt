@@ -1,0 +1,125 @@
+================================================================================
+CAHIER DES CHARGES - SMS COMPOSE (Envoi de SMS)
+================================================================================
+Fichier : old_manager.telecom.sms.compose.txt
+SVG     : old_manager.telecom.sms.compose.svg
+Module  : telecom/sms
+Genere  : Depuis old_manager_web-cloud_telecom_sms.tar
+================================================================================
+
+## 1. INFORMATIONS GENERALES
+
+| Champ | Valeur |
+|-------|--------|
+| Titre page | Envoyer un SMS |
+| Breadcrumb | SMS > Gestion des SMS > Envoyer un SMS |
+| URL state | sms.service.sms.compose |
+| Fichier source | sms/sms/compose/telecom-sms-sms-compose.html |
+| Controller | telecom-sms-sms-compose.controller.js |
+
+--------------------------------------------------------------------------------
+## 2. LAYOUT ET STRUCTURE
+--------------------------------------------------------------------------------
+
+### 2.1 Structure principale
+- Header avec lien retour "Retour aux SMS"
+- Titre H1 : "Envoyer un SMS"
+- Layout 2 colonnes (9/3) avec sidebar a droite
+
+### 2.2 Sidebar droite (col-md-3)
+- Composant credits SMS (solde + lien gerer credits)
+- Tile "Astuces" avec liens :
+  * Composition d un SMS
+  * Taille d un SMS  
+  * Liste des destinataires (lien externe)
+
+### 2.3 Contenu principal (col-md-9)
+- Message erreur si credits insuffisants
+- Formulaire envoi SMS en 2 sections
+
+--------------------------------------------------------------------------------
+## 3. FORMULAIRE ENVOI SMS
+--------------------------------------------------------------------------------
+
+### 3.1 Section "Configurer l expediteur et le destinataire"
+
+**Champ Expediteur (select):**
+- Label : Expediteur
+- Groupes :
+  * Expediteurs permettant les reponses (shortNumber, numeros virtuels)
+  * Expediteurs alphanumeriques
+  * Autres expediteurs
+- Lien "Gerer les expediteurs"
+
+**Champ Destinataire:**
+- Input numero au format international (+33601020304)
+- OU selection depuis carnets d adresses
+- OU selection depuis listes de destinataires
+- Validation : format international obligatoire
+
+### 3.2 Section "Composer un message"
+
+**Textarea Message:**
+- Compteur caracteres restants
+- Indicateur nombre SMS equivalent
+- Warning si caracteres speciaux (8bit -> Unicode)
+- Limite 255 SMS max
+
+**Checkbox mentions legales:**
+- "Je certifie que le SMS n est pas a caractere publicitaire"
+- Si SMS commercial : envoi entre 8h-20h lundi-samedi
+
+**Options avancees (toggle):**
+- Envoi immediat / Envoi differe
+- Si differe : date picker + time picker
+
+### 3.3 Estimation envoi
+- Nombre de destinataires
+- Credit restant
+- Credit restant apres operation
+- Note : cout variable selon destinations
+
+### 3.4 Boutons action
+- Envoyer (primary, disabled si form invalide ou credits <= 0)
+- Annuler
+
+--------------------------------------------------------------------------------
+## 4. APIS UTILISEES
+--------------------------------------------------------------------------------
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /sms/{serviceName} | Infos compte (creditsLeft) |
+| GET | /sms/{serviceName}/senders | Liste expediteurs |
+| GET | /sms/{serviceName}/receivers | Listes destinataires |
+| GET | /sms/{serviceName}/phonebooks | Carnets adresses |
+| POST | /sms/{serviceName}/jobs | Envoi SMS |
+| GET | /sms/ptts | Liste PTT (tarifs) |
+
+--------------------------------------------------------------------------------
+## 5. COMPOSANTS ODS/MANAGER
+--------------------------------------------------------------------------------
+
+- tuc-section-back-link : Lien retour
+- oui-spinner : Chargement
+- oui-message : Alertes erreur
+- oui-field : Champs formulaire
+- oui-timepicker : Selection heure
+- uib-datepicker-popup : Selection date
+- ovh-manager-sms-sms-credits : Widget credits
+
+--------------------------------------------------------------------------------
+## 6. TRADUCTIONS CLES
+--------------------------------------------------------------------------------
+
+- sms_sms_compose_title : Envoyer un SMS
+- sms_sms_compose_sender_label : Expediteur
+- sms_sms_compose_recipient_label : Saisissez le numero d un seul destinataire
+- sms_sms_compose_message_label : Message
+- sms_sms_compose_send : Envoyer
+- sms_sms_compose_alert_not_enough_credits : Votre solde de credits est insuffisant
+- sms_sms_compose_no_stop_clause_label : Je certifie sur l honneur que le SMS n est pas a caractere publicitaire
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

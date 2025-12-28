@@ -1,0 +1,114 @@
+================================================================================
+COMPOSANT : toast-message
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (component)
+SOURCE: packages/manager/modules/telecom-universe-components/src/toaster/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Affichage de messages de notification (toasts) avec types différents.
+Gère les messages success, error, warning, info avec fermeture manuelle.
+S'intègre avec le service TucToast pour la gestion centralisée.
+
+Cas d'usage :
+- Confirmation de succès d'une action
+- Affichage d'erreurs API
+- Avertissements utilisateur
+- Messages d'information
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+┌─────────────────────────────────────────────────────────────────┐
+│  [SUCCESS] ✓ Le numéro abrégé a été créé avec succès.     [×]  │
+└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  [ERROR] ⚠ Impossible de sauvegarder les modifications.   [×]  │
+└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  [WARNING] ⚡ Votre crédit SMS est faible.                 [×]  │
+└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  [INFO] ℹ Une maintenance est prévue ce soir.              [×]  │
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. TYPES DE MESSAGES
+================================================================================
+| Type    | Classe CSS      | Couleur   | Usage                    |
+|---------|-----------------|-----------|--------------------------|
+| success | alert-success   | Vert      | Action réussie           |
+| error   | alert-danger    | Rouge     | Erreur                   |
+| warning | alert-warning   | Orange    | Avertissement            |
+| info    | alert-info      | Bleu      | Information              |
+
+================================================================================
+4. SERVICE TucToast
+================================================================================
+Méthodes disponibles :
+- TucToast.success(message)
+- TucToast.error(message)
+- TucToast.warning(message)
+- TucToast.info(message)
+- TucToast.getMessages()
+- TucToast.getMessagesByType(type)
+- TucToast.clearMessage(message)
+- TucToast.clearMessagesByType(type)
+
+================================================================================
+5. STRUCTURE MESSAGE
+================================================================================
+{
+  type: 'success' | 'error' | 'warning' | 'info',
+  content: string,    // HTML supporté (ng-bind-html)
+  timestamp: number   // Auto-généré
+}
+
+================================================================================
+6. COMPORTEMENT
+================================================================================
+- Messages filtrés par timestamp (n'affiche pas les vieux messages)
+- Animation de scroll automatique vers nouveaux messages
+- Bouton fermeture (×) pour chaque message
+- Support HTML dans le contenu
+
+================================================================================
+7. TRADUCTIONS (FR)
+================================================================================
+toaster_close : "Fermer"
+
+================================================================================
+8. CLASSES CSS
+================================================================================
+.alert.alert-xs         : Style alert compact
+.alert-success          : Style succès (vert)
+.alert-danger           : Style erreur (rouge)
+.alert-warning          : Style warning (orange)
+.alert-info             : Style info (bleu)
+.oui-icon-close         : Icône fermeture
+.oui-message__close-button : Bouton fermeture
+
+================================================================================
+9. COMPOSANT ENFANT
+================================================================================
+tuc-toast-message-scroller : Directive pour scroll automatique
+
+================================================================================
+10. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface ToastMessage {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  content: string;
+}
+
+interface ToastContextValue {
+  messages: ToastMessage[];
+  addToast: (type: string, content: string) => void;
+  removeToast: (id: string) => void;
+}
+
+// Utiliser react-hot-toast ou sonner pour équivalent

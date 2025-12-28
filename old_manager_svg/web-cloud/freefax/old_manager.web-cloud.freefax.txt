@@ -1,0 +1,151 @@
+# old_manager.web-cloud.freefax.txt
+# Cahier des charges - Dashboard FreeFax
+# Généré depuis : old_manager_web-cloud_telecom_fax.tar
+
+---
+
+## 1. RÉSUMÉ EXÉCUTIF
+
+### Périmètre
+Page dashboard d'un service FreeFax individuel.
+
+### Objectif fonctionnel
+Afficher les informations générales et permettre la configuration d'un fax.
+
+### Utilisateurs cibles
+Clients OVHcloud disposant d'un service FreeFax.
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+```
+packages/manager/modules/freefax/src/freefax/
+├── freefax.component.js       # Composant principal
+├── freefax.controller.js      # Controller (non fourni)
+├── freefax.html               # Template (non fourni)
+├── freefax.scss               # Styles
+├── information/               # Sous-module infos générales
+├── credit/                    # Sous-module crédits
+├── faxConfiguration/          # Sous-module config fax
+├── notifications/             # Sous-module notifications
+├── voicemailConfiguration/    # Sous-module répondeur
+└── translations/
+```
+
+### Modules importés
+```javascript
+import credit from './credit';
+import faxConfiguration from './faxConfiguration';
+import notifications from './notifications';
+import voicemailConfiguration from './voicemailConfiguration';
+```
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Route
+| Propriété | Valeur |
+|-----------|--------|
+| State | freefaxes.freefax |
+| URL | /freefax/:serviceName |
+| Component | ovhManagerFreefaxComponent |
+
+### Paramètres
+| Param | Type | Description |
+|-------|------|-------------|
+| serviceName | string | Identifiant du fax |
+
+### Breadcrumb
+Affiche serviceName
+
+### Titre page
+freefax_page_title : "Freefax {{name}}"
+
+---
+
+## 4. COMPOSANTS UI
+
+### Structure page
+La page est composée de plusieurs sections (tiles) :
+
+| Section | Module | Description |
+|---------|--------|-------------|
+| Informations générales | information | Infos du service |
+| Configuration fax | faxConfiguration | Paramètres envoi fax |
+| Configuration répondeur | voicemailConfiguration | Paramètres répondeur |
+| Crédits | credit | Commande de fax |
+| Notifications | notifications | Alertes email |
+
+### Binding
+```javascript
+bindings: {
+  serviceName: '<',
+}
+```
+
+---
+
+## 5. APIs & DONNÉES
+
+### Endpoint principal
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /freefax/{serviceName} | Détails du fax |
+
+### Modèle de données
+```typescript
+interface Freefax {
+  number: string;
+  fromName: string;
+  fromEmail: string;
+  faxQuality: 'normal' | 'high' | 'best';
+  faxMaxCall: number;
+  faxTagLine: string;
+}
+```
+
+---
+
+## 6. TRADUCTIONS
+
+### Clés i18n
+| Clé | FR |
+|-----|-----|
+| freefax_page_title | "Freefax {{name}}" |
+| freefax_title | "Gestion du répondeur/fax {{serviceName}}" |
+| freefax_general_information | "Informations Générales" |
+| freefax_fax_configuration | "Configuration du fax" |
+| freefax_voicemail_configuration_title | "Configuration du repondeur" |
+| freefax_detail_error | "Oups ! Nous n'avons pas pu récupérer les information de votre freefax." |
+| freefax_expired_error | "Service expiré" |
+| freefax_domain | "Nom de domaine" |
+| freefax_domain_expired | "(Domaine expiré)" |
+| freefax_line | "Numéro de ligne" |
+| freefax_fax_remaining | "Nombre de faxs restants" |
+| freefax_point_remaining | "Mes points" |
+| freefax_voicemail | "Répondeur" |
+| freefax_voicemail_active | "Répondeur actif" |
+| freefax_voicemail_inactive | "Répondeur inactif" |
+| freefax_offer | "Offre" |
+| freefax_offer_ecofax_perso | "EcoFax Perso" |
+
+---
+
+## 7. RÈGLES MÉTIER
+
+### États du service
+| État | Affichage |
+|------|-----------|
+| Actif | Dashboard complet |
+| Expiré | Message freefax_expired_error |
+| Erreur chargement | Message freefax_detail_error |
+
+### Sous-modules
+Chaque sous-module gère sa propre logique :
+- credit : Commande de crédits fax
+- faxConfiguration : Configuration envoi (voir TXT dédié)
+- notifications : Gestion alertes email
+- voicemailConfiguration : Paramètres répondeur

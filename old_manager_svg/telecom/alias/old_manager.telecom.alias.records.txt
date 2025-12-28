@@ -1,0 +1,129 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.alias.records
+================================================================================
+Page : Gestion des enregistrements d'appels CCS
+NAV1 : telecom
+NAV2 : alias
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+Gestion des enregistrements d'appels pour un numero alias configure en
+Contact Center Solution (CCS). Permet d'activer/desactiver l'enregistrement,
+configurer la demande de non-enregistrement, telecharger et supprimer les
+enregistrements.
+
+Utilisateurs cibles : Superviseurs centre d'appels
+Retention : 60 jours automatique
+
+--------------------------------------------------------------------------------
+## 2. ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Fichiers sources :
+- Controller : alias/records/records.controller.js (199 lignes)
+- Template : alias/records/records.html
+- Routing : alias/records/records.routing.js
+
+Dependances :
+- OvhApiTelephony.EasyHunting() : API CCS
+- OvhApiTelephony.EasyHunting().Hunting().Queue() : Files d'attente
+
+--------------------------------------------------------------------------------
+## 3. PAGES & NAVIGATION
+--------------------------------------------------------------------------------
+
+Route : telecom.telephony.billingAccount.alias.configuration.records
+URL : /telecom/telephony/{billingAccount}/alias/{serviceName}/configuration/records
+Params :
+  - billingAccount : Identifiant groupe facturation
+  - serviceName : Numero alias CCS
+
+Breadcrumb : Telecom > Telephonie > [Groupe] > [Alias] > Configuration > Enregistrements
+
+--------------------------------------------------------------------------------
+## 4. COMPOSANTS UI
+--------------------------------------------------------------------------------
+
+Section Configuration :
+- Toggle : Activer enregistrement
+- Toggle : Demande de non-enregistrement
+- Si demande active :
+  - Select : Langue du message
+  - Select : Touche DTMF (1-9)
+
+Section Enregistrements :
+- Datagrid avec topbar
+- Colonnes : Date, Duree, Actions
+- Actions : Telecharger, Supprimer
+- Selection multiple pour suppression groupee
+
+Message info :
+- Retention 60 jours automatique
+
+--------------------------------------------------------------------------------
+## 5. APIs & DONNEES
+--------------------------------------------------------------------------------
+
+### API Lecture
+
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue
+  -> Liste files d'attente
+
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}
+  -> Configuration file (record, askForRecordDisabling, recordDisablingLanguage, recordDisablingDigit)
+
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/records
+  -> Liste IDs enregistrements
+
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/records/{recordId}
+  -> Details enregistrement (url telechargement)
+
+### API Ecriture
+
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}
+  Body : { record, askForRecordDisabling, recordDisablingLanguage, recordDisablingDigit }
+
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/records/{recordId}
+
+--------------------------------------------------------------------------------
+## 6. TRADUCTIONS (FR)
+--------------------------------------------------------------------------------
+
+telephony_alias_contactCenterSolution_records_title : "Gestion des enregistrements"
+telephony_alias_contactCenterSolution_records_subtitle_help : "Ces appels sont automatiquement supprimes apres 60 jours."
+telephony_alias_contactCenterSolution_records_enable : "Activer l'enregistrement des appels"
+telephony_alias_contactCenterSolution_records_ask_disable : "Proposer le non-enregistrement"
+telephony_alias_contactCenterSolution_records_language : "Langue du message"
+telephony_alias_contactCenterSolution_records_digit : "Touche pour refuser"
+
+--------------------------------------------------------------------------------
+## 7. REGLES METIER
+--------------------------------------------------------------------------------
+
+Langues disponibles :
+- fr, en, de, es, it, pl, pt
+
+Digits disponibles :
+- 1 a 9
+
+Demande non-enregistrement :
+- Si askForRecordDisabling = true
+- Langue ET digit obligatoires
+- Message joue au debut de l'appel
+
+Telechargement :
+- Delai 500ms entre fichiers (eviter surcharge)
+- URL temporaire fournie par API
+
+Suppression :
+- Individuelle ou groupee
+- Confirmation requise
+
+Retention :
+- 60 jours automatique
+- Suppression manuelle possible avant
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

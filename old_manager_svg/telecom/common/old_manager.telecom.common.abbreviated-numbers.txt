@@ -1,0 +1,139 @@
+================================================================================
+COMPOSANT : abbreviated-numbers
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (component)
+SOURCE: packages/manager/modules/telecom-universe-components/src/telecom/telephony/abbreviatedNumbers/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Gestion des numéros abrégés (speed dial) pour un service téléphonie.
+Permet de créer, modifier, supprimer, importer et exporter des numéros
+abrégés avec leur destination et nom associé.
+
+Cas d'usage :
+- Configuration raccourcis téléphoniques
+- Import en masse depuis CSV
+- Export pour sauvegarde
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+┌─────────────────────────────────────────────────────────────────┐
+│  Actions ▼                                                      │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ Ajouter | Télécharger | Importer | Vider                │   │
+│  └──────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────┤
+│  🔍 Recherche...                    [Filtres]                   │
+├────────────┬─────────────────┬──────────┬──────────┬────────────┤
+│ N° abrégé ↑│ Numéro cible    │ Nom      │ Prénom   │ Actions    │
+├────────────┼─────────────────┼──────────┼──────────┼────────────┤
+│ 200        │ 0033612345678   │ Dupont   │ Jean     │ [⋮]        │
+│ 201        │ 0033698765432   │ Martin   │ Marie    │ [⋮]        │
+│ 202        │ 0033654321098   │ Bernard  │ Pierre   │ [⋮]        │
+└────────────┴─────────────────┴──────────┴──────────┴────────────┘
+
+Menu Actions [⋮] :
+  - Éditer
+  - Supprimer
+
+================================================================================
+3. COLONNES DU DATAGRID
+================================================================================
+| Colonne           | Propriété          | Triable | Filtrable | Recherchable |
+|-------------------|-------------------|---------|-----------|--------------|
+| Numéro abrégé     | abbreviatedNumber | Oui ↑   | Oui       | Oui          |
+| Numéro cible      | destinationNumber | Oui     | Oui       | Oui          |
+| Nom               | surname           | Oui     | Oui       | Oui          |
+| Prénom            | name              | Oui     | Oui       | Oui          |
+
+================================================================================
+4. ACTIONS TOPBAR
+================================================================================
+| Action      | Description                                           |
+|-------------|-------------------------------------------------------|
+| Ajouter     | Ouvre modal création                                  |
+| Télécharger | Export CSV des numéros                                |
+| Importer    | Import depuis fichier CSV                             |
+| Vider       | Supprime tous les numéros (avec confirmation)         |
+
+================================================================================
+5. VALIDATION NUMÉRO ABRÉGÉ
+================================================================================
+- 3 ou 4 chiffres
+- Doit commencer par un chiffre spécifique (configurable)
+- Doit être unique
+
+================================================================================
+6. FORMAT NUMÉRO CIBLE
+================================================================================
+- Format international : 00xx...
+- Exemple : 0033612345678
+
+================================================================================
+7. FORMAT CSV IMPORT
+================================================================================
+abbreviatedNumber;destinationNumber;surname;name
+200;0033612345678;Dupont;Jean
+201;0033698765432;Martin;Marie
+
+Contraintes :
+- Extension .csv obligatoire
+- Pas de ligne d'en-tête
+- Taille max : 50 Ko
+- Séparateur : ; (point-virgule)
+
+================================================================================
+8. TRADUCTIONS (FR)
+================================================================================
+telephony_abbreviated_numbers_id           : "Numéro abrégé"
+telephony_abbreviated_numbers_number       : "Numéro cible"
+telephony_abbreviated_numbers_surname      : "Nom"
+telephony_abbreviated_numbers_name         : "Prénom"
+telephony_abbreviated_numbers_common_actions: "Actions"
+telephony_abbreviated_numbers_common_add   : "Ajouter"
+telephony_abbreviated_numbers_download_label: "Télécharger"
+telephony_abbreviated_numbers_import_label : "Importer"
+telephony_abbreviated_numbers_edit         : "Éditer"
+telephony_abbreviated_numbers_delete       : "Supprimer"
+telephony_abbreviated_numbers_insert_title : "Ajouter un numéro abrégé"
+telephony_abbreviated_numbers_update_title : "Modifier un numéro abrégé"
+
+================================================================================
+9. MODALES ASSOCIÉES
+================================================================================
+- abbreviated-numbers.modal.html : Ajout/modification
+- abbreviated-numbers-empty.modal.html : Confirmation vidage
+- abbreviated-numbers-import.modal.html : Import CSV
+
+================================================================================
+10. COMPOSANTS ODS UTILISÉS
+================================================================================
+- oui-datagrid
+- oui-datagrid-column
+- oui-datagrid-topbar
+- oui-action-menu
+- oui-action-menu-item
+
+================================================================================
+11. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface AbbreviatedNumber {
+  abbreviatedNumber: string;
+  destinationNumber: string;
+  surname: string;
+  name: string;
+}
+
+interface AbbreviatedNumbersProps {
+  serviceName: string;
+  billingAccount: string;
+  onAdd: () => void;
+  onEdit: (number: AbbreviatedNumber) => void;
+  onDelete: (number: AbbreviatedNumber) => void;
+  onImport: (file: File) => void;
+  onExport: () => void;
+}

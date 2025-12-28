@@ -1,0 +1,207 @@
+# CAHIER DES CHARGES - Service Mediator (Gestion Groupes Telephonie)
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/mediator.service.js
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Service AngularJS centralisant l'acces aux groupes de telephonie et leurs services.
+
+### Objectif fonctionnel
+- Charger et mettre en cache les groupes de telephonie
+- Rechercher un service par son nom ou numero
+- Gerer le groupe courant selectionne
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| mediator.service.js | Service TelephonyMediator |
+
+### Dependances
+- $q, $http
+- iceberg (pagination)
+- OvhApiTelephony (schema API)
+- TelephonyGroup, TelephonyGroupFax, TelephonyGroupLine, TelephonyGroupNumber (factories)
+
+---
+
+## 3. FACTORIES UTILISEES
+
+### TelephonyGroup
+Represente un groupe de telephonie (billingAccount).
+```javascript
+{
+  billingAccount: string,
+  description: string,
+  lines: TelephonyGroupLine[],
+  numbers: TelephonyGroupNumber[],
+  fax: TelephonyGroupFax[]
+}
+```
+
+### TelephonyGroupLine
+Represente une ligne SIP.
+```javascript
+{
+  serviceName: string,
+  description: string,
+  serviceType: 'line',
+  featureType: string,
+  isTrunk(): boolean,
+  isPlugNFax: boolean
+}
+```
+
+### TelephonyGroupNumber
+Represente un numero (alias).
+```javascript
+{
+  serviceName: string,
+  description: string,
+  serviceType: 'alias',
+  featureType: string
+}
+```
+
+### TelephonyGroupFax
+Represente un fax.
+```javascript
+{
+  serviceName: string,
+  description: string,
+  serviceType: 'line',
+  featureType: 'fax' | 'voicefax',
+  isFax: true
+}
+```
+
+---
+
+## 4. APIs & DONNEES
+
+### Endpoints utilises
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /telephony | Liste tous les groupes (Iceberg) |
+| GET | /telephony/{billingAccount} | Detail d'un groupe |
+| GET | /telephony/{billingAccount}/service | Services du groupe (Iceberg) |
+| GET | /telephony/searchServices?axiom={axiom} | Recherche service |
+| GET | /telephony/{billingAccount}/service/{serviceName} | Detail service |
+| GET | /telephony (schema) | Schema API pour enums |
+
+---
+
+## 5. METHODES PRINCIPALES
+
+### getAll()
+```javascript
+getAll() {
+  return iceberg('/telephony')
+    .query()
+    .expand('CachedObjectList-Pages')
+    .execute(null, true)
+    .$promise.then(({ data: groups }) => groups.map(createGroup));
+}
+```
+
+### getGroup(billingAccount)
+```javascript
+getGroup(billingAccount) {
+  return $q.all({
+    group: $http.get(`/telephony/${billingAccount}`),
+    services: iceberg(`/telephony/${billingAccount}/service`)
+      .query()
+      .expand('CachedObjectList-Pages')
+      .execute(null, true).$promise
+  }).then(({ group, services }) => {
+    const telephonyGroup = createGroup(group.data);
+    
+    services.data.map(service => createService({ ...service, billingAccount }))
+      .forEach(service => {
+        if (service instanceof TelephonyGroupFax) telephonyGroup.fax.push(service);
+        if (service instanceof TelephonyGroupLine) telephonyGroup.lines.push(service);
+        if (service instanceof TelephonyGroupNumber) telephonyGroup.numbers.push(service);
+      });
+    
+    return telephonyGroup;
+  });
+}
+```
+
+### findService(axiom)
+```javascript
+findService(axiom) {
+  return $http.get(`/telephony/searchServices?axiom=${axiom}`)
+    .then(({ data: [result] }) => {
+      if (result) {
+        const { billingAccount, domain } = result;
+        return $http.get(`/telephony/${billingAccount}/service/${domain}`)
+          .then(({ data: service }) => createService({ ...service, billingAccount }));
+      }
+      return null;
+    })
+    .catch(() => null);
+}
+```
+
+### getApiModelEnum(modelName)
+```javascript
+getApiModelEnum(modelName) {
+  return getApiModels().then(models => models[modelName].enum);
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+### Creation service selon type
+```javascript
+createService(service) {
+  if (['fax', 'voicefax'].includes(service.featureType)) {
+    return new TelephonyGroupFax(service);
+  }
+  if (service.serviceType === 'line') {
+    return new TelephonyGroupLine(service);
+  }
+  if (service.serviceType === 'alias') {
+    return new TelephonyGroupNumber(service);
+  }
+  return null;
+}
+```
+
+### Validation numero
+```javascript
+IsValidNumber(number) {
+  return !!(
+    number &&
+    number.match(/^\+?(\d|\.| |#|-)+$/) &&
+    number.length < 26 &&
+    number.length > 2
+  );
+}
+```
+
+### Gestion groupe courant
+```javascript
+setCurrentGroup(group) {
+  currentGroup = group;
+  return currentGroup;
+}
+
+getCurrentGroup() {
+  return currentGroup;
+}
+```
+
+### Reset cache
+```javascript
+resetAllCache() {
+  getAllDeferred = null;
+  groups = {};
+}
+```

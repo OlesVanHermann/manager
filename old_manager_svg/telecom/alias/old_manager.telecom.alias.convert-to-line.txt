@@ -1,0 +1,119 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.alias.convert-to-line
+================================================================================
+Page : Conversion d'un numero alias en ligne SIP
+NAV1 : telecom
+NAV2 : alias
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+Permet de convertir un numero alias en ligne SIP. La conversion est planifiee
+et prend effet a la prochaine facturation. Une tache de conversion est creee
+et peut etre annulee tant qu'elle n'est pas executee.
+
+Utilisateurs cibles : Administrateurs telephonie VoIP
+Prerequis : Numero alias non inclus dans une plage
+
+--------------------------------------------------------------------------------
+## 2. ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Fichiers sources :
+- Controller : alias/administration/convertToLine/convert-to-line.controller.js (245 lignes)
+- Template : alias/administration/convertToLine/convert-to-line.html
+- Routing : alias/administration/convertToLine/convert-to-line.routing.js
+
+Dependances :
+- OvhApiTelephony.Number() : API numeros
+- tucVoipServiceTask : Polling taches
+
+--------------------------------------------------------------------------------
+## 3. PAGES & NAVIGATION
+--------------------------------------------------------------------------------
+
+Route : telecom.telephony.billingAccount.alias.configuration.convertToLine
+URL : /telecom/telephony/{billingAccount}/alias/{serviceName}/configuration/convertToLine
+Params :
+  - billingAccount : Identifiant groupe facturation
+  - serviceName : Numero alias
+
+Breadcrumb : Telecom > Telephonie > [Groupe] > [Alias] > Administration > Convertir
+
+--------------------------------------------------------------------------------
+## 4. COMPOSANTS UI
+--------------------------------------------------------------------------------
+
+Etat initial (pas de tache) :
+- Liste offres disponibles (select)
+- Bouton : Convertir en ligne
+
+Etat tache en cours :
+- Message : Conversion planifiee
+- Details offre selectionnee
+- Bouton : Annuler la conversion
+
+Message erreur plage :
+- Affiche si numero dans plage
+- Conversion impossible
+
+--------------------------------------------------------------------------------
+## 5. APIs & DONNEES
+--------------------------------------------------------------------------------
+
+### API Lecture
+
+GET /telephony/{billingAccount}/number/{serviceName}/convertToLineAvailableOffers
+  -> Liste offres SIP disponibles
+
+GET /telephony/{billingAccount}/service/{serviceName}/offerTask
+  Params : { action: "convertToSip", type: "offer" }
+  -> Tache conversion en cours (si existe)
+
+### API Ecriture
+
+POST /telephony/{billingAccount}/number/{serviceName}/convertToLine
+  Body : { offer: "offre_selectionnee" }
+  -> Cree tache conversion
+
+POST /telephony/{billingAccount}/number/{serviceName}/cancelConvertToLine
+  -> Annule tache conversion
+
+### Erreur specifique
+
+Status 400 : "number range forbidden change"
+  -> Numero appartient a une plage, conversion impossible
+
+--------------------------------------------------------------------------------
+## 6. TRADUCTIONS (FR)
+--------------------------------------------------------------------------------
+
+telephony_alias_administration_convert_title : "Convertir un numero en ligne"
+telephony_alias_administration_convert_success : "Conversion planifiee avec succes."
+telephony_alias_administration_convert_cancel_success : "Conversion annulee."
+telephony_alias_administration_convert_range_error : "Ce numero appartient a une plage de numeros, il ne peut pas etre converti en ligne."
+
+--------------------------------------------------------------------------------
+## 7. REGLES METIER
+--------------------------------------------------------------------------------
+
+Prerequis :
+- Numero ne doit pas appartenir a une plage
+- Contrats doivent etre acceptes
+
+Tache conversion :
+- action: "convertToSip"
+- type: "offer"
+- Une seule tache active a la fois
+
+Planification :
+- Conversion effective a prochaine facturation
+- Annulation possible jusqu'a execution
+
+Offres :
+- Liste dynamique selon eligibilite
+- Selection obligatoire
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

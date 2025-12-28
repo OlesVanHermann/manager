@@ -1,0 +1,80 @@
+================================================================================
+COMPOSANT : file-reader
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (directive)
+SOURCE: packages/manager/modules/telecom-universe-components/src/file-reader/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Bouton permettant de sélectionner un fichier local et de lire son contenu
+via l'API FileReader du navigateur. Le contenu est retourné en texte.
+
+Cas d'usage :
+- Import de fichier CSV de contacts
+- Import de configuration JSON
+- Chargement de fichiers de numéros abrégés
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+┌─────────────────────────────────────────────────────────────────┐
+│  ┌─────────────────────────────────────┐                        │
+│  │ [Transclude: Texte du bouton]       │  ← Bouton stylé        │
+│  │      (input file masqué)            │                        │
+│  └─────────────────────────────────────┘                        │
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. PROPRIETES (BINDINGS)
+================================================================================
+| Propriété       | Type     | Direction | Description                        |
+|-----------------|----------|-----------|-----------------------------------|
+| ngAccept        | string   | @         | Types MIME acceptés (ex: ".csv")  |
+| ngAcceptFilter  | function | &         | Filtre custom sur le fichier      |
+| ngRead          | function | &         | Callback avec contenu lu (data)   |
+
+================================================================================
+4. COMPORTEMENT
+================================================================================
+1. Utilisateur clique sur le bouton
+2. Sélecteur de fichier natif s'ouvre
+3. Si ngAcceptFilter défini → vérifie le fichier
+4. Si accepté → FileReader.readAsText()
+5. Au chargement → appel ngRead({ data: contenu })
+6. Reset de l'input après lecture
+
+================================================================================
+5. DETECTION SUPPORT
+================================================================================
+- Vérifie window.FileReader
+- Si absent → bouton désactivé (ng-disabled)
+
+================================================================================
+6. CLASSES CSS
+================================================================================
+.file-reader     : Container du bouton
+.btn.btn-default : Style bouton Bootstrap
+
+================================================================================
+7. EXEMPLE D'UTILISATION ANGULARJS
+================================================================================
+<tuc-file-reader
+    ng-accept=".csv,.txt"
+    ng-accept-filter="$ctrl.validateFile(file)"
+    ng-read="$ctrl.processFileContent(data)">
+    <span class="oui-icon oui-icon-upload"></span>
+    Importer un fichier
+</tuc-file-reader>
+
+================================================================================
+8. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface FileReaderProps {
+  accept?: string;              // ".csv,.json"
+  acceptFilter?: (file: File) => boolean;
+  onRead: (data: string) => void;
+  children: React.ReactNode;    // Contenu du bouton
+}

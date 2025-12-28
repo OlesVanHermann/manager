@@ -1,0 +1,129 @@
+# CAHIER DES CHARGES - Services Mediator Telecom
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/
+
+## 1. IDENTIFICATION
+- Services: TelecomMediator, TelephonyMediator
+- Type: Services AngularJS
+- Fichiers source: telecom-mediator.service.js, telephony/mediator.service.js
+- Usage: Services centraux pour la gestion et le cache des données télécom
+
+## 2. DESCRIPTION FONCTIONNELLE
+Les services Mediator servent d'intermédiaire entre les composants UI et
+les APIs. Ils gèrent le cache, le chargement des données et fournissent
+des méthodes de recherche de services.
+
+## 3. TELECOM MEDIATOR
+
+### Rôle
+Service racine pour la gestion des données télécom.
+Fournit l'accès aux groupes de facturation et services associés.
+
+### Méthodes principales
+| Méthode | Description |
+|---------|-------------|
+| getAll() | Charge tous les groupes de téléphonie |
+| getGroup(billingAccount) | Retourne un groupe par son compte |
+| findService(serviceName) | Recherche un service dans tous les groupes |
+| resetCache() | Vide le cache des données |
+
+## 4. TELEPHONY MEDIATOR
+
+### Rôle
+Service spécialisé pour la téléphonie.
+Gère les groupes, lignes, fax, numéros et leurs relations.
+
+### Structure des données
+
+#### Groupe (BillingAccount)
+{
+  billingAccount: string,
+  description: string,
+  status: string,
+  lines: Line[],
+  fax: Fax[],
+  numbers: Number[],
+  services: Service[]  // Tous les services combinés
+}
+
+#### Service (générique)
+{
+  serviceName: string,
+  description: string,
+  serviceType: 'line' | 'fax' | 'alias',
+  billingAccount: string,
+  // Méthodes
+  getDisplayedName(): string,
+  isTrunk(): boolean,
+  isPlugNFax: boolean,
+  isFax: boolean
+}
+
+### Méthodes principales
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| getGroups() | Promise<Group[]> | Liste tous les groupes |
+| getGroup(billingAccount) | Promise<Group> | Récupère un groupe |
+| findService(serviceName) | Promise<Service> | Trouve un service par nom |
+| getAllServices() | Service[] | Tous les services de tous les groupes |
+| getLines(billingAccount) | Line[] | Lignes d'un groupe |
+| getFax(billingAccount) | Fax[] | Fax d'un groupe |
+| getNumbers(billingAccount) | Number[] | Numéros d'un groupe |
+
+### Lazy Loading
+Les services sont chargés à la demande (lazy loading).
+Quand un groupe est affiché, ses services sont chargés automatiquement.
+Le cache évite les appels API redondants.
+
+## 5. APIS UTILISÉES
+
+### Groupes
+GET /telephony                           // Liste des billingAccounts
+GET /telephony/{billingAccount}          // Détail d'un groupe
+
+### Lignes
+GET /telephony/{billingAccount}/line     // Liste des lignes
+GET /telephony/{billingAccount}/line/{serviceName}  // Détail
+
+### Fax
+GET /telephony/{billingAccount}/fax      // Liste des fax
+GET /telephony/{billingAccount}/fax/{serviceName}   // Détail
+
+### Numéros (Alias)
+GET /telephony/{billingAccount}/number   // Liste des numéros
+GET /telephony/{billingAccount}/number/{serviceName}  // Détail
+
+## 6. USAGE DANS LES COMPOSANTS
+
+### Service Choice
+Utilise TelephonyMediator.getGroups() pour lister tous les services
+disponibles et permettre à l'utilisateur d'en sélectionner un.
+
+### TimeCondition Slot Edit
+Utilise TelephonyMediator.findService() pour trouver le service
+correspondant au numéro de redirection configuré.
+
+### Exemple d'utilisation
+// Dans un controller
+TelephonyMediator.findService('+33123456789')
+  .then(service => {
+    if (service) {
+      // Service OVH trouvé
+      this.redirectNumberOvh = service;
+      this.model.slotType = 'number_ovh';
+    } else {
+      // Numéro externe
+      this.model.slotType = 'number';
+    }
+  });
+
+## 7. CACHE
+Les Mediators maintiennent un cache interne:
+- Évite les appels API répétés
+- Peut être vidé avec resetCache()
+- Se rafraîchit automatiquement après certaines actions
+
+## 8. DÉPENDANCES
+- $q (promises)
+- OvhApiTelephony
+- Modèles: TelephonyGroup, TelephonyLine, TelephonyFax, TelephonyNumber

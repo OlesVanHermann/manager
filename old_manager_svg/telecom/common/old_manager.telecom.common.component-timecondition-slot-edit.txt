@@ -1,0 +1,106 @@
+# CAHIER DES CHARGES - Composant TimeCondition Slot Edit
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/slot/edit/
+
+## 1. IDENTIFICATION
+- Composant: voipTimeConditionSlotEditCtrl
+- Type: Controller AngularJS (popover)
+- Fichier source: edit.controller.js, edit.html
+- Usage: Modal d'édition d'un slot de redirection
+
+## 2. DESCRIPTION FONCTIONNELLE
+Popover à 2 pages permettant de configurer un slot :
+- Page 1 : Configuration principale (type + numéro)
+- Page 2 : Sélection du type ou choix du service OVH
+
+## 3. STRUCTURE DU POPOVER - PAGE 1
+[Header] Configuration du créneau X / Créneaux hors plages horaires
+
+[Alert Info] Comportement à adopter pour les plages horaires utilisant ce créneau.
+
+[Section]
+  [Bouton] Rediriger l'appel vers -> [Page 2: slotType]
+    Valeur actuelle: "Un répondeur" / "Un numéro externe" / "Une ligne OVHcloud"
+  
+  [Si type === 'number']
+    [Input] Numéro vers lequel rediriger
+    Placeholder: "Numéro au format international (ex: +3312345678)"
+    Validation: /^\+(?:[0-9]){6,14}[0-9]$/
+  
+  [Si type !== 'number']
+    [Bouton] Numéro vers lequel rediriger -> [Page 2: number]
+    Affiche: Service sélectionné + type
+
+[Footer]
+  [Bouton Primary] Modifier (disabled si invalide ou pas de changement)
+  [Bouton Secondary] Annuler
+
+## 4. STRUCTURE DU POPOVER - PAGE 2
+[Header] [Retour] Rediriger l'appel vers / Numéro vers lequel rediriger
+
+[Si rightPage === 'slotType']
+  [Radio Group]
+    - Une ligne ou un numéro OVHcloud
+      "Permet de renvoyer l'appel vers l'une de vos lignes OVHcloud..."
+    - Un numéro externe
+      "Permet de renvoyer l'appel vers un numéro externe (hors OVHcloud)."
+    - Un répondeur
+      "Permet de renvoyer l'appel vers le répondeur de l'une de vos lignes..."
+
+[Si rightPage === 'number']
+  [voip-service-choice] Sélecteur de service OVH
+
+## 5. TYPES DE REDIRECTION
+| Type interne | Type API | Description |
+|--------------|----------|-------------|
+| number_ovh | number | Ligne ou numéro OVHcloud |
+| number | number | Numéro externe |
+| voicemail | voicemail | Répondeur d'une ligne |
+
+## 6. CONTROLLER - PROPRIÉTÉS
+self.loading = { init: false }
+self.popoverStatus = { move: false, rightPage: null }
+self.model = { slotType: null, search: '' }
+self.slot = null  // Instance du slot en édition
+self.availableSlotTypes = ['number_ovh', 'number', 'voicemail']
+self.redirectNumberOvh = null  // Service OVH sélectionné
+self.isLoadingSlotNumber = false
+
+## 7. CONTROLLER - MÉTHODES
+| Méthode | Description |
+|---------|-------------|
+| getServiceType(service) | Retourne le type de service (number/trunk/fax/plug_fax/line) |
+| filterGroupServices(group) | Filtre les services selon le type de slot |
+| isSlotValid() | Vérifie que le numéro n'est pas vide |
+| onSlotTypeBtnClick() | Ouvre la page de sélection du type |
+| onSlotTypeChange() | Gère le changement de type |
+| onSlotNumberBtnClick() | Ouvre la page de sélection du numéro |
+| onSlotNumberChange(service) | Gère la sélection d'un service OVH |
+| onValidateBtnClick() | Valide et ferme le popover |
+| onCancelBtnClick() | Annule et ferme le popover |
+
+## 8. TRADUCTIONS FR
+voip_time_condition_slots_redirect_popover_back_btn_title = "Retour"
+voip_time_condition_slots_redirect_popover_slot1_title = "Configuration du créneau 1"
+voip_time_condition_slots_redirect_popover_slot1_help = "Comportement à adopter pour les plages horaires utilisant le créneau 1."
+voip_time_condition_slots_redirect_popover_slot2_title = "Configuration du créneau 2"
+voip_time_condition_slots_redirect_popover_slot3_title = "Configuration du créneau 3"
+voip_time_condition_slots_redirect_popover_unavailable_title = "Créneaux hors plages horaires"
+voip_time_condition_slots_redirect_popover_unavailable_help = "Comportement par défaut à adopter en dehors des plages horaires."
+voip_time_condition_slots_redirect_popover_unavailable_help_timeout = "Ce comportement sera déclenché après le délai de renvoi renseigné."
+voip_time_condition_slots_redirect_popover_redirect_type = "Rediriger l'appel vers"
+voip_time_condition_slots_redirect_popover_redirect_type_voicemail = "Un répondeur"
+voip_time_condition_slots_redirect_popover_redirect_type_voicemail_explain = "Permet de renvoyer l'appel vers le répondeur de l'une de vos lignes (sans la faire sonner)."
+voip_time_condition_slots_redirect_popover_redirect_type_number = "Un numéro externe"
+voip_time_condition_slots_redirect_popover_redirect_type_number_explain = "Permet de renvoyer l'appel vers un numéro externe (hors OVHcloud)."
+voip_time_condition_slots_redirect_popover_redirect_type_number_ovh = "Une ligne ou un numéro OVHcloud"
+voip_time_condition_slots_redirect_popover_redirect_type_number_ovh_explain = "Permet de renvoyer l'appel vers l'une de vos lignes OVHcloud ou l'un de vos numéros OVHcloud."
+voip_time_condition_slots_redirect_popover_number_to_redirect = "Numéro vers lequel rediriger"
+voip_time_condition_slots_redirect_popover_number_to_redirect_placeholder = "Numéro au format international (ex: +3312345678)"
+voip_time_condition_slots_redirect_popover_number_to_redirect_required = "Le numéro vers lequel rediriger est obligatoire."
+voip_time_condition_slots_redirect_popover_number_to_redirect_format = "Le numéro doit être au format international (ex: +3312345678)."
+
+## 9. DÉPENDANCES
+- TelephonyMediator.findService()
+- voip-service-choice (composant)
+- oui-field, oui-spinner (ODS)

@@ -1,0 +1,104 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.fax.management
+================================================================================
+Genere le: 2025-12-28
+Source: old_manager_web-cloud_telecom_fax.tar
+NAV1: telecom
+NAV2: fax
+Type: Page de gestion (hub actions)
+
+================================================================================
+1. RESUME EXECUTIF
+================================================================================
+
+Cette page est un hub de navigation vers les actions de gestion du fax.
+Elle affiche une liste de liens vers les sous-pages de gestion.
+
+Perimetre fonctionnel:
+- Affichage des actions disponibles pour la gestion du fax
+- Navigation vers les sous-pages (informations, resiliation)
+
+Users cibles: Administrateurs de services fax Telecom OVHcloud
+
+================================================================================
+2. ARCHITECTURE
+================================================================================
+
+Fichiers sources:
+- packages/manager/apps/telecom/src/app/telecom/telephony/fax/management/
+  - management.controller.js
+  - management.html
+  - management.routing.js
+  - index.js
+  - translations/Messages_fr_FR.json
+
+Route UI-Router:
+- State: telecom.telephony.billingAccount.fax.dashboard.management
+- URL: /management
+- Params: billingAccount, serviceName (depuis parent)
+
+================================================================================
+3. PAGES & NAVIGATION
+================================================================================
+
+Breadcrumb:
+Telecom > Telephonie > [Groupe] > Fax > [serviceName] > Gestion
+
+Actions disponibles (tuc-telecom-v4-links):
++------------------------------------------+
+| GESTION DU FAX                           |
++------------------------------------------+
+| [icon-details] Informations generales    |  -> .management.informations
+| [icon-error]   Resiliation du fax        |  -> .management.terminate
++------------------------------------------+
+
+================================================================================
+4. COMPOSANTS UI
+================================================================================
+
+Composants utilises:
+- oui-spinner : Indicateur de chargement
+- tuc-telecom-v4-links : Liste d'actions avec icones et liens
+
+Structure du composant actions:
+{
+  name: string,           // Identifiant action
+  main: boolean,          // Action principale
+  picto: string,          // Classe icone (ovh-font-*)
+  sref: string,           // State UI-Router destination
+  text: string            // Label traduit
+}
+
+================================================================================
+5. APIs & DONNEES
+================================================================================
+
+API appelee au chargement:
+- TelephonyMediator.getGroup(billingAccount)
+  -> Recupere le groupe telephonie
+  -> group.getFax(serviceName) pour obtenir l'objet fax
+
+Aucun appel API direct sur cette page (hub de navigation).
+
+================================================================================
+6. TRADUCTIONS (FR)
+================================================================================
+
+telephony_group_fax_management_back_link: "Retour a la gestion du fax"
+telephony_group_fax_management_action_informations: "Informations generales"
+telephony_group_fax_management_action_terminate: "Resiliation du fax"
+
+================================================================================
+7. REGLES METIER
+================================================================================
+
+Etats:
+- loading.init = true : Affiche spinner
+- loading.init = false : Affiche liste actions
+
+Permissions:
+- L'utilisateur doit avoir acces au groupe telephonie (billingAccount)
+- L'utilisateur doit avoir acces au service fax (serviceName)
+
+Gestion erreurs:
+- Toast d'erreur si echec chargement avec message API

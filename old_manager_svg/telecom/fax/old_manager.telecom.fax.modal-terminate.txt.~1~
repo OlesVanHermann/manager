@@ -1,0 +1,184 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.fax.modal-terminate
+================================================================================
+Genere le: 2025-12-28
+Source: old_manager_web-cloud_telecom_fax.tar
+NAV1: telecom
+NAV2: fax
+Type: Page de resiliation (pas modal, page complete)
+
+================================================================================
+1. RESUME EXECUTIF
+================================================================================
+
+Page de demande de resiliation d'un service fax Telecom.
+Permet de demander la resiliation ou d'annuler une demande en cours.
+Supporte les actions en masse (bulk) sur plusieurs fax.
+
+Perimetre fonctionnel:
+- Formulaire de demande de resiliation avec choix de raison
+- Affichage d'une demande en cours avec option d'annulation
+- Actions bulk sur plusieurs services fax
+
+Users cibles: Administrateurs souhaitant resilier un service fax
+
+================================================================================
+2. ARCHITECTURE
+================================================================================
+
+Fichiers sources:
+- packages/manager/apps/telecom/src/app/telecom/telephony/fax/management/terminate/
+  - terminate.controller.js
+  - terminate.html
+  - terminate.routing.js
+  - index.js
+  - translations/Messages_fr_FR.json
+
+Route UI-Router:
+- State: telecom.telephony.billingAccount.fax.dashboard.management.terminate
+- URL: /terminate
+- Params: billingAccount, serviceName
+
+================================================================================
+3. PAGES & NAVIGATION
+================================================================================
+
+Breadcrumb:
+Telecom > Telephonie > [Groupe] > Fax > [serviceName] > Gestion > Resiliation
+
+Layout 2 colonnes (row):
++---------------------------+---------------------------+
+| INFORMATIONS              | RESILIATION / ANNULATION  |
+| (col-md-6)                | (col-md-6)                |
++---------------------------+---------------------------+
+| [alert-info]              | Formulaire OU             |
+| - Info resiliation        | Annulation en cours       |
+| - Prise en compte         |                           |
+|   prochaine facture       |                           |
++---------------------------+---------------------------+
+
+================================================================================
+4. COMPOSANTS UI
+================================================================================
+
+Composants utilises:
+- tuc-section-back-link : Lien retour vers dashboard
+- oui-spinner : Chargement
+- tuc-toast-message : Notifications
+- tuc-telephony-bulk-action : Actions en masse
+
+Formulaire resiliation:
+- select : Choix raison (required)
+- textarea : Details si raison = "other" (conditionnellement required)
+- button : Soumettre resiliation
+- bulk-action : Appliquer a plusieurs services
+
+Zone annulation (si demande en cours):
+- Message informatif avec date effective
+- Bouton annulation
+
+================================================================================
+5. APIs & DONNEES
+================================================================================
+
+APIs au chargement:
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | TelephonyMediator.getGroup(billingAccount) | Groupe telephonie |
+| GET | TelephonyMediator.getApiModelEnum('telephony.TerminationReasonEnum') | Liste raisons |
+| GET | voipServiceOfferTask.getTaskInStatus(..., 'termination') | Tache en cours |
+
+APIs actions:
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| DELETE | /telephony/{billingAccount}/service/{serviceName} | Demande resiliation |
+| POST | fax.cancelTermination() | Annuler resiliation |
+
+Bulk action:
+- route: /telephony/{billingAccount}/service/{serviceName}
+- method: DELETE
+- Filtre: services de type 'fax' ou 'voicefax'
+
+Modele donnees formulaire:
+{
+  reason: string,   // Valeur enum TerminationReasonEnum
+  details: string   // Texte libre si reason = 'other'
+}
+
+================================================================================
+6. TRADUCTIONS (FR)
+================================================================================
+
+Titres:
+telephony_group_fax_management_terminate_breadcrumb: "Resiliation du fax"
+telephony_group_fax_management_terminate_info: "Informations"
+
+Messages informatifs:
+telephony_group_fax_management_terminate_info1: "Cette page vous permet de demander la resiliation de votre fax."
+telephony_group_fax_management_terminate_info2: "Les demandes de resiliation seront prises en compte lors de votre prochaine facturation. Jusqu'a cette date, l'annulation de la demande restera possible."
+
+Formulaire:
+telephony_group_fax_management_terminate_reason: "Pour nous aider a ameliorer nos services, veuillez preciser la raison de votre resiliation :"
+telephony_group_fax_management_terminate_reason_choose: "Choisissez une raison"
+telephony_group_fax_management_terminate_details: "Precisez"
+telephony_group_fax_management_terminate_button: "Resilier"
+
+Raisons (TerminationReasonEnum):
+telephony_group_fax_management_terminate_reason_label_addresseMove: "Demenagement"
+telephony_group_fax_management_terminate_reason_label_billingDifficulties: "Facturation non adaptee"
+telephony_group_fax_management_terminate_reason_label_cessationOfActivity: "Cessation d'activite"
+telephony_group_fax_management_terminate_reason_label_missingOptions: "Manque de fonctionnalites"
+telephony_group_fax_management_terminate_reason_label_other: "Autres"
+telephony_group_fax_management_terminate_reason_label_plugAndPhoneDifficulties: "Problemes lies au materiel"
+telephony_group_fax_management_terminate_reason_label_technicalDifficulties: "Problemes techniques"
+telephony_group_fax_management_terminate_reason_label_moveToCompetitor: "Depart vers la concurrence"
+
+Annulation:
+telephony_group_fax_management_terminate_cancel: "Annuler la resiliation"
+telephony_group_fax_management_terminate_cancel_doing: "Une demande de resiliation pour le fax <strong>{{ serviceName }}</strong> est en cours et sera effective le <strong>{{ date }}</strong>."
+telephony_group_fax_management_terminate_cancel_explain: "Vous pouvez annuler la demande jusqu'a cette date."
+telephony_group_fax_management_terminate_cancel_button: "Annuler la resiliation"
+
+Messages succes/erreur:
+telephony_group_fax_management_terminate_success: "La demande de resiliation a ete prise en compte."
+telephony_group_fax_management_terminate_error: "Oups ! Une erreur est survenue lors de la resiliation de votre fax."
+telephony_group_fax_management_terminate_cancel_success: "L'annulation de la resiliation de votre fax a ete effectuee avec succes."
+telephony_group_fax_management_terminate_cancel_error: "Oups ! Une erreur est survenue lors de l'annulation de la resiliation de votre fax."
+
+Bulk:
+telephony_group_fax_management_terminate_bulk_all_success: "La demande de resiliation a bien ete appliquee aux services selectionnes"
+telephony_group_fax_management_terminate_bulk_some_success: "La demande de resiliation a bien ete appliquee a {{ count}} des services selectionnes"
+telephony_group_fax_management_terminate_bulk_error: "La demande de resiliation n'a pas pu etre appliquee aux services suivants :"
+
+================================================================================
+7. REGLES METIER
+================================================================================
+
+Etats d'affichage:
+- loading.init = true : Spinner global
+- terminateTask = null : Affiche formulaire resiliation
+- terminateTask != null : Affiche zone annulation
+
+Validation formulaire:
+- Raison obligatoire (required)
+- Details obligatoire si raison = 'other' (ng-required)
+- Bouton desactive si formulaire invalide
+
+Date effective:
+- nextBillDate = moment().add(1, 'month').startOf('month')
+- La resiliation prend effet au 1er du mois suivant
+
+Filtrage bulk:
+- Seuls les services de type 'fax' ou 'voicefax' sont eligibles
+
+Flux resiliation:
+1. User remplit formulaire
+2. Clic "Resilier"
+3. Appel API DELETE
+4. Rafraichissement pour afficher zone annulation
+
+Flux annulation:
+1. User voit demande en cours
+2. Clic "Annuler la resiliation"
+3. Appel cancelTermination()
+4. Retour a l'etat initial (formulaire)

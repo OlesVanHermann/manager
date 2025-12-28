@@ -1,0 +1,87 @@
+================================================================================
+COMPOSANT : input-filter
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Directive réutilisable
+SOURCE: packages/manager/modules/telecom-universe-components/src/input-filter/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Directive simple pour filtrer/restreindre la saisie utilisateur dans un champ
+input. Applique une fonction de transformation à chaque frappe clavier.
+
+Cas d'usage :
+- Autoriser uniquement les chiffres
+- Convertir en majuscules
+- Supprimer les caractères spéciaux
+- Formater un numéro de téléphone
+
+================================================================================
+2. UTILISATION
+================================================================================
+<input tuc-input-filter="$ctrl.myFilter" ng-model="$ctrl.value" />
+
+$ctrl.myFilter = function(value) {
+    return value.replace(/\D/g, "");  // Garde uniquement les chiffres
+};
+
+================================================================================
+3. COMPORTEMENT
+================================================================================
+1. L'utilisateur tape un caractère
+2. La fonction de filtre est appelée avec la valeur complète
+3. La valeur filtrée est comparée à la valeur originale
+4. Si différente → mise à jour du modèle et du rendu
+5. La valeur filtrée est retournée au pipeline ngModel
+
+================================================================================
+4. INTEGRATION NGMODEL
+================================================================================
+- Utilise modelCtrl.$parsers.push()
+- S'intègre dans le pipeline de validation AngularJS
+- Compatible avec les autres validateurs
+
+================================================================================
+5. EXEMPLES DE FILTRES
+================================================================================
+// Chiffres uniquement
+function digitsOnly(value) {
+    return value.replace(/\D/g, '');
+}
+
+// Majuscules
+function upperCase(value) {
+    return value.toUpperCase();
+}
+
+// Alphanumérique uniquement
+function alphanumeric(value) {
+    return value.replace(/[^a-zA-Z0-9]/g, '');
+}
+
+// Format téléphone français
+function phoneFormat(value) {
+    const digits = value.replace(/\D/g, '');
+    return digits.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+}
+
+================================================================================
+6. EXEMPLE D'INTEGRATION REACT
+================================================================================
+// Hook personnalisé
+function useInputFilter(filterFn: (value: string) => string) {
+  const [value, setValue] = useState('');
+  
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const filtered = filterFn(e.target.value);
+    setValue(filtered);
+  };
+  
+  return { value, onChange: handleChange };
+}
+
+// Utilisation
+const phoneFilter = useInputFilter(v => v.replace(/\D/g, ''));
+<input {...phoneFilter} />

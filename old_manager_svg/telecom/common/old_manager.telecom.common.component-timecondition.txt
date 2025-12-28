@@ -1,0 +1,81 @@
+# CAHIER DES CHARGES - Composant TimeCondition
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/
+
+## 1. IDENTIFICATION
+- Composant: VoipTimeCondition
+- Type: Factory AngularJS réutilisable
+- Fichier source: time-condition.factory.js
+- Usage: Gestion des plages horaires pour téléphonie VoIP
+
+## 2. DESCRIPTION FONCTIONNELLE
+Composant permettant de gérer les conditions temporelles (plages horaires)
+pour les services de téléphonie VoIP. Supporte 3 types de features :
+- SIP : Lignes SIP standard
+- EasyHunting : Files d'appels simplifiées
+- OvhPabx : PABX OVH (dialplan/extension)
+
+## 3. PROPRIÉTÉS OBLIGATOIRES
+| Propriété | Type | Description |
+|-----------|------|-------------|
+| billingAccount | string | Compte de facturation |
+| serviceName | string | Nom du service téléphonique |
+| featureType | enum | 'sip', 'easyHunting', 'ovhPabx' |
+| extensionId | number | Requis si featureType === 'ovhPabx' |
+
+## 4. PROPRIÉTÉS OPTIONNELLES
+| Propriété | Type | Défaut | Description |
+|-----------|------|--------|-------------|
+| slots | Array | [] | Liste des créneaux horaires |
+| conditions | Array | [] | Liste des conditions temporelles |
+| timeout | number | 45 | Délai de renvoi (SIP uniquement) |
+| enable | boolean | false | État d'activation |
+
+## 5. CONSTANTES
+VOIP_TIME_CONDITION = {
+  slotTypesCount: { sip: 3, easyHunting: 3, ovhPabx: 0 }
+}
+
+VOIP_TIME_CONDITION_DEFAULT_SLOTS = [
+  { name: 'available' },    // Horaires d'ouverture
+  { name: 'slot1' },        // Créneau 1
+  { name: 'slot2' },        // Créneau 2
+  { name: 'slot3' },        // Créneau 3
+  { name: 'unavailable' }   // Horaires de fermeture
+]
+
+VOIP_TIMECONDITION_ORDERED_DAYS = [
+  'monday','tuesday','wednesday','thursday','friday','saturday','sunday'
+]
+
+## 6. MÉTHODES PRINCIPALES
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| init() | Promise | Initialise depuis l'API |
+| save() | Promise | Sauvegarde les options |
+| saveConditions() | Promise | Sauvegarde toutes les conditions modifiées |
+| getConditions() | Promise | Récupère les conditions depuis l'API |
+| addCondition(opts) | Condition | Ajoute une condition |
+| removeCondition(cond) | self | Supprime une condition |
+| getCondition(id) | Condition | Récupère une condition par ID |
+| startEdition() | self | Démarre le mode édition |
+| stopEdition(cancel) | self | Termine le mode édition |
+| stopSlotsEdition(cancel) | self | Termine l'édition des slots |
+| stopConditionsEdition(cancel) | self | Termine l'édition des conditions |
+| hasChange(property) | boolean | Détecte les modifications |
+
+## 7. ÉTATS DES CONDITIONS
+| État | Description |
+|------|-------------|
+| OK | Condition existante non modifiée |
+| DRAFT | Nouvelle condition en cours de création |
+| TO_CREATE | Condition à créer lors de la sauvegarde |
+| TO_DELETE | Condition à supprimer lors de la sauvegarde |
+
+## 8. DÉPENDANCES
+- lodash (chunk, filter, find, get, isEqual, map, remove, set, some)
+- moment.js
+- OvhApiTelephony
+- VoipTimeConditionCondition (factory)
+- VoipTimeConditionSlot (factory)
+- voipTimeCondition (service)

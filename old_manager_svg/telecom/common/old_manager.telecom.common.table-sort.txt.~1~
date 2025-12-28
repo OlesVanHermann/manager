@@ -1,0 +1,106 @@
+================================================================================
+COMPOSANT : table-sort
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (directive + component)
+SOURCE: packages/manager/modules/telecom-universe-components/src/table-sort/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Système de tri pour colonnes de tableaux. Permet de trier les données
+en cliquant sur les en-têtes de colonnes avec indicateur de direction.
+
+Cas d'usage :
+- Tri de liste de services
+- Tri de consommation par date/montant
+- Tri alphabétique de contacts
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+┌──────────────────────────────────────────────────────────────────────────┐
+│  Nom du service ↑  │  Date création  │  Statut ↓     │  Actions         │
+├────────────────────┼─────────────────┼───────────────┼──────────────────┤
+│  Service A         │  2024-01-15     │  Actif        │  [...]           │
+│  Service B         │  2024-02-20     │  Suspendu     │  [...]           │
+└────────────────────┴─────────────────┴───────────────┴──────────────────┘
+
+Indicateurs :
+- ↑ oui-icon-arrow-up   : Tri ascendant (A→Z, ancien→récent)
+- ↓ oui-icon-arrow-down : Tri descendant (Z→A, récent→ancien)
+- invisible             : Colonne non triée
+
+================================================================================
+3. COMPOSANTS
+================================================================================
+A) Directive tucTableSort (parent)
+   - Initialise le contexte de tri sur la table
+   - Binding : tucTableSort="$ctrl.sortFunction"
+
+B) Component colSort (enfant)
+   - Bouton cliquable pour chaque colonne triable
+   - Bindings :
+     | Propriété | Type   | Description                    |
+     |-----------|--------|--------------------------------|
+     | fieldName | string | Nom du champ à trier           |
+
+================================================================================
+4. LOGIQUE DE TRI
+================================================================================
+État stocké dans scope.$parent.sort :
+{
+  fieldName: string | null,   // Champ actuellement trié
+  descending: boolean | null  // Direction du tri
+}
+
+Au clic :
+1. Si même colonne → inverse descending
+2. Si autre colonne → fieldName = nouveau, descending = false
+3. Appel de tucTableSort() avec les paramètres
+
+================================================================================
+5. CLASSES CSS
+================================================================================
+.btn.btn-link       : Style bouton sans bordure
+.oui-icon           : Base icône
+.oui-icon-arrow-up  : Flèche montante
+.oui-icon-arrow-down: Flèche descendante
+.invisible          : Cache l'icône si non trié
+
+================================================================================
+6. EXEMPLE D'UTILISATION ANGULARJS
+================================================================================
+<table tuc-table-sort="$ctrl.onSort">
+  <thead>
+    <tr>
+      <th>
+        <tuc-col-sort field-name="name">Nom</tuc-col-sort>
+      </th>
+      <th>
+        <tuc-col-sort field-name="createdAt">Date</tuc-col-sort>
+      </th>
+    </tr>
+  </thead>
+</table>
+
+================================================================================
+7. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface SortConfig {
+  field: string | null;
+  direction: 'asc' | 'desc' | null;
+}
+
+interface TableSortProps {
+  sortConfig: SortConfig;
+  onSort: (field: string) => void;
+}
+
+interface SortableHeaderProps {
+  field: string;
+  label: string;
+  sortConfig: SortConfig;
+  onSort: (field: string) => void;
+}

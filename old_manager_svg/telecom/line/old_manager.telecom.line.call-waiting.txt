@@ -1,0 +1,64 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.line.call-waiting
+================================================================================
+Page : Double appel et mode intercom
+NAV1 : telecom
+NAV2 : line
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+Configuration double appel (call waiting) et mode intercom pour ligne VoIP.
+Double appel : gerer second appel entrant. Intercom : decrochage automatique
+avec haut-parleur (prefixe 3691).
+
+--------------------------------------------------------------------------------
+## 2. ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Fichiers : line/calls/callWaiting/call-waiting.controller.js, call-waiting.html
+API : OvhApiTelephony.Line().Options()
+
+--------------------------------------------------------------------------------
+## 3. NAVIGATION
+--------------------------------------------------------------------------------
+
+Route : telecom.telephony.billingAccount.line.dashboard.calls.callWaiting
+
+--------------------------------------------------------------------------------
+## 4. COMPOSANTS UI
+--------------------------------------------------------------------------------
+
+Section Double appel (MGCP uniquement) :
+- Checkbox : Activer le double appel
+- Explication : Impact transfert appel
+
+Section Mode Intercom :
+- Checkbox : Activer avec prefixe 3691
+- Telephones compatibles : Thomson ST2030, Cisco SPA5, LG IP 88XX
+
+Boutons : Annuler, Enregistrer (si modifications)
+Bulk action disponible
+
+--------------------------------------------------------------------------------
+## 5. APIs
+--------------------------------------------------------------------------------
+
+GET /telephony/{billingAccount}/line/{serviceName}/options
+  -> { callWaiting, intercom }
+
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+  Body : { callWaiting: boolean, intercom: "no"|"prefixed" }
+
+--------------------------------------------------------------------------------
+## 6. REGLES METIER
+--------------------------------------------------------------------------------
+
+Double appel : MGCP uniquement (SIP -> force false)
+Intercom : SIP et MGCP, prefixe 3691 obligatoire
+Computed : intercomSwitch true -> intercom = "prefixed"
+Bulk : Lignes SIP/MGCP uniquement
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

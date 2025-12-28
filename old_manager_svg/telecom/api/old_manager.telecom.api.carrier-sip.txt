@@ -1,0 +1,118 @@
+================================================================================
+SERVICE API : OvhApiTelephonyCarrierSip
+================================================================================
+NAV1: telecom
+NAV2: api
+TYPE: Service API ($resource)
+SOURCE: ovh-api-services/src/api/telephony/carrierSip/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Service AngularJS pour la gestion des trunks SIP Carrier.
+Permet de configurer les endpoints, consulter les CDR et gérer les settings.
+
+================================================================================
+2. ENDPOINTS
+================================================================================
+Base : /telephony/{billingAccount}/carrierSip/{serviceName}
+
+| Méthode | Endpoint           | Description                        |
+|---------|--------------------|-----------------------------------|
+| GET     | /                  | Détails du trunk                  |
+| GET     | /settings          | Paramètres actuels                |
+| PUT     | /settings          | Modifier les paramètres           |
+
+================================================================================
+3. SOUS-SERVICES
+================================================================================
+Endpoints (/endpoints) :
+- GET    : Liste des endpoints SIP
+- POST   : Créer un endpoint
+- GET    /{id} : Détail d'un endpoint
+- PUT    /{id} : Modifier
+- DELETE /{id} : Supprimer
+
+CDRs (/cdrs) - Call Detail Records :
+- GET    : Liste des CDR
+- GET    /{id} : Détail d'un CDR
+
+Cluster Details (/clusterDetails) :
+- GET    : Informations du cluster SIP
+
+================================================================================
+4. STRUCTURE ENDPOINT
+================================================================================
+{
+  id: number,
+  ip: string,                   // Adresse IP
+  port: number,                 // Port SIP (5060)
+  priority: number,             // Priorité (load balancing)
+  protocol: 'udp'|'tcp'|'tls',
+  weight: number                // Poids (load balancing)
+}
+
+================================================================================
+5. STRUCTURE CDR
+================================================================================
+{
+  id: number,
+  called: string,               // Numéro appelé
+  caller: string,               // Numéro appelant
+  dateTime: string,             // Date/heure ISO
+  destinationCountry: string,
+  direction: 'inbound'|'outbound',
+  duration: number,             // Durée en secondes
+  hangupCause: string,
+  planType: string,
+  priceWithoutTax: number
+}
+
+================================================================================
+6. SETTINGS
+================================================================================
+{
+  maxConcurrentCalls: number,   // Appels simultanés max
+  description: string
+}
+
+================================================================================
+7. EXEMPLE REACT QUERY
+================================================================================
+// Liste des endpoints
+const useCarrierSipEndpoints = (billingAccount: string, serviceName: string) => {
+  return useQuery({
+    queryKey: ['carrierSip', billingAccount, serviceName, 'endpoints'],
+    queryFn: () => api.get(
+      `/telephony/${billingAccount}/carrierSip/${serviceName}/endpoints`
+    )
+  });
+};
+
+// CDR avec pagination
+const useCarrierSipCdrs = (
+  billingAccount: string, 
+  serviceName: string,
+  params: { dateFrom?: string; dateTo?: string }
+) => {
+  return useQuery({
+    queryKey: ['carrierSip', billingAccount, serviceName, 'cdrs', params],
+    queryFn: () => api.get(
+      `/telephony/${billingAccount}/carrierSip/${serviceName}/cdrs`,
+      { params }
+    )
+  });
+};
+
+// Créer un endpoint
+const useCreateEndpoint = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ billingAccount, serviceName, endpoint }) =>
+      api.post(
+        `/telephony/${billingAccount}/carrierSip/${serviceName}/endpoints`,
+        endpoint
+      ),
+    onSuccess: () => queryClient.invalidateQueries(['carrierSip', 'endpoints'])
+  });
+};

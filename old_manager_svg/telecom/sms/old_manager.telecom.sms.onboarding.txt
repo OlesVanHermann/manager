@@ -1,0 +1,150 @@
+# old_manager.telecom.sms.onboarding.txt
+# Cahier des charges - Page Onboarding SMS
+# Généré depuis : old_manager_web-cloud_telecom_sms.tar
+
+---
+
+## 1. RÉSUMÉ EXÉCUTIF
+
+### Périmètre
+Page d'accueil affichée lorsque l'utilisateur n'a aucun compte SMS.
+
+### Objectif fonctionnel
+Présenter le service SMS OVHcloud et inciter à la commande avec liens vers documentation.
+
+### Utilisateurs cibles
+Nouveaux clients ou clients sans compte SMS actif.
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+```
+packages/manager/modules/sms/src/onboarding/
+├── onboarding.component.js   # Déclaration composant
+├── onboarding.controller.js  # Logique (guides, CTA)
+├── onboarding.html           # Template
+├── onboarding.module.js      # Module Angular
+├── onboarding.routing.js     # Route
+├── constants.js              # URLs CTA et guides
+└── translations/
+    └── Messages_fr_FR.json
+```
+
+### Dépendances
+- manager-on-boarding-layout : Layout standard onboarding OVH
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Route
+| Propriété | Valeur |
+|-----------|--------|
+| State | sms.onboarding |
+| URL | /sms/onboarding |
+| Component | smsOnboardingComponent |
+
+### Redirections
+| Condition | Destination |
+|-----------|-------------|
+| resources.length > 0 | sms.index |
+
+### Breadcrumb
+Masqué (hideBreadcrumb: () => true)
+
+---
+
+## 4. COMPOSANTS UI
+
+### Layout
+```html
+<manager-on-boarding-layout data-guides="$ctrl.guides">
+    <onboarding-title>
+        <p data-translate="sms_onboarding_title"></p>
+    </onboarding-title>
+    <onboarding-description>
+        <p data-translate="sms_onboarding_description"></p>
+        <a class="oui-button oui-button_primary oui-button_l"
+           data-translate="sms_onboarding_order"
+           href="{{$ctrl.cta}}"
+           target="_blank">
+        </a>
+    </onboarding-description>
+</manager-on-boarding-layout>
+```
+
+### Éléments
+| Élément | Contenu |
+|---------|---------|
+| Titre | "SMS PRO" |
+| Description | "L'envoi de SMS par Internet n'a jamais été aussi simple." |
+| Bouton CTA | "Découvrir les offres" → lien externe |
+| Guides | 3 cartes avec liens documentation |
+
+---
+
+## 5. APIs & DONNÉES
+
+### Endpoint
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /sms | Vérification existence comptes |
+
+### Resolver
+```javascript
+resources: ($http) => $http.get('/sms').then(({ data }) => data)
+```
+
+---
+
+## 6. TRADUCTIONS
+
+### Clés i18n
+| Clé | FR |
+|-----|-----|
+| sms_onboarding_title | "SMS PRO" |
+| sms_onboarding_description | "L'envoi de SMS par Internet n'a jamais été aussi simple." |
+| sms_onboarding_order | "Découvrir les offres" |
+| sms_onboarding_guide1_title | "Gérer les crédits SMS et activer la recharge automatique" |
+| sms_onboarding_guide1_description | "Apprenez comment gérer vos crédits SMS OVHcloud" |
+| sms_onboarding_guide2_title | "API SMS Cookbook" |
+| sms_onboarding_guide2_description | "Ce guide présente quelques combinaisons possible avec l'API pour utiliser la plateforme SMS d'OVH." |
+| sms_onboarding_guide3_title | "Gérer les SMS avec réponse" |
+
+---
+
+## 7. RÈGLES MÉTIER
+
+### URLs CTA par subsidiary
+| Subsidiary | URL |
+|------------|-----|
+| FR | https://www.ovhcloud.com/fr/sms/ |
+| GB | https://www.ovhcloud.com/en-gb/sms/ |
+| ES | https://www.ovhcloud.com/es-es/sms/ |
+| IT | https://www.ovhcloud.com/it/sms/ |
+| PL | https://www.ovhcloud.com/pl/sms/ |
+| IE | https://www.ovhcloud.com/en-ie/sms/ |
+| DEFAULT | https://www.ovhcloud.com/en-gb/sms/ |
+
+### Guides
+| # | Titre | URL FR |
+|---|-------|--------|
+| 1 | Gérer les crédits SMS | https://docs.ovh.com/fr/sms/activer-la-recharge-automatique-du-credit-sms/ |
+| 2 | API SMS Cookbook | https://docs.ovh.com/fr/sms/api_sms_cookbook/ |
+| 3 | Gérer les SMS avec réponse | https://docs.ovh.com/fr/sms/gerer-les-sms-avec-reponse/ |
+
+### Logique controller
+```javascript
+async $onInit() {
+  const user = await this.coreConfig.getUser();
+  this.ovhSubsidiary = user.ovhSubsidiary;
+  this.guides = GUIDES.map((guide) => ({
+    link: guide.links[this.ovhSubsidiary] || guide.links.DEFAULT,
+    description: guide.description && this.$translate.instant(guide.description),
+    title: this.$translate.instant(guide.title),
+  }));
+  this.cta = CTA[this.ovhSubsidiary] || CTA.DEFAULT;
+}
+```

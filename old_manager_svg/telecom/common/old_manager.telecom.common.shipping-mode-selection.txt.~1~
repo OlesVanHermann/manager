@@ -1,0 +1,118 @@
+================================================================================
+COMPOSANT : shipping-mode-selection
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (component)
+SOURCE: packages/manager/modules/telecom-universe-components/src/shippingModeSelection/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Sélecteur de mode de livraison pour commande de matériel.
+Propose le choix entre Mondial Relay et transporteur, avec
+intégration du widget de sélection de point relais.
+
+Cas d'usage :
+- Commande de téléphone/matériel
+- Livraison d'équipement xDSL
+- Envoi de cartes SIM
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+État initial (choix du mode) :
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ○ Livraison gratuite en point Mondial Relay sous 48h          │
+│    (après envoi)                                                │
+│                                                                 │
+│  ○ Livraison par transporteur (+ 9.99 € HT) sous 24h           │
+│    (après envoi)                                                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Après sélection Mondial Relay :
+┌─────────────────────────────────────────────────────────────────┐
+│  ● Livraison gratuite en point Mondial Relay                    │
+│  ─────────────────────────────────────────────────────────────  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                             ││
+│  │  [Widget Mondial Relay - Carte + Liste points]              ││
+│  │                                                             ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. PROPRIETES (BINDINGS)
+================================================================================
+| Propriété | Type   | Direction | Description                             |
+|-----------|--------|-----------|----------------------------------------|
+| ngModel   | object | =         | Mode + adresse sélectionnés            |
+
+================================================================================
+4. OPTIONS DE CONFIGURATION
+================================================================================
+Via $ctrl.options :
+| Option             | Type    | Description                             |
+|--------------------|---------|----------------------------------------|
+| disableMondialRelay| boolean | Cache l'option Mondial Relay           |
+| disableTransporter | boolean | Cache l'option transporteur            |
+| payForRelay        | boolean | Mondial Relay payant (non gratuit)     |
+| shippingPrice      | number  | Prix de livraison (€ HT)               |
+
+================================================================================
+5. MODES DE LIVRAISON
+================================================================================
+| Mode          | Délai    | Prix                        |
+|---------------|----------|----------------------------|
+| mondialRelay  | 48h      | Gratuit ou options.price    |
+| transporter   | 24h      | Gratuit ou options.price    |
+
+================================================================================
+6. TRADUCTIONS (FR)
+================================================================================
+shipping_mode_selection_mode_mondial_relay :
+  "Livraison gratuite en point Mondial Relay sous 48h (après envoi)"
+
+shipping_mode_selection_mode_mondial_relay_not_free :
+  "Livraison en point Mondial Relay (+ {{ price }} € HT) sous 48h (après envoi)"
+
+shipping_mode_selection_mode_transporter :
+  "Livraison par transporteur (+ {{ price }} € HT) sous 24h (après envoi)"
+
+shipping_mode_selection_mode_transporter_free :
+  "Livraison gratuite par transporteur sous 24h (après envoi)"
+
+================================================================================
+7. COMPOSANT ENFANT
+================================================================================
+<ovh-mondial-relay ng-model="$ctrl.selectedRelay">
+  Widget externe de sélection de point relais avec carte
+
+================================================================================
+8. CLASSES CSS
+================================================================================
+.shipping-mode-selection : Container principal
+.animate-mondial-relay   : Animation d'apparition du widget
+.text-price              : Style du prix
+.text-infos              : Style "HT"
+
+================================================================================
+9. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface ShippingMode {
+  mode: 'mondialRelay' | 'transporter';
+  relay?: MondialRelayPoint;
+  address?: Address;
+}
+
+interface ShippingModeSelectionProps {
+  value: ShippingMode | null;
+  onChange: (mode: ShippingMode) => void;
+  options?: {
+    disableMondialRelay?: boolean;
+    disableTransporter?: boolean;
+    shippingPrice?: number;
+  };
+}

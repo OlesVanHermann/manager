@@ -1,0 +1,83 @@
+================================================================================
+SERVICE API : OvhApiTelephonyRedirect
+================================================================================
+NAV1: telecom
+NAV2: api
+TYPE: Service API ($resource)
+SOURCE: ovh-api-services/src/api/telephony/redirect/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Service AngularJS pour la gestion des redirections d'appels (DDI/redirect).
+Permet de configurer la destination des appels entrants.
+
+================================================================================
+2. ENDPOINTS
+================================================================================
+Base : /telephony/{billingAccount}/{featureType}/{serviceName}
+
+| featureType | Description                              |
+|-------------|------------------------------------------|
+| redirect    | Numéro avec redirection simple           |
+| ddi         | Direct Dial-In (SDA)                     |
+
+================================================================================
+3. METHODES
+================================================================================
+| Méthode | Endpoint                    | Description                    |
+|---------|-----------------------------|--------------------------------|
+| GET     | /                           | Détails de la redirection      |
+| POST    | /changeDestination          | Changer la destination         |
+
+================================================================================
+4. PARAMETRES CHANGE DESTINATION
+================================================================================
+{
+  destination: string  // Numéro cible au format international
+}
+
+================================================================================
+5. EXEMPLE D'UTILISATION
+================================================================================
+// Récupérer la configuration actuelle
+OvhApiTelephonyRedirectV6.get({
+  billingAccount: 'billing123',
+  featureType: 'redirect',
+  serviceName: '0033123456789'
+}).$promise.then(redirect => {
+  console.log('Destination actuelle:', redirect.destination);
+});
+
+// Changer la destination
+OvhApiTelephonyRedirectV6.change({
+  billingAccount: 'billing123',
+  featureType: 'redirect',
+  serviceName: '0033123456789'
+}, {
+  destination: '0033987654321'
+}).$promise;
+
+================================================================================
+6. EXEMPLE REACT QUERY
+================================================================================
+const useRedirectDestination = (billingAccount: string, serviceName: string) => {
+  return useQuery({
+    queryKey: ['redirect', billingAccount, serviceName],
+    queryFn: () => api.get(
+      `/telephony/${billingAccount}/redirect/${serviceName}`
+    )
+  });
+};
+
+const useChangeDestination = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ billingAccount, serviceName, destination }) =>
+      api.post(
+        `/telephony/${billingAccount}/redirect/${serviceName}/changeDestination`,
+        { destination }
+      ),
+    onSuccess: () => queryClient.invalidateQueries(['redirect'])
+  });
+};

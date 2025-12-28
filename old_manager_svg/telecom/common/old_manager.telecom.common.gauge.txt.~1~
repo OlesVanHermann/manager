@@ -1,0 +1,91 @@
+================================================================================
+COMPOSANT : gauge
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (directive)
+SOURCE: packages/manager/modules/telecom-universe-components/src/gauge/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Jauge visuelle SVG animée en forme de compteur semi-circulaire.
+L'aiguille se déplace de façon fluide vers la valeur cible.
+
+Cas d'usage :
+- Affichage du niveau de crédit SMS
+- Indicateur de consommation bande passante
+- Jauge de quota utilisé
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+        ╭───────────────────╮
+       ╱                     ╲
+      │    ┃ ┃ ┃ ┃ ┃         │   ← Graduations (0%, 25%, 50%, 75%, 100%)
+      │         ⟋            │   ← Aiguille animée
+      │        ●             │   ← Pivot central
+       ╲                    ╱
+        ╰──────────────────╯
+
+================================================================================
+3. PROPRIETES (BINDINGS)
+================================================================================
+| Propriété     | Type   | Direction | Description                          |
+|---------------|--------|-----------|--------------------------------------|
+| tucGauge      | number | =         | Valeur maximum de la jauge           |
+| tucGaugeWidth | number | =         | Largeur en pixels (défaut: 100)      |
+| ngModel       | number | =         | Valeur actuelle à afficher           |
+
+================================================================================
+4. ANIMATION
+================================================================================
+- Intervalle : 100ms
+- Vitesse proportionnelle à la distance restante
+- Seuil d'arrêt : speed < 0.05
+- Rotation : 0° (gauche) à 180° (droite)
+
+Formule :
+  fraction = currentValue / tucGauge
+  rotation = 180 * fraction (degrés)
+
+================================================================================
+5. STRUCTURE SVG
+================================================================================
+<svg class="gauge">
+  <g transform="scale(0.2)">
+    <g transform="translate(220,220)">
+      <!-- Arc de fond -->
+      <path class="gauge frame" d="M-188,68 A200,200 0 1,1 188,68"/>
+      
+      <!-- Graduations -->
+      <path class="gauge mark mk0" transform="rotate(180)"/>
+      <path class="gauge mark mk45" transform="rotate(225)"/>
+      <path class="gauge mark mk90" transform="rotate(270)"/>
+      <path class="gauge mark mk135" transform="rotate(315)"/>
+      <path class="gauge mark mk180" transform="rotate(0)"/>
+      
+      <!-- Aiguille -->
+      <path class="gauge-cursor" transform="rotate(X)"/>
+    </g>
+  </g>
+</svg>
+
+================================================================================
+6. CLASSES CSS
+================================================================================
+.gauge         : Container SVG
+.gauge.frame   : Arc de fond
+.gauge.mark    : Graduations
+.gauge-cursor  : Aiguille
+
+================================================================================
+7. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface GaugeProps {
+  value: number;      // Valeur actuelle
+  max: number;        // Valeur maximum
+  width?: number;     // Largeur en px (défaut: 100)
+}
+
+// Animation via requestAnimationFrame + easing

@@ -1,0 +1,176 @@
+# CAHIER DES CHARGES - Composant Notification
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/notification/
+
+## 1. IDENTIFICATION
+- Composant: NotificationListCtrl
+- Type: Component + Service AngularJS
+- Fichiers source: notification.component.js, notification.service.js, notification-list.html
+- Usage: Gestion des alertes SMS/Email pour les services télécom
+
+## 2. DESCRIPTION FONCTIONNELLE
+Composant permettant de gérer les notifications d'alerte pour les services
+télécom. Supporte les alertes par email et SMS avec différentes fréquences
+d'envoi et options de notification d'incidents.
+
+## 3. TEMPLATE HTML - STRUCTURE
+<div class="text-center" data-ng-if="NotificationListCtrl.loading">
+    <oui-spinner data-size="l"></oui-spinner>
+    <h2>Le chargement de vos alertes est en cours ...</h2>
+</div>
+
+<!-- Avertissement SMS sans crédit -->
+<div data-ng-repeat="smsDetail in NotificationListCtrl.smsDetails">
+    <oui-message type="warning" data-ng-if="smsDetail.creditsLeft === 0">
+        Attention, le compte {{ smsAccount }} n'a plus de crédit pour l'envoi de nouveaux SMS.
+    </oui-message>
+</div>
+
+<!-- Tableau des notifications -->
+<div class="table-responsive-vertical">
+    <button class="btn btn-default mb-3" data-ng-click="NotificationListCtrl.addElement()">
+        <i class="oui-icon oui-icon-add mr-2"></i>
+        Ajouter une alerte
+    </button>
+    
+    <table class="table table-hover">
+        <thead>
+            <tr class="sort">
+                <th>Type</th>
+                <th>Compte</th>
+                <th>Contact à notifier</th>
+                <th>Fréquence d'envoi</th>
+                <th>Notification des incidents</th>
+                <th>Délai avant notification (min)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Ligne vide -->
+            <tr data-ng-if="NotificationListCtrl.ngModel.length === 0">
+                <td colspan="4">Il n'y a aucune alerte enregistrée.</td>
+            </tr>
+            
+            <!-- Mode lecture -->
+            <tr data-ng-repeat="element in NotificationListCtrl.ngModel"
+                data-ng-if="!element.editMode">
+                <td>{{ type: mail/sms }}</td>
+                <td>{{ smsAccount }}</td>
+                <td>{{ email || phone }}</td>
+                <td>{{ frequency }}</td>
+                <td>{{ allowIncident: Oui/Non }}</td>
+                <td>{{ downThreshold }}</td>
+                <td>
+                    <button class="btn btn-ovh-danger btn-link"
+                            data-ng-really-click="destroyElement(element)">
+                        <i class="ovh-font ovh-font-bin"></i>
+                    </button>
+                </td>
+            </tr>
+            
+            <!-- Mode édition -->
+            <tr data-ng-if="element.editMode">
+                <td><select ng-model="element.type">...</select></td>
+                <td><select ng-model="element.smsAccount">...</select></td>
+                <td><input ng-model="element.email/phone"/></td>
+                <td><select ng-model="element.frequency">...</select></td>
+                <td><select ng-model="element.allowIncident">...</select></td>
+                <td><oui-numeric ng-model="element.downThreshold"/></td>
+                <td>
+                    <button class="btn btn-primary" ng-click="submitElement(element)">
+                        <i class="fa fa-check"></i>
+                    </button>
+                    <button class="btn btn-default" ng-click="removeElement(element)">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+## 4. MODÈLE DE DONNÉES - NOTIFICATION
+| Propriété | Type | Description |
+|-----------|------|-------------|
+| id | string | Identifiant unique |
+| type | enum | 'mail' ou 'sms' |
+| smsAccount | string | Compte SMS (si type=sms) |
+| email | string | Adresse email (si type=mail) |
+| phone | string | Numéro téléphone (si type=sms) |
+| frequency | enum | Fréquence d'envoi |
+| allowIncident | boolean | Notification des incidents |
+| downThreshold | number | Délai avant notification (minutes) |
+| editMode | boolean | Mode édition actif |
+| frozen | boolean | Actions bloquées |
+
+## 5. OPTIONS DE FRÉQUENCE
+| Valeur | Label FR |
+|--------|----------|
+| once | Une fois |
+| 5m | Toutes les 5 minutes |
+| 1h | Toutes les heures |
+| 6h | Toutes les 6 heures |
+
+## 6. CONTROLLER - PROPRIÉTÉS
+self.loading = false
+self.ngModel = []              // Liste des notifications
+self.smsDetails = []           // Détails des comptes SMS
+self.accounts = []             // Comptes SMS disponibles
+self.types = [
+  { name: 'mail', label: 'components_notification_mail' },
+  { name: 'sms', label: 'components_notification_sms' }
+]
+self.frequencies = [
+  { name: 'once', label: 'components_notification_once' },
+  { name: '5m', label: 'components_notification_5m' },
+  { name: '1h', label: 'components_notification_1h' },
+  { name: '6h', label: 'components_notification_6h' }
+]
+self.allowIncident = [
+  { name: true, label: 'components_notification_true' },
+  { name: false, label: 'components_notification_false' }
+]
+self.downThreshold = { min: 0, max: 60 }
+
+## 7. CONTROLLER - MÉTHODES
+| Méthode | Description |
+|---------|-------------|
+| addElement() | Ajoute une nouvelle notification en mode édition |
+| removeElement(element) | Annule l'ajout/édition d'un élément |
+| submitElement(element) | Sauvegarde une notification |
+| destroyElement(element) | Supprime une notification (avec confirmation) |
+| sortElements(SORT) | Trie les éléments selon la colonne |
+| isTypeValid(type) | Vérifie si le type est valide (SMS nécessite un compte) |
+
+## 8. TRADUCTIONS FR
+components_notification_delete = "Supprimer"
+components_notification_type = "Type"
+components_notification_error_noSmsAccount = "Vous n'avez pas de comptes SMS"
+components_notification_loading = "Le chargement de vos alertes est en cours ..."
+components_notification_noNotification = "Il n'y a aucune alerte enregistrée."
+components_notification_frequency = "Fréquence d'envoi"
+components_notification_contact = "Contact à notifier en cas d'alertes"
+components_notification_account = "Compte"
+components_notification_confirm = "Êtes-vous sûr(e) de vouloir supprimer la notification sur le service {{service}} pour {{contact}} ?"
+components_notification_add = "Ajouter une alerte"
+components_notification_mail = "E-mail"
+components_notification_sms = "SMS"
+components_notification_once = "Une fois"
+components_notification_5m = "Toutes les 5 minutes"
+components_notification_1h = "Toutes les heures"
+components_notification_6h = "Toutes les 6 heures"
+components_notification_sms_detail_warning = "Attention, le compte {{smsAccount}} n'a plus de crédit pour l'envoi de nouveaux SMS."
+components_notification_allowIncident = "Notification des incidents"
+components_notification_downThreshold = "Délai avant notification (en minutes)"
+components_notification_true = "Oui"
+components_notification_false = "Non"
+
+## 9. VALIDATION
+- Email: validation type="email" standard
+- Phone: directive ovh-validate="phone", format 0033...
+- Type SMS: requiert au moins un compte SMS disponible
+
+## 10. DÉPENDANCES
+- oui-spinner, oui-message, oui-numeric (ODS)
+- ng-really-click (confirmation avant action)
+- tuc-table-sort, tuc-col-sort (tri de tableau)

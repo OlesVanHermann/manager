@@ -1,0 +1,218 @@
+# CAHIER DES CHARGES - Composant Service Choice (Selecteur de Service)
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/service/choice/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Directive AngularJS pour selectionner un service de telephonie parmi tous les groupes du compte.
+
+### Objectif fonctionnel
+- Lister tous les groupes de telephonie
+- Afficher les services de chaque groupe (lignes, numeros, fax)
+- Filtrer par type et par recherche textuelle
+- Permettre la selection d'un service
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| choice.directive.js | Directive voipServiceChoice |
+| choice.controller.js | Controller voipServiceChoiceCtrl |
+| choice.html | Template liste groupes/services |
+| choice.less | Styles CSS |
+| index.js | Module AngularJS |
+| translations/Messages_fr_FR.json | Traductions FR |
+
+### Dependances
+- lodash (indexOf, sortBy, isFunction)
+- tucVoipBillingAccount (liste groupes)
+- TelephonyMediator (chargement services)
+- $translate
+
+---
+
+## 3. COMPOSANT UI
+
+### Directive
+```javascript
+{
+  restrict: 'E',
+  templateUrl: 'choice.html',
+  controller: 'voipServiceChoiceCtrl',
+  controllerAs: '$ctrl',
+  bindToController: true,
+  scope: {
+    onChoiceValidated: '&?',
+    onChoiceCancel: '&?',
+    onChoiceChanged: '&?',
+    excludeServices: '<?',
+    availableTypes: '<?',
+    filterServices: '<?',
+    hideHeader: '<?',
+    hideFooter: '<?',
+    hiddenGroups: '<?',
+    preloadGroup: '<?',
+    choiceArgs: '<?'
+  }
+}
+```
+
+### Bindings
+| Binding | Type | Description |
+|---------|------|-------------|
+| onChoiceValidated | function | Callback validation |
+| onChoiceCancel | function | Callback annulation |
+| onChoiceChanged | function | Callback changement selection |
+| excludeServices | array | Services a exclure |
+| availableTypes | array | Types autorises |
+| filterServices | function | Filtre custom |
+| hideHeader | boolean | Masquer header |
+| hideFooter | boolean | Masquer footer |
+| hiddenGroups | array | Groupes a masquer |
+| preloadGroup | string | Groupe a precharger |
+| choiceArgs | any | Arguments passes aux callbacks |
+
+---
+
+## 4. TRADUCTIONS (FR)
+
+```json
+{
+  "telephony_service_choice_title": "Choix du service",
+  "telephony_service_choice_filter_by": "Filtrer par :",
+  "telephony_service_choice_filter_by_type": "Types",
+  "telephony_service_choice_filter_by_group": "Groupes",
+  "telephony_service_choice_filter_type_sip": "Lignes SIP",
+  "telephony_service_choice_filter_type_plugAndFax": "Lignes SIP (plug&fax)",
+  "telephony_service_choice_filter_type_trunk": "Lignes Trunk",
+  "telephony_service_choice_filter_type_fax": "Fax",
+  "telephony_service_choice_filter_type_number": "Numero",
+  "telephony_service_choice_destination": "Choisissez un service"
+}
+```
+
+---
+
+## 5. APIs & DONNEES
+
+### Chargement initial
+```javascript
+$onInit() {
+  // 1. Charger tous les groupes
+  tucVoipBillingAccount.fetchAll().then(groupList => {
+    this.groupList = sortBy(groupList, g => g.getDisplayedName());
+    
+    // Filtrer groupes masques
+    if (hiddenGroups?.length) {
+      this.groupList = this.groupList.filter(
+        g => !hiddenGroups.includes(g.billingAccount)
+      );
+    }
+    
+    // Precharger un groupe si specifie
+    if (preloadGroup) {
+      const group = this.groupList.find(g => g.billingAccount === preloadGroup);
+      if (group) this.startLoadServices(group, { immediate: true });
+    }
+  });
+}
+```
+
+### Chargement services (lazy)
+```javascript
+startLoadServices(group, { immediate } = {}) {
+  // Charge apres 1s de hover (ou immediatement si immediate=true)
+  const doLoad = () => {
+    return TelephonyMediator.getGroup(group.billingAccount)
+      .then(mediatorGroup => {
+        let services = mediatorGroup.getAllServices();
+        
+        // Appliquer filtre custom si fourni
+        if (filterServices) {
+          services = filterServices(mediatorGroup, services, choiceArgs);
+        }
+        
+        group.services = services;
+      });
+  };
+  
+  if (immediate) return doLoad();
+  return $timeout(doLoad, 1000);
+}
+```
+
+### Endpoints utilises
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /telephony | Liste groupes (Iceberg) |
+| GET | /telephony/{billingAccount} | Detail groupe |
+| GET | /telephony/{billingAccount}/service | Services du groupe (Iceberg) |
+
+---
+
+## 6. REGLES METIER
+
+### Types de services
+```javascript
+getServiceType(service) {
+  if (service.serviceType === 'alias') return 'number';
+  if (service.isFax) return 'fax';
+  if (service.isTrunk?.()) return 'trunk';
+  return service.isPlugNFax ? 'plugAndFax' : 'sip';
+}
+```
+
+### Filtres
+```javascript
+// Exclure certains services
+excludeFilter(service) {
+  if (Array.isArray(excludeServices)) {
+    return excludeServices.indexOf(service.serviceName) < 0;
+  }
+  return true;
+}
+
+// Filtrer par type
+availableFilter(service) {
+  if (availableTypes) {
+    return availableTypes.indexOf(getServiceType(service)) >= 0;
+  }
+  return true;
+}
+```
+
+### Selection
+```javascript
+onChange(service) {
+  selectedService = service;
+  if (onChoiceChanged && isFunction(onChoiceChanged())) {
+    onChoiceChanged()(selectedService, choiceArgs);
+  }
+}
+
+onValidate() {
+  if (onChoiceValidated && isFunction(onChoiceValidated())) {
+    onChoiceValidated()(selectedService, choiceArgs);
+  }
+  selectedService = null;
+  search = '';
+}
+
+onCancel() {
+  if (onChoiceCancel && isFunction(onChoiceCancel())) {
+    onChoiceCancel()(choiceArgs);
+  }
+  selectedService = null;
+  search = '';
+}
+```
+
+### Reset selection sur recherche
+```javascript
+$scope.$watch('$ctrl.search', () => {
+  selectedService = null;
+});
+```

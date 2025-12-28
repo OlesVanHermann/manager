@@ -1,0 +1,117 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.common.table-sort
+================================================================================
+
+1. IDENTIFICATION
+-----------------
+Chemin     : telecom/common
+Composant  : En-tete tableau triable
+Type       : Directive tri colonne
+Framework  : AngularJS 1.7.x
+Module     : telecom-universe-components
+
+2. DESCRIPTION FONCTIONNELLE
+----------------------------
+Directive transformant un en-tete de colonne en bouton de tri.
+Affiche une fleche indiquant l ordre de tri (ascendant/descendant).
+Permet de trier les donnees d un tableau par colonne.
+
+3. STRUCTURE UI
+---------------
+Non trie :
++------------------------------------------------------------------+
+| Nom       | Date [v]   | Statut                                  |
++------------------------------------------------------------------+
+
+Tri ascendant :
++------------------------------------------------------------------+
+| Nom       | Date [^]   | Statut                                  |
++------------------------------------------------------------------+
+
+Tri descendant :
++------------------------------------------------------------------+
+| Nom       | Date [v]   | Statut                                  |
++------------------------------------------------------------------+
+
+4. ETATS VISUELS
+----------------
+| Etat              | Icone            | Description              |
+|-------------------|------------------|--------------------------|
+| Non trie          | invisible        | Pas d icone affichee     |
+| Tri ascendant     | oui-icon-arrow-up| Fleche vers le haut      |
+| Tri descendant    | oui-icon-arrow-down| Fleche vers le bas     |
+
+5. ATTRIBUTS DIRECTIVE
+----------------------
+| Attribut    | Type     | Description                          |
+|-------------|----------|--------------------------------------|
+| fieldName   | string   | Nom du champ a trier                 |
+| title       | string   | Tooltip au survol                    |
+| getSort()   | function | Retourne l etat de tri actuel        |
+| sortElement()| function| Declenche le tri                    |
+
+6. STRUCTURE SORT
+-----------------
+{
+  fieldName: "date",      // Champ actuellement trie
+  descending: false       // true = descendant, false = ascendant
+}
+
+7. COMPORTEMENT
+---------------
+1. Clic sur colonne non triee : Tri ascendant
+2. Clic sur colonne triee asc : Tri descendant
+3. Clic sur colonne triee desc : Tri ascendant
+4. Icone visible uniquement sur colonne active
+
+8. COMPOSANTS UTILISES
+----------------------
+- oui-icon-arrow-up : Fleche tri ascendant
+- oui-icon-arrow-down : Fleche tri descendant
+- uib-tooltip : Tooltip Bootstrap
+
+9. STYLES
+---------
+- btn btn-link : Style bouton lien
+- p-0 : Pas de padding
+- align-middle : Alignement vertical icone
+- invisible : Cache icone si non actif
+
+10. EXEMPLE D UTILISATION
+-------------------------
+<table>
+  <thead>
+    <tr>
+      <th>
+        <tuc-table-sort field-name="name" title="Trier par nom">
+          Nom
+        </tuc-table-sort>
+      </th>
+      <th>
+        <tuc-table-sort field-name="date" title="Trier par date">
+          Date
+        </tuc-table-sort>
+      </th>
+    </tr>
+  </thead>
+</table>
+
+11. INTEGRATION CONTROLEUR
+--------------------------
+// Dans le controleur
+$ctrl.sortConfig = { fieldName: 'date', descending: false };
+
+$ctrl.getSort = () => $ctrl.sortConfig;
+
+$ctrl.sortElement = (fieldName) => {
+  if ($ctrl.sortConfig.fieldName === fieldName) {
+    $ctrl.sortConfig.descending = !$ctrl.sortConfig.descending;
+  } else {
+    $ctrl.sortConfig = { fieldName, descending: false };
+  }
+  $ctrl.applySort();
+};
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

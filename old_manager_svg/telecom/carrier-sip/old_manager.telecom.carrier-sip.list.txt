@@ -1,50 +1,94 @@
-================================================================================
-CAHIER DES CHARGES - old_manager.telecom.carrier-sip.list
-================================================================================
-Genere le : 2025-01-XX
-Source : old_manager_web-cloud_telecom.tar (analyse partielle)
-NAV1 : telecom
-NAV2 : carrier-sip
-Type : Liste des services Carrier SIP
+# old_manager.telecom.carrier-sip.list.txt
+# Cahier des charges - Liste Carrier SIP
+# Généré depuis : old_manager_web-cloud_telecom_carrier-sip.tar
 
-================================================================================
-1. RESUME EXECUTIF
-================================================================================
+---
 
-ATTENTION : Ce cahier des charges est base sur une analyse PARTIELLE.
+## 1. RÉSUMÉ EXÉCUTIF
 
-Objectif : Liste de tous les services Carrier SIP du compte
-Utilisateurs cibles : Administrateurs telecom
-Perimetre : Visualisation, filtrage, acces aux dashboards individuels
+### Périmètre
+Page de liste des services Carrier SIP de l'utilisateur.
 
-================================================================================
-2. COMPOSANTS UI (ESTIMES)
-================================================================================
+### Objectif fonctionnel
+Afficher tous les trunks Carrier SIP avec navigation vers le dashboard de chaque service.
 
-Datagrid avec colonnes probables :
-- Nom du service
-- Groupe de facturation
-- Statut
-- Nombre de canaux
-- Actions
+### Utilisateurs cibles
+Clients OVHcloud disposant d'un ou plusieurs services Carrier SIP.
 
-Filtres :
-- Recherche textuelle
-- Filtre par groupe
+### Note
+Le code source de la liste n'est pas fourni dans le tar. Cette spécification est basée sur les patterns standards OVH.
 
-Actions :
-- Clic ligne -> Dashboard du service
-- Commander nouveau service
+---
 
-================================================================================
-3. APIs (ESTIMEES)
-================================================================================
+## 2. ARCHITECTURE
 
-GET /telephony (liste groupes)
-GET /telephony/{billingAccount}/carrierSip (liste services du groupe)
+### Pattern attendu
+- ListLayoutHelper de @ovh-ux/manager-ng-layout-helpers
+- Datagrid OUI Kit avec pagination Iceberg
 
-================================================================================
-4. DONNEES MANQUANTES
-================================================================================
+---
 
-Code source complet requis pour finaliser ce cahier des charges.
+## 3. PAGES & NAVIGATION
+
+### Route probable
+| Propriété | Valeur |
+|-----------|--------|
+| State | carrier-sip ou carrier-sip.index |
+| URL | /carrier-sip |
+
+### Redirection
+Si aucun service Carrier SIP : redirection vers onboarding.
+
+---
+
+## 4. COMPOSANTS UI
+
+### Structure attendue
+| Élément | Composant |
+|---------|-----------|
+| Header | oui-header avec titre |
+| Bouton commande | oui-button vers ordre |
+| Liste | oui-datagrid avec pagination |
+
+### Colonnes probables
+| Colonne | Description |
+|---------|-------------|
+| Nom/ID | Identifiant du service (lien vers dashboard) |
+| Description | Description du trunk |
+| Billing Account | Compte de facturation associé |
+
+---
+
+## 5. APIs & DONNÉES
+
+### Endpoint probable
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /telephony | Liste billingAccounts |
+| GET | /telephony/{billingAccount}/carrierSip | Carrier SIP par compte |
+
+---
+
+## 6. TRADUCTIONS
+
+### Clés i18n probables
+| Clé | FR (estimé) |
+|-----|-----|
+| carrier_sip_title | "Carrier SIP" |
+| carrier_sip_order | "Commander" |
+| carrier_sip_name_label | "Nom" |
+| carrier_sip_description_label | "Description" |
+| carrier_sip_view_label | "Voir le détail" |
+
+---
+
+## 7. RÈGLES MÉTIER
+
+### Comportement conditionnel
+| Condition | Action |
+|-----------|--------|
+| Aucun service | Redirection onboarding |
+| Services présents | Affichage datagrid |
+
+### Note importante
+CODE SOURCE NON FOURNI - Spécification basée sur les patterns standards.

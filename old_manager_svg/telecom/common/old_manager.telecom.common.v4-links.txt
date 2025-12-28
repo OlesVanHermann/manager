@@ -1,0 +1,126 @@
+================================================================================
+COMPOSANT : v4-links (telecom-v4-links)
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (component)
+SOURCE: packages/manager/modules/telecom-universe-components/src/telecom/v4-links/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Grille de liens d'actions rapides vers les fonctionnalités principales.
+Affiche des boutons stylisés avec icônes, organisés en rangées.
+Supporte les liens internes (ui-sref), externes (url), et désactivés.
+
+Cas d'usage :
+- Dashboard de service avec actions principales
+- Page d'accueil d'un billing account
+- Menu contextuel étendu
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+┌─────────────────────────────────────────────────────────────────┐
+│  ACTIONS PRINCIPALES (main)                                     │
+│  ┌───────────────────────────┐ ┌───────────────────────────┐    │
+│  │ 📞 Configurer la ligne  →│ │ 📋 Voir les factures    → │    │
+│  └───────────────────────────┘ └───────────────────────────┘    │
+│                                                                 │
+│  AUTRES ACTIONS (normal - grille 3 colonnes)                    │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐             │
+│  │ 🔧 Action 1 →│ │ 📊 Action 2 →│ │ ⚙️ Action 3 →│             │
+│  └──────────────┘ └──────────────┘ └──────────────┘             │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐             │
+│  │ 📁 Action 4 →│ │ 🔒 Action 5 →│ │ ❌ Désactivé │             │
+│  └──────────────┘ └──────────────┘ └──────────────┘             │
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. STRUCTURE DES ACTIONS
+================================================================================
+Interface Action :
+{
+  text: string;         // Texte du lien
+  tip?: string;         // Tooltip (hover)
+  picto?: string;       // Classe icône ovh-font
+  main?: boolean;       // Action principale (plus grande)
+  disabled?: boolean;   // Désactivé
+  url?: string;         // Lien externe
+  sref?: string;        // État ui-router
+  isExternal?: boolean; // Icône "nouvel onglet"
+  tracking?: string;    // Tracking analytics
+}
+
+================================================================================
+4. PROPRIETES (BINDINGS)
+================================================================================
+| Propriété   | Type   | Direction | Description                          |
+|-------------|--------|-----------|--------------------------------------|
+| actionRows  | object | <         | { main: Action[][], normal: Action[][] }|
+
+================================================================================
+5. MISE EN PAGE
+================================================================================
+- Actions main : 2 colonnes (col-md-6)
+- Actions normal : 3 colonnes (col-md-4)
+- Responsive : 1 colonne sur mobile (col-xs-12)
+
+================================================================================
+6. TYPES DE LIENS
+================================================================================
+| Type     | Comportement                               | Icône              |
+|----------|--------------------------------------------|--------------------|
+| disabled | Button désactivé                           | Aucune             |
+| url      | <a> avec target="_blank"                   | ovh-font-newtab    |
+| sref     | <a> avec ui-sref navigation interne        | ovh-font-arrow-right|
+
+================================================================================
+7. CLASSES CSS
+================================================================================
+.telecom-v4-links           : Container principal
+.main-actions-container     : Section actions principales
+.service-item               : Container d'un lien
+.main-service               : Style action principale (plus grande)
+.service-button             : Bouton/lien stylisé
+.service-button-description : Texte + icône
+.action-icon                : Icône de l'action
+.service-button-right-icon  : Flèche droite
+
+================================================================================
+8. EXEMPLE DE CONFIGURATION
+================================================================================
+$ctrl.actionRows = {
+  main: [
+    [
+      { text: 'Configurer', picto: 'ovh-font-config', sref: 'config', main: true },
+      { text: 'Facturation', picto: 'ovh-font-invoice', sref: 'billing', main: true }
+    ]
+  ],
+  normal: [
+    [
+      { text: 'Logs', picto: 'ovh-font-logs', sref: 'logs' },
+      { text: 'API', picto: 'ovh-font-api', url: 'https://api.ovh.com', isExternal: true },
+      { text: 'Indisponible', disabled: true }
+    ]
+  ]
+};
+
+================================================================================
+9. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface ActionLink {
+  text: string;
+  tip?: string;
+  icon?: string;
+  main?: boolean;
+  disabled?: boolean;
+  href?: string;
+  to?: string;
+  external?: boolean;
+}
+
+interface V4LinksProps {
+  mainActions?: ActionLink[][];
+  actions?: ActionLink[][];
+}

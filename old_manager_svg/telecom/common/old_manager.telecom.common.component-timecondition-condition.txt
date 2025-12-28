@@ -1,0 +1,89 @@
+# CAHIER DES CHARGES - Composant TimeCondition Condition
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/condition/
+
+## 1. IDENTIFICATION
+- Composant: VoipTimeConditionCondition
+- Type: Factory AngularJS
+- Fichier source: condition.factory.js
+- Usage: Représente une condition temporelle (plage horaire)
+
+## 2. DESCRIPTION FONCTIONNELLE
+Une condition représente une plage horaire associée à un jour de la semaine
+et à une politique de redirection (vers quel slot).
+
+## 3. PROPRIÉTÉS OBLIGATOIRES
+| Propriété | Type | Description |
+|-----------|------|-------------|
+| billingAccount | string | Compte de facturation |
+| serviceName | string | Nom du service téléphonique |
+| featureType | enum | 'sip', 'easyHunting', 'ovhPabx' |
+| dialplanId | number | ID du dialplan (ovhPabx uniquement) |
+| extensionId | number | ID de l'extension (ovhPabx uniquement) |
+
+## 4. PROPRIÉTÉS DE LA CONDITION
+| Propriété | Type | Défaut | Description |
+|-----------|------|--------|-------------|
+| conditionId | string/number | tmp_XXX | ID unique |
+| weekDay | string | 'monday' | Jour de la semaine |
+| timeFrom | string | '08:30:00' | Heure de début (HH:mm:ss) |
+| timeTo | string | '17:29:59' | Heure de fin (HH:mm:ss) |
+| policy | string | 'available' | Politique de redirection |
+| state | string | 'OK' | État de la condition |
+
+## 5. ÉTATS POSSIBLES
+| État | Description |
+|------|-------------|
+| OK | Condition existante, non modifiée |
+| DRAFT | Nouvelle condition en cours de création (pas encore validée) |
+| TO_CREATE | Condition à créer lors de la sauvegarde |
+| TO_DELETE | Condition marquée pour suppression |
+
+## 6. MÉTHODES
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| setOptions(opts) | self | Configure la condition |
+| clone() | Condition | Clone la condition (sans conditionId) |
+| getTimeMoment(time) | moment | Retourne un moment.js pour 'from' ou 'to' |
+| toFullCalendarEvent() | object | Convertit pour affichage FullCalendar |
+| create() | Promise | Crée la condition via API |
+| save() | Promise | Sauvegarde la condition via API |
+| remove() | Promise | Supprime la condition via API |
+| startEdition() | self | Démarre l'édition |
+| stopEdition(cancel, cancelToOriginal, reset) | self | Termine l'édition |
+| hasChange(property, fromOriginal) | boolean | Détecte les changements |
+
+## 7. FORMAT DES HEURES SELON LE TYPE
+
+### SIP
+- API utilise: hourBegin, hourEnd (format HHMM)
+- Interne utilise: timeFrom, timeTo (format HH:mm:ss)
+- Conversion: getSipTime(), parseSipTime()
+
+### EasyHunting / OvhPabx
+- API utilise: timeFrom, timeTo (format HH:mm:ss)
+- Pas de conversion nécessaire
+
+## 8. FULLCALENDAR EVENT FORMAT
+{
+  id: conditionId,
+  start: moment(),  // Heure de début
+  end: moment(),    // Heure de fin
+  allDay: false
+}
+
+## 9. JOURS DE LA SEMAINE
+VOIP_TIMECONDITION_ORDERED_DAYS = [
+  'monday',    // Index 0
+  'tuesday',   // Index 1
+  'wednesday', // Index 2
+  'thursday',  // Index 3
+  'friday',    // Index 4
+  'saturday',  // Index 5
+  'sunday'     // Index 6
+]
+
+## 10. DÉPENDANCES
+- lodash (upperFirst, get, isEqual, now, random)
+- moment.js
+- voipTimeCondition (service)

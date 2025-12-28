@@ -1,0 +1,165 @@
+# CAHIER DES CHARGES - Composant Service Choice
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/telephony/service/choice/
+
+## 1. IDENTIFICATION
+- Composant: voipServiceChoice / telephony-service-choice
+- Type: Directive + Controller AngularJS
+- Fichiers source: choice.controller.js, choice.directive.js, choice.html
+- Usage: Sélecteur de service téléphonique parmi les groupes de l'utilisateur
+
+## 2. DESCRIPTION FONCTIONNELLE
+Composant permettant de sélectionner un service téléphonique (ligne SIP,
+fax, numéro, trunk) parmi tous les services disponibles de l'utilisateur.
+Utilisé notamment pour choisir la destination d'une redirection.
+
+## 3. TEMPLATE HTML - STRUCTURE
+<div class="telephony-service-choice">
+    <!-- Loading -->
+    <div class="my-3" data-ng-if="$ctrl.loading.init">
+        <oui-spinner data-size="m"></oui-spinner>
+    </div>
+    
+    <div data-ng-if="!$ctrl.loading.init" data-ng-class="$ctrl.wrapperClass">
+        <div class="telephony-service-choice-container" data-ng-class="$ctrl.containerClass">
+            
+            <!-- Header (optionnel) -->
+            <header data-ng-if="!$ctrl.hideHeader">
+                <h2>Choix du service</h2>
+            </header>
+
+            <div id="groups" class="telephony-service-choice-section">
+                <!-- Barre de recherche -->
+                <div class="oui-input-overlay mb-4">
+                    <input type="text" class="oui-input" 
+                           name="searchService" id="searchService"
+                           data-ng-model="$ctrl.search"
+                           placeholder="Rechercher..."/>
+                    <span class="oui-icon oui-icon-search"></span>
+                </div>
+
+                <!-- Résultats par groupe -->
+                <div class="section-group" 
+                     data-ng-repeat="group in $ctrl.groupList track by $index">
+                    
+                    <!-- Titre du groupe -->
+                    <div class="group-title text-capitalize">
+                        {{ group.getDisplayedName() }}
+                    </div>
+                    
+                    <!-- Services du groupe -->
+                    <div class="section-item"
+                         data-ng-repeat="service in group.services | filter:$ctrl.search">
+                        <div class="oui-radio">
+                            <input type="radio" class="oui-radio__input"
+                                   id="ruleNumber-{{ service.serviceName }}"
+                                   name="ruleNumber"
+                                   data-ng-model="$ctrl.value"
+                                   data-ng-value="service.serviceName"
+                                   data-ng-change="$ctrl.onChange(service)"/>
+                            <label class="oui-radio__label-container"
+                                   for="ruleNumber-{{ service.serviceName }}">
+                                <span class="oui-radio__label">
+                                    <span class="oui-radio__icon"></span>
+                                    <span class="oui-radio__text">
+                                        {{ service.getDisplayedName() }}
+                                    </span>
+                                </span>
+                                <span class="oui-radio__description">
+                                    <i>{{ type de service }}</i>
+                                    <i>{{ service.serviceName }}</i>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer (optionnel) -->
+            <footer class="telephony-service-choice-footer" data-ng-if="!$ctrl.hideFooter">
+                <button type="submit" class="btn btn-primary"
+                        data-ng-disabled="!$ctrl.selectedService"
+                        data-ng-click="$ctrl.onValidate()">
+                    Valider
+                </button>
+                <button type="reset" class="btn btn-default mr-sm-2 float-left"
+                        data-ng-click="$ctrl.onCancel()">
+                    Annuler
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>
+
+## 4. CONTROLLER - PROPRIÉTÉS
+self.loading = { init: false, services: {} }
+self.search = ''                    // Recherche texte
+self.value = null                   // serviceName sélectionné
+self.selectedService = null         // Service complet sélectionné
+self.groupList = []                 // Liste des groupes de téléphonie
+
+## 5. BINDINGS (DIRECTIVE)
+| Binding | Type | Description |
+|---------|------|-------------|
+| onChoiceChanged | & | Callback quand un service est sélectionné |
+| onChoiceValidate | & | Callback quand l'utilisateur valide |
+| onChoiceCancel | & | Callback quand l'utilisateur annule |
+| hideHeader | < | Masquer le header |
+| hideFooter | < | Masquer le footer |
+| title | < | Titre personnalisé |
+| excludeFilter | < | Filtre d'exclusion de services |
+| availableFilter | < | Filtre de services disponibles |
+| wrapperClass | < | Classe CSS wrapper |
+| containerClass | < | Classe CSS container |
+
+## 6. TYPES DE SERVICES
+| Type interne | Label FR | Description |
+|--------------|----------|-------------|
+| sip | Lignes SIP | Ligne téléphonique standard |
+| plugAndFax | Lignes SIP (plug&fax) | Ligne avec fax intégré |
+| trunk | Lignes Trunk | Ligne trunk SIP |
+| fax | Fax | Service fax |
+| number | Numéro | Numéro alias |
+
+## 7. CONTROLLER - MÉTHODES
+| Méthode | Description |
+|---------|-------------|
+| startLoadServices(group) | Charge les services d'un groupe (lazy loading) |
+| stopLoadServices(group) | Arrête le chargement d'un groupe |
+| getServiceType(service) | Retourne le type du service |
+| onChange(service) | Appelé quand un service est sélectionné |
+| onValidate() | Valide la sélection |
+| onCancel() | Annule la sélection |
+
+## 8. FILTRES DISPONIBLES
+| Filtre | Usage |
+|--------|-------|
+| tucPropsFilter | Filtre sur serviceName et description |
+| excludeFilter | Exclut certains services |
+| availableFilter | N'affiche que les services disponibles |
+
+## 9. TRADUCTIONS FR
+telephony_service_choice_title = "Choix du service"
+telephony_service_choice_filter_by = "Filtrer par :"
+telephony_service_choice_filter_by_type = "Types"
+telephony_service_choice_filter_by_group = "Groupes"
+telephony_service_choice_filter_type_sip = "Lignes SIP"
+telephony_service_choice_filter_type_plugAndFax = "Lignes SIP (plug&fax)"
+telephony_service_choice_filter_type_trunk = "Lignes Trunk"
+telephony_service_choice_filter_type_fax = "Fax"
+telephony_service_choice_filter_type_number = "Numéro"
+telephony_service_choice_destination = "Choisissez un service"
+
+## 10. CLASSES CSS
+- .telephony-service-choice
+- .telephony-service-choice-container
+- .telephony-service-choice-section
+- .telephony-service-choice-footer
+- .section-group
+- .section-item
+- .group-title
+
+## 11. DÉPENDANCES
+- TelephonyMediator (pour charger les groupes)
+- oui-spinner, oui-radio, oui-input (ODS)
+- tucPropsFilter (filtre custom)

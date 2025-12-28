@@ -1,0 +1,88 @@
+================================================================================
+COMPOSANT : input-file
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (directive)
+SOURCE: packages/manager/modules/telecom-universe-components/src/input-file/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Sélecteur de fichier avec affichage du nom sélectionné et bouton de suppression.
+Contrairement à file-reader, ce composant retourne l'objet File complet
+(pas juste le contenu).
+
+Cas d'usage :
+- Upload de fichiers audio (messages vocaux)
+- Import de documents
+- Sélection d'images
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+État initial (aucun fichier) :
+┌─────────────────────────────────────────────────────────────────┐
+│  ┌──────────────────────────────┐                               │
+│  │ [Transclude: Texte bouton]   │  ← Bouton de sélection        │
+│  └──────────────────────────────┘                               │
+│  (Fichiers acceptés : .mp3, .wav)  ← Texte explicatif optionnel │
+└─────────────────────────────────────────────────────────────────┘
+
+État fichier sélectionné :
+┌─────────────────────────────────────────────────────────────────┐
+│  ┌────────────────────────────────────────┐ ┌───┐               │
+│  │ mon_fichier_audio.mp3                  │ │ ✕ │  ← Supprimer  │
+│  └────────────────────────────────────────┘ └───┘               │
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. PROPRIETES (BINDINGS)
+================================================================================
+| Propriété       | Type     | Direction | Description                       |
+|-----------------|----------|-----------|-----------------------------------|
+| ngModel         | File     | =         | Objet File sélectionné            |
+| ngAccept        | string   | @         | Types acceptés (ex: ".mp3,.wav")  |
+| ngAcceptFilter  | function | &         | Filtre custom (file) => boolean   |
+| change          | function | &         | Callback à chaque changement      |
+| fileExplain     | string   | @         | Texte explicatif affiché          |
+
+================================================================================
+4. COMPORTEMENT
+================================================================================
+1. Clic sur bouton → sélecteur fichier natif
+2. Fichier choisi :
+   - Si ngAcceptFilter défini → validation
+   - Si accepté → ngModel = fichier, affichage nom
+   - change({ file }) appelé
+3. Clic sur ✕ :
+   - ngModel = null
+   - input file reset
+   - change({ file: null }) appelé
+
+================================================================================
+5. CLASSES CSS
+================================================================================
+.input-file      : Container bouton initial
+.btn.btn-default : Style bouton Bootstrap
+.form-control    : Input affichant le nom
+.input-group     : Groupe input + bouton clear
+.input-group-btn : Container bouton clear
+.oui-icon-add    : Icône du bouton clear (croix)
+
+================================================================================
+6. TRADUCTIONS
+================================================================================
+input_file_delete : Label accessible bouton suppression
+
+================================================================================
+7. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface InputFileProps {
+  value: File | null;
+  onChange: (file: File | null) => void;
+  accept?: string;
+  acceptFilter?: (file: File) => boolean;
+  placeholder?: string;        // Texte bouton
+  helpText?: string;           // fileExplain
+}

@@ -1,138 +1,31 @@
-# CAHIER DES CHARGES - old_manager.telecom.telephony.line.calls
-# Module gestion des appels d'une ligne
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.telephony.line.calls
+================================================================================
+Module      : telecom/telephony
+Composant   : line.calls (gestion des appels)
+Framework   : AngularJS
+Génération  : Automatique depuis code source
+================================================================================
 
-## 1. RESUME EXECUTIF
+## 1. RÉSUMÉ EXÉCUTIF
 
-### Perimetre
-Ensemble des fonctionnalites de gestion des appels pour une ligne SIP.
+Page de gestion des appels d'une ligne téléphonique VoIP permettant de
+configurer les fonctionnalités d'appel : renvois, filtres, numéros abrégés,
+affichage du numéro, etc.
+
+### Utilisateurs cibles
+- Clients VoIP souhaitant configurer le comportement des appels
 
 ### Objectif fonctionnel
-Configurer renvois, filtrage, numeros abreges, click2call, conditions horaires.
+- Configurer les renvois d'appel
+- Gérer le filtrage des appels
+- Configurer l'affichage du numéro
+- Gérer les numéros abrégés de la ligne
+- Configurer les plages horaires
+- Activer/désactiver l'attente d'appel
 
----
+--------------------------------------------------------------------------------
 
 ## 2. ARCHITECTURE
 
-### Arborescence fichiers source
-```
-telecom/telephony/line/calls/
-├── calls.module.js
-├── abbreviatedNumbers/
-├── callWaiting/
-├── click2Call/
-├── displayNumber/
-├── events/
-├── externalNumber/
-├── filtering/
-├── forward/
-├── lockOutCall/
-├── simultaneousLines/
-├── timeCondition/
-└── trunk/
-```
-
-### Sous-modules (14)
-| Module | Description |
-|--------|-------------|
-| abbreviatedNumbers | Raccourcis numerotation |
-| callWaiting | Signal appel en attente |
-| click2Call | Appel depuis web/API |
-| displayNumber | Numero presente |
-| events | Historique appels |
-| externalNumber | Numeros hors OVH |
-| filtering | Liste blanche/noire |
-| forward | Renvois conditionnels |
-| lockOutCall | Blocage appels sortants |
-| simultaneousLines | Gestion canaux |
-| timeCondition | Plages horaires |
-| trunk | Options trunk SIP |
-
----
-
-## 3. PAGES & NAVIGATION
-
-### Route
-- State: `telecom.telephony.billingAccount.line.dashboard.calls`
-- URL: `/telephony/{billingAccount}/line/{serviceName}/calls`
-
-### Sous-routes
-| State | Description |
-|-------|-------------|
-| .forward | Renvois d'appel |
-| .filtering | Filtrage |
-| .click2Call | Click to call |
-| .timeCondition | Conditions horaires |
-| .abbreviatedNumbers | Numeros abreges |
-
----
-
-## 4. COMPOSANTS UI
-
-### Menu Actions
-- Liste des fonctionnalites disponibles
-- Icones par type d'action
-
-### Vue Forward
-- 4 types de renvoi configurables
-- Selecteur destination (numero OVH, externe, fax, repondeur)
-- Delai pour "pas de reponse"
-
-### Vue Filtering
-- Liste blanche (numeros autorises)
-- Liste noire (numeros bloques)
-
-### Vue TimeCondition
-- Grille horaire 7j/7
-- Plages colorees
-- Actions par plage
-
----
-
-## 5. APIs & DONNEES
-
-### Endpoints Forward
-
-```
-GET /telephony/{billingAccount}/line/{serviceName}/options
-Response: {
-  forwardUnconditional: { enable: boolean, number: string, nature: string },
-  forwardNoReply: { enable: boolean, number: string, nature: string, delay: number },
-  forwardBusy: { enable: boolean, number: string, nature: string },
-  forwardBackup: { enable: boolean, number: string, nature: string }
-}
-```
-
-### Endpoints Click2Call
-
-```
-GET /telephony/{billingAccount}/line/{serviceName}/click2CallUser
-POST /telephony/{billingAccount}/line/{serviceName}/click2CallUser
-POST /telephony/{billingAccount}/line/{serviceName}/click2Call
-Body: { calledNumber: string, callingNumber: string }
-```
-
----
-
-## 6. TRADUCTIONS
-
-### Cles i18n Forward (FR)
-| Cle | Valeur FR |
-|-----|-----------|
-| telephony_line_actions_line_calls_forward_title | Renvoi d'appel |
-| telephony_line_actions_line_calls_forward_unconditional_title | Renvoi de tous les appels |
-| telephony_line_actions_line_calls_forward_no_reply_title | Renvoi quand il n'y a pas de reponse |
-| telephony_line_actions_line_calls_forward_busy_title | Renvoi quand la ligne est occupee |
-| telephony_line_actions_line_calls_forward_backup_title | Renvoi quand la ligne est injoignable |
-
----
-
-## 7. REGLES METIER
-
-### Renvois d'appel
-- Un seul renvoi actif a la fois par type
-- Priorite: Inconditionnel > Occupe > Pas de reponse > Backup
-- Delai "pas de reponse": 5 a 60 secondes
-
-### Click2Call
-- Necessite creation utilisateur
-- Mot de passe: 8-20 caracteres
+### Fichiers sources

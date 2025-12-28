@@ -1,0 +1,105 @@
+================================================================================
+COMPOSANT : jsplumb
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Directive réutilisable (wrapper jsPlumb)
+SOURCE: packages/manager/modules/telecom-universe-components/src/jsplumb/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Wrapper AngularJS pour la bibliothèque jsPlumb permettant de créer des
+diagrammes interactifs avec des connexions visuelles entre éléments.
+
+Cas d'usage :
+- Visualisation de flux d'appels (dialplan)
+- Configuration de règles de routage
+- Diagrammes de configuration PABX
+
+================================================================================
+2. COMPOSANTS DU MODULE
+================================================================================
+| Fichier                        | Description                              |
+|--------------------------------|------------------------------------------|
+| jsplumb.directive.js           | Directive principale (container)         |
+| jsplumb.directive.controller.js| Contrôleur de la directive              |
+| jsplumb.service.js             | Service wrapper jsPlumb                  |
+| jsPlumb.constant.js            | Constantes de configuration              |
+| endpoint/                      | Directive pour les endpoints             |
+| connection/                    | Directive pour les connexions            |
+| connector/                     | Configuration des connecteurs            |
+
+================================================================================
+3. PROPRIETES (BINDINGS)
+================================================================================
+| Propriété            | Type   | Direction | Description                     |
+|----------------------|--------|-----------|--------------------------------|
+| tucJsplumb           | object | =         | Options de configuration        |
+| tucJsplumbInstance   | object | =         | Référence à l'instance jsPlumb |
+
+================================================================================
+4. FONCTIONNALITES
+================================================================================
+- Création d'endpoints (points de connexion)
+- Création de connexions entre endpoints
+- Gestion du redimensionnement fenêtre
+- Repaint automatique optimisé (debounce)
+- Suspension du dessin pendant les modifications batch
+
+================================================================================
+5. CONFIGURATION PAR DEFAUT
+================================================================================
+{
+  Container: element,           // Element DOM container
+  Endpoint: ['Dot', { radius: 5 }],
+  Connector: ['Bezier', { curviness: 50 }],
+  PaintStyle: { strokeWidth: 2, stroke: '#456' },
+  HoverPaintStyle: { stroke: '#89a' },
+  ConnectionOverlays: [['Arrow', { width: 10, length: 10, location: 1 }]]
+}
+
+================================================================================
+6. METHODES INSTANCE
+================================================================================
+- getInstance(options)          : Créer une instance jsPlumb
+- setSuspendDrawing(boolean)    : Suspendre/reprendre le rendu
+- customRepaint()               : Méthode de repaint personnalisée
+- addEndpoint(el, options)      : Ajouter un endpoint
+- connect(params)               : Créer une connexion
+- deleteConnection(conn)        : Supprimer une connexion
+- reset()                       : Réinitialiser l'instance
+
+================================================================================
+7. GESTION DU REDIMENSIONNEMENT
+================================================================================
+- Écoute de window.resize (debounced 33ms)
+- Watch sur dimensions de la fenêtre
+- Repaint automatique des connexions
+
+================================================================================
+8. EXEMPLE D'UTILISATION ANGULARJS
+================================================================================
+<div tuc-jsplumb="$ctrl.jsplumbOptions" 
+     tuc-jsplumb-instance="$ctrl.jsplumb">
+     
+  <div tuc-jsplumb-endpoint="$ctrl.endpoint1">Source</div>
+  <div tuc-jsplumb-endpoint="$ctrl.endpoint2">Target</div>
+  
+</div>
+
+================================================================================
+9. EXEMPLE D'INTEGRATION REACT
+================================================================================
+// Utiliser react-flow ou reactflow pour équivalent moderne
+import ReactFlow, { 
+  Node, 
+  Edge, 
+  Controls 
+} from 'reactflow';
+
+interface FlowDiagramProps {
+  nodes: Node[];
+  edges: Edge[];
+  onConnect: (connection: Connection) => void;
+}

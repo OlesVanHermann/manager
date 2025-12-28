@@ -1,0 +1,156 @@
+# CAHIER DES CHARGES - Composant Notification (Alertes XDSL)
+# Source: packages/manager/apps/telecom/src/components/notification/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Composant AngularJS pour gerer les alertes de monitoring des services XDSL (email et SMS).
+
+### Objectif fonctionnel
+- Lister les alertes configurees sur un service XDSL
+- Ajouter/supprimer des alertes email ou SMS
+- Configurer la frequence et les seuils de notification
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| notification.component.js | Component principal |
+| notification.service.js | Service NotificationElement |
+| notification-list.html | Template liste alertes |
+| translations/Messages_fr_FR.json | Traductions FR |
+
+### Dependances
+- iceberg (pagination)
+- OvhApiXdslNotifications (API alertes XDSL)
+
+---
+
+## 3. MODELE DE DONNEES
+
+### NotificationElement
+```javascript
+class NotificationElement {
+  constructor(element, editMode) {
+    this.type = element.type;              // 'mail' ou 'sms'
+    this.frequency = element.frequency;    // Frequence d'envoi
+    this.email = (type === 'mail') ? element.email : null;
+    this.phone = (type === 'sms') ? element.phone : null;
+    this.smsAccount = element.smsAccount;  // Compte SMS OVH
+    this.xdslService = element.xdslService;
+    this.editMode = editMode === true;
+    this.id = element.id;
+    this.allowIncident = element.allowIncident;
+    this.downThreshold = element.downThreshold / 60; // Convertir en minutes
+  }
+}
+```
+
+### Methodes validation
+```javascript
+isValidSms() {
+  return this.type === 'sms' && this.phone && this.smsAccount;
+}
+
+isValidEmail() {
+  return this.type === 'mail' && this.email;
+}
+
+isValid() {
+  return this.frequency && this.type && this.allowIncident && 
+         this.downThreshold && (this.isValidEmail() || this.isValidSms());
+}
+```
+
+### Donnees creation API
+```javascript
+getCreationData() {
+  const data = {
+    frequency: this.frequency,
+    type: this.type,
+    allowIncident: this.allowIncident,
+    downThreshold: this.downThreshold * 60 // Reconvertir en secondes
+  };
+  
+  if (this.type === 'sms') {
+    data.phone = this.phone;
+    data.smsAccount = this.smsAccount;
+  } else if (this.type === 'mail') {
+    data.email = this.email;
+  }
+  
+  return data;
+}
+```
+
+---
+
+## 4. APIs & DONNEES
+
+### Endpoints utilises
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /xdsl/{serviceName}/monitoringNotifications | Liste alertes |
+| POST | /xdsl/{serviceName}/monitoringNotifications | Creer alerte |
+| DELETE | /xdsl/{serviceName}/monitoringNotifications/{id} | Supprimer alerte |
+| GET | /sms | Liste comptes SMS (pour selection) |
+
+---
+
+## 5. TRADUCTIONS (FR)
+
+```json
+{
+  "components_notification_delete": "Supprimer",
+  "components_notification_type": "Type",
+  "components_notification_error_noSmsAccount": "Vous n'avez pas de comptes SMS",
+  "components_notification_loading": "Le chargement de vos alertes est en cours ...",
+  "components_notification_noNotification": "Il n'y a aucune alerte enregistree.",
+  "components_notification_frequency": "Frequence d'envoi",
+  "components_notification_contact": "Contact a notifier en cas d'alertes",
+  "components_notification_account": "Compte",
+  "components_notification_confirm": "Etes-vous sur(e) de vouloir supprimer la notification sur le service {{service}} pour {{contact}} ?",
+  "components_notification_add": "Ajouter une alerte",
+  "components_notification_mail": "E-mail",
+  "components_notification_sms": "SMS",
+  "components_notification_once": "Une fois",
+  "components_notification_5m": "Toutes les 5 minutes",
+  "components_notification_1h": "Toutes les heures",
+  "components_notification_6h": "Toutes les 6 heures",
+  "components_notification_sms_detail_warning": "Attention, le compte {{smsAccount}} n'a plus de credit pour l'envoi de nouveaux SMS.",
+  "components_notification_allowIncident": "Notification des incidents",
+  "components_notification_downThreshold": "Delai avant notification (en minutes)",
+  "components_notification_true": "Oui",
+  "components_notification_false": "Non"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+### Types d'alertes
+| Type | Contact | Prerequis |
+|------|---------|-----------|
+| mail | Adresse email | Aucun |
+| sms | Numero telephone | Compte SMS OVH avec credit |
+
+### Frequences disponibles
+| Valeur | Label |
+|--------|-------|
+| once | Une fois |
+| 5m | Toutes les 5 minutes |
+| 1h | Toutes les heures |
+| 6h | Toutes les 6 heures |
+
+### Seuil de notification
+- downThreshold stocke en secondes dans l'API
+- Affiche en minutes dans l'interface
+- Conversion: API -> UI: /60, UI -> API: *60
+
+### Verification credit SMS
+- Afficher warning si compte SMS sans credit
+- Message: "Attention, le compte {smsAccount} n'a plus de credit..."

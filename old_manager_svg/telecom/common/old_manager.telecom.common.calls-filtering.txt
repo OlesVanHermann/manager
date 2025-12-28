@@ -1,0 +1,127 @@
+================================================================================
+COMPOSANT : calls-filtering
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (component)
+SOURCE: packages/manager/modules/telecom-universe-components/src/telecom/telephony/callsFiltering/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Gestion du filtrage des appels entrants/sortants pour une ligne téléphonique.
+Permet de créer des règles de blocage ou d'autorisation basées sur des
+numéros, plages ou natures d'appels.
+
+Cas d'usage :
+- Bloquer les appels internationaux
+- Autoriser uniquement certains numéros
+- Filtrer les numéros spéciaux/surtaxés
+
+================================================================================
+2. COMPOSANTS INCLUS
+================================================================================
+A) callsFilteringAdd : Formulaire d'ajout de règle
+B) callsFilteringTable : Tableau des règles existantes
+C) callsFilteringAddHelper : Modal d'aide à la saisie
+
+================================================================================
+3. STRUCTURE UI - AJOUT DE RÈGLE
+================================================================================
+┌─────────────────────────────────────────────────────────────────┐
+│  [Assistant]  [Importer CSV]                                    │
+├─────────────────────────────────────────────────────────────────┤
+│  Nature du numéro                                               │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ ▼ Fax / International / Services / Spécial / Voicemail │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  Type de liste                                                  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ ▼ Liste blanche / Liste noire                          │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  Numéro à filtrer                                               │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ +33612345678                                            │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│                                              [Ajouter]          │
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+4. NATURES D'APPEL
+================================================================================
+| Nature        | Traduction FR        | Description                    |
+|---------------|----------------------|--------------------------------|
+| fax           | Fax                  | Appels fax                     |
+| international | International        | Appels vers l'étranger         |
+| services      | Services             | Numéros de service             |
+| special       | Spécial              | Numéros spéciaux/surtaxés      |
+| voicemail     | Messagerie           | Appels messagerie              |
+
+================================================================================
+5. TYPES DE LISTE
+================================================================================
+| Type       | Description                                          |
+|------------|------------------------------------------------------|
+| whitelist  | Liste blanche - Seuls ces numéros sont autorisés     |
+| blacklist  | Liste noire - Ces numéros sont bloqués               |
+
+================================================================================
+6. STRUCTURE UI - TABLEAU DES RÈGLES
+================================================================================
+┌────────────────────────────────────────────────────────────────────────────┐
+│ Nature         │ Type         │ Numéro          │ Statut   │ Actions      │
+├────────────────┼──────────────┼─────────────────┼──────────┼──────────────┤
+│ International  │ Liste noire  │ 0044*           │ Actif    │ [⋮]          │
+│ Spécial        │ Liste noire  │ 089*            │ Actif    │ [⋮]          │
+│ Fax            │ Liste blanche│ +33612345678    │ Actif    │ [⋮]          │
+└────────────────┴──────────────┴─────────────────┴──────────┴──────────────┘
+
+================================================================================
+7. IMPORT CSV
+================================================================================
+Format attendu :
+nature;type;callNumber
+international;blacklist;0044*
+special;blacklist;089*
+
+================================================================================
+8. ASSISTANT (HELPER)
+================================================================================
+Modal d'aide pour :
+- Sélection de plages de numéros prédéfinies
+- Numéros spéciaux courants
+- Préfixes pays
+
+================================================================================
+9. TRADUCTIONS (FR)
+================================================================================
+telephony_calls_filtering_nature        : "Nature"
+telephony_calls_filtering_list          : "Type de liste"
+telephony_calls_filtering_helper        : "Assistant"
+telephony_calls_filtering_add_csv_import: "Importer CSV"
+telephony_calls_filtering_table_nature_fax          : "Fax"
+telephony_calls_filtering_table_nature_international: "International"
+telephony_calls_filtering_table_nature_services     : "Services"
+telephony_calls_filtering_table_nature_special      : "Spécial"
+telephony_calls_filtering_table_nature_voicemail    : "Messagerie"
+
+================================================================================
+10. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface FilterRule {
+  nature: 'fax' | 'international' | 'services' | 'special' | 'voicemail';
+  type: 'whitelist' | 'blacklist';
+  callNumber: string;
+  status: 'active' | 'inactive';
+}
+
+interface CallsFilteringProps {
+  rules: FilterRule[];
+  onAddRule: (rule: Omit<FilterRule, 'status'>) => Promise<void>;
+  onDeleteRule: (rule: FilterRule) => Promise<void>;
+  onImportCSV: (file: File) => Promise<void>;
+  disableNature?: boolean;
+}

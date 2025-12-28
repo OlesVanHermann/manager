@@ -1,0 +1,128 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.alias.terminate
+================================================================================
+Page : Resiliation d'un numero alias
+NAV1 : telecom
+NAV2 : alias
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+Formulaire de demande de resiliation d'un numero alias. Selection d'un motif
+obligatoire, details optionnels selon motif. La resiliation prend effet a la
+prochaine facturation et peut etre annulee jusqu'a cette date.
+
+Utilisateurs cibles : Administrateurs telephonie VoIP
+Impact : Resiliation definitive du numero
+
+--------------------------------------------------------------------------------
+## 2. ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Fichiers sources :
+- Controller : alias/administration/terminate/terminate.controller.js (141 lignes)
+- Template : alias/administration/terminate/terminate.html
+- Routing : alias/administration/terminate/terminate.routing.js
+
+Dependances :
+- OvhApiTelephony.Service() : API services
+- TelephonyMediator : Schema API (enum motifs)
+
+--------------------------------------------------------------------------------
+## 3. PAGES & NAVIGATION
+--------------------------------------------------------------------------------
+
+Route : telecom.telephony.billingAccount.alias.administration.terminate
+URL : /telecom/telephony/{billingAccount}/alias/{serviceName}/administration/terminate
+Params :
+  - billingAccount : Identifiant groupe facturation
+  - serviceName : Numero alias
+
+Breadcrumb : Telecom > Telephonie > [Groupe] > [Alias] > Administration > Resilier
+
+--------------------------------------------------------------------------------
+## 4. COMPOSANTS UI
+--------------------------------------------------------------------------------
+
+Formulaire :
+- Select : Motif resiliation (required)
+- Textarea : Details (conditionnel)
+- Message info : Prise en compte prochaine facturation
+
+Avertissements SVA :
+- Si numero SVA : Avertissement versements 60 jours
+- Rappel validation KYC
+
+Avertissement plage :
+- Si numero dans plage : Resiliation complete de la plage
+
+Boutons :
+- Annuler
+- Resilier
+
+--------------------------------------------------------------------------------
+## 5. APIs & DONNEES
+--------------------------------------------------------------------------------
+
+### API Lecture
+
+GET /telephony.json (schema)
+  Via TelephonyMediator.getApiScheme()
+  -> Recupere : models['telephony.TerminationReasonEnum'].enum
+
+### API Ecriture
+
+DELETE /telephony/{billingAccount}/service/{serviceName}
+  Params : { reason, details }
+  -> Demande resiliation
+
+POST /telephony/{billingAccount}/service/{serviceName}/cancelTermination
+  -> Annule demande resiliation
+
+### Motifs (TerminationReasonEnum)
+
+- addresseMove : Demenagement
+- billingDifficulties : Difficultes facturation
+- cessationOfActivity : Cessation activite
+- missingOptions : Options manquantes (details requis)
+- moveToCompetitor : Passage concurrence
+- other : Autre (details requis)
+- plugAndPhoneDifficulties : Difficultes Plug & Phone
+- technicalDifficulties : Difficultes techniques
+
+--------------------------------------------------------------------------------
+## 6. TRADUCTIONS (FR)
+--------------------------------------------------------------------------------
+
+telephony_alias_administration_terminate_title : "Resilier un numero"
+telephony_alias_administration_terminate_info : "Selectionnez un motif de resiliation"
+telephony_alias_administration_terminate_info2 : "Les demandes de resiliation seront prises en compte lors de votre prochaine facturation. Jusqu'a cette date, l'annulation de la demande restera possible."
+telephony_alias_administration_terminate_sva_warning : "Attention : Les versements SVA seront effectues jusqu'a 60 jours apres la resiliation."
+
+--------------------------------------------------------------------------------
+## 7. REGLES METIER
+--------------------------------------------------------------------------------
+
+Motifs avec details obligatoires :
+- missingOptions
+- other
+
+Specificite SVA :
+- Avertissement versements 60 jours
+- Rappel validation KYC necessaire
+
+Specificite plage (pool) :
+- Si numero dans plage : resiliation complete
+- Avertissement specifique affiche
+
+Prise en compte :
+- Resiliation effective prochaine facturation
+- Annulation possible jusqu'a facturation
+
+Validation :
+- Motif obligatoire
+- Details obligatoires si motif = missingOptions ou other
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

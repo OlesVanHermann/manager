@@ -1,0 +1,182 @@
+# CAHIER DES CHARGES - Composant TimeCondition (Conditions Temporelles)
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Composant AngularJS partage pour la gestion des conditions temporelles de telephonie OVHcloud.
+Permet de definir des plages horaires avec redirections d'appels differentes selon les creneaux.
+
+### Objectif fonctionnel
+- Gerer les horaires d'ouverture/fermeture d'un service telephonique
+- Configurer jusqu'a 3 creneaux personnalises avec redirections
+- Appliquer des politiques de renvoi (numero externe, voicemail, numero OVH)
+
+### Users cibles
+- Administrateurs de groupes de telephonie
+- Gestionnaires de lignes SIP, easyHunting, ovhPabx
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| time-condition.factory.js | Factory VoipTimeCondition (classe principale) |
+| time-condition.service.js | Service voipTimeCondition (helpers, resources API) |
+| time-condition.constant.js | Constantes (slots, jours ordonnes) |
+| index.js | Module AngularJS |
+
+### Dependances
+- lodash (chunk, filter, find, get, isEqual, map, remove, set, some)
+- moment.js (parsing dates/heures)
+- VoipTimeConditionCondition (factory condition)
+- VoipTimeConditionSlot (factory slot)
+- OvhApiTelephony (abstractions API)
+
+---
+
+## 3. TYPES DE CONDITIONS TEMPORELLES
+
+### featureType supportes
+| Type | API | Slots | Timeout |
+|------|-----|-------|---------|
+| sip | OvhApiTelephony.TimeCondition() | 3 | Oui (45s defaut) |
+| easyHunting | OvhApiTelephony.EasyHunting().TimeConditions() | 3 | Non |
+| ovhPabx | OvhApiTelephony.OvhPabx().Dialplan().Extension().ConditionTime() | 0 | Non |
+
+---
+
+## 4. SLOTS (CRENEAUX)
+
+### Configuration par defaut
+| Nom | Description | Configurable |
+|-----|-------------|--------------|
+| available | Horaires d'ouverture | Non (numero du service) |
+| slot1 | Creneau 1 | Oui (type + numero) |
+| slot2 | Creneau 2 | Oui (type + numero) |
+| slot3 | Creneau 3 | Oui (type + numero) |
+| unavailable | Horaires de fermeture | Oui (type + numero) |
+
+### Types de redirection
+| Type | Description |
+|------|-------------|
+| number | Numero externe (format international) |
+| number_ovh | Ligne ou numero OVHcloud |
+| voicemail | Repondeur d'une ligne |
+
+---
+
+## 5. APIs & DONNEES
+
+### Endpoints REST (via abstractions)
+
+**SIP TimeCondition:**
+| Methode | Endpoint |
+|---------|----------|
+| GET | /telephony/{billingAccount}/timeCondition/{serviceName} |
+| PUT | /telephony/{billingAccount}/timeCondition/{serviceName} |
+| GET | /telephony/{billingAccount}/timeCondition/{serviceName}/condition |
+| GET | /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id} |
+| POST | /telephony/{billingAccount}/timeCondition/{serviceName}/condition |
+| PUT | /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id} |
+| DELETE | /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id} |
+
+**EasyHunting TimeConditions:**
+| Methode | Endpoint |
+|---------|----------|
+| GET | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions |
+| PUT | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions |
+| CRUD | /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions/{id} |
+
+**OvhPabx ConditionTime:**
+| Methode | Endpoint |
+|---------|----------|
+| CRUD | /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime/{id} |
+
+### Parametres API
+
+**getOptions/setOptions (SIP):**
+```typescript
+interface TimeConditionOptions {
+  status: 'enabled' | 'disabled';
+  timeout: number; // 45 par defaut
+  slot1Type?: 'number' | 'voicemail';
+  slot1Number?: string;
+  slot2Type?: 'number' | 'voicemail';
+  slot2Number?: string;
+  slot3Type?: 'number' | 'voicemail';
+  slot3Number?: string;
+  unavailableType?: 'number' | 'voicemail';
+  unavailableNumber?: string;
+}
+```
+
+**Condition (SIP):**
+```typescript
+interface TimeConditionCondition {
+  id: number;
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  hourBegin: string; // Format "0830" (HHMM)
+  hourEnd: string;   // Format "1730"
+  policy: 'available' | 'slot1' | 'slot2' | 'slot3' | 'unavailable';
+}
+```
+
+**Condition (EasyHunting/OvhPabx):**
+```typescript
+interface TimeConditionConditionV2 {
+  conditionId: number;
+  weekDay: 'monday' | 'tuesday' | ... | 'sunday';
+  timeFrom: string; // Format "08:30:00"
+  timeTo: string;   // Format "17:29:59"
+  policy?: 'available' | 'slot1' | 'slot2' | 'slot3' | 'unavailable';
+}
+```
+
+---
+
+## 6. TRADUCTIONS (FR)
+
+### Constantes
+```javascript
+VOIP_TIMECONDITION_ORDERED_DAYS = [
+  'monday', 'tuesday', 'wednesday', 'thursday', 
+  'friday', 'saturday', 'sunday'
+];
+
+VOIP_TIME_CONDITION.slotTypesCount = {
+  sip: 3,
+  easyHunting: 3,
+  ovhPabx: 0
+};
+```
+
+---
+
+## 7. REGLES METIER
+
+### Parsing heures SIP
+- hourBegin/hourEnd en format HHMM (ex: "0830", "1730")
+- Conversion vers HH:mm:ss pour affichage
+- hourEnd = timeTo + 1 minute (ex: 17:29:59 -> "1730")
+
+### Gestion des etats
+| Etat | Description |
+|------|-------------|
+| OK | Condition existante, non modifiee |
+| DRAFT | Nouvelle condition en cours de creation |
+| TO_CREATE | Condition a creer lors de la sauvegarde |
+| TO_DELETE | Condition a supprimer lors de la sauvegarde |
+
+### Sauvegarde
+- saveConditions() traite toutes les conditions modifiees
+- Utilise $q.allSettled pour executer en parallele
+- Conditions TO_CREATE -> create() puis stopEdition()
+- Conditions TO_DELETE -> remove() puis removeCondition()
+- Conditions OK avec changes -> save() puis stopEdition()
+
+### Groupement des conditions
+- groupTimeConditions() regroupe les conditions par jours et horaires
+- Permet affichage synthetique (ex: "Lu - Ve : 08:30 - 12:00, 14:00 - 18:00")

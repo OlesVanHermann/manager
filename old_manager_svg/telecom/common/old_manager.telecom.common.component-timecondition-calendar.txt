@@ -1,0 +1,95 @@
+# CAHIER DES CHARGES - Composant TimeCondition Calendar
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/calendar/
+
+## 1. IDENTIFICATION
+- Composant: voipTimeConditionCalendarCtrl
+- Type: Controller + Directive AngularJS
+- Fichiers source: calendar.controller.js, calendar.directive.js, calendar.html
+- Usage: Affichage visuel des plages horaires sur un calendrier hebdomadaire
+
+## 2. DESCRIPTION FONCTIONNELLE
+Composant calendrier utilisant FullCalendar (ui-calendar) pour afficher
+les conditions temporelles sous forme d'événements visuels.
+Permet de visualiser et éditer les plages horaires d'une semaine.
+
+## 3. TEMPLATE HTML
+<div class="voip-time-condition-calendar">
+    <div class="text-center" data-ng-if="$ctrl.loading.init">
+        <oui-spinner></oui-spinner>
+    </div>
+
+    <div data-ng-if="!$ctrl.loading.init">
+        <div
+            class="voip-time-condition-ui-calendar"
+            data-ui-calendar="$ctrl.options"
+            data-ng-model="$ctrl.eventSources"
+            data-calendar="conditionsCalendar"
+        ></div>
+    </div>
+</div>
+
+## 4. CONTROLLER - PROPRIÉTÉS
+self.loading = { init: false, translations: false }
+self.eventSources = []           // Sources d'événements FullCalendar
+self.conditionInEdition = null   // Condition en cours d'édition
+self.fcEventInEdition = null     // Événement FullCalendar en édition
+self.options = {}                // Options FullCalendar
+
+## 5. CONTROLLER - INITIALISATION
+$onInit():
+1. Charge les traductions (translatePartialLoader)
+2. Appelle timeCondition.getConditions()
+3. Convertit les conditions en événements FullCalendar
+
+## 6. OPTIONS FULLCALENDAR ATTENDUES
+{
+  defaultView: 'agendaWeek',      // Vue semaine
+  allDaySlot: false,              // Pas de slot "toute la journée"
+  slotDuration: '00:15:00',       // Intervalles de 15 minutes
+  slotLabelFormat: 'HH:mm',       // Format heure
+  columnFormat: 'ddd',            // Format jour (lun, mar, etc.)
+  firstDay: 1,                    // Lundi = premier jour
+  minTime: '00:00:00',
+  maxTime: '24:00:00',
+  height: 'auto',
+  editable: true,                 // Drag & drop activé
+  selectable: true,               // Sélection pour création
+  selectHelper: true,
+  eventOverlap: false,            // Pas de chevauchement
+  header: false,                  // Pas d'en-tête
+  locale: 'fr'
+}
+
+## 7. ÉVÉNEMENTS FULLCALENDAR
+Chaque condition est convertie via toFullCalendarEvent():
+{
+  id: conditionId,
+  start: moment(),     // Date/heure début
+  end: moment(),       // Date/heure fin
+  allDay: false,
+  className: policy,   // Classe CSS selon le slot (available, slot1, etc.)
+  editable: true
+}
+
+## 8. INTERACTIONS UTILISATEUR
+| Action | Comportement |
+|--------|--------------|
+| Clic sur événement | Ouvre le popover d'édition de condition |
+| Drag & drop | Déplace la plage horaire (change weekDay/heures) |
+| Resize | Modifie l'heure de fin |
+| Sélection zone vide | Crée une nouvelle condition (état DRAFT) |
+
+## 9. CLASSES CSS
+- .voip-time-condition-calendar
+- .voip-time-condition-ui-calendar
+- .fc-event.available (couleur horaires ouverture)
+- .fc-event.slot1 (couleur créneau 1)
+- .fc-event.slot2 (couleur créneau 2)
+- .fc-event.slot3 (couleur créneau 3)
+
+## 10. DÉPENDANCES
+- ui-calendar (AngularJS wrapper pour FullCalendar)
+- moment.js
+- $translatePartialLoader
+- timeCondition.getConditions()

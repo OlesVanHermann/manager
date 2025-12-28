@@ -1,0 +1,143 @@
+# CAHIER DES CHARGES - Modal Edition Condition (Plage Horaire)
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/condition/edit/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Controller et template pour l'edition d'une condition temporelle dans un popover.
+
+### Objectif fonctionnel
+- Modifier jour, heures et politique d'une plage horaire
+- Repeter une condition sur plusieurs jours
+- Detecter les conflits de plages
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| edit.controller.js | Controller voipTimeConditionConditionCtrl |
+| edit.html | Template popover multi-pages |
+
+### Dependances
+- lodash (filter, find, isEqual, isFunction, remove, some, sortBy, startsWith)
+- moment.js
+- $translate
+
+---
+
+## 3. COMPOSANT UI
+
+### Structure popover (2 pages)
+**Page 1 - Formulaire principal:**
+- Jour de la semaine (bouton -> page 2)
+- Repetition (bouton -> page 2)
+- Politique de redirection (bouton -> page 2)
+- Plage horaire (oui-timepicker x2)
+- Actions: Valider / Annuler / Supprimer
+
+**Page 2 - Selections:**
+- Choix du jour (7 jours + weekDays + weekendDays)
+- Choix de la politique (slots disponibles)
+
+### Repeater (repetition)
+```javascript
+repeaterChoices = [
+  { name: 'monday', id: 0, active: false },
+  { name: 'tuesday', id: 1, active: false },
+  { name: 'wednesday', id: 2, active: false },
+  { name: 'thursday', id: 3, active: false },
+  { name: 'friday', id: 4, active: false },
+  { name: 'saturday', id: 5, active: false },
+  { name: 'sunday', id: 6, active: false },
+  { name: 'weekDays', id: 7, active: false },    // Lu-Ve
+  { name: 'weekendDays', id: 8, active: false }  // Sa-Di
+];
+```
+
+---
+
+## 4. COMPOSANTS ODS/OUI
+
+| Composant | Usage |
+|-----------|-------|
+| oui-timepicker | Selection heure debut/fin |
+| oui-checkbox | Selection jours repetition |
+| oui-radio | Selection politique |
+| oui-button | Actions footer |
+
+---
+
+## 5. EVENEMENTS
+
+### Navigation popover
+```javascript
+onRepeaterBtnClick()  // -> page repeater
+onPolicyBtnClick()    // -> page policy
+moveBackward()        // <- retour page 1
+```
+
+### Modification horaires
+```javascript
+onTimeFromChange(modelValue) // Mise a jour heure debut
+onTimeToChange(modelValue)   // Mise a jour heure fin
+// Si timeFrom >= timeTo -> timeTo = timeFrom + 15min
+```
+
+### Validation
+```javascript
+onValidateBtnClick() {
+  if (condition.state === 'DRAFT') condition.state = 'TO_CREATE';
+  condition.stopEdition();
+  // Callback parent avec repeatToDays
+}
+```
+
+### Suppression
+```javascript
+onDeleteConfirmBtnClick() {
+  if (conditionId.startsWith('tmp_')) {
+    timeCondition.removeCondition(condition);
+  } else {
+    condition.state = 'TO_DELETE';
+  }
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+### Detection overlap
+```javascript
+isConditionValid() {
+  // Recupere conditions du meme jour
+  const dayConditions = filter(conditions, c => 
+    c.weekDay === condition.weekDay && 
+    c.conditionId !== condition.conditionId
+  );
+  
+  // Verifie chevauchement
+  return !some(dayConditions, c => {
+    return (
+      timeFrom.isBetween(c.from, c.to) ||
+      timeTo.isBetween(c.from, c.to)
+    ) && c.state !== 'TO_DELETE';
+  });
+}
+```
+
+### Labels repetition
+| Selection | Label affiche |
+|-----------|---------------|
+| Lu-Ve | "Tous les jours de la semaine" |
+| Sa-Di | "Tout le week-end" |
+| Lu-Di | "Tous les jours" |
+| Selection custom | "Lundi Mardi Vendredi" |
+
+### Contrainte horaire
+- Increment: 15 minutes
+- Si timeTo <= timeFrom -> timeTo = timeFrom + 15min
+- maxFrom = 23:45 (pour permettre 15min minimum)

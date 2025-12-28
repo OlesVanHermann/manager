@@ -1,0 +1,85 @@
+================================================================================
+SERVICE API : OvhApiTelephonyFax
+================================================================================
+NAV1: telecom
+NAV2: api
+TYPE: Service API ($resource)
+SOURCE: ovh-api-services/src/api/telephony/fax/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Service AngularJS pour la gestion des lignes fax OVH.
+Permet d'envoyer des fax, gérer les paramètres et consulter l'historique.
+
+================================================================================
+2. ENDPOINTS
+================================================================================
+Base : /telephony/{billingAccount}/fax/{serviceName}
+
+| Méthode | Endpoint           | Description                        |
+|---------|--------------------|-----------------------------------|
+| GET     | /                  | Détails de la ligne fax           |
+| GET     | /settings          | Paramètres actuels                |
+| PUT     | /settings          | Modifier les paramètres           |
+
+================================================================================
+3. SOUS-SERVICES
+================================================================================
+Campaigns (/campaigns) :
+- GET    : Liste des campagnes
+- POST   : Créer une campagne
+- GET    /{id} : Détail
+- DELETE /{id} : Supprimer
+- POST   /{id}/start : Démarrer
+- POST   /{id}/stop : Arrêter
+
+================================================================================
+4. PARAMETRES FAX
+================================================================================
+{
+  callNumber: string,           // Numéro d'appel
+  countryCode: string,          // Code pays
+  faxMaxCall: number,           // Nombre max d'appels
+  faxQuality: 'normal'|'high'|'best',
+  faxTagLine: string,           // Ligne d'en-tête
+  fromEmail: string,            // Email expéditeur
+  fromName: string,             // Nom expéditeur
+  mailFormat: 'pdf'|'tiff',
+  redirectionEmail: string[]    // Emails de redirection
+}
+
+================================================================================
+5. API FREEFAX
+================================================================================
+Base : /freefax/{serviceName}
+
+Service spécifique pour FreeFax (fax gratuit OVH) :
+- GET    /             : Détails
+- GET    /voicemail    : Configuration voicemail
+- PUT    /voicemail    : Modifier voicemail
+- POST   /changePassword : Changer mot de passe
+
+================================================================================
+6. EXEMPLE REACT QUERY
+================================================================================
+const useFaxSettings = (billingAccount: string, serviceName: string) => {
+  return useQuery({
+    queryKey: ['fax', billingAccount, serviceName, 'settings'],
+    queryFn: () => api.get(
+      `/telephony/${billingAccount}/fax/${serviceName}/settings`
+    )
+  });
+};
+
+const useUpdateFaxSettings = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ billingAccount, serviceName, settings }) =>
+      api.put(
+        `/telephony/${billingAccount}/fax/${serviceName}/settings`,
+        settings
+      ),
+    onSuccess: () => queryClient.invalidateQueries(['fax'])
+  });
+};

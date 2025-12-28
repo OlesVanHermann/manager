@@ -1,0 +1,200 @@
+# CAHIER DES CHARGES - Modal Edition Slot (Creneau Redirection)
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/slot/edit/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Controller et template pour l'edition d'un slot de redirection dans un popover.
+
+### Objectif fonctionnel
+- Configurer le type de redirection (numero externe, OVH, voicemail)
+- Selectionner le numero ou service cible
+- Valider le format du numero international
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| edit.controller.js | Controller voipTimeConditionSlotEditCtrl |
+| edit.html | Template popover multi-pages |
+
+### Dependances
+- lodash (isEmpty)
+- TelephonyMediator (recherche services)
+- $filter (tucPropsFilter)
+
+---
+
+## 3. COMPOSANT UI
+
+### Structure popover (2 pages)
+**Page 1 - Configuration slot:**
+- Titre dynamique selon slot.name
+- Message d'aide contextuel
+- Type de redirection (bouton -> page 2)
+- Numero cible:
+  - Si type='number': champ input avec validation
+  - Si type='number_ovh' ou 'voicemail': bouton -> page 2
+- Actions: Modifier / Annuler
+
+**Page 2 - Selections:**
+- Choix type redirection (3 options radio)
+- Choix service OVH (composant voip-service-choice)
+
+### Types de redirection
+```javascript
+availableSlotTypes = ['number_ovh', 'number', 'voicemail'];
+```
+
+| Type | Label FR | Description |
+|------|----------|-------------|
+| number_ovh | Une ligne ou un numero OVHcloud | Renvoi vers service OVH |
+| number | Un numero externe | Renvoi vers numero hors OVH |
+| voicemail | Un repondeur | Renvoi vers voicemail d'une ligne |
+
+---
+
+## 4. COMPOSANTS ODS/OUI
+
+| Composant | Usage |
+|-----------|-------|
+| oui-field | Champ numero avec validation |
+| oui-input | Input numero externe |
+| oui-radio | Selection type redirection |
+| oui-spinner | Loading recherche service |
+| voip-service-choice | Selecteur service OVH |
+
+---
+
+## 5. TRADUCTIONS (FR)
+
+```json
+{
+  "voip_time_condition_slots_redirect_popover_back_btn_title": "Retour",
+  "voip_time_condition_slots_redirect_popover_slot1_title": "Configuration du creneau 1",
+  "voip_time_condition_slots_redirect_popover_slot1_help": "Comportement a adopter pour les plages horaires utilisant le creneau 1.",
+  "voip_time_condition_slots_redirect_popover_slot2_title": "Configuration du creneau 2",
+  "voip_time_condition_slots_redirect_popover_slot2_help": "Comportement a adopter pour les plages horaires utilisant le creneau 2.",
+  "voip_time_condition_slots_redirect_popover_slot3_title": "Configuration du creneau 3",
+  "voip_time_condition_slots_redirect_popover_slot3_help": "Comportement a adopter pour les plages horaires utilisant le creneau 3.",
+  "voip_time_condition_slots_redirect_popover_unavailable_title": "Creneaux hors plages horaires",
+  "voip_time_condition_slots_redirect_popover_unavailable_help": "Comportement par defaut a adopter en dehors des plages horaires.",
+  "voip_time_condition_slots_redirect_popover_unavailable_help_timeout": "Ce comportement sera declenche apres le delai de renvoi renseigne.",
+  "voip_time_condition_slots_redirect_popover_redirect_type": "Rediriger l'appel vers",
+  "voip_time_condition_slots_redirect_popover_redirect_type_voicemail": "Un repondeur",
+  "voip_time_condition_slots_redirect_popover_redirect_type_voicemail_explain": "Permet de renvoyer l'appel vers le repondeur de l'une de vos lignes (sans la faire sonner).",
+  "voip_time_condition_slots_redirect_popover_redirect_type_number": "Un numero externe",
+  "voip_time_condition_slots_redirect_popover_redirect_type_number_explain": "Permet de renvoyer l'appel vers un numero externe (hors OVHcloud).",
+  "voip_time_condition_slots_redirect_popover_redirect_type_number_ovh": "Une ligne ou un numero OVHcloud",
+  "voip_time_condition_slots_redirect_popover_redirect_type_number_ovh_explain": "Permet de renvoyer l'appel vers l'une de vos lignes OVHcloud ou l'un de vos numeros OVHcloud.",
+  "voip_time_condition_slots_redirect_popover_number_to_redirect": "Numero vers lequel rediriger",
+  "voip_time_condition_slots_redirect_popover_number_to_redirect_placeholder": "Numero au format international (ex: +3312345678)",
+  "voip_time_condition_slots_redirect_popover_number_to_redirect_required": "Le numero vers lequel rediriger est obligatoire.",
+  "voip_time_condition_slots_redirect_popover_number_to_redirect_format": "Le numero doit etre au format international (ex: +3312345678)."
+}
+```
+
+---
+
+## 6. EVENEMENTS
+
+### Navigation popover
+```javascript
+onSlotTypeBtnClick() {
+  popoverStatus.move = true;
+  popoverStatus.rightPage = 'slotType';
+}
+
+onSlotNumberBtnClick() {
+  popoverStatus.move = true;
+  popoverStatus.rightPage = 'number';
+}
+```
+
+### Changement type
+```javascript
+onSlotTypeChange() {
+  popoverStatus.move = false;
+  
+  if (model.slotType === 'number') {
+    slot.type = 'number';
+    slot.number = null;
+    redirectNumberOvh = null;
+  } else {
+    slot.type = (model.slotType === 'voicemail') ? 'voicemail' : 'number';
+    
+    // Si voicemail et service deja selectionne compatible
+    if (model.slotType === 'voicemail' && redirectNumberOvh?.serviceType !== 'alias') {
+      slot.number = redirectNumberOvh.serviceName;
+      return;
+    }
+    
+    // Sinon recherche service actuel
+    slot.number = null;
+    redirectNumberOvh = null;
+    TelephonyMediator.findService(slot.serviceName).then(service => {
+      redirectNumberOvh = service;
+      slot.number = service?.serviceName;
+    });
+  }
+}
+```
+
+### Selection service OVH
+```javascript
+onSlotNumberChange(selectedService) {
+  popoverStatus.move = false;
+  slot.number = selectedService.serviceName;
+  redirectNumberOvh = selectedService;
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Validation numero externe
+```javascript
+pattern = /^\+(?:[0-9]){6,14}[0-9]$/
+// Exemples valides: +33123456789, +1234567890123456
+// Exemples invalides: 0612345678, +33 1 23 45 67 89
+```
+
+### Validation slot
+```javascript
+isSlotValid() {
+  return !isEmpty(slot.number);
+}
+```
+
+### Determination type reel
+```javascript
+// A l'init, on determine si c'est number_ovh ou number
+if (slot.type === 'number' && redirectNumberOvh) {
+  model.slotType = 'number_ovh'; // Service OVH
+} else {
+  model.slotType = slot.type; // 'number' ou 'voicemail'
+}
+```
+
+### Filtrage services selon type
+```javascript
+filterGroupServices(group) {
+  if (model.slotType === 'number_ovh') {
+    return group.getAllServices(); // Tous (lines + numbers + fax)
+  }
+  return [...group.lines, ...group.fax]; // Voicemail: lignes et fax uniquement
+}
+```
+
+### Types de services affiches
+| serviceType | Label FR |
+|-------------|----------|
+| number | Numero |
+| line | Ligne SIP |
+| fax | Fax |
+| plug_fax | Plug & Fax |
+| trunk | Ligne SIP Trunk |

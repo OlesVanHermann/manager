@@ -1,0 +1,145 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.alias.statistics
+================================================================================
+Page : Statistiques temps reel file d'appels CCS
+NAV1 : telecom
+NAV2 : alias
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+Affichage en temps reel des statistiques d'une file d'appels CCS (Contact
+Center Solution). Metriques : QoS, appels totaux/repondus/perdus, temps
+d'attente, duree moyenne. Actions sur appels en cours : ecoute, transfert,
+interception, raccrochage.
+
+Utilisateurs cibles : Superviseurs centre d'appels
+Rafraichissement : 1 seconde automatique
+
+--------------------------------------------------------------------------------
+## 2. ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Fichiers sources :
+- Controller : alias/statistics/statistics.controller.js (214 lignes)
+- Template : alias/statistics/statistics.html
+- Routing : alias/statistics/statistics.routing.js
+
+Dependances :
+- OvhApiTelephony.EasyHunting() : API CCS
+- Polling : Intervalle 1 seconde
+
+--------------------------------------------------------------------------------
+## 3. PAGES & NAVIGATION
+--------------------------------------------------------------------------------
+
+Route : telecom.telephony.billingAccount.alias.configuration.statistics
+URL : /telecom/telephony/{billingAccount}/alias/{serviceName}/configuration/statistics
+Params :
+  - billingAccount : Identifiant groupe facturation
+  - serviceName : Numero alias CCS
+
+Breadcrumb : Telecom > Telephonie > [Groupe] > [Alias] > Configuration > Statistiques
+
+--------------------------------------------------------------------------------
+## 4. COMPOSANTS UI
+--------------------------------------------------------------------------------
+
+Section Metriques globales :
+- QoS (%) : (callsAnswered / callsTotal) * 100
+- Appels totaux
+- Appels repondus
+- Appels perdus
+- Temps attente moyen
+- Duree moyenne
+
+Section Agents :
+- Liste agents avec statut temps reel
+- Statuts : inAQueueCall, loggedOut, onBreak, receiving, waiting
+
+Section Appels en cours :
+- Liste appels actifs
+- Colonnes : Numero, Duree, Agent, Statut
+- Actions par appel :
+  - Eavesdrop (ecoute/chuchotement)
+  - Transfer
+  - Intercept
+  - Hangup
+
+Message info :
+- "Donnees reinitialisees tous les jours a 00h heure francaise"
+
+--------------------------------------------------------------------------------
+## 5. APIs & DONNEES
+--------------------------------------------------------------------------------
+
+### API Lecture (polling 1s)
+
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent
+  -> Liste agents avec statuts
+
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls
+  -> Appels en cours
+
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/statistics
+  -> Statistiques agregees (QoS, totaux, moyennes)
+
+### API Actions sur appels
+
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{callId}/eavesdrop
+  Body : { number: "numero_superviseur" }
+  -> Ecoute discrete ou chuchotement
+
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{callId}/transfer
+  Body : { number: "numero_destination" }
+
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{callId}/intercept
+  Body : { number: "numero_superviseur" }
+
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{callId}/hangup
+
+--------------------------------------------------------------------------------
+## 6. TRADUCTIONS (FR)
+--------------------------------------------------------------------------------
+
+telephony_alias_statistics_title : "Statistiques d'appels"
+telephony_alias_statistics_subtitle : "Consultez en temps reel les statistiques ainsi que l'etat de votre file d'appels"
+telephony_alias_statistics_subtitle_help : "Les donnees sont reinitialisees tous les jours a 00h heure francaise"
+telephony_alias_statistics_qos : "Qualite de service"
+telephony_alias_statistics_calls_total : "Appels totaux"
+telephony_alias_statistics_calls_answered : "Appels repondus"
+telephony_alias_statistics_calls_lost : "Appels perdus"
+telephony_alias_statistics_wait_time : "Temps d'attente moyen"
+telephony_alias_statistics_call_duration : "Duree moyenne"
+
+--------------------------------------------------------------------------------
+## 7. REGLES METIER
+--------------------------------------------------------------------------------
+
+Calcul QoS :
+- QoS = (callsAnswered / callsTotal) * 100
+- Affichage en pourcentage
+
+Polling :
+- Intervalle : 1 seconde
+- Arret automatique si changement de route
+- Reprise a la navigation retour
+
+Statuts agents :
+- inAQueueCall : En appel dans la file
+- loggedOut : Deconnecte
+- onBreak : En pause
+- receiving : Recoit un appel
+- waiting : Disponible
+
+Detection appels :
+- En cours : state="Answered" AND answered AND !end
+- En attente : state="Waiting" AND answered AND !end
+
+Reinitialisation :
+- Quotidienne a 00h00 heure francaise
+- Statistiques remises a zero
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

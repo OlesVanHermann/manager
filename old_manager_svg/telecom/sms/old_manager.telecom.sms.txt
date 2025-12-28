@@ -1,0 +1,189 @@
+# old_manager.telecom.sms.txt
+# Cahier des charges - Liste des comptes SMS
+# Généré depuis : old_manager_web-cloud_telecom_sms.tar
+
+---
+
+## 1. RÉSUMÉ EXÉCUTIF
+
+### Périmètre
+Page de liste des comptes SMS OVHcloud avec datagrid paginé.
+
+### Objectif fonctionnel
+Afficher tous les comptes SMS de l'utilisateur avec possibilité de filtrer, trier et accéder au détail de chaque compte.
+
+### Utilisateurs cibles
+Clients OVHcloud disposant d'un ou plusieurs comptes SMS.
+
+### Comportement conditionnel
+- Si aucun compte SMS : redirection automatique vers sms.onboarding
+- Si au moins un compte : affichage du datagrid
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+```
+packages/manager/modules/sms/src/
+├── sms.component.js        # Composant principal
+├── sms.controller.js       # Controller avec colonnes datagrid
+├── sms.routing.js          # Route et resolvers
+├── sms.html                # Template (non fourni, via ListLayoutHelper)
+└── translations/
+    └── Messages_fr_FR.json # Traductions
+```
+
+### Dépendances
+- @ovh-ux/manager-ng-layout-helpers : ListLayoutHelper
+- lodash/get : Accès aux propriétés imbriquées
+
+### Pattern utilisé
+- ListLayoutHelper : Pattern standard OVH pour les listes paginées Iceberg
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Route
+| Propriété | Valeur |
+|-----------|--------|
+| State | sms.index |
+| URL | /sms?${ListLayoutHelper.urlQueryParams} |
+| Component | ovhManagerSms |
+
+### Paramètres URL (via ListLayoutHelper)
+- Pagination : page, pageSize
+- Tri : sort, sortOrder
+- Filtres : filter
+
+### Redirections
+| Condition | Destination |
+|-----------|-------------|
+| resources.data.length === 0 | sms.onboarding |
+
+### Breadcrumb
+Masqué (hideBreadcrumb: () => true)
+
+---
+
+## 4. COMPOSANTS UI
+
+### Header
+| Composant | Contenu |
+|-----------|---------|
+| Titre | "SMS" (sms_title) |
+| Bouton droit | "Commander" (sms_order) → sms.order |
+| Menu guides | Liste de liens documentation |
+
+### Datagrid
+| ID | dg-sms |
+|-----------|---------|
+| Filtre par défaut | name |
+| Modèle de données | sms.Account |
+
+### Colonnes
+
+| Colonne | Propriété | Label FR | Sortable | Filterable | Type |
+|---------|-----------|----------|----------|------------|------|
+| Nom | name | "Nom" | ✅ | ✅ | Lien vers détail |
+| Description | description | "Description" | ✅ | ✅ | Texte |
+| Format | channel | "Format de compte" | ✅ | ✅ | Enum traduit |
+| Statut | status | "Statut" | ✅ | ✅ | Enum traduit |
+
+### Filtres spéciaux
+
+**channel** (hideOperators: true)
+| Valeur | Label FR |
+|--------|----------|
+| both | "Standard" |
+| marketing | "SMPP marketing" |
+| transactional | "SMPP transactionnel" |
+
+**status** (hideOperators: true)
+| Valeur | Label FR |
+|--------|----------|
+| enable | "OK" |
+| disable | "Désactivé" |
+
+### Menu actions (par ligne)
+| Action | Label | Destination |
+|--------|-------|-------------|
+| Voir détails | "Détails" (sms_view_sms_label) | sms.service.dashboard |
+
+---
+
+## 5. APIs & DONNÉES
+
+### Endpoint principal
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /sms | Liste des comptes SMS (Iceberg) |
+
+### Headers Iceberg
+```
+X-Pagination-Mode: CachedObjectList-Pages
+X-Pagination-Size: 25
+X-Pagination-Number: 1
+X-Pagination-Sort: name
+X-Pagination-Sort-Order: ASC
+```
+
+### Modèle de données
+```typescript
+interface SmsAccount {
+  name: string;           // Identifiant du compte
+  description: string;    // Description libre
+  channel: SmsChannelEnum;
+  status: SmsStatusAccountEnum;
+}
+
+type SmsChannelEnum = 'both' | 'marketing' | 'transactional';
+type SmsStatusAccountEnum = 'enable' | 'disable';
+```
+
+### Schema API
+- sms.StatusAccountEnum : Récupéré via resolver schema
+- sms.ChannelEnum : Récupéré via resolver schema
+
+---
+
+## 6. TRADUCTIONS
+
+### Clés i18n
+| Clé | FR |
+|-----|-----|
+| sms_title | "SMS" |
+| sms_order | "Commander" |
+| sms_name_label | "Nom" |
+| sms_description_label | "Description" |
+| sms_channel_label | "Format de compte" |
+| sms_channel_both | "Standard" |
+| sms_channel_marketing | "SMPP marketing" |
+| sms_channel_transactional | "SMPP transactionnel" |
+| sms_status_label | "Statut" |
+| sms_status_label_enable | "OK" |
+| sms_status_label_disable | "Désactivé" |
+| sms_view_sms_label | "Détails" |
+| sms_header_guide | "Guides" |
+| sms_header_guide_start_with_sms | "Débuter avec les SMS OVHcloud" |
+
+---
+
+## 7. RÈGLES MÉTIER
+
+### États
+| État | Affichage |
+|------|-----------|
+| Loading | Spinner OUI Kit |
+| Empty | Redirection vers onboarding |
+| Error | Toast error standard |
+| Success | Affichage datagrid |
+
+### Tracking
+| Event | Name |
+|-------|------|
+| Clic Commander | sms::index::order |
+
+### Liens guides (header)
+Configurés via HEADER_GUIDE_LINK avec URLs par subsidiary (FR, GB, ES, IT, PL, IE).

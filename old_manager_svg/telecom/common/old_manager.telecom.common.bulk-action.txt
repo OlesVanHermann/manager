@@ -1,0 +1,106 @@
+================================================================================
+COMPOSANT : bulk-action (telephony-bulk-action)
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Composant réutilisable (component)
+SOURCE: packages/manager/modules/telecom-universe-components/src/telecom/telephony/bulkAction/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Système permettant d'appliquer une action en masse sur plusieurs services
+téléphonie du même groupe de facturation. Affiche une modal de sélection
+des services cibles.
+
+Cas d'usage :
+- Appliquer la même configuration à plusieurs lignes
+- Modifier les options de plusieurs services
+- Actions groupées sur un billing account
+
+================================================================================
+2. STRUCTURE UI - BOUTON
+================================================================================
+┌─────────────────────────────────────────────────────────────────┐
+│  [Configuration actuelle du service]                            │
+│                                                                 │
+│                    [Appliquer à plusieurs services]             │
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. STRUCTURE UI - MODAL
+================================================================================
+┌─────────────────────────────────────────────────────────────────┐
+│  Appliquer la configuration à d'autres services                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Services disponibles :                                         │
+│  ☑ Ligne 1 - 0033123456789                                      │
+│  ☐ Ligne 2 - 0033987654321                                      │
+│  ☑ Ligne 3 - 0033555666777                                      │
+│  ☐ Fax 1 - 0033111222333                                        │
+│                                                                 │
+│  [Tout sélectionner] [Tout désélectionner]                      │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                              [Annuler]  [Appliquer à 2 services]│
+└─────────────────────────────────────────────────────────────────┘
+
+================================================================================
+4. SERVICE TucTelephonyBulkAction
+================================================================================
+Méthodes :
+- getServiceList(billingAccount, serviceType)
+- filterCompatibleServices(services, currentService)
+- applyAction(services, actionFn)
+- getBulkActionStatus()
+
+================================================================================
+5. FLUX D'EXECUTION
+================================================================================
+1. Utilisateur configure un service
+2. Clic sur "Appliquer à plusieurs services"
+3. Chargement des services compatibles du billing account
+4. Sélection des services cibles
+5. Application de l'action sur chaque service sélectionné
+6. Affichage du résultat (succès/erreurs)
+
+================================================================================
+6. FILTRAGE DES SERVICES
+================================================================================
+Services compatibles :
+- Même billing account
+- Même type de service (line, fax, alias, etc.)
+- Exclut le service source
+- Optionnel : mêmes capacités/options
+
+================================================================================
+7. GESTION DES ERREURS
+================================================================================
+- Exécution continue en cas d'erreur sur un service
+- Résumé final avec succès/échecs
+- Détail des erreurs par service
+
+================================================================================
+8. COMPOSANTS ASSOCIES
+================================================================================
+- telephony-bulk-action.component.js : Bouton déclencheur
+- telephony-bulk-action-modal.html : Modal de sélection
+- telephony-bulk-action-modal.controller.js : Logique modal
+
+================================================================================
+9. EXEMPLE D'INTEGRATION REACT
+================================================================================
+interface BulkActionProps<T> {
+  billingAccount: string;
+  currentService: string;
+  serviceType: 'line' | 'fax' | 'alias';
+  actionFn: (serviceName: string, config: T) => Promise<void>;
+  config: T;
+  buttonLabel?: string;
+}
+
+interface BulkActionResult {
+  success: string[];
+  errors: Array<{ service: string; error: Error }>;
+}

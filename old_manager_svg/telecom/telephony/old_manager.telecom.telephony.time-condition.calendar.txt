@@ -1,0 +1,84 @@
+# CAHIER DES CHARGES - Composant Calendar (Calendrier TimeCondition)
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/calendar/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Directive AngularJS affichant un calendrier hebdomadaire pour visualiser et editer les conditions temporelles.
+
+### Objectif fonctionnel
+- Afficher les plages horaires sur une semaine
+- Permettre l'ajout/edition/suppression de conditions via drag & drop
+- Integrer FullCalendar pour l'affichage
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| calendar.directive.js | Directive voipTimeConditionCalendar |
+| calendar.controller.js | Controller avec init et translations |
+| calendar.html | Template avec FullCalendar |
+| index.js | Module AngularJS |
+
+### Dependances
+- FullCalendar (librairie calendrier)
+- $translate, $translatePartialLoader
+- VoipTimeCondition (instance parent)
+
+---
+
+## 3. COMPOSANT UI
+
+### Directive
+```javascript
+{
+  restrict: 'E',
+  templateUrl: 'calendar.html',
+  controller: 'voipTimeConditionCalendarCtrl',
+  controllerAs: '$ctrl',
+  bindToController: true,
+  scope: {
+    timeCondition: '=' // Instance VoipTimeCondition
+  }
+}
+```
+
+### Initialisation
+1. Chargement des traductions (../condition)
+2. Appel timeCondition.getConditions()
+3. Conversion en events FullCalendar
+
+### Events FullCalendar
+```javascript
+{
+  id: condition.conditionId,
+  start: momentFrom, // moment.js
+  end: momentTo,
+  allDay: false
+}
+```
+
+---
+
+## 4. TRADUCTIONS
+
+Utilise les traductions de ../condition/translations/:
+- voip_time_condition_condition_popover_*
+
+---
+
+## 5. REGLES METIER
+
+### Affichage semaine
+- Vue weekView par defaut
+- Jours ordonnes lundi -> dimanche
+- Heures de 00:00 a 24:00
+
+### Interactions
+- Click sur event -> ouvre popover edition
+- Drag & drop -> modifie horaires
+- Resize -> modifie duree
+- Click zone vide -> cree nouvelle condition

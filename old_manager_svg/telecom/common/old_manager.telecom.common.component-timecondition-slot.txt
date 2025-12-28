@@ -1,0 +1,80 @@
+# CAHIER DES CHARGES - Composant TimeCondition Slot
+# Source: old_manager_web-cloud_telecom.tar
+# Généré depuis: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/slot/
+
+## 1. IDENTIFICATION
+- Composant: VoipTimeConditionSlot
+- Type: Factory AngularJS
+- Fichier source: slot.factory.js
+- Usage: Représente un créneau horaire de redirection
+
+## 2. DESCRIPTION FONCTIONNELLE
+Un slot représente une destination de redirection pour les appels.
+Chaque TimeCondition peut avoir jusqu'à 5 slots :
+- available : Horaires d'ouverture (appels normaux)
+- slot1, slot2, slot3 : Créneaux personnalisés
+- unavailable : Horaires de fermeture
+
+## 3. PROPRIÉTÉS
+| Propriété | Type | Obligatoire | Description |
+|-----------|------|-------------|-------------|
+| name | string | Oui | Nom du slot (available, slot1-3, unavailable) |
+| serviceName | string | Oui | Nom du service téléphonique |
+| type | string | Non | Type de redirection: 'number' ou 'voicemail' |
+| number | string | Non | Numéro de destination |
+| inEdition | boolean | - | État d'édition actuel |
+| saveForEdition | object | - | Sauvegarde pour annulation |
+| originalSave | object | - | Sauvegarde originale |
+
+## 4. MÉTHODES
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| setOptions(opts) | self | Configure type et number |
+| startEdition() | self | Démarre l'édition, sauvegarde état |
+| stopEdition(cancel, cancelToOriginal, reset) | self | Termine l'édition |
+| hasChange(property, fromOriginal) | boolean | Détecte les changements |
+
+## 5. TEMPLATE HTML (slot.html)
+Structure du composant visuel :
+
+<div class="telephony-time-condition-slot slot-legend d-table">
+  <div class="d-table-cell">
+    <div class="legend-color [slot.name]"></div>  <!-- Couleur du slot -->
+  </div>
+  <div class="d-table-cell ml-3">
+    <span>{{ 'voip_time_condition_slots_type_' + slot.name | translate }}</span>
+    <button class="oui-popover-button">?</button>  <!-- Info-bulle -->
+    
+    <!-- Si non configuré -->
+    <small>Non configuré</small>
+    
+    <!-- Si configuré -->
+    <span>Rediriger vers le [type]: [number]</span>
+  </div>
+  
+  <!-- Bouton édition (si enableEdition && name !== 'available') -->
+  <div class="d-table-cell text-right">
+    <button class="oui-button oui-button_s" [popover]>
+      <span class="oui-icon oui-icon-gear"></span>
+    </button>
+  </div>
+</div>
+
+## 6. TRADUCTIONS FR
+voip_time_condition_slots_type_slot1 = "Créneau 1"
+voip_time_condition_slots_type_slot2 = "Créneau 2"
+voip_time_condition_slots_type_slot3 = "Créneau 3"
+voip_time_condition_slots_type_available = "Horaires d'ouverture"
+voip_time_condition_slots_type_unavailable = "Horaires de fermeture"
+voip_time_condition_slots_undefined = "Non configuré"
+voip_time_condition_slots_redirect_type_voicemail = "Rediriger vers le répondeur : {{ number }}"
+voip_time_condition_slots_redirect_type_number = "Rediriger vers le numéro : {{ number }}"
+voip_time_condition_slots_type_available_help = "Créneaux durant lesquels il est possible de vous joindre..."
+voip_time_condition_slots_type_unavailable_help = "Créneaux durant lesquels il est impossible de vous joindre."
+voip_time_condition_slots_type_slot_help = "Créneaux supplémentaires durant lesquels l'appelant sera redirigé..."
+
+## 7. CLASSES CSS
+- .telephony-time-condition-slot
+- .slot-legend
+- .legend-color.available / .slot1 / .slot2 / .slot3 / .unavailable
+- .legend-description

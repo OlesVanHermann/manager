@@ -1,0 +1,104 @@
+================================================================================
+COMPOSANT : elapsed-time
+================================================================================
+NAV1: telecom
+NAV2: common
+TYPE: Directive réutilisable
+SOURCE: packages/manager/modules/telecom-universe-components/src/elapsed-time/
+
+================================================================================
+1. DESCRIPTION FONCTIONNELLE
+================================================================================
+Affiche le temps écoulé depuis une date donnée de façon lisible et dynamique.
+Se met à jour automatiquement en temps réel grâce à un service partagé
+pour optimiser les performances.
+
+Cas d'usage :
+- Durée d'un appel en cours
+- Temps depuis le dernier événement
+- Durée d'une tâche en cours
+
+================================================================================
+2. STRUCTURE UI
+================================================================================
+Exemples d'affichage :
+- "45 sec."
+- "3 min 42 s"
+- "2 h 15 min 30 s"
+- "5 jours et 12 heures"
+
+================================================================================
+3. PROPRIETES (BINDINGS)
+================================================================================
+| Propriété | Type   | Direction | Description                            |
+|-----------|--------|-----------|----------------------------------------|
+| from      | Date   | =         | Date de référence (début du compteur)  |
+
+================================================================================
+4. FORMATS D'AFFICHAGE
+================================================================================
+| Condition          | Format                        | Exemple              |
+|--------------------|-------------------------------|----------------------|
+| < 1 minute         | {{ seconds }} sec.            | "45 sec."            |
+| < 1 heure          | {{ minutes }} min {{ seconds }} s | "3 min 42 s"    |
+| < 1 jour           | {{ hours }} h {{ minutes }} min {{ seconds }} s | "2 h 15 min 30 s" |
+| >= 1 jour          | {{ days }} jours et {{ hours }} heures | "5 jours et 12 heures" |
+
+================================================================================
+5. TRADUCTIONS (FR)
+================================================================================
+elapsed_time_seconds : "{{ seconds }} sec."
+elapsed_time_minutes : "{{ minutes }} min {{ seconds }} s"
+elapsed_time_hours   : "{{ hours }} h {{ minutes }} min {{ seconds }} s"
+elapsed_time_days    : "{{ days }} jours et {{ hours }} heures"
+
+================================================================================
+6. SERVICE TucElapsedTimePeriodicUpdater
+================================================================================
+Optimisation des performances :
+- Un seul timer partagé pour toutes les instances
+- Enregistrement/désenregistrement des callbacks
+- Synchronisation des mises à jour
+- Compensation du décalage serveur (deltaTime)
+
+Méthodes :
+- register(callback)
+- unregister(callback)
+- getDeltaTime() → Promise<number>
+
+================================================================================
+7. CALCUL DU TEMPS
+================================================================================
+Utilise moment.js :
+- moment(from).subtract(delta, 'seconds')
+- moment().diff(from, 'days')
+- moment().diff(from, 'hours')
+- moment().diff(from, 'minutes')
+- moment().diff(from, 'seconds')
+
+================================================================================
+8. EXEMPLE D'INTEGRATION REACT
+================================================================================
+import { useState, useEffect } from 'react';
+import { formatDuration, intervalToDuration } from 'date-fns';
+
+interface ElapsedTimeProps {
+  from: Date;
+}
+
+function ElapsedTime({ from }: ElapsedTimeProps) {
+  const [elapsed, setElapsed] = useState('');
+  
+  useEffect(() => {
+    const update = () => {
+      const duration = intervalToDuration({ start: from, end: new Date() });
+      setElapsed(formatDuration(duration, { format: ['days', 'hours', 'minutes', 'seconds'] }));
+    };
+    
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [from]);
+  
+  return <span>{elapsed}</span>;
+}

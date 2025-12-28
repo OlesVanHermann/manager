@@ -1,0 +1,120 @@
+# CAHIER DES CHARGES - Factory Slot (Creneau de Redirection)
+# Source: packages/manager/apps/telecom/src/components/telecom/telephony/timeCondition/slot/
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Factory AngularJS representant un slot (creneau) de redirection avec type et numero cible.
+
+### Objectif fonctionnel
+- Modeliser un creneau de redirection (ex: slot1 -> voicemail 0033123456789)
+- Gerer l'edition avec rollback possible
+- Detecter les modifications
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+| Fichier | Role |
+|---------|------|
+| slot.factory.js | Factory VoipTimeConditionSlot |
+| slot.component.js | Component affichage slot |
+| slot.controller.js | Controller du component |
+| slot.html | Template affichage |
+| index.js | Module AngularJS |
+| translations/Messages_fr_FR.json | Traductions FR |
+
+### Dependances
+- lodash (get, isEqual)
+
+---
+
+## 3. MODELE DE DONNEES
+
+### Attributs obligatoires
+| Attribut | Type | Description |
+|----------|------|-------------|
+| serviceName | string | Nom du service parent |
+| name | string | Nom du slot (available, slot1, slot2, slot3, unavailable) |
+
+### Attributs slot
+| Attribut | Type | Description |
+|----------|------|-------------|
+| type | string | 'number' ou 'voicemail' |
+| number | string | Numero cible (format international ou serviceName) |
+
+### Attributs edition
+| Attribut | Type | Description |
+|----------|------|-------------|
+| inEdition | boolean | En cours d'edition |
+| saveForEdition | object | Sauvegarde pour rollback immediat |
+| originalSave | object | Sauvegarde pour rollback complet |
+
+---
+
+## 4. TRADUCTIONS (FR)
+
+```json
+{
+  "voip_time_condition_slots_type_slot1": "Creneau 1",
+  "voip_time_condition_slots_type_slot2": "Creneau 2",
+  "voip_time_condition_slots_type_slot3": "Creneau 3",
+  "voip_time_condition_slots_type_available": "Horaires d'ouverture",
+  "voip_time_condition_slots_type_unavailable": "Horaires de fermeture",
+  "voip_time_condition_slots_undefined": "Non configure",
+  "voip_time_condition_slots_configure": "Configurer",
+  "voip_time_condition_slots_redirect_type_voicemail": "Rediriger vers le repondeur : {{ number }}",
+  "voip_time_condition_slots_redirect_type_number": "Rediriger vers le numero : {{ number }}",
+  "voip_time_condition_slots_type_available_help": "Creneaux durant lesquels il est possible de vous joindre en appliquant la file d'appels configuree",
+  "voip_time_condition_slots_type_unavailable_help": "Creneaux durant lesquels il est impossible de vous joindre.",
+  "voip_time_condition_slots_type_slot_help": "Creneaux supplementaires durant lesquels l'appelant sera redirige vers un autre numero ou un repondeur."
+}
+```
+
+---
+
+## 5. REGLES METIER
+
+### Edition
+```javascript
+slot.startEdition() {
+  inEdition = true;
+  saveForEdition = { type, number };
+  if (!originalSave) originalSave = copy(saveForEdition);
+}
+
+slot.stopEdition(cancel, cancelToOriginal, resetOriginal) {
+  if (cancelToOriginal && originalSave) {
+    type = originalSave.type;
+    number = originalSave.number;
+    originalSave = null;
+  } else if (cancel && saveForEdition) {
+    type = saveForEdition.type;
+    number = saveForEdition.number;
+  }
+  if (resetOriginal) originalSave = null;
+  saveForEdition = null;
+  inEdition = false;
+}
+```
+
+### Detection changements
+```javascript
+slot.hasChange(property, fromOriginal) {
+  compareToObject = fromOriginal ? originalSave : saveForEdition;
+  if (!compareToObject) return false;
+  
+  if (property) {
+    return !isEqual(slot[property], compareToObject[property]);
+  }
+  return hasChange('status') || hasChange('number') || hasChange('type');
+}
+```
+
+### Slots disponibles par featureType
+| featureType | Slots |
+|-------------|-------|
+| sip | available, slot1, slot2, slot3, unavailable |
+| easyHunting | available, slot1, slot2, slot3, unavailable |
+| ovhPabx | (aucun slot configurable) |
