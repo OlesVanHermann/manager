@@ -1,0 +1,239 @@
+# Cahier des Charges : telecom/line - Click2Call
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion du service Click2Call permettant de passer des appels telephoniques depuis une interface web ou via API.
+
+### Objectif fonctionnel
+- Passer des appels telephoniques sans decrocher le telephone
+- Gerer les utilisateurs autorises a utiliser le service Click2Call
+- Fournir des identifiants API pour integration externe
+
+### Users cibles
+- Administrateurs telephonie
+- Developpeurs integrant l'API Click2Call
+- Utilisateurs finaux du service
+
+---
+
+## 2. ARCHITECTURE
+
+### Chemin source
+```
+/packages/manager/apps/telecom/src/app/telecom/telephony/line/calls/click2Call/
+├── click-2-call.controller.js
+├── click-2-call.html
+├── click-2-call.routing.js
+├── translations/
+│   └── Messages_fr_FR.json
+├── add-user/
+│   ├── add-user.controller.js
+│   ├── add-user.html
+│   └── translations/
+├── change-password/
+│   ├── change-password.controller.js
+│   └── change-password.html
+└── remove-user/
+    ├── remove-user.controller.js
+    └── remove-user.html
+```
+
+### Composants partages
+```
+/packages/manager/apps/telecom/src/components/telecom/telephony/group/line/click2Call/
+└── user/
+    └── user.factory.js    # TelephonyGroupLineClick2CallUser
+```
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.calls.click2call
+```
+
+### Params URL
+- `billingAccount` : Identifiant du groupe de facturation
+- `serviceName` : Numero de ligne telephonique
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale Click2Call
+- **Route** : `telecom.telephony.billingAccount.line.dashboard.calls.click2call`
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Appels > Click2Call
+
+### Sous-pages (modals/routes)
+| Action | Route/Modal | Description |
+|--------|-------------|-------------|
+| Ajouter utilisateur | `.addUser` (route) | Formulaire ajout identifiant |
+| Changer mot de passe | `.changePassword` (route) | Modification password |
+| Supprimer utilisateur | Modal `$uibModal` | Confirmation suppression |
+
+---
+
+## 4. COMPOSANTS UI
+
+### Layout principal (2 colonnes)
+
+#### Colonne gauche : Formulaire d'appel
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Appel Click2Call" |
+| Input | Numero appelant (pre-rempli, readonly) |
+| Input | Numero a appeler (saisie utilisateur) |
+| Bouton | "Appeler" (btn-primary) |
+
+#### Colonne droite : Liste utilisateurs
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Utilisateurs autorises" / "Identifiants" |
+| Bouton | "+ Ajouter" (btn-primary) |
+| Tableau | Liste des utilisateurs |
+
+### Tableau utilisateurs
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Login | string | Email/identifiant utilisateur |
+| Date creation | date | creationDateTime |
+| Actions | links | Modifier, Supprimer |
+
+### Etats
+| Etat | Affichage |
+|------|-----------|
+| Loading | Spinner pendant chargement |
+| Empty | Message "Aucun utilisateur" + bouton Ajouter |
+| Error | Toast message d'erreur |
+| Success | Toast message succes |
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints utilises
+
+#### Lecture
+```
+GET /telephony/{billingAccount}/line/{serviceName}/click2CallUser
+    → Liste des utilisateurs Click2Call
+    Response: [{ id, login, creationDateTime }]
+```
+
+#### Creation
+```
+POST /telephony/{billingAccount}/line/{serviceName}/click2CallUser
+    Body: { login: string, password: string }
+    → Cree un nouvel utilisateur
+```
+
+#### Suppression
+```
+DELETE /telephony/{billingAccount}/line/{serviceName}/click2CallUser/{id}
+    → Supprime un utilisateur
+```
+
+#### Modification mot de passe
+```
+POST /telephony/{billingAccount}/line/{serviceName}/click2CallUser/{id}/changePassword
+    Body: { password: string }
+    → Change le mot de passe
+```
+
+#### Passer un appel
+```
+POST /telephony/{billingAccount}/line/{serviceName}/click2CallUser/click2Call
+    Body: { calledNumber: string }
+    → Declenche l'appel
+```
+
+### Sequencement
+1. Au chargement : GET liste utilisateurs
+2. Tri par `creationDateTime` DESC (lodash orderBy)
+3. Actions utilisateur declenchent POST/DELETE
+4. Refresh liste apres modification
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles principales (Messages_fr_FR.json)
+```json
+{
+  "telephony_group_line_calls_click2call_title": "Click2call",
+  "telephony_group_line_calls_click2call_ids_title": "Identifiants",
+  "telephony_group_line_calls_click2call_informations_title": "Informations",
+  "telephony_group_line_calls_click2call_informations_text_1": "Le service Click2Call a ete concu pour simplifier la mise en relation avec vos clients.",
+  "telephony_group_line_calls_click2call_informations_text_2": "D'un simple lien sur votre page web, rappelez vos clients. OVHcloud fournit une API pour permettre de passer des appels sans toucher au telephone !",
+  "telephony_group_line_calls_click2call_informations_text_3": "Creez des identifiants afin d'autoriser une application ou une personne a effectuer des appels sur votre compte.",
+  "telephony_group_line_calls_click2call_user_title_id": "Identifiant",
+  "telephony_group_line_calls_click2call_user_title_login": "Login",
+  "telephony_group_line_calls_click2call_user_title_creationDate": "Date de creation",
+  "telephony_group_line_calls_click2call_no_user": "Aucun utilisateur",
+  "telephony_group_line_calls_click2call_call_title": "Appel Click2Call",
+  "telephony_group_line_calls_click2call_call_number_to_call_label": "Numero a appeler : ",
+  "telephony_group_line_calls_click2call_call_number_to_call_placeholder": "Entrez ici le numero a appeler",
+  "telephony_group_line_calls_click2call_call_do_call_label": "Appeler",
+  "telephony_group_line_calls_click2call_call_do_ok": "L'appel est en cours sur la ligne {{serviceName}}.",
+  "telephony_group_line_calls_click2call_call_do_ko": "Echec de l'appel.",
+  "telephony_group_line_calls_click2call_ids_add": "Ajouter",
+  "telephony_group_line_calls_click2call_addUser": "Ajouter un identifiant",
+  "telephony_group_line_calls_click2call_removeUser_confirm": "Voulez-vous vraiment supprimer l'utilisateur <strong>{{name}}</strong> ?",
+  "telephony_group_line_calls_click2call_removeUser_removed": "Identifiant supprime",
+  "telephony_group_line_calls_click2call_removeUser_ko": "Impossible de supprimer l'identifiant.<br/>{{error}}",
+  "telephony_group_line_calls_click2call_changePasswordUser": "Changer le mot de passe",
+  "telephony_group_line_calls_click2call_changePasswordUser_changedPassword": "Mot de passe change avec succes"
+}
+```
+
+### Cles ajout utilisateur
+```json
+{
+  "telephony_group_line_calls_click2call_addUser_title": "Ajouter un utilisateur",
+  "telephony_group_line_calls_click2call_addUser_login_placeholder": "Login",
+  "telephony_group_line_calls_click2call_addUser_password_placeholder": "Mot de passe",
+  "telephony_group_line_calls_click2call_addUser_added": "Utilisateur <strong>{{name}}</strong> ajoute !",
+  "telephony_group_line_calls_click2call_addUser_rule_size": "Doit contenir entre 8 et 20 caracteres",
+  "telephony_group_line_calls_click2call_addUser_rule_special": "Doit contenir des chiffres, lettres sans accent ou {{list}}"
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Validation mot de passe
+- Longueur : 8 a 20 caracteres
+- Caracteres autorises : chiffres, lettres sans accent, caracteres speciaux definis
+
+### Permissions
+- Acces reserve aux administrateurs du groupe telephonie
+- Chaque utilisateur cree peut passer des appels via API
+
+### Comportements
+- Tri des utilisateurs par date de creation (plus recent en premier)
+- Pagination : 5 elements par page (`filter.perPage: 5`)
+- Appel : timeout de 1 seconde minimum avant retour reponse
+- Modal de confirmation avant suppression
+
+### Bulk actions
+- Support des actions bulk pour ajouter utilisateurs sur plusieurs lignes
+- Message specifique si succes partiel
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Input text | OsdsInput |
+| Bouton primary | OsdsButton variant="primary" |
+| Bouton default | OsdsButton variant="stroked" |
+| Tableau | OsdsDatagrid |
+| Modal | OsdsModal |
+| Toast | OsdsMessage |
+
+### Points d'attention
+- Remplacer `$uibModal` par `OsdsModal`
+- Utiliser `useQuery`/`useMutation` au lieu de factory AngularJS
+- Conserver la logique de tri et pagination

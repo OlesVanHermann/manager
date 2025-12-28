@@ -1,0 +1,95 @@
+# Cahier des Charges : telecom/line - Changer d'offre
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Changement d'offre/abonnement pour une ligne telephonique SIP.
+
+### Objectif fonctionnel
+- Visualiser l'offre actuelle et ses caracteristiques
+- Selectionner une nouvelle offre parmi celles disponibles
+- Planifier le changement a la prochaine facturation
+
+### Users cibles
+- Administrateurs telephonie
+- Gestionnaires de comptes
+
+---
+
+## 2. LAYOUT
+
+### Section unique avec informations et formulaire
+
+---
+
+## 3. COMPOSANTS UI
+
+### Zone informations offre actuelle
+| Champ | Type | Exemple |
+|-------|------|---------|
+| Groupe | Label + Value | Mon groupe telephonie |
+| Prochaine facturation | Label + Value | 15/01/2025 |
+| Offre actuelle | Label + Value | Ligne SIP Entreprise - 9,99 EUR HT/mois |
+
+### Formulaire changement
+| Composant | Description |
+|-----------|-------------|
+| Select | Liste des offres disponibles |
+| Prix nouvelle offre | Affichage dynamique |
+| Date application | Date prochaine facturation |
+| Lien bulk | "Appliquer a plusieurs lignes..." |
+| Boutons | Valider / Annuler |
+
+### Options offres (dropdown)
+| Offre | Prix |
+|-------|------|
+| Ligne SIP Decouverte | 1,99 EUR HT/mois |
+| Ligne SIP Standard | 4,99 EUR HT/mois |
+| Ligne SIP Entreprise | 9,99 EUR HT/mois |
+| Ligne SIP Premium | 19,99 EUR HT/mois |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}
+    Response: { offer, nextBillingDate, ... }
+
+GET /telephony/{billingAccount}/line/{serviceName}/offers
+    Response: [{ name, price, description }]
+
+POST /telephony/{billingAccount}/service/{serviceName}/offerChange
+    Body: { offer: string }
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_offer_change_title": "Changer d'offre",
+  "telephony_line_offer_change_current_title": "Informations sur l'offre actuelle",
+  "telephony_line_offer_change_group": "Groupe",
+  "telephony_line_offer_change_next_billing": "Prochaine facturation",
+  "telephony_line_offer_change_current_offer": "Offre actuelle",
+  "telephony_line_offer_change_available": "Offres disponibles",
+  "telephony_line_offer_change_new_price": "Prix de la nouvelle offre",
+  "telephony_line_offer_change_apply_date": "Date d'application",
+  "telephony_line_offer_change_submit": "Valider",
+  "telephony_line_offer_change_cancel": "Annuler",
+  "telephony_line_offer_change_bulk": "Appliquer a plusieurs lignes..."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Changement effectif a la prochaine facturation
+- Prorata possible selon offres
+- Downgrade/upgrade autorises
+- Annulation possible jusqu'a la date d'application

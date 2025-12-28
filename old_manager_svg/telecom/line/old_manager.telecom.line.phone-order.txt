@@ -1,0 +1,111 @@
+# Cahier des Charges : telecom/line - Commander un telephone
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Commande d'un telephone IP Plug & Phone avec systeme de caution.
+
+### Objectif fonctionnel
+- Choisir un modele de telephone parmi le catalogue
+- Visualiser les caracteristiques et prix
+- Commander avec versement de caution
+
+---
+
+## 2. LAYOUT
+
+### 2 sections verticales
+| Section | Contenu |
+|---------|---------|
+| Haut | Selection telephone (grille de cartes) |
+| Bas | Informations sur la procedure |
+
+---
+
+## 3. COMPOSANTS UI
+
+### Section Selection telephone
+| Element | Description |
+|---------|-------------|
+| Titre | "Choisir un telephone" |
+| Grille | 4 cartes de telephones |
+
+### Carte telephone
+| Element | Description |
+|---------|-------------|
+| Nom modele | Ex: Cisco SPA504G |
+| Caracteristique | Ex: 4 lignes |
+| Image | Placeholder telephone |
+| Prix | Ex: 99,00 EUR HT |
+| Selection | Bordure bleue si selectionne |
+
+### Telephones disponibles (exemples)
+| Modele | Lignes | Prix |
+|--------|--------|------|
+| Cisco SPA504G | 4 | 99,00 EUR HT |
+| Yealink T46U | 16 | 179,00 EUR HT |
+| Gigaset DX800A | 6 | 249,00 EUR HT |
+| Polycom VVX450 | 12 | 299,00 EUR HT |
+
+### Details telephone selectionne
+| Info | Valeur |
+|------|--------|
+| Modele | Cisco SPA504G - 4 lignes SIP |
+| Caracteristiques | Ecran LCD, PoE, Mains libres HD |
+| Caution | 99,00 EUR HT |
+| Frais de port | 9,99 EUR HT |
+
+### Section Informations
+| Element | Description |
+|---------|-------------|
+| Texte caution | Versement d'une caution |
+| Procedure | Nouvelle commande ou echange |
+| Retour | Delai 15 jours |
+| Remboursement | Apres reception materiel |
+| Adresse | OVH SAS, SAV, 155 av Georges Hannart, 59170 Croix |
+
+### Navigation
+| Bouton | Action |
+|--------|--------|
+| Suivant → | Etape suivante du wizard |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/availablePhones
+    Response: [{ brand, model, lines, price, features }]
+
+POST /order/telephony/{billingAccount}/line/{serviceName}/phone
+    Body: { model: string }
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_phone_order_title": "Commander un telephone",
+  "telephony_line_phone_order_choose": "Choisir un telephone",
+  "telephony_line_phone_order_selected": "Telephone selectionne :",
+  "telephony_line_phone_order_deposit": "Caution :",
+  "telephony_line_phone_order_shipping": "Frais de port :",
+  "telephony_line_phone_order_info_title": "Informations",
+  "telephony_line_phone_order_info_deposit": "La commande implique le versement d'une caution.",
+  "telephony_line_phone_order_info_return": "Retour sous 15 jours en cas d'echange.",
+  "telephony_line_phone_order_return_address": "Adresse de retour :",
+  "telephony_line_phone_order_next": "Suivant"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Caution restituee apres retour materiel
+- Echange standard possible si telephone existant
+- Frais de port ajoutes au total
+- Delai retour 15 jours

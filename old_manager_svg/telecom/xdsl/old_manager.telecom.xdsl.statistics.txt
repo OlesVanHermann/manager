@@ -1,0 +1,137 @@
+# Cahier des Charges : telecom/xdsl - Statistiques
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de visualisation des statistiques de la ligne xDSL.
+
+### Objectif fonctionnel
+- Afficher les graphiques de performance
+- Selectionner la periodicite
+- Analyser synchronisation, trafic, ping, SNR, attenuation
+
+---
+
+## 2. LAYOUT
+
+### Structure avec selecteur et grille de graphiques
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | Retour a mon acces |
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Statistiques |
+| Identifiant | xdsl-ab12345-1 |
+
+### Selecteur periodicite
+| Option | Etat |
+|--------|------|
+| Journalier | Actif (bleu) |
+| Hebdomadaire | Inactif |
+| Mensuel | Inactif |
+| Annuel | Inactif |
+
+### Graphique Synchronisation
+| Element | Description |
+|---------|-------------|
+| Titre | Synchronisation |
+| Legende | Download (bleu), Upload (vert) |
+| Type | Ligne |
+| Donnees | Kbps au fil du temps |
+
+### Graphique Trafic
+| Element | Description |
+|---------|-------------|
+| Titre | Trafic |
+| Legende | Download (bleu), Upload (vert) |
+| Type | Barres |
+| Donnees | Volume transfere |
+
+### Graphique Ping
+| Element | Description |
+|---------|-------------|
+| Titre | Ping |
+| Type | Ligne |
+| Valeur affichee | XX ms |
+| Couleur | Orange |
+
+### Graphique Marge de bruit (SNR)
+| Element | Description |
+|---------|-------------|
+| Titre | Marge de bruit (SNR) |
+| Legende | Down (bleu), Up (vert) |
+| Type | Ligne |
+| Valeur | X.X dB / Y.Y dB |
+
+### Graphique Attenuation
+| Element | Description |
+|---------|-------------|
+| Titre | Attenuation |
+| Type | Ligne stable |
+| Valeur | XX.X dB |
+| Couleur | Rouge |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /xdsl/{serviceName}/statistics
+    Query: { period: "daily" | "weekly" | "monthly" | "yearly" }
+    Response: {
+      sync: [{ timestamp, down, up }],
+      traffic: [{ timestamp, down, up }],
+      ping: [{ timestamp, value }],
+      snr: [{ timestamp, down, up }],
+      attenuation: [{ timestamp, value }]
+    }
+```
+
+### Periodicites
+| Periode | Points de donnees |
+|---------|-------------------|
+| daily | 24 (1/heure) |
+| weekly | 7 (1/jour) |
+| monthly | 30 (1/jour) |
+| yearly | 12 (1/mois) |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "xdsl_stats_title": "Statistiques",
+  "xdsl_stats_back": "Retour a mon acces",
+  "xdsl_stats_period": "Periodicite",
+  "xdsl_stats_daily": "Journalier",
+  "xdsl_stats_weekly": "Hebdomadaire",
+  "xdsl_stats_monthly": "Mensuel",
+  "xdsl_stats_yearly": "Annuel",
+  "xdsl_stats_sync": "Synchronisation",
+  "xdsl_stats_traffic": "Trafic",
+  "xdsl_stats_ping": "Ping",
+  "xdsl_stats_snr": "Marge de bruit (SNR)",
+  "xdsl_stats_attenuation": "Attenuation",
+  "xdsl_stats_download": "Download",
+  "xdsl_stats_upload": "Upload"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Donnees mises a jour toutes les heures
+- Historique conserve 1 an
+- SNR bas = instabilite potentielle
+- Attenuation stable normalement

@@ -1,0 +1,96 @@
+# Cahier des Charges : telecom/line - Restriction MGCP par IP
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration des restrictions d'acces MGCP par adresse IP pour securiser les lignes telephoniques.
+
+### Objectif fonctionnel
+- Definir des restrictions IP pour une ligne specifique
+- Configurer des restrictions par defaut pour le code client
+- Limiter l'acces reseau aux equipements MGCP
+
+### Users cibles
+- Administrateurs securite telephonie
+- Techniciens reseaux
+
+---
+
+## 2. LAYOUT
+
+### Structure 2 colonnes
+| Colonne | Contenu |
+|---------|---------|
+| Gauche | Restriction MGCP de la ligne |
+| Droite | Restriction MGCP par code client |
+
+---
+
+## 3. COMPOSANTS UI
+
+### Section Restriction ligne (gauche)
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Restriction MGCP de la ligne" |
+| Info box | Affiche restriction actuelle |
+| Input | Adresse IP ou sous-reseau CIDR |
+| Placeholder | Ex: 192.168.1.0/24 |
+| Lien bulk | "Appliquer a plusieurs lignes..." |
+| Bouton | "Valider" |
+
+### Section Restriction code client (droite)
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Restriction MGCP par code client" |
+| Info box | "S'appliquera aux nouvelles lignes MGCP" |
+| Input | Adresse IP ou sous-reseau CIDR |
+| Placeholder | Ex: 10.0.0.0/8 |
+| Bouton | "Valider" |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints ligne
+```
+GET /telephony/{billingAccount}/line/{serviceName}/options
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+    Body: { mgcpIpRestriction: string }
+```
+
+### Endpoints code client
+```
+GET /me/telephony/settings/mgcpIpRestriction
+PUT /me/telephony/settings/mgcpIpRestriction
+    Body: { ipRestriction: string }
+```
+
+### Format IP
+- IPv4 simple : 192.168.1.1
+- CIDR : 192.168.1.0/24
+- Plage : 10.0.0.0/8
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_mgcp_ip_title": "Restriction MGCP par IP",
+  "telephony_line_mgcp_ip_line_title": "Restriction MGCP de la ligne",
+  "telephony_line_mgcp_ip_line_current": "Restriction actuelle :",
+  "telephony_line_mgcp_ip_line_none": "Aucune restriction definie",
+  "telephony_line_mgcp_ip_client_title": "Restriction MGCP par code client",
+  "telephony_line_mgcp_ip_client_info": "Cette restriction s'appliquera a toutes les nouvelles lignes MGCP.",
+  "telephony_line_mgcp_ip_label": "Adresse IP ou sous-reseau CIDR",
+  "telephony_line_mgcp_ip_submit": "Valider"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Format CIDR obligatoire pour les plages
+- Restriction ligne prioritaire sur restriction client
+- Vide = aucune restriction (tout autorise)

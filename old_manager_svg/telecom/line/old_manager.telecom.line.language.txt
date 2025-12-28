@@ -1,0 +1,147 @@
+# Cahier des Charges : telecom/line - Gerer la langue
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration de la langue utilisee pour les messages vocaux du serveur telephonique.
+
+### Objectif fonctionnel
+- Modifier la langue des annonces vocales
+- Changer la langue de la boite vocale
+- Appliquer a la ligne selectionnee
+
+### Users cibles
+- Administrateurs telephonie
+- Utilisateurs multilingues
+
+---
+
+## 2. ARCHITECTURE
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.management.language
+```
+
+### Params URL
+- `billingAccount` : Identifiant groupe facturation
+- `serviceName` : Numero de ligne
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale
+- **Titre** : "Gerer la langue"
+- **Lien retour** : "Retour a la gestion de la ligne"
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Gestion > Langue
+
+---
+
+## 4. COMPOSANTS UI
+
+### Section Informations
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Informations sur la langue" |
+| Texte | Explication impact du parametre |
+
+### Formulaire
+| Champ | Type | Description |
+|-------|------|-------------|
+| Langue | Select dropdown | Liste des langues disponibles |
+| Bouton Valider | Primary | Enregistre le choix |
+
+### Select Langue (dropdown ouvert)
+| Option | Code |
+|--------|------|
+| Francais | fr_FR |
+| English | en_GB |
+| Deutsch | de_DE |
+| Espanol | es_ES |
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints
+
+#### Lecture langue actuelle
+```
+GET /telephony/{billingAccount}/line/{serviceName}
+    Response: {
+      language: string,
+      ...
+    }
+```
+
+#### Mise a jour langue
+```
+PUT /telephony/{billingAccount}/line/{serviceName}
+    Body: { language: string }
+```
+
+#### Liste langues disponibles
+```
+GET /telephony.LanguageEnum (via schema API)
+    Response: ["fr_FR", "en_GB", "de_DE", "es_ES", ...]
+```
+
+### Donnees
+| Champ | Type | Valeurs |
+|-------|------|---------|
+| language | enum | fr_FR, en_GB, de_DE, es_ES, it_IT, pl_PL, pt_PT |
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles principales
+```json
+{
+  "telephony_line_language_title": "Gerer la langue",
+  "telephony_line_language_info_title": "Informations sur la langue",
+  "telephony_line_language_info_text": "Ce parametre permet de modifier la langue utilisee pour les messages vocaux du serveur (boite vocale, annonces, etc.).",
+  "telephony_line_language_label": "Langue",
+  "telephony_line_language_submit": "Valider",
+  "telephony_line_language_success": "Langue mise a jour.",
+  "telephony_line_language_error": "Erreur lors de la mise a jour.",
+  "telephony_line_language_fr_FR": "Francais",
+  "telephony_line_language_en_GB": "English",
+  "telephony_line_language_de_DE": "Deutsch",
+  "telephony_line_language_es_ES": "Espanol"
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Langues disponibles
+- Francais (fr_FR) - defaut
+- Anglais (en_GB)
+- Allemand (de_DE)
+- Espagnol (es_ES)
+- Italien (it_IT)
+- Polonais (pl_PL)
+- Portugais (pt_PT)
+
+### Impact changement
+- Messages vocaux de la boite vocale
+- Annonces serveur (attente, menus)
+- Guides vocaux interactifs
+
+### Application
+- Changement effectif immediatement
+- Affecte uniquement la ligne selectionnee
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Select dropdown | OsdsSelect |
+| Bouton primary | OsdsButton variant="primary" |
+| Lien retour | OsdsLink |

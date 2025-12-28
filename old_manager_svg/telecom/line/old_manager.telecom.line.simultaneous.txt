@@ -1,0 +1,105 @@
+# Cahier des Charges : telecom/line - Lignes simultanees
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Commande de lignes simultanees supplementaires pour gerer plusieurs appels en parallele.
+
+### Objectif fonctionnel
+- Visualiser le nombre actuel de lignes simultanees
+- Commander des lignes supplementaires
+- Calculer le cout mensuel additionnel
+
+### Users cibles
+- Administrateurs telephonie
+- Gestionnaires de comptes entreprise
+
+---
+
+## 2. LAYOUT
+
+### Section unique avec formulaire de commande
+
+---
+
+## 3. COMPOSANTS UI
+
+### Zone information
+| Composant | Description |
+|-----------|-------------|
+| Info box | "Les lignes simultanees permettent de gerer plusieurs appels en parallele." |
+
+### Formulaire commande
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Commander des lignes supplementaires" |
+| Texte info | Nombre actuel de lignes : X |
+| Input number | Nombre a commander |
+| Contrainte | (max: 10) |
+
+### Zone prix
+| Element | Style |
+|---------|-------|
+| Container | Box verte (#F0FDF4) |
+| Label | "Cout mensuel supplementaire :" |
+| Prix | Vert, gras, grand (ex: + 5,97 EUR HT/mois) |
+| Detail | (1,99 EUR x 3 lignes) |
+
+### Boutons
+| Bouton | Type | Action |
+|--------|------|--------|
+| Generer le bon | Primary | Cree bon de commande |
+| Annuler | Default | Reset |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}
+    Response: { simultaneousLines: number, maxSimultaneousLines: number }
+
+GET /order/telephony/{billingAccount}/line/{serviceName}/simultaneousLines
+    Params: { quantity: number }
+    Response: { prices, contracts }
+
+POST /order/telephony/{billingAccount}/line/{serviceName}/simultaneousLines
+    Body: { quantity: number }
+    Response: { orderId, url }
+```
+
+### Calcul prix
+```
+prixTotal = prixUnitaire * quantite
+prixUnitaire = 1,99 EUR HT/mois (exemple)
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_simultaneous_title": "Lignes simultanees",
+  "telephony_line_simultaneous_info": "Les lignes simultanees permettent de gerer plusieurs appels en parallele sur votre ligne.",
+  "telephony_line_simultaneous_order_title": "Commander des lignes supplementaires",
+  "telephony_line_simultaneous_current": "Nombre actuel de lignes simultanees :",
+  "telephony_line_simultaneous_quantity_label": "Nombre de lignes a commander",
+  "telephony_line_simultaneous_max": "(max: {{max}})",
+  "telephony_line_simultaneous_cost_label": "Cout mensuel supplementaire :",
+  "telephony_line_simultaneous_cost_detail": "({{price}} x {{qty}} lignes)",
+  "telephony_line_simultaneous_submit": "Generer le bon",
+  "telephony_line_simultaneous_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Maximum 10 lignes simultanees par ligne
+- Prix unitaire par ligne supplementaire
+- Facturation mensuelle
+- Bon de commande genere apres validation

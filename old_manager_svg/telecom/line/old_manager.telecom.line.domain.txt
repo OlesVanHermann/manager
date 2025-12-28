@@ -1,0 +1,172 @@
+# Cahier des Charges : telecom/line - Domaine SIP
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration du domaine SIP utilise pour l'enregistrement de la ligne telephonique.
+
+### Objectif fonctionnel
+- Consulter et modifier le domaine SIP de la ligne
+- Gerer les domaines SIP par pays associes au code client
+- Appliquer la configuration a plusieurs lignes
+
+### Users cibles
+- Administrateurs telephonie
+- Techniciens configurant l'infrastructure SIP
+
+---
+
+## 2. ARCHITECTURE
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.management.domain
+```
+
+### Params URL
+- `billingAccount` : Identifiant groupe facturation
+- `serviceName` : Numero de ligne
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale
+- **Titre** : "Domaine SIP"
+- **Lien retour** : "Retour a la gestion de la ligne"
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Gestion > Domaine
+
+---
+
+## 4. COMPOSANTS UI
+
+### Section 1 : Domaine SIP de la ligne
+| Composant | Description |
+|-----------|-------------|
+| Info box | "Configurez le domaine SIP utilise pour l'enregistrement." |
+| Label | "Domaine enregistre" |
+| Value/Select | Domaine actuel (sip.ovh.net) |
+| Lien bulk | "Appliquer a plusieurs lignes..." |
+| Bouton Enregistrer | Sauvegarde modification |
+| Lien Annuler | Reset |
+
+### Section 2 : Domaines SIP par pays (code client)
+| Composant | Description |
+|-----------|-------------|
+| Info box | "Ces domaines seront utilises par defaut pour les nouvelles lignes." |
+| Liste pays | France (FR), Belgique (BE), Suisse (CH), Espagne (ES) |
+| Domaines | sip.ovh.fr, sip.ovh.be, sip.ovh.ch, sip.ovh.es |
+| Bouton Modifier | Ouvre edition |
+
+### Modes
+| Mode | Affichage |
+|------|-----------|
+| Consultation | Valeurs en lecture seule |
+| Edition | Select dropdown pour choisir domaine |
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints
+
+#### Lecture domaine ligne
+```
+GET /telephony/{billingAccount}/line/{serviceName}
+    Response: {
+      domain: string,
+      ...
+    }
+```
+
+#### Mise a jour domaine
+```
+PUT /telephony/{billingAccount}/line/{serviceName}
+    Body: { domain: string }
+```
+
+#### Liste domaines disponibles
+```
+GET /telephony/{billingAccount}/line/{serviceName}/availableSipDomains
+    Response: ["sip.ovh.net", "sip.ovh.fr", ...]
+```
+
+#### Domaines par defaut (code client)
+```
+GET /me/telephony/defaultSipDomains
+    Response: {
+      "FR": "sip.ovh.fr",
+      "BE": "sip.ovh.be",
+      "CH": "sip.ovh.ch",
+      "ES": "sip.ovh.es"
+    }
+```
+
+#### Mise a jour domaines defaut
+```
+PUT /me/telephony/defaultSipDomains
+    Body: {
+      "FR": "sip.ovh.fr",
+      ...
+    }
+```
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles principales
+```json
+{
+  "telephony_line_domain_title": "Domaine SIP",
+  "telephony_line_domain_line_title": "Domaine SIP de la ligne",
+  "telephony_line_domain_line_info": "Configurez le domaine SIP utilise pour l'enregistrement de cette ligne.",
+  "telephony_line_domain_label": "Domaine enregistre",
+  "telephony_line_domain_select_label": "Selectionner un domaine",
+  "telephony_line_domain_save": "Enregistrer",
+  "telephony_line_domain_cancel": "Annuler",
+  "telephony_line_domain_bulk": "Appliquer a plusieurs lignes...",
+  "telephony_line_domain_client_title": "Domaines SIP associes a votre code client",
+  "telephony_line_domain_client_info": "Ces domaines seront utilises par defaut pour les nouvelles lignes.",
+  "telephony_line_domain_modify": "Modifier",
+  "telephony_line_domain_success": "Domaine mis a jour.",
+  "telephony_line_domain_error": "Erreur lors de la mise a jour."
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Domaines disponibles
+- sip.ovh.net (defaut europeen)
+- sip.ovh.fr (France)
+- sip.ovh.be (Belgique)
+- sip.ovh.ch (Suisse)
+- sip.ovh.es (Espagne)
+
+### Impact changement
+- Changement effectif apres re-enregistrement du telephone
+- Peut necessiter un reboot du terminal
+
+### Domaines par defaut
+- Associes au code client (NIC)
+- Utilises pour les nouvelles lignes creees
+- Un domaine par pays disponible
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Info box | OsdsMessage variant="info" |
+| Select dropdown | OsdsSelect |
+| Liste pays | OsdsTable ou liste stylisee |
+| Bouton primary | OsdsButton variant="primary" |
+
+### Points d'attention
+- Afficher clairement l'impact du changement de domaine
+- Grouper les domaines par region/pays
+- Permettre la modification en bulk

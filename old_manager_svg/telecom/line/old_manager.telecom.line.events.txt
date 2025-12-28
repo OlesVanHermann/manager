@@ -1,0 +1,184 @@
+# Cahier des Charges : telecom/line - Planification des evenements
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Calendrier de planification des evenements et comportements de la ligne telephonique.
+
+### Objectif fonctionnel
+- Visualiser les evenements planifies sur un calendrier
+- Ajouter des creneaux horaires avec comportements specifiques
+- Gerer les periodes d'ouverture, fermeture et renvoi
+
+### Users cibles
+- Administrateurs telephonie
+- Gestionnaires configurant les horaires d'ouverture
+
+---
+
+## 2. ARCHITECTURE
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.calls.events
+```
+
+### Params URL
+- `billingAccount` : Identifiant groupe facturation
+- `serviceName` : Numero de ligne
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale
+- **Titre** : "Planification des evenements"
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Appels > Evenements
+
+---
+
+## 4. COMPOSANTS UI
+
+### Zone information
+| Composant | Description |
+|-----------|-------------|
+| Info box | "Configurez le comportement de votre ligne selon les creneaux horaires." |
+
+### Calendrier
+| Element | Description |
+|---------|-------------|
+| Navigation mois | Fleches < > pour changer de mois |
+| Titre mois | "Decembre 2024" |
+| En-tetes jours | Lun, Mar, Mer, Jeu, Ven, Sam, Dim |
+| Cellules jour | Affichent les evenements |
+| Jour courant | Surligne en gras |
+
+### Evenements (barres colorees)
+| Couleur | Type | Description |
+|---------|------|-------------|
+| Vert (#10B981) | Ouvert | Ligne disponible |
+| Bleu (#3B82F6) | Renvoi | Redirection active |
+| Orange (#F97316) | Ferme | Ligne indisponible |
+
+### Legende
+| Element | Position |
+|---------|----------|
+| Indicateurs | Bas du calendrier |
+| Labels | "Ouvert", "Renvoi", "Ferme" |
+
+### Actions
+| Bouton | Position | Action |
+|--------|----------|--------|
+| "+ Ajouter evenement" | Bas droite | Ouvre modal creation |
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints
+
+#### Lecture evenements
+```
+GET /telephony/{billingAccount}/line/{serviceName}/events
+    Response: [{
+      id: number,
+      dateStart: string (ISO),
+      dateEnd: string (ISO),
+      type: "open" | "forward" | "closed",
+      forwardNumber?: string
+    }]
+```
+
+#### Creation evenement
+```
+POST /telephony/{billingAccount}/line/{serviceName}/events
+    Body: {
+      dateStart: string,
+      dateEnd: string,
+      type: string,
+      forwardNumber?: string
+    }
+```
+
+#### Modification evenement
+```
+PUT /telephony/{billingAccount}/line/{serviceName}/events/{eventId}
+    Body: { ... }
+```
+
+#### Suppression evenement
+```
+DELETE /telephony/{billingAccount}/line/{serviceName}/events/{eventId}
+```
+
+### Structure evenement
+| Champ | Type | Description |
+|-------|------|-------------|
+| id | number | Identifiant unique |
+| dateStart | string | Debut creneau (ISO 8601) |
+| dateEnd | string | Fin creneau |
+| type | enum | "open", "forward", "closed" |
+| forwardNumber | string | Numero de renvoi (si type=forward) |
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles principales
+```json
+{
+  "telephony_line_events_title": "Planification des evenements",
+  "telephony_line_events_info": "Configurez le comportement de votre ligne selon les creneaux horaires.",
+  "telephony_line_events_add": "Ajouter evenement",
+  "telephony_line_events_type_open": "Ouvert",
+  "telephony_line_events_type_forward": "Renvoi",
+  "telephony_line_events_type_closed": "Ferme",
+  "telephony_line_events_days_mon": "Lun",
+  "telephony_line_events_days_tue": "Mar",
+  "telephony_line_events_days_wed": "Mer",
+  "telephony_line_events_days_thu": "Jeu",
+  "telephony_line_events_days_fri": "Ven",
+  "telephony_line_events_days_sat": "Sam",
+  "telephony_line_events_days_sun": "Dim"
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Types d'evenements
+| Type | Comportement |
+|------|--------------|
+| open | Ligne recoit les appels normalement |
+| forward | Appels rediriges vers un numero |
+| closed | Appels refuses ou messagerie |
+
+### Chevauchement
+- Evenements peuvent se chevaucher visuellement
+- Priorite selon ordre de creation
+- L'evenement le plus recent a priorite
+
+### Affichage calendrier
+- Vue mensuelle par defaut
+- Navigation mois par mois
+- Jour courant mis en evidence
+- Weekends affiches mais non differencies
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Info box | OsdsMessage variant="info" |
+| Calendrier | Composant custom ou lib externe |
+| Bouton ajouter | OsdsButton variant="primary" |
+| Badges couleur | OsdsBadge avec couleur custom |
+
+### Points d'attention
+- Utiliser une librairie calendrier React (ex: FullCalendar)
+- Permettre le drag & drop pour modifier les creneaux
+- Afficher les chevauchements clairement
+- Supporter les fuseaux horaires

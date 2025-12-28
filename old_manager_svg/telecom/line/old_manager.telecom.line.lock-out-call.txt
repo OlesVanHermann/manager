@@ -1,0 +1,143 @@
+# Cahier des Charges : telecom/line - Verrouillage des appels sortants
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Protection de la ligne par verrouillage des appels sortants avec code PIN.
+
+### Objectif fonctionnel
+- Activer/desactiver le verrouillage
+- Configurer un code PIN a 4 chiffres
+- Proteger contre les usages frauduleux
+
+### Users cibles
+- Administrateurs securite telephonie
+- Gestionnaires de lignes partagees
+
+---
+
+## 2. ARCHITECTURE
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.calls.lockOutCall
+```
+
+### Params URL
+- `billingAccount` : Identifiant groupe facturation
+- `serviceName` : Numero de ligne
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale
+- **Titre** : "Verrouillage des appels sortants"
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Appels > Verrouillage
+
+---
+
+## 4. COMPOSANTS UI
+
+### Zone information
+| Composant | Description |
+|-----------|-------------|
+| Info box | "Protegez votre ligne en bloquant les appels sortants avec un code PIN." |
+
+### Formulaire configuration
+| Champ | Type | Description |
+|-------|------|-------------|
+| Checkbox | toggle | Activer le verrouillage |
+| Code PIN | input password | 4 chiffres masques |
+| Aide | text muted | "Ce code sera demande pour passer un appel." |
+| Lien bulk | link | "Appliquer a plusieurs lignes" |
+
+### Boutons
+| Bouton | Type | Action |
+|--------|------|--------|
+| Enregistrer | Primary | Sauvegarde configuration |
+| Annuler | Default | Reset formulaire |
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints
+
+#### Lecture configuration
+```
+GET /telephony/{billingAccount}/line/{serviceName}/options
+    Response: {
+      lockOutCall: boolean,
+      lockOutCallPassword: string (masque),
+      ...
+    }
+```
+
+#### Mise a jour configuration
+```
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+    Body: {
+      lockOutCall: boolean,
+      lockOutCallPassword: string
+    }
+```
+
+### Donnees
+| Champ | Type | Description |
+|-------|------|-------------|
+| lockOutCall | boolean | Verrouillage actif |
+| lockOutCallPassword | string | Code PIN 4 chiffres |
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles principales
+```json
+{
+  "telephony_line_lock_out_call_title": "Verrouillage des appels sortants",
+  "telephony_line_lock_out_call_info": "Protegez votre ligne en bloquant les appels sortants avec un code PIN.",
+  "telephony_line_lock_out_call_config_title": "Configuration du verrouillage",
+  "telephony_line_lock_out_call_enable": "Activer le verrouillage des appels sortants",
+  "telephony_line_lock_out_call_pin_label": "Code PIN (4 chiffres)",
+  "telephony_line_lock_out_call_pin_help": "Ce code sera demande pour passer un appel sortant.",
+  "telephony_line_lock_out_call_bulk": "Appliquer a plusieurs lignes",
+  "telephony_line_lock_out_call_save": "Enregistrer",
+  "telephony_line_lock_out_call_cancel": "Annuler",
+  "telephony_line_lock_out_call_success": "Configuration enregistree.",
+  "telephony_line_lock_out_call_error": "Erreur lors de l'enregistrement."
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Format PIN
+- Exactement 4 chiffres
+- Chiffres uniquement (0-9)
+- Affichage masque (****)
+
+### Comportement
+- Si verrouillage actif : code demande avant chaque appel sortant
+- Appels entrants non affectes
+- Appels urgences (112, 15, 17, 18) non bloques
+
+### Securite
+- PIN stocke de maniere securisee
+- Pas de limitation tentatives (cote API)
+- Reset possible via manager
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Info box | OsdsMessage variant="info" |
+| Checkbox | OsdsToggle ou OsdsCheckbox |
+| Input PIN | OsdsInput type="password" |
+| Bouton primary | OsdsButton variant="primary" |
+| Bouton default | OsdsButton variant="stroked" |

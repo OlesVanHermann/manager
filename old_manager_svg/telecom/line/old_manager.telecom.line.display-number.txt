@@ -1,0 +1,159 @@
+# Cahier des Charges : telecom/line - Numero affiche
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration du numero affiche lors des appels sortants (Caller ID).
+
+### Objectif fonctionnel
+- Configurer le numero presente aux correspondants
+- Activer/desactiver le mode anonyme
+- Appliquer la configuration a plusieurs lignes
+
+### Users cibles
+- Administrateurs telephonie
+- Utilisateurs configurant leur identite d'appel
+
+---
+
+## 2. ARCHITECTURE
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.calls.displayNumber
+```
+
+### Params URL
+- `billingAccount` : Identifiant groupe facturation
+- `serviceName` : Numero de ligne
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale
+- **Titre** : "Numero affiche"
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Appels > Numero affiche
+
+---
+
+## 4. COMPOSANTS UI
+
+### Zone information
+| Composant | Description |
+|-----------|-------------|
+| Info box | "Configurez le numero affiche lors de vos appels sortants." |
+
+### Formulaire configuration
+| Champ | Type | Description |
+|-------|------|-------------|
+| Mode anonyme | Checkbox | Masquer le numero |
+| Numero a afficher | Select/Input | Liste des numeros disponibles |
+| Bouton "Choisir..." | Button | Ouvre selecteur de numero |
+
+### Actions
+| Bouton | Type | Action |
+|--------|------|--------|
+| Enregistrer | Primary | Sauvegarde configuration |
+| Annuler | Default | Reset formulaire |
+| Lien bulk | Link | "Appliquer a plusieurs lignes" |
+
+### Etats
+| Etat | Affichage |
+|------|-----------|
+| Loading | Spinner |
+| Mode consultation | Affiche numero actuel |
+| Mode edition | Formulaire actif |
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints
+
+#### Lecture options ligne
+```
+GET /telephony/{billingAccount}/line/{serviceName}/options
+    Response: {
+      displayNumber: string,
+      anonymousCall: boolean,
+      ...
+    }
+```
+
+#### Mise a jour options
+```
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+    Body: {
+      displayNumber: string,
+      anonymousCall: boolean
+    }
+```
+
+#### Liste numeros disponibles
+```
+GET /telephony/{billingAccount}/line/{serviceName}/availableNumbers
+    → Liste des numeros utilisables pour l'affichage
+```
+
+### Donnees
+| Champ | Type | Description |
+|-------|------|-------------|
+| displayNumber | string | Numero affiche (format E.164) |
+| anonymousCall | boolean | Mode anonyme actif |
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles principales
+```json
+{
+  "telephony_line_display_number_title": "Numero affiche",
+  "telephony_line_display_number_info": "Configurez le numero affiche lors de vos appels sortants.",
+  "telephony_line_display_number_anonymous_label": "Appeler en mode anonyme",
+  "telephony_line_display_number_number_label": "Numero a afficher",
+  "telephony_line_display_number_choose": "Choisir...",
+  "telephony_line_display_number_save": "Enregistrer",
+  "telephony_line_display_number_cancel": "Annuler",
+  "telephony_line_display_number_bulk": "Appliquer a plusieurs lignes",
+  "telephony_line_display_number_success": "Configuration enregistree.",
+  "telephony_line_display_number_error": "Erreur lors de l'enregistrement."
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Validation
+- Le numero affiche doit etre un numero valide du groupe
+- Mode anonyme desactive l'affichage du numero
+
+### Comportement
+- Changement effectif immediatement
+- Le mode anonyme a priorite sur le numero configure
+
+### Numeros disponibles
+- Numeros du groupe de facturation
+- Numeros alias associes
+- Ligne appelante elle-meme
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Info box | OsdsMessage variant="info" |
+| Checkbox | OsdsCheckbox |
+| Select | OsdsSelect |
+| Input | OsdsInput |
+| Bouton primary | OsdsButton variant="primary" |
+| Bouton default | OsdsButton variant="stroked" |
+
+### Points d'attention
+- Permettre la recherche dans la liste des numeros
+- Afficher le format lisible du numero (+33 1 23...)
+- Gerer le cas ou aucun numero alternatif n'est disponible

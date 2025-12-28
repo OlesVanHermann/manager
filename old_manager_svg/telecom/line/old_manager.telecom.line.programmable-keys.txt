@@ -1,0 +1,126 @@
+# Cahier des Charges : telecom/line - Touches programmables
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration des touches programmables (function keys) d'un telephone IP.
+
+### Objectif fonctionnel
+- Visualiser la configuration des touches
+- Modifier les fonctions associees aux touches
+- Appliquer la configuration a plusieurs lignes
+
+---
+
+## 2. LAYOUT
+
+### Tableau de configuration des touches
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete
+| Element | Description |
+|---------|-------------|
+| Lien retour | Retour au telephone |
+| Titre | Touches programmables - {modele} |
+
+### Lien bulk
+| Element | Description |
+|---------|-------------|
+| Link | Appliquer a plusieurs lignes |
+
+### Tableau des touches
+| Colonne | Description |
+|---------|-------------|
+| Touche | Numero de la touche (1, 2, 3...) |
+| Fonction | Type de fonction |
+| Parametre | Valeur associee |
+| Libelle | Label affiche sur telephone |
+| Actions | Lien Modifier |
+
+### Fonctions disponibles
+| Fonction | Description |
+|----------|-------------|
+| Numerotation rapide | Appel direct d'un numero |
+| BLF (supervision) | Busy Lamp Field |
+| Transfert | Transfert d'appel |
+| Intercom | Appel interphone |
+| - | Non configure |
+
+### Exemples de configuration
+| Touche | Fonction | Parametre | Libelle |
+|--------|----------|-----------|---------|
+| 1 | Numerotation rapide | +33 1 23 45 67 89 | Support |
+| 2 | BLF | Ligne 0033198765432 | Marie |
+| 3 | Transfert | +33 1 11 22 33 44 | Accueil |
+| 4 | - | - | - |
+| 5 | - | - | - |
+| 6 | Intercom | *80*0033155667788 | Pierre |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Info | Affichage 1-6 sur 10 touches |
+| Navigation | < 1 2 > |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone
+    Response: { brand, model, maxLines }
+
+GET /telephony/{billingAccount}/line/{serviceName}/phone/functionKey
+    Response: [{ keyNum, function, parameter, label }]
+
+PUT /telephony/{billingAccount}/line/{serviceName}/phone/functionKey/{keyNum}
+    Body: { function, parameter, label }
+```
+
+### Types de fonctions (enum)
+```
+telephony.PhoneFunctionKeyTypeEnum:
+  - none
+  - speedDial
+  - blf
+  - transfer
+  - intercom
+  - pickup
+  - park
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_programmable_keys_title": "Touches programmables",
+  "telephony_line_programmable_keys_config_title": "Configuration des touches",
+  "telephony_line_programmable_keys_bulk": "Appliquer a plusieurs lignes",
+  "telephony_line_programmable_keys_col_key": "Touche",
+  "telephony_line_programmable_keys_col_function": "Fonction",
+  "telephony_line_programmable_keys_col_param": "Parametre",
+  "telephony_line_programmable_keys_col_label": "Libelle",
+  "telephony_line_programmable_keys_col_actions": "Actions",
+  "telephony_line_programmable_keys_modify": "Modifier",
+  "telephony_line_programmable_keys_func_none": "-",
+  "telephony_line_programmable_keys_func_speed": "Numerotation rapide",
+  "telephony_line_programmable_keys_func_blf": "BLF (supervision)",
+  "telephony_line_programmable_keys_func_transfer": "Transfert",
+  "telephony_line_programmable_keys_func_intercom": "Intercom"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Nombre de touches variable selon modele
+- Configuration appliquee apres redemarrage
+- BLF necessite ligne du meme groupe
+- Intercom prefixe avec *80*

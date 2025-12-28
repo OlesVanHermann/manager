@@ -1,0 +1,105 @@
+# Cahier des Charges : telecom/line - Creneaux non configures
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Vue des creneaux avec avertissements pour ceux non configures.
+
+### Objectif fonctionnel
+- Afficher l'etat de tous les creneaux
+- Alerter sur les creneaux non configures
+- Inciter a la configuration
+
+---
+
+## 2. LAYOUT
+
+### Page avec grille de cartes et alertes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Configuration des creneaux |
+| Sous-titre | Definissez le comportement pour chaque type de creneau horaire |
+
+### Banniere avertissement
+| Element | Description |
+|---------|-------------|
+| Type | Warning (fond jaune #FEF3C7) |
+| Icone | Triangle attention |
+| Message | Attention : 3 creneaux ne sont pas configures. Les appels pendant ces creneaux ne seront pas rediriges. |
+
+### Carte creneau OK
+| Element | Style |
+|---------|-------|
+| Bordure | Grise normale |
+| Fond | Blanc |
+| Bouton | Config (gris) |
+
+### Carte creneau NON CONFIGURE
+| Element | Style |
+|---------|-------|
+| Bordure | Jaune (#FCD34D) |
+| Fond | Jaune pale (#FFFBEB) |
+| Texte status | Non configure (italique) |
+| Alerte | Warning : Configuration requise |
+| Bouton | Config (bleu primary) |
+
+### Cartes avec warning
+| Creneau | Etat |
+|---------|------|
+| Horaires d'ouverture | OK (vert) |
+| Horaires de fermeture | Non configure (warning) |
+| Creneau 1 | Non configure (warning) |
+| Creneau 2 | Non configure (warning) |
+| Creneau 3 | OK (configure) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/timeCondition/slots
+    Response: {
+      available: { configured: true },
+      unavailable: { configured: false },
+      slot1: { configured: false },
+      slot2: { configured: false },
+      slot3: { configured: true, type: "voicemail", number: "..." }
+    }
+```
+
+### Logique warning
+| Condition | Affichage |
+|-----------|-----------|
+| configured: false | Carte warning + compteur |
+| configured: true | Carte normale |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_timecondition_undefined_title": "Configuration des creneaux",
+  "telephony_line_timecondition_undefined_subtitle": "Definissez le comportement pour chaque type de creneau horaire.",
+  "telephony_line_timecondition_undefined_warning": "Attention : {{count}} creneaux ne sont pas configures. Les appels pendant ces creneaux ne seront pas rediriges.",
+  "telephony_line_timecondition_undefined_not_configured": "Non configure",
+  "telephony_line_timecondition_undefined_config_required": "Configuration requise",
+  "telephony_line_timecondition_undefined_config_button": "Config"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Alerte globale si creneaux non configures
+- Bouton Config mis en evidence
+- Appels sans redirection si non configure
+- Priorite configuration fermeture

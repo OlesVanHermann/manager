@@ -1,0 +1,105 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.general.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/lines/{serviceName}
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Page générale d'une ligne téléphonique VoIP affichant les informations
+principales, les identifiants SIP et les fonctionnalités actives.
+
+================================================================================
+
+## STRUCTURE PAGE
+
+### NAV3 (Left Panel)
+- [Lignes] | Numéros | Fax | Abrégés
+
+### NAV4 Tabs (Right Panel)
+- [Général] | Téléphone | Appels | Transferts | Messagerie | Conso | Options
+
+### Contenu
+- Breadcrumb vers groupe
+- Header: numéro + description + badge statut + actions
+- Bloc Informations ligne
+- Bloc Identifiants SIP
+- Bloc Fonctionnalités actives
+- Zone danger (résiliation)
+
+================================================================================
+
+## DONNÉES DYNAMIQUES
+
+| Élément SVG        | Source API                              |
+|--------------------|-----------------------------------------|
+| Numéro             | serviceName                             |
+| Description        | GET /telephony/{ba}/line/{sn} → description |
+| Statut             | GET /telephony/{ba}/line/{sn}/serviceInfos → status |
+| Type offre         | offerType                               |
+| Date activation    | serviceInfos.creation                   |
+| Renouvellement     | serviceInfos.expiration                 |
+| Engagement         | serviceInfos.engagedUpTo                |
+| Login SIP          | serviceName                             |
+| Mot de passe SIP   | (masqué, régénérable)                   |
+| Domaine SIP        | GET /telephony/{ba}/line/{sn} → domain  |
+
+================================================================================
+
+## BLOC INFORMATIONS LIGNE
+
+| Champ          | Éditable | Type      |
+|----------------|----------|-----------|
+| Numéro         | Non      | Copiable  |
+| Description    | Oui      | Input     |
+| Type d'offre   | Non      | Text      |
+| Date activation| Non      | Date      |
+| Renouvellement | Non      | Date      |
+| Engagement     | Non      | Text      |
+
+================================================================================
+
+## BLOC IDENTIFIANTS SIP
+
+| Champ          | Actions                          |
+|----------------|----------------------------------|
+| Login SIP      | Copier                           |
+| Mot de passe   | Afficher/Masquer, Régénérer      |
+| Domaine SIP    | Copier                           |
+
+### Régénération mot de passe
+- Bouton: 🔑 Régénérer
+- API: POST /telephony/{ba}/line/{sn}/changePassword
+- Confirmation requise
+
+================================================================================
+
+## BLOC FONCTIONNALITÉS
+
+| Feature         | Lien                    | Badge              |
+|-----------------|-------------------------|--------------------|
+| Messagerie      | /line/{sn}/voicemail    | Activée / Désactivée |
+| Renvoi d'appel  | /line/{sn}/forward      | Configuré / Non    |
+| Filtrage appels | /line/{sn}/calls        | N règles actives   |
+| Click-to-Call   | /line/{sn}/options      | Activé / Désactivé |
+
+================================================================================
+
+## ACTIONS HEADER
+
+| Action       | Bouton      | API                           |
+|--------------|-------------|-------------------------------|
+| Renommer     | ✎ Renommer  | PUT /telephony/{ba}/line/{sn} |
+| Changer offre| ⇄ Changer   | POST /telephony/{ba}/line/{sn}/changeOffer |
+
+================================================================================
+
+## ZONE DANGER
+
+- Bouton: "× Résilier la ligne"
+- API: DELETE /telephony/{ba}/line/{sn}
+- Modal confirmation avec période de rétractation
+
+================================================================================

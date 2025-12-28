@@ -1,0 +1,105 @@
+# Cahier des Charges : telecom/line - Restrictions SIP par IP
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration des restrictions d'acces SIP par adresse IP pour securiser les lignes telephoniques.
+
+### Objectif fonctionnel
+- Definir des plages IP autorisees pour une ligne
+- Configurer des restrictions par defaut (code client)
+- Gerer plusieurs adresses IP par ligne
+
+### Users cibles
+- Administrateurs securite
+- Techniciens reseaux
+
+---
+
+## 2. LAYOUT
+
+### Structure 2 sections verticales
+| Section | Contenu |
+|---------|---------|
+| Haut | Restrictions SIP de la ligne |
+| Bas | Restrictions SIP code client |
+
+---
+
+## 3. COMPOSANTS UI
+
+### Section Restrictions ligne
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Restrictions SIP de la ligne" |
+| Info box | "Restrictions utilisees sur la ligne selectionnee" |
+| Label | "Reseaux IP autorises" |
+| Liste IP | Inputs avec boutons supprimer |
+| Bouton | "Ajouter une adresse IP" |
+| Lien bulk | "Appliquer a plusieurs lignes..." |
+
+### Input IP avec suppression
+| Element | Description |
+|---------|-------------|
+| Input | Champ lecture/ecriture IP/CIDR |
+| Bouton poubelle | Supprime l'entree |
+
+### Section Restrictions code client
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Restrictions SIP associees a votre code client" |
+| Info box | "Utilisees lors de l'installation de nouvelles lignes" |
+| Label | "Reseaux IP autorises" |
+| Etat vide | "Aucune restriction" |
+| Bouton | "Ajouter une adresse IP" |
+| Bouton submit | "Appliquer les modifications" |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints ligne
+```
+GET /telephony/{billingAccount}/line/{serviceName}/options
+    Response: { ipRestrictions: ["192.168.1.0/24", "10.0.0.0/8"] }
+
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+    Body: { ipRestrictions: string[] }
+```
+
+### Endpoints code client
+```
+GET /me/telephony/settings
+    Response: { defaultSipRestrictions: string[] }
+
+PUT /me/telephony/settings
+    Body: { defaultSipRestrictions: string[] }
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_restrictions_title": "Restrictions SIP par IP",
+  "telephony_line_restrictions_line_title": "Restrictions SIP de la ligne",
+  "telephony_line_restrictions_line_info": "Ces restrictions sont utilisees sur la ligne actuellement selectionnee.",
+  "telephony_line_restrictions_client_title": "Restrictions SIP associees a votre code client",
+  "telephony_line_restrictions_client_info": "Ces restrictions sont utilisees lors de l'installation de nouvelles lignes.",
+  "telephony_line_restrictions_label": "Reseaux IP autorises",
+  "telephony_line_restrictions_none": "Aucune restriction",
+  "telephony_line_restrictions_add": "Ajouter une adresse IP",
+  "telephony_line_restrictions_submit": "Appliquer les modifications",
+  "telephony_line_restrictions_bulk": "Appliquer a plusieurs lignes..."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Multiple IPs/CIDR par ligne autorisees
+- Format CIDR pour les plages (ex: 192.168.1.0/24)
+- Vide = aucune restriction
+- Restrictions ligne prioritaires sur client

@@ -1,0 +1,161 @@
+# Cahier des Charges : telecom/line - Numeros externes presentes (Trunk)
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion des numeros externes pouvant etre presentes lors des appels sortants sur une ligne Trunk SIP.
+
+### Objectif fonctionnel
+- Ajouter des numeros externes a presenter
+- Visualiser le statut de validation des numeros
+- Supprimer des numeros configures
+
+### Users cibles
+- Administrateurs telephonie Trunk/SIP
+- Entreprises utilisant des numeros externes
+
+---
+
+## 2. ARCHITECTURE
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.calls.externalNumber
+```
+
+### Params URL
+- `billingAccount` : Identifiant groupe facturation
+- `serviceName` : Numero de ligne Trunk
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale
+- **Titre** : "Numeros externes presentes (Trunk)"
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Appels > Numeros externes
+
+---
+
+## 4. COMPOSANTS UI
+
+### Section gauche : Numeros configures
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Numeros configures" |
+| Tableau | Liste des numeros avec statut |
+
+#### Colonnes tableau
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Numero | string | Format E.164 (+33...) |
+| Statut | badge | Valide (vert) / En attente (orange) |
+| Actions | link | Supprimer (rouge) |
+
+#### Badges statut
+| Statut | Couleur | Background |
+|--------|---------|------------|
+| Valide | #059669 | #D1FAE5 |
+| En attente | #D97706 | #FEF3C7 |
+
+### Section droite : Ajouter un numero
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Ajouter un numero" |
+| Info box | "Limite : 10 numeros max (lignes simultanees)" |
+| Input | Numero a presenter |
+| Checkbox | Validation automatique (VIP) |
+| Boutons | Ajouter / Annuler |
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints
+
+#### Liste numeros externes
+```
+GET /telephony/{billingAccount}/line/{serviceName}/trunks/externalDisplayedNumbers
+    Response: [{
+      number: string,
+      status: "validated" | "pending",
+      createdAt: string
+    }]
+```
+
+#### Ajouter numero
+```
+POST /telephony/{billingAccount}/line/{serviceName}/trunks/externalDisplayedNumbers
+    Body: {
+      number: string,
+      autoValidation: boolean
+    }
+```
+
+#### Supprimer numero
+```
+DELETE /telephony/{billingAccount}/line/{serviceName}/trunks/externalDisplayedNumbers/{number}
+```
+
+### Donnees
+| Champ | Type | Description |
+|-------|------|-------------|
+| number | string | Numero au format E.164 |
+| status | enum | validated, pending |
+| autoValidation | boolean | Validation VIP automatique |
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles principales
+```json
+{
+  "telephony_line_external_number_title": "Numeros externes presentes (Trunk)",
+  "telephony_line_external_number_list_title": "Numeros configures",
+  "telephony_line_external_number_add_title": "Ajouter un numero",
+  "telephony_line_external_number_limit_info": "Limite : 10 numeros max (lignes simultanees)",
+  "telephony_line_external_number_input_label": "Numero a presenter",
+  "telephony_line_external_number_auto_validation": "Validation automatique (VIP)",
+  "telephony_line_external_number_col_number": "Numero",
+  "telephony_line_external_number_col_status": "Statut",
+  "telephony_line_external_number_col_actions": "Actions",
+  "telephony_line_external_number_status_validated": "Valide",
+  "telephony_line_external_number_status_pending": "En attente",
+  "telephony_line_external_number_add": "Ajouter",
+  "telephony_line_external_number_cancel": "Annuler",
+  "telephony_line_external_number_delete": "Supprimer"
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Limites
+- Maximum 10 numeros externes par ligne
+- Limite liee au nombre de lignes simultanees
+
+### Validation
+- Mode normal : validation manuelle par OVH
+- Mode VIP : validation automatique (option payante)
+- Statut "En attente" jusqu'a validation
+
+### Format numero
+- Format E.164 obligatoire (+33...)
+- Numeros mobiles et fixes acceptes
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Tableau | OsdsDatagrid |
+| Badge statut | OsdsBadge |
+| Info box | OsdsMessage variant="info" |
+| Input | OsdsInput |
+| Checkbox | OsdsCheckbox |
+| Bouton primary | OsdsButton variant="primary" |
+| Lien supprimer | OsdsButton variant="ghost" color="error" |

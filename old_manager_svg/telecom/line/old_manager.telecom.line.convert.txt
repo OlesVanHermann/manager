@@ -1,0 +1,188 @@
+# Cahier des Charges : telecom/line - Convertir ligne en numero
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page permettant de convertir une ligne telephonique SIP en numero (alias).
+
+### Objectif fonctionnel
+- Transformer une ligne active en simple numero de redirection
+- Annuler une demande de conversion en cours
+- Support des actions bulk sur plusieurs lignes
+
+### Users cibles
+- Administrateurs telephonie souhaitant reorganiser leur parc
+
+---
+
+## 2. ARCHITECTURE
+
+### Chemin source
+```
+/packages/manager/apps/telecom/src/app/telecom/telephony/line/management/convert/
+├── convert.controller.js
+├── convert.html
+├── convert.routing.js
+├── index.js
+└── translations/
+    └── Messages_fr_FR.json
+```
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.management.convert
+```
+
+### Params URL
+- `billingAccount` : Identifiant groupe facturation
+- `serviceName` : Numero de ligne
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Gestion > Convertir
+
+### Lien retour
+- "Retour a la gestion de la ligne"
+
+---
+
+## 4. COMPOSANTS UI
+
+### Section Informations
+| Element | Description |
+|---------|-------------|
+| Titre | "Informations" |
+| Texte 1 | Prise en compte a la prochaine facturation |
+| Texte 2 | Ligne non operationnelle apres conversion |
+| Texte 3 | Retour materiel Plug And Phone propose |
+
+### Section Conversion
+| Element | Condition | Description |
+|---------|-----------|-------------|
+| Warning box | Si task existe | "La ligne sera convertie le {date}" |
+| Lien bulk | Toujours | "Appliquer a plusieurs lignes..." |
+| Bouton convertir | Si pas de task | "Convertir {line} en numero" |
+| Bouton annuler | Si task existe | "Annuler la demande" |
+
+### Etats
+| Etat | Variable | Affichage |
+|------|----------|-----------|
+| Chargement initial | isLoading | Spinner |
+| Conversion en cours | isConverting | Bouton disabled + spinner |
+| Annulation en cours | isCancelling | Bouton disabled + spinner |
+| Ligne dans pack xDSL | isInXdslPack | Conversion bloquee |
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints
+
+#### Verifier tache conversion
+```
+GET /telephony/{billingAccount}/line/{serviceName}/convertToNumber (via line.getConvertionTask())
+```
+
+#### Lancer conversion
+```
+POST /telephony/{billingAccount}/line/{serviceName}/convertToNumber
+    Body: {}
+    → Planifie la conversion
+```
+
+#### Annuler conversion
+```
+POST /telephony/{billingAccount}/line/{serviceName}/cancelConvertToNumber
+    Body: {}
+    → Annule la tache planifiee
+```
+
+#### Verifier pack xDSL
+```
+GET /pack/xdsl/search?pattern={serviceName}
+    → Verifie si ligne dans un pack xDSL
+```
+
+### Sequencement
+1. getGroup(billingAccount) → getLine(serviceName)
+2. line.getConvertionTask() → recupere task existante
+3. line.isIncludedInXdslPack() → verifie pack xDSL
+4. Action conversion/annulation selon contexte
+
+### Bulk actions
+```javascript
+{
+  name: 'convertToNumber',
+  route: '/telephony/{billingAccount}/line/{serviceName}/convertToNumber',
+  method: 'POST',
+  params: null
+}
+```
+
+#### Filtrage services bulk
+- Exclut offres "individual"
+- Garde featureType: ['sip', 'mgcp']
+- Exclut lignes dans pack xDSL
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles (Messages_fr_FR.json)
+```json
+{
+  "telephony_line_convert_title": "Convertir une ligne en numero",
+  "telephony_line_convert_info_title": "Informations",
+  "telephony_line_convert_info1": "Les demandes de conversion seront prises en compte lors de votre prochaine facturation.",
+  "telephony_line_convert_info2": "Une fois la conversion realisee, votre ligne ne sera plus operationnelle.",
+  "telephony_line_convert_info3": "Si vous avez un telephone Plug And Phone, nous vous proposerons un retour de materiel.",
+  "telephony_line_convert_convert": "Convertir la ligne {{ line }} en numero",
+  "telephony_line_convert_cancel_convert": "Annuler la demande de conversion",
+  "telephony_line_convert_warning": "La ligne {{ line }} sera convertie en numero le {{ date }}.",
+  "telephony_line_convert_convert_success": "Demande de conversion effectuee.",
+  "telephony_line_convert_cancel_success": "La demande a bien ete annulee.",
+  "telephony_line_convert_bulk_all_success": "Conversion appliquee aux services selectionnes.",
+  "telephony_line_convert_bulk_some_success": "Conversion appliquee a {{ count }} des services selectionnes.",
+  "telephony_line_convert_bulk_error": "Conversion non appliquee au(x) service(s) suivant(s) :",
+  "telephony_line_convert_bulk_on_error": "Erreur lors de la demande de conversion."
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Conditions
+- Une ligne dans un pack xDSL ne peut PAS etre convertie
+- La conversion est planifiee pour la prochaine facturation
+- Annulation possible jusqu'a la date de facturation
+
+### Consequences conversion
+- Ligne non operationnelle
+- Plus d'appels sortants possibles
+- Numero devient un alias (redirection)
+- Retour materiel Plug And Phone propose
+
+### Validation bulk
+- Maximum 100 services sinon pas de verification pack xDSL
+- Filtrage automatique des lignes incompatibles
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Warning box | OsdsMessage variant="warning" |
+| Bouton primary | OsdsButton variant="primary" |
+| Lien retour | OsdsLink |
+| Spinner | OsdsSpinner |
+
+### Points d'attention
+- Garder la logique de verification pack xDSL
+- Conserver le support bulk
+- Afficher clairement la date de conversion planifiee

@@ -1,0 +1,115 @@
+# Cahier des Charges : telecom/line - Retours materiel (RMA)
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Suivi des demandes de retour materiel (Return Merchandise Authorization).
+
+### Objectif fonctionnel
+- Visualiser le detail d'un RMA
+- Suivre les etapes du processus
+- Telecharger le bon de retour
+- Annuler un RMA
+
+---
+
+## 2. LAYOUT
+
+### Carte RMA avec details et progression
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete carte
+| Element | Description |
+|---------|-------------|
+| Numero RMA | RMA n° 123456789 |
+
+### Informations RMA
+| Champ | Exemple |
+|-------|---------|
+| Type | Echange standard |
+| Equipement | CISCO SPA504G |
+| Nouvel equipement | YEALINK T46U |
+| Adresse livraison | Nom, adresse, email, tel |
+
+### Tracker de progression
+| Etape | Statut | Date |
+|-------|--------|------|
+| Demande de RMA creee | Done ✓ | 15/01/2025 10:30 |
+| Bon de retour envoye | Done ✓ | 15/01/2025 11:00 |
+| Materiel expedie | Done ✓ | 16/01/2025 09:15 |
+| Reception ancien materiel | Pending | En attente |
+| RMA cloture | Pending | En attente |
+
+### Indicateurs visuels etapes
+| Statut | Style |
+|--------|-------|
+| Done | Cercle vert + check blanc |
+| Pending | Cercle gris |
+
+### Boutons actions
+| Bouton | Type | Action |
+|--------|------|--------|
+| Telecharger le bon | Default | PDF bon retour |
+| Annuler le RMA | Danger | Annulation |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/rma
+    Response: [{
+      id, type, oldEquipment, newEquipment,
+      address, steps: [{ name, date, status }]
+    }]
+
+GET /telephony/{billingAccount}/line/{serviceName}/phone/rma/{rmaId}/returnLabel
+    Response: PDF
+
+DELETE /telephony/{billingAccount}/line/{serviceName}/phone/rma/{rmaId}
+```
+
+### Types RMA
+| Type | Description |
+|------|-------------|
+| exchange | Echange standard |
+| return | Retour simple |
+| repair | Reparation |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_rma_title": "Retours materiel (RMA)",
+  "telephony_line_rma_number": "RMA n°",
+  "telephony_line_rma_type": "Type",
+  "telephony_line_rma_type_exchange": "Echange standard",
+  "telephony_line_rma_equipment": "Equipement",
+  "telephony_line_rma_new_equipment": "Nouvel equipement",
+  "telephony_line_rma_address": "Adresse de livraison",
+  "telephony_line_rma_steps_title": "Etapes du RMA",
+  "telephony_line_rma_step_created": "Demande de RMA creee",
+  "telephony_line_rma_step_label_sent": "Bon de retour envoye",
+  "telephony_line_rma_step_shipped": "Materiel expedie",
+  "telephony_line_rma_step_received": "Reception de l'ancien materiel",
+  "telephony_line_rma_step_closed": "RMA cloture",
+  "telephony_line_rma_pending": "En attente",
+  "telephony_line_rma_download_label": "Telecharger le bon",
+  "telephony_line_rma_cancel": "Annuler le RMA"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Bon de retour a imprimer et coller sur colis
+- Delai retour 15 jours
+- Annulation possible tant que non expedie
+- Caution restituee apres cloture

@@ -1,0 +1,113 @@
+# Cahier des Charges : telecom/line - Creneau numero externe
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration d'un creneau avec redirection vers un numero externe.
+
+### Objectif fonctionnel
+- Selectionner le type "numero externe"
+- Saisir le numero de destination
+- Valider le format international
+
+---
+
+## 2. LAYOUT
+
+### Modal 480x700 avec formulaire
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete modal
+| Element | Description |
+|---------|-------------|
+| Pastille couleur | Jaune (#FEF3C7) pour creneau 2 |
+| Titre | Configuration du creneau 2 |
+
+### Info banner
+| Element | Description |
+|---------|-------------|
+| Type | Information (fond bleu) |
+| Message | Comportement a adopter pour les plages horaires utilisant le creneau 2 |
+
+### Selecteur type (cliquable)
+| Element | Description |
+|---------|-------------|
+| Label | Rediriger l'appel vers |
+| Valeur | Un numero externe |
+| Indicateur | Fleche > |
+
+### Section type de redirection
+| Element | Description |
+|---------|-------------|
+| Titre | TYPE DE REDIRECTION |
+
+### Options radio
+| Option | Etat |
+|--------|------|
+| Un repondeur | Non |
+| Un numero externe | Selectionnee |
+| Une ligne OVHcloud | Non |
+
+### Champ numero externe
+| Element | Description |
+|---------|-------------|
+| Label | Numero vers lequel rediriger * |
+| Input | Champ texte avec focus bleu |
+| Valeur exemple | +33612345678 |
+| Helper | Numero au format international (ex: +3312345678) |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Modifier | Primary | Sauvegarde |
+| Annuler | Default | Ferme |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition/slots/{slotId}
+    Body: {
+      type: "external",
+      number: "+33612345678"
+    }
+```
+
+### Validation numero
+| Regle | Description |
+|-------|-------------|
+| Format | E.164 international |
+| Prefixe | Doit commencer par + |
+| Longueur | 8-15 chiffres apres indicatif |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_timecondition_slot_external_title": "Configuration du creneau {{slot}}",
+  "telephony_line_timecondition_slot_external_info": "Comportement a adopter pour les plages horaires utilisant le creneau {{slot}}.",
+  "telephony_line_timecondition_slot_external_type": "Rediriger l'appel vers",
+  "telephony_line_timecondition_slot_external_value": "Un numero externe",
+  "telephony_line_timecondition_slot_external_number_label": "Numero vers lequel rediriger",
+  "telephony_line_timecondition_slot_external_number_helper": "Numero au format international (ex: +3312345678)",
+  "telephony_line_timecondition_slot_external_modify": "Modifier",
+  "telephony_line_timecondition_slot_external_cancel": "Annuler",
+  "telephony_line_timecondition_slot_external_error_format": "Format de numero invalide"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Numero au format E.164 requis
+- Validation temps reel du format
+- Appels factures selon destination
+- Possibilite de changer de type

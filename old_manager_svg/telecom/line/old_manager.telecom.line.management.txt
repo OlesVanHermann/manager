@@ -1,0 +1,140 @@
+# Cahier des Charges : telecom/line - Gestion de la ligne
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page hub de gestion regroupant les actions administratives sur une ligne telephonique.
+
+### Objectif fonctionnel
+- Centraliser l'acces aux fonctionnalites de gestion
+- Presenter les options sous forme de tuiles cliquables
+- Naviguer vers les pages de configuration specifiques
+
+### Users cibles
+- Administrateurs telephonie
+- Utilisateurs gerant leur ligne
+
+---
+
+## 2. ARCHITECTURE
+
+### Route Angular
+```
+telecom.telephony.billingAccount.line.dashboard.management
+```
+
+### Params URL
+- `billingAccount` : Identifiant groupe facturation
+- `serviceName` : Numero de ligne
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Page principale
+- **Titre** : "Gestion de la ligne"
+- **Breadcrumb** : Telecom > Telephonie > {billingAccount} > {serviceName} > Gestion
+
+### Tuiles navigation
+| Tuile | Icone | Route cible | Description |
+|-------|-------|-------------|-------------|
+| Offre et options | clipboard | .offer | Gerer votre abonnement |
+| Mot de passe SIP | key | .password | Modifier le mot de passe |
+| Domaine | globe | .domain | Configuration domaine SIP |
+| Restrictions | block | .restrictions | Limiter les appels sortants |
+| Consommation | chart | .consumption | Historique et details |
+| Resilier | x-circle | .terminate | Supprimer la ligne |
+
+---
+
+## 4. COMPOSANTS UI
+
+### Layout
+| Element | Description |
+|---------|-------------|
+| Grille | 3 colonnes de tuiles |
+| Espacement | 20px entre tuiles |
+| Responsive | 2 colonnes tablette, 1 mobile |
+
+### Tuile (Tile)
+| Element | Style |
+|---------|-------|
+| Container | Card blanche, border, radius 8px |
+| Icone | Cercle bleu clair (#EFF6FF) avec emoji/icone |
+| Titre | Font-weight 600, couleur sombre |
+| Description | Texte muted, font-size 12px |
+| Hover | Background leger gris |
+
+### Dimensions
+- Largeur tuile : 250px
+- Hauteur tuile : 150px
+- Rayon icone : 25px
+
+---
+
+## 5. APIS & DONNEES
+
+### Endpoints
+Cette page est un hub de navigation, pas d'appels API directs.
+
+Les donnees sont chargees par les pages enfants :
+- .offer : GET /telephony/{billingAccount}/line/{serviceName}
+- .password : POST .../changePassword
+- .domain : GET/PUT .../domain
+- .restrictions : GET/PUT .../restrictions
+- .consumption : GET .../consumption
+- .terminate : DELETE ...
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+### Cles principales
+```json
+{
+  "telephony_line_management_title": "Gestion de la ligne",
+  "telephony_line_management_offer_title": "Offre et options",
+  "telephony_line_management_offer_desc": "Gerer votre abonnement",
+  "telephony_line_management_password_title": "Mot de passe SIP",
+  "telephony_line_management_password_desc": "Modifier le mot de passe",
+  "telephony_line_management_domain_title": "Domaine",
+  "telephony_line_management_domain_desc": "Configuration domaine SIP",
+  "telephony_line_management_restrictions_title": "Restrictions",
+  "telephony_line_management_restrictions_desc": "Limiter les appels sortants",
+  "telephony_line_management_consumption_title": "Consommation",
+  "telephony_line_management_consumption_desc": "Historique et details",
+  "telephony_line_management_terminate_title": "Resilier",
+  "telephony_line_management_terminate_desc": "Supprimer la ligne"
+}
+```
+
+---
+
+## 7. REGLES METIER
+
+### Visibilite des tuiles
+- Toutes les tuiles sont toujours visibles
+- Certaines actions peuvent etre desactivees selon le contexte
+- La tuile "Resilier" peut etre mise en evidence (danger)
+
+### Navigation
+- Clic sur tuile = navigation vers sous-page
+- Pas de chargement de donnees sur cette page
+- Retour possible via breadcrumb
+
+---
+
+## NOTES IMPLEMENTATION NEW_MANAGER
+
+### Mapping composants ODS
+| Element actuel | Composant ODS |
+|----------------|---------------|
+| Tuile | OsdsCard ou OsdsTile |
+| Icone | OsdsIcon |
+| Grille | CSS Grid ou OsdsGrid |
+
+### Points d'attention
+- Utiliser des icones coherentes du design system
+- Marquer visuellement la tuile "Resilier" (danger)
+- Assurer la navigation clavier accessible
+- Responsive design pour mobile

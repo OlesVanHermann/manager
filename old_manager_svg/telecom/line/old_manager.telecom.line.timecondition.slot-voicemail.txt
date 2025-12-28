@@ -1,0 +1,118 @@
+# Cahier des Charges : telecom/line - Creneau repondeur
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration d'un creneau avec redirection vers un repondeur.
+
+### Objectif fonctionnel
+- Selectionner le type "repondeur"
+- Choisir le repondeur de destination
+- Configurer la redirection vers messagerie vocale
+
+---
+
+## 2. LAYOUT
+
+### Modal 480x700 avec selecteur de ligne
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete modal
+| Element | Description |
+|---------|-------------|
+| Pastille couleur | Bleu (#DBEAFE) pour creneau 1 |
+| Titre | Configuration du creneau 1 |
+
+### Info banner
+| Element | Description |
+|---------|-------------|
+| Type | Information (fond bleu) |
+| Message | Comportement a adopter pour les plages horaires utilisant le creneau 1 |
+
+### Selecteur type (cliquable)
+| Element | Description |
+|---------|-------------|
+| Label | Rediriger l'appel vers |
+| Valeur | Un repondeur |
+| Indicateur | Fleche > |
+
+### Section type de redirection
+| Element | Description |
+|---------|-------------|
+| Titre | TYPE DE REDIRECTION |
+
+### Options radio
+| Option | Etat |
+|--------|------|
+| Un repondeur | Selectionnee |
+| Un numero externe | Non |
+| Une ligne OVHcloud | Non |
+
+### Selecteur repondeur (cliquable)
+| Element | Description |
+|---------|-------------|
+| Label | Numero vers lequel rediriger |
+| Fond | Gris pale (#FAFAFA) |
+| Nom | Ligne bureau principal |
+| Type | Ligne SIP |
+| Numero | +33 1 23 45 67 89 |
+| Indicateur | Fleche > |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Modifier | Primary | Sauvegarde |
+| Annuler | Default | Ferme |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line
+    Response: [{ serviceName, description, number, voicemailEnabled }]
+
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition/slots/{slotId}
+    Body: {
+      type: "voicemail",
+      number: "0033123456789",
+      serviceName: "bureau-principal"
+    }
+```
+
+### Lignes avec repondeur actif
+| Condition | Affichage |
+|-----------|-----------|
+| voicemailEnabled: true | Disponible dans liste |
+| voicemailEnabled: false | Non affiche |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_timecondition_slot_voicemail_title": "Configuration du creneau {{slot}}",
+  "telephony_line_timecondition_slot_voicemail_info": "Comportement a adopter pour les plages horaires utilisant le creneau {{slot}}.",
+  "telephony_line_timecondition_slot_voicemail_type": "Rediriger l'appel vers",
+  "telephony_line_timecondition_slot_voicemail_value": "Un repondeur",
+  "telephony_line_timecondition_slot_voicemail_number_label": "Numero vers lequel rediriger",
+  "telephony_line_timecondition_slot_voicemail_line_type": "Ligne SIP",
+  "telephony_line_timecondition_slot_voicemail_modify": "Modifier",
+  "telephony_line_timecondition_slot_voicemail_cancel": "Annuler",
+  "telephony_line_timecondition_slot_voicemail_no_voicemail": "Aucune ligne avec repondeur actif"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Uniquement lignes avec repondeur actif
+- Appel redirige sans faire sonner
+- Message vocal enregistre
+- Notification par email possible

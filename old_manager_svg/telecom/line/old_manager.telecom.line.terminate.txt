@@ -1,0 +1,131 @@
+# Cahier des Charges : telecom/line - Resiliation de la ligne
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Demande de resiliation d'une ligne telephonique avec procedure de retour materiel.
+
+### Objectif fonctionnel
+- Demander la resiliation de la ligne
+- Selectionner la raison de resiliation
+- Informer sur la procedure de retour materiel
+
+### Users cibles
+- Administrateurs telephonie
+- Gestionnaires de comptes
+
+---
+
+## 2. LAYOUT
+
+### Structure 2 colonnes
+| Colonne | Contenu |
+|---------|---------|
+| Gauche | Informations et procedure retour |
+| Droite | Formulaire de resiliation |
+
+---
+
+## 3. COMPOSANTS UI
+
+### Colonne gauche : Informations
+| Section | Contenu |
+|---------|---------|
+| Texte intro | Explication de la resiliation |
+| Texte facturation | Prise en compte prochaine facturation |
+| Texte retour | Procedure retour materiel (15 jours) |
+| Texte caution | Restitution sous 10 jours |
+| Texte email | Bon de retour envoye par email |
+
+### Encadre adresse retour
+| Element | Valeur |
+|---------|--------|
+| Icone | Maison |
+| Titre | "Adresse de retour :" |
+| Ligne 1 | OVH SAS |
+| Ligne 2 | Service Apres Vente |
+| Ligne 3 | 155 avenue Georges Hannart |
+| Ligne 4 | 59170 Croix |
+
+### Colonne droite : Formulaire
+| Composant | Description |
+|-----------|-------------|
+| Titre | "Resiliation de la ligne" |
+| Texte | Demande raison de resiliation |
+| Select | Liste des causes |
+| Lien bulk | "Appliquer a plusieurs lignes..." |
+| Bouton | "Resilier" |
+
+### Options raison (dropdown)
+| Option |
+|--------|
+| Demenagement |
+| Facturation non adaptee |
+| Cessation d'activite |
+| Manque de fonctionnalites |
+| Problemes techniques |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}
+    Response: { canTerminate: boolean, ... }
+
+POST /telephony/{billingAccount}/line/{serviceName}/terminate
+    Body: { reason: string }
+
+DELETE /telephony/{billingAccount}/line/{serviceName}/terminate
+    → Annule la demande de resiliation
+```
+
+### Enum raisons
+```
+telephony.TerminationReasonEnum:
+  - moving
+  - billingIssue
+  - cessationOfActivity
+  - lackOfFeatures
+  - technicalIssues
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_terminate_title": "Resiliation de la ligne",
+  "telephony_line_terminate_info_title": "Informations",
+  "telephony_line_terminate_info_1": "Cette page vous permet de demander la resiliation de votre ligne.",
+  "telephony_line_terminate_info_2": "Les demandes seront prises en compte lors de votre prochaine facturation.",
+  "telephony_line_terminate_return_title": "Procedure de retour materiel :",
+  "telephony_line_terminate_return_delay": "Retournez l'ancien materiel dans un delai de 15 jours.",
+  "telephony_line_terminate_return_deposit": "La caution vous est restituee sous 10 jours apres reception.",
+  "telephony_line_terminate_return_email": "Vous recevrez le bon de retour par e-mail.",
+  "telephony_line_terminate_address_title": "Adresse de retour :",
+  "telephony_line_terminate_form_title": "Resiliation de la ligne",
+  "telephony_line_terminate_reason_label": "Preciser la raison de votre resiliation :",
+  "telephony_line_terminate_reason_placeholder": "Choisissez une cause",
+  "telephony_line_terminate_reason_moving": "Demenagement",
+  "telephony_line_terminate_reason_billing": "Facturation non adaptee",
+  "telephony_line_terminate_reason_cessation": "Cessation d'activite",
+  "telephony_line_terminate_reason_features": "Manque de fonctionnalites",
+  "telephony_line_terminate_reason_technical": "Problemes techniques",
+  "telephony_line_terminate_bulk": "Appliquer a plusieurs lignes...",
+  "telephony_line_terminate_submit": "Resilier"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Resiliation effective a la prochaine facturation
+- Annulation possible jusqu'a la date effective
+- Retour materiel sous 15 jours
+- Caution restituee sous 10 jours apres reception
+- Raison obligatoire pour statistiques
