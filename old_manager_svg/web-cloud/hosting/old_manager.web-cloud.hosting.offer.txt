@@ -1,0 +1,121 @@
+# Cahier des Charges : web-cloud/hosting - Changer d'offre
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Wizard de changement d'offre d'hébergement.
+
+### Objectif fonctionnel
+- Comparer les offres
+- Sélectionner une nouvelle offre
+- Procéder au changement
+
+---
+
+## 2. LAYOUT
+
+### Structure wizard 3 étapes + tableau comparatif
+
+---
+
+## 3. COMPOSANTS UI
+
+### Wizard stepper
+| Étape | Label |
+|-------|-------|
+| 1 (actif) | Offre |
+| 2 | Configuration |
+| 3 | Paiement |
+
+### Tableau comparatif
+| Caractéristique | Perso | Pro | Perf 1 | Perf 2 |
+|-----------------|-------|-----|--------|--------|
+| Espace disque | 100 Go | 250 Go | 500 Go | 1 To |
+| Sites web | Illimités | Illimités | Illimités | Illimités |
+| Bases de données | 10 | 25 | 50 | 100 |
+| Comptes email | 100 | 500 | 1000 | 2000 |
+| RAM garantie | - | - | 2 Go | 4 Go |
+| Prix HT/mois | 3,99 € | 7,99 € | 15,99 € | 29,99 € |
+
+### États colonnes
+| État | Style |
+|------|-------|
+| Offre actuelle | Header gris, bouton disabled |
+| Recommandée | Header bleu, bouton primary |
+| Autre | Header gris, bouton outline |
+
+### Boutons action
+| Bouton | Style |
+|--------|-------|
+| Annuler | Outline gris |
+| Continuer | Primary |
+| Choisir | Dans chaque colonne |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}
+GET /order/hosting/web/upgrade/{serviceName}
+POST /order/hosting/web/upgrade/{serviceName}
+```
+
+### Modele
+```typescript
+interface OfferComparison {
+  offers: OfferDetails[];
+  currentOffer: string;
+  recommendedOffer: string;
+}
+
+interface OfferDetails {
+  name: string;
+  displayName: string;
+  diskSpace: string;
+  websites: string;
+  databases: number;
+  emails: number;
+  ram?: string;
+  price: number;
+  isCurrent: boolean;
+  isRecommended: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_offer_title": "Changer d'offre",
+  "hosting_offer_desc": "Sélectionnez la nouvelle offre pour votre hébergement web",
+  "hosting_offer_step_offer": "Offre",
+  "hosting_offer_step_config": "Configuration",
+  "hosting_offer_step_payment": "Paiement",
+  "hosting_offer_characteristics": "Caractéristiques",
+  "hosting_offer_disk": "Espace disque",
+  "hosting_offer_sites": "Sites web",
+  "hosting_offer_db": "Bases de données",
+  "hosting_offer_email": "Comptes email",
+  "hosting_offer_ram": "RAM garantie",
+  "hosting_offer_price": "Prix HT/mois",
+  "hosting_offer_current": "Offre actuelle",
+  "hosting_offer_recommended": "Recommandée",
+  "hosting_offer_choose": "Choisir",
+  "hosting_offer_cancel": "Annuler",
+  "hosting_offer_continue": "Continuer",
+  "hosting_offer_unlimited": "Illimités"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Upgrade = prise d'effet immédiate
+- Downgrade = fin de période
+- Prix prorata calculé automatiquement
+- Recommandation basée sur usage actuel

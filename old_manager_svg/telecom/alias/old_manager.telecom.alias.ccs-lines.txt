@@ -1,0 +1,127 @@
+# Cahier des Charges : telecom/alias - CCS Gestion des lignes
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion des lignes du Contact Center Solution.
+
+### Objectif fonctionnel
+- Ajouter des lignes au CCS
+- Configurer les parametres par ligne
+- Reordonner les lignes
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec datagrid + options
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Gestion des lignes |
+| Sous-titre | Contact Center Solution |
+
+### Section Organisation
+| Element | Description |
+|---------|-------------|
+| Titre | Organisation |
+| Bouton | + Ajouter une ligne |
+
+### Datagrid lignes
+| Colonne | Description |
+|---------|-------------|
+| Ordre | Fleches reordonnement |
+| Type | Ligne SIP / Externe |
+| Numero | Numero telephone |
+| Nom | Description |
+| Timeout | Secondes |
+| Wrap-up | Secondes |
+| Simultanes | Nb appels |
+| Statut | Actif/Inactif |
+| Actions | Menu ⋮ |
+
+### Menu actions
+| Action | Description |
+|--------|-------------|
+| Modifier | Edite parametres |
+| Supprimer | Retire la ligne |
+
+### Options globales
+| Champ | Type | Description |
+|-------|------|-------------|
+| Numero affiche | Select | Presentation |
+| Strategie | Select | Distribution |
+| Renvois | Checkbox | Suivre renvois |
+
+### Strategies distribution
+| Strategie | Description |
+|-----------|-------------|
+| Sequentiel | Dans l'ordre |
+| Sequentiel memoire | Reprend au dernier |
+| Ring all | Tous ensemble |
+| Aleatoire | Au hasard |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Valider | Primary | Sauvegarde |
+| Annuler | Default | Annule |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+GET /telephony/{billingAccount}/easyHunting/{serviceName}
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}
+```
+
+### Modele EasyHunting
+```typescript
+interface EasyHunting {
+  serviceName: string;
+  strategy: string;
+  showCallerNumber: string;
+  followInterfaceForwards: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_ccs_lines_title": "Gestion des lignes",
+  "alias_ccs_lines_add": "Ajouter une ligne",
+  "alias_ccs_lines_type": "Type",
+  "alias_ccs_lines_number": "Numero",
+  "alias_ccs_lines_name": "Nom",
+  "alias_ccs_lines_timeout": "Timeout",
+  "alias_ccs_lines_wrapup": "Wrap-up",
+  "alias_ccs_lines_simultaneous": "Simultanes",
+  "alias_ccs_lines_status": "Statut",
+  "alias_ccs_lines_strategy": "Strategie de distribution",
+  "alias_ccs_lines_display_number": "Numero a afficher",
+  "alias_ccs_lines_follow_forwards": "Appliquer les renvois"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Ordre = priorite distribution
+- Ligne externe = frais supplementaires
+- Meme groupe facturation requis
+- Maximum 20 lignes par CCS

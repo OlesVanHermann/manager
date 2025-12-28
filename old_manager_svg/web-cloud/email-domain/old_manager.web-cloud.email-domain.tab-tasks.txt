@@ -1,0 +1,120 @@
+# Cahier des Charges : web-cloud/email-domain - Onglet Taches
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet d'historique des operations sur le service email.
+
+### Objectif fonctionnel
+- Voir l'historique des operations
+- Suivre le statut des taches en cours
+- Consulter les erreurs
+
+---
+
+## 2. LAYOUT
+
+### Structure onglet avec tableau pagine
+
+---
+
+## 3. COMPOSANTS UI
+
+### Tableau taches
+| Colonne | Description |
+|---------|-------------|
+| ID | Numero de tache (#12345) |
+| Type d'operation | Creation compte, Modification quota, etc. |
+| Detail | Information complementaire |
+| Date | DD/MM/YYYY HH:MM |
+| Statut | Badge Terminee/En cours/Erreur |
+| Actions | Lien "Voir" |
+
+### Etats statut
+| Etat | Couleur | Description |
+|------|---------|-------------|
+| Terminee | Vert | Operation reussie |
+| En cours | Bleu | Operation en attente |
+| Erreur | Rouge | Operation echouee |
+
+### Types d'operations
+| Type | Description |
+|------|-------------|
+| Creation compte | Nouveau compte email |
+| Modification quota | Changement de taille |
+| Suppression compte | Compte supprime |
+| Creation redirection | Nouvelle redirection |
+| Creation filtre | Nouveau filtre |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Texte | Affichage X-Y sur Z taches |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/domain/{domain}/task
+GET /email/domain/{domain}/task/{id}
+```
+
+### Modele
+```typescript
+interface EmailTask {
+  id: number;
+  action: TaskAction;
+  account?: string;
+  date: string;
+  status: TaskStatus;
+  todoDate: string;
+  doneDate?: string;
+}
+
+type TaskAction =
+  | 'addAccount'
+  | 'changePassword'
+  | 'deleteAccount'
+  | 'changeQuota'
+  | 'addRedirection'
+  | 'deleteRedirection'
+  | 'addFilter'
+  | 'deleteFilter';
+
+type TaskStatus = 'todo' | 'doing' | 'done' | 'error';
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_domain_tasks_title": "Taches",
+  "email_domain_tasks_col_id": "ID",
+  "email_domain_tasks_col_type": "Type d'operation",
+  "email_domain_tasks_col_detail": "Detail",
+  "email_domain_tasks_col_date": "Date",
+  "email_domain_tasks_col_status": "Statut",
+  "email_domain_tasks_status_done": "Terminee",
+  "email_domain_tasks_status_doing": "En cours",
+  "email_domain_tasks_status_error": "Erreur",
+  "email_domain_tasks_action_add_account": "Creation compte",
+  "email_domain_tasks_action_delete_account": "Suppression compte",
+  "email_domain_tasks_action_change_quota": "Modification quota",
+  "email_domain_tasks_action_add_redirection": "Creation redirection",
+  "email_domain_tasks_view": "Voir",
+  "email_domain_tasks_pagination": "Affichage de {start}-{end} sur {total} taches"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Historique de toutes les operations
+- Taches asynchrones (creation compte prend du temps)
+- Erreurs consultables pour diagnostic
+- Conservation historique 30 jours

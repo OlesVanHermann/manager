@@ -1,0 +1,102 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Statistiques et Logs
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des accès aux statistiques et logs.
+
+### Objectif fonctionnel
+- Accéder aux statistiques Urchin
+- Consulter les logs bruts
+- Gérer les utilisateurs autorisés
+
+---
+
+## 2. LAYOUT
+
+### Structure accès rapides + gestion utilisateurs
+
+---
+
+## 3. COMPOSANTS UI
+
+### Carte accès rapides
+| Element | Description |
+|---------|-------------|
+| Statistiques Urchin | Lien externe |
+| Logs bruts | Lien externe |
+
+### Section utilisateurs
+| Element | Description |
+|---------|-------------|
+| Titre | Utilisateurs autorisés |
+| Description | Ces utilisateurs ont accès à vos statistiques |
+| Bouton | + Créer un nouvel utilisateur (primary) |
+
+### Tableau utilisateurs
+| Colonne | Description |
+|---------|-------------|
+| Utilisateur | Login (principal marqué) |
+| Description | Description libre |
+| État | Badge Actif |
+| Actions | Menu ⋮ |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Edit |
+| Changer le mot de passe | Reset |
+| Voir les accès | View permissions |
+| Supprimer | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/userLogs
+POST /hosting/web/{serviceName}/userLogs
+PUT /hosting/web/{serviceName}/userLogs/{login}
+DELETE /hosting/web/{serviceName}/userLogs/{login}
+POST /hosting/web/{serviceName}/userLogs/{login}/changePassword
+```
+
+### Modele
+```typescript
+interface UserLogs {
+  login: string;
+  description?: string;
+  state: 'ok' | 'off';
+  isPrimary: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_userlogs_title": "Statistiques et logs",
+  "hosting_userlogs_quick": "Accès rapides",
+  "hosting_userlogs_urchin": "Voir les statistiques Urchin",
+  "hosting_userlogs_logs": "Consulter les logs bruts",
+  "hosting_userlogs_users": "Utilisateurs autorisés",
+  "hosting_userlogs_users_desc": "Ces utilisateurs ont accès à vos statistiques et aux logs de vos sites",
+  "hosting_userlogs_add": "Créer un nouvel utilisateur",
+  "hosting_userlogs_col_user": "Utilisateur",
+  "hosting_userlogs_col_desc": "Description",
+  "hosting_userlogs_col_state": "État",
+  "hosting_userlogs_primary": "principal"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Urchin = statistiques d'audience
+- Logs bruts = access/error logs Apache
+- Utilisateur principal non supprimable
+- Protection par htpasswd

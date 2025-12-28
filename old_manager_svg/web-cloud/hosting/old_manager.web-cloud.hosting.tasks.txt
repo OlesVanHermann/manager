@@ -1,0 +1,106 @@
+# Cahier des Charges : web-cloud/hosting - Tâches en cours
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de suivi des tâches et opérations.
+
+### Objectif fonctionnel
+- Voir l'historique des opérations
+- Suivre les tâches en cours
+- Consulter les détails des erreurs
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + description + tableau + pagination
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tête
+| Element | Description |
+|---------|-------------|
+| Titre | Tâches en cours |
+| Description | Historique des opérations effectuées |
+
+### Tableau tâches
+| Colonne | Description |
+|---------|-------------|
+| ID | Numéro unique (#847392) |
+| Type | Description de l'opération |
+| Date de début | Date/heure début |
+| Date de fin | Date/heure fin ou "-" |
+| État | Badge coloré |
+| Détails | Lien "Voir" |
+
+### États de tâche
+| État | Couleur badge |
+|------|---------------|
+| Terminé | Vert (#DEF7EC) |
+| En cours | Jaune (#FEF3C7) |
+| Erreur | Rouge (#FEE2E2) |
+| Planifié | Bleu (#DBEAFE) |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Texte | "Affichage de X à Y sur Z tâches" |
+| Boutons | < 1 2 3 > |
+| Actif | Fond bleu |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/task
+GET /hosting/web/{serviceName}/task/{id}
+```
+
+### Modele
+```typescript
+interface HostingTask {
+  id: number;
+  function: string;
+  startDate: string;
+  doneDate?: string;
+  status: 'done' | 'doing' | 'error' | 'todo';
+  lastUpdate: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_tasks_title": "Tâches en cours",
+  "hosting_tasks_desc": "Historique des opérations effectuées sur votre hébergement",
+  "hosting_tasks_col_id": "ID",
+  "hosting_tasks_col_type": "Type",
+  "hosting_tasks_col_start": "Date de début",
+  "hosting_tasks_col_end": "Date de fin",
+  "hosting_tasks_col_state": "État",
+  "hosting_tasks_col_details": "Détails",
+  "hosting_tasks_done": "Terminé",
+  "hosting_tasks_doing": "En cours",
+  "hosting_tasks_error": "Erreur",
+  "hosting_tasks_todo": "Planifié",
+  "hosting_tasks_view": "Voir",
+  "hosting_tasks_pagination": "Affichage de {from} à {to} sur {total} tâches"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Historique conservé 30 jours
+- Rafraîchissement auto pour "En cours"
+- Détails = messages d'erreur si échec
+- Tâches ordonnées par date décroissante

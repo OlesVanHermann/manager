@@ -1,0 +1,124 @@
+# Cahier des Charges : web-cloud/hosting - Utilisateurs logs
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des utilisateurs autorisés aux statistiques.
+
+### Objectif fonctionnel
+- Accéder aux statistiques
+- Accéder aux logs bruts
+- Gérer les utilisateurs autorisés
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + alert + sections stats/logs + tableau utilisateurs
+
+---
+
+## 3. COMPOSANTS UI
+
+### Message info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Texte | Guide pour comprendre les statistiques |
+| Lien | Consulter le guide ↗ |
+
+### Section Statistiques
+| Element | Description |
+|---------|-------------|
+| Titre | Statistiques |
+| Description | Accédez aux statistiques détaillées |
+| Bouton | Voir les statistiques → (primary) |
+
+### Section Logs
+| Element | Description |
+|---------|-------------|
+| Titre | Logs |
+| Description | Accédez aux logs bruts |
+| Bouton | Voir les logs → (primary) |
+
+### Section Utilisateurs logs
+| Element | Description |
+|---------|-------------|
+| Titre | Utilisateurs logs |
+| Description | Gérez les utilisateurs autorisés |
+| Bouton | + Créer un utilisateur (outline) |
+
+### Tableau utilisateurs
+| Colonne | Description |
+|---------|-------------|
+| Login | Identifiant |
+| Description | Texte libre |
+| Date de création | Date |
+| Actions | Menu ⋮ |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Éditer l'utilisateur |
+| Mot de passe | Changer password |
+| Supprimer | Supprimer |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/userLogs
+POST /hosting/web/{serviceName}/userLogs
+PUT /hosting/web/{serviceName}/userLogs/{login}
+DELETE /hosting/web/{serviceName}/userLogs/{login}
+POST /hosting/web/{serviceName}/userLogs/{login}/changePassword
+```
+
+### Modele
+```typescript
+interface UserLogs {
+  login: string;
+  description?: string;
+  createdAt: string;
+  isPrimary: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_userlogs_title": "Logs et statistiques",
+  "hosting_userlogs_desc": "Consultez les logs et statistiques de votre hébergement",
+  "hosting_userlogs_guide": "Consultez notre guide pour comprendre les statistiques",
+  "hosting_userlogs_guide_link": "Consulter le guide",
+  "hosting_userlogs_stats_title": "Statistiques",
+  "hosting_userlogs_stats_desc": "Accédez aux statistiques détaillées de votre hébergement",
+  "hosting_userlogs_stats_btn": "Voir les statistiques",
+  "hosting_userlogs_logs_title": "Logs",
+  "hosting_userlogs_logs_desc": "Accédez aux logs bruts de votre hébergement",
+  "hosting_userlogs_logs_btn": "Voir les logs",
+  "hosting_userlogs_users_title": "Utilisateurs logs",
+  "hosting_userlogs_users_desc": "Gérez les utilisateurs autorisés à consulter les statistiques",
+  "hosting_userlogs_add": "Créer un utilisateur",
+  "hosting_userlogs_col_login": "Login",
+  "hosting_userlogs_col_desc": "Description",
+  "hosting_userlogs_col_created": "Date de création",
+  "hosting_userlogs_edit": "Modifier",
+  "hosting_userlogs_password": "Mot de passe",
+  "hosting_userlogs_delete": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Utilisateur principal non supprimable
+- Accès protégé par htpasswd
+- Statistiques = Urchin/AWStats
+- Logs = access.log/error.log Apache

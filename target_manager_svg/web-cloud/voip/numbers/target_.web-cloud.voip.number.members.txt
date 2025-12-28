@@ -1,0 +1,132 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.members.svg
+Route:   /web-cloud/voip/numbers/{serviceName}/members
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Membres
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des lignes membres d'une file d'appels (hunting group). Configuration
+de l'ordre d'appel, timeouts et priorités.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 5 membres                | GET /telephony/.../members → count                      |
+| Séquentielle             | number.huntingStrategy                                  |
+| 20 sec                   | number.defaultTimeout                                   |
+| +33 9 12 34 56 01        | members[].line                                          |
+| Jean Dupont              | members[].description                                   |
+| Haute                    | members[].priority                                      |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche
+     * + Ajouter membre
+
+   - BANNIERE RESUME:
+     * Nombre membres
+     * Stratégie
+     * Timeout
+
+   - TABLE MEMBRES (drag & drop):
+     * Poignée réordonnement
+     * Ordre
+     * Ligne
+     * Description
+     * Statut (badge)
+     * Timeout
+     * Priorité (badge)
+     * Actions
+
+   - BANNIERE INFO DRAG&DROP
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste membres
+GET /telephony/{billingAccount}/number/{serviceName}/members
+Response: [{
+  id, order, line, description, status, timeout, priority
+}]
+
+### Ajouter membre
+POST /telephony/{billingAccount}/number/{serviceName}/members
+Body: { lineServiceName, timeout, priority }
+
+### Modifier membre
+PUT /telephony/{billingAccount}/number/{serviceName}/members/{id}
+Body: { timeout, priority, status }
+
+### Supprimer membre
+DELETE /telephony/{billingAccount}/number/{serviceName}/members/{id}
+
+### Réordonner membres
+PUT /telephony/{billingAccount}/number/{serviceName}/members/reorder
+Body: { orderedIds: [id1, id2, ...] }
+
+================================================================================
+
+## STRATEGIES FILE
+
+| Stratégie     | Description                        |
+|---------------|------------------------------------|
+| sequential    | Un par un dans l'ordre             |
+| simultaneous  | Tous en même temps                 |
+| circular      | À tour de rôle                     |
+| random        | Aléatoire                          |
+
+================================================================================
+
+## PRIORITES
+
+| Priorité | Couleur | Description          |
+|----------|---------|----------------------|
+| high     | Bleu    | Priorité haute       |
+| normal   | Gris    | Priorité normale     |
+| low      | Jaune   | Priorité basse       |
+
+================================================================================
+
+## REGLES METIER
+
+- Max 20 membres par file
+- Timeout: 5-60 secondes
+- Membre inactif: non appelé
+- Drag & drop: sauvegarde auto
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberMembersTab (container)
+- MembersToolbar
+- MembersSummaryBanner
+- MembersTable (with DnD)
+- MemberRow (draggable)
+- MemberStatusBadge
+- MemberPriorityBadge
+- AddMemberModal
+- EditMemberModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

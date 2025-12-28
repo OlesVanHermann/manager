@@ -1,0 +1,134 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.ccs.svg
+Route:   /web-cloud/voip/numbers/{serviceName}/ccs
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Centre de Contact
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration du Centre de Contact (CCS). Gestion des files d'attente,
+des agents et des stratégies de distribution des appels.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 3 agents connectés       | GET /telephony/.../ccs → connectedAgents                |
+| 2 appels en attente      | ccs.queuedCalls                                         |
+| 1:45 min                 | ccs.averageWaitTime                                     |
+| Round-robin              | ccs.strategy                                            |
+| Jean Dupont              | agents[].name                                           |
+| Disponible               | agents[].status                                         |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC STATUT (3 cards):
+     * Agents connectés
+     * Appels en attente
+     * Temps moyen attente
+
+   - BLOC CONFIGURATION:
+     * Stratégie distribution (dropdown)
+     * Temps max attente (input)
+     * Capacité max file (input)
+
+   - TABLE AGENTS:
+     * Avatar + nom + rôle
+     * Ligne assignée
+     * Statut (badge)
+     * Appels traités
+     * Temps moyen
+     * Actions
+
+   - ACTIONS: Enregistrer, Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Configuration CCS
+GET /telephony/{billingAccount}/number/{serviceName}/ccs
+Response: {
+  strategy, maxWaitTime, maxQueueSize,
+  connectedAgents, queuedCalls, averageWaitTime
+}
+
+### Modifier configuration
+PUT /telephony/{billingAccount}/number/{serviceName}/ccs
+Body: { strategy, maxWaitTime, maxQueueSize }
+
+### Liste agents
+GET /telephony/{billingAccount}/number/{serviceName}/ccs/agents
+Response: [{
+  id, name, role, line, status, callsHandled, avgTime
+}]
+
+### Ajouter agent
+POST /telephony/{billingAccount}/number/{serviceName}/ccs/agents
+Body: { lineServiceName, role }
+
+### Supprimer agent
+DELETE /telephony/{billingAccount}/number/{serviceName}/ccs/agents/{agentId}
+
+================================================================================
+
+## STRATEGIES DISTRIBUTION
+
+| Stratégie     | Description                        |
+|---------------|------------------------------------|
+| roundRobin    | À tour de rôle                     |
+| leastCalls    | Moins d'appels traités             |
+| random        | Aléatoire                          |
+| ringAll       | Tous simultanément                 |
+| longestIdle   | Plus longtemps inactif             |
+
+================================================================================
+
+## STATUTS AGENT
+
+| Statut      | Couleur | Description          |
+|-------------|---------|----------------------|
+| available   | Vert    | Disponible           |
+| onCall      | Jaune   | En appel             |
+| wrapUp      | Orange  | Post-appel           |
+| paused      | Gris    | En pause             |
+| offline     | Rouge   | Déconnecté           |
+
+================================================================================
+
+## REGLES METIER
+
+- Max 50 agents par CCS
+- Temps max attente: 1-600 sec
+- Capacité file: 1-100 appels
+- Superviseur: accès stats temps réel
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberCcsTab (container)
+- CcsStatusCards
+- QueueConfigForm
+- AgentsTable
+- AgentStatusBadge
+- AddAgentModal
+- EditAgentModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

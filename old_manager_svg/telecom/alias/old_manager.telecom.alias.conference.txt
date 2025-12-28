@@ -1,0 +1,133 @@
+# Cahier des Charges : telecom/alias - Conference telephonique
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration d'une conference telephonique.
+
+### Objectif fonctionnel
+- Configurer les parametres de conference
+- Gerer le code PIN
+- Configurer l'enregistrement
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec configuration complete
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Configuration de la conference |
+| Numero | Numero de la conference |
+
+### Section Configuration
+| Champ | Type | Description |
+|-------|------|-------------|
+| Code PIN | Input text | Code 1-8 chiffres |
+| Annonce | Select son | Fichier audio entree |
+| Enregistrement | Toggle | Actif/Desactive |
+| Micro entree | Toggle | Actif/Muet |
+| Appels anonymes | Toggle | Acceptes/Rejetes |
+| Langue | Select | Langue annonces |
+
+### Options PIN
+| Option | Description |
+|--------|-------------|
+| Sans code | Acces libre |
+| Code simple | 4 chiffres |
+| Code complexe | 8 chiffres |
+
+### Options enregistrement
+| Option | Description |
+|--------|-------------|
+| Desactive | Pas d'enregistrement |
+| Manuel | Declenchement manuel |
+| Automatique | Enregistre toujours |
+
+### Section Administration
+| Champ | Type | Description |
+|-------|------|-------------|
+| Email rapport | Select | Frequence envoi |
+| URL suivi | Read-only | Lien supervision |
+| URL controle | Read-only | Lien administration |
+
+### Rapport email
+| Option | Description |
+|--------|-------------|
+| Jamais | Pas de rapport |
+| Fin conference | A chaque fin |
+| Quotidien | Resume journalier |
+
+### URLs acces web
+| URL | Usage |
+|-----|-------|
+| Suivi | Voir participants |
+| Controle | Muter/Exclure |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Valider | Primary | Sauvegarde |
+| Annuler | Default | Annule |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/conference/{serviceName}
+PUT /telephony/{billingAccount}/conference/{serviceName}
+GET /telephony/{billingAccount}/conference/{serviceName}/settings
+PUT /telephony/{billingAccount}/conference/{serviceName}/settings
+GET /telephony/{billingAccount}/conference/{serviceName}/webAccess
+```
+
+### Modele Conference
+```typescript
+interface TelephonyConference {
+  serviceName: string;
+  pin: string;
+  announceFile: boolean;
+  recordStatus: boolean;
+  enterMuted: boolean;
+  anonymousRejection: boolean;
+  language: string;
+  reportEmail: string;
+  reportStatus: string;
+  webAccessUrl: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_conference_title": "Configuration de la conference",
+  "alias_conference_pin": "Code PIN d'acces",
+  "alias_conference_announcement": "Annonce personnalisee",
+  "alias_conference_record": "Enregistrer la conference",
+  "alias_conference_mute_entry": "Micro des participants a l'entree",
+  "alias_conference_anonymous": "Appels anonymes",
+  "alias_conference_language": "Langue de la conference",
+  "alias_conference_report_email": "Rapport par email",
+  "alias_conference_web_access": "URLs d'acces web"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- PIN optionnel (1-8 chiffres)
+- Enregistrement stocke 30 jours
+- URL acces valide 24h
+- Max 50 participants simultanes

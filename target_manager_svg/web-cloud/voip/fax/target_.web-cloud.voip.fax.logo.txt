@@ -1,0 +1,116 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.logo.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/fax/{serviceName}/logo
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Fax | NAV4=Général | NAV5=Logo
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion du logo d'en-tête de fax. Upload, preview et configuration du logo
+qui apparaît sur chaque fax envoyé.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972101234            | GET /telephony/{ba}/fax/{sn} → serviceName              |
+| logo-entreprise.png      | GET /telephony/{ba}/fax/{sn}/logo → filename            |
+| 180x45 pixels            | logo → dimensions                                       |
+| 12 Ko                    | logo → size                                             |
+| PNG                      | logo → format                                           |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - NAV3 tabs: Lignes | Numéros | [Fax] | Abrégés
+   - Liste des fax
+
+2. RIGHT PANEL (1096px)
+   - Header: Numéro + Description
+   - NAV4 tabs: [Général] | Envoi | Campagnes | Reçus | Envoyés | Conso | Messagerie | Filtrage
+   - NAV5 sub-tabs: Informations | Paramètres | [Logo] | Notifications
+
+   - INFO BANNER: Explication logo fax
+
+   - BLOC: Logo actuel (1040x200)
+     * Preview logo actuel
+     * Infos fichier (nom, dimensions, taille)
+     * Bouton Supprimer
+     * Aperçu en-tête fax (mini preview)
+
+   - BLOC: Changer le logo (1040x180)
+     * Zone drag & drop
+     * Bouton Parcourir
+
+   - BLOC: Spécifications (1040x130)
+     * Formats acceptés
+     * Dimensions max
+     * Taille max
+     * Recommandations
+
+================================================================================
+
+## API ENDPOINTS
+
+### Logo actuel
+GET /telephony/{billingAccount}/fax/{serviceName}/logo
+Response: {
+  hasLogo: boolean,
+  filename, format, dimensions: { width, height }, size,
+  url (preview)
+}
+
+### Upload logo
+POST /telephony/{billingAccount}/fax/{serviceName}/logo
+Body: multipart (image file)
+Response: { success, filename, ... }
+
+### Supprimer logo
+DELETE /telephony/{billingAccount}/fax/{serviceName}/logo
+
+### Preview en-tête
+GET /telephony/{billingAccount}/fax/{serviceName}/logo/preview
+Response: Image (preview de l'en-tête complet)
+
+================================================================================
+
+## SPECIFICATIONS LOGO
+
+| Paramètre      | Valeur                    |
+|----------------|---------------------------|
+| Formats        | PNG, JPEG, GIF            |
+| Dimensions max | 200x50 pixels             |
+| Taille max     | 100 Ko                    |
+| Recommandé     | PNG fond transparent      |
+
+================================================================================
+
+## REGLES METIER
+
+- Logo optionnel
+- Redimensionnement auto si trop grand
+- Conversion en niveaux de gris pour fax
+- Contraste ajusté automatiquement
+- Mise en cache pour performance
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxLogoTab (container)
+- CurrentLogoCard (preview + infos)
+- FaxHeaderPreview (aperçu en-tête)
+- LogoDropzone (upload drag & drop)
+- DeleteLogoConfirmModal
+- LogoSpecsCard
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

@@ -1,0 +1,147 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.settings.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/fax/{serviceName}/settings
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Fax | NAV4=Général | NAV5=Paramètres
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Paramètres généraux du service fax. Configuration de l'identité, qualité,
+réception et archivage.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972101234            | GET /telephony/{ba}/fax/{sn} → serviceName              |
+| Entreprise SARL          | GET /telephony/{ba}/fax/{sn}/settings → senderName      |
+| 0033972101234            | settings → csid                                         |
+| Normale (200x100)        | settings → resolution                                   |
+| A4                       | settings → paperFormat                                  |
+| 3 tentatives             | settings → retryAttempts                                |
+| contact@entreprise.com   | settings → notificationEmail                            |
+| PDF                      | settings → receiveFormat                                |
+| 90 jours                 | settings → retention                                    |
+| Activé                   | settings → autoArchive                                  |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - NAV3 tabs: Lignes | Numéros | [Fax] | Abrégés
+   - Liste des fax
+
+2. RIGHT PANEL (1096px)
+   - Header: Numéro + Description
+   - NAV4 tabs: [Général] | Envoi | Campagnes | Reçus | Envoyés | Conso | Messagerie | Filtrage
+   - NAV5 sub-tabs: Informations | [Paramètres] | Logo | Notifications
+
+   - BLOC: Identité de l'expéditeur (1040x120)
+     * Nom affiché (sender name)
+     * Numéro affiché (CSID)
+
+   - BLOC: Qualité d'envoi (1040x140)
+     * Résolution (dropdown)
+     * Format papier (dropdown)
+     * Tentatives en cas d'échec (dropdown)
+
+   - BLOC: Réception des fax (1040x140)
+     * Email de notification
+     * Format de réception (checkboxes: PDF, TIFF, Les deux)
+
+   - BLOC: Archivage (1040x120)
+     * Conservation des fax (dropdown)
+     * Archivage automatique (toggle)
+
+   - ACTIONS:
+     * Enregistrer
+     * Réinitialiser
+
+================================================================================
+
+## API ENDPOINTS
+
+### Paramètres fax
+GET /telephony/{billingAccount}/fax/{serviceName}/settings
+Response: {
+  senderName, csid, resolution, paperFormat, retryAttempts,
+  notificationEmail, receiveFormat, retention, autoArchive
+}
+
+### Modifier paramètres
+PUT /telephony/{billingAccount}/fax/{serviceName}/settings
+Body: { ... }
+
+================================================================================
+
+## OPTIONS
+
+### Résolution
+| Option         | Valeur    | DPI        |
+|----------------|-----------|------------|
+| Normale        | normal    | 200x100    |
+| Fine           | fine      | 200x200    |
+| Super fine     | superfine | 200x400    |
+
+### Format papier
+| Option | Description |
+|--------|-------------|
+| A4     | 210x297mm   |
+| Letter | US Letter   |
+| Legal  | US Legal    |
+
+### Tentatives
+| Option | Description           |
+|--------|-----------------------|
+| 1      | Pas de nouvelle tentative |
+| 3      | 3 tentatives (défaut) |
+| 5      | 5 tentatives          |
+
+### Format réception
+| Option    | Description |
+|-----------|-------------|
+| pdf       | PDF uniquement |
+| tiff      | TIFF uniquement |
+| both      | PDF + TIFF |
+
+### Conservation
+| Option  | Description |
+|---------|-------------|
+| 30      | 30 jours    |
+| 60      | 60 jours    |
+| 90      | 90 jours (défaut) |
+| 180     | 180 jours   |
+| 365     | 1 an        |
+
+================================================================================
+
+## REGLES METIER
+
+- CSID: identifiant affiché sur le fax du destinataire
+- Nom expéditeur: max 32 caractères
+- Email notification: format valide obligatoire
+- Résolution fine = meilleure qualité mais plus lent
+- Conservation min 30 jours, max 1 an
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxSettingsTab (container)
+- SenderIdentityCard
+- SendQualityCard
+- ReceptionSettingsCard
+- ArchiveSettingsCard
+- EditSenderNameModal
+- EditNotificationEmailModal
+- SettingsSaveButton
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

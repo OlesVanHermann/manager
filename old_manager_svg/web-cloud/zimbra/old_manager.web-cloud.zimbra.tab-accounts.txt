@@ -1,0 +1,119 @@
+# Cahier des Charges : web-cloud/zimbra - Comptes email
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des comptes email Zimbra.
+
+### Objectif fonctionnel
+- Voir les comptes configures
+- Creer de nouveaux comptes
+- Commander des comptes supplementaires
+
+---
+
+## 2. LAYOUT
+
+### Structure onglet avec stats + switch + toolbar + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Ligne info
+| Element | Description |
+|---------|-------------|
+| Webmail | Lien https://zimbra.mail.ovh.net |
+| Stats | Zimbra Starter: 3/5, Zimbra Pro: 2/3 |
+
+### Switch comptes
+| Vue | Description |
+|-----|-------------|
+| Comptes configures | Comptes actifs avec utilisateur |
+| Comptes non configures | Slots non assignes |
+
+### Boutons action
+| Bouton | Type |
+|--------|------|
+| + Creer un compte | Primary |
+| Commander un compte | Secondary |
+
+### Tableau comptes
+| Colonne | Description |
+|---------|-------------|
+| Checkbox | Selection multiple |
+| Compte email | Adresse email |
+| Organisation | Badge organisation |
+| Offre | STARTER / PRO |
+| Quota | 15 Go / 50 Go |
+| Statut | Badge Actif (vert) |
+| Renouvellement | Automatique |
+| Actions | Menu ⋮ |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Edit settings |
+| Alias | Manage aliases |
+| Changer d'offre | Upgrade/downgrade |
+| Supprimer | Destructif (rouge) |
+| Resilier | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/account
+POST /zimbra/platform/{platformId}/account
+DELETE /zimbra/platform/{platformId}/account/{accountId}
+PUT /zimbra/platform/{platformId}/account/{accountId}
+```
+
+### Modele
+```typescript
+interface ZimbraAccount {
+  id: string;
+  email: string;
+  organization: string;
+  offer: 'starter' | 'pro';
+  quota: number;
+  state: 'ok' | 'suspended';
+  renewal: 'automatic' | 'manual';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_accounts_title": "Compte email",
+  "zimbra_accounts_configured": "Comptes configures",
+  "zimbra_accounts_unconfigured": "Comptes non configures",
+  "zimbra_accounts_create": "Creer un compte",
+  "zimbra_accounts_order": "Commander un compte",
+  "zimbra_accounts_col_email": "Compte email",
+  "zimbra_accounts_col_org": "Organisation",
+  "zimbra_accounts_col_offer": "Offre",
+  "zimbra_accounts_col_quota": "Quota",
+  "zimbra_accounts_col_status": "Statut",
+  "zimbra_accounts_col_renewal": "Renouvellement",
+  "zimbra_accounts_action_edit": "Modifier",
+  "zimbra_accounts_action_alias": "Alias",
+  "zimbra_accounts_action_change_offer": "Changer d'offre",
+  "zimbra_accounts_action_delete": "Supprimer",
+  "zimbra_accounts_action_terminate": "Resilier"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- STARTER = 15 Go, PRO = 50 Go
+- Comptes configures = assignes a un utilisateur
+- Comptes non configures = slots disponibles
+- Renouvellement automatique par defaut

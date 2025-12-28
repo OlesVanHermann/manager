@@ -1,0 +1,134 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Migration
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de migration vers une nouvelle infrastructure.
+
+### Objectif fonctionnel
+- Voir l'infrastructure actuelle
+- Comparer avec la nouvelle infrastructure
+- Lancer la migration
+
+---
+
+## 2. LAYOUT
+
+### Structure message info + 2 cartes comparatives + warning + bouton
+
+---
+
+## 3. COMPOSANTS UI
+
+### Message info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Titre | Migrez votre hébergement vers une nouvelle infrastructure |
+| Description | Migration vers un nouveau cluster avec meilleures performances |
+
+### Carte infrastructure actuelle
+| Champ | Valeur exemple |
+|-------|----------------|
+| Cluster | cluster027 |
+| Datacenter | Gravelines (gra3) |
+| PHP disponible | 7.4, 8.0, 8.1, 8.2 |
+| Génération | 2022 |
+
+### Flèche de transition
+| Element | Description |
+|---------|-------------|
+| Type | Icône → |
+| Position | Entre les 2 cartes |
+
+### Carte nouvelle infrastructure
+| Champ | Valeur exemple |
+|-------|----------------|
+| Cluster | cluster051 |
+| Datacenter | Gravelines (gra5) |
+| PHP disponible | 8.0, 8.1, 8.2, 8.3 |
+| Génération | 2024 |
+| Badge | Recommandée (vert) |
+| Style | Bordure bleue + fond bleu clair |
+
+### Message warning
+| Element | Description |
+|---------|-------------|
+| Type | Warning (jaune) |
+| Titre | Attention |
+| Points | - Courte interruption (quelques minutes) |
+|        | - Fichiers et BDD conservés |
+|        | - Vérifier compatibilité PHP |
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Lancer la migration |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/attachedDomain
+GET /hosting/web/availableOffer
+POST /hosting/web/{serviceName}/requestMigration
+```
+
+### Modele
+```typescript
+interface CurrentInfrastructure {
+  cluster: string;
+  datacenter: string;
+  phpVersions: string[];
+  generation: string;
+}
+
+interface TargetInfrastructure {
+  cluster: string;
+  datacenter: string;
+  phpVersions: string[];
+  generation: string;
+  recommended: boolean;
+}
+
+interface MigrationRequest {
+  targetCluster: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_migration_title": "Migration",
+  "hosting_migration_info": "Migrez votre hébergement vers une nouvelle infrastructure",
+  "hosting_migration_info_desc": "La migration permet de déplacer votre hébergement vers un nouveau cluster avec de meilleures performances et les dernières technologies",
+  "hosting_migration_current": "Infrastructure actuelle",
+  "hosting_migration_target": "Nouvelle infrastructure",
+  "hosting_migration_recommended": "Recommandée",
+  "hosting_migration_cluster": "Cluster",
+  "hosting_migration_datacenter": "Datacenter",
+  "hosting_migration_php": "PHP disponible",
+  "hosting_migration_generation": "Génération",
+  "hosting_migration_warning_title": "Attention",
+  "hosting_migration_warning_downtime": "La migration entraînera une courte interruption de service (quelques minutes)",
+  "hosting_migration_warning_data": "Vos fichiers, bases de données et configurations seront conservés",
+  "hosting_migration_warning_php": "Assurez-vous que vos scripts sont compatibles avec les nouvelles versions PHP",
+  "hosting_migration_submit": "Lancer la migration"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Migration = changement de cluster
+- Interruption de service courte
+- Conservation complète des données
+- Nouvelles versions PHP disponibles
+- Vérifier compatibilité scripts avant migration

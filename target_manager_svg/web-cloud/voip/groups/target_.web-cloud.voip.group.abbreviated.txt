@@ -1,0 +1,112 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.group.abbreviated.svg
+Route:   /web-cloud/voip/group/{billingAccount}/abbreviated
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Numéros abrégés
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des numéros abrégés du groupe de facturation. Permet de créer
+des raccourcis de numérotation interne (2-4 chiffres).
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 100                      | GET /telephony/.../abbreviatedNumber → abbreviatedNumber|
+| +33 9 72 10 00 01        | abbreviated.destinationNumber                           |
+| Ligne                    | abbreviated.destinationType (line/number/external)      |
+| Jean Dupont              | abbreviated.name                                        |
+| 24/12/2024               | abbreviated.modifiedAt                                  |
+| 87 disponibles           | stats.available2digits                                  |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche groupes
+   - Liste des groupes de facturation
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche
+     * Bouton ajouter
+
+   - TABLE NUMEROS ABREGES:
+     * Numéro abrégé (2-4 chiffres)
+     * Destination (numéro complet)
+     * Type (badge: Ligne/Numéro/Externe)
+     * Nom/Description
+     * Dernière modification
+     * Actions (Éditer/Supprimer)
+
+   - PAGINATION
+
+   - BLOC INFO:
+     * Mode d'emploi
+
+   - BLOC PLAGES DISPONIBLES:
+     * Stats 2 chiffres
+     * Stats 3 chiffres
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste numéros abrégés
+GET /telephony/{billingAccount}/abbreviatedNumber
+Response: [abbreviatedNumber, ...]
+
+### Détail numéro abrégé
+GET /telephony/{billingAccount}/abbreviatedNumber/{abbreviatedNumber}
+Response: { abbreviatedNumber, destinationNumber, name, destinationType }
+
+### Créer numéro abrégé
+POST /telephony/{billingAccount}/abbreviatedNumber
+Body: { abbreviatedNumber, destinationNumber, name }
+
+### Modifier numéro abrégé
+PUT /telephony/{billingAccount}/abbreviatedNumber/{abbreviatedNumber}
+Body: { destinationNumber?, name? }
+
+### Supprimer numéro abrégé
+DELETE /telephony/{billingAccount}/abbreviatedNumber/{abbreviatedNumber}
+
+### Stats disponibilité
+GET /telephony/{billingAccount}/abbreviatedNumber/availability
+Response: { range2digits, range3digits, range4digits }
+
+================================================================================
+
+## REGLES METIER
+
+- Formats: 2 chiffres (10-99), 3 chiffres (100-999), 4 chiffres (1000-9999)
+- Maximum 1000 numéros abrégés par groupe
+- Destination: ligne du groupe, numéro alias, ou numéro externe
+- Numéro abrégé unique dans le groupe
+- Appel depuis poste du groupe uniquement
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- GroupAbbreviatedTab (container)
+- AbbreviatedNumbersTable
+- AbbreviatedTypesBadge
+- AddAbbreviatedModal
+- EditAbbreviatedModal
+- AbbreviatedRangesCards
+- DeleteAbbreviatedConfirmModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

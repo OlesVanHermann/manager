@@ -1,0 +1,156 @@
+# Cahier des Charges : telecom/telephony - Administration groupe
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page d'administration d'un groupe de facturation telephonie.
+
+### Objectif fonctionnel
+- Acceder aux options du groupe
+- Gerer le regroupement de lignes
+- Suivre les portabilites en cours
+- Supprimer le groupe
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec grille de cartes actions et section portabilites
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour a l'administration de groupe |
+| Breadcrumb | Telecom / VoIP / billing-xxx / Administration |
+| Titre | Administration |
+
+### Cartes actions (grille 3x2)
+| Carte | Description | Action |
+|-------|-------------|--------|
+| Options du groupe | Configurez options generales | Configurer → |
+| Regroupement de lignes | Gerez lignes et appartenance | Gerer → |
+| Ajouter un groupe | Creez nouveau groupe facturation | Creer → |
+| Portabilites en cours | Suivez demandes portabilite | Voir les portabilites → |
+| Manager marque blanche | Personnalisez interface | Personnaliser → |
+| Supprimer le groupe | Supprimez definitivement | Supprimer → |
+
+### Carte action standard
+| Element | Description |
+|---------|-------------|
+| Icone | Emoji descriptif |
+| Titre | Nom action |
+| Description | 2 lignes texte gris |
+| Lien | Action → (bleu) |
+
+### Carte suppression
+| Element | Description |
+|---------|-------------|
+| Fond | Rouge clair |
+| Bordure | Rouge |
+| Texte | Rouge |
+
+### Badge portabilites
+| Etat | Style |
+|------|-------|
+| En cours | Fond jaune, texte orange |
+| Validee | Fond vert, texte vert |
+
+### Section Portabilites en cours
+| Element | Description |
+|---------|-------------|
+| Titre section | Portabilites en cours |
+| Liste | Lignes portabilite |
+
+### Ligne portabilite
+| Element | Description |
+|---------|-------------|
+| Numero | Format 0033XXXXXXXXX |
+| Operateur | Nom operateur source |
+| Statut | Badge En attente / Validee |
+| Date prevue | JJ/MM/AAAA |
+| Actions | Annuler / Relancer ou Attacher / Supprimer |
+
+### Bouton nouvelle portabilite
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | + Nouvelle portabilite |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}
+DELETE /telephony/{billingAccount}
+GET /telephony/{billingAccount}/portability
+POST /telephony/{billingAccount}/portability
+DELETE /telephony/{billingAccount}/portability/{id}
+```
+
+### Modele
+```typescript
+interface BillingAccount {
+  id: string;
+  name: string;
+  status: string;
+}
+
+interface Portability {
+  id: string;
+  number: string;
+  operator: string;
+  status: 'pending' | 'validated' | 'cancelled';
+  scheduledDate: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_admin_title": "Administration",
+  "telephony_admin_back": "Retour a l'administration de groupe",
+  "telephony_admin_options": "Options du groupe",
+  "telephony_admin_options_desc": "Configurez les options generales de votre groupe",
+  "telephony_admin_lines": "Regroupement de lignes",
+  "telephony_admin_lines_desc": "Gerez les lignes et leur appartenance aux groupes",
+  "telephony_admin_add_group": "Ajouter un groupe",
+  "telephony_admin_add_group_desc": "Creez un nouveau groupe de facturation",
+  "telephony_admin_portabilities": "Portabilites en cours",
+  "telephony_admin_portabilities_desc": "Suivez vos demandes de portabilite",
+  "telephony_admin_white_label": "Manager marque blanche",
+  "telephony_admin_white_label_desc": "Personnalisez l'interface pour vos utilisateurs",
+  "telephony_admin_delete": "Supprimer le groupe",
+  "telephony_admin_delete_desc": "Supprimez definitivement ce groupe de facturation",
+  "telephony_admin_configure": "Configurer",
+  "telephony_admin_manage": "Gerer",
+  "telephony_admin_create": "Creer",
+  "telephony_admin_customize": "Personnaliser",
+  "telephony_admin_portability_pending": "En attente",
+  "telephony_admin_portability_validated": "Validee",
+  "telephony_admin_portability_date": "Date prevue",
+  "telephony_admin_portability_cancel": "Annuler",
+  "telephony_admin_portability_relaunch": "Relancer",
+  "telephony_admin_portability_attach": "Attacher",
+  "telephony_admin_portability_remove": "Supprimer",
+  "telephony_admin_portability_new": "Nouvelle portabilite",
+  "telephony_admin_in_progress": "en cours"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Suppression groupe necessite confirmation
+- Portabilite annulable avant date execution
+- Relance possible si document manquant
+- Attachement apres validation portabilite

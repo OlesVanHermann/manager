@@ -1,0 +1,117 @@
+# Cahier des Charges : web-cloud/email-pro - Dashboard
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Dashboard principal d'un service Email Pro.
+
+### Objectif fonctionnel
+- Voir les informations du service
+- Gerer les comptes email
+- Acceder aux onglets (domaines, taches)
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec sidebar + carte info + onglets + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Carte informations service
+| Champ | Valeur |
+|-------|--------|
+| Service | emailpro-abc123.ovh.net |
+| Statut | Badge "Actif" vert |
+| Domaine principal | monentreprise.com |
+| Comptes | 8 / 10 |
+| Espace utilise | 12.5 Go / 50 Go |
+| Renouvellement | DD/MM/YYYY |
+
+### Onglets
+| Onglet | Description |
+|--------|-------------|
+| Comptes email | Liste des comptes (actif) |
+| Domaines | Domaines associes |
+| Taches | Historique operations |
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | + Ajouter un compte |
+
+### Tableau comptes
+| Colonne | Description |
+|---------|-------------|
+| Compte | Adresse email (lien) |
+| Quota utilise | X.X Go / Y Go |
+| Derniere connexion | DD/MM/YYYY HH:MM |
+| Statut | Badge Actif/Suspendu |
+| Actions | Menu ⋮ |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/pro/{service}
+GET /email/pro/{service}/account
+POST /email/pro/{service}/account
+DELETE /email/pro/{service}/account/{email}
+```
+
+### Modele
+```typescript
+interface EmailProService {
+  domain: string;
+  hostname: string;
+  offer: string;
+  maxAccounts: number;
+  state: string;
+}
+
+interface EmailProAccount {
+  primaryEmailAddress: string;
+  displayName: string;
+  quota: number;
+  currentUsage: number;
+  lastLogonDate: string;
+  state: 'ok' | 'suspended';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_pro_title": "Email Pro",
+  "email_pro_primary_domain": "Domaine principal",
+  "email_pro_accounts": "Comptes",
+  "email_pro_space_used": "Espace utilise",
+  "email_pro_renewal": "Renouvellement",
+  "email_pro_tab_accounts": "Comptes email",
+  "email_pro_tab_domains": "Domaines",
+  "email_pro_tab_tasks": "Taches",
+  "email_pro_add_account": "Ajouter un compte",
+  "email_pro_col_account": "Compte",
+  "email_pro_col_quota": "Quota utilise",
+  "email_pro_col_last_login": "Derniere connexion",
+  "email_pro_status_active": "Actif",
+  "email_pro_status_suspended": "Suspendu"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Email Pro = offre professionnelle
+- 5 Go par compte par defaut
+- Quota modifiable jusqu'a limite service
+- Compte suspendu = connexion bloquee

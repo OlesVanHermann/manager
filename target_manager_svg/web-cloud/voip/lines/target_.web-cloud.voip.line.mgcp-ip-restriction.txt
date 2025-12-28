@@ -1,0 +1,109 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.mgcp-ip-restriction.svg
+Route:   /web-cloud/voip/line/{serviceName}/mgcp/ip-restriction
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Restriction IP
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration des restrictions IP pour les lignes MGCP. Permet de limiter
+les adresses IP autorisées à s'enregistrer sur la ligne VoIP.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 82.64.123.45             | GET /telephony/.../mgcp/ip → currentIp                  |
+| true                     | ipRestriction.enabled                                   |
+| 82.64.123.45             | allowedIps[].address                                    |
+| Bureau principal         | allowedIps[].description                                |
+| 15/11/2025               | allowedIps[].createdAt                                  |
+| En ligne maintenant      | allowedIps[].lastConnection                             |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BANNIERE WARNING:
+     * Avertissement configuration
+
+   - BLOC IP ACTUELLE:
+     * IP détectée
+     * Bouton ajouter
+
+   - BLOC MODE RESTRICTION:
+     * Toggle activer/désactiver
+
+   - TOOLBAR:
+     * Refresh, recherche, ajouter IP
+
+   - TABLE IPS AUTORISEES:
+     * Adresse IP / Plage CIDR
+     * Description
+     * Date ajout
+     * Dernière connexion
+     * Actions (éditer/supprimer)
+
+   - ACTIONS: Enregistrer, Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Config restriction IP
+GET /telephony/{billingAccount}/line/{serviceName}/mgcp/ipRestriction
+Response: { enabled, currentIp, allowedIps: [{ address, description, createdAt, lastConnection }] }
+
+### Modifier mode
+PUT /telephony/{billingAccount}/line/{serviceName}/mgcp/ipRestriction
+Body: { enabled: boolean }
+
+### Ajouter IP
+POST /telephony/{billingAccount}/line/{serviceName}/mgcp/ipRestriction/ips
+Body: { address, description }
+
+### Modifier IP
+PUT /telephony/{billingAccount}/line/{serviceName}/mgcp/ipRestriction/ips/{ipId}
+Body: { description }
+
+### Supprimer IP
+DELETE /telephony/{billingAccount}/line/{serviceName}/mgcp/ipRestriction/ips/{ipId}
+
+================================================================================
+
+## REGLES METIER
+
+- Formats supportés: IP unique, CIDR (/16, /24, etc.)
+- Maximum 20 IPs/plages par ligne
+- L'IP actuelle doit être dans la liste si restriction activée
+- Avertissement avant suppression dernière IP
+- Historique connexions 30 jours
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- MgcpIpRestrictionTab (container)
+- WarningBanner
+- CurrentIpCard
+- RestrictionModeToggle
+- AllowedIpsTable
+- AddIpModal
+- EditIpModal
+- DeleteIpConfirmModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

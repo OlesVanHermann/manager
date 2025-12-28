@@ -1,0 +1,126 @@
+# Cahier des Charges : telecom/line - Associer telephone
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page d'association d'une ligne a un telephone existant.
+
+### Objectif fonctionnel
+- Selectionner un telephone disponible
+- Voir les lignes deja associees
+- Configurer l'adresse IP
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec carte selection telephone + IP
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour au telephone |
+
+### Carte formulaire
+| Element | Description |
+|---------|-------------|
+| Titre | Associer cette ligne a un telephone |
+
+### Liste telephones
+| Element | Description |
+|---------|-------------|
+| Radio | Selection |
+| Modele | Nom modele |
+| MAC | Adresse MAC |
+| Lignes | X / Y utilisees |
+| Details | Liste lignes existantes |
+
+### Telephone selectionne
+| Etat | Style |
+|------|-------|
+| Selected | Radio plein |
+| Normal | Radio vide |
+
+### Details lignes associees
+| Element | Description |
+|---------|-------------|
+| Format | • +33 X XX XX XX XX (Description) |
+
+### Champ IP
+| Element | Description |
+|---------|-------------|
+| Label | Adresse IP du telephone |
+| Type | Text input |
+| Format | XXX.XXX.XXX.XXX |
+
+### Info box
+| Element | Description |
+|---------|-------------|
+| Fond | Bleu clair |
+| Texte | IP pour config automatique |
+
+### Boutons
+| Bouton | Type | Action |
+|--------|------|--------|
+| Associer | Primary | Sauvegarde |
+| Annuler | Secondary | Annule |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/phone
+POST /telephony/{billingAccount}/line/{serviceName}/phone/attach
+```
+
+### Modele
+```typescript
+interface AvailablePhone {
+  macAddress: string;
+  model: string;
+  usedLines: number;
+  maxLines: number;
+  associatedLines: AssociatedLine[];
+}
+
+interface AssociatedLine {
+  number: string;
+  description: string;
+  slot: number;
+}
+
+interface AttachRequest {
+  macAddress: string;
+  ipAddress?: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_attach_title": "Associer cette ligne a un telephone",
+  "line_attach_lines_used": "Lignes utilisees",
+  "line_attach_ip": "Adresse IP du telephone",
+  "line_attach_ip_info": "L'adresse IP permet de configurer automatiquement le telephone.",
+  "line_attach_submit": "Associer",
+  "line_attach_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Telephone doit avoir slot libre
+- IP optionnelle mais recommandee
+- Association immediate
+- Reboot telephone peut etre necessaire

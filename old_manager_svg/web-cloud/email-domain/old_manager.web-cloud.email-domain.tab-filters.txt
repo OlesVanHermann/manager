@@ -1,0 +1,117 @@
+# Cahier des Charges : web-cloud/email-domain - Onglet Filtres
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des filtres email (regles de tri).
+
+### Objectif fonctionnel
+- Creer des regles de tri automatique
+- Definir conditions et actions
+- Gerer les priorites
+
+---
+
+## 2. LAYOUT
+
+### Structure onglet avec selecteur compte + tableau filtres
+
+---
+
+## 3. COMPOSANTS UI
+
+### Selecteur de compte
+| Element | Description |
+|---------|-------------|
+| Label | Compte email: |
+| Type | Select dropdown |
+| Options | Liste des comptes du domaine |
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | + Creer un filtre |
+
+### Tableau filtres
+| Colonne | Description |
+|---------|-------------|
+| Nom du filtre | Identifiant du filtre |
+| Condition | Ex: Objet contient "[SPAM]" |
+| Action | Ex: Deplacer vers Corbeille |
+| Priorite | Ordre d'execution (1, 2, 3...) |
+| Statut | Badge Actif/Inactif |
+| Actions | Menu ⋮ |
+
+### Bandeau info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Texte | Les filtres sont appliques dans l'ordre de priorite. Glissez-deposez pour reorganiser. |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/domain/{domain}/account/{accountName}/filter
+POST /email/domain/{domain}/account/{accountName}/filter
+PUT /email/domain/{domain}/account/{accountName}/filter/{name}
+DELETE /email/domain/{domain}/account/{accountName}/filter/{name}
+```
+
+### Modele
+```typescript
+interface EmailFilter {
+  name: string;
+  active: boolean;
+  priority: number;
+  action: FilterAction;
+  actionParam?: string;
+}
+
+interface FilterRule {
+  header: 'from' | 'to' | 'subject' | 'body';
+  operand: 'contains' | 'equals' | 'matches';
+  value: string;
+}
+
+type FilterAction =
+  | 'delete'
+  | 'move'
+  | 'redirect'
+  | 'copy';
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_domain_filters_title": "Filtres",
+  "email_domain_filters_account": "Compte email:",
+  "email_domain_filters_create": "Creer un filtre",
+  "email_domain_filters_col_name": "Nom du filtre",
+  "email_domain_filters_col_condition": "Condition",
+  "email_domain_filters_col_action": "Action",
+  "email_domain_filters_col_priority": "Priorite",
+  "email_domain_filters_col_status": "Statut",
+  "email_domain_filters_info": "Les filtres sont appliques dans l'ordre de priorite. Glissez-deposez pour reorganiser.",
+  "email_domain_filters_action_delete": "Supprimer",
+  "email_domain_filters_action_move": "Deplacer vers",
+  "email_domain_filters_action_redirect": "Rediriger vers",
+  "email_domain_filters_action_copy": "Copier vers"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Filtres par compte email
+- Priorite = ordre d'execution
+- Drag-drop pour reorganiser
+- Actions: supprimer, deplacer, rediriger, copier
+- Conditions: de, a, objet, corps

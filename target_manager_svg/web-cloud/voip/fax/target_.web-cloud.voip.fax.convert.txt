@@ -1,0 +1,90 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.convert.svg
+Route:   /web-cloud/voip/fax/{serviceName}/convert
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Convertir fax
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Conversion d'un service fax en ligne téléphonique. Opération irréversible
+qui supprime les fonctionnalités fax pour activer les fonctions téléphonie.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| +33 9 12 34 56 78        | GET /telephony/.../fax → number                         |
+| Fax Pro                  | fax.offer                                               |
+| 1 234 fax                | fax.totalSentCount                                      |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche fax
+   - Liste des fax
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - WARNING BANNER:
+     * Opération irréversible
+     * Conséquences
+
+   - BLOC SERVICE ACTUEL:
+     * Numéro
+     * Type
+     * Total fax envoyés
+
+   - BLOC SELECTION OFFRE:
+     * Cards radio offres ligne
+
+   - CHECKBOX CONFIRMATION
+
+   - ACTIONS: Convertir (rouge), Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Info fax
+GET /telephony/{billingAccount}/fax/{serviceName}
+Response: { number, offer, totalSentCount }
+
+### Offres lignes
+GET /order/{billingAccount}/fax/{serviceName}/lineOffers
+Response: [{ offerId, name, price }]
+
+### Convertir
+POST /telephony/{billingAccount}/fax/{serviceName}/convertToLine
+Body: { lineOfferId }
+
+================================================================================
+
+## REGLES METIER
+
+- Irréversible
+- Historique fax conservé 30j après conversion
+- Numéro conservé
+- Nouvelle facturation immédiate
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxConvertTab (container)
+- IrreversibleWarningBanner
+- CurrentFaxInfoCard
+- LineOfferSelector
+- ConfirmationCheckbox
+- ConvertActionButtons
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

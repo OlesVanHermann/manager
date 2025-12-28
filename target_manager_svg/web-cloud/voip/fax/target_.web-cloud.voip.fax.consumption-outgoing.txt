@@ -1,0 +1,114 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.consumption-outgoing.svg
+Route:   /web-cloud/voip/fax/{serviceName}/consumption/outgoing
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Fax envoyés
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Historique des fax envoyés avec filtres, statistiques et actions
+(téléchargement, renvoi en cas d'échec).
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 47 fax                   | GET /telephony/.../fax/sent → totalCount                |
+| 156 pages                | stats.totalPages                                        |
+| 44 (93.6%)               | stats.successCount / successRate                        |
+| 3 (6.4%)                 | stats.failedCount / failedRate                          |
+| 28/12/2025 14:32         | history[].date                                          |
+| +33 1 42 68 53 00        | history[].recipient                                     |
+| Devis n°2024-156         | history[].subject                                       |
+| 3                        | history[].pages                                         |
+| 1m 24s                   | history[].duration                                      |
+| Réussi                   | history[].status                                        |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche fax
+   - Liste des fax
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - TABS: Fax envoyés / Fax reçus
+
+   - TOOLBAR:
+     * Refresh, recherche
+     * Filtre période (dropdown)
+     * Filtre statut (dropdown)
+     * Bouton envoyer fax
+
+   - STATS SUMMARY (4 cards):
+     * Total envoyés
+     * Pages envoyées
+     * Réussis (vert)
+     * Échecs (rouge)
+
+   - TABLE FAX ENVOYES:
+     * Date
+     * Destinataire
+     * Objet
+     * Pages
+     * Durée
+     * Statut (badge)
+     * Actions (télécharger/renvoyer)
+
+   - PAGINATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste fax envoyés
+GET /telephony/{billingAccount}/fax/{serviceName}/sent
+Query: { period, status, page, limit }
+Response: { items: [...], totalCount, stats }
+
+### Télécharger fax
+GET /telephony/{billingAccount}/fax/{serviceName}/sent/{faxId}/download
+Response: PDF file
+
+### Renvoyer fax échoué
+POST /telephony/{billingAccount}/fax/{serviceName}/sent/{faxId}/resend
+
+### Stats période
+GET /telephony/{billingAccount}/fax/{serviceName}/sent/stats
+Query: { period }
+Response: { totalCount, totalPages, successCount, failedCount }
+
+================================================================================
+
+## REGLES METIER
+
+- Périodes: 7j, 30j, 90j, personnalisée
+- Statuts: Tous, Réussis, Échecs, En cours
+- Renvoi disponible uniquement si échec
+- PDF téléchargeable 90 jours
+- Échec = ligne occupée, pas de réponse, etc.
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxOutgoingTab (container)
+- FaxTypeTabs
+- FaxFiltersToolbar
+- FaxStatsCards
+- FaxHistoryTable
+- DownloadFaxButton
+- ResendFaxButton
+- Pagination
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

@@ -1,0 +1,167 @@
+# Cahier des Charges : telecom/scheduler - Plages horaires
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion du calendrier des plages horaires d'un alias.
+
+### Objectif fonctionnel
+- Configurer les periodes de fermeture
+- Definir les comportements par categorie
+- Visualiser le planning mensuel/hebdo/jour
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec sidebar + calendrier principal + footer actions
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Titre | Plages horaires |
+
+### Section categories
+| Element | Description |
+|---------|-------------|
+| Titre | Categories (souligne) |
+| Legende | Badges couleur avec label |
+
+### Categories disponibles
+| Couleur | Label |
+|---------|-------|
+| Vert (#10B981) | Disponible |
+| Rouge (#EF4444) | Ferme |
+| Orange (#F59E0B) | Messagerie |
+| Violet (#8B5CF6) | Renvoi externe |
+
+### Section calendrier
+| Element | Description |
+|---------|-------------|
+| Titre | Jours de fermeture |
+| Sous-titre | Definissez vos periodes de fermeture exceptionnelles |
+
+### Barre controles calendrier
+| Element | Description |
+|---------|-------------|
+| Bouton Aujourd'hui | Retour date courante |
+| Fleches nav | ◀ ▶ mois precedent/suivant |
+| Mois/Annee | Ex: "Decembre 2024" |
+| Vue Jour | Bouton toggle |
+| Vue Semaine | Bouton toggle |
+| Vue Mois | Bouton toggle (actif bleu) |
+| Actions | Dropdown menu |
+
+### Menu Actions (dropdown)
+| Option | Description |
+|--------|-------------|
+| Ajouter jours feries | → Modal bank-holidays |
+| Importer calendrier | → Modal import |
+| Exporter calendrier | → Modal export |
+
+### Grille calendrier
+| Element | Description |
+|---------|-------------|
+| Header | Lun Mar Mer Jeu Ven Sam Dim |
+| Cellules | Numero du jour + evenements |
+| Evenements | Badges colores avec label |
+
+### Evenements affiches
+| Element | Description |
+|---------|-------------|
+| Badge | Rectangle arrondi couleur categorie |
+| Texte | Nom de l'evenement (blanc) |
+| Multi-jour | Etirement sur plusieurs cellules |
+
+### Footer barre actions
+| Element | Description |
+|---------|-------------|
+| Fond | Gris fonce (#374151) |
+| Message | "Enregistrer les modifications ?" |
+| Bouton Enregistrer | Primary bleu |
+| Bouton Annuler | Secondary blanc |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/timeCondition/{serviceName}
+GET /telephony/{billingAccount}/timeCondition/{serviceName}/condition
+POST /telephony/{billingAccount}/timeCondition/{serviceName}/condition
+PUT /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id}
+DELETE /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id}
+```
+
+### Modele
+```typescript
+interface TimeCondition {
+  id: number;
+  policy: string;
+  status: string;
+}
+
+interface SchedulerEvent {
+  id: number;
+  title: string;
+  category: SchedulerCategory;
+  startDate: string;
+  endDate: string;
+  allDay: boolean;
+  description?: string;
+}
+
+interface SchedulerCategory {
+  id: string;
+  label: string;
+  color: string;
+  action: 'available' | 'closed' | 'voicemail' | 'redirect';
+}
+
+type CalendarView = 'day' | 'week' | 'month';
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telecom_scheduler_title": "Plages horaires",
+  "telecom_scheduler_categories": "Categories",
+  "telecom_scheduler_cat_available": "Disponible",
+  "telecom_scheduler_cat_closed": "Ferme",
+  "telecom_scheduler_cat_voicemail": "Messagerie",
+  "telecom_scheduler_cat_redirect": "Renvoi externe",
+  "telecom_scheduler_closures": "Jours de fermeture",
+  "telecom_scheduler_closures_desc": "Definissez vos periodes de fermeture exceptionnelles",
+  "telecom_scheduler_today": "Aujourd'hui",
+  "telecom_scheduler_view_day": "Jour",
+  "telecom_scheduler_view_week": "Semaine",
+  "telecom_scheduler_view_month": "Mois",
+  "telecom_scheduler_actions": "Actions",
+  "telecom_scheduler_add_holidays": "Ajouter jours feries",
+  "telecom_scheduler_import": "Importer calendrier",
+  "telecom_scheduler_export": "Exporter calendrier",
+  "telecom_scheduler_save_prompt": "Enregistrer les modifications ?",
+  "telecom_scheduler_save": "Enregistrer",
+  "telecom_scheduler_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Vue mois par defaut
+- Categories = actions sur les appels entrants
+- Evenements multi-jours supportes
+- Modifications en batch (footer save)
+- Calendrier interactif (clic = creation event)
+- Navigation fluide entre vues
+

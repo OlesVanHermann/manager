@@ -1,0 +1,108 @@
+# Cahier des Charges : web-cloud/hosting - Tâches planifiées Cron
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des tâches planifiées (cron jobs).
+
+### Objectif fonctionnel
+- Lister les tâches planifiées
+- Ajouter de nouvelles tâches
+- Modifier/supprimer des tâches
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + bouton + tableau + aide
+
+---
+
+## 3. COMPOSANTS UI
+
+### Bouton d'action
+| Bouton | Style |
+|--------|-------|
+| Ajouter une planification | Primary |
+
+### Tableau tâches cron
+| Colonne | Description |
+|---------|-------------|
+| Commande | Chemin script (monospace) |
+| Langage | PHP 8.2 / Node / Autre |
+| Fréquence | Expression cron (*/15 * * * *) |
+| E-mail | Email notification ou "Non" |
+| État | Badge Activé/Désactivé |
+| Description | Texte libre |
+| Actions | Menu ⋮ |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Éditer la tâche |
+| Supprimer | Destructif (rouge) |
+
+### Section aide
+| Element | Description |
+|---------|-------------|
+| Lien | Besoin d'aide pour configurer vos tâches planifiées ? |
+| Description | Consultez nos guides en ligne |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/cron
+POST /hosting/web/{serviceName}/cron
+PUT /hosting/web/{serviceName}/cron/{id}
+DELETE /hosting/web/{serviceName}/cron/{id}
+```
+
+### Modele
+```typescript
+interface CronJob {
+  id: number;
+  command: string;
+  language: 'php' | 'node' | 'python' | 'other';
+  languageVersion?: string;
+  frequency: string;
+  email?: string;
+  state: 'enabled' | 'disabled';
+  description?: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_cron_title": "Tâches planifiées - Cron",
+  "hosting_cron_add": "Ajouter une planification",
+  "hosting_cron_col_command": "Commande",
+  "hosting_cron_col_language": "Langage",
+  "hosting_cron_col_frequency": "Fréquence",
+  "hosting_cron_col_email": "E-mail",
+  "hosting_cron_col_state": "État",
+  "hosting_cron_col_description": "Description",
+  "hosting_cron_enabled": "Activé",
+  "hosting_cron_disabled": "Désactivé",
+  "hosting_cron_edit": "Modifier",
+  "hosting_cron_delete": "Supprimer",
+  "hosting_cron_help": "Besoin d'aide pour configurer vos tâches planifiées ?",
+  "hosting_cron_help_desc": "Consultez nos guides en ligne"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Minimum 5 minutes entre exécutions
+- Timeout selon offre (60-300s)
+- Email = notification résultat
+- PHP par défaut, Node.js disponible
+- Syntaxe cron standard

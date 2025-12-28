@@ -1,0 +1,112 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.sms.senders.svg
+Route:   /web-cloud/sms/{serviceName}/senders
+NAV:     NAV1=Web Cloud | NAV2=SMS | NAV3=Expéditeurs
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des noms d'expéditeur SMS. Création et validation des
+identifiants alphanumériques ou numériques.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| OVHcloud                 | GET /sms/.../senders → sender                           |
+| Alphanumérique           | sender.type (alphanumeric/numeric)                      |
+| Validé                   | sender.status (pending/validated/refused)               |
+| 15/01/2024               | sender.createdAt                                        |
+| 45 832                   | sender.sentCount                                        |
+| true                     | sender.isDefault                                        |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche comptes SMS
+   - Liste des comptes SMS
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - INFO BANNER:
+     * Explication validation alphanumériques
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche
+     * Filtre statut
+     * Bouton nouvel expéditeur
+
+   - TABLE EXPEDITEURS:
+     * Nom expéditeur
+     * Type (badge)
+     * Statut (badge)
+     * Date création
+     * SMS envoyés
+     * Par défaut (toggle)
+     * Actions (Supprimer/Annuler)
+
+   - LEGENDE TYPES
+
+   - BLOC REGLES:
+     * Règles alphanumériques
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste expéditeurs
+GET /sms/{serviceName}/senders
+Response: [{ sender, type, status, createdAt, sentCount, isDefault }]
+
+### Créer expéditeur
+POST /sms/{serviceName}/senders
+Body: { sender, description?, referer? }
+Response: { sender, status: 'pending' }
+
+### Définir par défaut
+PUT /sms/{serviceName}/senders/{sender}/default
+
+### Supprimer expéditeur
+DELETE /sms/{serviceName}/senders/{sender}
+
+### Vérifier disponibilité
+GET /sms/{serviceName}/senders/check
+Query: { sender }
+Response: { available: boolean, reason? }
+
+================================================================================
+
+## REGLES METIER
+
+- Alphanumérique: 3-11 car, lettres/chiffres, pas ressembler à tel
+- Numérique: numéro court ou numéro long validé
+- Validation alphanumérique: 24-48h ouvrées
+- Maximum 50 expéditeurs par compte
+- 1 seul expéditeur par défaut
+- Refus possible si marque déposée/trompeur
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- SmsSendersTab (container)
+- SendersTable
+- SenderTypeBadge
+- SenderStatusBadge
+- DefaultSenderToggle
+- CreateSenderModal
+- SenderValidationRules
+- DeleteSenderConfirmModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

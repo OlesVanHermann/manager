@@ -1,0 +1,95 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.hebergement.hosting.logs.svg
+Route:   /web-cloud/hebergement/{serviceName}/logs
+Version: v1 (2024-12-28)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG                    | Source API                                    |
+|--------------------------------|-----------------------------------------------|
+| Logs web/erreur/FTP            | Filtre type                                   |
+| mon-site.fr                    | GET /hosting/web/{sn}/attachedDomain          |
+| 28/12/2024                     | Filtre date                                   |
+| Lignes de log                  | GET /hosting/web/{sn}/logs                    |
+================================================================================
+
+# STRUCTURE PAGE
+
+1. HEADER - Titre "Logs et statistiques"
+
+2. BARRE DE FILTRES
+   | Filtre       | Type        | Options                      |
+   |--------------|-------------|------------------------------|
+   | Type de log  | Select      | Logs web, Logs erreur, FTP   |
+   | Domaine      | Select      | Liste domaines attaches      |
+   | Date         | Date picker | Date du jour par defaut      |
+   | Telecharger  | Button      | Telecharge fichier .gz       |
+
+3. LIENS STATISTIQUES
+   - Acceder a Urchin (stats externes)
+   - Acceder aux statistiques OVHcloud
+
+4. VISIONNEUSE DE LOGS
+   - Background sombre (#1F2937)
+   - Police monospace (Courier New)
+   - Format: DD/MM/YYYY HH:MM:SS - IP - METHOD /path HTTP/1.1 STATUS SIZE
+
+5. CODE COULEURS
+   | Status | Couleur | Hex      |
+   |--------|---------|----------|
+   | 200    | Gris    | #9CA3AF  |
+   | Bot    | Vert    | #10B981  |
+   | 403    | Orange  | #F59E0B  |
+   | 404    | Rouge   | #EF4444  |
+
+6. LEGENDE
+   - Affichee sous la visionneuse
+
+================================================================================
+
+# API ENDPOINTS
+
+GET    /hosting/web/{serviceName}/userLogs
+       -> Identifiants acces logs
+
+GET    /hosting/web/{serviceName}/logs
+       -> Contenu des logs (filtrable par type/date)
+
+GET    /hosting/web/{serviceName}/attachedDomain
+       -> Liste des domaines pour filtre
+
+================================================================================
+
+# MODELE DONNEES
+
+interface LogEntry {
+  timestamp: string;
+  ip: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  path: string;
+  protocol: string;
+  status: number;
+  size: number;
+  userAgent?: string;
+}
+
+interface LogFilter {
+  type: 'web' | 'error' | 'ftp';
+  domain: string;
+  date: string;    // YYYY-MM-DD
+}
+
+================================================================================
+
+# REGLES METIER
+
+- Logs conserves 30 jours
+- Telechargement format .gz compresse
+- Urchin = interface externe statistiques (legacy)
+- Logs FTP separes des logs web
+- Actualisation temps reel disponible
+- Max 1000 lignes affichees (pagination implicite)
+
+================================================================================

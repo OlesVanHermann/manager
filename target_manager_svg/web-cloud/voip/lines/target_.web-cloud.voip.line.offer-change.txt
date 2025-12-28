@@ -1,0 +1,124 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.offer-change.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/lines/{serviceName}/offer-change
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Lignes | NAV4=Général | NAV5=Changement offre
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Interface de changement d'offre/forfait pour une ligne VoIP. Affiche l'offre
+actuelle et propose les offres disponibles avec comparaison.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972123456            | GET /telephony/{ba}/line/{sn} → serviceName             |
+| VoIP Entreprise          | GET /telephony/{ba}/line/{sn}/offer → name              |
+| 9,99 € HT / mois         | offer → price                                           |
+| Actif                    | offer → status                                          |
+| VoIP Pro                 | GET /telephony/line/offers → offers[].name              |
+| 14,99 €                  | offers[].price                                          |
+| Recommandée              | offers[].recommended                                    |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - NAV3 tabs: [Lignes] | Numéros | Fax | Abrégés
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Numéro + Description
+   - NAV4 tabs: [Général] | Téléphone | Appels | Transferts | Messagerie | Conso | Options
+   - NAV5 sub-tabs: Informations | Événements | [Changement offre]
+
+   - BLOC: Offre actuelle (1040x120)
+     * Fond vert (actif)
+     * Badge statut
+     * Nom offre + description
+     * Fonctionnalités incluses
+     * Prix HT/mois
+
+   - BLOC: Changer vers (1040x240)
+     * 3 cards offres en colonnes
+     * Offre recommandée: fond bleu + badge
+     * Pour chaque: nom, description, features, prix
+     * Bouton Sélectionner
+
+   - BANNER INFO: Information changement (1040x60)
+     * Effectif au prochain renouvellement
+     * Pas d'interruption
+     * Proratisation
+
+   - ACTION: Comparer les offres
+
+================================================================================
+
+## API ENDPOINTS
+
+### Offre actuelle
+GET /telephony/{billingAccount}/line/{serviceName}/offer
+Response: {
+  name, description, features[], price, currency, status, renewalDate
+}
+
+### Offres disponibles
+GET /telephony/line/offers
+Response: [{
+  id, name, description, features[], price, currency, recommended
+}]
+
+### Changer d'offre
+POST /telephony/{billingAccount}/line/{serviceName}/changeOffer
+Body: { offerId }
+Response: { orderId, effectiveDate }
+
+### Comparer offres
+GET /telephony/line/offers/compare
+Query: { offerIds: [] }
+Response: { comparison: { feature: [offer1, offer2, ...] } }
+
+================================================================================
+
+## OFFRES TYPE
+
+| Offre          | Prix     | Inclus                                    |
+|----------------|----------|-------------------------------------------|
+| VoIP Essentiel | 4,99 €   | France fixe, messagerie                   |
+| VoIP Entreprise| 9,99 €   | France fixe+mobile, messagerie, renvoi    |
+| VoIP Pro       | 14,99 €  | Tout + File d'attente, Interception       |
+| VoIP Premium   | 29,99 €  | Tout + International, SVI, Stats          |
+
+================================================================================
+
+## REGLES METIER
+
+- Changement effectif au prochain renouvellement
+- Aucune interruption de service
+- Différence de prix proratisée
+- Downgrade possible (vers offre moins chère)
+- Upgrade immédiat possible moyennant supplément
+- Historique des changements conservé
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineOfferChangeTab (container)
+- CurrentOfferCard (offre actuelle)
+- AvailableOfferCard (offre disponible)
+- RecommendedBadge
+- OfferCompareModal
+- ChangeOfferConfirmModal
+- OfferFeaturesList
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

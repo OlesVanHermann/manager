@@ -1,0 +1,141 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.phonebook.svg
+Route:   /web-cloud/voip/lines/{serviceName}/phonebook
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Carnet d'adresses
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion du carnet d'adresses de la ligne téléphonique. Contacts synchronisés
+avec le téléphone physique.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Mon carnet professionnel | GET /telephony/.../phonebook → name                     |
+| Dupont                   | contacts[].surname                                      |
+| Jean                     | contacts[].name                                         |
+| Travail                  | contacts[].group                                        |
+| 01 23 45 67 89           | contacts[].homePhone                                    |
+| 06 12 34 56 78           | contacts[].homeMobile                                   |
+| 87                       | contacts.totalCount                                     |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - CARTE NOM CARNET:
+     * Nom éditable
+     * Boutons: Éditer, Supprimer
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche contact
+     * Importer CSV/vCard
+     * Exporter CSV
+     * + Ajouter contact
+
+   - SÉLECTION MULTIPLE:
+     * Checkbox "tout sélectionner"
+     * Compteur sélection
+     * Bouton supprimer sélection
+
+   - TABLE CONTACTS:
+     * Checkbox sélection
+     * Nom, Prénom
+     * Groupe (badge coloré)
+     * Tél. domicile, Mobile perso
+     * Tél. bureau, Mobile pro
+     * Actions: Éditer, Supprimer
+
+   - PAGINATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste phonebooks
+GET /telephony/{billingAccount}/line/{serviceName}/phone/phonebook
+Response: [{ id, name, contactCount }]
+
+### Créer phonebook
+POST /telephony/{billingAccount}/line/{serviceName}/phone/phonebook
+Body: { name }
+
+### Liste contacts
+GET /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{id}/phonebookContact
+Response: [{
+  id, surname, name, group,
+  homePhone, homeMobile, workPhone, workMobile
+}]
+
+### Ajouter contact
+POST /telephony/.../phonebook/{id}/phonebookContact
+Body: { surname, name, group, homePhone, ... }
+
+### Modifier contact
+PUT /telephony/.../phonebook/{id}/phonebookContact/{contactId}
+
+### Supprimer contact
+DELETE /telephony/.../phonebook/{id}/phonebookContact/{contactId}
+
+### Import
+POST /telephony/.../phonebook/{id}/import
+Body: { file, format: 'csv' | 'vcard' }
+
+### Export
+GET /telephony/.../phonebook/{id}/export
+Query: { format: 'csv' }
+
+================================================================================
+
+## GROUPES
+
+| Groupe   | Couleur | Code    |
+|----------|---------|---------|
+| Travail  | Bleu    | #DBEAFE |
+| Famille  | Vert    | #DEF7EC |
+| Amis     | Jaune   | #FEF3C7 |
+
+================================================================================
+
+## REGLES METIER
+
+- Max 200 contacts par carnet
+- Au moins un numéro par contact
+- Groupes: Travail, Famille, Amis
+- Import: CSV, vCard
+- Export: CSV uniquement
+- Synchro auto avec téléphone
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LinePhonebookTab (container)
+- PhonebookNameCard
+- PhonebookToolbar
+- ContactsTable
+- ContactGroupBadge
+- AddContactModal
+- EditContactModal
+- ImportContactsModal
+- DeleteConfirmModal
+- BulkDeleteButton
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

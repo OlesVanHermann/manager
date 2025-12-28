@@ -1,0 +1,124 @@
+# Cahier des Charges : web-cloud/hosting - Logs et statistiques
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de visualisation des logs Apache.
+
+### Objectif fonctionnel
+- Consulter les logs en temps réel
+- Filtrer par type/domaine/date
+- Télécharger les logs
+- Accéder aux statistiques externes
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + filtres + liens + visionneuse + légende
+
+---
+
+## 3. COMPOSANTS UI
+
+### Barre de filtres
+| Filtre | Type |
+|--------|------|
+| Type de log | Select (Logs web, Logs erreur, Logs FTP) |
+| Domaine | Select (liste domaines) |
+| Date | Date picker |
+| Bouton | Télécharger (primary) |
+
+### Liens statistiques
+| Lien | Description |
+|------|-------------|
+| Accéder à Urchin | Statistiques Urchin |
+| Accéder aux statistiques OVHcloud | Stats intégrées |
+
+### Visionneuse de logs
+| Element | Description |
+|---------|-------------|
+| Background | Sombre (#1F2937) |
+| Police | Courier New monospace |
+| Couleur défaut | Gris (#D1D5DB) |
+| Couleur info | Vert (#10B981) |
+| Couleur warning | Orange (#F59E0B) |
+| Couleur error | Rouge (#EF4444) |
+| Scrollbar | Visible à droite |
+
+### Format ligne de log
+```
+DD/MM/YYYY HH:MM:SS - IP - METHOD /path HTTP/1.1 STATUS SIZE
+```
+
+### Légende
+| Couleur | Signification |
+|---------|---------------|
+| Gris | Requête OK (200) |
+| Vert | Info/Bot (robots, sitemap) |
+| Orange | Accès refusé (403) |
+| Rouge | Non trouvé (404) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/userLogs
+GET /hosting/web/{serviceName}/logs
+GET /hosting/web/{serviceName}/attachedDomain
+```
+
+### Modele
+```typescript
+interface LogEntry {
+  timestamp: string;
+  ip: string;
+  method: string;
+  path: string;
+  protocol: string;
+  status: number;
+  size: number;
+  userAgent?: string;
+}
+
+interface LogFilter {
+  type: 'web' | 'error' | 'ftp';
+  domain: string;
+  date: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_logs_title": "Logs et statistiques",
+  "hosting_logs_type": "Type de log",
+  "hosting_logs_type_web": "Logs web",
+  "hosting_logs_type_error": "Logs erreur",
+  "hosting_logs_type_ftp": "Logs FTP",
+  "hosting_logs_domain": "Domaine",
+  "hosting_logs_date": "Date",
+  "hosting_logs_download": "Télécharger",
+  "hosting_logs_urchin": "Accéder à Urchin",
+  "hosting_logs_stats": "Accéder aux statistiques OVHcloud",
+  "hosting_logs_legend_ok": "Requête OK",
+  "hosting_logs_legend_info": "Info/Bot",
+  "hosting_logs_legend_403": "Accès refusé (403)",
+  "hosting_logs_legend_404": "Non trouvé (404)"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Logs conservés 30 jours
+- Téléchargement format .gz
+- Urchin = interface externe statistiques
+- Codes couleurs selon status HTTP
+- Logs FTP séparés

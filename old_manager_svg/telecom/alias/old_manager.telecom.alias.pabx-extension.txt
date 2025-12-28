@@ -1,0 +1,175 @@
+# Cahier des Charges : telecom/alias - Extension PABX
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de modification d'une extension du plan de numerotation PABX.
+
+### Objectif fonctionnel
+- Configurer la position de l'extension
+- Definir les conditions d'application
+- Choisir l'action a executer
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec formulaire en 3 sections
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour au plan de numerotation |
+| Titre | Modifier l'extension |
+
+### Carte formulaire
+| Element | Description |
+|---------|-------------|
+| Fond | Blanc avec bordure |
+| Padding | 24px |
+
+### Section 1 - Informations generales
+| Champ | Type | Description |
+|-------|------|-------------|
+| Position | Input number | Ordre d'execution |
+| Activee | Toggle switch | Vert = active |
+
+### Section 2 - Conditions
+| Element | Description |
+|---------|-------------|
+| Titre | Conditions |
+| Helper | Criteres pour appliquer cette extension |
+
+### Champs conditions
+| Champ | Type | Options |
+|-------|------|---------|
+| Type de condition | Select | Horaires, Liste noire, Liste blanche, Aucune |
+| Plage horaire | Select | Heures ouvrables, etc. (si type=Horaires) |
+| Filtrage | Checkbox | Appliquer un filtrage (liste noire/blanche) |
+
+### Section 3 - Actions
+| Element | Description |
+|---------|-------------|
+| Titre | Actions |
+| Helper | Traitement de l'appel si les conditions sont remplies |
+
+### Champs actions
+| Champ | Type | Options |
+|-------|------|---------|
+| Action | Select | Transferer, Jouer message, Rejeter, etc. |
+| File d'attente | Select | Liste des files (si action=Transferer) |
+
+### Options action
+| Action | Parametre |
+|--------|-----------|
+| Transferer vers une file d'attente | Selection file |
+| Jouer un message | Selection son |
+| Rejeter l'appel | - |
+| Transferer vers numero | Numero cible |
+| Messagerie vocale | Selection boite |
+
+### Boutons actions
+| Bouton | Type | Action |
+|--------|------|--------|
+| Annuler | Secondary | Retour |
+| Enregistrer | Primary | Sauvegarde |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue
+GET /telephony/{billingAccount}/scheduler
+```
+
+### Modele
+```typescript
+interface ExtensionForm {
+  position: number;
+  enabled: boolean;
+  conditionType: ConditionType;
+  schedulerCategory?: string;
+  screenListType?: 'blacklist' | 'whitelist';
+  action: ExtensionAction;
+  actionParam?: string;
+}
+
+type ConditionType =
+  | 'none'
+  | 'schedule'
+  | 'blacklist'
+  | 'whitelist';
+
+type ExtensionAction =
+  | 'playback'
+  | 'transfer'
+  | 'hangup'
+  | 'hunting'
+  | 'ivr'
+  | 'voicemail';
+
+interface Queue {
+  queueId: number;
+  name: string;
+  description: string;
+}
+
+interface SchedulerCategory {
+  name: string;
+  status: 'open' | 'closed';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_pabx_ext_title": "Modifier l'extension",
+  "alias_pabx_ext_back": "Retour au plan de numerotation",
+  "alias_pabx_ext_general": "Informations generales",
+  "alias_pabx_ext_position": "Position",
+  "alias_pabx_ext_enabled": "Activee",
+  "alias_pabx_ext_conditions": "Conditions",
+  "alias_pabx_ext_conditions_help": "Criteres pour appliquer cette extension",
+  "alias_pabx_ext_condition_type": "Type de condition",
+  "alias_pabx_ext_condition_none": "Aucune",
+  "alias_pabx_ext_condition_schedule": "Horaires",
+  "alias_pabx_ext_condition_blacklist": "Liste noire",
+  "alias_pabx_ext_condition_whitelist": "Liste blanche",
+  "alias_pabx_ext_schedule": "Plage horaire",
+  "alias_pabx_ext_schedule_business": "Heures ouvrables",
+  "alias_pabx_ext_filtering": "Appliquer un filtrage (liste noire/blanche)",
+  "alias_pabx_ext_actions": "Actions",
+  "alias_pabx_ext_actions_help": "Traitement de l'appel si les conditions sont remplies",
+  "alias_pabx_ext_action": "Action",
+  "alias_pabx_ext_action_queue": "Transferer vers une file d'attente",
+  "alias_pabx_ext_action_playback": "Jouer un message",
+  "alias_pabx_ext_action_hangup": "Rejeter l'appel",
+  "alias_pabx_ext_action_transfer": "Transferer vers un numero",
+  "alias_pabx_ext_action_voicemail": "Messagerie vocale",
+  "alias_pabx_ext_queue": "File d'attente",
+  "alias_pabx_ext_cancel": "Annuler",
+  "alias_pabx_ext_save": "Enregistrer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Position unique par extension
+- Position = ordre d'execution
+- Condition vide = toujours vraie
+- Action obligatoire
+- Plage horaire depend du scheduler configure
+- File d'attente doit exister

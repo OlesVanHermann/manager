@@ -1,0 +1,144 @@
+# Cahier des Charges : telecom/telephony - Documents SVA
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des documents justificatifs KYC pour SVA.
+
+### Objectif fonctionnel
+- Telecharger les documents requis
+- Suivre le statut de verification
+- Gerer les documents existants
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec tableau documents
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour au portefeuille SVA |
+| Titre | Documents justificatifs |
+| Sous-titre | Description telechargement |
+
+### Message succes
+| Element | Description |
+|---------|-------------|
+| Fond | Vert clair |
+| Bordure | Vert |
+| Icone | ✓ |
+| Texte | Document telecharge avec succes |
+
+### Tableau documents
+| Colonne | Description |
+|---------|-------------|
+| Type | Type + sous-titre |
+| Nom fichier | Nom ou - |
+| Statut | Badge |
+| Actions | Menu ⋮ |
+
+### Types documents
+| Type | Sous-titre |
+|------|------------|
+| Justificatif entreprise | Kbis ou equivalent |
+| Piece d'identite - X | Carte d'identite ou passeport |
+| RIB / IBAN | Releve d'identite bancaire |
+| Justificatif domicile | Facture ou avis imposition |
+
+### Badges statut
+| Statut | Couleur | Icone |
+|--------|---------|-------|
+| Valide | Vert | ✓ |
+| Requis | Jaune | ⚠ |
+| En cours | Bleu | ⏳ |
+| Rejete | Rouge | ✗ |
+
+### Menu actions
+| Action | Description |
+|--------|-------------|
+| Telecharger | Upload nouveau fichier |
+| Voir | Ouvrir fichier |
+| Supprimer | Retirer document |
+
+### Dropdown action
+| Element | Description |
+|---------|-------------|
+| Style | Fond blanc, ombre |
+| Item | ⬆ Telecharger |
+
+### Info box
+| Element | Description |
+|---------|-------------|
+| Fond | Bleu clair |
+| Texte | Verification sous 48h, formats acceptes |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/svaWallet/documents
+POST /telephony/svaWallet/documents
+DELETE /telephony/svaWallet/documents/{id}
+GET /telephony/svaWallet/documents/{id}/download
+```
+
+### Modele Document
+```typescript
+interface SvaDocument {
+  id: string;
+  type: 'kbis' | 'id' | 'rib' | 'address_proof';
+  relatedTo?: string; // beneficiary name
+  fileName: string;
+  status: 'valid' | 'required' | 'pending' | 'rejected';
+  uploadDate?: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_sva_docs_title": "Documents justificatifs",
+  "telephony_sva_docs_subtitle": "Telechargez les documents necessaires",
+  "telephony_sva_docs_back": "Retour au portefeuille SVA",
+  "telephony_sva_docs_success": "Document telecharge avec succes.",
+  "telephony_sva_docs_col_type": "Type de document",
+  "telephony_sva_docs_col_filename": "Nom du fichier",
+  "telephony_sva_docs_col_status": "Statut",
+  "telephony_sva_docs_col_actions": "Actions",
+  "telephony_sva_docs_type_kbis": "Justificatif d'entreprise",
+  "telephony_sva_docs_type_kbis_help": "Kbis ou equivalent",
+  "telephony_sva_docs_type_id": "Piece d'identite",
+  "telephony_sva_docs_type_id_help": "Carte d'identite ou passeport",
+  "telephony_sva_docs_type_rib": "RIB / IBAN",
+  "telephony_sva_docs_type_rib_help": "Releve d'identite bancaire",
+  "telephony_sva_docs_type_address": "Justificatif de domicile",
+  "telephony_sva_docs_type_address_help": "Facture ou avis d'imposition",
+  "telephony_sva_docs_status_valid": "Valide",
+  "telephony_sva_docs_status_required": "Requis",
+  "telephony_sva_docs_status_pending": "En cours",
+  "telephony_sva_docs_status_rejected": "Rejete",
+  "telephony_sva_docs_upload": "Telecharger",
+  "telephony_sva_docs_info": "Les documents sont verifies sous 48h ouvrees. Formats acceptes: PDF, JPG, PNG (max 5 Mo)."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Formats: PDF, JPG, PNG
+- Taille max: 5 Mo
+- Verification: 48h ouvrees
+- Documents requis selon type structure
+- Piece ID pour chaque beneficiaire

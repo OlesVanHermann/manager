@@ -1,0 +1,128 @@
+# Cahier des Charges : telecom/alias - Modal Ajouter une ligne CCS
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal d'ajout de ligne au Contact Center Solution.
+
+### Objectif fonctionnel
+- Ajouter des lignes au CCS
+- Configurer les parametres
+- Informer des frais eventuels
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec formulaire multi-lignes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header modal
+| Element | Description |
+|---------|-------------|
+| Lien | ← Ajouter une ligne |
+| Titre | Implicite |
+
+### Champ numeros
+| Element | Description |
+|---------|-------------|
+| Label | Numero |
+| Info | Ajoutez les numeros |
+| Input | Champ numero |
+| Rechercher | Bouton |
+| Supprimer | Bouton |
+
+### Bouton ajout
+| Element | Description |
+|---------|-------------|
+| Texte | + Ajouter une ligne |
+| Action | Nouveau champ |
+
+### Timeout
+| Element | Description |
+|---------|-------------|
+| Label | Delai de sonnerie (timeout) |
+| Help | Temps avant ligne suivante |
+| Input | Number avec fleches |
+| Defaut | 20 secondes |
+
+### Wrap-up
+| Element | Description |
+|---------|-------------|
+| Label | Temps de repos (wrap-up) |
+| Help | Delai avant nouvel appel |
+| Input | Number avec fleches |
+| Defaut | 5 secondes |
+
+### Appels simultanes
+| Element | Description |
+|---------|-------------|
+| Label | Appels simultanes |
+| Input | Number avec fleches |
+| Defaut | 1 |
+
+### Informations tarif
+| Element | Description |
+|---------|-------------|
+| Ligne 1 | Ligne externe = frais |
+| Ligne 2 | Meme groupe facturation |
+| Lien | Grille tarifaire → |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Ajouter | Primary | Valide |
+| Annuler | Default | Ferme |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+```
+
+### Parametres
+```typescript
+interface AddLineParams {
+  number: string;
+  timeout: number;
+  wrapUpTime: number;
+  simultaneousLines: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_modal_ccs_line_add_title": "Ajouter une ligne",
+  "alias_modal_ccs_line_add_number": "Numero",
+  "alias_modal_ccs_line_add_info": "Ajoutez les numeros des lignes a inclure",
+  "alias_modal_ccs_line_add_search": "Rechercher",
+  "alias_modal_ccs_line_add_more": "Ajouter une ligne",
+  "alias_modal_ccs_line_add_timeout": "Delai de sonnerie (timeout)",
+  "alias_modal_ccs_line_add_timeout_help": "Temps avant de passer a la ligne suivante",
+  "alias_modal_ccs_line_add_wrapup": "Temps de repos (wrap-up)",
+  "alias_modal_ccs_line_add_wrapup_help": "Delai avant de recevoir un nouvel appel",
+  "alias_modal_ccs_line_add_simultaneous": "Appels simultanes",
+  "alias_modal_ccs_line_add_external_warning": "L'ajout d'une ligne externe peut engendrer des frais",
+  "alias_modal_ccs_line_add_same_group": "Les lignes doivent etre du meme groupe",
+  "alias_modal_ccs_line_add_pricing": "Consulter la grille tarifaire"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Numero VoIP ou externe valide
+- Meme groupe facturation
+- Ligne externe = frais
+- Maximum 20 lignes par CCS

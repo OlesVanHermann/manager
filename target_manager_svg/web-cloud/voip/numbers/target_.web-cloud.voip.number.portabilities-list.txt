@@ -1,0 +1,115 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.portabilities-list.svg
+Route:   /web-cloud/voip/number/{serviceName}/portabilities
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Portabilités
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Liste des demandes de portabilité de numéros. Suivi des transferts
+de numéros depuis d'autres opérateurs vers OVHcloud.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 2                        | GET /telephony/.../portability → inProgress             |
+| 8                        | stats.completed                                         |
+| 1                        | stats.pendingDocs                                       |
+| 0                        | stats.rejected                                          |
+| PORT-2024-0089           | portabilities[].reference                               |
+| +33 1 42 68 53 00        | portabilities[].numbers[]                               |
+| Orange                   | portabilities[].operator                                |
+| 15/12/2025               | portabilities[].requestDate                             |
+| 15/01/2026               | portabilities[].portingDate                             |
+| En cours                 | portabilities[].status                                  |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BANNIERE INFO:
+     * Explication portabilité
+
+   - TOOLBAR:
+     * Refresh, recherche
+     * Filtre statut
+     * Bouton nouvelle portabilité
+
+   - STATS CARDS (4):
+     * En cours (bleu)
+     * Terminées (vert)
+     * En attente docs (orange)
+     * Refusées (rouge)
+
+   - TABLE PORTABILITES:
+     * Référence
+     * Numéro(s)
+     * Opérateur source
+     * Date demande
+     * Date portage
+     * Statut (badge)
+     * Actions
+
+   - PAGINATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste portabilités
+GET /telephony/{billingAccount}/portability
+Query: { status, page, limit }
+Response: { items: [...], totalCount, stats }
+
+### Détails portabilité
+GET /telephony/{billingAccount}/portability/{reference}
+Response: { reference, numbers, operator, requestDate, portingDate, status, documents }
+
+### Nouvelle portabilité
+POST /telephony/{billingAccount}/portability
+Body: { numbers: [], operator, rio? }
+
+### Ajouter document
+POST /telephony/{billingAccount}/portability/{reference}/documents
+Body: FormData avec fichier
+
+================================================================================
+
+## REGLES METIER
+
+- Délai portabilité: 7-30 jours selon opérateur
+- Documents requis: RIO, facture, mandat
+- Statuts: pending, docs_required, in_progress, completed, rejected
+- Numéros géographiques ou mobiles
+- Portage groupé possible (même opérateur)
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- PortabilitiesListTab (container)
+- InfoBanner
+- PortabilityFiltersToolbar
+- PortabilityStatsCards
+- PortabilitiesTable
+- NewPortabilityModal
+- AddDocumentModal
+- PortabilityDetailsModal
+- Pagination
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

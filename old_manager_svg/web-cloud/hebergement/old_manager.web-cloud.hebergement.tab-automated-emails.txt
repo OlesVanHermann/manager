@@ -1,0 +1,116 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Scripts Emails
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des emails envoyés depuis les scripts.
+
+### Objectif fonctionnel
+- Voir l'état du service d'envoi
+- Consulter les statistiques d'envoi
+- Voir les erreurs d'envoi
+
+---
+
+## 2. LAYOUT
+
+### Structure sous-titre + 2 cartes + tableau erreurs
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tête
+| Element | Description |
+|---------|-------------|
+| Titre | Scripts e-mail |
+| Description | E-mails envoyés depuis des scripts CGI/PERL/PHP |
+| Guide | Lien vers documentation |
+
+### Carte État du service
+| Champ | Description |
+|-------|-------------|
+| État du service | Badge actif/bloqué |
+| Rapport d'erreurs | Email destination + Changer |
+| Bouton | Bloquer l'envoi (outline danger) |
+
+### Carte Statistiques
+| Champ | Description |
+|-------|-------------|
+| Total des e-mails envoyés | Nombre total |
+| E-mails envoyés aujourd'hui | Nombre jour |
+| Total des e-mails en erreur | Nombre erreurs (rouge) |
+| Note | Pour purger, bloquer d'abord |
+
+### Tableau emails en erreur
+| Colonne | Description |
+|---------|-------------|
+| Date | Date/heure |
+| E-mail | Adresse destination |
+| Message | Message d'erreur SMTP |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/email
+PUT /hosting/web/{serviceName}/email
+POST /hosting/web/{serviceName}/email/bounces
+DELETE /hosting/web/{serviceName}/email/bounces
+```
+
+### Modele
+```typescript
+interface HostingEmail {
+  state: 'on' | 'off';
+  reportTo: string;
+  stats: {
+    total: number;
+    today: number;
+    bounce: number;
+  };
+}
+
+interface EmailBounce {
+  date: string;
+  email: string;
+  message: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_email_title": "Scripts e-mail",
+  "hosting_email_desc": "E-mails envoyés depuis des scripts CGI/PERL/PHP",
+  "hosting_email_state_card": "État du service",
+  "hosting_email_state": "État du service",
+  "hosting_email_report": "Rapport d'erreurs à",
+  "hosting_email_change": "Changer le destinataire",
+  "hosting_email_block": "Bloquer l'envoi",
+  "hosting_email_stats_card": "Statistiques",
+  "hosting_email_total": "Total des e-mails envoyés",
+  "hosting_email_today": "E-mails envoyés aujourd'hui",
+  "hosting_email_errors": "Total des e-mails en erreur",
+  "hosting_email_purge_note": "Pour purger les e-mails, vous devez d'abord en demander le blocage",
+  "hosting_email_bounces": "E-mails en erreur",
+  "hosting_email_col_date": "Date",
+  "hosting_email_col_email": "E-mail",
+  "hosting_email_col_message": "Message"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Envoi via fonction mail() PHP
+- Quota quotidien selon offre
+- Blocage = plus aucun envoi
+- Purge possible après blocage
+- Erreurs 550 = bounce/spam

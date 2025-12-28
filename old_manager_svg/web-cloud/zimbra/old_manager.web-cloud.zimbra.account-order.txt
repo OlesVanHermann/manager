@@ -1,0 +1,119 @@
+# Cahier des Charges : web-cloud/zimbra - Commander comptes
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Formulaire de commande de comptes Zimbra supplementaires.
+
+### Objectif fonctionnel
+- Selectionner une offre (Starter/Pro)
+- Definir le nombre de comptes
+- Choisir la duree d'engagement
+- Voir le recapitulatif et valider
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec breadcrumb + formulaire + recapitulatif lateral
+
+---
+
+## 3. COMPOSANTS UI
+
+### Navigation
+| Element | Description |
+|---------|-------------|
+| Breadcrumb | Zimbra > Comptes email > Commander |
+| Lien retour | Retour vers mes comptes email |
+
+### En-tete
+| Element | Description |
+|---------|-------------|
+| Titre | Commander vos comptes Zimbra |
+| Description | Veuillez choisir le nombre de comptes puis le type de paiement a commander |
+
+### Cartes offres
+| Offre | Details |
+|-------|---------|
+| Zimbra Starter | 15 Go, Partage calendriers, ActiveSync - 1,99 EUR HT/mois |
+| Zimbra Pro | 50 Go, Partage illimite, Stockage fichiers, Visio - 5,99 EUR HT/mois |
+
+### Formulaire
+| Champ | Type | Description |
+|-------|------|-------------|
+| Nombre de comptes | Input number | Quantite a commander |
+| Duree engagement | Radio | 1 mois / 12 mois |
+| CGV | Checkbox | Acceptation conditions |
+
+### Recapitulatif
+| Element | Description |
+|---------|-------------|
+| Titre | Recapitulatif |
+| Detail | 5 x Zimbra Starter |
+| Total | Total HT/mois |
+
+### Bouton
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Continuer ma commande |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/offer
+POST /order/zimbra/{platformId}/account
+GET /order/cart/{cartId}
+POST /order/cart/{cartId}/checkout
+```
+
+### Modele
+```typescript
+interface ZimbraOrder {
+  offer: 'starter' | 'pro';
+  quantity: number;
+  duration: 1 | 12; // months
+}
+
+interface ZimbraOffer {
+  name: string;
+  storage: number;
+  pricePerMonth: number;
+  features: string[];
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_order_title": "Commander vos comptes Zimbra",
+  "zimbra_order_description": "Veuillez choisir le nombre de comptes puis le type de paiement a commander",
+  "zimbra_order_starter": "Zimbra Starter",
+  "zimbra_order_pro": "Zimbra Pro",
+  "zimbra_order_quantity": "Nombre de comptes",
+  "zimbra_order_duration": "Duree de l'engagement",
+  "zimbra_order_1month": "1 mois",
+  "zimbra_order_12months": "12 mois",
+  "zimbra_order_summary": "Recapitulatif",
+  "zimbra_order_total": "Total HT/mois",
+  "zimbra_order_submit": "Continuer ma commande",
+  "zimbra_order_cgv": "J'accepte qu'OVH mette en place le service immediatement apres validation de ma commande..."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Offre Starter = 15 Go stockage
+- Offre Pro = 50 Go + fonctionnalites avancees
+- Engagement mensuel ou annuel
+- Prix degressif possible sur engagement long
+- CGV obligatoires avant validation

@@ -1,0 +1,121 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.filtering.svg
+Route:   /web-cloud/voip/line/{serviceName}/filtering
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Filtrage appels
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Page principale de filtrage des appels. Configuration du mode de
+filtrage (blacklist/whitelist) et gestion des règles.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Blacklist                | GET /telephony/.../screening → mode                     |
+| true                     | screening.blockAnonymous                                |
+| +33 1 23 45 67 89        | rules[].number                                          |
+| Démarchage               | rules[].description                                     |
+| Bloqué                   | rules[].action (block/allow)                            |
+| Actif                    | rules[].status                                          |
+| 247 appels               | stats.blockedCount                                      |
+| 12.3%                    | stats.blockRate                                         |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - TABS: Entrants / Sortants
+
+   - BLOC MODE FILTRAGE:
+     * Radio: Liste noire (blacklist)
+     * Radio: Liste blanche (whitelist)
+
+   - BLOC APPELS ANONYMES:
+     * Toggle bloquer anonymes
+
+   - TABLE REGLES:
+     * Toolbar (refresh, recherche, ajouter)
+     * Numéro/Préfixe
+     * Description
+     * Type (badge)
+     * Date création
+     * Statut (badge)
+     * Actions (éditer/supprimer)
+
+   - PAGINATION
+
+   - STATS:
+     * Appels bloqués (30j)
+     * Taux de blocage
+
+================================================================================
+
+## API ENDPOINTS
+
+### Config filtrage
+GET /telephony/{billingAccount}/line/{serviceName}/screening
+Response: { mode, blockAnonymous }
+
+### Modifier mode
+PUT /telephony/{billingAccount}/line/{serviceName}/screening
+Body: { mode, blockAnonymous }
+
+### Liste règles
+GET /telephony/{billingAccount}/line/{serviceName}/screening/rules
+Response: [{ id, number, description, action, status, createdAt }]
+
+### Ajouter règle
+POST /telephony/{billingAccount}/line/{serviceName}/screening/rules
+Body: { number, description, action }
+
+### Modifier règle
+PUT /telephony/{billingAccount}/line/{serviceName}/screening/rules/{ruleId}
+Body: { description?, action?, status? }
+
+### Supprimer règle
+DELETE /telephony/{billingAccount}/line/{serviceName}/screening/rules/{ruleId}
+
+### Stats
+GET /telephony/{billingAccount}/line/{serviceName}/screening/stats
+Response: { blockedCount, blockRate }
+
+================================================================================
+
+## REGLES METIER
+
+- Modes: blacklist (défaut), whitelist
+- Wildcards supportés: +33 9* bloque tout 09
+- Maximum 100 règles par ligne
+- Règle inactive = pas appliquée
+- Historique blocages conservé 30 jours
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineFilteringTab (container)
+- FilteringModeTabs
+- FilteringModeSelector
+- AnonymousBlockToggle
+- FilteringRulesTable
+- AddRuleModal
+- EditRuleModal
+- FilteringStatsCards
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

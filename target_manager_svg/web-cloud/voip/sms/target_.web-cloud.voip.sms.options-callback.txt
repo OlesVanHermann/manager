@@ -1,0 +1,103 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.sms.options-callback.svg
+Route:   /web-cloud/voip/sms/{serviceName}/options/callback
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Callback URL
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration des webhooks (callback URLs) pour recevoir les notifications
+SMS : accusés de réception, réponses entrantes, erreurs.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG                                     | Source API                              |
+|-------------------------------------------------|-----------------------------------------|
+| true                                            | GET /sms/.../callbacks → delivery.enabled |
+| https://api.monsite.com/webhooks/sms/delivery   | delivery.url                            |
+| POST                                            | delivery.method                         |
+| true                                            | response.enabled                        |
+| https://api.monsite.com/webhooks/sms/response   | response.url                            |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche comptes SMS
+   - Liste des comptes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BANNIERE INFO:
+     * Explication callbacks
+
+   - BLOC DELIVERY REPORTS:
+     * Toggle activer
+     * Input URL
+     * Dropdown méthode HTTP
+
+   - BLOC REPONSES SMS:
+     * Toggle activer
+     * Input URL
+     * Dropdown méthode HTTP
+
+   - BLOC TEST:
+     * Dropdown type test
+     * Bouton envoyer test
+
+   - BLOC DOCUMENTATION:
+     * Description
+     * Lien documentation
+
+   - ACTIONS: Enregistrer, Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Config callbacks
+GET /sms/{serviceName}/callbacks
+Response: { delivery: { enabled, url, method }, response: { enabled, url, method } }
+
+### Modifier callbacks
+PUT /sms/{serviceName}/callbacks
+Body: { delivery?: { enabled, url, method }, response?: { enabled, url, method } }
+
+### Tester callback
+POST /sms/{serviceName}/callbacks/test
+Body: { type: 'delivery' | 'response' }
+Response: { success, statusCode, responseTime }
+
+================================================================================
+
+## REGLES METIER
+
+- URL: HTTPS obligatoire en production
+- Méthodes: GET, POST
+- Timeout callback: 10 secondes
+- Retry: 3 tentatives en cas d'échec
+- Format payload: JSON
+- Signature HMAC disponible
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- SmsCallbackOptionsTab (container)
+- InfoBanner
+- CallbackConfigCard
+- UrlInput
+- HttpMethodSelector
+- CallbackTestSection
+- DocumentationLink
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

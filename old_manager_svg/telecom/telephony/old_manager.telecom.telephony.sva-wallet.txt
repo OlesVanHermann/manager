@@ -1,0 +1,191 @@
+# Cahier des Charges : telecom/telephony - Portefeuille SVA
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion du portefeuille SVA (Services a Valeur Ajoutee) pour KYC.
+
+### Objectif fonctionnel
+- Gerer l'identite entreprise
+- Configurer le compte bancaire
+- Declarer les beneficiaires effectifs
+- Soumettre les documents justificatifs
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec sections KYC
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Titre | Portefeuille SVA |
+| Sous-titre | Description gestion reversements |
+
+### Banniere statut
+| Etat | Style | Contenu |
+|------|-------|---------|
+| En attente | Fond jaune, bordure jaune | Warning + texte + bouton |
+| Valide | Fond vert | Succes message |
+| Rejete | Fond rouge | Erreur + actions |
+
+### Section Identite
+| Element | Description |
+|---------|-------------|
+| Type | Carte |
+| Champs | Raison sociale, SIRET, Adresse, Representant |
+| Action | Modifier les informations |
+
+### Champs identite
+| Champ | Format |
+|-------|--------|
+| Raison sociale | Texte |
+| SIRET | 14 chiffres |
+| Adresse | Multi-lignes |
+| Representant | Nom + Fonction |
+
+### Section Compte bancaire
+| Element | Description |
+|---------|-------------|
+| Type | Carte |
+| Champs | IBAN, BIC, Titulaire |
+| Badge | Verifie (vert) |
+| Action | Modifier l'IBAN |
+
+### IBAN display
+| Element | Description |
+|---------|-------------|
+| Fond | Gris clair |
+| Format | FR76 XXXX ... masque |
+
+### Section Beneficiaires
+| Element | Description |
+|---------|-------------|
+| Type | Carte |
+| Titre | Beneficiaires effectifs |
+| Sous-titre | >25% du capital |
+
+### Carte beneficiaire
+| Element | Description |
+|---------|-------------|
+| Avatar | Cercle bleu avec icone |
+| Nom | Texte bold |
+| Info | Fonction + pourcentage |
+| Badge | Verifie / En attente |
+
+### Bouton ajout beneficiaire
+| Element | Description |
+|---------|-------------|
+| Style | Bordure pointillee |
+| Icone | + |
+| Texte | Ajouter |
+
+### Section Documents
+| Element | Description |
+|---------|-------------|
+| Type | Carte |
+| Liste | Kbis, Piece ID, RIB |
+
+### Carte document
+| Etat | Style |
+|------|-------|
+| Valide | Fond vert, icone check |
+| Requis | Fond jaune, icone warning |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/svaWallet
+PUT /telephony/svaWallet/identity
+PUT /telephony/svaWallet/bankAccount
+GET /telephony/svaWallet/beneficiaries
+POST /telephony/svaWallet/beneficiaries
+DELETE /telephony/svaWallet/beneficiaries/{id}
+GET /telephony/svaWallet/documents
+POST /telephony/svaWallet/documents
+```
+
+### Modeles
+```typescript
+interface SvaWallet {
+  status: 'pending' | 'verified' | 'rejected';
+  identity: CompanyIdentity;
+  bankAccount: BankAccount;
+  beneficiaries: Beneficiary[];
+}
+
+interface CompanyIdentity {
+  name: string;
+  siret: string;
+  address: Address;
+  legalRepresentative: string;
+  legalRepresentativeRole: string;
+}
+
+interface BankAccount {
+  iban: string;
+  bic: string;
+  holder: string;
+  verified: boolean;
+}
+
+interface Beneficiary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  percentage: number;
+  verified: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_sva_wallet_title": "Portefeuille SVA",
+  "telephony_sva_wallet_subtitle": "Gerez votre compte de reversement",
+  "telephony_sva_wallet_pending": "Verification d'identite en attente",
+  "telephony_sva_wallet_complete": "Completer",
+  "telephony_sva_wallet_identity": "Identite",
+  "telephony_sva_wallet_company": "Raison sociale",
+  "telephony_sva_wallet_siret": "SIRET",
+  "telephony_sva_wallet_address": "Adresse",
+  "telephony_sva_wallet_representative": "Representant legal",
+  "telephony_sva_wallet_edit_identity": "Modifier les informations",
+  "telephony_sva_wallet_bank": "Compte bancaire",
+  "telephony_sva_wallet_iban": "IBAN",
+  "telephony_sva_wallet_bic": "BIC",
+  "telephony_sva_wallet_holder": "Titulaire",
+  "telephony_sva_wallet_verified": "Verifie",
+  "telephony_sva_wallet_edit_iban": "Modifier l'IBAN",
+  "telephony_sva_wallet_beneficiaries": "Beneficiaires effectifs",
+  "telephony_sva_wallet_beneficiaries_help": "Personnes detenant plus de 25% du capital",
+  "telephony_sva_wallet_pending_status": "En attente",
+  "telephony_sva_wallet_add_beneficiary": "Ajouter",
+  "telephony_sva_wallet_documents": "Documents justificatifs",
+  "telephony_sva_wallet_doc_valid": "Document valide",
+  "telephony_sva_wallet_doc_required": "Document requis",
+  "telephony_sva_wallet_manage_docs": "Gerer les documents"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- KYC obligatoire pour reversements SVA
+- SIRET doit etre valide
+- Beneficiaires >25% declares
+- Documents: Kbis, CNI representant, RIB
+- Delai verification ~48h

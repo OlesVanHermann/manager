@@ -1,0 +1,119 @@
+# Cahier des Charges : web-cloud/hosting - Multisite
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des domaines attachés (multisite).
+
+### Objectif fonctionnel
+- Lister les domaines attachés
+- Ajouter de nouveaux domaines
+- Configurer SSL/CDN/Firewall par domaine
+- Gérer les associations Git
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + boutons + recherche + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Boutons d'action
+| Bouton | Style |
+|--------|-------|
+| Ajouter un domaine ou sous-domaine | Primary |
+| Régénérer le certificat SSL | Outline |
+
+### Champ recherche
+| Element | Description |
+|---------|-------------|
+| Placeholder | Recherche... |
+| Position | Au-dessus du tableau |
+
+### Tableau multisite
+| Colonne | Description |
+|---------|-------------|
+| Domaine | Nom du domaine (lien bleu) |
+| Dossier racine | Chemin /www, /blog, etc. |
+| SSL | Badge Activé/Désactivé |
+| CDN | Badge Activé/Désactivé |
+| Firewall | Badge Activé/Désactivé |
+| Logs séparés | Badge Activé/Désactivé |
+| Diagnostic | Point vert = OK |
+| Actions | Menu ⋮ |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier le domaine | Éditer configuration |
+| Accéder aux logs | Voir logs domaine |
+| Purger le CDN | Vider cache CDN |
+| Associer Git | Déploiement Git |
+| Détacher le domaine | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/attachedDomain
+POST /hosting/web/{serviceName}/attachedDomain
+PUT /hosting/web/{serviceName}/attachedDomain/{domain}
+DELETE /hosting/web/{serviceName}/attachedDomain/{domain}
+POST /hosting/web/{serviceName}/ssl/regenerate
+```
+
+### Modele
+```typescript
+interface AttachedDomain {
+  domain: string;
+  path: string;
+  ssl: boolean;
+  cdn: 'active' | 'none';
+  firewall: 'active' | 'none';
+  ownLog: boolean;
+  status: 'ok' | 'error';
+  ipv6: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_multisite_title": "Multisite",
+  "hosting_multisite_add": "Ajouter un domaine ou sous-domaine",
+  "hosting_multisite_regenerate_ssl": "Régénérer le certificat SSL",
+  "hosting_multisite_search": "Recherche...",
+  "hosting_multisite_col_domain": "Domaine",
+  "hosting_multisite_col_path": "Dossier racine",
+  "hosting_multisite_col_ssl": "SSL",
+  "hosting_multisite_col_cdn": "CDN",
+  "hosting_multisite_col_firewall": "Firewall",
+  "hosting_multisite_col_logs": "Logs séparés",
+  "hosting_multisite_col_diagnostic": "Diagnostic",
+  "hosting_multisite_enabled": "Activé",
+  "hosting_multisite_disabled": "Désactivé",
+  "hosting_multisite_edit": "Modifier le domaine",
+  "hosting_multisite_logs": "Accéder aux logs",
+  "hosting_multisite_purge_cdn": "Purger le CDN",
+  "hosting_multisite_git": "Associer Git",
+  "hosting_multisite_detach": "Détacher le domaine"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Domaine principal non détachable
+- SSL partagé entre tous les domaines
+- Régénération SSL = Let's Encrypt
+- Logs séparés = fichiers distincts par domaine
+- Diagnostic = vérification DNS

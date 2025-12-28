@@ -1,0 +1,106 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Variables Environnement
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des variables d'environnement.
+
+### Objectif fonctionnel
+- Stocker des configurations sensibles
+- Définir des variables par runtime
+- Masquer les secrets
+
+---
+
+## 2. LAYOUT
+
+### Structure message info + toolbar + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Message info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Texte | Les variables d'environnement permettent de stocker des configurations sensibles |
+
+### Toolbar
+| Element | Description |
+|---------|-------------|
+| Bouton | + Ajouter une variable (primary) |
+
+### Tableau variables
+| Colonne | Description |
+|---------|-------------|
+| Clé | Nom variable (monospace) |
+| Valeur | Valeur masquée si secret |
+| Type | Badge Secret / Public |
+| Runtime | Runtime associé |
+| Actions | Menu ⋮ |
+
+### Types de variable
+| Type | Badge |
+|------|-------|
+| Secret | Rouge (#FEE2E2) |
+| Public | Bleu (#DBEAFE) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Edit |
+| Voir la valeur | Reveal secret |
+| Supprimer | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/envvar
+POST /hosting/web/{serviceName}/envvar
+PUT /hosting/web/{serviceName}/envvar/{key}
+DELETE /hosting/web/{serviceName}/envvar/{key}
+```
+
+### Modele
+```typescript
+interface HostingEnvVar {
+  key: string;
+  value: string;
+  type: 'secret' | 'public';
+  runtimeId: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_envvar_title": "Variables d'environnement",
+  "hosting_envvar_info": "Les variables d'environnement permettent de stocker des configurations sensibles",
+  "hosting_envvar_add": "Ajouter une variable",
+  "hosting_envvar_col_key": "Clé",
+  "hosting_envvar_col_value": "Valeur",
+  "hosting_envvar_col_type": "Type",
+  "hosting_envvar_col_runtime": "Runtime",
+  "hosting_envvar_type_secret": "Secret",
+  "hosting_envvar_type_public": "Public",
+  "hosting_envvar_action_edit": "Modifier",
+  "hosting_envvar_action_reveal": "Voir la valeur",
+  "hosting_envvar_action_delete": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Secrets masqués par défaut (****)
+- Clés en majuscules convention
+- Variables liées à un runtime spécifique
+- DATABASE_URL, APP_ENV, API_KEY courantes

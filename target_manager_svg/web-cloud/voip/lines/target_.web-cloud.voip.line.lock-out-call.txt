@@ -1,0 +1,108 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.lock-out-call.svg
+Route:   /web-cloud/voip/lines/{serviceName}/lock-out-call
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Verrouillage appels
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration du verrouillage des appels sortants. Permet de bloquer certains
+types de destinations (international, surtaxés, mobiles, SVA).
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Verrouillage activé      | GET /telephony/.../options → lockOutCall                |
+| International bloqué     | options.lockOutCallInternational                        |
+| Surtaxés bloqués         | options.lockOutCallPremium                              |
+| *31*                     | options.unlockCode                                      |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC ACTIVATION:
+     * Toggle principal ON/OFF
+
+   - BLOC DESTINATIONS BLOQUEES:
+     * Checkbox: Appels internationaux
+     * Checkbox: Numéros surtaxés (08XX)
+     * Checkbox: Appels vers mobiles
+     * Checkbox: Services à valeur ajoutée
+
+   - BLOC CODE DEBLOCAGE:
+     * Code à composer (*31*)
+
+   - ACTIONS: Enregistrer, Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Lire configuration
+GET /telephony/{billingAccount}/line/{serviceName}/options
+Response: {
+  lockOutCall: boolean,
+  lockOutCallInternational: boolean,
+  lockOutCallPremium: boolean,
+  lockOutCallMobile: boolean,
+  lockOutCallSVA: boolean,
+  unlockCode: string
+}
+
+### Modifier configuration
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+Body: {
+  lockOutCall: true,
+  lockOutCallInternational: true,
+  lockOutCallPremium: true,
+  lockOutCallMobile: false,
+  lockOutCallSVA: false
+}
+
+================================================================================
+
+## TYPES DE BLOCAGE
+
+| Type          | Description                      |
+|---------------|----------------------------------|
+| international | Tous pays hors France métro      |
+| premium       | 08XX surtaxés                    |
+| mobile        | 06/07                            |
+| sva           | Audiotel, services vocaux        |
+
+================================================================================
+
+## REGLES METIER
+
+- Code déblocage: *31* par défaut
+- Déblocage temporaire: 1 appel
+- Urgences (15, 17, 18, 112): jamais bloqués
+- Modification effective immédiatement
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineLockOutCallTab (container)
+- LockActivationToggle
+- BlockedDestinationsCheckboxes
+- UnlockCodeDisplay
+- SaveCancelButtons
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

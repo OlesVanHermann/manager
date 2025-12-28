@@ -1,0 +1,132 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.ddi.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/numbers/{serviceName}/redirect/ddi
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Numéros | NAV4=Redirection | NAV5=DDI
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration DDI (Direct Dial-In) / SDA (Sélection Directe à l'Arrivée).
+Routage automatique des appels selon les derniers chiffres composés.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972100000            | GET /telephony/{ba}/number/{sn} → serviceName           |
+| 0033972100000-099        | GET /telephony/{ba}/number/{sn}/ddi → range             |
+| 0033972123456            | ddi.defaultDestination                                  |
+| 00                       | ddi.rules[].extension                                   |
+| 0033972100000            | ddi.rules[].fullNumber                                  |
+| 0033972123456            | ddi.rules[].destination                                 |
+| Accueil / Standard       | ddi.rules[].description                                 |
+| Actif                    | ddi.rules[].status                                      |
+| 8                        | count(ddi.rules)                                        |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - NAV3 tabs: Lignes | [Numéros] | Fax | Abrégés
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Numéro + Description
+   - NAV4 tabs: Général | [Redirection] | File d'attente | SVI | Planification | Sons
+   - NAV5 sub-tabs: Simple | [DDI] | Avancé
+
+   - INFO BANNER: Explication DDI/SDA
+
+   - BLOC: Configuration (1040x120)
+     * Plage SDA (numéro début - fin)
+     * Destination par défaut
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche
+     * Importer CSV
+     * + Ajouter règle
+
+   - TABLE RÈGLES DDI (1040x280):
+     * Colonnes: Extension | Numéro complet | Destination | Description | Statut | Actions
+     * Extension en gras
+     * Actions: Modifier, Supprimer
+
+   - PAGINATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Configuration DDI
+GET /telephony/{billingAccount}/number/{serviceName}/ddi
+Response: {
+  enabled: boolean,
+  range: { start, end },
+  defaultDestination: string,
+  rules: [{
+    id, extension, fullNumber, destination, description, status
+  }]
+}
+
+### Ajouter règle DDI
+POST /telephony/{billingAccount}/number/{serviceName}/ddi/rules
+Body: { extension, destination, description }
+
+### Modifier règle DDI
+PUT /telephony/{billingAccount}/number/{serviceName}/ddi/rules/{id}
+Body: { destination, description, status }
+
+### Supprimer règle DDI
+DELETE /telephony/{billingAccount}/number/{serviceName}/ddi/rules/{id}
+
+### Modifier destination par défaut
+PUT /telephony/{billingAccount}/number/{serviceName}/ddi
+Body: { defaultDestination }
+
+### Import CSV
+POST /telephony/{billingAccount}/number/{serviceName}/ddi/import
+Body: multipart (CSV file)
+
+================================================================================
+
+## FORMAT CSV IMPORT
+
+```csv
+extension;destination;description
+00;0033972123456;Accueil
+10;0033972123457;Commercial
+20;0033972123458;Support
+```
+
+================================================================================
+
+## REGLES METIER
+
+- Extension: 2 à 4 chiffres (derniers chiffres du numéro)
+- Destination: ligne du groupe ou numéro externe
+- Numéros non configurés → destination par défaut
+- Maximum 100 règles DDI
+- Extension doit être dans la plage SDA
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberDdiTab (container)
+- DdiConfigCard (plage + défaut)
+- DdiRulesTable (tableau paginé)
+- AddDdiRuleModal
+- EditDdiRuleModal
+- ImportDdiCsvModal
+- DdiStatusBadge
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

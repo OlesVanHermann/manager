@@ -1,0 +1,123 @@
+# Cahier des Charges : telecom/billingAccount - Services
+
+## 1. VUE D'ENSEMBLE
+
+**Écran** : Liste des services du groupe de facturation
+**Objectif** : Visualiser et accéder à tous les services (lignes, numéros, fax) du groupe
+**Contexte** : Vue principale des services rattachés au billingAccount
+
+## 2. LAYOUT & STRUCTURE
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Header OVHcloud - Telecom                                   │
+├─────────────────────────────────────────────────────────────┤
+│ Services du groupe                                          │
+├─────────────────────────────────────────────────────────────┤
+│ Numéro | Description | Type de service | Fonctionnalité | Actions │
+│ ───────────────────────────────────────────────────────────────── │
+│ +33 1 23... | Poste Accueil | Ligne | VoIP Pro | [Voir →]  │
+│ +33 1 23... | Poste Direction | Ligne | VoIP Pro | [Voir →] │
+│ +33 1 00... | Numéro principal | Numéro | Redirection | [Voir →] │
+│ +33 8 00... | SAV Gratuit | Numéro | File d'attente | [Voir →] │
+│ +33 1 23... | Fax bureau | Fax | Fax standard | [Voir →]   │
+├─────────────────────────────────────────────────────────────┤
+│ Filtres: [Lignes] [Numéros] [Fax]          [pagination]     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 3. COMPOSANTS UI
+
+### Tableau
+- Header gris (#F9FAFB)
+- Lignes blanches avec séparateurs
+- Numéro en lien bleu cliquable
+
+### Bouton Action
+- Bouton "Voir →" avec bordure grise
+- Texte bleu (#0050D7)
+
+### Filtres (chips)
+- **Actif** : fond bleu clair (#EFF6FF), bordure bleue (#BFDBFE)
+- **Inactif** : fond blanc, bordure grise
+
+### Pagination
+- Format "X - Y sur Z"
+- Boutons ‹ › avec bordure grise
+
+## 4. DONNÉES & COLONNES
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Numéro | phone/link | Numéro de téléphone cliquable |
+| Description | string | Nom/description du service |
+| Type de service | enum | Ligne, Numéro, Fax |
+| Fonctionnalité | string | Type spécifique (VoIP Pro, Redirection, File d'attente, etc.) |
+| Actions | button | Bouton "Voir" vers détail |
+
+### Types de service
+- **Ligne** : ligne téléphonique VoIP
+- **Numéro** : alias/numéro virtuel
+- **Fax** : service de fax
+
+### Fonctionnalités
+- VoIP Pro, VoIP Entreprise
+- Redirection, File d'attente, SVI
+- Fax standard, Fax pro
+
+## 5. ACTIONS & INTERACTIONS
+
+### Clic sur numéro
+- Ligne → `/telecom/{billingAccount}/line/{serviceName}`
+- Numéro → `/telecom/{billingAccount}/alias/{serviceName}`
+- Fax → `/telecom/{billingAccount}/fax/{serviceName}`
+
+### Bouton "Voir →"
+- Même navigation que clic sur numéro
+
+### Filtres
+- Clic sur filtre → affiche uniquement ce type
+- Multi-sélection possible
+- Clic sur filtre actif → désactive
+
+## 6. APIS & ENDPOINTS
+
+### GET (lecture)
+```
+GET /telephony/{billingAccount}/service
+GET /telephony/{billingAccount}/line
+GET /telephony/{billingAccount}/number
+GET /telephony/{billingAccount}/fax
+```
+
+### Détail service
+```
+GET /telephony/{billingAccount}/service/{serviceName}
+GET /telephony/{billingAccount}/line/{serviceName}
+GET /telephony/{billingAccount}/number/{serviceName}
+GET /telephony/{billingAccount}/fax/{serviceName}
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| title | Services du groupe |
+| col_number | Numéro |
+| col_description | Description |
+| col_service_type | Type de service |
+| col_feature | Fonctionnalité |
+| col_actions | Actions |
+| view | Voir |
+| filter_lines | Lignes |
+| filter_numbers | Numéros |
+| filter_fax | Fax |
+| type_line | Ligne |
+| type_number | Numéro |
+| type_fax | Fax |
+| feature_voip_pro | VoIP Pro |
+| feature_redirection | Redirection |
+| feature_queue | File d'attente |
+| feature_svi | SVI |
+| feature_fax_standard | Fax standard |
+| filters_available | Filtres disponibles |

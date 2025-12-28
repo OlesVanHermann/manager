@@ -1,0 +1,122 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.programmable-keys.svg
+Route:   /web-cloud/voip/lines/{serviceName}/programmable-keys
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Touches programmables
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration des touches programmables du téléphone. Assignation de fonctions
+(appel rapide, BLF, transfert, etc.) aux touches physiques du poste.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Cisco 8845               | GET /telephony/.../phone → model                        |
+| 10                       | phone.functionKeysCount                                 |
+| Support                  | keys[].label                                            |
+| Appel rapide             | keys[].function                                         |
+| +33 1 23 45 67 89        | keys[].parameter                                        |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes avec modèle téléphone
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - INFO BANNER: Modèle téléphone + nombre de touches
+
+   - REPRÉSENTATION TÉLÉPHONE:
+     * Schéma visuel du téléphone
+     * Touches numérotées 1-10
+
+   - TABLE CONFIGURATION:
+     * N° touche
+     * Libellé
+     * Fonction (dropdown)
+     * Paramètre (numéro, etc.)
+     * Actions: Éditer, Supprimer
+
+   - PAGINATION TOUCHES: Page 1-5 | 6-10
+
+   - ACTIONS: Enregistrer, Réinitialiser
+
+================================================================================
+
+## API ENDPOINTS
+
+### Configuration téléphone
+GET /telephony/{billingAccount}/line/{serviceName}/phone
+Response: {
+  model, functionKeysCount, macAddress
+}
+
+### Liste touches programmables
+GET /telephony/{billingAccount}/line/{serviceName}/phone/functionKey
+Response: [{
+  keyNum, label, function, parameter
+}]
+
+### Configurer touche
+PUT /telephony/{billingAccount}/line/{serviceName}/phone/functionKey/{keyNum}
+Body: { label, function, parameter }
+
+### Supprimer configuration touche
+DELETE /telephony/{billingAccount}/line/{serviceName}/phone/functionKey/{keyNum}
+
+### Réinitialiser toutes les touches
+POST /telephony/{billingAccount}/line/{serviceName}/phone/functionKey/reset
+
+================================================================================
+
+## FONCTIONS DISPONIBLES
+
+| Fonction      | Paramètre              | Description                  |
+|---------------|------------------------|------------------------------|
+| speedDial     | Numéro                 | Appel rapide                 |
+| blf           | Ligne à superviser     | Supervision (BLF)            |
+| transfer      | -                      | Transfert d'appel            |
+| conference    | -                      | Conférence                   |
+| pickup        | Groupe interception    | Interception d'appel         |
+| dnd           | -                      | Ne pas déranger              |
+| voicemail     | -                      | Messagerie vocale            |
+| hold          | -                      | Mise en attente              |
+| park          | Position               | Parcage d'appel              |
+
+================================================================================
+
+## REGLES METIER
+
+- Nombre de touches selon modèle téléphone
+- BLF: supervision lignes du même groupe
+- Libellé: max 12 caractères
+- Synchro auto après enregistrement
+- Redémarrage téléphone si nécessaire
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineProgrammableKeysTab (container)
+- PhoneSchematic
+- FunctionKeysTable
+- FunctionKeyRow
+- FunctionSelect
+- EditFunctionKeyModal
+- KeyPagination
+- PhoneInfoBanner
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

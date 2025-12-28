@@ -1,0 +1,148 @@
+# Cahier des Charges : web-cloud/hosting - Dashboard
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Vue dashboard avec informations générales organisées en 4 tuiles.
+
+### Objectif fonctionnel
+- Afficher les informations générales
+- Montrer la configuration
+- Résumer les ressources
+- Gérer l'abonnement
+
+---
+
+## 2. LAYOUT
+
+### Structure breadcrumb + titre + grille 2x2 tuiles
+
+---
+
+## 3. COMPOSANTS UI
+
+### Breadcrumb
+| Element | Description |
+|---------|-------------|
+| Format | Hébergements / mywebsite.com |
+| Style | Texte muted |
+
+### Tuile Informations générales
+| Champ | Description |
+|-------|-------------|
+| État du service | Badge Actif (vert) |
+| IPv4 | Adresse IP |
+| IPv6 | Adresse IP |
+| Espace disque | Barre progression (60%) |
+| Datacentre | eu-west-gra |
+| Cluster | cluster027 |
+
+### Tuile Configuration
+| Champ | Description |
+|-------|-------------|
+| Version PHP globale | 8.2 + lien Modifier |
+| Offre | Performance 1 + lien Changer |
+| Certificat SSL | Badge Actif + Let's Encrypt |
+| Option CDN | Badge Activé + lien Paramétrer |
+
+### Tuile Résumé
+| Champ | Description |
+|-------|-------------|
+| Sites web | 3 sur 5 recommandés |
+| Bases de données | 2 / 5 |
+| Modules 1 clic | 1 |
+| Web Cloud Databases | 0 + lien Commander |
+
+### Tuile Abonnement
+| Champ | Description |
+|-------|-------------|
+| Date de création | 15/03/2022 |
+| Expire le | 15/03/2026 |
+| Renouvellement | Automatique |
+| Liens | Renouveler / Gérer le renouvellement |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}
+GET /hosting/web/{serviceName}/serviceInfos
+GET /hosting/web/{serviceName}/attachedDomain
+GET /hosting/web/{serviceName}/database
+```
+
+### Modele
+```typescript
+interface DashboardSummary {
+  info: {
+    state: string;
+    ipv4: string;
+    ipv6: string;
+    diskUsage: { used: number; total: number; percent: number; };
+    datacenter: string;
+    cluster: string;
+  };
+  config: {
+    phpVersion: string;
+    offer: string;
+    ssl: { active: boolean; type: string; };
+    cdn: { active: boolean; };
+  };
+  summary: {
+    websites: { count: number; recommended: number; };
+    databases: { count: number; max: number; };
+    modules: number;
+    cloudDatabases: number;
+  };
+  subscription: {
+    creationDate: string;
+    expirationDate: string;
+    renewalMode: 'automatic' | 'manual';
+  };
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_dash_info_title": "Informations générales",
+  "hosting_dash_config_title": "Configuration",
+  "hosting_dash_summary_title": "Résumé",
+  "hosting_dash_subscription_title": "Abonnement",
+  "hosting_dash_state": "État du service",
+  "hosting_dash_disk": "Espace disque",
+  "hosting_dash_datacenter": "Datacentre",
+  "hosting_dash_cluster": "Cluster",
+  "hosting_dash_php": "Version PHP globale",
+  "hosting_dash_php_modify": "Modifier la configuration",
+  "hosting_dash_offer": "Offre",
+  "hosting_dash_offer_change": "Changer d'offre",
+  "hosting_dash_ssl": "Certificat SSL",
+  "hosting_dash_cdn": "Option CDN",
+  "hosting_dash_cdn_configure": "Paramétrer le CDN",
+  "hosting_dash_sites": "Sites web",
+  "hosting_dash_db": "Bases de données",
+  "hosting_dash_modules": "Modules 1 clic",
+  "hosting_dash_clouddb": "Web Cloud Databases",
+  "hosting_dash_clouddb_order": "Commander",
+  "hosting_dash_created": "Date de création",
+  "hosting_dash_expires": "Expire le",
+  "hosting_dash_renewal": "Renouvellement",
+  "hosting_dash_renew": "Renouveler",
+  "hosting_dash_manage_renewal": "Gérer le renouvellement"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Grille 2x2 tuiles
+- Liens d'action dans chaque tuile
+- Barre de progression avec pourcentage
+- Badges d'état colorés

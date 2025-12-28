@@ -1,0 +1,110 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.restrictions.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/lines/{serviceName}/options/restrictions
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Lignes | NAV4=Options | NAV5=Restrictions
+Version: v1 (2025-12-28)
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972123456            | GET /telephony/{ba}/line/{sn} → serviceName             |
+| Autorisé/Bloqué          | GET /telephony/{ba}/line/{sn}/options → callRestrictions |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - NAV3 tabs: [Lignes] | Numéros | Fax | Abrégés
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Numéro + Description
+   - NAV4 tabs: Général | Téléphone | Appels | Transferts | Messagerie | Conso | [Options]
+   - NAV5 sub-tabs: Paramètres | [Restrictions] | IP autorisées | Codecs
+
+   - WARNING BANNER (si restrictions actives)
+
+   - BLOC: Restrictions par destination (1040x300)
+     * Grid 2 colonnes de cards
+     * Par type: France fixe, France mobile, International, DOM-TOM
+     * Surtaxés, Spéciaux gratuits, Urgences, Audiotel
+     * Toggle Autorisé (vert) / Bloqué (rouge) par type
+     * Urgences: toujours autorisés (non modifiable)
+
+   - ACTIONS:
+     * Enregistrer
+     * Réinitialiser
+     * Appliquer à d'autres lignes
+
+================================================================================
+
+## API ENDPOINTS
+
+### Lire restrictions
+GET /telephony/{billingAccount}/line/{serviceName}/options
+Response: {
+  callRestrictions: {
+    franceLandline: boolean,
+    franceMobile: boolean,
+    international: boolean,
+    domTom: boolean,
+    premium: boolean,
+    freeSpecial: boolean,
+    audiotel: boolean
+  }
+}
+
+### Modifier restrictions
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+Body: { callRestrictions: { ... } }
+
+### Appliquer à plusieurs lignes
+POST /telephony/{billingAccount}/line/restrictions/batch
+Body: {
+  sourceServiceName: string,
+  targetServiceNames: string[]
+}
+
+================================================================================
+
+## TYPES DE DESTINATIONS
+
+| Type             | Préfixes           | Modifiable |
+|------------------|--------------------|-----------:|
+| France fixe      | 01-05, 09          | Oui        |
+| France mobile    | 06, 07             | Oui        |
+| International    | 00XX (hors France) | Oui        |
+| DOM-TOM          | 0262, 0590, etc.   | Oui        |
+| Surtaxés         | 089X               | Oui        |
+| Spéciaux gratuits| 0800, 0801, 0805   | Oui        |
+| Urgences         | 15,17,18,112...    | Non        |
+| Audiotel         | 0836, 0892, 0899   | Oui        |
+
+================================================================================
+
+## REGLES METIER
+
+- Urgences TOUJOURS autorisés (obligation légale)
+- Restrictions appliquées aux appels sortants uniquement
+- Appels entrants non concernés
+- Changement effectif sous 5 minutes
+- Peut être appliqué en masse à plusieurs lignes
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineRestrictionsTab (container)
+- RestrictionCard (toggle par type)
+- RestrictionWarningBanner
+- BatchApplyModal
+- SaveRestrictions
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

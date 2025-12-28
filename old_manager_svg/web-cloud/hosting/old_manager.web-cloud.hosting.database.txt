@@ -1,0 +1,123 @@
+# Cahier des Charges : web-cloud/hosting - Bases de données
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des bases de données MySQL.
+
+### Objectif fonctionnel
+- Lister les bases de données
+- Créer de nouvelles bases
+- Gérer sauvegardes et imports
+- Accéder à phpMyAdmin
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + boutons + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Boutons d'action
+| Bouton | Style |
+|--------|-------|
+| Créer une base de données | Primary |
+| Commander une base de données | Outline |
+
+### Tableau bases de données
+| Colonne | Description |
+|---------|-------------|
+| Nom de la base | Identifiant |
+| Nom d'utilisateur | Login MySQL |
+| Adresse du serveur | Host MySQL |
+| Version | MySQL 8.0 |
+| Taille | Barre progression + Mo/quota |
+| État | Badge Actif |
+| Actions | Menu ⋮ |
+
+### Barre de progression taille
+| Couleur | Condition |
+|---------|-----------|
+| Vert (#10B981) | < 80% utilisé |
+| Orange (#F59E0B) | >= 80% utilisé |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Changer le mot de passe | Reset password |
+| Créer une sauvegarde | Dump SQL |
+| Restaurer une sauvegarde | Import dump |
+| Importer un fichier | Upload SQL |
+| Accéder à phpMyAdmin | Lien externe |
+| Supprimer la base | Destructif (rouge) |
+
+### Compteur
+| Element | Description |
+|---------|-------------|
+| Format | "X bases de données sur Y disponibles" |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/database
+POST /hosting/web/{serviceName}/database
+DELETE /hosting/web/{serviceName}/database/{name}
+POST /hosting/web/{serviceName}/database/{name}/changePassword
+POST /hosting/web/{serviceName}/database/{name}/dump
+POST /hosting/web/{serviceName}/database/{name}/import
+POST /hosting/web/{serviceName}/database/{name}/restore
+```
+
+### Modele
+```typescript
+interface HostingDatabase {
+  name: string;
+  user: string;
+  server: string;
+  version: string;
+  quotaSize: number;
+  quotaUsed: number;
+  state: 'ok' | 'error';
+  type: 'mysql' | 'postgresql';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_db_title": "Bases de données",
+  "hosting_db_create": "Créer une base de données",
+  "hosting_db_order": "Commander une base de données",
+  "hosting_db_col_name": "Nom de la base",
+  "hosting_db_col_user": "Nom d'utilisateur",
+  "hosting_db_col_server": "Adresse du serveur",
+  "hosting_db_col_version": "Version",
+  "hosting_db_col_size": "Taille",
+  "hosting_db_col_state": "État",
+  "hosting_db_password": "Changer le mot de passe",
+  "hosting_db_backup": "Créer une sauvegarde",
+  "hosting_db_restore": "Restaurer une sauvegarde",
+  "hosting_db_import": "Importer un fichier",
+  "hosting_db_phpmyadmin": "Accéder à phpMyAdmin",
+  "hosting_db_delete": "Supprimer la base",
+  "hosting_db_count": "{used} bases de données sur {total} disponibles"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Quota selon offre hébergement
+- phpMyAdmin accessible via SSO
+- Sauvegardes conservées 7 jours
+- Import max 100 Mo par fichier

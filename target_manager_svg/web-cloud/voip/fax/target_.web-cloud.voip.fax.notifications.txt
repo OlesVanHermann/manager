@@ -1,0 +1,132 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.notifications.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/fax/{serviceName}/notifications
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Fax | NAV4=Général | NAV5=Notifications
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration des notifications email pour le service fax. Alertes pour
+fax reçus, accusés de réception et alertes crédits.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972101234            | GET /telephony/{ba}/fax/{sn} → serviceName              |
+| Activé                   | GET /telephony/{ba}/fax/{sn}/notifications → enabled    |
+| contact@entreprise.com   | notifications.incoming.email                            |
+| PDF                      | notifications.incoming.attachFormat                     |
+| fax@entreprise.com       | notifications.outgoing.email                            |
+| 10 crédits               | notifications.alerts.creditThreshold                    |
+| admin@entreprise.com     | notifications.alerts.email                              |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - NAV3 tabs: Lignes | Numéros | [Fax] | Abrégés
+   - Liste des fax
+
+2. RIGHT PANEL (1096px)
+   - Header: Numéro + Description
+   - NAV4 tabs: [Général] | Envoi | Campagnes | Reçus | Envoyés | Conso | Messagerie | Filtrage
+   - NAV5 sub-tabs: Informations | Paramètres | Logo | [Notifications]
+
+   - BLOC: Fax reçus (1040x160)
+     * Toggle notification par email
+     * Email destinataire
+     * Checkbox joindre fax en PJ
+     * Format PJ (dropdown)
+
+   - BLOC: Fax envoyés (1040x190)
+     * Toggle accusé de réception
+     * Checkboxes: Envoi réussi, Échec d'envoi
+     * Email pour accusés
+
+   - BLOC: Alertes (1040x150)
+     * Checkbox alerte crédits insuffisants
+     * Seuil (dropdown)
+     * Email alertes
+
+   - ACTIONS:
+     * Enregistrer
+     * Tester l'envoi
+
+================================================================================
+
+## API ENDPOINTS
+
+### Configuration notifications
+GET /telephony/{billingAccount}/fax/{serviceName}/notifications
+Response: {
+  incoming: {
+    enabled, email, attachFax, attachFormat
+  },
+  outgoing: {
+    enabled, email, notifySuccess, notifyFailure
+  },
+  alerts: {
+    creditAlert, creditThreshold, email
+  }
+}
+
+### Modifier notifications
+PUT /telephony/{billingAccount}/fax/{serviceName}/notifications
+Body: { ... }
+
+### Tester notification
+POST /telephony/{billingAccount}/fax/{serviceName}/notifications/test
+Body: { type: 'incoming' | 'outgoing' | 'alert' }
+
+================================================================================
+
+## OPTIONS
+
+### Format pièce jointe
+| Option | Description    |
+|--------|----------------|
+| pdf    | PDF uniquement |
+| tiff   | TIFF uniquement|
+| both   | PDF + TIFF     |
+
+### Seuil crédit
+| Option | Description          |
+|--------|----------------------|
+| 5      | 5 crédits restants   |
+| 10     | 10 crédits restants  |
+| 20     | 20 crédits restants  |
+| 50     | 50 crédits restants  |
+
+================================================================================
+
+## REGLES METIER
+
+- Email valide obligatoire si notification activée
+- Format PDF recommandé (plus léger)
+- Alerte crédit envoyée 1 fois par seuil atteint
+- Test envoie un email exemple
+- Plusieurs destinataires possibles (séparés par virgule)
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxNotificationsTab (container)
+- IncomingNotificationsCard
+- OutgoingNotificationsCard
+- AlertsNotificationsCard
+- NotificationToggle
+- EmailInputField
+- TestNotificationButton
+- SaveNotificationsButton
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

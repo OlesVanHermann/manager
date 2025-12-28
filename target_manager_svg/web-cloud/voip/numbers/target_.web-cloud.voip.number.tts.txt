@@ -1,0 +1,125 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.tts.svg
+Route:   /web-cloud/voip/numbers/{serviceName}/tts
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Synthèse vocale
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Création de messages vocaux par synthèse vocale (Text-To-Speech). Conversion
+de texte en fichiers audio utilisables dans les menus SVI.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| accueil_principal        | GET /telephony/.../tts → sounds[].name                  |
+| Léa (FR)                 | sounds[].voice                                          |
+| 0:12                     | sounds[].duration                                       |
+| 28/12/2024               | sounds[].createdAt                                      |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC CREATION:
+     * Textarea texte (obligatoire)
+     * Dropdown voix
+     * Dropdown vitesse
+     * Dropdown tonalité
+     * Boutons: Prévisualiser, Créer
+
+   - TABLE SONS TTS:
+     * Nom
+     * Texte (aperçu)
+     * Voix
+     * Durée
+     * Date création
+     * Actions: Play, Download, Delete
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste sons TTS
+GET /telephony/{billingAccount}/number/{serviceName}/tts
+Response: [{
+  id, name, text, voice, speed, duration, createdAt
+}]
+
+### Créer son TTS
+POST /telephony/{billingAccount}/number/{serviceName}/tts
+Body: { text, voice, speed, pitch, name }
+Response: { id, audioUrl }
+
+### Prévisualiser (sans sauvegarder)
+POST /telephony/{billingAccount}/number/{serviceName}/tts/preview
+Body: { text, voice, speed, pitch }
+Response: { previewUrl }
+
+### Télécharger son
+GET /telephony/{billingAccount}/number/{serviceName}/tts/{id}/download
+
+### Supprimer son
+DELETE /telephony/{billingAccount}/number/{serviceName}/tts/{id}
+
+================================================================================
+
+## VOIX DISPONIBLES
+
+| ID       | Nom          | Langue | Genre    |
+|----------|--------------|--------|----------|
+| lea_fr   | Léa          | FR     | Féminin  |
+| thomas_fr| Thomas       | FR     | Masculin |
+| claire_fr| Claire       | FR     | Féminin  |
+| emma_en  | Emma         | EN     | Féminin  |
+| james_en | James        | EN     | Masculin |
+
+================================================================================
+
+## OPTIONS
+
+| Option    | Valeurs                           |
+|-----------|-----------------------------------|
+| speed     | 0.5x, 0.75x, 1.0x, 1.25x, 1.5x    |
+| pitch     | Grave, Standard, Aigu             |
+
+================================================================================
+
+## REGLES METIER
+
+- Texte: max 1000 caractères
+- Durée max: 5 minutes
+- Max 50 sons par numéro
+- Formats: MP3, WAV
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberTtsTab (container)
+- TtsCreationForm
+- TextToSpeechTextarea
+- VoiceSelector
+- SpeedSelector
+- PitchSelector
+- PreviewButton
+- TtsSoundsTable
+- AudioPlayer
+- DownloadButton
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

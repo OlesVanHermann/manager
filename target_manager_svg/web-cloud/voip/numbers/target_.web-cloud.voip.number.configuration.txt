@@ -1,0 +1,114 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.configuration.svg
+Route:   /web-cloud/voip/number/{serviceName}/configuration
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Configuration numéro
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration générale d'un numéro alias. Type de configuration (redirection,
+SVI, file d'attente), destination et options d'affichage.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| +33 9 72 30 00 01        | GET /telephony/.../number → serviceNumber               |
+| Alias                    | number.type                                             |
+| Actif                    | number.status                                           |
+| Accueil standard         | number.description                                      |
+| Redirection simple       | number.configType                                       |
+| Ligne du groupe          | destination.type                                        |
+| 0033972100001            | destination.serviceName                                 |
+| 30                       | timeout                                                 |
+| Messagerie vocale        | fallback.action                                         |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC INFORMATIONS:
+     * Numéro formaté
+     * Type (badge)
+     * Statut (badge)
+     * Description (editable)
+     * Pays
+
+   - BLOC TYPE CONFIG (4 radios):
+     * Redirection simple
+     * SVI / Menu vocal
+     * File d'attente
+     * Conférence
+
+   - BLOC DESTINATION:
+     * Type destination (dropdown)
+     * Ligne destination (dropdown)
+     * Timeout
+
+   - BLOC NON-REPONSE:
+     * Action (dropdown)
+     * Numéro basculement
+
+   - BLOC AFFICHAGE:
+     * Toggle afficher numéro sortant
+     * Toggle masquer appelant
+
+   - ACTIONS: Enregistrer, Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Info numéro
+GET /telephony/{billingAccount}/number/{serviceName}
+Response: { serviceNumber, type, status, description, country, configType }
+
+### Config destination
+GET /telephony/{billingAccount}/number/{serviceName}/destination
+Response: { type, serviceName, timeout, fallback }
+
+### Modifier config
+PUT /telephony/{billingAccount}/number/{serviceName}/configuration
+Body: { description?, configType?, destination?, timeout?, fallback?, displaySettings? }
+
+### Lignes disponibles
+GET /telephony/{billingAccount}/line
+Response: [{ serviceName, description }]
+
+================================================================================
+
+## REGLES METIER
+
+- Types config: redirect, ivr, queue, conference
+- Destinations: ligne groupe, numéro externe, SVI
+- Timeout: 5-120 secondes
+- Fallback: messagerie, numéro externe, raccrocher
+- Affichage: un seul numéro sortant par compte
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberConfigurationTab (container)
+- NumberInfoCard
+- ConfigTypeSelector
+- DestinationForm
+- FallbackSettings
+- DisplaySettingsCard
+- LineSelector
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

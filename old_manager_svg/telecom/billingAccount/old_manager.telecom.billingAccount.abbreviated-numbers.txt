@@ -1,0 +1,123 @@
+# Cahier des Charges : telecom/billingAccount - Numéros Abrégés
+
+## 1. VUE D'ENSEMBLE
+
+**Écran** : Gestion des numéros abrégés du groupe
+**Objectif** : Configurer des numéros courts (100-7999) pour joindre rapidement les collaborateurs
+**Contexte** : Accessible depuis le menu du billingAccount
+
+## 2. LAYOUT & STRUCTURE
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Header OVHcloud - Telecom                                   │
+├─────────────────────────────────────────────────────────────┤
+│ Numéros abrégés                                             │
+│ Description explicative                                      │
+├─────────────────────────────────────────────────────────────┤
+│ [+ Ajouter] [Importer CSV] [Exporter CSV]                   │
+├─────────────────────────────────────────────────────────────┤
+│ Tableau des numéros abrégés                                 │
+│ N° abrégé | Destination | Nom | Prénom | Actions           │
+│ ─────────────────────────────────────────────────────────── │
+│ 100       | +33 1 23... | Dupont | Marie | [✎] [×]         │
+│ 101       | +33 1 23... | Martin | Jean  | [✎] [×]         │
+├─────────────────────────────────────────────────────────────┤
+│ ℹ Info : plage 100-7999                                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 3. COMPOSANTS UI
+
+### Boutons d'action (toolbar)
+- **+ Ajouter** : bouton primaire bleu
+- **Importer CSV** : bouton secondaire
+- **Exporter CSV** : bouton secondaire
+
+### Tableau
+- Header avec fond gris (#F9FAFB)
+- Lignes alternées blanches
+- Séparateurs horizontaux
+
+### Actions par ligne
+- Bouton Modifier (✎) : bordure grise
+- Bouton Supprimer (×) : bordure rouge (#DC2626)
+
+### Info banner
+- Fond bleu clair (#EFF6FF)
+- Bordure bleue (#BFDBFE)
+- Icône ℹ
+
+## 4. DONNÉES & COLONNES
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| N° abrégé | string | 100-7999, affiché en gras |
+| Destination | phone | Numéro de téléphone complet |
+| Nom | string | Nom de famille |
+| Prénom | string | Prénom |
+| Actions | buttons | Modifier, Supprimer |
+
+## 5. ACTIONS & INTERACTIONS
+
+### Toolbar
+- **+ Ajouter** → Modal ajout numéro abrégé
+- **Importer CSV** → Modal import fichier CSV
+- **Exporter CSV** → Téléchargement direct
+
+### Actions ligne
+- **Modifier (✎)** → Modal modification
+- **Supprimer (×)** → Modal confirmation suppression
+
+## 6. APIS & ENDPOINTS
+
+### GET (lecture)
+```
+GET /telephony/{billingAccount}/abbreviatedNumber
+GET /telephony/{billingAccount}/abbreviatedNumber/{abbreviatedNumber}
+```
+
+### POST (création)
+```
+POST /telephony/{billingAccount}/abbreviatedNumber
+Body: {
+  abbreviatedNumber: number,
+  destinationNumber: string,
+  name: string,
+  surname: string
+}
+```
+
+### PUT (modification)
+```
+PUT /telephony/{billingAccount}/abbreviatedNumber/{abbreviatedNumber}
+```
+
+### DELETE (suppression)
+```
+DELETE /telephony/{billingAccount}/abbreviatedNumber/{abbreviatedNumber}
+```
+
+### Import/Export
+```
+POST /telephony/{billingAccount}/abbreviatedNumber/import (multipart/form-data)
+GET /telephony/{billingAccount}/abbreviatedNumber/export
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| title | Numéros abrégés |
+| description | Configurez des numéros courts pour joindre rapidement vos collaborateurs |
+| add | Ajouter |
+| import_csv | Importer CSV |
+| export_csv | Exporter CSV |
+| col_abbreviated | N° abrégé |
+| col_destination | Destination |
+| col_name | Nom |
+| col_surname | Prénom |
+| col_actions | Actions |
+| info_range | Les numéros abrégés sont disponibles dans la plage 100-7999. Chaque numéro peut pointer vers une ligne ou un numéro externe. |
+| edit | Modifier |
+| delete | Supprimer |

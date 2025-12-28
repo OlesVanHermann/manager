@@ -1,0 +1,122 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Changer d'offre
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de changement d'offre d'hébergement.
+
+### Objectif fonctionnel
+- Voir l'offre actuelle
+- Comparer les offres disponibles
+- Sélectionner une nouvelle offre
+
+---
+
+## 2. LAYOUT
+
+### Structure carte offre actuelle + grille 4 offres
+
+---
+
+## 3. COMPOSANTS UI
+
+### Carte offre actuelle
+| Element | Description |
+|---------|-------------|
+| Label | Offre actuelle |
+| Nom | Performance 1 |
+| Badge | Active (vert) |
+
+### Cartes offres (grille 4 colonnes)
+| Element | Description |
+|---------|-------------|
+| Titre | Nom de l'offre |
+| Description | Cible (vitrines, pro, e-commerce) |
+| Prix | XX,XX EUR/mois HT |
+| Séparateur | Ligne horizontale |
+| Features | Liste des caractéristiques |
+| Bouton | Sélectionner |
+
+### Offres disponibles
+| Offre | Prix | Caractéristiques |
+|-------|------|------------------|
+| Perso | 2,99 EUR | 100 Go, 1 BDD, SSL |
+| Performance 1 | 9,99 EUR | 250 Go, BDD illimitées, SSL + CDN |
+| Performance 2 | 19,99 EUR | 500 Go, 4 vCPU, 4 Go RAM |
+| Performance 3 | 39,99 EUR | 1 To, 8 vCPU, 8 Go RAM |
+
+### États des cartes
+| État | Style |
+|------|-------|
+| Offre actuelle | Badge bleu "OFFRE ACTUELLE" en haut |
+| Sélectionnée | Bordure bleue + fond bleu clair |
+| Autre | Bordure grise + fond blanc |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}
+GET /order/hosting/web/upgrade/{serviceName}
+POST /order/hosting/web/upgrade/{serviceName}
+```
+
+### Modele
+```typescript
+interface CurrentOffer {
+  name: string;
+  displayName: string;
+  state: 'active' | 'suspended';
+}
+
+interface AvailableOffer {
+  name: string;
+  displayName: string;
+  description: string;
+  price: number;
+  diskSpace: string;
+  databases: string;
+  vcpu?: number;
+  ram?: string;
+  features: string[];
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_offer_title": "Changer d'offre",
+  "hosting_offer_current": "Offre actuelle",
+  "hosting_offer_current_badge": "OFFRE ACTUELLE",
+  "hosting_offer_choose": "Choisissez votre nouvelle offre",
+  "hosting_offer_select": "Sélectionner",
+  "hosting_offer_perso": "Perso",
+  "hosting_offer_perso_desc": "Pour les sites vitrines",
+  "hosting_offer_perf1": "Performance 1",
+  "hosting_offer_perf1_desc": "Pour les sites professionnels",
+  "hosting_offer_perf2": "Performance 2",
+  "hosting_offer_perf2_desc": "Pour les sites e-commerce",
+  "hosting_offer_perf3": "Performance 3",
+  "hosting_offer_perf3_desc": "Pour les sites à fort trafic",
+  "hosting_offer_month": "/mois HT",
+  "hosting_offer_disk": "{size} espace disque",
+  "hosting_offer_db": "base de données",
+  "hosting_offer_db_unlimited": "Bases de données illimitées",
+  "hosting_offer_ssl": "SSL inclus",
+  "hosting_offer_cdn": "SSL + CDN inclus"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Upgrade immédiat avec facturation prorata
+- Downgrade possible en fin de période
+- Migration automatique des données
+- Pas de perte de service

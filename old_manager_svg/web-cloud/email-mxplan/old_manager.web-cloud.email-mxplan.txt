@@ -1,0 +1,146 @@
+# Cahier des Charges : web-cloud/email-mxplan - Dashboard
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Dashboard du service MX Plan avec vue d'ensemble.
+
+### Objectif fonctionnel
+- Voir les informations generales du service
+- Consulter la configuration email
+- Acceder au webmail
+- Naviguer vers les onglets
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec header + onglets + 3 cartes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header service
+| Element | Description |
+|---------|-------------|
+| Titre | MX Plan - {domaine} |
+| Sous-titre | Date expiration |
+| Bouton Actions | Dropdown menu |
+
+### Onglets navigation
+| Onglet | Description |
+|--------|-------------|
+| Informations generales | Vue d'ensemble (actif) |
+| Comptes email | Liste des comptes |
+| Redirections | Redirections email |
+| Listes de diffusion | Mailing lists |
+| Taches | Historique operations |
+
+### Carte Informations generales
+| Champ | Exemple |
+|-------|---------|
+| Offre | MX Plan 100 |
+| Domaine | mondomaine.fr |
+| Comptes email | 5 / 100 |
+| Espace utilise | 1 Go / 5 Go (20%) |
+| Redirections | 12 actives |
+| Listes de diffusion | 2 actives |
+
+### Barre progression espace
+| Element | Description |
+|---------|-------------|
+| Type | Progress bar horizontale |
+| Couleur | Bleu (#0050D7) |
+| Affichage | XX Go / YY Go (ZZ%) |
+
+### Carte Configuration
+| Champ | Valeur |
+|-------|--------|
+| Serveur IMAP | ssl0.ovh.net:993 (SSL) |
+| Serveur POP3 | ssl0.ovh.net:995 (SSL) |
+| Serveur SMTP | ssl0.ovh.net:465 (SSL) |
+| Liens | Configurer sur Outlook, Configurer sur Thunderbird |
+
+### Carte Webmail
+| Element | Description |
+|---------|-------------|
+| Bouton | Acceder au webmail (Primary) |
+| Anti-spam | Badge Active (vert) |
+| Anti-virus | Badge Active (vert) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/domain/{domain}
+GET /email/domain/{domain}/account
+GET /email/domain/{domain}/redirection
+GET /email/domain/{domain}/mailingList
+```
+
+### Modele
+```typescript
+interface MXPlanService {
+  domain: string;
+  offer: 'MX Plan 1' | 'MX Plan 5' | 'MX Plan 100';
+  maxAccounts: number;
+  currentAccounts: number;
+  quota: {
+    used: number;
+    total: number;
+  };
+  expiration: string;
+  state: 'ok' | 'suspended';
+}
+
+interface MXPlanConfiguration {
+  imapServer: string;
+  imapPort: number;
+  pop3Server: string;
+  pop3Port: number;
+  smtpServer: string;
+  smtpPort: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "mxplan_dashboard_title": "Informations generales",
+  "mxplan_offer": "Offre",
+  "mxplan_domain": "Domaine",
+  "mxplan_accounts": "Comptes email",
+  "mxplan_space_used": "Espace utilise",
+  "mxplan_redirections": "Redirections",
+  "mxplan_redirections_active": "{count} actives",
+  "mxplan_mailing_lists": "Listes de diffusion",
+  "mxplan_config_title": "Configuration",
+  "mxplan_imap": "Serveur IMAP",
+  "mxplan_pop3": "Serveur POP3",
+  "mxplan_smtp": "Serveur SMTP",
+  "mxplan_configure_outlook": "Configurer sur Outlook",
+  "mxplan_configure_thunderbird": "Configurer sur Thunderbird",
+  "mxplan_webmail_title": "Webmail",
+  "mxplan_webmail_access": "Acceder au webmail",
+  "mxplan_antispam": "Anti-spam",
+  "mxplan_antivirus": "Anti-virus",
+  "mxplan_enabled": "Active",
+  "mxplan_expires": "Expire le {date}"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- MX Plan = offre email incluse avec domaine
+- Quota global partage entre comptes
+- Webmail = Roundcube
+- IMAP/POP3/SMTP avec SSL obligatoire
+- Anti-spam et antivirus actives par defaut

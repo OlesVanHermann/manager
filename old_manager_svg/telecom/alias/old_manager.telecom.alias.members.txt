@@ -1,0 +1,126 @@
+# Cahier des Charges : telecom/alias - Gestion des membres
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion des membres d'une file d'attente/groupe.
+
+### Objectif fonctionnel
+- Ajouter/supprimer des membres
+- Configurer les parametres par membre
+- Reordonner les membres
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec liste reordonnables + edition inline
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Gestion des membres |
+| Info | Glissez-deposez pour reordonner |
+
+### Info banner
+| Element | Description |
+|---------|-------------|
+| Fond | Bleu clair |
+| Icone | Information |
+| Texte | Instructions reordonnement |
+
+### Liste membres
+| Element | Description |
+|---------|-------------|
+| Ordre | Fleches + drag handle |
+| Info | Nom + numero |
+| Statut | Badge couleur |
+| Params | Timeout, wrap-up, lignes |
+| Actions | Modifier / Supprimer |
+
+### Statuts membre
+| Statut | Badge | Couleur |
+|--------|-------|---------|
+| Disponible | Vert | #DEF7EC |
+| En appel | Bleu | #DBEAFE |
+| Deconnecte | Rouge | #FEE2E2 |
+
+### Edition inline
+| Champ | Type | Description |
+|-------|------|-------------|
+| Statut | Select | Disponible/Inactif |
+| Timeout | Number (s) | Delai sonnerie |
+| Wrap-up | Number (s) | Temps repos |
+| Lignes | Number | Appels simultanes |
+
+### Confirmation suppression
+| Element | Description |
+|---------|-------------|
+| Fond | Rouge clair |
+| Question | Confirmer la suppression ? |
+| Boutons | Supprimer / Annuler |
+
+### Boutons edition
+| Bouton | Type | Action |
+|--------|------|--------|
+| Enregistrer | Primary | Valide modification |
+| Annuler | Default | Annule |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+```
+
+### Modele Agent
+```typescript
+interface EasyHuntingAgent {
+  agentId: number;
+  number: string;
+  description: string;
+  status: 'available' | 'loggedOut';
+  timeout: number;
+  wrapUpTime: number;
+  simultaneousLines: number;
+  position: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_members_title": "Gestion des membres",
+  "alias_members_reorder_info": "Utilisez les fleches ou glissez-deposez pour reordonner",
+  "alias_members_status": "Statut",
+  "alias_members_timeout": "Timeout",
+  "alias_members_wrapup": "Temps de repos",
+  "alias_members_lines": "Lignes simultanees",
+  "alias_members_edit": "Modifier",
+  "alias_members_delete": "Supprimer",
+  "alias_members_confirm_delete": "Confirmer la suppression de ce membre ?"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Ordre = priorite de distribution
+- Timeout min: 5s, max: 60s
+- Wrap-up max: 300s
+- Drag & drop pour reordonnement
+- Edition inline avec surlignage

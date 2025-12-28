@@ -1,0 +1,100 @@
+# Cahier des Charges : web-cloud/zimbra - Domaines
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des domaines Zimbra.
+
+### Objectif fonctionnel
+- Voir les domaines associes
+- Ajouter de nouveaux domaines
+- Configurer et diagnostiquer
+
+---
+
+## 2. LAYOUT
+
+### Structure onglet avec toolbar + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | + Ajouter un domaine |
+
+### Tableau domaines
+| Colonne | Description |
+|---------|-------------|
+| Domaine | Nom de domaine |
+| Organisation | Badge organisation |
+| Nombre de comptes | Compteur |
+| Statut | Badge Actif/CNAME requis |
+| Actions | Menu ⋮ |
+
+### Etats statut
+| Etat | Badge |
+|------|-------|
+| Actif | Vert (#DEF7EC) |
+| CNAME requis | Orange (#FEF3C7) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Configurer | Edit DNS settings |
+| Diagnostics | Check DNS config |
+| Supprimer | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/domain
+POST /zimbra/platform/{platformId}/domain
+DELETE /zimbra/platform/{platformId}/domain/{domainId}
+GET /zimbra/platform/{platformId}/domain/{domainId}/diagnostic
+```
+
+### Modele
+```typescript
+interface ZimbraDomain {
+  id: string;
+  name: string;
+  organization: string;
+  accountCount: number;
+  state: 'ok' | 'cnameRequired' | 'inCreation';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_domains_title": "Domaine",
+  "zimbra_domains_add": "Ajouter un domaine",
+  "zimbra_domains_col_domain": "Domaine",
+  "zimbra_domains_col_org": "Organisation",
+  "zimbra_domains_col_accounts": "Nombre de comptes",
+  "zimbra_domains_col_status": "Statut",
+  "zimbra_domains_status_active": "Actif",
+  "zimbra_domains_status_cname": "CNAME requis",
+  "zimbra_domains_action_configure": "Configurer",
+  "zimbra_domains_action_diagnostics": "Diagnostics",
+  "zimbra_domains_action_delete": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Domaine doit avoir CNAME valide
+- Un domaine par organisation
+- Diagnostics = verification DNS

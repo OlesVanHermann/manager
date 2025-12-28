@@ -1,0 +1,133 @@
+# Cahier des Charges : web-cloud/hosting - FTP SSH
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des accès FTP/SSH.
+
+### Objectif fonctionnel
+- Afficher les informations de connexion
+- Gérer les utilisateurs FTP
+- Gérer les sauvegardes
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + carte info + boutons + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Carte Informations FTP
+| Champ | Valeur exemple |
+|-------|----------------|
+| Titre | Informations FTP |
+| Description | Ces paramètres vous permettront de mettre votre site en ligne |
+| Serveur FTP et SFTP | ftp.cluster027.hosting.ovh.net |
+| Serveur SSH | ssh.cluster027.hosting.ovh.net |
+| Login principal | mywebsitec |
+| Port FTP | 21 |
+| Port SFTP | 22 |
+| Port SSH | 22 |
+
+### Boutons d'action
+| Bouton | Style |
+|--------|-------|
+| Créer un utilisateur | Primary |
+| Restaurer une sauvegarde | Outline |
+| Générer une sauvegarde | Outline |
+
+### Tableau utilisateurs
+| Colonne | Description |
+|---------|-------------|
+| Login | Nom d'utilisateur |
+| Répertoire cible | Chemin d'accès |
+| FTP | Badge Activé/Désactivé |
+| SFTP | Badge Activé/Désactivé |
+| SSH | Badge Activé/Désactivé |
+| État | Badge Activé/Désactivé |
+| Actions | Menu ⋮ |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Changer le mot de passe | Reset password |
+| Modifier | Éditer utilisateur |
+| Supprimer | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/user
+POST /hosting/web/{serviceName}/user
+PUT /hosting/web/{serviceName}/user/{login}
+DELETE /hosting/web/{serviceName}/user/{login}
+POST /hosting/web/{serviceName}/user/{login}/changePassword
+GET /hosting/web/{serviceName}/dump
+POST /hosting/web/{serviceName}/dump
+POST /hosting/web/{serviceName}/restoreSnapshot
+```
+
+### Modele
+```typescript
+interface FtpInfo {
+  ftpServer: string;
+  sshServer: string;
+  primaryLogin: string;
+  ports: { ftp: number; sftp: number; ssh: number; };
+}
+
+interface FtpUser {
+  login: string;
+  home: string;
+  ftp: boolean;
+  sftp: boolean;
+  ssh: boolean;
+  state: 'ok' | 'disabled';
+  isPrimaryUser: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_ftp_title": "FTP - SSH",
+  "hosting_ftp_info_title": "Informations FTP",
+  "hosting_ftp_info_desc": "Ces paramètres vous permettront de mettre votre site en ligne",
+  "hosting_ftp_server": "Serveur FTP et SFTP",
+  "hosting_ftp_ssh_server": "Serveur SSH",
+  "hosting_ftp_login": "Login principal",
+  "hosting_ftp_port_ftp": "Port FTP",
+  "hosting_ftp_port_sftp": "Port SFTP",
+  "hosting_ftp_port_ssh": "Port SSH",
+  "hosting_ftp_create_user": "Créer un utilisateur",
+  "hosting_ftp_restore_backup": "Restaurer une sauvegarde",
+  "hosting_ftp_generate_backup": "Générer une sauvegarde",
+  "hosting_ftp_col_login": "Login",
+  "hosting_ftp_col_home": "Répertoire cible",
+  "hosting_ftp_col_ftp": "FTP",
+  "hosting_ftp_col_sftp": "SFTP",
+  "hosting_ftp_col_ssh": "SSH",
+  "hosting_ftp_col_state": "État",
+  "hosting_ftp_change_password": "Changer le mot de passe",
+  "hosting_ftp_edit": "Modifier",
+  "hosting_ftp_delete": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Utilisateur principal non supprimable
+- SSH réservé aux offres Performance
+- Sauvegardes conservées 7 jours
+- SFTP = FTP over SSH (port 22)

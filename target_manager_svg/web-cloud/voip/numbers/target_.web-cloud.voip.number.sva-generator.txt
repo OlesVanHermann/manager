@@ -1,0 +1,121 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.sva-generator.svg
+Route:   /web-cloud/voip/numbers/{serviceName}/sva-generator
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Mentions SVA
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Générateur de mentions légales obligatoires pour les numéros à valeur ajoutée.
+Génère les mentions textuelles, audio et pictogrammes réglementaires.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0891 123 456             | GET /telephony/.../number → serviceName                 |
+| 0,80 €/min               | number.rate                                             |
+| Standard (0891)          | number.palier                                           |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC INFORMATIONS NUMERO:
+     * Numéro
+     * Tarification
+     * Palier
+
+   - BLOC MENTIONS GENEREES:
+     * Mention courte (copyable)
+     * Mention complète (copyable)
+     * Annonce audio (écouter/télécharger)
+     * Pictogramme SVA (PNG/SVG)
+
+   - BANNIERE INFO REGLEMENTATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Informations numéro SVA
+GET /telephony/{billingAccount}/number/{serviceName}/sva
+Response: {
+  number, rate, palier, legalName
+}
+
+### Générer mentions
+GET /telephony/{billingAccount}/number/{serviceName}/sva/mentions
+Response: {
+  shortMention, fullMention, audioUrl, pictogramPng, pictogramSvg
+}
+
+### Télécharger annonce audio
+GET /telephony/{billingAccount}/number/{serviceName}/sva/audio
+
+### Télécharger pictogramme
+GET /telephony/{billingAccount}/number/{serviceName}/sva/pictogram
+Query: { format: 'png' | 'svg' }
+
+================================================================================
+
+## PALIERS SVA
+
+| Palier       | Préfixe | Tarif max      |
+|--------------|---------|----------------|
+| Gratuit      | 0800    | Gratuit        |
+| Banalisé     | 0805    | Prix d'un appel|
+| Majoré       | 081X    | 0,06€/min      |
+| Majoré+      | 082X    | 0,20€/min      |
+| Majoré++     | 089X    | 0,80€/min      |
+
+================================================================================
+
+## FORMATS MENTIONS
+
+| Format       | Usage                      |
+|--------------|----------------------------|
+| Courte       | Publicités (30 caractères) |
+| Complète     | Documents officiels        |
+| Audio        | Début d'appel (8 sec)      |
+| Pictogramme  | Web et print               |
+
+================================================================================
+
+## REGLES METIER
+
+- Mentions obligatoires selon ARCEP
+- Pictogramme: taille min 15×15mm print
+- Audio: diffusion obligatoire avant mise en relation
+- Mise à jour auto si tarif change
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberSvaGeneratorTab (container)
+- SvaInfoCard
+- ShortMentionBlock
+- FullMentionBlock
+- AudioMentionBlock
+- PictogramBlock
+- CopyButton
+- AudioPlayer
+- DownloadButtons
+- RegulationInfoBanner
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

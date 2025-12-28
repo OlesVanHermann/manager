@@ -1,0 +1,185 @@
+# Cahier des Charges : telecom/alias - Liste portabilites
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de suivi des demandes de portabilite.
+
+### Objectif fonctionnel
+- Suivre les portabilites en cours
+- Visualiser les etapes de progression
+- Gerer les erreurs et relances
+- Joindre des documents
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec liste accordeon
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour au groupe |
+| Titre | Portabilites |
+| Lien info | i Consultez les etapes |
+
+### Carte portabilite (collapsed)
+| Element | Description |
+|---------|-------------|
+| Numero | +33 6 12 34 56 78 |
+| Etape | Validation operateur |
+| Badge statut | ERR_01 / TERMINE / EN COURS |
+| Lien | Details |
+| Chevron | ▶ (collapsed) / ▼ (expanded) |
+
+### Badges statut
+| Statut | Couleur | Description |
+|--------|---------|-------------|
+| ERR_XX | Rouge | Erreur |
+| TERMINE | Vert | Succes |
+| EN COURS | Jaune | En attente |
+
+### Carte portabilite (expanded)
+| Section | Description |
+|---------|-------------|
+| Details | Operateur, dates |
+| Documents | Zone joindre/liste |
+| Progression | Steps tracker |
+| Actions | Liens relancer/annuler |
+
+### Details portabilite
+| Champ | Exemple |
+|-------|---------|
+| Operateur | Orange |
+| Date creation | 15/12/2024 |
+| Date souhaitee | 15/01/2025 |
+
+### Bouton joindre
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Joindre le formulaire client |
+
+### Liste documents
+| Element | Description |
+|---------|-------------|
+| Header | Documents joints (collapsible) |
+| Ligne | Nom fichier + bouton supprimer |
+
+### Lien relancer
+| Element | Description |
+|---------|-------------|
+| Texte | Relancer la portabilite → |
+| Type | Link bleu |
+
+### Progress tracker (Steps)
+| Etape | Icone | Description |
+|-------|-------|-------------|
+| Done | ✓ vert | Etape terminee |
+| Error | ! rouge | Etape en erreur |
+| Active | ● bleu | Etape en cours |
+| Todo | ○ gris | Etape a venir |
+
+### Etapes portabilite
+| Ordre | Nom | Delai |
+|-------|-----|-------|
+| 1 | Reception de la demande | Immediat |
+| 2 | Verification des pieces | 2 jours |
+| 3 | Validation operateur | 5 jours |
+| 4 | Portage effectif | 1 jour |
+
+### Ligne etape
+| Element | Description |
+|---------|-------------|
+| Cercle | Etat (done/error/active/todo) |
+| Nom | Nom de l'etape |
+| Delai | (X jours) |
+| Badge erreur | Message erreur si applicable |
+| Date | Fait le XX/XX/XXXX |
+
+### Lien annuler
+| Element | Description |
+|---------|-------------|
+| Texte | Annuler la portabilite |
+| Type | Link bleu |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/portability
+GET /telephony/{billingAccount}/portability/{id}
+GET /telephony/{billingAccount}/portability/{id}/status
+POST /telephony/{billingAccount}/portability/{id}/document
+DELETE /telephony/{billingAccount}/portability/{id}
+POST /telephony/{billingAccount}/portability/{id}/relaunch
+```
+
+### Modele Portability
+```typescript
+interface Portability {
+  id: string;
+  number: string;
+  operator: string;
+  creationDate: string;
+  desiredDate: string;
+  status: 'pending' | 'processing' | 'error' | 'done';
+  currentStep: string;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+interface PortabilityStep {
+  name: string;
+  status: 'done' | 'error' | 'active' | 'todo';
+  date?: string;
+  errorMessage?: string;
+  estimatedDays: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_portability_title": "Portabilites",
+  "alias_portability_back": "Retour au groupe",
+  "alias_portability_guide": "Consultez les etapes",
+  "alias_portability_details": "Details",
+  "alias_portability_operator": "Operateur",
+  "alias_portability_creation": "Date de creation",
+  "alias_portability_desired": "Date souhaitee",
+  "alias_portability_attach": "Joindre le formulaire client",
+  "alias_portability_documents": "Documents joints",
+  "alias_portability_relaunch": "Relancer la portabilite",
+  "alias_portability_cancel": "Annuler la portabilite",
+  "alias_portability_step_reception": "Reception de la demande",
+  "alias_portability_step_verification": "Verification des pieces",
+  "alias_portability_step_validation": "Validation operateur",
+  "alias_portability_step_done": "Portage effectif",
+  "alias_portability_step_date": "Fait le {{date}}",
+  "alias_portability_status_error": "Erreur",
+  "alias_portability_status_done": "Termine",
+  "alias_portability_status_pending": "En cours"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Delais indicatifs (varient selon operateur)
+- Erreurs necessitent correction + relance
+- Documents PDF obligatoires
+- Annulation possible avant portage effectif
+- RIO obligatoire pour mobile
+- Notification email a chaque etape

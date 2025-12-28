@@ -1,0 +1,111 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.sms.order.svg
+Route:   /web-cloud/voip/sms/{serviceName}/order
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Acheter crédits SMS
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Page d'achat de crédits SMS. Affiche les packs disponibles, permet
+un montant personnalisé et affiche le récapitulatif de commande.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 1,247 SMS                | GET /sms/{serviceName} → creditsLeft                    |
+| 7,50 €                   | GET /sms/packs → packs[].price                          |
+| 0,075 € / SMS            | pack.unitPrice                                          |
+| 100 SMS                  | pack.quantity                                           |
+| Populaire                | pack.isPopular                                          |
+| -27%                     | calculé: (basePrice - pack.unitPrice) / basePrice       |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche comptes SMS
+   - Liste des comptes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC CREDIT ACTUEL:
+     * Nombre SMS restants
+     * Valeur en euros
+
+   - BLOC PACKS (4 cartes):
+     * Quantité SMS
+     * Prix total HT
+     * Prix unitaire
+     * Remise (si applicable)
+     * Badge "Populaire" (si applicable)
+     * Bouton sélectionner
+
+   - BLOC MONTANT PERSONNALISE:
+     * Input nombre SMS
+     * Minimum indiqué
+
+   - BLOC RECAPITULATIF:
+     * Pack sélectionné
+     * Prix unitaire
+     * Total HT
+     * TVA
+
+   - ACTIONS: Procéder au paiement, Annuler
+   - Note validité crédits
+
+================================================================================
+
+## API ENDPOINTS
+
+### Info compte
+GET /sms/{serviceName}
+Response: { creditsLeft, creditPrice }
+
+### Liste packs
+GET /sms/packs
+Response: [{ id, quantity, price, unitPrice, isPopular }]
+
+### Créer commande
+POST /sms/{serviceName}/order
+Body: { quantity, packId? }
+Response: { orderId, amount, paymentUrl }
+
+### Simuler prix
+GET /sms/{serviceName}/order/simulate
+Query: { quantity }
+Response: { unitPrice, totalHT, totalTTC }
+
+================================================================================
+
+## REGLES METIER
+
+- Minimum: 100 SMS
+- Packs: 100, 500, 1000, 5000, 10000
+- Prix dégressif selon quantité
+- TVA France: 20%
+- Validité crédits: 12 mois
+- Paiement: CB, prélèvement, bon commande
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- SmsOrderTab (container)
+- CurrentCreditCard
+- PacksGrid
+- PackCard
+- CustomAmountInput
+- OrderSummaryCard
+- PaymentButton
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

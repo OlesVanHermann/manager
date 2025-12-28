@@ -1,0 +1,120 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.sms.pending.svg
+Route:   /web-cloud/sms/{serviceName}/pending
+NAV:     NAV1=Web Cloud | NAV2=SMS | NAV3=SMS en attente
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Liste des SMS planifiés en attente d'envoi. Permet de visualiser,
+modifier ou annuler les envois programmés.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| #P-12345                 | GET /sms/.../jobs → id                                  |
+| +33 6 12 34 56 78        | job.receiver (ou "Liste: X (count)")                    |
+| Rappel: Votre RDV...     | job.message (tronqué)                                   |
+| Cabinet Dr.Martin        | job.sender                                              |
+| 25/12 08:00              | job.scheduledAt                                         |
+| 1.0                      | job.estimatedCredits                                    |
+| 12 SMS planifiés         | pagination.total                                        |
+| 3 827.0 crédits          | stats.totalReservedCredits                              |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche comptes SMS
+   - Liste des comptes SMS
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - WARNING BANNER:
+     * Nombre SMS dans les 24h
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche
+     * Filtre période
+
+   - TABLE SMS EN ATTENTE:
+     * Checkbox sélection
+     * ID
+     * Destinataire(s) / Liste
+     * Message (tronqué)
+     * Expéditeur
+     * Date/heure prévue (highlight si proche)
+     * Crédits estimés
+     * Actions (Modifier/Annuler)
+
+   - PAGINATION
+
+   - BULK ACTIONS:
+     * Annuler sélection
+
+   - SUMMARY:
+     * Total crédits réservés
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste SMS planifiés
+GET /sms/{serviceName}/jobs
+Query: { status: 'pending', limit, offset }
+Response: [{ id, receivers, message, sender, scheduledAt, estimatedCredits }]
+
+### Détail job
+GET /sms/{serviceName}/jobs/{jobId}
+Response: { id, receivers[], message, sender, scheduledAt, estimatedCredits, createdAt }
+
+### Modifier job
+PUT /sms/{serviceName}/jobs/{jobId}
+Body: { message?, scheduledAt? }
+
+### Annuler job
+DELETE /sms/{serviceName}/jobs/{jobId}
+
+### Annuler en masse
+DELETE /sms/{serviceName}/jobs
+Body: { jobIds[] }
+
+### Stats
+GET /sms/{serviceName}/jobs/stats
+Response: { pendingCount, next24hCount, totalReservedCredits }
+
+================================================================================
+
+## REGLES METIER
+
+- Modification possible jusqu'à 5min avant envoi
+- Annulation possible jusqu'à 1min avant envoi
+- Crédits réservés à la planification
+- Crédits restitués si annulation
+- Limite 1000 SMS par job
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- SmsPendingTab (container)
+- PendingJobsTable
+- PendingJobRow
+- EditPendingJobModal
+- CancelJobConfirmModal
+- BulkCancelConfirmModal
+- ReservedCreditsCard
+- Next24hWarningBanner
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

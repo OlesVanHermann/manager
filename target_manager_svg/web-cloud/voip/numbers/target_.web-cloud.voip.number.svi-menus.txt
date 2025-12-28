@@ -1,0 +1,131 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.svi-menus.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/numbers/{serviceName}/ivr/menus
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Numéros | NAV4=SVI | NAV5=Menus
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des menus du Serveur Vocal Interactif (SVI/IVR). Configuration des
+menus vocaux avec touches DTMF et destinations.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 0033972100000            | GET /telephony/{ba}/number/{sn} → serviceName           |
+| Menu Principal           | GET /telephony/{ba}/number/{sn}/ivr/menus → name        |
+| accueil.mp3              | menus[].announcement                                    |
+| Actif                    | menus[].status                                          |
+| Point d'entrée           | menus[].type (entry/submenu)                            |
+| 1 → Commercial           | menus[].keys[].key, menus[].keys[].destination          |
+| 3                        | count(menus)                                            |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - NAV3 tabs: Lignes | [Numéros] | Fax | Abrégés
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Numéro + Description
+   - NAV4 tabs: Général | Redirection | File d'attente | [SVI] | Planification | Sons
+   - NAV5 sub-tabs: Configuration | [Menus] | Statistiques
+
+   - TOOLBAR:
+     * + Nouveau menu
+     * Vue arborescence
+
+   - LISTE MENUS (1040x400):
+     * Cards pour chaque menu
+     * Barre colorée latérale (différencie les menus)
+     * Nom + statut + type
+     * Annonce associée
+     * Touches configurées avec destinations
+     * Actions: Éditer, Supprimer
+
+   - INFO BANNER: Explication SVI
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste menus SVI
+GET /telephony/{billingAccount}/number/{serviceName}/ivr/menus
+Response: [{
+  id, name, status, type, announcement, timeout, invalidAction,
+  keys: [{ key, action, destination, submenuId }]
+}]
+
+### Créer menu
+POST /telephony/{billingAccount}/number/{serviceName}/ivr/menus
+Body: { name, announcement, timeout, invalidAction, keys }
+
+### Modifier menu
+PUT /telephony/{billingAccount}/number/{serviceName}/ivr/menus/{id}
+Body: { name, announcement, timeout, invalidAction, keys }
+
+### Supprimer menu
+DELETE /telephony/{billingAccount}/number/{serviceName}/ivr/menus/{id}
+
+### Définir point d'entrée
+PUT /telephony/{billingAccount}/number/{serviceName}/ivr/entryMenu
+Body: { menuId }
+
+================================================================================
+
+## TOUCHES DTMF
+
+| Touche | Description                    |
+|--------|--------------------------------|
+| 0-9    | Chiffres standard              |
+| *      | Étoile (retour menu, etc.)     |
+| #      | Dièse (validation, etc.)       |
+
+================================================================================
+
+## ACTIONS POSSIBLES
+
+| Action      | Description                         |
+|-------------|-------------------------------------|
+| transfer    | Transférer vers ligne/numéro        |
+| queue       | Envoyer vers file d'attente         |
+| submenu     | Aller vers sous-menu                |
+| voicemail   | Envoyer vers messagerie             |
+| hangup      | Raccrocher après annonce            |
+| repeat      | Rejouer l'annonce                   |
+| back        | Retour menu précédent               |
+
+================================================================================
+
+## REGLES METIER
+
+- Maximum 10 niveaux de sous-menus
+- Timeout configurable (défaut 10s)
+- Action sur touche invalide configurable
+- Annonce obligatoire pour chaque menu
+- Une touche = une action
+- Point d'entrée unique obligatoire
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberIvrMenusTab (container)
+- IvrMenuCard (card menu)
+- IvrKeyBadge (touche DTMF)
+- CreateMenuModal
+- EditMenuModal
+- IvrTreeView (vue arborescence)
+- DeleteMenuConfirmModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

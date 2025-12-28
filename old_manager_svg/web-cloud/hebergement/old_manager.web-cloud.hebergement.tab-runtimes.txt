@@ -1,0 +1,118 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Runtimes
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des moteurs d'exécution.
+
+### Objectif fonctionnel
+- Configurer PHP ou Node.js par dossier
+- Définir les versions de runtime
+- Gérer les ports pour Node.js
+
+---
+
+## 2. LAYOUT
+
+### Structure message info + toolbar + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Message info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Texte | Les moteurs d'exécution permettent de définir la version de PHP ou Node.js |
+
+### Toolbar
+| Element | Description |
+|---------|-------------|
+| Bouton | + Ajouter un runtime (primary) |
+
+### Tableau runtimes
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du runtime (défaut marqué) |
+| Type | Badge PHP / Node.js |
+| Version | Numéro + badge fin de vie |
+| Dossier racine | Chemin |
+| Port public | Port pour Node.js |
+| État | Badge Actif |
+| Actions | Menu ⋮ |
+
+### Types de runtime
+| Type | Badge |
+|------|-------|
+| PHP | Indigo (#E0E7FF) |
+| Node.js | Vert (#D1FAE5) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Edit |
+| Redémarrer | Restart |
+| Définir par défaut | Set default |
+| Supprimer | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/runtime
+POST /hosting/web/{serviceName}/runtime
+PUT /hosting/web/{serviceName}/runtime/{id}
+DELETE /hosting/web/{serviceName}/runtime/{id}
+POST /hosting/web/{serviceName}/runtime/{id}/restart
+```
+
+### Modele
+```typescript
+interface HostingRuntime {
+  id: string;
+  name: string;
+  type: 'php' | 'nodejs';
+  version: string;
+  path: string;
+  publicPort?: number;
+  isDefault: boolean;
+  state: 'ok' | 'starting' | 'error';
+  isEol: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_runtime_title": "Moteurs d'exécution",
+  "hosting_runtime_info": "Les moteurs d'exécution permettent de définir la version de PHP ou Node.js",
+  "hosting_runtime_add": "Ajouter un runtime",
+  "hosting_runtime_col_name": "Nom",
+  "hosting_runtime_col_type": "Type",
+  "hosting_runtime_col_version": "Version",
+  "hosting_runtime_col_path": "Dossier racine",
+  "hosting_runtime_col_port": "Port public",
+  "hosting_runtime_col_state": "État",
+  "hosting_runtime_default": "par défaut",
+  "hosting_runtime_eol": "Fin de vie",
+  "hosting_runtime_action_edit": "Modifier",
+  "hosting_runtime_action_restart": "Redémarrer",
+  "hosting_runtime_action_default": "Définir par défaut",
+  "hosting_runtime_action_delete": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- PHP par défaut sur /
+- Node.js nécessite port public
+- Versions EOL affichées avec warning
+- Redémarrage possible pour Node.js

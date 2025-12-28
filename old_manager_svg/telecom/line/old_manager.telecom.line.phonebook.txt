@@ -1,0 +1,151 @@
+# Cahier des Charges : telecom/line - Carnet d'adresses
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion du carnet d'adresses d'une ligne telephonique.
+
+### Objectif fonctionnel
+- Gerer les contacts du telephone
+- Ajouter/modifier/supprimer des contacts
+- Importer/exporter le carnet
+- Supprimer en masse
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec carte nom + toolbar actions + tableau contacts
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Titre | Carnet d'adresses |
+| Description | Gerez les contacts de votre ligne telephonique |
+
+### Carte nom carnet
+| Element | Description |
+|---------|-------------|
+| Label | Nom du carnet: |
+| Nom | Mon carnet professionnel |
+| Bouton | Editer (crayon) |
+| Supprimer | Bouton rouge |
+
+### Menu Actions
+| Option | Description |
+|--------|-------------|
+| + Ajouter | Nouveau contact |
+| Importer | Import CSV/vCard |
+| Exporter | Export CSV |
+| Actualiser | Rafraichir liste |
+
+### Bouton suppression selection
+| Element | Description |
+|---------|-------------|
+| Type | Danger (rouge) |
+| Texte | Supprimer (X) |
+| Compteur | Nombre selectionne |
+
+### Tableau contacts
+| Colonne | Description |
+|---------|-------------|
+| Checkbox | Selection multiple |
+| Nom | Nom de famille |
+| Prenom | Prenom |
+| Groupe | Categorie (Travail, Famille, Amis) |
+| Tel. domicile | Numero fixe |
+| Mobile perso | Numero mobile personnel |
+| Tel. bureau | Numero professionnel |
+| Mobile pro | Numero mobile pro |
+| Actions | Menu contextuel |
+
+### Checkbox
+| Etat | Style |
+|------|-------|
+| Checked | Fond bleu, check blanc |
+| Unchecked | Fond blanc, bordure grise |
+
+### Menu ligne (...)
+| Option | Description |
+|--------|-------------|
+| Modifier | Ouvre modal edition |
+| Supprimer | Supprime contact (rouge) |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Afficher | Select (10/25/50) |
+| Page | Page X sur Y |
+| Navigation | Fleches |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/phonebook
+POST /telephony/{billingAccount}/line/{serviceName}/phone/phonebook
+PUT /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{id}
+DELETE /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{id}
+POST /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/import
+GET /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/export
+```
+
+### Modele Contact
+```typescript
+interface PhonebookContact {
+  id: string;
+  surname: string;
+  name: string;
+  group: string;
+  homePhone?: string;
+  homeMobile?: string;
+  workPhone?: string;
+  workMobile?: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_phonebook_title": "Carnet d'adresses",
+  "line_phonebook_desc": "Gerez les contacts de votre ligne telephonique",
+  "line_phonebook_name": "Nom du carnet",
+  "line_phonebook_actions": "Actions",
+  "line_phonebook_add": "Ajouter",
+  "line_phonebook_import": "Importer",
+  "line_phonebook_export": "Exporter",
+  "line_phonebook_refresh": "Actualiser",
+  "line_phonebook_delete_selected": "Supprimer",
+  "line_phonebook_col_surname": "Nom",
+  "line_phonebook_col_name": "Prenom",
+  "line_phonebook_col_group": "Groupe",
+  "line_phonebook_col_home": "Tel. domicile",
+  "line_phonebook_col_mobile": "Mobile perso",
+  "line_phonebook_col_work": "Tel. bureau",
+  "line_phonebook_col_work_mobile": "Mobile pro",
+  "line_phonebook_modify": "Modifier",
+  "line_phonebook_delete": "Supprimer",
+  "line_phonebook_show": "Afficher",
+  "line_phonebook_per_page": "par page",
+  "line_phonebook_page": "Page"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Maximum 200 contacts par carnet
+- Groupes: Travail, Famille, Amis
+- Au moins un numero requis par contact
+- Import CSV ou vCard
+- Synchronisation avec telephone

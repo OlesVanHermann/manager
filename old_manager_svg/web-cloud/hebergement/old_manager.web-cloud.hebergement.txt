@@ -1,0 +1,138 @@
+# Cahier des Charges : web-cloud/hebergement - Dashboard
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Dashboard principal d'un hebergement web mutualisé.
+
+### Objectif fonctionnel
+- Voir les informations générales de l'hébergement
+- Consulter la configuration PHP
+- Gérer l'offre et les options
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec breadcrumb + onglets + 3 cartes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Navigation
+| Element | Description |
+|---------|-------------|
+| Breadcrumb | Web Cloud > Hébergements > {domaine} |
+| Titre | {domaine} avec badge status |
+| Edit | Bouton modifier le nom |
+
+### Status
+| Element | Description |
+|---------|-------------|
+| Badge | Actif (vert) |
+| Expiration | Date d'expiration |
+
+### Onglets
+| Onglet | Description |
+|--------|-------------|
+| Informations générales | Actif |
+| Multisite | Liste des domaines |
+| Certificats SSL | Gestion SSL |
+| Modules en 1 clic | CMS |
+| Statistiques et logs | Analytics |
+| FTP - SSH | Accès fichiers |
+| Bases de données | MySQL |
+| Tâches en cours | Operations |
+| Plus | Menu déroulant |
+
+### Carte Informations générales
+| Champ | Description |
+|-------|-------------|
+| État du service | Badge Actif |
+| IPv4 | Adresse avec copie |
+| IPv6 | Adresse avec copie |
+| Espace disque | Progress bar avec % |
+| Datacenter | Localisation (Gravelines) |
+| Cluster | Numéro cluster |
+| Filer | Numéro filer |
+
+### Carte Configuration
+| Champ | Description |
+|-------|-------------|
+| Version PHP | Version + badge supportée |
+| Moteur | php / nodejs |
+| Environnement | production / development |
+| .ovhconfig | Lien modifier |
+| Firewall | Activé/Désactivé |
+
+### Carte Offre
+| Champ | Description |
+|-------|-------------|
+| Offre actuelle | Performance 1/2/3 |
+| Boost | Activé/Désactivé |
+| CDN | Basic/Advanced |
+| SSL | Let's Encrypt / Custom |
+| Actions | Liens modification |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}
+GET /hosting/web/{serviceName}/serviceInfos
+```
+
+### Modele
+```typescript
+interface HostingInfo {
+  serviceName: string;
+  displayName: string;
+  state: 'active' | 'suspended';
+  offer: string;
+  cluster: string;
+  filer: string;
+  primaryLogin: string;
+  ipv4: string;
+  ipv6: string;
+  quotaUsed: number;
+  quotaSize: number;
+  datacenter: string;
+  phpVersion: string;
+  environment: string;
+  firewall: boolean;
+  cdn: string;
+  ssl: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_dashboard_title": "{serviceName}",
+  "hosting_state_active": "Actif",
+  "hosting_state_suspended": "Suspendu",
+  "hosting_card_general": "Informations générales",
+  "hosting_card_config": "Configuration",
+  "hosting_card_offer": "Offre",
+  "hosting_disk_usage": "Espace disque",
+  "hosting_php_version": "Version PHP globale",
+  "hosting_php_supported": "Supportée",
+  "hosting_change_offer": "Changer d'offre",
+  "hosting_delete": "Supprimer mon hébergement"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Offre détermine les limites (stockage, sites, BDD)
+- PHP 8.x recommandé, anciennes versions dépréciées
+- Boost temporaire pour pics de trafic
+- CDN optionnel selon offre

@@ -1,0 +1,134 @@
+# Cahier des Charges : web-cloud/hosting - Modules 1 clic
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des modules CMS (WordPress, PrestaShop...).
+
+### Objectif fonctionnel
+- Lister les modules installés
+- Installer de nouveaux modules
+- Gérer les accès admin
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + description + bouton + tableau + galerie
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tête
+| Element | Description |
+|---------|-------------|
+| Titre | Modules en 1 clic |
+| Description | Installez WordPress, PrestaShop, Joomla! en quelques clics |
+
+### Bouton d'action
+| Bouton | Style |
+|--------|-------|
+| Ajouter un module | Primary |
+
+### Tableau modules installés
+| Colonne | Description |
+|---------|-------------|
+| Module | Icône + nom (WordPress, PrestaShop...) |
+| Version | Numéro de version |
+| Chemin | Lien vers dossier (/www, /shop) |
+| Login | Identifiant admin |
+| Base de données | Nom de la BDD associée |
+| État | Badge Actif |
+| Actions | Menu ⋮ |
+
+### Icônes modules
+| Module | Couleur |
+|--------|---------|
+| WordPress | #21759B (bleu) |
+| PrestaShop | #DF0067 (rose) |
+| Joomla! | #5091CD (bleu clair) |
+| Drupal | #0678BE (bleu) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Accéder au site | Ouvrir le site |
+| Interface d'administration | Ouvrir /wp-admin |
+| Changer le mot de passe | Reset admin password |
+| Supprimer le module | Destructif (rouge) |
+
+### Galerie modules disponibles
+| Element | Description |
+|---------|-------------|
+| Titre | Modules disponibles |
+| Format | Cartes 140x100px avec icône |
+| Modules | WordPress, PrestaShop, Joomla!, Drupal |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/module
+POST /hosting/web/{serviceName}/module
+DELETE /hosting/web/{serviceName}/module/{id}
+POST /hosting/web/{serviceName}/module/{id}/changePassword
+```
+
+### Modele
+```typescript
+interface InstalledModule {
+  id: number;
+  moduleId: string;
+  name: string;
+  version: string;
+  path: string;
+  adminLogin: string;
+  database: string;
+  state: 'ok' | 'error';
+  url: string;
+  adminUrl: string;
+}
+
+interface AvailableModule {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  latestVersion: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_module_title": "Modules en 1 clic",
+  "hosting_module_desc": "Installez des modules populaires comme WordPress, PrestaShop, Joomla! en quelques clics",
+  "hosting_module_add": "Ajouter un module",
+  "hosting_module_col_module": "Module",
+  "hosting_module_col_version": "Version",
+  "hosting_module_col_path": "Chemin",
+  "hosting_module_col_login": "Login",
+  "hosting_module_col_database": "Base de données",
+  "hosting_module_col_state": "État",
+  "hosting_module_access_site": "Accéder au site",
+  "hosting_module_access_admin": "Interface d'administration",
+  "hosting_module_password": "Changer le mot de passe",
+  "hosting_module_delete": "Supprimer le module",
+  "hosting_module_available": "Modules disponibles"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Installation auto = BDD + fichiers + config
+- Version la plus récente par défaut
+- Chemin doit être vide ou inexistant
+- Suppression = fichiers + BDD optionnel

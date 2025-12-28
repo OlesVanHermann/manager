@@ -1,0 +1,154 @@
+# Cahier des Charges : web-cloud/email - Filtres
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des filtres email (regles de tri).
+
+### Objectif fonctionnel
+- Voir les filtres configures
+- Creer de nouveaux filtres
+- Gerer la priorite et l'etat
+- Configurer conditions et actions
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec selecteur compte + bouton + tableau + info
+
+---
+
+## 3. COMPOSANTS UI
+
+### Selecteur compte
+| Element | Description |
+|---------|-------------|
+| Label | Compte e-mail |
+| Type | Select dropdown |
+| Valeur | contact@mywebsite.com |
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Creer un filtre |
+
+### Tableau filtres
+| Colonne | Description |
+|---------|-------------|
+| Priorite | Numero ordre (1, 2, 3...) |
+| Nom | Nom du filtre (bold) |
+| Condition | Type + valeur |
+| Action | Type + destination |
+| Etat | Badge Actif/Inactif |
+| Actions | Menu ⋮ |
+
+### Format condition
+| Element | Description |
+|---------|-------------|
+| Type | Sujet contient, De contient, Tous les messages |
+| Valeur | Texte de la condition |
+
+### Format action
+| Element | Description |
+|---------|-------------|
+| Type | Deplacer vers, Repondre avec |
+| Destination | Dossier ou message |
+
+### Etats filtre
+| Etat | Badge |
+|------|-------|
+| Actif | Vert (#DEF7EC) |
+| Inactif | Gris (#F3F4F6) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Edit filter |
+| Activer / Desactiver | Toggle state |
+| Changer la priorite | Change order |
+| --- | Separateur |
+| Supprimer | Destructif (rouge) |
+
+### Bandeau info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Titre | Comment fonctionnent les filtres ? |
+| Texte | Les filtres sont executes dans l'ordre de priorite... |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/domain/{domain}/account/{account}/filter
+POST /email/domain/{domain}/account/{account}/filter
+DELETE /email/domain/{domain}/account/{account}/filter/{name}
+PUT /email/domain/{domain}/account/{account}/filter/{name}
+PUT /email/domain/{domain}/account/{account}/filter/{name}/changePriority
+```
+
+### Modele
+```typescript
+interface EmailFilter {
+  name: string;
+  priority: number;
+  active: boolean;
+  conditions: FilterCondition[];
+  action: FilterAction;
+}
+
+interface FilterCondition {
+  field: 'subject' | 'from' | 'to' | 'body' | 'all';
+  operator: 'contains' | 'startsWith' | 'endsWith' | 'equals';
+  value: string;
+}
+
+interface FilterAction {
+  type: 'move' | 'delete' | 'reply' | 'forward' | 'markRead';
+  destination?: string;
+  message?: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_filters_title": "Filtres",
+  "email_filters_account": "Compte e-mail",
+  "email_filters_create": "Creer un filtre",
+  "email_filters_col_priority": "Priorite",
+  "email_filters_col_name": "Nom",
+  "email_filters_col_condition": "Condition",
+  "email_filters_col_action": "Action",
+  "email_filters_col_state": "Etat",
+  "email_filters_state_active": "Actif",
+  "email_filters_state_inactive": "Inactif",
+  "email_filters_condition_subject": "Sujet contient:",
+  "email_filters_condition_from": "De contient:",
+  "email_filters_condition_all": "Tous les messages",
+  "email_filters_action_move": "Deplacer vers:",
+  "email_filters_action_reply": "Repondre avec:",
+  "email_filters_action_edit": "Modifier",
+  "email_filters_action_toggle": "Activer / Desactiver",
+  "email_filters_action_priority": "Changer la priorite",
+  "email_filters_action_delete": "Supprimer",
+  "email_filters_info_title": "Comment fonctionnent les filtres ?",
+  "email_filters_info_text": "Les filtres sont executes dans l'ordre de priorite. Quand un e-mail correspond a une condition, l'action associee est appliquee."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Filtres executes par ordre de priorite
+- Un email peut correspondre a plusieurs filtres
+- Actions possibles: deplacer, supprimer, repondre, transferer
+- Filtres par compte (pas globaux)

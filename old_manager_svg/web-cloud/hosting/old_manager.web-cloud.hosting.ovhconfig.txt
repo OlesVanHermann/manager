@@ -1,0 +1,143 @@
+# Cahier des Charges : web-cloud/hosting - Configuration PHP (.ovhconfig)
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de modification de la configuration PHP.
+
+### Objectif fonctionnel
+- Restaurer ou modifier la config
+- Changer la version PHP
+- Configurer les options avancées
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec wizard 2 étapes + formulaire + aide
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header modal
+| Element | Description |
+|---------|-------------|
+| Titre | Modifier la configuration PHP (.ovhconfig) |
+| Bouton X | Fermer |
+
+### Wizard stepper
+| Étape | Label |
+|-------|-------|
+| 1 (actif) | Action |
+| 2 | Configuration |
+
+### Options action (radio)
+| Option | Description |
+|--------|-------------|
+| Restaurer | Revenir à une version antérieure |
+| Modifier (sélectionné) | Personnaliser les paramètres PHP |
+
+### Formulaire configuration PHP
+| Champ | Type | Valeurs |
+|-------|------|---------|
+| Version PHP | Select | 7.4, 8.0, 8.1, 8.2, 8.3 |
+| Environnement d'exécution | Select | stable64, legacy |
+
+### Options avancées
+| Champ | Type | Valeurs |
+|-------|------|---------|
+| Moteur | Select | php, phpcgi |
+| Environnement | Select | production, development |
+| Firewall HTTP | Select | none, security |
+
+### Message warning
+| Element | Description |
+|---------|-------------|
+| Type | Warning (jaune) |
+| Icône | ⚠️ |
+| Texte | La modification peut impacter le fonctionnement |
+
+### Panel Aide (droite)
+| Section | Contenu |
+|---------|---------|
+| Versions PHP | Recommandée: PHP 8.2 |
+| Environnement | stable64 vs legacy |
+| Firewall HTTP | Protections attaques web |
+
+### Boutons footer
+| Bouton | Style |
+|--------|-------|
+| Annuler | Outline |
+| Suivant → | Primary |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/ovhConfig
+PUT /hosting/web/{serviceName}/ovhConfig
+GET /hosting/web/{serviceName}/ovhConfig/rollback
+POST /hosting/web/{serviceName}/ovhConfig/rollback
+```
+
+### Modele
+```typescript
+interface OvhConfig {
+  engineName: 'php' | 'phpcgi';
+  engineVersion: string;
+  environment: 'production' | 'development';
+  container: 'stable64' | 'legacy';
+  httpFirewall: 'none' | 'security';
+}
+
+interface OvhConfigRollback {
+  id: string;
+  date: string;
+  config: OvhConfig;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_ovhconfig_title": "Modifier la configuration PHP (.ovhconfig)",
+  "hosting_ovhconfig_step_action": "Action",
+  "hosting_ovhconfig_step_config": "Configuration",
+  "hosting_ovhconfig_question": "Que souhaitez-vous faire ?",
+  "hosting_ovhconfig_restore": "Restaurer une configuration précédente",
+  "hosting_ovhconfig_restore_desc": "Revenir à une version antérieure de votre configuration PHP",
+  "hosting_ovhconfig_modify": "Modifier la configuration actuelle",
+  "hosting_ovhconfig_modify_desc": "Personnaliser les paramètres PHP de votre hébergement",
+  "hosting_ovhconfig_php_title": "Configuration PHP",
+  "hosting_ovhconfig_php_version": "Version PHP",
+  "hosting_ovhconfig_container": "Environnement d'exécution",
+  "hosting_ovhconfig_advanced": "Options avancées",
+  "hosting_ovhconfig_engine": "Moteur",
+  "hosting_ovhconfig_environment": "Environnement",
+  "hosting_ovhconfig_firewall": "Firewall HTTP",
+  "hosting_ovhconfig_warning": "La modification de ces paramètres peut impacter le fonctionnement de votre site",
+  "hosting_ovhconfig_help_title": "Aide",
+  "hosting_ovhconfig_help_version": "Version recommandée",
+  "hosting_ovhconfig_help_container": "stable64 : environnement 64 bits recommandé",
+  "hosting_ovhconfig_help_legacy": "legacy : compatibilité applications anciennes",
+  "hosting_ovhconfig_help_firewall": "Active les protections contre les attaques web courantes",
+  "hosting_ovhconfig_cancel": "Annuler",
+  "hosting_ovhconfig_next": "Suivant"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Modifications appliquées en quelques minutes
+- Rollback = historique des configs
+- production = erreurs masquées
+- development = affichage erreurs PHP
+- stable64 recommandé pour 8.x

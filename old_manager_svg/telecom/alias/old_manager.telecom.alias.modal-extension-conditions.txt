@@ -1,0 +1,134 @@
+# Cahier des Charges : telecom/alias - Modal Conditions avancees
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de configuration des conditions d'une extension.
+
+### Objectif fonctionnel
+- Configurer le calendrier
+- Definir les plages horaires
+- Gerer le filtrage d'appels
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec sections + detail
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header modal
+| Element | Description |
+|---------|-------------|
+| Titre | Conditions avancees |
+| Bouton X | Fermer modal |
+
+### Info alert
+| Element | Description |
+|---------|-------------|
+| Fond | Bleu clair |
+| Icone | Information |
+| Texte | Explication conditions |
+
+### Section Calendrier
+| Element | Description |
+|---------|-------------|
+| Titre | Calendrier |
+| Statut | Aucune/configuree |
+| Badge | Categorie active |
+| Chevron | Acces detail |
+
+### Section Plages horaires
+| Element | Description |
+|---------|-------------|
+| Titre | Plages horaires |
+| Statut | N creneaux configures |
+| Badges | Heures actives |
+| Chevron | Acces detail |
+
+### Section Filtrage
+| Element | Description |
+|---------|-------------|
+| Titre | Filtrage d'appels |
+| Statut | Liste X - N numeros |
+| Chevron | Acces detail |
+
+### Detail plages horaires
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour |
+| Titre | Plages horaires |
+| Jours | Selecteur multi-jours |
+| Creneaux | Inputs heure debut/fin |
+| Ajouter | + Ajouter un creneau |
+
+### Selecteur jours
+| Jour | Etat |
+|------|------|
+| Lun-Ven | Selectionnes (bleu) |
+| Sam-Dim | Non selectionnes (gris) |
+
+### Input creneau
+| Champ | Format |
+|-------|--------|
+| Debut | HH:MM |
+| Fin | HH:MM |
+| Valider | Bouton ✓ |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Modifier | Primary | Sauvegarde |
+| Annuler | Default | Ferme |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionTime/{conditionId}
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/conditionScreenList
+```
+
+### Modele ConditionTime
+```typescript
+interface OvhPabxDialplanExtensionConditionTime {
+  conditionId: number;
+  weekDay: string;
+  timeFrom: string;
+  timeTo: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_modal_conditions_title": "Conditions avancees",
+  "alias_modal_conditions_info": "Les conditions permettent de filtrer les appels",
+  "alias_modal_conditions_calendar": "Calendrier",
+  "alias_modal_conditions_time_slots": "Plages horaires",
+  "alias_modal_conditions_filtering": "Filtrage d'appels",
+  "alias_modal_conditions_no_condition": "Aucune condition",
+  "alias_modal_conditions_slots_configured": "creneaux configures",
+  "alias_modal_conditions_add_slot": "Ajouter un creneau",
+  "alias_modal_conditions_back": "Retour"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Conditions cumulatives (ET)
+- Plages horaires non chevauchantes
+- Calendrier lie au scheduler
+- Maximum 10 conditions par extension

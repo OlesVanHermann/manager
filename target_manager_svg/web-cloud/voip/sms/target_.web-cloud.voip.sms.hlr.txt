@@ -1,0 +1,115 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.sms.hlr.svg
+Route:   /web-cloud/sms/{serviceName}/hlr
+NAV:     NAV1=Web Cloud | NAV2=SMS | NAV3=Vérification HLR
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Vérification HLR (Home Location Register) des numéros de téléphone.
+Permet de vérifier la validité, l'opérateur et le type de numéro avant envoi.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| +33 6 12 34 56 78        | GET /sms/.../hlr → number                               |
+| Valide                   | hlr.status (valid/invalid/unknown)                      |
+| Orange France            | hlr.operator                                            |
+| France                   | hlr.country                                             |
+| Mobile                   | hlr.type (mobile/landline)                              |
+| 24/12/2024 15:32         | hlr.checkedAt                                           |
+| 0.01 cr                  | hlr.cost                                                |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche comptes SMS
+   - Liste des comptes SMS
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - INFO BANNER:
+     * Explication HLR Lookup + coût
+
+   - BLOC NOUVELLE VERIFICATION:
+     * Input numéro
+     * Bouton vérifier
+
+   - BLOC VERIFICATION EN MASSE:
+     * Upload CSV
+     * Bouton lancer analyse
+
+   - TABLE HISTORIQUE:
+     * Numéro
+     * Statut (badge)
+     * Opérateur
+     * Pays (drapeau)
+     * Type (Mobile/Fixe)
+     * Date
+     * Coût
+
+   - STATS:
+     * Crédits utilisés ce mois
+     * Nombre de requêtes
+
+================================================================================
+
+## API ENDPOINTS
+
+### Vérification unitaire
+POST /sms/{serviceName}/hlr
+Body: { number }
+Response: { number, status, operator, country, type, cost }
+
+### Vérification en masse
+POST /sms/{serviceName}/hlr/batch
+Body: { numbers[] } ou FormData avec fichier CSV
+Response: { batchId, count }
+
+### Résultat batch
+GET /sms/{serviceName}/hlr/batch/{batchId}
+Response: { status, results[], validCount, invalidCount }
+
+### Historique
+GET /sms/{serviceName}/hlr/history
+Query: { startDate?, endDate?, limit, offset }
+Response: [{ number, status, operator, country, type, checkedAt, cost }]
+
+### Stats
+GET /sms/{serviceName}/hlr/stats
+Response: { monthlyCreditsUsed, monthlyRequestCount }
+
+================================================================================
+
+## REGLES METIER
+
+- Coût: 0.01 crédit par requête
+- Résultat mis en cache 24h
+- Batch max 10 000 numéros
+- Format international requis (+XX...)
+- Résultats: valid, invalid, unknown
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- SmsHlrTab (container)
+- HlrSingleLookupForm
+- HlrBatchUploadForm
+- HlrHistoryTable
+- HlrStatusBadge
+- HlrCountryFlag
+- HlrStatsFooter
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

@@ -1,0 +1,132 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.group.portability.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/portability
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Portabilité
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des demandes de portabilité de numéros. Suivi des transferts entrants
+et sortants avec timeline d'avancement.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| voip-ab12345             | GET /telephony → billingAccount                         |
+| 0972123456               | GET /telephony/{ba}/portability → number                |
+| Orange                   | portability[].currentOperator                           |
+| 01AB CD EF GH 12         | portability[].rio                                       |
+| 20/12/2024               | portability[].requestDate                               |
+| 03/01/2025               | portability[].portDate                                  |
+| En cours                 | portability[].status                                    |
+| Entrant/Sortant          | portability[].direction                                 |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche groupes
+   - Liste des groupes VoIP
+
+2. RIGHT PANEL (1096px)
+   - Header: Groupe + Description
+   - NAV3 tabs: Dashboard | Lignes | Numéros | Fax | Répertoire | Facturation | Commandes | [Portabilité]
+
+   - INFO BANNER: Explication portabilité
+
+   - TOOLBAR:
+     * Refresh
+     * + Nouvelle demande
+
+   - BLOC: Demandes en cours (1040x180)
+     * Cards pour chaque demande active
+     * Timeline: Demande → Validation → Traitement → Portage
+     * Infos: numéro, opérateur, RIO, dates
+     * Bouton Voir détails
+
+   - TABLE: Historique des portabilités (1040x200)
+     * Colonnes: Numéro | Opérateur | Date demande | Date portage | Type | Statut | Actions
+
+   - BLOC INFO: Comment obtenir le RIO
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste portabilités
+GET /telephony/{billingAccount}/portability
+Response: [{
+  id, number, currentOperator, rio, requestDate, portDate,
+  status, direction, timeline
+}]
+
+### Nouvelle demande portabilité
+POST /telephony/{billingAccount}/portability
+Body: { number, rio, desiredDate }
+Response: { id, status }
+
+### Détail portabilité
+GET /telephony/{billingAccount}/portability/{id}
+Response: { ... + documents[], history[] }
+
+### Annuler portabilité
+DELETE /telephony/{billingAccount}/portability/{id}
+
+================================================================================
+
+## STATUTS PORTABILITÉ
+
+| Statut        | Badge  | Description                    |
+|---------------|--------|--------------------------------|
+| pending       | Gris   | En attente validation          |
+| validated     | Bleu   | Validé, en attente traitement  |
+| processing    | Jaune  | Traitement en cours            |
+| scheduled     | Bleu   | Portage programmé              |
+| completed     | Vert   | Terminé                        |
+| cancelled     | Rouge  | Annulé                         |
+| rejected      | Rouge  | Rejeté (RIO invalide, etc.)    |
+
+================================================================================
+
+## TIMELINE PORTABILITÉ
+
+| Étape       | Description                       |
+|-------------|-----------------------------------|
+| Demande     | Demande créée                     |
+| Validation  | Documents vérifiés                |
+| Traitement  | Coordination avec opérateur       |
+| Portage     | Numéro transféré                  |
+
+================================================================================
+
+## REGLES METIER
+
+- Délai légal: 7 jours ouvrés
+- RIO obligatoire (obtenu au 3179)
+- RIO valide 7 jours
+- Annulation possible jusqu'à J-1
+- Portabilité entrante gratuite
+- Portabilité sortante: voir conditions
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- GroupPortabilityTab (container)
+- ActivePortabilityCard (demande en cours)
+- PortabilityTimeline
+- PortabilityHistoryTable
+- NewPortabilityModal
+- PortabilityDetailModal
+- RioInfoCard
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

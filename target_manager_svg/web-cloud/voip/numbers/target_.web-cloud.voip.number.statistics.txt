@@ -1,0 +1,100 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.statistics.svg
+Route:   /web-cloud/voip/number/{serviceName}/statistics
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Statistiques appels
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Statistiques détaillées du trafic d'appels sur un numéro. KPIs, graphiques
+d'évolution, répartition horaire et destinations.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 1,247                    | GET /telephony/.../stats → totalCalls                   |
+| 1,089 (87.3%)            | stats.answeredCalls / answeredRate                      |
+| 158 (12.7%)              | stats.missedCalls / missedRate                          |
+| 3:42                     | stats.avgDuration                                       |
+| 0:23                     | stats.avgWaitTime                                       |
+| [chart data]             | stats.dailyDistribution[]                               |
+| [heatmap data]           | stats.hourlyDistribution[]                              |
+| [destinations]           | stats.topDestinations[]                                 |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + sélecteur période + export
+
+   - STATS CARDS (5):
+     * Total appels + trend
+     * Appels répondus (vert)
+     * Appels manqués (rouge)
+     * Durée moyenne
+     * Temps attente moyen
+
+   - GRAPHIQUE EVOLUTION:
+     * Barres par jour
+     * Axes labels
+
+   - REPARTITION HORAIRE:
+     * Heatmap jours/heures
+     * Note pic activité
+
+   - PRINCIPALES DESTINATIONS:
+     * Liste top 4
+     * Nombre appels
+     * Pourcentage
+
+================================================================================
+
+## API ENDPOINTS
+
+### Statistiques
+GET /telephony/{billingAccount}/number/{serviceName}/statistics
+Query: { period: '7d' | '30d' | '90d' | custom }
+Response: { totalCalls, answeredCalls, missedCalls, avgDuration, avgWaitTime, dailyDistribution, hourlyDistribution, topDestinations }
+
+### Export CSV
+GET /telephony/{billingAccount}/number/{serviceName}/statistics/export
+Query: { period, format: 'csv' | 'xlsx' }
+Response: File download
+
+================================================================================
+
+## REGLES METIER
+
+- Périodes: 7j, 30j, 90j, personnalisée
+- Données disponibles 12 mois
+- Refresh toutes les heures
+- Export: CSV, XLSX
+- Heatmap: Lun-Ven, 8h-18h
+- Pas de données temps réel
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberStatisticsTab (container)
+- PeriodSelector
+- ExportButton
+- StatsCardsRow
+- TrafficChart (recharts)
+- HourlyHeatmap
+- TopDestinationsCard
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

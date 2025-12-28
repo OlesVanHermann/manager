@@ -1,0 +1,132 @@
+# Cahier des Charges : web-cloud/email-exchange - Boites partagees
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des boites partagees Exchange.
+
+### Objectif fonctionnel
+- Voir la liste des boites partagees
+- Creer de nouvelles boites partagees
+- Gerer les delegations d'acces
+- Configurer les proprietes
+
+---
+
+## 2. LAYOUT
+
+### Structure onglet avec bouton action + tableau pagine
+
+---
+
+## 3. COMPOSANTS UI
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Creer une boite partagee |
+
+### Tableau boites partagees
+| Colonne | Description |
+|---------|-------------|
+| Adresse | Lien bleu cliquable |
+| Nom d'affichage | Texte |
+| Quota | Barre progression + texte |
+| Acces (Full) | Nombre utilisateurs |
+| Envoi de | Nombre utilisateurs |
+| Actions | Menu ⋮ |
+
+### Barre quota
+| Element | Description |
+|---------|-------------|
+| Type | Progress bar horizontale |
+| Couleur | Bleu (#0050D7) |
+| Texte | XX Go / YY Go |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Gerer les delegations | Full access + Send As |
+| Modifier les proprietes | Edit mailbox settings |
+| Acceder a OWA | Open webmail |
+| --- | Separateur |
+| Supprimer | Destructif (rouge) |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Texte | Affichage X-Y sur Z boites partagees |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/exchange/{organization}/{service}/sharedAccount
+POST /email/exchange/{organization}/{service}/sharedAccount
+DELETE /email/exchange/{organization}/{service}/sharedAccount/{email}
+PUT /email/exchange/{organization}/{service}/sharedAccount/{email}
+GET /email/exchange/{organization}/{service}/sharedAccount/{email}/fullAccess
+POST /email/exchange/{organization}/{service}/sharedAccount/{email}/fullAccess
+DELETE /email/exchange/{organization}/{service}/sharedAccount/{email}/fullAccess/{account}
+GET /email/exchange/{organization}/{service}/sharedAccount/{email}/sendAs
+POST /email/exchange/{organization}/{service}/sharedAccount/{email}/sendAs
+DELETE /email/exchange/{organization}/{service}/sharedAccount/{email}/sendAs/{account}
+```
+
+### Modele
+```typescript
+interface ExchangeSharedAccount {
+  sharedEmailAddress: string;
+  displayName: string;
+  quota: number;
+  usedQuota: number;
+  state: 'ok' | 'inCreation' | 'suspended';
+  hiddenFromAddressBook: boolean;
+}
+
+interface SharedAccountFullAccess {
+  allowedAccountId: number;
+  allowedAccount: string;
+}
+
+interface SharedAccountSendAs {
+  allowedAccountId: number;
+  allowedAccount: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "exchange_shared_title": "Boites partagees",
+  "exchange_shared_create": "Creer une boite partagee",
+  "exchange_shared_col_address": "Adresse",
+  "exchange_shared_col_display": "Nom d'affichage",
+  "exchange_shared_col_quota": "Quota",
+  "exchange_shared_col_full_access": "Acces (Full)",
+  "exchange_shared_col_send_as": "Envoi de",
+  "exchange_shared_users": "{count} utilisateurs",
+  "exchange_shared_action_delegations": "Gerer les delegations",
+  "exchange_shared_action_properties": "Modifier les proprietes",
+  "exchange_shared_action_owa": "Acceder a OWA",
+  "exchange_shared_action_delete": "Supprimer",
+  "exchange_shared_pagination": "Affichage de {start}-{end} sur {total} boites partagees"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Boite partagee = boite sans licence utilisateur
+- Full Access = peut lire/ecrire tous les emails
+- Send As = peut envoyer en tant que la boite
+- Quota 50 Go standard
+- Acces via OWA ou Outlook
+- Pas de connexion directe (delegation uniquement)

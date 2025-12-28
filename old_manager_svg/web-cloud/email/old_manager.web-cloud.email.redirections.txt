@@ -1,0 +1,127 @@
+# Cahier des Charges : web-cloud/email - Redirections
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des redirections email.
+
+### Objectif fonctionnel
+- Voir les redirections actives
+- Creer de nouvelles redirections
+- Gerer les copies locales
+- Distinguer redirections locales/externes
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec description + bouton + tableau + info
+
+---
+
+## 3. COMPOSANTS UI
+
+### Description page
+| Element | Description |
+|---------|-------------|
+| Texte | Transferez vos e-mails vers d'autres adresses automatiquement. |
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Creer une redirection |
+
+### Tableau redirections
+| Colonne | Description |
+|---------|-------------|
+| De | Adresse source |
+| Vers | Adresse destination |
+| Type | Badge Locale/Externe |
+| Copie locale | Badge Oui/Non |
+| Actions | Menu ⋮ |
+
+### Types de redirection
+| Type | Badge |
+|------|-------|
+| Locale | Bleu clair (#DBEAFE) |
+| Externe | Vert clair (#DEF7EC) |
+
+### Copie locale
+| Etat | Badge |
+|------|-------|
+| Oui | Vert clair (#DEF7EC) |
+| Non | Rouge clair (#FEE2E2) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Edit redirection |
+| --- | Separateur |
+| Supprimer | Destructif (rouge) |
+
+### Bandeau info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Titre | A propos des redirections |
+| Points | Locale, Externe, Copie locale |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/domain/{domain}/redirection
+POST /email/domain/{domain}/redirection
+DELETE /email/domain/{domain}/redirection/{id}
+PUT /email/domain/{domain}/redirection/{id}
+```
+
+### Modele
+```typescript
+interface EmailRedirection {
+  id: string;
+  from: string;
+  to: string;
+  localCopy: boolean;
+}
+
+type RedirectionType = 'local' | 'external';
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_redirections_title": "Redirections",
+  "email_redirections_desc": "Transferez vos e-mails vers d'autres adresses automatiquement.",
+  "email_redirections_create": "Creer une redirection",
+  "email_redirections_col_from": "De",
+  "email_redirections_col_to": "Vers",
+  "email_redirections_col_type": "Type",
+  "email_redirections_col_copy": "Copie locale",
+  "email_redirections_type_local": "Locale",
+  "email_redirections_type_external": "Externe",
+  "email_redirections_copy_yes": "Oui",
+  "email_redirections_copy_no": "Non",
+  "email_redirections_action_edit": "Modifier",
+  "email_redirections_action_delete": "Supprimer",
+  "email_redirections_info_title": "A propos des redirections",
+  "email_redirections_info_local": "Locale : redirige vers un compte e-mail du meme domaine",
+  "email_redirections_info_external": "Externe : redirige vers une adresse e-mail externe",
+  "email_redirections_info_copy": "Copie locale : conserve une copie dans la boite d'origine"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Locale = destination sur meme domaine
+- Externe = destination hors domaine
+- Copie locale = garde une copie dans boite source
+- Redirection ne consomme pas de compte

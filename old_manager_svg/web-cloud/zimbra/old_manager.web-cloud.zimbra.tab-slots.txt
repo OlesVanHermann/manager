@@ -1,0 +1,96 @@
+# Cahier des Charges : web-cloud/zimbra - Slots
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Vue des comptes non configures (slots disponibles).
+
+### Objectif fonctionnel
+- Voir les slots non assignes
+- Configurer ou changer d'offre
+- Annuler les resiliations
+
+---
+
+## 2. LAYOUT
+
+### Structure identique a tab-accounts avec switch sur "non configures"
+
+---
+
+## 3. COMPOSANTS UI
+
+### Switch comptes
+| Vue | Description |
+|-----|-------------|
+| Comptes configures | Inactif |
+| Comptes non configures | Actif (bleu) |
+
+### Tableau slots
+| Colonne | Description |
+|---------|-------------|
+| Offre | STARTER / PRO |
+| Quota | 15 Go / 50 Go |
+| Echeance | Date expiration |
+| Renouvellement | Badge Automatique/Resiliation prevue |
+| Actions | Menu ⋮ |
+
+### Etats renouvellement
+| Etat | Badge |
+|------|-------|
+| Automatique | Vert (#DEF7EC) |
+| Resiliation prevue | Orange (#FEF3C7) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Changer d'offre | Upgrade/downgrade |
+| Annuler la resiliation | Cancel termination |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/slot
+PUT /zimbra/platform/{platformId}/slot/{slotId}/changeOffer
+DELETE /zimbra/platform/{platformId}/slot/{slotId}/termination
+```
+
+### Modele
+```typescript
+interface ZimbraSlot {
+  id: string;
+  offer: 'starter' | 'pro';
+  quota: number;
+  expiration: string;
+  renewal: 'automatic' | 'termination';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_slots_title": "Comptes non configures",
+  "zimbra_slots_col_offer": "Offre",
+  "zimbra_slots_col_quota": "Quota",
+  "zimbra_slots_col_expiration": "Echeance",
+  "zimbra_slots_col_renewal": "Renouvellement",
+  "zimbra_slots_renewal_auto": "Automatique",
+  "zimbra_slots_renewal_term": "Resiliation prevue",
+  "zimbra_slots_action_change": "Changer d'offre",
+  "zimbra_slots_action_cancel": "Annuler la resiliation"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Slot = licence non assignee
+- Peut etre assigne a un utilisateur
+- Resiliation annulable avant echeance

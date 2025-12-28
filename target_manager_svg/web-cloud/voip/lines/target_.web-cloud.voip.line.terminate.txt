@@ -1,0 +1,118 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.terminate.svg
+Route:   /web-cloud/voip/lines/{serviceName}/terminate
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Résiliation
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Page de résiliation définitive d'une ligne téléphonique. Suppression du numéro
+et de toutes les données associées.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| +33 9 12 34 56 78        | GET /telephony/.../line → number                        |
+| Bureau Paris - Jean      | line.description                                        |
+| 15/03/2023               | line.activationDate                                     |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre (rouge) + description
+
+   - WARNING BANNER ROUGE:
+     * Action irréversible
+     * Liste des conséquences
+
+   - BLOC LIGNE A RESILIER:
+     * Numéro
+     * Description
+     * Date d'activation
+
+   - BLOC OPTIONS RESILIATION:
+     * Radio: Immédiate
+     * Radio: À date (avec date picker)
+
+   - TEXTAREA RAISON (optionnel)
+
+   - CHECKBOX CONFIRMATION
+
+   - ACTIONS: Confirmer (rouge), Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Informations ligne
+GET /telephony/{billingAccount}/line/{serviceName}
+Response: {
+  number, description, activationDate, billingAccount
+}
+
+### Demander résiliation
+POST /telephony/{billingAccount}/line/{serviceName}/terminate
+Body: {
+  terminationDate: 'immediate' | 'YYYY-MM-DD',
+  reason: string (optional)
+}
+
+### Annuler résiliation (si pas encore effective)
+DELETE /telephony/{billingAccount}/line/{serviceName}/terminate
+
+================================================================================
+
+## TYPES RESILIATION
+
+| Type       | Description                        |
+|------------|-----------------------------------|
+| immediate  | Fin de période de facturation     |
+| scheduled  | À une date précise                |
+
+================================================================================
+
+## REGLES METIER
+
+- Préavis: fin de période en cours
+- Numéro: irrécupérable après 30 jours
+- Portabilité sortante: possible avant résiliation
+- Remboursement: au prorata si engagement terminé
+
+================================================================================
+
+## CONSEQUENCES
+
+- Perte définitive du numéro
+- Suppression messagerie vocale
+- Suppression carnet d'adresses
+- Suppression configuration (renvois, etc.)
+- Fin de facturation
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineTerminateTab (container)
+- IrreversibleWarningBanner
+- LineInfoCard
+- TerminationOptionsRadio
+- DatePicker
+- ReasonTextarea
+- ConfirmationCheckbox
+- TerminateActionButtons
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

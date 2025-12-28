@@ -1,0 +1,152 @@
+# Cahier des Charges : telecom/alias - OVH PABX Plan de numerotation
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Interface visuelle du plan de numerotation OVH PABX.
+
+### Objectif fonctionnel
+- Visualiser le flux d'appels
+- Configurer les etapes (extensions)
+- Definir les actions et conditions
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec schema visuel + legende
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Plan de numerotation |
+| Sous-titre | Configurez le routage |
+
+### Schema visuel
+| Element | Description |
+|---------|-------------|
+| Appel entrant | Noeud source |
+| Dialplan | Noeud principal |
+| Extensions | Etapes successives |
+| Connexions | Lignes pointillees |
+
+### Noeud Dialplan
+| Element | Description |
+|---------|-------------|
+| Fond | Bleu clair |
+| Icone | Engrenage |
+| Titre | Plan de numerotation |
+| Nom | Description perso |
+| Menu | Actions (⋮) |
+
+### Menu Dialplan
+| Action | Description |
+|--------|-------------|
+| Modifier | Edite le nom |
+| Ajouter etape | Nouvelle extension |
+| Masquer etapes | Toggle affichage |
+| Supprimer | Supprime dialplan |
+
+### Noeud Extension
+| Element | Description |
+|---------|-------------|
+| Header | Etape N + badge statut |
+| Info | Nb actions, conditions |
+| Actions | Badges colores |
+| Menu | Actions (⋮) |
+
+### Badges actions
+| Type | Couleur | Description |
+|------|---------|-------------|
+| Jouer son | Jaune | #FEF3C7 |
+| File attente | Bleu | #DBEAFE |
+| Messagerie | Violet | #E0E7FF |
+| Menu IVR | Rose | #FCE7F3 |
+| Transfert | Vert | #ECFDF5 |
+| TTS | Violet | #F3E8FF |
+| Raccrocher | Rouge | #FEF2F2 |
+| Pause | Gris | #F5F5F4 |
+
+### Badge Terminal
+| Element | Description |
+|---------|-------------|
+| Fond | Rouge clair |
+| Texte | Terminal |
+| Info | Met fin a l'appel |
+
+### Conditions extension
+| Element | Description |
+|---------|-------------|
+| Calendrier | Jours programmes |
+| Plages | Horaires actifs |
+| Filtrage | Liste blanche/noire |
+
+### Legende
+| Element | Description |
+|---------|-------------|
+| Titre | Legende des actions |
+| Badges | Tous types colores |
+| Terminal | Explication |
+
+### Bouton ajout
+| Element | Description |
+|---------|-------------|
+| Texte | + Ajouter une etape |
+| Action | Cree nouvelle extension |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/rule
+```
+
+### Modele Extension
+```typescript
+interface OvhPabxDialplanExtension {
+  extensionId: number;
+  position: number;
+  enabled: boolean;
+  schedulerCategory: string;
+  screenListType: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_dialplan_title": "Plan de numerotation",
+  "alias_dialplan_step": "Etape",
+  "alias_dialplan_add_step": "Ajouter une etape",
+  "alias_dialplan_actions": "actions",
+  "alias_dialplan_no_condition": "Aucune condition",
+  "alias_dialplan_conditions": "Conditions",
+  "alias_dialplan_active": "Actif",
+  "alias_dialplan_inactive": "Inactif",
+  "alias_dialplan_terminal": "Terminal",
+  "alias_dialplan_legend": "Legende des actions"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Extensions executees dans l'ordre
+- Conditions evaluees sequentiellement
+- Action terminale = fin du flux
+- Maximum 10 extensions par dialplan

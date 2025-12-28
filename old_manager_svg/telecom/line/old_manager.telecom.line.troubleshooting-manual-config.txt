@@ -1,0 +1,159 @@
+# Cahier des Charges : telecom/line - Configuration manuelle
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de depannage avec configuration manuelle du telephone.
+
+### Objectif fonctionnel
+- Guider la reinitialisation usine
+- Trouver l'adresse IP du telephone
+- Acceder a l'interface web de configuration
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec etapes verticales + screenshots
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour a l'assistance |
+| Titre | Configuration manuelle |
+
+### Etape 1 - Reset usine (complete)
+| Element | Description |
+|---------|-------------|
+| Numero | ✓ (cercle vert) |
+| Titre | Reinitialisation usine |
+| Modele | Pour un Cisco : |
+
+### Instructions reset
+| Etape | Action |
+|-------|--------|
+| 1 | Debranchez le telephone |
+| 2 | Maintenez le bouton "Setup" enfonce |
+| 3 | Rebranchez le telephone en maintenant le bouton |
+
+### Etape 2 - Trouver IP (active)
+| Element | Description |
+|---------|-------------|
+| Numero | 2 (cercle bleu) |
+| Titre | Trouver l'adresse IP du telephone |
+| Instructions | Sur votre telephone Cisco... |
+
+### Instructions IP Cisco
+| Etape | Action |
+|-------|--------|
+| 1 | Appuyez sur le bouton "Setup" |
+| 2 | Naviguez vers "Network" > "Current IP" |
+| 3 | Notez l'adresse IP affichee |
+
+### Champ saisie IP
+| Element | Description |
+|---------|-------------|
+| Label | Adresse IP privee du telephone |
+| Type | Input text |
+| Exemple | 192.168.1.100 |
+| Bouton | Suivant (Primary) |
+
+### Etape 3 - Interface web (inactive)
+| Element | Description |
+|---------|-------------|
+| Numero | 3 (cercle gris) |
+| Titre | Acces a l'interface web |
+| URL | http://192.168.1.100 |
+
+### Instructions interface web
+| Etape | Action |
+|-------|--------|
+| 1 | Ouvrez votre navigateur |
+| 2 | Entrez l'adresse IP du telephone |
+| 3 | Cliquez sur "Admin Login" |
+| 4 | Allez dans "Voice" > "Provisioning" |
+| 5 | Entrez l'URL du serveur OVH |
+| 6 | Sauvegardez et redemarrez |
+
+### Zone screenshot
+| Element | Description |
+|---------|-------------|
+| Type | Image placeholder |
+| Contenu | Capture d'ecran interface web Cisco |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone
+GET /telephony/provisioningUrl
+```
+
+### Modele
+```typescript
+interface PhoneModel {
+  brand: string;
+  model: string;
+  resetInstructions: string[];
+  ipInstructions: string[];
+  webInstructions: string[];
+}
+
+interface ProvisioningInfo {
+  serverUrl: string;
+  configUrl: string;
+}
+
+interface ManualConfigStep {
+  step: number;
+  status: 'done' | 'current' | 'pending';
+  title: string;
+  instructions: string[];
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_manual_title": "Configuration manuelle",
+  "line_manual_back": "Retour a l'assistance",
+  "line_manual_step1_title": "Reinitialisation usine",
+  "line_manual_step1_model": "Pour un Cisco",
+  "line_manual_step1_1": "Debranchez le telephone",
+  "line_manual_step1_2": "Maintenez le bouton \"Setup\" enfonce",
+  "line_manual_step1_3": "Rebranchez le telephone en maintenant le bouton",
+  "line_manual_step2_title": "Trouver l'adresse IP du telephone",
+  "line_manual_step2_model": "Sur votre telephone Cisco",
+  "line_manual_step2_1": "Appuyez sur le bouton \"Setup\"",
+  "line_manual_step2_2": "Naviguez vers \"Network\" > \"Current IP\"",
+  "line_manual_step2_3": "Notez l'adresse IP affichee",
+  "line_manual_step2_input": "Adresse IP privee du telephone",
+  "line_manual_step3_title": "Acces a l'interface web",
+  "line_manual_step3_url": "Une fois l'IP connue, acces",
+  "line_manual_step3_1": "Ouvrez votre navigateur",
+  "line_manual_step3_2": "Entrez l'adresse IP du telephone",
+  "line_manual_step3_3": "Cliquez sur \"Admin Login\"",
+  "line_manual_step3_4": "Allez dans \"Voice\" > \"Provisioning\"",
+  "line_manual_step3_5": "Entrez l'URL du serveur OVH",
+  "line_manual_step3_6": "Sauvegardez et redemarrez",
+  "line_manual_next": "Suivant"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Instructions specifiques par modele telephone
+- IP privee = reseau local (192.168.x.x)
+- Interface web accessible depuis meme reseau
+- URL provisioning fournie par OVH

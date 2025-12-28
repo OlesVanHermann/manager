@@ -1,0 +1,128 @@
+# Cahier des Charges : telecom/line - Configuration codec
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de configuration du codec audio d'une ligne.
+
+### Objectif fonctionnel
+- Choisir le codec audio prioritaire
+- Activer le mode automatique
+- Appliquer a plusieurs lignes
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec info + config actuelle + formulaire
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour au telephone |
+| Titre | Configuration du codec audio |
+
+### Info box
+| Element | Description |
+|---------|-------------|
+| Fond | Bleu clair |
+| Ligne 1 | Codec = qualite voix + bande passante |
+| Ligne 2 | G711A = meilleure qualite |
+| Ligne 3 | G729 = moins de bande passante |
+| Ligne 4 | Choisir selon connexion |
+
+### Config actuelle
+| Champ | Valeur |
+|-------|--------|
+| Codec actuel | G711A, G729 |
+| Mode automatique | Active |
+
+### Carte formulaire
+| Element | Description |
+|---------|-------------|
+| Titre | Modifier le codec |
+| Description | Selectionnez priorite |
+
+### Radio options codec
+| Option | Description |
+|--------|-------------|
+| G711A, G729 | Haute qualite prioritaire |
+| G729, G711A | Economie bande passante prioritaire |
+| G711A | Uniquement haute qualite |
+| G729 | Uniquement economie |
+
+### Checkbox automatique
+| Element | Description |
+|---------|-------------|
+| Checked | Fond bleu |
+| Label | Activer choix automatique |
+
+### Lien action multiple
+| Element | Description |
+|---------|-------------|
+| Texte | Appliquer a plusieurs lignes... |
+| Type | Link bleu |
+
+### Bouton
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Modifier |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/codec
+PUT /telephony/{billingAccount}/line/{serviceName}/phone/codec
+```
+
+### Modele
+```typescript
+interface CodecConfig {
+  currentCodecs: string[];
+  autoMode: boolean;
+  priority: 'quality' | 'bandwidth';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_codec_title": "Configuration du codec audio",
+  "line_codec_back": "Retour au telephone",
+  "line_codec_info_1": "Le codec audio definit la qualite de la voix et la bande passante utilisee.",
+  "line_codec_info_2": "G711A offre la meilleure qualite mais utilise plus de bande passante.",
+  "line_codec_info_3": "G729 offre une bonne qualite avec moins de bande passante.",
+  "line_codec_info_4": "Choisissez en fonction de votre connexion internet.",
+  "line_codec_current": "Codec actuel",
+  "line_codec_auto": "Mode automatique",
+  "line_codec_modify": "Modifier le codec",
+  "line_codec_select": "Selectionnez l'ordre de priorite des codecs",
+  "line_codec_quality": "Haute qualite prioritaire",
+  "line_codec_bandwidth": "Economie de bande passante prioritaire",
+  "line_codec_only_quality": "Uniquement haute qualite",
+  "line_codec_only_bandwidth": "Uniquement economie de bande passante",
+  "line_codec_auto_enable": "Activer le choix automatique du codec",
+  "line_codec_bulk": "Appliquer a plusieurs lignes...",
+  "line_codec_save": "Modifier"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- G711A = 64 kbit/s, qualite CD
+- G729 = 8 kbit/s, qualite telephone
+- Mode auto = negociation automatique
+- Changement effectif immediat

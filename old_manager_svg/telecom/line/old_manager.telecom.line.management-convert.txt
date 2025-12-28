@@ -1,0 +1,129 @@
+# Cahier des Charges : telecom/line - Convertir en numero
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de conversion d'une ligne SIP en numero alias.
+
+### Objectif fonctionnel
+- Convertir une ligne vers un numero alias
+- Choisir le groupe de destination
+- Selectionner le type d'alias
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec alerte + formulaire conversion
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour a la gestion |
+| Titre | Convertir en numero |
+
+### Alerte information
+| Element | Description |
+|---------|-------------|
+| Type | Warning (fond jaune) |
+| Icone | ⚠ |
+| Titre | Information importante |
+| Message | La conversion transforme votre ligne SIP... |
+
+### Carte ligne actuelle
+| Champ | Valeur |
+|-------|--------|
+| Label | Ligne a convertir |
+| Numero | +33 1 23 45 67 89 |
+| Offre | Offre actuelle : VoIP Business |
+| Badge | Numero Alias (fond bleu clair) |
+
+### Select groupe destination
+| Element | Description |
+|---------|-------------|
+| Label | Groupe de destination * |
+| Helper | Le numero sera rattache a ce groupe |
+| Type | Dropdown |
+
+### Radio type alias
+| Option | Description |
+|--------|-------------|
+| Redirection simple | Redirige les appels vers une autre ligne |
+| File d'attente | Configure une file d'attente pour les appels |
+| SVI (Serveur Vocal) | Menu vocal interactif |
+| Conference | Numero de conference telephonique |
+
+### Boutons actions
+| Bouton | Type | Action |
+|--------|------|--------|
+| Annuler | Secondary | Retour |
+| Convertir la ligne | Primary | Valide conversion |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}
+POST /telephony/{billingAccount}/line/{serviceName}/convertToNumber
+```
+
+### Modele
+```typescript
+interface LineToConvert {
+  serviceName: string;
+  description: string;
+  offer: string;
+}
+
+interface ConversionRequest {
+  billingAccount: string;
+  aliasType: 'redirect' | 'queue' | 'ivr' | 'conference';
+}
+
+type AliasType = 'redirect' | 'queue' | 'ivr' | 'conference';
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_convert_title": "Convertir en numero",
+  "line_convert_back": "Retour a la gestion",
+  "line_convert_warning_title": "Information importante",
+  "line_convert_warning_msg": "La conversion transforme votre ligne SIP en numero alias. Vous conserverez le numero mais perdrez les fonctionnalites de ligne.",
+  "line_convert_form_title": "Configuration de la conversion",
+  "line_convert_current": "Ligne a convertir",
+  "line_convert_offer": "Offre actuelle",
+  "line_convert_result": "Type apres conversion",
+  "line_convert_group": "Groupe de destination",
+  "line_convert_group_help": "Le numero sera rattache a ce groupe de telephonie",
+  "line_convert_type": "Type de numero alias",
+  "line_convert_redirect": "Redirection simple",
+  "line_convert_redirect_desc": "Redirige les appels vers une autre ligne",
+  "line_convert_queue": "File d'attente",
+  "line_convert_queue_desc": "Configure une file d'attente pour les appels",
+  "line_convert_ivr": "SVI (Serveur Vocal)",
+  "line_convert_ivr_desc": "Menu vocal interactif",
+  "line_convert_conference": "Conference",
+  "line_convert_conference_desc": "Numero de conference telephonique",
+  "line_convert_cancel": "Annuler",
+  "line_convert_submit": "Convertir la ligne"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Conversion irreversible
+- Perte fonctionnalites ligne (voicemail direct)
+- Numero conserve
+- Groupe cible obligatoire

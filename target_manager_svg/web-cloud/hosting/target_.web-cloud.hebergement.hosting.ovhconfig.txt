@@ -1,0 +1,89 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.hebergement.hosting.ovhconfig.svg
+Route:   /web-cloud/hebergement/{serviceName}/ovhconfig
+Version: v1 (2024-12-28)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG                    | Source API                                    |
+|--------------------------------|-----------------------------------------------|
+| PHP 8.3 (selectionne)          | GET /hosting/web/{sn} -> phpVersion           |
+| Production/Development         | GET /hosting/web/{sn} -> environment          |
+| php-fpm/phpcgi                 | GET /hosting/web/{sn} -> engineName           |
+| Firewall ON/OFF                | GET /hosting/web/{sn} -> firewall             |
+================================================================================
+
+# STRUCTURE PAGE
+
+1. HEADER - Titre "Configuration .ovhconfig" + Description
+
+2. BLOC VERSION PHP (Card 500x180)
+   | Option   | Badge        | Status     |
+   |----------|--------------|------------|
+   | PHP 8.3  | Recommande   | Vert       |
+   | PHP 8.2  | -            | Normal     |
+   | PHP 8.1  | -            | Normal     |
+   | PHP 8.0  | Legacy       | Warning    |
+   | PHP 7.4  | Deprecie     | Erreur     |
+
+3. BLOC ENVIRONNEMENT (Card 300x120)
+   - Production (display_errors = Off)
+   - Development (display_errors = On)
+
+4. BLOC MOTEUR (Card 500x120)
+   - php-fpm (Recommande)
+   - phpcgi (Legacy)
+
+5. BLOC FIREWALL (Card 300x90)
+   - Toggle ON/OFF
+
+6. BOUTON SAUVEGARDER
+
+7. BANNIERE INFO
+
+================================================================================
+
+# API ENDPOINTS
+
+GET    /hosting/web/{serviceName}
+       -> Configuration actuelle (.ovhconfig)
+
+PUT    /hosting/web/{serviceName}
+       -> Modifier la configuration
+       Body: {
+         phpVersion: '8.3' | '8.2' | '8.1' | '8.0' | '7.4',
+         environment: 'production' | 'development',
+         engineName: 'php-fpm' | 'phpcgi',
+         firewall: boolean
+       }
+
+GET    /hosting/web/availablePhpVersion
+       -> Versions PHP disponibles
+
+================================================================================
+
+# MODELE DONNEES
+
+interface OvhConfig {
+  phpVersion: string;
+  environment: 'production' | 'development';
+  engineName: 'php-fpm' | 'phpcgi';
+  firewall: boolean;
+  container: string;
+}
+
+================================================================================
+
+# REGLES METIER
+
+- Fichier .ovhconfig cree a la racine FTP
+- Modifications effectives immediatement
+- php-fpm = meilleure performance
+- phpcgi = compatibilite anciens scripts
+- Firewall = protection ModSecurity
+- Versions PHP < 8.0 deprecies (EOL)
+- Development active display_errors
+
+================================================================================

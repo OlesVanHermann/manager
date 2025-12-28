@@ -1,0 +1,106 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.display-number.svg
+Route:   /web-cloud/voip/lines/{serviceName}/display-number
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Numéro affiché
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration du numéro présenté lors des appels sortants (Caller ID).
+Permet d'afficher le numéro de la ligne, un alias ou de masquer le numéro.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| +33 9 12 34 56 78        | GET /telephony/.../line → number                        |
+| Numéro de la ligne       | options.displayNumber.type                              |
+| Liste alias              | GET /telephony/.../number → alias[]                     |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC OPTIONS RADIO:
+     * Numéro de la ligne (default)
+     * Numéro alias du groupe
+     * Numéro masqué
+
+   - BLOC SELECTION ALIAS:
+     * Dropdown des alias disponibles
+     * Désactivé si option ligne/masqué
+
+   - BANNIERE INFO
+
+   - ACTIONS: Enregistrer, Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Lire configuration
+GET /telephony/{billingAccount}/line/{serviceName}/options
+Response: {
+  displayNumber: {
+    type: 'line' | 'alias' | 'hidden',
+    aliasNumber: string | null
+  }
+}
+
+### Liste alias disponibles
+GET /telephony/{billingAccount}/number
+Response: [{ serviceName, description, featureType: 'alias' }]
+
+### Modifier numéro affiché
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+Body: {
+  displayNumber: {
+    type: 'line' | 'alias' | 'hidden',
+    aliasNumber?: string
+  }
+}
+
+================================================================================
+
+## TYPES D'AFFICHAGE
+
+| Type    | Description                    | Paramètre       |
+|---------|--------------------------------|-----------------|
+| line    | Numéro de la ligne             | -               |
+| alias   | Numéro alias sélectionné       | aliasNumber     |
+| hidden  | Numéro privé/masqué            | -               |
+
+================================================================================
+
+## REGLES METIER
+
+- Alias: doit appartenir au même groupe
+- Masqué: peut être ignoré par certains opérateurs
+- Changement effectif immédiatement
+- Historique des modifications conservé
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineDisplayNumberTab (container)
+- DisplayTypeRadioGroup
+- AliasSelectDropdown
+- InfoBanner
+- SaveCancelButtons
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

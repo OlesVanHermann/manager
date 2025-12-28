@@ -1,0 +1,127 @@
+# Cahier des Charges : telecom/scheduler - Exporter calendrier
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal d'export du calendrier au format ICS.
+
+### Objectif fonctionnel
+- Exporter les evenements
+- Choisir la periode d'export
+- Telecharger le fichier ICS
+
+---
+
+## 2. LAYOUT
+
+### Structure modal simple avec options radio + boutons
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal
+| Element | Description |
+|---------|-------------|
+| Largeur | 600px |
+| Hauteur | 330px |
+| Bouton fermer | × en haut droite |
+
+### Titre modal
+| Element | Description |
+|---------|-------------|
+| Texte | Exporter le calendrier |
+
+### Description
+| Element | Description |
+|---------|-------------|
+| Texte | Exportez votre calendrier au format ICS... |
+
+### Options de periode
+| Element | Description |
+|---------|-------------|
+| Label | Periode a exporter |
+| Type | Radio buttons verticaux |
+
+### Options radio
+| Option | Description | Champ associe |
+|--------|-------------|---------------|
+| Tous les evenements | Export complet | Aucun |
+| Evenements a partir de | Export partiel | Datepicker |
+| Annee specifique | Export annuel | Input annee |
+
+### Datepicker "a partir de"
+| Element | Description |
+|---------|-------------|
+| Type | Date input |
+| Format | DD/MM/YYYY |
+| Defaut | 01/01/YYYY+1 |
+| Etat | Disabled si non selectionne |
+
+### Input annee
+| Element | Description |
+|---------|-------------|
+| Type | Number input |
+| Format | YYYY |
+| Defaut | Annee courante |
+| Etat | Disabled si non selectionne |
+
+### Footer modal
+| Element | Description |
+|---------|-------------|
+| Bouton Annuler | Secondary, ferme modal |
+| Bouton Exporter | Primary, telecharge fichier |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/timeCondition/{serviceName}/export?format=ics
+GET /telephony/{billingAccount}/timeCondition/{serviceName}/export?format=ics&from={date}
+GET /telephony/{billingAccount}/timeCondition/{serviceName}/export?format=ics&year={year}
+```
+
+### Modele
+```typescript
+interface ExportOptions {
+  type: 'all' | 'from_date' | 'year';
+  fromDate?: string;
+  year?: number;
+}
+
+interface ExportResult {
+  filename: string;
+  content: string;
+  mimeType: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telecom_export_title": "Exporter le calendrier",
+  "telecom_export_desc": "Exportez votre calendrier au format ICS pour l'utiliser dans d'autres applications.",
+  "telecom_export_period": "Periode a exporter",
+  "telecom_export_all": "Tous les evenements",
+  "telecom_export_from": "Evenements a partir de",
+  "telecom_export_year": "Annee specifique",
+  "telecom_export_submit": "Exporter",
+  "telecom_export_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Format export = ICS (iCalendar)
+- Option "Tous" par defaut
+- Date "a partir de" = futur par defaut
+- Fichier telecharge = {serviceName}-calendar.ics
+- Export cote serveur (API)
+

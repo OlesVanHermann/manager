@@ -1,0 +1,123 @@
+# Cahier des Charges : telecom/alias - Appels en cours
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Supervision des appels en cours sur l'alias.
+
+### Objectif fonctionnel
+- Voir les appels en temps reel
+- Intervenir sur les appels
+- Superviser les agents
+
+---
+
+## 2. LAYOUT
+
+### Structure page temps reel avec actions
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Appels en cours |
+| Indicateur | Nombre appels actifs |
+| Refresh | Auto-actualisation |
+
+### Stats temps reel
+| Metrique | Description |
+|----------|-------------|
+| En cours | Appels actifs |
+| En attente | File d'attente |
+| Duree max | Appel le plus long |
+
+### Liste appels
+| Colonne | Description |
+|---------|-------------|
+| Appelant | Numero source |
+| Agent | Agent en ligne |
+| Duree | Temps ecoule |
+| Statut | En cours/Attente |
+| Actions | Menu intervention |
+
+### Actions disponibles
+| Action | Description |
+|--------|-------------|
+| Ecouter | Mode supervision |
+| Chuchoter | Parler a l'agent |
+| Intercepter | Prendre l'appel |
+| Transferer | Rediriger l'appel |
+| Raccrocher | Terminer l'appel |
+
+### Indicateurs statut
+| Statut | Couleur | Description |
+|--------|---------|-------------|
+| inProgress | Vert | Conversation |
+| waiting | Orange | En attente |
+| ringing | Bleu | Sonnerie |
+
+### Actualisation
+| Element | Description |
+|---------|-------------|
+| Auto-refresh | Toutes les 5s |
+| Bouton refresh | Rafraichir maintenant |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/liveCalls
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent/{agentId}/liveStatus
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/eavesdrop
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/whisper
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/intercept
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/transfer
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/hangup
+```
+
+### Modele LiveCall
+```typescript
+interface OvhPabxHuntingQueueLiveCall {
+  id: number;
+  agent: string;
+  caller: string;
+  state: 'inProgress' | 'waiting' | 'ringing';
+  answered: boolean;
+  begin: string;
+  queueId: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_live_calls_title": "Appels en cours",
+  "alias_live_calls_count": "appels actifs",
+  "alias_live_calls_waiting": "En attente",
+  "alias_live_calls_caller": "Appelant",
+  "alias_live_calls_agent": "Agent",
+  "alias_live_calls_duration": "Duree",
+  "alias_live_calls_eavesdrop": "Ecouter",
+  "alias_live_calls_whisper": "Chuchoter",
+  "alias_live_calls_intercept": "Intercepter",
+  "alias_live_calls_transfer": "Transferer",
+  "alias_live_calls_hangup": "Raccrocher"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Actualisation auto: 5 secondes
+- Ecoute necessite numero valide
+- Intervention superviseur uniquement
+- Historique 24h max

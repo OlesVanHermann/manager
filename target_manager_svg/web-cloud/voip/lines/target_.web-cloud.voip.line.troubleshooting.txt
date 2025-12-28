@@ -1,0 +1,130 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.troubleshooting.svg
+Route:   /web-cloud/voip/lines/{serviceName}/troubleshooting
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Diagnostic
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Outils de diagnostic et dépannage de la ligne téléphonique. Vérification du
+statut, actions correctives et historique des événements.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Connecté depuis 3h24     | GET /telephony/.../diagnostic → registration            |
+| Cisco 8845 - En ligne    | diagnostic.phone.status                                 |
+| Latence: 45ms            | diagnostic.quality.latency                              |
+| Il y a 12 min - Réussi   | diagnostic.lastCall                                     |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC ETAT LIGNE (4 cards):
+     * Enregistrement SIP (vert/rouge)
+     * Téléphone (vert/rouge)
+     * Qualité audio (vert/jaune/rouge)
+     * Dernier appel (statut)
+
+   - BLOC ACTIONS DIAGNOSTIC:
+     * Redémarrer téléphone
+     * Test d'appel
+     * Rapport complet
+
+   - TABLE HISTORIQUE EVENEMENTS:
+     * Date/heure
+     * Événement
+     * Détail
+     * Statut badge
+
+   - BANNIERE LIEN SUPPORT
+
+================================================================================
+
+## API ENDPOINTS
+
+### Diagnostic complet
+GET /telephony/{billingAccount}/line/{serviceName}/diagnostic
+Response: {
+  registration: { status, since },
+  phone: { model, status, ip },
+  quality: { latency, jitter, packetLoss },
+  lastCall: { date, duration, status }
+}
+
+### Redémarrer téléphone
+POST /telephony/{billingAccount}/line/{serviceName}/phone/reboot
+
+### Test d'appel
+POST /telephony/{billingAccount}/line/{serviceName}/diagnostic/testCall
+
+### Générer rapport
+POST /telephony/{billingAccount}/line/{serviceName}/diagnostic/report
+Response: { reportUrl, expiresAt }
+
+### Historique événements
+GET /telephony/{billingAccount}/line/{serviceName}/diagnostic/events
+Response: [{
+  date, event, detail, status
+}]
+
+================================================================================
+
+## INDICATEURS QUALITE
+
+| Métrique      | Vert     | Jaune     | Rouge    |
+|---------------|----------|-----------|----------|
+| Latence       | < 30ms   | 30-100ms  | > 100ms  |
+| Jitter        | < 20ms   | 20-50ms   | > 50ms   |
+| Packet loss   | < 1%     | 1-5%      | > 5%     |
+
+================================================================================
+
+## STATUTS EVENEMENTS
+
+| Statut    | Couleur | Description          |
+|-----------|---------|----------------------|
+| ok        | Vert    | Résolu/Normal        |
+| monitored | Jaune   | Sous surveillance    |
+| error     | Rouge   | Erreur active        |
+
+================================================================================
+
+## REGLES METIER
+
+- Reboot: max 3 par heure
+- Test call: vers numéro OVH gratuit
+- Rapport: valide 24h
+- Historique: 30 derniers jours
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineTroubleshootingTab (container)
+- StatusIndicatorCard
+- DiagnosticActionsGrid
+- RebootPhoneButton
+- TestCallButton
+- GenerateReportButton
+- EventsHistoryTable
+- EventStatusBadge
+- SupportLinkBanner
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

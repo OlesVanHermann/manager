@@ -1,0 +1,141 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.carrier-sip.cdr.svg
+Route:   /web-cloud/voip/carrier-sip/{serviceName}/cdr
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=CDR
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Call Detail Records (CDR) du trunk Carrier SIP. Historique détaillé de tous
+les appels avec métriques de qualité et coûts.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| trunk-sip-001            | GET /telephony/trunks/{sn} → serviceName                |
+| 28/12 15:42:18           | GET /telephony/trunks/{sn}/cdr → dateTime               |
+| +33612345678             | cdr[].caller                                            |
+| +33123456789             | cdr[].callee                                            |
+| Sortant/Entrant          | cdr[].direction                                         |
+| 5:32                     | cdr[].duration                                          |
+| EP-001                   | cdr[].endpoint                                          |
+| 0,12 €                   | cdr[].cost                                              |
+| OK/Échec                 | cdr[].status                                            |
+| 4.5                      | cdr[].mos (Mean Opinion Score)                          |
+| 2 847                    | cdr.totalCount                                          |
+| 97.2%                    | cdr.successRate                                         |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche trunks
+   - Liste des trunks SIP
+
+2. RIGHT PANEL (1096px)
+   - Header: Trunk + Description
+   - NAV3 tabs: Dashboard | Endpoints | [CDR] | Paramètres | Routage
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche numéro
+     * Filtre période (dropdown)
+     * Filtre type (dropdown)
+     * Export CSV
+
+   - STATS PÉRIODE (4 cards):
+     * Total appels
+     * Durée totale
+     * Taux de réussite
+     * Coût total
+
+   - TABLE CDR (1040x280):
+     * Colonnes: Date/Heure | Appelant | Appelé | Direction | Durée | Endpoint | Coût | Statut | Qualité | ID
+     * Ligne erreur: fond rouge pâle
+     * Badge direction (entrant/sortant)
+     * Score MOS qualité
+
+   - PAGINATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste CDR
+GET /telephony/trunks/{serviceName}/cdr
+Query: { dateTime.from, dateTime.to, direction, status, endpoint }
+Response: {
+  records: [{
+    id, dateTime, caller, callee, direction, duration,
+    endpoint, cost, status, mos, codec, sipCode
+  }],
+  totalCount, successRate, totalDuration, totalCost
+}
+
+### Détail CDR
+GET /telephony/trunks/{serviceName}/cdr/{id}
+Response: { ... + fullSipHeaders, qualityMetrics }
+
+### Export CDR
+GET /telephony/trunks/{serviceName}/cdr/export
+Query: { dateTime.from, dateTime.to, format: 'csv' }
+
+================================================================================
+
+## COLONNES CDR
+
+| Colonne   | Description                          |
+|-----------|--------------------------------------|
+| Date/Heure| Timestamp de l'appel                 |
+| Appelant  | Numéro source (caller)               |
+| Appelé    | Numéro destination (callee)          |
+| Direction | Entrant/Sortant                      |
+| Durée     | Durée de l'appel (mm:ss)             |
+| Endpoint  | Identifiant endpoint utilisé         |
+| Coût      | Coût de l'appel en euros             |
+| Statut    | OK/Échec avec code SIP               |
+| Qualité   | Score MOS (1-5)                      |
+| ID        | Identifiant unique appel             |
+
+================================================================================
+
+## STATUTS APPEL
+
+| Statut | Badge | Description                    |
+|--------|-------|--------------------------------|
+| OK     | Vert  | Appel abouti                   |
+| Échec  | Rouge | Appel non abouti (voir code)   |
+
+================================================================================
+
+## REGLES METIER
+
+- Conservation CDR: 12 mois
+- Export max 10 000 lignes
+- MOS < 3.5 = qualité dégradée
+- Coût calculé à la seconde
+- Appels entrants gratuits
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- CarrierSipCdrTab (container)
+- CdrToolbar (filtres + export)
+- CdrStatsCards
+- CdrTable (tableau paginé)
+- CdrStatusBadge
+- CdrDirectionBadge
+- CdrMosIndicator
+- CdrDetailModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

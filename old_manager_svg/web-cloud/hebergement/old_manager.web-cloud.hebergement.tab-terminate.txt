@@ -1,0 +1,113 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Suppression
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de résiliation/suppression de l'hébergement.
+
+### Objectif fonctionnel
+- Afficher les avertissements
+- Récapituler le service
+- Confirmer la suppression
+
+---
+
+## 2. LAYOUT
+
+### Structure message danger + récap + warning + boutons
+
+---
+
+## 3. COMPOSANTS UI
+
+### Message danger
+| Element | Description |
+|---------|-------------|
+| Type | Danger (rouge) |
+| Titre | Attention - Action irréversible |
+| Points | - Tous vos fichiers et dossiers |
+|        | - Toutes vos bases de données |
+|        | - Tous vos comptes FTP et emails |
+
+### Carte récapitulatif
+| Champ | Description |
+|-------|-------------|
+| Titre | Récapitulatif du service |
+| Nom du service | monsite.com |
+| Offre | Performance 1 |
+| Date de création | 15/01/2022 |
+| Expiration | 15/01/2025 |
+
+### Message warning
+| Element | Description |
+|---------|-------------|
+| Type | Warning (jaune) |
+| Ligne 1 | L'action n'octroie aucun remboursement |
+| Ligne 2 | Un e-mail de confirmation sera envoyé |
+| Ligne 3 | Voulez-vous continuer ? |
+
+### Boutons action
+| Bouton | Style |
+|--------|-------|
+| Confirmer la suppression | Danger (rouge) |
+| Annuler | Outline gris |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}
+DELETE /hosting/web/{serviceName}/terminate
+POST /hosting/web/{serviceName}/confirmTermination
+```
+
+### Modele
+```typescript
+interface TerminationInfo {
+  serviceName: string;
+  offer: string;
+  creationDate: string;
+  expirationDate: string;
+}
+
+interface TerminationRequest {
+  confirmation: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_terminate_title": "Supprimer mon hébergement",
+  "hosting_terminate_warning_title": "Attention - Action irréversible",
+  "hosting_terminate_warning_desc": "La suppression d'un hébergement entraîne l'effacement définitif de toutes les données correspondantes",
+  "hosting_terminate_files": "Tous vos fichiers et dossiers",
+  "hosting_terminate_db": "Toutes vos bases de données",
+  "hosting_terminate_ftp": "Tous vos comptes FTP et emails associés",
+  "hosting_terminate_recap": "Récapitulatif du service",
+  "hosting_terminate_name": "Nom du service",
+  "hosting_terminate_offer": "Offre",
+  "hosting_terminate_created": "Date de création",
+  "hosting_terminate_expiration": "Expiration",
+  "hosting_terminate_no_refund": "L'action de supprimer un hébergement n'octroie aucun remboursement",
+  "hosting_terminate_email": "Un e-mail contenant la procédure de fermeture vous sera envoyé",
+  "hosting_terminate_confirm_question": "Voulez-vous continuer ?",
+  "hosting_terminate_confirm": "Confirmer la suppression",
+  "hosting_terminate_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Action irréversible
+- Pas de remboursement
+- Email de confirmation envoyé
+- Suppression effective à expiration
+- Double confirmation requise

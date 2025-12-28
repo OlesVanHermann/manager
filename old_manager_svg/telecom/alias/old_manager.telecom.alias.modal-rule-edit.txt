@@ -1,0 +1,119 @@
+# Cahier des Charges : telecom/alias - Modal Edition action
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal d'edition d'une action dans le dialplan.
+
+### Objectif fonctionnel
+- Selectionner le type d'action
+- Configurer les parametres
+- Previsualiser l'effet
+
+---
+
+## 2. LAYOUT
+
+### Structure modal popover avec formulaire
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header modal
+| Element | Description |
+|---------|-------------|
+| Titre | Modifier l'action |
+| Bouton X | Fermer modal |
+
+### Selecteur action
+| Element | Description |
+|---------|-------------|
+| Champ | Action |
+| Valeur | Type selectionne |
+| Chevron | Ouvre liste actions |
+
+### Selecteur parametre
+| Element | Description |
+|---------|-------------|
+| Champ | Parametre (selon type) |
+| Valeur | Valeur configuree |
+| Chevron | Ouvre selection |
+
+### Types d'actions
+| Action | Parametre |
+|--------|-----------|
+| Jouer un son | Selection fichier |
+| Pause (sleep) | Duree en ms |
+| Transfert (bridge) | Numero destination |
+| Lire DTMF | Nom variable |
+| Nom appelant | Texte a afficher |
+
+### Exemples parametres
+| Type | Champ | Valeur exemple |
+|------|-------|----------------|
+| Pause | Duree | 5000 ms |
+| Transfert | Numero | +33612345678 |
+| DTMF | Variable | userChoice |
+| Nom | Texte | Support OVH |
+
+### Warning
+| Element | Description |
+|---------|-------------|
+| Fond | Jaune |
+| Icone | Warning |
+| Texte | Actions terminales |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Modifier | Primary | Sauvegarde |
+| Annuler | Default | Ferme |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/rule/{ruleId}
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}/rule/{ruleId}
+```
+
+### Modele Rule
+```typescript
+interface OvhPabxDialplanExtensionRule {
+  ruleId: number;
+  action: string;
+  actionParam: string;
+  position: number;
+  negativeAction: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_modal_rule_edit_title": "Modifier l'action",
+  "alias_modal_rule_edit_action": "Action",
+  "alias_modal_rule_edit_param": "Parametre",
+  "alias_modal_rule_edit_playback": "Jouer un son",
+  "alias_modal_rule_edit_sleep": "Pause (sleep)",
+  "alias_modal_rule_edit_bridge": "Transfert (bridge)",
+  "alias_modal_rule_edit_dtmf": "Lire DTMF",
+  "alias_modal_rule_edit_caller_name": "Nom appelant",
+  "alias_modal_rule_edit_warning": "Certaines actions sont terminales"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Un seul type d'action par regle
+- Parametres obligatoires selon type
+- Validation format numero
+- Preview non destructif

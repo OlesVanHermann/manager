@@ -1,0 +1,134 @@
+# Cahier des Charges : telecom/alias - CCS Filtrage des appels
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration du filtrage d'appels du Contact Center Solution.
+
+### Objectif fonctionnel
+- Rejeter les appels anonymes
+- Gerer les listes noires/blanches
+- Configurer les regles de filtrage
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec config + datagrid listes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Filtrage des appels |
+| Sous-titre | Configuration des regles |
+
+### Section Filtres
+| Element | Description |
+|---------|-------------|
+| Titre | Configuration des filtres |
+
+### Rejet anonymes
+| Element | Description |
+|---------|-------------|
+| Label | Rejet des appels anonymes |
+| Info | Rejeter automatiquement |
+| Toggle | Active/Desactive |
+
+### Activation filtrage
+| Option | Description |
+|--------|-------------|
+| Desactive | Pas de filtrage |
+| Liste noire | Bloquer numeros listes |
+| Liste blanche | Accepter uniquement listes |
+
+### Section Listes
+| Element | Description |
+|---------|-------------|
+| Titre | Configuration des listes |
+| Type liste | Select (Noire/Blanche) |
+| Aide saisie | Select (Specifique/Plage) |
+| Input | Numero a ajouter |
+
+### Menu actions bulk
+| Element | Description |
+|---------|-------------|
+| Dropdown | Actions |
+| Options | Exporter / Supprimer |
+| Compteur | X elements selectionnes |
+
+### Datagrid listes
+| Colonne | Description |
+|---------|-------------|
+| Checkbox | Selection |
+| Numero | Numero filtre |
+| Type | Specifique/Plage |
+| Liste | Badge Noire/Blanche |
+
+### Badges
+| Badge | Couleur | Description |
+|-------|---------|-------------|
+| Liste noire | Rouge | #FEE2E2 |
+| Liste blanche | Vert | #DEF7EC |
+
+### Footer sticky
+| Element | Description |
+|---------|-------------|
+| Fond | Gris fonce |
+| Texte | Enregistrer les modifications ? |
+| Lien | Appliquer en masse |
+| Boutons | Annuler / Appliquer |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/screenListConditions
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/screenListConditions
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/screenListConditions/{conditionId}
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}
+```
+
+### Modele ScreenListCondition
+```typescript
+interface ScreenListCondition {
+  conditionId: number;
+  callerIdNumber: string;
+  screenListType: 'incomingBlackList' | 'incomingWhiteList';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_ccs_filtering_title": "Filtrage des appels",
+  "alias_ccs_filtering_anonymous": "Rejet des appels anonymes",
+  "alias_ccs_filtering_mode": "Activation du filtrage",
+  "alias_ccs_filtering_disabled": "Desactive",
+  "alias_ccs_filtering_blacklist": "Liste noire",
+  "alias_ccs_filtering_whitelist": "Liste blanche",
+  "alias_ccs_filtering_lists": "Configuration des listes",
+  "alias_ccs_filtering_list_type": "Type de liste",
+  "alias_ccs_filtering_helper": "Aide a la saisie",
+  "alias_ccs_filtering_add_number": "Ajouter un numero",
+  "alias_ccs_filtering_export": "Exporter la selection",
+  "alias_ccs_filtering_delete_selected": "Supprimer la selection"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Listes exclusives (noire OU blanche)
+- Format numero: international (0033...)
+- Import/Export CSV supporte
+- Maximum 500 numeros par liste

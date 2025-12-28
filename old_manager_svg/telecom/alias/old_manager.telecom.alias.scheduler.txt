@@ -1,0 +1,125 @@
+# Cahier des Charges : telecom/alias - Calendrier/Scheduler
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion du calendrier pour conditions temporelles.
+
+### Objectif fonctionnel
+- Definir les periodes d'ouverture/fermeture
+- Planifier des evenements exceptionnels
+- Gerer les jours feries
+
+---
+
+## 2. LAYOUT
+
+### Structure calendrier mensuel/hebdo + liste evenements
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Calendrier |
+| Navigation | Mois precedent/suivant |
+| Vue | Mois / Semaine |
+
+### Vue calendrier
+| Element | Description |
+|---------|-------------|
+| Grille | Jours du mois |
+| Marqueurs | Points colores par type |
+| Selection | Click pour details |
+
+### Categories evenements
+| Categorie | Couleur | Description |
+|-----------|---------|-------------|
+| Vacances | Bleu | Conges |
+| Feries | Rouge | Jours feries |
+| Exceptionnels | Orange | Evenements speciaux |
+| Maintenance | Gris | Travaux |
+
+### Liste evenements
+| Colonne | Description |
+|---------|-------------|
+| Titre | Nom evenement |
+| Periode | Date debut - fin |
+| Categorie | Type avec badge |
+| Actions | Modifier / Supprimer |
+
+### Formulaire evenement
+| Champ | Type | Description |
+|-------|------|-------------|
+| Titre | Input text | Nom |
+| Categorie | Select | Type evenement |
+| Date debut | Datepicker | Debut |
+| Date fin | Datepicker | Fin |
+| Journee entiere | Toggle | Oui/Non |
+| Heure debut | Timepicker | Si pas journee |
+| Heure fin | Timepicker | Si pas journee |
+| Description | Textarea | Details |
+
+### Import jours feries
+| Element | Description |
+|---------|-------------|
+| Pays | Selection pays |
+| Annee | Annee a importer |
+| Bouton | Importer automatiquement |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/timeCondition/{serviceName}/condition
+POST /telephony/{billingAccount}/timeCondition/{serviceName}/condition
+PUT /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id}
+DELETE /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id}
+GET /telephony/{billingAccount}/scheduler/{serviceName}/events
+POST /telephony/{billingAccount}/scheduler/{serviceName}/events
+```
+
+### Modele Event
+```typescript
+interface TelephonySchedulerEvent {
+  uid: string;
+  title: string;
+  dateStart: string;
+  dateEnd: string;
+  categories: string;
+  description: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_scheduler_title": "Calendrier",
+  "alias_scheduler_add_event": "Ajouter un evenement",
+  "alias_scheduler_event_title": "Titre",
+  "alias_scheduler_event_category": "Categorie",
+  "alias_scheduler_event_start": "Debut",
+  "alias_scheduler_event_end": "Fin",
+  "alias_scheduler_all_day": "Journee entiere",
+  "alias_scheduler_import_holidays": "Importer jours feries",
+  "alias_scheduler_cat_vacation": "Vacances",
+  "alias_scheduler_cat_holiday": "Jour ferie",
+  "alias_scheduler_cat_exceptional": "Exceptionnel"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Evenements peuvent se chevaucher
+- Import jours feries par pays
+- Recurrence non supportee
+- Evenement passe modifiable

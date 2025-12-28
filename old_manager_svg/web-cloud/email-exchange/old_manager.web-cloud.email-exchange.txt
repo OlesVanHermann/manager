@@ -1,0 +1,159 @@
+# Cahier des Charges : web-cloud/email-exchange - Dashboard
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Dashboard du service Microsoft Exchange avec vue d'ensemble.
+
+### Objectif fonctionnel
+- Voir les informations generales du service
+- Consulter la configuration Exchange
+- Verifier les parametres de securite
+- Acceder aux differentes sections via onglets
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec header + onglets + 3 cartes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header service
+| Element | Description |
+|---------|-------------|
+| Badge | Exchange (bleu) |
+| Titre | Nom du service (exchange-abc123) |
+| Sous-titre | Date expiration + domaine principal |
+| Bouton Actions | Dropdown menu |
+
+### Onglets navigation
+| Onglet | Description |
+|--------|-------------|
+| Informations generales | Vue d'ensemble (actif) |
+| Comptes email | Liste des comptes |
+| Groupes | Groupes de distribution |
+| Boites partagees | Shared mailboxes |
+| Contacts | Contacts partages |
+| Ressources | Salles, equipements |
+| Taches | Historique operations |
+
+### Carte Informations generales
+| Champ | Exemple |
+|-------|---------|
+| Offre | Hosted Exchange |
+| Domaine principal | mondomaine.fr |
+| Comptes | 10 / 50 |
+| Espace total | 200 Go / 500 Go (40%) |
+| Groupes | 5 actifs |
+| Boites partagees | 3 actives |
+
+### Barre progression espace
+| Element | Description |
+|---------|-------------|
+| Type | Progress bar horizontale |
+| Couleur | Bleu (#0050D7) |
+| Affichage | XX Go / YY Go (ZZ%) |
+
+### Carte Configuration
+| Champ | Valeur |
+|-------|--------|
+| Serveur (Autodiscover) | autodiscover.mail.ovh.net |
+| OWA (Webmail) | https://ex.mail.ovh.net/owa |
+| EWS | ex.mail.ovh.net/EWS |
+| Liens | Configurer sur Outlook, Configurer sur Mobile |
+
+### Carte Securite
+| Champ | Statut |
+|-------|--------|
+| Anti-spam | Badge Active (vert) |
+| Anti-virus | Badge Active (vert) |
+| DKIM | Badge Active (vert) |
+| Liens | Gerer les politiques de securite, Configurer DMARC |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/exchange/{organization}/{service}
+GET /email/exchange/{organization}/{service}/domain
+GET /email/exchange/{organization}/{service}/account
+GET /email/exchange/{organization}/{service}/sharedAccount
+GET /email/exchange/{organization}/{service}/mailingList
+```
+
+### Modele
+```typescript
+interface ExchangeService {
+  displayName: string;
+  domain: string;
+  offer: 'hosted' | 'provider' | 'dedicated';
+  maxAccounts: number;
+  currentAccounts: number;
+  quota: {
+    used: number;
+    total: number;
+  };
+  expiration: string;
+  state: 'ok' | 'inMaintenance' | 'suspended';
+}
+
+interface ExchangeConfiguration {
+  autodiscoverUrl: string;
+  owaUrl: string;
+  ewsUrl: string;
+}
+
+interface ExchangeSecurity {
+  antispamEnabled: boolean;
+  antivirusEnabled: boolean;
+  dkimEnabled: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "exchange_dashboard_title": "Informations generales",
+  "exchange_offer": "Offre",
+  "exchange_offer_hosted": "Hosted Exchange",
+  "exchange_primary_domain": "Domaine principal",
+  "exchange_accounts": "Comptes",
+  "exchange_total_space": "Espace total",
+  "exchange_groups": "Groupes",
+  "exchange_groups_active": "{count} actifs",
+  "exchange_shared_mailboxes": "Boites partagees",
+  "exchange_shared_active": "{count} actives",
+  "exchange_config_title": "Configuration",
+  "exchange_autodiscover": "Serveur (Autodiscover)",
+  "exchange_owa": "OWA (Webmail)",
+  "exchange_ews": "EWS",
+  "exchange_configure_outlook": "Configurer sur Outlook",
+  "exchange_configure_mobile": "Configurer sur Mobile",
+  "exchange_security_title": "Securite",
+  "exchange_antispam": "Anti-spam",
+  "exchange_antivirus": "Anti-virus",
+  "exchange_dkim": "DKIM",
+  "exchange_security_policies": "Gerer les politiques de securite",
+  "exchange_configure_dmarc": "Configurer DMARC",
+  "exchange_enabled": "Active",
+  "exchange_expires": "Expire le {date}"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Exchange = offre collaborative Microsoft
+- Quota global partage entre comptes
+- Autodiscover pour configuration automatique
+- OWA = webmail Exchange
+- Securite integree (anti-spam, antivirus, DKIM)

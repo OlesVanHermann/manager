@@ -1,0 +1,148 @@
+# Cahier des Charges : web-cloud/hosting - Informations générales
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page détaillée des informations générales de l'hébergement.
+
+### Objectif fonctionnel
+- Afficher toutes les informations du service
+- Gérer la configuration
+- Accéder aux liens utiles
+
+---
+
+## 2. LAYOUT
+
+### Structure tabs + 3 tuiles ligne 1 + 2 tuiles ligne 2
+
+---
+
+## 3. COMPOSANTS UI
+
+### Barre d'onglets
+| Onglet | Description |
+|--------|-------------|
+| Informations générales | Actif (fond bleu) |
+| Multisite | Lien |
+| FTP - SSH | Lien |
+| Bases de données | Lien |
+| SSL | Lien |
+
+### Tuile Informations générales
+| Champ | Description |
+|-------|-------------|
+| État du service | Badge Actif (vert) |
+| IPv4 | 213.186.33.5 |
+| IPv6 | 2001:41d0:1:1b00:... |
+| Espace disque | Barre (35%) + "3,5 Go / 10 Go" |
+| Datacenter | Gravelines (gra3) |
+| Cluster | cluster027.hosting.ovh.net |
+
+### Tuile Configuration
+| Champ | Action |
+|-------|--------|
+| Version PHP | 8.2 + indicateur vert + menu ⋮ |
+| Certificat SSL | Let's Encrypt - Actif + menu ⋮ |
+| Offre email | Active + menu ⋮ |
+| CDN | Oui - CDN Basic |
+
+### Menu SSL (⋮)
+| Option | Description |
+|--------|-------------|
+| Commander un certificat | Sectigo payant |
+| Regénérer le certificat | Let's Encrypt |
+| Supprimer le certificat | Destructif |
+
+### Tuile Abonnement
+| Champ | Description |
+|-------|-------------|
+| Offre | Performance 1 + menu ⋮ |
+| Renouvellement | Automatique - 15/01/2026 |
+| Boost | Désactivé |
+| Contacts | Admin/Technique/Facturation |
+| Date de création | 15 janvier 2023 |
+
+### Tuile Liens utiles
+| Lien | Description |
+|------|-------------|
+| Statistiques de visites | Accès Urchin/AWStats |
+| Accès HTTP au cluster | URL directe |
+| Versions des langages | Documentation |
+
+### Tuile Aperçu
+| Element | Description |
+|---------|-------------|
+| Type | Placeholder image |
+| Contenu | "Aperçu du site" |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}
+GET /hosting/web/{serviceName}/serviceInfos
+GET /hosting/web/{serviceName}/ssl
+GET /hosting/web/{serviceName}/ovhConfig
+```
+
+### Modele
+```typescript
+interface GeneralInformations {
+  state: 'active' | 'suspended';
+  ipv4: string;
+  ipv6: string;
+  diskUsage: { used: number; total: number; };
+  datacenter: string;
+  cluster: string;
+  phpVersion: string;
+  ssl: { type: string; state: string; };
+  email: { state: string; };
+  cdn: { enabled: boolean; type: string; };
+  offer: string;
+  renewal: { mode: string; date: string; };
+  boost: boolean;
+  contacts: { admin: string; tech: string; billing: string; };
+  creationDate: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_general_title": "Informations générales",
+  "hosting_general_state": "État du service",
+  "hosting_general_disk": "Espace disque",
+  "hosting_general_datacenter": "Datacenter",
+  "hosting_general_cluster": "Cluster",
+  "hosting_config_title": "Configuration",
+  "hosting_config_php": "Version PHP",
+  "hosting_config_ssl": "Certificat SSL",
+  "hosting_config_email": "Offre email",
+  "hosting_config_cdn": "CDN",
+  "hosting_subscription_title": "Abonnement",
+  "hosting_subscription_offer": "Offre",
+  "hosting_subscription_renewal": "Renouvellement",
+  "hosting_subscription_boost": "Boost",
+  "hosting_subscription_contacts": "Contacts",
+  "hosting_subscription_created": "Date de création",
+  "hosting_links_title": "Liens utiles",
+  "hosting_links_stats": "Statistiques de visites",
+  "hosting_links_http": "Accès HTTP au cluster",
+  "hosting_links_versions": "Versions des langages disponibles"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Menus contextuels (⋮) pour actions rapides
+- Indicateur vert = configuration valide
+- Aperçu = screenshot du site
+- Contacts = identifiants OVH

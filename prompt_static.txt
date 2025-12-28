@@ -1,0 +1,671 @@
+# CONSIGNES STATIC - Site Navigable depuis SVG Target
+
+## 1. Contexte et objectif
+
+Générer un **site HTML statique navigable** à partir des SVG target_ du New Manager OVHcloud.
+
+**Input :** Archives `target_*.tar` contenant :
+- Fichiers `.svg` : mockups visuels complets (1440x900px)
+- Fichiers `.txt` : spécifications (design tokens, actions, APIs)
+
+**Output :** Site HTML statique dans `/home/ubuntu/aiapp/static/`
+
+**Déploiement :** `https://manager.di2amp.com/static/`
+
+---
+
+## 2. Règles de travail
+
+1. **Analyser** les SVG fournis pour identifier la structure de navigation
+2. **Mapper** les noms de fichiers SVG vers les chemins HTML
+3. **Transformer** les SVG en ajoutant des zones cliquables `<a>`
+4. **Générer** les fichiers HTML avec SVG inline
+5. **Déployer** avec le script D3-deploy_static.sh
+
+---
+
+## 3. Convention de nommage
+
+### 3.1 Mapping SVG → HTML
+
+| Pattern SVG | Chemin HTML |
+|-------------|-------------|
+| `target_.{univers}.{section}.{tab}.svg` | `/{univers}/{section}/{tab}.html` |
+| `target_.{univers}.{section}.index.svg` | `/{univers}/{section}/index.html` |
+| `target_.{univers}.index.svg` | `/{univers}/index.html` |
+
+### 3.2 Exemples concrets
+
+| Fichier SVG | Fichier HTML |
+|-------------|--------------|
+| `target_.web-cloud.hebergement.hosting.general.svg` | `/web-cloud/hosting/general.html` |
+| `target_.web-cloud.hebergement.hosting.ftp-ssh.svg` | `/web-cloud/hosting/ftp-ssh.html` |
+| `target_.web-cloud.voip.index.svg` | `/web-cloud/voip/index.html` |
+| `target_.web-cloud.voip.line.general.svg` | `/web-cloud/voip/line/general.html` |
+| `target_.web-cloud.voip.group.dashboard.svg` | `/web-cloud/voip/group/dashboard.html` |
+
+### 3.3 Structure de sortie
+
+```
+/home/ubuntu/aiapp/static/
+├── index.html                          # Page d'accueil avec navigation globale
+├── style.css                           # CSS global
+├── web-cloud/
+│   ├── index.html                      # Accueil Web Cloud (si disponible)
+│   ├── hosting/
+│   │   ├── general.html
+│   │   ├── ftp-ssh.html
+│   │   ├── ssl.html
+│   │   ├── multi-sites.html
+│   │   ├── modules.html
+│   │   ├── cdn.html
+│   │   ├── email.html
+│   │   └── tasks.html
+│   └── voip/
+│       ├── index.html
+│       ├── line/
+│       │   ├── general.html
+│       │   ├── calls.html
+│       │   └── ...
+│       ├── group/
+│       │   ├── dashboard.html
+│       │   └── ...
+│       ├── numbers/
+│       │   └── ...
+│       └── fax/
+│           └── ...
+├── public-cloud/
+│   └── ...
+├── bare-metal/
+│   └── ...
+└── ...
+```
+
+---
+
+## 4. Identification des zones cliquables
+
+### 4.1 Navigation principale (NAV1 - Header bleu)
+
+Position Y : 0-50px
+
+| Texte visible | Lien cible |
+|---------------|------------|
+| Accueil | `/home/index.html` |
+| Public Cloud | `/public-cloud/index.html` |
+| Hosted Private Cloud | `/private-cloud/index.html` |
+| Bare Metal Cloud | `/bare-metal/index.html` |
+| Web Cloud | `/web-cloud/index.html` |
+| Network | `/network/index.html` |
+| IAM / Securite | `/iam/index.html` |
+| Licences | `/license/index.html` |
+
+### 4.2 Navigation secondaire (NAV2 - Sous-header blanc)
+
+Position Y : 50-90px
+
+Varie selon l'univers. Exemple pour Web Cloud :
+
+| Texte visible | Lien cible |
+|---------------|------------|
+| Accueil | `/web-cloud/index.html` |
+| Domaines & DNS | `/web-cloud/domains/index.html` |
+| Hebergement | `/web-cloud/hosting/general.html` |
+| Emails & Collab | `/web-cloud/emails/index.html` |
+| VoIP | `/web-cloud/voip/index.html` |
+| Acces | `/web-cloud/access/index.html` |
+
+### 4.3 Navigation tabs (NAV3 - Onglets)
+
+Position Y : ~100-130px (varie selon le layout)
+
+Exemple pour Hosting :
+
+| Texte visible | Lien cible |
+|---------------|------------|
+| Infos générales | `general.html` (relatif) |
+| Multisite | `multi-sites.html` |
+| FTP - SSH | `ftp-ssh.html` |
+| Bases de données | `databases.html` |
+| Modules | `modules.html` |
+| SSL | `ssl.html` |
+| CDN | `cdn.html` |
+| Email | `email.html` |
+| Tâches | `tasks.html` |
+
+### 4.4 Liste des services (Left Panel)
+
+Les items de la liste de gauche restent **non cliquables** (pas de détail individuel en static).
+
+### 4.5 Boutons d'action
+
+Les boutons (Gérer, Modifier, Configurer, etc.) restent **non cliquables** (actions API).
+
+---
+
+## 5. Template HTML
+
+### 5.1 Structure de base
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{PAGE_TITLE} - OVHcloud Manager Static</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="svg-container">
+    <!-- SVG INLINE ICI avec zones cliquables -->
+  </div>
+</body>
+</html>
+```
+
+### 5.2 CSS global (style.css)
+
+```css
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Source Sans Pro', -apple-system, sans-serif;
+  background: #F6F6F9;
+  min-height: 100vh;
+}
+
+.svg-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.svg-container svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Zones cliquables */
+.svg-container a {
+  cursor: pointer;
+}
+
+.svg-container a:hover rect,
+.svg-container a:hover text {
+  opacity: 0.8;
+}
+
+/* Indicateur de lien actif */
+.nav-link:hover {
+  text-decoration: underline;
+}
+```
+
+---
+
+## 6. Transformation des SVG
+
+### 6.1 Ajout des zones cliquables
+
+Envelopper les éléments de navigation dans des balises `<a>` SVG :
+
+**Avant :**
+```xml
+<text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+```
+
+**Après :**
+```xml
+<a href="/static/web-cloud/index.html">
+  <text x="510" y="32" class="text-white" font-size="14" font-weight="600" style="cursor:pointer">Web Cloud</text>
+</a>
+```
+
+### 6.2 Zones rectangulaires cliquables
+
+Pour les onglets et boutons, ajouter un rectangle transparent cliquable :
+
+```xml
+<a href="/static/web-cloud/hosting/ftp-ssh.html">
+  <rect x="200" y="100" width="80" height="30" fill="transparent" style="cursor:pointer"/>
+  <text x="210" y="120" class="nav3-item">FTP - SSH</text>
+</a>
+```
+
+### 6.3 Namespace XLink
+
+S'assurer que le SVG a le namespace pour les liens :
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 1440 900" width="1440" height="900">
+```
+
+---
+
+## 7. Génération des fichiers
+
+### 7.1 Script de transformation (transform_svg.sh)
+
+```bash
+#!/bin/bash
+# Usage: ./transform_svg.sh input.svg output.html "Page Title"
+
+INPUT_SVG="$1"
+OUTPUT_HTML="$2"
+PAGE_TITLE="$3"
+
+# Créer le répertoire de destination si nécessaire
+mkdir -p "$(dirname "$OUTPUT_HTML")"
+
+# Générer le HTML avec SVG inline
+cat > "$OUTPUT_HTML" << 'HTML_HEADER'
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAGE_TITLE_PLACEHOLDER - OVHcloud Manager Static</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="svg-container">
+HTML_HEADER
+
+# Remplacer le placeholder du titre
+sed -i "s/PAGE_TITLE_PLACEHOLDER/$PAGE_TITLE/" "$OUTPUT_HTML"
+
+# Insérer le SVG transformé (avec liens)
+# ... transformation des zones cliquables ...
+cat "$INPUT_SVG" >> "$OUTPUT_HTML"
+
+cat >> "$OUTPUT_HTML" << 'HTML_FOOTER'
+  </div>
+</body>
+</html>
+HTML_FOOTER
+```
+
+### 7.2 Workflow complet
+
+```bash
+# 1. Lister l'archive (JAMAIS extraire - fichiers déjà sur disque)
+tar tvf /home/ubuntu/target_manager_svg.web-cloud.hosting.tar
+# Les fichiers sont dans /home/ubuntu/target_manager_svg/web-cloud/hosting/
+
+# 2. Pour chaque SVG, générer le HTML
+for svg in ./web-cloud/hosting/*.svg; do
+  # Extraire le nom de base
+  basename=$(basename "$svg" .svg)
+  # Parser le nom : target_.web-cloud.hebergement.hosting.{tab}
+  tab=$(echo "$basename" | sed 's/target_\.web-cloud\.hebergement\.hosting\.//')
+  
+  # Générer le HTML
+  ./transform_svg.sh "$svg" "/home/ubuntu/aiapp/static/web-cloud/hosting/${tab}.html" "Hosting - ${tab}"
+done
+
+# 3. Déployer
+/home/ubuntu/aiapp/scripts/D3-deploy_static.sh
+```
+
+---
+
+## 8. Script de déploiement
+
+### 8.1 D3-deploy_static.sh
+
+```bash
+#!/bin/bash
+#===============================================================================
+# D3-deploy_static.sh - Déploie le site statique vers /var/www/aiapp/static/
+#===============================================================================
+
+set -e
+
+SOURCE_DIR="/home/ubuntu/aiapp/static"
+DEST_DIR="/var/www/aiapp/static"
+BACKUP_DIR="/home/ubuntu/action-target/tmp"
+
+echo "=== Déploiement du site statique ==="
+echo "Source: $SOURCE_DIR"
+echo "Destination: $DEST_DIR"
+echo ""
+
+# Vérifier que la source existe
+if [ ! -d "$SOURCE_DIR" ]; then
+    echo "ERREUR: Le répertoire source n'existe pas: $SOURCE_DIR"
+    exit 1
+fi
+
+# Créer backup si destination existe
+if [ -d "$DEST_DIR" ]; then
+    echo "Backup de l'existant vers: /home/ubuntu/action-target/tmp/"
+    cp -r --backup=numbered "$DEST_DIR" /home/ubuntu/action-target/tmp/
+fi
+
+# Créer le répertoire destination
+mkdir -p "$DEST_DIR"
+
+# Synchroniser les fichiers
+echo "Synchronisation des fichiers..."
+rsync -av --delete "$SOURCE_DIR/" "$DEST_DIR/"
+
+# Fixer les permissions
+chmod -R 755 "$DEST_DIR"
+find "$DEST_DIR" -type f -name "*.html" -exec chmod 644 {} \;
+find "$DEST_DIR" -type f -name "*.css" -exec chmod 644 {} \;
+find "$DEST_DIR" -type f -name "*.svg" -exec chmod 644 {} \;
+
+echo ""
+echo "=== Déploiement terminé ==="
+echo "URL: https://manager.di2amp.com/static/"
+echo ""
+
+# Lister les fichiers déployés
+echo "Fichiers déployés:"
+find "$DEST_DIR" -type f | head -20
+TOTAL=$(find "$DEST_DIR" -type f | wc -l)
+echo "... Total: $TOTAL fichiers"
+```
+
+### 8.2 Permissions
+
+```bash
+chmod +x /home/ubuntu/aiapp/scripts/D3-deploy_static.sh
+```
+
+---
+
+## 9. Page d'index globale
+
+### 9.1 Génération automatique
+
+Créer une page d'accueil listant toutes les pages disponibles :
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OVHcloud Manager - Prototype Statique</title>
+  <style>
+    body {
+      font-family: 'Source Sans Pro', sans-serif;
+      background: #F6F6F9;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { color: #000E9C; margin-bottom: 10px; }
+    h2 { color: #1F2937; margin: 30px 0 15px; border-bottom: 2px solid #E5E7EB; padding-bottom: 10px; }
+    .subtitle { color: #6B7280; margin-bottom: 30px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+    .card {
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 15px 20px;
+      text-decoration: none;
+      color: #1F2937;
+      transition: all 0.2s;
+    }
+    .card:hover {
+      border-color: #0050D7;
+      box-shadow: 0 4px 12px rgba(0,80,215,0.15);
+    }
+    .card-title { font-weight: 600; color: #0050D7; }
+    .card-path { font-size: 12px; color: #6B7280; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h1>🖥️ OVHcloud Manager - Prototype Statique</h1>
+  <p class="subtitle">Navigation entre les maquettes SVG du New Manager</p>
+
+  <h2>Web Cloud</h2>
+  <div class="grid">
+    <a href="/static/web-cloud/hosting/general.html" class="card">
+      <div class="card-title">Hébergement - Infos générales</div>
+      <div class="card-path">/web-cloud/hosting/general.html</div>
+    </a>
+    <a href="/static/web-cloud/hosting/ftp-ssh.html" class="card">
+      <div class="card-title">Hébergement - FTP/SSH</div>
+      <div class="card-path">/web-cloud/hosting/ftp-ssh.html</div>
+    </a>
+    <!-- Autres pages... -->
+  </div>
+
+  <h2>VoIP</h2>
+  <div class="grid">
+    <a href="/static/web-cloud/voip/index.html" class="card">
+      <div class="card-title">VoIP - Accueil</div>
+      <div class="card-path">/web-cloud/voip/index.html</div>
+    </a>
+    <!-- Autres pages... -->
+  </div>
+
+</body>
+</html>
+```
+
+---
+
+## 10. Workflow complet
+
+### 10.1 Résumé express
+
+```
+1. LISTER      → tar tvf pour voir le contenu des archives
+2. LIRE        → Les fichiers sont déjà sur disque dans /home/ubuntu/target_manager_svg/
+3. ANALYSER    → Identifier les SVG et leur structure de navigation
+4. TRANSFORMER → Ajouter les <a href> dans les SVG
+5. GÉNÉRER     → Créer les fichiers HTML avec SVG inline
+6. INDEXER     → Générer la page index.html globale
+7. DÉPLOYER    → /home/ubuntu/aiapp/scripts/D3-deploy_static.sh
+8. TESTER      → https://manager.di2amp.com/static/
+```
+
+### 10.2 Commandes de génération
+
+```bash
+# Créer la structure
+mkdir -p /home/ubuntu/aiapp/static/web-cloud/hosting
+mkdir -p /home/ubuntu/aiapp/static/web-cloud/voip/{line,group,numbers,fax}
+
+# Générer le CSS global
+cp+tee /home/ubuntu/aiapp/static/style.css
+
+# Générer chaque page HTML
+cp+tee /home/ubuntu/aiapp/static/web-cloud/hosting/general.html
+
+# Générer l'index
+cp+tee /home/ubuntu/aiapp/static/index.html
+
+# Déployer
+/home/ubuntu/aiapp/scripts/D3-deploy_static.sh
+```
+
+---
+
+## 11. Gestion des pages manquantes
+
+### 11.1 Page 404 générique
+
+Si un lien pointe vers une page non générée, créer une page 404 :
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Page non disponible - OVHcloud Manager Static</title>
+  <style>
+    body {
+      font-family: 'Source Sans Pro', sans-serif;
+      background: #F6F6F9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    .container { max-width: 400px; }
+    h1 { color: #000E9C; font-size: 48px; margin-bottom: 10px; }
+    p { color: #6B7280; margin-bottom: 20px; }
+    a { color: #0050D7; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚧</h1>
+    <h2>Page non disponible</h2>
+    <p>Cette maquette n'a pas encore été générée.</p>
+    <a href="/static/">← Retour à l'accueil</a>
+  </div>
+</body>
+</html>
+```
+
+### 11.2 Liens désactivés
+
+Pour les liens vers des pages non existantes, ajouter une classe CSS :
+
+```css
+.disabled-link {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+```
+
+---
+
+## 12. Notes importantes
+
+1. **Chemins absolus** : Tous les liens utilisent `/static/...` pour fonctionner depuis n'importe quelle page
+2. **SVG inline** : Les SVG sont intégrés directement dans le HTML (pas de `<img src>`) pour permettre les liens internes
+3. **Pas de JavaScript** : Le site est 100% statique, navigation uniquement via liens HTML
+4. **Responsive** : Le SVG s'adapte à la largeur avec `width: 100%` mais garde ses proportions
+5. **Pas d'API** : Les boutons d'action ne sont pas fonctionnels (prototype visuel uniquement)
+
+---
+
+## 13. Script automatique generate_html_v2.sh
+
+### 13.1 Emplacement et usage
+
+```bash
+/home/ubuntu/action-static/generate_html_v2.sh all     # Régénère tout
+/home/ubuntu/action-static/generate_html_v2.sh <svg>   # Un fichier spécifique
+```
+
+### 13.2 Structure de navigation injectée
+
+Le script injecte automatiquement 4 niveaux de navigation :
+
+**NAV1 - Header bleu (y=32)**
+```
+Accueil → /static/index.html
+Web Cloud → /static/web-cloud/index.html
+```
+Pattern : `<text x="40" y="32" class="text-white"...>Accueil</text>`
+
+**NAV2 - Sous-header (y=75 hosting, y=76 voip)**
+```
+Hosting:  Accueil, Hebergement, VoIP
+VoIP:     Hebergements, VoIP
+```
+Pattern : `<text x="..." y="75" class="text-muted"...>`
+
+**NAV3 - Sidebar VoIP (dans translate(12, 56))**
+```
+Lignes   → /static/web-cloud/voip/lines/general.html
+Numeros  → /static/web-cloud/voip/numbers/general.html
+Fax      → /static/web-cloud/voip/fax/general.html
+Abreges  → /static/web-cloud/voip/abbreviated.html
+```
+Pattern : `<text x="28" y="16" class="text-white" font-size="10"...>Lignes</text>`
+
+**NAV4 - Tabs par section (dans translate(0, 50) ou buttons)**
+
+Hosting (buttons avec text-anchor="middle"):
+```
+Infos générales, Multisite, FTP-SSH, SSL, CDN
+```
+
+VoIP Line (text simple):
+```
+General, Telephone, Appels, Transferts, Messagerie, Conso, Options
+```
+
+### 13.3 Détection automatique de section
+
+Le script détecte la section depuis le nom du SVG :
+- `*hosting*` → hosting
+- `*line*` → voip.line
+- `*number*` → voip.number
+- `*fax*` → voip.fax
+- `*group*` → voip.group
+- `*sms*` → voip.sms
+- `*carrier-sip*` → voip.carrier-sip
+
+### 13.4 Configuration navigation
+
+Fichier de config JSON : `/home/ubuntu/action-static/nav_config.json`
+
+### 13.5 Ajouter une nouvelle section
+
+1. Ajouter la détection dans `detect_section()`
+2. Ajouter le base_path dans `get_nav4_base_path()`
+3. Ajouter les patterns sed dans `inject_nav4_links()`
+4. Tester : `./generate_html_v2.sh <svg_file>`
+
+---
+
+## 14. Référence rapide
+
+### 14.1 Créer une page statique
+
+```bash
+# Backup + création
+cp --backup=numbered /home/ubuntu/aiapp/static/web-cloud/hosting/general.html /home/ubuntu/action-target/tmp/ 2>/dev/null || true
+tee /home/ubuntu/aiapp/static/web-cloud/hosting/general.html > /dev/null <<'HTMLEOF'
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hébergement - Infos générales - OVHcloud Manager</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="svg-container">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900">
+      <!-- SVG content avec liens -->
+    </svg>
+  </div>
+</body>
+</html>
+HTMLEOF
+```
+
+### 14.2 Déployer
+
+```bash
+/home/ubuntu/aiapp/scripts/D3-deploy_static.sh
+```
+
+### 14.3 Tester
+
+```
+https://manager.di2amp.com/static/
+```

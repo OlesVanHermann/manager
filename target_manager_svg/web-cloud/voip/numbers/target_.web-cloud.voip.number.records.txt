@@ -1,0 +1,129 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.records.svg
+Route:   /web-cloud/voip/numbers/{serviceName}/records
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Enregistrements
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Historique et gestion des enregistrements d'appels sur un numéro.
+Écoute, téléchargement et suppression des enregistrements.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 28/12/2024 14:32         | GET /telephony/.../records → records[].date             |
+| +33 6 12 34 56 78        | records[].caller                                        |
+| Jean Dupont              | records[].agent                                         |
+| 5:23                     | records[].duration                                      |
+| 2.4 Mo                   | records[].size                                          |
+| Bonne                    | records[].quality                                       |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC CONFIGURATION:
+     * Toggle enregistrement auto
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche
+     * Filtre dates (du/au)
+     * Exporter tout
+
+   - TABLE ENREGISTREMENTS:
+     * Date/heure
+     * Appelant
+     * Agent
+     * Durée
+     * Taille
+     * Qualité (badge)
+     * Actions: Play, Download, Delete
+
+   - PAGINATION
+
+   - BANNIERE RETENTION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Configuration enregistrement
+GET /telephony/{billingAccount}/number/{serviceName}/records/config
+Response: { autoRecord: boolean, retention: 90 }
+
+### Modifier configuration
+PUT /telephony/{billingAccount}/number/{serviceName}/records/config
+Body: { autoRecord: boolean }
+
+### Liste enregistrements
+GET /telephony/{billingAccount}/number/{serviceName}/records
+Query: { from, to, page, limit }
+Response: {
+  total, records: [{
+    id, date, caller, agent, duration, size, quality, audioUrl
+  }]
+}
+
+### Télécharger enregistrement
+GET /telephony/{billingAccount}/number/{serviceName}/records/{id}/download
+
+### Supprimer enregistrement
+DELETE /telephony/{billingAccount}/number/{serviceName}/records/{id}
+
+### Export bulk
+POST /telephony/{billingAccount}/number/{serviceName}/records/export
+Body: { from, to, format: 'zip' }
+
+================================================================================
+
+## QUALITE AUDIO
+
+| Qualité | Couleur | Critère              |
+|---------|---------|----------------------|
+| good    | Vert    | Score > 4.0          |
+| average | Jaune   | Score 3.0-4.0        |
+| poor    | Rouge   | Score < 3.0          |
+
+================================================================================
+
+## REGLES METIER
+
+- Rétention: 90 jours par défaut
+- Format: MP3 (128 kbps)
+- Taille max: 100 Mo
+- Export: ZIP avec métadonnées CSV
+- RGPD: suppression sur demande
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- NumberRecordsTab (container)
+- RecordingConfigToggle
+- RecordsToolbar
+- DateRangeFilter
+- RecordsTable
+- AudioPlayerInline
+- RecordQualityBadge
+- ExportRecordsModal
+- Pagination
+- RetentionInfoBanner
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

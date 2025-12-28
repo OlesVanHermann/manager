@@ -1,0 +1,127 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.group.repayments.svg
+Route:   /web-cloud/voip/groups/{billingAccount}/repayments
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Reversements
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des reversements pour numéros spéciaux (surtaxés 08XX). Suivi des
+gains, demandes de versement et historique.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| voip-ab12345             | GET /telephony → billingAccount                         |
+| 1 247,50 €               | GET /telephony/{ba}/repayments → availableBalance       |
+| +345,80 €                | repayments.currentMonth.amount                          |
+| 1 234                    | repayments.currentMonth.calls                           |
+| 4 892,30 €               | repayments.yearTotal                                    |
+| FR76 1234...             | repayments.iban                                         |
+| 01/12/2024               | repayments.history[].date                               |
+| Novembre 2024            | repayments.history[].period                             |
+| 412,50 €                 | repayments.history[].grossAmount                        |
+| 371,25 €                 | repayments.history[].netAmount                          |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche groupes
+   - Liste des groupes VoIP
+
+2. RIGHT PANEL (1096px)
+   - Header: Groupe + Description
+   - NAV3 tabs: Dashboard | Lignes | Numéros | Fax | Répertoire | Facturation | Commandes | [Reversements]
+
+   - INFO BANNER: Explication reversements
+
+   - STATS (3 cards):
+     * Solde disponible (vert)
+     * Ce mois (blanc)
+     * Total année (blanc)
+
+   - BLOC: Demander versement (1040x80)
+     * Seuil minimum, IBAN
+     * Bouton Demander versement
+
+   - TABLE: Historique des versements (1040x260)
+     * Colonnes: Date | Période | Appels | Montant brut | Commission | Montant net | Statut
+
+   - PAGINATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Reversements
+GET /telephony/{billingAccount}/repayments
+Response: {
+  availableBalance, currentMonth: { amount, calls },
+  yearTotal, iban, minimumThreshold,
+  history: [{
+    id, date, period, calls, grossAmount, commission, netAmount, status
+  }]
+}
+
+### Demander versement
+POST /telephony/{billingAccount}/repayments/request
+Body: { amount } // optionnel, tout le solde par défaut
+Response: { requestId, status }
+
+### Configurer IBAN
+PUT /telephony/{billingAccount}/repayments/iban
+Body: { iban, bic }
+
+================================================================================
+
+## STATUTS VERSEMENT
+
+| Statut    | Badge | Description                    |
+|-----------|-------|--------------------------------|
+| pending   | Jaune | En cours de traitement         |
+| paid      | Vert  | Payé                           |
+| rejected  | Rouge | Rejeté (IBAN invalide, etc.)   |
+
+================================================================================
+
+## CALCUL REVERSEMENT
+
+| Élément      | Description                        |
+|--------------|------------------------------------|
+| Montant brut | Total des appels surtaxés          |
+| Commission   | 10% retenu par OVH                 |
+| Montant net  | Montant versé au client            |
+
+================================================================================
+
+## REGLES METIER
+
+- Seuil minimum: 100 € pour demander versement
+- Versements mensuels automatiques si > 100 €
+- Commission OVH: 10%
+- IBAN obligatoire pour recevoir les fonds
+- Délai versement: 15 jours
+- Applicable uniquement aux numéros 08XX surtaxés
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- GroupRepaymentsTab (container)
+- RepaymentBalanceCards
+- RequestPaymentCard
+- RepaymentHistoryTable
+- RequestPaymentModal
+- ConfigureIbanModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

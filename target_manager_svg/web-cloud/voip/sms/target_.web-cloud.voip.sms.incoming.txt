@@ -1,0 +1,150 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.sms.incoming.svg
+Route:   /web-cloud/voip/sms/{serviceName}/incoming
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Reçus
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Historique des SMS reçus sur le numéro virtuel du compte. Liste avec
+expéditeur, contenu, statut webhook et actions (répondre, supprimer).
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| sms-abc123-1             | GET /sms → serviceName                                  |
+| +33 7 00 12 34 56        | GET /sms/{sn}/virtualNumbers → number                   |
+| 247                      | GET /sms/{sn}/incoming → totalCount                     |
+| 89                       | incoming.uniqueSenders                                  |
+| 28/12 15:42              | incoming[].receivedAt                                   |
+| +33612345678             | incoming[].sender                                       |
+| Oui je confirme...       | incoming[].message                                      |
+| Envoyé/Échec             | incoming[].webhookStatus                                |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche comptes SMS
+   - Liste des comptes avec crédits
+
+2. RIGHT PANEL (1096px)
+   - Header: Compte + Description
+   - NAV3 tabs: Général | Envoyer | Campagnes | [Reçus] | Modèles
+
+   - INFO BANNER: Numéro de réception + webhook
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche par numéro
+     * Filtre période
+     * Export CSV
+
+   - STATS CARDS (3 cards):
+     * SMS reçus (période)
+     * Expéditeurs uniques
+     * Webhook status
+
+   - TABLE SMS REÇUS (1040x320):
+     * Colonnes: Date/Heure | Expéditeur | Message | Webhook | Actions
+     * Actions: Voir, Répondre, Supprimer
+
+   - PAGINATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste SMS reçus
+GET /sms/{serviceName}/incoming
+Query: { dateTime.from, dateTime.to, sender }
+Response: {
+  messages: [{
+    id, sender, message, receivedAt,
+    webhookStatus, webhookResponse
+  }],
+  totalCount, uniqueSenders
+}
+
+### Détail SMS
+GET /sms/{serviceName}/incoming/{id}
+Response: { ...message, fullHeaders }
+
+### Supprimer SMS
+DELETE /sms/{serviceName}/incoming/{id}
+
+### Export SMS
+GET /sms/{serviceName}/incoming/export
+Query: { dateTime.from, dateTime.to, format: 'csv' }
+
+### Numéros virtuels
+GET /sms/{serviceName}/virtualNumbers
+Response: [{ number, status, capabilities }]
+
+### Configuration webhook
+GET /sms/{serviceName}/receivers
+Response: {
+  url, enabled, secret,
+  lastSuccess, lastError
+}
+
+PUT /sms/{serviceName}/receivers
+Body: { url, enabled, secret }
+
+================================================================================
+
+## STATUTS WEBHOOK
+
+| Statut    | Badge  | Description                    |
+|-----------|--------|--------------------------------|
+| sent      | Vert   | Webhook envoyé avec succès     |
+| failed    | Orange | Échec envoi (retry prévu)      |
+| error     | Rouge  | Erreur définitive              |
+| pending   | Gris   | En attente d'envoi             |
+| disabled  | Gris   | Webhook désactivé              |
+
+================================================================================
+
+## REGLES METIER
+
+- Conservation SMS reçus: 3 mois
+- Webhook retry: 3 tentatives
+- Délai retry: 5min, 30min, 2h
+- Export max 10 000 lignes
+- STOP automatique géré
+- Réponse compte 1 crédit
+
+================================================================================
+
+## MOTS-CLÉS RÉSERVÉS
+
+| Mot-clé | Action automatique           |
+|---------|------------------------------|
+| STOP    | Désinscription liste         |
+| ARRET   | Désinscription liste         |
+| START   | Réinscription liste          |
+| AIDE    | Envoi message aide           |
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- SmsIncomingTab (container)
+- IncomingToolbar
+- IncomingStatsCards
+- IncomingSmsTable
+- WebhookStatusBadge
+- SmsDetailModal
+- SmsReplyModal
+- WebhookConfigModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

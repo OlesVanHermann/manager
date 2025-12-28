@@ -574,13 +574,11 @@ cd /home/ubuntu/aiapp/frontend && npm run build:dev
 
 ```bash
 # Backup puis suppression des fichiers monolithiques
-cp services/{nav1}.{nav2}.ts services/{nav1}.{nav2}.ts.backup.$(date +%Y%m%dT%H%M%S)
-rm services/{nav1}.{nav2}.ts
+mv --backup=numbered services/{nav1}.{nav2}.ts /home/ubuntu/action-target/tmp/
 
 # Si CSS monolithique existe
 if [ -f styles/{nav2}.css ]; then
-  cp styles/{nav2}.css styles/{nav2}.css.backup.$(date +%Y%m%dT%H%M%S)
-  rm styles/{nav2}.css
+  mv --backup=numbered styles/{nav2}.css /home/ubuntu/action-target/tmp/
 fi
 
 # Vérifier build
@@ -600,7 +598,7 @@ JAMAIS de "... comme avant" ou "// reste inchangé".
 
 **Format :**
 ```bash
-cp /chemin/fichier /chemin/fichier.$(date +%Y%m%dT%H%M%S) 2>/dev/null || true
+cp --backup=numbered /chemin/fichier /home/ubuntu/action-target/tmp/ 2>/dev/null || true
 tee /chemin/fichier > /dev/null <<'FILEEND'
 // Le code ENTIER ici
 // Avec TOUS les commentaires
@@ -734,8 +732,8 @@ import "./FtpTab.css";
 ## M) Commandes Utiles
 
 ```bash
-# Lister tous les fichiers d'un module
-find src/pages/{nav1}/{nav2} -name "*.ts" -o -name "*.tsx" -o -name "*.css" | sort
+# Lister tous les fichiers d'un module (via index pré-généré)
+grep "{nav1}/{nav2}" /home/ubuntu/new_manager_files.txt | grep -E "\.(ts|tsx|css)$" | sort
 
 # Compter les imports JS par source
 grep -rh "from.*service" src/pages/{nav1}/{nav2} | sort | uniq -c | sort -rn
@@ -752,8 +750,8 @@ grep -r "from.*tabs/" src/pages/{nav1}/{nav2}/tabs/{tab}/ | grep -v 'from "./'
 # VÉRIFICATION ISOLATION CSS
 grep -r "import.*\.\..*\.css" src/pages/{nav1}/{nav2}/tabs/
 
-# Lister les traductions
-find public/locales -name "*.json" | sort
+# Lister les traductions (via index pré-généré)
+grep "locales.*\.json$" /home/ubuntu/new_manager_files.txt | sort
 ```
 
 ---

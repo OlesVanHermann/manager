@@ -1,0 +1,113 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.sms.options.svg
+Route:   /web-cloud/sms/{serviceName}/options
+NAV:     NAV1=Web Cloud | NAV2=SMS | NAV3=Options
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration générale du compte SMS. Paramètres d'envoi, limites,
+notifications et sécurité.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Marketing Dept           | GET /sms/{serviceName} → name                           |
+| https://example.com/...  | sms.callbackUrl                                         |
+| Activé                   | sms.smsResponse (boolean)                               |
+| OVHcloud                 | sms.defaultSender                                       |
+| 10 000                   | sms.dailyLimit                                          |
+| 50                       | sms.minuteLimit                                         |
+| 100                      | sms.lowCreditAlert                                      |
+| admin@example.com        | sms.notificationEmail                                   |
+| 192.168.1.0/24           | sms.allowedIps[]                                        |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche comptes SMS
+   - Liste des comptes SMS
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC PARAMETRES GENERAUX:
+     * Nom du compte (éditable)
+     * Callback URL
+     * SMS entrants (toggle)
+     * Accusé de réception (toggle)
+
+   - BLOC EXPEDITEUR PAR DEFAUT:
+     * Sélection expéditeur
+     * Numéro de réponse
+
+   - BLOC LIMITES D'ENVOI:
+     * Limite quotidienne
+     * Limite par minute
+     * Seuil alerte crédit bas
+
+   - BLOC NOTIFICATIONS:
+     * Email notification
+     * Toggle alerte crédit
+     * Toggle rapport quotidien
+
+   - BLOC SECURITE:
+     * Token API (masqué + copie)
+     * IPs autorisées
+
+   - ACTIONS: Enregistrer, Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Info compte
+GET /sms/{serviceName}
+Response: { name, callbackUrl, smsResponse, deliveryReceipt, defaultSender, ... }
+
+### Modifier options
+PUT /sms/{serviceName}
+Body: { name?, callbackUrl?, smsResponse?, ... }
+
+### Régénérer token
+POST /sms/{serviceName}/regenerateToken
+Response: { token }
+
+### Modifier IPs autorisées
+PUT /sms/{serviceName}/allowedIps
+Body: { ips[] }
+
+================================================================================
+
+## REGLES METIER
+
+- Callback URL doit être HTTPS
+- Limite quotidienne max: 100 000
+- Limite par minute max: 500
+- Token API régénérable (invalidation immédiate)
+- IPs au format CIDR ou adresse unique
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- SmsOptionsTab (container)
+- GeneralSettingsCard
+- DefaultSenderCard
+- SendLimitsCard
+- NotificationsCard
+- SecurityCard
+- ApiTokenField
+- IpWhitelistInput
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

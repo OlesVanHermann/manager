@@ -1,0 +1,164 @@
+# Cahier des Charges : telecom/alias - Plan de numerotation PABX
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de configuration du plan de numerotation (dialplan) pour un numero alias PABX.
+
+### Objectif fonctionnel
+- Visualiser le plan de numerotation
+- Gerer les extensions (etapes)
+- Definir l'ordre de traitement des appels
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec arbre visuel des extensions + panneau info
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Titre | Plan de numerotation |
+
+### Noeud plan principal
+| Element | Description |
+|---------|-------------|
+| Icone | Engrenage dans cercle violet |
+| Titre | Plan de numerotation |
+| Sous-titre | Plan principal |
+| Menu | Bouton ⋮ (actions) |
+| Style | Fond violet clair, bordure violette |
+
+### Ligne verticale
+| Element | Description |
+|---------|-------------|
+| Type | Ligne connectrice |
+| Couleur | Gris (#E5E7EB) |
+| Position | Gauche des extensions |
+
+### Carte extension
+| Element | Description |
+|---------|-------------|
+| Indicateur | Cercle vert (active) |
+| Titre | Extension X |
+| Info | Position: X | Condition: XXX |
+| Action | Action: Description |
+| Menu | Bouton ⋮ |
+| Style | Fond blanc, bordure grise |
+
+### Extensions affichees
+| Extension | Position | Condition | Action |
+|-----------|----------|-----------|--------|
+| Extension 1 | 1 | Aucune | Rediriger vers file d'attente |
+| Extension 2 | 2 | Horaires | Jouer un message |
+| Extension 3 | 3 | Liste noire | Rejeter l'appel |
+
+### Bouton ajouter
+| Element | Description |
+|---------|-------------|
+| Style | Pill gris clair |
+| Texte | + Ajouter etape |
+| Indicateur | Cercle gris |
+
+### Menu actions (expanded)
+| Option | Style |
+|--------|-------|
+| Modifier | Lien bleu |
+| Ajouter une etape | Lien bleu |
+| Masquer les etapes | Texte normal |
+| Supprimer | Texte rouge |
+
+### Panneau information
+| Element | Description |
+|---------|-------------|
+| Type | Info (fond bleu) |
+| Titre | Plan de numerotation |
+| Contenu | Explication du fonctionnement |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/number/{serviceName}/feature
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/dialplan/{dialplanId}/extension/{extensionId}
+```
+
+### Modele
+```typescript
+interface Dialplan {
+  dialplanId: number;
+  name: string;
+  showCallerNumber: boolean;
+  transferTimeout: number;
+}
+
+interface Extension {
+  extensionId: number;
+  position: number;
+  enabled: boolean;
+  schedulerCategory?: string;
+  screenListType?: 'blacklist' | 'whitelist';
+}
+
+interface ExtensionRule {
+  ruleId: number;
+  action: ExtensionAction;
+  actionParam?: string;
+}
+
+type ExtensionAction =
+  | 'playback'
+  | 'transfer'
+  | 'hangup'
+  | 'hunting'
+  | 'ivr'
+  | 'voicemail';
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_pabx_dialplan_title": "Plan de numerotation",
+  "alias_pabx_dialplan_main": "Plan principal",
+  "alias_pabx_dialplan_extension": "Extension",
+  "alias_pabx_dialplan_position": "Position",
+  "alias_pabx_dialplan_condition": "Condition",
+  "alias_pabx_dialplan_condition_none": "Aucune",
+  "alias_pabx_dialplan_condition_schedule": "Horaires",
+  "alias_pabx_dialplan_condition_blacklist": "Liste noire",
+  "alias_pabx_dialplan_action": "Action",
+  "alias_pabx_dialplan_action_queue": "Rediriger vers file d'attente",
+  "alias_pabx_dialplan_action_playback": "Jouer un message",
+  "alias_pabx_dialplan_action_hangup": "Rejeter l'appel",
+  "alias_pabx_dialplan_add": "Ajouter etape",
+  "alias_pabx_dialplan_menu_edit": "Modifier",
+  "alias_pabx_dialplan_menu_add": "Ajouter une etape",
+  "alias_pabx_dialplan_menu_hide": "Masquer les etapes",
+  "alias_pabx_dialplan_menu_delete": "Supprimer",
+  "alias_pabx_dialplan_info_title": "Plan de numerotation",
+  "alias_pabx_dialplan_info_desc": "Le plan de numerotation definit le traitement des appels entrants."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Extensions executees dans l'ordre (position)
+- Premiere condition vraie = action executee
+- Extension desactivee = ignoree
+- Condition vide = toujours vraie
+- Actions possibles : transfert, message, raccrochage

@@ -1,0 +1,138 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.carrier-sip.settings.svg
+Route:   /web-cloud/voip/carrier-sip/{serviceName}/settings
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Paramètres
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Paramètres de configuration du trunk Carrier SIP. Configuration SIP,
+authentification, codecs et limites.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| trunk-sip-001            | GET /telephony/trunks/{sn} → serviceName                |
+| sip1.ovh.net:5060        | GET /telephony/trunks/{sn}/settings → sipServer         |
+| sip2.ovh.net:5060        | settings.sipServerBackup                                |
+| IP + Credentials         | settings.authMode                                       |
+| trunk-sip-001            | settings.username                                       |
+| G.711 A-law              | settings.codecs[0]                                      |
+| 100                      | settings.maxChannels                                    |
+| 10                       | settings.cps                                            |
+| 192.168.1.0/24           | settings.allowedIPs[]                                   |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche trunks
+   - Liste des trunks SIP
+
+2. RIGHT PANEL (1096px)
+   - Header: Trunk + Description
+   - NAV3 tabs: Dashboard | Endpoints | CDR | [Paramètres] | Routage
+
+   - BLOC: Configuration SIP (1040x130)
+     * Serveur SIP principal
+     * Serveur SIP secondaire (failover)
+
+   - BLOC: Authentification (1040x130)
+     * Mode (dropdown)
+     * Username
+     * Password + bouton régénérer
+
+   - BLOC: Codecs audio (1040x150)
+     * Checkboxes codecs avec priorité
+     * G.711 A-law, G.711 μ-law, G.729, Opus, G.722
+     * Bouton Configurer
+
+   - BLOC: Limites et sécurité (1040x130)
+     * Canaux simultanés max
+     * CPS (Calls Per Second)
+     * IP autorisées
+
+   - ACTIONS:
+     * Enregistrer
+     * Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Paramètres trunk
+GET /telephony/trunks/{serviceName}/settings
+Response: {
+  sipServer, sipServerBackup, sipPort, transport,
+  authMode, username,
+  codecs: [{ name, priority, enabled }],
+  maxChannels, cps, allowedIPs
+}
+
+### Modifier paramètres
+PUT /telephony/trunks/{serviceName}/settings
+Body: { ... }
+
+### Régénérer password
+POST /telephony/trunks/{serviceName}/settings/regeneratePassword
+Response: { password }
+
+### Modifier IP autorisées
+PUT /telephony/trunks/{serviceName}/settings/allowedIPs
+Body: { ips: [] }
+
+================================================================================
+
+## MODES AUTHENTIFICATION
+
+| Mode           | Description                        |
+|----------------|------------------------------------|
+| ip             | Authentification par IP uniquement |
+| credentials    | Username/Password uniquement       |
+| ip_credentials | IP + Username/Password             |
+
+================================================================================
+
+## CODECS SUPPORTÉS
+
+| Codec       | Bitrate  | Qualité | Usage                |
+|-------------|----------|---------|----------------------|
+| G.711 A-law | 64 kbps  | Haute   | Europe, international|
+| G.711 μ-law | 64 kbps  | Haute   | USA, Japon           |
+| G.729       | 8 kbps   | Moyenne | Bande passante limitée|
+| Opus        | 6-510 kb | Variable| WebRTC, moderne      |
+| G.722       | 64 kbps  | HD      | Communications HD    |
+
+================================================================================
+
+## REGLES METIER
+
+- Min 1 codec actif obligatoire
+- G.711 recommandé en priorité 1
+- CPS max selon offre
+- IP autorisées: format CIDR ou IP unique
+- Régénération password déconnecte endpoints
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- CarrierSipSettingsTab (container)
+- SipConfigCard
+- AuthenticationCard
+- CodecsConfigCard
+- LimitsSecurityCard
+- RegeneratePasswordModal
+- EditAllowedIpsModal
+- SettingsSaveButton
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

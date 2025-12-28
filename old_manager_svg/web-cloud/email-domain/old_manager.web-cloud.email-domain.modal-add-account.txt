@@ -1,0 +1,141 @@
+# Cahier des Charges : web-cloud/email-domain - Modal creation compte
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de creation d'un nouveau compte email.
+
+### Objectif fonctionnel
+- Creer une nouvelle adresse email
+- Definir le mot de passe
+- Configurer le quota
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec formulaire
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal
+| Element | Description |
+|---------|-------------|
+| Largeur | 600px |
+| Titre | Creer un compte email |
+| Bouton fermer | × en haut droite |
+
+### Champ nom du compte
+| Element | Description |
+|---------|-------------|
+| Label | Nom du compte * |
+| Type | Input text + suffixe domaine |
+| Placeholder | nouveau-compte |
+| Suffixe | @mondomaine.fr |
+
+### Champ description
+| Element | Description |
+|---------|-------------|
+| Label | Description |
+| Type | Input text |
+| Placeholder | Ex: Compte support client |
+
+### Champ mot de passe
+| Element | Description |
+|---------|-------------|
+| Label | Mot de passe * |
+| Type | Password avec toggle visibilite |
+| Icone | Oeil pour afficher |
+
+### Champ confirmation
+| Element | Description |
+|---------|-------------|
+| Label | Confirmer le mot de passe * |
+| Type | Password |
+
+### Exigences mot de passe
+| Regle | Description |
+|-------|-------------|
+| Longueur | 9 a 30 caracteres |
+| Complexite | Au moins 1 chiffre, 1 majuscule, 1 minuscule |
+| Restriction | Aucun caractere accentue |
+
+### Champ quota
+| Element | Description |
+|---------|-------------|
+| Label | Taille du compte (Go) |
+| Type | Input number |
+| Defaut | 5 |
+| Info | Max: 5 Go |
+
+### Bandeau info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Texte | Comptes disponibles: X sur Y - Espace restant: Z Go |
+
+### Footer modal
+| Element | Description |
+|---------|-------------|
+| Bouton Annuler | Secondary |
+| Bouton Creer | Primary |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+POST /email/domain/{domain}/account
+GET /email/domain/{domain}/quota
+```
+
+### Modele
+```typescript
+interface CreateAccountForm {
+  accountName: string;
+  description?: string;
+  password: string;
+  size: number;
+}
+
+interface QuotaInfo {
+  accountsUsed: number;
+  accountsMax: number;
+  spaceUsed: number;
+  spaceMax: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_domain_modal_create_title": "Creer un compte email",
+  "email_domain_modal_account_name": "Nom du compte",
+  "email_domain_modal_description": "Description",
+  "email_domain_modal_password": "Mot de passe",
+  "email_domain_modal_confirm_password": "Confirmer le mot de passe",
+  "email_domain_modal_requirements": "Exigences:",
+  "email_domain_modal_req_length": "9 a 30 caracteres",
+  "email_domain_modal_req_complexity": "Au moins 1 chiffre, 1 majuscule, 1 minuscule",
+  "email_domain_modal_req_accent": "Aucun caractere accentue",
+  "email_domain_modal_quota": "Taille du compte (Go)",
+  "email_domain_modal_info": "Comptes disponibles: {used} sur {max} | Espace restant: {space} Go",
+  "email_domain_modal_cancel": "Annuler",
+  "email_domain_modal_create": "Creer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Nom du compte unique sur le domaine
+- Mot de passe complexe obligatoire
+- Quota max selon espace restant
+- Creation asynchrone (tache)

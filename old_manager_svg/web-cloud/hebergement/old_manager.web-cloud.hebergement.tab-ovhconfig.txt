@@ -1,0 +1,117 @@
+# Cahier des Charges : web-cloud/hebergement - Tab OVHConfig
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de configuration du fichier .ovhconfig.
+
+### Objectif fonctionnel
+- Configurer la version PHP
+- Gérer le moteur et l'environnement
+- Activer/désactiver les firewalls
+- Prévisualiser le fichier généré
+
+---
+
+## 2. LAYOUT
+
+### Structure message info + 2 colonnes (formulaire + aperçu)
+
+---
+
+## 3. COMPOSANTS UI
+
+### Message info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Ligne 1 | Le fichier .ovhconfig permet de configurer le comportement PHP |
+| Ligne 2 | Les modifications sont appliquées instantanément |
+
+### Formulaire configuration
+| Champ | Type | Valeurs |
+|-------|------|---------|
+| Version PHP | Select | 7.4, 8.0, 8.1, 8.2, 8.3 |
+| Moteur PHP | Select | php, phpcgi |
+| Environnement | Select | production, development |
+| Firewall applicatif | Toggle | Activé/Désactivé |
+| HTTP Firewall | Toggle | Activé/Désactivé |
+
+### Boutons action
+| Bouton | Style |
+|--------|-------|
+| Enregistrer | Primary |
+| Annuler | Outline gris |
+
+### Aperçu fichier
+| Element | Description |
+|---------|-------------|
+| Titre | Aperçu du fichier .ovhconfig |
+| Contenu | Code block fond sombre |
+| Syntaxe | INI avec commentaires verts |
+
+### Exemple aperçu
+```ini
+; Configuration OVH
+app.engine=php
+app.engine.version=8.2
+environment=production
+http.firewall=none
+app.firewall.enabled=1
+; Fichier généré automatiquement
+```
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/ovhConfig
+PUT /hosting/web/{serviceName}/ovhConfig
+POST /hosting/web/{serviceName}/ovhConfig/refresh
+```
+
+### Modele
+```typescript
+interface OvhConfig {
+  engine: 'php' | 'phpcgi';
+  engineVersion: string;
+  environment: 'production' | 'development';
+  httpFirewall: 'none' | 'security';
+  appFirewall: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_ovhconfig_title": "Modifier la configuration (.ovhconfig)",
+  "hosting_ovhconfig_info": "Le fichier .ovhconfig permet de configurer le comportement PHP de votre hébergement",
+  "hosting_ovhconfig_instant": "Les modifications sont appliquées instantanément",
+  "hosting_ovhconfig_php_config": "Configuration PHP",
+  "hosting_ovhconfig_version": "Version PHP",
+  "hosting_ovhconfig_engine": "Moteur PHP",
+  "hosting_ovhconfig_environment": "Environnement",
+  "hosting_ovhconfig_app_firewall": "Firewall applicatif",
+  "hosting_ovhconfig_http_firewall": "HTTP Firewall",
+  "hosting_ovhconfig_active": "Activé",
+  "hosting_ovhconfig_inactive": "Désactivé",
+  "hosting_ovhconfig_save": "Enregistrer",
+  "hosting_ovhconfig_cancel": "Annuler",
+  "hosting_ovhconfig_preview": "Aperçu du fichier .ovhconfig"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Modifications appliquées immédiatement
+- Firewall applicatif = protection ModSecurity
+- HTTP Firewall = protection DDoS
+- Environment production = errors masquées
+- Environment development = debug activé

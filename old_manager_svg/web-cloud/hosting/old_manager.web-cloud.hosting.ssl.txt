@@ -1,0 +1,111 @@
+# Cahier des Charges : web-cloud/hosting - Certificat SSL
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion du certificat SSL.
+
+### Objectif fonctionnel
+- Voir l'état du certificat
+- Régénérer le certificat
+- Commander un certificat payant
+- Voir les domaines couverts
+
+---
+
+## 2. LAYOUT
+
+### Structure titre + carte état + boutons + domaines + info
+
+---
+
+## 3. COMPOSANTS UI
+
+### Carte État du certificat
+| Champ | Description |
+|-------|-------------|
+| Titre | État du certificat + Badge Actif |
+| Type | Let's Encrypt |
+| Fournisseur | Let's Encrypt Authority X3 |
+| Création | Date et heure |
+| Expiration | Date et heure |
+| Renouvellement | Automatique |
+
+### Boutons d'action
+| Bouton | Style |
+|--------|-------|
+| Régénérer le SSL | Outline primary |
+| Commander un SSL | Outline |
+| Supprimer le SSL | Danger |
+
+### Section Domaines couverts
+| Element | Description |
+|---------|-------------|
+| Description | Le certificat SSL couvre les domaines suivants |
+| Liste | Points verts + noms de domaines |
+
+### Panel Information
+| Element | Description |
+|---------|-------------|
+| Background | Bleu clair (#E8F0FE) |
+| Icône | ℹ️ |
+| Contenu | Explication Let's Encrypt + suggestion payant |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/ssl
+POST /hosting/web/{serviceName}/ssl/regenerate
+DELETE /hosting/web/{serviceName}/ssl
+POST /order/hosting/web/{serviceName}/ssl
+```
+
+### Modele
+```typescript
+interface SslCertificate {
+  type: 'letsencrypt' | 'sectigo' | 'custom';
+  provider: string;
+  status: 'active' | 'creating' | 'error';
+  creationDate: string;
+  expirationDate: string;
+  isAutoRenew: boolean;
+  domains: string[];
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_ssl_title": "Certificat SSL",
+  "hosting_ssl_state": "État du certificat",
+  "hosting_ssl_type": "Type",
+  "hosting_ssl_provider": "Fournisseur",
+  "hosting_ssl_created": "Création",
+  "hosting_ssl_expires": "Expiration",
+  "hosting_ssl_renewal": "Renouvellement",
+  "hosting_ssl_auto": "Automatique",
+  "hosting_ssl_regenerate": "Régénérer le SSL",
+  "hosting_ssl_order": "Commander un SSL",
+  "hosting_ssl_delete": "Supprimer le SSL",
+  "hosting_ssl_domains_title": "Domaines couverts",
+  "hosting_ssl_domains_desc": "Le certificat SSL couvre les domaines suivants",
+  "hosting_ssl_info_title": "Informations",
+  "hosting_ssl_info_letsencrypt": "Le certificat Let's Encrypt est gratuit et renouvelé automatiquement tous les 90 jours",
+  "hosting_ssl_info_paid": "Pour un certificat payant avec validation étendue (EV), utilisez \"Commander un SSL\""
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Let's Encrypt = gratuit, 90 jours
+- Renouvellement auto 30 jours avant expiration
+- Régénération = ajout nouveaux domaines
+- Sectigo = certificat payant avec EV

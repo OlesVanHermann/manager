@@ -1,0 +1,134 @@
+# Cahier des Charges : web-cloud/hosting - Dashboard principal
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page dashboard principal de l'hébergement web.
+
+### Objectif fonctionnel
+- Vue d'ensemble du service
+- Accès rapide aux informations clés
+- Navigation vers les différentes sections
+
+---
+
+## 2. LAYOUT
+
+### Structure header + tabs + 3 tuiles
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header hébergement
+| Element | Description |
+|---------|-------------|
+| Titre | Nom du service (monsite.com) |
+| Sous-titre | Hostname du cluster |
+| Date expiration | Date d'expiration du service |
+| Bouton Guides | Outline + icône livre |
+| Bouton Actions | Dropdown menu |
+
+### Barre d'onglets
+| Onglet | Description |
+|--------|-------------|
+| Informations générales | Onglet actif (souligné bleu) |
+| Multisite | Navigation |
+| Modules | Navigation |
+| Logs | Navigation |
+| FTP - SSH | Navigation |
+| Base de données | Navigation |
+| Tâches | Navigation |
+| Plus ▼ | Menu déroulant |
+
+### Tuile Informations générales
+| Champ | Description |
+|-------|-------------|
+| État du service | Badge Actif (vert) |
+| IPv4 | Adresse IP v4 |
+| IPv6 | Adresse IP v6 |
+| Espace disque | Barre progression + % |
+| Datacenter | Localisation (Gravelines) |
+
+### Tuile Offre
+| Champ | Description |
+|-------|-------------|
+| Offre actuelle | Performance 1/2/3/Perso |
+| Espace disque | Capacité totale |
+| Sites web | Nombre ou Illimité |
+| Bases de données | Nombre + capacité |
+| Comptes email | Nombre |
+| Bouton | Changer d'offre (primary) |
+
+### Tuile Configuration
+| Champ | Description |
+|-------|-------------|
+| Version PHP | 8.x |
+| Firewall applicatif | Activé/Désactivé |
+| SSL | Type de certificat |
+| CDN | Activé/Désactivé |
+| SSH | Activé/Désactivé |
+| Lien | Modifier la configuration |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}
+GET /hosting/web/{serviceName}/serviceInfos
+```
+
+### Modele
+```typescript
+interface HostingDashboard {
+  serviceName: string;
+  cluster: string;
+  expirationDate: string;
+  state: 'active' | 'suspended' | 'expired';
+  ipv4: string;
+  ipv6: string;
+  diskUsage: { used: number; total: number; };
+  datacenter: string;
+  offer: string;
+  phpVersion: string;
+  ssl: string;
+  cdn: boolean;
+  ssh: boolean;
+  firewall: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_dashboard_title": "Informations générales",
+  "hosting_dashboard_state": "État du service",
+  "hosting_dashboard_disk": "Espace disque",
+  "hosting_dashboard_datacenter": "Datacenter",
+  "hosting_dashboard_offer_title": "Offre",
+  "hosting_dashboard_offer_current": "Offre actuelle",
+  "hosting_dashboard_offer_disk": "Espace disque",
+  "hosting_dashboard_offer_sites": "Sites web",
+  "hosting_dashboard_offer_db": "Bases de données",
+  "hosting_dashboard_offer_email": "Comptes email",
+  "hosting_dashboard_offer_change": "Changer d'offre",
+  "hosting_dashboard_config_title": "Configuration",
+  "hosting_dashboard_config_php": "Version PHP",
+  "hosting_dashboard_config_firewall": "Firewall applicatif",
+  "hosting_dashboard_config_modify": "Modifier la configuration"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- 3 tuiles principales en grille
+- Barre progression espace disque avec couleurs
+- Onglets secondaires dans menu "Plus"
+- Actions groupées dans dropdown

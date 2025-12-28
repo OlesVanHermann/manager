@@ -1,0 +1,99 @@
+# Cahier des Charges : web-cloud/zimbra - Dashboard
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Dashboard Zimbra avec vue d'ensemble du service.
+
+### Objectif fonctionnel
+- Voir le statut du service
+- Consulter les statistiques par offre
+- Acceder aux liens utiles (webmail, guides)
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec onglets + 3 tuiles dashboard
+
+---
+
+## 3. COMPOSANTS UI
+
+### Onglets navigation
+| Onglet | Description |
+|--------|-------------|
+| Informations generales | Vue d'ensemble (actif) |
+| Organisation | Gestion organisations |
+| Domaine | Gestion domaines |
+| Compte email | Gestion comptes |
+| Redirections | Redirections email |
+| Repondeur | Auto-replies |
+
+### Tuile Statut
+| Champ | Valeur |
+|-------|--------|
+| Statut service | Badge Actif (vert) |
+| Taches en cours | Aucune tache en cours |
+
+### Tuile Statistiques
+| Champ | Valeur |
+|-------|--------|
+| Compte par offre | 3/5 Starter, 2/3 Pro |
+
+### Tuile Liens utiles
+| Lien | Description |
+|------|-------------|
+| Webmail | Acces webmail Zimbra |
+| Guide administrateur | Documentation admin |
+| Guide d'utilisateur | Documentation user |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform
+GET /zimbra/platform/{platformId}/account
+GET /zimbra/platform/{platformId}/domain
+GET /zimbra/platform/{platformId}/task
+```
+
+### Modele
+```typescript
+interface ZimbraPlatform {
+  id: string;
+  state: 'ok' | 'suspended';
+  statistics: {
+    starterAccounts: { used: number; total: number };
+    proAccounts: { used: number; total: number };
+  };
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_dashboard_status": "Statut",
+  "zimbra_dashboard_statistics": "Statistiques",
+  "zimbra_dashboard_links": "Liens utiles",
+  "zimbra_status_active": "Actif",
+  "zimbra_no_tasks": "Aucune tache en cours",
+  "zimbra_accounts_by_offer": "Compte par offre",
+  "zimbra_webmail": "Webmail",
+  "zimbra_admin_guide": "Guide administrateur",
+  "zimbra_user_guide": "Guide d'utilisateur"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Zimbra = suite collaborative alternative a Exchange
+- Offres: Starter (15 Go), Pro (50 Go)
+- Webmail accessible via URL OVH

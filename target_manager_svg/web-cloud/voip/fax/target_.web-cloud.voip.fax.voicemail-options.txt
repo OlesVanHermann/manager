@@ -1,0 +1,104 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.voicemail-options.svg
+Route:   /web-cloud/voip/fax/{serviceName}/reception/options
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Options réception fax
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration des options de réception des fax : transfert par email,
+notifications et qualité de réception.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| true                     | GET /telephony/.../fax/reception → emailForwardEnabled  |
+| fax@entreprise.com       | reception.primaryEmail                                  |
+| compta@..., direction@...| reception.secondaryEmails[]                             |
+| PDF                      | reception.format                                        |
+| true                     | reception.emailNotification                             |
+| false                    | reception.smsNotification                               |
+| Fine (200 dpi)           | reception.preferredResolution                           |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche fax
+   - Liste des fax
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BANNIERE INFO:
+     * Explication transfert email
+
+   - BLOC TRANSFERT EMAIL:
+     * Toggle activer transfert
+     * Email principal (input)
+     * Emails supplémentaires (input + bouton ajouter)
+     * Format (dropdown PDF/TIFF)
+
+   - BLOC NOTIFICATIONS:
+     * Toggle notification email
+     * Toggle notification SMS
+     * Numéro SMS (input, grisé si désactivé)
+
+   - BLOC QUALITE:
+     * Radio: Fine (200 dpi)
+     * Radio: Standard (100 dpi)
+     * Note explicative
+
+   - ACTIONS: Enregistrer, Annuler
+
+================================================================================
+
+## API ENDPOINTS
+
+### Config réception
+GET /telephony/{billingAccount}/fax/{serviceName}/reception
+Response: { emailForwardEnabled, primaryEmail, secondaryEmails, format, emailNotification, smsNotification, smsNumber, preferredResolution }
+
+### Modifier config
+PUT /telephony/{billingAccount}/fax/{serviceName}/reception
+Body: { emailForwardEnabled?, primaryEmail?, secondaryEmails?, format?, emailNotification?, smsNotification?, smsNumber?, preferredResolution? }
+
+### Ajouter email secondaire
+POST /telephony/{billingAccount}/fax/{serviceName}/reception/emails
+Body: { email }
+
+### Supprimer email secondaire
+DELETE /telephony/{billingAccount}/fax/{serviceName}/reception/emails/{email}
+
+================================================================================
+
+## REGLES METIER
+
+- Maximum 5 emails de transfert
+- Formats: PDF (défaut), TIFF
+- Résolutions: Fine (200 dpi), Standard (100 dpi)
+- SMS: nécessite crédit SMS disponible
+- Email principal obligatoire si transfert activé
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxReceptionOptionsTab (container)
+- InfoBanner
+- EmailForwardingCard
+- EmailListInput
+- NotificationsCard
+- QualitySettingsCard
+- ResolutionSelector
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

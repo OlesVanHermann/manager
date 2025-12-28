@@ -1,0 +1,107 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.domain.svg
+Route:   /web-cloud/voip/lines/{serviceName}/domain
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Domaine SIP
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Configuration du domaine SIP pour les lignes trunk. Permet d'utiliser un
+domaine personnalisé au lieu du domaine par défaut OVHcloud.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| sip.ovh.fr               | GET /telephony/.../line → domain                        |
+| Actif                    | domain.status                                           |
+| 91.121.128.72            | domain.ipAddress                                        |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche lignes
+   - Liste des lignes
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - BLOC DOMAINE ACTUEL:
+     * Nom domaine
+     * Description
+     * Badge statut
+
+   - BLOC DOMAINE PERSONNALISE:
+     * Input nouveau domaine
+     * Bouton vérifier DNS
+
+   - BLOC CONFIGURATION DNS:
+     * Instructions
+     * Enregistrement SRV (copyable)
+     * Enregistrement A (copyable)
+
+   - ACTIONS: Appliquer, Réinitialiser
+
+================================================================================
+
+## API ENDPOINTS
+
+### Lire domaine
+GET /telephony/{billingAccount}/line/{serviceName}/domain
+Response: {
+  domain, status, ipAddress, isDefault
+}
+
+### Vérifier DNS
+POST /telephony/{billingAccount}/line/{serviceName}/domain/check
+Body: { domain }
+Response: { valid, errors: [] }
+
+### Appliquer domaine
+PUT /telephony/{billingAccount}/line/{serviceName}/domain
+Body: { domain }
+
+### Réinitialiser domaine par défaut
+DELETE /telephony/{billingAccount}/line/{serviceName}/domain
+
+================================================================================
+
+## STATUTS DOMAINE
+
+| Statut      | Couleur | Description              |
+|-------------|---------|--------------------------|
+| active      | Vert    | Domaine opérationnel     |
+| pending     | Jaune   | Vérification en cours    |
+| error       | Rouge   | Erreur DNS               |
+
+================================================================================
+
+## REGLES METIER
+
+- Uniquement pour lignes SIP Trunk
+- DNS doit propager avant activation (24-48h)
+- Vérification automatique toutes les 6h
+- Rollback auto si DNS invalide après 72h
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- LineDomainTab (container)
+- CurrentDomainCard
+- CustomDomainInput
+- DnsVerifyButton
+- DnsConfigInstructions
+- CopyableCodeBlock
+- DomainActionButtons
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

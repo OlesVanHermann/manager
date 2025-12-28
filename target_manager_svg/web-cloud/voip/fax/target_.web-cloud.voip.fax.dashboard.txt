@@ -1,0 +1,118 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.dashboard.svg
+Route:   /web-cloud/voip/fax/{serviceName}/dashboard
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Tableau de bord Fax
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Tableau de bord principal du service fax. Vue d'ensemble avec statistiques,
+informations du service, actions rapides et derniers fax.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 47                       | GET /telephony/.../fax/stats → sentCount                |
+| 23                       | stats.receivedCount                                     |
+| 2                        | stats.pendingCount                                      |
+| 3                        | stats.failedCount                                       |
+| +33 9 72 20 00 01        | fax.number                                              |
+| Actif                    | fax.status                                              |
+| Fax Pro 100 pages        | fax.offer                                               |
+| 73 pages                 | fax.remainingCredit                                     |
+| 15/01/2026               | fax.renewalDate                                         |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche fax
+   - Liste des fax
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - STATS CARDS (4):
+     * Fax envoyés (30j) + trend
+     * Fax reçus (30j) + trend
+     * En attente d'envoi
+     * Échecs (30j) + count
+
+   - BLOC INFORMATIONS SERVICE:
+     * Numéro de fax
+     * Statut (badge)
+     * Offre
+     * Crédit restant
+     * Date renouvellement
+
+   - BLOC ACTIONS RAPIDES (4):
+     * Envoyer un fax
+     * Voir l'historique
+     * Paramètres
+     * Recharger
+
+   - TABLE DERNIERS FAX:
+     * Date
+     * Type (Envoyé/Reçu badge)
+     * Destinataire/Émetteur
+     * Pages
+     * Statut (badge)
+     * Actions (télécharger/renvoyer)
+
+================================================================================
+
+## API ENDPOINTS
+
+### Stats fax
+GET /telephony/{billingAccount}/fax/{serviceName}/stats
+Query: { period: '30d' }
+Response: { sentCount, receivedCount, pendingCount, failedCount, trends }
+
+### Info service
+GET /telephony/{billingAccount}/fax/{serviceName}
+Response: { number, status, offer, remainingCredit, renewalDate }
+
+### Derniers fax
+GET /telephony/{billingAccount}/fax/{serviceName}/history
+Query: { limit: 5 }
+Response: [{ date, type, recipient, pages, status }]
+
+### Télécharger fax
+GET /telephony/{billingAccount}/fax/{serviceName}/history/{faxId}/download
+Response: PDF file
+
+### Renvoyer fax
+POST /telephony/{billingAccount}/fax/{serviceName}/history/{faxId}/resend
+
+================================================================================
+
+## REGLES METIER
+
+- Crédit renouvelé mensuellement
+- Pages non utilisées perdues
+- Historique conservé 90 jours
+- Téléchargement PDF disponible
+- Renvoi possible si échec
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- FaxDashboardTab (container)
+- StatsCards
+- ServiceInfoCard
+- QuickActionsGrid
+- RecentFaxesTable
+- DownloadFaxButton
+- ResendFaxButton
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

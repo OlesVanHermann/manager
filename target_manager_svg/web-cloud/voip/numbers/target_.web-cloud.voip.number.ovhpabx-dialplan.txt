@@ -1,0 +1,109 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.ovhpabx-dialplan.svg
+Route:   /web-cloud/voip/number/{serviceName}/dialplan
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Plan de numérotation
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Éditeur visuel de plan de numérotation (dialplan). Permet de configurer
+le routage des appels avec des conditions, menus SVI, files d'attente.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| +33 9 72 30 00 01        | GET /telephony/.../dialplan → entry.number              |
+| Lun-Ven 9h-18h           | steps[].timeCondition.schedule                          |
+| Menu SVI                 | steps[].type                                            |
+| 0033972100001            | steps[].destination                                     |
+| 28/12/2025 14:32         | dialplan.lastModified                                   |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - TOOLBAR:
+     * Bouton ajouter étape
+     * Bouton dupliquer
+     * Bouton tester
+     * Dernière modification
+
+   - ZONE DIALPLAN VISUEL:
+     * Étape Entrée (vert)
+     * Condition horaire (bleu)
+     * Branches Oui/Non
+     * Menu SVI (orange)
+     * Messagerie (violet)
+     * Destinations finales
+
+   - COMPOSANTS DISPONIBLES (6):
+     * Condition horaire
+     * Menu SVI
+     * Transfert
+     * File d'attente
+     * Messagerie
+     * Annonce
+
+   - ACTIONS: Enregistrer, Annuler, Réinitialiser
+
+================================================================================
+
+## API ENDPOINTS
+
+### Dialplan
+GET /telephony/{billingAccount}/number/{serviceName}/dialplan
+Response: { entry, steps: [], lastModified }
+
+### Modifier dialplan
+PUT /telephony/{billingAccount}/number/{serviceName}/dialplan
+Body: { steps: [] }
+
+### Tester dialplan
+POST /telephony/{billingAccount}/number/{serviceName}/dialplan/test
+Body: { testNumber, simulatedTime? }
+Response: { path: [], destination }
+
+### Composants disponibles
+GET /telephony/{billingAccount}/number/{serviceName}/dialplan/components
+Response: [{ type, name, configurable: [] }]
+
+================================================================================
+
+## REGLES METIER
+
+- Types: timeCondition, ivr, transfer, queue, voicemail, announcement
+- Condition horaire: plages multiples
+- Menu SVI: 0-9, *, #
+- File attente: max 50 agents
+- Profondeur max: 10 niveaux
+- Un seul dialplan actif par numéro
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- DialplanEditorTab (container)
+- DialplanToolbar
+- DialplanCanvas (react-flow)
+- StepNode (Entry, Condition, IVR, Transfer, Queue, Voicemail, Announcement)
+- StepEdge
+- ComponentsPalette
+- StepConfigModal
+- TestDialplanModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

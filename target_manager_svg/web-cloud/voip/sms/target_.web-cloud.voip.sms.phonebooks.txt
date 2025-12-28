@@ -1,0 +1,110 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.sms.phonebooks.svg
+Route:   /web-cloud/sms/{serviceName}/phonebooks
+NAV:     NAV1=Web Cloud | NAV2=SMS | NAV3=Répertoires
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des répertoires de contacts pour les campagnes SMS.
+Création, import et organisation des listes de destinataires.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Clients VIP              | GET /sms/.../phonebooks → name                          |
+| 2 547                    | phonebook.contactCount                                  |
+| 24/12/2024               | phonebook.updatedAt                                     |
+| 4 répertoires            | phonebooks.length                                       |
+| 27 479 contacts          | stats.totalContacts                                     |
+| 342 doublons             | stats.duplicatesCount                                   |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche comptes SMS
+   - Liste des comptes SMS
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - TOOLBAR:
+     * Refresh
+     * Recherche répertoire
+     * Bouton nouveau répertoire
+
+   - PHONEBOOK CARDS (grille 3 colonnes):
+     * Icône couleur + Nom
+     * Nb contacts
+     * Dernière MAJ
+     * Actions: Voir contacts / Importer / Supprimer
+
+   - CARD VIDE:
+     * CTA créer ou importer
+
+   - STATS:
+     * Total répertoires
+     * Total contacts
+     * Doublons détectés
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste répertoires
+GET /sms/{serviceName}/phonebooks
+Response: [{ id, name, contactCount, createdAt, updatedAt, color }]
+
+### Créer répertoire
+POST /sms/{serviceName}/phonebooks
+Body: { name, color? }
+
+### Supprimer répertoire
+DELETE /sms/{serviceName}/phonebooks/{phonebookId}
+
+### Importer contacts
+POST /sms/{serviceName}/phonebooks/{phonebookId}/import
+Body: FormData avec fichier CSV
+Response: { importedCount, skippedCount, errors[] }
+
+### Export répertoire
+GET /sms/{serviceName}/phonebooks/{phonebookId}/export
+Response: CSV file
+
+### Stats globales
+GET /sms/{serviceName}/phonebooks/stats
+Response: { totalPhonebooks, totalContacts, duplicatesCount }
+
+================================================================================
+
+## REGLES METIER
+
+- Nom répertoire unique par compte
+- Max 100 000 contacts par répertoire
+- Import CSV: colonnes number, name, email (optionnel)
+- Détection doublons cross-répertoires
+- Couleur personnalisable (8 options)
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- SmsPhonebooksTab (container)
+- PhonebookCard
+- CreatePhonebookModal
+- ImportContactsModal
+- PhonebookContactsDrawer
+- PhonebookStatsCards
+- DeletePhonebookConfirmModal
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================

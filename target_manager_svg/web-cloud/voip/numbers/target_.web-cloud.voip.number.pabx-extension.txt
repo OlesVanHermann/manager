@@ -1,0 +1,112 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.pabx-extension.svg
+Route:   /web-cloud/voip/number/{serviceName}/pabx/extensions
+NAV:     NAV1=Web Cloud | NAV2=VoIP | NAV3=Extensions PABX
+Version: v1 (2025-12-28)
+================================================================================
+
+## DESCRIPTION
+
+Gestion des numéros courts internes (extensions) du PABX. Permet de créer,
+modifier et supprimer des extensions pointant vers des lignes, files ou conférences.
+
+================================================================================
+
+## DONNEES DYNAMIQUES
+
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 24                       | GET /telephony/.../pabx/extensions → totalCount         |
+| 22                       | stats.activeCount                                       |
+| 2                        | stats.inactiveCount                                     |
+| 100-199                  | config.extensionRange                                   |
+| 100                      | extensions[].number                                     |
+| Jean Dupont              | extensions[].name                                       |
+| Ligne SIP                | extensions[].type                                       |
+| 0033972100001            | extensions[].destination                                |
+| Actif                    | extensions[].status                                     |
+
+================================================================================
+
+## STRUCTURE PAGE
+
+1. LEFT PANEL (280px)
+   - Recherche numéros
+   - Liste des numéros
+
+2. RIGHT PANEL (1096px)
+   - Header: Titre + description
+
+   - TOOLBAR:
+     * Refresh, recherche
+     * Bouton nouvelle extension
+     * Bouton importer CSV
+
+   - STATS CARDS (4):
+     * Total extensions
+     * Actives (vert)
+     * Inactives (gris)
+     * Plage disponible
+
+   - TABLE EXTENSIONS:
+     * Extension (numéro court)
+     * Nom
+     * Type (badge: Ligne SIP, File attente, Conférence)
+     * Destination
+     * Statut (badge)
+     * Actions (éditer/supprimer)
+
+   - PAGINATION
+
+================================================================================
+
+## API ENDPOINTS
+
+### Liste extensions
+GET /telephony/{billingAccount}/number/{serviceName}/pabx/extensions
+Query: { status, page, limit }
+Response: { items: [...], totalCount, stats, config }
+
+### Créer extension
+POST /telephony/{billingAccount}/number/{serviceName}/pabx/extensions
+Body: { number, name, type, destination }
+
+### Modifier extension
+PUT /telephony/{billingAccount}/number/{serviceName}/pabx/extensions/{number}
+Body: { name?, type?, destination?, status? }
+
+### Supprimer extension
+DELETE /telephony/{billingAccount}/number/{serviceName}/pabx/extensions/{number}
+
+### Importer CSV
+POST /telephony/{billingAccount}/number/{serviceName}/pabx/extensions/import
+Body: FormData avec fichier CSV
+
+================================================================================
+
+## REGLES METIER
+
+- Plage extensions: configurable (100-999)
+- Types: sip_line, queue, conference, voicemail, external
+- Extension unique dans la plage
+- Destination doit exister dans le groupe
+- Import CSV: colonnes number, name, type, destination
+
+================================================================================
+
+## COMPOSANTS REACT
+
+- PabxExtensionsTab (container)
+- ExtensionsToolbar
+- ExtensionsStatsCards
+- ExtensionsTable
+- NewExtensionModal
+- EditExtensionModal
+- ImportCsvModal
+- Pagination
+
+================================================================================
+FIN DOCUMENTATION
+================================================================================
