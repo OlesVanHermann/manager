@@ -1,0 +1,100 @@
+# Cahier des Charges : web-cloud/zimbra - Repondeurs
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des repondeurs automatiques Zimbra.
+
+### Objectif fonctionnel
+- Voir les repondeurs configures
+- Creer de nouveaux repondeurs
+- Modifier/supprimer
+
+---
+
+## 2. LAYOUT
+
+### Structure onglet avec toolbar + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | + Ajouter un repondeur |
+
+### Tableau repondeurs
+| Colonne | Description |
+|---------|-------------|
+| Adresse | Email du compte |
+| Du | Date debut |
+| Jusqu'au | Date fin |
+| Copier vers | Email backup |
+| Statut | Badge Actif/Erreur |
+| Actions | Menu ⋮ |
+
+### Etats statut
+| Etat | Badge |
+|------|-------|
+| Actif | Vert (#DEF7EC) |
+| Erreur | Rouge (#FEE2E2) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Edit auto-reply |
+| Supprimer | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/autoReply
+POST /zimbra/platform/{platformId}/autoReply
+DELETE /zimbra/platform/{platformId}/autoReply/{autoReplyId}
+PUT /zimbra/platform/{platformId}/autoReply/{autoReplyId}
+```
+
+### Modele
+```typescript
+interface ZimbraAutoReply {
+  id: string;
+  account: string;
+  from: string; // date
+  to: string; // date
+  copyTo?: string;
+  message: string;
+  state: 'ok' | 'error';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_autoreply_title": "Repondeur",
+  "zimbra_autoreply_add": "Ajouter un repondeur",
+  "zimbra_autoreply_col_address": "Adresse",
+  "zimbra_autoreply_col_from": "Du",
+  "zimbra_autoreply_col_to": "Jusqu'au",
+  "zimbra_autoreply_col_copy": "Copier vers",
+  "zimbra_autoreply_col_status": "Statut",
+  "zimbra_autoreply_action_edit": "Modifier",
+  "zimbra_autoreply_action_delete": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Repondeur = message automatique d'absence
+- Periode de validite obligatoire
+- Copie optionnelle vers autre adresse

@@ -1,0 +1,89 @@
+# Cahier des Charges : web-cloud/zimbra - Modal suppression domaine
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de confirmation de suppression d'un domaine Zimbra.
+
+### Objectif fonctionnel
+- Confirmer la suppression du domaine
+- Verifier qu'aucun compte n'est associe
+- Bloquer si comptes existants
+
+---
+
+## 2. LAYOUT
+
+### Structure modale avec header danger + contenu + footer
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal header
+| Element | Description |
+|---------|-------------|
+| Icone | Warning rouge |
+| Titre | Supprimer le domaine |
+| Bouton fermer | X |
+
+### Contenu
+| Element | Description |
+|---------|-------------|
+| Question | Etes-vous sur(e) de vouloir supprimer le domaine {domain} ? |
+
+### Message erreur (si comptes associes)
+| Element | Description |
+|---------|-------------|
+| Type | Danger (rouge) |
+| Texte | Au moins un compte email est encore associe a ce nom de domaine |
+| Action | Veuillez supprimer les comptes emails associes avant de supprimer |
+
+### Footer
+| Element | Description |
+|---------|-------------|
+| Bouton annuler | Secondary |
+| Bouton supprimer | Danger (disabled si comptes) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/domain/{domainId}/account
+DELETE /zimbra/platform/{platformId}/domain/{domainId}
+```
+
+### Modele
+```typescript
+interface DomainDeleteCheck {
+  canDelete: boolean;
+  associatedAccounts: number;
+  blockingReason?: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_domain_delete_title": "Supprimer le domaine",
+  "zimbra_domain_delete_confirm": "Etes-vous sur(e) de vouloir supprimer le domaine {domain} ?",
+  "zimbra_domain_delete_blocked": "Au moins un compte email est encore associe a ce nom de domaine",
+  "zimbra_domain_delete_action": "Veuillez supprimer les comptes emails associes avant de supprimer",
+  "zimbra_domain_delete_cancel": "Annuler",
+  "zimbra_domain_delete_submit": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Impossible de supprimer si comptes associes
+- Bouton disabled si blocage
+- Suppression DNS non automatique
+- Organisation conservee apres suppression domaine

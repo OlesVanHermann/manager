@@ -1,0 +1,64 @@
+# Cahier des Charges : web-cloud/access/overthebox - Détails
+
+## 1. VUE D'ENSEMBLE
+- **Écran** : Onglet Détails d'une OverTheBox
+- **Objectif** : Afficher informations générales, appareil et interfaces réseau
+- **Contexte** : Onglet par défaut du dashboard OTB
+
+## 2. LAYOUT & STRUCTURE
+- Bannière info (mise à jour disponible)
+- 2 colonnes : Infos générales | Infos appareil
+- Section pleine largeur : Interfaces réseau
+
+## 3. COMPOSANTS UI
+- **OdsMessage** : Bannière info (bleu) pour mise à jour
+- **OdsCard** : 3 cartes (infos générales, appareil, interfaces)
+- **OdsButton** : "Résilier", "Changer d'offre"
+- **OdsToggle** : Activation IPv6
+- **OdsTable** : Liste interfaces réseau
+- **OdsBadge** : Statut interfaces (Actif/Inactif)
+
+## 4. DONNÉES
+
+### Informations générales
+| Champ | Type | Description |
+|-------|------|-------------|
+| État appareil | status | Activé (vert) / Désactivé |
+| Date facturation | date | Format DD/MM/YYYY |
+| Offre | text | Nom offre (ex: OverTheBox IT v1) |
+
+### Informations appareil
+| Champ | Type | Description |
+|-------|------|-------------|
+| Identifiant service | text | otb-xxx |
+| Identifiant appareil | text | device-xxx |
+| Version système | text | vX.X.X |
+| IP publique | text | Adresse IPv4 |
+| IPv6 | toggle | Activé/Désactivé |
+
+### Interfaces réseau (tableau)
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Interface | text | if0, if1, if2... |
+| Type | text | WAN (DHCP), WAN (PPPoE), 4G (USB) |
+| IP | text | Adresse IP |
+| Passerelle | text | Gateway ou "-" |
+| Débit | text | ↓ X Mbps / ↑ Y Mbps |
+| Statut | badge | Actif (vert) / Inactif (rouge) |
+
+## 5. ACTIONS & INTERACTIONS
+- Bouton "Résilier" → Modal résiliation
+- Bouton "Changer d'offre" → overthebox.migration
+- Toggle IPv6 → Activer/désactiver IPv6
+
+## 6. APIS & ENDPOINTS
+- GET /overthebox/{serviceName} : Infos service
+- GET /overthebox/{serviceName}/device : Infos appareil
+- GET /overthebox/{serviceName}/device/interfaces : Liste interfaces
+- PUT /overthebox/{serviceName}/device : Modifier config (IPv6)
+- POST /overthebox/{serviceName}/terminate : Résilier
+
+## 7. ÉTATS
+- Mise à jour disponible → Bannière bleue visible
+- Appareil non lié → Afficher warning-device-link
+- Appareil non trouvé → Afficher warning-not-found

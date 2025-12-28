@@ -1,0 +1,139 @@
+# Cahier des Charges : web-cloud/email-domain - Modal configuration Outlook
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal affichant les parametres de configuration pour Outlook.
+
+### Objectif fonctionnel
+- Afficher les parametres IMAP/POP3
+- Guider l'utilisateur dans la configuration
+- Fournir les etapes de configuration
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec sections parametres + etapes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal
+| Element | Description |
+|---------|-------------|
+| Largeur | 700px |
+| Titre | Configuration Outlook |
+| Icone | Email emoji |
+
+### Bandeau compte
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Texte | Configuration pour: {email} |
+
+### Section IMAP (recommande)
+| Parametre | Valeur |
+|-----------|--------|
+| Serveur entrant (IMAP) | ssl0.ovh.net |
+| Port IMAP | 993 (SSL) |
+| Serveur sortant (SMTP) | ssl0.ovh.net |
+| Port SMTP | 465 (SSL) |
+| Identifiant | {email complet} |
+| Mot de passe | Votre mot de passe email |
+
+### Section POP3 (alternatif)
+| Parametre | Valeur |
+|-----------|--------|
+| Serveur entrant (POP3) | ssl0.ovh.net |
+| Port POP3 | 995 (SSL) |
+| Serveur sortant (SMTP) | ssl0.ovh.net |
+| Port SMTP | 465 (SSL) |
+
+### Section etapes
+| Etape | Description |
+|-------|-------------|
+| 1 | Ouvrez Outlook et allez dans Fichier > Ajouter un compte |
+| 2 | Selectionnez "Configuration manuelle" |
+| 3 | Choisissez IMAP ou POP selon votre preference |
+| 4 | Entrez les parametres ci-dessus |
+| 5 | Testez la connexion et terminez la configuration |
+
+### Lien guide
+| Element | Description |
+|---------|-------------|
+| Type | Lien externe |
+| Texte | Voir le guide complet sur docs.ovh.com |
+| Icone | Livre |
+
+### Footer modal
+| Element | Description |
+|---------|-------------|
+| Bouton Fermer | Primary |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/domain/{domain}/account/{accountName}
+```
+
+### Modele
+```typescript
+interface EmailConfig {
+  imapServer: string;
+  imapPort: number;
+  imapSsl: boolean;
+  pop3Server: string;
+  pop3Port: number;
+  pop3Ssl: boolean;
+  smtpServer: string;
+  smtpPort: number;
+  smtpSsl: boolean;
+}
+
+const DEFAULT_CONFIG: EmailConfig = {
+  imapServer: 'ssl0.ovh.net',
+  imapPort: 993,
+  imapSsl: true,
+  pop3Server: 'ssl0.ovh.net',
+  pop3Port: 995,
+  pop3Ssl: true,
+  smtpServer: 'ssl0.ovh.net',
+  smtpPort: 465,
+  smtpSsl: true
+};
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_domain_config_title": "Configuration Outlook",
+  "email_domain_config_for": "Configuration pour: {email}",
+  "email_domain_config_imap_title": "Parametres IMAP (recommande)",
+  "email_domain_config_pop3_title": "Parametres POP3 (alternatif)",
+  "email_domain_config_incoming": "Serveur entrant",
+  "email_domain_config_outgoing": "Serveur sortant (SMTP)",
+  "email_domain_config_port": "Port",
+  "email_domain_config_username": "Identifiant",
+  "email_domain_config_password": "Mot de passe",
+  "email_domain_config_steps_title": "Etapes de configuration",
+  "email_domain_config_guide": "Voir le guide complet sur docs.ovh.com",
+  "email_domain_config_close": "Fermer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- IMAP recommande (synchronisation)
+- POP3 pour telechargement local
+- SSL obligatoire
+- Serveur identique pour tous les comptes MX Plan

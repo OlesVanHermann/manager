@@ -1,0 +1,97 @@
+# Cahier des Charges : web-cloud/email-domain - Onglet Redirections
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des redirections email.
+
+### Objectif fonctionnel
+- Creer des redirections automatiques
+- Choisir de conserver ou non une copie
+- Gerer les redirections actives
+
+---
+
+## 2. LAYOUT
+
+### Structure onglet avec bouton action + tableau + info
+
+---
+
+## 3. COMPOSANTS UI
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | + Creer une redirection |
+
+### Tableau redirections
+| Colonne | Description |
+|---------|-------------|
+| De | Adresse source |
+| Vers | Adresse destination |
+| Conserver une copie | Oui / Non |
+| Statut | Badge Actif/Inactif |
+| Actions | Menu ⋮ |
+
+### Bandeau info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Texte | Les redirections permettent de transferer automatiquement les emails recus vers une autre adresse. |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/domain/{domain}/redirection
+GET /email/domain/{domain}/redirection/{id}
+POST /email/domain/{domain}/redirection
+DELETE /email/domain/{domain}/redirection/{id}
+```
+
+### Modele
+```typescript
+interface EmailRedirection {
+  id: string;
+  from: string;
+  to: string;
+  localCopy: boolean;
+}
+
+interface CreateRedirectionForm {
+  from: string;
+  to: string;
+  localCopy: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_domain_redirect_title": "Redirections",
+  "email_domain_redirect_create": "Creer une redirection",
+  "email_domain_redirect_col_from": "De",
+  "email_domain_redirect_col_to": "Vers",
+  "email_domain_redirect_col_copy": "Conserver une copie",
+  "email_domain_redirect_col_status": "Statut",
+  "email_domain_redirect_copy_yes": "Oui",
+  "email_domain_redirect_copy_no": "Non",
+  "email_domain_redirect_info": "Les redirections permettent de transferer automatiquement les emails recus vers une autre adresse."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Redirection = transfert automatique
+- Copie locale = garde une copie sur le serveur
+- Sans copie = email uniquement sur destination
+- Destination interne ou externe

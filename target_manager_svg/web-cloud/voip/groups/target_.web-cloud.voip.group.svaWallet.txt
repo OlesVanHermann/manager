@@ -1,0 +1,117 @@
+# CAHIER DES CHARGES - old_manager.telecom.telephony.svaWallet
+# Module portefeuille SVA (Services a Valeur Ajoutee)
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion du portefeuille SVA pour les numeros surtaxes avec reversements.
+
+### Objectif fonctionnel
+Permettre l'onboarding KYC, la gestion des documents, et le suivi des reversements.
+
+---
+
+## 2. ARCHITECTURE
+
+### Arborescence fichiers source
+```
+telecom/telephony/svaWallet/
+├── sva-wallet.module.js
+├── sva-wallet.routing.js
+├── kyc/
+│   ├── identity/
+│   │   ├── documents/
+│   │   └── form/
+│   ├── bankAccount/
+│   └── summary/
+├── profileTile/
+├── statusBanner/
+└── lemonway_logo.png
+```
+
+### Partenaire
+- Lemonway: prestataire paiement
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Route
+- State: `telecom.telephony.svaWallet`
+- URL: `/telephony/svaWallet`
+
+### Sous-routes KYC
+| State | Description |
+|-------|-------------|
+| .kyc.identity.form | Formulaire identite |
+| .kyc.identity.documents | Upload documents |
+| .kyc.bankAccount | Coordonnees bancaires |
+| .kyc.summary | Resume et validation |
+
+---
+
+## 4. COMPOSANTS UI
+
+### Tile Profil SVA
+| Statut | Label FR |
+|--------|----------|
+| BLOCKED | Bloque |
+| EXPIRED | Expire |
+| IN_PROGRESS | En attente de validation |
+| VALID | Valide |
+| WAITING_FOR_DOCUMENT | Incomplet |
+
+### Documents requis
+| Type | Description |
+|------|-------------|
+| ID | Carte d'identite |
+| ADDRESS_PROOF | Justificatif domicile |
+| COMPANY_REGISTRATION | KBIS |
+| IBAN | Coordonnees bancaires |
+| SELFIE | Photo verification |
+
+---
+
+## 5. APIs & DONNEES
+
+### Endpoints
+
+```
+GET /me/sva/wallet
+PUT /me/sva/wallet
+POST /me/sva/onboarding
+GET /me/sva/wallet/bankAccount
+POST /me/sva/wallet/bankAccount
+POST /me/sva/wallet/document
+GET /me/sva/cdr
+```
+
+---
+
+## 6. TRADUCTIONS
+
+### Cles i18n (FR)
+| Cle | Valeur FR |
+|-----|-----------|
+| telephony_billingAccount_svaWallet_profile_title | Profil SVA |
+| telephony_billingAccount_svaWallet_profile_status_VALID | Valide |
+| telephony_billingAccount_svaWallet_profile_status_BLOCKED | Bloque |
+| telephony_billingAccount_svaWallet_profile_see_profile | Voir mon profil SVA |
+| telephony_billingAccount_svaWallet_profile_see_repayment | Voir mes reversements |
+| telephony_billingAccount_svaWallet_kyc_documents_type_ID | Carte d'identite |
+| telephony_billingAccount_svaWallet_kyc_documents_type_IBAN | IBAN |
+
+---
+
+## 7. REGLES METIER
+
+### Processus KYC
+1. Creation profil (particulier/entreprise)
+2. Upload documents obligatoires
+3. Verification manuelle (1-3 jours)
+4. Activation compte
+
+### Reversements
+- Seuil minimum: 10 EUR
+- Frequence: mensuelle
+- Virement vers IBAN valide

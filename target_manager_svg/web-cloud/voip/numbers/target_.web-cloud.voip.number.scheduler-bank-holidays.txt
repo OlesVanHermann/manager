@@ -1,0 +1,166 @@
+# Cahier des Charges : telecom/scheduler - Ajouter jours feries
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal d'ajout des jours feries au calendrier des plages horaires.
+
+### Objectif fonctionnel
+- Selectionner un pays
+- Choisir une annee
+- Cocher les jours feries a ajouter
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec filtres gauche + liste droite
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal
+| Element | Description |
+|---------|-------------|
+| Largeur | 800px |
+| Hauteur | 540px |
+| Bouton fermer | × en haut droite |
+
+### Titre modal
+| Element | Description |
+|---------|-------------|
+| Texte | Ajouter des jours feries |
+
+### Filtre pays (gauche)
+| Element | Description |
+|---------|-------------|
+| Label | Pays |
+| Type | Select dropdown |
+| Defaut | France |
+| Options | Liste pays europeens |
+
+### Filtre annee (gauche)
+| Element | Description |
+|---------|-------------|
+| Label | Annee |
+| Type | Boutons toggle verticaux |
+| Format | YYYY (N) avec N = nombre de feries |
+
+### Boutons annee
+| Annee | Description |
+|-------|-------------|
+| 2024 (11) | Bouton toggle |
+| 2025 (11) | Bouton toggle |
+| 2026 (11) | Bouton toggle |
+
+### Liste jours feries (droite)
+| Colonne | Description |
+|---------|-------------|
+| Checkbox | Selection individuelle |
+| Nom | Nom du jour ferie |
+| Date | Format "jour J mois YYYY" |
+
+### Etats checkbox
+| Etat | Apparence | Description |
+|------|-----------|-------------|
+| Non selectionne | Bordure grise | Peut etre ajoute |
+| Selectionne | Fond bleu + check | Sera ajoute |
+| Deja present | Fond gris disabled | Dans le calendrier |
+
+### Info deja present
+| Element | Description |
+|---------|-------------|
+| Badge | "Deja dans le calendrier" |
+| Couleur | Orange (#F59E0B) |
+| Position | Sous le nom du ferie |
+
+### Jours feries France
+| Nom | Date exemple 2025 |
+|-----|-------------------|
+| Jour de l'an | mercredi 1 janvier |
+| Lundi de Paques | lundi 21 avril |
+| Fete du Travail | jeudi 1 mai |
+| Victoire 1945 | jeudi 8 mai |
+| Ascension | jeudi 29 mai |
+| Lundi de Pentecote | lundi 9 juin |
+| Fete Nationale | lundi 14 juillet |
+| Assomption | vendredi 15 aout |
+| Toussaint | samedi 1 novembre |
+| Armistice | mardi 11 novembre |
+| Noel | jeudi 25 decembre |
+
+### Footer modal
+| Element | Description |
+|---------|-------------|
+| Bouton Annuler | Secondary, ferme modal |
+| Bouton Ajouter (N) | Primary, avec compteur |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /me/availablePublicHolidays?country={country}&year={year}
+POST /telephony/{billingAccount}/timeCondition/{serviceName}/condition (batch)
+```
+
+### Modele
+```typescript
+interface PublicHoliday {
+  name: string;
+  date: string;
+  country: string;
+}
+
+interface BankHolidaySelection {
+  country: string;
+  year: number;
+  holidays: PublicHoliday[];
+}
+
+interface AddHolidaysResult {
+  added: number;
+  skipped: number;
+  errors: string[];
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telecom_holidays_title": "Ajouter des jours feries",
+  "telecom_holidays_country": "Pays",
+  "telecom_holidays_year": "Annee",
+  "telecom_holidays_add": "Ajouter ({count})",
+  "telecom_holidays_cancel": "Annuler",
+  "telecom_holidays_already": "Deja dans le calendrier",
+  "telecom_holidays_new_year": "Jour de l'an",
+  "telecom_holidays_easter": "Lundi de Paques",
+  "telecom_holidays_labor": "Fete du Travail",
+  "telecom_holidays_victory": "Victoire 1945",
+  "telecom_holidays_ascension": "Ascension",
+  "telecom_holidays_pentecost": "Lundi de Pentecote",
+  "telecom_holidays_national": "Fete Nationale",
+  "telecom_holidays_assumption": "Assomption",
+  "telecom_holidays_saints": "Toussaint",
+  "telecom_holidays_armistice": "Armistice",
+  "telecom_holidays_christmas": "Noel"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Pays = France par defaut
+- 11 jours feries en France
+- Annee courante selectionnee par defaut
+- Dates deja presentes = grisees
+- Compteur dynamique sur bouton Ajouter
+- Ajout en batch (creation multiple)
+

@@ -1,0 +1,138 @@
+# Cahier des Charges : telecom/telephony - Commander numero geographique
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Formulaire de commande d'un numero geographique (01-05).
+
+### Objectif fonctionnel
+- Commander un ou plusieurs numeros geographiques
+- Choisir la zone geographique (ville)
+- Renseigner les informations du titulaire
+- Valider et passer commande
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec cartes formulaire verticales
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | <- Retour aux commandes |
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Commander un numero geographique - France |
+
+### Carte Quantite
+| Champ | Type | Options |
+|-------|------|---------|
+| Nombre de numeros | Select | 1 numero, 2 numeros, ..., 10 numeros |
+| Type d'offre | Radio | Numero alias (redirection), SDA uniquement |
+
+### Carte Zone geographique
+| Champ | Type | Description |
+|-------|------|-------------|
+| Ville ou code postal | Input autocomplete | Recherche ville/CP |
+
+### Carte Choix du numero
+| Option | Prix |
+|--------|------|
+| Numero standard | 0,00 EUR HT/mois |
+| Numero personnalise | +5,00 EUR HT/mois |
+
+| Element | Description |
+|---------|-------------|
+| Numero attribue | +33 1 84 XX XX XX (preview) |
+
+### Carte Adresse du titulaire
+| Champ | Type | Description |
+|-------|------|-------------|
+| Nom / Raison sociale | Input | Nom ou entreprise |
+| Adresse | Input | Rue et numero |
+| Code postal | Input | 5 chiffres |
+| Ville | Input | Ville |
+
+### Carte Validation
+| Element | Description |
+|---------|-------------|
+| Checkbox | J'accepte les conditions generales et je renonce au droit de retractation |
+| Bouton | Commander (0,00 EUR HT/mois) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Zones geographiques
+| Prefixe | Region |
+|---------|--------|
+| 01 | Ile-de-France |
+| 02 | Nord-Ouest |
+| 03 | Nord-Est |
+| 04 | Sud-Est |
+| 05 | Sud-Ouest |
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/number/geo/zones
+    Query: { country: "fr", city: "Paris" }
+    Response: [{ city, zipCode, zne }]
+
+GET /telephony/{billingAccount}/number/geo/prices
+    Response: { standard, premium }
+
+POST /telephony/{billingAccount}/number/geo/order
+    Body: {
+      quantity: 1,
+      type: "alias",
+      zone: "75",
+      address: { name, street, zipCode, city },
+      acceptRetractation: true
+    }
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_order_geo_title": "Commander un numero geographique - France",
+  "telephony_order_geo_back": "Retour aux commandes",
+  "telephony_order_geo_quantity": "Quantite",
+  "telephony_order_geo_count": "Nombre de numeros",
+  "telephony_order_geo_type_alias": "Numero alias (redirection)",
+  "telephony_order_geo_type_sda": "SDA uniquement",
+  "telephony_order_geo_zone": "Zone geographique",
+  "telephony_order_geo_city": "Ville ou code postal",
+  "telephony_order_geo_choice": "Choix du numero",
+  "telephony_order_geo_standard": "Numero standard",
+  "telephony_order_geo_custom": "Numero personnalise",
+  "telephony_order_geo_assigned": "Numero attribue :",
+  "telephony_order_geo_address": "Adresse du titulaire",
+  "telephony_order_geo_name": "Nom / Raison sociale",
+  "telephony_order_geo_street": "Adresse",
+  "telephony_order_geo_zip": "Code postal",
+  "telephony_order_geo_city_field": "Ville",
+  "telephony_order_geo_validation": "Validation de la commande",
+  "telephony_order_geo_cgv": "J'accepte les conditions generales et je renonce au droit de retractation",
+  "telephony_order_geo_submit": "Commander"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Adresse doit correspondre a la zone geographique
+- Alias = redirection vers ligne existante
+- SDA = numero direct sans ligne
+- Numero personnalise = choix du suffixe
+- CGV et retractation obligatoires

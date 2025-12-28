@@ -1,0 +1,108 @@
+# Cahier des Charges : web-cloud/zimbra - Changer offre compte
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de changement d'offre pour un compte Zimbra existant.
+
+### Objectif fonctionnel
+- Comparer les offres disponibles
+- Selectionner une nouvelle offre
+- Voir le prorata et confirmer
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec breadcrumb + cartes offres + recapitulatif
+
+---
+
+## 3. COMPOSANTS UI
+
+### Navigation
+| Element | Description |
+|---------|-------------|
+| Breadcrumb | Zimbra > Comptes email > Changer d'offre |
+| Lien retour | Retour vers mes comptes emails |
+| Titre | Selectionnez votre nouvelle offre |
+| Email | contact@exemple.com |
+
+### Cartes offres
+| Offre | Etat | Details |
+|-------|------|---------|
+| Zimbra Starter | Badge "Offre actuelle" (bleu) | 1,99 EUR, 15 Go |
+| Zimbra Pro | Badge "Nouveau" (vert) + check | 5,99 EUR, 50 Go |
+| Zimbra Business | Badge "Bientot disponible" (jaune) | Disabled |
+
+### Fonctionnalites affichees
+| Offre | Features |
+|-------|----------|
+| Starter | 15 Go, Partage limite calendriers, ActiveSync |
+| Pro | 50 Go, Partage illimite, ActiveSync, Stockage fichiers, 1 Go partage, Visio |
+| Business | Co-edition, Chat prive, Chat equipe (grise) |
+
+### Recapitulatif paiement
+| Element | Description |
+|---------|-------------|
+| Titre | A payer maintenant |
+| Montant | 2,00 EUR HT (prorata) |
+| Prochaine facturation | 5,99 EUR HT/mois |
+| Bouton | Confirmer (primary) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/account/{accountId}
+GET /zimbra/platform/{platformId}/offer
+PUT /zimbra/platform/{platformId}/account/{accountId}/changeOffer
+POST /zimbra/platform/{platformId}/account/{accountId}/upgrade
+```
+
+### Modele
+```typescript
+interface ChangeOffer {
+  currentOffer: 'starter' | 'pro';
+  targetOffer: 'starter' | 'pro';
+  prorata: number;
+  nextBilling: number;
+}
+
+interface ZimbraOffer {
+  id: string;
+  name: string;
+  price: number;
+  storage: number;
+  features: string[];
+  available: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_upgrade_title": "Selectionnez votre nouvelle offre",
+  "zimbra_upgrade_current": "Offre actuelle",
+  "zimbra_upgrade_new": "Nouveau",
+  "zimbra_upgrade_soon": "Bientot disponible",
+  "zimbra_upgrade_pay_now": "A payer maintenant",
+  "zimbra_upgrade_prorata": "HT (prorata)",
+  "zimbra_upgrade_next_billing": "Prochaine facturation",
+  "zimbra_upgrade_confirm": "Confirmer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Upgrade immediat avec prorata
+- Downgrade en fin de periode
+- Business pas encore disponible
+- Prorata calcule sur jours restants

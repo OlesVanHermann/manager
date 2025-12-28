@@ -1,0 +1,131 @@
+# Cahier des Charges : telecom/line - Calendrier plages horaires
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Vue calendrier hebdomadaire des plages horaires configurees sur la ligne.
+
+### Objectif fonctionnel
+- Visualiser les plages horaires de la semaine
+- Naviguer entre les semaines
+- Identifier les creneaux par couleur
+- Cliquer pour modifier un creneau
+
+---
+
+## 2. LAYOUT
+
+### Structure avec calendrier grille 7 jours
+
+---
+
+## 3. COMPOSANTS UI
+
+### Breadcrumb
+| Element | Description |
+|---------|-------------|
+| Chemin | Telecom / Ligne / Plages horaires |
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Configuration des plages horaires |
+
+### Navigation semaine
+| Element | Description |
+|---------|-------------|
+| Bouton precedent | < Precedent |
+| Label semaine | Semaine du XX au XX Mois YYYY |
+| Bouton suivant | Suivant > |
+
+### Grille calendrier
+| Element | Description |
+|---------|-------------|
+| Colonnes | 7 jours (LUN-DIM) |
+| Lignes | Heures (08:00-20:00) |
+| Cellules | Plages horaires colorees |
+
+### En-tetes jours
+| Jour | Format |
+|------|--------|
+| Lundi | LUN 23 |
+| Mardi | MAR 24 |
+| Mercredi | MER 25 |
+| Jeudi | JEU 26 |
+| Vendredi | VEN 27 |
+| Samedi | SAM 28 |
+| Dimanche | DIM 29 |
+
+### Heures (axe vertical)
+| Heure |
+|-------|
+| 08:00 |
+| 10:00 |
+| 12:00 |
+| 14:00 |
+| 16:00 |
+| 18:00 |
+| 20:00 |
+
+### Legende des creneaux
+| Couleur | Signification |
+|---------|---------------|
+| Vert (#DEF7EC) | Horaires d'ouverture |
+| Rouge (#FEE2E2) | Horaires de fermeture |
+| Bleu (#DBEAFE) | Creneau 1 |
+| Jaune (#FEF3C7) | Creneau 2 |
+| Rose (#FCE7F3) | Creneau 3 |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/timeCondition
+    Response: [{
+      id, day, timeFrom, timeTo,
+      slot: "slot1" | "slot2" | "slot3" | "available" | "unavailable",
+      policy
+    }]
+
+GET /telephony/{billingAccount}/line/{serviceName}/timeCondition/slots
+    Response: {
+      slot1: { number, type },
+      slot2: { number, type },
+      slot3: { number, type }
+    }
+```
+
+### Jours de la semaine (enum)
+```
+monday, tuesday, wednesday, thursday, friday, saturday, sunday
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_timecondition_calendar_title": "Configuration des plages horaires",
+  "telephony_line_timecondition_calendar_week": "Semaine du {{start}} au {{end}} {{month}}",
+  "telephony_line_timecondition_calendar_prev": "Precedent",
+  "telephony_line_timecondition_calendar_next": "Suivant",
+  "telephony_line_timecondition_calendar_legend": "Legende des creneaux",
+  "telephony_line_timecondition_calendar_open": "Horaires d'ouverture",
+  "telephony_line_timecondition_calendar_closed": "Horaires de fermeture",
+  "telephony_line_timecondition_calendar_slot1": "Creneau 1",
+  "telephony_line_timecondition_calendar_slot2": "Creneau 2",
+  "telephony_line_timecondition_calendar_slot3": "Creneau 3"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- 3 creneaux personnalisables maximum
+- Plages de 15 minutes minimum
+- Pas de chevauchement autorise
+- Clic sur creneau ouvre edition

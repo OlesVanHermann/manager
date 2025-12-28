@@ -1,0 +1,114 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Multisite
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de gestion des domaines attachés à l'hébergement.
+
+### Objectif fonctionnel
+- Lister les domaines configurés
+- Ajouter de nouveaux domaines
+- Configurer SSL, CDN, firewall par domaine
+
+---
+
+## 2. LAYOUT
+
+### Structure toolbar + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Toolbar
+| Element | Description |
+|---------|-------------|
+| Bouton Actions | Dropdown primary |
+| Recherche | Champ de recherche |
+
+### Menu Actions
+| Option | Description |
+|--------|-------------|
+| Ajouter un domaine | Ouvre formulaire |
+| Commander un certificat SSL | Redirection commande |
+| Régénérer le certificat SSL | Action SSL |
+
+### Tableau multisite
+| Colonne | Description |
+|---------|-------------|
+| Domaine | Nom de domaine (link) |
+| Dossier racine | Chemin relatif |
+| SSL | Badge Oui/Non |
+| Firewall | Activé/Désactivé |
+| CDN | Activé/- |
+| Logs | Lien Voir |
+| IPv6 | Activé/Désactivé |
+| Actions | Menu ⋮ |
+
+### Menu actions ligne (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier le domaine | Edit |
+| Modifier le dossier racine | Edit path |
+| Activer/Désactiver SSL | Toggle SSL |
+| Vider le cache CDN | Purge cache |
+| Supprimer | Destructif (rouge) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/attachedDomain
+POST /hosting/web/{serviceName}/attachedDomain
+PUT /hosting/web/{serviceName}/attachedDomain/{domain}
+DELETE /hosting/web/{serviceName}/attachedDomain/{domain}
+```
+
+### Modele
+```typescript
+interface AttachedDomain {
+  domain: string;
+  path: string;
+  ssl: boolean;
+  firewall: boolean;
+  cdn: boolean;
+  ipv6: boolean;
+  ownLog: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_multisite_title": "Multisite",
+  "hosting_multisite_actions": "Actions",
+  "hosting_multisite_add": "Ajouter un domaine",
+  "hosting_multisite_col_domain": "Domaine",
+  "hosting_multisite_col_path": "Dossier racine",
+  "hosting_multisite_col_ssl": "SSL",
+  "hosting_multisite_col_firewall": "Firewall",
+  "hosting_multisite_col_cdn": "CDN",
+  "hosting_multisite_col_logs": "Logs",
+  "hosting_multisite_col_ipv6": "IPv6",
+  "hosting_multisite_action_edit": "Modifier le domaine",
+  "hosting_multisite_action_path": "Modifier le dossier racine",
+  "hosting_multisite_action_ssl": "Activer/Désactiver SSL",
+  "hosting_multisite_action_purge": "Vider le cache CDN",
+  "hosting_multisite_action_delete": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Un domaine = un dossier racine
+- SSL activable par domaine
+- CDN optionnel selon offre
+- Logs séparés par domaine possible
+- IPv6 optionnel par domaine

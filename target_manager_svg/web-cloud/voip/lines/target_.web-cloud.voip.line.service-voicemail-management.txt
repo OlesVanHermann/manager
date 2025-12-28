@@ -1,0 +1,125 @@
+# Cahier des Charges : telecom/line - Gestion messages vocaux
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des messages vocaux recus.
+
+### Objectif fonctionnel
+- Ecouter les messages vocaux
+- Telecharger les messages
+- Supprimer les messages
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec carte tableau messages
+
+---
+
+## 3. COMPOSANTS UI
+
+### Carte messages
+| Element | Description |
+|---------|-------------|
+| Titre section | Messages vocaux |
+
+### Bouton suppression selection
+| Element | Description |
+|---------|-------------|
+| Type | Danger (rouge) |
+| Texte | Supprimer (X) |
+| Compteur | Nombre selectionne |
+
+### Tableau messages
+| Colonne | Description |
+|---------|-------------|
+| Checkbox | Selection multiple |
+| Appelant | Numero ou "Numero masque" |
+| Date | DD/MM/YYYY HH:MM |
+| Duree | MM:SS |
+| Actions | Icones actions |
+
+### Actions ligne
+| Action | Icone | Description |
+|--------|-------|-------------|
+| Ecouter | Play/Stop | Lecture audio |
+| Voir | Oeil | Details message |
+| Telecharger | Fleche bas | Download audio |
+| Supprimer | Poubelle | Supprime message |
+
+### Etat lecture
+| Etat | Icone | Couleur |
+|------|-------|---------|
+| Pret | Play | Bleu |
+| En cours | Stop | Rouge |
+
+### Checkbox
+| Etat | Style |
+|------|-------|
+| Checked | Fond bleu, check blanc |
+| Unchecked | Fond blanc, bordure grise |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Afficher | Select (10/25/50) |
+| Page | Page X sur Y |
+| Navigation | Fleches |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{id}
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{id}/download
+DELETE /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{id}
+```
+
+### Modele
+```typescript
+interface VoicemailMessage {
+  id: string;
+  callerNumber: string;
+  date: string;
+  duration: number;
+  read: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_vm_messages_title": "Messages vocaux",
+  "line_vm_messages_delete": "Supprimer",
+  "line_vm_messages_col_caller": "Appelant",
+  "line_vm_messages_col_date": "Date",
+  "line_vm_messages_col_duration": "Duree",
+  "line_vm_messages_hidden": "Numero masque",
+  "line_vm_messages_play": "Ecouter",
+  "line_vm_messages_stop": "Arreter",
+  "line_vm_messages_view": "Voir",
+  "line_vm_messages_download": "Telecharger",
+  "line_vm_messages_remove": "Supprimer",
+  "line_vm_messages_show": "Afficher",
+  "line_vm_messages_per_page": "par page",
+  "line_vm_messages_page": "Page",
+  "line_vm_messages_refresh": "Actualiser"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Retention messages: 30 jours
+- Format telechargerment: MP3 ou WAV
+- Suppression definitive
+- Maximum 100 messages par boite

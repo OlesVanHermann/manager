@@ -1,0 +1,113 @@
+# Cahier des Charges : web-cloud/zimbra - Ajouter domaine
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Formulaire d'ajout d'un domaine a la plateforme Zimbra.
+
+### Objectif fonctionnel
+- Ajouter un domaine OVHcloud ou externe
+- Configurer la zone DNS
+- Associer a une organisation
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec breadcrumb + formulaire multi-etapes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Navigation
+| Element | Description |
+|---------|-------------|
+| Breadcrumb | Zimbra > Domaines > Ajouter un domaine |
+| Lien retour | Retour vers les noms de domaine |
+| Titre | Ajouter un domaine |
+
+### Formulaire
+| Champ | Type | Description |
+|-------|------|-------------|
+| Organisation * | Select | Selectionner une organisation |
+| Type de domaine | Radio | OVHcloud / Externe |
+| Nom de domaine * | Select ou Input | Selon type |
+| Configuration | Radio | Recommandee / Personnalisee |
+
+### Types de domaine (Radio)
+| Option | Description |
+|--------|-------------|
+| OVHcloud | Selectionner un domaine dans la liste |
+| Externe | Saisir un nom de domaine non gere par OVHcloud |
+
+### Configuration DNS (Radio)
+| Option | Description |
+|--------|-------------|
+| Recommandee | Configuration automatique securisee |
+| Personnalisee | Configuration manuelle |
+
+### Message warning
+| Element | Description |
+|---------|-------------|
+| Type | Warning (jaune) |
+| Texte | En optant pour la configuration recommandee, vous acceptez que l'ensemble de vos emails soient achemines vers le service Zimbra |
+
+### Bouton
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Confirmer |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/organization
+GET /domain
+POST /zimbra/platform/{platformId}/domain
+```
+
+### Modele
+```typescript
+interface AddZimbraDomain {
+  organization: string;
+  domainType: 'ovhcloud' | 'external';
+  domainName: string;
+  dnsConfiguration: 'recommended' | 'custom';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_domain_add_title": "Ajouter un domaine",
+  "zimbra_domain_add_organization": "Organisation",
+  "zimbra_domain_add_type": "Type de domaine",
+  "zimbra_domain_add_type_ovh": "Selectionner un domaine dans la liste",
+  "zimbra_domain_add_type_external": "Saisir un nom de domaine non gere par votre compte OVHcloud",
+  "zimbra_domain_add_name": "Nom de domaine",
+  "zimbra_domain_add_config": "Configuration",
+  "zimbra_domain_add_config_recommended": "Configuration recommandee",
+  "zimbra_domain_add_config_recommended_desc": "Nous configurons votre service pour assurer le meilleur niveau de securite",
+  "zimbra_domain_add_config_custom": "Configuration personnalisee",
+  "zimbra_domain_add_config_custom_desc": "Vous pouvez personnaliser la configuration et choisir quand basculer vos emails vers ce service",
+  "zimbra_domain_add_warning": "En optant pour la configuration recommandee, vous acceptez que l'ensemble de vos emails soient achemines vers le service Zimbra",
+  "zimbra_domain_add_confirm": "Confirmer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Organisation obligatoire
+- Domaine OVHcloud = selection dans liste
+- Domaine externe = verification CNAME requise
+- Config recommandee = MX automatiques
+- Config personnalisee = configuration manuelle

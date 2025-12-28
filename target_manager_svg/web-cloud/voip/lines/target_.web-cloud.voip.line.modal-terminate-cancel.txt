@@ -1,0 +1,103 @@
+# Cahier des Charges : telecom/line - Annulation resiliation
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page permettant d'annuler une demande de resiliation en cours.
+
+### Objectif fonctionnel
+- Afficher les details de la resiliation programmee
+- Permettre l'annulation de la resiliation
+- Restaurer la ligne en service normal
+
+---
+
+## 2. LAYOUT
+
+### Page complete avec carte d'annulation
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | Retour a la gestion de la ligne |
+
+### Titre page
+| Element | Description |
+|---------|-------------|
+| Titre | Resiliation de la ligne "{numero}" |
+
+### Carte annulation
+| Element | Description |
+|---------|-------------|
+| Titre section | Annuler la resiliation de la ligne |
+
+### Informations resiliation
+| Element | Description |
+|---------|-------------|
+| Texte | Vous avez une demande de resiliation en cours sur la ligne |
+| Date | Cette resiliation est programmee le XX/XX/XXXX (rouge) |
+
+### Avertissement
+| Element | Description |
+|---------|-------------|
+| Texte ligne 1 | En cliquant sur le bouton Annuler la resiliation |
+| Texte ligne 2 | vous procedez a l'annulation immediate de la resiliation |
+
+### Bouton action
+| Bouton | Type | Action |
+|--------|------|--------|
+| Annuler la resiliation | Primary | Annule la resiliation |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/terminate
+    Response: {
+      scheduledDate: date,
+      status: "pending" | "processing"
+    }
+
+DELETE /telephony/{billingAccount}/line/{serviceName}/terminate
+    Response: { success: true }
+```
+
+### Etats possibles
+| Etat | Description |
+|------|-------------|
+| pending | Resiliation programmee, annulable |
+| processing | En cours de traitement, non annulable |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_terminate_cancel_back": "Retour a la gestion de la ligne",
+  "telephony_line_terminate_cancel_title": "Resiliation de la ligne \"{{serviceName}}\"",
+  "telephony_line_terminate_cancel_section": "Annuler la resiliation de la ligne",
+  "telephony_line_terminate_cancel_pending": "Vous avez une demande de resiliation en cours sur la ligne.",
+  "telephony_line_terminate_cancel_scheduled": "Cette resiliation est programmee le",
+  "telephony_line_terminate_cancel_warning1": "En cliquant sur le bouton Annuler la resiliation,",
+  "telephony_line_terminate_cancel_warning2": "vous procedez a l'annulation immediate de la resiliation.",
+  "telephony_line_terminate_cancel_button": "Annuler la resiliation",
+  "telephony_line_terminate_cancel_success": "La resiliation a ete annulee",
+  "telephony_line_terminate_cancel_error": "Erreur lors de l'annulation"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Annulation possible jusqu'a J-1
+- Restauration immediate des services
+- Facturation reprend normalement
+- Notification email de confirmation

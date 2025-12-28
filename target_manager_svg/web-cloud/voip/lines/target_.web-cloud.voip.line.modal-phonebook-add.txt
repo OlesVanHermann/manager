@@ -1,0 +1,117 @@
+# Cahier des Charges : telecom/line - Modal Ajout contact
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal d'ajout d'un nouveau contact au carnet d'adresses du telephone.
+
+### Objectif fonctionnel
+- Saisir les informations du contact
+- Valider les donnees obligatoires
+- Ajouter au phonebook
+
+---
+
+## 2. LAYOUT
+
+### Modal 600x650 avec formulaire
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete modal
+| Element | Description |
+|---------|-------------|
+| Titre | Ajouter un contact |
+| Bouton fermer | X en haut a droite |
+
+### Formulaire - Ligne 1 (2 colonnes)
+| Champ | Type | Obligatoire |
+|-------|------|-------------|
+| Nom | Input text | Oui (*) |
+| Prenom | Input text | Oui (*) |
+
+### Formulaire - Ligne 2
+| Champ | Type | Description |
+|-------|------|-------------|
+| Groupe | Input + Select | Dropdown selection groupe |
+
+### Message info
+| Element | Description |
+|---------|-------------|
+| Info | Au moins un numero de telephone est requis |
+
+### Formulaire - Ligne 3 (2 colonnes)
+| Champ | Type | Placeholder |
+|-------|------|-------------|
+| Tel. domicile | Input tel | Telephone personnel |
+| Mobile perso | Input tel | Mobile personnel |
+
+### Formulaire - Ligne 4 (2 colonnes)
+| Champ | Type | Placeholder |
+|-------|------|-------------|
+| Tel. travail | Input tel | Telephone professionnel |
+| Mobile pro | Input tel | Mobile professionnel |
+
+### Footer modal
+| Bouton | Type | Action |
+|--------|------|--------|
+| Annuler | Default | Ferme la modal |
+| Valider | Primary | Enregistre le contact |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+POST /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{bookId}/phonebookContact
+    Body: {
+      name: string,
+      surname: string,
+      group: string,
+      homePhone: string,
+      homeMobile: string,
+      workPhone: string,
+      workMobile: string
+    }
+```
+
+### Validation
+| Champ | Regle |
+|-------|-------|
+| Nom | Requis, max 50 caracteres |
+| Prenom | Requis, max 50 caracteres |
+| Telephones | Au moins 1 requis |
+| Format tel | E.164 ou local |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_phonebook_add_title": "Ajouter un contact",
+  "telephony_line_phonebook_add_name": "Nom",
+  "telephony_line_phonebook_add_surname": "Prenom",
+  "telephony_line_phonebook_add_group": "Groupe",
+  "telephony_line_phonebook_add_group_select": "Selectionner",
+  "telephony_line_phonebook_add_phone_required": "Au moins un numero de telephone est requis",
+  "telephony_line_phonebook_add_home_phone": "Tel. domicile",
+  "telephony_line_phonebook_add_home_mobile": "Mobile perso",
+  "telephony_line_phonebook_add_work_phone": "Tel. travail",
+  "telephony_line_phonebook_add_work_mobile": "Mobile pro",
+  "telephony_line_phonebook_add_cancel": "Annuler",
+  "telephony_line_phonebook_add_submit": "Valider"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Nom et prenom obligatoires
+- Au moins un numero de telephone requis
+- Synchronisation immediate avec telephone
+- Groupe optionnel, defaut "Autres"

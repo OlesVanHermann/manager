@@ -1,0 +1,91 @@
+# Cahier des Charges : telecom/xdsl - Notifications (warning SMS)
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page notifications avec alertes de credit SMS epuise ou faible.
+
+### Objectif fonctionnel
+- Alerter sur les problemes de credit SMS
+- Permettre la recharge rapide
+- Identifier les notifications impactees
+
+---
+
+## 2. LAYOUT
+
+### Structure avec bannieres warning + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Banniere critique (credit epuise)
+| Element | Description |
+|---------|-------------|
+| Type | Danger (fond rouge) |
+| Titre | Credit SMS epuise |
+| Message | Le compte sms-xxx n'a plus de credit... |
+| Bouton | Recharger -> |
+
+### Banniere warning (credit faible)
+| Element | Description |
+|---------|-------------|
+| Type | Warning (fond jaune) |
+| Message | Attention : le compte sms-xxx a un credit faible (X SMS restants) |
+
+### Tableau avec lignes en warning
+| Element | Description |
+|---------|-------------|
+| Ligne normale | Fond blanc |
+| Ligne warning | Fond jaune pale (#FFFBEB) |
+| Compte en erreur | Texte rouge avec icone warning |
+| Compte faible | Texte orange avec icone warning |
+
+### Indicateurs visuels
+| Etat | Style |
+|------|-------|
+| Credit epuise | Texte danger + icone |
+| Credit faible | Texte warning + icone |
+| Email | Pas d'indicateur (toujours OK) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /xdsl/{serviceName}/monitoringNotifications
+GET /sms/{serviceName}
+    Response: { creditsLeft, status }
+```
+
+### Seuils d'alerte
+| Seuil | Niveau |
+|-------|--------|
+| 0 | Critique (epuise) |
+| < 20 | Warning (faible) |
+| >= 20 | OK |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "xdsl_notif_sms_empty": "Credit SMS epuise",
+  "xdsl_notif_sms_empty_desc": "Le compte {{account}} n'a plus de credit. Les notifications SMS ne seront pas envoyees.",
+  "xdsl_notif_sms_low": "Attention : le compte {{account}} a un credit faible ({{count}} SMS restants).",
+  "xdsl_notif_sms_recharge": "Recharger"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Verification credit SMS au chargement
+- Banniere critique si credit = 0
+- Banniere warning si credit < 20
+- Lien direct vers recharge SMS
+- Lignes impactees surlignees

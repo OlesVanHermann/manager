@@ -1,0 +1,140 @@
+# Cahier des Charges : telecom/line - Carnet d'adresses telephone
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion du carnet d'adresses (phonebook) synchronise avec le telephone IP.
+
+### Objectif fonctionnel
+- Visualiser les contacts
+- Ajouter/modifier/supprimer des contacts
+- Importer/exporter des contacts
+- Synchroniser avec le telephone
+
+---
+
+## 2. LAYOUT
+
+### Structure page complete avec sidebar
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | Retour au telephone |
+
+### En-tete carnet
+| Element | Description |
+|---------|-------------|
+| Titre | Carnet d'adresses |
+| Nom carnet | Contacts professionnels |
+| Edit icon | Renommer le carnet |
+| Bouton | Supprimer le carnet |
+
+### Barre actions
+| Element | Description |
+|---------|-------------|
+| Menu Actions | Dropdown avec options |
+| Bouton supprimer | Supprimer (N) selectionnes |
+
+### Menu Actions (dropdown)
+| Option | Action |
+|--------|--------|
+| Ajouter | Ouvre modal ajout contact |
+| Importer | Import CSV/vCard |
+| Exporter | Export CSV/vCard |
+
+### Tableau contacts
+| Colonne | Description |
+|---------|-------------|
+| Checkbox | Selection multiple |
+| Nom | Nom de famille (triable) |
+| Prenom | Prenom |
+| Groupe | Famille, Travail, Amis |
+| Tel. domicile | Numero fixe |
+| Mobile perso | Numero mobile |
+| Tel. travail | Numero professionnel |
+| Actions | Menu ⋮ |
+
+### Menu actions ligne
+| Option | Action |
+|--------|--------|
+| Modifier | Ouvre modal edition |
+| Supprimer | Supprime le contact |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Info | Affichage X-Y sur Z contacts |
+| Navigation | Page X / Y |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/phonebook
+    Response: [{ id, name }]
+
+GET /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{bookId}/phonebookContact
+    Response: [{ id, name, surname, group, homePhone, homeMobile, workPhone }]
+
+POST /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{bookId}/phonebookContact
+    Body: { name, surname, group, homePhone, homeMobile, workPhone }
+
+PUT /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{bookId}/phonebookContact/{contactId}
+DELETE /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{bookId}/phonebookContact/{contactId}
+
+POST /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{bookId}/import
+    Body: FormData (CSV/vCard)
+
+GET /telephony/{billingAccount}/line/{serviceName}/phone/phonebook/{bookId}/export
+    Response: CSV/vCard file
+```
+
+### Groupes predéfinis
+- Famille
+- Travail
+- Amis
+- VIP
+- Autres
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_phonebook_title": "Carnet d'adresses",
+  "telephony_line_phonebook_back": "Retour au telephone",
+  "telephony_line_phonebook_name": "Carnet",
+  "telephony_line_phonebook_delete_book": "Supprimer le carnet",
+  "telephony_line_phonebook_contacts": "Contacts",
+  "telephony_line_phonebook_actions": "Actions",
+  "telephony_line_phonebook_add": "Ajouter",
+  "telephony_line_phonebook_import": "Importer",
+  "telephony_line_phonebook_export": "Exporter",
+  "telephony_line_phonebook_delete_selected": "Supprimer",
+  "telephony_line_phonebook_col_name": "Nom",
+  "telephony_line_phonebook_col_surname": "Prenom",
+  "telephony_line_phonebook_col_group": "Groupe",
+  "telephony_line_phonebook_col_home": "Tel. domicile",
+  "telephony_line_phonebook_col_mobile": "Mobile perso",
+  "telephony_line_phonebook_col_work": "Tel. travail",
+  "telephony_line_phonebook_modify": "Modifier",
+  "telephony_line_phonebook_delete": "Supprimer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Synchronisation automatique avec telephone
+- Formats import : CSV, vCard
+- Limite contacts selon modele telephone
+- Groupes personnalisables

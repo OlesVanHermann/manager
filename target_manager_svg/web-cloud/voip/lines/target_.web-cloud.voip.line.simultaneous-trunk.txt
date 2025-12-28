@@ -1,0 +1,145 @@
+# Cahier des Charges : telecom/line - Trunk SIP canaux simultanes
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de configuration des canaux simultanees d'un Trunk SIP.
+
+### Objectif fonctionnel
+- Voir les canaux actuels
+- Commander des canaux supplementaires
+- Voir la repartition des packs
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec cartes information + commande + graphique
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Lignes simultanees |
+| Titre | Configuration Trunk SIP |
+
+### Banniere info
+| Element | Description |
+|---------|-------------|
+| Fond | Bleu clair |
+| Bordure | Bleue |
+| Ligne 1 | Nb canaux = nb appels simultanes |
+| Ligne 2 | Facturation mensuelle |
+| Ligne 3 | Bande passante 100 kbit/s par canal |
+
+### Carte Canaux actuels
+| Champ | Valeur |
+|-------|--------|
+| Quantite | 20 |
+| Prix mensuel HT | 40,00 € / mois |
+| Commande en attente | Aucune |
+
+### Carte Commander des canaux
+| Element | Description |
+|---------|-------------|
+| Quantite souhaitee | Input number avec stepper |
+| Quantite optimisee | Valeur calculee |
+| Prix mensuel HT | Prix calcule |
+| Bande passante | Recommandation en Mbit/s |
+| Bouton | Valider (Primary) |
+
+### Input stepper
+| Element | Description |
+|---------|-------------|
+| Champ | Input number |
+| Boutons | + / - |
+
+### Carte Repartition des canaux
+| Element | Description |
+|---------|-------------|
+| Titre | Repartition des canaux |
+| Graphique | Pie chart |
+| Legende | Pack 5 canaux, Pack 10 canaux |
+
+### Pie chart legende
+| Couleur | Description |
+|---------|-------------|
+| Bleu | Pack 5 canaux (x2) |
+| Vert | Pack 10 canaux (x1) |
+| Orange | Pack 10 canaux (x1) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/trunk/{serviceName}
+GET /telephony/{billingAccount}/trunk/{serviceName}/channelsPacksRepartition
+POST /telephony/{billingAccount}/trunk/{serviceName}/channelsPack
+```
+
+### Modele Trunk
+```typescript
+interface TrunkChannels {
+  currentQuantity: number;
+  monthlyPrice: number;
+  pendingOrder?: {
+    quantity: number;
+    date: string;
+  };
+}
+
+interface ChannelsOrder {
+  requestedQuantity: number;
+  optimizedQuantity: number;
+  monthlyPrice: number;
+  recommendedBandwidth: number;
+}
+
+interface ChannelsPack {
+  type: string;
+  quantity: number;
+  count: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_trunk_title": "Configuration Trunk SIP",
+  "line_trunk_back": "Lignes simultanees",
+  "line_trunk_info_1": "Le nombre de canaux determine le nombre d'appels simultanees possibles.",
+  "line_trunk_info_2": "La facturation est mensuelle et basee sur le nombre de canaux commandes.",
+  "line_trunk_info_3": "Bande passante recommandee : 100 kbit/s par canal.",
+  "line_trunk_current": "Canaux actuels",
+  "line_trunk_quantity": "Quantite",
+  "line_trunk_price": "Prix mensuel HT",
+  "line_trunk_pending": "Commande en attente",
+  "line_trunk_pending_none": "Aucune",
+  "line_trunk_order": "Commander des canaux",
+  "line_trunk_requested": "Quantite souhaitee",
+  "line_trunk_optimized": "Quantite optimisee",
+  "line_trunk_bandwidth": "Bande passante recommandee",
+  "line_trunk_validate": "Valider",
+  "line_trunk_chart": "Repartition des canaux",
+  "line_trunk_pack_5": "Pack 5 canaux",
+  "line_trunk_pack_10": "Pack 10 canaux"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Canaux vendus par packs (5 ou 10)
+- Quantite optimisee = meilleur rapport qualite/prix
+- 100 kbit/s par canal recommande
+- Facturation mensuelle
+- Commande effective sous 24h

@@ -1,0 +1,120 @@
+# Cahier des Charges : web-cloud/hebergement - Liste des hébergements
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de listing de tous les hébergements du compte.
+
+### Objectif fonctionnel
+- Lister tous les hébergements
+- Rechercher un hébergement
+- Accéder à la gestion
+- Commander un nouvel hébergement
+
+---
+
+## 2. LAYOUT
+
+### Structure sidebar + titre + barre recherche + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Sidebar navigation
+| Element | Description |
+|---------|-------------|
+| Hébergements | Sélectionné (bleu) |
+| Domaines | Lien |
+| Emails | Lien |
+
+### En-tête
+| Element | Description |
+|---------|-------------|
+| Titre | Hébergements web |
+| Recherche | Champ avec icône loupe |
+| Bouton | + Commander (primary) |
+
+### Tableau hébergements
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du service (lien bleu) |
+| Offre | Perso/Performance 1/2/3 |
+| Datacenter | Localisation (gra3, rbx7...) |
+| État | Badge Actif/Expire bientôt |
+| Expiration | Date (rouge si proche) |
+| Actions | Menu ⋮ |
+
+### États
+| État | Badge |
+|------|-------|
+| Actif | Vert (#DEF7EC) |
+| Expire bientôt | Rouge (#FEE2E2) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Gérer | Accéder au dashboard |
+| Renouveler | Prolonger l'abonnement |
+| Changer d'offre | Upgrade/downgrade |
+| Résilier | Destructif (rouge) |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Texte | 1-4 sur 4 hébergements |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web
+GET /hosting/web/{serviceName}
+GET /hosting/web/{serviceName}/serviceInfos
+```
+
+### Modele
+```typescript
+interface HostingListItem {
+  serviceName: string;
+  offer: string;
+  datacenter: string;
+  state: 'active' | 'expired' | 'expiring';
+  expirationDate: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_list_title": "Hébergements web",
+  "hosting_list_search": "Rechercher...",
+  "hosting_list_order": "Commander",
+  "hosting_list_col_name": "Nom",
+  "hosting_list_col_offer": "Offre",
+  "hosting_list_col_datacenter": "Datacenter",
+  "hosting_list_col_state": "État",
+  "hosting_list_col_expiration": "Expiration",
+  "hosting_list_active": "Actif",
+  "hosting_list_expiring": "Expire bientôt",
+  "hosting_list_manage": "Gérer",
+  "hosting_list_renew": "Renouveler",
+  "hosting_list_change_offer": "Changer d'offre",
+  "hosting_list_terminate": "Résilier",
+  "hosting_list_pagination": "{start}-{end} sur {total} hébergements"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Tri par défaut : nom croissant
+- Recherche sur nom du service
+- "Expire bientôt" = moins de 30 jours
+- Click sur nom = accès dashboard

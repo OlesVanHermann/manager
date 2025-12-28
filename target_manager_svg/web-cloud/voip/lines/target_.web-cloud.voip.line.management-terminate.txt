@@ -1,0 +1,140 @@
+# Cahier des Charges : telecom/line - Resilier la ligne
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de resiliation definitive d'une ligne VoIP.
+
+### Objectif fonctionnel
+- Resilier une ligne
+- Indiquer le motif de resiliation
+- Confirmer la suppression
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec alerte danger + formulaire
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour a la gestion |
+| Titre | Resilier la ligne |
+
+### Alerte danger
+| Element | Description |
+|---------|-------------|
+| Type | Danger (fond rouge) |
+| Icone | ⚠ |
+| Titre | Attention |
+| Message | La resiliation est definitive. Vous perdrez votre numero. |
+
+### Zone ligne concernee
+| Element | Description |
+|---------|-------------|
+| Label | Ligne concernee |
+| Valeur | +33 1 23 45 67 89 (fond gris) |
+
+### Select motif
+| Element | Description |
+|---------|-------------|
+| Label | Motif de resiliation * |
+| Type | Dropdown |
+| Placeholder | Selectionnez un motif... |
+
+### Options motif (dropdown)
+| Option |
+|--------|
+| Je n'ai plus besoin du service |
+| Le prix est trop eleve |
+| Je passe a la concurrence |
+| Autre raison |
+
+### Zone commentaires
+| Element | Description |
+|---------|-------------|
+| Label | Commentaires (optionnel) |
+| Type | Textarea |
+| Placeholder | Precision sur votre demande... |
+
+### Checkbox confirmation
+| Element | Description |
+|---------|-------------|
+| Type | Checkbox obligatoire |
+| Label | Je confirme vouloir resilier cette ligne et comprends que cette action est irreversible. |
+
+### Boutons actions
+| Bouton | Type | Action |
+|--------|------|--------|
+| Annuler | Secondary | Retour |
+| Confirmer la resiliation | Danger (rouge) | Resilie |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}
+DELETE /telephony/{billingAccount}/line/{serviceName}
+```
+
+### Modele
+```typescript
+interface LineToTerminate {
+  serviceName: string;
+  description: string;
+}
+
+interface TerminationRequest {
+  reason: TerminationReason;
+  comment?: string;
+}
+
+type TerminationReason =
+  | 'no_longer_needed'
+  | 'too_expensive'
+  | 'competitor'
+  | 'other';
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_terminate_title": "Resilier la ligne",
+  "line_terminate_back": "Retour a la gestion",
+  "line_terminate_warning_title": "Attention",
+  "line_terminate_warning_msg": "La resiliation est definitive. Vous perdrez votre numero de telephone.",
+  "line_terminate_form_title": "Formulaire de resiliation",
+  "line_terminate_line": "Ligne concernee",
+  "line_terminate_reason": "Motif de resiliation",
+  "line_terminate_reason_placeholder": "Selectionnez un motif...",
+  "line_terminate_reason_no_need": "Je n'ai plus besoin du service",
+  "line_terminate_reason_expensive": "Le prix est trop eleve",
+  "line_terminate_reason_competitor": "Je passe a la concurrence",
+  "line_terminate_reason_other": "Autre raison",
+  "line_terminate_comment": "Commentaires (optionnel)",
+  "line_terminate_comment_placeholder": "Precision sur votre demande...",
+  "line_terminate_confirm_checkbox": "Je confirme vouloir resilier cette ligne et comprends que cette action est irreversible.",
+  "line_terminate_cancel": "Annuler",
+  "line_terminate_confirm": "Confirmer la resiliation"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Action irreversible
+- Perte definitive du numero
+- Motif obligatoire
+- Checkbox confirmation obligatoire
+- Facturation jusqu'a fin du mois

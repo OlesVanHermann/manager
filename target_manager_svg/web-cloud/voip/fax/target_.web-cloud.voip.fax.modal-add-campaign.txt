@@ -1,0 +1,126 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.fax.modal-add-campaign
+================================================================================
+
+1. IDENTIFICATION
+-----------------
+Chemin     : telecom/fax
+Composant  : Modal ajout campagne fax
+Type       : Modal dialog
+Framework  : AngularJS 1.7.x
+
+2. DESCRIPTION FONCTIONNELLE
+----------------------------
+Modal permettant de creer une nouvelle campagne d envoi de fax en masse.
+L utilisateur peut definir les parametres de la campagne : nom, document PDF,
+qualite, type d envoi (automatique/manuel/programme), et liste des destinataires.
+
+3. STRUCTURE UI
+---------------
++------------------------------------------------------------------+
+| [X] Fermer                                                       |
++------------------------------------------------------------------+
+| Ajouter une nouvelle campagne                                    |
+|                                                                  |
+| Nom de la campagne *                                             |
+| [________________________] (max 24 caracteres)                   |
+|                                                                  |
+| Document a faxer (format pdf) *                                  |
+| [Fichier...] [nom_fichier.pdf]                                   |
+|                                                                  |
+| Qualite d envoi                                                  |
+| [v Normale / Haute / Meilleure]                                  |
+|                                                                  |
+| Type d envoi *                                                   |
+| [v Automatique / Manuel / Programme]                             |
+|                                                                  |
+| (si Programme)                                                   |
+| Date d envoi *          | Heure d envoi                          |
+| [____/__/____] [cal]    | [__:__]                                |
+|                                                                  |
+| Destinataires                                                    |
+| (o) Entrer les destinataires manuellement                        |
+| ( ) Fichier de destinataires (format txt)                        |
+|                                                                  |
+| (si manuel)                                                      |
+| [________________________________________________________]       |
+| |  Liste de numeros separes par virgule, point-virgule   |       |
+| |  ou retour a la ligne. Format: 6 a 17 chiffres (+)     |       |
+| [________________________________________________________]       |
+|                                                                  |
+| (si fichier txt)                                                 |
+| [Fichier...] [recipients.txt]                                    |
+|                                                                  |
++------------------------------------------------------------------+
+| [Annuler]                                    [Valider]           |
++------------------------------------------------------------------+
+
+4. ETATS
+--------
+- Formulaire vide (initial)
+- Chargement (oui-spinner + "Ajout d une campagne de fax...")
+- Succes (tuc-success-drawing-check + "Campagne ajoutee !")
+
+5. CHAMPS FORMULAIRE
+--------------------
+| Champ           | Type      | Requis | Validation               |
+|-----------------|-----------|--------|--------------------------|
+| name            | text      | Oui    | maxlength 24             |
+| uploadedFile    | file      | Oui    | PDF uniquement           |
+| faxQuality      | select    | Oui    | normal/high/best         |
+| sendType        | select    | Oui    | automatic/manual/scheduled|
+| sendDate        | datepicker| Cond.  | Si sendType=scheduled    |
+| sendTime        | timepicker| Non    | Si sendType=scheduled    |
+| recipientsType  | radio     | Oui    | list/document            |
+| recipientsList  | textarea  | Cond.  | Pattern numeros          |
+| recipientsDocFile| file     | Cond.  | TXT uniquement           |
+
+6. VALIDATIONS
+--------------
+- Nom obligatoire, max 24 caracteres
+- Document PDF obligatoire
+- Type d envoi obligatoire
+- Date obligatoire si programme
+- Liste destinataires : pattern numeros (6-17 chiffres, peut commencer par +)
+
+7. ENDPOINTS API
+----------------
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /telephony/{billingAccount}/fax/{serviceName}/campaigns | Liste campagnes |
+| POST | /telephony/{billingAccount}/fax/{serviceName}/campaigns | Creer campagne |
+| POST | /me/document | Upload document PDF |
+
+8. COMPOSANTS UTILISES
+----------------------
+- oui-spinner : Indicateur chargement
+- oui-timepicker : Selection heure
+- tuc-input-file : Upload fichier
+- tuc-success-drawing-check : Animation succes
+- uib-datepicker-popup : Selection date
+
+9. TRADUCTIONS FR
+-----------------
+telephony_service_fax_campaigns_add_campaign_title: "Ajouter une nouvelle campagne"
+telephony_service_fax_campaigns_add_campaign_label_name: "Nom de la campagne"
+telephony_service_fax_campaigns_add_campaign_label_document: "Document a faxer (format pdf)"
+telephony_service_fax_campaigns_add_campaign_label_quality: "Qualite d envoi"
+telephony_service_fax_campaigns_add_campaign_quality_normal: "Normale"
+telephony_service_fax_campaigns_add_campaign_quality_high: "Haute"
+telephony_service_fax_campaigns_add_campaign_quality_best: "Meilleure"
+telephony_service_fax_campaigns_add_campaign_label_send_type: "Type d envoi"
+telephony_service_fax_campaigns_add_campaign_send_type_automatic: "Automatique"
+telephony_service_fax_campaigns_add_campaign_send_type_manual: "Manuel"
+telephony_service_fax_campaigns_add_campaign_send_type_scheduled: "Programme"
+telephony_service_fax_campaigns_add_campaign_label_recipients_list: "Destinataires"
+telephony_service_fax_campaigns_add_campaign_adding: "Ajout d une campagne de fax..."
+telephony_service_fax_campaigns_add_campaign_added: "Campagne ajoutee !"
+
+10. ACTIONS UTILISATEUR
+-----------------------
+- Annuler : Ferme la modal sans sauvegarder
+- Valider : Cree la campagne (disabled si formulaire invalide)
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

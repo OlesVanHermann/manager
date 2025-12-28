@@ -1,0 +1,105 @@
+# Cahier des Charges : web-cloud/zimbra - Parametres compte
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de modification des parametres d'un compte Zimbra.
+
+### Objectif fonctionnel
+- Modifier les informations du compte
+- Changer le mot de passe
+- Acceder aux alias et redirections
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec breadcrumb + sous-onglets + formulaire
+
+---
+
+## 3. COMPOSANTS UI
+
+### Navigation
+| Element | Description |
+|---------|-------------|
+| Breadcrumb | Zimbra > Comptes email > Parametres |
+| Lien retour | Retour vers mes comptes emails |
+| Titre | Modifier le compte contact@exemple.com |
+
+### Sous-onglets
+| Onglet | Description |
+|--------|-------------|
+| Parametres du compte | Actif |
+| Alias | Gestion alias |
+| Redirection | Redirections du compte |
+| Repondeur | Auto-reply |
+
+### Formulaire
+| Champ | Type | Description |
+|-------|------|-------------|
+| Adresse email | Disabled | Non modifiable |
+| Nom | Input | Nom de famille |
+| Prenom | Input | Prenom |
+| Nom a afficher | Input | Display name |
+| Cacher dans annuaire | Checkbox | Hide from GAL |
+| Mot de passe | Password + dice | Optionnel |
+| Forcer changement | Checkbox (coche) | Force reset |
+
+### Exigences mot de passe
+- 10 caracteres minimum
+- 1 chiffre et 1 caractere special
+- 1 lettre majuscule
+
+### Bouton
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Enregistrer |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /zimbra/platform/{platformId}/account/{accountId}
+PUT /zimbra/platform/{platformId}/account/{accountId}
+POST /zimbra/platform/{platformId}/account/{accountId}/changePassword
+```
+
+### Modele
+```typescript
+interface UpdateZimbraAccount {
+  lastName?: string;
+  firstName?: string;
+  displayName?: string;
+  hideFromGAL?: boolean;
+  password?: string;
+  forcePasswordChange?: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "zimbra_settings_title": "Modifier le compte {email}",
+  "zimbra_settings_tab_params": "Parametres du compte",
+  "zimbra_settings_tab_alias": "Alias",
+  "zimbra_settings_tab_redirect": "Redirection",
+  "zimbra_settings_tab_autoreply": "Repondeur",
+  "zimbra_settings_email": "Adresse email",
+  "zimbra_settings_save": "Enregistrer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Email non modifiable
+- Mot de passe optionnel (si non renseigne, pas de changement)
+- Force change = reset obligatoire a la prochaine connexion

@@ -1,0 +1,125 @@
+# old_manager.telecom.carrier-sip.dashboard.txt
+# Cahier des charges - Dashboard Carrier SIP
+# Généré depuis : old_manager_web-cloud_telecom_carrier-sip.tar
+
+---
+
+## 1. RÉSUMÉ EXÉCUTIF
+
+### Périmètre
+Page dashboard d'un trunk Carrier SIP avec informations générales et navigation vers onglets.
+
+### Objectif fonctionnel
+Afficher les informations d'un service Carrier SIP : détails du cluster, paramètres, liens vers CDR et endpoints.
+
+### Utilisateurs cibles
+Clients OVHcloud disposant d'un service Carrier SIP (trunk SIP opérateur).
+
+---
+
+## 2. ARCHITECTURE
+
+### Fichiers sources
+```
+packages/manager/apps/carrier-sip/src/
+├── routing.js                # Route principale + resolvers
+├── app.module.js             # Module Angular
+├── endpoints/
+│   ├── routing.js
+│   └── index.js
+└── cdr/
+    ├── routing.js
+    └── index.js
+
+packages/manager/modules/carrier-sip/src/
+├── VoipCarrierSipLine.class.js   # Classe métier
+├── endpoints/
+└── cdr/
+```
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Route
+| Propriété | Valeur |
+|-----------|--------|
+| State | app |
+| URL | /billingAccount/:billingAccount/carrierSip/:serviceName |
+| Component | carrierSipDashboard |
+
+### Paramètres URL
+| Param | Type | Description |
+|-------|------|-------------|
+| billingAccount | string | Identifiant compte facturation |
+| serviceName | string | Identifiant du trunk SIP |
+
+### Navigation onglets
+| Onglet | State | URL relative |
+|--------|-------|--------------|
+| Dashboard | app | / |
+| Endpoints | app.endpoints | /endpoints |
+| CDR | app.cdrs | /cdr |
+
+---
+
+## 4. COMPOSANTS UI
+
+### Structure page
+| Section | Contenu |
+|---------|---------|
+| Header | Nom du service + navigation onglets |
+| Informations générales | Détails du trunk |
+| Cluster details | Informations cluster SIP |
+| Settings | Paramètres du service |
+
+### Classe métier VoipCarrierSipLine
+```javascript
+class VoipCarrierSipLine {
+  constructor(options) {
+    Object.assign(this, options);
+  }
+  getDisplayedName() {
+    return this.description || this.serviceName;
+  }
+}
+```
+
+---
+
+## 5. APIs & DONNÉES
+
+### Endpoints
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /telephony/{billingAccount}/carrierSip/{serviceName} | Infos trunk |
+| GET | /telephony/{billingAccount}/carrierSip/{serviceName}/clusterDetails | Détails cluster |
+| GET | /telephony/{billingAccount}/carrierSip/{serviceName}/settings | Paramètres |
+| GET | /telephony/{serviceName}/serviceInfos | Infos service |
+
+### Gestion erreur clusterDetails
+Erreurs 404/500 : retourne objet vide (cluster non disponible)
+Autres erreurs : propagées
+
+---
+
+## 6. TRADUCTIONS
+
+Les traductions spécifiques au dashboard ne sont pas dans les fichiers fournis.
+Voir les modules endpoints et cdr pour les traductions disponibles.
+
+---
+
+## 7. RÈGLES MÉTIER
+
+### États
+| État | Comportement |
+|------|--------------|
+| Loading | Spinner pendant chargement resolvers |
+| Cluster indisponible | Affichage partiel (clusterDetails = {}) |
+| Erreur API | Gestion selon type (404/500 ignorés pour cluster) |
+| Succès | Affichage complet dashboard |
+
+### Affichage nom service
+Priorité : description > serviceName

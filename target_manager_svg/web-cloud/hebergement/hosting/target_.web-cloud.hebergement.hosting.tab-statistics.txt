@@ -1,0 +1,111 @@
+# Cahier des Charges : web-cloud/hebergement - Tab Statistiques
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet de visualisation des statistiques de fréquentation.
+
+### Objectif fonctionnel
+- Voir l'aperçu rapide des métriques
+- Accéder aux statistiques détaillées (Urchin/AWStats)
+- Visualiser le trafic
+
+---
+
+## 2. LAYOUT
+
+### Structure message info + 4 KPI cards + graphique
+
+---
+
+## 3. COMPOSANTS UI
+
+### Message info
+| Element | Description |
+|---------|-------------|
+| Type | Info (bleu) |
+| Titre | Accédez à vos statistiques détaillées |
+| Description | Les statistiques sont disponibles via Urchin/AWStats |
+| Bouton | Accéder aux statistiques (primary) |
+
+### Cartes KPI (4 colonnes)
+| KPI | Description |
+|-----|-------------|
+| Visiteurs uniques | Nombre + évolution % |
+| Pages vues | Nombre + évolution % |
+| Bande passante | Valeur en Go + évolution % |
+| Erreurs 404 | Nombre + évolution % |
+
+### Indicateurs évolution
+| Couleur | Signification |
+|---------|---------------|
+| Vert (#10B981) | Évolution positive |
+| Rouge (#DC2626) | Évolution négative |
+
+### Graphique trafic
+| Element | Description |
+|---------|-------------|
+| Titre | Trafic des 7 derniers jours |
+| Type | Bar chart |
+| Axes | Jours de la semaine / Nombre visites |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /hosting/web/{serviceName}/statistics
+GET /hosting/web/{serviceName}/statistics/chart
+```
+
+### Modele
+```typescript
+interface HostingStatistics {
+  period: '30days' | '7days';
+  uniqueVisitors: number;
+  pageViews: number;
+  bandwidth: number;
+  errors404: number;
+  trends: {
+    visitors: number;
+    pageViews: number;
+    bandwidth: number;
+    errors: number;
+  };
+}
+
+interface StatisticsChart {
+  labels: string[];
+  values: number[];
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "hosting_stats_title": "Statistiques",
+  "hosting_stats_info": "Accédez à vos statistiques détaillées",
+  "hosting_stats_info_desc": "Les statistiques de votre hébergement sont disponibles via l'interface Urchin/AWStats",
+  "hosting_stats_access": "Accéder aux statistiques",
+  "hosting_stats_overview": "Aperçu rapide (30 derniers jours)",
+  "hosting_stats_visitors": "Visiteurs uniques",
+  "hosting_stats_pageviews": "Pages vues",
+  "hosting_stats_bandwidth": "Bande passante",
+  "hosting_stats_errors": "Erreurs 404",
+  "hosting_stats_vs_last": "vs mois dernier",
+  "hosting_stats_chart": "Trafic des 7 derniers jours"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Statistiques mises à jour quotidiennement
+- Urchin/AWStats = interface externe
+- Données conservées 12 mois
+- Évolution calculée vs période précédente

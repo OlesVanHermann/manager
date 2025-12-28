@@ -1,0 +1,61 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.fax.modal-terminate
+================================================================================
+Page : Resiliation ligne/fax
+NAV1 : telecom
+NAV2 : fax / line
+================================================================================
+
+## 1. RESUME EXECUTIF
+
+Formulaire resiliation ligne telephonique ou fax. Selection motif, details
+optionnels, soumission. Effective prochaine facturation, annulable.
+
+--------------------------------------------------------------------------------
+## 2. ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Fichiers : line/management/terminate/terminate.controller.js, terminate.html
+Sous-module : cancel/ (annulation)
+
+--------------------------------------------------------------------------------
+## 3. NAVIGATION
+--------------------------------------------------------------------------------
+
+Route : telecom.telephony.billingAccount.line.dashboard.management.terminate
+Sous-route : .cancel
+
+--------------------------------------------------------------------------------
+## 4. COMPOSANTS UI
+--------------------------------------------------------------------------------
+
+- Select : Motif resiliation (required)
+- Textarea : Details (si missingOptions ou other)
+- Info : Telephone associe si present
+- Bouton : Resilier + Bulk action
+
+--------------------------------------------------------------------------------
+## 5. APIs
+--------------------------------------------------------------------------------
+
+GET /telephony.json -> models['telephony.TerminationReasonEnum'].enum
+
+DELETE /telephony/{billingAccount}/service/{serviceName}
+  Params : { reason, details }
+
+Motifs : addresseMove, billingDifficulties, cessationOfActivity, missingOptions,
+moveToCompetitor, other, plugAndPhoneDifficulties, technicalDifficulties
+
+--------------------------------------------------------------------------------
+## 6. REGLES METIER
+--------------------------------------------------------------------------------
+
+Details obligatoires si : missingOptions, other
+Telephone : avertissement si associe
+Effectif : prochaine facturation
+Annulation : possible jusqu'a facturation
+Bulk : lignes SIP/MGCP uniquement
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

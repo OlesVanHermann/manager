@@ -1,0 +1,134 @@
+# Cahier des Charges : web-cloud/email - Comptes email
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des comptes email.
+
+### Objectif fonctionnel
+- Voir la liste des comptes
+- Creer de nouveaux comptes
+- Gerer les quotas et etats
+- Acceder aux actions par compte
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec breadcrumb + bouton + recherche + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Bouton action
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Creer un compte e-mail |
+
+### Champ recherche
+| Element | Description |
+|---------|-------------|
+| Placeholder | Rechercher un compte... |
+
+### Tableau comptes
+| Colonne | Description |
+|---------|-------------|
+| Compte e-mail | Lien bleu cliquable |
+| Description | Texte libre |
+| Quota | Barre progression + Mo/Go |
+| Etat | Badge Active/Suspendu |
+| Spam | Badge Active/Desactive |
+| Actions | Menu ⋮ |
+
+### Barre quota
+| Element | Description |
+|---------|-------------|
+| Couleur normale | Vert (#10B981) |
+| Couleur alerte | Orange (#F59E0B) si >80% |
+| Texte | XXX Mo / Y Go |
+
+### Etats compte
+| Etat | Badge |
+|------|-------|
+| Active | Vert (#DEF7EC) |
+| Suspendu | Gris (#F3F4F6) |
+
+### Menu actions (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Edit account settings |
+| Changer le mot de passe | Reset password |
+| Configurer un repondeur | Setup auto-reply |
+| Creer une redirection | Add forwarding |
+| --- | Separateur |
+| Supprimer | Destructif (rouge) |
+
+### Info compteur
+| Element | Description |
+|---------|-------------|
+| Texte | X comptes e-mail sur Y disponibles |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /email/domain/{domain}/account
+POST /email/domain/{domain}/account
+DELETE /email/domain/{domain}/account/{name}
+PUT /email/domain/{domain}/account/{name}
+POST /email/domain/{domain}/account/{name}/changePassword
+GET /email/domain/{domain}/account/{name}/quota
+```
+
+### Modele
+```typescript
+interface EmailAccount {
+  accountName: string;
+  email: string;
+  description?: string;
+  quota: number;
+  usedQuota: number;
+  state: 'ok' | 'suspended' | 'blocked';
+  spamDetector: boolean;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "email_accounts_title": "Comptes e-mail",
+  "email_accounts_create": "Creer un compte e-mail",
+  "email_accounts_search": "Rechercher un compte...",
+  "email_accounts_col_email": "Compte e-mail",
+  "email_accounts_col_desc": "Description",
+  "email_accounts_col_quota": "Quota",
+  "email_accounts_col_state": "Etat",
+  "email_accounts_col_spam": "Spam",
+  "email_accounts_state_active": "Active",
+  "email_accounts_state_suspended": "Suspendu",
+  "email_accounts_spam_enabled": "Active",
+  "email_accounts_spam_disabled": "Desactive",
+  "email_accounts_action_edit": "Modifier",
+  "email_accounts_action_password": "Changer le mot de passe",
+  "email_accounts_action_responder": "Configurer un repondeur",
+  "email_accounts_action_redirect": "Creer une redirection",
+  "email_accounts_action_delete": "Supprimer",
+  "email_accounts_count": "{current} comptes e-mail sur {max} disponibles"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- 1 Go par compte (variable selon offre)
+- Spam detector activable par compte
+- Recherche par nom de compte
+- Suspension = acces bloque temporairement

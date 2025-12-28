@@ -1,0 +1,121 @@
+# Cahier des Charges : telecom/telephony - Commander numero non geographique
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Formulaire de commande d'un numero non geographique (09).
+
+### Objectif fonctionnel
+- Commander un ou plusieurs numeros 09
+- Choisir entre numero standard ou personnalise
+- Renseigner les informations du titulaire
+- Valider et passer commande
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec cartes formulaire verticales
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | <- Retour aux commandes |
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Commander un numero non geographique |
+
+### Carte Quantite
+| Champ | Type | Options |
+|-------|------|---------|
+| Nombre de numeros | Select | 1 numero, 2 numeros, ..., 10 numeros |
+| Type d'offre | Radio | Numero alias (redirection), SDA uniquement |
+
+### Carte Choix du numero
+| Option | Description |
+|--------|-------------|
+| Numero standard | 09 XX XX XX XX (attribue automatiquement) |
+| Numero personnalise | Choix du suffixe |
+
+| Element | Description |
+|---------|-------------|
+| Numero attribue | +33 9 72 XX XX XX (preview) |
+
+### Carte Adresse du titulaire
+| Champ | Type | Description |
+|-------|------|-------------|
+| Nom / Raison sociale | Input | Nom ou entreprise |
+| Adresse | Input | Adresse complete avec ville et CP |
+
+### Carte Validation
+| Element | Description |
+|---------|-------------|
+| Checkbox | Je renonce au droit de retractation et j'accepte les conditions generales |
+| Bouton | Commander (0,00 EUR HT/mois) |
+
+---
+
+## 4. APIS & DONNEES
+
+### Caracteristiques 09
+| Propriete | Valeur |
+|-----------|--------|
+| Prefixe | 09 |
+| Type | Non geographique |
+| Cout appel | Inclus dans forfaits |
+| Zone | France entiere |
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/number/nongeo/prices
+    Response: { standard, premium }
+
+POST /telephony/{billingAccount}/number/nongeo/order
+    Body: {
+      quantity: 1,
+      type: "alias",
+      address: { name, fullAddress },
+      acceptRetractation: true
+    }
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_order_nongeo_title": "Commander un numero non geographique",
+  "telephony_order_nongeo_back": "Retour aux commandes",
+  "telephony_order_nongeo_quantity": "Quantite",
+  "telephony_order_nongeo_count": "Nombre de numeros",
+  "telephony_order_nongeo_type_alias": "Numero alias (redirection)",
+  "telephony_order_nongeo_type_sda": "SDA uniquement",
+  "telephony_order_nongeo_choice": "Choix du numero",
+  "telephony_order_nongeo_standard": "Numero standard (09 XX XX XX XX)",
+  "telephony_order_nongeo_custom": "Numero personnalise",
+  "telephony_order_nongeo_assigned": "Numero attribue :",
+  "telephony_order_nongeo_address": "Adresse du titulaire",
+  "telephony_order_nongeo_name": "Nom / Raison sociale",
+  "telephony_order_nongeo_fulladdress": "Adresse",
+  "telephony_order_nongeo_validation": "Validation",
+  "telephony_order_nongeo_cgv": "Je renonce au droit de retractation et j'accepte les conditions generales",
+  "telephony_order_nongeo_submit": "Commander"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Pas de contrainte geographique
+- Numero portable sur toute la France
+- Tarification identique partout
+- Ideal pour entreprises multi-sites
+- CGV et retractation obligatoires

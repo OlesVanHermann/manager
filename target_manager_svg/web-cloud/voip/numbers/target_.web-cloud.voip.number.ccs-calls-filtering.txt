@@ -1,0 +1,185 @@
+# Cahier des Charges : telecom/alias - CCS Filtrage des appels
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de configuration du filtrage des appels pour le Contact Center Solution.
+
+### Objectif fonctionnel
+- Configurer le rejet des appels anonymes
+- Gerer les listes noires et blanches
+- Ajouter/supprimer des numeros filtres
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec 3 sections : config filtres + config listes + detail listes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Titre | Filtrage des appels |
+| Sous-titre | Gerez les appels entrants avec des listes noires et blanches |
+
+### Section 1 - Configuration des filtres
+| Element | Description |
+|---------|-------------|
+| Titre | Configuration des filtres (souligne) |
+
+### Toggle appels anonymes
+| Element | Description |
+|---------|-------------|
+| Label | Rejet des appels anonymes |
+| Helper | Rejeter automatiquement les appels masques |
+| Options | Active / Desactive (toggle group) |
+
+### Radio activation filtrage
+| Option | Description |
+|--------|-------------|
+| Desactive | Pas de filtrage |
+| Liste noire | Bloquer les numeros |
+| Liste blanche | Autoriser uniquement |
+
+### Section 2 - Configuration des listes
+| Element | Description |
+|---------|-------------|
+| Titre | Configuration des listes (souligne) |
+
+### Select type de liste
+| Element | Description |
+|---------|-------------|
+| Label | Type de liste |
+| Options | Liste noire / Liste blanche |
+
+### Select aide saisie
+| Element | Description |
+|---------|-------------|
+| Label | Aide a la saisie |
+| Options | Numero complet / Prefixe |
+
+### Input ajouter numero
+| Element | Description |
+|---------|-------------|
+| Label | Ajouter un numero |
+| Placeholder | 00... |
+
+### Section 3 - Detail des listes
+| Element | Description |
+|---------|-------------|
+| Titre | Detail des listes (souligne) |
+
+### Menu actions
+| Element | Description |
+|---------|-------------|
+| Type | Dropdown |
+| Texte | Actions ▼ |
+| Info | X elements selectionnes |
+
+### Tableau numeros
+| Colonne | Description |
+|---------|-------------|
+| Checkbox | Selection multiple |
+| Numero | Format E.164 |
+| Type | Numero complet / Prefixe |
+| Liste | Badge (noire=rouge, blanche=vert) |
+
+### Badges liste
+| Liste | Style |
+|-------|-------|
+| Liste noire | Fond rouge clair |
+| Liste blanche | Fond vert clair |
+
+### Barre footer
+| Element | Description |
+|---------|-------------|
+| Fond | Gris fonce |
+| Texte | Enregistrer les modifications ? |
+| Lien | Appliquer a plusieurs numeros... |
+| Boutons | Appliquer / Annuler |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/number/{serviceName}/ccs/filtering
+PUT /telephony/{billingAccount}/number/{serviceName}/ccs/filtering
+GET /telephony/{billingAccount}/number/{serviceName}/ccs/filtering/list
+POST /telephony/{billingAccount}/number/{serviceName}/ccs/filtering/list
+DELETE /telephony/{billingAccount}/number/{serviceName}/ccs/filtering/list/{id}
+```
+
+### Modele
+```typescript
+interface FilteringConfig {
+  rejectAnonymous: boolean;
+  filteringType: 'disabled' | 'blacklist' | 'whitelist';
+}
+
+interface FilteredNumber {
+  id: string;
+  number: string;
+  type: 'full' | 'prefix';
+  list: 'black' | 'white';
+}
+
+interface FilteringListEntry {
+  number: string;
+  matchType: 'full' | 'prefix';
+  listType: 'incoming_black' | 'incoming_white';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_ccs_filter_title": "Filtrage des appels",
+  "alias_ccs_filter_subtitle": "Gerez les appels entrants avec des listes noires et blanches",
+  "alias_ccs_filter_config_title": "Configuration des filtres",
+  "alias_ccs_filter_reject_anon": "Rejet des appels anonymes",
+  "alias_ccs_filter_reject_anon_help": "Rejeter automatiquement les appels masques",
+  "alias_ccs_filter_active": "Active",
+  "alias_ccs_filter_inactive": "Desactive",
+  "alias_ccs_filter_activation": "Activation du filtrage",
+  "alias_ccs_filter_disabled": "Desactive",
+  "alias_ccs_filter_blacklist": "Liste noire (bloquer les numeros)",
+  "alias_ccs_filter_whitelist": "Liste blanche (autoriser uniquement)",
+  "alias_ccs_filter_lists_title": "Configuration des listes",
+  "alias_ccs_filter_list_type": "Type de liste",
+  "alias_ccs_filter_list_black": "Liste noire (appels entrants)",
+  "alias_ccs_filter_list_white": "Liste blanche (appels entrants)",
+  "alias_ccs_filter_input_help": "Aide a la saisie",
+  "alias_ccs_filter_full": "Numero complet",
+  "alias_ccs_filter_prefix": "Prefixe",
+  "alias_ccs_filter_add": "Ajouter un numero",
+  "alias_ccs_filter_detail_title": "Detail des listes",
+  "alias_ccs_filter_actions": "Actions",
+  "alias_ccs_filter_selected": "elements selectionnes",
+  "alias_ccs_filter_col_number": "Numero",
+  "alias_ccs_filter_col_type": "Type",
+  "alias_ccs_filter_col_list": "Liste",
+  "alias_ccs_filter_save_prompt": "Enregistrer les modifications ?",
+  "alias_ccs_filter_apply_multi": "Appliquer a plusieurs numeros...",
+  "alias_ccs_filter_apply": "Appliquer",
+  "alias_ccs_filter_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Liste noire = numeros bloques
+- Liste blanche = seuls numeros autorises
+- Prefixe = debut du numero (ex: 0033)
+- Anonyme = numero masque/inconnu
+- Application multiple possible

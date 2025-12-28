@@ -1,0 +1,124 @@
+# Cahier des Charges : telecom/xdsl - Mon modem
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de configuration et gestion du modem xDSL.
+
+### Objectif fonctionnel
+- Visualiser les infos modem
+- Configurer a distance
+- Gerer les parametres reseau et WiFi
+
+---
+
+## 2. LAYOUT
+
+### Structure avec tuiles configurables
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | Detail du pack |
+
+### Titre + Onglets
+| Element | Description |
+|---------|-------------|
+| Titre | xDSL "xdsl-ab12345-1" |
+| Onglet actif | Mon modem |
+
+### Banniere warning
+| Element | Description |
+|---------|-------------|
+| Type | Warning (fond jaune) |
+| Message | La configuration a distance n'est pas activee ! |
+
+### Section Configuration generale
+| Element | Description |
+|---------|-------------|
+| Titre section | Configuration generale |
+
+### Tuile Modem
+| Champ | Exemple |
+|-------|---------|
+| Modele | Zyxel VMG8924-B10D |
+| Adresse MAC | AA:BB:CC:DD:EE:FF |
+| Numero de serie | S123456789 |
+| Bouton | Echanger mon modem |
+
+### Tuile Configuration a distance
+| Element | Description |
+|---------|-------------|
+| Etat | Toggle On/Off |
+| Description | Activer pour permettre config OVH |
+
+### Section Configuration reseau
+| Tuile | Liens |
+|-------|-------|
+| Reseau | LAN, DHCP, NAT/PAT |
+| Pare-Feu | Toggle + Etat |
+| WiFi | Toggle + Lien configurer |
+
+### Section Configurations avancees
+| Tuile | Description |
+|-------|-------------|
+| Mode Bridge | Toggle On/Off |
+| MTU | Valeur (1492) |
+| DMZ | Toggle On/Off |
+| Firmware | Version + MAJ |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /xdsl/{serviceName}/modem
+    Response: { model, macAddress, serial, remoteConfig, bridgeMode, mtu, dmz, firmware }
+
+PUT /xdsl/{serviceName}/modem
+    Body: { remoteConfig, bridgeMode, mtu, dmzIP }
+
+POST /xdsl/{serviceName}/modem/reset
+POST /xdsl/{serviceName}/modem/firmware
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "xdsl_modem_title": "Mon modem",
+  "xdsl_modem_remote_disabled": "La configuration a distance n'est pas activee pour ce modem !",
+  "xdsl_modem_general": "Configuration generale",
+  "xdsl_modem_info": "Modem",
+  "xdsl_modem_model": "Modele du modem",
+  "xdsl_modem_mac": "Adresse MAC",
+  "xdsl_modem_serial": "Numero de serie",
+  "xdsl_modem_exchange": "Echanger mon modem",
+  "xdsl_modem_remote": "Configuration a distance",
+  "xdsl_modem_network": "Configuration reseau",
+  "xdsl_modem_firewall": "Pare-Feu",
+  "xdsl_modem_wifi": "WiFi",
+  "xdsl_modem_advanced": "Configurations avancees",
+  "xdsl_modem_bridge": "Mode Bridge",
+  "xdsl_modem_mtu": "MTU",
+  "xdsl_modem_dmz": "DMZ",
+  "xdsl_modem_firmware": "Firmware",
+  "xdsl_modem_update": "Mettre a jour"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Config a distance requise pour modifs
+- Bridge desactive WiFi et NAT
+- MAJ firmware via tache planifiee
+- Echange modem via support

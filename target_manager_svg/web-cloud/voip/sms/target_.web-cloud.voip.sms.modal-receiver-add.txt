@@ -1,0 +1,122 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.sms.modal-receiver-add
+================================================================================
+
+1. IDENTIFICATION
+-----------------
+Chemin     : telecom/sms
+Composant  : Modal ajout fichier destinataires
+Type       : Modal formulaire
+Framework  : AngularJS 1.7.x
+
+2. DESCRIPTION FONCTIONNELLE
+----------------------------
+Modal permettant d ajouter une liste de destinataires SMS.
+Deux modes : upload de fichier (CSV/TXT) ou URL distante.
+
+3. STRUCTURE UI
+---------------
++------------------------------------------------------------------+
+| [X] Fermer                                                       |
++------------------------------------------------------------------+
+| Ajouter un fichier de destinataires                              |
+|                                                                  |
+| Mode d ajout :                                                   |
+| (o) Via un fichier                                               |
+| ( ) Via une URL                                                  |
+|                                                                  |
+| (si fichier)                                                     |
+| Nom *                                                            |
+| [________________________________] (max 40 caracteres)           |
+|                                                                  |
+| Fichier de destinataires                                         |
+| [Fichier...] [contacts.csv]                                      |
+|                                                                  |
+| (si URL)                                                         |
+| URL *                                                            |
+| [https://example.com/contacts.csv]                               |
+|                                                                  |
+| [ ] Re-telecharger le fichier avant l envoi de SMS               |
+|                                                                  |
+| [i] Format attendu : CSV avec colonne "number"                   |
+|     Maximum 9 listes de contacts par compte                      |
+|                                                                  |
++------------------------------------------------------------------+
+| [Annuler]                                    [Ajouter]           |
++------------------------------------------------------------------+
+
+Etat ajout :
++------------------------------------------------------------------+
+|                        [Spinner]                                 |
+|           Ajout de la liste des destinataires...                 |
++------------------------------------------------------------------+
+
+Etat succes :
++------------------------------------------------------------------+
+|                     [Check anime]                                |
+|           Liste des destinataires ajoutee !                      |
++------------------------------------------------------------------+
+
+4. MODES D AJOUT
+----------------
+| Mode     | Description                              |
+|----------|------------------------------------------|
+| document | Upload fichier local (CSV/TXT)           |
+| url      | Telechargement depuis URL distante       |
+
+5. CHAMPS FORMULAIRE
+--------------------
+| Champ        | Type     | Requis | Validation                   |
+|--------------|----------|--------|------------------------------|
+| description  | text     | Oui    | Max 40 caracteres            |
+| file         | file     | Cond.  | Si mode=document             |
+| url          | text     | Cond.  | Si mode=url, format URL      |
+| autoUpdate   | checkbox | Non    | Re-telechargement automatique|
+
+6. VALIDATIONS
+--------------
+- Nom obligatoire, max 40 caracteres
+- Fichier : format CSV ou TXT
+- URL : doit commencer par http:// ou https://
+- Maximum 9 listes par compte
+
+7. FORMAT FICHIER ATTENDU
+-------------------------
+- CSV avec colonne "number" obligatoire
+- Numeros au format international (+33...)
+- Separateur : virgule ou point-virgule
+
+8. ENDPOINTS API
+----------------
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | /sms/{serviceName}/receivers | Creer liste |
+| POST | /me/document | Upload fichier |
+
+9. COMPOSANTS UTILISES
+----------------------
+- oui-spinner : Chargement
+- tuc-input-file : Upload fichier
+- tuc-success-drawing-check : Animation succes
+
+10. TRADUCTIONS FR
+------------------
+sms_receivers_add_receiver: "Ajouter un fichier de destinataires"
+sms_receivers_add_mode_document: "Via un fichier"
+sms_receivers_add_mode_url: "Via une URL"
+sms_receivers_add_description_label: "Nom :"
+sms_receivers_add_file_label: "Fichier de destinataires"
+sms_receivers_add_url_label: "URL :"
+sms_receivers_add_auto_update_label: "Re-telecharger le fichier avant l envoi de SMS"
+sms_receivers_add_receiver_adding: "Ajout de la liste des destinataires..."
+sms_receivers_add_receiver_added: "Liste des destinataires ajoutee !"
+sms_receivers_add_receiver_slot_is_full: "Le nombre maximum de listes est atteint."
+
+11. ACTIONS UTILISATEUR
+-----------------------
+- Annuler : Ferme modal sans action
+- Ajouter : Cree la liste de destinataires
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

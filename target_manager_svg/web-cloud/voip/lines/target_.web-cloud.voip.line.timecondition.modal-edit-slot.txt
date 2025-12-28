@@ -1,0 +1,114 @@
+# Cahier des Charges : telecom/line - Edition creneau hors plages
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de configuration du comportement par defaut en dehors des plages horaires.
+
+### Objectif fonctionnel
+- Definir la redirection hors horaires
+- Choisir le type de destination
+- Selectionner le numero cible
+
+---
+
+## 2. LAYOUT
+
+### Modal 480x700 avec options radio
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete modal
+| Element | Description |
+|---------|-------------|
+| Pastille couleur | Carre rouge (slot-unavailable) |
+| Titre | Creneaux hors plages horaires |
+
+### Info banner
+| Element | Description |
+|---------|-------------|
+| Type | Information (fond bleu pale) |
+| Message | Comportement par defaut a adopter en dehors des plages horaires |
+
+### Champ redirection (cliquable)
+| Element | Description |
+|---------|-------------|
+| Label | Rediriger l'appel vers |
+| Valeur | Un repondeur |
+| Indicateur | Fleche > |
+
+### Options radio
+| Option | Description | Selection |
+|--------|-------------|-----------|
+| Un repondeur | Renvoyer l'appel vers le repondeur sans faire sonner | Selectionnee |
+| Un numero externe | Renvoyer vers un numero externe (hors OVHcloud) | Non |
+| Une ligne OVHcloud | Renvoyer vers une ligne ou numero OVHcloud | Non |
+
+### Champ numero cible (cliquable)
+| Element | Description |
+|---------|-------------|
+| Label | Numero vers lequel rediriger |
+| Valeur | Ma ligne bureau |
+| Detail | Ligne SIP - +33 1 23 45 67 89 |
+| Indicateur | Fleche > |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Modifier | Primary | Sauvegarde |
+| Annuler | Default | Ferme |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/timeCondition/slots/unavailable
+    Response: { type, number, voicemail }
+
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition/slots/unavailable
+    Body: {
+      type: "voicemail" | "external" | "ovhLine",
+      number: string
+    }
+```
+
+### Types de redirection
+| Type | Description |
+|------|-------------|
+| voicemail | Vers repondeur |
+| external | Vers numero externe |
+| ovhLine | Vers ligne OVHcloud |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_timecondition_slot_unavailable_title": "Creneaux hors plages horaires",
+  "telephony_line_timecondition_slot_unavailable_info": "Comportement par defaut a adopter en dehors des plages horaires.",
+  "telephony_line_timecondition_slot_redirect_to": "Rediriger l'appel vers",
+  "telephony_line_timecondition_slot_type_voicemail": "Un repondeur",
+  "telephony_line_timecondition_slot_type_voicemail_desc": "Permet de renvoyer l'appel vers le repondeur de l'une de vos lignes (sans la faire sonner).",
+  "telephony_line_timecondition_slot_type_external": "Un numero externe",
+  "telephony_line_timecondition_slot_type_external_desc": "Permet de renvoyer l'appel vers un numero externe (hors OVHcloud).",
+  "telephony_line_timecondition_slot_type_ovh": "Une ligne ou un numero OVHcloud",
+  "telephony_line_timecondition_slot_type_ovh_desc": "Permet de renvoyer l'appel vers l'une de vos lignes OVHcloud.",
+  "telephony_line_timecondition_slot_number": "Numero vers lequel rediriger",
+  "telephony_line_timecondition_slot_modify": "Modifier",
+  "telephony_line_timecondition_slot_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Configuration obligatoire si plages definies
+- Repondeur par defaut
+- Verification numero valide
+- Application immediate

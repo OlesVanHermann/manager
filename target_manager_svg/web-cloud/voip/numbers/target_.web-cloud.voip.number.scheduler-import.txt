@@ -1,0 +1,153 @@
+# Cahier des Charges : telecom/scheduler - Importer calendrier
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal d'import d'un fichier ICS dans le calendrier des plages horaires.
+
+### Objectif fonctionnel
+- Importer un fichier calendrier externe
+- Supporter le drag-drop
+- Ajouter les evenements au calendrier
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec zone drop + info + boutons
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal
+| Element | Description |
+|---------|-------------|
+| Largeur | 600px |
+| Hauteur | 380px |
+| Bouton fermer | × en haut droite |
+
+### Titre modal
+| Element | Description |
+|---------|-------------|
+| Texte | Importer un calendrier |
+
+### Description
+| Element | Description |
+|---------|-------------|
+| Texte | Importez un fichier ICS pour ajouter des evenements... |
+
+### Zone drag-drop
+| Element | Description |
+|---------|-------------|
+| Taille | 540x150px |
+| Bordure | Pointillee grise |
+| Fond | Gris clair (#F9FAFB) |
+| Icone | Dossier (📁) gris |
+| Texte principal | Glissez-deposez votre fichier ICS ici |
+| Texte secondaire | ou |
+| Bouton | Parcourir... |
+
+### Bouton parcourir
+| Element | Description |
+|---------|-------------|
+| Type | Secondary |
+| Texte | Parcourir... |
+| Action | Ouvre selecteur fichier |
+
+### Zone information
+| Element | Description |
+|---------|-------------|
+| Type | Info box (fond bleu clair) |
+| Icone | ⓘ |
+| Texte | Formats acceptes : .ics, .ical. Taille maximale : 5 Mo |
+
+### Etat fichier selectionne
+| Element | Description |
+|---------|-------------|
+| Icone | Fichier |
+| Nom | filename.ics |
+| Taille | XX Ko |
+| Bouton supprimer | × |
+
+### Footer modal
+| Element | Description |
+|---------|-------------|
+| Bouton Annuler | Secondary, ferme modal |
+| Bouton Importer | Primary (disabled si pas de fichier) |
+
+### Etats bouton Importer
+| Etat | Apparence |
+|------|-----------|
+| Sans fichier | Gris disabled |
+| Fichier selectionne | Bleu actif |
+| En cours | Spinner + "Import en cours..." |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+POST /telephony/{billingAccount}/timeCondition/{serviceName}/import
+Content-Type: multipart/form-data
+```
+
+### Modele
+```typescript
+interface ImportFile {
+  file: File;
+  filename: string;
+  size: number;
+}
+
+interface ImportResult {
+  imported: number;
+  skipped: number;
+  errors: ImportError[];
+}
+
+interface ImportError {
+  line: number;
+  event?: string;
+  reason: string;
+}
+
+const ACCEPTED_FORMATS = ['.ics', '.ical'];
+const MAX_SIZE_MB = 5;
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telecom_import_title": "Importer un calendrier",
+  "telecom_import_desc": "Importez un fichier ICS pour ajouter des evenements au calendrier.",
+  "telecom_import_dropzone": "Glissez-deposez votre fichier ICS ici",
+  "telecom_import_or": "ou",
+  "telecom_import_browse": "Parcourir...",
+  "telecom_import_info": "Formats acceptes : .ics, .ical. Taille maximale : 5 Mo",
+  "telecom_import_submit": "Importer",
+  "telecom_import_cancel": "Annuler",
+  "telecom_import_loading": "Import en cours...",
+  "telecom_import_success": "{count} evenements importes",
+  "telecom_import_error_format": "Format de fichier non supporte",
+  "telecom_import_error_size": "Fichier trop volumineux (max 5 Mo)",
+  "telecom_import_error_parse": "Erreur lors de la lecture du fichier"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Formats acceptes : .ics, .ical
+- Taille max : 5 Mo
+- Drag-drop ou selection fichier
+- Validation format avant envoi
+- Evenements existants = non dupliques
+- Rapport d'import avec compteurs
+- Erreurs detaillees si echec partiel
+

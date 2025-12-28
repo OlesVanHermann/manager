@@ -1,0 +1,90 @@
+# Cahier des Charges : telecom/alias - Modal Niveau sonore participant
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de gestion du niveau sonore d'un participant conference.
+
+### Objectif fonctionnel
+- Ajuster le niveau sonore (0-4)
+- Gerer le mute/unmute
+- Exclure le participant
+- Rendre sourd (ne peut plus entendre)
+
+---
+
+## 2. LAYOUT
+
+### Structure popover dans menu d'action ligne tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Menu actions participant
+| Action | Icone | Description |
+|--------|-------|-------------|
+| Exclure | 🚫 | Kick participant |
+| Rendre sourd | 🔇 | Ne peut plus entendre |
+| Niveau sonore | 🎤 | Ouvre sous-menu |
+
+### Controle niveau sonore
+| Element | Description |
+|---------|-------------|
+| Label | Niveau sonore |
+| Bouton - | Diminuer |
+| Input | Affiche valeur |
+| Bouton + | Augmenter |
+| Help | (0-4) |
+
+### Footer sous-menu
+| Bouton | Type | Action |
+|--------|------|--------|
+| Annuler | Default | Ferme |
+| Valider | Primary | Applique |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+POST /telephony/{billingAccount}/conference/{serviceName}/participants/{participantId}/kick
+POST /telephony/{billingAccount}/conference/{serviceName}/participants/{participantId}/deaf
+POST /telephony/{billingAccount}/conference/{serviceName}/participants/{participantId}/mute
+PUT /telephony/{billingAccount}/conference/{serviceName}/participants/{participantId}/energy
+```
+
+### Parametres
+```typescript
+interface ParticipantAction {
+  participantId: number;
+  energy?: number; // 0-4
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_participant_kick": "Exclure le participant",
+  "alias_participant_deaf": "Rendre sourd (ne peut plus entendre)",
+  "alias_participant_sound": "Gerer le niveau sonore",
+  "alias_participant_sound_level": "Niveau sonore",
+  "alias_participant_sound_help": "(0-4)",
+  "alias_participant_sound_cancel": "Annuler",
+  "alias_participant_sound_apply": "Valider"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Niveau 0: minimum (presque mute)
+- Niveau 4: maximum
+- Deaf = n'entend plus mais peut parler
+- Mute = ne peut plus parler mais entend
+- Kick = deconnexion immediate

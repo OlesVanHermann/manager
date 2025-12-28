@@ -1,0 +1,115 @@
+# Cahier des Charges : telecom/line - Erreur chevauchement
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Affichage d'erreur lors de la creation d'une plage horaire en conflit.
+
+### Objectif fonctionnel
+- Detecter les conflits de plages
+- Afficher l'erreur clairement
+- Proposer une suggestion de correction
+
+---
+
+## 2. LAYOUT
+
+### Modal avec message d'erreur
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete modal
+| Element | Description |
+|---------|-------------|
+| Titre | Ajouter une plage horaire |
+
+### Champs formulaire
+| Champ | Valeur |
+|-------|--------|
+| Jour de la semaine | Lundi |
+| Repeter | Tous les lundis > |
+| Rediriger vers | Creneau 1 > |
+
+### Champs horaires (en erreur)
+| Element | Description |
+|---------|-------------|
+| Input De | 09:00 (bordure rouge) |
+| Input A | 12:00 (bordure rouge) |
+| Style erreur | stroke: #DC2626 |
+
+### Message d'erreur
+| Element | Description |
+|---------|-------------|
+| Type | Alerte erreur (fond rouge pale) |
+| Icone | Triangle warning |
+| Message | Cette plage horaire est en conflit avec une autre ! |
+
+### Details conflit
+| Element | Description |
+|---------|-------------|
+| Titre | CONFLIT DETECTE AVEC : |
+| Carte conflit | Fond rose avec bordure |
+| Info conflit | Lundi 09:00 - 11:00 |
+| Details | Creneau 1 - Redirection vers +33 1 23 45 67 89 |
+
+### Suggestion
+| Element | Description |
+|---------|-------------|
+| Type | Info box (fond bleu pale) |
+| Icone | Ampoule |
+| Message | Suggestion : Modifiez l'heure de debut a 11:00 ou plus tard |
+
+### Boutons (footer)
+| Bouton | Type | Etat |
+|--------|------|------|
+| Ajouter | Primary | Desactive (gris) |
+| Annuler | Default | Actif |
+
+---
+
+## 4. APIS & DONNEES
+
+### Validation cote client
+```javascript
+// Detecte chevauchement avant soumission
+function hasOverlap(newCondition, existingConditions) {
+  return existingConditions.some(c =>
+    c.day === newCondition.day &&
+    !(newCondition.timeTo <= c.timeFrom || newCondition.timeFrom >= c.timeTo)
+  );
+}
+```
+
+### Reponse API erreur
+```
+POST /telephony/{billingAccount}/line/{serviceName}/timeCondition
+    Status: 409 Conflict
+    Response: {
+      error: "OVERLAP",
+      conflictWith: { id, day, timeFrom, timeTo, slot }
+    }
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_timecondition_overlap_error": "Cette plage horaire est en conflit avec une autre !",
+  "telephony_line_timecondition_overlap_conflict": "CONFLIT DETECTE AVEC :",
+  "telephony_line_timecondition_overlap_suggestion": "Suggestion : Modifiez l'heure de debut a {{time}} ou plus tard.",
+  "telephony_line_timecondition_overlap_slot_info": "{{slot}} - Redirection vers {{number}}"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Chevauchement interdit
+- Validation temps reel
+- Bouton desactive si erreur
+- Suggestion automatique de correction

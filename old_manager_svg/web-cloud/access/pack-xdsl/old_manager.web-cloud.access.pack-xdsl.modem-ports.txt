@@ -1,0 +1,59 @@
+# Cahier des Charges : web-cloud/access/pack-xdsl - Modem Ports
+
+## 1. VUE D'ENSEMBLE
+- **Écran** : Redirection de ports (NAT) du modem
+- **Objectif** : Configurer les règles NAT/PAT
+- **Contexte** : Exposer des services internes à Internet
+
+## 2. LAYOUT & STRUCTURE
+- Carte blanche avec titre + tooltip
+- Bandeau info (firewall doit être "Normal")
+- Tableau des règles avec édition inline
+- Bouton ajouter règle
+
+## 3. COMPOSANTS UI
+- **OdsCard** : Container principal
+- **OdsMessage** : Info firewall (bleu)
+- **OdsTable** : Liste des règles NAT
+- **OdsInput** : Champs édition
+- **OdsSelect** : Protocole
+- **OdsActionMenu** : Menu ⋮ (Modifier, Supprimer)
+- **OdsButton** : "+ Ajouter une règle"
+
+## 4. BANDEAU INFO
+- Message : "Le firewall doit être configuré sur 'Normal' pour que la redirection de ports fonctionne"
+
+## 5. TABLEAU RÈGLES NAT
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom descriptif (SSH, HTTP, HTTPS) |
+| IP source | IP autorisée ou "-" (toutes) |
+| Port début | Port externe début |
+| Port fin | Port externe fin |
+| Protocole | TCP / UDP / TCP+UDP |
+| Client interne | IP destination interne |
+| Port interne ⓘ | Port interne début |
+| Port fin int. | Port interne fin |
+| Actions | Menu ⋮ |
+
+## 6. MODE ÉDITION
+- Fond bleu clair (#F0F9FF)
+- Tous champs en input
+- Boutons ✓ valider, ✕ annuler
+
+## 7. MENU ACTIONS
+- Modifier → Mode édition
+- Supprimer (rouge) → Supprime règle
+
+## 8. EXEMPLES RÈGLES
+| Nom | Ports | Protocole | Client | Port interne |
+|-----|-------|-----------|--------|--------------|
+| SSH | 22 | TCP | 192.168.1.10 | 22 |
+| HTTP | 80 | TCP | 192.168.1.20 | 80 |
+| HTTPS | 443 | TCP | 192.168.1.20 | 443 |
+
+## 9. APIS & ENDPOINTS
+- GET /xdsl/{serviceName}/modem/portMappings : Liste règles
+- POST /xdsl/{serviceName}/modem/portMappings : Ajouter
+- PUT /xdsl/{serviceName}/modem/portMappings/{id} : Modifier
+- DELETE /xdsl/{serviceName}/modem/portMappings/{id} : Supprimer

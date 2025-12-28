@@ -1,0 +1,125 @@
+# Cahier des Charges : telecom/line - Creneau ligne OVHcloud
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration d'un creneau avec redirection vers une ligne OVHcloud.
+
+### Objectif fonctionnel
+- Selectionner le type "ligne OVHcloud"
+- Choisir parmi les lignes disponibles
+- Rediriger vers une ligne du parc
+
+---
+
+## 2. LAYOUT
+
+### Modal 480x700 avec selecteur de ligne
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete modal
+| Element | Description |
+|---------|-------------|
+| Pastille couleur | Rose (#FCE7F3) pour creneau 3 |
+| Titre | Configuration du creneau 3 |
+
+### Info banner
+| Element | Description |
+|---------|-------------|
+| Type | Information (fond bleu) |
+| Message | Comportement a adopter pour les plages horaires utilisant le creneau 3 |
+
+### Selecteur type (cliquable)
+| Element | Description |
+|---------|-------------|
+| Label | Rediriger l'appel vers |
+| Valeur | Une ligne ou un numero OVHcloud |
+| Indicateur | Fleche > |
+
+### Section type de redirection
+| Element | Description |
+|---------|-------------|
+| Titre | TYPE DE REDIRECTION |
+
+### Options radio
+| Option | Etat |
+|--------|------|
+| Un repondeur | Non |
+| Un numero externe | Non |
+| Une ligne OVHcloud | Selectionnee |
+
+### Selecteur ligne OVH (cliquable)
+| Element | Description |
+|---------|-------------|
+| Label | Numero vers lequel rediriger * |
+| Fond | Gris pale (#FAFAFA) |
+| Nom | Support technique |
+| Type | Ligne SIP Trunk |
+| Numero | +33 1 77 88 99 00 |
+| Indicateur | Fleche > |
+
+### Lien action
+| Element | Description |
+|---------|-------------|
+| Lien | Choisir un autre service -> |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Modifier | Primary | Sauvegarde |
+| Annuler | Default | Ferme |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line
+    Response: [{ serviceName, description, number }]
+
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition/slots/{slotId}
+    Body: {
+      type: "ovhLine",
+      number: "0033177889900",
+      serviceName: "support-technique"
+    }
+```
+
+### Types de lignes OVH
+| Type | Description |
+|------|-------------|
+| sip | Ligne SIP standard |
+| trunk | Ligne SIP Trunk |
+| alias | Numero alias |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_timecondition_slot_ovh_title": "Configuration du creneau {{slot}}",
+  "telephony_line_timecondition_slot_ovh_info": "Comportement a adopter pour les plages horaires utilisant le creneau {{slot}}.",
+  "telephony_line_timecondition_slot_ovh_type": "Rediriger l'appel vers",
+  "telephony_line_timecondition_slot_ovh_value": "Une ligne ou un numero OVHcloud",
+  "telephony_line_timecondition_slot_ovh_number_label": "Numero vers lequel rediriger",
+  "telephony_line_timecondition_slot_ovh_line_type_sip": "Ligne SIP",
+  "telephony_line_timecondition_slot_ovh_line_type_trunk": "Ligne SIP Trunk",
+  "telephony_line_timecondition_slot_ovh_choose_other": "Choisir un autre service",
+  "telephony_line_timecondition_slot_ovh_modify": "Modifier",
+  "telephony_line_timecondition_slot_ovh_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Uniquement lignes du meme groupe
+- Appels internes gratuits
+- Possibilite de choisir un alias
+- Cascade de renvoi possible

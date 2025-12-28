@@ -1,0 +1,124 @@
+# Cahier des Charges : telecom/alias - Conditions temporelles
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration des plages horaires d'ouverture.
+
+### Objectif fonctionnel
+- Definir les heures d'ouverture
+- Configurer par jour de semaine
+- Gerer les exceptions
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec grille horaire + config
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Plages horaires |
+| Sous-titre | Jours et heures d'ouverture |
+
+### Grille semaine
+| Element | Description |
+|---------|-------------|
+| Colonnes | Jours (Lun-Dim) |
+| Lignes | Creneaux horaires |
+| Selection | Click ou drag |
+
+### Selection jours
+| Jour | Selectionnable |
+|------|----------------|
+| Lundi | Oui/Non |
+| Mardi | Oui/Non |
+| Mercredi | Oui/Non |
+| Jeudi | Oui/Non |
+| Vendredi | Oui/Non |
+| Samedi | Oui/Non |
+| Dimanche | Oui/Non |
+
+### Creneaux horaires
+| Element | Description |
+|---------|-------------|
+| Heure debut | Timepicker |
+| Heure fin | Timepicker |
+| Bouton + | Ajouter creneau |
+| Bouton X | Supprimer creneau |
+
+### Presets horaires
+| Preset | Valeur |
+|--------|--------|
+| Bureaux | 09:00-12:00, 14:00-18:00 |
+| Commerce | 09:00-19:00 |
+| 24/7 | 00:00-23:59 |
+
+### Apercu
+| Element | Description |
+|---------|-------------|
+| Visuel | Barre timeline |
+| Statut actuel | Ouvert/Ferme |
+
+### Footer
+| Bouton | Type | Action |
+|--------|------|--------|
+| Appliquer | Primary | Sauvegarde |
+| Reinitialiser | Default | Reset |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/timeCondition/{serviceName}
+GET /telephony/{billingAccount}/timeCondition/{serviceName}/condition
+POST /telephony/{billingAccount}/timeCondition/{serviceName}/condition
+PUT /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id}
+DELETE /telephony/{billingAccount}/timeCondition/{serviceName}/condition/{id}
+```
+
+### Modele TimeCondition
+```typescript
+interface TelephonyTimeCondition {
+  id: number;
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  hourBegin: string;
+  hourEnd: string;
+  policy: 'available' | 'unavailable';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_time_condition_title": "Plages horaires",
+  "alias_time_condition_day": "Jour",
+  "alias_time_condition_from": "De",
+  "alias_time_condition_to": "A",
+  "alias_time_condition_add_slot": "Ajouter un creneau",
+  "alias_time_condition_preset_office": "Horaires bureau",
+  "alias_time_condition_preset_shop": "Horaires commerce",
+  "alias_time_condition_preset_247": "24h/24 7j/7",
+  "alias_time_condition_open": "Ouvert",
+  "alias_time_condition_closed": "Ferme"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Creneaux non chevauchants
+- Maximum 4 creneaux par jour
+- Fuseau horaire Europe/Paris
+- Verification coherence auto

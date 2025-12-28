@@ -1,0 +1,115 @@
+# Cahier des Charges : telecom/line - Wizard RMA telephone
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Etape RMA (retour materiel) dans le wizard commande telephone.
+
+### Objectif fonctionnel
+- Proposer le retour de l'ancien materiel
+- Afficher les RMA en cours
+- Telecharger le bon de retour
+
+---
+
+## 2. LAYOUT
+
+### Structure wizard etape 3 avec info RMA
+
+---
+
+## 3. COMPOSANTS UI
+
+### Stepper
+| Etape | Etat | Nom |
+|-------|------|-----|
+| 1 | Done (vert) | Materiel |
+| 2 | Done (vert) | Livraison |
+| 3 | Active (bleu) | RMA |
+| 4 | Todo (gris) | Recapitulatif |
+
+### Titre section
+| Element | Description |
+|---------|-------------|
+| Titre | Retour de materiel (RMA) |
+
+### Info box
+| Element | Description |
+|---------|-------------|
+| Fond | Bleu clair |
+| Ligne 1 | Retour gratuit ancien telephone |
+| Ligne 2 | Bon de retour prepaye par email |
+| Ligne 3 | Delai 30 jours emballage original |
+
+### Warning RMA en cours
+| Element | Description |
+|---------|-------------|
+| Fond | Jaune |
+| Bordure | Orange |
+| Titre | RMA en attente |
+| Texte | Demande retour deja en cours |
+| Reference | RMA-2024-XXXXXX |
+| Lien | Telecharger bon PDF |
+
+### Checkbox retour
+| Element | Description |
+|---------|-------------|
+| Type | Checkbox |
+| Label | Je souhaite retourner mon ancien materiel |
+
+### Boutons navigation
+| Bouton | Type | Action |
+|--------|------|--------|
+| ← Retour | Secondary | Etape precedente |
+| Suivant → | Primary | Etape suivante |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/rma
+POST /telephony/{billingAccount}/line/{serviceName}/rma
+GET /telephony/{billingAccount}/line/{serviceName}/rma/{id}/pdf
+```
+
+### Modele
+```typescript
+interface RMA {
+  id: string;
+  reference: string;
+  status: 'pending' | 'received' | 'processed';
+  createdAt: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "line_rma_title": "Retour de materiel (RMA)",
+  "line_rma_info_1": "Si vous possedez un ancien telephone, vous pouvez le retourner gratuitement.",
+  "line_rma_info_2": "Vous recevrez un bon de retour prepaye par email.",
+  "line_rma_info_3": "Le materiel doit etre retourne dans son emballage d'origine sous 30 jours.",
+  "line_rma_pending": "RMA en attente",
+  "line_rma_pending_desc": "Vous avez deja une demande de retour en cours pour cette ligne.",
+  "line_rma_reference": "Reference",
+  "line_rma_download": "Telecharger le bon de retour (PDF)",
+  "line_rma_checkbox": "Je souhaite retourner mon ancien materiel",
+  "line_rma_back": "Retour",
+  "line_rma_next": "Suivant"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- RMA optionnel
+- Delai 30 jours pour retour
+- Emballage original requis
+- Bon de retour prepaye
+- Un seul RMA actif par ligne

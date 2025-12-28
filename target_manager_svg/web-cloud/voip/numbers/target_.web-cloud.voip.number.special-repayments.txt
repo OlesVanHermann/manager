@@ -1,0 +1,104 @@
+# Cahier des Charges : telecom/alias - Numeros speciaux Reversements
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Gestion des reversements pour numeros surtaxes (SVA).
+
+### Objectif fonctionnel
+- Consulter les reversements
+- Voir l'historique des paiements
+- Configurer le compte bancaire
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec resume + historique
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header
+| Element | Description |
+|---------|-------------|
+| Titre | Reversements |
+| Numero | Numero surtaxe concerne |
+
+### Resume financier
+| Element | Description |
+|---------|-------------|
+| Solde actuel | Montant a reverser |
+| Prochain paiement | Date estimee |
+| Seuil declenchement | Montant minimum |
+
+### Compte bancaire
+| Champ | Description |
+|-------|-------------|
+| IBAN | Numero de compte |
+| BIC | Code banque |
+| Titulaire | Nom du titulaire |
+| Statut | Verifie/En attente |
+
+### Historique reversements
+| Colonne | Description |
+|---------|-------------|
+| Date | Date du virement |
+| Montant | Montant reverse |
+| Periode | Periode concernee |
+| Statut | Paye/En cours |
+
+### Statistiques
+| Metrique | Description |
+|----------|-------------|
+| Appels | Nombre d'appels |
+| Duree totale | Minutes facturees |
+| CA genere | Chiffre d'affaires |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/rsva/{serviceName}
+GET /telephony/{billingAccount}/rsva/{serviceName}/currentRateCode
+GET /telephony/{billingAccount}/rsva/{serviceName}/scheduledRateCode
+GET /telephony/{billingAccount}/rsva/{serviceName}/allowedRateCodes
+```
+
+### Modele RSVA
+```typescript
+interface TelephonyRsva {
+  serviceName: string;
+  typology: string;
+  currentRateCode: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "alias_special_repayments_title": "Reversements",
+  "alias_special_repayments_balance": "Solde actuel",
+  "alias_special_repayments_next": "Prochain paiement",
+  "alias_special_repayments_threshold": "Seuil declenchement",
+  "alias_special_repayments_history": "Historique",
+  "alias_special_repayments_bank": "Compte bancaire",
+  "alias_special_repayments_iban": "IBAN",
+  "alias_special_repayments_bic": "BIC"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Seuil minimum: 100 EUR
+- Reversement mensuel automatique
+- Compte bancaire verifie obligatoire
+- Delai paiement: J+30

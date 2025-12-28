@@ -1,0 +1,388 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.telephony.carrierSip
+================================================================================
+Genere le: 2025-01-XX
+Source: old_manager_web-cloud_telecom_carrier-sip.tar
+Framework: AngularJS 1.x + OvhUI Kit
+NAV1: telecom
+NAV2: telephony (sous-module: carrierSip)
+
+================================================================================
+1. RESUME EXECUTIF
+================================================================================
+
+Le module Carrier SIP permet de gerer les trunks SIP professionnels OVHcloud.
+Il offre une interface pour visualiser les informations du service, configurer
+les endpoints SIP et telecharger les releves d'appels (CDR).
+
+Utilisateurs cibles: Administrateurs telecom, integrateurs SIP, DSI
+Perimetre: Consultation et export (lecture seule, pas de modification)
+
+Pages/Onglets:
+- Dashboard (tableau de bord principal)
+- SIP Endpoints (configuration des terminaisons)
+- CDR (Call Detail Records - export des appels)
+
+================================================================================
+2. ARCHITECTURE
+================================================================================
+
+Arborescence source:
+---------------------
+packages/manager/
+├── apps/carrier-sip/
+│   ├── src/
+│   │   ├── routing.js              # Route principale + resolve
+│   │   ├── app.module.js           # Module AngularJS
+│   │   ├── endpoints/routing.js    # Route onglet endpoints
+│   │   └── cdr/routing.js          # Route onglet CDR
+│   └── package.json
+└── modules/carrier-sip/
+    ├── src/
+    │   ├── carrier-sip.service.js      # Service API centralisé
+    │   ├── VoipCarrierSipLine.class.js # Classe modèle
+    │   ├── dashboard/
+    │   │   ├── dashboard.component.js
+    │   │   ├── dashboard.html
+    │   │   └── translations/Messages_fr_FR.json
+    │   ├── endpoints/
+    │   │   ├── endpoints.component.js
+    │   │   ├── endpoints.html
+    │   │   └── translations/Messages_fr_FR.json
+    │   └── cdr/
+    │       ├── cdr.component.js
+    │       ├── cdr.controller.js
+    │       ├── cdr.constants.js
+    │       ├── cdr.html
+    │       └── translations/Messages_fr_FR.json
+    └── package.json
+
+Dependances:
+- @ovh-ux/manager-carrier-sip (module)
+- OvhApiTelephony (wrapper API ngResource)
+- moment.js (gestion dates CDR)
+- lodash (utilitaires)
+
+================================================================================
+3. PAGES & NAVIGATION
+================================================================================
+
+Routes UI-Router:
+-----------------
+| Etat              | URL                                                      | Composant              |
+|-------------------|----------------------------------------------------------|------------------------|
+| app               | /billingAccount/:billingAccount/carrierSip/:serviceName  | carrierSipDashboard    |
+| app.endpoints     | .../endpoints                                            | carrierSipEndpoints    |
+| app.cdrs          | .../cdr                                                  | carrierSipCdr          |
+
+Parametres de route:
+- billingAccount: string (identifiant groupe telephonie)
+- serviceName: string (identifiant trunk SIP)
+
+Breadcrumb implicite:
+Telecom > Telephonie > {billingAccount} > Carrier SIP > {serviceName}
+
+Navigation par onglets (oui-header-tabs):
+- Tableau de bord (actif par defaut)
+- SIP Endpoints
+- CDR
+
+================================================================================
+4. COMPOSANTS UI
+================================================================================
+
+4.1 DASHBOARD (dashboard.html)
+------------------------------
+
+Structure: 3 colonnes (Bootstrap col-md-4)
+
+COLONNE 1 - Informations generales:
+┌─────────────────────────────────────────┐
+│ oui-tile: "Informations generales"      │
+├─────────────────────────────────────────┤
+│ oui-tile-definition                     │
+│   term: "Nom du service"                │
+│   description: {serviceName}            │
+├─────────────────────────────────────────┤
+│ oui-tile-definition                     │
+│   term: "Description"                   │
+│   description: {description}            │
+├─────────────────────────────────────────┤
+│ dl.oui-tile__definition                 │
+│   dt: "Nombre de call/sec max"          │
+│   dd: {settings.maxCallsPerSecond}      │
+│   dt: "Nombre d'appels simultanes"      │
+│   dd: {settings.maxConcurrentCalls}     │
+└─────────────────────────────────────────┘
+
+COLONNE 2 - Abonnement:
+┌─────────────────────────────────────────┐
+│ oui-tile: "Abonnement"                  │
+├─────────────────────────────────────────┤
+│ oui-tile-definition                     │
+│   term: "Date de renouvellement"        │
+│   description: {serviceInfos.expiration}│
+├─────────────────────────────────────────┤
+│ oui-tile-definition                     │
+│   term: "Date de creation"              │
+│   description: {serviceInfos.creation}  │
+├─────────────────────────────────────────┤
+│ oui-tile-definition                     │
+│   term: "Contacts"                      │
+│   ul.list-unstyled:                     │
+│     - {contactAdmin} Administrateur     │
+│     - {contactTech} Technique           │
+│     - {contactBilling} Facturation      │
+└─────────────────────────────────────────┘
+
+COLONNE 3 - Raccourcis:
+┌─────────────────────────────────────────┐
+│ oui-tile: "Raccourcis"                  │
+├─────────────────────────────────────────┤
+│ oui-tile-button href={billingLink}      │
+│   "Releve de consommation"              │
+├─────────────────────────────────────────┤
+│ oui-tile-button href={cdrsLink}         │
+│   "Mise a disposition des CDR"          │
+└─────────────────────────────────────────┘
+
+LIGNE 2 - Reseau (conditionnel):
+Condition: ng-if="clusterDetails.zones && clusterDetails.zones.length > 0"
+┌─────────────────────────────────────────┐
+│ oui-tile: "Reseau"                      │
+├─────────────────────────────────────────┤
+│ ng-repeat zone in clusterDetails.zones  │
+│   oui-tile-definition                   │
+│     term: "IP Media {zone.region}"      │
+│     ng-repeat ipMedia in zone.mediaIps  │
+│       oui-tile-description: {ipMedia}   │
+└─────────────────────────────────────────┘
+
+4.2 ENDPOINTS (endpoints.html)
+------------------------------
+
+Section 1 - Liste IPs autorisees (appels sortants):
+┌─────────────────────────────────────────┐
+│ h3: "Liste d'adresses IP autorisees..." │
+├─────────────────────────────────────────┤
+│ oui-datagrid class="small-width"        │
+│   rows: endpointIpList                  │
+│   ┌─────────────────────────────────┐   │
+│   │ Colonne: "IP SIP"               │   │
+│   │ Contenu: {$row} (IP brute)      │   │
+│   └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+
+Section 2 - Routage appels entrants:
+┌─────────────────────────────────────────────────────────────────────┐
+│ h3: "Routage d'appels entrants"                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│ oui-datagrid                                                        │
+│   rows: endpointsWithIncomingCallsAllowed                           │
+│   ┌────────┬───────────┬─────────┬──────┬──────────┬───────┐        │
+│   │ Id     │ Protocole │ IP SIP  │ Port │ Priorite │ Poids │        │
+│   ├────────┼───────────┼─────────┼──────┼──────────┼───────┤        │
+│   │ {id}   │ TCP/UDP/  │ {ip}    │{port}│{priority}│{weight│        │
+│   │        │ TLS       │         │      │          │       │        │
+│   └────────┴───────────┴─────────┴──────┴──────────┴───────┘        │
+└─────────────────────────────────────────────────────────────────────┘
+
+4.3 CDR (cdr.html)
+------------------
+
+┌─────────────────────────────────────────┐
+│ tuc-toast-message (notifications)       │
+├─────────────────────────────────────────┤
+│ h3: "CDR"                               │
+├─────────────────────────────────────────┤
+│ p: (texte explicatif CDR)               │
+├─────────────────────────────────────────┤
+│ form novalidate ng-submit="getCallDet..."│
+│                                         │
+│ [oui-spinner ng-if="isExporting"]       │
+│                                         │
+│ div.row ng-if="!isExporting"            │
+│   ┌─────────────┬─────────────┐         │
+│   │ oui-field   │ oui-field   │         │
+│   │ label:"Mois"│ label:"Ann."│         │
+│   │ oui-select  │ oui-select  │         │
+│   │ model:month │ model:year  │         │
+│   │ items:months│ items:years │         │
+│   └─────────────┴─────────────┘         │
+│                                         │
+│ oui-form-actions                        │
+│   disabled: !isValid()                  │
+│   submit-text: "Telecharger"            │
+└─────────────────────────────────────────┘
+
+================================================================================
+5. APIs & DONNEES
+================================================================================
+
+5.1 ENDPOINTS API (8 endpoints)
+-------------------------------
+
+| #  | Methode | Endpoint                                                          | Version | Usage                    |
+|----|---------|-------------------------------------------------------------------|---------|--------------------------|
+| 1  | GET     | /telephony/{billingAccount}/carrierSip                            | apiv6   | Liste carrierSip         |
+| 2  | GET     | /telephony/{billingAccount}/carrierSip/{serviceName}              | apiv6   | Detail carrierSip        |
+| 3  | GET     | /telephony/{billingAccount}/carrierSip/{serviceName}/settings     | apiv6   | Parametres               |
+| 4  | GET     | /telephony/{billingAccount}/carrierSip/{serviceName}/endpoints    | apiv6   | Liste endpoints IDs      |
+| 5  | GET     | /telephony/{billingAccount}/carrierSip/{serviceName}/endpoints/{id}| apiv6  | Detail endpoint          |
+| 6  | GET     | /telephony/{billingAccount}/carrierSip/{serviceName}/cdrs?month=  | apiv6   | Export CDR               |
+| 7  | GET     | /telephony/{billingAccount}/carrierSip/{serviceName}/clusterDetails| apiv6  | Cluster/reseau           |
+| 8  | GET     | /telephony/lines/{serviceName}/serviceInfos                       | apiv6   | Infos service            |
+
+5.2 SEQUENCEMENT DES APPELS
+---------------------------
+
+Dashboard (parallele via resolve):
+  Promise.all([
+    getCarrierSip(billingAccount, serviceName),      // -> carrierSip
+    getSettings(billingAccount, serviceName),         // -> settings
+    getServiceInfos(serviceName),                     // -> serviceInfos
+    $http.get(.../clusterDetails)                     // -> clusterDetails
+  ])
+
+Endpoints (sequentiel):
+  1. getEndpoints(billingAccount, serviceName)        // -> liste IDs
+  2. Promise.all(ids.map(id => getEndpoint(id)))      // -> details
+
+CDR (polling):
+  1. GET /cdrs?month=YYYY-MM
+  2. Si validationDate absent -> attendre 1s -> retry
+  3. Si validationDate present -> window.location.href = url
+
+5.3 TYPES DE DONNEES
+--------------------
+
+interface VoipCarrierSipLine {
+  billingAccount: string;
+  serviceName: string;
+  description?: string;
+}
+
+interface CarrierSipSettings {
+  maxCallsPerSecond: number;
+  maxConcurrentCalls: number;
+}
+
+interface ServiceInfos {
+  expiration: string;       // Date ISO "YYYY-MM-DD"
+  creation: string;         // Date ISO
+  contactAdmin: string;     // NIC-handle "xx12345-ovh"
+  contactTech: string;
+  contactBilling: string;
+}
+
+interface Endpoint {
+  id: number;
+  ip: string;
+  port: number;
+  protocol: 'tcp' | 'udp' | 'tls';
+  priority: number;
+  weight: number;
+  enableIncomingCalls: boolean;
+}
+
+interface ClusterDetails {
+  zones?: Array<{
+    region: string;         // "eu", "ca", etc.
+    mediaIps: string[];     // ["1.2.3.4", "5.6.7.8"]
+  }>;
+}
+
+interface CdrResponse {
+  validationDate?: string;  // Present si pret
+  url: string;              // URL de telechargement
+}
+
+================================================================================
+6. TRADUCTIONS (FR)
+================================================================================
+
+6.1 DASHBOARD
+-------------
+carrier_sip_dashboard_header_dashboard = "Tableau de bord"
+carrier_sip_dashboard_header_endpoints = "SIP Endpoints"
+carrier_sip_dashboard_header_cdr = "CDR"
+carrier_sip_dashboard_general_information = "Informations generales"
+carrier_sip_dashboard_general_information_name = "Nom du service"
+carrier_sip_dashboard_general_information_description = "Description"
+carrier_sip_dashboard_general_information_max_calls_second = "Nombre de call/sec max"
+carrier_sip_dashboard_general_information_max_concurrent_calls = "Nombre d'appels simultanes"
+carrier_sip_dashboard_network = "Reseau"
+carrier_sip_dashboard_network_ip_media = "IP Media"
+carrier_sip_dashboard_renewal = "Abonnement"
+carrier_sip_dashboard_renewal_date = "Date de renouvellement"
+carrier_sip_dashboard_renewal_creation_date = "Date de creation"
+carrier_sip_dashboard_renewal_contacts = "Contacts"
+carrier_sip_dashboard_renewal_contacts_admin = "Administrateur"
+carrier_sip_dashboard_renewal_contacts_tech = "Technique"
+carrier_sip_dashboard_renewal_contacts_billing = "Facturation"
+carrier_sip_dashboard_shortcuts = "Raccourcis"
+carrier_sip_dashboard_shortcuts_bills = "Releve de consommation"
+carrier_sip_dashboard_shortcuts_cdrs = "Mise a disposition des CDR"
+
+6.2 ENDPOINTS
+-------------
+carrier_sip_endpoints_list_IP = "Liste d'adresses IP autorisees pour les appels sortants"
+carrier_sip_endpoints_with_incoming_call_enabled = "Routage d'appels entrants"
+carrier_sip_endpoints_id = "Id"
+carrier_sip_endpoints_protocol = "Protocole"
+carrier_sip_endpoints_protocol_tcp = "TCP"
+carrier_sip_endpoints_protocol_tls = "TLS"
+carrier_sip_endpoints_protocol_udp = "UDP"
+carrier_sip_endpoints_ip_sip = "IP SIP"
+carrier_sip_endpoints_port = "Port"
+carrier_sip_endpoints_priority = "Priorite"
+carrier_sip_endpoints_weight = "Poids"
+
+6.3 CDR
+-------
+carrier_sip_cdr_title = "CDR"
+carrier_sip_cdr_information = "Le Call Details Records (CDR) contient toutes les informations relatives a un appel telephonique : numero de telephone, duree d'appel, date et heure de l'appel, etc. Obtenez le detail des appels passes en telechargeant le fichier .csv apres avoir selectionne la periode souhaitee (mois et annee) ci-dessous."
+carrier_sip_cdr_field_month = "Mois"
+carrier_sip_cdr_field_month_placeholder = "Selectionnez un mois"
+carrier_sip_cdr_field_year = "Annee"
+carrier_sip_cdr_field_year_placeholder = "Selectionnez une annee"
+carrier_sip_cdr_action_download = "Telecharger"
+carrier_sip_cdr_action_succeed = "Telechargement effectue."
+carrier_sip_cdr_action_failed = "Une erreur est survenue lors du telechargement."
+
+================================================================================
+7. REGLES METIER
+================================================================================
+
+7.1 AFFICHAGE CONDITIONNEL
+--------------------------
+- Bloc Reseau: visible uniquement si clusterDetails.zones existe et non vide
+- Titre header: description si presente, sinon serviceName
+- Sous-titre header: serviceName si description presente, sinon null
+
+7.2 GESTION ERREURS
+-------------------
+- clusterDetails: catch 404 et 500 silencieusement (retourne {})
+- CDR: affiche toast erreur avec message API
+
+7.3 FILTRAGE ENDPOINTS
+----------------------
+- endpointIpList: toutes les IPs (map ip)
+- endpointsWithIncomingCallsAllowed: filtre enableIncomingCalls === true
+
+7.4 LOGIQUE CDR
+---------------
+- Mois disponibles: moment.months() (Janvier -> Decembre)
+- Annees disponibles: annee courante jusqu'a annee - 20 (GET_RECORD_NUMBER_OF_YEARS)
+- Format requete: "YYYY-MM" avec zero-padding (ex: "2024-01")
+- Polling: 1 seconde (POLLER_TIMEOUT = 1000)
+- Validation formulaire: month ET year requis ET pas en cours d'export
+
+7.5 CONSTANTES
+--------------
+GET_RECORD_NUMBER_OF_YEARS = 20    // Historique 20 ans
+POLLER_TIMEOUT = 1000              // Polling 1 seconde
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

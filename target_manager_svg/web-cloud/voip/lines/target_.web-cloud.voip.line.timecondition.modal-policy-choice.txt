@@ -1,0 +1,104 @@
+# Cahier des Charges : telecom/line - Choix du creneau
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal de selection du creneau vers lequel rediriger les appels.
+
+### Objectif fonctionnel
+- Lister les creneaux disponibles
+- Afficher leur configuration actuelle
+- Permettre la selection
+
+---
+
+## 2. LAYOUT
+
+### Modal 480x660 avec liste radio
+
+---
+
+## 3. COMPOSANTS UI
+
+### En-tete modal
+| Element | Description |
+|---------|-------------|
+| Bouton retour | < (fleche gauche) |
+| Titre | Rediriger les appels vers |
+
+### Liste des creneaux (radio)
+| Creneau | Couleur | Description | Selection |
+|---------|---------|-------------|-----------|
+| Horaires d'ouverture | Vert | File d'appels configuree | Selectionnee |
+| Creneau 1 | Bleu | Rediriger vers : +33 6 12 34 56 78 | Non |
+| Creneau 2 | Jaune | Non configure (italique) | Non |
+| Creneau 3 | Rose | Non configure (italique) | Non |
+
+### Indicateur selection
+| Element | Style |
+|---------|-------|
+| Radio checked | Cercle bleu plein |
+| Radio unchecked | Cercle blanc borde gris |
+
+### Info box
+| Element | Description |
+|---------|-------------|
+| Type | Information (fond bleu pale) |
+| Titre | Information |
+| Message | Selectionnez le creneau vers lequel rediriger les appels pendant cette plage horaire |
+
+### Texte pied
+| Element | Description |
+|---------|-------------|
+| Note | Les creneaux non configures peuvent etre parametres depuis la page de configuration des creneaux |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/timeCondition/slots
+    Response: {
+      available: { type, queue },
+      slot1: { type, number },
+      slot2: { type, number },
+      slot3: { type, number }
+    }
+```
+
+### Structure slot
+| Champ | Type | Description |
+|-------|------|-------------|
+| type | string | voicemail, external, ovhLine, queue |
+| number | string | Numero de destination |
+| configured | boolean | Si configure ou non |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_line_timecondition_policy_title": "Rediriger les appels vers",
+  "telephony_line_timecondition_policy_back": "Retour",
+  "telephony_line_timecondition_policy_available": "Horaires d'ouverture",
+  "telephony_line_timecondition_policy_available_desc": "File d'appels configuree",
+  "telephony_line_timecondition_policy_slot1": "Creneau 1",
+  "telephony_line_timecondition_policy_slot2": "Creneau 2",
+  "telephony_line_timecondition_policy_slot3": "Creneau 3",
+  "telephony_line_timecondition_policy_redirect_to": "Rediriger vers le numero",
+  "telephony_line_timecondition_policy_not_configured": "Non configure",
+  "telephony_line_timecondition_policy_info": "Selectionnez le creneau vers lequel rediriger les appels pendant cette plage horaire.",
+  "telephony_line_timecondition_policy_config_note": "Les creneaux non configures peuvent etre parametres depuis la page de configuration des creneaux."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- 4 options maximum (ouverture + 3 creneaux)
+- Creneaux non configures utilisables mais sans effet
+- Selection obligatoire pour valider
+- Navigation retour conserve selection precedente

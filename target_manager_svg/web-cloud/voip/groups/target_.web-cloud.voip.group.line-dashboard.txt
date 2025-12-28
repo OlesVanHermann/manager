@@ -1,0 +1,98 @@
+# CAHIER DES CHARGES - old_manager.telecom.telephony.line-dashboard
+# Dashboard/Gestion d'une ligne SIP
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page principale de gestion d'une ligne SIP (onglet Gestion par defaut).
+
+### Objectif fonctionnel
+Afficher et modifier les parametres principaux de la ligne.
+
+---
+
+## 2. ARCHITECTURE
+
+### Arborescence fichiers source
+```
+telecom/telephony/line/management/
+├── management.module.js
+├── management.controller.js
+├── management.html
+├── offerChange/
+├── password/
+├── restrictions/
+├── terminate/
+├── convert/
+└── translations/
+```
+
+---
+
+## 3. PAGES & NAVIGATION
+
+### Route
+- State: `telecom.telephony.billingAccount.line.dashboard`
+- URL: `/telephony/{billingAccount}/line/{serviceName}`
+
+### Actions disponibles
+| Action | Description |
+|--------|-------------|
+| Changer offre | Modifier le forfait |
+| Changer mot de passe SIP | Regenerer credentials |
+| Gerer restrictions | Limiter destinations |
+| Resilier | Demander resiliation |
+| Convertir en numero | Transformer en alias |
+
+---
+
+## 4. COMPOSANTS UI
+
+### Tiles Information
+- Tile Offre: nom, description, lien changement
+- Tile Canaux simultanes: actuel, maximum, modifier
+- Tile Credentials SIP: identifiant, mot de passe, regenerer
+- Tile Statut: etat, derniere connexion, IP
+
+---
+
+## 5. APIs & DONNEES
+
+### Endpoints
+
+#### Changement mot de passe
+```
+POST /telephony/{billingAccount}/line/{serviceName}/changePassword
+Body: { password: string }
+```
+
+#### Derniere connexion
+```
+GET /telephony/{billingAccount}/line/{serviceName}/lastRegistrations
+Response: Array<{ datetime: string, ip: string, localIp: string }>
+```
+
+#### IPs autorisees
+```
+GET /telephony/{billingAccount}/line/{serviceName}/ips
+Response: Array<string>
+```
+
+---
+
+## 6. TRADUCTIONS
+
+Voir translations/Messages_fr_FR.json du module management.
+
+---
+
+## 7. REGLES METIER
+
+### Mot de passe SIP
+- Minimum 8 caracteres
+- Doit contenir chiffres et lettres
+- Regeneration declenche reboot telephone
+
+### Canaux simultanes
+- Modification payante si > quota offre
+- Delai application: immediat

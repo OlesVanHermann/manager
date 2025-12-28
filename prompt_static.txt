@@ -559,75 +559,191 @@ Pour les liens vers des pages non existantes, ajouter une classe CSS :
 
 ---
 
-## 13. Script automatique generate_html_v2.sh
+## 13. Injection des liens de navigation (OBLIGATOIRE)
 
-### 13.1 Emplacement et usage
+**RÈGLE CRITIQUE** : Toute page HTML générée DOIT avoir les liens de navigation cliquables.
+
+### 13.1 Script d'injection
 
 ```bash
-/home/ubuntu/action-static/generate_html_v2.sh all     # Régénère tout
-/home/ubuntu/action-static/generate_html_v2.sh <svg>   # Un fichier spécifique
+# Injecter les liens sur TOUTES les pages existantes
+/home/ubuntu/action-static/inject_nav_links.sh
+
+# Nettoyer les doublons si le script a été exécuté plusieurs fois
+find /home/ubuntu/aiapp/static -name "*.html" -exec sed -i 's|<a href="[^"]*"><a href="\([^"]*\)">|<a href="\1">|g' {} \;
+find /home/ubuntu/aiapp/static -name "*.html" -exec sed -i 's|</a></a>|</a>|g' {} \;
 ```
 
-### 13.2 Structure de navigation injectée
+### 13.2 Structure de navigation (4 niveaux)
 
-Le script injecte automatiquement 4 niveaux de navigation :
-
-**NAV1 - Header bleu (y=32)**
 ```
-Accueil → /static/index.html
-Web Cloud → /static/web-cloud/index.html
-```
-Pattern : `<text x="40" y="32" class="text-white"...>Accueil</text>`
-
-**NAV2 - Sous-header (y=75 hosting, y=76 voip)**
-```
-Hosting:  Accueil, Hebergement, VoIP
-VoIP:     Hebergements, VoIP
-```
-Pattern : `<text x="..." y="75" class="text-muted"...>`
-
-**NAV3 - Sidebar VoIP (dans translate(12, 56))**
-```
-Lignes   → /static/web-cloud/voip/lines/general.html
-Numeros  → /static/web-cloud/voip/numbers/general.html
-Fax      → /static/web-cloud/voip/fax/general.html
-Abreges  → /static/web-cloud/voip/abbreviated.html
-```
-Pattern : `<text x="28" y="16" class="text-white" font-size="10"...>Lignes</text>`
-
-**NAV4 - Tabs par section (dans translate(0, 50) ou buttons)**
-
-Hosting (buttons avec text-anchor="middle"):
-```
-Infos générales, Multisite, FTP-SSH, SSL, CDN
+┌─────────────────────────────────────────────────────────────────────────┐
+│ NAV1 - Header bleu (y=32)                                               │
+│ Accueil | Public Cloud | Private Cloud | Bare Metal | Web Cloud | ...  │
+├─────────────────────────────────────────────────────────────────────────┤
+│ NAV2 - Sous-header blanc (y=75)                                         │
+│ Accueil | Domaines | Hebergement | Emails | VoIP | Acces                │
+├─────────────────────────────────────────────────────────────────────────┤
+│ NAV3 - Sidebar VoIP (panel gauche)                                      │
+│ [Lignes] [Numéros] [Fax] [Abrégés]                                      │
+├─────────────────────────────────────────────────────────────────────────┤
+│ NAV4 - Tabs contextuels (panel droit)                                   │
+│ Hosting: Home | Multisite | FTP-SSH | Modules | SSL | CDN | ...         │
+│ VoIP Line: General | Telephone | Appels | Transferts | Messagerie | ... │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-VoIP Line (text simple):
+### 13.3 Patterns de remplacement NAV1
+
+| Texte | Pattern SVG | Lien cible |
+|-------|-------------|------------|
+| Accueil | `<text x="40" y="32"...>Accueil</text>` | `/static/index.html` |
+| Public Cloud | `<text x="110" y="32"...>Public Cloud</text>` | `/static/public-cloud/index.html` |
+| Hosted Private Cloud | `<text x="210" y="32"...>Hosted Private Cloud</text>` | `/static/private-cloud/index.html` |
+| Bare Metal Cloud | `<text x="370" y="32"...>Bare Metal Cloud</text>` | `/static/bare-metal/index.html` |
+| Web Cloud | `<text x="510" y="32"...>Web Cloud</text>` | `/static/web-cloud/index.html` |
+| Network | `<text x="620" y="32"...>Network</text>` | `/static/network/index.html` |
+| IAM / Securite | `<text x="700" y="32"...>IAM / Securite</text>` | `/static/iam/index.html` |
+| Licences | `<text x="810" y="32"...>Licences</text>` | `/static/license/index.html` |
+
+**Commande sed NAV1 :**
+```bash
+sed -i 's|<text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>|<a href="/static/index.html"><text x="40" y="32" class="text-white" font-size="14" opacity="0.7" style="cursor:pointer">Accueil</text></a>|g' "$file"
 ```
-General, Telephone, Appels, Transferts, Messagerie, Conso, Options
+
+### 13.4 Patterns de remplacement NAV2
+
+| Texte | Pattern SVG | Lien cible |
+|-------|-------------|------------|
+| Accueil | `<text x="40" y="75"...>Accueil</text>` | `/static/web-cloud/index.html` |
+| Domaines et DNS | `<text x="110" y="75"...>Domaines...</text>` | `/static/web-cloud/domains/index.html` |
+| Hebergement | `<text x="240" y="75"...>Hebergement</text>` | `/static/web-cloud/hosting/general.html` |
+| Emails et Collab | `<text x="360" y="75"...>Emails...</text>` | `/static/web-cloud/emails/index.html` |
+| VoIP | `<text x="480" y="75"...>VoIP</text>` | `/static/web-cloud/voip/lines/general.html` |
+| Acces | `<text x="530" y="75"...>Acces</text>` | `/static/web-cloud/access/index.html` |
+
+### 13.5 Patterns de remplacement NAV3 (VoIP Sidebar)
+
+| Texte | Lien cible |
+|-------|------------|
+| Lignes | `/static/web-cloud/voip/lines/general.html` |
+| Numeros | `/static/web-cloud/voip/numbers/general.html` |
+| Fax | `/static/web-cloud/voip/fax/dashboard.html` |
+| Abreges | `/static/web-cloud/voip/abbreviated.html` |
+
+### 13.6 Patterns de remplacement NAV4
+
+#### Hosting (tabs boutons)
+| Texte | Lien cible |
+|-------|------------|
+| Home | `/static/web-cloud/hosting/general.html` |
+| Multisite | `/static/web-cloud/hosting/multi-sites.html` |
+| FTP-SSH | `/static/web-cloud/hosting/ftp-ssh.html` |
+| Modules | `/static/web-cloud/hosting/modules.html` |
+| Taches | `/static/web-cloud/hosting/tasks.html` |
+| Emails | `/static/web-cloud/hosting/email.html` |
+| Variables | `/static/web-cloud/hosting/envvars.html` |
+| Runtimes | `/static/web-cloud/hosting/runtimes.html` |
+| SSL | `/static/web-cloud/hosting/ssl.html` |
+| CDN | `/static/web-cloud/hosting/cdn.html` |
+| Boost | `/static/web-cloud/hosting/boost.html` |
+| Logs | `/static/web-cloud/hosting/logs.html` |
+
+#### VoIP Line (tabs texte)
+| Texte | Lien cible |
+|-------|------------|
+| General | `/static/web-cloud/voip/lines/general.html` |
+| Telephone | `/static/web-cloud/voip/lines/phone.html` |
+| Appels | `/static/web-cloud/voip/lines/calls.html` |
+| Transferts | `/static/web-cloud/voip/lines/forward.html` |
+| Messagerie | `/static/web-cloud/voip/lines/voicemail.html` |
+| Conso | `/static/web-cloud/voip/lines/consumption.html` |
+| Options | `/static/web-cloud/voip/lines/options.html` |
+
+#### VoIP Group (tabs)
+| Texte | Lien cible |
+|-------|------------|
+| Dashboard | `/static/web-cloud/voip/groups/dashboard.html` |
+| Services | `/static/web-cloud/voip/groups/services.html` |
+| Repertoire | `/static/web-cloud/voip/groups/phonebook.html` |
+| Facturation | `/static/web-cloud/voip/groups/billing.html` |
+| Administration | `/static/web-cloud/voip/groups/admin.html` |
+
+#### VoIP Number (tabs)
+| Texte | Lien cible |
+|-------|------------|
+| General | `/static/web-cloud/voip/numbers/general.html` |
+| Configuration | `/static/web-cloud/voip/numbers/configuration.html` |
+| Statistiques | `/static/web-cloud/voip/numbers/statistics.html` |
+
+#### VoIP Fax (tabs)
+| Texte | Lien cible |
+|-------|------------|
+| Dashboard | `/static/web-cloud/voip/fax/dashboard.html` |
+| Envoyer | `/static/web-cloud/voip/fax/send.html` |
+| Entrants | `/static/web-cloud/voip/fax/incoming.html` |
+| Sortants | `/static/web-cloud/voip/fax/outgoing.html` |
+| Conso | `/static/web-cloud/voip/fax/consumption.html` |
+| Parametres | `/static/web-cloud/voip/fax/settings.html` |
+
+#### VoIP SMS (tabs)
+| Texte | Lien cible |
+|-------|------------|
+| Dashboard | `/static/web-cloud/voip/sms/dashboard.html` |
+| Envoyer | `/static/web-cloud/voip/sms/send.html` |
+| Sortants | `/static/web-cloud/voip/sms/outgoing.html` |
+| Entrants | `/static/web-cloud/voip/sms/incoming.html` |
+| Options | `/static/web-cloud/voip/sms/options.html` |
+
+### 13.7 Détection automatique de section
+
+Le script détecte la section depuis le chemin du fichier :
+
+```bash
+if [[ "$file" == *"/hosting/"* ]]; then
+    SECTION="hosting"
+elif [[ "$file" == *"/voip/lines/"* ]]; then
+    SECTION="voip-line"
+elif [[ "$file" == *"/voip/groups/"* ]]; then
+    SECTION="voip-group"
+elif [[ "$file" == *"/voip/numbers/"* ]]; then
+    SECTION="voip-number"
+elif [[ "$file" == *"/voip/fax/"* ]]; then
+    SECTION="voip-fax"
+elif [[ "$file" == *"/voip/sms/"* ]]; then
+    SECTION="voip-sms"
+elif [[ "$file" == *"/voip/carrier-sip/"* ]]; then
+    SECTION="voip-carrier"
+fi
 ```
 
-### 13.3 Détection automatique de section
+### 13.8 Workflow complet de génération
 
-Le script détecte la section depuis le nom du SVG :
-- `*hosting*` → hosting
-- `*line*` → voip.line
-- `*number*` → voip.number
-- `*fax*` → voip.fax
-- `*group*` → voip.group
-- `*sms*` → voip.sms
-- `*carrier-sip*` → voip.carrier-sip
+```bash
+# 1. Générer les pages HTML depuis les SVG
+# (avec le script generate_html.sh ou manuellement)
 
-### 13.4 Configuration navigation
+# 2. OBLIGATOIRE: Injecter les liens de navigation
+/home/ubuntu/action-static/inject_nav_links.sh
 
-Fichier de config JSON : `/home/ubuntu/action-static/nav_config.json`
+# 3. Nettoyer les éventuels doublons
+find /home/ubuntu/aiapp/static -name "*.html" -exec sed -i 's|<a href="[^"]*"><a href="\([^"]*\)">|<a href="\1">|g' {} \;
+find /home/ubuntu/aiapp/static -name "*.html" -exec sed -i 's|</a></a>|</a>|g' {} \;
 
-### 13.5 Ajouter une nouvelle section
+# 4. Déployer
+/home/ubuntu/aiapp/scripts/D3-deploy_static.sh
 
-1. Ajouter la détection dans `detect_section()`
-2. Ajouter le base_path dans `get_nav4_base_path()`
-3. Ajouter les patterns sed dans `inject_nav4_links()`
-4. Tester : `./generate_html_v2.sh <svg_file>`
+# 5. Tester
+# https://manager.di2amp.com/static/web-cloud/hosting/multi-sites.html
+```
+
+### 13.9 Ajouter une nouvelle section
+
+1. Ajouter la détection de section dans `inject_nav_links.sh`
+2. Ajouter les patterns sed pour NAV4 de cette section
+3. Mettre à jour la sitemap (`/home/ubuntu/action-static/sitemap.json`)
+4. Tester : exécuter le script et vérifier les liens
+5. Déployer
 
 ---
 

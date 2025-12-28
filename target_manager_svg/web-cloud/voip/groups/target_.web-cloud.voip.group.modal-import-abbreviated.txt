@@ -1,0 +1,111 @@
+# Cahier des Charges : telecom/telephony - Modal Import numeros abreges
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal d'import CSV de numeros abreges.
+
+### Objectif fonctionnel
+- Importer une liste de numeros abreges depuis un fichier
+- Previsualiser les donnees avant validation
+- Creer plusieurs entrees en une operation
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec zone upload + tableau preview
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal Header
+| Element | Description |
+|---------|-------------|
+| Titre | Importer une liste de numeros abreges |
+| Bouton fermer | X en haut a droite |
+
+### Zone Upload
+| Element | Description |
+|---------|-------------|
+| Style | Zone pointillee (drag & drop) |
+| Icone | Upload (fleche vers le haut) |
+| Lien | Selectionnez votre fichier |
+| Note | Supprimer les eventuelles lignes d'entete |
+
+### Tableau Apercu
+| Colonne | Description |
+|---------|-------------|
+| Numero abrege | Code court (ex: 2001) |
+| Numero cible | Numero au format international |
+| Prenom | Prenom du contact |
+| Nom | Nom du contact |
+
+### Info Import
+| Element | Description |
+|---------|-------------|
+| Texte | Numeros importes : X |
+
+### Boutons
+| Bouton | Type | Action |
+|--------|------|--------|
+| Valider | Primary | Importe les numeros |
+| Annuler | Secondary | Ferme la modal |
+
+---
+
+## 4. APIS & DONNEES
+
+### Format fichier
+```
+CSV sans entete
+Separateur: virgule ou point-virgule
+Colonnes: numero_abrege, numero_cible, prenom, nom
+```
+
+### Endpoint
+```
+POST /telephony/{billingAccount}/abbreviatedNumber/batch
+    Body: [
+      { abbreviatedNumber, destination, surname, name },
+      ...
+    ]
+```
+
+### Validation cote client
+| Champ | Regle |
+|-------|-------|
+| Numero abrege | 3-4 chiffres commencant par 2 |
+| Numero cible | Format international (00xx) |
+| Prenom/Nom | Optionnels |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_abbreviated_import_title": "Importer une liste de numeros abreges",
+  "telephony_abbreviated_import_drop": "Selectionnez votre fichier",
+  "telephony_abbreviated_import_hint": "Supprimer les eventuelles lignes d'entete.",
+  "telephony_abbreviated_import_preview": "Apercu",
+  "telephony_abbreviated_import_short": "Numero abrege",
+  "telephony_abbreviated_import_target": "Numero cible",
+  "telephony_abbreviated_import_firstname": "Prenom",
+  "telephony_abbreviated_import_lastname": "Nom",
+  "telephony_abbreviated_import_count": "Numeros importes :",
+  "telephony_abbreviated_import_submit": "Valider",
+  "telephony_abbreviated_import_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Fichier CSV uniquement
+- Pas d'entete dans le fichier
+- Import ecrase les numeros existants avec le meme code
+- Maximum 50 numeros par import (selon API)
+- Preview montre les 3-5 premieres lignes

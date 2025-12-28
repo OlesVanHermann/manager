@@ -1,0 +1,63 @@
+# Cahier des Charges : web-cloud/hosting - Modal Ajouter CRON
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Création d'une tâche CRON
+- **Type** : Wizard 3 étapes
+- **Objectif** : Configurer une nouvelle tâche planifiée
+
+## 2. STRUCTURE MODAL
+- Header avec titre et bouton fermer (×)
+- Stepper horizontal 3 étapes
+- Zone formulaire (gauche)
+- Panneau aide (droite)
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal avec overlay
+- **OdsStepper** : 3 étapes (Configuration, Planification, Résumé)
+- **OdsInput** : Champ commande avec préfixe "./"
+- **OdsSelect** : Langage, Notification email
+- **OdsCheckbox** : Activer la tâche
+- **OdsButton** : Annuler (secondaire), Suivant (primaire)
+
+## 4. ÉTAPES WIZARD
+| Étape | Nom | État |
+|-------|-----|------|
+| 1 | Configuration | Actif (cercle bleu) |
+| 2 | Planification | À venir (cercle gris) |
+| 3 | Résumé | À venir (cercle gris) |
+
+## 5. FORMULAIRE ÉTAPE 1 (Configuration)
+### Champs
+| Champ | Type | Obligatoire | Description |
+|-------|------|-------------|-------------|
+| Commande | Input avec préfixe | Oui | Chemin relatif (./ + input) |
+| Langage | Select | Oui | PHP 8.2, PHP 8.1, Node 18... |
+| Activer la tâche | Checkbox | - | Coché par défaut |
+| Notification email | Select | Oui | Contact administrateur, Autre, Non |
+| Description | Input | Non | Texte libre |
+
+### Valeurs par défaut
+- Commande : www/cron/monscript.php
+- Langage : PHP 8.2
+- Activer : Coché
+- Notification : Contact administrateur
+
+## 6. PANNEAU AIDE
+Sections :
+- **Commande** : Chemin relatif vers le script à exécuter depuis la racine
+- **Langage** : Version PHP ou Node.js pour l'exécution
+- **Logs** : Les logs d'exécution sont accessibles dans l'onglet "Logs et statistiques"
+
+## 7. MESSAGES D'AIDE
+- Commande : "Le chemin doit être relatif au répertoire racine de votre hébergement."
+- Notification : "ℹ️ Un e-mail sera envoyé en cas d'erreur"
+
+## 8. BOUTONS FOOTER
+- Annuler (secondaire, bordure)
+- Suivant → (primaire bleu)
+
+## 9. APIS & ENDPOINTS
+- POST /hosting/web/{serviceName}/cron : Créer CRON
+- GET /hosting/web/{serviceName}/runtime : Liste langages disponibles
+- GET /hosting/web/{serviceName}/email : Liste contacts email
