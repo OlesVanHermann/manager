@@ -1,83 +1,77 @@
-# Cahier des Charges : web-cloud/domain - Zone DNS
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.zone-dns.svg
+Route:   /web-cloud/domaines/domain/{domainName}/zone
+NAV:     Web Cloud > Domaines et DNS > [domain] > Zone DNS
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Écran** : Gestion de la zone DNS
-- **Type** : Page liste avec tableau
-- **Objectif** : Visualiser et gérer les enregistrements DNS
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| 213.186.33.5             | GET /domain/zone/{z}/record -> target           |
+| mx1.mail.ovh.net         | GET /domain/zone/{z}/record -> target           |
+| 12 entrees               | GET /domain/zone/{z}/record -> count            |
+================================================================================
 
-## 2. LAYOUT
-- Header OVHcloud
-- Breadcrumb : Web Cloud > Noms de domaine > example.com
-- Titre et description
-- Bandeau info propagation
-- Boutons d'action
-- Filtres (recherche + type)
-- Tableau des enregistrements
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Domaines et DNS actif)
+3. LEFT PANEL - Liste domaines/zones
+4. RIGHT PANEL
+   - Header: Nom domaine + badge statut
+   - NAV3: 10 tabs (Zone DNS actif)
+   - Title + Description
+   - Info banner (propagation en cours)
+   - Toolbar: Ajouter, Importer, Exporter, Reinitialiser, Filtre
+   - Table enregistrements DNS
+   - Pagination
 
-## 3. COMPOSANTS UI
-- **OdsMessage** : Bandeau info bleu
-- **OdsButton** : Ajouter une entrée, Modifier en mode textuel, Modifier le TTL
-- **OdsInput** : Recherche domaine
-- **OdsSelect** : Filtre par type
-- **OdsTable** : Tableau des enregistrements
-- **OdsBadge** : Type d'enregistrement (A, AAAA, MX, CNAME, TXT...)
-- **OdsActionMenu** : Menu contextuel (⋮)
+INFO BANNER
+Message: Une ou plusieurs actions ont recemment ete realisees. Temps de propagation : 24h maximum.
 
-## 4. TITRE
-"Zone DNS"
+TOOLBAR ACTIONS
+| Bouton              | Style    | Action                    |
+|---------------------|----------|---------------------------|
+| + Ajouter une entree| Primaire | Modal ajout enregistrement|
+| Importer            | Outline  | Modal import zone         |
+| Exporter            | Outline  | Telecharger fichier zone  |
+| Reinitialiser       | Outline  | Modal confirmation reset  |
 
-## 5. DESCRIPTION
-"Vous pouvez voir ici la configuration des diverses entrées de votre domaine."
+TABLE COLONNES
+| Colonne     | Description                          |
+|-------------|--------------------------------------|
+| Sous-domaine| @ ou nom du sous-domaine             |
+| Type        | Badge colore (A, AAAA, CNAME, MX...) |
+| TTL         | Duree en secondes                    |
+| Cible       | Valeur de l'enregistrement           |
+| Actions     | Menu contextuel (⋮)                  |
 
-## 6. BANDEAU INFO
-Fond bleu (#E8F0FE) :
-"ℹ️ Une ou plusieurs actions ont récemment été réalisées. Temps de propagation : 24h maximum."
+BADGES TYPES DNS
+| Type  | Background | Text Color |
+|-------|------------|------------|
+| A     | #DBEAFE    | #1E40AF    |
+| AAAA  | #FEE2E2    | #991B1B    |
+| CNAME | #D1FAE5    | #065F46    |
+| MX    | #FEF3C7    | #92400E    |
+| TXT   | #E0E7FF    | #3730A3    |
 
-## 7. BOUTONS D'ACTION
-| Bouton | Type | Action |
-|--------|------|--------|
-| + Ajouter une entrée | Primaire | Ouvre modal choix type enregistrement |
-| Modifier en mode textuel | Secondaire | Ouvre modal éditeur zone texte |
-| Modifier le TTL par défaut | Secondaire | Ouvre modal TTL |
+MENU ACTIONS (⋮)
+| Action          | Description              |
+|-----------------|--------------------------|
+| Modifier        | Modal edition            |
+| Copier la valeur| Copier cible             |
+| Supprimer       | Modal confirmation       |
 
-## 8. FILTRES
-| Filtre | Type | Placeholder |
-|--------|------|-------------|
-| Recherche | Input | "🔍 Recherche domaine…" |
-| Type | Select | "Type: Tous ▼" |
-
-## 9. TABLEAU
-| Colonne | Description |
-|---------|-------------|
-| DOMAINE | Nom complet avec point final |
-| TYPE | Badge coloré (A, AAAA, MX, CNAME, TXT...) |
-| TTL | Valeur en secondes |
-| CIBLE | Valeur de l'enregistrement |
-| ACTIONS | Menu ⋮ |
-
-## 10. BADGES TYPE
-Fond bleu clair (#E8F0FE), texte bleu (#0050D7)
-Types : A, AAAA, MX, CNAME, TXT, NS, SRV, CAA, etc.
-
-## 11. EXEMPLES DE DONNÉES
-| Domaine | Type | TTL | Cible |
-|---------|------|-----|-------|
-| example.com. | A | 3600 | 203.0.113.50 |
-| example.com. | AAAA | 3600 | 2001:db8::1 |
-| example.com. | MX | 3600 | 10 mx1.mail.ovh.net. |
-| www.example.com. | CNAME | 3600 | example.com. |
-| example.com. | TXT | 3600 | "v=spf1 include:mx.ovh.com ~all" |
-
-## 12. ACTION MENU
-| Option | Couleur | Action |
-|--------|---------|--------|
-| Modifier | Normal | Ouvre modal modification |
-| Supprimer | Rouge (#991B1B) | Ouvre modal confirmation |
-
-## 13. APIS & ENDPOINTS
-- GET /domain/zone/{zoneName}/record : Lister les enregistrements
-- POST /domain/zone/{zoneName}/record : Créer un enregistrement
-- PUT /domain/zone/{zoneName}/record/{id} : Modifier un enregistrement
-- DELETE /domain/zone/{zoneName}/record/{id} : Supprimer un enregistrement
-- POST /domain/zone/{zoneName}/refresh : Rafraîchir la zone
-
+API ENDPOINTS
+GET    /domain/zone/{zoneName}/record          -> Liste enregistrements
+GET    /domain/zone/{zoneName}/record/{id}     -> Detail enregistrement
+POST   /domain/zone/{zoneName}/record          -> Ajouter enregistrement
+PUT    /domain/zone/{zoneName}/record/{id}     -> Modifier enregistrement
+DELETE /domain/zone/{zoneName}/record/{id}     -> Supprimer enregistrement
+GET    /domain/zone/{zoneName}/export          -> Exporter zone (fichier)
+POST   /domain/zone/{zoneName}/import          -> Importer zone
+POST   /domain/zone/{zoneName}/reset           -> Reinitialiser zone
+================================================================================

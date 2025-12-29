@@ -1,72 +1,50 @@
-# Cahier des Charges : web-cloud/domain - Modal Modifier entrée DNS
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-zone-record-edit.svg
+Route:   Modal - Modifier entree DNS
+NAV:     Web Cloud > Domaines et DNS > [domain] > Zone DNS > Modifier
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Modification d'un enregistrement DNS
-- **Type** : Formulaire de modification
-- **Objectif** : Éditer une entrée existante de la zone DNS
+TYPE: MODAL
+Parent: target_.web-cloud.domain.zone-dns.svg
+Trigger: Clic sur "Modifier" dans menu actions d'une entree
+================================================================================
 
-## 2. STRUCTURE MODAL
-- Header avec titre et bouton fermer (✕)
-- Type de champ (readonly avec badge)
-- Champ sous-domaine
-- Section TTL (défaut/personnalisé)
-- Champ cible
-- Note sur propagation
-- Footer avec boutons
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| A                        | GET /domain/zone/{z}/record/{id} -> fieldType   |
+| www                      | GET /domain/zone/{z}/record/{id} -> subDomain   |
+| 3600                     | GET /domain/zone/{z}/record/{id} -> ttl         |
+| 213.186.33.5             | GET /domain/zone/{z}/record/{id} -> target      |
+================================================================================
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur (650x520)
-- **OdsBadge** : Type de champ (bleu)
-- **OdsInput** : Sous-domaine, TTL personnalisé, Cible
-- **OdsRadio** : TTL (Par défaut / Personnalisé)
-- **OdsButton** : Annuler, Modifier
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer (x)
+2. Formulaire
+   - Type (lecture seule)
+   - Sous-domaine (editable)
+   - TTL (editable)
+   - Cible (editable)
+3. Banniere info propagation
+4. Footer: Annuler + Enregistrer
 
-## 4. TITRE
-"Modifier l'entrée DNS"
+CHAMPS FORMULAIRE
+| Champ         | Type   | Editable | Validation             | Exemple      |
+|---------------|--------|----------|------------------------|--------------|
+| Type          | badge  | Non      | -                      | A            |
+| Sous-domaine  | text   | Oui      | Optionnel, @ si vide   | www          |
+| TTL           | number | Oui      | Min: 60, Default: 3600 | 3600         |
+| Cible         | text   | Oui      | Required, format valide| 213.186.33.5 |
 
-## 5. CHAMP TYPE (READONLY)
-| Élément | Valeur |
-|---------|--------|
-| Label | "Type de champ" |
-| Input | Désactivé (fond gris) |
-| Badge | [A] (bleu #E8F0FE) |
-| Note | Le type n'est pas modifiable |
+BOUTONS
+| Bouton     | Style     | Action                    |
+|------------|-----------|---------------------------|
+| Annuler    | Secondary | Fermer modal sans sauver  |
+| Enregistrer| Primaire  | PUT + fermer modal        |
 
-## 6. CHAMP SOUS-DOMAINE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Sous-domaine" |
-| Input | "www" |
-| Suffixe (addon gris) | ".example.com" |
-
-## 7. SECTION TTL
-| Option | État | Valeur |
-|--------|------|--------|
-| Par défaut | ○ | - |
-| Personnalisé | ● Sélectionné | 3600 secondes |
-
-Input personnalisé :
-- Largeur : 120px
-- Valeur : 3600
-- Suffixe : "secondes"
-
-## 8. CHAMP CIBLE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Cible *" |
-| Obligatoire | Oui |
-| Input | "203.0.113.50" |
-
-## 9. NOTE PROPAGATION
-"La modification sera immédiate dans la zone DNS, mais veuillez prendre en compte le temps de propagation (maximum 24h)."
-
-## 10. BOUTONS FOOTER
-- Annuler (secondaire)
-- Modifier (primaire)
-
-## 11. APIS & ENDPOINTS
-- PUT /domain/zone/{zoneName}/record/{id} : Modifier enregistrement DNS
-  - subDomain: string (optionnel)
-  - target: string
-  - ttl: number (optionnel)
-
+API ENDPOINT
+PUT /domain/zone/{zoneName}/record/{id} -> Modifier enregistrement
+================================================================================

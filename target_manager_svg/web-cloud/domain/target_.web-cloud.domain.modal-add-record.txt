@@ -1,78 +1,68 @@
-# Cahier des Charges : web-cloud/domain - Modal Ajouter entrée DNS
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-add-record.svg
+Route:   Modal - Ajouter entree DNS
+NAV:     Web Cloud > Domaines et DNS > [domain] > Zone DNS > + Ajouter
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Création d'un enregistrement DNS
-- **Type** : Wizard 3 étapes
-- **Objectif** : Ajouter un enregistrement dans la zone DNS
+TYPE: MODAL
+Parent: target_.web-cloud.domain.zone-dns.svg
+Trigger: Clic sur bouton "+ Ajouter une entree"
+================================================================================
 
-## 2. STRUCTURE MODAL
-- Header avec titre et bouton fermer (×)
-- Stepper horizontal 3 étapes
-- Zone sélection type
-- Panneau aide
-- Footer avec boutons
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | Context - domaine courant                       |
+================================================================================
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur avec overlay
-- **OdsStepper** : 3 étapes (Type, Configuration, Résumé)
-- **OdsToggleGroup** : Boutons sélection type
-- **OdsCard** : Panneau aide
-- **OdsButton** : Annuler, Suivant
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer (x)
+2. Wizard Steps (3 etapes)
+   - 1. Type d'enregistrement (actif)
+   - 2. Configuration
+   - 3. Confirmation
+3. Grille selection types
+4. Description type selectionne
+5. Champs formulaire (preview)
+6. Footer: Annuler + Suivant
 
-## 4. ÉTAPES WIZARD
-| Étape | Nom | État |
-|-------|-----|------|
-| 1 | Type d'enregistrement | Actif |
-| 2 | Configuration | À venir |
-| 3 | Résumé | À venir |
+WIZARD STEPS
+| Etape | Titre          | Description                |
+|-------|----------------|----------------------------|
+| 1     | Type           | Selection type DNS         |
+| 2     | Configuration  | Saisie des valeurs         |
+| 3     | Confirmation   | Resume avant validation    |
 
-## 5. DESCRIPTION
-"Sélectionnez le type d'enregistrement DNS que vous souhaitez créer."
+TYPES D'ENREGISTREMENT (grille 5x2)
+| Type  | Description                    | Champs specifiques          |
+|-------|--------------------------------|-----------------------------|
+| A     | Adresse IPv4                   | Cible: IPv4                 |
+| AAAA  | Adresse IPv6                   | Cible: IPv6                 |
+| CNAME | Alias vers un autre domaine    | Cible: FQDN                 |
+| MX    | Serveur mail                   | Priorite + Serveur          |
+| TXT   | Texte libre (SPF, DKIM...)     | Cible: texte                |
+| NS    | Serveur DNS                    | Cible: hostname             |
+| SRV   | Service                        | Priority/Weight/Port/Target |
+| CAA   | Certification Authority        | Flags/Tag/Value             |
+| DKIM  | DomainKeys (emails)            | Selecteur + Cle             |
+| SPF   | Sender Policy Framework        | Generateur SPF              |
 
-## 6. TYPES D'ENREGISTREMENTS
+CHAMPS FORMULAIRE
+| Champ         | Type   | Validation             | Exemple      |
+|---------------|--------|------------------------|--------------|
+| Sous-domaine  | text   | Optionnel, @ si vide   | www          |
+| TTL           | number | Min: 60, Default: 3600 | 3600         |
+| Cible         | text   | Required, format valide| 213.186.33.5 |
 
-### Enregistrements de base
-| Type | Description |
-|------|-------------|
-| A | IPv4 (sélectionné par défaut) |
-| AAAA | IPv6 |
-| NS | Serveur de noms |
-| CNAME | Alias |
-| DNAME | Alias de zone |
+BOUTONS
+| Bouton   | Style     | Action                    |
+|----------|-----------|---------------------------|
+| Annuler  | Secondary | Fermer modal sans sauver  |
+| Suivant  | Primaire  | Passer a l'etape suivante |
 
-### Enregistrements avancés
-| Type | Description |
-|------|-------------|
-| CAA | Autorité de certification |
-| TXT | Texte |
-| NAPTR | Réécriture URI |
-| SRV | Service |
-| LOC | Localisation |
-| SSHFP | Empreinte SSH |
-| TLSA | Certificat TLS |
-| RP | Responsable |
-| SVCB | Service Binding |
-| HTTPS | HTTPS Binding |
-
-### Enregistrements email
-| Type | Description |
-|------|-------------|
-| MX | Serveur mail |
-| SPF | Sender Policy |
-| DKIM | DomainKeys |
-| DMARC | Authentification |
-
-## 7. PANNEAU AIDE
-Fond gris (#F9FAFB) avec descriptions :
-- **Enregistrement A** : Associe un nom de domaine à une adresse IPv4
-- **Enregistrement AAAA** : Associe un nom de domaine à une adresse IPv6
-- **Enregistrement CNAME** : Crée un alias vers un autre nom de domaine
-- **Enregistrement MX** : Définit les serveurs de messagerie pour votre domaine
-
-## 8. BOUTONS FOOTER
-- Annuler (secondaire)
-- Suivant → (primaire)
-
-## 9. APIS & ENDPOINTS
-- POST /domain/zone/{zoneName}/record : Créer enregistrement
-
+API ENDPOINT
+POST /domain/zone/{zoneName}/record -> Ajouter enregistrement
+================================================================================

@@ -1,70 +1,59 @@
-# Cahier des Charges : web-cloud/domain - Modal Ajouter redirection
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-add-redirection.svg
+Route:   Modal - Ajouter redirection
+NAV:     Web Cloud > Domaines et DNS > [domain] > Redirections > + Ajouter
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Création d'une redirection web
-- **Type** : Wizard 4 étapes
-- **Objectif** : Configurer une redirection HTTP pour un sous-domaine
+TYPE: MODAL
+Parent: target_.web-cloud.domain.redirection.svg
+Trigger: Clic sur bouton "+ Ajouter une redirection"
+================================================================================
 
-## 2. STRUCTURE MODAL
-- Header avec titre et bouton fermer (×)
-- Stepper horizontal 4 étapes
-- Formulaire sous-domaine
-- Checkbox www
-- Bandeau info
-- Panneau aide types
-- Footer avec boutons
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | Context - domaine courant                       |
+================================================================================
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur avec overlay
-- **OdsStepper** : 4 étapes
-- **OdsInput** : Sous-domaine
-- **OdsCheckbox** : Option www
-- **OdsMessage** : Bandeau info bleu
-- **OdsCard** : Panneau types redirection
-- **OdsButton** : Annuler, Suivant
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer (x)
+2. Formulaire
+   - Source (depuis)
+   - Destination (vers)
+   - Type de redirection (radio)
+   - Options avancees (checkbox)
+3. Banniere info
+4. Footer: Annuler + Enregistrer
 
-## 4. ÉTAPES WIZARD
-| Étape | Nom | État |
-|-------|-----|------|
-| 1 | Sous-domaine | Actif |
-| 2 | Type de redirection | À venir |
-| 3 | Cible | À venir |
-| 4 | Résumé | À venir |
+CHAMPS FORMULAIRE
+| Champ         | Type     | Validation           | Exemple                      |
+|---------------|----------|----------------------|------------------------------|
+| Source        | text     | Required, URL valide | http://example.com/          |
+| Destination   | text     | Required, URL valide | https://www.example.com/page |
+| Type          | radio    | Required             | 301, iframe, 302             |
+| Wildcard      | checkbox | Optional             | *.example.com                |
 
-## 5. DESCRIPTION ÉTAPE 1
-"Indiquez le sous-domaine que vous souhaitez rediriger."
+TYPES DE REDIRECTION
+| Type          | Code | Description                                 |
+|---------------|------|---------------------------------------------|
+| Visible       | 301  | Redirection permanente - recommandee SEO    |
+| Invisible     | -    | Contenu dans iframe, URL inchangee          |
+| Temporaire    | 302  | Redirection temporaire - maintenances       |
 
-## 6. CHAMP SOUS-DOMAINE
-| Élément | Valeur |
-|---------|--------|
-| Input | "www" |
-| Suffixe fixe | .example.com (fond gris) |
+OPTIONS AVANCEES
+| Option    | Description                               |
+|-----------|-------------------------------------------|
+| Wildcard  | Redirige tous les sous-domaines           |
 
-## 7. CHECKBOX WWW
-☑ "Créer aussi la redirection pour www.www.example.com"
+BOUTONS
+| Bouton     | Style     | Action                    |
+|------------|-----------|---------------------------|
+| Annuler    | Secondary | Fermer modal sans sauver  |
+| Enregistrer| Primaire  | POST + fermer modal       |
 
-## 8. BANDEAU INFO
-Fond bleu (#E8F0FE) :
-- "ℹ️ Informations"
-- "Laissez le champ vide pour rediriger le domaine principal (example.com)."
-- "Les sous-domaines existants peuvent être écrasés par cette redirection."
-
-## 9. PANNEAU TYPES DE REDIRECTION
-Fond gris avec descriptions :
-
-### Redirection visible
-L'URL affichée dans le navigateur change vers l'adresse de destination.
-
-### Redirection invisible (iframe)
-L'URL reste celle du domaine source mais affiche le contenu de la cible.
-
-### Redirection permanente (301)
-Indique aux moteurs de recherche que la redirection est définitive.
-
-## 10. BOUTONS FOOTER
-- Annuler (secondaire)
-- Suivant → (primaire)
-
-## 11. APIS & ENDPOINTS
-- POST /domain/zone/{zoneName}/redirection : Créer redirection
-
+API ENDPOINT
+POST /domain/{serviceName}/redirection -> Ajouter redirection
+================================================================================

@@ -1,68 +1,62 @@
-# Cahier des Charges : web-cloud/domain - Dashboard
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.dashboard.svg
+Route:   /web-cloud/domaines/domain/{domainName}/dashboard
+NAV:     Web Cloud > Domaines et DNS > [domain]
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Écran** : Dashboard principal du domaine
-- **Type** : Page avec grille de tuiles
-- **Objectif** : Vue d'ensemble du domaine et accès rapide aux fonctionnalités
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| Actif                    | GET /domain/{d} -> state                        |
+| 15/01/2020               | GET /domain/{d}/serviceInfos -> creation        |
+| 15/01/2025               | GET /domain/{d}/serviceInfos -> expiration      |
+| Activee                  | GET /domain/{d} -> transferLockStatus           |
+| Active (DNSSEC)          | GET /domain/{d}/dnssec -> state                 |
+| hosting-example...       | GET /domain/{d}/hosting -> serviceName          |
+================================================================================
 
-## 2. STRUCTURE DE LA PAGE
-- Header OVHcloud
-- Sidebar navigation avec liste domaines
-- Breadcrumb
-- Titre domaine avec badge statut
-- Grille tuiles (2x2)
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Domaines et DNS actif)
+3. LEFT PANEL - Liste domaines/zones
+4. RIGHT PANEL
+   - Header: Nom domaine + badge statut
+   - Grille 2x2 de tuiles informatives
 
-## 3. COMPOSANTS UI
-- **OdsCard** : 4 tuiles informatives
-- **OdsBadge** : Statut (Actif, Activé, Activée)
-- **OdsLink** : Actions (Modifier, Afficher, Configurer, Gérer, Résilier)
+TUILES (2x2)
+| Tuile                    | Contenu                              |
+|--------------------------|--------------------------------------|
+| Informations generales   | Statut, DNS, dates, protection       |
+| Securite                 | Transfert, DNSSEC, AUTH, WHOIS       |
+| Hebergement Web/Email    | Hosting associe, multisites          |
+| Resume des options       | DNS Anycast, date effet              |
 
-## 4. SIDEBAR
-- WEB CLOUD
-- **Noms de domaine** (sélectionné)
-  - example.com (actif)
-  - monsite.fr
-- Hébergements
-- E-mails
+TUILE 1: INFORMATIONS GENERALES
+| Champ             | Type    | Valeur exemple    |
+|-------------------|---------|-------------------|
+| Statut            | Badge   | Actif             |
+| Serveurs DNS      | Badge   | Actifs            |
+| Date creation     | Text    | 15/01/2020        |
+| Date expiration   | Text    | 15/01/2025        |
+| Protection        | Badge   | Activee           |
+| DNSSEC            | Badge   | Active            |
 
-## 5. HEADER DOMAINE
-- Titre : **example.com**
-- Badge : "Actif" (vert)
+TUILE 2: SECURITE
+| Element           | Statut  | Action            |
+|-------------------|---------|-------------------|
+| Protection transf | Activee | Modifier          |
+| DNSSEC            | Active  | Modifier          |
+| Code AUTH/INFO    | -       | Afficher          |
+| Affichage WHOIS   | -       | Configurer        |
+| Adresses Anti-spam| -       | Gerer             |
 
-## 6. TUILE 1 : Informations générales
-| Champ | Valeur |
-|-------|--------|
-| Statut | Badge "Actif" (vert) |
-| Serveurs DNS | Badge "Actifs" (vert) |
-| Date de création | 15/01/2020 |
-| Date d'expiration | 15/01/2025 |
-| Protection | Badge "Activée" (vert) |
-| DNSSEC | Badge "Activé" (vert) |
-
-## 7. TUILE 2 : Sécurité
-| Élément | Statut | Action |
-|---------|--------|--------|
-| Protection contre le transfert | Activée (vert) | Modifier |
-| Délégation Sécurisée - DNSSEC | Activé (vert) | Modifier |
-| Code AUTH/INFO | - | Afficher |
-| Affichage du WHOIS | - | Configurer |
-| Adresses Anti-spam | - | Gérer |
-
-## 8. TUILE 3 : Hébergement Web et e-mail
-| Élément | Valeur |
-|---------|--------|
-| Hébergements associés | hosting-example.cluster001.hosting.ovh.net (lien) |
-| Sous-domaines et multisites | www.example.com | Tout afficher |
-
-## 9. TUILE 4 : Résumé des options
-| Option | Statut | Action |
-|--------|--------|--------|
-| DNS Anycast | Activé (vert) | Résilier |
-| Date d'effet | 15/01/2025 | - |
-
-## 10. APIS & ENDPOINTS
-- GET /domain/{serviceName} : Infos domaine
-- GET /domain/{serviceName}/serviceInfos : Infos service
-- GET /domain/{serviceName}/dnssec : État DNSSEC
-- GET /domain/{serviceName}/option : Options actives
-
+API ENDPOINTS
+GET  /domain/{domain}                  -> Details domaine
+GET  /domain/{domain}/serviceInfos     -> Infos facturation
+GET  /domain/{domain}/dnssec           -> Etat DNSSEC
+GET  /domain/{domain}/option           -> Options actives
+================================================================================

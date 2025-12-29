@@ -1,45 +1,47 @@
-# Cahier des Charges : web-cloud/domain - Modal Supprimer entrée DNS
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-zone-record-delete.svg
+Route:   Modal - Supprimer entree DNS
+NAV:     Web Cloud > Domaines et DNS > [domain] > Zone DNS > Supprimer
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Suppression d'un enregistrement DNS
-- **Type** : Modal de confirmation danger
-- **Objectif** : Supprimer une entrée de la zone DNS
+TYPE: MODAL (confirmation danger)
+Parent: target_.web-cloud.domain.zone-dns.svg
+Trigger: Clic sur "Supprimer" dans menu actions d'une entree
+================================================================================
 
-## 2. STRUCTURE MODAL
-- Header avec titre et bouton fermer (✕)
-- Question de confirmation
-- Récapitulatif de l'enregistrement (fond gris)
-- Bandeau info propagation
-- Footer avec boutons
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| A                        | GET /domain/zone/{z}/record/{id} -> fieldType   |
+| www                      | GET /domain/zone/{z}/record/{id} -> subDomain   |
+| 213.186.33.5             | GET /domain/zone/{z}/record/{id} -> target      |
+| 3600                     | GET /domain/zone/{z}/record/{id} -> ttl         |
+================================================================================
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur compact (550x380)
-- **OdsCard** : Récapitulatif (fond gris #F9FAFB)
-- **OdsMessage** : Bandeau info bleu
-- **OdsButton** : Annuler, Supprimer (danger rouge)
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer (x)
+2. Message confirmation
+3. Recap enregistrement a supprimer
+4. Banniere warning
+5. Footer: Annuler + Supprimer
 
-## 4. TITRE
-"Supprimer l'entrée de la zone DNS"
+RECAP ENREGISTREMENT
+| Champ        | Description              |
+|--------------|--------------------------|
+| Type         | Badge colore (A, CNAME..)|
+| Sous-domaine | @ ou nom                 |
+| Cible        | Valeur de l'enregistrement|
+| TTL          | Duree en secondes        |
 
-## 5. QUESTION
-"Voulez-vous réellement supprimer l'entrée suivante de la zone DNS du domaine *example.com* ?"
+BOUTONS
+| Bouton    | Style   | Action                    |
+|-----------|---------|---------------------------|
+| Annuler   | Secondary| Fermer modal sans action  |
+| Supprimer | Danger  | DELETE + fermer modal     |
 
-## 6. RÉCAPITULATIF ENREGISTREMENT
-Fond gris (#F9FAFB), 3 lignes :
-| Champ | Valeur |
-|-------|--------|
-| Type de champ : | A |
-| Sous-domaine : | www |
-| Cible : | 203.0.113.50 |
-
-## 7. BANDEAU INFO
-Fond bleu (#E8F0FE) :
-"ℹ️ La suppression sera immédiate dans la zone DNS, mais veuillez prendre en compte le temps de propagation (maximum 24h)."
-
-## 8. BOUTONS FOOTER
-- Annuler (secondaire)
-- Supprimer (danger rouge)
-
-## 9. APIS & ENDPOINTS
-- DELETE /domain/zone/{zoneName}/record/{id} : Supprimer enregistrement
-
+API ENDPOINT
+DELETE /domain/zone/{zoneName}/record/{id} -> Supprimer enregistrement
+================================================================================

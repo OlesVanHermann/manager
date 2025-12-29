@@ -1,58 +1,49 @@
-# Cahier des Charges : web-cloud/domain - Modal Réinitialiser zone DNS
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.zone-reset.svg
+Route:   Modal - Reinitialiser zone DNS
+NAV:     Web Cloud > Domaines et DNS > [domain] > Zone DNS > Reinitialiser
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Réinitialisation de la zone DNS
-- **Type** : Modal danger avec confirmation
-- **Objectif** : Supprimer tous les enregistrements et réinitialiser
+TYPE: MODAL (danger avec confirmation)
+Parent: target_.web-cloud.domain.zone-dns.svg
+Trigger: Clic sur bouton "Reinitialiser"
+================================================================================
 
-## 2. STRUCTURE MODAL
-- Header avec icône warning rouge
-- Titre
-- Bandeau danger
-- Options de réinitialisation (3 radios)
-- Champ confirmation par saisie domaine
-- Footer avec boutons
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | Context - domaine courant                       |
+================================================================================
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur (600x560)
-- **OdsIcon** : Point d'exclamation rouge sur cercle rouge clair
-- **OdsMessage** : Bandeau danger rouge
-- **OdsRadio** : 3 options de réinitialisation
-- **OdsInput** : Confirmation par saisie domaine
-- **OdsButton** : Annuler, Réinitialiser (danger rouge)
+STRUCTURE MODAL
+1. Icone warning (danger)
+2. Header: Titre
+3. Banniere danger (avertissement)
+4. Options de reinitialisation (radio)
+5. Champ confirmation texte
+6. Footer: Annuler + Reinitialiser
 
-## 4. ICÔNE WARNING
-- Cercle rouge clair (#FEE2E2)
-- Point d'exclamation rouge (#991B1B)
+TYPES DE REINITIALISATION
+| Type        | Description                                      |
+|-------------|--------------------------------------------------|
+| Minimale    | Cree uniquement les enregistrements NS de base   |
+| Normale     | Cree NS + A/AAAA vers les serveurs OVH           |
+| Avec MX     | Cree NS + A/AAAA + MX vers les serveurs OVH      |
 
-## 5. TITRE
-"Réinitialiser la zone DNS"
+CONFIRMATION
+| Champ        | Type | Validation                   |
+|--------------|------|------------------------------|
+| Confirmation | text | Required, doit etre "REINITIALISER" |
 
-## 6. BANDEAU DANGER
-Fond rouge (#FEE2E2) :
-- "⚠️ Cette action est irréversible ! Tous les enregistrements"
-- "DNS personnalisés seront supprimés."
+BOUTONS
+| Bouton       | Style   | Action                    |
+|--------------|---------|---------------------------|
+| Annuler      | Secondary| Fermer modal sans action  |
+| Reinitialiser| Danger  | POST + fermer modal       |
 
-## 7. OPTIONS DE RÉINITIALISATION
-Label : "Type de réinitialisation"
-
-| Option | Description |
-|--------|-------------|
-| ● Réinitialisation minimale | Crée uniquement les enregistrements NS de base |
-| ○ Réinitialisation avec redirection OVH | Pointe le domaine vers les serveurs OVH (A, MX, CNAME) |
-| ○ Réinitialisation avec hébergement web | Configure la zone pour votre hébergement OVH existant |
-
-## 8. CONFIRMATION
-- Label : "Confirmez en tapant le nom du domaine"
-- Input : "example.com"
-- Validation : Doit correspondre exactement au nom du domaine
-
-## 9. BOUTONS FOOTER
-- Annuler (secondaire)
-- Réinitialiser (danger rouge)
-
-## 10. APIS & ENDPOINTS
-- POST /domain/zone/{zoneName}/reset : Réinitialiser la zone
-  - minimized: boolean (réinitialisation minimale)
-  - DnsRecords: array (enregistrements à recréer)
-
+API ENDPOINT
+POST /domain/zone/{zoneName}/reset -> Reinitialiser zone DNS
+================================================================================

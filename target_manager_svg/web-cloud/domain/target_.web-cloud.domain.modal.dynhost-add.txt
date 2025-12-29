@@ -1,70 +1,49 @@
-# Cahier des Charges : web-cloud/domain - Modal Ajouter DynHost
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.dynhost-add.svg
+Route:   Modal - Ajouter DynHost
+NAV:     Web Cloud > Domaines et DNS > [domain] > DynHost > + Ajouter
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Création d'un enregistrement DynHost
-- **Type** : Formulaire de création
-- **Objectif** : Configurer un DynHost pour IP dynamique
+TYPE: MODAL
+Parent: target_.web-cloud.domain.dynhost.svg
+Trigger: Clic sur bouton "+ Ajouter un DynHost"
+================================================================================
 
-## 2. STRUCTURE MODAL
-- Header avec titre et bouton fermer (×)
-- Bandeau info explicatif
-- Formulaire 4 champs
-- Info URL mise à jour
-- Footer avec boutons
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | Context - domaine courant                       |
+================================================================================
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur (600x600)
-- **OdsMessage** : Bandeau info bleu
-- **OdsInput** : Sous-domaine, IP, Identifiant, Mot de passe
-- **OdsButton** : Annuler, Créer
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer (x)
+2. Banniere info (explication DynHost)
+3. Formulaire
+   - Sous-domaine
+   - Adresse IP actuelle
+   - Identifiant DynHost
+   - Mot de passe
+   - Confirmation mot de passe
+4. Footer: Annuler + Creer
 
-## 4. TITRE
-"Ajouter un DynHost"
+CHAMPS FORMULAIRE
+| Champ               | Type     | Validation           | Exemple          |
+|---------------------|----------|----------------------|------------------|
+| Sous-domaine        | text     | Required, alphanum   | home             |
+| Adresse IP actuelle | text     | Required, IPv4 valide| 90.123.45.67     |
+| Identifiant DynHost | text     | Auto-genere          | example.com-home |
+| Mot de passe        | password | Required, min 8 chars| ••••••••         |
+| Confirmation        | password | Required, match      | ••••••••         |
 
-## 5. BANDEAU INFO
-Fond bleu (#E8F0FE) :
-- "ℹ️ Le DynHost permet de faire pointer un sous-domaine vers"
-- "une adresse IP dynamique (connexion internet résidentielle)."
-- "L'IP sera mise à jour automatiquement via un client DynDNS."
+BOUTONS
+| Bouton   | Style     | Action                    |
+|----------|-----------|---------------------------|
+| Annuler  | Secondary | Fermer modal sans sauver  |
+| Creer    | Primaire  | POST + fermer modal       |
 
-## 6. CHAMP SOUS-DOMAINE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Sous-domaine" |
-| Input | "home" |
-| Suffixe | ".example.com" |
-
-## 7. CHAMP IP ACTUELLE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Adresse IP actuelle" |
-| Placeholder | "Ex: 90.123.45.67" |
-
-## 8. CHAMP IDENTIFIANT
-| Élément | Valeur |
-|---------|--------|
-| Label | "Identifiant DynHost" |
-| Valeur | "example.com-home" |
-| Note | Généré automatiquement |
-
-## 9. CHAMP MOT DE PASSE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Mot de passe DynHost" |
-| Type | Password (masqué) |
-| Action | Lien "Générer" |
-
-## 10. INFO URL MISE À JOUR
-Fond gris (#F9FAFB) :
-"URL de mise à jour: https://www.ovh.com/nic/update?system=dyndns&hostname=..."
-
-## 11. BOUTONS FOOTER
-- Annuler (secondaire)
-- Créer (primaire)
-
-## 12. APIS & ENDPOINTS
-- POST /domain/zone/{zoneName}/dynHost/record : Créer DynHost
-  - subDomain: string
-  - ip: string
-- POST /domain/zone/{zoneName}/dynHost/login : Créer login DynHost
-
+API ENDPOINT
+POST /domain/zone/{zoneName}/dynHost/record -> Ajouter DynHost
+================================================================================

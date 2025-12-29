@@ -1,81 +1,54 @@
-# Cahier des Charges : web-cloud/domain - Zone DNS
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.dns-zone.svg
+Route:   /web-cloud/domaines/zone/{zoneName}
+NAV:     Web Cloud > Domaines et DNS > Zone DNS
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Écran** : Gestion de la zone DNS
-- **Type** : Page avec tableau paginé
-- **Objectif** : Gérer les enregistrements DNS du domaine
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/zone/{z} -> zoneName                |
+| 213.186.33.5             | GET /domain/zone/{z}/record -> target           |
+| 12 entrees               | GET /domain/zone/{z}/record -> count            |
+================================================================================
 
-## 2. STRUCTURE DE LA PAGE
-- Header OVHcloud
-- Sidebar navigation
-- Breadcrumb
-- Titre
-- Description
-- Boutons d'action
-- Barre recherche/filtre
-- Tableau enregistrements DNS
-- Menu contextuel
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Domaines et DNS actif)
+3. LEFT PANEL - Liste zones DNS
+4. RIGHT PANEL
+   - Title: Zone DNS de {zoneName}
+   - Toolbar: Ajouter, Importer, Exporter, Reinitialiser, Filtre
+   - Table enregistrements DNS
+   - Pagination
 
-## 3. COMPOSANTS UI
-- **OdsButton** : Ajouter entrée (primaire), Mode textuel, TTL, Réinitialiser
-- **OdsInput** : Recherche
-- **OdsSelect** : Filtre par type
-- **OdsTable** : Enregistrements DNS
-- **OdsActionMenu** : Menu ⋮ avec options
+NOTE: Cette page affiche une zone DNS independante (sans domaine associe).
+Pour les zones liees a un domaine, voir target_.web-cloud.domain.dns.svg
 
-## 4. DESCRIPTION
-"Vous pouvez voir ici la configuration des diverses entrées de votre domaine."
+TOOLBAR ACTIONS
+| Bouton              | Style    | Action                    |
+|---------------------|----------|---------------------------|
+| + Ajouter une entree| Primaire | Modal ajout enregistrement|
+| Importer            | Outline  | Modal import zone         |
+| Exporter            | Outline  | Telecharger fichier zone  |
+| Reinitialiser       | Outline  | Modal confirmation reset  |
 
-## 5. BOUTONS D'ACTION
-| Bouton | Style |
-|--------|-------|
-| Ajouter une entrée | Primaire bleu |
-| Modifier en mode textuel | Secondaire |
-| Modifier le TTL par défaut | Secondaire |
-| Réinitialiser ma zone DNS | Secondaire |
+TABLE COLONNES
+| Colonne     | Description                          |
+|-------------|--------------------------------------|
+| Sous-domaine| @ ou nom du sous-domaine             |
+| Type        | Badge colore (A, CNAME, MX, TXT...)  |
+| TTL         | Duree en secondes                    |
+| Cible       | Valeur de l'enregistrement           |
+| Actions     | Menu contextuel (⋮)                  |
 
-## 6. BARRE RECHERCHE/FILTRE
-- Input : "Recherche domaine…"
-- Select : "Tous" (filtre par type)
-
-## 7. TABLEAU ENREGISTREMENTS DNS
-| Colonne | Description |
-|---------|-------------|
-| Domaine | Nom complet avec point final |
-| Type | Badge coloré (A, AAAA, CNAME, MX, TXT, NS) |
-| TTL | Durée en secondes |
-| Cible | Valeur de l'enregistrement |
-| Actions | Menu ⋮ |
-
-### Codes couleur types
-| Type | Couleur |
-|------|---------|
-| A | Bleu (#0050D7) |
-| AAAA | Bleu |
-| CNAME | Violet (#9333EA) |
-| MX | Vert (#059669) |
-| TXT | Gris (#6B7280) |
-| NS | Rouge (#DC2626) |
-
-### Exemple données
-| Domaine | Type | TTL | Cible |
-|---------|------|-----|-------|
-| example.com. | A | 3600 | 203.0.113.50 |
-| example.com. | AAAA | 3600 | 2001:db8::1 |
-| www.example.com. | CNAME | 3600 | example.com. |
-| example.com. | MX | 3600 | 10 mx1.mail.ovh.net. |
-| example.com. | TXT | 3600 | "v=spf1 include:mx.ovh.com ~all" |
-| example.com. | NS | 86400 | dns100.ovh.net. |
-
-## 8. MENU ACTIONS (⋮)
-- Modifier l'entrée
-- Supprimer l'entrée (rouge)
-
-## 9. APIS & ENDPOINTS
-- GET /domain/zone/{zoneName}/record : Liste enregistrements
-- POST /domain/zone/{zoneName}/record : Ajouter entrée
-- PUT /domain/zone/{zoneName}/record/{id} : Modifier entrée
-- DELETE /domain/zone/{zoneName}/record/{id} : Supprimer entrée
-- POST /domain/zone/{zoneName}/reset : Réinitialiser zone
-- POST /domain/zone/{zoneName}/refresh : Rafraîchir zone
-
+API ENDPOINTS
+GET    /domain/zone/{zoneName}                   -> Info zone
+GET    /domain/zone/{zoneName}/record            -> Liste enregistrements
+POST   /domain/zone/{zoneName}/record            -> Ajouter enregistrement
+PUT    /domain/zone/{zoneName}/record/{id}       -> Modifier enregistrement
+DELETE /domain/zone/{zoneName}/record/{id}       -> Supprimer enregistrement
+================================================================================

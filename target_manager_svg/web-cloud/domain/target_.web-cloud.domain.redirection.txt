@@ -1,90 +1,73 @@
-# Cahier des Charges : web-cloud/domain - Redirection
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.redirection.svg
+Route:   /web-cloud/domaines/domain/{domainName}/redirection
+NAV:     Web Cloud > Domaines et DNS > [domain] > Redirections
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Écran** : Gestion des redirections du domaine
-- **Type** : Page liste avec tableau
-- **Objectif** : Créer, modifier, supprimer des redirections web
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| www.example.com          | GET /domain/zone/{z}/redirection -> target      |
+| blog.hosting.ovh.net     | GET /domain/zone/{z}/redirection -> target      |
+================================================================================
 
-## 2. LAYOUT
-- Header OVHcloud
-- Breadcrumb : Noms de domaine / example.com
-- Titre et description
-- Boutons d'action
-- Filtre de recherche
-- Tableau des redirections
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Domaines et DNS actif)
+3. LEFT PANEL - Liste domaines/zones
+4. RIGHT PANEL
+   - Header: Nom domaine + badge statut
+   - NAV3: 10 tabs (Redirections actif)
+   - Title + Description
+   - Toolbar: Ajouter, Exporter, Filtre
+   - Table redirections
+   - Pagination
 
-## 3. COMPOSANTS UI
-- **OdsButton** : Ajouter une redirection, Exporter en CSV
-- **OdsInput** : Filtre sous-domaine
-- **OdsTable** : Tableau des redirections
-- **OdsActionMenu** : Menu contextuel (⋮)
+TOOLBAR ACTIONS
+| Bouton                 | Style    | Action                    |
+|------------------------|----------|---------------------------|
+| + Ajouter une redirection| Primaire| Modal ajout redirection  |
+| Exporter CSV           | Outline  | Telecharger fichier CSV   |
 
-## 4. TITRE
-"Redirection"
+TABLE COLONNES
+| Colonne    | Description                              |
+|------------|------------------------------------------|
+| Domaine    | Sous-domaine source                      |
+| Type       | Type de redirection                      |
+| Cible      | URL ou adresse destination               |
+| Visibilite | 302, 301, iframe, -                      |
+| Actions    | Menu contextuel (⋮)                      |
 
-## 5. DESCRIPTION
-"Gérer ici les redirections de vos domaines et sous-domaines vers d'autres adresses web ou vers des serveurs."
+TYPES DE REDIRECTION
+| Type                    | Description                       |
+|-------------------------|-----------------------------------|
+| Redirection visible     | Redirection HTTP avec changement URL|
+| Redirection invisible   | Iframe (URL reste la meme)        |
+| vers un domaine (CNAME) | Enregistrement DNS CNAME          |
+| vers un serveur (A)     | Enregistrement DNS A              |
 
-## 6. BOUTONS D'ACTION
-| Bouton | Type | Action |
-|--------|------|--------|
-| Ajouter une redirection | Primaire | Ouvre modal ajout redirection |
-| Exporter en CSV | Secondaire | Télécharge les redirections en CSV |
+VISIBILITE
+| Code      | Description              |
+|-----------|--------------------------|
+| 301       | Redirection permanente   |
+| 302       | Redirection temporaire   |
+| iframe    | Cadre invisible          |
+| -         | Non applicable (DNS)     |
 
-## 7. FILTRE
-- Placeholder : "Filtre sous-domaine…"
-- Largeur : 300px
+MENU ACTIONS (⋮)
+| Action    | Description              |
+|-----------|--------------------------|
+| Modifier  | Modal edition            |
+| Supprimer | Modal confirmation (rouge)|
 
-## 8. TABLEAU
-| Colonne | Description | Exemple |
-|---------|-------------|---------|
-| Domaine | Sous-domaine source | example.com |
-| Type | Type de redirection | Redirection visible, vers un domain (CNAME), vers un serveur (A) |
-| Cible | Destination | https://www.example.com |
-| Visibilité | Comportement | temporaire (302), permanent (301), iframe |
-| Actions | Menu ⋮ | Modifier, Supprimer |
-
-## 9. EXEMPLES DE DONNÉES
-
-### Ligne 1
-| Champ | Valeur |
-|-------|--------|
-| Domaine | example.com |
-| Type | Redirection visible |
-| Cible | https://www.example.com |
-| Visibilité | temporaire (302) |
-
-### Ligne 2
-| Champ | Valeur |
-|-------|--------|
-| Domaine | blog.example.com |
-| Type | vers un domain (CNAME) |
-| Cible | blog.hosting.ovh.net |
-
-### Ligne 3
-| Champ | Valeur |
-|-------|--------|
-| Domaine | shop.example.com |
-| Type | vers un serveur (ipv4 - A) |
-| Cible | 203.0.113.100 |
-
-### Ligne 4
-| Champ | Valeur |
-|-------|--------|
-| Domaine | old.example.com |
-| Type | Redirection invisible |
-| Cible | https://new.example.com/page |
-| Visibilité | temporaire (iframe) |
-
-## 10. ACTION MENU
-| Option | Action |
-|--------|--------|
-| Modifier | Ouvre modal modification |
-| Supprimer | Ouvre modal confirmation suppression (rouge) |
-
-## 11. APIS & ENDPOINTS
-- GET /domain/zone/{zoneName}/redirection : Lister les redirections
-- POST /domain/zone/{zoneName}/redirection : Créer une redirection
-- PUT /domain/zone/{zoneName}/redirection/{id} : Modifier une redirection
-- DELETE /domain/zone/{zoneName}/redirection/{id} : Supprimer une redirection
-
+API ENDPOINTS
+GET    /domain/zone/{zoneName}/redirection          -> Liste redirections
+GET    /domain/zone/{zoneName}/redirection/{id}     -> Detail redirection
+POST   /domain/zone/{zoneName}/redirection          -> Ajouter redirection
+PUT    /domain/zone/{zoneName}/redirection/{id}     -> Modifier redirection
+DELETE /domain/zone/{zoneName}/redirection/{id}     -> Supprimer redirection
+================================================================================

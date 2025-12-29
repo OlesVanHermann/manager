@@ -1,59 +1,53 @@
-# Cahier des Charges : web-cloud/domain - Commander DNS Anycast
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.anycast.svg
+Route:   /web-cloud/domaines/domain/{domainName}/anycast/order
+NAV:     Web Cloud > Domaines et DNS > [domain] > Anycast
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Écran** : Page de commande DNS Anycast
-- **Type** : Wizard 2 étapes
-- **Objectif** : Commander l'option DNS Anycast pour améliorer les performances DNS
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| 2,99 € HT/an             | GET /order/cart/{cartId}/dns -> prices          |
+================================================================================
 
-## 2. STRUCTURE DE LA PAGE
-- Header OVHcloud
-- Sidebar navigation (Web Cloud > Noms de domaine)
-- Bouton retour
-- Titre et description
-- Stepper 2 étapes (Durée, Paiement)
-- Panneau avantages
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Domaines et DNS actif)
+3. LEFT PANEL - Liste domaines/zones
+4. RIGHT PANEL
+   - Breadcrumb retour
+   - Titre: Commander DNS Anycast
+   - Wizard 2 etapes (Confirmation, Paiement)
+   - Banniere info DNS Anycast
+   - Resume commande
+   - Boutons action
 
-## 3. COMPOSANTS UI
-- **OdsStepper** : 2 étapes verticales
-- **OdsCard** : Cartes sélection durée
-- **OdsButton** : Suivant
-- **OdsMessage** : Panneau info bleu (avantages)
+WIZARD STEPS
+| Etape | Nom          | Etat    |
+|-------|--------------|---------|
+| 1     | Confirmation | Actif   |
+| 2     | Paiement     | Inactif |
 
-## 4. DESCRIPTION
-- "Le DNS Anycast améliore les performances de résolution DNS de votre domaine"
-- Domaine : **example.com**
-- "en répliquant vos serveurs DNS sur plusieurs points de présence."
-- Notes délais :
-  - Activation : environ 24 heures après paiement
-  - Propagation DNS : jusqu'à 48 heures supplémentaires
+RESUME COMMANDE
+| Champ   | Valeur                  |
+|---------|-------------------------|
+| Domaine | example.com             |
+| Option  | DNS Anycast             |
+| Duree   | 1 an                    |
+| Prix    | 2,99 € HT/an            |
 
-## 5. ÉTAPE 1 : CHOISIR LA DURÉE
-| Durée | Prix |
-|-------|------|
-| 1 an | 2,99 € HT/an (sélectionné) |
+BOUTONS
+| Bouton    | Style    | Action                    |
+|-----------|----------|---------------------------|
+| Annuler   | Outline  | Retour page precedente    |
+| Commander | Primaire | Valider et payer          |
 
-Bouton : **Suivant →**
-
-## 6. ÉTAPE 2 : PAIEMENT (inactive)
-| Champ | Valeur |
-|-------|--------|
-| Prix prorata HT | -- |
-| Prix prorata TTC | -- |
-| Valide jusqu'au | -- |
-
-## 7. PANNEAU AVANTAGES
-Fond bleu (#E8F0FE) :
-
-### 🚀 Performance
-- Temps de résolution DNS réduit grâce à la proximité géographique des serveurs
-
-### 🛡️ Disponibilité
-- Haute disponibilité avec réplication sur plusieurs datacenters
-
-### 🌍 Couverture mondiale
-- Points de présence en Europe, Amérique du Nord et Asie
-
-## 8. APIS & ENDPOINTS
-- GET /domain/{serviceName}/option/anycast : Vérifier disponibilité
-- POST /order/domain/{serviceName}/anycast : Commander Anycast
-
+API ENDPOINTS
+GET  /order/cart/{cartId}/dns          -> Prix DNS Anycast
+POST /order/cart/{cartId}/dns          -> Ajouter au panier
+POST /order/cart/{cartId}/checkout     -> Finaliser commande
+================================================================================

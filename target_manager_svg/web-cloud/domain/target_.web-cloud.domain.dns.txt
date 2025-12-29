@@ -1,90 +1,74 @@
-# Cahier des Charges : web-cloud/domain - Zone DNS (avec onglets)
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.dns.svg
+Route:   /web-cloud/domaines/domain/{domainName}/zone
+NAV:     Web Cloud > Domaines et DNS > [domain] > Zone DNS
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Écran** : Zone DNS avec navigation par onglets
-- **Type** : Page avec tableau paginé
-- **Objectif** : Gérer les enregistrements de la zone DNS
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| 213.186.33.5             | GET /domain/zone/{z}/record -> target           |
+| mx1.mail.ovh.net         | GET /domain/zone/{z}/record -> target           |
+| 12 entrees               | GET /domain/zone/{z}/record -> count            |
+================================================================================
 
-## 2. STRUCTURE DE LA PAGE
-- Header OVHcloud
-- Sidebar navigation
-- Breadcrumb
-- Titre
-- Onglets navigation
-- Barre d'actions
-- Filtre recherche
-- Tableau enregistrements
-- Pagination
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Domaines et DNS actif)
+3. LEFT PANEL - Liste domaines/zones
+4. RIGHT PANEL
+   - Header: Nom domaine + badge statut
+   - NAV3: 10 tabs (Zone DNS actif)
+   - Title + Description
+   - Toolbar: Ajouter, Importer, Exporter, Reinitialiser, Filtre
+   - Table enregistrements DNS
+   - Pagination
 
-## 3. COMPOSANTS UI
-- **OdsTabs** : Navigation (Infos générales, Zone DNS, Serveurs DNS, Redirection)
-- **OdsButton** : Ajouter, Importer, Exporter, Réinitialiser
-- **OdsInput** : Filtre recherche
-- **OdsTable** : Liste enregistrements avec badges type
-- **OdsPagination** : Navigation pages
-- **OdsActionMenu** : Menu contextuel
+TOOLBAR ACTIONS
+| Bouton              | Style    | Action                    |
+|---------------------|----------|---------------------------|
+| + Ajouter une entree| Primaire | Modal ajout enregistrement|
+| Importer            | Outline  | Modal import zone         |
+| Exporter            | Outline  | Telecharger fichier zone  |
+| Reinitialiser       | Outline  | Modal confirmation reset  |
 
-## 4. ONGLETS
-| Onglet | État |
-|--------|------|
-| Informations générales | Inactif |
-| Zone DNS | Actif (sélectionné) |
-| Serveurs DNS | Inactif |
-| Redirection | Inactif |
+TABLE COLONNES
+| Colonne     | Description                          |
+|-------------|--------------------------------------|
+| Sous-domaine| @ ou nom du sous-domaine             |
+| Type        | Badge colore (A, AAAA, CNAME, MX...) |
+| TTL         | Duree en secondes                    |
+| Cible       | Valeur de l'enregistrement           |
+| Actions     | Menu contextuel (⋮)                  |
 
-## 5. BARRE D'ACTIONS
-| Bouton | Style |
-|--------|-------|
-| + Ajouter une entrée | Primaire bleu |
-| Importer (texte) | Secondaire |
-| Exporter | Secondaire |
-| Réinitialiser | Secondaire |
+BADGES TYPES DNS
+| Type  | Background | Text Color |
+|-------|------------|------------|
+| A     | #DBEAFE    | #1E40AF    |
+| AAAA  | #FEE2E2    | #991B1B    |
+| CNAME | #D1FAE5    | #065F46    |
+| MX    | #FEF3C7    | #92400E    |
+| TXT   | #E0E7FF    | #3730A3    |
+| NS    | #E5E7EB    | #374151    |
 
-## 6. FILTRE
-Input : "🔍 Filtrer par type ou sous-domaine..."
+MENU ACTIONS (⋮)
+| Action          | Description              |
+|-----------------|--------------------------|
+| Modifier        | Modal edition            |
+| Copier la valeur| Copier cible             |
+| Supprimer       | Modal confirmation       |
 
-## 7. TABLEAU ZONE DNS
-| Colonne | Description |
-|---------|-------------|
-| Sous-domaine | @ ou nom du sous-domaine |
-| Type | Badge coloré |
-| TTL | Durée en secondes |
-| Cible | Valeur |
-| Actions | Menu ⋮ |
-
-### Badges types (couleurs)
-| Type | Fond | Texte |
-|------|------|-------|
-| A | #DBEAFE | #1E40AF |
-| AAAA | #FEE2E2 | #991B1B |
-| CNAME | #D1FAE5 | #065F46 |
-| MX | #FEF3C7 | #92400E |
-| TXT | #E0E7FF | #3730A3 |
-
-### Exemple données
-| Sous-domaine | Type | TTL | Cible |
-|--------------|------|-----|-------|
-| @ | A | 3600 | 213.186.33.5 |
-| @ | AAAA | 3600 | 2001:41d0:1:1b00:213:186:33:5 |
-| www | CNAME | 3600 | example.com. |
-| @ | MX | 3600 | 1 mx1.mail.ovh.net. |
-| @ | MX | 3600 | 5 mx2.mail.ovh.net. |
-| @ | TXT | 3600 | "v=spf1 include:mx.ovh.com ~all" |
-| _dmarc | TXT | 3600 | "v=DMARC1; p=none; rua=mailto:..." |
-
-## 8. MENU ACTIONS (⋮)
-- Modifier l'entrée
-- Copier la valeur
-- Supprimer (rouge)
-
-## 9. PAGINATION
-"Affichage 1-7 sur 12 entrées" | 1 | 2 | ›
-
-## 10. APIS & ENDPOINTS
-- GET /domain/zone/{zoneName}/record : Liste enregistrements
-- POST /domain/zone/{zoneName}/record : Ajouter
-- PUT /domain/zone/{zoneName}/record/{id} : Modifier
-- DELETE /domain/zone/{zoneName}/record/{id} : Supprimer
-- GET /domain/zone/{zoneName}/export : Exporter zone
-- POST /domain/zone/{zoneName}/import : Importer zone
-
+API ENDPOINTS
+GET    /domain/zone/{zoneName}/record          -> Liste enregistrements
+GET    /domain/zone/{zoneName}/record/{id}     -> Detail enregistrement
+POST   /domain/zone/{zoneName}/record          -> Ajouter enregistrement
+PUT    /domain/zone/{zoneName}/record/{id}     -> Modifier enregistrement
+DELETE /domain/zone/{zoneName}/record/{id}     -> Supprimer enregistrement
+GET    /domain/zone/{zoneName}/export          -> Exporter zone (fichier)
+POST   /domain/zone/{zoneName}/import          -> Importer zone
+POST   /domain/zone/{zoneName}/reset           -> Reinitialiser zone
+================================================================================
