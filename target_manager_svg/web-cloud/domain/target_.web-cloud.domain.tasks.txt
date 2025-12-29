@@ -1,57 +1,69 @@
-# Cahier des Charges : web-cloud/domain - Tâches récentes
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.tasks.svg
+Route:   /web-cloud/domaines/domain/{domainName}/tasks
+NAV:     NAV1=Web Cloud | NAV2=Domaines et DNS | NAV3=Tâches
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Écran** : Liste des tâches sur le domaine
-- **Type** : Page liste avec tableau
-- **Objectif** : Visualiser l'historique des opérations
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| 29/12/2024 10:30         | GET /domain/{d}/task -> todayUpdate                    |
+| Modification zone DNS    | task -> function                                        |
+| Terminé                  | task -> status (todo, doing, done, error)              |
+| Propagation DNS          | task -> comment                                         |
+================================================================================
 
-## 2. LAYOUT
-- Header OVHcloud
-- Breadcrumb : Web Cloud > Noms de domaine > example.com > Tâches récentes
-- Titre
-- Tableau des tâches
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Sous-menu (Domaines et DNS actif)
+3. LEFT PANEL - Liste domaines/zones
+4. RIGHT PANEL
+   - Header: domainName
+   - NAV3: 10 tabs (Tâches actif)
+   - Toolbar: Refresh + Filtres
+   - Table: DATE, OPÉRATION, STATUT, COMMENTAIRE
+   - Pagination
+   - Bannière info
 
-## 3. COMPOSANTS UI
-- **OdsTable** : Tableau des tâches
-- **OdsBadge** : Statuts (Terminée, En cours, Planifiée, A traiter, Échouée)
-- **OdsActionMenu** : Menu contextuel (⋮)
+FILTRES
+| Filtre  | Valeurs                                |
+|---------|----------------------------------------|
+| Statut  | Tous, En cours, Terminé, Erreur       |
+| Type    | Tous, DNS, DNSSEC, Contacts, Domaine  |
 
-## 4. TITRE
-"Tâches récentes"
+STATUTS TÂCHES
+| Statut    | Badge Color | Icon |
+|-----------|-------------|------|
+| todo      | #F3F4F6     | ○    |
+| doing     | #FEF3C7     | ⏳   |
+| done      | #DEF7EC     | ✓    |
+| error     | #FEE2E2     | ✗    |
 
-## 5. TABLEAU
-| Colonne | Description |
-|---------|-------------|
-| Tâche | Nom technique de l'opération |
-| Date de création | Date au format FR |
-| Détail technique | Description de l'opération |
-| Statut | Badge coloré selon l'état |
-| Actions | Menu ⋮ |
+API ENDPOINTS
+GET /domain/{domain}/task           -> Liste des tâches
+GET /domain/{domain}/task/{id}      -> Détails tâche
+GET /domain/zone/{zone}/task        -> Tâches zone DNS
 
-## 6. BADGES STATUT
-| Statut | Couleur fond | Couleur texte |
-|--------|--------------|---------------|
-| Terminée | Vert (#DEF7EC) | Vert foncé (#03543F) |
-| En cours | Bleu (#E8F0FE) | Bleu (#0050D7) |
-| Planifiée | Bleu (#E8F0FE) | Bleu (#0050D7) |
-| A traiter | Jaune (#FEF3C7) | Orange (#92400E) |
-| Échouée | Rouge (#FEE2E2) | Rouge (#991B1B) |
+TYPES D'OPÉRATIONS
+| Function               | Description                          |
+|------------------------|--------------------------------------|
+| DomainCreate           | Création domaine                     |
+| DomainRenew            | Renouvellement                       |
+| DomainTransfer         | Transfert entrant                    |
+| DnsUpdate              | Modification zone DNS                |
+| DnsServerChange        | Changement serveurs DNS              |
+| DnssecActivate         | Activation DNSSEC                    |
+| DnssecDisable          | Désactivation DNSSEC                 |
+| ContactChange          | Changement de contact                |
+| OwnerChange            | Changement propriétaire              |
+| DomainLock             | Verrouillage transfert               |
+| DomainUnlock           | Déverrouillage transfert             |
 
-## 7. EXEMPLES DE TÂCHES
-| Tâche | Date | Détail | Statut |
-|-------|------|--------|--------|
-| DomainDnsUpdate | 27 déc. 2025 | Mise à jour zone DNS | Terminée |
-| DomainIncomingTransfer | 26 déc. 2025 | Transfert entrant | En cours |
-| DomainHostCreate | 25 déc. 2025 | Création GLUE | Planifiée |
-| DomainDnssecEnable | 24 déc. 2025 | Activation DNSSEC | A traiter |
-| DomainOutgoingTransfer | 23 déc. 2025 | Transfert sortant | Échouée |
-
-## 8. ACTION MENU
-| Option | Action |
-|--------|--------|
-| Modifier | Voir détails / Relancer |
-
-## 9. APIS & ENDPOINTS
-- GET /domain/{serviceName}/task : Lister les tâches
-- GET /domain/{serviceName}/task/{id} : Détails d'une tâche
-
+NAVIGATION
+- Click ↻ -> Rafraîchir liste
+- Click filtre -> Dropdown sélection
+- Click pagination -> Page suivante/précédente
+================================================================================

@@ -1,0 +1,82 @@
+# Cahier des Charges : network/ip - Edge Network Firewall
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Gestion des règles Edge Firewall
+- **URL** : /network/ip/{ip}/firewall
+- **Objectif** : Configurer les règles firewall en périphérie
+
+## 2. STRUCTURE PAGE
+- Sidebar Network
+- Lien retour
+- Breadcrumb
+- Titre + description
+- Barre d'action avec toggle
+- Datagrid des règles
+
+## 3. COMPOSANTS UI
+- **OdsLink** : "← Retour à \"IP\""
+- **OdsBreadcrumb** : {IP} › Gérer des règles de Edge Network Firewall
+- **OdsText** : Titre et descriptions
+- **OdsButton** : "Ajouter une règle" (outline)
+- **OdsToggle** : Activer le Edge Network Firewall
+- **OdsDatagrid** : Liste des règles
+- **OdsBadge** : Mode et statut
+- **OdsActionMenu** : Actions par règle
+
+## 4. DESCRIPTION
+| Ligne | Contenu |
+|-------|---------|
+| L1 | "Configurez la protection Edge de votre adresse IP. Vos règles de pare-feu seront appliquées" |
+| L2 | "en périphérie du réseau OVHcloud, afin de prévenir la saturation des liens vers votre service" |
+| L3 | "en filtrant le trafic entrant." |
+| Note 1 | "Cette fonction doit être utilisée en adéquation avec le pare-feu réseau sur votre serveur." |
+| Note 2 | "Un maximum de 20 règles par IP peuvent être définies." |
+| Note 3 | "Veuillez noter que \"l'état des sessions TCP\" fait référence à des indicateurs de protocole TCP." |
+
+## 5. BARRE D'ACTION
+| Élément | Position | Description |
+|---------|----------|-------------|
+| Bouton "Ajouter une règle" | Gauche | Outline, 140x36px |
+| Toggle "Activer le Edge Network Firewall" | Droite | Label + Toggle ON |
+
+## 6. COLONNES DATAGRID
+| Colonne | Type | Tri | Description |
+|---------|------|-----|-------------|
+| Priorité | Number | ✓ | 0-19 |
+| Mode | Badge | ✓ | Autoriser/Refuser |
+| Protocole | Text | ✓ | TCP/UDP/IPv4/ICMP |
+| IP source | Text | ✓ | "tous" ou CIDR |
+| Port source | Text | ✓ | "tous" ou numéro |
+| Port dest. | Text | ✓ | "tous" ou numéro |
+| État TCP | Text | ✓ | established/Aucun |
+| Statut | Badge | ✓ | Actif |
+| Actions | Menu ⋮ | - | Modifier/Supprimer |
+
+## 7. MODES RÈGLE
+| Mode | Badge | Description |
+|------|-------|-------------|
+| Autoriser | Vert (success) | Trafic autorisé |
+| Refuser | Jaune (warning) | Trafic bloqué |
+
+## 8. DONNÉES EXEMPLE
+| Priorité | Mode | Proto | IP src | Port src | Port dest | TCP | Statut |
+|----------|------|-------|--------|----------|-----------|-----|--------|
+| 0 | Autoriser | TCP | tous | tous | 22 | established | Actif |
+| 1 | Autoriser | TCP | tous | tous | 80, 443 | Aucun | Actif |
+| 19 | Refuser | IPv4 | tous | tous | tous | Aucun | Actif |
+
+## 9. ACTION MENU (ouvert)
+| Action | Style |
+|--------|-------|
+| Modifier | Normal |
+| --- | Séparateur |
+| Supprimer | Danger (rouge) |
+
+## 10. APIS & ENDPOINTS
+- GET /ip/{ip}/firewall/{ipOnFirewall}/rule - Liste règles
+- GET /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence} - Détails règle
+- POST /ip/{ip}/firewall/{ipOnFirewall}/rule - Créer règle
+- PUT /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence} - Modifier règle
+- DELETE /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence} - Supprimer règle
+
+

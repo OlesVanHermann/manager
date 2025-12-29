@@ -1,0 +1,773 @@
+================================================================================
+PROMPT TARGET - Web Cloud > Domaines et DNS
+================================================================================
+
+| Element                            | Valeur                                                      |
+|------------------------------------|------------------------------------------------------------|
+| **Prompt**                         | /home/ubuntu/prompt_target_web-cloud_domaines.txt          |
+| **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/domain/          |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/domain/|
+
+Version: v1 (2025-12-29)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+❌ INTERDIT : Afficher le SVG dans la conversation
+✅ OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. ARBORESCENCE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Web Cloud (x=510)
+│
+└── NAV2: Domaines et DNS (indicateur sous "Domaines et DNS")
+    │
+    ├── /web-cloud/domaines (INDEX)
+    │   │
+    │   │   LEFT: Liste domaines + zones DNS (sidebar)
+    │   │   RIGHT: Détails domaine/zone sélectionné
+    │   │
+    │   └── NAV3: 10 onglets (conditionnels selon type de service)
+    │       │
+    │       ├── [1] Infos générales (/general) ← hasDomain
+    │       │   │
+    │       │   │   Layout 3 colonnes: Domaine | Sécurité | Abonnement
+    │       │   │   + Row 2: Guides | Options | Conseils
+    │       │   │
+    │       │   └── ACTIONS: [🔒 Activer/Désactiver verrou transfert]
+    │       │                 [🔐 Activer/Désactiver DNSSEC]
+    │       │                 [🔑 Afficher AUTH/INFO]
+    │       │                 [↗ Gérer contacts WHOIS]
+    │       │                 [↻ Renouveler]
+    │       │
+    │       ├── [2] Zone DNS (/zone) ← hasZone
+    │       │   │
+    │       │   │   Table des enregistrements DNS avec filtres par type
+    │       │   │   Types: A, AAAA, CNAME, MX, TXT, NS, SRV, CAA, DKIM, SPF...
+    │       │   │
+    │       │   └── ACTIONS: [+ Ajouter entrée] [✎ Modifier] [× Supprimer]
+    │       │                 [📥 Importer zone] [📤 Exporter zone]
+    │       │                 [🔄 Réinitialiser zone] [⏱ Modifier TTL par défaut]
+    │       │                 [📜 Historique zone]
+    │       │
+    │       ├── [3] Serveurs DNS (/dns-servers) ← hasDomain
+    │       │   │
+    │       │   │   Liste des serveurs DNS actuels + formulaire modification
+    │       │   │
+    │       │   └── ACTIONS: [✎ Modifier serveurs DNS]
+    │       │                 [↻ Réinitialiser vers OVH]
+    │       │                 [🌐 Activer DNS Anycast]
+    │       │                 [× Résilier Anycast]
+    │       │
+    │       ├── [4] Redirections (/redirections) ← hasDomain
+    │       │   │
+    │       │   │   Table des redirections web (301, 302, frames)
+    │       │   │
+    │       │   └── ACTIONS: [+ Ajouter redirection]
+    │       │                 [✎ Modifier redirection]
+    │       │                 [× Supprimer redirection]
+    │       │
+    │       ├── [5] DynHost (/dynhost) ← hasZone
+    │       │   │
+    │       │   └── NAV4: [Entrées DynHost] | [Accès/Logins]
+    │       │       │
+    │       │       ├── Entrées DynHost (défaut)
+    │       │       │   │   Table des entrées DynHost (sous-domaine → IP dynamique)
+    │       │       │   └── ACTIONS: [+ Ajouter DynHost] [✎ Modifier IP] [× Supprimer]
+    │       │       │
+    │       │       └── Accès/Logins (/dynhost-login)
+    │       │           │   Table des identifiants DynHost
+    │       │           └── ACTIONS: [+ Créer login] [🔑 Changer MDP] [× Supprimer]
+    │       │
+    │       ├── [6] GLUE (/glue) ← hasDomain
+    │       │   │
+    │       │   │   Table des enregistrements GLUE (ns1.domain.tld → IP)
+    │       │   │
+    │       │   └── ACTIONS: [+ Ajouter GLUE] [✎ Modifier] [× Supprimer]
+    │       │
+    │       ├── [7] DNSSEC (/dnssec) ← hasDomain
+    │       │   │
+    │       │   │   État DNSSEC + liste des clés DS
+    │       │   │
+    │       │   └── ACTIONS: [✓ Activer DNSSEC] [× Désactiver DNSSEC]
+    │       │                 [+ Ajouter clé DS] [× Supprimer clé DS]
+    │       │
+    │       ├── [8] Contacts (/contacts) ← hasDomain
+    │       │   │
+    │       │   │   Liste des contacts (Admin, Tech, Billing, Owner)
+    │       │   │   + configuration WHOIS/OWO
+    │       │   │
+    │       │   └── ACTIONS: [✎ Modifier contacts] [↗ Gérer sur Manager]
+    │       │                 [⚙ Configurer OWO/WHOIS]
+    │       │
+    │       ├── [9] Tâches (/tasks) ← toujours visible
+    │       │   │
+    │       │   │   Liste des opérations en cours et historique
+    │       │   │
+    │       │   └── ACTIONS: [↻ Rafraîchir]
+    │       │
+    │       └── [10] Alldom (/alldom) ← toujours visible
+    │           │
+    │           │   Opérations en masse sur plusieurs domaines
+    │           │
+    │           └── ACTIONS: [🔒 Lock/Unlock en masse]
+    │                        [🔐 DNSSEC batch activation]
+    │                        [📤 Exporter CSV]
+    │                        [↻ Renouveler sélection]
+    │                        [✎ Modifier serveurs DNS batch]
+```
+
+### RÉCAPITULATIF NIVEAUX NAV
+
+| Niveau | Visuel | Position | Exemples Domains |
+|--------|--------|----------|------------------|
+| **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
+| **NAV2** | Sous-header blanc 40px | y=50 | Domaines et DNS (x=110) |
+| **NAV3** | Tabs right panel (10 boutons) | y=38 dans right panel | Infos, Zone DNS, Serveurs... |
+| **NAV4** | Sous-tabs (DynHost) | y=70 dans right panel | Entrées, Logins |
+| **ACTIONS** | Boutons + inline + modals | Variable | +, ✎, 🔑, ×, ↻, 📥, 📤 |
+
+### TYPES DE SERVICES
+
+| Type | ID | Badge Left Panel | Tabs disponibles |
+|------|-----|------------------|------------------|
+| Domaine + Zone | domain-and-zone | 🌐 Domaine + Zone | Tous (1-10) |
+| Domaine seul | domain-only | 🌐 Domaine | 1,3,4,6,7,8,9,10 |
+| Zone seule | zone-only | 📋 Zone DNS | 2,5,9,10 |
+
+##############################################################################
+# 2. NAV1 - HEADER OVH
+##############################################################################
+
+Item actif: "Web Cloud" (x=510)
+
+```svg
+<!-- NAV1 - Web Cloud actif -->
+<rect width="1440" height="50" class="bg-header"/>
+<text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>
+<text x="110" y="32" class="text-white" font-size="14" opacity="0.7">Public Cloud</text>
+<text x="210" y="32" class="text-white" font-size="14" opacity="0.7">Hosted Private Cloud</text>
+<text x="370" y="32" class="text-white" font-size="14" opacity="0.7">Bare Metal Cloud</text>
+<text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+<rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
+<text x="620" y="32" class="text-white" font-size="14" opacity="0.7">Network</text>
+<text x="700" y="32" class="text-white" font-size="14" opacity="0.7">IAM / Securite</text>
+<text x="810" y="32" class="text-white" font-size="14" opacity="0.7">Licences</text>
+<!-- Badge utilisateur -->
+<rect x="1280" y="12" width="140" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
+<rect x="1285" y="15" width="26" height="20" rx="10" fill="#DEF7EC"/>
+<text x="1292" y="29" fill="#03543F" font-size="10" font-weight="600">OK</text>
+<text x="1320" y="29" class="text-white" font-size="12">{nicHandle}</text>
+```
+
+##############################################################################
+# 3. NAV2 - WEB CLOUD
+##############################################################################
+
+Position: y=50, height=40px, background=#FFFFFF, border-bottom=#E5E7EB
+Item actif: "Domaines et DNS" (indicateur bleu dessous)
+
+| Item            | X    | État           |
+|-----------------|------|----------------|
+| Accueil         | 40   | muted          |
+| Domaines et DNS | 110  | **active**     |
+| Hébergement     | 240  | muted          |
+| Wordpress       | 345  | muted          |
+| Emails          | 430  | muted          |
+| VoIP            | 500  | muted          |
+| Accès           | 550  | muted          |
+| Guides          | 1350 | primary        |
+
+```svg
+<!-- NAV2 WEB CLOUD - Domaines et DNS actif -->
+<rect x="0" y="50" width="1440" height="40" class="bg-white"/>
+<line x1="0" y1="89" x2="1440" y2="89" stroke="#E5E7EB"/>
+<text x="40" y="75" class="text-muted" font-size="14">Accueil</text>
+<text x="110" y="75" class="text-primary" font-size="14" font-weight="600">Domaines et DNS</text>
+<rect x="105" y="85" width="110" height="3" fill="#0050D7"/>
+<text x="240" y="75" class="text-muted" font-size="14">Hébergement</text>
+<text x="345" y="75" class="text-muted" font-size="14">Wordpress</text>
+<text x="430" y="75" class="text-muted" font-size="14">Emails</text>
+<text x="500" y="75" class="text-muted" font-size="14">VoIP</text>
+<text x="550" y="75" class="text-muted" font-size="14">Accès</text>
+<text x="1350" y="75" class="text-primary" font-size="13">Guides</text>
+```
+
+##############################################################################
+# 4. NAV3 - TABS DOMAINES (10 onglets conditionnels)
+##############################################################################
+
+Route: /web-cloud/domaines/domain/{domainName}/{tab}
+
+| #  | Tab             | X    | W   | Route          | Condition    |
+|----|-----------------|------|-----|----------------|--------------|
+| 1  | Infos générales | 0    | 100 | /general       | hasDomain    |
+| 2  | Zone DNS        | 104  | 70  | /zone          | hasZone      |
+| 3  | Serveurs DNS    | 178  | 90  | /dns-servers   | hasDomain    |
+| 4  | Redirections    | 272  | 85  | /redirections  | hasDomain    |
+| 5  | DynHost         | 361  | 60  | /dynhost       | hasZone      |
+| 6  | GLUE            | 425  | 45  | /glue          | hasDomain    |
+| 7  | DNSSEC          | 474  | 55  | /dnssec        | hasDomain    |
+| 8  | Contacts        | 533  | 65  | /contacts      | hasDomain    |
+| 9  | Tâches          | 602  | 55  | /tasks         | toujours     |
+| 10 | Alldom          | 661  | 55  | /alldom        | toujours     |
+
+```svg
+<!-- NAV3 DOMAINS - 10 tabs, Infos générales actif par défaut -->
+<g transform="translate(0, 38)">
+  <!-- Tab actif: fond bleu, texte blanc -->
+  <rect x="0" y="0" width="100" height="26" rx="4" class="bg-primary"/>
+  <text x="50" y="17" class="text-white" font-size="11" text-anchor="middle">Infos générales</text>
+  
+  <!-- Tabs inactifs: bordure bleue, texte bleu -->
+  <rect x="104" y="0" width="70" height="26" rx="4" class="btn-outline"/>
+  <text x="139" y="17" class="text-primary" font-size="11" text-anchor="middle">Zone DNS</text>
+  
+  <rect x="178" y="0" width="90" height="26" rx="4" class="btn-outline"/>
+  <text x="223" y="17" class="text-primary" font-size="11" text-anchor="middle">Serveurs DNS</text>
+  
+  <rect x="272" y="0" width="85" height="26" rx="4" class="btn-outline"/>
+  <text x="314" y="17" class="text-primary" font-size="11" text-anchor="middle">Redirections</text>
+  
+  <rect x="361" y="0" width="60" height="26" rx="4" class="btn-outline"/>
+  <text x="391" y="17" class="text-primary" font-size="11" text-anchor="middle">DynHost</text>
+  
+  <rect x="425" y="0" width="45" height="26" rx="4" class="btn-outline"/>
+  <text x="447" y="17" class="text-primary" font-size="11" text-anchor="middle">GLUE</text>
+  
+  <rect x="474" y="0" width="55" height="26" rx="4" class="btn-outline"/>
+  <text x="501" y="17" class="text-primary" font-size="11" text-anchor="middle">DNSSEC</text>
+  
+  <rect x="533" y="0" width="65" height="26" rx="4" class="btn-outline"/>
+  <text x="565" y="17" class="text-primary" font-size="11" text-anchor="middle">Contacts</text>
+  
+  <rect x="602" y="0" width="55" height="26" rx="4" class="btn-outline"/>
+  <text x="629" y="17" class="text-primary" font-size="11" text-anchor="middle">Tâches</text>
+  
+  <rect x="661" y="0" width="55" height="26" rx="4" class="btn-outline"/>
+  <text x="688" y="17" class="text-primary" font-size="11" text-anchor="middle">Alldom</text>
+</g>
+```
+
+##############################################################################
+# 5. NAV4 - SOUS-TABS DYNHOST
+##############################################################################
+
+Route: /web-cloud/domaines/domain/{domainName}/dynhost/{subtab}
+
+| # | Tab              | Route           |
+|---|------------------|-----------------|
+| 1 | Entrées DynHost  | /dynhost        |
+| 2 | Accès/Logins     | /dynhost-login  |
+
+```svg
+<!-- NAV4 DYNHOST - Sous-tabs -->
+<g transform="translate(0, 70)">
+  <rect x="0" y="0" width="120" height="24" rx="4" class="bg-primary"/>
+  <text x="60" y="16" class="text-white" font-size="10" text-anchor="middle">Entrées DynHost</text>
+  
+  <rect x="124" y="0" width="100" height="24" rx="4" class="btn-outline"/>
+  <text x="174" y="16" class="text-primary" font-size="10" text-anchor="middle">Accès/Logins</text>
+</g>
+```
+
+##############################################################################
+# 6. LEFT PANEL - SIDEBAR
+##############################################################################
+
+Position: x=24, y=105, width=280px, height=780px
+
+### Structure
+```
+┌─────────────────────────────────┐
+│ ┌─────────────────────────────┐ │ y=12
+│ │ 🔍 Rechercher...            │ │ Search input h=34
+│ └─────────────────────────────┘ │
+│ Filtrer ▾            N services │ y=56, filter + count
+├─────────────────────────────────┤ y=80
+│ ┌─────────────────────────────┐ │
+│ │ 🌐  example.com             │ │ Service sélectionné
+│ │     Domaine + Zone          │ │ Type de service
+│ │     [.com]           [Actif]│ │ Extension + Badge
+│ └─────────────────────────────┘ │ h=64, bg=#E8F0FE
+│ ┌─────────────────────────────┐ │
+│ │ 📋  externe.org             │ │ Zone only
+│ │     Zone DNS                │ │
+│ │                      [Actif]│ │
+│ └─────────────────────────────┘ │
+│ ...                             │
+├─────────────────────────────────┤
+│ Page 1/N    ‹  1  2  3  ›       │ Pagination
+└─────────────────────────────────┘
+```
+
+### Service Item - Types et badges
+
+| Type | Icône | Ligne 2 | Badge extension |
+|------|-------|---------|-----------------|
+| domain-and-zone | 🌐 | Domaine + Zone | [.com] [.fr] etc |
+| domain-only | 🌐 | Domaine | [.com] [.fr] etc |
+| zone-only | 📋 | Zone DNS | - |
+
+### Badges statut
+- Actif: bg=#DEF7EC, text=#03543F
+- Expire bientôt: bg=#FEF3C7, text=#92400E
+- Expiré: bg=#FEE2E2, text=#991B1B
+- Suspendu: bg=#FEE2E2, text=#991B1B
+
+```svg
+<!-- LEFT PANEL DOMAINS -->
+<g transform="translate(24, 105)">
+  <rect x="0" y="0" width="280" height="780" rx="8" class="bg-white"/>
+  <rect x="0" y="0" width="280" height="780" rx="8" class="border"/>
+  
+  <!-- Search -->
+  <rect x="12" y="12" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+  <text x="40" y="34" class="text-muted" font-size="12">Rechercher...</text>
+  <text x="24" y="34" class="text-muted" font-size="14">🔍</text>
+  
+  <!-- Filter -->
+  <text x="12" y="68" class="text-muted" font-size="11">Filtrer ▾</text>
+  <text x="268" y="68" class="text-muted" font-size="11" text-anchor="end">{count} services</text>
+  
+  <!-- Service sélectionné: domain-and-zone -->
+  <rect x="6" y="80" width="268" height="64" rx="6" class="row-selected"/>
+  <text x="28" y="104" font-size="16">🌐</text>
+  <text x="52" y="100" class="text-dark" font-size="13" font-weight="500">{domainName}</text>
+  <text x="52" y="116" class="text-muted" font-size="10">Domaine + Zone</text>
+  <rect x="52" y="124" width="32" height="14" rx="3" fill="#E8F0FE"/>
+  <text x="58" y="134" class="text-primary" font-size="9">.{ext}</text>
+  <rect x="210" y="96" width="46" height="18" rx="9" fill="#DEF7EC"/>
+  <text x="233" y="109" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
+  
+  <!-- Service: zone-only -->
+  <rect x="6" y="150" width="268" height="64" rx="6" fill="#FFFFFF"/>
+  <text x="28" y="174" font-size="16">📋</text>
+  <text x="52" y="170" class="text-dark" font-size="13" font-weight="500">{zoneName}</text>
+  <text x="52" y="186" class="text-muted" font-size="10">Zone DNS</text>
+  <rect x="210" y="166" width="46" height="18" rx="9" fill="#DEF7EC"/>
+  <text x="233" y="179" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
+  
+  <!-- Service: domain-only avec warning -->
+  <rect x="6" y="220" width="268" height="64" rx="6" fill="#FFFFFF"/>
+  <text x="28" y="244" font-size="16">🌐</text>
+  <text x="52" y="240" class="text-dark" font-size="13" font-weight="500">{domainName2}</text>
+  <text x="52" y="256" class="text-muted" font-size="10">Domaine</text>
+  <rect x="52" y="264" width="28" height="14" rx="3" fill="#E8F0FE"/>
+  <text x="58" y="274" class="text-primary" font-size="9">.{ext}</text>
+  <rect x="195" y="236" width="70" height="18" rx="9" fill="#FEF3C7"/>
+  <text x="230" y="249" fill="#92400E" font-size="9" text-anchor="middle">Expire bientôt</text>
+</g>
+```
+
+##############################################################################
+# 7. RIGHT PANEL - STRUCTURE GÉNÉRAL
+##############################################################################
+
+Position: x=320, y=105, width=1096px, height=780px
+
+### Header
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ {domainName}                    [🔒 Verrouillé] [🔐 DNSSEC]         │
+├─────────────────────────────────────────────────────────────────────┤
+│ [Infos gén.] [Zone DNS] [Serveurs] [Redir.] [DynHost] [GLUE] ...    │
+├─────────────────────────────────────────────────────────────────────┤
+```
+
+### Tab Infos générales - Layout 3 colonnes
+```
+┌───────────────────┬───────────────────┬───────────────────┐
+│ DOMAINE           │ SÉCURITÉ          │ ABONNEMENT        │
+│ ─────────         │ ────────          │ ──────────        │
+│ Nom: example.com  │ Verrou transfert  │ Expiration        │
+│ Extension: .com   │ [🔒 Activé]       │ 15/03/2026        │
+│ Statut: Actif     │ [Désactiver]      │ [Renouveler]      │
+│                   │                   │                   │
+│ Serveurs DNS      │ DNSSEC            │ Contacts          │
+│ dns1.ovh.net      │ [🔐 Activé]       │ Admin: xx-ovh     │
+│ dns2.ovh.net      │ [Désactiver]      │ Tech: xx-ovh      │
+│ [Modifier]        │                   │ Billing: xx-ovh   │
+│                   │ AUTH/INFO         │ [Modifier]        │
+│ Sous-domaines     │ [🔑 Afficher]     │                   │
+│ www, mail, ftp    │                   │                   │
+│ [→ Zone DNS]      │                   │                   │
+└───────────────────┴───────────────────┴───────────────────┘
+
+┌───────────────────┬───────────────────┬───────────────────┐
+│ GUIDES            │ OPTIONS           │ CONSEILS          │
+│ ▸ Configurer DNS  │ DNS Anycast: Non  │ Commander         │
+│ ▸ Verrou transfert│ OWO Support: Oui  │ hébergement,      │
+│ ▸ DNSSEC          │ Type DNS: Hosted  │ emails...         │
+└───────────────────┴───────────────────┴───────────────────┘
+```
+
+### Tab Zone DNS - Table records
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ [+ Ajouter] [📥 Importer] [📤 Exporter] [🔄 Reset] [⏱ TTL] [📜 Hist]│
+├─────────────────────────────────────────────────────────────────────┤
+│ Filtrer: [Tous ▾] [A] [AAAA] [CNAME] [MX] [TXT] [NS] [SRV] [...]    │
+├─────────────────────────────────────────────────────────────────────┤
+│ Sous-domaine    │ TTL   │ Type  │ Cible                  │ Actions  │
+│ ─────────────── │ ───── │ ───── │ ────────────────────── │ ──────── │
+│ @               │ 3600  │ A     │ 213.186.33.5           │ ✎ ×     │
+│ @               │ 3600  │ AAAA  │ 2001:41d0:1:1b00::5    │ ✎ ×     │
+│ www             │ 3600  │ CNAME │ example.com.           │ ✎ ×     │
+│ mail            │ 3600  │ A     │ 213.186.33.5           │ ✎ ×     │
+│ @               │ 3600  │ MX    │ 10 mx1.mail.ovh.net.   │ ✎ ×     │
+│ @               │ 3600  │ TXT   │ "v=spf1 include:mx..." │ ✎ ×     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+##############################################################################
+# 8. MODALES PAR TYPE D'ENREGISTREMENT DNS
+##############################################################################
+
+### Types d'enregistrements supportés
+
+| Type | Description | Champs spécifiques |
+|------|-------------|-------------------|
+| A | IPv4 | target (IP) |
+| AAAA | IPv6 | target (IPv6) |
+| CNAME | Alias | target (FQDN) |
+| MX | Mail | priority, target |
+| TXT | Texte | target (texte libre) |
+| NS | Nameserver | target (FQDN) |
+| SRV | Service | priority, weight, port, target |
+| CAA | Certification | flags, tag, value |
+| DKIM | Email signing | target (clé publique) |
+| DMARC | Email policy | target (policy) |
+| SPF | Email sender | target (policy) |
+| DNAME | Delegation | target (FQDN) |
+| LOC | Location | coords |
+| NAPTR | ENUM | order, pref, flags, service, regexp, replacement |
+| SSHFP | SSH fingerprint | algorithm, fptype, fingerprint |
+| TLSA | TLS cert | usage, selector, matching, certificate |
+
+### Modale ajout/édition record
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Ajouter une entrée DNS                               [×]    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Type d'enregistrement                                       │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ A - Adresse IPv4                                    ▾   │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ Sous-domaine                                                │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ www                                                     │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│ .example.com                                                │
+│                                                             │
+│ TTL                                                         │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 3600                                                ▾   │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ Cible (adresse IP)                                          │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 213.186.33.5                                            │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│                              [Annuler]  [Valider]           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+##############################################################################
+# 9. APIs DOMAINS
+##############################################################################
+
+### 9.1 APIs Domain
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain                               | Liste domaines        |
+| GET     | /domain/{domain}                      | Détails domaine       |
+| GET     | /domain/{domain}/serviceInfos         | Infos facturation     |
+| PUT     | /domain/{domain}                      | Modifier domaine      |
+| GET     | /domain/{domain}/authInfo             | Obtenir AUTH/INFO     |
+
+### 9.2 APIs Transfer Lock
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/{domain}/rules/lock           | État verrou           |
+| POST    | /domain/{domain}/lock                 | Activer verrou        |
+| DELETE  | /domain/{domain}/lock                 | Désactiver verrou     |
+
+### 9.3 APIs Zone DNS
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/zone                          | Liste zones           |
+| GET     | /domain/zone/{zone}                   | Détails zone          |
+| GET     | /domain/zone/{zone}/record            | Liste records         |
+| GET     | /domain/zone/{zone}/record/{id}       | Détails record        |
+| POST    | /domain/zone/{zone}/record            | Créer record          |
+| PUT     | /domain/zone/{zone}/record/{id}       | Modifier record       |
+| DELETE  | /domain/zone/{zone}/record/{id}       | Supprimer record      |
+| POST    | /domain/zone/{zone}/refresh           | Rafraîchir zone       |
+| POST    | /domain/zone/{zone}/reset             | Réinitialiser zone    |
+| GET     | /domain/zone/{zone}/export            | Exporter zone         |
+| POST    | /domain/zone/{zone}/import            | Importer zone         |
+| GET     | /domain/zone/{zone}/history           | Historique zone       |
+| POST    | /domain/zone/{zone}/history/{id}/restore | Restaurer version  |
+
+### 9.4 APIs DNS Servers
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/{domain}/nameServer           | Liste serveurs DNS    |
+| POST    | /domain/{domain}/nameServer           | Modifier serveurs     |
+| GET     | /domain/{domain}/nameServer/status    | Statut serveurs       |
+
+### 9.5 APIs Redirections
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/{domain}/redirection          | Liste redirections    |
+| GET     | /domain/{domain}/redirection/{id}     | Détails redirection   |
+| POST    | /domain/{domain}/redirection          | Créer redirection     |
+| PUT     | /domain/{domain}/redirection/{id}     | Modifier redirection  |
+| DELETE  | /domain/{domain}/redirection/{id}     | Supprimer redirection |
+
+### 9.6 APIs DynHost
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/zone/{zone}/dynHost/record    | Liste entrées DynHost |
+| GET     | /domain/zone/{zone}/dynHost/record/{id}| Détails entrée       |
+| POST    | /domain/zone/{zone}/dynHost/record    | Créer entrée          |
+| PUT     | /domain/zone/{zone}/dynHost/record/{id}| Modifier IP          |
+| DELETE  | /domain/zone/{zone}/dynHost/record/{id}| Supprimer entrée     |
+| GET     | /domain/zone/{zone}/dynHost/login     | Liste logins          |
+| POST    | /domain/zone/{zone}/dynHost/login     | Créer login           |
+| PUT     | /domain/zone/{zone}/dynHost/login/{login}| Modifier login     |
+| POST    | /domain/zone/{zone}/dynHost/login/{login}/changePassword | Changer MDP |
+| DELETE  | /domain/zone/{zone}/dynHost/login/{login}| Supprimer login    |
+
+### 9.7 APIs GLUE
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/{domain}/glueRecord           | Liste GLUE            |
+| GET     | /domain/{domain}/glueRecord/{host}    | Détails GLUE          |
+| POST    | /domain/{domain}/glueRecord           | Créer GLUE            |
+| PUT     | /domain/{domain}/glueRecord/{host}    | Modifier GLUE         |
+| DELETE  | /domain/{domain}/glueRecord/{host}    | Supprimer GLUE        |
+
+### 9.8 APIs DNSSEC
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/{domain}/dsRecord             | Liste DS records      |
+| POST    | /domain/{domain}/dsRecord             | Ajouter DS record     |
+| DELETE  | /domain/{domain}/dsRecord/{id}        | Supprimer DS record   |
+| POST    | /domain/{domain}/activateDnssec       | Activer DNSSEC        |
+| POST    | /domain/{domain}/deactivateDnssec     | Désactiver DNSSEC     |
+
+### 9.9 APIs Contacts
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/{domain}/serviceInfos         | Contacts actuels      |
+| GET     | /domain/{domain}/owo                  | État OWO              |
+| POST    | /domain/{domain}/owo                  | Configurer OWO        |
+
+### 9.10 APIs Tasks
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/{domain}/task                 | Tâches domaine        |
+| GET     | /domain/zone/{zone}/task              | Tâches zone           |
+| GET     | /domain/{domain}/task/{id}            | Détails tâche         |
+
+### 9.11 APIs DNS Anycast
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /domain/{domain}/option/dnsAnycast    | État Anycast          |
+| POST    | /order/domain/zone/{zone}/dnsAnycast  | Commander Anycast     |
+| DELETE  | /domain/{domain}/option/dnsAnycast    | Résilier Anycast      |
+
+##############################################################################
+# 10. VARIABLES DYNAMIQUES
+##############################################################################
+
+| Variable           | Source API                                    |
+|--------------------|-----------------------------------------------|
+| {domainName}       | /domain → item                                |
+| {zoneName}         | /domain/zone → item                           |
+| {extension}        | Extrait de domainName (.com, .fr, etc)        |
+| {state}            | /domain/{d} → state                           |
+| {transferLockStatus}| /domain/{d} → transferLockStatus             |
+| {nameServerType}   | /domain/{d} → nameServerType                  |
+| {owoSupported}     | /domain/{d} → owoSupported                    |
+| {dnssecSupported}  | /domain/{d} → dnssecSupported                 |
+| {dnssecStatus}     | /domain/{d}/dsRecord → status                 |
+| {whoisOwner}       | /domain/{d} → whoisOwner                      |
+| {offer}            | /domain/{d} → offer                           |
+| {creation}         | /domain/{d}/serviceInfos → creation           |
+| {expiration}       | /domain/{d}/serviceInfos → expiration         |
+| {contactAdmin}     | /domain/{d}/serviceInfos → contactAdmin       |
+| {contactTech}      | /domain/{d}/serviceInfos → contactTech        |
+| {contactBilling}   | /domain/{d}/serviceInfos → contactBilling     |
+| {nicHandle}        | Session utilisateur                           |
+| {recordCount}      | /domain/zone/{z}/record → count               |
+| {subdomains}       | Extraits des records A/AAAA/CNAME             |
+
+##############################################################################
+# 11. ARBORESCENCE FICHIERS TARGET
+##############################################################################
+
+```
+/home/ubuntu/target_manager_svg/web-cloud/domain/
+│
+├── target_.web-cloud.domain.index.svg
+├── target_.web-cloud.domain.index.txt
+│
+├── general/
+│   ├── target_.web-cloud.domain.general.svg
+│   ├── target_.web-cloud.domain.general.txt
+│   ├── target_.web-cloud.domain.modal-authinfo.svg
+│   └── target_.web-cloud.domain.modal-authinfo.txt
+│
+├── zone/
+│   ├── target_.web-cloud.domain.zone.svg
+│   ├── target_.web-cloud.domain.zone.txt
+│   ├── target_.web-cloud.domain.zone-history.svg
+│   ├── target_.web-cloud.domain.zone-history.txt
+│   ├── target_.web-cloud.domain.modal-record-add.svg
+│   ├── target_.web-cloud.domain.modal-record-edit.svg
+│   ├── target_.web-cloud.domain.modal-record-delete.svg
+│   ├── target_.web-cloud.domain.modal-zone-import.svg
+│   ├── target_.web-cloud.domain.modal-zone-export.svg
+│   ├── target_.web-cloud.domain.modal-zone-reset.svg
+│   ├── target_.web-cloud.domain.modal-zone-ttl.svg
+│   │
+│   └── record-types/
+│       ├── target_.web-cloud.domain.modal-record-A.svg
+│       ├── target_.web-cloud.domain.modal-record-AAAA.svg
+│       ├── target_.web-cloud.domain.modal-record-CNAME.svg
+│       ├── target_.web-cloud.domain.modal-record-MX.svg
+│       ├── target_.web-cloud.domain.modal-record-TXT.svg
+│       ├── target_.web-cloud.domain.modal-record-NS.svg
+│       ├── target_.web-cloud.domain.modal-record-SRV.svg
+│       ├── target_.web-cloud.domain.modal-record-CAA.svg
+│       ├── target_.web-cloud.domain.modal-record-DKIM.svg
+│       ├── target_.web-cloud.domain.modal-record-DMARC.svg
+│       ├── target_.web-cloud.domain.modal-record-SPF.svg
+│       └── ... (autres types)
+│
+├── dns-servers/
+│   ├── target_.web-cloud.domain.dns-servers.svg
+│   ├── target_.web-cloud.domain.dns-servers.txt
+│   ├── target_.web-cloud.domain.modal-dns-modify.svg
+│   ├── target_.web-cloud.domain.modal-anycast-order.svg
+│   └── target_.web-cloud.domain.modal-anycast-terminate.svg
+│
+├── redirections/
+│   ├── target_.web-cloud.domain.redirections.svg
+│   ├── target_.web-cloud.domain.redirections.txt
+│   ├── target_.web-cloud.domain.modal-redirection-add.svg
+│   ├── target_.web-cloud.domain.modal-redirection-edit.svg
+│   └── target_.web-cloud.domain.modal-redirection-delete.svg
+│
+├── dynhost/
+│   ├── target_.web-cloud.domain.dynhost.svg
+│   ├── target_.web-cloud.domain.dynhost.txt
+│   ├── target_.web-cloud.domain.dynhost-login.svg
+│   ├── target_.web-cloud.domain.dynhost-login.txt
+│   ├── target_.web-cloud.domain.modal-dynhost-add.svg
+│   ├── target_.web-cloud.domain.modal-dynhost-edit.svg
+│   ├── target_.web-cloud.domain.modal-dynhost-delete.svg
+│   ├── target_.web-cloud.domain.modal-dynhost-login-add.svg
+│   ├── target_.web-cloud.domain.modal-dynhost-login-edit.svg
+│   └── target_.web-cloud.domain.modal-dynhost-login-delete.svg
+│
+├── glue/
+│   ├── target_.web-cloud.domain.glue.svg
+│   ├── target_.web-cloud.domain.glue.txt
+│   ├── target_.web-cloud.domain.modal-glue-add.svg
+│   ├── target_.web-cloud.domain.modal-glue-edit.svg
+│   └── target_.web-cloud.domain.modal-glue-delete.svg
+│
+├── dnssec/
+│   ├── target_.web-cloud.domain.dnssec.svg
+│   ├── target_.web-cloud.domain.dnssec.txt
+│   ├── target_.web-cloud.domain.modal-dnssec-enable.svg
+│   ├── target_.web-cloud.domain.modal-dnssec-disable.svg
+│   └── target_.web-cloud.domain.modal-ds-add.svg
+│
+├── contacts/
+│   ├── target_.web-cloud.domain.contacts.svg
+│   ├── target_.web-cloud.domain.contacts.txt
+│   └── target_.web-cloud.domain.modal-owo.svg
+│
+├── tasks/
+│   ├── target_.web-cloud.domain.tasks.svg
+│   └── target_.web-cloud.domain.tasks.txt
+│
+└── alldom/
+    ├── target_.web-cloud.domain.alldom.svg
+    ├── target_.web-cloud.domain.alldom.txt
+    ├── target_.web-cloud.domain.modal-batch-lock.svg
+    ├── target_.web-cloud.domain.modal-batch-dnssec.svg
+    ├── target_.web-cloud.domain.modal-batch-dns.svg
+    ├── target_.web-cloud.domain.modal-batch-renew.svg
+    └── target_.web-cloud.domain.modal-export-csv.svg
+```
+
+TOTAL: ~70 fichiers SVG + ~25 fichiers TXT = ~95 fichiers
+
+##############################################################################
+# 12. WORKFLOW GÉNÉRATION
+##############################################################################
+
+Pour chaque écran:
+□ Lire prompt_target.txt (design system)
+□ Lire ce fichier (NAV, APIs)
+□ Consulter SVG existants si dispo
+□ Générer SVG avec shell template + NAV appropriées
+□ Générer TXT documentation
+□ Sauvegarder dans /mnt/user-data/outputs/target_manager_svg/web-cloud/domain/
+
+### Ordre de génération recommandé
+
+**Phase 1 - Structure principale**
+1. target_.web-cloud.domain.index (liste domaines/zones)
+2. target_.web-cloud.domain.general
+3. target_.web-cloud.domain.zone
+4. target_.web-cloud.domain.dns-servers
+
+**Phase 2 - Tabs simples**
+5. target_.web-cloud.domain.redirections
+6. target_.web-cloud.domain.dynhost + dynhost-login
+7. target_.web-cloud.domain.glue
+8. target_.web-cloud.domain.dnssec
+9. target_.web-cloud.domain.contacts
+10. target_.web-cloud.domain.tasks
+11. target_.web-cloud.domain.alldom
+
+**Phase 3 - Modales Zone DNS (prioritaires)**
+12. target_.web-cloud.domain.modal-record-add (générique)
+13. target_.web-cloud.domain.modal-record-A
+14. target_.web-cloud.domain.modal-record-CNAME
+15. target_.web-cloud.domain.modal-record-MX
+16. target_.web-cloud.domain.modal-record-TXT
+17. Autres types de records...
+
+**Phase 4 - Autres modales**
+18. Modales redirections
+19. Modales dynhost
+20. Modales glue
+21. Modales dnssec
+22. Modales alldom (batch)
+
+**Phase 5 - Fonctionnalités avancées**
+23. target_.web-cloud.domain.zone-history
+24. Modales zone (import, export, reset, ttl)
+
+================================================================================
+FIN PROMPT TARGET WEB CLOUD > DOMAINES ET DNS
+================================================================================

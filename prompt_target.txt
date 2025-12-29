@@ -1,6 +1,12 @@
 ================================================================================
-PROMPT TARGET v2 - Generation SVG Manager OVH
+PROMPT TARGET v3 - Génération SVG Manager OVH
 ================================================================================
+
+Version: v3 (2025-12-29)
+Changelog:
+- v3: Ajout SOUS-NAV, standardisation NAV1-NAV4, dimensions unifiées
+- v2: Ajout composants réutilisables
+- v1: Version initiale
 
 ##############################################################################
 # 0. RÈGLES CRITIQUES
@@ -18,8 +24,15 @@ PROMPT TARGET v2 - Generation SVG Manager OVH
 Les SVG contiennent des EXEMPLES. Toujours documenter la source API.
 Notation: {variable} = donnée dynamique
 
-### PROMPTS COMPLÉMENTAIRES
-- prompt_target_webcloud.txt → NAV2 + NAV3 pour Web Cloud
+### PROMPTS COMPLÉMENTAIRES (Web Cloud)
+| Fichier | Section |
+|---------|---------|
+| prompt_target_web-cloud_domaines.txt | Domaines et DNS |
+| prompt_target_web-cloud_hebergement.txt | Hébergement |
+| prompt_target_web-cloud_wordpress.txt | Wordpress |
+| prompt_target_web-cloud_emails.txt | Emails |
+| prompt_target_web-cloud_voip.txt | VoIP |
+| prompt_target_web-cloud_access.txt | Accès Internet |
 
 ##############################################################################
 # 1. DESIGN SYSTEM
@@ -57,11 +70,13 @@ Notation: {variable} = donnée dynamique
 ### TYPOGRAPHIE (Source Sans Pro)
 | Element         | Size | Weight |
 |-----------------|------|--------|
-| NAV1/NAV2       | 14px | 400/600|
-| NAV3 tabs       | 9px  | 400    |
+| NAV1 items      | 14px | 400/600|
+| NAV2 items      | 14px | 400/600|
+| NAV3 tabs       | 11px | 400    |
+| NAV4 sous-tabs  | 12px | 400/500|
 | Page title      | 18px | 600    |
 | Bloc title      | 15px | 700    |
-| Theme title     | 10px | 600    |
+| Section title   | 13px | 600    |
 | Label/Value     | 11px | 400    |
 | Table header    | 11px | 600    |
 | Small           | 9px  | 400    |
@@ -72,73 +87,260 @@ Notation: {variable} = donnée dynamique
 | rx-card    | 8px   |
 | rx-button  | 4px   |
 | rx-badge   | 9px   |
+| rx-pill    | 18px  |
 | row-height | 45px  |
+| gap        | 16px  |
 
 ### ICÔNES
-↻ Refresh | ↗ External | 🔑 Password | ✎ Edit | ✕ Delete
-● Status | ▼ Dropdown | ‹› Pagination | C Copy | + Add
+↻ Refresh | ↗ External | 🔑 Password | ✎ Edit | × Delete
+● Status | ▼ Dropdown | ‹› Pagination | 📋 Copy | + Add
+🟢 Actif | 🟡 Warning | 🔴 Erreur | ⚪ Inactif
 
 ##############################################################################
-# 2. DIMENSIONS CANVAS
+# 2. DIMENSIONS CANVAS & STRUCTURE
 ##############################################################################
 
-Canvas: 1440x900px
+### Canvas
+```
+Largeur: 1440px
+Hauteur: 900px
+```
 
-VERTICAL:
-| Section | Y   | H    |
-|---------|-----|------|
-| NAV1    | 0   | 50   |
-| NAV2    | 50  | 40   |
-| Content | 90  | 810  |
+### Structure Verticale (Y)
+```
+┌──────────────────────────────────────────────────────────────┐ y=0
+│                        NAV1 (50px)                           │
+│              Header bleu OVH - items univers                 │
+├──────────────────────────────────────────────────────────────┤ y=50
+│                        NAV2 (40px)                           │
+│              Sous-header blanc - items section               │
+├──────────────────────────────────────────────────────────────┤ y=90
+│                      CONTENT AREA                            │
+│   ┌──────────────────────────────────────────────────────┐   │ y=105
+│   │              LEFT PANEL + RIGHT PANEL                │   │
+│   │                                                      │   │
+│   └──────────────────────────────────────────────────────┘   │ y=870
+└──────────────────────────────────────────────────────────────┘ y=900
+```
 
-HORIZONTAL:
-| Section     | X    | W    |
-|-------------|------|------|
-| Margin L    | 0    | 24   |
-| Left Panel  | 24   | 280  |
-| Gap         | 304  | 16   |
-| Right Panel | 320  | 1096 |
+| Zone | Y Start | Height | Y End | Description |
+|------|---------|--------|-------|-------------|
+| NAV1 | 0 | 50px | 50 | Header bleu OVH |
+| NAV2 | 50 | 40px | 90 | Sous-header blanc |
+| Gap | 90 | 15px | 105 | Marge supérieure |
+| Content | 105 | 765px | 870 | Zone panels |
+| Margin | 870 | 30px | 900 | Marge inférieure |
+
+### Structure Horizontale (X)
+```
+│24px│◄────── 280px ──────►│16px│◄────────── 1096px ──────────►│24px│
+│    │     LEFT PANEL      │    │         RIGHT PANEL          │    │
+x=0 x=24                 x=304 x=320                        x=1416 x=1440
+```
+
+| Zone | X Start | Width | X End |
+|------|---------|-------|-------|
+| Margin L | 0 | 24px | 24 |
+| LEFT PANEL | 24 | 280px | 304 |
+| Gap | 304 | 16px | 320 |
+| RIGHT PANEL | 320 | 1096px | 1416 |
+| Margin R | 1416 | 24px | 1440 |
+
+### Panels Height
+| Configuration | Left Panel Y | Right Panel Y | Height |
+|---------------|--------------|---------------|--------|
+| Sans SOUS-NAV | 105 | 105 | 765px |
+| Avec SOUS-NAV | 155 | 155 | 715px |
 
 ##############################################################################
-# 3. NAV1 - HEADER OVH (commun à tous)
+# 3. HIÉRARCHIE NAV STANDARDISÉE
+##############################################################################
+
+### Modèle de navigation
+```
+NAV1 ──► Header OVH (univers: Web Cloud, Public Cloud, Network, etc.)
+  │
+  └─► NAV2 ──► Section (Domaines, Hébergement, Emails, VoIP, Accès, etc.)
+        │
+        └─► [SOUS-NAV] ──► Toggle produit OPTIONNEL
+              │            (ex: Connexions/OverTheBox, Lignes/Numéros/Fax)
+              │
+              └─► NAV3 ──► Tabs RIGHT PANEL (onglets principaux)
+                    │
+                    └─► NAV4 ──► Sous-tabs RIGHT PANEL (si nécessaire)
+```
+
+### Définitions
+| Niveau | Position | Rôle | Exemple |
+|--------|----------|------|---------|
+| **NAV1** | y=0, h=50px | Univers OVH | Web Cloud, Public Cloud, Network |
+| **NAV2** | y=50, h=40px | Section dans univers | Domaines, Hébergement, Emails |
+| **SOUS-NAV** | y=105, h=36px | Toggle sous-produits (optionnel) | Connexions/OverTheBox |
+| **NAV3** | y=38 dans right panel | Tabs principaux | Général, Zone DNS, Sauvegardes |
+| **NAV4** | y=70 dans right panel | Sous-tabs (optionnel) | Statut, Diagnostic, Stats |
+| **ACTIONS** | Variable | Boutons d'action | +, ✎, ×, 🔄 |
+
+##############################################################################
+# 4. NAV1 - HEADER OVH (commun à tous)
 ##############################################################################
 
 Position: y=0, height=50px, background=#000E9C
 
-| Item                  | X    | État possible |
-|-----------------------|------|---------------|
-| Accueil               | 40   | muted/active  |
-| Public Cloud          | 110  | muted/active  |
-| Hosted Private Cloud  | 210  | muted/active  |
-| Bare Metal Cloud      | 370  | muted/active  |
-| Web Cloud             | 510  | muted/active  |
-| Network               | 620  | muted/active  |
-| IAM / Securite        | 700  | muted/active  |
-| Licences              | 810  | muted/active  |
+| Item | X | Note |
+|------|---|------|
+| Accueil | 40 | |
+| Public Cloud | 110 | |
+| Hosted Private Cloud | 210 | |
+| Bare Metal Cloud | 370 | |
+| Web Cloud | 510 | ← Actif pour ce projet |
+| Network | 620 | |
+| IAM / Securite | 700 | |
+| Licences | 810 | |
+| Badge user | 1280 | Droite |
 
-Indicateur actif: rect Wx3px, fill=#FFFFFF, y=46
-Badge utilisateur: x=1280, pill avec "OK" + {nicHandle}
+Indicateur actif: rect width=variable height=3px, fill=#FFFFFF, y=46
+
 ```svg
-<!-- NAV1 - Adapter l'item actif -->
-<rect width="1440" height="50" class="bg-header"/>
-<text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>
-<text x="110" y="32" class="text-white" font-size="14" opacity="0.7">Public Cloud</text>
-<text x="210" y="32" class="text-white" font-size="14" opacity="0.7">Hosted Private Cloud</text>
-<text x="370" y="32" class="text-white" font-size="14" opacity="0.7">Bare Metal Cloud</text>
-<text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+<!-- NAV1 - Header OVH (Web Cloud actif) -->
+<rect width="1440" height="50" fill="#000E9C"/>
+<text x="40" y="32" fill="#FFFFFF" font-family="Source Sans Pro" font-size="14" opacity="0.7">Accueil</text>
+<text x="110" y="32" fill="#FFFFFF" font-family="Source Sans Pro" font-size="14" opacity="0.7">Public Cloud</text>
+<text x="210" y="32" fill="#FFFFFF" font-family="Source Sans Pro" font-size="14" opacity="0.7">Hosted Private Cloud</text>
+<text x="370" y="32" fill="#FFFFFF" font-family="Source Sans Pro" font-size="14" opacity="0.7">Bare Metal Cloud</text>
+<text x="510" y="32" fill="#FFFFFF" font-family="Source Sans Pro" font-size="14" font-weight="600">Web Cloud</text>
 <rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
-<text x="620" y="32" class="text-white" font-size="14" opacity="0.7">Network</text>
-<text x="700" y="32" class="text-white" font-size="14" opacity="0.7">IAM / Securite</text>
-<text x="810" y="32" class="text-white" font-size="14" opacity="0.7">Licences</text>
+<text x="620" y="32" fill="#FFFFFF" font-family="Source Sans Pro" font-size="14" opacity="0.7">Network</text>
+<text x="700" y="32" fill="#FFFFFF" font-family="Source Sans Pro" font-size="14" opacity="0.7">IAM / Securite</text>
+<text x="810" y="32" fill="#FFFFFF" font-family="Source Sans Pro" font-size="14" opacity="0.7">Licences</text>
+
+<!-- Badge utilisateur -->
 <rect x="1280" y="12" width="140" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
 <rect x="1285" y="15" width="26" height="20" rx="10" fill="#DEF7EC"/>
 <text x="1292" y="29" fill="#03543F" font-size="10" font-weight="600">OK</text>
-<text x="1320" y="29" class="text-white" font-size="12">{nicHandle}</text>
+<text x="1320" y="29" fill="#FFFFFF" font-size="12">{nicHandle}</text>
 ```
 
 ##############################################################################
-# 4. SHELL TEMPLATE (structure commune)
+# 5. NAV2 - WEB CLOUD (standardisé)
 ##############################################################################
+
+Position: y=50, height=40px, background=#FFFFFF, border-bottom=#E5E7EB
+
+| Item | X | Width | Indicateur actif |
+|------|---|-------|------------------|
+| Accueil | 40 | ~55 | x=35, w=55 |
+| Domaines et DNS | 110 | ~110 | x=105, w=110 |
+| Hébergement | 240 | ~85 | x=235, w=85 |
+| Wordpress | 345 | ~70 | x=340, w=70 |
+| Emails | 430 | ~50 | x=425, w=50 |
+| VoIP | 500 | ~35 | x=495, w=35 |
+| Accès | 550 | ~40 | x=545, w=40 |
+| Guides | 1350 | ~50 | (toujours primary, pas d'indicateur) |
+
+Indicateur actif: rect height=3px, fill=#0050D7, y=85
+
+```svg
+<!-- NAV2 WEB CLOUD - Template (adapter l'item actif) -->
+<rect x="0" y="50" width="1440" height="40" fill="#FFFFFF"/>
+<line x1="0" y1="89" x2="1440" y2="89" stroke="#E5E7EB"/>
+
+<!-- Items (muted = #6B7280, active = #0050D7 font-weight="600") -->
+<text x="40" y="75" fill="#6B7280" font-family="Source Sans Pro" font-size="14">Accueil</text>
+<text x="110" y="75" fill="#6B7280" font-family="Source Sans Pro" font-size="14">Domaines et DNS</text>
+<text x="240" y="75" fill="#6B7280" font-family="Source Sans Pro" font-size="14">Hébergement</text>
+<text x="345" y="75" fill="#6B7280" font-family="Source Sans Pro" font-size="14">Wordpress</text>
+<text x="430" y="75" fill="#6B7280" font-family="Source Sans Pro" font-size="14">Emails</text>
+<text x="500" y="75" fill="#6B7280" font-family="Source Sans Pro" font-size="14">VoIP</text>
+<text x="550" y="75" fill="#6B7280" font-family="Source Sans Pro" font-size="14">Accès</text>
+<text x="1350" y="75" fill="#0050D7" font-family="Source Sans Pro" font-size="13">Guides</text>
+
+<!-- Indicateur actif - ADAPTER x et width selon section -->
+<!-- Exemple pour Hébergement actif: -->
+<rect x="235" y="85" width="85" height="3" fill="#0050D7"/>
+```
+
+##############################################################################
+# 6. SOUS-NAV - TOGGLE PRODUIT (optionnel)
+##############################################################################
+
+Position: y=105 (juste après NAV2), height=36px
+Usage: Quand une section a plusieurs sous-produits distincts
+
+| Propriété | Valeur |
+|-----------|--------|
+| Y | 105 |
+| Height | 36px |
+| Gap après | 14px |
+| Bouton actif | bg=#0050D7, text=#FFFFFF |
+| Bouton inactif | bg=#F3F4F6, border=#E5E7EB, text=#6B7280 |
+
+```svg
+<!-- SOUS-NAV - Toggle produit (exemple Accès Internet) -->
+<g transform="translate(24, 105)">
+  <!-- Bouton actif -->
+  <rect x="0" y="0" width="160" height="36" rx="6" fill="#0050D7"/>
+  <text x="80" y="23" fill="#FFFFFF" font-size="13" text-anchor="middle" font-weight="500">🌐 Connexions  4</text>
+  
+  <!-- Bouton inactif -->
+  <rect x="168" y="0" width="160" height="36" rx="6" fill="#F3F4F6" stroke="#E5E7EB"/>
+  <text x="248" y="23" fill="#6B7280" font-size="13" text-anchor="middle">📦 OverTheBox  1</text>
+</g>
+```
+
+Sections utilisant SOUS-NAV:
+- **Accès**: Connexions | OverTheBox
+- **VoIP**: Lignes | Numéros | Fax | Abrégés
+- **Emails**: Par domaine | Par pack (optionnel)
+
+Impact: Si SOUS-NAV présent, LEFT/RIGHT panels commencent à y=155 au lieu de y=105
+
+##############################################################################
+# 7. NAV3 - TABS RIGHT PANEL
+##############################################################################
+
+Position: y=38 dans le right panel (relatif à transform)
+Style: Boutons pill, actif=bg-primary, inactif=btn-outline
+
+```svg
+<!-- NAV3 - Tabs right panel (dans <g transform="translate(320, 105)"> ou 155 si SOUS-NAV) -->
+<g transform="translate(0, 38)">
+  <!-- Tab actif -->
+  <rect x="0" y="0" width="65" height="26" rx="4" fill="#0050D7"/>
+  <text x="32" y="17" fill="#FFFFFF" font-size="11" text-anchor="middle">Général</text>
+  
+  <!-- Tab inactif -->
+  <rect x="69" y="0" width="70" height="26" rx="4" fill="#FFFFFF" stroke="#0050D7"/>
+  <text x="104" y="17" fill="#0050D7" font-size="11" text-anchor="middle">Zone DNS</text>
+  
+  <!-- Autres tabs... -->
+</g>
+```
+
+##############################################################################
+# 8. NAV4 - SOUS-TABS RIGHT PANEL
+##############################################################################
+
+Position: y=70 dans le right panel (sous NAV3)
+Style: Texte souligné, actif=primary+underline, inactif=muted
+
+```svg
+<!-- NAV4 - Sous-tabs (dans le même groupe que NAV3) -->
+<g transform="translate(0, 70)">
+  <!-- Sous-tab actif -->
+  <text x="0" y="14" fill="#0050D7" font-size="12" font-weight="500">Statut</text>
+  <rect x="0" y="18" width="40" height="2" fill="#0050D7"/>
+  
+  <!-- Sous-tab inactif -->
+  <text x="60" y="14" fill="#6B7280" font-size="12">Diagnostic</text>
+  
+  <!-- Autres sous-tabs... -->
+</g>
+```
+
+##############################################################################
+# 9. SHELL TEMPLATE (structure commune)
+##############################################################################
+
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900">
   <defs>
@@ -170,59 +372,69 @@ Badge utilisateur: x=1280, pill avec "OK" + {nicHandle}
     </style>
   </defs>
 
+  <!-- Background -->
   <rect width="1440" height="900" class="bg-main"/>
 
-  <!-- NAV1 : Voir section 3 -->
+  <!-- NAV1 : Section 4 -->
+  
+  <!-- NAV2 : Section 5 -->
+  
+  <!-- SOUS-NAV (optionnel) : Section 6 -->
 
-  <!-- NAV2 : Voir prompt spécifique (prompt_target_webcloud.txt, etc.) -->
-
-  <!-- MAIN CONTENT -->
-  <g transform="translate(0, 90)">
-    <g transform="translate(24, 15)">
+  <!-- CONTENT AREA -->
+  <!-- Sans SOUS-NAV: translate(0, 105) -->
+  <!-- Avec SOUS-NAV: translate(0, 155) -->
+  <g transform="translate(0, 105)">
+    <g transform="translate(24, 0)">
       
       <!-- LEFT PANEL -->
-      <rect x="0" y="0" width="280" height="780" rx="8" class="bg-white"/>
-      <rect x="0" y="0" width="280" height="780" rx="8" class="border"/>
+      <rect x="0" y="0" width="280" height="765" rx="8" class="bg-white"/>
+      <rect x="0" y="0" width="280" height="765" rx="8" class="border"/>
+      
+      <!-- Recherche -->
       <rect x="12" y="12" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
-      <text x="26" y="34" class="text-muted" font-size="12">Rechercher...</text>
-      <text x="12" y="68" class="text-muted" font-size="11">Filtrer par statut</text>
-      <text x="240" y="68" class="text-muted" font-size="11" text-anchor="end">{serviceCount} services</text>
+      <text x="26" y="34" class="text-muted" font-size="12">🔍 Rechercher...</text>
       
-      <!-- Service selectionne -->
-      <rect x="6" y="80" width="268" height="56" rx="6" class="row-selected"/>
-      <circle cx="28" cy="108" r="14" fill="#0050D7"/>
-      <text x="28" y="112" class="text-white" font-size="10" text-anchor="middle">{avatar}</text>
-      <text x="52" y="100" class="text-dark" font-size="13" font-weight="500">{serviceName}</text>
-      <text x="52" y="116" class="text-muted" font-size="11">{offerName}</text>
-      <rect x="210" y="96" width="46" height="18" rx="9" fill="#DEF7EC"/>
-      <text x="233" y="109" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
-
+      <!-- Compteur -->
+      <text x="12" y="68" class="text-muted" font-size="11">{serviceCount} services</text>
+      
+      <!-- Service items (à partir de y=80) -->
+      
+    </g>
+    
+    <g transform="translate(320, 0)">
+      
       <!-- RIGHT PANEL -->
-      <rect x="296" y="0" width="1096" height="780" rx="8" class="bg-white"/>
-      <rect x="296" y="0" width="1096" height="780" rx="8" class="border"/>
+      <rect x="0" y="0" width="1096" height="765" rx="8" class="bg-white"/>
+      <rect x="0" y="0" width="1096" height="765" rx="8" class="border"/>
       
-      <g transform="translate(316, 0)">
-        <!-- HEADER PAGE -->
+      <g transform="translate(20, 0)">
+        <!-- HEADER PAGE (y=0 à y=35) -->
         <text x="0" y="24" class="text-dark" font-size="18" font-weight="600">{serviceName}</text>
-        <text x="120" y="24" class="text-muted" font-size="12">{subtitle}</text>
         
-        <!-- NAV3 TABS : Voir prompt spécifique -->
+        <!-- NAV3 TABS (y=38) -->
         <g transform="translate(0, 38)">
-          <!-- TABS SPECIFIQUES -->
+          <!-- Tabs -->
         </g>
 
-        <!-- CONTENU PAGE -->
-        <g transform="translate(0, 75)">
-          <!-- CONTENU SPECIFIQUE -->
+        <!-- NAV4 SOUS-TABS (y=70, si nécessaire) -->
+        <g transform="translate(0, 70)">
+          <!-- Sous-tabs -->
+        </g>
+
+        <!-- CONTENU (y=100 ou y=90 si pas de NAV4) -->
+        <g transform="translate(0, 100)">
+          <!-- Contenu page -->
         </g>
       </g>
+      
     </g>
   </g>
 </svg>
 ```
 
 ##############################################################################
-# 5. COMPOSANTS RÉUTILISABLES
+# 10. COMPOSANTS RÉUTILISABLES
 ##############################################################################
 
 ### TOOLBAR
@@ -234,8 +446,8 @@ Badge utilisateur: x=1280, pill avec "OK" + {nicHandle}
   <rect x="40" y="0" width="180" height="32" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
   <text x="52" y="21" class="text-muted" font-size="11">{searchPlaceholder}</text>
   
-  <rect x="228" y="0" width="150" height="32" rx="4" class="btn-outline"/>
-  <text x="303" y="21" class="text-primary" font-size="11" text-anchor="middle">+ {addLabel}</text>
+  <rect x="228" y="0" width="150" height="32" rx="4" class="btn-primary"/>
+  <text x="303" y="21" class="text-white" font-size="11" text-anchor="middle">+ {addLabel}</text>
 </g>
 ```
 
@@ -255,39 +467,27 @@ Badge utilisateur: x=1280, pill avec "OK" + {nicHandle}
     <rect x="68" y="0" width="28" height="26" rx="4" class="btn-outline"/>
     <text x="82" y="17" class="text-primary" font-size="11" text-anchor="middle">2</text>
     <rect x="102" y="0" width="28" height="26" rx="4" class="btn-outline"/>
-    <text x="116" y="17" class="text-primary" font-size="11" text-anchor="middle">3</text>
-    <rect x="136" y="0" width="28" height="26" rx="4" class="btn-outline"/>
-    <text x="150" y="17" class="text-primary" font-size="12" text-anchor="middle">›</text>
+    <text x="116" y="17" class="text-primary" font-size="12" text-anchor="middle">›</text>
   </g>
 </g>
 ```
 
-### BANNIERE INFO
+### BANNIÈRES
 ```svg
+<!-- Info -->
 <rect x="0" y="0" width="1056" height="40" rx="6" class="bg-info"/>
-<text x="20" y="25" class="text-info" font-size="12">{message}</text>
-```
+<text x="20" y="25" class="text-info" font-size="12">ℹ️ {message}</text>
 
-### BANNIERE WARNING
-```svg
+<!-- Warning -->
 <rect x="0" y="0" width="1056" height="40" rx="6" class="bg-warning"/>
-<text x="20" y="25" class="text-warning" font-size="12">{message}</text>
-```
+<text x="20" y="25" class="text-warning" font-size="12">⚠️ {message}</text>
 
-### BANNIERE ERROR
-```svg
+<!-- Error -->
 <rect x="0" y="0" width="1056" height="40" rx="6" class="bg-error"/>
-<text x="20" y="25" class="text-error" font-size="12">{message}</text>
+<text x="20" y="25" class="text-error" font-size="12">❌ {message}</text>
 ```
 
-### INPUT COPIABLE
-```svg
-<rect x="0" y="0" width="220" height="28" rx="4" class="bg-neutral-100"/>
-<text x="10" y="18" class="text-dark" font-size="10">{value}</text>
-<text x="200" y="18" class="text-primary" font-size="14">C</text>
-```
-
-### BADGE STATUT
+### BADGES STATUT
 ```svg
 <!-- Actif -->
 <rect x="0" y="0" width="46" height="18" rx="9" fill="#DEF7EC"/>
@@ -300,6 +500,10 @@ Badge utilisateur: x=1280, pill avec "OK" + {nicHandle}
 <!-- Erreur -->
 <rect x="0" y="0" width="46" height="18" rx="9" fill="#FEE2E2"/>
 <text x="23" y="13" fill="#DC2626" font-size="10" text-anchor="middle">Erreur</text>
+
+<!-- Warning -->
+<rect x="0" y="0" width="60" height="18" rx="9" fill="#FEF3C7"/>
+<text x="30" y="13" fill="#D97706" font-size="10" text-anchor="middle">En cours</text>
 ```
 
 ### INDICATEUR ON/OFF
@@ -311,14 +515,19 @@ Badge utilisateur: x=1280, pill avec "OK" + {nicHandle}
 <!-- OFF -->
 <text class="text-error" font-size="12">●</text>
 <text class="text-error" font-size="10">OFF</text>
+```
 
-<!-- Non disponible -->
-<text class="text-muted" font-size="9">non disponible</text>
+### INPUT COPIABLE
+```svg
+<rect x="0" y="0" width="220" height="28" rx="4" class="bg-neutral-100"/>
+<text x="10" y="18" class="text-dark" font-size="10">{value}</text>
+<text x="200" y="18" class="text-primary" font-size="12">📋</text>
 ```
 
 ##############################################################################
-# 6. TEMPLATE DOCUMENTATION .txt
+# 11. TEMPLATE DOCUMENTATION .txt
 ##############################################################################
+
 ```
 ================================================================================
 TARGET SVG DOCUMENTATION
@@ -332,44 +541,79 @@ Version: v1 (YYYY-MM-DD)
 | Exemple SVG           | Source API                      |
 |-----------------------|---------------------------------|
 | {exemple}             | GET /path → field               |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. TOOLBAR - Boutons [...]
-2. BLOC 1: {titre} - Dimensions, colonnes
-3. BLOC 2: {titre} - Table/Cards
-4. PAGINATION (si table)
-5. BANNIERE INFO (si besoin)
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (item actif)
+3. SOUS-NAV - Toggle produit (si applicable)
+4. LEFT PANEL - Liste services
+5. RIGHT PANEL
+   - Header: Titre + actions
+   - NAV3: Tabs principaux
+   - NAV4: Sous-tabs (si applicable)
+   - Contenu: Blocs, tables, formulaires
+
+# INTERACTIONS
+- Clic tab → Navigation
+- Clic bouton → Action/Modal
+- Clic ligne → Sélection
 
 # API ENDPOINTS
 GET/POST/PUT/DELETE /path/{id}
+
 ================================================================================
 ```
 
 ##############################################################################
-# 7. WORKFLOW & CHECKLIST
+# 12. ARBORESCENCE FICHIERS
 ##############################################################################
 
-□ Shell (NAV1 + NAV2 + Left Panel)
-□ NAV3 tabs (voir prompt spécifique section)
+```
+~/target_manager_svg/
+├── prompt_target.txt                          # CE FICHIER (design system)
+├── prompt_target_web-cloud_domaines.txt       # NAV spécifique Domaines
+├── prompt_target_web-cloud_hebergement.txt    # NAV spécifique Hébergement
+├── prompt_target_web-cloud_wordpress.txt      # NAV spécifique Wordpress
+├── prompt_target_web-cloud_emails.txt         # NAV spécifique Emails
+├── prompt_target_web-cloud_voip.txt           # NAV spécifique VoIP
+├── prompt_target_web-cloud_access.txt         # NAV spécifique Accès
+│
+└── web-cloud/
+    ├── domain/
+    │   ├── target_.web-cloud.domain.{route}.svg
+    │   └── target_.web-cloud.domain.{route}.txt
+    ├── hosting/
+    │   └── ...
+    ├── wordpress/
+    │   └── ...
+    ├── emails/
+    │   └── ...
+    ├── voip/
+    │   └── ...
+    └── access/
+        └── ...
+```
+
+##############################################################################
+# 13. WORKFLOW & CHECKLIST
+##############################################################################
+
+Pour chaque écran:
+□ Lire prompt_target.txt (ce fichier)
+□ Lire prompt spécifique section (prompt_target_web-cloud_*.txt)
+□ Shell (NAV1 + NAV2 + SOUS-NAV si applicable)
+□ Left Panel (liste services)
+□ Right Panel header + NAV3 tabs
+□ NAV4 sous-tabs si nécessaire
 □ Contenu métier (blocs + tables)
 □ Pagination si table
 □ Bannière info/warning/error si besoin
 □ Documentation .txt créée
 □ Données dynamiques documentées
+□ Sauvegarder via tee + present_files
 
-##############################################################################
-# 8. ARBORESCENCE
-##############################################################################
-
-~/target_manager_svg/
-├── prompt_target.txt              # CE FICHIER (générique)
-├── prompt_target_webcloud.txt     # NAV2+NAV3 Web Cloud
-├── web-cloud/
-│   └── hosting/
-│       ├── target_.{route}.svg
-│       └── target_.{route}.txt
-└── {autres-nav1}/
-    └── {nav2}/
-        └── target_.{route}.svg
-
+================================================================================
+FIN PROMPT TARGET v3
+================================================================================

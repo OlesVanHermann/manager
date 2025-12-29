@@ -1,137 +1,71 @@
-# Cahier des Charges : web-cloud/email-domain - Dashboard MX Plan
+# Cahier des Charges : web-cloud/email-domain - Dashboard principal
 
-## 1. RESUME EXECUTIF
+## 1. VUE D'ENSEMBLE
+- **Type** : Dashboard MX Plan
+- **URL** : /email/domain/{domain}
+- **Objectif** : Gérer service email MX Plan
 
-### Perimetre
-Dashboard principal d'un service email MX Plan.
-
-### Objectif fonctionnel
-- Voir les informations du service email
-- Gerer les comptes email
-- Acceder aux onglets (redirections, listes, filtres, repondeurs, taches)
-
----
-
-## 2. LAYOUT
-
-### Structure page avec sidebar + carte info + onglets + tableau
-
----
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar navigation (Email Pro, Exchange, MX Plan)
+- Breadcrumb
+- Titre service
+- Carte info service
+- Onglets
+- Tableau comptes email
+- Pagination
 
 ## 3. COMPOSANTS UI
+- **OdsText** : Titres, labels
+- **OdsBadge** : Statut Actif
+- **OdsTabs** : Navigation onglets
+- **OdsButton** : Créer un compte
+- **OdsDatagrid** : Tableau comptes
+- **OdsActionMenu** : Actions par ligne
+- **OdsPagination** : Navigation pages
 
-### Breadcrumb
-| Element | Description |
-|---------|-------------|
-| Chemin | Web Cloud > Emails > MX Plan |
+## 4. SIDEBAR
+| Élément | État |
+|---------|------|
+| Email Pro | Lien |
+| Exchange | Lien |
+| MX Plan | Actif (sélectionné) |
 
-### Titre page
-| Element | Description |
-|---------|-------------|
-| Texte | MX Plan - {domaine} |
-
-### Carte informations service
-| Champ | Valeur |
-|-------|--------|
-| Domaine | mondomaine.fr |
-| Statut | Badge "Actif" vert |
-| Offre | MX Plan (inclus avec hebergement) |
+## 5. CARTE INFO SERVICE
+| Élément | Contenu |
+|---------|---------|
+| Nom domaine | mondomaine.fr + Badge Actif |
+| Offre | MX Plan (inclus avec hébergement) |
 | Comptes email | 5 / 10 |
 | Redirections | 3 actives |
 | Listes de diffusion | 1 active |
 
-### Onglets
-| Onglet | Description |
-|--------|-------------|
-| Comptes email | Liste des comptes (actif) |
-| Redirections | Transferts automatiques |
-| Listes de diffusion | Envoi groupe |
-| Filtres | Regles de tri |
-| Repondeurs | Reponses automatiques |
-| Taches | Historique operations |
+## 6. ONGLETS
+| Onglet | État |
+|--------|------|
+| Comptes email | Actif |
+| Redirections | - |
+| Listes de diffusion | - |
+| Filtres | - |
+| Répondeurs | - |
+| Tâches | - |
 
-### Bouton action
-| Element | Description |
-|---------|-------------|
-| Type | Primary |
-| Texte | + Creer un compte |
+## 7. TABLEAU COMPTES
+| Colonne | Type |
+|---------|------|
+| Compte | Lien email (bleu) |
+| Description | Texte |
+| Quota | X Go / Y Go |
+| Statut | Badge Actif (vert) |
+| Actions | ActionMenu |
 
-### Tableau comptes email
-| Colonne | Description |
-|---------|-------------|
-| Compte | Adresse email (lien bleu) |
-| Description | Texte descriptif |
-| Quota | X.X Go / Y Go |
-| Statut | Badge Actif/Inactif |
-| Actions | Menu ⋮ |
-
-### Pagination
-| Element | Description |
-|---------|-------------|
+## 8. PAGINATION
+| Élément | Format |
+|---------|--------|
 | Texte | Affichage X-Y sur Z comptes |
 
----
-
-## 4. APIS & DONNEES
-
-### Endpoints
-```
-GET /email/domain/{domain}
-GET /email/domain/{domain}/account
-GET /email/domain/{domain}/account/{accountName}
-POST /email/domain/{domain}/account
-DELETE /email/domain/{domain}/account/{accountName}
-```
-
-### Modele
-```typescript
-interface EmailDomainService {
-  domain: string;
-  offer: string;
-  status: string;
-  accountsUsed: number;
-  accountsMax: number;
-}
-
-interface EmailAccount {
-  accountName: string;
-  email: string;
-  description: string;
-  size: number;
-  quota: number;
-  isBlocked: boolean;
-}
-```
-
----
-
-## 5. TRADUCTIONS (i18n)
-
-```json
-{
-  "email_domain_title": "MX Plan - {domain}",
-  "email_domain_offer": "Offre",
-  "email_domain_accounts": "Comptes email",
-  "email_domain_redirections": "Redirections",
-  "email_domain_mailing_lists": "Listes de diffusion",
-  "email_domain_filters": "Filtres",
-  "email_domain_responders": "Repondeurs",
-  "email_domain_tasks": "Taches",
-  "email_domain_create_account": "Creer un compte",
-  "email_domain_col_account": "Compte",
-  "email_domain_col_description": "Description",
-  "email_domain_col_quota": "Quota",
-  "email_domain_col_status": "Statut",
-  "email_domain_status_active": "Actif",
-  "email_domain_status_blocked": "Bloque"
-}
-```
-
----
-
-## 6. REGLES METIER
-
-- MX Plan inclus avec hebergement web
-- Quota par compte: 5 Go par defaut
-- Maximum 10 comptes selon offre
-- Statut bloque = emails rejetes
+## 9. APIS & ENDPOINTS
+- GET /email/domain/{domain} - Infos service
+- GET /email/domain/{domain}/account - Liste comptes
+- GET /email/domain/{domain}/redirection - Redirections
+- GET /email/domain/{domain}/mailingList - Listes diffusion

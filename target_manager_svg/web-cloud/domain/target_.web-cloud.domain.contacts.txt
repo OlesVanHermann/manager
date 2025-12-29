@@ -1,0 +1,72 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.contacts.svg
+Route:   /web-cloud/domaines/domain/{domainName}/contacts
+NAV:     NAV1=Web Cloud | NAV2=Domaines et DNS | NAV3=Contacts
+Version: v1 (2025-12-29)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| ab12345-ovh              | GET /domain/{d}/contact -> nicAdmin                    |
+| Jean DUPONT              | nichandle -> firstName + lastName                      |
+| jean.dupont@example.com  | nichandle -> email                                     |
+| Activé                   | GET /domain/{d}/owo -> obfuscate                       |
+================================================================================
+
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Sous-menu (Domaines et DNS actif)
+3. LEFT PANEL - Liste domaines/zones
+4. RIGHT PANEL
+   - Header: domainName
+   - NAV3: 10 tabs (Contacts actif)
+   - 4 Contact Cards (2x2 grid):
+     - Contact Administrateur (350+140=490px wide)
+     - Contact Technique
+     - Contact Facturation
+     - Propriétaire (WHOIS) - highlighted with blue border
+   - Section OWO (Protection WHOIS)
+   - Bannière info
+
+CONTACT CARDS LAYOUT
+| Card                   | Position     | Actions                    |
+|------------------------|--------------|----------------------------|
+| Admin                  | Col1 Row1    | Modifier contact (outline) |
+| Tech                   | Col2 Row1    | Modifier contact (outline) |
+| Facturation            | Col1 Row2    | Modifier contact (outline) |
+| Propriétaire (WHOIS)   | Col2 Row2    | Modifier WHOIS (primary)   |
+
+Note: Le card Propriétaire a une bordure bleue (#0050D7) pour le distinguer
+
+SECTION OWO (OBFUSCATE WHOIS)
+- Titre: Protection WHOIS (OWO)
+- Description du service
+- Badge statut (Activé/Désactivé)
+- Bouton "Configurer OWO"
+
+API ENDPOINTS
+GET    /domain/{domain}                     -> Infos domaine
+GET    /domain/{domain}/contact             -> Contacts (admin, tech, billing)
+GET    /me/contact/{nichandle}              -> Détails contact
+POST   /domain/{domain}/contact/change      -> Changer contact
+GET    /domain/{domain}/owo                 -> Statut OWO
+PUT    /domain/{domain}/owo                 -> Modifier OWO
+
+TYPES DE CONTACTS
+| Type         | Champ API     | Modifiable |
+|--------------|---------------|------------|
+| Admin        | nicAdmin      | Oui        |
+| Tech         | nicTech       | Oui        |
+| Facturation  | nicBilling    | Oui        |
+| Propriétaire | whoisOwner    | Oui*       |
+
+* Le changement de propriétaire peut entraîner des frais selon l'extension
+
+NAVIGATION
+- Click "Modifier contact" -> Redirection vers gestion contacts OVH
+- Click "Modifier WHOIS" -> Formulaire modification propriétaire
+- Click "Configurer OWO" -> Modal configuration OWO
+================================================================================

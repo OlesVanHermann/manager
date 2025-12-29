@@ -1,0 +1,86 @@
+# Cahier des Charges : network/load-balancer - Modal Statut Serveur
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Modal informative (lecture seule)
+- **Déclencheur** : Action "Voir le statut" dans le menu serveur
+- **Objectif** : Afficher le statut du health check par zone
+
+## 2. STRUCTURE MODAL
+- Overlay sombre (50% opacité)
+- Modal centrée (600x520px)
+- Header avec titre et bouton fermer
+- Liste des instances par zone
+- Pas de footer (modal informative)
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsText** : Titres et labels
+- **OdsBadge** : Statut UP/DOWN
+- **OdsDivider** : Séparateur entre instances
+
+## 4. HEADER MODAL
+| Élément | Valeur |
+|---------|--------|
+| Titre | "Statut du serveur" |
+| Bouton fermer | × (coin droit) |
+| Séparateur | Ligne grise |
+
+## 5. STRUCTURE PAR INSTANCE
+
+Chaque instance (zone) affiche :
+
+### En-tête instance
+| Élément | Format |
+|---------|--------|
+| Titre | "Instance #N (ZONE)" |
+| Style | Subheading 16px, semibold |
+
+### Champs de statut
+| Champ | Description | Exemple |
+|-------|-------------|---------|
+| Status | Badge UP ou DOWN | UP (vert) / DOWN (rouge) |
+| Check Code | Code retour HTTP | 200 |
+| Check Status | Statut HAProxy | L7OK / L4TOUT |
+| Last Check Content | Contenu réponse | HTTP/1.1 200 OK |
+| Check Time | Timestamp | 27/12/2025 10:30:15 |
+
+## 6. EXEMPLE DONNÉES
+
+### Instance #1 (GRA)
+| Champ | Valeur |
+|-------|--------|
+| Status | UP (badge vert) |
+| Check Code | 200 |
+| Check Status | L7OK |
+| Last Check Content | HTTP/1.1 200 OK |
+| Check Time | 27/12/2025 10:30:15 |
+
+### Instance #2 (FRA)
+| Champ | Valeur |
+|-------|--------|
+| Status | DOWN (badge rouge) |
+| Check Code | 0 |
+| Check Status | L4TOUT |
+| Last Check Content | Connection timeout |
+| Check Time | 27/12/2025 10:29:45 |
+
+## 7. CODES DE STATUT HAPROXY
+| Code | Description |
+|------|-------------|
+| L7OK | Layer 7 check OK |
+| L7STS | Layer 7 response - erreur status code |
+| L7RSP | Layer 7 response - erreur contenu |
+| L4OK | Layer 4 check OK |
+| L4TOUT | Layer 4 timeout |
+| L4CON | Layer 4 connection error |
+
+## 8. BADGES STATUT
+| Statut | Badge | Couleur fond | Couleur texte |
+|--------|-------|--------------|---------------|
+| UP | Success | #DEF7EC | #03543F |
+| DOWN | Error | #FEE2E2 | #991B1B |
+
+## 9. APIS & ENDPOINTS
+- GET /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server/{serverId}/status - Statut serveur
+
+

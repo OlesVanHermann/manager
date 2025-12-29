@@ -1,0 +1,92 @@
+# Cahier des Charges : network/load-balancer - Modal Résilier
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Modal de confirmation danger
+- **Déclencheur** : Action "Résilier mon service" dans le menu
+- **Objectif** : Confirmer la résiliation du Load Balancer
+
+## 2. STRUCTURE MODAL
+- Overlay sombre (50% opacité)
+- Modal centrée (600x480px)
+- Header avec titre et bouton fermer
+- Avertissements multiples
+- Champ de confirmation
+- Footer avec boutons action
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsMessage** : Avertissements (error + warning)
+- **OdsText** : Labels et informations
+- **OdsInput** : Champ de confirmation
+- **OdsButton** : Annuler (outline), Résilier (danger)
+
+## 4. HEADER MODAL
+| Élément | Valeur |
+|---------|--------|
+| Titre | "Résilier le Load Balancer" |
+| Bouton fermer | ✕ (coin droit) |
+| Séparateur | Ligne grise |
+
+## 5. AVERTISSEMENT PRINCIPAL
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Message error (rouge) |
+| Fond | #FEF2F2 |
+| Bordure | #FCA5A5 |
+| Icône | ⚠️ |
+| Titre | "Attention : Cette action est irréversible" |
+| Texte | "La résiliation entraînera la suppression définitive de votre Load Balancer et de toutes ses configurations." |
+
+## 6. INFORMATIONS SERVICE
+| Élément | Contenu |
+|---------|---------|
+| Label | "Service à résilier" |
+| Nom | LB Production |
+| Détails | loadbalancer-12345 • Offre L • GRA, LIM |
+| Style | Card grise avec fond #F9FAFB |
+
+## 7. AVERTISSEMENT RESSOURCES
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Message warning (jaune) |
+| Fond | #FEF3C7 |
+| Bordure | #F59E0B |
+| Titre | "Ressources qui seront supprimées :" |
+| Liste | • 3 frontends • 2 fermes de serveurs • 5 serveurs • 2 certificats SSL |
+
+## 8. CHAMP DE CONFIRMATION
+| Élément | Contenu |
+|---------|---------|
+| Label | "Pour confirmer, tapez \"TERMINATE\" ci-dessous" |
+| Type | Input text |
+| Placeholder | TERMINATE |
+| Largeur | 540px |
+| Validation | Doit être exactement "TERMINATE" |
+
+## 9. FOOTER MODAL
+| Bouton | Style | Position | État |
+|--------|-------|----------|------|
+| Annuler | Outline (bordure grise) | Gauche | Toujours actif |
+| Résilier | Danger (rouge #DC2626) | Droite | Actif si TERMINATE saisi |
+
+## 10. COMPORTEMENT
+| Action | Résultat |
+|--------|----------|
+| Saisie incorrecte | Bouton Résilier désactivé |
+| Saisie "TERMINATE" | Bouton Résilier activé |
+| Clic Résilier | Déclenche la résiliation |
+| Clic Annuler | Ferme la modal |
+
+## 11. CONSÉQUENCES RÉSILIATION
+- Suppression de tous les frontends
+- Suppression de toutes les fermes de serveurs
+- Suppression de tous les serveurs
+- Suppression de tous les certificats SSL
+- Libération des IP Failover
+- Perte de la configuration vRack
+
+## 12. APIS & ENDPOINTS
+- POST /ipLoadbalancing/{serviceName}/terminate - Résilier le service
+- DELETE /ipLoadbalancing/{serviceName} - Supprimer (alternative)
+
+

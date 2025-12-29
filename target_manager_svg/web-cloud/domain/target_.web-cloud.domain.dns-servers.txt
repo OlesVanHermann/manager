@@ -1,59 +1,65 @@
-# Cahier des Charges : web-cloud/domain - Serveurs DNS (vue détaillée)
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.dns-servers.svg
+Route:   /web-cloud/domaines/domain/{domainName}/dns-servers
+NAV:     NAV1=Web Cloud | NAV2=Domaines et DNS | NAV3=Serveurs DNS
+Version: v1 (2025-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Écran** : Gestion des serveurs DNS
-- **Type** : Page avec tableau
-- **Objectif** : Gérer les serveurs DNS du domaine
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| example.com              | Route param domainName                                  |
+| dns1.ovh.net             | GET /domain/{d}/nameServer -> host                     |
+| dns2.ovh.net             | GET /domain/{d}/nameServer -> host                     |
+| Hosted (OVH)             | GET /domain/{d} -> nameServerType                      |
+| Non activé (Anycast)     | GET /domain/{d}/option/dnsAnycast                      |
+| 213.251.128.130          | DNS lookup sur nameserver                               |
+================================================================================
 
-## 2. STRUCTURE DE LA PAGE
-- Header OVHcloud
-- Sidebar navigation
-- Breadcrumb
-- Titre
-- Boutons d'action
-- Tableau serveurs DNS
-- Section informations
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Sous-menu (Domaines et DNS actif)
+3. LEFT PANEL - Liste domaines/zones
+4. RIGHT PANEL
+   - Header: domainName
+   - NAV3: 10 tabs (Serveurs DNS actif)
+   - Card serveurs actuels: Type, Primaire, Secondaire + Actions
+   - Card DNS Anycast: Option premium
+   - Formulaire modification serveurs
+   - Bannière warning propagation
 
-## 3. COMPOSANTS UI
-- **OdsButton** : Ajouter serveur (primaire), Réinitialiser (secondaire)
-- **OdsTable** : Liste des serveurs DNS
-- **OdsBadge** : Statut Actif (vert)
-- **OdsActionMenu** : Menu contextuel (⋮)
-- **OdsCard** : Section informations (fond bleu)
+API ENDPOINTS
+GET    /domain/{domain}/nameServer         -> Liste serveurs DNS
+POST   /domain/{domain}/nameServer         -> Modifier serveurs
+GET    /domain/{domain}/nameServer/status  -> Statut serveurs
+GET    /domain/{domain}/option/dnsAnycast  -> État Anycast
+POST   /order/domain/zone/{zone}/dnsAnycast -> Commander Anycast
+DELETE /domain/{domain}/option/dnsAnycast  -> Résilier Anycast
 
-## 4. BOUTONS D'ACTION
-| Bouton | Style |
-|--------|-------|
-| Ajouter un serveur DNS | Primaire bleu |
-| Réinitialiser les serveurs DNS | Secondaire outline |
+TYPES DE DNS
+| Type     | Description                              |
+|----------|------------------------------------------|
+| Hosted   | Serveurs OVH (dns1/dns2.ovh.net)        |
+| External | Serveurs externes (personnalisés)        |
 
-## 5. TABLEAU SERVEURS DNS
-| Colonne | Description |
-|---------|-------------|
-| Serveur DNS | Nom FQDN du serveur |
-| IP associée | Adresse IP |
-| Statut | Badge Actif |
-| Actions | Menu ⋮ |
+DNS ANYCAST
+| Statut   | Badge       | Actions disponibles        |
+|----------|-------------|----------------------------|
+| Non actif| Gris        | Commander                  |
+| Actif    | Vert        | Résilier                   |
 
-### Exemple données
-| Serveur DNS | IP Associée | Statut |
-|-------------|-------------|--------|
-| dns100.ovh.net | 213.186.33.99 | Actif |
-| ns100.ovh.net | 213.251.128.100 | Actif |
+FORMULAIRE MODIFICATION
+- Serveur 1: requis (primaire)
+- Serveur 2: requis (secondaire)
+- Serveur 3: optionnel
+- Serveur 4: optionnel
+- Validation: vérification existence des serveurs
 
-## 6. MENU ACTIONS (⋮)
-- Supprimer (texte rouge danger)
-
-## 7. SECTION INFORMATIONS
-Fond bleu (#E8F0FE) :
-- "**Informations sur vos serveurs DNS**"
-- "Vous utilisez actuellement les serveurs DNS OVH recommandés pour votre domaine :"
-- • dns100.ovh.net
-- • ns100.ovh.net
-
-## 8. APIS & ENDPOINTS
-- GET /domain/{serviceName}/nameServer : Liste serveurs DNS
-- POST /domain/{serviceName}/nameServer : Ajouter serveur
-- DELETE /domain/{serviceName}/nameServer/{id} : Supprimer
-- POST /domain/{serviceName}/nameServer/reset : Réinitialiser
-
+NAVIGATION
+- Click "Modifier les serveurs" -> Active le formulaire
+- Click "Réinitialiser vers OVH" -> Modal confirmation
+- Click "Commander Anycast" -> Tunnel commande
+- Click "Valider" -> POST modification
+================================================================================

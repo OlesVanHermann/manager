@@ -1,0 +1,84 @@
+# Cahier des Charges : network/ip - Modal Anti-spam
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Modal d'information et action
+- **Déclencheur** : Action "Anti-spam" dans le menu IP (IP bloquée)
+- **Objectif** : Afficher les statistiques de spam et permettre le déblocage
+
+## 2. STRUCTURE MODAL
+- Overlay sombre (50% opacité)
+- Modal centrée large (700x580px)
+- Header avec titre dynamique et bouton fermer
+- Informations de blocage (key-value)
+- Tableau statistiques de spam
+- Footer avec boutons action
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsText** : Labels et valeurs
+- **OdsTable** : Statistiques de spam
+- **OdsButton** : Fermer/Débloquer l'IP (potentiellement disabled)
+
+## 4. HEADER MODAL
+| Élément | Valeur |
+|---------|--------|
+| Titre | "Déblocage de l'anti-spam pour l'IP {IP}" |
+| Bouton fermer | ✕ (coin droit) |
+| Séparateur | Ligne grise |
+
+## 5. INFORMATIONS BLOCAGE
+| Label | Valeur | Largeur label |
+|-------|--------|---------------|
+| Status | Bloquée | 200px |
+| Bloquée depuis | 27 décembre 2025 à 08:15:00 | 200px |
+| Date possible de déblocage | 27 décembre 2025 à 14:15:00 | 200px |
+
+## 6. TABLEAU STATISTIQUES
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 640x280px |
+| Bordure | Grise #E5E7EB |
+| Header | Fond gris #F3F4F6 |
+
+### Colonnes
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Date | Datetime | Horodatage |
+| Score | Number | Score de spam (0-100) |
+| Total | Number | Nombre total d'emails |
+| Nombre d'emails spammés | Number | Emails identifiés spam |
+
+### Données exemple
+| Date | Score | Total | Spammés |
+|------|-------|-------|---------|
+| 27 déc. 2025 08:00 | 85 | 1250 | 1063 |
+| 27 déc. 2025 07:00 | 72 | 980 | 706 |
+| 27 déc. 2025 06:00 | 68 | 850 | 578 |
+| 27 déc. 2025 05:00 | 55 | 620 | 341 |
+
+## 7. FOOTER MODAL
+| Bouton | Style | Position | État |
+|--------|-------|----------|------|
+| Fermer | Outline (bordure grise) | Gauche | Toujours actif |
+| Débloquer l'IP | Primary ou Disabled | Droite | Selon délai |
+
+### État du bouton Débloquer
+| Condition | État | Style |
+|-----------|------|-------|
+| Date déblocage atteinte | Actif | Bleu #0050D7 |
+| Avant date déblocage | Disabled | Gris #D1D5DB |
+
+## 8. CALCUL DU SCORE
+| Score | Interprétation |
+|-------|----------------|
+| 0-30 | Faible activité spam |
+| 31-60 | Activité modérée |
+| 61-80 | Activité élevée |
+| 81-100 | Activité très élevée |
+
+## 9. APIS & ENDPOINTS
+- GET /ip/{ip}/spam/{ipSpamming} - Détails blocage spam
+- GET /ip/{ip}/spam/{ipSpamming}/stats - Statistiques par heure
+- POST /ip/{ip}/spam/{ipSpamming}/unblock - Demander déblocage
+
+

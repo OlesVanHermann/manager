@@ -1,0 +1,770 @@
+================================================================================
+PROMPT TARGET - Web Cloud > Hébergement
+================================================================================
+
+| Element                            | Valeur                                                     |
+|------------------------------------|------------------------------------------------------------|
+| **Prompt**                         | /home/ubuntu/prompt_target_web-cloud_hebergement.txt       |
+| **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/hosting/         |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/hosting/|
+
+Version: v1 (2025-12-29)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+❌ INTERDIT : Afficher le SVG dans la conversation
+✅ OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. ARBORESCENCE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Web Cloud (x=510)
+│
+└── NAV2: Hébergement (indicateur sous "Hébergement")
+    │
+    ├── /web-cloud/hebergement (INDEX)
+    │   │
+    │   │   LEFT: Liste hébergements (sidebar)
+    │   │   RIGHT: Détails hébergement sélectionné
+    │   │
+    │   └── NAV3: 16 onglets principaux
+    │       │
+    │       ├── [1] Home (/general)
+    │       │   │
+    │       │   └── NAV4: [Général] | Statistiques | Indy | Offre | OvhConfig | Migration | Résiliation
+    │       │       │
+    │       │       ├── Général (défaut)
+    │       │       │   └── ACTIONS: [✎ Renommer] [🔑 Config SSH] [📤 Restaurer snapshot] [⚙ OvhConfig]
+    │       │       │
+    │       │       ├── Statistiques (/statistics)
+    │       │       │   └── ACTIONS: [↻ Rafraîchir] [📥 Exporter]
+    │       │       │
+    │       │       ├── Indy (/indy)
+    │       │       │   └── ACTIONS: [+ Ajouter domaine indépendant]
+    │       │       │
+    │       │       ├── Offre (/offer)
+    │       │       │   └── ACTIONS: [↑ Changer d'offre]
+    │       │       │
+    │       │       ├── OvhConfig (/ovhconfig)
+    │       │       │   └── ACTIONS: [⚙ Modifier configuration]
+    │       │       │
+    │       │       ├── Migration (/migration)
+    │       │       │   └── ACTIONS: [🚀 Lancer migration]
+    │       │       │
+    │       │       └── Résiliation (/terminate)
+    │       │           └── ACTIONS: [× Résilier hébergement]
+    │       │
+    │       ├── [2] Multisite (/multisite)
+    │       │   └── ACTIONS: [+ Ajouter domaine] [✎ Modifier] [🔍 Diagnostic] [↻ Vider CDN] [× Supprimer]
+    │       │
+    │       ├── [3] FTP-SSH (/ftp)
+    │       │   └── ACTIONS: [+ Créer utilisateur] [✎ Modifier] [🔑 Changer MDP] [× Supprimer]
+    │       │
+    │       ├── [4] Modules (/modules)
+    │       │   └── ACTIONS: [+ Installer module] [🔑 Changer MDP admin] [× Supprimer]
+    │       │
+    │       ├── [5] Taches (/tasks)
+    │       │   └── ACTIONS: [↻ Rafraîchir]
+    │       │
+    │       ├── [6] Emails (/emails)
+    │       │   └── ACTIONS: [⚙ Configurer] [🚫 Bloquer/Débloquer] [↻ Purger]
+    │       │
+    │       ├── [7] Variables (/envvars)
+    │       │   └── ACTIONS: [+ Ajouter variable] [✎ Modifier] [× Supprimer]
+    │       │
+    │       ├── [8] Runtimes (/runtimes)
+    │       │   └── ACTIONS: [+ Créer runtime] [✎ Modifier] [× Supprimer]
+    │       │
+    │       ├── [9] SSL (/ssl)
+    │       │   └── ACTIONS: [+ Commander SSL] [📤 Importer] [↻ Régénérer] [× Supprimer]
+    │       │
+    │       ├── [10] CDN (/cdn)
+    │       │   │
+    │       │   └── NAV4: [État] | Paramètres
+    │       │       │
+    │       │       ├── État (défaut)
+    │       │       │   └── ACTIONS: [✓ Activer] [× Désactiver] [↻ Vider cache]
+    │       │       │
+    │       │       └── Paramètres (/cdn-settings)
+    │       │           └── ACTIONS: [⚙ Configurer règles]
+    │       │
+    │       ├── [11] Boost (/boost)
+    │       │   └── ACTIONS: [✓ Activer boost] [× Désactiver boost]
+    │       │
+    │       ├── [12] Logs (/logs)
+    │       │   │
+    │       │   └── NAV4: [Logs OVH] | User Logs
+    │       │       │
+    │       │       ├── Logs OVH (défaut)
+    │       │       │   └── ACTIONS: [📥 Télécharger] [↻ Rafraîchir]
+    │       │       │
+    │       │       └── User Logs (/user-logs)
+    │       │           └── ACTIONS: [+ Créer accès logs] [🔑 Changer MDP] [× Supprimer]
+    │       │
+    │       ├── [13] BDD (/database)
+    │       │   │
+    │       │   └── NAV4: [Liste] | Statistiques | Dumps
+    │       │       │
+    │       │       ├── Liste (défaut)
+    │       │       │   └── ACTIONS: [+ Créer BDD] [✎ Modifier] [🔑 Changer MDP] [📤 Importer SQL]
+    │       │       │                 [📋 Copier] [📥 Dump] [↻ Restaurer] [× Supprimer]
+    │       │       │
+    │       │       ├── Statistiques (/database-statistics)
+    │       │       │   └── ACTIONS: [↻ Rafraîchir]
+    │       │       │
+    │       │       └── Dumps (/database-dumps)
+    │       │           └── ACTIONS: [📥 Télécharger] [↻ Restaurer] [× Supprimer]
+    │       │
+    │       ├── [14] BDD Cloud (/clouddb)
+    │       │   └── ACTIONS: [→ Accéder aux Cloud Databases]
+    │       │   └── Note: Redirection vers /web-cloud/private-database
+    │       │
+    │       ├── [15] Cron (/cron)
+    │       │   └── ACTIONS: [+ Créer cron] [✎ Modifier] [× Supprimer]
+    │       │
+    │       └── [16] SEO (/localseo)
+    │           └── ACTIONS: [+ Commander Local SEO] [→ Gérer]
+```
+
+### RÉCAPITULATIF NIVEAUX NAV
+
+| Niveau | Visuel | Position | Exemples Hosting |
+|--------|--------|----------|------------------|
+| **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
+| **NAV2** | Sous-header blanc 40px | y=50 | Hébergement (x=240) |
+| **NAV3** | Tabs right panel (16 boutons) | y=38 dans right panel | Home, Multisite, FTP-SSH... |
+| **NAV4** | Sous-tabs contextuels | y=70 dans right panel | Statistiques, Paramètres CDN... |
+| **ACTIONS** | Boutons header + inline + modals | Variable | +, ✎, 🔑, ×, ↻, 📥, 📤 |
+
+##############################################################################
+# 2. NAV1 - HEADER OVH
+##############################################################################
+
+Item actif: "Web Cloud" (x=510)
+
+```svg
+<!-- NAV1 - Web Cloud actif -->
+<rect width="1440" height="50" class="bg-header"/>
+<text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>
+<text x="110" y="32" class="text-white" font-size="14" opacity="0.7">Public Cloud</text>
+<text x="210" y="32" class="text-white" font-size="14" opacity="0.7">Hosted Private Cloud</text>
+<text x="370" y="32" class="text-white" font-size="14" opacity="0.7">Bare Metal Cloud</text>
+<text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+<rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
+<text x="620" y="32" class="text-white" font-size="14" opacity="0.7">Network</text>
+<text x="700" y="32" class="text-white" font-size="14" opacity="0.7">IAM / Securite</text>
+<text x="810" y="32" class="text-white" font-size="14" opacity="0.7">Licences</text>
+<!-- Badge utilisateur -->
+<rect x="1280" y="12" width="140" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
+<rect x="1285" y="15" width="26" height="20" rx="10" fill="#DEF7EC"/>
+<text x="1292" y="29" fill="#03543F" font-size="10" font-weight="600">OK</text>
+<text x="1320" y="29" class="text-white" font-size="12">{nicHandle}</text>
+```
+
+##############################################################################
+# 3. NAV2 - WEB CLOUD
+##############################################################################
+
+Position: y=50, height=40px, background=#FFFFFF, border-bottom=#E5E7EB
+Item actif: "Hébergement" (indicateur bleu dessous)
+
+| Item            | X    | État           |
+|-----------------|------|----------------|
+| Accueil         | 40   | muted          |
+| Domaines et DNS | 110  | muted          |
+| Hébergement     | 240  | **active**     |
+| Wordpress       | 345  | muted          |
+| Emails          | 430  | muted          |
+| VoIP            | 500  | muted          |
+| Accès           | 550  | muted          |
+| Guides          | 1350 | primary        |
+
+```svg
+<!-- NAV2 WEB CLOUD - Hébergement actif -->
+<rect x="0" y="50" width="1440" height="40" class="bg-white"/>
+<line x1="0" y1="89" x2="1440" y2="89" stroke="#E5E7EB"/>
+<text x="40" y="75" class="text-muted" font-size="14">Accueil</text>
+<text x="110" y="75" class="text-muted" font-size="14">Domaines et DNS</text>
+<text x="240" y="75" class="text-primary" font-size="14" font-weight="600">Hébergement</text>
+<rect x="235" y="85" width="85" height="3" fill="#0050D7"/>
+<text x="345" y="75" class="text-muted" font-size="14">Wordpress</text>
+<text x="430" y="75" class="text-muted" font-size="14">Emails</text>
+<text x="500" y="75" class="text-muted" font-size="14">VoIP</text>
+<text x="550" y="75" class="text-muted" font-size="14">Accès</text>
+<text x="1350" y="75" class="text-primary" font-size="13">Guides</text>
+```
+
+##############################################################################
+# 4. NAV3 - TABS HOSTING (16 onglets)
+##############################################################################
+
+Route: /web-cloud/hebergement/hosting/{serviceName}/{tab}
+
+| #  | Tab         | X    | W   | Route          | Note                    |
+|----|-------------|------|-----|----------------|-------------------------|
+| 1  | Home        | 0    | 50  | /general       | Défaut                  |
+| 2  | Multisite   | 54   | 70  | /multisite     |                         |
+| 3  | FTP-SSH     | 128  | 60  | /ftp           |                         |
+| 4  | Modules     | 192  | 60  | /modules       |                         |
+| 5  | Taches      | 256  | 55  | /tasks         |                         |
+| 6  | Emails      | 315  | 50  | /emails        | Emails automatiques     |
+| 7  | Variables   | 369  | 65  | /envvars       |                         |
+| 8  | Runtimes    | 438  | 65  | /runtimes      |                         |
+| 9  | SSL         | 507  | 35  | /ssl           |                         |
+| 10 | CDN         | 546  | 40  | /cdn           |                         |
+| 11 | Boost       | 590  | 45  | /boost         |                         |
+| 12 | Logs        | 639  | 40  | /logs          |                         |
+| 13 | BDD         | 683  | 40  | /database      |                         |
+| 14 | BDD Cloud   | 727  | 75  | /clouddb       | → private-database      |
+| 15 | Cron        | 806  | 45  | /cron          |                         |
+| 16 | SEO         | 855  | 40  | /localseo      |                         |
+
+```svg
+<!-- NAV3 HOSTING - 16 tabs, Home actif par défaut -->
+<g transform="translate(0, 38)">
+  <!-- Tab actif: fond bleu, texte blanc -->
+  <rect x="0" y="0" width="50" height="26" rx="4" class="bg-primary"/>
+  <text x="25" y="17" class="text-white" font-size="11" text-anchor="middle">Home</text>
+  
+  <!-- Tabs inactifs: bordure bleue, texte bleu -->
+  <rect x="54" y="0" width="70" height="26" rx="4" class="btn-outline"/>
+  <text x="89" y="17" class="text-primary" font-size="11" text-anchor="middle">Multisite</text>
+  
+  <rect x="128" y="0" width="60" height="26" rx="4" class="btn-outline"/>
+  <text x="158" y="17" class="text-primary" font-size="11" text-anchor="middle">FTP-SSH</text>
+  
+  <rect x="192" y="0" width="60" height="26" rx="4" class="btn-outline"/>
+  <text x="222" y="17" class="text-primary" font-size="11" text-anchor="middle">Modules</text>
+  
+  <rect x="256" y="0" width="55" height="26" rx="4" class="btn-outline"/>
+  <text x="283" y="17" class="text-primary" font-size="11" text-anchor="middle">Taches</text>
+  
+  <rect x="315" y="0" width="50" height="26" rx="4" class="btn-outline"/>
+  <text x="340" y="17" class="text-primary" font-size="11" text-anchor="middle">Emails</text>
+  
+  <rect x="369" y="0" width="65" height="26" rx="4" class="btn-outline"/>
+  <text x="401" y="17" class="text-primary" font-size="11" text-anchor="middle">Variables</text>
+  
+  <rect x="438" y="0" width="65" height="26" rx="4" class="btn-outline"/>
+  <text x="470" y="17" class="text-primary" font-size="11" text-anchor="middle">Runtimes</text>
+  
+  <rect x="507" y="0" width="35" height="26" rx="4" class="btn-outline"/>
+  <text x="524" y="17" class="text-primary" font-size="11" text-anchor="middle">SSL</text>
+  
+  <rect x="546" y="0" width="40" height="26" rx="4" class="btn-outline"/>
+  <text x="566" y="17" class="text-primary" font-size="11" text-anchor="middle">CDN</text>
+  
+  <rect x="590" y="0" width="45" height="26" rx="4" class="btn-outline"/>
+  <text x="612" y="17" class="text-primary" font-size="11" text-anchor="middle">Boost</text>
+  
+  <rect x="639" y="0" width="40" height="26" rx="4" class="btn-outline"/>
+  <text x="659" y="17" class="text-primary" font-size="11" text-anchor="middle">Logs</text>
+  
+  <rect x="683" y="0" width="40" height="26" rx="4" class="btn-outline"/>
+  <text x="703" y="17" class="text-primary" font-size="11" text-anchor="middle">BDD</text>
+  
+  <rect x="727" y="0" width="75" height="26" rx="4" class="btn-outline"/>
+  <text x="764" y="17" class="text-primary" font-size="11" text-anchor="middle">BDD Cloud</text>
+  
+  <rect x="806" y="0" width="45" height="26" rx="4" class="btn-outline"/>
+  <text x="828" y="17" class="text-primary" font-size="11" text-anchor="middle">Cron</text>
+  
+  <rect x="855" y="0" width="40" height="26" rx="4" class="btn-outline"/>
+  <text x="875" y="17" class="text-primary" font-size="11" text-anchor="middle">SEO</text>
+</g>
+```
+
+##############################################################################
+# 5. NAV4 - SOUS-TABS PAR SECTION
+##############################################################################
+
+### 5.1 Home (NAV3=general) - 7 sous-tabs
+
+| # | Tab           | Route        |
+|---|---------------|--------------|
+| 1 | Général       | /general     |
+| 2 | Statistiques  | /statistics  |
+| 3 | Indy          | /indy        |
+| 4 | Offre         | /offer       |
+| 5 | OvhConfig     | /ovhconfig   |
+| 6 | Migration     | /migration   |
+| 7 | Résiliation   | /terminate   |
+
+### 5.2 CDN (NAV3=cdn) - 2 sous-tabs
+
+| # | Tab        | Route          |
+|---|------------|----------------|
+| 1 | État       | /cdn           |
+| 2 | Paramètres | /cdn-settings  |
+
+### 5.3 Logs (NAV3=logs) - 2 sous-tabs
+
+| # | Tab       | Route       |
+|---|-----------|-------------|
+| 1 | Logs OVH  | /logs       |
+| 2 | User Logs | /user-logs  |
+
+### 5.4 BDD (NAV3=database) - 3 sous-tabs
+
+| # | Tab          | Route                 |
+|---|--------------|-----------------------|
+| 1 | Liste        | /database             |
+| 2 | Statistiques | /database-statistics  |
+| 3 | Dumps        | /database-dumps       |
+
+##############################################################################
+# 6. LEFT PANEL - SIDEBAR
+##############################################################################
+
+Position: x=24, y=105, width=280px, height=780px
+
+### Structure
+```
+┌─────────────────────────────────┐
+│ ┌─────────────────────────────┐ │ y=12
+│ │ 🔍 Rechercher...            │ │ Search input h=34
+│ └─────────────────────────────┘ │
+│ Filtrer par statut ▾  N services│ y=56, filter + count
+├─────────────────────────────────┤ y=80
+│ ┌─────────────────────────────┐ │
+│ │ 🌐  {serviceName}           │ │ Service sélectionné
+│ │     {offer}          [Actif]│ │ bg=#E8F0FE (row-selected)
+│ └─────────────────────────────┘ │ h=56
+│ ┌─────────────────────────────┐ │
+│ │ 🌐  {serviceName}           │ │ Service non sélectionné
+│ │     {offer}          [Actif]│ │ bg=#FFFFFF
+│ └─────────────────────────────┘ │
+│ ...                             │
+├─────────────────────────────────┤
+│ Page 1/N    ‹  1  2  3  ›       │ Pagination (si > 10)
+└─────────────────────────────────┘
+```
+
+### Service Item
+- Avatar: cercle 28px, bg=#0050D7, texte "🌐" ou initiale
+- Titre: {serviceName} ou {displayName}, font-size=13, font-weight=500
+- Sous-titre: {offer} (Performance 1, Perso, Pro...), font-size=11, text-muted
+- Badge: "Actif" (bg=#DEF7EC, text=#03543F) ou "Suspendu" (bg=#FEE2E2, text=#991B1B)
+
+```svg
+<!-- LEFT PANEL -->
+<g transform="translate(24, 105)">
+  <rect x="0" y="0" width="280" height="780" rx="8" class="bg-white"/>
+  <rect x="0" y="0" width="280" height="780" rx="8" class="border"/>
+  
+  <!-- Search -->
+  <rect x="12" y="12" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+  <text x="40" y="34" class="text-muted" font-size="12">Rechercher...</text>
+  <text x="24" y="34" class="text-muted" font-size="14">🔍</text>
+  
+  <!-- Filter -->
+  <text x="12" y="68" class="text-muted" font-size="11">Filtrer par statut ▾</text>
+  <text x="268" y="68" class="text-muted" font-size="11" text-anchor="end">{count} services</text>
+  
+  <!-- Service sélectionné -->
+  <rect x="6" y="80" width="268" height="56" rx="6" class="row-selected"/>
+  <circle cx="28" cy="108" r="14" fill="#0050D7"/>
+  <text x="28" y="112" class="text-white" font-size="12" text-anchor="middle">🌐</text>
+  <text x="52" y="100" class="text-dark" font-size="13" font-weight="500">{serviceName}</text>
+  <text x="52" y="116" class="text-muted" font-size="11">{offer}</text>
+  <rect x="210" y="96" width="46" height="18" rx="9" fill="#DEF7EC"/>
+  <text x="233" y="109" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
+  
+  <!-- Service non sélectionné -->
+  <rect x="6" y="142" width="268" height="56" rx="6" fill="#FFFFFF"/>
+  <circle cx="28" cy="170" r="14" fill="#0050D7"/>
+  <text x="28" y="174" class="text-white" font-size="12" text-anchor="middle">🌐</text>
+  <text x="52" y="162" class="text-dark" font-size="13" font-weight="500">{serviceName2}</text>
+  <text x="52" y="178" class="text-muted" font-size="11">{offer2}</text>
+  <rect x="210" y="158" width="46" height="18" rx="9" fill="#DEF7EC"/>
+  <text x="233" y="171" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
+</g>
+```
+
+##############################################################################
+# 7. RIGHT PANEL - STRUCTURE
+##############################################################################
+
+Position: x=320, y=105, width=1096px, height=780px
+
+### Structure
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ {serviceName}  (blog.exemple.fr, shop.exemple.fr +2)                │ Header
+├─────────────────────────────────────────────────────────────────────┤
+│ [Home] [Multisite] [FTP-SSH] [Modules] [Taches] [Emails] ...        │ NAV3 y=38
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ BLOC 1: Hébergement                                             │ │ y=75
+│ │   STOCKAGE | FTP/SSH | BASE DE DONNÉES | MULTISITE | CONFIG    │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ BLOC 2: Configuration                                           │ │
+│ │   PHP | RUNTIME | CRON | VARIABLES | RUNTIMES                   │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ BLOC 3: General                                                 │ │
+│ │   INFRASTRUCTURE | RÉSEAU | SÉCURITÉ | EMAILS                   │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ BLOC 4: Facturation                                             │ │
+│ │   SERVICE | OFFRE | CONTACTS | PAIEMENT | RÉSILIATION           │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Bloc Structure (5 colonnes × N lignes)
+```svg
+<!-- BLOC TEMPLATE -->
+<g transform="translate(0, {y})">
+  <rect x="0" y="0" width="1056" height="{height}" rx="8" class="bg-white"/>
+  <rect x="0" y="0" width="1056" height="{height}" rx="8" class="border"/>
+  <text x="20" y="28" class="text-dark" font-size="15" font-weight="700">{blocTitle}</text>
+  
+  <!-- 5 colonnes avec dividers -->
+  <g transform="translate(20, 45)">
+    <!-- Dividers verticaux -->
+    <line x1="200" y1="0" x2="200" y2="{contentHeight}" stroke="#E5E7EB"/>
+    <line x1="400" y1="0" x2="400" y2="{contentHeight}" stroke="#E5E7EB"/>
+    <line x1="600" y1="0" x2="600" y2="{contentHeight}" stroke="#E5E7EB"/>
+    <line x1="800" y1="0" x2="800" y2="{contentHeight}" stroke="#E5E7EB"/>
+    
+    <!-- Colonne 1 -->
+    <g transform="translate(0, 0)">
+      <text x="0" y="0" class="text-muted" font-size="10" font-weight="600">{THEME}</text>
+      <!-- Lignes info -->
+    </g>
+    
+    <!-- Colonnes 2-5 similaires -->
+  </g>
+</g>
+```
+
+##############################################################################
+# 8. APIs HOSTING
+##############################################################################
+
+### 8.1 APIs Service
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /hosting/web                          | Liste hébergements    |
+| GET     | /hosting/web/{serviceName}            | Détails hébergement   |
+| GET     | /hosting/web/{serviceName}/serviceInfos | Infos facturation   |
+| PUT     | /hosting/web/{serviceName}            | Modifier (displayName)|
+| DELETE  | /hosting/web/{serviceName}/terminate  | Résilier              |
+
+### 8.2 APIs Configuration
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/ovhConfig                 | Config PHP/moteur     |
+| PUT     | /hosting/web/{sn}/ovhConfig                 | Modifier config       |
+| GET     | /hosting/web/{sn}/dump                      | Liste snapshots       |
+| POST    | /hosting/web/{sn}/dump/{id}/restore         | Restaurer snapshot    |
+
+### 8.3 APIs Multisite
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/attachedDomain            | Liste domaines        |
+| GET     | /hosting/web/{sn}/attachedDomain/{domain}   | Détails domaine       |
+| POST    | /hosting/web/{sn}/attachedDomain            | Ajouter domaine       |
+| PUT     | /hosting/web/{sn}/attachedDomain/{domain}   | Modifier domaine      |
+| DELETE  | /hosting/web/{sn}/attachedDomain/{domain}   | Supprimer domaine     |
+
+### 8.4 APIs FTP/SSH
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/user                      | Liste utilisateurs    |
+| GET     | /hosting/web/{sn}/user/{login}              | Détails utilisateur   |
+| POST    | /hosting/web/{sn}/user                      | Créer utilisateur     |
+| PUT     | /hosting/web/{sn}/user/{login}              | Modifier utilisateur  |
+| POST    | /hosting/web/{sn}/user/{login}/changePassword| Changer MDP          |
+| DELETE  | /hosting/web/{sn}/user/{login}              | Supprimer utilisateur |
+
+### 8.5 APIs Database
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/database                  | Liste BDD             |
+| GET     | /hosting/web/{sn}/database/{name}           | Détails BDD           |
+| POST    | /hosting/web/{sn}/database                  | Créer BDD             |
+| PUT     | /hosting/web/{sn}/database/{name}           | Modifier BDD          |
+| POST    | /hosting/web/{sn}/database/{name}/changePassword | Changer MDP      |
+| POST    | /hosting/web/{sn}/database/{name}/dump      | Créer dump            |
+| POST    | /hosting/web/{sn}/database/{name}/import    | Importer SQL          |
+| POST    | /hosting/web/{sn}/database/{name}/restore   | Restaurer             |
+| DELETE  | /hosting/web/{sn}/database/{name}           | Supprimer BDD         |
+
+### 8.6 APIs Modules
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/module                    | Liste modules         |
+| GET     | /hosting/web/{sn}/module/{id}               | Détails module        |
+| POST    | /hosting/web/{sn}/module                    | Installer module      |
+| POST    | /hosting/web/{sn}/module/{id}/changePassword| Changer MDP admin    |
+| DELETE  | /hosting/web/{sn}/module/{id}               | Supprimer module      |
+
+### 8.7 APIs Cron
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/cron                      | Liste crons           |
+| GET     | /hosting/web/{sn}/cron/{id}                 | Détails cron          |
+| POST    | /hosting/web/{sn}/cron                      | Créer cron            |
+| PUT     | /hosting/web/{sn}/cron/{id}                 | Modifier cron         |
+| DELETE  | /hosting/web/{sn}/cron/{id}                 | Supprimer cron        |
+
+### 8.8 APIs SSL
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/ssl                       | Détails SSL           |
+| POST    | /hosting/web/{sn}/ssl                       | Commander/Importer    |
+| POST    | /hosting/web/{sn}/ssl/regenerate            | Régénérer             |
+| DELETE  | /hosting/web/{sn}/ssl                       | Supprimer             |
+
+### 8.9 APIs CDN
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/cdn                       | État CDN              |
+| POST    | /hosting/web/{sn}/cdn/enable                | Activer CDN           |
+| POST    | /hosting/web/{sn}/cdn/disable               | Désactiver CDN        |
+| POST    | /hosting/web/{sn}/cdn/flush                 | Vider cache           |
+
+### 8.10 APIs Boost
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/boostHistory              | Historique boost      |
+| POST    | /hosting/web/{sn}/request                   | Activer boost         |
+
+### 8.11 APIs Variables d'environnement
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/envVar                    | Liste variables       |
+| GET     | /hosting/web/{sn}/envVar/{key}              | Détails variable      |
+| POST    | /hosting/web/{sn}/envVar                    | Créer variable        |
+| PUT     | /hosting/web/{sn}/envVar/{key}              | Modifier variable     |
+| DELETE  | /hosting/web/{sn}/envVar/{key}              | Supprimer variable    |
+
+### 8.12 APIs Runtimes
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/runtime                   | Liste runtimes        |
+| GET     | /hosting/web/{sn}/runtime/{id}              | Détails runtime       |
+| POST    | /hosting/web/{sn}/runtime                   | Créer runtime         |
+| PUT     | /hosting/web/{sn}/runtime/{id}              | Modifier runtime      |
+| DELETE  | /hosting/web/{sn}/runtime/{id}              | Supprimer runtime     |
+
+### 8.13 APIs Emails automatiques
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/email                     | État emails           |
+| PUT     | /hosting/web/{sn}/email                     | Configurer            |
+| POST    | /hosting/web/{sn}/email/request             | Débloquer             |
+
+### 8.14 APIs Tâches
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/tasks                     | Liste tâches          |
+| GET     | /hosting/web/{sn}/tasks/{id}                | Détails tâche         |
+
+### 8.15 APIs Logs
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/userLogs                  | Liste accès logs      |
+| POST    | /hosting/web/{sn}/userLogs                  | Créer accès           |
+| PUT     | /hosting/web/{sn}/userLogs/{login}          | Modifier accès        |
+| DELETE  | /hosting/web/{sn}/userLogs/{login}          | Supprimer accès       |
+
+##############################################################################
+# 9. VARIABLES DYNAMIQUES
+##############################################################################
+
+| Variable           | Source API                                    |
+|--------------------|-----------------------------------------------|
+| {serviceName}      | /hosting/web → item                           |
+| {displayName}      | /hosting/web/{sn} → displayName               |
+| {offer}            | /hosting/web/{sn} → offer                     |
+| {state}            | /hosting/web/{sn} → state                     |
+| {datacenter}       | /hosting/web/{sn} → datacenter                |
+| {cluster}          | /hosting/web/{sn} → cluster                   |
+| {filer}            | /hosting/web/{sn} → filer                     |
+| {hostingIp}        | /hosting/web/{sn} → hostingIp                 |
+| {hostingIpv6}      | /hosting/web/{sn} → hostingIpv6               |
+| {quotaUsed}        | /hosting/web/{sn} → quotaUsed.value           |
+| {quotaSize}        | /hosting/web/{sn} → quotaSize.value           |
+| {phpVersion}       | /hosting/web/{sn}/ovhConfig → engineVersion   |
+| {engineName}       | /hosting/web/{sn}/ovhConfig → engineName      |
+| {environment}      | /hosting/web/{sn}/ovhConfig → environment     |
+| {firewall}         | /hosting/web/{sn}/ovhConfig → firewall        |
+| {sslProvider}      | /hosting/web/{sn}/ssl → provider              |
+| {sslStatus}        | /hosting/web/{sn}/ssl → status                |
+| {cdnStatus}        | /hosting/web/{sn}/cdn → status                |
+| {boostOffer}       | /hosting/web/{sn} → boostOffer                |
+| {creation}         | /hosting/web/{sn}/serviceInfos → creation     |
+| {expiration}       | /hosting/web/{sn}/serviceInfos → expiration   |
+| {contactAdmin}     | /hosting/web/{sn}/serviceInfos → contactAdmin |
+| {contactTech}      | /hosting/web/{sn}/serviceInfos → contactTech  |
+| {contactBilling}   | /hosting/web/{sn}/serviceInfos → contactBilling|
+| {nicHandle}        | Session utilisateur                           |
+
+##############################################################################
+# 10. ARBORESCENCE FICHIERS TARGET
+##############################################################################
+
+```
+/home/ubuntu/target_manager_svg/web-cloud/hosting/
+│
+├── target_.web-cloud.hebergement.hosting.index.svg
+├── target_.web-cloud.hebergement.hosting.index.txt
+│
+├── general/
+│   ├── target_.web-cloud.hebergement.hosting.general.svg
+│   ├── target_.web-cloud.hebergement.hosting.general.txt
+│   ├── target_.web-cloud.hebergement.hosting.statistics.svg
+│   ├── target_.web-cloud.hebergement.hosting.statistics.txt
+│   ├── target_.web-cloud.hebergement.hosting.indy.svg
+│   ├── target_.web-cloud.hebergement.hosting.indy.txt
+│   ├── target_.web-cloud.hebergement.hosting.offer.svg
+│   ├── target_.web-cloud.hebergement.hosting.offer.txt
+│   ├── target_.web-cloud.hebergement.hosting.ovhconfig.svg
+│   ├── target_.web-cloud.hebergement.hosting.ovhconfig.txt
+│   ├── target_.web-cloud.hebergement.hosting.migration.svg
+│   ├── target_.web-cloud.hebergement.hosting.migration.txt
+│   ├── target_.web-cloud.hebergement.hosting.terminate.svg
+│   └── target_.web-cloud.hebergement.hosting.terminate.txt
+│
+├── multisite/
+│   ├── target_.web-cloud.hebergement.hosting.multisite.svg
+│   └── target_.web-cloud.hebergement.hosting.multisite.txt
+│
+├── ftp/
+│   ├── target_.web-cloud.hebergement.hosting.ftp.svg
+│   └── target_.web-cloud.hebergement.hosting.ftp.txt
+│
+├── modules/
+│   ├── target_.web-cloud.hebergement.hosting.modules.svg
+│   └── target_.web-cloud.hebergement.hosting.modules.txt
+│
+├── tasks/
+│   ├── target_.web-cloud.hebergement.hosting.tasks.svg
+│   └── target_.web-cloud.hebergement.hosting.tasks.txt
+│
+├── emails/
+│   ├── target_.web-cloud.hebergement.hosting.emails.svg
+│   └── target_.web-cloud.hebergement.hosting.emails.txt
+│
+├── envvars/
+│   ├── target_.web-cloud.hebergement.hosting.envvars.svg
+│   └── target_.web-cloud.hebergement.hosting.envvars.txt
+│
+├── runtimes/
+│   ├── target_.web-cloud.hebergement.hosting.runtimes.svg
+│   └── target_.web-cloud.hebergement.hosting.runtimes.txt
+│
+├── ssl/
+│   ├── target_.web-cloud.hebergement.hosting.ssl.svg
+│   └── target_.web-cloud.hebergement.hosting.ssl.txt
+│
+├── cdn/
+│   ├── target_.web-cloud.hebergement.hosting.cdn.svg
+│   ├── target_.web-cloud.hebergement.hosting.cdn.txt
+│   ├── target_.web-cloud.hebergement.hosting.cdn-settings.svg
+│   └── target_.web-cloud.hebergement.hosting.cdn-settings.txt
+│
+├── boost/
+│   ├── target_.web-cloud.hebergement.hosting.boost.svg
+│   └── target_.web-cloud.hebergement.hosting.boost.txt
+│
+├── logs/
+│   ├── target_.web-cloud.hebergement.hosting.logs.svg
+│   ├── target_.web-cloud.hebergement.hosting.logs.txt
+│   ├── target_.web-cloud.hebergement.hosting.user-logs.svg
+│   └── target_.web-cloud.hebergement.hosting.user-logs.txt
+│
+├── database/
+│   ├── target_.web-cloud.hebergement.hosting.database.svg
+│   ├── target_.web-cloud.hebergement.hosting.database.txt
+│   ├── target_.web-cloud.hebergement.hosting.database-statistics.svg
+│   ├── target_.web-cloud.hebergement.hosting.database-statistics.txt
+│   ├── target_.web-cloud.hebergement.hosting.database-dumps.svg
+│   └── target_.web-cloud.hebergement.hosting.database-dumps.txt
+│
+├── clouddb/
+│   ├── target_.web-cloud.hebergement.hosting.clouddb.svg
+│   └── target_.web-cloud.hebergement.hosting.clouddb.txt
+│
+├── cron/
+│   ├── target_.web-cloud.hebergement.hosting.cron.svg
+│   └── target_.web-cloud.hebergement.hosting.cron.txt
+│
+└── localseo/
+    ├── target_.web-cloud.hebergement.hosting.localseo.svg
+    └── target_.web-cloud.hebergement.hosting.localseo.txt
+```
+
+TOTAL: ~30 fichiers SVG + ~30 fichiers TXT = ~60 fichiers
+
+##############################################################################
+# 11. WORKFLOW GÉNÉRATION
+##############################################################################
+
+Pour chaque écran:
+□ Lire prompt_target.txt (design system)
+□ Lire ce fichier (NAV, APIs)
+□ Consulter SVG existants si dispo
+□ Générer SVG avec shell template + NAV appropriées
+□ Générer TXT documentation
+□ Sauvegarder dans /mnt/user-data/outputs/target_manager_svg/web-cloud/hosting/
+
+### Ordre de génération recommandé
+
+**Phase 1 - Structure principale**
+1. target_.web-cloud.hebergement.hosting.index (onboarding/liste)
+2. target_.web-cloud.hebergement.hosting.general
+3. target_.web-cloud.hebergement.hosting.multisite
+4. target_.web-cloud.hebergement.hosting.ftp
+5. target_.web-cloud.hebergement.hosting.database
+
+**Phase 2 - Tabs simples**
+6. target_.web-cloud.hebergement.hosting.modules
+7. target_.web-cloud.hebergement.hosting.tasks
+8. target_.web-cloud.hebergement.hosting.emails
+9. target_.web-cloud.hebergement.hosting.envvars
+10. target_.web-cloud.hebergement.hosting.runtimes
+
+**Phase 3 - Tabs avec options**
+11. target_.web-cloud.hebergement.hosting.ssl
+12. target_.web-cloud.hebergement.hosting.cdn + cdn-settings
+13. target_.web-cloud.hebergement.hosting.boost
+14. target_.web-cloud.hebergement.hosting.logs + user-logs
+15. target_.web-cloud.hebergement.hosting.cron
+16. target_.web-cloud.hebergement.hosting.localseo
+
+**Phase 4 - Sous-tabs Home**
+17. target_.web-cloud.hebergement.hosting.statistics
+18. target_.web-cloud.hebergement.hosting.indy
+19. target_.web-cloud.hebergement.hosting.offer
+20. target_.web-cloud.hebergement.hosting.ovhconfig
+21. target_.web-cloud.hebergement.hosting.migration
+22. target_.web-cloud.hebergement.hosting.terminate
+
+**Phase 5 - Sous-tabs Database**
+23. target_.web-cloud.hebergement.hosting.database-statistics
+24. target_.web-cloud.hebergement.hosting.database-dumps
+
+**Phase 6 - CloudDB redirect**
+25. target_.web-cloud.hebergement.hosting.clouddb
+
+================================================================================
+FIN PROMPT TARGET WEB CLOUD > HÉBERGEMENT
+================================================================================

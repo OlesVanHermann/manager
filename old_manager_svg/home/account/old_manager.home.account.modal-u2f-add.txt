@@ -1,0 +1,61 @@
+# Cahier des Charges : home/account - Modal Ajouter clé U2F
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Modal enregistrement clé physique
+- **URL** : N/A (composant modal)
+- **Objectif** : Enregistrer une clé de sécurité U2F/FIDO2 (YubiKey, etc.)
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 450px |
+| Hauteur | 390px |
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Container
+- **OdsText** : Instructions
+- **OdsIcon** : Icône clé (🔑)
+- **OdsSpinner** : Indicateur attente
+- **OdsMessage** : Succès (vert)
+- **OdsInput** : Description clé
+- **OdsButton** : Actions
+
+## 4. ÉTATS
+
+### État 1 : Attente de la clé
+| Élément | Description |
+|---------|-------------|
+| Titre | "Ajouter une clé de sécurité" |
+| Instructions | "Enregistrez votre clé de sécurité" |
+| Zone centrale | Icône clé + zone d'attente |
+| Message | "Insérez votre clé et appuyez sur le bouton..." |
+| Indicateur | Spinner (animation rotation) |
+
+### État 2 : Clé détectée (succès)
+| Élément | Description |
+|---------|-------------|
+| Message succès | "✓ Clé enregistrée avec succès !" (fond vert) |
+| Champ description | Input optionnel "Ma YubiKey" |
+
+## 5. FORMULAIRE (après détection)
+| Champ | Type | Requis | Placeholder |
+|-------|------|--------|-------------|
+| Description | Input text | Non | Ma YubiKey |
+
+## 6. BOUTONS
+| Bouton | Style | Action | État |
+|--------|-------|--------|------|
+| Annuler | Secondary | Fermer modal | Toujours visible |
+| Terminer | Primary | Enregistrer clé | Visible après succès |
+
+## 7. FLUX TECHNIQUE
+1. Ouverture modal → Appel WebAuthn API (navigator.credentials.create)
+2. Attente interaction utilisateur avec la clé
+3. Détection appui → Récupération attestation
+4. Affichage succès + champ description
+5. Clic "Terminer" → Envoi au backend
+
+## 8. APIS & ENDPOINTS
+- POST /me/accessRestriction/u2f - Enregistrer nouvelle clé U2F
+- POST /me/accessRestriction/u2f/{id}/challenge - Obtenir challenge WebAuthn
+
