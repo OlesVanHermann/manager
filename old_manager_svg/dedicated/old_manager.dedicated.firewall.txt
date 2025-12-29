@@ -1,0 +1,64 @@
+# Cahier des Charges : dedicated - Onglet Firewall
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Firewall serveur dédié
+- **Type** : Gestion règles firewall
+- **Objectif** : Configurer le firewall OVHcloud
+
+## 2. STRUCTURE PAGE
+- Carte statut firewall avec toggle
+- Carte statistiques
+- Tableau règles firewall
+
+## 3. COMPOSANTS UI
+- **OdsCard** : Cartes sections
+- **OdsToggle** : Activation firewall
+- **OdsBadge** : Statut, Action (Autoriser/Bloquer)
+- **OdsDatagrid** : Tableau règles
+- **OdsButton** : Ajouter une règle
+
+## 4. CARTE STATUT FIREWALL
+| Élément | Type | Valeur |
+|---------|------|--------|
+| Statut | Badge + Toggle | Activé (bleu) |
+| Info | Text | Protection anti-DDoS incluse |
+
+## 5. CARTE STATISTIQUES
+| Info | Valeur |
+|------|--------|
+| Paquets bloqués (24h) | 12,456 |
+| Dernière attaque | il y a 3h |
+
+## 6. COLONNES TABLEAU RÈGLES
+| Colonne | Type | Description |
+|---------|------|-------------|
+| # | Number | Numéro priorité |
+| Action | Badge | Autoriser (vert) / Bloquer (rouge) |
+| Protocole | Text | TCP, UDP, ICMP |
+| Source | Code | IP ou CIDR |
+| Port dest. | Text | Port(s) destination |
+| Description | Text muted | Description règle |
+| Actions | Links | Modifier | Supprimer |
+
+## 7. EXEMPLES RÈGLES
+| # | Action | Proto | Source | Port | Description |
+|---|--------|-------|--------|------|-------------|
+| 1 | Autoriser | TCP | 0.0.0.0/0 | 22 | Accès SSH |
+| 2 | Autoriser | TCP | 0.0.0.0/0 | 80, 443 | HTTP/HTTPS |
+| 3 | Bloquer | TCP | 185.234.x.x/24 | * | IP malveillante |
+| 4 | Autoriser | ICMP | 0.0.0.0/0 | - | Ping |
+| ∞ | Bloquer | * | * | * | Règle par défaut (implicite) |
+
+## 8. BADGES ACTION
+| Action | Couleur |
+|--------|---------|
+| Autoriser | Vert |
+| Bloquer | Rouge |
+
+## 9. APIS & ENDPOINTS
+- GET /ip/{ip}/firewall - Statut firewall
+- PUT /ip/{ip}/firewall - Activer/désactiver
+- GET /ip/{ip}/firewall/{ipOnFirewall}/rule - Règles
+- POST /ip/{ip}/firewall/{ipOnFirewall}/rule - Ajouter règle
+- DELETE /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence} - Supprimer
+
