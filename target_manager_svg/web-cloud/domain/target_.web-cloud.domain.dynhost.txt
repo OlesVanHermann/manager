@@ -3,40 +3,54 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.dynhost.svg
 Route:   /web-cloud/domaines/domain/{domainName}/dynhost
-NAV:     NAV1=Web Cloud | NAV2=Domaines et DNS | NAV3=DynHost | NAV4=Entrées
+NAV:     Web Cloud > Domaines et DNS > [domain] > DynHost
 Version: v1 (2025-12-29)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                              |
-|--------------------------|---------------------------------------------------------|
-| home.example.com         | GET /domain/zone/{z}/dynHost/record -> subDomain       |
-| 82.64.123.45             | record -> ip                                            |
-| 29/12/2024 14:32         | record -> lastUpdate                                    |
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| 4 enregistrements        | GET /domain/zone/{z}/dynHost/record -> count    |
+| home.example.com         | GET /domain/zone/{z}/dynHost/record/{id} -> subDomain |
+| 92.184.112.45            | GET /domain/zone/{z}/dynHost/record/{id} -> ip  |
 ================================================================================
 
 STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Sous-menu (Domaines et DNS actif)
+2. NAV2 - Section (Domaines et DNS actif)
 3. LEFT PANEL - Liste domaines/zones
 4. RIGHT PANEL
-   - Header: domainName
+   - Header: Nom domaine + badge statut
    - NAV3: 10 tabs (DynHost actif)
-   - NAV4: [Entrées DynHost] | Accès/Logins
-   - Toolbar: Ajouter + Refresh
-   - Table: SOUS-DOMAINE, IP, DERNIÈRE MAJ, STATUT, ACTIONS
-   - Bannière info
+   - NAV4: Enregistrements | Gestion acces
+   - Banner info DynHost
+   - Toolbar: Ajouter, Gerer acces, Recherche
+   - Table enregistrements
+   - Section guides
+
+NAV4 TABS
+| Tab            | Route                    |
+|----------------|--------------------------|
+| Enregistrements| /dynhost                 |
+| Gestion acces  | /dynhost-login           |
+
+TOOLBAR ACTIONS
+| Bouton            | Action                          |
+|-------------------|---------------------------------|
+| + Ajouter DynHost | Modal ajout enregistrement      |
+| Gerer les acces   | Navigation vers dynhost-login   |
+
+TABLE COLONNES
+| Colonne      | Description                     |
+|--------------|---------------------------------|
+| SOUS-DOMAINE | Nom complet du sous-domaine     |
+| CIBLE (IP)   | Adresse IP actuelle             |
+| ACTIONS      | Refresh, Menu (Modifier, Suppr) |
 
 API ENDPOINTS
-GET    /domain/zone/{zone}/dynHost/record      -> Liste entrées
-GET    /domain/zone/{zone}/dynHost/record/{id} -> Détails entrée
-POST   /domain/zone/{zone}/dynHost/record      -> Créer entrée
-PUT    /domain/zone/{zone}/dynHost/record/{id} -> Modifier IP
-DELETE /domain/zone/{zone}/dynHost/record/{id} -> Supprimer entrée
-
-NAVIGATION
-- Click NAV4 "Accès/Logins" -> /dynhost-login
-- Click "+ Ajouter" -> Modal création
-- Click ✎ -> Modal modification IP
-- Click × -> Modal confirmation suppression
+GET    /domain/zone/{zone}/dynHost/record              -> Liste DynHost
+POST   /domain/zone/{zone}/dynHost/record              -> Ajouter
+PUT    /domain/zone/{zone}/dynHost/record/{id}         -> Modifier
+DELETE /domain/zone/{zone}/dynHost/record/{id}         -> Supprimer
 ================================================================================

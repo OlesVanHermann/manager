@@ -3,46 +3,61 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.redirections.svg
 Route:   /web-cloud/domaines/domain/{domainName}/redirections
-NAV:     NAV1=Web Cloud | NAV2=Domaines et DNS | NAV3=Redirections
+NAV:     Web Cloud > Domaines et DNS > [domain] > Redirections
 Version: v1 (2025-12-29)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                              |
-|--------------------------|---------------------------------------------------------|
-| www.example.com          | GET /domain/{d}/redirection -> subDomain               |
-| 301 Permanent            | redirection -> type                                     |
-| https://example.com      | redirection -> target                                   |
-| Promo été 2025           | redirection -> title (pour frames)                      |
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| 4 redirections           | GET /domain/zone/{z}/redirection -> count       |
+| blog.example.com         | GET /domain/zone/{z}/redirection/{id} -> subDomain |
+| Redirection visible      | GET /domain/zone/{z}/redirection/{id} -> type   |
+| https://www.example.com  | GET /domain/zone/{z}/redirection/{id} -> target |
+| temporaire (302)         | GET /domain/zone/{z}/redirection/{id} -> title  |
 ================================================================================
 
 STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Sous-menu (Domaines et DNS actif)
+2. NAV2 - Section (Domaines et DNS actif)
 3. LEFT PANEL - Liste domaines/zones
 4. RIGHT PANEL
-   - Header: domainName
+   - Header: Nom domaine + badge statut
    - NAV3: 10 tabs (Redirections actif)
-   - Toolbar: Ajouter + Refresh
-   - Table: SOURCE, TYPE, DESTINATION, TITRE, ACTIONS
-   - Bannière info
+   - Toolbar: Ajouter, Exporter CSV
+   - Filtre sous-domaine
+   - Table redirections
+   - Pagination
+   - Info box types
+
+TOOLBAR ACTIONS
+| Bouton               | Action                          |
+|----------------------|---------------------------------|
+| + Ajouter redirection| Modal ajout redirection         |
+| Exporter CSV         | Telechargement fichier CSV      |
+
+TABLE COLONNES
+| Colonne      | Description                          |
+|--------------|--------------------------------------|
+| DOMAINE      | Sous-domaine source                  |
+| TYPE         | Badge colore selon type              |
+| CIBLE        | URL ou IP destination                |
+| VISIBILITE   | 301/302/iframe                       |
+| ACTIONS      | Menu contextuel (Modifier, Supprimer)|
+
+TYPES REDIRECTIONS (badges)
+| Type                  | Background | Text    |
+|-----------------------|------------|---------|
+| Redirection visible   | #DBEAFE    | #1E40AF |
+| vers domaine (CNAME)  | #F3E8FF    | #7C3AED |
+| vers serveur (A)      | #DEF7EC    | #059669 |
+| Redirection invisible | #FEF3C7    | #D97706 |
 
 API ENDPOINTS
-GET    /domain/{domain}/redirection          -> Liste redirections
-GET    /domain/{domain}/redirection/{id}     -> Détails redirection
-POST   /domain/{domain}/redirection          -> Créer redirection
-PUT    /domain/{domain}/redirection/{id}     -> Modifier redirection
-DELETE /domain/{domain}/redirection/{id}     -> Supprimer redirection
-
-TYPES REDIRECTION
-| Type          | Code | Description                           |
-|---------------|------|---------------------------------------|
-| Permanent     | 301  | Redirection SEO-friendly              |
-| Temporaire    | 302  | Redirection temporaire                |
-| Frame         | -    | Affiche dans iframe, URL visible      |
-
-NAVIGATION
-- Click "+ Ajouter" -> Modal création
-- Click ✎ -> Modal modification
-- Click × -> Modal confirmation suppression
+GET    /domain/zone/{zone}/redirection              -> Liste redirections
+GET    /domain/zone/{zone}/redirection/{id}         -> Details redirection
+POST   /domain/zone/{zone}/redirection              -> Ajouter redirection
+PUT    /domain/zone/{zone}/redirection/{id}         -> Modifier redirection
+DELETE /domain/zone/{zone}/redirection/{id}         -> Supprimer redirection
 ================================================================================

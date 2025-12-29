@@ -3,55 +3,57 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.alldom.svg
 Route:   /web-cloud/domaines/domain/{domainName}/alldom
-NAV:     NAV1=Web Cloud | NAV2=Domaines et DNS | NAV3=Alldom
+NAV:     Web Cloud > Domaines et DNS > [domain] > Alldom
 Version: v1 (2025-12-29)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                              |
-|--------------------------|---------------------------------------------------------|
-| Activée                  | GET /alldom/{alldom} -> status                         |
-| 15/06/2025               | alldom -> expiration                                    |
-| example.com              | GET /alldom/{alldom}/domain -> domainName              |
-| .com                     | domain -> extension                                     |
-| Actif                    | domain -> state                                         |
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /allDom/{allDom} -> serviceName             |
+| 7 domaines               | GET /allDom/{allDom}/domain -> count            |
+| example.fr               | GET /allDom/{allDom}/domain/{d} -> domain       |
+| .fr                      | Extension extraite du domainName                |
+| 15/01/2026               | GET /domain/{d}/serviceInfos -> expiration      |
+| Actif                    | GET /domain/{d} -> state                        |
 ================================================================================
 
 STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Sous-menu (Domaines et DNS actif)
+2. NAV2 - Section (Domaines et DNS actif)
 3. LEFT PANEL - Liste domaines/zones
 4. RIGHT PANEL
-   - Header: domainName
+   - Header: Nom domaine + badge statut
    - NAV3: 10 tabs (Alldom actif)
-   - Card statut Alldom (expiration + bouton renouveler)
-   - Section: Domaines inclus
-     - Toolbar: Refresh + Recherche
-     - Table: DOMAINE, EXTENSION, EXPIRATION, STATUT, ACTIONS
-   - Bannière info
+   - Title + Description
+   - Banner info (liste domaines inclus)
+   - Table domaines du pack
+   - Pagination
+   - Section guides
 
-STATUT ALLDOM
-| Statut       | Badge         | Description                    |
-|--------------|---------------|--------------------------------|
-| active       | #DEF7EC       | Offre active                   |
-| expired      | #FEE2E2       | Offre expirée                  |
-| pendingRenew | #FEF3C7       | Renouvellement en cours        |
+TABLE COLONNES
+| Colonne    | Description                          |
+|------------|--------------------------------------|
+| DOMAINE    | Nom complet du domaine               |
+| EXTENSION  | Badge avec TLD                       |
+| EXPIRATION | Date d'expiration                    |
+| STATUT     | Badge Actif/Inactif                  |
+| ACTIONS    | Lien vers gestion du domaine         |
 
-STATUT DOMAINES
-| Statut       | Badge         | Description                    |
-|--------------|---------------|--------------------------------|
-| Actif        | #DEF7EC       | Domaine actif                  |
-| Expire bientôt| #FEF3C7      | Expiration < 30 jours          |
-| Expiré       | #FEE2E2       | Domaine expiré                 |
+EXTENSIONS INCLUSES (par defaut)
+| Extension | Description            |
+|-----------|------------------------|
+| .com      | Commercial             |
+| .fr       | France                 |
+| .net      | Network                |
+| .org      | Organisation           |
+| .eu       | Europe                 |
+| .be       | Belgique               |
+| .ch       | Suisse                 |
 
 API ENDPOINTS
-GET    /alldom                           -> Liste des offres Alldom
-GET    /alldom/{alldom}                  -> Détails Alldom
-GET    /alldom/{alldom}/domain           -> Domaines inclus
-POST   /order/cart/{cart}/alldom         -> Commander renouvellement
-
-NAVIGATION
-- Click "Renouveler Alldom" -> Modal/page de commande
-- Click "Gérer →" -> Navigation vers le domaine sélectionné
-- Click ↻ -> Rafraîchir la liste
+GET  /allDom                              -> Liste packs Alldom
+GET  /allDom/{allDom}                     -> Details pack
+GET  /allDom/{allDom}/domain              -> Domaines du pack
+GET  /allDom/{allDom}/serviceInfos        -> Infos facturation
 ================================================================================

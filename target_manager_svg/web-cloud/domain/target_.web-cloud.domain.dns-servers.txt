@@ -3,63 +3,51 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.dns-servers.svg
 Route:   /web-cloud/domaines/domain/{domainName}/dns-servers
-NAV:     NAV1=Web Cloud | NAV2=Domaines et DNS | NAV3=Serveurs DNS
+NAV:     Web Cloud > Domaines et DNS > [domain] > Serveurs DNS
 Version: v1 (2025-12-29)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                              |
-|--------------------------|---------------------------------------------------------|
-| example.com              | Route param domainName                                  |
-| dns1.ovh.net             | GET /domain/{d}/nameServer -> host                     |
-| dns2.ovh.net             | GET /domain/{d}/nameServer -> host                     |
-| Hosted (OVH)             | GET /domain/{d} -> nameServerType                      |
-| Non activé (Anycast)     | GET /domain/{d}/option/dnsAnycast                      |
-| 213.251.128.130          | DNS lookup sur nameserver                               |
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| 12 services              | GET /domain -> count + GET /domain/zone -> count|
+| dns100.ovh.net           | GET /domain/{d}/nameServer -> host              |
+| 213.186.33.99            | GET /domain/{d}/nameServer -> ip                |
+| Actif                    | GET /domain/{d}/nameServer -> isUsed            |
 ================================================================================
 
 STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Sous-menu (Domaines et DNS actif)
+2. NAV2 - Section (Domaines et DNS actif)
 3. LEFT PANEL - Liste domaines/zones
 4. RIGHT PANEL
-   - Header: domainName
+   - Header: Nom domaine + badge statut
    - NAV3: 10 tabs (Serveurs DNS actif)
-   - Card serveurs actuels: Type, Primaire, Secondaire + Actions
-   - Card DNS Anycast: Option premium
-   - Formulaire modification serveurs
-   - Bannière warning propagation
+   - Toolbar: Ajouter serveur, Reinitialiser OVH, DNS Anycast
+   - Table serveurs DNS
+   - Info box serveurs recommandes
+
+TOOLBAR ACTIONS
+| Bouton            | Action                          |
+|-------------------|---------------------------------|
+| + Ajouter serveur | Modal ajout serveur DNS         |
+| Reinitialiser OVH | Reset vers serveurs OVH         |
+| DNS Anycast       | Page/Modal configuration Anycast|
+
+TABLE COLONNES
+| Colonne      | Description                     |
+|--------------|---------------------------------|
+| SERVEUR DNS  | Nom FQDN du serveur             |
+| IP ASSOCIEE  | Adresse IP (si GLUE)            |
+| STATUT       | Badge Actif/Inactif             |
+| ACTIONS      | Supprimer                       |
 
 API ENDPOINTS
-GET    /domain/{domain}/nameServer         -> Liste serveurs DNS
-POST   /domain/{domain}/nameServer         -> Modifier serveurs
-GET    /domain/{domain}/nameServer/status  -> Statut serveurs
-GET    /domain/{domain}/option/dnsAnycast  -> État Anycast
-POST   /order/domain/zone/{zone}/dnsAnycast -> Commander Anycast
-DELETE /domain/{domain}/option/dnsAnycast  -> Résilier Anycast
-
-TYPES DE DNS
-| Type     | Description                              |
-|----------|------------------------------------------|
-| Hosted   | Serveurs OVH (dns1/dns2.ovh.net)        |
-| External | Serveurs externes (personnalisés)        |
-
-DNS ANYCAST
-| Statut   | Badge       | Actions disponibles        |
-|----------|-------------|----------------------------|
-| Non actif| Gris        | Commander                  |
-| Actif    | Vert        | Résilier                   |
-
-FORMULAIRE MODIFICATION
-- Serveur 1: requis (primaire)
-- Serveur 2: requis (secondaire)
-- Serveur 3: optionnel
-- Serveur 4: optionnel
-- Validation: vérification existence des serveurs
-
-NAVIGATION
-- Click "Modifier les serveurs" -> Active le formulaire
-- Click "Réinitialiser vers OVH" -> Modal confirmation
-- Click "Commander Anycast" -> Tunnel commande
-- Click "Valider" -> POST modification
+GET    /domain/{domain}/nameServer                -> Liste serveurs DNS
+POST   /domain/{domain}/nameServer                -> Ajouter serveur
+DELETE /domain/{domain}/nameServer/{id}           -> Supprimer serveur
+POST   /domain/{domain}/nameServer/reset          -> Reset OVH
+GET    /domain/{domain}/option/dnsAnycast         -> Statut Anycast
+POST   /domain/{domain}/option/dnsAnycast/enable  -> Activer Anycast
 ================================================================================
