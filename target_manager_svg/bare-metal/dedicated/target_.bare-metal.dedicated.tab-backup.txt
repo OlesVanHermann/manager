@@ -1,0 +1,65 @@
+# Cahier des Charges : bare-metal/dedicated - Onglet Sauvegardes
+
+## 1. VUE D'ENSEMBLE
+- **Onglet** : Sauvegardes
+- **Type** : Page avec tile info + tableau points de sauvegarde
+- **Objectif** : Gérer les sauvegardes du serveur
+
+## 2. STRUCTURE PAGE
+- Onglets navigation
+- Tile Backup Storage (état, espace, accès)
+- Tableau points de sauvegarde
+- Menu actions par ligne
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation
+- **OdsCard** : Tile Backup Storage
+- **OdsBadge** : État (Actif)
+- **OdsProgressBar** : Espace utilisé
+- **OdsButton** : Nouvelle sauvegarde (primary)
+- **OdsDatagrid** : Liste sauvegardes
+- **OdsActionMenu** : Actions par ligne
+
+## 4. TILE BACKUP STORAGE
+| Champ | Valeur |
+|-------|--------|
+| Titre | Backup Storage |
+| État | Actif ✅ |
+| Espace utilisé | 450 Go / 750 Go |
+| Accès FTP | ftpback-rbx7-123.ovh.net |
+| Protocoles | FTP, FTPS, NFS, CIFS |
+
+## 5. COLONNES TABLEAU
+| Colonne | Type |
+|---------|------|
+| Date | Datetime |
+| Type | Texte (Complète/Incrémentale) |
+| Taille | Go |
+| Statut | Badge (Terminé/En cours) |
+| Rétention | Jours |
+| Actions | ActionMenu |
+
+## 6. DONNÉES EXEMPLE
+| Date | Type | Taille | Statut | Rétention |
+|------|------|--------|--------|-----------|
+| 15 jan. 2024 - 03:00 | Complète | 245 Go | Terminé ✅ | 30 jours |
+| 14 jan. 2024 - 03:00 | Incrémentale | 12 Go | Terminé ✅ | 30 jours |
+| 13 jan. 2024 - 03:00 | Incrémentale | 8 Go | Terminé ✅ | 30 jours |
+| 16 jan. 2024 - 03:00 | Incrémentale | En cours... | En cours 🔵 | - |
+
+## 7. MENU ACTIONS (PAR LIGNE)
+- Restaurer
+- Monter en lecture
+- Télécharger
+- ---
+- 🔴 Supprimer
+
+## 8. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/features/backupFTP
+  - Informations backup storage
+- GET /dedicated/server/{serviceName}/features/backupFTP/access
+  - Points de sauvegarde
+- POST /dedicated/server/{serviceName}/features/backupFTP/access
+  - Créer une sauvegarde
+- DELETE /dedicated/server/{serviceName}/features/backupFTP/access/{id}
+  - Supprimer un point

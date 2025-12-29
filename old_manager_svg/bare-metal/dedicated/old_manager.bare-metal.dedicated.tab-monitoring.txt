@@ -1,0 +1,74 @@
+# Cahier des Charges : bare-metal/dedicated - Onglet Monitoring
+
+## 1. VUE D'ENSEMBLE
+- **Onglet** : Monitoring
+- **Type** : Page dashboard métriques
+- **Objectif** : Surveiller les performances du serveur
+
+## 2. STRUCTURE PAGE
+- Titre + sélecteur période
+- 4 cartes métriques (CPU, RAM, Disque, Réseau)
+- Graphique CPU
+- Graphique Mémoire
+- Graphique Réseau (large)
+
+## 3. COMPOSANTS UI
+- **OdsButton** : Sélecteur période (24h, 7 jours, 30 jours)
+- **OdsCard** : Métriques (4) + Graphiques (3)
+- **OdsBadge** : État (Normal, Modéré, Critique)
+- **OdsChart** : Line charts avec area
+
+## 4. SÉLECTEUR PÉRIODE
+| Période | État |
+|---------|------|
+| 24h | ✅ Actif (bleu) |
+| 7 jours | - |
+| 30 jours | - |
+
+## 5. CARTES MÉTRIQUES
+| Métrique | Valeur | État |
+|----------|--------|------|
+| CPU | 23% | Normal ✅ |
+| Mémoire | 67% | Modéré ⚠️ |
+| Disque | 45% | Normal ✅ |
+| Réseau | 156 Mb/s | Normal ✅ |
+
+## 6. GRAPHIQUE CPU
+- **Titre** : "Utilisation CPU (24h)"
+- **Axe Y** : 0-100%
+- **Axe X** : 00:00 - 24:00
+- **Couleur** : Bleu (#0050D7)
+- **Type** : Line + area
+
+## 7. GRAPHIQUE MÉMOIRE
+- **Titre** : "Utilisation Mémoire (24h)"
+- **Axe Y** : 0-64 Go
+- **Axe X** : 00:00 - 24:00
+- **Couleur** : Orange (#F59E0B) - usage élevé
+- **Type** : Line + area
+
+## 8. GRAPHIQUE RÉSEAU
+- **Titre** : "Trafic réseau (24h)"
+- **Lien** : "Configurer alertes"
+- **Axe Y** : 0 - 1 Gb/s
+- **Axe X** : 00:00 - 24:00
+- **Séries** :
+  - Entrant (bleu #0050D7)
+  - Sortant (vert #10B981)
+- **Légende** : Entrant, Sortant
+
+## 9. ÉTATS MÉTRIQUES
+| État | Couleur | Seuil |
+|------|---------|-------|
+| Normal | Vert | < 70% |
+| Modéré | Orange | 70-85% |
+| Critique | Rouge | > 85% |
+
+## 10. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/statistics
+  - Params: period (day, week, month), type (cpu, mem, disk, net)
+  - Statistiques de performance
+- GET /dedicated/server/{serviceName}/monitoring
+  - Configuration du monitoring
+- PUT /dedicated/server/{serviceName}/monitoring
+  - Configure les seuils d'alerte

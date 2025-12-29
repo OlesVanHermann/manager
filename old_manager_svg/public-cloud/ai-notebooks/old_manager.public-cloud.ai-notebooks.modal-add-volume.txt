@@ -1,0 +1,75 @@
+# Cahier des Charges : public-cloud/ai-notebooks - Modal Ajouter volume S3
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Ajout d'un volume S3 au notebook
+- **Type** : Modal formulaire
+- **Objectif** : Attacher un conteneur S3 au notebook
+
+## 2. STRUCTURE MODAL
+- Overlay sombre sur la page
+- Modal centrée (600x620)
+- Header avec titre et bouton fermer
+- Formulaire avec 5 champs
+- Toggle cache
+- Boutons Annuler / Ajouter
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsSelect** : Datastore S3, Conteneur
+- **OdsInput** : Chemin de montage, Préfixe
+- **OdsRadio** : Permission (RW, RO, RWD)
+- **OdsToggle** : Activer le cache local
+- **OdsButton** : Annuler (outline), Ajouter (primaire)
+
+## 4. TITRE
+"Ajouter un volume S3"
+
+## 5. CHAMPS
+
+### Datastore S3
+- Type: Select
+- Valeur exemple: "my-training-data"
+
+### Conteneur
+- Type: Select
+- Valeur exemple: "training-datasets"
+
+### Chemin de montage
+- Type: Input
+- Valeur exemple: "/workspace/data"
+
+### Préfixe (optionnel)
+- Type: Input
+- Placeholder: "ex: datasets/images/"
+
+### Permission
+- Type: Radio inline (3 options)
+- Options:
+  - Lecture/Écriture (RW) - sélectionné par défaut
+  - Lecture seule (RO)
+  - Écriture seule (RWD)
+
+### Cache
+- Type: Toggle
+- Label: "Activer le cache local"
+- État par défaut: Activé
+- Note: "Le cache améliore les performances mais utilise le stockage local."
+
+## 6. BOUTONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Outline gris | Ferme la modal |
+| Ajouter | Primaire bleu | Attache le volume |
+
+## 7. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/data
+  - Liste des datastores S3 disponibles
+- GET /cloud/project/{projectId}/ai/data/{datastoreId}/containers
+  - Liste des conteneurs du datastore
+- POST /cloud/project/{projectId}/ai/notebook/{notebookId}/volumes
+  - datastore: string
+  - container: string
+  - mountPath: string
+  - prefix: string (optionnel)
+  - permission: "RW" | "RO" | "RWD"
+  - cache: boolean

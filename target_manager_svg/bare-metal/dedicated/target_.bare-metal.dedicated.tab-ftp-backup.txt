@@ -1,0 +1,59 @@
+# Cahier des Charges : bare-metal/dedicated - Onglet Backup Storage FTP
+
+## 1. VUE D'ENSEMBLE
+- **Onglet** : Backup storage
+- **Type** : Page configuration avec deux tiles
+- **Objectif** : Gérer le stockage FTP de sauvegarde
+
+## 2. STRUCTURE PAGE
+- Breadcrumb + titre + état serveur
+- Onglets navigation
+- Bannière warning
+- Tile Informations
+- Tile Accès autorisés
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation
+- **OdsMessage** : Warning (fond jaune)
+- **OdsCard** : Tiles (2)
+- **OdsProgressBar** : Espace utilisé
+- **OdsButton** : Changer mot de passe, Ajouter accès
+- **OdsBadge** : État (Normal)
+
+## 4. BANNIÈRE WARNING
+- **Fond** : Jaune
+- **Message** : "⚠ Le backup storage est un espace de sauvegarde, pas un stockage principal. N'y stockez pas de données critiques sans autre copie."
+
+## 5. TILE INFORMATIONS
+| Champ | Valeur |
+|-------|--------|
+| Serveur FTP | ftpback-gra1-123.ovh.net |
+| Utilisateur | ns1234567.ip-123-45-67.eu |
+| Espace total | 500 Go |
+| Espace utilisé | 127 Go (25%) |
+
+- **Progress bar** : 25% rempli
+- **Bouton** : "Changer le mot de passe" (primary)
+
+## 6. TILE ACCÈS AUTORISÉS
+- **Description** : "Gérez les IPs autorisées à accéder au backup storage."
+- **Bouton** : "+ Ajouter un accès" (primary)
+
+### Liste des accès
+| IP | Protocoles | Action |
+|----|------------|--------|
+| 123.45.67.89 (ce serveur) | FTP, NFS, CIFS | 🗑 |
+| 10.0.0.100 | FTP | 🗑 |
+
+## 7. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/features/backupFTP
+  - Informations backup storage
+- PUT /dedicated/server/{serviceName}/features/backupFTP/password
+  - Change le mot de passe
+- GET /dedicated/server/{serviceName}/features/backupFTP/access
+  - Liste des accès autorisés
+- POST /dedicated/server/{serviceName}/features/backupFTP/access
+  - Body: { ipBlock, ftp, nfs, cifs }
+  - Ajoute un accès
+- DELETE /dedicated/server/{serviceName}/features/backupFTP/access/{ipBlock}
+  - Supprime un accès

@@ -1,0 +1,79 @@
+# Cahier des Charges : public-cloud/databases - Onglet Flux de réplication (Kafka MirrorMaker 2)
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Databases - Onglet Flux de réplication
+- **Type** : Page onglet listing
+- **Objectif** : Gérer les flux de réplication Kafka MirrorMaker 2
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec service Kafka MM2 actif
+- Breadcrumb avec "Flux de réplication"
+- Onglets (Flux de réplication actif)
+- Titre "Flux de réplication"
+- Bouton ajouter flux
+- Tableau des flux de réplication
+- ActionMenu ouvert
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsTabs** : Onglets avec Flux de réplication actif
+- **OdsButton** : "+ Ajouter un flux de réplication" (outline)
+- **OdsTable** : Liste des flux
+- **OdsBadge** : Statut (Activé)
+- **OdsActionMenu** : Actions
+
+## 4. TITRE
+"Flux de réplication"
+
+## 5. ONGLETS
+| Onglet | État |
+|--------|------|
+| Informations générales | Inactif |
+| Utilisateurs | Inactif |
+| Logs | Inactif |
+| Métriques | Inactif |
+| Flux de réplication | Actif (souligné bleu) |
+| Paramètres | Inactif |
+
+## 6. TABLEAU FLUX DE RÉPLICATION
+### Colonnes
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Source | Texte | Cluster Kafka source |
+| Cible | Texte | Cluster Kafka destination |
+| Topics | Texte | Pattern de topics (wildcard) |
+| Topics exclus | Texte | Topics à exclure |
+| Sync. offsets | Texte | Oui / Non |
+| Intervalle (s) | Nombre | Intervalle en secondes |
+| Statut | Badge pill | Activé / Désactivé |
+| Actions | Menu ⋮ | ActionMenu |
+
+### Badges Statut
+| Statut | Couleur |
+|--------|---------|
+| Activé | Vert (#DEF7EC, #03543F) |
+| Désactivé | Gris |
+
+### Données exemple
+| Source | Cible | Topics | Exclus | Sync | Intervalle | Statut |
+|--------|-------|--------|--------|------|------------|--------|
+| kafka-prod | kafka-dr | orders_* | - | Oui | 60 | Activé |
+| kafka-prod | kafka-analytics | events_* | events_test | Non | 120 | Activé |
+
+## 7. ACTION MENU (ouvert)
+| Action | Type |
+|--------|------|
+| Modifier | Standard |
+| Supprimer | Danger (rouge) |
+
+## 8. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/database/kafkaMirrorMaker/{serviceId}/replication
+  - Liste des flux de réplication
+- POST /cloud/project/{projectId}/database/kafkaMirrorMaker/{serviceId}/replication
+  - Body: { sourceCluster, targetCluster, topics, topicsBlacklist, syncGroupOffsets, replicationPolicyClass, interval }
+  - Créer un flux
+- PUT /cloud/project/{projectId}/database/kafkaMirrorMaker/{serviceId}/replication/{replicationId}
+  - Modifier un flux
+- DELETE /cloud/project/{projectId}/database/kafkaMirrorMaker/{serviceId}/replication/{replicationId}
+  - Supprimer un flux

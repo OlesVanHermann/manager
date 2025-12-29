@@ -1,0 +1,77 @@
+# Cahier des Charges : public-cloud/databases - Modal Ajouter une réplication
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Ajouter une réplication
+- **Type** : Modal formulaire
+- **Objectif** : Configurer une réplication entre deux services de base de données
+
+## 2. STRUCTURE MODAL
+- Overlay sombre avec fond page visible
+- Conteneur blanc 800x770px
+- Header avec titre et bouton fermer
+- Description
+- Formulaire (source, cible, type, tables)
+- Info box bleue
+- Warning box jaune
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur large
+- **OdsSelect** : Service source, Service cible
+- **OdsRadio** : Type de réplication (cards)
+- **OdsInput** : Tables à répliquer
+- **OdsMessage** : Info et warning
+- **OdsButton** : Annuler, Créer la réplication
+
+## 4. TITRE
+"Ajouter une réplication"
+
+## 5. DESCRIPTION
+"Configurez une réplication pour synchroniser vos données entre deux services de base de données. La réplication permet d'assurer la haute disponibilité et la redondance de vos données."
+
+## 6. CHAMPS DU FORMULAIRE
+
+### Service source
+| Champ | Type | Valeur | Requis |
+|-------|------|--------|--------|
+| Service source | Select | mysql-prod-db-abc123 (MySQL 8.0) | Oui |
+
+### Service cible
+| Champ | Type | Placeholder | Requis |
+|-------|------|-------------|--------|
+| Service cible | Select | Sélectionner un service cible... | Oui |
+
+### Type de réplication
+| Option | Description | Recommandation |
+|--------|-------------|----------------|
+| Asynchrone (sélectionné) | Meilleure performance, légère latence | Recommandé pour la plupart des cas |
+| Synchrone | Cohérence forte, impact performance | Pour données critiques uniquement |
+
+### Tables à répliquer
+| Champ | Type | Valeur défaut | Requis |
+|-------|------|---------------|--------|
+| Tables | Input | * (toutes les tables) | Oui |
+
+## 7. INFO BOX
+- Fond: Bleu clair (#E8F0FE)
+- Titre: "ℹ️ Information sur la réplication"
+- Texte:
+  - "La réplication sera activée après validation."
+  - "Le temps de synchronisation initiale dépend de la taille de vos données."
+
+## 8. WARNING BOX
+- Fond: Jaune (#FEF3C7)
+- Texte: "⚠️ La réplication peut générer des coûts supplémentaires liés au transfert de données entre régions."
+
+## 9. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline | Gauche | Fermer modal |
+| Créer la réplication | Primary bleu | Droite | POST replication |
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/database/service
+  - Liste des services disponibles pour la réplication
+- POST /cloud/project/{projectId}/database/service/{serviceId}/replication
+  - Body: { targetServiceId, replicationType, tables }
+  - Créer la configuration de réplication

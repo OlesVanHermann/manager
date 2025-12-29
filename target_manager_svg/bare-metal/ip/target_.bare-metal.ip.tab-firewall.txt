@@ -1,0 +1,84 @@
+# Cahier des Charges : bare-metal/ip - Firewall
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Firewall - Bloc IP
+- **Type** : Page détail onglet
+- **Objectif** : Configurer les règles firewall d'un bloc IP
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud + sidebar
+- Breadcrumb (IP › Bloc › Firewall)
+- Titre
+- Carte état firewall + toggle
+- Boutons actions
+- Tableau des règles
+- Note règle par défaut
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : IP › 192.168.1.0/24 › Firewall
+- **OdsCard** : État du firewall
+- **OdsBadge** : Activé (vert)
+- **OdsToggle** : Activer/désactiver firewall
+- **OdsButton** : Ajouter une règle (primary), Activer/Désactiver toutes (outline)
+- **OdsDatagrid** : Tableau des règles
+- **OdsActionMenu** : Menu actions par règle
+
+## 4. ÉTAT FIREWALL
+| Propriété | Valeur |
+|-----------|--------|
+| Label | État du firewall |
+| Badge | Activé (vert) ou Désactivé (gris) |
+| Description | Le firewall est actif et protège vos IP. |
+| Toggle | Activer/Désactiver |
+
+## 5. BOUTONS ACTIONS
+| Bouton | Style |
+|--------|-------|
+| Ajouter une règle | Primary |
+| Activer toutes les règles | Outline |
+| Désactiver toutes les règles | Outline |
+
+## 6. COLONNES TABLEAU
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Priorité | Number | 0-19 (0 = plus haute) |
+| Action | Text | permit / deny |
+| Protocole | Text | TCP, UDP, ICMP, any |
+| IP Source | Text | IP ou "any" |
+| Port Source | Text | Port(s) ou "any" |
+| IP Destination | Text | IP ou "any" |
+| Port Dest. | Text | Port(s) ou "-" |
+| État | Badge | Actif (vert), Inactif (jaune) |
+| Actions | ActionMenu | Menu ⋮ |
+
+## 7. RÈGLES EXEMPLES
+| Priorité | Action | Protocole | IP Src | Port Src | IP Dest | Port Dest | État |
+|----------|--------|-----------|--------|----------|---------|-----------|------|
+| 0 | permit | TCP | any | any | 192.168.1.10 | 22 | Actif |
+| 1 | permit | TCP | any | any | 192.168.1.10 | 80, 443 | Actif |
+| 2 | deny | ICMP | any | any | any | - | Inactif |
+| 19 | deny | any | any | any | any | any | Actif |
+
+## 8. ACTION MENU
+| Option | Style |
+|--------|-------|
+| Modifier | Normal |
+| Activer/Désactiver | Normal |
+| Supprimer | Rouge (danger) |
+
+## 9. NOTE RÈGLE PAR DÉFAUT
+La règle 19 (deny all) est la règle par défaut et ne peut pas être modifiée.
+
+## 10. APIS & ENDPOINTS
+- GET /ip/{ip}/firewall
+  - État du firewall
+- PUT /ip/{ip}/firewall
+  - Activer/désactiver firewall
+- GET /ip/{ip}/firewall/{ipOnFirewall}/rule
+  - Liste des règles
+- POST /ip/{ip}/firewall/{ipOnFirewall}/rule
+  - Ajouter une règle
+- PUT /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence}
+  - Modifier une règle
+- DELETE /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence}
+  - Supprimer une règle

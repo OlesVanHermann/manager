@@ -1,0 +1,82 @@
+# Cahier des Charges : public-cloud/ai-notebooks - Onglet Logs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Détail notebook - Onglet Logs
+- **Type** : Page détail avec console logs
+- **Objectif** : Visualiser les logs d'exécution du notebook
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec AI Notebooks actif
+- Breadcrumb
+- En-tête: Nom + badge statut
+- Onglets (Logs actif)
+- Toggle auto-refresh
+- Terminal de logs
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsBadge** : Statut Running (vert)
+- **OdsTabs** : 5 onglets
+- **OdsToggle** : Actualisation automatique
+- **OdsCard** : Terminal logs (fond sombre)
+
+## 4. TITRE
+"{notebook-name}" + Badge "Running"
+
+## 5. ONGLETS
+| Onglet | État |
+|--------|------|
+| Dashboard | Inactif |
+| Conteneurs | Inactif |
+| Dépôts Git | Inactif |
+| Backups | Inactif |
+| Logs | Actif (fond bleu) |
+
+## 6. SECTION LOGS
+### En-tête
+- Titre: "Logs"
+- Description: "Consultez les logs d'exécution de votre notebook"
+
+### Toggle auto-refresh
+- Toggle activé (bleu)
+- Label: "Actualisation automatique"
+
+## 7. TERMINAL LOGS
+- Fond sombre (#1F2937)
+- Police monospace
+- Hauteur: ~450px
+- Défilement vertical
+
+### Format des logs
+```
+TIMESTAMP [LEVEL] Message
+```
+
+### Niveaux de log (couleurs)
+| Niveau | Couleur |
+|--------|---------|
+| [INFO] | Bleu (#3B82F6) |
+| [WARN] | Jaune (#F59E0B) |
+| [ERROR] | Rouge (#EF4444) |
+
+### Exemple de logs
+```
+2024-12-27 09:15:32 [INFO] Starting Jupyter notebook server...
+2024-12-27 09:15:33 [INFO] Loading PyTorch 2.1.0+cu121
+2024-12-27 09:15:34 [INFO] CUDA available: True (1x NVIDIA V100S)
+2024-12-27 09:15:35 [INFO] Mounting volume: my-training-data at /workspace/data
+2024-12-27 09:15:36 [WARN] Cache sync pending for volume model-outputs
+2024-12-27 09:15:37 [INFO] Jupyter server running at https://abc123.notebook.gra.ai.cloud.ovh.net
+2024-12-27 09:15:38 [INFO] Notebook ready. Accepting connections...
+2024-12-27 10:23:45 [INFO] Kernel started: python3
+2024-12-27 10:24:12 [INFO] Executing cell [1]: import torch
+2024-12-27 11:45:33 [ERROR] OutOfMemoryError: CUDA out of memory
+2024-12-27 11:45:34 [INFO] Kernel restarted automatically
+```
+
+## 8. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/notebook/{notebookId}/logs
+  - Paramètres: limit, since (timestamp)
+  - Streaming: WebSocket pour temps réel
+- GET /cloud/project/{projectId}/ai/notebook/{notebookId}

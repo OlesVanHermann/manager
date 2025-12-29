@@ -1,0 +1,66 @@
+# Cahier des Charges : public-cloud/databases - Page Tâches Connector (Kafka)
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Databases - Tâches d'un Kafka Connector
+- **Type** : Page détail listing
+- **Objectif** : Surveiller et gérer les tâches d'un connector Kafka
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec Bases de données actif
+- Breadcrumb avec "Tâches"
+- Titre "Tâches"
+- Lien retour "← Retour aux connectors"
+- Description "Tâches du connector my-sink-connector :"
+- Liste des tâches (cartes sombres)
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsLink** : Retour aux connectors
+- **OdsCard** : Carte sombre pour chaque tâche
+- **OdsBadge** : Statut (RUNNING, FAILED, PAUSED)
+- **OdsButton** : "↻ Redémarrer" pour chaque tâche
+- **OdsCode** : Stack trace pour tâches en erreur
+
+## 4. TITRE
+"Tâches"
+
+## 5. LIEN RETOUR
+- Texte: "← Retour aux connectors"
+- Navigation vers onglet Connectors
+
+## 6. LISTE DES TÂCHES
+### Structure d'une tâche
+| Élément | Type | Description |
+|---------|------|-------------|
+| Numéro | Titre | "Tâche n°X" |
+| Statut | Badge pill | RUNNING / FAILED / PAUSED |
+| Action | Bouton | "↻ Redémarrer" |
+| Trace | Code | Stack trace si FAILED |
+
+### Badges Statut
+| Statut | Couleur |
+|--------|---------|
+| RUNNING | Vert (#DEF7EC, #03543F) |
+| FAILED | Rouge (#FEE2E2, #991B1B) |
+| PAUSED | Jaune (#FEF3C7, #92400E) |
+
+### Données exemple
+| Tâche | Statut | Trace |
+|-------|--------|-------|
+| Tâche n°0 | RUNNING | - |
+| Tâche n°1 | FAILED | org.apache.kafka.connect.errors.ConnectException... |
+| Tâche n°2 | PAUSED | - |
+| Tâche n°3 | RUNNING | - |
+
+## 7. STYLE DES CARTES
+- Fond: Sombre (#1F2937)
+- Texte: Clair (#D1D5DB)
+- Numéro en gras
+- Trace en police monospace
+
+## 8. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/database/kafka/{serviceId}/connector/{connectorId}/task
+  - Liste des tâches du connector
+- POST /cloud/project/{projectId}/database/kafka/{serviceId}/connector/{connectorId}/task/{taskId}/restart
+  - Redémarrer une tâche

@@ -1,0 +1,67 @@
+# Cahier des Charges : bare-metal/dedicated - Modal Console IPMI/KVM
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Console IPMI / KVM
+- **Type** : Modal console interactive
+- **Objectif** : Accès direct au serveur via IPMI/BMC
+
+## 2. STRUCTURE MODAL
+- Modal blanche (800x600px)
+- Header avec titre + bouton fermer
+- Bandeau info
+- Zone console (terminal noir)
+- Barre de contrôles
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur
+- **OdsMessage** : Info (fond bleu)
+- **Terminal** : Zone console (fond noir, texte vert)
+- **OdsButton** : Contrôles (Ctrl+Alt+Del, Power, Reset, Plein écran)
+- **OdsButton** : Nouvelle session (primary)
+
+## 4. HEADER
+- **Titre** : "Console IPMI / KVM"
+- **Bouton fermer** : ×
+
+## 5. BANDEAU INFO
+Fond bleu clair :
+- "ℹ️ La console IPMI permet un accès direct au serveur, même si l'OS ne répond pas."
+- "Session sécurisée via le BMC (Baseboard Management Controller)."
+
+## 6. ZONE CONSOLE
+Terminal noir (740x350px) avec barre de titre :
+- Boutons : ● ● ● (rouge, jaune, vert)
+- Titre : "ns1234567 - IPMI Console"
+
+### Contenu console (simulation BIOS)
+```
+American Megatrends BIOS v2.21
+Intel(R) Xeon(R) E-2388G CPU @ 3.20GHz
+Memory: 65536 MB DDR4 ECC
+
+Detecting drives...
+  NVMe0: Samsung PM983 960GB
+  NVMe1: Samsung PM983 960GB
+
+RAID Controller: LSI MegaRAID
+  Virtual Drive 0: RAID1 1.8TB Online
+
+Press F2 for Setup, F11 for Boot Menu
+
+Booting from NVMe0...
+```
+
+## 7. CONTRÔLES
+| Bouton | Action |
+|--------|--------|
+| Ctrl+Alt+Del | Envoie séquence au serveur |
+| Power | Contrôle alimentation |
+| Reset | Redémarrage matériel |
+| Plein écran | Mode plein écran |
+| Nouvelle session | Primary, nouvelle connexion IPMI |
+
+## 8. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/features/ipmi/access
+  - Récupère l'URL de la console IPMI
+- POST /dedicated/server/{serviceName}/features/ipmi/resetSessions
+  - Réinitialise les sessions IPMI

@@ -1,0 +1,71 @@
+# Cahier des Charges : public-cloud/kubernetes - Modal Ajuster Taille Pool
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Ajuster la taille du pool de nœuds
+- **Type** : Modal formulaire avec toggle autoscaling
+- **Objectif** : Configurer le nombre de nœuds et l'autoscaling
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Conteneur blanc 800x620px
+- Titre + bouton fermer
+- Description + lien documentation
+- Toggle autoscaling
+- Quantités min/max avec boutons −/+
+- Banner info bleu (conseil 3 nœuds)
+- Banner warning jaune (si mensuel + autoscale)
+- Résumé nombre de nœuds
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur large
+- **OdsText** : Description
+- **OdsLink** : "Plus d'informations ↗"
+- **OdsToggle** : Autoscaling (ON)
+- **OdsQuantity** : Minimum, Maximum
+- **OdsMessage** : Info (bleu), Warning (jaune)
+- **OdsButton** : Annuler, Enregistrer
+
+## 4. TITRE
+"Ajuster la taille du pool de nœuds"
+
+## 5. DESCRIPTION
+"Vous pouvez configurer la mise à l'échelle automatique de chacun de vos pools de nœuds. Cette fonctionnalité complète le «horizontal pod autoscaler» de Kubernetes."
+
+Lien : "Plus d'informations ↗"
+
+## 6. TOGGLE AUTOSCALING
+- Label : "Autoscaling"
+- État : Activé (ON - bleu)
+- Texte : "Autoscaling actif"
+
+## 7. QUANTITÉS (si autoscaling activé)
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Minimum | Quantity (−/+) | 1 |
+| Maximum | Quantity (−/+) | 10 |
+
+## 8. BANNER INFO
+- Fond bleu clair (#E0F2FE)
+- Bordure bleue (#0284C7)
+- "ℹ Il est conseillé de configurer un pool de 3 nœuds minimum pour optimiser le rolling upgrade lors des mises à jour de sécurité (patch updates)."
+
+## 9. BANNER WARNING (conditionnel)
+- Affiché si : autoscaling + facturation mensuelle
+- Fond jaune (#FEF3C7)
+- Bordure orange (#F59E0B)
+- "⚠ Attention"
+- "Vous activez simultanément l'autoscaling et le forfait mensuel pour ce nodepool. Chaque création de nœud par l'autoscaling entraînera une facturation immédiate."
+
+## 10. RÉSUMÉ
+"Nombre de nœuds (total): **1 - 10**"
+
+## 11. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline gris | Gauche | Fermer modal |
+| Enregistrer | Primary bleu | Droite | PUT scaling |
+
+## 12. APIS & ENDPOINTS
+- PUT /cloud/project/{projectId}/kube/{kubeId}/nodepool/{poolId}
+  - Body: { autoscale: { scaleDownUnneededTimeMinutes, scaleDownUnreadyTimeMinutes, scaleDownUtilizationThreshold }, desiredNodes, minNodes, maxNodes }

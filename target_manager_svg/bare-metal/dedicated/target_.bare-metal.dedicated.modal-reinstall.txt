@@ -1,0 +1,77 @@
+# Cahier des Charges : bare-metal/dedicated - Modal Réinstaller Serveur
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Réinstaller le serveur
+- **Type** : Modal formulaire complet avec warning
+- **Objectif** : Réinstaller le système d'exploitation
+
+## 2. STRUCTURE MODAL
+- Modal blanche (800x750px)
+- Header avec titre + bouton fermer
+- Warning destructif (fond rouge)
+- Formulaire multi-sections
+- Checkbox confirmation
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur
+- **OdsMessage** : Warning destructif (rouge)
+- **OdsSelect** : OS, Config disques, Clé SSH
+- **OdsRadio** : Type installation (3)
+- **OdsInput** : Hostname, Script post-install
+- **OdsCheckbox** : Confirmation
+- **OdsButton** : Annuler (outline), Réinstaller (danger)
+
+## 4. HEADER
+- **Titre** : "Réinstaller le serveur"
+- **Bouton fermer** : ×
+
+## 5. WARNING DESTRUCTIF
+Fond rouge avec bordure :
+- "⚠️ Attention : Cette action est irréversible !"
+- "Toutes les données présentes sur les disques seront définitivement supprimées."
+
+## 6. FORMULAIRE
+
+### Système d'exploitation
+- **Label** : "Système d'exploitation *"
+- **Select** : Debian 12 (Bookworm) - 64 bits ▼
+
+### Type d'installation
+| Option | État |
+|--------|------|
+| Installation personnalisée (recommandé) | ✅ Sélectionné |
+| Installation à partir d'un template OVHcloud | - |
+| Installation à partir de votre template personnalisé | - |
+
+### Configuration des disques
+- **Label** : "Configuration des disques"
+- **Select** : RAID 1 (Software) - 2 disques ▼
+
+### Clé SSH
+- **Label** : "Clé SSH (optionnel)"
+- **Select** : Sélectionner une clé SSH... ▼
+- **Lien** : "Ajouter une nouvelle clé SSH →"
+
+### Hostname
+- **Label** : "Nom d'hôte (hostname)"
+- **Input** : ns1234567.ip-192-168-1.eu
+
+### Script post-installation
+- **Label** : "Script post-installation (optionnel)"
+- **Textarea** : URL d'un script à exécuter après l'installation...
+- **Note** : "Le script sera exécuté avec les droits root après le premier démarrage."
+
+## 7. CONFIRMATION
+- **Checkbox** : ✅ "Je comprends que toutes les données seront supprimées"
+
+## 8. BOUTONS
+- **Annuler** : Outline, ferme la modal
+- **Réinstaller** : Danger (rouge), lance la réinstallation
+
+## 9. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/install/compatibleTemplates
+  - Liste des OS disponibles
+- POST /dedicated/server/{serviceName}/install/start
+  - Body: { templateId, partitioningScheme, sshKey, hostname, postInstallScript }
+  - Lance la réinstallation

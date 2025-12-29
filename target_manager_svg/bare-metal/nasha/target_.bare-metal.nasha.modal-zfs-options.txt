@@ -1,0 +1,84 @@
+# Cahier des Charges : bare-metal/nasha - Modal options ZFS
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Options ZFS
+- **Type** : Configuration avancée
+- **Objectif** : Configurer les options ZFS d'une partition
+
+## 2. STRUCTURE MODAL
+- Header avec titre (incluant nom partition)
+- Séparateur
+- Formulaire options
+- Séparateur
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur (700x630px)
+- **OdsSelect** : Template, Recordsize
+- **OdsCheckbox** : Atime
+- **OdsRadio** : Mode sync
+- **OdsButton** : Annuler (outline), Appliquer (primary)
+
+## 4. CHAMPS FORMULAIRE
+
+### Template de configuration
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Template de configuration |
+| Type | Select |
+| Valeur | Personnalisé |
+
+### Access Time (atime)
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Access Time (atime) |
+| Type | Checkbox |
+| Texte | Désactiver l'enregistrement du temps d'accès |
+| Aide | Améliore les performances en ne mettant pas à jour le timestamp d'accès à chaque lecture de fichier. |
+
+### Recordsize
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Taille des blocs (recordsize) |
+| Type | Select |
+| Valeur | 128 Ko (par défaut) |
+| Options | 4 Ko, 8 Ko, 16 Ko, 32 Ko, 64 Ko, 128 Ko, 256 Ko, 512 Ko, 1 Mo |
+
+### Mode de synchronisation (sync)
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Mode de synchronisation (sync) |
+| Type | Radio |
+
+## 5. OPTIONS SYNC
+### Standard
+| Champ | Valeur |
+|-------|--------|
+| Label | Standard (par défaut) |
+| Description | Écriture synchrone garantissant l'intégrité des données. |
+| Sélectionné | Oui |
+
+### Always
+| Champ | Valeur |
+|-------|--------|
+| Label | Always |
+| Description | Force la synchronisation même pour les écritures asynchrones. |
+
+### Désactivé
+| Champ | Valeur |
+|-------|--------|
+| Label | Désactivé |
+| Description | Désactive la synchronisation. Meilleures performances mais risque de perte de données en cas de coupure. |
+| Warning | ⚠️ Non recommandé pour les données critiques |
+
+## 6. BOUTONS
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Outline | Gauche |
+| Appliquer | Primary | Droite |
+
+## 7. APIS & ENDPOINTS
+- PUT /dedicated/nasha/{serviceName}/partition/{partitionName}/options
+  - atime: enum (on, off)
+  - recordsize: enum (4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576)
+  - sync: enum (standard, always, disabled)

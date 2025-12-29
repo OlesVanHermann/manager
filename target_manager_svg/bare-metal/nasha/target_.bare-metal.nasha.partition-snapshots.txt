@@ -1,0 +1,83 @@
+# Cahier des Charges : bare-metal/nasha - Partition snapshot policies
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Snapshot policies
+- **Type** : Page gestion snapshots
+- **Objectif** : Configurer les politiques de snapshots automatiques et manuels
+
+## 2. STRUCTURE PAGE
+- Breadcrumb
+- Titre partition + ID parent
+- Onglets navigation
+- Header explicatif
+- Warning banner
+- Compteur snapshots
+- Bouton créer
+- Tableau des policies
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : 3 onglets
+- **OdsMessage** : Warning banner (jaune)
+- **OdsText** : Descriptions
+- **OdsButton** : + Créer un Snapshot manuel (primary)
+- **OdsDatagrid** : Tableau policies
+- **OdsSelect** : Fréquences (inline)
+
+## 4. ONGLETS
+| Onglet | État |
+|--------|------|
+| Informations générales | - |
+| Snapshot policies | ✅ Actif |
+| Contrôle d'accès (ACL) | - |
+
+## 5. DESCRIPTION PAGE
+| Élément | Valeur |
+|---------|--------|
+| Titre | Gérer les Snapshot policies |
+| Description | Créez et gérez facilement vos règles de snapshots, en matière de périodicité ou de durée de rétention. |
+| Note | Les snapshots utilisent la capacité de stockage de votre solution NAS-HA. |
+
+## 6. WARNING BANNER
+| Propriété | Valeur |
+|-----------|--------|
+| Couleur | Jaune (warning) |
+| Texte ligne 1 | ⚠ 20% d'espace additionnel vous est fourni pour vos snapshots. |
+| Texte ligne 2 | Dans le cas où vous dépasseriez cet espace, les snapshots seront stockés sur votre espace de stockage primaire. |
+| Dismissible | Oui (bouton ✕) |
+
+## 7. COMPTEUR SNAPSHOTS
+| Info | Valeur |
+|------|--------|
+| Label | Nombre de snapshots |
+| Valeur | 12 (maximum: 100) |
+
+## 8. COLONNES TABLEAU
+| Colonne | Largeur | Type |
+|---------|---------|------|
+| Type | 280px | Text |
+| Nom | 300px | Text |
+| Options | 320px | Select/Action |
+
+## 9. DONNÉES EXEMPLE
+| Type | Nom | Options |
+|------|-----|---------|
+| Fréquences | - | Select: Toutes les heures, Tous les jours |
+| Snapshot manuel | partition_prod-snap-backup-2024 | 🗑 |
+| Snapshot manuel | partition_prod-snap-before-migration | 🗑 |
+| Snapshot manuel | partition_prod-snap-test | 🗑 |
+
+## 10. ACTIONS ROW FRÉQUENCES
+| Action | Icône |
+|--------|-------|
+| Valider | ✓ |
+| Annuler | ✕ |
+
+## 11. APIS & ENDPOINTS
+- GET /dedicated/nasha/{serviceName}/partition/{partitionName}/snapshot
+  - Types de snapshots actifs
+- GET /dedicated/nasha/{serviceName}/partition/{partitionName}/customSnapshot
+  - Snapshots manuels
+- POST /dedicated/nasha/{serviceName}/partition/{partitionName}/customSnapshot
+  - Créer snapshot manuel
+- DELETE /dedicated/nasha/{serviceName}/partition/{partitionName}/customSnapshot/{name}
+  - Supprimer snapshot manuel

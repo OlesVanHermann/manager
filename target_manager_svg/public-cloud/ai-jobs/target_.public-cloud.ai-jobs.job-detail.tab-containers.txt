@@ -1,0 +1,76 @@
+# Cahier des Charges : public-cloud/ai-jobs - Onglet Conteneurs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Détail d'un job - Onglet Conteneurs
+- **Type** : Page détail avec tableau
+- **Objectif** : Gérer les conteneurs de données attachés au job
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec AI Training actif
+- Breadcrumb avec lien retour
+- Titre du job + badge statut
+- Onglets (Dashboard, Conteneurs actif, Dépôts Git, Logs)
+- Description + boutons d'action
+- Tableau des conteneurs
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsLink** : Retour à la liste
+- **OdsBadge** : Statut RUNNING (vert)
+- **OdsTabs** : 4 onglets
+- **OdsButton** : Ajouter un conteneur (primaire), Synchronisation globale (outline)
+- **OdsTable** : Liste des conteneurs
+- **OdsActionMenu** : Actions par ligne
+
+## 4. TITRE
+"{jobId}" + Badge RUNNING
+
+## 5. ONGLETS
+| Onglet | État |
+|--------|------|
+| Dashboard | Inactif |
+| Conteneurs | Actif (souligné bleu) |
+| Dépôts Git | Inactif |
+| Logs | Inactif |
+
+## 6. SECTION CONTENEURS
+- Titre: "Conteneurs de données"
+- Description: "Vous pouvez attacher des conteneurs de type Datastore S3, Datastore GIT, Object Storage OVHcloud. Une fois attachés, ceux-ci seront temporairement chargés et mis en cache."
+
+### Boutons
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Ajouter un conteneur | Primaire bleu | Ouvre modal ajout volume |
+| Synchronisation globale | Outline bleu | Synchronise tous les volumes |
+
+## 7. TABLEAU CONTENEURS
+### Colonnes
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Alias | Texte | Nom court du volume |
+| Conteneur de données | Texte | URL du conteneur (s3://, git://) |
+| Répertoire de montage | Texte | Chemin de montage (/workspace/...) |
+| Permission | Texte | Lecture Seule / Lecture & Écriture |
+| Cache | Texte | Actif / Inactif |
+| Actions | Menu | ActionMenu |
+
+### Données exemple
+| Alias | Conteneur | Montage | Permission | Cache |
+|-------|-----------|---------|------------|-------|
+| data-input | s3://my-bucket-training | /workspace/data | Lecture Seule | Actif |
+| model-output | s3://my-bucket-models | /workspace/output | Lecture & Écriture | Actif |
+| git-source | git://github.com/my-org/ml-project | /workspace/src | Lecture Seule | Inactif |
+
+## 8. ACTION MENU (par ligne)
+| Action | Description |
+|--------|-------------|
+| Synchroniser les données | Force la synchronisation du cache |
+| Supprimer | Détache le conteneur (texte rouge) |
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/job/{jobId}
+- GET /cloud/project/{projectId}/ai/job/{jobId}/volumes
+- POST /cloud/project/{projectId}/ai/job/{jobId}/volumes : Attache un volume
+- POST /cloud/project/{projectId}/ai/job/{jobId}/volumes/{volumeId}/sync : Synchronise
+- DELETE /cloud/project/{projectId}/ai/job/{jobId}/volumes/{volumeId} : Détache

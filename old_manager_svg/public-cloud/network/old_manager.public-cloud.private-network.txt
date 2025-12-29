@@ -1,0 +1,77 @@
+# Cahier des Charges : public-cloud/private-network - Liste
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Private Network
+- **Type** : Page liste avec onglets et datagrid
+- **Objectif** : Gérer les réseaux privés du projet
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (Private Network actif sous Network)
+- Breadcrumb
+- Titre "Private Network"
+- Bouton créer
+- Onglets (Régions/Local Zones)
+- Tableau des réseaux
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsButton** : "+ Créer un réseau privé" (primary)
+- **OdsTabs** : Régions (vRack) | Local Zones
+- **OdsDatagrid** : Liste des réseaux
+- **OdsBadge** : DHCP actif/désactivé
+- **OdsLink** : Lien vers détail
+- **OdsActionMenu** : Actions (⋮)
+
+## 4. SIDEBAR
+- Projet : Mon Projet Cloud
+- Section NETWORK :
+  - **Private Network** (actif)
+  - Floating IPs
+  - Gateway
+  - Load Balancer
+
+## 5. ONGLETS
+| Onglet | État |
+|--------|------|
+| Régions (vRack) | Actif |
+| Local Zones | Inactif |
+
+## 6. TABLEAU
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom + ID tronqué |
+| VLAN ID | Numéro VLAN |
+| Localisation | Régions (virgules) |
+| CIDR | Plage d'adresses (monospace) |
+| DHCP | Badge actif/désactivé |
+| Gateway | Nom gateway ou "-" |
+| IPs allouées | Utilisées / Total |
+| Actions | Menu ⋮ |
+
+### Données exemple
+| Nom | VLAN | Localisation | CIDR | DHCP | Gateway | IPs |
+|-----|------|--------------|------|------|---------|-----|
+| prod-network | 100 | GRA, SBG, BHS | 10.0.0.0/16 | 🟢 actif | gw-prod | 45 / 65534 |
+| dev-network | 101 | GRA | 192.168.1.0/24 | 🟢 actif | - | 12 / 254 |
+| database-net | 102 | GRA, WAW | 172.16.0.0/12 | ⬜ désactivé | gw-db | 8 / 1048574 |
+
+## 7. ACTION MENU
+Options (menu ouvert) :
+- Créer un sous-réseau
+- Assigner une Gateway
+- Voir les sous-réseaux
+- ---
+- Supprimer (rouge)
+
+## 8. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/network/private
+  - Liste des réseaux privés
+- POST /cloud/project/{projectId}/network/private
+  - Crée un réseau privé
+- POST /cloud/project/{projectId}/network/private/{networkId}/subnet
+  - Crée un sous-réseau
+- DELETE /cloud/project/{projectId}/network/private/{networkId}
+  - Supprime le réseau

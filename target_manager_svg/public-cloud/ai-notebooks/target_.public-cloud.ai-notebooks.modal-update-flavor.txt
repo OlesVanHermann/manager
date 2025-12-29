@@ -1,0 +1,65 @@
+# Cahier des Charges : public-cloud/ai-notebooks - Modal Modifier ressources
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Modification des ressources (flavor) du notebook
+- **Type** : Modal formulaire avec sélection
+- **Objectif** : Changer le type et la quantité de ressources allouées
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Modal centrée (600x500)
+- Header avec titre et bouton fermer
+- Warning (notebook doit être arrêté)
+- Sélection flavor (tiles)
+- Sélection quantité (stepper)
+- Récapitulatif prix
+- Boutons Annuler / Confirmer
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsMessage** : Warning (jaune)
+- **OdsRadio** : Tiles flavor avec prix
+- **OdsStepper** : Sélection quantité
+- **OdsCard** : Récapitulatif prix
+- **OdsButton** : Annuler (outline), Confirmer (primaire)
+
+## 4. TITRE
+"Modifier les ressources"
+
+## 5. CONTENU
+
+### Warning
+- Fond jaune clair (#FFFBEB)
+- Message: "⚠ Le notebook doit être arrêté pour modifier les ressources."
+
+### Section: Sélectionner le type de ressources
+Tiles avec radio:
+
+| Flavor | Détails | Prix | État |
+|--------|---------|------|------|
+| ai1-1-gpu | 1 GPU NVIDIA V100S, 32 GB VRAM | 1,23 €/h | Sélectionné (bordure bleue) |
+| ai1-4-gpu | 4 GPU NVIDIA V100S, 128 GB VRAM | 4,92 €/h | Non sélectionné |
+| cpu-high | 8 vCores, 32 GB RAM | 0,15 €/h | Non sélectionné |
+
+### Section: Sélectionner la quantité de ressources
+- Note: "Quantité maximale pour ai1-1-gpu : 4"
+- Stepper: Input avec valeur "1" + boutons +/-
+
+### Récapitulatif prix
+- Fond gris (#F9FAFB)
+- Label: "Prix estimé :"
+- Prix: "**1,23 € HT/h**" (bleu, bold)
+- Note: "soit environ 886 € HT/mois"
+
+## 6. BOUTONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Outline gris | Ferme la modal |
+| Confirmer | Primaire bleu | Applique les modifications |
+
+## 7. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/capabilities/flavors
+  - Liste des flavors disponibles
+- PUT /cloud/project/{projectId}/ai/notebook/{notebookId}
+  - flavorId: string
+  - quantity: number

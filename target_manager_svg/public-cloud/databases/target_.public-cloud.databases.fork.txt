@@ -1,0 +1,92 @@
+# Cahier des Charges : public-cloud/databases - Page Fork
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Databases - Dupliquer votre service de base de données (fork)
+- **Type** : Page formulaire avec récapitulatif
+- **Objectif** : Créer une copie du service à partir d'un point de restauration
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec Bases de données actif
+- Breadcrumb avec "Fork"
+- Titre "Dupliquer votre service de base de données (fork)"
+- Description explicative
+- Formulaire 2 colonnes (formulaire + récapitulatif)
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsCard** : Sections du formulaire
+- **OdsRadio** : Point de restauration
+- **OdsSelect** : Type de service/version
+- **OdsInput** : Nom du service
+- **OdsTile** : Sélecteur datacentre, offre, instance
+- **OdsQuantity** : Nombre de nœuds, stockage
+- **OdsButton** : "Commander" (primary)
+
+## 4. TITRE
+"Dupliquer votre service de base de données (fork)"
+
+## 5. DESCRIPTION
+"Le fork de votre sauvegarde s'effectuera sur un nouveau cluster."
+
+## 6. SECTIONS DU FORMULAIRE
+
+### Section Source - Point de restauration
+| Champ | Type | Options |
+|-------|------|---------|
+| Point de restauration | Radio | Le plus récent (sélectionné), Date spécifique, Backup |
+
+### Section Service
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Type et version | Select | PostgreSQL 15 |
+
+### Section Nom
+| Champ | Type | Placeholder |
+|-------|------|-------------|
+| Nom | Input | my-postgresql-fork |
+
+### Section Datacentre
+| Champ | Type | Options |
+|-------|------|---------|
+| Localisation | Tiles | Gravelines (sélectionné), Strasbourg, Beauharnois |
+
+### Section Offre
+| Champ | Type | Options |
+|-------|------|---------|
+| Offre | Tiles | Essential (sélectionné), Business, Enterprise |
+
+### Section Instance
+| Champ | Type | Options |
+|-------|------|---------|
+| Type de nœud | Tiles | db1-4 (4 vCores, 16 GB) sélectionné, db1-7 (8 vCores, 32 GB) |
+
+### Section Dimensionnement du cluster
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Nombre de nœuds | Quantity | 3 |
+| Stockage additionnel | Input + unité | 0 GB |
+
+## 7. RÉCAPITULATIF COMMANDE
+| Élément | Valeur |
+|---------|--------|
+| Point de restauration | Le plus récent |
+| Service | PostgreSQL 15 |
+| Nom | my-postgresql-fork |
+| Région | Gravelines (GRA) |
+| Offre | Essential |
+| Instance | db1-4 (4 vCores · 16 GB RAM) |
+| Cluster | 3 nœuds |
+| **Estimation** | ~150,00 € HT/mois |
+
+## 8. BOUTONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Commander | Primary bleu | POST fork |
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/database/service/{serviceId}/backup
+  - Liste des backups disponibles
+- POST /cloud/project/{projectId}/database/service/{serviceId}/fork
+  - Body: { restorePoint, engine, version, plan, region, flavor, nodeCount, additionalStorage, name }
+  - Créer le fork

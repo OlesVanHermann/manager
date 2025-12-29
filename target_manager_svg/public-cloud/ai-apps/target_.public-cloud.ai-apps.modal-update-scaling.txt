@@ -1,0 +1,85 @@
+# Cahier des Charges : public-cloud/ai-apps - Modal Mise à jour dimensionnement
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Configuration du scaling/autoscaling
+- **Type** : Modal formulaire complexe
+- **Objectif** : Configurer le nombre de réplicas et l'autoscaling
+
+## 2. STRUCTURE MODAL
+- Header avec titre et bouton fermer (×)
+- Description stratégies
+- Toggle autoscaling
+- Champs min/max réplicas
+- Bandeau HA info
+- Select métrique surveillée
+- Champ seuil déclenchement
+- Bandeau warning facturation
+- Info configuration actuelle
+- Boutons Annuler / Modifier
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur (800x770)
+- **OdsToggle** : Autoscaling ON/OFF
+- **OdsInput** : Min réplicas, Max réplicas, Seuil %
+- **OdsSelect** : Métrique surveillée
+- **OdsMessage** : Info bleu, Warning orange
+- **OdsCard** : Config actuelle (fond gris)
+- **OdsButton** : Annuler, Modifier
+
+## 4. TITRE
+"Mettre à jour le dimensionnement de l'application"
+
+## 5. DESCRIPTION
+- "Selon votre préférence, choisissez la stratégie de déploiement qui convient le mieux"
+- "pour votre app : optez pour un dimensionnement fixe du nombre de réplicas ou bien"
+- "indiquez un minimum et maximum de réplicas pour optimiser dynamiquement les performances."
+- Lien: "Plus d'informations sur les stratégies de mise à l'échelle →"
+
+## 6. AUTOSCALING TOGGLE
+- Label: "Autoscaling"
+- Toggle ON (bleu) : "Autoscaling activé"
+
+## 7. CHAMPS RÉPLICAS
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Minimum de réplicas * | Input number | 2 |
+| Maximum de réplicas * | Input number | 10 |
+
+## 8. BANDEAU HA INFO
+Fond bleu (#E8F0FE) :
+"💡 Déployez sur un minimum de 2 réplicas pour disposer de haute-disponibilité"
+
+## 9. MÉTRIQUE SURVEILLÉE
+- Type: Select obligatoire
+- Valeur: "CPU"
+- Description: "Métrique qui agira comme élément déclencheur de l'Autoscaling."
+
+## 10. SEUIL DÉCLENCHEMENT
+- Label: "Seuil de déclenchement (%) *"
+- Description: "Valeur de la métrique, en pourcentage."
+- Valeur: 80 %
+
+## 11. BANDEAU WARNING
+Fond jaune (#FEF3C7) :
+- "⚠️ Veuillez noter que le nombre de réplicas choisi multipliera d'autant"
+- "le nombre de ressources prises et donc le coût associé."
+
+## 12. CONFIG ACTUELLE
+Fond gris (#F3F4F6) :
+"Configuration actuelle :"
+"Autoscaling activé • Min: 1 • Max: 5 • CPU: 70%"
+
+## 13. BOUTONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Outline | Ferme la modal |
+| Modifier | Primaire bleu | Sauvegarde la config |
+
+## 14. APIS & ENDPOINTS
+- PUT /cloud/project/{projectId}/ai/app/{appId}/scaling
+  - autoscaling: boolean
+  - minReplicas: number
+  - maxReplicas: number
+  - metric: "cpu" | "memory"
+  - threshold: number (0-100)
+

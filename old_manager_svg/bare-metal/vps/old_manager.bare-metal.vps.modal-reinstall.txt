@@ -1,0 +1,69 @@
+# Cahier des Charges : bare-metal/vps - Modal Réinstaller
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Réinstaller mon VPS
+- **Type** : Formulaire de réinstallation
+- **Objectif** : Choisir l'OS et réinstaller le VPS
+
+## 2. STRUCTURE MODAL
+- Header avec titre + bouton fermer
+- Formulaire (OS, packages, langue, SSH)
+- Option envoi mot de passe
+- Boutons Annuler / Confirmer
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Container (700x580px)
+- **OdsSelect** : OS, langue, clé SSH
+- **OdsMessage** : Info packages (fond bleu)
+- **OdsCheckbox** : Envoi mot de passe
+- **OdsButton** : Annuler (outline), Confirmer (primary)
+
+## 4. CHAMPS FORMULAIRE
+
+### Système d'exploitation
+| Élément | Valeur |
+|---------|--------|
+| Label | Quel système d'exploitation souhaitez-vous installer ? |
+| Aide | L'option Windows n'est pas incluse dans votre offre |
+| Valeur par défaut | Ubuntu 22.04 LTS (64 bits) |
+
+### Packages disponibles (info box)
+| Package | Version |
+|---------|---------|
+| Apache | 2.4.52 |
+| PHP | 8.1.2 |
+| MySQL | 8.0.31 |
+| Node.js | 18.12.1 |
+| Docker | 24.0.5 |
+
+### Langue du système
+| Élément | Valeur |
+|---------|--------|
+| Label | Langue du système |
+| Valeur par défaut | Français (fr_FR) |
+
+### Clé SSH
+| Élément | Valeur |
+|---------|--------|
+| Label | Clé SSH (optionnel) |
+| Placeholder | Sélectionner une clé SSH... |
+
+## 5. OPTIONS
+| Option | État par défaut |
+|--------|-----------------|
+| M'envoyer le mot de passe par e-mail | ☐ Non coché |
+| Note | Le mot de passe sera envoyé à l'adresse e-mail de votre compte |
+
+## 6. BOUTONS
+| Bouton | Style |
+|--------|-------|
+| Annuler | Outline |
+| Confirmer | Primary |
+
+## 7. APIS & ENDPOINTS
+- GET /vps/{serviceName}/availableImages
+  - Liste des OS disponibles
+- GET /me/sshKey
+  - Clés SSH du compte
+- POST /vps/{serviceName}/reinstall
+  - Body: { imageId, language, sshKey?, sendPassword }

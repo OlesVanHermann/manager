@@ -1,0 +1,70 @@
+# Cahier des Charges : public-cloud/ai-apps - Onglet Conteneurs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Liste des conteneurs de données attachés à l'app
+- **Type** : Onglet avec tableau
+- **Objectif** : Gérer les volumes de données (S3, Git, Object Storage)
+
+## 2. STRUCTURE PAGE
+- Breadcrumb
+- Lien retour liste
+- Titre app + badge statut + bouton accès HTTP
+- Onglets (Conteneurs actif)
+- Description
+- Boutons action (Ajouter, Sync globale)
+- Tableau des conteneurs
+- Menu actions (⋮)
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsBadge** : RUNNING (vert)
+- **OdsButton** : Accès http, + Ajouter un conteneur, Synchronisation globale
+- **OdsTabs** : Dashboard, Conteneurs, Dépots Git, Logs
+- **OdsTable** : Liste conteneurs
+- **OdsActionMenu** : Synchroniser, Supprimer
+
+## 4. TITRE
+"{app-name}"
+Badge: "RUNNING" (vert)
+Bouton: "Accès http" (primaire)
+
+## 5. ONGLETS
+| Onglet | État |
+|--------|------|
+| Dashboard | Inactif |
+| Conteneurs | Actif (souligné bleu) |
+| Dépots Git | Inactif |
+| Logs | Inactif |
+
+## 6. DESCRIPTION
+"Vous pouvez attacher des conteneurs de type Datastore S3, Datastore GIT, Object Storage OVHcloud."
+"Une fois attachés, ceux-ci seront temporairement chargés et mis en cache près de votre instance."
+
+## 7. BOUTONS D'ACTION
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Ajouter un conteneur | Primaire bleu | Ouvre modal ajout volume |
+| Synchronisation globale des données | Outline bleu | Sync tous les volumes |
+
+## 8. COLONNES TABLEAU
+| Colonne | Description | Exemple |
+|---------|-------------|---------|
+| Alias | Nom du volume | model-weights |
+| Conteneur de données | Source S3/Git | s3://ml-models-bucket |
+| Répertoire de montage | Chemin dans l'app | /app/models |
+| Permission | Droits d'accès | Lecture Seule, Lecture & Ecriture |
+| Cache | État du cache | Actif |
+| Actions | Menu ⋮ | Synchroniser, Supprimer |
+
+## 9. ACTIONMENU (⋮)
+| Option | Action |
+|--------|--------|
+| Synchroniser les données | Ouvre modal-data-sync |
+| Supprimer | Supprime le volume |
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/app/{appId}/volume : Lister volumes
+- POST /cloud/project/{projectId}/ai/app/{appId}/volume : Ajouter volume
+- DELETE /cloud/project/{projectId}/ai/app/{appId}/volume/{volumeId} : Supprimer
+- POST /cloud/project/{projectId}/ai/app/{appId}/datasync : Synchroniser
+

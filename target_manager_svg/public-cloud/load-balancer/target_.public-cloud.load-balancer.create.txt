@@ -1,0 +1,88 @@
+# Cahier des Charges : public-cloud/load-balancer - Créer un Load Balancer
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Wizard de création Load Balancer
+- **Type** : Formulaire multi-étapes vertical
+- **Objectif** : Créer un nouveau Load Balancer
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud avec navigation Public Cloud
+- Sidebar avec menu Network (Gateway, Private Network, Public IPs, Load Balancer actif)
+- Breadcrumb : Mon Projet / Load Balancer / Créer
+- Lien retour
+- Titre + description
+- 5 étapes de configuration
+- Bouton de validation
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsLink** : Retour
+- **OdsText** : Titre, description, labels
+- **OdsCard** : Sélection taille (radio cards)
+- **OdsRadio** : Sélection région
+- **OdsSelect** : IP publique, réseau privé, subnet
+- **OdsInput** : Nom
+- **OdsButton** : Créer un Load Balancer
+
+## 4. TITRE ET DESCRIPTION
+- **Titre** : "Créer un Load Balancer"
+- **Description** : "Avec notre service Load Balancer, vous pouvez équilibrer de manière sécurisée et automatique la charge de votre application en temps réel, sur plusieurs nœuds."
+
+## 5. ÉTAPE 1 : TAILLE
+- **Titre** : "Sélectionner la taille du Load Balancer"
+- **Type** : Radio cards
+
+| Taille | Description | Prix |
+|--------|-------------|------|
+| Taille S (sélectionné) | Petites applications, Tests et dev | 0,01 € / heure |
+| Taille M | Projets moyens, Trafic modéré | 0,02 € / heure |
+| Taille L | Fort trafic, Performances optimales | 0,04 € / heure |
+
+## 6. ÉTAPE 2 : LOCALISATION
+- **Titre** : "Sélectionnez une localisation"
+- **Type** : Chips sélectionnables
+
+| Région | Sélection |
+|--------|-----------|
+| 🇫🇷 GRA | Sélectionnée (bordure bleue) |
+| 🇫🇷 SBG | Non sélectionnée |
+| 🇩🇪 DE | Non sélectionnée |
+
+## 7. ÉTAPE 3 : IP PUBLIQUE
+- **Titre** : "Attacher une IP Publique"
+- **Description** : "Pour recevoir du trafic public, attachez une Floating IP à votre Load Balancer"
+- **Champ** : Select dropdown
+- **Valeur** : "Nouvelle IP Publique"
+
+## 8. ÉTAPE 4 : RÉSEAU PRIVÉ
+- **Titre** : "Sélectionnez un réseau privé"
+
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Choisissez un réseau privé | Select | my-private-network |
+| Choisissez un subnet | Select | 192.168.0.0/24 |
+
+## 9. ÉTAPE 5 : INFORMATIONS
+- **Titre** : "Informations"
+
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Nom du Load Balancer | Input | my-load-balancer |
+
+## 10. BOUTON VALIDATION
+- **Label** : "Créer un Load Balancer"
+- **Style** : Primary bleu
+- **Action** : POST création LB
+
+## 11. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/region
+  - Liste des régions
+- GET /cloud/project/{projectId}/network/private
+  - Liste des réseaux privés
+- GET /cloud/project/{projectId}/network/private/{networkId}/subnet
+  - Liste des subnets
+- GET /cloud/project/{projectId}/ip/failover
+  - Liste des Floating IPs disponibles
+- POST /cloud/project/{projectId}/region/{regionName}/loadbalancing/loadbalancer
+  - Body: { name, size, floatingIp, network, subnet }
+  - Créer le Load Balancer

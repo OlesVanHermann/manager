@@ -1,0 +1,70 @@
+# Cahier des Charges : public-cloud/private-network - Modal Créer
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Créer un réseau privé
+- **Type** : Modal formulaire multi-sections
+- **Objectif** : Créer un nouveau réseau privé (vRack)
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Modal blanche (700x680px)
+- Titre avec close
+- Sections : Nom, VLAN, Localisations, Sous-réseau
+- Bandeau info
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur
+- **OdsInput** : Nom, VLAN ID, CIDR, Gateway IP
+- **OdsCheckbox** : Sélection régions, DHCP
+- **OdsMessage** : Info (gris)
+- **OdsButton** : Annuler (secondary), Créer (primary)
+
+## 4. HEADER
+"Créer un réseau privé" + bouton ×
+
+## 5. SECTIONS
+
+### Nom du réseau
+- **Input** : Champ texte
+- **Valeur** : "prod-network"
+
+### VLAN ID
+- **Input** : Champ numérique (largeur 200px)
+- **Valeur** : 100
+- **Helper** : "De 0 à 4095 (optionnel)"
+
+### Localisations
+- **Titre** : "Localisations"
+- **Sous-titre** : "Sélectionnez les régions où le réseau sera disponible"
+
+| Région | Sélectionné |
+|--------|-------------|
+| GRA - Gravelines | ✅ |
+| SBG - Strasbourg | ✅ |
+| BHS - Beauharnois | ⬜ |
+| WAW - Varsovie | ⬜ |
+| UK - Londres | ⬜ |
+| DE - Francfort | ⬜ |
+
+### Configuration du sous-réseau
+- **CIDR** : 10.0.0.0/16
+- **Gateway IP** : 10.0.0.1 (optionnel)
+
+### DHCP
+- ✅ **Activer le DHCP**
+- Helper : "Attribution automatique des adresses IP aux instances"
+
+## 6. BANDEAU INFO
+Fond gris : "💡 Le réseau privé est gratuit. Seules les ressources connectées sont facturées."
+
+## 7. BOUTONS
+- Annuler (secondary)
+- Créer (primary)
+
+## 8. APIS & ENDPOINTS
+- POST /cloud/project/{projectId}/network/private
+  - Body: { name, vlanId, regions[], subnet: { cidr, gateway, dhcp } }
+  - Crée le réseau privé
+- GET /cloud/project/{projectId}/region
+  - Liste des régions disponibles

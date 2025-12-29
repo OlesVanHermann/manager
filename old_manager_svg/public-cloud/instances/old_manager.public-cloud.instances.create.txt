@@ -1,0 +1,89 @@
+# Cahier des Charges : public-cloud/instances - Créer une Instance
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Wizard de création d'instance
+- **Type** : Formulaire multi-étapes
+- **Objectif** : Créer une nouvelle instance compute
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud avec navigation
+- Sidebar avec menu (Instances actif)
+- Breadcrumb : Mon Projet / Instances / Créer une instance
+- Lien retour "← Retour"
+- Titre "Créer une instance"
+- 4 étapes numérotées
+- Résumé avec estimation de prix
+- Bouton de création
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsLink** : Retour
+- **OdsCard** : Cartes de sélection (régions, images, flavors)
+- **OdsTabs** : Onglets OS (Linux, Windows, Applications)
+- **OdsInput** : Nom de l'instance
+- **OdsSelect** : Clé SSH
+- **OdsRadio** : Facturation (Horaire/Mensuel)
+- **OdsButton** : Créer l'instance
+
+## 4. TITRE
+"Créer une instance"
+
+## 5. ÉTAPES DU WIZARD
+
+### Étape 1 : Sélectionner une localisation
+Chips de régions sélectionnables :
+- 🇫🇷 GRA (sélectionné)
+- 🇫🇷 SBG
+- 🇩🇪 DE
+- 🇬🇧 UK
+- 🇵🇱 WAW
+
+### Étape 2 : Sélectionner une image
+Onglets : Linux | Windows | Applications
+
+**Linux (actif) :**
+| Image | Version |
+|-------|---------|
+| Ubuntu (sélectionné) | 24.04 LTS |
+| Debian | 12 |
+| CentOS | Stream 9 |
+| Rocky Linux | 9 |
+
+### Étape 3 : Sélectionner un modèle
+Onglets : General | CPU | RAM | GPU
+
+**General (actif) :**
+| Modèle | vCores | RAM | Stockage | Prix estimé |
+|--------|--------|-----|----------|-------------|
+| b2-7 | 2 | 7 Go | 50 Go SSD | ~18 €/mois |
+| b2-15 (sélectionné) | 4 | 15 Go | 100 Go SSD | ~35 €/mois |
+| b2-30 | 8 | 30 Go | 200 Go SSD | ~70 €/mois |
+
+### Étape 4 : Configurer votre instance
+| Champ | Type | Valeur exemple |
+|-------|------|----------------|
+| Nom de l'instance | Input | my-instance-01 |
+| Clé SSH | Select | my-ssh-key |
+| Facturation | Radio | Horaire (sélectionné) / Mensuel |
+
+## 6. RÉSUMÉ
+- Fond gris (#F3F4F6)
+- Estimation : **0,049 €/heure** (~35 €/mois)
+- Détails : Ubuntu 24.04 LTS • b2-15 • GRA11
+
+## 7. BOUTONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Créer l'instance | Primary bleu | POST création |
+
+## 8. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/region
+  - Régions disponibles
+- GET /cloud/project/{projectId}/image
+  - Images disponibles
+- GET /cloud/project/{projectId}/flavor
+  - Flavors disponibles
+- GET /cloud/project/{projectId}/sshkey
+  - Clés SSH
+- POST /cloud/project/{projectId}/instance
+  - Body: { name, region, flavorId, imageId, sshKeyId, monthlyBilling }

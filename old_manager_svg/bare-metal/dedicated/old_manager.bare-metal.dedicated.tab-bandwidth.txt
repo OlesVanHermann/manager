@@ -1,0 +1,69 @@
+# Cahier des Charges : bare-metal/dedicated - Onglet Bande Passante
+
+## 1. VUE D'ENSEMBLE
+- **Onglet** : Bande passante
+- **Type** : Page statistiques avec graphique
+- **Objectif** : Visualiser le trafic réseau du serveur
+
+## 2. STRUCTURE PAGE
+- Titre + sélecteur de période
+- 4 cartes statistiques
+- Graphique trafic réseau
+- Cartes interfaces réseau
+
+## 3. COMPOSANTS UI
+- **OdsButton** : Sélecteur période (24h, 7j, 30j)
+- **OdsCard** : Statistiques (4)
+- **OdsChart** : Graphique ligne avec zones
+- **OdsBadge** : État (Illimité, Up)
+- **OdsProgressBar** : Usage bande passante
+
+## 4. SÉLECTEUR PÉRIODE
+| Période | État |
+|---------|------|
+| 24h | ✅ Actif |
+| 7j | - |
+| 30j | - |
+
+## 5. CARTES STATISTIQUES
+| Métrique | Valeur | Couleur |
+|----------|--------|---------|
+| Trafic entrant (24h) | 1.24 To | Bleu |
+| Trafic sortant (24h) | 856 Go | Vert |
+| Débit actuel | 456 Mb/s | Noir |
+| Limite mensuelle | 12.4 To / ∞ | Bleu + Badge Illimité |
+
+## 6. GRAPHIQUE TRAFIC
+- **Titre** : "Trafic réseau (24 dernières heures)"
+- **Type** : Line chart avec area
+- **Axe Y** : 0 à 1 Gb/s
+- **Axe X** : 00:00 à 00:00 (24h)
+- **Séries** :
+  - Entrant (bleu)
+  - Sortant (vert)
+
+## 7. CARTES INTERFACES RÉSEAU
+### eth0 (Public)
+| Champ | Valeur |
+|-------|--------|
+| État | Up ✅ |
+| Entrant | 324 Mb/s |
+| Sortant | 132 Mb/s |
+| Total mois | 1.8 To |
+
+### eth1 (vRack)
+| Champ | Valeur |
+|-------|--------|
+| État | Up ✅ |
+| Entrant | 89 Mb/s |
+| Sortant | 156 Mb/s |
+| Total mois | 856 Go |
+
+## 8. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/statistics
+  - Params: period (day, week, month)
+  - Statistiques de trafic
+- GET /dedicated/server/{serviceName}/bandwidth
+  - Informations bande passante
+- GET /dedicated/server/{serviceName}/networkInterfaceController
+  - Liste des interfaces réseau

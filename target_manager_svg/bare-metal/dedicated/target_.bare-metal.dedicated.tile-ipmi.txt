@@ -1,0 +1,76 @@
+# Cahier des Charges : bare-metal/dedicated - Tile IPMI
+
+## 1. VUE D'ENSEMBLE
+- **Onglet** : IPMI (tile view)
+- **Type** : Page avec tiles de sélection
+- **Objectif** : Choisir et lancer l'accès IPMI
+
+## 2. STRUCTURE PAGE
+- Onglets navigation
+- Titre
+- Bannière info
+- Carte État IPMI
+- Tiles sélection type d'accès (2)
+- Sélecteur durée session
+- Boutons action
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation
+- **OdsMessage** : Info (fond bleu)
+- **OdsCard** : État IPMI
+- **OdsTile** : Types d'accès (2)
+- **OdsRadio** : Sélection type
+- **OdsBadge** : États (Disponible, Recommandé)
+- **OdsSelect** : Durée session
+- **OdsButton** : Démarrer KVM (primary), Tester connexion (outline)
+
+## 4. BANNIÈRE INFO
+Fond bleu clair :
+- "ℹ️ L'IPMI permet d'accéder à la console de votre serveur indépendamment de l'OS."
+- "Idéal pour le dépannage ou la réinstallation système."
+
+## 5. CARTE ÉTAT IPMI
+| Champ | Valeur |
+|-------|--------|
+| État | Disponible ✅ |
+| Dernière connexion | 10 janvier 2024 à 14:32 |
+| Type | iLO 5 (HPE) |
+
+## 6. TILES TYPE D'ACCÈS
+### KVM over IP (sélectionné)
+| Élément | Valeur |
+|---------|--------|
+| Icône | 🖥️ |
+| Titre | KVM over IP |
+| Description 1 | Console graphique complète |
+| Description 2 | via Java ou HTML5 |
+| Badge | Recommandé ✅ |
+| État | Sélectionné (bordure bleue) |
+
+### Serial over LAN
+| Élément | Valeur |
+|---------|--------|
+| Icône | 📟 |
+| Titre | Serial over LAN |
+| Description 1 | Console série via SSH |
+| Description 2 | Pour environnements texte |
+| État | Non sélectionné |
+
+## 7. DURÉE SESSION
+- **Label** : "Durée de la session"
+- **Select** : 15 minutes ▼
+
+## 8. BOUTONS
+| Bouton | Style |
+|--------|-------|
+| Démarrer KVM | Primary |
+| Tester la connexion | Outline |
+
+## 9. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/features/ipmi
+  - État IPMI
+- POST /dedicated/server/{serviceName}/features/ipmi/access
+  - Body: { type: "kvmoverip", ttl }
+  - Génère accès KVM
+- GET /dedicated/server/{serviceName}/features/ipmi/test
+  - Test connexion IPMI

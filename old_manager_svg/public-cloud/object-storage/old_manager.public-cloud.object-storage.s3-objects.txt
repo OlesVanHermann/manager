@@ -1,0 +1,96 @@
+# Cahier des Charges : public-cloud/object-storage - Objets S3
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Liste des objets d'un conteneur S3
+- **Type** : Explorateur de fichiers avec navigation
+- **Objectif** : Parcourir et gérer les objets d'un bucket S3
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (Object Storage actif)
+- Breadcrumb
+- Header conteneur (nom, badge S3)
+- Onglets (Dashboard, Objets actif, Réplication)
+- Barre de chemin (fil d'ariane dans le bucket)
+- Zone drag & drop
+- Barre de recherche + boutons upload
+- Tableau objets avec checkboxes
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation site
+- **OdsBadge** : S3 (bleu)
+- **OdsTabs** : Dashboard | Objets | Réplication
+- **OdsInput** : Barre de chemin navigable (liens)
+- **OdsFileUpload** : Zone drag & drop
+- **OdsInput** : Recherche
+- **OdsButton** : "Uploader" (primary), "Dossier" (outline)
+- **OdsDatagrid** : Liste objets avec checkboxes
+- **OdsCheckbox** : Sélection multiple
+- **OdsActionMenu** : Actions (⋮)
+
+## 4. HEADER CONTENEUR
+- **Nom** : "backup-prod-2024"
+- **Badge** : S3 (bleu)
+
+## 5. ONGLETS
+| Onglet | Actif |
+|--------|-------|
+| Dashboard | - |
+| Objets | ✅ (souligné bleu) |
+| Réplication | - |
+
+## 6. BARRE DE CHEMIN
+Navigation : `backup-prod-2024` / `2024` / `december`
+- Chaque segment est cliquable (lien)
+
+## 7. ZONE DRAG & DROP
+- Bordure pointillée
+- Texte : "Glissez-déposez vos fichiers ici"
+- Sous-texte : "ou cliquez sur Uploader"
+
+## 8. BARRE D'ACTIONS
+- **Recherche** : "Rechercher un objet..." (300px)
+- **Boutons** :
+  - "Uploader" (primary)
+  - "Dossier" (outline) - créer dossier
+
+## 9. TABLEAU OBJETS
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| ☐ | Checkbox sélection |
+| NOM | Icône + nom (lien) |
+| TAILLE | Taille fichier |
+| CLASSE | Classe de stockage |
+| DERNIÈRE MODIF. | Date/heure |
+| ACTIONS | Menu ⋮ |
+
+### Données exemple
+| Nom | Taille | Classe | Dernière modif. |
+|-----|--------|--------|-----------------|
+| 📁 logs/ | — | — | — |
+| 📄 backup-db-20241227.sql.gz | 2.4 Go | Standard | 27 déc. 2024, 03:00 |
+| 📄 backup-files-20241227.tar.gz | 15.8 Go | Standard | 27 déc. 2024, 04:30 |
+| 📄 config-snapshot.json | 45 Ko | Standard | 26 déc. 2024, 18:15 |
+
+## 10. ACTION MENU
+Options (menu ouvert) :
+- Télécharger
+- ---
+- Copier l'URL
+- Voir les versions
+- Changer classe
+- Restaurer (Glacier)
+- ---
+- Supprimer (rouge)
+
+## 11. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/storage/{containerId}/object?prefix={path}
+  - Liste des objets avec préfixe
+- PUT /cloud/project/{projectId}/storage/{containerId}/object
+  - Upload objet
+- DELETE /cloud/project/{projectId}/storage/{containerId}/object/{objectKey}
+  - Supprime objet
+- GET /cloud/project/{projectId}/storage/{containerId}/object/{objectKey}/presigned
+  - URL pré-signée pour téléchargement

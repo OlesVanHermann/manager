@@ -1,0 +1,78 @@
+# Cahier des Charges : bare-metal/dedicated - Onglet Réseau
+
+## 1. VUE D'ENSEMBLE
+- **Onglet** : Réseau
+- **Type** : Page complète réseau
+- **Objectif** : Gérer la configuration réseau du serveur
+
+## 2. STRUCTURE PAGE
+- Breadcrumb + titre
+- Onglets navigation
+- Carte Interfaces réseau
+- Carte Adresses IP
+- Carte vRack
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation
+- **OdsCard** : Sections (3)
+- **OdsDatagrid** : Tableaux (interfaces, IPs)
+- **OdsBadge** : États (Actif)
+- **OdsButton** : Commander IP (primary), Configurer vRack, Retirer du vRack
+- **OdsActionMenu** : Actions par IP
+
+## 4. CARTE INTERFACES RÉSEAU
+### Colonnes
+| Colonne | Largeur |
+|---------|---------|
+| Interface | 130px |
+| MAC | 200px |
+| Vitesse | 150px |
+| Type | 150px |
+| État | 100px |
+| vRack | 150px |
+
+### Données exemple
+| Interface | MAC | Vitesse | Type | État | vRack |
+|-----------|-----|---------|------|------|-------|
+| eth0 | 00:11:22:33:44:55 | 1 Gbps | Public | Actif ✅ | - |
+| eth1 | 00:11:22:33:44:56 | 1 Gbps | vRack | Actif ✅ | pn-12345 |
+| eth2 | 00:11:22:33:44:57 | 10 Gbps | vRack (LACP) | Actif ✅ | pn-12345 |
+
+## 5. CARTE ADRESSES IP
+### Bouton
+- "Commander IP" (primary)
+
+### Colonnes
+| Colonne | Largeur |
+|---------|---------|
+| Adresse IP | 230px |
+| Type | 150px |
+| Reverse DNS | 300px |
+| MAC virtuelle | 200px |
+| Actions | 100px |
+
+### Données exemple
+| Adresse IP | Type | Reverse DNS | MAC virtuelle |
+|------------|------|-------------|---------------|
+| 192.168.1.100 | Principale | ns1234567.ip-192-168-1.eu | - |
+| 192.168.1.101 | IP Failover | web1.example.com | 02:00:00:xx:xx:01 |
+| 192.168.1.102 | IP Failover | web2.example.com | 02:00:00:xx:xx:02 |
+| 2001:41d0:xxx::1/64 | IPv6 | - | - |
+
+## 6. CARTE VRACK
+| Champ | Valeur | Action |
+|-------|--------|--------|
+| vRack actuel | pn-12345 (lien) | - |
+| VLAN ID | 100 | - |
+| - | - | Bouton "Configurer vRack" |
+| - | - | Bouton "Retirer du vRack" |
+
+## 7. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/networkInterfaceController
+  - Liste des interfaces
+- GET /ip?type=dedicated&serviceName={serviceName}
+  - Liste des IPs associées
+- GET /vrack/{serviceName}/dedicatedServer
+  - Serveurs dans le vRack
+- POST /ip/{ip}/move
+  - Déplace une IP failover

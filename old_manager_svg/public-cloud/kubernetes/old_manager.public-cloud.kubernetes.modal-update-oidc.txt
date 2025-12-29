@@ -1,0 +1,70 @@
+# Cahier des Charges : public-cloud/kubernetes - Modal Modifier OIDC
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Configurer le fournisseur OIDC
+- **Type** : Modal formulaire (édition)
+- **Objectif** : Modifier la configuration OIDC existante
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Conteneur blanc 700x820px avec barre bleue gauche
+- Icône 🔐 + titre + bouton fermer
+- Description
+- Section Paramètres requis
+- Accordéon Paramètres optionnels (expanded)
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur avec accent bleu
+- **OdsIcon** : Cadenas (🔐)
+- **OdsText** : Labels et descriptions
+- **OdsInput** : Tous les champs de saisie
+- **OdsTextarea** : CA Content
+- **OdsSelect** : Signing Algorithms
+- **OdsAccordion** : Paramètres optionnels
+- **OdsButton** : Annuler, Valider
+
+## 4. HEADER
+- Icône cadenas dans cercle bleu clair
+- Titre : "Configurer le fournisseur OIDC"
+- Bouton fermer (×)
+
+## 5. DESCRIPTION
+"Configurez l'authentification OIDC pour votre cluster Kubernetes."
+
+## 6. SECTION PARAMÈTRES REQUIS
+- **Titre** : "Paramètres requis"
+
+| Champ | Type | Placeholder | Required |
+|-------|------|-------------|----------|
+| URL de l'émetteur (Issuer URL) | Input | https://accounts.google.com | * |
+| Client ID | Input | my-kubernetes-app.apps.googleusercontent.com | * |
+
+## 7. ACCORDÉON PARAMÈTRES OPTIONNELS
+- Fond gris (#F3F4F6)
+- Titre : "Paramètres optionnels"
+- État : Expanded (▼)
+
+## 8. CHAMPS OPTIONNELS
+
+| Champ | Type | Placeholder | Position |
+|-------|------|-------------|----------|
+| Username Claim | Input | email | Gauche (320px) |
+| Username Prefix | Input | oidc: | Droite (320px) |
+| Groups Claim | Input | groups | Gauche (320px) |
+| Groups Prefix | Input | oidc: | Droite (320px) |
+| Signing Algorithms | Select | RS256 | Gauche (320px) |
+| CA Content | Textarea | Contenu du certificat CA en base64... | Full width (650px) |
+
+## 9. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline gris | Gauche | Fermer modal |
+| Valider | Primary bleu | Droite | PUT OIDC config |
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/kube/{kubeId}/openIdConnect
+  - Récupérer config OIDC actuelle
+- PUT /cloud/project/{projectId}/kube/{kubeId}/openIdConnect
+  - Body: { issuerUrl, clientId, usernameClaim?, usernamePrefix?, groupsClaim?, groupsPrefix?, signingAlgorithms?, caContent? }
+  - Modifier configuration OIDC

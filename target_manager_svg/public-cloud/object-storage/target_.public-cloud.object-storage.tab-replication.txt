@@ -1,0 +1,91 @@
+# Cahier des Charges : public-cloud/object-storage - Onglet Réplication
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Conteneur S3 - Onglet Réplication
+- **Type** : Page liste des règles de réplication
+- **Objectif** : Gérer la réplication cross-région
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (Object Storage actif)
+- Breadcrumb
+- Header conteneur (nom, badge S3)
+- Onglets (Dashboard, Objets, Réplication actif)
+- Titre section + lien doc + bouton ajouter
+- Tableau règles de réplication
+- Bandeau info
+- Compteur règles
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsBadge** : S3 (bleu)
+- **OdsTabs** : Dashboard | Objets | Réplication
+- **OdsLink** : "En savoir plus"
+- **OdsButton** : "+ Ajouter une règle de réplication" (primary)
+- **OdsDatagrid** : Liste règles
+- **OdsBadge** : Statuts (Activé vert, Désactivé jaune)
+- **OdsActionMenu** : Actions (⋮)
+- **OdsMessage** : Bandeau info (fond bleu clair)
+
+## 4. HEADER CONTENEUR
+- **Nom** : "backup-prod-2024"
+- **Badge** : S3 (bleu)
+
+## 5. ONGLETS
+| Onglet | Actif |
+|--------|-------|
+| Dashboard | - |
+| Objets | - |
+| Réplication | ✅ (souligné bleu) |
+
+## 6. HEADER SECTION
+- **Titre** : "Réplication"
+- **Lien** : "En savoir plus"
+- **Action** : "+ Ajouter une règle de réplication" (primary, 250px)
+
+## 7. TABLEAU RÈGLES
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| NOM | Identifiant règle |
+| DESTINATION | Lien vers conteneur |
+| RÉGION | Code région destination |
+| CLASSE | Classe de stockage |
+| PRIORITÉ | Valeur numérique |
+| STATUT | Badge couleur |
+| ACTIONS | Menu ⋮ |
+
+### Données exemple
+| Nom | Destination | Région | Classe | Priorité | Statut |
+|-----|-------------|--------|--------|----------|--------|
+| replication-dr-sbg | backup-dr-sbg | SBG | Standard IA | 100 | Activé (vert) |
+| archive-cold-de | archive-de-cold | DE | Standard IA | 50 | Désactivé (jaune) |
+| sync-uk-production | backup-uk-mirror | UK | Standard | 75 | Activé (vert) |
+
+## 8. ACTION MENU
+Options (menu ouvert) :
+- Modifier
+- Activer
+- ---
+- Supprimer (rouge)
+
+## 9. BANDEAU INFO
+Fond bleu clair avec bordure :
+"La réplication asynchrone permet de copier automatiquement vos objets vers un autre conteneur.
+Le conteneur de destination doit avoir le versioning activé."
+
+## 10. COMPTEUR
+"3 règles de réplication configurées"
+
+## 11. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/storage/{containerId}/replication
+  - Liste des règles de réplication
+- POST /cloud/project/{projectId}/storage/{containerId}/replication
+  - Crée une règle
+- PUT /cloud/project/{projectId}/storage/{containerId}/replication/{ruleId}
+  - Modifie une règle
+- PUT /cloud/project/{projectId}/storage/{containerId}/replication/{ruleId}/status
+  - Active/désactive une règle
+- DELETE /cloud/project/{projectId}/storage/{containerId}/replication/{ruleId}
+  - Supprime une règle

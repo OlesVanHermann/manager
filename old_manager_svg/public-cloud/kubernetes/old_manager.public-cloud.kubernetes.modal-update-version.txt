@@ -1,0 +1,67 @@
+# Cahier des Charges : public-cloud/kubernetes - Modal Mise à Jour Version
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Passer à la version mineure suivante de Kubernetes
+- **Type** : Modal warning avec confirmation
+- **Objectif** : Mettre à jour la version Kubernetes du cluster
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Conteneur blanc 800x700px
+- Header jaune (warning)
+- Titre warning + bouton fermer
+- Paragraphes explicatifs détaillés
+- Banner warning (indisponibilité rolling upgrade)
+- Sélecteur version cible
+- Info version actuelle
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur large
+- **OdsText** : Paragraphes explicatifs
+- **OdsMessage** : Warning (jaune)
+- **OdsBadge** : Version cible (#E8F0FE)
+- **OdsButton** : Annuler, Confirmer
+
+## 4. HEADER WARNING
+- Fond jaune (#FEF3C7)
+- Bordure orange (#F59E0B)
+- Titre orange : "Passer à la version mineure suivante de Kubernetes"
+
+## 5. DESCRIPTION DÉTAILLÉE
+Paragraphe 1 :
+"Avec cette fonctionnalité, vous pouvez faire évoluer votre cluster d'une version mineure à la suivante (**1.28** vers **1.29**). Avant de lancer cette action, nous vous invitons à sauvegarder la configuration de votre cluster et à vérifier que vos outils de travail sont compatibles."
+
+Paragraphe 2 :
+"Assurez-vous également que votre cluster comporte suffisamment de nœuds de travail pour permettre un rolling upgrade. **Une fois la mise à jour effectuée, vous ne pourrez pas revenir à la version antérieure.**" (rouge)
+
+Paragraphe 3 :
+"Afin de minimiser le temps d'indisponibilité de vos pods et de l'ensemble de votre service, nous allons évacuer (*drain*) chacun de vos nœuds en ne passant au suivant que quand l'actuel est fonctionnel (état « Ready »). Vos composants admin et votre API Server seront également mis à jour."
+
+Paragraphe 4 :
+"Cette opération prend généralement quelques dizaines de minutes en fonction du type et de la taille du cluster que vous possédez."
+
+## 6. BANNER WARNING
+- Fond jaune (#FEF3C7)
+- Bordure orange (#F59E0B)
+- "⚠ La mise à jour entrainera possiblement une indisponibilité de l'ordre d'une à deux minutes pour chacun de vos nœuds (rolling upgrade with node drain)."
+
+## 7. SÉLECTION VERSION
+- Label : "Passer à la Version :"
+- Badge : **1.29** (fond bleu clair, bordure bleue)
+
+## 8. VERSION ACTUELLE
+"Version actuelle : **1.28.5**"
+
+## 9. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline gris | Gauche | Fermer modal |
+| Confirmer | Primary bleu | Droite | POST update version |
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/kube/capabilities
+  - Versions disponibles
+- POST /cloud/project/{projectId}/kube/{kubeId}/update
+  - Body: { version }
+  - Lancer la mise à jour

@@ -1,0 +1,69 @@
+# Cahier des Charges : public-cloud/instances - Page Éditer Instance
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Éditer l'instance (plein écran)
+- **Type** : Page formulaire d'édition
+- **Objectif** : Renommer et/ou redimensionner une instance
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar avec menu (Instances actif)
+- Breadcrumb : Mon Projet / Instances / {nom} / Éditer
+- Lien retour
+- Titre "Éditer l'instance"
+- Card instance actuelle
+- Section renommer
+- Section redimensionner (cartes de flavors)
+- Boutons action
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsLink** : Retour
+- **OdsCard** : Info instance actuelle (gris)
+- **OdsInput** : Nouveau nom
+- **OdsCard** : Cartes de sélection flavor
+- **OdsBadge** : "(actuel)" sur flavor actif
+- **OdsButton** : Annuler, Enregistrer
+
+## 4. TITRE
+"Éditer l'instance"
+
+## 5. CARD INSTANCE ACTUELLE
+- Fond gris (#F3F4F6)
+- Label : "Instance actuelle"
+- Valeur : **my-instance-01** • b2-15 • GRA11 • Ubuntu 24.04
+
+## 6. SECTION RENOMMER
+- Titre : "Renommer l'instance"
+- Description : "Modifiez le nom de votre instance"
+- Champ : "Nouveau nom" → Input avec valeur "my-instance-01-updated"
+
+## 7. SECTION REDIMENSIONNER
+- Titre : "Redimensionner l'instance"
+- Description : "Changez le modèle de votre instance (nécessite un redémarrage)"
+
+### Cartes de flavors
+| Flavor | vCores | RAM | Prix | État |
+|--------|--------|-----|------|------|
+| b2-7 | 2 | 7 Go | ~18 €/mois | - |
+| b2-15 | 4 | 15 Go | ~35 €/mois | (actuel) sélectionné |
+| b2-30 | 8 | 30 Go | ~70 €/mois | - |
+| b2-60 | 16 | 60 Go | ~140 €/mois | - |
+
+## 8. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline gris | Gauche | Retour liste |
+| Enregistrer | Primary bleu | Droite | PUT update |
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/instance/{instanceId}
+  - Détails instance actuelle
+- GET /cloud/project/{projectId}/flavor
+  - Liste des flavors disponibles
+- PUT /cloud/project/{projectId}/instance/{instanceId}
+  - Body: { instanceName }
+  - Renommer l'instance
+- PUT /cloud/project/{projectId}/instance/{instanceId}/resize
+  - Body: { flavorId }
+  - Redimensionner (nécessite reboot)

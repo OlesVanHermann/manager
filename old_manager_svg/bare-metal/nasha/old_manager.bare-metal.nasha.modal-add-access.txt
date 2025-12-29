@@ -1,0 +1,76 @@
+# Cahier des Charges : bare-metal/nasha - Modal ajout accès
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Ajouter un nouvel accès
+- **Type** : Formulaire création
+- **Objectif** : Autoriser une IP à accéder à la partition
+
+## 2. STRUCTURE MODAL
+- Header avec titre + bouton fermer
+- Formulaire 4 champs
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur
+- **OdsInput** : IP, description
+- **OdsRadio** : Type d'accès
+- **OdsCheckbox** : Option AES
+- **OdsButton** : Annuler (outline), Ajouter l'accès (primary)
+
+## 4. CHAMPS FORMULAIRE
+
+### Adresse IP ou bloc IP
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Adresse IP ou bloc IP * |
+| Aide | Entrez une IP unique (ex: 10.0.0.1) ou un bloc CIDR (ex: 10.0.0.0/24) |
+| Placeholder | Entrez l'adresse IP... |
+| Requis | Oui |
+
+### Type d'accès
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Type d'accès * |
+| Type | Radio |
+| Options | Lecture seule, Lecture écriture |
+| Par défaut | Lecture écriture |
+
+### Option Lecture seule
+| Champ | Valeur |
+|-------|--------|
+| Label | Lecture seule |
+| Description | L'IP peut uniquement lire les fichiers. |
+
+### Option Lecture écriture
+| Champ | Valeur |
+|-------|--------|
+| Label | Lecture écriture |
+| Description | L'IP peut lire et modifier les fichiers. |
+
+### Description
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Description (optionnelle) |
+| Aide | Pour identifier facilement cet accès. |
+| Placeholder | Ex: Serveur web principal |
+| Requis | Non |
+
+### Chiffrement AES (CIFS)
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Activer le chiffrement AES |
+| Type | Checkbox |
+| Contexte | Options CIFS (si applicable) |
+
+## 5. BOUTONS
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Outline | Gauche |
+| Ajouter l'accès | Primary | Droite |
+
+## 6. APIS & ENDPOINTS
+- POST /dedicated/nasha/{serviceName}/partition/{partitionName}/access
+  - ip: string (IP ou CIDR)
+  - type: enum (readonly, readwrite)
+  - description: string (optionnel)
+  - aesEncryption: boolean (CIFS)

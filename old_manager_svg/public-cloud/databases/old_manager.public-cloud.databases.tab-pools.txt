@@ -1,0 +1,76 @@
+# Cahier des Charges : public-cloud/databases - Onglet Pools
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Databases - Onglet Pools (Connection Pooling)
+- **Type** : Page onglet listing
+- **Objectif** : Gérer les pools de connexions PostgreSQL
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec Databases actif
+- Breadcrumb avec "Pools"
+- Onglets (Pools actif)
+- Titre "Pools"
+- Description
+- Bouton ajouter pool
+- Tableau des pools
+- ActionMenu ouvert
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsTabs** : Onglets avec Pools actif
+- **OdsButton** : "+ Ajouter un Pool" (outline)
+- **OdsTable** : Liste des pools
+- **OdsActionMenu** : Actions par pool
+
+## 4. TITRE
+"Pools"
+
+## 5. DESCRIPTION
+"Les pools de connexions permettent de gérer efficacement un grand nombre de connexions client PostgreSQL sans sacrifier les performances globales."
+
+## 6. ONGLETS
+| Onglet | État |
+|--------|------|
+| Informations générales | Inactif |
+| Utilisateurs | Inactif |
+| Bases de données | Inactif |
+| Pools | Actif (souligné bleu) |
+| Logs | Inactif |
+| Métriques | Inactif |
+| Paramètres | Inactif |
+
+## 7. TABLEAU POOLS
+### Colonnes
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom | Texte | Nom du pool |
+| Base de données | Texte | DB cible |
+| Mode | Texte | transaction, session, statement |
+| Taille | Nombre | Nombre de connexions max |
+| Nom d'utilisateur | Texte | User associé |
+| Actions | Menu ⋮ | ActionMenu |
+
+### Données exemple
+| Nom | Base | Mode | Taille | User |
+|-----|------|------|--------|------|
+| pool-app-prod | app_production | transaction | 25 | admin |
+| pool-readonly | app_production | session | 10 | readonly_user |
+
+## 8. ACTION MENU (ouvert)
+| Action | Type |
+|--------|------|
+| Informations | Standard |
+| Modifier | Standard |
+| Supprimer | Danger (rouge) |
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/database/postgresql/{serviceId}/connectionPool
+  - Liste des pools
+- POST /cloud/project/{projectId}/database/postgresql/{serviceId}/connectionPool
+  - Body: { name, databaseId, mode, size, userId }
+  - Créer un pool
+- PUT /cloud/project/{projectId}/database/postgresql/{serviceId}/connectionPool/{poolId}
+  - Modifier un pool
+- DELETE /cloud/project/{projectId}/database/postgresql/{serviceId}/connectionPool/{poolId}
+  - Supprimer un pool

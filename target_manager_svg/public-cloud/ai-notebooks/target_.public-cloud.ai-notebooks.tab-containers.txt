@@ -1,0 +1,82 @@
+# Cahier des Charges : public-cloud/ai-notebooks - Onglet Conteneurs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Détail notebook - Onglet Conteneurs
+- **Type** : Page détail avec tableau
+- **Objectif** : Gérer les volumes S3 attachés au notebook
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec AI Notebooks actif
+- Breadcrumb
+- En-tête: Nom + badge statut
+- Onglets (Conteneurs actif avec compteur)
+- Carte avec tableau des volumes
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsBadge** : Statut Running (vert)
+- **OdsTabs** : 5 onglets
+- **OdsCard** : Conteneur du tableau
+- **OdsButton** : Ajouter volume (primaire)
+- **OdsTable** : Liste des volumes
+- **OdsBadge** : Permission (RW), Cache (Actif/Off)
+- **OdsActionMenu** : Actions par ligne
+
+## 4. TITRE
+"{notebook-name}" + Badge "Running"
+
+## 5. ONGLETS
+| Onglet | Badge | État |
+|--------|-------|------|
+| Dashboard | - | Inactif |
+| Conteneurs | 2 | Actif (fond bleu) |
+| Dépôts Git | - | Inactif |
+| Backups | - | Inactif |
+| Logs | - | Inactif |
+
+## 6. SECTION CONTENEURS
+### En-tête
+- Icône: 📦
+- Titre: "Conteneurs S3 attachés"
+- Description: "Gérez les volumes de données connectés à votre notebook"
+- Bouton: "+ Ajouter volume" (primaire bleu, aligné à droite)
+
+## 7. TABLEAU VOLUMES
+### Colonnes
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Alias | Texte | Nom court du volume |
+| Conteneur | Texte | Nom du bucket S3 |
+| Chemin de montage | Texte mono | Chemin dans le notebook |
+| Permission | Badge | RW (bleu) / RO |
+| Cache | Badge | Actif (vert) / Off (jaune) |
+| Actions | Menu | ActionMenu ⋮ |
+
+### Données exemple
+| Alias | Conteneur | Chemin | Permission | Cache |
+|-------|-----------|--------|------------|-------|
+| my-training-data | training-datasets | /workspace/data | RW | Actif |
+| model-outputs | ml-models | /workspace/models | RW | Off |
+
+## 8. ACTION MENU (par ligne)
+| Action | Description |
+|--------|-------------|
+| Synchroniser | Force la synchronisation du cache |
+| Modifier le cache | Active/désactive le cache |
+| --- | Séparateur |
+| Détacher | Retire le volume (texte rouge) |
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/notebook/{notebookId}
+  - Inclut volumes attachés
+- GET /cloud/project/{projectId}/ai/notebook/{notebookId}/volumes
+- POST /cloud/project/{projectId}/ai/notebook/{notebookId}/volumes
+  - alias: string
+  - container: string
+  - mountPath: string
+  - permission: "RW" | "RO"
+  - cache: boolean
+- POST /cloud/project/{projectId}/ai/notebook/{notebookId}/volumes/{volumeId}/sync
+- PUT /cloud/project/{projectId}/ai/notebook/{notebookId}/volumes/{volumeId}
+- DELETE /cloud/project/{projectId}/ai/notebook/{notebookId}/volumes/{volumeId}

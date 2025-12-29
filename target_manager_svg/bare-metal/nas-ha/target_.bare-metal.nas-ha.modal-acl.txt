@@ -1,0 +1,67 @@
+# Cahier des Charges : bare-metal/nas-ha - Gérer ACL
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Gestion des ACL d'une partition
+- **Type** : Modal formulaire + tableau
+- **Objectif** : Gérer les règles d'accès et utilisateurs CIFS
+
+## 2. STRUCTURE MODAL
+- Header avec titre + partition + bouton fermer
+- Section ajout règle
+- Tableau règles existantes
+- Section utilisateurs CIFS
+- Footer
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Modal large
+- **OdsInput** : IP/réseau, utilisateur, mot de passe
+- **OdsSelect** : Permissions
+- **OdsButton** : Ajouter
+- **OdsDatagrid** : Tableaux règles/users
+- **OdsBadge** : Permissions
+
+## 4. SECTION AJOUTER RÈGLE
+| Champ | Type | Description |
+|-------|------|-------------|
+| IP/Réseau | Input | ex: 192.168.1.0/24 |
+| Permissions | Select | Lecture seule / Lecture-Écriture |
+| Ajouter | Button | Ajoute la règle |
+
+## 5. TABLEAU RÈGLES ACL
+| Colonne | Type | Description |
+|---------|------|-------------|
+| IP / Réseau | Monospace | Adresse ou CIDR |
+| Permissions | Badge | Lecture/Écriture (vert) ou Lecture seule (orange) |
+| Protocole | Text | NFS, CIFS |
+| Actions | Links | Modifier, × Supprimer |
+
+## 6. SECTION UTILISATEURS CIFS
+### Formulaire ajout
+| Champ | Type | Description |
+|-------|------|-------------|
+| Nom utilisateur | Input | Nom CIFS |
+| Mot de passe | Password | Mot de passe |
+| Ajouter user | Button | Ajoute l'utilisateur |
+
+### Tableau utilisateurs
+| Colonne | Description |
+|---------|-------------|
+| Utilisateur | Nom |
+| Créé le | Date création |
+| Actions | Changer MDP, Supprimer |
+
+## 7. BOUTONS
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Enregistrer | Primary | Footer droite |
+
+## 8. APIS & ENDPOINTS
+- GET /dedicated/nasha/{serviceName}/partition/{partitionName}/access
+  - Liste des ACL
+- POST /dedicated/nasha/{serviceName}/partition/{partitionName}/access
+  - Ajouter ACL (ip, type)
+- DELETE /dedicated/nasha/{serviceName}/partition/{partitionName}/access/{ip}
+  - Supprimer ACL
+- POST /dedicated/nasha/{serviceName}/partition/{partitionName}/user
+  - Ajouter utilisateur CIFS
+

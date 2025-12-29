@@ -1,0 +1,62 @@
+# Cahier des Charges : bare-metal/load-balancer - Créer frontend
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Création d'un frontend
+- **Type** : Modal formulaire
+- **Objectif** : Ajouter un point d'entrée au LB
+
+## 2. STRUCTURE MODAL
+- Header avec titre + bouton fermer
+- Formulaire complet
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Modal principale (large)
+- **OdsInput** : Nom, port, IPs
+- **OdsSelect** : Protocole, farm, certificat
+- **OdsCheckbox** : Options SSL
+- **OdsButton** : Annuler, Créer
+
+## 4. CHAMPS FORMULAIRE
+| Champ | Type | Requis | Description |
+|-------|------|--------|-------------|
+| Nom | Input | Oui | Nom du frontend |
+| Port | Input number | Oui | Port d'écoute (443) |
+| Protocole | Select | Oui | HTTP, HTTPS, TCP |
+| Farm par défaut | Select | Oui | Farm destination |
+| Certificat SSL | Select | Si HTTPS | Certificat à utiliser |
+
+## 5. OPTIONS SSL (Checkboxes)
+| Option | Sélection | Description |
+|--------|-----------|-------------|
+| Forcer HTTPS | Coché | Redirection HTTP → HTTPS |
+| Activer HTTP/2 | Coché | Protocole HTTP/2 |
+| Activer HSTS | Non coché | HTTP Strict Transport Security |
+
+## 6. CHAMPS OPTIONNELS
+| Champ | Type | Description |
+|-------|------|-------------|
+| IPs autorisées | Input | Whitelist CIDR |
+| IPs bloquées | Input | Blacklist CIDR |
+
+## 7. HELPER TEXTS
+| Champ | Message |
+|-------|---------|
+| IPs autorisées | Laisser vide pour autoriser toutes les IPs |
+| Format | Format : 192.168.1.0/24, 10.0.0.1 |
+
+## 8. LIENS
+| Lien | Action |
+|------|--------|
+| + Ajouter un nouveau certificat | Ouvre modal import SSL |
+
+## 9. BOUTONS
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Outline | Gauche |
+| Créer | Primary | Droite |
+
+## 10. APIS & ENDPOINTS
+- POST /ipLoadbalancing/{serviceName}/http/frontend
+  - Paramètres : displayName, port, zone, defaultFarmId, ssl, sslId, allowedSource, deniedSource
+

@@ -1,0 +1,76 @@
+# Cahier des Charges : public-cloud/kubernetes - Créer un Cluster
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Wizard création cluster Kubernetes
+- **Type** : Formulaire multi-étapes
+- **Objectif** : Créer un nouveau cluster K8s
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar avec menu
+- Breadcrumb : Mon Projet / Kubernetes / Créer un cluster
+- Lien retour
+- Titre "Créer un cluster Kubernetes"
+- 5 étapes numérotées
+- Bouton de création
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsLink** : Retour
+- **OdsCard** : Cartes sélection (régions, plans, versions, flavors)
+- **OdsRadio** : Sélection plan
+- **OdsInput** : Nom pool, nom cluster
+- **OdsQuantity** : Nombre de nœuds
+- **OdsButton** : Créer un cluster Kubernetes
+
+## 4. TITRE
+"Créer un cluster Kubernetes"
+
+## 5. ÉTAPES DU WIZARD
+
+### Étape 1 : Sélectionnez une localisation
+- Label : "Région 1-AZ" - Déploiement résilient sur 1 zone
+- Cards chips :
+  - 🇫🇷 GRA (sélectionné)
+  - 🇫🇷 SBG
+  - 🇩🇪 DE
+
+### Étape 2 : Sélectionnez un plan
+| Plan | Description | SLA | Prix |
+|------|-------------|-----|------|
+| Free (sélectionné) | Plan de contrôle managé, HA | 99,5% SLO | 0,00 € |
+| Standard | 99,99% SLA, HA 3-AZ, ETCD 8 Go | 99,99% SLA | Bientôt disponible |
+
+### Étape 3 : Sélectionnez la version Kubernetes
+| Version | État |
+|---------|------|
+| 1.28 | - |
+| 1.29 | Sélectionné |
+| 1.30 | - |
+
+### Étape 4 : Configuration du pool de nœuds
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Nom du pool | Input | nodepool-1 |
+| Type de nœud | Cards | b2-7 (2 vCores, 7 Go, ~18€) / b2-15 |
+| Nombre de nœuds | Quantity | 3 |
+
+### Étape 5 : Nommez votre cluster
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Nom | Input | my-kubernetes-cluster |
+
+## 6. BOUTONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Créer un cluster Kubernetes | Primary bleu | POST création |
+
+## 7. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/region
+  - Régions disponibles
+- GET /cloud/project/{projectId}/kube/capabilities
+  - Plans et versions disponibles
+- GET /cloud/project/{projectId}/flavor
+  - Flavors pour les nœuds
+- POST /cloud/project/{projectId}/kube
+  - Body: { name, region, version, nodepool }

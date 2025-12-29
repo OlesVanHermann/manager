@@ -1,0 +1,77 @@
+# Cahier des Charges : public-cloud/object-storage - Versions Objet S3
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Versions d'un objet S3
+- **Type** : Page liste avec historique des versions
+- **Objectif** : Gérer les versions d'un objet spécifique
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (Object Storage actif)
+- Breadcrumb
+- Lien retour aux objets
+- Titre avec nom de l'objet
+- Tableau des versions
+- Compteur versions
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsLink** : "← Retour aux objets"
+- **OdsText** : Titre "Versions de : {nom_objet}"
+- **OdsDatagrid** : Liste des versions
+- **OdsBadge** : Statuts (Actuelle - vert, Delete Marker - rouge)
+- **OdsActionMenu** : Actions (⋮)
+- **OdsText** : Code monospace pour Version ID
+
+## 4. NAVIGATION RETOUR
+- **Lien** : "← Retour aux objets" (vers liste objets)
+
+## 5. HEADER
+- **Titre** : "Versions de : config-snapshot.json"
+
+## 6. TABLEAU VERSIONS
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| VERSION ID | ID tronqué (monospace) |
+| TAILLE | Taille en Ko/Mo |
+| DERNIÈRE MODIF. | Date et heure |
+| STATUT | Badge statut |
+| ACTIONS | Menu ⋮ |
+
+### Données exemple
+| Version ID | Taille | Dernière modif. | Statut |
+|------------|--------|-----------------|--------|
+| abc123def456... | 45 Ko | 27 déc. 2024, 18:15 | Actuelle (vert) |
+| xyz789ghi012... | 42 Ko | 26 déc. 2024, 14:30 | Ancienne |
+| mno345pqr678... | 38 Ko | 25 déc. 2024, 09:00 | Ancienne |
+| stu901vwx234... | — | 24 déc. 2024, 12:00 | Delete Marker (rouge) |
+
+### Statuts
+| Statut | Couleur | Description |
+|--------|---------|-------------|
+| Actuelle | Vert | Version courante |
+| Ancienne | Gris | Version précédente |
+| Delete Marker | Rouge | Marqueur de suppression |
+
+## 7. ACTION MENU
+Options (menu ouvert) :
+- Télécharger
+- Restaurer
+- ---
+- Supprimer (rouge)
+
+## 8. COMPTEUR
+"4 versions trouvées"
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/storage/{containerId}/object/{objectKey}/versions
+  - Liste toutes les versions de l'objet
+- GET /cloud/project/{projectId}/storage/{containerId}/object/{objectKey}/version/{versionId}
+  - Télécharge une version spécifique
+- PUT /cloud/project/{projectId}/storage/{containerId}/object/{objectKey}/restore
+  - Body: { versionId }
+  - Restaure une version précédente
+- DELETE /cloud/project/{projectId}/storage/{containerId}/object/{objectKey}/version/{versionId}
+  - Supprime une version

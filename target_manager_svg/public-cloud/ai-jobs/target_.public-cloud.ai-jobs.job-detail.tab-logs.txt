@@ -1,0 +1,88 @@
+# Cahier des Charges : public-cloud/ai-jobs - Onglet Logs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Détail d'un job - Onglet Logs
+- **Type** : Page détail avec console logs
+- **Objectif** : Visualiser les logs d'exécution du job en temps réel
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec AI Training actif
+- Breadcrumb avec lien retour
+- Titre du job + badge statut
+- Onglets (Dashboard, Conteneurs, Dépôts Git, Logs actif)
+- Contrôles (Actualiser, Copier)
+- Terminal de logs
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsLink** : Retour à la liste
+- **OdsBadge** : Statut RUNNING (vert)
+- **OdsTabs** : 4 onglets
+- **OdsButton** : Actualiser (outline), Copier (outline)
+- **OdsCard** : Terminal logs (fond sombre)
+
+## 4. TITRE
+"{jobId}" + Badge RUNNING
+
+## 5. ONGLETS
+| Onglet | État |
+|--------|------|
+| Dashboard | Inactif |
+| Conteneurs | Inactif |
+| Dépôts Git | Inactif |
+| Logs | Actif (souligné bleu) |
+
+## 6. SECTION LOGS
+- Titre: "Logs du job"
+
+### Contrôles
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Actualiser | Outline | Rafraîchit les logs |
+| Copier | Outline | Copie dans le presse-papier |
+
+- Indicateur: "Dernière mise à jour: il y a 5s"
+
+## 7. TERMINAL LOGS
+- Fond sombre (#1F2937)
+- Police monospace
+- Hauteur: ~450px
+- Défilement vertical
+
+### Format des logs
+```
+[TIMESTAMP] LEVEL Message
+```
+
+### Niveaux de log (couleurs)
+| Niveau | Couleur |
+|--------|---------|
+| INFO | Vert (#10B981) |
+| DEBUG | Bleu (#60A5FA) |
+| WARN | Jaune (#FBBF24) |
+| ERROR | Rouge (non visible) |
+
+### Exemple de logs
+```
+[2024-01-15 10:23:45] INFO Starting job job-abc123...
+[2024-01-15 10:23:46] INFO Pulling container image: pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+[2024-01-15 10:23:50] INFO Container image pulled successfully
+[2024-01-15 10:23:51] INFO Mounting volumes...
+[2024-01-15 10:23:52] DEBUG Volume /workspace/data mounted (s3://my-bucket-training)
+[2024-01-15 10:23:53] INFO Starting training script: python train.py
+[2024-01-15 10:23:54] INFO GPU detected: NVIDIA A100 80GB
+[2024-01-15 10:24:00] INFO Dataset loaded: 50000 samples
+[2024-01-15 10:24:01] INFO Epoch 1/10 - Training...
+[2024-01-15 10:25:30] INFO Epoch 1/10 - Loss: 0.8234 - Accuracy: 0.7123
+[2024-01-15 10:27:00] WARN GPU memory usage: 75%
+```
+
+### Curseur clignotant
+- Animation curseur en fin de logs
+
+## 8. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/job/{jobId}/logs
+  - Paramètres: limit, since (timestamp)
+  - Streaming: WebSocket pour temps réel
+- GET /cloud/project/{projectId}/ai/job/{jobId}

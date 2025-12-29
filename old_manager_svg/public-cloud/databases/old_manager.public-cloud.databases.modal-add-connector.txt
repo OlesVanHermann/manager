@@ -1,0 +1,85 @@
+# Cahier des Charges : public-cloud/databases - Modal Ajouter connector (Kafka)
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Ajouter un connector
+- **Type** : Modal formulaire avec éditeur JSON
+- **Objectif** : Créer un nouveau Kafka connector
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Conteneur blanc 650x600px
+- Header avec titre et bouton fermer
+- Sélecteur de type de connector
+- Champ nom
+- Info box bleue
+- Éditeur de code JSON
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur
+- **OdsSelect** : Type de connector
+- **OdsInput** : Nom du connector
+- **OdsMessage** : Info box bleue
+- **OdsCodeEditor** : Éditeur JSON avec coloration syntaxique
+- **OdsButton** : Annuler, Créer
+
+## 4. TITRE
+"Ajouter un connector"
+
+## 5. CHAMPS DU FORMULAIRE
+| Champ | Type | Placeholder | Requis |
+|-------|------|-------------|--------|
+| Connector | Select | io.confluent.connect.jdbc.JdbcSinkConnector | Oui |
+| Nom | Input | Entrez le nom de votre connector | Oui |
+
+### Types de connectors disponibles
+- JdbcSinkConnector (PostgreSQL, MySQL)
+- JdbcSourceConnector
+- ElasticsearchSinkConnector
+- DebeziumMySQLConnector
+- S3SinkConnector
+- etc.
+
+## 6. INFO BOX
+- Fond: Bleu clair (#DBEAFE)
+- Contenu:
+  - "Utilisez l'éditeur ci-dessous pour ajouter la configuration JSON de votre connecteur."
+  - "• Utilisez Ctrl + espace pour afficher les suggestions d'autocomplétion"
+  - "• Survolez les propriétés pour afficher des descriptions détaillées"
+
+## 7. ÉDITEUR JSON
+### Structure
+- Fond: Noir (#1F2937)
+- Numéros de ligne: Gris
+- Coloration syntaxique:
+  - Clés: Bleu (#60A5FA)
+  - Valeurs string: Violet (#A78BFA)
+  - Valeurs booléennes: Vert (#34D399)
+
+### Exemple de configuration
+```json
+{
+  "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+  "topics": "my-topic",
+  "connection.url": "jdbc:postgresql://...",
+  "auto.create": true
+}
+```
+
+## 8. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline | Gauche | Fermer modal |
+| Créer | Primary | Droite | POST connector |
+
+## 9. VALIDATION
+- Nom requis et unique
+- Configuration JSON valide
+- Classe de connector valide
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/database/kafka/{serviceId}/capabilities/connector
+  - Liste des types de connectors disponibles
+- POST /cloud/project/{projectId}/database/kafka/{serviceId}/connector
+  - Body: { name, configuration }
+  - Créer un connector

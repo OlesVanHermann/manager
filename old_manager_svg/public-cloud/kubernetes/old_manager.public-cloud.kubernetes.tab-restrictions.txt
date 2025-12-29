@@ -1,0 +1,56 @@
+# Cahier des Charges : public-cloud/kubernetes - Onglet Restrictions
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Onglet Restrictions API du cluster
+- **Type** : Datagrid éditable
+- **Objectif** : Gérer les restrictions IP d'accès à l'APIServer
+
+## 2. STRUCTURE PAGE
+- Header avec nom cluster et badge READY
+- Onglets : Service, Restrictions (actif), Node pools, Logs
+- Titre section + description
+- Bouton ajout
+- Tableau des IP autorisées avec mode édition
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation onglets
+- **OdsButton** : "+ Ajouter une nouvelle limitation"
+- **OdsDatagrid** : Tableau éditable
+- **OdsInput** : Saisie IP en mode édition
+- **OdsButton** : Valider (✓), Annuler (✕), Éditer (✎), Supprimer (🗑)
+
+## 4. TITRE SECTION
+"Gérer les accès à l'APIServer"
+
+## 5. DESCRIPTION
+"Choisissez les plages IPv4 pouvant accéder à l'APIServer de votre cluster.
+En l'absence d'IP, aucune restriction n'est appliquée."
+
+## 6. BOUTON AJOUT
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Ajouter une nouvelle limitation | Outline bleu | Ajouter ligne édition |
+
+## 7. COLONNES DU TABLEAU
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Clients autorisés | IP (monospace) | Plage CIDR |
+| Actions | Boutons | Éditer, Supprimer |
+
+## 8. DONNÉES EXEMPLE
+| IP | Actions |
+|----|---------|
+| 192.168.1.0/24 | ✎ 🗑 |
+| 10.0.0.0/8 | ✎ 🗑 |
+| 172.16.0.0/16 (en édition) | ✓ ✕ |
+
+## 9. MODE ÉDITION
+- Input avec bordure bleue (#0050D7)
+- Boutons : ✓ (Primary bleu), ✕ (Outline)
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/kube/{kubeId}
+  - Récupérer les restrictions (privateNetworkConfiguration.oidcAdmissionPlugins)
+- PUT /cloud/project/{projectId}/kube/{kubeId}
+  - Body: { customization: { apiServer: { admissionPlugins } } }
+  - Mettre à jour les restrictions

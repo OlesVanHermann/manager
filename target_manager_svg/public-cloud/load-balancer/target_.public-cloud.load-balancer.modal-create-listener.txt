@@ -1,0 +1,72 @@
+# Cahier des Charges : public-cloud/load-balancer - Modal Créer Listener
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Créer un listener
+- **Type** : Modal formulaire avec radio cards
+- **Objectif** : Créer un listener pour le Load Balancer
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Conteneur blanc 700x640px avec barre bleue gauche
+- Icône + titre + bouton fermer
+- Formulaire avec sections
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur avec accent bleu
+- **OdsIcon** : Réseau (📡)
+- **OdsInput** : Nom, Port
+- **OdsRadio** : Protocoles (cards)
+- **OdsSelect** : Pool, Certificat SSL
+- **OdsText** : Labels, helper text
+- **OdsButton** : Annuler, Créer
+
+## 4. HEADER
+- Icône réseau dans cercle bleu clair
+- Titre : "Créer un listener"
+- Bouton fermer (×)
+
+## 5. CHAMPS
+
+### Nom du listener
+| Champ | Type | Placeholder | Required |
+|-------|------|-------------|----------|
+| Nom du listener | Input | https-frontend | * |
+
+### Protocole (Radio cards)
+| Protocole | Sélection |
+|-----------|-----------|
+| HTTP | Non |
+| HTTPS | Sélectionné (bordure bleue) |
+| TCP | Non |
+| UDP | Non |
+
+### Port
+| Champ | Type | Valeur | Helper | Required |
+|-------|------|--------|--------|----------|
+| Port | Input | 443 | Port entre 1 et 65535 | * |
+
+### Pool de destination
+| Champ | Type | Valeur | Helper |
+|-------|------|--------|--------|
+| Pool de destination | Select | backend-web-servers (HTTPS) | Associez un pool compatible avec le protocole sélectionné |
+
+### Certificat SSL/TLS (si HTTPS/TERMINATED_HTTPS)
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Certificat SSL/TLS | Select | wildcard.example.com |
+
+## 6. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline gris | Gauche | Fermer modal |
+| Créer | Primary bleu | Droite | POST listener |
+
+## 7. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/region/{regionName}/loadbalancing/pool
+  - Liste des pools
+- GET /cloud/project/{projectId}/region/{regionName}/loadbalancing/certificate
+  - Liste des certificats
+- POST /cloud/project/{projectId}/region/{regionName}/loadbalancing/listener
+  - Body: { name, protocol, protocolPort, loadbalancerId, defaultPoolId?, certificateId? }
+  - Créer le listener

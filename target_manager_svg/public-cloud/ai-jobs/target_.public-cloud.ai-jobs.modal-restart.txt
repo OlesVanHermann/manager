@@ -1,0 +1,57 @@
+# Cahier des Charges : public-cloud/ai-jobs - Modal Relancer un job
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Relancer un nouveau job identique
+- **Type** : Modal informative avec CLI
+- **Objectif** : Créer un nouveau job avec les mêmes paramètres
+
+## 2. STRUCTURE MODAL
+- Overlay sombre sur la page
+- Modal centrée (600x380)
+- Header avec titre et bouton fermer
+- Icône info
+- Message explicatif
+- Bloc CLI avec commande
+- Boutons Annuler / Relancer
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsText** : Message explicatif
+- **OdsCard** : Bloc CLI (fond sombre)
+- **OdsButton** : Annuler (outline), Relancer (primaire), Copier CLI
+
+## 4. TITRE
+"Relancer un nouveau job"
+
+## 5. CONTENU
+### Icône
+- Cercle bleu avec "i" (info)
+
+### Message
+"Vous pouvez lancer un nouveau job à partir des mêmes paramètres qu'un autre job."
+
+"Voulez-vous relancer un job identique au job **{job-name}** ?"
+
+### Section CLI
+- Titre: "Commande CLI équivalente"
+- Bloc code sombre avec commande:
+```
+ovhai job run pytorch/pytorch:2.1.0-cuda12.1
+  --gpu 1 --volume data-input@s3://my-bucket:/data:RO
+```
+- Bouton copier (icône 📋)
+
+## 6. BOUTONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Outline gris | Ferme la modal |
+| Relancer | Primaire bleu | Crée et lance le nouveau job |
+
+## 7. APIS & ENDPOINTS
+- POST /cloud/project/{projectId}/ai/job
+  - Réutilise les paramètres du job source
+  - name: string (nouveau nom)
+  - image: string (même image)
+  - flavorId: string (même flavor)
+  - volumes: array (mêmes volumes)
+  - env: object (mêmes variables)

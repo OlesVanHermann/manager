@@ -1,0 +1,65 @@
+# Cahier des Charges : public-cloud/kubernetes - Modal Admission Plugins
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Activer/désactiver les plugins
+- **Type** : Modal formulaire avec toggles
+- **Objectif** : Gérer les Admission Plugins du cluster
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Conteneur blanc 700x600px
+- Titre + bouton fermer
+- Banner info bleu (NodeRestriction)
+- Banner warning orange (redéploiement API Server)
+- Liste de plugins avec toggles
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur
+- **OdsMessage** : Info (bleu), Warning (orange)
+- **OdsToggle** : Activer/Désactiver par plugin
+- **OdsText** : Noms des plugins
+- **OdsButton** : Annuler, Enregistrer
+
+## 4. TITRE
+"Activer/désactiver les plugins"
+
+## 5. BANNER INFO
+- Fond bleu clair (#E0F2FE)
+- Bordure bleu (#0284C7)
+- Icône ℹ
+- "Pour des raisons de sécurité, il n'est pas possible de désactiver le plugin Node Restriction."
+
+## 6. BANNER WARNING
+- Fond jaune (#FEF3C7)
+- Bordure orange (#F59E0B)
+- Icône ⚠
+- "Attention: veuillez noter que toute action sur les Admissions Plugins implique un redéploiement de l'API Server de votre cluster."
+
+## 7. LISTE DES PLUGINS
+
+| Plugin | État | Modifiable | Info |
+|--------|------|------------|------|
+| AlwaysPullImages | ON (bleu) | Oui | ⓘ tooltip |
+| NodeRestriction | ON (bleu, opaque) | Non | (Non modifiable) |
+| PodSecurityPolicy | OFF (gris) | Oui | - |
+| ResourceQuota | ON (bleu) | Oui | - |
+| LimitRanger | ON (bleu) | Oui | - |
+
+## 8. TOGGLE STYLES
+- **ON** : Fond bleu (#0050D7), cercle blanc à droite, label "Activer"
+- **OFF** : Fond gris (#D1D5DB), cercle blanc à gauche, label "Désactiver"
+- **Disabled** : Opacity 0.5, non cliquable
+
+## 9. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline gris | Gauche | Fermer modal |
+| Enregistrer | Primary bleu | Droite | PUT admission plugins |
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/kube/{kubeId}/customization
+  - Récupérer les plugins actuels
+- PUT /cloud/project/{projectId}/kube/{kubeId}/customization
+  - Body: { apiServer: { admissionPlugins: { enabled: [...], disabled: [...] } } }
+  - Modifier les admission plugins

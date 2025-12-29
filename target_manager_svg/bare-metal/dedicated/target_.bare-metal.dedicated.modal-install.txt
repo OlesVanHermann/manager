@@ -1,0 +1,71 @@
+# Cahier des Charges : bare-metal/dedicated - Modal Installer OS
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Installer un système d'exploitation
+- **Type** : Modal wizard multi-étapes
+- **Objectif** : Installer ou réinstaller l'OS du serveur
+
+## 2. STRUCTURE MODAL
+- Modal blanche (800x700px)
+- Header avec titre + bouton fermer
+- Indicateur d'étapes (3 étapes)
+- Grille de sélection OS (7 cartes)
+- Recherche OS
+- Warning banner
+- Footer gris avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur
+- **OdsStepper** : 3 étapes (Choix du système, Configuration, Confirmation)
+- **OdsTile** : Cartes OS (7)
+- **OdsInput** : Recherche OS
+- **OdsMessage** : Warning (fond jaune)
+- **OdsButton** : Annuler (outline), Suivant (primary)
+
+## 4. HEADER
+- **Titre** : "Installer un système d'exploitation"
+- **Bouton fermer** : ×
+
+## 5. INDICATEUR D'ÉTAPES
+| Étape | Nom | État |
+|-------|-----|------|
+| 1 | Choix du système | ✅ Active (bleu) |
+| 2 | Configuration | Inactive (gris) |
+| 3 | Confirmation | Inactive (gris) |
+
+## 6. GRILLE OS (2 lignes)
+
+### Ligne 1
+| OS | Version | Architecture |
+|----|---------|--------------|
+| 🐧 Debian | 12 (Bookworm) | 64 bits ✅ Sélectionné |
+| 🟠 Ubuntu | 24.04 LTS | 64 bits |
+| 🔵 Rocky Linux | 9 | 64 bits |
+| 🪟 Windows | Server 2022 | 64 bits - Licence incluse |
+
+### Ligne 2
+| OS | Version | Description |
+|----|---------|-------------|
+| 📦 Proxmox VE | 8.1 | Virtualisation |
+| 🟢 VMware ESXi | 8.0 | Bring your license |
+| ⚙️ Template perso | Votre image | Custom template |
+
+## 7. RECHERCHE
+- **Input** : "🔍 Rechercher un OS..."
+- **Largeur** : 300px
+
+## 8. WARNING BANNER
+Fond jaune avec bordure orange :
+- "⚠ L'installation effacera toutes les données présentes sur les disques du serveur."
+- "Assurez-vous d'avoir effectué une sauvegarde avant de continuer."
+
+## 9. BOUTONS
+- **Annuler** : Outline, ferme la modal
+- **Suivant** : Primary, passe à l'étape 2
+
+## 10. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/install/compatibleTemplates
+  - Liste des OS disponibles pour ce serveur
+- POST /dedicated/server/{serviceName}/install/start
+  - Body: { templateId, hostname, sshKey, partitioning... }
+  - Lance l'installation

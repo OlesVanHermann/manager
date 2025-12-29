@@ -1,0 +1,67 @@
+# Cahier des Charges : public-cloud/kubernetes - Onglet Node Pools
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Onglet Node Pools du cluster
+- **Type** : Datagrid avec ActionMenu
+- **Objectif** : Gérer les pools de nœuds
+
+## 2. STRUCTURE PAGE
+- Header avec nom cluster et badge statut
+- Onglets : Aperçu, Node Pools (actif), Accès APIServer, Logs
+- Bouton création
+- Tableau des node pools
+- ActionMenu ouvert
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation onglets
+- **OdsButton** : "+ Créer un pool de nœuds"
+- **OdsDatagrid** : Tableau des pools
+- **OdsBadge** : Ready (vert), Autoscaling (bleu)
+- **OdsActionMenu** : Actions contextuelles
+
+## 4. ONGLETS
+- Aperçu
+- **Node Pools** (actif, souligné bleu)
+- Accès APIServer
+- Logs
+
+## 5. BOUTON CRÉATION
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Créer un pool de nœuds | Primary bleu | Modal création |
+
+## 6. COLONNES DU TABLEAU
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom | Link bleu | Nom du pool |
+| Type de nœud | Text | Flavor (b2-15, c2-30) |
+| Nœuds | Number | Nombre de nœuds |
+| Autoscaling | Badge/Text | "Désactivé" ou plage "3 - 10" |
+| Anti-affinité | Text | Oui/Non |
+| Facturation | Text | Horaire/Mensuel |
+| Statut | Badge | Ready (vert) |
+| Actions | Menu ⋮ | ActionMenu |
+
+## 7. DONNÉES EXEMPLE
+| Nom | Type | Nœuds | Autoscaling | Anti-affinité | Facturation | Statut |
+|-----|------|-------|-------------|---------------|-------------|--------|
+| default-pool | b2-15 | 3 | Désactivé | Non | Horaire | Ready |
+| worker-pool | c2-30 | 5 | 3 - 10 | Non | Horaire | Ready |
+| gpu-pool | t2-45 | 2 | Désactivé | Oui | Mensuel | Ready |
+
+## 8. ACTION MENU
+| Action | Type | Description |
+|--------|------|-------------|
+| Voir les nœuds | Standard | Liste des nœuds |
+| Ajuster la taille | Standard | Modal scaling |
+| Modifier | Standard | Modal édition |
+| --- | Séparateur | --- |
+| Supprimer | Danger rouge | DELETE pool |
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/kube/{kubeId}/nodepool
+  - Liste des node pools
+- POST /cloud/project/{projectId}/kube/{kubeId}/nodepool
+  - Créer un pool
+- DELETE /cloud/project/{projectId}/kube/{kubeId}/nodepool/{poolId}
+  - Supprimer un pool

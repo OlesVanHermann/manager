@@ -1,0 +1,59 @@
+# Cahier des Charges : public-cloud/kubernetes - Flux de Données Logs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Gestion des flux de données (Log Streams)
+- **Type** : Page liste avec datagrid
+- **Objectif** : Gérer les abonnements aux logs via LDP
+
+## 2. STRUCTURE PAGE
+- Header avec lien retour
+- Titre "Flux de données"
+- Description détaillée
+- Bouton ajout
+- Sélecteur compte LDP
+- Tableau des flux abonnés
+
+## 3. COMPOSANTS UI
+- **OdsLink** : "← Retour à la page précédente"
+- **OdsText** : Titre et description
+- **OdsButton** : "+ Ajouter un flux de données"
+- **OdsSelect** : Compte Logs Data Platform
+- **OdsDatagrid** : Tableau des flux
+- **OdsBadge** : "Abonné" (vert)
+
+## 4. TITRE
+"Flux de données"
+
+## 5. DESCRIPTION
+"En vous abonnant aux audit logs de votre cluster Kubernetes, ils seront transférés dans Logs Data Platform et vous pourrez les centraliser avec vos autres logs, effectuer des recherches avancées, gérer leurs rétentions, définir des alertes ainsi que des tableaux de bord pour observer facilement vos clusters."
+
+## 6. BOUTON AJOUT
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Ajouter un flux de données | Outline bleu | Modal création |
+
+## 7. SÉLECTEUR COMPTE LDP
+- Label : "Compte Logs Data Platform"
+- Select : ldp-logs-production-abc123
+
+## 8. COLONNES DU TABLEAU
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom du flux | Text monospace | Nom du stream |
+| Statut | Badge | Abonné (vert) |
+| Rétention | Text | Durée (45 jours, 90 jours) |
+| Actions | Button | Se désabonner (outline rouge) |
+
+## 9. DONNÉES EXEMPLE
+| Nom | Statut | Rétention | Actions |
+|-----|--------|-----------|---------|
+| audit-logs-k8s-prod | Abonné | 45 jours | Se désabonner |
+| security-events-cluster | Abonné | 90 jours | Se désabonner |
+
+## 10. APIS & ENDPOINTS
+- GET /dbaas/logs
+  - Liste des comptes LDP
+- GET /cloud/project/{projectId}/kube/{kubeId}/log/subscription
+  - Liste des abonnements
+- DELETE /cloud/project/{projectId}/kube/{kubeId}/log/subscription/{subscriptionId}
+  - Se désabonner

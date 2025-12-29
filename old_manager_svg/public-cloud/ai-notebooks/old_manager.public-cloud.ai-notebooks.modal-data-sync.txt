@@ -1,0 +1,62 @@
+# Cahier des Charges : public-cloud/ai-notebooks - Modal Synchronisation données
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Synchronisation manuelle des données
+- **Type** : Modal formulaire avec options
+- **Objectif** : Synchroniser manuellement les données entre notebook et conteneur S3
+
+## 2. STRUCTURE MODAL
+- Overlay sombre sur la page
+- Modal centrée (600x480)
+- Header avec titre et bouton fermer
+- Description
+- Choix du type de synchronisation (Pull/Push)
+- Info box chemin de montage
+- Warning box
+- Boutons Annuler / Synchroniser
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsText** : Description
+- **OdsRadio** : Type de synchronisation (cards)
+- **OdsMessage** : Info box (bleu), Warning box (jaune)
+- **OdsButton** : Annuler (outline), Synchroniser (primaire)
+
+## 4. TITRE
+"Synchronisation manuelle des données"
+
+## 5. CHAMPS
+
+### Type de synchronisation *
+- Description: "Vous pouvez choisir entre une synchronisation de type push, vers votre conteneur de données ou de type pull, dans l'autre sens."
+
+### Options (radio cards)
+| Option | Description | État |
+|--------|-------------|------|
+| Pull | Depuis le conteneur vers le notebook | Sélectionné (bordure bleue, fond bleu clair) |
+| Push | Depuis le notebook vers le conteneur | Non sélectionné |
+
+## 6. INFO BOX (chemin de montage)
+- Fond bleu clair (#E8F0FE)
+- Icône: ℹ️
+- Message: "La synchronisation sera effectuée sur le répertoire de montage"
+- Chemin: "**/workspace/data (training-data)**"
+- Conteneur: "s3://my-ml-bucket"
+
+## 7. WARNING BOX
+- Fond jaune clair (#FEF3C7)
+- Titre: "⚠️ Attention"
+- Messages:
+  - "La synchronisation peut prendre plusieurs minutes selon la taille des données."
+  - "Le notebook restera accessible pendant ce temps."
+  - "Évitez de modifier les fichiers pendant la synchronisation."
+
+## 8. BOUTONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Outline gris | Ferme la modal |
+| Synchroniser | Primaire bleu | Lance la synchronisation |
+
+## 9. APIS & ENDPOINTS
+- POST /cloud/project/{projectId}/ai/notebook/{notebookId}/volumes/{volumeId}/sync
+  - type: "pull" | "push"

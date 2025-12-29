@@ -1,0 +1,91 @@
+# Cahier des Charges : public-cloud/ai-jobs - Lancer un job
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Formulaire de création d'un job AI Training
+- **Type** : Page wizard avec récapitulatif
+- **Objectif** : Configurer et lancer un job d'entraînement
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec AI Training actif
+- Breadcrumb
+- Titre "Lancer un job"
+- Colonne gauche: Formulaire (sections)
+- Colonne droite: Récapitulatif commande
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsCard** : Sections formulaire
+- **OdsInput** : Nom, Image Docker
+- **OdsRadio** : Région, Flavor, Confidentialité
+- **OdsCard** : Récapitulatif (droite)
+- **OdsButton** : Commander, Équivalent CLI
+- **OdsLink** : Configuration avancée
+
+## 4. TITRE
+"Lancer un job"
+
+## 5. SECTIONS FORMULAIRE
+
+### Section: Nom du job
+- Champ: Input
+- Placeholder: "my-training-job"
+
+### Section: Localisation
+- Label: "Sélectionnez la région"
+- Options (radio tiles):
+  - Gravelines (sélectionné)
+  - Beauharnois
+
+### Section: Ressources
+- Label: "Sélectionner le type de ressources"
+- Options (radio cards):
+
+| Flavor | GPU | VRAM |
+|--------|-----|------|
+| ai1-1-gpu | 1 GPU NVIDIA V100S | 32 GB |
+| ai1-4-gpu | 4 GPU NVIDIA V100S | 128 GB |
+| cpu-medium | 4 vCores | 16 GB RAM |
+
+### Section: Image Docker
+- Champ: Input
+- Placeholder: "pytorch/pytorch:latest"
+
+### Section: Confidentialité
+- Options (radio inline):
+  - Private (sélectionné)
+  - Public
+
+### Configuration avancée
+- Lien: "▼ Configuration avancée"
+
+## 6. RÉCAPITULATIF (colonne droite)
+Titre: "Votre commande"
+
+| Champ | Valeur |
+|-------|--------|
+| Nom | my-training-job |
+| Région | Gravelines (GRA) |
+| Ressources | ai1-1-gpu (1 GPU, 32 GB VRAM) |
+| Image | pytorch/pytorch |
+| Confidentialité | Private |
+
+### Prix
+- Label: "Estimation du prix"
+- Prix horaire: 1,23 € HT/h
+
+### Boutons
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Commander | Primaire bleu | Lance le job |
+| Équivalent CLI | Outline | Affiche commande CLI |
+
+## 7. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/capabilities : Régions, flavors
+- POST /cloud/project/{projectId}/ai/job
+  - name: string
+  - region: string
+  - flavorId: string
+  - image: string
+  - privacy: "private" | "public"
+

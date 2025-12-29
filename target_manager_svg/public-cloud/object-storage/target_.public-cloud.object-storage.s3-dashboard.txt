@@ -1,0 +1,96 @@
+# Cahier des Charges : public-cloud/object-storage - Dashboard S3
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Dashboard conteneur S3
+- **Type** : Page détail avec métriques et configuration
+- **Objectif** : Afficher aperçu et configuration d'un bucket S3
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (Object Storage actif)
+- Breadcrumb
+- Header conteneur (nom, badge S3, région)
+- Onglets (Dashboard actif, Objets, Réplication)
+- Carte aperçu du bucket
+- Cartes configuration (3 colonnes)
+- Carte tags
+- Cartes autres paramètres (3 colonnes)
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsBadge** : S3 (bleu)
+- **OdsTabs** : Dashboard | Objets | Réplication
+- **OdsCard** : Cartes informations et configuration
+- **OdsText** : Valeurs métriques (28px gras)
+- **OdsChip** : Tags avec fond bleu clair
+- **OdsBadge** : Statuts Activé (vert), Désactivé (jaune)
+- **OdsButton** : Copier, Activer, Ajouter
+- **OdsLink** : "En savoir plus"
+
+## 4. HEADER CONTENEUR
+- **Nom** : "backup-prod-2024"
+- **Badge** : S3 (bleu)
+- **Région** : "GRA (Gravelines)"
+
+## 5. ONGLETS
+| Onglet | Actif |
+|--------|-------|
+| Dashboard | ✅ (souligné bleu) |
+| Objets | - |
+| Réplication | - |
+
+## 6. APERÇU DU BUCKET
+
+| Métrique | Valeur |
+|----------|--------|
+| Espace utilisé | **45.8 Go** |
+| Nombre d'objets | **1,247** (Inclut versions et marqueurs) |
+| Nom du bucket | backup-prod-2024 |
+| Endpoint | s3.gra.io.cloud.ovh.net (lien) |
+| Virtual Host | backup-prod-2024.s3.gra.io.cloud.ovh.net [Copier] |
+
+## 7. CONFIGURATION
+
+### Versionning
+- **Statut** : Activé (badge vert)
+- **Description** : "Vos objets sont versionnés pour garantir une meilleure traçabilité."
+- **Lien** : "En savoir plus"
+
+### Chiffrement
+- **Statut** : Désactivé (badge jaune)
+- **Description** : "Les données ne sont actuellement pas chiffrées. Activez SSE-OMK."
+- **Action** : [Activer] (bouton primary)
+
+### Object Lock
+- **Statut** : Désactivé (badge jaune)
+- **Description** : "Empêche la suppression ou la modification des objets."
+- **Note** : "Disponible via API"
+
+## 8. TAGS
+- **Header** : "Tags" + [Ajouter]
+- **Tags affichés** :
+  - env: production
+  - team: data
+  - backup: daily
+
+## 9. AUTRES PARAMÈTRES
+
+| Paramètre | Description | Disponibilité |
+|-----------|-------------|---------------|
+| Access Logs | Journalisez les accès à vos objets | Disponible via API |
+| Lifecycle | Automatisez la gestion du cycle de vie | Disponible via API |
+| Hébergement statique | Hébergez un site web statique | Disponible via API |
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/storage/{containerId}
+  - Détails du conteneur
+- GET /cloud/project/{projectId}/storage/{containerId}/metrics
+  - Métriques (taille, nombre objets)
+- PUT /cloud/project/{projectId}/storage/{containerId}/versioning
+  - Configurer le versioning
+- PUT /cloud/project/{projectId}/storage/{containerId}/encryption
+  - Configurer le chiffrement
+- GET /cloud/project/{projectId}/storage/{containerId}/tags
+  - Liste des tags
+- PUT /cloud/project/{projectId}/storage/{containerId}/tags
+  - Modifier les tags

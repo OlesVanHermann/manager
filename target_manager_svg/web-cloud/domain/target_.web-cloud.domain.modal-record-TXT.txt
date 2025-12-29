@@ -1,0 +1,74 @@
+# Cahier des Charges : web-cloud/domain - Modal Ajouter enregistrement TXT
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Création d'un enregistrement DNS de type TXT
+- **Type** : Formulaire de création
+- **Objectif** : Ajouter un enregistrement TXT (texte arbitraire)
+
+## 2. STRUCTURE MODAL
+- Header avec titre et bouton fermer (✕)
+- Bandeau info explicatif
+- Champ sous-domaine
+- Champ valeur (textarea)
+- Compteur caractères
+- Champ TTL
+- Aperçu de l'enregistrement
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Grande modal (600x700)
+- **OdsMessage** : Bandeau info bleu
+- **OdsInput** : Sous-domaine
+- **OdsTextarea** : Valeur TXT
+- **OdsSelect** : TTL
+- **OdsCard** : Aperçu (fond gris)
+- **OdsButton** : Annuler, Ajouter
+
+## 4. TITRE
+"Ajouter un enregistrement TXT"
+
+## 5. BANDEAU INFO
+Fond bleu (#E8F0FE) :
+- **Titre** : "ℹ️ Enregistrement TXT (Text)"
+- "Permet de stocker du texte arbitraire. Utilisé pour la vérification de domaine, SPF, DKIM, DMARC, etc."
+
+## 6. CHAMP SOUS-DOMAINE
+| Élément | Valeur |
+|---------|--------|
+| Label | "Sous-domaine" |
+| Aide | "Laissez vide pour le domaine principal (@)" |
+| Input | "_dmarc" |
+| Suffixe (addon gris) | ".example-domain.com" |
+
+## 7. CHAMP VALEUR
+| Élément | Valeur |
+|---------|--------|
+| Label | "Valeur *" |
+| Aide | "Contenu de l'enregistrement TXT (max 255 caractères par segment)" |
+| Obligatoire | Oui |
+| Type | Textarea (120px hauteur) |
+| Valeur exemple | v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com; ... |
+| Compteur | "156 / 255" |
+
+## 8. CHAMP TTL
+| Élément | Valeur |
+|---------|--------|
+| Label | "TTL (Time To Live)" |
+| Type | Select dropdown |
+| Valeur | "3600 (1 heure)" |
+
+## 9. APERÇU
+Fond gris (#F9FAFB), police monospace :
+`_dmarc  3600  IN  TXT  "v=DMARC1; p=quarantine; ..."`
+
+## 10. BOUTONS FOOTER
+- Annuler (secondaire)
+- Ajouter (primaire)
+
+## 11. APIS & ENDPOINTS
+- POST /domain/zone/{zoneName}/record : Créer enregistrement TXT
+  - fieldType: "TXT"
+  - subDomain: string
+  - target: "contenu texte"
+  - ttl: number
+

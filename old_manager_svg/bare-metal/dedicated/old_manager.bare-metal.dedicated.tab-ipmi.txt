@@ -1,0 +1,80 @@
+# Cahier des Charges : bare-metal/dedicated - Onglet IPMI
+
+## 1. VUE D'ENSEMBLE
+- **Onglet** : IPMI
+- **Type** : Page gestion console distante
+- **Objectif** : Accéder à la console IPMI/KVM du serveur
+
+## 2. STRUCTURE PAGE
+- Breadcrumb + titre
+- Onglets navigation
+- Carte état IPMI
+- Carte accès KVM
+- Carte Serial over LAN
+- Carte contrôle alimentation
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation
+- **OdsCard** : Sections (4)
+- **OdsBadge** : États (Disponible, Allumé, Aucune)
+- **OdsButton** : Actions (Lancer, Activer, Redémarrer, etc.)
+- **OdsMessage** : Warning alimentation
+- **OdsClipboard** : Commande SSH
+
+## 4. CARTE ÉTAT IPMI
+| Champ | Valeur |
+|-------|--------|
+| Statut | Disponible ✅ |
+| Type | iLO (HP) |
+| Version | 2.78 |
+
+## 5. CARTE ACCÈS KVM
+| Élément | Description |
+|---------|-------------|
+| Icône | 🖥️ |
+| Titre | Accès KVM |
+| Description | Accédez à la console graphique via KVM over IP |
+| Session active | Aucune |
+| Bouton | "Lancer la console KVM" (primary) |
+| Note | Nécessite Java ou HTML5 |
+| Lien | "Télécharger le fichier JNLP →" |
+
+## 6. CARTE SERIAL OVER LAN
+| Élément | Description |
+|---------|-------------|
+| Icône | 📟 |
+| Titre | Serial over LAN (SOL) |
+| Description | Accédez à la console série via SSH |
+| Commande | `ssh -p 22 root@ns1234567-sol.ovh.net` |
+| Bouton | "Activer SOL (1h)" (primary) |
+| Note | Mot de passe affiché après activation, expire après 1h |
+
+## 7. CARTE CONTRÔLE ALIMENTATION
+| Élément | Valeur |
+|---------|--------|
+| Icône | ⚡ |
+| Titre | Contrôle d'alimentation |
+| État actuel | Allumé ✅ |
+
+**Boutons d'action :**
+| Action | Style |
+|--------|-------|
+| Redémarrer | Outline |
+| Hard reboot | Outline |
+| Éteindre | Outline |
+| Allumer | Outline |
+
+**Warning :**
+- Fond jaune : "⚠️ Attention : Le hard reboot peut entraîner une perte de données."
+
+## 8. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/features/ipmi
+  - État IPMI
+- POST /dedicated/server/{serviceName}/features/ipmi/access
+  - Body: { type: "kvmoverip" | "serialOverLanSshKey" }
+  - Génère un accès temporaire
+- GET /dedicated/server/{serviceName}/features/ipmi/test
+  - Test de disponibilité IPMI
+- POST /dedicated/server/{serviceName}/reboot
+  - Body: { type: "power" | "hardware" }
+  - Redémarre le serveur

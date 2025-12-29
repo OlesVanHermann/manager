@@ -1,0 +1,73 @@
+# Cahier des Charges : public-cloud/kubernetes - Modal Modifier Réseau
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Modifier la configuration réseau
+- **Type** : Modal formulaire avec sections
+- **Objectif** : Modifier les paramètres réseau du cluster
+
+## 2. STRUCTURE MODAL
+- Overlay sombre
+- Conteneur blanc 700x600px avec barre bleue gauche
+- Icône réseau + titre + bouton fermer
+- Section Réseau privé
+- Section Passerelle par défaut
+- Section Sous-réseau Load Balancer
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur avec accent bleu
+- **OdsIcon** : Réseau (🌐)
+- **OdsText** : Labels et descriptions
+- **OdsInput** : Lecture seule (réseau actuel)
+- **OdsToggle** : Activer passerelle vRack
+- **OdsRadio** : Automatique / IP personnalisée
+- **OdsSelect** : Sous-réseau LB
+- **OdsMessage** : Info (bleu)
+- **OdsButton** : Annuler, Modifier
+
+## 4. HEADER
+- Icône réseau dans cercle bleu clair
+- Titre : "Modifier la configuration réseau"
+- Bouton fermer (×)
+
+## 5. SECTION RÉSEAU PRIVÉ
+- **Titre** : "Réseau privé"
+- **Label** : "Réseau privé actuel"
+- **Champ** : Input lecture seule, fond gris (#F3F4F6)
+- **Valeur** : vRack-production (192.168.0.0/16)
+
+## 6. SECTION PASSERELLE PAR DÉFAUT
+- **Titre** : "Passerelle par défaut"
+- **Label** : "Activer la passerelle vRack"
+- **Toggle** : ON (bleu)
+
+### Sous-options (quand toggle ON)
+| Option | Style | Description |
+|--------|-------|-------------|
+| Automatique | Sélectionné (bordure bleue, fond bleu clair) | IP automatique |
+| IP personnalisée | Non sélectionné (bordure grise) | Saisir IP manuellement |
+
+## 7. SECTION SOUS-RÉSEAU LOAD BALANCER
+- **Titre** : "Sous-réseau Load Balancer"
+- **Label** : "Sous-réseau pour les Load Balancers"
+- **Select** : subnet-lb-prod (10.0.1.0/24) avec dropdown ▼
+
+### Banner Info
+- Fond bleu clair (#DBEAFE)
+- Icône ℹ
+- "Le sous-réseau doit avoir une passerelle configurée pour le Load Balancer."
+
+## 8. BOUTONS
+| Bouton | Style | Position | Action |
+|--------|-------|----------|--------|
+| Annuler | Outline gris | Gauche | Fermer modal |
+| Modifier | Primary bleu | Droite | PUT network config |
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/network/private
+  - Liste des réseaux privés
+- GET /cloud/project/{projectId}/network/private/{networkId}/subnet
+  - Liste des sous-réseaux
+- PUT /cloud/project/{projectId}/kube/{kubeId}
+  - Body: { privateNetworkConfiguration: { defaultVrackGateway, privateNetworkRoutingAsDefault }, loadBalancersSubnetId }
+  - Modifier configuration réseau

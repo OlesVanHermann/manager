@@ -1,0 +1,68 @@
+# Cahier des Charges : bare-metal/load-balancer - Onglet Farms
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Liste des farms (backends)
+- **Type** : Onglet cartes extensibles
+- **Objectif** : Gérer les pools de serveurs backend
+
+## 2. STRUCTURE PAGE
+- Breadcrumb avec retour
+- Titre "Farms"
+- Onglets navigation
+- Bouton création
+- Cartes farms avec tableau serveurs
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation
+- **OdsButton** : Créer une farm
+- **OdsCard** : Cartes farms (extensibles)
+- **OdsBadge** : État farm (Actif, Dégradé)
+- **OdsDatagrid** : Tableau serveurs par farm
+- **OdsBadge** : État serveur (UP, DOWN)
+- **OdsLink** : Ajouter un serveur
+
+## 4. CARTE FARM
+### Header
+| Élément | Description |
+|---------|-------------|
+| Nom | farm-web (bold) |
+| Badge | État (Actif vert, Dégradé orange) |
+
+### Infos
+| Propriété | Valeur |
+|-----------|--------|
+| Balance | Round Robin, Least Connections, Source, First |
+| Stickiness | Cookie, Source IP, Aucun |
+| Health Check | HTTP GET /health, TCP port X |
+
+### Tableau Serveurs
+| Colonne | Description |
+|---------|-------------|
+| Serveur | Lien vers détail |
+| Adresse | IP (monospace) |
+| Port | Port backend |
+| Poids | Weight (100 = normal) |
+| Backup | Oui/Non |
+| État | Badge UP (vert), DOWN (rouge) |
+| Actions | Menu ⋮ |
+
+## 5. BADGES ÉTAT SERVEUR
+| État | Couleur |
+|------|---------|
+| UP | Vert |
+| DOWN | Rouge |
+| MAINT | Orange |
+
+## 6. BADGES ÉTAT FARM
+| État | Couleur | Condition |
+|------|---------|-----------|
+| Actif | Vert | Tous UP |
+| Dégradé | Orange | Certains DOWN |
+| Hors ligne | Rouge | Tous DOWN |
+
+## 7. APIS & ENDPOINTS
+- GET /ipLoadbalancing/{serviceName}/http/farm
+- POST /ipLoadbalancing/{serviceName}/http/farm
+- GET /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server
+- POST /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server
+

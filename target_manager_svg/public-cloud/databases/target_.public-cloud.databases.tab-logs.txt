@@ -1,0 +1,83 @@
+# Cahier des Charges : public-cloud/databases - Onglet Logs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Databases - Onglet Logs
+- **Type** : Page onglet monitoring
+- **Objectif** : Afficher les logs d'un service de base de données
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec Databases actif
+- Breadcrumb avec "Logs"
+- Onglets (Logs actif)
+- Titre "Logs"
+- Description
+- Toggle Auto-Refresh
+- Zone logs terminal
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsTabs** : 7 onglets avec Logs actif
+- **OdsToggle** : Auto-Refresh (activé)
+- **OdsText** : Description
+- Zone logs: Fond sombre (#1F2937)
+
+## 4. TITRE
+"Logs"
+
+## 5. DESCRIPTION
+"Pour vous aider à suivre et à piloter votre service de base de données, vous trouverez les derniers événements (logs) ci-dessous, quasiment en direct."
+
+## 6. ONGLETS
+| Onglet | État |
+|--------|------|
+| Informations générales | Inactif |
+| Utilisateurs | Inactif |
+| Bases de données | Inactif |
+| Logs | Actif (souligné bleu) |
+| Métriques | Inactif |
+| Sauvegardes | Inactif |
+| Paramètres | Inactif |
+
+## 7. TOGGLE AUTO-REFRESH
+- Label: "Auto-Refresh"
+- État: Activé (fond bleu #0050D7)
+- Cercle: Blanc, position droite
+
+## 8. ZONE LOGS
+### Style
+- Fond: Sombre (#1F2937)
+- Dimensions: 880x400px
+- Coins: Arrondis 8px
+
+### Format lignes
+```
+[TIMESTAMP] [LEVEL] Message
+```
+
+### Couleurs niveaux
+| Niveau | Couleur |
+|--------|---------|
+| Timestamp | Gris (#9CA3AF) |
+| [INFO] | Vert (#34D399) |
+| [WARN] | Jaune (#FBBF24) |
+| [ERROR] | Rouge |
+| Message | Gris clair (#D1D5DB) |
+
+### Exemple de logs
+```
+2024-01-15 14:32:45.123 [INFO] PostgreSQL started on port 5432
+2024-01-15 14:32:46.456 [INFO] Connection accepted from 10.0.0.1
+2024-01-15 14:32:47.789 [INFO] Database 'app_production' selected
+2024-01-15 14:32:50.012 [WARN] Slow query detected (2.3s): SELECT * FROM users...
+2024-01-15 14:32:51.345 [INFO] Query completed successfully
+2024-01-15 14:32:52.678 [INFO] Connection closed from 10.0.0.1
+2024-01-15 14:33:00.001 [INFO] Checkpoint completed: wrote 128 buffers
+```
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/database/service/{serviceId}/log
+  - Params: { tail, since }
+  - Récupère les derniers logs
+- WebSocket /cloud/project/{projectId}/database/service/{serviceId}/log/stream
+  - Stream temps réel des logs

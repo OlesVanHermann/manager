@@ -1,0 +1,70 @@
+# Cahier des Charges : bare-metal/dedicated - Modal Configuration OLA Avancée
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Configurer OVH Link Aggregation
+- **Type** : Modal configuration avancée
+- **Objectif** : Configurer l'agrégation de liens réseau
+
+## 2. STRUCTURE MODAL
+- Modal blanche (700x600px)
+- Header avec titre + bouton fermer
+- Bandeau info
+- Mode d'agrégation (3 options)
+- Interfaces à agréger (checkboxes)
+- Configuration vRack
+- Résumé configuration
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur
+- **OdsMessage** : Info (fond bleu)
+- **OdsTile** : Modes agrégation (3)
+- **OdsCheckbox** : Interfaces réseau
+- **OdsSelect** : vRack
+- **OdsInput** : VLANs
+- **OdsCard** : Résumé
+- **OdsButton** : Annuler (outline), Appliquer (primary)
+
+## 4. HEADER
+- **Titre** : "Configurer OVH Link Aggregation"
+- **Bouton fermer** : ×
+
+## 5. BANDEAU INFO
+Fond bleu clair :
+- "ℹ️ OLA permet d'agréger plusieurs interfaces réseau pour augmenter la bande passante."
+- "Une configuration réseau sera générée automatiquement après activation."
+
+## 6. MODES D'AGRÉGATION
+| Mode | Description | État |
+|------|-------------|------|
+| LACP (802.3ad) | Négociation dynamique, Recommandé | ✅ Sélectionné |
+| Statique | Configuration manuelle | - |
+| Active-Backup | Failover uniquement | - |
+
+## 7. INTERFACES À AGRÉGER
+| Interface | Info | État |
+|-----------|------|------|
+| eth0 | 02:00:00:12:34:56 • 1 Gbit/s | ✅ Sélectionné |
+| eth1 | 02:00:00:12:34:57 • 1 Gbit/s | ✅ Sélectionné |
+
+## 8. CONFIGURATION VRACK
+| Champ | Valeur |
+|-------|--------|
+| vRack | pn-123456 ▼ |
+| VLANs | 100, 200, 300 |
+
+## 9. RÉSUMÉ
+Fond gris :
+- **Configuration résultante :**
+- `bond0 (LACP) = eth0 + eth1 → 2 Gbit/s agrégé`
+
+## 10. BOUTONS
+- **Annuler** : Outline, ferme la modal
+- **Appliquer** : Primary, applique la configuration
+
+## 11. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/ola
+  - Configuration OLA actuelle
+- PUT /dedicated/server/{serviceName}/ola/group
+  - Body: { name, mode, virtualNetworkInterfaces[] }
+  - Configure l'agrégation

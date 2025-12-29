@@ -1,0 +1,68 @@
+# Cahier des Charges : bare-metal/dedicated - Onglet DNS Secondaire
+
+## 1. VUE D'ENSEMBLE
+- **Onglet** : DNS secondaire
+- **Type** : Page gestion DNS secondaire
+- **Objectif** : Configurer la réplication DNS
+
+## 2. STRUCTURE PAGE
+- Breadcrumb + titre
+- Onglets navigation
+- Bouton Ajouter domaine
+- Bandeau info DNS secondaire
+- Tableau domaines configurés
+- Encart configuration requise
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation
+- **OdsButton** : Ajouter un domaine (primary)
+- **OdsMessage** : Info (fond bleu)
+- **OdsCard** : Tableau + aide
+- **OdsDatagrid** : Liste domaines
+- **OdsBadge** : États (Actif, En attente)
+- **OdsActionMenu** : Actions par domaine
+
+## 4. BANDEAU INFO
+Fond bleu clair :
+- **Titre** : "ℹ️ DNS secondaire OVHcloud"
+- **Ligne 1** : "Le serveur DNS secondaire OVHcloud réplique automatiquement vos zones DNS."
+- **Ligne 2** : "Serveur secondaire : sdns1.ovh.net (213.251.188.129)"
+
+## 5. COLONNES TABLEAU
+| Colonne | Largeur |
+|---------|---------|
+| Domaine | 280px |
+| IP du DNS primaire | 200px |
+| Dernière sync | 200px |
+| État | 100px |
+| Actions | 100px |
+
+## 6. DONNÉES EXEMPLE
+| Domaine | IP primaire | Dernière sync | État |
+|---------|-------------|---------------|------|
+| example.com | 192.168.1.100 | 27/12/2025 10:30 | Actif ✅ |
+| mysite.fr | 192.168.1.100 | 27/12/2025 10:28 | Actif ✅ |
+| newdomain.io | 192.168.1.100 | En attente... | En attente ⚠️ |
+
+## 7. MENU ACTIONS
+- Forcer la sync
+- Modifier
+- ---
+- 🔴 Supprimer
+
+## 8. ENCART CONFIGURATION
+Fond blanc :
+- **Titre** : "Configuration requise sur votre DNS primaire"
+- **Info** : "Autorisez les transferts de zone (AXFR) depuis : 213.251.188.129, 213.251.128.129"
+- **Lien** : "Voir la documentation complète →"
+
+## 9. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/secondaryDnsDomains
+  - Liste des domaines configurés
+- POST /dedicated/server/{serviceName}/secondaryDnsDomains
+  - Body: { domain, ip }
+  - Ajoute un domaine
+- DELETE /dedicated/server/{serviceName}/secondaryDnsDomains/{domain}
+  - Supprime un domaine
+- POST /dedicated/server/{serviceName}/secondaryDnsNameServerAvailable
+  - Force une synchronisation
