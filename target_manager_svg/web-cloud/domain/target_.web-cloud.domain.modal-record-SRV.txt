@@ -1,81 +1,78 @@
-# Cahier des Charges : web-cloud/domain - Modal Ajouter enregistrement SRV
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-record-SRV.svg
+Route:   /web-cloud/domain/{domain}/zone (modal)
+Version: v2 (2024-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Création d'un enregistrement DNS de type SRV
-- **Type** : Formulaire de création
-- **Objectif** : Ajouter un enregistrement SRV (Service)
+DESCRIPTION
+-----------
+Modal de création d'un enregistrement DNS de type SRV.
+Enregistrement SRV = Localise un service spécifique (SIP, XMPP, etc.).
 
-## 2. STRUCTURE MODAL
-- Header bleu OVH avec titre, badge SRV et bouton fermer (✕)
-- Champ sous-domaine
-- Champ TTL
-- Champs Priorité et Poids
-- Champ Port
-- Champ Cible
-- Footer avec boutons
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                          |
+|--------------------------|-------------------------------------|
+| {domain}                 | Contexte - domaine sélectionné      |
+| Service                  | Input utilisateur (_sip, _xmpp...)  |
+| Protocole                | Input utilisateur (_tcp, _udp)      |
+| Priorité (0)             | Input numérique                     |
+| Poids (5)                | Input numérique                     |
+| Port (5060)              | Input numérique                     |
+| TTL (3600)               | Input - défaut 3600 secondes        |
+| Cible                    | Input utilisateur (FQDN requis)     |
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur (650x550)
-- **OdsInput** : Multiples champs
-- **OdsBadge** : Type SRV (rouge)
-- **OdsButton** : Annuler, Ajouter l'entrée
+================================================================================
 
-## 4. TITRE
-"Ajouter une entrée DNS - SRV" avec badge [SRV]
+STRUCTURE MODALE
+----------------
+1. OVERLAY - Fond semi-transparent rgba(0,0,0,0.5)
+2. HEADER MODAL - Badge SRV (#9D174D sur fond #FCE7F3) + titre
+3. BANNIÈRE INFO - Explication du type d'enregistrement
+4. FORMULAIRE:
+   - Service (input texte, largeur 240px, requis)
+   - Protocole (input texte, largeur 120px, requis)
+   - Priorité (input numérique, largeur 80px, requis)
+   - Poids (input numérique, largeur 80px, requis)
+   - Port (input numérique, largeur 80px, requis)
+   - TTL (input numérique, largeur 80px, défaut 3600)
+   - Cible (input texte, largeur 520px, requis)
+5. ACTIONS - Boutons Annuler / Créer
 
-## 5. CHAMP SOUS-DOMAINE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Sous-domaine" |
-| Input | "_sip._tcp" |
-| Suffixe (addon gris) | ".exemple.com" |
+COULEURS SPÉCIFIQUES
+--------------------
+- Header modal: #FCE7F3 (rose clair)
+- Badge SRV: #9D174D (rose foncé)
 
-## 6. CHAMP TTL
-| Élément | Valeur |
-|---------|--------|
-| Label | "TTL" |
-| Input | 3600 |
+CHAMPS FORMULAIRE
+-----------------
+| Champ          | Type   | Requis | Placeholder                   |
+|----------------|--------|--------|-------------------------------|
+| Service        | text   | Oui    | _sip, _xmpp...                |
+| Protocole      | text   | Oui    | _tcp, _udp                    |
+| Priorité       | number | Oui    | 0                             |
+| Poids          | number | Oui    | 5                             |
+| Port           | number | Oui    | 5060                          |
+| TTL            | number | Non    | 3600                          |
+| Cible          | text   | Oui    | Ex: sipserver.example.com.    |
 
-## 7. CHAMP PRIORITÉ
-| Élément | Valeur |
-|---------|--------|
-| Label | "Priorité" |
-| Obligatoire | Oui (*) |
-| Input | 10 |
-| Plage | 0-65535 |
+SERVICES COURANTS
+-----------------
+- _sip._tcp / _sip._udp - VoIP SIP (port 5060)
+- _xmpp-client._tcp - Jabber/XMPP client (port 5222)
+- _xmpp-server._tcp - Jabber/XMPP serveur (port 5269)
+- _ldap._tcp - LDAP (port 389)
+- _autodiscover._tcp - Microsoft Exchange (port 443)
 
-## 8. CHAMP POIDS
-| Élément | Valeur |
-|---------|--------|
-| Label | "Poids" |
-| Obligatoire | Oui (*) |
-| Input | 5 |
-| Plage | 0-65535 |
+API ENDPOINT
+------------
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "SRV",
+  subDomain: "_service._protocol",
+  ttl: number,
+  target: "priority weight port target" (ex: "0 5 5060 sip.example.com.")
+}
 
-## 9. CHAMP PORT
-| Élément | Valeur |
-|---------|--------|
-| Label | "Port" |
-| Obligatoire | Oui (*) |
-| Input | 5060 |
-| Plage | 0-65535 |
-
-## 10. CHAMP CIBLE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Cible" |
-| Obligatoire | Oui (*) |
-| Input | "sipserver.exemple.com." |
-| Icône | ? (tooltip) |
-
-## 11. BOUTONS FOOTER
-- Annuler (secondaire)
-- Ajouter l'entrée (primaire)
-
-## 12. APIS & ENDPOINTS
-- POST /domain/zone/{zoneName}/record : Créer enregistrement SRV
-  - fieldType: "SRV"
-  - subDomain: "_service._protocol"
-  - target: "priority weight port target"
-  - ttl: number
-
+================================================================================

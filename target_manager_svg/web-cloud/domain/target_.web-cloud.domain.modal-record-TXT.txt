@@ -1,74 +1,66 @@
-# Cahier des Charges : web-cloud/domain - Modal Ajouter enregistrement TXT
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-record-TXT.svg
+Route:   /web-cloud/domain/{domain}/zone (modal)
+Version: v2 (2024-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Création d'un enregistrement DNS de type TXT
-- **Type** : Formulaire de création
-- **Objectif** : Ajouter un enregistrement TXT (texte arbitraire)
+DESCRIPTION
+-----------
+Modal de création d'un enregistrement DNS de type TXT.
+Enregistrement TXT = Stocke du texte libre (SPF, DKIM, vérification...).
 
-## 2. STRUCTURE MODAL
-- Header avec titre et bouton fermer (✕)
-- Bandeau info explicatif
-- Champ sous-domaine
-- Champ valeur (textarea)
-- Compteur caractères
-- Champ TTL
-- Aperçu de l'enregistrement
-- Footer avec boutons
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                          |
+|--------------------------|-------------------------------------|
+| {domain}                 | Contexte - domaine sélectionné      |
+| Sous-domaine             | Input utilisateur                   |
+| TTL (3600)               | Input - défaut 3600 secondes        |
+| Valeur                   | Input textarea (requis)             |
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Grande modal (600x700)
-- **OdsMessage** : Bandeau info bleu
-- **OdsInput** : Sous-domaine
-- **OdsTextarea** : Valeur TXT
-- **OdsSelect** : TTL
-- **OdsCard** : Aperçu (fond gris)
-- **OdsButton** : Annuler, Ajouter
+================================================================================
 
-## 4. TITRE
-"Ajouter un enregistrement TXT"
+STRUCTURE MODALE
+----------------
+1. OVERLAY - Fond semi-transparent rgba(0,0,0,0.5)
+2. HEADER MODAL - Badge TXT (#3730A3 sur fond #E0E7FF) + titre
+3. BANNIÈRE INFO - Explication du type d'enregistrement
+4. FORMULAIRE:
+   - Sous-domaine (input texte, largeur 350px)
+   - TTL (input numérique, largeur 150px, défaut 3600)
+   - Valeur (textarea, largeur 520px, hauteur 80px, requis)
+5. ACTIONS - Boutons Annuler / Créer
 
-## 5. BANDEAU INFO
-Fond bleu (#E8F0FE) :
-- **Titre** : "ℹ️ Enregistrement TXT (Text)"
-- "Permet de stocker du texte arbitraire. Utilisé pour la vérification de domaine, SPF, DKIM, DMARC, etc."
+COULEURS SPÉCIFIQUES
+--------------------
+- Header modal: #E0E7FF (indigo clair)
+- Badge TXT: #3730A3 (indigo foncé)
 
-## 6. CHAMP SOUS-DOMAINE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Sous-domaine" |
-| Aide | "Laissez vide pour le domaine principal (@)" |
-| Input | "_dmarc" |
-| Suffixe (addon gris) | ".example-domain.com" |
+CHAMPS FORMULAIRE
+-----------------
+| Champ          | Type     | Requis | Placeholder                      |
+|----------------|----------|--------|----------------------------------|
+| Sous-domaine   | text     | Non    | @ ou _dmarc, etc.                |
+| TTL            | number   | Non    | 3600                             |
+| Valeur         | textarea | Oui    | Ex: v=spf1 include:mx.ovh.com ~all |
 
-## 7. CHAMP VALEUR
-| Élément | Valeur |
-|---------|--------|
-| Label | "Valeur *" |
-| Aide | "Contenu de l'enregistrement TXT (max 255 caractères par segment)" |
-| Obligatoire | Oui |
-| Type | Textarea (120px hauteur) |
-| Valeur exemple | v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com; ... |
-| Compteur | "156 / 255" |
+CAS D'USAGE COURANTS
+--------------------
+- SPF: v=spf1 include:mx.ovh.com ~all (à la racine @)
+- DKIM: sous-domaine selector._domainkey
+- DMARC: sous-domaine _dmarc
+- Vérification Google/Microsoft: à la racine @
+- Site verification: google-site-verification=...
 
-## 8. CHAMP TTL
-| Élément | Valeur |
-|---------|--------|
-| Label | "TTL (Time To Live)" |
-| Type | Select dropdown |
-| Valeur | "3600 (1 heure)" |
+API ENDPOINT
+------------
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "TXT",
+  subDomain: string,
+  ttl: number,
+  target: string (valeur TXT entre guillemets si nécessaire)
+}
 
-## 9. APERÇU
-Fond gris (#F9FAFB), police monospace :
-`_dmarc  3600  IN  TXT  "v=DMARC1; p=quarantine; ..."`
-
-## 10. BOUTONS FOOTER
-- Annuler (secondaire)
-- Ajouter (primaire)
-
-## 11. APIS & ENDPOINTS
-- POST /domain/zone/{zoneName}/record : Créer enregistrement TXT
-  - fieldType: "TXT"
-  - subDomain: string
-  - target: "contenu texte"
-  - ttl: number
-
+================================================================================

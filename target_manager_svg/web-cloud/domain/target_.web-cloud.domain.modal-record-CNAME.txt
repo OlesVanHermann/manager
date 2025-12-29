@@ -1,58 +1,64 @@
-# Cahier des Charges : web-cloud/domain - Modal Ajouter enregistrement CNAME
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-record-CNAME.svg
+Route:   /web-cloud/domain/{domain}/zone (modal)
+Version: v2 (2024-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Création d'un enregistrement DNS de type CNAME
-- **Type** : Formulaire de création
-- **Objectif** : Ajouter un enregistrement CNAME (alias) dans la zone DNS
+DESCRIPTION
+-----------
+Modal de création d'un enregistrement DNS de type CNAME.
+Enregistrement CNAME = Crée un alias pointant vers un autre nom de domaine.
 
-## 2. STRUCTURE MODAL
-- Header bleu OVH avec titre, badge CNAME et bouton fermer (✕)
-- Champ sous-domaine
-- Champ TTL
-- Champ cible
-- Aide contextuelle
-- Footer avec boutons
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                          |
+|--------------------------|-------------------------------------|
+| {domain}                 | Contexte - domaine sélectionné      |
+| Sous-domaine             | Input utilisateur (requis)          |
+| TTL (3600)               | Input - défaut 3600 secondes        |
+| Cible (FQDN)             | Input utilisateur (FQDN requis)     |
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur (650x420)
-- **OdsInput** : Sous-domaine, TTL, Cible
-- **OdsBadge** : Type CNAME (bleu)
-- **OdsButton** : Annuler, Ajouter l'entrée
+================================================================================
 
-## 4. TITRE
-"Ajouter une entrée DNS - CNAME" avec badge [CNAME]
+STRUCTURE MODALE
+----------------
+1. OVERLAY - Fond semi-transparent rgba(0,0,0,0.5)
+2. HEADER MODAL - Badge CNAME (#065F46 sur fond #D1FAE5) + titre
+3. BANNIÈRE INFO - Explication du type d'enregistrement
+4. FORMULAIRE:
+   - Sous-domaine (input texte, largeur 350px, requis)
+   - TTL (input numérique, largeur 150px, défaut 3600)
+   - Cible FQDN (input texte, largeur 520px, requis)
+5. ACTIONS - Boutons Annuler / Créer
 
-## 5. CHAMP SOUS-DOMAINE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Sous-domaine" |
-| Input | "blog" |
-| Suffixe (addon gris) | ".exemple.com" |
+COULEURS SPÉCIFIQUES
+--------------------
+- Header modal: #D1FAE5 (vert clair)
+- Badge CNAME: #065F46 (vert foncé)
 
-## 6. CHAMP TTL
-| Élément | Valeur |
-|---------|--------|
-| Label | "TTL" |
-| Input | 3600 |
-| Unité | "secondes" |
+CHAMPS FORMULAIRE
+-----------------
+| Champ          | Type   | Requis | Placeholder            |
+|----------------|--------|--------|------------------------|
+| Sous-domaine   | text   | Oui    | www, blog, shop...     |
+| TTL            | number | Non    | 3600                   |
+| Cible (FQDN)   | text   | Oui    | Ex: example.com.       |
 
-## 7. CHAMP CIBLE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Cible" |
-| Obligatoire | Oui (*) |
-| Input | "www.exemple.com." |
-| Aide | "La cible doit être un nom d'hôte valide (FQDN terminé par un point)" |
-| Icône | ? (tooltip) |
+RÈGLES MÉTIER
+-------------
+- Un CNAME ne peut pas coexister avec d'autres enregistrements sur le même sous-domaine
+- La cible doit être un FQDN (Fully Qualified Domain Name) avec un point final
+- CNAME ne peut pas être créé à la racine (@)
 
-## 8. BOUTONS FOOTER
-- Annuler (secondaire)
-- Ajouter l'entrée (primaire)
+API ENDPOINT
+------------
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "CNAME",
+  subDomain: string,
+  ttl: number,
+  target: string (FQDN)
+}
 
-## 9. APIS & ENDPOINTS
-- POST /domain/zone/{zoneName}/record : Créer enregistrement CNAME
-  - fieldType: "CNAME"
-  - subDomain: string
-  - target: FQDN
-  - ttl: number
-
+================================================================================

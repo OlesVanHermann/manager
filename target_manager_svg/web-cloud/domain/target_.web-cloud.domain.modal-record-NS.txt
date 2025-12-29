@@ -1,58 +1,65 @@
-# Cahier des Charges : web-cloud/domain - Modal Ajouter enregistrement NS
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-record-NS.svg
+Route:   /web-cloud/domain/{domain}/zone (modal)
+Version: v2 (2024-12-29)
+================================================================================
 
-## 1. VUE D'ENSEMBLE
-- **Modal** : Création d'un enregistrement DNS de type NS
-- **Type** : Formulaire de création
-- **Objectif** : Ajouter un enregistrement NS (serveur de noms)
+DESCRIPTION
+-----------
+Modal de création d'un enregistrement DNS de type NS.
+Enregistrement NS = Définit les serveurs DNS autoritaires pour le domaine.
 
-## 2. STRUCTURE MODAL
-- Header bleu OVH avec titre, badge NS et bouton fermer (✕)
-- Champ sous-domaine
-- Champ TTL
-- Champ cible
-- Aide contextuelle
-- Footer avec boutons
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                          |
+|--------------------------|-------------------------------------|
+| {domain}                 | Contexte - domaine sélectionné      |
+| Sous-domaine             | Input utilisateur                   |
+| TTL (3600)               | Input - défaut 3600 secondes        |
+| Serveur DNS              | Input utilisateur (FQDN requis)     |
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur (650x420)
-- **OdsInput** : Sous-domaine, TTL, Cible
-- **OdsBadge** : Type NS (jaune)
-- **OdsButton** : Annuler, Ajouter l'entrée
+================================================================================
 
-## 4. TITRE
-"Ajouter une entrée DNS - NS" avec badge [NS]
+STRUCTURE MODALE
+----------------
+1. OVERLAY - Fond semi-transparent rgba(0,0,0,0.5)
+2. HEADER MODAL - Badge NS (#4B5563 sur fond #F3F4F6) + titre
+3. BANNIÈRE INFO - Explication du type d'enregistrement
+4. FORMULAIRE:
+   - Sous-domaine (input texte, largeur 350px)
+   - TTL (input numérique, largeur 150px, défaut 3600)
+   - Serveur DNS (input texte, largeur 520px, requis)
+5. ACTIONS - Boutons Annuler / Créer
 
-## 5. CHAMP SOUS-DOMAINE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Sous-domaine" |
-| Input | "subdomain" |
-| Suffixe (addon gris) | ".exemple.com" |
+COULEURS SPÉCIFIQUES
+--------------------
+- Header modal: #F3F4F6 (gris clair)
+- Badge NS: #4B5563 (gris foncé)
 
-## 6. CHAMP TTL
-| Élément | Valeur |
-|---------|--------|
-| Label | "TTL" |
-| Input | 86400 |
-| Unité | "secondes" |
+CHAMPS FORMULAIRE
+-----------------
+| Champ          | Type   | Requis | Placeholder              |
+|----------------|--------|--------|--------------------------|
+| Sous-domaine   | text   | Non    | @ (racine) ou sous-domaine |
+| TTL            | number | Non    | 3600                     |
+| Serveur DNS    | text   | Oui    | Ex: dns1.ovh.net.        |
 
-## 7. CHAMP CIBLE
-| Élément | Valeur |
-|---------|--------|
-| Label | "Cible" |
-| Obligatoire | Oui (*) |
-| Input | "ns1.exemple.com." |
-| Aide | "Serveur DNS autoritaire pour cette zone (FQDN terminé par un point)" |
-| Icône | ? (tooltip) |
+RÈGLES MÉTIER
+-------------
+- Les NS à la racine définissent les serveurs autoritaires du domaine
+- Les NS sur un sous-domaine permettent la délégation de zone
+- La cible doit être un FQDN avec point final
+- Généralement plusieurs NS sont configurés pour la redondance
 
-## 8. BOUTONS FOOTER
-- Annuler (secondaire)
-- Ajouter l'entrée (primaire)
+API ENDPOINT
+------------
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "NS",
+  subDomain: string,
+  ttl: number,
+  target: string (FQDN du serveur DNS)
+}
 
-## 9. APIS & ENDPOINTS
-- POST /domain/zone/{zoneName}/record : Créer enregistrement NS
-  - fieldType: "NS"
-  - subDomain: string
-  - target: FQDN du serveur DNS
-  - ttl: number
-
+================================================================================
