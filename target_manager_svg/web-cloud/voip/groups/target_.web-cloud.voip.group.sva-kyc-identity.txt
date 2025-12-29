@@ -1,0 +1,182 @@
+# Cahier des Charges : telecom/svaWallet - KYC Identite entreprise
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Formulaire de verification d'identite (KYC) pour portefeuille SVA.
+
+### Objectif fonctionnel
+- Collecter les informations legales de l'entreprise
+- Renseigner l'adresse du siege social
+- Identifier le representant legal
+- Valider les donnees avant soumission
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec formulaire multi-sections
+
+---
+
+## 3. COMPOSANTS UI
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Portefeuille SVA - Verification d'identite (KYC) |
+| Description | Completez votre dossier pour recevoir vos reversements. |
+
+### Alerte
+| Type | Message |
+|------|---------|
+| Warning | Les informations fournies doivent correspondre exactement a vos documents officiels. |
+
+### Section Identite de l'entreprise
+| Champ | Type | Description |
+|-------|------|-------------|
+| Type d'entreprise | Radio | Professionnel, Revendeur |
+| Raison sociale | Input | Nom legal de l'entreprise |
+| SIRET | Input | 14 chiffres |
+| Date d'immatriculation | Date picker | Date de creation |
+| Forme juridique | Select | SAS, SARL, SA, EURL, etc. |
+| Description de l'activite | Input | Description textuelle |
+
+### Checkboxes Options
+| Option |
+|--------|
+| Partenaire de crowdfunding |
+| Marketplace |
+
+### Section Adresse du siege
+| Champ | Type | Description |
+|-------|------|-------------|
+| N° de rue | Input | Numero |
+| Type de voie | Select | Rue, Avenue, Boulevard, etc. |
+| Nom de la voie | Input | Nom de la rue |
+| Code postal | Input | Format selon pays |
+| Ville | Input | Ville |
+| Pays | Select | Pays (defaut: France) |
+
+### Section Representant legal
+| Champ | Type | Description |
+|-------|------|-------------|
+| Nom | Input | Nom de famille |
+| Prenom | Input | Prenom |
+| Date de naissance | Date picker | JJ/MM/AAAA |
+| Email | Input | Email professionnel |
+
+### Certification
+| Element | Description |
+|---------|-------------|
+| Checkbox | J'atteste que les informations sont exactes et je certifie etre le representant legal |
+
+### Bouton
+| Bouton | Type | Action |
+|--------|------|--------|
+| Enregistrer et continuer | Primary | Sauvegarde et passe a l'etape suivante |
+
+---
+
+## 4. APIS & DONNEES
+
+### Formes juridiques
+| Code | Label |
+|------|-------|
+| SARL | Societe a responsabilite limitee |
+| SAS | Societe par actions simplifiee |
+| SA | Societe anonyme |
+| EURL | Entreprise unipersonnelle |
+| EI | Entreprise individuelle |
+| SCI | Societe civile immobiliere |
+| SASU | SAS unipersonnelle |
+
+### Endpoints
+```
+GET /svaWallet/{walletId}/kyc
+    Response: { status, identity, address, representative }
+
+PUT /svaWallet/{walletId}/kyc/identity
+    Body: {
+      businessType: "professional",
+      legalName: "MA SOCIETE SAS",
+      siret: "12345678901234",
+      registrationDate: "2020-01-15",
+      legalForm: "SAS",
+      activityDescription: "Services telecom",
+      isCrowdfunding: false,
+      isMarketplace: false
+    }
+
+PUT /svaWallet/{walletId}/kyc/address
+    Body: {
+      streetNumber: "10",
+      streetType: "rue",
+      streetName: "de la Paix",
+      postalCode: "75001",
+      city: "Paris",
+      country: "FR"
+    }
+
+PUT /svaWallet/{walletId}/kyc/representative
+    Body: {
+      lastName: "DUPONT",
+      firstName: "Jean",
+      birthDate: "1975-03-15",
+      email: "jean.dupont@masociete.fr"
+    }
+```
+
+### Validation SIRET
+| Regle | Description |
+|-------|-------------|
+| Format | 14 chiffres |
+| Algorithme | Luhn |
+| Verification | API INSEE |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "sva_kyc_title": "Portefeuille SVA - Verification d'identite (KYC)",
+  "sva_kyc_desc": "Completez votre dossier pour recevoir vos reversements.",
+  "sva_kyc_warning": "Les informations fournies doivent correspondre exactement a vos documents officiels.",
+  "sva_kyc_identity": "Identite de l'entreprise",
+  "sva_kyc_type": "Type d'entreprise",
+  "sva_kyc_type_pro": "Professionnel",
+  "sva_kyc_type_reseller": "Revendeur",
+  "sva_kyc_legal_name": "Raison sociale",
+  "sva_kyc_siret": "SIRET",
+  "sva_kyc_registration": "Date d'immatriculation",
+  "sva_kyc_legal_form": "Forme juridique",
+  "sva_kyc_activity": "Description de l'activite",
+  "sva_kyc_crowdfunding": "Partenaire de crowdfunding",
+  "sva_kyc_marketplace": "Marketplace",
+  "sva_kyc_address": "Adresse du siege",
+  "sva_kyc_street_num": "N° de rue",
+  "sva_kyc_street_type": "Type de voie",
+  "sva_kyc_street_name": "Nom de la voie",
+  "sva_kyc_postal": "Code postal",
+  "sva_kyc_city": "Ville",
+  "sva_kyc_country": "Pays",
+  "sva_kyc_representative": "Representant legal",
+  "sva_kyc_lastname": "Nom",
+  "sva_kyc_firstname": "Prenom",
+  "sva_kyc_birthdate": "Date de naissance",
+  "sva_kyc_email": "Email",
+  "sva_kyc_certify": "J'atteste que les informations sont exactes et je certifie etre le representant legal",
+  "sva_kyc_submit": "Enregistrer et continuer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- SIRET verifie via API INSEE
+- Adresse doit correspondre au Kbis
+- Representant legal = signataire
+- Certification obligatoire pour valider
+- Donnees conformes a la reglementation LCB-FT

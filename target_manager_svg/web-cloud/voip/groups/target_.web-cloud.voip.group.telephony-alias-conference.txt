@@ -1,0 +1,189 @@
+================================================================================
+CAHIER DES CHARGES - old_manager.telecom.telephony.alias-conference
+================================================================================
+Genere le : 2025-01-XX
+Source : old_manager_web-cloud_telecom.tar
+NAV1 : telecom
+NAV2 : telephony
+Type : Page de configuration conference telephonique
+
+================================================================================
+1. RESUME EXECUTIF
+================================================================================
+
+Objectif : Interface de gestion des conferences telephoniques pour un numero alias
+Utilisateurs cibles : Administrateurs de groupes telephoniques OVHcloud
+Perimetre : Configuration, gestion des participants en temps reel, parametres avances
+
+Fonctionnalites principales :
+- Visualisation des participants connectes en temps reel
+- Verrouillage/deverrouillage de la conference
+- Mode muet global (mute all)
+- Configuration des parametres (PIN, langue, annonce, enregistrement)
+- Gestion des acces web (URL de suivi et controle)
+- Actions sur les participants (expulser, sourdine, sensibilite micro)
+
+================================================================================
+2. ARCHITECTURE
+================================================================================
+
+Composants source :
+- components/telecom/telephony/group/number/feature/conference/
+  - conference.factory.js : Factory TelephonyGroupNumberConference
+  - conference.controller.js : Controleur principal
+  - conference.component.js : Definition du composant
+  - conference.html : Template principal
+  - conference-configuration.html : Popover de configuration
+  - conference-polling.service.js : Service de polling temps reel
+  - conference.less : Styles specifiques
+  - partiticipant/
+    - participant.factory.js : Factory TelephonyGroupNumberConferenceParticipant
+    - participant-actions.html : Menu actions participant
+
+Dependances :
+- OvhApiTelephony.Conference : API conferences
+- OvhApiMe.Document : Upload fichiers audio
+- tucVoipServiceTask : Polling des taches
+- TelephonyMediator : Mediateur telephonie
+
+================================================================================
+3. PAGES & NAVIGATION
+================================================================================
+
+Route : /telecom/telephony/{billingAccount}/alias/{serviceName}/conference
+Breadcrumb : Telecom > Telephonie > {Groupe} > {Alias} > Conference
+
+Etats de la page :
+- Loading : Chargement des informations
+- Empty : Aucun participant connecte
+- Active : Participants presents dans la conference
+
+Navigation interne :
+- Popover configuration (responsive-popover)
+- Menu actions participant (popover-trigger outsideClick)
+
+================================================================================
+4. COMPOSANTS UI
+================================================================================
+
+4.1 Bloc Conference Principal
+-----------------------------
+Structure : voip-plan__step avec icone contacts
+Elements :
+- Icone : ovh-font-contacts (ou spinner si sauvegarde)
+- Label : "Conference"
+- Bouton config : ovh-font-config -> ouvre popover configuration
+
+4.2 Controles Conference (si participants presents)
+---------------------------------------------------
+Switch Verrouillage :
+- ovh-font-lockOpened / ovh-font-lock
+- oui-switch inline
+- Toggle lock/unlock API
+
+Switch Mute All :
+- ovh-font-microphone / ovh-font-microphoneOff
+- oui-switch inline
+- Toggle mute/unmute tous participants
+
+4.3 Liste Participants
+----------------------
+Pour chaque participant :
+- Icone : ovh-font-user
+- Nom : participant.callerName
+- Info : "connecte depuis {date}"
+- Bouton actions : ovh-font-dots -> menu contextuel
+- Indicateurs :
+  - ovh-font-speaker (si talking)
+  - fa-deaf (si !hear)
+  - ovh-font-noneSpeaker (si !speak)
+
+4.4 Popover Configuration
+-------------------------
+Sections :
+1. Parametres generaux
+   - Langue (select)
+   - Code PIN (input, 1-8 chiffres, vide ou 0 = aucun)
+   - Annonce personnalisee (toggle + upload fichier)
+   - Enregistrement (toggle)
+   - Rentrer muet (toggle)
+   - Rejet appels anonymes (toggle)
+
+2. Adresses publiques
+   - URL de suivi (read)
+   - URL de controle (write)
+   - Bouton Generer/Regenerer
+
+3. Gestion rapports
+   - Type : aucun / email compte / autre email
+   - Email personnalise (si autre)
+   - Marque blanche (toggle)
+
+4.5 Menu Actions Participant
+----------------------------
+Actions disponibles :
+- Expulser (kick)
+- Sourdine (deaf/undeaf)
+- Sensibilite micro (slider)
+
+================================================================================
+5. APIs & DONNEES
+================================================================================
+
+5.1 Endpoints Conference
+------------------------
+GET /telephony/{billingAccount}/conference/{serviceName}
+GET /telephony/{billingAccount}/conference/{serviceName}/informations
+GET /telephony/{billingAccount}/conference/{serviceName}/settings
+PUT /telephony/{billingAccount}/conference/{serviceName}/settings
+POST /telephony/{billingAccount}/conference/{serviceName}/lock
+POST /telephony/{billingAccount}/conference/{serviceName}/unlock
+
+5.2 Endpoints Participants (AAPI)
+---------------------------------
+GET /telephony/{billingAccount}/conference/{serviceName}/participants
+POST /telephony/{billingAccount}/conference/{serviceName}/participants/{id}/kick
+POST /telephony/{billingAccount}/conference/{serviceName}/participants/{id}/mute
+POST /telephony/{billingAccount}/conference/{serviceName}/participants/{id}/unmute
+POST /telephony/{billingAccount}/conference/{serviceName}/participants/{id}/deaf
+POST /telephony/{billingAccount}/conference/{serviceName}/participants/{id}/undeaf
+PUT /telephony/{billingAccount}/conference/{serviceName}/participants/{id}
+
+5.3 Endpoints WebAccess
+-----------------------
+GET /telephony/{billingAccount}/conference/{serviceName}/webAccess
+GET /telephony/{billingAccount}/conference/{serviceName}/webAccess/{id}
+POST /telephony/{billingAccount}/conference/{serviceName}/webAccess
+DELETE /telephony/{billingAccount}/conference/{serviceName}/webAccess/{id}
+
+5.4 Endpoint Annonce Audio
+--------------------------
+POST /telephony/{billingAccount}/conference/{serviceName}/announceUpload
+
+================================================================================
+6. TRADUCTIONS (FR)
+================================================================================
+
+telephony_number_feature_conference = "Conference"
+telephony_number_feature_conference_edit = "Gerer les parametres de la conference"
+telephony_number_feature_conference_general_lock = "Verrouiller la conference"
+telephony_number_feature_conference_general_unlock = "Deverrouiller la conference"
+telephony_number_feature_conference_general_mute_all_members = "Activer mode muet sur tous les participants"
+telephony_number_feature_conference_general_settings_language = "Langue de votre conference"
+telephony_number_feature_conference_general_settings_pin = "Code PIN"
+telephony_number_feature_conference_general_settings_record = "Enregistrement"
+telephony_number_feature_conference_general_settings_enter_muted = "Rentrer muet"
+telephony_number_feature_conference_general_settings_reject_anonymous = "Rejet des appels anonymes"
+telephony_number_feature_conference_participants_actions_kick = "Expulser"
+telephony_number_feature_conference_participants_actions_deaf = "Sourdine"
+telephony_number_feature_conference_participants_empty = "Aucun participant dans la conference"
+
+================================================================================
+7. REGLES METIER
+================================================================================
+
+Validation PIN : Vide ou "0" = pas de PIN, sinon 1 a 8 chiffres
+Upload annonce : Formats wav, mp3, ogg - Taille max 10 Mo
+WebAccess : Toujours generer les 2 types (read + write) ensemble
+Actions participant : kick, mute/unmute, deaf/undeaf, energy (1-4)
+Verrouillage : locked = true -> nouveaux participants refuses

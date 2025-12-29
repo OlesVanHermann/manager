@@ -1,0 +1,126 @@
+# Cahier des Charges : telecom/telephony - Filtrage des appels
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion des filtres d'appels (liste blanche/noire) d'une ligne.
+
+### Objectif fonctionnel
+- Voir les regles de filtrage actives
+- Ajouter/supprimer des numeros
+- Filtrer par type et liste
+- Exporter les regles
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec toolbar et tableau filtres
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Breadcrumb | Telecom - Telephonie - Ligne - Filtrage des appels |
+| Titre | Filtrage des appels |
+
+### Toolbar actions
+| Element | Type | Action |
+|---------|------|--------|
+| Supprimer le filtre | Secondary | Supprime selection |
+| Exporter | Secondary | Export CSV |
+
+### Filtres
+| Element | Type | Options |
+|---------|------|---------|
+| Type | Select | Tous / Entrants / Sortants |
+| Liste | Select | Toutes / Blanche / Noire |
+
+### Tableau filtres
+| Colonne | Description |
+|---------|-------------|
+| Checkbox | Selection multiple |
+| Numero | Format international |
+| Type de numero | International / Numero court |
+| Type | Appels entrants / sortants |
+| Liste | Badge Noire / Blanche |
+| Statut | Point vert actif |
+
+### Badge liste
+| Type | Style |
+|------|-------|
+| Noire | Fond noir, texte blanc |
+| Blanche | Fond gris clair, texte fonce |
+
+### Checkbox
+| Etat | Style |
+|------|-------|
+| Checked | Fond bleu, check blanc |
+| Unchecked | Fond blanc, bordure grise |
+
+### Pagination
+| Element | Description |
+|---------|-------------|
+| Compteur | Page X / Y |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/antiSpam
+POST /telephony/{billingAccount}/line/{serviceName}/antiSpam
+DELETE /telephony/{billingAccount}/line/{serviceName}/antiSpam/{id}
+```
+
+### Modele Filter
+```typescript
+interface CallFilter {
+  id: string;
+  number: string;
+  numberType: 'international' | 'shortNumber';
+  callType: 'incoming' | 'outgoing';
+  listType: 'black' | 'white';
+  status: 'active' | 'inactive';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_filtering_title": "Filtrage des appels",
+  "telephony_filtering_delete": "Supprimer le filtre",
+  "telephony_filtering_export": "Exporter",
+  "telephony_filtering_filter_type": "Type",
+  "telephony_filtering_filter_list": "Liste",
+  "telephony_filtering_col_number": "Numero",
+  "telephony_filtering_col_number_type": "Type de numero",
+  "telephony_filtering_col_call_type": "Type",
+  "telephony_filtering_col_list": "Liste",
+  "telephony_filtering_col_status": "Statut",
+  "telephony_filtering_type_incoming": "Appels entrants",
+  "telephony_filtering_type_outgoing": "Appels sortants",
+  "telephony_filtering_list_black": "Noire",
+  "telephony_filtering_list_white": "Blanche",
+  "telephony_filtering_number_international": "International",
+  "telephony_filtering_number_short": "Numero court",
+  "telephony_filtering_page": "Page"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Liste noire = numeros bloques
+- Liste blanche = numeros autorises
+- Filtrage applicable aux entrants et/ou sortants
+- Maximum 100 regles par ligne
+- Export au format CSV

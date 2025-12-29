@@ -1,0 +1,132 @@
+# Cahier des Charges : telecom/billing - Depot de garantie
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion du depot de garantie du groupe.
+
+### Objectif fonctionnel
+- Voir le depot actuel
+- Commander un depot supplementaire
+- Comprendre le fonctionnement
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec carte info + formulaire commande + panneau info
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour a la facturation |
+| Titre | Depot de garantie |
+
+### Carte informations
+| Champ | Valeur |
+|-------|--------|
+| Groupe | ab12345-ovh-1 |
+| Depot actuel | 150,00 EUR HT |
+
+### Formulaire commande
+| Element | Description |
+|---------|-------------|
+| Titre | Commander un depot supplementaire |
+
+### Champ montant
+| Element | Description |
+|---------|-------------|
+| Label | Montant a ajouter |
+| Type | Select dropdown |
+| Options | 50, 100, 200, 500 EUR HT |
+
+### Info nouveau depot
+| Element | Description |
+|---------|-------------|
+| Label | Nouveau montant du depot |
+| Valeur | XXX,XX EUR HT (calcule) |
+
+### Checkbox conditions
+| Element | Description |
+|---------|-------------|
+| Type | Checkbox |
+| Label | J'accepte les conditions generales |
+| Lien | Consulter les conditions |
+
+### Bouton commande
+| Element | Description |
+|---------|-------------|
+| Type | Primary |
+| Texte | Commander |
+
+### Panneau information
+| Element | Description |
+|---------|-------------|
+| Type | Info (fond bleu) |
+| Titre | Information |
+| Contenu | Explication depot de garantie |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/billingAccount
+POST /telephony/{billingAccount}/billingAccount/deposit
+GET /order/telephony/{billingAccount}/deposit
+```
+
+### Modele
+```typescript
+interface DepositInfo {
+  billingAccount: string;
+  currentDeposit: number;
+}
+
+interface DepositOrder {
+  amount: number;
+}
+
+interface DepositOrderResult {
+  orderId: number;
+  orderUrl: string;
+  newDeposit: number;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telecom_deposit_title": "Depot de garantie",
+  "telecom_deposit_back": "Retour a la facturation",
+  "telecom_deposit_info_title": "Informations",
+  "telecom_deposit_group": "Groupe",
+  "telecom_deposit_current": "Depot actuel",
+  "telecom_deposit_order_title": "Commander un depot supplementaire",
+  "telecom_deposit_amount": "Montant a ajouter",
+  "telecom_deposit_new": "Nouveau montant du depot",
+  "telecom_deposit_accept": "J'accepte les conditions generales",
+  "telecom_deposit_conditions": "Consulter les conditions",
+  "telecom_deposit_submit": "Commander",
+  "telecom_deposit_panel_title": "Information",
+  "telecom_deposit_panel_desc": "Le depot de garantie permet de couvrir vos consommations hors forfait. Il est restitue a la resiliation du service."
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Depot = caution pour hors forfait
+- Restitue a la resiliation
+- Commande = bon de commande OVH
+- Montants predefinids
+- Conditions CGV obligatoires

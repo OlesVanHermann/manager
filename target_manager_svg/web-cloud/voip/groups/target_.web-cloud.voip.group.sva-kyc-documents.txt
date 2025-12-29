@@ -1,0 +1,148 @@
+# Cahier des Charges : telecom/svaWallet - KYC Documents justificatifs
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de telechargement des documents KYC pour portefeuille SVA.
+
+### Objectif fonctionnel
+- Lister les documents requis
+- Telecharger les justificatifs
+- Suivre le statut de validation
+- Remplacer les documents refuses
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec liste documents + tableau statut
+
+---
+
+## 3. COMPOSANTS UI
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Portefeuille SVA - Verification d'identite (KYC) |
+| Sous-titre | Documents justificatifs |
+| Description | Televersez les documents requis pour completer votre dossier KYC. |
+
+### Alerte
+| Type | Message |
+|------|---------|
+| Warning | Les documents doivent etre lisibles et en cours de validite. |
+| Info | Les fichiers acceptes sont : PDF, JPG, PNG (max 5 Mo). |
+
+### Liste Documents requis
+| Document |
+|----------|
+| Piece d'identite du representant legal |
+| Extrait Kbis de moins de 3 mois |
+| RIB de l'entreprise |
+| Justificatif de domicile |
+
+### Tableau Documents
+| Colonne | Description |
+|---------|-------------|
+| Document | Nom du document |
+| Statut | Badge de statut |
+| Actions | Liens telecharger/remplacer |
+
+### Badges Statut
+| Statut | Couleur | Texte |
+|--------|---------|-------|
+| Valide | Vert (#D1FAE5) | ✓ Valide |
+| En attente | Jaune (#FEF3C7) | ⏳ En attente |
+| Non fourni | Gris | Non fourni |
+| Refuse | Rouge (#FEE2E2) | ✗ Refuse |
+
+### Actions
+| Action | Description |
+|--------|-------------|
+| Televerser | Ouvre dialog upload |
+| Remplacer | Remplace document existant |
+| Telecharger | Telecharge le document |
+
+### Bouton
+| Bouton | Type | Action |
+|--------|------|--------|
+| Retour au tableau de bord | Primary | Navigue vers dashboard |
+
+---
+
+## 4. APIS & DONNEES
+
+### Documents requis
+| Type | Description |
+|------|-------------|
+| ID_CARD | Piece d'identite (CNI/Passeport) |
+| KBIS | Extrait Kbis |
+| RIB | Releve d'identite bancaire |
+| PROOF_ADDRESS | Justificatif de domicile |
+
+### Endpoints
+```
+GET /svaWallet/{walletId}/kyc/documents
+    Response: [
+      { type: "ID_CARD", status: "validated", uploadedAt, validatedAt },
+      { type: "KBIS", status: "pending", uploadedAt },
+      { type: "RIB", status: "not_provided" },
+      { type: "PROOF_ADDRESS", status: "not_provided" }
+    ]
+
+POST /svaWallet/{walletId}/kyc/documents
+    Body: FormData { type, file }
+    Response: { documentId, status: "pending" }
+
+GET /svaWallet/{walletId}/kyc/documents/{documentId}/download
+    Response: Binary file
+
+DELETE /svaWallet/{walletId}/kyc/documents/{documentId}
+```
+
+### Contraintes fichiers
+| Contrainte | Valeur |
+|------------|--------|
+| Taille max | 5 Mo |
+| Formats | PDF, JPG, PNG |
+| Resolution min | 300 DPI |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "sva_kyc_docs_title": "Documents justificatifs",
+  "sva_kyc_docs_desc": "Televersez les documents requis pour completer votre dossier KYC.",
+  "sva_kyc_docs_warning": "Les documents doivent etre lisibles et en cours de validite.",
+  "sva_kyc_docs_formats": "Les fichiers acceptes sont : PDF, JPG, PNG (max 5 Mo).",
+  "sva_kyc_docs_required": "Documents a fournir :",
+  "sva_kyc_docs_id": "Piece d'identite du representant legal",
+  "sva_kyc_docs_kbis": "Extrait Kbis de moins de 3 mois",
+  "sva_kyc_docs_rib": "RIB de l'entreprise",
+  "sva_kyc_docs_address": "Justificatif de domicile",
+  "sva_kyc_docs_document": "Document",
+  "sva_kyc_docs_status": "Statut",
+  "sva_kyc_docs_actions": "Actions",
+  "sva_kyc_docs_validated": "Valide",
+  "sva_kyc_docs_pending": "En attente",
+  "sva_kyc_docs_not_provided": "Non fourni",
+  "sva_kyc_docs_rejected": "Refuse",
+  "sva_kyc_docs_upload": "Televerser",
+  "sva_kyc_docs_replace": "Remplacer",
+  "sva_kyc_docs_download": "Telecharger",
+  "sva_kyc_docs_back": "Retour au tableau de bord"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Kbis doit avoir moins de 3 mois
+- Piece d'identite recto + verso
+- RIB au nom de l'entreprise
+- Validation manuelle par equipe compliance
+- Delai validation: 24-48h ouvrables

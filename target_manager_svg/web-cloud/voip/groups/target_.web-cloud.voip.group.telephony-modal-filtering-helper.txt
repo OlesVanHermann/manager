@@ -1,0 +1,106 @@
+# Cahier des Charges : telecom/telephony - Modal Assistant filtrage
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal assistant simplifie pour creer des filtres par type de numero.
+
+### Objectif fonctionnel
+- Simplifier la creation de filtres
+- Bloquer une categorie de numeros en un clic
+- Appliquer des regles predefinies
+
+---
+
+## 2. LAYOUT
+
+### Structure modal compacte avec 2 selects
+
+---
+
+## 3. COMPOSANTS UI
+
+### Modal Header
+| Element | Description |
+|---------|-------------|
+| Titre | Assistant de configuration |
+| Bouton fermer | X en haut a droite |
+
+### Formulaire
+| Champ | Type | Options |
+|-------|------|---------|
+| Liste | Select | Liste de filtrage (noire/blanche, entrant/sortant) |
+| Type de numero | Select | Categories predefinies |
+
+### Options Liste
+| Option |
+|--------|
+| Choisir la liste de filtrage ... |
+| Appels entrants - Liste noire |
+| Appels entrants - Liste blanche |
+| Appels sortants - Liste noire |
+| Appels sortants - Liste blanche |
+
+### Options Type de numero
+| Option | Description |
+|--------|-------------|
+| Mobiles nationaux | +33 6 / +33 7 |
+| Fixes nationaux | +33 1-5 / +33 9 |
+| Numeros internationaux | Hors +33 |
+| Numeros speciaux | 08xx |
+| Numeros masques | Anonymes |
+
+### Bouton
+| Bouton | Type | Action |
+|--------|------|--------|
+| Appliquer | Primary | Cree les filtres correspondants |
+
+---
+
+## 4. APIS & DONNEES
+
+### Prefixes par type (France)
+| Type | Prefixes |
+|------|----------|
+| Mobiles nationaux | 0033[67] |
+| Fixes nationaux | 0033[1-5], 00339 |
+| Internationaux | ^(?!0033) |
+| Speciaux | 00338 |
+| Masques | anonymous |
+
+### Endpoint
+```
+POST /telephony/{billingAccount}/line/{serviceName}/calls/filtering/batch
+    Body: [
+      { callerIdNumber: "00336", type: "incoming", list: "blacklist" },
+      { callerIdNumber: "00337", type: "incoming", list: "blacklist" }
+    ]
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_filtering_helper_title": "Assistant de configuration",
+  "telephony_filtering_helper_list": "Liste",
+  "telephony_filtering_helper_list_placeholder": "Choisir la liste de filtrage ...",
+  "telephony_filtering_helper_type": "Type de numero",
+  "telephony_filtering_helper_mobile": "Mobiles nationaux",
+  "telephony_filtering_helper_landline": "Fixes nationaux",
+  "telephony_filtering_helper_international": "Numeros internationaux",
+  "telephony_filtering_helper_special": "Numeros speciaux",
+  "telephony_filtering_helper_anonymous": "Numeros masques",
+  "telephony_filtering_helper_submit": "Appliquer"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Une selection = plusieurs filtres crees
+- Prefixes predefinis selon pays du groupe
+- Simplifie l'usage vs creation manuelle
+- Cumul possible avec filtres individuels

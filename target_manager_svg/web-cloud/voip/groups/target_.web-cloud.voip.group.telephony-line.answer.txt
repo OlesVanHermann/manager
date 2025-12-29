@@ -1,0 +1,154 @@
+# Cahier des Charges : telecom/telephony/line - Gestion du repondeur
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Onglet Repondeur de la gestion d'une ligne VoIP.
+
+### Objectif fonctionnel
+- Consulter les statistiques de la messagerie
+- Configurer les parametres du repondeur
+- Ecouter et gerer les messages vocaux
+
+---
+
+## 2. LAYOUT
+
+### Structure avec onglets + tiles stats + cartes + tableau
+
+---
+
+## 3. COMPOSANTS UI
+
+### Breadcrumb
+| Element | Description |
+|---------|-------------|
+| Chemin | Telecom > VoIP > {numero} > Gestion du repondeur |
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Gestion du repondeur |
+
+### Onglets
+| Onglet | Description |
+|--------|-------------|
+| Tableau de bord | Dashboard de la ligne |
+| Appels | Historique des appels |
+| Repondeur | Actif - Messagerie vocale |
+
+### Tiles Statistiques
+| Tile | Valeur | Description |
+|------|--------|-------------|
+| Messages non lus | Nombre | Messages en attente |
+| Messages totaux | Nombre | Total des messages |
+| Espace utilise | Pourcentage | Capacite utilisee |
+
+### Carte Configuration
+| Lien | Description |
+|------|-------------|
+| Choix de la messagerie par defaut | Selectionner la messagerie |
+| Mot de passe acces repondeur | Modifier le code d'acces |
+| Configuration du repondeur | Parametres avances |
+
+### Carte Gestion des messages
+| Element | Description |
+|---------|-------------|
+| Titre | Gestion des messages |
+| Description | Ecoutez, telechargez ou supprimez |
+| Bouton | Acceder aux messages (primary) |
+
+### Tableau Messages recents
+| Colonne | Description |
+|---------|-------------|
+| Date | Date et heure du message |
+| Expediteur | Numero appelant |
+| Duree | Duree du message |
+| Statut | Badge Non lu/Lu |
+| Actions | Liens Ecouter, Telecharger, Supprimer |
+
+### Badges statut
+| Statut | Couleur |
+|--------|---------|
+| Non lu | Bleu (#DBEAFE) |
+| Lu | Gris (#E5E7EB) |
+
+### Actions messages
+| Action | Type |
+|--------|------|
+| Ecouter | Lien (lecteur audio) |
+| Telecharger | Lien (download MP3/WAV) |
+| Supprimer | Lien danger |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail
+    Response: { active, mailbox, forcePassword, ... }
+
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/directories
+    Response: [{ id, name, dir }]
+
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/directories/{dir}/sounds
+    Response: [{ id, creationDatetime, duration, callerid, isRead }]
+
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/directories/{dir}/sounds/{id}
+    Response: { url } (lien de telechargement)
+
+DELETE /telephony/{billingAccount}/line/{serviceName}/voicemail/directories/{dir}/sounds/{id}
+
+PUT /telephony/{billingAccount}/line/{serviceName}/voicemail
+    Body: { active, forcePassword, mailbox, ... }
+
+POST /telephony/{billingAccount}/line/{serviceName}/voicemail/changePassword
+    Body: { password }
+```
+
+### Statistiques
+| Donnee | Source |
+|--------|--------|
+| Messages non lus | Count de isRead=false |
+| Messages totaux | Count total |
+| Espace utilise | Calcul sur taille/quota |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_voicemail_title": "Gestion du repondeur",
+  "telephony_voicemail_unread": "Messages non lus",
+  "telephony_voicemail_total": "Messages totaux",
+  "telephony_voicemail_space": "Espace utilise",
+  "telephony_voicemail_config": "Configuration",
+  "telephony_voicemail_default": "Choix de la messagerie par defaut",
+  "telephony_voicemail_password": "Mot de passe acces repondeur",
+  "telephony_voicemail_settings": "Configuration du repondeur",
+  "telephony_voicemail_messages": "Gestion des messages",
+  "telephony_voicemail_access": "Acceder aux messages",
+  "telephony_voicemail_recent": "Messages recents",
+  "telephony_voicemail_date": "Date",
+  "telephony_voicemail_from": "Expediteur",
+  "telephony_voicemail_duration": "Duree",
+  "telephony_voicemail_status": "Statut",
+  "telephony_voicemail_listen": "Ecouter",
+  "telephony_voicemail_download": "Telecharger",
+  "telephony_voicemail_delete": "Supprimer",
+  "telephony_voicemail_read": "Lu",
+  "telephony_voicemail_unread_badge": "Non lu"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Messages classes par date decroissante
+- Telechargement au format MP3 ou WAV
+- Suppression definitive (pas de corbeille)
+- Mot de passe = code PIN 4 chiffres
+- Numero masque affiche "Numero masque"

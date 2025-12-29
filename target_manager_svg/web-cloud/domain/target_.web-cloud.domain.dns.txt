@@ -1,0 +1,90 @@
+# Cahier des Charges : web-cloud/domain - Zone DNS (avec onglets)
+
+## 1. VUE D'ENSEMBLE
+- **Écran** : Zone DNS avec navigation par onglets
+- **Type** : Page avec tableau paginé
+- **Objectif** : Gérer les enregistrements de la zone DNS
+
+## 2. STRUCTURE DE LA PAGE
+- Header OVHcloud
+- Sidebar navigation
+- Breadcrumb
+- Titre
+- Onglets navigation
+- Barre d'actions
+- Filtre recherche
+- Tableau enregistrements
+- Pagination
+
+## 3. COMPOSANTS UI
+- **OdsTabs** : Navigation (Infos générales, Zone DNS, Serveurs DNS, Redirection)
+- **OdsButton** : Ajouter, Importer, Exporter, Réinitialiser
+- **OdsInput** : Filtre recherche
+- **OdsTable** : Liste enregistrements avec badges type
+- **OdsPagination** : Navigation pages
+- **OdsActionMenu** : Menu contextuel
+
+## 4. ONGLETS
+| Onglet | État |
+|--------|------|
+| Informations générales | Inactif |
+| Zone DNS | Actif (sélectionné) |
+| Serveurs DNS | Inactif |
+| Redirection | Inactif |
+
+## 5. BARRE D'ACTIONS
+| Bouton | Style |
+|--------|-------|
+| + Ajouter une entrée | Primaire bleu |
+| Importer (texte) | Secondaire |
+| Exporter | Secondaire |
+| Réinitialiser | Secondaire |
+
+## 6. FILTRE
+Input : "🔍 Filtrer par type ou sous-domaine..."
+
+## 7. TABLEAU ZONE DNS
+| Colonne | Description |
+|---------|-------------|
+| Sous-domaine | @ ou nom du sous-domaine |
+| Type | Badge coloré |
+| TTL | Durée en secondes |
+| Cible | Valeur |
+| Actions | Menu ⋮ |
+
+### Badges types (couleurs)
+| Type | Fond | Texte |
+|------|------|-------|
+| A | #DBEAFE | #1E40AF |
+| AAAA | #FEE2E2 | #991B1B |
+| CNAME | #D1FAE5 | #065F46 |
+| MX | #FEF3C7 | #92400E |
+| TXT | #E0E7FF | #3730A3 |
+
+### Exemple données
+| Sous-domaine | Type | TTL | Cible |
+|--------------|------|-----|-------|
+| @ | A | 3600 | 213.186.33.5 |
+| @ | AAAA | 3600 | 2001:41d0:1:1b00:213:186:33:5 |
+| www | CNAME | 3600 | example.com. |
+| @ | MX | 3600 | 1 mx1.mail.ovh.net. |
+| @ | MX | 3600 | 5 mx2.mail.ovh.net. |
+| @ | TXT | 3600 | "v=spf1 include:mx.ovh.com ~all" |
+| _dmarc | TXT | 3600 | "v=DMARC1; p=none; rua=mailto:..." |
+
+## 8. MENU ACTIONS (⋮)
+- Modifier l'entrée
+- Copier la valeur
+- Supprimer (rouge)
+
+## 9. PAGINATION
+"Affichage 1-7 sur 12 entrées" | 1 | 2 | ›
+
+## 10. APIS & ENDPOINTS
+- GET /domain/zone/{zoneName}/record : Liste enregistrements
+- POST /domain/zone/{zoneName}/record : Ajouter
+- PUT /domain/zone/{zoneName}/record/{id} : Modifier
+- DELETE /domain/zone/{zoneName}/record/{id} : Supprimer
+- GET /domain/zone/{zoneName}/export : Exporter zone
+- POST /domain/zone/{zoneName}/import : Importer zone
+

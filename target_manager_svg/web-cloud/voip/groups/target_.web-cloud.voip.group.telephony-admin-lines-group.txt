@@ -1,0 +1,137 @@
+# Cahier des Charges : telecom/telephony - Administration lignes groupe
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page d'administration des lignes et numeros d'un groupe de telephonie.
+
+### Objectif fonctionnel
+- Voir les lignes/numeros du groupe actuel
+- Attacher des services d'un autre groupe
+- Gerer les associations
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec 3 sections cartes
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour a l'administration |
+| Titre | Lignes du groupe |
+
+### Section Informations
+| Element | Description |
+|---------|-------------|
+| Type | Carte |
+| Titre | Informations |
+| Contenu | Comptage lignes et numeros |
+
+### Section Selection groupe
+| Element | Description |
+|---------|-------------|
+| Type | Carte |
+| Titre | Selectionner un groupe |
+| Sous-titre | Description selection |
+
+### Tableau groupes
+| Colonne | Description |
+|---------|-------------|
+| Groupe | Nom cliquable (link) |
+| Identifiant | Italique gris |
+
+### Etats ligne groupe
+| Etat | Style |
+|------|-------|
+| Normal | Blanc, lien bleu |
+| Selectionne | Fond bleu clair |
+| Desactive | Fond gris, texte muted |
+
+### Section Services
+| Element | Description |
+|---------|-------------|
+| Type | Carte |
+| Titre | Services a attacher |
+| Sous-titre | Services du groupe X |
+
+### Liste services
+| Type | Affichage |
+|------|-----------|
+| Lignes | Checkbox + numero + description |
+| Numeros | Checkbox + numero + type |
+
+### Checkbox
+| Etat | Style |
+|------|-------|
+| Checked | Fond bleu, check blanc |
+| Empty | Fond blanc, bordure grise |
+
+### Footer actions
+| Bouton | Type | Action |
+|--------|------|--------|
+| Attacher | Primary | Valide |
+| Choisir autre | Secondary | Reset selection |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony
+GET /telephony/{billingAccount}/service
+POST /telephony/{billingAccount}/service/{serviceName}/changeOfBillingAccount
+```
+
+### Modeles
+```typescript
+interface BillingAccount {
+  billingAccount: string;
+  description: string;
+  status: string;
+}
+
+interface TelephonyService {
+  serviceName: string;
+  serviceType: 'line' | 'alias' | 'fax';
+  description: string;
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_admin_lines_title": "Lignes du groupe",
+  "telephony_admin_lines_back": "Retour a l'administration",
+  "telephony_admin_lines_info": "Informations",
+  "telephony_admin_lines_count": "Ce groupe contient {{lines}} lignes et {{aliases}} numeros.",
+  "telephony_admin_lines_select": "Selectionner un groupe",
+  "telephony_admin_lines_select_help": "Selectionnez un groupe pour ajouter des services",
+  "telephony_admin_lines_col_group": "Groupe de telephonie",
+  "telephony_admin_lines_col_id": "Identifiant",
+  "telephony_admin_lines_services": "Services a attacher",
+  "telephony_admin_lines_services_help": "Selectionnez les services du groupe",
+  "telephony_admin_lines_lines": "Lignes",
+  "telephony_admin_lines_aliases": "Numeros",
+  "telephony_admin_lines_attach": "Attacher",
+  "telephony_admin_lines_change": "Choisir un autre groupe"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Groupes expires non selectionnables
+- Attachement = changement de facturation
+- Services du meme groupe non affichables
+- Confirmation requise avant attachement

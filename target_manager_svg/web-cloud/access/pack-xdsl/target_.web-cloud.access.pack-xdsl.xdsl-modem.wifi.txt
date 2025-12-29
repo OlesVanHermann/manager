@@ -1,0 +1,132 @@
+# Cahier des Charges : telecom/xdsl - Configuration WiFi
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration des reseaux WiFi 2.4 GHz et 5 GHz du modem.
+
+### Objectif fonctionnel
+- Activer/desactiver le WiFi
+- Configurer les SSID et mots de passe
+- Choisir les parametres de securite
+
+---
+
+## 2. LAYOUT
+
+### Structure avec 2 cartes WiFi + options
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | Retour a Mon modem |
+
+### Titre + description
+| Element | Description |
+|---------|-------------|
+| Titre | Configurer le Wi-Fi |
+| Description | Le mode Wi-Fi permet de configurer le reseau sans fil... |
+
+### Tuile Etat WiFi
+| Element | Description |
+|---------|-------------|
+| Label | WiFi |
+| Toggle | On/Off |
+| Badge | Wi-Fi active (vert) |
+
+### Tuile WiFi 2.4 GHz
+| Champ | Exemple |
+|-------|---------|
+| Nom du reseau (SSID) | OVH_WiFi_AB12 |
+| Cle de securite | **************** + bouton voir |
+| Type de securite | WPA2-PSK (dropdown) |
+| Canal | Auto (dropdown) |
+
+### Tuile WiFi 5 GHz
+| Champ | Exemple |
+|-------|---------|
+| Nom du reseau (SSID) | OVH_WiFi_AB12_5G |
+| Cle de securite | **************** + bouton voir |
+| Type de securite | WPA2-PSK (dropdown) |
+| Canal | Auto (dropdown) |
+
+### Tuile Options avancees
+| Option | Valeur |
+|--------|--------|
+| WiFi active par defaut | Toggle Oui/Non |
+| Diffusion du SSID | Toggle Oui/Non |
+
+### Boutons action
+| Bouton | Type | Action |
+|--------|------|--------|
+| Enregistrer | Primary | Sauvegarde |
+| Annuler | Default | Reset |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /xdsl/{serviceName}/modem/wifi
+    Response: {
+      enabled, wifi24: { ssid, security, channel },
+      wifi5: { ssid, security, channel },
+      options: { defaultEnabled, broadcastSsid }
+    }
+
+PUT /xdsl/{serviceName}/modem/wifi
+    Body: { enabled, wifi24, wifi5, options }
+```
+
+### Types de securite
+| Type | Description |
+|------|-------------|
+| open | Pas de securite |
+| WEP | Obsolete |
+| WPA-PSK | WPA personnel |
+| WPA2-PSK | WPA2 personnel (recommande) |
+| WPA3 | WPA3 (si supporte) |
+
+### Canaux
+| Bande | Canaux |
+|-------|--------|
+| 2.4 GHz | 1-13, Auto |
+| 5 GHz | 36-165, Auto |
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "xdsl_wifi_title": "Configurer le Wi-Fi",
+  "xdsl_wifi_desc": "Le mode Wi-Fi permet de configurer le reseau sans fil du modem pour que vos equipements sans fil puissent s'y connecter.",
+  "xdsl_wifi_status": "Etat du Wi-Fi",
+  "xdsl_wifi_enabled": "Wi-Fi active",
+  "xdsl_wifi_24": "Reseau Wi-Fi 2.4 GHz",
+  "xdsl_wifi_5": "Reseau Wi-Fi 5 GHz",
+  "xdsl_wifi_ssid": "Nom du reseau (SSID)",
+  "xdsl_wifi_password": "Cle de securite",
+  "xdsl_wifi_security": "Type de securite",
+  "xdsl_wifi_channel": "Canal",
+  "xdsl_wifi_advanced": "Options avancees",
+  "xdsl_wifi_default": "WiFi active par defaut",
+  "xdsl_wifi_broadcast": "Diffusion du SSID",
+  "xdsl_wifi_save": "Enregistrer",
+  "xdsl_wifi_cancel": "Annuler"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Mode bridge desactive WiFi
+- WPA2-PSK minimum recommande
+- Canal auto optimise par modem
+- SSID cache si broadcast off

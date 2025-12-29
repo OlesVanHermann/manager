@@ -1,0 +1,83 @@
+# Cahier des Charges : web-cloud/domain - Modal Ajouter enregistrement SPF
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Création d'un enregistrement DNS de type SPF
+- **Type** : Formulaire assisté de création
+- **Objectif** : Ajouter un enregistrement SPF (Sender Policy Framework)
+
+## 2. STRUCTURE MODAL
+- Header avec titre et bouton fermer (✕)
+- Bandeau info explicatif
+- Bandeau warning (un seul SPF)
+- Champ sous-domaine
+- Section serveurs autorisés (checkboxes)
+- Champ IPs supplémentaires
+- Section politique (radios)
+- Aperçu de l'enregistrement
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Grande modal (700x800)
+- **OdsMessage** : Bandeau info bleu, Bandeau warning jaune
+- **OdsInput** : Sous-domaine, IPs supplémentaires
+- **OdsCheckbox** : Options de serveurs autorisés
+- **OdsRadio** : Politique pour autres serveurs
+- **OdsCard** : Aperçu (fond gris)
+- **OdsButton** : Annuler, Ajouter
+
+## 4. TITRE
+"Ajouter un enregistrement SPF"
+
+## 5. BANDEAU INFO
+Fond bleu (#E8F0FE) :
+- **Titre** : "ℹ️ Enregistrement SPF (Sender Policy Framework)"
+- "Définit les serveurs autorisés à envoyer des emails pour votre domaine."
+
+## 6. BANDEAU WARNING
+Fond jaune (#FEF3C7) :
+"⚠️ Un seul enregistrement SPF est autorisé par domaine."
+
+## 7. CHAMP SOUS-DOMAINE
+| Élément | Valeur |
+|---------|--------|
+| Label | "Sous-domaine" |
+| Input | "@ (domaine principal)" (placeholder) |
+| Suffixe (addon gris) | ".example-domain.com" |
+
+## 8. SERVEURS AUTORISÉS (CHECKBOXES)
+| Option | État | Valeur SPF |
+|--------|------|------------|
+| ☑ Inclure les serveurs OVH | Coché | include:mx.ovh.com |
+| ☑ Autoriser l'IP de l'hébergement | Coché | a |
+| ☑ Autoriser les serveurs MX | Coché | mx |
+| ☐ Ajouter un include personnalisé | Non coché | - |
+
+## 9. CHAMP IPS SUPPLÉMENTAIRES
+| Élément | Valeur |
+|---------|--------|
+| Label | "Adresses IP supplémentaires (optionnel)" |
+| Placeholder | "Ex: ip4:192.0.2.1 ip6:2001:db8::1" |
+
+## 10. POLITIQUE AUTRES SERVEURS (RADIOS)
+| Option | État | Valeur SPF |
+|--------|------|------------|
+| ○ +all (Autoriser tous - déconseillé) | Non sélectionné | +all |
+| ● ~all (Softfail - recommandé) | Sélectionné, gras | ~all |
+| ○ -all (Rejeter tous - strict) | Non sélectionné | -all |
+| ○ ?all (Neutre) | Non sélectionné | ?all |
+
+## 11. APERÇU
+Fond gris (#F9FAFB), police monospace :
+`v=spf1 include:mx.ovh.com a mx ~all`
+
+## 12. BOUTONS FOOTER
+- Annuler (secondaire)
+- Ajouter (primaire)
+
+## 13. APIS & ENDPOINTS
+- POST /domain/zone/{zoneName}/record : Créer enregistrement SPF
+  - fieldType: "TXT" (SPF utilise TXT)
+  - subDomain: string
+  - target: "v=spf1 ... ~all"
+  - ttl: number
+

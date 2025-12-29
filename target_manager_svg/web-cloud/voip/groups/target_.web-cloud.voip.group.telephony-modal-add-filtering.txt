@@ -1,0 +1,114 @@
+# Cahier des Charges : telecom/telephony - Modal Ajouter filtre d'appel
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Modal d'ajout d'un filtre d'appel (liste noire/blanche).
+
+### Objectif fonctionnel
+- Creer une regle de filtrage
+- Definir le type de numero a filtrer
+- Choisir la liste (noire ou blanche)
+
+---
+
+## 2. LAYOUT
+
+### Structure modal avec formulaire + boutons mode
+
+---
+
+## 3. COMPOSANTS UI
+
+### Boutons mode (en haut)
+| Bouton | Description |
+|--------|-------------|
+| Assistant | Mode guide |
+| Import CSV | Import depuis fichier |
+
+### Modal Header
+| Element | Description |
+|---------|-------------|
+| Titre | Ajouter un filtre d'appel |
+
+### Formulaire
+| Champ | Type | Options |
+|-------|------|---------|
+| Type de numero | Select | International, National, Mobile, Fixe, Premium |
+| Liste | Select | Appels entrants - Liste noire, Appels entrants - Liste blanche, Appels sortants - Liste noire, Appels sortants - Liste blanche |
+| Numero | Input | Format international (optionnel si type generique) |
+
+### Aide contextuelle
+| Element | Description |
+|---------|-------------|
+| Aide | Vous avez la possibilite de saisir tout ou partie du numero. |
+| Exemple | +33123455678 le numero complet ; +3312345 les numeros commencant par ces chiffres |
+
+### Bouton
+| Bouton | Type | Action |
+|--------|------|--------|
+| Ajouter | Primary | Cree le filtre |
+
+---
+
+## 4. APIS & DONNEES
+
+### Types de numero
+| Type | Code |
+|------|------|
+| International | international |
+| Fixe national | landline |
+| Mobile national | mobile |
+| Numeros speciaux | special |
+| Tous | all |
+
+### Listes
+| Liste | Direction | Type |
+|-------|-----------|------|
+| Appels entrants - Liste noire | incoming | blacklist |
+| Appels entrants - Liste blanche | incoming | whitelist |
+| Appels sortants - Liste noire | outgoing | blacklist |
+| Appels sortants - Liste blanche | outgoing | whitelist |
+
+### Endpoint
+```
+POST /telephony/{billingAccount}/line/{serviceName}/calls/filtering
+    Body: {
+      callerIdNumber: "+33123456789",
+      type: "incoming",
+      list: "blacklist",
+      status: "active"
+    }
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_filtering_add_title": "Ajouter un filtre d'appel",
+  "telephony_filtering_add_assistant": "Assistant",
+  "telephony_filtering_add_import": "Import CSV",
+  "telephony_filtering_add_type": "Type de numero",
+  "telephony_filtering_add_list": "Liste",
+  "telephony_filtering_add_number": "Numero",
+  "telephony_filtering_add_number_help": "Vous avez la possibilite de saisir tout ou partie du numero.",
+  "telephony_filtering_add_example": "(Exemple : +33123455678 le numero complet ; +3312345 les numeros commencant par ces chiffres)",
+  "telephony_filtering_add_submit": "Ajouter",
+  "telephony_filtering_list_incoming_black": "Appels entrants - Liste noire",
+  "telephony_filtering_list_incoming_white": "Appels entrants - Liste blanche",
+  "telephony_filtering_list_outgoing_black": "Appels sortants - Liste noire",
+  "telephony_filtering_list_outgoing_white": "Appels sortants - Liste blanche"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Numero partiel = wildcard sur prefixe
+- Liste noire = appels rejetes
+- Liste blanche = seuls appels acceptes
+- Priorite: whitelist > blacklist
+- Maximum 200 filtres par ligne (selon API)

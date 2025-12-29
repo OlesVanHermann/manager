@@ -1,0 +1,140 @@
+# Cahier des Charges : telecom/telephony - Telephone ligne
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Page de gestion du telephone associe a une ligne VoIP.
+
+### Objectif fonctionnel
+- Voir les informations du telephone
+- Configurer les options (touches, codecs, contacts)
+- Commander accessoires
+- Rattacher/detacher le telephone
+
+---
+
+## 2. LAYOUT
+
+### Structure page avec cartes informations/configuration/commande/rattachement
+
+---
+
+## 3. COMPOSANTS UI
+
+### Header page
+| Element | Description |
+|---------|-------------|
+| Retour | ← Retour a la gestion du telephone |
+| Titre | Telephone |
+| Sous-titre | Ligne XXXXXXXXXX |
+
+### Carte Informations
+| Champ | Exemple |
+|-------|---------|
+| Modele | Cisco CP8845 |
+| Adresse MAC | 00:1A:2B:3C:4D:5E |
+| Adresse IP | 192.168.1.100 |
+| Firmware | sip8845.12-0-1SR1-1 |
+| Etat | Badge Connecte (vert) |
+
+### Actions telephone
+| Action | Icone | Description |
+|--------|-------|-------------|
+| Mise a jour firmware | 🔄 | Lien |
+| Redemarrer | 🔃 | Lien |
+| Changer telephone | 📱 | Lien |
+
+### Carte Configuration
+| Element | Action |
+|---------|--------|
+| Touches programmables | Configurer → |
+| Codecs audio | Configurer → |
+| Carnets contacts | Gerer → |
+| Plug & Phone | Parametres personnalises |
+
+### Section Commander
+| Carte | Description |
+|-------|-------------|
+| Telephone VoIP | Commander nouveau |
+| Casque audio | Commander casque |
+| Accessoires | Cables, alimentations, extensions |
+
+### Section Rattachement
+| Carte | Description |
+|-------|-------------|
+| Rattacher | Associer a equipement existant |
+| Detacher | Dissocier du telephone actuel |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone
+PUT /telephony/{billingAccount}/line/{serviceName}/phone
+POST /telephony/{billingAccount}/line/{serviceName}/phone/reboot
+POST /telephony/{billingAccount}/line/{serviceName}/phone/changePhoneConfiguration
+GET /telephony/{billingAccount}/line/{serviceName}/phone/functionKey
+```
+
+### Modele Phone
+```typescript
+interface Phone {
+  model: string;
+  macAddress: string;
+  ipAddress: string;
+  firmwareVersion: string;
+  status: 'connected' | 'disconnected';
+}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "telephony_phone_title": "Telephone",
+  "telephony_phone_back": "Retour a la gestion du telephone",
+  "telephony_phone_info": "Informations generales",
+  "telephony_phone_model": "Modele",
+  "telephony_phone_mac": "Adresse MAC",
+  "telephony_phone_ip": "Adresse IP",
+  "telephony_phone_firmware": "Firmware",
+  "telephony_phone_status": "Etat",
+  "telephony_phone_status_connected": "Connecte",
+  "telephony_phone_status_disconnected": "Deconnecte",
+  "telephony_phone_update": "Mise a jour du firmware",
+  "telephony_phone_reboot": "Redemarrer",
+  "telephony_phone_change": "Changer de telephone",
+  "telephony_phone_config": "Configuration",
+  "telephony_phone_keys": "Touches programmables",
+  "telephony_phone_codecs": "Codecs audio",
+  "telephony_phone_contacts": "Carnets de contacts",
+  "telephony_phone_plug_phone": "Parametres Plug & Phone personnalises",
+  "telephony_phone_configure": "Configurer",
+  "telephony_phone_manage": "Gerer",
+  "telephony_phone_order": "Commander",
+  "telephony_phone_order_phone": "Telephone VoIP",
+  "telephony_phone_order_phone_desc": "Commandez un nouveau telephone",
+  "telephony_phone_order_headset": "Casque audio",
+  "telephony_phone_order_headset_desc": "Commandez un casque compatible",
+  "telephony_phone_order_accessories": "Accessoires",
+  "telephony_phone_order_accessories_desc": "Cables, alimentations, modules...",
+  "telephony_phone_attach": "Rattachement",
+  "telephony_phone_attach_line": "Rattacher la ligne a un equipement",
+  "telephony_phone_attach_desc": "Associez cette ligne a un telephone que vous possedez",
+  "telephony_phone_detach_line": "Detacher la ligne du telephone",
+  "telephony_phone_detach_desc": "Dissociez cette ligne de son telephone actuel"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- Telephone Plug & Phone provisionne automatiquement
+- Redemarrage distant possible si connecte
+- Mise a jour firmware manuelle ou automatique
+- Rattachement necessite MAC address

@@ -1,0 +1,129 @@
+# Cahier des Charges : telecom/xdsl - Configuration reseau
+
+## 1. RESUME EXECUTIF
+
+### Perimetre
+Configuration reseau avancee du modem (LAN, DHCP, NAT).
+
+### Objectif fonctionnel
+- Configurer l'IP LAN
+- Gerer le serveur DHCP
+- Creer des redirections de ports
+- Attribuer des baux statiques
+
+---
+
+## 2. LAYOUT
+
+### Structure avec tuiles et tableaux
+
+---
+
+## 3. COMPOSANTS UI
+
+### Lien retour
+| Element | Description |
+|---------|-------------|
+| Link | Retour a Mon modem |
+
+### Titre
+| Element | Description |
+|---------|-------------|
+| Titre | Configuration reseau |
+
+### Tuile IP LAN
+| Champ | Exemple |
+|-------|---------|
+| Methode | Statique (dropdown) |
+| Adresse IP LAN | 192.168.1.1 |
+| Masque | 255.255.255.0 |
+
+### Tuile DHCP
+| Champ | Exemple |
+|-------|---------|
+| Passerelle | 192.168.1.1 |
+| DNS Primaire | 213.186.33.99 |
+| DNS Secondaire | 1.1.1.1 |
+| Plage DHCP | 192.168.1.10 - 192.168.1.254 |
+
+### Tuile Redirections de ports
+| Colonne | Description |
+|---------|-------------|
+| Nom | Label de la regle |
+| IP source | Toutes ou specifique |
+| Port debut | Port entree debut |
+| Port fin | Port entree fin |
+| Protocole | TCP/UDP |
+| IP destination | IP locale cible |
+| Actions | Modifier, Supprimer |
+
+### Bouton ajout
+| Element | Description |
+|---------|-------------|
+| Bouton | + Ajouter une redirection |
+
+### Tuile Baux DHCP statiques
+| Colonne | Description |
+|---------|-------------|
+| Nom | Label de l'appareil |
+| Adresse MAC | MAC de l'appareil |
+| Adresse IP | IP fixe attribuee |
+| Actions | Modifier, Supprimer |
+
+---
+
+## 4. APIS & DONNEES
+
+### Endpoints
+```
+GET /xdsl/{serviceName}/modem/lan
+PUT /xdsl/{serviceName}/modem/lan
+    Body: { method, ipAddress, netmask }
+
+GET /xdsl/{serviceName}/modem/dhcp
+PUT /xdsl/{serviceName}/modem/dhcp
+    Body: { gateway, dns1, dns2, rangeStart, rangeEnd }
+
+GET /xdsl/{serviceName}/modem/portMappings
+POST /xdsl/{serviceName}/modem/portMappings
+DELETE /xdsl/{serviceName}/modem/portMappings/{id}
+
+GET /xdsl/{serviceName}/modem/dhcpStatic
+POST /xdsl/{serviceName}/modem/dhcpStatic
+DELETE /xdsl/{serviceName}/modem/dhcpStatic/{id}
+```
+
+---
+
+## 5. TRADUCTIONS (i18n)
+
+```json
+{
+  "xdsl_router_title": "Configuration reseau",
+  "xdsl_router_lan": "IP LAN",
+  "xdsl_router_lan_desc": "Configuration de l'adresse IP locale du routeur",
+  "xdsl_router_method": "Methode",
+  "xdsl_router_ip": "Adresse IP LAN",
+  "xdsl_router_mask": "Masque",
+  "xdsl_router_dhcp": "DHCP",
+  "xdsl_router_dhcp_desc": "Serveur d'attribution d'adresses IP automatique",
+  "xdsl_router_gateway": "Passerelle",
+  "xdsl_router_dns1": "DNS Primaire",
+  "xdsl_router_dns2": "DNS Secondaire",
+  "xdsl_router_range": "Plage DHCP",
+  "xdsl_router_portmap": "Redirections de ports",
+  "xdsl_router_portmap_desc": "Redirigez le trafic entrant vers vos equipements reseau",
+  "xdsl_router_portmap_add": "Ajouter une redirection",
+  "xdsl_router_static": "Baux DHCP statiques",
+  "xdsl_router_static_desc": "Attribuez des adresses IP fixes a vos equipements"
+}
+```
+
+---
+
+## 6. REGLES METIER
+
+- IP LAN hors plage DHCP
+- Ports 1-1024 reserves
+- MAC unique par bail
+- Redemarrage modem apres modif
