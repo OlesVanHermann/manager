@@ -1,0 +1,71 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.tasks.svg
+Route:   /web-cloud/emails/{domain}/tasks
+NAV:     Web Cloud > Emails > [domain] > Taches
+Version: v1 (2025-12-29)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /email/domains -> domain                    |
+| 24 taches                | GET /email/domains/{d}/tasks -> totalCount      |
+| 29/12/2025 16:48         | GET /email/domains/{d}/tasks -> timestamp       |
+| Creation compte          | GET /email/domains/{d}/tasks -> operation       |
+| new-user@example.com     | GET /email/domains/{d}/tasks -> target          |
+| En cours                 | GET /email/domains/{d}/tasks -> status          |
+| 60%                      | GET /email/domains/{d}/tasks -> progress        |
+================================================================================
+
+STRUCTURE PAGE
+1. Left panel avec liste domaines
+2. Right panel header (domaine)
+3. NAV3: 8 tabs (Taches actif)
+4. Toolbar: Refresh, derniere actualisation, filtres statut
+5. Table taches
+   - Colonnes: Date, Operation, Cible, Statut, Progression, Details
+   - Barre progression coloree selon statut
+6. Pagination
+7. Banniere info
+
+STATUTS TACHES
+| Statut    | Couleur    | Badge bg   | Progress   |
+|-----------|------------|------------|------------|
+| En attente| #E5E7EB    | bg-neutral | #E5E7EB    |
+| En cours  | #DBEAFE    | bg-info    | #3B82F6    |
+| Termine   | #DEF7EC    | bg-success | #10B981    |
+| Echec     | #FEE2E2    | bg-error   | #DC2626    |
+
+TYPES D'OPERATIONS
+| Operation               | Duree estimee | Async    |
+|-------------------------|---------------|----------|
+| Creation compte         | 30s - 2min    | Oui      |
+| Suppression compte      | Immediat      | Non      |
+| Modification mot passe  | Immediat      | Non      |
+| Ajout alias             | 30s           | Oui      |
+| Migration compte        | 5-30min       | Oui      |
+| Import comptes          | Variable      | Oui      |
+| Configuration DNS       | 30s - 2min    | Oui      |
+
+FILTRES DISPONIBLES
+| Filtre    | Options                                    |
+|-----------|--------------------------------------------|
+| Statut    | Toutes, En attente, En cours, Echecs       |
+| Periode   | Aujourd'hui, 7j, 30j, Toutes               |
+| Type      | Toutes, Comptes, DNS, Migration            |
+
+ACTIONS PAR TACHE
+| Action    | Condition   | Comportement                      |
+|-----------|-------------|-----------------------------------|
+| Voir      | Toujours    | Modal details de la tache         |
+| Relancer  | Echec       | Relance l'operation               |
+| Annuler   | En attente  | Annule si pas encore lancee       |
+
+API ENDPOINTS
+GET  /email/domains/{domain}/tasks                -> Liste taches
+GET  /email/domains/{domain}/tasks/{id}           -> Details tache
+POST /email/domains/{domain}/tasks/{id}/retry     -> Relancer
+POST /email/domains/{domain}/tasks/{id}/cancel    -> Annuler
+================================================================================

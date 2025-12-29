@@ -3,73 +3,71 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.zone.svg
 Route:   /web-cloud/domaines/domain/{domainName}/zone
-NAV:     NAV1=Web Cloud | NAV2=Domaines et DNS | NAV3=Zone DNS
+NAV:     Web Cloud > Domaines et DNS > [domain] > Zone DNS
 Version: v1 (2025-12-29)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                              |
-|--------------------------|---------------------------------------------------------|
-| example.com              | Route param domainName                                  |
-| @, www, mail             | GET /domain/zone/{z}/record -> subDomain               |
-| 3600                     | record -> ttl                                           |
-| A, AAAA, CNAME...        | record -> fieldType                                     |
-| 213.186.33.5             | record -> target                                        |
-| 15 entrées               | GET /domain/zone/{z}/record -> count                   |
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /domain/{d} -> domain                       |
+| 12 enregistrements       | GET /domain/zone/{z}/record -> count            |
+| @                        | GET /domain/zone/{z}/record/{id} -> subDomain   |
+| A / AAAA / CNAME / MX    | GET /domain/zone/{z}/record/{id} -> fieldType   |
+| 3600                     | GET /domain/zone/{z}/record/{id} -> ttl         |
+| 203.0.113.50             | GET /domain/zone/{z}/record/{id} -> target      |
 ================================================================================
 
 STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Sous-menu (Domaines et DNS actif)
+2. NAV2 - Section (Domaines et DNS actif)
 3. LEFT PANEL - Liste domaines/zones
 4. RIGHT PANEL
-   - Header: domainName
+   - Header: Nom domaine + badge statut
    - NAV3: 10 tabs (Zone DNS actif)
-   - Toolbar: Ajouter, Refresh, Import, Export, Reset, TTL, Historique
-   - Filtres par type de record
-   - Recherche sous-domaine
-   - Table: SOUS-DOMAINE, TTL, TYPE, CIBLE, ACTIONS
+   - Banner info
+   - Toolbar: Ajouter, Mode textuel, TTL, Reinitialiser, Historique
+   - Recherche + Filtre par type
+   - Table enregistrements DNS
    - Pagination
-   - Bannière info propagation
+
+TOOLBAR ACTIONS
+| Bouton            | Action                          |
+|-------------------|---------------------------------|
+| + Ajouter entree  | Modal ajout record              |
+| Mode textuel      | Edition zone format texte       |
+| Modifier TTL      | Modal TTL par defaut            |
+| Reinitialiser     | Modal reset zone                |
+| Historique        | Page historique zone            |
+
+TABLE COLONNES
+| Colonne      | Description                     |
+|--------------|---------------------------------|
+| SOUS-DOMAINE | @ pour racine, sinon prefix     |
+| TYPE         | Badge colore (A, AAAA, CNAME, MX, TXT, NS, SRV, CAA) |
+| TTL          | Duree en secondes               |
+| CIBLE        | Valeur de l'enregistrement      |
+| ACTIONS      | Edit, Delete                    |
+
+COULEURS BADGES TYPE
+| Type  | Background | Text    |
+|-------|------------|---------|
+| A     | #DBEAFE    | #1E40AF |
+| AAAA  | #DBEAFE    | #1E40AF |
+| CNAME | #F3E8FF    | #7C3AED |
+| MX    | #DEF7EC    | #059669 |
+| TXT   | #F3F4F6    | #6B7280 |
+| NS    | #FEE2E2    | #DC2626 |
 
 API ENDPOINTS
-GET    /domain/zone/{zone}/record            -> Liste records
-GET    /domain/zone/{zone}/record/{id}       -> Détails record
-POST   /domain/zone/{zone}/record            -> Créer record
-PUT    /domain/zone/{zone}/record/{id}       -> Modifier record
-DELETE /domain/zone/{zone}/record/{id}       -> Supprimer record
-POST   /domain/zone/{zone}/refresh           -> Rafraîchir zone
-POST   /domain/zone/{zone}/reset             -> Réinitialiser zone
-GET    /domain/zone/{zone}/export            -> Exporter zone
-POST   /domain/zone/{zone}/import            -> Importer zone
-GET    /domain/zone/{zone}/history           -> Historique zone
-
-TYPES DE RECORDS
-| Type   | Badge Color | Description          |
-|--------|-------------|----------------------|
-| A      | Vert        | IPv4                 |
-| AAAA   | Bleu info   | IPv6                 |
-| CNAME  | Jaune       | Alias                |
-| MX     | Indigo      | Mail                 |
-| TXT    | Rose        | Texte (SPF, DKIM...) |
-| NS     | Vert foncé  | Nameserver           |
-| SRV    | Violet      | Service              |
-| CAA    | Orange      | Certification        |
-| DKIM   | Cyan        | Email signing        |
-| SPF    | Magenta     | Email sender         |
-
-ACTIONS TABLE
-| Action | Icône | Description                  |
-|--------|-------|------------------------------|
-| Edit   | ✎     | Ouvrir modal modification    |
-| Delete | ×     | Ouvrir modal suppression     |
-
-NOTE: Les records NS ne peuvent pas être modifiés/supprimés via cette interface
-
-NAVIGATION
-- Click "+ Ajouter" -> Modal choix type record
-- Click type filter -> Filtrer table
-- Click "📜 Historique" -> Vue historique zone
-- Click ✎ -> Modal edit record
-- Click × -> Modal confirm delete
+GET    /domain/zone/{zone}/record              -> Liste enregistrements
+GET    /domain/zone/{zone}/record/{id}         -> Details record
+POST   /domain/zone/{zone}/record              -> Ajouter record
+PUT    /domain/zone/{zone}/record/{id}         -> Modifier record
+DELETE /domain/zone/{zone}/record/{id}         -> Supprimer record
+POST   /domain/zone/{zone}/refresh             -> Rafraichir zone
+POST   /domain/zone/{zone}/reset               -> Reinitialiser zone
+GET    /domain/zone/{zone}/export              -> Exporter zone
+POST   /domain/zone/{zone}/import              -> Importer zone
+GET    /domain/zone/{zone}/history             -> Historique zone
 ================================================================================

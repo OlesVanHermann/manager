@@ -1,0 +1,69 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.security-signature.svg
+Route:   /web-cloud/emails/{domain}/security/signature
+NAV:     Web Cloud > Emails > [domain] > Securite > Signature
+Version: v1 (2025-12-29)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /email/domains -> domain                    |
+| ovh2024                  | GET /email/domains/{d}/dkim -> selector         |
+| MIIBIjANBgkqhk...        | GET /email/domains/{d}/dkim -> publicKey        |
+| v=spf1 include:mx...     | GET /email/domains/{d}/spf -> record            |
+| ~all                     | GET /email/domains/{d}/spf -> mode              |
+| Configure/Non configure  | GET /email/domains/{d}/dmarc -> status          |
+================================================================================
+
+STRUCTURE PAGE
+1. Left panel avec liste domaines
+2. Right panel header (domaine)
+3. NAV3: 8 tabs (Securite actif)
+4. NAV4: Antispam | Signature (actif) | MFA
+5. Cards DKIM et SPF (cote a cote)
+6. Card DMARC (pleine largeur)
+7. Banniere statut deliverabilite
+
+PROTOCOLES EMAIL
+| Protocole | Fonction                                | Enregistrement DNS |
+|-----------|----------------------------------------|-------------------|
+| DKIM      | Signature cryptographique des emails   | TXT selector._dk  |
+| SPF       | Serveurs autorises a envoyer           | TXT @             |
+| DMARC     | Politique si echec DKIM/SPF            | TXT _dmarc        |
+
+STATUTS POSSIBLES
+| Statut         | Couleur   | Description                     |
+|----------------|-----------|----------------------------------|
+| Configure      | #DEF7EC   | Enregistrement DNS valide       |
+| Non configure  | #FEF3C7   | Manque configuration            |
+| Erreur         | #FEE2E2   | Probleme DNS ou syntaxe         |
+
+MODES SPF
+| Mode   | Syntaxe | Comportement                         |
+|--------|---------|--------------------------------------|
+| pass   | +all    | Accepte tout (non recommande)        |
+| soft   | ~all    | Soft fail, accepte avec warning      |
+| hard   | -all    | Rejette strict si non autorise       |
+| neutral| ?all    | Pas de politique                     |
+
+ACTIONS DISPONIBLES
+| Action          | Description                                   |
+|-----------------|-----------------------------------------------|
+| Regenerer cle   | Nouvelle paire DKIM (necessite MAJ DNS)       |
+| Copier DNS      | Copie l'enregistrement dans le presse-papier  |
+| Modifier SPF    | Modal edition includes et mode                |
+| Verifier DNS    | Test propagation DNS                          |
+| Configurer DMARC| Modal creation politique DMARC                |
+
+API ENDPOINTS
+GET  /email/domains/{domain}/dkim              -> Config DKIM
+POST /email/domains/{domain}/dkim/regenerate   -> Regenerer cle
+GET  /email/domains/{domain}/spf               -> Config SPF
+PUT  /email/domains/{domain}/spf               -> Modifier SPF
+GET  /email/domains/{domain}/dmarc             -> Config DMARC
+PUT  /email/domains/{domain}/dmarc             -> Modifier DMARC
+GET  /email/domains/{domain}/dns/check         -> Verification DNS
+================================================================================

@@ -1,0 +1,71 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.security.svg
+Route:   /web-cloud/emails/{domain}/security
+NAV:     Web Cloud > Emails > [domain] > Securite > Antispam
+Version: v1 (2025-12-29)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| example.com              | GET /email/domains -> domain                    |
+| Standard                 | GET /email/domains/{d}/security -> spamLevel    |
+| Deplacer vers Spam       | GET /email/domains/{d}/security -> spamAction   |
+| true                     | GET /email/domains/{d}/security -> dailyReport  |
+| ceo@example.com          | GET /email/domains/{d}/accounts/{a}/spam        |
+| Strict                   | GET .../spam -> level                           |
+| 3 adresses               | GET .../spam -> whitelistCount                  |
+================================================================================
+
+STRUCTURE PAGE
+1. Left panel avec liste domaines
+2. Right panel header (domaine)
+3. NAV3: 8 tabs (Securite actif)
+4. NAV4: Antispam (actif) | Signature | MFA
+5. Configuration globale
+   - Niveau de filtrage (dropdown)
+   - Action sur spam (dropdown)
+   - Toggle rapport quotidien
+6. Table configuration par compte
+   - Colonnes: Compte, Niveau, Action, Whitelist, Blacklist, Actions
+
+NAV4 SECURITE
+| Tab        | Route       | Description                    |
+|------------|-------------|--------------------------------|
+| Antispam   | /antispam   | Configuration filtrage spam    |
+| Signature  | /signature  | Signatures DKIM/SPF            |
+| MFA        | /mfa        | Auth multi-facteurs (Exchange) |
+
+NIVEAUX FILTRAGE
+| Niveau    | Couleur   | Description                     |
+|-----------|-----------|----------------------------------|
+| Souple    | #DEF7EC   | Peu de filtrage, risque spam    |
+| Standard  | #E5E7EB   | Equilibre (recommande)          |
+| Strict    | #FEF3C7   | Agressif, risque faux positifs  |
+
+ACTIONS SUR SPAM
+| Action           | Description                           |
+|------------------|---------------------------------------|
+| Spam folder      | Deplacer vers dossier Spam            |
+| Supprimer        | Supprimer directement                 |
+| Tag subject      | Ajouter [SPAM] au sujet               |
+| Header           | Ajouter header X-Spam                 |
+
+DISPONIBILITE PAR OFFRE
+| Offre     | Antispam   | Signature  | MFA        |
+|-----------|------------|------------|------------|
+| MX Plan   | Basique    | DKIM auto  | Non        |
+| Email Pro | Avance     | DKIM/SPF   | Non        |
+| Exchange  | Avance     | DKIM/SPF   | Oui        |
+| Zimbra    | Avance     | DKIM/SPF   | Non        |
+
+API ENDPOINTS
+GET  /email/domains/{domain}/security             -> Config globale
+PUT  /email/domains/{domain}/security             -> Modifier config
+GET  /email/domains/{domain}/accounts/{a}/spam    -> Config compte
+PUT  /email/domains/{domain}/accounts/{a}/spam    -> Modifier spam compte
+GET  /email/domains/{domain}/accounts/{a}/whitelist -> Whitelist
+POST /email/domains/{domain}/accounts/{a}/whitelist -> Ajouter whitelist
+================================================================================
