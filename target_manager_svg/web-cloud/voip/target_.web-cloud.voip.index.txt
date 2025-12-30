@@ -2,39 +2,76 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.index.svg
-Route:   /web-cloud/telephony
-Version: v2 (2025-12-30)
+Route:   /web-cloud/voip
+Version: v3 (2025-12-30)
+Source:  old_manager.telecom.telephony.dashboard.svg
 ================================================================================
 
 DONNEES DYNAMIQUES
 | Exemple SVG              | Source API                              |
 |--------------------------|-----------------------------------------|
-| ma-telephonie-001        | GET /telephony → billingAccount         |
-| VoIP Entreprise          | billingAccount → serviceType            |
-| 12 lignes                | GET /telephony/{ba}/line → count        |
-| 8 numéros                | GET /telephony/{ba}/number → count      |
-| Business                 | billingAccount → offer                  |
-| Actif                    | billingAccount → status                 |
+| voip-ab12345             | GET /telephony → billingAccount         |
+| Ligne principale bureau  | GET /telephony/{ba} → description       |
+| 3 services               | GET /telephony/{ba}/line + number + fax |
+| 0,00 € HF                | GET /telephony/{ba} → currentOutplan    |
+| Actif                    | GET /telephony/{ba}/serviceInfos        |
+| 50,00 €                  | GET /telephony/{ba} → credit            |
+| ab12345-ovh              | Session utilisateur                     |
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Téléphonie actif
-3. CONTENT:
-   - TITRE "Mes services téléphonie"
-   - TOOLBAR: Refresh, Recherche, Filtre type, Commander
-   - TABLE: Groupe, Type, Lignes, Numéros, Offre, Statut, Actions
+2. NAV2 - VoIP actif (indicateur bleu x=495, w=35)
+3. PAS DE SOUS-NAV (index = liste des groupes)
+4. LEFT PANEL (x=24, y=105, w=280, h=765)
+   - Recherche
+   - Compteur groupes
+   - Liste groupes VoIP (cards sélectionnables)
+5. RIGHT PANEL (x=320, y=105, w=1096, h=765)
+   - Header: Nom groupe + billingAccount
+   - NAV3: Dashboard | Services | Répertoire | Facturation | Administration
+   - Contenu Dashboard:
+     * Bannière info
+     * 3 cards stats (Services, Hors Forfait, Crédit)
+     * Accès rapide (4 boutons)
+     * Informations du groupe (4 colonnes)
+     * Cards Carnet contacts + Numéros abrégés
 
-# TYPES DE SERVICE
-| Type          | Badge   | Couleur  |
-|---------------|---------|----------|
-| VoIP Entreprise| Bleu   | #DBEAFE  |
-| Trunk SIP     | Orange  | #FEF3C7  |
-| SMS Pro       | Violet  | #E9D5FF  |
-| Fax           | Bleu    | #DBEAFE  |
-| Carrier SIP   | Vert    | #DEF7EC  |
+# NAV3 TABS (Index/Dashboard)
+| # | Tab            | X   | W   | Route           |
+|---|----------------|-----|-----|-----------------|
+| 1 | Dashboard      | 0   | 80  | /               |
+| 2 | Services       | 84  | 65  | /services       |
+| 3 | Répertoire     | 153 | 75  | /phonebook      |
+| 4 | Facturation    | 232 | 80  | /billing        |
+| 5 | Administration | 316 | 100 | /admin          |
+
+# LEFT PANEL - SERVICE ITEM GROUPE
+Structure card:
+- Avatar cercle (initiales) - bleu si sélectionné, gris sinon
+- Description (13px, font-weight 500)
+- BillingAccount (11px, muted)
+- Stats: ☎️ N services · X,XX € HF
+- Badge statut (Actif/Inactif)
+
+# CARDS STATS
+| Card          | Données                    |
+|---------------|----------------------------|
+| Services      | Nombre + répartition       |
+| Hors Forfait  | Montant ce mois            |
+| Crédit        | Solde + statut recharge    |
+
+# ACCÈS RAPIDE
+- Voir les services → /services
+- Gérer mes reversements → /billing
+- Carnet de contacts → /phonebook
+- Numéros abrégés → /abbreviated
 
 # API ENDPOINTS
-GET /telephony - Liste des groupes
+GET /telephony - Liste des groupes de facturation
 GET /telephony/{billingAccount} - Détails groupe
+GET /telephony/{billingAccount}/serviceInfos - Infos service
+GET /telephony/{billingAccount}/line - Lignes du groupe
+GET /telephony/{billingAccount}/number - Numéros du groupe
+GET /telephony/{billingAccount}/fax - Fax du groupe
 ================================================================================

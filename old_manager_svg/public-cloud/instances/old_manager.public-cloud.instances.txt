@@ -1,71 +1,94 @@
-# Cahier des Charges : public-cloud/instances - Liste des Instances
+# Cahier des Charges : public-cloud/instances - Page List
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Liste des instances Public Cloud
-- **Type** : Datagrid avec ActionMenu
-- **Objectif** : Afficher et gérer les instances compute
+- **Type** : Page liste instances Public Cloud
+- **Contexte** : Public Cloud Compute
+- **Objectif** : Gérer les instances Public Cloud
 
-## 2. STRUCTURE PAGE
-- Header OVHcloud avec navigation
-- Sidebar avec menu (Instances actif)
-- Breadcrumb : Public Cloud / Mon Projet Cloud / Instances
-- Titre "Instances" + bouton création
-- Barre de recherche
-- Tableau des instances avec colonnes
-- ActionMenu ouvert sur la 1ère ligne
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Page largeur | 1200px |
+| Background | #F9FAFB |
 
 ## 3. COMPOSANTS UI
-- **OdsBreadcrumb** : Navigation fil d'Ariane
-- **OdsButton** : "+ Créer une instance"
+- **OdsText** : Titres et breadcrumb
+- **OdsButton** : Créer instance
 - **OdsInput** : Recherche
-- **OdsDatagrid** : Tableau des instances
-- **OdsBadge** : Statut (Activée vert, Éteinte orange)
-- **OdsActionMenu** : Actions contextuelles
+- **OdsDatagrid** : Liste instances
+- **OdsBadge** : Statut
+- **OdsActionMenu** : Menu actions
 
-## 4. TITRE
-"Instances"
+## 4. SIDEBAR
+| Section | Contenu |
+|---------|---------|
+| Projet | Nom du projet |
+| COMPUTE | Instances (actif) |
+| | Block Storage |
+| | Object Storage |
+| | Volume Backup |
+| | Volume Snapshot |
+| RÉSEAU | Private Network |
+| | Load Balancer |
+| | Public IPs |
+| CONTAINERS | Kubernetes |
+| | Private Registry |
 
-## 5. COLONNES DU TABLEAU
-| Colonne | Type | Description |
-|---------|------|-------------|
-| Nom/ID | Link + small text | Nom cliquable + UUID tronqué |
-| Région | Text | Code région (GRA11, SBG5) |
-| Modèle | Text | Flavor (b2-15, c2-30, r2-60) |
-| Image | Text | OS (Ubuntu 22.04, Debian 12) |
-| IP publique(s) | Text | Adresse IPv4 |
-| Statut | Badge | Activée (vert) / Éteinte (jaune) |
-| Facturation | Text | Mensuel / Horaire |
-| Actions | ActionMenu | Menu ⋮ |
+## 5. HEADER
+| Propriété | Valeur |
+|-----------|--------|
+| Breadcrumb | Public Cloud / Projet / Instances |
+| Titre | "Instances" |
 
-## 6. DONNÉES EXEMPLE
-| Nom | Région | Modèle | Image | IP | Statut | Facturation |
-|-----|--------|--------|-------|-----|--------|-------------|
-| web-server-prod | GRA11 | b2-15 | Ubuntu 22.04 | 51.210.xx.xx | Activée | Mensuel |
-| api-backend | SBG5 | c2-30 | Debian 12 | 54.37.xx.xx | Activée | Horaire |
-| db-mysql-master | GRA11 | r2-60 | Ubuntu 22.04 | 51.210.xx.xx | Éteinte | Mensuel |
+### Bouton principal
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | "+ Créer une instance" |
+| Style | Primary #0050D7 |
 
-## 7. ACTION MENU
-| Action | Type | Description |
-|--------|------|-------------|
-| Modifier | Standard | Éditer les propriétés |
-| Éteindre | Standard | Arrêter l'instance |
-| Redémarrer à chaud (soft) | Standard | Soft reboot |
-| Redémarrer à froid (hard) | Standard | Hard reboot |
-| --- | Séparateur | --- |
-| Mode rescue | Standard | Démarrer en rescue |
-| Réinstaller | Standard | Réinstaller l'OS |
-| Créer un backup | Standard | Snapshot |
-| --- | Séparateur | --- |
-| Supprimer | Danger (rouge) | Supprimer l'instance |
+## 6. BARRE FILTRES
+| Propriété | Valeur |
+|-----------|--------|
+| Recherche | Input avec placeholder |
 
-## 8. APIS & ENDPOINTS
-- GET /cloud/project/{projectId}/instance
-  - Liste des instances
-- DELETE /cloud/project/{projectId}/instance/{instanceId}
-  - Supprimer une instance
-- POST /cloud/project/{projectId}/instance/{instanceId}/start
-  - Démarrer
-- POST /cloud/project/{projectId}/instance/{instanceId}/stop
-  - Éteindre
-- POST /cloud/project/{projectId}/instance/{instanceId}/reboot
-  - Redémarrer
+## 7. DATAGRID
+| Colonne | Description |
+|---------|-------------|
+| Nom/ID | Nom + UUID tronqué |
+| Région | GRA11, SBG5, etc. |
+| Modèle | b2-15, c2-30, r2-60, etc. |
+| Image | Ubuntu, Debian, etc. |
+| IP publique(s) | Adresses IP masquées |
+| Statut | Badge Activée/Éteinte |
+| Facturation | Horaire/Mensuel |
+| Actions | Menu ⋮ |
+
+## 8. BADGES STATUT
+| Statut | Fond | Texte |
+|--------|------|-------|
+| Activée | #DEF7EC | #03543F |
+| Éteinte | #FEF3C7 | #92400E |
+
+## 9. MENU ACTIONS (⋮)
+| Option | Description |
+|--------|-------------|
+| Modifier | Modifier l'instance |
+| Éteindre | Stop instance |
+| Redémarrer à chaud | Soft reboot |
+| Redémarrer à froid | Hard reboot |
+| --- | Séparateur |
+| Mode rescue | Boot rescue |
+| Réinstaller | Reinstall OS |
+| Créer un backup | Create backup |
+| --- | Séparateur |
+| Supprimer | Delete instance (rouge) |
+
+## 10. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/instance - Liste instances
+- POST /cloud/project/{projectId}/instance - Créer
+- DELETE /cloud/project/{projectId}/instance/{id} - Supprimer
+- POST /cloud/project/{projectId}/instance/{id}/start - Démarrer
+- POST /cloud/project/{projectId}/instance/{id}/stop - Arrêter
+- POST /cloud/project/{projectId}/instance/{id}/reboot - Redémarrer
+
+
