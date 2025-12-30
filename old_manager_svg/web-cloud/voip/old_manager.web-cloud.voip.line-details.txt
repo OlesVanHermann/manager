@@ -1,0 +1,220 @@
+# Cahier des Charges : web-cloud/voip - Line Details (Tableau de bord ligne)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec tuiles d'information
+**Fonction:** Afficher le tableau de bord détaillé d'une ligne téléphonique
+**Contexte:** Vue principale après sélection d'une ligne
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Telecom (actif)
+
+### Breadcrumb
+Telephonie / am12345-ovh / 0033 1 23 45 67 89
+
+### NAV3 Tabs
+**Tableau de bord** (actif) | Gestion des appels | Consommation | Repondeur | Telephone | Assistance | Gestion
+
+## 3. LAYOUT
+
+### Structure
+- Header avec titre ligne et description
+- Grille de tuiles 3x2 puis 2x1
+
+### Dimensions principales
+- Container: 1240x660px
+- Tuiles grandes: 400x300px
+- Tuiles basses: 620x160px et 520x160px
+
+## 4. HEADER PAGE
+
+### Informations
+- Titre: "{description ligne}" (ex: "Ligne principale accueil")
+- Sous-titre: Numéro formaté (ex: "0033 1 23 45 67 89")
+
+## 5. TUILE INFORMATIONS GÉNÉRALES (400x300px)
+
+Position: Haut gauche
+
+### Titre
+"Informations generales"
+
+### Champs (2 colonnes)
+
+| Colonne gauche | Colonne droite |
+|----------------|----------------|
+| Numero | Offre |
+| Description | Simultaneite |
+| Type de ligne | Forfait inclus |
+| Statut (badge) | - |
+
+### Badge statut
+- Actif: #DCFCE7 (vert)
+- Inactif: #FEE2E2 (rouge)
+
+## 6. TUILE TÉLÉPHONE ASSOCIÉ (400x300px)
+
+Position: Haut centre
+
+### Titre
+"Telephone associe"
+
+### Carte téléphone (360x100px)
+- Background: #F9FAFB
+- Modèle: "Cisco CP-8851" (bold)
+- MAC: "AA:BB:CC:DD:EE:FF"
+- IP: "192.168.1.100"
+
+### Champs additionnels
+| Champ | Exemple |
+|-------|---------|
+| Derniere connexion | Aujourd'hui a 14:32 |
+| Firmware | sip88xx.14-1-1SR2-1 |
+
+## 7. TUILE ACTIONS RAPIDES (400x300px)
+
+Position: Haut droit
+
+### Titre
+"Actions rapides"
+
+### Liste liens (avec séparateurs)
+| Lien | Navigation |
+|------|------------|
+| Configurer le renvoi d'appel | modal.forward-config |
+| Gerer la messagerie vocale | Tab Repondeur |
+| Voir l'historique des appels | Tab Consommation |
+| Configurer le filtrage | Tab Gestion des appels |
+| Modifier le mot de passe SIP | modal.line-password |
+| Resilier la ligne | Modal résiliation |
+
+Chaque lien a une flèche "›" à droite
+
+## 8. TUILE CONSOMMATION DU MOIS (620x160px)
+
+Position: Bas gauche
+
+### Titre
+"Consommation du mois"
+
+### KPIs (3 colonnes)
+
+| KPI | Format | Style |
+|-----|--------|-------|
+| Appels sortants | Xh Xmin | text-body, font-20 |
+| Appels recus | Xh Xmin | text-body, font-20 |
+| Hors forfait | XX,XX EUR | text-danger, font-20 |
+
+### Note sous appels sortants
+"dont Xmin hors forfait" (text-muted)
+
+## 9. TUILE IDENTIFIANTS SIP (520x160px)
+
+Position: Bas droit
+
+### Titre
+"Identifiants SIP"
+
+### Champs (2 colonnes)
+
+| Colonne gauche | Colonne droite |
+|----------------|----------------|
+| Serveur | Utilisateur |
+| Mot de passe (masqué) | Port |
+
+### Actions mot de passe
+- Texte: "********"
+- Lien: "Afficher"
+
+## 10. APIS & ENDPOINTS
+
+```
+# Détails de la ligne
+GET /telephony/{billingAccount}/line/{serviceName}
+→ {
+  serviceName: "0033123456789",
+  description: "Ligne principale accueil",
+  lineType: "SIP Trunk",
+  status: "active",
+  offer: "VoIP Entreprise Pro",
+  simultaneousChannels: 10,
+  includedPlan: "Illimite France fixe"
+}
+
+# Téléphone associé
+GET /telephony/{billingAccount}/line/{serviceName}/phone
+→ {
+  model: "Cisco CP-8851",
+  macAddress: "AA:BB:CC:DD:EE:FF",
+  ipAddress: "192.168.1.100",
+  firmwareVersion: "sip88xx.14-1-1SR2-1",
+  lastConnection: "2024-12-30T14:32:00"
+}
+
+# Consommation mensuelle
+GET /telephony/{billingAccount}/line/{serviceName}/consumption
+Query: { period: "current_month" }
+→ {
+  outgoingDuration: 9240,  // secondes
+  incomingDuration: 18720,
+  outOfPlanAmount: 12.50,
+  outOfPlanDuration: 2700
+}
+
+# Identifiants SIP
+GET /telephony/{billingAccount}/line/{serviceName}/sip
+→ {
+  server: "sip.ovh.net",
+  username: "0033123456789",
+  port: 5060
+}
+
+# Mot de passe SIP (avec reveal)
+POST /telephony/{billingAccount}/line/{serviceName}/sip/password/reveal
+→ { password: "..." }
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_dashboard | Tableau de bord |
+| tab_calls | Gestion des appels |
+| tab_consumption | Consommation |
+| tab_voicemail | Repondeur |
+| tab_phone | Telephone |
+| tab_support | Assistance |
+| tab_management | Gestion |
+| card_general_info | Informations generales |
+| field_number | Numero |
+| field_description | Description |
+| field_line_type | Type de ligne |
+| field_status | Statut |
+| field_offer | Offre |
+| field_simultaneity | Simultaneite |
+| field_included_plan | Forfait inclus |
+| status_active | Actif |
+| status_inactive | Inactif |
+| card_phone | Telephone associe |
+| field_last_connection | Derniere connexion |
+| field_firmware | Firmware |
+| card_quick_actions | Actions rapides |
+| action_forward | Configurer le renvoi d'appel |
+| action_voicemail | Gerer la messagerie vocale |
+| action_history | Voir l'historique des appels |
+| action_filter | Configurer le filtrage |
+| action_sip_password | Modifier le mot de passe SIP |
+| action_terminate | Resilier la ligne |
+| card_consumption | Consommation du mois |
+| field_outgoing | Appels sortants |
+| field_incoming | Appels recus |
+| field_out_of_plan | Hors forfait |
+| out_of_plan_detail | dont {minutes}min hors forfait |
+| card_sip_credentials | Identifiants SIP |
+| field_server | Serveur |
+| field_username | Utilisateur |
+| field_password | Mot de passe |
+| field_port | Port |
+| action_show | Afficher |

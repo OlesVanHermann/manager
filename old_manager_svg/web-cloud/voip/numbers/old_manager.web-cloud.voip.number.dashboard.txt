@@ -1,0 +1,155 @@
+# Cahier des Charges : web-cloud/voip/number - Dashboard
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec onglets et menus déroulants
+**Fonction:** Vue d'ensemble et navigation d'un numéro téléphonique
+**Contexte:** Page principale de gestion d'un numéro VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Téléphonie > Groupe VoIP > +33 1 23 45 67 89
+
+## 3. HEADER
+
+### Titre principal
+- Nom éditable: "Mon numéro principal"
+- Sous-titre: "+33 1 23 45 67 89"
+
+### Menu Guides (100x32px)
+- Bouton: "Guides ▼"
+- Position: droite du header
+
+## 4. BANNIÈRE ALERTE (1200x50px)
+
+### Résiliation programmée
+- Background: #FEF3C7 (warning)
+- Texte: "Résiliation programmée le 15/02/2025."
+- Lien action: "Annuler la résiliation" (text-primary)
+
+## 5. NAVIGATION ONGLETS (1200x50px)
+
+### Onglets disponibles
+
+| Onglet | Type | Sous-menus |
+|--------|------|------------|
+| Numéro | actif | - |
+| Configuration | dropdown | Gestion des lignes, Sons et musiques, Plages horaires, Filtrage, Changer type |
+| Consommation | dropdown | Appels entrants, Appels sortants, Factures |
+| Statistiques | lien | - |
+| Enregistrements | lien | - |
+| Annuaire | lien | - |
+| Plus | dropdown | Options avancées |
+
+### Dropdown Configuration (220x200px)
+- Gestion des lignes
+- Sons et musiques d'attente
+- Plages horaires
+- Filtrage des appels
+- Changer le type de numéro
+
+## 6. SECTION INFORMATIONS (1200x300px)
+
+### Titre section
+"Informations du numéro"
+
+### Grille informations (ligne 1)
+
+| Champ | Valeur |
+|-------|--------|
+| Type de configuration | Contact Center Solution |
+| Numéro | +33 1 23 45 67 89 |
+| Pays | France |
+| Groupe | ab12345-ovh-1 (lien) |
+
+### Grille statistiques (ligne 2)
+
+| Métrique | Valeur | Style |
+|----------|--------|-------|
+| Lignes actives | 5 | font-size: 24px, font-weight: 600 |
+| Appels en cours | 2 | font-size: 24px, font-weight: 600 |
+| Appels en attente | 0 | font-size: 24px, font-weight: 600 |
+
+### Liens actions
+- "Gérer la configuration" (text-primary)
+- "Voir les statistiques" (text-primary)
+- "Consulter les enregistrements" (text-primary)
+
+## 7. TYPES DE CONFIGURATION
+
+| Type | Affichage |
+|------|-----------|
+| redirect | Redirection |
+| easyHunting | Contact Center Solution |
+| cloudIvr | Serveur vocal |
+| conference | Conférence |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Informations du numéro
+GET /telephony/{billingAccount}/number/{serviceName}
+→ {
+  featureType: "easyHunting",
+  serviceName: "+33123456789",
+  description: "Mon numéro principal",
+  country: "fr"
+}
+
+# Résiliation programmée
+GET /telephony/{billingAccount}/number/{serviceName}/pendingTermination
+→ { terminationDate: "2025-02-15" }
+
+# Annuler la résiliation
+DELETE /telephony/{billingAccount}/number/{serviceName}/pendingTermination
+
+# Statistiques temps réel (pour CCS)
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveStatistics
+→ {
+  callsInQueue: 0,
+  callsInProgress: 2,
+  activeAgents: 5
+}
+
+# Groupe associé
+GET /telephony/{billingAccount}
+→ { billingAccount: "ab12345-ovh-1", description: "..." }
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| breadcrumb_telephony | Téléphonie |
+| breadcrumb_group | Groupe VoIP |
+| btn_guides | Guides |
+| alert_termination | Résiliation programmée le {date}. |
+| alert_cancel_termination | Annuler la résiliation |
+| tab_number | Numéro |
+| tab_configuration | Configuration |
+| tab_consumption | Consommation |
+| tab_statistics | Statistiques |
+| tab_records | Enregistrements |
+| tab_directory | Annuaire |
+| tab_more | Plus |
+| dropdown_lines | Gestion des lignes |
+| dropdown_sounds | Sons et musiques d'attente |
+| dropdown_timeslots | Plages horaires |
+| dropdown_filtering | Filtrage des appels |
+| dropdown_change_type | Changer le type de numéro |
+| section_info | Informations du numéro |
+| field_type | Type de configuration |
+| field_number | Numéro |
+| field_country | Pays |
+| field_group | Groupe |
+| metric_active_lines | Lignes actives |
+| metric_calls_progress | Appels en cours |
+| metric_calls_waiting | Appels en attente |
+| link_manage_config | Gérer la configuration |
+| link_view_stats | Voir les statistiques |
+| link_view_records | Consulter les enregistrements |
+| type_redirect | Redirection |
+| type_ccs | Contact Center Solution |
+| type_ivr | Serveur vocal |
+| type_conference | Conférence |

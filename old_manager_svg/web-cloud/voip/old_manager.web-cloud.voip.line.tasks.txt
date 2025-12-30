@@ -1,0 +1,133 @@
+# Cahier des Charges : web-cloud/voip - Line Tasks (Tâches ligne)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec tableau d'historique
+**Fonction:** Afficher l'historique des tâches/opérations effectuées sur une ligne
+**Contexte:** Accessible depuis la vue détaillée d'une ligne
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche lignes
+- Liste des lignes avec statut
+
+### Panneau droit (1096px)
+- Header ligne sélectionnée
+- Bannière info
+- Tableau des tâches
+
+## 4. HEADER LIGNE
+
+### Informations affichées
+- Numéro: "0033912345678" (bold, 18px)
+- Description: "Poste Direction / Taches"
+
+## 5. BANNIÈRE INFORMATION (1036x50px)
+
+- Background: #DBEAFE (info)
+- Texte: "Cette page affiche l'historique des taches et operations effectuees sur votre ligne."
+- Couleur texte: #1E40AF
+
+## 6. TABLEAU TÂCHES (1036x400px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date | 180px | Date et heure de l'opération |
+| Operation | 300px | Type d'opération |
+| Statut | 200px | Badge statut |
+| Details | 316px | Informations complémentaires |
+
+### États tâche
+
+| État | Couleur | Badge |
+|------|---------|-------|
+| Termine | #DEF7EC | Texte #03543F |
+| En cours | #FEF3C7 | Texte #D97706 |
+| Echec | #FEE2E2 | Texte #DC2626 |
+
+### Données exemple
+
+| Date | Opération | Statut | Détails |
+|------|-----------|--------|---------|
+| 30/12/2024 14:32 | Redemarrage telephone | Termine | Reboot effectue avec succes |
+| 30/12/2024 10:15 | Mise a jour firmware | En cours | Installation v86.86.0.16 |
+| 29/12/2024 16:45 | Modification description | Termine | Poste Direction |
+| 28/12/2024 09:30 | Renouvellement abonnement | Termine | Renouvellement automatique |
+
+### Types d'opérations courants
+- Redemarrage telephone
+- Mise a jour firmware
+- Modification description
+- Renouvellement abonnement
+- Changement mot de passe SIP
+- Configuration renvoi
+- Activation/Désactivation option
+
+## 7. LIEN RETOUR
+
+- Position: Bas du tableau (y=560)
+- Texte: "<- Retour a la ligne"
+- Style: text-primary
+- Navigation: Retour au dashboard ligne
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des tâches d'une ligne
+GET /telephony/{billingAccount}/line/{serviceName}/task
+Query: { limit: 50, offset: 0 }
+→ [{
+  taskId: 123456,
+  date: "2024-12-30T14:32:00",
+  operation: "reboot",
+  status: "completed",
+  details: "Reboot effectue avec succes"
+}]
+
+# Détails d'une tâche
+GET /telephony/{billingAccount}/line/{serviceName}/task/{taskId}
+→ {
+  taskId: 123456,
+  date: "2024-12-30T14:32:00",
+  operation: "firmwareUpdate",
+  status: "running",
+  details: "Installation v86.86.0.16",
+  progress: 75
+}
+
+# Types d'opérations
+# reboot, firmwareUpdate, descriptionChange, renewal, passwordChange, forwardConfig, optionToggle
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Taches |
+| banner_info | Cette page affiche l'historique des taches et operations effectuees sur votre ligne. |
+| col_date | Date |
+| col_operation | Operation |
+| col_status | Statut |
+| col_details | Details |
+| status_completed | Termine |
+| status_running | En cours |
+| status_failed | Echec |
+| op_reboot | Redemarrage telephone |
+| op_firmware_update | Mise a jour firmware |
+| op_description_change | Modification description |
+| op_renewal | Renouvellement abonnement |
+| op_password_change | Changement mot de passe SIP |
+| op_forward_config | Configuration renvoi |
+| op_option_toggle | Activation/Desactivation option |
+| link_back | Retour a la ligne |

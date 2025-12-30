@@ -1,99 +1,48 @@
-# Cahier des Charges : network/load-balancer - Modal Ajouter Serveur
+# Cahier des Charges : network/load-balancer - Modal Add Server
 
 ## 1. VUE D'ENSEMBLE
-- **Type** : Modal de création
-- **Déclencheur** : Bouton "Ajouter un serveur" dans une ferme
-- **Objectif** : Ajouter un serveur backend à une ferme
 
-## 2. STRUCTURE MODAL
-- Overlay sombre (50% opacité)
-- Modal centrée (600x620px)
-- Header avec titre et bouton fermer
-- Info box ferme destination
-- Formulaire avec champs
-- Footer avec boutons action
+**Type:** Modal formulaire
+**Fonction:** Ajouter un serveur à une ferme
+**Contexte:** Action depuis la gestion d'une ferme
 
-## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur modal
-- **OdsMessage** : Info ferme destination
-- **OdsInput** : Champs texte/number
-- **OdsCheckbox** : Options
-- **OdsButton** : Annuler/Ajouter
+## 2. DIMENSIONS
 
-## 4. HEADER MODAL
-| Élément | Valeur |
-|---------|--------|
-| Titre | "Ajouter un serveur" |
-| Bouton fermer | ✕ (coin droit) |
-| Séparateur | Ligne grise |
+- Modal: 600x620px
+- Border radius: 12px
 
-## 5. INFO BOX FERME
-| Propriété | Valeur |
-|-----------|--------|
-| Type | Message info (bleu) |
-| Fond | #E8F0FE |
-| Bordure | #0050D7 |
-| Label | "Ferme de destination" |
-| Valeur | "farm-web-prod (HTTP:80 - GRA)" |
+## 3. HEADER MODAL
 
-## 6. CHAMPS DU FORMULAIRE
+- Titre: "Ajouter un serveur" (20px, bold)
+- Bouton fermer: ✕
 
-### Nom du serveur (optionnel)
-| Propriété | Valeur |
-|-----------|--------|
-| Type | Input text |
-| Placeholder | web-server-03 |
-| Largeur | 540px |
-| Obligatoire | Non |
+## 4. FORMULAIRE
 
-### Adresse IP *
-| Propriété | Valeur |
-|-----------|--------|
-| Type | Input text |
-| Exemple | 10.0.0.13 |
-| Largeur | 350px |
-| Obligatoire | Oui |
+### Info box ferme
+- Background: #E8F0FE
+- Ferme de destination: "farm-web-prod (HTTP:80 - GRA)"
 
-### Port
-| Propriété | Valeur |
-|-----------|--------|
-| Type | Input number |
-| Placeholder | 80 (défaut) |
-| Largeur | 170px |
-| Obligatoire | Non (hérite de la ferme) |
+### Champs
+- Nom du serveur (optionnel)
+- Adresse IP *
+- Port
+- Poids (weight) 1-256
 
-### Poids (weight)
-| Propriété | Valeur |
-|-----------|--------|
-| Type | Input number |
-| Défaut | 1 |
-| Largeur | 170px |
-| Plage | 1 à 256 |
+### Options (checkboxes)
+- ✓ Activer le serveur immédiatement
+- ☐ Serveur de backup
+- ☐ Utiliser une connexion SSL vers le serveur
 
-## 7. OPTIONS (checkboxes)
+## 5. FOOTER MODAL
 
-| Option | État défaut | Description |
-|--------|-------------|-------------|
-| Activer le serveur immédiatement | ☑ Coché | Serveur actif dès création |
-| Serveur de backup | ☐ Non coché | Utilisé si tous les autres sont HS |
-| Utiliser une connexion SSL | ☐ Non coché | Connexion SSL vers le serveur |
+| Bouton | Style |
+|--------|-------|
+| Annuler | btn-outline |
+| Ajouter | btn-primary |
 
-## 8. FOOTER MODAL
-| Bouton | Style | Position |
-|--------|-------|----------|
-| Annuler | Outline (bordure grise) | Gauche |
-| Ajouter | Primary (bleu) | Droite |
+## 6. APIS & ENDPOINTS
 
-## 9. VALIDATION
-| Champ | Règle |
-|-------|-------|
-| Adresse IP | Requis, format IPv4 ou IPv6 valide |
-| Port | Optionnel, 1-65535 |
-| Poids | 1-256 |
-
-## 10. APIS & ENDPOINTS
-- POST /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server - Ajouter serveur HTTP
-- POST /ipLoadbalancing/{serviceName}/tcp/farm/{farmId}/server - Ajouter serveur TCP
-- POST /ipLoadbalancing/{serviceName}/udp/farm/{farmId}/server - Ajouter serveur UDP
-
-
+```
+POST /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server
+POST /ipLoadbalancing/{serviceName}/tcp/farm/{farmId}/server
+```

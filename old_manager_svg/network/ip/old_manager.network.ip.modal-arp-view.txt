@@ -1,0 +1,89 @@
+# Cahier des Charges : network/ip - Modal ARP View
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal information
+**Fonction:** Afficher le statut de blocage ARP et les logs
+**Contexte:** Action depuis la liste IP
+
+## 2. DIMENSIONS
+
+- Modal: 500x350px
+- Border radius: 8px
+
+## 3. HEADER MODAL
+
+- Background: #000E9C
+- Titre: "ARP blocking" (15px, blanc, bold)
+- Bouton fermer: × (18px, blanc)
+
+## 4. STEPPER
+
+- 1 étape active (#0050D7)
+
+## 5. CONTENU
+
+### Informations statut
+
+| Champ | Valeur |
+|-------|--------|
+| Statut | Badge "Bloqué" (#FEE2E2, #DC2626) |
+| Bloqué depuis | 28/12/2025 14:32:45 |
+| Temps restant | 23h 45m 12s |
+
+### Section Logs
+- Label: "Logs :" (12px, muted, bold)
+- Container: 440x80px, background #F3F4F6
+- Police: monospace, 11px
+
+### Contenu logs exemple
+```
+ARP FLOOD detected from 51.178.42.123
+Source: 00:1a:2b:3c:4d:5e
+Packets blocked: 15,234
+```
+
+## 6. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Débloquer ARP | btn-outline | 130x36px |
+| Fermer | btn-primary | 100x36px |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Statut ARP blocking
+GET /ip/{ip}/arp/{ipBlocked}
+→ {
+  ipBlocked: "51.178.42.123",
+  state: "blocked",
+  blockedSince: "2025-12-28T14:32:45Z",
+  time: 85512  // secondes restantes
+}
+
+# Logs ARP
+GET /ip/{ip}/arp/{ipBlocked}/logs
+→ [{
+  message: "ARP FLOOD detected",
+  source: "51.178.42.123",
+  macAddress: "00:1a:2b:3c:4d:5e",
+  packetsBlocked: 15234
+}]
+
+# Débloquer ARP
+POST /ip/{ip}/arp/{ipBlocked}/unblock
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | ARP blocking |
+| status | Statut |
+| status_blocked | Bloqué |
+| blocked_since | Bloqué depuis |
+| time_remaining | Temps restant |
+| logs | Logs |
+| btn_unblock | Débloquer ARP |
+| btn_close | Fermer |

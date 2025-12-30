@@ -1,0 +1,141 @@
+# Cahier des Charges : web-cloud/voip/line - External Number
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page deux colonnes avec liste et formulaire
+**Fonction:** Gérer les numéros externes présentés lors des appels sortants
+**Contexte:** Configuration de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Ligne VoIP
+
+### Retour
+< Appels
+
+## 3. HEADER
+
+- Titre: "Numéros externes présentés"
+
+## 4. LAYOUT DEUX COLONNES
+
+### Colonne gauche - Liste (500x500px)
+
+#### Titre
+"Numéros présentés"
+
+#### Datagrid
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Numéro | 185px | Format international |
+| Statut | 180px | Badge coloré |
+| Action | 85px | 🗑️ |
+
+#### Statuts
+
+| Statut | Couleur texte |
+|--------|---------------|
+| Activé | #16A34A (vert) |
+| En attente | #92400E (orange) |
+| Refusé | #DC2626 (rouge) |
+
+#### Exemples données
+
+| Numéro | Statut |
+|--------|--------|
+| +33 6 12 34 56 78 | Activé |
+| +33 7 98 76 54 32 | En attente |
+| +33 1 23 45 67 89 | Refusé |
+
+#### Note limite
+"Maximum 3 numéros externes (lignes simultanées)"
+
+### Colonne droite - Formulaire (500x500px)
+
+#### Titre
+"Ajouter un numéro"
+
+#### Bannière info (450x150px)
+- Background: #EFF6FF
+- Texte: "Les numéros externes vous permettent de présenter un numéro externe comme appelant lors d'appels sortants."
+- "Vous pouvez ajouter jusqu'à 3 numéros (selon vos lignes simultanées)."
+- "Chaque numéro doit être validé par un appel de vérification."
+- "Seuls les numéros avec le même indicatif pays sont acceptés."
+
+#### Champ Numéro
+- Label: "Numéro à ajouter"
+- Input: 350x45px
+- Placeholder: "+33..."
+
+#### Checkbox validation
+- ☐ "Validation automatique" (i)
+
+#### Actions
+- Bouton "Annuler" (btn-outline, 80x40px)
+- Bouton "Ajouter" (btn-primary, 100x40px)
+
+#### Bannière succès (450x80px)
+- Background: #DCFCE7
+- Border: #16A34A
+- Titre: "Numéro ajouté avec succès !"
+- Texte: "Code de validation : 1234"
+- Note: "Appelez le +33 1 XX XX XX XX et entrez ce code."
+
+## 5. PROCESSUS DE VALIDATION
+
+1. Ajout du numéro externe
+2. Génération d'un code de validation
+3. Appel vers un numéro de validation OVH
+4. Saisie du code par DTMF
+5. Activation du numéro
+
+## 6. APIS & ENDPOINTS
+
+```
+# Lister les numéros externes
+GET /telephony/{billingAccount}/line/{serviceName}/externalNumber
+→ Liste des numéros avec statuts
+
+# Ajouter un numéro externe
+POST /telephony/{billingAccount}/line/{serviceName}/externalNumber
+Body: {
+  number: "+33612345678",
+  autoValidate: false
+}
+→ validationCode, validationNumber
+
+# Supprimer un numéro externe
+DELETE /telephony/{billingAccount}/line/{serviceName}/externalNumber/{number}
+
+# Valider manuellement
+POST /telephony/{billingAccount}/line/{serviceName}/externalNumber/{number}/validate
+Body: { code: "1234" }
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Numéros externes présentés |
+| section_list | Numéros présentés |
+| section_add | Ajouter un numéro |
+| col_number | Numéro |
+| col_status | Statut |
+| col_action | Action |
+| status_active | Activé |
+| status_pending | En attente |
+| status_refused | Refusé |
+| limit_note | Maximum 3 numéros externes (lignes simultanées) |
+| info_line1 | Les numéros externes vous permettent de présenter un numéro externe comme appelant lors d'appels sortants. |
+| info_line2 | Vous pouvez ajouter jusqu'à 3 numéros (selon vos lignes simultanées). |
+| info_line3 | Chaque numéro doit être validé par un appel de vérification. |
+| info_line4 | Seuls les numéros avec le même indicatif pays sont acceptés. |
+| field_number | Numéro à ajouter |
+| checkbox_auto | Validation automatique |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |
+| success_title | Numéro ajouté avec succès ! |
+| success_code | Code de validation : {code} |
+| success_call | Appelez le {number} et entrez ce code. |

@@ -1,0 +1,127 @@
+# Cahier des Charges : web-cloud/voip/group - Lines Attach
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page wizard 2 étapes avec sélection
+**Fonction:** Attacher des lignes depuis un autre groupe
+**Contexte:** Réorganisation des services entre groupes
+
+## 2. NAVIGATION
+
+### Retour
+< Administration du groupe
+
+## 3. HEADER
+
+- Titre: "Attacher des lignes"
+
+## 4. SECTION INFO (800x100px)
+
+### Titre
+"Informations"
+
+### Contenu
+- Lignes dans ce groupe: 5
+- Numéros alias dans ce groupe: 3
+
+## 5. SECTION SÉLECTION GROUPE SOURCE (800x450px)
+
+### Titre
+"Sélectionner un groupe source"
+
+### Description
+"Sélectionnez le groupe téléphonique depuis lequel vous souhaitez attacher des services."
+
+### Datagrid (750x300px)
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Groupe téléphonique | 375px | Nom descriptif |
+| Identifiant | 375px | billingAccount |
+
+### Données exemple
+
+| Groupe | Identifiant |
+|--------|-------------|
+| Mon entreprise - Agence Paris | ba-paris-001 |
+| Mon entreprise - Agence Lyon | ba-lyon-002 |
+| Mon entreprise - Siège (groupe actuel) | ba-siege-000 (grisé) |
+| Mon entreprise - Agence Marseille | ba-marseille-003 |
+
+- Ligne du groupe actuel: désactivée (fond gris)
+
+### Pagination
+"1-4 sur 4"
+
+## 6. PANNEAU SÉLECTION SERVICES (400x580px)
+
+### Header
+- Titre: "Services à attacher"
+- Sous-titre: "Agence Paris sélectionnée"
+
+### Section Lignes
+- Titre: "Lignes"
+- Liste checkbox:
+  - [x] +33 1 72 10 00 20 - Ligne Paris 1
+  - [ ] +33 1 72 10 00 21 - Ligne Paris 2
+  - [x] +33 1 72 10 00 22 - Ligne Paris 3
+
+### Section Numéros alias
+- Titre: "Numéros alias"
+- Liste checkbox:
+  - [ ] +33 1 72 10 00 30 - Accueil Paris
+
+### Boutons
+- "Attacher" (btn-primary, 150x40px)
+- "Autre groupe" (btn-outline, 180x40px)
+
+## 7. ÉTATS DU WORKFLOW
+
+1. Aucun groupe sélectionné → Panneau droit masqué
+2. Groupe sélectionné → Panneau services affiché
+3. Services cochés → Bouton "Attacher" actif
+4. Attachement réussi → Retour au dashboard
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des groupes disponibles
+GET /telephony
+→ [{ billingAccount, description }]
+
+# Services d'un groupe source
+GET /telephony/{sourceBillingAccount}/service
+→ [{
+  serviceName: "+33172100020",
+  description: "Ligne Paris 1",
+  serviceType: "line"
+}]
+
+# Attacher des services
+POST /telephony/{billingAccount}/service/attach
+Body: {
+  sourceBillingAccount: "ba-paris-001",
+  serviceNames: ["+33172100020", "+33172100022"]
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Attacher des lignes |
+| back_link | Administration du groupe |
+| section_info | Informations |
+| field_lines_count | Lignes dans ce groupe : |
+| field_alias_count | Numéros alias dans ce groupe : |
+| section_select_group | Sélectionner un groupe source |
+| description | Sélectionnez le groupe téléphonique depuis lequel vous souhaitez attacher des services. |
+| col_group | Groupe téléphonique |
+| col_identifier | Identifiant |
+| current_group | (groupe actuel) |
+| section_services | Services à attacher |
+| subtitle_selected | {groupName} sélectionnée |
+| section_lines | Lignes |
+| section_aliases | Numéros alias |
+| btn_attach | Attacher |
+| btn_other_group | Autre groupe |

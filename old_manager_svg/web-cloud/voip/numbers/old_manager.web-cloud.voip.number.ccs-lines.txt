@@ -1,0 +1,175 @@
+# Cahier des Charges : web-cloud/voip/number - CCS Lines
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid et formulaire d'options
+**Fonction:** Gérer les lignes membres du Contact Center Solution
+**Contexte:** Configuration des agents d'une file d'attente CCS
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro > Configuration CCS
+
+## 3. HEADER
+
+- Titre: "Lignes de la file d'attente"
+- Description: "Configurez les lignes membres de votre **Contact Center Solution**"
+
+## 4. SECTION ORGANISATION (1000x100px)
+
+### Titre
+"Organisation des lignes"
+
+### Bouton ajouter
+"+ Ajouter une ligne" (btn-outline-primary, 180x40px)
+
+## 5. DATAGRID LIGNES (1000x350px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Ordre | 75px | Boutons réordonnancement ▲/▼ |
+| Type | 120px | Interne / Externe |
+| Numéro | 160px | Numéro de téléphone |
+| Description | 170px | Libellé de la ligne |
+| Timeout | 100px | Délai avant passage suivant |
+| Wrap-up | 100px | Temps de repos après appel |
+| Simult. | 80px | Appels simultanés max |
+| Statut | 110px | Badge Actif/En pause |
+| Actions | 85px | Menu contextuel |
+
+### Données exemple
+
+| Ordre | Type | Numéro | Description | Timeout | Wrap-up | Simult. | Statut | Actions |
+|-------|------|--------|-------------|---------|---------|---------|--------|---------|
+| ▲ | Interne | +33 1 72 10 00 10 | Agent 1 - Support | 20s | 10s | 1 | Actif | ⋮ |
+| ▲▼ | Interne | +33 1 72 10 00 11 | Agent 2 - Commercial | 30s | 15s | 2 | Actif | ⋮ |
+| ▲▼ | Externe | +33 6 12 34 56 78 | Mobile Astreinte | 45s | 0s | 1 | En pause | ⋮ |
+| ▼ | Interne | +33 1 72 10 00 12 | Agent 3 - Technique | 25s | 5s | 1 | Actif | ⋮ |
+
+### Menu contextuel (120x80px)
+- Modifier
+- Supprimer (rouge)
+
+### Boutons de réordonnancement
+- Premier élément: ▲ uniquement désactivé
+- Éléments intermédiaires: ▲ et ▼
+- Dernier élément: ▼ uniquement désactivé
+
+## 6. STATUTS LIGNE
+
+| Statut | Couleur | Background |
+|--------|---------|------------|
+| Actif | #16A34A | #DCFCE7 |
+| En pause | #92400E | #FEF3C7 |
+
+## 7. FORMULAIRE OPTIONS (600x200px)
+
+### Numéro affiché (select)
+- Label: "Numéro affiché"
+- Options: Numéro de l'alias, Numéro de la ligne appelante
+- Largeur: 300x40px
+
+### Stratégie de distribution (select)
+- Label: "Stratégie de distribution"
+- Options: Séquentiel, Round-robin, Ring all, Random
+- Largeur: 220x40px
+- Description: "Les appels sont distribués dans l'ordre de la liste"
+
+### Checkbox renvois
+- [ ] "Appliquer les renvois d'appels des lignes"
+
+### Boutons
+- "Annuler" (btn-secondary, 100x36px)
+- "Valider" (btn-primary, 100x36px)
+
+## 8. STRATÉGIES DE DISTRIBUTION
+
+| Stratégie | Code | Description |
+|-----------|------|-------------|
+| Séquentiel | sequential | Appels distribués dans l'ordre de la liste |
+| Round-robin | roundRobin | Distribution à tour de rôle |
+| Tous sonnent | ringAll | Toutes les lignes sonnent simultanément |
+| Aléatoire | random | Distribution aléatoire |
+
+## 9. APIS & ENDPOINTS
+
+```
+# Liste des lignes de la file
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent
+→ [{
+  agentId,
+  number: "+33172100010",
+  description: "Agent 1",
+  timeout: 20,
+  wrapUpTime: 10,
+  simultaneousLines: 1,
+  status: "available",
+  position: 1
+}]
+
+# Ajouter une ligne
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent
+Body: {
+  number: "+33172100013",
+  description: "Nouvel agent",
+  timeout: 20,
+  wrapUpTime: 10,
+  simultaneousLines: 1
+}
+
+# Modifier une ligne
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent/{agentId}
+Body: { timeout, wrapUpTime, simultaneousLines, status }
+
+# Réordonner les lignes
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent/{agentId}/reorder
+Body: { position: 2 }
+
+# Supprimer une ligne
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent/{agentId}
+
+# Configuration de la file
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}
+→ { strategy, followInterfaceRedirects, displayNumber }
+
+# Modifier la configuration
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}
+Body: { strategy, followInterfaceRedirects, displayNumber }
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Lignes de la file d'attente |
+| description | Configurez les lignes membres de votre Contact Center Solution |
+| section_organization | Organisation des lignes |
+| btn_add_line | + Ajouter une ligne |
+| col_order | Ordre |
+| col_type | Type |
+| col_number | Numéro |
+| col_description | Description |
+| col_timeout | Timeout |
+| col_wrapup | Wrap-up |
+| col_simultaneous | Simult. |
+| col_status | Statut |
+| col_actions | Actions |
+| type_internal | Interne |
+| type_external | Externe |
+| status_active | Actif |
+| status_paused | En pause |
+| menu_edit | Modifier |
+| menu_delete | Supprimer |
+| field_display_number | Numéro affiché |
+| field_strategy | Stratégie de distribution |
+| strategy_sequential | Séquentiel |
+| strategy_roundrobin | Round-robin |
+| strategy_ringall | Tous sonnent |
+| strategy_random | Aléatoire |
+| strategy_sequential_desc | Les appels sont distribués dans l'ordre de la liste |
+| checkbox_follow_forwards | Appliquer les renvois d'appels des lignes |
+| btn_cancel | Annuler |
+| btn_validate | Valider |

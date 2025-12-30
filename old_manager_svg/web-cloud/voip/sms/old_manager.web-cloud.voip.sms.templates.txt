@@ -1,0 +1,158 @@
+# Cahier des Charges : web-cloud/voip/sms - Templates
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid et panneaux info
+**Fonction:** Gérer les modèles de SMS prédéfinis
+**Contexte:** Réutilisation de messages récurrents
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > SMS > sms-xxxxxxxx-1 > Modèles SMS
+
+### Retour
+← Retour aux SMS
+
+## 3. HEADER
+
+- Titre: "Modèles SMS"
+
+## 4. PANNEAUX INFORMATIONS (2 colonnes, 540px chacune)
+
+### Panneau gauche : Informations (540x150px)
+- Titre: "Informations"
+- Contenu:
+  - "L'envoi de SMS commerciaux non-sollicités est interdit par la loi."
+  - "Pour des raisons légales, les SMS non commerciaux sont envoyés entre 8h et 20h, du lundi au samedi."
+  - "Vous pouvez créer des modèles pour vos envois récurrents."
+
+### Panneau droite : Exemple (540x150px)
+- Titre: "Exemple"
+- Contenu:
+  - Nom : "Confirmation commande"
+  - Type : "Transactionnel"
+  - Message : "Votre commande #REF est confirmée."
+
+## 5. BARRE D'ACTIONS
+
+### Actions dropdown (120x36px)
+- Texte: "Actions ▼"
+- Options: Ajouter, Actualiser
+
+## 6. DATAGRID MODÈLES (1120x310px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Nom | 180px | Nom du modèle |
+| Date | 140px | Date création (DD/MM/YYYY) |
+| Type | 160px | Transactionnel/Notification/Marketing |
+| Description | 200px | Description libre |
+| Message | 200px | Contenu tronqué |
+| Statut | 100px | ✓ ou ⏳ |
+| Actions | 100px | Menu ⋮ |
+
+### Types de modèles
+- Transactionnel: Confirmations, factures
+- Notification: Alertes, rappels
+- Marketing: Promotions (restrictions horaires)
+
+### Données exemple
+
+| Nom | Date | Type | Description | Message | Statut | ⋮ |
+|-----|------|------|-------------|---------|--------|---|
+| Confirmation CMD | 15/12/2024 | Transactionnel | Envoi après achat | Votre commande... | ✓ | ⋮ |
+| Rappel RDV | 10/12/2024 | Notification | Rappel 24h avant | Rappel: RDV demain... | ⏳ | ⋮ |
+
+### Menu contextuel (120x105px)
+- Modifier
+- Relancer (utiliser pour nouvel envoi)
+- Supprimer
+
+### Pagination
+"Affichage 1-2 sur 2"
+
+## 7. STATUTS MODÈLE
+
+| Statut | Icône | Description |
+|--------|-------|-------------|
+| Validé | ✓ (vert) | Prêt à l'emploi |
+| En attente | ⏳ (orange) | Validation en cours |
+| Refusé | ✕ (rouge) | Non conforme |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des modèles
+GET /sms/{serviceName}/templates
+→ [{
+  id: "tpl-123",
+  name: "Confirmation CMD",
+  datetime: "2024-12-15",
+  activity: "transactional",
+  description: "Envoi après achat",
+  message: "Votre commande #REF est confirmée.",
+  status: "validated"
+}]
+
+# Créer un modèle
+POST /sms/{serviceName}/templates
+Body: {
+  name: "Nom du modèle",
+  activity: "transactional",
+  description: "Description",
+  message: "Contenu du message"
+}
+
+# Modifier un modèle
+PUT /sms/{serviceName}/templates/{templateId}
+Body: { name, description, message }
+
+# Supprimer un modèle
+DELETE /sms/{serviceName}/templates/{templateId}
+
+# Utiliser un modèle pour envoi
+POST /sms/{serviceName}/jobs
+Body: {
+  templateId: "tpl-123",
+  receivers: ["+33612345678"],
+  variables: { REF: "CMD-12345" }
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Modèles SMS |
+| back_link | Retour aux SMS |
+| panel_info_title | Informations |
+| info_legal | L'envoi de SMS commerciaux non-sollicités est interdit par la loi. |
+| info_hours | Pour des raisons légales, les SMS non commerciaux sont envoyés entre 8h et 20h, du lundi au samedi. |
+| info_templates | Vous pouvez créer des modèles pour vos envois récurrents. |
+| panel_example_title | Exemple |
+| example_name | Nom : |
+| example_type | Type : |
+| example_message | Message : |
+| btn_actions | Actions |
+| action_add | Ajouter |
+| action_refresh | Actualiser |
+| col_name | Nom |
+| col_date | Date |
+| col_type | Type |
+| col_description | Description |
+| col_message | Message |
+| col_status | Statut |
+| col_actions | Actions |
+| type_transactional | Transactionnel |
+| type_notification | Notification |
+| type_marketing | Marketing |
+| status_validated | Validé |
+| status_pending | En attente |
+| status_refused | Refusé |
+| menu_edit | Modifier |
+| menu_reuse | Relancer |
+| menu_delete | Supprimer |
+| pagination | Affichage {start}-{end} sur {total} |

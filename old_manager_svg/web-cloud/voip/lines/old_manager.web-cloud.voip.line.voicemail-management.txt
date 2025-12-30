@@ -1,0 +1,115 @@
+# Cahier des Charges : web-cloud/voip/line - Voicemail Management
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec sélection multiple
+**Fonction:** Écouter et gérer les messages du répondeur
+**Contexte:** Gestion du répondeur de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › 0033972XXXXXX › Gestion du répondeur › Écoute et gestion des messages
+
+### Retour
+← Retour vers la gestion du répondeur
+
+## 3. HEADER
+
+- Titre: "Gestion des messages du répondeur"
+
+## 4. TOOLBAR
+
+### Bouton suppression
+- "Supprimer le message" (btn-outline, 180x36px)
+- Affiché quand messages sélectionnés
+
+## 5. DATAGRID (1120x500px)
+
+### Header
+- Checkbox sélection globale
+- Colonne Appelant
+- Colonne Date
+- Colonne Durée
+- Bouton refresh: ↻
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| ☐ | 50px | Checkbox |
+| Appelant | 180px | Numéro ou "Anonyme" |
+| Date | 200px | Date + heure sur 2 lignes |
+| Durée | 100px | Format MM:SS |
+| Actions | 200px | Icônes circulaires |
+
+### Actions par ligne
+- ▶ Écouter (cercle bleu clair)
+- 👁 Voir transcription (cercle bleu clair, Bêta)
+- ⬇ Télécharger (cercle bleu clair)
+- 🗑 Supprimer (cercle rouge clair)
+
+### Exemples données
+
+| Appelant | Date | Durée |
+|----------|------|-------|
+| +33 6 12 34 56 78 | 28/12/2024 14:32:18 | 01:24 |
+| +33 1 23 45 67 89 | 27/12/2024 09:15:42 | 00:45 |
+| ☑ +33 9 87 65 43 21 | 26/12/2024 16:48:33 | 02:18 |
+| Anonyme | 25/12/2024 11:22:05 | 00:32 |
+
+### Légende
+"▶ Écouter  👁 Voir transcription (Bêta)  ⬇ Télécharger  🗑 Supprimer"
+
+### Pagination
+- Texte: "Affichage 1-4 sur 4"
+- Boutons: ‹ [1] ›
+
+## 6. APIS & ENDPOINTS
+
+```
+# Lister les messages vocaux
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages
+→ Liste paginée des messages
+
+# Détails message
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{id}
+→ caller, date, duration, read, transcription
+
+# Écouter (stream audio)
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{id}/listen
+→ URL audio streaming
+
+# Télécharger
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{id}/download
+→ Fichier audio
+
+# Transcription (Bêta)
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{id}/transcription
+→ text, confidence
+
+# Supprimer un message
+DELETE /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{id}
+
+# Supprimer plusieurs messages
+POST /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/batchDelete
+Body: { ids: [1, 2, 3] }
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Gestion des messages du répondeur |
+| btn_delete | Supprimer le message |
+| col_caller | Appelant |
+| col_date | Date |
+| col_duration | Durée |
+| caller_anonymous | Anonyme |
+| action_play | Écouter |
+| action_transcription | Voir transcription |
+| action_download | Télécharger |
+| action_delete | Supprimer |
+| beta | Bêta |
+| pagination | Affichage {start}-{end} sur {total} |
+| btn_refresh | Actualiser |

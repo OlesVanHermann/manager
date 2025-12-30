@@ -1,0 +1,122 @@
+# Cahier des Charges : web-cloud/voip/fax - Notifications
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec tableau éditable inline
+**Fonction:** Gérer les notifications email du fax
+**Contexte:** Configuration des alertes par email
+
+## 2. NAVIGATION
+
+### Retour
+< Retour
+
+## 3. HEADER
+
+- Titre: "Notifications - {numéro}"
+- Exemple: "Notifications - 0033972101234"
+
+## 4. CONTENU PRINCIPAL (1200x550px)
+
+### Bouton ajout
+"+ Ajouter une notification" (btn-primary, 180x40px)
+
+### Tableau des notifications
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Email | 380px | Adresse email |
+| Type | 300px | Type de notification |
+| Source | 300px | Source des événements |
+| Actions | 160px | Éditer / Supprimer |
+
+### Données exemple
+
+| Email | Type | Source | Actions |
+|-------|------|--------|---------|
+| contact@monentreprise.fr | Toutes les notifications | Fax et Voicemail | ✎ 🗑 |
+| compta@monentreprise.fr | Résumé quotidien | Fax uniquement | ✎ 🗑 |
+| direction@monentreprise.fr | (en édition) | Voicemail | ✓ ✕ |
+| tech@monentreprise.fr | Erreurs uniquement | Fax uniquement | ✎ 🗑 |
+
+### Mode édition inline
+- Input email: 350x36px, border bleu en focus
+- Select type: 280x36px
+- Select source: 200x36px
+- Boutons: ✓ (valider, bleu), ✕ (annuler, gris)
+
+### Footer
+"4 notifications (max 5)"
+
+## 5. TYPES DE NOTIFICATIONS
+
+| Type | Code | Description |
+|------|------|-------------|
+| Toutes les notifications | all | Chaque fax reçu |
+| Résumé quotidien | daily | Un email par jour |
+| Erreurs uniquement | errors | Uniquement les échecs |
+
+## 6. SOURCES
+
+| Source | Code | Description |
+|--------|------|-------------|
+| Fax et Voicemail | both | Tous les événements |
+| Fax uniquement | fax | Réception de fax |
+| Voicemail | voicemail | Messages vocaux |
+
+## 7. BOUTONS ACTIONS
+
+| Icône | Action | Couleur |
+|-------|--------|---------|
+| ✎ | Éditer | Bleu (#0050D7) |
+| 🗑 | Supprimer | Rouge (#DC2626) |
+| ✓ | Valider | Blanc sur bleu |
+| ✕ | Annuler | Gris (#6B7280) |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des notifications
+GET /telephony/{billingAccount}/fax/{serviceName}/notifications
+→ [{
+  id, email, type: "all", source: "both"
+}]
+
+# Ajouter une notification
+POST /telephony/{billingAccount}/fax/{serviceName}/notifications
+Body: {
+  email: "contact@...",
+  type: "all",
+  source: "both"
+}
+
+# Modifier une notification
+PUT /telephony/{billingAccount}/fax/{serviceName}/notifications/{notificationId}
+Body: { type: "daily", source: "fax" }
+
+# Supprimer une notification
+DELETE /telephony/{billingAccount}/fax/{serviceName}/notifications/{notificationId}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Notifications - {number} |
+| back_link | Retour |
+| btn_add | + Ajouter une notification |
+| col_email | Email |
+| col_type | Type |
+| col_source | Source |
+| col_actions | Actions |
+| type_all | Toutes les notifications |
+| type_daily | Résumé quotidien |
+| type_errors | Erreurs uniquement |
+| source_both | Fax et Voicemail |
+| source_fax | Fax uniquement |
+| source_voicemail | Voicemail |
+| btn_edit | Éditer |
+| btn_delete | Supprimer |
+| btn_validate | Valider |
+| btn_cancel | Annuler |
+| footer_count | {count} notifications (max {max}) |

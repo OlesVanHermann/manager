@@ -1,0 +1,141 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Scheduler
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page calendrier interactif
+**Fonction:** Configurer les plages horaires d'ouverture et fermetures exceptionnelles
+**Contexte:** Configuration file d'appels du numéro alias
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Plages horaires et fermetures
+
+### Retour
+← Plages horaires et fermetures
+
+## 3. DESCRIPTION
+
+"Configurez les plages horaires d'ouverture et les jours de fermeture exceptionnels."
+
+## 4. CONTRÔLES CALENDRIER
+
+### Navigation mois
+- Bouton précédent: ‹ (35x35px)
+- Titre mois: "Janvier 2025" (text-title)
+- Bouton suivant: › (35x35px)
+
+### Toggle vue
+- "Semaine" (btn-primary sélectionné, 80x35px)
+- "Mois" (btn-outline, 80x35px)
+
+### Menu Actions
+- Dropdown: "Actions ▼" (120x35px)
+
+## 5. VUE SEMAINE (1100x500px)
+
+### Colonne horaire
+- Heures: 08:00, 09:00, 10:00... 15:00
+- Largeur: 60px
+- Position: gauche
+
+### En-têtes jours (header 40px)
+- Background: #F3F4F6
+- Format: "Lun 6", "Mar 7", "Mer 8", "Jeu 9", "Ven 10", "Sam 11", "Dim 12"
+
+### Grille
+- Colonnes verticales: 7 jours
+- Lignes horizontales: toutes les heures
+- Border: #E5E7EB
+
+### Événements ouverts (bleu)
+- Background: #DBEAFE
+- Texte: "Ouvert" + horaires
+- Exemple: "08:00-12:00", "14:00-18:00"
+
+### Événements fermés (rouge)
+- Background: #FEE2E2 opacity 0.5
+- Texte: "Fermé"
+- Samedi/Dimanche entiers
+
+## 6. LÉGENDE
+
+- ☐ Bleu: "Plage ouverte"
+- ☐ Rouge: "Fermeture exceptionnelle"
+
+## 7. TYPES D'ÉVÉNEMENTS
+
+| Type | Couleur | Description |
+|------|---------|-------------|
+| open | #DBEAFE | Plage d'ouverture standard |
+| closed | #FEE2E2 | Fermeture exceptionnelle |
+| holiday | #FEE2E2 | Jour férié |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Configuration conditions temporelles
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions
+→ Liste des conditions
+
+# Créer une condition
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions
+Body: {
+  slot: "slot1",
+  policy: "available",
+  timeFrom: "0800",
+  timeTo: "1200",
+  day: "monday"
+}
+
+# Modifier une condition
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/{conditionId}
+Body: { timeFrom: "0900", timeTo: "1300" }
+
+# Supprimer une condition
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/{conditionId}
+
+# Fermetures exceptionnelles
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/exceptionalClosure
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/exceptionalClosure
+Body: {
+  dateStart: "2025-12-25",
+  dateEnd: "2025-12-26",
+  reason: "Noël"
+}
+```
+
+## 9. JOURS DE LA SEMAINE
+
+| Code | Jour |
+|------|------|
+| monday | Lundi |
+| tuesday | Mardi |
+| wednesday | Mercredi |
+| thursday | Jeudi |
+| friday | Vendredi |
+| saturday | Samedi |
+| sunday | Dimanche |
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Plages horaires et fermetures |
+| page_desc | Configurez les plages horaires d'ouverture et les jours de fermeture exceptionnels. |
+| btn_prev | ‹ |
+| btn_next | › |
+| view_week | Semaine |
+| view_month | Mois |
+| dropdown_actions | Actions |
+| event_open | Ouvert |
+| event_closed | Fermé |
+| legend_open | Plage ouverte |
+| legend_closed | Fermeture exceptionnelle |
+| day_mon | Lun |
+| day_tue | Mar |
+| day_wed | Mer |
+| day_thu | Jeu |
+| day_fri | Ven |
+| day_sat | Sam |
+| day_sun | Dim |

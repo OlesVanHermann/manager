@@ -1,0 +1,149 @@
+# Cahier des Charges : web-cloud/voip/fax - Consumption
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec statistiques et datagrid
+**Fonction:** Consulter la consommation fax (envoyés/reçus)
+**Contexte:** Suivi détaillé des fax
+
+## 2. NAVIGATION
+
+### NAV3 Tabs
+General | Parametres | Campagnes | **Consommation** (actif) | Filtrage | Logo | Notifications
+
+### NAV4 Sub-tabs
+**Envoyés** (actif) | Reçus
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Liste des fax
+
+### Panneau droit (1096px)
+- Header + tabs
+- Sub-tabs + sélecteur période
+- Stats + table
+
+## 4. HEADER FAX
+
+- Numéro: "0033972999888"
+- Description: "Fax Bureau / Consommation"
+
+## 5. SÉLECTEUR PÉRIODE (200x30px)
+
+- Type: Select dropdown
+- Valeur: "Décembre 2025"
+- Position: droite
+
+## 6. CARTES STATISTIQUES (3 cartes)
+
+| Carte | Valeur | Largeur |
+|-------|--------|---------|
+| Total fax envoyés | 68 | 340px |
+| Pages transmises | 245 | 340px |
+| Coût total | 12,25€ | 324px |
+
+## 7. DATAGRID CONSOMMATION (1036x400px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date | 160px | DD/MM/YYYY HH:mm |
+| Destinataire | 220px | Numéro fax |
+| Pages | 100px | Nombre de pages |
+| Durée | 120px | Format M:SS |
+| Coût | 130px | Prix en EUR |
+| Statut | 115px | Badge Abouti/Échoué |
+| Actions | 100px | Voir |
+
+### Statuts
+
+| Statut | Couleur |
+|--------|---------|
+| Abouti | #DEF7EC (vert) |
+| Échoué | #FEE2E2 (rouge) |
+
+### Données exemple
+
+| Date | Destinataire | Pages | Durée | Coût | Statut |
+|------|--------------|-------|-------|------|--------|
+| 30/12/2025 14:32 | +33 1 23 45 67 89 | 3 | 0:45 | 0,15€ | Abouti |
+| 30/12/2025 11:15 | +33 4 56 78 90 12 | 1 | 0:22 | 0,05€ | Abouti |
+| 29/12/2025 16:45 | +33 5 67 89 01 23 | 5 | 1:12 | 0,25€ | Abouti |
+| 29/12/2025 09:30 | +33 6 78 90 12 34 | 2 | 0:35 | 0,10€ | Échoué |
+
+### Pagination
+"1 - 4 sur 68 fax"
+
+## 8. BOUTON EXPORT (140x34px)
+
+- "Exporter CSV" (btn-outline)
+
+## 9. APIS & ENDPOINTS
+
+```
+# Liste des fax envoyés
+GET /telephony/{billingAccount}/fax/{serviceName}/voicemail/outgoing
+Query: { month: "2025-12", limit, offset }
+→ [{
+  id: "fax-123",
+  datetime: "2025-12-30T14:32:00",
+  recipient: "+33123456789",
+  pages: 3,
+  duration: 45,
+  cost: 0.15,
+  status: "success"
+}]
+
+# Liste des fax reçus
+GET /telephony/{billingAccount}/fax/{serviceName}/voicemail/incoming
+Query: { month: "2025-12", limit, offset }
+→ [{
+  id: "fax-456",
+  datetime: "2025-12-30T10:15:00",
+  sender: "+33198765432",
+  pages: 2,
+  duration: 30,
+  status: "success"
+}]
+
+# Statistiques mensuelles
+GET /telephony/{billingAccount}/fax/{serviceName}/consumption/statistics
+Query: { month: "2025-12" }
+→ {
+  totalSent: 68,
+  totalReceived: 45,
+  totalPages: 245,
+  totalCost: 12.25
+}
+
+# Exporter CSV
+GET /telephony/{billingAccount}/fax/{serviceName}/consumption/export
+Query: { month: "2025-12", direction: "outgoing" }
+→ CSV file
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_consumption | Consommation |
+| subtab_sent | Envoyés |
+| subtab_received | Reçus |
+| stat_total_sent | Total fax envoyés |
+| stat_total_pages | Pages transmises |
+| stat_total_cost | Coût total |
+| col_date | Date |
+| col_recipient | Destinataire |
+| col_sender | Expéditeur |
+| col_pages | Pages |
+| col_duration | Durée |
+| col_cost | Coût |
+| col_status | Statut |
+| col_actions | Actions |
+| status_success | Abouti |
+| status_failed | Échoué |
+| action_view | Voir |
+| btn_export | Exporter CSV |
+| pagination | {start} - {end} sur {total} fax |

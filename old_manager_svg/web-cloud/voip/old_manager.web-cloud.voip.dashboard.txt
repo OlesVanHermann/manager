@@ -1,0 +1,201 @@
+# Cahier des Charges : web-cloud/voip - Dashboard
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec cartes et liste latérale
+**Fonction:** Vue d'ensemble d'un groupe de facturation VoIP
+**Contexte:** Page principale après sélection d'un groupe
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+**Dashboard** (actif) | Services | Repertoire | Facturation | Administration
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche groupes
+- Compteur: "3 groupes VoIP"
+- Liste des groupes avec sélection
+
+### Panneau droit (1096px)
+- Header groupe + bouton Commander
+- Tabs navigation
+- Dashboard 3 colonnes de cartes
+
+## 4. HEADER GROUPE
+
+- Titre: "Telephonie Siege"
+- Sous-titre: "voip-ab12345"
+- Bouton: "+ Commander" (btn-primary, 130x36px)
+
+## 5. LISTE GROUPES (panneau gauche)
+
+### Carte groupe sélectionné (268x72px)
+- Background: #E8F0FE
+- Icône: cercle bleu avec "VoIP"
+- Nom du groupe
+- Identifiant (text-muted)
+- Résumé: "3 lignes - 2 numeros - 1 fax"
+- Badge statut: "Actif" (vert)
+
+### Carte groupe non sélectionné
+- Background: blanc avec bordure
+- Même structure
+
+## 6. CARTE ACTIONS RAPIDES (340x200px)
+
+### Titre
+"Je veux..."
+
+### Actions (liens)
+| Action | Navigation |
+|--------|------------|
+| Commander un numero | → order/number |
+| Consulter mes factures | → billing |
+| Demander une portabilite | → portability |
+| Gerer les numeros abreges | → directory/short |
+
+## 7. CARTE INFORMATIONS (340x200px)
+
+### Titre
+"Informations generales"
+
+### Champs
+
+| Champ | Valeur |
+|-------|--------|
+| Etat | Badge "Actif" (vert) |
+| Lignes | 3 (lien bleu) |
+| Numeros | 2 (lien bleu) |
+| Fax | 1 (lien bleu) |
+| Credit | 50,00 EUR |
+
+## 8. CARTE CONSOMMATION (340x200px)
+
+### Titre
+"Consommation du mois"
+
+### Graphique circulaire
+- Cercle de progression (72%)
+- Texte centre: "72%" + "du forfait"
+- Couleurs: bleu pour consommé, gris pour restant
+
+### Métrique
+- "Hors forfait :" 12,50 EUR (rouge)
+
+## 9. TABLEAU DERNIERS RELEVÉS (1052x280px)
+
+### Titre
+"Mes 5 derniers releves"
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date | 180px | DD/MM/YYYY |
+| Montant HT | 200px | Prix en EUR |
+| Deja regle | 200px | Oui/Non (vert/rouge) |
+| Actions | auto | Liens PDF, CSV |
+
+### Données exemple
+
+| Date | Montant HT | Deja regle | Actions |
+|------|------------|------------|---------|
+| 01/12/2025 | 45,00 EUR | Oui | PDF, CSV |
+| 01/11/2025 | 42,50 EUR | Oui | PDF, CSV |
+| 01/10/2025 | 48,00 EUR | Oui | PDF, CSV |
+
+## 10. SECTION PARC VOIP (1052x130px)
+
+### Titre
+"Mon parc VoIP"
+
+### Cartes équipements (200x70px)
+- Modèle téléphone: "Yealink T46U"
+- Numéro associé
+- Adresse MAC
+
+## 11. APIS & ENDPOINTS
+
+```
+# Informations groupe
+GET /telephony/{billingAccount}
+→ {
+  billingAccount: "voip-ab12345",
+  description: "Telephonie Siege",
+  status: "active",
+  currentOutplan: 12.50,
+  credit: 50.00
+}
+
+# Compteurs services
+GET /telephony/{billingAccount}/service
+→ {
+  lines: 3,
+  numbers: 2,
+  fax: 1
+}
+
+# Consommation du mois
+GET /telephony/{billingAccount}/consumption
+Query: { month: "current" }
+→ {
+  usagePercent: 72,
+  outOfPlan: 12.50
+}
+
+# Derniers relevés
+GET /telephony/{billingAccount}/bill
+Query: { limit: 5 }
+→ [{
+  date: "2025-12-01",
+  amountHT: 45.00,
+  paid: true
+}]
+
+# Équipements
+GET /telephony/{billingAccount}/equipment
+→ [{
+  model: "Yealink T46U",
+  line: "0033912345678",
+  mac: "AA:BB:CC:DD:EE:01"
+}]
+```
+
+## 12. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_dashboard | Dashboard |
+| tab_services | Services |
+| tab_directory | Repertoire |
+| tab_billing | Facturation |
+| tab_admin | Administration |
+| card_actions | Je veux... |
+| action_order_number | Commander un numero |
+| action_view_bills | Consulter mes factures |
+| action_portability | Demander une portabilite |
+| action_short_numbers | Gerer les numeros abreges |
+| card_info | Informations generales |
+| field_status | Etat |
+| field_lines | Lignes |
+| field_numbers | Numeros |
+| field_fax | Fax |
+| field_credit | Credit |
+| card_consumption | Consommation du mois |
+| consumption_percent | du forfait |
+| out_of_plan | Hors forfait |
+| card_bills | Mes 5 derniers releves |
+| col_date | Date |
+| col_amount | Montant HT |
+| col_paid | Deja regle |
+| col_actions | Actions |
+| card_equipment | Mon parc VoIP |
+| btn_order | Commander |

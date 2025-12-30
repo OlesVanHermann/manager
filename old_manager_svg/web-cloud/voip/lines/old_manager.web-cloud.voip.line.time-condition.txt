@@ -1,0 +1,173 @@
+# Cahier des Charges : web-cloud/voip/line - Time Condition
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration avec calendrier visuel
+**Fonction:** Configurer les plages horaires et renvois d'appels
+**Contexte:** Redirection d'appels selon l'heure et le jour
+
+## 2. NAVIGATION
+
+### Retour
+< Appels
+
+## 3. HEADER
+
+- Titre: "Plages horaires"
+
+## 4. BANNIÈRE INFO (1100x80px)
+
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Texte ligne 1: "Les plages horaires permettent de définir des renvois d'appels en fonction de l'heure et du jour."
+- Texte ligne 2: "Configurez vos créneaux pour rediriger les appels vers différentes destinations selon vos horaires."
+- Lien: "Besoin d'aide ?" (text-link)
+
+## 5. SECTION PARAMÈTRES (350x180px)
+
+### Titre
+"Paramètres"
+
+### Activation
+- Label: "Activation"
+- Radio: Oui / Non
+- Sélection: Oui (bleu)
+
+### Délai avant renvoi
+- Label: "Délai avant renvoi"
+- Select: 150x36px
+- Valeur: "20 secondes"
+- Options: 5s, 10s, 15s, 20s, 25s, 30s
+
+## 6. SECTION CONFIGURATION RENVOIS (700x180px)
+
+### Titre
+"Configuration des renvois"
+
+### Cartes créneaux (4 max)
+
+| Créneau | Couleur | Label | Destination | Action |
+|---------|---------|-------|-------------|--------|
+| 1 | Vert (#DCFCE7) | Heures ouvrables | +33 1 72 10 00 01 | Modifier |
+| 2 | Jaune (#FEF3C7) | Fermeture | Messagerie | Modifier |
+| 3 | Rouge (#FEE2E2) | Week-end | Astreinte | Modifier |
+| 4 | Gris (#F3F4F6) | Non configuré | - | Configurer |
+
+Chaque carte: 150x100px, border colorée
+
+## 7. SECTION CALENDRIER (1100x300px)
+
+### Header
+- Titre: "Conditions horaires"
+- Bouton: "Actions ▼" (dropdown, 120x30px)
+- Lien: "Appliquer à plusieurs lignes" (text-link)
+
+### Grille calendrier
+
+#### En-têtes jours
+Lun | Mar | Mer | Jeu | Ven | Sam | Dim
+
+#### Échelle horaire (gauche)
+08:00, 12:00, 14:00, 18:00, 22:00
+
+#### Zones colorées
+- Lun-Ven matin (08h-12h): Vert (#DCFCE7) → Créneau 1
+- Lun-Ven midi (12h-14h): Jaune (#FEF3C7) → Créneau 2
+- Lun-Ven après-midi (14h-18h): Vert (#DCFCE7) → Créneau 1
+- Lun-Ven soir (18h-22h): Jaune (#FEF3C7) → Créneau 2
+- Sam-Dim (toute la journée): Rouge (#FEE2E2) → Créneau 3
+
+## 8. BARRE ACTIONS (1100x60px)
+
+- Background: #1F2937 (dark)
+- Texte: "Enregistrer les modifications ?"
+- Bouton "Valider" (btn-primary, 100x36px)
+- Bouton "Annuler" (btn-secondary dark, 100x36px)
+
+## 9. TYPES DE CRÉNEAUX
+
+| Type | Code | Couleur | Description |
+|------|------|---------|-------------|
+| Ouvert | open | Vert | Heures de bureau |
+| Fermé | closed | Jaune | Hors horaires |
+| Exception | exception | Rouge | Week-end/jours fériés |
+| Non configuré | none | Gris | Créneau disponible |
+
+## 10. APIS & ENDPOINTS
+
+```
+# Configuration plages horaires
+GET /telephony/{billingAccount}/line/{serviceName}/timeCondition
+→ {
+  enabled: true,
+  timeout: 20,
+  slots: [
+    { id: 1, name: "Heures ouvrables", destination: "+33...", color: "green" },
+    { id: 2, name: "Fermeture", destination: "voicemail", color: "yellow" },
+    ...
+  ],
+  schedule: [
+    { dayOfWeek: "monday", start: "08:00", end: "12:00", slotId: 1 },
+    ...
+  ]
+}
+
+# Activer/désactiver
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition
+Body: { enabled: true, timeout: 20 }
+
+# Créer un créneau
+POST /telephony/{billingAccount}/line/{serviceName}/timeCondition/slot
+Body: { name: "...", destination: "...", color: "green" }
+
+# Modifier un créneau
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition/slot/{slotId}
+Body: { name: "...", destination: "..." }
+
+# Supprimer un créneau
+DELETE /telephony/{billingAccount}/line/{serviceName}/timeCondition/slot/{slotId}
+
+# Définir le planning
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition/schedule
+Body: { schedule: [...] }
+
+# Appliquer à plusieurs lignes
+POST /telephony/{billingAccount}/line/batchTimeCondition
+Body: {
+  serviceNames: ["line1", "line2"],
+  timeCondition: { ... }
+}
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Plages horaires |
+| back_link | Appels |
+| info_description | Les plages horaires permettent de définir des renvois d'appels en fonction de l'heure et du jour. |
+| info_details | Configurez vos créneaux pour rediriger les appels vers différentes destinations selon vos horaires. |
+| link_help | Besoin d'aide ? |
+| section_params | Paramètres |
+| field_activation | Activation |
+| field_timeout | Délai avant renvoi |
+| option_yes | Oui |
+| option_no | Non |
+| section_slots | Configuration des renvois |
+| slot_title | Créneau {number} |
+| slot_not_configured | Non configuré |
+| btn_modify | Modifier |
+| btn_configure | Configurer |
+| section_calendar | Conditions horaires |
+| btn_actions | Actions |
+| link_bulk | Appliquer à plusieurs lignes |
+| day_mon | Lun |
+| day_tue | Mar |
+| day_wed | Mer |
+| day_thu | Jeu |
+| day_fri | Ven |
+| day_sat | Sam |
+| day_sun | Dim |
+| footer_save | Enregistrer les modifications ? |
+| btn_validate | Valider |
+| btn_cancel | Annuler |

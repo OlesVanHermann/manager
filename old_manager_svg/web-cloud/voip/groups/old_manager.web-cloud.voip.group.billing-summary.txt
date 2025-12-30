@@ -1,0 +1,117 @@
+# Cahier des Charges : web-cloud/voip/group - Billing Summary
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page rapport avec résumé et détails
+**Fonction:** Consulter le résumé de consommation du groupe
+**Contexte:** Statistiques d'appels et facturation
+
+## 2. NAVIGATION
+
+### Retour
+< Retour vers Facturation
+
+## 3. HEADER
+
+- Titre: "Résumé de consommation"
+
+## 4. CARTE RÉSUMÉ (800x200px)
+
+### Titre
+"Résumé des appels"
+
+### Compteurs (4 colonnes)
+
+| Métrique | Valeur exemple |
+|----------|----------------|
+| Total des appels | 1 247 appels |
+| Appels entrants | 523 appels |
+| Appels sortants | 689 appels |
+| Transferts | 35 appels |
+
+- Font-size compteur: 28px, bold
+
+## 5. TABLEAU DÉTAILS PAR SERVICE (1100x400px)
+
+### Titre
+"Détails par service"
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Service | 330px | Nom + numéro |
+| Total | 150px | Nombre total d'appels |
+| Entrants | 150px | Appels reçus |
+| Sortants | 150px | Appels émis |
+| Transferts | 150px | Appels transférés |
+
+### Données exemple
+
+| Service | Total | Entrants | Sortants | Transferts |
+|---------|-------|----------|----------|------------|
+| Ligne principale (+33 1 72 10 00 01) | 456 | 198 | 245 | 13 |
+| Commercial (+33 1 72 10 00 02) | 312 | 145 | 160 | 7 |
+| Support technique (+33 1 72 10 00 03) | 289 | 112 | 168 | 9 |
+| Accueil (+33 1 72 10 00 00) | 190 | 68 | 116 | 6 |
+
+### Pagination
+"1-4 sur 12 services"
+
+## 6. TYPES D'APPELS
+
+| Type | Code | Description |
+|------|------|-------------|
+| Entrant | incoming | Appel reçu |
+| Sortant | outgoing | Appel émis |
+| Transfert | transfer | Appel redirigé |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Résumé global
+GET /telephony/{billingAccount}/statistics/summary
+Params: { from, to }
+→ {
+  totalCalls: 1247,
+  incomingCalls: 523,
+  outgoingCalls: 689,
+  transferCalls: 35
+}
+
+# Détails par service
+GET /telephony/{billingAccount}/statistics/byService
+Params: { from, to, page, pageSize }
+→ [{
+  serviceName: "...",
+  serviceNumber: "+33172100001",
+  description: "Ligne principale",
+  totalCalls: 456,
+  incomingCalls: 198,
+  outgoingCalls: 245,
+  transferCalls: 13
+}]
+
+# Export
+GET /telephony/{billingAccount}/statistics/export
+Params: { from, to, format: "csv" }
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Résumé de consommation |
+| back_link | Retour vers Facturation |
+| section_summary | Résumé des appels |
+| metric_total | Total des appels |
+| metric_incoming | Appels entrants |
+| metric_outgoing | Appels sortants |
+| metric_transfer | Transferts |
+| section_details | Détails par service |
+| col_service | Service |
+| col_total | Total |
+| col_incoming | Entrants |
+| col_outgoing | Sortants |
+| col_transfers | Transferts |
+| pagination | {start}-{end} sur {total} services |

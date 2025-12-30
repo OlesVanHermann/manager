@@ -1,0 +1,96 @@
+# Cahier des Charges : web-cloud/voip/line - Incoming Calls
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec filtres
+**Fonction:** Historique des appels entrants
+**Contexte:** Consommation de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › 0033972XXXXXX › Consommation › Appels reçus
+
+### Retour
+← Retour vers la gestion de votre consommation
+
+## 3. HEADER
+
+- Titre: "Appels reçus"
+
+## 4. RÉSUMÉ PÉRIODE
+
+### Informations affichées
+- Période: du 01/12/2024 au 31/12/2024
+- Total: 42 appels
+- Durée totale: 02:34:15
+
+### Bouton filtrer
+"Filtrer" (btn-outline, 100x36px)
+
+## 5. DATAGRID (1120x500px)
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Date | 140px | Date + heure sur 2 lignes |
+| Numéro appelant | 180px | Numéro ou "Anonyme" |
+| Numéro appelé | 180px | Numéro destination ou "-" |
+| Durée | 120px | Format HH:MM:SS |
+| Nature | 100px | Badge statut |
+
+### Badges Nature
+
+| Statut | Couleur | Background |
+|--------|---------|------------|
+| Reçu | #16A34A | #DCFCE7 |
+| Manqué | #92400E | #FEF3C7 |
+| Transféré | #1E40AF | #EFF6FF |
+
+### Exemples données
+
+| Date | Appelant | Appelé | Durée | Nature |
+|------|----------|--------|-------|--------|
+| 28/12/2024 14:32:18 | +33 6 12 34 56 78 | - | 00:03:42 | Reçu |
+| 28/12/2024 11:15:03 | Anonyme | - | 00:00:45 | Manqué |
+| 27/12/2024 09:48:22 | +33 1 23 45 67 89 | - | 00:12:08 | Reçu |
+| 26/12/2024 16:22:41 | +33 9 87 65 43 21 | +33 1 XX XX XX XX | 00:05:33 | Transféré |
+
+### Pagination
+- Texte: "Affichage 1-5 sur 42"
+- Boutons: ‹ [1] 2 ›
+
+## 6. APIS & ENDPOINTS
+
+```
+# Historique appels entrants
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/incomingCalls
+Query: ?dateFrom=2024-12-01&dateTo=2024-12-31&page=1&pageSize=10
+→ calls: [{ date, caller, callee, duration, nature }], total, totalDuration
+
+# Export CSV
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/incomingCalls/export
+Query: ?dateFrom=2024-12-01&dateTo=2024-12-31&format=csv
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Appels reçus |
+| link_back | Retour vers la gestion de votre consommation |
+| period_label | Période du {start} au {end} |
+| total_calls | Total: {count} appels |
+| total_duration | Durée totale: {duration} |
+| btn_filter | Filtrer |
+| col_date | Date |
+| col_caller | Numéro appelant |
+| col_callee | Numéro appelé |
+| col_duration | Durée |
+| col_nature | Nature |
+| nature_received | Reçu |
+| nature_missed | Manqué |
+| nature_transferred | Transféré |
+| caller_anonymous | Anonyme |
+| pagination | Affichage {start}-{end} sur {total} |

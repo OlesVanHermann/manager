@@ -1,0 +1,138 @@
+# Cahier des Charges : telecom/telephony - Line Terminate
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec informations
+**Fonction:** Demander la résiliation d'une ligne téléphonique
+**Contexte:** Accessible depuis la gestion d'une ligne
+
+## 2. NAVIGATION
+
+### Lien retour
+"← Ma ligne" (text-primary)
+
+## 3. LAYOUT
+
+- Background page: #F9FAFB
+- Dimensions: 1100x520px
+- Titre: "Résiliation de la ligne \"{description}\"" (22px, bold)
+- 2 colonnes: Informations (530px) + Résiliation (510px)
+
+## 4. COLONNE INFORMATIONS (530x400px)
+
+### Titre section
+"Informations" (14px, bold)
+
+### Texte explicatif
+- "Cette page vous permet de demander la résiliation de votre ligne."
+- "Les demandes de résiliation seront prises en compte lors de votre"
+- "prochaine facturation. Jusqu'à cette date, l'annulation de la demande"
+- "restera possible."
+
+### Section retour matériel
+Titre: "Procédure de retour matériel :" (13px, bold)
+
+Contenu:
+- "Vous nous retournez l'ancien matériel dans un délai de 15 jours après"
+- "la résiliation effective de votre ligne. La caution vous est restituée"
+- "sous 10 jours après réception de l'équipement."
+- "Vous recevrez par e-mail le bon de retour à joindre au matériel."
+
+### Encart adresse (490x120px)
+- Background: #F9FAFB
+- Border radius: 8px
+- Icône: 🏠
+- Titre: "Adresse de retour :"
+- Contenu:
+  - OVH SAS
+  - Service Après Vente
+  - 155 avenue Georges Hannart
+  - 59170 Croix
+
+## 5. COLONNE RÉSILIATION (510x400px)
+
+### Titre section
+"Résiliation de la ligne" (14px, bold)
+
+### Texte
+"Pour nous aider à améliorer nos services, veuillez préciser la raison de votre résiliation :"
+
+### Select raison (450x40px)
+Placeholder: "Choisissez une cause ▼"
+
+### Dropdown ouvert (450x180px)
+| Option |
+|--------|
+| Déménagement |
+| Facturation non adaptée |
+| Cessation d'activité |
+| Manque de fonctionnalités |
+| Problèmes liés au matériel |
+| Problèmes techniques |
+| Départ vers la concurrence |
+
+### Lien bulk
+"Appliquer à plusieurs lignes" (text-primary, 11px)
+
+### Bouton
+- Texte: "Résilier"
+- Style: btn-danger (#DC2626)
+- Dimensions: 120x36px
+
+## 6. APIS & ENDPOINTS
+
+```
+# Demander résiliation ligne
+POST /telephony/{billingAccount}/line/{serviceName}/terminate
+Body: {
+  reason: "moving",
+  details: null
+}
+→ {
+  terminationId: "term-456",
+  effectiveDate: "2025-01-31",
+  status: "pending",
+  equipmentReturnRequired: true
+}
+
+# Informations retour matériel
+GET /telephony/{billingAccount}/line/{serviceName}/equipment
+→ {
+  hasEquipment: true,
+  model: "Cisco CP-8851",
+  depositAmount: 150.00,
+  returnAddress: {
+    company: "OVH SAS",
+    service: "Service Après Vente",
+    street: "155 avenue Georges Hannart",
+    zipCode: "59170",
+    city: "Croix"
+  }
+}
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| link_back | Ma ligne |
+| page_title | Résiliation de la ligne "{description}" |
+| section_info | Informations |
+| info_intro | Cette page vous permet de demander la résiliation de votre ligne. |
+| info_billing | Les demandes de résiliation seront prises en compte lors de votre prochaine facturation. Jusqu'à cette date, l'annulation de la demande restera possible. |
+| equipment_title | Procédure de retour matériel : |
+| equipment_return | Vous nous retournez l'ancien matériel dans un délai de 15 jours après la résiliation effective de votre ligne. La caution vous est restituée sous 10 jours après réception de l'équipement. |
+| equipment_email | Vous recevrez par e-mail le bon de retour à joindre au matériel. |
+| return_address_title | Adresse de retour : |
+| section_terminate | Résiliation de la ligne |
+| reason_intro | Pour nous aider à améliorer nos services, veuillez préciser la raison de votre résiliation : |
+| placeholder_reason | Choisissez une cause |
+| reason_moving | Déménagement |
+| reason_pricing | Facturation non adaptée |
+| reason_cessation | Cessation d'activité |
+| reason_features | Manque de fonctionnalités |
+| reason_equipment | Problèmes liés au matériel |
+| reason_technical | Problèmes techniques |
+| reason_competitor | Départ vers la concurrence |
+| link_bulk | Appliquer à plusieurs lignes |
+| btn_terminate | Résilier |

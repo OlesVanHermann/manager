@@ -1,0 +1,99 @@
+# Cahier des Charges : network/ip - Modal BYOIP Slice
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal wizard 2 étapes
+**Fonction:** Segmenter un bloc IP en sous-blocs
+**Contexte:** Action depuis la gestion d'un bloc BYOIP
+
+## 2. DIMENSIONS
+
+- Modal: 550x400px
+- Border radius: 8px
+
+## 3. HEADER MODAL
+
+- Background: #000E9C
+- Titre: "Segmenter le bloc 192.0.2.0/24" (15px, blanc, bold)
+- Bouton fermer: × (18px, blanc)
+
+## 4. STEPPER
+
+| Étape | Nom | État |
+|-------|-----|------|
+| 1 | Configuration | Actif (#0050D7) |
+| 2 | Confirmation | Inactif |
+
+## 5. CONTENU
+
+### Instruction
+"Veuillez indiquer la taille des blocs enfants désirée" (13px)
+
+### Sélecteur taille
+- Label: (implicite)
+- Select: 200x36px
+- Valeur: "/26"
+- Options: /25, /26, /27, /28
+
+### Aperçu configuration
+- Container: 490x150px
+- Background: #F3F4F6
+- Border radius: 8px
+
+### Texte aperçu
+"Cette configuration entraînera la création des blocs suivants :" (13px)
+
+### Liste blocs générés
+- Bullet: Cercle 6px #0050D7
+- Format: "192.0.2.X/26"
+
+Exemple pour /26 :
+- 192.0.2.0/26
+- 192.0.2.64/26
+- 192.0.2.128/26
+- 192.0.2.192/26
+
+## 6. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 100x36px |
+| Valider | btn-primary | 100x36px |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Aperçu segmentation
+GET /ip/{ip}/slice/preview
+Query: { size: 26 }
+→ {
+  blocks: [
+    "192.0.2.0/26",
+    "192.0.2.64/26",
+    "192.0.2.128/26",
+    "192.0.2.192/26"
+  ]
+}
+
+# Segmenter bloc
+POST /ip/{ip}/slice
+Body: {
+  sliceSize: 26
+}
+→ {
+  taskId: "task-456",
+  blocks: ["192.0.2.0/26", ...]
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Segmenter le bloc {block} |
+| step_config | Configuration |
+| step_confirm | Confirmation |
+| instruction | Veuillez indiquer la taille des blocs enfants désirée |
+| preview_title | Cette configuration entraînera la création des blocs suivants |
+| btn_cancel | Annuler |
+| btn_validate | Valider |

@@ -75,12 +75,12 @@ export function DatabaseTab({ serviceName }: Props) {
   return (
     <div className="database-tab">
       {/* Header */}
-      <div className="tab-header">
+      <div className="database-tab-header">
         <div>
           <h3>{t("database.title")}</h3>
-          <p className="tab-description">{t("database.description")}</p>
+          <p className="database-tab-description">{t("database.description")}</p>
         </div>
-        <div className="tab-actions">
+        <div className="database-tab-actions">
           <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
             + {t("database.create")}
           </button>
@@ -88,29 +88,29 @@ export function DatabaseTab({ serviceName }: Props) {
       </div>
 
       {/* Banner info quota */}
-      <div className="info-banner" style={{ marginBottom: "1rem" }}>
-        <span className="info-icon">ℹ️</span>
+      <div className="database-info-banner" style={{ marginBottom: "1rem" }}>
+        <span className="database-info-icon">ℹ️</span>
         <span>Le quota affiché est mis à jour toutes les 24h.</span>
-        <a href="https://help.ovhcloud.com/csm/fr-web-hosting-database" target="_blank" rel="noopener noreferrer" className="link-action" style={{ marginLeft: "auto" }}>
+        <a href="https://help.ovhcloud.com/csm/fr-web-hosting-database" target="_blank" rel="noopener noreferrer" className="database-link-action" style={{ marginLeft: "auto" }}>
           En savoir plus →
         </a>
       </div>
 
       {/* Search */}
-      <div className="table-toolbar">
+      <div className="database-table-toolbar">
         <input
           type="text"
-          className="search-input"
+          className="database-search-input"
           placeholder={t("common.search")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <span className="records-count">{databases.length} {t("database.count")}</span>
+        <span className="database-records-count">{databases.length} {t("database.count")}</span>
       </div>
 
       {/* Table */}
       {paginatedDatabases.length === 0 ? (
-        <div className="empty-state">
+        <div className="database-empty-state">
           <p>{searchTerm ? t("common.noResult") : t("database.empty")}</p>
           {!searchTerm && (
             <button className="wh-database-btn-primary" onClick={() => setShowCreateModal(true)}>
@@ -135,15 +135,15 @@ export function DatabaseTab({ serviceName }: Props) {
             <tbody>
               {paginatedDatabases.map(db => (
                 <tr key={db.name}>
-                  <td className="font-mono font-medium">{db.name}</td>
-                  <td className="font-mono">{db.user || "-"}</td>
-                  <td className="font-mono">{db.server || "-"}</td>
+                  <td className="database-font-mono database-font-medium">{db.name}</td>
+                  <td className="database-font-mono">{db.user || "-"}</td>
+                  <td className="database-font-mono">{db.server || "-"}</td>
                   <td>{db.version || "-"}</td>
                   <td>
-                    <div className="size-display">
+                    <div className="database-size-display">
                       <span>{formatSize(db.quotaUsed)}</span>
-                      <span className="size-separator">/</span>
-                      <span className="size-total">{formatSize(db.quotaSize)}</span>
+                      <span className="database-size-separator">/</span>
+                      <span className="database-size-total">{formatSize(db.quotaSize)}</span>
                     </div>
                   </td>
                   <td>
@@ -152,34 +152,34 @@ export function DatabaseTab({ serviceName }: Props) {
                     </span>
                   </td>
                   <td>
-                    <div className="action-buttons">
-                      <button 
-                        className="btn-icon" 
+                    <div className="database-action-buttons">
+                      <button
+                        className="database-btn-icon"
                         onClick={() => setPasswordModal({ open: true, name: db.name })}
                         title={t("database.changePassword")}
                       >🔑</button>
-                      <button 
-                        className="btn-icon" 
+                      <button
+                        className="database-btn-icon"
                         onClick={() => setDumpModal({ open: true, name: db.name })}
                         title={t("database.dump")}
                       >💾</button>
-                      <button 
-                        className="btn-icon" 
+                      <button
+                        className="database-btn-icon"
                         onClick={() => setRestoreModal({ open: true, name: db.name })}
                         title={t("database.restore")}
                       >🔄</button>
-                      <button 
-                        className="btn-icon" 
+                      <button
+                        className="database-btn-icon"
                         onClick={() => setCopyModal({ open: true, name: db.name })}
                         title={t("database.copy")}
                       >📋</button>
-                      <button 
-                        className="btn-icon" 
+                      <button
+                        className="database-btn-icon"
                         onClick={() => setImportModal({ open: true, name: db.name })}
                         title={t("database.import")}
                       >📥</button>
-                      <button 
-                        className="btn-icon btn-danger-icon" 
+                      <button
+                        className="database-btn-icon database-btn-danger-icon"
                         onClick={() => handleDelete(db.name)}
                         title={t("database.delete")}
                       >🗑</button>
@@ -191,10 +191,10 @@ export function DatabaseTab({ serviceName }: Props) {
           </table>
 
           {totalPages > 1 && (
-            <div className="pagination">
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
-              <span className="pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
-              <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
+            <div className="database-pagination">
+              <button className="database-pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>←</button>
+              <span className="database-pagination-info">{t("common.page")} {currentPage} / {totalPages}</span>
+              <button className="database-pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>→</button>
             </div>
           )}
         </>

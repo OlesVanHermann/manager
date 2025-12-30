@@ -141,13 +141,13 @@ export function CronTab({ serviceName }: Props) {
             <tbody>
               {paginatedCrons.map(cron => (
                 <tr key={cron.id}>
-                  <td><code className="command-cell">{cron.command}</code></td>
+                  <td><code className="cron-command-cell">{cron.command}</code></td>
                   <td>{cron.description || "-"}</td>
                   <td>{cron.frequency || "-"}</td>
                   <td>{cron.language || "PHP"}</td>
                   <td>
                     <button 
-                      className={`badge-toggle ${cron.status === "enabled" ? "active" : ""}`}
+                      className={`cron-badge-toggle ${cron.status === "enabled" ? "active" : ""}`}
                       onClick={() => handleToggleStatus(cron)}
                       title={t("cron.toggleStatus")}
                     >

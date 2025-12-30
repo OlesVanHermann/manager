@@ -1,0 +1,127 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Stats EasyHunting
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Dashboard temps réel avec KPIs et tableau
+**Fonction:** Afficher les statistiques en temps réel de la file d'appels
+**Contexte:** Configuration easyHunting du numéro alias
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Statistiques en temps réel
+
+### Retour
+← Configuration
+
+## 3. HEADER
+
+- Titre: "Statistiques en temps réel"
+
+## 4. CARTES KPI (4 cartes, 200x100px chacune)
+
+### Carte 1 - Appels en file
+- Label: "Appels en file"
+- Valeur: "3" (text-title, 32px)
+
+### Carte 2 - Appels en cours
+- Label: "Appels en cours"
+- Valeur: "5" (text-title, 32px)
+
+### Carte 3 - Agents disponibles
+- Label: "Agents disponibles"
+- Valeur: "4" (couleur verte #16A34A, 32px)
+
+### Carte 4 - Total agents
+- Label: "Total agents"
+- Valeur: "8" (text-title, 32px)
+
+## 5. TABLEAU APPELS EN COURS (1100x340px)
+
+### Titre section
+"Appels en cours"
+
+### Colonnes datagrid
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Appelant | 190px | Numéro format international |
+| Agent | 200px | Nom de l'agent ou "-" |
+| File | 180px | Nom de la file |
+| Durée | 150px | Format MM:SS |
+| État | 170px | Badge statut |
+| Actions | 140px | Menu ⋮ |
+
+### Exemples données
+
+| Appelant | Agent | File | Durée | État |
+|----------|-------|------|-------|------|
+| +33 6 12 34 56 78 | Agent Commercial 1 | Commercial | 02:45 | En cours |
+| +33 1 98 76 54 32 | Support Technique | Support | 05:12 | En cours |
+| +33 7 11 22 33 44 | - | Commercial | 00:32 | En attente |
+| +33 6 55 44 33 22 | Agent Commercial 2 | Commercial | 01:08 | En cours |
+
+### Badges état
+
+| État | Background | Couleur texte |
+|------|------------|---------------|
+| En cours | #DCFCE7 | #16A34A |
+| En attente | #FEF3C7 | #D97706 |
+
+## 6. ACTIONS MENU
+
+| Action | Description |
+|--------|-------------|
+| Écouter | Écoute discrète de l'appel |
+| Souffler | Mode coaching |
+| Intervenir | Prise de parole |
+| Transférer | Transfert vers autre agent |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Statistiques temps réel
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls
+→ Liste des appels en cours
+
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveStatistics
+→ {
+  callsInQueue: 3,
+  callsOngoing: 5,
+  agentsAvailable: 4,
+  agentsTotal: 8
+}
+
+# Détails appel en cours
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}
+→ caller, agent, queue, duration, status
+
+# Actions sur appel
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/eavesdrop
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/whisper
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/intercept
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{id}/transfer
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Statistiques en temps réel |
+| kpi_calls_queue | Appels en file |
+| kpi_calls_ongoing | Appels en cours |
+| kpi_agents_available | Agents disponibles |
+| kpi_agents_total | Total agents |
+| section_live_calls | Appels en cours |
+| col_caller | Appelant |
+| col_agent | Agent |
+| col_queue | File |
+| col_duration | Durée |
+| col_status | État |
+| col_actions | Actions |
+| status_ongoing | En cours |
+| status_waiting | En attente |
+| action_listen | Écouter |
+| action_whisper | Souffler |
+| action_intercept | Intervenir |
+| action_transfer | Transférer |

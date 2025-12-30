@@ -1,0 +1,134 @@
+# Cahier des Charges : web-cloud/voip/line - Voicemail Options
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire multi-sections
+**Fonction:** Configurer les options du répondeur
+**Contexte:** Gestion du répondeur de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › 0033972XXXXXX › Gestion du répondeur › Configuration du répondeur
+
+### Retour
+← Retour vers la gestion du répondeur
+
+## 3. HEADER
+
+- Titre: "Configuration du répondeur"
+
+## 4. LAYOUT DEUX COLONNES
+
+### Section Accueil et enregistrement (540x320px)
+
+#### Titre
+"Accueil et enregistrement des messages"
+
+#### Toggle Enregistrement
+- Label: "Enregistrement des messages :"
+- Switch: ON (bleu)
+
+#### Message d'accueil
+- Label: "Message d'accueil du répondeur :"
+- État: "Annonce personnalisée : message_accueil.wav"
+
+#### Bouton suppression
+- "Supprimer le message d'accueil" (background #FEE2E2, text #DC2626, 200x32px)
+
+#### Upload fichier
+- Bouton: "📁 Fichier..." (150x32px)
+
+#### Bouton validation
+- "Appliquer les options" (btn-primary, 150x36px)
+
+### Section Adresses e-mail (540x320px)
+
+#### Titre
+"Adresses e-mail à notifier"
+
+#### Bannière info
+- Background: #EFF6FF
+- Texte: "Vous n'avez pas encore configuré d'adresse e-mail à notifier."
+
+#### Bouton ajout
+- "Ajouter une adresse e-mail" (btn-primary, 180x36px)
+
+## 5. SECTION OPTIONS NOTIFICATION (540x300px)
+
+### Titre
+"Options de notification"
+
+### Champ Format audio
+- Label: "Format des fichiers audios :"
+- Select: 200x36px
+- Valeur: "WAV"
+- Options: WAV, MP3
+
+### Toggle Conserver messages
+- Label: "Conserver les messages après envoi des notifications :"
+- Switch: ON (bleu)
+
+### Champ Expéditeur
+- Label: "Nom de l'expéditeur :"
+- Input: 300x36px
+- Placeholder: "OVH Voicemail"
+
+### Bouton validation
+- "Appliquer les options" (btn-primary, 150x36px)
+
+## 6. APIS & ENDPOINTS
+
+```
+# Configuration répondeur
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/settings
+→ recordingEnabled, greetingMessage, emailNotifications, audioFormat, keepMessages, senderName
+
+PUT /telephony/{billingAccount}/line/{serviceName}/voicemail/settings
+Body: {
+  recordingEnabled: true,
+  audioFormat: "wav",
+  keepMessages: true,
+  senderName: "OVH Voicemail"
+}
+
+# Message d'accueil
+POST /telephony/{billingAccount}/line/{serviceName}/voicemail/greeting
+Body: multipart/form-data { file: ... }
+
+DELETE /telephony/{billingAccount}/line/{serviceName}/voicemail/greeting
+
+# Adresses e-mail de notification
+GET /telephony/{billingAccount}/line/{serviceName}/voicemail/emails
+POST /telephony/{billingAccount}/line/{serviceName}/voicemail/emails
+Body: { email: "user@example.com" }
+DELETE /telephony/{billingAccount}/line/{serviceName}/voicemail/emails/{email}
+```
+
+## 7. FORMATS AUDIO
+
+| Format | Extension | Description |
+|--------|-----------|-------------|
+| WAV | .wav | Format non compressé |
+| MP3 | .mp3 | Format compressé |
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Configuration du répondeur |
+| section_recording | Accueil et enregistrement des messages |
+| field_recording | Enregistrement des messages : |
+| field_greeting | Message d'accueil du répondeur : |
+| greeting_custom | Annonce personnalisée : {filename} |
+| btn_delete_greeting | Supprimer le message d'accueil |
+| btn_file | 📁 Fichier... |
+| btn_apply | Appliquer les options |
+| section_emails | Adresses e-mail à notifier |
+| info_no_email | Vous n'avez pas encore configuré d'adresse e-mail à notifier. |
+| btn_add_email | Ajouter une adresse e-mail |
+| section_notification | Options de notification |
+| field_audio_format | Format des fichiers audios : |
+| field_keep_messages | Conserver les messages après envoi des notifications : |
+| field_sender_name | Nom de l'expéditeur : |
+| placeholder_sender | OVH Voicemail |

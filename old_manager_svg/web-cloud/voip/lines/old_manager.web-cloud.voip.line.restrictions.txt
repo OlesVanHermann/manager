@@ -1,0 +1,117 @@
+# Cahier des Charges : web-cloud/voip/line - Restrictions
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec 2 sections
+**Fonction:** Configurer les restrictions IP de la ligne et du compte
+**Contexte:** Sécurité de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Retour
+< Retour à la ligne
+
+## 3. HEADER
+
+- Titre: "Restrictions IP"
+
+## 4. SECTION RESTRICTIONS LIGNE (900x300px)
+
+### Titre
+"Restrictions IP de la ligne"
+
+### Bannière info (840x40px)
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Texte: "Seules les adresses IP autorisées pourront utiliser cette ligne SIP."
+
+### Liste IP autorisées
+- Label: "Adresses IP autorisées"
+
+| IP | Action |
+|----|--------|
+| 192.168.1.0/24 | 🗑 Supprimer |
+| 10.0.0.1 | 🗑 Supprimer |
+
+- Input: 350x40px par ligne
+- Bouton supprimer: 35x25px
+
+### Bouton ajout
+"+ Ajouter une IP" (btn-outline, 150x36px)
+
+### Lien bulk
+"Appliquer à plusieurs lignes..." (text-link)
+
+### Bouton validation
+"Appliquer" (btn-primary, 100x36px)
+
+## 5. SECTION RESTRICTIONS COMPTE (900x280px)
+
+### Titre
+"Restrictions IP du compte"
+
+### Bannière info (840x40px)
+- Background: #EFF6FF
+- Texte: "Ces restrictions s'appliquent à toutes les lignes du groupe."
+
+### Liste IP autorisées
+- Label: "Adresses IP autorisées"
+- État vide: "Aucune restriction configurée"
+
+### Bouton ajout
+"+ Ajouter une IP" (btn-outline, 150x36px)
+
+### Bouton validation
+"Appliquer" (btn-primary, 100x36px)
+
+## 6. FORMATS IP ACCEPTÉS
+
+| Format | Exemple | Description |
+|--------|---------|-------------|
+| IPv4 simple | 192.168.1.1 | Adresse unique |
+| IPv4 CIDR | 192.168.1.0/24 | Plage réseau |
+| IPv6 | 2001:db8::1 | Adresse IPv6 |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Restrictions de la ligne
+GET /telephony/{billingAccount}/line/{serviceName}/restrictions
+→ allowedIps: ["192.168.1.0/24", "10.0.0.1"]
+
+PUT /telephony/{billingAccount}/line/{serviceName}/restrictions
+Body: {
+  allowedIps: ["192.168.1.0/24", "10.0.0.1"]
+}
+
+# Restrictions du compte (groupe)
+GET /telephony/{billingAccount}/restrictions
+PUT /telephony/{billingAccount}/restrictions
+Body: {
+  allowedIps: [...]
+}
+
+# Appliquer à plusieurs lignes
+POST /telephony/{billingAccount}/line/batchRestrictions
+Body: {
+  serviceNames: ["line1", "line2"],
+  allowedIps: [...]
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Restrictions IP |
+| back_link | Retour à la ligne |
+| section_line | Restrictions IP de la ligne |
+| info_line | Seules les adresses IP autorisées pourront utiliser cette ligne SIP. |
+| section_account | Restrictions IP du compte |
+| info_account | Ces restrictions s'appliquent à toutes les lignes du groupe. |
+| field_allowed_ips | Adresses IP autorisées |
+| empty_state | Aucune restriction configurée |
+| btn_add_ip | + Ajouter une IP |
+| btn_delete | Supprimer |
+| link_bulk | Appliquer à plusieurs lignes... |
+| btn_apply | Appliquer |

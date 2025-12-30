@@ -1,0 +1,122 @@
+# Cahier des Charges : web-cloud/voip/sms - Campaign Statistics
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec KPIs et graphique
+**Fonction:** Afficher les statistiques d'une campagne SMS
+**Contexte:** Analyse post-campagne
+
+## 2. NAVIGATION
+
+### Retour
+< (retour à la liste des campagnes)
+
+## 3. HEADER
+
+- Titre: "Statistiques de campagne"
+
+## 4. SECTION SÉLECTEUR (1000x100px)
+
+### Campagne (select 250x40px)
+- Label: "Campagne"
+- Options: Liste des campagnes
+- Exemple: "Soldes d'hiver 2025"
+
+### Statut
+- Label: "Statut"
+- Valeur: "✓ Terminé" (text-success)
+
+### Date d'envoi
+- Label: "Date d'envoi"
+- Valeur: "28/12/2024"
+
+### Lien détails
+- Texte: "Voir les détails" (text-primary)
+
+## 5. CARTES KPI (3 cartes, 940x120px total)
+
+### Carte 1 : SMS envoyés (280x120px)
+- Background: #F9FAFB
+- Titre: "SMS envoyés"
+- Valeur: "2 500" (font-size: 42px)
+
+### Carte 2 : SMS délivrés (280x120px)
+- Background: #DCFCE7 (success)
+- Titre: "SMS délivrés"
+- Valeur: "2 450" (font-size: 42px)
+- Pourcentage: "98%" (text-success)
+
+### Carte 3 : Désinscrits (280x120px)
+- Background: #FEF3C7 (warning)
+- Titre: "Désinscrits (STOP)"
+- Valeur: "50" (font-size: 42px)
+- Pourcentage: "2%" (text-warning)
+
+## 6. GRAPHIQUE DÉLIVRABILITÉ (940x240px)
+
+### Titre section
+"Taux de délivrabilité par heure"
+
+### Type
+- Graphique en barres verticales
+- Axe X: heures (08:00 - 15:00)
+- Axe Y: nombre de SMS délivrés
+- Couleur barres: #0050D7
+
+### Données exemple
+| Heure | Délivrés |
+|-------|----------|
+| 08:00 | 200 |
+| 09:00 | 350 |
+| 10:00 | 450 |
+| 11:00 | 380 |
+| 12:00 | 280 |
+| 13:00 | 220 |
+| 14:00 | 180 |
+| 15:00 | 140 |
+
+## 7. INFORMATIONS ADDITIONNELLES
+
+- Texte: "Crédits consommés : 2 500 SMS (162,50 EUR HT)"
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des campagnes
+GET /sms/{serviceName}/batches
+→ [{ id, name, sentAt, status, recipientsCount }]
+
+# Statistiques d'une campagne
+GET /sms/{serviceName}/batches/{batchId}/statistics
+→ {
+  totalSent: 2500,
+  delivered: 2450,
+  deliveryRate: 98,
+  stoplisted: 50,
+  stopRate: 2,
+  creditsCost: 162.50
+}
+
+# Statistiques horaires
+GET /sms/{serviceName}/batches/{batchId}/statistics/hourly
+→ [{
+  hour: "08:00",
+  delivered: 200
+}, ...]
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Statistiques de campagne |
+| field_campaign | Campagne |
+| field_status | Statut |
+| field_sent_date | Date d'envoi |
+| link_details | Voir les détails |
+| status_completed | Terminé |
+| kpi_sent | SMS envoyés |
+| kpi_delivered | SMS délivrés |
+| kpi_stoplisted | Désinscrits (STOP) |
+| chart_title | Taux de délivrabilité par heure |
+| credits_consumed | Crédits consommés : {count} SMS ({cost} EUR HT) |

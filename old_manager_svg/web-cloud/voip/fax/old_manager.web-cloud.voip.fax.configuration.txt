@@ -1,0 +1,138 @@
+# Cahier des Charges : web-cloud/voip/fax - Configuration (Edit Mode)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec panneau aide
+**Fonction:** Modifier la configuration du fax
+**Contexte:** Mode édition des paramètres fax
+
+## 2. NAVIGATION
+
+(Aucun breadcrumb - page principale)
+
+## 3. HEADER
+
+- Titre: "Fax - {numéro}"
+- Exemple: "Fax - 0033972101234"
+
+## 4. LAYOUT 2 COLONNES
+
+### Colonne gauche: Formulaire (700x680px)
+### Colonne droite: Aide variables (350x300px)
+
+## 5. FORMULAIRE CONFIGURATION (700x680px)
+
+### Header section
+- Titre: "Configuration fax"
+- Note: "Les champs marqués * sont obligatoires"
+
+### Champs du formulaire
+
+#### Expéditeur *
+- Input: 400x40px
+- Valeur: "Mon Entreprise SARL"
+
+#### Email expéditeur *
+- Input: 400x40px
+- Valeur: "fax@monentreprise.fr"
+
+#### Qualité d'envoi *
+- Select: 400x40px
+- Options: Normale, Haute qualité, Fine
+- Valeur: "Haute qualité"
+
+#### Nombre d'essais max *
+- Select: 200x40px
+- Options: 1, 2, 3, 4, 5
+- Valeur: "3"
+
+#### Mot de passe
+- Bouton: "Réinitialiser" (200x40px)
+
+#### En-tête fax *
+- Input: 600x40px
+- Valeur: "Mon Entreprise - %%n - Page %%p/%%t"
+
+### Boutons actions
+- "Enregistrer" (btn-primary, 120x44px)
+- "Annuler" (btn-outline, 100x44px)
+
+## 6. PANNEAU VARIABLES EN-TÊTE (350x300px)
+
+### Titre
+"Variables en-tête"
+
+### Liste des variables
+
+| Variable | Description |
+|----------|-------------|
+| \| | Séparateur colonne |
+| %%i | Identifiant tâche |
+| %%j | Nom pièce jointe |
+| %%l | ID émission |
+| %%m | Email expéditeur |
+| %%n | Numéro de fax |
+| %%p | Page session |
+| %%t | Total pages session |
+
+## 7. QUALITÉS FAX
+
+| Option | Résolution | Usage |
+|--------|------------|-------|
+| Normale | 100 dpi | Documents texte |
+| Haute qualité | 200 dpi | Documents avec images |
+| Fine | 400 dpi | Documents détaillés |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Obtenir la configuration
+GET /telephony/{billingAccount}/fax/{serviceName}/settings
+→ {
+  sender, senderEmail, quality,
+  maxTries, header, password: "(masked)"
+}
+
+# Modifier la configuration
+PUT /telephony/{billingAccount}/fax/{serviceName}/settings
+Body: {
+  sender: "...",
+  senderEmail: "...",
+  quality: "high",
+  maxTries: 3,
+  header: "..."
+}
+
+# Réinitialiser le mot de passe
+POST /telephony/{billingAccount}/fax/{serviceName}/settings/resetPassword
+→ { newPassword: "..." }
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Fax - {number} |
+| section_config | Configuration fax |
+| required_note | Les champs marqués * sont obligatoires |
+| field_sender | Expéditeur |
+| field_sender_email | Email expéditeur |
+| field_quality | Qualité d'envoi |
+| field_max_tries | Nombre d'essais max |
+| field_password | Mot de passe |
+| field_header | En-tête fax |
+| btn_reset | Réinitialiser |
+| btn_save | Enregistrer |
+| btn_cancel | Annuler |
+| help_title | Variables en-tête |
+| var_separator | Séparateur colonne |
+| var_task_id | Identifiant tâche |
+| var_attachment | Nom pièce jointe |
+| var_emission_id | ID émission |
+| var_sender_email | Email expéditeur |
+| var_fax_number | Numéro de fax |
+| var_page | Page session |
+| var_total_pages | Total pages session |
+| quality_normal | Normale |
+| quality_high | Haute qualité |
+| quality_fine | Fine |

@@ -1,0 +1,118 @@
+# Cahier des Charges : web-cloud/voip/number - Redirect
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire de configuration
+**Fonction:** Configurer la redirection d'un numéro
+**Contexte:** Configuration du numéro en mode redirection simple
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro > Configuration Redirection
+
+## 3. HEADER
+
+- Titre: "Configuration : Redirection"
+
+## 4. FORMULAIRE PRINCIPAL (900x600px)
+
+### Section Appels entrants
+
+#### Titre section
+"Appels entrants" (souligné)
+
+#### Ligne de redirection (affichage)
+- Label: "Ligne vers laquelle rediriger"
+- Valeur: "Ligne SIP - 0033912345678 (Bureau principal)"
+
+#### Bouton sélection
+"+ Choisir une ligne" (btn-secondary, 200x36px)
+
+#### Avertissement
+"La redirection vers un numéro surtaxé est interdite."
+
+#### Suggestion CCS
+- Texte: "Pour des fonctionnalités avancées, passez au"
+- Lien: "Contact Center Solution" (text-primary)
+
+### Section Appels sortants (optionnel)
+
+#### Titre section
+"Appels sortants" + "(optionnel)"
+
+#### Checkbox présentation
+- [ ] "Utiliser ce numéro comme numéro de présentation"
+
+#### Avertissement
+"Attention : le numéro de présentation sera visible par vos correspondants"
+
+### Boutons actions
+- "Annuler" (btn-secondary, 100x40px)
+- "Enregistrer" (btn-primary, 120x40px)
+
+## 5. TYPES DE DESTINATIONS
+
+| Type | Description |
+|------|-------------|
+| Ligne SIP | Ligne téléphonique du compte |
+| Numéro externe | Numéro fixe ou mobile externe |
+| Messagerie | Boîte vocale |
+
+## 6. RESTRICTIONS
+
+| Restriction | Description |
+|-------------|-------------|
+| Numéros surtaxés | Interdits comme destination |
+| Boucle de redirection | Détectée et bloquée |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Configuration de la redirection
+GET /telephony/{billingAccount}/redirect/{serviceName}
+→ {
+  featureType: "redirect",
+  destination: "+33912345678",
+  destinationDescription: "Bureau principal",
+  destinationType: "line",
+  outgoingPresentation: false
+}
+
+# Modifier la redirection
+PUT /telephony/{billingAccount}/redirect/{serviceName}
+Body: {
+  destination: "+33912345679",
+  outgoingPresentation: true
+}
+
+# Liste des lignes disponibles
+GET /telephony/{billingAccount}/line
+→ [{
+  serviceName: "+33912345678",
+  description: "Bureau principal",
+  serviceType: "sipLine"
+}]
+
+# Vérifier qu'un numéro n'est pas surtaxé
+GET /telephony/number/{number}/isSurtaxed
+→ { isSurtaxed: false }
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Configuration : Redirection |
+| section_incoming | Appels entrants |
+| field_redirect_line | Ligne vers laquelle rediriger |
+| btn_choose_line | + Choisir une ligne |
+| warning_surtaxed | La redirection vers un numéro surtaxé est interdite. |
+| suggestion_ccs | Pour des fonctionnalités avancées, passez au |
+| link_ccs | Contact Center Solution |
+| section_outgoing | Appels sortants |
+| label_optional | (optionnel) |
+| checkbox_presentation | Utiliser ce numéro comme numéro de présentation |
+| warning_presentation | Attention : le numéro de présentation sera visible par vos correspondants |
+| btn_cancel | Annuler |
+| btn_save | Enregistrer |

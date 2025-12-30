@@ -1,0 +1,92 @@
+# Cahier des Charges : web-cloud/voip/line - Outgoing Fax
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid
+**Fonction:** Historique des fax envoyés
+**Contexte:** Consommation de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › 0033972XXXXXX › Consommation › Fax émis
+
+### Retour
+← Retour vers la gestion de votre consommation
+
+## 3. HEADER
+
+- Titre: "Tous les fax émis"
+
+## 4. RÉSUMÉ PÉRIODE
+
+### Informations affichées
+- Période: du 01/12/2024 au 31/12/2024
+- Fax émis: 5
+- Nombre de page(s): 12
+
+## 5. DATAGRID (1120x450px)
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Date | 160px | Date + heure sur 2 lignes |
+| Numéro appelé | 220px | Numéro destination |
+| Pages | 120px | Nombre de pages |
+| Nature | 100px | Badge statut |
+| Prix HT | 120px | Montant ou "-" |
+
+### Badge Nature
+- "Envoyé" (background #DCFCE7, text #16A34A)
+
+### Exemples données
+
+| Date | Numéro appelé | Pages | Nature | Prix |
+|------|---------------|-------|--------|------|
+| 28/12/2024 15:22:11 | +33 1 23 45 67 89 | 2 | Envoyé | - |
+| 27/12/2024 09:45:33 | +33 4 56 78 90 12 | 4 | Envoyé | - |
+| 26/12/2024 14:18:42 | +33 8 92 XX XX XX | 1 | Envoyé | 0,25 € |
+| 25/12/2024 11:05:18 | +33 9 87 65 43 21 | 3 | Envoyé | - |
+| 24/12/2024 16:42:55 | +33 1 11 22 33 44 | 2 | Envoyé | - |
+
+### Pagination
+- Texte: "Affichage 1-5 sur 5"
+- Boutons: ‹ [1] ›
+
+## 6. APIS & ENDPOINTS
+
+```
+# Historique fax sortants
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/outgoingFax
+Query: ?dateFrom=2024-12-01&dateTo=2024-12-31&page=1&pageSize=10
+→ {
+  faxes: [{ date, callee, pages, nature, price }],
+  totalFaxes: 5,
+  totalPages: 12
+}
+
+# Renvoyer un fax
+POST /telephony/{billingAccount}/line/{serviceName}/fax/{faxId}/resend
+
+# Export CSV
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/outgoingFax/export
+Query: ?format=csv
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Tous les fax émis |
+| link_back | Retour vers la gestion de votre consommation |
+| period_label | Période du {start} au {end} |
+| total_fax | Fax émis: {count} |
+| total_pages | nombre de page(s): {count} |
+| col_date | Date |
+| col_callee | Numéro appelé |
+| col_pages | Pages |
+| col_nature | Nature |
+| col_price | Prix HT |
+| nature_sent | Envoyé |
+| pagination | Affichage {start}-{end} sur {total} |

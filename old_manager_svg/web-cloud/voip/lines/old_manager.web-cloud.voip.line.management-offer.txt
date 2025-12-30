@@ -1,0 +1,142 @@
+# Cahier des Charges : web-cloud/voip/line - Management Offer
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec panneau info
+**Fonction:** Changer l'offre de la ligne VoIP
+**Contexte:** Gestion de l'abonnement
+
+## 2. NAVIGATION
+
+### Retour
+< Tableau de bord
+
+## 3. HEADER
+
+- Titre: "Changement d'offre"
+
+## 4. FORMULAIRE PRINCIPAL (700x550px)
+
+### Section "Informations actuelles"
+
+| Champ | Valeur exemple |
+|-------|----------------|
+| Groupe de facturation | mongroupe-voip |
+| Prochaine facturation | 15/01/2025 |
+| Offre actuelle | VoIP Pro - Ligne SIP illimitée France |
+| Prix actuel | 9,99 € HT/mois |
+
+### Bannière changement en attente (650x80px)
+- Background: #FEF3C7
+- Border: #FDE68A
+- Texte ligne 1: "Un changement d'offre est en attente."
+- Texte ligne 2: "Il prendra effet le 15/01/2025."
+- Texte ligne 3: "Nouvelle offre : VoIP Business - Ligne SIP illimitée monde"
+
+### Section "Changer d'offre"
+
+#### Select offre
+- Label: "Offres disponibles"
+- Select: 450x45px
+- Valeur: "VoIP Business - Ligne SIP illimitée monde"
+
+#### Prix sélectionné
+- Label: "Prix de l'offre sélectionnée"
+- Valeur: "19,99 € HT/mois" (font-size 18px, bold)
+
+#### Date d'application
+- Label: "Date d'application"
+- Valeur: "15/01/2025 (prochaine facturation)"
+
+### Lien bulk
+"Appliquer à plusieurs lignes..." (text-link)
+
+### Boutons
+- "Valider" (btn-primary, 100x40px)
+- "Annuler" (text-link)
+
+## 5. PANNEAU INFO (400x350px)
+
+### Titre
+"À propos du changement d'offre"
+
+### Bannière info (350x120px)
+- Background: #EFF6FF
+- Texte: "Le changement d'offre prend effet à la prochaine date de facturation. Les nouveaux tarifs s'appliqueront automatiquement à partir de cette date. Vous pouvez annuler le changement avant."
+
+### Offres disponibles
+- VoIP Eco - 4,99 € HT/mois
+- VoIP Pro - 9,99 € HT/mois
+- VoIP Business - 19,99 € HT/mois
+- VoIP Enterprise - 39,99 € HT/mois
+
+## 6. SECTION ANNULATION (400x100px)
+
+### Titre
+"Annuler le changement en attente"
+
+### Bouton
+"Annuler le changement" (background #FEE2E2, text #DC2626, 180x35px)
+
+## 7. OFFRES DISPONIBLES
+
+| Offre | Code | Prix HT |
+|-------|------|---------|
+| VoIP Eco | eco | 4,99 €/mois |
+| VoIP Pro | pro | 9,99 €/mois |
+| VoIP Business | business | 19,99 €/mois |
+| VoIP Enterprise | enterprise | 39,99 €/mois |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Informations offre actuelle
+GET /telephony/{billingAccount}/line/{serviceName}/offer
+→ offer, price, billingGroup, nextBilling, pendingChange
+
+# Offres disponibles
+GET /telephony/{billingAccount}/line/{serviceName}/availableOffers
+→ Liste des offres avec prix
+
+# Changer d'offre
+POST /telephony/{billingAccount}/line/{serviceName}/changeOffer
+Body: {
+  offer: "business"
+}
+
+# Annuler changement en attente
+DELETE /telephony/{billingAccount}/line/{serviceName}/changeOffer
+
+# Appliquer à plusieurs lignes
+POST /telephony/{billingAccount}/line/batchChangeOffer
+Body: {
+  serviceNames: ["line1", "line2"],
+  offer: "business"
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Changement d'offre |
+| back_link | Tableau de bord |
+| section_current | Informations actuelles |
+| field_billing_group | Groupe de facturation |
+| field_next_billing | Prochaine facturation |
+| field_current_offer | Offre actuelle |
+| pending_change | Un changement d'offre est en attente. |
+| pending_date | Il prendra effet le {date}. |
+| pending_offer | Nouvelle offre : {offer} |
+| section_change | Changer d'offre |
+| field_offers | Offres disponibles |
+| field_price | Prix de l'offre sélectionnée |
+| field_date | Date d'application |
+| date_next_billing | {date} (prochaine facturation) |
+| link_bulk | Appliquer à plusieurs lignes... |
+| btn_validate | Valider |
+| btn_cancel | Annuler |
+| panel_title | À propos du changement d'offre |
+| panel_info | Le changement d'offre prend effet à la prochaine date de facturation. |
+| section_cancel | Annuler le changement en attente |
+| btn_cancel_change | Annuler le changement |

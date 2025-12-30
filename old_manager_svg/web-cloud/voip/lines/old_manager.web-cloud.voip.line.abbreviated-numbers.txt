@@ -1,0 +1,125 @@
+# Cahier des Charges : web-cloud/voip/line - Abbreviated Numbers
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec import/export
+**Fonction:** Gérer les numéros abrégés de la ligne
+**Contexte:** Gestion des appels de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Ligne VoIP
+
+### Retour
+< Appels
+
+## 3. HEADER
+
+- Titre: "Numéros abrégés"
+- Description: "Les numéros abrégés permettent de composer rapidement vos contacts fréquents avec un code court (ex: *10)."
+
+## 4. TOOLBAR
+
+### Boutons
+- "+ Ajouter" (btn-primary, 150x40px)
+- "Importer CSV" (btn-outline, 150x40px)
+- "Exporter CSV" (btn-outline, 150x40px)
+
+### Recherche
+- Input: 350x40px
+- Placeholder: "Rechercher..."
+
+## 5. DATAGRID (1050x380px)
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Code | 125px | Format *XX |
+| Numéro de destination | 250px | Format international |
+| Nom | 250px | Nom du contact |
+| Prénom | 250px | Prénom du contact |
+| Actions | 175px | ✏️ 🗑️ |
+
+### Exemples données
+
+| Code | Numéro | Nom | Prénom |
+|------|--------|-----|--------|
+| *10 | +33 1 72 10 00 50 | Dupont | Jean |
+| *11 | +33 6 12 34 56 78 | Martin | Marie |
+| *12 | +33 8 00 10 20 30 | Support | Technique |
+| *13 | +33 1 72 10 00 60 | Accueil | - |
+| *14 | +33 7 65 43 21 09 | Bernard | Pierre |
+
+### Actions ligne
+- ✏️ Modifier
+- 🗑️ Supprimer
+
+### Pagination
+- Texte: "1-5 sur 12"
+- Boutons: < [1] 2 ... >
+
+## 6. FORMAT CSV
+
+### Structure
+```
+code;destination;nom;prenom
+*10;+33172100050;Dupont;Jean
+*11;+33612345678;Martin;Marie
+```
+
+## 7. APIS & ENDPOINTS
+
+```
+# Lister les numéros abrégés
+GET /telephony/{billingAccount}/line/{serviceName}/abbreviatedNumber
+→ Liste des numéros abrégés
+
+# Détails numéro abrégé
+GET /telephony/{billingAccount}/line/{serviceName}/abbreviatedNumber/{abbreviatedNumber}
+→ abbreviatedNumber, destinationNumber, name, surname
+
+# Ajouter un numéro abrégé
+POST /telephony/{billingAccount}/line/{serviceName}/abbreviatedNumber
+Body: {
+  abbreviatedNumber: "*15",
+  destinationNumber: "+33123456789",
+  name: "Nom",
+  surname: "Prénom"
+}
+
+# Modifier un numéro abrégé
+PUT /telephony/{billingAccount}/line/{serviceName}/abbreviatedNumber/{abbreviatedNumber}
+Body: { name: "Nouveau nom" }
+
+# Supprimer un numéro abrégé
+DELETE /telephony/{billingAccount}/line/{serviceName}/abbreviatedNumber/{abbreviatedNumber}
+
+# Import CSV
+POST /telephony/{billingAccount}/line/{serviceName}/abbreviatedNumber/import
+Body: { csvContent: "..." }
+
+# Export CSV
+GET /telephony/{billingAccount}/line/{serviceName}/abbreviatedNumber/export
+→ Fichier CSV
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Numéros abrégés |
+| page_desc | Les numéros abrégés permettent de composer rapidement vos contacts fréquents avec un code court (ex: *10). |
+| btn_add | + Ajouter |
+| btn_import | Importer CSV |
+| btn_export | Exporter CSV |
+| search_placeholder | Rechercher... |
+| col_code | Code |
+| col_destination | Numéro de destination |
+| col_name | Nom |
+| col_surname | Prénom |
+| col_actions | Actions |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| pagination | {start}-{end} sur {total} |

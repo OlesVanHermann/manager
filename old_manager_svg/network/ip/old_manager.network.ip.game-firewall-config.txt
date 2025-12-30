@@ -1,0 +1,113 @@
+# Cahier des Charges : network/ip - Game Firewall Config
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration avec datagrid
+**Fonction:** Gérer les règles du Game Firewall (anti-DDoS gaming)
+**Contexte:** Configuration Game Firewall d'une IP
+
+## 2. DIMENSIONS
+
+- Container: 1200x500px
+- Tableau: 1120x200px
+
+## 3. NAVIGATION
+
+### Bouton retour
+- Style: btn-outline (100x32px)
+- Label: "← IP"
+
+### Titre
+"Configuration du Game Firewall" (20px, #1F2937, bold)
+
+### Dropdown
+"Guides ▼" (btn-outline, 100x32px)
+
+## 4. DESCRIPTION
+
+2 lignes d'explication (12px, muted) :
+- "Le Game Firewall est un pare-feu optimisé pour les serveurs de jeux."
+- "Il permet de protéger votre serveur contre les attaques DDoS tout en minimisant la latence."
+
+## 5. BARRE ACTIONS
+
+### Bouton ajouter
+- Label: "+ Ajouter une règle" (150x36px, btn-outline)
+
+### Toggle statut
+- Label: "Game Firewall activé"
+- Switch: ON (#0050D7)
+
+## 6. TABLEAU RÈGLES
+
+### Colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| Position | 80px |
+| Protocole | 120px |
+| Port(s) | 180px |
+| Statut | 150px |
+| Actions | 570px |
+
+### Données exemple
+
+| Position | Protocole | Port(s) | Statut | Jeu typique |
+|----------|-----------|---------|--------|-------------|
+| 0 | UDP | 25565 | Actif | Minecraft |
+| 1 | UDP | 27015-27030 | Actif | Source Engine |
+| 2 | UDP | 30120 | Actif | FiveM |
+
+### Badges statut
+- Actif: Background #DCFCE7, texte #16A34A
+
+### Actions
+- Icône: 🗑 (supprimer)
+
+## 7. PAGINATION
+
+"3 règles" (12px, muted)
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste règles Game Firewall
+GET /ip/{ip}/game/{ipOnGame}/rules
+→ [{
+  id: 1,
+  protocol: "udp",
+  ports: { from: 27015, to: 27030 },
+  state: "ok"
+}]
+
+# Ajouter règle
+POST /ip/{ip}/game/{ipOnGame}/rules
+Body: {
+  protocol: "udp",
+  ports: { from: 25565, to: 25565 }
+}
+
+# Supprimer règle
+DELETE /ip/{ip}/game/{ipOnGame}/rules/{id}
+
+# Activer/Désactiver Game Firewall
+PUT /ip/{ip}/game/{ipOnGame}
+Body: { firewallModeEnabled: true }
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Configuration du Game Firewall |
+| description_line1 | Le Game Firewall est un pare-feu optimisé pour les serveurs de jeux |
+| description_line2 | Il permet de protéger votre serveur contre les attaques DDoS |
+| btn_add_rule | Ajouter une règle |
+| game_firewall_enabled | Game Firewall activé |
+| col_position | Position |
+| col_protocol | Protocole |
+| col_ports | Port(s) |
+| col_status | Statut |
+| col_actions | Actions |
+| status_active | Actif |
+| rules_count | {count} règles |

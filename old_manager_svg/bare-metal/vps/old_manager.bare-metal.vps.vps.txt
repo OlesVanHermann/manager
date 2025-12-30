@@ -1,0 +1,222 @@
+# Cahier des Charges : bare-metal/vps - VPS Dashboard
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec graphiques
+**Fonction:** Afficher le tableau de bord d'un VPS
+**Contexte:** Page principale après sélection d'un VPS
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Bare Metal Cloud (actif)
+
+### Sidebar
+- COMPUTE (section)
+  - **VPS** (actif, sélectionné)
+  - Serveurs dédiés
+  - Hosted Private Cloud
+
+### Breadcrumb
+Bare Metal Cloud › VPS › vps-abc123
+
+## 3. HEADER PAGE
+
+### Titre
+"VPS - {hostname}" (24px, bold)
+Exemple: "VPS - vps-abc123.vps.ovh.net"
+
+### Badge statut
+- Démarré: #DEF7EC (vert)
+- Arrêté: #FEE2E2 (rouge)
+
+### Tabs
+Tableau de bord (actif) | Backup | Snapshot | IP | Disques | Monitoring
+
+## 4. CARTES INFORMATIONS (3 colonnes)
+
+### Carte 1: Informations générales (350x200px)
+
+| Champ | Exemple |
+|-------|---------|
+| Nom | vps-abc123 |
+| Modèle | VPS Starter |
+| vCPU | 2 vCores |
+| RAM | 4 GB |
+| Stockage | 80 GB SSD NVMe |
+| Datacenter | rbx (Roubaix) |
+
+### Carte 2: Système & Accès (350x200px)
+
+| Champ | Exemple |
+|-------|---------|
+| OS | Ubuntu 22.04 LTS |
+| IPv4 | 51.38.123.45 (lien) |
+| IPv6 | 2001:41d0:xxx::1 (lien) |
+| Reverse DNS | vps-abc123.vps.ovh.net |
+
+Boutons:
+- KVM (100x30px)
+- Réinitialiser MDP (140x30px)
+
+### Carte 3: État actuel (360x200px)
+
+| Champ | Exemple |
+|-------|---------|
+| État | Badge "Démarré" |
+| Uptime | 15 jours 3h 45min |
+| Renouvellement | 15/01/2026 |
+
+Boutons:
+- Redémarrer (90x36px, primary)
+- Arrêter (80x36px, outline)
+- Réinstaller (110x36px, outline)
+
+## 5. GRAPHIQUES (2 colonnes)
+
+### Graphique CPU (540x220px)
+- Titre: "Utilisation CPU"
+- Période: "Dernière heure"
+- Axe Y: 0-100%
+- Ligne: #0050D7
+- Moyenne affichée: "Moyenne: 23%"
+
+### Graphique RAM (540x220px)
+- Titre: "Utilisation RAM"
+- Période: "Dernière heure"
+- Axe Y: 0 - Max RAM
+- Ligne: #10B981
+- Usage affiché: "Utilisé: 2.1 GB / 4 GB (52%)"
+
+## 6. BANDE PASSANTE (1100x180px)
+
+### Titre
+"Bande passante"
+
+### Barre quota
+- Label: "Quota mensuel"
+- Barre progression: 800px large
+- Remplissage: Proportionnel à l'usage
+- Texte: "350 GB / 1 TB"
+
+### Détails
+
+| Métrique | Valeur |
+|----------|--------|
+| Trafic entrant | 125 GB |
+| Trafic sortant | 225 GB |
+| Renouvellement quota | 1er janvier 2026 |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Informations VPS
+GET /vps/{serviceName}
+→ {
+  name: "vps-abc123",
+  displayName: "vps-abc123.vps.ovh.net",
+  model: {
+    name: "VPS Starter",
+    vcore: 2,
+    memory: 4,
+    disk: 80,
+    diskType: "nvme"
+  },
+  zone: "rbx",
+  state: "running"
+}
+
+# OS et accès
+GET /vps/{serviceName}/distribution
+→ {
+  name: "Ubuntu",
+  version: "22.04 LTS"
+}
+
+GET /vps/{serviceName}/ips
+→ {
+  ipv4: "51.38.123.45",
+  ipv6: "2001:41d0:xxx::1",
+  reverse: "vps-abc123.vps.ovh.net"
+}
+
+# État
+GET /vps/{serviceName}/status
+→ {
+  state: "running",
+  uptime: 1314300,  // secondes
+  renewDate: "2026-01-15"
+}
+
+# Monitoring
+GET /vps/{serviceName}/monitoring
+Query: { period: "hour", type: "cpu" }
+→ {
+  values: [{ timestamp: "...", value: 23 }, ...],
+  average: 23
+}
+
+# Bande passante
+GET /vps/{serviceName}/bandwidth
+Query: { period: "month" }
+→ {
+  quota: 1024,  // GB
+  used: 350,
+  incoming: 125,
+  outgoing: 225,
+  resetDate: "2026-01-01"
+}
+
+# Actions
+POST /vps/{serviceName}/reboot
+POST /vps/{serviceName}/stop
+POST /vps/{serviceName}/start
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| sidebar_compute | COMPUTE |
+| sidebar_vps | VPS |
+| sidebar_dedicated | Serveurs dédiés |
+| sidebar_private_cloud | Hosted Private Cloud |
+| tab_dashboard | Tableau de bord |
+| tab_backup | Backup |
+| tab_snapshot | Snapshot |
+| tab_ip | IP |
+| tab_disks | Disques |
+| tab_monitoring | Monitoring |
+| card_general | Informations générales |
+| field_name | Nom |
+| field_model | Modèle |
+| field_vcpu | vCPU |
+| field_ram | RAM |
+| field_storage | Stockage |
+| field_datacenter | Datacenter |
+| card_system | Système & Accès |
+| field_os | OS |
+| field_ipv4 | IPv4 |
+| field_ipv6 | IPv6 |
+| field_reverse | Reverse DNS |
+| btn_kvm | KVM |
+| btn_reset_password | Réinitialiser MDP |
+| card_status | État actuel |
+| field_state | État |
+| field_uptime | Uptime |
+| field_renewal | Renouvellement |
+| state_running | Démarré |
+| state_stopped | Arrêté |
+| btn_reboot | Redémarrer |
+| btn_stop | Arrêter |
+| btn_reinstall | Réinstaller |
+| graph_cpu | Utilisation CPU |
+| graph_ram | Utilisation RAM |
+| graph_period | Dernière heure |
+| graph_average | Moyenne |
+| graph_used | Utilisé |
+| section_bandwidth | Bande passante |
+| bandwidth_quota | Quota mensuel |
+| bandwidth_incoming | Trafic entrant |
+| bandwidth_outgoing | Trafic sortant |
+| bandwidth_reset | Renouvellement quota |

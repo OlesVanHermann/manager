@@ -1,0 +1,109 @@
+# Cahier des Charges : network/ip - Modal Firewall Add Rule
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire wizard 2 étapes
+**Fonction:** Ajouter une règle au firewall IP
+**Contexte:** Action depuis la page firewall
+
+## 2. DIMENSIONS
+
+- Modal: 650x450px
+- Border radius: 8px
+
+## 3. HEADER MODAL
+
+- Background: #000E9C
+- Titre: "Ajouter une règle firewall" (15px, blanc, bold)
+- Bouton fermer: × (18px, blanc)
+
+## 4. STEPPER
+
+| Étape | Nom | État |
+|-------|-----|------|
+| 1 | Configuration | Actif (#0050D7) |
+| 2 | Confirmation | Inactif |
+
+## 5. FORMULAIRE
+
+### Ligne 1: Position, Mode, Protocole
+
+| Champ | Type | Dimensions | Options |
+|-------|------|------------|---------|
+| Position | Select | 140x36px | 0-19 |
+| Mode | Select | 140x36px | permit, deny |
+| Protocole | Select | 140x36px | TCP, UDP, ICMP, any |
+
+### Ligne 2: IP Source
+| Champ | Type | Dimensions |
+|-------|------|------------|
+| IP source (optionnel) | Input | 590x36px |
+| Placeholder | - | "192.168.1.0/24 ou any" |
+
+### Ligne 3: Ports
+
+| Champ | Type | Dimensions |
+|-------|------|------------|
+| Port source | Input | 280x36px |
+| Placeholder | - | "1-65535 (optionnel)" |
+| Port destination | Input | 280x36px |
+| Valeur exemple | - | "443" |
+
+### Ligne 4: Options TCP
+
+| Champ | Type | Dimensions | Options |
+|-------|------|------------|---------|
+| Options TCP | Select | 200x36px | established, syn, none |
+| Fragments | Checkbox | 18x18px | - |
+
+## 6. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 100x36px |
+| Ajouter | btn-primary | 100x36px |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Ajouter règle firewall
+POST /ip/{ip}/firewall/{ipOnFirewall}/rules
+Body: {
+  sequence: 0,
+  action: "permit",
+  protocol: "tcp",
+  source: "any",
+  sourcePort: null,
+  destinationPort: 443,
+  tcpOption: "established",
+  fragments: false
+}
+→ {
+  sequence: 0,
+  action: "permit",
+  protocol: "tcp",
+  state: "creationPending"
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter une règle firewall |
+| step_config | Configuration |
+| step_confirm | Confirmation |
+| field_position | Position |
+| field_mode | Mode |
+| field_protocol | Protocole |
+| field_source_ip | IP source (optionnel) |
+| field_source_port | Port source |
+| field_dest_port | Port destination |
+| field_tcp_options | Options TCP |
+| field_fragments | Fragments |
+| mode_permit | permit |
+| mode_deny | deny |
+| placeholder_source | 192.168.1.0/24 ou any |
+| placeholder_port | 1-65535 (optionnel) |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

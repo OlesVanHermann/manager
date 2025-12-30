@@ -1,0 +1,161 @@
+# Cahier des Charges : web-cloud/voip/line - Calls (Appels)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid et historique
+**Fonction:** Consulter l'historique des appels d'une ligne
+**Contexte:** Onglet Appels d'une ligne VoIP
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Telephone | **Appels** (actif) | Transferts | Messagerie | Consommation | Options
+
+### NAV4 Sub-tabs
+**Historique** (actif) | Filtrage entrant | Filtrage sortant
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche lignes
+- Compteur: "3 lignes"
+- Liste des lignes (numéro + description + téléphone)
+
+### Panneau droit (1096px)
+- Header ligne
+- Tabs navigation
+- Sub-tabs
+- Toolbar + table historique
+
+## 4. HEADER LIGNE
+
+- Numéro: "0033912345678"
+- Description: "Poste Direction / Appels"
+
+## 5. BARRE D'OUTILS
+
+| Élément | Type | Position |
+|---------|------|----------|
+| Refresh | Bouton icône | Gauche |
+| Exporter CSV | btn-outline | Droite |
+
+## 6. DATAGRID HISTORIQUE (1036x480px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date | 160px | DD/MM/YYYY HH:mm |
+| Type | 100px | Entrant/Sortant (couleur) |
+| Numero | 200px | Numéro appelant/appelé (lien) |
+| Duree | 100px | Format MM:SS ou -- |
+| Statut | 100px | Badge statut |
+| Destination | 170px | Type destination |
+
+### Types d'appel
+
+| Type | Couleur |
+|------|---------|
+| Entrant | Vert (text-success) |
+| Sortant | Bleu (text-primary) |
+
+### Statuts
+
+| Statut | Couleur | Description |
+|--------|---------|-------------|
+| Repondu | #DEF7EC (vert) | Appel entrant décroché |
+| Abouti | #DEF7EC (vert) | Appel sortant réussi |
+| Manque | #FEE2E2 (rouge) | Appel manqué |
+| Rejete | #FEF3C7 (jaune) | Appel rejeté |
+
+### Destinations
+
+| Destination | Description |
+|-------------|-------------|
+| Mobile | Téléphone mobile |
+| Fixe France | Fixe national |
+| Numero vert | Numéro gratuit |
+| - | Non applicable |
+
+### Données exemple
+
+| Date | Type | Numero | Duree | Statut | Destination |
+|------|------|--------|-------|--------|-------------|
+| 30/12/2024 14:32 | Entrant | 0612345678 | 02:45 | Repondu | - |
+| 30/12/2024 14:15 | Sortant | 0698765432 | 05:12 | Abouti | Mobile |
+| 30/12/2024 13:50 | Entrant | +33145789012 | -- | Manque | - |
+| 30/12/2024 11:20 | Sortant | 0033155667788 | 01:30 | Abouti | Fixe France |
+| 30/12/2024 10:05 | Entrant | 0033987654321 | 08:22 | Repondu | - |
+| 30/12/2024 09:45 | Sortant | 0800123456 | 00:45 | Abouti | Numero vert |
+| 29/12/2024 17:30 | Entrant | Numero masque | -- | Rejete | - |
+
+## 7. PAGINATION
+
+- Format: "Affichage 1-10 sur 156"
+- Sélecteur: "Par page:" [10]
+- Navigation: < 1 2 >
+
+## 8. APIS & ENDPOINTS
+
+```
+# Historique des appels
+GET /telephony/{billingAccount}/line/{serviceName}/calls
+Query: { direction, status, startDate, endDate, limit, offset }
+→ [{
+  id: "call-123",
+  datetime: "2024-12-30T14:32:00",
+  direction: "incoming",
+  number: "0612345678",
+  duration: 165,
+  status: "answered",
+  destination: null
+}]
+
+# Export CSV
+GET /telephony/{billingAccount}/line/{serviceName}/calls/export
+Query: { startDate, endDate, format: "csv" }
+→ CSV file
+
+# Statistiques appels
+GET /telephony/{billingAccount}/line/{serviceName}/calls/statistics
+Query: { period: "month" }
+→ {
+  total: 156,
+  incoming: 89,
+  outgoing: 67,
+  missed: 12
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_calls | Appels |
+| subtab_history | Historique |
+| subtab_filter_in | Filtrage entrant |
+| subtab_filter_out | Filtrage sortant |
+| btn_export | Exporter CSV |
+| col_date | Date |
+| col_type | Type |
+| col_number | Numero |
+| col_duration | Duree |
+| col_status | Statut |
+| col_destination | Destination |
+| type_incoming | Entrant |
+| type_outgoing | Sortant |
+| status_answered | Repondu |
+| status_completed | Abouti |
+| status_missed | Manque |
+| status_rejected | Rejete |
+| dest_mobile | Mobile |
+| dest_landline | Fixe France |
+| dest_tollfree | Numero vert |
+| pagination | Affichage {start}-{end} sur {total} |
+| per_page | Par page |

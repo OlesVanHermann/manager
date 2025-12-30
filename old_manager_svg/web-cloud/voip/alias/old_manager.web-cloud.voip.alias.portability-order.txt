@@ -1,0 +1,145 @@
+# Cahier des Charges : web-cloud/voip/alias - Portability Order
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard multi-étapes (4 étapes)
+**Fonction:** Commander une portabilité de numéro
+**Contexte:** Import de numéro externe vers OVH
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Demander une portabilité
+
+### Retour
+← Retour au groupe
+
+## 3. HEADER
+
+- Titre: "Demander une portabilité"
+
+## 4. LAYOUT 2 COLONNES
+
+### Colonne gauche - Formulaire (550x670px)
+
+#### Titre
+"Commander"
+
+#### Indicateur d'étape
+"Étape 1 sur 4"
+
+#### Stepper horizontal (510x35px)
+- Background: #F3F4F6
+- Étapes: **Numéro** › Contact › Configuration › Résumé
+- Étape active: bleu, font-weight 600
+
+#### Formulaire Étape 1 (Numéro)
+
+##### Type de portabilité (radio group)
+- Label: "Vous souhaitez commander une portabilité pour :"
+- ● Un numéro isolé (sélectionné)
+- ○ Un ou plusieurs numéros appartenant à une tranche (SDA)
+
+##### Champ Numéro
+- Label: "Numéro à porter (format international) *"
+- Input: 510x40px
+- Valeur: "+33 1 23 45 67 89"
+
+##### Champ RIO
+- Label: "RIO" + "(info)" en lien
+- Input: 510x40px
+- Placeholder: "Code RIO à 12 caractères"
+
+##### Date de portabilité (radio group)
+- Label: "Date de portabilité souhaitée :"
+- ● Au plus tôt (sélectionné)
+- ○ Choisir la date
+
+#### Bouton navigation
+- "Suivant" (btn-primary, 110x40px) - aligné à droite
+
+### Colonne droite - Informations (480x400px)
+
+#### Titre
+"Informations"
+
+#### Bannière info (#EFF6FF)
+- Texte: "Durant toute la durée de votre contrat, la portabilité de vos numéros est totalement gratuite."
+- Texte: "Pays disponibles : France, Belgique, Suisse."
+
+#### Bannière warning (#FEF3C7)
+- Titre: "Attention :"
+- Texte 1: "Afin de vous prémunir contre toute interruption de service, demandez la résiliation de votre ligne uniquement lorsque la portabilité est terminée."
+- Texte 2: "Si vous résiliez votre ligne chez votre opérateur actuel, vous avez 40 jours pour demander la portabilité. Après ce délai, vous perdrez votre numéro."
+- Texte 3: "Si vous portez le numéro de votre connexion Internet, votre accès Internet sera coupé."
+
+## 5. ÉTAPES DU WIZARD
+
+| Étape | Nom | Champs |
+|-------|-----|--------|
+| 1 | Numéro | Type, Numéro, RIO, Date |
+| 2 | Contact | Titulaire, Adresse, SIRET |
+| 3 | Configuration | Ligne de destination |
+| 4 | Résumé | Récapitulatif + Validation |
+
+## 6. TYPES DE PORTABILITÉ
+
+| Type | Code | Description |
+|------|------|-------------|
+| Numéro isolé | isolated | Un seul numéro |
+| Tranche SDA | sda | Plage de numéros consécutifs |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Créer une demande de portabilité
+POST /telephony/{billingAccount}/portability
+Body: {
+  type: "isolated",
+  number: "+33123456789",
+  rio: "ABC123456789",
+  desiredDate: "2025-01-15",
+  country: "fr"
+}
+
+# Valider le RIO
+POST /telephony/portability/validateRio
+Body: { rio: "ABC123456789", number: "+33123456789" }
+
+# Opérateurs disponibles
+GET /telephony/portability/operators/{country}
+→ Liste des opérateurs par pays
+
+# Dates disponibles
+GET /telephony/portability/availableDates/{country}
+→ Prochaines dates de portabilité possibles
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Demander une portabilité |
+| section_order | Commander |
+| step_indicator | Étape {current} sur {total} |
+| step_number | Numéro |
+| step_contact | Contact |
+| step_config | Configuration |
+| step_summary | Résumé |
+| label_type | Vous souhaitez commander une portabilité pour : |
+| type_isolated | Un numéro isolé |
+| type_sda | Un ou plusieurs numéros appartenant à une tranche (SDA) |
+| field_number | Numéro à porter (format international) |
+| field_rio | RIO |
+| rio_hint | Code RIO à 12 caractères |
+| label_date | Date de portabilité souhaitée : |
+| date_asap | Au plus tôt |
+| date_choose | Choisir la date |
+| btn_next | Suivant |
+| section_info | Informations |
+| info_free | Durant toute la durée de votre contrat, la portabilité de vos numéros est totalement gratuite. |
+| info_countries | Pays disponibles : France, Belgique, Suisse. |
+| warning_title | Attention : |
+| warning_resiliate | Afin de vous prémunir contre toute interruption de service, demandez la résiliation de votre ligne uniquement lorsque la portabilité est terminée. |
+| warning_delay | Si vous résiliez votre ligne chez votre opérateur actuel, vous avez 40 jours pour demander la portabilité. Après ce délai, vous perdrez votre numéro. |
+| warning_internet | Si vous portez le numéro de votre connexion Internet, votre accès Internet sera coupé. |

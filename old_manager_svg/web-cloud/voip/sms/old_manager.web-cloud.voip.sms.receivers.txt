@@ -1,0 +1,151 @@
+# Cahier des Charges : web-cloud/voip/sms - Receivers
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page gestion avec 2 sections
+**Fonction:** Gérer les listes de destinataires (fichiers CSV)
+**Contexte:** Import et gestion de fichiers de contacts pour campagnes
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > SMS > sms-xxxxxxxx-1 > Contacts
+
+## 3. HEADER
+
+- Titre: "Contacts"
+
+## 4. SECTION INFORMATIONS (1120x150px)
+
+### Titre section
+"Informations"
+
+### Contenu
+- "Vous avez la possibilité de créer jusqu'à 9 listes de contacts par le biais de fichiers textes ou .csv."
+- "Vous pouvez consulter le guide sur la [liste de destinataires]." (lien)
+- "OVH vous offre la possibilité de nettoyer votre base de destinataires pour 0.1 crédit par abonné."
+- Note: "Le nettoyage dédoublonnera vos contacts et éliminera ceux qui sont invalides."
+
+## 5. SECTION GÉRER LES DESTINATAIRES (1120x460px)
+
+### Titre section
+"Gérer les destinataires"
+
+### Actions dropdown (120x32px)
+- Texte: "Actions ▼"
+- Options: Ajouter, Actualiser
+
+### Bouton suppression (230x32px)
+- État: Désactivé (grisé)
+- Texte: "Supprimer le fichier sélectionné"
+
+## 6. DATAGRID LISTES (1120x290px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Checkbox | 40px | Sélection |
+| Nom | 240px | Nom de la liste |
+| Date d'ajout | 200px | Format DD/MM/YYYY HH:mm:ss |
+| Nombre de contacts | 200px | Total contacts |
+| Mise à jour auto | 200px | Oui/Non |
+| Actions | 100px | Menu ⋮ |
+
+### Données exemple
+
+| ☐ | Nom | Date d'ajout | Contacts | MAJ auto | ⋮ |
+|---|-----|--------------|----------|----------|---|
+| ☐ | Clients Newsletter | 15/12/2024 14:30:00 | 1 250 | Oui | ⋮ |
+| ☐ | Prospects Campagne Noel | 10/12/2024 09:15:00 | 856 | Non | ⋮ |
+
+### Menu contextuel (120x165px)
+- Modifier
+- Consulter
+- Nettoyer
+- Télécharger
+- Supprimer
+
+### Pagination
+"Affichage 1-2 sur 2"
+
+## 7. FONCTIONNALITÉ NETTOYAGE
+
+### Description
+- Coût: 0.1 crédit par contact
+- Actions: Dédoublonnage + suppression invalides
+- Résultat: Liste optimisée
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des fichiers de destinataires
+GET /sms/{serviceName}/receivers
+→ [{
+  slotId: 1,
+  description: "Clients Newsletter",
+  datetime: "2024-12-15T14:30:00",
+  receiversCount: 1250,
+  autoUpdate: true
+}]
+
+# Ajouter une liste de destinataires
+POST /sms/{serviceName}/receivers
+Body: {
+  slot: 1,
+  description: "Nom de la liste",
+  csvUrl: "https://...",
+  autoUpdate: false
+}
+
+# Modifier une liste
+PUT /sms/{serviceName}/receivers/{slotId}
+Body: { description, autoUpdate }
+
+# Consulter les contacts d'une liste
+GET /sms/{serviceName}/receivers/{slotId}/contacts
+→ ["+33612345678", "+33698765432", ...]
+
+# Nettoyer une liste
+POST /sms/{serviceName}/receivers/{slotId}/clean
+→ {
+  removedDuplicates: 15,
+  removedInvalid: 8,
+  creditsCost: 125.0
+}
+
+# Télécharger une liste
+GET /sms/{serviceName}/receivers/{slotId}/csv
+→ CSV file
+
+# Supprimer une liste
+DELETE /sms/{serviceName}/receivers/{slotId}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Contacts |
+| section_info | Informations |
+| info_limit | Vous avez la possibilité de créer jusqu'à 9 listes de contacts par le biais de fichiers textes ou .csv. |
+| info_guide | Vous pouvez consulter le guide sur la |
+| link_guide | liste de destinataires |
+| info_clean | OVH vous offre la possibilité de nettoyer votre base de destinataires pour 0.1 crédit par abonné. |
+| info_clean_note | Le nettoyage dédoublonnera vos contacts et éliminera ceux qui sont invalides. |
+| section_manage | Gérer les destinataires |
+| btn_actions | Actions |
+| action_add | Ajouter |
+| action_refresh | Actualiser |
+| btn_delete | Supprimer le fichier sélectionné |
+| col_name | Nom |
+| col_date | Date d'ajout |
+| col_count | Nombre de contacts |
+| col_auto_update | Mise à jour auto |
+| col_actions | Actions |
+| menu_edit | Modifier |
+| menu_view | Consulter |
+| menu_clean | Nettoyer |
+| menu_download | Télécharger |
+| menu_delete | Supprimer |
+| pagination | Affichage {start}-{end} sur {total} |

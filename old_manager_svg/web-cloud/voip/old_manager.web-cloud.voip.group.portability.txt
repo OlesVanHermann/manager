@@ -1,0 +1,179 @@
+# Cahier des Charges : web-cloud/voip/group - Portability (Portabilité)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec statistiques et datagrid
+**Fonction:** Gérer les demandes de portabilité de numéros
+**Contexte:** Transfert de numéros entrants/sortants
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+Dashboard | General | Services | Commandes | **Portabilite** (actif) | Facturation
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche groupes
+- Groupe sélectionné
+
+### Panneau droit (1096px)
+- Header groupe
+- Tabs navigation
+- Bannière info
+- Toolbar + filtres
+- Cartes statistiques
+- Table portabilités
+
+## 4. HEADER GROUPE
+
+- Titre: "ovh-telecom-123"
+- Sous-titre: "Groupe / Portabilite"
+
+## 5. BANNIÈRE INFO (1036x50px)
+
+- Background: #DBEAFE (info)
+- Ligne 1: "La portabilite vous permet de conserver vos numeros de telephone lors d'un changement d'operateur."
+- Ligne 2: "Delai moyen: 7-15 jours ouvres selon le type de numero."
+
+## 6. BARRE D'OUTILS
+
+### Éléments
+
+| Élément | Type | Dimensions |
+|---------|------|------------|
+| Refresh | Bouton icône | 32x32px |
+| Recherche | Input | 180x32px |
+| Filtre Direction | Select | 100x32px |
+| Filtre Statut | Select | 100x32px |
+| Demander portabilite | btn-primary | 196x32px |
+
+## 7. CARTES STATISTIQUES (3 cartes)
+
+| Carte | Valeur | Dimensions |
+|-------|--------|------------|
+| Portabilites en cours | 2 | 200x70px |
+| Entrantes (12 mois) | 8 numeros (vert) | 200x70px |
+| Sortantes (12 mois) | 1 numero (rouge) | 200x70px |
+
+## 8. DATAGRID PORTABILITÉS (1036x400px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Numero | 160px | Format international |
+| Direction | 100px | Badge Entrante/Sortante |
+| Operateur | 180px | Opérateur d'origine/destination |
+| Statut | 120px | Badge statut |
+| Date demande | 130px | DD/MM/YYYY |
+| Date portage | 130px | DD/MM/YYYY prévu |
+| Actions | 80px | Lien détails |
+
+### Directions
+
+| Direction | Couleur |
+|-----------|---------|
+| Entrante | #DEF7EC (vert) |
+| Sortante | #FEE2E2 (rouge) |
+
+### Statuts
+
+| Statut | Couleur | Description |
+|--------|---------|-------------|
+| En validation | #FEF3C7 (jaune) | Validation en cours |
+| RIO recu | #DBEAFE (bleu) | Code RIO reçu |
+| Terminee | #DEF7EC (vert) | Portabilité effectuée |
+
+### Données exemple
+
+| Numero | Direction | Operateur | Statut | Date demande | Date portage |
+|--------|-----------|-----------|--------|--------------|--------------|
+| +33 1 23 45 67 89 | Entrante | Orange | En validation | 15/12/2024 | 02/01/2025 |
+| +33 9 87 65 43 21 | Entrante | Free | RIO recu | 20/12/2024 | 08/01/2025 |
+| +33 1 98 76 54 32 | Entrante | SFR | Terminee | 01/11/2024 | 20/11/2024 |
+| +33 9 11 22 33 44 | Sortante | Bouygues | Terminee | 15/09/2024 | 01/10/2024 |
+
+## 9. PAGINATION
+
+- Compteur: "4 portabilites"
+
+## 10. APIS & ENDPOINTS
+
+```
+# Statistiques portabilité
+GET /telephony/{billingAccount}/portability/statistics
+→ {
+  pending: 2,
+  incoming12Months: 8,
+  outgoing12Months: 1
+}
+
+# Liste des portabilités
+GET /telephony/{billingAccount}/portability
+Query: { direction, status, search, limit, offset }
+→ [{
+  number: "+33123456789",
+  direction: "incoming",
+  operator: "Orange",
+  status: "validating",
+  requestDate: "2024-12-15",
+  portingDate: "2025-01-02"
+}]
+
+# Détail d'une portabilité
+GET /telephony/{billingAccount}/portability/{portabilityId}
+→ {
+  number: "+33123456789",
+  direction: "incoming",
+  operator: "Orange",
+  status: "validating",
+  requestDate: "2024-12-15",
+  portingDate: "2025-01-02",
+  rio: "ABCD1234",
+  history: [...]
+}
+
+# Créer une demande de portabilité
+POST /telephony/{billingAccount}/portability
+Body: {
+  number: "+33123456789",
+  rio: "ABCD1234",
+  desiredDate: "2025-01-15"
+}
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_portability | Portabilite |
+| banner_line1 | La portabilite vous permet de conserver vos numeros de telephone lors d'un changement d'operateur. |
+| banner_line2 | Delai moyen: 7-15 jours ouvres selon le type de numero. |
+| btn_request | Demander portabilite |
+| search_placeholder | Rechercher un numero... |
+| filter_direction | Direction |
+| filter_status | Statut |
+| stat_pending | Portabilites en cours |
+| stat_incoming | Entrantes (12 mois) |
+| stat_outgoing | Sortantes (12 mois) |
+| col_number | Numero |
+| col_direction | Direction |
+| col_operator | Operateur |
+| col_status | Statut |
+| col_request_date | Date demande |
+| col_porting_date | Date portage |
+| col_actions | Actions |
+| direction_incoming | Entrante |
+| direction_outgoing | Sortante |
+| status_validating | En validation |
+| status_rio_received | RIO recu |
+| status_completed | Terminee |
+| action_details | Details |
+| pagination | {count} portabilites |

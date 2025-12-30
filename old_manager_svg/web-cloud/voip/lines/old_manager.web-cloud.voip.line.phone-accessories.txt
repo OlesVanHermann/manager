@@ -1,0 +1,115 @@
+# Cahier des Charges : web-cloud/voip/line - Phone Accessories
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 4 étapes avec catalogue produits
+**Fonction:** Commander des accessoires pour le téléphone
+**Contexte:** Configuration du téléphone SIP
+
+## 2. NAVIGATION
+
+### Retour
+< Téléphone
+
+## 3. HEADER
+
+- Titre: "Commander des accessoires"
+
+## 4. STEPPER (4 étapes)
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Choix | Active (cercle bleu) |
+| 2 | Livraison | Inactive (cercle gris) |
+| 3 | Résumé | Inactive |
+| 4 | Confirmation | Inactive |
+
+- Lignes de connexion entre étapes
+
+## 5. ÉTAPE 1 - CHOIX ACCESSOIRES
+
+### Info téléphone
+- Label: "Téléphone : Yealink T46U"
+- Description: "Sélectionnez les accessoires compatibles"
+
+### Grille de cartes produits (3 colonnes, 280x300px chacune)
+
+#### Carte 1 - Non sélectionnée
+- Image placeholder: 200x120px
+- Titre: "Casque sans fil EHS"
+- Description: "Compatible Yealink"
+- Prix: "89,00 EUR HT"
+- Bouton: "Ajouter" (btn-primary)
+
+#### Carte 2 - Sélectionnée
+- Border: #0050D7, 2px
+- Badge ✓ (cercle bleu coin supérieur droit)
+- Titre: "Module d'extension EXP40"
+- Description: "40 touches programmables"
+- Prix: "129,00 EUR HT"
+- Bouton: "Sélectionné (1)" (btn-outline)
+
+#### Carte 3 - Non sélectionnée
+- Titre: "Alimentation POE"
+- Description: "Injecteur POE+ 802.3at"
+- Prix: "35,00 EUR HT"
+- Bouton: "Ajouter" (btn-primary)
+
+## 6. FOOTER RÉSUMÉ (1200x80px)
+
+- Texte: "Panier : 1 article"
+- Détail: "Module d'extension EXP40"
+- Total: "Total : 129,00 EUR HT"
+- Bouton: "Continuer" (btn-primary, 120x40px)
+
+## 7. ACCESSOIRES DISPONIBLES
+
+| Accessoire | Prix HT | Compatibilité |
+|------------|---------|---------------|
+| Casque sans fil EHS | 89,00 € | Yealink |
+| Module extension EXP40 | 129,00 € | Yealink T4x |
+| Alimentation POE | 35,00 € | Universel |
+| Câble RJ9 | 15,00 € | Universel |
+| Support mural | 25,00 € | Selon modèle |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Accessoires compatibles
+GET /telephony/{billingAccount}/line/{serviceName}/phone/accessories
+→ Liste des accessoires avec prix et compatibilité
+
+# Ajouter au panier
+POST /telephony/{billingAccount}/cart
+Body: {
+  lineServiceName: "...",
+  items: [
+    { accessory: "exp40", quantity: 1 }
+  ]
+}
+
+# Passer commande
+POST /telephony/{billingAccount}/order/accessories
+Body: {
+  cartId: "...",
+  shippingAddress: {...}
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Commander des accessoires |
+| back_link | Téléphone |
+| step_choice | Choix |
+| step_shipping | Livraison |
+| step_summary | Résumé |
+| step_confirmation | Confirmation |
+| phone_label | Téléphone : {model} |
+| select_accessories | Sélectionnez les accessoires compatibles |
+| btn_add | Ajouter |
+| btn_selected | Sélectionné ({count}) |
+| cart_label | Panier : {count} article(s) |
+| total_label | Total : {amount} HT |
+| btn_continue | Continuer |

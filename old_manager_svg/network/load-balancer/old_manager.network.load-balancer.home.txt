@@ -1,78 +1,69 @@
-# Cahier des Charges : network/load-balancer - Accueil (variante)
+# Cahier des Charges : network/load-balancer - Home
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Dashboard LB (variante complète)
-- **URL** : /network/load-balancer/{serviceName}
-- **Objectif** : Vue avec tiles détaillées
 
-## 2. STRUCTURE PAGE
-- Breadcrumb
-- Titre service
-- Onglets
-- 6 tiles sur 2 rangées
+**Type:** Dashboard principal avec tiles
+**Fonction:** Afficher l'état général du Load Balancer
+**Contexte:** Page d'accueil d'un Load Balancer
 
-## 3. COMPOSANTS UI
-- **OdsTabs** : Accueil/Frontends/Fermes/SSL/Tâches/Logs
-- **OdsTile** : 6 tiles
-- **OdsBadge** : Statuts OK/Warning
-- **OdsProgressBar** : Usage zones
-- **OdsChart** : Graphique connexions
-- **OdsSelect** : Métrique graphique
-- **OdsActionMenu** : Actions par section
+## 2. NAVIGATION
 
-## 4. TILE 1 - STATUT
-| Élément | Badge |
-|---------|-------|
-| Frontends | 4 OK (vert) |
-| Fermes de serveurs | 3 OK (vert) |
-| Serveurs | 8 OK (vert) + 2 Warning (jaune) |
-| Certificats SSL | 2 OK (vert) |
+### Breadcrumb
+"Load Balancer › loadbalancer-abc123"
 
-## 5. TILE 2 - UTILISATION
-| Zone | Progress | Pourcentage |
-|------|----------|-------------|
-| 🇫🇷 Gravelines (GRA) | 1.2 TB / 2 TB | 60% |
-| 🇩🇪 Francfort (FRA) | 600 GB / 2 TB | 30% |
+### Onglets
+| Onglet | État |
+|--------|------|
+| Accueil | Actif (#0050D7) |
+| Frontends | Inactif |
+| Fermes de serveurs | Inactif |
+| Certificats SSL | Inactif |
+| Tâches | Inactif |
+| Logs | Inactif |
 
-## 6. TILE 3 - GRAPHIQUE
-| Propriété | Valeur |
-|-----------|--------|
-| Sélecteur | Connexions (dropdown) |
-| Type | Line chart |
-| Période | 24h |
+## 3. LAYOUT
 
-## 7. TILE 4 - INFORMATIONS
-| Champ | Valeur |
-|-------|--------|
-| IPv4 | 203.0.113.50 |
-| IPv6 | 2001:db8::1 |
-| IP Failover | 2 |
-| IP Sortantes | 4 |
+- 2 rangées de 3 tiles
+- Grid: 3 colonnes 360px
+- Gap: 20px
 
-## 8. TILE 5 - CONFIGURATION
-| Champ | Valeur | Action |
-|-------|--------|--------|
-| Nom | Mon Load Balancer Prod | ⋮ |
-| Chiffrement SSL | Intermédiaire | ⋮ |
-| Réseau privé | Actif (pn-12345) | - |
-| Datacenter | 🇫🇷 GRA, 🇩🇪 FRA | ⋮ |
+## 4. TILES ROW 1
 
-### Action Menu Datacenter (ouvert)
-| Action | Style |
-|--------|-------|
-| Ajouter une zone | Normal |
-| Supprimer une zone | Danger |
+### Tile Statut (360x220px)
 
-## 9. TILE 6 - ABONNEMENT
-| Champ | Valeur | Action |
-|-------|--------|--------|
-| Offre | Large | ⋮ |
-| Renouvellement auto | 15 janvier 2026 | ⋮ |
-| Contact | ab12345-ovh (Admin/Factu/Tech) | ⋮ |
-| Date de création | 15 juin 2024 | - |
+| Élément | Badge | Menu |
+|---------|-------|------|
+| Frontends | 4 OK (#DEF7EC) | ⋮ |
+| Fermes de serveurs | 3 OK (#DEF7EC) | ⋮ |
+| Serveurs | 8 OK, 2 Warning | - |
+| Certificats SSL | 2 OK (#DEF7EC) | - |
 
-## 10. APIS & ENDPOINTS
-- GET /ipLoadbalancing/{serviceName} - Détails
-- GET /ipLoadbalancing/{serviceName}/quota/history - Historique
-- GET /ipLoadbalancing/{serviceName}/serviceInfos - Service info
+### Tile Utilisation (360x220px)
+- Barres de progression par zone
+- Zone GRA: 60% (1.2 TB / 2 TB)
+- Zone FRA: 30% (600 GB / 2 TB)
 
+### Tile Graphique (360x220px)
+- Sélecteur métrique (Connexions)
+- Graphique ligne temporel
+
+## 5. APIS & ENDPOINTS
+
+```
+# Informations LB
+GET /ipLoadbalancing/{serviceName}
+
+# Statut
+GET /ipLoadbalancing/{serviceName}/status
+
+# Métriques
+GET /ipLoadbalancing/{serviceName}/quota
+```
+
+## 6. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_home | Accueil |
+| tile_status | Statut |
+| tile_usage | Utilisation |

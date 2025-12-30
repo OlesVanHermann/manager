@@ -1,0 +1,100 @@
+# Cahier des Charges : web-cloud/voip/sms - Campaigns Pending
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid
+**Fonction:** Gérer les campagnes SMS en attente d'envoi
+**Contexte:** Campagnes programmées pour envoi futur
+
+## 2. NAVIGATION
+
+### Retour
+< (retour au dashboard SMS)
+
+## 3. HEADER
+
+- Titre: "Campagnes en attente"
+
+## 4. BARRE D'ACTIONS
+
+### Actions dropdown (100x36px)
+- Texte: "Actions ▼"
+- Options: Modifier, Annuler
+
+## 5. DATAGRID CAMPAGNES (1200x600px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Checkbox | 35px | Sélection |
+| Nom | 210px | Nom de la campagne |
+| Date création | 170px | Date de création |
+| Envoi programmé | 180px | Date/heure d'envoi prévu |
+| Expéditeur | 180px | Nom de l'expéditeur |
+| Destinataires | 170px | Nombre total |
+| Statut | 150px | Badge "En attente" |
+| Actions | 65px | Menu ⋮ |
+
+### Données exemple
+
+| ☐ | Nom | Date création | Envoi programmé | Expéditeur | Destinataires | Statut | Actions |
+|---|-----|---------------|-----------------|------------|---------------|--------|---------|
+| ☐ | Promo Noël 2025 | 30/12/2024 14:30 | 01/01/2025 09:00 | MonEntreprise | 1250 | En attente | ⋮ |
+| ☐ | Rappel RDV clients | 29/12/2024 10:00 | 02/01/2025 08:00 | MaClinic | 85 | En attente | ⋮ |
+| ☐ | Newsletter Janvier | 28/12/2024 16:45 | 05/01/2025 10:00 | NewsletterPro | 3200 | En attente | ⋮ |
+
+### Menu contextuel (150x80px)
+- Détails
+- Annuler (rouge)
+
+### Pagination
+"3 campagnes en attente"
+
+## 6. STATUTS
+
+| Statut | Couleur | Background |
+|--------|---------|------------|
+| En attente | #92400E | #FEF3C7 |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Liste des campagnes en attente
+GET /sms/{serviceName}/batches
+Query: { status: "pending" }
+→ [{
+  id: "batch-456",
+  name: "Promo Noël 2025",
+  createdAt: "2024-12-30T14:30:00",
+  scheduledAt: "2025-01-01T09:00:00",
+  sender: "MonEntreprise",
+  recipientsCount: 1250,
+  status: "pending"
+}]
+
+# Annuler une campagne
+DELETE /sms/{serviceName}/batches/{batchId}
+
+# Modifier une campagne
+PUT /sms/{serviceName}/batches/{batchId}
+Body: { scheduledAt, message, ... }
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Campagnes en attente |
+| btn_actions | Actions |
+| col_name | Nom |
+| col_created_date | Date création |
+| col_scheduled_date | Envoi programmé |
+| col_sender | Expéditeur |
+| col_recipients | Destinataires |
+| col_status | Statut |
+| col_actions | Actions |
+| status_pending | En attente |
+| menu_details | Détails |
+| menu_cancel | Annuler |
+| pagination | {count} campagnes en attente |

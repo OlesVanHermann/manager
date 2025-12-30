@@ -1,0 +1,91 @@
+# Cahier des Charges : web-cloud/voip/groups - Add Group
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire de commande
+**Fonction:** Créer un nouveau groupe téléphonique
+**Contexte:** Organisation des services VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Administration > Ajouter un groupe
+
+### Retour
+← Retour à l'administration
+
+## 3. HEADER
+
+- Titre: "Ajouter un groupe"
+
+## 4. CARTE FORMULAIRE (700x350px)
+
+### Bannière info (660x60px)
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Texte ligne 1: "Vous pouvez commander de nouveaux groupes afin d'organiser et"
+- Texte ligne 2: "gérer plus facilement vos lignes et numéros."
+
+### Section contrats
+- Description: "Vous devez accepter les contrats afin de valider la commande."
+
+### Checkbox 1
+- [x] "J'ai lu et j'accepte les conditions générales de vente"
+
+### Checkbox 2
+- [x] "J'accepte les conditions particulières du service"
+
+### Bouton commande
+"Commander un nouveau groupe de téléphonie (Gratuit)" (btn-primary, 400x50px)
+
+### Note
+"Ce service est gratuit et vous permet de créer un groupe supplémentaire."
+
+## 5. CONTRATS À ACCEPTER
+
+| Contrat | Obligatoire |
+|---------|-------------|
+| CGV | Oui |
+| Conditions particulières VoIP | Oui |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Obtenir les contrats à signer
+GET /telephony/contracts
+→ [{
+  name: "Conditions générales de vente",
+  url: "https://...",
+  required: true
+}, {
+  name: "Conditions particulières du service",
+  url: "https://...",
+  required: true
+}]
+
+# Créer un nouveau groupe
+POST /telephony
+Body: {
+  acceptCgv: true,
+  acceptParticular: true
+}
+→ { billingAccount: "ab12345-ovh-2", orderId: "..." }
+
+# Suivre la commande
+GET /order/{orderId}
+→ { status, deliveryDate }
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Ajouter un groupe |
+| back_link | Retour à l'administration |
+| info_line1 | Vous pouvez commander de nouveaux groupes afin d'organiser et |
+| info_line2 | gérer plus facilement vos lignes et numéros. |
+| contracts_description | Vous devez accepter les contrats afin de valider la commande. |
+| checkbox_cgv | J'ai lu et j'accepte les conditions générales de vente |
+| checkbox_particular | J'accepte les conditions particulières du service |
+| btn_order | Commander un nouveau groupe de téléphonie (Gratuit) |
+| note_free | Ce service est gratuit et vous permet de créer un groupe supplémentaire. |

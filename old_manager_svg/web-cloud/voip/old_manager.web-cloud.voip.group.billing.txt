@@ -1,0 +1,141 @@
+# Cahier des Charges : web-cloud/voip/group - Billing (Consommation)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page statistiques avec cartes et tableau
+**Fonction:** Consulter la consommation détaillée du groupe
+**Contexte:** Onglet Facturation > Consommation
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+Dashboard | Services | Repertoire | **Facturation** (actif) | Administration
+
+### NAV4 Sub-tabs
+**Consommation** (actif) | Depot de garantie | Releves
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Liste des groupes VoIP
+
+### Panneau droit (1096px)
+- Header groupe
+- Tabs + sub-tabs
+- Cartes statistiques
+- Tableau détaillé
+
+## 4. HEADER GROUPE
+
+- Titre: "Telephonie Siege"
+- Sous-titre: "voip-ab12345 / Facturation"
+
+## 5. CARTES STATISTIQUES (3 cartes)
+
+| Carte | Valeur | Dimensions |
+|-------|--------|------------|
+| Total appels | 1,245 ce mois | 340x100px |
+| Appels entrants | 876 (70%) | 340x100px |
+| Appels sortants | 369 (30%) | 340x100px |
+
+## 6. TABLEAU CONSOMMATION PAR SERVICE (1052x420px)
+
+### Titre
+"Detail des services (en nombre d'appels)"
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Service | 260px | Numéro + description |
+| Entrants | 120px | Nombre appels entrants |
+| Sortants | 120px | Nombre appels sortants |
+| Transferes | 140px | Nombre transferts |
+| Total | 140px | Total appels |
+| Hors forfait | 150px | Montant HT |
+
+### Données exemple
+
+| Service | Entrants | Sortants | Transferes | Total | Hors forfait |
+|---------|----------|----------|------------|-------|--------------|
+| 0033912345678 (Poste Direction) | 234 | 156 | 12 | 402 | 0,00 EUR |
+| 0033912345679 (Accueil) | 456 | 89 | 23 | 568 | 5,50 EUR |
+| 0033800123456 (Numero vert) | 186 | 0 | 186 | 186 | 0,00 EUR |
+| 0033987654321 (Fax Direction) | 0 | 124 | 0 | 124 | 7,00 EUR |
+
+### Ligne TOTAL
+- Background: #E8F0FE
+- Totaux en gras
+- Hors forfait en rouge si > 0
+
+### Données totaux
+
+| Entrants | Sortants | Transferes | Total | Hors forfait |
+|----------|----------|------------|-------|--------------|
+| 876 | 369 | 221 | 1,245 | 12,50 EUR |
+
+## 7. PAGINATION
+
+- Format: "Affichage de 1 a 4 sur 6 services"
+- Navigation par page
+
+## 8. APIS & ENDPOINTS
+
+```
+# Statistiques globales du mois
+GET /telephony/{billingAccount}/consumption/summary
+Query: { month: "current" }
+→ {
+  totalCalls: 1245,
+  incomingCalls: 876,
+  outgoingCalls: 369,
+  incomingPercent: 70,
+  outgoingPercent: 30
+}
+
+# Consommation par service
+GET /telephony/{billingAccount}/consumption/byService
+Query: { month: "current", limit, offset }
+→ [{
+  serviceName: "0033912345678",
+  description: "Poste Direction",
+  incoming: 234,
+  outgoing: 156,
+  transferred: 12,
+  total: 402,
+  outOfPlan: 0.00
+}]
+
+# Export consommation
+GET /telephony/{billingAccount}/consumption/export
+Query: { month: "2025-12", format: "csv" }
+→ CSV file
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_billing | Facturation |
+| subtab_consumption | Consommation |
+| subtab_deposit | Depot de garantie |
+| subtab_statements | Releves |
+| stat_total_calls | Total appels |
+| stat_incoming | Appels entrants |
+| stat_outgoing | Appels sortants |
+| this_month | ce mois |
+| table_title | Detail des services (en nombre d'appels) |
+| col_service | Service |
+| col_incoming | Entrants |
+| col_outgoing | Sortants |
+| col_transferred | Transferes |
+| col_total | Total |
+| col_out_of_plan | Hors forfait |
+| row_total | TOTAL |
+| pagination | Affichage de {start} a {end} sur {total} services |

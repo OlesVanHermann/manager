@@ -1,0 +1,109 @@
+# Cahier des Charges : web-cloud/voip/sms - Campaigns History
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid
+**Fonction:** Consulter l'historique des campagnes SMS
+**Contexte:** Suivi des campagnes passées
+
+## 2. NAVIGATION
+
+### Retour
+< (retour au dashboard SMS)
+
+## 3. HEADER
+
+- Titre: "Historique des campagnes"
+
+## 4. BARRE D'ACTIONS
+
+### Actions dropdown (100x36px)
+- Texte: "Actions ▼"
+- Options: Statistiques, Supprimer
+
+### Recherche (240x36px)
+- Placeholder: "Rechercher..."
+- Position: droite
+
+## 5. DATAGRID CAMPAGNES (1200x600px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Nom | 230px | Nom de la campagne |
+| Date d'envoi | 170px | Format DD/MM/YYYY HH:mm |
+| Expéditeur | 180px | Nom de l'expéditeur |
+| Destinataires | 180px | Nombre total |
+| Statut | 170px | Badge Terminé/Erreur |
+| Actions | 100px | Menu ⋮ |
+
+### Données exemple
+
+| Nom | Date d'envoi | Expéditeur | Destinataires | Statut | Actions |
+|-----|--------------|------------|---------------|--------|---------|
+| Soldes d'hiver 2025 | 28/12/2024 10:00 | MonEntreprise | 2500 | Terminé | ⋮ |
+| Confirmation commande | 27/12/2024 15:30 | EShop | 150 | Terminé | ⋮ |
+| Test campagne | 26/12/2024 09:00 | Test | 5 | Erreur | ⋮ |
+| Black Friday 2024 | 29/11/2024 08:00 | MonEntreprise | 5000 | Terminé | ⋮ |
+
+### Menu contextuel (150x120px)
+- Détails
+- Télécharger les logs
+- Supprimer (rouge)
+
+### Pagination
+"4 campagnes - Page 1/1"
+
+## 6. STATUTS CAMPAGNE
+
+| Statut | Couleur | Background |
+|--------|---------|------------|
+| Terminé | #16A34A | #DCFCE7 |
+| Erreur | #DC2626 | #FEE2E2 |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Liste des campagnes
+GET /sms/{serviceName}/batches
+Query: { status: "completed", limit, offset }
+→ [{
+  id: "batch-123",
+  name: "Soldes d'hiver 2025",
+  sentAt: "2024-12-28T10:00:00",
+  sender: "MonEntreprise",
+  recipientsCount: 2500,
+  status: "completed"
+}]
+
+# Rechercher
+GET /sms/{serviceName}/batches?search=soldes
+
+# Supprimer une campagne
+DELETE /sms/{serviceName}/batches/{batchId}
+
+# Télécharger les logs
+GET /sms/{serviceName}/batches/{batchId}/logs
+→ CSV file
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Historique des campagnes |
+| btn_actions | Actions |
+| search_placeholder | Rechercher... |
+| col_name | Nom |
+| col_sent_date | Date d'envoi |
+| col_sender | Expéditeur |
+| col_recipients | Destinataires |
+| col_status | Statut |
+| col_actions | Actions |
+| status_completed | Terminé |
+| status_error | Erreur |
+| menu_details | Détails |
+| menu_download_logs | Télécharger les logs |
+| menu_delete | Supprimer |
+| pagination | {count} campagnes - Page {page}/{total} |

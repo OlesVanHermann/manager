@@ -1,0 +1,141 @@
+# Cahier des Charges : web-cloud/voip/sms - Campaign Create
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire en 2 colonnes
+**Fonction:** Créer une nouvelle campagne SMS
+**Contexte:** Envoi de SMS en masse
+
+## 2. NAVIGATION
+
+### Retour
+< (retour à la liste des campagnes)
+
+## 3. HEADER
+
+- Titre: "Créer une campagne SMS"
+
+## 4. LAYOUT 2 COLONNES
+
+### Colonne gauche : Formulaire (850x700px)
+### Colonne droite : Crédits + Conseils (280px)
+
+## 5. FORMULAIRE PRINCIPAL (850x700px)
+
+### Section Configuration
+
+#### Expéditeur (select 400x40px)
+- Label: "Expéditeur"
+- Options: Liste des expéditeurs validés
+- Exemple: "MonEntreprise"
+
+#### Destinataires
+- Label: "Destinataires"
+- Bouton 1: "Choisir un carnet" (btn-secondary, 200x36px)
+- Bouton 2: "Importer une liste" (btn-secondary, 200x36px)
+
+### Section Composition du message
+
+#### Message (textarea 790x120px)
+- Label: "Message"
+- Placeholder: "Bonjour [prenom], votre commande est prête..."
+- Compteur: "145/160 caractères (1 SMS)"
+
+### Section Options
+
+#### Checkboxes
+- [x] Envoi immédiat
+- [ ] Ajouter la mention STOP SMS
+- [ ] SMS Flash (affichage immédiat)
+
+### Section Estimation (790x80px)
+- Background: #F3F4F6
+- Titre: "Estimation"
+- Détail: "250 destinataires x 1 SMS = 250 SMS (0,065 EUR HT/SMS)"
+- Total: "16,25 EUR HT" (font-size: 18px, font-weight: 600)
+
+### Boutons actions
+- "Envoyer la campagne" (btn-primary, 180x44px)
+- "Annuler" (btn-secondary, 100x44px)
+
+## 6. PANNEAU CRÉDITS (280x150px)
+
+### Titre
+"Crédits SMS"
+
+### Contenu
+- Nombre: "1 250" (font-size: 32px, font-weight: 600)
+- Label: "crédits restants"
+- Lien: "Commander des crédits" (text-primary)
+
+## 7. PANNEAU CONSEILS (280x200px)
+
+### Titre
+"Conseils"
+
+### Liens
+- Guide de composition
+- Taille des messages
+- Format des fichiers
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des expéditeurs
+GET /sms/{serviceName}/senders
+→ [{ sender: "MonEntreprise", status: "enable" }]
+
+# Carnets d'adresses
+GET /sms/{serviceName}/phonebooks
+→ [{ bookKey: "...", name: "Contacts pro" }]
+
+# Listes de destinataires
+GET /sms/{serviceName}/receivers
+→ [{ slotId, description, recordsCount }]
+
+# Créer/envoyer une campagne
+POST /sms/{serviceName}/batches
+Body: {
+  sender: "MonEntreprise",
+  message: "Bonjour...",
+  receivers: ["slotId1"],
+  immediateDelivery: true,
+  noStopClause: true,
+  flashMessage: false
+}
+
+# Estimation
+POST /sms/{serviceName}/estimateCost
+Body: { message, receiversCount }
+→ { smsCount: 250, totalCost: 16.25, creditCost: 0.065 }
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Créer une campagne SMS |
+| section_config | Configuration |
+| field_sender | Expéditeur |
+| field_recipients | Destinataires |
+| btn_choose_phonebook | Choisir un carnet |
+| btn_import_list | Importer une liste |
+| section_compose | Composition du message |
+| field_message | Message |
+| char_count | {count}/160 caractères ({sms} SMS) |
+| section_options | Options |
+| option_immediate | Envoi immédiat |
+| option_stop | Ajouter la mention STOP SMS |
+| option_flash | SMS Flash (affichage immédiat) |
+| section_estimate | Estimation |
+| estimate_detail | {recipients} destinataires x {smsPerRecipient} SMS = {totalSms} SMS ({pricePerSms} EUR HT/SMS) |
+| estimate_total | {total} EUR HT |
+| btn_send | Envoyer la campagne |
+| btn_cancel | Annuler |
+| panel_credits | Crédits SMS |
+| credits_remaining | crédits restants |
+| link_order_credits | Commander des crédits |
+| panel_tips | Conseils |
+| tip_composition | Guide de composition |
+| tip_size | Taille des messages |
+| tip_format | Format des fichiers |

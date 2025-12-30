@@ -1,83 +1,39 @@
 # Cahier des Charges : network/load-balancer - Dashboard
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Dashboard d'un Load Balancer
-- **URL** : /network/load-balancer/{serviceName}
-- **Objectif** : Vue d'ensemble avec tiles
 
-## 2. STRUCTURE PAGE
-- Breadcrumb
-- Titre + ID service
-- Onglets navigation
-- 2 rangées de 3 tiles
+**Type:** Layout master-detail avec sidebar
+**Fonction:** Afficher la liste des LB et les détails sélectionné
+**Contexte:** Vue principale Load Balancer
 
-## 3. COMPOSANTS UI
-- **OdsBreadcrumb** : Navigation
-- **OdsTabs** : Accueil/Fermes/Frontends/SSL/Tâches/Graphiques
-- **OdsTile** : 6 tiles informations
-- **OdsBadge** : Statuts
-- **OdsProgressBar** : Usage zones
-- **OdsChart** : Graphique connexions
+## 2. DIMENSIONS
 
-## 4. ONGLETS
-| Onglet | Actif |
-|--------|-------|
-| Accueil | ✓ |
-| Fermes de serveurs | - |
-| Frontends | - |
-| Certificats SSL | - |
-| Tâches | - |
-| Graphiques | - |
+- Sidebar liste: 300px
+- Zone détails: 900px
 
-## 5. TILES ROW 1
-### Tile Statut
-| Élément | Badge | Action |
-|---------|-------|--------|
-| Frontends | 3 activés (vert) | ⋮ |
-| Fermes de serveurs | 2 activées (vert) | ⋮ |
-| Serveurs | 4/5 actifs (jaune) | ⋮ |
+## 3. SIDEBAR LISTE
 
-### Tile Utilisation
-| Zone | Usage | Action |
-|------|-------|--------|
-| 🇫🇷 Gravelines (GRA) | 2.4 GB / 10 GB | ⋮ |
-| 🇩🇪 Limbourg (LIM) | 1.1 GB / 10 GB | ⋮ |
+### Header
+- Titre: "Load Balancers" (16px, bold)
+- Badge count
 
-### Tile Graphiques
-| Propriété | Valeur |
-|-----------|--------|
-| Type | Connexions/s |
-| Graphique | Line chart |
+### Recherche
+- Input avec placeholder "🔍 Rechercher..."
 
-## 6. TILES ROW 2
-### Tile Informations
-| Champ | Valeur |
-|-------|--------|
-| IPv4 | 123.45.67.89 |
-| IPv6 | 2001:db8::1 |
-| IP Failover | Configurer |
-| IPv4 de sortie | 98.76.54.32 |
+### Liste items
+- Production LB | gra, rbx / Business | ● OK
+- Staging LB | gra / Standard | ● OK
+- Dev LB | rbx / Standard | ● Warning
 
-### Tile Configuration
-| Champ | Valeur | Action |
-|-------|--------|--------|
-| Nom | LB Production | ✏️ |
-| Quota par mois | Illimité | - |
-| Seuil de l'alerte | 8 GB | ⋮ |
-| Ciphers | intermediate | ⋮ |
-| Zones | GRA, LIM | ⋮ |
+## 4. ZONE DÉTAILS
 
-### Tile Abonnement
-| Champ | Valeur | Action |
-|-------|--------|--------|
-| Offre | L | ⋮ |
-| Renouvellement | 01/02/2025 | ⋮ |
-| Contacts | xx1234-ovh (Admin) | ⋮ |
-| Création | 15/06/2023 | - |
+- Header avec titre et bouton Rafraîchir
+- Onglets: Farms, Frontends
 
-## 7. APIS & ENDPOINTS
-- GET /ipLoadbalancing/{serviceName} - Détails LB
-- GET /ipLoadbalancing/{serviceName}/quota - Quotas
-- GET /ipLoadbalancing/{serviceName}/serviceInfos - Infos service
-- GET /ipLoadbalancing/{serviceName}/zone - Zones
+## 5. APIS & ENDPOINTS
 
+```
+GET /ipLoadbalancing
+GET /ipLoadbalancing/{serviceName}
+GET /ipLoadbalancing/{serviceName}/http/farm
+```

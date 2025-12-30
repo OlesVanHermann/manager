@@ -1,0 +1,123 @@
+# Cahier des Charges : web-cloud/voip/number - Change Type
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page sélection avec cartes radio
+**Fonction:** Changer le type de configuration d'un numéro
+**Contexte:** Conversion entre Redirection, CCS, Cloud IVR, Conférence
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro > Changer le type
+
+## 3. HEADER
+
+- Titre: "Changer le type de configuration"
+
+## 4. AIDE REPLIABLE (900x50px)
+
+- Titre: "Comment choisir le bon type ?"
+- État: replié par défaut
+- Chevron: v pour déplier
+
+## 5. TOGGLE MODE EXPERT (200x36px)
+
+- Bouton: "Afficher les options expert"
+- Fonction: Affiche les options avancées de chaque type
+
+## 6. GRILLE DE CARTES (2x2)
+
+### Carte 1 : Redirection (260x200px)
+- Titre: "Redirection"
+- Description ligne 1: "Redirige les appels vers"
+- Description ligne 2: "une ligne SIP ou un numéro"
+- Schéma: Placeholder illustrant le flux redirect
+- Radio button: non sélectionné
+
+### Carte 2 : Contact Center Solution (260x200px) - SÉLECTIONNÉE
+- Titre: "Contact Center Solution"
+- Description ligne 1: "Centre d'appels avec files"
+- Description ligne 2: "d'attente et agents"
+- Schéma: Placeholder illustrant easyHunting
+- Radio button: sélectionné (bleu #0050D7)
+- Bordure: bleue 2px
+
+### Carte 3 : Serveur vocal (260x200px)
+- Titre: "Serveur vocal (Cloud IVR)"
+- Description ligne 1: "Menu interactif avec choix"
+- Description ligne 2: "par touches"
+- Schéma: Placeholder illustrant cloudIvr
+- Radio button: non sélectionné
+
+### Carte 4 : Conférence (260x200px)
+- Titre: "Conférence"
+- Description ligne 1: "Salle de conférence"
+- Description ligne 2: "téléphonique"
+- Schéma: Placeholder illustrant conference
+- Radio button: non sélectionné
+
+## 7. TYPES DE CONFIGURATION
+
+| Type | Code API | Description |
+|------|----------|-------------|
+| Redirection | redirect | Renvoi simple vers une ligne |
+| Contact Center | easyHunting | Centre d'appels avec files et agents |
+| Serveur vocal | cloudIvr | Menu interactif avec touches DTMF |
+| Conférence | conference | Salle de conférence audio |
+
+## 8. LIEN ACTION GROUPÉE
+
+- Texte: "Appliquer à plusieurs numéros..."
+- Position: sous les cartes
+- Fonction: Ouvre une sélection multi-numéros
+
+## 9. BOUTON VALIDATION (200x44px)
+
+- Texte: "Appliquer la configuration"
+- Style: btn-primary
+
+## 10. APIS & ENDPOINTS
+
+```
+# Informations du numéro actuel
+GET /telephony/{billingAccount}/number/{serviceName}
+→ { featureType: "easyHunting", ... }
+
+# Types disponibles
+GET /telephony/{billingAccount}/number/{serviceName}/availableFeatureTypes
+→ ["redirect", "easyHunting", "cloudIvr", "conference"]
+
+# Changer le type
+POST /telephony/{billingAccount}/number/{serviceName}/changeFeatureType
+Body: { featureType: "conference" }
+
+# Changer le type pour plusieurs numéros (bulk)
+POST /telephony/{billingAccount}/number/changeFeatureType
+Body: {
+  serviceNames: ["+33123456789", "+33123456790"],
+  featureType: "redirect"
+}
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Changer le type de configuration |
+| help_title | Comment choisir le bon type ? |
+| btn_expert_mode | Afficher les options expert |
+| card_redirect | Redirection |
+| card_redirect_desc1 | Redirige les appels vers |
+| card_redirect_desc2 | une ligne SIP ou un numéro |
+| card_ccs | Contact Center Solution |
+| card_ccs_desc1 | Centre d'appels avec files |
+| card_ccs_desc2 | d'attente et agents |
+| card_ivr | Serveur vocal (Cloud IVR) |
+| card_ivr_desc1 | Menu interactif avec choix |
+| card_ivr_desc2 | par touches |
+| card_conference | Conférence |
+| card_conference_desc1 | Salle de conférence |
+| card_conference_desc2 | téléphonique |
+| link_bulk_apply | Appliquer à plusieurs numéros... |
+| btn_apply | Appliquer la configuration |

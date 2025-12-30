@@ -1,0 +1,170 @@
+# Cahier des Charges : web-cloud/voip/carrier-sip - Routing
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec règles de routage
+**Fonction:** Configurer le routage des appels sur trunk SIP
+**Contexte:** Gestion des règles de routage par pattern
+
+## 2. NAVIGATION
+
+### NAV3 Tabs
+General | Parametres | **Routage** (actif) | CDR
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Liste trunks SIP
+
+### Panneau droit (1096px)
+- Header trunk + tabs
+- Toolbar + table règles
+
+## 4. HEADER TRUNK
+
+- Nom: "trunk-abc123"
+- Badge: "Actif" (vert)
+
+## 5. BARRE D'OUTILS
+
+### Recherche (200x32px)
+- Placeholder: "Rechercher une règle..."
+
+### Bouton ajout (180x32px)
+- "Ajouter une règle" (btn-primary)
+
+## 6. BANNIÈRE INFO (1036x45px)
+
+- Background: #DBEAFE
+- Texte: "Les règles de routage sont évaluées dans l'ordre de priorité. La première règle correspondante est appliquée."
+
+## 7. DATAGRID RÈGLES (1036x500px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Priorité | 80px | Ordre d'évaluation |
+| Nom | 180px | Nom de la règle |
+| Pattern | 170px | Expression régulière |
+| Action | 170px | Route/Block |
+| Destination | 200px | Gateway cible |
+| Statut | 100px | Badge Actif/Bloqué |
+| Actions | 100px | Modifier/Supprimer |
+
+### Types d'action
+- Route: Envoie vers une gateway
+- Block: Bloque l'appel
+
+### Données exemple
+
+| Priorité | Nom | Pattern | Action | Destination | Statut |
+|----------|-----|---------|--------|-------------|--------|
+| 1 | France Mobile | ^33[67] | Route | Gateway-Mobile-01 | Actif |
+| 2 | France Fixe | ^33[1-5] | Route | Gateway-Fixe-01 | Actif |
+| 3 | International | ^00 | Route | Gateway-Intl-01 | Actif |
+| 4 | Numéros spéciaux | ^33[89] | Block | - | Bloqué |
+| 999 | Default (catch-all) | .* | Route | Gateway-Default | Actif |
+
+### Statuts
+
+| Statut | Couleur |
+|--------|---------|
+| Actif | #DEF7EC (vert) |
+| Bloqué | #FEF3C7 (orange) |
+
+### Actions par ligne
+- "Modifier" (text-primary)
+- "x" (text-error) - sauf pour Default
+
+## 8. CARTE DESTINATIONS (505x120px)
+
+### Titre
+"Destinations configurées"
+
+### Contenu
+- "4 gateways actives"
+- Lien: "Gérer les destinations"
+
+## 9. CARTE STATISTIQUES ROUTAGE (511x120px)
+
+### Titre
+"Statistiques routage (24h)"
+
+### Métriques
+
+| Métrique | Valeur | Style |
+|----------|--------|-------|
+| Appels routés | 1,234 | text-dark |
+| Appels bloqués | 56 | text-warning |
+
+## 10. APIS & ENDPOINTS
+
+```
+# Liste des règles de routage
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/routing/rules
+→ [{
+  id: "rule-1",
+  priority: 1,
+  name: "France Mobile",
+  pattern: "^33[67]",
+  action: "route",
+  destination: "Gateway-Mobile-01",
+  status: "active"
+}]
+
+# Ajouter une règle
+POST /telephony/{billingAccount}/carrierSip/{serviceName}/routing/rules
+Body: {
+  priority: 5,
+  name: "Nouvelle règle",
+  pattern: "^33...",
+  action: "route",
+  destination: "Gateway-01"
+}
+
+# Modifier une règle
+PUT /telephony/{billingAccount}/carrierSip/{serviceName}/routing/rules/{ruleId}
+Body: { priority, name, pattern, action, destination, status }
+
+# Supprimer une règle
+DELETE /telephony/{billingAccount}/carrierSip/{serviceName}/routing/rules/{ruleId}
+
+# Liste des destinations/gateways
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/routing/destinations
+→ [{ name: "Gateway-Mobile-01", status: "active" }, ...]
+
+# Statistiques routage
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/routing/statistics
+Query: { period: "24h" }
+→ {
+  routedCalls: 1234,
+  blockedCalls: 56
+}
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_routing | Routage |
+| search_placeholder | Rechercher une règle... |
+| btn_add_rule | Ajouter une règle |
+| banner_info | Les règles de routage sont évaluées dans l'ordre de priorité. La première règle correspondante est appliquée. |
+| col_priority | Priorité |
+| col_name | Nom |
+| col_pattern | Pattern |
+| col_action | Action |
+| col_destination | Destination |
+| col_status | Statut |
+| col_actions | Actions |
+| action_route | Route |
+| action_block | Block |
+| status_active | Actif |
+| status_blocked | Bloqué |
+| btn_edit | Modifier |
+| card_destinations | Destinations configurées |
+| link_manage_destinations | Gérer les destinations |
+| card_stats | Statistiques routage (24h) |
+| stat_routed | Appels routés |
+| stat_blocked | Appels bloqués |

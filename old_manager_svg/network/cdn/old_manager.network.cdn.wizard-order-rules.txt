@@ -1,0 +1,100 @@
+# Cahier des Charges : network/cdn - Wizard Order Rules
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard commande 4 étapes
+**Fonction:** Commander des règles de cache supplémentaires
+**Contexte:** Accessible depuis les options CDN
+
+## 2. DIMENSIONS
+
+- Container: 600x440px
+- Border radius: 8px
+
+## 3. HEADER WIZARD
+
+- Background: #F9FAFB
+- Titre: "Commander des regles de cache" (16px, bold)
+
+## 4. STEPPER (4 étapes)
+
+| Étape | Nom | État |
+|-------|-----|------|
+| 1 | Tarif | Actif (#0050D7) |
+| 2 | Duree | Inactif |
+| 3 | Resume | Inactif |
+| 4 | Paiement | Inactif |
+
+## 5. ÉTAPE 1 - TARIF
+
+### Instruction
+"Selectionnez le nombre de regles :" (13px, bold)
+
+### Options radio
+
+| Option | Prix | État |
+|--------|------|------|
+| 10 regles | 5,00 EUR HT/mois | Sélectionné |
+| 50 regles | 20,00 EUR HT/mois | Non sélectionné |
+| 100 regles | 35,00 EUR HT/mois | Non sélectionné |
+| 200 regles | Deja souscrit | Désactivé (muted) |
+
+### Style radio
+- Sélectionné: #0050D7, cercle blanc intérieur
+- Non sélectionné: Blanc, bordure #D1D5DB
+- Désactivé: Texte muted
+
+## 6. FOOTER WIZARD
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 100x36px |
+| Suivant → | btn-primary | 100x36px |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Options règles disponibles
+GET /cdn/dedicated/{serviceName}/options/rules
+→ [{
+  quantity: 10,
+  priceHT: 5.00,
+  period: "month",
+  available: true
+}, {
+  quantity: 200,
+  priceHT: 70.00,
+  period: "month",
+  available: false,
+  reason: "already_subscribed"
+}]
+
+# Commander règles
+POST /cdn/dedicated/{serviceName}/options/rules/order
+Body: {
+  quantity: 10,
+  duration: "P1M"
+}
+→ {
+  orderId: "order-789",
+  url: "https://www.ovh.com/order/..."
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_title | Commander des regles de cache |
+| step_price | Tarif |
+| step_duration | Duree |
+| step_summary | Resume |
+| step_payment | Paiement |
+| instruction | Selectionnez le nombre de regles |
+| rules_count | regles |
+| per_month | /mois |
+| already_subscribed | Deja souscrit |
+| btn_cancel | Annuler |
+| btn_next | Suivant |

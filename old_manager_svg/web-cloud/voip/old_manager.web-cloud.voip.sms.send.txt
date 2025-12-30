@@ -1,0 +1,179 @@
+# Cahier des Charges : web-cloud/voip/sms - Envoyer
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec panels latéraux
+**Fonction:** Envoyer un SMS immédiat
+**Contexte:** Onglet Envoyer d'un compte SMS
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | **Envoyer** (actif) | Campagnes | Entrants | Historique | Modeles
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche comptes
+- Liste des comptes
+
+### Panneau droit (1096px)
+- Header compte
+- Tabs navigation
+- Formulaire envoi (650px)
+- Panel résumé (356px)
+- Panel modèles récents (356px)
+
+## 4. FORMULAIRE ENVOI (650x550px)
+
+### Titre
+"Envoyer un SMS"
+
+### Champ 1: Expéditeur
+- Label: "Expediteur *"
+- Type: Select dropdown (300x36px)
+- Valeur: "MonEntreprise"
+
+### Champ 2: Destinataires
+- Label: "Destinataires *"
+- Type: Textarea (610x80px)
+- Placeholder: "+33 6 12 34 56 78"
+- Helper: "Un numero par ligne, format international (+33...)"
+- Lien: "Importer un fichier CSV"
+
+### Champ 3: Message
+- Label: "Message *"
+- Type: Textarea (610x120px)
+- Placeholder: "Saisissez votre message..."
+- Compteur: "0 / 160 caracteres (1 SMS)"
+- Variables: "{NOM} {PRENOM} {DATE}"
+
+### Options (checkboxes)
+- [ ] Planifier l'envoi
+- [ ] Utiliser un modele
+
+### Boutons
+- "Envoyer" (btn-primary, 140x40px)
+- "Apercu" (btn-outline, 140x40px)
+
+## 5. PANEL RÉSUMÉ (356x300px)
+
+### Titre
+"Resume"
+
+### Champs
+
+| Champ | Valeur |
+|-------|--------|
+| Destinataires | 0 |
+| SMS par destinataire | 1 |
+| Credits necessaires | 0 |
+| Credits disponibles | 1,500 (vert) |
+| Credits restants apres envoi | 1,500 |
+
+### Lien
+"Acheter des credits"
+
+## 6. PANEL MODÈLES RÉCENTS (356x230px)
+
+### Titre
+"Modeles recents"
+
+### Liste (3 modèles)
+| Nom modèle |
+|------------|
+| Confirmation commande |
+| Rappel rendez-vous |
+| Code de verification |
+
+Chaque modèle est une carte cliquable (316x40px)
+
+## 7. APIS & ENDPOINTS
+
+```
+# Envoyer un SMS
+POST /sms/{serviceName}/jobs
+Body: {
+  sender: "MonEntreprise",
+  receivers: ["+33612345678"],
+  message: "Votre message ici",
+  charset: "UTF-8"
+}
+→ {
+  jobId: "job-123",
+  creditsUsed: 1,
+  estimatedDelivery: "2025-12-30T15:00:00"
+}
+
+# Envoyer avec planification
+POST /sms/{serviceName}/jobs
+Body: {
+  sender: "MonEntreprise",
+  receivers: ["+33612345678"],
+  message: "Message planifie",
+  scheduledDatetime: "2025-12-31T09:00:00"
+}
+
+# Calculer le coût
+POST /sms/{serviceName}/jobs/estimate
+Body: {
+  receivers: ["+33612345678", "+33698765432"],
+  message: "Message test"
+}
+→ {
+  recipientsCount: 2,
+  smsPerRecipient: 1,
+  totalCredits: 2
+}
+
+# Importer destinataires CSV
+POST /sms/{serviceName}/receivers/import
+Content-Type: multipart/form-data
+Body: { file: <csv> }
+→ {
+  imported: 150,
+  duplicates: 5,
+  errors: 2
+}
+
+# Liste des modèles récents
+GET /sms/{serviceName}/templates
+Query: { limit: 3, orderBy: "usedAt" }
+→ [{
+  templateId: "tpl-001",
+  name: "Confirmation commande"
+}]
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_send | Envoyer |
+| form_title | Envoyer un SMS |
+| field_sender | Expediteur |
+| field_receivers | Destinataires |
+| receivers_helper | Un numero par ligne, format international (+33...) |
+| link_import_csv | Importer un fichier CSV |
+| field_message | Message |
+| placeholder_message | Saisissez votre message... |
+| counter_chars | {count} / 160 caracteres ({sms} SMS) |
+| variables_label | Variables disponibles: |
+| opt_schedule | Planifier l'envoi |
+| opt_template | Utiliser un modele |
+| btn_send | Envoyer |
+| btn_preview | Apercu |
+| panel_summary | Resume |
+| sum_recipients | Destinataires |
+| sum_sms_per | SMS par destinataire |
+| sum_credits_needed | Credits necessaires |
+| sum_credits_available | Credits disponibles |
+| sum_credits_after | Credits restants apres envoi |
+| link_buy_credits | Acheter des credits |
+| panel_templates | Modeles recents |

@@ -1,0 +1,147 @@
+# Cahier des Charges : web-cloud/voip/sms - Dashboard
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec tuiles et statistiques
+**Fonction:** Vue d'ensemble du compte SMS
+**Contexte:** Page principale de gestion SMS
+
+## 2. NAVIGATION
+
+### Breadcrumb
+SMS / sms-abc123-1
+
+## 3. HEADER
+
+- Titre: "Tableau de bord SMS"
+
+## 4. LAYOUT PRINCIPAL
+
+- 2 colonnes en haut
+- 2 colonnes en bas
+
+## 5. TUILE ACTIONS (380x320px)
+
+### Titre
+"Actions"
+
+### Liste des actions (liens avec chevron ›)
+| Action | Navigation |
+|--------|------------|
+| Envoyer un SMS | → compose |
+| Historique des envois | → outgoing |
+| SMS reçus | → incoming |
+| Expéditeurs | → senders |
+| Carnets d'adresses | → phonebooks |
+| Options | → options |
+
+## 6. TUILE STATISTIQUES (700x320px)
+
+### Titre
+"Statistiques"
+
+### Filtre période (radio buttons)
+- (•) Aujourd'hui
+- ( ) Cette semaine
+- ( ) Ce mois
+
+### Métriques (3 colonnes)
+
+| Métrique | Valeur |
+|----------|--------|
+| Nombre de campagnes | 3 |
+| SMS envoyés | 1 245 |
+| SMS délivrés | 1 198 |
+| Désabonnements STOP | 12 |
+| Crédits restants | 8 542 |
+
+### Lien recharge
+- "Recharger des crédits →" (text-primary)
+
+## 7. TUILE INFORMATIONS SERVICE (380x180px)
+
+### Titre
+"Informations du service"
+
+### Champs
+| Champ | Valeur |
+|-------|--------|
+| Nom du service | sms-abc123-1 |
+| Statut | Badge "Actif" (vert) |
+| Type de compte | Standard |
+
+## 8. TUILE ENVOI RAPIDE (700x180px)
+
+### Titre
+"Envoi rapide"
+
+### Formulaire inline
+- Destinataire (input 200x40px): "+33 6..."
+- Message (input 340x40px): "Votre message..."
+- Bouton "Envoyer" (btn-primary, 80x40px)
+
+### Note
+"160 caractères max. Les caractères spéciaux peuvent réduire la limite."
+
+## 9. APIS & ENDPOINTS
+
+```
+# Informations du service
+GET /sms/{serviceName}
+→ {
+  name: "sms-abc123-1",
+  status: "active",
+  creditsLeft: 8542,
+  accountType: "standard"
+}
+
+# Statistiques
+GET /sms/{serviceName}/statistics
+Query: { period: "today" | "week" | "month" }
+→ {
+  campaignsCount: 3,
+  sentCount: 1245,
+  deliveredCount: 1198,
+  stoplistedCount: 12
+}
+
+# Envoi rapide
+POST /sms/{serviceName}/jobs
+Body: {
+  message: "...",
+  receivers: ["+33..."]
+}
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Tableau de bord SMS |
+| tile_actions | Actions |
+| action_send | Envoyer un SMS |
+| action_history | Historique des envois |
+| action_received | SMS reçus |
+| action_senders | Expéditeurs |
+| action_phonebooks | Carnets d'adresses |
+| action_options | Options |
+| tile_stats | Statistiques |
+| period_today | Aujourd'hui |
+| period_week | Cette semaine |
+| period_month | Ce mois |
+| metric_campaigns | Nombre de campagnes |
+| metric_sent | SMS envoyés |
+| metric_delivered | SMS délivrés |
+| metric_stoplisted | Désabonnements STOP |
+| metric_credits | Crédits restants |
+| link_recharge | Recharger des crédits → |
+| tile_info | Informations du service |
+| field_service_name | Nom du service |
+| field_status | Statut |
+| field_account_type | Type de compte |
+| status_active | Actif |
+| tile_quick_send | Envoi rapide |
+| placeholder_recipient | +33 6... |
+| placeholder_message | Votre message... |
+| btn_send | Envoyer |
+| note_chars | 160 caractères max. Les caractères spéciaux peuvent réduire la limite. |

@@ -1,0 +1,190 @@
+# Cahier des Charges : web-cloud/voip/number - Statistics
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard temps réel avec métriques et listes
+**Fonction:** Suivre les statistiques de la file d'attente en temps réel
+**Contexte:** Supervision d'un numéro Contact Center Solution
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro > Statistiques
+
+## 3. HEADER
+
+- Titre: "Statistiques"
+- Description: "Suivez les statistiques de votre file d'attente en temps réel"
+
+## 4. SECTION STATISTIQUES APPELS (900x180px)
+
+### Titre section
+"Statistiques des appels" (souligné)
+
+### Métriques principales (ligne 1)
+
+| Métrique | Valeur | Style |
+|----------|--------|-------|
+| Qualité de service (QoS) | 87% | font-size: 20px, font-weight: 600 |
+| Appels reçus | 1 245 | font-size: 20px, font-weight: 600 |
+| Appels répondus | 1 083 | font-size: 20px, font-weight: 600 |
+| Appels perdus | 162 | font-size: 20px, font-weight: 600 |
+| Temps d'attente moyen | 45s | font-size: 20px, font-weight: 600 |
+| Durée moyenne | 4m 32s | font-size: 20px, font-weight: 600 |
+
+### Appels en cours (section)
+- Titre: "Appels en cours" (souligné)
+- En communication: 3
+- En attente: 2
+- Attente max: 1m 23s
+
+## 5. DATAGRID APPELS EN COURS (900x175px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Numéro appelant | 175px | Numéro de l'appelant |
+| Temps file | 150px | Temps depuis entrée dans la file |
+| En comm. | 150px | Durée de communication |
+| Agent | 200px | Agent en charge |
+| Actions | 150px | Menu ou bouton |
+
+### Données exemple
+
+| Numéro appelant | Temps file | En comm. | Agent | Actions |
+|-----------------|------------|----------|-------|---------|
+| +33 6 12 34 56 78 | 2m 15s | 1m 45s | Agent 1 | ⋮ (menu ouvert) |
+| +33 7 98 76 54 32 | 45s | Non | - | Intercepter → |
+| +33 1 23 45 67 89 | 5m 32s | 4m 10s | Agent 2 | ⋮ |
+
+### Menu contextuel (appel en communication)
+- Écouter
+- Transférer
+- Raccrocher (rouge)
+
+### Action appel en attente
+- Bouton: "Intercepter →" (text-primary)
+
+## 6. SECTION STATUT AGENTS (900x200px)
+
+### Titre section
+"Statut des agents" (souligné)
+- Compteurs: "En communication: 2" | "En attente: 1"
+
+### Datagrid agents (900x160px)
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Agent | 175px | Numéro de la ligne |
+| Description | 250px | Nom de l'agent |
+| Statut | 200px | Badge statut |
+| Depuis | 200px | Durée dans cet état |
+
+### Données exemple
+
+| Agent | Description | Statut | Depuis |
+|-------|-------------|--------|--------|
+| +33 1 72 10 00 10 | Agent 1 - Support | En communication | Il y a 1m 45s |
+| +33 1 72 10 00 11 | Agent 2 - Commercial | En communication | Il y a 4m 10s |
+| +33 1 72 10 00 12 | Agent 3 - Technique | En attente | Il y a 30s |
+
+## 7. STATUTS AGENTS
+
+| Statut | Couleur | Background |
+|--------|---------|------------|
+| En communication | #16A34A | #DCFCE7 |
+| En attente | #92400E | #FEF3C7 |
+| Hors ligne | #6B7280 | #F3F4F6 |
+| En pause | #DC2626 | #FEE2E2 |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Statistiques globales
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveStatistics
+→ {
+  qos: 87,
+  totalReceived: 1245,
+  totalAnswered: 1083,
+  totalLost: 162,
+  averageWaitTime: 45,
+  averageCallDuration: 272,
+  callsInProgress: 3,
+  callsInQueue: 2,
+  maxQueueWait: 83
+}
+
+# Appels en cours
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls
+→ [{
+  callId: "call-123",
+  callerNumber: "+33612345678",
+  queueTime: 135,
+  talkTime: 105,
+  agent: "Agent 1",
+  status: "inProgress"
+}]
+
+# Statut des agents
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent/liveStatus
+→ [{
+  agentId: "agent-1",
+  number: "+33172100010",
+  description: "Agent 1 - Support",
+  status: "inCall",
+  statusSince: 105
+}]
+
+# Intercepter un appel
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{callId}/intercept
+Body: { targetAgent: "agent-1" }
+
+# Écouter un appel
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{callId}/whisper
+Body: { listenerLine: "+33172100000" }
+
+# Transférer un appel
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{callId}/transfer
+Body: { destination: "+33612345679" }
+
+# Raccrocher un appel
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/liveCalls/{callId}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Statistiques |
+| description | Suivez les statistiques de votre file d'attente en temps réel |
+| section_call_stats | Statistiques des appels |
+| metric_qos | Qualité de service (QoS) |
+| metric_received | Appels reçus |
+| metric_answered | Appels répondus |
+| metric_lost | Appels perdus |
+| metric_avg_wait | Temps d'attente moyen |
+| metric_avg_duration | Durée moyenne |
+| section_calls_progress | Appels en cours |
+| field_in_call | En communication |
+| field_in_queue | En attente |
+| field_max_wait | Attente max |
+| col_caller | Numéro appelant |
+| col_queue_time | Temps file |
+| col_talk_time | En comm. |
+| col_agent | Agent |
+| col_actions | Actions |
+| status_not_in_call | Non |
+| btn_intercept | Intercepter → |
+| menu_listen | Écouter |
+| menu_transfer | Transférer |
+| menu_hangup | Raccrocher |
+| section_agents | Statut des agents |
+| agents_in_call | En communication: {count} |
+| agents_waiting | En attente: {count} |
+| col_description | Description |
+| col_status | Statut |
+| col_since | Depuis |
+| status_in_communication | En communication |
+| status_waiting | En attente |
+| time_ago | Il y a {duration} |

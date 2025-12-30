@@ -1,0 +1,191 @@
+# Cahier des Charges : web-cloud/voip/carrier-sip - Settings
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec sections
+**Fonction:** Configurer les paramètres du trunk Carrier SIP
+**Contexte:** Configuration technique SIP
+
+## 2. NAVIGATION
+
+### NAV3 Tabs
+General | **Parametres** (actif) | Routage | CDR
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Liste trunks SIP
+
+### Panneau droit (1096px)
+- Header trunk + tabs
+- Formulaire paramètres
+
+## 4. SECTION CONNEXION SIP (1036x200px)
+
+### Titre
+"Paramètres de connexion SIP"
+
+### Champs (2 colonnes)
+
+**Colonne gauche:**
+
+| Champ | Type | Valeur | Largeur |
+|-------|------|--------|---------|
+| Serveur SIP | Input (readonly) | sip.ovh.net | 280px |
+| Port SIP | Input (readonly) | 5060 | 100px |
+| Protocole transport | Select | UDP / TCP / TLS | 150px |
+
+**Colonne droite:**
+
+| Champ | Type | Valeur | Largeur |
+|-------|------|--------|---------|
+| Identifiant SIP | Input (readonly) | trunk-abc123 | 280px |
+| Mot de passe | Input (password) | ************ | 200px |
+| Realm | Input (readonly) | sip.ovh.net | 280px |
+
+### Action mot de passe
+- "Afficher" (text-primary)
+
+## 5. SECTION CODECS AUDIO (505x240px)
+
+### Titre
+"Codecs audio"
+
+### Note
+"Glisser-déposer pour réorganiser l'ordre de priorité"
+
+### Liste codecs (drag & drop)
+
+| Codec | Statut |
+|-------|--------|
+| G.711 A-Law (PCMA) | Badge "Actif" (vert) |
+| G.711 u-Law (PCMU) | Badge "Actif" (vert) |
+| G.729 | Badge "Actif" (vert) |
+| Opus | Badge "Inactif" (gris) |
+
+## 6. SECTION SÉCURITÉ (511x240px)
+
+### Titre
+"Sécurité"
+
+### Options (toggles)
+
+| Option | État | Description |
+|--------|------|-------------|
+| TLS (Transport Layer Security) | ON (vert) | Chiffrement transport |
+| SRTP (Secure RTP) | ON (vert) | Chiffrement média |
+| Filtrage IP | OFF (gris) | Restriction par IP |
+
+### Action
+- "+ Ajouter une IP autorisée" (text-primary)
+
+## 7. SECTION OPTIONS AVANCÉES (1036x140px)
+
+### Titre
+"Options avancées"
+
+### Champs
+
+| Champ | Type | Valeur | Largeur |
+|-------|------|--------|---------|
+| Session Timers | Input | 1800s | 100px |
+| Max Forwards | Input | 70 | 80px |
+| DTMF Mode | Select | RFC 2833 | 150px |
+
+## 8. BOUTONS ACTION
+
+- "Enregistrer" (btn-primary, 150x36px)
+- "Annuler" (btn-outline, 150x36px)
+
+## 9. APIS & ENDPOINTS
+
+```
+# Paramètres connexion SIP
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/settings/sip
+→ {
+  server: "sip.ovh.net",
+  port: 5060,
+  protocol: "UDP",
+  username: "trunk-abc123",
+  realm: "sip.ovh.net"
+}
+
+# Modifier paramètres SIP
+PUT /telephony/{billingAccount}/carrierSip/{serviceName}/settings/sip
+Body: { protocol }
+
+# Afficher/Régénérer mot de passe
+POST /telephony/{billingAccount}/carrierSip/{serviceName}/settings/sip/password
+→ { password: "newPassword123" }
+
+# Codecs
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/settings/codecs
+→ [{
+  name: "PCMA",
+  label: "G.711 A-Law",
+  priority: 1,
+  enabled: true
+}]
+
+# Modifier codecs
+PUT /telephony/{billingAccount}/carrierSip/{serviceName}/settings/codecs
+Body: [{ name: "PCMA", priority: 1, enabled: true }, ...]
+
+# Paramètres sécurité
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/settings/security
+→ {
+  tlsEnabled: true,
+  srtpEnabled: true,
+  ipFilterEnabled: false,
+  allowedIps: []
+}
+
+# Modifier sécurité
+PUT /telephony/{billingAccount}/carrierSip/{serviceName}/settings/security
+Body: { tlsEnabled, srtpEnabled, ipFilterEnabled }
+
+# Ajouter IP autorisée
+POST /telephony/{billingAccount}/carrierSip/{serviceName}/settings/security/ips
+Body: { ip: "192.168.1.0/24" }
+
+# Options avancées
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/settings/advanced
+→ {
+  sessionTimers: 1800,
+  maxForwards: 70,
+  dtmfMode: "rfc2833"
+}
+
+# Modifier options avancées
+PUT /telephony/{billingAccount}/carrierSip/{serviceName}/settings/advanced
+Body: { sessionTimers, maxForwards, dtmfMode }
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_settings | Paramètres |
+| section_sip | Paramètres de connexion SIP |
+| field_server | Serveur SIP |
+| field_port | Port SIP |
+| field_protocol | Protocole transport |
+| field_username | Identifiant SIP |
+| field_password | Mot de passe |
+| field_realm | Realm |
+| link_show_password | Afficher |
+| section_codecs | Codecs audio |
+| codecs_note | Glisser-déposer pour réorganiser l'ordre de priorité |
+| codec_active | Actif |
+| codec_inactive | Inactif |
+| section_security | Sécurité |
+| option_tls | TLS (Transport Layer Security) |
+| option_srtp | SRTP (Secure RTP) |
+| option_ip_filter | Filtrage IP |
+| link_add_ip | Ajouter une IP autorisée |
+| section_advanced | Options avancées |
+| field_session_timers | Session Timers |
+| field_max_forwards | Max Forwards |
+| field_dtmf_mode | DTMF Mode |
+| btn_save | Enregistrer |
+| btn_cancel | Annuler |

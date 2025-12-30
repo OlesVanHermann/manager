@@ -1,0 +1,133 @@
+# Cahier des Charges : web-cloud/voip - Modal Forward Config
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Configurer le renvoi d'appel sur une ligne
+**Contexte:** Accessible depuis les actions rapides ou la gestion des appels
+
+## 2. DIMENSIONS
+
+- Modal: 550x480px
+
+## 3. HEADER MODAL (60px)
+
+- Background: #F9FAFB
+- Titre: "Configurer le renvoi d'appel" (16px, bold)
+- Bouton fermer: "x"
+
+## 4. CONTENU
+
+### Type de renvoi (radio cards - 3 options)
+
+| Option | Description | Dimensions |
+|--------|-------------|------------|
+| Inconditionnel | Tous les appels | 160x60px |
+| Occupation | Si ligne occupee | 160x60px |
+| Non-reponse | Apres X sonneries | 162x60px |
+
+Style sélection: #E8F0FE + bordure #0050D7
+Style non sélectionné: blanc + bordure #E5E7EB
+
+### Toggle Activation
+- Position: Droite du label "Activation"
+- Toggle: 50x24px
+- État actif: #DEF7EC avec cercle #059669
+- Badge: "Actif" (text-success)
+
+### Numéro de destination
+- Label: "Numero de destination *"
+- Input: 502x40px
+- Placeholder: "+33 6 XX XX XX XX"
+
+### Options (checkboxes)
+
+| Option | État par défaut |
+|--------|-----------------|
+| Conserver le numero presente d'origine | Non coché |
+| Notifier par email des appels renvoyes | Non coché |
+
+### Bannière info (502x45px)
+- Background: #DBEAFE
+- Texte ligne 1: "Le renvoi inconditionnel redirige tous les appels vers le numero de destination,"
+- Texte ligne 2: "la ligne ne sonnera pas."
+- Couleur texte: #1E40AF
+
+## 5. FOOTER MODAL
+
+- Séparateur: Ligne #E5E7EB
+- Position boutons: Gauche
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Enregistrer | btn-primary | 120x36px |
+| Annuler | btn-outline | 100x36px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Récupérer configuration renvoi actuelle
+GET /telephony/{billingAccount}/line/{serviceName}/forward
+→ {
+  unconditional: {
+    active: false,
+    destination: null
+  },
+  busy: {
+    active: true,
+    destination: "+33612345678"
+  },
+  noAnswer: {
+    active: false,
+    destination: null,
+    ringCount: 5
+  }
+}
+
+# Configurer le renvoi
+PUT /telephony/{billingAccount}/line/{serviceName}/forward
+Body: {
+  type: "unconditional",  // unconditional, busy, noAnswer
+  active: true,
+  destination: "+33612345678",
+  options: {
+    preserveCallerId: true,
+    emailNotification: false
+  }
+}
+→ {
+  type: "unconditional",
+  active: true,
+  destination: "+33612345678"
+}
+
+# Désactiver tous les renvois
+DELETE /telephony/{billingAccount}/line/{serviceName}/forward
+→ { success: true }
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Configurer le renvoi d'appel |
+| field_forward_type | Type de renvoi |
+| type_unconditional | Inconditionnel |
+| type_unconditional_desc | Tous les appels |
+| type_busy | Occupation |
+| type_busy_desc | Si ligne occupee |
+| type_no_answer | Non-reponse |
+| type_no_answer_desc | Apres X sonneries |
+| field_activation | Activation |
+| status_active | Actif |
+| status_inactive | Inactif |
+| field_destination | Numero de destination |
+| field_options | Options |
+| option_preserve_caller | Conserver le numero presente d'origine |
+| option_email_notify | Notifier par email des appels renvoyes |
+| info_unconditional_1 | Le renvoi inconditionnel redirige tous les appels vers le numero de destination, |
+| info_unconditional_2 | la ligne ne sonnera pas. |
+| btn_save | Enregistrer |
+| btn_cancel | Annuler |

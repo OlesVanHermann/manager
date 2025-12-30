@@ -1,0 +1,158 @@
+# Cahier des Charges : web-cloud/voip/number - Configuration
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration avec tableau
+**Fonction:** Configurer les agents d'une file d'appels
+**Contexte:** Onglet Configuration d'un numéro VoIP (file d'appels)
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | **Configuration** (actif) | Consommation | Statistiques
+
+### NAV4 Sub-tabs (File d'appels)
+**Agents** (actif) | Files | Planification | Options
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche numéros
+- Compteur: "2 numeros"
+- Liste des numéros
+
+### Panneau droit (1096px)
+- Header numéro avec badge
+- Tabs + sub-tabs
+- Toolbar avec bouton ajout
+- Tableau agents
+- Bannière info
+
+## 4. HEADER NUMÉRO
+
+- Numéro: "0033912345680"
+- Badge: "Actif" (vert)
+- Description: "Accueil principal / Configuration"
+
+## 5. TOOLBAR
+
+### Éléments
+- Bouton refresh (32x32px, outline)
+- Bouton "+ Ajouter un agent" (btn-primary, 186x32px)
+
+## 6. TABLEAU AGENTS (1036x450px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Agent | 230px | Nom + identifiant |
+| Ligne associee | 230px | Numéro |
+| Statut | 120px | Badge état |
+| Temps de sonnerie | 180px | Format Xs |
+| Files | 140px | Liste files |
+| Actions | 116px | Liens |
+
+### États agent
+
+| État | Couleur |
+|------|---------|
+| Disponible | #DEF7EC (vert) |
+| Pause | #FEF3C7 (jaune) |
+| Occupe | #DBEAFE (bleu) |
+| Hors ligne | #F3F4F6 (gris) |
+
+### Actions
+- Modifier
+- Supprimer (x)
+
+### Données exemple
+
+| Agent | Ligne | Statut | Temps sonnerie | Files |
+|-------|-------|--------|----------------|-------|
+| Agent 1 (Jean Dupont) | 0033912345678 | Disponible | 20 sec | File 1, File 2 |
+| Agent 2 (Marie Martin) | 0033912345679 | Disponible | 25 sec | File 1 |
+| Agent 3 (Pierre Durand) | 0033912345680 | Pause | 30 sec | File 2 |
+
+### Pagination
+- Format: "1 - 5 sur 5 agents"
+
+## 7. BANNIÈRE INFO (1036x45px)
+
+- Background: #DBEAFE (info)
+- Texte: "Les agents peuvent etre associes a plusieurs files. Modifiez le temps de sonnerie pour ajuster la distribution des appels."
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des agents de la file
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+→ [{
+  agentId: "agent-001",
+  name: "Agent 1",
+  displayName: "Jean Dupont",
+  number: "0033912345678",
+  status: "available",
+  ringTime: 20,
+  queues: ["queue-1", "queue-2"]
+}]
+
+# Ajouter un agent
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+Body: {
+  number: "0033912345678",
+  name: "Nouvel agent",
+  ringTime: 20,
+  queues: ["queue-1"]
+}
+
+# Modifier un agent
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+Body: {
+  name: "Nouveau nom",
+  ringTime: 25,
+  queues: ["queue-1", "queue-2"]
+}
+
+# Supprimer un agent
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+
+# Liste des files
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue
+→ [{
+  queueId: "queue-1",
+  name: "File 1",
+  strategy: "sequentiallyByAgentOrder"
+}]
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_configuration | Configuration |
+| subtab_agents | Agents |
+| subtab_queues | Files |
+| subtab_schedule | Planification |
+| subtab_options | Options |
+| btn_add_agent | Ajouter un agent |
+| col_agent | Agent |
+| col_line | Ligne associee |
+| col_status | Statut |
+| col_ring_time | Temps de sonnerie |
+| col_queues | Files |
+| col_actions | Actions |
+| status_available | Disponible |
+| status_pause | Pause |
+| status_busy | Occupe |
+| status_offline | Hors ligne |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| info_banner | Les agents peuvent etre associes a plusieurs files. Modifiez le temps de sonnerie pour ajuster la distribution des appels. |
+| pagination | {start} - {end} sur {total} agents |

@@ -1,0 +1,145 @@
+# Cahier des Charges : network/security - Scrubbing Events
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec filtres
+**Fonction:** Afficher les événements de mitigation DDoS
+**Contexte:** Page du Scrubbing Center OVHcloud
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+OVHcloud (logo)
+
+## 3. LAYOUT
+
+- Background page: #F9FAFB
+- Dimensions: 1200x600px
+
+## 4. HEADER PAGE
+
+### Titre
+"Scrubbing Center - Evenements" (22px, bold)
+
+### Sous-titre
+"Liste des evenements de mitigation DDoS" (13px, muted)
+
+## 5. BARRE DE FILTRES (1120x60px)
+
+- Background: Blanc
+- Border radius: 8px
+
+### Filtres
+
+| Filtre | Dimensions | Options/Placeholder |
+|--------|------------|---------------------|
+| Afficher | Select 200x32px | "Tous les services" |
+| Recherche IP | Input 250x32px | "🔍 Rechercher par IP..." |
+| Période | Select 140x32px | "24 heures" |
+
+### Options période
+- 1 heure
+- 6 heures
+- 24 heures
+- 7 jours
+- 30 jours
+
+## 6. DATAGRID (1120x350px)
+
+- Background: Blanc
+- Border radius: 8px
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Début détection | 200px | Date/heure début |
+| Fin | 200px | Date/heure fin |
+| IP cible | 200px | IP/CIDR attaquée |
+| Vecteurs d'attaque | 420px | Badge type attaque |
+| Actions | 60px | Menu ⋮ |
+
+### Types d'attaque (badges)
+- UDP Flood: #FEF3C7, texte #92400E
+- SYN Flood: #FEF3C7, texte #92400E
+- Amplification: #FEF3C7, texte #92400E
+- ICMP Flood: #FEF3C7, texte #92400E
+
+### Pagination
+- Format: "Affichage 1-4 sur 42 evenements"
+- Boutons: ◀ | 1 | 2 | ... | ▶
+- Page active: Background #0050D7, texte blanc
+
+## 7. APIS & ENDPOINTS
+
+```
+# Liste des événements de mitigation
+GET /ip/{ip}/antihack
+Query: {
+  period: "day",  // hour, day, week, month
+  service: "all",
+  searchIp: null,
+  limit: 10,
+  offset: 0
+}
+→ [{
+  eventId: "evt-123",
+  startDate: "2024-12-30T14:23:45",
+  endDate: "2024-12-30T14:45:12",
+  targetIp: "51.178.0.100/32",
+  vectors: ["udp_flood"],
+  status: "mitigated",
+  peakBandwidth: "2.5 Gbps"
+}]
+
+# Détails d'un événement
+GET /ip/{ip}/antihack/{eventId}
+→ {
+  eventId: "evt-123",
+  startDate: "2024-12-30T14:23:45",
+  endDate: "2024-12-30T14:45:12",
+  targetIp: "51.178.0.100/32",
+  vectors: ["udp_flood"],
+  peakBandwidth: "2.5 Gbps",
+  totalPackets: 15000000,
+  mitigatedPackets: 14850000,
+  passedPackets: 150000
+}
+
+# Services associés
+GET /ip
+Query: { type: "dedicated" }
+→ [{
+  ip: "51.178.0.0/24",
+  serviceName: "ns1234567.ip-51-178-0.eu"
+}]
+
+# Types d'attaques
+# udp_flood, syn_flood, icmp_flood, amplification, dns_amplification, ntp_amplification
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Scrubbing Center - Evenements |
+| page_subtitle | Liste des evenements de mitigation DDoS |
+| filter_show | Afficher |
+| filter_all_services | Tous les services |
+| filter_search | Rechercher par IP... |
+| filter_period | Période |
+| period_1h | 1 heure |
+| period_6h | 6 heures |
+| period_24h | 24 heures |
+| period_7d | 7 jours |
+| period_30d | 30 jours |
+| col_start | Début détection |
+| col_end | Fin |
+| col_target | IP cible |
+| col_vectors | Vecteurs d'attaque |
+| col_actions | Actions |
+| vector_udp_flood | UDP Flood |
+| vector_syn_flood | SYN Flood |
+| vector_icmp_flood | ICMP Flood |
+| vector_amplification | Amplification |
+| pagination | Affichage {start}-{end} sur {total} evenements |

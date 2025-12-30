@@ -1,0 +1,139 @@
+# Cahier des Charges : network/ip - Firewall Rules
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration avec datagrid
+**Fonction:** Gérer les règles du firewall IP
+**Contexte:** Configuration firewall d'une IP
+
+## 2. DIMENSIONS
+
+- Container: 1200x550px
+- Tableau: 1120x220px
+
+## 3. NAVIGATION
+
+### Bouton retour
+- Style: btn-outline (100x32px)
+- Label: "← IP"
+
+### Titre
+"Configuration du firewall" (20px, #1F2937, bold)
+
+### Dropdown
+"Guides ▼" (btn-outline, 100x32px)
+
+## 4. DESCRIPTION
+
+3 lignes d'explication (12px, muted) :
+- "La configuration permet d'activer ou de désactiver le firewall."
+- "Il est possible de configurer jusqu'à 20 règles."
+- "Chaque règle est évaluée séquentiellement. La dernière règle est un Deny All implicite."
+
+## 5. MESSAGE WARNING
+
+- Background: #FEF3C7
+- Border: 1px solid #FDE68A
+- Icon: Cercle orange avec "!"
+- Texte: "Une règle 'deny all' est absente. Cliquez [ici pour l'ajouter] automatiquement..."
+
+## 6. BARRE ACTIONS
+
+### Bouton ajouter
+- Label: "+ Ajouter une règle" (150x36px, btn-outline)
+
+### Toggle statut
+- Label: "Règles activées"
+- Switch: ON (#0050D7)
+
+## 7. TABLEAU RÈGLES
+
+### Colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| Position | 70px |
+| Mode | 90px |
+| Protocole | 110px |
+| IP source | 160px |
+| Port source | 120px |
+| Port dest. | 110px |
+| Options | 170px |
+| Statut | 150px |
+| Actions | 120px |
+
+### Données exemple
+
+| Position | Mode | Protocole | IP source | Port src | Port dest | Options | Statut |
+|----------|------|-----------|-----------|----------|-----------|---------|--------|
+| 0 | permit | TCP | any | any | 443 | established | Actif |
+| 1 | permit | TCP | any | any | 80 | - | Actif |
+| 2 | permit | TCP | 192.168.1.0/24 | any | 22 | - | Actif |
+| 19 | deny | any | any | any | any | - | Actif |
+
+### Badges statut
+- Actif: Background #DCFCE7, texte #16A34A
+
+### Actions
+- Icône: 🗑 (supprimer)
+
+## 8. PAGINATION
+
+"4 règles sur 20" (12px, muted)
+
+## 9. APIS & ENDPOINTS
+
+```
+# Liste règles firewall
+GET /ip/{ip}/firewall/{ipOnFirewall}/rules
+→ [{
+  position: 0,
+  action: "permit",
+  protocol: "tcp",
+  source: "any",
+  sourcePort: "any",
+  destinationPort: 443,
+  tcpOption: "established",
+  state: "ok"
+}]
+
+# Ajouter règle
+POST /ip/{ip}/firewall/{ipOnFirewall}/rules
+Body: {
+  action: "permit",
+  protocol: "tcp",
+  source: "any",
+  destinationPort: 443
+}
+
+# Supprimer règle
+DELETE /ip/{ip}/firewall/{ipOnFirewall}/rules/{sequence}
+
+# Activer/Désactiver firewall
+PUT /ip/{ip}/firewall/{ipOnFirewall}
+Body: { enabled: true }
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Configuration du firewall |
+| description_line1 | La configuration permet d'activer ou de désactiver le firewall |
+| description_line2 | Il est possible de configurer jusqu'à 20 règles |
+| description_line3 | Chaque règle est évaluée séquentiellement |
+| warning_deny_all | Une règle 'deny all' est absente |
+| click_to_add | ici pour l'ajouter |
+| btn_add_rule | Ajouter une règle |
+| rules_enabled | Règles activées |
+| col_position | Position |
+| col_mode | Mode |
+| col_protocol | Protocole |
+| col_source | IP source |
+| col_source_port | Port source |
+| col_dest_port | Port dest. |
+| col_options | Options |
+| col_status | Statut |
+| col_actions | Actions |
+| status_active | Actif |
+| rules_count | {count} règles sur {max} |

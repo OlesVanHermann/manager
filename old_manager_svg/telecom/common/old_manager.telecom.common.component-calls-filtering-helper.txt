@@ -1,0 +1,103 @@
+# Cahier des Charges : telecom/common - Calls Filtering Helper (Assistant)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal assistant
+**Fonction:** Configurer rapidement des filtres d'appel par type de numéro
+**Contexte:** Accessible via le bouton Assistant du formulaire de filtrage
+
+## 2. DIMENSIONS
+
+- Modal: 450x320px
+- Border radius: 8px
+
+## 3. HEADER MODAL
+
+- Bouton fermer: "×"
+- Titre: "Assistant de configuration" (16px, bold)
+
+## 4. FORMULAIRE
+
+### Champ Liste
+- Label: "Liste"
+- Select: 400x40px
+- Placeholder: "Choisir la liste de filtrage ..."
+
+### Dropdown ouvert (400x120px)
+| Option |
+|--------|
+| Appels entrants - Liste blanche |
+| Appels entrants - Liste noire |
+| Appels sortants - Liste blanche |
+| Appels sortants - Liste noire |
+
+Style sélection: Background #F3F4F6
+
+### Champ Type de numéro
+- Label: "Type de numéro"
+- Select: 400x40px
+- Exemple: "Mobiles nationaux"
+
+### Options Type de numéro
+- International
+- Mobiles nationaux
+- Fixes nationaux
+- Numéros premium
+- Numéros courts
+
+## 5. FOOTER MODAL
+
+### Bouton
+- Texte: "Appliquer"
+- Style: btn-outline (bordure grise)
+- Dimensions: 90x36px
+- Position: Droite
+
+## 6. COMPORTEMENT
+
+L'assistant ajoute automatiquement tous les patterns correspondant au type sélectionné dans la liste choisie.
+
+## 7. APIS & ENDPOINTS
+
+```
+# Ajouter filtres par type
+POST /telephony/{billingAccount}/line/{serviceName}/calls/filter/bulk
+Body: {
+  type: "incoming",
+  list: "blacklist",
+  numberType: "international"  // Ajoute patterns +1*, +7*, etc.
+}
+→ {
+  addedCount: 15,
+  patterns: ["+1*", "+7*", "+86*", ...]
+}
+
+# Patterns prédéfinis par type
+GET /telephony/calls/filter/patterns
+→ {
+  international: ["+1*", "+7*", "+86*", ...],
+  mobile: ["+336*", "+337*"],
+  landline: ["+331*", "+332*", ...],
+  premium: ["+338*", "+3310*"],
+  short: ["3*", "1*"]
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Assistant de configuration |
+| field_list | Liste |
+| placeholder_list | Choisir la liste de filtrage ... |
+| field_number_type | Type de numéro |
+| list_incoming_whitelist | Appels entrants - Liste blanche |
+| list_incoming_blacklist | Appels entrants - Liste noire |
+| list_outgoing_whitelist | Appels sortants - Liste blanche |
+| list_outgoing_blacklist | Appels sortants - Liste noire |
+| type_international | International |
+| type_mobile | Mobiles nationaux |
+| type_landline | Fixes nationaux |
+| type_premium | Numéros premium |
+| type_short | Numéros courts |
+| btn_apply | Appliquer |

@@ -1,0 +1,120 @@
+# Cahier des Charges : web-cloud/voip - Modal Fax Send
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire avec upload
+**Fonction:** Envoyer un fax depuis une ligne fax virtuelle
+**Contexte:** Accessible depuis le dashboard d'une ligne fax
+
+## 2. DIMENSIONS
+
+- Modal: 600x550px
+
+## 3. HEADER MODAL (60px)
+
+- Background: #F9FAFB
+- Titre: "Envoyer un fax" (16px, bold)
+- Bouton fermer: "x"
+
+## 4. CONTENU
+
+### Champ Destinataire
+- Label: "Numero de fax destinataire *"
+- Input: 552x40px
+- Placeholder: "+33 X XX XX XX XX"
+
+### Zone upload document
+- Label: "Document a envoyer *"
+- Zone: 552x100px
+- Style: Bordure pointillée #E5E7EB, background #F9FAFB
+- Contenu:
+  - "Glissez-deposez un fichier PDF"
+  - "ou"
+  - "Parcourir..." (lien primary)
+
+### Note formats
+- Texte: "Formats acceptes : PDF (max 10 Mo, max 50 pages)"
+- Style: text-muted, font-size 10px
+
+### Qualité d'envoi (radio cards)
+
+| Option | Description | Sélection |
+|--------|-------------|-----------|
+| Standard | Rapide, bon compromis | Par défaut (bleu) |
+| Haute definition | Plus lent, meilleure qualite | Non sélectionné |
+
+Dimensions cartes: 180x45px chacune
+
+### Page de garde (checkbox)
+- Label: "Inclure une page de garde"
+- État: Non coché par défaut
+
+### Champ Objet
+- Label: "Objet"
+- Input: 552x36px
+- Placeholder: "Objet du fax..."
+- Visible si page de garde cochée
+
+## 5. FOOTER MODAL
+
+- Séparateur: Ligne #E5E7EB
+- Position boutons: Gauche
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Envoyer | btn-primary | 120x36px |
+| Annuler | btn-outline | 100x36px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Envoyer un fax
+POST /telephony/{billingAccount}/fax/{serviceName}/send
+Body: FormData {
+  recipient: "+33123456789",
+  document: File (PDF),
+  quality: "standard",  // ou "high"
+  includeCoverPage: false,
+  subject: "Objet du fax"
+}
+→ {
+  faxId: "fax-12345",
+  status: "sending",
+  pageCount: 3
+}
+
+# Vérifier statut d'envoi
+GET /telephony/{billingAccount}/fax/{serviceName}/send/{faxId}
+→ {
+  faxId: "fax-12345",
+  status: "sent",  // pending, sending, sent, failed
+  sentAt: "2024-12-30T15:30:00",
+  pageCount: 3,
+  duration: 45
+}
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Envoyer un fax |
+| field_recipient | Numero de fax destinataire |
+| field_document | Document a envoyer |
+| upload_drag | Glissez-deposez un fichier PDF |
+| upload_or | ou |
+| upload_browse | Parcourir... |
+| note_formats | Formats acceptes : PDF (max 10 Mo, max 50 pages) |
+| field_quality | Qualite d'envoi |
+| quality_standard | Standard |
+| quality_standard_desc | Rapide, bon compromis |
+| quality_high | Haute definition |
+| quality_high_desc | Plus lent, meilleure qualite |
+| field_cover_page | Page de garde |
+| option_include_cover | Inclure une page de garde |
+| field_subject | Objet |
+| placeholder_subject | Objet du fax... |
+| btn_send | Envoyer |
+| btn_cancel | Annuler |

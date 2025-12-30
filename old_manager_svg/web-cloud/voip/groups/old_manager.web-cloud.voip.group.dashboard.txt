@@ -1,0 +1,130 @@
+# Cahier des Charges : web-cloud/voip/group - Dashboard
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec tuiles et datagrid
+**Fonction:** Vue d'ensemble du groupe téléphonique
+**Contexte:** Page principale de gestion du groupe VoIP
+
+## 2. NAVIGATION
+
+(Aucun - page principale)
+
+## 3. HEADER
+
+- Titre: "Groupe - {billingAccount}"
+- Exemple: "Groupe - ab12345-ovh-1"
+
+## 4. LAYOUT 3 COLONNES (Rangée 1)
+
+### Tuile Actions (380x300px)
+| Action | Badge | Navigation |
+|--------|-------|------------|
+| Commander un numéro | - | → order-numbers |
+| Portabilités en cours | 3 | → portability |
+| Nouvelle portabilité | - | → new-portability |
+| Convertir en VoiceFax | - | → convert-voicefax |
+
+Chaque item: 330x40px, border grise, chevron >
+
+### Tuile Informations (380x300px)
+| Champ | Valeur |
+|-------|--------|
+| Statut | Badge "Actif" (vert) |
+| Lignes | 12 |
+| Numéros | 8 |
+| Fax | 2 |
+
+### Tuile Consommation (380x300px)
+- Graphique camembert (placeholder)
+- Hors forfait actuel: 12,50 EUR HT (rouge)
+
+## 5. DATAGRID FACTURES (1200x280px)
+
+### Titre
+"Factures"
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date | 280px | Format DD/MM/YYYY |
+| Montant | 250px | En EUR HT |
+| Payée | 250px | Oui/Non |
+| Actions | 200px | Menu contextuel |
+
+### Données exemple
+
+| Date | Montant | Payée | Actions |
+|------|---------|-------|---------|
+| 01/12/2024 | 156,80 EUR HT | Oui | ... |
+| 01/11/2024 | 142,30 EUR HT | Oui | ... |
+| 01/10/2024 | 138,90 EUR HT | Oui | ... |
+
+### Menu contextuel (180x110px)
+- Télécharger PDF
+- Télécharger CSV (émis)
+- Télécharger CSV (reçus)
+
+## 6. STATUTS GROUPE
+
+| Statut | Couleur | Background |
+|--------|---------|------------|
+| Actif | #16A34A | #DCFCE7 |
+| Suspendu | #DC2626 | #FEE2E2 |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Informations du groupe
+GET /telephony/{billingAccount}
+→ { billingAccount, description, status }
+
+# Statistiques
+GET /telephony/{billingAccount}/statistics
+→ { linesCount: 12, numbersCount: 8, faxCount: 2 }
+
+# Consommation
+GET /telephony/{billingAccount}/credit
+→ { currentOutOfPlan: 12.50, currency: "EUR" }
+
+# Portabilités en cours
+GET /telephony/{billingAccount}/portability
+→ [{ id, status, ... }]
+
+# Factures
+GET /telephony/{billingAccount}/bill
+→ [{ date, amount, paid }]
+
+# Télécharger facture
+GET /telephony/{billingAccount}/bill/{billId}/document
+Params: { format: "pdf" | "csv-outgoing" | "csv-incoming" }
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Groupe - {billingAccount} |
+| tile_actions | Actions |
+| action_order_number | Commander un numéro |
+| action_portability | Portabilités en cours |
+| action_new_portability | Nouvelle portabilité |
+| action_convert | Convertir en VoiceFax |
+| tile_info | Informations |
+| field_status | Statut |
+| field_lines | Lignes |
+| field_numbers | Numéros |
+| field_fax | Fax |
+| tile_consumption | Consommation |
+| field_out_of_plan | Hors forfait actuel |
+| section_bills | Factures |
+| col_date | Date |
+| col_amount | Montant |
+| col_paid | Payée |
+| col_actions | Actions |
+| menu_download_pdf | Télécharger PDF |
+| menu_download_csv_out | Télécharger CSV (émis) |
+| menu_download_csv_in | Télécharger CSV (reçus) |
+| status_active | Actif |
+| status_suspended | Suspendu |

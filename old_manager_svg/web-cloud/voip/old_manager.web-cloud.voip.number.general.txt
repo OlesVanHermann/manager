@@ -1,0 +1,195 @@
+# Cahier des Charges : web-cloud/voip/number - General
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec cartes informatives
+**Fonction:** Vue générale d'un numéro (alias)
+**Contexte:** Page principale d'un numéro VoIP
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+**General** (actif) | Configuration | Consommation | Statistiques
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche numéros
+- Compteur: "2 numeros"
+- Liste des numéros avec type
+
+### Panneau droit (1096px)
+- Header numéro avec badge
+- Tabs navigation
+- Bannière info
+- Cartes informations/configuration
+- Section types configuration
+- Section actions
+
+## 4. LISTE NUMÉROS (panneau gauche)
+
+### Carte numéro sélectionné (268x65px)
+- Background: #E8F0FE
+- Numéro: "0033912345680"
+- Description: "Accueil principal"
+- Type: "File d'appels"
+
+### Carte numéro non sélectionné
+- Background blanc avec bordure
+- Mêmes informations
+
+## 5. HEADER NUMÉRO
+
+### Informations
+- Numéro: "0033912345680"
+- Badge: "Actif" (vert)
+- Description: "Accueil principal"
+
+## 6. BANNIÈRE INFO (1036x65px)
+
+- Background: #DBEAFE (info)
+- Titre: "Qu'est-ce qu'un numero (alias) ?"
+- Description: "Un numero est virtuel et ne dispose d'aucun forfait d'appel ni materiel. Il est souvent votre premier moyen de contact client."
+
+## 7. CARTE INFORMATIONS (505x220px)
+
+### Titre
+"Informations"
+
+### Champs
+
+| Champ | Valeur |
+|-------|--------|
+| Numero | +33 9 12 34 56 80 |
+| Pays / Code | France (+33) |
+| Description | Accueil principal |
+| Etat | Badge "Actif" (vert) |
+
+### Lien
+"Modifier les informations"
+
+## 8. CARTE CONFIGURATION ACTUELLE (511x220px)
+
+### Titre
+"Configuration actuelle"
+
+### Champs
+
+| Champ | Valeur |
+|-------|--------|
+| Type de configuration | File d'appels (bold) |
+| Agents configures | 5 agents |
+| Files actives | 2 files |
+
+### Liens
+- "Gerer les agents"
+- "Tableau de bord"
+- "Modifier le type du numero"
+
+## 9. SECTION TYPES CONFIGURATION
+
+### Titre
+"Types de configuration disponibles"
+
+### Cartes (4 cartes, ~250x120px)
+
+| Carte | Titre | Description | État |
+|-------|-------|-------------|------|
+| 1 | Redirection | Renvoi simple vers une ligne | Lien "Configurer" |
+| 2 | File d'appels | Contact Center Solution | Badge "Actif" (vert), bordure bleue |
+| 3 | Conference | Appels multi-participants | Lien "Configurer" |
+| 4 | SVI | Serveur Vocal Interactif | Lien "Configurer" |
+
+## 10. SECTION ACTIONS
+
+### Titre
+"Actions"
+
+### Cartes (2 cartes, 340x80px)
+
+| Carte | Titre | Description |
+|-------|-------|-------------|
+| 1 | Convertir en ligne | Transformer ce numero en ligne SIP |
+| 2 | Resilier | Resilier ce numero (carte rouge) |
+
+## 11. APIS & ENDPOINTS
+
+```
+# Informations numéro
+GET /telephony/{billingAccount}/number/{serviceName}
+→ {
+  serviceName: "0033912345680",
+  description: "Accueil principal",
+  country: "fr",
+  countryCode: "+33",
+  status: "active",
+  featureType: "easyHunting"
+}
+
+# Modifier informations
+PUT /telephony/{billingAccount}/number/{serviceName}
+Body: { description: "Nouveau nom" }
+
+# Configuration actuelle
+GET /telephony/{billingAccount}/number/{serviceName}/feature
+→ {
+  featureType: "easyHunting",
+  agentsCount: 5,
+  queuesCount: 2
+}
+
+# Changer type configuration
+PUT /telephony/{billingAccount}/number/{serviceName}/changeFeatureType
+Body: { featureType: "redirect" | "easyHunting" | "conference" | "svi" }
+
+# Convertir en ligne
+POST /telephony/{billingAccount}/number/{serviceName}/convertToLine
+
+# Résilier numéro
+DELETE /telephony/{billingAccount}/number/{serviceName}/terminate
+```
+
+## 12. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_general | General |
+| tab_config | Configuration |
+| tab_consumption | Consommation |
+| tab_stats | Statistiques |
+| banner_title | Qu'est-ce qu'un numero (alias) ? |
+| banner_desc | Un numero est virtuel et ne dispose d'aucun forfait d'appel ni materiel. Il est souvent votre premier moyen de contact client. |
+| card_info | Informations |
+| field_number | Numero |
+| field_country | Pays / Code |
+| field_description | Description |
+| field_status | Etat |
+| link_edit_info | Modifier les informations |
+| card_config | Configuration actuelle |
+| field_config_type | Type de configuration |
+| field_agents | Agents configures |
+| field_queues | Files actives |
+| link_manage_agents | Gerer les agents |
+| link_dashboard | Tableau de bord |
+| link_change_type | Modifier le type du numero |
+| section_types | Types de configuration disponibles |
+| type_redirect | Redirection |
+| type_redirect_desc | Renvoi simple vers une ligne |
+| type_queue | File d'appels |
+| type_queue_desc | Contact Center Solution |
+| type_conference | Conference |
+| type_conference_desc | Appels multi-participants |
+| type_svi | SVI |
+| type_svi_desc | Serveur Vocal Interactif |
+| link_configure | Configurer |
+| section_actions | Actions |
+| action_convert | Convertir en ligne |
+| action_convert_desc | Transformer ce numero en ligne SIP |
+| action_terminate | Resilier |
+| action_terminate_desc | Resilier ce numero |

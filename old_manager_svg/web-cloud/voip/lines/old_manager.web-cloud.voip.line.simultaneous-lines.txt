@@ -1,0 +1,128 @@
+# Cahier des Charges : web-cloud/voip/line - Simultaneous Lines
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec commande
+**Fonction:** Commander des lignes simultanées supplémentaires
+**Contexte:** Gestion de la capacité d'appels de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Retour
+< Appels
+
+## 3. HEADER
+
+- Titre: "Appels simultanés"
+
+## 4. BANNIÈRE COMMANDE EN COURS (600x70px)
+
+- Background: #FEF3C7
+- Border: #FDE68A
+- Texte ligne 1: "Une commande de lignes supplémentaires est en cours de traitement."
+- Texte ligne 2: "Date d'exécution prévue : 15/01/2025"
+
+## 5. FORMULAIRE PRINCIPAL (600x500px)
+
+### Nombre de lignes actuelles
+- Label: "Nombre de lignes simultanées"
+- Note: "(Inclus: 1 de base + 2 supplémentaires)"
+- Input: 80x45px (lecture seule)
+- Valeur: "3"
+
+### Nombre maximum
+- Label: "Nombre maximum de lignes"
+- Valeur: "10"
+
+### Lien bulk
+"Appliquer à plusieurs lignes..." (text-link)
+
+### Section prix
+- Séparateur horizontal
+
+| Ligne | Montant |
+|-------|---------|
+| Prix HT | 5,00 EUR |
+| TVA | 1,00 EUR |
+| Prix TTC | 6,00 EUR |
+
+- Montants en rouge (#DC2626)
+
+### Checkbox CGV
+- Case: Cochée (#0050D7)
+- Label: "J'accepte les conditions générales de vente"
+- Lien: "Consulter les CGV" (text-link)
+
+### Bouton commande
+"Commander 🛒" (btn-primary, 180x45px)
+
+## 6. PANNEAU INFO (400x300px)
+
+### Titre
+"Information"
+
+### Texte explicatif
+- "Les lignes simultanées permettent de recevoir plusieurs appels en même temps sur votre numéro."
+
+### Exemple
+- Avec 1 ligne : 1 appel à la fois
+- Avec 3 lignes : 3 appels simultanés
+- Les appels excédentaires sont renvoyés
+
+### Tarif
+- Label: "Tarif par ligne supplémentaire :"
+- Valeur: "5,00 EUR HT / mois"
+
+## 7. APIS & ENDPOINTS
+
+```
+# Configuration lignes simultanées
+GET /telephony/{billingAccount}/line/{serviceName}/simultaneousLines
+→ current: 3, max: 10, baseIncluded: 1, additional: 2, pendingOrder: {...}
+
+# Simuler commande
+POST /telephony/{billingAccount}/line/{serviceName}/simultaneousLines/simulate
+Body: { count: 5 }
+→ { priceHT, vatAmount, priceTTC }
+
+# Commander
+POST /telephony/{billingAccount}/line/{serviceName}/simultaneousLines/order
+Body: {
+  count: 5,
+  acceptCGV: true
+}
+
+# Appliquer à plusieurs lignes
+POST /telephony/{billingAccount}/line/batchSimultaneousLines
+Body: {
+  serviceNames: ["line1", "line2"],
+  count: 3
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Appels simultanés |
+| back_link | Appels |
+| pending_order | Une commande de lignes supplémentaires est en cours de traitement. |
+| pending_date | Date d'exécution prévue : {date} |
+| field_current | Nombre de lignes simultanées |
+| field_current_note | (Inclus: {base} de base + {additional} supplémentaires) |
+| field_max | Nombre maximum de lignes |
+| link_bulk | Appliquer à plusieurs lignes... |
+| price_ht | Prix HT |
+| price_vat | TVA |
+| price_ttc | Prix TTC |
+| checkbox_cgv | J'accepte les conditions générales de vente |
+| link_cgv | Consulter les CGV |
+| btn_order | Commander 🛒 |
+| panel_title | Information |
+| panel_info | Les lignes simultanées permettent de recevoir plusieurs appels en même temps sur votre numéro. |
+| example_title | Exemple : |
+| example_1 | Avec 1 ligne : 1 appel à la fois |
+| example_3 | Avec 3 lignes : 3 appels simultanés |
+| example_overflow | Les appels excédentaires sont renvoyés |
+| tariff_label | Tarif par ligne supplémentaire : |
+| tariff_value | {price} HT / mois |

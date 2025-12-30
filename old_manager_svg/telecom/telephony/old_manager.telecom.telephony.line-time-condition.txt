@@ -1,0 +1,165 @@
+# Cahier des Charges : telecom/telephony - Line Time Condition
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration avec calendrier
+**Fonction:** Configurer les plages horaires et redirections d'une ligne
+**Contexte:** Accessible depuis la gestion des appels d'une ligne
+
+## 2. NAVIGATION
+
+### Lien retour
+"← Gestion des appels" (text-primary)
+
+## 3. LAYOUT
+
+- Background page: #F9FAFB
+- Dimensions: 1100x700px
+- Titre: "Gérer les plages horaires" (22px, bold)
+
+## 4. BANNIÈRE INFO (1060x80px)
+
+- Background: #EFF6FF
+- Contenu:
+  - "Paramétrez les créneaux de disponibilité de votre ligne et définissez les renvois à faire durant vos indisponibilités."
+  - "Vous pouvez paramétrer vos jours de fermeture exceptionnelle sur cette page."
+- Lien: "Besoin d'aide ?" (text-primary)
+
+## 5. SECTION CONFIGURATION GÉNÉRALE (520x180px)
+
+### Titre
+"Configuration générale" (14px, bold)
+
+### Toggle activation
+- Label: "Activer la redirection de vos appels en fonction de la plage horaire"
+- Boutons: "Oui" (sélectionné, primary) | "Non"
+- Dimensions boutons: 50x28px
+
+### Délai timeout
+- Label: "Délai avant le renvoi en \"hors plage horaire\""
+- Select: 150x32px
+- Valeur: "30 secondes ▼"
+
+## 6. SECTION CONFIGURATION REDIRECTIONS (520x180px)
+
+### Titre
+"Configuration des redirections" (14px, bold)
+
+### Créneaux (2x2 grille)
+
+| Créneau | Couleur | Destination | Config |
+|---------|---------|-------------|--------|
+| Disponible | #28A745 (vert) | +33 9 72 10 00 00 | ⚙ |
+| Indisponible | #DC3545 (rouge) | Messagerie | ⚙ |
+| Créneau 1 | #007BFF (bleu) | Non configuré | ⚙ |
+| Créneau 2 | #FFC107 (jaune) | Non configuré | ⚙ |
+
+Chaque créneau: 160x40px avec icône config 24x24px
+
+## 7. SECTION PLAGES HORAIRES (1060x45px)
+
+### Header
+- Titre: "Configuration des plages horaires" (14px, bold)
+- Lien: "Appliquer à plusieurs lignes" (text-primary)
+- Menu: "☰ Actions ▼" (100x30px)
+
+## 8. CALENDRIER SEMAINE (1060x220px)
+
+### Header jours
+| Jour | Largeur |
+|------|---------|
+| Lundi | 140px |
+| Mardi | 140px |
+| Mercredi | 140px |
+| Jeudi | 140px |
+| Vendredi | 140px |
+
+### Axe heures (gauche)
+- 09:00, 12:00, 14:00, 18:00
+
+### Plages colorées
+- Créneau 1: Bande bleue (opacity 0.3)
+- Créneau 2: Bande jaune (opacity 0.3)
+- Indisponible: Bande rouge (opacity 0.3)
+
+### Légende (droite)
+- Créneau 1 (bleu)
+- Créneau 2 (jaune)
+- Indisponible (rouge)
+
+## 9. FOOTER (1100x45px)
+
+- Background: #1F2937
+- Texte: "Sauvegarder la configuration de vos plages horaires ?" (blanc, bold)
+- Bouton Valider: 80x30px (primary)
+- Bouton Annuler: 80x30px (outline blanc)
+
+## 10. APIS & ENDPOINTS
+
+```
+# Configuration actuelle
+GET /telephony/{billingAccount}/line/{serviceName}/timeCondition
+→ {
+  enabled: true,
+  timeout: 30,
+  slots: [
+    { id: "available", type: "available", destination: "+33972100000" },
+    { id: "unavailable", type: "unavailable", destination: "voicemail" },
+    { id: "slot1", type: "slot", destination: null },
+    { id: "slot2", type: "slot", destination: null }
+  ],
+  schedule: {
+    monday: [{ start: "09:00", end: "12:00", slot: "slot1" }, { start: "14:00", end: "18:00", slot: "slot2" }],
+    tuesday: [...],
+    ...
+  }
+}
+
+# Sauvegarder configuration
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition
+Body: {
+  enabled: true,
+  timeout: 30,
+  slots: [...],
+  schedule: {...}
+}
+
+# Configurer un créneau
+PUT /telephony/{billingAccount}/line/{serviceName}/timeCondition/slot/{slotId}
+Body: {
+  destination: "+33612345678",
+  type: "number"  // number, voicemail, redirect
+}
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| link_back | Gestion des appels |
+| page_title | Gérer les plages horaires |
+| info_line_1 | Paramétrez les créneaux de disponibilité de votre ligne et définissez les renvois à faire durant vos indisponibilités. |
+| info_line_2 | Vous pouvez paramétrer vos jours de fermeture exceptionnelle sur cette page. |
+| link_help | Besoin d'aide ? |
+| section_general | Configuration générale |
+| toggle_enable | Activer la redirection de vos appels en fonction de la plage horaire |
+| btn_yes | Oui |
+| btn_no | Non |
+| field_timeout | Délai avant le renvoi en "hors plage horaire" |
+| section_redirects | Configuration des redirections |
+| slot_available | Disponible |
+| slot_unavailable | Indisponible |
+| slot_1 | Créneau 1 |
+| slot_2 | Créneau 2 |
+| not_configured | Non configuré |
+| section_schedule | Configuration des plages horaires |
+| link_bulk | Appliquer à plusieurs lignes |
+| btn_actions | Actions |
+| day_monday | Lundi |
+| day_tuesday | Mardi |
+| day_wednesday | Mercredi |
+| day_thursday | Jeudi |
+| day_friday | Vendredi |
+| footer_message | Sauvegarder la configuration de vos plages horaires ? |
+| btn_save | Valider |
+| btn_cancel | Annuler |

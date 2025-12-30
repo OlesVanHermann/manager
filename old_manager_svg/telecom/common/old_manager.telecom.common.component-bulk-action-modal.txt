@@ -1,0 +1,100 @@
+# Cahier des Charges : telecom/common - Bulk Action Modal
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal de sélection multiple
+**Fonction:** Sélectionner plusieurs services pour appliquer une action en masse
+**Contexte:** Composant réutilisable pour les actions bulk dans la téléphonie
+
+## 2. DIMENSIONS
+
+- Modal: 550x520px
+- Border radius: 8px
+
+## 3. HEADER MODAL
+
+- Bouton fermer: "×"
+- Titre: "Appliquer à plusieurs lignes" (16px, bold)
+
+## 4. CONTENU
+
+### Description
+- Ligne 1: "Choisissez les services auxquels appliquer les changements."
+- Ligne 2: "Cette action remplacera toute configuration existante."
+
+### Filtres (ligne)
+| Filtre | Dimensions | Placeholder |
+|--------|------------|-------------|
+| Groupe | 240x38px | "Tous les groupes" |
+| Recherche | 240x38px | "🔍 Rechercher" |
+
+### Sélection
+- Lien: "Tout sélectionner" (text-primary)
+- Compteur: "X services sélectionnés" (text-muted, aligné droite)
+
+### Liste services (500x250px)
+- Bordure: #E5E7EB
+- Scroll vertical si nécessaire
+
+### Carte service (490x55px)
+- Checkbox: 18x18px (checked = #0050D7 avec ✓ blanc)
+- Nom service: "Ligne Bureau - 0033972100001" (12px, bold)
+- Type: "Ligne SIP" (10px, muted)
+- Background sélectionné: #F9FAFB
+
+### Types de services
+- Ligne SIP
+- FAX
+- Numéro
+
+## 5. FOOTER MODAL
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 90x36px |
+| Valider | btn-primary | 90x36px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Liste des services du compte
+GET /telephony/{billingAccount}/service
+Query: { groupName, search }
+→ [{
+  serviceName: "0033972100001",
+  description: "Ligne Bureau",
+  type: "line",
+  groupName: "Principal"
+}]
+
+# Appliquer action en masse
+POST /telephony/{billingAccount}/bulk/{action}
+Body: {
+  services: ["0033972100001", "0033972100002"],
+  configuration: { ... }
+}
+→ {
+  taskId: "bulk-123",
+  status: "processing",
+  servicesCount: 3
+}
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Appliquer à plusieurs lignes |
+| description_1 | Choisissez les services auxquels appliquer les changements. |
+| description_2 | Cette action remplacera toute configuration existante. |
+| filter_group | Tous les groupes |
+| search_placeholder | Rechercher |
+| select_all | Tout sélectionner |
+| count_selected | {count} services sélectionnés |
+| type_line | Ligne SIP |
+| type_fax | FAX |
+| type_number | Numéro |
+| btn_cancel | Annuler |
+| btn_confirm | Valider |

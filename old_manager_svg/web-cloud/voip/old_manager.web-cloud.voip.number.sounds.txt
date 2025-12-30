@@ -1,0 +1,159 @@
+# Cahier des Charges : web-cloud/voip/number - Sounds (Sons)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid
+**Fonction:** Gérer les fichiers audio d'un numéro
+**Contexte:** Onglet Sons d'un numéro VoIP
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Configuration | Agents | Statistiques | **Sons** (actif) | Horaires
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche numéros
+- Liste des numéros
+
+### Panneau droit (1096px)
+- Header numéro avec badge
+- Tabs navigation
+- Bannière info
+- Toolbar avec recherche et bouton upload
+- Tableau sons
+
+## 4. HEADER NUMÉRO
+
+- Numéro: "+33 800 123 456"
+- Badge: "easyHunting" (vert)
+- Description: "Numero vert / Sons"
+
+## 5. BANNIÈRE INFO (1036x40px)
+
+- Background: #DBEAFE (info)
+- Texte: "Les fichiers audio sont utilises pour l'accueil, l'attente et les annonces de votre numero."
+
+## 6. TOOLBAR
+
+### Éléments
+- Bouton refresh (32x32px, outline)
+- Champ recherche "Rechercher un son..." (180x32px)
+- Bouton "+ Ajouter un son" (btn-primary, 136x32px)
+
+## 7. TABLEAU SONS (1036x500px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Nom | 280px | Nom du fichier |
+| Type | 150px | Badge type |
+| Duree | 100px | Format M:SS |
+| Taille | 100px | Format X.X MB |
+| Utilise dans | 200px | Usage |
+| Actions | 156px | Liens |
+
+### Types de son
+
+| Type | Couleur |
+|------|---------|
+| Accueil | #DEF7EC (vert) |
+| Attente | #DBEAFE (bleu) |
+| Fermeture | #FEF3C7 (jaune) |
+| SVI | #F3E8FF (violet) |
+| Annonce | #E5E7EB (gris) |
+
+### Actions
+- Play (écouter)
+- DL (télécharger)
+- Edit (modifier)
+- Supprimer (x)
+
+### Données exemple
+
+| Nom | Type | Duree | Taille | Utilise dans |
+|-----|------|-------|--------|--------------|
+| accueil_principal.wav | Accueil | 0:42 | 1.2 MB | Accueil principal |
+| attente_musique.wav | Attente | 3:15 | 4.8 MB | Musique d'attente |
+| fermeture_horaires.wav | Fermeture | 0:28 | 0.8 MB | Horaires fermes |
+| menu_svi.wav | SVI | 1:05 | 1.5 MB | Menu principal SVI |
+| file_attente_position.wav | Attente | 0:15 | 0.4 MB | Annonce position file |
+
+### Pagination
+- Format: "5 sons sur 12"
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des sons
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/sound
+Query: { limit, offset }
+→ [{
+  soundId: "sound-001",
+  name: "accueil_principal.wav",
+  type: "welcome",
+  duration: 42,
+  size: 1258291,
+  usedIn: "Accueil principal"
+}]
+
+# Uploader un son
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/sound
+Content-Type: multipart/form-data
+Body: {
+  file: <binary>,
+  name: "nouveau_son.wav",
+  type: "welcome"
+}
+
+# Télécharger un son
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/sound/{soundId}/download
+→ Audio file
+
+# Modifier un son
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/sound/{soundId}
+Body: {
+  name: "nouveau_nom.wav",
+  type: "hold"
+}
+
+# Supprimer un son
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/sound/{soundId}
+
+# Écouter un son (stream)
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/sound/{soundId}/stream
+→ Audio stream
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_sounds | Sons |
+| banner_sounds | Les fichiers audio sont utilises pour l'accueil, l'attente et les annonces de votre numero. |
+| btn_add_sound | Ajouter un son |
+| search_sound | Rechercher un son... |
+| col_name | Nom |
+| col_type | Type |
+| col_duration | Duree |
+| col_size | Taille |
+| col_used_in | Utilise dans |
+| col_actions | Actions |
+| type_welcome | Accueil |
+| type_hold | Attente |
+| type_closed | Fermeture |
+| type_svi | SVI |
+| type_announce | Annonce |
+| action_play | Play |
+| action_download | DL |
+| action_edit | Edit |
+| action_delete | Supprimer |
+| pagination | {count} sons sur {total} |

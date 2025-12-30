@@ -1,89 +1,118 @@
-# Cahier des Charges : network/load-balancer - Onglet vRack
+# Cahier des Charges : network/load-balancer - Tab vRack
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Configuration vRack
-- **URL** : /network/load-balancer/{serviceName}/vrack
-- **Objectif** : Gérer l'intégration réseau privé vRack
 
-## 2. STRUCTURE PAGE
-- Sidebar Network
-- Breadcrumb
-- Titre service
-- Onglets navigation
-- Message d'information
-- 2 cartes côte à côte
+**Type:** Onglet de configuration vRack
+**Fonction:** Gérer l'intégration du Load Balancer au réseau privé vRack
+**Contexte:** Dashboard LB > Onglet "vRack"
 
-## 3. COMPOSANTS UI
-- **OdsBreadcrumb** : Navigation
-- **OdsTabs** : Onglets avec vRack actif
-- **OdsMessage** : Information vRack (info)
-- **OdsCard** : Association vRack
-- **OdsCard** : Serveurs réseau privé
-- **OdsBadge** : Statuts (Connecté, OK)
-- **OdsButton** : "Modifier l'association" (outline)
+## 2. NAVIGATION
 
-## 4. MESSAGE INFORMATION
-| Propriété | Valeur |
-|-----------|--------|
-| Type | Info (bleu) |
-| Fond | #E8F0FE |
-| Bordure | #0050D7 |
-| Icône | ℹ️ |
-| Texte L1 | "L'intégration vRack vous permet de connecter votre Load Balancer à votre réseau privé." |
-| Texte L2 | "Les fermes de serveurs peuvent ainsi communiquer via des adresses IP privées." |
+### Onglets
+| Onglet | État |
+|--------|------|
+| Accueil | Inactif |
+| Fermes de serveurs | Inactif |
+| Frontends | Inactif |
+| Certificats SSL | Inactif |
+| Tâches | Inactif |
+| Graphiques | Inactif |
+| vRack | Actif (#0050D7 avec underline) |
 
-## 5. CARTE ASSOCIATION VRACK
-| Champ | Valeur | Style |
-|-------|--------|-------|
-| Statut | Connecté | Badge vert |
-| vRack | pn-123456 | Lien bleu |
-| Réseau privé | 10.0.0.0/24 | Text |
-| IP privée LB | 10.0.0.10 | Text |
-| Bouton | "Modifier l'association" | Outline |
+## 3. INFO BOX
 
-### Dimensions carte
-- Largeur : 500px
-- Hauteur : 300px
+### Container
+- Dimensions: 1100x80px
+- Background: #E8F0FE
+- Border: #0050D7
+- Border-radius: 4px
 
-## 6. CARTE SERVEURS RÉSEAU PRIVÉ
-| Élément | Contenu |
-|---------|---------|
-| Titre | "Serveurs dans le réseau privé" |
-| Format serveur | Nom + IP + Badge status |
-| Compteur | "3 serveurs connectés via le réseau privé" |
+### Contenu
+- Icône info (ℹ️)
+- Texte ligne 1: "L'intégration vRack vous permet de connecter votre Load Balancer à votre réseau privé."
+- Texte ligne 2: "Les fermes de serveurs peuvent ainsi communiquer via des adresses IP privées."
+- Couleur texte: #0050D7
 
-### Liste serveurs exemple
-| Nom | IP | Statut |
-|-----|-----|--------|
-| web-server-01 | 10.0.0.11 | OK (vert) |
-| web-server-02 | 10.0.0.12 | OK (vert) |
-| api-server-01 | 10.0.0.21 | OK (vert) |
+## 4. CARTE - ASSOCIATION vRACK
 
-### Dimensions carte
-- Largeur : 560px
-- Hauteur : 300px
+### Container
+- Dimensions: 500x300px
+- Background: white
+- Border: #E5E7EB
+- Border-radius: 8px
 
-## 7. ITEM SERVEUR
-| Propriété | Valeur |
-|-----------|--------|
-| Conteneur | Rectangle arrondi 4px |
-| Fond | #F9FAFB |
-| Bordure | #E5E7EB |
-| Hauteur | 50px |
+### Titre
+- "Association vRack" (16px, font-weight: 600)
 
-## 8. STATUTS CONNEXION
-| Statut | Badge |
-|--------|-------|
-| Connecté | Vert (success) |
-| Déconnecté | Gris (neutral) |
-| En attente | Jaune (warning) |
-| OK | Vert (success) |
+### Champs affichés
+| Label | Valeur |
+|-------|--------|
+| Statut | Badge "Connecté" (vert) |
+| vRack | pn-XXXXXX (link bleu) |
+| Réseau privé | 10.0.0.0/24 |
+| IP privée LB | 10.0.0.10 |
 
-## 9. APIS & ENDPOINTS
-- GET /ipLoadbalancing/{serviceName}/vrack/status - Statut vRack
-- GET /ipLoadbalancing/{serviceName}/vrack/network - Réseau privé
-- GET /ipLoadbalancing/{serviceName}/vrack/networkCreationRules - Règles création
-- POST /ipLoadbalancing/{serviceName}/vrack/network - Créer réseau
-- DELETE /ipLoadbalancing/{serviceName}/vrack/network/{vrackNetworkId} - Supprimer
+### Badge Statut
+- Background: #DEF7EC
+- Text: #03543F
+- Border-radius: 12px
 
+### Bouton
+- "Modifier l'association" (btn-outline, 180x36px)
+- Position: Bas de la carte
 
+## 5. CARTE - SERVEURS RÉSEAU PRIVÉ
+
+### Container
+- Dimensions: 560x300px
+- Background: white
+- Border: #E5E7EB
+- Border-radius: 8px
+
+### Titre
+- "Serveurs dans le réseau privé" (16px, font-weight: 600)
+
+### Liste des serveurs
+Chaque serveur dans une sous-carte:
+- Background: #F9FAFB
+- Border: #E5E7EB
+- Dimensions: 520x50px
+
+| Champ | Position |
+|-------|----------|
+| Nom serveur | Gauche, bold |
+| IP privée | Gauche, sous le nom, muted |
+| Badge statut | Droite |
+
+### Compteur
+- "X serveurs connectés via le réseau privé"
+- Position: Bas de la carte
+
+## 6. APIS & ENDPOINTS
+
+```
+GET /ipLoadbalancing/{serviceName}/vrack/status
+GET /ipLoadbalancing/{serviceName}/vrack/network
+GET /ipLoadbalancing/{serviceName}/vrack/networkCreationRules
+POST /ipLoadbalancing/{serviceName}/vrack/network
+DELETE /ipLoadbalancing/{serviceName}/vrack/network/{vrackNetworkId}
+```
+
+## 7. TRADUCTIONS (i18n)
+
+```json
+{
+  "vrack_tab": "vRack",
+  "vrack_info_line1": "L'intégration vRack vous permet de connecter votre Load Balancer à votre réseau privé.",
+  "vrack_info_line2": "Les fermes de serveurs peuvent ainsi communiquer via des adresses IP privées.",
+  "vrack_association": "Association vRack",
+  "status": "Statut",
+  "connected": "Connecté",
+  "vrack": "vRack",
+  "private_network": "Réseau privé",
+  "lb_private_ip": "IP privée LB",
+  "modify_association": "Modifier l'association",
+  "servers_private_network": "Serveurs dans le réseau privé",
+  "servers_connected_count": "{count} serveurs connectés via le réseau privé"
+}
+```

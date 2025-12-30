@@ -1,0 +1,146 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Queues OvhPabx
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page accordéon avec configuration
+**Fonction:** Gérer les files d'appels du PABX OVH (SVI)
+**Contexte:** Configuration SVI du numéro alias
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Gérer les files d'appels
+
+### Retour
+← Configuration
+
+## 3. HEADER
+
+- Titre: "Gérer les files d'appels"
+- Bouton guides: dropdown "Guides ▼"
+
+## 4. SECTION PRINCIPALE (1100x660px)
+
+### Titre section
+"Files d'appels"
+
+### Bouton ajout
+- "+ Ajouter une file" (btn-primary, 180x40px)
+
+## 5. ACCORDÉON FILE D'APPELS
+
+### Structure accordéon (1060x420px déplié)
+
+#### Header accordéon (50px hauteur)
+- Background: #F3F4F6
+- Nom file: "File Commercial" (font-weight 600)
+- Chevron: ▲ (déplié) / ▼ (replié)
+
+#### Contenu déplié
+
+##### Section Options
+- Titre: "Options"
+- Bouton: "Gérer les options" (btn-outline, 140x36px)
+
+##### Affichage options (2 lignes de 4 colonnes)
+
+| Label | Valeur exemple |
+|-------|----------------|
+| Stratégie | Du plus disponible au moins disponible |
+| Suivre les renvois d'appels | Oui |
+| Appelants max en attente | 10 |
+| Temps d'attente max | 300 secondes |
+| Musique d'attente | attente_commercial.mp3 |
+| Annonce sur débordement | debordement.mp3 |
+
+##### Séparateur
+- Line: #E5E7EB, 1px
+
+##### Section Agents membres
+- Titre: "Agents membres de la file"
+- Bouton: "Ajouter un membre" (btn-outline, 120x30px)
+
+##### Liste agents (1020x100px)
+
+| Numéro | Description | Action |
+|--------|-------------|--------|
+| +33 1 23 45 67 89 | Agent Commercial 1 | Retirer |
+| +33 7 55 44 33 22 | Agent Commercial 2 | Retirer |
+| +33 6 11 22 33 44 | Agent Commercial 3 | Retirer |
+
+##### Bouton suppression
+- "Supprimer la file" (btn-danger outline, 160x36px)
+- Position: bas droite
+
+## 6. FILES REPLIÉES
+
+### File repliée (1060x50px)
+- Background: #F3F4F6 opacity 0.5
+- Nom file visible
+- Chevron: ▼
+
+### Exemples files
+- File Support Technique
+- File Comptabilité
+
+## 7. STRATÉGIES DE DISTRIBUTION
+
+| Stratégie | Code API |
+|-----------|----------|
+| Du plus disponible au moins disponible | leastIdleSinceLastCall |
+| Séquentiel | sequentiallyByAgentOrder |
+| Aléatoire | random |
+| Tous en même temps | ringAll |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Lister les files
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue
+→ Liste des IDs files
+
+# Détails file
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}
+→ name, strategy, maxWaitTime, maxMember, soundOnHold
+
+# Créer une file
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue
+Body: {
+  name: "File Commercial",
+  strategy: "leastIdleSinceLastCall",
+  maxWaitTime: 300,
+  maxMember: 10
+}
+
+# Modifier une file
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}
+Body: { strategy: "random", maxWaitTime: 600 }
+
+# Supprimer une file
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}
+
+# Agents de la file
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent/{agentId}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Gérer les files d'appels |
+| section_queues | Files d'appels |
+| btn_add_queue | + Ajouter une file |
+| section_options | Options |
+| btn_manage_options | Gérer les options |
+| label_strategy | Stratégie |
+| label_follow_forwards | Suivre les renvois d'appels |
+| label_max_callers | Appelants max en attente |
+| label_max_wait | Temps d'attente max |
+| label_hold_music | Musique d'attente |
+| label_overflow_sound | Annonce sur débordement |
+| section_agents | Agents membres de la file |
+| btn_add_member | Ajouter un membre |
+| link_remove | Retirer |
+| btn_delete_queue | Supprimer la file |

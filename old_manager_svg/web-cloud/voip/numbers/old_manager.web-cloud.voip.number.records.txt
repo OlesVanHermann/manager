@@ -1,0 +1,164 @@
+# Cahier des Charges : web-cloud/voip/number - Records
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration + liste avec sélection multiple
+**Fonction:** Gérer les enregistrements d'appels de la file d'attente
+**Contexte:** Activation et consultation des enregistrements
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro > Enregistrements
+
+## 3. HEADER
+
+- Titre: "Enregistrements"
+- Description: "Gérez les enregistrements d'appels de votre file d'attente"
+- Guide: "Consultez notre guide pour en savoir plus sur la gestion des enregistrements"
+
+## 4. SECTION ACTIVATION (800x200px)
+
+### Titre section
+"Activation des enregistrements" (souligné)
+
+### Activation (radio buttons)
+- Label: "Activation"
+- Options:
+  - (•) Activé (sélectionné, bleu)
+  - ( ) Désactivé
+- Note: "Les enregistrements seront stockés pendant 30 jours"
+
+### Désactivation par l'appelant (radio buttons)
+- Label: "Permettre la désactivation par l'appelant"
+- Options:
+  - ( ) Activé
+  - (•) Désactivé (sélectionné)
+
+### Bouton appliquer
+"Appliquer" (btn-primary, 100x36px)
+
+## 5. SECTION LISTE (900x300px)
+
+### Titre section
+"Liste des enregistrements" (souligné)
+
+### Barre d'actions
+- Dropdown: "Actions ▼" (120x36px)
+- Indicateur: "2 éléments sélectionnés"
+
+### Menu Actions (dropdown)
+- Télécharger
+- Supprimer
+
+## 6. DATAGRID ENREGISTREMENTS (900x255px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Checkbox | 35px | Sélection multiple |
+| Début appel | 165px | Date/heure début |
+| Fin appel | 160px | Date/heure fin |
+| Numéro appelant | 180px | Numéro de l'appelant |
+| Agent | 190px | Agent ayant répondu |
+| Actions | 70px | Menu ⋮ |
+
+### Données exemple
+
+| ☑ | Début appel | Fin appel | Numéro appelant | Agent | Actions |
+|---|-------------|-----------|-----------------|-------|---------|
+| ✓ | 30/12/2024 10:25 | 30/12/2024 10:32 | +33 6 12 34 56 78 | Agent 1 | ⋮ |
+| ✓ | 30/12/2024 09:15 | 30/12/2024 09:28 | +33 6 98 76 54 32 | Agent 2 | ⋮ |
+| ☐ | 29/12/2024 16:45 | 29/12/2024 16:52 | +33 1 23 45 67 89 | Agent 1 | ⋮ |
+| ☐ | 29/12/2024 14:30 | 29/12/2024 14:41 | +33 7 11 22 33 44 | Agent 3 | ⋮ |
+
+### États des lignes
+- Ligne sélectionnée: background #EFF6FF
+- Checkbox cochée: background #0050D7 avec ✓ blanc
+
+### Menu contextuel par ligne
+- Écouter
+- Télécharger
+- Supprimer
+
+### Pagination
+- Texte: "1-4 sur 24"
+- Navigation: < [1] [2] >
+
+## 7. RÉTENTION DES ENREGISTREMENTS
+
+| Durée | Description |
+|-------|-------------|
+| 30 jours | Durée de conservation standard |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Configuration des enregistrements
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/records/settings
+→ {
+  recordEnabled: true,
+  allowCallerDisable: false,
+  retentionDays: 30
+}
+
+# Modifier la configuration
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/records/settings
+Body: {
+  recordEnabled: true,
+  allowCallerDisable: true
+}
+
+# Liste des enregistrements
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/records
+→ [{
+  id: "rec-123",
+  callStart: "2024-12-30T10:25:00",
+  callEnd: "2024-12-30T10:32:00",
+  callerNumber: "+33612345678",
+  agent: "Agent 1",
+  duration: 420
+}]
+
+# Télécharger un enregistrement
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/records/{recordId}/download
+→ { url: "https://..." }
+
+# Supprimer un enregistrement
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/records/{recordId}
+
+# Actions groupées
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/records/batch
+Body: {
+  action: "delete",
+  recordIds: ["rec-123", "rec-124"]
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Enregistrements |
+| description | Gérez les enregistrements d'appels de votre file d'attente |
+| guide_link | Consultez notre guide pour en savoir plus sur la gestion des enregistrements |
+| section_activation | Activation des enregistrements |
+| field_activation | Activation |
+| option_enabled | Activé |
+| option_disabled | Désactivé |
+| note_retention | Les enregistrements seront stockés pendant 30 jours |
+| field_allow_disable | Permettre la désactivation par l'appelant |
+| btn_apply | Appliquer |
+| section_list | Liste des enregistrements |
+| btn_actions | Actions |
+| selected_count | {count} éléments sélectionnés |
+| col_call_start | Début appel |
+| col_call_end | Fin appel |
+| col_caller | Numéro appelant |
+| col_agent | Agent |
+| col_actions | Actions |
+| menu_listen | Écouter |
+| menu_download | Télécharger |
+| menu_delete | Supprimer |
+| pagination | {start}-{end} sur {total} |

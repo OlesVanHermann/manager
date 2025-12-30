@@ -1,0 +1,163 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Time Condition
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration avec créneaux visuels
+**Fonction:** Configurer les conditions temporelles de la file d'appels
+**Contexte:** Configuration easyHunting du numéro alias
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Plages horaires et fermetures
+
+## 3. HEADER
+
+- Titre: "Plages horaires et fermetures"
+- Sous-titre: "Configurez les conditions temporelles de votre **File d'appels**."
+
+## 4. ACTIVATION (toggle buttons)
+
+- Label: "Activation des plages horaires"
+- Toggle: "Activé" (sélectionné, btn-primary) | "Désactivé" (btn-outline)
+
+## 5. SECTION CRÉNEAUX (3 cartes, 250x120px)
+
+### Titre section
+"Configuration des créneaux"
+
+### Créneau 1 - Disponible
+- Background: #DCFCE7
+- Border: #16A34A, 2px
+- Titre: "Créneau 1: Disponible" (vert)
+- Action: "Faire sonner les lignes"
+- Horaires: "Tous les jours 08:00 - 12:00"
+- Lien: "Modifier →"
+
+### Créneau 2 - Indisponible
+- Background: #DBEAFE
+- Border: #0050D7, 2px
+- Titre: "Créneau 2: Indisponible" (bleu)
+- Action: "Messagerie vocale"
+- Horaires: "Tous les jours 12:00 - 14:00"
+- Lien: "Modifier →"
+
+### Créneau 3 - Fermé
+- Background: #FEF3C7
+- Border: #D97706, 2px
+- Titre: "Créneau 3: Fermé" (orange)
+- Action: "Jouer un son"
+- Horaires: "Week-ends et jours fériés"
+- Lien: "Modifier →"
+
+## 6. SECTION CONFIGURATION HORAIRE
+
+### Titre section
+"Configuration horaire"
+
+### Description
+"Définissez les plages horaires pour chaque créneau."
+
+### Boutons actions
+- Dropdown: "Actions ▼" (120x36px)
+  - Exporter la configuration
+  - Importer une configuration
+- Bouton: "Gérer les fermetures" (180x36px)
+
+## 7. APERÇU SEMAINE TYPE (800x200px)
+
+### Titre
+"Aperçu semaine type"
+
+### En-têtes jours
+Lun, Mar, Mer, Jeu, Ven, Sam, Dim
+
+### Labels horaires (colonne gauche)
+08h, 12h, 14h, 18h
+
+### Blocs visuels
+
+| Période | Lun-Ven | Sam-Dim |
+|---------|---------|---------|
+| 08h-12h | Vert (disponible) | Orange (fermé) |
+| 12h-14h | Bleu (indisponible) | Orange (fermé) |
+| 14h-18h | Vert (disponible) | Orange (fermé) |
+
+### Légende
+- ☐ Vert: "Disponible"
+- ☐ Bleu: "Indisponible"
+- ☐ Orange: "Fermé"
+
+## 8. TYPES DE CRÉNEAUX
+
+| Type | Code | Couleur | Action par défaut |
+|------|------|---------|-------------------|
+| Disponible | slot1 | #DCFCE7 | Faire sonner les lignes |
+| Indisponible | slot2 | #DBEAFE | Messagerie vocale |
+| Fermé | slot3 | #FEF3C7 | Jouer un son |
+
+## 9. APIS & ENDPOINTS
+
+```
+# Activation plages horaires
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions
+→ enabled: boolean
+
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions
+Body: { enabled: true }
+
+# Configuration créneaux
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions/{conditionId}
+→ slot, policy, timeFrom, timeTo, weekDay
+
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions
+Body: {
+  slot: "slot1",
+  policy: "available",
+  timeFrom: "0800",
+  timeTo: "1200",
+  weekDay: "monday"
+}
+
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions/{conditionId}
+Body: { timeFrom: "0900" }
+
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/conditions/{conditionId}
+
+# Export/Import
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/export
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/timeConditions/import
+Body: { configuration: "..." }
+
+# Fermetures exceptionnelles
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/exceptionalClosure
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/exceptionalClosure
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Plages horaires et fermetures |
+| page_desc | Configurez les conditions temporelles de votre File d'appels. |
+| field_activation | Activation des plages horaires |
+| btn_enabled | Activé |
+| btn_disabled | Désactivé |
+| section_slots | Configuration des créneaux |
+| slot_available | Disponible |
+| slot_unavailable | Indisponible |
+| slot_closed | Fermé |
+| action_ring | Faire sonner les lignes |
+| action_voicemail | Messagerie vocale |
+| action_sound | Jouer un son |
+| link_edit | Modifier → |
+| section_schedule | Configuration horaire |
+| schedule_desc | Définissez les plages horaires pour chaque créneau. |
+| dropdown_actions | Actions |
+| action_export | Exporter la configuration |
+| action_import | Importer une configuration |
+| btn_closures | Gérer les fermetures |
+| section_preview | Aperçu semaine type |
+| legend_available | Disponible |
+| legend_unavailable | Indisponible |
+| legend_closed | Fermé |

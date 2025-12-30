@@ -1,0 +1,154 @@
+# Cahier des Charges : web-cloud/voip/carrier-sip - CDR
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec statistiques et datagrid
+**Fonction:** Consulter les CDR (Call Detail Records) du trunk SIP
+**Contexte:** Analyse du trafic voix sur trunk Carrier SIP
+
+## 2. NAVIGATION
+
+### NAV1
+Web Cloud (actif)
+
+### NAV2
+VoIP (actif)
+
+### NAV3 Tabs
+General | Parametres | Routage | **CDR** (actif)
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche trunks
+- Liste des trunks SIP
+- Trunk sélectionné: trunk-abc123 (100 canaux)
+
+### Panneau droit (1096px)
+- Header avec nom trunk + badge statut
+- Tabs NAV3
+- Contenu CDR
+
+## 4. HEADER TRUNK
+
+- Nom: "trunk-abc123"
+- Badge: "Actif" (vert)
+- Description: "Trunk Principal"
+
+## 5. BARRE FILTRES
+
+### Filtres période
+- Date début (130x32px): "30/12/2025"
+- Date fin (130x32px): "30/12/2025"
+
+### Filtre direction
+- Select (100x32px): "Tous" / Entrant / Sortant
+
+### Bouton export
+- "Exporter CSV" (180x32px, btn-outline)
+
+## 6. CARTES STATISTIQUES (4 cartes, 250x70px)
+
+| Carte | Valeur | Style |
+|-------|--------|-------|
+| Total appels | 2,547 | text-dark |
+| Durée totale | 127h 23min | text-dark |
+| Appels réussis | 2,489 (97.7%) | text-success |
+| Appels échoués | 58 (2.3%) | text-error |
+
+## 7. DATAGRID CDR (1036x480px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date/Heure | 130px | Format DD/MM HH:mm:ss |
+| Direction | 80px | Entrant/Sortant |
+| Source | 150px | Numéro appelant |
+| Destination | 150px | Numéro appelé |
+| Durée | 90px | Format Xmin Xs |
+| Statut | 80px | Badge Réussi/Échoué |
+| Code SIP | 100px | Code réponse |
+| Gateway | 130px | Nom gateway |
+| Coût | 80px | Prix en EUR |
+
+### Données exemple
+
+| Date/Heure | Direction | Source | Destination | Durée | Statut | Code | Gateway | Coût |
+|------------|-----------|--------|-------------|-------|--------|------|---------|------|
+| 30/12 14:32:15 | Sortant | +33912345678 | +33687654321 | 4min 23s | Réussi | 200 OK | Mobile-01 | 0,52€ |
+| 30/12 14:28:42 | Entrant | +33145678901 | +33912345678 | 12min 07s | Réussi | 200 OK | Fixe-01 | - |
+
+### Statuts
+
+| Statut | Couleur |
+|--------|---------|
+| Réussi | #DEF7EC (vert) |
+| Échoué | #FEE2E2 (rouge) |
+
+### Pagination
+"Affichage 1-50 sur 2,547"
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des CDR
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/cdr
+Query: { dateFrom, dateTo, direction, limit, offset }
+→ [{
+  id: "cdr-123",
+  datetime: "2025-12-30T14:32:15",
+  direction: "outgoing",
+  source: "+33912345678",
+  destination: "+33687654321",
+  duration: 263,
+  status: "success",
+  sipCode: "200 OK",
+  gateway: "Mobile-01",
+  cost: 0.52
+}]
+
+# Export CSV
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/cdr/export
+Query: { dateFrom, dateTo, direction }
+→ CSV file
+
+# Statistiques CDR
+GET /telephony/{billingAccount}/carrierSip/{serviceName}/cdr/statistics
+Query: { dateFrom, dateTo }
+→ {
+  totalCalls: 2547,
+  totalDuration: 458580,
+  successCount: 2489,
+  failedCount: 58,
+  successRate: 97.7
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_cdr | CDR |
+| filter_period | Période |
+| filter_direction | Direction |
+| direction_all | Tous |
+| direction_incoming | Entrant |
+| direction_outgoing | Sortant |
+| btn_export | Exporter CSV |
+| stat_total_calls | Total appels |
+| stat_total_duration | Durée totale |
+| stat_success | Appels réussis |
+| stat_failed | Appels échoués |
+| col_datetime | Date/Heure |
+| col_direction | Direction |
+| col_source | Source |
+| col_destination | Destination |
+| col_duration | Durée |
+| col_status | Statut |
+| col_sip_code | Code SIP |
+| col_gateway | Gateway |
+| col_cost | Coût |
+| status_success | Réussi |
+| status_failed | Échoué |
+| pagination | Affichage {start}-{end} sur {total} |

@@ -1,0 +1,144 @@
+# Cahier des Charges : web-cloud/voip/alias - Portabilities
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page accordéon avec timeline verticale
+**Fonction:** Suivre les portabilités de numéros en cours
+**Contexte:** Administration du groupe VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Portabilités en cours
+
+### Retour
+← L'administration de groupe
+
+## 3. HEADER
+
+- Titre: "Portabilités en cours"
+- Lien guide: (i) "Guide des étapes"
+
+## 4. ACCORDÉON PORTABILITÉS
+
+### Item accordéon (800x50px replié)
+
+#### Header accordéon
+- Numéro: "+33 1 23 45 67 89" (font-weight 600)
+- État: "Formulaire validé" (text-muted)
+- Lien: "Détails"
+- Chevron: ▼ / ▲
+
+#### Badges états
+
+| État | Background | Couleur |
+|------|------------|---------|
+| En cours | - | text-muted |
+| ERR001 | #FEE2E2 | #DC2626 |
+| Terminé | #DCFCE7 | #16A34A |
+
+### Contenu déplié (800x480px)
+
+#### Informations
+| Label | Valeur |
+|-------|--------|
+| Opérateur | Orange |
+| Date de la demande | 15/12/2024 |
+| Date de portabilité souhaitée | 15/01/2025 |
+
+#### Bouton mandat
+- "Attacher mon mandat de portabilité signé" (btn-primary, 350x40px)
+
+#### Timeline verticale
+
+##### Étape 1 - Terminée
+- Cercle: vert avec ✓
+- Ligne: verte (connectée)
+- Titre: "Formulaire envoyé"
+- Date: "Effectué le 15/12/2024"
+
+##### Étape 2 - Terminée
+- Cercle: vert avec ✓
+- Ligne: verte (connectée)
+- Titre: "Formulaire reçu"
+- Date: "Effectué le 16/12/2024"
+
+##### Étape 3 - Terminée
+- Cercle: vert avec ✓
+- Ligne: grise (vers prochaine)
+- Titre: "Formulaire validé"
+- Date: "Effectué le 18/12/2024"
+
+##### Étape 4 - En cours
+- Cercle: bleu avec "4"
+- Ligne: grise (vers prochaine)
+- Titre: "Demande envoyée à l'opérateur"
+- Délai: "3 jours ouvrés"
+
+##### Étape 5 - À venir
+- Cercle: blanc, border grise avec "5"
+- Titre: "Accusé de l'opérateur reçu"
+- Style: text-muted
+
+#### Lien annulation
+"Annuler la portabilité ?" (text-link)
+
+## 5. ÉTAPES DE PORTABILITÉ
+
+| Étape | Code | Description |
+|-------|------|-------------|
+| 1 | formSent | Formulaire envoyé |
+| 2 | formReceived | Formulaire reçu par OVH |
+| 3 | formValidated | Formulaire validé |
+| 4 | sentToOperator | Demande envoyée à l'opérateur |
+| 5 | operatorAck | Accusé de l'opérateur reçu |
+| 6 | scheduled | Portabilité planifiée |
+| 7 | done | Numéro activé |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Lister les portabilités
+GET /telephony/{billingAccount}/portability
+→ Liste des IDs de portabilité
+
+# Détails portabilité
+GET /telephony/{billingAccount}/portability/{id}
+→ number, status, operator, requestDate, desiredDate, steps
+
+# Étapes de la portabilité
+GET /telephony/{billingAccount}/portability/{id}/steps
+→ Liste des étapes avec statuts et dates
+
+# Uploader le mandat
+POST /telephony/{billingAccount}/portability/{id}/document
+Body: { documentType: "mandate", file: ... }
+
+# Annuler la portabilité
+DELETE /telephony/{billingAccount}/portability/{id}
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Portabilités en cours |
+| link_guide | Guide des étapes |
+| link_details | Détails |
+| label_operator | Opérateur |
+| label_request_date | Date de la demande |
+| label_desired_date | Date de portabilité souhaitée |
+| btn_attach_mandate | Attacher mon mandat de portabilité signé |
+| section_progress | Progression |
+| step_form_sent | Formulaire envoyé |
+| step_form_received | Formulaire reçu |
+| step_form_validated | Formulaire validé |
+| step_sent_operator | Demande envoyée à l'opérateur |
+| step_operator_ack | Accusé de l'opérateur reçu |
+| step_scheduled | Portabilité planifiée |
+| step_done | Numéro activé |
+| done_on | Effectué le {date} |
+| business_days | {n} jours ouvrés |
+| link_cancel | Annuler la portabilité ? |
+| status_error | ERR001 |
+| status_done | Terminé |

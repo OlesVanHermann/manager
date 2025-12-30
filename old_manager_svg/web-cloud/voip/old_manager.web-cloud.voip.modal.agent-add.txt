@@ -1,0 +1,118 @@
+# Cahier des Charges : web-cloud/voip - Modal Agent Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter un agent à une file d'attente (easyHunting)
+**Contexte:** Accessible depuis la liste des agents d'un numéro
+
+## 2. DIMENSIONS
+
+- Modal: 550x480px
+
+## 3. HEADER MODAL (60px)
+
+- Background: #F9FAFB
+- Titre: "Ajouter un agent" (16px, bold)
+- Bouton fermer: "x"
+
+## 4. CONTENU
+
+### Type d'agent (radio cards)
+
+| Option | Description | Style |
+|--------|-------------|-------|
+| Ligne interne | Ligne SIP du groupe | Sélectionné: #E8F0FE + bordure #0050D7 |
+| Numero externe | Telephone fixe/mobile | Non sélectionné: blanc + bordure #E5E7EB |
+
+Dimensions cartes: 245x50px chacune
+
+### Champ Ligne (si type interne)
+- Label: "Ligne *"
+- Select: 502x40px
+- Placeholder: "Selectionnez une ligne..."
+- Background: #F9FAFB
+
+### Champ Nom de l'agent
+- Label: "Nom de l'agent"
+- Input: 502x40px
+- Placeholder: "Ex: Jean Dupont"
+
+### Champ Priorité
+- Label: "Priorite (1 = plus haute)"
+- Input numérique: 100x40px
+- Valeur par défaut: 1
+
+### Options (checkboxes)
+
+| Option | État par défaut |
+|--------|-----------------|
+| Actif immediatement | ✓ Coché (#0050D7) |
+| Recevoir les appels en debordement uniquement | Non coché |
+
+## 5. FOOTER MODAL
+
+- Séparateur: Ligne #E5E7EB
+- Position boutons: Gauche
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Ajouter | btn-primary | 120x36px |
+| Annuler | btn-outline | 100x36px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Liste des lignes disponibles (pour le select)
+GET /telephony/{billingAccount}/line
+→ [{
+  serviceName: "0033912345678",
+  description: "Ligne Accueil"
+}]
+
+# Ajouter un agent interne
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+Body: {
+  type: "internal",
+  lineServiceName: "0033912345678",
+  name: "Jean Dupont",
+  priority: 1,
+  active: true,
+  overflowOnly: false
+}
+→ { agentId: 123 }
+
+# Ajouter un agent externe
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+Body: {
+  type: "external",
+  externalNumber: "+33612345678",
+  name: "Jean Dupont",
+  priority: 1,
+  active: true,
+  overflowOnly: false
+}
+→ { agentId: 124 }
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un agent |
+| field_agent_type | Type d'agent |
+| type_internal | Ligne interne |
+| type_internal_desc | Ligne SIP du groupe |
+| type_external | Numero externe |
+| type_external_desc | Telephone fixe/mobile |
+| field_line | Ligne |
+| placeholder_select_line | Selectionnez une ligne... |
+| field_agent_name | Nom de l'agent |
+| placeholder_agent_name | Ex: Jean Dupont |
+| field_priority | Priorite (1 = plus haute) |
+| option_active | Actif immediatement |
+| option_overflow | Recevoir les appels en debordement uniquement |
+| btn_add | Ajouter |
+| btn_cancel | Annuler |

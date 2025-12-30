@@ -54,31 +54,31 @@ export function LocalSeoTab({ serviceName }: Props) {
         </div>
 
         {/* Promo banner */}
-        <div className="promo-card">
-          <div className="promo-content">
+        <div className="localseo-promo-card">
+          <div className="localseo-promo-content">
             <h4>{t("localSeo.promoTitle")}</h4>
             <p>{t("localSeo.promoDesc")}</p>
 
-            <div className="promo-features">
-              <div className="feature-item">
-                <span className="feature-icon">📍</span>
+            <div className="localseo-promo-features">
+              <div className="localseo-feature-item">
+                <span className="localseo-feature-icon">📍</span>
                 <span>{t("localSeo.feature1")}</span>
               </div>
-              <div className="feature-item">
-                <span className="feature-icon">🔄</span>
+              <div className="localseo-feature-item">
+                <span className="localseo-feature-icon">🔄</span>
                 <span>{t("localSeo.feature2")}</span>
               </div>
-              <div className="feature-item">
-                <span className="feature-icon">📊</span>
+              <div className="localseo-feature-item">
+                <span className="localseo-feature-icon">📊</span>
                 <span>{t("localSeo.feature3")}</span>
               </div>
-              <div className="feature-item">
-                <span className="feature-icon">⭐</span>
+              <div className="localseo-feature-item">
+                <span className="localseo-feature-icon">⭐</span>
                 <span>{t("localSeo.feature4")}</span>
               </div>
             </div>
 
-            <div className="promo-actions">
+            <div className="localseo-promo-actions">
               <button className="wh-localseo-btn-primary" onClick={handleOrder}>
                 {t("localSeo.order")}
               </button>
@@ -88,7 +88,7 @@ export function LocalSeoTab({ serviceName }: Props) {
             </div>
           </div>
 
-          <div className="promo-info">
+          <div className="localseo-promo-info">
             <h5>{t("localSeo.whatIs")}</h5>
             <p>{t("localSeo.explanation")}</p>
           </div>

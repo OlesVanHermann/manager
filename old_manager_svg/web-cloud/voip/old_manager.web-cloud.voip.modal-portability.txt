@@ -1,0 +1,162 @@
+# Cahier des Charges : web-cloud/voip - Modal Portability (Demande de portabilité)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal wizard multi-étapes
+**Fonction:** Effectuer une demande de portabilité de numéros vers OVHcloud
+**Contexte:** Accessible depuis le menu Actions du compte VoIP
+
+## 2. DIMENSIONS
+
+- Modal: 700x660px
+- Position: Centrée avec overlay sombre
+
+## 3. HEADER MODAL
+
+- Background: #F9FAFB
+- Hauteur: 60px
+- Titre: "Demande de portabilite" (20px, bold)
+- Bouton fermer: "x" (coin droit)
+
+## 4. STEPPER (4 étapes)
+
+### Position
+Centré horizontalement sous le header
+
+### Étapes
+
+| # | Label | Description |
+|---|-------|-------------|
+| 1 | Numeros | Saisie des numéros à porter |
+| 2 | Operateur | Informations opérateur actuel |
+| 3 | Documents | Upload des justificatifs |
+| 4 | Confirmation | Récapitulatif et validation |
+
+### Style stepper
+- Étape active: Cercle #0050D7, texte #0050D7 bold
+- Étape inactive: Cercle blanc bordure #E5E7EB, texte #6B7280
+- Ligne connexion: #E5E7EB (2px)
+
+## 5. ÉTAPE 1 : NUMÉROS
+
+### Titre section
+"Numeros a porter"
+
+### Description
+"Saisissez les numeros que vous souhaitez transferer chez OVHcloud"
+
+### Champ saisie numéro
+- Label: "Numero de telephone"
+- Input: 450x40px
+- Placeholder: "01 23 45 67 89"
+- Bouton: "+ Ajouter" (100x40px)
+
+### Liste numéros sélectionnés
+- Label: "Numeros selectionnes (X)"
+- Carte par numéro: 650x45px, background #F9FAFB
+- Bouton suppression: "x" rouge à droite
+
+### Type de portabilité (radio cards)
+
+| Option | Description | Dimensions |
+|--------|-------------|------------|
+| Portabilite simple | Conserve la ligne chez l'opérateur | 300x50px |
+| Portabilite avec resiliation | Résilie chez l'opérateur | 330x50px |
+
+- Sélection: Bordure #0050D7, background #EFF6FF
+- Non sélectionné: Bordure #E5E7EB
+
+### Date de portage
+- Label: "Date souhaitee de portage"
+- Input date: 250x40px
+- Note: "Delai minimum: 10 jours ouvrables"
+
+## 6. FOOTER MODAL
+
+### Séparateur
+Ligne #E5E7EB
+
+### Boutons (selon étape)
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 100x36px |
+| Precedent | btn-outline | (étapes 2-4) |
+| Suivant | btn-primary | 130x36px |
+| Confirmer | btn-primary | (étape 4) |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Vérifier éligibilité numéro
+POST /telephony/portability/check
+Body: { phoneNumber: "+33123456789" }
+→ {
+  eligible: true,
+  currentOperator: "Orange",
+  estimatedDate: "2024-02-15"
+}
+
+# Créer demande de portabilité
+POST /telephony/{billingAccount}/portability
+Body: {
+  numbers: ["+33123456789", "+33123456790"],
+  portabilityType: "simple",  // ou "withTermination"
+  desiredDate: "2024-02-15",
+  currentOperator: {
+    name: "Orange",
+    rio: "xxxxx"  // si disponible
+  }
+}
+→ {
+  portabilityId: "port-12345",
+  status: "pending_documents"
+}
+
+# Upload document
+POST /telephony/{billingAccount}/portability/{portabilityId}/document
+Body: FormData (file)
+→ { documentId: "doc-123" }
+
+# Confirmer demande
+PUT /telephony/{billingAccount}/portability/{portabilityId}/confirm
+→ {
+  portabilityId: "port-12345",
+  status: "submitted",
+  estimatedCompletionDate: "2024-02-15"
+}
+
+# Suivre demande
+GET /telephony/{billingAccount}/portability/{portabilityId}
+→ {
+  portabilityId: "port-12345",
+  status: "in_progress",
+  numbers: ["+33123456789"],
+  desiredDate: "2024-02-15",
+  currentStep: "operator_validation"
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Demande de portabilite |
+| step_numbers | Numeros |
+| step_operator | Operateur |
+| step_documents | Documents |
+| step_confirmation | Confirmation |
+| section_numbers_to_port | Numeros a porter |
+| section_numbers_desc | Saisissez les numeros que vous souhaitez transferer chez OVHcloud |
+| field_phone_number | Numero de telephone |
+| btn_add | Ajouter |
+| label_selected_numbers | Numeros selectionnes ({count}) |
+| field_portability_type | Type de portabilite |
+| type_simple | Portabilite simple |
+| type_with_termination | Portabilite avec resiliation |
+| field_desired_date | Date souhaitee de portage |
+| note_min_delay | Delai minimum: 10 jours ouvrables |
+| btn_cancel | Annuler |
+| btn_previous | Precedent |
+| btn_next | Suivant |
+| btn_confirm | Confirmer |

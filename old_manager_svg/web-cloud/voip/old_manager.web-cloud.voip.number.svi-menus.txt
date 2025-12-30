@@ -1,0 +1,216 @@
+# Cahier des Charges : web-cloud/voip/number - Menus SVI
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page gestion avec arborescence menus
+**Fonction:** Gérer les menus SVI (Serveur Vocal Interactif)
+**Contexte:** Onglet Menus SVI d'un numéro VoIP
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Configuration | Agents | **Menus SVI** (actif) | Statistiques | Horaires
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche numéros
+- Liste des numéros
+
+### Panneau droit (1096px)
+- Header numéro avec badge
+- Tabs navigation
+- Bannière info SVI
+- Toolbar avec recherche et bouton création
+- Cartes menus (parent + enfants)
+- Cartes statistiques
+
+## 4. HEADER NUMÉRO
+
+- Numéro: "+33 800 123 456"
+- Badge: "easyHunting" (vert)
+- Description: "Numero vert / Menus SVI"
+
+## 5. BANNIÈRE INFO (1036x50px)
+
+- Background: #DBEAFE (info)
+- Ligne 1: "SVI (Serveur Vocal Interactif) permet de creer des menus vocaux pour guider vos appelants."
+- Ligne 2: "L'appelant navigue via les touches DTMF (1, 2, 3...) vers le service souhaite."
+
+## 6. TOOLBAR
+
+### Éléments
+- Bouton refresh (32x32px, outline)
+- Champ recherche "Rechercher un menu..." (180x32px)
+- Bouton "+ Creer un menu SVI" (btn-primary, 156x32px)
+
+## 7. CARTE MENU PRINCIPAL (1036x200px)
+
+### Header menu
+- Background: #F9FAFB
+- Titre: "Menu principal (accueil)"
+- Badge: "Actif" (vert)
+- Lien: "Edit"
+
+### Son d'accueil
+- Label: "SON D'ACCUEIL"
+- Valeur: "menu_principal.wav"
+- Durée: "(1:05)"
+
+### Options du menu
+Label: "OPTIONS DU MENU"
+
+#### Ligne 1 - Touches principales
+
+| Touche | Style | Destination | Type |
+|--------|-------|-------------|------|
+| 1 | Badge bleu | Service commercial | (File d'attente) |
+| 2 | Badge bleu | Support technique | (File d'attente) |
+| 3 | Badge bleu | Comptabilite | (Sous-menu) |
+
+#### Ligne 2 - Touches spéciales
+
+| Touche | Style | Action | Info |
+|--------|-------|--------|------|
+| 0 | Badge gris | Repeter le menu | - |
+| T | Badge jaune | Timeout: Accueil principal | (10s) |
+
+### Dimensions touches
+- Badge touche: 28x28px, border-radius: 4px
+
+## 8. CARTE SOUS-MENU (1036x160px)
+
+### Header sous-menu
+- Background: #F9FAFB
+- Titre: "Sous-menu Comptabilite"
+- Relation: "(enfant de: Menu principal)"
+- Badge: "Actif" (vert)
+- Lien: "Edit"
+
+### Son d'accueil
+- Label: "SON D'ACCUEIL"
+- Valeur: "menu_compta.wav"
+- Durée: "(0:32)"
+
+### Options
+
+| Touche | Style | Destination | Type |
+|--------|-------|-------------|------|
+| 1 | Badge bleu | Facturation | (+33 9 12 34 56 10) |
+| 2 | Badge bleu | Recouvrement | (+33 9 12 34 56 11) |
+| * | Badge gris | Retour menu principal | - |
+
+## 9. CARTES STATISTIQUES SVI (3 cartes, 250x80px)
+
+| Carte | Label | Valeur | Unité |
+|-------|-------|--------|-------|
+| 1 | MENUS CREES | 5 | menus |
+| 2 | NIVEAUX MAX | 3 | niveaux |
+| 3 | APPELS VIA SVI (7J) | 1,247 | appels |
+
+## 10. APIS & ENDPOINTS
+
+```
+# Liste des menus SVI
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/menu
+→ [{
+  menuId: "menu-001",
+  name: "Menu principal",
+  parentId: null,
+  soundId: "sound-001",
+  soundName: "menu_principal.wav",
+  soundDuration: 65,
+  status: "active"
+}]
+
+# Détail d'un menu
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}
+→ {
+  menuId: "menu-001",
+  name: "Menu principal",
+  parentId: null,
+  soundId: "sound-001",
+  status: "active",
+  timeoutAction: "replay",
+  timeoutDelay: 10,
+  entries: [{
+    key: "1",
+    destination: "queue-001",
+    destinationType: "queue",
+    label: "Service commercial"
+  }]
+}
+
+# Créer un menu
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/menu
+Body: {
+  name: "Nouveau menu",
+  parentId: null,
+  soundId: "sound-002",
+  timeoutAction: "replay",
+  timeoutDelay: 10
+}
+
+# Ajouter une entrée
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}/entry
+Body: {
+  key: "1",
+  destination: "queue-001",
+  destinationType: "queue",
+  label: "Service commercial"
+}
+
+# Modifier un menu
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}
+Body: {
+  name: "Nouveau nom",
+  soundId: "sound-003"
+}
+
+# Supprimer un menu
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}
+
+# Statistiques SVI
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/svi/statistics
+Query: { period: "7d" }
+→ {
+  menusCount: 5,
+  maxDepth: 3,
+  callsCount: 1247
+}
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_svi_menus | Menus SVI |
+| banner_svi_1 | SVI (Serveur Vocal Interactif) permet de creer des menus vocaux pour guider vos appelants. |
+| banner_svi_2 | L'appelant navigue via les touches DTMF (1, 2, 3...) vers le service souhaite. |
+| btn_create_menu | Creer un menu SVI |
+| search_menu | Rechercher un menu... |
+| label_welcome_sound | SON D'ACCUEIL |
+| label_menu_options | OPTIONS DU MENU |
+| label_options | OPTIONS |
+| type_queue | File d'attente |
+| type_submenu | Sous-menu |
+| type_line | Ligne directe |
+| action_replay | Repeter le menu |
+| action_timeout | Timeout |
+| action_return | Retour menu principal |
+| relation_child_of | enfant de: {parent} |
+| status_active | Actif |
+| status_inactive | Inactif |
+| action_edit | Edit |
+| stat_menus_created | MENUS CREES |
+| stat_max_depth | NIVEAUX MAX |
+| stat_calls_svi | APPELS VIA SVI (7J) |
+| unit_menus | menus |
+| unit_levels | niveaux |
+| unit_calls | appels |

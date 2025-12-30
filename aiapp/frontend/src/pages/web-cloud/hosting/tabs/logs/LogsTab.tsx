@@ -67,15 +67,15 @@ export function LogsTab({ serviceName, details }: Props) {
       </div>
 
       {/* Sub-tabs */}
-      <div className="sub-tabs">
-        <button 
-          className={`sub-tab ${activeSubTab === "stats" ? "active" : ""}`}
+      <div className="logs-sub-tabs">
+        <button
+          className={`logs-sub-tab ${activeSubTab === "stats" ? "active" : ""}`}
           onClick={() => setActiveSubTab("stats")}
         >
           Statistiques
         </button>
-        <button 
-          className={`sub-tab ${activeSubTab === "logs" ? "active" : ""}`}
+        <button
+          className={`logs-sub-tab ${activeSubTab === "logs" ? "active" : ""}`}
           onClick={() => setActiveSubTab("logs")}
         >
           Logs
@@ -86,7 +86,7 @@ export function LogsTab({ serviceName, details }: Props) {
       {activeSubTab === "stats" && (
         <div className="stats-content">
           {/* Filters */}
-          <div className="stats-filters">
+          <div className="logs-stats-filters">
             <div className="wh-logs-filter-group">
               <label>{t("logs.type")} :</label>
               <select 
@@ -115,10 +115,10 @@ export function LogsTab({ serviceName, details }: Props) {
           </div>
 
           {/* Chart placeholder */}
-          <div className="stats-chart-container">
-            <h4 className="chart-title">Requêtes HTTP - Dernière semaine</h4>
-            <div className="chart-placeholder">
-              <div className="chart-bars">
+          <div className="logs-stats-chart-container">
+            <h4 className="logs-chart-title">Requêtes HTTP - Dernière semaine</h4>
+            <div className="logs-chart-placeholder">
+              <div className="logs-chart-bars">
                 <div className="wh-logs-bar" style={{ height: "60%" }}><span>Lun</span></div>
                 <div className="wh-logs-bar" style={{ height: "75%" }}><span>Mar</span></div>
                 <div className="wh-logs-bar" style={{ height: "90%" }}><span>Mer</span></div>
@@ -172,7 +172,7 @@ export function LogsTab({ serviceName, details }: Props) {
                   </a>
                 </td>
                 <td>
-                  <button className="btn-action-menu">⋮</button>
+                  <button className="logs-btn-action-menu">⋮</button>
                 </td>
               </tr>
               {/* Logs personnalisés */}
@@ -191,7 +191,7 @@ export function LogsTab({ serviceName, details }: Props) {
                     </a>
                   </td>
                   <td>
-                    <button className="btn-action-menu">⋮</button>
+                    <button className="logs-btn-action-menu">⋮</button>
                   </td>
                 </tr>
               ))}

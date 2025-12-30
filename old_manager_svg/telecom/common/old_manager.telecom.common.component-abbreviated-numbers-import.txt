@@ -1,0 +1,104 @@
+# Cahier des Charges : telecom/common - Abbreviated Numbers Import
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal import avec prévisualisation
+**Fonction:** Importer une liste de numéros abrégés depuis un fichier CSV
+**Contexte:** Accessible depuis le menu Actions du datagrid des numéros abrégés
+
+## 2. DIMENSIONS
+
+- Modal: 600x400px
+- Border radius: 8px
+
+## 3. HEADER MODAL
+
+- Bouton fermer: "×" (position droite)
+- Titre: "Importer une liste de numéros abrégés" (16px, bold)
+
+## 4. CONTENU
+
+### Zone upload
+- Bouton: "📁 Sélectionnez votre fichier" (200x40px)
+- Style: Background #EFF6FF, bordure #BFDBFE
+- Couleur texte: #1E40AF
+
+### Note
+"Supprimer les éventuelles lignes d'entête." (text-muted, 11px)
+
+### Tableau prévisualisation (550x120px)
+
+| Colonne | Largeur |
+|---------|---------|
+| Numéro abrégé | 125px |
+| Numéro cible | 160px |
+| Nom | 140px |
+| Prénom | 110px |
+
+### Style des lignes
+- Valide: Texte normal (#1F2937)
+- Invalide: Texte rouge (#DC2626), barré (text-decoration: line-through)
+
+### Compteur import
+- "Numéros importés : X" (text-dark)
+- "Numéros ignorés : Y" (text-danger)
+
+## 5. FOOTER MODAL
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 90x36px |
+| Valider | btn-primary | 90x36px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Parser fichier CSV (prévisualisation)
+POST /telephony/{billingAccount}/abbreviatedNumber/import/preview
+Body: FormData (file: CSV)
+→ {
+  valid: [{
+    abbreviatedNumber: "200",
+    destinationNumber: "0033123456789",
+    surname: "Dupont",
+    name: "Marie"
+  }],
+  invalid: [{
+    row: 3,
+    reason: "Invalid abbreviated number format",
+    data: ["ABC", "invalid", "Bernard", "Sophie"]
+  }],
+  validCount: 2,
+  invalidCount: 1
+}
+
+# Confirmer import
+POST /telephony/{billingAccount}/abbreviatedNumber/import
+Body: FormData (file: CSV)
+→ {
+  importedCount: 2,
+  ignoredCount: 1
+}
+
+# Format CSV attendu
+# abbreviatedNumber;destinationNumber;surname;name
+# 200;0033123456789;Dupont;Marie
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Importer une liste de numéros abrégés |
+| btn_select_file | Sélectionnez votre fichier |
+| note_header | Supprimer les éventuelles lignes d'entête. |
+| col_abbreviated | Numéro abrégé |
+| col_destination | Numéro cible |
+| col_surname | Nom |
+| col_name | Prénom |
+| count_imported | Numéros importés |
+| count_ignored | Numéros ignorés |
+| btn_cancel | Annuler |
+| btn_confirm | Valider |

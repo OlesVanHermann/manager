@@ -1,0 +1,172 @@
+# Cahier des Charges : web-cloud/voip/number - Statistiques
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec KPIs et graphiques
+**Fonction:** Afficher les statistiques d'appels d'un numéro
+**Contexte:** Onglet Statistiques d'un numéro VoIP
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Configuration | Consommation | **Statistiques** (actif)
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche numéros
+- Compteur: "2 numeros"
+- Liste des numéros
+
+### Panneau droit (1096px)
+- Header numéro avec badge
+- Tabs navigation
+- Sélecteur période
+- Cartes KPI (2 lignes)
+- Graphique volume appels
+- Top agents
+- Boutons export
+
+## 4. HEADER NUMÉRO
+
+- Numéro: "0033912345680"
+- Badge: "Actif" (vert)
+- Description: "Accueil principal / Statistiques"
+
+## 5. SÉLECTEUR PÉRIODE (200x30px)
+
+- Type: Dropdown select
+- Valeur par défaut: "Decembre 2025"
+- Position: Droite du header
+
+## 6. CARTES KPI - LIGNE 1 (4 cartes)
+
+| Carte | Titre | Valeur | Indicateur | Dimensions |
+|-------|-------|--------|------------|------------|
+| 1 | Appels recus | 1,247 | +12% (vert) | 250x100px |
+| 2 | Appels traites | 1,089 | 87% (vert) | 250x100px |
+| 3 | Appels perdus | 158 | 13% (rouge, fond rouge) | 250x100px |
+| 4 | Temps moyen attente | 0:42 | - | 232x100px |
+
+## 7. CARTES KPI - LIGNE 2 (4 cartes)
+
+| Carte | Titre | Valeur | Indicateur | Dimensions |
+|-------|-------|--------|------------|------------|
+| 1 | Temps moyen conversation | 4:23 | - | 250x100px |
+| 2 | Agents disponibles | 3/5 | - | 250x100px |
+| 3 | Niveau de service | 78% | Objectif: 85% (jaune, fond jaune) | 250x100px |
+| 4 | Appels / heure (moy) | 52 | - | 232x100px |
+
+## 8. GRAPHIQUE VOLUME APPELS (680x250px)
+
+### Titre
+"Volume d'appels par jour"
+
+### Type
+Graphique en barres verticales
+
+### Axes
+- X: Jours du mois (1, 5, 10, 15, 18...)
+- Y: Nombre d'appels
+
+### Couleur barres
+- #0050D7 (bleu OVHcloud), opacité variable
+
+## 9. TOP AGENTS (336x250px)
+
+### Titre
+"Top agents"
+
+### Liste classement
+
+| Rang | Agent | Appels |
+|------|-------|--------|
+| 1 | Jean Dupont | 342 appels |
+| 2 | Marie Martin | 298 appels |
+| 3 | Luc Moreau | 267 appels |
+| 4 | Sophie Bernard | 182 appels |
+
+### Lien
+"Voir toutes les statistiques agents"
+
+## 10. BOUTONS EXPORT
+
+- "Exporter CSV" (btn-outline, 140x34px)
+- "Rapport detaille" (btn-outline, 180x34px)
+
+## 11. APIS & ENDPOINTS
+
+```
+# Statistiques globales
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/statistics
+Query: { period: "2025-12" }
+→ {
+  callsReceived: 1247,
+  callsAnswered: 1089,
+  callsLost: 158,
+  avgWaitTime: 42,
+  avgTalkTime: 263,
+  availableAgents: 3,
+  totalAgents: 5,
+  serviceLevel: 78,
+  serviceLevelTarget: 85,
+  avgCallsPerHour: 52
+}
+
+# Volume par jour
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/statistics/daily
+Query: { period: "2025-12" }
+→ [{
+  date: "2025-12-01",
+  callsReceived: 45,
+  callsAnswered: 40,
+  callsLost: 5
+}]
+
+# Top agents
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/statistics/agents
+Query: { period: "2025-12", limit: 5 }
+→ [{
+  agentId: "agent-001",
+  name: "Jean Dupont",
+  callsCount: 342
+}]
+
+# Export CSV
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/statistics/export
+Query: { period: "2025-12", format: "csv" }
+→ CSV file
+
+# Rapport détaillé
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/statistics/report
+Query: { period: "2025-12" }
+→ PDF file
+```
+
+## 12. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_stats | Statistiques |
+| period_select | Selectionner la periode |
+| kpi_calls_received | Appels recus |
+| kpi_calls_answered | Appels traites |
+| kpi_calls_lost | Appels perdus |
+| kpi_avg_wait | Temps moyen attente |
+| kpi_avg_talk | Temps moyen conversation |
+| kpi_agents_available | Agents disponibles |
+| kpi_service_level | Niveau de service |
+| kpi_target | Objectif: {value}% |
+| kpi_calls_hour | Appels / heure (moy) |
+| chart_title | Volume d'appels par jour |
+| top_agents | Top agents |
+| link_all_agents | Voir toutes les statistiques agents |
+| btn_export_csv | Exporter CSV |
+| btn_report | Rapport detaille |
+| unit_calls | appels |

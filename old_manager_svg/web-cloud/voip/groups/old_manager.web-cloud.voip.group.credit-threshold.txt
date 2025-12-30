@@ -1,0 +1,111 @@
+# Cahier des Charges : web-cloud/voip/group - Credit Threshold
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec état de succès
+**Fonction:** Configurer le seuil de crédit du groupe
+**Contexte:** Gestion du hors-forfait et des limites de dépenses
+
+## 2. NAVIGATION
+
+### Retour
+< Retour vers Facturation
+
+## 3. HEADER
+
+- Titre: "Seuil de crédit"
+
+## 4. FORMULAIRE PRINCIPAL (600x580px)
+
+### Titre section
+"Informations sur le seuil"
+
+### Informations actuelles
+
+| Champ | Valeur exemple | Style |
+|-------|----------------|-------|
+| Seuil de crédit actuel | 150,00 EUR HT | Normal |
+| Hors forfait autorisé | 50,00 EUR HT | Normal |
+| Hors forfait actuel | 12,50 EUR HT | Rouge (#DC2626) |
+
+### Nouveau seuil
+- Label: "Nouveau seuil de crédit"
+- Select: 400x40px
+- Options: 100, 150, 200, 300, 500 EUR HT
+- Valeur: "200,00 EUR HT"
+
+### Aperçu
+- Label: "Nouveau seuil après validation"
+- Valeur: "200,00 EUR HT" (bold)
+
+### Section contrats
+- Titre: "Contrats"
+- Description: "Vous devez accepter les conditions suivantes :"
+- Checkbox: Cochée
+- Label: "Conditions générales de service VoIP" (text-link)
+
+### Bouton validation
+"Valider" (btn-primary, 150x44px)
+
+## 5. PANNEAU SUCCÈS (400x250px)
+
+- Icône: ✓ dans cercle vert (#DCFCE7)
+- Titre: "Seuil de crédit mis à jour"
+- Message: "Le nouveau seuil sera actif sous 24h"
+
+## 6. SEUILS DISPONIBLES
+
+| Seuil | Prix HT |
+|-------|---------|
+| Minimum | 50,00 EUR |
+| Standard | 100,00 EUR |
+| Élevé | 200,00 EUR |
+| Très élevé | 500,00 EUR |
+| Maximum | 1000,00 EUR |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Obtenir les informations du seuil
+GET /telephony/{billingAccount}/credit
+→ {
+  currentThreshold: 150.00,
+  allowedOutOfPlan: 50.00,
+  currentOutOfPlan: 12.50,
+  currency: "EUR"
+}
+
+# Obtenir les seuils disponibles
+GET /telephony/{billingAccount}/credit/thresholds
+→ [50, 100, 150, 200, 300, 500, 1000]
+
+# Modifier le seuil
+PUT /telephony/{billingAccount}/credit
+Body: {
+  threshold: 200.00,
+  acceptTerms: true
+}
+
+# Obtenir les CGV
+GET /telephony/contracts
+→ [{ name, url }]
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Seuil de crédit |
+| back_link | Retour vers Facturation |
+| section_info | Informations sur le seuil |
+| field_current | Seuil de crédit actuel |
+| field_allowed | Hors forfait autorisé |
+| field_current_usage | Hors forfait actuel |
+| field_new_threshold | Nouveau seuil de crédit |
+| field_preview | Nouveau seuil après validation |
+| section_contracts | Contrats |
+| contracts_description | Vous devez accepter les conditions suivantes : |
+| checkbox_terms | Conditions générales de service VoIP |
+| btn_validate | Valider |
+| success_title | Seuil de crédit mis à jour |
+| success_message | Le nouveau seuil sera actif sous 24h |

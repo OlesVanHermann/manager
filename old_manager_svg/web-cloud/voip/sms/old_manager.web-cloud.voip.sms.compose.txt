@@ -1,0 +1,141 @@
+# Cahier des Charges : web-cloud/voip/sms - Compose
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire en 2 colonnes
+**Fonction:** Envoyer un SMS unique
+**Contexte:** Envoi rapide à un destinataire
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > SMS > sms-xxxxxxxx-1 > Envoyer un SMS
+
+### Retour
+← Retour aux SMS
+
+## 3. HEADER
+
+- Titre: "Envoyer un SMS"
+
+## 4. LAYOUT 2 COLONNES
+
+### Colonne gauche : Formulaire (700px)
+### Colonne droite : Solde + Astuces (380px)
+
+## 5. SECTION EXPÉDITEUR/DESTINATAIRE (700x290px)
+
+### Titre
+"Configurer l'expéditeur et le destinataire"
+
+### Expéditeur (select 400x36px)
+- Label: "Expéditeur"
+- Options: Numéro permettant la réponse (France uniquement), expéditeurs personnalisés
+- Lien: "Gérer les expéditeurs"
+
+### Destinataire (input 400x36px)
+- Label: "Saisissez le numéro d'un seul destinataire"
+- Placeholder: "Numéro du destinataire (exemple : +33601020304)"
+- Lien: "Gérer les destinataires"
+
+### Boutons ajout destinataires
+- "Liste des destinataires" (btn-secondary, 170x32px)
+- "Carnets d'adresses" (btn-secondary, 150x32px)
+
+## 6. PANNEAU SOLDE (380x100px)
+
+### Titre
+"Solde"
+
+### Contenu
+- Valeur: "245.50" (font-size: 28px, font-weight: 600)
+- Label: "SMS restants"
+- Lien: "Gérer vos crédits SMS"
+
+## 7. PANNEAU ASTUCES (380x150px)
+
+### Titre
+"Astuces"
+
+### Liens
+- Composition d'un SMS →
+- Taille d'un SMS →
+- Liste des destinataires →
+
+## 8. SECTION MESSAGE (700x280px)
+
+### Titre
+"Composer un message"
+
+### Message (textarea 500x100px)
+- Label: "Message"
+- Placeholder: "Votre message"
+
+### Compteurs
+- "Caractères restants : **160** / 160"
+- "Équivaut à : **1** SMS"
+
+### Options avancées
+- Lien: "▶ Options avancées" (replié)
+
+## 9. BOUTONS ACTIONS
+
+- "Envoyer" (btn-primary, 120x40px)
+- "Annuler" (btn-secondary, 100x40px)
+
+## 10. APIS & ENDPOINTS
+
+```
+# Expéditeurs
+GET /sms/{serviceName}/senders
+→ [{ sender, status }]
+
+# Solde crédits
+GET /sms/{serviceName}
+→ { creditsLeft: 245.50 }
+
+# Envoyer un SMS
+POST /sms/{serviceName}/jobs
+Body: {
+  sender: "MonEntreprise",
+  message: "Votre message",
+  receivers: ["+33601020304"],
+  noStopClause: true
+}
+
+# Estimation
+POST /sms/{serviceName}/estimateCost
+Body: { message, receiversCount: 1 }
+→ { smsCount: 1, creditCost: 0.065 }
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| breadcrumb_send | Envoyer un SMS |
+| back_link | Retour aux SMS |
+| page_title | Envoyer un SMS |
+| section_config | Configurer l'expéditeur et le destinataire |
+| field_sender | Expéditeur |
+| link_manage_senders | Gérer les expéditeurs |
+| field_recipient | Saisissez le numéro d'un seul destinataire |
+| placeholder_recipient | Numéro du destinataire (exemple : +33601020304) |
+| link_manage_recipients | Gérer les destinataires |
+| btn_receiver_list | Liste des destinataires |
+| btn_phonebooks | Carnets d'adresses |
+| panel_balance | Solde |
+| balance_remaining | SMS restants |
+| link_manage_credits | Gérer vos crédits SMS |
+| panel_tips | Astuces |
+| tip_composition | Composition d'un SMS → |
+| tip_size | Taille d'un SMS → |
+| tip_list | Liste des destinataires → |
+| section_compose | Composer un message |
+| field_message | Message |
+| placeholder_message | Votre message |
+| chars_remaining | Caractères restants : {remaining} / 160 |
+| sms_count | Équivaut à : {count} SMS |
+| link_advanced | Options avancées |
+| btn_send | Envoyer |
+| btn_cancel | Annuler |

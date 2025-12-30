@@ -1,0 +1,110 @@
+# Cahier des Charges : telecom/common - Calls Filtering Table
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Composant datagrid
+**Fonction:** Afficher et gérer les filtres d'appels configurés
+**Contexte:** Composant principal de la page de filtrage d'appels
+
+## 2. DIMENSIONS
+
+- Composant: 950x420px
+- Border radius: 8px
+
+## 3. TOOLBAR
+
+### Boutons gauche
+| Bouton | Dimensions | Description |
+|--------|------------|-------------|
+| 🗑 Supprimer le filtre sélectionné | 220x36px | Supprime les filtres cochés |
+| Exporter | 90x36px | Export CSV |
+
+### Filtres droite
+| Filtre | Dimensions | Options |
+|--------|------------|---------|
+| Type | 130x36px | Entrants/Sortants |
+| Liste | 130x36px | Blanche/Noire |
+
+## 4. TABLEAU (910x260px)
+
+### Header
+- Background: #F9FAFB
+- Checkbox global: 18x18px
+- Bouton refresh: ↻ (28x24px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Checkbox | 40px | Sélection |
+| Numéro | 175px | Triable (↓) |
+| Type de numéro | 170px | International, Services OVH... |
+| Type | 160px | Appels entrants/sortants |
+| Liste | 140px | Badge Blanche/Noire |
+| Statut | 165px | Création, ✓ |
+| Actions | 60px | ↻ refresh |
+
+### Badge Liste
+- Noire: Background #1F2937, texte blanc
+- Blanche: Background blanc, bordure #E5E7EB
+
+### Statut
+- Actif: Cercle vert (#16A34A) + ✓
+- En création: Texte "Création" + cercle pointillé bleu
+
+## 5. PAGINATION
+
+- Format: "Page X / Y"
+- Select lignes: "Afficher 10 ▼"
+
+## 6. APIS & ENDPOINTS
+
+```
+# Liste des filtres
+GET /telephony/{billingAccount}/line/{serviceName}/calls/filter
+Query: { type, list, sortField, sortOrder, limit, offset }
+→ [{
+  filterId: 123,
+  number: "+33612345678",
+  numberType: "international",
+  type: "incoming",
+  list: "blacklist",
+  status: "active"
+}]
+
+# Supprimer filtres
+DELETE /telephony/{billingAccount}/line/{serviceName}/calls/filter
+Body: { filterIds: [123, 124, 125] }
+→ { deletedCount: 3 }
+
+# Exporter filtres
+GET /telephony/{billingAccount}/line/{serviceName}/calls/filter/export
+Headers: { Accept: "text/csv" }
+→ CSV file
+
+# Rafraîchir statut
+GET /telephony/{billingAccount}/line/{serviceName}/calls/filter/{filterId}
+→ { filterId: 123, status: "active" }
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| btn_delete_selected | Supprimer le filtre sélectionné |
+| btn_export | Exporter |
+| filter_type | Type |
+| filter_list | Liste |
+| col_number | Numéro |
+| col_number_type | Type de numéro |
+| col_type | Type |
+| col_list | Liste |
+| col_status | Statut |
+| type_incoming | Appels entrants |
+| type_outgoing | Appels sortants |
+| list_whitelist | Blanche |
+| list_blacklist | Noire |
+| status_active | Actif |
+| status_creating | Création |
+| pagination_page | Page {current} / {total} |
+| pagination_show | Afficher |

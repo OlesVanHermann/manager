@@ -1,0 +1,187 @@
+# Cahier des Charges : web-cloud/voip/group - Services
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid filtrable
+**Fonction:** Liste de tous les services d'un groupe VoIP
+**Contexte:** Gestion des lignes, numéros et fax
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+Dashboard | **Services** (actif) | Repertoire | Facturation | Administration
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche groupes
+- Liste des groupes
+- Groupe sélectionné (background bleu)
+
+### Panneau droit (1096px)
+- Header groupe
+- Tabs navigation
+- Filtres par type
+- Barre de recherche
+- Table services
+
+## 4. HEADER GROUPE
+
+- Titre: "Telephonie Siege"
+- Sous-titre: "voip-ab12345 / Services"
+
+## 5. FILTRES PAR TYPE (tabs)
+
+| Filtre | Compteur | Style |
+|--------|----------|-------|
+| Tous | - | Actif (bg bleu) |
+| Lignes | (3) | Texte muted |
+| Numeros | (2) | Texte muted |
+| Fax | (1) | Texte muted |
+
+## 6. BARRE D'OUTILS
+
+| Élément | Type | Dimensions |
+|---------|------|------------|
+| Recherche | Input | 180x32px |
+| Ajouter | btn-primary | 110x32px |
+
+## 7. DATAGRID SERVICES (1052x560px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Service | 180px | Numéro de téléphone (lien) |
+| Description | 220px | Description personnalisée |
+| Type | 80px | Badge coloré |
+| Configuration | 200px | Type de configuration |
+| Statut | 100px | Badge Actif/Inactif |
+| Actions | 100px | Lien Detail |
+
+### Types de service
+
+| Type | Badge couleur |
+|------|---------------|
+| Ligne | #DBEAFE (bleu clair) |
+| Numero | #E0E7FF (indigo) |
+| Fax | #FEF3C7 (jaune) |
+
+### Configurations possibles
+
+| Configuration | Description |
+|---------------|-------------|
+| Ligne SIP | Ligne téléphonique standard |
+| File d'attente | Numéro avec gestion de file |
+| SVI | Serveur vocal interactif |
+| EcoFax Pro | Service fax virtuel |
+| Trunk | Ligne trunk SIP |
+
+### Données exemple
+
+| Service | Description | Type | Configuration | Statut |
+|---------|-------------|------|---------------|--------|
+| 0033912345678 | Poste Direction | Ligne | Ligne SIP | Actif |
+| 0033912345679 | Accueil | Ligne | Ligne SIP | Actif |
+| 0033800123456 | Numero vert principal | Numero | File d'attente | Actif |
+| 0033800123457 | Support technique | Numero | SVI | Actif |
+| 0033987654321 | Fax Direction | Fax | EcoFax Pro | Actif |
+| 0033912345680 | Commercial 1 | Ligne | Trunk | Actif |
+
+## 8. ÉTATS DES LIGNES
+
+### Ligne normale
+- Background blanc
+- Texte standard
+
+### Ligne hover
+- Background: #F9FAFB
+- Effet de survol
+
+## 9. PAGINATION
+
+- Format: "Affichage de 1 a 6 sur 6 resultats"
+- Navigation par page si nécessaire
+
+## 10. APIS & ENDPOINTS
+
+```
+# Liste des services
+GET /telephony/{billingAccount}/service
+Query: { type, search, limit, offset }
+→ [{
+  serviceName: "0033912345678",
+  description: "Poste Direction",
+  serviceType: "line",
+  featureType: "sip",
+  status: "active"
+}]
+
+# Filtrer par type
+GET /telephony/{billingAccount}/service
+Query: { type: "line" }
+→ [...]
+
+# Compteurs par type
+GET /telephony/{billingAccount}/service/count
+→ {
+  all: 6,
+  line: 3,
+  number: 2,
+  fax: 1
+}
+
+# Détail d'un service
+GET /telephony/{billingAccount}/service/{serviceName}
+→ {
+  serviceName: "0033912345678",
+  description: "Poste Direction",
+  serviceType: "line",
+  featureType: "sip",
+  status: "active",
+  options: {...}
+}
+
+# Ajouter un service
+POST /telephony/{billingAccount}/service
+Body: {
+  type: "line",
+  description: "Nouveau poste"
+}
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_services | Services |
+| filter_all | Tous |
+| filter_lines | Lignes |
+| filter_numbers | Numeros |
+| filter_fax | Fax |
+| search_placeholder | Rechercher... |
+| btn_add | Ajouter |
+| col_service | Service |
+| col_description | Description |
+| col_type | Type |
+| col_config | Configuration |
+| col_status | Statut |
+| col_actions | Actions |
+| type_line | Ligne |
+| type_number | Numero |
+| type_fax | Fax |
+| config_sip | Ligne SIP |
+| config_queue | File d'attente |
+| config_ivr | SVI |
+| config_ecofax | EcoFax Pro |
+| config_trunk | Trunk |
+| status_active | Actif |
+| status_inactive | Inactif |
+| action_detail | Detail |
+| pagination | Affichage de {start} a {end} sur {total} resultats |

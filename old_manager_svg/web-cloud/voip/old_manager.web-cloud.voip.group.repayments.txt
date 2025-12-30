@@ -1,0 +1,162 @@
+# Cahier des Charges : web-cloud/voip/group - Repayments (Reversements)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page statistiques avec tableau historique
+**Fonction:** Consulter les reversements des numéros surtaxés
+**Contexte:** Revenus générés par numéros premium
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+Dashboard | General | Services | Facturation | **Reversements** (actif) | Securite
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche groupes
+- Groupe sélectionné
+
+### Panneau droit (1096px)
+- Header groupe
+- Tabs navigation
+- Bannière info
+- Cartes statistiques
+- Tableau historique
+
+## 4. HEADER GROUPE
+
+- Titre: "ovh-telecom-123"
+- Sous-titre: "Groupe / Reversements"
+
+## 5. BANNIÈRE INFO (1036x50px)
+
+- Background: #DEF7EC (success)
+- Ligne 1: "Les reversements correspondent aux revenus generes par vos numeros surtaxes."
+- Ligne 2: "Les paiements sont effectues mensuellement si le solde depasse 50 EUR HT."
+
+## 6. CARTES STATISTIQUES (4 cartes)
+
+| Carte | Valeur | Dimensions | Style |
+|-------|--------|------------|-------|
+| Solde actuel | 347,82 EUR HT | 250x90px | Vert gras |
+| Revenus ce mois | 89,50 EUR HT | 250x90px | Normal |
+| Total reverse (12 mois) | 1 248,60 EUR HT | 250x90px | Normal |
+| Prochain versement | 15/01/2025 | 226x90px | + "si solde > 50 EUR" |
+
+## 7. TABLEAU HISTORIQUE (1036x400px)
+
+### Titre
+"Historique des reversements"
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Periode | 160px | Mois/Année |
+| Numero | 200px | Numéro surtaxé |
+| Type | 100px | Badge tarification |
+| Appels | 100px | Nombre d'appels |
+| Minutes | 120px | Durée totale |
+| Montant HT | 140px | Revenus générés |
+| Statut | 100px | Badge statut |
+
+### Types de tarification
+
+| Type | Couleur | Exemple |
+|------|---------|---------|
+| Prix/appel | #F3E8FF (violet) | 0,80 EUR/appel |
+| Prix/min | #DBEAFE (bleu) | 0,15 EUR/min |
+
+### Statuts
+
+| Statut | Couleur |
+|--------|---------|
+| En attente | #FEF3C7 (jaune) |
+| Verse | #DEF7EC (vert) |
+
+### Données exemple
+
+| Periode | Numero | Type | Appels | Minutes | Montant HT | Statut |
+|---------|--------|------|--------|---------|------------|--------|
+| Decembre 2024 | +33 892 123 456 | 0,80 EUR/appel | 156 | 423 min | 124,80 EUR | En attente |
+| Novembre 2024 | +33 892 123 456 | 0,80 EUR/appel | 142 | 387 min | 113,60 EUR | Verse |
+| Octobre 2024 | +33 892 123 456 | 0,80 EUR/appel | 168 | 512 min | 134,40 EUR | Verse |
+| Septembre 2024 | +33 892 123 456 | 0,80 EUR/appel | 134 | 298 min | 107,20 EUR | Verse |
+
+## 8. PAGINATION
+
+- Compteur: "12 lignes de reversement"
+- Navigation: < 1 2 >
+
+## 9. APIS & ENDPOINTS
+
+```
+# Statistiques reversements
+GET /telephony/{billingAccount}/repayment/statistics
+→ {
+  currentBalance: 347.82,
+  currentMonthRevenue: 89.50,
+  total12Months: 1248.60,
+  nextPaymentDate: "2025-01-15"
+}
+
+# Historique des reversements
+GET /telephony/{billingAccount}/repayment/history
+Query: { limit, offset }
+→ [{
+  period: "2024-12",
+  number: "+33892123456",
+  type: "perCall",
+  rate: 0.80,
+  calls: 156,
+  minutes: 423,
+  amountHT: 124.80,
+  status: "pending"
+}]
+
+# Détail d'un numéro surtaxé
+GET /telephony/{billingAccount}/number/{serviceName}/repayment
+Query: { month: "2024-12" }
+→ {
+  number: "+33892123456",
+  type: "perCall",
+  rate: 0.80,
+  calls: 156,
+  minutes: 423,
+  amountHT: 124.80,
+  details: [...]
+}
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_repayments | Reversements |
+| banner_line1 | Les reversements correspondent aux revenus generes par vos numeros surtaxes. |
+| banner_line2 | Les paiements sont effectues mensuellement si le solde depasse 50 EUR HT. |
+| stat_balance | Solde actuel |
+| stat_month_revenue | Revenus ce mois |
+| stat_total_12m | Total reverse (12 mois) |
+| stat_next_payment | Prochain versement |
+| threshold_info | si solde > 50 EUR |
+| table_title | Historique des reversements |
+| col_period | Periode |
+| col_number | Numero |
+| col_type | Type |
+| col_calls | Appels |
+| col_minutes | Minutes |
+| col_amount | Montant HT |
+| col_status | Statut |
+| type_per_call | {rate} EUR/appel |
+| type_per_minute | {rate} EUR/min |
+| status_pending | En attente |
+| status_paid | Verse |
+| pagination | {count} lignes de reversement |

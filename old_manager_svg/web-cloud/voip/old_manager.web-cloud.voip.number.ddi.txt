@@ -1,0 +1,183 @@
+# Cahier des Charges : web-cloud/voip/number - DDI
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid
+**Fonction:** Gérer les règles DDI (Direct Dial-In) d'un numéro
+**Contexte:** Onglet DDI d'un numéro VoIP easyHunting
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Configuration | Agents | **DDI** (actif) | Statistiques | Horaires
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche numéros
+- Liste des numéros
+
+### Panneau droit (1096px)
+- Header numéro avec badge
+- Tabs navigation
+- Bannière info DDI
+- Toolbar avec recherche et bouton ajout
+- Cartes statistiques
+- Tableau règles DDI
+
+## 4. HEADER NUMÉRO
+
+- Numéro: "+33 800 123 456"
+- Badge: "easyHunting" (vert)
+- Description: "Numero vert / DDI"
+
+## 5. BANNIÈRE INFO (1036x50px)
+
+- Background: #DBEAFE (info)
+- Ligne 1: "DDI (Direct Dial-In) permet de router les appels entrants vers des agents specifiques"
+- Ligne 2: "en fonction des derniers chiffres composes par l'appelant."
+
+## 6. TOOLBAR
+
+### Éléments
+- Bouton refresh (32x32px, outline)
+- Champ recherche "Rechercher une regle..." (180x32px)
+- Bouton "+ Ajouter une regle" (btn-primary, 156x32px)
+
+## 7. CARTES STATISTIQUES (3 cartes)
+
+| Carte | Titre | Valeur | Dimensions |
+|-------|-------|--------|------------|
+| 1 | Regles DDI actives | 8 / 10 | 200x70px |
+| 2 | Plage DDI | 100 - 199 | 200x70px |
+| 3 | Mode | Badge "Actif" (vert) | 200x70px |
+
+## 8. TABLEAU DDI (1036x400px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Extension | 130px | Numéro DDI |
+| Destination | 250px | Numéro ou service |
+| Type | 150px | Badge type |
+| Statut | 150px | Badge actif/inactif |
+| Description | 220px | Libellé |
+| Actions | 116px | Liens |
+
+### Types de destination
+
+| Type | Couleur |
+|------|---------|
+| Ligne interne | #DEF7EC (vert) |
+| Externe | #DBEAFE (bleu) |
+| File | #F3E8FF (violet) |
+| SVI | #FEF3C7 (jaune) |
+
+### États
+
+| État | Couleur |
+|------|---------|
+| Actif | #DEF7EC (vert) |
+| Inactif | #F3F4F6 (gris) |
+
+### Actions
+- Edit
+- Supprimer (x)
+
+### Données exemple
+
+| Extension | Destination | Type | Statut | Description |
+|-----------|-------------|------|--------|-------------|
+| 100 | +33 9 12 34 56 01 | Ligne interne | Actif | Accueil principal |
+| 101 | +33 9 12 34 56 02 | Ligne interne | Actif | Service commercial |
+| 102 | +33 6 12 34 56 78 | Externe | Actif | Mobile direction |
+| 110 | File d'attente SAV | File | Actif | Support technique |
+| 199 | SVI Menu principal | SVI | Inactif | Menu test |
+
+### Pagination
+- Format: "8 regles DDI"
+
+## 9. APIS & ENDPOINTS
+
+```
+# Liste des règles DDI
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/ddi
+→ [{
+  extension: "100",
+  destination: "+33912345601",
+  destinationType: "line",
+  status: "active",
+  description: "Accueil principal"
+}]
+
+# Ajouter une règle DDI
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/ddi
+Body: {
+  extension: "103",
+  destination: "+33912345603",
+  destinationType: "line",
+  description: "Nouvelle destination"
+}
+
+# Modifier une règle DDI
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/ddi/{extension}
+Body: {
+  destination: "+33612345678",
+  destinationType: "external",
+  status: "active"
+}
+
+# Supprimer une règle DDI
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/ddi/{extension}
+
+# Configuration plage DDI
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/ddi/settings
+→ {
+  rangeStart: 100,
+  rangeEnd: 199,
+  enabled: true
+}
+
+# Modifier plage DDI
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/ddi/settings
+Body: {
+  rangeStart: 100,
+  rangeEnd: 199,
+  enabled: true
+}
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_ddi | DDI |
+| banner_ddi_1 | DDI (Direct Dial-In) permet de router les appels entrants vers des agents specifiques |
+| banner_ddi_2 | en fonction des derniers chiffres composes par l'appelant. |
+| btn_add_rule | Ajouter une regle |
+| search_rule | Rechercher une regle... |
+| stat_active_rules | Regles DDI actives |
+| stat_ddi_range | Plage DDI |
+| stat_mode | Mode |
+| col_extension | Extension |
+| col_destination | Destination |
+| col_type | Type |
+| col_status | Statut |
+| col_description | Description |
+| col_actions | Actions |
+| type_line | Ligne interne |
+| type_external | Externe |
+| type_queue | File |
+| type_svi | SVI |
+| status_active | Actif |
+| status_inactive | Inactif |
+| action_edit | Edit |
+| action_delete | Supprimer |
+| count_rules | {count} regles DDI |

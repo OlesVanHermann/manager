@@ -1,0 +1,163 @@
+# Cahier des Charges : web-cloud/voip/number - Queue Lines
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid et formulaire d'options
+**Fonction:** Gérer les lignes d'une file d'attente simple
+**Contexte:** Configuration des agents d'une file d'attente (version basique)
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro > Lignes de la file
+
+## 3. HEADER
+
+- Titre: "Lignes de la file d'attente"
+- Description: "Configurez les lignes membres de votre file d'attente."
+
+## 4. SECTION ORGANISATION (1000x100px)
+
+### Titre section
+"Organisation"
+- Ligne séparatrice sous le titre
+
+### Bouton ajouter
+"+ Ajouter une ligne" (btn-secondary, 160x36px)
+
+## 5. DATAGRID LIGNES (960x200px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Ordre | 40px | Boutons ▲/▼ pour réordonner |
+| Type | 120px | Interne / Externe |
+| Numéro | 170px | Numéro de téléphone |
+| Description | 170px | Libellé de la ligne |
+| Timeout | 100px | Délai en secondes |
+| Wrap-up | 100px | Temps de repos |
+| Simult. | 80px | Appels simultanés |
+| Statut | 100px | Badge Actif |
+| Actions | 80px | Menu ⋮ |
+
+### Données exemple
+
+| Ordre | Type | Numéro | Description | Timeout | Wrap-up | Simult. | Statut | Actions |
+|-------|------|--------|-------------|---------|---------|---------|--------|---------|
+| ▲▼ | Interne | 0033 1 23 45 67 89 | Support niveau 1 | 20 sec | 10 sec | 2 | Actif | ⋮ |
+| ▲▼ | Interne | 0033 1 23 45 67 90 | Support niveau 2 | 30 sec | 15 sec | 1 | Actif | ⋮ |
+| ▲ | Externe | 0033 6 12 34 56 78 | Astreinte mobile | 45 sec | 0 sec | 1 | Actif | ⋮ |
+
+### Menu contextuel (120x70px)
+- Modifier
+- Supprimer (rouge)
+
+### Pagination
+"Affichage 1-3 sur 3"
+
+## 6. FORMULAIRE OPTIONS
+
+### Numéro affiché (select 350x40px)
+- Label: "Numéro affiché à l'appelé"
+- Options: Numéro de la file d'attente, Numéro de l'appelant
+
+### Stratégie de distribution (select 350x40px)
+- Label: "Stratégie de distribution"
+- Options: Round-robin, Séquentiel, Ring all, Random
+- Description: "Les appels sont distribués à tour de rôle entre les lignes."
+
+### Checkbox renvois
+- [ ] "Appliquer les renvois d'appel configurés sur les lignes"
+
+### Boutons actions (220x36px)
+- "Annuler" (btn-secondary, 100x36px)
+- "Valider" (btn-primary, 100x36px)
+
+## 7. STRATÉGIES DE DISTRIBUTION
+
+| Stratégie | Code | Description |
+|-----------|------|-------------|
+| Round-robin | roundRobin | Les appels sont distribués à tour de rôle |
+| Séquentiel | sequential | Appels distribués dans l'ordre de la liste |
+| Tous sonnent | ringAll | Toutes les lignes sonnent simultanément |
+| Aléatoire | random | Distribution aléatoire |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des lignes de la file
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent
+→ [{
+  agentId,
+  number: "0033123456789",
+  description: "Support niveau 1",
+  timeout: 20,
+  wrapUpTime: 10,
+  simultaneousLines: 2,
+  status: "available",
+  position: 1
+}]
+
+# Ajouter une ligne
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent
+Body: {
+  number: "0033123456791",
+  description: "Nouveau support",
+  timeout: 25,
+  wrapUpTime: 5,
+  simultaneousLines: 1
+}
+
+# Modifier une ligne
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent/{agentId}
+Body: { timeout, wrapUpTime, simultaneousLines }
+
+# Réordonner
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent/{agentId}/reorder
+Body: { position: 2 }
+
+# Supprimer une ligne
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}/agent/{agentId}
+
+# Configuration de la file
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}
+→ { strategy: "roundRobin", followInterfaceRedirects: false, displayNumber: "queue" }
+
+# Modifier la configuration
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/queue/{queueId}
+Body: { strategy, followInterfaceRedirects, displayNumber }
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Lignes de la file d'attente |
+| description | Configurez les lignes membres de votre file d'attente. |
+| section_organization | Organisation |
+| btn_add_line | + Ajouter une ligne |
+| col_order | |
+| col_type | Type |
+| col_number | Numéro |
+| col_description | Description |
+| col_timeout | Timeout |
+| col_wrapup | Wrap-up |
+| col_simultaneous | Simult. |
+| col_status | Statut |
+| col_actions | Actions |
+| type_internal | Interne |
+| type_external | Externe |
+| status_active | Actif |
+| menu_edit | Modifier |
+| menu_delete | Supprimer |
+| field_display_number | Numéro affiché à l'appelé |
+| display_queue | Numéro de la file d'attente |
+| display_caller | Numéro de l'appelant |
+| field_strategy | Stratégie de distribution |
+| strategy_roundrobin | Round-robin |
+| strategy_roundrobin_desc | Les appels sont distribués à tour de rôle entre les lignes. |
+| checkbox_follow_forwards | Appliquer les renvois d'appel configurés sur les lignes |
+| btn_cancel | Annuler |
+| btn_validate | Valider |
+| pagination | Affichage {start}-{end} sur {total} |

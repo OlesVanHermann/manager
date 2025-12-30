@@ -1,0 +1,123 @@
+# Cahier des Charges : web-cloud/voip - Modal SMS Template
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire avec compteur
+**Fonction:** Créer un modèle de SMS réutilisable
+**Contexte:** Accessible depuis l'onglet Modèles d'un compte SMS
+
+## 2. DIMENSIONS
+
+- Modal: 550x500px
+
+## 3. HEADER MODAL (60px)
+
+- Background: #F9FAFB
+- Titre: "Creer un modele SMS" (16px, bold)
+- Bouton fermer: "x"
+
+## 4. CONTENU
+
+### Nom du modèle
+- Label: "Nom du modele *" (12px, bold)
+- Input: 502x40px
+- Placeholder: "Ex: Confirmation commande, Rappel RDV..."
+
+### Type
+- Label: "Type *" (12px, bold)
+- Select: 240x40px (background #F9FAFB)
+- Valeur: "Transactionnel"
+- Options: Transactionnel, Marketing
+
+### Message
+- Label: "Message *" (12px, bold)
+- Textarea: 502x120px
+- Placeholder: "Saisissez votre message..."
+- Compteur: "0 / 160 caracteres (1 SMS)"
+
+### Boutons variables (insertion)
+- Label: "Inserer une variable" (12px, bold)
+
+| Variable | Dimensions |
+|----------|------------|
+| {NOM} | 70x28px |
+| {PRENOM} | 80x28px |
+| {DATE} | 70x28px |
+| {CODE} | 70x28px |
+| {REF} | 60x28px |
+
+Style boutons: btn-outline (bordure #0050D7, texte #0050D7)
+
+### Bannière info (502x40px)
+- Background: #DBEAFE
+- Texte: "Les variables seront remplacees par les donnees reelles lors de l'envoi."
+- Couleur texte: #1E40AF
+
+## 5. FOOTER MODAL
+
+- Séparateur: Ligne #E5E7EB
+- Position boutons: Gauche
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Creer | btn-primary | 120x36px |
+| Annuler | btn-outline | 100x36px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Créer un modèle
+POST /sms/{serviceName}/templates
+Body: {
+  name: "Confirmation commande",
+  type: "transactional",  // ou "marketing"
+  message: "Bonjour {NOM}, votre commande {REF} est confirmee."
+}
+→ {
+  templateId: "tpl-12345",
+  name: "Confirmation commande",
+  type: "transactional",
+  message: "Bonjour {NOM}, votre commande {REF} est confirmee.",
+  charCount: 52,
+  smsCount: 1
+}
+
+# Calculer caractères/SMS
+POST /sms/calculate
+Body: { message: "Texte du message..." }
+→ {
+  charCount: 52,
+  smsCount: 1,
+  encoding: "GSM-7"  // ou "UCS-2" si caractères spéciaux
+}
+
+# Variables disponibles
+GET /sms/{serviceName}/templates/variables
+→ [
+  { name: "NOM", description: "Nom du destinataire" },
+  { name: "PRENOM", description: "Prenom du destinataire" },
+  { name: "DATE", description: "Date formatee" },
+  { name: "CODE", description: "Code de verification" },
+  { name: "REF", description: "Reference commande" }
+]
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Creer un modele SMS |
+| field_name | Nom du modele |
+| field_type | Type |
+| field_message | Message |
+| type_transactional | Transactionnel |
+| type_marketing | Marketing |
+| placeholder_name | Ex: Confirmation commande, Rappel RDV... |
+| placeholder_message | Saisissez votre message... |
+| counter_chars | {count} / 160 caracteres ({sms} SMS) |
+| section_variables | Inserer une variable |
+| info_variables | Les variables seront remplacees par les donnees reelles lors de l'envoi. |
+| btn_create | Creer |
+| btn_cancel | Annuler |

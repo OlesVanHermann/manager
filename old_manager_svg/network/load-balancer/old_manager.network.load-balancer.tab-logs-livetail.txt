@@ -1,23 +1,12 @@
-# Cahier des Charges : network/load-balancer - Onglet Live Tail
+# Cahier des Charges : network/load-balancer - Tab Logs Live Tail
 
 ## 1. VUE D'ENSEMBLE
-- **Type** : Page onglet logs temps réel
-- **Contexte** : Dashboard Load Balancer - Logs
-- **Objectif** : Visualiser les logs d'accès en temps réel
 
-## 2. DIMENSIONS
-| Propriété | Valeur |
-|-----------|--------|
-| Largeur | 100% |
-| Hauteur | 600px |
+**Type:** Onglet avec console logs temps réel
+**Fonction:** Afficher les logs en streaming depuis l'onglet Logs
+**Contexte:** Dashboard LB > Onglet "Logs" > Sous-onglet "Live Tail"
 
-## 3. COMPOSANTS UI
-- **OdsTabs** : Navigation principale
-- **OdsButton** : Sous-navigation, Pause, Effacer
-- **OdsIndicator** : Point vert "En direct"
-- **Terminal** : Container logs (fond sombre)
-
-## 4. NAVIGATION
+## 2. NAVIGATION
 
 ### Onglets principaux
 | Onglet | État |
@@ -26,54 +15,77 @@
 | Fermes | Inactif |
 | Frontends | Inactif |
 | Graphiques | Inactif |
-| Logs | Actif |
+| Logs | Actif (#0050D7 avec underline) |
 | Tâches | Inactif |
 
 ### Sous-onglets Logs
-| Sous-onglet | État |
-|-------------|------|
-| Data Streams | Inactif |
-| Live Tail | Actif |
+| Sous-onglet | Style |
+|-------------|-------|
+| Data Streams | btn-outline (white) |
+| Live Tail | btn-primary (#0050D7) |
 
-## 5. BARRE DE CONTRÔLE
+## 3. BARRE DE CONTRÔLE
 
-### Contrôles
-| Élément | Type | Action |
-|---------|------|--------|
-| Indicateur live | Badge | Point vert + "En direct" |
-| Pause | Button | Pause le flux |
-| Effacer | Button | Vide le terminal |
+### Indicateur live
+- Cercle vert (6px radius, #10B981)
+- Texte: "En direct" (#10B981, 12px)
 
-## 6. TERMINAL LOGS
+### Boutons de contrôle
+| Bouton | Dimensions | Style |
+|--------|------------|-------|
+| Pause | 80x36px | btn-outline |
+| Effacer | 80x36px | btn-outline |
+
+## 4. CONSOLE LOGS
 
 ### Container
-| Propriété | Valeur |
-|-----------|--------|
-| Fond | Sombre (#1F2937) |
-| Bordure | Arrondie (8px) |
-| Police | Monospace |
-| Taille | 12px |
-| Hauteur | 330px |
+- Dimensions: 1100x330px
+- Background: #1F2937 (dark)
+- Border-radius: 8px
+- Font: monospace, 12px
 
-### Format des logs
+### Format des entrées
 ```
-{timestamp} {client_ip}:{port} → {backend_ip}:{port} {status} {message} {duration} {method} {path}
+YYYY-MM-DD HH:MM:SS IP:port → IP:port STATUS message latency METHOD /path
 ```
 
-### Code couleur
-| Code HTTP | Couleur | Description |
-|-----------|---------|-------------|
-| 2xx | Bleu (#60A5FA) | Success |
-| 4xx | Jaune (#FBBF24) | Client Error |
-| 5xx | Rouge (#F87171) | Server Error |
+### Couleurs des logs
+| Type | Couleur |
+|------|---------|
+| 2xx Success | #60A5FA (bleu) |
+| 4xx Client Error | #FBBF24 (jaune) |
+| 5xx Server Error | #F87171 (rouge) |
 
-## 7. LÉGENDE
-| Couleur | Label |
-|---------|-------|
-| Bleu | 2xx Success |
-| Jaune | 4xx Client Error |
-| Rouge | 5xx Server Error |
+### Curseur
+- Rectangle vert clignotant (#10B981, opacity 0.8)
+- Dimensions: 10x18px
 
-## 8. APIS & ENDPOINTS
-- GET /ipLoadbalancing/{serviceName}/logs/live - Logs temps réel (WebSocket)
+## 5. LÉGENDE
 
+### Position: Bas de la page
+| Indicateur | Couleur | Label |
+|------------|---------|-------|
+| Cercle | #60A5FA | 2xx Success |
+| Cercle | #FBBF24 | 4xx Client Error |
+| Cercle | #F87171 | 5xx Server Error |
+
+## 6. APIS & ENDPOINTS
+
+```
+WSS /ipLoadbalancing/{serviceName}/logs/stream
+```
+
+## 7. TRADUCTIONS (i18n)
+
+```json
+{
+  "live_tail": "Live Tail",
+  "data_streams": "Data Streams",
+  "live": "En direct",
+  "pause": "Pause",
+  "clear": "Effacer",
+  "success_2xx": "2xx Success",
+  "client_error_4xx": "4xx Client Error",
+  "server_error_5xx": "5xx Server Error"
+}
+```

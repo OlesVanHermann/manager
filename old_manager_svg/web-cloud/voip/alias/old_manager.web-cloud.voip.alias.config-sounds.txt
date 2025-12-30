@@ -1,0 +1,131 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Sounds
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire multi-sections
+**Fonction:** Configurer les sons et paramètres d'attente de la file d'appels
+**Contexte:** Configuration file d'appels du numéro alias
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Gestion des sons et de l'attente
+
+## 3. HEADER
+
+- Titre: "Gestion des sons et de l'attente"
+- Sous-titre: "Configurez les sons et l'attente de votre **File d'appels**."
+
+## 4. SECTION CONFIGURATION ATTENTE (800x220px)
+
+### Titre
+"Configuration de l'attente"
+
+### Champ Annonce d'ouverture
+- Label: "Annonce d'ouverture"
+- Select: 300x36px
+- Valeur: "Aucun"
+- Bouton: "+ Ajouter un son" (btn-outline, 160x36px)
+
+### Champ Musique d'attente
+- Label: "Musique d'attente"
+- Select: 300x36px
+- Valeur: "Musique par défaut"
+- Bouton: "+ Ajouter un son" (btn-outline, 160x36px)
+
+## 5. SECTION CONFIGURATION DÉBORDEMENT (800x240px)
+
+### Titre
+"Configuration du débordement"
+
+### Champ Nombre max appels
+- Label: "Nombre maximum d'appels en attente"
+- Input number: 120x36px avec spinner ▲▼
+- Valeur: "10"
+
+### Champ Action débordement
+- Label: "Action à effectuer en cas de débordement"
+- Note: "Cette action sera jouée si la file est pleine."
+- Radio group:
+  - ● "Rediriger vers une messagerie vocale" (sélectionné)
+  - ○ "Jouer un son puis raccrocher"
+
+## 6. SECTION CONFIGURATION FERMETURE (800x220px)
+
+### Titre
+"Configuration de la fermeture"
+
+### Champ Temps max attente
+- Label: "Temps maximum d'attente (en secondes)"
+- Input number: 120x36px avec spinner ▲▼
+- Valeur: "300"
+
+### Champ Action fermeture
+- Label: "Action à effectuer en cas de fermeture"
+- Note: "Cette action sera jouée si le temps d'attente maximum est dépassé."
+- Radio group:
+  - ○ "Rediriger vers une messagerie vocale"
+  - ● "Jouer un son puis raccrocher" (sélectionné)
+
+## 7. ACTIONS
+
+- Bouton "Annuler" (btn-outline, 100x36px)
+- Bouton "Valider" (btn-primary, 100x36px)
+
+## 8. TYPES D'ACTIONS
+
+| Action | Code | Description |
+|--------|------|-------------|
+| Messagerie vocale | voicemail | Redirige vers la boîte vocale |
+| Son + raccrocher | playback_hangup | Joue un message puis termine |
+
+## 9. APIS & ENDPOINTS
+
+```
+# Configuration file d'attente
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}
+→ maxWaitTime, maxMember, soundOnHold, actionOnOverflow, actionOnClosure
+
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}
+Body: {
+  maxMember: 10,
+  maxWaitTime: 300,
+  soundOnHold: 123,
+  actionOnOverflow: "voicemail",
+  actionOnClosure: "playback_hangup"
+}
+
+# Gestion des sons
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/sound
+→ Liste des sons disponibles
+
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/sound
+→ Upload d'un nouveau son
+
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/sound/{soundId}
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Gestion des sons et de l'attente |
+| page_desc | Configurez les sons et l'attente de votre File d'appels. |
+| section_wait | Configuration de l'attente |
+| field_welcome | Annonce d'ouverture |
+| field_hold_music | Musique d'attente |
+| value_none | Aucun |
+| value_default | Musique par défaut |
+| btn_add_sound | + Ajouter un son |
+| section_overflow | Configuration du débordement |
+| field_max_calls | Nombre maximum d'appels en attente |
+| field_overflow_action | Action à effectuer en cas de débordement |
+| overflow_note | Cette action sera jouée si la file est pleine. |
+| section_closure | Configuration de la fermeture |
+| field_max_wait | Temps maximum d'attente (en secondes) |
+| field_closure_action | Action à effectuer en cas de fermeture |
+| closure_note | Cette action sera jouée si le temps d'attente maximum est dépassé. |
+| action_voicemail | Rediriger vers une messagerie vocale |
+| action_hangup | Jouer un son puis raccrocher |
+| btn_cancel | Annuler |
+| btn_validate | Valider |

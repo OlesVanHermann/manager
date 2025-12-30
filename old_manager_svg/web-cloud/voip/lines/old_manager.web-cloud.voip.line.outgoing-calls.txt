@@ -1,0 +1,120 @@
+# Cahier des Charges : web-cloud/voip/line - Outgoing Calls
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec filtres
+**Fonction:** Historique des appels sortants
+**Contexte:** Consommation de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › 0033972XXXXXX › Consommation › Appels émis
+
+### Retour
+← Retour vers la gestion de votre consommation
+
+## 3. HEADER
+
+- Titre: "Appels émis"
+
+## 4. RÉSUMÉ PÉRIODE
+
+### Informations affichées
+- Période: du 01/12/2024 au 31/12/2024
+- Forfait: 38 appels - Durée: 01:45:22
+- Hors forfait: 4 appels - Durée: 00:18:33 - Montant: 2,45 € HT
+
+### Bouton filtrer
+"Filtrer" (btn-outline, 100x36px)
+
+## 5. DATAGRID (1120x480px)
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Date | 110px | Date + heure sur 2 lignes |
+| Numéro appelé | 170px | Numéro destination |
+| Durée | 100px | Format HH:MM:SS |
+| Nature | 100px | Badge "Émis" |
+| Destination | 120px | Badge type |
+| Prix HT | 100px | Montant ou "-" |
+
+### Badges Nature
+- "Émis" (background #DCFCE7, text #16A34A)
+
+### Badges Destination
+
+| Type | Couleur | Background |
+|------|---------|------------|
+| Fixe | #1F2937 | #F3F4F6 |
+| Mobile | #1F2937 | #F3F4F6 |
+| Spéciaux | #92400E | #FEF3C7 |
+| International | #1E40AF | #EFF6FF |
+
+### Exemples données
+
+| Date | Appelé | Durée | Nature | Destination | Prix |
+|------|--------|-------|--------|-------------|------|
+| 28/12/2024 15:42:11 | +33 1 23 45 67 89 | 00:08:24 | Émis | Fixe | - |
+| 28/12/2024 12:08:33 | +33 6 78 90 12 34 | 00:02:15 | Émis | Mobile | - |
+| 27/12/2024 10:22:45 | +33 8 92 XX XX XX | 00:05:18 | Émis | Spéciaux | 0,85 € |
+
+### Pagination
+- Texte: "Affichage 1-5 sur 42"
+- Boutons: ‹ [1] 2 ›
+
+## 6. TYPES DE DESTINATION
+
+| Type | Code | Description |
+|------|------|-------------|
+| Fixe | landline | Numéro fixe France |
+| Mobile | mobile | Numéro mobile France |
+| Spéciaux | special | Numéros surtaxés (08...) |
+| International | international | Appels internationaux |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Historique appels sortants
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/outgoingCalls
+Query: ?dateFrom=2024-12-01&dateTo=2024-12-31&page=1&pageSize=10
+→ {
+  calls: [{ date, callee, duration, nature, destination, price }],
+  summary: {
+    includedCalls: 38,
+    includedDuration: "01:45:22",
+    outOfPlanCalls: 4,
+    outOfPlanDuration: "00:18:33",
+    outOfPlanAmount: 2.45
+  }
+}
+
+# Export CSV
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/outgoingCalls/export
+Query: ?dateFrom=2024-12-01&dateTo=2024-12-31&format=csv
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Appels émis |
+| link_back | Retour vers la gestion de votre consommation |
+| period_label | Période du {start} au {end} |
+| summary_included | Forfait: {count} appels - Durée: {duration} |
+| summary_outofplan | Hors forfait: {count} appels - Durée: {duration} - Montant: {amount} |
+| btn_filter | Filtrer |
+| col_date | Date |
+| col_callee | Numéro appelé |
+| col_duration | Durée |
+| col_nature | Nature |
+| col_destination | Destination |
+| col_price | Prix HT |
+| nature_outgoing | Émis |
+| dest_landline | Fixe |
+| dest_mobile | Mobile |
+| dest_special | Spéciaux |
+| dest_international | International |
+| pagination | Affichage {start}-{end} sur {total} |

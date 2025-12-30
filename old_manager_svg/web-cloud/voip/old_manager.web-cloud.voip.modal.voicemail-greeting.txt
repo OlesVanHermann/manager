@@ -1,0 +1,122 @@
+# Cahier des Charges : web-cloud/voip - Modal Voicemail Greeting
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire avec upload audio
+**Fonction:** Personnaliser l'annonce de la messagerie vocale
+**Contexte:** Accessible depuis la gestion du répondeur d'une ligne
+
+## 2. DIMENSIONS
+
+- Modal: 550x420px
+
+## 3. HEADER MODAL (60px)
+
+- Background: #F9FAFB
+- Titre: "Personnaliser l'annonce" (16px, bold)
+- Bouton fermer: "x"
+
+## 4. CONTENU
+
+### Type d'annonce (radio cards)
+
+| Option | Description | Dimensions |
+|--------|-------------|------------|
+| Annonce par defaut | Message standard OVH | 245x50px |
+| Annonce personnalisee | Votre propre message | 247x50px |
+
+Style sélection: #E8F0FE + bordure #0050D7
+Style non sélectionné: blanc + bordure #E5E7EB
+
+### Zone upload fichier audio
+- Label: "Fichier audio (si personnalise)" (12px, bold)
+- Zone: 502x80px
+- Style: Bordure pointillée #E5E7EB, background #F9FAFB
+- Contenu:
+  - "Glissez-deposez un fichier audio"
+  - "ou"
+  - "Parcourir..." (lien primary)
+
+### Note formats
+- Texte: "Formats acceptes : WAV, MP3 (max 5 Mo, duree max 2 min)"
+- Style: text-muted, font-size 10px
+
+### Annonce actuelle
+- Label: "Annonce actuelle" (12px, bold)
+- Zone: 502x45px (background #F9FAFB)
+- Texte: "Annonce par defaut OVH"
+- Action: "Ecouter" (lien primary, droite)
+
+## 5. FOOTER MODAL
+
+- Séparateur: Ligne #E5E7EB
+- Position boutons: Gauche
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Enregistrer | btn-primary | 120x36px |
+| Annuler | btn-outline | 100x36px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Récupérer configuration annonce actuelle
+GET /telephony/{billingAccount}/voicemail/{serviceName}/greeting
+→ {
+  type: "default",  // default, custom
+  customGreetingId: null,
+  duration: 15
+}
+
+# Définir annonce par défaut
+PUT /telephony/{billingAccount}/voicemail/{serviceName}/greeting
+Body: {
+  type: "default"
+}
+→ { success: true }
+
+# Uploader annonce personnalisée
+POST /telephony/{billingAccount}/voicemail/{serviceName}/greeting/upload
+Body: FormData (audioFile: File)
+→ {
+  greetingId: "greeting-123",
+  duration: 18,
+  format: "mp3"
+}
+
+# Écouter l'annonce actuelle
+GET /telephony/{billingAccount}/voicemail/{serviceName}/greeting/listen
+→ {
+  url: "https://...",  // URL temporaire pour écouter
+  expiresAt: "2024-12-30T16:00:00"
+}
+
+# Formats acceptés
+# - WAV (8kHz, 16-bit mono ou 44.1kHz)
+# - MP3 (128kbps recommandé)
+# Taille max: 5 Mo
+# Durée max: 2 minutes
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Personnaliser l'annonce |
+| field_greeting_type | Type d'annonce |
+| type_default | Annonce par defaut |
+| type_default_desc | Message standard OVH |
+| type_custom | Annonce personnalisee |
+| type_custom_desc | Votre propre message |
+| field_audio_file | Fichier audio (si personnalise) |
+| upload_drag | Glissez-deposez un fichier audio |
+| upload_or | ou |
+| upload_browse | Parcourir... |
+| note_formats | Formats acceptes : WAV, MP3 (max 5 Mo, duree max 2 min) |
+| field_current_greeting | Annonce actuelle |
+| current_default | Annonce par defaut OVH |
+| action_listen | Ecouter |
+| btn_save | Enregistrer |
+| btn_cancel | Annuler |

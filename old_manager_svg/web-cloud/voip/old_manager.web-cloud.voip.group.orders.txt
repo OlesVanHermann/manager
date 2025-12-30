@@ -1,0 +1,155 @@
+# Cahier des Charges : web-cloud/voip/group - Orders (Commandes)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid
+**Fonction:** Gérer les commandes de services VoIP
+**Contexte:** Historique et suivi des commandes
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+Dashboard | General | Services | **Commandes** (actif) | Portabilite | Facturation
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche groupes
+- Groupe sélectionné
+
+### Panneau droit (1096px)
+- Header groupe
+- Tabs navigation
+- Toolbar + filtres
+- Table commandes
+
+## 4. HEADER GROUPE
+
+- Titre: "ovh-telecom-123"
+- Sous-titre: "Groupe / Commandes"
+
+## 5. BARRE D'OUTILS
+
+### Éléments
+
+| Élément | Type | Dimensions |
+|---------|------|------------|
+| Refresh | Bouton icône | 32x32px |
+| Recherche | Input | 180x32px |
+| Filtre Type | Select | 100x32px |
+| Filtre Statut | Select | 100x32px |
+| Nouvelle commande | btn-primary | 156x32px |
+
+## 6. DATAGRID COMMANDES (1036x550px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Reference | 160px | #ORD-XXXX-XXXXXX |
+| Type | 100px | Badge coloré |
+| Description | 250px | Description commande |
+| Statut | 100px | Badge statut |
+| Date | 130px | DD/MM/YYYY |
+| Actions | 100px | Lien détails |
+
+### Types de commande
+
+| Type | Couleur badge |
+|------|---------------|
+| Ligne SIP | #DBEAFE (bleu) |
+| Numero | #DEF7EC (vert) |
+| Trunk SIP | #F3E8FF (violet) |
+| Fax | #FEF3C7 (jaune) |
+
+### Statuts
+
+| Statut | Couleur |
+|--------|---------|
+| En cours | #FEF3C7 (jaune) |
+| Livree | #DEF7EC (vert) |
+| Annulee | #FEE2E2 (rouge) |
+
+### Données exemple
+
+| Reference | Type | Description | Statut | Date |
+|-----------|------|-------------|--------|------|
+| #ORD-2024-001234 | Ligne SIP | 3 nouvelles lignes SIP | En cours | 28/12/2024 |
+| #ORD-2024-001233 | Numero | Numero geographique +33 1 XX | Livree | 20/12/2024 |
+| #ORD-2024-001230 | Trunk SIP | Trunk SIP carrier-sip | Livree | 15/12/2024 |
+| #ORD-2024-001228 | Ligne SIP | Ligne SIP supplementaire | Annulee | 10/12/2024 |
+| #ORD-2024-001220 | Fax | Ligne fax virtuelle | Livree | 01/12/2024 |
+
+## 7. PAGINATION
+
+- Compteur: "12 commandes"
+- Navigation: < 1 2 3 >
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des commandes
+GET /telephony/{billingAccount}/order
+Query: { type, status, search, limit, offset }
+→ [{
+  orderId: "ORD-2024-001234",
+  type: "line",
+  description: "3 nouvelles lignes SIP",
+  status: "pending",
+  date: "2024-12-28"
+}]
+
+# Détail d'une commande
+GET /telephony/{billingAccount}/order/{orderId}
+→ {
+  orderId: "ORD-2024-001234",
+  type: "line",
+  description: "3 nouvelles lignes SIP",
+  status: "pending",
+  date: "2024-12-28",
+  items: [...],
+  total: 45.00
+}
+
+# Créer une commande
+POST /telephony/{billingAccount}/order
+Body: {
+  type: "line",
+  quantity: 3,
+  options: {...}
+}
+
+# Annuler une commande
+DELETE /telephony/{billingAccount}/order/{orderId}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_orders | Commandes |
+| btn_new_order | Nouvelle commande |
+| search_placeholder | Rechercher... |
+| filter_type | Type |
+| filter_status | Statut |
+| col_reference | Reference |
+| col_type | Type |
+| col_description | Description |
+| col_status | Statut |
+| col_date | Date |
+| col_actions | Actions |
+| type_line | Ligne SIP |
+| type_number | Numero |
+| type_trunk | Trunk SIP |
+| type_fax | Fax |
+| status_pending | En cours |
+| status_delivered | Livree |
+| status_cancelled | Annulee |
+| action_details | Details |
+| pagination | {count} commandes |

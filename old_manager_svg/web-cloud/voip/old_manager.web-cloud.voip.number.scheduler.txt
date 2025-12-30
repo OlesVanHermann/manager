@@ -1,0 +1,161 @@
+# Cahier des Charges : web-cloud/voip/number - Scheduler (Horaires)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration avec grille horaires
+**Fonction:** Gérer les horaires d'ouverture d'un numéro
+**Contexte:** Onglet Horaires d'un numéro VoIP
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Configuration | Agents | Statistiques | **Horaires** (actif)
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche numéros
+- Liste des numéros
+
+### Panneau droit (1096px)
+- Header numéro avec badge
+- Tabs navigation
+- Bannière statut actuel
+- Grille horaires semaine
+- Carte jours fériés
+
+## 4. HEADER NUMÉRO
+
+- Numéro: "+33 800 123 456"
+- Badge: "easyHunting" (vert)
+- Description: "Numero vert / Horaires"
+
+## 5. BANNIÈRE STATUT (1036x50px)
+
+- Background: #DEF7EC (success)
+- Texte: "Actuellement ouvert - Prochaine fermeture : 18:00"
+
+**États possibles:**
+- Ouvert (vert): "Actuellement ouvert - Prochaine fermeture : HH:mm"
+- Fermé (rouge): "Actuellement ferme - Prochaine ouverture : HH:mm"
+
+## 6. GRILLE HORAIRES (1036x450px)
+
+### Titre
+"Horaires d'ouverture"
+
+### Légende
+- Ouvert: #DEF7EC (vert)
+- Ferme: #FEE2E2 (rouge)
+- Reduit: #FEF3C7 (jaune)
+
+### Format par jour
+
+| Jour | Matin | Pause | Apres-midi | Action |
+|------|-------|-------|------------|--------|
+| Lundi | 09:00-12:00 (vert) | Pause (rouge) | 14:00-18:00 (vert) | Modifier |
+| Mardi | 09:00-12:00 (vert) | Pause (rouge) | 14:00-18:00 (vert) | Modifier |
+| Mercredi | 09:00-12:00 (vert) | Pause (rouge) | 14:00-18:00 (vert) | Modifier |
+| Jeudi | 09:00-12:00 (vert) | Pause (rouge) | 14:00-18:00 (vert) | Modifier |
+| Vendredi | 09:00-12:00 (vert) | Pause (rouge) | 14:00-17:00 (vert) | Modifier |
+| Samedi | Ferme (rouge, pleine largeur) | | | Modifier |
+| Dimanche | Ferme (rouge, pleine largeur) | | | Modifier |
+
+### Dimensions par ligne
+- Hauteur ligne: ~40px
+- Largeur label jour: 100px
+- Largeur créneaux: ~860px
+- Largeur action: 80px
+
+## 7. CARTE JOURS FÉRIÉS (1036x80px)
+
+### Titre
+"Jours feries et exceptions"
+
+### Contenu
+- Texte: "3 jours feries configures (ferme)"
+- Lien: "Gerer les exceptions"
+
+## 8. APIS & ENDPOINTS
+
+```
+# Récupérer les horaires
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/timeCondition
+→ {
+  monday: [
+    { start: "09:00", end: "12:00", status: "open" },
+    { start: "14:00", end: "18:00", status: "open" }
+  ],
+  tuesday: [...],
+  ...
+  saturday: [{ status: "closed" }],
+  sunday: [{ status: "closed" }]
+}
+
+# Modifier les horaires d'un jour
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/timeCondition/{day}
+Body: {
+  slots: [
+    { start: "09:00", end: "12:00", status: "open" },
+    { start: "14:00", end: "18:00", status: "open" }
+  ]
+}
+
+# Statut actuel
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/timeCondition/status
+→ {
+  currentStatus: "open",
+  nextChange: "18:00",
+  nextStatus: "closed"
+}
+
+# Liste des exceptions (jours fériés)
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/timeCondition/exception
+→ [{
+  date: "2025-12-25",
+  name: "Noel",
+  status: "closed"
+}]
+
+# Ajouter une exception
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/timeCondition/exception
+Body: {
+  date: "2025-01-01",
+  name: "Jour de l'an",
+  status: "closed"
+}
+
+# Supprimer une exception
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/timeCondition/exception/{date}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_schedule | Horaires |
+| status_open | Actuellement ouvert |
+| status_closed | Actuellement ferme |
+| next_close | Prochaine fermeture : {time} |
+| next_open | Prochaine ouverture : {time} |
+| title_schedule | Horaires d'ouverture |
+| legend_open | Ouvert |
+| legend_closed | Ferme |
+| legend_reduced | Reduit |
+| day_monday | Lundi |
+| day_tuesday | Mardi |
+| day_wednesday | Mercredi |
+| day_thursday | Jeudi |
+| day_friday | Vendredi |
+| day_saturday | Samedi |
+| day_sunday | Dimanche |
+| action_edit | Modifier |
+| title_holidays | Jours feries et exceptions |
+| holidays_count | {count} jours feries configures (ferme) |
+| link_manage_exceptions | Gerer les exceptions |

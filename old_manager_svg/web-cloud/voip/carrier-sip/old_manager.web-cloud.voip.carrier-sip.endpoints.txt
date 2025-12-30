@@ -1,0 +1,136 @@
+# Cahier des Charges : web-cloud/voip/carrier-sip - Endpoints
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec tableau
+**Fonction:** Gérer les endpoints SIP du trunk
+**Contexte:** Configuration des terminaisons SIP pour les appels entrants
+
+## 2. NAVIGATION
+
+### Onglets
+- Tableau de bord
+- **Endpoints** (actif)
+- CDR
+
+## 3. HEADER
+
+- Titre: "Trunk SIP - {serviceName}"
+- Sous-titre: "carrier-sip-{id}"
+
+## 4. SECTION IP SIP (1200x180px)
+
+### Titre
+"Liste des IP SIP"
+
+### Tableau simple
+
+| Colonne | Valeur |
+|---------|--------|
+| IP SIP | sip.carrier-sip.ovh.net |
+| IP SIP | sip2.carrier-sip.ovh.net |
+
+## 5. SECTION ENDPOINTS (1200x400px)
+
+### Titre
+"Endpoints avec appels entrants activés"
+
+### Colonnes du tableau
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| ID | 180px | Identifiant de l'endpoint |
+| Protocole | 200px | UDP / TCP / TLS |
+| IP SIP | 250px | Adresse IP |
+| Port | 150px | Port SIP |
+| Priorité | 150px | Ordre de priorité |
+| Poids | 100px | Poids pour load balancing |
+
+### Données exemple
+
+| ID | Protocole | IP SIP | Port | Priorité | Poids |
+|----|-----------|--------|------|----------|-------|
+| endpoint-001 | UDP | 192.168.1.100 | 5060 | 1 | 100 |
+| endpoint-002 | TCP | 192.168.1.101 | 5060 | 2 | 50 |
+| endpoint-003 | TLS | 192.168.1.102 | 5061 | 1 | 100 |
+| endpoint-004 | UDP | 192.168.1.103 | 5060 | 3 | 25 |
+
+### Footer
+"4 endpoints"
+
+## 6. PROTOCOLES SUPPORTÉS
+
+| Protocole | Port par défaut | Description |
+|-----------|-----------------|-------------|
+| UDP | 5060 | Standard, non chiffré |
+| TCP | 5060 | Connexion fiable |
+| TLS | 5061 | Chiffré |
+
+## 7. LOGIQUE PRIORITÉ/POIDS
+
+- **Priorité** : Ordre de sélection (1 = premier)
+- **Poids** : Distribution load-balancing entre endpoints de même priorité
+- Formule: Plus le poids est élevé, plus l'endpoint reçoit de trafic
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des IP SIP
+GET /telephony/carrierSip/{serviceName}/sipIps
+→ ["sip.carrier-sip.ovh.net", "sip2.carrier-sip.ovh.net"]
+
+# Liste des endpoints
+GET /telephony/carrierSip/{serviceName}/endpoints
+→ [{
+  id: "endpoint-001",
+  protocol: "UDP",
+  sipIp: "192.168.1.100",
+  port: 5060,
+  priority: 1,
+  weight: 100,
+  incomingCallsEnabled: true
+}]
+
+# Détail d'un endpoint
+GET /telephony/carrierSip/{serviceName}/endpoints/{endpointId}
+→ { ... }
+
+# Créer un endpoint
+POST /telephony/carrierSip/{serviceName}/endpoints
+Body: {
+  protocol: "UDP",
+  sipIp: "192.168.1.100",
+  port: 5060,
+  priority: 1,
+  weight: 100,
+  incomingCallsEnabled: true
+}
+
+# Modifier un endpoint
+PUT /telephony/carrierSip/{serviceName}/endpoints/{endpointId}
+Body: { priority: 2, weight: 50 }
+
+# Supprimer un endpoint
+DELETE /telephony/carrierSip/{serviceName}/endpoints/{endpointId}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Trunk SIP - {serviceName} |
+| tab_dashboard | Tableau de bord |
+| tab_endpoints | Endpoints |
+| tab_cdr | CDR |
+| section_sip_ips | Liste des IP SIP |
+| section_endpoints | Endpoints avec appels entrants activés |
+| col_id | ID |
+| col_protocol | Protocole |
+| col_sip_ip | IP SIP |
+| col_port | Port |
+| col_priority | Priorité |
+| col_weight | Poids |
+| footer_count | {count} endpoints |
+| protocol_udp | UDP |
+| protocol_tcp | TCP |
+| protocol_tls | TLS |

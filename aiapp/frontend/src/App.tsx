@@ -58,8 +58,7 @@ const HousingPage = lazy(() => import("./pages/bare-metal/housing"));
 // Web Cloud - 6 sections regroupées
 const WebCloudDashboard = lazy(() => import("./pages/web-cloud"));
 const DomainsDnsPage = lazy(() => import("./pages/web-cloud/domains"));
-const HebergementPage = lazy(() => import("./pages/web-cloud/hebergement"));
-const ManagedWordPressPage = lazy(() => import("./pages/web-cloud/hebergement/managed-wordpress"));
+const WordPressPage = lazy(() => import("./pages/web-cloud/wordpress"));
 const EmailsPage = lazy(() => import("./pages/web-cloud/emails"));
 const TelecomPage = lazy(() => import("./pages/web-cloud/telecom"));
 const AccessPage = lazy(() => import("./pages/web-cloud/access"));
@@ -224,8 +223,7 @@ function AppContent() {
       switch (nav.activeSectionId) {
         case "web-home": return <WebCloudDashboard onNavigate={nav.handleNavigate} />;
         case "web-domains-dns": return <DomainsDnsPage />;
-        case "web-hosting": return <HebergementPage />;
-        case "web-wordpress": return <ManagedWordPressPage />;
+        case "web-wordpress": return <WordPressPage />;
         case "web-emails": return <EmailsPage />;
         case "web-voip": return <TelecomPage />;
         case "web-access": return <AccessPage />;

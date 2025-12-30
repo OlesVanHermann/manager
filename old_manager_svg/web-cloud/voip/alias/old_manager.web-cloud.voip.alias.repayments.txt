@@ -1,0 +1,123 @@
+# Cahier des Charges : web-cloud/voip/alias - Repayments
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard + datagrid
+**Fonction:** Consulter les reversements et frais d'un numéro à valeur ajoutée
+**Contexte:** Numéro alias SVA (Service à Valeur Ajoutée)
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Reversements et coûts
+
+## 3. HEADER
+
+- Titre: "Reversements et coûts"
+- Sous-titre: "Consultez les reversements et les frais liés à votre numéro à valeur ajoutée."
+
+## 4. CARTES RÉSUMÉ (2 colonnes, 350x150px chacune)
+
+### Carte Versements
+
+#### Titre
+"Versements"
+
+#### Contenu
+| Label | Valeur |
+|-------|--------|
+| Versements en attente | 125,45 € HT |
+| Versements disponibles | 1 234,80 € HT |
+
+### Carte Coûts
+
+#### Titre
+"Coûts"
+
+#### Contenu
+| Label | Valeur |
+|-------|--------|
+| Frais à payer | 45,20 € HT |
+
+## 5. DATAGRID DÉTAIL (1100x400px)
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Date | 180px | Format DD-MM-YYYY HH:MM:SS |
+| Numéro appelant | 200px | Format international |
+| Durée (s) | 130px | Secondes |
+| Opérateur | 200px | Nom opérateur |
+| Versement | 150px | Montant € ou "-" |
+| Frais | 150px | Montant € ou "-" |
+
+### Exemples données
+
+| Date | Numéro | Durée | Opérateur | Versement | Frais |
+|------|--------|-------|-----------|-----------|-------|
+| 28-12-2024 14:32:15 | +33 6 12 34 56 78 | 185 | Orange | 0,245 € | - |
+| 28-12-2024 13:15:42 | +33 1 23 45 67 89 | 312 | SFR | 0,412 € | - |
+| 28-12-2024 11:45:08 | +33 9 87 65 43 21 | 95 | Free | 0,126 € | - |
+| 28-12-2024 10:22:33 | +33 6 55 44 33 22 | 428 | Bouygues | 0,567 € | - |
+| 27-12-2024 16:10:55 | +33 7 11 22 33 44 | 15 | Orange | - | 0,050 € |
+| 27-12-2024 14:58:21 | +33 6 99 88 77 66 | 256 | SFR | 0,339 € | - |
+
+### Pagination
+- Texte: "Affichage 1-6 sur 156"
+- Boutons: ‹ [1] 2 3 ›
+
+## 6. OPÉRATEURS
+
+| Code | Nom |
+|------|-----|
+| orange | Orange |
+| sfr | SFR |
+| free | Free |
+| bouygues | Bouygues |
+| other | Autre |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Résumé des versements
+GET /telephony/{billingAccount}/number/{serviceName}/repayments/summary
+→ {
+  pendingRepayments: 125.45,
+  availableRepayments: 1234.80,
+  fees: 45.20
+}
+
+# Liste des opérations
+GET /telephony/{billingAccount}/number/{serviceName}/repayments
+Query: { offset: 0, limit: 20, dateFrom, dateTo }
+→ Liste paginée des opérations
+
+# Détail opération
+GET /telephony/{billingAccount}/number/{serviceName}/repayments/{operationId}
+→ date, caller, duration, operator, repayment, fee
+
+# Export CSV
+GET /telephony/{billingAccount}/number/{serviceName}/repayments/export
+Query: { dateFrom, dateTo, format: "csv" }
+→ Fichier CSV
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Reversements et coûts |
+| page_desc | Consultez les reversements et les frais liés à votre numéro à valeur ajoutée. |
+| card_repayments | Versements |
+| label_pending | Versements en attente |
+| label_available | Versements disponibles |
+| card_fees | Coûts |
+| label_fees | Frais à payer |
+| col_date | Date |
+| col_caller | Numéro appelant |
+| col_duration | Durée (s) |
+| col_operator | Opérateur |
+| col_repayment | Versement |
+| col_fee | Frais |
+| pagination | Affichage {start}-{end} sur {total} |

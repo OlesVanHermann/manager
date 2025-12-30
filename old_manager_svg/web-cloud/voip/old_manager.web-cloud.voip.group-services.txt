@@ -1,0 +1,135 @@
+# Cahier des Charges : web-cloud/voip - Group Services
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid
+**Fonction:** Liste de tous les services d'un compte téléphonie
+**Contexte:** Ancien format de liste services
+
+## 2. NAVIGATION
+
+### Header
+OVHcloud > Telecom
+
+### Breadcrumb
+Telephonie / {billingAccount} / Services
+
+### NAV3 Tabs
+Tableau de bord | **Services** (actif) | Administration | Facturation | Commander alias | Annuaire | Numeros abreges | Contacts
+
+## 3. LAYOUT
+
+### Container principal (1280x580px)
+- Background blanc
+- Border-radius 8px
+- Barre de recherche + filtres
+- Tableau services
+
+## 4. BARRE D'OUTILS
+
+### Recherche (300x40px)
+- Placeholder: "Rechercher un service..."
+
+### Filtres (150x40px)
+- Type de service (dropdown)
+
+## 5. DATAGRID SERVICES
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Numero | 260px | Numéro de téléphone (lien) |
+| Description | 270px | Description personnalisée |
+| Type service | 200px | Ligne/Numero/Fax |
+| Fonctionnalite | 250px | Configuration active |
+| Actions | 100px | Menu ActionMenu |
+
+### Types de service
+
+| Type | Description |
+|------|-------------|
+| Ligne | Ligne SIP standard |
+| Numero | Alias/numéro spécial |
+| Fax | Ligne fax virtuelle |
+
+### Fonctionnalités possibles
+
+| Fonctionnalité | Description |
+|----------------|-------------|
+| SIP | Ligne SIP basique |
+| SIP + Voicemail | Ligne avec messagerie |
+| File d'attente | Numéro avec file d'attente |
+| Conference | Salle de conférence |
+| Fax virtuel | Service fax |
+
+### Données exemple
+
+| Numero | Description | Type | Fonctionnalite |
+|--------|-------------|------|----------------|
+| 0033 1 23 45 67 89 | Ligne principale accueil | Ligne | SIP |
+| 0033 1 23 45 67 90 | Poste direction | Ligne | SIP + Voicemail |
+| 0033 8 00 12 34 56 | Numero vert support | Numero | File d'attente |
+| 0033 1 23 45 67 91 | Fax entreprise | Fax | Fax virtuel |
+| 0033 1 23 45 67 92 | Salle de conference | Numero | Conference |
+
+## 6. MENU ACTIONS
+
+### Options
+- Voir le service
+
+## 7. PAGINATION
+
+- Format: "Affichage de 1 a 5 sur 26 services"
+- Boutons: Précédent, numéros de page, Suivant
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des services
+GET /telephony/{billingAccount}/service
+Query: { search, type, limit, offset }
+→ [{
+  serviceName: "0033123456789",
+  description: "Ligne principale accueil",
+  serviceType: "line",
+  featureType: "sip"
+}]
+
+# Types de service disponibles
+GET /telephony/{billingAccount}/service/types
+→ ["line", "number", "fax", "trunk"]
+
+# Détail d'un service
+GET /telephony/{billingAccount}/service/{serviceName}
+→ {
+  serviceName: "0033123456789",
+  description: "Ligne principale accueil",
+  serviceType: "line",
+  featureType: "sip",
+  status: "active"
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Services |
+| search_placeholder | Rechercher un service... |
+| filter_type | Type de service |
+| col_number | Numero |
+| col_description | Description |
+| col_type | Type service |
+| col_feature | Fonctionnalite |
+| col_actions | Actions |
+| type_line | Ligne |
+| type_number | Numero |
+| type_fax | Fax |
+| feature_sip | SIP |
+| feature_sip_voicemail | SIP + Voicemail |
+| feature_queue | File d'attente |
+| feature_conference | Conference |
+| feature_virtual_fax | Fax virtuel |
+| action_view | Voir le service |
+| pagination | Affichage de {start} a {end} sur {total} services |

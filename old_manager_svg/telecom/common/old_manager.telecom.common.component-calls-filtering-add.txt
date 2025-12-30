@@ -1,0 +1,98 @@
+# Cahier des Charges : telecom/common - Calls Filtering Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Composant formulaire
+**Fonction:** Ajouter un filtre d'appel (liste blanche/noire)
+**Contexte:** Composant intégré dans la page de gestion des filtres
+
+## 2. DIMENSIONS
+
+- Composant: 450x320px
+- Border radius: 8px
+
+## 3. TOOLBAR
+
+Position: Droite du composant
+
+| Bouton | Dimensions | Description |
+|--------|------------|-------------|
+| Assistant | 80x32px | Ouvre l'assistant de configuration |
+| Import CSV | 90x32px | Importer depuis un fichier |
+
+## 4. FORMULAIRE
+
+### Champs
+
+| Champ | Type | Placeholder/Valeur |
+|-------|------|---------------------|
+| Type de numéro | Select | "International ▼" |
+| Liste | Select | "Appels entrants - Liste noire ▼" |
+| Numéro | Input | "Au format international" + ⓘ |
+
+### Options Type de numéro
+- International
+- Services OVHcloud
+- Mobiles nationaux
+- Fixes nationaux
+- Répondeur
+
+### Options Liste
+- Appels entrants - Liste blanche
+- Appels entrants - Liste noire
+- Appels sortants - Liste blanche
+- Appels sortants - Liste noire
+
+### Message d'erreur (si doublon)
+- Background: #FEE2E2
+- Texte: "Ce filtre est déjà présent dans la liste." (#DC2626)
+- Dimensions: 410x32px
+
+### Bouton soumission
+- Texte: "Ajouter"
+- Style: btn-primary
+- Dimensions: 100x38px
+
+## 5. APIS & ENDPOINTS
+
+```
+# Ajouter un filtre
+POST /telephony/{billingAccount}/line/{serviceName}/calls/filter
+Body: {
+  type: "incoming",  // incoming, outgoing
+  list: "blacklist",  // whitelist, blacklist
+  numberType: "international",
+  number: "+33612345678"
+}
+→ {
+  filterId: 123,
+  status: "creating"
+}
+
+# Vérifier doublon
+GET /telephony/{billingAccount}/line/{serviceName}/calls/filter/check
+Query: { type, list, number }
+→ { exists: false }
+```
+
+## 6. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| btn_assistant | Assistant |
+| btn_import | Import CSV |
+| field_number_type | Type de numéro |
+| field_list | Liste |
+| field_number | Numéro |
+| placeholder_number | Au format international |
+| type_international | International |
+| type_ovh_services | Services OVHcloud |
+| type_mobile | Mobiles nationaux |
+| type_landline | Fixes nationaux |
+| type_voicemail | Répondeur |
+| list_incoming_whitelist | Appels entrants - Liste blanche |
+| list_incoming_blacklist | Appels entrants - Liste noire |
+| list_outgoing_whitelist | Appels sortants - Liste blanche |
+| list_outgoing_blacklist | Appels sortants - Liste noire |
+| error_duplicate | Ce filtre est déjà présent dans la liste. |
+| btn_add | Ajouter |

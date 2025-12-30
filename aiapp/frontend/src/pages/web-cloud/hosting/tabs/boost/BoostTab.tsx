@@ -131,16 +131,16 @@ export function BoostTab({ serviceName, details }: Props) {
             <h4>{t("boost.whatIs")}</h4>
             <p>{t("boost.explanation")}</p>
             <div className="boost-features">
-              <div className="feature-item">
-                <span className="feature-icon">⚡</span>
+              <div className="boost-feature-item">
+                <span className="boost-feature-icon">⚡</span>
                 <span>{t("boost.featureCpu")}</span>
               </div>
-              <div className="feature-item">
-                <span className="feature-icon">💾</span>
+              <div className="boost-feature-item">
+                <span className="boost-feature-icon">💾</span>
                 <span>{t("boost.featureRam")}</span>
               </div>
-              <div className="feature-item">
-                <span className="feature-icon">🎯</span>
+              <div className="boost-feature-item">
+                <span className="boost-feature-icon">🎯</span>
                 <span>{t("boost.featurePriority")}</span>
               </div>
             </div>

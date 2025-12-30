@@ -1,0 +1,169 @@
+# Cahier des Charges : web-cloud/voip/number - Agents
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid
+**Fonction:** Gérer les agents d'un numéro easyHunting
+**Contexte:** Onglet Agents d'un numéro VoIP
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Configuration | **Agents** (actif) | Statistiques | Horaires
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche numéros
+- Liste des numéros
+
+### Panneau droit (1096px)
+- Header numéro avec badge
+- Tabs navigation
+- Toolbar avec recherche et bouton ajout
+- Cartes statistiques temps réel
+- Tableau agents
+
+## 4. HEADER NUMÉRO
+
+- Numéro: "+33 800 123 456"
+- Badge: "easyHunting" (vert)
+- Description: "Numero vert / Agents"
+
+## 5. TOOLBAR
+
+### Éléments
+- Bouton refresh (32x32px, outline)
+- Champ recherche "Rechercher un agent..." (200x32px)
+- Bouton "+ Ajouter un agent" (btn-primary, 180x32px)
+
+## 6. CARTES STATISTIQUES TEMPS RÉEL (3 cartes)
+
+| Carte | Titre | Valeur | Dimensions |
+|-------|-------|--------|------------|
+| 1 | Agents actifs | 4 / 5 (vert) | 340x60px |
+| 2 | Appels en attente | 2 | 340x60px |
+| 3 | Temps d'attente moyen | 45s | 332x60px |
+
+## 7. TABLEAU AGENTS (1036x450px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Priorite | 80px | Numéro + flèches tri |
+| Agent | 200px | Nom de l'agent |
+| Numero | 180px | Numéro de téléphone |
+| Type | 100px | Interne/Externe |
+| Statut | 100px | Badge état |
+| Appels (24h) | 120px | Compteur |
+| Duree moy. | 120px | Format Xmin Xs |
+| Actions | 136px | Liens |
+
+### États agent
+
+| État | Couleur |
+|------|---------|
+| En ligne | #DEF7EC (vert) |
+| Hors ligne | #FEE2E2 (rouge) |
+| Pause | #FEF3C7 (jaune) |
+| Occupe | #DBEAFE (bleu) |
+
+### Actions
+- Modifier
+- Supprimer (x)
+
+### Données exemple
+
+| Priorite | Agent | Numero | Type | Statut | Appels | Duree moy |
+|----------|-------|--------|------|--------|--------|-----------|
+| 1 | Jean Dupont | +33 9 12 34 56 78 | Interne | En ligne | 45 | 3min 12s |
+| 2 | Marie Martin | +33 9 12 34 56 79 | Interne | En ligne | 38 | 4min 05s |
+| 3 | Pierre Bernard | +33 6 12 34 56 80 | Externe | Hors ligne | 12 | 2min 45s |
+| 4 | Sophie Petit | +33 9 12 34 56 81 | Interne | En ligne | 28 | 5min 30s |
+| 5 | Luc Moreau | +33 9 12 34 56 82 | Interne | En ligne | 52 | 2min 15s |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Liste des agents
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+Query: { limit, offset }
+→ [{
+  agentId: "agent-001",
+  agentNumber: "+33912345678",
+  name: "Jean Dupont",
+  priority: 1,
+  type: "internal",
+  status: "online",
+  callsCount24h: 45,
+  avgDuration: 192
+}]
+
+# Ajouter un agent
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent
+Body: {
+  agentNumber: "+33912345678",
+  name: "Nouveau Agent",
+  priority: 6,
+  type: "internal",
+  ringTime: 20
+}
+
+# Modifier un agent
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+Body: {
+  name: "Nouveau nom",
+  priority: 2,
+  ringTime: 25
+}
+
+# Supprimer un agent
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}
+
+# Changer priorité
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/agent/{agentId}/changePriority
+Body: { priority: 1 }
+
+# Statistiques temps réel
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/realtime
+→ {
+  onlineAgents: 4,
+  totalAgents: 5,
+  waitingCalls: 2,
+  avgWaitTime: 45
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_agents | Agents |
+| btn_add_agent | Ajouter un agent |
+| search_agent | Rechercher un agent... |
+| stat_online_agents | Agents actifs |
+| stat_waiting_calls | Appels en attente |
+| stat_avg_wait | Temps d'attente moyen |
+| col_priority | Priorite |
+| col_agent | Agent |
+| col_number | Numero |
+| col_type | Type |
+| col_status | Statut |
+| col_calls_24h | Appels (24h) |
+| col_avg_duration | Duree moy. |
+| col_actions | Actions |
+| type_internal | Interne |
+| type_external | Externe |
+| status_online | En ligne |
+| status_offline | Hors ligne |
+| status_pause | Pause |
+| status_busy | Occupe |
+| action_edit | Modifier |
+| action_delete | Supprimer |

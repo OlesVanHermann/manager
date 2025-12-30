@@ -1,0 +1,206 @@
+# Cahier des Charges : web-cloud/voip/sms - Campagnes
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec datagrid et statistiques
+**Fonction:** Gérer les campagnes SMS
+**Contexte:** Onglet Campagnes d'un compte SMS
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Envoyer | **Campagnes** (actif) | Entrants | Historique | Modeles
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche comptes
+- Liste des comptes
+
+### Panneau droit (1096px)
+- Header compte
+- Tabs navigation
+- Toolbar avec filtres
+- Cartes statistiques
+- Tableau campagnes
+
+## 4. TOOLBAR
+
+### Éléments
+- Bouton refresh (32x32px, outline)
+- Champ recherche "Rechercher une campagne..." (200x32px)
+- Select statut "Tous" (120x32px)
+- Bouton "+ Nouvelle campagne" (btn-primary, 180x32px)
+
+## 5. CARTES STATISTIQUES (4 cartes)
+
+| Carte | Titre | Valeur | Dimensions |
+|-------|-------|--------|------------|
+| 1 | Campagnes actives | 3 | 250x70px |
+| 2 | SMS envoyes (mois) | 12,847 | 250x70px |
+| 3 | Taux de delivrance | 98.5% (vert) | 250x70px |
+| 4 | Credits utilises | 847 | 250x70px |
+
+## 6. TABLEAU CAMPAGNES (1036x460px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Nom campagne | 200px | Nom |
+| Type | 100px | Marketing/Transactionnel |
+| Destinataires | 120px | Nombre cible |
+| Envoyes | 90px | Nombre envoyés |
+| Delivres | 90px | Nombre livrés |
+| Echecs | 80px | Nombre échecs |
+| Planifie | 120px | Date/heure ou "Recurrent" |
+| Statut | 100px | Badge statut |
+| Actions | 136px | Liens |
+
+### États campagne
+
+| État | Couleur | Description |
+|------|---------|-------------|
+| Terminee | #DEF7EC (vert) | Campagne terminée |
+| En cours | #DBEAFE (bleu) | Campagne en exécution |
+| Planifiee | #FEF3C7 (jaune) | Campagne programmée |
+| Brouillon | #F3F4F6 (gris) | Non planifiée |
+| Suspendue | #FEE2E2 (rouge) | Mise en pause |
+
+### Actions par statut
+
+| Statut | Actions disponibles |
+|--------|---------------------|
+| Terminee | Stats, Copier |
+| En cours | Stats, Pause, x |
+| Planifiee | Modifier, x |
+| Brouillon | Modifier, x |
+
+### Données exemple
+
+| Nom | Type | Dest. | Envoyés | Livrés | Échecs | Planifié | Statut |
+|-----|------|-------|---------|--------|--------|----------|--------|
+| Promo Noel 2025 | Marketing | 5,000 | 4,892 | 4,820 | 72 | 25/12 08:00 | Terminee |
+| Rappel RDV janvier | Transactionnel | 1,200 | 847 | 835 | 12 | Recurrent | En cours |
+| Soldes hiver 2026 | Marketing | 8,500 | - | - | - | 08/01 09:00 | Planifiee |
+| Newsletter fevrier | Marketing | - | - | - | - | Non planifie | Brouillon |
+
+### Pagination
+- Format: "Affichage 1-4 sur 4 campagnes"
+
+## 7. APIS & ENDPOINTS
+
+```
+# Liste des campagnes
+GET /sms/{serviceName}/campaigns
+Query: {
+  status: "all" | "completed" | "running" | "scheduled" | "draft",
+  limit, offset, search
+}
+→ [{
+  campaignId: "camp-001",
+  name: "Promo Noel 2025",
+  type: "marketing",
+  targetCount: 5000,
+  sentCount: 4892,
+  deliveredCount: 4820,
+  failedCount: 72,
+  scheduledAt: "2025-12-25T08:00:00",
+  status: "completed"
+}]
+
+# Statistiques globales
+GET /sms/{serviceName}/campaigns/statistics
+Query: { period: "month" }
+→ {
+  activeCampaigns: 3,
+  sentCount: 12847,
+  deliveryRate: 98.5,
+  creditsUsed: 847
+}
+
+# Créer une campagne
+POST /sms/{serviceName}/campaigns
+Body: {
+  name: "Nouvelle campagne",
+  type: "marketing",
+  sender: "MonEntreprise",
+  message: "Contenu SMS",
+  receivers: ["+33612345678"],
+  scheduledAt: "2025-01-08T09:00:00"
+}
+
+# Modifier une campagne
+PUT /sms/{serviceName}/campaigns/{campaignId}
+Body: {
+  name: "Nom modifie",
+  scheduledAt: "2025-01-09T10:00:00"
+}
+
+# Suspendre une campagne
+PUT /sms/{serviceName}/campaigns/{campaignId}/pause
+
+# Reprendre une campagne
+PUT /sms/{serviceName}/campaigns/{campaignId}/resume
+
+# Supprimer une campagne
+DELETE /sms/{serviceName}/campaigns/{campaignId}
+
+# Statistiques détaillées
+GET /sms/{serviceName}/campaigns/{campaignId}/statistics
+→ {
+  sentCount: 4892,
+  deliveredCount: 4820,
+  failedCount: 72,
+  deliveryRate: 98.5,
+  avgDeliveryTime: 2.3
+}
+
+# Copier une campagne
+POST /sms/{serviceName}/campaigns/{campaignId}/copy
+→ { newCampaignId: "camp-002" }
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_campaigns | Campagnes |
+| btn_new_campaign | Nouvelle campagne |
+| search_campaign | Rechercher une campagne... |
+| filter_status | Statut |
+| filter_all | Tous |
+| stat_active | Campagnes actives |
+| stat_sent_month | SMS envoyes (mois) |
+| stat_delivery_rate | Taux de delivrance |
+| stat_credits_used | Credits utilises |
+| col_name | Nom campagne |
+| col_type | Type |
+| col_recipients | Destinataires |
+| col_sent | Envoyes |
+| col_delivered | Delivres |
+| col_failed | Echecs |
+| col_scheduled | Planifie |
+| col_status | Statut |
+| col_actions | Actions |
+| type_marketing | Marketing |
+| type_transactional | Transactionnel |
+| status_completed | Terminee |
+| status_running | En cours |
+| status_scheduled | Planifiee |
+| status_draft | Brouillon |
+| status_paused | Suspendue |
+| schedule_recurring | Recurrent |
+| schedule_not_set | Non planifie |
+| action_stats | Stats |
+| action_copy | Copier |
+| action_pause | Pause |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| pagination | Affichage {start}-{end} sur {total} campagnes |

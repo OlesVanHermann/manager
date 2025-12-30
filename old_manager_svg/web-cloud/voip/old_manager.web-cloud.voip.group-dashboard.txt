@@ -1,0 +1,181 @@
+# Cahier des Charges : web-cloud/voip - Group Dashboard
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec cartes et tableau
+**Fonction:** Vue d'ensemble d'un compte de facturation téléphonie
+**Contexte:** Ancien format de dashboard groupe
+
+## 2. NAVIGATION
+
+### Header
+OVHcloud > Telecom
+
+### Breadcrumb
+Telephonie / {billingAccount}
+
+### NAV3 Tabs
+**Tableau de bord** (actif) | Services | Administration | Facturation | Commander alias | Annuaire | Numeros abreges | Contacts | Guides
+
+## 3. LAYOUT
+
+Layout pleine page avec cartes en grille
+
+### Structure
+- Titre page: "Compte principal entreprise"
+- Grille de cartes (3 colonnes première ligne, 2 colonnes seconde)
+
+## 4. CARTE ACTIONS (380x280px)
+
+### Titre
+"Actions"
+
+### Liens d'action
+
+| Action | Badge | Navigation |
+|--------|-------|------------|
+| Commander une ligne | - | → order/line |
+| Commander un numero | - | → order/number |
+| Portabilites | 3 | → portability |
+| Commander une portabilite | - | → portability/new |
+| Convertir en voicefax | - | → convert |
+
+## 5. CARTE INFORMATIONS (300x280px)
+
+### Titre
+"Informations"
+
+### Champs
+
+| Champ | Valeur |
+|-------|--------|
+| Statut | Actif |
+| Lignes | 18 |
+| Numeros | 6 |
+| Fax | 2 |
+
+## 6. CARTE CONSOMMATION (300x280px)
+
+### Titre
+"Consommation"
+
+### Graphique
+- Pie chart avec segments colorés
+- Bleu: portion utilisée
+- Vert: autre type de consommation
+
+### Métrique
+- "Hors forfait actuel": 45,20 EUR (rouge)
+
+## 7. CARTE ÉQUIPEMENTS RÉSEAU (620x180px)
+
+### Titre
+"Equipements reseau"
+
+### Cartes téléphones (280x100px)
+
+| Modèle | Ligne | MAC |
+|--------|-------|-----|
+| Cisco CP-8851 | 0033 1 23 45 67 89 | AA:BB:CC:DD:EE:FF |
+| Yealink T46G | 0033 1 23 45 67 90 | 11:22:33:44:55:66 |
+
+## 8. CARTE FACTURES (620x180px)
+
+### Titre
+"Factures"
+
+### Colonnes tableau
+
+| Colonne | Largeur |
+|---------|---------|
+| Date | 180px |
+| Montant | 150px |
+| Paye | 100px |
+| Actions | 100px |
+
+### Données exemple
+
+| Date | Montant | Paye | Actions |
+|------|---------|------|---------|
+| 15/01/2024 | 245,80 EUR | Oui (vert) | ... |
+| 15/12/2023 | 198,50 EUR | Oui (vert) | ... |
+
+## 9. APIS & ENDPOINTS
+
+```
+# Informations compte
+GET /telephony/{billingAccount}
+→ {
+  description: "Compte principal entreprise",
+  status: "active"
+}
+
+# Compteurs
+GET /telephony/{billingAccount}/service
+→ {
+  lines: 18,
+  numbers: 6,
+  fax: 2
+}
+
+# Consommation actuelle
+GET /telephony/{billingAccount}/consumption/current
+→ {
+  outOfPlan: 45.20
+}
+
+# Portabilités en cours
+GET /telephony/{billingAccount}/portability
+Query: { status: "pending" }
+→ { count: 3 }
+
+# Équipements
+GET /telephony/{billingAccount}/phone
+→ [{
+  model: "Cisco CP-8851",
+  line: "0033123456789",
+  macAddress: "AA:BB:CC:DD:EE:FF"
+}]
+
+# Factures récentes
+GET /telephony/{billingAccount}/bill
+Query: { limit: 2 }
+→ [{
+  date: "2024-01-15",
+  amount: 245.80,
+  paid: true
+}]
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_dashboard | Tableau de bord |
+| tab_services | Services |
+| tab_admin | Administration |
+| tab_billing | Facturation |
+| tab_order_alias | Commander alias |
+| tab_directory | Annuaire |
+| tab_short_numbers | Numeros abreges |
+| tab_contacts | Contacts |
+| tab_guides | Guides |
+| card_actions | Actions |
+| action_order_line | Commander une ligne |
+| action_order_number | Commander un numero |
+| action_portability | Portabilites |
+| action_order_portability | Commander une portabilite |
+| action_convert_voicefax | Convertir en voicefax |
+| card_info | Informations |
+| field_status | Statut |
+| field_lines | Lignes |
+| field_numbers | Numeros |
+| field_fax | Fax |
+| card_consumption | Consommation |
+| out_of_plan | Hors forfait actuel |
+| card_equipment | Equipements reseau |
+| card_bills | Factures |
+| col_date | Date |
+| col_amount | Montant |
+| col_paid | Paye |
+| col_actions | Actions |

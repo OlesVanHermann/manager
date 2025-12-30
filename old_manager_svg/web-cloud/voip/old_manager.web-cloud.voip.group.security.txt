@@ -1,0 +1,192 @@
+# Cahier des Charges : web-cloud/voip/group - Security (Sécurité)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page paramètres avec sections
+**Fonction:** Gérer la sécurité du groupe VoIP
+**Contexte:** Protection anti-fraude et restrictions d'accès
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+Dashboard | General | Services | Facturation | **Securite** (actif)
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche groupes
+- Groupe sélectionné
+
+### Panneau droit (1096px)
+- Header groupe
+- Tabs navigation
+- Sections sécurité empilées
+
+## 4. HEADER GROUPE
+
+- Titre: "ovh-telecom-123"
+- Sous-titre: "Groupe / Securite"
+
+## 5. SECTION PROTECTION ANTI-FRAUDE (1036x200px)
+
+### Titre
+"Protection anti-fraude"
+
+### Sous-titre
+"Configurez les limites de consommation pour proteger votre compte"
+
+### Paramètre: Limite appels sortants
+
+| Élément | Type | Valeur |
+|---------|------|--------|
+| Label | Texte | "Limite appels sortants" |
+| Description | Texte muted | "Seuil maximum de consommation mensuelle" |
+| Valeur | Input readonly | 500,00 EUR HT / mois |
+| Action | btn-outline | "Modifier" |
+
+### Paramètre: Appels internationaux
+
+| Élément | Type | Valeur |
+|---------|------|--------|
+| Label | Texte | "Appels internationaux" |
+| Description | Texte muted | "Autoriser/bloquer les appels vers l'international" |
+| Toggle | Switch | Activé (vert) |
+| Action | btn-outline | "Gerer pays" |
+
+## 6. SECTION IP AUTORISÉES (1036x250px)
+
+### Titre
+"Adresses IP autorisees"
+
+### Sous-titre
+"Restreignez l'acces SIP a des adresses IP specifiques"
+
+### Bouton
+"+ Ajouter IP" (btn-outline, 116x28px)
+
+### Tableau IP (996x160px)
+
+#### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Adresse IP / CIDR | 300px | Format CIDR (monospace) |
+| Description | 300px | Description personnalisée |
+| Creee le | 200px | DD/MM/YYYY |
+| Actions | 150px | Modifier, Supprimer |
+
+#### Données exemple
+
+| Adresse IP / CIDR | Description | Creee le | Actions |
+|-------------------|-------------|----------|---------|
+| 192.168.1.0/24 | Reseau bureau Paris | 15/10/2024 | Modifier, Supprimer |
+| 82.65.234.12/32 | VPN entreprise | 20/11/2024 | Modifier, Supprimer |
+| 10.0.0.0/8 | Reseau interne | 01/12/2024 | Modifier, Supprimer |
+
+## 7. SECTION TENTATIVES SUSPECTES (1036x180px)
+
+### Titre
+"Tentatives de connexion suspectes"
+
+### Sous-titre
+"Dernieres 24 heures - 3 tentatives bloquees"
+
+### Liste d'alertes
+
+| Niveau | Background | Contenu |
+|--------|------------|---------|
+| Critique | #FEE2E2 (rouge) | IP - tentatives - heure - motif |
+| Warning | #FEF3C7 (jaune) | IP - tentatives - heure - motif |
+
+### Données exemple
+
+| IP | Tentatives | Heure | Motif |
+|----|------------|-------|-------|
+| 185.234.67.89 | 5 tentatives echouees | Aujourd'hui 14:32 | IP non autorisee |
+| 91.121.45.67 | 2 tentatives echouees | Aujourd'hui 09:15 | Mot de passe incorrect |
+| 46.23.89.123 | 3 tentatives echouees | Hier 22:47 | Mot de passe incorrect |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Paramètres anti-fraude
+GET /telephony/{billingAccount}/security/antifraud
+→ {
+  outgoingLimit: 500.00,
+  internationalEnabled: true,
+  allowedCountries: ["FR", "BE", "CH", ...]
+}
+
+# Modifier limite sortante
+PUT /telephony/{billingAccount}/security/antifraud/limit
+Body: { limit: 500.00 }
+
+# Gérer pays autorisés
+GET /telephony/{billingAccount}/security/antifraud/countries
+→ ["FR", "BE", "CH", "DE", "ES"]
+
+PUT /telephony/{billingAccount}/security/antifraud/countries
+Body: { countries: ["FR", "BE"] }
+
+# Liste IP autorisées
+GET /telephony/{billingAccount}/security/ip
+→ [{
+  ip: "192.168.1.0/24",
+  description: "Reseau bureau Paris",
+  createdAt: "2024-10-15"
+}]
+
+# Ajouter IP
+POST /telephony/{billingAccount}/security/ip
+Body: {
+  ip: "192.168.1.0/24",
+  description: "Reseau bureau Paris"
+}
+
+# Supprimer IP
+DELETE /telephony/{billingAccount}/security/ip/{ipId}
+
+# Tentatives suspectes
+GET /telephony/{billingAccount}/security/attempts
+Query: { period: "24h" }
+→ [{
+  ip: "185.234.67.89",
+  attempts: 5,
+  datetime: "2024-12-30T14:32:00",
+  reason: "ip_not_allowed"
+}]
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_security | Securite |
+| section_antifraud | Protection anti-fraude |
+| antifraud_desc | Configurez les limites de consommation pour proteger votre compte |
+| field_outgoing_limit | Limite appels sortants |
+| field_outgoing_desc | Seuil maximum de consommation mensuelle |
+| field_international | Appels internationaux |
+| field_international_desc | Autoriser/bloquer les appels vers l'international |
+| toggle_active | Active |
+| btn_edit | Modifier |
+| btn_manage_countries | Gerer pays |
+| section_ip | Adresses IP autorisees |
+| ip_desc | Restreignez l'acces SIP a des adresses IP specifiques |
+| btn_add_ip | Ajouter IP |
+| col_ip | Adresse IP / CIDR |
+| col_description | Description |
+| col_created | Creee le |
+| col_actions | Actions |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| section_attempts | Tentatives de connexion suspectes |
+| attempts_summary | Dernieres 24 heures - {count} tentatives bloquees |
+| reason_ip_blocked | IP non autorisee |
+| reason_wrong_password | Mot de passe incorrect |

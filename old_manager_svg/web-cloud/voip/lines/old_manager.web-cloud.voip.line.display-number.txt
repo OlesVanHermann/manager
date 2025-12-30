@@ -1,0 +1,139 @@
+# Cahier des Charges : web-cloud/voip/line - Display Number
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec options radio
+**Fonction:** Configurer le numéro affiché lors des appels sortants
+**Contexte:** Caller ID / Présentation du numéro
+
+## 2. NAVIGATION
+
+### Retour
+< Appels
+
+## 3. HEADER
+
+- Titre: "Numéro affiché"
+
+## 4. BANNIÈRE INFO (800x80px)
+
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Texte ligne 1: "Le numéro affiché est le numéro qui apparaît chez votre correspondant lorsque vous l'appelez."
+- Texte ligne 2: "Vous pouvez choisir d'afficher votre numéro de ligne, un alias, ou de masquer votre numéro."
+
+## 5. FORMULAIRE PRINCIPAL (800x450px)
+
+### Informations actuelles
+
+| Champ | Valeur |
+|-------|--------|
+| Ligne configurée | +33 1 72 10 00 01 |
+| Numéro actuellement affiché | +33 1 72 10 00 01 (Numéro de la ligne) |
+
+### Section "Modifier le numéro affiché"
+
+#### Option 1 - Numéro de la ligne (sélectionnée)
+- Radio: Sélectionnée (#0050D7)
+- Label: "Numéro de la ligne (+33 1 72 10 00 01)"
+
+#### Option 2 - Numéro alias
+- Radio: Non sélectionnée
+- Label: "Numéro alias"
+- Select (désactivé): 400x40px
+- Placeholder: "Sélectionnez un alias..."
+
+#### Option 3 - Numéro externe
+- Radio: Non sélectionnée
+- Label: "Numéro externe validé"
+- Input (désactivé): 400x40px
+- Placeholder: "+33..."
+
+#### Option 4 - Masqué
+- Radio: Non sélectionnée
+- Label: "Masqué (numéro caché)"
+
+### Lien bulk
+"Appliquer à plusieurs lignes..." (text-link)
+
+### Bouton validation
+"Valider" (btn-primary, 120x40px)
+
+## 6. PANNEAU ALIAS DISPONIBLES (400x300px)
+
+### Titre
+"Alias disponibles"
+
+### Liste alias
+| Numéro | Description |
+|--------|-------------|
+| +33 1 72 10 00 50 | Accueil |
+| +33 1 72 10 00 51 | Commercial |
+| +33 1 72 10 00 52 | Support |
+| +33 8 00 10 20 30 | Numéro vert |
+
+### Note
+"Ces alias peuvent être utilisés comme numéro affiché."
+"Sélectionnez l'option 'Numéro alias' pour en choisir un."
+
+## 7. TYPES DE NUMÉRO AFFICHÉ
+
+| Type | Code | Description |
+|------|------|-------------|
+| Ligne | line | Numéro de la ligne |
+| Alias | alias | Numéro alias du groupe |
+| Externe | external | Numéro externe validé |
+| Masqué | hidden | Numéro caché |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Configuration actuelle
+GET /telephony/{billingAccount}/line/{serviceName}/options
+→ displayNumber, displayNumberType
+
+# Modifier le numéro affiché
+PUT /telephony/{billingAccount}/line/{serviceName}/options
+Body: {
+  displayNumber: "+33172100050",
+  displayNumberType: "alias"
+}
+
+# Alias disponibles
+GET /telephony/{billingAccount}/alias
+→ Liste des alias du groupe
+
+# Valider numéro externe
+POST /telephony/{billingAccount}/line/{serviceName}/validateExternalNumber
+Body: { number: "+33612345678" }
+
+# Appliquer à plusieurs lignes
+POST /telephony/{billingAccount}/line/batchDisplayNumber
+Body: {
+  serviceNames: ["line1", "line2"],
+  displayNumber: "+33172100050",
+  displayNumberType: "alias"
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Numéro affiché |
+| back_link | Appels |
+| info_line_1 | Le numéro affiché est le numéro qui apparaît chez votre correspondant lorsque vous l'appelez. |
+| info_line_2 | Vous pouvez choisir d'afficher votre numéro de ligne, un alias, ou de masquer votre numéro. |
+| field_configured_line | Ligne configurée |
+| field_current_display | Numéro actuellement affiché |
+| section_modify | Modifier le numéro affiché |
+| option_line | Numéro de la ligne ({number}) |
+| option_alias | Numéro alias |
+| option_external | Numéro externe validé |
+| option_hidden | Masqué (numéro caché) |
+| placeholder_alias | Sélectionnez un alias... |
+| link_bulk | Appliquer à plusieurs lignes... |
+| btn_validate | Valider |
+| panel_alias | Alias disponibles |
+| alias_note_1 | Ces alias peuvent être utilisés comme numéro affiché. |
+| alias_note_2 | Sélectionnez l'option 'Numéro alias' pour en choisir un. |

@@ -1,0 +1,203 @@
+# Cahier des Charges : web-cloud/voip/line - General
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec cartes informatives
+**Fonction:** Vue générale d'une ligne VoIP
+**Contexte:** Page principale d'une ligne téléphonique
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+**General** (actif) | Telephone | Appels | Transferts | Messagerie | Consommation | Options
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche lignes
+- Compteur: "3 lignes"
+- Liste des lignes avec badge statut
+
+### Panneau droit (1096px)
+- Header ligne avec actions
+- Tabs navigation
+- Cartes d'information (2 colonnes)
+- Bannière info
+
+## 4. LISTE LIGNES (panneau gauche)
+
+### Carte ligne sélectionnée (268x65px)
+- Background: #E8F0FE
+- Numéro: "0033912345678"
+- Description: "Poste Direction"
+- Téléphone: "Yealink T46U"
+- Badge: "Actif" (vert)
+
+### Carte ligne non sélectionnée
+- Background blanc avec bordure
+- Mêmes informations
+
+## 5. HEADER LIGNE
+
+### Informations
+- Numéro: "0033912345678"
+- Description: "Poste Direction"
+- Badge: "Actif" (vert)
+
+### Actions header
+| Bouton | Style | Action |
+|--------|-------|--------|
+| MDP SIP | btn-outline | Voir mot de passe SIP |
+| Resilier | btn rouge | Résilier la ligne |
+
+## 6. CARTE LIGNE SIP (510x220px)
+
+### Titre
+"Ligne SIP"
+
+### Champs
+
+| Champ | Valeur | Action |
+|-------|--------|--------|
+| Numero | +33 9 12 34 56 78 | Copier |
+| Description | Poste Direction | Modifier |
+| Offre | VoIP Entreprise | - |
+| Statut | Actif (vert) | - |
+
+### Identifiant SIP (zone grisée)
+- Format: 0033912345678@sip.ovh.fr
+- Action: Copier
+
+## 7. CARTE TÉLÉPHONE ASSOCIÉ (510x220px)
+
+### Titre
+"Telephone associe"
+
+### Champs
+
+| Champ | Valeur |
+|-------|--------|
+| Modele | Yealink T46U |
+| Adresse MAC | AA:BB:CC:DD:EE:01 |
+| Adresse IP | 192.168.1.100 |
+| Firmware | 86.86.0.15 |
+
+### Actions (2 boutons)
+- "Reboot" (btn-outline)
+- "Configurer" (btn-outline)
+
+## 8. CARTE ABONNEMENT (510x160px)
+
+### Titre
+"Abonnement"
+
+### Champs
+
+| Champ | Valeur |
+|-------|--------|
+| Date de creation | 15/01/2020 |
+| Expiration | 15/01/2025 |
+| Renouvellement | Automatique (vert) |
+
+### Actions (2 boutons)
+- "Renouveler" (btn-outline)
+- "Offre" (btn-outline)
+
+## 9. CARTE ACTIONS RAPIDES (510x160px)
+
+### Titre
+"Actions rapides"
+
+### Liens (4 boutons, grille 2x2)
+
+| Action | Navigation |
+|--------|------------|
+| Mot de passe SIP | → sip-password |
+| Domaine SIP | → sip-domain |
+| Softphone | → softphone |
+| Convertir en numero | → convert |
+
+## 10. BANNIÈRE INFO (1036x45px)
+
+- Background: #DBEAFE (info)
+- Texte: "Pour configurer les transferts d'appels, la messagerie vocale ou les options avancees, utilisez les onglets ci-dessus."
+
+## 11. APIS & ENDPOINTS
+
+```
+# Informations ligne
+GET /telephony/{billingAccount}/line/{serviceName}
+→ {
+  serviceName: "0033912345678",
+  description: "Poste Direction",
+  offer: "VoIP Entreprise",
+  status: "active",
+  sipUsername: "0033912345678@sip.ovh.fr"
+}
+
+# Téléphone associé
+GET /telephony/{billingAccount}/line/{serviceName}/phone
+→ {
+  model: "Yealink T46U",
+  macAddress: "AA:BB:CC:DD:EE:01",
+  ipAddress: "192.168.1.100",
+  firmware: "86.86.0.15"
+}
+
+# Abonnement
+GET /telephony/{billingAccount}/line/{serviceName}/subscription
+→ {
+  creationDate: "2020-01-15",
+  expirationDate: "2025-01-15",
+  autoRenew: true
+}
+
+# Mot de passe SIP
+GET /telephony/{billingAccount}/line/{serviceName}/sipPassword
+→ { password: "..." }
+
+# Redémarrer téléphone
+POST /telephony/{billingAccount}/line/{serviceName}/phone/reboot
+```
+
+## 12. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_general | General |
+| btn_sip_password | MDP SIP |
+| btn_terminate | Resilier |
+| card_sip | Ligne SIP |
+| field_number | Numero |
+| field_description | Description |
+| field_offer | Offre |
+| field_status | Statut |
+| field_sip_id | Identifiant SIP |
+| action_copy | Copier |
+| action_edit | Modifier |
+| card_phone | Telephone associe |
+| field_model | Modele |
+| field_mac | Adresse MAC |
+| field_ip | Adresse IP |
+| field_firmware | Firmware |
+| btn_reboot | Reboot |
+| btn_configure | Configurer |
+| card_subscription | Abonnement |
+| field_created | Date de creation |
+| field_expiration | Expiration |
+| field_renewal | Renouvellement |
+| renewal_auto | Automatique |
+| btn_renew | Renouveler |
+| btn_offer | Offre |
+| card_actions | Actions rapides |
+| action_sip_password | Mot de passe SIP |
+| action_sip_domain | Domaine SIP |
+| action_softphone | Softphone |
+| action_convert | Convertir en numero |
+| info_banner | Pour configurer les transferts d'appels, la messagerie vocale ou les options avancees, utilisez les onglets ci-dessus. |

@@ -1,0 +1,146 @@
+# Cahier des Charges : web-cloud/voip/number - Repayments
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard + liste avec résumés financiers
+**Fonction:** Consulter les reversements d'un numéro spécial (SVA)
+**Contexte:** Suivi des revenus générés par les numéros surtaxés
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro SVA > Reversements
+
+## 3. HEADER
+
+- Titre: "Reversements"
+- Description: "Consultez les reversements de votre numéro spécial"
+
+## 4. CARTES RÉSUMÉ (2 cartes, 850x150px total)
+
+### Carte Transferts (400x150px)
+- Titre: "Transferts" (souligné)
+- Champ 1:
+  - Label: "En attente"
+  - Valeur: "245,50 EUR" (font-size: 18px, font-weight: 600)
+- Champ 2:
+  - Label: "Disponible"
+  - Valeur: "1 234,00 EUR" (font-size: 18px, font-weight: 600)
+
+### Carte Frais (400x150px)
+- Titre: "Frais" (souligné)
+- Champ:
+  - Label: "À payer"
+  - Valeur: "45,00 EUR" (font-size: 18px, font-weight: 600)
+
+## 5. DATAGRID REVERSEMENTS (1100x450px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date | 175px | Date et heure de l'appel |
+| Numéro appelant | 180px | Numéro de l'appelant |
+| Durée | 120px | Durée en secondes |
+| Opérateur | 200px | Opérateur de l'appelant |
+| Reversement | 200px | Montant du reversement |
+| Frais | 100px | Frais associés |
+
+### Données exemple
+
+| Date | Numéro appelant | Durée | Opérateur | Reversement | Frais |
+|------|-----------------|-------|-----------|-------------|-------|
+| 30/12/2024 14:32:15 | +33 6 12 34 56 78 | 245 | Orange | 12,250 EUR | - |
+| 30/12/2024 12:15:42 | +33 7 98 76 54 32 | 180 | SFR | 9,000 EUR | - |
+| 30/12/2024 10:45:33 | +33 1 23 45 67 89 | 320 | Bouygues | 16,000 EUR | - |
+| 29/12/2024 23:59:59 | - | - | Frais mensuels | - | 15,00 EUR |
+| 29/12/2024 16:22:18 | +33 6 55 44 33 22 | 95 | Free | 4,750 EUR | - |
+| 29/12/2024 11:05:27 | +33 7 11 22 33 44 | 420 | Orange | 21,000 EUR | - |
+
+### Ligne de frais
+- Background: #FEF3C7 (warning)
+- Colonne Frais: texte couleur #92400E
+
+### Pagination
+- Texte: "1-25 sur 156"
+- Navigation: < [1] [2] [...] >
+
+## 6. TYPES DE LIGNES
+
+| Type | Background | Description |
+|------|------------|-------------|
+| Appel | #FFFFFF | Reversement d'appel entrant |
+| Frais | #FEF3C7 | Frais mensuels ou ponctuels |
+
+## 7. OPÉRATEURS TÉLÉCOM
+
+| Opérateur | Code |
+|-----------|------|
+| Orange | orange |
+| SFR | sfr |
+| Bouygues | bouygues |
+| Free | free |
+| Autres | other |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Résumé des reversements
+GET /telephony/{billingAccount}/svaWallet/{serviceName}/summary
+→ {
+  pendingTransfer: 245.50,
+  availableBalance: 1234.00,
+  pendingFees: 45.00,
+  currency: "EUR"
+}
+
+# Liste des reversements
+GET /telephony/{billingAccount}/svaWallet/{serviceName}/repayments
+Query: { from, to, page, pageSize }
+→ {
+  data: [{
+    date: "2024-12-30T14:32:15",
+    callerNumber: "+33612345678",
+    duration: 245,
+    operator: "Orange",
+    repaymentAmount: 12.25,
+    fees: 0,
+    type: "call"
+  }],
+  total: 156,
+  page: 1,
+  pageSize: 25
+}
+
+# Liste des frais
+GET /telephony/{billingAccount}/svaWallet/{serviceName}/fees
+→ [{
+  date: "2024-12-29T23:59:59",
+  description: "Frais mensuels",
+  amount: 15.00
+}]
+
+# Demander un virement
+POST /telephony/{billingAccount}/svaWallet/{serviceName}/transfer
+Body: { amount: 500.00 }
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Reversements |
+| description | Consultez les reversements de votre numéro spécial |
+| card_transfers | Transferts |
+| field_pending | En attente |
+| field_available | Disponible |
+| card_fees | Frais |
+| field_to_pay | À payer |
+| col_date | Date |
+| col_caller | Numéro appelant |
+| col_duration | Durée |
+| col_operator | Opérateur |
+| col_repayment | Reversement |
+| col_fees | Frais |
+| type_monthly_fees | Frais mensuels |
+| pagination | {start}-{end} sur {total} |

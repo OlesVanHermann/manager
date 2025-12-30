@@ -1,0 +1,166 @@
+# Cahier des Charges : web-cloud/voip/number - Portabilities
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page liste avec items extensibles et timeline
+**Fonction:** Suivre les portabilités de numéros en cours
+**Contexte:** Suivi du transfert de numéros depuis un autre opérateur
+
+## 2. NAVIGATION
+
+### Retour
+< Administration
+
+### Breadcrumb
+Télécom > Groupe VoIP > Administration > Portabilités
+
+## 3. HEADER
+
+- Titre: "Portabilités"
+- Lien guide: "Guide des étapes" (text-primary)
+
+## 4. LISTE DES PORTABILITÉS
+
+### Item replié (900x60px)
+- Numéro: "+33 1 72 10 00 05" (font-weight: 600)
+- Statut: "En cours de validation"
+- Badge erreur: "ERR_001" (rouge, si applicable)
+- Lien: "Détails"
+- Chevron: ▶ (replié) / ▼ (déplié)
+
+### Item déplié (900x480px)
+
+#### Informations portabilité (25px top)
+
+| Champ | Valeur |
+|-------|--------|
+| Opérateur | Orange |
+| Date de création | 15/12/2024 |
+| Date souhaitée | 10/01/2025 |
+
+#### Bouton formulaire
+"Joindre un formulaire" (btn-primary, 250x40px)
+
+## 5. TIMELINE (5 étapes)
+
+### Étape 1 : Demande reçue
+- État: Terminé (cercle vert avec ✓)
+- Date: "Complété le 15/12/2024"
+- Ligne connecteur vers étape suivante
+
+### Étape 2 : Validation du RIO
+- État: Terminé (cercle vert avec ✓)
+- Date: "Complété le 16/12/2024"
+- Ligne connecteur vers étape suivante
+
+### Étape 3 : Documents en attente
+- État: En cours (cercle bleu avec numéro)
+- Durée estimée: "2-3 jours"
+- Badge erreur: "ERR_001" (si applicable)
+- Ligne connecteur vers étape suivante
+
+### Étape 4 : Portage effectif
+- État: En attente (cercle blanc bordure grise)
+- Durée estimée: "1 jour"
+- Ligne connecteur vers étape suivante
+
+### Étape 5 : Terminé
+- État: En attente (cercle blanc bordure grise)
+
+### Lien relance
+"Relancer la portabilité →" (text-primary)
+
+## 6. ÉTATS DES ÉTAPES
+
+| État | Visuel | Couleur |
+|------|--------|---------|
+| Terminé | Cercle avec ✓ | #16A34A (vert) |
+| En cours | Cercle avec numéro | #0050D7 (bleu) |
+| En attente | Cercle vide | #FFFFFF bordure #E5E7EB |
+| Erreur | Badge | #DC2626 sur #FEE2E2 |
+
+## 7. STATUTS PORTABILITÉ
+
+| Statut | Code | Description |
+|--------|------|-------------|
+| Demande reçue | received | Demande enregistrée |
+| Validation RIO | rioValidation | Vérification du RIO |
+| Documents | documentsRequired | Documents en attente |
+| Portage effectif | porting | Transfert en cours |
+| Terminé | completed | Portabilité finalisée |
+| Erreur | error | Problème à résoudre |
+
+## 8. BADGES FINAUX
+
+| Badge | Couleur | Background |
+|-------|---------|------------|
+| Actif | #16A34A | #DCFCE7 |
+| ERR_XXX | #DC2626 | #FEE2E2 |
+
+## 9. APIS & ENDPOINTS
+
+```
+# Liste des portabilités
+GET /telephony/{billingAccount}/portability
+→ [{
+  id: "port-123",
+  number: "+33172100005",
+  operator: "Orange",
+  createdAt: "2024-12-15",
+  desiredDate: "2025-01-10",
+  status: "documentsRequired",
+  currentStep: 3,
+  error: "ERR_001"
+}]
+
+# Détails d'une portabilité
+GET /telephony/{billingAccount}/portability/{portabilityId}
+→ {
+  id: "port-123",
+  number: "+33172100005",
+  operator: "Orange",
+  createdAt: "2024-12-15",
+  desiredDate: "2025-01-10",
+  status: "documentsRequired",
+  steps: [
+    { step: 1, name: "received", completedAt: "2024-12-15" },
+    { step: 2, name: "rioValidation", completedAt: "2024-12-16" },
+    { step: 3, name: "documentsRequired", status: "inProgress", error: "ERR_001" },
+    { step: 4, name: "porting", status: "pending" },
+    { step: 5, name: "completed", status: "pending" }
+  ]
+}
+
+# Joindre un document
+POST /telephony/{billingAccount}/portability/{portabilityId}/document
+Body: { file: <document>, type: "mandate" }
+
+# Relancer la portabilité
+POST /telephony/{billingAccount}/portability/{portabilityId}/relaunch
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| back_link | Administration |
+| page_title | Portabilités |
+| guide_link | Guide des étapes |
+| link_details | Détails |
+| field_operator | Opérateur |
+| field_created_at | Date de création |
+| field_desired_date | Date souhaitée |
+| btn_attach_form | Joindre un formulaire |
+| timeline_title | Étapes de la portabilité |
+| step_received | Demande reçue |
+| step_rio_validation | Validation du RIO |
+| step_documents | Documents en attente |
+| step_porting | Portage effectif |
+| step_completed | Terminé |
+| step_completed_at | Complété le {date} |
+| step_duration | {duration} |
+| link_relaunch | Relancer la portabilité → |
+| status_in_progress | En cours de validation |
+| status_porting | Portage effectif |
+| status_completed | Terminé |
+| badge_active | Actif |

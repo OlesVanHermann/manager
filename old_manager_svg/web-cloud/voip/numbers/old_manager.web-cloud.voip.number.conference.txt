@@ -1,0 +1,181 @@
+# Cahier des Charges : web-cloud/voip/number - Conference
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec panneau latéral
+**Fonction:** Configurer une salle de conférence téléphonique
+**Contexte:** Configuration du numéro en mode conférence
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro > Configuration Conférence
+
+## 3. HEADER
+
+- Titre: "Configuration de la conférence"
+
+## 4. LAYOUT PRINCIPAL
+
+- Colonne gauche: Formulaire configuration (800x640px)
+- Colonne droite: Panneau URLs (400x300px)
+
+## 5. FORMULAIRE CONFIGURATION (800x640px)
+
+### Section Configuration
+
+#### Code PIN (200x40px)
+- Label: "Code PIN d'accès (optionnel)"
+- Input text: 4 chiffres
+- Exemple: "1234"
+
+#### Annonce personnalisée
+- Label: "Annonce personnalisée (fichier audio)"
+- Statut: "Aucun fichier"
+- Bouton: "Télécharger" (btn-secondary, 150x32px)
+
+#### Enregistrer la conférence (toggle buttons)
+- Label: "Enregistrer la conférence"
+- Option 1: "Activé" (sélectionné, bleu)
+- Option 2: "Désactivé"
+
+#### Micro des participants (toggle buttons)
+- Label: "Micro des participants à l'entrée"
+- Option 1: "Actif" (sélectionné)
+- Option 2: "Muet"
+
+#### Appels anonymes (toggle buttons)
+- Label: "Appels anonymes"
+- Option 1: "Acceptés" (sélectionné)
+- Option 2: "Rejetés"
+
+#### Langue (select 200x40px)
+- Label: "Langue de la conférence"
+- Options: Français, English, Deutsch, Español, etc.
+
+### Section Administration
+
+#### Rapport email (select 300x40px)
+- Label: "Recevoir un rapport par e-mail"
+- Options: À chaque conférence, Hebdomadaire, Mensuel, Jamais
+
+### Boutons
+- "Annuler" (btn-secondary, 100x36px)
+- "Valider" (btn-primary, 100x36px)
+
+## 6. PANNEAU URLS (400x300px)
+
+### Titre
+"URLs de suivi et contrôle"
+
+### Bouton génération
+"Générer les URLs" (btn-secondary, 180x36px)
+
+### URL de suivi
+- Label: "URL de suivi"
+- Champ lecture seule: https://conference.ovh.net/follow/...
+- Description: "Permet de suivre les participants en temps réel"
+
+### URL de contrôle
+- Label: "URL de contrôle"
+- Champ lecture seule: https://conference.ovh.net/control/...
+- Description: "Permet de gérer la conférence (mute, kick...)"
+
+## 7. OPTIONS TOGGLE
+
+| Option | Valeur ON | Valeur OFF |
+|--------|-----------|------------|
+| Enregistrement | Activé | Désactivé |
+| Micro entrée | Actif | Muet |
+| Appels anonymes | Acceptés | Rejetés |
+
+## 8. LANGUES DISPONIBLES
+
+| Langue | Code |
+|--------|------|
+| Français | fr |
+| English | en |
+| Deutsch | de |
+| Español | es |
+| Italiano | it |
+| Nederlands | nl |
+| Polski | pl |
+| Português | pt |
+
+## 9. APIS & ENDPOINTS
+
+```
+# Configuration de la conférence
+GET /telephony/{billingAccount}/conference/{serviceName}
+→ {
+  pin: "1234",
+  recordConference: true,
+  enterMuted: false,
+  anonymousCall: true,
+  language: "fr",
+  reportEmail: "everyConference"
+}
+
+# Modifier la configuration
+PUT /telephony/{billingAccount}/conference/{serviceName}
+Body: {
+  pin: "5678",
+  recordConference: false,
+  enterMuted: true,
+  anonymousCall: false,
+  language: "en",
+  reportEmail: "never"
+}
+
+# Uploader une annonce
+POST /telephony/{billingAccount}/conference/{serviceName}/announcements
+Body: { file: <audio_file> }
+
+# Générer les URLs de suivi/contrôle
+POST /telephony/{billingAccount}/conference/{serviceName}/webAccess
+→ {
+  followUrl: "https://conference.ovh.net/follow/...",
+  controlUrl: "https://conference.ovh.net/control/..."
+}
+
+# Obtenir les URLs existantes
+GET /telephony/{billingAccount}/conference/{serviceName}/webAccess
+→ [{ type: "follow", url: "..." }, { type: "control", url: "..." }]
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Configuration de la conférence |
+| section_config | Configuration |
+| field_pin | Code PIN d'accès |
+| field_pin_optional | (optionnel) |
+| field_announcement | Annonce personnalisée |
+| field_announcement_audio | (fichier audio) |
+| no_file | Aucun fichier |
+| btn_upload | Télécharger |
+| field_record | Enregistrer la conférence |
+| field_enter_muted | Micro des participants à l'entrée |
+| field_anonymous | Appels anonymes |
+| option_active | Activé |
+| option_inactive | Désactivé |
+| option_unmuted | Actif |
+| option_muted | Muet |
+| option_accepted | Acceptés |
+| option_rejected | Rejetés |
+| field_language | Langue de la conférence |
+| section_admin | Administration |
+| field_report_email | Recevoir un rapport par e-mail |
+| report_every | À chaque conférence |
+| report_weekly | Hebdomadaire |
+| report_monthly | Mensuel |
+| report_never | Jamais |
+| panel_urls | URLs de suivi et contrôle |
+| btn_generate_urls | Générer les URLs |
+| field_follow_url | URL de suivi |
+| follow_url_desc | Permet de suivre les participants en temps réel |
+| field_control_url | URL de contrôle |
+| control_url_desc | Permet de gérer la conférence (mute, kick...) |
+| btn_cancel | Annuler |
+| btn_validate | Valider |

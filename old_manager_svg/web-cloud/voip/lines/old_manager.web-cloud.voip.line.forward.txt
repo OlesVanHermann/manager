@@ -1,0 +1,137 @@
+# Cahier des Charges : web-cloud/voip/line - Forward
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire avec options multiples
+**Fonction:** Configurer les renvois d'appels de la ligne
+**Contexte:** Gestion des appels de la ligne VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Ligne VoIP
+
+### Retour
+‹ Gestion des appels
+
+## 3. HEADER
+
+- Titre: "Renvoi d'appel"
+
+## 4. BANNIÈRE INFO (700x80px)
+
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Texte ligne 1: "Le renvoi d'appel permet de rediriger les appels entrants vers un autre numéro."
+- Texte ligne 2: "Attention : le renvoi inconditionnel désactive les autres types de renvoi."
+
+## 5. FORMULAIRE CONFIGURATION (700x480px)
+
+### Types de renvoi (checkboxes)
+
+| Type | Sélection | Description |
+|------|-----------|-------------|
+| Renvoi inconditionnel | ☐ | Tous les appels |
+| Renvoi sur non-réponse | ☑ | Après délai |
+| Renvoi sur occupation | ☐ | Ligne occupée |
+| Renvoi sur indisponibilité | ☐ | Téléphone hors ligne |
+
+### Champ Délai (pour non-réponse)
+- Label: "Après"
+- Input: 80x36px
+- Valeur: "20"
+- Suffixe: "secondes (5-60)"
+
+### Champ Nature transfert
+- Label: "Transférer vers"
+- Select: 300x40px
+- Options: Ligne interne, Numéro externe, Messagerie vocale
+
+### Champ Numéro destination
+- Label: "Numéro de destination"
+- Input: 400x40px
+- Valeur: "0033 1 23 45 67 90"
+
+### Lien bulk action
+"Appliquer à plusieurs lignes" (text-link)
+
+### Actions
+- Bouton "Valider" (btn-primary, 100x36px)
+- Lien "Annuler" (text-link)
+
+## 6. PANNEAU AIDE (400x200px)
+
+### Titre
+"Types de renvoi"
+
+### Liste
+| Type | Description |
+|------|-------------|
+| Inconditionnel | Tous les appels sont redirigés |
+| Non-réponse | Après un délai sans réponse |
+| Occupation | Quand la ligne est occupée |
+| Indisponibilité | Quand le téléphone est hors ligne |
+
+## 7. TYPES DE RENVOI
+
+| Code | Type | Paramètres |
+|------|------|------------|
+| unconditional | Inconditionnel | destination |
+| noReply | Non-réponse | destination, timeout |
+| busy | Occupation | destination |
+| unavailable | Indisponibilité | destination |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Configuration renvoi
+GET /telephony/{billingAccount}/line/{serviceName}/options/forwardCall
+→ unconditionalEnabled, noReplyEnabled, busyEnabled, unavailableEnabled
+→ unconditionalNumber, noReplyNumber, busyNumber, unavailableNumber
+→ noReplyDelay
+
+PUT /telephony/{billingAccount}/line/{serviceName}/options/forwardCall
+Body: {
+  unconditionalEnabled: false,
+  noReplyEnabled: true,
+  noReplyNumber: "+33123456790",
+  noReplyDelay: 20,
+  busyEnabled: false,
+  unavailableEnabled: false
+}
+
+# Appliquer à plusieurs lignes
+POST /telephony/{billingAccount}/line/batchForwardCall
+Body: {
+  serviceNames: ["line1", "line2"],
+  forwardSettings: { ... }
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Renvoi d'appel |
+| info_line1 | Le renvoi d'appel permet de rediriger les appels entrants vers un autre numéro. |
+| info_line2 | Attention : le renvoi inconditionnel désactive les autres types de renvoi. |
+| section_config | Configuration |
+| type_unconditional | Renvoi inconditionnel |
+| type_no_reply | Renvoi sur non-réponse |
+| type_busy | Renvoi sur occupation |
+| type_unavailable | Renvoi sur indisponibilité |
+| field_delay | Après |
+| delay_suffix | secondes (5-60) |
+| field_nature | Transférer vers |
+| nature_internal | Ligne interne |
+| nature_external | Numéro externe |
+| nature_voicemail | Messagerie vocale |
+| field_destination | Numéro de destination |
+| link_bulk | Appliquer à plusieurs lignes |
+| btn_validate | Valider |
+| btn_cancel | Annuler |
+| help_title | Types de renvoi |
+| help_unconditional | Tous les appels sont redirigés |
+| help_no_reply | Après un délai sans réponse |
+| help_busy | Quand la ligne est occupée |
+| help_unavailable | Quand le téléphone est hors ligne |

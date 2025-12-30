@@ -1,0 +1,124 @@
+# Cahier des Charges : web-cloud/voip - Modal Filter Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter un filtre d'appel entrant sur une ligne
+**Contexte:** Accessible depuis la gestion des appels d'une ligne
+
+## 2. DIMENSIONS
+
+- Modal: 550x450px
+
+## 3. HEADER MODAL (60px)
+
+- Background: #F9FAFB
+- Titre: "Ajouter un filtre d'appel" (16px, bold)
+- Bouton fermer: "x"
+
+## 4. CONTENU
+
+### Type de filtre (select)
+- Label: "Type de filtre *"
+- Select: 502x40px
+- Background: #F9FAFB
+- Options:
+  - Numero specifique
+  - Numeros masques
+  - Numeros internationaux
+  - Plage de numeros
+  - Tous les appels
+
+### Numéro ou pattern
+- Label: "Numero ou pattern *"
+- Input: 502x40px
+- Placeholder: "Ex: +33612345678 ou +336* pour tous les mobiles"
+
+### Action (radio buttons)
+
+| Option | Sélection |
+|--------|-----------|
+| Rejeter l'appel | Par défaut (●) |
+| Transferer vers messagerie | Non sélectionné (○) |
+
+### Description
+- Label: "Description (optionnel)"
+- Input: 502x40px
+- Placeholder: "Ex: Blocage demarchage telephonique"
+
+### Bannière info (502x40px)
+- Background: #DBEAFE
+- Texte: "Les filtres s'appliquent aux appels entrants sur cette ligne."
+- Couleur texte: #1E40AF
+
+## 5. FOOTER MODAL
+
+- Séparateur: Ligne #E5E7EB
+- Position boutons: Gauche
+
+### Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Ajouter | btn-primary | 120x36px |
+| Annuler | btn-outline | 100x36px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Ajouter un filtre
+POST /telephony/{billingAccount}/line/{serviceName}/filter
+Body: {
+  filterType: "specific",  // specific, anonymous, international, range, all
+  pattern: "+33612345678",
+  action: "reject",  // reject, voicemail
+  description: "Blocage demarchage telephonique"
+}
+→ {
+  filterId: 123,
+  filterType: "specific",
+  pattern: "+33612345678",
+  action: "reject",
+  active: true
+}
+
+# Types de filtre
+# specific: Numéro exact ou pattern avec wildcard (*)
+# anonymous: Numéros masqués
+# international: Numéros hors France
+# range: Plage de numéros (ex: +336*)
+# all: Tous les appels
+
+# Liste des filtres existants
+GET /telephony/{billingAccount}/line/{serviceName}/filter
+→ [{
+  filterId: 123,
+  filterType: "specific",
+  pattern: "+33612345678",
+  action: "reject",
+  description: "Blocage demarchage",
+  active: true
+}]
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un filtre d'appel |
+| field_filter_type | Type de filtre |
+| type_specific | Numero specifique |
+| type_anonymous | Numeros masques |
+| type_international | Numeros internationaux |
+| type_range | Plage de numeros |
+| type_all | Tous les appels |
+| field_pattern | Numero ou pattern |
+| placeholder_pattern | Ex: +33612345678 ou +336* pour tous les mobiles |
+| field_action | Action |
+| action_reject | Rejeter l'appel |
+| action_voicemail | Transferer vers messagerie |
+| field_description | Description (optionnel) |
+| placeholder_description | Ex: Blocage demarchage telephonique |
+| info_filter | Les filtres s'appliquent aux appels entrants sur cette ligne. |
+| btn_add | Ajouter |
+| btn_cancel | Annuler |

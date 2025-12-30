@@ -1,0 +1,137 @@
+# Cahier des Charges : web-cloud/voip/number - Terminate
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire de confirmation
+**Fonction:** Résilier un numéro téléphonique
+**Contexte:** Action irréversible de résiliation
+
+## 2. NAVIGATION
+
+### Retour
+< Retour au tableau de bord
+
+### Breadcrumb
+Télécom > Groupe VoIP > Numéro > Résilier
+
+## 3. HEADER
+
+- Titre: "Résilier le numéro"
+
+## 4. FORMULAIRE PRINCIPAL (900x620px)
+
+### Section Informations importantes
+
+#### Titre section
+"Informations importantes"
+
+#### Bannière info (840x100px)
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Ligne 1: "La résiliation d'un numéro est définitive et irréversible."
+- Ligne 2: "Le numéro sera libéré et pourra être attribué à un autre client."
+- Ligne 3: "Toutes les configurations associées seront perdues."
+
+#### Bannière warning SVA (840x80px)
+- Background: #FEF3C7
+- Border: #FDE68A
+- Ligne 1: "Si ce numéro est un numéro surtaxé (SVA), les reversements en cours seront perdus."
+- Ligne 2: "Consultez votre porte-monnaie SVA avant de résilier."
+- Lien: "Porte-monnaie SVA" (text-primary)
+
+### Section Confirmer la résiliation
+
+#### Titre section
+"Confirmer la résiliation"
+
+#### Numéro concerné
+- Texte: "Vous allez résilier le numéro :"
+- Valeur: "+33 1 23 45 67 89" (font-weight: 600)
+
+#### Date d'effet
+- Texte: "La résiliation prendra effet le 31 du mois en cours."
+
+#### Raison (select 400x40px)
+- Label: "Raison de la résiliation"
+- Placeholder: "Sélectionnez une raison..."
+- Options: Migration vers autre opérateur, Fin d'activité, Changement de numéro, Autre
+
+#### Détails (textarea 400x80px)
+- Label: "Détails complémentaires"
+- Placeholder: "Précisez votre demande..."
+- Condition: Affiché si raison = "Autre"
+
+### Bouton action (180x40px)
+- Texte: "Résilier le numéro"
+- Style: btn-danger (background #DC2626)
+
+## 5. RAISONS DE RÉSILIATION
+
+| Raison | Code |
+|--------|------|
+| Migration vers autre opérateur | migration |
+| Fin d'activité | endOfActivity |
+| Changement de numéro | numberChange |
+| Autre | other |
+
+## 6. RÈGLES MÉTIER
+
+| Règle | Description |
+|-------|-------------|
+| Date d'effet | Fin du mois en cours |
+| Reversements SVA | Perdus si non réclamés |
+| Portabilité sortante | Impossible après résiliation |
+| Annulation | Possible jusqu'à la date d'effet |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Vérifier si le numéro est SVA
+GET /telephony/{billingAccount}/number/{serviceName}
+→ { featureType: "...", isSva: true }
+
+# Solde SVA (si applicable)
+GET /telephony/{billingAccount}/svaWallet/{serviceName}/summary
+→ { availableBalance: 245.50 }
+
+# Résilier le numéro
+POST /telephony/{billingAccount}/number/{serviceName}/terminate
+Body: {
+  reason: "endOfActivity",
+  details: "Fermeture de la société"
+}
+→ { terminationDate: "2025-01-31" }
+
+# Annuler la résiliation
+DELETE /telephony/{billingAccount}/number/{serviceName}/pendingTermination
+
+# Obtenir la date d'effet
+GET /telephony/{billingAccount}/number/{serviceName}/terminationDate
+→ { effectiveDate: "2025-01-31" }
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| back_link | Retour au tableau de bord |
+| page_title | Résilier le numéro |
+| section_important | Informations importantes |
+| info_line1 | La résiliation d'un numéro est définitive et irréversible. |
+| info_line2 | Le numéro sera libéré et pourra être attribué à un autre client. |
+| info_line3 | Toutes les configurations associées seront perdues. |
+| warning_sva_line1 | Si ce numéro est un numéro surtaxé (SVA), les reversements en cours seront perdus. |
+| warning_sva_line2 | Consultez votre porte-monnaie SVA avant de résilier. |
+| link_sva_wallet | Porte-monnaie SVA |
+| section_confirm | Confirmer la résiliation |
+| field_number | Vous allez résilier le numéro : |
+| field_effective_date | La résiliation prendra effet le 31 du mois en cours. |
+| field_reason | Raison de la résiliation |
+| placeholder_reason | Sélectionnez une raison... |
+| reason_migration | Migration vers autre opérateur |
+| reason_end_activity | Fin d'activité |
+| reason_number_change | Changement de numéro |
+| reason_other | Autre |
+| field_details | Détails complémentaires |
+| placeholder_details | Précisez votre demande... |
+| btn_terminate | Résilier le numéro |
