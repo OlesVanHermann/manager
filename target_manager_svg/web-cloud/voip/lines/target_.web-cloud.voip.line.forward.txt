@@ -2,60 +2,71 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.forward.svg
-Route:   /web-cloud/voip/{ba}/lines/{sn}/forward
-NAV:     Web Cloud > VoIP > [groupe] > Lignes > [ligne] > Transferts
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/forward
+Version: v3 (2025-12-30)
+Source:  old_manager.telecom.line.forward.svg
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| +33612345678             | GET /telephony/{ba}/line/{sn}/options -> forwardUnconditionalNumber |
-| Active/Inactive          | GET /telephony/{ba}/line/{sn}/options -> forwardUnconditional |
-| 20 secondes              | GET /telephony/{ba}/line/{sn}/options -> forwardNoReplyDelay |
-| Messagerie vocale        | GET /telephony/{ba}/line/{sn}/options -> forwardNoReplyNumber |
-| Mode filtrage            | GET /telephony/{ba}/line/{sn}/options -> callsFiltering |
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                              |
+|--------------------------|-----------------------------------------|
+| Activé/Désactivé         | GET /telephony/{ba}/line/{sn}/options   |
+| Numéro externe           | options → forwardUnconditional.nature   |
+| 0033612345678            | options → forwardUnconditional.number   |
+| 20 secondes              | options → forwardNoReplyDelay           |
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes (actif) | Numeros | Fax | Abreges
-2. Left panel: Liste lignes du groupe
-3. NAV3: General | Telephone | Appels | Transferts (actif) | Messagerie | Consommation | Options
-4. Cards:
-   - Renvoi inconditionnel (toggle + destination)
-   - Renvoi sur non-reponse (toggle + destination + delai)
-   - Renvoi sur occupation (toggle + destination)
-   - Renvoi sur injoignable (toggle + destination)
-   - Banniere info priorite
-   - Filtrage appels entrants (mode + liste)
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - VoIP actif
+3. SOUS-NAV - Lignes actif
+4. LEFT PANEL - Liste lignes
+5. RIGHT PANEL
+   - Header: Numéro + Description
+   - NAV3: Transferts actif
+   - NAV4: Inconditionnel | Occupation | Non-réponse
+   - Bloc configuration renvoi actif
+   - Bannière warning si renvoi actif
+   - Cards aperçu autres renvois
 
-TYPES DE RENVOI
-| Type           | API Field                      | Priorite |
-|----------------|--------------------------------|----------|
-| Inconditionnel | forwardUnconditional           | 1        |
-| Occupation     | forwardBusy                    | 2        |
-| Non-reponse    | forwardNoReply                 | 3        |
-| Injoignable    | forwardBackup                  | 4        |
+# NAV3 TAB ACTIF
+Tab 4: Transferts (x=202, w=75)
 
-DESTINATIONS POSSIBLES
-| Type             | Description                    |
-|------------------|--------------------------------|
-| Numero externe   | +33... ou 00...                |
-| Ligne interne    | Autre ligne du groupe          |
-| Messagerie       | Voicemail de la ligne          |
-| Numero special   | File attente, SVI...           |
+# NAV4 TABS
+| # | Tab            | Route                    |
+|---|----------------|--------------------------|
+| 1 | Inconditionnel | /forward                 |
+| 2 | Occupation     | /forward/busy            |
+| 3 | Non-réponse    | /forward/noanswer        |
 
-MODES FILTRAGE
-| Mode           | API Value    | Description                     |
-|----------------|--------------|--------------------------------|
-| Aucun          | none         | Tous appels acceptes           |
-| Liste noire    | blacklist    | Numeros listes rejetes         |
-| Liste blanche  | whitelist    | Seuls numeros listes acceptes  |
+# TYPES DESTINATION
+| Type        | Description                        |
+|-------------|------------------------------------|
+| number      | Numéro interne du groupe           |
+| external    | Numéro externe                     |
+| voicemail   | Messagerie vocale                  |
 
-API ENDPOINTS
-GET  /telephony/{ba}/line/{sn}/options              -> Config renvois
-PUT  /telephony/{ba}/line/{sn}/options              -> Modifier renvois
-GET  /telephony/{ba}/line/{sn}/callsFiltering       -> Liste filtrage
-POST /telephony/{ba}/line/{sn}/callsFiltering       -> Ajouter filtre
-DELETE /telephony/{ba}/line/{sn}/callsFiltering/{n} -> Supprimer filtre
+# ACTIONS
+| Action      | Type    | API                                   |
+|-------------|---------|---------------------------------------|
+| Modifier    | Bouton  | PUT /telephony/{ba}/line/{sn}/options |
+| Désactiver  | Bouton  | PUT /telephony/{ba}/line/{sn}/options |
+| Toggle      | Switch  | PUT /telephony/{ba}/line/{sn}/options |
+
+# API ENDPOINTS
+GET /telephony/{ba}/line/{sn}/options - Options ligne
+PUT /telephony/{ba}/line/{sn}/options - Modifier renvois
+
+# PAYLOAD PUT options
+{
+  "forwardUnconditional": {
+    "enable": true,
+    "nature": "external",
+    "number": "0033612345678"
+  },
+  "forwardBusy": { ... },
+  "forwardNoReply": { ... },
+  "forwardNoReplyDelay": 20,
+  "forwardBackup": { ... }
+}
 ================================================================================

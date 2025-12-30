@@ -2,42 +2,63 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.voicemail.svg
-Route:   /web-cloud/telephony/{ba}/line/{serviceName}/voicemail
-Version: v2 (2025-12-30)
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/voicemail
+Version: v3 (2025-12-30)
+Source:  old_manager.telecom.line.voicemail.svg
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| 2 non lus                | GET /telephony/{ba}/voicemail/{vm}/directories|
-| 5 total                  | directories → count                     |
-| 12% espace               | voicemail → usedQuota                   |
-| Messages list            | GET /telephony/{ba}/voicemail/{vm}/directories/{dir}|
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| Activée/Désactivée       | GET /telephony/{ba}/voicemail/{sn}/settings   |
+| contact@example.com      | settings → email                              |
+| 30 jours                 | settings → retentionDays                      |
+| 3 (non lus)              | GET /telephony/{ba}/voicemail/{sn}/directories → unread |
+| 12 (total)               | directories → total                           |
+| 45%                      | Calcul espace utilisé                         |
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Ligne + NAV3 (Messagerie vocale actif)
-2. RIGHT PANEL:
-   - TITRE "Messagerie vocale"
-   - STATS (3): Non lus, Total, Espace
-   - MESSAGES: Liste avec actions
-   - PARAMETRES: Toggles + email notification
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - VoIP actif
+3. SOUS-NAV - Lignes actif
+4. LEFT PANEL - Liste lignes
+5. RIGHT PANEL
+   - Header: Numéro + Description
+   - NAV3: Messagerie actif
+   - NAV4: Options | Messages | Annonce
+   - Bloc options messagerie
+   - Cards statistiques
+   - Bannière info accès
 
-# STATUTS MESSAGE
-| Statut   | Style           |
-|----------|-----------------|
-| Non lu   | Fond jaune      |
-| Lu       | Fond blanc      |
+# NAV3 TAB ACTIF
+Tab 5: Messagerie (x=281, w=80)
 
-# OPTIONS MESSAGERIE
-| Option              | Default |
-|---------------------|---------|
-| Messagerie activée  | ON      |
-| Notification email  | ON      |
-| Joindre audio       | OFF     |
+# NAV4 TABS
+| # | Tab       | Route                   |
+|---|-----------|-------------------------|
+| 1 | Options   | /voicemail              |
+| 2 | Messages  | /voicemail/messages     |
+| 3 | Annonce   | /voicemail/greeting     |
+
+# OPTIONS
+| Option              | Type    | Description                    |
+|---------------------|---------|--------------------------------|
+| Messagerie vocale   | Toggle  | Activer/Désactiver             |
+| Notification email  | Toggle  | Recevoir notification          |
+| Email               | Input   | Adresse email notification     |
+| Joindre audio       | Toggle  | Joindre fichier audio au mail  |
+| Durée rétention     | Display | Durée conservation messages    |
+
+# ACTIONS
+| Action       | Type    | API                                        |
+|--------------|---------|-------------------------------------------|
+| Changer PIN  | Bouton  | POST /telephony/{ba}/voicemail/{sn}/settings/changePassword |
+| Modifier     | Bouton  | PUT /telephony/{ba}/voicemail/{sn}/settings |
 
 # API ENDPOINTS
-GET /telephony/{ba}/voicemail - Liste messageries
-GET /telephony/{ba}/voicemail/{vm}/directories - Dossiers
-DELETE /telephony/{ba}/voicemail/{vm}/directories/{dir}/{id} - Supprimer
+GET /telephony/{ba}/voicemail/{sn}/settings - Options messagerie
+PUT /telephony/{ba}/voicemail/{sn}/settings - Modifier options
+POST /telephony/{ba}/voicemail/{sn}/settings/changePassword - Changer PIN
+GET /telephony/{ba}/voicemail/{sn}/directories - Dossiers/statistiques
 ================================================================================

@@ -2,41 +2,48 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.calls.svg
-Route:   /web-cloud/telephony/{ba}/line/{serviceName}/calls
-Version: v2 (2025-12-30)
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/calls
+Version: v3 (2025-12-30)
+Source:  old_manager.telecom.line.calls.svg
 ================================================================================
 
-DONNEES DYNAMIQUES
+DONNÉES DYNAMIQUES
 | Exemple SVG              | Source API                              |
 |--------------------------|-----------------------------------------|
-| +33 6 12 34 56 78        | GET /telephony/{ba}/line/{sn}/calls     |
-| 30/12/2025 14:32         | call → datetime                         |
-| 8m 23s                   | call → duration                         |
-| Entrant/Sortant/Manqué   | call → direction + answered             |
+| Date/Heure               | GET /telephony/{ba}/line/{sn}/calls     |
+| Type (Entrant/Sortant)   | call → direction                        |
+| Numéro                   | call → calling/called                   |
+| Durée                    | call → duration                         |
+| Statut                   | call → status                           |
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Ligne + NAV3 (Appels actif)
-2. RIGHT PANEL:
-   - TITRE "Historique des appels"
-   - TOOLBAR: Refresh, Recherche, Filtres type/période, Export
-   - TABLE: Type, Correspondant, Date, Durée, Statut, Actions
-   - PAGINATION
+1. NAV1-2 - Header standard
+2. SOUS-NAV - Lignes actif
+3. LEFT PANEL - Liste lignes
+4. RIGHT PANEL
+   - NAV3: Appels actif
+   - NAV4: Historique | Filtrage entrant | Filtrage sortant
+   - Toolbar (Refresh, Export)
+   - Table historique appels
+   - Pagination
 
-# TYPES D'APPELS
-| Type    | Badge  | Couleur  |
-|---------|--------|----------|
-| Entrant | Vert   | #DEF7EC  |
-| Sortant | Bleu   | #DBEAFE  |
-| Manqué  | Rouge  | #FEE2E2  |
+# NAV4 TABS
+| # | Tab              | Route                    |
+|---|------------------|--------------------------|
+| 1 | Historique       | /calls                   |
+| 2 | Filtrage entrant | /calls/filtering-in      |
+| 3 | Filtrage sortant | /calls/filtering-out     |
 
-# STATUTS
-| Statut   | Badge  |
-|----------|--------|
-| Répondu  | Vert   |
-| Manqué   | Rouge  |
+# TABLE COLONNES
+| Colonne | Description          |
+|---------|----------------------|
+| Date    | Date/heure appel     |
+| Type    | ↙ Entrant / ↗ Sortant|
+| Numéro  | Numéro distant       |
+| Durée   | Format mm:ss         |
+| Statut  | Répondu/Abouti/Manqué|
 
 # API ENDPOINTS
-GET /telephony/{ba}/line/{serviceName}/calls - Liste appels
-GET /telephony/{ba}/line/{serviceName}/calls/export - Export CSV
+GET /telephony/{ba}/line/{sn}/calls - Historique appels
 ================================================================================

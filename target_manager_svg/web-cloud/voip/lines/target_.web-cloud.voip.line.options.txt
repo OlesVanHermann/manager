@@ -2,61 +2,59 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.options.svg
-Route:   /web-cloud/voip/{ba}/lines/{sn}/options
-NAV:     Web Cloud > VoIP > [groupe] > Lignes > [ligne] > Options
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/options
+Version: v3 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| Double appel ON/OFF      | GET /telephony/{ba}/line/{sn}/options -> callWaiting |
-| Presentation numero      | GET /telephony/{ba}/line/{sn}/options -> displayNumber |
-| Numero masque            | GET /telephony/{ba}/line/{sn}/options -> identificationRestriction |
-| Interphone               | GET /telephony/{ba}/line/{sn}/options -> intercom |
-| Restrictions             | GET /telephony/{ba}/line/{sn}/options -> callRestriction |
-| Appels simultanees       | GET /telephony/{ba}/line/{sn}/options -> simultaneousLines |
-| Numero affiche           | GET /telephony/{ba}/line/{sn}/options -> displayedNumber |
-| Langue                   | GET /telephony/{ba}/line/{sn}/options -> language |
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                              |
+|--------------------------|-----------------------------------------|
+| Toggles ON/OFF           | GET /telephony/{ba}/line/{sn}/options   |
+| 0033972123456            | options → displayedNumber               |
+| Français                 | options → language                      |
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes (actif) | Numeros | Fax | Abreges
-2. Left panel: Liste lignes du groupe
-3. NAV3: General | Telephone | Appels | Transferts | Messagerie | Consommation | Options (actif)
-4. Cards:
-   - Options d'appel (double appel, CLIP, CLIR, intercom)
-   - Restrictions d'appels (internationaux, mobiles, surtaxes)
-   - Numero affiche (choix numero present)
-   - Langue et region (langue annonces, timezone)
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - VoIP actif
+3. SOUS-NAV - Lignes actif
+4. LEFT PANEL - Liste lignes
+5. RIGHT PANEL
+   - Header: Numéro + Description
+   - NAV3: Options actif
+   - Bloc Options d'appel (toggles)
+   - Bloc Numéro affiché
+   - Bloc Langue annonces
+   - Bloc Restrictions d'appels
 
-OPTIONS D'APPEL
-| Option              | API Field                  | Description                |
-|---------------------|----------------------------|----------------------------|
-| Double appel        | callWaiting                | Signal appel entrant       |
-| Presentation numero | displayNumber              | Affiche numero sortant     |
-| Numero masque       | identificationRestriction  | Cache numero sortant       |
-| Interphone          | intercom                   | Auto-reponse appels int.   |
+# NAV3 TAB ACTIF
+Tab 7: Options (x=464, w=60)
 
-RESTRICTIONS
-| Restriction         | API Field                  | Description                |
-|---------------------|----------------------------|----------------------------|
-| Internationaux      | internationalOutgoing      | Appels hors France         |
-| Mobiles             | mobileOutgoing             | Vers 06/07                 |
-| Numeros surtaxes    | specialOutgoing            | Vers 08xx                  |
-| SMS surtaxes        | premiumSms                 | SMS payants                |
+# OPTIONS D'APPEL (toggles)
+| Option                        | API Field              |
+|-------------------------------|------------------------|
+| Double appel                  | callWaiting            |
+| Présentation du numéro        | displayNumber          |
+| Interception d'appel groupe   | interceptionAllowed    |
+| Restrictions IP SIP           | ipRestriction          |
+| Protection anti-hacking       | antiHack               |
+| Enregistrement des appels     | recordingAllowed       |
 
-LANGUES DISPONIBLES
-| Langue    | Code |
-|-----------|------|
-| Francais  | fr   |
-| English   | en   |
-| Deutsch   | de   |
-| Espanol   | es   |
-| Italiano  | it   |
+# RESTRICTIONS D'APPELS
+| Restriction            | API Field                |
+|------------------------|--------------------------|
+| Appels internationaux  | outgoingInternational    |
+| Appels vers mobiles    | outgoingMobile           |
+| Numéros spéciaux       | outgoingSpecial          |
+| Numéros surtaxés       | outgoingPremium          |
 
-API ENDPOINTS
-GET  /telephony/{ba}/line/{sn}/options         -> Toutes options
-PUT  /telephony/{ba}/line/{sn}/options         -> Modifier options
-GET  /telephony/{ba}/number                    -> Liste numeros (pour affiche)
+# ACTIONS
+| Action    | Type   | API                                   |
+|-----------|--------|---------------------------------------|
+| Toggle    | Switch | PUT /telephony/{ba}/line/{sn}/options |
+| Modifier  | Bouton | PUT /telephony/{ba}/line/{sn}/options |
+
+# API ENDPOINTS
+GET /telephony/{ba}/line/{sn}/options - Récupérer options
+PUT /telephony/{ba}/line/{sn}/options - Modifier options
 ================================================================================

@@ -2,37 +2,61 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.calls-filtering-in.svg
-Route:   /web-cloud/voip/{billingAccount}/line/{serviceName}/calls/filtering-in
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/calls/filtering-in
+Version: v3 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| +33 8**                  | GET /telephony/{ba}/line/{sn}/calls/filter -> number |
-| Rejeter                  | -> action (accept/reject/voicemail)     |
-| Bloquer numeros surtaxes | -> description                          |
-| Actif                    | -> status (enabled/disabled)            |
-| Accepter                 | -> defaultPolicy                        |
-
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| Règles de filtrage       | GET /telephony/{ba}/line/{sn}/options/incomingFiltering |
+| Type (Bloquer/Autoriser) | rule → type                                      |
+| Numéro/Préfixe           | rule → pattern                                   |
+| Action                   | rule → action                                    |
+| Statut                   | rule → enabled                                   |
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Web Cloud (VoIP actif)
-3. LEFT PANEL - Liste lignes
-4. RIGHT PANEL
-   - Header: numero + description
-   - NAV3: Dashboard | Consommation | [Appels] | Telephone | Gestion
-   - NAV4: Renvois | [Filtrage entrant] | Filtrage sortant | Messagerie
-   - Bloc: Politique par defaut (dropdown)
-   - Toolbar: + Ajouter regle
-   - Table: Numero/Prefixe, Action, Description, Statut, Actions
-   - Info banner
+2. NAV2 - VoIP actif
+3. SOUS-NAV - Lignes actif
+4. LEFT PANEL - Liste lignes
+5. RIGHT PANEL
+   - Header: Numéro + Description
+   - NAV3: Appels actif
+   - NAV4: Historique | Filtrage entrant (actif) | Filtrage sortant
+   - Toolbar (Refresh, Ajouter règle)
+   - Table règles de filtrage
+
+# NAV4 TAB ACTIF
+Tab 2: Filtrage entrant
+
+# TYPES DE RÈGLES
+| Type      | Badge   | Description                |
+|-----------|---------|----------------------------|
+| Bloquer   | Rouge   | Rejeter l'appel            |
+| Autoriser | Vert    | Accepter (liste blanche)   |
+
+# ACTIONS SUR APPEL BLOQUÉ
+| Action      | Description                      |
+|-------------|----------------------------------|
+| Raccrocher  | Raccrocher immédiatement         |
+| Messagerie  | Rediriger vers messagerie        |
+| Occupé      | Signal d'occupation              |
+| Transfert   | Transférer vers autre numéro     |
+
+# TABLE COLONNES
+| Colonne        | Description                 |
+|----------------|------------------------------|
+| Type           | Bloquer/Autoriser            |
+| Numéro/Préfixe | Pattern de correspondance    |
+| Action         | Action si correspondance     |
+| Statut         | Actif/Inactif                |
+| Actions        | ✎ Modifier, × Supprimer     |
 
 # API ENDPOINTS
-GET /telephony/{ba}/line/{sn}/calls/filter - Liste regles filtrage entrant
-POST /telephony/{ba}/line/{sn}/calls/filter - Creer regle
-PUT /telephony/{ba}/line/{sn}/calls/filter/{id} - Modifier regle
-DELETE /telephony/{ba}/line/{sn}/calls/filter/{id} - Supprimer regle
+GET /telephony/{ba}/line/{sn}/options - Options filtrage
+POST /telephony/{ba}/line/{sn}/options/incomingFiltering - Créer règle
+PUT /telephony/{ba}/line/{sn}/options/incomingFiltering/{id} - Modifier
+DELETE /telephony/{ba}/line/{sn}/options/incomingFiltering/{id} - Supprimer
 ================================================================================

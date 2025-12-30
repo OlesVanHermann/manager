@@ -2,40 +2,56 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.voicemail-messages.svg
-Route:   /web-cloud/voip/{billingAccount}/line/{serviceName}/calls/voicemail/messages
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/voicemail/messages
+Version: v3 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| 3                        | GET /telephony/{ba}/line/{sn}/voicemail/messages (count unread) |
-| 12                       | -> total count                          |
-| 45%                      | -> storage.used / storage.total         |
-| 29/12/2024 14:32         | -> messages[].date                      |
-| +33 6 12 34 56 78        | -> messages[].caller                    |
-| 0:45                     | -> messages[].duration                  |
-| Non lu / Lu              | -> messages[].read                      |
-
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| Liste messages           | GET /telephony/{ba}/voicemail/{sn}/directories |
+| Date/Heure               | message → creationDatetime                    |
+| De (numéro)              | message → caller                              |
+| Durée                    | message → duration                            |
+| Statut (Lu/Non lu)       | message → consulted                           |
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Web Cloud (VoIP actif)
-3. LEFT PANEL - Liste lignes
-4. RIGHT PANEL
-   - Header: numero + description
-   - NAV3: Dashboard | Consommation | [Appels] | Telephone | Gestion
-   - NAV4: Renvois | Filtrage entrant | Filtrage sortant | [Messagerie]
-   - Sub-tabs: [Messages] | Annonces | Options
-   - Stats: Messages non lus, Total, Espace utilise
-   - Toolbar: Refresh + Supprimer selection
-   - Table: Checkbox, Date, Appelant, Duree, Statut, Actions
-   - Pagination
+2. NAV2 - VoIP actif
+3. SOUS-NAV - Lignes actif
+4. LEFT PANEL - Liste lignes
+5. RIGHT PANEL
+   - Header: Numéro + Description
+   - NAV3: Messagerie actif
+   - NAV4: Options | Messages (actif) | Annonce
+   - Toolbar (Refresh, Tout écouter, Tout supprimer)
+   - Table messages vocaux avec lecteur audio
+
+# NAV4 TAB ACTIF
+Tab 2: Messages
+
+# TABLE COLONNES
+| Colonne  | Description                        |
+|----------|-------------------------------------|
+| Date     | Date/heure du message               |
+| De       | Numéro appelant                     |
+| Durée    | Durée du message                    |
+| Statut   | Lu/Non lu                           |
+| Lecteur  | Player audio inline                 |
+| Actions  | 📥 Télécharger, × Supprimer        |
+
+# ACTIONS
+| Action         | Type    | API                                      |
+|----------------|---------|------------------------------------------|
+| Écouter        | Player  | GET /telephony/{ba}/voicemail/{sn}/directories/{id}/download |
+| Télécharger    | Icône   | GET /telephony/{ba}/voicemail/{sn}/directories/{id}/download |
+| Supprimer      | Icône   | DELETE /telephony/{ba}/voicemail/{sn}/directories/{id} |
+| Tout supprimer | Bouton  | DELETE /telephony/{ba}/voicemail/{sn}/directories |
 
 # API ENDPOINTS
-GET /telephony/{ba}/line/{sn}/voicemail/messages - Liste messages
-GET /telephony/{ba}/line/{sn}/voicemail/messages/{id}/download - Telecharger
-DELETE /telephony/{ba}/line/{sn}/voicemail/messages/{id} - Supprimer
-PUT /telephony/{ba}/line/{sn}/voicemail/messages/{id} - Marquer lu/non lu
+GET /telephony/{ba}/voicemail/{sn}/directories - Liste messages
+GET /telephony/{ba}/voicemail/{sn}/directories/{id} - Détails message
+GET /telephony/{ba}/voicemail/{sn}/directories/{id}/download - Télécharger
+DELETE /telephony/{ba}/voicemail/{sn}/directories/{id} - Supprimer
 ================================================================================

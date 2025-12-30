@@ -2,36 +2,55 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.voicemail-greeting.svg
-Route:   /web-cloud/voip/{billingAccount}/line/{serviceName}/calls/voicemail/greeting
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/voicemail/greeting
+Version: v3 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| annonce_personnalisee.wav| GET /telephony/{ba}/line/{sn}/voicemail/greeting |
-| Toggle ON/OFF            | -> customGreetingEnabled                |
-| Toggle ON/OFF            | -> announceNumber                       |
-
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| Type annonce             | GET /telephony/{ba}/voicemail/{sn}/settings → greetingType |
+| Durée                    | greeting → duration                           |
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Web Cloud (VoIP actif)
-3. LEFT PANEL - Liste lignes
-4. RIGHT PANEL
-   - Header: numero + description
-   - NAV3: Dashboard | Consommation | [Appels] | Telephone | Gestion
-   - NAV4: Renvois | Filtrage entrant | Filtrage sortant | [Messagerie]
-   - Sub-tabs: Messages | [Annonces] | Options
-   - Bloc: Annonce d'accueil (fichier actuel + upload)
-   - Bloc: Annonce de fermeture (fichier actuel + upload)
-   - Bloc: Options (toggles)
-   - Info banner (formats acceptes)
+2. NAV2 - VoIP actif
+3. SOUS-NAV - Lignes actif
+4. LEFT PANEL - Liste lignes
+5. RIGHT PANEL
+   - Header: Numéro + Description
+   - NAV3: Messagerie actif
+   - NAV4: Options | Messages | Annonce (actif)
+   - Bloc Annonce actuelle (player + actions)
+   - Bloc Envoyer nouvelle annonce (upload)
+   - Bannière info annonce par défaut
+
+# NAV4 TAB ACTIF
+Tab 3: Annonce
+
+# TYPES ANNONCE
+| Type          | Description                          |
+|---------------|--------------------------------------|
+| default       | Annonce système par défaut           |
+| custom        | Annonce personnalisée uploadée       |
+
+# ACTIONS
+| Action            | Type    | API                                      |
+|-------------------|---------|------------------------------------------|
+| Écouter           | Player  | GET /telephony/{ba}/voicemail/{sn}/settings/downloadGreeting |
+| Télécharger       | Bouton  | GET /telephony/{ba}/voicemail/{sn}/settings/downloadGreeting |
+| Annonce défaut    | Bouton  | PUT /telephony/{ba}/voicemail/{sn}/settings → greetingType=default |
+| Upload nouvelle   | Upload  | POST /telephony/{ba}/voicemail/{sn}/settings/uploadGreeting |
+
+# FORMATS ACCEPTÉS
+- MP3, WAV, OGG
+- Maximum 5 Mo
+- Maximum 2 minutes
 
 # API ENDPOINTS
-GET /telephony/{ba}/line/{sn}/voicemail/greeting - Annonce actuelle
-POST /telephony/{ba}/line/{sn}/voicemail/greeting - Uploader annonce
-DELETE /telephony/{ba}/line/{sn}/voicemail/greeting - Supprimer annonce
-PUT /telephony/{ba}/line/{sn}/voicemail/options - Modifier options
+GET /telephony/{ba}/voicemail/{sn}/settings - Récupérer config
+GET /telephony/{ba}/voicemail/{sn}/settings/downloadGreeting - Télécharger
+POST /telephony/{ba}/voicemail/{sn}/settings/uploadGreeting - Envoyer
+PUT /telephony/{ba}/voicemail/{sn}/settings - Modifier type
 ================================================================================

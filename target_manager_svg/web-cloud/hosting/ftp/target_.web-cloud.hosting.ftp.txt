@@ -2,55 +2,55 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.hosting.ftp.svg
-Route:   /web-cloud/hosting/{serviceName}/ftp
-Version: v2 (2025-12-30)
+Route:   /web-cloud/hebergement/hosting/{serviceName}/ftp
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG                       | Source API                              |
-|-----------------------------------|-----------------------------------------|
-| ftp.cluster028.hosting.ovh.net    | GET /hosting/web/{sn} → ftp             |
-| monsitepro                        | GET /hosting/web/{sn}/user              |
-| 30/12/2025 14:32                  | user → lastLogin                        |
+| Exemple SVG                        | Source API                                    |
+|------------------------------------|-----------------------------------------------|
+| ftp.cluster027.hosting.ovh.net     | GET /hosting/web/{sn} -> cluster + pattern    |
+| ssh.cluster027.hosting.ovh.net     | GET /hosting/web/{sn} -> cluster + pattern    |
+| monsitec                           | GET /hosting/web/{sn}/user -> login           |
+| /home/monsitec                     | GET /hosting/web/{sn}/user/{login} -> home    |
+| Actif (FTP/SFTP/SSH)               | GET /hosting/web/{sn}/user/{login} -> state   |
+| 30/12/2025 14:32                   | GET /hosting/web/{sn}/user/{login} -> lastLoginDate |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Hébergement + NAV3 (FTP - SSH actif)
-2. RIGHT PANEL:
-   - TITRE "FTP - SSH"
-   - NAV4: FTP, SSH, Web FTP
-   - CONNEXION: Serveur, Port, Mode, User, Pass
-   - UTILISATEURS: Table avec actions
-   - ACCÈS RAPIDE: 3 cards (WebFTP, SFTP, Docs)
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Hébergement actif
+3. LEFT PANEL - Liste hébergements
+4. RIGHT PANEL
+   - Header: Nom service
+   - NAV3: 16 tabs (FTP-SSH actif)
+   - BLOC INFO: Serveurs FTP/SSH, Login principal, Ports
+   - TOOLBAR: Refresh, Search, Créer utilisateur, Sauvegardes
+   - TABLE: Utilisateurs FTP/SSH
+     - Login (+ badge principal)
+     - Répertoire cible
+     - FTP (badge)
+     - SFTP (badge)
+     - SSH (badge)
+     - État (badge)
+     - Dernière connexion
+     - Actions (...)
+   - PAGINATION
 
-# NAV3 HOSTING
-- Tableau de bord
-- Multisites
-- Bases de données
-- FTP - SSH (actif)
-- Certificat SSL
-- Modules
-- Tâches planifiées
-- Statistiques
-- Gestion
-
-# NAV4 FTP
-| Tab     | Description              |
-|---------|--------------------------|
-| FTP     | Connexion FTP standard   |
-| SSH     | Accès SSH/SFTP           |
-| Web FTP | Gestionnaire fichiers web|
-
-# TYPES UTILISATEUR
-| Type      | Badge    | Description              |
-|-----------|----------|--------------------------|
-| Principal | Violet   | Compte admin             |
-| Standard  | -        | Accès limité dossier     |
+# INTERACTIONS
+- Clic "Créer utilisateur" -> Modal add-ftp-user
+- Clic "..." -> Menu (Changer MDP, Modifier, Supprimer)
+- Clic "Restaurer sauvegarde" -> Modal restore
+- Clic "Générer sauvegarde" -> Modal snapshot
+- Clic icône copie (C) -> Copier dans presse-papier
 
 # API ENDPOINTS
 GET /hosting/web/{serviceName}/user
+GET /hosting/web/{serviceName}/user/{login}
 POST /hosting/web/{serviceName}/user
 PUT /hosting/web/{serviceName}/user/{login}
-DELETE /hosting/web/{serviceName}/user/{login}
 POST /hosting/web/{serviceName}/user/{login}/changePassword
+DELETE /hosting/web/{serviceName}/user/{login}
+
 ================================================================================

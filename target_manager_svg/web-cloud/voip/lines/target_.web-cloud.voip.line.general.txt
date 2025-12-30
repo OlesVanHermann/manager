@@ -2,66 +2,77 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.general.svg
-Route:   /web-cloud/voip/{ba}/lines/{sn}/general
-NAV:     Web Cloud > VoIP > [groupe] > Lignes > [ligne] > General
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/general
+Version: v3 (2025-12-30)
+Source:  old_manager.telecom.line.dashboard.svg
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| 0033972101234            | GET /telephony/{ba}/line/{sn} -> serviceName    |
-| Bureau Direction         | GET /telephony/{ba}/line/{sn} -> description    |
-| VoIP PRO                 | GET /telephony/{ba}/line/{sn} -> offerType      |
-| Actif                    | GET /telephony/{ba}/line/{sn}/serviceInfos      |
-| Yealink T46G             | GET /telephony/{ba}/line/{sn}/phone -> model    |
-| AA:BB:CC:DD:EE:FF        | GET /telephony/{ba}/line/{sn}/phone -> macAddress|
-| 192.168.1.50             | GET /telephony/{ba}/line/{sn}/phone -> ip       |
-| 83.86.0.15               | GET /telephony/{ba}/line/{sn}/phone -> firmware |
-| 15/01/2020               | GET /telephony/{ba}/line/{sn}/serviceInfos      |
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                              |
+|--------------------------|-----------------------------------------|
+| 0033972123456            | GET /telephony/{ba}/line/{sn}           |
+| Bureau Direction         | line → description                      |
+| Yealink T46G             | GET /telephony/{ba}/line/{sn}/phone     |
+| VoIP PRO                 | line → offerType                        |
+| Actif                    | GET /telephony/{ba}/line/{sn}/serviceInfos |
+| sip.ovh.fr               | line → domain                           |
+| ••••••••••••             | (masqué, API changePassword)            |
+| AA:BB:CC:DD:EE:FF        | phone → macAddress                      |
+| 192.168.1.50             | phone → ip                              |
+| 83.86.0.15               | phone → firmwareVersion                 |
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes (actif) | Numeros | Fax | Abreges
-2. Left panel: Liste lignes du groupe
-3. Right panel header: Numero + description + actions
-4. NAV3: General (actif) | Telephone | Appels | Transferts | Messagerie | Consommation | Options
-5. Cards:
-   - Ligne SIP (numero, description, offre, statut, identifiant)
-   - Telephone associe (modele, MAC, IP, firmware, actions)
-   - Abonnement (dates, renouvellement)
-   - Authentification SIP (mot de passe)
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - VoIP actif
+3. SOUS-NAV - Lignes actif (compteur: 3)
+4. LEFT PANEL (x=24, y=155, w=280, h=715)
+   - Recherche
+   - Compteur lignes
+   - Liste lignes (cards sélectionnables)
+5. RIGHT PANEL (x=320, y=155, w=1096, h=715)
+   - Header: Numéro + Description + Actions (MDP SIP, Résilier)
+   - NAV3: Général | Téléphone | Appels | Transferts | Messagerie | Consommation | Options
+   - Contenu Général:
+     * Bloc Ligne SIP (infos principales)
+     * Bloc Téléphone associé (si applicable)
+     * Bloc Abonnement
+     * Warning Anti-hack (si alerte)
+     * Actions rapides
 
-NAV3 LIGNES (7 tabs)
-| Tab          | Route         | Description                    |
-|--------------|---------------|--------------------------------|
-| General      | /general      | Infos ligne + telephone        |
-| Telephone    | /phone        | Config telephone detaillee     |
-| Appels       | /calls        | Historique + filtrage          |
-| Transferts   | /forward      | Renvois d'appels               |
-| Messagerie   | /voicemail    | Messagerie vocale              |
-| Consommation | /consumption  | Stats appels/fax               |
-| Options      | /options      | Options ligne (call waiting...) |
+# NAV3 TABS (Lignes - 7 tabs)
+| # | Tab          | X   | W   | Route         |
+|---|--------------|-----|-----|---------------|
+| 1 | Général      | 0   | 60  | /general      |
+| 2 | Téléphone    | 64  | 75  | /phone        |
+| 3 | Appels       | 143 | 55  | /calls        |
+| 4 | Transferts   | 202 | 75  | /forward      |
+| 5 | Messagerie   | 281 | 80  | /voicemail    |
+| 6 | Consommation | 365 | 95  | /consumption  |
+| 7 | Options      | 464 | 60  | /options      |
 
-ACTIONS HEADER
-| Action        | Comportement                               |
-|---------------|-------------------------------------------|
-| MDP SIP       | Modal changement mot de passe SIP         |
-| Changer offre | Modal upgrade/downgrade offre             |
-| Resilier      | Modal confirmation resiliation            |
+# LEFT PANEL - SERVICE ITEM LIGNE
+Structure card:
+- Avatar cercle (☎️) - bleu si sélectionné, gris sinon
+- Numéro (13px, font-weight 500)
+- Description (11px, muted)
+- Modèle téléphone + statut (10px)
+- Badge statut
 
-ACTIONS TELEPHONE
-| Action     | Comportement                               |
-|------------|-------------------------------------------|
-| Reboot     | Redemarrage distant du telephone          |
-| Configurer | Modal configuration avancee               |
+# BLOCS CONTENU
+| Bloc              | Données                                  |
+|-------------------|------------------------------------------|
+| Ligne SIP         | Numéro, description, offre, statut, SIP  |
+| Téléphone associé | Modèle, MAC, IP, firmware, actions       |
+| Abonnement        | Création, expiration, renouvellement     |
+| Actions rapides   | Domaine, Restrictions, Langue, etc.      |
 
-API ENDPOINTS
-GET  /telephony/{ba}/line/{sn}              -> Details ligne
-GET  /telephony/{ba}/line/{sn}/serviceInfos -> Infos abonnement
-GET  /telephony/{ba}/line/{sn}/phone        -> Infos telephone
-PUT  /telephony/{ba}/line/{sn}              -> Modifier description
-POST /telephony/{ba}/line/{sn}/changePassword -> Changer MDP SIP
-POST /telephony/{ba}/line/{sn}/phone/reboot -> Redemarrer telephone
-DELETE /telephony/{ba}/line/{sn}            -> Resilier ligne
+# API ENDPOINTS
+GET /telephony/{ba}/line/{sn} - Détails ligne
+GET /telephony/{ba}/line/{sn}/phone - Infos téléphone
+GET /telephony/{ba}/line/{sn}/serviceInfos - Infos abonnement
+PUT /telephony/{ba}/line/{sn} - Modifier ligne
+POST /telephony/{ba}/line/{sn}/changePassword - Changer MDP SIP
+POST /telephony/{ba}/line/{sn}/phone/reboot - Redémarrer téléphone
+DELETE /telephony/{ba}/line/{sn} - Résilier ligne
 ================================================================================

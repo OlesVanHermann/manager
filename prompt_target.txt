@@ -4,17 +4,13 @@ PROMPT TARGET v3 - Génération SVG Manager OVH
 
 Version: v3 (2025-12-29)
 Changelog:
-- v3: Ajout SOUS-NAV, standardisation NAV1-NAV4, dimensions unifiées
+- v3: Standardisation NAV1-NAV4, dimensions unifiées
 - v2: Ajout composants réutilisables
 - v1: Version initiale
 
 ##############################################################################
 # 0. RÈGLES CRITIQUES
 ##############################################################################
-
-### GÉNÉRATION DIRECTE
-❌ INTERDIT : Afficher le SVG dans la conversation
-✅ OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
 
 ### FICHIERS TOUJOURS PAR PAIRE
 - target_.{route}.svg  → Le visuel
@@ -147,10 +143,9 @@ x=0 x=24                 x=304 x=320                        x=1416 x=1440
 | Margin R | 1416 | 24px | 1440 |
 
 ### Panels Height
-| Configuration | Left Panel Y | Right Panel Y | Height |
-|---------------|--------------|---------------|--------|
-| Sans SOUS-NAV | 105 | 105 | 765px |
-| Avec SOUS-NAV | 155 | 155 | 715px |
+| Left Panel Y | Right Panel Y | Height |
+|--------------|---------------|--------|
+| 105 | 105 | 765px |
 
 ##############################################################################
 # 3. HIÉRARCHIE NAV STANDARDISÉE
@@ -162,12 +157,9 @@ NAV1 ──► Header OVH (univers: Web Cloud, Public Cloud, Network, etc.)
   │
   └─► NAV2 ──► Section (Domaines, Hébergement, Emails, VoIP, Accès, etc.)
         │
-        └─► [SOUS-NAV] ──► Toggle produit OPTIONNEL
-              │            (ex: Connexions/OverTheBox, Lignes/Numéros/Fax)
+        └─► NAV3 ──► Tabs RIGHT PANEL (onglets principaux)
               │
-              └─► NAV3 ──► Tabs RIGHT PANEL (onglets principaux)
-                    │
-                    └─► NAV4 ──► Sous-tabs RIGHT PANEL (si nécessaire)
+              └─► NAV4 ──► Sous-tabs RIGHT PANEL (si nécessaire)
 ```
 
 ### Définitions
@@ -175,7 +167,6 @@ NAV1 ──► Header OVH (univers: Web Cloud, Public Cloud, Network, etc.)
 |--------|----------|------|---------|
 | **NAV1** | y=0, h=50px | Univers OVH | Web Cloud, Public Cloud, Network |
 | **NAV2** | y=50, h=40px | Section dans univers | Domaines, Hébergement, Emails |
-| **SOUS-NAV** | y=105, h=36px | Toggle sous-produits (optionnel) | Connexions/OverTheBox |
 | **NAV3** | y=38 dans right panel | Tabs principaux | Général, Zone DNS, Sauvegardes |
 | **NAV4** | y=70 dans right panel | Sous-tabs (optionnel) | Statut, Diagnostic, Stats |
 | **ACTIONS** | Variable | Boutons d'action | +, ✎, ×, 🔄 |
@@ -260,49 +251,14 @@ Indicateur actif: rect height=3px, fill=#0050D7, y=85
 ```
 
 ##############################################################################
-# 6. SOUS-NAV - TOGGLE PRODUIT (optionnel)
-##############################################################################
-
-Position: y=105 (juste après NAV2), height=36px
-Usage: Quand une section a plusieurs sous-produits distincts
-
-| Propriété | Valeur |
-|-----------|--------|
-| Y | 105 |
-| Height | 36px |
-| Gap après | 14px |
-| Bouton actif | bg=#0050D7, text=#FFFFFF |
-| Bouton inactif | bg=#F3F4F6, border=#E5E7EB, text=#6B7280 |
-
-```svg
-<!-- SOUS-NAV - Toggle produit (exemple Accès Internet) -->
-<g transform="translate(24, 105)">
-  <!-- Bouton actif -->
-  <rect x="0" y="0" width="160" height="36" rx="6" fill="#0050D7"/>
-  <text x="80" y="23" fill="#FFFFFF" font-size="13" text-anchor="middle" font-weight="500">🌐 Connexions  4</text>
-  
-  <!-- Bouton inactif -->
-  <rect x="168" y="0" width="160" height="36" rx="6" fill="#F3F4F6" stroke="#E5E7EB"/>
-  <text x="248" y="23" fill="#6B7280" font-size="13" text-anchor="middle">📦 OverTheBox  1</text>
-</g>
-```
-
-Sections utilisant SOUS-NAV:
-- **Accès**: Connexions | OverTheBox
-- **VoIP**: Lignes | Numéros | Fax | Abrégés
-- **Emails**: Par domaine | Par pack (optionnel)
-
-Impact: Si SOUS-NAV présent, LEFT/RIGHT panels commencent à y=155 au lieu de y=105
-
-##############################################################################
-# 7. NAV3 - TABS RIGHT PANEL
+# 6. NAV3 - TABS RIGHT PANEL
 ##############################################################################
 
 Position: y=38 dans le right panel (relatif à transform)
 Style: Boutons pill, actif=bg-primary, inactif=btn-outline
 
 ```svg
-<!-- NAV3 - Tabs right panel (dans <g transform="translate(320, 105)"> ou 155 si SOUS-NAV) -->
+<!-- NAV3 - Tabs right panel (dans <g transform="translate(320, 105)">) -->
 <g transform="translate(0, 38)">
   <!-- Tab actif -->
   <rect x="0" y="0" width="65" height="26" rx="4" fill="#0050D7"/>
@@ -317,7 +273,7 @@ Style: Boutons pill, actif=bg-primary, inactif=btn-outline
 ```
 
 ##############################################################################
-# 8. NAV4 - SOUS-TABS RIGHT PANEL
+# 7. NAV4 - SOUS-TABS RIGHT PANEL
 ##############################################################################
 
 Position: y=70 dans le right panel (sous NAV3)
@@ -338,7 +294,7 @@ Style: Texte souligné, actif=primary+underline, inactif=muted
 ```
 
 ##############################################################################
-# 9. SHELL TEMPLATE (structure commune)
+# 8. SHELL TEMPLATE (structure commune)
 ##############################################################################
 
 ```svg
@@ -378,12 +334,8 @@ Style: Texte souligné, actif=primary+underline, inactif=muted
   <!-- NAV1 : Section 4 -->
   
   <!-- NAV2 : Section 5 -->
-  
-  <!-- SOUS-NAV (optionnel) : Section 6 -->
 
   <!-- CONTENT AREA -->
-  <!-- Sans SOUS-NAV: translate(0, 105) -->
-  <!-- Avec SOUS-NAV: translate(0, 155) -->
   <g transform="translate(0, 105)">
     <g transform="translate(24, 0)">
       
@@ -434,7 +386,7 @@ Style: Texte souligné, actif=primary+underline, inactif=muted
 ```
 
 ##############################################################################
-# 10. COMPOSANTS RÉUTILISABLES
+# 9. COMPOSANTS RÉUTILISABLES
 ##############################################################################
 
 ### TOOLBAR
@@ -525,7 +477,7 @@ Style: Texte souligné, actif=primary+underline, inactif=muted
 ```
 
 ##############################################################################
-# 11. TEMPLATE DOCUMENTATION .txt
+# 10. TEMPLATE DOCUMENTATION .txt
 ##############################################################################
 
 ```
@@ -547,9 +499,8 @@ Version: v1 (YYYY-MM-DD)
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
 2. NAV2 - Section (item actif)
-3. SOUS-NAV - Toggle produit (si applicable)
-4. LEFT PANEL - Liste services
-5. RIGHT PANEL
+3. LEFT PANEL - Liste services
+4. RIGHT PANEL
    - Header: Titre + actions
    - NAV3: Tabs principaux
    - NAV4: Sous-tabs (si applicable)
@@ -567,7 +518,7 @@ GET/POST/PUT/DELETE /path/{id}
 ```
 
 ##############################################################################
-# 12. ARBORESCENCE FICHIERS
+# 11. ARBORESCENCE FICHIERS
 ##############################################################################
 
 ```
@@ -597,13 +548,13 @@ GET/POST/PUT/DELETE /path/{id}
 ```
 
 ##############################################################################
-# 13. WORKFLOW & CHECKLIST
+# 12. WORKFLOW & CHECKLIST
 ##############################################################################
 
 Pour chaque écran:
 □ Lire prompt_target.txt (ce fichier)
 □ Lire prompt spécifique section (prompt_target_web-cloud_*.txt)
-□ Shell (NAV1 + NAV2 + SOUS-NAV si applicable)
+□ Shell (NAV1 + NAV2)
 □ Left Panel (liste services)
 □ Right Panel header + NAV3 tabs
 □ NAV4 sous-tabs si nécessaire
