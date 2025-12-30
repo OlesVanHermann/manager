@@ -1,0 +1,144 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Lines
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec configuration
+**Fonction:** Gérer les lignes d'une file d'appels
+**Contexte:** Configuration file d'appels du numéro alias
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Gestion des lignes
+
+## 3. HEADER
+
+- Titre: "Gestion des lignes"
+- Sous-titre: "Configurez les lignes de votre **File d'appels**."
+
+## 4. SECTION ORGANISATION DES LIGNES
+
+### Toolbar
+- Bouton: "+ Ajouter une ligne" (btn-outline, 180x36px)
+
+### Colonnes datagrid (1100x280px)
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Ordre | 40px | Flèches ▲▼ réorganisation |
+| Type | 100px | SIP / External |
+| Numéro | 160px | Format international |
+| Nom | 160px | Description |
+| Timeout | 100px | Secondes |
+| Wrap-up | 100px | Secondes |
+| Lignes simult. | 130px | Nombre |
+| Statut | 140px | Badge Actif |
+| Actions | 60px | Menu ⋮ |
+
+### Menu actions ligne
+- Modifier
+- Supprimer
+
+### Exemples données
+
+| Type | Numéro | Nom | Timeout | Wrap-up | Simult. | Statut |
+|------|--------|-----|---------|---------|---------|--------|
+| SIP | +33 9 72 10 00 01 | Standard | 20 sec | 5 sec | 1 | Actif |
+| SIP | +33 9 72 10 00 02 | Support technique | 30 sec | 10 sec | 2 | Actif |
+| External | +33 6 12 34 56 78 | Mobile commercial | 25 sec | 0 sec | 1 | Actif |
+
+### Badge Statut
+- Actif: Background #DCFCE7, couleur #16A34A
+
+## 5. SECTION OPTIONS
+
+### Numéro affiché lors des appels sortants
+- Select: 300x36px
+- Valeur: "Numéro appelant"
+- Options: Numéro appelant, Numéro alias, Numéro personnalisé
+
+### Stratégie de distribution des appels
+- Select: 300x36px
+- Valeur: "Distribution séquentielle"
+- Note: "Les appels sont distribués dans l'ordre de la liste des lignes."
+
+### Options checkbox
+- ☐ "Appliquer les renvois configurés sur les lignes"
+
+## 6. ACTIONS
+
+- Bouton: "Annuler" (btn-outline, 100x36px)
+- Bouton: "Valider" (btn-primary, 100x36px)
+
+## 7. STRATÉGIES DE DISTRIBUTION
+
+| Stratégie | Code | Description |
+|-----------|------|-------------|
+| Séquentielle | sequentiallyByAgentOrder | Dans l'ordre de la liste |
+| Aléatoire | random | Distribution aléatoire |
+| Moins occupé | leastIdleSinceLastCall | Agent le plus disponible |
+| Simultané | ringAll | Tous sonnent en même temps |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Lister les lignes
+GET /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent
+→ Liste des agents de la file
+
+# Ajouter une ligne
+POST /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent
+Body: {
+  number: "+33972100001",
+  position: 1,
+  timeout: 20,
+  wrapUpTime: 5,
+  simultaneousLines: 1
+}
+
+# Modifier une ligne
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent/{agentId}
+Body: { timeout: 25, position: 2 }
+
+# Supprimer une ligne
+DELETE /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}/agent/{agentId}
+
+# Configuration file
+PUT /telephony/{billingAccount}/easyHunting/{serviceName}/hunting/queue/{queueId}
+Body: {
+  strategy: "sequentiallyByAgentOrder",
+  followCallForwards: false
+}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Gestion des lignes |
+| page_desc | Configurez les lignes de votre File d'appels. |
+| section_organization | Organisation des lignes |
+| btn_add_line | + Ajouter une ligne |
+| col_order | |
+| col_type | Type |
+| col_number | Numéro |
+| col_name | Nom |
+| col_timeout | Timeout |
+| col_wrapup | Wrap-up |
+| col_simultaneous | Lignes simult. |
+| col_status | Statut |
+| col_actions | Actions |
+| type_sip | SIP |
+| type_external | External |
+| status_active | Actif |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| field_display_number | Numéro affiché lors des appels sortants |
+| display_caller | Numéro appelant |
+| display_alias | Numéro alias |
+| field_strategy | Stratégie de distribution des appels |
+| strategy_sequential | Distribution séquentielle |
+| strategy_desc | Les appels sont distribués dans l'ordre de la liste des lignes. |
+| checkbox_forwards | Appliquer les renvois configurés sur les lignes |
+| btn_cancel | Annuler |
+| btn_validate | Valider |

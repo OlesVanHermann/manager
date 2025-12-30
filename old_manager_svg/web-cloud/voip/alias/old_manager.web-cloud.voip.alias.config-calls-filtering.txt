@@ -1,0 +1,130 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Calls Filtering
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration avec listes
+**Fonction:** Configurer le filtrage des appels entrants (liste noire/blanche)
+**Contexte:** Configuration du numéro alias VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Filtrage d'appels
+
+## 3. SECTION CONFIGURATION DES FILTRES
+
+### Rejet appels anonymes (toggle buttons)
+- Activé / Désactivé (sélectionné)
+
+### Activation du filtrage (radio group)
+- ● Filtrage désactivé (sélectionné)
+- ○ Activer la liste noire (bloquer les numéros de la liste)
+- ○ Activer la liste blanche (accepter uniquement les numéros de la liste)
+
+## 4. SECTION CONFIGURATION DES LISTES
+
+### Champs formulaire
+
+| Champ | Type | Options |
+|-------|------|---------|
+| Type de liste | Select | Liste noire |
+| Type de numéro | Select | Numéro exact |
+| Ajouter un numéro | Input | 0033612345678 |
+
+## 5. SECTION DÉTAIL DES LISTES
+
+### Toolbar
+- Dropdown: "Actions ▼"
+- Texte: "0 éléments sélectionnés"
+
+### Colonnes datagrid (800x150px)
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| ☐ | 40px | Checkbox |
+| Numéro | 220px | Format international |
+| Type de numéro | 220px | Numéro exact / Préfixe |
+| Type de liste | 220px | Liste noire / Liste blanche |
+
+### Exemples données
+
+| Numéro | Type de numéro | Type de liste |
+|--------|----------------|---------------|
+| 0033612345678 | Numéro exact | Liste noire |
+| 0033698765432 | Numéro exact | Liste noire |
+
+## 6. BARRE D'ACTION FLOTTANTE
+
+- Background: #1F2937 (gris foncé)
+- Texte: "Voulez-vous sauvegarder vos modifications ?"
+- Lien: "Appliquer à plusieurs services"
+- Boutons: "Appliquer" (btn-primary) | "Annuler" (btn-outline blanc)
+
+## 7. APIS & ENDPOINTS
+
+```
+# Configuration filtrage
+GET /telephony/{billingAccount}/number/{serviceName}/screening
+→ incomingScreenList: "disabled" | "blacklist" | "whitelist"
+→ outgoingScreenList: null
+→ rejectAnonymous: boolean
+
+PUT /telephony/{billingAccount}/number/{serviceName}/screening
+Body: {
+  incomingScreenList: "blacklist",
+  rejectAnonymous: true
+}
+
+# Lister les règles de filtrage
+GET /telephony/{billingAccount}/screen/{serviceName}
+→ Liste des règles
+
+# Ajouter une règle
+POST /telephony/{billingAccount}/screen/{serviceName}
+Body: {
+  callNumber: "0033612345678",
+  type: "incomingBlacklist",
+  nature: "number" | "prefix"
+}
+
+# Supprimer une règle
+DELETE /telephony/{billingAccount}/screen/{serviceName}/{id}
+```
+
+## 8. TYPES DE FILTRAGE
+
+| Type | Code API | Description |
+|------|----------|-------------|
+| Liste noire entrant | incomingBlacklist | Bloque les numéros |
+| Liste blanche entrant | incomingWhitelist | N'accepte que ces numéros |
+| Numéro exact | number | Correspondance exacte |
+| Préfixe | prefix | Tous les numéros commençant par |
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Filtrage d'appels |
+| page_desc | Gérez les règles de filtrage pour les appels entrants sur votre numéro. |
+| section_config | Configuration des filtres |
+| field_anonymous | Rejet des appels anonymes |
+| field_filtering | Activation du filtrage |
+| filter_disabled | Filtrage désactivé |
+| filter_blacklist | Activer la liste noire (bloquer les numéros de la liste) |
+| filter_whitelist | Activer la liste blanche (accepter uniquement les numéros de la liste) |
+| section_lists | Configuration des listes |
+| field_list_type | Type de liste |
+| field_number_type | Type de numéro |
+| field_add_number | Ajouter un numéro |
+| list_black | Liste noire |
+| list_white | Liste blanche |
+| number_exact | Numéro exact |
+| number_prefix | Préfixe |
+| section_detail | Détail des listes |
+| col_number | Numéro |
+| col_number_type | Type de numéro |
+| col_list_type | Type de liste |
+| save_question | Voulez-vous sauvegarder vos modifications ? |
+| link_apply_multi | Appliquer à plusieurs services |
+| btn_apply | Appliquer |
+| btn_cancel | Annuler |

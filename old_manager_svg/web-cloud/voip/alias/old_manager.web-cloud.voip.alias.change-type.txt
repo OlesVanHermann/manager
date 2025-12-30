@@ -1,0 +1,95 @@
+# Cahier des Charges : web-cloud/voip/alias - Change Type
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page sélection avec cartes radio
+**Fonction:** Configurer le type de traitement des appels d'un numéro alias
+**Contexte:** Configuration du numéro alias VoIP
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Configuration du numéro
+
+## 3. LAYOUT
+
+### Section collapsible
+- "À quoi sert la configuration du numéro ?" (accordéon)
+
+### Bouton mode
+- "Passer en mode expert" (btn-outline)
+
+## 4. CARTES TYPE DE CONFIGURATION (4 cartes, 2x2)
+
+### Carte 1 : Redirection (360x220px)
+- Radio: sélectionné (bleu)
+- Titre: "Redirection"
+- Schéma: Téléphone → flèche → Mobile
+- Description: "Redirigez les appels entrants vers un autre numéro ou une ligne."
+- Border: #0050D7 (sélectionné)
+
+### Carte 2 : File d'appels (360x220px)
+- Radio: non sélectionné
+- Titre: "File d'appels"
+- Schéma: Téléphone → File → Multiple agents
+- Description: "Gérez vos appels entrants avec une file d'attente et des agents."
+
+### Carte 3 : Serveur Vocal Interactif (360x220px)
+- Radio: non sélectionné
+- Titre: "Serveur Vocal Interactif"
+- Schéma: Téléphone → Menu → Options 1,2,3
+- Description: "Créez un menu interactif pour orienter vos appelants."
+
+### Carte 4 : Conférence (360x220px)
+- Radio: non sélectionné
+- Titre: "Conférence"
+- Schéma: Multiple participants ↔ Centre conférence
+- Description: "Organisez des conférences téléphoniques multiparticipants."
+
+## 5. ACTIONS
+
+- Lien: "Appliquer à plusieurs services"
+- Bouton: "Paramétrer" (btn-primary, 140x40px)
+
+## 6. TYPES DE CONFIGURATION
+
+| Type | Code API | Description |
+|------|----------|-------------|
+| Redirection | ddi | Redirection simple vers numéro/ligne |
+| File d'appels | easyHunting | File d'attente avec agents |
+| SVI | ovhPabx | Serveur vocal interactif |
+| Conférence | conference | Salle de conférence |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Obtenir type actuel
+GET /telephony/{billingAccount}/number/{serviceName}
+→ featureType: "ddi" | "easyHunting" | "ovhPabx" | "conference"
+
+# Changer le type de configuration
+PUT /telephony/{billingAccount}/number/{serviceName}/changeFeatureType
+Body: { featureType: "easyHunting" }
+→ Tâche de conversion
+
+# Convertir en ligne (cas spécial)
+POST /telephony/{billingAccount}/number/{serviceName}/convertToLine
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Configuration du numéro |
+| section_help | À quoi sert la configuration du numéro ? |
+| btn_expert | Passer en mode expert |
+| type_redirect | Redirection |
+| type_redirect_desc | Redirigez les appels entrants vers un autre numéro ou une ligne. |
+| type_queue | File d'appels |
+| type_queue_desc | Gérez vos appels entrants avec une file d'attente et des agents. |
+| type_ivr | Serveur Vocal Interactif |
+| type_ivr_desc | Créez un menu interactif pour orienter vos appelants. |
+| type_conference | Conférence |
+| type_conference_desc | Organisez des conférences téléphoniques multiparticipants. |
+| link_apply_multi | Appliquer à plusieurs services |
+| btn_configure | Paramétrer |

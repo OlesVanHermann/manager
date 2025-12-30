@@ -1,0 +1,149 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Menus
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page éditeur visuel avec liste
+**Fonction:** Gérer les menus du Serveur Vocal Interactif (SVI)
+**Contexte:** Configuration SVI du numéro alias
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Gestion des menus
+
+### Retour
+← Configuration
+
+## 3. BANNIÈRE INFO (500x70px)
+
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Texte ligne 1: "Les menus permettent de créer un serveur vocal interactif."
+- Texte ligne 2: "L'appelant peut naviguer via les touches de son téléphone."
+
+## 4. SECTION LISTE DES MENUS (500x350px)
+
+### Toolbar
+- Bouton: "+ Ajouter un menu" (btn-primary, 180x36px)
+
+### Liste des menus
+
+| Menu | Entrées | Sélectionné |
+|------|---------|-------------|
+| ● Menu principal | 3 entrées configurées | Oui (bleu) |
+| ○ Menu commercial | 2 entrées configurées | Non |
+| ○ Menu support | 4 entrées configurées | Non |
+
+### Carte menu
+- Radio: cercle bleu (sélectionné) ou gris
+- Nom: font-weight 600
+- Description: nombre d'entrées
+- Lien: "Modifier"
+
+## 5. SECTION ÉDITION DU MENU (580x470px)
+
+### Header
+- Titre: "Édition du menu"
+
+### Diagramme visuel du menu
+
+#### Noeud racine
+- Background: #0050D7
+- Texte: "Menu principal"
+- Sous-texte: "Annonce: bienvenue.mp3"
+- Dimensions: 180x60px
+
+#### Lignes de connexion
+- Trait: #0050D7, 2px
+- Structure arborescente
+
+#### Noeuds enfants (180x80px chacun)
+
+| Touche | Label | Action |
+|--------|-------|--------|
+| Touche 1 | Commercial | → File d'appels |
+| Touche 2 | Support technique | → Sous-menu support |
+| Touche 3 | Autres demandes | → Messagerie vocale |
+
+- Background: #EFF6FF
+- Border: #0050D7
+- Lien: "Modifier"
+
+### Bouton ajout
+- "+ Ajouter" (btn-outline dashed, 120x35px)
+
+## 6. ACTIONS DU MENU
+
+| Type d'action | Code | Description |
+|---------------|------|-------------|
+| File d'appels | easyHunting | Transfère vers file |
+| Sous-menu | menu | Navigue vers autre menu |
+| Messagerie | voicemail | Envoie vers messagerie |
+| Raccrocher | hangup | Termine l'appel |
+| Numéro externe | external | Transfère vers numéro |
+
+## 7. APIS & ENDPOINTS
+
+```
+# Lister les menus
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/menu
+→ Liste des IDs menus
+
+# Détails menu
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}
+→ name, welcomeSoundId, greetSound
+
+# Créer un menu
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/menu
+Body: {
+  name: "Menu principal",
+  welcomeSoundId: 123,
+  greetSound: "default"
+}
+
+# Entrées du menu
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}/entry
+→ Liste des entrées
+
+# Créer une entrée
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}/entry
+Body: {
+  dtmf: "1",
+  action: "menuSub",
+  actionParam: "456",
+  position: 1
+}
+
+# Modifier une entrée
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}/entry/{entryId}
+Body: { action: "voicemail", actionParam: "789" }
+```
+
+## 8. TOUCHES DTMF
+
+| Touche | Valeur |
+|--------|--------|
+| 0-9 | Chiffres |
+| * | Étoile |
+| # | Dièse |
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Gestion des menus |
+| info_line1 | Les menus permettent de créer un serveur vocal interactif. |
+| info_line2 | L'appelant peut naviguer via les touches de son téléphone. |
+| section_list | Liste des menus |
+| btn_add_menu | + Ajouter un menu |
+| entries_count | {n} entrées configurées |
+| link_edit | Modifier |
+| section_editor | Édition du menu |
+| label_announce | Annonce |
+| key_label | Touche {n} |
+| action_queue | File d'appels |
+| action_submenu | Sous-menu |
+| action_voicemail | Messagerie vocale |
+| action_hangup | Raccrocher |
+| action_external | Numéro externe |
+| btn_add_entry | + Ajouter |

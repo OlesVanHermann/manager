@@ -1,0 +1,125 @@
+# Cahier des Charges : web-cloud/voip/alias - Config Agents OVH PABX
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec formulaire d'ajout
+**Fonction:** Gérer les agents d'une file d'appels OVH PABX
+**Contexte:** Configuration file d'appels du numéro alias
+
+## 2. NAVIGATION
+
+### Breadcrumb
+Télécom › Groupe VoIP › Numéro alias 0033972XXXXXX › Gérer les agents
+
+### Retour
+← Configuration
+
+## 3. SECTION AJOUTER AGENT (1100x150px)
+
+### Formulaire inline
+| Champ | Type | Largeur |
+|-------|------|---------|
+| + Ajouter un numéro | btn-outline | 180px |
+| Numéro | Input + recherche | 300px |
+| - | btn-primary | - |
+
+- Bouton: "Ajouter un agent" (btn-primary, 150x36px)
+
+## 4. SECTION LISTE DES AGENTS (1100x430px)
+
+### Toolbar
+- Bouton: "Supprimer l'agent sélectionné" (btn-outline, 240x36px)
+
+### Colonnes datagrid
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| ☐ | 40px | Checkbox sélection |
+| Agent | 150px | Numéro international |
+| Description | 180px | Texte libre |
+| Type | 100px | Interne / Externe |
+| Délai | 80px | Secondes |
+| Repos | 80px | Secondes wrap-up |
+| Appels simultanés | 150px | Nombre |
+| État | 100px | Badge Disponible/Déconnecté |
+| Actions | 60px | ✏️ Modifier |
+
+### Badges État
+
+| État | Background | Couleur |
+|------|------------|---------|
+| Disponible | #DCFCE7 | #16A34A |
+| Déconnecté | #FEF3C7 | #D97706 |
+
+### Exemples données
+
+| Agent | Description | Type | Délai | Repos | Simult. | État |
+|-------|-------------|------|-------|-------|---------|------|
+| +33 1 23 45 67 89 | Agent Commercial 1 | Interne | 20 | 5 | 3 | Disponible |
+| +33 6 98 76 54 32 | Support Technique | Externe | 30 | 10 | 2 | Déconnecté |
+| +33 9 12 34 56 78 | Agent Comptabilité | Interne | 25 | 8 | 1 | Disponible |
+| +33 7 55 44 33 22 | Agent Commercial 2 | Interne | 20 | 5 | 3 | Disponible |
+
+## 5. PAGINATION
+
+- Texte: "Affichage 1-4 sur 4"
+- Navigation: ‹ 1 ›
+
+## 6. APIS & ENDPOINTS
+
+```
+# Lister les agents
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent
+→ Liste des IDs agents
+
+# Détails agent
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent/{agentId}
+→ number, description, status, timeout, wrapUpTime, simultaneousLines
+
+# Ajouter un agent
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent
+Body: {
+  number: "+33612345678",
+  description: "Nouvel agent",
+  timeout: 20,
+  wrapUpTime: 5,
+  simultaneousLines: 1
+}
+
+# Modifier un agent
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent/{agentId}
+Body: { description: "Nouveau nom", timeout: 25 }
+
+# Supprimer un agent
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent/{agentId}
+
+# Statut agent (connexion/déconnexion)
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent/{agentId}/logOn
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/hunting/agent/{agentId}/logOff
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Gérer les agents |
+| section_add | Ajouter un agent |
+| btn_add_number | + Ajouter un numéro |
+| field_number | Numéro |
+| placeholder_number | Numéro au format international |
+| btn_add_agent | Ajouter un agent |
+| section_list | Liste des agents |
+| btn_delete_selected | Supprimer l'agent sélectionné |
+| col_agent | Agent |
+| col_description | Description |
+| col_type | Type |
+| col_timeout | Délai |
+| col_wrapup | Repos |
+| col_simultaneous | Appels simultanés |
+| col_status | État |
+| col_actions | Actions |
+| type_internal | Interne |
+| type_external | Externe |
+| status_available | Disponible |
+| status_disconnected | Déconnecté |
+| pagination | Affichage {start}-{end} sur {total} |
