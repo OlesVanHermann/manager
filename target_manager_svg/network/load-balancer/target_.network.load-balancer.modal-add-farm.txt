@@ -1,0 +1,150 @@
+# Cahier des Charges : network/load-balancer - Modal Ajouter Ferme
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Modal de création
+- **Déclencheur** : Bouton "Ajouter une ferme de serveurs"
+- **Objectif** : Créer une nouvelle ferme de serveurs
+
+## 2. STRUCTURE MODAL
+- Overlay sombre (50% opacité)
+- Modal centrée (700x750px)
+- Header avec titre et bouton fermer
+- Formulaire avec champs
+- Footer avec boutons action
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsText** : Titre
+- **OdsInput** : Champs texte
+- **OdsSelect** : Dropdowns
+- **OdsRadio** : Sélection protocole
+- **OdsButton** : Annuler/Ajouter
+- **OdsLink** : Options avancées
+
+## 4. HEADER MODAL
+| Élément | Valeur |
+|---------|--------|
+| Titre | "Ajouter une ferme de serveurs" |
+| Bouton fermer | ✕ (coin droit) |
+| Séparateur | Ligne grise |
+
+## 5. CHAMPS DU FORMULAIRE
+
+### Nom de la ferme *
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input text |
+| Placeholder | farm-api-backend |
+| Largeur | 640px |
+| Obligatoire | Oui |
+
+### Protocole *
+| Option | Sélectionné |
+|--------|-------------|
+| HTTP | ● (actif) |
+| TCP | ○ |
+| UDP | ○ |
+
+Type : Radio buttons
+
+### Port *
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input number |
+| Exemple | 8080 |
+| Largeur | 200px |
+| Obligatoire | Oui |
+
+### Zone *
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Exemple | "GRA - Gravelines" |
+| Largeur | 320px |
+| Obligatoire | Oui |
+
+Options zone :
+- GRA - Gravelines
+- FRA - Francfort
+- RBX - Roubaix
+- LIM - Limbourg
+- SBG - Strasbourg
+
+### Méthode de répartition *
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Exemple | "roundrobin - Distribution équitable" |
+| Largeur | 640px |
+| Obligatoire | Oui |
+
+Options méthode :
+- roundrobin - Distribution équitable
+- leastconn - Moins de connexions actives
+- source - Affinité IP source
+- first - Premier disponible
+- uri - Basé sur l'URI
+
+### Persistance de session (stickiness)
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Défaut | "Aucune" |
+| Largeur | 640px |
+| Obligatoire | Non |
+
+Options stickiness :
+- Aucune
+- cookie - Cookie applicatif
+- sourceIp - IP source
+
+### Type de probe (health check)
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Exemple | "HTTP" |
+| Largeur | 310px |
+| Obligatoire | Non |
+
+### Chemin de vérification
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input text |
+| Exemple | /health |
+| Largeur | 310px |
+| Visible si | Probe HTTP sélectionné |
+
+## 6. OPTIONS AVANCÉES
+- **Style** : Lien bleu avec "+"
+- **Texte** : "+ Options avancées (timeout, intervalle...)"
+- **Action** : Affiche champs additionnels
+
+### Champs avancés (masqués par défaut)
+| Champ | Type | Description |
+|-------|------|-------------|
+| Timeout client | Number | Timeout connexion client (ms) |
+| Timeout serveur | Number | Timeout réponse serveur (ms) |
+| Intervalle probe | Number | Intervalle health check (ms) |
+| Seuil DOWN | Number | Échecs avant DOWN |
+| Seuil UP | Number | Succès avant UP |
+
+## 7. FOOTER MODAL
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Outline (bordure grise) | Gauche |
+| Ajouter | Primary (bleu) | Droite |
+
+## 8. VALIDATION
+| Champ | Règle |
+|-------|-------|
+| Nom | Requis, alphanumérique + tirets |
+| Port | Requis, 1-65535 |
+| Zone | Requis |
+| Méthode | Requis |
+
+## 9. APIS & ENDPOINTS
+- POST /ipLoadbalancing/{serviceName}/http/farm - Créer ferme HTTP
+- POST /ipLoadbalancing/{serviceName}/tcp/farm - Créer ferme TCP
+- POST /ipLoadbalancing/{serviceName}/udp/farm - Créer ferme UDP
+
+

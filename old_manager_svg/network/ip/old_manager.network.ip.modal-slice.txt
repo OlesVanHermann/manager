@@ -1,88 +1,53 @@
-# Cahier des Charges : network/ip - Modal Segmenter Bloc
+# Cahier des Charges : network/ip - Modal Slice
 
 ## 1. VUE D'ENSEMBLE
-- **Type** : Modal d'action
-- **Déclencheur** : Action "Segmenter le bloc" dans le menu IP
-- **Objectif** : Diviser un bloc IP en sous-réseaux plus petits
+- **Type** : Modal segmentation bloc IP
+- **Contexte** : Gestion IP
+- **Objectif** : Segmenter un bloc IP en sous-blocs
 
-## 2. STRUCTURE MODAL
-- Overlay sombre (50% opacité)
-- Modal centrée (600x480px)
-- Header avec titre dynamique et bouton fermer
-- Select dropdown pour taille des blocs enfants
-- Zone d'information sur les blocs créés
-- Footer avec boutons action
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Modal | 600x480px |
+| Background | Blanc |
+| Overlay | Noir 50% opacité |
 
 ## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur modal
-- **OdsSelect** : Choix de la taille CIDR
-- **OdsList** : Liste des blocs qui seront créés
-- **OdsText** : Labels et descriptions
-- **OdsButton** : Annuler/Confirmer
+- **OdsModal** : Container principal
+- **OdsSelect** : Taille des sous-blocs
+- **OdsCard** : Prévisualisation blocs créés
+- **OdsButton** : Actions
 
 ## 4. HEADER MODAL
-| Élément | Valeur |
-|---------|--------|
-| Titre | "Segmenter le bloc {IP}/{CIDR}" |
-| Bouton fermer | ✕ (coin droit) |
-| Séparateur | Ligne grise |
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Segmenter le bloc {bloc}" |
+| Bouton fermer | × |
 
-## 5. FORMULAIRE
-
-### Instructions
+## 5. INSTRUCTION
 | Propriété | Valeur |
 |-----------|--------|
 | Texte | "Veuillez indiquer la taille des blocs enfants désirée" |
-| Position | Haut du formulaire |
 
-### Select Taille CIDR
+## 6. SELECT TAILLE
 | Propriété | Valeur |
 |-----------|--------|
-| Type | Select dropdown |
-| Largeur | 540px |
-| Exemple | /24 |
-| Options | CIDR plus petits que le bloc parent |
+| Options | /24, /25, /26, /27, /28 |
+| Largeur | 100% |
 
-## 6. ZONE INFORMATION
+## 7. SECTION PRÉVISUALISATION
 | Propriété | Valeur |
 |-----------|--------|
-| Fond | Gris (#F3F4F6) |
-| Dimensions | 540x220px |
+| Fond | #F3F4F6 |
 | Titre | "Cette configuration entraînera la création des blocs suivants" |
+| Liste | Puces + CIDR blocs enfants |
 
-### Liste des blocs créés
-| Élément | Style |
-|---------|-------|
-| Puce | Cercle gris |
-| Bloc 1 | 192.168.0.0/24 |
-| Bloc 2 | 192.168.1.0/24 |
-| Bloc 3 | 192.168.2.0/24 |
-| Bloc 4 | 192.168.3.0/24 |
+## 8. BOUTONS FOOTER
+| Bouton | Style |
+|--------|-------|
+| Annuler | Outline |
+| Confirmer | Primary |
 
-## 7. FOOTER MODAL
-| Bouton | Style | Position |
-|--------|-------|----------|
-| Annuler | Outline (bordure grise) | Gauche |
-| Confirmer | Primary (bleu) | Droite |
-
-## 8. OPTIONS CIDR
-| Bloc parent | Options segmentation |
-|-------------|---------------------|
-| /22 | /23, /24, /25, /26, /27, /28 |
-| /23 | /24, /25, /26, /27, /28 |
-| /24 | /25, /26, /27, /28 |
-| /25 | /26, /27, /28 |
-
-## 9. CALCUL NOMBRE DE BLOCS
-| Parent | Enfant | Nombre de blocs |
-|--------|--------|-----------------|
-| /22 | /24 | 4 |
-| /22 | /25 | 8 |
-| /23 | /24 | 2 |
-| /24 | /26 | 4 |
-
-## 10. APIS & ENDPOINTS
-- GET /ip/{ip}/slicedChildren - Prévisualiser la segmentation
-- POST /ip/{ip}/slice - Effectuer la segmentation
-
-
+## 9. APIS & ENDPOINTS
+- GET /ip/{bloc}/slice/preview - Prévisualisation
+- POST /ip/{bloc}/slice - Segmenter bloc

@@ -2,78 +2,52 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.carrier-sip.dashboard.svg
-Route:   /web-cloud/voip/carrier-sip/{trunk}
-NAV:     Web Cloud > VoIP > Trunk SIP > [trunk] > General
-Version: v1 (2025-12-29)
+Route:   /web-cloud/telephony/{serviceName}/carrier-sip/dashboard
+Version: v2 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| trunk-sip-abc123         | GET /telephony/trunk/{trunk} -> serviceName     |
-| 3 / 10                   | GET /telephony/trunk/{trunk} -> activeChannels/maxChannels |
-| 127                      | GET /telephony/trunk/{trunk}/statistics -> callsToday |
-| 4:32                     | GET /telephony/trunk/{trunk}/statistics -> avgDuration |
-| 99.8%                    | GET /telephony/trunk/{trunk}/statistics -> sipQuality |
-| sip.ovh.net              | GET /telephony/trunk/{trunk} -> sipServer       |
-| Endpoints IP             | GET /telephony/trunk/{trunk}/endpoints          |
-| Appels recents           | GET /telephony/trunk/{trunk}/cdr?limit=5        |
+| Exemple SVG              | Source API                              |
+|--------------------------|-----------------------------------------|
+| 12 appels en cours       | GET /telephony/{ba}/carrierSip/{sn}/currentCalls|
+| 847 appels aujourd'hui   | statistics → callsToday                 |
+| 45 230 minutes           | statistics → minutesThisMonth           |
+| 4/4 endpoints            | GET /telephony/{ba}/carrierSip/{sn}/endpoints|
+| 99.2% ASR                | statistics → asr (Answer-Seizure Ratio) |
 ================================================================================
 
-STRUCTURE PAGE
-1. Left panel: Liste trunks SIP
-2. Header: Nom trunk + statut + label
-3. NAV3: General (actif) | Parametres | Routage | CDR | Statistiques
-4. Stats cards (4 KPIs)
-5. Configuration SIP
-6. Endpoints IP autorises
-7. Appels recents
+# STRUCTURE PAGE
+1. LEFT PANEL - Service Carrier SIP + NAV3 (Dashboard actif)
+2. RIGHT PANEL:
+   - TITRE "Carrier SIP - Tableau de bord"
+   - STATS CARDS (5): En cours, Aujourd'hui, Minutes, Endpoints, ASR
+   - ENDPOINTS: Liste avec statut connexion
+   - TRAFIC: Graphique temps réel
+   - DERNIERS APPELS: Table récents
 
-STATS CARDS
-| Carte           | Donnee              | Indicateur     |
-|-----------------|---------------------|----------------|
-| Canaux actifs   | Utilises / Max      | Disponibles    |
-| Appels auj.     | Compteur            | Delta vs hier  |
-| Duree moyenne   | mm:ss               | Total          |
-| Qualite SIP     | % reussite          | Niveau         |
+# NAV3 CARRIER SIP
+- Tableau de bord (actif)
+- Endpoints (compteur)
+- CDR / Journaux
+- Routage
+- Paramètres
 
-CONFIGURATION SIP
-| Champ        | Description                    |
-|--------------|--------------------------------|
-| Serveur SIP  | Hostname serveur OVH           |
-| Port         | Port SIP (5060)                |
-| Transport    | UDP/TCP                        |
-| Identifiant  | user@domain (copiable)         |
-| Mot de passe | Masque (affichable)            |
-| Codecs       | Liste codecs supportes         |
-| DTMF         | Mode DTMF (RFC 2833)           |
+# STATUTS ENDPOINT
+| Statut     | Couleur |
+|------------|---------|
+| Connecté   | Vert    |
+| Déconnecté | Rouge   |
+| Dégradé    | Orange  |
 
-ENDPOINTS IP
-| Colonne | Description                    |
-|---------|--------------------------------|
-| IP      | Adresse IP autorisee           |
-| Label   | Description (IPBX, etc.)       |
-| Statut  | Actif/Inactif                  |
-| Actions | Supprimer                      |
+# CODES SIP
+| Code | Badge  | Description      |
+|------|--------|------------------|
+| 200  | Vert   | OK               |
+| 486  | Orange | Busy             |
+| 503  | Rouge  | Service Unavail  |
 
-APPELS RECENTS (preview CDR)
-| Colonne     | Description                    |
-|-------------|--------------------------------|
-| Date        | Date/heure appel               |
-| Source      | Numero appelant                |
-| Destination | Numero appele                  |
-| Duree       | Duree appel                    |
-| Statut      | Repondu/Echec/...              |
-| Direction   | Entrant/Sortant                |
-| Qualite     | Score qualite                  |
-
-API ENDPOINTS
-GET /telephony/trunk                           -> Liste trunks
-GET /telephony/trunk/{trunk}                   -> Detail trunk
-GET /telephony/trunk/{trunk}/statistics        -> Stats
-GET /telephony/trunk/{trunk}/endpoints         -> Liste IPs
-POST /telephony/trunk/{trunk}/endpoints        -> Ajouter IP
-DELETE /telephony/trunk/{trunk}/endpoints/{ip} -> Supprimer IP
-GET /telephony/trunk/{trunk}/cdr               -> CDR recents
-POST /telephony/trunk/{trunk}/regenerate       -> Regenerer credentials
+# API ENDPOINTS
+GET /telephony/{ba}/carrierSip/{serviceName} - Infos service
+GET /telephony/{ba}/carrierSip/{serviceName}/endpoints - Liste endpoints
+GET /telephony/{ba}/carrierSip/{serviceName}/cdr - CDR
 ================================================================================

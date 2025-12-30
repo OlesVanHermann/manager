@@ -1,0 +1,84 @@
+# Cahier des Charges : network/loadbalancer - Page Logs
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Page logs d'accès Load Balancer
+- **Contexte** : Network Load Balancer
+- **Objectif** : Consulter l'historique des requêtes
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Page largeur | 1100px |
+| Page hauteur | 550px |
+| Background | #F9FAFB |
+
+## 3. COMPOSANTS UI
+- **OdsText** : Titres et descriptions
+- **OdsInput** : Recherche
+- **OdsSelect** : Code HTTP, période
+- **OdsButton** : Exporter
+- **Terminal** : Zone logs style terminal
+
+## 4. HEADER
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Logs d'accès" |
+| Description | "lb-production-web - Historique des requêtes." |
+
+## 5. BARRE FILTRES
+| Élément | Largeur | Contenu |
+|---------|---------|---------|
+| Recherche | 250px | "🔍 Filtrer par URL, IP..." |
+| Code HTTP | 120px | "Tous codes" |
+| Période | 140px | "15 dernières min" |
+| Exporter | 100px | Bouton outline |
+
+## 6. ZONE TERMINAL LOGS
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 1040px |
+| Hauteur | 370px |
+| Background | #1F2937 |
+| Border radius | 8px |
+| Police | Monospace 10px |
+
+## 7. FORMAT LIGNE LOG
+| Élément | Couleur | Exemple |
+|---------|---------|---------|
+| Timestamp | #6B7280 | "15:45:23.123" |
+| Code HTTP | Voir ci-dessous | "200", "500"... |
+| Requête | #D1D5DB | "GET /api/v2/users IP → backend:port Xms" |
+
+## 8. COULEURS CODES HTTP
+| Code | Couleur |
+|------|---------|
+| 2xx | #16A34A (vert) |
+| 3xx | #0EA5E9 (cyan) / #F59E0B (304) |
+| 4xx | #DC2626 (rouge) |
+| 5xx | #DC2626 (rouge) |
+
+## 9. BARRE STATISTIQUES (footer terminal)
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Bas du terminal |
+| Couleur | #6B7280 |
+| Format | "Last 15 min: X requests | 2xx: X | 3xx: X | 4xx: X | 5xx: X" |
+
+## 10. BOUTON LIVE TAIL
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | "Live tail ▶" |
+| Couleur | #0050D7 |
+| Position | Droite footer terminal |
+
+## 11. EXEMPLES LOGS
+| Timestamp | Code | Requête |
+|-----------|------|---------|
+| 15:45:23.123 | 200 | GET /api/v2/users 86.45.123.45 → web-01:8080 12ms |
+| 15:45:22.845 | 500 | POST /api/v2/orders 10.0.0.15 → web-03:8080 1234ms ⚠️ timeout |
+| 15:45:22.210 | 503 | GET /api/v2/heavy 86.45.123.50 → no healthy backend |
+
+## 12. APIS & ENDPOINTS
+- GET /ipLoadbalancing/{serviceName}/logs - Logs d'accès
+- GET /ipLoadbalancing/{serviceName}/logs/stream - Live tail WebSocket
+

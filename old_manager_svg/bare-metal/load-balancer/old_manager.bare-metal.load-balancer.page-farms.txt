@@ -1,0 +1,88 @@
+# Cahier des Charges : bare-metal/load-balancer - Page fermes de serveurs
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Page liste avec accordéons
+- **Contexte** : Load Balancer Dedicated
+- **Objectif** : Gérer les fermes de serveurs et leurs membres
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 1200px |
+| Hauteur | 650px |
+
+## 3. COMPOSANTS UI
+- **OdsText** : Titres, labels, descriptions
+- **OdsButton** : Ajouter ferme, Ajouter serveur
+- **OdsAccordion** : Groupes de fermes
+- **OdsDatagrid** : Tableau des serveurs
+- **OdsToggle** : Activation serveur
+- **OdsBadge** : Statut (UP/DOWN)
+- **OdsActionMenu** : Actions par ferme/serveur
+
+## 4. HEADER
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Fermes de serveurs" |
+| Description | "Gérez vos fermes de serveurs et leurs membres." |
+
+## 5. BARRE D'ACTIONS
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Ajouter une ferme | Outline bleu | Ouvre modal ajout ferme |
+
+## 6. ACCORDÉON FERME
+
+### Header accordéon
+| Élément | Description |
+|---------|-------------|
+| Icône | ▼ (ouvert) / ▶ (fermé) |
+| Titre | "{farmName} ({farmId})" |
+| Info | "{protocol} - {balance} - {count} serveurs" |
+| Action | Menu ⋮ |
+
+### Menu ActionMenu ferme
+| Action | Description |
+|--------|-------------|
+| Voir les détails | Affiche modal détails |
+| Voir le statut | Affiche statut health check |
+| Modifier | Ouvre modal édition |
+| Supprimer | Ouvre modal suppression (rouge) |
+
+## 7. CONTENU ACCORDÉON (SERVEURS)
+
+### Barre d'actions serveurs
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Ajouter un serveur | Outline bleu | Ouvre modal ajout serveur |
+
+### Colonnes tableau serveurs
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Serveur | Texte | Nom du serveur |
+| Adresse IPv4 | Texte | IP:port |
+| Actif | Toggle | Activation/désactivation |
+| Statut | Badge | UP (vert), DOWN (rouge) |
+| Actions | Menu ⋮ | Actions sur le serveur |
+
+### Menu ActionMenu serveur
+| Action | Description |
+|--------|-------------|
+| Modifier | Éditer la configuration |
+| Supprimer | Supprimer le serveur |
+
+## 8. EXEMPLES DE FERMES
+| Ferme | Protocole | Répartition | Serveurs |
+|-------|-----------|-------------|----------|
+| farm-production-web (123456) | HTTP | Round Robin | 3 |
+| farm-api-backend (456789) | TCP | Least Connections | 2 |
+
+## 9. APIS & ENDPOINTS
+- GET /ipLoadbalancing/{serviceName}/http/farm - Liste des fermes HTTP
+- GET /ipLoadbalancing/{serviceName}/tcp/farm - Liste des fermes TCP
+- POST /ipLoadbalancing/{serviceName}/http/farm - Créer ferme HTTP
+- DELETE /ipLoadbalancing/{serviceName}/http/farm/{farmId} - Supprimer ferme
+- GET /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server - Liste serveurs
+- POST /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server - Ajouter serveur
+- DELETE /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server/{serverId} - Supprimer serveur
+

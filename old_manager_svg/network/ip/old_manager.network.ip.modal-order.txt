@@ -1,126 +1,64 @@
-# Cahier des Charges : network/ip - Modal Commander IP
+# Cahier des Charges : network/ip - Modal Order
 
 ## 1. VUE D'ENSEMBLE
-- **Type** : Modal formulaire de commande
-- **Déclencheur** : Bouton "Commander des IP"
+- **Type** : Modal commande IP
+- **Contexte** : Gestion IP
 - **Objectif** : Commander de nouvelles adresses IP
 
-## 2. STRUCTURE MODAL
-- Overlay sombre (50% opacité)
-- Modal centrée grande (800x700px)
-- Header avec titre et bouton fermer
-- Sélection type d'IP (radio cards)
-- Formulaire de configuration
-- Récapitulatif de commande
-- Footer avec boutons action
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Modal | 800x700px |
+| Background | Blanc |
+| Overlay | Noir 50% opacité |
 
 ## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur modal
+- **OdsModal** : Container principal
 - **OdsRadio** : Type d'IP (cartes)
-- **OdsSelect** : Service, Pays, Quantité
+- **OdsSelect** : Service, pays, quantité
 - **OdsCard** : Récapitulatif commande
-- **OdsText** : Labels, prix, note
-- **OdsButton** : Annuler/Commander
+- **OdsButton** : Actions
 
 ## 4. HEADER MODAL
-| Élément | Valeur |
-|---------|--------|
+| Propriété | Valeur |
+|-----------|--------|
 | Titre | "Commander des adresses IP" |
-| Bouton fermer | ✕ (coin droit) |
-| Séparateur | Ligne grise |
+| Bouton fermer | ✕ |
 
-## 5. TYPE D'ADRESSE IP (Radio Cards)
+## 5. TYPES D'IP (CARTES)
+| Type | Description |
+|------|-------------|
+| IP Failover | Adresse individuelle basculable |
+| Bloc IP RIPE | Bloc d'adresses IP |
+| BYOIP | Importez vos propres IP |
 
-### IP Failover (sélectionné)
+## 6. STYLE CARTES TYPE
+| État | Fond | Bordure |
+|------|------|---------|
+| Sélectionné | #E8F0FE | #0050D7, 2px |
+| Non sélectionné | Blanc | #E5E7EB |
+
+## 7. CHAMPS FORMULAIRE
+| Champ | Type | Requis |
+|-------|------|--------|
+| Service de destination | Select | Oui |
+| Pays de géolocalisation | Select | Oui |
+| Quantité | Select | Oui |
+
+## 8. RÉCAPITULATIF COMMANDE
 | Propriété | Valeur |
 |-----------|--------|
-| Fond | Bleu clair (#E8F0FE) |
-| Bordure | Bleu 2px |
-| Radio | Sélectionné (●) |
-| Titre | "IP Failover" |
-| L1 | "Adresse IP individuelle" |
-| L2 | "basculable entre serveurs" |
+| Fond | #F9FAFB |
+| Ligne produit | Description + prix |
+| Total | Montant HT/mois |
 
-### Bloc IP RIPE
-| Propriété | Valeur |
-|-----------|--------|
-| Fond | Blanc |
-| Bordure | Grise |
-| Radio | Non sélectionné (○) |
-| Titre | "Bloc IP RIPE" |
-| L1 | "Bloc d'adresses IP" |
-| L2 | "pour votre infrastructure" |
+## 9. BOUTONS FOOTER
+| Bouton | Style |
+|--------|-------|
+| Annuler | Outline |
+| Commander | Primary |
 
-### BYOIP
-| Propriété | Valeur |
-|-----------|--------|
-| Fond | Blanc |
-| Bordure | Grise |
-| Radio | Non sélectionné (○) |
-| Titre | "BYOIP" |
-| L1 | "Importez vos propres" |
-| L2 | "adresses IP" |
-
-## 6. FORMULAIRE
-
-### Service de destination
-| Propriété | Valeur |
-|-----------|--------|
-| Label | "Service de destination *" |
-| Type | Select dropdown |
-| Largeur | 740px |
-| Exemple | ns1234567.ip-123-45-67.eu |
-
-### Pays de géolocalisation
-| Propriété | Valeur |
-|-----------|--------|
-| Label | "Pays de géolocalisation *" |
-| Type | Select dropdown |
-| Largeur | 360px |
-| Exemple | 🇫🇷 France |
-
-### Quantité
-| Propriété | Valeur |
-|-----------|--------|
-| Label | "Quantité" |
-| Type | Select dropdown |
-| Largeur | 150px |
-| Défaut | 1 |
-
-## 7. RÉCAPITULATIF COMMANDE
-| Propriété | Valeur |
-|-----------|--------|
-| Fond | Gris (#F9FAFB) |
-| Bordure | Grise |
-| Dimensions | 740x120px |
-| Titre | "Récapitulatif de la commande" |
-
-### Lignes de commande
-| Élément | Prix |
-|---------|------|
-| 1x IP Failover - France | 2,99 € HT/mois |
-| **Total** | **2,99 € HT/mois** |
-
-## 8. NOTE
-"* Champs obligatoires. La commande sera soumise à validation."
-
-## 9. FOOTER MODAL
-| Bouton | Style | Position |
-|--------|-------|----------|
-| Annuler | Outline (bordure grise) | Gauche |
-| Commander | Primary (bleu) | Droite |
-
-## 10. TARIFICATION
-| Type | Prix mensuel HT |
-|------|-----------------|
-| IP Failover | 2,99 € |
-| Bloc /29 (8 IP) | Variable |
-| Bloc /28 (16 IP) | Variable |
-| BYOIP | Gratuit (propre IP) |
-
-## 11. APIS & ENDPOINTS
-- GET /order/cart/{cartId}/ip - Options disponibles
-- POST /order/cart/{cartId}/ip - Ajouter au panier
-- POST /order/cart/{cartId}/checkout - Valider commande
-
-
+## 10. APIS & ENDPOINTS
+- GET /ip/order/eligibility - Services éligibles
+- GET /ip/order/countries - Pays disponibles
+- POST /ip/order - Créer commande

@@ -1,0 +1,77 @@
+# Cahier des Charges : public-cloud/ai-training - Liste des jobs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Liste des jobs AI Training
+- **Type** : Page listing avec tableau
+- **Objectif** : Afficher et gérer tous les jobs d'entraînement du projet
+
+## 2. STRUCTURE PAGE
+- Header OVH
+- Sidebar avec AI Training actif
+- Breadcrumb
+- Titre + boutons actions
+- Barre de recherche
+- Tableau des jobs
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsButton** : Lancer un job (primaire), Guides (outline)
+- **OdsInput** : Barre de recherche
+- **OdsTable** : Liste des jobs
+- **OdsBadge** : Statuts (Running, Done, Failed)
+- **OdsActionMenu** : Actions par ligne
+
+## 4. TITRE
+"AI Training"
+
+## 5. ACTIONS HEADER
+| Bouton | Style | Action |
+|--------|-------|--------|
+| 📖 | Outline icône | Accès aux guides |
+| + Lancer un job | Primaire bleu | Ouvre page création job |
+
+## 6. BARRE DE RECHERCHE
+- Placeholder: "🔍 Rechercher..."
+- Largeur: 300px
+
+## 7. TABLEAU JOBS
+### Colonnes
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Name | Lien + ID | Nom du job + UUID |
+| Région | Texte | GRA, BHS, SBG |
+| Image Docker | Texte mono | Nom de l'image |
+| Ressources | Texte icône | ⚡ GPU ou 🖥️ CPU |
+| Durée | Texte | Temps d'exécution |
+| Date de création | Date | Date de lancement |
+| Statut | Badge | Running/Done/Failed |
+| Actions | Menu | ActionMenu ⋮ |
+
+### Badges statuts
+| Statut | Couleur |
+|--------|---------|
+| Running | Vert (#DEF7EC) |
+| Done | Bleu (#E8F0FE) |
+| Failed | Rouge (#FEE2E2) |
+
+### Données exemple
+| Name | Région | Image | Ressources | Durée | Date | Statut |
+|------|--------|-------|------------|-------|------|--------|
+| train-model-v2 | GRA | pytorch/pytorch:2.1-cuda12 | 4 GPU A100 | 5h 23m | 27/12/2024 | Running |
+| preprocess-data | BHS | python:3.11-slim | 8 CPU | 45m | 26/12/2024 | Done |
+| finetune-llm | GRA | huggingface/transformers | 2 GPU V100S | 2h 10m | 25/12/2024 | Failed |
+
+## 8. ACTION MENU (par ligne)
+| Action | Description |
+|--------|-------------|
+| Gérer | Ouvre le détail du job |
+| Redémarrer | Relance un job identique |
+| Arrêter | Arrête le job (si running, sinon grisé) |
+| --- | Séparateur |
+| Supprimer | Supprime le job (texte rouge) |
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/job
+- POST /cloud/project/{projectId}/ai/job/{jobId}/stop
+- POST /cloud/project/{projectId}/ai/job (restart)
+- DELETE /cloud/project/{projectId}/ai/job/{jobId}

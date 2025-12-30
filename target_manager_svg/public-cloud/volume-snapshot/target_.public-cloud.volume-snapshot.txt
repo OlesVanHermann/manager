@@ -1,0 +1,70 @@
+# Cahier des Charges : public-cloud/volume-snapshot - Liste
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Volume Snapshot
+- **Type** : Page liste avec datagrid
+- **Objectif** : Gérer les snapshots de volumes
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (Volume Snapshot actif sous Storage)
+- Breadcrumb
+- Titre "Volume Snapshot"
+- Bouton créer
+- Tableau des snapshots
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsButton** : "+ Créer un snapshot de volume" (outline primary)
+- **OdsDatagrid** : Liste des snapshots
+- **OdsBadge** : Statuts (OK/Création/Erreur)
+- **OdsLink** : Lien vers volume source
+- **OdsActionMenu** : Actions (⋮)
+
+## 4. TABLEAU
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du snapshot |
+| ID | UUID tronqué |
+| Localisation | Code région |
+| Capacité | En GB |
+| Date de création | Format DD/MM/YYYY HH:mm |
+| Volume | Lien vers le volume source |
+| Statut | Badge couleur |
+| Actions | Menu ⋮ |
+
+### Données exemple
+| Nom | Localisation | Capacité | Date | Volume | Statut |
+|-----|--------------|----------|------|--------|--------|
+| snap-prod-daily | GRA11 | 100 GB | 27/12/2024 06:00 | volume-prod-01 | 🟢 OK |
+| snap-staging-weekly | SBG5 | 50 GB | 22/12/2024 00:00 | volume-staging | 🟢 OK |
+| snap-dev-new | WAW1 | 25 GB | 27/12/2024 14:00 | volume-dev | 🟡 Création... |
+| snap-failed | BHS5 | 75 GB | 20/12/2024 09:15 | volume-test | 🔴 Erreur |
+
+### Statuts
+| Statut | Couleur | Badge |
+|--------|---------|-------|
+| OK | Vert | bg-success |
+| Création... | Jaune | bg-warning |
+| Erreur | Rouge | bg-error |
+
+## 5. ACTION MENU
+Options (menu ouvert) :
+- Créer un volume
+- ---
+- Supprimer (rouge)
+
+**Note** : Actions désactivées pendant la création
+
+## 6. PAGINATION
+"4 résultats" | "Page 1 sur 1"
+
+## 7. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/volume/snapshot
+  - Liste des snapshots
+- POST /cloud/project/{projectId}/volume/{volumeId}/snapshot
+  - Crée un snapshot
+- DELETE /cloud/project/{projectId}/volume/snapshot/{snapshotId}
+  - Supprime un snapshot

@@ -1,0 +1,105 @@
+# Cahier des Charges : network/ip - Modal Configurer MAC Virtuelle
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Modal de configuration
+- **Déclencheur** : Action "Ajouter une MAC virtuelle" dans le menu IP
+- **Objectif** : Créer une adresse MAC virtuelle pour une IP failover
+
+## 2. STRUCTURE MODAL
+- Overlay sombre (50% opacité)
+- Modal centrée (600x520px)
+- Header avec titre et bouton fermer
+- Message d'information
+- Formulaire de configuration
+- Footer avec boutons action
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsMessage** : Information (info bleu)
+- **OdsInput** : IP (readonly), Nom VM (optionnel)
+- **OdsRadio** : Type de MAC (ovh/vmware)
+- **OdsButton** : Annuler/Créer
+
+## 4. HEADER MODAL
+| Élément | Valeur |
+|---------|--------|
+| Titre | "Configurer la MAC virtuelle" |
+| Bouton fermer | ✕ (coin droit) |
+| Séparateur | Ligne grise |
+
+## 5. MESSAGE INFORMATION
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Info (bleu) |
+| Fond | #E8F0FE |
+| Bordure | #0050D7 |
+| Icône | ℹ️ |
+| L1 | "Une adresse MAC virtuelle vous permet d'attribuer une" |
+| L2 | "adresse MAC fixe à votre IP failover, utile pour les VM" |
+| L3 | "Windows ou les configurations réseau spécifiques." |
+
+## 6. CHAMPS DU FORMULAIRE
+
+### IP Failover (readonly)
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "IP Failover" |
+| Type | Input readonly |
+| Fond | Gris (#F3F4F6) |
+| Largeur | 540px |
+| Exemple | 123.45.67.89 |
+
+### Type de MAC virtuelle
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Type de MAC virtuelle" |
+| Type | Radio buttons |
+
+#### Option 1 - ovh (sélectionné)
+| Propriété | Valeur |
+|-----------|--------|
+| Radio | ● Sélectionné |
+| Titre | "ovh - MAC OVHcloud" |
+| Description | "Adresse MAC générée automatiquement par OVHcloud" |
+
+#### Option 2 - vmware
+| Propriété | Valeur |
+|-----------|--------|
+| Radio | ○ Non sélectionné |
+| Titre | "vmware - MAC VMware" |
+| Description | "Adresse MAC compatible avec les environnements VMware" |
+
+### Nom de la machine virtuelle
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Nom de la machine virtuelle (optionnel)" |
+| Type | Input text |
+| Largeur | 540px |
+| Placeholder | vm-web-server-01 |
+
+## 7. FOOTER MODAL
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Outline (bordure grise) | Gauche |
+| Créer | Primary (bleu) | Droite |
+
+## 8. TYPES DE MAC DISPONIBLES
+| Type | Préfixe | Usage |
+|------|---------|-------|
+| ovh | 02:00:00 | Usage général, VM Linux/Windows |
+| vmware | 00:50:56 | Environnements VMware ESXi |
+
+## 9. CAS D'USAGE
+| Contexte | Description |
+|----------|-------------|
+| VM Windows | Licence liée à la MAC |
+| Haute disponibilité | MAC persistante entre failovers |
+| VMware | Compatibilité vSphere |
+| Réseaux legacy | MAC fixe requise |
+
+## 10. APIS & ENDPOINTS
+- GET /ip/{ip}/virtualMac/availableTypes - Types disponibles
+- POST /ip/{ip}/virtualMac - Créer MAC virtuelle
+- DELETE /ip/{ip}/virtualMac/{macAddress} - Supprimer MAC
+
+

@@ -1,0 +1,71 @@
+# Cahier des Charges : public-cloud/volume-backup - Liste
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Volume Backup
+- **Type** : Page liste avec datagrid
+- **Objectif** : Gérer les sauvegardes de volumes
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (Volume Backup actif sous Storage)
+- Breadcrumb
+- Titre "Volume Backup"
+- Bouton créer
+- Tableau des sauvegardes
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsButton** : "+ Créer une sauvegarde de volume" (outline primary)
+- **OdsDatagrid** : Liste des backups
+- **OdsBadge** : Statuts (Actif/Création/Erreur)
+- **OdsLink** : Lien vers volume source
+- **OdsActionMenu** : Actions (⋮)
+
+## 4. TABLEAU
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du backup |
+| ID | UUID tronqué |
+| Localisation | Code région (GRA11, SBG5...) |
+| Volume | Lien vers le volume source |
+| Date de création | Format DD/MM/YYYY HH:mm |
+| Taille | En GB |
+| Statut | Badge couleur |
+| Actions | Menu ⋮ |
+
+### Données exemple
+| Nom | Localisation | Volume | Date | Taille | Statut |
+|-----|--------------|--------|------|--------|--------|
+| backup-prod-2024 | GRA11 | volume-prod-01 | 27/12/2024 10:30 | 100 GB | 🟢 Actif |
+| backup-staging | SBG5 | volume-staging | 25/12/2024 15:45 | 50 GB | 🟢 Actif |
+| backup-dev-new | WAW1 | volume-dev | 27/12/2024 14:00 | 25 GB | 🟡 Création... |
+| backup-failed | BHS5 | volume-test | 20/12/2024 09:15 | 75 GB | 🔴 Erreur |
+
+### Statuts
+| Statut | Couleur | Badge |
+|--------|---------|-------|
+| Actif | Vert | bg-success |
+| Création... | Jaune | bg-warning |
+| Erreur | Rouge | bg-error |
+
+## 5. ACTION MENU
+Options (menu ouvert) :
+- Restaurer un volume
+- Créer un volume
+- ---
+- Supprimer (rouge)
+
+**Note** : Actions désactivées pendant la création
+
+## 6. PAGINATION
+"4 résultats" | "Page 1 sur 1"
+
+## 7. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/volume/backup
+  - Liste des sauvegardes
+- POST /cloud/project/{projectId}/volume/{volumeId}/backup
+  - Crée une sauvegarde
+- DELETE /cloud/project/{projectId}/volume/backup/{backupId}
+  - Supprime une sauvegarde

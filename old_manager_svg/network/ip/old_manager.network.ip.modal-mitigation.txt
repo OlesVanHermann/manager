@@ -1,96 +1,65 @@
-# Cahier des Charges : network/ip - Modal Gérer Mitigation
+# Cahier des Charges : network/ip - Modal Mitigation
 
 ## 1. VUE D'ENSEMBLE
-- **Type** : Modal de configuration
-- **Déclencheur** : Action "Gérer la mitigation" dans le menu IP
-- **Objectif** : Configurer le mode de mitigation Anti-DDoS
+- **Type** : Modal configuration Anti-DDoS
+- **Contexte** : Gestion IP - Sécurité
+- **Objectif** : Gérer la mitigation Anti-DDoS d'une IP
 
-## 2. STRUCTURE MODAL
-- Overlay sombre (50% opacité)
-- Modal centrée (600x580px)
-- Header avec titre et bouton fermer
-- Info box IP + statut
-- Options de mitigation (radio cards)
-- Avertissement
-- Footer avec boutons action
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Modal | 600x580px |
+| Background | Blanc |
+| Overlay | Noir 50% opacité |
 
 ## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur modal
-- **OdsMessage** : Info IP (info)
-- **OdsBadge** : Statut (Normal)
-- **OdsRadio** : Options (cartes cliquables)
-- **OdsMessage** : Avertissement (warning)
-- **OdsButton** : Annuler/Appliquer
+- **OdsModal** : Container principal
+- **OdsRadio** : Options mode mitigation (cartes)
+- **OdsBadge** : Statut IP
+- **OdsMessage** : Info et warning
+- **OdsButton** : Actions
 
 ## 4. HEADER MODAL
-| Élément | Valeur |
-|---------|--------|
+| Propriété | Valeur |
+|-----------|--------|
 | Titre | "Gérer la mitigation Anti-DDoS" |
-| Bouton fermer | ✕ (coin droit) |
-| Séparateur | Ligne grise |
+| Bouton fermer | ✕ |
 
-## 5. INFO BOX IP
+## 5. INFO IP
 | Propriété | Valeur |
 |-----------|--------|
-| Type | Info (bleu) |
+| Fond | #E8F0FE |
 | Label | "Adresse IP" |
-| Valeur | 123.45.67.89 (bold) |
-| Badge | "Statut: Normal" (vert) |
+| Badge statut | "Statut: Normal" (vert) |
 
-## 6. MODES DE MITIGATION
+## 6. MODES MITIGATION
+| Mode | Description |
+|------|-------------|
+| Automatique (recommandé) | S'active automatiquement lors d'une attaque |
+| Permanent | Toujours active, peut augmenter la latence |
+| Forcer maintenant | Activation immédiate pendant 1 heure |
 
-### Option 1 - Automatique (recommandé)
+## 7. STYLE CARTES OPTIONS
+| État | Fond | Bordure |
+|------|------|---------|
+| Sélectionné | #E8F0FE | #0050D7, 2px |
+| Non sélectionné | Blanc | #E5E7EB |
+
+## 8. WARNING BOX
 | Propriété | Valeur |
 |-----------|--------|
-| Sélectionné | ● |
-| Fond | Bleu clair (#E8F0FE) |
-| Bordure | Bleu 2px |
-| Titre | "Automatique (recommandé)" |
-| Description | "La mitigation s'active automatiquement lors d'une attaque détectée." |
-
-### Option 2 - Permanent
-| Propriété | Valeur |
-|-----------|--------|
-| Sélectionné | ○ |
-| Fond | Blanc |
-| Bordure | Grise |
-| Titre | "Permanent" |
-| Description | "La mitigation est toujours active. Peut augmenter légèrement la latence." |
-
-### Option 3 - Forcer maintenant
-| Propriété | Valeur |
-|-----------|--------|
-| Sélectionné | ○ |
-| Fond | Blanc |
-| Bordure | Grise |
-| Titre | "Forcer maintenant" |
-| Description | "Force l'activation immédiate de la mitigation pendant 1 heure." |
-
-## 7. MESSAGE AVERTISSEMENT
-| Propriété | Valeur |
-|-----------|--------|
-| Type | Warning (jaune) |
 | Fond | #FEF3C7 |
 | Bordure | #F59E0B |
-| Icône | ⚠️ |
-| Texte | "Le mode permanent peut impacter les performances de certaines applications sensibles à la latence." |
+| Texte | #92400E |
+| Message | Impact performances mode permanent |
 
-## 8. FOOTER MODAL
-| Bouton | Style | Position |
-|--------|-------|----------|
-| Annuler | Outline (bordure grise) | Gauche |
-| Appliquer | Primary (bleu) | Droite |
-
-## 9. STATUTS MITIGATION
-| Statut | Badge | Description |
-|--------|-------|-------------|
-| Normal | Vert | Pas d'attaque détectée |
-| Under attack | Rouge | Attaque en cours |
-| Protected | Bleu | Mitigation active |
+## 9. BOUTONS FOOTER
+| Bouton | Style |
+|--------|-------|
+| Annuler | Outline |
+| Appliquer | Primary |
 
 ## 10. APIS & ENDPOINTS
-- GET /ip/{ip}/mitigation/{ipOnMitigation} - Statut mitigation
-- PUT /ip/{ip}/mitigation/{ipOnMitigation} - Modifier mode
-- POST /ip/{ip}/mitigation/{ipOnMitigation}/stats - Statistiques
-
-
+- GET /ip/{ip}/mitigation - État mitigation
+- PUT /ip/{ip}/mitigation - Modifier mode mitigation
+- POST /ip/{ip}/mitigation/force - Forcer activation

@@ -1,0 +1,85 @@
+# Cahier des Charges : bare-metal/ip - Page règles de firewall
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Page liste avec tableau
+- **Contexte** : Gestion des adresses IP - Firewall
+- **Objectif** : Gérer les règles de firewall pour une adresse IP
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 1200px |
+| Hauteur | 600px |
+
+## 3. COMPOSANTS UI
+- **OdsText** : Titres, labels, descriptions
+- **OdsLink** : Lien retour, lien guide
+- **OdsButton** : Ajouter une règle
+- **OdsToggle** : Activation firewall
+- **OdsDatagrid** : Tableau des règles
+- **OdsBadge** : Statut (Actif)
+- **OdsPagination** : Pagination
+
+## 4. HEADER
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | "← Liste des IP" |
+| Titre | "Firewall IP" |
+| Lien guide | "Guide ▾" (dropdown) |
+
+## 5. DESCRIPTION
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | "Configurez les règles de filtrage réseau pour protéger votre IP." |
+| Ligne 2 | "Les règles sont appliquées de la plus haute priorité (0) à la plus basse (19)." |
+
+## 6. BARRE D'ACTIONS
+
+### Bouton Ajouter
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "+ Ajouter une règle" |
+| Style | Outline bleu |
+| Action | Ouvre modal ajout règle |
+
+### Toggle Firewall
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Firewall activé" |
+| Type | OdsToggle |
+| État | On (bleu) / Off (gris) |
+
+## 7. TABLEAU DES RÈGLES
+
+### Colonnes
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Position | Number | 0-19 (priorité) |
+| Action | Badge | "Autoriser" (vert) / "Refuser" (rouge) |
+| Protocole | Texte | TCP, UDP, Tous, ICMP |
+| IP source | Texte | CIDR ou "Toutes" |
+| Port source | Texte | Numéro ou "Tous" |
+| Port dest. | Texte | Numéro, plage ou "Tous" |
+| Options | Texte | established, fragments, - |
+| Statut | Badge | "Actif" (vert), "Inactif" (gris) |
+| Actions | Icône | 🗑 (supprimer) |
+
+### Exemples de règles
+| Position | Action | Protocole | IP source | Port src | Port dest | Options | Statut |
+|----------|--------|-----------|-----------|----------|-----------|---------|--------|
+| 0 | Autoriser | TCP | 192.168.1.0/24 | Tous | 22 | - | Actif |
+| 1 | Autoriser | TCP | Toutes | Tous | 80, 443 | established | Actif |
+| 19 | Refuser | Tous | Toutes | Tous | Tous | - | Actif |
+
+## 8. PAGINATION
+| Propriété | Valeur |
+|-----------|--------|
+| Format | "{start} - {end} sur {total} règles" |
+| Exemple | "1 - 3 sur 3 règles" |
+
+## 9. APIS & ENDPOINTS
+- GET /ip/{ip}/firewall/{ipOnFirewall}/rule - Liste des règles
+- POST /ip/{ip}/firewall/{ipOnFirewall}/rule - Créer règle
+- DELETE /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence} - Supprimer règle
+- PUT /ip/{ip}/firewall/{ipOnFirewall} - Activer/Désactiver firewall
+

@@ -1,0 +1,82 @@
+# Cahier des Charges : bare-metal/dedicated - Page Configuration OLA
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Page de configuration
+- **Contexte** : Configuration réseau serveur dédié
+- **Objectif** : Configurer l'agrégation de liens OLA (OVHcloud Link Aggregation)
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Page largeur | 1100px |
+| Page hauteur | 750px |
+
+## 3. COMPOSANTS UI
+- **OdsButton** : Retour, Annuler, Confirmer
+- **OdsInput** : Nom de l'agrégation
+- **OdsDatagrid** : Interfaces réseau (avec checkboxes)
+- **OdsMessage** : Info et Warning
+- **OdsText** : Descriptions
+- **OdsCheckbox** : Sélection interfaces
+
+## 4. HEADER PAGE
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | "← OVHcloud Link Aggregation" |
+| Couleur lien | Bleu (#0050D7) |
+| Description | "Configurez l'agrégation de liens pour combiner plusieurs interfaces réseau." |
+
+## 5. CONTENU
+
+### Messages d'information
+| Type | Fond | Contenu |
+|------|------|---------|
+| Info | #EFF6FF | "ℹ La configuration OLA nécessite une configuration manuelle supplémentaire sur votre serveur. Consultez le guide." |
+| Warning | #FEF3C7 | "⚠ La réinitialisation de la configuration OLA effacera tous les paramètres actuels." |
+
+### Formulaire - Nom agrégation
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Nom de l'agrégation" |
+| Type | OdsInput |
+| Valeur par défaut | bond0 |
+| Largeur | 400px |
+| Border focus | #0050D7 |
+
+### Datagrid - Interfaces réseau
+| Colonne | Type | Largeur |
+|---------|------|---------|
+| ☐ | Checkbox | 30px |
+| MAC | Texte | 200px |
+| Type actuel | Texte | 200px |
+| ↑ Sortant | Texte | 200px |
+| ↓ Entrant | Texte | 200px |
+
+### Données interfaces
+| Sélectionné | MAC | Type | Sortant | Entrant |
+|-------------|-----|------|---------|---------|
+| ✓ | aa:bb:cc:dd:ee:01 | Public | 1 Gbps | 10 Gbps |
+| ✓ | aa:bb:cc:dd:ee:02 | Private | 10 Gbps | 10 Gbps |
+| ☐ | aa:bb:cc:dd:ee:03 | Private | 10 Gbps | 10 Gbps |
+
+### Prévisualisation configuration
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Configuration après agrégation" |
+| Colonnes | Mode, MAC, ↑ Sortant, ↓ Entrant |
+
+| Mode | MAC | Sortant | Entrant |
+|------|-----|---------|---------|
+| vRack aggregation | aa:bb:cc:dd:ee:01 | 10 Gbps | 10 Gbps |
+
+## 6. FOOTER PAGE
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Secondary (bordure grise) | Retour à la liste |
+| Confirmer | Primary (#0050D7) | Applique la configuration |
+
+## 7. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/virtualNetworkInterface - Liste interfaces
+- POST /dedicated/server/{serviceName}/ola/aggregation - Créer agrégation OLA
+- GET /dedicated/server/{serviceName}/ola/aggregation - Statut agrégation
+

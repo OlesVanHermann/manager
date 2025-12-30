@@ -1,0 +1,88 @@
+# Cahier des Charges : network/load-balancer - Onglet Fermes (variante datagrid)
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Liste des fermes de serveurs (format tableau)
+- **URL** : /network/load-balancer/{serviceName}/farms
+- **Objectif** : Gérer les fermes avec vue détaillée en datagrid
+
+## 2. STRUCTURE PAGE
+- Sidebar Network
+- Breadcrumb
+- Titre service
+- Onglets navigation
+- Bouton d'ajout
+- Datagrid des fermes
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsTabs** : Accueil/Fermes de serveurs (actif)/Frontends/SSL/Tâches
+- **OdsButton** : "Ajouter une ferme de serveurs" (outline)
+- **OdsDatagrid** : Liste des fermes
+- **OdsBadge** : Nombre de serveurs actifs
+- **OdsActionMenu** : Actions par ferme
+
+## 4. COLONNES DATAGRID
+| Colonne | Type | Tri | Description |
+|---------|------|-----|-------------|
+| Nom | Link | ✓ | Nom de la ferme (lien) |
+| Protocole | Text | ✓ | HTTP/TCP/UDP |
+| Port | Text | ✓ | Port d'écoute |
+| Zone | Text | ✓ | Datacenter |
+| Méthode | Text | ✓ | Algorithme répartition |
+| Serveurs | Badge | ✓ | Nombre actifs |
+| Probe | Text | ✓ | Type health check |
+| Actions | Menu ⋮ | - | Actions |
+
+## 5. DONNÉES EXEMPLE
+| Nom | Protocole | Port | Zone | Méthode | Serveurs | Probe |
+|-----|-----------|------|------|---------|----------|-------|
+| farm-web-prod | HTTP | 80 | GRA | roundrobin | 3 actifs (vert) | HTTP |
+| farm-api | TCP | 8080 | LIM | leastconn | 2 actifs (vert) | TCP |
+
+## 6. MÉTHODES DE RÉPARTITION
+| Méthode | Description |
+|---------|-------------|
+| roundrobin | Distribution équitable |
+| leastconn | Moins de connexions |
+| source | Affinité IP source |
+| first | Premier disponible |
+| uri | Basé sur l'URI |
+
+## 7. TYPES DE PROBE
+| Type | Description |
+|------|-------------|
+| HTTP | Requête HTTP GET |
+| TCP | Connexion TCP |
+| mysql | Check MySQL |
+| smtp | Check SMTP |
+| pgsql | Check PostgreSQL |
+
+## 8. ACTION MENU (ouvert)
+| Action | Style |
+|--------|-------|
+| Voir les détails | Normal |
+| --- | Séparateur |
+| Modifier | Normal |
+| --- | Séparateur |
+| Gérer les serveurs | Normal |
+| --- | Séparateur |
+| Modifier le probe | Normal |
+| --- | Séparateur |
+| Supprimer | Danger (rouge) |
+
+## 9. BADGE SERVEURS
+| Valeur | Badge | Signification |
+|--------|-------|---------------|
+| X actifs | Vert (success) | Serveurs UP |
+| 0 actif | Jaune (warning) | Aucun serveur |
+
+## 10. APIS & ENDPOINTS
+- GET /ipLoadbalancing/{serviceName}/http/farm - Liste fermes HTTP
+- GET /ipLoadbalancing/{serviceName}/tcp/farm - Liste fermes TCP
+- GET /ipLoadbalancing/{serviceName}/udp/farm - Liste fermes UDP
+- GET /ipLoadbalancing/{serviceName}/http/farm/{farmId} - Détails ferme
+- POST /ipLoadbalancing/{serviceName}/http/farm - Créer ferme
+- PUT /ipLoadbalancing/{serviceName}/http/farm/{farmId} - Modifier ferme
+- DELETE /ipLoadbalancing/{serviceName}/http/farm/{farmId} - Supprimer ferme
+
+

@@ -1,0 +1,85 @@
+# Cahier des Charges : bare-metal/load-balancer - Page Server Farm
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Page listing fermes de serveurs
+- **Contexte** : Load Balancer
+- **Objectif** : Gérer les fermes backend et leurs serveurs
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Page largeur | 1200px |
+| Page hauteur | 650px |
+| Background | #F9FAFB |
+
+## 3. COMPOSANTS UI
+- **OdsText** : Titres et descriptions
+- **OdsButton** : Ajout ferme/serveur
+- **OdsAccordion** : Liste fermes expandable
+- **OdsDatagrid** : Tableau serveurs
+- **OdsSwitch** : Toggle activation
+- **OdsPopover** : Menu actions
+
+## 4. HEADER
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Fermes de serveurs" |
+| Description | "Les fermes regroupent les serveurs backend qui traitent les requêtes. Configurez l'équilibrage et les sondes de santé." |
+
+## 5. BOUTON AJOUT
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | "+ Ajouter une ferme" |
+| Style | Fond blanc, bordure #E5E7EB |
+
+## 6. ACCORDÉON FERME
+
+### Header fermé
+| Propriété | Valeur |
+|-----------|--------|
+| Icône | ▶ |
+| Nom | {farmName} |
+| Infos | "{protocol} | {balancing} | {serverCount} serveurs" |
+| Menu | ⋮ |
+
+### Header ouvert
+| Propriété | Valeur |
+|-----------|--------|
+| Icône | ▼ |
+| Bouton ajout | "+ Ajouter un serveur" |
+
+## 7. COLONNES TABLEAU SERVEURS
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Serveur | 235px | Nom serveur |
+| IPv4 | 200px | Adresse IP |
+| Actif | 150px | Toggle switch |
+| Statut | 200px | Indicateur UP/DOWN |
+| Actions | 80px | Menu ⋮ |
+
+## 8. INDICATEURS STATUT
+| Statut | Indicateur | Couleur |
+|--------|------------|---------|
+| UP | ● UP | #16A34A (vert) |
+| DOWN | ● DOWN | #DC2626 (rouge) |
+
+## 9. TOGGLE SWITCH
+| État | Style |
+|------|-------|
+| ON | Fond #16A34A, cercle droite |
+| OFF | Fond #E5E7EB, cercle gauche |
+
+## 10. EXEMPLES FERMES
+| Nom | Protocole | Balancing | Serveurs |
+|-----|-----------|-----------|----------|
+| backend-web-prod | HTTP | RoundRobin | 4 |
+| backend-api | HTTPS | LeastConn | 2 |
+| backend-postgres | TCP | Source | 3 |
+
+## 11. APIS & ENDPOINTS
+- GET /ipLoadbalancing/{serviceName}/http/farm - Liste fermes HTTP
+- GET /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server - Serveurs ferme
+- POST /ipLoadbalancing/{serviceName}/http/farm - Créer ferme
+- POST /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server - Ajouter serveur
+- PUT /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server/{serverId} - Modifier serveur
+- DELETE /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server/{serverId} - Supprimer

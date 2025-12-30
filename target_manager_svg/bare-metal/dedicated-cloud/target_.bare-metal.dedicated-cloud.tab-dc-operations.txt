@@ -1,0 +1,77 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Onglet Opérations
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Onglet de suivi des opérations
+- **Contexte** : Gestion Dedicated Cloud (VMware)
+- **Objectif** : Visualiser et gérer les opérations/tâches du datacenter
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Page largeur | 1100px |
+| Page hauteur | 750px |
+
+## 3. COMPOSANTS UI
+- **OdsDatagrid** : Liste des opérations
+- **OdsSelect** : Filtre progression
+- **OdsButton** : Actualiser
+- **OdsBadge** : États de progression
+- **OdsActionMenu** : Actions par ligne
+
+## 4. HEADER PAGE
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Opérations" |
+
+## 5. CONTENU
+
+### Barre de filtres
+| Élément | Type | Options |
+|---------|------|---------|
+| Filtre Progression | OdsSelect | Tous, Terminé, En cours, À faire, Annulé |
+| Actualiser | OdsButton | Secondary |
+
+### Datagrid Opérations
+| Colonne | Type | Largeur | Triable |
+|---------|------|---------|---------|
+| ID Tâche | Texte | 60px | Oui |
+| Nom | Texte | 120px | Oui |
+| Type | Texte | 90px | Oui |
+| Progression | Badge | 100px | Oui |
+| Commentaire | Texte | 140px | Non |
+| Créé depuis | Texte | 100px | Oui |
+| Créé par | Texte | 100px | Oui |
+| Date exécution | Texte | 120px | Oui |
+| Actions | ActionMenu | 50px | Non |
+
+### Badges de progression
+| État | Fond | Couleur texte |
+|------|------|---------------|
+| Terminé | #DCFCE7 | #16A34A |
+| En cours (45%) | #FEF3C7 | #92400E |
+| À faire | #EFF6FF | #1E40AF |
+| Annulé | #FEE2E2 | #DC2626 |
+
+### Exemple données
+| ID | Nom | Type | Progression | Commentaire | Créé depuis | Créé par | Date exécution |
+|----|-----|------|-------------|-------------|-------------|----------|----------------|
+| 12456 | createVirtualMachine | standard | Terminé | VM provisioning | API | admin | 29/12 14:30 |
+| 12457 | updateHost | maintenance | En cours (45%) | ESXi upgrade | Manager | dev01 | 30/12 02:00 |
+| 12458 | scheduledMaintenance | maintenance | À faire | Security patch | Scheduler | system | 05/01 03:00 |
+| 12455 | addDatastore | standard | Annulé | User cancelled | API | admin | 28/12 10:15 |
+
+### ActionMenu options
+| Action | Disponibilité |
+|--------|---------------|
+| Modifier la date d'exécution | Si "À faire" |
+
+### Pagination
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | "{n} opérations" |
+
+## 6. APIS & ENDPOINTS
+- GET /dedicatedCloud/{serviceName}/task - Liste toutes les tâches
+- GET /dedicatedCloud/{serviceName}/task/{taskId} - Détail d'une tâche
+- PUT /dedicatedCloud/{serviceName}/task/{taskId} - Modifier date d'exécution
+

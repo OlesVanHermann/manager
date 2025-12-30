@@ -1,0 +1,78 @@
+# Cahier des Charges : public-cloud/apps - Onglet Logs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Logs d'une application AI Deploy
+- **Type** : Onglet avec terminal logs
+- **Objectif** : Monitorer les logs en temps réel d'une app
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (AI Deploy actif)
+- Breadcrumb
+- Onglets navigation
+- Titre + description
+- Toggle auto-refresh
+- Terminal logs
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsTabs** : 4 onglets
+- **OdsToggle** : Auto-Refresh
+- **OdsTerminal** : Affichage logs (fond sombre)
+
+## 4. BREADCRUMB
+"Public Cloud › my-project › AI Deploy › my-inference-app › Logs"
+
+## 5. ONGLETS
+
+| Onglet | Actif |
+|--------|-------|
+| Dashboard | - |
+| Conteneurs | - |
+| Métriques | - |
+| Logs | ✓ |
+
+## 6. HEADER SECTION
+- **Titre** : "Logs"
+- **Description** : "Vous trouverez ici l'ensemble des logs de votre application afin de vous aider à suivre et monitorer son évolution."
+
+## 7. AUTO-REFRESH
+- **Label** : "Auto-Refresh"
+- **Toggle** : Activé (bleu)
+- Position : au-dessus du terminal
+
+## 8. TERMINAL LOGS
+- Fond sombre (#1F2937)
+- Police monospace (Consolas)
+- Taille : 12px
+
+### Format des logs
+```
+[timestamp] [level] message
+```
+
+### Couleurs par niveau
+| Niveau | Couleur |
+|--------|---------|
+| timestamp | Gris (#9CA3AF) |
+| [INFO] | Vert (#10B981) |
+| [WARN] | Orange (#F59E0B) |
+| message | Gris clair (#D1D5DB) |
+
+### Exemple de logs
+```
+2024-01-15 14:30:01 [INFO] Starting inference server on port 8080...
+2024-01-15 14:30:02 [INFO] Loading model weights from /models/v1.0...
+2024-01-15 14:30:05 [INFO] Model loaded successfully (2.3GB)
+2024-01-15 14:30:06 [INFO] GPU detected: NVIDIA Tesla V100
+2024-01-15 14:30:07 [INFO] Server ready - accepting connections
+2024-01-15 14:31:23 [INFO] POST /predict - 200 OK - 45ms
+2024-01-15 14:31:45 [WARN] High latency detected: 230ms
+```
+
+## 9. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ai/app/{appId}/log
+  - Récupère les logs
+  - Query: { tail?, since?, until? }
+- WebSocket /cloud/project/{projectId}/ai/app/{appId}/log/stream
+  - Streaming temps réel

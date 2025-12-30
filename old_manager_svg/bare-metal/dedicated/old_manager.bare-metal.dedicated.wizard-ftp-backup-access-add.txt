@@ -1,0 +1,103 @@
+# Cahier des Charges : bare-metal/dedicated - Wizard Ajouter Accès FTP Backup
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Wizard de configuration (2 étapes)
+- **Contexte** : Gestion backup serveur dédié
+- **Objectif** : Ajouter un accès FTP Backup avec blocs IP et protocoles
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Page largeur | 900px |
+| Page hauteur | 600px |
+
+## 3. COMPOSANTS UI
+- **OdsStepper** : Indicateur d'étapes
+- **OdsSelect** : Sélection blocs IP (multi-select)
+- **OdsCheckbox** : Protocoles autorisés
+- **OdsButton** : Annuler, Suivant
+- **OdsMessage** : Info
+- **OdsText** : Descriptions
+
+## 4. HEADER PAGE
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Ajouter un accès FTP Backup" |
+
+## 5. CONTENU
+
+### Indicateur d'étapes
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Configuration | En cours (cercle bleu) |
+| 2 | Confirmation | À venir (cercle gris) |
+
+### Instructions
+| Ligne | Contenu |
+|-------|---------|
+| 1 | "Configurez l'accès au backup FTP en sélectionnant les blocs IP et les protocoles autorisés." |
+| 2 | "Maximum de 5 blocs IP autorisés." |
+
+### Section Blocs IP autorisés
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Blocs IP autorisés" |
+| Type | Multi-select liste |
+| Largeur | 350px |
+| Hauteur | 120px |
+
+### Liste des blocs IP
+| Sélectionné | Bloc IP |
+|-------------|---------|
+| ✓ | 192.168.1.0/24 |
+| ☐ | 10.0.0.0/8 |
+| ☐ | 172.16.0.0/16 |
+| ☐ | 51.210.xxx.xxx/32 |
+
+### Section Protocoles autorisés
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Protocoles autorisés" |
+| Type | Checkboxes verticaux |
+| Position | Droite (x: 420) |
+
+### Options protocoles
+| Sélectionné | Protocole | Description |
+|-------------|-----------|-------------|
+| ✓ | CIFS | Windows |
+| ✓ | FTP | Standard |
+| ☐ | NFS | Linux/Unix |
+
+### Style checkboxes
+| État | Apparence |
+|------|-----------|
+| Coché | Fond #0050D7, ✓ blanc |
+| Non coché | Fond blanc, border #E5E7EB |
+| Taille | 20x20px, radius 4px |
+
+### Message d'information
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Info (#EFF6FF) |
+| Icône | ℹ |
+| Texte | "Au moins un protocole doit être sélectionné. Choisissez les protocoles en fonction de votre système d'exploitation." |
+| Couleur texte | #1E40AF |
+
+## 6. FOOTER PAGE
+| Bouton | Position | Style | Action |
+|--------|----------|-------|--------|
+| Annuler | Gauche | Secondary (bordure grise) | Ferme le wizard |
+| Suivant | Droite | Primary (#0050D7) | Passe à l'étape 2 |
+
+## 7. VALIDATION
+| Règle | Message d'erreur |
+|-------|------------------|
+| Au moins 1 bloc IP | "Veuillez sélectionner au moins un bloc IP" |
+| Maximum 5 blocs IP | "Maximum 5 blocs IP autorisés" |
+| Au moins 1 protocole | "Veuillez sélectionner au moins un protocole" |
+
+## 8. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName}/features/backupFTP/access - Liste accès existants
+- POST /dedicated/server/{serviceName}/features/backupFTP/access - Créer nouvel accès
+- GET /dedicated/server/{serviceName}/features/backupFTP - Statut backup FTP
+

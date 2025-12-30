@@ -1,0 +1,112 @@
+# Cahier des Charges : network/load-balancer - Modal Configuration Sonde
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Modal de configuration
+- **Déclencheur** : Bouton "Paramètres de la sonde" dans édition ferme
+- **Objectif** : Configurer le health check d'une ferme
+
+## 2. STRUCTURE MODAL
+- Overlay sombre (50% opacité)
+- Modal centrée (700x650px)
+- Header avec titre et bouton fermer
+- Formulaire de configuration
+- Footer avec boutons action
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur modal
+- **OdsInput** : Champs texte/number
+- **OdsRadio** : Sélection méthode et correspondance
+- **OdsCheckbox** : Options
+- **OdsButton** : Annuler/OK
+
+## 4. HEADER MODAL
+| Élément | Valeur |
+|---------|--------|
+| Titre | "Configuration de la sonde" |
+| Bouton fermer | × (coin droit) |
+| Séparateur | Ligne grise |
+
+## 5. CHAMPS DU FORMULAIRE
+
+### URL de la sonde (HTTP uniquement)
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input text |
+| Exemple | /health |
+| Largeur | 640px |
+| Note | Uniquement pour probes HTTP |
+
+### Forcer SSL
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Checkbox |
+| Défaut | Non coché |
+| Description | Force HTTPS pour la sonde |
+
+### Port
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input number |
+| Exemple | 80 |
+| Largeur | 150px |
+
+### Méthode (HTTP)
+| Option | Description |
+|--------|-------------|
+| GET | Requête GET (défaut) |
+| HEAD | Requête HEAD |
+| OPTIONS | Requête OPTIONS |
+
+Type : Radio buttons
+
+### Correspondance
+| Option | Description |
+|--------|-------------|
+| Status | Vérifie le code HTTP (défaut) |
+| Contains | Vérifie contenu réponse |
+| Matches | Regex sur la réponse |
+
+Type : Radio buttons
+
+### Pattern (regex ou status code)
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input text |
+| Exemple | 200 |
+| Largeur | 640px |
+| Note | Code HTTP ou expression régulière |
+
+### Intervalle (secondes)
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input number |
+| Exemple | 30 |
+| Largeur | 150px |
+| Minimum | 30 secondes |
+
+### Inverser le résultat
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Checkbox |
+| Défaut | Non coché |
+| Description | Inverse le résultat de la sonde (UP→DOWN) |
+
+## 6. FOOTER MODAL
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Outline (bordure grise) | Centre-droite |
+| OK | Primary (bleu) | Droite |
+
+## 7. TYPES DE PROBE
+| Type | Description |
+|------|-------------|
+| HTTP | Requête HTTP vers l'URL |
+| TCP | Connexion TCP simple |
+| SMTP | Check serveur mail |
+| MySQL | Check serveur MySQL |
+| PostgreSQL | Check serveur PostgreSQL |
+
+## 8. APIS & ENDPOINTS
+- PUT /ipLoadbalancing/{serviceName}/http/farm/{farmId} - Modifier probe (dans balance/stickiness)
+
+

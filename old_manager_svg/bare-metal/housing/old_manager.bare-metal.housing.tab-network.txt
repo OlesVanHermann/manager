@@ -1,0 +1,83 @@
+# Cahier des Charges : bare-metal/housing - Onglet Configuration réseau
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Page tableau de bord
+- **Contexte** : Colocation (Housing)
+- **Objectif** : Afficher et gérer la configuration réseau de la baie
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 1100px |
+| Hauteur | 500px |
+
+## 3. COMPOSANTS UI
+- **OdsText** : Titres, labels, valeurs
+- **OdsCard** : Cartes d'information réseau
+- **OdsBadge** : Statut vRack
+- **OdsDatagrid** : Tableau IP Failover
+- **OdsButton** : Ajouter une IP
+- **OdsActionMenu** : Actions par ligne
+
+## 4. HEADER
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Configuration réseau" |
+
+## 5. CARTES D'INFORMATION
+
+### Carte IP principale
+| Champ | Description |
+|-------|-------------|
+| Titre | "IP principale" |
+| IP | "{ip}" (ex: "51.210.xxx.xxx") |
+| Gateway | "Gateway: {gateway}" |
+| Netmask | "Netmask: {mask}" |
+
+### Carte Bande passante
+| Champ | Description |
+|-------|-------------|
+| Titre | "Bande passante" |
+| Valeur | "{bandwidth}" (ex: "1 Gbps") |
+| Garantie | "Garantie: {guaranteed}" |
+| Burst | "Burst: jusqu'à {max}" |
+
+### Carte vRack
+| Champ | Description |
+|-------|-------------|
+| Titre | "vRack" |
+| Nom | "{vrackName}" (ex: "pn-123456") |
+| Badge | "Connecté" (vert) ou "Non connecté" (gris) |
+
+## 6. SECTION IP FAILOVER
+
+### Header section
+| Élément | Description |
+|---------|-------------|
+| Titre | "Adresses IP Failover" |
+| Bouton | "+ Ajouter une IP" (outline bleu) |
+
+### Colonnes du tableau
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Adresse IP | Texte | Adresse IP failover |
+| Reverse DNS | Texte | FQDN du reverse |
+| MAC virtuelle | Texte | Adresse MAC virtuelle |
+| Géolocalisation | Texte | Pays de l'IP |
+| Actions | ActionMenu | Menu ⋮ |
+
+### ActionMenu options
+| Action | Description |
+|--------|-------------|
+| Modifier le reverse | Changer le DNS reverse |
+| Gérer la MAC virtuelle | Ajouter/modifier MAC |
+| Déplacer l'IP | Transférer vers autre service |
+| Supprimer | Supprimer l'IP failover |
+
+## 7. APIS & ENDPOINTS
+- GET /dedicated/housing/{serviceName}/network - Config réseau principale
+- GET /dedicated/housing/{serviceName}/ip - Liste des IP failover
+- POST /dedicated/housing/{serviceName}/ip/{ip}/reverse - Modifier reverse
+- POST /ip/{ip}/virtualMac - Créer MAC virtuelle
+- DELETE /ip/{ip} - Supprimer IP failover
+

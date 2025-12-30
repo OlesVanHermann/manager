@@ -1,0 +1,106 @@
+# Cahier des Charges : network/load-balancer - Page Édition Ferme
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Page de formulaire (pas une modal)
+- **URL** : /network/load-balancer/{serviceName}/farms/{farmId}/edit
+- **Objectif** : Modifier les paramètres d'une ferme existante
+
+## 2. STRUCTURE PAGE
+- Sidebar Network
+- Lien retour
+- Formulaire complet
+- Paramètres avancés dépliables
+- Boutons action
+
+## 3. COMPOSANTS UI
+- **OdsLink** : "← Édition de la ferme de serveurs {farmId}"
+- **OdsInput** : Champs texte/number
+- **OdsButtonGroup** : Sélection protocole (désactivé)
+- **OdsSelect** : Dropdowns
+- **OdsAccordion** : Paramètres avancés
+- **OdsButton** : Mettre à jour / Annuler
+
+## 4. LIEN RETOUR
+- **Texte** : "← Édition de la ferme de serveurs 78901"
+- **Style** : Lien bleu primaire
+- **Action** : Retour à la liste des fermes
+
+## 5. CHAMPS PRINCIPAUX
+
+### Nom (facultatif)
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input text |
+| Exemple | farm-web-prod |
+| Largeur | 500px |
+
+### Protocole (non modifiable)
+| Option | État |
+|--------|------|
+| HTTP | Sélectionné (bleu) |
+| HTTPS | Désactivé (gris) |
+| TCP | Désactivé (gris) |
+
+**Note** : Le protocole ne peut pas être modifié après la création.
+
+### Port
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input number |
+| Exemple | 80 |
+| Largeur | 150px |
+| Aide | "Port attaché à la ferme (1 à 65535). Par défaut, hérite du port du frontend." |
+
+### Datacenter
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Input readonly (gris) |
+| Exemple | "Gravelines (GRA)" |
+| Largeur | 500px |
+| Modifiable | Non |
+
+### Réseau privé
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Exemple | "pn-12345 - vlan-production" |
+| Largeur | 500px |
+
+## 6. PARAMÈTRES AVANCÉS (dépliable)
+
+### Mode de répartition
+| Option | Description |
+|--------|-------------|
+| First | Premier disponible |
+| Least | Moins de connexions |
+| Round-robin | Distribution équitable (défaut) |
+| Source | Affinité IP source |
+| URI | Basé sur l'URI |
+
+Style : ButtonGroup avec sélection exclusive
+
+### Suivi de session
+| Option | Description |
+|--------|-------------|
+| Aucun | Pas de persistance (défaut) |
+| Cookie | Cookie applicatif |
+| Source IP | Affinité IP source |
+
+### Sonde de disponibilité
+| Élément | Type |
+|---------|------|
+| Type de sonde | Select (HTTP, TCP, etc.) |
+| Paramètres de la sonde | Button link vers modal config |
+
+## 7. FOOTER (boutons)
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Mettre à jour | Primary (bleu) | Gauche |
+| Annuler | Outline (gris) | À droite du précédent |
+
+## 8. APIS & ENDPOINTS
+- GET /ipLoadbalancing/{serviceName}/http/farm/{farmId} - Récupérer ferme
+- PUT /ipLoadbalancing/{serviceName}/http/farm/{farmId} - Modifier ferme
+- GET /ipLoadbalancing/{serviceName}/vrack/network - Réseaux privés
+
+

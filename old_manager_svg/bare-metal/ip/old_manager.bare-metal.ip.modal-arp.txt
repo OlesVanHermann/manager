@@ -1,0 +1,77 @@
+# Cahier des Charges : bare-metal/ip - Modal statut ARP
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Modal informative avec action
+- **Contexte** : Gestion des adresses IP
+- **Objectif** : Afficher le statut ARP d'une IP et permettre le déblocage
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Modal largeur | 450px |
+| Modal hauteur | 320px |
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Container principal
+- **OdsText** : Labels, valeurs, logs
+- **OdsBadge** : Statut (Bloqué/OK)
+- **OdsButton** : Débloquer, Fermer
+
+## 4. HEADER MODAL
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Voir ARP" |
+| Fond | Bleu clair (#EFF6FF) |
+| Couleur texte | Bleu (#1E40AF) |
+| Bouton fermer | × |
+
+## 5. INFORMATIONS STATUT
+
+### Champ Statut
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Statut" |
+| Type | Badge |
+| États | "Bloqué" (rouge #FEE2E2), "OK" (vert #DCFCE7) |
+
+### Champ Bloqué depuis
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Bloqué depuis" |
+| Format | "DD/MM/YYYY HH:mm:ss" |
+| Exemple | "29/12/2024 10:15:32" |
+| Visible | Si statut = Bloqué |
+
+### Champ Temps restant
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Temps restant" |
+| Format | "{heures}h {minutes}min" |
+| Exemple | "23h 45min" |
+| Visible | Si statut = Bloqué |
+
+## 6. SECTION LOGS
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Logs" |
+| Type | Zone monospace (fond gris) |
+| Contenu | Détails du blocage ARP |
+
+### Format logs
+```
+Dec 29 10:15:32 - ARP blocked
+Reason: Too many ARP requests
+Source IP: 51.210.xxx.100
+Requests count: 1250/min
+```
+
+## 7. FOOTER MODAL
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Débloquer | Warning (orange #F59E0B) | Débloque l'IP (si bloquée) |
+| Fermer | Primary (bleu) | Ferme modal |
+
+## 8. APIS & ENDPOINTS
+- GET /ip/{ip}/arp - Statut ARP de l'IP
+- POST /ip/{ip}/arp/unblock - Débloquer l'ARP
+

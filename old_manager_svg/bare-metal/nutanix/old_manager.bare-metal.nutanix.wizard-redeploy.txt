@@ -1,0 +1,123 @@
+# Cahier des Charges : bare-metal/nutanix - Wizard Redéployer Cluster
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Assistant multi-étapes (wizard)
+- **Contexte** : Gestion cluster Nutanix
+- **Objectif** : Redéployer entièrement le cluster avec une nouvelle configuration
+
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Page largeur | 1000px |
+| Page hauteur | 750px |
+| Container contenu | 750px largeur |
+
+## 3. COMPOSANTS UI
+- **OdsStepper** : Indicateur d'étapes
+- **OdsMessage** : Avertissement warning
+- **OdsRadio** : Sélection méthode
+- **OdsCard** : Cards d'options
+- **OdsButton** : Navigation wizard
+
+## 4. HEADER
+| Propriété | Valeur |
+|-----------|--------|
+| Fond | #000E9C |
+| Logo | OVHcloud (blanc) |
+
+## 5. NAVIGATION
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | "← Retour" (bleu #0050D7) |
+| Titre page | "Redéployer le cluster" |
+
+## 6. MESSAGE D'AVERTISSEMENT
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Warning |
+| Fond | #FEF3C7 |
+| Border | #FDE68A |
+| Icône | ⚠ |
+| Titre | "Attention" |
+| Couleur texte | #92400E |
+
+### Contenu avertissement
+| Ligne | Texte |
+|-------|-------|
+| 1 | "Le redéploiement va effacer toutes les données et reconfigurer le cluster." |
+| 2 | "• Les VMs seront supprimées" |
+| 3 | "• Les données stockées seront perdues" |
+| 4 | "• Le cluster sera indisponible pendant l'opération" |
+
+## 7. STEPPER (2 ÉTAPES)
+| Étape | Numéro | Label | État initial |
+|-------|--------|-------|--------------|
+| 1 | 1 | Méthode | Active (bleu #0050D7) |
+| 2 | 2 | Configuration | Inactive (gris) |
+
+### Style stepper
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle actif | Fond #0050D7, texte blanc |
+| Cercle inactif | Fond blanc, bordure #E5E7EB, texte gris |
+| Ligne connexion | #E5E7EB |
+
+## 8. ÉTAPE 1 : MÉTHODE
+
+### Titre section
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | "Sélectionnez la méthode de redéploiement" |
+| Style | 15px, font-weight 500 |
+
+### Option 1 : Configuration initiale
+| Propriété | Valeur |
+|-----------|--------|
+| Container | 700x100px, border #0050D7 (si sélectionné) |
+| Radio | Cercle avec point central bleu (si sélectionné) |
+| Titre | "Configuration initiale" |
+| Description 1 | "Redéploie le cluster avec les paramètres d'origine." |
+| Description 2 | "Recommandé pour une restauration rapide." |
+
+### Option 2 : Configuration personnalisée
+| Propriété | Valeur |
+|-----------|--------|
+| Container | 700x100px, border #E5E7EB (si non sélectionné) |
+| Radio | Cercle vide (si non sélectionné) |
+| Titre | "Configuration personnalisée" |
+| Description 1 | "Redéploie avec une nouvelle configuration (IPs, réplication, version AOS...)." |
+| Description 2 | "Pour modifier les paramètres du cluster." |
+
+## 9. ÉTAPE 2 : CONFIGURATION (si personnalisée)
+
+### Champs du formulaire
+| Champ | Type | Description |
+|-------|------|-------------|
+| Version AOS | Select | Version d'Acropolis OS |
+| Facteur réplication | Select | 2 ou 3 copies |
+| Plage IP CVM | Input | CIDR pour les CVMs |
+| Plage IP AHV | Input | CIDR pour les hyperviseurs |
+| Gateway | Input | IP passerelle |
+| DNS | Input | Serveurs DNS |
+
+## 10. FOOTER
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Fixe en bas |
+
+### Boutons
+| Bouton | Style | Couleur | Position |
+|--------|-------|---------|----------|
+| Suivant | Primary | #0050D7 | Droite |
+| Redéployer (étape 2) | Primary danger | #DC2626 | Droite |
+
+## 11. FLUX NAVIGATION
+```
+Étape 1 → [Suivant] → Étape 2 → [Redéployer] → Confirmation → Exécution
+```
+
+## 12. APIS & ENDPOINTS
+- GET /nutanix/{serviceName} - Récupérer config actuelle
+- POST /nutanix/{serviceName}/redeploy - Lancer redéploiement
+  - Body (si personnalisé): { aosVersion, replicationFactor, cvmIpRange, ahvIpRange, gateway, dns }
+

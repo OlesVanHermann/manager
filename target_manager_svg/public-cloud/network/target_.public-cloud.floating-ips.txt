@@ -1,0 +1,76 @@
+# Cahier des Charges : public-cloud/floating-ips - Liste
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Floating IPs
+- **Type** : Page liste avec datagrid
+- **Objectif** : Gérer les Floating IPs du projet
+
+## 2. STRUCTURE PAGE
+- Header OVHcloud
+- Sidebar (Floating IPs actif sous Network)
+- Breadcrumb
+- Titre "Floating IPs"
+- Bouton créer
+- Barre de recherche
+- Tableau des IPs
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsButton** : "+ Acheter une Floating IP" (primary)
+- **OdsInput** : Barre de recherche
+- **OdsDatagrid** : Liste des IPs
+- **OdsBadge** : Statuts (Attachée/Détachée)
+- **OdsLink** : Lien vers ressource associée
+- **OdsActionMenu** : Actions (⋮)
+
+## 4. SIDEBAR
+- Projet : Mon Projet Cloud
+- Section NETWORK :
+  - Private Network
+  - **Floating IPs** (actif)
+  - Gateway
+  - Load Balancer
+
+## 5. TABLEAU
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| Adresse IP | IP publique (monospace) |
+| Région | Code région (GRA, SBG...) |
+| Associée à | Nom ressource + type |
+| Type | IPv4 |
+| Gateway | Nom gateway associée |
+| Statut | Badge couleur |
+| Actions | Menu ⋮ |
+
+### Données exemple
+| IP | Région | Associée à | Type | Gateway | Statut |
+|----|--------|------------|------|---------|--------|
+| 51.210.45.123 | GRA | web-server-01 (Instance) | IPv4 | gw-prod | 🟢 Attachée |
+| 51.210.67.89 | GRA | api-gateway (Instance) | IPv4 | gw-prod | 🟢 Attachée |
+| 51.210.89.45 | SBG | - | IPv4 | - | 🟡 Détachée |
+| 51.210.12.34 | GRA | lb-production (Load Balancer) | IPv4 | gw-prod | 🟢 Attachée |
+
+### Statuts
+| Statut | Couleur |
+|--------|---------|
+| Attachée | Vert |
+| Détachée | Jaune/orange |
+
+## 6. ACTION MENU
+Options (menu ouvert) :
+- Attacher à une instance
+- Modifier
+- ---
+- Libérer l'IP (rouge)
+
+## 7. APIS & ENDPOINTS
+- GET /cloud/project/{projectId}/ip/floating
+  - Liste des Floating IPs
+- POST /cloud/project/{projectId}/ip/floating/{ipId}/attach
+  - Attache à une instance
+- POST /cloud/project/{projectId}/ip/floating/{ipId}/detach
+  - Détache de l'instance
+- DELETE /cloud/project/{projectId}/ip/floating/{ipId}
+  - Libère l'IP

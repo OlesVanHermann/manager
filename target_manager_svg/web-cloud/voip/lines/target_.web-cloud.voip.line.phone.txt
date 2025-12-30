@@ -2,65 +2,47 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.phone.svg
-Route:   /web-cloud/voip/{ba}/lines/{sn}/phone
-NAV:     Web Cloud > VoIP > [groupe] > Lignes > [ligne] > Telephone
-Version: v1 (2025-12-29)
+Route:   /web-cloud/telephony/{ba}/line/{serviceName}/phone
+Version: v2 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| Yealink T46G             | GET /telephony/{ba}/line/{sn}/phone -> brand+model |
-| AA:BB:CC:DD:EE:FF        | GET /telephony/{ba}/line/{sn}/phone -> macAddress |
-| 192.168.1.50             | GET /telephony/{ba}/line/{sn}/phone -> ip       |
-| 83.86.0.15               | GET /telephony/{ba}/line/{sn}/phone -> firmware |
-| 29/12/2025 14:00         | GET /telephony/{ba}/line/{sn}/phone -> lastRegistration |
-| Liste codecs             | GET /telephony/{ba}/line/{sn}/options -> codecs |
-| Touches programmables    | GET /telephony/{ba}/line/{sn}/phone/functionKey |
+| Exemple SVG              | Source API                              |
+|--------------------------|-----------------------------------------|
+| Yealink T46U             | GET /telephony/{ba}/line/{sn}/phone → brand+model|
+| 80:5E:C0:12:34:56        | phone → macAddress                      |
+| 192.168.1.42             | phone → ip                              |
+| v108.86.0.25             | phone → firmware                        |
+| En ligne                 | phone → status                          |
+| Touches programmables    | GET /telephony/{ba}/line/{sn}/phone/functionKey|
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes (actif) | Numeros | Fax | Abreges
-2. Left panel: Liste lignes du groupe
-3. NAV3: General | Telephone (actif) | Appels | Transferts | Messagerie | Consommation | Options
-4. Cards:
-   - Telephone (infos materiel + actions)
-   - Codecs audio (liste avec priorite)
-   - Touches programmables (table config)
+# STRUCTURE PAGE
+1. LEFT PANEL - Ligne + NAV3 (Téléphone actif)
+2. RIGHT PANEL:
+   - TITRE "Téléphone"
+   - INFOS: Modèle, MAC, IP, Firmware, Statut
+   - ACTIONS: Softphone, Click2Call, Détacher, Commander
+   - TOUCHES PROGRAMMABLES: Table avec types
 
-CODECS DISPONIBLES
-| Codec    | Description         | Bande passante |
-|----------|---------------------|----------------|
-| G.711a   | PCMA, HD quality    | 64 kbps        |
-| G.711u   | PCMU, standard      | 64 kbps        |
-| G.729    | Compresse           | 8 kbps         |
-| G.722    | HD Voice            | 64 kbps        |
-| OPUS     | Moderne, adaptif    | Variable       |
+# TYPES DE TOUCHES
+| Type          | Description            |
+|---------------|------------------------|
+| BLF           | Busy Lamp Field        |
+| Numéro rapide | Speed dial             |
+| Transfert     | Transfert vers numéro  |
+| Park          | Parcage d'appel        |
+| Ligne         | Ligne supplémentaire   |
 
-TYPES TOUCHES PROGRAMMABLES
-| Type       | Description                          |
-|------------|--------------------------------------|
-| BLF        | Supervision presence (voyant)        |
-| Raccourci  | Appel rapide numero                  |
-| Transfert  | Code de transfert                    |
-| DTMF       | Sequence DTMF                        |
-| Park       | Parking appel                        |
-| Intercom   | Interphone direct                    |
+# STATUTS TÉLÉPHONE
+| Statut     | Badge  |
+|------------|--------|
+| En ligne   | Vert   |
+| Hors ligne | Rouge  |
+| Dégradé    | Orange |
 
-ACTIONS TELEPHONE
-| Action       | Comportement                               |
-|--------------|--------------------------------------------|
-| Reboot       | Redemarrage distant                        |
-| Reconfigurer | Reprovisionning config OVH                 |
-| Detacher     | Dissocier telephone de la ligne            |
-
-API ENDPOINTS
-GET  /telephony/{ba}/line/{sn}/phone                -> Details telephone
-POST /telephony/{ba}/line/{sn}/phone/reboot         -> Redemarrer
-POST /telephony/{ba}/line/{sn}/phone/resetConfig    -> Reconfigurer
-DELETE /telephony/{ba}/line/{sn}/phone              -> Detacher
-GET  /telephony/{ba}/line/{sn}/options              -> Codecs
-PUT  /telephony/{ba}/line/{sn}/options              -> Modifier codecs
-GET  /telephony/{ba}/line/{sn}/phone/functionKey    -> Touches
-PUT  /telephony/{ba}/line/{sn}/phone/functionKey/{k}-> Modifier touche
+# API ENDPOINTS
+GET /telephony/{ba}/line/{serviceName}/phone - Infos téléphone
+POST /telephony/{ba}/line/{serviceName}/phone/reboot - Redémarrer
+GET /telephony/{ba}/line/{serviceName}/phone/functionKey - Touches
 ================================================================================

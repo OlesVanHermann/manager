@@ -1,0 +1,104 @@
+# Cahier des Charges : network/load-balancer - Onglet Logs
+
+## 1. VUE D'ENSEMBLE
+- **Page** : Logs en temps réel (Live Tail)
+- **URL** : /network/load-balancer/{serviceName}/logs
+- **Objectif** : Visualiser les logs HAProxy en temps réel
+
+## 2. STRUCTURE PAGE
+- Sidebar Network
+- Breadcrumb
+- Onglets principaux
+- Sous-onglets (Live Tail / Data Streams)
+- Contrôles de filtrage
+- Terminal de logs
+
+## 3. COMPOSANTS UI
+- **OdsBreadcrumb** : Navigation
+- **OdsTabs** : Onglets principaux avec Logs actif
+- **OdsTabs** : Sous-onglets Live Tail / Data Streams
+- **OdsText** : Description
+- **OdsSelect** : Type de logs
+- **OdsButton** : Pause/Play, Effacer
+- **OdsTerminal** : Affichage logs (fond sombre)
+
+## 4. ONGLETS PRINCIPAUX
+| Onglet | Actif |
+|--------|-------|
+| Accueil | - |
+| Frontends | - |
+| Fermes de serveurs | - |
+| Certificats SSL | - |
+| Tâches | - |
+| Logs | ✓ |
+
+## 5. SOUS-ONGLETS
+| Sous-onglet | Description |
+|-------------|-------------|
+| Live Tail | Logs temps réel (actif) |
+| Data Streams | Configuration des flux de données |
+
+## 6. CONTRÔLES FILTRAGE
+| Élément | Type | Valeur par défaut |
+|---------|------|-------------------|
+| Type de logs | Select | haproxy |
+| Pause/Play | Button outline | ⏸ Pause |
+| Effacer | Button secondary | Effacer |
+
+### Options Type de logs
+| Option | Description |
+|--------|-------------|
+| haproxy | Logs HAProxy |
+| error | Erreurs uniquement |
+| access | Accès HTTP |
+
+## 7. TERMINAL LOGS
+| Propriété | Valeur |
+|-----------|--------|
+| Fond | Gris foncé (#1F2937) |
+| Dimensions | 1120x500px |
+| Coins | Arrondis 8px |
+| Police | Monospace, 12px |
+
+### Format d'une ligne de log
+```
+[TIMESTAMP] [LEVEL] [SOURCE] [MESSAGE]
+```
+
+| Élément | Couleur |
+|---------|---------|
+| Timestamp | Gris (#9CA3AF) |
+| INFO | Vert (#10B981) |
+| WARN | Jaune (#FBBF24) |
+| ERROR | Rouge (#EF4444) |
+| Source [haproxy] | Cyan (#06B6D4) |
+| Message | Gris clair (#E5E7EB) |
+
+## 8. EXEMPLE DE LOGS
+```
+2025-12-27T10:30:15.123Z INFO [haproxy] 203.0.113.50:443 frontend-https-main backend-web-prod/server-01 0/0/0/15/15 200 1234
+2025-12-27T10:30:15.456Z INFO [haproxy] 203.0.113.51:443 frontend-https-main backend-web-prod/server-02 0/0/0/12/12 200 2345
+2025-12-27T10:30:15.789Z WARN [haproxy] 203.0.113.52:443 frontend-https-main backend-web-prod/server-02 0/0/0/5012/5012 504 0
+```
+
+## 9. FORMAT HAPROXY LOG
+| Champ | Description |
+|-------|-------------|
+| Client IP:Port | Adresse source |
+| Frontend | Nom du frontend |
+| Backend/Server | Ferme et serveur |
+| Timings | Tq/Tw/Tc/Tr/Tt (ms) |
+| HTTP Status | Code retour |
+| Bytes | Taille réponse |
+
+## 10. CURSEUR
+- Rectangle clignotant vert (#10B981)
+- Position : fin des logs
+- Indique le streaming actif
+
+## 11. APIS & ENDPOINTS
+- GET /dbaas/logs/cluster - Clusters de logs
+- GET /dbaas/logs/input - Flux de logs
+- WebSocket /ipLoadbalancing/{serviceName}/logs/stream - Stream temps réel
+
+

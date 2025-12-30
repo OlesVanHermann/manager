@@ -2,60 +2,41 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.calls.svg
-Route:   /web-cloud/voip/{ba}/lines/{sn}/calls
-NAV:     Web Cloud > VoIP > [groupe] > Lignes > [ligne] > Appels
-Version: v1 (2025-12-29)
+Route:   /web-cloud/telephony/{ba}/line/{serviceName}/calls
+Version: v2 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| 156 appels entrants      | GET /telephony/{ba}/line/{sn}/automaticCall     |
-| 89 appels sortants       | + filtering direction=outgoing                  |
-| 23 appels manques        | + filtering wayType=missed                      |
-| 4h 32min duree totale    | Somme des durees                                |
-| Liste appels             | GET /telephony/{ba}/line/{sn}/automaticCall     |
+| Exemple SVG              | Source API                              |
+|--------------------------|-----------------------------------------|
+| +33 6 12 34 56 78        | GET /telephony/{ba}/line/{sn}/calls     |
+| 30/12/2025 14:32         | call → datetime                         |
+| 8m 23s                   | call → duration                         |
+| Entrant/Sortant/Manqué   | call → direction + answered             |
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes (actif) | Numeros | Fax | Abreges
-2. Left panel: Liste lignes du groupe
-3. NAV3: General | Telephone | Appels (actif) | Transferts | Messagerie | Consommation | Options
-4. Filters: Recherche + periode + type
-5. Stats: 4 cards (entrants, sortants, manques, duree)
-6. Table historique avec pagination
+# STRUCTURE PAGE
+1. LEFT PANEL - Ligne + NAV3 (Appels actif)
+2. RIGHT PANEL:
+   - TITRE "Historique des appels"
+   - TOOLBAR: Refresh, Recherche, Filtres type/période, Export
+   - TABLE: Type, Correspondant, Date, Durée, Statut, Actions
+   - PAGINATION
 
-TYPES D'APPELS (BADGES)
-| Type      | Couleur    | API wayType |
-|-----------|------------|-------------|
-| Entrant   | #DEF7EC    | incoming    |
-| Sortant   | #DBEAFE    | outgoing    |
-| Manque    | #FEE2E2    | missed      |
-| Transfere | #FEF3C7    | transfer    |
+# TYPES D'APPELS
+| Type    | Badge  | Couleur  |
+|---------|--------|----------|
+| Entrant | Vert   | #DEF7EC  |
+| Sortant | Bleu   | #DBEAFE  |
+| Manqué  | Rouge  | #FEE2E2  |
 
-STATUTS APPEL
-| Statut      | Icone        | Description              |
-|-------------|--------------|--------------------------|
-| Repondu     | ● vert       | Appel decroche           |
-| Termine     | ● vert       | Appel sortant termine    |
-| Non repondu | ● rouge      | Appel manque             |
-| Transfere   | ● orange     | Redirige vers autre dest |
-| Messagerie  | ● gris       | Redirige vers voicemail  |
+# STATUTS
+| Statut   | Badge  |
+|----------|--------|
+| Répondu  | Vert   |
+| Manqué   | Rouge  |
 
-COLONNES TABLE
-| Colonne       | Description                    |
-|---------------|--------------------------------|
-| Date          | Date/heure appel               |
-| Type          | Badge direction                |
-| Correspondant | Numero appelant/appele         |
-| Destination   | Numero destination finale      |
-| Duree         | Duree communication            |
-| Statut        | Etat final appel               |
-| Cout          | Cout HT (sortants uniquement)  |
-
-API ENDPOINTS
-GET /telephony/{ba}/line/{sn}/automaticCall                -> Liste appels
-GET /telephony/{ba}/line/{sn}/automaticCall?direction=incoming -> Entrants
-GET /telephony/{ba}/line/{sn}/automaticCall?direction=outgoing -> Sortants
-GET /telephony/{ba}/line/{sn}/automaticCall/{id}           -> Detail appel
+# API ENDPOINTS
+GET /telephony/{ba}/line/{serviceName}/calls - Liste appels
+GET /telephony/{ba}/line/{serviceName}/calls/export - Export CSV
 ================================================================================

@@ -2,67 +2,47 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.sms.dashboard.svg
-Route:   /web-cloud/voip/sms/{account}
-NAV:     Web Cloud > VoIP > SMS > [account] > General
-Version: v1 (2025-12-29)
+Route:   /web-cloud/telephony/{serviceName}/sms/dashboard
+Version: v2 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| sms-abc123de             | GET /sms/{account} -> name                      |
-| 1,250                    | GET /sms/{account} -> creditsLeft               |
-| 31/12/2026               | GET /sms/{account} -> creditsExpiration         |
-| 347                      | GET /sms/{account}/consumption -> monthlyCount  |
-| 98.2%                    | GET /sms/{account}/consumption -> successRate   |
-| MonEntreprise            | GET /sms/{account}/senders -> name              |
-| Activite recente         | GET /sms/{account}/outgoing?limit=3             |
+| Exemple SVG              | Source API                              |
+|--------------------------|-----------------------------------------|
+| 2 450 crédits            | GET /sms/{serviceName} → creditsLeft    |
+| 1 234 SMS envoyés        | GET /sms/{serviceName}/outgoing → count |
+| 89 SMS reçus             | GET /sms/{serviceName}/incoming → count |
+| 5 carnets                | GET /sms/{serviceName}/phonebooks       |
+| MonEntreprise            | GET /sms/{serviceName}/senders          |
 ================================================================================
 
-STRUCTURE PAGE
-1. NAV3: General (actif) | SMS envoyes | SMS recus | Campagnes | Modeles | Expediteurs | Parametres
-2. Left panel: Liste comptes SMS
-3. Header: Nom compte + badges + actions
-4. Stats cards (3 KPIs)
-5. Expediteurs configures
-6. Activite recente
-7. Actions rapides
-8. Info banner API
+# STRUCTURE PAGE
+1. LEFT PANEL - Service SMS + NAV3 (Dashboard actif)
+2. RIGHT PANEL:
+   - TITRE "SMS Pro - Tableau de bord"
+   - STATS CARDS (4): Crédits, Envoyés, Reçus, Carnets
+   - ENVOI RAPIDE: Formulaire simplifié
+   - DERNIERS SMS: Liste récents
+   - GRAPHIQUE: Activité 7 jours
 
-STATS CARDS
-| Carte              | Donnee                | Unite          |
-|--------------------|-----------------------|----------------|
-| Credits disponibles| Solde actuel          | Credits        |
-| Usage ce mois      | SMS envoyes           | SMS + delta    |
-| Taux de succes     | % delivres            | % + details    |
+# NAV3 SMS
+- Tableau de bord (actif)
+- Envoyer SMS
+- Historique
+- Carnets d'adresses
+- Expéditeurs
+- Paramètres
 
-EXPEDITEURS
-| Type           | Description              |
-|----------------|--------------------------|
-| Alphanumerique | Nom entreprise (11 car.) |
-| Numerique      | Numero telephone         |
-| Court          | Numero court (5 chiffres)|
+# STATUTS SMS
+| Statut    | Badge  |
+|-----------|--------|
+| OK        | Vert   |
+| En cours  | Orange |
+| Échec     | Rouge  |
 
-ACTIONS RAPIDES
-| Action             | Description              |
-|--------------------|--------------------------|
-| Envoyer un SMS     | Message individuel       |
-| Nouvelle campagne  | Envoi en masse           |
-| Creer un modele    | Message reutilisable     |
-| Acheter des credits| Recharger le compte      |
-
-ACTIVITE RECENTE
-| Type      | Indicateur | Description            |
-|-----------|------------|------------------------|
-| SMS envoye| vert       | Envoye + statut delivre|
-| Campagne  | vert       | Terminee + stats       |
-| SMS recu  | orange     | Recu + statut lu/non lu|
-
-API ENDPOINTS
-GET /sms                                      -> Liste comptes
-GET /sms/{account}                            -> Detail compte
-GET /sms/{account}/consumption                -> Stats consommation
-GET /sms/{account}/senders                    -> Liste expediteurs
-GET /sms/{account}/outgoing                   -> SMS envoyes recents
-POST /sms/{account}/credits/buy               -> Acheter credits
+# API ENDPOINTS
+GET /sms/{serviceName} - Infos compte SMS
+GET /sms/{serviceName}/outgoing - SMS envoyés
+GET /sms/{serviceName}/incoming - SMS reçus
+POST /sms/{serviceName}/jobs - Envoyer SMS
 ================================================================================

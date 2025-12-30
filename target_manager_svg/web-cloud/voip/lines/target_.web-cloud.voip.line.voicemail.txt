@@ -2,56 +2,42 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.voicemail.svg
-Route:   /web-cloud/voip/{ba}/lines/{sn}/voicemail
-NAV:     Web Cloud > VoIP > [groupe] > Lignes > [ligne] > Messagerie
-Version: v1 (2025-12-29)
+Route:   /web-cloud/telephony/{ba}/line/{serviceName}/voicemail
+Version: v2 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| Active/Inactive          | GET /telephony/{ba}/line/{sn}/options -> voicemail |
-| direction@mondomaine.fr  | GET /telephony/{ba}/line/{sn}/options -> voicemailMailAddress |
-| MP3/WAV                  | GET /telephony/{ba}/line/{sn}/options -> voicemailAudioFormat |
-| Annonce personnalisee    | GET /telephony/{ba}/voicemail/{vm}/greetings    |
-| Liste messages           | GET /telephony/{ba}/voicemail/{vm}/messages     |
+| Exemple SVG              | Source API                              |
+|--------------------------|-----------------------------------------|
+| 2 non lus                | GET /telephony/{ba}/voicemail/{vm}/directories|
+| 5 total                  | directories → count                     |
+| 12% espace               | voicemail → usedQuota                   |
+| Messages list            | GET /telephony/{ba}/voicemail/{vm}/directories/{dir}|
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes (actif) | Numeros | Fax | Abreges
-2. Left panel: Liste lignes du groupe
-3. NAV3: General | Telephone | Appels | Transferts | Messagerie (actif) | Consommation | Options
-4. Cards:
-   - Messagerie vocale (toggle, PIN, email, format, joindre)
-   - Annonce personnalisee (upload, ecouter, enregistrer)
-   - Messages vocaux (table)
+# STRUCTURE PAGE
+1. LEFT PANEL - Ligne + NAV3 (Messagerie vocale actif)
+2. RIGHT PANEL:
+   - TITRE "Messagerie vocale"
+   - STATS (3): Non lus, Total, Espace
+   - MESSAGES: Liste avec actions
+   - PARAMETRES: Toggles + email notification
 
-FORMATS AUDIO
-| Format | Extension | Description          |
-|--------|-----------|----------------------|
-| MP3    | .mp3      | Compresse, leger     |
-| WAV    | .wav      | Haute qualite        |
-| OGG    | .ogg      | Libre, compresse     |
+# STATUTS MESSAGE
+| Statut   | Style           |
+|----------|-----------------|
+| Non lu   | Fond jaune      |
+| Lu       | Fond blanc      |
 
-STATUTS MESSAGE
-| Statut | Couleur   | Description          |
-|--------|-----------|----------------------|
-| Non lu | #DBEAFE   | Message non ecoute   |
-| Lu     | #F3F4F6   | Message deja ecoute  |
+# OPTIONS MESSAGERIE
+| Option              | Default |
+|---------------------|---------|
+| Messagerie activée  | ON      |
+| Notification email  | ON      |
+| Joindre audio       | OFF     |
 
-ACTIONS MESSAGE
-| Action      | Comportement                    |
-|-------------|---------------------------------|
-| Ecouter     | Player audio inline             |
-| Telecharger | Download fichier audio          |
-| Supprimer   | Suppression avec confirmation   |
-
-API ENDPOINTS
-GET  /telephony/{ba}/line/{sn}/options              -> Config voicemail
-PUT  /telephony/{ba}/line/{sn}/options              -> Modifier config
-GET  /telephony/{ba}/voicemail/{vm}/greetings       -> Annonce
-POST /telephony/{ba}/voicemail/{vm}/greetings       -> Upload annonce
-GET  /telephony/{ba}/voicemail/{vm}/directories     -> Messages
-GET  /telephony/{ba}/voicemail/{vm}/directories/{m} -> Detail message
-DELETE /telephony/{ba}/voicemail/{vm}/directories/{m} -> Supprimer
+# API ENDPOINTS
+GET /telephony/{ba}/voicemail - Liste messageries
+GET /telephony/{ba}/voicemail/{vm}/directories - Dossiers
+DELETE /telephony/{ba}/voicemail/{vm}/directories/{dir}/{id} - Supprimer
 ================================================================================
