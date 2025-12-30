@@ -2,52 +2,53 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.access.otb.actions.svg
-Route:   /web-cloud/access/overthebox/{serviceName}/actions
-Version: v2 (2025-12-30)
+Route:   /web-cloud/access/overthebox/{otbId}/tasks
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| 0.9.35                   | GET /overTheBox/{sn}/device → firmware  |
-| 148.5 Mbps download      | GET /overTheBox/{sn}/device/speedtest   |
-| 62.3 Mbps upload         | speedtest → upload                      |
-| 12 ms ping               | speedtest → ping                        |
+DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                              |
+|-----------------------|-----------------------------------------|
+| otb-xxx123            | GET /overTheBox/{id} → serviceName      |
+| action-12345          | GET /overTheBox/{id}/tasks → id         |
+| reboot                | GET /overTheBox/{id}/tasks → name       |
+| 28/12/2025            | GET /overTheBox/{id}/tasks → createdAt  |
+| Terminé/En cours/...  | GET /overTheBox/{id}/tasks → status     |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - OverTheBox + NAV3 (Actions actif)
-2. RIGHT PANEL:
-   - TITRE "Actions sur le boîtier"
-   - GRID ACTIONS (6): Redémarrer, Speedtest, Diagnostic, MAJ, Backup, Restore
-   - DERNIER SPEEDTEST: Résultats détaillés
-   - ZONE DANGER: Réinitialiser, Dissocier
-
-# NAV3 OTB
-- Tableau de bord
-- Connexions [3]
-- Statistiques
-- Accès distant
-- Actions (actif)
-- Logs
-- Gestion
+1. NAV1 - Header OVH (Web Cloud actif x=510)
+2. NAV2 - Web Cloud (Accès actif x=550)
+3. LEFT PANEL - Liste services OverTheBox
+4. RIGHT PANEL
+   - Header: otb-xxx123 + description
+   - NAV3: [Général] [Connexions] [Tâches] - Tâches actif
+   - Actions disponibles (4 cartes)
+   - Historique des tâches (table)
+   - Pagination
 
 # ACTIONS DISPONIBLES
-| Action       | Type     | Description              |
-|--------------|----------|--------------------------|
-| Redémarrer   | POST     | Reboot à chaud           |
-| Speedtest    | POST     | Test de débit            |
-| Diagnostic   | POST     | Analyse réseau           |
-| MAJ firmware | POST     | Mise à jour              |
-| Backup       | GET      | Export config            |
-| Restore      | POST     | Import config            |
-| Reset        | POST     | Factory reset (danger)   |
-| Dissocier    | DELETE   | Unlink service           |
+| Action | Description |
+|--------|-------------|
+| Redémarrer | Redémarrage à chaud du boîtier |
+| Réinitialiser | Restaurer configuration usine |
+| Mise à jour | Mettre à jour le firmware |
+| Sauvegarder | Backup configuration |
+
+# STATUTS TÂCHES
+| Statut     | Badge Color | Text Color |
+|------------|-------------|------------|
+| Terminé    | #DEF7EC     | #03543F    |
+| En cours   | #DBEAFE     | #1E40AF    |
+| En attente | #FEF3C7     | #D97706    |
+| Erreur     | #FEE2E2     | #DC2626    |
 
 # API ENDPOINTS
-POST /overTheBox/{serviceName}/device/actions
-GET /overTheBox/{serviceName}/device/backup
-POST /overTheBox/{serviceName}/device/restore
-GET /overTheBox/{serviceName}/device/speedtest
-POST /overTheBox/{serviceName}/device/speedtest
+POST /overTheBox/{id}/device/reboot - Redémarrer
+POST /overTheBox/{id}/device/reset - Réinitialiser
+POST /overTheBox/{id}/device/update - Mise à jour firmware
+POST /overTheBox/{id}/device/backup - Sauvegarder config
+GET /overTheBox/{id}/tasks - Liste des tâches
+
 ================================================================================

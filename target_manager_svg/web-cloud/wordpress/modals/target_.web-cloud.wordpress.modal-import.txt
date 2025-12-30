@@ -1,0 +1,68 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.wordpress.modal-import.svg
+Route:   /web-cloud/wordpress (action)
+Version: v1 (2025-12-30)
+================================================================================
+
+DESCRIPTION
+Modal d'import d'un site WordPress existant depuis un autre hébergeur.
+Formulaire avec accès FTP/SFTP et base de données.
+
+================================================================================
+
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| Start/Pro/Business       | GET /managedCMS/offers → offres disponibles   |
+| rbx1/gra1/sbg1           | GET /hosting/availableDatacenters             |
+
+================================================================================
+
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer
+2. URL site actuel: Input text
+3. Accès FTP/SFTP: Hôte, port, user, password
+4. Accès base de données: Hôte, port, user, password, nom BDD
+5. Sélection offre: Dropdown
+6. Bannière warning: Durée import
+7. Footer: Annuler | Lancer l'import
+
+================================================================================
+
+INTERACTIONS
+- Clic "×" → Ferme modal
+- Clic "Annuler" → Ferme modal
+- Saisie champs → Validation format
+- Toggle visibilité MDP → Affiche/masque
+- Clic "Lancer l'import" → POST /managedCMS/resource/import
+
+================================================================================
+
+API ENDPOINTS
+POST /managedCMS/resource/import
+  Body: {
+    sourceUrl: "https://mon-ancien-site.com",
+    ftp: {
+      host: "ftp.hebergeur.com",
+      port: 21,
+      user: "ftp_user",
+      password: "..."
+    },
+    database: {
+      host: "db.hebergeur.com",
+      port: 3306,
+      user: "db_user",
+      password: "...",
+      name: "nom_base"
+    },
+    offer: "pro",
+    datacenter: "gra1"
+  }
+  Response: { importId, taskId, status: "importing" }
+
+GET /managedCMS/resource/import/{importId}/status
+  Response: { status, progress, currentStep, errors }
+
+================================================================================

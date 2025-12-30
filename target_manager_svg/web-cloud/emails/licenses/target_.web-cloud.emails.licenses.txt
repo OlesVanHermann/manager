@@ -2,72 +2,61 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.licenses.svg
-Route:   /web-cloud/emails/{domain}/licenses
-NAV:     Web Cloud > Emails > [domain] > Licences > Packs
-Version: v1 (2025-12-29)
+Route:   /web-cloud/emails/licenses
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| example.com              | GET /email/domains -> domain                    |
-| Exchange Pack Biz 10     | GET /email/domains/{d}/packs -> name            |
-| 7 / 10                   | GET /email/domains/{d}/packs -> used/total      |
-| 290 Go / 500 Go          | GET /email/domains/{d}/packs -> storageUsed     |
-| 15/01/2026               | GET /email/domains/{d}/packs -> renewalDate     |
-| 89.90 EUR HT             | GET /email/domains/{d}/licenses/cost -> monthly |
+| Exemple SVG                | Source API                              |
+|----------------------------|-----------------------------------------|
+| Exchange Business 10       | GET /email/licenses/packs -> name       |
+| 7/10 utilisees             | -> usedLicenses / totalLicenses         |
+| Multi-domaine              | -> scope                                |
+| 49,90 EUR/mois             | -> price                                |
+| ceo@example.com            | GET /email/licenses/packs/{id}/accounts |
+| 15/03/2025                 | -> expirationDate                       |
+
 ================================================================================
 
 STRUCTURE PAGE
-1. Left panel avec liste domaines
-2. Right panel header (domaine)
-3. NAV3: 8 tabs (Licences actif)
-4. NAV4: Packs (actif) | A la carte | Historique
-5. Toolbar: Ajouter pack, Modifier allocation
-6. Cards packs actifs
-   - Header colore par offre
-   - Jauge licences utilisees
-   - Stockage consomme
-   - Date renouvellement
-7. Resume global des licences
-8. Banniere upsell
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Emails actif)
+3. LEFT PANEL - Vue licence
+   - Toggle: [Par domaine] / [Par licence (actif)]
+   - Section PACKS avec barres utilisation
+   - Section A LA CARTE
+   - Boutons Commander pack / Ajouter licence
+4. RIGHT PANEL
+   - Header: Nom pack + stats + Gerer
+   - NAV3: 8 tabs (Licences actif)
+   - NAV4: [Mes packs] | A la carte | Historique
+   - Details pack (offre, scope, expiration, prix)
+   - Table comptes utilisant ce pack
+   - Recapitulatif mensuel
 
-NAV4 LICENCES
-| Tab        | Route       | Description                    |
-|------------|-------------|--------------------------------|
-| Packs      | /packs      | Packs souscrits                |
-| A la carte | /alacarte   | Licences individuelles         |
-| Historique | /history    | Commandes et modifications     |
+TYPES LICENCES
+| Type       | Description                          |
+|------------|--------------------------------------|
+| Pack       | Lot de licences (remise volume)      |
+| A la carte | Licences individuelles               |
+| Inclus     | MX Plan gratuit avec domaine         |
 
-OFFRES ET COULEURS
-| Offre     | Couleur Header | Couleur Jauge |
-|-----------|----------------|---------------|
-| Exchange  | #F59E0B        | #F59E0B       |
-| Email Pro | #3B82F6        | #3B82F6       |
-| Zimbra    | #8B5CF6        | #8B5CF6       |
-| MX Plan   | #6B7280        | #6B7280       |
-
-PACKS DISPONIBLES
-| Pack              | Licences | Stockage/licence | Prix/mois |
-|-------------------|----------|------------------|-----------|
-| Exchange Biz 5    | 5        | 50 Go            | 29.95 EUR |
-| Exchange Biz 10   | 10       | 50 Go            | 54.90 EUR |
-| Exchange Biz 25   | 25       | 50 Go            | 124.75 EUR|
-| Email Pro Pack 5  | 5        | 10 Go            | 14.95 EUR |
-| Email Pro Pack 10 | 10       | 10 Go            | 27.90 EUR |
-
-ACTIONS
-| Action             | Comportement                            |
-|--------------------|-----------------------------------------|
-| Ajouter pack       | Commander nouveau pack                  |
-| Modifier allocation| Reassigner licences entre comptes       |
-| Gerer              | Details du pack, upgrade, downgrade     |
+SCOPE PACKS
+| Scope        | Description                         |
+|--------------|-------------------------------------|
+| Multi-domaine| Utilisable sur tous les domaines    |
+| Mono-domaine | Reserve a un domaine specifique     |
 
 API ENDPOINTS
-GET  /email/domains/{domain}/packs                -> Liste packs
-POST /email/domains/{domain}/packs                -> Commander pack
-GET  /email/domains/{domain}/packs/{id}           -> Details pack
-PUT  /email/domains/{domain}/packs/{id}           -> Modifier pack
-GET  /email/domains/{domain}/licenses/cost        -> Cout total
-GET  /email/domains/{domain}/licenses/available   -> Licences dispo
+GET    /email/licenses                      - Vue inventaire complet
+GET    /email/licenses/packs                - Liste packs
+GET    /email/licenses/packs/{id}           - Details pack
+GET    /email/licenses/packs/{id}/accounts  - Comptes du pack
+POST   /email/licenses/packs                - Commander pack
+PUT    /email/licenses/packs/{id}           - Modifier pack (upgrade)
+DELETE /email/licenses/packs/{id}           - Resilier pack
+GET    /email/licenses/alacarte             - Licences a la carte
+POST   /email/licenses/alacarte             - Ajouter licence
+DELETE /email/licenses/alacarte/{id}        - Supprimer licence
+
 ================================================================================

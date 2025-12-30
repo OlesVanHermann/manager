@@ -1,0 +1,53 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.wordpress.modal-domain-add.svg
+Route:   /web-cloud/wordpress/{serviceName}/domains (action)
+Version: v1 (2025-12-30)
+================================================================================
+
+DESCRIPTION
+Modal pour ajouter un domaine alias au site WordPress.
+Affiche les instructions DNS requises et option SSL automatique.
+
+================================================================================
+
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| mon-blog.fr              | GET /managedCMS/resource/{sn} → displayName   |
+| 1.2.3.4                  | GET /managedCMS/resource/{sn} → serverIp      |
+
+================================================================================
+
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer
+2. Champ domaine: Input text
+3. Type domaine: Radio (Alias/Multisite)
+4. Bloc DNS requis: Configuration A + CNAME avec bouton copier
+5. Checkbox SSL: Option Let's Encrypt automatique
+6. Footer: Annuler | Ajouter
+
+================================================================================
+
+INTERACTIONS
+- Clic "×" → Ferme modal
+- Clic "Annuler" → Ferme modal
+- Saisie domaine → Validation format DNS
+- Sélection type → Radio Alias/Multisite
+- Clic "Copier" → Copie config DNS dans clipboard
+- Toggle SSL → Active/désactive Let's Encrypt
+- Clic "Ajouter" → POST /managedCMS/resource/{sn}/domains
+
+================================================================================
+
+API ENDPOINTS
+POST /managedCMS/resource/{serviceName}/domains
+  Body: {
+    domain: "www.monautre-domaine.com",
+    type: "alias",
+    enableSsl: true
+  }
+  Response: { taskId, status: "pending" }
+
+================================================================================

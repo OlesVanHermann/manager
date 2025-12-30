@@ -2,46 +2,65 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.zone.svg
-Route:   /web-cloud/domain/{domainName}/zone
-Version: v1 (2025-12-29)
+Route:   /web-cloud/domaines/domain/{domainName}/zone
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| A, AAAA, CNAME, MX, TXT  | GET /domain/zone/{dn}/record → fieldType|
-| @, www                   | GET /domain/zone/{dn}/record → subDomain|
-| 203.0.113.50             | GET /domain/zone/{dn}/record → target   |
-| 3600                     | GET /domain/zone/{dn}/record → ttl      |
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| example.com.                    | GET /domain/zone/{z}/record → subDomain |
+| A, AAAA, CNAME, MX, TXT, NS     | GET /domain/zone/{z}/record/{id} → type |
+| 3600                            | GET /domain/zone/{z}/record/{id} → ttl  |
+| 203.0.113.50                    | GET /domain/zone/{z}/record/{id} → target|
+| 12 entrées                      | GET /domain/zone/{z}/record → count     |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Domaine + NAV3
-2. RIGHT PANEL:
-   - Titre "Zone DNS"
-   - TOOLBAR: Refresh, Recherche, Filtre type, Bouton Ajouter
-   - TABLE: Type, Sous-domaine, Cible, TTL, Actions (edit/delete)
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Domaines et DNS actif
+3. LEFT PANEL - Liste domaines (280px)
+4. RIGHT PANEL (1096px)
+   - Header: Zone DNS de {domainName}
+   - NAV3: 10 tabs, Zone DNS actif
+   - TOOLBAR: + Ajouter, Mode textuel, TTL, Reset, Historique
+   - SEARCH + FILTER par type
+   - TABLE: Sous-domaine, Type (badge couleur), TTL, Cible, Actions
    - PAGINATION
-   - EXPORT BUTTONS: Exporter, Importer, Réinitialiser
 
-# TYPES DNS (badges couleur)
-| Type  | Couleur   |
-|-------|-----------|
-| A     | Bleu      |
-| AAAA  | Orange    |
-| CNAME | Vert      |
-| MX    | Violet    |
-| TXT   | Rose      |
-| NS    | Gris      |
-| SRV   | Cyan      |
+# TYPES D'ENREGISTREMENTS (badges colorés)
+- A: #0050D7 (bleu)
+- AAAA: #0050D7 (bleu)
+- CNAME: #9333EA (violet)
+- MX: #059669 (vert)
+- TXT: #6B7280 (gris)
+- NS: #DC2626 (rouge)
+- SRV: #F59E0B (orange)
+- CAA: #14B8A6 (teal)
+- DKIM: #8B5CF6 (violet clair)
+
+# ACTIONS TOOLBAR
+- + Ajouter une entrée → modal-record-add
+- Modifier en mode textuel → modal-zone-import
+- Modifier le TTL par défaut → modal-zone-ttl
+- Réinitialiser ma zone → modal-zone-reset
+- Historique → zone-history
+
+# ACTIONS ROW
+- ⋮ → Modifier / Supprimer
 
 # API ENDPOINTS
-GET /domain/zone/{zoneName}/record - Liste entrées DNS
-POST /domain/zone/{zoneName}/record - Ajouter entrée
-PUT /domain/zone/{zoneName}/record/{id} - Modifier entrée
-DELETE /domain/zone/{zoneName}/record/{id} - Supprimer entrée
-POST /domain/zone/{zoneName}/refresh - Rafraîchir zone
-GET /domain/zone/{zoneName}/export - Exporter fichier zone
-POST /domain/zone/{zoneName}/import - Importer fichier zone
-POST /domain/zone/{zoneName}/reset - Réinitialiser zone
+GET /domain/zone/{zoneName}
+GET /domain/zone/{zoneName}/record
+GET /domain/zone/{zoneName}/record/{id}
+POST /domain/zone/{zoneName}/record
+PUT /domain/zone/{zoneName}/record/{id}
+DELETE /domain/zone/{zoneName}/record/{id}
+POST /domain/zone/{zoneName}/refresh
+POST /domain/zone/{zoneName}/reset
+GET /domain/zone/{zoneName}/export
+POST /domain/zone/{zoneName}/import
+GET /domain/zone/{zoneName}/history
+
 ================================================================================

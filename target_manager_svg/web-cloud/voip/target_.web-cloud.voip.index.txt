@@ -3,75 +3,43 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.index.svg
 Route:   /web-cloud/voip
-Version: v3 (2025-12-30)
-Source:  old_manager.telecom.telephony.dashboard.svg
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNÉES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| voip-ab12345             | GET /telephony → billingAccount         |
-| Ligne principale bureau  | GET /telephony/{ba} → description       |
-| 3 services               | GET /telephony/{ba}/line + number + fax |
-| 0,00 € HT                | GET /telephony/{ba} → currentOutplan    |
-| Actif                    | GET /telephony/{ba}/serviceInfos        |
-| 50,00 €                  | GET /telephony/{ba} → credit            |
-| ab12345-ovh              | Session utilisateur                     |
+| Exemple SVG             | Source API                                      |
+|-------------------------|-------------------------------------------------|
+| am12345-ovh             | GET /telephony → billingAccount                 |
+| Compte principal entrep.| GET /telephony/{ba} → description               |
+| 24                      | GET /telephony/{ba}/service → count             |
+| 45,20 €                 | GET /telephony/{ba}/outplanNotification → total |
+| 200,00 €                | GET /telephony/{ba} → securityDeposit           |
+| Actif/Suspendu          | GET /telephony/{ba} → status                    |
+| ab12345-ovh             | Session utilisateur                             |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif (indicateur bleu x=495, w=35)
-3. PAS DE SOUS-NAV (index = liste des groupes)
-4. LEFT PANEL (x=24, y=105, w=280, h=765)
-   - Recherche
-   - Compteur groupes
-   - Liste groupes VoIP (cards sélectionnables)
-5. RIGHT PANEL (x=320, y=105, w=1096, h=765)
-   - Header: Nom groupe + billingAccount
-   - NAV3: Dashboard | Services | Répertoire | Facturation | Administration
-   - Contenu Dashboard:
-     * Bannière info
-     * 3 cards stats (Services, Hors Forfait, Crédit)
-     * Accès rapide (4 boutons)
-     * Informations du groupe (4 colonnes)
-     * Cards Carnet contacts + Numéros abrégés
+1. NAV1 - Header OVH (Web Cloud actif, x=510)
+2. NAV2 - Web Cloud (VoIP actif, x=500)
+3. TITRE - "Téléphonie VoIP" + description + bouton Commander
+4. PANEL - Table des comptes de facturation
+   - Barre recherche
+   - Header: Compte | Description | Nb services | Hors forfait | Caution | Statut | Actions
+   - Lignes: Liste des billingAccounts
+   - Pagination
 
-# NAV3 TABS (Index/Dashboard)
-| # | Tab            | X   | W   | Route           |
-|---|----------------|-----|-----|-----------------|
-| 1 | Dashboard      | 0   | 80  | /               |
-| 2 | Services       | 84  | 65  | /services       |
-| 3 | Répertoire     | 153 | 75  | /phonebook      |
-| 4 | Facturation    | 232 | 80  | /billing        |
-| 5 | Administration | 316 | 100 | /admin          |
-
-# LEFT PANEL - SERVICE ITEM GROUPE
-Structure card:
-- Avatar cercle (initiales) - bleu si sélectionné, gris sinon
-- Description (13px, font-weight 500)
-- BillingAccount (11px, muted)
-- Stats: ☎️ N services · X,XX € HT
-- Badge statut (Actif/Inactif)
-
-# CARDS STATS
-| Card          | Données                    |
-|---------------|----------------------------|
-| Services      | Nombre + répartition       |
-| Hors Forfait  | Montant ce mois            |
-| Crédit        | Solde + statut recharge    |
-
-# ACCÈS RAPIDE
-- Voir les services → /services
-- Gérer mes reversements → /billing
-- Carnet de contacts → /phonebook
-- Numéros abrégés → /abbreviated
+# INTERACTIONS
+- Input recherche → Filtre comptes
+- Clic compte → Navigation vers dashboard groupe
+- ... actions → Menu (Voir, Modifier, Résilier)
+- + Commander → Modal/Page commande nouveau groupe
+- Pagination → Navigation pages
 
 # API ENDPOINTS
-GET /telephony - Liste des groupes de facturation
-GET /telephony/{billingAccount} - Détails groupe
-GET /telephony/{billingAccount}/serviceInfos - Infos service
-GET /telephony/{billingAccount}/line - Lignes du groupe
-GET /telephony/{billingAccount}/number - Numéros du groupe
-GET /telephony/{billingAccount}/fax - Fax du groupe
+GET  /telephony                                               # Liste comptes
+GET  /telephony/{ba}                                          # Détails compte
+GET  /telephony/{ba}/service                                  # Services du compte
+GET  /telephony/{ba}/outplanNotification                      # Hors forfait
+
 ================================================================================

@@ -3,76 +3,59 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.general.svg
 Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/general
-Version: v3 (2025-12-30)
-Source:  old_manager.telecom.line.dashboard.svg
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNÉES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| 0033972123456            | GET /telephony/{ba}/line/{sn}           |
-| Bureau Direction         | line → description                      |
-| Yealink T46G             | GET /telephony/{ba}/line/{sn}/phone     |
-| VoIP PRO                 | line → offerType                        |
-| Actif                    | GET /telephony/{ba}/line/{sn}/serviceInfos |
-| sip.ovh.fr               | line → domain                           |
-| ••••••••••••             | (masqué, API changePassword)            |
-| AA:BB:CC:DD:EE:FF        | phone → macAddress                      |
-| 192.168.1.50             | phone → ip                              |
-| 83.86.0.15               | phone → firmwareVersion                 |
+| Exemple SVG             | Source API                                      |
+|-------------------------|-------------------------------------------------|
+| 0033 9 72 10 12 34      | GET /telephony/{ba}/line/{sn} → serviceName     |
+| Ligne principale accueil| GET /telephony/{ba}/line/{sn} → description     |
+| VoIP Entreprise Pro     | GET /telephony/{ba}/line/{sn} → offerType       |
+| SIP Trunk               | GET /telephony/{ba}/line/{sn} → lineType        |
+| 10 appels               | GET /telephony/{ba}/line/{sn} → simultaneousLines|
+| Cisco CP-8851           | GET /telephony/{ba}/line/{sn}/phone → brand+model|
+| AA:BB:CC:DD:EE:FF       | GET /telephony/{ba}/line/{sn}/phone → macAddress|
+| 15/01/2020              | GET /telephony/{ba}/line/{sn}/serviceInfos → creation|
+| 15/01/2025              | GET /telephony/{ba}/line/{sn}/serviceInfos → expiration|
+| 2h 34min                | GET /telephony/{ba}/line/{sn}/consumption       |
+| 12,50 €                 | GET /telephony/{ba}/line/{sn}/consumption → outplan|
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. SOUS-NAV - Lignes actif (compteur: 3)
-4. LEFT PANEL (x=24, y=155, w=280, h=715)
-   - Recherche
-   - Compteur lignes
-   - Liste lignes (cards sélectionnables)
-5. RIGHT PANEL (x=320, y=155, w=1096, h=715)
-   - Header: Numéro + Description + Actions (MDP SIP, Résilier)
-   - NAV3: Général | Téléphone | Appels | Transferts | Messagerie | Consommation | Options
-   - Contenu Général:
-     * Bloc Ligne SIP (infos principales)
-     * Bloc Téléphone associé (si applicable)
-     * Bloc Abonnement
-     * Warning Anti-hack (si alerte)
-     * Actions rapides
+1. NAV1 - Header OVH (Web Cloud actif, x=510)
+2. NAV2 - Web Cloud (VoIP actif, x=500)
+3. LEFT PANEL - Liste des lignes du groupe
+4. RIGHT PANEL
+   - Header: Numéro + description + boutons actions (MDP SIP, Résilier)
+   - NAV3: 7 tabs (**Général**, Téléphone, Appels, Transferts, Messagerie, Consommation, Options)
+   - Bloc: Informations générales (numéro, description, offre, statut, SIP credentials)
+   - Bloc: Téléphone associé (modèle, MAC, IP, boutons reboot/config)
+   - Bloc: Abonnement (dates, renouvellement, boutons)
+   - Bloc: Consommation du mois (appels sortants/reçus, hors forfait)
 
-# NAV3 TABS (Lignes - 7 tabs)
-| # | Tab          | X   | W   | Route         |
-|---|--------------|-----|-----|---------------|
-| 1 | Général      | 0   | 60  | /general      |
-| 2 | Téléphone    | 64  | 75  | /phone        |
-| 3 | Appels       | 143 | 55  | /calls        |
-| 4 | Transferts   | 202 | 75  | /forward      |
-| 5 | Messagerie   | 281 | 80  | /voicemail    |
-| 6 | Consommation | 365 | 95  | /consumption  |
-| 7 | Options      | 464 | 60  | /options      |
-
-# LEFT PANEL - SERVICE ITEM LIGNE
-Structure card:
-- Avatar cercle (☎️) - bleu si sélectionné, gris sinon
-- Numéro (13px, font-weight 500)
-- Description (11px, muted)
-- Modèle téléphone + statut (10px)
-- Badge statut
-
-# BLOCS CONTENU
-| Bloc              | Données                                  |
-|-------------------|------------------------------------------|
-| Ligne SIP         | Numéro, description, offre, statut, SIP  |
-| Téléphone associé | Modèle, MAC, IP, firmware, actions       |
-| Abonnement        | Création, expiration, renouvellement     |
-| Actions rapides   | Domaine, Restrictions, Langue, etc.      |
+# INTERACTIONS
+- Clic NAV3 tab → Navigation vers autre section ligne
+- 📋 → Copie valeur dans presse-papier
+- ✎ description → Modal édition description
+- 👁 Voir → Affiche mot de passe SIP
+- 🔑 Changer → Modal changement mot de passe
+- ↻ Reboot → Redémarre téléphone
+- ⚙ Configurer → Navigation vers config téléphone
+- ↻ Renouveler → Lance renouvellement
+- ⇄ Changer offre → Modal changement offre
+- 📊 Voir détails → Navigation vers consommation détaillée
+- × Résilier → Modal confirmation résiliation
 
 # API ENDPOINTS
-GET /telephony/{ba}/line/{sn} - Détails ligne
-GET /telephony/{ba}/line/{sn}/phone - Infos téléphone
-GET /telephony/{ba}/line/{sn}/serviceInfos - Infos abonnement
-PUT /telephony/{ba}/line/{sn} - Modifier ligne
-POST /telephony/{ba}/line/{sn}/changePassword - Changer MDP SIP
-POST /telephony/{ba}/line/{sn}/phone/reboot - Redémarrer téléphone
-DELETE /telephony/{ba}/line/{sn} - Résilier ligne
+GET    /telephony/{ba}/line/{sn}                           # Détails ligne
+PUT    /telephony/{ba}/line/{sn}                           # Modifier ligne
+GET    /telephony/{ba}/line/{sn}/serviceInfos              # Infos abonnement
+GET    /telephony/{ba}/line/{sn}/phone                     # Infos téléphone
+POST   /telephony/{ba}/line/{sn}/phone/reboot              # Reboot téléphone
+POST   /telephony/{ba}/line/{sn}/changePassword            # Changer MDP SIP
+GET    /telephony/{ba}/line/{sn}/consumption               # Consommation
+DELETE /telephony/{ba}/line/{sn}                           # Résilier ligne
+
 ================================================================================

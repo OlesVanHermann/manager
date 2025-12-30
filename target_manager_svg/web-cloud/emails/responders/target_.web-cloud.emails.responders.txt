@@ -3,59 +3,44 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.responders.svg
 Route:   /web-cloud/emails/{domain}/responders
-NAV:     Web Cloud > Emails > [domain] > Repondeurs
-Version: v1 (2025-12-29)
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
 | Exemple SVG              | Source API                                      |
 |--------------------------|-------------------------------------------------|
 | example.com              | GET /email/domains -> domain                    |
-| 3 repondeurs             | GET /email/domains/{d}/responders -> count      |
-| ceo@example.com          | GET /email/domains/{d}/responders -> email      |
-| Reponse vacances         | GET /email/domains/{d}/responders -> title      |
-| 23/12/2025               | GET /email/domains/{d}/responders -> startDate  |
-| 02/01/2026               | GET /email/domains/{d}/responders -> endDate    |
-| Je suis en conges...     | GET /email/domains/{d}/responders -> message    |
-| Actif                    | GET /email/domains/{d}/responders -> status     |
+| ceo@example.com          | GET /email/domains/{d}/accounts -> email        |
+| Actif/Inactif            | GET /email/domains/{d}/accounts/{e}/responder   |
+| 23/12 - 02/01            | -> dateStart, dateEnd                           |
+| Je suis absent...        | -> content (apercu)                             |
+
 ================================================================================
 
 STRUCTURE PAGE
-1. Left panel avec liste domaines
-2. Right panel header (domaine + compteur)
-3. NAV3: 8 tabs (Repondeurs actif)
-4. Toolbar: Bouton "Creer repondeur"
-5. Liste cards repondeurs
-   - Badge statut
-   - Email associe
-   - Titre + dates
-   - Apercu message
-   - Actions (Modifier, Activer/Desactiver, Supprimer)
-6. Banniere info
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Emails actif)
+3. LEFT PANEL - Liste domaines
+4. RIGHT PANEL
+   - Header: Domaine
+   - NAV3: 8 tabs (Repondeurs actif)
+   - Toolbar: Configurer repondeur, Filtrer
+   - Table repondeurs:
+     Compte | Statut | Periode | Message | Actions
+   - Pagination
 
-STATUTS REPONDEUR
-| Statut    | Couleur   | Description                           |
-|-----------|-----------|---------------------------------------|
-| Actif     | #DEF7EC   | Envoie actuellement des reponses      |
-| Planifie  | #FEF3C7   | Programme pour dates futures          |
-| Inactif   | #F3F4F6   | Desactive, ne repond pas              |
-
-CONFIGURATION REPONDEUR
-| Champ       | Type     | Description                           |
-|-------------|----------|---------------------------------------|
-| email       | select   | Boite mail associee                   |
-| title       | text     | Nom du repondeur (interne)            |
-| startDate   | date     | Date debut (optionnel)                |
-| endDate     | date     | Date fin (optionnel)                  |
-| message     | textarea | Corps du message automatique          |
-| copyTo      | email    | Copie vers (optionnel)                |
-| frequency   | select   | Une fois/jour/toujours par expediteur |
+COLONNES TABLE
+| Colonne  | Description                               |
+|----------|-------------------------------------------|
+| Compte   | Adresse email du compte                   |
+| Statut   | Actif (vert) / Inactif (gris)             |
+| Periode  | Dates debut-fin ou "Permanent"            |
+| Message  | Apercu du message de reponse automatique  |
+| Actions  | Configurer, Modifier, Desactiver          |
 
 API ENDPOINTS
-GET  /email/domains/{domain}/responders           -> Liste repondeurs
-POST /email/domains/{domain}/responders           -> Creer repondeur
-GET  /email/domains/{domain}/responders/{id}      -> Details
-PUT  /email/domains/{domain}/responders/{id}      -> Modifier
-DELETE /email/domains/{domain}/responders/{id}    -> Supprimer
-POST /email/domains/{domain}/responders/{id}/toggle -> Activer/Desactiver
+GET    /email/domains/{d}/accounts/{e}/responder   - Etat repondeur
+PUT    /email/domains/{d}/accounts/{e}/responder   - Configurer
+DELETE /email/domains/{d}/accounts/{e}/responder   - Desactiver
+
 ================================================================================

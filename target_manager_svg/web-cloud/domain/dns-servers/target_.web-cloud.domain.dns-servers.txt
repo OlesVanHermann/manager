@@ -2,29 +2,51 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.dns-servers.svg
-Route:   /web-cloud/domain/{domainName}/dns-servers
-Version: v1 (2025-12-29)
+Route:   /web-cloud/domaines/domain/{domainName}/dns-servers
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| DNS OVH                  | GET /domain/{dn}/nameServer → isUsed    |
-| dns101.ovh.net           | GET /domain/{dn}/nameServer → host      |
-| 213.251.128.130          | GET /domain/{dn}/nameServer → ip        |
-| Actif                    | Statut dérivé de la config              |
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| dns100.ovh.net                  | GET /domain/{d}/nameServer → host       |
+| ns100.ovh.net                   | GET /domain/{d}/nameServer → host       |
+| 213.186.33.99                   | GET /domain/{d}/nameServer → ip         |
+| Actif                           | GET /domain/{d}/nameServer/status       |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Domaine + NAV3
-2. RIGHT PANEL:
-   - Titre "Serveurs DNS"
-   - INFO BANNER: Explication des DNS
-   - BLOC Configuration: Type DNS actuel (OVH/Externe)
-   - TABLE: Liste serveurs DNS (Serveur, IP, Statut)
-   - BLOC Modifier: Radio buttons DNS OVH / DNS Externes
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Domaines et DNS actif
+3. LEFT PANEL - Liste domaines (280px)
+4. RIGHT PANEL (1096px)
+   - Header: Serveurs DNS
+   - NAV3: 10 tabs, Serveurs DNS actif
+   - TOOLBAR: Modifier les serveurs, Réinitialiser vers OVH
+   - TABLE: Serveur DNS, IP associée, Statut, Actions
+   - INFO BANNER: Informations serveurs actuels
+   - HELP LINK
+
+# TYPES DE SERVEURS
+- OVH (hosted): dns*.ovh.net, ns*.ovh.net
+- Externes: Serveurs tiers configurés par l'utilisateur
+
+# ACTIONS
+- Modifier les serveurs DNS → modal-dns-modify
+- Réinitialiser vers OVH → Restaure les DNS OVH par défaut
+- ⋮ → Supprimer (si plus de 2 serveurs)
+
+# STATUTS
+- Actif (vert): Serveur répond correctement
+- Erreur (rouge): Serveur ne répond pas
+- En cours (gris): Propagation DNS en cours
 
 # API ENDPOINTS
-GET /domain/{domainName}/nameServer - Liste serveurs DNS
-PUT /domain/{domainName}/nameServers/update - Modifier serveurs DNS
+GET /domain/{domainName}/nameServer
+GET /domain/{domainName}/nameServer/status
+POST /domain/{domainName}/nameServer
+PUT /domain/{domainName}/nameServer
+DELETE /domain/{domainName}/nameServer/{id}
+
 ================================================================================

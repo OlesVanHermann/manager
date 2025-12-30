@@ -2,38 +2,63 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.dnssec.svg
-Route:   /web-cloud/domain/{domainName}/dnssec
-Version: v1 (2025-12-29)
+Route:   /web-cloud/domaines/domain/{domainName}/dnssec
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| ✓ DNSSEC est activé      | GET /domain/{dn}/dnssec → status        |
-| Toggle ON                | GET /domain/{dn}/dnssec → status        |
-| KSK/ZSK                  | GET /domain/{dn}/dnssec → keys[].flags  |
-| RSASHA256 (8)            | GET /domain/{dn}/dnssec → keys[].algorithm |
-| 12345                    | GET /domain/{dn}/dnssec → keys[].keyTag |
-| 2BB183AF...              | GET /domain/{dn}/dnssec → keys[].publicKey |
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| 12345                           | GET /domain/{d}/dsRecord → keyTag       |
+| 257 - Zone Signing Key          | GET /domain/{d}/dsRecord/{id} → flags   |
+| 13 - ECDSAP256SHA256            | GET /domain/{d}/dsRecord/{id} → algorithm |
+| AwEAAb2bj...KLM=                | GET /domain/{d}/dsRecord/{id} → publicKey |
+| Actif                           | GET /domain/{d} → dnssecSupported       |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Domaine + NAV3
-2. RIGHT PANEL:
-   - Titre "DNSSEC"
-   - STATUS BANNER: Vert si activé, Gris si désactivé
-   - TOGGLE: Activer/Désactiver DNSSEC
-   - TABLE Clés: Type (KSK/ZSK), Algorithme, Key Tag, Digest, Statut
-   - INFO BOX: Explication KSK vs ZSK
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Domaines et DNS actif
+3. LEFT PANEL - Liste domaines (280px)
+4. RIGHT PANEL (1096px)
+   - Header: DNSSEC
+   - NAV3: 10 tabs, DNSSEC actif
+   - BANNER INFO: Explication DNSSEC
+   - STATUS: État DNSSEC + Toggle désactiver
+   - TOOLBAR: + Ajouter un DS record
+   - TABLE: Tag, Drapeau, Algorithme, Clé publique, Actions
+   - PAGINATION
+   - HELP LINK
 
-# TYPES DE CLÉS
-| Type | Couleur | Description |
-|------|---------|-------------|
-| KSK  | Violet  | Key Signing Key |
-| ZSK  | Bleu    | Zone Signing Key |
+# ACTIONS
+- + Ajouter un DS record → modal-ds-add
+- Désactiver DNSSEC → modal-dnssec-disable
+- ⋮ → Modifier / Supprimer
+
+# ALGORITHMES DNSSEC
+| ID | Nom                    |
+|----|------------------------|
+| 5  | RSASHA1                |
+| 7  | RSASHA1-NSEC3-SHA1     |
+| 8  | RSASHA256              |
+| 10 | RSASHA512              |
+| 13 | ECDSAP256SHA256        |
+| 14 | ECDSAP384SHA384        |
+| 15 | ED25519                |
+| 16 | ED448                  |
+
+# FLAGS (Drapeaux)
+| Value | Signification         |
+|-------|-----------------------|
+| 256   | Zone Signing Key (ZSK)|
+| 257   | Key Signing Key (KSK) |
 
 # API ENDPOINTS
-GET /domain/{domainName}/dnssec - Statut et clés DNSSEC
-POST /domain/{domainName}/dnssec - Activer DNSSEC
-DELETE /domain/{domainName}/dnssec - Désactiver DNSSEC
+GET /domain/{domainName}/dsRecord
+GET /domain/{domainName}/dsRecord/{id}
+POST /domain/{domainName}/dsRecord
+PUT /domain/{domainName}/dsRecord/{id}
+DELETE /domain/{domainName}/dsRecord/{id}
+
 ================================================================================

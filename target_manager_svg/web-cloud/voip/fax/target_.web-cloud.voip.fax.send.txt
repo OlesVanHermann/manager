@@ -1,0 +1,71 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.fax.send.svg
+Route:   /web-cloud/voip/{billingAccount}/fax/{serviceName}/send
+Version: v1 (2024-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG               | Source API                                        |
+|---------------------------|---------------------------------------------------|
+| 0033972107777             | GET /telephony/{ba}/fax/{sn} → serviceName       |
+| 150 pages                 | GET /telephony/{ba}/fax/{sn} → credit            |
+
+================================================================================
+
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des fax du groupe
+4. RIGHT PANEL
+   - Header: "Envoyer un fax"
+   - NAV3: Général | [Envoi] | Campagnes | ...
+   - Form: Destinataires, Document, Options, Aperçu
+   - Bannière info expéditeur
+   - Boutons: Annuler / Envoyer
+
+# CHAMPS FORMULAIRE
+| Champ | Type | Obligatoire | Description |
+|-------|------|-------------|-------------|
+| Numéro(s) | Textarea | Oui | Numéros fax destinataires |
+| Document | File upload | Oui | PDF/DOC/TXT max 10Mo |
+| Qualité | Dropdown | Non | Normale/Haute/Meilleure |
+| Tentatives | Dropdown | Non | 1-5 (défaut: 3) |
+| Différé | DateTime | Non | Envoi programmé |
+
+# OPTIONS QUALITÉ
+| Qualité | Description |
+|---------|-------------|
+| Normale | 204x98 dpi - Rapide |
+| Haute | 204x196 dpi - Standard |
+| Meilleure | 204x392 dpi - Lent |
+
+# FORMATS ACCEPTÉS
+- PDF (recommandé)
+- DOC, DOCX
+- TXT
+- Taille max: 10 Mo
+
+# INTERACTIONS
+- Drag & drop → Upload fichier
+- Clic zone → Ouvrir explorateur
+- "+ Ajouter contacts" → Modal sélection contacts
+- "Annuler" → Retour page précédente
+- "Envoyer" → POST API + confirmation
+
+# API ENDPOINTS
+POST /telephony/{ba}/fax/{sn}/send (multipart/form-data)
+
+# PAYLOAD
+```json
+{
+  "recipients": ["+33145678901"],
+  "document": "<base64 ou URL>",
+  "quality": "normal",
+  "retries": 3,
+  "scheduledAt": null
+}
+```
+
+================================================================================

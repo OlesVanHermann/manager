@@ -1,0 +1,59 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.wordpress.modal-ssl.svg
+Route:   /web-cloud/wordpress/{serviceName}/domains (action)
+Version: v1 (2025-12-30)
+================================================================================
+
+DESCRIPTION
+Modal de configuration SSL pour un domaine du site WordPress.
+Permet d'activer Let's Encrypt ou importer un certificat personnalisé.
+
+================================================================================
+
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                          |
+|--------------------------|-----------------------------------------------------|
+| monblog.com              | GET /managedCMS/resource/{sn}/domains → domain      |
+| Let's Encrypt            | GET /managedCMS/resource/{sn}/domains/{d}/ssl → type |
+
+================================================================================
+
+STRUCTURE MODAL
+1. Header: Titre avec nom domaine + bouton fermer
+2. Type certificat: Radio (Let's Encrypt/Personnalisé)
+3. Option forcer HTTPS: Radio (Oui/Non)
+4. Bannière info: Génération automatique
+5. Footer: Annuler | Activer SSL
+
+================================================================================
+
+INTERACTIONS
+- Clic "×" → Ferme modal
+- Clic "Annuler" → Ferme modal
+- Radio type → Let's Encrypt ou import certificat
+- Radio HTTPS → Force redirection ou non
+- Clic "Activer SSL" → POST /managedCMS/resource/{sn}/domains/{d}/ssl
+
+================================================================================
+
+API ENDPOINTS
+POST /managedCMS/resource/{serviceName}/domains/{domain}/ssl
+  Body: {
+    type: "letsencrypt",
+    forceHttps: true
+  }
+  Response: { taskId, status: "pending" }
+
+Pour certificat personnalisé:
+POST /managedCMS/resource/{serviceName}/domains/{domain}/ssl
+  Body: {
+    type: "custom",
+    certificate: "-----BEGIN CERTIFICATE-----...",
+    privateKey: "-----BEGIN PRIVATE KEY-----...",
+    chain: "-----BEGIN CERTIFICATE-----...",
+    forceHttps: true
+  }
+
+================================================================================

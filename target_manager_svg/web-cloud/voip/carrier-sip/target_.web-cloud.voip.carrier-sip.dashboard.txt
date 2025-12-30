@@ -2,52 +2,57 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.carrier-sip.dashboard.svg
-Route:   /web-cloud/telephony/{serviceName}/carrier-sip/dashboard
+Route:   /web-cloud/voip/carrier-sip/{serviceName}/dashboard
 Version: v2 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| 12 appels en cours       | GET /telephony/{ba}/carrierSip/{sn}/currentCalls|
-| 847 appels aujourd'hui   | statistics → callsToday                 |
-| 45 230 minutes           | statistics → minutesThisMonth           |
-| 4/4 endpoints            | GET /telephony/{ba}/carrierSip/{sn}/endpoints|
-| 99.2% ASR                | statistics → asr (Answer-Seizure Ratio) |
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| cs-1234567               | GET /telephony/trunks → serviceName           |
+| Trunk SIP production     | GET /telephony/trunks/{sn} → description      |
+| 10                       | GET /telephony/trunks/{sn} → maxCallsPerSecond|
+| 100                      | GET /telephony/trunks/{sn} → maxConcurrentCalls|
+| 15/01/2026               | GET /telephony/trunks/{sn}/serviceInfos → expiration |
+| 15/01/2024               | GET /telephony/trunks/{sn}/serviceInfos → creation |
+| ab12345-ovh              | GET /telephony/trunks/{sn}/serviceInfos → contactAdmin |
+| 91.121.128.10            | GET /telephony/trunks/{sn}/network → mediaIp  |
+| 12,458                   | GET /telephony/trunks/{sn}/statistics → totalCalls |
+| 98.5%                    | GET /telephony/trunks/{sn}/statistics → successRate |
+| 2:34                     | GET /telephony/trunks/{sn}/statistics → avgDuration |
+
 ================================================================================
 
-# STRUCTURE PAGE
-1. LEFT PANEL - Service Carrier SIP + NAV3 (Dashboard actif)
-2. RIGHT PANEL:
-   - TITRE "Carrier SIP - Tableau de bord"
-   - STATS CARDS (5): En cours, Aujourd'hui, Minutes, Endpoints, ASR
-   - ENDPOINTS: Liste avec statut connexion
-   - TRAFIC: Graphique temps réel
-   - DERNIERS APPELS: Table récents
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif avec indicateur bleu)
+3. LEFT PANEL - Liste des trunks SIP (280px)
+   - Recherche
+   - Compteur (2 trunks SIP)
+   - Items services avec badge statut
+4. RIGHT PANEL (1096px)
+   - Header: Nom service + description
+   - NAV3: [Dashboard] | Endpoints | CDR | Routage | Parametres
+   - Row 1: 3 cards (Infos generales, Renouvellement, Raccourcis)
+   - Row 2: 2 cards (Reseau IP Media, Statistiques)
 
-# NAV3 CARRIER SIP
-- Tableau de bord (actif)
-- Endpoints (compteur)
-- CDR / Journaux
-- Routage
-- Paramètres
+COMPOSANTS
+- Cards avec header et separateur
+- IP copiables avec fond gris
+- Statistiques avec grands chiffres
+- Placeholder graphique
 
-# STATUTS ENDPOINT
-| Statut     | Couleur |
-|------------|---------|
-| Connecté   | Vert    |
-| Déconnecté | Rouge   |
-| Dégradé    | Orange  |
+INTERACTIONS
+- Clic trunk left panel → Charge details
+- Clic tab NAV3 → Change vue
+- Clic raccourci → Navigation
+- Clic Copy → Copie IP presse-papier
 
-# CODES SIP
-| Code | Badge  | Description      |
-|------|--------|------------------|
-| 200  | Vert   | OK               |
-| 486  | Orange | Busy             |
-| 503  | Rouge  | Service Unavail  |
+API ENDPOINTS
+GET /telephony/trunks                           # Liste trunks
+GET /telephony/trunks/{serviceName}             # Details trunk
+GET /telephony/trunks/{serviceName}/serviceInfos # Infos facturation
+GET /telephony/trunks/{serviceName}/network     # IPs reseau
+GET /telephony/trunks/{serviceName}/statistics  # Stats appels
 
-# API ENDPOINTS
-GET /telephony/{ba}/carrierSip/{serviceName} - Infos service
-GET /telephony/{ba}/carrierSip/{serviceName}/endpoints - Liste endpoints
-GET /telephony/{ba}/carrierSip/{serviceName}/cdr - CDR
 ================================================================================

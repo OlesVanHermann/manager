@@ -1,0 +1,61 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.wordpress.modal-create.svg
+Route:   /web-cloud/wordpress (action)
+Version: v1 (2025-12-30)
+================================================================================
+
+DESCRIPTION
+Modal de création d'un nouveau site WordPress managé.
+Wizard de configuration: nom, domaine, offre, datacenter, identifiants admin.
+
+================================================================================
+
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| Start/Pro/Business       | GET /managedCMS/offers → offres disponibles   |
+| rbx1/gra1/sbg1           | GET /hosting/availableDatacenters             |
+| 4,99€/9,99€/19,99€       | GET /managedCMS/offers → prices               |
+
+================================================================================
+
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer
+2. Champ nom du site: Input text
+3. Champ domaine: Input text
+4. Sélection offre: Radio buttons (Start/Pro/Business)
+5. Sélection datacenter: Dropdown
+6. Identifiants admin: Username + password (générés)
+7. Footer: Annuler | Créer le site
+
+================================================================================
+
+INTERACTIONS
+- Clic "×" → Ferme modal
+- Clic "Annuler" → Ferme modal
+- Saisie nom/domaine → Validation format
+- Sélection offre → Affiche features incluses
+- Sélection datacenter → Dropdown
+- Générer MDP → Crée mot de passe aléatoire
+- Clic "Créer" → POST /managedCMS/resource
+
+================================================================================
+
+API ENDPOINTS
+POST /managedCMS/resource
+  Body: {
+    name: "mon-blog",
+    domain: "mon-blog.fr",
+    offer: "pro",
+    datacenter: "gra1",
+    adminUser: "admin",
+    adminPassword: "..."
+  }
+  Response: { serviceName, taskId, status: "installing" }
+
+GET /managedCMS/offers
+  Response: [{ name, storage, cdnIncluded, stagingIncluded, backupFrequency, price }]
+
+================================================================================

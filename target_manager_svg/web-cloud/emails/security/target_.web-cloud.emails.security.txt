@@ -3,69 +3,55 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.security.svg
 Route:   /web-cloud/emails/{domain}/security
-NAV:     Web Cloud > Emails > [domain] > Securite > Antispam
-Version: v1 (2025-12-29)
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| example.com              | GET /email/domains -> domain                    |
-| Standard                 | GET /email/domains/{d}/security -> spamLevel    |
-| Deplacer vers Spam       | GET /email/domains/{d}/security -> spamAction   |
-| true                     | GET /email/domains/{d}/security -> dailyReport  |
-| ceo@example.com          | GET /email/domains/{d}/accounts/{a}/spam        |
-| Strict                   | GET .../spam -> level                           |
-| 3 adresses               | GET .../spam -> whitelistCount                  |
+| Exemple SVG                     | Source API                           |
+|---------------------------------|--------------------------------------|
+| example.com                     | GET /email/domains -> domain         |
+| mx1.mail.ovh.net                | GET /email/domains/{d}/dns/mx        |
+| v=spf1 include:mx.ovh.com ~all  | GET /email/domains/{d}/dns/spf       |
+| OK / A configurer               | GET /email/domains/{d}/dns/diagnostic|
+
 ================================================================================
 
 STRUCTURE PAGE
-1. Left panel avec liste domaines
-2. Right panel header (domaine)
-3. NAV3: 8 tabs (Securite actif)
-4. NAV4: Antispam (actif) | Signature | MFA
-5. Configuration globale
-   - Niveau de filtrage (dropdown)
-   - Action sur spam (dropdown)
-   - Toggle rapport quotidien
-6. Table configuration par compte
-   - Colonnes: Compte, Niveau, Action, Whitelist, Blacklist, Actions
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Emails actif)
+3. LEFT PANEL - Liste domaines
+4. RIGHT PANEL
+   - Header: Domaine
+   - NAV3: 8 tabs (Securite actif)
+   - NAV4: [DNS Config] | Antispam | Signature
+   - Banniere auto-configuration
+   - Boutons Auto-config / Diagnostiquer
+   - Blocs: MX, SPF, DKIM, DMARC
 
-NAV4 SECURITE
-| Tab        | Route       | Description                    |
-|------------|-------------|--------------------------------|
-| Antispam   | /antispam   | Configuration filtrage spam    |
-| Signature  | /signature  | Signatures DKIM/SPF            |
-| MFA        | /mfa        | Auth multi-facteurs (Exchange) |
+BLOCS DNS
+| Bloc  | Statut possible | Actions                    |
+|-------|-----------------|----------------------------|
+| MX    | OK / Erreur     | Modifier                   |
+| SPF   | OK / Erreur     | Modifier                   |
+| DKIM  | OK / A config   | Configurer, Regenerer      |
+| DMARC | OK / Absent     | Modifier                   |
 
-NIVEAUX FILTRAGE
-| Niveau    | Couleur   | Description                     |
-|-----------|-----------|----------------------------------|
-| Souple    | #DEF7EC   | Peu de filtrage, risque spam    |
-| Standard  | #E5E7EB   | Equilibre (recommande)          |
-| Strict    | #FEF3C7   | Agressif, risque faux positifs  |
-
-ACTIONS SUR SPAM
-| Action           | Description                           |
-|------------------|---------------------------------------|
-| Spam folder      | Deplacer vers dossier Spam            |
-| Supprimer        | Supprimer directement                 |
-| Tag subject      | Ajouter [SPAM] au sujet               |
-| Header           | Ajouter header X-Spam                 |
-
-DISPONIBILITE PAR OFFRE
-| Offre     | Antispam   | Signature  | MFA        |
-|-----------|------------|------------|------------|
-| MX Plan   | Basique    | DKIM auto  | Non        |
-| Email Pro | Avance     | DKIM/SPF   | Non        |
-| Exchange  | Avance     | DKIM/SPF   | Oui        |
-| Zimbra    | Avance     | DKIM/SPF   | Non        |
+DISPONIBILITE
+| Offre     | DNS Config | Antispam | Signature |
+|-----------|------------|----------|-----------|
+| MX Plan   | Non        | Non      | Non       |
+| Email Pro | Oui        | Oui      | Oui       |
+| Exchange  | Oui        | Oui      | Oui       |
+| Zimbra    | Oui        | Oui      | Non       |
 
 API ENDPOINTS
-GET  /email/domains/{domain}/security             -> Config globale
-PUT  /email/domains/{domain}/security             -> Modifier config
-GET  /email/domains/{domain}/accounts/{a}/spam    -> Config compte
-PUT  /email/domains/{domain}/accounts/{a}/spam    -> Modifier spam compte
-GET  /email/domains/{domain}/accounts/{a}/whitelist -> Whitelist
-POST /email/domains/{domain}/accounts/{a}/whitelist -> Ajouter whitelist
+GET  /email/domains/{domain}/dns/diagnostic  - Diagnostic complet
+GET  /email/domains/{domain}/dns/mx          - Etat MX
+POST /email/domains/{domain}/dns/mx          - Auto-configurer MX
+GET  /email/domains/{domain}/dns/spf         - Etat SPF
+POST /email/domains/{domain}/dns/spf         - Auto-configurer SPF
+GET  /email/domains/{domain}/dns/dkim        - Etat DKIM
+POST /email/domains/{domain}/dns/dkim        - Configurer DKIM
+POST /email/domains/{domain}/dns/dkim/regenerate - Regenerer DKIM
+
 ================================================================================

@@ -2,35 +2,73 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.domain.general.svg
-Route:   /web-cloud/domain/{domainName}/general
-Version: v1 (2025-12-29)
+Route:   /web-cloud/domaines/domain/{domainName}/general
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| example.com              | GET /domain/{dn} → domain               |
-| Actif                    | GET /domain/{dn} → status               |
-| 15/03/2020               | GET /domain/{dn} → creation             |
-| 15/03/2026               | GET /domain/{dn} → expiration           |
-| Toggle ON                | GET /domain/{dn} → renewalEnabled       |
-| ab12345-ovh              | GET /domain/{dn} → nicAdmin             |
-| Toggle Owo               | GET /domain/{dn} → owoSupported + owoEnabled |
-| Toggle Lock              | GET /domain/{dn} → transferLockStatus   |
-| Toggle DNSSEC            | GET /domain/{dn}/dnssec → enabled       |
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| example.com                     | Route param {domainName}                |
+| Actif                           | GET /domain/{d} → state                 |
+| .com (gTLD)                     | GET /domain/{d} → extension + type      |
+| OVHcloud                        | GET /domain/{d} → registrar             |
+| 15 mars 2020                    | GET /domain/{d}/serviceInfos → creation |
+| 15 mars 2026                    | GET /domain/{d}/serviceInfos → expiration|
+| dns1.ovh.net, dns2.ovh.net      | GET /domain/{d}/nameServer              |
+| Activé (DNSSEC)                 | GET /domain/{d}/dsRecord → status       |
+| Verrouillé                      | GET /domain/{d} → transferLockStatus    |
+| ab12345-ovh                     | GET /domain/{d}/serviceInfos → contacts |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Domaine + NAV3 (10 onglets)
-2. RIGHT PANEL:
-   - Titre "Informations générales"
-   - BLOC Configuration: nom, statut, dates, renouvellement, contacts
-   - BLOC Protection: Owo, Transfer Lock, DNSSEC (toggles)
-   - BLOC Actions: Transférer, Changer propriétaire, Résilier
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Domaines et DNS actif
+3. LEFT PANEL - Liste domaines (280px)
+4. RIGHT PANEL (1096px)
+   - Header: {domainName}
+   - Breadcrumb
+   - NAV3: 10 tabs, Infos générales actif
+   - TILES 3 colonnes:
+     - Informations générales (état, extension, registrar, dates)
+     - Configuration DNS (serveurs, DNSSEC, Anycast, zone)
+     - Sécurité (verrou, WHOIS, AUTH code, OWO)
+   - TILES 2 colonnes:
+     - Abonnement (offre, prix, renouvellement)
+     - Contacts (propriétaire, admin, tech, billing)
+   - HELP LINK
+
+# NAV3 TABS
+1. Infos générales (actif)
+2. Zone DNS
+3. Serveurs DNS
+4. Redirections
+5. DynHost
+6. GLUE
+7. DNSSEC
+8. Contacts
+9. Tâches
+10. Alldom
+
+# ACTIONS
+- ⋮ Serveurs DNS → Modifier serveurs DNS
+- ⋮ DNSSEC → Activer/Désactiver DNSSEC
+- ⋮ Anycast → Commander/Résilier Anycast
+- ⋮ Verrou → Activer/Désactiver verrou
+- ⋮ WHOIS → Configurer protection
+- Afficher → Modal Auth Code
+- ⋮ Abonnement → Modifier renouvellement
+- ⋮ Contacts → Modifier contacts
 
 # API ENDPOINTS
-GET /domain/{domainName} - Informations générales
-PUT /domain/{domainName} - Modifier configuration
-PUT /domain/{domainName}/owo - Activer/Désactiver Owo
-PUT /domain/{domainName}/lock - Activer/Désactiver transfert lock
+GET /domain/{domainName}
+GET /domain/{domainName}/serviceInfos
+GET /domain/{domainName}/nameServer
+GET /domain/{domainName}/dsRecord
+GET /domain/{domainName}/authInfo
+PUT /domain/{domainName}
+POST /domain/{domainName}/lock
+DELETE /domain/{domainName}/lock
+
 ================================================================================

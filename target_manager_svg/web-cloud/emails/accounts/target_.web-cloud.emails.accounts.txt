@@ -3,59 +3,54 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.accounts.svg
 Route:   /web-cloud/emails/{domain}/accounts
-NAV:     Web Cloud > Emails > [domain] > Boites mail
-Version: v1 (2025-12-29)
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| example.com              | GET /email/domains -> domain                    |
-| 12 boites mail           | GET /email/domains/{d}/accounts -> count        |
-| ceo@example.com          | GET /email/domains/{d}/accounts -> email        |
-| Exchange                 | GET /email/domains/{d}/accounts -> offerType    |
-| Pack Biz 10              | GET /email/domains/{d}/accounts -> packName     |
-| 35/50 Go                 | GET /email/domains/{d}/accounts -> quota        |
-| Actif                    | GET /email/domains/{d}/accounts -> status       |
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| example.com              | GET /email/domains -> domain                  |
+| ceo@example.com          | GET /email/domains/{d}/accounts -> email      |
+| Exchange                 | GET /email/domains/{d}/accounts -> offer      |
+| Pack Biz 10              | GET /email/domains/{d}/accounts -> license    |
+| 35/50 Go                 | GET /email/domains/{d}/accounts -> quota      |
+| Actif                    | GET /email/domains/{d}/accounts -> status     |
+| 3 alias                  | GET /email/domains/{d}/accounts/{e}/aliases   |
+
 ================================================================================
 
 STRUCTURE PAGE
-1. Left panel
-   - Toggle vue: Par domaine (actif) / Par licence
-   - Liste domaines avec stats (nb boites, offres)
-   - Domain selectionne en surbrillance
-2. Right panel header
-   - Nom domaine + compteur boites
-3. NAV3: 8 tabs (Boites mail actif)
-4. Toolbar
-   - Bouton "Creer boite" (primary)
-   - Bouton "Importer" (outline)
-   - Bouton "Exporter" (outline)
-5. Table comptes email
-   - Colonnes: Email, Offre, Licence, Quota, Statut, Actions
-   - Badge couleur par offre
-   - Actions contextuelles par offre
-6. Pagination
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Emails actif)
+3. LEFT PANEL - Liste domaines
+4. RIGHT PANEL
+   - Header: Domaine + stats
+   - NAV3: 8 tabs (Boites mail actif)
+   - Toolbar: Creer, Importer, Exporter, Filtrer
+   - Filtres par offre
+   - Table comptes avec colonnes:
+     Email | Offre | Licence/Pack | Quota | Statut | Actions
+   - Pagination
 
-BADGES OFFRES
-| Offre     | Couleur   | Actions disponibles           |
-|-----------|-----------|-------------------------------|
-| Exchange  | #F59E0B   | Modifier, MFA, Calendrier     |
-| Email Pro | #3B82F6   | Modifier, Alias, Signature    |
-| Zimbra    | #8B5CF6   | Modifier, Alias, Webmail      |
-| MX Plan   | #6B7280   | Modifier (basique)            |
-
-ACTIONS TOOLBAR
-| Action    | Comportement                                    |
-|-----------|-------------------------------------------------|
-| Creer     | Modal creation compte avec choix offre          |
-| Importer  | Modal import CSV/migration                      |
-| Exporter  | Telecharge CSV liste comptes                    |
+ACTIONS PAR OFFRE
+| Action   | MX Plan | Pro | Exchange | Zimbra |
+|----------|---------|-----|----------|--------|
+| Edit     | Oui     | Oui | Oui      | Oui    |
+| MDP      | Oui     | Oui | Oui      | Oui    |
+| Alias    | Non     | Oui | Oui      | Oui    |
+| Deleg    | Non     | Oui | Oui      | Non    |
+| MFA      | Non     | Non | Oui      | Non    |
+| Archive  | Non     | Oui | Oui      | Non    |
+| Upgrade  | Oui     | Oui | Non      | Oui    |
 
 API ENDPOINTS
-GET  /email/domains/{domain}/accounts           -> Liste comptes
-POST /email/domains/{domain}/accounts           -> Creer compte
-GET  /email/domains/{domain}/accounts/{id}      -> Details compte
-PUT  /email/domains/{domain}/accounts/{id}      -> Modifier compte
-DELETE /email/domains/{domain}/accounts/{id}    -> Supprimer compte
+GET    /email/domains/{domain}/accounts           - Liste comptes
+GET    /email/domains/{domain}/accounts/{email}   - Details compte
+POST   /email/domains/{domain}/accounts           - Creer compte
+PUT    /email/domains/{domain}/accounts/{email}   - Modifier compte
+DELETE /email/domains/{domain}/accounts/{email}   - Supprimer compte
+POST   /email/domains/{d}/accounts/{e}/password   - Changer MDP
+POST   /email/domains/{d}/accounts/{e}/upgrade    - Upgrader offre
+POST   /email/domains/{d}/accounts/{e}/downgrade  - Downgrader offre
+
 ================================================================================

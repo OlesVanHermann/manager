@@ -2,57 +2,50 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.access.otb.dashboard.svg
-Route:   /web-cloud/access/overthebox/{serviceName}/dashboard
-Version: v2 (2025-12-30)
+Route:   /web-cloud/access/overthebox/{otbId}
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| otb-ef12345-1            | GET /overTheBox/{serviceName}           |
-| 148 Mbps agrégé          | GET /overTheBox/{sn}/device → aggregatedBandwidth|
-| 3/3 connexions           | GET /overTheBox/{sn}/device/availableInterfaces|
-| 45 jours uptime          | device → uptime                         |
-| Connecté tunnel          | device → tunnelStatus                   |
-| 91.134.x.x               | device → publicIP                       |
+DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                              |
+|-----------------------|-----------------------------------------|
+| otb-xxx123            | GET /overTheBox/{id} → serviceName      |
+| OverTheBox Plus       | GET /overTheBox/{id} → offerName        |
+| 3 connexions agrégées | GET /overTheBox/{id}/device → interfaces|
+| 15/01/2026            | GET /overTheBox/{id} → expiration       |
+| device-abc123def456   | GET /overTheBox/{id}/device → deviceId  |
+| v0.9.12               | GET /overTheBox/{id}/device → systemVersion|
+| 91.134.xxx.xxx        | GET /overTheBox/{id}/device → publicIp  |
+| if0, if1, if2         | GET /overTheBox/{id}/device/interfaces  |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - OverTheBox + NAV3 (Dashboard actif)
-2. RIGHT PANEL:
-   - TITRE "Tableau de bord OverTheBox"
-   - STATS CARDS (5): Débit, Connexions, Uptime, Tunnel, IP
-   - CONNEXIONS: État de chaque lien
-   - RÉPARTITION: Graphique trafic
-   - ACTIONS RAPIDES: Redémarrer, SSH, Speedtest, Priorité
+1. NAV1 - Header OVH (Web Cloud actif x=510)
+2. NAV2 - Web Cloud (Accès actif x=550)
+3. LEFT PANEL - Liste services OverTheBox (2 services exemple)
+4. RIGHT PANEL
+   - Header: otb-xxx123 + description
+   - NAV3: [Général] [Connexions] [Tâches] - Général actif
+   - Bannière info (mise à jour disponible)
+   - 2 colonnes: Infos générales + Infos appareil
+   - Table: Interfaces réseau
 
-# NAV3 OVERTHEBOX
-- Tableau de bord (actif)
-- Connexions (compteur)
-- Statistiques
-- Accès distant
-- Actions
-- Logs
-- Gestion
+# BLOCS PRINCIPAUX
+| Bloc | Dimensions | Contenu |
+|------|------------|---------|
+| Infos générales | 500x280 | État, facturation, offre |
+| Infos appareil | 500x280 | IDs, version, IP, IPv6 toggle |
+| Interfaces réseau | 1036x280 | Table 3 colonnes interfaces |
 
-# TYPES CONNEXION
-| Type  | Description         |
-|-------|---------------------|
-| FTTH  | Fibre optique       |
-| VDSL2 | VDSL                |
-| 4G    | Backup mobile       |
-| ADSL  | ADSL                |
-
-# STATUTS
-| Statut   | Badge              |
-|----------|--------------------|
-| Primaire | Blanc sur fond vert|
-| Backup   | Orange             |
-| Actif    | Point vert         |
-| Inactif  | Point rouge        |
+# TOGGLE IPv6
+- ON: bg=#0050D7, cercle à droite
+- OFF: bg=#E5E7EB, cercle à gauche
 
 # API ENDPOINTS
-GET /overTheBox/{serviceName} - Infos service
-GET /overTheBox/{serviceName}/device - Infos boîtier
-POST /overTheBox/{serviceName}/device/actions - Actions
+GET /overTheBox/{id} - Détails du service
+GET /overTheBox/{id}/device - Détails de l'appareil
+GET /overTheBox/{id}/device/interfaces - Liste interfaces
+PUT /overTheBox/{id}/device/configuration - Modifier config
+
 ================================================================================

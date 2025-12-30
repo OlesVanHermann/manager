@@ -2,40 +2,53 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.group.dashboard.svg
-Route:   /web-cloud/telephony/{billingAccount}/dashboard
-Version: v2 (2025-12-30)
+Route:   /web-cloud/voip/{billingAccount}/dashboard
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| 12 lignes                | GET /telephony/{ba}/line → count        |
-| 156 appels               | GET /telephony/{ba}/statistics          |
-| 8h 42m                   | statistics → totalDuration              |
-| 45,20€                   | GET /telephony/{ba}/bill                |
-| 3 appels en cours        | GET /telephony/{ba}/currentCalls        |
+DONNÉES DYNAMIQUES
+| Exemple SVG             | Source API                                      |
+|-------------------------|-------------------------------------------------|
+| Compte principal entrep.| GET /telephony/{ba} → description               |
+| am12345-ovh             | GET /telephony → billingAccount                 |
+| 18 lignes               | GET /telephony/{ba}/line → count                |
+| 6 numéros               | GET /telephony/{ba}/number → count              |
+| 2 fax                   | GET /telephony/{ba}/fax → count                 |
+| Actif                   | GET /telephony/{ba}/serviceInfos → status       |
+| 45,20 €                 | GET /telephony/{ba} → currentOutplan            |
+| Équipements             | GET /telephony/{ba}/line/{sn}/phone             |
+| Factures                | GET /me/bill?category=telephony                 |
+| ab12345-ovh             | Session utilisateur                             |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Groupe + NAV3 (Dashboard actif)
-2. RIGHT PANEL:
-   - TITRE "Tableau de bord du groupe"
-   - STATS CARDS (5): Lignes, Appels, Durée, Conso, En cours
-   - GRAPHIQUE: Activité 24h
-   - LIGNES EN APPEL: Liste temps réel
-   - ÉVÉNEMENTS: Historique récent
+1. NAV1 - Header OVH (Web Cloud actif, x=510)
+2. NAV2 - Web Cloud (VoIP actif, x=500)
+3. LEFT PANEL - Liste des groupes VoIP (avec compteurs ☎️🔢📠)
+4. RIGHT PANEL
+   - Header: Nom du groupe
+   - NAV3: 5 tabs (**Dashboard**, Services, Répertoire, Facturation, Administration)
+   - Bloc Actions: Liens rapides (commander ligne/numéro, portabilités, voicefax)
+   - Bloc Informations: Compteurs (statut, lignes, numéros, fax)
+   - Bloc Consommation: Pie chart + hors forfait
+   - Bloc Équipements: Cards téléphones (modèle, ligne, MAC)
+   - Bloc Factures: Table récentes (date, montant, payé)
 
-# NAV3 GROUPE
-- Tableau de bord (actif)
-- Lignes (compteur)
-- Numéros (compteur)
-- Fax (compteur)
-- Consommation
-- Facturation
-- Paramètres
+# INTERACTIONS
+- Clic NAV3 tab → Navigation vers autre section groupe
+- Clic lien Actions → Navigue vers page correspondante
+- Clic équipement → Navigue vers détails ligne/téléphone
+- Clic ... facture → Menu actions (télécharger PDF, voir détails)
 
 # API ENDPOINTS
-GET /telephony/{billingAccount} - Infos groupe
-GET /telephony/{billingAccount}/statistics - Statistiques
-GET /telephony/{billingAccount}/currentCalls - Appels en cours
+GET  /telephony                                            # Liste groupes
+GET  /telephony/{ba}                                       # Détails groupe
+GET  /telephony/{ba}/serviceInfos                          # Infos service
+GET  /telephony/{ba}/line                                  # Liste lignes
+GET  /telephony/{ba}/number                                # Liste numéros
+GET  /telephony/{ba}/fax                                   # Liste fax
+GET  /telephony/{ba}/line/{sn}/phone                       # Infos téléphone
+GET  /me/bill?category=telephony                           # Factures telecom
+
 ================================================================================
