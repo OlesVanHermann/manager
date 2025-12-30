@@ -1,0 +1,91 @@
+# Cahier des Charges : web-cloud/hosting - Modal Dump Restore
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire avec options
+**Fonction:** Restaurer une sauvegarde de base de données
+**Contexte:** Action depuis l'onglet sauvegardes BDD
+
+## 2. DIMENSIONS
+
+- Modal: 600x420px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. HEADER MODAL
+
+- Background: #F9FAFB
+- Hauteur: 56px
+- Titre: "Restaurer une sauvegarde"
+- Bouton fermer: × (position droite)
+
+## 4. CONTENU
+
+### Section sauvegarde à restaurer
+- Label: "SAUVEGARDE À RESTAURER" (muted, font-weight 600)
+- Carte info (552x70px):
+  - Background: #F9FAFB, border #E5E7EB
+  - Nom fichier: "monsite_wordpress_2025-01-15.sql.gz" (font-weight 500)
+  - Info: "Créée le 15/01/2025 à 02:00 - Taille : 45.2 Mo"
+  - Badge: "Automatique"
+
+### Champ base cible
+- Label: "Base de données cible"
+- Select: 552x40px
+- Valeur: "monsite_wordpress"
+- Options: liste des bases disponibles
+
+### Options de restauration (checkboxes)
+- Label: "Options de restauration"
+- ☑ Vider la base avant restauration (coché par défaut)
+- ☐ Créer une sauvegarde avant restauration
+
+### Bannière warning (552x50px)
+- Background: #FEF3C7
+- Icône: !
+- Texte ligne 1: "La restauration écrasera toutes les données actuelles."
+- Texte ligne 2: "Cette action est irréversible sans sauvegarde préalable."
+- Couleur texte: #D97706
+
+## 5. FOOTER MODAL
+
+- Bouton gauche: "Annuler" (btn-outline, 100x36px)
+- Bouton droit: "Restaurer" (btn-primary, 100x36px)
+
+## 6. APIS & ENDPOINTS
+
+```
+# Lister les dumps disponibles
+GET /hosting/web/{serviceName}/database/{name}/dump
+→ Liste des sauvegardes (id, date, size, type)
+
+# Restaurer un dump
+POST /hosting/web/{serviceName}/database/{name}/dump/{id}/restore
+Body: {
+  flushDatabase: true,
+  createBackup: false
+}
+→ Tâche de restauration
+
+# Créer un dump avant restauration (optionnel)
+POST /hosting/web/{serviceName}/database/{name}/dump
+Body: { date: "now", sendEmail: true }
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Restaurer une sauvegarde |
+| section_dump | SAUVEGARDE À RESTAURER |
+| dump_created | Créée le {date} à {time} |
+| dump_size | Taille : {size} |
+| type_automatic | Automatique |
+| type_manual | Manuelle |
+| field_target | Base de données cible |
+| section_options | Options de restauration |
+| option_flush | Vider la base avant restauration |
+| option_backup | Créer une sauvegarde avant restauration |
+| warning_overwrite | La restauration écrasera toutes les données actuelles. |
+| warning_irreversible | Cette action est irréversible sans sauvegarde préalable. |
+| btn_cancel | Annuler |
+| btn_restore | Restaurer |

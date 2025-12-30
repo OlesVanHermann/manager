@@ -2,35 +2,62 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.modal.contact-add.svg
-Route:   Modal (overlay) - declenchee depuis admin/contacts
-Version: v1 (2025-12-29)
+Modal:   Ajout de contact dans l'annuaire
+Context: Page Ligne SIP - Téléphone - Annuaire
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| Technique                | GET /telephony/{ba}/accessibleRoles     |
-|                          | -> roles disponibles                    |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| (champs vides)        | Formulaire de création                        |
 
 ================================================================================
 
 # STRUCTURE MODAL
-1. Header: Titre + bouton fermer
-2. Inputs:
-   - Nom (required)
-   - Prenom (required)
-   - Email (required)
-   - Telephone
-   - Role (dropdown, required)
-3. Checkboxes: Notifications (Email, SMS, Telephone)
-4. Textarea: Notes
-5. Footer: Annuler + Ajouter
+1. HEADER - Titre + bouton fermer
+2. CONTENT
+   - Champ Nom (obligatoire)
+   - Champ Prénom (optionnel)
+   - Champ Téléphone principal (obligatoire)
+   - Champ Téléphone secondaire (optionnel)
+   - Champ Email (optionnel)
+   - Note champs obligatoires
+3. FOOTER - Boutons Ajouter / Annuler
 
 # DIMENSIONS
-- Largeur: 700px
-- Hauteur: 600px
-- Position: Centree
+- Width: 550px
+- Height: 520px
+- Padding: 24px
+
+# VALIDATION
+| Champ | Règle |
+|-------|-------|
+| Nom | Obligatoire, 2-50 caractères |
+| Prénom | Optionnel, max 50 caractères |
+| Téléphone principal | Obligatoire, format international |
+| Téléphone secondaire | Optionnel, format international |
+| Email | Optionnel, format email valide |
+
+# INTERACTIONS
+- Clic ✕ → Fermer modal
+- Saisie champs → Validation en temps réel
+- Clic "Ajouter" → POST API + fermer modal si succès
+- Clic "Annuler" → Fermer modal sans sauvegarder
+- Erreur validation → Afficher message sous le champ
 
 # API ENDPOINTS
-POST /me/contact - Creer contact
+POST /telephony/{ba}/phonebook/{bookKey}/phonebookContact → Créer contact
+
+# PAYLOAD ATTENDU
+```json
+{
+  "name": "Dupont",
+  "surname": "Jean",
+  "phoneNumber": "+33612345678",
+  "homeMobile": "+33698765432",
+  "email": "jean.dupont@exemple.com"
+}
+```
+
 ================================================================================

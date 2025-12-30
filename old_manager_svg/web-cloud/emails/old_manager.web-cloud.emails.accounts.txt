@@ -1,0 +1,164 @@
+# Cahier des Charges : web-cloud/emails - Accounts
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid
+**Fonction:** Gestion des boîtes mail d'un domaine
+**Contexte:** Onglet principal de la section Emails
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail (actif) | Redirections | Répondeurs | Listes | Sécurité | Avancé | Licences | Tâches
+
+## 3. LAYOUT
+
+### Panel gauche (280px)
+- Toggle: "Par domaine" / "Par licence"
+- Recherche: "Rechercher un domaine..."
+- Compteur: "Filtrer par offre" + "5 domaines"
+- Liste des domaines avec résumé
+
+#### Item domaine sélectionné
+- Nom du domaine (font-weight 600)
+- Liste des offres avec pastilles colorées:
+  - Orange (#F59E0B): Exchange
+  - Bleu (#3B82F6): Pro
+  - Violet (#8B5CF6): Zimbra
+  - Gris (#6B7280): MX Plan
+- Séparateur
+- Résumé: "{n} boîtes - {n} Go - {n} sources"
+- Bouton bas: "+ Ajouter domaine"
+
+### Panel droit (1096px)
+- Header: nom domaine + résumé
+- Bouton: "Webmail"
+
+## 4. HEADER PAGE
+
+- Titre: "example.com"
+- Sous-titre: "12 boîtes - 4 offres - 67 Go utilisés"
+- Bouton: "Webmail" (ouvre OWA/Roundcube)
+
+## 5. TOOLBAR
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Créer boîte | btn-primary | Ouvre modal création |
+| Importer | btn-outline | Import CSV/PST |
+| Exporter | btn-outline | Export liste |
+| Recherche | Input | Filtre les boîtes |
+| ↻ | btn-outline | Rafraîchit la liste |
+
+### Filtres par offre
+- Pills: Toutes (actif) | Exchange | Pro | Zimbra | MX Plan
+- Chaque pill avec pastille de couleur
+
+## 6. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Checkbox | 30px | Sélection multiple |
+| Email | 260px | Adresse + infos (alias, MFA) |
+| Offre | 120px | Badge coloré (Exchange/Pro/Zimbra/MX) |
+| Licence/Pack | 160px | Nom du pack + position |
+| Quota | 140px | Barre progression + texte |
+| Statut | 80px | Badge (Actif/Suspendu) |
+| Actions | 130px | "Modifier" + menu ⋮ |
+
+### Badge offre par type
+
+| Offre | Couleur | Background |
+|-------|---------|------------|
+| Exchange | #F59E0B | Orange |
+| Pro | #3B82F6 | Bleu |
+| Zimbra | #8B5CF6 | Violet |
+| MX Plan | #6B7280 | Gris |
+
+### Sous-infos email
+- Nombre d'alias
+- MFA activé
+- Délégation
+
+### Menu actions (⋮)
+- Modifier mot de passe
+- Configurer Outlook
+- Ajouter alias
+- Gérer délégations
+- Suspendre
+- Supprimer
+
+## 7. PAGINATION
+
+- Texte: "Affichage {start}-{end} sur {total}"
+- Sélecteur: "Par page: 10"
+- Navigation: < 1 2 3 >
+
+## 8. APIS & ENDPOINTS
+
+```
+# MX Plan
+GET /email/domain/{domain}/account
+→ Liste des comptes MX Plan
+
+# Exchange
+GET /email/exchange/{organization}/service/{serviceName}/account
+→ Liste des comptes Exchange
+
+# Email Pro
+GET /email/pro/{service}/account
+→ Liste des comptes Email Pro
+
+# Zimbra
+GET /email/zimbra/{serviceName}/account
+→ Liste des comptes Zimbra
+
+# Actions communes
+POST /email/{type}/{service}/account
+Body: { email: "...", password: "...", quota: ... }
+→ Crée un compte
+
+DELETE /email/{type}/{service}/account/{email}
+→ Supprime un compte
+
+PUT /email/{type}/{service}/account/{email}
+→ Modifie un compte
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | {domain} |
+| summary | {n} boîtes - {n} offres - {n} Go utilisés |
+| btn_webmail | Webmail |
+| btn_create | + Créer boîte |
+| btn_import | Importer |
+| btn_export | Exporter |
+| filter_all | Toutes |
+| filter_exchange | Exchange |
+| filter_pro | Pro |
+| filter_zimbra | Zimbra |
+| filter_mxplan | MX Plan |
+| col_email | Email |
+| col_offer | Offre |
+| col_license | Licence/Pack |
+| col_quota | Quota |
+| col_status | Statut |
+| col_actions | Actions |
+| action_modify | Modifier |
+| action_password | Modifier mot de passe |
+| action_outlook | Configurer Outlook |
+| action_alias | Ajouter alias |
+| action_delegation | Gérer délégations |
+| action_suspend | Suspendre |
+| action_delete | Supprimer |
+| pagination | Affichage {start}-{end} sur {total} |

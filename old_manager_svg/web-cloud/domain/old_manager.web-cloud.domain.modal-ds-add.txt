@@ -1,0 +1,135 @@
+# Cahier des Charges : web-cloud/domain - Modal DS Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire technique
+**Fonction:** Ajouter un enregistrement DS (Delegation Signer) pour DNSSEC
+**Contexte:** Configuration DNSSEC avec DNS externes
+
+## 2. DIMENSIONS
+
+- Modal: 700x620px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Ajouter un enregistrement DS" (centré)
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 30px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 640x50px
+- Titre: "Enregistrement DS (Delegation Signer)"
+- Description: "Lie votre zone signée DNSSEC au registre du TLD."
+
+### Formulaire
+
+| Champ | Type | Dimensions | Obligatoire |
+|-------|------|------------|-------------|
+| Key Tag | Input number | 200x36px | Oui * |
+| Algorithme | Dropdown | 280x36px | Oui * |
+| Type de digest | Dropdown | 280x36px | Oui * |
+| Digest | Textarea | 640x80px | Oui * |
+| Clé publique | Textarea | 640x60px | Non (optionnel) |
+
+### Options Algorithme
+- 3 - DSA/SHA-1
+- 5 - RSA/SHA-1
+- 6 - DSA-NSEC3-SHA1
+- 7 - RSASHA1-NSEC3-SHA1
+- 8 - RSA/SHA-256
+- 10 - RSA/SHA-512
+- 13 - ECDSA P-256/SHA-256
+- 14 - ECDSA P-384/SHA-384
+- 15 - Ed25519
+- 16 - Ed448
+
+### Options Type de digest
+- 1 - SHA-1
+- 2 - SHA-256
+- 4 - SHA-384
+
+### Placeholders
+- Key Tag: "12345"
+- Digest: "49FD46E6C4B45C55D4AC..."
+- Clé publique: "AwEAAb... (Base64)"
+
+### Aide
+- Texte: "Ces informations sont fournies par votre serveur DNS ou votre fournisseur DNSSEC."
+- Lien: "Comment trouver ces informations ?" (text-primary)
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Ajouter | btn-primary | 110x34px |
+
+## 6. COMPOSANTS UI
+
+### Input technique
+- Background: #FFFFFF
+- Border: #D1D5DB
+- Border-radius: 4px
+
+### Label obligatoire
+- Asterisque rouge (#DC2626)
+
+### Textarea
+- Resize: vertical
+- Font-family: monospace pour digest
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /domain/{serviceName}/dsRecord
+→ Liste des enregistrements DS existants
+
+POST /domain/{serviceName}/dsRecord
+Body: {
+  keyTag: 12345,
+  algorithm: 8,
+  digestType: 2,
+  digest: "49FD46E6C4B45C55D4AC...",
+  publicKey: "AwEAAb..." // optionnel
+}
+→ Ajoute un enregistrement DS
+
+DELETE /domain/{serviceName}/dsRecord/{id}
+→ Supprime un enregistrement DS
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un enregistrement DS |
+| info_title | Enregistrement DS (Delegation Signer) |
+| info_desc | Lie votre zone signée DNSSEC au registre du TLD. |
+| field_keytag | Key Tag |
+| field_algorithm | Algorithme |
+| field_digest_type | Type de digest |
+| field_digest | Digest |
+| field_pubkey | Clé publique |
+| field_optional | (optionnel) |
+| algo_3 | 3 - DSA/SHA-1 |
+| algo_5 | 5 - RSA/SHA-1 |
+| algo_8 | 8 - RSA/SHA-256 |
+| algo_13 | 13 - ECDSA P-256/SHA-256 |
+| digest_1 | 1 - SHA-1 |
+| digest_2 | 2 - SHA-256 |
+| digest_4 | 4 - SHA-384 |
+| help_text | Ces informations sont fournies par votre serveur DNS ou votre fournisseur DNSSEC. |
+| help_link | Comment trouver ces informations ? |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

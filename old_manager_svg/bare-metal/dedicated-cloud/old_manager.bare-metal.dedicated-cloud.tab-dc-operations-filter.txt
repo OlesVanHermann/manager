@@ -1,0 +1,101 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Tab DC Operations Filter
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page Listing / Datagrid avec filtres
+**Fonction:** Afficher et filtrer les opérations du datacenter
+**Contexte:** Onglet Opérations du Dedicated Cloud
+
+## 2. DIMENSIONS
+
+- Container principal: 1360x650px
+- Datagrid: largeur complète
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > **Opérations**
+
+### Zone principale
+1. Titre
+2. Filtre dropdown + bouton Actualiser
+3. Datagrid des opérations
+4. Pagination
+
+## 4. COMPOSANTS UI
+
+### Titre
+- Text: "Opérations"
+- Font-size: 18px
+
+### Filtre
+- Type: Select dropdown
+- Label: "Progression"
+- Dimensions: 200x40px
+
+### Bouton Actualiser
+- Position: Droite
+- Icône: ⟳
+- Label: "Actualiser"
+
+## 5. COLONNES DATAGRID
+
+| Colonne | Largeur | Type |
+|---------|---------|------|
+| Référence | 100px | Texte |
+| Nom | 200px | Texte |
+| Type | 130px | Texte |
+| Progression | 150px | Badge |
+| Services affectés | 200px | Lien |
+| Créé par | 150px | Texte |
+| Date traitement | 150px | Date |
+| Actions | 100px | Menu ⋮ |
+
+### Badges Progression
+| Statut | Couleur |
+|--------|---------|
+| Terminé | bg-success (#DCFCE7) |
+| En cours (45%) | bg-info (#DBEAFE) |
+| À planifier | bg-warning (#FEF3C7) |
+
+### Données exemple
+| Réf | Nom | Type | Progression | Services | Créé par | Date |
+|-----|-----|------|-------------|----------|----------|------|
+| 12345678 | upgradeHost | Maintenance | Terminé | dc-paris-01 | OVHcloud | 28/12/2025 |
+| 12345679 | addDatastore | Générique | En cours (45%) | dc-paris-01 | admin@vsphere | 30/12/2025 |
+| 12345680 | enableBackup | Maintenance | À planifier | dc-london-02 | OVHcloud | 02/01/2026 |
+| 12345681 | updateNSX | Maintenance | Terminé | dc-paris-01 | OVHcloud | 25/12/2025 |
+
+## 6. PAGINATION
+
+- Format: "Affichage de 1 à 4 sur 12 opérations"
+- Navigation: ← 1 2 →
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/task
+Query: { state: "doing|done|todo" }
+→ Liste les opérations avec filtre
+
+GET /dedicatedCloud/{serviceName}/task/{taskId}
+→ Détails d'une opération
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_operations_title | Opérations |
+| filter_progression | Progression |
+| btn_refresh | Actualiser |
+| column_reference | Référence |
+| column_name | Nom |
+| column_type | Type |
+| column_progression | Progression |
+| column_services | Services affectés |
+| column_created_by | Créé par |
+| column_date | Date traitement |
+| status_done | Terminé |
+| status_doing | En cours |
+| status_todo | À planifier |

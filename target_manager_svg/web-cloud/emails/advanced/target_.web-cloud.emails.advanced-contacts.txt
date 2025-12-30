@@ -2,70 +2,78 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.advanced-contacts.svg
-Route:   /web-cloud/emails/{domain}/advanced/contacts
-NAV:     Web Cloud > Emails > [domain] > Avance > Contacts
-Version: v1 (2025-12-29)
+Route:   /web-cloud/emails/{domain}/advanced-contacts
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| example.com              | GET /email/domains -> domain                    |
-| 15 contacts              | GET /email/domains/{d}/contacts -> totalCount   |
-| Jean Dupont              | GET /email/domains/{d}/contacts -> displayName  |
-| j.dupont@client.com      | GET /email/domains/{d}/contacts -> email        |
-| Client SA                | GET /email/domains/{d}/contacts -> company      |
-| +33 1 23 45 67 89        | GET /email/domains/{d}/contacts -> phone        |
-| Client                   | GET /email/domains/{d}/contacts -> category     |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| Jean Dupont                   | GET /email/exchange/{d}/contacts → displayName |
+| jean.dupont@partenaire.fr     | → externalEmail                        |
+| Partenaire SARL               | → company                              |
+| +33 6 12 34 56 78             | → phone                                |
+| 15/12/2025                    | → createdAt                            |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. Left panel avec liste domaines
-2. Right panel header (domaine)
-3. NAV3: 8 tabs (Avance actif)
-4. NAV4: Ressources | Contacts (actif) | Audit | Appareils
-5. Toolbar: Ajouter, Importer, Exporter, Recherche
-6. Table contacts partages
-7. Pagination
-8. Banniere info
+# STRUCTURE PAGE
 
-CATEGORIES CONTACTS
-| Categorie  | Couleur   | Description                     |
-|------------|-----------|----------------------------------|
-| Client     | #DEF7EC   | Clients de l'entreprise         |
-| Fournisseur| #FEF3C7   | Fournisseurs et prestataires    |
-| Partenaire | #DBEAFE   | Partenaires commerciaux         |
-| Autre      | #E5E7EB   | Categorie par defaut            |
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Emails actif)
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Avancé ACTIF)
+   - NAV4: Général | Contacts (actif) | Audit | Appareils
+   - Toolbar: Ajouter, Importer, Exporter, Recherche
+   - Bannière info
+   - Table contacts externes
+   - Pagination
 
-CHAMPS CONTACT
-| Champ        | Type     | Requis | Description              |
-|--------------|----------|--------|--------------------------|
-| displayName  | text     | Oui    | Nom affiche              |
-| firstName    | text     | Non    | Prenom                   |
-| lastName     | text     | Non    | Nom                      |
-| email        | email    | Oui    | Email principal          |
-| company      | text     | Non    | Societe                  |
-| phone        | tel      | Non    | Telephone                |
-| mobile       | tel      | Non    | Mobile                   |
-| address      | text     | Non    | Adresse postale          |
-| category     | select   | Non    | Categorie                |
-| notes        | textarea | Non    | Notes                    |
+# NAV4 - SOUS-TABS AVANCÉ
 
-ACTIONS
-| Action    | Comportement                               |
-|-----------|--------------------------------------------|
-| Ajouter   | Modal creation contact                     |
-| Importer  | Import CSV/vCard                           |
-| Exporter  | Export CSV ou vCard                        |
-| Modifier  | Modal edition                              |
-| Suppr     | Suppression avec confirmation              |
+| # | Tab       | Route               | Contenu                     |
+|---|-----------|---------------------|-----------------------------|
+| 1 | Général   | /advanced           | Dashboard fonctionnalités   |
+| 2 | Contacts  | /advanced-contacts  | Contacts partagés Exchange  |
+| 3 | Audit     | /advanced-audit     | Logs d'activité             |
+| 4 | Appareils | /advanced-devices   | Appareils mobiles connectés |
 
-API ENDPOINTS
-GET  /email/domains/{domain}/contacts             -> Liste contacts
-POST /email/domains/{domain}/contacts             -> Creer contact
-GET  /email/domains/{domain}/contacts/{id}        -> Details
-PUT  /email/domains/{domain}/contacts/{id}        -> Modifier
-DELETE /email/domains/{domain}/contacts/{id}      -> Supprimer
-POST /email/domains/{domain}/contacts/import      -> Import CSV/vCard
-GET  /email/domains/{domain}/contacts/export      -> Export
+# COLONNES TABLE
+
+| Colonne        | Largeur | Contenu                        |
+|----------------|---------|--------------------------------|
+| Nom            | 200px   | Avatar initiales + nom complet |
+| Email externe  | 220px   | Adresse email du contact       |
+| Société        | 160px   | Nom de l'entreprise            |
+| Téléphone      | 160px   | Numéro ou "-"                  |
+| Créé le        | 140px   | Date création                  |
+| Actions        | 100px   | ✎ Modifier, × Supprimer        |
+
+# INTERACTIONS
+
+- Clic "+ Ajouter contact" → Modal création contact
+- Clic "↑ Importer" → Modal import CSV/vCard
+- Clic "↓ Exporter" → Téléchargement CSV/vCard
+- Clic ✎ → Modal modifier contact
+- Clic × → Modal confirmer suppression
+
+# RESTRICTIONS
+
+⚠️ Les contacts externes Exchange sont UNIQUEMENT disponibles pour :
+- Exchange (toutes versions)
+
+Les contacts apparaissent dans le carnet d'adresses global (GAL) de tous les utilisateurs Exchange du domaine.
+
+# API ENDPOINTS
+
+GET    /email/exchange/{org}/{domain}/contacts       → Liste contacts
+POST   /email/exchange/{org}/{domain}/contacts       → Créer contact
+GET    /email/exchange/{org}/{d}/contacts/{id}       → Détails contact
+PUT    /email/exchange/{org}/{d}/contacts/{id}       → Modifier contact
+DELETE /email/exchange/{org}/{d}/contacts/{id}       → Supprimer contact
+POST   /email/exchange/{org}/{domain}/contacts/import → Import CSV/vCard
+GET    /email/exchange/{org}/{domain}/contacts/export → Export CSV/vCard
+
 ================================================================================

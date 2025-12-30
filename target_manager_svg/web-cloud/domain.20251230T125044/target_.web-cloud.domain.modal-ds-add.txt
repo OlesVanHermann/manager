@@ -1,0 +1,63 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-ds-add.svg
+Route:   /web-cloud/domaines/domain/{domainName}/dnssec (modal)
+NAV:     Modal accessible depuis onglet DNSSEC - bouton "Ajouter clé DS"
+Version: v1 (2025-12-29)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                              |
+|--------------------------|---------------------------------------------------------|
+| Algorithmes              | Valeurs prédéfinies (8, 10, 13, 15)                    |
+| Digest Types             | Valeurs prédéfinies (1=SHA-1, 2=SHA-256, 4=SHA-384)    |
+================================================================================
+
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer
+2. Bannière info explicative
+3. Formulaire:
+   - Key Tag (numérique, 5 chiffres max)
+   - Algorithme (dropdown)
+   - Type de Digest (dropdown)
+   - Digest (textarea, hexadécimal)
+4. Aide sur les algorithmes
+5. Footer: Annuler | Ajouter
+
+CHAMPS DU FORMULAIRE
+| Champ        | Type     | Validation                        | Obligatoire |
+|--------------|----------|-----------------------------------|-------------|
+| keyTag       | number   | 1-65535                           | Oui         |
+| algorithm    | select   | 8, 10, 13, 15                     | Oui         |
+| digestType   | select   | 1, 2, 4                           | Oui         |
+| digest       | string   | Hex, longueur selon digestType    | Oui         |
+
+ALGORITHMES DNSSEC
+| ID | Nom                | Description                      |
+|----|---------------------|----------------------------------|
+| 8  | RSASHA256          | RSA avec SHA-256                 |
+| 10 | RSASHA512          | RSA avec SHA-512                 |
+| 13 | ECDSAP256SHA256    | ECDSA P-256 (recommandé)         |
+| 15 | ED25519            | Edwards-curve Digital Signature  |
+
+DIGEST TYPES
+| ID | Nom     | Longueur Digest |
+|----|---------|-----------------|
+| 1  | SHA-1   | 40 hex chars    |
+| 2  | SHA-256 | 64 hex chars    |
+| 4  | SHA-384 | 96 hex chars    |
+
+API ENDPOINTS
+POST /domain/{domain}/dsRecord
+Body: {
+  "keyTag": 12345,
+  "algorithm": 13,
+  "digestType": 2,
+  "digest": "A1B2C3D4..."
+}
+
+ACTIONS
+- Click "Annuler" -> Fermer modal
+- Click "Ajouter" -> POST clé DS, puis refresh liste
+================================================================================

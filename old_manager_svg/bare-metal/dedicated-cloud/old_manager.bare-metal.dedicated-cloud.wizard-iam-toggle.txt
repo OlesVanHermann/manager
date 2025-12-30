@@ -1,0 +1,108 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard IAM Toggle
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 2 étapes
+**Fonction:** Activer/Désactiver l'IAM OVHcloud sur l'infrastructure
+**Contexte:** Activation de la délégation des accès vers IAM OVHcloud
+
+## 2. DIMENSIONS
+
+- Container principal: 1440x600px
+- Zone wizard: 1000x450px (centrée)
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > Utilisateurs > **Activer l'IAM OVHcloud**
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Confirmation | Active (bleu) |
+| 2 | Traitement | Inactive (gris) |
+
+## 4. ÉTAPE 1 : CONFIRMATION
+
+### Header wizard
+- Background: #F9FAFB
+- Titre: "Activer l'IAM OVHcloud"
+- Hauteur: 70px
+
+### Message avertissement
+- Background: #FEF3C7 (warning)
+- Border: #FDE68A
+- Dimensions: 920x90px
+- Contenu (4 lignes):
+  - "L'IAM OVHcloud est intégré pour le produit vSphere uniquement. Les infrastructures bénéficiant d'options"
+  - "de sécurité renforcée ou d'un service certifié (HDS, PCI-DSS ou SNC) ne peuvent actuellement pas"
+  - "utiliser l'IAM OVHcloud. Si vous souhaitez activer l'une de ces options ou services certifiés"
+  - "ultérieurement, vous devrez désactiver l'IAM OVHcloud."
+
+### Question confirmation
+- Texte: "Êtes-vous sûr de vouloir activer l'IAM OVHcloud ?"
+- Font-size: 15px
+
+### Texte explicatif
+- Couleur: text-muted
+- Ligne 1: "Cette action activera la délégation de gestion des accès au service IAM OVHcloud."
+- Ligne 2: "Vous pourrez ensuite créer des rôles IAM et gérer les politiques d'accès."
+
+## 5. COMPOSANTS UI
+
+### Stepper
+- Step active: cercle bleu #0050D7 avec numéro blanc
+- Step inactive: cercle gris #E5E7EB
+- Ligne connexion: #E5E7EB, 2px
+
+### Boutons footer
+- Position: bas du wizard
+- Espacement: 810px entre Annuler et Confirmer
+
+## 6. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Position: gauche
+- Action: Ferme le wizard, retour à la page IAM
+
+### Bouton Confirmer
+- Style: btn-primary (120x40px)
+- Position: droite
+- Action: Déclenche l'activation IAM, passe à l'étape 2
+
+## 7. ÉTAPE 2 : TRAITEMENT
+
+### Contenu (non visible dans le SVG)
+- Spinner de chargement
+- Message "Activation en cours..."
+- À la fin: message de succès et redirection
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/iam
+→ Récupère le statut IAM actuel
+
+POST /dedicatedCloud/{serviceName}/iam/enable
+→ Active l'IAM OVHcloud
+
+POST /dedicatedCloud/{serviceName}/iam/disable
+→ Désactive l'IAM OVHcloud (même wizard, textes différents)
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_iam_enable_title | Activer l'IAM OVHcloud |
+| wizard_iam_disable_title | Désactiver l'IAM OVHcloud |
+| wizard_iam_warning | L'IAM OVHcloud est intégré pour le produit vSphere uniquement. Les infrastructures bénéficiant d'options de sécurité renforcée ou d'un service certifié (HDS, PCI-DSS ou SNC) ne peuvent actuellement pas utiliser l'IAM OVHcloud. |
+| wizard_iam_warning_disable | Si vous souhaitez activer l'une de ces options ou services certifiés ultérieurement, vous devrez désactiver l'IAM OVHcloud. |
+| wizard_iam_confirm_question | Êtes-vous sûr de vouloir activer l'IAM OVHcloud ? |
+| wizard_iam_enable_desc_1 | Cette action activera la délégation de gestion des accès au service IAM OVHcloud. |
+| wizard_iam_enable_desc_2 | Vous pourrez ensuite créer des rôles IAM et gérer les politiques d'accès. |
+| step_confirmation | Confirmation |
+| step_processing | Traitement |
+| btn_cancel | Annuler |
+| btn_confirm | Confirmer |

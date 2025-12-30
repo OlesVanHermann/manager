@@ -2,70 +2,48 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.phone.svg
-Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/phone
-Version: v3 (2025-12-30)
-Source:  old_manager.telecom.line.phone.svg
+Route:   /web-cloud/voip/{billingAccount}/line/{serviceName}/phone
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNÉES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| Yealink                  | GET /telephony/{ba}/line/{sn}/phone → brand |
-| T46G                     | phone → model                           |
-| AA:BB:CC:DD:EE:FF        | phone → macAddress                      |
-| 192.168.1.50             | phone → ip                              |
-| 83.86.0.15               | phone → firmwareVersion                 |
-| En ligne                 | phone → status                          |
-| SpeedDial/BLF/Line       | GET /telephony/{ba}/line/{sn}/phone/functionKey |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| Yealink T46U          | GET /telephony/{ba}/line/{sn}/phone → brand+model |
+| AA:BB:CC:DD:EE:01     | GET /telephony/{ba}/line/{sn}/phone → macAddress |
+| 192.168.1.100         | GET /telephony/{ba}/line/{sn}/phone → ip      |
+| 86.86.0.15            | GET /telephony/{ba}/line/{sn}/phone → firmwareVersion |
+| Connecté              | GET /telephony/{ba}/line/{sn}/phone → status  |
+
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. SOUS-NAV - Lignes actif
-4. LEFT PANEL - Liste lignes
-5. RIGHT PANEL
-   - Header: Numéro + Description
-   - NAV3: Téléphone actif
-   - Bloc Téléphone associé (infos + actions)
-   - Table Touches programmables
-   - Bloc Codecs audio
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des lignes
+4. RIGHT PANEL
+   - Header: Numéro + breadcrumb /Téléphone
+   - NAV3: Général | [Téléphone] | Appels | Transferts | Messagerie | Consommation | Options
+   - Card "Informations générales": Modèle, MAC, IP, Firmware, État, boutons Reboot/MAJ
+   - Card "Configuration": Touches programmables, Codecs, Carnets contacts
+   - Section "Commander": Téléphone, Casque, Accessoires
+   - Section "Rattachement": Rattacher/Détacher téléphone
 
-# NAV3 TAB ACTIF
-Tab 2: Téléphone (x=64, w=75)
-
-# BLOCS CONTENU
-| Bloc                    | Données                              |
-|-------------------------|--------------------------------------|
-| Téléphone associé       | Marque, modèle, MAC, IP, firmware    |
-| Touches programmables   | Liste touches BLF/SpeedDial/Line     |
-| Codecs audio            | Ordre préférence G.722, G.711        |
-
-# ACTIONS
-| Action            | Type    | API                                  |
-|-------------------|---------|--------------------------------------|
-| Reboot            | Bouton  | POST /telephony/{ba}/line/{sn}/phone/reboot |
-| Configuration     | Bouton  | Navigation vers config               |
-| MDP admin         | Bouton  | POST /telephony/{ba}/line/{sn}/phone/changePhoneConfiguration |
-| Ajouter touche    | Bouton  | POST /telephony/{ba}/line/{sn}/phone/functionKey |
-| ✎ touche          | Icône   | PUT /telephony/{ba}/line/{sn}/phone/functionKey/{keyNum} |
-| × touche          | Icône   | DELETE /telephony/{ba}/line/{sn}/phone/functionKey/{keyNum} |
-
-# TYPES TOUCHES
-| Type      | Badge    | Description                   |
-|-----------|----------|-------------------------------|
-| SpeedDial | Bleu     | Numérotation rapide           |
-| BLF       | Vert     | Busy Lamp Field (supervision) |
-| Line      | Orange   | Ligne supplémentaire          |
-| Park      | Gris     | Parcage d'appel               |
-| Intercom  | Violet   | Intercom                      |
-| Transfer  | Rose     | Transfert                     |
+# INTERACTIONS
+- Clic "Redémarrer" → Action reboot téléphone
+- Clic "Mise à jour firmware" → Modal mise à jour
+- Clic "Touches programmables" → Page configuration touches
+- Clic "Codecs audio" → Modal configuration codecs
+- Clic "Commander" → Redirection boutique
+- Clic "Rattacher/Détacher" → Modal action
 
 # API ENDPOINTS
-GET /telephony/{ba}/line/{sn}/phone - Infos téléphone
-POST /telephony/{ba}/line/{sn}/phone/reboot - Redémarrer
-GET /telephony/{ba}/line/{sn}/phone/functionKey - Liste touches
-POST /telephony/{ba}/line/{sn}/phone/functionKey - Créer touche
-PUT /telephony/{ba}/line/{sn}/phone/functionKey/{keyNum} - Modifier
-DELETE /telephony/{ba}/line/{sn}/phone/functionKey/{keyNum} - Supprimer
+GET /telephony/{ba}/line/{sn}/phone             → Infos téléphone
+POST /telephony/{ba}/line/{sn}/phone/reboot     → Redémarrer
+PUT /telephony/{ba}/line/{sn}/phone             → Modifier config
+GET /telephony/{ba}/line/{sn}/phone/functionKey → Touches programmables
+PUT /telephony/{ba}/line/{sn}/phone/functionKey/{id} → Modifier touche
+POST /telephony/{ba}/line/{sn}/attachDevice     → Rattacher
+POST /telephony/{ba}/line/{sn}/detachDevice     → Détacher
+
 ================================================================================

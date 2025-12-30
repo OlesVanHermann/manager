@@ -1,0 +1,94 @@
+# Cahier des Charges : web-cloud/hosting - Modal EnvVar Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter une variable d'environnement
+**Contexte:** Action depuis l'onglet Variables
+
+## 2. DIMENSIONS
+
+- Modal: 600x380px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. HEADER MODAL
+
+- Background: #F9FAFB
+- Hauteur: 56px
+- Titre: "Ajouter une variable d'environnement"
+- Bouton fermer: × (position droite)
+
+## 4. FORMULAIRE
+
+### Champ Clé
+- Label: "Clé *"
+- Input: 552x36px, background #F3F4F6
+- Placeholder: "MA_VARIABLE"
+- Obligatoire
+
+### Champ Valeur
+- Label: "Valeur *"
+- Textarea: 552x80px, background #F3F4F6
+- Placeholder: "Valeur de la variable"
+- Obligatoire
+
+### Type (radio group)
+- Label: "Type"
+- Options:
+  - ● Variable simple (sélectionné par défaut)
+  - ○ Secret (masqué)
+
+## 5. FOOTER MODAL
+
+- Bouton gauche: "Annuler" (btn-outline, 100x36px)
+- Bouton droit: "Ajouter" (btn-primary, 100x36px)
+
+## 6. VALIDATION
+
+| Champ | Règle |
+|-------|-------|
+| Clé | Requis, format UPPER_SNAKE_CASE, unique |
+| Valeur | Requis |
+
+### Règles clé
+- Lettres majuscules, chiffres et underscore uniquement
+- Doit commencer par une lettre
+- Maximum 128 caractères
+
+## 7. APIS & ENDPOINTS
+
+```
+# Lister variables existantes
+GET /hosting/web/{serviceName}/envVar
+→ Liste des variables
+
+# Ajouter une variable
+POST /hosting/web/{serviceName}/envVar
+Body: {
+  key: "MA_VARIABLE",
+  value: "valeur",
+  type: "string" | "secret"
+}
+→ Tâche de création
+
+# Vérifier unicité
+GET /hosting/web/{serviceName}/envVar/{key}
+→ 404 si n'existe pas
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter une variable d'environnement |
+| field_key | Clé |
+| field_value | Valeur |
+| field_type | Type |
+| type_simple | Variable simple |
+| type_secret | Secret (masqué) |
+| placeholder_key | MA_VARIABLE |
+| placeholder_value | Valeur de la variable |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |
+| error_key_format | La clé doit être en UPPER_SNAKE_CASE |
+| error_key_exists | Cette clé existe déjà |

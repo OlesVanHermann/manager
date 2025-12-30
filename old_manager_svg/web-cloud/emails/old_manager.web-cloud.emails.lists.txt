@@ -1,0 +1,137 @@
+# Cahier des Charges : web-cloud/emails - Lists
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid
+**Fonction:** Gestion des listes de diffusion / mailing lists
+**Contexte:** Onglet Listes
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections | Répondeurs | Listes (actif) | Sécurité | Avancé | Licences | Tâches
+
+## 3. TOOLBAR
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Créer liste | btn-primary | Ouvre modal création |
+| Recherche | Input | Filtre les listes |
+| ↻ | btn-outline | Rafraîchit |
+
+## 4. BANNER INFO
+
+- Background: #DBEAFE
+- Texte: "Les listes de diffusion permettent d'envoyer des emails à plusieurs destinataires en une seule adresse."
+
+## 5. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Adresse liste | 280px | Email de la liste (lien) |
+| Type | 170px | Badge coloré + type |
+| Membres | 130px | Nombre de membres |
+| Modérateurs | 140px | Nombre ou "-" |
+| Statut | 100px | Badge Actif |
+| Actions | 200px | Membres / Modifier / Suppr |
+
+### Types de listes
+
+| Type | Badge | Offre |
+|------|-------|-------|
+| Groupe Exchange | Orange (#F59E0B) | Exchange uniquement |
+| Mailing list Pro | Bleu (#3B82F6) | Email Pro |
+| Mailing list MX | Gris (#6B7280) | MX Plan |
+
+## 6. EXEMPLES DE LISTES
+
+| Adresse | Type | Membres | Modérateurs | Statut |
+|---------|------|---------|-------------|--------|
+| equipe@example.com | Groupe Exchange | 12 | 2 | Actif |
+| newsletter@example.com | Mailing list Pro | 156 | 1 | Actif |
+| support-interne@example.com | Mailing list MX | 5 | - | Actif |
+
+## 7. ACTIONS PAR LIGNE
+
+- **Membres**: Ouvre la liste des membres
+- **Modifier**: Ouvre modal modification
+- **Suppr**: Confirmation puis suppression
+
+## 8. PAGINATION
+
+- Texte: "Affichage 1-3 sur 3"
+
+## 9. APIS & ENDPOINTS
+
+```
+# Exchange - Groupes de distribution
+GET /email/exchange/{organization}/service/{serviceName}/mailingList
+→ Liste des groupes
+
+POST /email/exchange/{organization}/service/{serviceName}/mailingList
+Body: {
+  displayName: "Équipe",
+  mailingListAddress: "equipe@example.com",
+  senderAuthentification: true
+}
+→ Crée un groupe
+
+GET /email/exchange/{organization}/service/{serviceName}/mailingList/{name}/member
+→ Membres du groupe
+
+POST /email/exchange/{organization}/service/{serviceName}/mailingList/{name}/member/account
+Body: { email: "jean@example.com" }
+→ Ajoute un membre
+
+DELETE /email/exchange/{organization}/service/{serviceName}/mailingList/{name}
+→ Supprime le groupe
+
+# Email Pro - Mailing lists
+GET /email/pro/{service}/mailingList
+POST /email/pro/{service}/mailingList
+DELETE /email/pro/{service}/mailingList/{name}
+
+# MX Plan - Mailing lists
+GET /email/domain/{domain}/mailingList
+POST /email/domain/{domain}/mailingList
+DELETE /email/domain/{domain}/mailingList/{name}
+
+GET /email/domain/{domain}/mailingList/{name}/subscriber
+→ Abonnés de la liste
+
+POST /email/domain/{domain}/mailingList/{name}/subscriber
+→ Ajoute un abonné
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Listes |
+| info_banner | Les listes de diffusion permettent d'envoyer des emails à plusieurs destinataires en une seule adresse. |
+| btn_create | + Créer liste |
+| search_placeholder | Filtrer... |
+| col_address | Adresse liste |
+| col_type | Type |
+| col_members | Membres |
+| col_moderators | Modérateurs |
+| col_status | Statut |
+| col_actions | Actions |
+| type_exchange | Groupe Exchange |
+| type_pro | Mailing list Pro |
+| type_mx | Mailing list MX |
+| members_count | {n} membres |
+| moderators_count | {n} modérateurs |
+| status_active | Actif |
+| action_members | Membres |
+| action_edit | Modifier |
+| action_delete | Suppr |
+| pagination | Affichage {start}-{end} sur {total} |

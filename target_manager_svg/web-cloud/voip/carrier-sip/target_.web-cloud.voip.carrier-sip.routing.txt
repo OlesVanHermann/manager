@@ -2,70 +2,63 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.carrier-sip.routing.svg
-Route:   /web-cloud/voip/{billingAccount}/carrier-sip/{serviceName}/routing
-Version: v1 (2024-12-30)
+Route:   /web-cloud/voip/{billingAccount}/trunk/{serviceName}/routing
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Liste règles              | GET /telephony/{ba}/trunk/{sn}/routing            |
-| Endpoints                 | GET /telephony/{ba}/trunk/{sn}/endpoints          |
-| Load balancing mode       | GET /telephony/{ba}/trunk/{sn}/loadBalancing      |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| trunk-abc123          | Route param {serviceName}                     |
+| France Mobile         | GET /telephony/{ba}/trunk/{sn}/routes → name  |
+| ^33[67]               | routes → pattern (regex)                      |
+| Route / Block         | routes → action                               |
+| Gateway-Mobile-01     | routes → destination                          |
+| Actif / Bloqué        | routes → status                               |
+| 1,234                 | GET /telephony/{ba}/trunk/{sn}/routing/stats  |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Section Web Cloud (VoIP actif)
-3. LEFT PANEL - Menu Carrier SIP (Routage actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des trunks
 4. RIGHT PANEL
-   - Header: "Routage des appels"
-   - Toolbar: Refresh + Ajouter règle
-   - Bannière info (ordre évaluation)
-   - Table règles de routage
-   - Bloc: Répartition de charge
-   - Bloc: Paramètres failover
+   - Header: Identifiant trunk + badge statut + description
+   - NAV3: Général | Paramètres | [Routage] | CDR | Consommation
+   - Toolbar: Refresh, Recherche, + Ajouter règle
+   - Bannière info: Explication ordre de priorité
+   - Table règles de routage: Priorité, Nom, Pattern, Action, Destination, Statut
+   - Card "Destinations configurées": Nombre gateways
+   - Card "Statistiques routage": Appels routés/bloqués 24h
 
-# TABLE RÈGLES ROUTAGE
-| Colonne | Description |
-|---------|-------------|
-| # | Ordre d'évaluation |
-| Préfixe | Pattern (* = joker) |
-| Description | Note libre |
-| Destination | Endpoint(s) cible |
-| Statut | Actif / Inactif |
-| Priorité | Valeur numérique (plus élevé = prioritaire) |
-| Actions | Modifier, Monter, Descendre, Supprimer |
-
-# MODES LOAD BALANCING
-| Mode | Description |
-|------|-------------|
-| Failover | Primary/Backup séquentiel |
-| Round-robin | Distribution circulaire |
-| Weighted | Distribution par poids |
-| Least connections | Vers endpoint le moins chargé |
-
-# PARAMÈTRES FAILOVER
-| Param | Description |
-|-------|-------------|
-| Délai timeout | Temps avant bascule |
-| Seuil d'erreurs | Échecs consécutifs avant failover |
-| Délai récupération | Temps avant réactivation endpoint |
-| Mode probe | Méthode de vérification (OPTIONS/INVITE) |
+# COLONNES TABLE
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Priorité | 80px | Numéro + flèches tri |
+| Nom | 180px | Nom de la règle |
+| Pattern | 170px | Expression régulière |
+| Action | 170px | Route / Block |
+| Destination | 200px | Gateway cible |
+| Statut | 100px | Badge Actif/Bloqué |
+| Actions | 116px | Edit / Delete |
 
 # INTERACTIONS
-- "+ Ajouter règle" → Modal création règle
-- "✎" → Modal édition
-- "↑ ↓" → Réordonne les règles
-- "×" → Supprime la règle
-- Radio mode → Change mode load balancing
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic "+ Ajouter règle" → Modal création règle
+- Clic ▲/▼ priorité → Réordonner règle
+- Clic ✎ → Modal édition règle
+- Clic ✕ → Modal confirmation suppression
+- Clic "Gérer destinations" → Page gestion gateways
 
 # API ENDPOINTS
-GET /telephony/{ba}/trunk/{sn}/routing
-POST /telephony/{ba}/trunk/{sn}/routing
-PUT /telephony/{ba}/trunk/{sn}/routing/{id}
-DELETE /telephony/{ba}/trunk/{sn}/routing/{id}
-PUT /telephony/{ba}/trunk/{sn}/loadBalancing
+GET /telephony/{ba}/trunk/{sn}/routes              → Liste règles routage
+POST /telephony/{ba}/trunk/{sn}/routes             → Créer règle
+PUT /telephony/{ba}/trunk/{sn}/routes/{id}         → Modifier règle
+DELETE /telephony/{ba}/trunk/{sn}/routes/{id}      → Supprimer règle
+PUT /telephony/{ba}/trunk/{sn}/routes/{id}/priority → Modifier priorité
+GET /telephony/{ba}/trunk/{sn}/destinations        → Liste gateways
+GET /telephony/{ba}/trunk/{sn}/routing/stats       → Statistiques routage
 
 ================================================================================

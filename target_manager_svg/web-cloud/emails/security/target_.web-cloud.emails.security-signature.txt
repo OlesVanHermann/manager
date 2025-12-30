@@ -2,68 +2,91 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.security-signature.svg
-Route:   /web-cloud/emails/{domain}/security/signature
-NAV:     Web Cloud > Emails > [domain] > Securite > Signature
-Version: v1 (2025-12-29)
+Route:   /web-cloud/emails/{domain}/security-signature
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| example.com              | GET /email/domains -> domain                    |
-| ovh2024                  | GET /email/domains/{d}/dkim -> selector         |
-| MIIBIjANBgkqhk...        | GET /email/domains/{d}/dkim -> publicKey        |
-| v=spf1 include:mx...     | GET /email/domains/{d}/spf -> record            |
-| ~all                     | GET /email/domains/{d}/spf -> mode              |
-| Configure/Non configure  | GET /email/domains/{d}/dmarc -> status          |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| Signature activée: ON/OFF     | GET /email/exchange/{d}/signature → enabled |
+| Position: Après le message    | → position (after/before/reply)        |
+| Contenu HTML                  | → content                              |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. Left panel avec liste domaines
-2. Right panel header (domaine)
-3. NAV3: 8 tabs (Securite actif)
-4. NAV4: Antispam | Signature (actif) | MFA
-5. Cards DKIM et SPF (cote a cote)
-6. Card DMARC (pleine largeur)
-7. Banniere statut deliverabilite
+# STRUCTURE PAGE
 
-PROTOCOLES EMAIL
-| Protocole | Fonction                                | Enregistrement DNS |
-|-----------|----------------------------------------|-------------------|
-| DKIM      | Signature cryptographique des emails   | TXT selector._dk  |
-| SPF       | Serveurs autorises a envoyer           | TXT @             |
-| DMARC     | Politique si echec DKIM/SPF            | TXT _dmarc        |
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Emails actif)
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Sécurité ACTIF)
+   - NAV4: DNS Config | Antispam | Signature (actif)
+   - Bannière warning (Exchange only)
+   - Card Signature entreprise
 
-STATUTS POSSIBLES
-| Statut         | Couleur   | Description                     |
-|----------------|-----------|----------------------------------|
-| Configure      | #DEF7EC   | Enregistrement DNS valide       |
-| Non configure  | #FEF3C7   | Manque configuration            |
-| Erreur         | #FEE2E2   | Probleme DNS ou syntaxe         |
+# NAV4 - SOUS-TABS SÉCURITÉ
 
-MODES SPF
-| Mode   | Syntaxe | Comportement                         |
-|--------|---------|--------------------------------------|
-| pass   | +all    | Accepte tout (non recommande)        |
-| soft   | ~all    | Soft fail, accepte avec warning      |
-| hard   | -all    | Rejette strict si non autorise       |
-| neutral| ?all    | Pas de politique                     |
+| # | Tab        | Route               | Contenu                    |
+|---|------------|---------------------|----------------------------|
+| 1 | DNS Config | /security           | MX, SPF, DKIM, DMARC, SRV  |
+| 2 | Antispam   | /security-antispam  | Règles, quarantaine        |
+| 3 | Signature  | /security-signature | Disclaimer entreprise      |
 
-ACTIONS DISPONIBLES
-| Action          | Description                                   |
-|-----------------|-----------------------------------------------|
-| Regenerer cle   | Nouvelle paire DKIM (necessite MAJ DNS)       |
-| Copier DNS      | Copie l'enregistrement dans le presse-papier  |
-| Modifier SPF    | Modal edition includes et mode                |
-| Verifier DNS    | Test propagation DNS                          |
-| Configurer DMARC| Modal creation politique DMARC                |
+# CARD SIGNATURE
 
-API ENDPOINTS
-GET  /email/domains/{domain}/dkim              -> Config DKIM
-POST /email/domains/{domain}/dkim/regenerate   -> Regenerer cle
-GET  /email/domains/{domain}/spf               -> Config SPF
-PUT  /email/domains/{domain}/spf               -> Modifier SPF
-GET  /email/domains/{domain}/dmarc             -> Config DMARC
-PUT  /email/domains/{domain}/dmarc             -> Modifier DMARC
-GET  /email/domains/{domain}/dns/check         -> Verification DNS
+| Section            | Description                              |
+|--------------------|------------------------------------------|
+| Toggle activation  | Activer/désactiver signature globale     |
+| Position           | Avant message / Après message / Réponses |
+| Éditeur WYSIWYG    | Formatage riche (gras, italique, liens)  |
+| Variables          | Insertion données utilisateur dynamiques |
+
+# VARIABLES DISPONIBLES
+
+| Variable          | Description                  |
+|-------------------|------------------------------|
+| %%DISPLAY_NAME%%  | Nom complet affiché          |
+| %%FIRST_NAME%%    | Prénom utilisateur           |
+| %%LAST_NAME%%     | Nom de famille               |
+| %%TITLE%%         | Fonction/Titre               |
+| %%DEPARTMENT%%    | Service/Département          |
+| %%PHONE%%         | Numéro de téléphone          |
+| %%MOBILE%%        | Numéro mobile                |
+| %%EMAIL%%         | Adresse email                |
+
+# POSITIONS SIGNATURE
+
+| Position    | Description                                |
+|-------------|-------------------------------------------|
+| after       | Après le corps du message (défaut)        |
+| before      | Avant le corps du message                 |
+| reply       | Uniquement sur les réponses               |
+
+# INTERACTIONS
+
+- Toggle ON/OFF → Active/désactive signature
+- Sélecteur position → Change emplacement
+- Bouton "Variables" → Insère variable dans éditeur
+- Bouton "Aperçu" → Modal prévisualisation
+- Bouton "Enregistrer" → Sauvegarde signature
+
+# RESTRICTIONS
+
+⚠️ La signature entreprise est disponible UNIQUEMENT pour :
+- Exchange (toutes versions)
+
+NON disponible pour :
+- Email Pro
+- Zimbra
+- MX Plan
+
+# API ENDPOINTS
+
+GET  /email/exchange/{org}/{domain}/signature → Config signature
+PUT  /email/exchange/{org}/{domain}/signature → Modifier signature
+POST /email/exchange/{org}/{domain}/signature/preview → Prévisualisation
+
 ================================================================================

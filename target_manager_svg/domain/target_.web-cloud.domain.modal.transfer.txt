@@ -1,0 +1,76 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.transfer.svg
+Route:   /web-cloud/domain/{domainName}/transfer
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| exemple.com                     | /domain → domainName                    |
+| XyZ123AbC456dEf...              | /domain/{domain}/authInfo → authCode    |
+| ✓ Checks                        | Vérification statut domaine             |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. HEADER - Titre "Transférer le domaine {domaine}" (fond gris)
+2. CONTENT
+   - Bannière warning (action irréversible)
+   - Type transfert (cards)
+   - AuthCode + bouton copier
+   - Checklist prérequis
+3. FOOTER - Boutons Annuler / Obtenir le code (danger)
+
+# MODAL TYPE
+- Type: Transfert sortant domaine
+- Dimensions: 700x560px
+- Header: Fond gris (#F9FAFB)
+
+# TYPES DE TRANSFERT
+| Type | Description |
+|------|-------------|
+| Sortant | Vers un autre registrar (Gandi, Namecheap...) |
+| Entre comptes OVH | Vers un autre NIC handle OVH |
+
+# PRÉREQUIS TRANSFERT SORTANT
+1. **Pas en rédemption** - Domaine actif
+2. **Transfer Lock désactivé** - Déverrouiller d'abord
+3. **Plus de 60 jours** - Après enregistrement ou dernier transfert
+4. **Email propriétaire valide** - Pour confirmation
+
+# AUTHCODE / EPP CODE
+Le code d'autorisation (AuthCode, EPP Code, Transfer Key) est
+un code secret unique qui prouve la propriété du domaine.
+Il est nécessaire pour initier un transfert chez le nouveau registrar.
+
+# PROCÉDURE DE TRANSFERT SORTANT
+1. Obtenir l'AuthCode chez OVH
+2. Initier le transfert chez le nouveau registrar
+3. Confirmer par email (propriétaire et admin)
+4. Transfert effectif sous 5-7 jours
+
+# RÈGLE DES 60 JOURS
+ICANN impose un délai de 60 jours après :
+- L'enregistrement initial
+- Un transfert précédent
+- Un changement de propriétaire (selon TLD)
+
+# API ENDPOINTS
+GET /domain/{domain}/authInfo - Obtenir AuthCode
+  Response: { authCode: "XyZ123AbC456dEf" }
+
+POST /domain/{domain}/authInfo/refresh - Régénérer AuthCode
+  Response: { authCode: "NewCode789..." }
+
+GET /domain/{domain}/transferability - Vérifier éligibilité
+  Response: {
+    transferable: true,
+    lockStatus: "unlocked",
+    redemption: false,
+    registrationAge: 180
+  }
+
+================================================================================

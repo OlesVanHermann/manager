@@ -1,0 +1,62 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.wordpress.extensions-plugins.svg
+Route:   /web-cloud/wordpress/{serviceName}/extensions-plugins
+Version: v1 (2025-12-30)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| 8 plugins                | GET /managedCMS/resource/{sn}/plugins → count |
+| Yoast SEO                | plugin.name                                   |
+| 21.6                     | plugin.version                                |
+| Actif / Inactif          | plugin.active                                 |
+| 21.7 disponible          | plugin.updateAvailable + newVersion           |
+| 3 MAJ disponibles        | count(plugins where updateAvailable=true)     |
+================================================================================
+
+STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif x=510)
+2. NAV2 - Web Cloud (Wordpress actif x=345)
+3. LEFT PANEL - Liste des sites WordPress
+4. RIGHT PANEL
+   - Header: Nom site + version + offre
+   - NAV3: 6 tabs (Extensions actif)
+   - NAV4: Themes | Plugins (actif)
+   - Contenu Plugins:
+     * Header "PLUGINS INSTALLES (n)" + bouton "Tout MAJ"
+     * Table plugins:
+       - Colonne PLUGIN (icone + nom)
+       - Colonne VERSION
+       - Colonne STATUT (Actif/Inactif badge)
+       - Colonne MAJ (version dispo si MAJ)
+       - Colonne ACTIONS (MAJ, Activer/Desactiver)
+     * Banniere warning si MAJ disponibles
+
+BADGES STATUT
+- Actif: fond vert (#DEF7EC), texte vert
+- Inactif: fond gris (#F3F4F6), texte gris
+
+BOUTONS ACTIONS
+- MAJ: bouton outline bleu (si MAJ dispo)
+- Desactiver (⏸): pour plugins actifs
+- Activer (▶): pour plugins inactifs, fond vert
+
+INTERACTIONS
+- Clic NAV4 "Themes" → Navigation vers extensions-themes
+- Clic "Tout mettre a jour" → POST /plugins/updateAll
+- Clic "MAJ" individuel → POST /plugins/{name}/update
+- Clic "⏸" → POST /plugins/{name}/deactivate
+- Clic "▶" → POST /plugins/{name}/activate
+- Clic "Verifier maintenant" → GET /plugins (refresh)
+
+API ENDPOINTS
+GET  /managedCMS/resource/{sn}/plugins                 - Liste plugins
+POST /managedCMS/resource/{sn}/plugins/updateAll       - MAJ tous
+POST /managedCMS/resource/{sn}/plugins/{name}/update   - MAJ un plugin
+POST /managedCMS/resource/{sn}/plugins/{name}/activate - Activer
+POST /managedCMS/resource/{sn}/plugins/{name}/deactivate - Desactiver
+
+================================================================================

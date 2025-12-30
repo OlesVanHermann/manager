@@ -6,49 +6,95 @@ Route:   /web-cloud/emails/{domain}/tasks
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                           |
-|--------------------------|--------------------------------------|
-| example.com              | GET /email/domains -> domain         |
-| #12847                   | GET /email/domains/{d}/tasks -> id   |
-| Creation compte          | -> type                              |
-| new-user@example.com     | -> target                            |
-| 30/12/2025 10:45:23      | -> createdAt                         |
-| En cours / Termine       | -> status                            |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| #T-2025123001                 | GET /email/domains/{d}/tasks → id      |
+| Création compte               | → type                                 |
+| nouveau@example.com           | → target                               |
+| 30/12/2025 14:45:22           | → createdAt                            |
+| 70%                           | → progress                             |
+| En cours                      | → status                               |
 
 ================================================================================
 
-STRUCTURE PAGE
+# STRUCTURE PAGE
+
 1. NAV1 - Header OVH (Web Cloud actif)
 2. NAV2 - Web Cloud (Emails actif)
-3. LEFT PANEL - Liste domaines
-4. RIGHT PANEL
-   - Header: Domaine
-   - NAV3: 8 tabs (Taches actif)
-   - Toolbar: Refresh, Filtrer par statut
-   - Table taches:
-     ID | Type | Cible | Date | Statut | Details
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Tâches ACTIF)
+   - Filtres: Statut, Type
+   - Cards résumé par statut
+   - Table tâches
    - Pagination
 
-STATUTS TACHES
-| Statut    | Badge   | Couleur bg | Couleur text |
-|-----------|---------|------------|--------------|
-| En cours  | Orange  | #FEF3C7    | #D97706      |
-| Termine   | Vert    | #DEF7EC    | #03543F      |
-| Erreur    | Rouge   | #FEE2E2    | #DC2626      |
-| En attente| Gris    | #F3F4F6    | #6B7280      |
+# FILTRES
 
-TYPES DE TACHES
-- Creation compte
-- Suppression compte
-- Migration compte
-- Config DKIM
-- Config SPF
-- Changement mot de passe
-- Modification quota
+| Filtre | Options                                       |
+|--------|-----------------------------------------------|
+| Statut | Toutes, En cours, Terminées, En erreur, Attente |
+| Type   | Toutes, Création, Suppression, Modif, Config  |
 
-API ENDPOINTS
-GET /email/domains/{domain}/tasks        - Liste taches
-GET /email/domains/{domain}/tasks/{id}   - Details tache
+# CARDS RÉSUMÉ
+
+| Card           | Couleur  | Description                    |
+|----------------|----------|--------------------------------|
+| En cours       | 🟡 Jaune | Tâches en cours d'exécution    |
+| Terminées (24h)| 🟢 Vert  | Tâches terminées dernières 24h |
+| En erreur      | 🔴 Rouge | Tâches en échec                |
+| En attente     | ⚪ Gris  | Tâches en file d'attente       |
+
+# TYPES DE TÂCHES
+
+| Type                | Badge      | Description                    |
+|---------------------|------------|--------------------------------|
+| Création compte     | 🔵 Bleu    | Création d'un nouveau compte   |
+| Suppression compte  | 🔴 Rouge   | Suppression d'un compte        |
+| Changement MDP      | 🟣 Violet  | Modification mot de passe      |
+| Config SPF/DKIM     | 🟢 Vert    | Configuration DNS email        |
+| Création redirection| 🟢 Vert    | Nouvelle redirection           |
+| Activation répondeur| 🟢 Vert    | Configuration répondeur        |
+
+# STATUTS
+
+| Statut    | Badge      | Description                  |
+|-----------|------------|------------------------------|
+| En cours  | 🟡 Jaune   | Exécution en cours           |
+| Terminée  | 🟢 Vert    | Exécution réussie            |
+| En erreur | 🔴 Rouge   | Exécution échouée            |
+| En attente| ⚪ Gris    | En file d'attente            |
+| Annulée   | ⚪ Gris    | Annulée par l'utilisateur    |
+
+# COLONNES TABLE
+
+| Colonne     | Largeur | Contenu                        |
+|-------------|---------|--------------------------------|
+| ID Tâche    | 120px   | Identifiant unique             |
+| Type        | 180px   | Badge type de tâche            |
+| Cible       | 200px   | Ressource concernée            |
+| Créée       | 140px   | Date + heure                   |
+| Progression | 190px   | Barre + pourcentage            |
+| Statut      | 120px   | Badge statut                   |
+| Actions     | 80px    | ↻ Réessayer, ⏸ Pause           |
+
+# INTERACTIONS
+
+- Sélecteur statut → Filtre les tâches
+- Sélecteur type → Filtre par type
+- Clic ↻ (sur erreur) → Relance la tâche
+- Clic ⏸ (sur en cours) → Pause/info tâche
+- Clic ID tâche → Détails + logs
+
+# API ENDPOINTS
+
+GET  /email/domains/{domain}/tasks         → Liste tâches
+GET  /email/domains/{domain}/tasks/{id}    → Détails tâche
+GET  /email/domains/{d}/tasks/{id}/logs    → Logs tâche
+POST /email/domains/{d}/tasks/{id}/retry   → Relancer tâche
+POST /email/domains/{d}/tasks/{id}/cancel  → Annuler tâche
+GET  /email/domains/{domain}/tasks/stats   → Statistiques
 
 ================================================================================

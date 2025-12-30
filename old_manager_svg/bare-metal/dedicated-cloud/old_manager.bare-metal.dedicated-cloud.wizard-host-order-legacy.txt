@@ -1,0 +1,125 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard Host Order Legacy
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 2 étapes
+**Fonction:** Commander un hôte pour le datacenter
+**Contexte:** Commande de ressources depuis un datacenter existant
+
+## 2. DIMENSIONS
+
+- Container principal: 1440x850px
+- Zone wizard: 1360x650px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > dc-paris-01 > **Commander un host**
+
+### Lien retour
+- "← Commander un host" (text-primary)
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Sélection | Active (bleu) |
+| 2 | Récapitulatif | Inactive (gris) |
+
+## 4. ÉTAPE 1 : SÉLECTION
+
+### Tableau de sélection hosts
+
+**Colonnes:**
+| Colonne | Largeur | Type |
+|---------|---------|------|
+| Radio | 40px | Selection |
+| Host | 200px | Texte |
+| Vitesse CPU | 150px | Texte |
+| RAM (ECC) | 150px | Texte |
+| Nombre de cores | 150px | Nombre |
+| Tarif HT (au mois) | Auto | Prix |
+
+**Données exemple:**
+| | Host | CPU | RAM | Cores | Tarif |
+|-|------|-----|-----|-------|-------|
+| ● | Host L | 3.0 GHz | 384 Go | 16 | 450,00 € |
+| ○ | Host XL | 3.2 GHz | 768 Go | 24 | 750,00 € |
+| ○ | Host XXL | 3.4 GHz | 1536 Go | 48 | 1 200,00 € |
+| ○ | Host vSAN | 3.0 GHz | 512 Go | 20 | 850,00 € |
+
+### Message info vSAN
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Icône: i (cercle bleu)
+- Texte: "Il faut au moins trois hôtes vSAN dans votre infrastructure pour que le vSAN soit fonctionnel."
+- Dimensions: 1280x50px
+
+### Champ quantité
+- Label: "Quantité d'host(s) à commander :"
+- Type: Number stepper avec - et +
+- Valeur par défaut: 1
+- Dimensions: 100x44px
+
+## 5. COMPOSANTS UI
+
+### En-tête tableau
+- Background: #F3F4F6 (bg-table-header)
+- Font-weight: 600
+- Hauteur: 40px
+
+### Prix
+- Couleur: text-danger #DC2626
+- Font-weight: 600
+- Alignement: droite
+
+### Alternance lignes
+- Impaires: bg-white
+- Paires: bg-muted #F9FAFB
+- Hauteur ligne: 50px
+
+## 6. ACTIONS & INTERACTIONS
+
+### Sélection host
+- Click sur ligne → sélectionne le radio button
+- Un seul host sélectionnable à la fois
+- Si vSAN sélectionné, affiche le message info
+
+### Bouton Annuler
+- Style: btn-secondary (100x36px)
+- Action: Retour à la page précédente
+
+### Bouton Suivant
+- Style: btn-primary (100x36px)
+- Action: Passe à l'étape 2 (Récapitulatif)
+- Disabled si aucun host sélectionné
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderableHostProfiles
+→ Liste les profils d'hôte commandables
+
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderHosts
+Body: {
+  profile: "Host L",
+  quantity: 1
+}
+→ Génère un bon de commande
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_host_title | Commander un host |
+| column_host | Host |
+| column_cpu_speed | Vitesse CPU |
+| column_ram | RAM (ECC) |
+| column_cores | Nombre de cores |
+| column_price_monthly | Tarif HT (au mois) |
+| wizard_quantity_label | Quantité d'host(s) à commander |
+| info_vsan_minimum | Il faut au moins trois hôtes vSAN dans votre infrastructure pour que le vSAN soit fonctionnel. |
+| step_selection | Sélection |
+| step_summary | Récapitulatif |
+| btn_cancel | Annuler |
+| btn_next | Suivant |

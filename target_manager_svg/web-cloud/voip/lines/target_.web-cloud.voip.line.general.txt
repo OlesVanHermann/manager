@@ -2,60 +2,55 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.general.svg
-Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/general
+Route:   /web-cloud/voip/{billingAccount}/line/{serviceName}
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNÉES DYNAMIQUES
-| Exemple SVG             | Source API                                      |
-|-------------------------|-------------------------------------------------|
-| 0033 9 72 10 12 34      | GET /telephony/{ba}/line/{sn} → serviceName     |
-| Ligne principale accueil| GET /telephony/{ba}/line/{sn} → description     |
-| VoIP Entreprise Pro     | GET /telephony/{ba}/line/{sn} → offerType       |
-| SIP Trunk               | GET /telephony/{ba}/line/{sn} → lineType        |
-| 10 appels               | GET /telephony/{ba}/line/{sn} → simultaneousLines|
-| Cisco CP-8851           | GET /telephony/{ba}/line/{sn}/phone → brand+model|
-| AA:BB:CC:DD:EE:FF       | GET /telephony/{ba}/line/{sn}/phone → macAddress|
-| 15/01/2020              | GET /telephony/{ba}/line/{sn}/serviceInfos → creation|
-| 15/01/2025              | GET /telephony/{ba}/line/{sn}/serviceInfos → expiration|
-| 2h 34min                | GET /telephony/{ba}/line/{sn}/consumption       |
-| 12,50 €                 | GET /telephony/{ba}/line/{sn}/consumption → outplan|
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| 0033912345678            | Route param {serviceName}                     |
+| Poste Direction          | GET /telephony/{ba}/line/{sn} → description   |
+| Actif                    | GET /telephony/{ba}/line/{sn}/serviceInfos    |
+| VoIP Entreprise          | GET /telephony/{ba}/line/{sn} → offerType     |
+| Yealink T46U             | GET /telephony/{ba}/line/{sn}/phone → brand+model |
+| AA:BB:CC:DD:EE:01        | GET /telephony/{ba}/line/{sn}/phone → macAddress |
+| 192.168.1.100            | GET /telephony/{ba}/line/{sn}/phone → ip      |
+| 0033912345678@sip.ovh.fr | GET /telephony/{ba}/line/{sn}/sipAccounts     |
+| 15/01/2020               | GET /telephony/{ba}/line/{sn}/serviceInfos → creation |
+| 15/01/2025               | GET /telephony/{ba}/line/{sn}/serviceInfos → expiration |
 
 ================================================================================
 
 # STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif, x=510)
-2. NAV2 - Web Cloud (VoIP actif, x=500)
-3. LEFT PANEL - Liste des lignes du groupe
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des lignes du groupe avec sélection
 4. RIGHT PANEL
-   - Header: Numéro + description + boutons actions (MDP SIP, Résilier)
-   - NAV3: 7 tabs (**Général**, Téléphone, Appels, Transferts, Messagerie, Consommation, Options)
-   - Bloc: Informations générales (numéro, description, offre, statut, SIP credentials)
-   - Bloc: Téléphone associé (modèle, MAC, IP, boutons reboot/config)
-   - Bloc: Abonnement (dates, renouvellement, boutons)
-   - Bloc: Consommation du mois (appels sortants/reçus, hors forfait)
+   - Header: Numéro + description + badge statut + actions (MDP SIP, Résilier)
+   - NAV3: [Général] | Téléphone | Appels | Transferts | Messagerie | Consommation | Options
+   - Card "Ligne SIP": Numéro, description, offre, statut, identifiant SIP
+   - Card "Téléphone associé": Modèle, MAC, IP, Firmware, boutons Reboot/Configurer
+   - Card "Abonnement": Dates création/expiration, renouvellement, boutons
+   - Card "Actions rapides": MDP SIP, Domaine, Softphone, Convertir
+   - Bannière info
 
 # INTERACTIONS
-- Clic NAV3 tab → Navigation vers autre section ligne
-- 📋 → Copie valeur dans presse-papier
-- ✎ description → Modal édition description
-- 👁 Voir → Affiche mot de passe SIP
-- 🔑 Changer → Modal changement mot de passe
-- ↻ Reboot → Redémarre téléphone
-- ⚙ Configurer → Navigation vers config téléphone
-- ↻ Renouveler → Lance renouvellement
-- ⇄ Changer offre → Modal changement offre
-- 📊 Voir détails → Navigation vers consommation détaillée
-- × Résilier → Modal confirmation résiliation
+- Clic ligne LEFT PANEL → Sélection
+- Clic tab NAV3 → Navigation onglet
+- Clic "MDP SIP" → Modal changement mot de passe
+- Clic "Résilier" → Modal confirmation résiliation
+- Clic "Reboot" → Action redémarrage téléphone
+- Clic "Configurer" → Page configuration téléphone
+- Clic action rapide → Modal/page correspondante
 
 # API ENDPOINTS
-GET    /telephony/{ba}/line/{sn}                           # Détails ligne
-PUT    /telephony/{ba}/line/{sn}                           # Modifier ligne
-GET    /telephony/{ba}/line/{sn}/serviceInfos              # Infos abonnement
-GET    /telephony/{ba}/line/{sn}/phone                     # Infos téléphone
-POST   /telephony/{ba}/line/{sn}/phone/reboot              # Reboot téléphone
-POST   /telephony/{ba}/line/{sn}/changePassword            # Changer MDP SIP
-GET    /telephony/{ba}/line/{sn}/consumption               # Consommation
-DELETE /telephony/{ba}/line/{sn}                           # Résilier ligne
+GET /telephony/{ba}/line/{sn}           → Détails ligne
+GET /telephony/{ba}/line/{sn}/serviceInfos → Infos abonnement
+GET /telephony/{ba}/line/{sn}/phone     → Infos téléphone
+GET /telephony/{ba}/line/{sn}/sipAccounts → Comptes SIP
+POST /telephony/{ba}/line/{sn}/changePassword → Changer MDP
+POST /telephony/{ba}/line/{sn}/phone/reboot → Redémarrer téléphone
+DELETE /telephony/{ba}/line/{sn}        → Résilier
 
 ================================================================================

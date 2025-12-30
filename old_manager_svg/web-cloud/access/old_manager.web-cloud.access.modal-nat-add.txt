@@ -1,0 +1,127 @@
+# Cahier des Charges : web-cloud/access - Modal NAT Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter une règle de redirection NAT/PAT
+**Contexte:** Configuration port forwarding du modem
+
+## 2. DIMENSIONS
+
+- Modal: 500x470px
+- Background page: overlay rgba(0,0,0,0.5)
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F9FAFB
+- Titre: "Ajouter une règle NAT"
+- Bouton fermer: ×
+- Height: 50px
+
+## 4. DESCRIPTION
+
+- Texte: "Redirigez un port externe vers un appareil de votre réseau local."
+- Font-size: 12px, text-muted
+
+## 5. FORMULAIRE
+
+### Champ Nom de la règle
+- Label: "Nom de la règle *"
+- Type: Input text
+- Placeholder: "Ex: Serveur Web, Camera IP..."
+- Largeur: 400px
+
+### Champ Protocole
+- Label: "Protocole"
+- Type: Select dropdown
+- Options: TCP, UDP, TCP/UDP
+- Valeur par défaut: TCP
+- Largeur: 150px
+
+### Champ Port externe
+- Label: "Port externe *"
+- Type: Input text
+- Placeholder: "80"
+- Largeur: 180px
+- Helper: "ou plage: 80-443"
+
+### Champ Adresse IP interne
+- Label: "Adresse IP interne *"
+- Type: Input text (IP)
+- Valeur exemple: "192.168.1.100"
+- Largeur: 200px
+
+### Champ Port interne
+- Label: "Port interne"
+- Type: Input text
+- Placeholder: "80"
+- Largeur: 100px
+- Helper: "(optionnel)"
+
+### Info box
+- Background: #DBEAFE
+- Border-radius: 4px
+- Dimensions: 400x40px
+- Texte: "ℹ️ Laissez le port interne vide pour utiliser le même que l'externe."
+
+## 6. COMPOSANTS UI
+
+### Input text
+- Height: 36px
+- Border: #E5E7EB
+- Border-radius: 4px
+
+### Select dropdown
+- Height: 36px
+- Border: #E5E7EB
+- Chevron: ▼
+
+## 7. FOOTER MODAL
+
+### Bouton Annuler
+- Style: btn-outline (100x36px)
+
+### Bouton Ajouter
+- Style: btn-primary (130x36px)
+- Disabled si: formulaire invalide
+
+## 8. VALIDATION
+
+- Nom: obligatoire
+- Port externe: obligatoire, 1-65535 ou plage valide
+- IP interne: format IPv4 valide
+- Port interne: optionnel, 1-65535
+
+## 9. APIS & ENDPOINTS
+
+```
+POST /xdsl/{serviceName}/modem/portMappings
+Body: {
+  name: "Serveur Web",
+  protocol: "tcp",
+  externalPortStart: 80,
+  externalPortEnd: 80,
+  internalIp: "192.168.1.100",
+  internalPort: 80
+}
+→ Crée la règle NAT
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter une règle NAT |
+| modal_description | Redirigez un port externe vers un appareil de votre réseau local. |
+| field_name | Nom de la règle |
+| field_name_placeholder | Ex: Serveur Web, Camera IP... |
+| field_protocol | Protocole |
+| field_external_port | Port externe |
+| port_range_hint | ou plage: 80-443 |
+| field_internal_ip | Adresse IP interne |
+| field_internal_port | Port interne |
+| internal_port_hint | (optionnel) |
+| info_same_port | Laissez le port interne vide pour utiliser le même que l'externe. |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

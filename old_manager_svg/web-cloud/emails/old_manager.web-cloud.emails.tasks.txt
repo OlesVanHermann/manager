@@ -1,0 +1,157 @@
+# Cahier des Charges : web-cloud/emails - Tasks
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec cartes statistiques
+**Fonction:** Historique et suivi des tâches email du domaine
+**Contexte:** Onglet Tâches
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections | Répondeurs | Listes | Sécurité | Avancé | Licences | Tâches (actif)
+
+## 3. TOOLBAR / FILTRES
+
+| Filtre | Type | Options |
+|--------|------|---------|
+| Statut | Dropdown | Toutes, En cours, Terminées, En erreur, En attente |
+| Type | Dropdown | Toutes les tâches, Création, Modification, Suppression, Config |
+| ↻ | btn-outline | Rafraîchir |
+
+## 4. CARTES STATISTIQUES (4 cartes)
+
+| Carte | Background | Couleur texte | Valeur | Libellé |
+|-------|------------|---------------|--------|---------|
+| En cours | #FEF3C7 | #D97706 | 2 | tâches |
+| Terminées (24h) | #DEF7EC | #059669 | 5 | tâches |
+| En erreur | #FEE2E2 | #DC2626 | 1 | tâche |
+| En attente | #F3F4F6 | #374151 | 0 | tâche |
+
+Dimensions: 200x60px chacune
+
+## 5. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| ID Tâche | 120px | #T-YYYYMMDDXX |
+| Type | 150px | Badge coloré |
+| Cible | 180px | Email ou domaine |
+| Créée | 130px | Date + heure |
+| Progression | 160px | Barre + % |
+| Statut | 100px | Badge statut |
+| Actions | 80px | Relancer (si erreur) |
+
+### Badges Type
+
+| Type | Background | Couleur |
+|------|------------|---------|
+| Création compte | #DBEAFE | #1E40AF |
+| Changement MDP | #E0E7FF | #4338CA |
+| Suppression compte | #FEE2E2 | #DC2626 |
+| Config SPF | #DEF7EC | #059669 |
+| Création redirection | #DEF7EC | #059669 |
+
+### Badges Statut
+
+| Statut | Background | Couleur |
+|--------|------------|---------|
+| En cours | #FEF3C7 | #D97706 |
+| Terminée | #DEF7EC | #059669 |
+| Erreur | #FEE2E2 | #DC2626 |
+| En attente | #F3F4F6 | #6B7280 |
+
+### Barre de progression
+- Fond: #E5E7EB
+- En cours: #0050D7 (bleu)
+- Erreur: #DC2626 (rouge)
+- Terminée: #DEF7EC (vert plein)
+- Dimensions: 140x8px
+
+### Exemples données
+
+| ID | Type | Cible | Créée | Progress | Statut |
+|----|------|-------|-------|----------|--------|
+| #T-2025123001 | Création compte | nouveau@example.com | 30/12/2025 14:45:22 | 70% | En cours |
+| #T-2025123002 | Changement MDP | jean@example.com | 30/12/2025 14:42:10 | 35% | En cours |
+| #T-2025122901 | Suppression compte | ancien@example.com | 29/12/2025 18:30:45 | Échec | Erreur |
+| #T-2025122902 | Config SPF | example.com | 29/12/2025 16:15:00 | 100% | Terminée |
+| #T-2025122903 | Création redirection | info@example.com | 29/12/2025 15:30:22 | 100% | Terminée |
+
+- Ligne erreur: background #FEF2F2
+
+## 6. ACTIONS
+
+- **Relancer**: Visible uniquement si statut = Erreur (lien bleu)
+- **-**: Pas d'action pour les tâches terminées ou en cours
+
+## 7. PAGINATION
+
+- Texte: "Affichage 1-6 sur 8 tâches"
+- Navigation: < 1 2 >
+
+## 8. APIS & ENDPOINTS
+
+```
+# Exchange - Lister tâches
+GET /email/exchange/{organization}/service/{serviceName}/task
+Query: { status: "doing|done|error|todo" }
+→ Liste des tâches Exchange
+
+GET /email/exchange/{organization}/service/{serviceName}/task/{id}
+→ Détails d'une tâche
+
+# Email Pro
+GET /email/pro/{service}/task
+GET /email/pro/{service}/task/{id}
+
+# MX Plan
+GET /email/domain/{domain}/task
+GET /email/domain/{domain}/task/{id}
+
+# Relancer une tâche (via recréation)
+POST /email/exchange/{organization}/service/{serviceName}/account/{email}/retry
+→ Relance la tâche échouée
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_title | Tâches |
+| filter_status | Statut |
+| filter_type | Type |
+| status_all | Toutes |
+| status_doing | En cours |
+| status_done | Terminées |
+| status_error | En erreur |
+| status_pending | En attente |
+| type_all | Toutes les tâches |
+| type_create | Création |
+| type_update | Modification |
+| type_delete | Suppression |
+| type_config | Configuration |
+| card_doing | En cours |
+| card_done | Terminées (24h) |
+| card_error | En erreur |
+| card_pending | En attente |
+| card_tasks | tâches |
+| card_task | tâche |
+| col_id | ID Tâche |
+| col_type | Type |
+| col_target | Cible |
+| col_created | Créée |
+| col_progress | Progression |
+| col_status | Statut |
+| col_actions | Actions |
+| action_retry | Relancer |
+| progress_failed | Échec |
+| pagination | Affichage {start}-{end} sur {total} tâches |

@@ -1,0 +1,122 @@
+# Cahier des Charges : web-cloud/domain - Modal Redirection Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter une redirection web
+**Contexte:** Action depuis l'onglet Redirections
+
+## 2. DIMENSIONS
+
+- Modal: 700x700px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Ajouter une redirection"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 20px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Info banner
+- Background: #DBEAFE
+- Texte: "Une redirection web permet de rediriger les visiteurs vers une autre URL."
+
+### Sous-domaine source
+- Label: "Sous-domaine source *"
+- Input + addon: 400px + 260px
+- Placeholder input: "www"
+- Addon: ".exemple.com"
+- Note: "Laissez vide pour rediriger depuis la racine du domaine"
+
+### URL de destination
+- Label: "URL de destination *"
+- Input: 660x36px
+- Placeholder: "https://www.nouvelle-adresse.com/"
+- Note: "URL complète incluant le protocole (http:// ou https://)"
+
+### Type de redirection (radio buttons)
+
+| Type | Code | Description |
+|------|------|-------------|
+| Redirection permanente | 301 | Recommandé pour les déménagements définitifs. Les moteurs de recherche mettent à jour leurs index. |
+| Redirection temporaire | 302 | Pour les redirections temporaires. L'URL originale reste référencée. |
+| Redirection visible (iframe) | - | Le contenu distant s'affiche mais l'URL source reste visible dans la barre d'adresse. |
+
+### Options iframe (si applicable)
+- Titre de la page: Input 320x32px
+- Mots-clés (SEO): Input 320x32px
+- Description: Textarea 660x50px
+
+### Aperçu
+- Background: #F3F4F6
+- Dimensions: 660x30px
+- Exemple: "www.exemple.com → https://www.nouvelle-adresse.com/ (301 permanent)"
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 90x32px |
+| Ajouter la redirection | btn-primary | 160x32px |
+
+## 6. COMPOSANTS UI
+
+### Input avec addon
+- Input: border-radius gauche
+- Addon: background #F3F4F6, border-radius droit
+
+### Radio option
+- Titre: font-weight 500
+- Description: font-size 9px, text-muted
+
+## 7. APIS & ENDPOINTS
+
+```
+POST /domain/zone/{zoneName}/redirection
+Body: {
+  subDomain: "www",
+  target: "https://www.nouvelle-adresse.com/",
+  type: "visible" | "visiblePermanent" | "invisible",
+  title: "Mon site", // pour iframe
+  keywords: "mot1, mot2", // pour iframe
+  description: "Description" // pour iframe
+}
+→ Crée une redirection
+
+GET /domain/zone/{zoneName}/redirection
+→ Liste des redirections existantes
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter une redirection |
+| info_text | Une redirection web permet de rediriger les visiteurs vers une autre URL. |
+| field_source | Sous-domaine source |
+| field_source_note | Laissez vide pour rediriger depuis la racine du domaine |
+| field_target | URL de destination |
+| field_target_note | URL complète incluant le protocole (http:// ou https://) |
+| field_type | Type de redirection |
+| type_301 | Redirection permanente (301) |
+| type_301_desc | Recommandé pour les déménagements définitifs. Les moteurs de recherche mettent à jour leurs index. |
+| type_302 | Redirection temporaire (302) |
+| type_302_desc | Pour les redirections temporaires. L'URL originale reste référencée. |
+| type_frame | Redirection visible (iframe) |
+| type_frame_desc | Le contenu distant s'affiche mais l'URL source reste visible dans la barre d'adresse. |
+| field_options | Options pour iframe (si applicable) |
+| field_title | Titre de la page |
+| field_keywords | Mots-clés (SEO) |
+| field_description | Description |
+| field_preview | Aperçu |
+| btn_cancel | Annuler |
+| btn_add | Ajouter la redirection |

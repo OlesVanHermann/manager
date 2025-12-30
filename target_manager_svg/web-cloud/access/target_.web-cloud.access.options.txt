@@ -1,0 +1,78 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.access.options.svg
+Route:   /web-cloud/access/connections/{id}/options
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| 91.134.xxx.xxx           | GET /options → ipv4.address                      |
+| Incluse                  | → ipv4.included                                  |
+| 2001:41d0:xxxx::/64      | → ipv6.prefix                                    |
+| Actif                    | → ipv6.enabled                                   |
+| 1 active                 | → failoverIps.count                              |
+| 91.134.yyy.yyy           | → failoverIps[].address                          |
+| Non souscrit             | → gtr4h.subscribed                               |
+| mail.entreprise.fr       | → reverseDns.value                               |
+| 39,99 € HT               | GET /billing/summary → basePrice                 |
+| 2,99 € HT                | → optionsPrice                                   |
+| 42,98 € HT               | → totalPrice                                     |
+
+================================================================================
+
+# STRUCTURE PAGE
+
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Accès actif)
+3. LEFT PANEL - Liste connexions
+4. RIGHT PANEL
+   - Header: Nom connexion
+   - NAV3: 7 tabs (Options actif)
+   - Contenu:
+     - OPTIONS ET ABONNEMENTS (titre)
+     - Cards options (2x3 grid):
+       1. IP Fixe v4 (incluse)
+       2. IPv6 (configurable)
+       3. IP Failover supplémentaire
+       4. GTR 4H
+       5. Reverse DNS personnalisé
+       6. Modem de secours
+     - RÉCAPITULATIF MENSUEL (bannière)
+
+# OPTIONS DISPONIBLES
+| Option | Prix | Statut possible |
+|--------|------|-----------------|
+| IP Fixe v4 | Inclus | Incluse |
+| IPv6 | Inclus | Actif/Inactif |
+| IP Failover | 2,99 €/mois/IP | X active(s) |
+| GTR 4H | 29,99 €/mois | Souscrit/Non souscrit |
+| Reverse DNS | Inclus | Actif |
+| Modem secours | 9,99 €/mois | Souscrit/Non souscrit |
+
+# CARD OPTION
+Chaque card affiche:
+- Icône + Nom option + Badge statut
+- Description (2 lignes)
+- Prix ou "Inclus dans l'offre"
+- Bouton action (Configurer/Souscrire/Ajouter)
+
+# INTERACTIONS
+- Configurer → Modal configuration option
+- Souscrire → Tunnel de commande
+- + Ajouter IP → Modal ajout IP Failover
+- Modifier reverse → Modal édition DNS
+- Voir facturation → /home/billing
+
+# API ENDPOINTS
+GET  /access/connections/{id}/options           - Liste options
+POST /access/connections/{id}/options/{type}    - Souscrire option
+DELETE /access/connections/{id}/options/{type}  - Résilier option
+PUT  /access/connections/{id}/options/ipv6      - Config IPv6
+PUT  /access/connections/{id}/options/reverse   - Modifier reverse DNS
+POST /access/connections/{id}/options/failover  - Ajouter IP Failover
+GET  /access/connections/{id}/billing/summary   - Récapitulatif facturation
+
+================================================================================

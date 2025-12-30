@@ -6,51 +6,76 @@ Route:   /web-cloud/emails/{domain}/accounts
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| example.com              | GET /email/domains -> domain                  |
-| ceo@example.com          | GET /email/domains/{d}/accounts -> email      |
-| Exchange                 | GET /email/domains/{d}/accounts -> offer      |
-| Pack Biz 10              | GET /email/domains/{d}/accounts -> license    |
-| 35/50 Go                 | GET /email/domains/{d}/accounts -> quota      |
-| Actif                    | GET /email/domains/{d}/accounts -> status     |
-| 3 alias                  | GET /email/domains/{d}/accounts/{e}/aliases   |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| example.com           | GET /email/domains → domain                   |
+| ceo@example.com       | GET /email/domains/{d}/accounts → email       |
+| 3 alias               | GET /email/domains/{d}/accounts/{e} → aliases |
+| MFA activé            | GET /email/domains/{d}/accounts/{e} → mfa     |
+| Exchange              | GET /email/domains/{d}/accounts/{e} → offer   |
+| Pack Biz 10 (1/10)    | GET /email/licenses/packs/{id} → name,used    |
+| 35/50 Go              | GET /email/domains/{d}/accounts/{e} → quota   |
+| Actif                 | GET /email/domains/{d}/accounts/{e} → status  |
 
 ================================================================================
 
-STRUCTURE PAGE
+# STRUCTURE PAGE
+
 1. NAV1 - Header OVH (Web Cloud actif)
 2. NAV2 - Web Cloud (Emails actif)
-3. LEFT PANEL - Liste domaines
-4. RIGHT PANEL
-   - Header: Domaine + stats
-   - NAV3: 8 tabs (Boites mail actif)
-   - Toolbar: Creer, Importer, Exporter, Filtrer
-   - Filtres par offre
-   - Table comptes avec colonnes:
-     Email | Offre | Licence/Pack | Quota | Statut | Actions
+3. LEFT PANEL (280px)
+   - Toggle vue: Par domaine / Par licence
+   - Recherche domaine
+   - Liste domaines avec breakdown offres
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine + compteurs
+   - NAV3: 8 tabs (Boîtes mail ACTIF)
+   - Toolbar: Créer, Importer, Exporter, Recherche, Refresh
+   - Filtres offre (badges colorés)
+   - Table comptes avec checkboxes pour actions bulk
+   - Colonnes: Email, Offre, Licence/Pack, Quota, Statut, Actions
    - Pagination
 
-ACTIONS PAR OFFRE
-| Action   | MX Plan | Pro | Exchange | Zimbra |
-|----------|---------|-----|----------|--------|
-| Edit     | Oui     | Oui | Oui      | Oui    |
-| MDP      | Oui     | Oui | Oui      | Oui    |
-| Alias    | Non     | Oui | Oui      | Oui    |
-| Deleg    | Non     | Oui | Oui      | Non    |
-| MFA      | Non     | Non | Oui      | Non    |
-| Archive  | Non     | Oui | Oui      | Non    |
-| Upgrade  | Oui     | Oui | Non      | Oui    |
+# COLONNES TABLE
 
-API ENDPOINTS
-GET    /email/domains/{domain}/accounts           - Liste comptes
-GET    /email/domains/{domain}/accounts/{email}   - Details compte
-POST   /email/domains/{domain}/accounts           - Creer compte
-PUT    /email/domains/{domain}/accounts/{email}   - Modifier compte
-DELETE /email/domains/{domain}/accounts/{email}   - Supprimer compte
-POST   /email/domains/{d}/accounts/{e}/password   - Changer MDP
-POST   /email/domains/{d}/accounts/{e}/upgrade    - Upgrader offre
-POST   /email/domains/{d}/accounts/{e}/downgrade  - Downgrader offre
+| Colonne     | Largeur | Contenu                           |
+|-------------|---------|-----------------------------------|
+| Checkbox    | 32px    | Sélection multiple                |
+| Email       | 260px   | Adresse + sous-texte (alias, MFA) |
+| Offre       | 120px   | Badge couleur + nom offre         |
+| Licence/Pack| 160px   | Nom pack + utilisation            |
+| Quota       | 140px   | Barre + texte                     |
+| Statut      | 80px    | Badge Actif/Inactif/Erreur        |
+| Actions     | 180px   | Icônes selon offre                |
+
+# ACTIONS PAR OFFRE
+
+| Icône | Action        | MX Plan | Pro | Exchange | Zimbra |
+|-------|---------------|:-------:|:---:|:--------:|:------:|
+| ✎     | Modifier      | ✅      | ✅  | ✅       | ✅     |
+| 🔑    | Mot de passe  | ✅      | ✅  | ✅       | ✅     |
+| 📧    | Alias         | ❌      | ✅  | ✅       | ✅     |
+| 📤    | Délégation    | ❌      | ✅  | ✅       | ❌     |
+| 🔐    | MFA           | ❌      | ❌  | ✅       | ❌     |
+| ⋯     | Plus actions  | ✅      | ✅  | ✅       | ✅     |
+
+# INTERACTIONS
+
+- Checkbox → Sélection pour actions bulk
+- Clic email → Détail compte (slide panel ou page)
+- Clic filtre offre → Filtre table
+- Clic action → Modal correspondante
+- Clic ⋯ → Menu dropdown (Upgrade, Downgrade, Supprimer)
+
+# API ENDPOINTS
+
+GET    /email/domains/{domain}/accounts        → Liste comptes
+GET    /email/domains/{d}/accounts/{email}     → Détails compte
+POST   /email/domains/{domain}/accounts        → Créer compte
+PUT    /email/domains/{d}/accounts/{email}     → Modifier compte
+DELETE /email/domains/{d}/accounts/{email}     → Supprimer compte
+POST   /email/domains/{d}/accounts/{e}/password→ Changer MDP
+GET    /email/domains/{d}/accounts/{e}/aliases → Liste alias
 
 ================================================================================

@@ -1,0 +1,71 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.modal.forward-config.svg
+Modal:   Configuration du renvoi d'appel
+Context: Page Ligne SIP - Renvois
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| Inconditionnel        | Type sélectionné (inconditionnel/busy/noReply)|
+| Actif                 | GET /telephony/{ba}/line/{sn}/options → forward|
+| +33 6 XX XX XX XX     | forward → destination                         |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. HEADER - Titre + bouton fermer
+2. CONTENT
+   - Sélecteur type de renvoi (3 cards)
+   - Toggle activation
+   - Champ numéro de destination
+   - Options (checkboxes)
+   - Bannière info
+3. FOOTER - Boutons Enregistrer / Annuler
+
+# DIMENSIONS
+- Width: 550px
+- Height: 480px
+- Padding: 24px
+
+# TYPES DE RENVOI
+| Type | Description | Condition |
+|------|-------------|-----------|
+| Inconditionnel | Tous les appels | Toujours |
+| Occupation | Si ligne occupée | Busy |
+| Non-réponse | Après X sonneries | No reply (timeout) |
+
+# OPTIONS
+| Option | Description |
+|--------|-------------|
+| Conserver numéro | Le numéro de l'appelant est affiché |
+| Notifier email | Email à chaque appel renvoyé |
+
+# INTERACTIONS
+- Clic ✕ → Fermer modal
+- Clic type renvoi → Sélectionner le type
+- Toggle activation → Activer/désactiver le renvoi
+- Checkbox → Cocher/décocher option
+- Clic "Enregistrer" → PUT API + fermer modal
+- Clic "Annuler" → Fermer modal
+
+# API ENDPOINTS
+GET /telephony/{ba}/line/{sn}/options              → Obtenir config renvois
+PUT /telephony/{ba}/line/{sn}/options              → Modifier config renvois
+
+# PAYLOAD ATTENDU
+```json
+{
+  "forwardUnconditional": {
+    "enabled": true,
+    "destination": "+33612345678",
+    "preserveCallerNumber": true,
+    "notifyEmail": false
+  }
+}
+```
+
+================================================================================

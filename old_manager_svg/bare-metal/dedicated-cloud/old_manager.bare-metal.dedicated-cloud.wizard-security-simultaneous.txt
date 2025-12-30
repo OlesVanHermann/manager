@@ -1,0 +1,117 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard Security Simultaneous
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 2 étapes
+**Fonction:** Configurer le nombre maximum de connexions simultanées par utilisateur
+**Contexte:** Paramètres de sécurité du Dedicated Cloud
+
+## 2. DIMENSIONS
+
+- Container principal: 1440x600px
+- Zone wizard: 1000x450px (centrée)
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > Sécurité > **Connexions simultanées**
+
+### Header wizard
+- Background: #F9FAFB
+- Titre: "Modifier le nombre de connexions simultanées"
+- Hauteur: 70px
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Configuration | Active (bleu) |
+| 2 | Confirmation | Inactive (gris) |
+
+## 4. ÉTAPE 1 : CONFIGURATION
+
+### Champ nombre
+- Label: "Nombre maximum de connexions d'utilisateurs simultanées"
+- Type: number input
+- Dimensions: 200x45px
+- Valeur exemple: 5
+
+### Textes d'aide
+- Ligne 1: "Définissez 0 pour autoriser un nombre illimité de connexions simultanées."
+- Ligne 2: "Cette limite s'applique à chaque utilisateur individuellement."
+- Couleur: text-muted
+
+### Info valeur actuelle
+- Background: #EFF6FF (bg-info)
+- Dimensions: 600x40px
+- Texte: "Valeur actuelle : 10 connexions simultanées par utilisateur"
+- Couleur texte: #1E40AF
+
+## 5. COMPOSANTS UI
+
+### Input number
+- Border: #E5E7EB
+- Border-radius: 4px
+- Padding: 15px
+- Largeur: 200px
+
+### Bloc info
+- Background: #EFF6FF
+- Border-radius: 4px
+- Padding: 10px 20px
+
+### Stepper
+- Step active: cercle bleu #0050D7
+- Step inactive: cercle gris #E5E7EB
+
+## 6. ACTIONS & INTERACTIONS
+
+### Validation input
+- Valeur minimum: 0
+- Valeur maximum: non spécifiée
+- 0 = illimité
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Position: gauche
+- Action: Retour à la page sécurité
+
+### Bouton Suivant
+- Style: btn-primary (120x40px)
+- Position: droite
+- Action: Passe à l'étape 2 (Confirmation)
+
+## 7. ÉTAPE 2 : CONFIRMATION
+
+### Contenu (non visible dans le SVG)
+- Résumé du changement
+- Ancienne valeur → Nouvelle valeur
+- Boutons Précédent/Confirmer
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/security
+→ Récupère les paramètres de sécurité actuels
+→ Retourne: { maxConcurrentConnections: 10 }
+
+PUT /dedicatedCloud/{serviceName}/security
+Body: {
+  maxConcurrentConnections: 5  // 0 pour illimité
+}
+→ Met à jour le nombre de connexions simultanées
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_simultaneous_title | Modifier le nombre de connexions simultanées |
+| wizard_simultaneous_label | Nombre maximum de connexions d'utilisateurs simultanées |
+| wizard_simultaneous_help_1 | Définissez 0 pour autoriser un nombre illimité de connexions simultanées. |
+| wizard_simultaneous_help_2 | Cette limite s'applique à chaque utilisateur individuellement. |
+| wizard_simultaneous_current | Valeur actuelle : {count} connexions simultanées par utilisateur |
+| step_configuration | Configuration |
+| step_confirmation | Confirmation |
+| btn_cancel | Annuler |
+| btn_next | Suivant |
+| btn_confirm | Confirmer |

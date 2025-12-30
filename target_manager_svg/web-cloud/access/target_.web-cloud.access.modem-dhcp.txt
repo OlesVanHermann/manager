@@ -1,0 +1,74 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.access.modem-dhcp.svg
+Route:   /web-cloud/access/connections/{id}/modem-dhcp
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| 192.168.1.1              | GET /modem/dhcp → routerIp                       |
+| 255.255.255.0            | → subnetMask                                     |
+| 192.168.1.10             | → rangeStart                                     |
+| 192.168.1.254            | → rangeEnd                                       |
+| 24 heures                | → leaseTime                                      |
+| 20 appareils             | → leases.count                                   |
+| iPhone-Jean              | → leases[].hostname                              |
+| 192.168.1.15             | → leases[].ip                                    |
+| AA:BB:CC:DD:EE:01        | → leases[].mac                                   |
+| 23h 45m                  | → leases[].expires                               |
+| DHCP / Réservé           | → leases[].type                                  |
+| 213.186.33.99            | → dns.primary                                    |
+
+================================================================================
+
+# STRUCTURE PAGE
+
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Accès actif)
+3. LEFT PANEL - Liste connexions
+4. RIGHT PANEL
+   - Header: Nom connexion
+   - NAV3: 7 tabs (Modem actif)
+   - NAV4: 5 sous-tabs (DHCP actif)
+   - Contenu:
+     - CONFIGURATION DHCP:
+       - Toggle ON/OFF
+       - IP routeur, Masque
+       - Plage début/fin
+       - Durée bail
+       - Bouton Appliquer
+     - BAUX ACTIFS (table):
+       - Appareil (hostname)
+       - Adresse IP
+       - Adresse MAC
+       - Expire (countdown)
+       - Type (DHCP/Réservé)
+       - Actions (Réserver/Supprimer)
+       - Pagination
+     - SERVEURS DNS:
+       - Primaire, Secondaire
+       - Bouton Modifier
+
+# TYPES DE BAIL
+- DHCP: Attribution dynamique
+- Réservé: IP fixe par MAC
+
+# INTERACTIONS
+- Toggle → Active/Désactive DHCP
+- Appliquer → PUT /modem/dhcp
+- + Réservation → Modal
+- Réserver → Crée réservation pour cet appareil
+- Supprimer → Supprime réservation
+- Modifier DNS → Modal
+
+# API ENDPOINTS
+GET  /access/connections/{id}/modem/dhcp        - Config DHCP
+PUT  /access/connections/{id}/modem/dhcp        - Modifier config
+GET  /access/connections/{id}/modem/dhcp/leases - Liste baux
+POST /access/connections/{id}/modem/dhcp/leases - Créer réservation
+DELETE /access/connections/{id}/modem/dhcp/leases/{mac} - Supprimer
+
+================================================================================

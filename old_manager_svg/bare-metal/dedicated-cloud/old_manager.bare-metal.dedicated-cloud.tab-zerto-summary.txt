@@ -1,0 +1,114 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Tab Zerto Summary
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page de configuration/résumé
+**Fonction:** Afficher le résumé et configurer le VPN Zerto
+**Contexte:** Page de détail d'un site Zerto
+
+## 2. DIMENSIONS
+
+- Container principal: 1360x800px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > Datacenter dc-123 > Zerto > **Résumé**
+
+### Zone principale (2 colonnes)
+
+**Colonne gauche (600px):**
+1. Alerte warning (VPN non configuré)
+2. Résumé configuration
+3. Formulaire configuration VPN
+4. Bouton Valider
+
+**Colonne droite (séparée par ligne verticale):**
+1. Section Suppression Zerto
+
+## 4. COMPOSANTS UI
+
+### Alerte warning
+- Background: #FEF3C7
+- Icône: ⚠
+- Texte: "Pour finaliser l'activation de votre PRA Zerto, nous vous invitons à ajouter les IPs du VPN ci-dessous"
+
+### Résumé configuration
+- Titre: "Résumé de la configuration de votre site Zerto"
+- Format: Definition list (dt/dd)
+
+| Label | Valeur |
+|-------|--------|
+| Type de plan de reprise d'activité | OVH vers on premises |
+| Datacenter OVH | dc-123 (Paris) |
+| Private Cloud OVH | pcc-192-0-2-1 |
+
+### Formulaire VPN
+- Titre: "Configuration VPN"
+
+| Champ | Type | Valeur exemple |
+|-------|------|----------------|
+| Clé de chiffrement du VPN (PSK) | password | •••••••••••••••• |
+| IP publique du VPN distant | text | 198.51.100.1 |
+| IP privée du VPN distant | text | 10.0.0.1 |
+| Réseau VRA Datacenter on premises | text | 10.0.0.0/24 |
+| IP de votre Zvm | text | 10.0.0.5 |
+
+### Bouton Valider
+- Style: btn-primary (120x40px)
+
+### Section Suppression (colonne droite)
+- Titre: "Supprimer définitivement votre option Zerto"
+- Description: "Cette action supprimera définitivement votre PRA Zerto. Cette opération est irréversible."
+- Bouton: "Supprimer Zerto" (btn-secondary)
+
+## 5. ACTIONS & INTERACTIONS
+
+### Bouton Valider
+- Sauvegarde la configuration VPN
+- Affiche notification succès
+
+### Bouton Supprimer Zerto
+- Ouvre modal de confirmation
+- Action destructive
+
+## 6. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/zerto/site/{siteId}
+→ Récupère les détails du site
+
+PUT /dedicatedCloud/{serviceName}/zerto/site/{siteId}/vpn
+Body: {
+  psk: "secretKey",
+  remotePublicIp: "198.51.100.1",
+  remotePrivateIp: "10.0.0.1",
+  vraNetwork: "10.0.0.0/24",
+  zvmIp: "10.0.0.5"
+}
+→ Configure le VPN
+
+DELETE /dedicatedCloud/{serviceName}/zerto
+→ Supprime l'option Zerto
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_zerto_summary_title | Résumé |
+| tab_zerto_warning_vpn | Pour finaliser l'activation de votre PRA Zerto, nous vous invitons à ajouter les IPs du VPN ci-dessous |
+| tab_zerto_summary_section | Résumé de la configuration de votre site Zerto |
+| tab_zerto_pra_type | Type de plan de reprise d'activité |
+| tab_zerto_datacenter | Datacenter OVH |
+| tab_zerto_pcc | Private Cloud OVH |
+| tab_zerto_vpn_config | Configuration VPN |
+| tab_zerto_psk | Clé de chiffrement du VPN (PSK) |
+| tab_zerto_remote_public_ip | IP publique du VPN distant |
+| tab_zerto_remote_private_ip | IP privée du VPN distant |
+| tab_zerto_vra_network | Réseau VRA Datacenter on premises |
+| tab_zerto_zvm_ip | IP de votre Zvm |
+| tab_zerto_validate | Valider |
+| tab_zerto_delete_section | Supprimer définitivement votre option Zerto |
+| tab_zerto_delete_desc | Cette action supprimera définitivement votre PRA Zerto. Cette opération est irréversible. |
+| tab_zerto_delete_btn | Supprimer Zerto |

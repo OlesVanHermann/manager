@@ -6,41 +6,57 @@ Route:   /web-cloud/emails/{domain}/responders
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| example.com              | GET /email/domains -> domain                    |
-| ceo@example.com          | GET /email/domains/{d}/accounts -> email        |
-| Actif/Inactif            | GET /email/domains/{d}/accounts/{e}/responder   |
-| 23/12 - 02/01            | -> dateStart, dateEnd                           |
-| Je suis absent...        | -> content (apercu)                             |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG               | Source API                                    |
+|---------------------------|-----------------------------------------------|
+| ceo@example.com           | GET /email/domains/{d}/accounts/{e}/responder |
+| Message aperçu            | → message (truncated)                         |
+| 24/12/2025 → 05/01/2026   | → dateStart, dateEnd                          |
+| Actif/Planifié/Inactif    | → status                                      |
 
 ================================================================================
 
-STRUCTURE PAGE
+# STRUCTURE PAGE
+
 1. NAV1 - Header OVH (Web Cloud actif)
 2. NAV2 - Web Cloud (Emails actif)
-3. LEFT PANEL - Liste domaines
-4. RIGHT PANEL
-   - Header: Domaine
-   - NAV3: 8 tabs (Repondeurs actif)
-   - Toolbar: Configurer repondeur, Filtrer
-   - Table repondeurs:
-     Compte | Statut | Periode | Message | Actions
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Répondeurs ACTIF)
+   - Toolbar: Créer répondeur, Recherche, Refresh
+   - Bannière info
+   - Table répondeurs
    - Pagination
 
-COLONNES TABLE
-| Colonne  | Description                               |
-|----------|-------------------------------------------|
-| Compte   | Adresse email du compte                   |
-| Statut   | Actif (vert) / Inactif (gris)             |
-| Periode  | Dates debut-fin ou "Permanent"            |
-| Message  | Apercu du message de reponse automatique  |
-| Actions  | Configurer, Modifier, Desactiver          |
+# COLONNES TABLE
 
-API ENDPOINTS
-GET    /email/domains/{d}/accounts/{e}/responder   - Etat repondeur
-PUT    /email/domains/{d}/accounts/{e}/responder   - Configurer
-DELETE /email/domains/{d}/accounts/{e}/responder   - Desactiver
+| Colonne       | Largeur | Contenu                       |
+|---------------|---------|-------------------------------|
+| Compte email  | 260px   | Adresse + badge offre         |
+| Message       | 300px   | Aperçu message + sous-texte   |
+| Période       | 200px   | Dates ou "Permanent"          |
+| Statut        | 120px   | Badge Actif/Planifié/Inactif  |
+| Actions       | 136px   | ✎ Modifier, × Désactiver      |
+
+# STATUTS RÉPONDEUR
+
+| Statut   | Badge      | Description                     |
+|----------|------------|----------------------------------|
+| Actif    | Vert       | Répondeur actuellement actif     |
+| Planifié | Orange     | Dates futures programmées        |
+| Inactif  | Gris       | Répondeur désactivé              |
+
+# INTERACTIONS
+
+- Clic "+ Créer répondeur" → Modal création/configuration
+- Clic ✎ → Modal modifier répondeur
+- Clic × → Désactiver le répondeur
+
+# API ENDPOINTS
+
+GET    /email/domains/{d}/accounts/{e}/responder → État répondeur
+PUT    /email/domains/{d}/accounts/{e}/responder → Configurer répondeur
+DELETE /email/domains/{d}/accounts/{e}/responder → Désactiver répondeur
 
 ================================================================================

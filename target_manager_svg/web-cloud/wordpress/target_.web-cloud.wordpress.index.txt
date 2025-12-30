@@ -3,74 +3,52 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.wordpress.index.svg
 Route:   /web-cloud/wordpress
-NAV:     Web Cloud > Wordpress > (index avec liste sites + detail)
-Version: v1 (2025-12-29)
+Version: v1 (2025-12-30)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| mon-blog.fr              | GET /webWordpress -> displayName                |
-| WordPress 6.4.2          | GET /webWordpress/{id} -> wordpressVersion      |
-| PHP 8.2                  | GET /webWordpress/{id} -> phpVersion            |
-| Actif                    | GET /webWordpress/{id} -> state                 |
-| Pro                      | GET /webWordpress/{id} -> offer                 |
-| rbx1                     | GET /webWordpress/{id} -> datacenter            |
-| https://mon-blog.fr      | GET /webWordpress/{id} -> url                   |
-| admin                    | GET /webWordpress/{id} -> adminUser             |
-| 15/01/2024               | GET /webWordpress/{id} -> creation              |
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| mon-blog.fr              | GET /managedCMS/resource → displayName        |
+| WordPress 6.4.2          | GET /managedCMS/resource/{sn} → wordpressVersion |
+| Pro                      | GET /managedCMS/resource/{sn} → offer         |
+| rbx1                     | GET /managedCMS/resource/{sn} → datacenter    |
+| Actif                    | GET /managedCMS/resource/{sn} → state         |
+| 3 sites WordPress        | GET /managedCMS/resource → count              |
+| ab12345-ovh              | Session → nicHandle                           |
 ================================================================================
 
 STRUCTURE PAGE
-1. LEFT PANEL (280px)
-   - Header "Sites WordPress"
-   - Barre recherche
-   - Liste des sites avec:
-     - Icone WordPress
-     - Nom du site (displayName)
-     - Version WordPress
-     - Etat (circle color + label)
-     - Offre + Datacenter
+1. NAV1 - Header OVH (Web Cloud actif x=510)
+2. NAV2 - Web Cloud (Wordpress actif x=345)
+3. LEFT PANEL - Liste des sites WordPress
+   - Recherche
+   - Compteur sites
+   - Items sites (88px height chacun)
+   - Bouton "Nouveau site"
+4. RIGHT PANEL
+   - Header: Nom site + version + offre
+   - Quick actions header (Admin WP, Visiter)
+   - NAV3: 6 tabs (General actif)
+   - Contenu General:
+     * Actions rapides (4 boutons)
+     * Bloc WORDPRESS (infos site)
+     * Bloc TECHNIQUE (infos serveur)
+     * Zone Danger (suppression)
 
-2. RIGHT PANEL (1096px)
-   - Header avec nom site + boutons rapides
-   - NAV3: 6 tabs (General, Domaines, Performances, Extensions, Sauvegardes, Taches)
-   - Contenu tab General (defaut):
-     - Quick Actions (4 boutons)
-     - Bloc WordPress (etat, version, PHP, URL, admin)
-     - Bloc Technique (offre, datacenter, SSL, CDN, auto-update, creation)
-     - Zone Danger (suppression)
-
-ETATS SITE
-| Etat        | Couleur  | Badge           |
-|-------------|----------|-----------------|
-| active      | #10B981  | Actif           |
-| installing  | #F59E0B  | Installation... |
-| updating    | #F59E0B  | Mise a jour...  |
-| suspended   | #EF4444  | Suspendu        |
-| error       | #EF4444  | Erreur          |
-
-OFFRES
-| Offre    | Badge Color | Features                    |
-|----------|-------------|-----------------------------|
-| Start    | #F3F4F6     | 10 Go, SSL, Backup quotidien|
-| Pro      | #DBEAFE     | 50 Go, SSL, CDN, Backup     |
-| Business | #DEF7EC     | 100 Go, SSL, CDN, Staging   |
+INTERACTIONS
+- Clic item left panel → Selection site
+- Clic tab NAV3 → Navigation vers tab
+- Clic "Admin WP" → Ouvre /wp-admin
+- Clic "Visiter le site" → Ouvre URL site
+- Clic "Vider le cache" → POST flushCache
+- Clic "Supprimer" → Modal confirmation
 
 API ENDPOINTS
-GET    /webWordpress                          -> Liste des sites
-GET    /webWordpress/{serviceName}            -> Detail d'un site
-POST   /webWordpress/{serviceName}/purgeCache -> Vider cache
-POST   /webWordpress/{serviceName}/resetPassword -> Reset MDP admin
-PUT    /webWordpress/{serviceName}            -> Mettre a jour config
-DELETE /webWordpress/{serviceName}            -> Supprimer site
+GET    /managedCMS/resource                    - Liste sites
+GET    /managedCMS/resource/{serviceName}      - Details site
+POST   /managedCMS/resource/{sn}/flushCache    - Vider cache
+POST   /managedCMS/resource/{sn}/resetAdminPassword - Reset MDP
+DELETE /managedCMS/resource/{serviceName}      - Supprimer site
 
-ACTIONS
-- Click site left panel -> Selectionner et afficher details
-- Click "Admin WP" -> Ouvrir wp-admin (nouvelle fenetre)
-- Click "Visiter" -> Ouvrir site (nouvelle fenetre)
-- Click "Vider le cache" -> POST purgeCache
-- Click "Reinitialiser mot de passe" -> Modal reset password
-- Click "Mettre a jour WP" -> Modal confirmation MAJ
-- Click "Supprimer le site" -> Modal confirmation suppression
 ================================================================================

@@ -1,0 +1,124 @@
+# Cahier des Charges : public/cloud/instances - Listing
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page listing avec datagrid
+**Fonction:** Liste des instances Public Cloud
+**Contexte:** Gestion des VMs d'un projet
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Tableau: 1280x550px
+
+## 3. LAYOUT & STRUCTURE
+
+### Header OVHcloud
+- Background: #000E9C
+- Texte: "OVHcloud" + "Public Cloud"
+
+### Titre page
+- Titre: "Instances"
+- Bouton "Guides" (btn-secondary avec dropdown)
+
+### Boutons actions
+- "+ Créer une instance" (btn-secondary avec text-primary)
+- Bouton refresh ↻
+
+## 4. DATAGRID INSTANCES
+
+### Colonnes
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Nom / ID | 210px | Nom (link) + ID tronqué |
+| Région | 130px | Code région |
+| Modèle | 120px | Flavor (B2-15, C2-30, etc.) |
+| Image | 150px | OS (Ubuntu, Debian, etc.) |
+| IP publique | 150px | Adresse IPv4 ou - |
+| IP privée | 120px | Adresse privée |
+| Volumes | 130px | Nom du volume attaché |
+| Statut | 120px | Badge état |
+| Actions | 100px | Menu ⋮ |
+
+### Données exemple
+| Nom | Région | Modèle | Image | IP publique | Statut |
+|-----|--------|--------|-------|-------------|--------|
+| web-server-prod | GRA11 | B2-15 | Ubuntu 22.04 | 51.210.45.123 | ACTIVE |
+| api-backend-01 | SBG5 | C2-30 | Debian 12 | 51.210.45.124 | ACTIVE |
+| db-mysql-master | GRA11 | R2-60 | CentOS 8 | 51.210.45.125 | BUILDING |
+| worker-node-01 | BHS5 | B2-7 | Ubuntu 22.04 | - | ACTIVE |
+
+### Badges statut
+| Statut | Background | Text |
+|--------|------------|------|
+| ACTIVE | #DCFCE7 | #16A34A |
+| BUILDING | #FEF3C7 | #92400E |
+
+## 5. MENU ACTIONS
+
+### Dropdown (200x280px)
+- "Voir l'instance"
+- "Modifier"
+- "Assigner une IP flottante"
+- "Activer la facturation mensuelle"
+- ---
+- "Créer un backup"
+- "Programmer un backup auto"
+- ---
+- "Démarrer"
+- "Arrêter"
+- "Redémarrer (soft)"
+- ---
+- "Supprimer" (text-danger)
+
+## 6. APIS & ENDPOINTS
+
+```
+GET /cloud/project/{projectId}/instance
+→ Liste des instances
+
+GET /cloud/project/{projectId}/instance/{instanceId}
+→ Détails instance
+
+POST /cloud/project/{projectId}/instance
+Body: { name, region, flavorId, imageId, sshKeyId }
+→ Crée une instance
+
+POST /cloud/project/{projectId}/instance/{instanceId}/floatingIp
+→ Assigne une IP flottante
+
+POST /cloud/project/{projectId}/instance/{instanceId}/activeMonthlyBilling
+→ Active facturation mensuelle
+
+DELETE /cloud/project/{projectId}/instance/{instanceId}
+→ Supprime l'instance
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Instances |
+| btn_guides | Guides |
+| btn_create | Créer une instance |
+| btn_refresh | Actualiser |
+| col_name | Nom / ID |
+| col_region | Région |
+| col_model | Modèle |
+| col_image | Image |
+| col_public_ip | IP publique |
+| col_private_ip | IP privée |
+| col_volumes | Volumes |
+| col_status | Statut |
+| status_active | ACTIVE |
+| status_building | BUILDING |
+| action_view | Voir l'instance |
+| action_edit | Modifier |
+| action_floating_ip | Assigner une IP flottante |
+| action_monthly | Activer la facturation mensuelle |
+| action_backup | Créer un backup |
+| action_auto_backup | Programmer un backup auto |
+| action_start | Démarrer |
+| action_stop | Arrêter |
+| action_reboot | Redémarrer (soft) |
+| action_delete | Supprimer |

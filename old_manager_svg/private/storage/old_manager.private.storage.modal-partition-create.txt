@@ -1,0 +1,133 @@
+# Cahier des Charges : private/storage - Modal Partition Create
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Créer une nouvelle partition sur NAS-HA
+**Contexte:** Ajout d'espace de stockage partitionné
+
+## 2. DIMENSIONS
+
+- Modal: 500x500px
+- Background page: #F9FAFB
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F3F4F6
+- Titre: "Créer une partition"
+- Bouton fermer: ×
+- Height: 55px
+
+## 4. FORMULAIRE
+
+### Champ Nom de la partition
+- Label: "Nom de la partition *"
+- Type: Input text
+- Placeholder: "ex: backup-prod"
+- Largeur: 460px
+
+### Champ Description
+- Label: "Description"
+- Type: Input text
+- Placeholder: "Description optionnelle"
+- Largeur: 460px
+
+### Champ Taille
+- Label: "Taille (Go) *"
+- Type: Input number
+- Largeur: 200px
+- Note: "Min: 10 Go • Max: 4000 Go"
+
+### Champ Protocole
+- Label: "Protocole *"
+- Type: Radio cards (3 options)
+
+| Option | État |
+|--------|------|
+| NFS | Sélectionné |
+| CIFS | Non sélectionné |
+| NFS + CIFS | Non sélectionné |
+
+### Style radio cards
+- Dimensions: ~145x50px
+- Selected: border #0050D7, 2px
+
+### Champ Politique de snapshots
+- Label: "Politique de snapshots"
+- Type: Select dropdown
+- Options:
+  - Aucune
+  - Quotidien (rétention 7 jours)
+  - Hebdomadaire (rétention 4 semaines)
+  - Mensuel (rétention 3 mois)
+
+## 5. COMPOSANTS UI
+
+### Input number
+- Height: 40px
+- Border-radius: 4px
+- Avec constraints min/max
+
+### Radio card protocol
+- Titre du protocole
+- Radio button à gauche
+
+## 6. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Action: Ferme le modal
+
+### Bouton Créer
+- Style: btn-primary (100x40px)
+- Action: Crée la partition
+
+### Validation
+- Nom: requis, alphanumérique + tirets
+- Taille: requis, entre 10 et 4000 Go
+- Protocole: requis
+- Vérification espace disponible
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicated/nasha/{serviceName}
+→ Informations NAS (espace disponible)
+
+POST /dedicated/nasha/{serviceName}/partition
+Body: {
+  partitionName: "backup-prod",
+  partitionDescription: "Backup production",
+  size: 500,
+  protocol: "NFS"
+}
+→ Crée la partition
+
+PUT /dedicated/nasha/{serviceName}/partition/{partitionName}/customSnapshot
+Body: { expiration: "2025-02-01T00:00:00Z" }
+→ Configure les snapshots
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Créer une partition |
+| field_name | Nom de la partition |
+| field_name_placeholder | ex: backup-prod |
+| field_description | Description |
+| field_description_placeholder | Description optionnelle |
+| field_size | Taille (Go) |
+| field_size_hint | Min: 10 Go • Max: 4000 Go |
+| field_protocol | Protocole |
+| protocol_nfs | NFS |
+| protocol_cifs | CIFS |
+| protocol_both | NFS + CIFS |
+| field_snapshot | Politique de snapshots |
+| snapshot_none | Aucune |
+| snapshot_daily | Quotidien (rétention 7 jours) |
+| snapshot_weekly | Hebdomadaire (rétention 4 semaines) |
+| snapshot_monthly | Mensuel (rétention 3 mois) |
+| btn_cancel | Annuler |
+| btn_create | Créer |

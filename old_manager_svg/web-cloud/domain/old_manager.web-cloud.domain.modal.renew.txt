@@ -1,0 +1,120 @@
+# Cahier des Charges : web-cloud/domain - Modal Renew
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Renouveler un nom de domaine
+**Contexte:** Action depuis la page informations générales
+
+## 2. DIMENSIONS
+
+- Modal: 600x450px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Renouveler exemple.com"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Informations actuelles
+- Box info: 552x55px, background #F9FAFB
+
+| Élément | Position | Style |
+|---------|----------|-------|
+| "Expiration actuelle" | Gauche | text-muted font-size 10px |
+| Date expiration | Gauche | text-dark font-size 13px font-weight 500 |
+| "Renouvellement auto" | Droite | text-muted font-size 10px |
+| Toggle ON | Droite | 45x22px background #059669 |
+
+### Durée du renouvellement
+- Label: "Durée du renouvellement"
+- Layout: 4 cartes sélectionnables (horizontal)
+
+| Carte | Dimensions | Prix |
+|-------|------------|------|
+| 1 an | 125x45px | 9,99 € HT |
+| 2 ans | 125x45px | 18,99 € HT |
+| 5 ans | 125x45px | 44,99 € HT |
+| 10 ans | 147x45px | 84,99 € HT |
+
+- Carte sélectionnée: background #0050D7, texte blanc
+- Cartes non sélectionnées: background blanc, border grise
+
+### Nouvelle expiration
+- Banner succès: 552x40px, background #DEF7EC
+- Texte: "Nouvelle date d'expiration : 15 mars 2027"
+
+### Total à payer
+- Box: 252x55px (alignée droite), background #F9FAFB
+- Label: "Total à payer" (text-muted)
+- Montant: "9,99 € HT" (font-size 16px, font-weight 600)
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Renouveler | btn-primary | 110x34px |
+
+## 6. LOGIQUE MÉTIER
+
+- Les prix varient selon l'extension du domaine
+- La nouvelle date = date actuelle + durée sélectionnée
+- Le toggle renouvellement auto peut être modifié
+- Les domaines ont une durée max de renouvellement (10 ans)
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /domain/{serviceName}/serviceInfos
+→ Obtient la date d'expiration et le status de renouvellement
+
+GET /order/cart/{cartId}/domain
+Body: { domain: "exemple.com", duration: "P1Y" }
+→ Calcule le prix de renouvellement
+
+POST /order/cart/{cartId}/checkout
+→ Finalise la commande
+
+POST /domain/{serviceName}/renew
+Body: {
+  renew: {
+    automatic: true,
+    period: 12 // mois
+  }
+}
+→ Configure le renouvellement automatique
+
+# Durées disponibles
+# P1Y = 1 an
+# P2Y = 2 ans
+# P5Y = 5 ans
+# P10Y = 10 ans
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Renouveler {domain} |
+| current_expiration | Expiration actuelle |
+| auto_renew | Renouvellement auto |
+| field_duration | Durée du renouvellement |
+| duration_1y | 1 an |
+| duration_2y | 2 ans |
+| duration_5y | 5 ans |
+| duration_10y | 10 ans |
+| new_expiration | Nouvelle date d'expiration : {date} |
+| total | Total à payer |
+| btn_cancel | Annuler |
+| btn_renew | Renouveler |

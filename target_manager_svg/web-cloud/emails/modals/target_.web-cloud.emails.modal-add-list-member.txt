@@ -1,0 +1,81 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal-add-list-member.svg
+Route:   /web-cloud/emails/{domain}/lists/{list} (modal)
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| equipe@example.com            | Contexte: liste sélectionnée           |
+| Groupe Exchange · 12 membres  | GET /email/lists/{l} → type, count     |
+| admin@example.com             | GET /email/accounts/{d} → list         |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 500x520px
+- Type: Formulaire multi-sélection
+- Zone de saisie libre + sélection comptes
+- Preview des membres à ajouter
+
+# MÉTHODES D'AJOUT
+
+| Méthode          | Description                           |
+|------------------|---------------------------------------|
+| Saisie libre     | Emails séparés par virgules/lignes    |
+| Sélection        | Checkbox parmi comptes existants      |
+
+# CHAMPS
+
+| Champ           | Type      | Requis | Validation                  |
+|-----------------|-----------|--------|-----------------------------|
+| Adresses email  | textarea  | Cond.  | Format email valide         |
+| Comptes sélect. | checkbox  | Cond.  | Au moins une méthode        |
+
+# ÉLÉMENTS
+
+| Élément          | Description                           |
+|------------------|---------------------------------------|
+| Info liste       | Card avec badge type et nb membres    |
+| Zone saisie      | Textarea pour emails libres           |
+| Tags preview     | Tags des emails saisis                |
+| Liste comptes    | Checkbox des comptes du domaine       |
+| Compteur         | Nombre de membres à ajouter           |
+
+# INTERACTIONS
+
+- Saisie email → Création tag preview
+- Clic × (tag) → Supprime de la sélection
+- Checkbox compte → Ajoute/retire de sélection
+- Recherche → Filtre les comptes
+- Clic "Ajouter" → Ajoute les membres
+
+# VALIDATION
+
+- Au moins un membre à ajouter
+- Tous les emails au format valide
+- Pas de doublons avec membres existants
+
+# API ENDPOINTS
+
+POST /email/domains/{domain}/lists/{list}/members
+
+## Payload
+```json
+{
+  "members": [
+    "pierre@example.com",
+    "marie@example.com",
+    "support@example.com"
+  ]
+}
+```
+
+GET    /email/domains/{d}/lists/{l}/members → Liste membres actuels
+DELETE /email/domains/{d}/lists/{l}/members/{m} → Retirer membre
+
+================================================================================

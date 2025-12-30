@@ -3,70 +3,60 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.number.scheduler.svg
 Route:   /web-cloud/voip/{billingAccount}/number/{serviceName}/scheduler
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Horaires hebdo            | GET /telephony/{ba}/number/{sn}/schedule         |
-| Fermetures except.        | GET /telephony/{ba}/number/{sn}/schedule/exceptions |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| +33 800 123 456       | Route param {serviceName}                     |
+| Ouvert                | Calcul basé sur schedule actuel               |
+| 09:00 - 12:00         | GET scheduler → slots[].timeFrom/timeTo       |
+| Fermé                 | Jours sans slots configurés                   |
+| 3 jours fériés        | GET scheduler/holidays → count                |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. LEFT PANEL - Liste des numéros du groupe
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des numéros
 4. RIGHT PANEL
-   - Titre: Planification horaire
-   - NAV3 tabs
-   - Toolbar (+ Ajouter créneau)
-   - Grille horaires hebdo
-   - Fermetures exceptionnelles
+   - Header: Numéro + badge type + breadcrumb /Horaires
+   - NAV3: Général | Configuration | Agents | Statistiques | [Horaires]
+   - Bannière statut (ouvert/fermé + prochaine transition)
+   - Grille horaires semaine (visualisation + édition)
+   - Section jours fériés et exceptions
 
-# NAV3 TABS
-| Tab | Route |
-|-----|-------|
-| Général | /general |
-| Configuration | /configuration |
-| Agents | /agents |
-| Sons | /sounds |
-| Planification | /scheduler (actif) |
-| Statistiques | /stats |
-
-# HORAIRES HEBDOMADAIRES
-| Colonne | Description |
-|---------|-------------|
-| Jour | Lundi-Dimanche |
-| Horaires | Créneaux (badges) |
-| Statut | Ouvert/Fermé |
-| Actions | Edit, Delete |
-
-# CRÉNEAUX HORAIRES
-| Type | Badge | Couleur |
-|------|-------|---------|
-| Ouvert | schedule-open | Vert |
-| Fermé | schedule-closed | Rouge |
-
-# FERMETURES EXCEPTIONNELLES
-- Liste des dates de fermeture
-- Format: JJ/MM/AAAA - Motif
-- Action: Supprimer
+# REPRÉSENTATION VISUELLE
+| Couleur | Signification |
+|---------|---------------|
+| Vert DEF7EC | Plage ouverte |
+| Rouge FEE2E2 | Plage fermée |
+| Orange FEF3C7 | Effectif réduit |
 
 # INTERACTIONS
-- "+ Ajouter créneau" → Modal création créneau
-- ✎ → Modal édition créneau
-- × → Suppression créneau
-- "+ Fermeture" → Modal ajout exception
+- Clic NAV3 tab → Navigation onglet
+- Clic ✎ jour → Modal édition horaires du jour
+- Clic "Gérer exceptions" → Page exceptions/fériés
+- Drag sur plage horaire → Ajuster les horaires (optionnel)
 
 # API ENDPOINTS
-GET /telephony/{ba}/number/{sn}/schedule
-POST /telephony/{ba}/number/{sn}/schedule
-PUT /telephony/{ba}/number/{sn}/schedule/{day}
-DELETE /telephony/{ba}/number/{sn}/schedule/{day}
-GET /telephony/{ba}/number/{sn}/schedule/exceptions
-POST /telephony/{ba}/number/{sn}/schedule/exceptions
-DELETE /telephony/{ba}/number/{sn}/schedule/exceptions/{id}
+GET /telephony/{ba}/number/{sn}/easyHunting/scheduler → Config horaires
+PUT /telephony/{ba}/number/{sn}/easyHunting/scheduler → Modifier horaires
+GET /telephony/{ba}/number/{sn}/easyHunting/scheduler/holidays → Jours fériés
+POST /telephony/{ba}/number/{sn}/easyHunting/scheduler/holidays → Ajouter férié
+
+# STRUCTURE SCHEDULER
+```json
+{
+  "monday": [
+    {"timeFrom": "09:00", "timeTo": "12:00"},
+    {"timeFrom": "14:00", "timeTo": "18:00"}
+  ],
+  "saturday": [],
+  "sunday": []
+}
+```
 
 ================================================================================

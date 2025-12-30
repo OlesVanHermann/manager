@@ -1,0 +1,78 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal-add-alias.svg
+Route:   /web-cloud/emails/{domain}/accounts (modal alias)
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| jean@example.com              | Contexte: compte sélectionné           |
+| Exchange · 50 Go              | GET /email/accounts/{a} → offer, quota |
+| j.doe@example.com             | GET /email/accounts/{a}/aliases        |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 500x420px
+- Type: Formulaire simple
+- Bannière info explicative
+- Liste alias existants
+
+# CHAMPS
+
+| Champ          | Type    | Requis | Validation                  |
+|----------------|---------|--------|-----------------------------|
+| Partie locale  | text    | Oui    | Alphanum, 2-64 chars        |
+| Domaine        | fixed   | -      | Domaine du compte principal |
+
+# ÉLÉMENTS
+
+| Élément           | Description                           |
+|-------------------|---------------------------------------|
+| Bannière info     | Explication du concept d'alias        |
+| Compte principal  | Card avec badge offre                 |
+| Champ alias       | Input + domaine fixe                  |
+| Preview           | Prévisualisation du mapping           |
+| Alias existants   | Tags des alias actuels                |
+
+# LIMITES
+
+| Offre     | Max alias |
+|-----------|-----------|
+| Exchange  | 300       |
+| Email Pro | 50        |
+| Zimbra    | 100       |
+| MX Plan   | 10        |
+
+# INTERACTIONS
+
+- Saisie alias → Preview mise à jour
+- Clic × (tag) → Supprime alias existant
+- Clic "Ajouter" → Crée l'alias
+- Clic "Annuler" → Ferme modal
+
+# VALIDATION
+
+- Partie locale non vide
+- Format email valide
+- Alias pas déjà utilisé sur le domaine
+- Limite d'alias non atteinte
+
+# API ENDPOINTS
+
+GET  /email/domains/{d}/accounts/{a}/aliases → Liste alias
+POST /email/domains/{d}/accounts/{a}/aliases → Ajouter alias
+DELETE /email/domains/{d}/accounts/{a}/aliases/{alias} → Supprimer
+
+## Payload création
+```json
+{
+  "alias": "contact@example.com"
+}
+```
+
+================================================================================

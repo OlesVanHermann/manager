@@ -1,0 +1,190 @@
+# Cahier des Charges : web-cloud/access/overthebox - General
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard OverTheBox
+**Fonction:** Vue d'ensemble du service OverTheBox
+**Contexte:** Onglet Général de l'OverTheBox
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Zone contenu: 1096x765px
+- Status cards: 250x100px (x4)
+- Card connexions: 1030x250px
+- Card informations: 1030x170px
+- Boutons actions: 160x50px
+
+## 3. LAYOUT
+
+### Panel gauche
+- Largeur: 280px
+- Liste des OverTheBox
+- Recherche (input)
+- Sélection active: background #E8F0FE
+
+### Panel droit
+- Largeur: 1096px
+- Header avec nom et ID
+- NAV3 tabs
+- Contenu principal
+
+## 4. NAVIGATION
+
+### NAV3 Tabs OverTheBox
+| Onglet | État |
+|--------|------|
+| Général | Actif |
+| Connexions | Inactif |
+| Remotes | Inactif |
+| Configuration | Inactif |
+| Logs | Inactif |
+| Tâches | Inactif |
+
+## 5. HEADER
+
+- Nom: "OTB Siege Paris" (18px, font-weight 600)
+- ID: "otb-abc123xyz" (12px, text-muted)
+
+## 6. STATUS CARDS (4 colonnes)
+
+### Card 1: Statut
+- Label: "STATUT"
+- Badge: "Actif" (success, pill)
+- Sous-info: "Uptime: 45j 12:34:56"
+
+### Card 2: IP Publique
+- Label: "IP PUBLIQUE"
+- Valeur: "91.134.xxx.xxx" (16px, font-weight 600)
+- Action: "📋 Copier" (text-primary)
+
+### Card 3: Bande passante
+- Label: "BANDE PASSANTE AGRÉGÉE"
+- Valeur: "↓ 850 Mbps ↑ 350 Mbps"
+- Sous-info: "3 connexions actives"
+
+### Card 4: Firmware
+- Label: "FIRMWARE"
+- Valeur: "v0.9.12"
+- Badge: "À jour" (success)
+
+## 7. CARD CONNEXIONS ACTIVES
+
+### Header
+"CONNEXIONS ACTIVES"
+
+### Grille connexions (3 colonnes)
+Chaque connexion card: 310x80px, background #F9FAFB
+
+| Connexion | Type | Fournisseur | Débit | Priorité |
+|-----------|------|-------------|-------|----------|
+| Fibre Pro Paris | FTTH | OVH | ↓ 500 ↑ 200 Mbps | 1 |
+| ADSL Backup | VDSL2 | Orange | ↓ 50 ↑ 10 Mbps | 2 |
+| 4G Secours | 4G LTE | Bouygues | ↓ 100 ↑ 50 Mbps | 3 |
+
+### Indicateur statut
+- Cercle vert #10B981 = connecté
+- Cercle rouge #EF4444 = déconnecté
+
+### Boutons
+- "+ Ajouter connexion" (btn-outline, 180x32px)
+- "Gérer priorités" (btn-outline, 180x32px)
+
+## 8. CARD INFORMATIONS SERVICE
+
+### Header
+"INFORMATIONS SERVICE"
+
+### Champs (grille 3 colonnes)
+
+| Label | Valeur |
+|-------|--------|
+| Offre | OverTheBox Plus |
+| Date activation | 15/06/2024 |
+| Renouvellement | 15/06/2025 |
+| Service ID | otb-abc123xyz + 📋 Copier |
+| Device ID | device-xyz789 |
+| Nom | OTB Siege Paris + ✎ Modifier |
+
+### Bouton résiliation
+- "Résilier le service" (btn-outline-danger, 160x32px)
+- Border: #DC2626
+
+## 9. ACTIONS RAPIDES (3 boutons)
+
+| Action | Icône | Dimensions |
+|--------|-------|------------|
+| Redémarrer | 🔄 | 160x50px |
+| Statistiques | 📊 | 160x50px |
+| Documentation | 📖 | 160x50px |
+
+Style: btn-outline avec icône
+
+## 10. APIS & ENDPOINTS
+
+```
+GET /overTheBox/{serviceName}
+→ Informations service (nom, offre, dates)
+
+GET /overTheBox/{serviceName}/device
+→ Informations device (ID, firmware, uptime)
+
+GET /overTheBox/{serviceName}/device/status
+→ Statut actuel (IP publique, uptime)
+
+GET /overTheBox/{serviceName}/device/links
+→ Liste des connexions actives
+
+GET /overTheBox/{serviceName}/device/statistics
+→ Statistiques agrégées (bande passante)
+
+PUT /overTheBox/{serviceName}
+Body: { customName: "Nouveau nom" }
+→ Renommer l'OTB
+
+POST /overTheBox/{serviceName}/device/reboot
+→ Redémarrer l'OverTheBox
+
+POST /overTheBox/{serviceName}/changeContact
+Body: { contactAdmin: "new-nic" }
+→ Changer le contact
+
+DELETE /overTheBox/{serviceName}/terminate
+→ Résilier le service
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| nav_general | Général |
+| nav_connections | Connexions |
+| nav_remotes | Remotes |
+| nav_config | Configuration |
+| nav_logs | Logs |
+| nav_tasks | Tâches |
+| card_status | Statut |
+| card_ip | IP Publique |
+| card_bandwidth | Bande passante agrégée |
+| card_firmware | Firmware |
+| badge_active | Actif |
+| badge_uptodate | À jour |
+| uptime | Uptime: {duration} |
+| connections_active | {n} connexions actives |
+| btn_copy | Copier |
+| section_connections | Connexions actives |
+| conn_priority | Prio: {n} |
+| btn_add_connection | + Ajouter connexion |
+| btn_manage_priorities | Gérer priorités |
+| section_info | Informations service |
+| field_offer | Offre |
+| field_activation | Date activation |
+| field_renewal | Renouvellement |
+| field_service_id | Service ID |
+| field_device_id | Device ID |
+| field_name | Nom |
+| btn_edit | Modifier |
+| btn_terminate | Résilier le service |
+| action_reboot | Redémarrer |
+| action_statistics | Statistiques |
+| action_documentation | Documentation |

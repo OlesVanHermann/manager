@@ -1,0 +1,122 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Modal Zerto Add Site
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal de formulaire complexe
+**Fonction:** Ajouter un site Zerto pour la réplication/DR
+**Contexte:** Accessible depuis l'onglet Zerto du Dedicated Cloud
+
+## 2. DIMENSIONS
+
+- Modal: 700x740px
+- Border-radius: 8px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. COMPOSANTS UI
+
+### Header Modal
+- Background: #F9FAFB
+- Titre: "Ajouter un site Zerto"
+- Close button: ×
+
+### Section Configuration (lecture seule)
+- Sous-titre: "Configuration du site"
+- Infos affichées:
+  - Type de plan de reprise d'activité: "On premises"
+  - Datacenter OVH: "dc-123 (Paris)"
+  - Private Cloud OVH: "pcc-192-0-2-1"
+- Séparateur horizontal
+
+### Formulaire (5 champs)
+
+#### Champ 1: Label
+- Label: "Label *"
+- Placeholder: "Nom du site (ex: site-paris-01)"
+
+#### Champ 2: PSK
+- Label: "Clé de chiffrement du VPN (PSK) *"
+- Placeholder: "Clé pré-partagée pour le VPN"
+
+#### Champ 3: IP publique VPN distant
+- Label: "IP publique du VPN distant *"
+- Placeholder: "Ex: 198.51.100.1"
+
+#### Champ 4: Réseau VRA
+- Label: "Réseau VRA Datacenter on premises *"
+- Placeholder: "Ex: 10.0.0.0/24"
+
+#### Champ 5: IP ZVM
+- Label: "IP de votre Zvm *"
+- Placeholder: "Ex: 10.0.0.5"
+
+## 4. HEADER MODAL
+
+- Hauteur: 60px
+- Titre: "Ajouter un site Zerto"
+
+## 5. CONTENU
+
+### Récapitulatif configuration
+| Info | Valeur |
+|------|--------|
+| Type de plan | On premises |
+| Datacenter OVH | dc-123 (Paris) |
+| Private Cloud OVH | pcc-192-0-2-1 |
+
+### Formulaire
+| Champ | Type | Obligatoire | Format |
+|-------|------|-------------|--------|
+| Label | text | Oui | Alphanumérique |
+| PSK | password | Oui | Clé VPN |
+| IP publique VPN | text | Oui | IPv4 |
+| Réseau VRA | text | Oui | CIDR |
+| IP ZVM | text | Oui | IPv4 |
+
+## 6. FOOTER MODAL
+
+- Séparateur: ligne 1px
+- Bouton Annuler: btn-secondary (120x40px)
+- Bouton Valider: btn-primary (120x40px)
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/zerto/configuration
+→ Récupère la configuration Zerto actuelle
+
+POST /dedicatedCloud/{serviceName}/zerto/site
+Body: {
+  label: "site-paris-01",
+  psk: "secretKey123",
+  remotePublicIp: "198.51.100.1",
+  vraNetwork: "10.0.0.0/24",
+  zvmIp: "10.0.0.5"
+}
+→ Ajoute un nouveau site Zerto
+```
+
+## 8. VALIDATION
+
+- Tous les champs obligatoires
+- IP: format IPv4 valide
+- Réseau: format CIDR valide
+- PSK: minimum 16 caractères recommandé
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_zerto_add_site_title | Ajouter un site Zerto |
+| modal_zerto_config_section | Configuration du site |
+| modal_zerto_dr_type | Type de plan de reprise d'activité |
+| modal_zerto_datacenter | Datacenter OVH |
+| modal_zerto_pcc | Private Cloud OVH |
+| modal_zerto_label | Label |
+| modal_zerto_label_placeholder | Nom du site (ex: site-paris-01) |
+| modal_zerto_psk | Clé de chiffrement du VPN (PSK) |
+| modal_zerto_psk_placeholder | Clé pré-partagée pour le VPN |
+| modal_zerto_remote_ip | IP publique du VPN distant |
+| modal_zerto_vra_network | Réseau VRA Datacenter on premises |
+| modal_zerto_zvm_ip | IP de votre Zvm |
+| modal_cancel | Annuler |
+| modal_validate | Valider |

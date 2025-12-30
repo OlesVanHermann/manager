@@ -1,0 +1,141 @@
+# Cahier des Charges : web-cloud/access - Line Stats
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page monitoring avec graphiques
+**Fonction:** Statistiques de ligne xDSL/FTTH
+**Contexte:** Visualisation débit, uptime, événements
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Graphique débit: 1030x220px
+- Cards métriques: 505x180px
+- Tableau événements: 1030x140px
+
+## 3. LAYOUT & STRUCTURE
+
+### NAV4 Sous-tabs
+| Sous-onglet | État |
+|-------------|------|
+| Statut | Inactif |
+| Diagnostic | Inactif |
+| Statistiques | Actif |
+| Alertes | Inactif |
+
+## 4. TOOLBAR
+
+### Sélecteur période
+- Type: Select dropdown
+- Options: 7 derniers jours, 30 jours, 3 mois
+- Dimensions: 100x28px
+
+### Bouton export
+- "Exporter CSV" (btn-outline, 130x28px)
+
+## 5. GRAPHIQUE DÉBIT
+
+### Dimensions
+- 1030x220px
+
+### Titre
+"DÉBIT DE SYNCHRONISATION"
+
+### Légende
+- Descendant: #0050D7 (bleu)
+- Montant: #10B981 (vert)
+
+### Axes
+- Y: 0, 250, 500, 750, 1000 Mbps
+- X: Dates sur 7 jours
+
+### Style
+- Lignes horizontales: dashed #E5E7EB
+- Courbes: stroke-width 2
+
+## 6. CARD UPTIME
+
+### Dimensions
+- 505x180px
+
+### Contenu
+- Titre: "UPTIME"
+- Valeur: "99.98%" (36px, font-weight 600)
+- Tendance: "+0.02% vs mois précédent" (#059669)
+- Temps de disponibilité: "29j 23h 58m"
+- Temps d'indisponibilité: "2 minutes"
+
+## 7. CARD CONNEXIONS
+
+### Dimensions
+- 505x180px
+
+### Contenu
+- Titre: "CONNEXIONS"
+- Resynchronisations (7j): nombre
+- Dernière resync: date/heure
+- Déconnexions (7j): nombre
+- Durée connexion actuelle: "127 jours"
+
+## 8. TABLEAU ÉVÉNEMENTS
+
+### Titre
+"HISTORIQUE DES ÉVÉNEMENTS (7 derniers jours)"
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| Date | Date et heure |
+| Type | Badge (Resync, Down, etc.) |
+| Description | Texte explicatif |
+| Durée | Durée de l'événement |
+
+### Badge types
+- Resync: Background #DBEAFE, text #1E40AF
+
+## 9. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/lines/{number}/statistics
+Query: { period: "7days" | "30days" | "3months" }
+→ Statistiques de débit
+
+GET /xdsl/{serviceName}/totalDeconsolidationTerms
+→ Uptime et disponibilité
+
+GET /xdsl/{serviceName}/lines/{number}/history
+→ Historique des événements
+
+GET /xdsl/{serviceName}/lines/{number}/synchronization
+→ État de synchronisation actuel
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| filter_period | Période |
+| period_7d | 7 derniers jours |
+| period_30d | 30 jours |
+| period_3m | 3 mois |
+| btn_export | Exporter CSV |
+| chart_bandwidth | Débit de synchronisation |
+| legend_down | Descendant |
+| legend_up | Montant |
+| card_uptime | Uptime |
+| uptime_vs | vs mois précédent |
+| uptime_available | Temps de disponibilité ce mois |
+| uptime_unavailable | Temps d'indisponibilité |
+| card_connections | Connexions |
+| resync_7d | Resynchronisations (7j) |
+| last_resync | Dernière resync |
+| disconnections_7d | Déconnexions (7j) |
+| current_duration | Durée connexion actuelle |
+| table_events | Historique des événements |
+| col_date | Date |
+| col_type | Type |
+| col_description | Description |
+| col_duration | Durée |
+| type_resync | Resync |
+| event_auto_resync | Resynchronisation automatique |
+| event_manual_resync | Resynchronisation manuelle |

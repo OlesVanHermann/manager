@@ -1,0 +1,117 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Modal User Rights Edit
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal de formulaire complexe
+**Fonction:** Modifier les droits d'un utilisateur sur un datacenter spécifique
+**Contexte:** Accessible depuis l'onglet Droits d'un utilisateur
+
+## 2. DIMENSIONS
+
+- Modal: 700x580px
+- Border-radius: 8px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. COMPOSANTS UI
+
+### Header Modal
+- Background: #F9FAFB
+- Titre: "Modifier les droits - dc-paris-01"
+- Close button: ×
+
+### Info contexte
+- Utilisateur: "admin@vsphere.local"
+- Datacenter: "dc-paris-01"
+- Séparateur: ligne horizontale
+
+### Formulaire (4 champs)
+
+#### Champ 1: Accès vSphere
+- Type: Select dropdown
+- Valeur: "Admin complet"
+- Options: Admin complet, Lecture seule, Aucun accès
+
+#### Champ 2: Ajouter des ressources
+- Type: Checkbox
+- Label: "Autoriser l'ajout de ressources (hosts, datastores)"
+- État: checked
+
+#### Champ 3: Rôle VM Network
+- Type: Select dropdown
+- Valeur: "Admin"
+- Options: Admin, Lecture seule, Aucun
+
+#### Champ 4: Rôle Network (V(x)Lan)
+- Type: Select dropdown
+- Valeur: "Admin"
+- Options: Admin, Lecture seule, Aucun
+
+### Helper text
+- "Les modifications prendront effet après la prochaine connexion de l'utilisateur."
+
+## 4. HEADER MODAL
+
+- Hauteur: 60px
+- Titre dynamique: "Modifier les droits - {datacenterName}"
+
+## 5. CONTENU
+
+### Informations contextuelles
+```
+Utilisateur : admin@vsphere.local
+Datacenter : dc-paris-01
+```
+
+### Formulaire de droits
+| Champ | Type | Options |
+|-------|------|---------|
+| Accès vSphere | select | Admin complet, Lecture seule, Aucun accès |
+| Ajouter des ressources | checkbox | Oui/Non |
+| Rôle VM Network | select | Admin, Lecture seule, Aucun |
+| Rôle Network (V(x)Lan) | select | Admin, Lecture seule, Aucun |
+
+## 6. FOOTER MODAL
+
+- Séparateur: ligne 1px
+- Bouton Annuler: btn-secondary (100x36px)
+- Bouton Modifier: btn-primary (100x36px)
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/user/{userId}/rights/{datacenterId}
+→ Récupère les droits actuels
+
+PUT /dedicatedCloud/{serviceName}/user/{userId}/rights/{datacenterId}
+Body: {
+  vsphereAccess: "admin",
+  canAddResources: true,
+  vmNetworkRole: "admin",
+  networkRole: "admin"
+}
+→ Met à jour les droits de l'utilisateur
+```
+
+## 8. VALIDATION
+
+- Au moins une permission doit être définie
+- Les modifications nécessitent une reconnexion
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_rights_edit_title | Modifier les droits |
+| modal_rights_user | Utilisateur |
+| modal_rights_datacenter | Datacenter |
+| modal_rights_vsphere_access | Accès vSphere |
+| modal_rights_add_resources | Ajouter des ressources |
+| modal_rights_add_resources_desc | Autoriser l'ajout de ressources (hosts, datastores) |
+| modal_rights_vm_network | Rôle VM Network |
+| modal_rights_network_vlan | Rôle Network (V(x)Lan) |
+| modal_rights_helper | Les modifications prendront effet après la prochaine connexion de l'utilisateur. |
+| modal_cancel | Annuler |
+| modal_modify | Modifier |
+| access_admin | Admin complet |
+| access_readonly | Lecture seule |
+| access_none | Aucun accès |

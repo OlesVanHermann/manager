@@ -1,0 +1,135 @@
+# Cahier des Charges : web-cloud/emails - Redirections
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec panel latéral
+**Fonction:** Gestion des redirections email du domaine
+**Contexte:** Onglet Redirections
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections (actif) | Répondeurs | Listes | Sécurité | Avancé | Licences | Tâches
+
+## 3. LAYOUT
+
+### Panel gauche (280x765px)
+- Toggle: "Par domaine" / "Par licence"
+- Recherche domaine
+- Liste des domaines avec compteurs offres
+
+### Panel droit (1096x765px)
+- Header avec nom domaine
+- Onglets NAV3
+- Toolbar
+- Tableau redirections
+
+## 4. TOOLBAR
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Créer redirection | btn-primary | Ouvre modal création |
+| Filtrer... | Input | Recherche |
+| ↻ | btn-outline | Rafraîchir |
+
+## 5. BANNIÈRE INFO
+
+- Background: #DBEAFE
+- Dimensions: 1036x40px
+- Texte: "Les redirections permettent de transférer automatiquement les emails reçus vers une autre adresse."
+
+## 6. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| De | 280px | Email source (lien bleu) |
+| Vers | 300px | Email destination |
+| Copie locale | 120px | Badge Oui/Non |
+| Statut | 100px | Badge Actif |
+| Actions | 160px | Modifier / Supprimer |
+
+### Badges Copie locale
+
+| Valeur | Background | Couleur |
+|--------|------------|---------|
+| Oui | #DEF7EC | #03543F |
+| Non | #F3F4F6 | #6B7280 |
+
+### Exemples
+
+| De | Vers | Copie | Statut |
+|----|------|-------|--------|
+| contact@example.com | jean.dupont@gmail.com | Oui | Actif |
+| support@example.com | helpdesk@external.com | Non | Actif |
+| sales@example.com | team-sales@example.com | Oui | Actif |
+| newsletter@example.com | marketing@agence.fr | Non | Actif |
+
+## 7. ACTIONS PAR LIGNE
+
+- **Modifier**: Ouvre modal modification (lien bleu)
+- **Supprimer**: Confirmation puis suppression (lien rouge)
+
+## 8. PAGINATION
+
+- Texte: "Affichage 1-4 sur 4"
+
+## 9. APIS & ENDPOINTS
+
+```
+# MX Plan - Lister redirections
+GET /email/domain/{domain}/redirection
+→ Liste des redirections du domaine
+
+# Créer redirection
+POST /email/domain/{domain}/redirection
+Body: {
+  from: "contact@example.com",
+  to: "jean.dupont@gmail.com",
+  localCopy: true
+}
+
+# Modifier redirection
+PUT /email/domain/{domain}/redirection/{id}
+Body: { localCopy: false }
+
+# Supprimer redirection
+DELETE /email/domain/{domain}/redirection/{id}
+
+# Exchange - Forward
+GET /email/exchange/{organization}/service/{serviceName}/account/{email}
+→ Champs forwardTo, forwardCopy
+
+PUT /email/exchange/{organization}/service/{serviceName}/account/{email}
+Body: {
+  forwardTo: "destination@external.com",
+  forwardCopy: true
+}
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_title | Redirections |
+| info_banner | Les redirections permettent de transférer automatiquement les emails reçus vers une autre adresse. |
+| btn_create | + Créer redirection |
+| filter_placeholder | Filtrer... |
+| col_from | De |
+| col_to | Vers |
+| col_local_copy | Copie locale |
+| col_status | Statut |
+| col_actions | Actions |
+| copy_yes | Oui |
+| copy_no | Non |
+| status_active | Actif |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| pagination | Affichage {start}-{end} sur {total} |

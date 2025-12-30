@@ -1,0 +1,189 @@
+# Cahier des Charges : web-cloud/access - Modem Paramètres
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page paramètres avancés
+**Fonction:** Gérer les paramètres système du modem
+**Contexte:** Onglet Modem > Paramètres
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Zone contenu: 1096x765px
+- Card accès admin: 1030x150px
+- Card firmware: 1030x150px
+- Card sauvegarde: 1030x150px
+- Card maintenance: 1030x100px
+
+## 3. NAVIGATION
+
+### NAV3 Tabs
+| Onglet | État |
+|--------|------|
+| Général | Inactif |
+| Ligne | Inactif |
+| Modem | Actif |
+| Services | Inactif |
+
+### NAV4 Sous-tabs
+| Sous-onglet | État |
+|-------------|------|
+| Dashboard | Inactif |
+| WiFi | Inactif |
+| DHCP | Inactif |
+| NAT/Ports | Inactif |
+| Routeur | Inactif |
+| Paramètres | Actif |
+| Guides | Inactif |
+
+## 4. CARD ACCÈS ADMINISTRATION
+
+### Titre
+"ACCÈS ADMINISTRATION"
+
+### Champs
+
+| Label | Valeur | Action |
+|-------|--------|--------|
+| URL d'accès local | http://192.168.1.1 | Ouvrir |
+| Port admin | 80 | - |
+| Utilisateur | admin | - |
+| Mot de passe | ******** | Afficher |
+
+### Bouton
+- "Changer MDP" (btn-outline, 160x32px)
+
+## 5. CARD FIRMWARE
+
+### Titre
+"FIRMWARE"
+
+### Champs
+
+| Label | Valeur | Badge |
+|-------|--------|-------|
+| Version actuelle | 4.12.0 | À jour (success) |
+| Dernière MAJ | 15/12/2024 | - |
+| MAJ automatique | Toggle ON | Plage: 03:00 - 06:00 |
+
+### Bouton
+- "Forcer MAJ" (btn-outline, 160x32px)
+
+## 6. CARD SAUVEGARDE CONFIGURATION
+
+### Titre
+"SAUVEGARDE CONFIGURATION"
+
+### Champs
+
+| Label | Valeur | Action |
+|-------|--------|--------|
+| Dernière sauvegarde | 10/12/2024 14:30 | Télécharger |
+| Taille | 2.3 KB | - |
+
+### Boutons
+- "Sauvegarder" (btn-primary, 160x32px)
+- "Restaurer config" (btn-outline, 180x32px)
+- "Réinitialiser" (btn-danger-outline, 180x32px)
+
+## 7. CARD MAINTENANCE
+
+### Titre
+"MAINTENANCE"
+
+### Champs
+
+| Label | Valeur |
+|-------|--------|
+| Uptime | 127j 08:45:12 |
+| Dernier redémarrage | 25/08/2024 03:15 |
+
+### Bouton
+- "Redémarrer" (btn-danger-outline, 160x36px)
+
+## 8. INFO BANNER
+
+- Background: #DBEAFE
+- Texte: "La réinitialisation effacera tous les paramètres personnalisés et restaurera la configuration usine."
+
+## 9. COMPOSANTS UI
+
+### Toggle switch MAJ auto
+- Dimensions: 60x28px
+- ON: Background #DEF7EC, cercle vert
+
+### Input readonly
+- Background: #F3F4F6
+- Border-radius: 4px
+
+### Dropdown plage horaire
+- Options: 00:00-03:00, 03:00-06:00, 06:00-09:00, etc.
+
+## 10. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/modem/adminCredentials
+→ Informations d'accès (URL, user)
+
+PUT /xdsl/{serviceName}/modem/adminPassword
+Body: { password: "newPassword" }
+→ Change le mot de passe admin
+
+GET /xdsl/{serviceName}/modem/firmware
+→ Version firmware actuelle
+
+PUT /xdsl/{serviceName}/modem/firmwareUpgrade
+→ Force la mise à jour
+
+PUT /xdsl/{serviceName}/modem/firmwareAutoUpgrade
+Body: { enabled: true, window: "03:00-06:00" }
+→ Configure MAJ automatique
+
+GET /xdsl/{serviceName}/modem/configuration
+→ Télécharge la configuration
+
+POST /xdsl/{serviceName}/modem/configuration/backup
+→ Sauvegarde la configuration
+
+POST /xdsl/{serviceName}/modem/configuration/restore
+→ Restaure une configuration
+
+POST /xdsl/{serviceName}/modem/reset
+→ Réinitialisation usine
+
+POST /xdsl/{serviceName}/modem/reboot
+→ Redémarre le modem
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| nav_params | Paramètres |
+| section_admin | Accès administration |
+| field_url | URL d'accès local |
+| field_port | Port admin |
+| field_user | Utilisateur |
+| field_password | Mot de passe |
+| btn_show | Afficher |
+| btn_open | Ouvrir |
+| btn_change_pwd | Changer MDP |
+| section_firmware | Firmware |
+| field_version | Version actuelle |
+| firmware_uptodate | À jour |
+| field_last_update | Dernière MAJ |
+| field_auto_update | MAJ automatique |
+| field_window | Plage horaire |
+| btn_force_update | Forcer MAJ |
+| section_backup | Sauvegarde configuration |
+| field_last_backup | Dernière sauvegarde |
+| field_size | Taille |
+| btn_download | Télécharger |
+| btn_backup | Sauvegarder |
+| btn_restore | Restaurer config |
+| btn_reset | Réinitialiser |
+| section_maintenance | Maintenance |
+| field_uptime | Uptime |
+| field_last_reboot | Dernier redémarrage |
+| btn_reboot | Redémarrer |
+| warning_reset | La réinitialisation effacera tous les paramètres personnalisés et restaurera la configuration usine. |

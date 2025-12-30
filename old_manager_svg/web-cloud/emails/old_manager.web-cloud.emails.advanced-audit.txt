@@ -1,0 +1,130 @@
+# Cahier des Charges : web-cloud/emails - Advanced Audit
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec filtres
+**Fonction:** Journal d'audit des actions email
+**Contexte:** Sous-onglet Audit de l'onglet Avancé
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections | Répondeurs | Listes | Sécurité | Avancé (actif) | Licences | Tâches
+
+### NAV4
+- Sous-onglets: Général | Contacts | Audit (actif) | Appareils
+
+## 3. FILTRES
+
+| Filtre | Type | Options |
+|--------|------|---------|
+| Période | Dropdown | 7 derniers jours, 30 jours, 90 jours, 1 an |
+| Type | Dropdown | Tous, Connexion, Mot de passe, Création, Suppression |
+| Utilisateur | Dropdown | Tous, liste des comptes |
+
+### Actions toolbar
+- Exporter (btn-outline)
+- Rafraîchir (↻)
+
+## 4. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Date/Heure | 140px | Date + heure sur 2 lignes |
+| Utilisateur | 180px | Email (lien) |
+| Action | 180px | Badge coloré |
+| Cible | 200px | Ressource concernée |
+| IP Source | 140px | Adresse IP |
+| Résultat | 100px | Badge Succès/Échec |
+
+### Types d'actions (badges)
+
+| Action | Badge | Couleur |
+|--------|-------|---------|
+| Connexion | #DBEAFE | Bleu info |
+| Mot de passe | #FEF3C7 | Jaune warning |
+| Création | #FEF3C7 | Jaune warning |
+| Accès boîte | #F3F4F6 | Gris |
+| Redirection | #E0E7FF | Indigo |
+
+### Badges résultat
+
+| Résultat | Couleur |
+|----------|---------|
+| Succès | #DEF7EC (vert) |
+| Échec | #FEE2E2 (rouge) |
+
+## 5. EXEMPLES D'ÉVÉNEMENTS
+
+| Date | Utilisateur | Action | Cible | IP | Résultat |
+|------|-------------|--------|-------|-----|----------|
+| 30/12 14:32 | admin@ | Connexion | OWA Webmail | 82.65.123.45 | Succès |
+| 30/12 14:28 | admin@ | Mot de passe | jean@ | 82.65.123.45 | Succès |
+| 30/12 12:45 | marie@ | Connexion | ActiveSync | 91.172.45.89 | Échec |
+| 30/12 10:15 | admin@ | Accès boîte | support@ | 82.65.123.45 | Succès |
+| 29/12 18:22 | pierre@ | Redirection | perso@gmail | 78.231.67.12 | Succès |
+
+## 6. PAGINATION
+
+- Texte: "Affichage 1-6 sur 247 événements"
+- Navigation: < 1 2 ... >
+
+## 7. APIS & ENDPOINTS
+
+```
+# Exchange uniquement
+GET /email/exchange/{organization}/service/{serviceName}/log
+Query: {
+  type: "connexion" | "password" | "creation" | ...,
+  user: "admin@example.com",
+  date.from: "2025-12-01",
+  date.to: "2025-12-31"
+}
+→ Liste les événements d'audit
+
+GET /email/exchange/{organization}/service/{serviceName}/log/{id}
+→ Détails d'un événement
+
+# Export
+GET /email/exchange/{organization}/service/{serviceName}/log/export
+Query: { format: "csv" }
+→ Exporte les logs
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Audit |
+| filter_period | Période |
+| filter_type | Type |
+| filter_user | Utilisateur |
+| period_7d | 7 derniers jours |
+| period_30d | 30 derniers jours |
+| period_90d | 90 derniers jours |
+| period_1y | 1 an |
+| type_all | Tous |
+| type_login | Connexion |
+| type_password | Mot de passe |
+| type_creation | Création |
+| type_access | Accès boîte |
+| type_forward | Redirection |
+| col_date | Date/Heure |
+| col_user | Utilisateur |
+| col_action | Action |
+| col_target | Cible |
+| col_ip | IP Source |
+| col_result | Résultat |
+| result_success | Succès |
+| result_failed | Échec |
+| btn_export | Exporter |
+| btn_refresh | Rafraîchir |
+| pagination | Affichage {start}-{end} sur {total} événements |

@@ -2,61 +2,79 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.licenses.svg
-Route:   /web-cloud/emails/licenses
+Route:   /web-cloud/emails/{domain}/licenses
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG                | Source API                              |
-|----------------------------|-----------------------------------------|
-| Exchange Business 10       | GET /email/licenses/packs -> name       |
-| 7/10 utilisees             | -> usedLicenses / totalLicenses         |
-| Multi-domaine              | -> scope                                |
-| 49,90 EUR/mois             | -> price                                |
-| ceo@example.com            | GET /email/licenses/packs/{id}/accounts |
-| 15/03/2025                 | -> expirationDate                       |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| 5 licences actives            | GET /email/licenses/{d} → count by type |
+| 49,95 € HT                    | → totalCost by type                    |
+| Exchange 2019                 | → offerName                            |
+| admin@example.com             | → associatedAccount                    |
+| 50 Go                         | → quota                                |
+| 15/01/2026                    | → renewalDate                          |
+| 9,99 €/mois                   | → unitPrice                            |
 
 ================================================================================
 
-STRUCTURE PAGE
+# STRUCTURE PAGE
+
 1. NAV1 - Header OVH (Web Cloud actif)
 2. NAV2 - Web Cloud (Emails actif)
-3. LEFT PANEL - Vue licence
-   - Toggle: [Par domaine] / [Par licence (actif)]
-   - Section PACKS avec barres utilisation
-   - Section A LA CARTE
-   - Boutons Commander pack / Ajouter licence
-4. RIGHT PANEL
-   - Header: Nom pack + stats + Gerer
-   - NAV3: 8 tabs (Licences actif)
-   - NAV4: [Mes packs] | A la carte | Historique
-   - Details pack (offre, scope, expiration, prix)
-   - Table comptes utilisant ce pack
-   - Recapitulatif mensuel
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Licences ACTIF)
+   - NAV4: Vue globale (actif) | À la carte | Historique
+   - Cards résumé par offre
+   - Card total
+   - Table détail licences
+   - Pagination
 
-TYPES LICENCES
-| Type       | Description                          |
-|------------|--------------------------------------|
-| Pack       | Lot de licences (remise volume)      |
-| A la carte | Licences individuelles               |
-| Inclus     | MX Plan gratuit avec domaine         |
+# NAV4 - SOUS-TABS LICENCES
 
-SCOPE PACKS
-| Scope        | Description                         |
-|--------------|-------------------------------------|
-| Multi-domaine| Utilisable sur tous les domaines    |
-| Mono-domaine | Reserve a un domaine specifique     |
+| # | Tab         | Route              | Contenu                     |
+|---|-------------|--------------------|-----------------------------|
+| 1 | Vue globale | /licenses          | Résumé + liste complète     |
+| 2 | À la carte  | /licenses-alacarte | Commander nouvelles options |
+| 3 | Historique  | /licenses-history  | Historique commandes        |
 
-API ENDPOINTS
-GET    /email/licenses                      - Vue inventaire complet
-GET    /email/licenses/packs                - Liste packs
-GET    /email/licenses/packs/{id}           - Details pack
-GET    /email/licenses/packs/{id}/accounts  - Comptes du pack
-POST   /email/licenses/packs                - Commander pack
-PUT    /email/licenses/packs/{id}           - Modifier pack (upgrade)
-DELETE /email/licenses/packs/{id}           - Resilier pack
-GET    /email/licenses/alacarte             - Licences a la carte
-POST   /email/licenses/alacarte             - Ajouter licence
-DELETE /email/licenses/alacarte/{id}        - Supprimer licence
+# CARDS RÉSUMÉ PAR OFFRE
+
+| Offre     | Couleur  | Informations                        |
+|-----------|----------|-------------------------------------|
+| Exchange  | 🟠 Orange| Nb licences, coût mensuel, bouton   |
+| Email Pro | 🔵 Bleu  | Nb licences, coût mensuel, bouton   |
+| Zimbra    | 🟣 Violet| Nb licences, coût mensuel, bouton   |
+| MX Plan   | ⚪ Gris  | Nb licences, "Inclus", désactivé    |
+
+# COLONNES TABLE LICENCES
+
+| Colonne        | Largeur | Contenu                        |
+|----------------|---------|--------------------------------|
+| Offre          | 160px   | Badge couleur + nom offre      |
+| Compte associé | 220px   | Email du compte                |
+| Quota          | 120px   | Espace stockage                |
+| Renouvellement | 160px   | Date prochaine facturation     |
+| Prix unitaire  | 140px   | Prix mensuel                   |
+| Statut         | 120px   | Badge Actif/Expiré/Suspendu    |
+| Actions        | 100px   | ⚙ Gérer                        |
+
+# INTERACTIONS
+
+- Clic "Gérer →" (card offre) → Vue filtrée par offre
+- Clic ⚙ (ligne) → Menu actions licence
+- Pagination → Navigation entre pages
+
+# API ENDPOINTS
+
+GET  /email/licenses/{domain}                → Liste toutes licences
+GET  /email/licenses/{domain}/summary        → Résumé par offre
+GET  /email/licenses/{domain}/costs          → Coûts mensuels
+GET  /email/exchange/{org}/{domain}/licenses → Licences Exchange
+GET  /email/pro/{domain}/licenses            → Licences Email Pro
+GET  /email/zimbra/{domain}/licenses         → Licences Zimbra
 
 ================================================================================

@@ -1,0 +1,70 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.glue.svg
+Route:   /web-cloud/domain/{domainName}/glue/add
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| exemple.com                     | /domain → domainName                    |
+| ns1, ns2, dns1...               | Input utilisateur                       |
+| 203.0.113.10                    | Input utilisateur (IPv4)                |
+| 2001:db8::1                     | Input utilisateur (IPv6)                |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. HEADER - Titre "Ajouter un enregistrement GLUE" (fond gris)
+2. CONTENT
+   - Nom du serveur DNS + suffixe domaine
+   - Adresse IPv4
+   - Adresse IPv6 (optionnel)
+   - Bannière warning (IP fixe)
+3. FOOTER - Boutons Annuler / Ajouter
+
+# MODAL TYPE
+- Type: Formulaire GLUE record
+- Dimensions: 600x450px
+- Header: Fond gris (#F9FAFB)
+
+# QU'EST-CE QU'UN GLUE RECORD ?
+Un GLUE record associe un nom de serveur DNS à une IP au niveau
+du registre (TLD). Il est nécessaire quand vos serveurs DNS sont
+des sous-domaines de votre propre domaine.
+
+Exemple : Pour le domaine exemple.com, si vous utilisez
+ns1.exemple.com comme serveur DNS, il faut un GLUE record
+car sinon il y aurait une dépendance circulaire.
+
+# CHAMPS
+| Champ | Obligatoire | Description |
+|-------|-------------|-------------|
+| Nom serveur | Oui | Préfixe (ns1, ns2, dns1...) |
+| IPv4 | Oui | Adresse IPv4 stable |
+| IPv6 | Non | Adresse IPv6 stable |
+
+# PRÉREQUIS
+- IP fixe et stable (pas d'IP dynamique)
+- Le serveur DNS doit être configuré et fonctionnel
+- Les records A/AAAA correspondants dans la zone
+
+# PROPAGATION
+- Enregistrement au registre : quelques heures
+- Propagation complète : jusqu'à 48h
+
+# API ENDPOINTS
+POST /domain/{domain}/glueRecord - Créer GLUE record
+  Body: {
+    host: "ns1",
+    ips: ["203.0.113.10", "2001:db8::1"]
+  }
+
+GET /domain/{domain}/glueRecord - Lister GLUE records
+  Response: [
+    { host: "ns1", ips: ["203.0.113.10"] }
+  ]
+
+================================================================================

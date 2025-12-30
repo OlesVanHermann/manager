@@ -1,0 +1,86 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal-configure-dmarc.svg
+Route:   /web-cloud/emails/{domain}/security (modal)
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| example.com                   | Contexte: domaine courant              |
+| quarantine                    | GET /email/domains/{d}/dns/dmarc → policy |
+| 100                           | → pct                                  |
+| dmarc-reports@example.com     | → rua                                  |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 600x680px
+- Type: Configuration technique
+- Sélection visuelle de politique
+- Preview enregistrement DNS
+
+# CHAMPS
+
+| Champ           | Type      | Requis | Validation                  |
+|-----------------|-----------|--------|-----------------------------|
+| Politique       | radio     | Oui    | none/quarantine/reject      |
+| Pourcentage     | number    | Oui    | 1-100                       |
+| Email rua       | email     | Non    | Format email valide         |
+| Email ruf       | email     | Non    | Format email valide         |
+
+# POLITIQUES DMARC
+
+| Politique  | Description                              |
+|------------|------------------------------------------|
+| none       | Surveillance uniquement, aucune action   |
+| quarantine | Emails suspects en spam/quarantaine      |
+| reject     | Rejet des emails non authentifiés        |
+
+# PARAMÈTRES
+
+| Paramètre | Description                              |
+|-----------|------------------------------------------|
+| pct       | % de messages soumis à la politique      |
+| rua       | Adresse pour rapports agrégés            |
+| ruf       | Adresse pour rapports forensiques        |
+
+# FORMAT DNS
+
+```
+_dmarc.example.com. IN TXT "v=DMARC1; p=quarantine; pct=100; rua=mailto:dmarc@example.com"
+```
+
+# INTERACTIONS
+
+- Sélection politique → Met à jour preview
+- Saisie pct → Met à jour preview
+- Saisie emails → Met à jour preview
+- Clic "Configurer" → Crée/modifie record
+
+# RECOMMANDATIONS
+
+1. Commencer par p=none pour surveiller
+2. Analyser les rapports pendant 2-4 semaines
+3. Passer progressivement à quarantine puis reject
+4. Utiliser pct=10 puis augmenter graduellement
+
+# API ENDPOINTS
+
+GET  /email/domains/{domain}/dns/dmarc     → Config actuelle
+POST /email/domains/{domain}/dns/dmarc     → Configurer DMARC
+
+## Payload
+```json
+{
+  "policy": "quarantine",
+  "percentage": 100,
+  "ruaEmail": "dmarc-reports@example.com",
+  "rufEmail": "dmarc-forensics@example.com"
+}
+```
+
+================================================================================

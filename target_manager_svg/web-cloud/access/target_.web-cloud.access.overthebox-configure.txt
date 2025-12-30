@@ -1,0 +1,85 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.access.overthebox-configure.svg
+Route:   /web-cloud/access/overthebox/{id}/configuration
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| 192.168.100.10/254       | GET /overthebox/{id}/config → dhcp.range         |
+| 192.168.100.1            | → network.routerIp                               |
+| 255.255.255.0            | → network.netmask                                |
+| 213.186.33.99            | → dns.primary                                    |
+| 213.186.33.98            | → dns.secondary                                  |
+| Équilibrage de charge    | → aggregation.mode                               |
+| Automatique              | → aggregation.failover                           |
+| ON                       | → aggregation.encrypted                          |
+| 1500                     | → aggregation.mtu                                |
+| ON                       | → qos.enabled                                    |
+| 850 Mbps                 | → qos.download                                   |
+| 350 Mbps                 | → qos.upload                                     |
+| 25/12/2024 10:30         | → backup.lastBackup                              |
+
+================================================================================
+
+# STRUCTURE PAGE
+
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Accès actif)
+3. LEFT PANEL - Liste OverTheBox
+4. RIGHT PANEL
+   - Header: Nom OTB
+   - NAV3: 6 tabs (Configuration actif)
+   - Contenu:
+     - CONFIGURATION RÉSEAU:
+       - Plage DHCP (début/fin)
+       - IP du routeur
+       - Masque
+       - DNS primaire/secondaire
+       - Bouton Appliquer
+     - AGRÉGATION:
+       - Mode d'agrégation (dropdown)
+       - Comportement failover (dropdown)
+       - Tunnel chiffré (toggle)
+       - MTU
+       - Bouton Appliquer
+     - QoS:
+       - Toggle ON/OFF
+       - Bande passante download/upload
+       - Lien vers règles QoS
+     - SAUVEGARDE:
+       - Date dernière sauvegarde
+       - Boutons: Sauvegarder, Télécharger, Restaurer, Réinitialiser
+
+# MODES AGRÉGATION
+- Équilibrage de charge: Répartition du trafic
+- Failover: Secours automatique
+- Bande passante: Agrégation pure
+- Manuel: Configuration personnalisée
+
+# COMPORTEMENTS FAILOVER
+- Automatique: Basculement auto sur panne
+- Manuel: Intervention requise
+- Dégradé: Maintien partiel
+
+# INTERACTIONS
+- Appliquer → PUT /config
+- Toggle → PUT /config (section)
+- Règles QoS → Modal/Page QoS
+- Sauvegarder → POST /config/backup
+- Télécharger → GET /config/backup/download
+- Restaurer → Modal upload + PUT /config/backup
+- Réinitialiser → Confirmation danger + POST /config/reset
+
+# API ENDPOINTS
+GET  /overthebox/{id}/config              - Configuration complète
+PUT  /overthebox/{id}/config              - Modifier config
+POST /overthebox/{id}/config/backup       - Créer sauvegarde
+GET  /overthebox/{id}/config/backup       - Télécharger backup
+PUT  /overthebox/{id}/config/backup       - Restaurer backup
+POST /overthebox/{id}/config/reset        - Réinitialiser usine
+
+================================================================================

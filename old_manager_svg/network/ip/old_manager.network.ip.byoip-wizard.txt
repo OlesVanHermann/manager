@@ -1,0 +1,148 @@
+# Cahier des Charges : network/ip - BYOIP Wizard
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 4 étapes
+**Fonction:** Importer et annoncer ses propres blocs IP (Bring Your Own IP)
+**Contexte:** Configuration BYOIP sur l'infrastructure OVHcloud
+
+## 2. DIMENSIONS
+
+- Container principal: 1200x850px
+- Zone wizard: 1100x540px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Network > IP > **BYOIP**
+
+### Titre page
+- "BYOIP - Bring Your Own IP"
+- Dropdown Guides à droite
+
+### Description
+- "Importez et annoncez vos propres blocs IP sur l'infrastructure OVHcloud."
+
+### Message warning
+- Background: #FEF3C7
+- Texte: "La fonctionnalité BYOIP est actuellement disponible uniquement dans certaines régions..."
+
+### Stepper (4 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | RIR | Completed (bleu) |
+| 2 | Région | Active (bleu) |
+| 3 | Plage IP | Inactive (gris) |
+| 4 | Système autonome | Inactive (gris) |
+
+## 4. ÉTAPE 2 : RÉGION (visible)
+
+### Titre section
+- "Sélectionner une région"
+- Sous-titre: "Choisissez la région où votre bloc IP sera annoncé."
+
+### Cartes région (3 colonnes)
+
+**Carte Europe (sélectionnée):**
+- Bordure: #0050D7, 2px
+- Checkmark vert en haut droite
+- Titre: "Europe"
+- Datacenters: "RBX, GRA, SBG, WAW, BHS"
+- RIR: "RIPE NCC"
+
+**Carte Amérique du Nord:**
+- Bordure: #E5E7EB
+- Titre: "Amérique du Nord"
+- Datacenters: "BHS, VIN, HIL"
+- RIR: "ARIN"
+
+**Carte Asie-Pacifique:**
+- Bordure: #E5E7EB
+- Titre: "Asie-Pacifique"
+- Datacenters: "SYD, SGP"
+- RIR: "APNIC"
+
+### Section Token d'autorisation
+- Titre: "Token d'autorisation"
+- Description: "Copiez ce token et ajoutez-le à votre objet RIR pour prouver la propriété du bloc IP."
+
+**Instructions:**
+1. Connectez-vous à votre compte RIR (RIPE, ARIN, APNIC)
+2. Créez ou modifiez un objet route/route6
+3. Ajoutez le token suivant dans le champ "remarks"
+
+**Zone token:**
+- Background: #F3F4F6
+- Token: "OVH-VERIFY-TOKEN-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+- Bouton copie: 📋
+
+## 5. COMPOSANTS UI
+
+### Stepper horizontal
+- Step completed: cercle bleu avec numéro
+- Step active: cercle bleu avec numéro
+- Step inactive: cercle blanc bordure grise
+- Ligne de connexion: bleue (completed), grise (pending)
+
+### Carte région
+- Dimensions: 220x100px
+- Border-radius: 8px
+- Sélectionnée: bordure bleue + checkmark
+
+## 6. ACTIONS & INTERACTIONS
+
+### Sélection région
+- Click sur carte → sélectionne la région
+- Met à jour le RIR associé
+
+### Copie token
+- Click sur 📋 → copie dans le presse-papier
+- Notification "Token copié"
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Action: Ferme le wizard
+
+### Bouton Suivant
+- Style: btn-primary (100x40px)
+- Action: Passe à l'étape 3 (Plage IP)
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /ip/byoip/eligibility
+→ Vérifie l'éligibilité BYOIP
+
+GET /ip/byoip/token
+→ Génère le token de vérification
+
+POST /ip/byoip/import
+Body: {
+  ipBlock: "192.0.2.0/24",
+  rir: "RIPE",
+  region: "europe",
+  asn: 12345
+}
+→ Importe le bloc IP
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| byoip_title | BYOIP - Bring Your Own IP |
+| byoip_description | Importez et annoncez vos propres blocs IP sur l'infrastructure OVHcloud. |
+| byoip_warning | La fonctionnalité BYOIP est actuellement disponible uniquement dans certaines régions. |
+| step_rir | RIR |
+| step_region | Région |
+| step_ip_range | Plage IP |
+| step_asn | Système autonome |
+| select_region_title | Sélectionner une région |
+| select_region_desc | Choisissez la région où votre bloc IP sera annoncé. |
+| region_europe | Europe |
+| region_north_america | Amérique du Nord |
+| region_asia_pacific | Asie-Pacifique |
+| token_title | Token d'autorisation |
+| token_desc | Copiez ce token et ajoutez-le à votre objet RIR pour prouver la propriété du bloc IP. |
+| btn_cancel | Annuler |
+| btn_next | Suivant |

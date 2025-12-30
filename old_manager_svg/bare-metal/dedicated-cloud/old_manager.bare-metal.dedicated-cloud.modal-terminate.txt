@@ -1,0 +1,105 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Modal Terminate
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal de confirmation danger
+**Fonction:** Première étape de résiliation du service Dedicated Cloud
+**Contexte:** Déclenché depuis le menu actions ou paramètres du service
+
+## 2. DIMENSIONS
+
+- Modal: 600x430px
+- Border-radius: 8px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. COMPOSANTS UI
+
+### Header Modal
+- Background: #F9FAFB
+- Titre: "Résilier mon service"
+- Close button: ×
+
+### Bloc d'avertissement (Danger)
+- Background: #FEE2E2
+- Border: 1px solid #FECACA
+- Icône: Cercle rouge avec "!"
+- Messages d'alerte (3 lignes):
+  - "La résiliation de votre service entraînera l'effacement"
+  - "définitif de toutes les données correspondantes ainsi que"
+  - "la suppression des blocs d'IP associés. Aucun remboursement."
+
+### Sélecteur type de résiliation
+- Label: "Type de résiliation"
+- Select dropdown: 520x44px
+- Options:
+  - "Résilier immédiatement"
+  - "Résilier à la fin de la période de facturation"
+
+### Texte explicatif
+- Description de l'action sélectionnée
+- "Un email contenant la procédure de résiliation de cette infrastructure vous sera envoyé."
+
+### Question de confirmation
+- "Voulez-vous continuer ?"
+- Font-weight: 500
+
+## 4. HEADER MODAL
+
+- Hauteur: 60px
+- Titre: "Résilier mon service"
+
+## 5. CONTENU
+
+### Avertissement critique
+```
+⚠ La résiliation de votre service entraînera l'effacement
+définitif de toutes les données correspondantes ainsi que
+la suppression des blocs d'IP associés. Aucun remboursement.
+```
+
+### Options de résiliation
+| Valeur | Label |
+|--------|-------|
+| immediate | Résilier immédiatement |
+| end_of_period | Résilier à la fin de la période de facturation |
+
+## 6. FOOTER MODAL
+
+- Séparateur: ligne 1px
+- Bouton Annuler: btn-secondary (100x36px)
+- Bouton Confirmer: btn-danger #DC2626 (100x36px)
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/terminate/options
+→ Récupère les options de résiliation disponibles
+
+POST /dedicatedCloud/{serviceName}/terminate
+Body: {
+  terminationType: "immediate" | "end_of_period"
+}
+→ Initie le processus de résiliation
+```
+
+## 8. FLUX DE NAVIGATION
+
+1. Modal Terminate (cette modal) → Choix du type
+2. Clic "Confirmer" → Ouvre modal-terminate-confirm
+3. Confirmation finale → Email envoyé + Service en cours de résiliation
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_terminate_title | Résilier mon service |
+| modal_terminate_warning_1 | La résiliation de votre service entraînera l'effacement |
+| modal_terminate_warning_2 | définitif de toutes les données correspondantes ainsi que |
+| modal_terminate_warning_3 | la suppression des blocs d'IP associés. Aucun remboursement. |
+| modal_terminate_type_label | Type de résiliation |
+| modal_terminate_type_immediate | Résilier immédiatement |
+| modal_terminate_type_end_period | Résilier à la fin de la période de facturation |
+| modal_terminate_email_info | Un email contenant la procédure de résiliation de cette infrastructure vous sera envoyé. |
+| modal_terminate_continue | Voulez-vous continuer ? |
+| modal_cancel | Annuler |
+| modal_confirm | Confirmer |

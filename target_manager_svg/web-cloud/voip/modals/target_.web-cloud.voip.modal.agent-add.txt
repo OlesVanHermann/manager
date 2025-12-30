@@ -2,68 +2,72 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.modal.agent-add.svg
-Route:   Modal - Ajouter un agent à la file d'attente
-Version: v1 (2024-12-30)
+Modal:   Ajout d'un agent à une file d'attente
+Context: Page Numéro - Configuration - Agents
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Lignes disponibles        | GET /telephony/{ba}/line                         |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| Lignes dropdown       | GET /telephony/{ba}/line → liste              |
+| Priorité par défaut   | Prochaine priorité disponible                 |
 
 ================================================================================
 
 # STRUCTURE MODAL
-1. Header: "Ajouter un agent" + bouton fermer
-2. Champ numéro(s) avec recherche
-3. Paramètres (timeout, wrap-up, lignes)
-4. Bannière info explicative
-5. Statut initial
-6. Footer: Annuler / Ajouter
+1. HEADER - Titre + bouton fermer
+2. CONTENT
+   - Sélecteur type d'agent (2 cards)
+   - Dropdown sélection ligne (si interne)
+   - Champ numéro (si externe)
+   - Champ nom agent
+   - Champ priorité (spinner)
+   - Options (checkboxes)
+3. FOOTER - Boutons Ajouter / Annuler
 
-# CHAMPS FORMULAIRE
-| Champ | Type | Obligatoire | Description |
-|-------|------|-------------|-------------|
-| Numéro(s) | Multi-input | Oui (min 1) | Numéros agent |
-| Timeout | Number | Oui | Délai sonnerie (sec) |
-| Wrap-up | Number | Oui | Temps repos (sec) |
-| Lignes simultanées | Number | Oui | Appels en parallèle |
-| Statut | Dropdown | Oui | Disponible/Pause/Déconnecté |
+# DIMENSIONS
+- Width: 550px
+- Height: 480px
+- Padding: 24px
 
-# AJOUT MULTIPLE
-- Possibilité d'ajouter plusieurs numéros
-- Bouton "+" pour ajouter une ligne
-- Bouton "×" pour supprimer une ligne
-- Bouton "🔍" pour rechercher dans les lignes
+# TYPES D'AGENT
+| Type | Description |
+|------|-------------|
+| Ligne interne | Ligne SIP appartenant au groupe |
+| Numéro externe | N'importe quel numéro de téléphone |
 
-# PARAMÈTRES PAR DÉFAUT
-| Param | Défaut |
-|-------|--------|
-| Timeout | 20 sec |
-| Wrap-up | 5 sec |
-| Lignes simultanées | 1 |
-| Statut | Disponible |
+# PRIORITÉ
+- 1 = plus haute priorité
+- Appelé en premier si stratégie séquentielle
+- Les agents de même priorité sont appelés selon la stratégie
+
+# OPTIONS
+| Option | Description |
+|--------|-------------|
+| Actif immédiatement | L'agent reçoit les appels dès l'ajout |
+| Débordement uniquement | N'est appelé qu'en cas de timeout |
 
 # INTERACTIONS
-- Champs numéro → Saisie format international
-- 🔍 → Recherche parmi lignes du groupe
-- × → Supprime la ligne d'input
-- "+" → Ajoute nouvelle ligne d'input
-- Spinners → Ajuste valeurs numériques
-- "Annuler" → Ferme modal
-- "Ajouter" → POST API + ferme modal
+- Clic ✕ → Fermer modal
+- Clic type agent → Change le champ ligne/numéro
+- Dropdown ligne → Sélectionner ligne interne
+- Spinner priorité → Incrémenter/décrémenter
+- Checkbox → Activer/désactiver option
+- Clic "Ajouter" → POST API + fermer
 
 # API ENDPOINTS
-POST /telephony/{ba}/number/{sn}/queue/agents
+GET /telephony/{ba}/line                   → Liste lignes disponibles
+POST /telephony/{ba}/number/{sn}/easyHunting/hunting/agent → Ajouter agent
 
-# PAYLOAD
+# PAYLOAD ATTENDU
 ```json
 {
-  "numbers": ["0033612345678"],
-  "timeout": 20,
-  "wrapUpTime": 5,
-  "simultaneousLines": 1,
-  "status": "available"
+  "agentNumber": "0033912345678",
+  "agentName": "Jean Dupont",
+  "priority": 1,
+  "enabled": true,
+  "overflowOnly": false
 }
 ```
 

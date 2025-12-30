@@ -1,0 +1,127 @@
+# Cahier des Charges : web-cloud/domain - Modal Batch DNS
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal action batch
+**Fonction:** Changer les serveurs DNS de plusieurs domaines simultanément
+**Contexte:** Action groupée depuis liste des domaines
+
+## 2. DIMENSIONS
+
+- Modal: 800x680px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #FFFFFF
+- Titre: "Changement Serveurs DNS (Batch)"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+- Boutons: Annuler (gauche), Appliquer (droite)
+
+## 4. CONTENU
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 752x50px
+- Titre: "Serveurs DNS"
+- Description: "Modifiez les serveurs DNS utilisés par les domaines sélectionnés. La propagation peut prendre jusqu'à 48h."
+
+### Formulaire DNS
+
+| Champ | Type | Dimensions | Obligatoire |
+|-------|------|------------|-------------|
+| Serveur DNS 1 | Input | 365x36px | Oui |
+| Serveur DNS 2 | Input | 367x36px | Oui |
+| Serveur DNS 3 | Input | 365x36px | Non |
+| Serveur DNS 4 | Input | 367x36px | Non |
+
+### Liste domaines
+- Titre: "Domaines sélectionnés (3)"
+- Colonnes:
+  - Checkbox (14x14px)
+  - DOMAINE
+  - DNS ACTUELS
+
+### Exemples données
+
+| Domaine | DNS actuels |
+|---------|-------------|
+| example.com | dns1.ovh.net, ns1.ovh.net |
+| example.fr | dns2.ovh.net, ns2.ovh.net |
+| example.eu | dns1.ovh.net, ns1.ovh.net |
+
+### Warning banner
+- Background: #FEF3C7
+- Dimensions: 752x65px
+- Titre: "Attention"
+- Messages:
+  - "Le changement de serveurs DNS peut entraîner une indisponibilité temporaire de vos services."
+  - "Assurez-vous que les nouveaux serveurs DNS sont correctement configurés avant de procéder."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions | Action |
+|--------|-------|------------|--------|
+| Annuler | btn-outline | 100x34px | Fermer modal |
+| Appliquer (3) | btn-primary | 150x34px | Appliquer les changements |
+
+## 6. COMPOSANTS UI
+
+### Checkbox table
+- Checked: Background #0050D7, checkmark blanc
+- Unchecked: Background blanc, border #E5E7EB
+
+### Table header
+- Background: #F9FAFB
+- Height: 32px
+
+### Table row
+- Height: 40px
+- Alternance: blanc / #F9FAFB
+
+## 7. APIS & ENDPOINTS
+
+```
+PUT /domain/{serviceName}/nameServers
+Body: {
+  nameServers: [
+    { host: "dns1.ovh.net" },
+    { host: "ns1.ovh.net" },
+    { host: "dns3.ovh.net" },
+    { host: "ns3.ovh.net" }
+  ]
+}
+→ Change les serveurs DNS d'un domaine
+
+# Pour chaque domaine sélectionné, appeler:
+PUT /domain/{domain}/nameServers
+→ Application en batch
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Changement Serveurs DNS (Batch) |
+| info_title | Serveurs DNS |
+| info_desc | Modifiez les serveurs DNS utilisés par les domaines sélectionnés. La propagation peut prendre jusqu'à 48h. |
+| field_dns_servers | Nouveaux serveurs DNS : |
+| field_dns1 | Serveur DNS 1 * |
+| field_dns2 | Serveur DNS 2 * |
+| field_dns3 | Serveur DNS 3 (optionnel) |
+| field_dns4 | Serveur DNS 4 (optionnel) |
+| list_title | Domaines sélectionnés ({n}) |
+| col_domain | Domaine |
+| col_current_dns | DNS actuels |
+| warning_title | Attention |
+| warning_line1 | Le changement de serveurs DNS peut entraîner une indisponibilité temporaire de vos services. |
+| warning_line2 | Assurez-vous que les nouveaux serveurs DNS sont correctement configurés avant de procéder. |
+| btn_cancel | Annuler |
+| btn_apply | Appliquer ({n}) |

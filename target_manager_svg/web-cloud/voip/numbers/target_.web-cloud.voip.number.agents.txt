@@ -3,76 +3,59 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.number.agents.svg
 Route:   /web-cloud/voip/{billingAccount}/number/{serviceName}/agents
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Liste agents              | GET /telephony/{ba}/number/{sn}/queue/agents     |
-| Statut agent              | GET /telephony/{ba}/number/{sn}/queue/agents/{id}/status |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| +33 800 123 456       | Route param {serviceName}                     |
+| easyHunting           | GET /telephony/{ba}/number/{sn} → featureType |
+| 4 / 5                 | GET agents → actifs / total                   |
+| Jean Dupont           | agents[].name                                 |
+| +33 9 12 34 56 78     | agents[].number                               |
+| En ligne / Hors ligne | agents[].status                               |
+| 45                    | agents[].callCount24h                         |
+| 3min 12s              | agents[].averageDuration                      |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. LEFT PANEL - Liste des numéros du groupe
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des numéros
 4. RIGHT PANEL
-   - Titre: Gestion des agents
-   - Sous-titre: Numéro + description
-   - NAV3 tabs
-   - Toolbar (refresh + add)
-   - Bannière info drag & drop
-   - Liste agents
-   - Résumé
+   - Header: Numéro + badge type + breadcrumb /Agents
+   - NAV3: Général | Configuration | [Agents] | Statistiques | Horaires
+   - Toolbar: Refresh, Recherche, + Ajouter agent
+   - Cards stats: Agents actifs, Appels en attente, Temps moyen
+   - Table agents: Priorité, Agent, Numéro, Type, Statut, Appels, Durée
 
-# NAV3 TABS
-| Tab | Route |
-|-----|-------|
-| Général | /general |
-| Configuration | /configuration |
-| Agents | /agents (actif) |
-| Sons | /sounds |
-| Planification | /scheduler |
-| Statistiques | /stats |
-
-# LISTE AGENTS
-| Colonne | Description |
-|---------|-------------|
-| Ordre | Flèches + drag handle |
-| Nom | Nom agent |
-| Numéro | Numéro téléphone |
-| Statut | Disponible/En appel/Déconnecté |
-| Params | Timeout, Wrap-up, Lignes |
-| Actions | Edit, Delete |
-
-# STATUTS AGENTS
-| Statut | Badge | Couleur |
-|--------|-------|---------|
-| Disponible | bg-success | Vert |
-| En appel | bg-warning | Orange |
-| Déconnecté | bg-error | Rouge |
-
-# PARAMÈTRES AGENT
-| Param | Description | Défaut |
-|-------|-------------|--------|
-| Timeout | Temps sonnerie max | 20s |
-| Wrap-up | Temps entre appels | 5s |
-| Lignes | Appels simultanés | 1 |
+# COLONNES TABLE
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Priorité | 80px | Numéro + flèches tri |
+| Agent | 200px | Nom de l'agent |
+| Numéro | 180px | Numéro de téléphone |
+| Type | 100px | Interne / Externe |
+| Statut | 100px | Badge En ligne / Hors ligne |
+| Appels (24h) | 120px | Nombre d'appels |
+| Durée moy. | 120px | Durée moyenne appel |
+| Actions | 136px | Edit / Delete |
 
 # INTERACTIONS
-- ▲/▼ → Réorganiser ordre
-- ≡ → Drag & drop
-- ✎ → Modal édition agent
-- × → Confirmation suppression
-- "+ Ajouter" → Modal ajout agent
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic "+ Ajouter agent" → Modal ajout agent
+- Clic ▲/▼ priorité → Réordonner agent
+- Clic ✎ → Modal édition agent
+- Clic ✕ → Supprimer agent (confirmation)
 
 # API ENDPOINTS
-GET /telephony/{ba}/number/{sn}/queue/agents
-POST /telephony/{ba}/number/{sn}/queue/agents
-PUT /telephony/{ba}/number/{sn}/queue/agents/{id}
-DELETE /telephony/{ba}/number/{sn}/queue/agents/{id}
-PUT /telephony/{ba}/number/{sn}/queue/agents/order
+GET /telephony/{ba}/number/{sn}/easyHunting/hunting/agent → Liste agents
+POST /telephony/{ba}/number/{sn}/easyHunting/hunting/agent → Ajouter
+PUT /telephony/{ba}/number/{sn}/easyHunting/hunting/agent/{id} → Modifier
+DELETE /telephony/{ba}/number/{sn}/easyHunting/hunting/agent/{id} → Supprimer
+GET /telephony/{ba}/number/{sn}/easyHunting/hunting/agent/{id}/status → Statut
 
 ================================================================================

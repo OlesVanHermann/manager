@@ -1,0 +1,108 @@
+# Cahier des Charges : web-cloud/domain - Modal DynHost
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter une entrée DynHost (DNS dynamique)
+**Contexte:** Action depuis l'onglet DynHost
+
+## 2. DIMENSIONS
+
+- Modal: 600x400px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Ajouter un DynHost"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Sous-domaine
+- Label: "Sous-domaine *"
+- Layout: Input + suffixe
+- Input: 280x36px
+- Placeholder: "home, nas, etc."
+- Suffixe: ".exemple.com"
+
+### Adresse IP initiale
+- Label: "Adresse IP initiale *"
+- Input: 552x36px
+- Placeholder: "Ex: 86.234.12.45"
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 552x75px
+- Titre: "Identifiants de mise à jour" (font-weight 600)
+- Texte lignes:
+  - "Un login et mot de passe seront générés automatiquement."
+  - "Vous pourrez les utiliser avec un client DynDNS."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Créer | btn-primary | 110x34px |
+
+## 6. APRÈS CRÉATION
+
+Une fois créé, le système génère:
+- Login: {subdomain}.{domain} (ex: home.exemple.com)
+- Password: chaîne aléatoire
+
+Ces identifiants sont à utiliser avec:
+- Un client DynDNS (ddclient, etc.)
+- Un routeur compatible DynDNS
+- URL de mise à jour OVH
+
+## 7. APIS & ENDPOINTS
+
+```
+POST /domain/zone/{zoneName}/dynHost
+Body: {
+  subDomain: "home",
+  ip: "86.234.12.45"
+}
+→ Crée un DynHost
+
+GET /domain/zone/{zoneName}/dynHost
+→ Liste des DynHost
+
+GET /domain/zone/{zoneName}/dynHost/login
+→ Liste des identifiants DynHost
+
+POST /domain/zone/{zoneName}/dynHost/login
+Body: {
+  loginSuffix: "home",
+  subDomain: "home"
+}
+→ Crée les identifiants
+
+# URL de mise à jour:
+# https://www.ovh.com/nic/update?system=dyndns&hostname={subdomain}.{domain}&myip={ip}
+# Auth: login / password
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un DynHost |
+| field_subdomain | Sous-domaine |
+| subdomain_placeholder | home, nas, etc. |
+| field_ip | Adresse IP initiale |
+| ip_placeholder | Ex: 86.234.12.45 |
+| info_title | Identifiants de mise à jour |
+| info_line1 | Un login et mot de passe seront générés automatiquement. |
+| info_line2 | Vous pourrez les utiliser avec un client DynDNS. |
+| btn_cancel | Annuler |
+| btn_create | Créer |

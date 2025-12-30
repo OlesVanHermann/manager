@@ -1,0 +1,152 @@
+# Cahier des Charges : web-cloud/emails - Advanced Devices
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec statistiques
+**Fonction:** Gestion des appareils mobiles synchronisés (ActiveSync)
+**Contexte:** Sous-onglet Appareils de l'onglet Avancé (Exchange uniquement)
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections | Répondeurs | Listes | Sécurité | Avancé (actif) | Licences | Tâches
+
+### NAV4
+- Sous-onglets: Général | Contacts | Audit | Appareils (actif)
+
+## 3. TOOLBAR
+
+| Élément | Type | Contenu |
+|---------|------|---------|
+| Utilisateur | Dropdown | "Tous les utilisateurs" |
+| Recherche | Input | "Rechercher un appareil..." |
+| ↻ | btn-outline | Rafraîchit |
+
+## 4. BANNER INFO
+
+- Background: #DBEAFE
+- Texte: "Liste des appareils mobiles synchronisés via ActiveSync (Exchange) ou protocole équivalent."
+
+## 5. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Appareil | 180px | Nom + ID sur 2 lignes |
+| Utilisateur | 180px | Email (lien) |
+| Type | 120px | Badge (Mobile/Tablette/Desktop) |
+| OS | 140px | Système d'exploitation |
+| Dernière sync | 160px | Date + heure |
+| Statut | 100px | Badge (Autorisé/Bloqué/En attente) |
+| Actions | 60px | 🔒 (bloquer) + ✕ (supprimer) |
+
+### Badges Type
+
+| Type | Background | Couleur texte |
+|------|------------|---------------|
+| Mobile | #F3F4F6 | #6B7280 |
+| Tablette | #DBEAFE | #1E40AF |
+| Desktop | #FEF3C7 | #D97706 |
+
+### Badges Statut
+
+| Statut | Background | Couleur texte |
+|--------|------------|---------------|
+| Autorisé | #DEF7EC | #03543F |
+| Bloqué | #FEE2E2 | #DC2626 |
+| En attente | #FEF3C7 | #D97706 |
+
+## 6. CARTES STATISTIQUES
+
+4 cartes en bas de page :
+
+| Carte | Background | Contenu |
+|-------|------------|---------|
+| Total appareils | #F9FAFB | 18 |
+| Autorisés | #DEF7EC | 16 |
+| Bloqués | #FEE2E2 | 2 |
+| En attente | #FEF3C7 | 0 |
+
+## 7. EXEMPLES D'APPAREILS
+
+| Appareil | Utilisateur | Type | OS | Dernière sync | Statut |
+|----------|-------------|------|-----|---------------|--------|
+| iPhone 15 Pro | admin@ | Mobile | iOS 17.2 | 30/12 14:45 | Autorisé |
+| Samsung Galaxy S24 | jean@ | Mobile | Android 14 | 30/12 12:30 | Autorisé |
+| iPad Pro 12.9" | marie@ | Tablette | iPadOS 17.2 | 29/12 18:22 | Autorisé |
+| Huawei P40 | pierre@ | Mobile | Android 12 | 15/12 09:15 | Bloqué |
+| Outlook Desktop | admin@ | Desktop | Windows 11 | 30/12 14:32 | Autorisé |
+
+## 8. PAGINATION
+
+- Texte: "Affichage 1-5 sur 18 appareils"
+- Navigation: < 1 2 >
+
+## 9. APIS & ENDPOINTS
+
+```
+# Exchange uniquement
+GET /email/exchange/{organization}/service/{serviceName}/device
+Query: { user: "admin@example.com" }
+→ Liste des appareils
+
+GET /email/exchange/{organization}/service/{serviceName}/device/{id}
+→ Détails d'un appareil
+
+PUT /email/exchange/{organization}/service/{serviceName}/device/{id}
+Body: { allowed: true }
+→ Autorise un appareil
+
+PUT /email/exchange/{organization}/service/{serviceName}/device/{id}
+Body: { allowed: false }
+→ Bloque un appareil
+
+DELETE /email/exchange/{organization}/service/{serviceName}/device/{id}
+→ Supprime un appareil
+
+POST /email/exchange/{organization}/service/{serviceName}/device/{id}/wipe
+→ Efface les données à distance (Remote Wipe)
+
+# Statistiques
+GET /email/exchange/{organization}/service/{serviceName}/device/statistics
+→ Compteurs par statut
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Appareils |
+| info_banner | Liste des appareils mobiles synchronisés via ActiveSync (Exchange) ou protocole équivalent. |
+| filter_user | Utilisateur |
+| filter_all | Tous les utilisateurs |
+| search_placeholder | Rechercher un appareil... |
+| col_device | Appareil |
+| col_user | Utilisateur |
+| col_type | Type |
+| col_os | OS |
+| col_sync | Dernière sync |
+| col_status | Statut |
+| col_actions | Actions |
+| type_mobile | Mobile |
+| type_tablet | Tablette |
+| type_desktop | Desktop |
+| status_allowed | Autorisé |
+| status_blocked | Bloqué |
+| status_pending | En attente |
+| action_block | Bloquer |
+| action_allow | Autoriser |
+| action_delete | Supprimer |
+| action_wipe | Effacer à distance |
+| stat_total | Total appareils |
+| stat_allowed | Autorisés |
+| stat_blocked | Bloqués |
+| stat_pending | En attente |
+| pagination | Affichage {start}-{end} sur {total} appareils |

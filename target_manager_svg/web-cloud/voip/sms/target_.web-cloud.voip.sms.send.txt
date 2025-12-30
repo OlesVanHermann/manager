@@ -2,40 +2,60 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.sms.send.svg
-Route:   /web-cloud/telephony/{serviceName}/sms/send
-Version: v2 (2025-12-30)
+Route:   /web-cloud/voip/{billingAccount}/sms/{serviceName}/send
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| 2 450 crédits            | GET /sms/{serviceName} → creditsLeft    |
-| MonEntreprise            | GET /sms/{serviceName}/senders          |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| sms-abc123            | Route param {serviceName}                     |
+| MonEntreprise         | GET /sms/{sn}/senders → list[].sender         |
+| 1,500                 | GET /sms/{sn} → creditsLeft                   |
+| Modèles récents       | GET /sms/{sn}/templates → list                |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. LEFT PANEL - Service SMS + NAV3 (Envoyer SMS actif)
-2. RIGHT PANEL:
-   - TITRE "Envoyer un SMS" + compteur crédits
-   - FORMULAIRE: Type, Destinataires, Expéditeur, Message, Options
-   - RÉSUMÉ: Compteurs et coût estimé
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des comptes SMS
+4. RIGHT PANEL
+   - Header: Nom compte + breadcrumb /Envoyer
+   - NAV3: Général | [Envoyer] | Campagnes | Entrants | Historique | Modèles
+   - Formulaire envoi:
+     * Expéditeur (dropdown)
+     * Destinataires (textarea + import CSV)
+     * Message (textarea avec compteur)
+     * Options (checkboxes)
+     * Boutons Envoyer / Aperçu
+   - Panel "Résumé": Calcul crédits
+   - Panel "Modèles récents": Accès rapide
 
-# TYPE D'ENVOI
-| Type        | Description                |
-|-------------|----------------------------|
-| Manuel      | Saisie numéros à la main   |
-| Carnet      | Sélection depuis carnet    |
-| Import CSV  | Upload fichier CSV         |
+# CALCUL CRÉDITS
+| Caractères | SMS | Crédits |
+|------------|-----|---------|
+| 0-160      | 1   | 1       |
+| 161-306    | 2   | 2       |
+| 307-459    | 3   | 3       |
+| ...        | ... | ...     |
 
-# OPTIONS SMS
-- Envoi différé: Programmer date/heure
-- Accusé réception: Notification livraison
-- Mode Flash: Affichage direct écran
-
-# VARIABLES DISPONIBLES
-{nom}, {prenom}, {date}, {heure}
+# INTERACTIONS
+- Dropdown expéditeur → Sélectionner sender
+- Textarea destinataires → Saisie numéros
+- "Importer CSV" → Modal import fichier
+- Textarea message → Saisie avec compteur temps réel
+- Variables {NOM} etc → Insertion auto
+- Checkbox planifier → Affiche date/heure
+- Checkbox modèle → Affiche dropdown modèles
+- Clic modèle récent → Remplit le message
+- Clic "Aperçu" → Modal preview
+- Clic "Envoyer" → POST API + confirmation
 
 # API ENDPOINTS
-GET /sms/{serviceName}/senders - Liste expéditeurs
-POST /sms/{serviceName}/jobs - Envoyer SMS
+GET /sms/{sn}/senders                  → Liste expéditeurs
+GET /sms/{sn}/templates                → Liste modèles
+POST /sms/{sn}/jobs                    → Envoyer SMS
+POST /sms/{sn}/jobs/estimate           → Estimer coût
+
 ================================================================================

@@ -1,0 +1,138 @@
+# Cahier des Charges : web-cloud/domain - Modal Transfer
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire danger
+**Fonction:** Transférer un domaine (sortant ou entre comptes OVH)
+**Contexte:** Action depuis la page informations générales
+
+## 2. DIMENSIONS
+
+- Modal: 700x560px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Transférer le domaine exemple.com"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Warning banner
+- Background: #FEE2E2 (rouge clair)
+- Dimensions: 652x65px
+- Titre: "Attention" (font-weight 600)
+- Texte ligne 1: "Le transfert sortant déplacera votre domaine vers un autre registrar."
+- Texte ligne 2: "Cette action est irréversible une fois confirmée par le nouveau registrar."
+
+### Type de transfert
+- Label: "Type de transfert"
+- Layout: 2 cartes sélectionnables
+
+| Carte | État | Dimensions | Contenu |
+|-------|------|------------|---------|
+| Transfert sortant | Sélectionnée | 320x70px | "Vers un autre registrar" |
+| Entre comptes OVH | Non sélectionnée | 320x70px | "Vers un autre NIC OVH" |
+
+### Code d'autorisation (AuthCode)
+- Label: "Code d'autorisation (AuthCode)"
+- Layout: Input readonly + bouton copier
+- Input: 500x36px, background #F9FAFB
+- Contenu: code masqué "XyZ123AbC456dEf..."
+- Bouton: "Copier" (btn-outline-primary, 142x36px)
+
+### Checklist
+- Label: "Avant de transférer, vérifiez :"
+- 3 items avec check vert
+
+| Check | Texte |
+|-------|-------|
+| ✓ | Le domaine n'est pas en période de redemption |
+| ✓ | Le Transfer Lock est désactivé |
+| ✓ | Le domaine a plus de 60 jours |
+
+- Check box: 14x14px, background #DEF7EC
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Obtenir le code | btn-danger (#DC2626) | 140x34px |
+
+## 6. VARIANTES
+
+### Transfert sortant (vers autre registrar)
+- Affiche l'AuthCode
+- Checklist visible
+- Le code est à fournir au nouveau registrar
+
+### Entre comptes OVH (change-nicowner)
+- Pas d'AuthCode
+- Formulaire avec nouveau NIC Handle
+- Processus de validation par email
+
+## 7. CONDITIONS PRÉ-TRANSFERT
+
+| Condition | Vérification |
+|-----------|--------------|
+| Pas en redemption | Domaine doit être actif ou expiré (pas supprimé) |
+| Transfer Lock OFF | /domain/{serviceName} → transferLockStatus: "unlocked" |
+| Plus de 60 jours | Date création + 60j < aujourd'hui |
+| Pas de changement récent | Pas de change-owner dans les 60 derniers jours |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Transfert sortant
+GET /domain/{serviceName}/authInfo
+→ Obtient le code d'autorisation (AuthCode)
+
+# Vérification transfert
+GET /domain/{serviceName}
+→ Contient transferLockStatus, creation date, status
+
+# Déverrouiller transfert
+POST /domain/{serviceName}/lock
+Body: { mode: "unlock" }
+→ Désactive le Transfer Lock
+
+# Transfert entre comptes OVH
+POST /me/changeNichandle/{service}
+Body: { newNichandle: "xy98765-ovh" }
+→ Lance le transfert de propriété
+
+# Historique des opérations
+GET /domain/{serviceName}/owo
+→ Voir le statut des opérations en cours
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Transférer le domaine {domain} |
+| warning_title | Attention |
+| warning_line1 | Le transfert sortant déplacera votre domaine vers un autre registrar. |
+| warning_line2 | Cette action est irréversible une fois confirmée par le nouveau registrar. |
+| field_type | Type de transfert |
+| type_outgoing | Transfert sortant |
+| type_outgoing_desc | Vers un autre registrar |
+| type_internal | Entre comptes OVH |
+| type_internal_desc | Vers un autre NIC OVH |
+| field_authcode | Code d'autorisation (AuthCode) |
+| btn_copy | Copier |
+| checklist_title | Avant de transférer, vérifiez : |
+| check_redemption | Le domaine n'est pas en période de redemption |
+| check_lock | Le Transfer Lock est désactivé |
+| check_60days | Le domaine a plus de 60 jours |
+| btn_cancel | Annuler |
+| btn_get_code | Obtenir le code |

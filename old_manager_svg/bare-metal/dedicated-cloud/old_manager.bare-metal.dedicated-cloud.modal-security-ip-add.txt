@@ -1,0 +1,108 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Modal Security IP Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal Wizard (2 étapes)
+**Fonction:** Ajouter une règle de sécurité IP à l'infrastructure
+**Contexte:** Accessible depuis l'onglet Sécurité du Dedicated Cloud
+
+## 2. DIMENSIONS
+
+- Modal: 700x390px
+- Border-radius: 8px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. COMPOSANTS UI
+
+### Header Modal
+- Background: #F9FAFB
+- Titre: "Ajout d'une règle de sécurité"
+- Close button: ×
+
+### Stepper (progression)
+- Étape 1: "Saisie" (active - cercle bleu #0050D7)
+- Étape 2: "Confirmation" (inactive - cercle gris #E5E7EB)
+- Ligne de connexion entre les étapes
+
+### Formulaire (Étape 1)
+
+#### Champ IP
+- Label: "Entrez l'IP de la nouvelle règle de sécurité :"
+- Input: 620x40px
+- Placeholder: "Ex: 192.168.1.0/24"
+
+#### Champ Description
+- Label: "Description :"
+- Input: 620x40px
+- Placeholder: "Description optionnelle"
+
+## 4. HEADER MODAL
+
+- Hauteur: 60px
+- Background: #F9FAFB
+- Titre: font-size 20px, font-weight 600
+
+## 5. CONTENU - ÉTAPE 1 (SAISIE)
+
+### Stepper visuel
+```
+[1] Saisie ───── [2] Confirmation
+ ●                ○
+```
+
+### Champs du formulaire
+| Champ | Type | Obligatoire | Validation |
+|-------|------|-------------|------------|
+| IP | text | Oui | Format IP/CIDR valide |
+| Description | text | Non | Max 255 caractères |
+
+## 6. CONTENU - ÉTAPE 2 (CONFIRMATION)
+
+- Récapitulatif des informations saisies
+- Boutons: Précédent / Confirmer
+
+## 7. FOOTER MODAL
+
+- Séparateur: ligne 1px
+- Bouton Annuler: btn-secondary
+- Bouton Suivant: btn-primary (étape 1)
+- Bouton Confirmer: btn-primary (étape 2)
+
+## 8. APIS & ENDPOINTS
+
+```
+POST /dedicatedCloud/{serviceName}/security/ip
+Body: {
+  ip: "192.168.1.0/24",
+  description: "Réseau bureau Paris"
+}
+→ Ajoute la règle de sécurité IP
+
+GET /dedicatedCloud/{serviceName}/security/ip
+→ Liste les règles existantes (pour vérifier doublons)
+```
+
+## 9. VALIDATION
+
+### Étape 1
+- IP obligatoire
+- Format CIDR valide (ex: 192.168.1.0/24, 10.0.0.1/32)
+- Vérification que l'IP n'existe pas déjà
+
+### Étape 2
+- Confirmation avant création
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_security_ip_add_title | Ajout d'une règle de sécurité |
+| modal_security_step_input | Saisie |
+| modal_security_step_confirm | Confirmation |
+| modal_security_ip_label | Entrez l'IP de la nouvelle règle de sécurité : |
+| modal_security_ip_placeholder | Ex: 192.168.1.0/24 |
+| modal_security_description_label | Description : |
+| modal_security_description_placeholder | Description optionnelle |
+| modal_cancel | Annuler |
+| modal_next | Suivant |
+| modal_confirm | Confirmer |

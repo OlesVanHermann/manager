@@ -1,0 +1,133 @@
+# Cahier des Charges : web-cloud/domain - Modal Change Owner
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal procédure officielle
+**Fonction:** Initier un changement de propriétaire de domaine
+**Contexte:** Action depuis la page contacts ou informations générales
+
+## 2. DIMENSIONS
+
+- Modal: 700x600px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Changer de propriétaire - exemple.com"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Warning banner
+- Background: #FEF3C7
+- Dimensions: 652x55px
+- Titre: "Procédure officielle de changement de propriétaire"
+- Description: "Cette procédure est soumise aux règles du registre. Des justificatifs peuvent être requis."
+
+### Propriétaire actuel
+- Label: "Propriétaire actuel"
+- Box info: 652x45px, background #F9FAFB
+- Contenu: NIC handle, Nom complet, Email
+
+### Nouveau propriétaire - Type
+- Label: "Nouveau propriétaire"
+- Type cards (3 colonnes):
+
+| Type | Dimensions | Description |
+|------|------------|-------------|
+| Particulier | 210x45px | Personne physique |
+| Entreprise | 210x45px | Personne morale |
+| Association | 212x45px | Loi 1901 |
+
+- Sélectionné: background #0050D7, text white
+- Non sélectionné: background blanc, border #E5E7EB
+
+### NIC Handle
+- Label: "NIC Handle du nouveau propriétaire"
+- Input: 400x36px
+- Placeholder: "xy98765-ovh"
+- OU
+- Bouton: "Créer un contact" (btn-outline-primary, 202x36px)
+
+### Justificatifs (optionnels)
+- Label: "Justificatifs (optionnels)"
+- Zone drop: 652x70px, border dashed #E5E7EB
+- Texte: "Glissez vos fichiers ici"
+- Note: "PDF, JPG - Max 5 Mo"
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Initier la procédure | btn-primary | 160x34px |
+
+## 6. COMPOSANTS UI
+
+### Type card
+- Border-radius: 4px
+- Titre: 10px, centré
+- Sous-titre: 9px, opacity 0.8
+
+### Drop zone
+- Border: dashed #E5E7EB
+- Background: #F9FAFB
+- Border-radius: 4px
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /domain/{serviceName}/owner
+→ Propriétaire actuel
+
+POST /domain/{serviceName}/trade
+Body: {
+  ownerType: "individual" | "corporation" | "association",
+  newOwner: "xy98765-ovh"
+}
+→ Initie la procédure de changement
+
+GET /domain/{serviceName}/trade
+→ Statut de la procédure en cours
+
+POST /domain/{serviceName}/trade/{tradeId}/document
+Body: FormData (fichier)
+→ Upload un justificatif
+
+# La procédure nécessite:
+# - Validation email ancien propriétaire
+# - Validation email nouveau propriétaire
+# - Éventuellement documents selon TLD
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Changer de propriétaire - {domain} |
+| warning_title | Procédure officielle de changement de propriétaire |
+| warning_desc | Cette procédure est soumise aux règles du registre. Des justificatifs peuvent être requis. |
+| field_current | Propriétaire actuel |
+| field_new | Nouveau propriétaire |
+| type_individual | Particulier |
+| type_individual_desc | Personne physique |
+| type_corporation | Entreprise |
+| type_corporation_desc | Personne morale |
+| type_association | Association |
+| type_association_desc | Loi 1901 |
+| field_nic | NIC Handle du nouveau propriétaire |
+| or_separator | ou |
+| btn_create_contact | Créer un contact |
+| field_documents | Justificatifs (optionnels) |
+| drop_text | Glissez vos fichiers ici |
+| drop_formats | PDF, JPG - Max 5 Mo |
+| btn_cancel | Annuler |
+| btn_initiate | Initier la procédure |

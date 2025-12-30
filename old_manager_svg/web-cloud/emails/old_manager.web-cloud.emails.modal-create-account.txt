@@ -1,0 +1,146 @@
+# Cahier des Charges : web-cloud/emails - Modal Create Account
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal wizard (étapes)
+**Fonction:** Créer un nouveau compte email
+**Contexte:** Action depuis la toolbar de l'onglet Boîtes mail
+
+## 2. DIMENSIONS
+
+- Modal: 600x680px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Créer un compte email"
+- Bouton fermer: × (coin droit)
+
+### Stepper
+- 3 étapes: Type de compte → Informations → Confirmation
+- Cercles numérotés avec lignes de connexion
+- Étape active: cercle bleu #0050D7
+- Étapes futures: cercle gris #E5E7EB
+
+### Content
+- Padding: 24px
+
+### Footer
+- Boutons alignés gauche/droite
+
+## 4. ÉTAPE 1 - TYPE DE COMPTE
+
+### Titre section
+- "Choisissez une offre"
+- Font-size: 14px, font-weight 600
+
+### Cartes offres (552x80px chacune)
+
+#### Exchange (sélectionnée)
+- Border: #0050D7, 2px, background #EFF6FF
+- Avatar: cercle orange "E"
+- Titre: "Exchange"
+- Description: "Messagerie professionnelle complète"
+- Features: "50 Go - Calendrier - ActiveSync"
+- Prix: "9,99 EUR/mois" (bleu)
+- Radio checked: cercle bleu avec ✓
+
+#### Email Pro
+- Border: #E5E7EB
+- Avatar: cercle bleu "P"
+- Titre: "Email Pro"
+- Description: "Email professionnel simple et efficace"
+- Features: "10 Go - IMAP/POP3 - Webmail"
+- Prix: "3,99 EUR/mois"
+- Radio unchecked
+
+#### Zimbra
+- Border: #E5E7EB
+- Avatar: cercle violet "Z"
+- Titre: "Zimbra"
+- Description: "Suite collaborative open source"
+- Features: "25 Go - Calendrier - Drive"
+- Prix: "4,99 EUR/mois"
+- Radio unchecked
+
+### Info licences
+- Box: 552x50px, background #F3F4F6
+- Texte: "Licences Exchange disponibles: 2 licences libres"
+- Aide: "Vous pouvez associer ce compte à une licence existante ou en commander une nouvelle."
+
+### Quantité
+- Label: "Nombre de comptes à créer"
+- Stepper: - [1] + (80x28px)
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 130x40px |
+| Suivant → | btn-primary | 130x40px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Vérifier licences disponibles
+GET /email/exchange/{organization}/service/{serviceName}/account
+→ Nombre de comptes vs quota
+
+GET /email/exchange/{organization}/service/{serviceName}
+→ Infos service (maxReceiveSize, maxSendSize, quota)
+
+# Créer compte Exchange
+POST /email/exchange/{organization}/service/{serviceName}/account
+Body: {
+  login: "jean",
+  displayName: "Jean Dupont",
+  password: "SecureP@ss123",
+  company: "ACME Corp"
+}
+
+# Créer compte Email Pro
+POST /email/pro/{service}/account
+Body: {
+  primaryEmailAddress: "jean@example.com",
+  password: "SecureP@ss123",
+  displayName: "Jean Dupont"
+}
+
+# Créer compte Zimbra
+POST /email/zimbra/{serviceName}/account
+Body: {
+  email: "jean@example.com",
+  password: "SecureP@ss123"
+}
+
+# Commander licence supplémentaire
+POST /order/cart
+POST /order/cart/{cartId}/exchange
+POST /order/cart/{cartId}/checkout
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Créer un compte email |
+| step_type | Type de compte |
+| step_info | Informations |
+| step_confirm | Confirmation |
+| section_choose | Choisissez une offre |
+| exchange_title | Exchange |
+| exchange_desc | Messagerie professionnelle complète |
+| emailpro_title | Email Pro |
+| emailpro_desc | Email professionnel simple et efficace |
+| zimbra_title | Zimbra |
+| zimbra_desc | Suite collaborative open source |
+| licenses_available | Licences {type} disponibles: |
+| licenses_free | {n} licences libres |
+| licenses_help | Vous pouvez associer ce compte à une licence existante ou en commander une nouvelle. |
+| field_quantity | Nombre de comptes à créer |
+| btn_cancel | Annuler |
+| btn_next | Suivant |
+| btn_previous | Précédent |
+| btn_create | Créer |

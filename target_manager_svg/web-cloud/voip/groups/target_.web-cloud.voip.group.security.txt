@@ -3,73 +3,91 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.group.security.svg
 Route:   /web-cloud/voip/{billingAccount}/security
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Score sécurité            | GET /telephony/{ba}/security/score                |
-| IP whitelist              | GET /telephony/{ba}/security/ipWhitelist          |
-| Logs activité             | GET /telephony/{ba}/security/logs                 |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| ovh-telecom-123       | Route param {billingAccount}                  |
+| 500,00 €              | GET security/limits → outgoingLimit           |
+| Activé                | GET security/international → enabled          |
+| 192.168.1.0/24        | GET security/allowedIps → ip                  |
+| Réseau bureau Paris   | allowedIps[].description                      |
+| 185.234.67.89         | GET security/alerts → sourceIp                |
+| 5 tentatives          | alerts[].attemptCount                         |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Section Web Cloud (VoIP actif)
-3. LEFT PANEL - Groupe VoIP (Sécurité actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des groupes
 4. RIGHT PANEL
-   - Header: "Sécurité du groupe"
-   - Bannière score sécurité
-   - Bloc: Paramètres de sécurité (toggles)
-   - Bloc: Liste blanche IP
-   - Bloc: Activité récente
+   - Header: Groupe + breadcrumb /Sécurité
+   - NAV3: Dashboard | Général | Services | Facturation | [Sécurité]
+   - Section protection anti-fraude (limites, international)
+   - Section IP autorisées (whitelist)
+   - Section alertes tentatives suspectes
 
-# PARAMÈTRES SÉCURITÉ
-| Paramètre | Description |
-|-----------|-------------|
-| Restriction IP | Limiter connexions SIP à IPs autorisées |
-| 2FA | Double authentification actions sensibles |
-| Politique MDP | Exigences de complexité des mots de passe |
+# SECTIONS DE LA PAGE
 
-# SCORE SÉCURITÉ
-| Niveau | Score | Couleur |
-|--------|-------|---------|
-| Critique | 0-25% | Rouge |
-| Faible | 26-50% | Orange |
-| Moyen | 51-75% | Jaune |
-| Bon | 76-100% | Vert |
+## 1. Protection anti-fraude
+Configurez les seuils de protection :
+- Limite appels sortants (€ HT / mois)
+- Toggle appels internationaux
+- Gestion des pays autorisés
 
-# TABLE IP WHITELIST
-| Colonne | Description |
-|---------|-------------|
-| Adresse IP/CIDR | IP ou plage autorisée |
-| Description | Note descriptive |
-| Actions | Supprimer |
+## 2. Adresses IP autorisées
+Restriction de l'accès SIP par IP :
+- Liste blanche d'IP/CIDR
+- Description pour chaque entrée
+- Actions: modifier, supprimer
 
-# TABLE ACTIVITÉ
-| Colonne | Description |
-|---------|-------------|
-| Date/Heure | Timestamp événement |
-| Action | Type d'opération |
-| Utilisateur | Compte concerné |
-| IP source | Origine connexion |
-| Résultat | OK / Bloqué / Échec |
+## 3. Tentatives suspectes
+Monitoring sécurité en temps réel :
+- Tentatives bloquées (IP non autorisée)
+- Tentatives échouées (mauvais mot de passe)
+- Historique 24h/7j
+
+# COLONNES TABLE IP
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Adresse IP/CIDR | 310px | Format IP ou CIDR (monospace) |
+| Description | 300px | Texte libre |
+| Créée le | 200px | Date création |
+| Actions | 100px | ✎ Edit ✕ Delete |
+
+# TYPES D'ALERTES
+| Type | Couleur | Description |
+|------|---------|-------------|
+| Bloquée (IP) | Rouge #FEE2E2 | IP non dans whitelist |
+| Échouée (MDP) | Orange #FEF3C7 | Mauvais mot de passe |
+| Suspecte | Orange #FEF3C7 | Pattern anormal détecté |
 
 # INTERACTIONS
-- Toggles → Active/désactive paramètres
-- "+ Ajouter une IP" → Modal ajout IP
-- "✕ Supprimer" → Retire IP de whitelist
-- "Voir tout l'historique" → Page logs complets
+- Clic NAV3 tab → Navigation onglet
+- Clic "Modifier" limite → Modal édition limite
+- Toggle international → Activer/désactiver
+- Clic "Gérer pays" → Modal liste pays autorisés
+- Clic "+ Ajouter IP" → Modal ajout IP
+- Clic ✎ sur IP → Modal édition
+- Clic ✕ sur IP → Supprimer (confirmation)
 
 # API ENDPOINTS
-GET /telephony/{ba}/security/score
-GET /telephony/{ba}/security/settings
-PUT /telephony/{ba}/security/settings
-GET /telephony/{ba}/security/ipWhitelist
-POST /telephony/{ba}/security/ipWhitelist
-DELETE /telephony/{ba}/security/ipWhitelist/{ip}
-GET /telephony/{ba}/security/logs
+GET /telephony/{ba}/security → Configuration sécurité
+PUT /telephony/{ba}/security → Modifier config
+GET /telephony/{ba}/security/allowedIp → Liste IP autorisées
+POST /telephony/{ba}/security/allowedIp → Ajouter IP
+DELETE /telephony/{ba}/security/allowedIp/{id} → Supprimer IP
+GET /telephony/{ba}/security/alerts → Alertes récentes
+GET /telephony/{ba}/security/countries → Pays internationaux
+
+# BONNES PRATIQUES SÉCURITÉ
+1. Définir une limite de consommation réaliste
+2. Restreindre les appels internationaux si non utilisés
+3. Configurer une whitelist IP si environnement fixe
+4. Surveiller régulièrement les alertes
+5. Changer les mots de passe SIP régulièrement
 
 ================================================================================

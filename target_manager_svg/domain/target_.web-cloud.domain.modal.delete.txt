@@ -1,0 +1,69 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.delete.svg
+Route:   /web-cloud/domain/{domainName}/delete
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| exemple.com                     | /domain → domainName                    |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. ICON - Icône warning (fond rouge)
+2. CONTENT
+   - Titre "Résilier {domaine} ?"
+   - Texte avertissement (action irréversible)
+   - Champ confirmation texte
+3. FOOTER - Boutons Annuler / Résilier définitivement (danger)
+
+# MODAL TYPE
+- Type: Confirmation suppression dangereuse
+- Dimensions: 500x340px
+- Style: Danger (bouton rouge)
+
+# CONFIRMATION
+L'utilisateur doit taper le nom de domaine exact pour confirmer.
+Cela évite les suppressions accidentelles.
+
+# CONSÉQUENCES DE LA RÉSILIATION
+1. **Immédiat** : Le domaine entre en période de rédemption
+2. **30 jours** : Période de rédemption (récupération possible avec frais)
+3. **60-90 jours** : Période de suppression (récupération impossible)
+4. **Après** : Le domaine est libéré au public
+
+# SERVICES ASSOCIÉS IMPACTÉS
+- Zone DNS : Supprimée
+- Emails : Inaccessibles
+- Sites web : Offline
+- Sous-domaines : Tous supprimés
+
+# PÉRIODE DE RÉDEMPTION
+Pendant cette période, le propriétaire peut encore récupérer
+le domaine en payant des frais de rédemption (généralement
+élevés, ~100€ selon l'extension).
+
+# ALTERNATIVES À LA RÉSILIATION
+- Désactiver le renouvellement automatique
+- Transférer vers un autre registrar
+- Changer de propriétaire
+
+# API ENDPOINTS
+DELETE /domain/{domain} - Initier résiliation
+  Response: { status: "pending_deletion" }
+
+GET /domain/{domain}/deletion - État de la suppression
+  Response: {
+    status: "redemption",
+    redemptionEnd: "2025-02-15",
+    deletionDate: "2025-03-15"
+  }
+
+POST /domain/{domain}/restore - Restaurer (période rédemption)
+  Response: { orderId: "...", price: "99.99" }
+
+================================================================================

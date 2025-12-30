@@ -1,0 +1,112 @@
+# Cahier des Charges : web-cloud/domain - Modal DNS External
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Configurer des serveurs DNS externes (non-OVH)
+**Contexte:** Action depuis la page Serveurs DNS
+
+## 2. DIMENSIONS
+
+- Modal: 700x540px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Configurer des serveurs DNS externes"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Warning banner
+- Background: #FEF3C7
+- Dimensions: 652x40px
+- Texte: "En utilisant des DNS externes, la zone DNS OVH ne sera plus utilisée. Propagation : 24-48h."
+
+### Serveurs DNS
+- Label: "Serveurs DNS (minimum 2) *"
+
+### Formulaire NS (4 lignes)
+
+| NS | Hostname | IP (optionnel) |
+|----|----------|----------------|
+| NS1 | Input 350x36px | Input 200x36px |
+| NS2 | Input 350x36px | Input 200x36px |
+| NS3 | Input 350x36px (optionnel) | Input 200x36px |
+| NS4 | Input 350x36px (optionnel) | Input 200x36px |
+
+- Placeholders hostname: "ns1.example-dns.com"
+- Placeholders IP: "IP (optionnel)"
+
+### Bouton ajouter
+- "+ Ajouter un NS" (btn-outline-primary, 140x30px)
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 652x40px
+- Texte: "Les serveurs DNS doivent être déjà configurés pour votre domaine avant ce changement."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Appliquer | btn-primary | 110x34px |
+
+## 6. VALIDATION
+
+- Minimum 2 serveurs DNS requis
+- Format hostname valide (FQDN)
+- IP optionnelle mais si fournie, doit être valide (IPv4 ou IPv6)
+
+## 7. APIS & ENDPOINTS
+
+```
+PUT /domain/{serviceName}/nameServers
+Body: {
+  nameServers: [
+    { host: "ns1.example-dns.com", ip: "203.0.113.10" },
+    { host: "ns2.example-dns.com", ip: "203.0.113.11" },
+    { host: "ns3.example-dns.com" },
+    { host: "ns4.example-dns.com" }
+  ]
+}
+→ Change les serveurs DNS
+
+GET /domain/{serviceName}/nameServers
+→ Liste actuelle des serveurs DNS
+
+# Note: La zone DNS OVH reste disponible mais n'est plus utilisée
+# Pour revenir aux DNS OVH:
+PUT /domain/{serviceName}/nameServers
+Body: {
+  nameServers: [
+    { host: "dns1.ovh.net" },
+    { host: "ns1.ovh.net" }
+  ]
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Configurer des serveurs DNS externes |
+| warning_text | En utilisant des DNS externes, la zone DNS OVH ne sera plus utilisée. Propagation : 24-48h. |
+| field_dns | Serveurs DNS (minimum 2) |
+| ns_label | NS{n} |
+| hostname_placeholder | ns{n}.example-dns.com |
+| ip_placeholder | IP (optionnel) |
+| optional | Optionnel |
+| btn_add_ns | + Ajouter un NS |
+| info_text | Les serveurs DNS doivent être déjà configurés pour votre domaine avant ce changement. |
+| btn_cancel | Annuler |
+| btn_apply | Appliquer |

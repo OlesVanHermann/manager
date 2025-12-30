@@ -2,72 +2,72 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.sms.templates.svg
-Route:   /web-cloud/voip/sms/{account}/templates
-NAV:     Web Cloud > VoIP > SMS > [account] > Modeles
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/sms/{serviceName}/templates
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| Confirmation RDV         | GET /sms/{account}/templates/{id} -> name       |
-| 160 car.                 | GET /sms/{account}/templates/{id} -> charCount  |
-| 1 SMS                    | GET /sms/{account}/templates/{id} -> smsCount   |
-| Bonjour {prenom}...      | GET /sms/{account}/templates/{id} -> content    |
-| {prenom}, {date}, {heure}| GET /sms/{account}/templates/{id} -> variables  |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| sms-abc123            | Route param {serviceName}                     |
+| Confirmation commande | GET /sms/{sn}/templates → name                |
+| Transactionnel        | templates[].type                              |
+| Bonjour {NOM}...      | templates[].content                           |
+| 85 caractères         | templates[].characterCount                    |
+| 1 SMS                 | Calcul: ceil(characterCount / 160)            |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. NAV3: General | SMS envoyes | SMS recus | Campagnes | Modeles (actif) | Expediteurs | Parametres
-2. Left panel: Liste comptes SMS
-3. Header: Nom compte + button nouveau
-4. Search
-5. Templates grid (cards)
-6. Variables disponibles info
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des comptes SMS
+4. RIGHT PANEL
+   - Header: Nom compte + breadcrumb /Modèles
+   - NAV3: Général | Envoyer | Campagnes | Entrants | Historique | [Modèles]
+   - Toolbar: Refresh, Recherche, + Créer modèle
+   - Bannière info: Explication variables
+   - Grille de modèles: Cards avec aperçu contenu
 
-CARD TEMPLATE
-| Element    | Description                    |
-|------------|--------------------------------|
-| Nom        | Nom du modele                  |
-| Caracteres | Badge nb caracteres + couleur  |
-| SMS count  | Nombre de SMS                  |
-| Preview    | Apercu du contenu              |
-| Variables  | Liste variables utilisees      |
-| Actions    | Utiliser, Modifier, Supprimer  |
+# STRUCTURE CARD MODÈLE
+| Zone | Contenu |
+|------|---------|
+| Header | Nom + Badge type |
+| Body | Aperçu message (3 lignes max) |
+| Footer | Stats (caractères, SMS) + Actions |
 
-COULEUR BADGE CARACTERES
-| Plage       | Couleur   | SMS count |
-|-------------|-----------|-----------|
-| 1-160       | #DEF7EC   | 1 SMS     |
-| 161-306     | #FEF3C7   | 2 SMS     |
-| 307-459     | #FEE2E2   | 3 SMS     |
+# TYPES DE MODÈLES
+| Type | Badge | Usage |
+|------|-------|-------|
+| Transactionnel | Vert DEF7EC | Confirmations, codes, RDV |
+| Marketing | Bleu DBEAFE | Promos, newsletters |
 
-VARIABLES DISPONIBLES
-| Variable     | Description              |
-|--------------|--------------------------|
-| {prenom}     | Prenom du destinataire   |
-| {nom}        | Nom du destinataire      |
-| {email}      | Email du destinataire    |
-| {telephone}  | Telephone destinataire   |
-| {date}       | Date personnalisee       |
-| {heure}      | Heure personnalisee      |
-| {code}       | Code verification        |
-| {montant}    | Montant (facture)        |
-| {numero}     | Numero (facture/commande)|
-| {tracking}   | Numero de suivi          |
-| {entreprise} | Nom entreprise           |
-| {annee}      | Annee courante           |
+# VARIABLES DISPONIBLES
+| Variable | Description |
+|----------|-------------|
+| {NOM} | Nom du destinataire |
+| {PRENOM} | Prénom du destinataire |
+| {DATE} | Date formatée |
+| {HEURE} | Heure formatée |
+| {CODE} | Code de vérification |
+| {REF} | Référence commande/colis |
+| {URL} | Lien court |
+| {REDUCTION} | Pourcentage de réduction |
 
-FORMULAIRE CREATION (modal)
-| Champ     | Type      | Requis | Max       |
-|-----------|-----------|--------|-----------|
-| Nom       | text      | Oui    | 50 car.   |
-| Message   | textarea  | Oui    | 459 car.  |
+# INTERACTIONS
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic "+ Créer modèle" → Modal création
+- Clic "Utiliser" → Ouvre page Envoyer avec modèle pré-rempli
+- Clic ✎ → Modal édition modèle
+- Clic ✕ → Supprimer modèle (confirmation)
+- Clic carte création → Modal création nouveau modèle
 
-API ENDPOINTS
-GET    /sms/{account}/templates                -> Liste modeles
-POST   /sms/{account}/templates                -> Creer modele
-GET    /sms/{account}/templates/{id}           -> Detail
-PUT    /sms/{account}/templates/{id}           -> Modifier
-DELETE /sms/{account}/templates/{id}           -> Supprimer
+# API ENDPOINTS
+GET /sms/{sn}/templates                    → Liste modèles
+POST /sms/{sn}/templates                   → Créer modèle
+GET /sms/{sn}/templates/{id}               → Détails modèle
+PUT /sms/{sn}/templates/{id}               → Modifier modèle
+DELETE /sms/{sn}/templates/{id}            → Supprimer modèle
+
 ================================================================================

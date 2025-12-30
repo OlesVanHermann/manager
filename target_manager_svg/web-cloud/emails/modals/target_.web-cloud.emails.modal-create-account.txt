@@ -1,0 +1,72 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal-create-account.svg
+Route:   /web-cloud/emails/{domain}/accounts (modal)
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| 9,99 €/mois                   | GET /email/offers → price              |
+| 2 licences libres             | GET /email/licenses/{d}/available      |
+| Exchange/Pro/Zimbra           | GET /email/offers → list               |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 600x680px
+- Header: Titre + bouton fermer
+- Step indicator: 3 étapes
+- Content: Cards offres
+- Footer: Annuler + Suivant
+
+# ÉTAPES DU WIZARD
+
+| Étape | Titre         | Contenu                          |
+|-------|---------------|----------------------------------|
+| 1     | Type compte   | Sélection offre (Exchange/Pro/Z) |
+| 2     | Informations  | Email, nom, mot de passe         |
+| 3     | Confirmation  | Récapitulatif + validation       |
+
+# CHAMPS ÉTAPE 2
+
+| Champ           | Type      | Requis | Validation                  |
+|-----------------|-----------|--------|-----------------------------|
+| Partie locale   | text      | Oui    | Alphanum, 2-64 chars        |
+| Nom affiché     | text      | Non    | Max 128 chars               |
+| Prénom          | text      | Non    | Max 64 chars                |
+| Nom             | text      | Non    | Max 64 chars                |
+| Mot de passe    | password  | Oui    | Min 8 chars, complexité     |
+| Confirmation    | password  | Oui    | Match mot de passe          |
+
+# INTERACTIONS
+
+- Clic card offre → Sélection (radio)
+- Clic "Suivant" → Étape suivante
+- Clic "Annuler" → Ferme modal
+- Clic × → Ferme modal
+
+# API ENDPOINTS
+
+GET  /email/offers                    → Liste offres
+GET  /email/licenses/{domain}/available → Licences disponibles
+POST /email/domains/{domain}/accounts → Créer compte
+
+## Payload création
+```json
+{
+  "offer": "exchange",
+  "localPart": "john",
+  "displayName": "John Doe",
+  "firstName": "John",
+  "lastName": "Doe",
+  "password": "SecureP@ss123",
+  "quota": 50,
+  "useLicense": "existing|new"
+}
+```
+
+================================================================================

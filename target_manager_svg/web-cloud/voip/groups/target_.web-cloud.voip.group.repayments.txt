@@ -3,61 +3,84 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.group.repayments.svg
 Route:   /web-cloud/voip/{billingAccount}/repayments
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Liste remboursements      | GET /telephony/{ba}/repayments                    |
-| Statut demande            | GET /telephony/{ba}/repayments/{id} → status      |
-| Montant                   | GET /telephony/{ba}/repayments/{id} → amount      |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| ovh-telecom-123       | Route param {billingAccount}                  |
+| 347,82 €              | GET repayments/balance → amount               |
+| 89,50 €               | GET repayments/current → amount               |
+| 1 248,60 €            | GET repayments/total → amount (12 mois)       |
+| 15/01/2025            | GET repayments/next → date                    |
+| Décembre 2024         | repayments[].period                           |
+| +33 892 123 456       | repayments[].number                           |
+| 0,80€/appel           | repayments[].tariff                           |
+| 156                   | repayments[].callCount                        |
+| 423 min               | repayments[].duration                         |
+| 124,80 €              | repayments[].amount                           |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Section Web Cloud (VoIP actif)
-3. LEFT PANEL - Groupe VoIP (Remboursements actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des groupes
 4. RIGHT PANEL
-   - Header: "Remboursements"
-   - Toolbar: Refresh + Demander remboursement
-   - Bannière info (délais)
-   - Table des demandes
-   - Bloc: Résumé
-   - Bloc: Légende statuts
+   - Header: Groupe + breadcrumb /Reversements
+   - NAV3: Dashboard | Général | Services | Facturation | [Reversements] | Sécurité
+   - Bannière info: Explication reversements
+   - Stats cards: Solde actuel, Revenus mois, Total 12 mois, Prochain versement
+   - Table historique: Période, Numéro, Type, Appels, Minutes, Montant, Statut
 
-# TABLE REMBOURSEMENTS
-| Colonne | Description |
-|---------|-------------|
-| Date demande | Date d'initiation |
-| Référence | N° unique de la demande |
-| Motif | Raison du remboursement |
-| Montant | Somme demandée |
-| Statut | En cours/Validé/Crédité/Refusé |
-| Actions | Voir détails |
+# QU'EST-CE QUE LES REVERSEMENTS ?
+Les reversements sont les revenus générés par les numéros surtaxés :
+- Numéros en 08 92/93/94/95/96/97/98/99
+- Numéros en 09 18/19/36/37...
+- Facturation à l'appel ou à la minute
+- OVH reverse la part opérateur au client
 
-# STATUTS REMBOURSEMENT
-| Statut | Badge | Description |
-|--------|-------|-------------|
-| En cours | Jaune | Demande en traitement |
-| Validé | Vert | Approuvé, en attente de crédit |
-| Crédité | Vert | Montant versé |
-| Refusé | Rouge | Demande rejetée |
+# CONDITIONS DE VERSEMENT
+- Solde minimum: 50€ HT
+- Fréquence: Mensuelle (le 15 du mois)
+- Délai: M+1 (revenus de décembre versés en janvier)
+- Mode: Virement bancaire sur RIB enregistré
 
-# MOTIFS COURANTS
-- Annulation service
-- Incident réseau
-- Surfacturation
-- Réclamation qualité
+# COLONNES TABLE
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Période | 160px | Mois et année |
+| Numéro | 200px | Numéro surtaxé |
+| Type | 150px | Badge tarification |
+| Appels | 120px | Nombre d'appels |
+| Minutes | 120px | Durée totale |
+| Montant HT | 130px | Revenus générés |
+| Statut | 100px | Badge En attente/Versé |
+
+# TYPES DE TARIFICATION
+| Type | Couleur | Description |
+|------|---------|-------------|
+| X,XX€/appel | Violet #F3E8FF | Facturation fixe par appel |
+| X,XX€/min | Bleu #DBEAFE | Facturation à la minute |
+| Gratuit | Vert #DEF7EC | Numéro gratuit (pas de reversement) |
+
+# STATUTS REVERSEMENT
+| Statut | Couleur | Description |
+|--------|---------|-------------|
+| En attente | Orange #FEF3C7 | En cours de calcul/validation |
+| Versé | Vert #DEF7EC | Virement effectué |
+| Bloqué | Rouge #FEE2E2 | Problème (RIB manquant, etc.) |
 
 # INTERACTIONS
-- "+ Demander un remboursement" → Modal demande
-- "Voir" → Détails de la demande
+- Clic NAV3 tab → Navigation onglet
+- Clic période → Détail du mois
+- Export CSV → Télécharger historique
 
 # API ENDPOINTS
-GET /telephony/{ba}/repayments
-POST /telephony/{ba}/repayments
-GET /telephony/{ba}/repayments/{id}
+GET /telephony/{ba}/repaymentConsumption → Liste consommations
+GET /telephony/{ba}/repaymentConsumption/{id} → Détail période
+GET /telephony/{ba}/repaymentConsumption/balance → Solde actuel
+POST /telephony/{ba}/repaymentConsumption/export → Export CSV
 
 ================================================================================

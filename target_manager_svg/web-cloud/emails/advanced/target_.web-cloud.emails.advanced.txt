@@ -6,44 +6,82 @@ Route:   /web-cloud/emails/{domain}/advanced
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                  |
-|--------------------------|---------------------------------------------|
-| example.com              | GET /email/domains -> domain                |
-| Salle de reunion A       | GET /email/domains/{d}/resources -> name    |
-| Salle / Equipement       | -> type                                     |
-| salle-a@example.com      | -> email                                    |
-| 12 personnes             | -> capacity                                 |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| 3 Salles                      | GET /email/exchange/{d}/resources → count by type |
+| 12 Dossiers                   | GET /email/exchange/{d}/publicFolders → count |
+| 8 Groupes                     | GET /email/exchange/{d}/groups → count |
+| 15 Délégations actives        | GET /email/exchange/{d}/delegations → count |
+| 67 Go / 250 Go                | GET /email/exchange/{d}/quota         |
 
 ================================================================================
 
-STRUCTURE PAGE
+# STRUCTURE PAGE
+
 1. NAV1 - Header OVH (Web Cloud actif)
 2. NAV2 - Web Cloud (Emails actif)
-3. LEFT PANEL - Liste domaines
-4. RIGHT PANEL
-   - Header: Domaine
-   - NAV3: 8 tabs (Avance actif)
-   - NAV4: [Ressources] | Contacts ext. | Audit | Appareils
-   - Toolbar: Creer ressource, Filtrer
-   - Table ressources
-   - Pagination
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Avancé ACTIF)
+   - NAV4: Général (actif) | Contacts | Audit | Appareils
+   - Bannière warning (Exchange only)
+   - 6 Cards fonctionnalités avancées
 
-DISPONIBILITE
-EXCHANGE UNIQUEMENT - Ce tab n'apparait que si le domaine
-contient au moins une boite Exchange.
+# NAV4 - SOUS-TABS AVANCÉ
 
-TYPES RESSOURCES
-| Type       | Badge   | Usage                       |
-|------------|---------|------------------------------|
-| Salle      | Bleu    | Salles de reunion            |
-| Equipement | Orange  | Projecteurs, vehicules, etc. |
+| # | Tab       | Route               | Contenu                     |
+|---|-----------|---------------------|-----------------------------|
+| 1 | Général   | /advanced           | Dashboard fonctionnalités   |
+| 2 | Contacts  | /advanced-contacts  | Contacts partagés Exchange  |
+| 3 | Audit     | /advanced-audit     | Logs d'activité             |
+| 4 | Appareils | /advanced-devices   | Appareils mobiles connectés |
 
-API ENDPOINTS
-GET    /email/domains/{domain}/resources        - Liste ressources
-POST   /email/domains/{domain}/resources        - Creer ressource
-GET    /email/domains/{d}/resources/{id}        - Details ressource
-PUT    /email/domains/{d}/resources/{id}        - Modifier ressource
-DELETE /email/domains/{d}/resources/{id}        - Supprimer ressource
+# CARDS FONCTIONNALITÉS
+
+| Card                  | Métriques                    | Action        |
+|-----------------------|------------------------------|---------------|
+| Ressources partagées  | Salles, Équipements, Véhic.  | Gérer →       |
+| Dossiers publics      | Nombre, Espace utilisé       | Gérer →       |
+| Groupes distribution  | Groupes, Membres total       | Gérer →       |
+| Délégations           | Actives, Full Access         | Gérer →       |
+| Politiques            | Rétention, Archivage, Litig. | Configurer →  |
+| Quotas globaux        | Barre progression stockage   | Détails →     |
+
+# RESTRICTIONS
+
+⚠️ Ces fonctionnalités sont disponibles UNIQUEMENT pour :
+- Exchange (toutes versions)
+
+NON disponible pour :
+- Email Pro
+- Zimbra
+- MX Plan
+
+# API ENDPOINTS
+
+## Ressources
+GET    /email/exchange/{org}/{domain}/resources        → Liste ressources
+POST   /email/exchange/{org}/{domain}/resources        → Créer ressource
+DELETE /email/exchange/{org}/{d}/resources/{id}        → Supprimer
+
+## Dossiers publics
+GET    /email/exchange/{org}/{domain}/publicFolders    → Liste dossiers
+POST   /email/exchange/{org}/{domain}/publicFolders    → Créer dossier
+PUT    /email/exchange/{org}/{d}/publicFolders/{id}    → Modifier
+DELETE /email/exchange/{org}/{d}/publicFolders/{id}    → Supprimer
+
+## Groupes
+GET    /email/exchange/{org}/{domain}/groups           → Liste groupes
+POST   /email/exchange/{org}/{domain}/groups           → Créer groupe
+GET    /email/exchange/{org}/{d}/groups/{id}/members   → Membres groupe
+
+## Délégations
+GET    /email/exchange/{org}/{d}/accounts/{a}/delegations → Délégations compte
+POST   /email/exchange/{org}/{d}/accounts/{a}/delegations → Ajouter délégation
+
+## Quotas
+GET    /email/exchange/{org}/{domain}/quota            → Quotas globaux
 
 ================================================================================

@@ -1,0 +1,121 @@
+# Cahier des Charges : private/storage - Page Accesses
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page listing avec datagrid
+**Fonction:** Gérer les accès NFS/CIFS d'une partition
+**Contexte:** Configuration des ACL pour le montage réseau
+
+## 2. DIMENSIONS
+
+- Page: 1100x600px
+- Zone mount points: 1040x60px
+- Tableau accès: 1040x330px
+
+## 3. LAYOUT & STRUCTURE
+
+### Header page
+- Titre: "Accès NFS/CIFS"
+- Sous-titre: "Partition : backup-prod • Protocole : NFS"
+
+### Bouton action
+- "+ Ajouter un accès" (btn-primary, 150x40px)
+
+## 4. SECTION POINTS DE MONTAGE
+
+### Info box
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Border-radius: 4px
+- Height: 60px
+
+### Contenu
+- **NFS:** `mount -t nfs zpool-xxx.nasha.ovh.net:/zpool-xxx/backup-prod /mnt/backup`
+- **CIFS:** `//zpool-xxx.nasha.ovh.net/zpool-xxx-backup-prod`
+
+### Style
+- Label: font-weight 500, #1E40AF
+- Commande: font-family monospace, #1E40AF
+
+## 5. DATAGRID ACCÈS
+
+### Colonnes
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Adresse IP | 230px | IP ou réseau CIDR |
+| Type | 130px | IPv4, IPv6, Réseau |
+| Permissions | 170px | Badge rw/ro |
+| ACL | 150px | all_squash, root_squash, etc. |
+| Ajouté le | 150px | Date d'ajout |
+| Statut | 150px | Badge Actif/Inactif |
+| Actions | 40px | Menu ⋮ |
+
+### Données exemple
+| IP | Type | Permissions | ACL | Statut |
+|----|------|-------------|-----|--------|
+| 51.91.xxx.1 | IPv4 | rw | all_squash | Actif |
+| 51.91.xxx.2 | IPv4 | rw | all_squash | Actif |
+| 192.168.1.0/24 | Réseau | ro | root_squash | Actif |
+
+### Badges permissions
+- rw: Background #EFF6FF, text #0050D7
+- ro: Background #FEF3C7, text #92400E
+
+### Badges statut
+- Actif: Background #DCFCE7, text #16A34A
+
+## 6. MENU ACTIONS
+
+### Dropdown (150x110px)
+- "Modifier permissions"
+- ---
+- "Modifier ACL"
+- ---
+- "Supprimer" (text-danger)
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicated/nasha/{serviceName}/partition/{partitionName}
+→ Informations partition (protocole)
+
+GET /dedicated/nasha/{serviceName}/partition/{partitionName}/access
+→ Liste des accès
+
+POST /dedicated/nasha/{serviceName}/partition/{partitionName}/access
+Body: { ip: "192.168.1.0/24", type: "readonly", aclDescription: "all_squash" }
+→ Crée un accès
+
+PUT /dedicated/nasha/{serviceName}/partition/{partitionName}/access/{ip}
+→ Modifie un accès
+
+DELETE /dedicated/nasha/{serviceName}/partition/{partitionName}/access/{ip}
+→ Supprime un accès
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Accès NFS/CIFS |
+| page_subtitle_partition | Partition |
+| page_subtitle_protocol | Protocole |
+| btn_add_access | Ajouter un accès |
+| section_mount_points | Points de montage |
+| mount_nfs | NFS |
+| mount_cifs | CIFS |
+| col_ip | Adresse IP |
+| col_type | Type |
+| col_permissions | Permissions |
+| col_acl | ACL |
+| col_added | Ajouté le |
+| col_status | Statut |
+| type_ipv4 | IPv4 |
+| type_ipv6 | IPv6 |
+| type_network | Réseau |
+| perm_rw | rw |
+| perm_ro | ro |
+| status_active | Actif |
+| action_edit_permissions | Modifier permissions |
+| action_edit_acl | Modifier ACL |
+| action_delete | Supprimer |

@@ -1,0 +1,167 @@
+# Cahier des Charges : web-cloud/access - Modem NAT
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration réseau
+**Fonction:** Gérer le NAT, UPnP et DMZ
+**Contexte:** Onglet Modem > NAT/Ports
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Zone contenu: 1096x765px
+- Card redirection: 1030x400px
+- Card UPnP: 1030x100px
+- Card DMZ: 1030x100px
+
+## 3. NAVIGATION
+
+### NAV3 Tabs
+| Onglet | État |
+|--------|------|
+| Général | Inactif |
+| Ligne | Inactif |
+| Modem | Actif |
+| Services | Inactif |
+
+### NAV4 Sous-tabs
+| Sous-onglet | État |
+|-------------|------|
+| Dashboard | Inactif |
+| WiFi | Inactif |
+| DHCP | Inactif |
+| NAT/Ports | Actif |
+| Routeur | Inactif |
+| Paramètres | Inactif |
+| Guides | Inactif |
+
+## 4. CARD REDIRECTION DE PORTS
+
+### Header
+- Titre: "REDIRECTION DE PORTS"
+- Bouton: "+ Ajouter règle" (btn-outline)
+
+### Colonnes datagrid
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| NOM | 140px | Nom de la règle |
+| PROTOCOLE | 80px | TCP/UDP |
+| PORT EXTERNE | 120px | Port(s) externe(s) |
+| IP INTERNE | 120px | Adresse IP destination |
+| PORT INTERNE | 120px | Port(s) interne(s) |
+| STATUT | 100px | Badge Actif/Inactif |
+| ACTIONS | 150px | Modifier, Supprimer |
+
+### Exemples de données
+
+| Nom | Protocole | Port ext | IP interne | Port int | Statut |
+|-----|-----------|----------|------------|----------|--------|
+| Serveur Web | TCP | 80, 443 | 192.168.1.100 | 80, 443 | Actif |
+| SSH | TCP | 22 | 192.168.1.50 | 22 | Actif |
+| FTP | TCP | 21 | 192.168.1.50 | 21 | Inactif |
+| Camera IP | TCP/UDP | 8080 | 192.168.1.150 | 80 | Actif |
+
+### Badges statut
+- Actif: Background #DEF7EC, text #03543F
+- Inactif: Background #F3F4F6, text-muted
+
+### Actions
+- "Modifier" (text-primary)
+- "Supprimer" (text-error)
+
+### Pagination
+- Texte: "Affichage 1-4 sur 4 règles"
+
+## 5. CARD UPnP
+
+### Header
+- Titre: "UPnP (Universal Plug and Play)"
+- Toggle OFF: Background #FEE2E2, cercle rouge
+
+### Champs
+| Label | Valeur |
+|-------|--------|
+| Ports ouverts automatiquement | 0 |
+| Dernier appareil | - |
+
+## 6. CARD DMZ
+
+### Header
+- Titre: "DMZ (Zone démilitarisée)"
+- Toggle OFF: Background #FEE2E2, cercle rouge
+
+### Champs
+| Label | Valeur |
+|-------|--------|
+| Adresse IP DMZ | Non configuré |
+
+### Bouton
+- "Configurer DMZ" (btn-outline)
+
+## 7. COMPOSANTS UI
+
+### Toggle switch OFF
+- Dimensions: 60x28px
+- Background: #FEE2E2
+- Cercle: rouge #DC2626
+
+### Badge statut
+- Border-radius: 10px
+- Padding: 4px 12px
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/modem/portMappings
+→ Liste des règles NAT
+
+POST /xdsl/{serviceName}/modem/portMappings
+→ Ajoute une règle NAT
+
+PUT /xdsl/{serviceName}/modem/portMappings/{id}
+→ Modifie une règle
+
+DELETE /xdsl/{serviceName}/modem/portMappings/{id}
+→ Supprime une règle
+
+GET /xdsl/{serviceName}/modem/upnp
+→ Configuration UPnP
+
+PUT /xdsl/{serviceName}/modem/upnp
+Body: { enabled: true/false }
+→ Active/désactive UPnP
+
+GET /xdsl/{serviceName}/modem/dmz
+→ Configuration DMZ
+
+PUT /xdsl/{serviceName}/modem/dmz
+Body: { ip: "192.168.1.x" }
+→ Configure DMZ
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| nav_nat | NAT/Ports |
+| section_port_forwarding | Redirection de ports |
+| btn_add_rule | + Ajouter règle |
+| col_name | Nom |
+| col_protocol | Protocole |
+| col_external_port | Port externe |
+| col_internal_ip | IP interne |
+| col_internal_port | Port interne |
+| col_status | Statut |
+| col_actions | Actions |
+| status_active | Actif |
+| status_inactive | Inactif |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| section_upnp | UPnP (Universal Plug and Play) |
+| upnp_auto_ports | Ports ouverts automatiquement |
+| upnp_last_device | Dernier appareil |
+| section_dmz | DMZ (Zone démilitarisée) |
+| dmz_ip | Adresse IP DMZ |
+| dmz_not_configured | Non configuré |
+| btn_configure_dmz | Configurer DMZ |

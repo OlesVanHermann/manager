@@ -1,0 +1,159 @@
+# Cahier des Charges : web-cloud/access - Modem WiFi
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration WiFi
+**Fonction:** Gérer les réseaux WiFi 2.4 GHz et 5 GHz
+**Contexte:** Onglet Modem > WiFi
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Zone contenu: 1096x765px
+- Card WiFi: 1030x230px (x2 pour 2.4 et 5 GHz)
+- Warning banner: 1030x50px
+
+## 3. NAVIGATION
+
+### NAV3 Tabs
+| Onglet | État |
+|--------|------|
+| Général | Inactif |
+| Ligne | Inactif |
+| Modem | Actif |
+| Services | Inactif |
+
+### NAV4 Sous-tabs
+| Sous-onglet | État |
+|-------------|------|
+| Dashboard | Inactif |
+| WiFi | Actif |
+| DHCP | Inactif |
+| NAT/Ports | Inactif |
+| Routeur | Inactif |
+| Paramètres | Inactif |
+| Guides | Inactif |
+
+## 4. CARD WIFI 2.4 GHz
+
+### Header
+- Titre: "WIFI 2.4 GHz"
+- Toggle: ON (vert #10B981)
+
+### Champs
+
+| Label | Valeur | Input type |
+|-------|--------|------------|
+| SSID | MonReseau | Input readonly 250px |
+| Mot de passe | ************** | Input password + Afficher |
+| Sécurité | WPA3 | Dropdown 150px |
+| Canal | Auto (6) | Dropdown 120px |
+| Appareils connectés | 12 | KPI + lien "Voir liste" |
+
+### Boutons
+- "Appliquer" (btn-primary, 140x36px)
+- "Générer MDP" (btn-outline, 160x36px)
+
+## 5. CARD WIFI 5 GHz
+
+### Header
+- Titre: "WIFI 5 GHz"
+- Toggle: ON (vert)
+
+### Champs
+
+| Label | Valeur | Input type |
+|-------|--------|------------|
+| SSID | MonReseau_5G | Input readonly 250px |
+| Mot de passe | ************** | Input password + Afficher |
+| Sécurité | WPA3 | Dropdown 150px |
+| Canal | Auto (36) | Dropdown 120px |
+| Appareils connectés | 8 | KPI + lien "Voir liste" |
+
+### Boutons
+- "Appliquer" (btn-primary, 140x36px)
+- "Générer MDP" (btn-outline, 160x36px)
+
+## 6. WARNING BANNER
+
+- Background: #FEF3C7
+- Texte: "Les modifications WiFi déconnecteront temporairement les appareils connectés."
+
+## 7. COMPOSANTS UI
+
+### Toggle switch
+- Dimensions: 60x28px
+- ON: Background #DEF7EC, cercle vert
+- OFF: Background #FEE2E2, cercle rouge
+
+### Input SSID
+- Background: #F3F4F6
+- Height: 28px
+- Width: 250px
+
+### Input password
+- Background: #F3F4F6
+- Height: 28px
+- Width: 250px
+- Eye icon: toggle affichage
+
+### Dropdown sécurité
+- Options: WPA2-PSK, WPA3, WPA2/WPA3, Open
+
+### Dropdown canal
+- 2.4 GHz: Auto, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+- 5 GHz: Auto, 36, 40, 44, 48, 52, 56, 60, 64, 100, 104...
+
+### KPI appareils
+- Font-size: 24px, font-weight 600
+- Lien: "Voir liste" (text-primary)
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/modem/wifi
+→ Configuration WiFi (par bande)
+
+PUT /xdsl/{serviceName}/modem/wifi
+Body: {
+  band: "2.4GHz",
+  enabled: true,
+  ssid: "MonReseau",
+  security: "WPA3",
+  key: "password123",
+  channel: "auto"
+}
+→ Applique la configuration
+
+GET /xdsl/{serviceName}/modem/wifi/password
+→ Affiche le mot de passe
+
+POST /xdsl/{serviceName}/modem/wifi/password/generate
+→ Génère un nouveau mot de passe aléatoire
+
+GET /xdsl/{serviceName}/modem/connectedDevices?band=2.4GHz
+→ Liste des appareils connectés sur cette bande
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| nav_wifi | WiFi |
+| wifi_24ghz | WiFi 2.4 GHz |
+| wifi_5ghz | WiFi 5 GHz |
+| field_ssid | SSID |
+| field_password | Mot de passe |
+| field_security | Sécurité |
+| field_channel | Canal |
+| channel_auto | Auto ({n}) |
+| connected_devices | Appareils connectés |
+| btn_view_list | Voir liste |
+| btn_show | Afficher |
+| btn_apply | Appliquer |
+| btn_generate | Générer MDP |
+| security_wpa2 | WPA2-PSK |
+| security_wpa3 | WPA3 |
+| security_mixed | WPA2/WPA3 |
+| security_open | Open |
+| warning_wifi | Les modifications WiFi déconnecteront temporairement les appareils connectés. |

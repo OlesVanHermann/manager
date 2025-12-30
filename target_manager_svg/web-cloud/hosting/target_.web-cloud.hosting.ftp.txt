@@ -1,0 +1,74 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.hosting.ftp.svg
+Route:   /web-cloud/hebergement/hosting/{serviceName}/ftp
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                       | Source API                                    |
+|-----------------------------------|-----------------------------------------------|
+| ftp.cluster027.hosting.ovh.net    | GET /hosting/web/{sn} → cluster + constante   |
+| ssh.cluster027.hosting.ovh.net    | GET /hosting/web/{sn} → cluster + constante   |
+| monsitec                          | GET /hosting/web/{sn} → primaryLogin          |
+| /home/monsitec                    | GET /hosting/web/{sn}/user/{login} → home     |
+| Actif/Désactivé (FTP)             | GET /hosting/web/{sn}/user/{login} → isFtp    |
+| Actif/Désactivé (SFTP)            | GET /hosting/web/{sn}/user/{login} → isSftp   |
+| Actif/Désactivé (SSH)             | GET /hosting/web/{sn}/user/{login} → sshState |
+| Actif (État)                      | GET /hosting/web/{sn}/user/{login} → state    |
+| 30/12/2025 10:23                  | GET /hosting/web/{sn}/user/{login} → lastLogin|
+================================================================================
+
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Hébergement actif
+3. LEFT PANEL - Liste hébergements
+4. RIGHT PANEL
+   - Header: Nom service
+   - NAV3: 16 tabs (FTP-SSH actif)
+   - BLOC INFO: Serveur FTP/SFTP, Serveur SSH, Login principal, Accès web
+   - TOOLBAR: Créer utilisateur | Restaurer snapshot | Générer snapshot | Recherche
+   - TABLE: Login, Répertoire, FTP, SFTP, SSH, État, Dernière connexion, Actions
+   - PAGINATION
+
+# BLOC INFO CONNEXION
+| Colonne          | Contenu                              |
+|------------------|--------------------------------------|
+| Serveur FTP/SFTP | ftp.clusterXXX.hosting.ovh.net      |
+| Ports            | FTP: 21, SFTP: 22                   |
+| Serveur SSH      | ssh.clusterXXX.hosting.ovh.net      |
+| Port SSH         | 22                                   |
+| Login principal  | {primaryLogin} + bouton copier      |
+| Accès Web        | Lien Net2FTP                        |
+
+# COLONNES TABLE UTILISATEURS
+| Colonne          | Largeur | Contenu                        |
+|------------------|---------|--------------------------------|
+| Login            | 180px   | Nom + badge "Principal" si oui|
+| Répertoire       | 250px   | Chemin home                   |
+| FTP              | 80px    | Badge Actif/Désactivé         |
+| SFTP             | 80px    | Badge Actif/Désactivé         |
+| SSH              | 90px    | Badge Actif/Désactivé         |
+| État             | 100px   | Badge Actif/Suspendu          |
+| Dernière connexion| 200px  | Date/heure                    |
+| Actions          | 56px    | Menu ⋮                        |
+
+# INTERACTIONS
+- Clic "Créer utilisateur" → Modal création
+- Clic "Restaurer snapshot" → Modal sélection snapshot
+- Clic "Générer snapshot" → Modal confirmation
+- Clic "Net2FTP" → Ouverture nouvel onglet
+- Clic ⋮ → Menu contextuel (Changer MDP, Modifier, Supprimer)
+
+# API ENDPOINTS
+GET /hosting/web/{sn}/user              - Liste utilisateurs FTP
+GET /hosting/web/{sn}/user/{login}      - Détails utilisateur
+POST /hosting/web/{sn}/user             - Créer utilisateur
+PUT /hosting/web/{sn}/user/{login}      - Modifier utilisateur
+POST /hosting/web/{sn}/user/{login}/changePassword - Changer mot de passe
+DELETE /hosting/web/{sn}/user/{login}   - Supprimer utilisateur
+GET /hosting/web/{sn}/dump              - Liste snapshots
+POST /hosting/web/{sn}/dump/{id}/restore - Restaurer snapshot
+
+================================================================================

@@ -2,54 +2,57 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.fax.consumption.svg
-Route:   /web-cloud/voip/{ba}/fax/{sn}/consumption
-NAV:     Web Cloud > VoIP > [groupe] > Fax > [fax] > Consommation
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/fax/{serviceName}/consumption
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| 156                      | GET /telephony/{ba}/fax/{sn}/consumption -> sentCount |
-| 89                       | GET /telephony/{ba}/fax/{sn}/consumption -> receivedCount |
-| 487                      | GET /telephony/{ba}/fax/{sn}/consumption -> totalPages |
-| 45,60 €                  | GET /telephony/{ba}/fax/{sn}/consumption -> totalCost |
-| +12%                     | Calcul vs periode precedente                    |
-| Evolution chart          | GET /telephony/{ba}/fax/{sn}/consumption -> monthlyStats |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| 0033972999888         | Route param {serviceName}                     |
+| 68                    | GET /telephony/{ba}/fax/{sn}/consumption → total |
+| 245                   | consumption → pagesCount                      |
+| 12,25€                | consumption → totalCost                       |
+| 30/12/2025 14:32      | consumption → items[].datetime                |
+| +33 1 23 45 67 89     | items[].destinationNumber                     |
+| 3                     | items[].pages                                 |
+| 0:45                  | items[].duration (seconds → mm:ss)            |
+| 0,15€                 | items[].price                                 |
+| Abouti/Échoué         | items[].status                                |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes | Numeros | Fax (actif) | Abreges
-2. Left panel: Liste fax du groupe
-3. NAV3: General | Parametres | Notifications | Logo | Fax envoyes | Fax recus | Consommation (actif) | Campagnes
-4. Period selector + Export
-5. Stats cards (4 KPIs)
-6. Evolution chart (bar chart)
-7. Breakdown sections
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des fax
+4. RIGHT PANEL
+   - Header: Numéro + breadcrumb /Consommation
+   - NAV3: Général | Paramètres | Campagnes | [Consommation] | Filtrage | Logo | Notifications
+   - NAV4: [Envoyés] | Reçus
+   - Sélecteur période
+   - Cards stats: Total fax | Pages | Coût
+   - Table détail consommation
+   - Pagination
+   - Bouton Export CSV
 
-STATS CARDS
-| Carte         | Donnee           | Icone |
-|---------------|------------------|-------|
-| Fax envoyes   | Compteur + delta | 📤    |
-| Fax recus     | Compteur + delta | 📥    |
-| Pages totales | Envoyees + Recues| 📄    |
-| Cout total    | Montant HT       | 💶    |
+# STATUTS FAX
+| Statut  | Badge Color | Description         |
+|---------|-------------|---------------------|
+| Abouti  | #DEF7EC     | Transmission réussie|
+| Échoué  | #FEE2E2     | Échec transmission  |
 
-GRAPHIQUE EVOLUTION
-- Type: Bar chart double (envoyes/recus)
-- Periode: 12 mois glissants
-- Couleurs: Bleu (#0050D7) envoyes, Vert (#10B981) recus
-- Axes: Mois (X), Quantite (Y)
+# INTERACTIONS
+- Clic NAV4 sous-tab → Basculer envoyés/reçus
+- Sélecteur période → Changer mois
+- Clic "📄" → Détail/télécharger fax
+- Pagination → Navigation pages
+- Clic "Exporter CSV" → Téléchargement
 
-REPARTITION ENVOIS
-| Zone                 | Tarif/page |
-|----------------------|------------|
-| France metropolitaine| 0,10 €     |
-| Europe               | 0,50 €     |
-| International        | 0,40 €     |
+# API ENDPOINTS
+GET /telephony/{ba}/fax/{sn}/consumption                    → Stats globales
+GET /telephony/{ba}/fax/{sn}/consumption?wayType=outgoing   → Fax envoyés
+GET /telephony/{ba}/fax/{sn}/consumption?wayType=incoming   → Fax reçus
+GET /telephony/{ba}/fax/{sn}/consumption/{id}/download      → Télécharger
 
-API ENDPOINTS
-GET /telephony/{ba}/fax/{sn}/consumption                    -> Stats periode
-GET /telephony/{ba}/fax/{sn}/consumption/monthly            -> Stats mensuelles
-GET /telephony/{ba}/fax/{sn}/consumption/export             -> Export CSV
 ================================================================================

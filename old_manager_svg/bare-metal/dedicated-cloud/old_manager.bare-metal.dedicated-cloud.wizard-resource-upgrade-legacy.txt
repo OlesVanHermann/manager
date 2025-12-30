@@ -1,0 +1,136 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard Resource Upgrade Legacy
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard modal 3 étapes
+**Fonction:** Passer au forfait mensuel (upgrade de ressource)
+**Contexte:** Changement de facturation d'un host vers un forfait mensuel avec engagement
+
+## 2. DIMENSIONS
+
+- Overlay: 1440x700px (fond noir 50%)
+- Modal wizard: 900x620px (centrée)
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F9FAFB
+- Titre: "Passer au forfait mensuel"
+- Bouton fermer: × (coin droit)
+- Hauteur: 60px
+
+### Stepper (3 étapes)
+| Étape | Label | État visuel |
+|-------|-------|-------------|
+| 1 | Durée | Completed (vert ✓) |
+| 2 | Contrats | Completed (vert ✓) |
+| 3 | Récapitulatif | Active (bleu) |
+
+## 4. ÉTAPE 3 : RÉCAPITULATIF (visible)
+
+### Titre section
+- "Récapitulatif de votre commande :"
+
+### Tableau récapitulatif
+
+**Colonnes:**
+| Colonne | Alignement |
+|---------|------------|
+| Description | Gauche |
+| Prix | Droite |
+
+**En-tête:**
+- Background: #F3F4F6
+- Font-weight: 600
+
+**Lignes:**
+| Description | Prix |
+|-------------|------|
+| Hosted Private Cloud - Host L (Intel Xeon-E 2288G) | 450,00 € HT/mois |
+| Engagement 12 mois - Réduction 10% | -45,00 € HT/mois |
+
+### Totaux
+- Total HT: 405,00 € HT/mois (text-danger, font-weight: 600)
+- Total TTC: 486,00 € TTC/mois (text-danger, font-weight: 600)
+- Alignement: droite
+
+### Textes finaux
+- Ligne 1: "En validant, vous serez redirigé vers un bon de commande."
+- Ligne 2 (italic, muted): "Votre commande sera effective après validation du paiement."
+
+## 5. COMPOSANTS UI
+
+### Stepper completed
+- Cercle vert #10B981 avec ✓ blanc
+- Ligne verte entre étapes complétées
+
+### Stepper active
+- Cercle bleu #0050D7 avec numéro blanc
+
+### Prix négatif (réduction)
+- Préfixe: -
+- Même style que prix positif
+
+## 6. ACTIONS & INTERACTIONS
+
+### Bouton Précédent
+- Style: btn-secondary (100x36px)
+- Position: gauche
+- Action: Retour à l'étape 2
+
+### Bouton Annuler
+- Style: btn-secondary (100x36px)
+- Position: centre-droite
+- Action: Ferme le modal
+
+### Bouton Valider
+- Style: btn-primary (100x36px)
+- Position: droite
+- Action: Redirige vers bon de commande OVHcloud
+
+## 7. ÉTAPES PRÉCÉDENTES (non visibles)
+
+### Étape 1 : Durée
+- Sélection de la durée d'engagement (1, 12, 24 mois)
+- Affichage des réductions par durée
+
+### Étape 2 : Contrats
+- Acceptation des CGV
+- Conditions de l'engagement
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/upgradeableResources
+→ Liste les ressources upgradables
+
+GET /dedicatedCloud/{serviceName}/resource/{resourceId}/upgradeOptions
+→ Options de forfait disponibles
+
+POST /dedicatedCloud/{serviceName}/resource/{resourceId}/upgrade
+Body: {
+  duration: 12,
+  autoPayWithPreferredPaymentMethod: false
+}
+→ Génère un bon de commande d'upgrade
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_upgrade_title | Passer au forfait mensuel |
+| wizard_summary_title | Récapitulatif de votre commande |
+| column_description | Description |
+| column_price | Prix |
+| wizard_engagement_reduction | Engagement {duration} mois - Réduction {percent}% |
+| wizard_total_ht | Total HT |
+| wizard_total_ttc | Total TTC |
+| wizard_redirect_info | En validant, vous serez redirigé vers un bon de commande. |
+| wizard_payment_info | Votre commande sera effective après validation du paiement. |
+| step_duration | Durée |
+| step_contracts | Contrats |
+| step_summary | Récapitulatif |
+| btn_previous | Précédent |
+| btn_cancel | Annuler |
+| btn_validate | Valider |

@@ -3,70 +3,74 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.number.sounds.svg
 Route:   /web-cloud/voip/{billingAccount}/number/{serviceName}/sounds
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Sons disponibles          | GET /telephony/{ba}/sound                        |
-| Config actuelle           | GET /telephony/{ba}/number/{sn}/queue/sounds     |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| +33 800 123 456       | Route param {serviceName}                     |
+| easyHunting           | GET /telephony/{ba}/number/{sn} → featureType |
+| accueil_principal.wav | GET sounds → name                             |
+| Accueil               | sounds[].type (accueil/attente/fermeture/svi) |
+| 0:42                  | sounds[].duration                             |
+| 1.2 MB                | sounds[].size                                 |
+| Accueil principal     | sounds[].usedIn (référence config)            |
+| 5 sons sur 12         | Compteur pagination                           |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. LEFT PANEL - Liste des numéros du groupe
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des numéros
 4. RIGHT PANEL
-   - Titre: Configuration des sons
-   - Sous-titre: Numéro + description
-   - NAV3 tabs
-   - Config attente
-   - Config débordement
-   - Config fermeture
-   - Boutons action
+   - Header: Numéro + badge type + breadcrumb /Sons
+   - NAV3: Général | Configuration | Agents | Statistiques | [Sons] | Horaires
+   - Bannière info: Explication des fichiers audio
+   - Toolbar: Refresh, Recherche, + Ajouter son
+   - Table sons: Nom, Type, Durée, Taille, Utilisé dans, Actions
+   - Pagination
 
-# NAV3 TABS
-| Tab | Route |
-|-----|-------|
-| Général | /general |
-| Configuration | /configuration |
-| Agents | /agents |
-| Sons | /sounds (actif) |
-| Planification | /scheduler |
-| Statistiques | /stats |
+# COLONNES TABLE
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Nom | 280px | Icône + nom fichier .wav/.mp3 |
+| Type | 150px | Badge coloré (Accueil/Attente/Fermeture/SVI) |
+| Durée | 100px | Format M:SS |
+| Taille | 100px | Format X.X MB |
+| Utilisé dans | 200px | Référence configuration |
+| Actions | 120px | ▶ Écouter ⬇ Télécharger ✎ Edit ✕ Delete |
 
-# CONFIG ATTENTE
-| Champ | Type | Description |
-|-------|------|-------------|
-| Annonce d'ouverture | Dropdown | Son joué à l'entrée |
-| Musique d'attente | Dropdown | Musique pendant attente |
-
-# CONFIG DÉBORDEMENT
-| Champ | Type | Description |
-|-------|------|-------------|
-| Max appels | Number | Nombre max en file |
-| Action débordement | Radio | Voicemail ou son |
-
-# CONFIG FERMETURE
-| Champ | Type | Description |
-|-------|------|-------------|
-| Délai max | Number | Timeout en secondes |
-| Action fermeture | Radio | Voicemail ou son |
-| Son fermeture | Dropdown | Si action = son |
+# TYPES DE SONS
+| Type | Couleur Badge | Usage |
+|------|---------------|-------|
+| Accueil | Vert #DEF7EC | Message d'accueil |
+| Attente | Bleu #DBEAFE | Musique/annonce d'attente |
+| Fermeture | Orange #FEF3C7 | Message hors horaires |
+| SVI | Violet #F3E8FF | Menus vocaux interactifs |
 
 # INTERACTIONS
-- Dropdowns → Sélection sons
-- "+ Ajouter" → Modal upload son
-- Radio buttons → Toggle actions
-- "Annuler" → Annule modifications
-- "Valider" → PUT API
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic "+ Ajouter un son" → Modal upload audio
+- Clic ▶ → Lire le fichier audio
+- Clic ⬇ → Télécharger le fichier
+- Clic ✎ → Modal édition (nom, type)
+- Clic ✕ → Supprimer son (confirmation)
 
 # API ENDPOINTS
-GET /telephony/{ba}/sound
-POST /telephony/{ba}/sound (upload)
-GET /telephony/{ba}/number/{sn}/queue/sounds
-PUT /telephony/{ba}/number/{sn}/queue/sounds
+GET /telephony/{ba}/number/{sn}/easyHunting/sound → Liste sons
+POST /telephony/{ba}/number/{sn}/easyHunting/sound → Upload son
+GET /telephony/{ba}/number/{sn}/easyHunting/sound/{id} → Détails son
+PUT /telephony/{ba}/number/{sn}/easyHunting/sound/{id} → Modifier son
+DELETE /telephony/{ba}/number/{sn}/easyHunting/sound/{id} → Supprimer son
+GET /telephony/{ba}/number/{sn}/easyHunting/sound/{id}/file → Download fichier
+
+# FORMATS AUDIO SUPPORTÉS
+- WAV (recommandé): 16-bit, 8kHz mono
+- MP3: Compatible avec conversion
+- OGG: Compatible avec conversion
+- Taille max: 10 MB par fichier
 
 ================================================================================

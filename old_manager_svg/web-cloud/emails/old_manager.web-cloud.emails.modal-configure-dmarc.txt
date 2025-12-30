@@ -1,0 +1,130 @@
+# Cahier des Charges : web-cloud/emails - Modal Configure DMARC
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire avancé
+**Fonction:** Configurer la politique DMARC pour le domaine email
+**Contexte:** Action depuis l'onglet Sécurité > DNS Config
+
+## 2. DIMENSIONS
+
+- Modal: 600x680px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Configurer DMARC"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Boutons alignés gauche/droite
+
+## 4. CONTENU
+
+### Bannière info
+- Background: #DBEAFE
+- Dimensions: 552x60px
+- Texte ligne 1: "ℹ️ DMARC (Domain-based Message Authentication) protège votre"
+- Texte ligne 2: "domaine contre le spoofing et le phishing en définissant une politique"
+- Texte ligne 3: "pour les emails non authentifiés."
+
+### Sélecteur de politique
+- Label: "Politique DMARC *"
+- 3 cartes horizontales (176x70px chacune)
+
+| Politique | Border | Description |
+|-----------|--------|-------------|
+| none | #E5E7EB | Surveillance uniquement - Aucune action |
+| quarantine (sélectionné) | #0050D7, 2px, bg #EFF6FF | Emails suspects en quarantaine/spam |
+| reject | #E5E7EB | Rejeter les emails non authentifiés |
+
+- Radio button dans chaque carte
+- Carte sélectionnée: checked avec ✓
+
+### Pourcentage d'application
+- Label: "Pourcentage d'application"
+- Input: 200x36px
+- Valeur: "100" avec suffixe "%"
+- Aide: "Recommandé: 100%"
+
+### Email rapports agrégés (rua)
+- Label: "Email pour rapports (rua)"
+- Input: 552x36px
+- Placeholder: "dmarc-reports@example.com"
+- Aide: "Recevez des rapports agrégés sur l'authentification des emails"
+
+### Email rapports forensiques (ruf)
+- Label: "Email pour rapports forensiques (ruf)"
+- Input: 552x36px
+- Placeholder: "dmarc-forensics@example.com"
+- Aide: "Optionnel - rapports détaillés sur chaque échec"
+
+### Aperçu DNS généré
+- Label: "Enregistrement DNS généré"
+- Box: 552x70px, background #F3F4F6
+- Contenu monospace:
+  - `_dmarc.example.com TXT`
+  - `"v=DMARC1; p=quarantine; pct=100;`
+  - `rua=mailto:dmarc-reports@example.com"`
+
+### Avertissement
+- Background: #FEF3C7
+- Dimensions: 552x40px
+- Texte: "⚠️ Testez avec \"none\" avant d'utiliser \"quarantine\" ou \"reject\""
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 130x40px |
+| Configurer | btn-primary | 130x40px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Créer enregistrement DMARC
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "TXT",
+  subDomain: "_dmarc",
+  target: "v=DMARC1; p=quarantine; pct=100; rua=mailto:dmarc@example.com"
+}
+→ Crée l'enregistrement DNS DMARC
+
+# Modifier enregistrement existant
+PUT /domain/zone/{zoneName}/record/{id}
+Body: { target: "v=DMARC1; p=reject; pct=100; ..." }
+
+# Rafraîchir zone
+POST /domain/zone/{zoneName}/refresh
+→ Applique les modifications
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Configurer DMARC |
+| info_dmarc | DMARC (Domain-based Message Authentication) protège votre domaine contre le spoofing et le phishing en définissant une politique pour les emails non authentifiés. |
+| field_policy | Politique DMARC |
+| policy_none | none |
+| policy_none_desc | Surveillance uniquement - Aucune action |
+| policy_quarantine | quarantine |
+| policy_quarantine_desc | Emails suspects en quarantaine/spam |
+| policy_reject | reject |
+| policy_reject_desc | Rejeter les emails non authentifiés |
+| field_percentage | Pourcentage d'application |
+| percentage_recommended | Recommandé: 100% |
+| field_rua | Email pour rapports (rua) |
+| rua_help | Recevez des rapports agrégés sur l'authentification des emails |
+| field_ruf | Email pour rapports forensiques (ruf) |
+| ruf_help | Optionnel - rapports détaillés sur chaque échec |
+| preview_title | Enregistrement DNS généré |
+| warning | Testez avec "none" avant d'utiliser "quarantine" ou "reject" |
+| btn_cancel | Annuler |
+| btn_configure | Configurer |

@@ -1,0 +1,180 @@
+# Cahier des Charges : private/cloud - Page Backup Config
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page de configuration
+**Fonction:** Configurer le backup Veeam Managed Backup
+**Contexte:** Gestion des sauvegardes VMware
+
+## 2. DIMENSIONS
+
+- Page: 1100x750px
+- Cards offres: 250x180px
+
+## 3. LAYOUT & STRUCTURE
+
+### Header page
+- Titre: "Veeam Managed Backup"
+- Bouton guides: dropdown avec icône ▼
+
+### Toggle activation
+- Zone: 1040x60px
+- Switch ON/OFF
+- Label: "Backup activé" ou "Backup désactivé"
+
+### Section offres
+- Titre: "Choisir une offre"
+- 3 cards horizontales
+
+### Section rapport quotidien
+- Titre: "Rapport quotidien"
+- Description + formulaire
+
+## 4. TOGGLE BACKUP
+
+### Switch component
+- Dimensions: 44x24px
+- État ON: bg #0050D7, cercle droite
+- État OFF: bg #E5E7EB, cercle gauche
+
+### Box container
+- Background: white
+- Border: #E5E7EB
+- Border-radius: 8px
+
+## 5. CARTES OFFRES
+
+### Offre Starter
+| Propriété | Valeur |
+|-----------|--------|
+| Header bg | #F3F4F6 |
+| Features | Backup quotidien, Rétention 14 jours, 1 restore point |
+| Prix | 0,10 € HT/VM/jour |
+
+### Offre Advanced (sélectionnée)
+| Propriété | Valeur |
+|-----------|--------|
+| Border | #0050D7, 2px |
+| Header bg | #EFF6FF |
+| Badge | "Actuel" (vert) |
+| Features | Backup quotidien, Rétention 28 jours, 7 restore points, Email personnalisé |
+| Prix | 0,20 € HT/VM/jour |
+
+### Offre Premium
+| Propriété | Valeur |
+|-----------|--------|
+| Header bg | #F3F4F6 |
+| Features | Backup quotidien, Rétention 90 jours, 14 restore points, Encryption at rest |
+| Prix | 0,40 € HT/VM/jour |
+
+### Bouton mise à jour offre
+- "Mettre à jour l'offre"
+- Désactivé si même offre sélectionnée
+
+## 6. SECTION RAPPORT QUOTIDIEN
+
+### Description
+"Configurez le contenu du rapport de backup envoyé chaque jour."
+
+### Options checkboxes
+| Option | État |
+|--------|------|
+| Durée du backup | Checked |
+| Taille du backup | Checked |
+| Taille des disques | Unchecked |
+| Journée complète | Unchecked |
+| Points de restauration | Checked |
+| Envoyer à une adresse email personnalisée | Checked |
+
+### Champ email personnalisé
+- Visible si dernière option cochée
+- Input: 300x36px
+- Exemple: "admin@company.com"
+
+### Bouton mise à jour options
+- "Mettre à jour les options"
+- Style: btn-primary (200x40px)
+
+## 7. COMPOSANTS UI
+
+### Card offre selected
+- Border: #0050D7, 2px
+- Header: bg #EFF6FF
+
+### Badge "Actuel"
+- Background: #DCFCE7
+- Text: #16A34A
+- Border-radius: 4px
+
+### Checkbox checked
+- Background: #0050D7
+- Checkmark: blanc
+
+## 8. ACTIONS & INTERACTIONS
+
+### Toggle backup
+- ON→OFF: ouvre modal de confirmation (backup-delete)
+- OFF→ON: active le backup avec offre par défaut
+
+### Sélection offre
+- Click: sélectionne l'offre
+- Active le bouton "Mettre à jour l'offre"
+
+### Options rapport
+- Modification temps réel des checkboxes
+- Bouton pour sauvegarder
+
+## 9. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/backup
+→ Configuration backup actuelle
+
+PUT /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/backup
+Body: {
+  backupOffer: "advanced"
+}
+→ Change l'offre
+
+PUT /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/backup/dailyReport
+Body: {
+  scheduleHour: 8,
+  email: "admin@company.com",
+  reportOptions: ["duration", "size", "restorePoints"]
+}
+→ Configure le rapport quotidien
+
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/backup/enable
+→ Active le backup
+
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/backup/disable
+→ Désactive le backup
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Veeam Managed Backup |
+| toggle_enabled | Backup activé |
+| toggle_disabled | Backup désactivé |
+| section_offers | Choisir une offre |
+| offer_starter | Starter |
+| offer_advanced | Advanced |
+| offer_premium | Premium |
+| badge_current | Actuel |
+| feature_daily | Backup quotidien |
+| feature_retention | Rétention {days} jours |
+| feature_restore_points | {count} restore points |
+| feature_email | Email personnalisé |
+| feature_encryption | Encryption at rest |
+| btn_update_offer | Mettre à jour l'offre |
+| section_report | Rapport quotidien |
+| report_desc | Configurez le contenu du rapport de backup envoyé chaque jour. |
+| opt_duration | Durée du backup |
+| opt_size | Taille du backup |
+| opt_disk_size | Taille des disques |
+| opt_full_day | Journée complète |
+| opt_restore_points | Points de restauration |
+| opt_custom_email | Envoyer à une adresse email personnalisée |
+| btn_update_options | Mettre à jour les options |

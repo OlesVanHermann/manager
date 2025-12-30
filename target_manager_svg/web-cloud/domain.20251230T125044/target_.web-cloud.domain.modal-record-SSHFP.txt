@@ -1,0 +1,80 @@
+# Cahier des Charges : web-cloud/domain - Modal Ajouter enregistrement SSHFP
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Création d'un enregistrement DNS de type SSHFP
+- **Type** : Formulaire de création
+- **Objectif** : Ajouter un enregistrement SSHFP (SSH Fingerprint)
+
+## 2. STRUCTURE MODAL
+- Header bleu OVH avec titre, badge SSHFP et bouton fermer (✕)
+- Champ sous-domaine
+- Champ TTL
+- Champs Algorithme et Type d'empreinte
+- Champ Empreinte
+- Aide contextuelle
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur (650x500)
+- **OdsInput** : Sous-domaine, TTL, Empreinte
+- **OdsSelect** : Algorithme, Type d'empreinte
+- **OdsBadge** : Type SSHFP (jaune)
+- **OdsButton** : Annuler, Ajouter l'entrée
+
+## 4. TITRE
+"Ajouter une entrée DNS - SSHFP" avec badge [SSHFP]
+
+## 5. CHAMP SOUS-DOMAINE
+| Élément | Valeur |
+|---------|--------|
+| Label | "Sous-domaine" |
+| Input | "server" |
+| Suffixe (addon gris) | ".exemple.com" |
+
+## 6. CHAMP TTL
+| Élément | Valeur |
+|---------|--------|
+| Label | "TTL" |
+| Input | 3600 |
+
+## 7. CHAMP ALGORITHME
+| Élément | Valeur |
+|---------|--------|
+| Label | "Algorithme" |
+| Obligatoire | Oui (*) |
+| Type | Select dropdown |
+| Valeur | "2 - DSA" |
+| Options | 1=RSA, 2=DSA, 3=ECDSA, 4=Ed25519 |
+
+## 8. CHAMP TYPE D'EMPREINTE
+| Élément | Valeur |
+|---------|--------|
+| Label | "Type d'empreinte" |
+| Obligatoire | Oui (*) |
+| Type | Select dropdown |
+| Valeur | "2 - SHA-256" |
+| Options | 1=SHA-1, 2=SHA-256 |
+
+## 9. CHAMP EMPREINTE
+| Élément | Valeur |
+|---------|--------|
+| Label | "Empreinte (Fingerprint)" |
+| Obligatoire | Oui (*) |
+| Input | "9DBA55CEA0AF8AC578E515E8C... (hex)" |
+| Police | monospace |
+
+## 10. AIDE CONTEXTUELLE
+- "SSHFP (SSH Fingerprint) stocke l'empreinte de la clé publique SSH du serveur."
+- "Utilisez: ssh-keygen -r hostname pour générer l'empreinte."
+
+## 11. BOUTONS FOOTER
+- Annuler (secondaire)
+- Ajouter l'entrée (primaire)
+
+## 12. APIS & ENDPOINTS
+- POST /domain/zone/{zoneName}/record : Créer enregistrement SSHFP
+  - fieldType: "SSHFP"
+  - subDomain: string
+  - target: "algorithm fptype fingerprint"
+  - ttl: number
+

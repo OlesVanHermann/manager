@@ -3,68 +3,87 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.group.portability.svg
 Route:   /web-cloud/voip/{billingAccount}/portability
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Liste demandes            | GET /telephony/{ba}/portability                   |
-| Statut demande            | GET /telephony/{ba}/portability/{id} → status     |
-| Date prévue               | GET /telephony/{ba}/portability/{id} → dateExpected|
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| ovh-telecom-123       | Route param {billingAccount}                  |
+| +33 1 23 45 67 89     | GET portability → number                      |
+| Entrante / Sortante   | portability[].direction                       |
+| Orange                | portability[].operator                        |
+| En validation         | portability[].status                          |
+| 15/12/2024            | portability[].requestDate                     |
+| 02/01/2025            | portability[].portingDate                     |
+| 2 en cours            | Compteur portabilités actives                 |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Section Web Cloud (VoIP actif)
-3. LEFT PANEL - Groupe VoIP (Portabilité actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des groupes
 4. RIGHT PANEL
-   - Header: "Portabilité des numéros"
-   - Toolbar: Refresh + Nouvelle demande
-   - Bannière info délais
-   - Table des demandes
-   - Bloc: Documents requis
-   - Bloc: Étapes du processus
+   - Header: Groupe + breadcrumb /Portabilité
+   - NAV3: Dashboard | Général | Services | Commandes | [Portabilité] | Facturation
+   - Bannière info: Explication portabilité
+   - Toolbar: Refresh, Recherche, Filtres, + Demander portabilité
+   - Stats cards: En cours, Entrantes 12 mois, Sortantes 12 mois
+   - Table portabilités: Numéro, Direction, Opérateur, Statut, Dates, Actions
 
-# TABLE DEMANDES PORTABILITÉ
-| Colonne | Description |
-|---------|-------------|
-| Date demande | Date d'initiation |
-| Numéro(s) | Numéros à porter |
-| Opérateur cédant | Opérateur d'origine |
-| Date prévue | Date estimée de portage |
-| Statut | En validation/Programmée/Terminée |
-| Actions | Voir, Télécharger mandat |
+# QU'EST-CE QUE LA PORTABILITÉ ?
+La portabilité des numéros permet de :
+- Conserver ses numéros lors d'un changement d'opérateur
+- Importer des numéros d'autres opérateurs vers OVH (entrante)
+- Exporter des numéros OVH vers d'autres opérateurs (sortante)
+
+# COLONNES TABLE
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Numéro | 160px | Format +33 X XX XX XX XX |
+| Direction | 120px | Badge Entrante/Sortante |
+| Opérateur | 180px | Nom opérateur tiers |
+| Statut | 150px | Badge état portabilité |
+| Date demande | 150px | Date de la demande |
+| Date portage | 140px | Date effective prévue |
+| Actions | 100px | Détails / Annuler |
 
 # STATUTS PORTABILITÉ
-| Statut | Badge | Description |
-|--------|-------|-------------|
-| En validation | Jaune | Documents en cours de vérification |
-| Programmée | Bleu | Date de portage confirmée |
-| Terminée | Vert | Portage effectué |
-| Refusée | Rouge | Demande rejetée |
+| Statut | Couleur | Description |
+|--------|---------|-------------|
+| RIO reçu | Bleu #DBEAFE | Code RIO reçu, en attente validation |
+| En validation | Orange #FEF3C7 | Validation en cours chez l'opérateur |
+| Programmée | Bleu #DBEAFE | Date de portage confirmée |
+| Terminée | Vert #DEF7EC | Portabilité effectuée |
+| Rejetée | Rouge #FEE2E2 | Portabilité refusée |
+| Annulée | Gris #F3F4F6 | Annulée par l'utilisateur |
 
-# DOCUMENTS REQUIS
-- Mandat de portabilité signé
-- RIO (Relevé d'Identité Opérateur)
-- Copie pièce d'identité
-- Dernière facture opérateur
-
-# ÉTAPES PROCESSUS
-1. Demande initiée
-2. Validation documents
-3. Traitement opérateur
-4. Portage effectif
+# DIRECTIONS
+| Direction | Couleur | Description |
+|-----------|---------|-------------|
+| Entrante ↓ | Vert #DEF7EC | Import depuis autre opérateur |
+| Sortante ↑ | Rouge #FEE2E2 | Export vers autre opérateur |
 
 # INTERACTIONS
-- "+ Nouvelle demande" → Wizard portabilité
-- "Voir" → Détails demande
-- "📥 Mandat" → Télécharge le mandat
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic filtre Direction → Entrante/Sortante/Tous
+- Clic filtre Statut → Filtrer par statut
+- Clic "+ Demander portabilité" → Assistant portabilité
+- Clic "Détails" → Page détail portabilité
+- Clic "Annuler" → Annuler portabilité (si possible)
 
 # API ENDPOINTS
-GET /telephony/{ba}/portability
-POST /telephony/{ba}/portability
-GET /telephony/{ba}/portability/{id}/mandate
+GET /telephony/{ba}/portability → Liste portabilités
+GET /telephony/{ba}/portability/{id} → Détail portabilité
+POST /telephony/{ba}/portability → Nouvelle demande
+DELETE /telephony/{ba}/portability/{id} → Annuler portabilité
+GET /telephony/{ba}/portability/{id}/document → Documents requis
+
+# CODE RIO
+Le RIO (Relevé d'Identité Opérateur) est un code à 12 caractères
+nécessaire pour toute portabilité. Il s'obtient en appelant le 3179
+depuis la ligne concernée.
 
 ================================================================================

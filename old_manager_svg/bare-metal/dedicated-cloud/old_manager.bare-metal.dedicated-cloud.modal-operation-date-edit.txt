@@ -1,0 +1,106 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Modal Operation Date Edit
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal avec calendrier
+**Fonction:** Modifier la date planifiée d'une opération
+**Contexte:** Accessible depuis la liste des opérations en attente
+
+## 2. DIMENSIONS
+
+- Modal: 600x480px
+- Border-radius: 8px
+- Overlay: rgba(0,0,0,0.5)
+- Calendrier: 450x280px
+
+## 3. COMPOSANTS UI
+
+### Header Modal
+- Background: #F9FAFB
+- Titre: "Modifier la date de traitement"
+- Font-size: 20px, font-weight: 600
+- Close button: ×
+
+### Informations opération
+- ID Opération: "#12345680 - enableBackup"
+- Plage autorisée: "02/01/2026 - 15/01/2026"
+- Font-size: 13px pour la plage (text-muted)
+
+### Calendrier
+- Header: Navigation mois (← Janvier 2026 →)
+- Background header: #F3F4F6
+- Jours de la semaine: LUN MAR MER JEU VEN SAM DIM
+- Jours désactivés: Hors plage autorisée (opacity 0.4)
+- Jour sélectionné: Cercle bleu #0050D7
+
+### Sélecteur d'heure
+- Label: "Heure :"
+- Input: 80x30px avec valeur "09:00"
+
+## 4. HEADER MODAL
+
+- Hauteur: 60px
+- Titre: "Modifier la date de traitement"
+- Icône fermeture: × (droite)
+
+## 5. CONTENU
+
+### Détails opération
+```
+Opération : #12345680 - enableBackup
+Plage autorisée : 02/01/2026 - 15/01/2026
+```
+
+### Calendrier interactif
+- Affiche le mois courant
+- Navigation: flèches ← →
+- Jours cliquables: uniquement dans la plage autorisée
+- Sélection: cercle bleu avec texte blanc
+- Jours hors plage: grisés, non cliquables
+
+### Sélection heure
+- Format: HH:MM
+- Valeur par défaut: 09:00
+
+## 6. FOOTER MODAL
+
+- Séparateur: ligne 1px
+- Bouton Annuler: btn-secondary
+- Bouton Modifier: btn-primary
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/task/{taskId}
+→ Récupère les détails de l'opération (dates min/max)
+
+PUT /dedicatedCloud/{serviceName}/task/{taskId}/reschedule
+Body: {
+  executionDate: "2026-01-05T09:00:00Z"
+}
+→ Reprogramme l'opération à la nouvelle date
+```
+
+## 8. VALIDATION
+
+- Date doit être dans la plage autorisée
+- Heure au format valide
+- Bouton "Modifier" désactivé si date invalide
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_operation_date_title | Modifier la date de traitement |
+| modal_operation_label | Opération |
+| modal_operation_allowed_range | Plage autorisée |
+| modal_operation_hour | Heure |
+| modal_cancel | Annuler |
+| modal_modify | Modifier |
+| calendar_mon | LUN |
+| calendar_tue | MAR |
+| calendar_wed | MER |
+| calendar_thu | JEU |
+| calendar_fri | VEN |
+| calendar_sat | SAM |
+| calendar_sun | DIM |

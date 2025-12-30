@@ -1,0 +1,81 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal-create-responder.svg
+Route:   /web-cloud/emails/{domain}/responders (modal)
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| jean@example.com              | Contexte: compte sélectionné           |
+| Exchange · 50 Go              | GET /email/accounts/{a} → offer, used  |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 600x680px
+- Type: Formulaire complet
+- Date picker pour période
+- Zone de texte pour message
+
+# CHAMPS
+
+| Champ            | Type      | Requis | Validation                  |
+|------------------|-----------|--------|-----------------------------|
+| Date début       | date      | Oui    | Format YYYY-MM-DD           |
+| Date fin         | date      | Non    | Doit être > date début      |
+| Objet            | text      | Non    | Max 255 chars               |
+| Message          | textarea  | Oui    | Max 5000 chars              |
+
+# OPTIONS
+
+| Option                    | Par défaut | Description                    |
+|---------------------------|------------|--------------------------------|
+| Une fois par expéditeur   | Oui        | Évite spam de réponses         |
+| Copie des réponses        | Non        | Archive dans Envoyés           |
+| Pas de date fin           | Non        | Actif indéfiniment             |
+
+# PÉRIODE
+
+- Date début: obligatoire
+- Date fin: optionnelle (si vide = actif indéfiniment)
+- Validation: fin > début si renseignée
+
+# INTERACTIONS
+
+- Sélection date → Date picker
+- Saisie message → Zone de texte
+- Toggles options → Cases à cocher
+- Clic "Activer" → Active le répondeur
+- Clic "Annuler" → Ferme modal
+
+# VALIDATION
+
+- Date début obligatoire
+- Message non vide
+- Date fin > date début si renseignée
+
+# API ENDPOINTS
+
+POST /email/domains/{domain}/accounts/{account}/responder
+
+## Payload
+```json
+{
+  "startDate": "2025-12-30",
+  "endDate": "2026-01-06",
+  "subject": "Re: [Absence] Je suis actuellement absent",
+  "body": "Bonjour,\n\nJe suis actuellement absent...",
+  "oncePerSender": true,
+  "copyResponses": false
+}
+```
+
+GET    /email/domains/{d}/accounts/{a}/responder → État actuel
+PUT    /email/domains/{d}/accounts/{a}/responder → Modifier
+DELETE /email/domains/{d}/accounts/{a}/responder → Désactiver
+
+================================================================================

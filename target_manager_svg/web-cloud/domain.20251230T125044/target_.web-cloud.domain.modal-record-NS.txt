@@ -1,0 +1,65 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-record-NS.svg
+Route:   /web-cloud/domain/{domain}/zone (modal)
+Version: v2 (2024-12-29)
+================================================================================
+
+DESCRIPTION
+-----------
+Modal de création d'un enregistrement DNS de type NS.
+Enregistrement NS = Définit les serveurs DNS autoritaires pour le domaine.
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                          |
+|--------------------------|-------------------------------------|
+| {domain}                 | Contexte - domaine sélectionné      |
+| Sous-domaine             | Input utilisateur                   |
+| TTL (3600)               | Input - défaut 3600 secondes        |
+| Serveur DNS              | Input utilisateur (FQDN requis)     |
+
+================================================================================
+
+STRUCTURE MODALE
+----------------
+1. OVERLAY - Fond semi-transparent rgba(0,0,0,0.5)
+2. HEADER MODAL - Badge NS (#4B5563 sur fond #F3F4F6) + titre
+3. BANNIÈRE INFO - Explication du type d'enregistrement
+4. FORMULAIRE:
+   - Sous-domaine (input texte, largeur 350px)
+   - TTL (input numérique, largeur 150px, défaut 3600)
+   - Serveur DNS (input texte, largeur 520px, requis)
+5. ACTIONS - Boutons Annuler / Créer
+
+COULEURS SPÉCIFIQUES
+--------------------
+- Header modal: #F3F4F6 (gris clair)
+- Badge NS: #4B5563 (gris foncé)
+
+CHAMPS FORMULAIRE
+-----------------
+| Champ          | Type   | Requis | Placeholder              |
+|----------------|--------|--------|--------------------------|
+| Sous-domaine   | text   | Non    | @ (racine) ou sous-domaine |
+| TTL            | number | Non    | 3600                     |
+| Serveur DNS    | text   | Oui    | Ex: dns1.ovh.net.        |
+
+RÈGLES MÉTIER
+-------------
+- Les NS à la racine définissent les serveurs autoritaires du domaine
+- Les NS sur un sous-domaine permettent la délégation de zone
+- La cible doit être un FQDN avec point final
+- Généralement plusieurs NS sont configurés pour la redondance
+
+API ENDPOINT
+------------
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "NS",
+  subDomain: string,
+  ttl: number,
+  target: string (FQDN du serveur DNS)
+}
+
+================================================================================

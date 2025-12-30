@@ -1,0 +1,138 @@
+# Cahier des Charges : web-cloud/emails - Modal Create Responder
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Configurer un répondeur automatique (out of office)
+**Contexte:** Action depuis l'onglet Répondeurs
+
+## 2. DIMENSIONS
+
+- Modal: 600x680px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Configurer un répondeur automatique"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Boutons alignés gauche/droite
+
+## 4. CONTENU
+
+### Info compte
+- Box: 552x50px, background #F3F4F6
+- Avatar: cercle 28px avec lettre offre (E=orange)
+- Email: "jean@example.com"
+- Info: "Exchange - 50 Go utilisés"
+
+### Période d'activation
+- Label: "Période d'activation"
+- 2 inputs date côte à côte:
+
+| Champ | Dimensions | Valeur |
+|-------|------------|--------|
+| Du * | 220x36px | 30/12/2025 📅 |
+| Au | 220x36px | 06/01/2026 📅 |
+
+- Checkbox: "Pas de date de fin (actif indéfiniment)" (non coché)
+
+### Objet du message
+- Label: "Objet du message"
+- Input: 552x36px
+- Placeholder: "Re: [Absence] Je suis actuellement absent"
+
+### Message de réponse
+- Label: "Message de réponse *"
+- Textarea: 552x180px
+- Contenu exemple:
+```
+Bonjour,
+Je suis actuellement absent du bureau jusqu'au 6 janvier 2026.
+Je n'aurai pas accès à mes emails pendant cette période.
+
+Pour toute urgence, merci de contacter :
+Marie Dupont - marie@example.com
+
+Cordialement,
+Jean
+```
+
+### Section Options
+- Label: "Options"
+- 2 checkboxes:
+
+| Option | État |
+|--------|------|
+| Répondre une seule fois par expéditeur | coché ✓ |
+| Conserver une copie des réponses envoyées | non coché |
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 130x40px |
+| Activer | btn-primary | 130x40px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Exchange - Configurer répondeur (OOF - Out Of Office)
+PUT /email/exchange/{organization}/service/{serviceName}/account/{email}/oofSettings
+Body: {
+  state: "enabled",
+  externalAudience: "all",
+  scheduledStartDateTime: "2025-12-30T00:00:00Z",
+  scheduledEndDateTime: "2026-01-06T00:00:00Z",
+  internalReply: "Je suis absent...",
+  externalReply: "Je suis absent..."
+}
+
+# Email Pro
+PUT /email/pro/{service}/account/{email}/oofSettings
+Body: {
+  enabled: true,
+  from: "2025-12-30",
+  to: "2026-01-06",
+  message: "Je suis absent..."
+}
+
+# MX Plan - Répondeur
+POST /email/domain/{domain}/responder
+Body: {
+  account: "jean@example.com",
+  content: "Je suis absent...",
+  copy: false,
+  from: "2025-12-30",
+  to: "2026-01-06"
+}
+
+# Supprimer répondeur
+DELETE /email/domain/{domain}/responder/{account}
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Configurer un répondeur automatique |
+| field_period | Période d'activation |
+| field_from | Du |
+| field_to | Au |
+| option_no_end | Pas de date de fin (actif indéfiniment) |
+| field_subject | Objet du message |
+| subject_placeholder | Re: [Absence] Je suis actuellement absent |
+| field_message | Message de réponse |
+| section_options | Options |
+| option_once | Répondre une seule fois par expéditeur |
+| option_copy | Conserver une copie des réponses envoyées |
+| btn_cancel | Annuler |
+| btn_activate | Activer |
+| btn_update | Mettre à jour |
+| btn_disable | Désactiver |

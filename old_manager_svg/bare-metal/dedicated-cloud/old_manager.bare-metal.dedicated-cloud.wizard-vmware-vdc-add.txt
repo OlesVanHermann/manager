@@ -1,0 +1,152 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard VMware VDC Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 2 étapes
+**Fonction:** Ajouter un nouveau datacenter virtuel (VDC) au Private Cloud
+**Contexte:** Extension de l'infrastructure avec un nouveau VDC
+
+## 2. DIMENSIONS
+
+- Container principal: 1440x800px
+- Zone wizard: 1360x650px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > **Ajout d'un datacentre**
+
+### Titre principal
+- Texte: "Ajout d'un datacentre"
+- Font-size: 24px, font-weight: 600
+- Sous-titre: "Sélectionnez la configuration de votre nouveau datacenter virtuel"
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Type de VDC | Active (bleu) |
+| 2 | Profil d'hôte | Inactive (gris) |
+
+## 4. ÉTAPE 1 : TYPE DE VDC
+
+### Label section
+- "Sélectionnez un type de datacenter virtuel :"
+
+### Cartes de sélection (3 colonnes)
+
+**Carte 1 - NSX-T (Sélectionnée):**
+- Dimensions: 380x180px
+- Bordure: #0050D7, 2px (sélectionnée)
+- Radio: checked (bleu)
+- Titre: "NSX-T"
+- Description:
+  - "Datacenter avec réseau software-defined"
+  - "basé sur NSX-T. Recommandé pour les"
+  - "nouvelles installations."
+- Badge: "Recommandé" (bg-success #DCFCE7, text #16A34A)
+
+**Carte 2 - NSX-V:**
+- Dimensions: 380x180px
+- Bordure: #E5E7EB, 1px
+- Radio: unchecked
+- Titre: "NSX-V"
+- Description:
+  - "Datacenter avec réseau software-defined"
+  - "basé sur NSX-V. Pour la compatibilité"
+  - "avec les environnements existants."
+
+**Carte 3 - vRack:**
+- Dimensions: 380x180px
+- Bordure: #E5E7EB, 1px
+- Radio: unchecked
+- Titre: "vRack"
+- Description:
+  - "Datacenter avec réseau vRack natif."
+  - "Configuration réseau simplifiée sans"
+  - "NSX."
+
+### Message info NSX-T
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Icône: i (cercle bleu)
+- Dimensions: 1200x60px
+- Texte (2 lignes):
+  - "NSX-T inclut automatiquement un NSX Edge standard. Les NSX Edges supplémentaires"
+  - "sont facturés à la consommation."
+
+## 5. COMPOSANTS UI
+
+### Carte sélectionnée
+- Border: 2px solid #0050D7
+- Radio intérieur: cercle bleu avec point blanc
+
+### Carte non sélectionnée
+- Border: 1px solid #E5E7EB
+- Radio: cercle blanc avec bordure grise
+
+### Badge recommandé
+- Background: #DCFCE7
+- Texte: #16A34A
+- Border-radius: 12px
+- Padding: 4px 12px
+
+## 6. ACTIONS & INTERACTIONS
+
+### Sélection carte
+- Click sur carte → sélectionne le type
+- Mise à jour du message info selon le type sélectionné
+
+### Bouton Annuler
+- Style: btn-secondary (100x36px)
+- Position: bas gauche
+- Action: Retour au dashboard
+
+### Bouton Suivant
+- Style: btn-primary (100x36px)
+- Position: bas droite
+- Action: Passe à l'étape 2 (Profil d'hôte)
+
+## 7. ÉTAPE 2 : PROFIL D'HÔTE (non visible)
+
+### Contenu
+- Sélection du profil d'hôte initial
+- Configuration des ressources
+- Récapitulatif et validation
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/availableVdcTypes
+→ Liste les types de VDC disponibles
+
+GET /dedicatedCloud/{serviceName}/availableHostProfiles
+→ Liste les profils d'hôte pour le type sélectionné
+
+POST /dedicatedCloud/{serviceName}/datacenter
+Body: {
+  type: "NSX-T" | "NSX-V" | "vRack",
+  hostProfile: "Host L",
+  quantity: 2
+}
+→ Crée un nouveau datacenter virtuel
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_vdc_title | Ajout d'un datacentre |
+| wizard_vdc_subtitle | Sélectionnez la configuration de votre nouveau datacenter virtuel |
+| wizard_vdc_type_label | Sélectionnez un type de datacenter virtuel |
+| vdc_type_nsxt | NSX-T |
+| vdc_type_nsxt_desc | Datacenter avec réseau software-defined basé sur NSX-T. Recommandé pour les nouvelles installations. |
+| vdc_type_nsxv | NSX-V |
+| vdc_type_nsxv_desc | Datacenter avec réseau software-defined basé sur NSX-V. Pour la compatibilité avec les environnements existants. |
+| vdc_type_vrack | vRack |
+| vdc_type_vrack_desc | Datacenter avec réseau vRack natif. Configuration réseau simplifiée sans NSX. |
+| badge_recommended | Recommandé |
+| info_nsxt_edge | NSX-T inclut automatiquement un NSX Edge standard. Les NSX Edges supplémentaires sont facturés à la consommation. |
+| step_vdc_type | Type de VDC |
+| step_host_profile | Profil d'hôte |
+| btn_cancel | Annuler |
+| btn_next | Suivant |

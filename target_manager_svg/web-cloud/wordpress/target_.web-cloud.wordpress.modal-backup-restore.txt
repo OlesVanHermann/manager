@@ -1,0 +1,70 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.wordpress.modal-backup-restore.svg
+Route:   /web-cloud/wordpress/{serviceName}/backups/{backupId}/restore (modal)
+Version: v1 (2025-12-30)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| 27/12/2025 15:42         | GET /backups/{id} → date                      |
+| Manuel                   | backup.type (automatic / manual)              |
+| 242 Mo                   | backup.size                                   |
+| Avant mise a jour...     | backup.note (manuel uniquement)               |
+| Tout (selected)          | user input → POST body.scope                  |
+================================================================================
+
+STRUCTURE MODAL
+1. HEADER - Titre "Restaurer une sauvegarde" + bouton fermer (x)
+2. SAUVEGARDE SELECTIONNEE - Banniere info avec:
+   - Date et heure
+   - Type (Auto/Manuel) + taille
+   - Note (si manuel)
+3. OPTIONS DE RESTAURATION - 3 radio buttons:
+   - Tout (fichiers + base de donnees) - defaut
+   - Fichiers uniquement
+   - Base de donnees uniquement
+4. BANNIERE WARNING - Avertissements:
+   - Remplacement donnees actuelles
+   - Sauvegarde auto avant restauration
+   - Indisponibilite temporaire
+   - Duree estimee
+5. BANNIERE INFO - Possibilite d'annulation
+6. FOOTER - Boutons Annuler + Restaurer
+
+OPTIONS DE RESTAURATION
+| Option           | Scope    | Description                           |
+|------------------|----------|---------------------------------------|
+| Tout             | full     | Fichiers + base de donnees            |
+| Fichiers         | files    | wp-content (themes, plugins, uploads) |
+| Base de donnees  | database | Contenu, parametres, utilisateurs     |
+
+PROCESSUS RESTAURATION
+1. Creation sauvegarde automatique pre-restauration
+2. Mise en maintenance du site
+3. Restauration des fichiers et/ou BDD selon option
+4. Verification integrite
+5. Remise en ligne du site
+6. Notification utilisateur
+
+INTERACTIONS
+- Clic "x" → Fermer modal
+- Selection option → Highlight radio
+- Clic "Annuler" → Fermer modal
+- Clic "Restaurer" → POST /managedCMS/resource/{sn}/backups/{id}/restore
+
+API ENDPOINTS
+GET  /managedCMS/resource/{sn}/backups/{id}          - Details sauvegarde
+POST /managedCMS/resource/{sn}/backups/{id}/restore  - Lancer restauration
+Body: { scope: "full"|"files"|"database" }
+
+DUREES ESTIMEES
+| Taille site | Duree estimee |
+|-------------|---------------|
+| < 500 Mo    | 5-10 minutes  |
+| 500 Mo - 2 Go | 10-20 minutes |
+| > 2 Go      | 20-45 minutes |
+
+================================================================================

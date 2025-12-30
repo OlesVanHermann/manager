@@ -1,0 +1,80 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.dns-external.svg
+Route:   /web-cloud/domain/{domainName}/dns/external
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| ns1.example-dns.com             | Input utilisateur                       |
+| ns2.example-dns.com             | Input utilisateur                       |
+| IP (optionnel)                  | Input utilisateur                       |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. HEADER - Titre "Configurer des serveurs DNS externes" (fond gris)
+2. CONTENT
+   - Bannière warning (zone OVH désactivée)
+   - Champs serveurs DNS (4 lignes NS1-NS4)
+   - Bouton ajouter NS
+   - Bannière info (prérequis)
+3. FOOTER - Boutons Annuler / Appliquer
+
+# MODAL TYPE
+- Type: Configuration DNS externes
+- Dimensions: 700x540px
+- Header: Fond gris (#F9FAFB)
+
+# CHAMPS DNS
+| Champ | Obligatoire | Description |
+|-------|-------------|-------------|
+| NS1 | Oui | Premier serveur DNS |
+| NS2 | Oui | Deuxième serveur DNS |
+| NS3 | Non | Troisième serveur DNS |
+| NS4 | Non | Quatrième serveur DNS |
+| IP | Non | IP GLUE si NS est sous-domaine |
+
+# QUAND UTILISER DES DNS EXTERNES ?
+- Hébergement DNS chez Cloudflare, Route53, etc.
+- DNS managés par un prestataire tiers
+- Multi-provider DNS pour la redondance
+- Migration vers un autre fournisseur DNS
+
+# CONSÉQUENCES
+1. La zone DNS OVH ne sera plus utilisée
+2. Toutes les modifications DNS se feront chez le fournisseur externe
+3. L'éditeur de zone OVH sera désactivé
+4. DNSSEC OVH sera désactivé
+
+# CHAMP IP (GLUE RECORD)
+Le champ IP est nécessaire uniquement si le serveur DNS est
+un sous-domaine du domaine lui-même (ex: ns1.exemple.com
+pour le domaine exemple.com).
+
+# PROPAGATION DNS
+- Délai : 24 à 48 heures
+- Pendant la propagation : réponses mixtes possibles
+- Vérification : dig NS exemple.com @8.8.8.8
+
+# API ENDPOINTS
+PUT /domain/{domain}/nameServers - Modifier serveurs DNS
+  Body: {
+    nameServers: [
+      { host: "ns1.example-dns.com", ip: null },
+      { host: "ns2.example-dns.com", ip: null }
+    ]
+  }
+
+GET /domain/{domain}/nameServers - Obtenir serveurs actuels
+  Response: {
+    nameServers: [
+      { host: "dns1.ovh.net", ip: null },
+      { host: "ns1.ovh.net", ip: null }
+    ]
+  }
+
+================================================================================

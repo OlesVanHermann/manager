@@ -1,0 +1,109 @@
+# Cahier des Charges : network/ip - Modal Virtual MAC Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal wizard 2 étapes
+**Fonction:** Ajouter une MAC virtuelle à une IP (nouvelle ou existante)
+**Contexte:** Gestion des adresses MAC virtuelles pour virtualisation
+
+## 2. DIMENSIONS
+
+- Modal: 500x390px
+- Overlay: fond noir 50%
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #000E9C
+- Titre: "Ajouter une MAC virtuelle"
+- Bouton fermer: ×
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Configuration | Active |
+| 2 | Confirmation | Inactive |
+
+## 4. FORMULAIRE
+
+### Choix création/existante
+| Option | État | Description |
+|--------|------|-------------|
+| Créer une nouvelle MAC virtuelle | Sélectionné | Génère une nouvelle adresse MAC |
+| Utiliser une MAC virtuelle existante | Non sélectionné | Réutilise une MAC existante |
+
+### Radio buttons
+- Cercle actif: #0050D7 avec point central
+- Cercle inactif: bordure #E5E7EB
+
+### Champ Type (si nouvelle)
+- Label: "Type"
+- Select dropdown
+- Options: vmware, ovh, kvm
+- Largeur: 440px
+
+### Champ Nom de la machine virtuelle
+- Label: "Nom de la machine virtuelle"
+- Input text
+- Placeholder: vm-web-01
+- Largeur: 440px
+
+## 5. COMPOSANTS UI
+
+### Input select
+- Height: 40px
+- Border-radius: 4px
+- Border: #E5E7EB
+- Chevron: ▼ à droite
+
+### Input text
+- Height: 40px
+- Border-radius: 4px
+- Border: #E5E7EB
+
+## 6. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x36px)
+- Action: Ferme le modal
+
+### Bouton Suivant
+- Style: btn-primary (100x36px)
+- Action: Valide étape 1, passe à l'étape 2
+
+### Validation
+- Type: requis si nouvelle MAC
+- Nom VM: optionnel mais recommandé
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /ip/{ip}/virtualmac
+→ Liste les MAC virtuelles existantes
+
+POST /ip/{ip}/virtualmac
+Body: {
+  type: "vmware",
+  virtualMachineName: "vm-web-01"
+}
+→ Crée une nouvelle MAC virtuelle
+
+POST /ip/{ip}/virtualmac/{macAddress}/virtualMachine
+Body: {
+  ipAddress: "51.178.42.123",
+  virtualMachineName: "vm-web-01"
+}
+→ Associe une MAC existante à une IP
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_vmac_title | Ajouter une MAC virtuelle |
+| option_create_new | Créer une nouvelle MAC virtuelle |
+| option_use_existing | Utiliser une MAC virtuelle existante |
+| field_type | Type |
+| field_vm_name | Nom de la machine virtuelle |
+| btn_cancel | Annuler |
+| btn_next | Suivant |

@@ -1,0 +1,118 @@
+# Cahier des Charges : private/storage - Modal Access Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter un accès NFS à une partition
+**Contexte:** Gestion des ACL sur NAS-HA
+
+## 2. DIMENSIONS
+
+- Modal: 450x400px
+- Background page: #F9FAFB
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F3F4F6
+- Titre: "Ajouter un accès"
+- Bouton fermer: ×
+- Height: 55px
+
+## 4. FORMULAIRE
+
+### Champ Adresse IP ou réseau
+- Label: "Adresse IP ou réseau *"
+- Type: Input text
+- Placeholder: "ex: 51.91.xxx.xxx ou 192.168.1.0/24"
+- Largeur: 410px
+
+### Champ Permissions
+- Label: "Permissions *"
+- Type: Radio cards (2 options)
+
+| Option | État | Description |
+|--------|------|-------------|
+| Lecture/Écriture (rw) | Sélectionné | Accès complet |
+| Lecture seule (ro) | Non sélectionné | Accès en lecture uniquement |
+
+### Style radio cards
+- Dimensions: 200x50px
+- Selected: border #0050D7, 2px
+
+### Champ ACL
+- Label: "ACL"
+- Type: Select dropdown
+- Options:
+  - all_squash (recommandé)
+  - root_squash
+  - no_root_squash
+- Valeur par défaut: all_squash
+
+### Info box ACL
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Texte:
+  - "ℹ️ all_squash : tous les utilisateurs sont mappés vers nobody."
+  - "root_squash : seul root est mappé vers nobody."
+
+## 5. COMPOSANTS UI
+
+### Radio card selected
+- Border: #0050D7, 2px
+- Radio button: cercle bleu avec point blanc
+
+### Input text
+- Height: 40px
+- Border-radius: 4px
+
+## 6. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Action: Ferme le modal
+
+### Bouton Ajouter
+- Style: btn-primary (100x40px)
+- Action: Crée l'accès NFS
+
+### Validation
+- IP/réseau: format IPv4 ou CIDR valide
+- Permissions: requis
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicated/nasha/{serviceName}/partition/{partitionName}/access
+→ Liste des accès existants
+
+POST /dedicated/nasha/{serviceName}/partition/{partitionName}/access
+Body: {
+  ip: "192.168.1.0/24",
+  type: "readwrite",
+  aclDescription: "all_squash"
+}
+→ Crée l'accès
+
+DELETE /dedicated/nasha/{serviceName}/partition/{partitionName}/access/{ip}
+→ Supprime un accès
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un accès |
+| field_ip | Adresse IP ou réseau |
+| field_ip_placeholder | ex: 51.91.xxx.xxx ou 192.168.1.0/24 |
+| field_permissions | Permissions |
+| perm_readwrite | Lecture/Écriture (rw) |
+| perm_readonly | Lecture seule (ro) |
+| field_acl | ACL |
+| acl_all_squash | all_squash (recommandé) |
+| acl_root_squash | root_squash |
+| acl_no_root_squash | no_root_squash |
+| info_all_squash | all_squash : tous les utilisateurs sont mappés vers nobody. |
+| info_root_squash | root_squash : seul root est mappé vers nobody. |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

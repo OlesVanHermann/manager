@@ -1,0 +1,61 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.line.forward.svg
+Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/forward
+Version: v1 (2025-12-30)
+================================================================================
+
+DONNÉES DYNAMIQUES
+| Exemple SVG             | Source API                                      |
+|-------------------------|-------------------------------------------------|
+| 0033 9 72 10 12 34      | GET /telephony/{ba}/line/{sn} → serviceName     |
+| Bureau Direction        | GET /telephony/{ba}/line/{sn} → description     |
+| Yealink T46G            | GET /telephony/{ba}/line/{sn}/phone → brand+model|
+| 18 lignes               | GET /telephony/{ba}/line → count                |
+| Activé/Désactivé        | GET /telephony/{ba}/line/{sn}/options → forwardUnconditional|
+| Ligne interne           | GET /telephony/{ba}/line/{sn}/options → forwardUnconditionalNature|
+| 0033 1 23 45 67 90      | GET /telephony/{ba}/line/{sn}/options → forwardUnconditionalNumber|
+| ab12345-ovh             | Session utilisateur                             |
+
+================================================================================
+
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif, x=510)
+2. NAV2 - Web Cloud (VoIP actif, x=500)
+3. LEFT PANEL - Liste des lignes du groupe
+4. RIGHT PANEL
+   - Header: Numéro + description + modèle téléphone
+   - NAV3: 7 tabs (Général, Téléphone, Appels, **Transferts**, Messagerie, Consommation, Options)
+   - NAV4: 3 sous-tabs (**Inconditionnel**, Occupation, Non-réponse)
+   - Bannière warning: Alerte renvoi inconditionnel
+   - Bloc gauche: Configuration renvoi (toggle, type, destination)
+   - Bloc droite: Explication types de renvoi
+   - Bannière info: Info combinaison renvois
+
+# INTERACTIONS
+- Clic NAV3 tab → Navigation vers autre section ligne
+- Clic NAV4 sous-tab → Bascule Inconditionnel/Occupation/Non-réponse
+- Toggle Activé/Désactivé → Active/désactive le renvoi
+- Select type destination → Change vers Ligne interne/Externe/Messagerie
+- Input numéro → Saisie destination
+- Bouton Valider → Sauvegarde configuration
+- Lien "Appliquer à plusieurs lignes" → Modal sélection lignes
+
+# API ENDPOINTS
+GET  /telephony/{ba}/line/{sn}/options                     # Options ligne
+PUT  /telephony/{ba}/line/{sn}/options                     # Modifier options
+
+# OPTIONS RENVOI (dans /options)
+- forwardUnconditional: boolean
+- forwardUnconditionalNumber: string
+- forwardUnconditionalNature: enum (line, external, voicemail)
+- forwardNoReply: boolean
+- forwardNoReplyNumber: string
+- forwardNoReplyDelay: number (5-60)
+- forwardBusy: boolean
+- forwardBusyNumber: string
+- forwardBackup: boolean
+- forwardBackupNumber: string
+
+================================================================================

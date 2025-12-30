@@ -1,0 +1,113 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard Datastore Order Legacy
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 2 étapes
+**Fonction:** Commander un datastore pour le datacenter
+**Contexte:** Commande de ressources depuis un datacenter existant
+
+## 2. DIMENSIONS
+
+- Container principal: 1440x800px
+- Zone wizard: 1360x600px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > dc-paris-01 > **Commander un datastore**
+
+### Lien retour
+- "← Commander un datastore" (text-primary)
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Sélection | Active (bleu) |
+| 2 | Récapitulatif | Inactive (gris) |
+
+## 4. ÉTAPE 1 : SÉLECTION
+
+### Titre section
+- "Sélectionner un profil de stockage :"
+
+### Tableau de sélection
+
+**Colonnes:**
+| Colonne | Largeur | Alignement |
+|---------|---------|------------|
+| Radio | 40px | Centre |
+| Profil | 200px | Gauche |
+| Type | 500px | Gauche |
+| Tarif (au mois) | Auto | Droite |
+
+**Données exemple:**
+| | Profil | Type | Tarif |
+|-|--------|------|-------|
+| ● | DS-SSD-3200 | SSD NVMe - 3.2 To | 120,00 € HT |
+| ○ | DS-SSD-6400 | SSD NVMe - 6.4 To | 220,00 € HT |
+| ○ | DS-HDD-8000 | HDD SATA - 8 To | 80,00 € HT |
+| ○ | DS-HDD-16000 | HDD SATA - 16 To | 140,00 € HT |
+
+### Champ quantité
+- Label: "Quantité d'espace(s) à commander :"
+- Type: Number stepper avec - et +
+- Valeur par défaut: 1
+- Dimensions: 100x44px
+
+## 5. COMPOSANTS UI
+
+### Radio buttons
+- Checked: Cercle bleu #0050D7 avec point blanc au centre
+- Unchecked: Cercle blanc avec bordure #E5E7EB
+
+### Prix
+- Couleur: text-danger #DC2626
+- Font-weight: 600
+
+### Alternance lignes
+- Impaires: bg-white
+- Paires: bg-muted #F9FAFB
+
+## 6. ACTIONS & INTERACTIONS
+
+### Sélection profil
+- Click sur ligne → sélectionne le radio button
+- Un seul profil sélectionnable à la fois
+
+### Bouton Annuler
+- Style: btn-secondary (100x36px)
+- Action: Retour à la page précédente
+
+### Bouton Suivant
+- Style: btn-primary (100x36px)
+- Action: Passe à l'étape 2 (Récapitulatif)
+- Disabled si aucun profil sélectionné
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderableDatastores
+→ Liste les profils de datastore commandables
+
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderDatastores
+Body: {
+  profile: "DS-SSD-3200",
+  quantity: 1
+}
+→ Génère un bon de commande
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_datastore_title | Commander un datastore |
+| wizard_datastore_select_profile | Sélectionner un profil de stockage |
+| column_profile | Profil |
+| column_type | Type |
+| column_price_monthly | Tarif (au mois) |
+| wizard_quantity_label | Quantité d'espace(s) à commander |
+| step_selection | Sélection |
+| step_summary | Récapitulatif |
+| btn_cancel | Annuler |
+| btn_next | Suivant |

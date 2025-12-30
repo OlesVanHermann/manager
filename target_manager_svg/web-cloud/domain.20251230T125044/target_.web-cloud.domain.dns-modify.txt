@@ -1,0 +1,62 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.dns-modify.svg
+Route:   Modal - Modifier entree DNS
+NAV:     Web Cloud > Domaines et DNS > [domain] > Zone DNS > Modifier
+Version: v1 (2025-12-29)
+================================================================================
+
+TYPE: MODAL
+Parent: target_.web-cloud.domain.dns.svg
+Trigger: Clic sur "Modifier" dans menu actions (⋮) d'une entree DNS
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                      |
+|--------------------------|-------------------------------------------------|
+| www                      | GET /domain/zone/{z}/record/{id} -> subDomain   |
+| CNAME                    | GET /domain/zone/{z}/record/{id} -> fieldType   |
+| 3600                     | GET /domain/zone/{z}/record/{id} -> ttl         |
+| example.com.             | GET /domain/zone/{z}/record/{id} -> target      |
+================================================================================
+
+STRUCTURE MODAL
+1. Header: Titre + bouton fermer (×)
+2. Formulaire
+   - Sous-domaine (input)
+   - Type d'enregistrement (select)
+   - TTL (input number)
+   - Cible (input)
+3. Banniere info propagation
+4. Footer: Annuler + Enregistrer
+
+CHAMPS FORMULAIRE
+| Champ         | Type   | Validation             | Exemple      |
+|---------------|--------|------------------------|--------------|
+| Sous-domaine  | text   | Optionnel, @ si vide   | www          |
+| Type          | select | Required               | CNAME        |
+| TTL           | number | Min: 60, Default: 3600 | 3600         |
+| Cible         | text   | Required, format valide| example.com. |
+
+TYPES D'ENREGISTREMENT (select)
+| Type  | Description                    |
+|-------|--------------------------------|
+| A     | Adresse IPv4                   |
+| AAAA  | Adresse IPv6                   |
+| CNAME | Alias vers un autre domaine    |
+| MX    | Serveur mail                   |
+| TXT   | Texte libre (SPF, DKIM...)     |
+| NS    | Serveur DNS                    |
+| SRV   | Service                        |
+| CAA   | Certification Authority        |
+
+BOUTONS
+| Bouton     | Style     | Action                    |
+|------------|-----------|---------------------------|
+| Annuler    | Secondary | Fermer modal sans sauver  |
+| Enregistrer| Primaire  | PUT + fermer modal        |
+
+API ENDPOINT
+PUT /domain/zone/{zoneName}/record/{id} -> Modifier enregistrement
+================================================================================

@@ -1,0 +1,86 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.access.modem-router.svg
+Route:   /web-cloud/access/connections/{id}/modem-router
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| Routeur                  | GET /modem/config → mode                         |
+| Actif                    | → mode === 'router'                              |
+| ON                       | → firewall.enabled                               |
+| Moyen                    | → firewall.level                                 |
+| 5 règles                 | → firewall.rulesCount                            |
+| ON                       | → firewall.dosProtection                         |
+| OFF                      | → firewall.pingWan                               |
+| 10.0.0.0                 | GET /modem/routes → routes[].destination         |
+| 255.0.0.0                | → routes[].netmask                               |
+| 192.168.1.254            | → routes[].gateway                               |
+| LAN                      | → routes[].interface                             |
+| 10                       | → routes[].metric                                |
+
+================================================================================
+
+# STRUCTURE PAGE
+
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Accès actif)
+3. LEFT PANEL - Liste connexions
+4. RIGHT PANEL
+   - Header: Nom connexion
+   - NAV3: 7 tabs (Modem actif)
+   - NAV4: 5 sous-tabs (Routeur actif)
+   - Contenu:
+     - MODE DE FONCTIONNEMENT:
+       - Mode Routeur (sélectionnable)
+       - Mode Bridge (sélectionnable)
+       - Radio button selection
+     - FIREWALL:
+       - Toggle ON/OFF
+       - Niveau de protection (dropdown)
+       - Règles actives (count + lien)
+       - Protection DoS (toggle)
+       - Ping WAN (toggle)
+       - Bouton Appliquer
+     - ROUTES STATIQUES (table):
+       - Destination
+       - Masque
+       - Passerelle
+       - Interface
+       - Métrique
+       - Actions (Modifier/Supprimer)
+       - Bouton + Ajouter route
+     - Bannière info mode
+
+# MODES DISPONIBLES
+- Routeur: NAT, DHCP, Firewall actifs (recommandé)
+- Bridge: Transparent, IP publique sur équipement client
+
+# NIVEAUX FIREWALL
+- Bas: Minimal filtering
+- Moyen: Standard protection (recommandé)
+- Haut: Strict filtering
+- Personnalisé: Custom rules
+
+# INTERACTIONS
+- Sélection mode → PUT /modem/config
+- Toggle firewall → PUT /modem/firewall
+- Appliquer → PUT /modem/firewall
+- + Ajouter route → Modal création
+- Modifier route → Modal édition
+- Supprimer route → Confirmation
+
+# API ENDPOINTS
+GET  /access/connections/{id}/modem/config       - Config modem
+PUT  /access/connections/{id}/modem/config       - Changer mode
+GET  /access/connections/{id}/modem/firewall     - Config firewall
+PUT  /access/connections/{id}/modem/firewall     - Modifier firewall
+GET  /access/connections/{id}/modem/routes       - Liste routes
+POST /access/connections/{id}/modem/routes       - Créer route
+PUT  /access/connections/{id}/modem/routes/{id}  - Modifier route
+DELETE /access/connections/{id}/modem/routes/{id} - Supprimer route
+
+================================================================================

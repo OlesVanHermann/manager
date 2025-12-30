@@ -1,0 +1,122 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard Security Session Timeout
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 2 étapes
+**Fonction:** Configurer le délai d'expiration des sessions utilisateur
+**Contexte:** Paramètres de sécurité du Dedicated Cloud
+
+## 2. DIMENSIONS
+
+- Container principal: 1440x600px
+- Zone wizard: 1000x450px (centrée)
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > Sécurité > **Délai d'expiration**
+
+### Header wizard
+- Background: #F9FAFB
+- Titre: "Modifier le délai d'expiration d'une session"
+- Hauteur: 70px
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Configuration | Active (bleu) |
+| 2 | Confirmation | Inactive (gris) |
+
+## 4. ÉTAPE 1 : CONFIGURATION
+
+### Checkbox "Never expires"
+- Dimensions: 20x20px
+- Border-radius: 4px
+- Label: "La session n'expire jamais"
+- État: unchecked (bordure #E5E7EB)
+
+### Champ nombre de minutes
+- Label: "Nombre de minutes avant l'expiration d'une session"
+- Type: number input
+- Dimensions: 200x45px
+- Valeur exemple: 30
+- Unité: "minutes" (texte à droite du champ)
+
+### Texte d'aide
+- Couleur: text-muted
+- Texte: "Définissez 0 ou cochez la case pour désactiver l'expiration automatique."
+
+## 5. COMPOSANTS UI
+
+### Checkbox
+- Unchecked: bordure #E5E7EB, 2px, bg-white
+- Checked: bg-primary #0050D7 avec ✓ blanc
+- Border-radius: 4px
+- Dimensions: 20x20px
+
+### Input number
+- Border: #E5E7EB
+- Border-radius: 4px
+- Padding: 15px
+- Disabled si checkbox cochée
+
+### Unité
+- Positionnée à droite du champ
+- Couleur: text-muted
+
+## 6. ACTIONS & INTERACTIONS
+
+### Checkbox interaction
+- Si cochée → désactive le champ minutes
+- Si décochée → active le champ minutes
+
+### Validation
+- Valeur minimum: 0
+- Valeur maximum: non spécifiée
+- 0 = équivalent à "n'expire jamais"
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Position: gauche
+- Action: Retour à la page sécurité
+
+### Bouton Suivant
+- Style: btn-primary (120x40px)
+- Position: droite
+- Action: Passe à l'étape 2 (Confirmation)
+
+## 7. ÉTAPE 2 : CONFIRMATION
+
+### Contenu (non visible dans le SVG)
+- Résumé de la configuration
+- Affichage: "X minutes" ou "N'expire jamais"
+- Boutons Précédent/Confirmer
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/security
+→ Récupère les paramètres de sécurité actuels
+→ Retourne: { sessionTimeout: 30 } (en minutes, 0 = pas d'expiration)
+
+PUT /dedicatedCloud/{serviceName}/security
+Body: {
+  sessionTimeout: 30  // 0 pour désactiver
+}
+→ Met à jour le délai d'expiration
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_timeout_title | Modifier le délai d'expiration d'une session |
+| wizard_timeout_never | La session n'expire jamais |
+| wizard_timeout_label | Nombre de minutes avant l'expiration d'une session |
+| wizard_timeout_unit | minutes |
+| wizard_timeout_help | Définissez 0 ou cochez la case pour désactiver l'expiration automatique. |
+| step_configuration | Configuration |
+| step_confirmation | Confirmation |
+| btn_cancel | Annuler |
+| btn_next | Suivant |
+| btn_confirm | Confirmer |

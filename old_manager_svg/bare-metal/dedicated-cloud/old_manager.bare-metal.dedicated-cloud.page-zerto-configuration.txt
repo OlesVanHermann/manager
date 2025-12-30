@@ -1,0 +1,116 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Page Zerto Configuration
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page Wizard (4 étapes)
+**Fonction:** Configurer le plan de reprise d'activité (PRA) avec Zerto
+**Contexte:** Accessible depuis l'onglet Zerto du Dedicated Cloud
+
+## 2. DIMENSIONS
+
+- Container principal: 1360x750px
+- Cartes de choix: 600x200px
+
+## 3. LAYOUT & STRUCTURE
+
+### Header OVHcloud
+- Background: #000E9C
+- Logo OVHcloud + "Bare Metal Cloud"
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > Zerto > **Configuration**
+
+### Zone principale
+1. Titre + description
+2. Stepper (4 étapes)
+3. Zone de sélection (cartes)
+4. Avertissement (si applicable)
+5. Boutons navigation
+
+## 4. COMPOSANTS UI
+
+### Titre
+- Text: "Créez votre plan de reprise d'activité avec Zerto"
+- Font-size: 20px, font-weight: 600
+
+### Description
+- Ligne 1: "Assurez la protection de votre système d'information en configurant votre plan de reprise d'activité."
+- Ligne 2: "Basculez votre infrastructure en 1 clic et quelques minutes en cas de dysfonctionnement ou d'interruption de service."
+
+### Stepper
+| Étape | Label | État initial |
+|-------|-------|--------------|
+| 1 | Type de PRA | Active |
+| 2 | Datacenter principal | Inactive |
+| 3 | Datacenter secondaire | Inactive |
+| 4 | Confirmation | Inactive |
+
+## 5. ÉTAPE 1 : TYPE DE PRA
+
+### Sous-titre
+- Text: "Sélectionnez le type de plan de reprise d'activité"
+
+### Carte 1 - OVH vers OVH (sélectionnée)
+- Border: 2px solid #0050D7
+- Header background: #EFF6FF
+- Titre: "OVH vers OVH"
+- Description: "Répliquez votre infrastructure entre deux Hosted Private Cloud OVHcloud. Nécessite un Private Cloud secondaire."
+- Note: "Idéal pour une réplication complète dans l'environnement OVHcloud."
+- Radio: checked
+
+### Carte 2 - OVH vers On-Premises
+- Border: 1px solid #E5E7EB
+- Header background: #F9FAFB
+- Titre: "OVH vers On-Premises"
+- Description: "Répliquez votre infrastructure OVHcloud vers votre datacenter local. Nécessite une connexion VPN."
+- Note: "Idéal pour une stratégie hybride cloud/on-premise."
+- Radio: unchecked
+
+### Avertissement (conditionnel)
+- Background: #FEF3C7
+- Border: 1px solid #FDE68A
+- Icône: ⚠
+- Texte: "Votre datacenter actuel ne dispose d'aucun host. Veuillez en commander un pour utiliser ce datacenter pour votre PRA, ou choisissez un datacenter disposant d'au moins un host."
+
+## 6. FOOTER / NAVIGATION
+
+- Bouton Annuler: btn-secondary (100x40px) - gauche
+- Bouton Suivant: btn-primary (120x40px) - droite
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/zerto/configuration
+→ Récupère la configuration actuelle
+
+GET /dedicatedCloud/{serviceName}/datacenter
+→ Liste les datacenters disponibles
+
+POST /dedicatedCloud/{serviceName}/zerto
+Body: {
+  type: "ovh-to-ovh" | "ovh-to-onpremise",
+  primaryDatacenter: "dc-paris-01",
+  secondaryDatacenter: "dc-london-02"
+}
+→ Configure le PRA Zerto
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_zerto_config_title | Créez votre plan de reprise d'activité avec Zerto |
+| page_zerto_config_desc_1 | Assurez la protection de votre système d'information en configurant votre plan de reprise d'activité. |
+| page_zerto_config_desc_2 | Basculez votre infrastructure en 1 clic et quelques minutes en cas de dysfonctionnement ou d'interruption de service. |
+| step_pra_type | Type de PRA |
+| step_primary_dc | Datacenter principal |
+| step_secondary_dc | Datacenter secondaire |
+| step_confirmation | Confirmation |
+| pra_type_title | Sélectionnez le type de plan de reprise d'activité |
+| pra_ovh_to_ovh | OVH vers OVH |
+| pra_ovh_to_ovh_desc | Répliquez votre infrastructure entre deux Hosted Private Cloud OVHcloud. |
+| pra_ovh_to_onprem | OVH vers On-Premises |
+| pra_ovh_to_onprem_desc | Répliquez votre infrastructure OVHcloud vers votre datacenter local. |
+| warning_no_host | Votre datacenter actuel ne dispose d'aucun host. |
+| modal_cancel | Annuler |
+| modal_next | Suivant |

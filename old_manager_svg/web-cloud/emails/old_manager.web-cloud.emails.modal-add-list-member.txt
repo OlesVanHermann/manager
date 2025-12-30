@@ -1,0 +1,117 @@
+# Cahier des Charges : web-cloud/emails - Modal Add List Member
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter des membres à une liste de diffusion / groupe
+**Contexte:** Action depuis la gestion d'une liste existante
+
+## 2. DIMENSIONS
+
+- Modal: 500x520px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Ajouter des membres"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Boutons alignés gauche/droite
+
+## 4. CONTENU
+
+### Info liste cible
+- Box: 452x50px, background #F3F4F6
+- Avatar: cercle 28px avec lettre offre (E=orange, P=bleu)
+- Email liste: "equipe@example.com"
+- Info: "Groupe Exchange - 12 membres"
+
+### Champ ajout manuel
+- Label: "Ajouter des membres *"
+- Textarea: 452x80px
+- Placeholder ligne 1: "Entrez les adresses email séparées par des virgules"
+- Placeholder ligne 2: "ou une adresse par ligne"
+- Tags preview: Pills bleues (#DBEAFE) avec email + × supprimer
+
+### Séparateur
+- Texte centré: "- ou sélectionnez parmi les comptes existants -"
+
+### Recherche comptes
+- Input recherche: 452x36px, background #F9FAFB
+- Placeholder: "🔍 Rechercher un compte..."
+
+### Liste comptes sélectionnables
+- Container: 452x140px avec scroll
+- Chaque ligne: checkbox + email + type offre
+- Checkbox cochée: background #0050D7 avec ✓
+- Checkbox non cochée: border #E5E7EB
+
+### Exemples de comptes
+
+| Email | Type | État |
+|-------|------|------|
+| admin@example.com | Exchange | non coché |
+| marie@example.com | Exchange | coché |
+| jean@example.com | Exchange | non coché |
+| support@example.com | Email Pro | coché |
+| contact@example.com | MX Plan | non coché |
+
+### Résumé
+- Texte: "3 membre(s) à ajouter"
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 130x40px |
+| Ajouter | btn-primary | 130x40px |
+
+## 6. VALIDATION
+
+- Au moins un membre à ajouter
+- Emails valides (format)
+- Pas de doublons avec membres existants
+
+## 7. APIS & ENDPOINTS
+
+```
+# Exchange - Ajouter membre groupe
+POST /email/exchange/{organization}/service/{serviceName}/mailingList/{name}/member/account
+Body: { email: "nouveau@example.com" }
+→ Ajoute un membre au groupe
+
+# Email Pro - Mailing list
+POST /email/pro/{service}/mailingList/{name}/subscriber
+Body: { email: "nouveau@example.com" }
+
+# MX Plan - Mailing list
+POST /email/domain/{domain}/mailingList/{name}/subscriber
+Body: { email: "nouveau@example.com" }
+
+# Lister les comptes disponibles
+GET /email/exchange/{organization}/service/{serviceName}/account
+GET /email/pro/{service}/account
+GET /email/domain/{domain}/account
+→ Comptes pouvant être ajoutés
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter des membres |
+| field_manual | Ajouter des membres |
+| placeholder_manual | Entrez les adresses email séparées par des virgules |
+| or_select | ou sélectionnez parmi les comptes existants |
+| search_placeholder | Rechercher un compte... |
+| summary | {n} membre(s) à ajouter |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |
+| error_invalid | Adresse email invalide |
+| error_duplicate | Ce membre existe déjà |

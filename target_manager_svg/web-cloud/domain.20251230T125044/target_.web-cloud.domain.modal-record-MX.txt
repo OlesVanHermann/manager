@@ -1,0 +1,68 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal-record-MX.svg
+Route:   /web-cloud/domain/{domain}/zone (modal)
+Version: v2 (2024-12-29)
+================================================================================
+
+DESCRIPTION
+-----------
+Modal de création d'un enregistrement DNS de type MX.
+Enregistrement MX = Définit les serveurs de messagerie pour le domaine.
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                          |
+|--------------------------|-------------------------------------|
+| {domain}                 | Contexte - domaine sélectionné      |
+| Sous-domaine             | Input utilisateur                   |
+| Priorité (1)             | Input numérique (requis)            |
+| TTL (3600)               | Input - défaut 3600 secondes        |
+| Serveur mail             | Input utilisateur (FQDN requis)     |
+
+================================================================================
+
+STRUCTURE MODALE
+----------------
+1. OVERLAY - Fond semi-transparent rgba(0,0,0,0.5)
+2. HEADER MODAL - Badge MX (#92400E sur fond #FEF3C7) + titre
+3. BANNIÈRE INFO - Explication du type d'enregistrement
+4. FORMULAIRE:
+   - Sous-domaine (input texte, largeur 350px)
+   - Priorité (input numérique, largeur 100px, requis)
+   - TTL (input numérique, largeur 100px, défaut 3600)
+   - Serveur mail (input texte, largeur 520px, requis)
+5. ACTIONS - Boutons Annuler / Créer
+
+COULEURS SPÉCIFIQUES
+--------------------
+- Header modal: #FEF3C7 (jaune clair)
+- Badge MX: #92400E (marron)
+
+CHAMPS FORMULAIRE
+-----------------
+| Champ          | Type   | Requis | Placeholder            |
+|----------------|--------|--------|------------------------|
+| Sous-domaine   | text   | Non    | @ (racine)             |
+| Priorité       | number | Oui    | 1                      |
+| TTL            | number | Non    | 3600                   |
+| Serveur mail   | text   | Oui    | Ex: mx1.mail.ovh.net.  |
+
+RÈGLES MÉTIER
+-------------
+- Priorité: plus le nombre est bas, plus le serveur est prioritaire
+- Valeurs typiques: 1, 5, 10, 20, 100
+- La cible doit être un FQDN avec point final
+- Généralement configuré à la racine (@)
+
+API ENDPOINT
+------------
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "MX",
+  subDomain: string,
+  ttl: number,
+  target: "priority serveur" (ex: "1 mx1.mail.ovh.net.")
+}
+
+================================================================================

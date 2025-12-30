@@ -1,0 +1,137 @@
+# Cahier des Charges : private/cloud - Modal Host Order
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire de commande
+**Fonction:** Commander un nouveau host ESXi
+**Contexte:** Extension de la capacité compute VMware
+
+## 2. DIMENSIONS
+
+- Modal: 500x490px
+- Background page: #F9FAFB
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F3F4F6
+- Titre: "Commander un host ESXi"
+- Bouton fermer: ×
+- Height: 55px
+
+## 4. FORMULAIRE
+
+### Champ Datacenter
+- Label: "Datacenter *"
+- Type: Select dropdown
+- Largeur: 460px
+- Exemple: "DC1 - Paris"
+
+### Champ Gamme
+- Label: "Gamme *"
+- Type: Radio cards (3 options)
+
+| Option | Description | État |
+|--------|-------------|------|
+| Essentials | vSphere | Non sélectionné |
+| SDDC | vSphere + NSX | Sélectionné |
+| Premier | + vSAN + Backup | Non sélectionné |
+
+### Style radio cards
+- Dimensions: 145x60px (Essentials, Premier), 145x60px (SDDC)
+- Selected: border #0050D7, 2px
+- Radio button actif: cercle bleu avec point blanc
+
+### Champ Configuration
+- Label: "Configuration *"
+- Type: Select dropdown
+- Exemple: "AMD EPYC 7313 - 32 cores - 256 Go RAM"
+
+### Champ Facturation
+- Label: "Facturation"
+- Type: Radio cards (2 options)
+
+| Option | Description | État |
+|--------|-------------|------|
+| Horaire | Sans engagement | Non sélectionné |
+| Mensuel | -20% sur le prix horaire | Sélectionné |
+
+## 5. RÉSUMÉ PRIX
+
+### Box prix
+- Background: #F3F4F6
+- Dimensions: 460x45px
+- Label: "Prix estimé :"
+- Valeur: "450,00 € HT/mois"
+
+## 6. COMPOSANTS UI
+
+### Radio card
+- Border-radius: 4px
+- Label principal + sous-label
+- Radio button à gauche
+
+### Remise mensuel
+- Badge ou texte "-20%"
+- Font-weight: 500
+
+## 7. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Action: Ferme le modal
+
+### Bouton Commander
+- Style: btn-primary (110x40px)
+- Action: Lance la commande du host
+
+### Recalcul prix
+- Dynamique selon gamme, config et facturation
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter
+→ Liste des datacenters
+
+GET /dedicatedCloud/{serviceName}/commercialRange
+→ Gammes disponibles (Essentials, SDDC, Premier)
+
+GET /order/catalog/public/dedicatedCloud
+→ Catalogue avec prix hosts
+
+POST /order/dedicatedCloud/{serviceName}/host
+Body: {
+  datacenterId: 1,
+  commercialRange: "sddc",
+  name: "host-profile-xxl",
+  billingType: "monthly"
+}
+→ Commande le host
+
+GET /dedicatedCloud/host/profile
+→ Profils de hosts disponibles
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Commander un host ESXi |
+| field_datacenter | Datacenter |
+| field_range | Gamme |
+| range_essentials | Essentials |
+| range_essentials_desc | vSphere |
+| range_sddc | SDDC |
+| range_sddc_desc | vSphere + NSX |
+| range_premier | Premier |
+| range_premier_desc | + vSAN + Backup |
+| field_config | Configuration |
+| field_billing | Facturation |
+| billing_hourly | Horaire |
+| billing_hourly_desc | Sans engagement |
+| billing_monthly | Mensuel |
+| billing_monthly_desc | -20% sur le prix horaire |
+| price_estimate | Prix estimé |
+| btn_cancel | Annuler |
+| btn_order | Commander |

@@ -2,48 +2,58 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.calls.svg
-Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/calls
-Version: v3 (2025-12-30)
-Source:  old_manager.telecom.line.calls.svg
+Route:   /web-cloud/voip/{billingAccount}/line/{serviceName}/calls
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNÉES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| Date/Heure               | GET /telephony/{ba}/line/{sn}/calls     |
-| Type (Entrant/Sortant)   | call → direction                        |
-| Numéro                   | call → calling/called                   |
-| Durée                    | call → duration                         |
-| Statut                   | call → status                           |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| 30/12/2025 14:32      | GET /telephony/{ba}/line/{sn}/calls → datetime|
+| ↙ Entrant / ↗ Sortant | calls → wayType (incoming/outgoing)           |
+| 0612345678            | calls → called/calling                        |
+| 02:45                 | calls → duration (seconds → mm:ss)            |
+| Répondu/Manqué/Abouti | calls → planType / status                     |
+| Mobile/Fixe France    | calls → destinationType                       |
+| 156 total             | Pagination count                              |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. NAV1-2 - Header standard
-2. SOUS-NAV - Lignes actif
-3. LEFT PANEL - Liste lignes
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des lignes
 4. RIGHT PANEL
-   - NAV3: Appels actif
-   - NAV4: Historique | Filtrage entrant | Filtrage sortant
-   - Toolbar (Refresh, Export)
-   - Table historique appels
+   - Header: Numéro + breadcrumb /Appels
+   - NAV3: Général | Téléphone | [Appels] | Transferts | Messagerie | Consommation | Options
+   - NAV4: [Historique] | Filtrage entrant | Filtrage sortant
+   - Toolbar: Refresh + Export CSV
+   - Table historique appels:
+     * Date/heure
+     * Type (entrant/sortant avec icône)
+     * Numéro (lien cliquable)
+     * Durée (mm:ss)
+     * Statut (badge couleur)
+     * Destination (type)
    - Pagination
 
-# NAV4 TABS
-| # | Tab              | Route                    |
-|---|------------------|--------------------------|
-| 1 | Historique       | /calls                   |
-| 2 | Filtrage entrant | /calls/filtering-in      |
-| 3 | Filtrage sortant | /calls/filtering-out     |
+# STATUTS APPELS
+| Statut   | Badge Color | Description           |
+|----------|-------------|-----------------------|
+| Répondu  | #DEF7EC     | Appel entrant pris    |
+| Abouti   | #DEF7EC     | Appel sortant abouti  |
+| Manqué   | #FEE2E2     | Appel entrant manqué  |
+| Rejeté   | #FEF3C7     | Appel rejeté/filtré   |
 
-# TABLE COLONNES
-| Colonne | Description          |
-|---------|----------------------|
-| Date    | Date/heure appel     |
-| Type    | ↙ Entrant / ↗ Sortant|
-| Numéro  | Numéro distant       |
-| Durée   | Format mm:ss         |
-| Statut  | Répondu/Abouti/Manqué|
+# INTERACTIONS
+- Clic NAV4 sous-tab → Navigation Historique/Filtrage
+- Clic numéro → Appel Click2Call ou détails
+- Clic Export CSV → Téléchargement fichier
+- Pagination → Navigation pages
 
 # API ENDPOINTS
-GET /telephony/{ba}/line/{sn}/calls - Historique appels
+GET /telephony/{ba}/line/{sn}/calls             → Historique appels
+GET /telephony/{ba}/line/{sn}/calls?limit=10    → Pagination
+GET /telephony/{ba}/line/{sn}/calls/filtering   → Règles filtrage
+
 ================================================================================

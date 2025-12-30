@@ -3,73 +3,65 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.fax.settings.svg
 Route:   /web-cloud/voip/{billingAccount}/fax/{serviceName}/settings
-Version: v2 (2025-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| 0033972101234            | GET /telephony/{ba}/fax → serviceName           |
-| Fax bureau principal     | GET /telephony/{ba}/fax/{sn} → description      |
-| Mon Entreprise SARL      | GET /telephony/{ba}/fax/{sn} → fromName         |
-| fax@monentreprise.fr     | GET /telephony/{ba}/fax/{sn} → fromEmail        |
-| Haute qualite            | GET /telephony/{ba}/fax/{sn} → quality          |
-| 3                        | GET /telephony/{ba}/fax/{sn} → faxMaxCall       |
-| Mon Entreprise - %%n...  | GET /telephony/{ba}/fax/{sn} → faxTagLine       |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| 0033972999888         | Route param {serviceName}                     |
+| Normale               | GET /telephony/{ba}/fax/{sn}/settings → quality |
+| 3                     | settings → sendingTries                       |
+| Mon Entreprise...     | settings → faxHeader                          |
+| 5 min                 | settings → delayBetweenTries                  |
+| PDF                   | settings → mailFormat                         |
+| 10 Mo                 | settings → faxMaxCall                         |
+| contact@entreprise.fr | settings → fromEmail                          |
+| ••••••••              | settings → password (masqué)                  |
+| entreprise.fr...      | settings → allowedSenderDomains               |
 
 ================================================================================
 
-STRUCTURE PAGE
+# STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Web Cloud (VoIP actif avec indicateur bleu)
-3. LEFT PANEL - Liste des fax (280px)
-   - Recherche
-   - Compteur (3 services fax)
-   - Items services avec badge statut
-4. RIGHT PANEL (1096px)
-   - Header: Numero fax + description
-   - NAV3: General | Envoi | Campagnes | Recus | Envoyes | [Parametres] | Notifications
-   - Form Card: Configuration fax
-   - Help Card: Variables en-tete
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des fax
+4. RIGHT PANEL
+   - Header: Numéro + breadcrumb /Paramètres
+   - NAV3: Général | [Paramètres] | Campagnes | Consommation | Filtrage | Logo | Notifications
+   - Section "Paramètres d'envoi": Qualité, Tentatives, En-tête, Délai
+   - Section "Paramètres de réception": Format PJ, Taille max, Email
+   - Section "Sécurité": MDP, Domaines autorisés
+   - Boutons: Enregistrer / Annuler
 
-COMPOSANTS
-- Formulaire avec champs label + input
-- Select dropdown (qualite, nb essais)
-- Bouton Reinitialiser mot de passe
-- Card aide variables en-tete
+# OPTIONS QUALITÉ
+| Valeur    | Description                    |
+|-----------|--------------------------------|
+| Normale   | Résolution standard (200x100)  |
+| Haute     | Résolution fine (200x200)      |
+| Très haute| Résolution super-fine (200x400)|
 
-FORM FIELDS
-| Champ              | Type     | Description                    |
-|--------------------|----------|--------------------------------|
-| Expediteur         | text     | Nom entreprise                 |
-| Email expediteur   | email    | Email pour reponses            |
-| Qualite d'envoi    | select   | Normal/Haute/Optimale          |
-| Nombre d'essais    | select   | 1 a 5                          |
-| Mot de passe       | button   | Reinitialiser                  |
-| En-tete fax        | text     | Variables %%n, %%p, %%t, etc.  |
+# OPTIONS FORMAT
+| Valeur | Description            |
+|--------|------------------------|
+| PDF    | Document PDF           |
+| TIFF   | Image TIFF             |
+| Both   | PDF + TIFF             |
 
-VARIABLES EN-TETE
-| Variable | Description            |
-|----------|------------------------|
-| |        | Separateur colonne     |
-| %%i      | Identifiant tache      |
-| %%j      | Nom piece jointe       |
-| %%l      | ID emission            |
-| %%m      | Email expediteur       |
-| %%n      | Numero de fax          |
-| %%p      | Page session           |
-| %%t      | Total pages session    |
+# INTERACTIONS
+- Dropdown qualité → Sélectionner qualité
+- Dropdown tentatives → Nombre 1-5
+- Input en-tête → Texte libre
+- Dropdown format → PDF/TIFF/Both
+- Input email → Email valide
+- Clic "Modifier" MDP → Modal changement MDP
+- Clic "Gérer →" domaines → Modal gestion domaines
+- Clic "Enregistrer" → PUT API
+- Clic "Annuler" → Reset formulaire
 
-INTERACTIONS
-- Clic fax left panel → Charge details
-- Clic tab NAV3 → Change vue
-- Clic Reinitialiser → Modal confirmation
-- Clic Enregistrer → PUT API
-- Clic Annuler → Restaure valeurs
-
-API ENDPOINTS
-GET  /telephony/{ba}/fax/{sn}              # Details fax
-PUT  /telephony/{ba}/fax/{sn}              # Modifier parametres
-POST /telephony/{ba}/fax/{sn}/changePassword # Reinitialiser MDP
+# API ENDPOINTS
+GET /telephony/{ba}/fax/{sn}/settings              → Lire paramètres
+PUT /telephony/{ba}/fax/{sn}/settings              → Modifier paramètres
+POST /telephony/{ba}/fax/{sn}/settings/changePassword → Changer MDP
 
 ================================================================================

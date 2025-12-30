@@ -1,0 +1,136 @@
+# Cahier des Charges : public/storage - Page Snapshots
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page listing avec datagrid
+**Fonction:** Gérer les snapshots de volumes
+**Contexte:** Block storage snapshots management
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Card contenu: 1280x640px
+
+## 3. LAYOUT & STRUCTURE
+
+### Header OVHcloud
+- Background: #000E9C
+- Texte: "OVHcloud" + "Public Cloud"
+
+### Breadcrumb
+- Public Cloud / my-project / Volume Snapshots
+
+### Titre page
+- Titre: "Volume Snapshots"
+- Sous-titre: "Gérez les snapshots de vos volumes block storage"
+
+### Bouton action
+- "+ Créer un snapshot" (btn-primary, 260x40px)
+
+## 4. FILTRES
+
+### Barre de recherche
+- Placeholder: "Rechercher un snapshot..."
+- Dimensions: 300x40px
+
+### Filtre région
+- Type: Select dropdown
+- Placeholder: "Toutes régions"
+- Dimensions: 150x40px
+
+## 5. DATAGRID SNAPSHOTS
+
+### Colonnes
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Nom | 260px | Nom du snapshot (link) |
+| Volume source | 220px | Nom du volume |
+| Région | 150px | Code région |
+| Taille | 130px | Taille en Go |
+| Date de création | 200px | Date et heure |
+| Statut | 140px | Badge état |
+| Actions | 120px | Menu ⋮ |
+
+### Données exemple
+| Nom | Volume source | Région | Taille | Date | Statut |
+|-----|---------------|--------|--------|------|--------|
+| snap-db-production-2024-01-15 | vol-database-prod | GRA11 | 100 Go | 15/01/2024 14:30 | Disponible |
+| snap-web-data-weekly | vol-web-storage | SBG5 | 50 Go | 14/01/2024 03:00 | Disponible |
+| snap-backup-before-upgrade | vol-app-data | GRA11 | 200 Go | 12/01/2024 18:45 | En cours |
+| snap-logs-archive-jan | vol-logs | RBX-A | 25 Go | 01/01/2024 00:00 | Disponible |
+
+### Badges statut
+| Statut | Background | Text |
+|--------|------------|------|
+| Disponible | #DCFCE7 | #16A34A |
+| En cours | #DBEAFE | #1E40AF |
+
+## 6. MENU ACTIONS
+
+### Dropdown (180x150px)
+- "Voir les détails"
+- ---
+- "Créer un volume"
+- ---
+- "Créer une image"
+- ---
+- "Supprimer" (text-danger)
+
+## 7. PAGINATION
+
+### Format
+- Texte: "Affichage de 1 à 4 sur 12 snapshots"
+
+### Boutons
+- ‹ (précédent)
+- [1] (actif, bg #0050D7)
+- 2 (inactif)
+- › (suivant)
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /cloud/project/{projectId}/volume/snapshot
+→ Liste des snapshots
+
+GET /cloud/project/{projectId}/volume/snapshot/{snapshotId}
+→ Détails snapshot
+
+POST /cloud/project/{projectId}/volume/{volumeId}/snapshot
+Body: { name: "snap-name" }
+→ Crée un snapshot
+
+POST /cloud/project/{projectId}/volume/snapshot/{snapshotId}/volume
+Body: { name: "new-volume" }
+→ Crée un volume depuis snapshot
+
+POST /cloud/project/{projectId}/volume/snapshot/{snapshotId}/image
+Body: { name: "new-image" }
+→ Crée une image depuis snapshot
+
+DELETE /cloud/project/{projectId}/volume/snapshot/{snapshotId}
+→ Supprime le snapshot
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Volume Snapshots |
+| page_subtitle | Gérez les snapshots de vos volumes block storage |
+| btn_create | Créer un snapshot |
+| search_placeholder | Rechercher un snapshot... |
+| filter_region | Toutes régions |
+| col_name | Nom |
+| col_volume | Volume source |
+| col_region | Région |
+| col_size | Taille |
+| col_created | Date de création |
+| col_status | Statut |
+| status_available | Disponible |
+| status_creating | En cours |
+| action_details | Voir les détails |
+| action_create_volume | Créer un volume |
+| action_create_image | Créer une image |
+| action_delete | Supprimer |
+| pagination_display | Affichage de {start} à {end} sur {total} snapshots |

@@ -1,0 +1,79 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.renew.svg
+Route:   /web-cloud/domain/{domainName}/renew
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| exemple.com                     | /domain → domainName                    |
+| 15 mars 2026                    | /domain/{domain} → expirationDate       |
+| Toggle ON                       | /domain/{domain} → autoRenew            |
+| 9,99 € HT                       | /price/domain/renew/{tld}               |
+| 15 mars 2027                    | Calculé (expiration + durée)            |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. HEADER - Titre "Renouveler {domaine}" (fond gris)
+2. CONTENT
+   - Info expiration + toggle auto-renew
+   - Choix durée (cards prix)
+   - Nouvelle date expiration
+   - Total
+3. FOOTER - Boutons Annuler / Renouveler
+
+# MODAL TYPE
+- Type: Commande renouvellement domaine
+- Dimensions: 600x450px
+- Header: Fond gris (#F9FAFB)
+
+# DURÉES DISPONIBLES
+| Durée | Prix HT (exemple .com) |
+|-------|------------------------|
+| 1 an | 9,99 € |
+| 2 ans | 18,99 € |
+| 5 ans | 44,99 € |
+| 10 ans | 84,99 € |
+
+# RENOUVELLEMENT AUTOMATIQUE
+- Toggle pour activer/désactiver
+- Si actif : renouvellement 30 jours avant expiration
+- Moyen de paiement par défaut utilisé
+
+# CALCUL NOUVELLE EXPIRATION
+La nouvelle date = date expiration actuelle + durée choisie
+(pas date du jour + durée)
+
+# PRIX PAR EXTENSION
+Les prix varient selon l'extension (TLD) :
+- .com, .net : ~10€/an
+- .fr : ~8€/an
+- .eu : ~7€/an
+- .io : ~35€/an
+
+# LIMITATIONS
+- Durée max selon TLD (généralement 10 ans)
+- Date expiration max : 10 ans à partir d'aujourd'hui
+- Pas de renouvellement si domaine en rédemption
+
+# API ENDPOINTS
+POST /domain/{domain}/renew - Commander renouvellement
+  Body: { duration: 1 }
+  Response: { orderId: "12345", newExpiration: "2027-03-15" }
+
+GET /price/domain/renew/{tld} - Prix renouvellement
+  Response: {
+    "1": 9.99,
+    "2": 18.99,
+    "5": 44.99,
+    "10": 84.99
+  }
+
+PUT /domain/{domain}/autoRenew - Modifier auto-renew
+  Body: { enabled: true }
+
+================================================================================

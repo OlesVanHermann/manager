@@ -1,0 +1,89 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.access.modem-params.svg
+Route:   /web-cloud/access/connections/{id}/modem-params
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| http://192.168.1.1       | GET /modem/admin → url                           |
+| 80                       | → port                                           |
+| admin                    | → username                                       |
+| ••••••••                 | → password (masqué)                              |
+| 4.12.0                   | GET /modem/firmware → version                    |
+| À jour                   | → upToDate                                       |
+| 15/12/2024               | → lastUpdate                                     |
+| ON                       | → autoUpdate.enabled                             |
+| 03:00 - 06:00            | → autoUpdate.window                              |
+| 10/12/2024 14:30         | GET /modem/backup → lastBackup.date              |
+| 2.3 KB                   | → lastBackup.size                                |
+| 127j 08:45:12            | GET /modem → uptime                              |
+| 25/08/2024 03:15         | → lastReboot                                     |
+
+================================================================================
+
+# STRUCTURE PAGE
+
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Section (Accès actif)
+3. LEFT PANEL - Liste connexions
+4. RIGHT PANEL
+   - Header: Nom connexion
+   - NAV3: 7 tabs (Modem actif)
+   - NAV4: 6 sous-tabs (Paramètres actif)
+   - Contenu:
+     - ACCÈS ADMINISTRATION:
+       - URL d'accès local (+ lien ouvrir)
+       - Port admin
+       - Utilisateur
+       - Mot de passe (masqué)
+       - Bouton Changer MDP
+     - FIRMWARE:
+       - Version actuelle + badge
+       - Dernière MAJ
+       - MAJ automatique (toggle)
+       - Plage horaire (dropdown)
+       - Bouton Forcer MAJ
+     - SAUVEGARDE CONFIGURATION:
+       - Dernière sauvegarde (+ télécharger)
+       - Taille
+       - Boutons: Sauvegarder, Restaurer, Réinitialiser
+     - MAINTENANCE:
+       - Uptime
+       - Dernier redémarrage
+       - Bouton Redémarrer
+     - Bannière info réinitialisation
+
+# PLAGES HORAIRES MAJ
+- 00:00 - 03:00
+- 03:00 - 06:00 (recommandé)
+- 06:00 - 09:00
+- Désactivé
+
+# INTERACTIONS
+- ↗ Ouvrir → Nouvelle fenêtre admin modem
+- 👁 → Révèle mot de passe
+- Changer MDP → Modal
+- Forcer MAJ → Confirmation + POST /firmware/update
+- Télécharger → Download fichier config
+- Sauvegarder → POST /backup
+- Restaurer config → Modal upload + PUT /backup
+- Réinitialiser → Confirmation danger + POST /reset
+- Redémarrer → Confirmation + POST /reboot
+
+# API ENDPOINTS
+GET  /access/connections/{id}/modem/admin         - Accès admin
+PUT  /access/connections/{id}/modem/admin/password - Changer MDP
+GET  /access/connections/{id}/modem/firmware      - Info firmware
+PUT  /access/connections/{id}/modem/firmware      - Config MAJ auto
+POST /access/connections/{id}/modem/firmware/update - Forcer MAJ
+GET  /access/connections/{id}/modem/backup        - Dernière sauvegarde
+POST /access/connections/{id}/modem/backup        - Créer sauvegarde
+PUT  /access/connections/{id}/modem/backup        - Restaurer config
+POST /access/connections/{id}/modem/reset         - Réinitialiser usine
+POST /access/connections/{id}/modem/reboot        - Redémarrer
+
+================================================================================

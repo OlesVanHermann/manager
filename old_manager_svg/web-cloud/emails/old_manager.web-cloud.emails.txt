@@ -1,0 +1,160 @@
+# Cahier des Charges : web-cloud/emails - Dashboard Principal
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec panel latéral et datagrid
+**Fonction:** Liste des boîtes email du domaine avec filtres par offre
+**Contexte:** Onglet principal Boîtes mail
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail (actif) | Redirections | Répondeurs | Listes | Sécurité | Avancé | Licences | Tâches
+
+## 3. LAYOUT
+
+### Panel gauche (280x765px)
+- Toggle: "Par domaine" (actif) / "Par licence"
+- Recherche: "Rechercher un domaine..."
+- Filtre par offre (liens)
+- Liste domaines avec compteurs multi-offres
+
+### Carte domaine sélectionnée (268x120px)
+- Background: #E8F0FE (sélectionné)
+- Nom domaine: font-weight 600
+- Compteurs par offre avec pastilles couleur:
+  - 🟠 5 Exchange - Pack Biz10
+  - 🔵 4 Pro - Pack Pro5
+  - 🟣 2 Zimbra - À la carte
+  - ⚫ 1 MX Plan - Inclus
+- Séparateur
+- Résumé: "12 boîtes - 67 Go - 4 sources"
+
+### Bouton ajout
+- "+ Ajouter domaine" (btn-outline)
+
+## 4. PANEL DROIT
+
+### Header
+- Titre: nom domaine (18px, font-weight 600)
+- Sous-titre: "12 boîtes - 4 offres - 67 Go utilisés"
+- Bouton: "Webmail" (btn-outline)
+
+### Toolbar
+- Boutons: + Créer boîte | Importer | Exporter
+- Recherche: "Filtrer..."
+
+### Filtres offres (pills horizontaux)
+
+| Filtre | Background | Pastille |
+|--------|------------|----------|
+| Toutes | #F3F4F6 | - |
+| Exchange | #FEF3C7 | 🟠 |
+| Pro | #DBEAFE | 🔵 |
+| Zimbra | #EDE9FE | 🟣 |
+| MX Plan | #F3F4F6 | ⚫ |
+
+## 5. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Email | 280px | Email + compteur alias + badges |
+| Offre | 120px | Pastille + nom offre |
+| Licence / Pack | 180px | Nom pack + compteur |
+| Quota | 130px | Barre + X/Y Go |
+| Statut | 80px | Badge Actif |
+| Actions | 60px | Menu ... |
+
+### Pastilles Offre
+
+| Offre | Couleur |
+|-------|---------|
+| Exchange | #F59E0B (orange) |
+| Email Pro | #3B82F6 (bleu) |
+| Zimbra | #8B5CF6 (violet) |
+| MX Plan | #6B7280 (gris) |
+
+### Exemples données
+
+| Email | Offre | Licence | Quota | Statut |
+|-------|-------|---------|-------|--------|
+| ceo@example.com (3 alias, MFA actif) | Exchange | Pack Biz 10 (1/10) | 35/50 Go | Actif |
+| contact@example.com (2 alias) | Email Pro | Pack Pro 5 (1/5) | 4/10 Go | Actif |
+| dev@example.com (1 alias) | Zimbra | À la carte #47 | 2/10 Go | Actif |
+| info@example.com | MX Plan | Inclus domaine | 0.5/5 Go | Actif |
+
+### Barre quota
+- Fond: #E5E7EB
+- Remplissage: couleur de l'offre
+- Dimensions: 100x8px
+
+## 6. PAGINATION
+
+- Texte: "Affichage 1-12 sur 12"
+- Sélecteur: "Par page: [10]"
+- Navigation: < 1 >
+
+## 7. APIS & ENDPOINTS
+
+```
+# Lister les services email du compte
+GET /email/exchange
+GET /email/pro
+GET /email/zimbra
+GET /email/domain
+→ Liste des services par type
+
+# Comptes par domaine
+GET /email/exchange/{organization}/service/{serviceName}/account
+GET /email/pro/{service}/account
+GET /email/zimbra/{serviceName}/account
+GET /email/domain/{domain}/account
+→ Liste des comptes
+
+# Détails compte
+GET /email/exchange/{organization}/service/{serviceName}/account/{email}
+→ quota, aliases, mfa, etc.
+
+# Statistiques
+GET /email/exchange/{organization}/service/{serviceName}/account/{email}/usage
+→ Utilisation quota
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Emails |
+| tab_accounts | Boîtes mail |
+| toggle_domain | Par domaine |
+| toggle_license | Par licence |
+| search_domain | Rechercher un domaine... |
+| btn_add_domain | + Ajouter domaine |
+| btn_create | + Créer boîte |
+| btn_import | Importer |
+| btn_export | Exporter |
+| filter_all | Toutes |
+| filter_exchange | Exchange |
+| filter_pro | Pro |
+| filter_zimbra | Zimbra |
+| filter_mxplan | MX Plan |
+| col_email | Email |
+| col_offer | Offre |
+| col_license | Licence / Pack |
+| col_quota | Quota |
+| col_status | Statut |
+| col_actions | Actions |
+| status_active | Actif |
+| pagination | Affichage {start}-{end} sur {total} |
+| per_page | Par page |
+| alias_count | {n} alias |
+| mfa_active | MFA actif |
+| btn_webmail | Webmail |

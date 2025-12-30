@@ -1,0 +1,136 @@
+# Cahier des Charges : network/ip - Edge Network Firewall
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page de configuration avec tableau inline edit
+**Fonction:** Gérer les règles du Edge Network Firewall
+**Contexte:** Protection DDoS et filtrage réseau en périphérie
+
+## 2. DIMENSIONS
+
+- Container principal: 1200x850px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Network > IP > **Edge Network Firewall**
+
+### Lien retour
+- "← Gérer les IPs"
+
+### Titre page
+- "Gérer des règles de Edge Network Firewall"
+- Dropdown Guides à droite
+
+### Description (2 lignes)
+- "Configurez la protection Edge de votre adresse IP. Vos règles de pare-feu seront appliquées en périphérie du réseau OVHcloud."
+- "Cette fonction doit être utilisée en adéquation avec le pare-feu réseau sur votre serveur. Maximum 20 règles par IP."
+
+### Message warning
+- Background: #FEF3C7
+- Texte: "Nous n'avons détecté que des règles 'Accepter'. Cliquez ici [créer une règle de refus] pour ajouter une règle."
+
+## 4. BARRE D'ACTIONS
+
+### Bouton Ajouter une règle
+- Style: btn-secondary (180x40px)
+- Texte: "+ Ajouter une règle"
+
+### Toggle Firewall activé
+- Label: "Activé"
+- Toggle: On (bleu)
+- Icône aide: ?
+
+## 5. COLONNES DATAGRID
+
+| Colonne | Largeur | Type |
+|---------|---------|------|
+| Priorité | 90px | Select 0-19 |
+| Mode | 100px | Select (Autoriser/Refuser) |
+| Protocole | 120px | Select (TCP/UDP/ICMP/IPv4) |
+| IP source | 160px | Input CIDR |
+| Port source | 150px | Input (Any/port) |
+| Port dest. | 130px | Input |
+| État TCP | 120px | Select |
+| Statut | 120px | Badge |
+| Actions | 100px | Icônes |
+
+### Ligne d'ajout inline
+- Background: #EFF6FF
+- Tous les champs en mode édition
+- Actions: ✕ (annuler) ✓ (valider)
+
+### Badges Statut
+| Statut | Couleur |
+|--------|---------|
+| Actif | bg-success #DCFCE7 |
+| En création | bg-info #DBEAFE |
+
+### Données exemple
+| Prio | Mode | Proto | Source | Port src | Port dst | TCP | Statut |
+|------|------|-------|--------|----------|----------|-----|--------|
+| 0 | Autoriser | TCP | tous | tous | 80 | - | Actif |
+| 1 | Autoriser | TCP | tous | tous | 443 | - | Actif |
+| 2 | Autoriser | UDP | tous | tous | 53 | - | Actif |
+| 3 | Autoriser | ICMP | tous | - | - | - | En création |
+| 19 | Refuser | IPv4 | tous | tous | tous | - | Actif |
+
+## 6. ACTIONS & INTERACTIONS
+
+### Toggle Firewall
+- Active/désactive le firewall globalement
+
+### Ajouter une règle
+- Affiche une ligne en mode édition
+- Validation: ✓
+- Annulation: ✕
+
+### Supprimer règle (🗑)
+- Supprime la règle après confirmation
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /ip/{ip}/firewall/{ipOnFirewall}/rule
+→ Liste les règles
+
+POST /ip/{ip}/firewall/{ipOnFirewall}/rule
+Body: {
+  sequence: 0,
+  action: "permit",
+  protocol: "tcp",
+  source: "0.0.0.0/0",
+  sourcePort: "any",
+  destinationPort: 443
+}
+→ Crée une règle
+
+DELETE /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence}
+→ Supprime une règle
+
+PUT /ip/{ip}/firewall/{ipOnFirewall}
+Body: { enabled: true }
+→ Active/désactive le firewall
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| firewall_title | Gérer des règles de Edge Network Firewall |
+| firewall_desc_1 | Configurez la protection Edge de votre adresse IP. |
+| firewall_desc_2 | Maximum 20 règles par IP. |
+| firewall_warning_accept_only | Nous n'avons détecté que des règles "Accepter". |
+| firewall_add_rule | Ajouter une règle |
+| firewall_enabled | Activé |
+| column_priority | Priorité |
+| column_mode | Mode |
+| column_protocol | Protocole |
+| column_source_ip | IP source |
+| column_source_port | Port source |
+| column_dest_port | Port dest. |
+| column_tcp_state | État TCP |
+| mode_permit | Autoriser |
+| mode_deny | Refuser |
+| status_active | Actif |
+| status_creating | En création |

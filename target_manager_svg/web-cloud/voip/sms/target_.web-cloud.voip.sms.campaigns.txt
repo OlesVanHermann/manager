@@ -2,79 +2,77 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.sms.campaigns.svg
-Route:   /web-cloud/voip/sms/{account}/campaigns
-NAV:     Web Cloud > VoIP > SMS > [account] > Campagnes
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/sms/{serviceName}/campaigns
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| Voeux 2026               | GET /sms/{account}/batches/{id} -> name         |
-| 1,500                    | GET /sms/{account}/batches/{id} -> recipientsCount |
-| 25/12/2025 09:00         | GET /sms/{account}/batches/{id} -> scheduledDate |
-| 1,485 (99%)              | GET /sms/{account}/batches/{id} -> deliveredCount |
-| 1,500                    | GET /sms/{account}/batches/{id} -> creditsUsed  |
-| Terminee/En cours        | GET /sms/{account}/batches/{id} -> status       |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| sms-abc123            | Route param {serviceName}                     |
+| Promo Noël 2025       | GET /sms/{sn}/campaigns → name                |
+| Marketing             | campaigns[].type                              |
+| 5,000                 | campaigns[].recipientCount                    |
+| 4,892                 | campaigns[].sentCount                         |
+| 4,820                 | campaigns[].deliveredCount                    |
+| 72                    | campaigns[].failedCount                       |
+| 25/12 08:00           | campaigns[].scheduledDate                     |
+| Terminée/En cours     | campaigns[].status                            |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. NAV3: General | SMS envoyes | SMS recus | Campagnes (actif) | Modeles | Expediteurs | Parametres
-2. Left panel: Liste comptes SMS
-3. Header: Nom compte + button nouvelle campagne
-4. Filters: Recherche + statut
-5. Table campagnes
-6. Pagination
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des comptes SMS
+4. RIGHT PANEL
+   - Header: Nom compte + breadcrumb /Campagnes
+   - NAV3: Général | Envoyer | [Campagnes] | Entrants | Historique | Modèles
+   - Toolbar: Refresh, Recherche, Filtre statut, + Nouvelle campagne
+   - Cards stats: Actives, SMS envoyés, Taux délivrance, Crédits
+   - Table campagnes: Nom, Type, Dest, Envoyés, Délivrés, Échecs, Planifié, Statut
 
-STATUTS CAMPAGNE
-| Statut     | Couleur   | Description              |
-|------------|-----------|--------------------------|
-| Brouillon  | #F3F4F6   | Non encore programme     |
-| Programmee | #DBEAFE   | En attente execution     |
-| En cours   | #FEF3C7   | Envoi en progression     |
-| Terminee   | #DEF7EC   | Tous SMS envoyes         |
-| Partiel    | #FEE2E2   | Termine avec echecs      |
-| Annulee    | #F3F4F6   | Campagne annulee         |
+# COLONNES TABLE
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Nom campagne | 200px | Titre de la campagne |
+| Type | 100px | Marketing / Transactionnel |
+| Destinataires | 120px | Nombre total |
+| Envoyés | 90px | Nombre envoyés |
+| Délivrés | 90px | Nombre délivrés (vert) |
+| Échecs | 80px | Nombre échecs (rouge) |
+| Planifié | 120px | Date/heure ou Récurrent |
+| Statut | 110px | Badge statut |
+| Actions | 106px | Stats/Edit/Pause/Delete |
 
-COLONNES TABLE
-| Colonne       | Description                    |
-|---------------|--------------------------------|
-| Nom           | Nom campagne                   |
-| Destinataires | Nombre total                   |
-| Programme     | Date/heure envoi               |
-| Envoyes       | Nombre envoyes                 |
-| Delivres      | Nb delivres + taux             |
-| Credits       | Credits consommes              |
-| Statut        | Badge etat                     |
-| Actions       | Selon statut                   |
+# STATUTS CAMPAGNE
+| Statut | Badge | Description |
+|--------|-------|-------------|
+| Terminée | Vert DEF7EC | Envoi complété |
+| En cours | Bleu DBEAFE | En train d'envoyer |
+| Planifiée | Orange FEF3C7 | Programmée pour plus tard |
+| Brouillon | Gris F3F4F6 | Non planifiée |
+| Pause | Jaune FEF3C7 | Temporairement arrêtée |
 
-ACTIONS PAR STATUT
-| Statut     | Actions disponibles            |
-|------------|--------------------------------|
-| Brouillon  | Editer, Supprimer              |
-| Programmee | Modifier, Supprimer            |
-| En cours   | Arreter                        |
-| Terminee   | Rapport                        |
-| Partiel    | Rapport, Relancer echecs       |
+# INTERACTIONS
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic "+ Nouvelle campagne" → Modal/Page création
+- Dropdown statut → Filtrer par statut
+- Clic 📊 → Statistiques détaillées campagne
+- Clic ✎ → Éditer campagne (si brouillon/planifiée)
+- Clic ⏸ → Mettre en pause (si en cours)
+- Clic C → Copier campagne
+- Clic ✕ → Supprimer campagne (confirmation)
 
-CREATION CAMPAGNE (wizard multi-etapes)
-| Etape | Champs                           |
-|-------|----------------------------------|
-| 1     | Nom, Description                 |
-| 2     | Message ou Modele                |
-| 3     | Destinataires (CSV, liste, API)  |
-| 4     | Expediteur                       |
-| 5     | Programmation (immediate/date)   |
-| 6     | Resume + Confirmation            |
+# API ENDPOINTS
+GET /sms/{sn}/campaigns                    → Liste campagnes
+POST /sms/{sn}/campaigns                   → Créer campagne
+GET /sms/{sn}/campaigns/{id}               → Détails campagne
+PUT /sms/{sn}/campaigns/{id}               → Modifier campagne
+DELETE /sms/{sn}/campaigns/{id}            → Supprimer campagne
+POST /sms/{sn}/campaigns/{id}/pause        → Mettre en pause
+POST /sms/{sn}/campaigns/{id}/resume       → Reprendre envoi
+GET /sms/{sn}/campaigns/{id}/statistics    → Stats campagne
 
-API ENDPOINTS
-GET    /sms/{account}/batches                    -> Liste campagnes
-POST   /sms/{account}/batches                    -> Creer campagne
-GET    /sms/{account}/batches/{id}               -> Detail
-PUT    /sms/{account}/batches/{id}               -> Modifier
-DELETE /sms/{account}/batches/{id}               -> Supprimer
-POST   /sms/{account}/batches/{id}/start         -> Demarrer
-POST   /sms/{account}/batches/{id}/stop          -> Arreter
-POST   /sms/{account}/batches/{id}/retry         -> Relancer echecs
-GET    /sms/{account}/batches/{id}/report        -> Rapport detaille
 ================================================================================

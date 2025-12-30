@@ -1,0 +1,114 @@
+# Cahier des Charges : web-cloud/hosting - Modal Restore Backup
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal wizard avec sélection
+**Fonction:** Restaurer une sauvegarde complète (FTP/BDD/Complet)
+**Contexte:** Action depuis FTP ou page générale
+
+## 2. DIMENSIONS
+
+- Modal: 600x440px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. HEADER MODAL
+
+- Background: #F9FAFB
+- Hauteur: 56px
+- Titre: "Restaurer une sauvegarde"
+- Bouton fermer: ✕ (position droite)
+
+## 4. TYPE DE RESTAURATION
+
+- Label: "Que souhaitez-vous restaurer ?"
+
+### Cartes sélection (3 cartes, 170x60px)
+
+| Type | Description | État |
+|------|-------------|------|
+| Fichiers FTP | Tous les fichiers du site | Sélectionné (border primaire) |
+| Base de données | MySQL / PostgreSQL | - |
+| Complet | Fichiers + BDD | - |
+
+## 5. SÉLECTION DATE
+
+- Label: "Date de la sauvegarde"
+- Select: 300x36px
+- Valeur: "28/12/2025 - 03:00 (hier)"
+
+## 6. LISTE SAUVEGARDES DISPONIBLES
+
+- Label: "Sauvegardes disponibles"
+
+### Tableau sauvegardes (552px)
+
+| Date | Taille | État |
+|------|--------|------|
+| 28/12/2025 03:00 | 2.3 GB | Sélectionné (background #E8F0FE) |
+| 27/12/2025 03:00 | 2.2 GB | - |
+| 26/12/2025 03:00 | 2.1 GB | - |
+
+### Ligne sélectionnée
+- Background: #E8F0FE
+- Badge: "Sélectionné" (couleur primaire)
+
+## 7. BANNIÈRE DANGER (552x40px)
+
+- Background: #FEE2E2
+- Texte: "La restauration écrasera les fichiers actuels. Cette action est irréversible."
+- Couleur texte: #DC2626
+
+## 8. FOOTER MODAL
+
+- Bouton gauche: "Annuler" (btn-outline, 100x36px)
+- Bouton droit: "Restaurer" (btn-primary, 100x36px)
+
+## 9. APIS & ENDPOINTS
+
+```
+# Lister sauvegardes FTP disponibles
+GET /hosting/web/{serviceName}/dump
+→ Liste des sauvegardes (date, size)
+
+# Restaurer sauvegarde FTP
+POST /hosting/web/{serviceName}/dump/{date}/restore
+Body: { type: "ftp" }
+→ Tâche de restauration
+
+# Restaurer sauvegarde BDD
+POST /hosting/web/{serviceName}/database/{name}/dump/{date}/restore
+Body: { flushDatabase: true }
+
+# Restaurer complet (2 appels)
+POST /hosting/web/{serviceName}/dump/{date}/restore
+POST /hosting/web/{serviceName}/database/{name}/dump/{date}/restore
+```
+
+## 10. RÉTENTION SAUVEGARDES
+
+| Type offre | Rétention |
+|------------|-----------|
+| Perso | 7 jours |
+| Pro | 14 jours |
+| Performance | 14 jours |
+| Cloud Web | 14 jours |
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Restaurer une sauvegarde |
+| restore_type | Que souhaitez-vous restaurer ? |
+| type_ftp | Fichiers FTP |
+| type_ftp_desc | Tous les fichiers du site |
+| type_database | Base de données |
+| type_database_desc | MySQL / PostgreSQL |
+| type_complete | Complet |
+| type_complete_desc | Fichiers + BDD |
+| field_date | Date de la sauvegarde |
+| section_available | Sauvegardes disponibles |
+| status_selected | Sélectionné |
+| warning_overwrite | La restauration écrasera les fichiers actuels. |
+| warning_irreversible | Cette action est irréversible. |
+| btn_cancel | Annuler |
+| btn_restore | Restaurer |

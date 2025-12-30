@@ -1,0 +1,77 @@
+# Cahier des Charges : web-cloud/domain - Modal Ajouter enregistrement HTTPS
+
+## 1. VUE D'ENSEMBLE
+- **Modal** : Création d'un enregistrement DNS de type HTTPS
+- **Type** : Formulaire de création
+- **Objectif** : Ajouter un enregistrement HTTPS (SVCB spécifique HTTPS)
+
+## 2. STRUCTURE MODAL
+- Header bleu OVH avec titre, badge HTTPS et bouton fermer (✕)
+- Champ sous-domaine
+- Champs TTL et Priorité
+- Champ cible
+- Champ paramètres de service
+- Aide contextuelle
+- Footer avec boutons
+
+## 3. COMPOSANTS UI
+- **OdsModal** : Conteneur (700x520)
+- **OdsInput** : Sous-domaine, TTL, Priorité, Cible
+- **OdsTextarea** : Paramètres de service
+- **OdsBadge** : Type HTTPS (bleu)
+- **OdsButton** : Annuler, Ajouter l'entrée
+
+## 4. TITRE
+"Ajouter une entrée DNS - HTTPS" avec badge [HTTPS]
+
+## 5. CHAMP SOUS-DOMAINE
+| Élément | Valeur |
+|---------|--------|
+| Label | "Sous-domaine" |
+| Input | "www" |
+| Suffixe (addon gris) | ".exemple.com" |
+
+## 6. CHAMP TTL
+| Élément | Valeur |
+|---------|--------|
+| Label | "TTL" |
+| Input | 3600 |
+
+## 7. CHAMP PRIORITÉ
+| Élément | Valeur |
+|---------|--------|
+| Label | "Priorité (SvcPriority)" |
+| Obligatoire | Oui (*) |
+| Input | 1 |
+| Aide | "0=alias" |
+
+## 8. CHAMP CIBLE
+| Élément | Valeur |
+|---------|--------|
+| Label | "Cible (TargetName)" |
+| Obligatoire | Oui (*) |
+| Input | "." |
+| Aide | "(point = utiliser le nom du propriétaire)" |
+
+## 9. CHAMP PARAMÈTRES DE SERVICE
+| Élément | Valeur |
+|---------|--------|
+| Label | "Paramètres de service (SvcParams)" |
+| Type | Textarea |
+| Valeur exemple | alpn="h2,h3" port=443 ipv4hint=93.184.216.34 ipv6hint=2606:2800:220:1::1 |
+
+## 10. AIDE CONTEXTUELLE
+- "HTTPS est une variante de SVCB spécifique au protocole HTTPS."
+- "Permet d'indiquer le support HTTP/2, HTTP/3 et les adresses IP alternatives."
+
+## 11. BOUTONS FOOTER
+- Annuler (secondaire)
+- Ajouter l'entrée (primaire)
+
+## 12. APIS & ENDPOINTS
+- POST /domain/zone/{zoneName}/record : Créer enregistrement HTTPS
+  - fieldType: "HTTPS"
+  - subDomain: string
+  - target: "priority target svcparams"
+  - ttl: number
+

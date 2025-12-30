@@ -1,0 +1,128 @@
+# Cahier des Charges : web-cloud/hosting - Database Users
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid
+**Fonction:** Gestion des utilisateurs d'une base de données
+**Contexte:** Sous-page utilisateurs de la base de données
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Hébergement (actif)
+
+### Breadcrumb
+- hosting-example.ovh > hosting_db1 > Utilisateurs
+
+## 3. BANNIÈRE INFO (1040x45px)
+
+- Background: #DBEAFE
+- Texte: "Chaque utilisateur peut avoir des droits différents sur la base de données. L'utilisateur principal a tous les droits."
+
+## 4. TOOLBAR
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Créer un utilisateur | btn-primary | Ouvre modal création |
+
+## 5. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Nom d'utilisateur | 230px | Nom + badge Principal si applicable |
+| Droits | 250px | Liste des privilèges SQL |
+| Date de création | 200px | Date + heure |
+| Statut | 100px | Badge Actif |
+| Actions | 190px | Mot de passe / Menu ... |
+
+### Badge Principal
+- Background: #0050D7
+- Couleur: #FFFFFF
+- Texte: "Principal"
+
+### Badge Statut Actif
+- Background: #DEF7EC
+- Couleur: #03543F
+
+### Exemples données
+
+| Utilisateur | Droits | Date création | Statut |
+|-------------|--------|---------------|--------|
+| hosting_user (Principal) | ALL PRIVILEGES | 15/10/2024 09:30 | Actif |
+| hosting_readonly | SELECT | 20/12/2024 14:22 | Actif |
+| hosting_backup | SELECT, LOCK TABLES | 22/12/2024 10:15 | Actif |
+
+## 6. ACTIONS
+
+### Actions par ligne
+- **Mot de passe**: Lien bleu pour changer le mot de passe
+- **Menu ...**: Menu contextuel avec actions supplémentaires
+
+### Actions utilisateur principal
+- Uniquement changement de mot de passe (pas de suppression)
+
+### Actions autres utilisateurs
+- Mot de passe
+- Modifier droits
+- Supprimer
+
+## 7. FOOTER
+
+- Texte: "3 utilisateurs sur cette base de données"
+- Lien guide: "Guide : Gérer les utilisateurs de base de données"
+
+## 8. APIS & ENDPOINTS
+
+```
+# Lister utilisateurs de la base
+GET /hosting/web/{serviceName}/database/{name}/user
+→ Liste des utilisateurs
+
+# Détails utilisateur
+GET /hosting/web/{serviceName}/database/{name}/user/{user}
+→ Info utilisateur (droits, date création)
+
+# Créer utilisateur
+POST /hosting/web/{serviceName}/database/{name}/user
+Body: {
+  user: "new_user",
+  password: "***",
+  grant: "SELECT"
+}
+
+# Modifier droits
+PUT /hosting/web/{serviceName}/database/{name}/user/{user}
+Body: { grant: "SELECT, INSERT, UPDATE" }
+
+# Changer mot de passe
+POST /hosting/web/{serviceName}/database/{name}/user/{user}/changePassword
+Body: { password: "***" }
+
+# Supprimer utilisateur
+DELETE /hosting/web/{serviceName}/database/{name}/user/{user}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Utilisateurs de la base {name} |
+| info_rights | Chaque utilisateur peut avoir des droits différents sur la base de données. |
+| btn_create | + Créer un utilisateur |
+| col_username | Nom d'utilisateur |
+| col_rights | Droits |
+| col_created | Date de création |
+| col_status | Statut |
+| col_actions | Actions |
+| badge_primary | Principal |
+| status_active | Actif |
+| action_password | Mot de passe |
+| action_edit | Modifier droits |
+| action_delete | Supprimer |
+| count_users | {n} utilisateurs sur cette base de données |
+| guide_link | Guide : Gérer les utilisateurs de base de données |

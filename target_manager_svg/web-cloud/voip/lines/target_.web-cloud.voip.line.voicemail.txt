@@ -2,63 +2,69 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.voicemail.svg
-Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/voicemail
-Version: v3 (2025-12-30)
-Source:  old_manager.telecom.line.voicemail.svg
+Route:   /web-cloud/voip/{billingAccount}/line/{serviceName}/voicemail
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNÉES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| Activée/Désactivée       | GET /telephony/{ba}/voicemail/{sn}/settings   |
-| contact@example.com      | settings → email                              |
-| 30 jours                 | settings → retentionDays                      |
-| 3 (non lus)              | GET /telephony/{ba}/voicemail/{sn}/directories → unread |
-| 12 (total)               | directories → total                           |
-| 45%                      | Calcul espace utilisé                         |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| 0033912345678         | Route param {serviceName}                     |
+| Poste Direction       | GET /telephony/{ba}/line/{sn} → description   |
+| Activé                | GET /telephony/{ba}/line/{sn}/voicemail → active |
+| ••••••                | GET /telephony/{ba}/line/{sn}/voicemail → password (masqué) |
+| 30/12/2025 14:32      | GET /telephony/{ba}/voicemail/{vm}/directories → datetime |
+| +33 6 12 34 56 78     | voicemail directories → caller                |
+| 0:45                  | voicemail directories → duration (seconds → mm:ss) |
+| Nouveau/Lu            | voicemail directories → status                |
+
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. SOUS-NAV - Lignes actif
-4. LEFT PANEL - Liste lignes
-5. RIGHT PANEL
-   - Header: Numéro + Description
-   - NAV3: Messagerie actif
-   - NAV4: Options | Messages | Annonce
-   - Bloc options messagerie
-   - Cards statistiques
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des lignes
+4. RIGHT PANEL
+   - Header: Numéro + breadcrumb /Messagerie
+   - NAV3: Général | Téléphone | Appels | Transferts | [Messagerie] | Consommation | Options
+   - NAV4: [Options] | Messages | Annonce
+   - Cards config: Messagerie par défaut | Mot de passe | Configuration
+   - Table messages récents
+   - Pagination + lien "Voir tous"
    - Bannière info accès
 
-# NAV3 TAB ACTIF
-Tab 5: Messagerie (x=281, w=80)
+# ÉTATS MESSAGES
+| État     | Badge Color | Description            |
+|----------|-------------|------------------------|
+| Nouveau  | #DBEAFE     | Message non écouté     |
+| Lu       | #DEF7EC     | Message écouté         |
 
-# NAV4 TABS
-| # | Tab       | Route                   |
-|---|-----------|-------------------------|
-| 1 | Options   | /voicemail              |
-| 2 | Messages  | /voicemail/messages     |
-| 3 | Annonce   | /voicemail/greeting     |
-
-# OPTIONS
-| Option              | Type    | Description                    |
-|---------------------|---------|--------------------------------|
-| Messagerie vocale   | Toggle  | Activer/Désactiver             |
-| Notification email  | Toggle  | Recevoir notification          |
-| Email               | Input   | Adresse email notification     |
-| Joindre audio       | Toggle  | Joindre fichier audio au mail  |
-| Durée rétention     | Display | Durée conservation messages    |
-
-# ACTIONS
-| Action       | Type    | API                                        |
-|--------------|---------|-------------------------------------------|
-| Changer PIN  | Bouton  | POST /telephony/{ba}/voicemail/{sn}/settings/changePassword |
-| Modifier     | Bouton  | PUT /telephony/{ba}/voicemail/{sn}/settings |
+# INTERACTIONS
+- Clic NAV4 sous-tab → Navigation Options/Messages/Annonce
+- Clic "Modifier →" → Modal modification config
+- Clic "▶ Écouter" → Lecture message audio
+- Clic "📥 Télécharger" → Téléchargement fichier audio
+- Clic "🗑️" → Suppression message
+- Clic "Voir tous →" → Liste complète messages
 
 # API ENDPOINTS
-GET /telephony/{ba}/voicemail/{sn}/settings - Options messagerie
-PUT /telephony/{ba}/voicemail/{sn}/settings - Modifier options
-POST /telephony/{ba}/voicemail/{sn}/settings/changePassword - Changer PIN
-GET /telephony/{ba}/voicemail/{sn}/directories - Dossiers/statistiques
+GET /telephony/{ba}/line/{sn}/voicemail                    → Config messagerie
+PUT /telephony/{ba}/line/{sn}/voicemail                    → Modifier config
+GET /telephony/{ba}/voicemail/{vm}/directories             → Liste messages
+GET /telephony/{ba}/voicemail/{vm}/directories/{id}/download → Télécharger
+DELETE /telephony/{ba}/voicemail/{vm}/directories/{id}     → Supprimer
+POST /telephony/{ba}/line/{sn}/voicemail/changePassword    → Changer MDP
+
+# CONFIG MESSAGERIE (API)
+| Champ              | Type    | Description                    |
+|--------------------|---------|--------------------------------|
+| active             | boolean | Messagerie activée             |
+| audioFormat        | string  | Format audio (wav, mp3)        |
+| doNotRecord        | boolean | Ne pas enregistrer             |
+| forcePassword      | boolean | Forcer mot de passe            |
+| fromEmail          | string  | Email émetteur notifications   |
+| fromEmailCustom    | string  | Email personnalisé             |
+| keepMessage        | boolean | Garder messages après écoute   |
+| redirectionEmails  | array   | Emails de redirection          |
+
 ================================================================================

@@ -1,0 +1,193 @@
+# Cahier des Charges : web-cloud/domain - Zone DNS
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid
+**Fonction:** Gestion des enregistrements de la zone DNS
+**Contexte:** Onglet Zone DNS d'un domaine
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Domaines et DNS (actif)
+
+### NAV3
+- Onglets: Infos générales | Zone DNS (actif) | Serveurs DNS | Redirections | DynHost | GLUE | DNSSEC | Contacts | Tâches | Alldom
+
+## 3. LAYOUT
+
+### Panel gauche
+- Largeur: 280px
+- Recherche: 256x34px
+- Liste des domaines avec scroll
+
+### Domaine sélectionné
+- Background: #E8F0FE
+- Icône: 🌐
+- Nom: font-weight 500
+- Type: "Domaine + Zone"
+- Badge: "Actif" (vert)
+
+### Panel droit
+- Largeur: 1096px
+- Zone principale de gestion
+
+## 4. HEADER
+
+- Titre: "Zone DNS de example.com"
+- Description: "Vous pouvez configurer les entrées DNS de votre zone."
+
+## 5. TOOLBAR
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Ajouter une entrée | btn-primary | Ouvre modal ajout |
+| Modifier en mode textuel | btn-outline | Édition BIND |
+| Modifier le TTL par défaut | btn-outline | Ouvre modal TTL |
+| Réinitialiser ma zone | btn-outline | Ouvre modal reset |
+| Historique | btn-outline | Va vers zone-history |
+
+- Dimensions toolbar: 130x32px, 150x32px, 140x32px, 140x32px, 90x32px
+
+## 6. FILTRES
+
+| Filtre | Type | Dimensions |
+|--------|------|------------|
+| Rechercher | Input | 200x32px |
+| Type | Dropdown | 100x32px |
+
+### Options dropdown Type
+- Tous
+- A
+- AAAA
+- CNAME
+- MX
+- TXT
+- NS
+- SRV
+- CAA
+- DKIM
+- SPF
+
+## 7. DATAGRID
+
+### Structure
+- Dimensions: 1040x400px
+- Header: 40px, background #F9FAFB
+- Rows: 45px chacune
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Sous-domaine | 260px | FQDN (ex: www.example.com.) |
+| Type | 100px | Badge coloré |
+| TTL | 100px | Valeur en secondes |
+| Cible | 500px | Valeur de l'enregistrement |
+| Actions | 60px | Menu ⋮ |
+
+### Badges par type
+
+| Type | Couleur | Background |
+|------|---------|------------|
+| A | Blanc | #0050D7 (bleu) |
+| AAAA | Blanc | #0050D7 (bleu) |
+| CNAME | Blanc | #9333EA (violet) |
+| MX | Blanc | #059669 (vert) |
+| TXT | Blanc | #6B7280 (gris) |
+| NS | Blanc | #DC2626 (rouge) |
+| SRV | Blanc | #D97706 (orange) |
+| CAA | Blanc | #0891B2 (cyan) |
+
+### Menu actions (⋮)
+- Modifier
+- Supprimer
+
+## 8. PAGINATION
+
+- Texte: "Affichage {start}-{end} sur {total} entrées"
+- Numéros de page: 1, 2, 3...
+- Page active: font-weight 600, text-primary
+
+## 9. EXEMPLES D'ENREGISTREMENTS
+
+| Sous-domaine | Type | TTL | Cible |
+|--------------|------|-----|-------|
+| example.com. | A | 3600 | 203.0.113.50 |
+| example.com. | AAAA | 3600 | 2001:db8::1 |
+| www.example.com. | CNAME | 3600 | example.com. |
+| example.com. | MX | 3600 | 10 mx1.mail.ovh.net. |
+| example.com. | TXT | 3600 | "v=spf1 include:mx.ovh.com ~all" |
+| example.com. | NS | 86400 | dns100.ovh.net. |
+
+## 10. APIS & ENDPOINTS
+
+```
+GET /domain/zone/{zoneName}/record
+Query: {
+  fieldType: "A",
+  subDomain: "www"
+}
+→ Liste les enregistrements (paginée)
+
+GET /domain/zone/{zoneName}/record/{id}
+→ Détails d'un enregistrement
+
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "A",
+  subDomain: "www",
+  target: "203.0.113.50",
+  ttl: 3600
+}
+→ Crée un enregistrement
+
+PUT /domain/zone/{zoneName}/record/{id}
+Body: { target: "203.0.113.51" }
+→ Modifie un enregistrement
+
+DELETE /domain/zone/{zoneName}/record/{id}
+→ Supprime un enregistrement
+
+POST /domain/zone/{zoneName}/refresh
+→ Applique les modifications (refresh SOA)
+
+POST /domain/zone/{zoneName}/reset
+Body: { minimized: true }
+→ Réinitialise la zone
+
+GET /domain/zone/{zoneName}/soa
+→ Récupère le SOA (TTL par défaut)
+
+PUT /domain/zone/{zoneName}/soa
+Body: { ttl: 3600 }
+→ Modifie le TTL par défaut
+
+GET /domain/zone/{zoneName}/export
+→ Exporte la zone en format BIND
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Zone DNS de {domain} |
+| page_description | Vous pouvez configurer les entrées DNS de votre zone. |
+| btn_add | + Ajouter une entrée |
+| btn_text_mode | Modifier en mode textuel |
+| btn_ttl | Modifier le TTL par défaut |
+| btn_reset | Réinitialiser ma zone |
+| btn_history | Historique |
+| search_placeholder | Rechercher... |
+| filter_all | Tous |
+| col_subdomain | Sous-domaine |
+| col_type | Type |
+| col_ttl | TTL |
+| col_target | Cible |
+| col_actions | Actions |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| pagination | Affichage {start}-{end} sur {total} entrées |

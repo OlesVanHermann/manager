@@ -1,0 +1,124 @@
+# Cahier des Charges : private/cloud - Modal Datastore Order
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire de commande
+**Fonction:** Commander un nouveau datastore (vSAN ou NFS)
+**Contexte:** Extension du stockage VMware
+
+## 2. DIMENSIONS
+
+- Modal: 500x490px
+- Background page: #F9FAFB
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F3F4F6
+- Titre: "Commander un datastore"
+- Bouton fermer: ×
+- Height: 60px
+
+## 4. FORMULAIRE
+
+### Champ Datacenter
+- Label: "Datacenter"
+- Type: Select dropdown
+- Largeur: 460px
+- Exemple: "DC1 - Paris"
+
+### Champ Type de datastore
+- Label: "Type de datastore"
+- Type: Radio cards (2 options)
+
+| Option | État | Description |
+|--------|------|-------------|
+| vSAN | Sélectionné | Stockage haute performance |
+| NFS | Non sélectionné | Stockage partagé réseau |
+
+### Style radio cards
+- Dimensions: 220x80px chacune
+- Selected: border #0050D7, 2px
+- Unselected: border #E5E7EB
+
+### Champ Profil de performance
+- Label: "Profil de performance"
+- Type: Select dropdown
+- Exemple: "vSAN Premium - SSD NVMe"
+
+### Champ Capacité
+- Label: "Capacité"
+- Type: Select dropdown
+- Options: 500 Go, 1 To, 2 To, 4 To, 8 To
+
+## 5. RÉSUMÉ PRIX
+
+### Box prix
+- Background: #F3F4F6
+- Dimensions: 460x40px
+- Label: "Prix mensuel estimé :"
+- Valeur: "120,00 € HT/mois"
+
+## 6. COMPOSANTS UI
+
+### Radio card selected
+- Border: #0050D7, 2px
+- Radio button: cercle bleu avec point blanc
+
+### Select dropdown
+- Height: 40px
+- Border-radius: 4px
+- Chevron: ▼
+
+## 7. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Action: Ferme le modal
+
+### Bouton Commander
+- Style: btn-primary (110x40px)
+- Action: Lance la commande du datastore
+
+### Validation
+- Tous les champs requis
+- Recalcul prix dynamique selon sélection
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter
+→ Liste des datacenters
+
+GET /order/catalog/public/dedicatedCloud
+→ Catalogue avec prix datastores
+
+POST /order/dedicatedCloud/{serviceName}/filer
+Body: {
+  datacenterId: 1,
+  name: "vsan-ds-01",
+  profile: "premium",
+  size: 2000
+}
+→ Commande le datastore
+
+GET /dedicatedCloud/filer/profile
+→ Profils de performance disponibles
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Commander un datastore |
+| field_datacenter | Datacenter |
+| field_type | Type de datastore |
+| type_vsan | vSAN |
+| type_vsan_desc | Stockage haute performance |
+| type_nfs | NFS |
+| type_nfs_desc | Stockage partagé réseau |
+| field_profile | Profil de performance |
+| field_capacity | Capacité |
+| price_estimate | Prix mensuel estimé |
+| btn_cancel | Annuler |
+| btn_order | Commander |

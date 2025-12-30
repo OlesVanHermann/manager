@@ -6,43 +6,75 @@ Route:   /web-cloud/emails/{domain}/security-antispam
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                |
-|--------------------------|-------------------------------------------|
-| example.com              | GET /email/domains -> domain              |
-| Whitelist/Blacklist      | GET /email/domains/{d}/antispam/rules     |
-| *@partner.com            | -> pattern                                |
-| Actif                    | -> status                                 |
-| 12                       | GET /email/domains/{d}/antispam/quarantine|
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| Niveau: Modéré                | GET /email/domains/{d}/antispam → level|
+| 23 emails en quarantaine      | → quarantineCount                      |
+| Règle personnalisée           | GET /email/domains/{d}/antispam/rules  |
+| spam@*.ru                     | → pattern                              |
+| Bloquer                       | → action (block/allow/quarantine)      |
 
 ================================================================================
 
-STRUCTURE PAGE
+# STRUCTURE PAGE
+
 1. NAV1 - Header OVH (Web Cloud actif)
 2. NAV2 - Web Cloud (Emails actif)
-3. LEFT PANEL - Liste domaines
-4. RIGHT PANEL
-   - Header: Domaine
-   - NAV3: 8 tabs (Securite actif)
-   - NAV4: DNS Config | [Antispam] | Signature
-   - Toolbar: Ajouter regle, Quarantaine
-   - Table regles antispam
-   - Pagination
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Sécurité ACTIF)
+   - NAV4: DNS Config | Antispam (actif) | Signature
+   - Card Niveau protection
+   - Card Règles personnalisées
+   - Card Quarantaine
 
-TYPES DE REGLES
-| Type         | Badge    | Action possible        |
-|--------------|----------|------------------------|
-| Whitelist    | Vert     | Toujours accepter      |
-| Blacklist    | Rouge    | Bloquer                |
-| Filtre sujet | Orange   | Quarantaine            |
-| Filtre IP    | Gris     | Bloquer / Quarantaine  |
+# NAV4 - SOUS-TABS SÉCURITÉ
 
-API ENDPOINTS
-GET    /email/domains/{d}/antispam/rules       - Liste regles
-POST   /email/domains/{d}/antispam/rules       - Ajouter regle
-PUT    /email/domains/{d}/antispam/rules/{id}  - Modifier regle
-DELETE /email/domains/{d}/antispam/rules/{id}  - Supprimer regle
-GET    /email/domains/{d}/antispam/quarantine  - Messages en quarantaine
-POST   /email/domains/{d}/antispam/quarantine/{id}/release - Liberer message
+| # | Tab        | Route               | Contenu                    |
+|---|------------|---------------------|----------------------------|
+| 1 | DNS Config | /security           | MX, SPF, DKIM, DMARC, SRV  |
+| 2 | Antispam   | /security-antispam  | Règles, quarantaine        |
+| 3 | Signature  | /security-signature | Disclaimer entreprise      |
+
+# NIVEAUX PROTECTION ANTISPAM
+
+| Niveau     | Description                              |
+|------------|------------------------------------------|
+| Désactivé  | Pas de filtrage antispam                 |
+| Faible     | Filtrage minimal, peu de faux positifs   |
+| Modéré     | Équilibre filtrage/faux positifs         |
+| Strict     | Filtrage agressif, plus de faux positifs |
+
+# COLONNES TABLE RÈGLES
+
+| Colonne    | Largeur | Contenu                        |
+|------------|---------|--------------------------------|
+| Pattern    | 300px   | Motif email/domaine            |
+| Type       | 150px   | Email / Domaine / IP           |
+| Action     | 150px   | Bloquer / Autoriser / Quarant. |
+| Créée le   | 150px   | Date création                  |
+| Actions    | 150px   | ✎ Modifier, × Supprimer        |
+
+# INTERACTIONS
+
+- Clic niveau protection → Modal changement niveau
+- Clic "+ Ajouter règle" → Modal création règle
+- Clic "Voir quarantaine" → Liste emails en quarantaine
+- Clic ✎ → Modal modifier règle
+- Clic × → Modal confirmer suppression
+
+# API ENDPOINTS
+
+GET    /email/domains/{domain}/antispam          → Config antispam
+PUT    /email/domains/{domain}/antispam          → Modifier niveau
+GET    /email/domains/{domain}/antispam/rules    → Liste règles
+POST   /email/domains/{domain}/antispam/rules    → Créer règle
+PUT    /email/domains/{d}/antispam/rules/{id}    → Modifier règle
+DELETE /email/domains/{d}/antispam/rules/{id}    → Supprimer règle
+GET    /email/domains/{domain}/antispam/quarantine → Liste quarantaine
+POST   /email/domains/{d}/antispam/quarantine/{id}/release → Libérer email
+DELETE /email/domains/{d}/antispam/quarantine/{id} → Supprimer email
 
 ================================================================================

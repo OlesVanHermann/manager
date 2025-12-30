@@ -1,0 +1,130 @@
+# Cahier des Charges : private/cloud - Modal User Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Créer un nouvel utilisateur VMware
+**Contexte:** Gestion des accès vCenter et NSX
+
+## 2. DIMENSIONS
+
+- Modal: 450x430px
+- Background page: #F9FAFB
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F3F4F6
+- Titre: "Ajouter un utilisateur"
+- Bouton fermer: ×
+- Height: 55px
+
+## 4. FORMULAIRE
+
+### Champ Nom d'utilisateur
+- Label: "Nom d'utilisateur *"
+- Type: Input text
+- Placeholder: "ex: admin-prod"
+- Largeur: 410px
+
+### Champ Email
+- Label: "Email *"
+- Type: Input email
+- Placeholder: "email@domain.com"
+- Largeur: 410px
+
+### Champ Rôle
+- Label: "Rôle *"
+- Type: Select dropdown
+- Valeur par défaut: "Administrator"
+- Options:
+  - Administrator
+  - Read-only
+  - Network administrator
+  - VM admin
+
+### Section Options
+- Label: "Options"
+- Type: Checkboxes verticales
+
+| Option | État par défaut |
+|--------|-----------------|
+| Activer l'accès vCenter | Checked |
+| Activer l'accès NSX | Unchecked |
+| Envoyer le mot de passe par email | Checked |
+
+## 5. COMPOSANTS UI
+
+### Input text
+- Height: 40px
+- Border-radius: 4px
+- Border: #E5E7EB
+
+### Checkbox
+- Size: 18x18px
+- Checked: bg #0050D7 avec ✓ blanc
+- Border-radius: 3px
+
+### Select dropdown
+- Height: 40px
+- Chevron: ▼
+
+## 6. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Action: Ferme le modal
+
+### Bouton Créer
+- Style: btn-primary (100x40px)
+- Action: Crée l'utilisateur
+
+### Validation
+- Nom d'utilisateur: requis, format alphanumérique + tirets
+- Email: requis, format email valide
+- Rôle: requis
+
+### Comportement mot de passe
+- Si "Envoyer par email" coché: génération auto, envoi email
+- Sinon: affichage du mot de passe à copier
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/user
+→ Liste des utilisateurs existants
+
+POST /dedicatedCloud/{serviceName}/user
+Body: {
+  name: "admin-prod",
+  email: "admin@company.com",
+  role: "administrator",
+  canManageNetwork: false,
+  sendPassword: true
+}
+→ Crée l'utilisateur
+
+GET /dedicatedCloud/{serviceName}/user/role
+→ Rôles disponibles
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un utilisateur |
+| field_username | Nom d'utilisateur |
+| field_username_placeholder | ex: admin-prod |
+| field_email | Email |
+| field_email_placeholder | email@domain.com |
+| field_role | Rôle |
+| role_admin | Administrator |
+| role_readonly | Read-only |
+| role_network | Network administrator |
+| role_vm | VM admin |
+| section_options | Options |
+| opt_vcenter_access | Activer l'accès vCenter |
+| opt_nsx_access | Activer l'accès NSX |
+| opt_send_password | Envoyer le mot de passe par email |
+| btn_cancel | Annuler |
+| btn_create | Créer |

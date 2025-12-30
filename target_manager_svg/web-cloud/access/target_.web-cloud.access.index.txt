@@ -3,43 +3,69 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.access.index.svg
 Route:   /web-cloud/access
-Version: v2 (2025-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| xdsl-ab12345-1           | GET /xdsl → serviceName                 |
-| VDSL2/FTTH/ADSL          | xdsl → accessType                       |
-| 12 rue de Paris...       | xdsl → address                          |
-| ↓ 70 Mbps ↑ 15 Mbps      | GET /xdsl/{sn}/statistics               |
-| Connecté/Incident        | xdsl → status                           |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| Fibre Pro Paris          | GET /access/connections → name                |
+| FTTH · Pack Pro          | GET /access/connections → techType, offerType |
+| Connecté                 | GET /access/connections → status              |
+| ↓ 1 Gbps ↑ 500 Mbps      | GET /access/connections → downSpeed, upSpeed  |
+| 📦 Livebox 6             | GET /access/connections → modem.name          |
+| otb-abc123def            | GET /overTheBox → serviceName                 |
+| 3 connexions             | GET /access/connections → count               |
+| ab12345-ovh              | Session utilisateur                           |
+
 ================================================================================
 
 # STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Accès Internet actif
-3. CONTENT:
-   - TITRE "Mes accès Internet"
-   - TOOLBAR: Refresh, Recherche, Filtre type, Commander
-   - TABLE: Service, Type, Adresse, Débit, Statut, Actions
 
-# TYPES D'ACCÈS
-| Type        | Badge   | Couleur  |
-|-------------|---------|----------|
-| VDSL2       | Bleu    | #DBEAFE  |
-| FTTH        | Vert    | #DEF7EC  |
-| ADSL        | Orange  | #FEF3C7  |
-| OverTheBox  | Violet  | #E9D5FF  |
+1. NAV1 - Header OVH (Web Cloud actif, x=510)
+2. NAV2 - Section (Accès actif, x=550)
+3. LEFT PANEL - Liste services
+   - Recherche
+   - Compteur (X connexions · Y OverTheBox)
+   - Items connexions avec:
+     - Icône 🌐
+     - Nom personnalisé
+     - Type techno + Offre
+     - Statut (cercle couleur + label)
+     - Débits sync
+     - Modem (📦 OVH ou 🔧 perso)
+     - Lien OTB si applicable
+   - Divider
+   - Items OverTheBox avec:
+     - Icône 📦
+     - ServiceName
+     - Modèle OTB
+     - Statut + nombre WAN
+     - Débit agrégé
 
-# STATUTS
-| Statut    | Badge  |
-|-----------|--------|
-| Connecté  | Vert   |
-| Incident  | Rouge  |
-| Dégradé   | Orange |
+4. RIGHT PANEL
+   - Header: Nom connexion + adresse
+   - Actions: Déménager, Migrer offre
+   - NAV3: 7 tabs (Général actif)
+   - Contenu Tab Général:
+     - Bloc CONNEXION (statut, type, offre, débit, adresse)
+     - Bloc MODEM + SERVICES INCLUS (2 colonnes)
+     - Bloc OPTIONS ACTIVES (badges + bouton ajouter)
+     - Bloc ABONNEMENT (dates, contacts)
+     - Actions: Renommer, Contacts, Résilier
+
+# INTERACTIONS
+- Clic item left panel → Charge détails dans right panel
+- Clic tab → Navigation vers sous-page
+- Clic bouton action → Ouvre modal
 
 # API ENDPOINTS
-GET /xdsl - Liste accès xDSL
-GET /overTheBox - Liste OverTheBox
+GET  /access/connections           - Liste connexions
+GET  /access/connections/{id}      - Détails connexion
+GET  /overTheBox                   - Liste OverTheBox
+POST /access/connections/{id}/rename - Renommer
+POST /access/connections/{id}/migrate - Migrer offre
+POST /access/connections/{id}/move    - Déménager
+DELETE /access/connections/{id}       - Résilier
+
 ================================================================================

@@ -1,0 +1,76 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.dynhost.svg
+Route:   /web-cloud/domain/{domainName}/dynhost/add
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| exemple.com                     | /domain/zone → zoneName                 |
+| home, nas, etc.                 | Input utilisateur                       |
+| 86.234.12.45                    | Input utilisateur                       |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. HEADER - Titre "Ajouter un DynHost" (fond gris)
+2. CONTENT
+   - Champ sous-domaine + suffixe domaine
+   - Champ IP initiale
+   - Bannière info (identifiants)
+3. FOOTER - Boutons Annuler / Créer
+
+# MODAL TYPE
+- Type: Formulaire création DynHost
+- Dimensions: 600x400px
+- Header: Fond gris (#F9FAFB)
+
+# CHAMPS
+| Champ | Obligatoire | Description |
+|-------|-------------|-------------|
+| Sous-domaine | Oui | Préfixe (home, nas, camera...) |
+| IP initiale | Oui | Adresse IPv4 de départ |
+
+# QU'EST-CE QUE DYNHOST ?
+DynHost (Dynamic Host) permet d'associer un sous-domaine à une
+adresse IP dynamique. L'IP peut être mise à jour automatiquement
+via un client DynDNS quand elle change.
+
+# CAS D'USAGE TYPIQUES
+- Serveur domestique (NAS, Raspberry Pi)
+- Caméra de surveillance accessible à distance
+- Accès SSH à une machine derrière un routeur résidentiel
+- VPN personnel hébergé à domicile
+
+# IDENTIFIANTS GÉNÉRÉS
+Après création, des identifiants seront générés :
+- Login : généralement le sous-domaine complet
+- Mot de passe : généré aléatoirement
+
+Ces identifiants servent à mettre à jour l'IP via :
+- Client DynDNS (ddclient, No-IP DUC)
+- Box/routeur avec fonction DynDNS
+- Script personnalisé
+
+# URL DE MISE À JOUR
+```
+https://www.ovh.com/nic/update?system=dyndns&hostname={subdomain}.{domain}&myip={ip}
+```
+Avec authentification HTTP Basic (login/password)
+
+# API ENDPOINTS
+POST /domain/zone/{zone}/dynHost/record - Créer DynHost
+  Body: { subDomain: "home", ip: "86.234.12.45" }
+  Response: {
+    id: "12345",
+    subDomain: "home",
+    zone: "exemple.com",
+    ip: "86.234.12.45",
+    login: "exemple.com-home",
+    password: "xxxxxxxx"
+  }
+
+================================================================================

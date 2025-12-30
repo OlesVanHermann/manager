@@ -2,64 +2,61 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.number.general.svg
-Route:   /web-cloud/voip/{ba}/numbers/{sn}/general
-NAV:     Web Cloud > VoIP > [groupe] > Numeros > [numero] > General
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/number/{serviceName}
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| 0033972109999            | GET /telephony/{ba}/number/{sn} -> serviceName  |
-| Accueil principal        | GET /telephony/{ba}/number/{sn} -> description  |
-| Queue                    | GET /telephony/{ba}/number/{sn} -> featureType  |
-| 5 membres                | GET /telephony/{ba}/ovhPabx/{sn}/hunting/queue  |
-| Actif                    | GET /telephony/{ba}/number/{sn}/serviceInfos    |
-| France (+33)             | GET /telephony/{ba}/number/{sn} -> country      |
-| 15/03/2021               | GET /telephony/{ba}/number/{sn}/serviceInfos    |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| 0033912345680         | Route param {serviceName}                     |
+| Accueil principal     | GET /telephony/{ba}/number/{sn} → description |
+| Actif                 | GET /telephony/{ba}/number/{sn} → status      |
+| France (+33)          | GET /telephony/{ba}/number/{sn} → country     |
+| File d'appels         | GET /telephony/{ba}/number/{sn} → featureType |
+| 5 agents              | GET /telephony/{ba}/easyHunting/{sn}/agent    |
+| 2 files               | GET /telephony/{ba}/easyHunting/{sn}/hunting  |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes | Numeros (actif) | Fax | Abreges
-2. Left panel: Liste numeros du groupe avec badges type
-3. Right panel header: Numero + badge type + description + actions
-4. NAV3: General (actif) | Configuration | Portabilite | Statistiques
-5. Cards:
-   - Numero (numero, description, type, statut, pays)
-   - Configuration file d'attente (membres, strategie, musique, timeout)
-   - Abonnement (date creation, origine)
-   - Banniere info file d'attente
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des numéros
+4. RIGHT PANEL
+   - Header: Numéro + badge statut + description
+   - NAV3: [Général] | Configuration | Consommation | Statistiques
+   - Bannière info "Qu'est-ce qu'un numéro"
+   - Card "Informations": Numéro, Pays, Description, État, bouton modifier
+   - Card "Configuration actuelle": Type, Agents, Files, liens gestion
+   - Section "Types de configuration": 4 cards (Redirection, File, Conférence, SVI)
+   - Section "Actions": Convertir en ligne, Résilier
 
-TYPES DE NUMEROS (BADGES)
-| Type      | Couleur    | featureType API        |
-|-----------|------------|------------------------|
-| Queue     | #DBEAFE    | easyHunting            |
-| SVI       | #F3E8FF    | svi                    |
-| Redirect  | #DEF7EC    | redirect               |
-| Conf      | #FEF3C7    | conference             |
-| DDI       | #E0E7FF    | ddi                    |
-| Alias     | #E5E7EB    | empty/contactCenterSolution |
+# TYPES DE CONFIGURATION
+| Type         | featureType    | Description                       |
+|--------------|----------------|-----------------------------------|
+| Redirection  | redirect       | Renvoi simple vers une ligne      |
+| File d'appels| easyHunting    | Contact Center Solution           |
+| Conférence   | conference     | Appels multi-participants         |
+| SVI          | svi            | Serveur Vocal Interactif          |
 
-NAV3 NUMEROS (4 tabs)
-| Tab           | Route          | Description                    |
-|---------------|----------------|--------------------------------|
-| General       | /general       | Infos numero + config resume   |
-| Configuration | /configuration | Config detaillee selon type    |
-| Portabilite   | /portability   | Historique portabilite         |
-| Statistiques  | /stats         | Stats appels                   |
+# INTERACTIONS
+- Clic NAV3 tab → Navigation onglet
+- Clic "Modifier les informations →" → Modal édition description
+- Clic "Gérer les agents →" → Page agents file d'appels
+- Clic "Tableau de bord →" → Dashboard file d'appels
+- Clic "Modifier le type →" → Modal changement type
+- Clic card type → Configure ce type
+- Clic "Convertir en ligne" → Modal conversion
+- Clic "Résilier" → Modal confirmation résiliation
 
-ACTIONS HEADER
-| Action          | Comportement                               |
-|-----------------|-------------------------------------------|
-| Changer type    | Modal selection nouveau type              |
-| Convertir ligne | Convertit alias en ligne SIP              |
-| Resilier        | Modal confirmation resiliation            |
+# API ENDPOINTS
+GET /telephony/{ba}/number/{sn}                    → Détails numéro
+PUT /telephony/{ba}/number/{sn}                    → Modifier description
+GET /telephony/{ba}/number/{sn}/serviceInfos       → Infos abonnement
+POST /telephony/{ba}/number/{sn}/changeFeatureType → Changer type
+GET /telephony/{ba}/easyHunting/{sn}               → Config file d'appels
+GET /telephony/{ba}/easyHunting/{sn}/agent         → Liste agents
+DELETE /telephony/{ba}/number/{sn}                 → Résilier
 
-API ENDPOINTS
-GET  /telephony/{ba}/number/{sn}              -> Details numero
-GET  /telephony/{ba}/number/{sn}/serviceInfos -> Infos abonnement
-GET  /telephony/{ba}/ovhPabx/{sn}/hunting/queue -> Config file attente
-PUT  /telephony/{ba}/number/{sn}              -> Modifier description
-POST /telephony/{ba}/number/{sn}/changeFeatureType -> Changer type
-DELETE /telephony/{ba}/number/{sn}            -> Resilier numero
 ================================================================================

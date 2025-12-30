@@ -1,0 +1,67 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.wordpress.modal-delete.svg
+Route:   /web-cloud/wordpress/{serviceName}/delete (modal)
+Version: v1 (2025-12-30)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| mon-blog.fr              | GET /managedCMS/resource/{sn} → displayName   |
+================================================================================
+
+STRUCTURE MODAL
+1. HEADER - Titre "Supprimer le site WordPress" + bouton fermer (x)
+2. BANNIERE WARNING - Zone rouge avec:
+   - Titre "ATTENTION - ACTION IRREVERSIBLE"
+   - Nom du site a supprimer
+   - Liste des elements supprimes:
+     * Fichiers WordPress
+     * Base de donnees
+     * Sauvegardes
+     * Configuration SSL/CDN
+     * Domaines associes
+   - Message "Cette action est IRREVERSIBLE"
+3. CONFIRMATION:
+   - Instructions: taper le nom du site
+   - Input text pour confirmation
+4. OPTION BACKUP - Checkbox pour creer sauvegarde avant suppression
+5. FOOTER - Boutons Annuler + Supprimer (desactive tant que non confirme)
+
+ELEMENTS SUPPRIMES
+| Element                 | Description                              |
+|-------------------------|------------------------------------------|
+| Fichiers WordPress      | Tout le contenu /wp-content/             |
+| Base de donnees         | Tables WordPress + donnees               |
+| Sauvegardes             | Auto + manuelles                         |
+| Configuration SSL       | Certificats Let's Encrypt                |
+| Configuration CDN       | Cache + parametres CDN                   |
+| Domaines                | Principal + alias                        |
+
+VALIDATION FORMULAIRE
+- Input confirmation: Doit etre exactement egal au nom du site
+- Bouton "Supprimer": Desactive (gris) jusqu'a confirmation valide
+
+INTERACTIONS
+- Clic "x" → Fermer modal
+- Saisie input → Validation en temps reel
+  * Si texte = nom site → Activer bouton "Supprimer" (rouge)
+  * Sinon → Garder bouton desactive (gris clair)
+- Toggle checkbox backup → Creer sauvegarde avant suppression
+- Clic "Annuler" → Fermer modal
+- Clic "Supprimer" (si active) → DELETE /managedCMS/resource/{sn}
+
+API ENDPOINTS
+GET    /managedCMS/resource/{sn}             - Infos site (pour confirmation)
+POST   /managedCMS/resource/{sn}/backups     - Creer sauvegarde (si checkbox)
+DELETE /managedCMS/resource/{sn}             - Supprimer site
+
+ETATS BOUTON SUPPRIMER
+| Etat      | Condition                      | Style                |
+|-----------|--------------------------------|----------------------|
+| Desactive | Input != nom site              | bg: #FCA5A5 (rose)   |
+| Active    | Input == nom site exactement   | bg: #DC2626 (rouge)  |
+
+================================================================================

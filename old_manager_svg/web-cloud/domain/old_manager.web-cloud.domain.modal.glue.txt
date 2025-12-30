@@ -1,0 +1,105 @@
+# Cahier des Charges : web-cloud/domain - Modal GLUE
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter un enregistrement GLUE (Glue Record)
+**Contexte:** Action depuis l'onglet GLUE
+
+## 2. DIMENSIONS
+
+- Modal: 600x450px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Ajouter un enregistrement GLUE"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Nom du serveur DNS
+- Label: "Nom du serveur DNS *"
+- Layout: Input + suffixe
+- Input: 280x36px
+- Placeholder: "ns1, ns2, dns1..."
+- Suffixe: ".exemple.com"
+
+### Adresse IPv4
+- Label: "Adresse IPv4 *"
+- Input: 552x36px
+- Placeholder: "203.0.113.10"
+
+### Adresse IPv6
+- Label: "Adresse IPv6 (optionnel)"
+- Input: 552x36px
+- Placeholder: "2001:db8::1"
+
+### Warning banner
+- Background: #FEF3C7
+- Dimensions: 552x55px
+- Texte lignes:
+  - "Un enregistrement GLUE doit pointer vers une IP fixe et stable."
+  - "La propagation peut prendre jusqu'à 48h."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Ajouter | btn-primary | 110x34px |
+
+## 6. UTILISATION
+
+Les enregistrements GLUE sont nécessaires quand:
+- Vous utilisez des serveurs DNS sous votre propre domaine
+- Exemple: ns1.exemple.com doit avoir un GLUE si exemple.com utilise ns1.exemple.com comme DNS
+
+Cela évite les références circulaires dans la résolution DNS.
+
+## 7. APIS & ENDPOINTS
+
+```
+POST /domain/{serviceName}/glueRecord
+Body: {
+  host: "ns1",
+  ips: ["203.0.113.10", "2001:db8::1"]
+}
+→ Crée un enregistrement GLUE
+
+GET /domain/{serviceName}/glueRecord
+→ Liste des enregistrements GLUE
+
+DELETE /domain/{serviceName}/glueRecord/{host}
+→ Supprime un enregistrement GLUE
+
+PUT /domain/{serviceName}/glueRecord/{host}
+Body: {
+  ips: ["203.0.113.11"]
+}
+→ Modifie un enregistrement GLUE
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un enregistrement GLUE |
+| field_host | Nom du serveur DNS |
+| host_placeholder | ns1, ns2, dns1... |
+| field_ipv4 | Adresse IPv4 |
+| ipv4_placeholder | 203.0.113.10 |
+| field_ipv6 | Adresse IPv6 (optionnel) |
+| ipv6_placeholder | 2001:db8::1 |
+| warning_line1 | Un enregistrement GLUE doit pointer vers une IP fixe et stable. |
+| warning_line2 | La propagation peut prendre jusqu'à 48h. |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

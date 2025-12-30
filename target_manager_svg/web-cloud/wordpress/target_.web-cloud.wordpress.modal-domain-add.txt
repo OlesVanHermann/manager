@@ -1,0 +1,59 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.wordpress.modal-domain-add.svg
+Route:   /web-cloud/wordpress/{serviceName}/domains/add (modal)
+Version: v1 (2025-12-30)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| www.monautre-domaine.com | user input → POST body.domain                 |
+| Alias (selected)         | user input → POST body.type                   |
+| 1.2.3.4                  | GET /managedCMS/resource/{sn} → serverIp      |
+| mon-blog.fr.             | GET /managedCMS/resource/{sn} → primaryDomain |
+| SSL checked              | user input → POST body.sslEnabled             |
+================================================================================
+
+STRUCTURE MODAL
+1. HEADER - Titre "Ajouter un domaine" + bouton fermer (x)
+2. FORMULAIRE:
+   - Domaine a ajouter: Input text
+   - Type: 2 radio buttons
+     * Alias (redirige vers domaine principal)
+     * Multisite (installation WP separee - Business uniquement)
+   - Banniere DNS: Configuration requise avec tableau
+     * Type A: @ → IP serveur
+     * Type CNAME: www → domaine principal
+     * Bouton copier
+   - Checkbox SSL: Activer Let's Encrypt automatiquement
+3. FOOTER - Boutons Annuler + Ajouter
+
+TYPES DE DOMAINE
+| Type      | Description                        | Offres         |
+|-----------|------------------------------------|----------------|
+| Alias     | Redirection vers domaine principal | Toutes         |
+| Multisite | Installation WP independante       | Business only  |
+
+CONFIGURATION DNS REQUISE
+| Type   | Nom  | Valeur                    |
+|--------|------|---------------------------|
+| A      | @    | {serverIp}                |
+| CNAME  | www  | {primaryDomain}.          |
+
+INTERACTIONS
+- Clic "x" → Fermer modal
+- Selection type → Highlight radio
+- Clic "📋 Copier" → Copier config DNS dans presse-papier
+- Toggle checkbox SSL → Activer/desactiver SSL auto
+- Clic "Annuler" → Fermer modal
+- Clic "Ajouter" → POST /managedCMS/resource/{sn}/domains
+
+API ENDPOINTS
+POST /managedCMS/resource/{sn}/domains       - Ajouter domaine
+Body: { domain, type: "alias"|"multisite", sslEnabled: boolean }
+
+GET  /managedCMS/resource/{sn}               - Infos serveur (IP, domaine principal)
+
+================================================================================

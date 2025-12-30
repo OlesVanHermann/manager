@@ -2,70 +2,96 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.advanced-audit.svg
-Route:   /web-cloud/emails/{domain}/advanced/audit
-NAV:     Web Cloud > Emails > [domain] > Avance > Audit
-Version: v1 (2025-12-29)
+Route:   /web-cloud/emails/{domain}/advanced-audit
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| example.com              | GET /email/domains -> domain                    |
-| 234 evenements           | GET /email/domains/{d}/audit -> totalCount      |
-| 29/12/2025 16:45         | GET /email/domains/{d}/audit -> timestamp       |
-| ceo@example.com          | GET /email/domains/{d}/audit -> account         |
-| Connexion                | GET /email/domains/{d}/audit -> action          |
-| 92.184.112.45            | GET /email/domains/{d}/audit -> ip              |
-| Succes                   | GET /email/domains/{d}/audit -> result          |
-| 98.2%                    | GET /email/domains/{d}/audit/stats -> successRate|
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| 30/12/2025 14:32:15           | GET /email/exchange/{d}/audit → timestamp |
+| admin@example.com             | → user                                 |
+| Connexion                     | → action (login/password/access/...)   |
+| OWA Webmail                   | → target                               |
+| 82.65.123.45                  | → sourceIp                             |
+| Succès/Échec                  | → result                               |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. Left panel avec liste domaines
-2. Right panel header (domaine)
-3. NAV3: 8 tabs (Avance actif)
-4. NAV4: Ressources | Contacts | Audit (actif) | Appareils
-5. Filtres (periode, compte, export)
-6. Table journal audit
-7. Pagination
-8. Cartes statistiques
+# STRUCTURE PAGE
 
-TYPES D'ACTIONS AUDIT
-| Action                    | Description                        |
-|---------------------------|------------------------------------|
-| Connexion                 | Login OWA/Outlook                  |
-| Deconnexion               | Logout                             |
-| Envoi email               | Email envoye                       |
-| Reception email           | Email recu                         |
-| Modification mot de passe | Changement password                |
-| Ajout delegue             | Partage calendrier/boite           |
-| Modification parametres   | Config compte modifiee             |
-| Suppression email         | Message supprime                   |
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Emails actif)
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Avancé ACTIF)
+   - NAV4: Général | Contacts | Audit (actif) | Appareils
+   - Filtres: Période, Type, Utilisateur
+   - Table logs audit
+   - Pagination
 
-RESULTATS POSSIBLES
-| Resultat | Couleur   | Description                     |
-|----------|-----------|----------------------------------|
-| Succes   | #DEF7EC   | Action completee                |
-| Echec    | #FEE2E2   | Erreur ou refus                 |
-| Warning  | #FEF3C7   | Complete avec avertissement     |
+# NAV4 - SOUS-TABS AVANCÉ
 
-FILTRES DISPONIBLES
-| Filtre    | Options                                    |
-|-----------|--------------------------------------------|
-| Periode   | 7j, 30j, 90j, Personnalise                 |
-| Compte    | Tous, Liste comptes specifiques            |
-| Action    | Toutes, Connexions, Emails, Parametres     |
-| Resultat  | Tous, Succes, Echecs                       |
+| # | Tab       | Route               | Contenu                     |
+|---|-----------|---------------------|-----------------------------|
+| 1 | Général   | /advanced           | Dashboard fonctionnalités   |
+| 2 | Contacts  | /advanced-contacts  | Contacts partagés Exchange  |
+| 3 | Audit     | /advanced-audit     | Logs d'activité             |
+| 4 | Appareils | /advanced-devices   | Appareils mobiles connectés |
 
-RETENTION LOGS
-- MX Plan: Pas d'audit
-- Email Pro: 30 jours
-- Exchange: 90 jours
-- Zimbra: 30 jours
+# FILTRES
 
-API ENDPOINTS
-GET  /email/domains/{domain}/audit             -> Liste evenements
-GET  /email/domains/{domain}/audit/stats       -> Statistiques
-GET  /email/domains/{domain}/audit/{id}        -> Details evenement
-GET  /email/domains/{domain}/audit/export      -> Export CSV
+| Filtre      | Options                                    |
+|-------------|--------------------------------------------|
+| Période     | 24h, 7 jours, 30 jours, 90 jours, Custom   |
+| Type        | Tous, Connexion, Mot de passe, Accès, ...  |
+| Utilisateur | Tous, [liste utilisateurs]                 |
+
+# TYPES D'ACTIONS AUDIT
+
+| Type            | Badge      | Description                      |
+|-----------------|------------|----------------------------------|
+| Connexion       | 🔵 Bleu    | Login OWA, Outlook, ActiveSync   |
+| Mot de passe    | 🟡 Jaune   | Changement de mot de passe       |
+| Accès boîte     | ⚪ Gris    | Accès délégué à une boîte        |
+| Redirection     | 🟣 Violet  | Création/modif de redirection    |
+| Création        | 🟡 Jaune   | Création de compte/ressource     |
+| Suppression     | 🔴 Rouge   | Suppression de compte/ressource  |
+| Modification    | 🔵 Bleu    | Modification de paramètres       |
+
+# COLONNES TABLE
+
+| Colonne     | Largeur | Contenu                        |
+|-------------|---------|--------------------------------|
+| Date/Heure  | 140px   | Date + heure sur 2 lignes      |
+| Utilisateur | 180px   | Email de l'utilisateur         |
+| Action      | 180px   | Badge type d'action            |
+| Cible       | 200px   | Ressource concernée            |
+| IP Source   | 140px   | Adresse IP                     |
+| Résultat    | 100px   | Badge Succès/Échec             |
+
+# INTERACTIONS
+
+- Sélecteur période → Filtre les logs
+- Sélecteur type → Filtre par type d'action
+- Sélecteur utilisateur → Filtre par utilisateur
+- Clic "↓ Exporter" → Téléchargement CSV
+- Clic ligne → Détails de l'événement (modal)
+
+# RESTRICTIONS
+
+⚠️ L'audit Exchange est disponible UNIQUEMENT pour :
+- Exchange (toutes versions)
+
+Rétention des logs : 90 jours
+
+# API ENDPOINTS
+
+GET  /email/exchange/{org}/{domain}/audit              → Liste événements
+GET  /email/exchange/{org}/{domain}/audit/{id}         → Détails événement
+GET  /email/exchange/{org}/{domain}/audit/export       → Export CSV
+GET  /email/exchange/{org}/{domain}/audit/types        → Types disponibles
+GET  /email/exchange/{org}/{domain}/audit/users        → Utilisateurs pour filtre
+
 ================================================================================

@@ -3,84 +3,109 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.number.svi-menus.svg
 Route:   /web-cloud/voip/{billingAccount}/number/{serviceName}/svi-menus
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Liste menus               | GET /telephony/{ba}/number/{sn}/ovhPabx/menus    |
-| Options menu              | GET /telephony/{ba}/number/{sn}/ovhPabx/menus/{id}/entry |
-| Sons disponibles          | GET /telephony/{ba}/sound                        |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| +33 800 123 456       | Route param {serviceName}                     |
+| easyHunting           | GET /telephony/{ba}/number/{sn} → featureType |
+| Menu principal        | GET svi/menus → name                          |
+| menu_principal.wav    | menus[].soundId → GET sounds/{id}             |
+| 1 → Service commercial| menus[].entries[].dtmf + destination          |
+| 5 menus               | GET svi/menus → count                         |
+| 1,247 appels          | GET svi/stats → totalCalls                    |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. LEFT PANEL - Liste des numéros du groupe
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des numéros
 4. RIGHT PANEL
-   - Titre: Configuration du SVI
-   - NAV3 tabs
-   - Toolbar (+ Ajouter menu)
-   - Bannière info
-   - Arborescence visuelle
-   - Liste des menus
+   - Header: Numéro + badge type + breadcrumb /Menus SVI
+   - NAV3: Général | Configuration | Agents | [Menus SVI] | Statistiques | Horaires
+   - Bannière info: Explication SVI/IVR
+   - Toolbar: Refresh, Recherche, + Créer menu
+   - Cards menus: Arborescence visuelle des menus
+   - Stats: Menus créés, Niveaux max, Appels via SVI
 
-# NAV3 TABS
-| Tab | Route |
-|-----|-------|
-| Général | /general |
-| Configuration | /configuration |
-| Menus SVI | /svi-menus (actif) |
-| Sons | /sounds |
-| Statistiques | /stats |
+# QU'EST-CE QUE LE SVI ?
+SVI (Serveur Vocal Interactif) ou IVR (Interactive Voice Response)
+permet de créer des menus vocaux guidant l'appelant.
 
-# ARBORESCENCE VISUELLE
-- Vue graphique des menus imbriqués
-- Nœud racine : Menu principal
-- Nœuds enfants : Options DTMF
-- Lignes de connexion entre menus
+L'appelant entend un message et navigue via les touches du téléphone
+(DTMF) pour atteindre le service souhaité.
 
-# TABLEAU MENUS
-| Colonne | Description |
-|---------|-------------|
-| Menu | Nom du menu |
-| Son d'accueil | Fichier audio |
-| Options | Touches DTMF configurées |
-| Timeout | Délai avant action par défaut |
-| Actions | Edit, Delete |
+# STRUCTURE D'UN MENU
+```
+Menu
+├── Son d'accueil (fichier audio)
+├── Entries (touches DTMF)
+│   ├── 1 → Destination (ligne/file/sous-menu)
+│   ├── 2 → Destination
+│   ├── 0 → Répéter menu
+│   └── * → Menu parent
+├── Timeout → Action si aucune touche
+└── Invalid → Action si touche non définie
+```
 
-# OPTIONS DTMF
-| Touche | Action possible |
-|--------|----------------|
-| 0-9 | Renvoi, sous-menu, raccrocher |
-| * | Répéter message |
-| # | Retour menu parent |
-
-# TYPES D'ACTIONS
+# TYPES DE DESTINATION
 | Type | Description |
 |------|-------------|
-| Transfer | Renvoi vers numéro |
-| Queue | Renvoi vers file d'attente |
-| Menu | Aller vers sous-menu |
-| Hangup | Raccrocher |
-| Playback | Jouer son puis action |
+| Ligne | Numéro de téléphone direct |
+| File d'attente | File avec agents |
+| Sous-menu | Autre menu SVI (navigation) |
+| Messagerie | Boîte vocale |
+| Raccrocher | Fin d'appel |
+
+# TOUCHES DTMF
+| Touche | Couleur | Usage commun |
+|--------|---------|--------------|
+| 1-9 | Bleu #0050D7 | Options principales |
+| 0 | Gris #6B7280 | Répéter / Opérateur |
+| * | Gris #6B7280 | Retour menu parent |
+| # | Gris #6B7280 | Valider / Terminer |
 
 # INTERACTIONS
-- "+ Ajouter menu" → Modal création menu
-- ✎ → Modal édition menu/options
-- × → Confirmation suppression
-- "Éditer →" sur nœud → Édition options
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic "+ Créer un menu SVI" → Modal création menu
+- Clic ✎ sur menu → Modal édition menu
+- Clic option DTMF → Éditer destination
+- Drag & drop → Réorganiser options
 
 # API ENDPOINTS
-GET /telephony/{ba}/number/{sn}/ovhPabx/menus
-POST /telephony/{ba}/number/{sn}/ovhPabx/menus
-PUT /telephony/{ba}/number/{sn}/ovhPabx/menus/{id}
-DELETE /telephony/{ba}/number/{sn}/ovhPabx/menus/{id}
-GET /telephony/{ba}/number/{sn}/ovhPabx/menus/{id}/entry
-POST /telephony/{ba}/number/{sn}/ovhPabx/menus/{id}/entry
-PUT /telephony/{ba}/number/{sn}/ovhPabx/menus/{id}/entry/{entryId}
-DELETE /telephony/{ba}/number/{sn}/ovhPabx/menus/{id}/entry/{entryId}
+GET /telephony/{ba}/number/{sn}/easyHunting/hunting/svi/menu → Liste menus
+GET /telephony/{ba}/number/{sn}/easyHunting/hunting/svi/menu/{id} → Détail menu
+POST /telephony/{ba}/number/{sn}/easyHunting/hunting/svi/menu → Créer menu
+PUT /telephony/{ba}/number/{sn}/easyHunting/hunting/svi/menu/{id} → Modifier
+DELETE /telephony/{ba}/number/{sn}/easyHunting/hunting/svi/menu/{id} → Supprimer
+GET /telephony/{ba}/number/{sn}/easyHunting/hunting/svi/stats → Statistiques
+
+# PAYLOAD MENU SVI
+```json
+{
+  "name": "Menu principal",
+  "soundId": 123,
+  "entries": [
+    {"dtmf": "1", "destinationType": "queue", "destinationId": "456"},
+    {"dtmf": "2", "destinationType": "queue", "destinationId": "789"},
+    {"dtmf": "3", "destinationType": "menu", "destinationId": "101"},
+    {"dtmf": "0", "destinationType": "repeat"}
+  ],
+  "timeoutAction": "transfer",
+  "timeoutDestination": "0033912345678",
+  "timeoutDelay": 10,
+  "invalidAction": "repeat"
+}
+```
+
+# LIMITATIONS
+- Max 10 niveaux de sous-menus
+- Max 12 entrées DTMF par menu (0-9, *, #)
+- Timeout: 5-30 secondes
+- Son d'accueil obligatoire
 
 ================================================================================

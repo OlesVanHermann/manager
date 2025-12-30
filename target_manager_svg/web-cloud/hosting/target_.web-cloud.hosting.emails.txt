@@ -1,0 +1,72 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.hosting.emails.svg
+Route:   /web-cloud/hebergement/hosting/{serviceName}/emails
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                    | Source API                                      |
+|--------------------------------|-------------------------------------------------|
+| Actif                          | GET /hosting/web/{sn}/automatedEmails → state   |
+| admin@monsiteweb.com           | GET /hosting/web/{sn}/automatedEmails → email   |
+| 1,247                          | GET /hosting/web/{sn}/automatedEmails → sent    |
+| 42                             | GET /hosting/web/{sn}/automatedEmails → todaySent|
+| 3                              | GET /hosting/web/{sn}/automatedEmails → bounced |
+| Historique barres              | GET /hosting/web/{sn}/automatedEmails/stats     |
+| Erreurs table                  | GET /hosting/web/{sn}/automatedEmails/bounces   |
+================================================================================
+
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Hébergement actif
+3. LEFT PANEL - Liste hébergements
+4. RIGHT PANEL
+   - Header: Nom service
+   - NAV3: 16 tabs (Emails actif)
+   - BLOC INFO: État, destinataire rapport, statistiques
+   - BLOC GRAPHIQUE: Historique 7 jours
+   - BLOC ERREURS: Table des bounces
+
+# BLOC INFORMATIONS
+| Champ                  | Type         | Valeur exemple               |
+|------------------------|--------------|------------------------------|
+| État du service        | Badge        | Actif (vert)                 |
+| Rapport d'erreurs à    | Text + Link  | email + "Changer destinataire"|
+| Total envoyés          | Stat card    | 1,247                        |
+| Envoyés aujourd'hui    | Stat card    | 42                           |
+| Total en erreur        | Stat card    | 3 (rouge)                    |
+
+# BOUTONS ACTIONS
+| Bouton           | Style  | Action                    |
+|------------------|--------|---------------------------|
+| Bloquer l'envoi  | Danger | POST .../block            |
+| Purger les e-mails| Outline| POST .../purge           |
+
+# GRAPHIQUE HISTORIQUE
+- Type: Barres verticales
+- Période: 7 jours (Lun-Dim)
+- Axe Y: 0-100
+
+# TABLE ERREURS
+| Colonne  | Largeur | Contenu              |
+|----------|---------|----------------------|
+| Date     | 130px   | Timestamp            |
+| E-mail   | 170px   | Adresse destinataire |
+| Message  | 200px   | Code erreur SMTP     |
+
+# INTERACTIONS
+- Clic "Changer le destinataire" → Modal modification
+- Clic "Bloquer l'envoi" → Blocage des envois
+- Clic "Purger les e-mails" → Vidage file d'attente
+
+# API ENDPOINTS
+GET /hosting/web/{sn}/automatedEmails              - Statut et stats
+GET /hosting/web/{sn}/automatedEmails/bounces      - Liste erreurs
+POST /hosting/web/{sn}/automatedEmails/block       - Bloquer envois
+POST /hosting/web/{sn}/automatedEmails/unblock     - Débloquer envois
+POST /hosting/web/{sn}/automatedEmails/purge       - Purger file
+PUT /hosting/web/{sn}/automatedEmails/recipient    - Changer destinataire
+
+================================================================================

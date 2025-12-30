@@ -3,56 +3,70 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.group.orders.svg
 Route:   /web-cloud/voip/{billingAccount}/orders
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Liste commandes           | GET /telephony/{ba}/orders                        |
-| Statut commande           | GET /telephony/{ba}/orders/{id} → status          |
-| Montant                   | GET /telephony/{ba}/orders/{id} → price           |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| ovh-telecom-123       | Route param {billingAccount}                  |
+| #ORD-2024-001234      | GET orders → orderId                          |
+| Ligne SIP             | orders[].type                                 |
+| 3 nouvelles lignes    | orders[].description                          |
+| En cours              | orders[].status                               |
+| 28/12/2024            | orders[].date                                 |
+| 12 commandes          | Compteur pagination                           |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Section Web Cloud (VoIP actif)
-3. LEFT PANEL - Groupe VoIP sélectionné
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des groupes
 4. RIGHT PANEL
-   - Header: "Commandes"
-   - NAV3: Dashboard | Services | Répertoire | Facturation | [Commandes]
-   - Toolbar: Refresh + Nouvelle commande
-   - Table des commandes
-   - Stats résumé
+   - Header: Groupe + breadcrumb /Commandes
+   - NAV3: Dashboard | Général | Services | [Commandes] | Portabilité | Facturation
+   - Toolbar: Refresh, Recherche, Filtres (Type, Statut), + Nouvelle commande
+   - Table commandes: Référence, Type, Description, Statut, Date, Actions
 
-# TABLE COMMANDES
-| Colonne | Description |
-|---------|-------------|
-| Date | Date de commande |
-| N° Commande | Référence unique |
-| Description | Produit/service commandé |
-| Montant | Prix HT |
-| Statut | En attente/En cours/Livrée/Annulée |
-| Actions | Voir, Payer (si en attente) |
+# COLONNES TABLE
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Référence | 160px | ID commande #ORD-XXXX |
+| Type | 170px | Badge (Ligne SIP/Numéro/Trunk/Fax) |
+| Description | 250px | Texte descriptif |
+| Statut | 150px | Badge (En cours/Livrée/Annulée) |
+| Date | 150px | Format DD/MM/YYYY |
+| Actions | 100px | Lien "Détails →" |
+
+# TYPES DE COMMANDE
+| Type | Couleur Badge | Description |
+|------|---------------|-------------|
+| Ligne SIP | Bleu #DBEAFE | Nouvelles lignes téléphoniques |
+| Numéro | Vert #DEF7EC | Numéros géographiques/spéciaux |
+| Trunk SIP | Violet #F3E8FF | Accès opérateur |
+| Fax | Orange #FEF3C7 | Lignes fax virtuelles |
 
 # STATUTS COMMANDE
-| Statut | Badge | Description |
-|--------|-------|-------------|
-| En attente | Jaune | Paiement en attente |
-| En cours | Bleu | Traitement en cours |
-| Livrée | Vert | Commande complétée |
-| Annulée | Rouge | Commande annulée |
+| Statut | Couleur Badge | Description |
+|--------|---------------|-------------|
+| En cours | Orange #FEF3C7 | Commande en traitement |
+| Livrée | Vert #DEF7EC | Commande finalisée |
+| Annulée | Rouge #FEE2E2 | Commande annulée |
+| En attente | Gris #F3F4F6 | En attente de paiement/validation |
 
 # INTERACTIONS
-- "+ Nouvelle commande" → Workflow commande
-- "Voir" → Détails commande
-- "Payer" → Redirection paiement
-- Ligne → Sélection pour détails
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic filtre Type → Filtrer par type de commande
+- Clic filtre Statut → Filtrer par statut
+- Clic "+ Nouvelle commande" → Assistant commande
+- Clic "Détails →" → Page détail commande
 
 # API ENDPOINTS
-GET /telephony/{ba}/orders
-GET /telephony/{ba}/orders/{id}
-POST /telephony/{ba}/orders/{id}/pay
+GET /telephony/{ba}/order → Liste des commandes
+GET /telephony/{ba}/order/{id} → Détail commande
+POST /telephony/{ba}/order → Nouvelle commande
+GET /telephony/{ba}/order/{id}/status → Statut commande
 
 ================================================================================

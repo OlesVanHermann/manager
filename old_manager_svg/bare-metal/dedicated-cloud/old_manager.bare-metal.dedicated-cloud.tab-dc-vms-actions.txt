@@ -1,0 +1,107 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Tab DC VMs Actions
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page Listing / Datagrid avec menu actions
+**Fonction:** Gérer les machines virtuelles et leurs licences/sauvegardes
+**Contexte:** Onglet Machines virtuelles d'un datacenter
+
+## 2. DIMENSIONS
+
+- Container principal: 1360x600px
+- Datagrid: largeur complète
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > dc-paris-01 > **Machines virtuelles**
+
+### Zone principale
+1. Message info (conditionnel)
+2. Titre
+3. Datagrid des VMs
+4. Pagination
+
+## 4. COMPOSANTS UI
+
+### Message info
+- Background: #EFF6FF
+- Icône: i (cercle bleu)
+- Texte: "Pour activer les licences, vous devez d'abord activer l'option SPLA dans les paramètres."
+
+### Titre
+- Text: "Machines virtuelles"
+- Font-size: 18px
+
+## 5. COLONNES DATAGRID
+
+| Colonne | Largeur | Type |
+|---------|---------|------|
+| Nom | 200px | Texte |
+| vCPU | 80px | Nombre |
+| Mémoire | 100px | Texte (Go) |
+| Stockage | 100px | Texte (Go/To) |
+| OS | 200px | Texte |
+| Licence | 130px | Badge |
+| Sauvegarde | 130px | Badge |
+| Actions | 100px | Menu ⋮ |
+
+### Badges
+| Type | État actif | État inactif |
+|------|------------|--------------|
+| Licence | bg-info "Win 2022 DC" | bg-muted "Désactivée" |
+| Sauvegarde | bg-success "Activée (7)" | bg-muted "Aucune" |
+
+### Données exemple
+| Nom | vCPU | Mémoire | Stockage | OS | Licence | Sauvegarde |
+|-----|------|---------|----------|-----|---------|------------|
+| vm-webapp-prod-01 | 8 | 32 Go | 500 Go | Windows Server 2022 | Win 2022 DC | Activée (7) |
+| vm-database-prod-02 | 16 | 64 Go | 2 To | RHEL 8 | Désactivée | Activée (3) |
+| vm-api-staging-03 | 4 | 16 Go | 200 Go | Ubuntu 22.04 | Désactivée | Aucune |
+| vm-monitoring-01 | 2 | 8 Go | 100 Go | CentOS 7 | Désactivée | Aucune |
+
+## 6. MENU ACTIONS
+
+| Action | Style |
+|--------|-------|
+| Activer la licence | Normal |
+| Supprimer la licence | Danger (rouge) |
+
+## 7. PAGINATION
+
+- Format: "Affichage de 1 à 4 sur 24 machines virtuelles"
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{dcId}/vm
+→ Liste les VMs du datacenter
+
+GET /dedicatedCloud/{serviceName}/datacenter/{dcId}/vm/{vmId}
+→ Détails d'une VM
+
+POST /dedicatedCloud/{serviceName}/datacenter/{dcId}/vm/{vmId}/license
+→ Active une licence
+
+DELETE /dedicatedCloud/{serviceName}/datacenter/{dcId}/vm/{vmId}/license
+→ Supprime une licence
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_vms_title | Machines virtuelles |
+| tab_vms_spla_info | Pour activer les licences, vous devez d'abord activer l'option SPLA dans les paramètres. |
+| column_name | Nom |
+| column_vcpu | vCPU |
+| column_memory | Mémoire |
+| column_storage | Stockage |
+| column_os | OS |
+| column_license | Licence |
+| column_backup | Sauvegarde |
+| action_activate_license | Activer la licence |
+| action_delete_license | Supprimer la licence |
+| status_disabled | Désactivée |
+| status_enabled | Activée |
+| status_none | Aucune |

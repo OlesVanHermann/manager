@@ -2,59 +2,61 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.line.options.svg
-Route:   /web-cloud/voip/{billingAccount}/lines/{serviceName}/options
-Version: v3 (2025-12-30)
+Route:   /web-cloud/voip/{billingAccount}/line/{serviceName}/options
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNÉES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| Toggles ON/OFF           | GET /telephony/{ba}/line/{sn}/options   |
-| 0033972123456            | options → displayedNumber               |
-| Français                 | options → language                      |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| 0033912345678         | Route param {serviceName}                     |
+| Toggle ON/OFF         | GET /telephony/{ba}/line/{sn}/options → [field] |
+
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. SOUS-NAV - Lignes actif
-4. LEFT PANEL - Liste lignes
-5. RIGHT PANEL
-   - Header: Numéro + Description
-   - NAV3: Options actif
-   - Bloc Options d'appel (toggles)
-   - Bloc Numéro affiché
-   - Bloc Langue annonces
-   - Bloc Restrictions d'appels
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des lignes
+4. RIGHT PANEL
+   - Header: Numéro + breadcrumb /Options
+   - NAV3: Général | Téléphone | Appels | Transferts | Messagerie | Consommation | [Options]
+   - Section "Fonctionnalités de la ligne"
+     * Présentation du numéro (toggle)
+     * Signal d'appel (toggle)
+     * Interception d'appels (toggle)
+     * Ne pas déranger (toggle)
+   - Section "Sécurité"
+     * Restrictions d'appels (lien config)
+     * Click2Call (toggle)
+   - Bannière warning options payantes
 
-# NAV3 TAB ACTIF
-Tab 7: Options (x=464, w=60)
+# OPTIONS DISPONIBLES
+| Option               | Type   | API Field            | Description                    |
+|---------------------|--------|----------------------|--------------------------------|
+| Présentation numéro | toggle | identificationRestriction | Masquer/afficher CLID      |
+| Signal d'appel      | toggle | callWaiting          | Notification appel en cours    |
+| Interception        | toggle | intercom             | Prendre appel autre ligne      |
+| Ne pas déranger     | toggle | doNotDisturb         | Rejeter tous appels            |
+| Click2Call          | toggle | click2CallUser       | Autoriser appels depuis web    |
 
-# OPTIONS D'APPEL (toggles)
-| Option                        | API Field              |
-|-------------------------------|------------------------|
-| Double appel                  | callWaiting            |
-| Présentation du numéro        | displayNumber          |
-| Interception d'appel groupe   | interceptionAllowed    |
-| Restrictions IP SIP           | ipRestriction          |
-| Protection anti-hacking       | antiHack               |
-| Enregistrement des appels     | recordingAllowed       |
-
-# RESTRICTIONS D'APPELS
-| Restriction            | API Field                |
-|------------------------|--------------------------|
-| Appels internationaux  | outgoingInternational    |
-| Appels vers mobiles    | outgoingMobile           |
-| Numéros spéciaux       | outgoingSpecial          |
-| Numéros surtaxés       | outgoingPremium          |
-
-# ACTIONS
-| Action    | Type   | API                                   |
-|-----------|--------|---------------------------------------|
-| Toggle    | Switch | PUT /telephony/{ba}/line/{sn}/options |
-| Modifier  | Bouton | PUT /telephony/{ba}/line/{sn}/options |
+# INTERACTIONS
+- Toggle ON/OFF → Active/désactive l'option (PUT immédiat)
+- Clic "Configurer les restrictions →" → Navigation page restrictions
+- Clic "Voir détails" → Modal détail restrictions
 
 # API ENDPOINTS
-GET /telephony/{ba}/line/{sn}/options - Récupérer options
-PUT /telephony/{ba}/line/{sn}/options - Modifier options
+GET /telephony/{ba}/line/{sn}/options              → Toutes les options
+PUT /telephony/{ba}/line/{sn}/options              → Modifier options
+GET /telephony/{ba}/line/{sn}/options/restrictions → Restrictions appels
+PUT /telephony/{ba}/line/{sn}/options/restrictions → Modifier restrictions
+
+# RESTRICTIONS DISPONIBLES (Page dédiée)
+| Type                  | Description                        |
+|-----------------------|------------------------------------|
+| outgoingInternational | Appels internationaux              |
+| outgoingPremiumRate   | Numéros surtaxés                   |
+| outgoingMobile        | Appels vers mobiles                |
+| incomingAnonymous     | Appels entrants anonymes           |
+
 ================================================================================

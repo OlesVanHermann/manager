@@ -1,0 +1,134 @@
+# Cahier des Charges : web-cloud/access - Modal Modem Declare
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire avec warning
+**Fonction:** Déclarer un modem personnel à la place du modem OVH
+**Contexte:** Configuration d'équipement tiers pour la connexion
+
+## 2. DIMENSIONS
+
+- Modal: 500x420px
+- Background page: overlay rgba(0,0,0,0.5)
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F9FAFB
+- Titre: "Déclarer un modem personnel"
+- Bouton fermer: ×
+- Height: 50px
+
+## 4. DESCRIPTION
+
+- Texte: "Utilisez votre propre équipement à la place du modem fourni par OVH."
+- Font-size: 12px, text-muted
+
+## 5. WARNING BOX
+
+- Background: #FEF3C7
+- Border-radius: 4px
+- Dimensions: 450x50px
+
+### Contenu
+- Titre: "⚠️ Attention"
+- Texte: "Le support technique OVH sera limité en cas d'utilisation d'un modem tiers."
+
+## 6. FORMULAIRE
+
+### Champ Marque du modem
+- Label: "Marque du modem *"
+- Type: Select dropdown
+- Placeholder: "Sélectionner..."
+- Largeur: 200px
+
+### Champ Modèle
+- Label: "Modèle *"
+- Type: Select dropdown
+- Placeholder: "Sélectionner..."
+- Largeur: 200px
+
+### Champ Adresse MAC
+- Label: "Adresse MAC *"
+- Type: Input text
+- Placeholder: "XX:XX:XX:XX:XX:XX"
+- Largeur: 300px
+- Helper: "Format: AA:BB:CC:DD:EE:FF"
+
+### Champ Identifiant PPPoE
+- Label: "Identifiant PPPoE"
+- Type: Input readonly
+- Background: #F3F4F6
+- Valeur: "fti/abc123xyz"
+- Bouton copie: C (icône)
+- Largeur: 415px
+
+### Bouton voir mot de passe
+- Style: btn-outline (200x32px)
+- Icône: 🔑
+- Texte: "Voir le mot de passe"
+
+## 7. COMPOSANTS UI
+
+### Select dropdown
+- Height: 36px
+- Border: #E5E7EB
+- Border-radius: 4px
+- Chevron: ▼
+
+### Input readonly
+- Background: #F3F4F6
+- Border: #E5E7EB
+
+## 8. FOOTER MODAL
+
+### Bouton Annuler
+- Style: btn-outline (100x36px)
+
+### Bouton Déclarer
+- Style: btn-primary (130x36px)
+- Disabled si: formulaire invalide
+
+## 9. VALIDATION
+
+- Marque: obligatoire
+- Modèle: obligatoire
+- MAC: format XX:XX:XX:XX:XX:XX valide
+
+## 10. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/modem/availableModemBrands
+→ Liste des marques supportées
+
+GET /xdsl/{serviceName}/modem/availableModemModels?brand={brand}
+→ Liste des modèles par marque
+
+GET /xdsl/{serviceName}/pppLogin
+→ Identifiants PPPoE
+
+POST /xdsl/{serviceName}/modem/declare
+Body: {
+  brand: "TP-Link",
+  model: "Archer VR600",
+  macAddress: "AA:BB:CC:DD:EE:FF"
+}
+→ Déclare le modem personnel
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Déclarer un modem personnel |
+| modal_description | Utilisez votre propre équipement à la place du modem fourni par OVH. |
+| warning_title | Attention |
+| warning_message | Le support technique OVH sera limité en cas d'utilisation d'un modem tiers. |
+| field_brand | Marque du modem |
+| field_model | Modèle |
+| field_mac | Adresse MAC |
+| mac_format | Format: AA:BB:CC:DD:EE:FF |
+| field_pppoe | Identifiant PPPoE |
+| btn_password | Voir le mot de passe |
+| btn_cancel | Annuler |
+| btn_declare | Déclarer |

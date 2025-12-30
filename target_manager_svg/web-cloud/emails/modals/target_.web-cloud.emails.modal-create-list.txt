@@ -1,0 +1,90 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal-create-list.svg
+Route:   /web-cloud/emails/{domain}/lists (modal)
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| @example.com                  | Contexte: domaine courant              |
+| Exchange disponible           | GET /email/offers/{d} → available      |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 600x620px
+- Type: Formulaire avec options
+- Sélection type liste (Exchange/Mailing)
+- Options modération et visibilité
+
+# CHAMPS
+
+| Champ           | Type      | Requis | Validation                  |
+|-----------------|-----------|--------|-----------------------------|
+| Type liste      | radio     | Oui    | Exchange ou Mailing list    |
+| Partie locale   | text      | Oui    | Alphanum, 2-64 chars        |
+| Nom affichage   | text      | Non    | Max 128 chars               |
+| Modérateurs     | email[]   | Cond.  | Si modération active        |
+
+# TYPES DE LISTES
+
+| Type             | Badge     | Description                    |
+|------------------|-----------|--------------------------------|
+| Groupe Exchange  | 🟠 Orange | Distribution Outlook, GAL      |
+| Mailing list     | 🔵 Bleu   | Liste simple SMTP              |
+
+# OPTIONS
+
+| Option                          | Par défaut | Description                |
+|---------------------------------|------------|----------------------------|
+| Modération                      | Non        | Valide messages avant envoi|
+| Expéditeurs externes            | Non        | Accepte hors domaine       |
+| Masquer dans GAL                | Non        | Invisible carnet global    |
+| Membres uniquement              | Non        | Restreint aux membres      |
+
+# INTERACTIONS
+
+- Sélection type → Active les options spécifiques
+- Toggle modération → Affiche champ modérateurs
+- Clic "Créer" → Crée la liste
+- Clic "Annuler" → Ferme modal
+
+# VALIDATION
+
+- Adresse non vide et format valide
+- Au moins un modérateur si modération active
+- Type de liste sélectionné
+
+# API ENDPOINTS
+
+POST /email/domains/{domain}/lists
+
+## Payload Exchange
+```json
+{
+  "type": "exchange",
+  "address": "equipe@example.com",
+  "displayName": "Équipe Marketing",
+  "moderation": true,
+  "moderators": ["admin@example.com"],
+  "allowExternal": false,
+  "hideFromGAL": true,
+  "membersOnly": false
+}
+```
+
+## Payload Mailing
+```json
+{
+  "type": "mailing",
+  "address": "newsletter@example.com",
+  "displayName": "Newsletter",
+  "moderation": false
+}
+```
+
+================================================================================

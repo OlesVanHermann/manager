@@ -1,0 +1,103 @@
+# Cahier des Charges : web-cloud/hosting - Modal Add Domain
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter un domaine/multisite à l'hébergement
+**Contexte:** Action depuis l'onglet Multisite
+
+## 2. DIMENSIONS
+
+- Modal: 600x550px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. HEADER MODAL
+
+- Background: #F9FAFB
+- Hauteur: 56px
+- Titre: "Ajouter un domaine"
+- Bouton fermer: × (position droite)
+
+## 4. FORMULAIRE
+
+### Champ Domaine
+- Label: "Domaine *"
+- Input: 552x36px, background #F3F4F6
+- Placeholder: "www.nouveausite.fr"
+- Obligatoire
+
+### Champ Dossier racine
+- Label: "Dossier racine *"
+- Input: 552x36px, background #F3F4F6
+- Valeur: "/www/"
+- Obligatoire
+
+### Certificat SSL (radio group)
+- Label: "Certificat SSL"
+- Options:
+  - ● Générer un certificat Let's Encrypt (sélectionné par défaut)
+  - ○ Utiliser le certificat existant
+  - ○ Pas de SSL
+
+### Toggle CDN
+- Label: "CDN"
+- Toggle: On (vert #DEF7EC)
+- Description: "Activer le CDN pour ce domaine"
+
+### Toggle Firewall
+- Label: "Firewall applicatif"
+- Toggle: On (vert #DEF7EC)
+- Description: "Activer le firewall pour ce domaine"
+
+## 5. FOOTER MODAL
+
+- Bouton gauche: "Annuler" (btn-outline, 100x36px)
+- Bouton droit: "Ajouter" (btn-primary, 100x36px)
+
+## 6. APIS & ENDPOINTS
+
+```
+# Ajouter un domaine attaché
+POST /hosting/web/{serviceName}/attachedDomain
+Body: {
+  domain: "www.nouveausite.fr",
+  path: "/www/",
+  ssl: true,
+  cdn: "active",
+  firewall: "active"
+}
+→ Tâche de création
+
+# Vérifier disponibilité du domaine
+GET /domain/zone/{zoneName}/record?fieldType=A
+→ Vérifier si le domaine pointe vers l'hébergement
+
+# Générer certificat SSL
+POST /hosting/web/{serviceName}/ssl
+Body: { domain: "www.nouveausite.fr" }
+```
+
+## 7. VALIDATION
+
+| Champ | Règle |
+|-------|-------|
+| Domaine | Requis, format domaine valide |
+| Dossier racine | Requis, commence par / |
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un domaine |
+| field_domain | Domaine |
+| field_path | Dossier racine |
+| field_ssl | Certificat SSL |
+| ssl_letsencrypt | Générer un certificat Let's Encrypt |
+| ssl_existing | Utiliser le certificat existant |
+| ssl_none | Pas de SSL |
+| field_cdn | CDN |
+| cdn_desc | Activer le CDN pour ce domaine |
+| field_firewall | Firewall applicatif |
+| firewall_desc | Activer le firewall pour ce domaine |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

@@ -2,58 +2,82 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.fax.logo.svg
-Route:   /web-cloud/voip/{ba}/fax/{sn}/logo
-NAV:     Web Cloud > VoIP > [groupe] > Fax > [fax] > Logo
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/fax/{serviceName}/logo
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| Logo preview             | GET /telephony/{ba}/fax/{sn}/logo -> url        |
-| logo-entreprise.png      | GET /telephony/{ba}/fax/{sn}/logo -> filename   |
-| 12 Ko                    | GET /telephony/{ba}/fax/{sn}/logo -> size       |
-| 300x100 px               | GET /telephony/{ba}/fax/{sn}/logo -> dimensions |
-| Mon Entreprise SARL      | GET /telephony/{ba}/fax/{sn}/header -> company  |
-| +33 972 10 77 77         | GET /telephony/{ba}/fax/{sn}/header -> faxNumber|
-| www.monentreprise.fr     | GET /telephony/{ba}/fax/{sn}/header -> info     |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| +33 9 12 34 56 78     | Route param {serviceName}                     |
+| logo-entreprise.png   | GET fax/{sn}/logo → filename                  |
+| 400 x 80 pixels       | logo.dimensions                               |
+| 24 KB                 | logo.size                                     |
+| 15/11/2024            | logo.updatedAt                                |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes | Numeros | Fax (actif) | Abreges
-2. Left panel: Liste fax du groupe
-3. NAV3: General | Parametres | Notifications | Logo (actif) | Fax envoyes | Fax recus | Consommation | Campagnes
-4. Info banner: Explication logo
-5. Logo actuel (preview + actions)
-6. Nouveau logo (upload zone)
-7. Informations d'en-tete
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des lignes fax
+4. RIGHT PANEL
+   - Header: Numéro fax + badge + breadcrumb /Logo
+   - NAV3: Général | Paramètres | [Logo] | Notifications | Campagnes
+   - Bannière info: Explication logo fax
+   - Section logo actuel (prévisualisation + infos)
+   - Section téléversement (drag & drop)
+   - Section spécifications techniques
 
-LOGO ACTUEL
-| Element      | Description              |
-|--------------|--------------------------|
-| Preview      | Apercu du logo           |
-| Fichier      | Nom + taille + dimensions|
-| Date         | Date telechargement      |
-| Actions      | Telecharger, Supprimer   |
+# SECTIONS DE LA PAGE
 
-UPLOAD LOGO
-| Contrainte   | Valeur                   |
-|--------------|--------------------------|
-| Formats      | PNG, JPEG                |
-| Taille max   | 500 Ko                   |
-| Dimensions   | 300x100 px recommande    |
+## 1. Logo actuel
+- Zone de prévisualisation du logo
+- Informations: nom fichier, dimensions, taille, date
+- Actions: Changer, Supprimer, Télécharger
 
-INFORMATIONS EN-TETE
-| Champ        | Description              |
-|--------------|--------------------------|
-| Entreprise   | Nom affiche en haut      |
-| Numero fax   | Numero de rappel         |
-| Info ligne   | URL, email, etc.         |
+## 2. Téléverser un nouveau logo
+- Zone drag & drop
+- Bouton parcourir fichiers
+- Support multi-format
 
-API ENDPOINTS
-GET    /telephony/{ba}/fax/{sn}/logo              -> Info logo actuel
-POST   /telephony/{ba}/fax/{sn}/logo              -> Upload nouveau logo
-DELETE /telephony/{ba}/fax/{sn}/logo              -> Supprimer logo
-GET    /telephony/{ba}/fax/{sn}/header            -> Info en-tete
-PUT    /telephony/{ba}/fax/{sn}/header            -> Modifier en-tete
+## 3. Spécifications techniques
+- Formats acceptés: PNG, JPEG, GIF
+- Dimensions max: 500 x 100 pixels
+- Taille max: 100 KB
+- Recommandation: fond blanc/transparent
+
+# UTILISATION DU LOGO
+Le logo configuré apparaît :
+- En en-tête de chaque page de fax envoyé
+- Sur la page de garde (si configurée)
+- Dans le récapitulatif de transmission
+
+# BONNES PRATIQUES
+1. Utiliser un logo vectoriel converti en PNG
+2. Privilégier un fond blanc ou transparent
+3. Garder une résolution de 300 DPI pour impression
+4. Éviter les logos trop détaillés (perte de qualité fax)
+5. Tester le rendu en envoyant un fax test
+
+# INTERACTIONS
+- Clic NAV3 tab → Navigation onglet
+- Clic "Changer le logo" → Ouvrir sélecteur fichier
+- Drag & drop zone → Upload fichier
+- Clic "Supprimer" → Supprimer logo (confirmation)
+- Clic "Télécharger" → Download logo actuel
+
+# API ENDPOINTS
+GET /telephony/{ba}/fax/{sn}/logo → Récupérer logo actuel
+PUT /telephony/{ba}/fax/{sn}/logo → Mettre à jour logo
+DELETE /telephony/{ba}/fax/{sn}/logo → Supprimer logo
+POST /telephony/{ba}/fax/{sn}/logo/upload → Upload nouveau logo
+
+# FORMATS SUPPORTÉS
+| Format | Extension | Notes |
+|--------|-----------|-------|
+| PNG | .png | Recommandé, supporte transparence |
+| JPEG | .jpg, .jpeg | Bon pour photos |
+| GIF | .gif | Support basique |
+
 ================================================================================

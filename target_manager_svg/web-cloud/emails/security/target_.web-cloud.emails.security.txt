@@ -6,52 +6,63 @@ Route:   /web-cloud/emails/{domain}/security
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG                     | Source API                           |
-|---------------------------------|--------------------------------------|
-| example.com                     | GET /email/domains -> domain         |
-| mx1.mail.ovh.net                | GET /email/domains/{d}/dns/mx        |
-| v=spf1 include:mx.ovh.com ~all  | GET /email/domains/{d}/dns/spf       |
-| OK / A configurer               | GET /email/domains/{d}/dns/diagnostic|
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| mx1.mail.ovh.net (10)         | GET /email/domains/{d}/dns/mx → value  |
+| v=spf1 include:mx.ovh.com     | GET /email/domains/{d}/dns/spf → value |
+| ovhex123456-selector          | GET /email/domains/{d}/dns/dkim → sel  |
+| Valide/Non configuré          | → status                               |
 
 ================================================================================
 
-STRUCTURE PAGE
+# STRUCTURE PAGE
+
 1. NAV1 - Header OVH (Web Cloud actif)
 2. NAV2 - Web Cloud (Emails actif)
-3. LEFT PANEL - Liste domaines
-4. RIGHT PANEL
-   - Header: Domaine
-   - NAV3: 8 tabs (Securite actif)
-   - NAV4: [DNS Config] | Antispam | Signature
-   - Banniere auto-configuration
-   - Boutons Auto-config / Diagnostiquer
-   - Blocs: MX, SPF, DKIM, DMARC
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Sécurité ACTIF)
+   - NAV4: DNS Config (actif) | Antispam | Signature
+   - Bouton Diagnostiquer
+   - Cards DNS: MX, SPF, DKIM, DMARC, SRV
+   - Card Résumé sécurité
 
-BLOCS DNS
-| Bloc  | Statut possible | Actions                    |
-|-------|-----------------|----------------------------|
-| MX    | OK / Erreur     | Modifier                   |
-| SPF   | OK / Erreur     | Modifier                   |
-| DKIM  | OK / A config   | Configurer, Regenerer      |
-| DMARC | OK / Absent     | Modifier                   |
+# NAV4 - SOUS-TABS SÉCURITÉ
 
-DISPONIBILITE
-| Offre     | DNS Config | Antispam | Signature |
-|-----------|------------|----------|-----------|
-| MX Plan   | Non        | Non      | Non       |
-| Email Pro | Oui        | Oui      | Oui       |
-| Exchange  | Oui        | Oui      | Oui       |
-| Zimbra    | Oui        | Oui      | Non       |
+| # | Tab        | Route               | Contenu                    |
+|---|------------|---------------------|----------------------------|
+| 1 | DNS Config | /security           | MX, SPF, DKIM, DMARC, SRV  |
+| 2 | Antispam   | /security-antispam  | Règles, quarantaine        |
+| 3 | Signature  | /security-signature | Disclaimer entreprise      |
 
-API ENDPOINTS
-GET  /email/domains/{domain}/dns/diagnostic  - Diagnostic complet
-GET  /email/domains/{domain}/dns/mx          - Etat MX
-POST /email/domains/{domain}/dns/mx          - Auto-configurer MX
-GET  /email/domains/{domain}/dns/spf         - Etat SPF
-POST /email/domains/{domain}/dns/spf         - Auto-configurer SPF
-GET  /email/domains/{domain}/dns/dkim        - Etat DKIM
-POST /email/domains/{domain}/dns/dkim        - Configurer DKIM
-POST /email/domains/{domain}/dns/dkim/regenerate - Regenerer DKIM
+# CARDS DNS
+
+| Card  | Statut possible       | Actions                    |
+|-------|-----------------------|----------------------------|
+| MX    | Valide/Invalide       | Auto-configurer            |
+| SPF   | Valide/Invalide       | Auto-configurer            |
+| DKIM  | Actif/Inactif         | Régénérer                  |
+| DMARC | Valide/Non configuré  | Configurer                 |
+| SRV   | Valide/Invalide       | Auto-configurer            |
+
+# INTERACTIONS
+
+- Clic "Diagnostiquer" → Lance diagnostic complet
+- Clic "Auto-configurer X" → Modal confirmation + action
+- Clic "Régénérer DKIM" → Modal confirmation + action
+
+# API ENDPOINTS
+
+GET  /email/domains/{domain}/dns/diagnostic → Diagnostic complet
+GET  /email/domains/{domain}/dns/mx        → État MX
+POST /email/domains/{domain}/dns/mx        → Auto-configurer MX
+GET  /email/domains/{domain}/dns/spf       → État SPF
+POST /email/domains/{domain}/dns/spf       → Auto-configurer SPF
+GET  /email/domains/{domain}/dns/dkim      → État DKIM
+POST /email/domains/{domain}/dns/dkim/regenerate → Régénérer DKIM
+GET  /email/domains/{domain}/dns/dmarc     → État DMARC
+POST /email/domains/{domain}/dns/dmarc     → Configurer DMARC
 
 ================================================================================

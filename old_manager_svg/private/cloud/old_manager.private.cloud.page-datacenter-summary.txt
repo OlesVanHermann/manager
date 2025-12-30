@@ -1,0 +1,154 @@
+# Cahier des Charges : private/cloud - Page Datacenter Summary
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page tableau de bord datacenter
+**Fonction:** Vue d'ensemble des ressources d'un datacenter VMware
+**Contexte:** Dashboard principal d'un datacenter Private Cloud
+
+## 2. DIMENSIONS
+
+- Page: 1100x750px
+- Cards ressources: 250x120px, 230x120px
+- Tableau hosts: 1040x220px
+
+## 3. LAYOUT & STRUCTURE
+
+### Header datacenter
+- Titre: "DC1 - Paris"
+- Badge statut: "Actif" (vert)
+- Sous-titre: "pcc-xxx-dc1 • vSphere 7.0 U3"
+
+### Quick actions
+- "Commander" (btn-primary avec dropdown)
+- "vCenter" (btn-secondary avec icône ↗)
+
+## 4. CARDS RESSOURCES
+
+### Layout
+4 cards horizontales
+
+### Card Hosts
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Hosts |
+| Valeur | 8 actifs |
+| Progress bar | CPU: 80%, RAM: 65% |
+| Color bar | #0050D7 |
+
+### Card Datastores
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Datastores |
+| Valeur | 12 • 48 To |
+| Progress bar | Utilisé: 70% (33.6 To) |
+
+### Card Machines virtuelles
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Machines virtuelles |
+| Valeur | 156 |
+| Badges | 142 on (vert), 14 off (rouge) |
+
+### Card Réseaux
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Réseaux |
+| Valeur | 24 |
+| Détail | vLAN: 18 • VXLAN: 6 |
+
+## 5. TABLEAU HOSTS ESXi
+
+### Titre section
+"Hosts ESXi"
+
+### Colonnes
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du host (link) |
+| Modèle | Gamme (Essentials, SDDC, etc.) |
+| CPU | Progress bar avec % |
+| RAM | Progress bar avec % |
+| VMs | Nombre de VMs |
+| Statut | Badge (Actif, Maintenance) |
+| Facturation | Horaire/Mensuel |
+
+### Barres de progression
+- Normal (<80%): #0050D7 bleu
+- Warning (≥80%): #F59E0B orange
+
+### Données exemple
+| Host | Modèle | CPU | RAM | VMs |
+|------|--------|-----|-----|-----|
+| esx01.dc1 | SDDC Essentials | 80% | 65% | 42 |
+| esx02.dc1 | SDDC Essentials | 70% | 60% | 38 |
+| esx03.dc1 | SDDC Performance | 90% | 85% | 52 |
+
+### Footer tableau
+"+5 hosts..." (lien vers vue complète)
+
+## 6. TÂCHES RÉCENTES
+
+### Titre section
+"Tâches récentes"
+
+### Liste tâches
+| Statut | Tâche | Timestamp |
+|--------|-------|-----------|
+| Succès | Ajout datastore ds-prod-004 | Il y a 2 heures |
+| Succès | Migration VM web-server-01 vers esx02 | Il y a 5 heures |
+| En cours | Backup VMs production | Démarré il y a 30 min |
+| Échec | Snapshot VM db-master-01 (espace insuffisant) | Hier 14:32 |
+
+### Badges statut
+- Succès: #DCFCE7, text #16A34A
+- En cours: #EFF6FF, text #0050D7
+- Échec: #FEE2E2, text #DC2626
+
+### Footer
+"Voir toutes les tâches →" (lien)
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}
+→ Détails du datacenter
+
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/host
+→ Liste des hosts
+
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/filer
+→ Liste des datastores
+
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/vm
+→ Liste des VMs
+
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/task
+→ Tâches récentes
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| card_hosts | Hosts |
+| card_datastores | Datastores |
+| card_vms | Machines virtuelles |
+| card_networks | Réseaux |
+| hosts_active | actifs |
+| vm_on | on |
+| vm_off | off |
+| section_hosts | Hosts ESXi |
+| section_tasks | Tâches récentes |
+| col_name | Nom |
+| col_model | Modèle |
+| col_cpu | CPU |
+| col_ram | RAM |
+| col_vms | VMs |
+| col_status | Statut |
+| col_billing | Facturation |
+| status_active | Actif |
+| status_success | Succès |
+| status_in_progress | En cours |
+| status_failed | Échec |
+| link_all_tasks | Voir toutes les tâches |

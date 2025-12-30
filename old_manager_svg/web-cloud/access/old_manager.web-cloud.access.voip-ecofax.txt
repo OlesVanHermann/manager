@@ -1,0 +1,205 @@
+# Cahier des Charges : web-cloud/access - VoIP EcoFax
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page gestion EcoFax
+**Fonction:** Gérer le fax numérique (réception, envoi, historique)
+**Contexte:** Onglet VoIP > EcoFax de la connexion
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Zone contenu: 1096x765px
+- Card configuration: 1030x180px
+- Card envoi: 1030x150px
+- Card historique: 1030x280px
+
+## 3. NAVIGATION
+
+### NAV3 Tabs
+| Onglet | État |
+|--------|------|
+| Général | Inactif |
+| Ligne | Inactif |
+| Modem | Inactif |
+| Services | Inactif |
+| VoIP | Actif |
+
+### NAV4 Sous-tabs VoIP
+| Sous-onglet | État |
+|-------------|------|
+| Lignes | Inactif |
+| EcoFax | Actif |
+
+## 4. CARD CONFIGURATION ECOFAX
+
+### Header
+- Titre: "ECOFAX - 09 72 XX XX XX"
+- Badge: "Actif" (success)
+
+### Champs
+
+| Label | Valeur | Type | Action |
+|-------|--------|------|--------|
+| Email de réception | fax@entreprise.fr | Input readonly 350px | Lien "Modifier" |
+| Format réception | PDF | Dropdown 150px | - |
+| Qualité | Haute (200 dpi) | Dropdown 150px | - |
+
+### Options dropdown Format
+- PDF
+- TIFF
+- PNG
+
+### Options dropdown Qualité
+- Standard (100 dpi)
+- Haute (200 dpi)
+- Très haute (300 dpi)
+
+### Bouton
+- "Enregistrer" (btn-primary, 160x36px)
+
+## 5. CARD ENVOYER UN FAX
+
+### Titre
+"ENVOYER UN FAX"
+
+### Champs
+
+| Label | Type | Dimensions | Placeholder |
+|-------|------|------------|-------------|
+| Numéro destinataire | Input text | 250x28px | +33 1 XX XX XX XX |
+| Fichier (PDF/TIFF) | Zone upload | 250x28px | Glisser ou cliquer |
+
+### Zone upload
+- Border: dashed #E5E7EB
+- Background: #F3F4F6
+- Texte: "Glisser ou cliquer"
+
+### Bouton
+- "Envoyer" (btn-primary, 160x36px)
+
+## 6. CARD HISTORIQUE DES FAX
+
+### Header
+"HISTORIQUE DES FAX"
+
+### Colonnes datagrid
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| DATE | 120px | 30/12/2024 14:32 |
+| TYPE | 80px | Badge (Reçu/Envoyé) |
+| CORRESPONDANT | 160px | +33 1 44 55 66 77 |
+| PAGES | 60px | 3 |
+| STATUT | 100px | Badge statut |
+| ACTIONS | 120px | Liens action |
+
+### Badges Type
+- Reçu: Background #DBEAFE, text #1E40AF
+- Envoyé: Background #FEF3C7, text #D97706
+
+### Badges Statut
+- Succès: Background #DEF7EC, text #03543F
+- Échec: Background #FEE2E2, text #DC2626
+
+### Actions par statut
+- Succès: "Télécharger" (text-primary)
+- Échec: "Renvoyer" (text-primary)
+
+### Pagination
+- Texte: "Affichage 1-3 sur 12"
+- Bouton: › (btn-outline)
+
+## 7. COMPOSANTS UI
+
+### Badge type fax
+- Border-radius: 10px
+- Padding: 4px 16px
+- Font-size: 10px
+
+### Zone upload fichier
+- Border: dashed
+- Background: #F3F4F6
+- Border-radius: 4px
+
+### Input téléphone
+- Format: international (+33)
+- Validation: numéro fax valide
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /freefax/{serviceName}
+→ Configuration EcoFax actuelle
+
+PUT /freefax/{serviceName}
+Body: {
+  email: "fax@entreprise.fr",
+  format: "pdf",
+  quality: "high"
+}
+→ Met à jour la configuration
+
+GET /freefax/{serviceName}/mainService
+→ Numéro de fax associé
+
+POST /freefax/{serviceName}/fax
+Body: {
+  to: "+33144556677",
+  file: <base64>
+}
+→ Envoie un fax
+
+GET /freefax/{serviceName}/voicemail
+→ Historique des fax (reçus)
+
+GET /freefax/{serviceName}/fax/sent
+→ Historique des fax envoyés
+
+GET /freefax/{serviceName}/fax/{faxId}
+→ Détails d'un fax
+
+GET /freefax/{serviceName}/fax/{faxId}/download
+→ Télécharge le fax (PDF)
+
+POST /freefax/{serviceName}/fax/{faxId}/resend
+→ Renvoie un fax échoué
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| nav_ecofax | EcoFax |
+| section_config | EcoFax - {number} |
+| badge_active | Actif |
+| field_email | Email de réception |
+| field_format | Format réception |
+| field_quality | Qualité |
+| format_pdf | PDF |
+| format_tiff | TIFF |
+| format_png | PNG |
+| quality_standard | Standard (100 dpi) |
+| quality_high | Haute (200 dpi) |
+| quality_very_high | Très haute (300 dpi) |
+| btn_modify | Modifier |
+| btn_save | Enregistrer |
+| section_send | Envoyer un fax |
+| field_recipient | Numéro destinataire |
+| field_file | Fichier (PDF/TIFF) |
+| upload_placeholder | Glisser ou cliquer |
+| btn_send | Envoyer |
+| section_history | Historique des fax |
+| col_date | Date |
+| col_type | Type |
+| col_correspondent | Correspondant |
+| col_pages | Pages |
+| col_status | Statut |
+| col_actions | Actions |
+| type_received | Reçu |
+| type_sent | Envoyé |
+| status_success | Succès |
+| status_error | Échec |
+| action_download | Télécharger |
+| action_resend | Renvoyer |
+| pagination | Affichage {start}-{end} sur {total} |

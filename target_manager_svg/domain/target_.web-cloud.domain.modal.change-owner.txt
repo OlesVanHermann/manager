@@ -1,0 +1,79 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.change-owner.svg
+Route:   /web-cloud/domain/{domainName}/change-owner
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| exemple.com                     | /domain → domainName                    |
+| ab12345-ovh                     | /domain/{domain}/owner → nichandle      |
+| Jean Dupont - Example SAS       | Contact owner name + organization       |
+| jean@example.com                | Contact owner email                     |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. HEADER - Titre "Changer de propriétaire - {domaine}" (fond gris)
+2. CONTENT
+   - Bannière warning (procédure officielle)
+   - Propriétaire actuel
+   - Type nouveau propriétaire (cards)
+   - NIC Handle ou création contact
+   - Upload justificatifs
+3. FOOTER - Boutons Annuler / Initier la procédure
+
+# MODAL TYPE
+- Type: Procédure officielle changement propriétaire
+- Dimensions: 700x600px
+- Header: Fond gris (#F9FAFB)
+
+# TYPES DE PROPRIÉTAIRE
+| Type | Description |
+|------|-------------|
+| Particulier | Personne physique |
+| Entreprise | Personne morale (SARL, SAS, SA...) |
+| Association | Loi 1901 |
+
+# PROCÉDURE
+1. L'utilisateur sélectionne le type de nouveau propriétaire
+2. Saisie du NIC Handle existant OU création nouveau contact
+3. Upload optionnel de justificatifs (pièce d'identité, Kbis...)
+4. Initiation de la procédure
+5. Email de validation envoyé aux deux parties
+6. Le nouveau propriétaire accepte le transfert
+7. Changement effectif après validation
+
+# JUSTIFICATIFS REQUIS
+Selon l'extension et le type de changement :
+- .fr : Pièce d'identité, Kbis si entreprise
+- .eu : Justificatif de domiciliation UE
+- .com/.net/.org : Généralement aucun
+
+# DÉLAIS
+- Validation email : 7 jours max
+- Changement effectif : Immédiat après validation
+- Annulation si non validé : Automatique après 30 jours
+
+# API ENDPOINTS
+GET /domain/{domain}/owner - Obtenir propriétaire actuel
+  Response: {
+    nichandle: "ab12345-ovh",
+    name: "Jean Dupont",
+    organisation: "Example SAS",
+    email: "jean@example.com"
+  }
+
+POST /domain/{domain}/changeOwner - Initier changement
+  Body: {
+    newOwner: "xy98765-ovh",
+    ownerType: "individual" | "company" | "association"
+  }
+
+POST /domain/{domain}/changeOwner/document - Upload justificatif
+  Body: FormData (file)
+
+================================================================================

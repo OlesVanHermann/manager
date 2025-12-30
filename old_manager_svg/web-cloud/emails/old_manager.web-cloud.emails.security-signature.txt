@@ -1,0 +1,157 @@
+# Cahier des Charges : web-cloud/emails - Security Signature
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page formulaire éditeur
+**Fonction:** Configurer la signature email entreprise (disclaimer)
+**Contexte:** Sous-onglet Signature de l'onglet Sécurité
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections | Répondeurs | Listes | Sécurité (actif) | Avancé | Licences | Tâches
+
+### NAV4
+- Sous-onglets: DNS Config | Antispam | Signature (actif)
+
+## 3. BANNIÈRE WARNING
+
+- Background: #FEF3C7
+- Dimensions: 1036x40px
+- Texte: "La signature email est disponible uniquement pour les comptes Exchange."
+
+## 4. CARTE SIGNATURE (1036x500px)
+
+### Header
+- Titre: "Signature entreprise (Disclaimer)"
+- Sous-titre: "Ajoutez automatiquement une signature à tous les emails sortants"
+
+### Toggle activation
+- Label: "Signature activée"
+- Toggle: On (vert #059669, cercle à droite)
+
+### Position
+- Label: "Position dans l'email"
+- Dropdown: 200x28px
+- Valeur: "Après le message"
+- Options: Avant le message / Après le message / En bas de thread
+
+## 5. ÉDITEUR DE SIGNATURE
+
+### Titre section
+- "Contenu de la signature"
+
+### Toolbar éditeur (996x36px)
+- Background: #F9FAFB, border #E5E7EB
+
+| Outil | Description |
+|-------|-------------|
+| **B** | Gras |
+| *I* | Italique |
+| U | Souligné |
+| Séparateur | |
+| Taille | Dropdown taille police |
+| Séparateur | |
+| Couleur | Sélecteur couleur |
+| Séparateur | |
+| Lien | Insérer lien |
+| Image | Insérer image |
+| Séparateur | |
+| Variables | Insérer variable |
+
+### Zone de texte (996x180px)
+Contenu exemple:
+```
+--
+ACME Corporation
+%%DISPLAY_NAME%%
+%%TITLE%%
++33 1 23 45 67 89
+www.acme-corp.com
+Ce message et ses pièces jointes sont confidentiels...
+```
+
+## 6. VARIABLES DISPONIBLES
+
+- Label: "Variables disponibles :"
+- 2 lignes de variables
+
+| Variable | Description |
+|----------|-------------|
+| %%DISPLAY_NAME%% | Nom affiché |
+| %%FIRST_NAME%% | Prénom |
+| %%LAST_NAME%% | Nom |
+| %%TITLE%% | Fonction |
+| %%DEPARTMENT%% | Service |
+| %%PHONE%% | Téléphone |
+
+## 7. BOUTONS ACTION
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Aperçu | btn-outline | 100x32px |
+| Enregistrer | btn-primary | 120x32px |
+
+## 8. APIS & ENDPOINTS
+
+```
+# Exchange - Disclaimer
+GET /email/exchange/{organization}/service/{serviceName}/domain/{domain}/disclaimer
+→ Configuration disclaimer actuelle
+
+PUT /email/exchange/{organization}/service/{serviceName}/domain/{domain}/disclaimer
+Body: {
+  outsideMessageOnly: false,
+  content: "<html>...</html>"
+}
+→ Met à jour la signature
+
+# Désactiver
+DELETE /email/exchange/{organization}/service/{serviceName}/domain/{domain}/disclaimer
+
+# Prévisualisation
+POST /email/exchange/{organization}/service/{serviceName}/domain/{domain}/disclaimer/preview
+Body: {
+  content: "Texte avec %%DISPLAY_NAME%%...",
+  accountEmail: "jean@example.com"
+}
+→ Renvoie le HTML avec variables remplacées
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_title | Signature |
+| warning_exchange | La signature email est disponible uniquement pour les comptes Exchange. |
+| card_title | Signature entreprise (Disclaimer) |
+| card_subtitle | Ajoutez automatiquement une signature à tous les emails sortants |
+| field_enabled | Signature activée |
+| field_position | Position dans l'email |
+| position_before | Avant le message |
+| position_after | Après le message |
+| position_bottom | En bas de thread |
+| section_content | Contenu de la signature |
+| toolbar_bold | Gras |
+| toolbar_italic | Italique |
+| toolbar_underline | Souligné |
+| toolbar_size | Taille |
+| toolbar_color | Couleur |
+| toolbar_link | Lien |
+| toolbar_image | Image |
+| toolbar_variables | Variables |
+| section_variables | Variables disponibles |
+| var_display_name | Nom affiché |
+| var_first_name | Prénom |
+| var_last_name | Nom |
+| var_title | Fonction |
+| var_department | Service |
+| var_phone | Téléphone |
+| btn_preview | Aperçu |
+| btn_save | Enregistrer |

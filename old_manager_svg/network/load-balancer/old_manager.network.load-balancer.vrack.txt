@@ -1,0 +1,149 @@
+# Cahier des Charges : network/load-balancer - vRack
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page de configuration avec tableau
+**Fonction:** Gérer les réseaux privés vRack attachés au Load Balancer
+**Contexte:** Configuration réseau privé pour IP Load Balancing
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Tableau: 1200x350px
+
+## 3. LAYOUT & STRUCTURE
+
+### Header OVHcloud
+- Background: #000E9C
+- Texte: "OVHcloud" + "Network"
+
+### Breadcrumb
+IP Load Balancing / loadbalancer-abc123 / vRack
+
+### Titre page
+"Réseau privé (vRack)"
+
+## 4. ZONE STATUT vRACK
+
+### Card status
+- Dimensions: 1200x80px
+- Background: white
+
+### Contenu status
+| Label | Valeur |
+|-------|--------|
+| Statut vRack | Actif (pn-12345) |
+
+### Boutons actions
+- "Activer" (btn-secondary)
+- "Désactiver" (btn-secondary)
+
+### Description
+- "Le vRack permet de connecter votre Load Balancer à un réseau privé."
+- "Vous pouvez ajouter jusqu'à 10 réseaux privés supplémentaires."
+
+## 5. TABLEAU RÉSEAUX PRIVÉS
+
+### Bouton action
+"+ Ajouter un réseau privé" (btn-outline)
+
+### Colonnes tableau
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Réseau privé | 260px | Nom du réseau |
+| VLAN ID | 140px | Identifiant VLAN |
+| Sous-réseau | 180px | CIDR notation |
+| IP NAT | 180px | Adresse NAT |
+| Fermes | 220px | Badges des fermes associées |
+| Actions | 100px | Menu ⋮ |
+
+### Header tableau
+- Background: #F3F4F6
+- Height: 40px
+
+### Données exemple
+| Réseau | VLAN | Sous-réseau | IP NAT | Fermes |
+|--------|------|-------------|--------|--------|
+| my-private-network-1 | 100 | 10.0.0.0/24 | 10.0.0.254 | farm-web-01 |
+| my-private-network-2 | 200 | 10.0.1.0/24 | 10.0.1.254 | farm-api-01, farm-api-02 |
+| backup-network | 300 | 10.0.2.0/24 | 10.0.2.254 | - |
+
+### Badges fermes
+- Background: #EFF6FF
+- Text color: #0050D7
+- Border-radius: 4px
+
+## 6. MENU ACTIONS
+
+### Dropdown
+- Largeur: 120px
+- Options:
+  - Modifier
+  - Supprimer (text-danger)
+
+## 7. ACTIONS & INTERACTIONS
+
+### Activer vRack
+- Action: Attache le Load Balancer au vRack
+
+### Désactiver vRack
+- Action: Détache du vRack (nécessite suppression des réseaux)
+
+### Ajouter réseau privé
+- Ouvre modal de configuration
+
+### Menu actions ligne
+- Modifier: édite la configuration réseau
+- Supprimer: retire le réseau privé
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /ipLoadbalancing/{serviceName}/vrack/network
+→ Liste les réseaux privés
+
+POST /ipLoadbalancing/{serviceName}/vrack/network
+Body: {
+  displayName: "my-private-network",
+  vlan: 100,
+  subnet: "10.0.0.0/24",
+  natIp: "10.0.0.254"
+}
+→ Ajoute un réseau privé
+
+PUT /ipLoadbalancing/{serviceName}/vrack/network/{vrackNetworkId}
+→ Modifie un réseau
+
+DELETE /ipLoadbalancing/{serviceName}/vrack/network/{vrackNetworkId}
+→ Supprime un réseau
+
+GET /ipLoadbalancing/{serviceName}/vrack/status
+→ Statut vRack
+
+POST /ipLoadbalancing/{serviceName}/vrack/activateVrack
+→ Active le vRack
+
+POST /ipLoadbalancing/{serviceName}/vrack/deactivateVrack
+→ Désactive le vRack
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Réseau privé (vRack) |
+| vrack_status | Statut vRack |
+| vrack_active | Actif |
+| vrack_desc | Le vRack permet de connecter votre Load Balancer à un réseau privé. |
+| vrack_limit | Vous pouvez ajouter jusqu'à 10 réseaux privés supplémentaires. |
+| btn_activate | Activer |
+| btn_deactivate | Désactiver |
+| btn_add_network | Ajouter un réseau privé |
+| col_network | Réseau privé |
+| col_vlan | VLAN ID |
+| col_subnet | Sous-réseau |
+| col_nat_ip | IP NAT |
+| col_farms | Fermes |
+| col_actions | Actions |
+| action_edit | Modifier |
+| action_delete | Supprimer |

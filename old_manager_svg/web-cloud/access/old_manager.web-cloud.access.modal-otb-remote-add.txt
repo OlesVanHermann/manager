@@ -1,0 +1,134 @@
+# Cahier des Charges : web-cloud/access - Modal OTB Remote Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter un tunnel d'accès distant
+**Contexte:** Configuration remote access OverTheBox
+
+## 2. DIMENSIONS
+
+- Modal: 500x470px
+- Background page: overlay rgba(0,0,0,0.5)
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F9FAFB
+- Titre: "Ajouter un accès distant"
+- Bouton fermer: ×
+- Height: 50px
+
+## 4. DESCRIPTION
+
+- Texte: "Configurez un tunnel sécurisé vers un équipement de votre réseau local."
+- Font-size: 12px, text-muted
+
+## 5. FORMULAIRE
+
+### Champ Nom du tunnel
+- Label: "Nom du tunnel *"
+- Type: Input text
+- Placeholder: "Ex: Serveur NAS, Camera surveillance..."
+- Largeur: 400px
+
+### Champ Protocole (toggle buttons)
+- Label: "Protocole"
+- Type: Button group
+- Options: SSH | HTTP | HTTPS | TCP
+- Sélectionné: SSH (background #0050D7)
+- Non sélectionné: btn-outline
+
+### Champ Adresse IP locale
+- Label: "Adresse IP locale *"
+- Type: Input text (IP)
+- Valeur exemple: "192.168.1.100"
+- Largeur: 200px
+
+### Champ Port local
+- Label: "Port local *"
+- Type: Input number
+- Valeur exemple: "22"
+- Largeur: 100px
+
+### Champ Port distant
+- Label: "Port distant (exposition)"
+- Type: Input text
+- Placeholder: "Automatique"
+- Largeur: 150px
+- Helper: "(recommandé)"
+
+## 6. INFO BOX (Aperçu URL)
+
+- Background: #DBEAFE
+- Border-radius: 4px
+- Dimensions: 400x50px
+
+### Contenu
+- Label: "ℹ️ URL d'accès générée:"
+- URL: "ssh://otb-abc123xyz.overthebox.net:45678"
+- Style URL: text-primary, font-weight 500
+
+## 7. COMPOSANTS UI
+
+### Button group
+- Dimensions bouton: 80x32px
+- Border-radius: 4px
+- Gap: 10px
+
+### Input text
+- Height: 36px
+- Border: #E5E7EB
+- Border-radius: 4px
+
+## 8. FOOTER MODAL
+
+### Bouton Annuler
+- Style: btn-outline (100x36px)
+
+### Bouton Créer
+- Style: btn-primary (100x36px)
+- Disabled si: formulaire invalide
+
+## 9. VALIDATION
+
+- Nom: obligatoire
+- IP locale: format IPv4 valide
+- Port local: obligatoire, 1-65535
+- Port distant: optionnel (auto-assigné)
+
+## 10. APIS & ENDPOINTS
+
+```
+POST /overTheBox/{serviceName}/remoteAccesses
+Body: {
+  exposedPort: 45678,
+  localIp: "192.168.1.100",
+  localPort: 22,
+  protocol: "ssh",
+  publicKey: "ssh-rsa ...",
+  name: "Serveur NAS"
+}
+→ Crée le tunnel d'accès distant
+
+GET /overTheBox/{serviceName}/remoteAccesses/{remoteAccessId}
+→ Récupère l'URL d'accès générée
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un accès distant |
+| modal_description | Configurez un tunnel sécurisé vers un équipement de votre réseau local. |
+| field_name | Nom du tunnel |
+| field_name_placeholder | Ex: Serveur NAS, Camera surveillance... |
+| field_protocol | Protocole |
+| field_local_ip | Adresse IP locale |
+| field_local_port | Port local |
+| field_remote_port | Port distant (exposition) |
+| auto | Automatique |
+| recommended | (recommandé) |
+| preview_url | URL d'accès générée: |
+| btn_cancel | Annuler |
+| btn_create | Créer |

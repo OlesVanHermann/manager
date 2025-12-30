@@ -1,0 +1,123 @@
+# Cahier des Charges : web-cloud/domain - Modal Redirection
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter une redirection web
+**Contexte:** Action depuis l'onglet Redirections
+
+## 2. DIMENSIONS
+
+- Modal: 700x500px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Ajouter une redirection"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Source (sous-domaine)
+- Label: "Source (sous-domaine) *"
+- Layout: Input + suffixe
+- Input: 300x36px
+- Placeholder: "www ou @ pour le domaine"
+- Suffixe: ".exemple.com"
+
+### Type de redirection
+- Label: "Type de redirection *"
+- Layout: 3 cartes sélectionnables
+
+| Carte | État | Dimensions | Contenu |
+|-------|------|------------|---------|
+| Visible (301) | Sélectionnée (bleu) | 200x45px | "Redirection permanente" |
+| Visible (302) | Non sélectionnée | 200x45px | "Redirection temporaire" |
+| Invisible (iFrame) | Non sélectionnée | 200x45px | "URL masquée" |
+
+### URL de destination
+- Label: "URL de destination *"
+- Input: 652x36px
+- Placeholder: "https://www.exemple.com/page"
+
+### Options
+- Checkbox coché: "Inclure les paramètres de l'URL source"
+
+### Titre de la page (iFrame)
+- Label: "Titre de la page (iFrame)" (gris si 301/302)
+- Input: 652x36px
+- Placeholder: "Titre affiché dans l'onglet navigateur"
+- Note: Visible uniquement si type iFrame sélectionné
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Ajouter | btn-primary | 110x34px |
+
+## 6. TYPES DE REDIRECTION
+
+| Type | Code HTTP | Comportement |
+|------|-----------|--------------|
+| Visible (301) | 301 Moved Permanently | SEO-friendly, URL change visible |
+| Visible (302) | 302 Found | Temporaire, URL change visible |
+| Invisible (iFrame) | 200 OK | URL masquée, contenu en iframe |
+
+## 7. APIS & ENDPOINTS
+
+```
+POST /domain/zone/{zoneName}/redirection
+Body: {
+  subDomain: "www",
+  type: "visible" | "visiblePermanent" | "invisible",
+  target: "https://www.exemple.com/page",
+  title: "Page title", // for iframe only
+  keywords: "",
+  description: ""
+}
+→ Crée une redirection
+
+GET /domain/zone/{zoneName}/redirection
+→ Liste des redirections
+
+GET /domain/zone/{zoneName}/redirection/{id}
+→ Détails d'une redirection
+
+DELETE /domain/zone/{zoneName}/redirection/{id}
+→ Supprime une redirection
+
+PUT /domain/zone/{zoneName}/redirection/{id}
+Body: { target: "..." }
+→ Modifie une redirection
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter une redirection |
+| field_source | Source (sous-domaine) |
+| source_placeholder | www ou @ pour le domaine |
+| field_type | Type de redirection |
+| type_301 | Visible (301) |
+| type_301_desc | Redirection permanente |
+| type_302 | Visible (302) |
+| type_302_desc | Redirection temporaire |
+| type_iframe | Invisible (iFrame) |
+| type_iframe_desc | URL masquée |
+| field_destination | URL de destination |
+| destination_placeholder | https://www.exemple.com/page |
+| option_include_params | Inclure les paramètres de l'URL source |
+| field_title | Titre de la page (iFrame) |
+| title_placeholder | Titre affiché dans l'onglet navigateur |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

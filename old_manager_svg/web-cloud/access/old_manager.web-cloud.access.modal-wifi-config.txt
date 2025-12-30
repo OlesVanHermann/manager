@@ -1,0 +1,128 @@
+# Cahier des Charges : web-cloud/access - Modal WiFi Config
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire configuration
+**Fonction:** Configurer les paramètres WiFi du modem
+**Contexte:** Configuration réseau sans fil
+
+## 2. DIMENSIONS
+
+- Modal: 500x460px
+- Background page: overlay rgba(0,0,0,0.5)
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F9FAFB
+- Titre: "Configuration WiFi"
+- Bouton fermer: ×
+- Height: 50px
+
+## 4. FORMULAIRE
+
+### Sélection bande de fréquence (toggle buttons)
+- Label: "Bande de fréquence"
+- Type: Button group
+- Options: 2.4 GHz | 5 GHz
+- Sélectionné: 2.4 GHz (background #0050D7)
+- Non sélectionné: btn-outline
+- Dimensions bouton: 100x32px
+
+### Champ SSID
+- Label: "Nom du réseau (SSID) *"
+- Type: Input text
+- Valeur exemple: "MonReseauWifi-2.4G"
+- Largeur: 450px
+
+### Champ Type de sécurité
+- Label: "Type de sécurité"
+- Type: Select dropdown
+- Options: WPA2-PSK (AES), WPA3, WPA2/WPA3 Mixed, Open
+- Valeur par défaut: "WPA2-PSK (AES)"
+- Largeur: 200px
+
+### Champ Clé de sécurité
+- Label: "Clé de sécurité *"
+- Type: Input password
+- Valeur: "••••••••••••••••" (masqué)
+- Largeur: 450px
+- Bouton œil: Toggle affichage (👁)
+
+### Champ Canal
+- Label: "Canal"
+- Type: Select dropdown
+- Options: Automatique, 1-11 (2.4GHz) ou 36-165 (5GHz)
+- Valeur par défaut: "Automatique"
+- Largeur: 120px
+- Helper: "(recommandé)"
+
+## 5. COMPOSANTS UI
+
+### Button group
+- Dimensions: 100x32px par bouton
+- Border-radius: 4px
+- Gap: 5px
+
+### Select dropdown
+- Height: 36px
+- Border: #E5E7EB
+- Chevron: ▼
+
+### Input password
+- Height: 36px
+- Eye icon: Position droite
+- Toggle: affiche/masque le mot de passe
+
+## 6. FOOTER MODAL
+
+### Bouton Annuler
+- Style: btn-outline (100x36px)
+
+### Bouton Enregistrer
+- Style: btn-primary (130x36px)
+- Disabled si: formulaire invalide
+
+## 7. VALIDATION
+
+- SSID: obligatoire, 1-32 caractères
+- Clé: obligatoire, 8-63 caractères (WPA2)
+- Canal: valide pour la bande sélectionnée
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/modem/wifi
+→ Configuration WiFi actuelle (par bande)
+
+PUT /xdsl/{serviceName}/modem/wifi
+Body: {
+  band: "2.4GHz" | "5GHz",
+  ssid: "MonReseauWifi",
+  security: "WPA2-PSK",
+  key: "motdepasse123",
+  channel: "auto" | 1-11 | 36-165
+}
+→ Applique la configuration WiFi
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Configuration WiFi |
+| field_band | Bande de fréquence |
+| band_2g | 2.4 GHz |
+| band_5g | 5 GHz |
+| field_ssid | Nom du réseau (SSID) |
+| field_security | Type de sécurité |
+| security_wpa2 | WPA2-PSK (AES) |
+| security_wpa3 | WPA3 |
+| security_mixed | WPA2/WPA3 Mixed |
+| security_open | Open |
+| field_key | Clé de sécurité |
+| field_channel | Canal |
+| channel_auto | Automatique |
+| recommended | (recommandé) |
+| btn_cancel | Annuler |
+| btn_save | Enregistrer |

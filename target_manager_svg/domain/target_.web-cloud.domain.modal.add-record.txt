@@ -1,0 +1,92 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.domain.modal.add-record.svg
+Route:   /web-cloud/domain/{domainName}/zone/add
+Version: v1 (2025-12-30)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| exemple.com                     | /domain/zone → zoneName                 |
+| A, AAAA, CNAME...               | Types d'enregistrements DNS             |
+| 3600                            | TTL par défaut ou sélection             |
+
+================================================================================
+
+# STRUCTURE MODAL
+1. HEADER - Titre "Ajouter une entrée DNS" (fond gris)
+2. CONTENT
+   - Sélection type (cards)
+   - Sous-domaine + suffixe
+   - Cible (IP ou hostname)
+   - TTL avec raccourcis
+   - Priorité (pour MX)
+   - Bannière info propagation
+3. FOOTER - Boutons Annuler / Ajouter
+
+# MODAL TYPE
+- Type: Formulaire ajout DNS générique
+- Dimensions: 700x600px
+- Header: Fond gris (#F9FAFB)
+
+# TYPES D'ENREGISTREMENTS
+| Type | Description |
+|------|-------------|
+| A | IPv4 address |
+| AAAA | IPv6 address |
+| CNAME | Canonical name (alias) |
+| MX | Mail exchange |
+| TXT | Text record |
+| NS | Name server |
+| SRV | Service location |
+
+# CHAMPS
+| Champ | Obligatoire | Description |
+|-------|-------------|-------------|
+| Type | Oui | Type d'enregistrement |
+| Sous-domaine | Non | @ pour racine, ou préfixe |
+| Cible | Oui | IP ou hostname selon type |
+| TTL | Non | Durée cache (défaut 3600) |
+| Priorité | MX only | Priorité mail serveur |
+
+# TTL (TIME TO LIVE)
+| Valeur | Utilisation |
+|--------|-------------|
+| 300 (5min) | Changements fréquents |
+| 3600 (1h) | Standard |
+| 21600 (6h) | Données stables |
+| 86400 (24h) | Rarement modifié |
+
+# RACCOURCIS TTL
+- 1h = 3600 secondes
+- 6h = 21600 secondes
+- 24h = 86400 secondes
+
+# VALIDATION CIBLE SELON TYPE
+- **A** : IPv4 valide (xxx.xxx.xxx.xxx)
+- **AAAA** : IPv6 valide
+- **CNAME** : FQDN avec point final
+- **MX** : FQDN + priorité requise
+- **TXT** : Texte entre guillemets
+
+# API ENDPOINTS
+POST /domain/zone/{zone}/record - Créer enregistrement
+  Body: {
+    fieldType: "A",
+    subDomain: "www",
+    target: "203.0.113.50",
+    ttl: 3600
+  }
+
+POST /domain/zone/{zone}/record - Créer MX
+  Body: {
+    fieldType: "MX",
+    subDomain: "",
+    target: "mail.exemple.com.",
+    ttl: 3600,
+    priority: 10
+  }
+
+================================================================================

@@ -2,69 +2,105 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.emails.advanced-devices.svg
-Route:   /web-cloud/emails/{domain}/advanced/devices
-NAV:     Web Cloud > Emails > [domain] > Avance > Appareils
-Version: v1 (2025-12-29)
+Route:   /web-cloud/emails/{domain}/advanced-devices
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| example.com              | GET /email/domains -> domain                    |
-| 7 appareils              | GET /email/domains/{d}/devices -> totalCount    |
-| ceo@example.com          | GET /email/domains/{d}/devices -> account       |
-| iPhone 15 Pro            | GET /email/domains/{d}/devices -> deviceName    |
-| A1B2C3D4E5F6             | GET /email/domains/{d}/devices -> deviceId      |
-| Mobile                   | GET /email/domains/{d}/devices -> type          |
-| iOS 17.2                 | GET /email/domains/{d}/devices -> os            |
-| Il y a 5 min             | GET /email/domains/{d}/devices -> lastSync      |
-| Actif                    | GET /email/domains/{d}/devices -> status        |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| iPhone 15 Pro                 | GET /email/exchange/{d}/devices → name |
+| APPL5A3B2C1D                  | → deviceId                             |
+| admin@example.com             | → user                                 |
+| Mobile/Tablette/Desktop       | → deviceType                           |
+| iOS 17.2                      | → os + version                         |
+| 30/12/2025 14:45              | → lastSync                             |
+| Autorisé/Bloqué/En attente    | → status                               |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. Left panel avec liste domaines
-2. Right panel header (domaine)
-3. NAV3: 8 tabs (Avance actif)
-4. NAV4: Ressources | Contacts | Audit | Appareils (actif)
-5. Filtres (compte, type)
-6. Table appareils synchronises
-7. Pagination
-8. Banniere actions securite
+# STRUCTURE PAGE
 
-TYPES D'APPAREILS
-| Type      | Couleur   | Description                     |
-|-----------|-----------|----------------------------------|
-| Mobile    | #E5E7EB   | Smartphones iOS/Android         |
-| Desktop   | #DBEAFE   | Outlook desktop, Mac Mail       |
-| Tablette  | #FEF3C7   | iPad, tablettes Android         |
-| Web       | #DEF7EC   | OWA, Webmail                    |
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Emails actif)
+3. LEFT PANEL (280px) - Liste domaines
+4. RIGHT PANEL (1096px)
+   - Header: Nom domaine
+   - NAV3: 8 tabs (Avancé ACTIF)
+   - NAV4: Général | Contacts | Audit | Appareils (actif)
+   - Filtre utilisateur + Recherche
+   - Bannière info
+   - Table appareils
+   - Cards résumé
+   - Pagination
 
-STATUTS APPAREILS
-| Statut    | Couleur   | Critere                         |
-|-----------|-----------|----------------------------------|
-| Actif     | #DEF7EC   | Sync < 7 jours                  |
-| Inactif   | #FEF3C7   | Sync 7-30 jours                 |
-| Obsolete  | #FEE2E2   | Sync > 30 jours                 |
+# NAV4 - SOUS-TABS AVANCÉ
 
-ACTIONS SECURITE
-| Action    | Effet                                      |
-|-----------|--------------------------------------------|
-| Wipe      | Efface donnees Exchange de l'appareil      |
-| Bloquer   | Empeche synchronisation future             |
-| Supprimer | Retire de la liste (si inactif)            |
+| # | Tab       | Route               | Contenu                     |
+|---|-----------|---------------------|-----------------------------|
+| 1 | Général   | /advanced           | Dashboard fonctionnalités   |
+| 2 | Contacts  | /advanced-contacts  | Contacts partagés Exchange  |
+| 3 | Audit     | /advanced-audit     | Logs d'activité             |
+| 4 | Appareils | /advanced-devices   | Appareils mobiles connectés |
 
-POLITIQUE MDM EXCHANGE
-- Peut imposer code PIN
-- Peut imposer chiffrement
-- Peut limiter applications
-- Configurable par compte ou globalement
+# TYPES D'APPAREILS
 
-API ENDPOINTS
-GET  /email/domains/{domain}/devices              -> Liste appareils
-GET  /email/domains/{domain}/devices/{id}         -> Details appareil
-POST /email/domains/{domain}/devices/{id}/wipe    -> Wipe distant
-POST /email/domains/{domain}/devices/{id}/block   -> Bloquer
-DELETE /email/domains/{domain}/devices/{id}       -> Supprimer
-GET  /email/domains/{domain}/devices/policy       -> Politique MDM
-PUT  /email/domains/{domain}/devices/policy       -> Modifier politique
+| Type      | Badge      | Exemples                    |
+|-----------|------------|------------------------------|
+| Mobile    | ⚪ Gris    | iPhone, Android phones       |
+| Tablette  | 🔵 Bleu    | iPad, Android tablets        |
+| Desktop   | 🟡 Jaune   | Outlook Desktop, Mac Mail    |
+
+# STATUTS APPAREILS
+
+| Statut     | Badge      | Description                  |
+|------------|------------|------------------------------|
+| Autorisé   | 🟢 Vert    | Synchronisation active       |
+| Bloqué     | 🔴 Rouge   | Accès refusé                 |
+| En attente | 🟡 Jaune   | Approbation requise          |
+
+# COLONNES TABLE
+
+| Colonne       | Largeur | Contenu                        |
+|---------------|---------|--------------------------------|
+| Appareil      | 180px   | Icône + nom + ID              |
+| Utilisateur   | 180px   | Email propriétaire            |
+| Type          | 120px   | Badge type                    |
+| OS            | 140px   | Système d'exploitation        |
+| Dernière sync | 140px   | Date + heure                  |
+| Statut        | 120px   | Badge statut                  |
+| Actions       | 100px   | 🔒 Bloquer/✓ Autoriser, × Sup |
+
+# CARDS RÉSUMÉ
+
+| Card           | Description                    |
+|----------------|--------------------------------|
+| Total appareils| Nombre total enregistrés       |
+| Autorisés      | Appareils avec accès           |
+| Bloqués        | Appareils refusés              |
+| En attente     | En attente d'approbation       |
+
+# INTERACTIONS
+
+- Sélecteur utilisateur → Filtre par utilisateur
+- Clic 🔒 (sur appareil autorisé) → Modal confirmer blocage
+- Clic ✓ (sur appareil bloqué) → Modal confirmer autorisation
+- Clic × → Modal confirmer suppression (efface l'association)
+
+# RESTRICTIONS
+
+⚠️ La gestion des appareils est disponible UNIQUEMENT pour :
+- Exchange (toutes versions)
+
+Les appareils se connectent via ActiveSync (protocole Microsoft).
+
+# API ENDPOINTS
+
+GET    /email/exchange/{org}/{domain}/devices           → Liste appareils
+GET    /email/exchange/{org}/{d}/devices/{id}           → Détails appareil
+PUT    /email/exchange/{org}/{d}/devices/{id}           → Modifier statut
+DELETE /email/exchange/{org}/{d}/devices/{id}           → Supprimer appareil
+POST   /email/exchange/{org}/{d}/devices/{id}/wipe      → Effacement à distance
+GET    /email/exchange/{org}/{domain}/devices/stats     → Statistiques
+
 ================================================================================

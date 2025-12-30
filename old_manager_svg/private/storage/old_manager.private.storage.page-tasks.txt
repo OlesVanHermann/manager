@@ -1,0 +1,152 @@
+# Cahier des Charges : private/storage - Page Tasks
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page listing avec historique
+**Fonction:** Historique des tâches NAS-HA
+**Contexte:** Suivi des opérations sur le stockage
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Tableau: 1220x350px
+
+## 3. LAYOUT & STRUCTURE
+
+### Header OVHcloud
+- Background: #000E9C
+- Texte: "OVHcloud" + "Bare Metal Cloud"
+
+### Breadcrumb
+- NAS-HA / zpool-123456 / Tâches
+
+### Titre page
+- Titre: "Stockage Production"
+- Sous-titre: "zpool-123456"
+
+## 4. NAVIGATION ONGLETS
+
+### Tabs
+| Onglet | État |
+|--------|------|
+| Informations générales | Inactif |
+| Partitions | Inactif |
+| Tâches | Actif |
+
+### Style tab actif
+- Text: #0050D7, font-weight 600
+- Underline: 3px #0050D7
+
+## 5. CONTENU PRINCIPAL
+
+### Header section
+- Titre: "Historique des tâches"
+- Sous-titre: "Liste des opérations effectuées sur votre NAS-HA"
+
+### Filtre
+- Type: Select dropdown
+- Placeholder: "Filtrer par statut..."
+- Dimensions: 200x36px
+- Options: Tous, Terminé, En cours, Échec
+
+## 6. DATAGRID TÂCHES
+
+### Colonnes
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| ID | 130px | Numéro de tâche (#xxxxx) |
+| Opération | 300px | Type d'opération |
+| Partition | 200px | Partition concernée |
+| Date | 250px | Date et heure |
+| Statut | 200px | Badge état |
+| Progression | 140px | Progress bar ou % |
+
+### Types d'opérations
+- Création de snapshot
+- Modification des accès
+- Extension de partition
+- Suppression de snapshot
+- Création de partition
+
+### Badges statut
+| Statut | Background | Text |
+|--------|------------|------|
+| Terminé | #DCFCE7 | #16A34A |
+| En cours | #DBEAFE | #1E40AF |
+| Échec | #FEE2E2 | #DC2626 |
+
+### Données exemple
+| ID | Opération | Partition | Date | Statut | Progression |
+|----|-----------|-----------|------|--------|-------------|
+| #45892 | Création de snapshot | partition-data | 15/01/2024 14:32 | Terminé | 100% |
+| #45891 | Modification des accès | partition-backup | 15/01/2024 12:15 | Terminé | 100% |
+| #45890 | Extension de partition | partition-data | 14/01/2024 18:45 | En cours | 70% (progress bar) |
+| #45889 | Suppression de snapshot | partition-logs | 14/01/2024 10:20 | Échec | - |
+| #45888 | Création de partition | partition-logs | 13/01/2024 09:00 | Terminé | 100% |
+
+### Progress bar (en cours)
+- Container: 80x8px
+- Background: #E5E7EB
+- Fill: #0050D7
+
+## 7. PAGINATION
+
+### Format
+- Texte: "Affichage de 1 à 5 sur 23 tâches"
+
+### Boutons
+- ‹ (précédent)
+- [1] (actif, bg #0050D7)
+- 2 (inactif)
+- › (suivant)
+
+### Style boutons
+- Dimensions: 30x30px
+- Actif: bg #0050D7, text white
+- Inactif: border #E5E7EB
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicated/nasha/{serviceName}/task
+→ Liste des tâches
+
+GET /dedicated/nasha/{serviceName}/task/{taskId}
+→ Détails d'une tâche (status, progress)
+
+GET /dedicated/nasha/{serviceName}/task?status=doing
+→ Tâches en cours uniquement
+
+GET /dedicated/nasha/{serviceName}/task?status=done
+→ Tâches terminées uniquement
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_info | Informations générales |
+| tab_partitions | Partitions |
+| tab_tasks | Tâches |
+| section_title | Historique des tâches |
+| section_subtitle | Liste des opérations effectuées sur votre NAS-HA |
+| filter_placeholder | Filtrer par statut... |
+| filter_all | Tous |
+| filter_done | Terminé |
+| filter_doing | En cours |
+| filter_error | Échec |
+| col_id | ID |
+| col_operation | Opération |
+| col_partition | Partition |
+| col_date | Date |
+| col_status | Statut |
+| col_progress | Progression |
+| op_create_snapshot | Création de snapshot |
+| op_modify_access | Modification des accès |
+| op_extend_partition | Extension de partition |
+| op_delete_snapshot | Suppression de snapshot |
+| op_create_partition | Création de partition |
+| status_done | Terminé |
+| status_doing | En cours |
+| status_error | Échec |
+| pagination_display | Affichage de {start} à {end} sur {total} tâches |

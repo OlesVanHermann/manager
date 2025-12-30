@@ -2,75 +2,64 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.number.stats.svg
-Route:   /web-cloud/voip/{ba}/number/{sn}/statistics
-NAV:     Web Cloud > VoIP > [groupe] > Numeros > [numero] > Statistiques
-Version: v1 (2025-12-29)
+Route:   /web-cloud/voip/{billingAccount}/number/{serviceName}/statistics
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                      |
-|--------------------------|-------------------------------------------------|
-| 1,247                    | GET /telephony/{ba}/service/{sn}/statistics -> callsReceived |
-| 1,089                    | GET /telephony/{ba}/service/{sn}/statistics -> callsAnswered |
-| 158                      | GET /telephony/{ba}/service/{sn}/statistics -> callsMissed |
-| 0:42                     | GET /telephony/{ba}/service/{sn}/statistics -> avgWaitTime |
-| 3:28                     | GET /telephony/{ba}/service/{sn}/statistics -> avgDuration |
-| Volume chart             | GET /telephony/{ba}/service/{sn}/statistics -> dailyStats |
-| Repartition horaire      | GET /telephony/{ba}/service/{sn}/statistics -> hourlyStats |
-| Performance agents       | GET /telephony/{ba}/service/{sn}/statistics -> agentStats |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| 0033912345680         | Route param {serviceName}                     |
+| 1,247                 | GET /telephony/{ba}/easyHunting/{sn}/statistics → callsTotal |
+| 1,089 (87%)           | statistics → callsAnswered                    |
+| 158 (13%)             | statistics → callsLost                        |
+| 0:42                  | statistics → averageWaitingTime               |
+| 4:23                  | statistics → averageTalkTime                  |
+| 3/5                   | statistics → agentsAvailable / agentsTotal    |
+| 78%                   | statistics → serviceLevel                     |
+| 52                    | statistics → callsPerHour                     |
+| Graph data            | GET /telephony/{ba}/easyHunting/{sn}/statistics/byDay |
+| Top agents            | GET /telephony/{ba}/easyHunting/{sn}/agent/statistics |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. SOUS-NAV: Lignes | Numeros (actif) | Fax | Abreges
-2. Left panel: Liste numeros du groupe
-3. NAV3: General | Configuration | Statistiques (actif) | Portabilite | Enregistrements
-4. Period selector + Granularity + Export
-5. Stats cards (5 KPIs)
-6. Volume chart (line chart)
-7. Repartition horaire (heatmap/bars)
-8. Performance agents (table)
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des numéros
+4. RIGHT PANEL
+   - Header: Numéro + badge + breadcrumb /Statistiques
+   - NAV3: Général | Configuration | Consommation | [Statistiques]
+   - Sélecteur période
+   - KPI Cards Row 1: Appels reçus | Traités | Perdus | Temps attente
+   - KPI Cards Row 2: Temps conversation | Agents dispo | Niveau service | Appels/heure
+   - Graphique volume appels par jour
+   - Top agents
+   - Boutons Export CSV + Rapport détaillé
 
-STATS CARDS
-| Carte            | Donnee                | Comparaison    |
-|------------------|-----------------------|----------------|
-| Appels recus     | Total periode         | vs mois prec.  |
-| Appels repondus  | Total + taux          | -              |
-| Appels manques   | Total + taux abandon  | -              |
-| Temps attente    | Moyenne               | vs objectif    |
-| Duree moyenne    | Par appel + total     | -              |
+# KPI METRICS
+| Métrique              | Calcul                              |
+|-----------------------|-------------------------------------|
+| Appels reçus          | Total entrants sur la période       |
+| Appels traités        | Appels décrochés / Total * 100      |
+| Appels perdus         | Appels non décrochés (abandonné, timeout) |
+| Temps attente moyen   | Somme temps file / Nb appels        |
+| Temps conversation    | Somme durée appels / Nb appels      |
+| Niveau de service     | % appels répondus < seuil (ex: 20s) |
+| Appels/heure          | Moyenne horaire sur période         |
 
-GRAPHIQUE VOLUME
-- Type: Line chart double
-- Lignes: Recus (bleu), Repondus (vert)
-- Periode: Selon selecteur (jour/semaine/mois)
-- Axes: Date (X), Nombre appels (Y)
+# INTERACTIONS
+- Sélecteur période → Changer plage temporelle
+- Clic graphique → Détail journée
+- Clic "Voir toutes les stats agents →" → Page détail agents
+- Clic "Exporter CSV" → Téléchargement données brutes
+- Clic "Rapport détaillé" → Génération rapport PDF
 
-REPARTITION HORAIRE
-- Type: Horizontal bars (heatmap style)
-- Heures: 8h-18h
-- Couleurs: Intensite proportionnelle au volume
-- Palette: #DBEAFE (faible) → #1D4ED8 (fort)
+# API ENDPOINTS
+GET /telephony/{ba}/easyHunting/{sn}/statistics            → Stats globales
+GET /telephony/{ba}/easyHunting/{sn}/statistics?from=&to=  → Stats période
+GET /telephony/{ba}/easyHunting/{sn}/statistics/byDay      → Stats par jour
+GET /telephony/{ba}/easyHunting/{sn}/statistics/byHour     → Stats par heure
+GET /telephony/{ba}/easyHunting/{sn}/agent/statistics      → Stats par agent
 
-PERFORMANCE AGENTS
-| Colonne     | Description              |
-|-------------|--------------------------|
-| Agent       | Nom/numero agent         |
-| Appels      | Total appels             |
-| Repondus    | Total repondus           |
-| Duree moy.  | Duree moyenne appel      |
-| Taux        | % reponse (couleur)      |
-
-GRANULARITE
-| Option  | Description           |
-|---------|-----------------------|
-| Jour    | Stats journalieres    |
-| Semaine | Stats hebdomadaires   |
-| Mois    | Stats mensuelles      |
-
-API ENDPOINTS
-GET /telephony/{ba}/service/{sn}/statistics               -> Stats globales
-GET /telephony/{ba}/service/{sn}/statistics/daily         -> Stats journalieres
-GET /telephony/{ba}/service/{sn}/statistics/hourly        -> Stats horaires
-GET /telephony/{ba}/service/{sn}/statistics/agents        -> Stats par agent
-GET /telephony/{ba}/service/{sn}/statistics/export        -> Export CSV
 ================================================================================

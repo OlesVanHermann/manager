@@ -1,0 +1,141 @@
+# Cahier des Charges : web-cloud/domain - Modal Batch Renew
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal commande batch
+**Fonction:** Renouveler plusieurs domaines simultanément
+**Contexte:** Action groupée depuis liste des domaines
+
+## 2. DIMENSIONS
+
+- Modal: 800x680px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #FFFFFF
+- Titre: "Renouvellement Domaines (Batch)"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 752x50px
+- Titre: "Renouvellement groupé"
+- Description: "Renouvelez plusieurs domaines en une seule opération. Les prix varient selon les extensions."
+
+### Durée sélecteur
+- Label: "Durée de renouvellement :"
+- Dropdown: 200x36px
+- Options: "1 an", "2 ans", "3 ans", "5 ans", "10 ans"
+
+### Liste domaines
+- Titre: "Domaines à renouveler (4)"
+- Colonnes:
+  - Checkbox
+  - DOMAINE
+  - EXPIRATION
+  - PRIX RENOUVELLEMENT
+  - NOUVELLE EXP.
+
+### Exemples données
+
+| Domaine | Expiration | Prix | Nouvelle exp. |
+|---------|------------|------|---------------|
+| example.com | 15/06/2025 | 9,99 EUR HT | 15/06/2026 |
+| example.fr | 15/06/2025 | 7,99 EUR HT | 15/06/2026 |
+| example.eu | 15/06/2025 | 6,99 EUR HT | 15/06/2026 |
+| example.org | 01/02/2025 | 12,99 EUR HT | 01/02/2026 |
+
+### Summary box
+- Background: #DEF7EC
+- Dimensions: 752x100px
+- Titre: "Récapitulatif"
+
+| Label | Valeur |
+|-------|--------|
+| Domaines sélectionnés | 4 |
+| Durée | 1 an |
+| Total HT | 37,96 EUR |
+| TVA (20%) | 7,59 EUR |
+| **Total TTC** | **45,55 EUR** (16px, primary, font-weight 700) |
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 100x34px |
+| Commander - 45,55 EUR | btn-primary | 220x34px |
+
+## 6. COMPOSANTS UI
+
+### Prix colonne
+- Font-weight: 600
+- Alignement: gauche
+
+### Nouvelle expiration
+- Color: text-success (#059669)
+
+### Summary box
+- Border-radius: 6px
+- 2 colonnes: détails (gauche), totaux (droite)
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /domain/{serviceName}/serviceInfos
+→ Date d'expiration actuelle
+
+GET /order/catalog/formatted?productName=domain
+→ Prix de renouvellement par extension
+
+POST /order/cart
+→ Crée un panier
+
+POST /order/cart/{cartId}/domain
+Body: {
+  domain: "example.com",
+  duration: "P1Y",
+  planCode: "domain-renew"
+}
+→ Ajoute le renouvellement au panier
+
+POST /order/cart/{cartId}/checkout
+Body: { autoPayWithPreferredPaymentMethod: true }
+→ Valide la commande
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Renouvellement Domaines (Batch) |
+| info_title | Renouvellement groupé |
+| info_desc | Renouvelez plusieurs domaines en une seule opération. Les prix varient selon les extensions. |
+| field_duration | Durée de renouvellement : |
+| duration_1y | 1 an |
+| duration_2y | 2 ans |
+| duration_3y | 3 ans |
+| duration_5y | 5 ans |
+| duration_10y | 10 ans |
+| list_title | Domaines à renouveler ({n}) |
+| col_domain | Domaine |
+| col_expiration | Expiration |
+| col_price | Prix renouvellement |
+| col_new_exp | Nouvelle exp. |
+| summary_title | Récapitulatif |
+| summary_domains | Domaines sélectionnés |
+| summary_duration | Durée |
+| summary_total_ht | Total HT |
+| summary_vat | TVA (20%) |
+| summary_total_ttc | Total TTC |
+| btn_cancel | Annuler |
+| btn_order | Commander - {price} |

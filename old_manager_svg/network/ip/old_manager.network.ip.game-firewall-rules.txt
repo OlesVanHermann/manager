@@ -1,0 +1,135 @@
+# Cahier des Charges : network/ip - GAME Firewall Rules
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page de configuration avec tableau inline edit
+**Fonction:** Configurer la protection DDoS GAME pour une IP
+**Contexte:** Protection spécifique pour serveurs de jeux
+
+## 2. DIMENSIONS
+
+- Container principal: 1200x750px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Network > IP > **Configurer le GAME firewall**
+
+### Lien retour
+- "← IP"
+
+### Titre page
+- "Configurer le GAME firewall"
+- Dropdown Guides à droite
+
+### Description (3 lignes)
+- "Ceci est la page de configuration de la protection DDoS GAME pour l'adresse IP sélectionnée."
+- "Plusieurs règles de pare-feu peuvent être configurées pour protéger au mieux toutes les applications hébergées."
+- "Astuce : vous pouvez choisir 'autre' protocole pour autoriser un trafic arbitraire vers un ou plusieurs ports spécifiques."
+
+## 4. BARRE D'ACTIONS
+
+### Bouton Ajouter une règle
+- Style: btn-secondary (180x40px)
+- Texte: "+ Ajouter une règle"
+
+### Toggle Stratégie par défaut
+- Label: "Appliquer la stratégie 'Refus par défaut'"
+- Toggle: On (bleu)
+- Icône aide: ?
+
+## 5. COLONNES DATAGRID
+
+| Colonne | Largeur | Type |
+|---------|---------|------|
+| Protocole de jeu | 240px | Select |
+| Port de démarrage | 200px | Input number |
+| Port final | 200px | Input number |
+| Statut | 200px | Badge |
+| Actions | 220px | Icônes |
+
+### Protocoles de jeu disponibles
+- ARK Survival Evolved
+- Minecraft
+- Counter-Strike 2
+- FiveM (GTA V)
+- Rust
+- Valheim
+- Team Fortress 2
+- Autre (UDP)
+- Autre (TCP)
+
+### Ligne d'ajout inline
+- Background: #EFF6FF
+- Actions: ✕ (annuler) ✓ (valider)
+
+### Badges Statut
+| Statut | Couleur |
+|--------|---------|
+| Protégé | bg-success #DCFCE7 |
+| En cours de création | bg-info #DBEAFE |
+
+### Données exemple
+| Protocole | Port début | Port fin | Statut |
+|-----------|------------|----------|--------|
+| Minecraft | 25565 | 25565 | Protégé |
+| Counter-Strike 2 | 27015 | 27020 | Protégé |
+| FiveM (GTA V) | 30120 | 30120 | En cours de création |
+| Autre (UDP) | 7777 | 7780 | Protégé |
+
+## 6. ACTIONS & INTERACTIONS
+
+### Toggle Stratégie par défaut
+- Refuse tout trafic non explicitement autorisé
+- Recommandé pour protection maximale
+
+### Ajouter une règle
+- Affiche ligne en mode édition
+- Sélection protocole → pré-remplit les ports
+
+### Supprimer règle (🗑)
+- Supprime la règle de protection
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /ip/{ip}/game
+→ Récupère la configuration GAME
+
+GET /ip/{ip}/game/rule
+→ Liste les règles GAME
+
+POST /ip/{ip}/game/rule
+Body: {
+  protocol: "minecraft",
+  ports: { from: 25565, to: 25565 }
+}
+→ Crée une règle
+
+DELETE /ip/{ip}/game/rule/{ruleId}
+→ Supprime une règle
+
+PUT /ip/{ip}/game
+Body: { firewallModeEnabled: true }
+→ Active/désactive le mode refus par défaut
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| game_firewall_title | Configurer le GAME firewall |
+| game_firewall_desc | Ceci est la page de configuration de la protection DDoS GAME pour l'adresse IP sélectionnée. |
+| game_firewall_tip | Astuce : vous pouvez choisir "autre" protocole pour autoriser un trafic arbitraire. |
+| game_add_rule | Ajouter une règle |
+| game_default_deny | Appliquer la stratégie "Refus par défaut" |
+| column_game_protocol | Protocole de jeu |
+| column_port_start | Port de démarrage |
+| column_port_end | Port final |
+| status_protected | Protégé |
+| status_creating | En cours de création |
+| protocol_minecraft | Minecraft |
+| protocol_csgo | Counter-Strike 2 |
+| protocol_fivem | FiveM (GTA V) |
+| protocol_other_udp | Autre (UDP) |
+| protocol_other_tcp | Autre (TCP) |

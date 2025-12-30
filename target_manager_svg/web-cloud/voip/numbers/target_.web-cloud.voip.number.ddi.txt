@@ -3,61 +3,83 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.number.ddi.svg
 Route:   /web-cloud/voip/{billingAccount}/number/{serviceName}/ddi
-Version: v1 (2024-12-30)
+Version: v1 (2025-12-30)
 ================================================================================
 
 ⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG               | Source API                                        |
-|---------------------------|---------------------------------------------------|
-| Liste DDI                 | GET /telephony/{ba}/number/{sn}/ddi              |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| +33 800 123 456       | Route param {serviceName}                     |
+| easyHunting           | GET /telephony/{ba}/number/{sn} → featureType |
+| 8 / 10                | GET ddi → count / maxCount                    |
+| 100 - 199             | GET ddi/range → min / max                     |
+| 100                   | ddi[].extension                               |
+| +33 9 12 34 56 01     | ddi[].destination                             |
+| Ligne interne         | ddi[].type (interne/externe/file/svi)         |
+| Actif                 | ddi[].status                                  |
 
 ================================================================================
 
 # STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - VoIP actif
-3. LEFT PANEL - Liste des numéros du groupe
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste des numéros
 4. RIGHT PANEL
-   - Titre: DDI - Numéros entrants
-   - NAV3 tabs
-   - Bannière info DDI
-   - Toolbar (refresh + search + add)
-   - Tableau DDI
-   - Pagination
+   - Header: Numéro + badge type + breadcrumb /DDI
+   - NAV3: Général | Configuration | Agents | [DDI] | Statistiques | Horaires
+   - Bannière info: Explication DDI
+   - Toolbar: Refresh, Recherche, + Ajouter règle
+   - Stats cards: Règles actives, Plage DDI, Mode
+   - Table DDI: Extension, Destination, Type, Statut, Description, Actions
 
-# NAV3 TABS
-| Tab | Route |
-|-----|-------|
-| Général | /general |
-| Configuration | /configuration |
-| DDI | /ddi (actif) |
-| Agents | /agents |
-| Statistiques | /stats |
+# QU'EST-CE QUE LE DDI ?
+DDI (Direct Dial-In) permet de créer des extensions internes.
+L'appelant compose le numéro principal + une extension pour joindre
+directement un agent, une file ou un menu SVI sans passer par l'accueil.
 
-# TABLEAU DDI
-| Colonne | Description |
-|---------|-------------|
-| Numéro DDI | Numéro entrant |
-| Description | Label descriptif |
-| Statut | Actif/Inactif |
-| Date ajout | Date création |
-| Actions | Edit, Delete |
+Exemple: +33 800 123 456 + ext 101 → Service commercial
 
-# DDI (Direct Dial-In)
-- Permet d'associer plusieurs numéros entrants
-- Tous routés vers la même configuration
-- Utile pour les portabilités de plages
+# COLONNES TABLE
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Extension | 130px | Numéro court (ex: 100, 101) |
+| Destination | 250px | Numéro ou service de destination |
+| Type | 150px | Badge (Ligne interne/Externe/File/SVI) |
+| Statut | 150px | Badge Actif/Inactif |
+| Description | 220px | Texte libre |
+| Actions | 80px | ✎ Edit ✕ Delete |
+
+# TYPES DE DESTINATION
+| Type | Couleur Badge | Description |
+|------|---------------|-------------|
+| Ligne interne | Vert #DEF7EC | Ligne SIP du groupe |
+| Externe | Bleu #DBEAFE | Numéro externe quelconque |
+| File | Violet #F3E8FF | File d'attente |
+| SVI | Orange #FEF3C7 | Menu vocal interactif |
 
 # INTERACTIONS
-- "+ Ajouter DDI" → Modal ajout
-- ✎ → Modal édition description
-- × → Confirmation suppression
-- Pagination → Navigation pages
+- Clic NAV3 tab → Navigation onglet
+- Clic ↻ → Rafraîchir liste
+- Clic "+ Ajouter une règle" → Modal ajout DDI
+- Clic ✎ → Modal édition règle
+- Clic ✕ → Supprimer règle (confirmation)
 
 # API ENDPOINTS
-GET /telephony/{ba}/number/{sn}/ddi
-POST /telephony/{ba}/number/{sn}/ddi
-PUT /telephony/{ba}/number/{sn}/ddi/{id}
-DELETE /telephony/{ba}/number/{sn}/ddi/{id}
+GET /telephony/{ba}/number/{sn}/easyHunting/hunting/ddi → Liste DDI
+GET /telephony/{ba}/number/{sn}/easyHunting/hunting/ddi/range → Plage dispo
+POST /telephony/{ba}/number/{sn}/easyHunting/hunting/ddi → Ajouter DDI
+PUT /telephony/{ba}/number/{sn}/easyHunting/hunting/ddi/{ext} → Modifier
+DELETE /telephony/{ba}/number/{sn}/easyHunting/hunting/ddi/{ext} → Supprimer
+
+# PAYLOAD DDI
+```json
+{
+  "extension": "103",
+  "destination": "0033912345678",
+  "destinationType": "external",
+  "description": "Mobile urgence",
+  "enabled": true
+}
+```
 
 ================================================================================

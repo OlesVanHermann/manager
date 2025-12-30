@@ -1,0 +1,153 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard Zerto OVH
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 2 étapes
+**Fonction:** Configurer la réplication Zerto OVH vers OVH
+**Contexte:** Configuration PRA Zerto entre deux datacenters OVHcloud
+
+## 2. DIMENSIONS
+
+- Container principal: 1440x700px
+- Zone wizard: 1360x550px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > dc-paris-01 > Zerto > **Configuration OVH vers OVH**
+
+### Titre
+- "Configuration Zerto - Réplication OVH vers OVH"
+- Font-size: 18px, font-weight: 600
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Datacenter principal | Completed (vert ✓) |
+| 2 | Datacenter secondaire | Active (bleu) |
+
+## 4. ÉTAPE 2 : DATACENTER SECONDAIRE (visible)
+
+### Zone formulaire
+- Background: #F9FAFB
+- Border-radius: 6px
+- Dimensions: 1280x330px
+
+### Label section
+- "Sélectionnez le datacenter secondaire pour la réplication :"
+- Font-weight: 600
+
+### Cartes de sélection datacenter (3 colonnes)
+
+**Carte 1 - dc-london-02 (Sélectionnée):**
+- Dimensions: 380x100px
+- Bordure: #0050D7, 2px
+- Radio: checked (bleu)
+- Titre: "dc-london-02" (font-weight: 600)
+- Info ligne 1: "Infrastructure : pcc-192-0-2-2"
+- Info ligne 2: "Région : London (UK)"
+
+**Carte 2 - dc-frankfurt-03:**
+- Dimensions: 380x100px
+- Bordure: #E5E7EB, 1px
+- Radio: unchecked
+- Titre: "dc-frankfurt-03"
+- Info: "Infrastructure : pcc-192-0-2-3"
+- Région: "Frankfurt (DE)"
+
+**Carte 3 - dc-warsaw-04:**
+- Dimensions: 380x100px
+- Bordure: #E5E7EB, 1px
+- Radio: unchecked
+- Titre: "dc-warsaw-04"
+- Info: "Infrastructure : pcc-192-0-2-4"
+- Région: "Warsaw (PL)"
+
+### Message info
+- Background: #EFF6FF
+- Border: #BFDBFE
+- Icône: i (cercle bleu)
+- Dimensions: 1180x60px
+- Texte (2 lignes):
+  - "Le datacenter secondaire doit être situé dans une infrastructure différente"
+  - "pour garantir la haute disponibilité de vos données en cas de sinistre."
+
+## 5. COMPOSANTS UI
+
+### Stepper completed
+- Cercle vert #10B981 avec ✓ blanc
+- Ligne verte entre étapes
+
+### Stepper active
+- Cercle bleu #0050D7 avec numéro blanc
+
+### Carte sélectionnée
+- Border: 2px solid #0050D7
+- Radio: cercle bleu avec point blanc
+
+### Carte non sélectionnée
+- Border: 1px solid #E5E7EB
+- Radio: cercle blanc avec bordure grise
+
+## 6. ACTIONS & INTERACTIONS
+
+### Sélection datacenter
+- Click sur carte → sélectionne le datacenter
+- Un seul datacenter sélectionnable
+
+### Contraintes
+- Datacenter secondaire ≠ datacenter principal
+- Infrastructure différente recommandée
+
+### Bouton Précédent
+- Style: btn-secondary (100x36px)
+- Position: gauche
+- Action: Retour à l'étape 1
+
+### Bouton Annuler
+- Style: btn-secondary (100x36px)
+- Position: centre-droite
+- Action: Annule le wizard
+
+### Bouton Suivant
+- Style: btn-primary (100x36px)
+- Position: droite
+- Action: Valide la configuration et lance la création
+
+## 7. ÉTAPE 1 : DATACENTER PRINCIPAL (complétée)
+
+### Contenu (non visible)
+- Sélection du datacenter source
+- Vérification de l'éligibilité Zerto
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter
+→ Liste les datacenters du PCC
+
+GET /dedicatedCloud/{serviceName}/zerto/eligibleDatacenters
+→ Liste les datacenters éligibles comme secondaire
+
+POST /dedicatedCloud/{serviceName}/datacenter/{primaryDcId}/zerto/ovh
+Body: {
+  secondaryDatacenterId: "dc-london-02",
+  secondaryInfrastructure: "pcc-192-0-2-2"
+}
+→ Configure la réplication OVH vers OVH
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_zerto_ovh_title | Configuration Zerto - Réplication OVH vers OVH |
+| wizard_zerto_step2_label | Sélectionnez le datacenter secondaire pour la réplication |
+| card_infrastructure | Infrastructure |
+| card_region | Région |
+| info_different_infrastructure | Le datacenter secondaire doit être situé dans une infrastructure différente pour garantir la haute disponibilité de vos données en cas de sinistre. |
+| step_primary_dc | Datacenter principal |
+| step_secondary_dc | Datacenter secondaire |
+| btn_previous | Précédent |
+| btn_cancel | Annuler |
+| btn_next | Suivant |

@@ -1,0 +1,110 @@
+# Cahier des Charges : web-cloud/domain - Modal Contacts
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal modification contact
+**Fonction:** Modifier un contact du domaine (admin, tech, billing)
+**Contexte:** Action depuis la page contacts
+
+## 2. DIMENSIONS
+
+- Modal: 600x450px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Modifier le contact administrateur"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Contact actuel
+- Label: "Contact actuel"
+- Box info: 552x45px, background #F9FAFB
+- Contenu: "ab12345-ovh   Jean Dupont (jean@example.com)"
+
+### Nouveau NIC Handle
+- Label: "Nouveau NIC Handle *"
+- Input: 552x36px
+- Placeholder: "ex: xy98765-ovh"
+
+### Séparateur
+- Lignes horizontales avec "ou" au centre
+
+### Bouton création
+- "+ Créer un nouveau contact" (btn-outline-primary, 252x32px)
+- Centré
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 552x50px
+- Texte lignes:
+  - "Le nouveau contact recevra un email de confirmation."
+  - "Le changement sera effectif après validation."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Modifier | btn-primary | 110x34px |
+
+## 6. VARIANTES
+
+Le titre change selon le type de contact:
+- "Modifier le contact administrateur"
+- "Modifier le contact technique"
+- "Modifier le contact facturation"
+
+Le propriétaire ne peut pas être modifié via ce modal (procédure change-owner).
+
+## 7. APIS & ENDPOINTS
+
+```
+PUT /domain/{serviceName}/contacts
+Body: {
+  contactAdmin: "xy98765-ovh"
+  // ou contactTech ou contactBilling
+}
+→ Modifie le contact
+
+# Workflow:
+# 1. Demande de changement
+# 2. Email au nouveau contact
+# 3. Validation par le nouveau contact
+# 4. Changement effectif
+
+POST /me/contact
+Body: {
+  firstName: "...",
+  lastName: "...",
+  email: "...",
+  ...
+}
+→ Crée un nouveau contact
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title_admin | Modifier le contact administrateur |
+| modal_title_tech | Modifier le contact technique |
+| modal_title_billing | Modifier le contact facturation |
+| field_current | Contact actuel |
+| field_new_nic | Nouveau NIC Handle |
+| nic_placeholder | ex: xy98765-ovh |
+| or_separator | ou |
+| btn_create_contact | + Créer un nouveau contact |
+| info_line1 | Le nouveau contact recevra un email de confirmation. |
+| info_line2 | Le changement sera effectif après validation. |
+| btn_cancel | Annuler |
+| btn_modify | Modifier |

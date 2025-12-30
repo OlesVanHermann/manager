@@ -1,0 +1,146 @@
+# Cahier des Charges : web-cloud/emails - Responders
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page datagrid avec panel latéral
+**Fonction:** Gestion des répondeurs automatiques (out of office)
+**Contexte:** Onglet Répondeurs
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections | Répondeurs (actif) | Listes | Sécurité | Avancé | Licences | Tâches
+
+## 3. LAYOUT
+
+### Panel gauche (280x765px)
+- Toggle: "Par domaine" / "Par licence"
+- Recherche domaine
+- Liste des domaines avec compteurs
+
+### Panel droit (1096x765px)
+- Header avec nom domaine
+- Onglets NAV3
+- Toolbar
+- Tableau répondeurs
+
+## 4. TOOLBAR
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Créer répondeur | btn-primary | Ouvre modal création |
+| Filtrer... | Input | Recherche |
+| ↻ | btn-outline | Rafraîchir |
+
+## 5. BANNIÈRE INFO
+
+- Background: #DBEAFE
+- Dimensions: 1036x40px
+- Texte: "Les répondeurs envoient automatiquement une réponse aux emails reçus (absence, vacances...)."
+
+## 6. DATAGRID
+
+### Colonnes
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Compte email | 240px | Email + badge offre |
+| Message | 280px | Aperçu du message |
+| Période | 180px | Dates ou "Permanent" |
+| Statut | 100px | Badge Actif/Planifié/Inactif |
+| Actions | 160px | Modifier / Supprimer |
+
+### Badges Statut
+
+| Statut | Background | Couleur |
+|--------|------------|---------|
+| Actif | #DEF7EC | #03543F |
+| Planifié | #FEF3C7 | #D97706 |
+| Inactif | #F3F4F6 | #6B7280 |
+
+### Exemples
+
+| Compte | Message | Période | Statut |
+|--------|---------|---------|--------|
+| ceo@example.com (E) | Je suis absent du bureau jusqu'au... | 24/12/2025 - 05/01/2026 | Actif |
+| contact@example.com (P) | Merci pour votre message... | Permanent | Planifié |
+| support@example.com (E) | Notre service support est fermé... | - | Inactif |
+
+- (E) = cercle orange Exchange
+- (P) = cercle bleu Email Pro
+
+## 7. ACTIONS PAR LIGNE
+
+- **Modifier**: Ouvre modal modification (lien bleu)
+- **Supprimer**: Confirmation puis suppression (lien rouge)
+
+## 8. PAGINATION
+
+- Texte: "Affichage 1-3 sur 3"
+
+## 9. APIS & ENDPOINTS
+
+```
+# MX Plan - Lister répondeurs
+GET /email/domain/{domain}/responder
+→ Liste des répondeurs
+
+# Créer répondeur
+POST /email/domain/{domain}/responder
+Body: {
+  account: "jean@example.com",
+  content: "Je suis absent...",
+  copy: false,
+  from: "2025-12-24",
+  to: "2026-01-05"
+}
+
+# Modifier répondeur
+PUT /email/domain/{domain}/responder/{account}
+Body: {
+  content: "Nouveau message...",
+  to: "2026-01-10"
+}
+
+# Supprimer répondeur
+DELETE /email/domain/{domain}/responder/{account}
+
+# Exchange - Out Of Office
+GET /email/exchange/{organization}/service/{serviceName}/account/{email}
+→ Champs outOfOffice*
+
+PUT /email/exchange/{organization}/service/{serviceName}/account/{email}
+Body: {
+  outOfOffice: true,
+  outOfOfficeMessage: "Je suis absent...",
+  outOfOfficeStartDate: "2025-12-24T00:00:00",
+  outOfOfficeEndDate: "2026-01-05T00:00:00"
+}
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_title | Répondeurs |
+| info_banner | Les répondeurs envoient automatiquement une réponse aux emails reçus (absence, vacances...). |
+| btn_create | + Créer répondeur |
+| filter_placeholder | Filtrer... |
+| col_account | Compte email |
+| col_message | Message |
+| col_period | Période |
+| col_status | Statut |
+| col_actions | Actions |
+| period_permanent | Permanent |
+| status_active | Actif |
+| status_scheduled | Planifié |
+| status_inactive | Inactif |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| pagination | Affichage {start}-{end} sur {total} |

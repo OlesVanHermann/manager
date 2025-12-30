@@ -1,0 +1,125 @@
+# Cahier des Charges : web-cloud/domain - Modal Batch Lock
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal action batch
+**Fonction:** Verrouiller/déverrouiller le transfert de plusieurs domaines
+**Contexte:** Action groupée depuis liste des domaines
+
+## 2. DIMENSIONS
+
+- Modal: 700x620px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #FFFFFF
+- Titre: "Verrouillage transfert (Batch)"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 652x50px
+- Titre: "Protection contre le transfert"
+- Description: "Le verrouillage empêche le transfert non autorisé de vos domaines vers un autre registrar."
+
+### Action sélecteur
+- Label: "Action à appliquer :"
+- Dropdown: 200x36px
+- Options: "Verrouiller" / "Déverrouiller"
+
+### Liste domaines
+- Titre: "Domaines sélectionnés (5)"
+- Colonnes:
+  - Checkbox
+  - DOMAINE
+  - STATUT ACTUEL
+
+### Badges statut
+
+| Badge | Background | Text color |
+|-------|------------|------------|
+| Verrouillé | #DEF7EC | #03543F |
+| Déverrouillé | #FEF3C7 | #92400E |
+
+### Exemples données
+
+| Domaine | Statut | Checkbox |
+|---------|--------|----------|
+| example.com | Déverrouillé | ✓ |
+| example.fr | Déverrouillé | ✓ |
+| example.eu | Verrouillé | ✓ |
+| example.net | Non supporté (.net externe) | ☐ (disabled) |
+| example.org | Déverrouillé | ✓ |
+
+### Summary banner
+- Background: #FEF3C7
+- Dimensions: 652x45px
+- Titre: "Résumé de l'opération"
+- Message: "4 domaines seront verrouillés. 1 domaine ignoré (non supporté)."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 100x34px |
+| Appliquer (4) | btn-primary | 150x34px |
+
+## 6. COMPOSANTS UI
+
+### Checkbox disabled
+- Background: #FFFFFF
+- Border: #E5E7EB
+- Non cliquable
+- Texte grisé
+
+### Badge amber
+- Background: #FEF3C7
+- Text: #92400E
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /domain/{serviceName}/transferLock
+→ Statut verrouillage actuel
+
+POST /domain/{serviceName}/lock
+→ Verrouille le domaine
+
+DELETE /domain/{serviceName}/lock
+→ Déverrouille le domaine
+
+# Pour chaque domaine sélectionné:
+POST /domain/{domain}/lock     # si verrouillage
+DELETE /domain/{domain}/lock   # si déverrouillage
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Verrouillage transfert (Batch) |
+| info_title | Protection contre le transfert |
+| info_desc | Le verrouillage empêche le transfert non autorisé de vos domaines vers un autre registrar. |
+| field_action | Action à appliquer : |
+| action_lock | Verrouiller |
+| action_unlock | Déverrouiller |
+| list_title | Domaines sélectionnés ({n}) |
+| col_domain | Domaine |
+| col_status | Statut actuel |
+| status_locked | Verrouillé |
+| status_unlocked | Déverrouillé |
+| status_not_supported | Non supporté ({ext} externe) |
+| summary_title | Résumé de l'opération |
+| summary_message | {applied} domaines seront {action}. {ignored} domaine ignoré (non supporté). |
+| btn_cancel | Annuler |
+| btn_apply | Appliquer ({n}) |

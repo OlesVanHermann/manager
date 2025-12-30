@@ -2,37 +2,66 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.modal.filter-add.svg
-Route:   Modal (overlay) - declenchee depuis filtrage appels ligne
-Version: v1 (2025-12-29)
+Modal:   Ajout d'un filtre d'appel
+Context: Page Ligne SIP - Options - Restrictions
+Version: v1 (2025-12-30)
 ================================================================================
 
-DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                              |
-|--------------------------|-----------------------------------------|
-| (aucune)                 | Formulaire de creation                  |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| (champs vides)        | Formulaire de création                        |
+| Numéro spécifique     | Dropdown: Numéro spécifique, Préfixe, Anonyme |
 
 ================================================================================
 
 # STRUCTURE MODAL
-1. Header: Titre + bouton fermer
-2. Radio buttons: Type de filtre
-   - Numero exact
-   - Prefixe
-   - Anonyme
-3. Input: Numero ou prefixe (required)
-4. Radio buttons: Action
-   - Rejeter
-   - Accepter
-   - Messagerie
-5. Input: Description
-6. Toggle: Activer immediatement
-7. Footer: Annuler + Ajouter
+1. HEADER - Titre + bouton fermer
+2. CONTENT
+   - Dropdown Type de filtre
+   - Champ Numéro ou pattern (obligatoire)
+   - Radio Action (Rejeter / Transférer messagerie)
+   - Champ Description (optionnel)
+   - Bannière info
+3. FOOTER - Boutons Ajouter / Annuler
 
 # DIMENSIONS
-- Largeur: 700px
-- Hauteur: 500px
-- Position: Centree
+- Width: 550px
+- Height: 450px
+- Padding: 24px
+
+# TYPES DE FILTRE
+| Type | Description |
+|------|-------------|
+| Numéro spécifique | Bloque un numéro exact |
+| Préfixe | Bloque tous les numéros commençant par... |
+| Anonyme | Bloque les appels masqués |
+| Surtaxé | Bloque les numéros surtaxés (08xx) |
+
+# ACTIONS DISPONIBLES
+| Action | Description |
+|--------|-------------|
+| Rejeter | Termine l'appel immédiatement |
+| Messagerie | Redirige vers messagerie vocale |
+
+# INTERACTIONS
+- Clic ✕ → Fermer modal
+- Dropdown type → Sélectionner type de filtre
+- Radio action → Sélectionner action
+- Clic "Ajouter" → POST API + fermer modal
+- Clic "Annuler" → Fermer modal sans sauvegarder
 
 # API ENDPOINTS
-POST /telephony/{ba}/line/{sn}/calls/filter - Creer regle filtrage
+POST /telephony/{ba}/line/{sn}/options/callFilter → Créer filtre
+
+# PAYLOAD ATTENDU
+```json
+{
+  "type": "specific",
+  "number": "+33612345678",
+  "action": "reject",
+  "description": "Blocage démarchage"
+}
+```
+
 ================================================================================

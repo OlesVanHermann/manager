@@ -2,53 +2,52 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.group.dashboard.svg
-Route:   /web-cloud/voip/{billingAccount}/dashboard
+Route:   /web-cloud/voip/{billingAccount}
 Version: v1 (2025-12-30)
 ================================================================================
 
-DONNÉES DYNAMIQUES
-| Exemple SVG             | Source API                                      |
-|-------------------------|-------------------------------------------------|
-| Compte principal entrep.| GET /telephony/{ba} → description               |
-| am12345-ovh             | GET /telephony → billingAccount                 |
-| 18 lignes               | GET /telephony/{ba}/line → count                |
-| 6 numéros               | GET /telephony/{ba}/number → count              |
-| 2 fax                   | GET /telephony/{ba}/fax → count                 |
-| Actif                   | GET /telephony/{ba}/serviceInfos → status       |
-| 45,20 €                 | GET /telephony/{ba} → currentOutplan            |
-| Équipements             | GET /telephony/{ba}/line/{sn}/phone             |
-| Factures                | GET /me/bill?category=telephony                 |
-| ab12345-ovh             | Session utilisateur                             |
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| {nicHandle}           | Session utilisateur                           |
+| voip-ab12345          | GET /telephony → item                         |
+| Téléphonie Siège      | GET /telephony/{ba} → description             |
+| 3 lignes              | GET /telephony/{ba}/line → count              |
+| 2 numéros             | GET /telephony/{ba}/number → count            |
+| 1 fax                 | GET /telephony/{ba}/fax → count               |
+| 50,00 €               | GET /telephony/{ba} → creditThreshold         |
+| 72% forfait           | Calcul: conso/forfait * 100                   |
+| 12,50 € hors forfait  | GET /telephony/{ba}/serviceInfos → outplanCost|
+| Parc VoIP             | GET /telephony/{ba}/line/{sn}/phone           |
 
 ================================================================================
 
 # STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif, x=510)
-2. NAV2 - Web Cloud (VoIP actif, x=500)
-3. LEFT PANEL - Liste des groupes VoIP (avec compteurs ☎️🔢📠)
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+3. LEFT PANEL - Liste groupes avec sélection
 4. RIGHT PANEL
-   - Header: Nom du groupe
-   - NAV3: 5 tabs (**Dashboard**, Services, Répertoire, Facturation, Administration)
-   - Bloc Actions: Liens rapides (commander ligne/numéro, portabilités, voicefax)
-   - Bloc Informations: Compteurs (statut, lignes, numéros, fax)
-   - Bloc Consommation: Pie chart + hors forfait
-   - Bloc Équipements: Cards téléphones (modèle, ligne, MAC)
-   - Bloc Factures: Table récentes (date, montant, payé)
+   - Header: Nom groupe + bouton Commander
+   - NAV3: [Dashboard] | Services | Répertoire | Facturation | Administration
+   - Tiles row 1:
+     * "Je veux..." (4 actions rapides)
+     * "Informations générales" (état, compteurs, crédit)
+     * "Consommation du mois" (graphique circulaire)
+   - Table "Mes 5 derniers relevés" (date, montant, statut, actions)
+   - Section "Mon parc VoIP" (cartes téléphones avec pagination)
 
 # INTERACTIONS
-- Clic NAV3 tab → Navigation vers autre section groupe
-- Clic lien Actions → Navigue vers page correspondante
-- Clic équipement → Navigue vers détails ligne/téléphone
-- Clic ... facture → Menu actions (télécharger PDF, voir détails)
+- Clic groupe LEFT PANEL → Sélection
+- Clic action rapide → Navigation
+- Clic tab NAV3 → Navigation section
+- Clic PDF/CSV → Téléchargement
+- Clic "Voir tout" parc → Liste complète
 
 # API ENDPOINTS
-GET  /telephony                                            # Liste groupes
-GET  /telephony/{ba}                                       # Détails groupe
-GET  /telephony/{ba}/serviceInfos                          # Infos service
-GET  /telephony/{ba}/line                                  # Liste lignes
-GET  /telephony/{ba}/number                                # Liste numéros
-GET  /telephony/{ba}/fax                                   # Liste fax
-GET  /telephony/{ba}/line/{sn}/phone                       # Infos téléphone
-GET  /me/bill?category=telephony                           # Factures telecom
+GET /telephony/{ba}                     → Détails groupe
+GET /telephony/{ba}/serviceInfos        → Infos facturation
+GET /telephony/{ba}/line                → Liste lignes
+GET /telephony/{ba}/line/{sn}/phone     → Détails téléphone
+GET /telephony/{ba}/historyConsumption  → Historique conso
 
 ================================================================================

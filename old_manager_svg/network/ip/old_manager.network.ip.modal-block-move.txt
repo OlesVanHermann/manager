@@ -1,0 +1,92 @@
+# Cahier des Charges : network/ip - Modal Block Move
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal wizard 2 étapes
+**Fonction:** Déplacer une Additional IP vers un autre service
+**Contexte:** Migration d'IP entre services OVHcloud
+
+## 2. DIMENSIONS
+
+- Modal: 500x420px
+- Overlay: fond noir 50%
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #000E9C
+- Titre: "Déplacer Additional IP"
+- Bouton fermer: ×
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Sélection | Active |
+| 2 | Confirmation | Inactive |
+
+## 4. ÉTAPE 1 : SÉLECTION
+
+### Question
+- "Sélectionnez le service de destination pour l'IP **51.178.42.0/28** :"
+
+### Champ De (readonly)
+- Label: "De"
+- Valeur: "ns123456.ip-51-178-0.eu (Serveur dédié)"
+
+### Champ Vers (select)
+- Label: "Vers"
+- Type: Select dropdown
+- Dimensions: 440x40px
+- Valeur: "Parking des IPs"
+- Options groupées par type de service
+
+### Message warning (si parking)
+- Background: #FEF3C7
+- Border: #FDE68A
+- Texte: "Attention, le déplacement d'une IP dans le 'Parking des IP' engendre des coûts d'immobilisation !"
+
+### Liste services disponibles
+- Serveur dédié: ns654321, ns789012
+- VPS: vps-abc123, vps-def456
+- Dedicated Cloud: pcc-1234
+
+## 5. ACTIONS & INTERACTIONS
+
+### Sélection service
+- Dropdown avec services groupés par type
+- Affiche warning si parking sélectionné
+
+### Bouton Annuler
+- Style: btn-secondary (100x36px)
+- Action: Ferme le modal
+
+### Bouton Suivant
+- Style: btn-primary (100x36px)
+- Action: Passe à l'étape 2 (Confirmation)
+
+## 6. APIS & ENDPOINTS
+
+```
+GET /ip/{ip}/destinationService
+→ Liste les services éligibles
+
+POST /ip/{ip}/move
+Body: {
+  to: "ns654321"
+}
+→ Déplace l'IP vers le service
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_move_title | Déplacer Additional IP |
+| modal_move_select | Sélectionnez le service de destination pour l'IP |
+| field_from | De |
+| field_to | Vers |
+| parking_label | Parking des IPs |
+| parking_warning | Attention, le déplacement d'une IP dans le "Parking des IP" engendre des coûts d'immobilisation ! |
+| services_available | Services disponibles |
+| btn_cancel | Annuler |
+| btn_next | Suivant |

@@ -1,0 +1,135 @@
+# Cahier des Charges : private/cloud - Modal NSX Add
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter un NSX Edge au datacenter
+**Contexte:** Configuration réseau virtuel VMware NSX
+
+## 2. DIMENSIONS
+
+- Modal: 500x450px
+- Background page: #F9FAFB
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F3F4F6
+- Titre: "Ajouter un NSX Edge"
+- Bouton fermer: ×
+- Height: 55px
+
+## 4. FORMULAIRE
+
+### Champ Datacenter
+- Label: "Datacenter *"
+- Type: Select dropdown
+- Largeur: 460px
+- Exemple: "DC1 - Paris"
+
+### Champ Taille
+- Label: "Taille *"
+- Type: Radio cards (3 options)
+
+| Option | Specs | État |
+|--------|-------|------|
+| Medium | 4 vCPU / 8 Go | Non sélectionné |
+| Large | 8 vCPU / 16 Go | Sélectionné |
+| X-Large | 16 vCPU / 32 Go | Non sélectionné |
+
+### Style radio cards
+- Dimensions: 145x70px chacune
+- Selected: border #0050D7, 2px
+
+### Champ Services à activer
+- Label: "Services à activer"
+- Type: Checkboxes inline
+
+| Service | État |
+|---------|------|
+| NAT | Checked |
+| Firewall | Checked |
+| VPN IPSec | Unchecked |
+| Load Balancer | Unchecked |
+
+### Champ Facturation
+- Label: "Facturation"
+- Type: Radio cards (2 options)
+
+| Option | Description | État |
+|--------|-------------|------|
+| Horaire | Sans engagement | Non sélectionné |
+| Mensuel | -20% sur le prix horaire | Sélectionné |
+
+## 5. COMPOSANTS UI
+
+### Checkbox group
+- Layout: horizontal inline
+- Spacing: ~80px entre checkboxes
+- Checked: bg #0050D7 avec ✓ blanc
+
+### Radio card size
+- Titre: nom de la taille
+- Sous-titre: specs (vCPU / RAM)
+
+## 6. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Action: Ferme le modal
+
+### Bouton Ajouter
+- Style: btn-primary (100x40px)
+- Action: Crée le NSX Edge
+
+### Validation
+- Datacenter requis
+- Taille requise
+- Au moins un service optionnel
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter
+→ Liste des datacenters
+
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsx/edge/size
+→ Tailles disponibles
+
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsx/edge
+Body: {
+  size: "large",
+  enableNat: true,
+  enableFirewall: true,
+  enableVpn: false,
+  enableLoadBalancer: false,
+  billingType: "monthly"
+}
+→ Crée le NSX Edge
+
+GET /order/catalog/public/dedicatedCloud
+→ Prix des NSX Edge
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un NSX Edge |
+| field_datacenter | Datacenter |
+| field_size | Taille |
+| size_medium | Medium |
+| size_large | Large |
+| size_xlarge | X-Large |
+| field_services | Services à activer |
+| service_nat | NAT |
+| service_firewall | Firewall |
+| service_vpn | VPN IPSec |
+| service_lb | Load Balancer |
+| field_billing | Facturation |
+| billing_hourly | Horaire |
+| billing_hourly_desc | Sans engagement |
+| billing_monthly | Mensuel |
+| billing_monthly_desc | -20% sur le prix horaire |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

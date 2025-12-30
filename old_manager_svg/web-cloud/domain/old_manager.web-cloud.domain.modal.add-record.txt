@@ -1,0 +1,134 @@
+# Cahier des Charges : web-cloud/domain - Modal Add Record
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire dynamique
+**Fonction:** Ajouter un enregistrement DNS à la zone
+**Contexte:** Action depuis l'onglet Zone DNS
+
+## 2. DIMENSIONS
+
+- Modal: 700x600px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Ajouter une entrée DNS"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Séparateur: ligne #E5E7EB
+
+## 4. CONTENU
+
+### Sélection du type
+- Label: "Type d'enregistrement *"
+- Type buttons (grille horizontale):
+
+| Type | Dimensions | Description |
+|------|------------|-------------|
+| A | 75x32px | IPv4 |
+| AAAA | 75x32px | IPv6 |
+| CNAME | 75x32px | Alias |
+| MX | 75x32px | Mail |
+| TXT | 75x32px | Texte |
+| NS | 75x32px | Nameserver |
+| SRV | 75x32px | Service |
+
+- Sélectionné: background #0050D7, text white
+- Non sélectionné: background blanc, border #E5E7EB
+
+### Sous-domaine
+- Label: "Sous-domaine"
+- Input: 300x36px
+- Placeholder: "@ ou www, mail, etc."
+- Suffixe: ".exemple.com"
+
+### Cible
+- Label: "Cible (IP ou hostname) *"
+- Input: 652x36px
+- Placeholder: "203.0.113.50 ou mail.exemple.com."
+
+### TTL (Time To Live)
+- Label: "TTL (Time To Live)"
+- Input number: 150x36px, default "3600", suffixe "sec"
+- Quick buttons: 1h, 6h, 24h (background #F9FAFB)
+
+### Priorité (pour MX)
+- Label: "Priorité (MX uniquement)"
+- Input number: 150x36px
+- Placeholder: "10"
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 652x40px
+- Texte: "La propagation DNS peut prendre jusqu'à 24-48h selon les serveurs."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 110x34px |
+| Ajouter | btn-primary | 110x34px |
+
+## 6. CHAMPS PAR TYPE
+
+| Type | Champs requis |
+|------|---------------|
+| A | Sous-domaine, IPv4, TTL |
+| AAAA | Sous-domaine, IPv6, TTL |
+| CNAME | Sous-domaine, Target hostname, TTL |
+| MX | Sous-domaine, Mail server, Priority, TTL |
+| TXT | Sous-domaine, Value (textarea), TTL |
+| NS | Sous-domaine, Nameserver, TTL |
+| SRV | Service, Protocol, Priority, Weight, Port, Target, TTL |
+
+## 7. APIS & ENDPOINTS
+
+```
+POST /domain/zone/{zoneName}/record
+Body: {
+  fieldType: "A",
+  subDomain: "www",
+  target: "203.0.113.50",
+  ttl: 3600
+}
+→ Crée un enregistrement
+
+# Pour MX:
+Body: {
+  fieldType: "MX",
+  subDomain: "",
+  target: "mail.exemple.com.",
+  ttl: 3600,
+  priority: 10
+}
+
+POST /domain/zone/{zoneName}/refresh
+→ Rafraîchit la zone après modification
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter une entrée DNS |
+| field_type | Type d'enregistrement |
+| field_subdomain | Sous-domaine |
+| subdomain_placeholder | @ ou www, mail, etc. |
+| field_target | Cible (IP ou hostname) |
+| target_placeholder | 203.0.113.50 ou mail.exemple.com. |
+| field_ttl | TTL (Time To Live) |
+| ttl_unit | sec |
+| ttl_1h | 1h |
+| ttl_6h | 6h |
+| ttl_24h | 24h |
+| field_priority | Priorité (MX uniquement) |
+| info_propagation | La propagation DNS peut prendre jusqu'à 24-48h selon les serveurs. |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |

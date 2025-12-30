@@ -1,0 +1,103 @@
+# Cahier des Charges : web-cloud/hosting - Modal Regenerate SSL
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal sélection multiple
+**Fonction:** Régénérer le certificat SSL avec sélection des domaines
+**Contexte:** Action depuis l'onglet SSL
+
+## 2. DIMENSIONS
+
+- Modal: 600x320px
+- Overlay: rgba(0,0,0,0.5)
+
+## 3. HEADER MODAL
+
+- Background: #F9FAFB
+- Hauteur: 56px
+- Titre: "Régénérer le certificat SSL"
+- Bouton fermer: ✕ (position droite)
+
+## 4. CONTENU
+
+### Instructions
+- Texte: "Choisissez les domaines à inclure dans le nouveau certificat :"
+
+### Liste domaines (checkboxes)
+
+| Domaine | État | Badge |
+|---------|------|-------|
+| ☑ www.monsite.com | Coché | Principal |
+| ☑ monsite.com | Coché | - |
+| ☑ blog.monsite.com | Coché | - |
+| ☐ dev.monsite.com | Décoché | Non résolu |
+
+### Checkbox styles
+- Coché: Background #0050D7, icône ✓ blanc
+- Décoché: Background #FFFFFF, border #E5E7EB
+- Désactivé (non résolu): Grisé
+
+### Bannière warning (552x40px)
+- Background: #FEF3C7
+- Texte: "La régénération peut prendre quelques minutes. Le site reste accessible."
+- Couleur texte: #D97706
+
+### Info fournisseur
+- Texte: "Fournisseur: Let's Encrypt | Validité: 90 jours | Renouvellement automatique"
+- Couleur: muted
+
+## 5. FOOTER MODAL
+
+- Bouton gauche: "Annuler" (btn-outline, 100x36px)
+- Bouton droit: "Régénérer" (btn-primary, 100x36px)
+
+## 6. VALIDATION
+
+- Au moins un domaine doit être sélectionné
+- Les domaines "Non résolu" ne peuvent pas être inclus (DNS non configuré)
+
+## 7. APIS & ENDPOINTS
+
+```
+# Obtenir certificat actuel
+GET /hosting/web/{serviceName}/ssl
+→ domains, provider, status, expiration
+
+# Lister domaines attachés
+GET /hosting/web/{serviceName}/attachedDomain
+→ Liste avec statut DNS
+
+# Vérifier résolution DNS
+GET /hosting/web/{serviceName}/attachedDomain/{domain}
+→ dnsStatus: "resolved" | "unresolved"
+
+# Régénérer certificat
+POST /hosting/web/{serviceName}/ssl/regenerate
+Body: {
+  domains: ["www.monsite.com", "monsite.com", "blog.monsite.com"]
+}
+→ Tâche de régénération
+
+# Supprimer et recréer (alternative)
+DELETE /hosting/web/{serviceName}/ssl
+POST /hosting/web/{serviceName}/ssl
+Body: { domains: [...] }
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Régénérer le certificat SSL |
+| instruction | Choisissez les domaines à inclure dans le nouveau certificat : |
+| badge_primary | Principal |
+| badge_unresolved | Non résolu |
+| warning_time | La régénération peut prendre quelques minutes. |
+| warning_accessible | Le site reste accessible. |
+| info_provider | Fournisseur: {provider} |
+| info_validity | Validité: {days} jours |
+| info_renewal | Renouvellement automatique |
+| btn_cancel | Annuler |
+| btn_regenerate | Régénérer |
+| error_no_domain | Sélectionnez au moins un domaine |
+| error_unresolved | Ce domaine n'est pas résolu |

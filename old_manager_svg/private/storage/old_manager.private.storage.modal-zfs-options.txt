@@ -1,0 +1,140 @@
+# Cahier des Charges : private/storage - Modal ZFS Options
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire configuration
+**Fonction:** Configurer les options ZFS d'une partition
+**Contexte:** Optimisation des performances et stockage ZFS
+
+## 2. DIMENSIONS
+
+- Modal: 500x430px
+- Background page: #F9FAFB
+
+## 3. LAYOUT & STRUCTURE
+
+### Header modal
+- Background: #F3F4F6
+- Titre: "Options ZFS"
+- Bouton fermer: ×
+- Height: 55px
+
+### Info partition
+- Label: "Partition :"
+- Valeur: nom de la partition (ex: "data-share")
+- Font-weight: 500
+
+## 4. FORMULAIRE
+
+### Champ Compression
+- Label: "Compression"
+- Type: Select dropdown
+- Options:
+  - off (désactivé)
+  - lz4 (recommandé)
+  - gzip
+  - zstd
+- Valeur par défaut: lz4
+- Largeur: 460px
+- Note: "Algorithme de compression des données. lz4 offre un bon équilibre performance/ratio."
+
+### Champ Taille des blocs (recordsize)
+- Label: "Taille des blocs (recordsize)"
+- Type: Select dropdown
+- Options:
+  - 16 Ko
+  - 32 Ko
+  - 64 Ko
+  - 128 Ko (défaut)
+  - 256 Ko
+  - 512 Ko
+  - 1 Mo
+- Valeur par défaut: 128 Ko
+- Largeur: 460px
+- Note: "Taille recommandée selon usage : 128K général, 1M streaming, 16K bases de données."
+
+### Champ Mode de synchronisation
+- Label: "Mode de synchronisation"
+- Type: Radio cards (3 options)
+
+| Option | Description |
+|--------|-------------|
+| Standard | Mode par défaut (sélectionné) |
+| Always | Synchronisation forcée |
+| Disabled | Synchronisation désactivée |
+
+### Style radio cards
+- Dimensions: ~145x50px par card
+- Selected: border #0050D7, 2px
+- Radio button: cercle bleu avec point blanc si sélectionné
+
+## 5. COMPOSANTS UI
+
+### Select dropdown
+- Height: 40px
+- Border: #E5E7EB
+- Border-radius: 4px
+- Arrow: ▼ à droite
+
+### Radio card
+- Border-radius: 4px
+- Unselected: border #E5E7EB
+- Selected: border #0050D7 2px
+
+### Warning box
+- Background: #FEF3C7
+- Border: #FDE68A
+- Icon: ⚠️
+- Texte: "Les modifications seront appliquées aux nouvelles données uniquement."
+- Dimensions: 460x35px
+
+## 6. ACTIONS & INTERACTIONS
+
+### Bouton Annuler
+- Style: btn-secondary (100x40px)
+- Action: Ferme le modal sans modifier
+
+### Bouton Appliquer
+- Style: btn-primary (100x40px)
+- Action: Applique les options ZFS
+
+### Comportement
+- Options appliquées aux nouvelles données uniquement
+- Données existantes non recompressées automatiquement
+
+## 7. APIS & ENDPOINTS
+
+```
+GET /dedicated/nasha/{serviceName}/partition/{partitionName}
+→ Options ZFS actuelles
+
+PUT /dedicated/nasha/{serviceName}/partition/{partitionName}/options
+Body: {
+  compression: "lz4",
+  recordsize: 131072,
+  sync: "standard"
+}
+→ Modifie les options ZFS
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Options ZFS |
+| field_partition | Partition |
+| field_compression | Compression |
+| compression_off | off (désactivé) |
+| compression_lz4 | lz4 (recommandé) |
+| compression_gzip | gzip |
+| compression_zstd | zstd |
+| compression_hint | Algorithme de compression des données. lz4 offre un bon équilibre performance/ratio. |
+| field_recordsize | Taille des blocs (recordsize) |
+| recordsize_hint | Taille recommandée selon usage : 128K général, 1M streaming, 16K bases de données. |
+| field_sync | Mode de synchronisation |
+| sync_standard | Standard |
+| sync_always | Always |
+| sync_disabled | Disabled |
+| warning_new_data | Les modifications seront appliquées aux nouvelles données uniquement. |
+| btn_cancel | Annuler |
+| btn_apply | Appliquer |

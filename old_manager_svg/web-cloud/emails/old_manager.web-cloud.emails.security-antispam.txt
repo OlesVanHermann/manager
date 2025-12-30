@@ -1,0 +1,143 @@
+# Cahier des Charges : web-cloud/emails - Security Antispam
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard avec règles
+**Fonction:** Configuration antispam du domaine
+**Contexte:** Sous-onglet Antispam de l'onglet Sécurité
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections | Répondeurs | Listes | Sécurité (actif) | Avancé | Licences | Tâches
+
+### NAV4
+- Sous-onglets: DNS Config | Antispam (actif) | Signature
+
+## 3. CARTES STATISTIQUES (4 cartes)
+
+| Carte | Background | Border | Valeur | Libellé |
+|-------|------------|--------|--------|---------|
+| Emails délivrés | #DEF7EC | #A7F3D0 | 1,247 | Emails délivrés (7 jours) |
+| Spam bloqués | #FEE2E2 | #FECACA | 89 | Spam bloqués (7 jours) |
+| En quarantaine | #FEF3C7 | #FDE68A | 12 | En quarantaine |
+| Action | btn-outline | - | - | Voir quarantaine |
+
+Dimensions: 250x80px, 270x80px, 250x80px, 210x80px
+
+## 4. SECTION RÈGLES PERSONNALISÉES
+
+### Header
+- Titre: "Règles personnalisées"
+- Bouton: "+ Ajouter règle" (btn-primary)
+
+### Colonnes tableau
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Règle | 260px | Nom de la règle |
+| Condition | 260px | Description condition |
+| Action | 150px | Badge action |
+| Statut | 80px | Badge Actif |
+| Actions | 120px | Modifier / Suppr |
+
+### Badges Action
+
+| Action | Background | Couleur |
+|--------|------------|---------|
+| Supprimer | #FEE2E2 | #DC2626 |
+| Accepter | #DEF7EC | #03543F |
+| Quarantaine | #FEF3C7 | #D97706 |
+
+### Exemples règles
+
+| Règle | Condition | Action | Statut |
+|-------|-----------|--------|--------|
+| Bloquer domaine spam | Si expéditeur contient "@spam-domain.com" | Supprimer | Actif |
+| Liste blanche partenaire | Si expéditeur contient "@partenaire.fr" | Accepter | Actif |
+| Quarantaine mots clés | Si sujet contient "urgent", "gagné" | Quarantaine | Actif |
+
+## 5. PARAMÈTRES GLOBAUX
+
+- Box: 1036x120px, background #F9FAFB, border #E5E7EB
+- Titre: "Paramètres globaux"
+
+### Paramètres
+
+| Paramètre | Type | Valeur | Options |
+|-----------|------|--------|---------|
+| Niveau de filtrage | Dropdown | Modéré | Faible/Modéré/Strict |
+| Rétention quarantaine | Dropdown | 7 jours | 3/7/14/30 jours |
+| Rapport quotidien | Toggle | Activé | On/Off |
+
+- Note: "Les modifications s'appliquent à toutes les boîtes du domaine."
+
+## 6. APIS & ENDPOINTS
+
+```
+# Statistiques antispam
+GET /email/exchange/{organization}/service/{serviceName}/statistics
+Query: { period: "7days" }
+→ Statistiques spam/ham
+
+# Quarantaine
+GET /email/exchange/{organization}/service/{serviceName}/quarantine
+→ Emails en quarantaine
+
+POST /email/exchange/{organization}/service/{serviceName}/quarantine/{id}/release
+→ Libère un email de quarantaine
+
+DELETE /email/exchange/{organization}/service/{serviceName}/quarantine/{id}
+→ Supprime définitivement
+
+# Règles antispam (MX Plan)
+GET /email/domain/{domain}/spamRules
+POST /email/domain/{domain}/spamRules
+Body: {
+  type: "blacklist",
+  value: "@spam-domain.com",
+  action: "reject"
+}
+
+# Configuration antispam
+GET /email/domain/{domain}/antispam
+PUT /email/domain/{domain}/antispam
+Body: {
+  level: "moderate",
+  quarantineRetention: 7
+}
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_title | Antispam |
+| stat_delivered | Emails délivrés (7 jours) |
+| stat_blocked | Spam bloqués (7 jours) |
+| stat_quarantine | En quarantaine |
+| btn_quarantine | Voir quarantaine |
+| section_rules | Règles personnalisées |
+| btn_add_rule | + Ajouter règle |
+| col_rule | Règle |
+| col_condition | Condition |
+| col_action | Action |
+| col_status | Statut |
+| action_delete | Supprimer |
+| action_accept | Accepter |
+| action_quarantine | Quarantaine |
+| status_active | Actif |
+| section_settings | Paramètres globaux |
+| setting_level | Niveau de filtrage |
+| level_low | Faible |
+| level_moderate | Modéré |
+| level_strict | Strict |
+| setting_retention | Rétention quarantaine |
+| setting_report | Rapport quotidien |
+| settings_note | Les modifications s'appliquent à toutes les boîtes du domaine. |

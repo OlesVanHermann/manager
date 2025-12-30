@@ -1,0 +1,140 @@
+# Cahier des Charges : bare-metal/dedicated-cloud - Wizard Zerto On-Premise
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Wizard 2 étapes
+**Fonction:** Configurer la réplication Zerto OVH vers On-Premises
+**Contexte:** Configuration PRA Zerto hybride (cloud vers infrastructure locale)
+
+## 2. DIMENSIONS
+
+- Container principal: 1440x750px
+- Zone wizard: 1360x600px
+
+## 3. LAYOUT & STRUCTURE
+
+### Breadcrumb
+- Hosted Private Cloud VMware > pcc-192-0-2-1 > dc-paris-01 > Zerto > **Configuration On-Premises**
+
+### Titre
+- "Configuration Zerto - Réplication OVH vers On-Premises"
+- Font-size: 18px, font-weight: 600
+
+### Stepper (2 étapes)
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Datacenter OVH | Active (bleu) |
+| 2 | Datacenter on premises | Inactive (gris) |
+
+## 4. ÉTAPE 1 : DATACENTER OVH
+
+### Zone formulaire
+- Background: #F9FAFB
+- Border-radius: 6px
+- Dimensions: 1280x380px
+
+### Label section
+- "Configurez le datacenter OVH source :"
+- Font-weight: 600
+
+### Champs formulaire (2 colonnes)
+
+**Ligne 1:**
+| Champ | Type | Largeur | Valeur exemple |
+|-------|------|---------|----------------|
+| Datacenter OVH * | Select dropdown | 550px | dc-paris-01 |
+| Adresse IP publique * | Text input | 300px | 192.0.2.100 |
+
+**Ligne 2:**
+| Champ | Type | Largeur | Valeur exemple |
+|-------|------|---------|----------------|
+| VPN Pre-shared key * | Password input | 550px | •••••••••••••••••••• |
+| Port VPN * | Number input | 150px | 4500 |
+
+### Message warning prérequis
+- Background: #FEF3C7
+- Border: #FDE68A
+- Dimensions: 1180x80px
+- Titre: "Configuration requise côté On-Premises :"
+- Points:
+  - "• Zerto Virtual Replication Appliance (ZVR) installé sur votre infrastructure locale"
+  - "• Ports 4007 et 4008 ouverts pour la communication avec OVH"
+- Couleur texte: #92400E
+
+## 5. COMPOSANTS UI
+
+### Select dropdown
+- Border: #E5E7EB
+- Border-radius: 4px
+- Icône: ▼
+- Hauteur: 44px
+
+### Password input
+- Type: password (masqué)
+- Même style que text input
+
+### Labels requis
+- Astérisque (*) après le label
+
+## 6. ACTIONS & INTERACTIONS
+
+### Validation formulaire
+- Tous les champs requis doivent être remplis
+- IP publique: format IPv4 valide
+- Port: nombre entre 1 et 65535
+- PSK: minimum 8 caractères
+
+### Bouton Annuler
+- Style: btn-secondary (100x36px)
+- Action: Retour à la page Zerto
+
+### Bouton Suivant
+- Style: btn-primary (100x36px)
+- Action: Passe à l'étape 2
+- Disabled si formulaire invalide
+
+## 7. ÉTAPE 2 : DATACENTER ON-PREMISES (non visible)
+
+### Contenu attendu
+- Configuration de l'infrastructure locale
+- IP privée du site on-premises
+- Réseau VRA
+- Validation de la connectivité
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter
+→ Liste les datacenters disponibles
+
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/zerto/eligibility
+→ Vérifie l'éligibilité Zerto
+
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/zerto/onpremise
+Body: {
+  datacenterId: "dc-paris-01",
+  publicIp: "192.0.2.100",
+  vpnPsk: "secretKey",
+  vpnPort: 4500,
+  onPremiseConfig: { ... }
+}
+→ Configure la réplication vers on-premises
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| wizard_zerto_onpremise_title | Configuration Zerto - Réplication OVH vers On-Premises |
+| wizard_zerto_step1_label | Configurez le datacenter OVH source |
+| field_datacenter_ovh | Datacenter OVH |
+| field_public_ip | Adresse IP publique |
+| field_vpn_psk | VPN Pre-shared key |
+| field_vpn_port | Port VPN |
+| warning_onpremise_title | Configuration requise côté On-Premises : |
+| warning_onpremise_zvr | Zerto Virtual Replication Appliance (ZVR) installé sur votre infrastructure locale |
+| warning_onpremise_ports | Ports 4007 et 4008 ouverts pour la communication avec OVH |
+| step_datacenter_ovh | Datacenter OVH |
+| step_datacenter_onpremise | Datacenter on premises |
+| btn_cancel | Annuler |
+| btn_next | Suivant |
