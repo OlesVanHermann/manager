@@ -1,9 +1,12 @@
 // ============================================================
 // MODAL - Delete Account (Suppression de compte email)
+// Aligné avec target_.web-cloud.emails.modal.delete-account.svg
 // ============================================================
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { EmailOffer } from "../types";
+import { OfferBadge } from "./OfferBadge";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -12,6 +15,8 @@ interface DeleteAccountModalProps {
     id: string;
     email: string;
     displayName: string;
+    offer: EmailOffer;
+    packName?: string;
   } | null;
   onConfirm: () => Promise<void>;
 }
@@ -27,13 +32,16 @@ export function DeleteAccountModal({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmEmail, setConfirmEmail] = useState("");
+  const [confirmText, setConfirmText] = useState("");
+
+  const CONFIRM_WORD = "SUPPRIMER";
+  const isConfirmValid = confirmText === CONFIRM_WORD;
 
   const handleConfirm = async () => {
     if (!account) return;
 
-    if (confirmEmail !== account.email) {
-      setError(t("deleteAccount.errors.emailMismatch"));
+    if (!isConfirmValid) {
+      setError(t("deleteAccount.errors.confirmMismatch"));
       return;
     }
 
@@ -51,7 +59,7 @@ export function DeleteAccountModal({
   };
 
   const handleClose = () => {
-    setConfirmEmail("");
+    setConfirmText("");
     setError(null);
     onClose();
   };
@@ -61,7 +69,8 @@ export function DeleteAccountModal({
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-container modal-danger" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+        <div className="modal-header modal-header-danger">
+          <span className="modal-icon">⚠️</span>
           <h2 className="modal-title">{t("deleteAccount.title")}</h2>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
@@ -74,35 +83,54 @@ export function DeleteAccountModal({
             </div>
           )}
 
-          <div className="delete-warning">
-            <span className="warning-icon">⚠</span>
-            <div className="warning-content">
-              <p className="warning-title">{t("deleteAccount.warning.title")}</p>
-              <p className="warning-text">{t("deleteAccount.warning.text")}</p>
+          {/* Warning icon centered */}
+          <div className="delete-icon-container">
+            <div className="delete-icon-circle">
+              <span className="delete-icon">!</span>
             </div>
           </div>
 
-          <div className="delete-info">
-            <p>{t("deleteAccount.info.willDelete")}:</p>
-            <ul>
-              <li>{t("deleteAccount.info.allEmails")}</li>
-              <li>{t("deleteAccount.info.allContacts")}</li>
-              <li>{t("deleteAccount.info.allCalendars")}</li>
-              <li>{t("deleteAccount.info.allSettings")}</li>
-            </ul>
+          {/* Question */}
+          <p className="delete-question">{t("deleteAccount.question")}</p>
+
+          {/* Account card */}
+          <div className="delete-account-card">
+            <div className="account-card-left">
+              <span className="account-icon">📧</span>
+              <div className="account-details">
+                <span className="account-email">{account.email}</span>
+                <span className="account-pack">
+                  <OfferBadge offer={account.offer} size="small" />
+                  {account.packName && <span className="pack-name">{account.packName}</span>}
+                </span>
+              </div>
+            </div>
           </div>
 
+          {/* Warning box */}
+          <div className="warning-box warning-box-yellow">
+            <p className="warning-title">⚠️ {t("deleteAccount.warning.title")}</p>
+            <ul className="warning-list">
+              <li>{t("deleteAccount.info.allEmails")}</li>
+              <li>{t("deleteAccount.info.allAliases")}</li>
+              <li>{t("deleteAccount.info.allRedirections")}</li>
+            </ul>
+            <p className="warning-positive">✓ {t("deleteAccount.info.licenseFreed", { pack: account.packName || "votre pack" })}</p>
+          </div>
+
+          {/* Confirmation field */}
           <div className="form-group">
             <label className="form-label">
-              {t("deleteAccount.confirm.label", { email: account.email })}
+              {t("deleteAccount.confirm.typeWord", { word: CONFIRM_WORD })}
             </label>
             <input
               type="text"
-              className="form-input"
-              value={confirmEmail}
-              onChange={(e) => setConfirmEmail(e.target.value)}
-              placeholder={account.email}
+              className={`form-input form-input-danger ${isConfirmValid ? "valid" : ""}`}
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+              placeholder={CONFIRM_WORD}
               disabled={loading}
+              autoComplete="off"
             />
           </div>
         </div>
@@ -113,9 +141,9 @@ export function DeleteAccountModal({
           </button>
           <button
             type="button"
-            className="btn btn-danger"
+            className={`btn btn-danger ${!isConfirmValid ? "btn-disabled" : ""}`}
             onClick={handleConfirm}
-            disabled={loading || confirmEmail !== account.email}
+            disabled={loading || !isConfirmValid}
           >
             {loading ? t("common.deleting") : t("deleteAccount.submit")}
           </button>

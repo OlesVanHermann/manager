@@ -1,0 +1,104 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.hosting.general.home.terminate.svg
+Route:   /web-cloud/hebergement/hosting/{serviceName}/terminate
+Version: v1 (2025-12-31)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| monsiteweb.com           | GET /hosting/web/{sn} → serviceName           |
+| Pro 2024                 | GET /hosting/web/{sn} → offer                 |
+| 15 janvier 2024          | GET /hosting/web/{sn}/serviceInfos → creation |
+| 15 janvier 2026          | GET /hosting/web/{sn}/serviceInfos → expiration|
+| Automatique              | GET /hosting/web/{sn}/serviceInfos → renew    |
+| {quotaUsed}              | GET /hosting/web/{sn} → quotaUsed.value       |
+| {databaseCount}          | GET /hosting/web/{sn}/database → count        |
+| {emailCount}             | Calculé depuis comptes email liés             |
+| {multisiteCount}         | GET /hosting/web/{sn}/attachedDomain → count  |
+| {cronCount}              | GET /hosting/web/{sn}/cron → count            |
+================================================================================
+
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Hébergement actif
+3. LEFT PANEL - Liste hébergements
+4. RIGHT PANEL
+   - Header: Nom service
+   - NAV3: 16 tabs (Home actif)
+   - NAV5: 7 sous-tabs (Résiliation actif - fond rouge)
+   - BANDEAU AVERTISSEMENT (rouge)
+   - BLOC INFOS SERVICE
+   - BLOC OPTIONS RÉSILIATION
+   - BLOC CONSÉQUENCES (orange)
+   - BOUTONS ACTIONS
+
+# NAV5 SOUS-TABS
+| Tab          | Actif  | Style                    |
+|--------------|--------|--------------------------|
+| Général      | Non    | Fond gris #F3F4F6        |
+| Statistiques | Non    | Fond gris #F3F4F6        |
+| Indy         | Non    | Fond gris #F3F4F6        |
+| Offre        | Non    | Fond gris #F3F4F6        |
+| OvhConfig    | Non    | Fond gris #F3F4F6        |
+| Migration    | Non    | Fond gris #F3F4F6        |
+| Résiliation  | Oui    | Fond rouge #FEE2E2       |
+
+# BANDEAU AVERTISSEMENT
+- Couleur: bg-error (#FEE2E2)
+- Texte: text-danger (#DC2626)
+- Message: Action irréversible, suppression à l'expiration
+
+# BLOC INFOS SERVICE
+| Champ            | Contenu                     |
+|------------------|-----------------------------|
+| Nom du service   | {serviceName}               |
+| Offre actuelle   | {offer}                     |
+| Date création    | {creation}                  |
+| Date expiration  | {expiration}                |
+| Renouvellement   | Badge Automatique/Manuel    |
+
+# OPTIONS RÉSILIATION (radio buttons)
+| Option                                          | Recommandé |
+|-------------------------------------------------|------------|
+| À la date d'expiration                          | Oui ✓      |
+| Immédiatement (suppression sous 24h)            | Non        |
+| Annuler renouvellement automatique uniquement   | Non        |
+
+# BLOC CONSÉQUENCES
+Liste des éléments qui seront supprimés:
+- Fichiers FTP (avec taille utilisée)
+- Bases de données MySQL (avec count)
+- Comptes email (avec count)
+- Configuration SSL, CDN
+- Domaines attachés (avec count)
+- Tâches planifiées (avec count)
+- Statistiques et logs
+- Sauvegardes automatiques
+
+# BOUTONS ACTIONS
+| Bouton               | Style       | Action                          |
+|----------------------|-------------|---------------------------------|
+| Résilier hébergement | btn-danger  | Confirmation + API terminate    |
+| Annuler              | btn-outline | Retour page précédente          |
+
+# INTERACTIONS
+- Sélection option résiliation → Radio button actif
+- Clic "Résilier" → Modal confirmation avec saisie nom service
+- Clic "Annuler" → Retour à l'onglet Général
+
+# API ENDPOINTS
+GET /hosting/web/{sn}/serviceInfos          - Infos facturation/dates
+PUT /hosting/web/{sn}/serviceInfos          - Modifier renouvellement
+POST /hosting/web/{sn}/terminate            - Demande résiliation
+DELETE /hosting/web/{sn}/terminate          - Annuler résiliation
+
+# NOTES UX
+- Le bouton "Résilier" est rouge (danger) pour attirer l'attention
+- L'option "À l'expiration" est présélectionnée (moins destructive)
+- Le bloc conséquences liste tous les éléments impactés
+- Modal de confirmation requiert la saisie du nom du service
+
+================================================================================

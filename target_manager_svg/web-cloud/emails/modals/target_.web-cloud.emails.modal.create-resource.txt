@@ -1,0 +1,139 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal.create-resource.svg
+Route:   /web-cloud/emails/{domain}/advanced (modal création ressource)
+Version: v1 (2025-12-31)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| example.com                   | Contexte: domaine sélectionné          |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 540x580px
+- Header: Icône 🏢 + titre + bouton fermer
+- Badge: Exchange uniquement (fond jaune)
+- Content: Formulaire création ressource
+- Footer: Annuler + Créer
+
+# RESTRICTION OFFRE
+
+Cette fonctionnalité est **UNIQUEMENT** disponible pour les domaines
+avec au moins une boîte Exchange. Le badge jaune en haut rappelle
+cette restriction.
+
+# TYPES DE RESSOURCE
+
+| Type        | Icône | Description                        | Champs spécifiques     |
+|-------------|-------|------------------------------------|-----------------------|
+| Salle       | 🏢    | Salle de réunion, bureau          | Capacité, Localisation |
+| Équipement  | 🖨️    | Vidéoprojecteur, véhicule, etc.   | Localisation           |
+
+# CHAMPS DU FORMULAIRE
+
+| Champ                   | Type      | Requis | Condition    | Validation           |
+|-------------------------|-----------|--------|--------------|----------------------|
+| Type                    | radio     | Oui    | -            | room / equipment     |
+| Nom                     | text      | Oui    | -            | 1-128 chars          |
+| Email (partie locale)   | text      | Oui    | -            | Alphanum, 2-64 chars |
+| Capacité                | number    | Non    | Type = room  | 1-999                |
+| Localisation            | text      | Non    | -            | Max 256 chars        |
+| Réservable Outlook      | checkbox  | Non    | -            | Par défaut: coché    |
+| Acceptation auto        | checkbox  | Non    | -            | Par défaut: décoché  |
+| Autoriser conflits      | checkbox  | Non    | -            | Par défaut: décoché  |
+
+# OPTIONS DE RÉSERVATION
+
+| Option                | Description                                           | Défaut  |
+|-----------------------|-------------------------------------------------------|---------|
+| Réservable Outlook    | Visible dans le planificateur de réunions            | ✓ Oui   |
+| Acceptation auto      | Réservations acceptées sans validation manuelle       | ☐ Non   |
+| Autoriser conflits    | Permet plusieurs réservations au même créneau        | ☐ Non   |
+
+# COMPORTEMENT CONDITIONNEL
+
+- Si type = "Salle" → Afficher champ "Capacité"
+- Si type = "Équipement" → Masquer champ "Capacité"
+- L'email est généré automatiquement à partir du nom si vide
+
+# INTERACTIONS
+
+- Clic type → Toggle salle/équipement
+- Saisie nom → Suggestion email automatique
+- Clic checkboxes → Toggle options
+- Clic "Créer" → Valide et crée la ressource
+- Clic "Annuler" → Ferme modal
+- Clic × → Ferme modal
+
+# VALIDATION
+
+Erreurs possibles :
+- Nom vide → "Le nom de la ressource est requis"
+- Email vide → "L'adresse email est requise"
+- Email existe → "Cette adresse email est déjà utilisée"
+- Capacité invalide → "La capacité doit être un nombre entre 1 et 999"
+
+# API ENDPOINTS
+
+POST /email/domains/{domain}/resources
+
+## Payload création salle
+```json
+{
+  "type": "room",
+  "name": "Salle Everest",
+  "localPart": "salle-everest",
+  "capacity": 12,
+  "location": "Bâtiment A, 3ème étage",
+  "bookable": true,
+  "autoAccept": false,
+  "allowConflicts": false
+}
+```
+
+## Payload création équipement
+```json
+{
+  "type": "equipment",
+  "name": "Vidéoprojecteur Salle A",
+  "localPart": "videoproj-a",
+  "location": "Armoire technique B12",
+  "bookable": true,
+  "autoAccept": true,
+  "allowConflicts": false
+}
+```
+
+## Réponse succès
+```json
+{
+  "id": "res-456",
+  "type": "room",
+  "name": "Salle Everest",
+  "email": "salle-everest@example.com",
+  "createdAt": "2025-12-31T12:00:00Z"
+}
+```
+
+## Réponse erreur
+```json
+{
+  "error": "EMAIL_EXISTS",
+  "message": "Cette adresse email est déjà utilisée par un compte ou une ressource"
+}
+```
+
+# NOTES UX
+
+- Type sélectionné par défaut : Salle (le plus courant)
+- Email généré automatiquement en slug du nom
+- Champs Capacité/Localisation sur la même ligne (gain de place)
+- Options avancées avec checkboxes claires
+- Info box explique l'usage de la ressource
+
+================================================================================

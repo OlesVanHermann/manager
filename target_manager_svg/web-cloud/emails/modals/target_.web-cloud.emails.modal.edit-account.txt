@@ -1,0 +1,85 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal.edit-account.svg
+Route:   /web-cloud/emails/{domain}/accounts (modal modification)
+Version: v1 (2025-12-31)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| john@example.com              | Contexte: compte sélectionné           |
+| Exchange · 50 Go              | account.offer + account.quota.total    |
+| John Doe                      | account.displayName                    |
+| 12 Go (24%)                   | account.quota.used                     |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 520x560px
+- Header: Icône ✏️ + titre + bouton fermer
+- Content: Formulaire modification
+- Footer: Annuler + Enregistrer
+
+# CHAMPS DU FORMULAIRE
+
+| Champ                | Type      | Requis | Éditable | Validation           |
+|----------------------|-----------|--------|----------|----------------------|
+| Compte (email)       | readonly  | -      | Non      | -                    |
+| Offre                | readonly  | -      | Non      | -                    |
+| Nom affiché          | text      | Non    | Oui      | Max 128 chars        |
+| Quota                | select    | Oui    | Oui*     | Selon offre          |
+| Changer mot de passe | checkbox  | Non    | Oui      | -                    |
+| Nouveau mot de passe | password  | Cond.  | Oui      | Min 8 chars          |
+| Confirmer mot de passe| password | Cond.  | Oui      | Match password       |
+
+* Quota modifiable uniquement si l'offre le permet
+
+# LOGIQUE CONDITIONNELLE
+
+- Si "Changer mot de passe" décoché → champs password désactivés (opacity 0.5)
+- Si "Changer mot de passe" coché → champs password actifs et requis
+- Bouton "Enregistrer" actif si au moins un champ modifié
+
+# QUOTAS DISPONIBLES PAR OFFRE
+
+| Offre     | Quotas disponibles                    |
+|-----------|---------------------------------------|
+| MX Plan   | 5 Go (fixe)                           |
+| Email Pro | 10 Go (fixe)                          |
+| Zimbra    | 10 Go (fixe)                          |
+| Exchange  | 50 Go, 100 Go, 300 Go (selon licence) |
+
+# INTERACTIONS
+
+- Modification champ → Active bouton "Enregistrer"
+- Clic checkbox password → Toggle section mot de passe
+- Clic "Enregistrer" → Valide et soumet
+- Clic "Annuler" → Ferme modal sans sauvegarde
+- Clic × → Ferme modal
+
+# API ENDPOINTS
+
+PUT /email/domains/{domain}/accounts/{account}
+
+## Payload modification
+```json
+{
+  "displayName": "John Doe Updated",
+  "quota": 100,
+  "password": "NewSecureP@ss123"  // optionnel
+}
+```
+
+## Réponse succès
+```json
+{
+  "taskId": "T-2025123101",
+  "status": "pending",
+  "message": "Modification en cours"
+}
+```
+
+================================================================================

@@ -1,0 +1,135 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal.order-pack.svg
+Route:   /web-cloud/emails (modal commande pack)
+Version: v1 (2025-12-31)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| 4,99 €/licence                | GET /email/offers → pricing            |
+| -10%                          | Calcul selon quantité                  |
+| 44,90 €/mois                  | quantity × pricePerLicense             |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 600x700px
+- Type: Wizard 3 étapes
+- Header: Icône 📦 + titre
+- Progress: Step indicator horizontal
+- Content: Variable selon étape
+- Footer: Annuler + Suivant/Retour/Commander
+
+# ÉTAPES DU WIZARD
+
+| Étape | Titre         | Contenu                                |
+|-------|---------------|----------------------------------------|
+| 1     | Offre         | Sélection offre + quantité             |
+| 2     | Configuration | Nom pack + scope (multi/mono domaine)  |
+| 3     | Confirmation  | Récapitulatif + validation paiement    |
+
+# STEP 1 - CHOIX OFFRE
+
+## Cards offres
+| Offre     | Badge | Prix/licence | Features clés                    |
+|-----------|-------|--------------|----------------------------------|
+| Exchange  | 🟠 E  | 4,99 €       | 50 Go, Calendrier, MFA, Ressources |
+| Email Pro | 🔵 P  | 2,99 €       | 10 Go, Alias, Signature, Archivage |
+| Zimbra    | 🟣 Z  | 3,99 €       | 10 Go, Collaboration, Webmail    |
+
+## Sélection quantité
+- Boutons −/+
+- Input numérique
+- Quick select: 5, 10, 25, 50
+
+## Remises volume
+| Quantité  | Remise | Prix Exchange | Prix Pro | Prix Zimbra |
+|-----------|--------|---------------|----------|-------------|
+| 1-4       | 0%     | 4,99 €        | 2,99 €   | 3,99 €      |
+| 5-9       | -5%    | 4,74 €        | 2,84 €   | 3,79 €      |
+| 10-24     | -10%   | 4,49 €        | 2,69 €   | 3,59 €      |
+| 25-49     | -20%   | 3,99 €        | 2,39 €   | 3,19 €      |
+| 50+       | -30%   | 3,49 €        | 2,09 €   | 2,79 €      |
+
+# STEP 2 - CONFIGURATION
+
+## Champs
+| Champ           | Type      | Requis | Validation                     |
+|-----------------|-----------|--------|--------------------------------|
+| Nom du pack     | text      | Oui    | 3-50 chars, alphanum + espaces |
+| Scope           | radio     | Oui    | multi-domain / single-domain   |
+| Domaine (si mono)| select   | Cond.  | Liste domaines du compte       |
+
+## Scope options
+- **Multi-domaine**: Licences utilisables sur tous les domaines
+- **Mono-domaine (-5%)**: Réservé à un domaine spécifique
+
+# STEP 3 - CONFIRMATION
+
+## Récapitulatif affiché
+- Offre sélectionnée + badge
+- Nombre de licences
+- Scope (multi/mono + domaine si applicable)
+- Nom du pack
+- Prix unitaire (après remise)
+- Prix mensuel total HT
+- Mention renouvellement automatique
+
+## Actions
+- Checkbox CGV à cocher
+- Bouton "Commander" (actif si CGV cochées)
+
+# INTERACTIONS
+
+- Clic card offre → Sélection (radio unique)
+- Clic quantité → Recalcul prix en temps réel
+- Remise volume → Affichage dans box verte
+- Suivant → Valide étape, passe à la suivante
+- Retour → Revient à l'étape précédente
+- Commander → Soumet la commande
+
+# API ENDPOINTS
+
+GET /email/offers
+→ Liste des offres et pricing
+
+GET /email/domains
+→ Liste domaines pour scope mono-domaine
+
+POST /email/licenses/packs
+→ Commander le pack
+
+## Payload commande
+```json
+{
+  "offer": "exchange",
+  "quantity": 10,
+  "name": "Exchange Business 10",
+  "scope": "multi-domain",
+  "domain": null,
+  "acceptCGV": true
+}
+```
+
+## Réponse succès
+```json
+{
+  "orderId": "O-2025123103",
+  "packId": "pack-456",
+  "status": "pending_payment",
+  "redirectUrl": "https://ovh.com/payment/..."
+}
+```
+
+# NOTES UX
+
+- Prix toujours affiché HT
+- Remise volume calculée en temps réel
+- Message encourageant pour quantités plus grandes
+- Mono-domaine offre 5% de réduction supplémentaire
+
+================================================================================

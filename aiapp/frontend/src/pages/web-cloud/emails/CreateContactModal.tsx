@@ -1,32 +1,34 @@
 // ============================================================
-// MODAL - Create Contact (Création de contact partagé)
+// MODAL - Create Contact (Création de contact externe Exchange)
+// Aligné avec target_.web-cloud.emails.modal.create-contact.svg
 // ============================================================
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { OfferBadge } from "./OfferBadge";
 
 interface CreateContactModalProps {
   isOpen: boolean;
   onClose: () => void;
-  folders: { id: string; name: string }[];
+  domain: string;
   onSubmit: (data: CreateContactData) => Promise<void>;
 }
 
 interface CreateContactData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
+  displayName: string;
+  firstName?: string;
+  lastName?: string;
+  externalEmail: string;
   company?: string;
-  department?: string;
-  folderId: string;
+  phone?: string;
+  hideFromGal: boolean;
 }
 
-/** Modal de création d'un contact partagé. */
+/** Modal de création d'un contact externe (Exchange uniquement). */
 export function CreateContactModal({
   isOpen,
   onClose,
-  folders,
+  domain,
   onSubmit,
 }: CreateContactModalProps) {
   const { t } = useTranslation("web-cloud/emails/modals");
@@ -34,38 +36,45 @@ export function CreateContactModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [displayName, setDisplayName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [externalEmail, setExternalEmail] = useState("");
   const [company, setCompany] = useState("");
-  const [department, setDepartment] = useState("");
-  const [folderId, setFolderId] = useState(folders[0]?.id || "");
+  const [phone, setPhone] = useState("");
+  const [visibleInGal, setVisibleInGal] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!firstName.trim() && !lastName.trim()) {
-      setError(t("createContact.errors.nameRequired"));
+    // Validation
+    if (!displayName.trim()) {
+      setError(t("createContact.errors.displayNameRequired"));
       return;
     }
 
-    if (!email.includes("@")) {
+    if (!externalEmail.includes("@")) {
       setError(t("createContact.errors.emailInvalid"));
+      return;
+    }
+
+    // Vérifier que l'email n'est pas du domaine interne
+    if (externalEmail.toLowerCase().endsWith(`@${domain.toLowerCase()}`)) {
+      setError(t("createContact.errors.emailMustBeExternal"));
       return;
     }
 
     setLoading(true);
     try {
       await onSubmit({
-        firstName,
-        lastName,
-        email,
-        phone: phone || undefined,
+        displayName,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        externalEmail,
         company: company || undefined,
-        department: department || undefined,
-        folderId,
+        phone: phone || undefined,
+        hideFromGal: !visibleInGal,
       });
       handleClose();
     } catch (err) {
@@ -76,12 +85,13 @@ export function CreateContactModal({
   };
 
   const handleClose = () => {
+    setDisplayName("");
     setFirstName("");
     setLastName("");
-    setEmail("");
-    setPhone("");
+    setExternalEmail("");
     setCompany("");
-    setDepartment("");
+    setPhone("");
+    setVisibleInGal(true);
     setError(null);
     onClose();
   };
@@ -92,12 +102,20 @@ export function CreateContactModal({
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
+          <span className="modal-icon">👤</span>
           <h2 className="modal-title">{t("createContact.title")}</h2>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
+            {/* Exchange only badge */}
+            <div className="feature-badge feature-badge-exchange">
+              <OfferBadge offer="exchange" size="small" />
+              <span className="feature-text">{t("createContact.exchangeOnly")}</span>
+              <span className="feature-domain">{domain}</span>
+            </div>
+
             {error && (
               <div className="modal-error">
                 <span className="error-icon">⚠</span>
@@ -105,7 +123,20 @@ export function CreateContactModal({
               </div>
             )}
 
-            {/* Name */}
+            {/* Display name (required) */}
+            <div className="form-group">
+              <label className="form-label">{t("createContact.fields.displayName")} *</label>
+              <input
+                type="text"
+                className="form-input"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder={t("createContact.placeholders.displayName")}
+                disabled={loading}
+              />
+            </div>
+
+            {/* First name / Last name */}
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label">{t("createContact.fields.firstName")}</label>
@@ -125,21 +156,34 @@ export function CreateContactModal({
                   className="form-input"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Dupont"
+                  placeholder="Martin"
                   disabled={loading}
                 />
               </div>
             </div>
 
-            {/* Email */}
+            {/* External email (required) */}
             <div className="form-group">
-              <label className="form-label">{t("createContact.fields.email")} *</label>
+              <label className="form-label">{t("createContact.fields.externalEmail")} *</label>
               <input
                 type="email"
                 className="form-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="jean.dupont@example.com"
+                value={externalEmail}
+                onChange={(e) => setExternalEmail(e.target.value)}
+                placeholder="contact@fournisseur.com"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Company */}
+            <div className="form-group">
+              <label className="form-label">{t("createContact.fields.company")}</label>
+              <input
+                type="text"
+                className="form-input"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                placeholder={t("createContact.placeholders.company")}
                 disabled={loading}
               />
             </div>
@@ -152,50 +196,23 @@ export function CreateContactModal({
                 className="form-input"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+33 6 12 34 56 78"
+                placeholder="+33 1 23 45 67 89"
                 disabled={loading}
               />
             </div>
 
-            {/* Company */}
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">{t("createContact.fields.company")}</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  placeholder="Acme Inc"
-                  disabled={loading}
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{t("createContact.fields.department")}</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  placeholder="Direction"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            {/* Folder */}
+            {/* GAL visibility */}
             <div className="form-group">
-              <label className="form-label">{t("createContact.fields.folder")}</label>
-              <select
-                className="form-select"
-                value={folderId}
-                onChange={(e) => setFolderId(e.target.value)}
-                disabled={loading}
-              >
-                {folders.map((folder) => (
-                  <option key={folder.id} value={folder.id}>{folder.name}</option>
-                ))}
-              </select>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={visibleInGal}
+                  onChange={(e) => setVisibleInGal(e.target.checked)}
+                  disabled={loading}
+                />
+                {t("createContact.fields.visibleInGal")}
+              </label>
+              <span className="form-hint">{t("createContact.galHint")}</span>
             </div>
           </div>
 

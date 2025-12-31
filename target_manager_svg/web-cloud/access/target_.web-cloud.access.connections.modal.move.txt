@@ -1,0 +1,84 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.access.connections.modal.move.svg
+Route:   /web-cloud/access/connections/{id}/move (modal)
+Version: v1 (2025-12-31)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| 45 Avenue de la République| Input utilisateur → street                      |
+| 69001                    | Input utilisateur → zipCode                      |
+| Lyon                     | Input utilisateur → city                         |
+| Bâtiment A               | Input utilisateur → building (optionnel)         |
+| B                        | Input utilisateur → stair (optionnel)            |
+| 3                        | Input utilisateur → floor (optionnel)            |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+Modal de demande de déménagement de connexion Internet.
+Dimensions: 550x480px
+
+1. HEADER:
+   - Icône 🚚 + Titre "Déménager la connexion"
+   - Bouton fermer (×)
+
+2. DESCRIPTION:
+   - Texte explicatif
+
+3. FORMULAIRE:
+   - Rue * (obligatoire)
+   - Code postal * + Ville * (obligatoires, sur même ligne)
+   - Bâtiment + Escalier + Étage (optionnels, sur même ligne)
+
+4. INFO BOX:
+   - Information sur le test d'éligibilité
+   - Délai estimé (2-4 semaines)
+
+5. ACTIONS:
+   - Annuler → Ferme modal
+   - Demander le déménagement → POST move
+
+# CHAMPS FORMULAIRE
+
+| Champ       | Type   | Obligatoire | Validation                    |
+|-------------|--------|-------------|-------------------------------|
+| street      | text   | Oui         | Non vide                      |
+| zipCode     | text   | Oui         | Format code postal            |
+| city        | text   | Oui         | Non vide                      |
+| building    | text   | Non         | -                             |
+| stair       | text   | Non         | -                             |
+| floor       | text   | Non         | -                             |
+
+# INTERACTIONS
+
+- Validation en temps réel des champs obligatoires
+- Bouton submit désactivé si champs obligatoires vides
+- Annuler → Ferme sans action
+- Submit → POST /access/connections/{id}/move
+
+# API ENDPOINTS
+
+POST /access/connections/{id}/move
+Body: { street, zipCode, city, building?, stair?, floor? }
+
+Réponse: { taskId, estimatedDate }
+
+# PROCESSUS DÉMÉNAGEMENT
+
+1. Soumission demande → Création tâche
+2. Test d'éligibilité nouvelle adresse
+3. Planification intervention (si éligible)
+4. Réalisation (2-4 semaines selon zone)
+5. Activation nouvelle ligne
+
+# VALIDATION
+
+- Champs rue, code postal, ville obligatoires
+- Erreur affichée si champ manquant
+
+================================================================================

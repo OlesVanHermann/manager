@@ -1,0 +1,103 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal.delete-account.svg
+Route:   /web-cloud/emails/{domain}/accounts (modal suppression compte)
+Version: v1 (2025-12-31)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| john@example.com              | Contexte: compte sélectionné           |
+| Exchange                      | account.offer                          |
+| Pack Business 10              | account.license.packName               |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 500x480px
+- Type: Modal de confirmation dangereuse
+- Header: Fond rouge, icône ⚠️
+- Icône centrale: Cercle rouge avec !
+- Champ confirmation: Saisie "SUPPRIMER"
+- Bouton: Rouge, désactivé par défaut
+
+# ÉLÉMENTS
+
+| Élément          | Description                              |
+|------------------|------------------------------------------|
+| Header rouge     | Indique action dangereuse                |
+| Icône warning    | Cercle rouge avec !                      |
+| Question         | "Voulez-vous vraiment supprimer..."      |
+| Account card     | Email + offre + badge                    |
+| Warning box      | Liste des conséquences                   |
+| Champ confirm    | Input pour taper "SUPPRIMER"             |
+| Bouton Annuler   | Gris, ferme la modal                     |
+| Bouton Supprimer | Rouge, désactivé jusqu'à confirmation    |
+
+# CONSÉQUENCES AFFICHÉES
+
+- Tous les emails seront définitivement supprimés
+- Les alias associés seront supprimés
+- Les redirections vers ce compte seront supprimées
+- ✓ La licence sera libérée dans le pack (positif)
+
+# VALIDATION
+
+Le bouton "Supprimer" ne devient actif que si :
+- Le champ contient exactement "SUPPRIMER" (case sensitive)
+
+États du bouton :
+- Désactivé : bg #F87171, opacity 0.7 sur texte
+- Actif : bg #DC2626, cursor pointer
+
+# INTERACTIONS
+
+- Saisie dans le champ → Vérification en temps réel
+- Saisie "SUPPRIMER" → Active le bouton (couleur pleine)
+- Clic "Supprimer" (actif) → Exécute suppression
+- Clic "Annuler" → Ferme modal
+- Clic × → Ferme modal
+- Clic overlay → Ferme modal
+
+# DIFFÉRENCE AVEC modal.delete
+
+Cette modal est SPÉCIFIQUE aux comptes email avec :
+- Affichage du pack/licence concerné
+- Mention de la libération de licence
+- Design centré sur l'email
+
+modal.delete est générique pour redirections, listes, etc.
+
+# API ENDPOINTS
+
+DELETE /email/domains/{domain}/accounts/{account}
+
+## Headers requis
+- X-Confirm: "SUPPRIMER"
+
+## Réponse succès
+```json
+{
+  "taskId": "T-2025123102",
+  "status": "pending",
+  "message": "Suppression en cours",
+  "licenseFreed": {
+    "packId": "pack-123",
+    "packName": "Business 10",
+    "availableAfter": 1
+  }
+}
+```
+
+## Réponse erreur
+```json
+{
+  "error": "CONFIRMATION_REQUIRED",
+  "message": "Confirmation header missing or invalid"
+}
+```
+
+================================================================================

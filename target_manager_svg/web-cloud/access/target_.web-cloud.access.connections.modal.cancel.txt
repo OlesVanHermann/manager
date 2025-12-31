@@ -1,0 +1,101 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.access.connections.modal.cancel.svg
+Route:   /web-cloud/access/connections/{id}/cancel (modal)
+Version: v1 (2025-12-31)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| Fibre Pro Paris          | GET /access/connections/{id} → name              |
+| Services associés        | → services.count                                 |
+| Numéro de téléphone      | → voip.numbers[]                                 |
+| Modem                    | → modem.model                                    |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+Modal de confirmation de résiliation d'abonnement Internet.
+Dimensions: 500x420px
+Type: DANGER (action destructive irréversible)
+
+1. HEADER:
+   - Icône ⚠ en rouge + Titre "Résilier l'abonnement"
+   - Bouton fermer (×)
+
+2. WARNING BOX:
+   - Message d'avertissement sur l'irréversibilité
+   - Fond jaune/orange (#FEF3C7)
+
+3. CONNEXION INFO:
+   - Nom de la connexion à résilier
+
+4. LISTE DES EFFETS:
+   - Suppression services associés
+   - Perte numéro de téléphone
+   - Retour modem obligatoire
+
+5. CONFIRMATION:
+   - Champ texte pour taper "RESILIER"
+   - Hint explicatif
+
+6. ACTIONS:
+   - Garder mon abonnement → Ferme modal (bouton secondaire)
+   - Résilier l'abonnement → DELETE (bouton danger rouge)
+
+# SÉCURITÉS
+
+1. Double confirmation:
+   - Warning visuel clair
+   - Saisie texte "RESILIER" obligatoire
+
+2. Bouton désactivé:
+   - Si texte != "RESILIER"
+   - Visuellement grisé (#F87171)
+
+3. Action irréversible:
+   - Pas de rollback possible
+   - Suppression définitive
+
+# INTERACTIONS
+
+- Input → Convertit automatiquement en majuscules
+- Bouton Résilier → Désactivé tant que texte != "RESILIER"
+- Garder → Ferme modal sans action
+- Résilier → DELETE /access/connections/{id}
+
+# API ENDPOINTS
+
+DELETE /access/connections/{id}
+Headers: { X-Confirm-Action: "RESILIER" }
+
+Réponse: { taskId, terminationDate }
+
+# PROCESSUS RÉSILIATION
+
+1. Confirmation utilisateur (RESILIER)
+2. Création tâche de résiliation
+3. Date de résiliation = fin période de facturation
+4. Envoi instructions retour modem
+5. Désactivation effective
+
+# CONSÉQUENCES
+
+| Élément           | Action                                    |
+|-------------------|-------------------------------------------|
+| Ligne Internet    | Désactivée à date de résiliation          |
+| Services inclus   | Supprimés (emails, domaine, VoIP)         |
+| Numéros VoIP      | Perdus définitivement                     |
+| Modem OVH         | À retourner sous 15 jours                 |
+| IP fixe           | Libérée                                   |
+| Options           | Résiliées automatiquement                 |
+
+# VALIDATION
+
+- Texte confirmation exact = "RESILIER"
+- Case sensitive: non (toUpperCase appliqué)
+
+================================================================================

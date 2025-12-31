@@ -1,0 +1,109 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.emails.modal.create-contact.svg
+Route:   /web-cloud/emails/{domain}/advanced-contacts (modal)
+Version: v1 (2025-12-31)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG                   | Source API                              |
+|-------------------------------|----------------------------------------|
+| example.com                   | Contexte: domaine sélectionné          |
+
+================================================================================
+
+# STRUCTURE MODAL
+
+- Dimensions: 520x520px
+- Header: Icône 👤 + titre + bouton fermer
+- Badge: Exchange uniquement (fond jaune)
+- Content: Formulaire création contact
+- Footer: Annuler + Ajouter
+
+# RESTRICTION OFFRE
+
+Cette fonctionnalité est **UNIQUEMENT** disponible pour les domaines
+avec au moins une boîte Exchange. Le badge jaune en haut rappelle
+cette restriction.
+
+# CHAMPS DU FORMULAIRE
+
+| Champ           | Type      | Requis | Validation                     |
+|-----------------|-----------|--------|--------------------------------|
+| Nom affiché     | text      | Oui    | 1-128 chars                    |
+| Prénom          | text      | Non    | Max 64 chars                   |
+| Nom             | text      | Non    | Max 64 chars                   |
+| Email externe   | email     | Oui    | Format email valide            |
+| Société         | text      | Non    | Max 128 chars                  |
+| Téléphone       | tel       | Non    | Format téléphone               |
+| Visible GAL     | checkbox  | Non    | Par défaut: coché              |
+
+# GAL - GLOBAL ADDRESS LIST
+
+Le carnet d'adresses global (GAL) permet aux utilisateurs Exchange de
+trouver les contacts externes dans Outlook/OWA lors de la composition
+d'un email.
+
+Options :
+- ✓ Coché : Contact visible par tous les utilisateurs Exchange
+- ☐ Décoché : Contact privé, visible uniquement par l'admin
+
+# INTERACTIONS
+
+- Saisie champs → Validation en temps réel
+- Clic checkbox → Toggle visibilité GAL
+- Clic "Ajouter" → Valide et crée le contact
+- Clic "Annuler" → Ferme modal
+- Clic × → Ferme modal
+
+# VALIDATION
+
+Champs obligatoires :
+- Nom affiché : ne peut pas être vide
+- Email externe : doit être un email valide
+- Email externe : ne doit pas être @{domain} (pas interne)
+
+# API ENDPOINTS
+
+POST /email/domains/{domain}/externalContacts
+
+## Payload création
+```json
+{
+  "displayName": "Fournisseur ABC",
+  "firstName": "Jean",
+  "lastName": "Martin",
+  "externalEmail": "contact@fournisseur.com",
+  "company": "Fournisseur ABC SARL",
+  "phone": "+33123456789",
+  "hideFromGal": false
+}
+```
+
+## Réponse succès
+```json
+{
+  "id": "contact-789",
+  "displayName": "Fournisseur ABC",
+  "externalEmail": "contact@fournisseur.com",
+  "createdAt": "2025-12-31T12:00:00Z"
+}
+```
+
+## Réponse erreur
+```json
+{
+  "error": "CONTACT_EXISTS",
+  "message": "Un contact avec cet email existe déjà"
+}
+```
+
+# NOTES UX
+
+- Champs prénom/nom côte à côte pour gagner de la place
+- Email externe est le champ le plus important (mis en évidence)
+- Checkbox "Visible GAL" cochée par défaut (comportement attendu)
+- Badge Exchange visible pour éviter confusion
+
+================================================================================

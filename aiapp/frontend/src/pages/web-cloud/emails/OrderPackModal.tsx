@@ -30,6 +30,22 @@ const PRICING: Record<EmailOffer, { base: number; perLicense: number }> = {
   "mx-plan": { base: 0, perLicense: 0 },
 };
 
+// Remises volume
+const VOLUME_DISCOUNTS = [
+  { min: 1, max: 4, discount: 0 },
+  { min: 5, max: 9, discount: 0.05 },
+  { min: 10, max: 24, discount: 0.10 },
+  { min: 25, max: 49, discount: 0.20 },
+  { min: 50, max: Infinity, discount: 0.30 },
+];
+
+const getVolumeDiscount = (quantity: number): number => {
+  const tier = VOLUME_DISCOUNTS.find(d => quantity >= d.min && quantity <= d.max);
+  return tier?.discount || 0;
+};
+
+const QUICK_QUANTITIES = [5, 10, 25, 50];
+
 /** Modal de commande d'un pack de licences. */
 export function OrderPackModal({
   isOpen,
@@ -50,7 +66,11 @@ export function OrderPackModal({
   const [name, setName] = useState("");
 
   const pricing = PRICING[offer];
-  const monthlyTotal = quantity * pricing.perLicense;
+  const discount = getVolumeDiscount(quantity);
+  const discountedPrice = pricing.perLicense * (1 - discount);
+  const monthlyTotal = quantity * discountedPrice;
+  const originalTotal = quantity * pricing.perLicense;
+  const savings = originalTotal - monthlyTotal;
 
   const handleSubmit = async () => {
     setError(null);
@@ -139,6 +159,8 @@ export function OrderPackModal({
           {step === 1 && (
             <div className="wizard-content">
               <h3 className="wizard-title">{t("orderPack.step1.title")}</h3>
+
+              {/* Offer cards */}
               <div className="offer-cards">
                 {(["exchange", "email-pro", "zimbra"] as EmailOffer[]).map((o) => (
                   <div
@@ -146,12 +168,94 @@ export function OrderPackModal({
                     className={`offer-card-select ${offer === o ? "selected" : ""}`}
                     onClick={() => setOffer(o)}
                   >
+                    <div className="offer-card-radio">
+                      <span className={`radio-dot ${offer === o ? "active" : ""}`} />
+                    </div>
                     <OfferBadge offer={o} />
-                    <h4>{OFFER_CONFIG[o].label}</h4>
-                    <p className="offer-desc">{t(`orderPack.offers.${o}`)}</p>
-                    <span className="offer-price">{PRICING[o].perLicense.toFixed(2)} €/lic/mois</span>
+                    <div className="offer-card-content">
+                      <h4>{OFFER_CONFIG[o].label}</h4>
+                      <p className="offer-desc">{t(`orderPack.offers.${o}`)}</p>
+                    </div>
+                    <div className="offer-card-price">
+                      <span className="price-value">{PRICING[o].perLicense.toFixed(2)} €</span>
+                      <span className="price-unit">/licence/mois</span>
+                    </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Quantity selector with quick buttons */}
+              <div className="form-group">
+                <label className="form-label">{t("orderPack.fields.quantity")}</label>
+                <div className="quantity-row">
+                  <div className="quantity-selector">
+                    <button
+                      type="button"
+                      className="qty-btn"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={loading || quantity <= 1}
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      className="qty-input"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                      min={1}
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      className="qty-btn"
+                      onClick={() => setQuantity(quantity + 1)}
+                      disabled={loading}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="quick-qty-buttons">
+                    {QUICK_QUANTITIES.map((q) => (
+                      <button
+                        key={q}
+                        type="button"
+                        className={`quick-qty-btn ${quantity === q ? "selected" : ""}`}
+                        onClick={() => setQuantity(q)}
+                        disabled={loading}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Volume discount box */}
+              {discount > 0 && (
+                <div className="discount-box">
+                  <span className="discount-icon">✨</span>
+                  <div className="discount-content">
+                    <span className="discount-title">
+                      {t("orderPack.discount.applied", { percent: Math.round(discount * 100) })}
+                    </span>
+                    <span className="discount-detail">
+                      {quantity} × {discountedPrice.toFixed(2)} € = {monthlyTotal.toFixed(2)} €/mois
+                      <span className="discount-original">(au lieu de {originalTotal.toFixed(2)} €)</span>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Price summary */}
+              <div className="price-summary">
+                <div className="price-summary-left">
+                  <span className="price-label">{t("orderPack.summary.monthlyTotal")}</span>
+                  <span className="price-offer">{quantity} × {OFFER_CONFIG[offer].label}</span>
+                </div>
+                <div className="price-summary-right">
+                  <span className="price-total">{monthlyTotal.toFixed(2)} €</span>
+                  <span className="price-period">/mois</span>
+                </div>
               </div>
             </div>
           )}

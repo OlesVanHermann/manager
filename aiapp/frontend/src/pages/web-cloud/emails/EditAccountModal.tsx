@@ -5,6 +5,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { EmailOffer } from "../types";
+import { OfferBadge } from "./OfferBadge";
+import { OFFER_CONFIG } from "./emails.constants";
 
 interface EditAccountModalProps {
   isOpen: boolean;
@@ -15,6 +17,7 @@ interface EditAccountModalProps {
     displayName: string;
     offer: EmailOffer;
     quota: { used: number; total: number };
+    packName?: string;
   } | null;
   onSubmit: (data: EditAccountData) => Promise<void>;
 }
@@ -91,11 +94,27 @@ export function EditAccountModal({
   if (!isOpen || !account) return null;
 
   const usedGb = account.quota.used / (1024 * 1024 * 1024);
+  const totalGb = account.quota.total / (1024 * 1024 * 1024);
+  const usedPercent = Math.round((usedGb / totalGb) * 100);
+
+  // Quotas disponibles selon l'offre
+  const getAvailableQuotas = (offer: EmailOffer): number[] => {
+    switch (offer) {
+      case "exchange": return [50, 100, 300];
+      case "email-pro": return [10];
+      case "zimbra": return [10];
+      case "mx-plan": return [5];
+      default: return [5, 10, 25, 50];
+    }
+  };
+
+  const availableQuotas = getAvailableQuotas(account.offer);
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
+          <span className="modal-icon">✏️</span>
           <h2 className="modal-title">{t("editAccount.title")}</h2>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
@@ -109,15 +128,16 @@ export function EditAccountModal({
               </div>
             )}
 
-            {/* Email (read-only) */}
-            <div className="form-group">
-              <label className="form-label">{t("editAccount.fields.email")}</label>
-              <input
-                type="text"
-                className="form-input"
-                value={account.email}
-                disabled
-              />
+            {/* Account info card */}
+            <div className="account-info-card">
+              <div className="account-info-left">
+                <span className="info-label">{t("editAccount.fields.account")}</span>
+                <span className="info-value">{account.email}</span>
+              </div>
+              <div className="account-info-right">
+                <OfferBadge offer={account.offer} />
+                <span className="offer-quota">{totalGb} Go</span>
+              </div>
             </div>
 
             {/* Display name */}
@@ -135,20 +155,23 @@ export function EditAccountModal({
             {/* Quota */}
             <div className="form-group">
               <label className="form-label">{t("editAccount.fields.quota")}</label>
-              <select
-                className="form-select"
-                value={quota}
-                onChange={(e) => setQuota(Number(e.target.value))}
-                disabled={loading}
-              >
-                <option value={5} disabled={usedGb > 5}>5 Go</option>
-                <option value={10} disabled={usedGb > 10}>10 Go</option>
-                <option value={25} disabled={usedGb > 25}>25 Go</option>
-                <option value={50}>50 Go</option>
-              </select>
-              <span className="form-hint">
-                {t("editAccount.quotaUsed", { used: usedGb.toFixed(1) })}
-              </span>
+              <div className="quota-row">
+                <select
+                  className="form-select"
+                  value={quota}
+                  onChange={(e) => setQuota(Number(e.target.value))}
+                  disabled={loading || availableQuotas.length === 1}
+                >
+                  {availableQuotas.map((q) => (
+                    <option key={q} value={q} disabled={usedGb > q}>
+                      {q} Go
+                    </option>
+                  ))}
+                </select>
+                <span className="quota-usage">
+                  {t("editAccount.quotaUsed", { used: usedGb.toFixed(1), percent: usedPercent })}
+                </span>
+              </div>
             </div>
 
             {/* Change password section */}
@@ -165,7 +188,7 @@ export function EditAccountModal({
             </div>
 
             {changePassword && (
-              <div className="form-row">
+              <div className="password-fields">
                 <div className="form-group">
                   <label className="form-label">{t("editAccount.fields.newPassword")}</label>
                   <input
@@ -190,6 +213,17 @@ export function EditAccountModal({
                 </div>
               </div>
             )}
+
+            {/* Info box */}
+            <div className="info-box info-box-primary">
+              <span className="info-icon">ℹ️</span>
+              <div className="info-content">
+                <p>{t("editAccount.info.immediate")}</p>
+                {availableQuotas.length > 1 && (
+                  <p>{t("editAccount.info.quotaModifiable")}</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="modal-footer">

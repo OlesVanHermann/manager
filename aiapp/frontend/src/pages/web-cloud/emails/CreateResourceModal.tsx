@@ -1,9 +1,11 @@
 // ============================================================
 // MODAL - Create Resource (Création de ressource partagée)
+// Aligné avec target_.web-cloud.emails.modal.create-resource.svg
 // ============================================================
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { OfferBadge } from "./OfferBadge";
 
 interface CreateResourceModalProps {
   isOpen: boolean;
@@ -19,6 +21,8 @@ interface CreateResourceData {
   capacity?: number;
   location?: string;
   bookable: boolean;
+  autoAccept: boolean;
+  allowConflicts: boolean;
 }
 
 /** Modal de création d'une ressource partagée (salle ou équipement). */
@@ -39,6 +43,27 @@ export function CreateResourceModal({
   const [capacity, setCapacity] = useState<number | "">("");
   const [location, setLocation] = useState("");
   const [bookable, setBookable] = useState(true);
+  const [autoAccept, setAutoAccept] = useState(false);
+  const [allowConflicts, setAllowConflicts] = useState(false);
+
+  // Auto-generate localPart from name
+  const generateLocalPart = (resourceName: string): string => {
+    return resourceName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .substring(0, 30);
+  };
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+    // Auto-fill localPart if empty or was auto-generated
+    if (!localPart || localPart === generateLocalPart(name)) {
+      setLocalPart(generateLocalPart(value));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +88,8 @@ export function CreateResourceModal({
         capacity: type === "room" && capacity ? Number(capacity) : undefined,
         location: location || undefined,
         bookable,
+        autoAccept,
+        allowConflicts,
       });
       handleClose();
     } catch (err) {
@@ -79,6 +106,8 @@ export function CreateResourceModal({
     setCapacity("");
     setLocation("");
     setBookable(true);
+    setAutoAccept(false);
+    setAllowConflicts(false);
     setError(null);
     onClose();
   };
@@ -89,12 +118,20 @@ export function CreateResourceModal({
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
+          <span className="modal-icon">🏢</span>
           <h2 className="modal-title">{t("createResource.title")}</h2>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
+            {/* Exchange only badge */}
+            <div className="feature-badge feature-badge-exchange">
+              <OfferBadge offer="exchange" size="small" />
+              <span className="feature-text">{t("createResource.exchangeOnly")}</span>
+              <span className="feature-domain">{domain}</span>
+            </div>
+
             {error && (
               <div className="modal-error">
                 <span className="error-icon">⚠</span>
@@ -120,19 +157,19 @@ export function CreateResourceModal({
                   onClick={() => setType("equipment")}
                   disabled={loading}
                 >
-                  🔧 {t("createResource.types.equipment")}
+                  🖨️ {t("createResource.types.equipment")}
                 </button>
               </div>
             </div>
 
             {/* Resource name */}
             <div className="form-group">
-              <label className="form-label">{t("createResource.fields.name")}</label>
+              <label className="form-label">{t("createResource.fields.name")} *</label>
               <input
                 type="text"
                 className="form-input"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => handleNameChange(e.target.value)}
                 placeholder={type === "room" ? t("createResource.placeholders.roomName") : t("createResource.placeholders.equipmentName")}
                 disabled={loading}
               />
@@ -185,18 +222,50 @@ export function CreateResourceModal({
               </>
             )}
 
-            {/* Bookable */}
+            {/* Booking options */}
             <div className="form-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={bookable}
-                  onChange={(e) => setBookable(e.target.checked)}
-                  disabled={loading}
-                />
-                {t("createResource.fields.bookable")}
-              </label>
-              <span className="form-hint">{t("createResource.bookableHint")}</span>
+              <label className="form-label">{t("createResource.fields.bookingOptions")}</label>
+
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={bookable}
+                    onChange={(e) => setBookable(e.target.checked)}
+                    disabled={loading}
+                  />
+                  {t("createResource.options.bookable")}
+                </label>
+
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={autoAccept}
+                    onChange={(e) => setAutoAccept(e.target.checked)}
+                    disabled={loading || !bookable}
+                  />
+                  {t("createResource.options.autoAccept")}
+                </label>
+
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={allowConflicts}
+                    onChange={(e) => setAllowConflicts(e.target.checked)}
+                    disabled={loading || !bookable}
+                  />
+                  {t("createResource.options.allowConflicts")}
+                </label>
+              </div>
+            </div>
+
+            {/* Info box */}
+            <div className="info-box info-box-primary">
+              <span className="info-icon">ℹ️</span>
+              <div className="info-content">
+                <p>{t("createResource.info.visibility")}</p>
+                <p>{t("createResource.info.booking")}</p>
+              </div>
             </div>
           </div>
 
