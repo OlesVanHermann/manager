@@ -101,6 +101,7 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
     // Si DNS externes, pas de redirections possibles
     if (isExternalDns) {
       setNotSupported(true);
+      setNotSupportedReason("external");
       setLoading(false);
       return;
     }
@@ -108,13 +109,6 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
     try {
       setLoading(true);
       setError(null);
-      // Si DNS externes, marquer comme non supporté
-      if (isExternalDns) {
-        setNotSupported(true);
-        setNotSupportedReason("external");
-        setRedirections([]);
-        return;
-      }
       setNotSupported(false);
       setNotSupportedReason(null);
       const ids = await redirectionService.listRedirections(domain);
@@ -269,7 +263,7 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
   // ---------- RENDER NOT SUPPORTED ----------
   if (notSupported) {
     return (
-      <div className="redirections-tab">
+      <div className="redir-tab">
         <div className="redir-header">
           <div>
             <h3>{t("title")}</h3>
@@ -277,9 +271,9 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
           </div>
         </div>
 
-        <div className="not-supported-banner">
+        <div className="redir-not-supported">
           <AlertIcon />
-          <div className="not-supported-content">
+          <div className="redir-not-supported-content">
             <h4>{notSupportedReason === "external" ? t("notSupportedTitle") : t("notSupportedApiTitle")}</h4>
             <p>{notSupportedReason === "external" ? t("notSupportedDesc") : t("notSupportedApiDesc")}</p>
           </div>
@@ -295,15 +289,15 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
 
   // ---------- RENDER ----------
   return (
-    <div className="redirections-tab">
+    <div className="redir-tab">
       {/* Header */}
       <div className="redir-header">
         <div>
           <h3>{t("title")}</h3>
           <p className="redir-description">{t("description")}</p>
         </div>
-        <div className="tab-header-actions">
-          <button className="btn-primary" onClick={openCreateModal}>
+        <div className="redir-header-actions">
+          <button className="redir-btn-primary" onClick={openCreateModal}>
             <PlusIcon /> {t("add")}
           </button>
         </div>
@@ -320,35 +314,35 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
           </svg>
           <h3>{t("empty")}</h3>
           <p className="redir-hint">{t("emptyHint")}</p>
-          <button className="btn-primary" onClick={openCreateModal}>
+          <button className="redir-btn-primary" onClick={openCreateModal}>
             <PlusIcon /> {t("add")}
           </button>
         </div>
       ) : (
         /* Cards list */
-        <div className="redirection-cards">
+        <div className="redir-cards">
           {redirections.map((redir) => (
-            <div key={redir.id} className="redirection-card">
-              <div className="redirection-header">
-                <span className={`redirection-type ${getTypeBadgeClass(redir.type)}`}>
+            <div key={redir.id} className="redir-card">
+              <div className="redir-card-header">
+                <span className={`redir-type ${getTypeBadgeClass(redir.type)}`}>
                   {getTypeLabel(redir.type)}
                 </span>
                 <div className="redir-card-actions">
                   <button className="redir-btn-icon" onClick={() => openEditModal(redir)} title={t("edit")}>
                     <EditIcon />
                   </button>
-                  <button className="btn-icon btn-icon-danger" onClick={() => handleDeleteClick(redir)} title={t("delete")}>
+                  <button className="redir-btn-icon danger" onClick={() => handleDeleteClick(redir)} title={t("delete")}>
                     <TrashIcon />
                   </button>
                 </div>
               </div>
-              <div className="redirection-flow">
+              <div className="redir-flow">
                 <span className="redir-from">{redir.subDomain || "@"}.{domain}</span>
                 <span className="redir-arrow"><ArrowIcon /></span>
                 <span className="redir-to">{redir.target}</span>
               </div>
-              {redir.title && <div className="redirection-meta"><strong>{t("metaTitle")}:</strong> {redir.title}</div>}
-              {redir.keywords && <div className="redirection-meta"><strong>{t("metaKeywords")}:</strong> {redir.keywords}</div>}
+              {redir.title && <div className="redir-meta"><strong>{t("metaTitle")}:</strong> {redir.title}</div>}
+              {redir.keywords && <div className="redir-meta"><strong>{t("metaKeywords")}:</strong> {redir.keywords}</div>}
             </div>
           ))}
         </div>
@@ -385,7 +379,7 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
               </div>
               <div className="redir-form-group">
                 <label>{t("subdomain")}</label>
-                <div className="input-with-suffix">
+                <div className="redir-input-with-suffix">
                   <input
                     type="text"
                     value={formData.subDomain}
@@ -394,9 +388,9 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
                     className="redir-input"
                     disabled={modalMode === 'edit'}
                   />
-                  <span className="input-suffix">.{domain}</span>
+                  <span className="redir-input-suffix">.{domain}</span>
                 </div>
-                <small className="form-hint">{t("subdomainHint")}</small>
+                <small className="redir-form-hint">{t("subdomainHint")}</small>
               </div>
               <div className="redir-form-group">
                 <label>{t("target")} *</label>
@@ -437,7 +431,7 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
                       value={formData.description}
                       onChange={(e) => handleFormChange('description', e.target.value)}
                       placeholder={t("metaDescriptionPlaceholder")}
-                      className="form-input form-textarea"
+                      className="redir-textarea"
                       rows={3}
                     />
                   </div>
@@ -445,8 +439,8 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
               )}
             </div>
             <div className="redir-modal-footer">
-              <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
-              <button className="btn-primary" onClick={handleSave} disabled={saving}>
+              <button className="redir-btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
+              <button className="redir-btn-primary" onClick={handleSave} disabled={saving}>
                 {saving ? tCommon("loading") : tCommon("actions.save")}
               </button>
             </div>
@@ -464,13 +458,13 @@ export function RedirectionTab({ domain, nameServerType }: Props) {
             </div>
             <div className="redir-modal-body">
               <p>{t("confirmDeleteMessage")}</p>
-              <div className="delete-preview">
+              <div className="redir-delete-preview">
                 <strong>{deleteConfirm.subDomain || "@"}.{domain}</strong> → {deleteConfirm.target}
               </div>
             </div>
             <div className="redir-modal-footer">
-              <button className="btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
-              <button className="btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>
+              <button className="redir-btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
+              <button className="redir-btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>
                 {deleting ? tCommon("loading") : tCommon("actions.delete")}
               </button>
             </div>

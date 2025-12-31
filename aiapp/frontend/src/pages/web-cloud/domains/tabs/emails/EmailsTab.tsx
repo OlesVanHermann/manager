@@ -25,28 +25,138 @@ export function EmailsTab({ domain }: Props) {
   const [hasEmailService, setHasEmailService] = useState(true);
 
   const loadData = useCallback(async () => {
-    try { setLoading(true); const [a, m, r] = await Promise.all([emailsService.listEmailAccounts(domain), emailsService.listMailingLists(domain), emailsService.listEmailRedirections(domain)]); setAccounts(a); setMailingLists(m); setRedirections(r); setHasEmailService(a.length > 0 || m.length > 0 || r.length > 0); }
-    catch { setHasEmailService(false); } finally { setLoading(false); }
+    try {
+      setLoading(true);
+      const [a, m, r] = await Promise.all([
+        emailsService.listEmailAccounts(domain),
+        emailsService.listMailingLists(domain),
+        emailsService.listEmailRedirections(domain)
+      ]);
+      setAccounts(a);
+      setMailingLists(m);
+      setRedirections(r);
+      setHasEmailService(a.length > 0 || m.length > 0 || r.length > 0);
+    } catch {
+      setHasEmailService(false);
+    } finally {
+      setLoading(false);
+    }
   }, [domain]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  if (loading) return <div className="dom-emails-loading"><div className="dom-emails-skeleton" /></div>;
+  if (loading) {
+    return (
+      <div className="emails-loading">
+        <div className="emails-skeleton" />
+      </div>
+    );
+  }
 
   const emailManagerUrl = `${OVH_MANAGER_BASE}/#/web/email-domain/${domain}`;
 
   return (
     <div className="emails-tab">
-      <div className="dom-emails-header"><div><h3>{t("title")}</h3><p className="dom-emails-description">{t("description")}</p></div><div className="tab-header-actions"><a href={emailManagerUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">{t("manageInManager")} <ExternalLinkIcon /></a></div></div>
+      <div className="emails-header">
+        <div>
+          <h3>{t("title")}</h3>
+          <p className="emails-description">{t("description")}</p>
+        </div>
+        <div className="emails-header-actions">
+          <a href={emailManagerUrl} target="_blank" rel="noopener noreferrer" className="emails-btn-secondary">
+            {t("manageInManager")} <ExternalLinkIcon />
+          </a>
+        </div>
+      </div>
+
       {!hasEmailService ? (
-        <div className="dom-emails-empty"><MailIcon /><h3>{t("noEmailService")}</h3><p>{t("noEmailServiceHint")}</p><a href="https://www.ovh.com/fr/emails/" target="_blank" rel="noopener noreferrer" className="btn-primary">{t("orderEmail")} <ExternalLinkIcon /></a></div>
+        <div className="emails-empty">
+          <MailIcon />
+          <h3>{t("noEmailService")}</h3>
+          <p>{t("noEmailServiceHint")}</p>
+          <a href="https://www.ovh.com/fr/emails/" target="_blank" rel="noopener noreferrer" className="emails-btn-primary">
+            {t("orderEmail")} <ExternalLinkIcon />
+          </a>
+        </div>
       ) : (
         <>
-          <div className="view-toggle" style={{ marginBottom: "var(--space-4)" }}><button className={`toggle-btn ${activeView === "accounts" ? "active" : ""}`} onClick={() => setActiveView("accounts")}><MailIcon /> {t("accounts")} ({accounts.length})</button><button className={`toggle-btn ${activeView === "mailinglists" ? "active" : ""}`} onClick={() => setActiveView("mailinglists")}><UsersIcon /> {t("mailingLists")} ({mailingLists.length})</button><button className={`toggle-btn ${activeView === "redirections" ? "active" : ""}`} onClick={() => setActiveView("redirections")}>{t("redirections")} ({redirections.length})</button></div>
-          {activeView === "accounts" && (accounts.length === 0 ? <div className="dom-emails-info-banner"><span>ℹ️</span><p>{t("noAccounts")}</p></div> : <div className="email-list">{accounts.map((a) => <div key={a} className="email-item"><MailIcon /><span>{a}@{domain}</span></div>)}</div>)}
-          {activeView === "mailinglists" && (mailingLists.length === 0 ? <div className="dom-emails-info-banner"><span>ℹ️</span><p>{t("noMailingLists")}</p></div> : <div className="email-list">{mailingLists.map((l) => <div key={l} className="email-item"><UsersIcon /><span>{l}@{domain}</span></div>)}</div>)}
-          {activeView === "redirections" && (redirections.length === 0 ? <div className="dom-emails-info-banner"><span>ℹ️</span><p>{t("noRedirections")}</p></div> : <div className="email-list">{redirections.map((r) => <div key={r} className="email-item"><span>{r}</span></div>)}</div>)}
-          <div className="dom-emails-info-box" style={{ marginTop: "var(--space-6)" }}><p>{t("manageHint")}</p></div>
+          <div className="emails-view-toggle">
+            <button
+              className={`emails-toggle-btn ${activeView === "accounts" ? "active" : ""}`}
+              onClick={() => setActiveView("accounts")}
+            >
+              <MailIcon /> {t("accounts")} ({accounts.length})
+            </button>
+            <button
+              className={`emails-toggle-btn ${activeView === "mailinglists" ? "active" : ""}`}
+              onClick={() => setActiveView("mailinglists")}
+            >
+              <UsersIcon /> {t("mailingLists")} ({mailingLists.length})
+            </button>
+            <button
+              className={`emails-toggle-btn ${activeView === "redirections" ? "active" : ""}`}
+              onClick={() => setActiveView("redirections")}
+            >
+              {t("redirections")} ({redirections.length})
+            </button>
+          </div>
+
+          {activeView === "accounts" && (
+            accounts.length === 0 ? (
+              <div className="emails-info-banner">
+                <span>ℹ️</span>
+                <p>{t("noAccounts")}</p>
+              </div>
+            ) : (
+              <div className="emails-list">
+                {accounts.map((a) => (
+                  <div key={a} className="emails-item">
+                    <MailIcon />
+                    <span>{a}@{domain}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+
+          {activeView === "mailinglists" && (
+            mailingLists.length === 0 ? (
+              <div className="emails-info-banner">
+                <span>ℹ️</span>
+                <p>{t("noMailingLists")}</p>
+              </div>
+            ) : (
+              <div className="emails-list">
+                {mailingLists.map((l) => (
+                  <div key={l} className="emails-item">
+                    <UsersIcon />
+                    <span>{l}@{domain}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+
+          {activeView === "redirections" && (
+            redirections.length === 0 ? (
+              <div className="emails-info-banner">
+                <span>ℹ️</span>
+                <p>{t("noRedirections")}</p>
+              </div>
+            ) : (
+              <div className="emails-list">
+                {redirections.map((r) => (
+                  <div key={r} className="emails-item">
+                    <span>{r}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+
+          <div className="emails-info-box">
+            <p>{t("manageHint")}</p>
+          </div>
         </>
       )}
     </div>

@@ -1,68 +1,112 @@
-# Cahier des Charges : web-cloud/hosting - FTP - SSH
+# Cahier des Charges : web-cloud/hosting - FTP SSH
 
 ## 1. VUE D'ENSEMBLE
-- **Écran** : Gestion accès FTP/SSH
-- **Objectif** : Gérer utilisateurs et accès
-- **Contexte** : Transfert fichiers et accès console
 
-## 2. LAYOUT & STRUCTURE
-- Titre : "FTP - SSH"
-- Tuile infos connexion
-- 3 boutons action
-- Tableau utilisateurs
+**Type:** Page listing avec tile info et tableau
+**Fonction:** Gérer les accès FTP/SSH de l'hébergement
+**Contexte:** Hébergement Web
 
-## 3. COMPOSANTS UI
-- **OdsCard** : Infos FTP
-- **OdsButton** : "Créer un utilisateur" (primaire)
-- **OdsButton** : "Restaurer une sauvegarde" (secondaire)
-- **OdsButton** : "Générer une sauvegarde" (secondaire)
-- **OdsTable** : Liste utilisateurs
-- **OdsBadge** : FTP, SFTP, SSH, État (Activé/Désactivé)
-- **OdsActionMenu** : Menu ⋮
+## 2. DIMENSIONS
 
-## 4. TUILE INFORMATIONS FTP
+- Page: 1440x900px
+- Background: #F9FAFB
+- Tile info: 880x180px
+- Table: 880x300px
+
+## 3. NAVIGATION
+
+### Breadcrumb
+- Hébergements / mywebsite.com
+
+### Titre page
+- "FTP - SSH" (24px, font-weight: 600)
+
+## 4. TILE INFORMATIONS FTP (880x180px)
+
+### Header
+- "Informations FTP" (16px, font-weight: 600)
+- Sous-titre: "Ces paramètres vous permettront de mettre votre site en ligne"
+
+### Contenu
 | Champ | Valeur |
 |-------|--------|
 | Serveur FTP et SFTP | ftp.cluster027.hosting.ovh.net |
 | Serveur SSH | ssh.cluster027.hosting.ovh.net |
 | Login principal | mywebsitec |
-| Port FTP | 21 |
-| Port SFTP | 22 |
-| Port SSH | 22 |
 
-## 5. BOUTONS ACTION
-- "Créer un utilisateur" (bleu primaire)
-- "Restaurer une sauvegarde" (bordure grise)
-- "Générer une sauvegarde" (bordure grise)
+### Ports
+- Port FTP: 21
+- Port SFTP: 22
+- Port SSH: 22
 
-## 6. TABLEAU UTILISATEURS
-| Colonne | Description |
-|---------|-------------|
-| Login | Nom utilisateur |
-| Répertoire cible | Chemin home |
+## 5. ACTIONS UTILISATEURS
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Créer un utilisateur | Primary (#0050D7) | Ouvrir modal |
+| Restaurer une sauvegarde | Secondary outline | Ouvrir modal |
+| Générer une sauvegarde | Secondary outline | Lancer sauvegarde |
+
+## 6. DATAGRID UTILISATEURS
+
+### Colonnes
+| Colonne | Contenu |
+|---------|---------|
+| Login | mywebsitec |
+| Répertoire cible | /home/mywebsitec |
 | FTP | Badge Activé/Désactivé |
 | SFTP | Badge Activé/Désactivé |
 | SSH | Badge Activé/Désactivé |
-| État | Badge Activé/Désactivé |
+| État | Badge Activé |
 | Actions | Menu ⋮ |
 
-## 7. EXEMPLES DONNÉES
-| Login | Répertoire | FTP | SFTP | SSH | État |
-|-------|-----------|-----|------|-----|------|
-| mywebsitec | /home/mywebsitec | Activé | Activé | Activé | Activé |
-| mywebsitec-dev | /home/mywebsitec/dev | Activé | Activé | Désactivé | Activé |
+### Badges
+| État | Fond | Texte |
+|------|------|-------|
+| Activé | #DEF7EC | #03543F |
+| Désactivé | #F3F4F6 | #6B7280 |
 
-## 8. MENU ACTIONS (⋮)
+### Menu Actions (⋮)
 - Changer le mot de passe
 - Modifier
-- Supprimer (rouge)
+- Supprimer (texte rouge #DC2626)
 
-## 9. APIS & ENDPOINTS
-- GET /hosting/web/{serviceName}/user : Liste utilisateurs
-- POST /hosting/web/{serviceName}/user : Créer utilisateur
-- PUT /hosting/web/{serviceName}/user/{login} : Modifier
-- DELETE /hosting/web/{serviceName}/user/{login} : Supprimer
-- POST /hosting/web/{serviceName}/user/{login}/changePassword : Changer MDP
-- GET /hosting/web/{serviceName}/dump : Liste sauvegardes
-- POST /hosting/web/{serviceName}/dump : Créer sauvegarde
-- POST /hosting/web/{serviceName}/restoreSnapshot : Restaurer
+## 7. APIS & ENDPOINTS
+
+```
+GET /hosting/web/{serviceName}
+GET /hosting/web/{serviceName}/user
+POST /hosting/web/{serviceName}/user
+PUT /hosting/web/{serviceName}/user/{login}
+DELETE /hosting/web/{serviceName}/user/{login}
+POST /hosting/web/{serviceName}/user/{login}/changePassword
+POST /hosting/web/{serviceName}/dump
+POST /hosting/web/{serviceName}/restoreSnapshot
+```
+
+## 8. TRADUCTIONS (i18n)
+
+```json
+{
+  "ftp_ssh": "FTP - SSH",
+  "ftp_information": "Informations FTP",
+  "ftp_help_text": "Ces paramètres vous permettront de mettre votre site en ligne",
+  "ftp_sftp_server": "Serveur FTP et SFTP",
+  "ssh_server": "Serveur SSH",
+  "main_login": "Login principal",
+  "port_ftp": "Port FTP",
+  "port_sftp": "Port SFTP",
+  "port_ssh": "Port SSH",
+  "create_user": "Créer un utilisateur",
+  "restore_backup": "Restaurer une sauvegarde",
+  "generate_backup": "Générer une sauvegarde",
+  "login": "Login",
+  "target_directory": "Répertoire cible",
+  "enabled": "Activé",
+  "disabled": "Désactivé",
+  "status": "État",
+  "change_password": "Changer le mot de passe",
+  "edit": "Modifier",
+  "delete": "Supprimer"
+}
+```

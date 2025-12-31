@@ -116,7 +116,7 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
             href={details.adminUrl || `${details.url}/wp-admin`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-outline"
+            className="general-btn general-btn-outline"
           >
             {t('general.accessAdmin')}
           </a>
@@ -124,19 +124,19 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
             href={details.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-outline"
+            className="general-btn general-btn-outline"
           >
             {t('general.visitSite')}
           </a>
           <button
-            className="btn btn-outline"
+            className="general-btn general-btn-outline"
             onClick={handleFlushCache}
             disabled={actionLoading === 'cache'}
           >
             {actionLoading === 'cache' ? '...' : t('general.flushCache')}
           </button>
           <button
-            className="btn btn-outline"
+            className="general-btn general-btn-outline"
             onClick={handleResetPassword}
             disabled={actionLoading === 'password'}
           >
@@ -183,7 +183,7 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
           {details.updateAvailable && (
             <div className="general-update-btn-wrapper">
               <button
-                className="btn btn-outline general-btn-update"
+                className="general-btn general-btn-outline general-btn-update"
                 onClick={handleUpdateWordPress}
                 disabled={actionLoading === 'update'}
               >
@@ -241,7 +241,7 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
         <div className="general-danger-header">
           <h4>{t('general.dangerZone')}</h4>
           <button
-            className="btn general-btn-danger"
+            className="general-btn general-btn-danger"
             onClick={() => setShowDeleteModal(true)}
           >
             {t('general.delete')}

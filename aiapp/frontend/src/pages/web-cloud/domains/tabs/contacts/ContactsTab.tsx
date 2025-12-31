@@ -59,12 +59,12 @@ const CONTACT_ICONS: Record<string, () => JSX.Element> = {
   billing: CreditCardIcon,
 };
 
-// Utilise les classes CSS au lieu de couleurs hardcodées
+// Utilise les classes CSS préfixées
 const CONTACT_VARIANTS: Record<string, string> = {
-  owner: "contact-variant-enterprise",
-  admin: "contact-variant-primary",
-  tech: "contact-variant-success",
-  billing: "contact-variant-warning",
+  owner: "contacts-variant-enterprise",
+  admin: "contacts-variant-primary",
+  tech: "contacts-variant-success",
+  billing: "contacts-variant-warning",
 };
 
 const OVH_MANAGER_BASE = "https://www.ovh.com/manager";
@@ -123,40 +123,40 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
           <h3>{t("title")}</h3>
           <p className="contacts-description">{t("description")}</p>
         </div>
-        <div className="tab-header-actions">
-          <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="btn-primary">
+        <div className="contacts-header-actions">
+          <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-btn-primary">
             {t("reassignContacts")} <ExternalLinkIcon />
           </a>
         </div>
       </div>
 
-      <div className="contacts-grid-v2">
+      <div className="contacts-grid">
         {contacts.map((contact) => {
           const IconComponent = CONTACT_ICONS[contact.type];
           const variantClass = CONTACT_VARIANTS[contact.type];
 
           return (
-            <div key={contact.type} className="contact-card-v2">
-              <div className={`contact-icon-v2 ${variantClass}`}>
+            <div key={contact.type} className="contacts-card">
+              <div className={`contacts-icon ${variantClass}`}>
                 <IconComponent />
               </div>
-              <div className="contact-content-v2">
-                <div className="contact-type-v2">{t(`types.${contact.type}`)}</div>
+              <div className="contacts-content">
+                <div className="contacts-type">{t(`types.${contact.type}`)}</div>
                 {contact.loading ? (
-                  <div className="skeleton-text" style={{ width: "120px", height: "20px" }} />
+                  <div className="contacts-skeleton contacts-skeleton-text" />
                 ) : (
                   <>
-                    <div className="contact-nic-v2">{contact.nic}</div>
+                    <div className="contacts-nic">{contact.nic}</div>
                     {contact.details && (
-                      <div className="contact-name-v2">
+                      <div className="contacts-name">
                         {contact.details.firstName} {contact.details.lastName}
                       </div>
                     )}
                   </>
                 )}
-                <div className="contact-role-v2">{t(`roles.${contact.type}`)}</div>
+                <div className="contacts-role">{t(`roles.${contact.type}`)}</div>
               </div>
-              <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contact-edit-v2">
+              <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-edit">
                 {t("modify")} →
               </a>
             </div>

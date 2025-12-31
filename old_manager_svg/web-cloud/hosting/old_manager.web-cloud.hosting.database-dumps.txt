@@ -1,65 +1,103 @@
-# Cahier des Charges : web-cloud/hosting - Sauvegardes base de données
+# Cahier des Charges : web-cloud/hosting - Database Dumps
 
 ## 1. VUE D'ENSEMBLE
-- **Écran** : Liste des sauvegardes (dumps) d'une base de données
-- **Objectif** : Gérer les sauvegardes automatiques et manuelles
-- **Contexte** : Backup et restauration de données
 
-## 2. LAYOUT & STRUCTURE
-- Breadcrumb : Hébergements > mon-hebergement > Bases de données > mydatabase_db1 > Sauvegardes
-- Titre : "Sauvegardes de la base mydatabase_db1"
-- Bandeau info (rétention 30 jours)
-- Bouton créer sauvegarde
-- Tableau des sauvegardes
-- Pagination
+**Type:** Page listing avec tableau
+**Fonction:** Gérer les sauvegardes d'une base de données
+**Contexte:** Hébergement Web - Base de données
 
-## 3. COMPOSANTS UI
-- **OdsMessage** : Bandeau info bleu
-- **OdsButton** : "+ Créer une sauvegarde" (primaire)
-- **OdsTable** : Liste des dumps
-- **OdsBadge** : Type (Automatique bleu, Manuel jaune), Statut (Disponible vert)
-- **OdsActionMenu** : Menu ⋮
-- **OdsLink** : Restaurer, Télécharger
-- **OdsPagination** : Navigation pages
+## 2. DIMENSIONS
 
-## 4. BANDEAU INFO
-- "ℹ️ Les sauvegardes automatiques sont conservées pendant 30 jours."
-- "Vous pouvez également créer des sauvegardes manuelles à tout moment."
+- Page: 1440x900px
+- Background: #F9FAFB
+- Table width: 1100px
 
-## 5. TABLEAU SAUVEGARDES
-| Colonne | Description |
-|---------|-------------|
-| Date de création | Timestamp complet |
-| Type | Badge Automatique (bleu) / Manuel (jaune) |
-| Taille | En Mo |
-| Statut | Badge Disponible (vert) |
-| Expiration | Date ou "-" pour manuel |
-| Actions | Liens ou Menu ⋮ |
+## 3. NAVIGATION
 
-## 6. EXEMPLES DONNÉES
-| Date | Type | Taille | Statut | Expiration |
-|------|------|--------|--------|------------|
-| 27 déc. 2025 - 03:00 | Automatique | 45.2 Mo | Disponible | 26 janv. 2026 |
-| 26 déc. 2025 - 03:00 | Automatique | 44.8 Mo | Disponible | 25 janv. 2026 |
-| 24 déc. 2025 - 14:32 | Manuel | 44.5 Mo | Disponible | - |
-| 23 déc. 2025 - 03:00 | Automatique | 43.9 Mo | Disponible | 22 janv. 2026 |
+### Breadcrumb
+- Hébergements > mon-hebergement > Bases de données > mydatabase_db1 > Sauvegardes
 
-## 7. ACTIONS EN LIGNE
-- Restaurer (lien bleu)
-- Télécharger (lien bleu)
+### Sidebar
+- Section: BASE DE DONNÉES
+- Sous-menu: Informations, **Sauvegardes (dumps)**, Utilisateurs
 
-## 8. MENU ACTIONS (⋮)
+### Titre page
+- "Sauvegardes de la base mydatabase_db1" (24px, font-weight: 600)
+
+## 4. BANNIÈRE INFO
+
+- Background: #E8F0FE (bleu clair)
+- Icône: ℹ️
+- Texte: "Les sauvegardes automatiques sont conservées pendant 30 jours."
+- Texte 2: "Vous pouvez également créer des sauvegardes manuelles à tout moment."
+
+## 5. ACTIONS
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| + Créer une sauvegarde | Primary (#0050D7) | Créer dump manuel |
+
+## 6. DATAGRID
+
+### Colonnes
+| Colonne | Contenu |
+|---------|---------|
+| Date de création | 27 déc. 2025 - 03:00 |
+| Type | Badge Automatique/Manuel |
+| Taille | 45.2 Mo |
+| Statut | Badge Disponible |
+| Expiration | 26 janv. 2026 ou "-" |
+| Actions | Liens/Menu ⋮ |
+
+### Badges Type
+| Type | Fond | Texte |
+|------|------|-------|
+| Automatique | #E8F0FE | #0050D7 |
+| Manuel | #FEF3C7 | #92400E |
+
+### Badges Statut
+| Statut | Fond | Texte |
+|--------|------|-------|
+| Disponible | #DEF7EC | #03543F |
+
+### Menu Actions (⋮)
 - Restaurer
 - Télécharger (.sql.gz)
-- Supprimer (rouge)
+- Supprimer (texte rouge #991B1B)
 
-## 9. PAGINATION
+## 7. PAGINATION
+
 - "Affichage de 1 à 5 sur 30 sauvegardes"
 
-## 10. APIS & ENDPOINTS
-- GET /hosting/web/{serviceName}/database/{name}/dump : Liste dumps
-- POST /hosting/web/{serviceName}/database/{name}/dump : Créer dump
-- GET /hosting/web/{serviceName}/database/{name}/dump/{id} : Détails
-- DELETE /hosting/web/{serviceName}/database/{name}/dump/{id} : Supprimer
-- POST /hosting/web/{serviceName}/database/{name}/dump/{id}/restore : Restaurer
-- GET /hosting/web/{serviceName}/database/{name}/dump/{id}/download : Télécharger
+## 8. APIS & ENDPOINTS
+
+```
+GET /hosting/web/{serviceName}/database/{name}/dump
+POST /hosting/web/{serviceName}/database/{name}/dump
+DELETE /hosting/web/{serviceName}/database/{name}/dump/{id}
+POST /hosting/web/{serviceName}/database/{name}/dump/{id}/restore
+```
+
+## 9. TRADUCTIONS (i18n)
+
+```json
+{
+  "backups": "Sauvegardes",
+  "database_backups": "Sauvegardes de la base",
+  "create_backup": "Créer une sauvegarde",
+  "creation_date": "Date de création",
+  "type": "Type",
+  "automatic": "Automatique",
+  "manual": "Manuel",
+  "size": "Taille",
+  "status": "Statut",
+  "available": "Disponible",
+  "expiration": "Expiration",
+  "restore": "Restaurer",
+  "download": "Télécharger",
+  "delete": "Supprimer",
+  "auto_backup_info": "Les sauvegardes automatiques sont conservées pendant 30 jours.",
+  "manual_backup_info": "Vous pouvez également créer des sauvegardes manuelles à tout moment.",
+  "display_results": "Affichage de {from} à {to} sur {total} sauvegardes"
+}
+```

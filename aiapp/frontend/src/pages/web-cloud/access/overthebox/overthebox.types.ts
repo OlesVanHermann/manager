@@ -11,6 +11,9 @@ export interface OverTheBox {
   tunnelMode: string;
 }
 
+// Alias for service response
+export type OverTheBoxService = OverTheBox;
+
 export interface Remote {
   remoteId: string;
   publicIp?: string;

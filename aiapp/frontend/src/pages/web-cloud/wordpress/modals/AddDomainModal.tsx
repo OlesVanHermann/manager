@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { domainsService } from '../tabs/domains/DomainsTab.service';
+import './Modals.css';
 
 interface Props {
   serviceName: string;
@@ -123,7 +124,7 @@ export function AddDomainModal({ serviceName, isOpen, onClose, onSuccess }: Prop
                   <span className="dns-value">mon-blog.fr.</span>
                 </div>
               </div>
-              <button type="button" className="btn btn-outline btn-sm" onClick={() => {
+              <button type="button" className="modal-btn modal-btn-outline modal-btn-sm" onClick={() => {
                 navigator.clipboard.writeText('A @ 1.2.3.4\nCNAME www mon-blog.fr.');
               }}>
                 📋 {t('domains.copyConfig')}
@@ -144,10 +145,10 @@ export function AddDomainModal({ serviceName, isOpen, onClose, onSuccess }: Prop
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={handleClose}>
+            <button type="button" className="modal-btn modal-btn-secondary" onClick={handleClose}>
               {t('common.cancel')}
             </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="modal-btn modal-btn-primary" disabled={loading}>
               {loading ? '...' : t('domains.modal.addButton')}
             </button>
           </div>

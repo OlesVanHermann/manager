@@ -139,13 +139,13 @@ export default function WordPressPage() {
   };
 
   return (
-    <div className="wordpress-page">
-      <div className="wordpress-split">
+    <div className="wp-page">
+      <div className="wp-split">
         {/* LEFT PANEL - Liste des sites */}
-        <aside className="service-list-sidebar">
-          <div className="sidebar-search">
-            <div className="search-input-wrapper">
-              <span className="search-icon">🔍</span>
+        <aside className="wp-sidebar">
+          <div className="wp-sidebar-search">
+            <div className="wp-search-wrapper">
+              <span className="wp-search-icon">🔍</span>
               <input
                 type="text"
                 placeholder={t('common.search')}
@@ -154,67 +154,67 @@ export default function WordPressPage() {
               />
             </div>
           </div>
-          <div className="sidebar-filter">
+          <div className="wp-sidebar-filter">
             <span>{filteredServices.length} {t('common.sites', { count: filteredServices.length })}</span>
           </div>
-          <div className="service-items">
+          <div className="wp-service-items">
             {filteredServices.map(svc => {
               const svcDetails = svc === selectedService ? details : null;
               const stateInfo = svcDetails ? getStateInfo(svcDetails.state) : null;
               return (
                 <div
                   key={svc}
-                  className={`service-item ${svc === selectedService ? 'selected' : ''}`}
+                  className={`wp-service-item ${svc === selectedService ? 'selected' : ''}`}
                   onClick={() => handleSelectService(svc)}
                 >
-                  <span className="service-icon">🌐</span>
-                  <div className="service-info">
-                    <div className="service-item-name">{svcDetails?.displayName || svc}</div>
-                    <div className="service-item-version">WordPress {svcDetails?.wordpressVersion || svcDetails?.wpVersion || '--'}</div>
+                  <span className="wp-service-icon">🌐</span>
+                  <div className="wp-service-info">
+                    <div className="wp-service-name">{svcDetails?.displayName || svc}</div>
+                    <div className="wp-service-version">WordPress {svcDetails?.wordpressVersion || svcDetails?.wpVersion || '--'}</div>
                     {stateInfo && (
-                      <div className="service-item-state">
-                        <span className="state-dot" style={{ backgroundColor: stateInfo.color }} />
+                      <div className="wp-service-state">
+                        <span className="wp-state-dot" style={{ backgroundColor: stateInfo.color }} />
                         <span>{stateInfo.label}</span>
                       </div>
                     )}
-                    <div className="service-item-offer">{svcDetails?.offer || 'WordPress'} · {svcDetails?.datacenter || '--'}</div>
+                    <div className="wp-service-offer">{svcDetails?.offer || 'WordPress'} · {svcDetails?.datacenter || '--'}</div>
                   </div>
                 </div>
               );
             })}
           </div>
-          <div className="sidebar-actions">
-            <button className="btn btn-primary btn-block" onClick={() => setShowCreateModal(true)}>
+          <div className="wp-sidebar-actions">
+            <button className="wp-btn wp-btn-primary wp-btn-block" onClick={() => setShowCreateModal(true)}>
               + {t('actions.newSite')}
             </button>
           </div>
         </aside>
 
         {/* RIGHT PANEL - Details du site */}
-        <main className="wordpress-main">
+        <main className="wp-main">
           {loading ? (
-            <div className="mwp-page-loading">{t('common.loading')}</div>
+            <div className="wp-page-loading">{t('common.loading')}</div>
           ) : error ? (
-            <div className="mwp-page-error">{error}</div>
+            <div className="wp-page-error">{error}</div>
           ) : selectedService && details ? (
-            <div className="service-detail">
+            <div className="wp-detail">
               {/* Header */}
-              <div className="detail-header">
-                <div className="detail-header-info">
+              <div className="wp-detail-header">
+                <div className="wp-detail-header-info">
                   <h2>{details.displayName || details.serviceName}</h2>
-                  <span className="detail-header-meta">
+                  <span className="wp-detail-header-meta">
                     WordPress {details.wordpressVersion || details.wpVersion} · PHP {details.phpVersion} · {details.offer}
                   </span>
                 </div>
-                <div className="detail-header-actions">
+                <div className="wp-detail-header-actions">
                   <button
-                    className="btn btn-outline"
+                    className="wp-btn wp-btn-outline"
                     onClick={() => window.open(details.adminUrl || `${details.url}/wp-admin`, '_blank')}
                   >
                     Admin WP
                   </button>
                   <button
-                    className="btn btn-outline"
+                    className="wp-btn wp-btn-outline"
                     onClick={() => window.open(details.url, '_blank')}
                   >
                     {t('actions.visitSite')}
@@ -223,11 +223,11 @@ export default function WordPressPage() {
               </div>
 
               {/* NAV3 Tabs */}
-              <div className="detail-header-tabs">
+              <div className="wp-tabs">
                 {TABS.map(tab => (
                   <button
                     key={tab.key}
-                    className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}
+                    className={`wp-tab-btn ${activeTab === tab.key ? 'active' : ''}`}
                     onClick={() => handleTabChange(tab.key)}
                   >
                     {t(tab.labelKey)}
@@ -236,11 +236,11 @@ export default function WordPressPage() {
               </div>
 
               {/* Tab Content */}
-              <div className="tab-content">{renderTab()}</div>
+              <div className="wp-tab-content">{renderTab()}</div>
             </div>
           ) : (
-            <div className="wordpress-empty">
-              <span className="empty-icon">🌐</span>
+            <div className="wp-empty">
+              <span className="wp-empty-icon">🌐</span>
               <h3>{t('common.selectService')}</h3>
             </div>
           )}

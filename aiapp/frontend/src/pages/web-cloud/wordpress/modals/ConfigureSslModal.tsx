@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { domainsService } from '../tabs/domains/DomainsTab.service';
 import type { SslConfig } from '../wordpress.types';
+import './Modals.css';
 
 interface Props {
   serviceName: string;
@@ -128,10 +129,10 @@ export function ConfigureSslModal({ serviceName, domain, isOpen, onClose, onSucc
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={handleClose}>
+            <button type="button" className="modal-btn modal-btn-secondary" onClick={handleClose}>
               {t('common.cancel')}
             </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="modal-btn modal-btn-primary" disabled={loading}>
               {loading ? '...' : t('ssl.modal.activate')}
             </button>
           </div>

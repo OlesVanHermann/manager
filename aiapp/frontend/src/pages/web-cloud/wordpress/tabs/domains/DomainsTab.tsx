@@ -104,7 +104,7 @@ CNAME   www       ${domains.find(d => d.type === 'primary')?.domain || 'example.
       {/* Header */}
       <div className="domains-header">
         <h3>{t('domains.title')}</h3>
-        <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+        <button className="domains-btn domains-btn-primary" onClick={() => setShowAddModal(true)}>
           + {t('domains.addDomain')}
         </button>
       </div>
@@ -163,7 +163,7 @@ CNAME   www       ${domains.find(d => d.type === 'primary')?.domain || 'example.
                   <td>
                     <div className="domains-actions">
                       <button
-                        className="btn btn-sm btn-outline"
+                        className="domains-btn domains-btn-sm domains-btn-outline"
                         onClick={() => handleConfigureSsl(domain.domain)}
                         title={t('domains.configureSsl')}
                       >
@@ -171,7 +171,7 @@ CNAME   www       ${domains.find(d => d.type === 'primary')?.domain || 'example.
                       </button>
                       {domain.type !== 'primary' && (
                         <button
-                          className="btn btn-sm btn-outline domains-btn-danger-outline"
+                          className="domains-btn domains-btn-sm domains-btn-outline domains-btn-danger-outline"
                           onClick={() => handleDeleteDomain(domain.domain)}
                           title={t('domains.delete')}
                         >
@@ -203,7 +203,7 @@ CNAME   www       ${domains.find(d => d.type === 'primary')?.domain || 'example.
             <span className="domains-dns-value">{domains.find(d => d.type === 'primary')?.domain || 'example.com'}.</span>
           </div>
         </div>
-        <button className="btn btn-outline btn-sm" onClick={copyDnsConfig}>
+        <button className="domains-btn domains-btn-outline domains-btn-sm" onClick={copyDnsConfig}>
           📋 {t('domains.copyConfig')}
         </button>
       </div>

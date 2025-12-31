@@ -66,7 +66,7 @@ export function ThemesTab({ serviceName }: Props) {
     return (
       <div className="ext-error">
         <p>{error}</p>
-        <button className="btn btn-outline btn-sm" onClick={loadThemes}>
+        <button className="ext-btn ext-btn-outline ext-btn-sm" onClick={loadThemes}>
           {t('common.retry')}
         </button>
       </div>
@@ -85,7 +85,7 @@ export function ThemesTab({ serviceName }: Props) {
             {themes.length} {t('extensions.themesInstalled')}
           </p>
         </div>
-        <button className="btn btn-outline btn-sm" onClick={loadThemes}>
+        <button className="ext-btn ext-btn-outline ext-btn-sm" onClick={loadThemes}>
           {t('common.refresh')}
         </button>
       </div>
@@ -120,7 +120,7 @@ export function ThemesTab({ serviceName }: Props) {
                     {theme.hasUpdate && (
                       <div className="ext-card-actions">
                         <button
-                          className="btn btn-sm btn-primary"
+                          className="ext-btn ext-btn-sm ext-btn-primary"
                           onClick={() => handleUpdate(theme.name)}
                           disabled={updating === theme.name}
                         >
@@ -156,7 +156,7 @@ export function ThemesTab({ serviceName }: Props) {
                     {theme.hasUpdate && (
                       <div className="ext-card-actions">
                         <button
-                          className="btn btn-sm btn-outline"
+                          className="ext-btn ext-btn-sm ext-btn-outline"
                           onClick={() => handleUpdate(theme.name)}
                           disabled={updating === theme.name}
                         >

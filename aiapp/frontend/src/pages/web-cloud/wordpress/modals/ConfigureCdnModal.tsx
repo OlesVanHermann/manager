@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { performanceService } from '../tabs/performance/PerformanceTab.service';
+import './Modals.css';
 
 interface Props {
   serviceName: string;
@@ -109,10 +110,10 @@ export function ConfigureCdnModal({ serviceName, isOpen, onClose, onSuccess }: P
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={handleClose}>
+            <button type="button" className="modal-btn modal-btn-secondary" onClick={handleClose}>
               {t('common.cancel')}
             </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="modal-btn modal-btn-primary" disabled={loading}>
               {loading ? '...' : t('cdn.modal.confirm')}
             </button>
           </div>

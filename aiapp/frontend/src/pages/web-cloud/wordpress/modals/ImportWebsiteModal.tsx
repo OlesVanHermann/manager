@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../../../services/api';
 import type { ImportWebsiteParams } from '../wordpress.types';
+import './Modals.css';
 
 interface Props {
   serviceName: string;
@@ -200,13 +201,13 @@ export function ImportWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={handleClose}>
+            <button type="button" className="modal-btn modal-btn-secondary" onClick={handleClose}>
               {t('common.cancel')}
             </button>
             {step > 1 && (
               <button
                 type="button"
-                className="btn btn-outline"
+                className="modal-btn modal-btn-outline"
                 onClick={() => setStep(s => s - 1)}
               >
                 ← {t('common.previous')}
@@ -215,14 +216,14 @@ export function ImportWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
             {step < 3 ? (
               <button
                 type="button"
-                className="btn btn-primary"
+                className="modal-btn modal-btn-primary"
                 onClick={() => setStep(s => s + 1)}
                 disabled={!canGoNext()}
               >
                 {t('common.next')} →
               </button>
             ) : (
-              <button type="submit" className="btn btn-primary" disabled={loading}>
+              <button type="submit" className="modal-btn modal-btn-primary" disabled={loading}>
                 {loading ? '...' : t('import.start')}
               </button>
             )}

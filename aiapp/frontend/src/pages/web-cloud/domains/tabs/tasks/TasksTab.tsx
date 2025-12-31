@@ -6,7 +6,6 @@ import "./TasksTab.css";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { tasksService } from "./TasksTab.service";
-import type { DomainTask, ZoneTask } from "../../domains.types";
 
 // ============ TYPES ============
 
@@ -118,8 +117,8 @@ export function TasksTab({ name, hasDomain, hasZone }: Props) {
     loadTasks();
   }, [loadTasks]);
 
-  const filteredTasks = statusFilter === "all" 
-    ? tasks 
+  const filteredTasks = statusFilter === "all"
+    ? tasks
     : tasks.filter((t) => {
         if (statusFilter === "pending") return t.status === "todo" || t.status === "init";
         if (statusFilter === "doing") return t.status === "doing";
@@ -140,11 +139,11 @@ export function TasksTab({ name, hasDomain, hasZone }: Props) {
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case "done": return "status-done";
-      case "doing": return "status-doing";
+      case "done": return "tasks-status-done";
+      case "doing": return "tasks-status-doing";
       case "error":
-      case "cancelled": return "status-error";
-      default: return "status-pending";
+      case "cancelled": return "tasks-status-error";
+      default: return "tasks-status-pending";
     }
   };
 
@@ -161,42 +160,42 @@ export function TasksTab({ name, hasDomain, hasZone }: Props) {
 
   if (loading) {
     return (
-      <div className="dtasks-loading">
-        <div className="dtasks-skeleton" />
-        <div className="dtasks-skeleton" />
+      <div className="tasks-loading">
+        <div className="tasks-skeleton" />
+        <div className="tasks-skeleton" />
       </div>
     );
   }
 
   return (
     <div className="tasks-tab">
-      <div className="dtasks-header">
+      <div className="tasks-header">
         <div>
           <h3>{t("title")}</h3>
-          <p className="dtasks-description">{t("description")}</p>
+          <p className="tasks-description">{t("description")}</p>
         </div>
-        <div className="tab-header-actions">
-          <button className="btn-secondary" onClick={loadTasks}>
+        <div className="tasks-header-actions">
+          <button className="tasks-btn-secondary" onClick={loadTasks}>
             <RefreshIcon /> {t("refresh")}
           </button>
         </div>
       </div>
 
       <div className="tasks-filters">
-        <div className="filter-buttons">
-          <button className={`filter-btn ${statusFilter === "all" ? "active" : ""}`} onClick={() => setStatusFilter("all")}>
+        <div className="tasks-filter-buttons">
+          <button className={`tasks-filter-btn ${statusFilter === "all" ? "active" : ""}`} onClick={() => setStatusFilter("all")}>
             {t("filters.all")}
           </button>
-          <button className={`filter-btn ${statusFilter === "pending" ? "active" : ""}`} onClick={() => setStatusFilter("pending")}>
+          <button className={`tasks-filter-btn ${statusFilter === "pending" ? "active" : ""}`} onClick={() => setStatusFilter("pending")}>
             {t("filters.pending")}
           </button>
-          <button className={`filter-btn ${statusFilter === "doing" ? "active" : ""}`} onClick={() => setStatusFilter("doing")}>
+          <button className={`tasks-filter-btn ${statusFilter === "doing" ? "active" : ""}`} onClick={() => setStatusFilter("doing")}>
             {t("filters.doing")}
           </button>
-          <button className={`filter-btn ${statusFilter === "done" ? "active" : ""}`} onClick={() => setStatusFilter("done")}>
+          <button className={`tasks-filter-btn ${statusFilter === "done" ? "active" : ""}`} onClick={() => setStatusFilter("done")}>
             {t("filters.done")}
           </button>
-          <button className={`filter-btn ${statusFilter === "error" ? "active" : ""}`} onClick={() => setStatusFilter("error")}>
+          <button className={`tasks-filter-btn ${statusFilter === "error" ? "active" : ""}`} onClick={() => setStatusFilter("error")}>
             {t("filters.error")}
           </button>
         </div>
@@ -204,25 +203,25 @@ export function TasksTab({ name, hasDomain, hasZone }: Props) {
       </div>
 
       {filteredTasks.length === 0 ? (
-        <div className="dtasks-empty">
+        <div className="tasks-empty">
           <CheckIcon />
           <h3>{t("empty")}</h3>
-          <p className="dtasks-hint">{t("emptyHint")}</p>
+          <p className="tasks-hint">{t("emptyHint")}</p>
         </div>
       ) : (
         <div className="tasks-list">
           {filteredTasks.map((task) => (
-            <div key={`${task.source}-${task.id}`} className={`task-card ${getStatusClass(task.status)}`}>
-              <div className="task-icon">{getStatusIcon(task.status)}</div>
-              <div className="task-content">
-                <div className="task-function">{task.function}</div>
-                {task.comment && <div className="task-comment">{task.comment}</div>}
-                <div className="task-meta">
-                  <span className="task-source">{task.source === "domain" ? "Domaine" : "Zone DNS"}</span>
-                  <span className="task-date">{formatDate(task.lastUpdate || task.creationDate)}</span>
+            <div key={`${task.source}-${task.id}`} className={`tasks-card ${getStatusClass(task.status)}`}>
+              <div className="tasks-icon">{getStatusIcon(task.status)}</div>
+              <div className="tasks-content">
+                <div className="tasks-function">{task.function}</div>
+                {task.comment && <div className="tasks-comment">{task.comment}</div>}
+                <div className="tasks-meta">
+                  <span className={`tasks-source ${task.source}`}>{task.source === "domain" ? "Domaine" : "Zone DNS"}</span>
+                  <span className="tasks-date">{formatDate(task.lastUpdate || task.creationDate)}</span>
                 </div>
               </div>
-              <div className={`task-status ${getStatusClass(task.status)}`}>
+              <div className={`tasks-status ${getStatusClass(task.status)}`}>
                 {t(`status.${task.status}`)}
               </div>
             </div>

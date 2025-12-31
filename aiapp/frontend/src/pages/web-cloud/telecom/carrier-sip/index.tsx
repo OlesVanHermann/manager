@@ -10,6 +10,8 @@ import { generalService } from "./tabs/general/GeneralTab.service";
 import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
 import { EndpointsTab } from "./tabs/endpoints/EndpointsTab.tsx";
 import { CdrTab } from "./tabs/cdr/CdrTab.tsx";
+import { RoutingTab } from "./tabs/routing/RoutingTab.tsx";
+import { SettingsTab } from "./tabs/settings/SettingsTab.tsx";
 
 const TrunkIcon = () => (
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -66,6 +68,8 @@ export default function CarrierSipPage() {
     { id: "general", label: t("tabs.general") },
     { id: "endpoints", label: t("tabs.endpoints") },
     { id: "cdr", label: t("tabs.cdr") },
+    { id: "routing", label: t("tabs.routing") },
+    { id: "settings", label: t("tabs.settings") },
   ];
 
   return (
@@ -113,6 +117,12 @@ export default function CarrierSipPage() {
             )}
             {activeTab === "cdr" && (
               <CdrTab billingAccount={billingAccount} serviceName={serviceName} />
+            )}
+            {activeTab === "routing" && (
+              <RoutingTab billingAccount={billingAccount} serviceName={serviceName} />
+            )}
+            {activeTab === "settings" && (
+              <SettingsTab billingAccount={billingAccount} serviceName={serviceName} />
             )}
           </div>
         </div>

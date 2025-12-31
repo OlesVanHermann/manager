@@ -1,55 +1,96 @@
-# Cahier des Charges : web-cloud/hosting - Statistiques base de données
+# Cahier des Charges : web-cloud/hosting - Database Statistics
 
 ## 1. VUE D'ENSEMBLE
-- **Écran** : Statistiques d'une base de données
-- **Objectif** : Visualiser l'utilisation et les performances
-- **Contexte** : Monitoring et optimisation
 
-## 2. LAYOUT & STRUCTURE
-- Breadcrumb : Hébergements › monsite.example.com › Bases de données › Statistiques
-- Titre : "Statistiques des bases de données"
-- Sélecteur de base + filtres période
-- 2 graphiques côte à côte
-- Tuile résumé avec 5 KPIs
-- Bandeau info (mise à jour horaire)
+**Type:** Page statistiques avec graphiques
+**Fonction:** Afficher les statistiques de la base de données
+**Contexte:** Hébergement Web - Base de données
 
-## 3. COMPOSANTS UI
-- **OdsSelect** : Sélecteur de base de données
-- **OdsButtonGroup** : Filtres période (7 jours, 30 jours, 1 an)
-- **OdsCard** : Conteneurs graphiques et résumé
-- **OdsChart** : Graphiques linéaires avec aire
-- **OdsMessage** : Bandeau info bleu
+## 2. DIMENSIONS
 
-## 4. SÉLECTEURS
-- **Base de données** : Dropdown avec toutes les bases (ex: mydatabase_wp)
-- **Période** : Boutons radio (7 jours actif, 30 jours, 1 an)
+- Page: 1440x900px
+- Background: #F9FAFB
+- Graphiques: 540x300px chacun
 
-## 5. GRAPHIQUE 1 : CONNEXIONS SIMULTANÉES
-- Type : Ligne avec aire remplie
-- Axe X : Jours (Lun - Sam)
-- Axe Y : 10 à 50 connexions
-- Couleur : Bleu primaire
+## 3. NAVIGATION
 
-## 6. GRAPHIQUE 2 : ESPACE DISQUE UTILISÉ
-- Type : Ligne avec aire remplie
-- Axe X : Jours
-- Axe Y : 100Mo à 500Mo
-- Couleur : Bleu primaire
+### Breadcrumb
+- Hébergements › monsite.example.com › Bases de données › Statistiques
 
-## 7. TUILE RÉSUMÉ (5 KPIs)
-| Métrique | Valeur |
-|----------|--------|
-| Connexions moyennes | 32 |
-| Connexions max | 47 |
-| Espace utilisé | 285 Mo |
-| Quota disponible | 715 Mo |
-| Tables | 52 |
+### Titre page
+- "Statistiques des bases de données" (18px, font-weight: 600)
 
-## 8. BANDEAU INFO
-- "ℹ️ Les statistiques sont mises à jour toutes les heures. Les données affichées peuvent avoir jusqu'à 60 minutes de retard."
+## 4. FILTRES
 
-## 9. APIS & ENDPOINTS
-- GET /hosting/web/{serviceName}/database/{name}/statistics : Stats complètes
-- GET /hosting/web/{serviceName}/database/{name}/statistics/connections : Connexions
-- GET /hosting/web/{serviceName}/database/{name}/statistics/disk : Espace disque
-- GET /hosting/web/{serviceName}/database/{name} : Infos base (tables, quota)
+### Sélecteur de base de données
+- Dropdown: "mydatabase_wp" (300x40px)
+
+### Sélecteur de période
+| Option | État |
+|--------|------|
+| 7 jours | Actif (fond #0050D7) |
+| 30 jours | Inactif (fond blanc) |
+| 1 an | Inactif (fond blanc) |
+
+## 5. GRAPHIQUES
+
+### Graphique 1: Connexions simultanées (540x300px)
+- Type: Line chart avec aire remplie
+- Couleur ligne: #0050D7
+- Couleur aire: rgba(0,80,215,0.1)
+- Axes Y: 10, 20, 30, 40, 50
+- Axes X: Lun, Mar, Mer, Jeu, Ven, Sam
+- Grille: #E5E7EB
+
+### Graphique 2: Espace disque utilisé (540x300px)
+- Type: Line chart avec aire remplie
+- Couleur ligne: #0050D7
+- Couleur aire: rgba(0,80,215,0.1)
+- Axes Y: 100Mo, 200Mo, 300Mo, 400Mo, 500Mo
+
+## 6. RÉSUMÉ (Cards)
+
+| Card | Valeur | Style |
+|------|--------|-------|
+| Connexions moyennes | 32 | 24px bold |
+| Connexions max | 47 | 24px bold |
+| Espace utilisé | 285 Mo | 24px bold |
+| Quota disponible | 715 Mo | 24px bold |
+| Tables | 52 | 24px bold |
+
+- Background cards: #F9FAFB
+- Border-radius: 4px
+
+## 7. BANNIÈRE INFO
+
+- Background: #E8F0FE
+- Icône: ℹ️
+- Texte: "Les statistiques sont mises à jour toutes les heures. Les données affichées peuvent avoir jusqu'à 60 minutes de retard."
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /hosting/web/{serviceName}/database/{name}/statistics
+GET /hosting/web/{serviceName}/database/{name}
+```
+
+## 9. TRADUCTIONS (i18n)
+
+```json
+{
+  "database_statistics": "Statistiques des bases de données",
+  "period": "Période",
+  "seven_days": "7 jours",
+  "thirty_days": "30 jours",
+  "one_year": "1 an",
+  "simultaneous_connections": "Connexions simultanées",
+  "disk_space_used": "Espace disque utilisé",
+  "summary": "Résumé",
+  "average_connections": "Connexions moyennes",
+  "max_connections": "Connexions max",
+  "space_used": "Espace utilisé",
+  "available_quota": "Quota disponible",
+  "tables": "Tables",
+  "stats_delay_info": "Les statistiques sont mises à jour toutes les heures. Les données affichées peuvent avoir jusqu'à 60 minutes de retard."
+}
+```

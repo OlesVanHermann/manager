@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiClient } from "../../../../services/api";
+import './Modals.css';
 
 interface Props {
   serviceName: string;
@@ -75,8 +76,8 @@ export function DeleteWebsiteModal({ serviceName, websiteId, websiteName, isOpen
             </div>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>{t("common.cancel")}</button>
-            <button type="submit" className="btn btn-danger" disabled={loading || confirmText !== websiteName}>
+            <button type="button" className="modal-btn modal-btn-secondary" onClick={onClose}>{t("common.cancel")}</button>
+            <button type="submit" className="modal-btn modal-btn-danger" disabled={loading || confirmText !== websiteName}>
               {loading ? t("common.deleting") : t("website.delete")}
             </button>
           </div>

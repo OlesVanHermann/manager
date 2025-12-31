@@ -96,7 +96,7 @@ export function PluginsTab({ serviceName }: Props) {
     return (
       <div className="ext-error">
         <p>{error}</p>
-        <button className="btn btn-outline btn-sm" onClick={loadPlugins}>
+        <button className="ext-btn ext-btn-outline ext-btn-sm" onClick={loadPlugins}>
           {t('common.retry')}
         </button>
       </div>
@@ -120,14 +120,14 @@ export function PluginsTab({ serviceName }: Props) {
         <div className="ext-header-actions">
           {pluginsWithUpdate > 0 && (
             <button
-              className="btn btn-primary btn-sm"
+              className="ext-btn ext-btn-primary ext-btn-sm"
               onClick={handleUpdateAll}
               disabled={updatingAll}
             >
               {updatingAll ? '...' : t('extensions.updateAll')}
             </button>
           )}
-          <button className="btn btn-outline btn-sm" onClick={loadPlugins}>
+          <button className="ext-btn ext-btn-outline ext-btn-sm" onClick={loadPlugins}>
             {t('common.refresh')}
           </button>
         </div>
@@ -168,7 +168,7 @@ export function PluginsTab({ serviceName }: Props) {
                     <div className="ext-list-actions">
                       {plugin.hasUpdate && (
                         <button
-                          className="btn btn-xs btn-primary"
+                          className="ext-btn ext-btn-xs ext-btn-primary"
                           onClick={() => handleUpdate(plugin.name)}
                           disabled={actionLoading === `update-${plugin.name}`}
                           title={t('extensions.update')}
@@ -177,7 +177,7 @@ export function PluginsTab({ serviceName }: Props) {
                         </button>
                       )}
                       <button
-                        className="btn btn-xs btn-outline"
+                        className="ext-btn ext-btn-xs ext-btn-outline"
                         onClick={() => handleTogglePlugin(plugin)}
                         disabled={actionLoading === `deactivate-${plugin.name}`}
                         title={t('extensions.deactivate')}
@@ -215,7 +215,7 @@ export function PluginsTab({ serviceName }: Props) {
                     <div className="ext-list-actions">
                       {plugin.hasUpdate && (
                         <button
-                          className="btn btn-xs btn-outline"
+                          className="ext-btn ext-btn-xs ext-btn-outline"
                           onClick={() => handleUpdate(plugin.name)}
                           disabled={actionLoading === `update-${plugin.name}`}
                           title={t('extensions.update')}
@@ -224,7 +224,7 @@ export function PluginsTab({ serviceName }: Props) {
                         </button>
                       )}
                       <button
-                        className="btn btn-xs btn-success"
+                        className="ext-btn ext-btn-xs ext-btn-success"
                         onClick={() => handleTogglePlugin(plugin)}
                         disabled={actionLoading === `activate-${plugin.name}`}
                         title={t('extensions.activate')}

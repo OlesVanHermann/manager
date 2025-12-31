@@ -99,7 +99,7 @@ export function TasksTab({ serviceName }: Props) {
     return (
       <div className="tasks-error">
         <p>{error}</p>
-        <button className="btn btn-outline btn-sm" onClick={() => loadTasks()}>
+        <button className="tasks-btn tasks-btn-outline tasks-btn-sm" onClick={() => loadTasks()}>
           {t('common.retry')}
         </button>
       </div>
@@ -128,7 +128,7 @@ export function TasksTab({ serviceName }: Props) {
             <span>{t('tasks.autoRefresh')}</span>
           </label>
           <button
-            className="btn btn-outline btn-sm"
+            className="tasks-btn tasks-btn-outline tasks-btn-sm"
             onClick={() => loadTasks()}
             title={t('tasks.refresh')}
           >

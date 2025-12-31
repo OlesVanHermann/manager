@@ -62,8 +62,8 @@ export function ThemesPluginsTab({ serviceName }: Props) {
                   <td><code>{plugin.version}</code></td>
                   <td><span className={`mwp-themes-plugins-badge ${plugin.active ? "success" : "inactive"}`}>{plugin.active ? t("plugins.active") : t("plugins.inactive")}</span></td>
                   <td><div className="themes-plugins-actions">
-                    <button className={`btn btn-xs ${plugin.active ? "btn-warning" : "btn-success"}`} onClick={() => handleTogglePlugin(plugin)} disabled={updating === `toggle-${plugin.name}`} title={plugin.active ? t("plugins.deactivate") : t("plugins.activate")}>{updating === `toggle-${plugin.name}` ? "..." : plugin.active ? "⏸️" : "▶️"}</button>
-                    {plugin.updateAvailable && <button className="btn btn-xs btn-primary" onClick={() => handleUpdatePlugin(plugin.name)} disabled={updating === `plugin-${plugin.name}`} title={t("plugins.update")}>{updating === `plugin-${plugin.name}` ? "..." : "⬆️"}</button>}
+                    <button className={`btn wp-btn-xs ${plugin.active ? "btn-warning" : "btn-success"}`} onClick={() => handleTogglePlugin(plugin)} disabled={updating === `toggle-${plugin.name}`} title={plugin.active ? t("plugins.deactivate") : t("plugins.activate")}>{updating === `toggle-${plugin.name}` ? "..." : plugin.active ? "⏸️" : "▶️"}</button>
+                    {plugin.updateAvailable && <button className="wp-btn wp-btn-xs wp-btn-primary" onClick={() => handleUpdatePlugin(plugin.name)} disabled={updating === `plugin-${plugin.name}`} title={t("plugins.update")}>{updating === `plugin-${plugin.name}` ? "..." : "⬆️"}</button>}
                   </div></td>
                 </tr>
               ))}

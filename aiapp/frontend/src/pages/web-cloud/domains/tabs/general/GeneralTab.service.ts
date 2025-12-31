@@ -3,7 +3,7 @@
 // ============================================================
 
 import { ovhGet, ovhPost, ovhPut } from "../../../../../services/api";
-import type { Domain, DomainServiceInfos, DnssecStatus, DnsRecord } from "../../domains.types";
+import type { Domain, DomainServiceInfos, DnsRecord } from "../../domains.types";
 
 // ============ HELPERS LOCAUX (DUPLIQUÉS) ============
 
@@ -96,6 +96,40 @@ class GeneralService {
       return null;
     } catch {
       return null;
+    }
+  }
+
+  // -------- NAME SERVERS --------
+  async getNameServers(domain: string): Promise<{ id: number; host: string; ip?: string; isUsed: boolean }[]> {
+    try {
+      const ids = await ovhGet<number[]>(`/domain/${domain}/nameServer`);
+      if (ids.length === 0) return [];
+      const servers = await Promise.all(
+        ids.map((id) => ovhGet<{ id: number; host: string; ip?: string; isUsed: boolean }>(`/domain/${domain}/nameServer/${id}`))
+      );
+      return servers.filter((s) => s.isUsed);
+    } catch {
+      return [];
+    }
+  }
+
+  // -------- ZONE RECORDS COUNT --------
+  async getZoneRecordsCount(zone: string): Promise<number> {
+    try {
+      const ids = await ovhGet<number[]>(`/domain/zone/${zone}/record`);
+      return ids.length;
+    } catch {
+      return 0;
+    }
+  }
+
+  // -------- ANYCAST STATUS --------
+  async getAnycastStatus(zone: string): Promise<boolean> {
+    try {
+      const info = await ovhGet<{ hasDnsAnycast?: boolean }>(`/domain/zone/${zone}`);
+      return info.hasDnsAnycast || false;
+    } catch {
+      return false;
     }
   }
 }

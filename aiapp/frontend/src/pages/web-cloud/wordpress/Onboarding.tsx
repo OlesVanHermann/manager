@@ -93,16 +93,16 @@ export function Onboarding({ onCreate, onImport }: OnboardingProps) {
         {/* Actions */}
         <div className="onboarding-actions">
           {onCreate && (
-            <button className="btn btn-primary btn-lg" onClick={onCreate}>
+            <button className="wp-btn wp-btn-primary wp-btn-lg" onClick={onCreate}>
               + {t('onboarding.createSite')}
             </button>
           )}
           {onImport && (
-            <button className="btn btn-outline btn-lg" onClick={onImport}>
+            <button className="wp-btn wp-btn-outline wp-btn-lg" onClick={onImport}>
               {t('onboarding.importSite')}
             </button>
           )}
-          <button className="btn btn-secondary btn-lg" onClick={handleOrder}>
+          <button className="wp-btn wp-btn-secondary wp-btn-lg" onClick={handleOrder}>
             {t('onboarding.order')}
           </button>
         </div>

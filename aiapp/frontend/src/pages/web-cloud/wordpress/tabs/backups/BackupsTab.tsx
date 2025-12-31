@@ -133,7 +133,7 @@ export function BackupsTab({ serviceName }: Props) {
     return (
       <div className="backups-error">
         <p>{error}</p>
-        <button className="btn btn-outline btn-sm" onClick={loadData}>
+        <button className="backups-btn backups-btn-outline backups-btn-sm" onClick={loadData}>
           {t('common.retry')}
         </button>
       </div>
@@ -150,7 +150,7 @@ export function BackupsTab({ serviceName }: Props) {
         </div>
         <div className="backups-actions">
           <button
-            className="btn btn-primary"
+            className="backups-btn backups-btn-primary"
             onClick={handleCreateBackup}
             disabled={creating}
           >
@@ -193,7 +193,7 @@ export function BackupsTab({ serviceName }: Props) {
           <h4>{t('backups.empty')}</h4>
           <p>{t('backups.emptyHint')}</p>
           <button
-            className="btn btn-primary"
+            className="backups-btn backups-btn-primary"
             onClick={handleCreateBackup}
             disabled={creating}
           >
@@ -234,7 +234,7 @@ export function BackupsTab({ serviceName }: Props) {
                     <td>
                       <div className="backups-row-actions">
                         <button
-                          className="btn btn-xs btn-primary"
+                          className="backups-btn backups-btn-xs backups-btn-primary"
                           onClick={() => handleRestoreClick(backup)}
                           disabled={backup.status !== 'completed'}
                           title={t('backups.restore')}
@@ -242,7 +242,7 @@ export function BackupsTab({ serviceName }: Props) {
                           ↩️
                         </button>
                         <button
-                          className="btn btn-xs btn-outline"
+                          className="backups-btn backups-btn-xs backups-btn-outline"
                           onClick={() => handleDownload(backup)}
                           disabled={backup.status !== 'completed'}
                           title={t('backups.download')}
@@ -251,7 +251,7 @@ export function BackupsTab({ serviceName }: Props) {
                         </button>
                         {backup.type === 'manual' && (
                           <button
-                            className="btn btn-xs btn-danger"
+                            className="backups-btn backups-btn-xs backups-btn-danger"
                             onClick={() => handleDelete(backup.id)}
                             title={t('backups.delete')}
                           >

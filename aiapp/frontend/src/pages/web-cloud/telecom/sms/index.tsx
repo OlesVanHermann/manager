@@ -1,5 +1,5 @@
 // ============================================================
-// SMS PAGE - Imports depuis tabs ISOLÉS
+// SMS PAGE - Compte SMS avec tous les tabs
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -9,9 +9,13 @@ import { ovhApi } from '../../../../services/api';
 import type { SmsAccount } from './sms.types';
 
 // Imports ISOLÉS - chaque tab depuis son dossier
+import { GeneralTab } from './tabs/general/GeneralTab';
+import { SendTab } from './tabs/send/SendTab';
+import { CampaignsTab } from './tabs/campaigns/CampaignsTab';
 import { OutgoingTab } from './tabs/outgoing/OutgoingTab';
 import { IncomingTab } from './tabs/incoming/IncomingTab';
 import { SendersTab } from './tabs/senders/SendersTab';
+import { TemplatesTab } from './tabs/templates/TemplatesTab';
 
 // ============================================================
 // SERVICE LOCAL - Pour le compte SMS uniquement
@@ -25,7 +29,7 @@ const smsIndexService = {
   },
 };
 
-type TabId = 'outgoing' | 'incoming' | 'senders';
+type TabId = 'general' | 'send' | 'campaigns' | 'outgoing' | 'incoming' | 'senders' | 'templates';
 
 export default function SmsPage() {
   const { t } = useTranslation('web-cloud/telecom/sms/index');
@@ -33,7 +37,7 @@ export default function SmsPage() {
   const [account, setAccount] = useState<SmsAccount | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabId>('outgoing');
+  const [activeTab, setActiveTab] = useState<TabId>('general');
 
   useEffect(() => {
     const load = async () => {
@@ -53,9 +57,13 @@ export default function SmsPage() {
   }, [serviceName]);
 
   const tabs: { id: TabId; label: string }[] = [
+    { id: 'general', label: t('tabs.general') },
+    { id: 'send', label: t('tabs.send') },
+    { id: 'campaigns', label: t('tabs.campaigns') },
     { id: 'outgoing', label: t('tabs.outgoing') },
     { id: 'incoming', label: t('tabs.incoming') },
     { id: 'senders', label: t('tabs.senders') },
+    { id: 'templates', label: t('tabs.templates') },
   ];
 
   if (loading) {
@@ -104,12 +112,20 @@ export default function SmsPage() {
 
   const renderTab = () => {
     switch (activeTab) {
+      case 'general':
+        return <GeneralTab accountName={serviceName} />;
+      case 'send':
+        return <SendTab accountName={serviceName} />;
+      case 'campaigns':
+        return <CampaignsTab accountName={serviceName} />;
       case 'outgoing':
         return <OutgoingTab accountName={serviceName} />;
       case 'incoming':
         return <IncomingTab accountName={serviceName} />;
       case 'senders':
         return <SendersTab accountName={serviceName} />;
+      case 'templates':
+        return <TemplatesTab accountName={serviceName} />;
       default:
         return null;
     }
@@ -130,7 +146,7 @@ export default function SmsPage() {
       </div>
 
       <div className="credits-display">
-        <span className="credits-value">{account.creditsLeft}</span>
+        <span className="credits-value">{account.creditsLeft.toLocaleString('fr-FR')}</span>
         <span className="credits-label">{t('credits')}</span>
       </div>
 

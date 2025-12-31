@@ -1,6 +1,7 @@
 // ============================================================
 import "./DynHostTab.css";
-// TAB: DYNHOST - CRUD enregistrements + Logins
+// TAB: DYNHOST - Table Records + Logins
+// Aligné sur target SVG dynhost.svg / dynhost-login.svg
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
@@ -43,7 +44,7 @@ const EditIcon = () => (
 
 const TrashIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
   </svg>
 );
 
@@ -56,6 +57,12 @@ const CloseIcon = () => (
 const UserIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
   </svg>
 );
 
@@ -264,9 +271,10 @@ export function DynHostTab({ zoneName }: Props) {
   // ---------- RENDER LOADING ----------
   if (loading) {
     return (
-      <div className="dynhost-loading">
-        <div className="dynhost-skeleton" />
-        <div className="dynhost-skeleton" />
+      <div className="dynhost-tab">
+        <div className="dynhost-loading">
+          <div className="dynhost-skeleton" />
+        </div>
       </div>
     );
   }
@@ -274,27 +282,28 @@ export function DynHostTab({ zoneName }: Props) {
   // ---------- RENDER ----------
   return (
     <div className="dynhost-tab">
-      {/* Header with view toggle */}
+      {/* Header */}
       <div className="dynhost-header">
         <div>
           <h3>{t("dynhost.title")}</h3>
           <p className="dynhost-description">{t("dynhost.description")}</p>
         </div>
-        <div className="tab-header-actions">
-          <div className="view-toggle">
-            <button className={`toggle-btn ${activeView === "records" ? "active" : ""}`} onClick={() => setActiveView("records")}>
-              {t("dynhost.records")}
-            </button>
-            <button className={`toggle-btn ${activeView === "logins" ? "active" : ""}`} onClick={() => setActiveView("logins")}>
-              <UserIcon /> {t("dynhost.logins")}
-            </button>
-          </div>
-          {activeView === "records" ? (
-            <button className="btn-primary" onClick={openCreateModal}><PlusIcon /> {t("dynhost.add")}</button>
-          ) : (
-            <button className="btn-primary" onClick={openLoginModal}><PlusIcon /> {t("dynhost.addLogin")}</button>
-          )}
-        </div>
+      </div>
+
+      {/* Sub-tabs NAV4 */}
+      <div className="dynhost-subtabs">
+        <button
+          className={`dynhost-subtab ${activeView === "records" ? "active" : ""}`}
+          onClick={() => setActiveView("records")}
+        >
+          {t("dynhost.records")}
+        </button>
+        <button
+          className={`dynhost-subtab ${activeView === "logins" ? "active" : ""}`}
+          onClick={() => setActiveView("logins")}
+        >
+          <UserIcon /> {t("dynhost.logins")}
+        </button>
       </div>
 
       {error && <div className="dynhost-error-banner">{error}</div>}
@@ -302,32 +311,77 @@ export function DynHostTab({ zoneName }: Props) {
       {/* RECORDS VIEW */}
       {activeView === "records" && (
         <>
+          <div className="dynhost-section-header">
+            <div>
+              <h4 className="dynhost-section-title">{t("dynhost.records")}</h4>
+              <p className="dynhost-section-desc">{t("dynhost.description")}</p>
+            </div>
+            <div className="dynhost-header-actions">
+              <button className="dynhost-btn-secondary" onClick={() => loadRecords()}>
+                <RefreshIcon />
+              </button>
+              <button className="dynhost-btn-primary" onClick={openCreateModal}>
+                <PlusIcon /> {t("dynhost.add")}
+              </button>
+            </div>
+          </div>
+
           {records.length === 0 ? (
             <div className="dynhost-empty">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
                 <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
               </svg>
               <h3>{t("dynhost.empty")}</h3>
-              <p className="dynhost-hint">{t("dynhost.emptyHint")}</p>
-              <button className="btn-primary" onClick={openCreateModal}><PlusIcon /> {t("dynhost.add")}</button>
+              <p>{t("dynhost.emptyHint")}</p>
+              <button className="dynhost-btn-primary" onClick={openCreateModal}>
+                <PlusIcon /> {t("dynhost.add")}
+              </button>
             </div>
           ) : (
-            <div className="dynhost-cards">
-              {records.map((record) => (
-                <div key={record.id} className="dynhost-card">
-                  <div className="dynhost-header">
-                    <h4>{record.subDomain || "@"}.{zoneName}</h4>
-                    <div className="dynhost-card-actions">
-                      <button className="dynhost-btn-icon" onClick={() => openEditModal(record)} title={t("dynhost.edit")}><EditIcon /></button>
-                      <button className="btn-icon btn-icon-danger" onClick={() => setDeleteConfirm(record)} title={t("dynhost.delete")}><TrashIcon /></button>
-                    </div>
-                  </div>
-                  <div className="dynhost-info">
-                    <label>{t("dynhost.ip")}:</label>
-                    <span>{record.ip}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="dynhost-table-wrapper">
+              <table className="dynhost-table">
+                <thead>
+                  <tr>
+                    <th>{t("dynhost.subdomain")}</th>
+                    <th>{t("dynhost.ip")}</th>
+                    <th>{t("dynhost.zone")}</th>
+                    <th style={{ textAlign: "right" }}>{tCommon("actions.title")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.map((record) => (
+                    <tr key={record.id}>
+                      <td>
+                        <span className="dynhost-subdomain">
+                          {record.subDomain ? `${record.subDomain}.${zoneName}` : zoneName}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="dynhost-ip">{record.ip}</span>
+                      </td>
+                      <td>{zoneName}</td>
+                      <td>
+                        <div className="dynhost-actions-cell">
+                          <button
+                            className="dynhost-btn-icon"
+                            onClick={() => openEditModal(record)}
+                            title={t("dynhost.edit")}
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            className="dynhost-btn-icon danger"
+                            onClick={() => setDeleteConfirm(record)}
+                            title={t("dynhost.delete")}
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </>
@@ -336,31 +390,70 @@ export function DynHostTab({ zoneName }: Props) {
       {/* LOGINS VIEW */}
       {activeView === "logins" && (
         <>
+          <div className="dynhost-section-header">
+            <div>
+              <h4 className="dynhost-section-title">{t("dynhost.logins")}</h4>
+              <p className="dynhost-section-desc">{t("dynhost.loginsHint")}</p>
+            </div>
+            <div className="dynhost-header-actions">
+              <button className="dynhost-btn-secondary" onClick={() => loadLogins()}>
+                <RefreshIcon />
+              </button>
+              <button className="dynhost-btn-primary" onClick={openLoginModal}>
+                <PlusIcon /> {t("dynhost.addLogin")}
+              </button>
+            </div>
+          </div>
+
           {loginsLoading ? (
-            <div className="dynhost-loading"><div className="dynhost-skeleton" /></div>
+            <div className="dynhost-loading">
+              <div className="dynhost-skeleton" />
+            </div>
           ) : logins.length === 0 ? (
             <div className="dynhost-empty">
               <UserIcon />
               <h3>{t("dynhost.noLogins")}</h3>
-              <p className="dynhost-hint">{t("dynhost.loginsHint")}</p>
-              <button className="btn-primary" onClick={openLoginModal}><PlusIcon /> {t("dynhost.addLogin")}</button>
+              <p>{t("dynhost.loginsHint")}</p>
+              <button className="dynhost-btn-primary" onClick={openLoginModal}>
+                <PlusIcon /> {t("dynhost.addLogin")}
+              </button>
             </div>
           ) : (
-            <div className="dynhost-cards">
-              {logins.map((login) => (
-                <div key={login.login} className="dynhost-card">
-                  <div className="dynhost-header">
-                    <h4><UserIcon /> {login.login}</h4>
-                    <div className="dynhost-card-actions">
-                      <button className="btn-icon btn-icon-danger" onClick={() => setDeleteLoginConfirm(login)} title={t("dynhost.delete")}><TrashIcon /></button>
-                    </div>
-                  </div>
-                  <div className="dynhost-info">
-                    <label>{t("dynhost.subdomain")}:</label>
-                    <span>{login.subDomain || "*"}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="dynhost-table-wrapper">
+              <table className="dynhost-table">
+                <thead>
+                  <tr>
+                    <th>{t("dynhost.loginSuffix")}</th>
+                    <th>{t("dynhost.subdomain")}</th>
+                    <th style={{ textAlign: "right" }}>{tCommon("actions.title")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logins.map((login) => (
+                    <tr key={login.login}>
+                      <td>
+                        <span className="dynhost-login-id">{login.login}</span>
+                      </td>
+                      <td>
+                        <span className="dynhost-subdomain">
+                          {login.subDomain ? `${login.subDomain}.${zoneName}` : `*.${zoneName}`}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="dynhost-actions-cell">
+                          <button
+                            className="dynhost-btn-icon danger"
+                            onClick={() => setDeleteLoginConfirm(login)}
+                            title={t("dynhost.delete")}
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </>
@@ -384,19 +477,36 @@ export function DynHostTab({ zoneName }: Props) {
               {formError && <div className="dynhost-form-error">{formError}</div>}
               <div className="dynhost-form-group">
                 <label>{t("dynhost.subdomain")}</label>
-                <div className="input-with-suffix">
-                  <input type="text" value={formData.subDomain} onChange={(e) => handleFormChange("subDomain", e.target.value)} placeholder="home" className="dynhost-input" disabled={modalMode === "edit"} />
-                  <span className="input-suffix">.{zoneName}</span>
+                <div className="dynhost-input-with-suffix">
+                  <input
+                    type="text"
+                    value={formData.subDomain}
+                    onChange={(e) => handleFormChange("subDomain", e.target.value)}
+                    placeholder="home"
+                    className="dynhost-input"
+                    disabled={modalMode === "edit"}
+                  />
+                  <span className="dynhost-input-suffix">.{zoneName}</span>
                 </div>
+                <small className="dynhost-form-hint">{t("dynhost.subdomainHint")}</small>
               </div>
               <div className="dynhost-form-group">
                 <label>{t("dynhost.ip")} *</label>
-                <input type="text" value={formData.ip} onChange={(e) => handleFormChange("ip", e.target.value)} placeholder="192.168.1.1" className="dynhost-input" required />
+                <input
+                  type="text"
+                  value={formData.ip}
+                  onChange={(e) => handleFormChange("ip", e.target.value)}
+                  placeholder="192.168.1.1"
+                  className="dynhost-input"
+                  required
+                />
               </div>
             </div>
             <div className="dynhost-modal-footer">
-              <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
-              <button className="btn-primary" onClick={handleSave} disabled={saving}>{saving ? tCommon("loading") : tCommon("actions.save")}</button>
+              <button className="dynhost-btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
+              <button className="dynhost-btn-primary" onClick={handleSave} disabled={saving}>
+                {saving ? tCommon("loading") : tCommon("actions.save")}
+              </button>
             </div>
           </div>
         </div>
@@ -414,24 +524,43 @@ export function DynHostTab({ zoneName }: Props) {
               {loginFormError && <div className="dynhost-form-error">{loginFormError}</div>}
               <div className="dynhost-form-group">
                 <label>{t("dynhost.loginSuffix")} *</label>
-                <div className="input-with-prefix">
-                  <span className="input-prefix">{zoneName}-</span>
-                  <input type="text" value={loginForm.loginSuffix} onChange={(e) => handleLoginFormChange("loginSuffix", e.target.value)} placeholder="user1" className="dynhost-input" />
+                <div className="dynhost-input-with-prefix">
+                  <span className="dynhost-input-prefix">{zoneName}-</span>
+                  <input
+                    type="text"
+                    value={loginForm.loginSuffix}
+                    onChange={(e) => handleLoginFormChange("loginSuffix", e.target.value)}
+                    placeholder="user1"
+                    className="dynhost-input"
+                  />
                 </div>
               </div>
               <div className="dynhost-form-group">
                 <label>{t("dynhost.password")} *</label>
-                <input type="password" value={loginForm.password} onChange={(e) => handleLoginFormChange("password", e.target.value)} className="dynhost-input" />
+                <input
+                  type="password"
+                  value={loginForm.password}
+                  onChange={(e) => handleLoginFormChange("password", e.target.value)}
+                  className="dynhost-input"
+                />
               </div>
               <div className="dynhost-form-group">
                 <label>{t("dynhost.subdomain")}</label>
-                <input type="text" value={loginForm.subDomain} onChange={(e) => handleLoginFormChange("subDomain", e.target.value)} placeholder="* (tous)" className="dynhost-input" />
-                <small className="form-hint">{t("dynhost.subdomainLoginHint")}</small>
+                <input
+                  type="text"
+                  value={loginForm.subDomain}
+                  onChange={(e) => handleLoginFormChange("subDomain", e.target.value)}
+                  placeholder="* (tous)"
+                  className="dynhost-input"
+                />
+                <small className="dynhost-form-hint">{t("dynhost.subdomainLoginHint")}</small>
               </div>
             </div>
             <div className="dynhost-modal-footer">
-              <button className="btn-secondary" onClick={closeLoginModal}>{tCommon("actions.cancel")}</button>
-              <button className="btn-primary" onClick={handleSaveLogin} disabled={savingLogin}>{savingLogin ? tCommon("loading") : tCommon("actions.save")}</button>
+              <button className="dynhost-btn-secondary" onClick={closeLoginModal}>{tCommon("actions.cancel")}</button>
+              <button className="dynhost-btn-primary" onClick={handleSaveLogin} disabled={savingLogin}>
+                {savingLogin ? tCommon("loading") : tCommon("actions.save")}
+              </button>
             </div>
           </div>
         </div>
@@ -447,11 +576,15 @@ export function DynHostTab({ zoneName }: Props) {
             </div>
             <div className="dynhost-modal-body">
               <p>{t("dynhost.confirmDeleteMessage")}</p>
-              <div className="delete-preview"><strong>{deleteConfirm.subDomain || "@"}.{zoneName}</strong> → {deleteConfirm.ip}</div>
+              <div className="dynhost-delete-preview">
+                <strong>{deleteConfirm.subDomain || "@"}.{zoneName}</strong> → {deleteConfirm.ip}
+              </div>
             </div>
             <div className="dynhost-modal-footer">
-              <button className="btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
-              <button className="btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>{deleting ? tCommon("loading") : tCommon("actions.delete")}</button>
+              <button className="dynhost-btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
+              <button className="dynhost-btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>
+                {deleting ? tCommon("loading") : tCommon("actions.delete")}
+              </button>
             </div>
           </div>
         </div>
@@ -467,11 +600,15 @@ export function DynHostTab({ zoneName }: Props) {
             </div>
             <div className="dynhost-modal-body">
               <p>{t("dynhost.confirmDeleteLoginMessage")}</p>
-              <div className="delete-preview"><strong>{deleteLoginConfirm.login}</strong></div>
+              <div className="dynhost-delete-preview">
+                <strong>{deleteLoginConfirm.login}</strong>
+              </div>
             </div>
             <div className="dynhost-modal-footer">
-              <button className="btn-secondary" onClick={() => setDeleteLoginConfirm(null)}>{tCommon("actions.cancel")}</button>
-              <button className="btn-danger" onClick={handleDeleteLoginConfirm} disabled={deleting}>{deleting ? tCommon("loading") : tCommon("actions.delete")}</button>
+              <button className="dynhost-btn-secondary" onClick={() => setDeleteLoginConfirm(null)}>{tCommon("actions.cancel")}</button>
+              <button className="dynhost-btn-danger" onClick={handleDeleteLoginConfirm} disabled={deleting}>
+                {deleting ? tCommon("loading") : tCommon("actions.delete")}
+              </button>
             </div>
           </div>
         </div>

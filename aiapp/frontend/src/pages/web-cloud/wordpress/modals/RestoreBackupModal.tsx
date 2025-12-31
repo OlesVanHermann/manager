@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { WordPressBackup, RestoreOptions } from '../wordpress.types';
+import './Modals.css';
 
 interface Props {
   isOpen: boolean;
@@ -150,12 +151,12 @@ export function RestoreBackupModal({ isOpen, backup, onClose, onConfirm }: Props
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={handleClose}>
+            <button type="button" className="modal-btn modal-btn-secondary" onClick={handleClose}>
               {t('common.cancel')}
             </button>
             <button
               type="submit"
-              className="btn btn-danger"
+              className="modal-btn modal-btn-danger"
               disabled={loading || !confirmed || (!options.files && !options.database)}
             >
               {loading ? '...' : t('restore.modal.restore')}

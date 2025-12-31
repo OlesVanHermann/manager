@@ -129,7 +129,7 @@ export function AlldomTab() {
             <div className="domains-alldom-warning">
               <WarningIcon />
               <span>{t("alldom.terminatingWarning")}</span>
-              <button className="btn-link" onClick={handleCancelTerminate}>
+              <button className="alldom-btn-link" onClick={handleCancelTerminate}>
                 {t("alldom.cancelTermination")}
               </button>
             </div>

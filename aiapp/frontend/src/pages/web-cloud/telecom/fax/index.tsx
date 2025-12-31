@@ -6,11 +6,26 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { GeneralTab } from './tabs/general/GeneralTab';
+import { CampaignsTab } from './tabs/campaigns/CampaignsTab';
+import { ConsumptionTab } from './tabs/consumption/ConsumptionTab';
+import { SettingsTab } from './tabs/settings/SettingsTab';
+import { LogoTab } from './tabs/logo/LogoTab';
+import './fax.css';
+
+type TabId = 'general' | 'campaigns' | 'consumption' | 'settings' | 'logo';
 
 export default function FaxPage() {
   const { t } = useTranslation('web-cloud/telecom/fax/index');
   const { serviceName } = useParams<{ serviceName: string }>();
-  const [activeTab] = useState<'general'>('general');
+  const [activeTab, setActiveTab] = useState<TabId>('general');
+
+  const tabs: { id: TabId; label: string }[] = [
+    { id: 'general', label: t('tabs.general') },
+    { id: 'campaigns', label: t('tabs.campaigns') },
+    { id: 'consumption', label: t('tabs.consumption') },
+    { id: 'settings', label: t('tabs.settings') },
+    { id: 'logo', label: t('tabs.logo') },
+  ];
 
   if (!serviceName) {
     return (
@@ -25,6 +40,23 @@ export default function FaxPage() {
     );
   }
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'general':
+        return <GeneralTab serviceName={serviceName} />;
+      case 'campaigns':
+        return <CampaignsTab serviceName={serviceName} />;
+      case 'consumption':
+        return <ConsumptionTab serviceName={serviceName} />;
+      case 'settings':
+        return <SettingsTab serviceName={serviceName} />;
+      case 'logo':
+        return <LogoTab serviceName={serviceName} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -35,13 +67,25 @@ export default function FaxPage() {
           <span>/</span>
           <span>{t('breadcrumb.fax')}</span>
         </div>
-        <h1>{t('title')}</h1>
+        <h1>{t('title')}: {serviceName}</h1>
       </div>
 
+      {/* ---------- TABS ---------- */}
+      <div className="fax-tabs">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            className={`fax-tab ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ---------- TAB CONTENT ---------- */}
       <div className="tab-content">
-        {activeTab === 'general' && (
-          <GeneralTab serviceName={serviceName} />
-        )}
+        {renderTabContent()}
       </div>
     </div>
   );

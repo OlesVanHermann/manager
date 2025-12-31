@@ -186,15 +186,15 @@ export function DnsServersTab({ domain }: Props) {
 
   // ---------- RENDER ----------
   return (
-    <div className="dns-servers-tab">
+    <div className="dnsservers-tab">
       {/* Header */}
       <div className="dnsservers-header">
         <div>
           <h3>{t("dnsServers.title")}</h3>
           <p className="dnsservers-description">{t("dnsServers.description")}</p>
         </div>
-        <div className="tab-header-actions">
-          <button className="btn-secondary" onClick={openEditModal}>
+        <div className="dnsservers-header-actions">
+          <button className="dnsservers-btn-secondary" onClick={openEditModal}>
             <EditIcon /> {t("dnsServers.modify")}
           </button>
         </div>
@@ -211,16 +211,16 @@ export function DnsServersTab({ domain }: Props) {
         </div>
       ) : (
         /* Cards list */
-        <div className="dns-server-cards">
+        <div className="dnsservers-cards">
           {servers.map((server) => (
-            <div key={server.id} className="dns-server-card">
-              <div className="dns-server-icon">
+            <div key={server.id} className="dnsservers-card">
+              <div className="dnsservers-icon">
                 <ServerIcon />
               </div>
-              <div className="dns-server-info">
+              <div className="dnsservers-info">
                 <h4>{server.host}</h4>
                 {server.ip && <p>IP: {server.ip}</p>}
-                {!server.isUsed && <span className="dnsservers-badge badge-warning">{t("dnsServers.notUsed")}</span>}
+                {!server.isUsed && <span className="dnsservers-badge warning">{t("dnsServers.notUsed")}</span>}
               </div>
             </div>
           ))}
@@ -243,40 +243,40 @@ export function DnsServersTab({ domain }: Props) {
             </div>
             <div className="dnsservers-modal-body">
               {/* Warning */}
-              <div className="warning-box">
+              <div className="dnsservers-warning">
                 <WarningIcon />
                 <p>{t("dnsServers.warning")}</p>
               </div>
 
               {formError && <div className="dnsservers-form-error">{formError}</div>}
 
-              <div className="dns-servers-form">
-                <div className="form-header-row">
+              <div className="dnsservers-form">
+                <div className="dnsservers-form-header">
                   <span className="col-number">#</span>
                   <span className="col-host">{t("dnsServers.hostname")} *</span>
                   <span className="col-ip">{t("dnsServers.ip")} ({t("dnsServers.optional")})</span>
                   <span className="col-action"></span>
                 </div>
                 {formServers.map((server, index) => (
-                  <div key={index} className="form-server-row">
+                  <div key={index} className="dnsservers-form-row">
                     <span className="col-number">{index + 1}</span>
                     <input
                       type="text"
                       value={server.host}
                       onChange={(e) => handleServerChange(index, 'host', e.target.value)}
                       placeholder="ns1.example.com"
-                      className="form-input col-host"
+                      className="dnsservers-input col-host"
                     />
                     <input
                       type="text"
                       value={server.ip}
                       onChange={(e) => handleServerChange(index, 'ip', e.target.value)}
                       placeholder="192.0.2.1"
-                      className="form-input col-ip"
+                      className="dnsservers-input col-ip"
                     />
                     <button
                       type="button"
-                      className="btn-icon btn-icon-danger col-action"
+                      className="dnsservers-btn-icon danger col-action"
                       onClick={() => removeServerRow(index)}
                       disabled={formServers.length <= 2}
                       title={t("dnsServers.removeServer")}
@@ -286,19 +286,19 @@ export function DnsServersTab({ domain }: Props) {
                   </div>
                 ))}
                 {formServers.length < 6 && (
-                  <button type="button" className="btn-link" onClick={addServerRow}>
+                  <button type="button" className="dnsservers-btn-link" onClick={addServerRow}>
                     <PlusIcon /> {t("dnsServers.addServer")}
                   </button>
                 )}
               </div>
 
-              <div className="info-box info-box-small">
+              <div className="dnsservers-info-box small">
                 <p>{t("dnsServers.formHint")}</p>
               </div>
             </div>
             <div className="dnsservers-modal-footer">
-              <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
-              <button className="btn-primary" onClick={handleSave} disabled={saving}>
+              <button className="dnsservers-btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
+              <button className="dnsservers-btn-primary" onClick={handleSave} disabled={saving}>
                 {saving ? tCommon("loading") : tCommon("actions.save")}
               </button>
             </div>

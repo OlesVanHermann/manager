@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../../../services/api';
 import type { CreateWebsiteParams } from '../wordpress.types';
+import './Modals.css';
 
 interface Props {
   serviceName: string;
@@ -165,10 +166,10 @@ export function CreateWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={handleClose}>
+            <button type="button" className="modal-btn modal-btn-secondary" onClick={handleClose}>
               {t('common.cancel')}
             </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="modal-btn modal-btn-primary" disabled={loading}>
               {loading ? '...' : t('website.create')}
             </button>
           </div>

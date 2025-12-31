@@ -1,61 +1,100 @@
-# Cahier des Charges : web-cloud/hosting - Bases de données
+# Cahier des Charges : web-cloud/hosting - Database Listing
 
 ## 1. VUE D'ENSEMBLE
-- **Écran** : Gestion des bases de données
-- **Objectif** : Créer et gérer les BDD MySQL
-- **Contexte** : Stockage données applications
 
-## 2. LAYOUT & STRUCTURE
-- Titre : "Bases de données"
-- 2 boutons action
-- Tableau des bases
-- Info quota en bas
+**Type:** Page listing avec tableau
+**Fonction:** Lister et gérer les bases de données de l'hébergement
+**Contexte:** Hébergement Web
 
-## 3. COMPOSANTS UI
-- **OdsButton** : "Créer une base de données" (primaire)
-- **OdsButton** : "Commander une base de données" (secondaire)
-- **OdsTable** : Liste bases
-- **OdsBadge** : État (Actif)
-- **OdsProgressBar** : Taille utilisée
-- **OdsActionMenu** : Menu ⋮
+## 2. DIMENSIONS
 
-## 4. BOUTONS ACTION
-- "Créer une base de données" (bleu primaire)
-- "Commander une base de données" (bordure grise)
+- Page: 1440x900px
+- Background: #F9FAFB
+- Table: 880x400px
 
-## 5. TABLEAU BASES DE DONNÉES
-| Colonne | Description |
-|---------|-------------|
-| Nom de la base | Identifiant BDD |
-| Nom d'utilisateur | Login connexion |
-| Adresse du serveur | Hostname MySQL |
-| Version | MySQL 8.0, etc. |
-| Taille | Usage avec barre progression |
+## 3. NAVIGATION
+
+### Breadcrumb
+- Hébergements / mywebsite.com
+
+### Titre page
+- "Bases de données" (24px, font-weight: 600)
+
+## 4. ACTIONS HEADER
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Créer une base de données | Primary (#0050D7) | Ouvrir modal création |
+| Commander une base de données | Secondary outline | Rediriger vers commande |
+
+## 5. DATAGRID
+
+### Colonnes
+| Colonne | Contenu |
+|---------|---------|
+| Nom de la base | mywebsitec_db1 |
+| Nom d'utilisateur | mywebsitec |
+| Adresse du serveur | mywebsitec.mysql.db |
+| Version | MySQL 8.0 |
+| Taille | Progress bar + texte |
 | État | Badge Actif |
 | Actions | Menu ⋮ |
 
-## 6. EXEMPLES DONNÉES
-| Base | Utilisateur | Serveur | Version | Taille |
-|------|------------|---------|---------|--------|
-| mywebsitec_db1 | mywebsitec | mywebsitec.mysql.db | MySQL 8.0 | 156 Mo / 400 Mo |
-| mywebsitec_db2 | mywebsitec | mywebsitec.mysql.db | MySQL 8.0 | 340 Mo / 400 Mo (warning) |
+### Progress bar Taille
+- Background: #E5E7EB
+- Barre normale: #10B981 (vert)
+- Barre warning (>80%): #F59E0B (orange)
+- Format: "156 Mo / 400 Mo"
 
-## 7. MENU ACTIONS (⋮)
-- Changer le mot de passe
-- Créer une sauvegarde
-- Restaurer une sauvegarde
-- Importer un fichier
-- Accéder à phpMyAdmin
-- Supprimer la base (rouge)
+### Badge État
+| État | Fond | Texte |
+|------|------|-------|
+| Actif | #DEF7EC | #03543F |
 
-## 8. INFO QUOTA
+### Menu Actions (⋮)
+1. Changer le mot de passe
+2. Créer une sauvegarde
+3. Restaurer une sauvegarde
+4. Importer un fichier
+5. Accéder à phpMyAdmin
+6. Supprimer la base (texte rouge #DC2626)
+
+## 6. FOOTER INFO
+
 - "2 bases de données sur 5 disponibles"
 
-## 9. APIS & ENDPOINTS
-- GET /hosting/web/{serviceName}/database : Liste BDD
-- POST /hosting/web/{serviceName}/database : Créer BDD
-- DELETE /hosting/web/{serviceName}/database/{name} : Supprimer
-- POST /hosting/web/{serviceName}/database/{name}/changePassword : Changer MDP
-- POST /hosting/web/{serviceName}/database/{name}/dump : Créer sauvegarde
-- POST /hosting/web/{serviceName}/database/{name}/import : Importer
-- POST /hosting/web/{serviceName}/database/{name}/restore : Restaurer
+## 7. APIS & ENDPOINTS
+
+```
+GET /hosting/web/{serviceName}/database
+POST /hosting/web/{serviceName}/database
+DELETE /hosting/web/{serviceName}/database/{name}
+POST /hosting/web/{serviceName}/database/{name}/changePassword
+POST /hosting/web/{serviceName}/database/{name}/dump
+POST /hosting/web/{serviceName}/database/{name}/dump/{id}/restore
+POST /hosting/web/{serviceName}/database/{name}/import
+```
+
+## 8. TRADUCTIONS (i18n)
+
+```json
+{
+  "databases": "Bases de données",
+  "create_database": "Créer une base de données",
+  "order_database": "Commander une base de données",
+  "database_name": "Nom de la base",
+  "username": "Nom d'utilisateur",
+  "server_address": "Adresse du serveur",
+  "version": "Version",
+  "size": "Taille",
+  "status": "État",
+  "active": "Actif",
+  "change_password": "Changer le mot de passe",
+  "create_backup": "Créer une sauvegarde",
+  "restore_backup": "Restaurer une sauvegarde",
+  "import_file": "Importer un fichier",
+  "access_phpmyadmin": "Accéder à phpMyAdmin",
+  "delete_database": "Supprimer la base",
+  "databases_count": "{used} bases de données sur {total} disponibles"
+}
+```

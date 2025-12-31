@@ -245,24 +245,24 @@ export function ZoneTab({ zoneName }: Props) {
             <h3>{t("history.title")}</h3>
             <p className="zone-description">{t("history.description")}</p>
           </div>
-          <button className="btn-secondary" onClick={() => setView("records")}>← {t("zone.backToRecords")}</button>
+          <button className="zone-btn-secondary" onClick={() => setView("records")}>← {t("zone.backToRecords")}</button>
         </div>
         {historyLoading ? (
           <div className="zone-loading"><div className="zone-skeleton" /><div className="zone-skeleton" /></div>
         ) : history.length === 0 ? (
           <div className="zone-empty"><p>{t("history.empty")}</p></div>
         ) : (
-          <div className="history-timeline">
+          <div className="zone-history-timeline">
             {history.map((date, index) => (
-              <div key={date} className="history-item">
-                <div className="history-dot" />
-                <div className="history-content">
-                  <div className="history-info">
-                    <div className="history-date">{formatDate(date)}</div>
+              <div key={date} className="zone-history-item">
+                <div className="zone-history-dot" />
+                <div className="zone-history-content">
+                  <div className="zone-history-info">
+                    <div className="zone-history-date">{formatDate(date)}</div>
                     {index === 0 && <span className="zone-badge success">{t("history.current")}</span>}
                   </div>
                   {index > 0 && (
-                    <button className="btn-secondary btn-sm" onClick={() => handleRestore(date)} disabled={restoring === date}>
+                    <button className="zone-btn-secondary zone-btn-sm" onClick={() => handleRestore(date)} disabled={restoring === date}>
                       {restoring === date ? tCommon("loading") : t("history.restore")}
                     </button>
                   )}
@@ -290,30 +290,30 @@ export function ZoneTab({ zoneName }: Props) {
           <h3>{t("zone.title")}</h3>
           <p className="zone-description">{t("zone.description")}</p>
         </div>
-        <div className="tab-header-actions">
-          <button className="btn-secondary" onClick={handleShowHistory}>📜 {t("zone.history")}</button>
-          <button className="btn-secondary" onClick={handleRefreshZone} disabled={refreshing}>{refreshing ? tCommon("loading") : t("zone.refresh")}</button>
-          <button className="btn-primary" onClick={openCreateModal}><PlusIcon /> {t("zone.addRecord")}</button>
+        <div className="zone-header-actions">
+          <button className="zone-btn-secondary" onClick={handleShowHistory}>📜 {t("zone.history")}</button>
+          <button className="zone-btn-secondary" onClick={handleRefreshZone} disabled={refreshing}>{refreshing ? tCommon("loading") : t("zone.refresh")}</button>
+          <button className="zone-btn-primary" onClick={openCreateModal}><PlusIcon /> {t("zone.addRecord")}</button>
         </div>
       </div>
 
       {/* Stats */}
       <div className="zone-stats">
-        <div className="stat-card"><div className="stat-value">{totalCount}</div><div className="stat-label">{t("zone.totalRecords")}</div></div>
-        <div className="stat-card"><div className="stat-value">{records.filter((r) => r.fieldType === "A").length}</div><div className="stat-label">A</div></div>
-        <div className="stat-card"><div className="stat-value">{records.filter((r) => r.fieldType === "CNAME").length}</div><div className="stat-label">CNAME</div></div>
-        <div className="stat-card"><div className="stat-value">{records.filter((r) => r.fieldType === "MX").length}</div><div className="stat-label">MX</div></div>
-        <div className="stat-card"><div className="stat-value">{records.filter((r) => r.fieldType === "TXT").length}</div><div className="stat-label">TXT</div></div>
+        <div className="zone-stat-card"><div className="zone-stat-value">{totalCount}</div><div className="zone-stat-label">{t("zone.totalRecords")}</div></div>
+        <div className="zone-stat-card"><div className="zone-stat-value">{records.filter((r) => r.fieldType === "A").length}</div><div className="zone-stat-label">A</div></div>
+        <div className="zone-stat-card"><div className="zone-stat-value">{records.filter((r) => r.fieldType === "CNAME").length}</div><div className="zone-stat-label">CNAME</div></div>
+        <div className="zone-stat-card"><div className="zone-stat-value">{records.filter((r) => r.fieldType === "MX").length}</div><div className="zone-stat-label">MX</div></div>
+        <div className="zone-stat-card"><div className="zone-stat-value">{records.filter((r) => r.fieldType === "TXT").length}</div><div className="zone-stat-label">TXT</div></div>
       </div>
 
       {/* Filters */}
-      <div className="filters-row">
-        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select">
+      <div className="zone-filters-row">
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="zone-filter-select">
           <option value="">{t("zone.allTypes")}</option>
           {RECORD_TYPES.map((type) => (<option key={type} value={type}>{type}</option>))}
         </select>
-        <input type="text" placeholder={t("zone.filterSubdomain")} value={filterSubdomain} onChange={(e) => setFilterSubdomain(e.target.value)} className="filter-input" />
-        <span className="records-count">{loading ? `${loadedCount}/${totalCount}` : `${filteredRecords.length}`} {t("zone.records")}</span>
+        <input type="text" placeholder={t("zone.filterSubdomain")} value={filterSubdomain} onChange={(e) => setFilterSubdomain(e.target.value)} className="zone-filter-input" />
+        <span className="zone-records-count">{loading ? `${loadedCount}/${totalCount}` : `${filteredRecords.length}`} {t("zone.records")}</span>
       </div>
 
       {/* Error */}
@@ -326,7 +326,7 @@ export function ZoneTab({ zoneName }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
           </svg>
           <p>{t("zone.empty")}</p>
-          <button className="btn-primary" onClick={openCreateModal}><PlusIcon /> {t("zone.addRecord")}</button>
+          <button className="zone-btn-primary" onClick={openCreateModal}><PlusIcon /> {t("zone.addRecord")}</button>
         </div>
       ) : (
         <table className="zone-table">
@@ -342,13 +342,13 @@ export function ZoneTab({ zoneName }: Props) {
           <tbody>
             {filteredRecords.map((record) => (
               <tr key={record.id}>
-                <td><span className={`record-type type-${record.fieldType.toLowerCase()}`}>{record.fieldType}</span></td>
+                <td><span className={`zone-record-type type-${record.fieldType.toLowerCase()}`}>{record.fieldType}</span></td>
                 <td className="zone-font-mono">{record.subDomain || "@"}</td>
-                <td className="font-mono target-cell" title={record.target}>{record.target}</td>
+                <td className="zone-target-cell" title={record.target}>{record.target}</td>
                 <td>{record.ttl}s</td>
-                <td className="actions-cell">
+                <td className="zone-actions-cell">
                   <button className="zone-btn-icon" onClick={() => openEditModal(record)} title={t("zone.edit")}><EditIcon /></button>
-                  <button className="btn-icon btn-icon-danger" onClick={() => handleDeleteClick(record)} title={t("zone.delete")}><TrashIcon /></button>
+                  <button className="zone-btn-icon danger" onClick={() => handleDeleteClick(record)} title={t("zone.delete")}><TrashIcon /></button>
                 </td>
               </tr>
             ))}
@@ -373,11 +373,11 @@ export function ZoneTab({ zoneName }: Props) {
               </div>
               <div className="zone-form-group">
                 <label>{t("zone.subdomain")}</label>
-                <div className="input-with-suffix">
+                <div className="zone-input-with-suffix">
                   <input type="text" value={formData.subDomain} onChange={(e) => handleFormChange("subDomain", e.target.value)} placeholder="www" className="zone-input" />
-                  <span className="input-suffix">.{zoneName}</span>
+                  <span className="zone-input-suffix">.{zoneName}</span>
                 </div>
-                <small className="form-hint">{t("zone.subdomainHint")}</small>
+                <small className="zone-form-hint">{t("zone.subdomainHint")}</small>
               </div>
               <div className="zone-form-group">
                 <label>{t("zone.target")} *</label>
@@ -395,8 +395,8 @@ export function ZoneTab({ zoneName }: Props) {
               </div>
             </div>
             <div className="zone-modal-footer">
-              <button className="btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
-              <button className="btn-primary" onClick={handleSave} disabled={saving}>{saving ? tCommon("loading") : tCommon("actions.save")}</button>
+              <button className="zone-btn-secondary" onClick={closeModal}>{tCommon("actions.cancel")}</button>
+              <button className="zone-btn-primary" onClick={handleSave} disabled={saving}>{saving ? tCommon("loading") : tCommon("actions.save")}</button>
             </div>
           </div>
         </div>
@@ -412,13 +412,13 @@ export function ZoneTab({ zoneName }: Props) {
             </div>
             <div className="zone-modal-body">
               <p>{t("zone.confirmDeleteMessage")}</p>
-              <div className="delete-preview">
+              <div className="zone-delete-preview">
                 <strong>{deleteConfirm.fieldType}</strong> {deleteConfirm.subDomain || "@"}.{zoneName} → {deleteConfirm.target}
               </div>
             </div>
             <div className="zone-modal-footer">
-              <button className="btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
-              <button className="btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>{deleting ? tCommon("loading") : tCommon("actions.delete")}</button>
+              <button className="zone-btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
+              <button className="zone-btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>{deleting ? tCommon("loading") : tCommon("actions.delete")}</button>
             </div>
           </div>
         </div>

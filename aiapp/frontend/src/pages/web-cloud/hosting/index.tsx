@@ -153,10 +153,10 @@ export function HostingPage() {
     if (!selected) return null;
 
     const TabComponent = TAB_COMPONENTS[activeTab];
-    if (!TabComponent) return <div className="tab-error">Tab "{activeTab}" not found</div>;
+    if (!TabComponent) return <div className="hosting-tab-error">Tab "{activeTab}" not found</div>;
 
     return (
-      <Suspense fallback={<div className="hosting-page-loading">Chargement...</div>}>
+      <Suspense fallback={<div className="hosting-tab-loading">Chargement...</div>}>
         <TabComponent
           serviceName={selected.serviceName}
           details={selected}
@@ -171,7 +171,7 @@ export function HostingPage() {
   const renderStatus = (state: string) => {
     const isActive = state === "active";
     return (
-      <span className={`service-status-badge ${isActive ? "active" : "suspended"}`}>
+      <span className={`hosting-status-badge ${isActive ? "active" : "suspended"}`}>
         {isActive ? "Actif" : "Suspendu"}
       </span>
     );
@@ -182,17 +182,17 @@ export function HostingPage() {
     return (
       <div className="hosting-page">
         <div className="hosting-split">
-          <div className="service-list-sidebar">
-            <div className="sidebar-search">
-              <div className="search-input-wrapper">
-                <span className="search-icon">🔍</span>
+          <div className="hosting-sidebar">
+            <div className="hosting-sidebar-search">
+              <div className="hosting-search-wrapper">
+                <span className="hosting-search-icon">🔍</span>
                 <input type="text" placeholder="Rechercher..." disabled />
               </div>
             </div>
-            <div className="empty-state"><p>Chargement...</p></div>
+            <div className="hosting-empty-state"><p>Chargement...</p></div>
           </div>
           <div className="hosting-main">
-            <div className="empty-state"><p>Chargement...</p></div>
+            <div className="hosting-empty-state"><p>Chargement...</p></div>
           </div>
         </div>
       </div>
@@ -204,9 +204,9 @@ export function HostingPage() {
     return (
       <div className="hosting-page">
         <div className="hosting-split">
-          <div className="service-list-sidebar" />
+          <div className="hosting-sidebar" />
           <div className="hosting-main">
-            <div className="empty-state" style={{ color: "#991B1B" }}>{error}</div>
+            <div className="hosting-empty-state" style={{ color: "#991B1B" }}>{error}</div>
           </div>
         </div>
       </div>
@@ -219,14 +219,14 @@ export function HostingPage() {
   return (
     <div className="hosting-page">
       {/* NAV2 */}
-      
+
       <div className="hosting-split">
         {/* ========== SIDEBAR ========== */}
-        <div className="service-list-sidebar">
+        <div className="hosting-sidebar">
           {/* Search */}
-          <div className="sidebar-search">
-            <div className="search-input-wrapper">
-              <span className="search-icon">🔍</span>
+          <div className="hosting-sidebar-search">
+            <div className="hosting-search-wrapper">
+              <span className="hosting-search-icon">🔍</span>
               <input
                 type="text"
                 placeholder="Rechercher..."
@@ -240,26 +240,26 @@ export function HostingPage() {
           </div>
 
           {/* Filter info */}
-          <div className="sidebar-filter">
-            <span className="filter-dropdown">Filtrer ▾</span>
-            <span className="service-count">{filteredServices.length} services</span>
+          <div className="hosting-sidebar-filter">
+            <span className="hosting-filter-dropdown">Filtrer ▾</span>
+            <span className="hosting-service-count">{filteredServices.length} services</span>
           </div>
 
           {/* List */}
-          <div className="service-items">
+          <div className="hosting-service-items">
             {paginatedServices.length === 0 ? (
-              <div className="empty-state"><p>Aucun hébergement</p></div>
+              <div className="hosting-empty-state"><p>Aucun hébergement</p></div>
             ) : (
               paginatedServices.map((h) => (
                 <div
                   key={h.serviceName}
-                  className={`service-item ${selectedId === h.serviceName ? "selected" : ""}`}
+                  className={`hosting-service-item ${selectedId === h.serviceName ? "selected" : ""}`}
                   onClick={() => handleSelectService(h.serviceName)}
                 >
-                  <div className="service-icon">🌐</div>
-                  <div className="service-info">
-                    <div className="service-item-name">{h.displayName || h.serviceName}</div>
-                    <div className="service-item-type">{h.offer || "Hébergement"}</div>
+                  <div className="hosting-service-icon">🌐</div>
+                  <div className="hosting-service-info">
+                    <div className="hosting-service-name">{h.displayName || h.serviceName}</div>
+                    <div className="hosting-service-type">{h.offer || "Hébergement"}</div>
                   </div>
                   {renderStatus(h.state)}
                 </div>
@@ -269,11 +269,11 @@ export function HostingPage() {
 
           {/* Pagination - TOUJOURS VISIBLE si > 1 page */}
           {totalPages > 1 && (
-            <div className="sidebar-pagination">
-              <span className="pagination-info">Page {currentPage}/{totalPages}</span>
-              <div className="pagination-buttons">
+            <div className="hosting-sidebar-pagination">
+              <span className="hosting-pagination-info">Page {currentPage}/{totalPages}</span>
+              <div className="hosting-pagination-buttons">
                 <button
-                  className="pagination-btn"
+                  className="hosting-pagination-btn"
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 >‹</button>
@@ -291,7 +291,7 @@ export function HostingPage() {
                   return (
                     <button
                       key={page}
-                      className={`pagination-btn ${currentPage === page ? "active" : ""}`}
+                      className={`hosting-pagination-btn ${currentPage === page ? "active" : ""}`}
                       onClick={() => setCurrentPage(page)}
                     >
                       {page}
@@ -299,7 +299,7 @@ export function HostingPage() {
                   );
                 })}
                 <button
-                  className="pagination-btn"
+                  className="hosting-pagination-btn"
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                 >›</button>
@@ -311,23 +311,23 @@ export function HostingPage() {
         {/* ========== MAIN CONTENT ========== */}
         <div className="hosting-main">
           {selected ? (
-            <div className="service-detail">
+            <div className="hosting-detail">
               {/* Header: Nom + aliases */}
-              <div className="detail-header-domains">
+              <div className="hosting-detail-header">
                 <h2>{selected.displayName || selected.serviceName}</h2>
                 {multisitesText && (
-                  <span className="multisites-list" title={attachedDomains.join(", ")}>
+                  <span className="hosting-multisites-list" title={attachedDomains.join(", ")}>
                     {multisitesText}
                   </span>
                 )}
               </div>
 
               {/* NAV3 Tabs */}
-              <div className="detail-header-tabs">
+              <div className="hosting-tabs">
                 {TABS.map(tab => (
                   <button
                     key={tab.id}
-                    className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                    className={`hosting-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
                     onClick={() => setActiveTab(tab.id)}
                   >
                     {tab.label}
@@ -336,13 +336,13 @@ export function HostingPage() {
               </div>
 
               {/* Tab Content */}
-              <div className="tab-content">
+              <div className="hosting-tab-content">
                 {renderTabContent()}
               </div>
             </div>
           ) : (
             <div className="hosting-empty">
-              <div className="empty-icon">🌐</div>
+              <div className="hosting-empty-icon">🌐</div>
               <h3>Sélectionnez un hébergement</h3>
               <p>Choisissez un service dans la liste pour voir ses détails.</p>
             </div>

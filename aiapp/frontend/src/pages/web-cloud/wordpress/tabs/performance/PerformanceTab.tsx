@@ -101,7 +101,7 @@ export function PerformanceTab({ serviceName, offer }: Props) {
           {!isProOrBusiness ? (
             <div className="performance-upgrade-notice">
               <p>{t('performance.cdnNotAvailable')}</p>
-              <a href="https://www.ovhcloud.com/fr/web-hosting/wordpress-hosting/" target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+              <a href="https://www.ovhcloud.com/fr/web-hosting/wordpress-hosting/" target="_blank" rel="noopener noreferrer" className="perf-btn perf-btn-outline perf-btn-sm">
                 {t('performance.upgradeOffer')}
               </a>
             </div>
@@ -130,11 +130,11 @@ export function PerformanceTab({ serviceName, offer }: Props) {
                 </div>
               )}
               <div className="performance-actions">
-                <button className="btn btn-outline btn-sm" onClick={() => setShowCdnModal(true)}>
+                <button className="perf-btn perf-btn-outline perf-btn-sm" onClick={() => setShowCdnModal(true)}>
                   {t('performance.configureCdn')}
                 </button>
                 <button
-                  className="btn btn-outline btn-sm"
+                  className="perf-btn perf-btn-outline perf-btn-sm"
                   onClick={handleToggleCdn}
                   disabled={actionLoading === 'cdn'}
                 >
@@ -170,7 +170,7 @@ export function PerformanceTab({ serviceName, offer }: Props) {
           </div>
           <div className="performance-actions">
             <button
-              className="btn btn-outline btn-sm"
+              className="perf-btn perf-btn-outline perf-btn-sm"
               onClick={handleFlushCache}
               disabled={actionLoading === 'cache'}
             >
