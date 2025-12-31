@@ -44,8 +44,16 @@ function usePeriodNavigation() {
     if (period.year < currentYear) return true;
     if (period.year === currentYear) {
       const blocks = refundsService.getBlocks(windowSize);
-      const idx = blocks.findIndex(([s]) => s === period.startMonth);
-      if (idx >= 0 && idx < blocks.length - 1) return blocks[idx + 1][1] <= currentMonth;
+      const isAligned = blocks.some(([s, e]) => s === period.startMonth && e === period.endMonth);
+
+      if (isAligned) {
+        const idx = blocks.findIndex(([s]) => s === period.startMonth);
+        if (idx >= 0 && idx < blocks.length - 1) return blocks[idx + 1][1] <= currentMonth;
+      } else {
+        // DESALIGNE: check if there's a block with B.end > endMonth
+        const candidates = blocks.filter(([, e]) => e > period.endMonth);
+        if (candidates.length > 0) return candidates[0][1] <= currentMonth;
+      }
     }
     return false;
   })();
@@ -57,15 +65,28 @@ function usePeriodNavigation() {
     if (!canGoPrevious) return;
     setPeriod((p) => {
       const blocks = refundsService.getBlocks(windowSize);
-      const idx = blocks.findIndex(([s]) => s === p.startMonth);
-      if (idx > 0) {
-        const [s, e] = blocks[idx - 1];
-        return { ...p, startMonth: s, endMonth: e };
-      } else if (idx === 0) {
-        const [s, e] = blocks[blocks.length - 1];
-        return { ...p, year: p.year - 1, startMonth: s, endMonth: e };
+      const isAligned = blocks.some(([s, e]) => s === p.startMonth && e === p.endMonth);
+
+      if (isAligned) {
+        const idx = blocks.findIndex(([s]) => s === p.startMonth);
+        if (idx > 0) {
+          const [s, e] = blocks[idx - 1];
+          return { ...p, startMonth: s, endMonth: e };
+        } else {
+          const [s, e] = blocks[blocks.length - 1];
+          return { ...p, year: p.year - 1, startMonth: s, endMonth: e };
+        }
+      } else {
+        // DESALIGNE: snap vers bloc strictement avant (B.start < startMonth)
+        const candidates = blocks.filter(([s]) => s < p.startMonth);
+        if (candidates.length > 0) {
+          const [s, e] = candidates[candidates.length - 1];
+          return { ...p, startMonth: s, endMonth: e };
+        } else {
+          const [s, e] = blocks[blocks.length - 1];
+          return { ...p, year: p.year - 1, startMonth: s, endMonth: e };
+        }
       }
-      return p;
     });
   }, [canGoPrevious, windowSize]);
 
@@ -73,15 +94,28 @@ function usePeriodNavigation() {
     if (!canGoNext) return;
     setPeriod((p) => {
       const blocks = refundsService.getBlocks(windowSize);
-      const idx = blocks.findIndex(([s]) => s === p.startMonth);
-      if (idx >= 0 && idx < blocks.length - 1) {
-        const [s, e] = blocks[idx + 1];
-        return { ...p, startMonth: s, endMonth: e };
-      } else if (idx === blocks.length - 1) {
-        const [s, e] = blocks[0];
-        return { ...p, year: p.year + 1, startMonth: s, endMonth: e };
+      const isAligned = blocks.some(([s, e]) => s === p.startMonth && e === p.endMonth);
+
+      if (isAligned) {
+        const idx = blocks.findIndex(([s]) => s === p.startMonth);
+        if (idx < blocks.length - 1) {
+          const [s, e] = blocks[idx + 1];
+          return { ...p, startMonth: s, endMonth: e };
+        } else {
+          const [s, e] = blocks[0];
+          return { ...p, year: p.year + 1, startMonth: s, endMonth: e };
+        }
+      } else {
+        // DESALIGNE: snap vers bloc strictement apres (B.end > endMonth)
+        const candidates = blocks.filter(([, e]) => e > p.endMonth);
+        if (candidates.length > 0) {
+          const [s, e] = candidates[0];
+          return { ...p, startMonth: s, endMonth: e };
+        } else {
+          const [s, e] = blocks[0];
+          return { ...p, year: p.year + 1, startMonth: s, endMonth: e };
+        }
       }
-      return p;
     });
   }, [canGoNext, windowSize]);
 

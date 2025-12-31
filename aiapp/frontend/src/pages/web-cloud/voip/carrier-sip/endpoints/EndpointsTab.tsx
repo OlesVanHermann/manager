@@ -1,0 +1,79 @@
+// ============================================================
+// ENDPOINTS TAB - Composant ISOLÉ (défactorisé)
+// ============================================================
+
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import type { Endpoint } from "../../carrier-sip.types";
+import { endpointsService } from "./EndpointsTab.service";
+import "./EndpointsTab.css";
+
+interface Props {
+  billingAccount: string;
+  serviceName: string;
+}
+
+export function EndpointsTab({ billingAccount, serviceName }: Props) {
+  const { t } = useTranslation("web-cloud/voip/carrier-sip/endpoints");
+  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await endpointsService.getEndpoints(billingAccount, serviceName);
+        setEndpoints(data);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [billingAccount, serviceName]);
+
+  if (loading) {
+    return (
+      <div className="endpoints-loading">
+        <div className="csip-endpoints-skeleton" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="endpoints-tab">
+      <div className="endpoints-tab-header">
+        <div>
+          <h3>{t("title")}</h3>
+          <p className="endpoints-tab-description">{t("description")}</p>
+        </div>
+      </div>
+
+      {endpoints.length === 0 ? (
+        <div className="endpoints-empty-state">
+          <p>{t("empty")}</p>
+        </div>
+      ) : (
+        <div className="endpoints-cards">
+          {endpoints.map((e) => (
+            <div key={e.id} className={`endpoints-card ${e.status === "active" ? "active" : ""}`}>
+              <div className="endpoints-card-header">
+                <h4>{e.ip}</h4>
+                <span className={`csip-endpoints-badge ${e.status === "active" ? "success" : "inactive"}`}>
+                  {e.status}
+                </span>
+              </div>
+              <div className="endpoints-card-info">
+                <label>{t("priority")}</label>
+                <span>{e.priority}</span>
+                <label>{t("weight")}</label>
+                <span>{e.weight}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default EndpointsTab;

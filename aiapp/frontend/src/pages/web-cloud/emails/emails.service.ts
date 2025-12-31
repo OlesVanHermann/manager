@@ -27,7 +27,30 @@ interface DomainServiceMapping {
 // Cache du mapping domaine → service
 let domainMappingCache: DomainServiceMapping[] = [];
 let cacheTimestamp = 0;
-const CACHE_TTL = 60000; // 1 minute
+const CACHE_TTL = 300000; // 5 minutes (amélioration performance)
+
+// Utilitaire pour batch API calls
+async function batchFetch<T, R>(
+  items: T[],
+  fetchFn: (item: T) => Promise<R>,
+  batchSize = 10
+): Promise<(R | null)[]> {
+  const results: (R | null)[] = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.all(
+      batch.map(async (item) => {
+        try {
+          return await fetchFn(item);
+        } catch {
+          return null;
+        }
+      })
+    );
+    results.push(...batchResults);
+  }
+  return results;
+}
 
 // ============ SERVICE ============
 
@@ -43,94 +66,95 @@ class EmailsService {
 
     const mappings: DomainServiceMapping[] = [];
 
-    // 1. MX Plan - le domaine EST le service
+    // 1a. MX Plan legacy - /email/domain (serviceId = domain)
     try {
       const mxDomains = await ovhGet<string[]>("/email/domain");
-      for (const domain of mxDomains) {
-        mappings.push({
-          domain,
-          offer: "mx-plan",
-          serviceId: domain,
-        });
+      for (const item of mxDomains) {
+        if (!item.startsWith("mxplan-")) {
+          mappings.push({ domain: item, offer: "mx-plan", serviceId: item });
+        }
       }
     } catch (err) {
-      console.error("Error fetching MX Plan domains:", err);
+      console.error("Error fetching MX Plan legacy domains:", err);
+    }
+
+    // 1b. MX Plan hébergé - /email/mxplan (serviceId = mxplan-xxx)
+    // BATCH: Fetch all services in parallel
+    try {
+      const mxplanServices = await ovhGet<string[]>("/email/mxplan");
+      const mxplanResults = await batchFetch(mxplanServices, async (serviceId) => {
+        const domains = await ovhGet<string[]>(`/email/mxplan/${serviceId}/domain`);
+        return domains.map(domain => ({ domain, offer: "mx-plan" as EmailOffer, serviceId }));
+      });
+      for (const result of mxplanResults) {
+        if (result) mappings.push(...result);
+      }
+    } catch (err) {
+      console.error("Error fetching MX Plan hosted services:", err);
     }
 
     // 2. Email Pro - service → domaines
+    // BATCH: Fetch all services in parallel
     try {
       const proServices = await ovhGet<string[]>("/email/pro");
-      for (const service of proServices) {
-        try {
-          const domains = await ovhGet<string[]>(`/email/pro/${service}/domain`);
-          for (const domain of domains) {
-            mappings.push({
-              domain,
-              offer: "email-pro",
-              serviceId: service,
-            });
-          }
-        } catch (err) {
-          console.error(`Error fetching Email Pro domains for ${service}:`, err);
-        }
+      const proResults = await batchFetch(proServices, async (service) => {
+        const domains = await ovhGet<string[]>(`/email/pro/${service}/domain`);
+        return domains.map(domain => ({ domain, offer: "email-pro" as EmailOffer, serviceId: service }));
+      });
+      for (const result of proResults) {
+        if (result) mappings.push(...result);
       }
     } catch (err) {
       console.error("Error fetching Email Pro services:", err);
     }
 
     // 3. Exchange - org → service → domaines
+    // BATCH: Fetch all orgs, then services, then domains in parallel
     try {
       const exchangeOrgs = await ovhGet<string[]>("/email/exchange");
-      for (const org of exchangeOrgs) {
-        try {
-          const services = await ovhGet<string[]>(`/email/exchange/${org}/service`);
-          for (const service of services) {
-            try {
-              const domains = await ovhGet<string[]>(`/email/exchange/${org}/service/${service}/domain`);
-              for (const domain of domains) {
-                mappings.push({
-                  domain,
-                  offer: "exchange",
-                  serviceId: service,
-                  org,
-                });
-              }
-            } catch (err) {
-              console.error(`Error fetching Exchange domains for ${org}/${service}:`, err);
-            }
-          }
-        } catch (err) {
-          console.error(`Error fetching Exchange services for ${org}:`, err);
-        }
+
+      // First level: get all services per org in parallel
+      const orgServicePairs: { org: string; service: string }[] = [];
+      const servicesResults = await batchFetch(exchangeOrgs, async (org) => {
+        const services = await ovhGet<string[]>(`/email/exchange/${org}/service`);
+        return services.map(service => ({ org, service }));
+      });
+      for (const result of servicesResults) {
+        if (result) orgServicePairs.push(...result);
+      }
+
+      // Second level: get all domains per service in parallel
+      const exchangeResults = await batchFetch(orgServicePairs, async ({ org, service }) => {
+        const domains = await ovhGet<string[]>(`/email/exchange/${org}/service/${service}/domain`);
+        return domains.map(domain => ({ domain, offer: "exchange" as EmailOffer, serviceId: service, org }));
+      });
+      for (const result of exchangeResults) {
+        if (result) mappings.push(...result);
       }
     } catch (err) {
       console.error("Error fetching Exchange orgs:", err);
     }
 
-    // 4. Zimbra - platform → domaines
-    try {
-      const zimbraPlatforms = await ovhGet<string[]>("/zimbra");
-      for (const platform of zimbraPlatforms) {
-        try {
-          const domainsData = await ovhGet<{ id: string; name: string }[]>(`/zimbra/${platform}/domain`);
-          for (const d of domainsData) {
-            mappings.push({
-              domain: d.name,
-              offer: "zimbra",
-              serviceId: platform,
-            });
-          }
-        } catch (err) {
-          console.error(`Error fetching Zimbra domains for ${platform}:`, err);
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching Zimbra platforms:", err);
-    }
+    // 4. Zimbra - désactivé car l'API /email/zimbra n'existe pas pour ce compte
+    // TODO: Activer quand le compte a un service Zimbra
 
-    domainMappingCache = mappings;
+    // Deduplicate: if a domain has a hosted MX Plan, remove the legacy entry
+    const hostedDomains = new Set(
+      mappings.filter(m => m.offer === "mx-plan" && m.serviceId.startsWith("mxplan-")).map(m => m.domain)
+    );
+    const deduped = mappings.filter(m => {
+      // Keep all non-MX Plan entries
+      if (m.offer !== "mx-plan") return true;
+      // Keep hosted MX Plan entries
+      if (m.serviceId.startsWith("mxplan-")) return true;
+      // For legacy MX Plan, only keep if not also in hosted
+      return !hostedDomains.has(m.domain);
+    });
+
+    console.log("[EmailsService] Domain mapping built:", deduped.length, "entries (deduped from", mappings.length, ")");
+    domainMappingCache = deduped;
     cacheTimestamp = now;
-    return mappings;
+    return deduped;
   }
 
   /** Trouve les services associés à un domaine. */
@@ -178,7 +202,6 @@ class EmailsService {
     for (const svc of services) {
       try {
         const svcAccounts = await this.getAccountsForService(svc);
-        // Filtrer pour ne garder que les comptes du domaine demandé
         const filtered = svcAccounts.filter(acc => acc.email.endsWith(`@${domain}`));
         accounts.push(...filtered);
       } catch (err) {
@@ -193,7 +216,7 @@ class EmailsService {
   private async getAccountsForService(svc: DomainServiceMapping): Promise<EmailAccount[]> {
     switch (svc.offer) {
       case "mx-plan":
-        return this.getMxPlanAccounts(svc.serviceId);
+        return this.getMxPlanAccounts(svc.serviceId, svc.domain);
       case "email-pro":
         return this.getEmailProAccounts(svc.serviceId);
       case "exchange":
@@ -206,80 +229,119 @@ class EmailsService {
   }
 
   // --- MX Plan ---
-  private async getMxPlanAccounts(domain: string): Promise<EmailAccount[]> {
+  private async getMxPlanAccounts(serviceId: string, domain?: string): Promise<EmailAccount[]> {
+    // Determine if this is a hosted MX Plan (mxplan-xxx) or legacy (domain name)
+    const isHosted = serviceId.startsWith("mxplan-");
+    const endpoint = isHosted
+      ? `/email/mxplan/${serviceId}/account`
+      : `/email/domain/${serviceId}/account`;
+
     try {
-      const names = await ovhGet<string[]>(`/email/domain/${domain}/account`);
-      if (!names || names.length === 0) return [];
+      const allAccountIds = await ovhGet<string[]>(endpoint);
+      if (!allAccountIds || allAccountIds.length === 0) return [];
 
-      const accounts: EmailAccount[] = [];
-      for (const name of names) {
-        try {
-          const details = await ovhGet<{
-            accountName: string;
-            description?: string;
-            quota?: number;
-            size?: number;
-            isBlocked?: boolean;
-          }>(`/email/domain/${domain}/account/${name}`);
-
-          accounts.push({
-            id: `mxplan-${domain}-${name}`,
-            email: `${name}@${domain}`,
-            displayName: details.description || name,
-            offer: "mx-plan",
-            domain,
-            quota: details.quota || 5000,
-            quotaUsed: details.size || 0,
-            aliases: [],
-            status: details.isBlocked ? "suspended" : "ok",
-            serviceId: domain,
-          });
-        } catch (err) {
-          console.error(`Error loading MX Plan account ${name}@${domain}:`, err);
-        }
+      // OPTIMIZATION: Filter by domain BEFORE fetching details
+      let filteredAccountIds = allAccountIds;
+      if (domain && isHosted) {
+        filteredAccountIds = allAccountIds.filter(id => id.endsWith(`@${domain}`));
       }
+
+      if (filteredAccountIds.length === 0) return [];
+
+      // Fetch details only for filtered accounts (parallel for speed, max 10 concurrent)
+      const accounts: EmailAccount[] = [];
+      const batchSize = 10;
+
+      for (let i = 0; i < filteredAccountIds.length; i += batchSize) {
+        const batch = filteredAccountIds.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+          batch.map(async (accountId) => {
+            try {
+              const detailEndpoint = isHosted
+                ? `/email/mxplan/${serviceId}/account/${accountId}`
+                : `/email/domain/${serviceId}/account/${accountId}`;
+
+              const details = await ovhGet<{
+                accountName?: string;
+                description?: string;
+                quota?: number;
+                size?: number;
+                isBlocked?: boolean;
+                id?: string;
+                currentUsage?: number;
+                displayName?: string;
+                primaryEmailAddress?: string;
+                state?: string;
+                firstName?: string;
+                lastName?: string;
+              }>(detailEndpoint);
+
+              const email = details.primaryEmailAddress || (isHosted ? accountId : `${accountId}@${serviceId}`);
+              const emailDomain = email.split("@")[1] || domain || serviceId;
+
+              return {
+                id: `mxplan-${serviceId}-${accountId}`,
+                email,
+                displayName: details.displayName || details.description ||
+                  [details.firstName, details.lastName].filter(Boolean).join(" ") || accountId.split("@")[0],
+                firstName: details.firstName,
+                lastName: details.lastName,
+                offer: "mx-plan" as EmailOffer,
+                domain: emailDomain,
+                quota: details.quota || 5000,
+                quotaUsed: details.currentUsage || details.size || 0,
+                aliases: [],
+                status: (details.isBlocked || details.state === "suspended") ? "suspended" : "ok",
+                serviceId,
+              } as EmailAccount;
+            } catch (err) {
+              console.error(`Error loading MX Plan account ${accountId}:`, err);
+              return null;
+            }
+          })
+        );
+        accounts.push(...batchResults.filter((a): a is EmailAccount => a !== null));
+      }
+
       return accounts;
     } catch (err) {
-      console.error(`getMxPlanAccounts(${domain}) error:`, err);
+      console.error(`getMxPlanAccounts(${serviceId}) error:`, err);
       return [];
     }
   }
 
   // --- Email Pro ---
+  // BATCH: Fetch all accounts in parallel
   private async getEmailProAccounts(service: string): Promise<EmailAccount[]> {
     try {
       const emails = await ovhGet<string[]>(`/email/pro/${service}/account`);
       if (!emails || emails.length === 0) return [];
 
-      const accounts: EmailAccount[] = [];
-      for (const email of emails) {
-        try {
-          const details = await ovhGet<{
-            primaryEmailAddress: string;
-            displayName?: string;
-            quota?: number;
-            currentUsage?: number;
-            state?: string;
-          }>(`/email/pro/${service}/account/${email}`);
+      const results = await batchFetch(emails, async (email) => {
+        const details = await ovhGet<{
+          primaryEmailAddress: string;
+          displayName?: string;
+          quota?: number;
+          currentUsage?: number;
+          state?: string;
+        }>(`/email/pro/${service}/account/${email}`);
 
-          const domain = email.split("@")[1] || "";
-          accounts.push({
-            id: `pro-${service}-${email}`,
-            email: details.primaryEmailAddress || email,
-            displayName: details.displayName,
-            offer: "email-pro",
-            domain,
-            quota: details.quota || 10000,
-            quotaUsed: details.currentUsage || 0,
-            aliases: [],
-            status: details.state === "ok" ? "ok" : "pending",
-            serviceId: service,
-          });
-        } catch (err) {
-          console.error(`Error loading Email Pro account ${email}:`, err);
-        }
-      }
-      return accounts;
+        const domain = email.split("@")[1] || "";
+        return {
+          id: `pro-${service}-${email}`,
+          email: details.primaryEmailAddress || email,
+          displayName: details.displayName,
+          offer: "email-pro" as EmailOffer,
+          domain,
+          quota: details.quota || 10000,
+          quotaUsed: details.currentUsage || 0,
+          aliases: [],
+          status: details.state === "ok" ? "ok" : "pending",
+          serviceId: service,
+        } as EmailAccount;
+      });
+
+      return results.filter((a): a is EmailAccount => a !== null);
     } catch (err) {
       console.error(`getEmailProAccounts(${service}) error:`, err);
       return [];
@@ -287,44 +349,41 @@ class EmailsService {
   }
 
   // --- Exchange ---
+  // BATCH: Fetch all accounts in parallel
   private async getExchangeAccounts(org: string, service: string): Promise<EmailAccount[]> {
     try {
       const emails = await ovhGet<string[]>(`/email/exchange/${org}/service/${service}/account`);
       if (!emails || emails.length === 0) return [];
 
-      const accounts: EmailAccount[] = [];
-      for (const email of emails) {
-        try {
-          const details = await ovhGet<{
-            primaryEmailAddress: string;
-            displayName?: string;
-            firstName?: string;
-            lastName?: string;
-            quota?: number;
-            currentUsage?: number;
-            state?: string;
-          }>(`/email/exchange/${org}/service/${service}/account/${email}`);
+      const results = await batchFetch(emails, async (email) => {
+        const details = await ovhGet<{
+          primaryEmailAddress: string;
+          displayName?: string;
+          firstName?: string;
+          lastName?: string;
+          quota?: number;
+          currentUsage?: number;
+          state?: string;
+        }>(`/email/exchange/${org}/service/${service}/account/${email}`);
 
-          const domain = email.split("@")[1] || "";
-          accounts.push({
-            id: `exchange-${org}-${service}-${email}`,
-            email: details.primaryEmailAddress || email,
-            displayName: details.displayName,
-            firstName: details.firstName,
-            lastName: details.lastName,
-            offer: "exchange",
-            domain,
-            quota: details.quota || 50000,
-            quotaUsed: details.currentUsage || 0,
-            aliases: [],
-            status: details.state === "ok" ? "ok" : "pending",
-            serviceId: `${org}/${service}`,
-          });
-        } catch (err) {
-          console.error(`Error loading Exchange account ${email}:`, err);
-        }
-      }
-      return accounts;
+        const domain = email.split("@")[1] || "";
+        return {
+          id: `exchange-${org}-${service}-${email}`,
+          email: details.primaryEmailAddress || email,
+          displayName: details.displayName,
+          firstName: details.firstName,
+          lastName: details.lastName,
+          offer: "exchange" as EmailOffer,
+          domain,
+          quota: details.quota || 50000,
+          quotaUsed: details.currentUsage || 0,
+          aliases: [],
+          status: details.state === "ok" ? "ok" : "pending",
+          serviceId: `${org}/${service}`,
+        } as EmailAccount;
+      });
+
+      return results.filter((a): a is EmailAccount => a !== null);
     } catch (err) {
       console.error(`getExchangeAccounts(${org}/${service}) error:`, err);
       return [];
@@ -341,7 +400,7 @@ class EmailsService {
         quota?: number;
         usedSpace?: number;
         status?: string;
-      }[]>(`/zimbra/${platform}/account`);
+      }[]>(`/email/zimbra/${platform}/account`);
 
       if (!accountsData || accountsData.length === 0) return [];
 

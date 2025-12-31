@@ -1,122 +1,183 @@
 // ============================================================
-// DOMAINS PAGE - Vue Liste (table) + Vue Détail (sidebar+panel)
-// Basé sur target SVG: list.svg, dashboard.svg, general-informations.svg
+// DOMAINS PAGE - NAV3 Groups (General / DNS / Expert)
+// Ref: prompt_target_sidecar_left.txt + todo_web-cloud_domains.txt
+// Layout: LEFT PANEL (280px) + RIGHT PANEL (tabs grouped by NAV3)
 // ============================================================
 
 import "./domains.css";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { Suspense, useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { LeftPanel, LeftPanelItemContent, useLeftPanel } from "../../../components/LeftPanel";
 import { domainsPageService } from "./domains.service";
 import type { Domain, DomainServiceInfos, DnsZone } from "./domains.types";
 
-// Import des tabs
-import { GeneralTab } from "./tabs/general/GeneralTab.tsx";
-import { ZoneTab } from "./tabs/zone/ZoneTab.tsx";
-import { DnsServersTab } from "./tabs/dnsservers/DnsServersTab.tsx";
-import { RedirectionTab } from "./tabs/redirection/RedirectionTab.tsx";
-import { DynHostTab } from "./tabs/dynhost/DynHostTab.tsx";
-import { GlueTab } from "./tabs/glue/GlueTab.tsx";
-import { DnssecTab } from "./tabs/dnssec/DnssecTab.tsx";
-import { TasksTab } from "./tabs/tasks/TasksTab.tsx";
-import { AlldomTab } from "./tabs/alldom/AlldomTab.tsx";
-import { ContactsTab } from "./tabs/contacts/ContactsTab.tsx";
+// ============ LAZY LOADED TABS ============
+
+// GENERAL group (./general/NAV4)
+const GeneralTab = React.lazy(() => import("./general/GeneralTab").then(m => ({ default: m.GeneralTab })));
+const ContactsTab = React.lazy(() => import("./general/contacts/ContactsTab").then(m => ({ default: m.ContactsTab })));
+const AlldomTab = React.lazy(() => import("./general/alldom/AlldomTab").then(m => ({ default: m.AlldomTab })));
+
+// DNS group (./dns/NAV4)
+const DnsInfoTab = React.lazy(() => import("./dns/dns-info/DnsInfoTab").then(m => ({ default: m.DnsInfoTab })));
+const DnsServersTab = React.lazy(() => import("./dns/dnsservers/DnsServersTab").then(m => ({ default: m.DnsServersTab })));
+const ZoneTab = React.lazy(() => import("./dns/zone/ZoneTab").then(m => ({ default: m.ZoneTab })));
+const DnssecTab = React.lazy(() => import("./dns/dnssec/DnssecTab").then(m => ({ default: m.DnssecTab })));
+const SpfTab = React.lazy(() => import("./dns/spf/SpfTab").then(m => ({ default: m.SpfTab })));
+const DkimTab = React.lazy(() => import("./dns/dkim/DkimTab").then(m => ({ default: m.DkimTab })));
+const DmarcTab = React.lazy(() => import("./dns/dmarc/DmarcTab").then(m => ({ default: m.DmarcTab })));
+const ArcTab = React.lazy(() => import("./dns/arc/ArcTab").then(m => ({ default: m.ArcTab })));
+const BimiTab = React.lazy(() => import("./dns/bimi/BimiTab").then(m => ({ default: m.BimiTab })));
+const CaaTab = React.lazy(() => import("./dns/caa/CaaTab").then(m => ({ default: m.CaaTab })));
+const DynHostTab = React.lazy(() => import("./dns/dynhost/DynHostTab").then(m => ({ default: m.DynHostTab })));
+
+// EXPERT group (./expert/NAV4)
+const GlueTab = React.lazy(() => import("./expert/glue/GlueTab").then(m => ({ default: m.GlueTab })));
+const TasksTab = React.lazy(() => import("./expert/tasks/TasksTab").then(m => ({ default: m.TasksTab })));
 
 // ============ ICONS ============
 
-const GlobeIcon = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-  </svg>
-);
-
-const ChevronLeftIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="15 18 9 12 15 6"/>
-  </svg>
-);
-
-const MoreIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+const GlobeIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M2 12h20" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
   </svg>
 );
 
 // ============ TYPES ============
 
-type ServiceEntryType = "domain-and-zone" | "domain-only" | "zone-only";
-type ViewMode = "list" | "detail";
+type ServiceType = "domain" | "zone" | "both";
+type Nav3Group = "general" | "dns" | "expert";
 
-interface DomainZoneEntry {
-  id: string;
-  type: ServiceEntryType;
+interface DomainEntry {
+  name: string;
+  type: ServiceType;
   hasDomain: boolean;
   hasZone: boolean;
+  extension: string;
+  status: "active" | "expiring" | "expired";
+  expiration: string;
+}
+
+interface DomainDetails {
+  domain: Domain | null;
+  serviceInfos: DomainServiceInfos | null;
+  zone: DnsZone | null;
 }
 
 interface TabDef {
   id: string;
   labelKey: string;
-  condition: (entry: DomainZoneEntry) => boolean;
+  group: Nav3Group;
+  condition: (entry: DomainEntry) => boolean;
 }
 
-// ============ TABS DEFINITION ============
+// ============ NAV3 GROUPS DEFINITION ============
 
-const ALL_TABS: TabDef[] = [
-  { id: "general", labelKey: "tabs.general", condition: (e) => e.hasDomain },
-  { id: "zone", labelKey: "tabs.zone", condition: (e) => e.hasZone },
-  { id: "dns-servers", labelKey: "tabs.dnsServers", condition: (e) => e.hasDomain },
-  { id: "redirections", labelKey: "tabs.redirections", condition: (e) => e.hasDomain },
-  { id: "dynhost", labelKey: "tabs.dynhost", condition: (e) => e.hasZone },
-  { id: "glue", labelKey: "tabs.glue", condition: (e) => e.hasDomain },
-  { id: "dnssec", labelKey: "tabs.dnssec", condition: (e) => e.hasDomain },
-  { id: "contacts", labelKey: "tabs.contacts", condition: (e) => e.hasDomain },
-  { id: "tasks", labelKey: "tabs.tasks", condition: () => true },
-  { id: "alldom", labelKey: "tabs.alldom", condition: () => true },
+const NAV3_GROUPS: { id: Nav3Group; labelKey: string }[] = [
+  { id: "general", labelKey: "nav3.general" },
+  { id: "dns", labelKey: "nav3.dns" },
+  { id: "expert", labelKey: "nav3.expert" },
 ];
 
-// ============ MOCK DATA FOR DEMO ============
+// ============ TABS DEFINITION (grouped by NAV3) ============
 
-const getMockDomainData = (domain: string) => ({
-  expiration: new Date(Date.now() + Math.random() * 365 * 24 * 60 * 60 * 1000).toLocaleDateString("fr-FR"),
-  renewal: "Automatique",
-  status: Math.random() > 0.2 ? "active" : Math.random() > 0.5 ? "expiring" : "expired",
-  extension: domain.split(".").pop()?.toUpperCase() || "COM",
-});
+const ALL_TABS: TabDef[] = [
+  // GENERAL group (3 tabs)
+  { id: "general", labelKey: "tabs.general", group: "general", condition: (e) => e.hasDomain },
+  { id: "contacts", labelKey: "tabs.contacts", group: "general", condition: (e) => e.hasDomain },
+  { id: "alldom", labelKey: "tabs.alldom", group: "general", condition: () => true },
+
+  // DNS group (11 tabs)
+  { id: "dns-info", labelKey: "tabs.dnsInfo", group: "dns", condition: (e) => e.hasZone },
+  { id: "dns-servers", labelKey: "tabs.dnsServers", group: "dns", condition: (e) => e.hasDomain },
+  { id: "zone", labelKey: "tabs.zone", group: "dns", condition: (e) => e.hasZone },
+  { id: "dnssec", labelKey: "tabs.dnssec", group: "dns", condition: (e) => e.hasDomain },
+  { id: "spf", labelKey: "tabs.spf", group: "dns", condition: (e) => e.hasZone },
+  { id: "dkim", labelKey: "tabs.dkim", group: "dns", condition: (e) => e.hasZone },
+  { id: "dmarc", labelKey: "tabs.dmarc", group: "dns", condition: (e) => e.hasZone },
+  { id: "arc", labelKey: "tabs.arc", group: "dns", condition: (e) => e.hasZone },
+  { id: "bimi", labelKey: "tabs.bimi", group: "dns", condition: (e) => e.hasZone },
+  { id: "caa", labelKey: "tabs.caa", group: "dns", condition: (e) => e.hasZone },
+  { id: "dynhost", labelKey: "tabs.dynhost", group: "dns", condition: (e) => e.hasZone },
+
+  // EXPERT group (2 tabs)
+  { id: "glue", labelKey: "tabs.glue", group: "expert", condition: (e) => e.hasDomain },
+  { id: "tasks", labelKey: "tabs.tasks", group: "expert", condition: () => true },
+];
+
+// ============ FILTER OPTIONS ============
+
+const FILTER_OPTIONS = [
+  { value: "all", label: "Tous" },
+  { value: "domain", label: "Domaines" },
+  { value: "zone", label: "Zones DNS" },
+];
+
+// ============ TAB SKELETON ============
+
+const TabSkeleton = () => (
+  <div className="dom-loading">
+    <div className="dom-skeleton" style={{ height: 200 }} />
+  </div>
+);
+
+// ============ NAV3 SELECTOR COMPONENT ============
+
+interface Nav3SelectorProps {
+  groups: { id: Nav3Group; labelKey: string }[];
+  activeGroup: Nav3Group;
+  onGroupChange: (group: Nav3Group) => void;
+  t: (key: string) => string;
+}
+
+const Nav3Selector: React.FC<Nav3SelectorProps> = ({ groups, activeGroup, onGroupChange, t }) => (
+  <div className="dom-nav3-selector">
+    {groups.map((group) => (
+      <button
+        key={group.id}
+        className={`dom-nav3-group-btn ${activeGroup === group.id ? "active" : ""}`}
+        onClick={() => onGroupChange(group.id)}
+      >
+        {t(group.labelKey)}
+      </button>
+    ))}
+  </div>
+);
 
 // ============ COMPOSANT PRINCIPAL ============
 
 export default function DomainsPage() {
   const { t } = useTranslation("web-cloud/domains/index");
-  const { t: tCommon } = useTranslation("common");
 
-  // ---------- STATE ----------
-  const [entries, setEntries] = useState<DomainZoneEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("general");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  // -------- NAV3 Group State --------
+  const [activeNav3, setActiveNav3] = useState<Nav3Group>("general");
 
-  // ---------- LOAD LIST ----------
-  const loadList = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
+  // -------- useLeftPanel Hook --------
+  const {
+    items: entries,
+    loading,
+    error,
+    selectedId: selectedName,
+    selectedItem: selectedEntry,
+    setSelectedId: setSelectedName,
+    details,
+    detailsLoading,
+    searchQuery,
+    setSearchQuery,
+    filterValue: filterType,
+    setFilterValue: setFilterType,
+    paginatedItems,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    totalItems,
+    refresh,
+    refreshDetails,
+  } = useLeftPanel<DomainEntry, DomainDetails>({
+    fetchList: async () => {
+      // 2 API calls paralleles (target pattern)
       const [domains, zones] = await Promise.all([
         domainsPageService.listDomains(),
         domainsPageService.listZones(),
@@ -126,405 +187,210 @@ export default function DomainsPage() {
       const zoneSet = new Set(zones);
       const allNames = new Set([...domains, ...zones]);
 
-      const list: DomainZoneEntry[] = [];
+      const list: DomainEntry[] = [];
 
       for (const name of allNames) {
         const hasDomain = domainSet.has(name);
         const hasZone = zoneSet.has(name);
+        const extension = name.split(".").pop() || "";
 
-        let type: ServiceEntryType;
-        if (hasDomain && hasZone) type = "domain-and-zone";
-        else if (hasDomain) type = "domain-only";
-        else type = "zone-only";
+        // Dates simulees (en production: appel API lazy)
+        const now = Date.now();
+        const expDate = new Date(now + Math.random() * 365 * 24 * 60 * 60 * 1000);
+        const daysUntilExp = Math.floor((expDate.getTime() - now) / (24 * 60 * 60 * 1000));
 
-        list.push({ id: name, type, hasDomain, hasZone });
+        let status: "active" | "expiring" | "expired" = "active";
+        if (daysUntilExp < 0) status = "expired";
+        else if (daysUntilExp < 30) status = "expiring";
+
+        list.push({
+          name,
+          type: hasDomain && hasZone ? "both" : hasDomain ? "domain" : "zone",
+          hasDomain,
+          hasZone,
+          extension: extension.toLowerCase(),
+          status,
+          expiration: expDate.toLocaleDateString("fr-FR"),
+        });
       }
 
-      list.sort((a, b) => a.id.localeCompare(b.id));
-      setEntries(list);
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      return list;
+    },
 
-  useEffect(() => {
-    loadList();
-  }, [loadList]);
+    fetchDetails: async (name: string) => {
+      // Lazy load: 3 appels max on selection
+      const [domain, serviceInfos, zone] = await Promise.all([
+        domainsPageService.getDomain(name).catch(() => null),
+        domainsPageService.getServiceInfos(name).catch(() => null),
+        domainsPageService.getZone(name).catch(() => null),
+      ]);
 
-  // ---------- SELECTED ENTRY ----------
-  const selectedEntry = useMemo(
-    () => entries.find((e) => e.id === selectedId) || null,
-    [entries, selectedId]
-  );
+      return { domain, serviceInfos, zone };
+    },
 
-  // ---------- DOMAIN DETAILS STATE ----------
-  const [domainDetails, setDomainDetails] = useState<Domain | null>(null);
-  const [serviceInfos, setServiceInfos] = useState<DomainServiceInfos | null>(null);
-  const [zoneDetails, setZoneDetails] = useState<DnsZone | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+    getItemId: (entry) => entry.name,
 
-  // ---------- LOAD DETAILS ----------
-  useEffect(() => {
-    if (!selectedEntry) {
-      setDomainDetails(null);
-      setServiceInfos(null);
-      setZoneDetails(null);
-      return;
-    }
+    filterFn: (entry, query, filter) => {
+      // Filter by type
+      if (filter === "domain" && !entry.hasDomain) return false;
+      if (filter === "zone" && (!entry.hasZone || entry.hasDomain)) return false;
 
-    const loadDetails = async () => {
-      setDetailLoading(true);
-      try {
-        const [domain, infos, zone] = await Promise.all([
-          selectedEntry.hasDomain ? domainsPageService.getDomain(selectedEntry.id) : Promise.resolve(null),
-          selectedEntry.hasDomain ? domainsPageService.getServiceInfos(selectedEntry.id) : Promise.resolve(null),
-          selectedEntry.hasZone ? domainsPageService.getZone(selectedEntry.id) : Promise.resolve(null),
-        ]);
-        setDomainDetails(domain);
-        setServiceInfos(infos);
-        setZoneDetails(zone);
-      } catch {
-        setDomainDetails(null);
-        setServiceInfos(null);
-        setZoneDetails(null);
-      } finally {
-        setDetailLoading(false);
+      // Filter by search
+      if (query.trim()) {
+        return entry.name.toLowerCase().includes(query.toLowerCase());
       }
-    };
+      return true;
+    },
 
-    loadDetails();
-  }, [selectedEntry]);
+    cacheKey: "domains-list",
+    cacheTTL: 60000, // 60s
+    pageSize: 20,
+  });
 
-  // ---------- RESET TAB ON SELECTION CHANGE ----------
+  // -------- Active Tab --------
+  const [activeTab, setActiveTab] = useState<string>("general");
+
+  // -------- Available Tabs for current NAV3 group --------
+  const availableTabs = useMemo(() => {
+    if (!selectedEntry) return [];
+    return ALL_TABS.filter(
+      (tab) => tab.group === activeNav3 && tab.condition(selectedEntry)
+    );
+  }, [selectedEntry, activeNav3]);
+
+  // -------- Reset Tab on Selection or NAV3 change --------
   useEffect(() => {
-    if (selectedEntry) {
-      const availableTabs = ALL_TABS.filter((tab) => tab.condition(selectedEntry));
-      if (availableTabs.length > 0 && !availableTabs.find((t) => t.id === activeTab)) {
+    if (selectedEntry && availableTabs.length > 0) {
+      if (!availableTabs.find((t) => t.id === activeTab)) {
         setActiveTab(availableTabs[0].id);
       }
     }
-  }, [selectedEntry, activeTab]);
+  }, [selectedEntry, availableTabs, activeTab]);
 
-  // ---------- FILTERED ENTRIES ----------
-  const filteredEntries = useMemo(() => {
-    if (!searchQuery.trim()) return entries;
-    const q = searchQuery.toLowerCase();
-    return entries.filter((e) => e.id.toLowerCase().includes(q));
-  }, [entries, searchQuery]);
+  // -------- Type Label --------
+  const getTypeLabel = useCallback((entry: DomainEntry): string => {
+    if (entry.hasDomain && entry.hasZone) return t("type.domainAndZone");
+    if (entry.hasDomain) return t("type.domainOnly");
+    return t("type.zoneOnly");
+  }, [t]);
 
-  // ---------- AVAILABLE TABS ----------
-  const availableTabs = useMemo(() => {
-    if (!selectedEntry) return [];
-    return ALL_TABS.filter((tab) => tab.condition(selectedEntry));
-  }, [selectedEntry]);
-
-  // ---------- REFRESH HANDLER ----------
-  const handleRefresh = useCallback(async () => {
-    if (!selectedEntry) return;
-    setDomainDetails(null);
-    setServiceInfos(null);
-    const [d, s] = await Promise.all([
-      domainsPageService.getDomain(selectedEntry.id),
-      domainsPageService.getServiceInfos(selectedEntry.id),
-    ]);
-    setDomainDetails(d);
-    setServiceInfos(s);
-  }, [selectedEntry]);
-
-  // ---------- HANDLERS ----------
-  const handleSelectDomain = (id: string) => {
-    setSelectedId(id);
-    setViewMode("detail");
-  };
-
-  const handleBackToList = () => {
-    setViewMode("list");
-    setSelectedId(null);
-  };
-
-  const toggleRowSelection = (id: string) => {
-    const newSet = new Set(selectedRows);
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-    setSelectedRows(newSet);
-  };
-
-  const toggleAllSelection = () => {
-    if (selectedRows.size === filteredEntries.length) {
-      setSelectedRows(new Set());
-    } else {
-      setSelectedRows(new Set(filteredEntries.map((e) => e.id)));
-    }
-  };
-
-  // ---------- RENDER TAB CONTENT ----------
+  // -------- Render Tab Content --------
   const renderTabContent = () => {
-    if (!selectedEntry) return null;
+    if (!selectedEntry || !details) return null;
+
+    const { domain, serviceInfos, zone } = details;
 
     switch (activeTab) {
+      // GENERAL group
       case "general":
-        return <GeneralTab domain={selectedEntry.id} details={domainDetails || undefined} serviceInfos={serviceInfos || undefined} loading={detailLoading} onRefresh={handleRefresh} onTabChange={setActiveTab} />;
-      case "zone":
-        return <ZoneTab zoneName={selectedEntry.id} />;
-      case "dns-servers":
-        return <DnsServersTab domain={selectedEntry.id} />;
-      case "redirections":
-        return <RedirectionTab domain={selectedEntry.id} nameServerType={domainDetails?.nameServerType} />;
-      case "dynhost":
-        return <DynHostTab zoneName={selectedEntry.id} />;
-      case "glue":
-        return <GlueTab domain={selectedEntry.id} />;
-      case "dnssec":
-        return <DnssecTab domain={selectedEntry.id} />;
+        return <GeneralTab domain={selectedEntry.name} details={domain || undefined} serviceInfos={serviceInfos || undefined} loading={detailsLoading} onRefresh={refreshDetails} onTabChange={setActiveTab} />;
       case "contacts":
-        return <ContactsTab domain={selectedEntry.id} serviceInfos={serviceInfos || undefined} />;
-      case "tasks":
-        return <TasksTab name={selectedEntry.id} hasDomain={selectedEntry.hasDomain} hasZone={selectedEntry.hasZone} />;
+        return <ContactsTab domain={selectedEntry.name} serviceInfos={serviceInfos || undefined} />;
       case "alldom":
         return <AlldomTab />;
+
+      // DNS group
+      case "dns-info":
+        return <DnsInfoTab zoneName={selectedEntry.name} />;
+      case "dns-servers":
+        return <DnsServersTab domain={selectedEntry.name} />;
+      case "zone":
+        return <ZoneTab zoneName={selectedEntry.name} />;
+      case "dnssec":
+        return <DnssecTab domain={selectedEntry.name} />;
+      case "spf":
+        return <SpfTab zoneName={selectedEntry.name} />;
+      case "dkim":
+        return <DkimTab zoneName={selectedEntry.name} />;
+      case "dmarc":
+        return <DmarcTab zoneName={selectedEntry.name} />;
+      case "arc":
+        return <ArcTab zoneName={selectedEntry.name} />;
+      case "bimi":
+        return <BimiTab zoneName={selectedEntry.name} />;
+      case "caa":
+        return <CaaTab zoneName={selectedEntry.name} />;
+      case "dynhost":
+        return <DynHostTab zoneName={selectedEntry.name} />;
+
+      // EXPERT group
+      case "glue":
+        return <GlueTab domain={selectedEntry.name} />;
+      case "tasks":
+        return <TasksTab name={selectedEntry.name} hasDomain={selectedEntry.hasDomain} hasZone={selectedEntry.hasZone} />;
+
       default:
         return null;
     }
   };
 
-  // ---------- RENDER LOADING ----------
-  if (loading) {
-    return (
-      <div className="domains-page">
-        <div className="domains-header">
-          <div>
-            <h1>{t("title")}</h1>
-            <p className="domains-header-desc">{t("description")}</p>
-          </div>
-        </div>
-        <div className="domains-loading">{tCommon("loading")}</div>
-      </div>
-    );
-  }
+  // ============================================================
+  // RENDER
+  // ============================================================
 
-  // ---------- RENDER ERROR ----------
-  if (error) {
-    return (
-      <div className="domains-page">
-        <div className="domains-header">
-          <div>
-            <h1>{t("title")}</h1>
-            <p className="domains-header-desc">{t("description")}</p>
-          </div>
-        </div>
-        <div className="domains-empty">
-          <div className="domains-status error">{error}</div>
-        </div>
-      </div>
-    );
-  }
-
-  // ---------- RENDER EMPTY ----------
-  if (entries.length === 0) {
-    return (
-      <div className="domains-page">
-        <div className="domains-header">
-          <div>
-            <h1>{t("title")}</h1>
-            <p className="domains-header-desc">{t("description")}</p>
-          </div>
-        </div>
-        <div className="domains-empty">
-          <div className="domains-empty-icon"><GlobeIcon size={48} /></div>
-          <h3>{t("empty.title")}</h3>
-          <p>{t("empty.description")}</p>
-          <a href="https://help.ovhcloud.com/csm/fr-domains" target="_blank" rel="noopener noreferrer" className="domains-guides-link">
-            {tCommon("actions.viewGuides")} →
-          </a>
-        </div>
-      </div>
-    );
-  }
-
-  // ---------- RENDER LIST VIEW ----------
-  if (viewMode === "list") {
-    return (
-      <div className="domains-page">
-        <div className="domains-header">
-          <div>
-            <h1>{t("title")}</h1>
-            <p className="domains-header-desc">{t("description")}</p>
-          </div>
-          <a href="https://help.ovhcloud.com/csm/fr-domains" target="_blank" rel="noopener noreferrer" className="domains-guides-link">
-            {tCommon("actions.viewGuides")} →
-          </a>
-        </div>
-
-        <div className="domains-list-view">
-          <div className="domains-toolbar">
-            <div className="domains-toolbar-left">
-              <a href="https://www.ovh.com/fr/order/domain/" target="_blank" rel="noopener noreferrer" className="domains-btn-primary">
-                <PlusIcon /> {t("actions.orderDomain")}
-              </a>
-              <button className="domains-btn-outline">{t("actions.transferDomain")}</button>
-            </div>
-            <div className="domains-toolbar-right">
-              <div className="domains-search">
-                <SearchIcon />
-                <input
-                  type="text"
-                  placeholder={tCommon("search")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="domains-table-wrapper">
-            <table className="domains-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 40 }}>
-                    <input
-                      type="checkbox"
-                      className="domains-checkbox"
-                      checked={selectedRows.size === filteredEntries.length && filteredEntries.length > 0}
-                      onChange={toggleAllSelection}
-                    />
-                  </th>
-                  <th>{t("table.domain")}</th>
-                  <th>{t("table.extension")}</th>
-                  <th>{t("table.status")}</th>
-                  <th>{t("table.expiration")}</th>
-                  <th>{t("table.renewal")}</th>
-                  <th style={{ width: 60 }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEntries.map((entry) => {
-                  const mockData = getMockDomainData(entry.id);
-                  return (
-                    <tr key={entry.id}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          className="domains-checkbox"
-                          checked={selectedRows.has(entry.id)}
-                          onChange={() => toggleRowSelection(entry.id)}
-                        />
-                      </td>
-                      <td>
-                        <span className="domains-name-cell" onClick={() => handleSelectDomain(entry.id)}>
-                          {entry.id}
-                        </span>
-                      </td>
-                      <td><span className="domains-extension">.{mockData.extension}</span></td>
-                      <td>
-                        <span className={`domains-status ${mockData.status}`}>
-                          {mockData.status === "active" ? t("status.active") :
-                           mockData.status === "expiring" ? t("status.expiring") : t("status.expired")}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`domains-date ${mockData.status === "expiring" ? "warning" : mockData.status === "expired" ? "error" : ""}`}>
-                          {mockData.expiration}
-                        </span>
-                      </td>
-                      <td className="domains-renewal">{mockData.renewal}</td>
-                      <td>
-                        <button className="domains-actions-btn" onClick={() => handleSelectDomain(entry.id)}>
-                          <MoreIcon />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="domains-pagination">
-            <span>{filteredEntries.length} {t("serviceUnit")}</span>
-            <div className="domains-pagination-pages">
-              <span className="active">1</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ---------- RENDER DETAIL VIEW ----------
   return (
-    <div className="domains-page">
-      <div className="domains-header">
-        <div>
-          <button className="domains-back-btn" onClick={handleBackToList}>
-            <ChevronLeftIcon /> {t("actions.backToList")}
-          </button>
-          <h1>{t("title")}</h1>
-          <p className="domains-header-desc">{t("description")}</p>
-        </div>
-        <a href="https://help.ovhcloud.com/csm/fr-domains" target="_blank" rel="noopener noreferrer" className="domains-guides-link">
-          {tCommon("actions.viewGuides")} →
-        </a>
-      </div>
-
-      <div className="domains-detail-view">
-        {/* SIDEBAR */}
-        <div className="domains-sidebar">
-          <div className="domains-sidebar-search">
-            <input
-              type="text"
-              placeholder={tCommon("search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+    <div className="dom-page">
+      <div className="dom-detail-container">
+        {/* ============ LEFT PANEL ============ */}
+        <LeftPanel
+          items={paginatedItems}
+          selectedId={selectedName}
+          onSelect={setSelectedName}
+          getItemId={(entry) => entry.name}
+          renderItem={(entry, isSelected) => (
+            <LeftPanelItemContent
+              icon="🌐"
+              name={entry.name}
+              subtitle={getTypeLabel(entry)}
+              badge={{
+                text: entry.status === "active" ? t("status.active") :
+                      entry.status === "expiring" ? t("status.expiring") : t("status.expired"),
+                variant: entry.status,
+              }}
+              extBadge={entry.hasDomain ? entry.extension : undefined}
             />
-          </div>
-          <div className="domains-sidebar-filter">
-            <span>{filteredEntries.length} {t("serviceUnit")}</span>
-          </div>
-          <div className="domains-sidebar-list">
-            {filteredEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className={`domains-sidebar-item ${selectedId === entry.id ? "selected" : ""}`}
-                onClick={() => setSelectedId(entry.id)}
-              >
-                <span className="domains-sidebar-icon">🌐</span>
-                <div className="domains-sidebar-info">
-                  <div className="domains-sidebar-name">{entry.id}</div>
-                  <div className="domains-sidebar-type">
-                    {entry.type === "domain-and-zone" ? t("type.domainAndZone") :
-                     entry.type === "domain-only" ? t("type.domainOnly") : t("type.zoneOnly")}
-                  </div>
-                  <span className="domains-sidebar-ext">.{entry.id.split(".").pop()?.toUpperCase()}</span>
-                </div>
-                <span className="domains-sidebar-badge">{t("status.active")}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+          )}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder={t("actions.searchPlaceholder")}
+          filterOptions={FILTER_OPTIONS.map(opt => ({
+            value: opt.value,
+            label: t(`filter.${opt.value}`) || opt.label,
+          }))}
+          filterValue={filterType}
+          onFilterChange={setFilterType}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          showPagination={totalPages > 1}
+          loading={loading}
+          error={error}
+          emptyMessage={t("empty.title")}
+          emptyIcon={<GlobeIcon size={32} />}
+          itemCount={totalItems}
+          itemLabel={t("serviceUnit")}
+          // NAV3 Selector
+          nav3Groups={NAV3_GROUPS.map(g => ({ id: g.id, label: t(g.labelKey) }))}
+          activeNav3={activeNav3}
+          onNav3Change={(id) => setActiveNav3(id as Nav3Group)}
+        />
 
-        {/* MAIN PANEL */}
-        <div className="domains-main-panel">
+        {/* ============ RIGHT PANEL ============ */}
+        <div className="dom-main-panel">
           {selectedEntry ? (
             <>
-              <div className="domains-panel-header">
-                <h2>{selectedEntry.id}</h2>
-                {domainDetails && (
-                  <span className={`domains-panel-badge ${domainDetails.transferLockStatus === "locked" ? "" : "warning"}`}>
-                    {domainDetails.transferLockStatus === "locked" ? "🔒 Verrouillé" : "🔓 Déverrouillé"}
-                  </span>
-                )}
+              {/* Header */}
+              <div className="dom-panel-header">
+                <h2>{selectedEntry.name}</h2>
               </div>
 
-              <div className="domains-nav3">
+              {/* NAV3: Tabs for current group */}
+              <div className="dom-nav3">
                 {availableTabs.map((tab) => (
                   <button
                     key={tab.id}
-                    className={`domains-nav3-btn ${activeTab === tab.id ? "active" : ""}`}
+                    className={`dom-nav3-btn ${activeTab === tab.id ? "active" : ""}`}
                     onClick={() => setActiveTab(tab.id)}
                   >
                     {t(tab.labelKey)}
@@ -532,13 +398,16 @@ export default function DomainsPage() {
                 ))}
               </div>
 
-              <div className="domains-tab-content">
-                {renderTabContent()}
+              {/* Tab Content with Suspense */}
+              <div className="dom-tab-content">
+                <Suspense fallback={<TabSkeleton />}>
+                  {renderTabContent()}
+                </Suspense>
               </div>
             </>
           ) : (
-            <div className="domains-empty">
-              <div className="domains-empty-icon"><GlobeIcon size={48} /></div>
+            <div className="dom-empty">
+              <div className="dom-empty-icon"><GlobeIcon /></div>
               <h3>{t("empty.selectTitle")}</h3>
               <p>{t("empty.selectDescription")}</p>
             </div>

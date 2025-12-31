@@ -206,26 +206,36 @@ export interface EmailTask {
   lastUpdate?: string;
 }
 
-// ---------- VUE TOGGLE ----------
+// ---------- NAV3 (LEFT PANEL) ----------
+
+export type Nav3Mode = "general" | "packs";
+
+// ---------- VUE TOGGLE (LEGACY - kept for compatibility) ----------
 
 export type ViewMode = "domain" | "license";
 
-// ---------- ÉTAT PAGE ----------
+// ---------- TABS NAV4 ----------
 
-export interface EmailsPageState {
-  viewMode: ViewMode;
-  selectedDomain?: string;
-  selectedLicense?: string;
-  activeTab: EmailTab;
-  activeSubTab?: string;
-}
-
-export type EmailTab =
+export type GeneralTab =
   | "accounts"
   | "redirections"
   | "responders"
   | "lists"
   | "security"
   | "advanced"
-  | "licenses"
   | "tasks";
+
+export type PacksTab = "packs" | "alacarte" | "history";
+
+export type EmailTab = GeneralTab | PacksTab | "licenses";
+
+// ---------- ÉTAT PAGE ----------
+
+export interface EmailsPageState {
+  nav3Mode: Nav3Mode;
+  viewMode: ViewMode;
+  selectedDomain?: string;
+  selectedLicense?: string;
+  activeTab: EmailTab;
+  activeSubTab?: string;
+}

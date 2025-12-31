@@ -1,0 +1,1047 @@
+# PROMPT SPLIT v2.2 - Architecture Modulaire React/TypeScript
+
+Version: 2.2 (2025-12-31)
+Remplace: prompt_split.txt (v1)
+
+CHANGELOG v2.2:
+- 4 patterns d'arborescence documentés (tabs/, groups/, flat/, api/)
+- Niveau GROUPE ajouté entre NAV2 et NAV3
+- Fichiers additionnels documentés (helpers, icons, hooks, modals, sections)
+- CSS/Services partagés NAV2 tolérés avec règles
+- Section WARNINGS ajoutée
+- Section API MULTI-PROVIDERS ajoutée
+- Checklist mise à jour
+
+================================================================================
+
+## A) Contexte
+
+Tu es un expert en refactoring React/TypeScript pour le projet New Manager OVHcloud.
+
+**Architecture de navigation (5 niveaux max) :**
+
+| Niveau | Description | Exemple | Obligatoire |
+|--------|-------------|---------|-------------|
+| **NAV1** | Catégorie principale | general, web-cloud, bare-metal, network | ✅ Oui |
+| **NAV2** | Produit/Service | billing, hosting, domains, access | ✅ Oui |
+| **GROUP** | Regroupement fonctionnel | general, expert, dns, sites | ❌ Optionnel |
+| **NAV3** | Tab principal | general, ftp, ssl, zone, connections | ✅ Oui |
+| **NAV4** | Sous-tab | line, modem, voip, diagnostic | ❌ Optionnel |
+
+**Convention : le 1er élément de chaque niveau s'appelle `general`**
+
+**Objectif :** Organiser le code en modules ISOLÉS avec partage minimal contrôlé.
+
+---
+
+## B) Les 4 Patterns d'Arborescence
+
+### Pattern A : TABS (structure classique)
+
+**Quand l'utiliser :** NAV2 avec tabs simples sans regroupement logique.
+
+**Utilisé par :** `general/billing`, `general/api`, `general/account`, `general/support`
+
+```
+src/pages/{NAV1}/{NAV2}/
+├── {nav2}.types.ts                    ← Types partagés NAV2
+├── index.tsx                          ← Page principale
+├── index.css                          ← CSS layout NAV2 (optionnel)
+└── tabs/
+    └── {nav3}/
+        ├── {Nav3}Tab.tsx              ← Composant principal
+        ├── {Nav3}Tab.service.ts       ← Service API isolé
+        ├── {Nav3}Tab.css              ← Styles isolés
+        ├── {Nav3}Tab.helpers.ts       ← Fonctions utilitaires (optionnel)
+        ├── {Nav3}Tab.icons.tsx        ← Icônes/assets (optionnel)
+        ├── {Nav3}Tab.hooks.ts         ← Hooks locaux (optionnel)
+        ├── {Nav3}Tab.modals.tsx       ← Modales inline (optionnel)
+        └── {Nav3}Tab.sections.tsx     ← Sous-sections (optionnel)
+```
+
+**Exemple :**
+```
+src/pages/general/billing/
+├── billing.types.ts
+├── index.tsx
+├── index.css
+└── tabs/
+    ├── general/
+    │   ├── GeneralTab.tsx
+    │   ├── GeneralTab.service.ts
+    │   ├── GeneralTab.css
+    │   ├── GeneralTab.helpers.ts
+    │   └── GeneralTab.icons.tsx
+    ├── invoices/
+    │   ├── InvoicesTab.tsx
+    │   ├── InvoicesTab.service.ts
+    │   └── InvoicesTab.css
+    └── methods/
+        ├── MethodsTab.tsx
+        ├── MethodsTab.service.ts
+        └── MethodsTab.css
+```
+
+---
+
+### Pattern B : GROUPS (tabs regroupés)
+
+**Quand l'utiliser :** NAV2 avec beaucoup de tabs nécessitant un regroupement logique.
+
+**Utilisé par :** `web-cloud/hosting`, `web-cloud/domains`
+
+```
+src/pages/{NAV1}/{NAV2}/
+├── {nav2}.types.ts                    ← Types partagés NAV2
+├── index.tsx                          ← Page principale
+├── styles.css                         ← CSS layout NAV2
+├── {GROUP}/                           ← Groupe fonctionnel
+│   ├── index.ts                       ← Barrel exports
+│   └── {nav3}/
+│       ├── {Nav3}Tab.tsx
+│       ├── {Nav3}Tab.service.ts
+│       ├── {Nav3}Tab.css
+│       └── modals/                    ← Modales du tab (optionnel)
+│           ├── {Action}Modal.tsx
+│           └── {Action}Modal.css
+└── {GROUP2}/
+    └── {nav3}/
+        └── ...
+```
+
+**Exemple (hosting) :**
+```
+src/pages/web-cloud/hosting/
+├── hosting.types.ts
+├── index.tsx
+├── styles.css
+├── general/
+│   ├── index.ts
+│   ├── general/
+│   │   ├── GeneralTab.tsx
+│   │   ├── GeneralTab.service.ts
+│   │   └── GeneralTab.css
+│   ├── logs/
+│   │   ├── LogsTab.tsx
+│   │   └── LogsTab.service.ts
+│   └── statistics/
+│       └── StatisticsTab.tsx
+├── expert/
+│   ├── index.ts
+│   ├── ftp/
+│   │   ├── FtpTab.tsx
+│   │   ├── FtpTab.service.ts
+│   │   └── FtpTab.css
+│   ├── database/
+│   │   ├── DatabaseTab.tsx
+│   │   ├── DatabaseTab.service.ts
+│   │   └── modals/
+│   │       ├── CreateDatabaseModal.tsx
+│   │       └── DeleteDatabaseModal.tsx
+│   └── cron/
+│       └── CronTab.tsx
+└── sites/
+    ├── multisite/
+    │   └── MultisiteTab.tsx
+    └── ssl/
+        └── SslTab.tsx
+```
+
+**Groupes standards :**
+
+| Groupe | Description | Tabs typiques |
+|--------|-------------|---------------|
+| `general/` | Informations générales | general, offer, statistics, logs |
+| `expert/` | Configuration avancée | ftp, database, cron, envvars |
+| `sites/` | Gestion des sites | multisite, ssl, cdn |
+| `dns/` | Configuration DNS | zone, dnssec, dnsservers, dynhost |
+| `security/` | Sécurité | antispam, signature, dmarc |
+
+---
+
+### Pattern C : FLAT (structure plate NAV3)
+
+**Quand l'utiliser :** NAV2 avec sous-sections distinctes ayant leurs propres tabs (NAV4).
+
+**Utilisé par :** `web-cloud/access`
+
+```
+src/pages/{NAV1}/{NAV2}/
+├── {nav2}.types.ts                    ← Types partagés NAV2
+├── {nav2}.service.ts                  ← Service partagé NAV2 (discovery)
+├── index.tsx                          ← Page principale (router)
+├── index.css                          ← CSS layout NAV2
+└── {NAV3}/                            ← Section distincte
+    ├── index.tsx                      ← Page section
+    ├── {nav3}.types.ts                ← Types locaux NAV3
+    ├── {nav3}.service.ts              ← Service partagé NAV3
+    ├── {nav3}.css                     ← CSS partagé NAV3
+    ├── {Nav4}Tab.tsx                  ← Tab (NAV4)
+    ├── {Nav4}Tab.service.ts
+    ├── {Nav4}Tab.css
+    ├── {SubComponent}.tsx             ← Sous-composants du tab
+    ├── modals/
+    │   └── {Action}Modal.tsx
+    └── warnings/                      ← États d'erreur (optionnel)
+        ├── index.ts
+        ├── Warning{State}.tsx
+        └── Warnings.css
+```
+
+**Exemple (access) :**
+```
+src/pages/web-cloud/access/
+├── access.types.ts
+├── access.service.ts
+├── index.tsx
+├── index.css
+├── connections/                       ← NAV3
+│   ├── index.ts
+│   ├── connections.types.ts
+│   ├── connections.service.ts
+│   ├── connections.css
+│   ├── ConnectionsPage.tsx
+│   ├── GeneralTab.tsx                 ← NAV4
+│   ├── GeneralTab.service.ts
+│   ├── GeneralTab.css
+│   ├── LineTab.tsx                    ← NAV4
+│   ├── LineTab.service.ts
+│   ├── LineTab.css
+│   ├── LineDiagnostic.tsx             ← Sous-composant de LineTab
+│   ├── LineStats.tsx
+│   ├── LineAlerts.tsx
+│   ├── ModemOvhTab.tsx                ← NAV4
+│   ├── ModemWifi.tsx                  ← Sous-composant
+│   ├── ModemDhcp.tsx
+│   └── modals/
+│       ├── RenameModal.tsx
+│       ├── MigrateModal.tsx
+│       └── WifiConfigModal.tsx
+└── overthebox/                        ← NAV3
+    ├── index.tsx
+    ├── overthebox.types.ts
+    ├── GeneralTab.tsx
+    ├── RemotesTab.tsx
+    ├── ConfigureTab.tsx
+    ├── modals/
+    │   └── OtbLinkModal.tsx
+    └── warnings/
+        ├── index.ts
+        ├── WarningDeviceLink.tsx
+        ├── WarningNoPayment.tsx
+        └── Warnings.css
+```
+
+---
+
+### Pattern D : API (multi-providers)
+
+**Quand l'utiliser :** NAV2 gérant plusieurs providers/backends avec APIs différentes.
+
+**Utilisé par :** `web-cloud/emails`
+
+```
+src/pages/{NAV1}/{NAV2}/
+├── types.ts                           ← Types communs
+├── index.tsx
+├── styles.css
+├── api/                               ← Services par provider
+│   ├── index.ts                       ← Factory/Router API
+│   ├── {provider1}/
+│   │   ├── index.ts
+│   │   ├── accounts.api.ts
+│   │   ├── redirections.api.ts
+│   │   └── tasks.api.ts
+│   └── {provider2}/
+│       ├── index.ts
+│       └── accounts.api.ts
+├── use{Entity}.ts                     ← Hooks partagés NAV2
+├── {Component}.tsx                    ← Composants partagés NAV2
+├── {Modal}Modal.tsx                   ← Modales à la racine
+└── {GROUP}/
+    └── {nav3}/
+        └── {Nav3}Tab.tsx
+```
+
+**Exemple (emails) :**
+```
+src/pages/web-cloud/emails/
+├── types.ts
+├── emails.constants.ts
+├── emails.service.ts
+├── emailsPage.service.ts
+├── index.tsx
+├── styles.css
+├── LeftPanel.tsx
+├── LeftPanel.css
+├── RightPanelHeader.tsx
+├── api/
+│   ├── index.ts
+│   ├── mxplan/
+│   │   ├── index.ts
+│   │   ├── accounts.api.ts
+│   │   ├── redirections.api.ts
+│   │   ├── lists.api.ts
+│   │   └── tasks.api.ts
+│   ├── exchange/
+│   │   ├── index.ts
+│   │   ├── accounts.api.ts
+│   │   ├── groups.api.ts
+│   │   ├── resources.api.ts
+│   │   └── audit.api.ts
+│   ├── emailpro/
+│   │   └── accounts.api.ts
+│   └── zimbra/
+│       ├── accounts.api.ts
+│       └── aliases.api.ts
+├── useEmailAccounts.ts
+├── useEmailDomains.ts
+├── useEmailLicenses.ts
+├── CreateAccountModal.tsx
+├── DeleteAccountModal.tsx
+├── EditAccountModal.tsx
+├── general/
+│   ├── index.ts
+│   ├── general.css
+│   ├── AccountsTab.tsx
+│   ├── ListsTab.tsx
+│   ├── RedirectionsTab.tsx
+│   ├── RespondersTab.tsx
+│   ├── TasksTab.tsx
+│   ├── security/
+│   │   ├── SecurityTab.tsx
+│   │   ├── AntispamTab.tsx
+│   │   └── DnsConfigTab.tsx
+│   └── advanced/
+│       ├── AdvancedTab.tsx
+│       └── ResourcesTab.tsx
+└── packs/
+    ├── index.ts
+    ├── LicensesTab.tsx
+    ├── PacksTab.tsx
+    └── HistoryTab.tsx
+```
+
+---
+
+## C) Traductions (public/locales/)
+
+**Convention :**
+```
+public/locales/{lang}/{NAV1}/{NAV2}/
+├── index.json                         ← Traductions communes NAV2
+├── {nav3}.json                        ← Traductions par tab
+└── {GROUP}/                           ← Si pattern GROUPS
+    └── {nav3}.json
+```
+
+**Exemple :**
+```
+public/locales/
+├── fr/
+│   ├── web-cloud/
+│   │   ├── access/
+│   │   │   ├── index.json
+│   │   │   ├── connections.json
+│   │   │   ├── modals.json
+│   │   │   ├── connections/
+│   │   │   │   ├── general.json
+│   │   │   │   ├── line.json
+│   │   │   │   └── modem.json
+│   │   │   └── overthebox/
+│   │   │       ├── index.json
+│   │   │       ├── general.json
+│   │   │       └── warnings.json
+│   │   └── hosting/
+│   │       ├── index.json
+│   │       └── web-cloud.hosting.general.json
+│   └── general/
+│       └── billing/
+│           ├── index.json
+│           ├── general.json
+│           └── invoices.json
+└── en/
+    └── ... (miroir de fr/)
+```
+
+---
+
+## D) Règles de Partage et Isolation
+
+### Matrice de partage
+
+| Niveau source | Peut importer depuis | Interdit d'importer |
+|---------------|---------------------|---------------------|
+| **NAV4 Tab** | NAV3 types/service, NAV2 types, Global | Autre NAV4, Autre NAV3 |
+| **NAV3 Section** | NAV2 types/service, Global | Autre NAV3 |
+| **NAV2 Page** | Global uniquement | Autre NAV2 |
+| **Global** | — | Tout niveau local |
+
+### Imports AUTORISÉS ✅
+
+```typescript
+// ═══════════════════════════════════════════════════════════════════════════
+// GLOBAL - Depuis /src/services/, /src/components/, /src/hooks/
+// ═══════════════════════════════════════════════════════════════════════════
+
+// API bas niveau
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "@/services/api";
+
+// Composants UI design system
+import { Button, Modal, Table, Alert } from "@/components/ui";
+import { DataGrid } from "@/components/DataGrid";
+
+// Hooks génériques
+import { useApi } from "@/hooks/useApi";
+import { useToast } from "@/hooks/useToast";
+
+// CSS design system
+import "@/styles/global.css";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAV2 - Types partagés (SEUL fichier partageable entre NAV3)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Types depuis le niveau NAV2
+import type { HostingInfo, FtpUser } from "../../hosting.types";
+import type { ConnectionInfo } from "../../access.types";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAV2 - Service partagé (TOLÉRÉ pour discovery/utilities)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Service NAV2 pour fonctions communes (liste services, formatage, validation)
+import { accessService } from "../../access.service";
+import { getServiceList } from "../../domains.service";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAV3 - Types et service locaux (pattern FLAT)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Types NAV3 locaux
+import type { LineInfo, ModemConfig } from "../connections.types";
+
+// Service NAV3 partagé entre NAV4
+import { connectionsService } from "../connections.service";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOCAL - Service et CSS du tab
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Service isolé du tab
+import { lineService } from "./LineTab.service";
+import { ftpService } from "./FtpTab.service";
+
+// CSS isolé du tab
+import "./LineTab.css";
+import "./FtpTab.css";
+```
+
+### Imports INTERDITS ❌
+
+```typescript
+// ═══════════════════════════════════════════════════════════════════════════
+// ❌ INTERDIT 1 : Import croisé entre tabs NAV3/NAV4
+// ═══════════════════════════════════════════════════════════════════════════
+
+// FtpTab.tsx ne doit JAMAIS faire :
+import { sslService } from "../ssl/SslTab.service";        // ❌
+import { quelqueChose } from "../general/GeneralTab";      // ❌
+import { formatDomain } from "../multisite/MultisiteTab";  // ❌
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ❌ INTERDIT 2 : Import CSS croisé entre tabs
+// ═══════════════════════════════════════════════════════════════════════════
+
+// FtpTab.tsx ne doit JAMAIS importer le CSS d'un autre tab :
+import "../ssl/SslTab.css";                                // ❌
+import styles from "../general/GeneralTab.module.css";     // ❌
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ❌ INTERDIT 3 : Import croisé entre NAV3 (pattern FLAT)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// connections/ ne doit JAMAIS importer depuis overthebox/
+import { otbService } from "../overthebox/GeneralTab.service";  // ❌
+import "../overthebox/overthebox.css";                          // ❌
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ❌ INTERDIT 4 : Import croisé entre NAV2
+// ═══════════════════════════════════════════════════════════════════════════
+
+// hosting/ ne doit JAMAIS importer depuis domains/
+import { domainService } from "../../domains/domains.service";  // ❌
+import type { DomainInfo } from "../../domains/domains.types";  // ❌
+```
+
+---
+
+## E) CSS - Règles et Conventions
+
+### Fichiers CSS autorisés par niveau
+
+| Niveau | Fichier | Contenu autorisé |
+|--------|---------|------------------|
+| **NAV2** | `index.css`, `styles.css` | Layout, grid, left panel, variables locales |
+| **NAV3** | `{nav3}.css` | Layout section, styles communs NAV4 |
+| **NAV4/Tab** | `{Nav4}Tab.css` | Styles isolés du tab uniquement |
+| **Modales** | `modals.css`, `{Modal}Modal.css` | Styles modales |
+| **Warnings** | `Warnings.css` | Styles états d'erreur |
+
+### Convention de nommage CSS
+
+**Préfixe OBLIGATOIRE par tab pour éviter les collisions :**
+
+```css
+/* FtpTab.css */
+.ftp-container { }
+.ftp-user-row { }
+.ftp-quota-bar { }
+.ftp-actions { }
+
+/* SslTab.css */
+.ssl-container { }
+.ssl-certificate { }
+.ssl-status-badge { }
+
+/* LineTab.css */
+.line-status { }
+.line-diagnostic { }
+.line-stats-chart { }
+```
+
+### Variables CSS
+
+```css
+/* ✅ OK - Utiliser les variables globales ODS */
+.ftp-card {
+  color: var(--ods-color-primary);
+  padding: var(--ods-spacing-md);
+  border-radius: var(--ods-radius-md);
+}
+
+/* ✅ OK - Variables locales dans le fichier du tab */
+.ftp-container {
+  --ftp-header-height: 48px;
+  --ftp-row-height: 56px;
+}
+
+/* ❌ INTERDIT - Variables partagées au niveau NAV2 */
+/* hosting-variables.css - NE PAS CRÉER */
+:root {
+  --hosting-primary: #0050d7;
+}
+```
+
+---
+
+## F) Services - Structure et Organisation
+
+### Service par tab (OBLIGATOIRE)
+
+```typescript
+// tabs/ftp/FtpTab.service.ts
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "@/services/api";
+import type { FtpUser } from "../../hosting.types";
+
+// ========================================
+// SERVICE FTP - ISOLÉ
+// ========================================
+
+// Helpers locaux (dupliqués si nécessaire dans d'autres tabs)
+const formatQuota = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR");
+
+export const ftpService = {
+  getAll: (serviceName: string): Promise<FtpUser[]> =>
+    ovhGet(`/hosting/web/${serviceName}/user`),
+
+  get: (serviceName: string, login: string): Promise<FtpUser> =>
+    ovhGet(`/hosting/web/${serviceName}/user/${login}`),
+
+  create: (serviceName: string, data: Partial<FtpUser>): Promise<void> =>
+    ovhPost(`/hosting/web/${serviceName}/user`, data),
+
+  update: (serviceName: string, login: string, data: Partial<FtpUser>): Promise<void> =>
+    ovhPut(`/hosting/web/${serviceName}/user/${login}`, data),
+
+  delete: (serviceName: string, login: string): Promise<void> =>
+    ovhDelete(`/hosting/web/${serviceName}/user/${login}`),
+
+  changePassword: (serviceName: string, login: string, password: string): Promise<void> =>
+    ovhPost(`/hosting/web/${serviceName}/user/${login}/changePassword`, { password }),
+};
+```
+
+### Service partagé NAV2 (TOLÉRÉ pour discovery)
+
+```typescript
+// access.service.ts
+import { ovhGet } from "@/services/api";
+import type { ConnectionInfo, OverTheBoxInfo } from "./access.types";
+
+// ========================================
+// SERVICE ACCESS - DISCOVERY & UTILITIES
+// ========================================
+
+// Ce service NE CONTIENT PAS la logique métier des tabs
+// Il sert uniquement à :
+// 1. Lister les services disponibles
+// 2. Fonctions utilitaires communes
+// 3. Formatage/validation spécifique au domaine
+
+export const accessService = {
+  // Discovery - liste des connexions
+  listConnections: (): Promise<string[]> =>
+    ovhGet("/xdsl"),
+
+  // Discovery - liste des OverTheBox
+  listOverTheBox: (): Promise<string[]> =>
+    ovhGet("/overTheBox"),
+
+  // Utility - formater un débit
+  formatSpeed: (bps: number): string => {
+    if (bps >= 1_000_000_000) return `${(bps / 1_000_000_000).toFixed(1)} Gbps`;
+    if (bps >= 1_000_000) return `${(bps / 1_000_000).toFixed(0)} Mbps`;
+    return `${(bps / 1_000).toFixed(0)} Kbps`;
+  },
+
+  // Utility - déterminer le type de connexion
+  getConnectionType: (access: ConnectionInfo): string => {
+    if (access.accessType === "ftth") return "FTTH";
+    if (access.accessType === "vdsl") return "VDSL2";
+    return access.accessType.toUpperCase();
+  },
+};
+```
+
+### Service partagé NAV3 (pattern FLAT)
+
+```typescript
+// connections/connections.service.ts
+import { ovhGet } from "@/services/api";
+import type { ConnectionInfo, LineInfo } from "./connections.types";
+
+// ========================================
+// SERVICE CONNECTIONS - PARTAGÉ NAV4
+// ========================================
+
+// Ce service est partagé entre GeneralTab, LineTab, ModemTab, etc.
+// car ils travaillent tous sur la même connexion
+
+export const connectionsService = {
+  // Infos connexion (utilisé par tous les tabs)
+  getConnection: (serviceName: string): Promise<ConnectionInfo> =>
+    ovhGet(`/xdsl/${serviceName}`),
+
+  // Infos ligne (utilisé par LineTab et ses sous-composants)
+  getLine: (serviceName: string): Promise<LineInfo> =>
+    ovhGet(`/xdsl/${serviceName}/lines`).then(lines =>
+      ovhGet(`/xdsl/${serviceName}/lines/${lines[0]}`)
+    ),
+
+  // Rename (utilisé par GeneralTab)
+  rename: (serviceName: string, description: string): Promise<void> =>
+    ovhPut(`/xdsl/${serviceName}`, { description }),
+};
+```
+
+---
+
+## G) Fichiers Additionnels par Tab
+
+### Structure complète possible
+
+```
+tabs/{nav3}/
+├── {Nav3}Tab.tsx              ← Composant principal (OBLIGATOIRE)
+├── {Nav3}Tab.service.ts       ← Service API (OBLIGATOIRE)
+├── {Nav3}Tab.css              ← Styles (OBLIGATOIRE)
+├── {Nav3}Tab.types.ts         ← Types locaux au tab
+├── {Nav3}Tab.helpers.ts       ← Fonctions utilitaires
+├── {Nav3}Tab.icons.tsx        ← Composants icônes/SVG
+├── {Nav3}Tab.hooks.ts         ← Hooks React locaux
+├── {Nav3}Tab.modals.tsx       ← Modales inline (petites)
+├── {Nav3}Tab.sections.tsx     ← Sous-sections du tab
+├── {Nav3}Tab.constants.ts     ← Constantes locales
+├── modals/                    ← Modales séparées (grandes)
+│   ├── Create{Entity}Modal.tsx
+│   ├── Edit{Entity}Modal.tsx
+│   └── Delete{Entity}Modal.tsx
+└── index.ts                   ← Barrel export
+```
+
+### Fichiers helpers
+
+```typescript
+// tabs/invoices/InvoicesTab.helpers.ts
+
+export const formatAmount = (cents: number, currency: string = "EUR"): string => {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency,
+  }).format(cents / 100);
+};
+
+export const formatInvoiceNumber = (id: string): string => {
+  return `FR-${id.toUpperCase()}`;
+};
+
+export const getInvoiceStatus = (paid: boolean, dueDate: string): string => {
+  if (paid) return "paid";
+  if (new Date(dueDate) < new Date()) return "overdue";
+  return "pending";
+};
+```
+
+### Fichiers icons
+
+```tsx
+// tabs/security/SecurityTab.icons.tsx
+import React from "react";
+
+export const ShieldIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16">
+    <path d="M8 0L0 3v5c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V3L8 0z" />
+  </svg>
+);
+
+export const LockIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16">
+    <path d="M12 6V4a4 4 0 0 0-8 0v2H2v10h12V6h-2zM6 4a2 2 0 1 1 4 0v2H6V4z" />
+  </svg>
+);
+
+export const KeyIcon = () => (/* ... */);
+```
+
+### Fichiers hooks
+
+```typescript
+// tabs/security/SecurityTab.hooks.ts
+import { useState, useCallback } from "react";
+import { securityService } from "./SecurityTab.service";
+
+export const useTwoFactor = (nichandle: string) => {
+  const [status, setStatus] = useState<"enabled" | "disabled" | "loading">("loading");
+  const [error, setError] = useState<Error | null>(null);
+
+  const enable = useCallback(async () => {
+    try {
+      await securityService.enableTwoFactor(nichandle);
+      setStatus("enabled");
+    } catch (e) {
+      setError(e as Error);
+    }
+  }, [nichandle]);
+
+  const disable = useCallback(async () => {
+    try {
+      await securityService.disableTwoFactor(nichandle);
+      setStatus("disabled");
+    } catch (e) {
+      setError(e as Error);
+    }
+  }, [nichandle]);
+
+  return { status, error, enable, disable };
+};
+```
+
+---
+
+## H) Warnings (États d'erreur)
+
+### Structure
+
+```
+{NAV3}/warnings/
+├── index.ts                   ← Barrel export + composant conditionnel
+├── Warnings.css               ← Styles communs
+├── Warning{State1}.tsx
+├── Warning{State2}.tsx
+└── Warning{State3}.tsx
+```
+
+### Exemple
+
+```tsx
+// overthebox/warnings/index.ts
+export { WarningDeviceLink } from "./WarningDeviceLink";
+export { WarningNoPayment } from "./WarningNoPayment";
+export { WarningNoSubscription } from "./WarningNoSubscription";
+export { WarningNotActivated } from "./WarningNotActivated";
+export { WarningNotFound } from "./WarningNotFound";
+
+import type { OverTheBoxInfo } from "../overthebox.types";
+
+export type WarningType =
+  | "device-link"
+  | "no-payment"
+  | "no-subscription"
+  | "not-activated"
+  | "not-found"
+  | null;
+
+export const getWarningType = (otb: OverTheBoxInfo | null): WarningType => {
+  if (!otb) return "not-found";
+  if (!otb.status.linked) return "device-link";
+  if (!otb.billing.valid) return "no-payment";
+  if (!otb.subscription.active) return "no-subscription";
+  if (!otb.status.activated) return "not-activated";
+  return null;
+};
+```
+
+```tsx
+// overthebox/warnings/WarningDeviceLink.tsx
+import React from "react";
+import { Alert, Button } from "@/components/ui";
+import { useTranslation } from "react-i18next";
+import "./Warnings.css";
+
+interface Props {
+  serviceName: string;
+  onLink: () => void;
+}
+
+export const WarningDeviceLink: React.FC<Props> = ({ serviceName, onLink }) => {
+  const { t } = useTranslation("web-cloud/access/overthebox/warnings");
+
+  return (
+    <div className="otb-warning otb-warning--device-link">
+      <Alert variant="warning" title={t("deviceLink.title")}>
+        <p>{t("deviceLink.description")}</p>
+        <Button onClick={onLink}>{t("deviceLink.action")}</Button>
+      </Alert>
+    </div>
+  );
+};
+```
+
+---
+
+## I) API Multi-Providers
+
+### Structure
+
+```
+{NAV2}/api/
+├── index.ts                   ← Factory/Router
+├── types.ts                   ← Types communs API
+├── {provider1}/
+│   ├── index.ts               ← Barrel export provider
+│   ├── accounts.api.ts
+│   ├── redirections.api.ts
+│   └── tasks.api.ts
+└── {provider2}/
+    ├── index.ts
+    └── accounts.api.ts
+```
+
+### Factory pattern
+
+```typescript
+// emails/api/index.ts
+import * as mxplan from "./mxplan";
+import * as exchange from "./exchange";
+import * as emailpro from "./emailpro";
+import * as zimbra from "./zimbra";
+
+export type EmailProvider = "mxplan" | "exchange" | "emailpro" | "zimbra";
+
+const providers = { mxplan, exchange, emailpro, zimbra };
+
+export const getApi = (provider: EmailProvider) => providers[provider];
+
+// Usage dans un composant :
+// const api = getApi(service.type);
+// const accounts = await api.accounts.getAll(serviceName);
+```
+
+### API par provider
+
+```typescript
+// emails/api/mxplan/accounts.api.ts
+import { ovhGet, ovhPost, ovhDelete } from "@/services/api";
+import type { EmailAccount } from "../../types";
+
+const BASE = "/email/mxplan";
+
+export const getAll = (serviceName: string): Promise<string[]> =>
+  ovhGet(`${BASE}/${serviceName}/account`);
+
+export const get = (serviceName: string, email: string): Promise<EmailAccount> =>
+  ovhGet(`${BASE}/${serviceName}/account/${email}`);
+
+export const create = (serviceName: string, data: Partial<EmailAccount>): Promise<void> =>
+  ovhPost(`${BASE}/${serviceName}/account`, data);
+
+export const remove = (serviceName: string, email: string): Promise<void> =>
+  ovhDelete(`${BASE}/${serviceName}/account/${email}`);
+
+export const changePassword = (serviceName: string, email: string, password: string): Promise<void> =>
+  ovhPost(`${BASE}/${serviceName}/account/${email}/changePassword`, { password });
+```
+
+---
+
+## J) Workflow et Commandes
+
+### Vérification isolation
+
+```bash
+# ═══════════════════════════════════════════════════════════════════════════
+# TESTS D'ISOLATION (doivent retourner 0 résultat)
+# ═══════════════════════════════════════════════════════════════════════════
+
+NAV1="web-cloud"
+NAV2="access"
+
+# Test 1: Imports croisés entre tabs NAV3/NAV4
+echo "=== Test: imports croisés entre tabs ==="
+grep -rn "from.*\.\.\/.*Tab" src/pages/${NAV1}/${NAV2}/
+
+# Test 2: CSS croisé entre tabs
+echo "=== Test: CSS croisé entre tabs ==="
+grep -rn "import.*\.\.\/.*\.css" src/pages/${NAV1}/${NAV2}/ | grep -v "index.css\|styles.css\|${NAV2}.css"
+
+# Test 3: Imports depuis autre NAV2
+echo "=== Test: imports depuis autre NAV2 ==="
+grep -rn "from.*\.\.\/\.\.\/" src/pages/${NAV1}/${NAV2}/ | grep -v "services/api\|components/\|hooks/"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BUILD TEST
+# ═══════════════════════════════════════════════════════════════════════════
+cd /home/ubuntu/aiapp/frontend && npm run build:dev
+```
+
+### Création d'un nouveau tab
+
+```bash
+# Variables
+NAV1="web-cloud"
+NAV2="hosting"
+GROUP="expert"
+NAV3="newfeature"
+
+# Créer la structure
+mkdir -p src/pages/${NAV1}/${NAV2}/${GROUP}/${NAV3}
+
+# Créer les fichiers de base
+touch src/pages/${NAV1}/${NAV2}/${GROUP}/${NAV3}/{NewfeatureTab.tsx,NewfeatureTab.service.ts,NewfeatureTab.css}
+
+# Créer les traductions
+mkdir -p public/locales/{fr,en}/${NAV1}/${NAV2}
+touch public/locales/fr/${NAV1}/${NAV2}/${NAV3}.json
+touch public/locales/en/${NAV1}/${NAV2}/${NAV3}.json
+```
+
+---
+
+## K) Conventions de Nommage
+
+### Fichiers
+
+| Élément | Convention | Exemple |
+|---------|------------|---------|
+| Types NAV2 | `{nav2}.types.ts` | `hosting.types.ts` |
+| Service NAV2 | `{nav2}.service.ts` | `access.service.ts` |
+| Types NAV3 | `{nav3}.types.ts` | `connections.types.ts` |
+| Service NAV3 | `{nav3}.service.ts` | `connections.service.ts` |
+| Composant Tab | `{Nav3}Tab.tsx` | `FtpTab.tsx` |
+| Service Tab | `{Nav3}Tab.service.ts` | `FtpTab.service.ts` |
+| Styles Tab | `{Nav3}Tab.css` | `FtpTab.css` |
+| Helpers Tab | `{Nav3}Tab.helpers.ts` | `InvoicesTab.helpers.ts` |
+| Hooks Tab | `{Nav3}Tab.hooks.ts` | `SecurityTab.hooks.ts` |
+| Modale | `{Action}{Entity}Modal.tsx` | `CreateDatabaseModal.tsx` |
+| Warning | `Warning{State}.tsx` | `WarningDeviceLink.tsx` |
+| Hook NAV2 | `use{Entity}.ts` | `useEmailAccounts.ts` |
+| API provider | `{entity}.api.ts` | `accounts.api.ts` |
+
+### Classes CSS
+
+| Niveau | Préfixe | Exemples |
+|--------|---------|----------|
+| NAV2 layout | `.{nav2}-` | `.access-layout`, `.access-sidebar` |
+| NAV3 section | `.{nav3}-` | `.connections-header`, `.overthebox-panel` |
+| NAV4 tab | `.{nav4}-` | `.general-card`, `.line-status` |
+| Modale | `.modal-{name}-` | `.modal-rename-form` |
+| Warning | `.warning-{state}` | `.warning-device-link` |
+
+### Exports
+
+```typescript
+// Service - export nommé
+export const ftpService = { ... };
+
+// Composant - export nommé
+export const FtpTab: React.FC<Props> = () => { ... };
+
+// Barrel - re-export
+export { FtpTab } from "./FtpTab";
+export { ftpService } from "./FtpTab.service";
+```
+
+---
+
+## L) Checklist
+
+### Avant de commencer
+- [ ] Pattern identifié (TABS, GROUPS, FLAT, API)
+- [ ] Structure de dossiers créée
+- [ ] Types NAV2 existants ou à créer
+
+### Création des fichiers
+- [ ] `{Nav3}Tab.tsx` créé
+- [ ] `{Nav3}Tab.service.ts` créé
+- [ ] `{Nav3}Tab.css` créé avec préfixe
+- [ ] Traductions fr/en créées
+
+### Isolation vérifiée
+- [ ] Aucun import croisé entre tabs
+- [ ] Aucun import CSS croisé
+- [ ] Aucun import depuis autre NAV2
+- [ ] Types importés depuis NAV2 uniquement
+
+### Build
+- [ ] `npm run build:dev` réussi
+- [ ] Pas de warnings TypeScript
+- [ ] Test fonctionnel OK
+
+---
+
+## M) Résumé des Règles
+
+### Autorisé ✅
+
+1. Types partagés au niveau NAV2 (`{nav2}.types.ts`)
+2. Service partagé NAV2 pour discovery/utilities (`{nav2}.service.ts`)
+3. CSS layout NAV2 (`index.css`, `styles.css`)
+4. Types et service partagés NAV3 (pattern FLAT)
+5. Fichiers additionnels par tab (helpers, icons, hooks, modals)
+6. Warnings dans dossier dédié
+7. API par provider (pattern API)
+8. Duplication de code entre tabs (helpers identiques)
+
+### Interdit ❌
+
+1. Import croisé entre tabs NAV3/NAV4
+2. Import CSS croisé entre tabs
+3. Import depuis autre NAV2 (sauf global)
+4. Context/Provider partagé entre tabs
+5. Composants UI partagés au niveau NAV2 (sauf exceptions documentées)
+6. Variables CSS partagées au niveau NAV2
+
+### Toléré ⚠️
+
+1. Service NAV2 si limité à discovery/utilities
+2. CSS NAV2 si limité à layout/grid
+3. Service NAV3 si tabs partagent la même entité (pattern FLAT)
+4. Modales à la racine NAV2 si partagées entre plusieurs tabs
+
+---
+
+================================================================================
+FIN PROMPT SPLIT v2.2
+================================================================================

@@ -2,53 +2,61 @@
 // WORDPRESS - Onboarding (aucun service)
 // ============================================================
 
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+type OfferType = 'start' | 'pro' | 'business';
+
 interface OnboardingProps {
-  onCreate?: () => void;
+  onCreate?: (offer?: OfferType) => void;
   onImport?: () => void;
 }
 
 export function Onboarding({ onCreate, onImport }: OnboardingProps) {
   const { t } = useTranslation('web-cloud/wordpress/index');
+  const [selectedOffer, setSelectedOffer] = useState<OfferType>('pro'); // Pro par défaut (recommandé)
 
   const handleOrder = () => {
     window.open('https://www.ovhcloud.com/fr/web-hosting/wordpress-hosting/', '_blank');
   };
 
+  const handleCreate = () => {
+    if (onCreate) onCreate(selectedOffer);
+  };
+
   return (
-    <div className="onboarding-page">
-      <div className="onboarding-content">
-        <div className="onboarding-icon">🌐</div>
+    <div className="wp-onboarding-container">
+      <div className="wp-onboarding-content">
+        <div className="wp-onboarding-icon">🌐</div>
         <h1>{t('onboarding.title')}</h1>
-        <p className="onboarding-description">{t('onboarding.description')}</p>
+        <p className="wp-onboarding-description">{t('onboarding.description')}</p>
 
         {/* Features */}
-        <div className="onboarding-features">
-          <div className="feature-item">
-            <span className="feature-icon">🚀</span>
-            <div className="feature-text">
+        <div className="wp-onboarding-features">
+          <div className="wp-feature-item">
+            <span className="wp-feature-icon">🚀</span>
+            <div className="wp-feature-text">
               <strong>{t('onboarding.features.performance')}</strong>
               <span>{t('onboarding.features.performanceDesc')}</span>
             </div>
           </div>
-          <div className="feature-item">
-            <span className="feature-icon">🔒</span>
-            <div className="feature-text">
+          <div className="wp-feature-item">
+            <span className="wp-feature-icon">🔒</span>
+            <div className="wp-feature-text">
               <strong>{t('onboarding.features.security')}</strong>
               <span>{t('onboarding.features.securityDesc')}</span>
             </div>
           </div>
-          <div className="feature-item">
-            <span className="feature-icon">🔄</span>
-            <div className="feature-text">
+          <div className="wp-feature-item">
+            <span className="wp-feature-icon">🔄</span>
+            <div className="wp-feature-text">
               <strong>{t('onboarding.features.updates')}</strong>
               <span>{t('onboarding.features.updatesDesc')}</span>
             </div>
           </div>
-          <div className="feature-item">
-            <span className="feature-icon">💾</span>
-            <div className="feature-text">
+          <div className="wp-feature-item">
+            <span className="wp-feature-icon">💾</span>
+            <div className="wp-feature-text">
               <strong>{t('onboarding.features.backups')}</strong>
               <span>{t('onboarding.features.backupsDesc')}</span>
             </div>
@@ -56,44 +64,53 @@ export function Onboarding({ onCreate, onImport }: OnboardingProps) {
         </div>
 
         {/* Offers */}
-        <div className="onboarding-offers">
+        <div className="wp-onboarding-offers">
           <h3>{t('onboarding.offers.title')}</h3>
-          <div className="offers-grid">
-            <div className="offer-card">
-              <div className="offer-name">Start</div>
-              <div className="offer-price">4,99 €/mois</div>
-              <ul className="offer-features">
-                <li>10 Go stockage</li>
-                <li>SSL inclus</li>
-                <li>Backup quotidien</li>
+          <div className="wp-offers-grid">
+            <div
+              className={`wp-offer-card ${selectedOffer === 'start' ? 'selected' : ''}`}
+              onClick={() => setSelectedOffer('start')}
+            >
+              <div className="wp-offer-name">{t('onboarding.offers.start.title')}</div>
+              <div className="wp-offer-price">{t('onboarding.offers.start.price')}</div>
+              <ul className="wp-offer-features">
+                {(t('onboarding.offers.start.features', { returnObjects: true }) as string[]).map((feature, i) => (
+                  <li key={i}>{feature}</li>
+                ))}
               </ul>
             </div>
-            <div className="offer-card recommended">
-              <div className="offer-badge">{t('onboarding.offers.recommended')}</div>
-              <div className="offer-name">Pro</div>
-              <div className="offer-price">9,99 €/mois</div>
-              <ul className="offer-features">
-                <li>50 Go stockage</li>
-                <li>SSL + CDN</li>
-                <li>Backup quotidien</li>
+            <div
+              className={`wp-offer-card recommended ${selectedOffer === 'pro' ? 'selected' : ''}`}
+              onClick={() => setSelectedOffer('pro')}
+            >
+              <div className="wp-offer-badge">{t('onboarding.offers.recommended')}</div>
+              <div className="wp-offer-name">{t('onboarding.offers.pro.title')}</div>
+              <div className="wp-offer-price">{t('onboarding.offers.pro.price')}</div>
+              <ul className="wp-offer-features">
+                {(t('onboarding.offers.pro.features', { returnObjects: true }) as string[]).map((feature, i) => (
+                  <li key={i}>{feature}</li>
+                ))}
               </ul>
             </div>
-            <div className="offer-card">
-              <div className="offer-name">Business</div>
-              <div className="offer-price">19,99 €/mois</div>
-              <ul className="offer-features">
-                <li>100 Go stockage</li>
-                <li>SSL + CDN + Staging</li>
-                <li>Backup horaire</li>
+            <div
+              className={`wp-offer-card ${selectedOffer === 'business' ? 'selected' : ''}`}
+              onClick={() => setSelectedOffer('business')}
+            >
+              <div className="wp-offer-name">{t('onboarding.offers.business.title')}</div>
+              <div className="wp-offer-price">{t('onboarding.offers.business.price')}</div>
+              <ul className="wp-offer-features">
+                {(t('onboarding.offers.business.features', { returnObjects: true }) as string[]).map((feature, i) => (
+                  <li key={i}>{feature}</li>
+                ))}
               </ul>
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="onboarding-actions">
+        <div className="wp-onboarding-actions">
           {onCreate && (
-            <button className="wp-btn wp-btn-primary wp-btn-lg" onClick={onCreate}>
+            <button className="wp-btn wp-btn-primary wp-btn-lg" onClick={handleCreate}>
               + {t('onboarding.createSite')}
             </button>
           )}
@@ -107,7 +124,7 @@ export function Onboarding({ onCreate, onImport }: OnboardingProps) {
           </button>
         </div>
 
-        <div className="onboarding-help">
+        <div className="wp-onboarding-help">
           <a
             href="https://help.ovhcloud.com/csm/fr-web-hosting-wordpress"
             target="_blank"

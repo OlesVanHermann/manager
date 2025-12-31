@@ -1,22 +1,23 @@
 // ============================================================
 // COMPOSANT - RightPanelHeader (Header du panel droit)
+// Adapté pour NAV3 [General] [Packs]
 // ============================================================
 
 import { useTranslation } from "react-i18next";
-import { ViewMode, EmailDomain, EmailLicense } from "./types";
+import { Nav3Mode, EmailDomain, EmailLicense } from "./types";
 import { OFFER_CONFIG } from "./emails.constants";
 
 interface RightPanelHeaderProps {
-  viewMode: ViewMode;
+  nav3Mode: Nav3Mode;
   selectedDomain: EmailDomain | null;
   selectedLicense: EmailLicense | null;
 }
 
 /** Header du panel droit avec infos domaine ou licence. */
-export function RightPanelHeader({ viewMode, selectedDomain, selectedLicense }: RightPanelHeaderProps) {
+export function RightPanelHeader({ nav3Mode, selectedDomain, selectedLicense }: RightPanelHeaderProps) {
   const { t } = useTranslation("web-cloud/emails/index");
 
-  if (viewMode === "domain" && selectedDomain) {
+  if (nav3Mode === "general" && selectedDomain) {
     return (
       <div className="right-panel-header">
         <div className="right-panel-header-main">
@@ -54,7 +55,7 @@ export function RightPanelHeader({ viewMode, selectedDomain, selectedLicense }: 
     );
   }
 
-  if (viewMode === "license" && selectedLicense) {
+  if (nav3Mode === "packs" && selectedLicense) {
     const config = OFFER_CONFIG[selectedLicense.offer];
     return (
       <div className="right-panel-header">

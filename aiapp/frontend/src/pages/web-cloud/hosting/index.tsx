@@ -4,49 +4,61 @@
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense, startTransition } from "react";
 import { useTranslation } from "react-i18next";
-import { generalService } from "./tabs/general/GeneralTab.service";
+import { generalService } from "./general/general/GeneralTab.service";
 import type { Hosting } from "./hosting.types";
 // Nav2Bar est dans le parent
 import "./styles.css";
 
 // ---------- LAZY LOADED TABS ----------
 const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
-  general: React.lazy(() => import("./tabs/general")),
-  multisite: React.lazy(() => import("./tabs/multisite")),
-  ftp: React.lazy(() => import("./tabs/ftp")),
-  database: React.lazy(() => import("./tabs/database")),
-  clouddb: React.lazy(() => import("./tabs/clouddb")),
-  modules: React.lazy(() => import("./tabs/modules")),
-  cron: React.lazy(() => import("./tabs/cron")),
-  envvars: React.lazy(() => import("./tabs/envvars")),
-  runtimes: React.lazy(() => import("./tabs/runtimes")),
-  ssl: React.lazy(() => import("./tabs/ssl")),
-  cdn: React.lazy(() => import("./tabs/cdn")),
-  boost: React.lazy(() => import("./tabs/boost")),
-  localseo: React.lazy(() => import("./tabs/localseo")),
-  emails: React.lazy(() => import("./tabs/emails")),
-  logs: React.lazy(() => import("./tabs/logs")),
-  tasks: React.lazy(() => import("./tabs/tasks")),
+  // NAV3: [Général]
+  general: React.lazy(() => import("./general/general")),
+  statistics: React.lazy(() => import("./general/statistics")),
+  indy: React.lazy(() => import("./general/indy")),
+  offer: React.lazy(() => import("./general/offer")),
+  modules: React.lazy(() => import("./general/modules")),
+  logs: React.lazy(() => import("./general/logs")),
+  localseo: React.lazy(() => import("./general/seo")),
+  // NAV3: [Sites]
+  multisite: React.lazy(() => import("./sites/multisite")),
+  ssl: React.lazy(() => import("./sites/ssl")),
+  // NAV3: [Expert]
+  ftp: React.lazy(() => import("./expert/ftp")),
+  database: React.lazy(() => import("./expert/database")),
+  clouddb: React.lazy(() => import("./expert/clouddb")),
+  cdn: React.lazy(() => import("./expert/cdn")),
+  boost: React.lazy(() => import("./expert/boost")),
+  emails: React.lazy(() => import("./expert/emails")),
+  envvars: React.lazy(() => import("./expert/envvars")),
+  runtimes: React.lazy(() => import("./expert/runtimes")),
+  cron: React.lazy(() => import("./expert/cron")),
+  tasks: React.lazy(() => import("./expert/tasks")),
 };
 
-// ---------- TAB DEFINITIONS (NAV3) ----------
+// ---------- TAB DEFINITIONS (NAV3/NAV4) ----------
 const TABS = [
-  { id: "general", label: "Home" },
-  { id: "multisite", label: "Multisite" },
-  { id: "ftp", label: "FTP-SSH" },
-  { id: "modules", label: "Modules" },
-  { id: "tasks", label: "Tâches" },
-  { id: "emails", label: "Emails" },
-  { id: "envvars", label: "Variables" },
-  { id: "runtimes", label: "Runtimes" },
-  { id: "ssl", label: "SSL" },
-  { id: "cdn", label: "CDN" },
-  { id: "boost", label: "Boost" },
-  { id: "logs", label: "Logs" },
-  { id: "database", label: "BDD" },
-  { id: "clouddb", label: "BDD Cloud" },
-  { id: "cron", label: "Cron" },
-  { id: "localseo", label: "SEO" },
+  // NAV3: [Général]
+  { id: "general", label: "Home", group: "general" },
+  { id: "statistics", label: "Statistiques", group: "general" },
+  { id: "indy", label: "Indy", group: "general" },
+  { id: "offer", label: "Offre", group: "general" },
+  { id: "modules", label: "Modules", group: "general" },
+  { id: "logs", label: "Logs", group: "general" },
+  { id: "localseo", label: "SEO", group: "general" },
+  // NAV3: [Sites]
+  { id: "multisite", label: "Multisite", group: "sites" },
+  { id: "ssl", label: "SSL", group: "sites" },
+  // NAV3: [Expert]
+  { id: "ftp", label: "FTP-SSH", group: "expert" },
+  { id: "database", label: "BDD", group: "expert" },
+  { id: "clouddb", label: "BDD Cloud", group: "expert" },
+  { id: "cdn", label: "CDN", group: "expert" },
+  { id: "boost", label: "Boost", group: "expert" },
+  { id: "emails", label: "Emails", group: "expert" },
+  { id: "envvars", label: "Variables", group: "expert" },
+  { id: "runtimes", label: "Runtimes", group: "expert" },
+  { id: "cron", label: "Cron", group: "expert" },
+  { id: "tasks", label: "Tâches", group: "expert" },
 ];
 
 // ============================================================

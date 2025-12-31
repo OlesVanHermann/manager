@@ -56,11 +56,9 @@ class EmailsPageService {
 
   /** Liste les services Zimbra. */
   async listZimbra(): Promise<string[]> {
-    try {
-      return await ovhGet<string[]>("/email/zimbra");
-    } catch {
-      return [];
-    }
+    // Désactivé - l'API /email/zimbra n'existe pas pour tous les comptes
+    // TODO: Réactiver quand Zimbra sera supporté
+    return [];
   }
 
   /** Charge tous les counts en parallèle. */

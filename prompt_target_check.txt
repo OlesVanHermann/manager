@@ -1,0 +1,339 @@
+################################################################################
+#                         prompt_target_check.txt
+#                    Vérification Layout vs prompt_target.txt
+################################################################################
+#
+# OBJECTIF: Analyser tous les CSS/layouts du New Manager pour vérifier
+#           leur conformité avec les specs de prompt_target.txt
+#
+# USAGE: Donner ce prompt à Claude avec accès au code source
+#
+################################################################################
+
+Tu es un expert en CSS et layout. Ta mission est d'analyser le code source
+du New Manager pour vérifier que TOUS les layouts respectent exactement
+les dimensions définies dans prompt_target.txt.
+
+##############################################################################
+# 1. SPECS DE RÉFÉRENCE (TOLÉRANCE: 0px)
+##############################################################################
+
+### Structure Verticale (Y)
+```
+┌──────────────────────────────────────────────────────────────┐ y=0
+│                        NAV1 (50px)                           │
+│              Header bleu OVH - items univers                 │
+├──────────────────────────────────────────────────────────────┤ y=50
+│                        NAV2 (40px)                           │
+│              Sous-header blanc - items section               │
+├──────────────────────────────────────────────────────────────┤ y=90
+│                      GAP (15px)                              │
+├──────────────────────────────────────────────────────────────┤ y=105
+│   ┌──────────────────────────────────────────────────────┐   │
+│   │              LEFT PANEL + RIGHT PANEL                │   │
+│   └──────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Structure Horizontale (X)
+```
+│24px│◄────── 280px ──────►│16px│◄────────── flex:1 ──────────►│24px│
+│    │     LEFT PANEL      │    │         RIGHT PANEL          │    │
+x=0 x=24                 x=304 x=320                        x=1416 x=1440
+```
+
+### Valeurs EXACTES attendues
+
+| Élément                  | Propriété      | Valeur     | Tolérance |
+|--------------------------|----------------|------------|-----------|
+| NAV1 (header univers)    | height         | 50px       | 0         |
+| NAV2 (tabs sections)     | height         | 40px       | 0         |
+| Gap NAV2→Content         | padding-top    | 15px       | 0         |
+| Margin gauche            | padding-left   | 24px       | 0         |
+| Margin droite            | padding-right  | 24px       | 0         |
+| LEFT PANEL (sidebar)     | width          | 280px      | 0         |
+| LEFT PANEL (sidebar)     | min-width      | 280px      | 0         |
+| LEFT PANEL (sidebar)     | max-width      | 280px      | 0         |
+| Gap LEFT↔RIGHT           | gap            | 16px       | 0         |
+| RIGHT PANEL              | flex           | 1          | -         |
+
+### Valeurs INTERDITES (causent des décalages)
+
+| Propriété      | Valeur interdite | Contexte           | Problème              |
+|----------------|------------------|--------------------|-----------------------|
+| padding        | 24px (uniforme)  | content-area       | padding-top doit être 15px |
+| padding-top    | 20px, 24px, 30px | content-area       | Décalage vertical     |
+| width          | 240px, 260px     | sidebar            | Trop étroit (-40px/-20px) |
+| width          | 300px, 320px     | sidebar            | Trop large (+20px/+40px) |
+| gap            | 8px, 12px, 20px  | split container    | Gap non conforme      |
+| height         | 48px, 52px       | nav1               | NAV1 mal dimensionné  |
+| height         | 38px, 44px       | nav2               | NAV2 mal dimensionné  |
+
+##############################################################################
+# 2. MÉTHODOLOGIE D'ANALYSE
+##############################################################################
+
+### Étape 1: Lister les fichiers CSS à analyser
+```bash
+find /home/ubuntu/aiapp/frontend/src -name "*.css" -type f | grep -v node_modules
+```
+
+### Étape 2: Identifier les conteneurs de layout
+Chercher les sélecteurs suivants dans chaque fichier CSS:
+
+**Conteneurs principaux (vérifier padding-top):**
+- .*-page { }
+- .*-container { }
+- .*-detail-container { }
+- .*-split { }
+- .content-area { }
+- .main-content { }
+- .page-content { }
+
+**Sidebars (vérifier width: 280px):**
+- .*-sidebar { }
+- .*-left-panel { }
+- .left-panel { }
+- .sidebar { }
+- .sidecar { }
+
+**Split containers (vérifier gap: 16px):**
+- .*-split { }
+- .*-panels { }
+- .*-container { } (avec display: flex)
+
+### Étape 3: Pour chaque fichier, extraire et vérifier
+
+```bash
+# Pattern de recherche
+grep -E "(padding|gap|width|height|min-width|max-width)\s*:" fichier.css
+```
+
+### Étape 4: Comparer avec les specs
+
+Pour chaque propriété trouvée, vérifier:
+1. La valeur est-elle exactement celle attendue?
+2. La valeur est-elle dans la liste des valeurs interdites?
+3. Le contexte (sélecteur) correspond-il à un élément de layout?
+
+##############################################################################
+# 3. FICHIERS PRIORITAIRES À VÉRIFIER
+##############################################################################
+
+Ces fichiers définissent les layouts principaux de chaque section:
+
+### Global
+- src/index.css (styles globaux, NAV1, NAV2)
+- src/App.css (conteneur principal)
+
+### Web Cloud - Par section
+- src/pages/web-cloud/index.css
+- src/pages/web-cloud/domains/domains.css
+- src/pages/web-cloud/hosting/styles.css
+- src/pages/web-cloud/emails/styles.css
+- src/pages/web-cloud/wordpress/wordpress.css
+- src/pages/web-cloud/telecom/index.css
+- src/pages/web-cloud/access/index.css
+
+### Composants partagés
+- src/pages/web-cloud/emails/components/LeftPanel/LeftPanel.css
+- Tout fichier contenant "sidebar", "split", "panel" dans le nom
+
+##############################################################################
+# 4. FORMAT DU RAPPORT
+##############################################################################
+
+Pour chaque écart trouvé, rapporter:
+
+```
+🔴 ÉCART DÉTECTÉ
+   Fichier:    [chemin relatif]
+   Sélecteur:  [.classe ou #id]
+   Propriété:  [nom de la propriété]
+   Valeur:     [valeur actuelle]
+   Attendu:    [valeur selon specs]
+   Écart:      [+/-Xpx]
+   Impact:     [description de l'impact visuel]
+```
+
+### Résumé final
+
+```
+================================================================================
+📋 RAPPORT prompt_target_check
+================================================================================
+
+📁 Fichiers analysés:     [N]
+✅ Fichiers conformes:    [N]
+🔴 Fichiers avec écarts:  [N]
+⚠️  Total écarts:          [N]
+
+ÉCARTS PAR CATÉGORIE:
+  • padding-top incorrect:  [N]
+  • sidebar width incorrect: [N]
+  • gap incorrect:          [N]
+  • autres:                 [N]
+
+================================================================================
+```
+
+##############################################################################
+# 5. CORRECTIONS À GÉNÉRER
+##############################################################################
+
+Pour chaque écart, générer la correction CSS:
+
+```css
+/* ========== [fichier.css] ========== */
+
+/* AVANT (incorrect) */
+.selecteur {
+    propriété: valeur_incorrecte;
+}
+
+/* APRÈS (conforme prompt_target.txt) */
+.selecteur {
+    propriété: valeur_correcte; /* [explication] */
+}
+```
+
+### Patterns de correction courants
+
+**padding: 24px → padding: 15px 24px 24px 24px**
+```css
+/* Le padding-top doit être 15px (gap NAV2→Content) */
+.content-area {
+    padding: 15px 24px 24px 24px; /* top right bottom left */
+}
+```
+
+**width: Xpx → width: 280px (sidebar)**
+```css
+/* Sidebar doit faire exactement 280px */
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    flex: 0 0 280px; /* Empêche le flex de modifier la taille */
+}
+```
+
+**gap: Xpx → gap: 16px (split container)**
+```css
+/* Gap entre LEFT et RIGHT panels = 16px */
+.hosting-split {
+    display: flex;
+    gap: 16px;
+}
+```
+
+##############################################################################
+# 6. CHECKLIST DE VÉRIFICATION
+##############################################################################
+
+Avant de valider un fichier CSS comme conforme, vérifier:
+
+□ NAV1 a height: 50px (si défini dans ce fichier)
+□ NAV2 a height: 40px (si défini dans ce fichier)
+□ Content area a padding-top: 15px (pas 24px uniforme)
+□ Margins latérales sont 24px
+□ Tous les sidebars ont width: 280px
+□ Tous les split containers ont gap: 16px
+□ Aucune valeur interdite n'est présente
+
+##############################################################################
+# 7. COMMANDES UTILES
+##############################################################################
+
+### Trouver tous les padding suspects
+```bash
+grep -rn "padding:\s*24px" --include="*.css" src/
+grep -rn "padding-top:\s*[^1]" --include="*.css" src/ | grep -v "padding-top: 15"
+```
+
+### Trouver tous les sidebars avec mauvaise largeur
+```bash
+grep -rn "sidebar" --include="*.css" src/ | grep "width"
+grep -rn "left-panel" --include="*.css" src/ | grep "width"
+```
+
+### Trouver tous les gaps incorrects
+```bash
+grep -rn "gap:\s*[^1]" --include="*.css" src/ | grep -v "gap: 16"
+```
+
+### Trouver les heights de NAV
+```bash
+grep -rn "height:\s*4[^0]px\|height:\s*5[^0]px" --include="*.css" src/
+```
+
+##############################################################################
+# 8. EXEMPLE DE SORTIE ATTENDUE
+##############################################################################
+
+```
+================================================================================
+📋 ANALYSE prompt_target_check
+================================================================================
+
+📄 Analyse de: pages/web-cloud/domains/domains.css
+
+   Conteneur trouvé: .dom-detail-container
+   ├─ padding: 24px
+   │  └─ 🔴 ÉCART: padding-top=24px, attendu=15px (+9px)
+   └─ gap: 16px ✅
+
+   Sidebar trouvé: .dom-sidebar
+   └─ width: 280px ✅
+
+📄 Analyse de: pages/web-cloud/access/index.css
+
+   Sidebar trouvé: .access-left-panel
+   ├─ width: 320px
+   │  └─ 🔴 ÉCART: width=320px, attendu=280px (+40px)
+   └─ min-width: 320px
+      └─ 🔴 ÉCART: min-width=320px, attendu=280px (+40px)
+
+================================================================================
+🔧 CORRECTIONS À APPLIQUER
+================================================================================
+
+/* pages/web-cloud/domains/domains.css */
+.dom-detail-container {
+    padding: 15px 24px 24px 24px; /* était: 24px */
+}
+
+/* pages/web-cloud/access/index.css */
+.access-left-panel {
+    width: 280px;     /* était: 320px */
+    min-width: 280px; /* était: 320px */
+}
+
+================================================================================
+📊 RÉSUMÉ
+================================================================================
+
+Fichiers analysés:  148
+Écarts trouvés:     7
+  • padding-top:    2
+  • sidebar width:  3
+  • gap:            2
+
+Status: ❌ NON CONFORME - Corrections requises
+================================================================================
+```
+
+##############################################################################
+# 9. INSTRUCTIONS FINALES
+##############################################################################
+
+1. Analyse TOUS les fichiers CSS du projet
+2. Identifie TOUS les écarts par rapport aux specs
+3. Génère un rapport complet avec:
+   - Liste des écarts par fichier
+   - Corrections CSS à appliquer
+   - Résumé quantitatif
+4. Propose les commandes sed/patch pour corriger automatiquement
+5. Ne laisse passer AUCUN écart, même de 1px
+
+RAPPEL: Tolérance = 0px. Le layout doit être PIXEL PERFECT.

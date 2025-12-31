@@ -57,11 +57,22 @@ class AccessService {
   private mapTechType(type: string): string {
     const map: Record<string, string> = {
       'adsl': 'ADSL',
+      'adsl2': 'ADSL2+',
+      'adsl2+': 'ADSL2+',
       'vdsl': 'VDSL2',
+      'vdsl2': 'VDSL2',
+      'sdsl': 'SDSL',
       'ftth': 'FTTH',
-      'sdsl': 'ADSL',
+      'ftto': 'FTTO',
+      'ftte': 'FTTE',
+      'fiber': 'FTTH',
+      '4g': '4G/LTE',
+      'lte': '4G/LTE',
+      '5g': '5G',
+      'satellite': 'SAT',
+      'sat': 'SAT',
     };
-    return map[type?.toLowerCase()] || 'ADSL';
+    return map[type?.toLowerCase()] || type?.toUpperCase() || 'xDSL';
   }
 }
 

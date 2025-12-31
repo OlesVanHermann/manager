@@ -1,0 +1,1193 @@
+================================================================================
+PROMPT TARGET - Web Cloud > Hébergement
+================================================================================
+
+| Element                            | Valeur                                                     |
+|------------------------------------|------------------------------------------------------------|
+| **Prompt**                         | /home/ubuntu/prompt_target.web-cloud.hosting.txt           |
+| **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/hosting/         |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/hosting/|
+
+Version: v2 (2025-12-31) - Structure NAV3/NAV4 mise à jour
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+❌ INTERDIT : Afficher le SVG dans la conversation
+✅ OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. ARBORESCENCE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Web Cloud (x=510)
+│
+└── NAV2: Hébergement (indicateur sous "Hébergement")
+    │
+    ├── /web-cloud/hebergement (INDEX)
+    │   │
+    │   │   LEFT: Liste hébergements (sidebar)
+    │   │   RIGHT: Détails hébergement sélectionné
+    │   │
+    │   └── NAV3: [Général] [Sites] [Expert] (sélecteur dans sidebar)
+    │       │
+    │       │   ┌─────────────────────────────────────┐
+    │       │   │  [Général]  [Sites]  [Expert]       │  ← NAV3 selector
+    │       │   ├─────────────────────────────────────┤
+    │       │   │  🔍 Rechercher...                   │
+    │       │   └─────────────────────────────────────┘
+    │       │
+    │       ├── NAV3: [Général] - Vue par défaut (7 tabs + 2 liens)
+    │       │   │
+    │       │   ├── NAV4: Home (/general)
+    │       │   │   └── NAV5: [Général] | Statistiques | Indy | Offre | OvhConfig | Migration | Résiliation
+    │       │   │       ├── Général (défaut)
+    │       │   │       │   └── ACTIONS: [✎ Renommer] [🔑 Config SSH] [📤 Restaurer snapshot] [⚙ OvhConfig]
+    │       │   │       ├── Statistiques (/statistics)
+    │       │   │       │   └── ACTIONS: [↻ Rafraîchir] [📥 Exporter]
+    │       │   │       ├── Indy (/indy)
+    │       │   │       │   └── ACTIONS: [+ Ajouter domaine indépendant]
+    │       │   │       ├── Offre (/offer)
+    │       │   │       │   └── ACTIONS: [↑ Changer d'offre]
+    │       │   │       ├── OvhConfig (/ovhconfig)
+    │       │   │       │   └── ACTIONS: [⚙ Modifier configuration]
+    │       │   │       ├── Migration (/migration)
+    │       │   │       │   └── ACTIONS: [🚀 Lancer migration]
+    │       │   │       └── Résiliation (/terminate)
+    │       │   │           └── ACTIONS: [× Résilier hébergement]
+    │       │   │
+    │       │   ├── NAV4: Modules (/modules)
+    │       │   │   └── ACTIONS: [+ Installer module] [🔑 Changer MDP admin] [× Supprimer]
+    │       │   │
+    │       │   ├── NAV4: FTP-SSH (/ftp) ⟷ aussi dans [Sites]
+    │       │   │   └── ACTIONS: [+ Créer utilisateur] [✎ Modifier] [🔑 Changer MDP] [× Supprimer]
+    │       │   │
+    │       │   ├── NAV4: BDD (/database) ⟷ aussi dans [Sites]
+    │       │   │   └── NAV5: [Liste] | Statistiques | Dumps
+    │       │   │       ├── Liste (défaut)
+    │       │   │       │   └── ACTIONS: [+ Créer BDD] [✎ Modifier] [🔑 Changer MDP] [📤 Importer SQL]
+    │       │   │       │                 [📋 Copier] [📥 Dump] [↻ Restaurer] [× Supprimer]
+    │       │   │       ├── Statistiques (/database-statistics)
+    │       │   │       │   └── ACTIONS: [↻ Rafraîchir]
+    │       │   │       └── Dumps (/database-dumps)
+    │       │   │           └── ACTIONS: [📥 Télécharger] [↻ Restaurer] [× Supprimer]
+    │       │   │
+    │       │   ├── NAV4: Logs (/logs)
+    │       │   │   └── NAV5: [Logs OVH] | User Logs
+    │       │   │       ├── Logs OVH (défaut)
+    │       │   │       │   └── ACTIONS: [📥 Télécharger] [↻ Rafraîchir]
+    │       │   │       └── User Logs (/user-logs)
+    │       │   │           └── ACTIONS: [+ Créer accès logs] [🔑 Changer MDP] [× Supprimer]
+    │       │   │
+    │       │   ├── NAV4: CDN (/cdn) ⟷ aussi dans [Expert]
+    │       │   │   └── NAV5: [État] | Paramètres
+    │       │   │       ├── État (défaut)
+    │       │   │       │   └── ACTIONS: [✓ Activer] [× Désactiver] [↻ Vider cache]
+    │       │   │       └── Paramètres (/cdn-settings)
+    │       │   │           └── ACTIONS: [⚙ Configurer règles]
+    │       │   │
+    │       │   ├── NAV4: SEO (/localseo)
+    │       │   │   └── ACTIONS: [+ Commander Local SEO] [→ Gérer]
+    │       │   │
+    │       │   ├── [→] Sites → Bascule vers NAV3 [Sites]
+    │       │   └── [→] Expert → Bascule vers NAV3 [Expert]
+    │       │
+    │       ├── NAV3: [Sites] - Gestion domaines (5 tabs)
+    │       │   │
+    │       │   ├── NAV4: Multisite (/multisite)
+    │       │   │   └── ACTIONS: [+ Ajouter domaine] [✎ Modifier] [🔍 Diagnostic] [↻ Vider CDN] [× Supprimer]
+    │       │   │
+    │       │   ├── NAV4: SSL (/ssl)
+    │       │   │   └── ACTIONS: [+ Commander SSL] [📤 Importer] [↻ Régénérer] [× Supprimer]
+    │       │   │
+    │       │   ├── NAV4: FTP-SSH (/ftp) ⟷ aussi dans [Général]
+    │       │   │   └── ACTIONS: [+ Créer utilisateur] [✎ Modifier] [🔑 Changer MDP] [× Supprimer]
+    │       │   │
+    │       │   ├── NAV4: BDD (/database) ⟷ aussi dans [Général]
+    │       │   │   └── (voir NAV5 dans NAV3 Général)
+    │       │   │
+    │       │   └── NAV4: CloudDb (/clouddb) ⟷ aussi dans [Expert]
+    │       │       └── ACTIONS: [+ Créer CloudDb] [✎ Configurer] [📊 Statistiques] [× Supprimer]
+    │       │       └── Note: MIGRATION - L'ancien "private-database" (/web-cloud/private-database)
+    │       │                 est intégré en NAV4 comme "CloudDb" (/web-cloud/hosting/CloudDb)
+    │       │
+    │       └── NAV3: [Expert] - Configuration avancée (8 tabs)
+    │           │
+    │           ├── NAV4: CDN (/cdn) ⟷ aussi dans [Général]
+    │           │   └── (voir NAV5 dans NAV3 Général)
+    │           │
+    │           ├── NAV4: CloudDb (/clouddb) ⟷ aussi dans [Sites]
+    │           │   └── ACTIONS: [+ Créer CloudDb] [✎ Configurer] [📊 Statistiques] [× Supprimer]
+    │           │
+    │           ├── NAV4: Boost (/boost)
+    │           │   └── ACTIONS: [✓ Activer boost] [× Désactiver boost]
+    │           │
+    │           ├── NAV4: Emails (/emails)
+    │           │   └── ACTIONS: [⚙ Configurer] [🚫 Bloquer/Débloquer] [↻ Purger]
+    │           │
+    │           ├── NAV4: Variables (/envvars)
+    │           │   └── ACTIONS: [+ Ajouter variable] [✎ Modifier] [× Supprimer]
+    │           │
+    │           ├── NAV4: Runtimes (/runtimes)
+    │           │   └── ACTIONS: [+ Créer runtime] [✎ Modifier] [× Supprimer]
+    │           │
+    │           ├── NAV4: Cron (/cron)
+    │           │   └── ACTIONS: [+ Créer cron] [✎ Modifier] [× Supprimer]
+    │           │
+    │           └── NAV4: Taches (/tasks)
+    │               └── ACTIONS: [↻ Rafraîchir]
+```
+
+### RÉCAPITULATIF NIVEAUX NAV
+
+| Niveau | Visuel | Position | Exemples Hosting |
+|--------|--------|----------|------------------|
+| **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
+| **NAV2** | Sous-header blanc 40px | y=50 | Hébergement (x=240) |
+| **NAV3** | Sélecteur [Général] [Sites] [Expert] | Sidebar, au-dessus recherche | Filtre les NAV4 affichées |
+| **NAV4** | Tabs right panel (selon NAV3) | y=38 dans right panel | Général: 7+2, Sites: 5, Expert: 8 |
+| **NAV5** | Sous-tabs contextuels | y=70 dans right panel | Statistiques, Paramètres CDN... |
+| **ACTIONS** | Boutons header + inline + modals | Variable | +, ✎, 🔑, ×, ↻, 📥, 📤 |
+
+### STRUCTURE SIDEBAR AVEC GROUPES
+
+```
+┌─────────────────────────────────────┐
+│  [Général]  [Sites]  [Expert]       │  ← GROUPE selector (nouveau)
+├─────────────────────────────────────┤
+│  🔍 Rechercher...                   │
+├─────────────────────────────────────┤
+│  Filtrer par statut ▾   N services  │
+├─────────────────────────────────────┤
+│  🌐  service1.ovh.net        [Actif]│
+│      Performance 1                  │
+├─────────────────────────────────────┤
+│  🌐  service2.ovh.net        [Actif]│
+│      Perso                          │
+├─────────────────────────────────────┤
+│  Page 1/N    ‹  1  2  3  ›          │
+└─────────────────────────────────────┘
+```
+
+##############################################################################
+# 2. NAV1 - HEADER OVH
+##############################################################################
+
+Item actif: "Web Cloud" (x=510)
+
+```svg
+<!-- NAV1 - Web Cloud actif -->
+<rect width="1440" height="50" class="bg-header"/>
+<text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>
+<text x="110" y="32" class="text-white" font-size="14" opacity="0.7">Public Cloud</text>
+<text x="210" y="32" class="text-white" font-size="14" opacity="0.7">Hosted Private Cloud</text>
+<text x="370" y="32" class="text-white" font-size="14" opacity="0.7">Bare Metal Cloud</text>
+<text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+<rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
+<text x="620" y="32" class="text-white" font-size="14" opacity="0.7">Network</text>
+<text x="700" y="32" class="text-white" font-size="14" opacity="0.7">IAM / Securite</text>
+<text x="810" y="32" class="text-white" font-size="14" opacity="0.7">Licences</text>
+<!-- Badge utilisateur -->
+<rect x="1280" y="12" width="140" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
+<rect x="1285" y="15" width="26" height="20" rx="10" fill="#DEF7EC"/>
+<text x="1292" y="29" fill="#03543F" font-size="10" font-weight="600">OK</text>
+<text x="1320" y="29" class="text-white" font-size="12">{nicHandle}</text>
+```
+
+##############################################################################
+# 3. NAV2 - WEB CLOUD
+##############################################################################
+
+Position: y=50, height=40px, background=#FFFFFF, border-bottom=#E5E7EB
+Item actif: "Hébergement" (indicateur bleu dessous)
+
+| Item            | X    | État           |
+|-----------------|------|----------------|
+| Accueil         | 40   | muted          |
+| Domaines et DNS | 110  | muted          |
+| Hébergement     | 240  | **active**     |
+| Wordpress       | 345  | muted          |
+| Emails          | 430  | muted          |
+| VoIP            | 500  | muted          |
+| Accès           | 550  | muted          |
+| Guides          | 1350 | primary        |
+
+```svg
+<!-- NAV2 WEB CLOUD - Hébergement actif -->
+<rect x="0" y="50" width="1440" height="40" class="bg-white"/>
+<line x1="0" y1="89" x2="1440" y2="89" stroke="#E5E7EB"/>
+<text x="40" y="75" class="text-muted" font-size="14">Accueil</text>
+<text x="110" y="75" class="text-muted" font-size="14">Domaines et DNS</text>
+<text x="240" y="75" class="text-primary" font-size="14" font-weight="600">Hébergement</text>
+<rect x="235" y="85" width="85" height="3" fill="#0050D7"/>
+<text x="345" y="75" class="text-muted" font-size="14">Wordpress</text>
+<text x="430" y="75" class="text-muted" font-size="14">Emails</text>
+<text x="500" y="75" class="text-muted" font-size="14">VoIP</text>
+<text x="550" y="75" class="text-muted" font-size="14">Accès</text>
+<text x="1350" y="75" class="text-primary" font-size="13">Guides</text>
+```
+
+##############################################################################
+# 4. NAV3/NAV4/NAV5 - STRUCTURE COMPLÈTE
+##############################################################################
+
+Route: /web-cloud/hosting/{serviceName}/{nav3}/{nav4}/{nav5}
+
+### NAV3 - GROUPES (sélecteur dans sidebar)
+
+| NAV3       | Description              | Nombre NAV4 |
+|------------|--------------------------|-------------|
+| [Général]  | Vue par défaut           | 7 + 2 liens |
+| [Sites]    | Gestion domaines         | 5           |
+| [Expert]   | Configuration avancée    | 8           |
+
+### NAV4 PAR NAV3
+
+**NAV3: [Général]** - Vue par défaut (7 tabs + 2 liens NAV3)
+| #  | NAV4     | Route      | Type   | NAV5                    |
+|----|----------|------------|--------|-------------------------|
+| 1  | Home     | /general   | LOCAL  | Général, Stats, Indy, Offre, OvhConfig, Migration, Résiliation |
+| 2  | Modules  | /modules   | LOCAL  | -                       |
+| 3  | FTP-SSH  | /ftp       | LINK→Expert | -                  |
+| 4  | BDD      | /database  | LINK→Expert | Liste, Stats, Dumps |
+| 5  | Logs     | /logs      | LOCAL  | Logs OVH, User Logs     |
+| 6  | CDN      | /cdn       | LINK→Expert | État, Paramètres   |
+| 7  | SEO      | /localseo  | LOCAL  | -                       |
+| →  | Sites    | -          | NAV3   | Bascule vers [Sites]    |
+| →  | Expert   | -          | NAV3   | Bascule vers [Expert]   |
+
+**NAV3: [Sites]** - Gestion domaines (5 tabs)
+| #  | NAV4     | Route      | Type   | NAV5                    |
+|----|----------|------------|--------|-------------------------|
+| 1  | Multisite| /multisite | LOCAL  | -                       |
+| 2  | SSL      | /ssl       | LOCAL  | -                       |
+| 3  | FTP-SSH  | /ftp       | LINK→Expert | -                  |
+| 4  | BDD      | /database  | LINK→Expert | Liste, Stats, Dumps |
+| 5  | CloudDb  | /clouddb   | LINK→Expert | -                  |
+
+**NAV3: [Expert]** - Configuration avancée (12 tabs = 4 sources + 8 locales)
+| #  | NAV4     | Route      | Type   | NAV5                    |
+|----|----------|------------|--------|-------------------------|
+| 1  | FTP-SSH  | /ftp       | SOURCE | -                       |
+| 2  | BDD      | /database  | SOURCE | Liste, Statistiques, Dumps |
+| 3  | CDN      | /cdn       | SOURCE | État, Paramètres        |
+| 4  | CloudDb  | /clouddb   | SOURCE | -                       |
+| 5  | Boost    | /boost     | LOCAL  | -                       |
+| 6  | Emails   | /emails    | LOCAL  | -                       |
+| 7  | Variables| /envvars   | LOCAL  | -                       |
+| 8  | Runtimes | /runtimes  | LOCAL  | -                       |
+| 9  | Cron     | /cron      | LOCAL  | -                       |
+| 10 | Taches   | /tasks     | LOCAL  | -                       |
+
+**Légende Types :**
+- `LOCAL` : NAV4 propre à ce NAV3, fichiers dans ce répertoire
+- `SOURCE` : NAV4 partagée, fichiers sources ici (dans [Expert])
+- `LINK→Expert` : Affiche le composant Expert.NAV4, NAV3 reste inchangé visuellement
+- `NAV3` : Lien pour basculer vers un autre groupe NAV3
+
+### NAV4 PARTAGÉES - Règle de placement
+
+**RÈGLE : Les NAV4 présentes dans 2+ NAV3 sont placées dans [Expert].**
+Les autres NAV3 utilisent un LINK vers Expert.
+
+| NAV4     | NAV3 principal | Links depuis         |
+|----------|----------------|----------------------|
+| FTP-SSH  | **[Expert]**   | [Général], [Sites]   |
+| BDD      | **[Expert]**   | [Général], [Sites]   |
+| CDN      | **[Expert]**   | [Général]            |
+| CloudDb  | **[Expert]**   | [Sites]              |
+
+### COMPORTEMENT DU LINK
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  LINK = Affichage TRANSPARENT (pas une redirection)                 │
+│                                                                      │
+│  Exemple : Utilisateur sur NAV3=[Général], clique sur "BDD"         │
+│                                                                      │
+│  ✓ Le contenu de [Expert].BDD s'affiche                             │
+│  ✓ Le sélecteur NAV3 reste visuellement sur [Général]               │
+│  ✓ L'utilisateur ne voit PAS qu'il utilise Expert.BDD               │
+│  ✓ C'est une INCLUSION du composant, pas un changement de NAV3      │
+│                                                                      │
+│  Techniquement : import { BddTab } from '../expert/nav4/bdd'        │
+│  Visuellement  : NAV3=[Général] reste actif                         │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Visuel NAV3 avec links
+
+```
+NAV3: [Général]                    NAV3: [Sites]                    NAV3: [Expert]
+├── Home                           ├── Multisite                    ├── FTP ⬅️ source
+├── Modules                        ├── SSL                          ├── BDD ⬅️ source
+├── FTP ──────link──────────────────────────link────────────────────┤    └── nav5/
+├── BDD ──────link──────────────────────────link────────────────────┤
+│   └── nav5/                      ├── CloudDb ────link─────────────├── CDN ⬅️ source
+├── Logs                           │                                │    └── nav5/
+├── CDN ──────link─────────────────────────────────────────────────├── CloudDb ⬅️ source
+│   └── nav5/                                                       ├── Boost
+├── SEO                                                             ├── Emails
+├── [→Sites]                                                        ├── Variables
+└── [→Expert]                                                       ├── Runtimes
+                                                                    ├── Cron
+                                                                    └── Taches
+```
+
+### NAV5 - SOUS-TABS (contextuelles)
+
+| NAV4   | NAV5                                                      |
+|--------|-----------------------------------------------------------|
+| Home   | [Général] Statistiques, Indy, Offre, OvhConfig, Migration, Résiliation |
+| BDD    | [Liste] Statistiques, Dumps                               |
+| Logs   | [Logs OVH] User Logs                                      |
+| CDN    | [État] Paramètres                                         |
+
+```svg
+<!-- NAV3 HOSTING - Groupe [Général] actif, Home actif -->
+<g transform="translate(0, 38)">
+  <!-- Tab actif: fond bleu, texte blanc -->
+  <rect x="0" y="0" width="50" height="26" rx="4" class="bg-primary"/>
+  <text x="25" y="17" class="text-white" font-size="11" text-anchor="middle">Home</text>
+
+  <!-- Tabs inactifs groupe Général -->
+  <rect x="54" y="0" width="60" height="26" rx="4" class="btn-outline"/>
+  <text x="84" y="17" class="text-primary" font-size="11" text-anchor="middle">Modules</text>
+
+  <rect x="118" y="0" width="60" height="26" rx="4" class="btn-outline"/>
+  <text x="148" y="17" class="text-primary" font-size="11" text-anchor="middle">FTP-SSH</text>
+
+  <rect x="182" y="0" width="40" height="26" rx="4" class="btn-outline"/>
+  <text x="202" y="17" class="text-primary" font-size="11" text-anchor="middle">BDD</text>
+
+  <rect x="226" y="0" width="40" height="26" rx="4" class="btn-outline"/>
+  <text x="246" y="17" class="text-primary" font-size="11" text-anchor="middle">Logs</text>
+
+  <rect x="270" y="0" width="40" height="26" rx="4" class="btn-outline"/>
+  <text x="290" y="17" class="text-primary" font-size="11" text-anchor="middle">CDN</text>
+
+  <rect x="314" y="0" width="40" height="26" rx="4" class="btn-outline"/>
+  <text x="334" y="17" class="text-primary" font-size="11" text-anchor="middle">SEO</text>
+
+  <!-- Liens vers autres groupes (style différent) -->
+  <rect x="368" y="0" width="50" height="26" rx="4" fill="#F3F4F6" stroke="#9CA3AF"/>
+  <text x="393" y="17" class="text-muted" font-size="11" text-anchor="middle">Sites →</text>
+
+  <rect x="422" y="0" width="55" height="26" rx="4" fill="#F3F4F6" stroke="#9CA3AF"/>
+  <text x="449" y="17" class="text-muted" font-size="11" text-anchor="middle">Expert →</text>
+</g>
+```
+
+##############################################################################
+# 5. NAV5 - SOUS-TABS PAR NAV4
+##############################################################################
+
+### 5.1 NAV4: Home → 7 NAV5
+
+| # | NAV5          | Route        |
+|---|---------------|--------------|
+| 1 | Général       | /general     |
+| 2 | Statistiques  | /statistics  |
+| 3 | Indy          | /indy        |
+| 4 | Offre         | /offer       |
+| 5 | OvhConfig     | /ovhconfig   |
+| 6 | Migration     | /migration   |
+| 7 | Résiliation   | /terminate   |
+
+### 5.2 NAV4: CDN → 2 NAV5
+
+| # | NAV5       | Route          |
+|---|------------|----------------|
+| 1 | État       | /cdn           |
+| 2 | Paramètres | /cdn-settings  |
+
+### 5.3 NAV4: Logs → 2 NAV5
+
+| # | NAV5      | Route       |
+|---|-----------|-------------|
+| 1 | Logs OVH  | /logs       |
+| 2 | User Logs | /user-logs  |
+
+### 5.4 NAV4: BDD → 3 NAV5
+
+| # | NAV5         | Route                 |
+|---|--------------|-----------------------|
+| 1 | Liste        | /database             |
+| 2 | Statistiques | /database-statistics  |
+| 3 | Dumps        | /database-dumps       |
+
+##############################################################################
+# 6. LEFT PANEL - SIDEBAR
+##############################################################################
+
+Position: x=24, y=105, width=280px, height=765px
+
+### Structure
+```
+┌─────────────────────────────────┐
+│ ┌─────────────────────────────┐ │ y=12
+│ │ 🔍 Rechercher...            │ │ Search input h=34
+│ └─────────────────────────────┘ │
+│ Filtrer par statut ▾  N services│ y=56, filter + count
+├─────────────────────────────────┤ y=80
+│ ┌─────────────────────────────┐ │
+│ │ 🌐  {serviceName}           │ │ Service sélectionné
+│ │     {offer}          [Actif]│ │ bg=#E8F0FE (row-selected)
+│ └─────────────────────────────┘ │ h=56
+│ ┌─────────────────────────────┐ │
+│ │ 🌐  {serviceName}           │ │ Service non sélectionné
+│ │     {offer}          [Actif]│ │ bg=#FFFFFF
+│ └─────────────────────────────┘ │
+│ ...                             │
+├─────────────────────────────────┤
+│ Page 1/N    ‹  1  2  3  ›       │ Pagination (si > 10)
+└─────────────────────────────────┘
+```
+
+### Service Item
+- Avatar: cercle 28px, bg=#0050D7, texte "🌐" ou initiale
+- Titre: {serviceName} ou {displayName}, font-size=13, font-weight=500
+- Sous-titre: {offer} (Performance 1, Perso, Pro...), font-size=11, text-muted
+- Badge: "Actif" (bg=#DEF7EC, text=#03543F) ou "Suspendu" (bg=#FEE2E2, text=#991B1B)
+
+```svg
+<!-- LEFT PANEL -->
+<g transform="translate(24, 105)">
+  <rect x="0" y="0" width="280" height="765" rx="8" class="bg-white"/>
+  <rect x="0" y="0" width="280" height="765" rx="8" class="border"/>
+  
+  <!-- Search -->
+  <rect x="12" y="12" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+  <text x="40" y="34" class="text-muted" font-size="12">Rechercher...</text>
+  <text x="24" y="34" class="text-muted" font-size="14">🔍</text>
+  
+  <!-- Filter -->
+  <text x="12" y="68" class="text-muted" font-size="11">Filtrer par statut ▾</text>
+  <text x="268" y="68" class="text-muted" font-size="11" text-anchor="end">{count} services</text>
+  
+  <!-- Service sélectionné -->
+  <rect x="6" y="80" width="268" height="56" rx="6" class="row-selected"/>
+  <circle cx="28" cy="108" r="14" fill="#0050D7"/>
+  <text x="28" y="112" class="text-white" font-size="12" text-anchor="middle">🌐</text>
+  <text x="52" y="100" class="text-dark" font-size="13" font-weight="500">{serviceName}</text>
+  <text x="52" y="116" class="text-muted" font-size="11">{offer}</text>
+  <rect x="210" y="96" width="46" height="18" rx="9" fill="#DEF7EC"/>
+  <text x="233" y="109" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
+  
+  <!-- Service non sélectionné -->
+  <rect x="6" y="142" width="268" height="56" rx="6" fill="#FFFFFF"/>
+  <circle cx="28" cy="170" r="14" fill="#0050D7"/>
+  <text x="28" y="174" class="text-white" font-size="12" text-anchor="middle">🌐</text>
+  <text x="52" y="162" class="text-dark" font-size="13" font-weight="500">{serviceName2}</text>
+  <text x="52" y="178" class="text-muted" font-size="11">{offer2}</text>
+  <rect x="210" y="158" width="46" height="18" rx="9" fill="#DEF7EC"/>
+  <text x="233" y="171" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
+</g>
+```
+
+##############################################################################
+# 7. RIGHT PANEL - STRUCTURE
+##############################################################################
+
+Position: x=320, y=105, width=1096px, height=765px
+
+### Structure
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ {serviceName}  (blog.exemple.fr, shop.exemple.fr +2)                │ Header
+├─────────────────────────────────────────────────────────────────────┤
+│ [Home] [Multisite] [FTP-SSH] [Modules] [Taches] [Emails] ...        │ NAV3 y=38
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ BLOC 1: Hébergement                                             │ │ y=75
+│ │   STOCKAGE | FTP/SSH | BASE DE DONNÉES | MULTISITE | CONFIG    │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ BLOC 2: Configuration                                           │ │
+│ │   PHP | RUNTIME | CRON | VARIABLES | RUNTIMES                   │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ BLOC 3: General                                                 │ │
+│ │   INFRASTRUCTURE | RÉSEAU | SÉCURITÉ | EMAILS                   │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+│ ┌─────────────────────────────────────────────────────────────────┐ │
+│ │ BLOC 4: Facturation                                             │ │
+│ │   SERVICE | OFFRE | CONTACTS | PAIEMENT | RÉSILIATION           │ │
+│ └─────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Bloc Structure (5 colonnes × N lignes)
+```svg
+<!-- BLOC TEMPLATE -->
+<g transform="translate(0, {y})">
+  <rect x="0" y="0" width="1056" height="{height}" rx="8" class="bg-white"/>
+  <rect x="0" y="0" width="1056" height="{height}" rx="8" class="border"/>
+  <text x="20" y="28" class="text-dark" font-size="15" font-weight="700">{blocTitle}</text>
+  
+  <!-- 5 colonnes avec dividers -->
+  <g transform="translate(20, 45)">
+    <!-- Dividers verticaux -->
+    <line x1="200" y1="0" x2="200" y2="{contentHeight}" stroke="#E5E7EB"/>
+    <line x1="400" y1="0" x2="400" y2="{contentHeight}" stroke="#E5E7EB"/>
+    <line x1="600" y1="0" x2="600" y2="{contentHeight}" stroke="#E5E7EB"/>
+    <line x1="800" y1="0" x2="800" y2="{contentHeight}" stroke="#E5E7EB"/>
+    
+    <!-- Colonne 1 -->
+    <g transform="translate(0, 0)">
+      <text x="0" y="0" class="text-muted" font-size="10" font-weight="600">{THEME}</text>
+      <!-- Lignes info -->
+    </g>
+    
+    <!-- Colonnes 2-5 similaires -->
+  </g>
+</g>
+```
+
+##############################################################################
+# 8. APIs HOSTING
+##############################################################################
+
+### 8.1 APIs Service
+| Méthode | Endpoint                              | Description           |
+|---------|---------------------------------------|-----------------------|
+| GET     | /hosting/web                          | Liste hébergements    |
+| GET     | /hosting/web/{serviceName}            | Détails hébergement   |
+| GET     | /hosting/web/{serviceName}/serviceInfos | Infos facturation   |
+| PUT     | /hosting/web/{serviceName}            | Modifier (displayName)|
+| DELETE  | /hosting/web/{serviceName}/terminate  | Résilier              |
+
+### 8.2 APIs Configuration
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/ovhConfig                 | Config PHP/moteur     |
+| PUT     | /hosting/web/{sn}/ovhConfig                 | Modifier config       |
+| GET     | /hosting/web/{sn}/dump                      | Liste snapshots       |
+| POST    | /hosting/web/{sn}/dump/{id}/restore         | Restaurer snapshot    |
+
+### 8.3 APIs Multisite
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/attachedDomain            | Liste domaines        |
+| GET     | /hosting/web/{sn}/attachedDomain/{domain}   | Détails domaine       |
+| POST    | /hosting/web/{sn}/attachedDomain            | Ajouter domaine       |
+| PUT     | /hosting/web/{sn}/attachedDomain/{domain}   | Modifier domaine      |
+| DELETE  | /hosting/web/{sn}/attachedDomain/{domain}   | Supprimer domaine     |
+
+### 8.4 APIs FTP/SSH
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/user                      | Liste utilisateurs    |
+| GET     | /hosting/web/{sn}/user/{login}              | Détails utilisateur   |
+| POST    | /hosting/web/{sn}/user                      | Créer utilisateur     |
+| PUT     | /hosting/web/{sn}/user/{login}              | Modifier utilisateur  |
+| POST    | /hosting/web/{sn}/user/{login}/changePassword| Changer MDP          |
+| DELETE  | /hosting/web/{sn}/user/{login}              | Supprimer utilisateur |
+
+### 8.5 APIs Database
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/database                  | Liste BDD             |
+| GET     | /hosting/web/{sn}/database/{name}           | Détails BDD           |
+| POST    | /hosting/web/{sn}/database                  | Créer BDD             |
+| PUT     | /hosting/web/{sn}/database/{name}           | Modifier BDD          |
+| POST    | /hosting/web/{sn}/database/{name}/changePassword | Changer MDP      |
+| POST    | /hosting/web/{sn}/database/{name}/dump      | Créer dump            |
+| POST    | /hosting/web/{sn}/database/{name}/import    | Importer SQL          |
+| POST    | /hosting/web/{sn}/database/{name}/restore   | Restaurer             |
+| DELETE  | /hosting/web/{sn}/database/{name}           | Supprimer BDD         |
+
+### 8.6 APIs Modules
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/module                    | Liste modules         |
+| GET     | /hosting/web/{sn}/module/{id}               | Détails module        |
+| POST    | /hosting/web/{sn}/module                    | Installer module      |
+| POST    | /hosting/web/{sn}/module/{id}/changePassword| Changer MDP admin    |
+| DELETE  | /hosting/web/{sn}/module/{id}               | Supprimer module      |
+
+### 8.7 APIs Cron
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/cron                      | Liste crons           |
+| GET     | /hosting/web/{sn}/cron/{id}                 | Détails cron          |
+| POST    | /hosting/web/{sn}/cron                      | Créer cron            |
+| PUT     | /hosting/web/{sn}/cron/{id}                 | Modifier cron         |
+| DELETE  | /hosting/web/{sn}/cron/{id}                 | Supprimer cron        |
+
+### 8.8 APIs SSL
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/ssl                       | Détails SSL           |
+| POST    | /hosting/web/{sn}/ssl                       | Commander/Importer    |
+| POST    | /hosting/web/{sn}/ssl/regenerate            | Régénérer             |
+| DELETE  | /hosting/web/{sn}/ssl                       | Supprimer             |
+
+### 8.9 APIs CDN
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/cdn                       | État CDN              |
+| POST    | /hosting/web/{sn}/cdn/enable                | Activer CDN           |
+| POST    | /hosting/web/{sn}/cdn/disable               | Désactiver CDN        |
+| POST    | /hosting/web/{sn}/cdn/flush                 | Vider cache           |
+
+### 8.10 APIs Boost
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/boostHistory              | Historique boost      |
+| POST    | /hosting/web/{sn}/request                   | Activer boost         |
+
+### 8.11 APIs Variables d'environnement
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/envVar                    | Liste variables       |
+| GET     | /hosting/web/{sn}/envVar/{key}              | Détails variable      |
+| POST    | /hosting/web/{sn}/envVar                    | Créer variable        |
+| PUT     | /hosting/web/{sn}/envVar/{key}              | Modifier variable     |
+| DELETE  | /hosting/web/{sn}/envVar/{key}              | Supprimer variable    |
+
+### 8.12 APIs Runtimes
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/runtime                   | Liste runtimes        |
+| GET     | /hosting/web/{sn}/runtime/{id}              | Détails runtime       |
+| POST    | /hosting/web/{sn}/runtime                   | Créer runtime         |
+| PUT     | /hosting/web/{sn}/runtime/{id}              | Modifier runtime      |
+| DELETE  | /hosting/web/{sn}/runtime/{id}              | Supprimer runtime     |
+
+### 8.13 APIs Emails automatiques
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/email                     | État emails           |
+| PUT     | /hosting/web/{sn}/email                     | Configurer            |
+| POST    | /hosting/web/{sn}/email/request             | Débloquer             |
+
+### 8.14 APIs Tâches
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/tasks                     | Liste tâches          |
+| GET     | /hosting/web/{sn}/tasks/{id}                | Détails tâche         |
+
+### 8.15 APIs Logs
+| Méthode | Endpoint                                    | Description           |
+|---------|---------------------------------------------|-----------------------|
+| GET     | /hosting/web/{sn}/userLogs                  | Liste accès logs      |
+| POST    | /hosting/web/{sn}/userLogs                  | Créer accès           |
+| PUT     | /hosting/web/{sn}/userLogs/{login}          | Modifier accès        |
+| DELETE  | /hosting/web/{sn}/userLogs/{login}          | Supprimer accès       |
+
+##############################################################################
+# 9. VARIABLES DYNAMIQUES
+##############################################################################
+
+| Variable           | Source API                                    |
+|--------------------|-----------------------------------------------|
+| {serviceName}      | /hosting/web → item                           |
+| {displayName}      | /hosting/web/{sn} → displayName               |
+| {offer}            | /hosting/web/{sn} → offer                     |
+| {state}            | /hosting/web/{sn} → state                     |
+| {datacenter}       | /hosting/web/{sn} → datacenter                |
+| {cluster}          | /hosting/web/{sn} → cluster                   |
+| {filer}            | /hosting/web/{sn} → filer                     |
+| {hostingIp}        | /hosting/web/{sn} → hostingIp                 |
+| {hostingIpv6}      | /hosting/web/{sn} → hostingIpv6               |
+| {quotaUsed}        | /hosting/web/{sn} → quotaUsed.value           |
+| {quotaSize}        | /hosting/web/{sn} → quotaSize.value           |
+| {phpVersion}       | /hosting/web/{sn}/ovhConfig → engineVersion   |
+| {engineName}       | /hosting/web/{sn}/ovhConfig → engineName      |
+| {environment}      | /hosting/web/{sn}/ovhConfig → environment     |
+| {firewall}         | /hosting/web/{sn}/ovhConfig → firewall        |
+| {sslProvider}      | /hosting/web/{sn}/ssl → provider              |
+| {sslStatus}        | /hosting/web/{sn}/ssl → status                |
+| {cdnStatus}        | /hosting/web/{sn}/cdn → status                |
+| {boostOffer}       | /hosting/web/{sn} → boostOffer                |
+| {creation}         | /hosting/web/{sn}/serviceInfos → creation     |
+| {expiration}       | /hosting/web/{sn}/serviceInfos → expiration   |
+| {contactAdmin}     | /hosting/web/{sn}/serviceInfos → contactAdmin |
+| {contactTech}      | /hosting/web/{sn}/serviceInfos → contactTech  |
+| {contactBilling}   | /hosting/web/{sn}/serviceInfos → contactBilling|
+| {nicHandle}        | Session utilisateur                           |
+
+##############################################################################
+# 10. ARBORESCENCE FICHIERS TARGET
+##############################################################################
+
+### Convention de nommage (mise à jour 2025-12-31)
+```
+target_.{NAV1}.{NAV2}.svg                         # INDEX (onboarding)
+target_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.svg           # NAV4
+target_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.{NAV5}.svg    # NAV5
+
+Exemple NAV4 : target_.web-cloud.hosting.general.modules.svg
+               ─────────┬────── ───┬─── ───┬─── ───┬───
+                      NAV1      NAV2   NAV3   NAV4
+
+Exemple NAV5 : target_.web-cloud.hosting.general.home.statistics.svg
+               ─────────┬────── ───┬─── ───┬─── ─┬── ─────┬─────
+                      NAV1      NAV2   NAV3  NAV4   NAV5
+
+NAV3 disponibles:
+- general : [Général] - Home (+NAV5), Modules, Logs (+NAV5), SEO
+- sites   : [Sites]   - Multisite, SSL
+- expert  : [Expert]  - FTP, BDD (+NAV5), CDN (+NAV5), CloudDb, Boost, Emails, Envvars, Runtimes, Cron, Tasks
+```
+
+### Structure FLAT (sans sous-dossiers)
+```
+/home/ubuntu/target_manager_svg/web-cloud/hosting/
+│
+│   # ══════ INDEX (onboarding) ══════
+├── target_.web-cloud.hosting.index.svg
+├── target_.web-cloud.hosting.index.txt
+│
+│   # ══════ NAV3: [Général] ══════
+│
+│   # NAV4: Home (avec NAV5)
+├── target_.web-cloud.hosting.general.home.general.svg      # NAV5: Général (défaut)
+├── target_.web-cloud.hosting.general.home.general.txt
+├── target_.web-cloud.hosting.general.home.statistics.svg   # NAV5: Statistiques
+├── target_.web-cloud.hosting.general.home.statistics.txt
+├── target_.web-cloud.hosting.general.home.indy.svg         # NAV5: Indy
+├── target_.web-cloud.hosting.general.home.indy.txt
+├── target_.web-cloud.hosting.general.home.offer.svg        # NAV5: Offre
+├── target_.web-cloud.hosting.general.home.offer.txt
+├── target_.web-cloud.hosting.general.home.ovhconfig.svg    # NAV5: OvhConfig
+├── target_.web-cloud.hosting.general.home.ovhconfig.txt
+├── target_.web-cloud.hosting.general.home.migration.svg    # NAV5: Migration
+├── target_.web-cloud.hosting.general.home.migration.txt
+├── target_.web-cloud.hosting.general.home.terminate.svg    # NAV5: Résiliation (À CRÉER)
+├── target_.web-cloud.hosting.general.home.terminate.txt
+│
+│   # NAV4: Modules
+├── target_.web-cloud.hosting.general.modules.svg
+├── target_.web-cloud.hosting.general.modules.txt
+│
+│   # NAV4: Logs (avec NAV5)
+├── target_.web-cloud.hosting.general.logs.svg              # NAV5: Logs OVH (défaut)
+├── target_.web-cloud.hosting.general.logs.txt
+├── target_.web-cloud.hosting.general.logs.user.svg         # NAV5: User Logs
+├── target_.web-cloud.hosting.general.logs.user.txt
+│
+│   # NAV4: SEO
+├── target_.web-cloud.hosting.general.seo.svg
+├── target_.web-cloud.hosting.general.seo.txt
+│
+│   # ══════ NAV3: [Sites] ══════
+│
+│   # NAV4: Multisite
+├── target_.web-cloud.hosting.sites.multisite.svg
+├── target_.web-cloud.hosting.sites.multisite.txt
+│
+│   # NAV4: SSL
+├── target_.web-cloud.hosting.sites.ssl.svg
+├── target_.web-cloud.hosting.sites.ssl.txt
+│
+│   # ══════ NAV3: [Expert] ══════
+│
+│   # NAV4: FTP (SOURCE pour LINK)
+├── target_.web-cloud.hosting.expert.ftp.svg
+├── target_.web-cloud.hosting.expert.ftp.txt
+│
+│   # NAV4: BDD (SOURCE pour LINK, avec NAV5)
+├── target_.web-cloud.hosting.expert.bdd.svg                # NAV5: Liste (défaut)
+├── target_.web-cloud.hosting.expert.bdd.txt
+├── target_.web-cloud.hosting.expert.bdd.statistics.svg     # NAV5: Statistiques
+├── target_.web-cloud.hosting.expert.bdd.statistics.txt
+├── target_.web-cloud.hosting.expert.bdd.dumps.svg          # NAV5: Dumps
+├── target_.web-cloud.hosting.expert.bdd.dumps.txt
+│
+│   # NAV4: CDN (SOURCE pour LINK, avec NAV5)
+├── target_.web-cloud.hosting.expert.cdn.svg                # NAV5: État (défaut)
+├── target_.web-cloud.hosting.expert.cdn.txt
+├── target_.web-cloud.hosting.expert.cdn.parametres.svg     # NAV5: Paramètres
+├── target_.web-cloud.hosting.expert.cdn.parametres.txt
+│
+│   # NAV4: CloudDb (SOURCE pour LINK)
+├── target_.web-cloud.hosting.expert.clouddb.svg            # À CRÉER
+├── target_.web-cloud.hosting.expert.clouddb.txt
+│
+│   # NAV4: Boost
+├── target_.web-cloud.hosting.expert.boost.svg
+├── target_.web-cloud.hosting.expert.boost.txt
+│
+│   # NAV4: Emails
+├── target_.web-cloud.hosting.expert.emails.svg
+├── target_.web-cloud.hosting.expert.emails.txt
+│
+│   # NAV4: Variables
+├── target_.web-cloud.hosting.expert.envvars.svg
+├── target_.web-cloud.hosting.expert.envvars.txt
+│
+│   # NAV4: Runtimes
+├── target_.web-cloud.hosting.expert.runtimes.svg
+├── target_.web-cloud.hosting.expert.runtimes.txt
+│
+│   # NAV4: Cron
+├── target_.web-cloud.hosting.expert.cron.svg
+├── target_.web-cloud.hosting.expert.cron.txt
+│
+│   # NAV4: Tasks
+├── target_.web-cloud.hosting.expert.tasks.svg
+└── target_.web-cloud.hosting.expert.tasks.txt
+```
+
+### Note sur les LINK
+Les fichiers LINK (.txt uniquement) ne sont PAS nécessaires car:
+- Le routing est géré dans le code frontend (index.tsx)
+- Les NAV4 partagées (FTP, BDD, CDN, CloudDb) sont dans expert/ et importées par les autres NAV3
+- Pas de fichiers SVG distincts pour les LINK
+
+##############################################################################
+# 11. ARBORESCENCE FRONTEND (mise à jour 2025-12-31)
+##############################################################################
+
+### CONVENTION RÉELLE : Modals FLAT (pas de sous-dossier modals/)
+
+```
+aiapp/frontend/src/pages/web-cloud/hosting/
+│
+├── index.tsx                        # Routing principal + TabLoader
+├── HostingSidebar.tsx               # Sidebar liste services
+├── HostingLayout.tsx                # Layout wrapper
+├── Onboarding.tsx                   # Page onboarding (dashboard)
+├── TabLoader.tsx                    # Lazy loading des tabs
+├── hosting.types.ts                 # Types TypeScript
+├── styles.css                       # Styles globaux hosting (.hosting-*)
+│
+├── general/                         # ══════ NAV3: [Général] ══════
+│   │
+│   ├── general/                     # NAV4: Home
+│   │   ├── index.ts
+│   │   ├── GeneralTab.tsx
+│   │   ├── GeneralTab.css
+│   │   ├── GeneralTab.service.ts
+│   │   ├── EditDisplayNameModal.tsx    # ⚠️ FLAT (pas dans modals/)
+│   │   ├── ConfigureSshModal.tsx
+│   │   ├── RestoreSnapshotModal.tsx
+│   │   ├── OvhConfigModal.tsx
+│   │   ├── MigrationModal.tsx
+│   │   ├── TerminateModal.tsx
+│   │   ├── OrderSslModal.tsx
+│   │   └── EditPathModal.tsx
+│   │
+│   ├── statistics/                  # NAV4: Statistiques
+│   │   ├── index.ts
+│   │   ├── StatisticsTab.tsx
+│   │   └── StatisticsTab.css
+│   │
+│   ├── indy/                        # NAV4: Indy
+│   │   ├── index.ts
+│   │   ├── IndyTab.tsx
+│   │   └── IndyTab.css
+│   │
+│   ├── offer/                       # NAV4: Offre
+│   │   ├── index.ts
+│   │   ├── OfferTab.tsx
+│   │   └── OfferTab.css
+│   │
+│   ├── modules/                     # NAV4: Modules
+│   │   ├── index.ts
+│   │   ├── ModulesTab.tsx
+│   │   ├── ModulesTab.css
+│   │   ├── ModulesTab.service.ts
+│   │   ├── modals.ts                   # Re-export des modals
+│   │   ├── InstallModuleModal.tsx
+│   │   ├── ChangePasswordModal.tsx
+│   │   └── DeleteModuleModal.tsx
+│   │
+│   ├── logs/                        # NAV4: Logs (+ UserLogs NAV5)
+│   │   ├── index.ts
+│   │   ├── LogsTab.tsx
+│   │   ├── LogsTab.css
+│   │   ├── LogsTab.service.ts
+│   │   ├── UserLogsTab.tsx             # NAV5: User Logs
+│   │   ├── UserLogsTab.css
+│   │   ├── modals.ts
+│   │   ├── DownloadLogsModal.tsx
+│   │   └── UserLogsModal.tsx
+│   │
+│   └── seo/                         # NAV4: SEO
+│       ├── index.ts
+│       ├── LocalSeoTab.tsx             # ⚠️ Nommé LocalSeoTab (pas SeoTab)
+│       ├── LocalSeoTab.css
+│       └── LocalSeoTab.service.ts
+│
+├── sites/                           # ══════ NAV3: [Sites] ══════
+│   │
+│   ├── multisite/                   # NAV4: Multisite
+│   │   ├── index.ts
+│   │   ├── MultisiteTab.tsx
+│   │   ├── MultisiteTab.css
+│   │   ├── MultisiteTab.service.ts
+│   │   ├── modals.ts
+│   │   ├── AddDomainModal.tsx
+│   │   ├── EditDomainModal.tsx
+│   │   ├── EditDomainWizard.tsx
+│   │   ├── DeleteDomainModal.tsx
+│   │   ├── DeleteDomainWizard.tsx
+│   │   ├── DiagnosticModal.tsx
+│   │   └── FlushCdnWizard.tsx
+│   │
+│   └── ssl/                         # NAV4: SSL
+│       ├── index.ts
+│       ├── SslTab.tsx
+│       ├── SslTab.css
+│       ├── SslTab.service.ts
+│       ├── modals.ts
+│       ├── OrderSslModal.tsx
+│       ├── OrderSslWizard.tsx
+│       ├── ImportSslModal.tsx
+│       ├── RegenerateSslModal.tsx
+│       └── DeleteSslModal.tsx
+│
+└── expert/                          # ══════ NAV3: [Expert] ══════
+    │
+    ├── ftp/                         # NAV4: FTP-SSH (SOURCE)
+    │   ├── index.ts
+    │   ├── FtpTab.tsx
+    │   ├── FtpTab.css
+    │   ├── FtpTab.service.ts
+    │   ├── modals.ts
+    │   ├── CreateFtpUserModal.tsx
+    │   ├── EditFtpUserModal.tsx
+    │   ├── ChangePasswordModal.tsx
+    │   └── DeleteFtpUserModal.tsx
+    │
+    ├── database/                    # NAV4: BDD (SOURCE) + NAV5 inclus
+    │   ├── index.ts
+    │   ├── DatabaseTab.tsx
+    │   ├── DatabaseTab.css
+    │   ├── DatabaseTab.service.ts
+    │   ├── DatabaseDumpsTab.tsx        # NAV5: Dumps (dans même dossier)
+    │   ├── DatabaseDumpsTab.css
+    │   ├── DatabaseStatisticsTab.tsx   # NAV5: Statistics (dans même dossier)
+    │   ├── modals.ts
+    │   ├── CreateDatabaseModal.tsx
+    │   ├── EditDatabaseModal.tsx
+    │   ├── ChangePasswordModal.tsx
+    │   ├── ImportSqlModal.tsx
+    │   ├── CopyDatabaseModal.tsx
+    │   ├── DumpDatabaseModal.tsx
+    │   ├── RestoreDatabaseModal.tsx
+    │   └── DeleteDatabaseModal.tsx
+    │
+    ├── cdn/                         # NAV4: CDN (SOURCE) + NAV5 inclus
+    │   ├── index.ts
+    │   ├── CdnTab.tsx
+    │   ├── CdnTab.css
+    │   ├── CdnTab.service.ts
+    │   ├── CdnSettingsTab.tsx          # NAV5: Settings (dans même dossier)
+    │   ├── CdnSettingsTab.css
+    │   ├── ActivateCdnModal.tsx
+    │   ├── DeactivateCdnModal.tsx
+    │   └── FlushCdnModal.tsx
+    │
+    ├── clouddb/                     # NAV4: CloudDB (SOURCE)
+    │   ├── index.ts
+    │   ├── CloudDbTab.tsx
+    │   └── CloudDbTab.css
+    │
+    ├── boost/                       # NAV4: Boost
+    │   ├── index.ts
+    │   ├── BoostTab.tsx
+    │   ├── BoostTab.css
+    │   ├── BoostTab.service.ts
+    │   ├── ActivateBoostModal.tsx
+    │   └── DeactivateBoostModal.tsx
+    │
+    ├── emails/                      # NAV4: Emails
+    │   ├── index.ts
+    │   ├── EmailsTab.tsx
+    │   ├── EmailsTab.css
+    │   └── EmailsTab.service.ts
+    │
+    ├── envvars/                     # NAV4: Variables
+    │   ├── index.ts
+    │   ├── EnvvarsTab.tsx
+    │   ├── EnvvarsTab.css
+    │   ├── EnvvarsTab.service.ts
+    │   ├── modals.ts
+    │   ├── CreateEnvvarModal.tsx
+    │   ├── EditEnvvarModal.tsx
+    │   └── DeleteEnvvarModal.tsx
+    │
+    ├── runtimes/                    # NAV4: Runtimes
+    │   ├── index.ts
+    │   ├── RuntimesTab.tsx
+    │   ├── RuntimesTab.css
+    │   ├── RuntimesTab.service.ts
+    │   ├── modals.ts
+    │   ├── CreateRuntimeModal.tsx
+    │   ├── EditRuntimeModal.tsx
+    │   └── DeleteRuntimeModal.tsx
+    │
+    ├── cron/                        # NAV4: Cron
+    │   ├── index.ts
+    │   ├── CronTab.tsx
+    │   ├── CronTab.css
+    │   ├── CronTab.service.ts
+    │   ├── modals.ts
+    │   ├── CreateCronModal.tsx
+    │   ├── EditCronModal.tsx
+    │   └── DeleteCronModal.tsx
+    │
+    └── tasks/                       # NAV4: Tasks
+        ├── index.ts
+        ├── TasksTab.tsx
+        ├── TasksTab.css
+        └── TasksTab.service.ts
+```
+
+### Import des tabs dans index.tsx
+```typescript
+// index.tsx - Structure des imports lazy
+// Note: database inclut DatabaseDumpsTab et DatabaseStatisticsTab
+// Note: cdn inclut CdnSettingsTab
+const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<...>> = {
+  // NAV3: [Général]
+  general: React.lazy(() => import("./general/general")),
+  statistics: React.lazy(() => import("./general/statistics")),
+  indy: React.lazy(() => import("./general/indy")),
+  offer: React.lazy(() => import("./general/offer")),
+  modules: React.lazy(() => import("./general/modules")),
+  logs: React.lazy(() => import("./general/logs")),
+  userlogs: React.lazy(() => import("./general/logs")),  // UserLogsTab
+  seo: React.lazy(() => import("./general/seo")),
+
+  // NAV3: [Sites]
+  multisite: React.lazy(() => import("./sites/multisite")),
+  ssl: React.lazy(() => import("./sites/ssl")),
+
+  // NAV3: [Expert]
+  ftp: React.lazy(() => import("./expert/ftp")),
+  database: React.lazy(() => import("./expert/database")),
+  databasedumps: React.lazy(() => import("./expert/database")),      // Dans database/
+  databasestatistics: React.lazy(() => import("./expert/database")), // Dans database/
+  cdn: React.lazy(() => import("./expert/cdn")),
+  cdnsettings: React.lazy(() => import("./expert/cdn")),             // Dans cdn/
+  clouddb: React.lazy(() => import("./expert/clouddb")),
+  boost: React.lazy(() => import("./expert/boost")),
+  emails: React.lazy(() => import("./expert/emails")),
+  envvars: React.lazy(() => import("./expert/envvars")),
+  runtimes: React.lazy(() => import("./expert/runtimes")),
+  cron: React.lazy(() => import("./expert/cron")),
+  tasks: React.lazy(() => import("./expert/tasks")),
+};
+```
+
+##############################################################################
+# 12. ARBORESCENCE LOCALES (CONVENTION FLAT)
+##############################################################################
+
+### CONVENTION RÉELLE : Fichiers FLAT avec préfixe web-cloud.hosting.*
+
+```
+aiapp/frontend/public/locales/
+├── en/
+│   └── web-cloud/
+│       └── hosting/
+│           │
+│           │   # ══════ Fichiers principaux ══════
+│           ├── index.json                          # Config i18n namespace
+│           ├── web-cloud.hosting.json              # Termes généraux hosting
+│           │
+│           │   # ══════ NAV3: [Général] ══════
+│           ├── web-cloud.hosting.general.json      # GeneralTab
+│           ├── web-cloud.hosting.modules.json      # ModulesTab
+│           ├── web-cloud.hosting.logs.json         # LogsTab + UserLogsTab
+│           ├── web-cloud.hosting.localseo.json     # LocalSeoTab
+│           │
+│           │   # ══════ NAV3: [Sites] ══════
+│           ├── web-cloud.hosting.multisite.json    # MultisiteTab
+│           ├── web-cloud.hosting.ssl.json          # SslTab
+│           │
+│           │   # ══════ NAV3: [Expert] ══════
+│           ├── web-cloud.hosting.ftp.json          # FtpTab (SOURCE)
+│           ├── web-cloud.hosting.database.json     # DatabaseTab + Dumps + Stats (SOURCE)
+│           ├── web-cloud.hosting.clouddb.json      # CloudDbTab (SOURCE)
+│           ├── web-cloud.hosting.boost.json        # BoostTab
+│           ├── web-cloud.hosting.emails.json       # EmailsTab
+│           ├── web-cloud.hosting.envvars.json      # EnvvarsTab
+│           ├── web-cloud.hosting.runtimes.json     # RuntimesTab
+│           ├── web-cloud.hosting.cron.json         # CronTab
+│           ├── web-cloud.hosting.tasks.json        # TasksTab
+│           │
+│           │   # ══════ Sous-dossiers spécifiques ══════
+│           ├── modals/
+│           │   └── migration.json                  # MigrationModal
+│           │
+│           └── tabs/
+│               ├── database-statistics.json        # DatabaseStatisticsTab
+│               ├── indy.json                       # IndyTab
+│               ├── offer.json                      # OfferTab
+│               └── statistics.json                 # StatisticsTab
+│
+└── fr/
+    └── web-cloud/
+        └── hosting/
+            └── (même structure que en/)
+```
+
+### ⚠️ FICHIERS MANQUANTS (à créer si nécessaire)
+- `web-cloud.hosting.cdn.json` - Traductions CDN + CdnSettings
+- `tabs/userlogs.json` - Traductions UserLogsTab (si distinct de logs.json)
+
+##############################################################################
+# 13. WORKFLOW GÉNÉRATION
+##############################################################################
+
+### Fichiers existants (26 paires SVG+TXT)
+
+**INDEX**
+- [x] target_.web-cloud.hosting.index
+
+**NAV3: [Expert] - 12 fichiers**
+- [x] target_.web-cloud.hosting.expert.ftp
+- [x] target_.web-cloud.hosting.expert.bdd
+- [x] target_.web-cloud.hosting.expert.bdd.statistics
+- [x] target_.web-cloud.hosting.expert.bdd.dumps
+- [x] target_.web-cloud.hosting.expert.cdn
+- [x] target_.web-cloud.hosting.expert.cdn.parametres
+- [ ] target_.web-cloud.hosting.expert.clouddb (À CRÉER)
+- [x] target_.web-cloud.hosting.expert.boost
+- [x] target_.web-cloud.hosting.expert.emails
+- [x] target_.web-cloud.hosting.expert.envvars
+- [x] target_.web-cloud.hosting.expert.runtimes
+- [x] target_.web-cloud.hosting.expert.cron
+- [x] target_.web-cloud.hosting.expert.tasks
+
+**NAV3: [Général] - 10 fichiers**
+- [x] target_.web-cloud.hosting.general.home.general
+- [x] target_.web-cloud.hosting.general.home.statistics
+- [x] target_.web-cloud.hosting.general.home.indy
+- [x] target_.web-cloud.hosting.general.home.offer
+- [x] target_.web-cloud.hosting.general.home.ovhconfig
+- [x] target_.web-cloud.hosting.general.home.migration
+- [ ] target_.web-cloud.hosting.general.home.terminate (À CRÉER)
+- [x] target_.web-cloud.hosting.general.modules
+- [x] target_.web-cloud.hosting.general.logs
+- [x] target_.web-cloud.hosting.general.logs.user
+- [x] target_.web-cloud.hosting.general.seo
+
+**NAV3: [Sites] - 2 fichiers**
+- [x] target_.web-cloud.hosting.sites.multisite
+- [x] target_.web-cloud.hosting.sites.ssl
+
+### Fichiers à créer (2)
+1. target_.web-cloud.hosting.general.home.terminate (NAV5: Résiliation)
+2. target_.web-cloud.hosting.expert.clouddb (NAV4: CloudDb)
+
+================================================================================
+FIN PROMPT TARGET WEB CLOUD > HÉBERGEMENT
+================================================================================

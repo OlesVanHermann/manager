@@ -1,0 +1,626 @@
+# PROMPT SPLIT v5 - Architecture Modulaire React/TypeScript
+
+Version: v5 (2025-12-31)
+Changelog: Synchronisation avec patterns réels du codebase New Manager OVHcloud
+
+## A) Contexte
+
+Tu es un expert en architecture React/TypeScript pour le projet New Manager OVHcloud.
+
+**Architecture de navigation :**
+- **NAV1** : Catégorie principale (general, web-cloud, bare-metal, network, iam, public-cloud...)
+- **NAV2** : Produit / Service (hosting, domains, wordpress, vps, emails...)
+- **NAV3** : Onglet fonctionnel ou groupe (general, ftp, ssl, expert, sites...)
+- **NAV4** : Sous-onglet (si NAV3 est un groupe)
+
+**Convention : le 1er élément de chaque niveau s'appelle `general`**
+
+---
+
+## B) Arborescences Cibles
+
+### B.1) Pattern STANDARD (web-cloud, bare-metal, network, iam)
+
+NAV3 directement sous NAV2, sans dossier `tabs/` intermédiaire.
+
+```
+src/pages/{NAV1}/{NAV2}/
+├── index.tsx                      # Page principale
+├── {nav2}.types.ts                # Types partagés NAV2
+├── {nav2}.css | styles.css        # CSS partagé NAV2 (optionnel)
+├── Modals.css                     # CSS modales partagé (optionnel)
+├── {Nav2}Layout.tsx               # Layout (optionnel)
+├── {Nav2}Sidebar.tsx              # Sidebar (optionnel)
+├── Onboarding.tsx                 # Onboarding (optionnel)
+├── tabs.ts                        # Export des tabs (optionnel)
+├── {nav2}.service.ts              # Service partagé NAV2 (optionnel)
+├── use{Feature}.ts                # Hooks partagés NAV2 (optionnel)
+├── *Modal.tsx                     # Modales globales NAV2 (optionnel)
+│
+├── {nav3}/                        # Dossier NAV3
+│   ├── {Nav3}Tab.tsx              # Composant principal
+│   ├── {Nav3}Tab.service.ts       # Service isolé
+│   ├── {Nav3}Tab.css              # Styles isolés
+│   ├── index.ts                   # Barrel file (optionnel)
+│   └── *Modal.tsx                 # Modales locales NAV3 (optionnel)
+│
+└── {nav3-groupe}/                 # NAV3 groupé (optionnel)
+    ├── {nav4}/                    # Sous-dossier NAV4
+    │   ├── {Nav4}Tab.tsx
+    │   ├── {Nav4}Tab.service.ts
+    │   └── {Nav4}Tab.css
+    └── {nav4}/
+        └── ...
+```
+
+**Exemple web-cloud/wordpress :**
+```
+src/pages/web-cloud/wordpress/
+├── index.tsx
+├── wordpress.types.ts
+├── wordpress.css
+├── Modals.css
+├── Onboarding.tsx
+├── tabs.ts
+├── GeneralTab.tsx                 # NAV3 général à la racine (exception)
+├── GeneralTab.service.ts
+├── GeneralTab.css
+├── CreateWebsiteModal.tsx         # Modales globales NAV2
+├── DeleteWebsiteModal.tsx
+│
+├── domains/                       # NAV3
+│   ├── DomainsTab.tsx
+│   ├── DomainsTab.service.ts
+│   └── DomainsTab.css
+│
+├── extensions/                    # NAV3 avec NAV4
+│   ├── ExtensionsTab.tsx          # Container NAV4
+│   ├── ThemesTab.tsx              # NAV4
+│   ├── PluginsTab.tsx             # NAV4
+│   ├── Extensions.service.ts
+│   └── Extensions.css
+│
+└── backups/
+    ├── BackupsTab.tsx
+    ├── BackupsTab.service.ts
+    └── BackupsTab.css
+```
+
+**Exemple web-cloud/hosting (NAV3 groupés) :**
+```
+src/pages/web-cloud/hosting/
+├── index.tsx
+├── hosting.types.ts
+├── styles.css
+├── HostingLayout.tsx
+├── HostingSidebar.tsx
+├── Onboarding.tsx
+│
+├── expert/                        # NAV3 = groupe
+│   ├── ftp/                       # NAV4
+│   │   ├── FtpTab.tsx
+│   │   ├── FtpTab.service.ts
+│   │   └── FtpTab.css
+│   ├── cdn/                       # NAV4
+│   ├── database/                  # NAV4
+│   └── ssl/                       # NAV4
+│
+├── general/                       # NAV3 = groupe
+│   ├── general/                   # NAV4
+│   ├── offer/                     # NAV4
+│   └── modules/                   # NAV4
+│
+└── sites/                         # NAV3 = groupe
+    ├── multisite/                 # NAV4
+    └── ssl/                       # NAV4
+```
+
+### B.2) Pattern ALTERNATIF (general/)
+
+Pour NAV1=general, utilisation du dossier `tabs/` intermédiaire.
+
+```
+src/pages/general/{NAV2}/
+├── index.tsx
+├── {nav2}.types.ts
+│
+└── tabs/
+    └── {nav3}/
+        ├── {Nav3}Tab.tsx
+        ├── {Nav3}Tab.service.ts
+        └── {Nav3}Tab.css
+```
+
+**Exemple general/account :**
+```
+src/pages/general/account/
+├── index.tsx
+├── account.types.ts
+│
+└── tabs/
+    ├── general/
+    │   ├── GeneralTab.tsx
+    │   ├── GeneralTab.service.ts
+    │   └── GeneralTab.css
+    ├── security/
+    │   ├── SecurityTab.tsx
+    │   ├── SecurityTab.service.ts
+    │   └── SecurityTab.css
+    └── privacy/
+        ├── PrivacyTab.tsx
+        ├── PrivacyTab.service.ts
+        └── PrivacyTab.css
+```
+
+---
+
+## C) Traductions (Locales)
+
+### C.1) Patterns acceptés
+
+5 patterns coexistent dans le codebase :
+
+| # | Pattern | Exemple | Usage |
+|---|---------|---------|-------|
+| 1 | `{nav2}/index.json` | `wordpress/index.json` | Fichier unique monolithique |
+| 2 | `{nav2}/{nav3}.json` | `domains/general.json` | Un fichier par NAV3 |
+| 3 | `{nav2}/web-cloud.{nav2}.{nav3}.json` | `hosting/web-cloud.hosting.ftp.json` | Préfixé NAV1.NAV2 |
+| 4 | `{nav2}/{nav3}/{nav4}.json` | `voip/lines/consumption.json` | Structure profonde |
+| 5 | `{nav2}/modals.json` | `emails/modals.json` | Modales séparées |
+
+### C.2) Structure recommandée
+
+```
+public/locales/{lang}/{NAV1}/{NAV2}/
+├── index.json                     # Clés communes NAV2
+├── {nav3}.json                    # Clés par NAV3
+├── modals.json                    # Clés modales (optionnel)
+└── {nav3}/                        # Si NAV4 existe
+    └── {nav4}.json
+```
+
+### C.3) Convention de clés
+
+```json
+{
+  "nav2.nav3.section.element": "Texte traduit",
+  "wordpress.general.title": "Informations générales",
+  "wordpress.general.actions.delete": "Supprimer le site",
+  "wordpress.modal.create.title": "Créer un site WordPress"
+}
+```
+
+---
+
+## D) Fichiers Partagés - AUTORISÉS
+
+### D.1) Au niveau NAV2 (partagés entre NAV3)
+
+| Type | Fichiers autorisés | Exemple |
+|------|-------------------|---------|
+| **Types** | `{nav2}.types.ts` | `wordpress.types.ts` |
+| **CSS** | `{nav2}.css`, `styles.css`, `Modals.css` | `wordpress.css` |
+| **Service** | `{nav2}.service.ts`, `{nav2}Page.service.ts` | `emails.service.ts` |
+| **Hooks** | `use{Feature}.ts` | `useEmailAccounts.ts` |
+| **Layout** | `{Nav2}Layout.tsx`, `{Nav2}Sidebar.tsx` | `HostingLayout.tsx` |
+| **Onboarding** | `Onboarding.tsx` | `Onboarding.tsx` |
+| **Header** | `RightPanelHeader.tsx` | `RightPanelHeader.tsx` |
+| **Barrel** | `tabs.ts`, `index.ts` | `tabs.ts` |
+| **Modales** | `*Modal.tsx` (globales) | `CreateWebsiteModal.tsx` |
+
+### D.2) Au niveau global (/services/, /components/, /hooks/)
+
+| Type | Import autorisé |
+|------|-----------------|
+| **API** | `import { ovhGet, ovhPost } from "@/services/api"` |
+| **Composants UI** | `import { Button, Modal } from "@/components/ui"` |
+| **Hooks globaux** | `import { useApi, useToast } from "@/hooks"` |
+| **Styles globaux** | `import "@/styles/global.css"` |
+
+---
+
+## E) Isolation NAV3 - PRINCIPES
+
+### E.1) Règle d'or
+
+> **Chaque NAV3 est autonome. Les modifications d'un NAV3 n'impactent PAS les autres NAV3.**
+
+### E.2) Imports autorisés depuis un NAV3
+
+```typescript
+// ✅ AUTORISÉ - Types NAV2
+import type { WordpressInfo } from "../../wordpress.types";
+
+// ✅ AUTORISÉ - Service partagé NAV2
+import { wordpressService } from "../../wordpress.service";
+
+// ✅ AUTORISÉ - API globale
+import { ovhGet, ovhPost } from "@/services/api";
+
+// ✅ AUTORISÉ - Composants UI globaux
+import { Button, Modal, Table } from "@/components/ui";
+
+// ✅ AUTORISÉ - Hooks globaux
+import { useApi } from "@/hooks/useApi";
+
+// ✅ AUTORISÉ - Service local
+import { domainsService } from "./DomainsTab.service";
+
+// ✅ AUTORISÉ - CSS local
+import "./DomainsTab.css";
+```
+
+### E.3) Imports INTERDITS depuis un NAV3
+
+```typescript
+// ❌ INTERDIT - Import croisé entre NAV3
+import { backupsService } from "../backups/BackupsTab.service";
+import "../performance/PerformanceTab.css";
+
+// ❌ INTERDIT - Composant d'un autre NAV3
+import { BackupCard } from "../backups/BackupCard";
+```
+
+### E.4) Duplication assumée
+
+Si deux NAV3 ont besoin de la même fonction helper :
+
+```typescript
+// domains/DomainsTab.service.ts
+const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR");
+
+// backups/BackupsTab.service.ts
+const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR");
+```
+
+**Pourquoi ?** Le coût de duplication (quelques lignes) < coût du couplage (régressions).
+
+---
+
+## F) CSS - Conventions
+
+### F.1) Fichiers CSS par niveau
+
+| Niveau | Fichier | Préfixe classes |
+|--------|---------|-----------------|
+| NAV2 | `{nav2}.css`, `styles.css` | `.{nav2}-` |
+| NAV2 modales | `Modals.css` | `.{nav2}-modal-` |
+| NAV3 | `{Nav3}Tab.css` | `.{nav3}-` |
+| NAV4 | `{Nav4}Tab.css` | `.{nav4}-` |
+
+### F.2) Convention de nommage
+
+```css
+/* wordpress.css - CSS partagé NAV2 */
+.wordpress-container { }
+.wordpress-header { }
+.wordpress-sidebar { }
+
+/* Modals.css - Modales partagées NAV2 */
+.wordpress-modal-overlay { }
+.wordpress-modal-content { }
+
+/* domains/DomainsTab.css - CSS isolé NAV3 */
+.domains-table { }
+.domains-row { }
+.domains-badge { }
+```
+
+### F.3) Variables CSS
+
+```css
+/* Utiliser les variables globales ODS */
+.domains-card {
+  background: var(--ods-color-surface);
+  padding: var(--ods-spacing-md);
+  border-radius: var(--ods-radius-md);
+  color: var(--ods-color-text);
+}
+```
+
+---
+
+## G) Services - Conventions
+
+### G.1) Patterns de nommage
+
+| Niveau | Pattern | Exemple |
+|--------|---------|---------|
+| NAV2 partagé | `{nav2}.service.ts` | `domains.service.ts` |
+| NAV2 page | `{nav2}Page.service.ts` | `emailsPage.service.ts` |
+| NAV3 isolé | `{Nav3}Tab.service.ts` | `DomainsTab.service.ts` |
+| NAV3 simple | `{nav3}.service.ts` | `numbers.service.ts` |
+| Modales | `modals.service.ts` | `modals.service.ts` |
+
+### G.2) Structure service NAV3
+
+```typescript
+// domains/DomainsTab.service.ts
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "@/services/api";
+import type { Domain } from "../../wordpress.types";
+
+// Helpers locaux (dupliqués si nécessaire)
+const formatDomain = (d: string) => d.toLowerCase().trim();
+
+// API calls
+export const domainsService = {
+  getAll: (serviceName: string): Promise<Domain[]> =>
+    ovhGet(`/hosting/web/${serviceName}/attachedDomain`),
+
+  get: (serviceName: string, domain: string): Promise<Domain> =>
+    ovhGet(`/hosting/web/${serviceName}/attachedDomain/${domain}`),
+
+  create: (serviceName: string, data: Partial<Domain>): Promise<void> =>
+    ovhPost(`/hosting/web/${serviceName}/attachedDomain`, data),
+
+  update: (serviceName: string, domain: string, data: Partial<Domain>): Promise<void> =>
+    ovhPut(`/hosting/web/${serviceName}/attachedDomain/${domain}`, data),
+
+  delete: (serviceName: string, domain: string): Promise<void> =>
+    ovhDelete(`/hosting/web/${serviceName}/attachedDomain/${domain}`),
+};
+```
+
+---
+
+## H) Modales - Conventions
+
+### H.1) Deux patterns
+
+| Pattern | Localisation | Usage |
+|---------|--------------|-------|
+| **Globale NAV2** | `{nav2}/*Modal.tsx` | Modales partagées entre NAV3 |
+| **Locale NAV3** | `{nav3}/*Modal.tsx` | Modales spécifiques à un NAV3 |
+
+### H.2) Nommage
+
+```
+CreateWebsiteModal.tsx      # Action + Objet + Modal
+DeleteWebsiteModal.tsx
+ConfigureSslModal.tsx
+AddDomainModal.tsx
+RestoreBackupModal.tsx
+```
+
+### H.3) CSS Modales
+
+```css
+/* Modals.css - Partagé NAV2 */
+.wordpress-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.wordpress-modal-content {
+  background: white;
+  border-radius: var(--ods-radius-lg);
+  padding: var(--ods-spacing-lg);
+  max-width: 600px;
+}
+
+.wordpress-modal-header { }
+.wordpress-modal-body { }
+.wordpress-modal-footer { }
+```
+
+---
+
+## I) Composants Layout - Conventions
+
+### I.1) Fichiers Layout NAV2
+
+| Fichier | Rôle |
+|---------|------|
+| `{Nav2}Layout.tsx` | Container principal (left panel + right panel) |
+| `{Nav2}Sidebar.tsx` | Liste des services dans le left panel |
+| `RightPanelHeader.tsx` | Header du right panel avec infos service |
+| `Onboarding.tsx` | Écran quand aucun service n'existe |
+
+### I.2) Structure type Layout
+
+```typescript
+// HostingLayout.tsx
+import { HostingSidebar } from "./HostingSidebar";
+import { Onboarding } from "./Onboarding";
+import "./styles.css";
+
+export const HostingLayout: React.FC = () => {
+  const { services, selectedService } = useHostingData();
+
+  if (services.length === 0) {
+    return <Onboarding />;
+  }
+
+  return (
+    <div className="hosting-layout">
+      <div className="hosting-left-panel">
+        <HostingSidebar services={services} selected={selectedService} />
+      </div>
+      <div className="hosting-right-panel">
+        <Outlet />
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## J) Hooks Partagés NAV2
+
+### J.1) Pattern
+
+```typescript
+// emails/useEmailAccounts.ts
+import { useState, useEffect } from "react";
+import { emailsService } from "./emails.service";
+import type { EmailAccount } from "./emails.types";
+
+export const useEmailAccounts = (serviceName: string) => {
+  const [accounts, setAccounts] = useState<EmailAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    emailsService.getAccounts(serviceName)
+      .then(setAccounts)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  }, [serviceName]);
+
+  return { accounts, loading, error, refetch: () => { /* ... */ } };
+};
+```
+
+### J.2) Usage
+
+```typescript
+// emails/general/AccountsTab.tsx
+import { useEmailAccounts } from "../useEmailAccounts";
+
+export const AccountsTab: React.FC<{ serviceName: string }> = ({ serviceName }) => {
+  const { accounts, loading, error } = useEmailAccounts(serviceName);
+  // ...
+};
+```
+
+---
+
+## K) Barrel Files
+
+### K.1) Pattern index.ts dans NAV3
+
+```typescript
+// domains/dns/index.ts
+export { DnsTab } from "./DnsTab";
+export { AddRecordModal } from "./AddRecordModal";
+export { EditRecordModal } from "./EditRecordModal";
+export { DeleteRecordModal } from "./DeleteRecordModal";
+```
+
+### K.2) Pattern tabs.ts au niveau NAV2
+
+```typescript
+// wordpress/tabs.ts
+export { GeneralTab } from "./GeneralTab";
+export { DomainsTab } from "./domains/DomainsTab";
+export { PerformanceTab } from "./performance/PerformanceTab";
+export { ExtensionsTab } from "./extensions/ExtensionsTab";
+export { BackupsTab } from "./backups/BackupsTab";
+export { TasksTab } from "./tasks/TasksTab";
+```
+
+---
+
+## L) Récapitulatif Nommage
+
+### L.1) Fichiers
+
+| Élément | Convention | Exemple |
+|---------|------------|---------|
+| Types NAV2 | `{nav2}.types.ts` | `wordpress.types.ts` |
+| CSS NAV2 | `{nav2}.css` ou `styles.css` | `wordpress.css` |
+| CSS Modales | `Modals.css` | `Modals.css` |
+| Service NAV2 | `{nav2}.service.ts` | `emails.service.ts` |
+| Hook NAV2 | `use{Feature}.ts` | `useEmailAccounts.ts` |
+| Layout | `{Nav2}Layout.tsx` | `HostingLayout.tsx` |
+| Sidebar | `{Nav2}Sidebar.tsx` | `HostingSidebar.tsx` |
+| Composant NAV3 | `{Nav3}Tab.tsx` | `DomainsTab.tsx` |
+| Service NAV3 | `{Nav3}Tab.service.ts` | `DomainsTab.service.ts` |
+| CSS NAV3 | `{Nav3}Tab.css` | `DomainsTab.css` |
+| Modale | `{Action}{Object}Modal.tsx` | `CreateWebsiteModal.tsx` |
+| Traduction | `{nav3}.json` ou `index.json` | `general.json` |
+
+### L.2) Classes CSS
+
+| Niveau | Préfixe | Exemples |
+|--------|---------|----------|
+| NAV2 | `.{nav2}-` | `.wordpress-container`, `.wordpress-header` |
+| NAV2 modal | `.{nav2}-modal-` | `.wordpress-modal-overlay` |
+| NAV3 | `.{nav3}-` | `.domains-table`, `.domains-row` |
+| NAV4 | `.{nav4}-` | `.themes-card`, `.plugins-list` |
+
+---
+
+## M) Checklist Création NAV2
+
+### Phase 1 : Structure
+- [ ] Créer `src/pages/{nav1}/{nav2}/`
+- [ ] Créer `index.tsx`
+- [ ] Créer `{nav2}.types.ts`
+- [ ] Créer `{nav2}.css` ou `styles.css`
+
+### Phase 2 : Optionnels NAV2
+- [ ] `{Nav2}Layout.tsx` si layout spécifique
+- [ ] `{Nav2}Sidebar.tsx` si left panel
+- [ ] `Onboarding.tsx` si écran vide
+- [ ] `{nav2}.service.ts` si API partagée
+- [ ] `Modals.css` si modales partagées
+- [ ] `tabs.ts` si export centralisé
+
+### Phase 3 : NAV3
+Pour chaque NAV3 :
+- [ ] Créer dossier `{nav3}/`
+- [ ] Créer `{Nav3}Tab.tsx`
+- [ ] Créer `{Nav3}Tab.service.ts`
+- [ ] Créer `{Nav3}Tab.css`
+- [ ] Créer modales locales si besoin
+
+### Phase 4 : Traductions
+- [ ] Créer `public/locales/fr/{nav1}/{nav2}/index.json`
+- [ ] Créer `public/locales/en/{nav1}/{nav2}/index.json`
+- [ ] OU créer un fichier par NAV3 : `{nav3}.json`
+
+### Phase 5 : Validation
+- [ ] Build réussi (`npm run build:dev`)
+- [ ] Pas d'imports croisés entre NAV3
+- [ ] Classes CSS préfixées correctement
+
+---
+
+## N) Commandes Utiles
+
+```bash
+# Lister structure d'un NAV2
+find src/pages/{nav1}/{nav2} -type f \( -name "*.tsx" -o -name "*.ts" -o -name "*.css" \) | sort
+
+# Vérifier imports croisés NAV3
+grep -rn "from.*\.\.\/.*Tab" src/pages/{nav1}/{nav2}/
+
+# Vérifier CSS croisés
+grep -rn "import.*\.\..*\.css" src/pages/{nav1}/{nav2}/
+
+# Lister classes CSS utilisées
+grep -roh 'className="[^"]*"' src/pages/{nav1}/{nav2}/ | sort | uniq -c | sort -rn
+
+# Lister traductions
+find public/locales -path "*{nav2}*" -name "*.json" | sort
+
+# Compter fichiers par NAV3
+find src/pages/{nav1}/{nav2} -maxdepth 2 -type d -exec sh -c 'echo -n "{}: "; find "{}" -maxdepth 1 -type f | wc -l' \;
+```
+
+---
+
+## O) Migration depuis prompt_split v1-v4
+
+### Changements majeurs v5
+
+| Aspect | v1-v4 | v5 |
+|--------|-------|-----|
+| Structure | `tabs/` obligatoire | `tabs/` optionnel (NAV1=general uniquement) |
+| CSS partagé | INTERDIT | AUTORISÉ au niveau NAV2 |
+| Service partagé | INTERDIT | AUTORISÉ au niveau NAV2 |
+| Hooks partagés | INTERDIT | AUTORISÉ au niveau NAV2 |
+| Barrel files | INTERDIT | AUTORISÉ (`tabs.ts`, `index.ts`) |
+| Modales | Dans NAV3 uniquement | NAV2 global OU NAV3 local |
+| Traductions | 1 pattern | 5 patterns acceptés |
+
+### Pas de migration nécessaire
+
+Le code existant est conforme. Le prompt v5 documente la réalité du codebase.
+
+---
+
+FIN PROMPT SPLIT v5

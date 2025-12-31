@@ -288,14 +288,36 @@ export interface ModemGuide {
 export interface VoipLine {
   id: string;
   number: string;
-  status: 'active' | 'suspended';
-  type: 'line' | 'fax';
+  status: 'online' | 'offline' | 'pending';
+  type: 'sip' | 'fax';
+  description?: string;
+  monthCalls?: number;
 }
 
 export interface EcoFax {
   enabled: boolean;
   email: string;
   number?: string;
+  status?: 'active' | 'inactive';
+  format?: 'pdf' | 'tiff' | 'pdf_tiff';
+  quality?: 'standard' | 'high' | 'ultra';
+}
+
+export interface VoipStats {
+  incomingCalls: number;
+  outgoingCalls: number;
+  totalDuration: number; // in minutes
+  faxSent: number;
+  faxReceived: number;
+}
+
+export interface FaxHistoryItem {
+  id: string;
+  date: string;
+  type: 'received' | 'sent';
+  correspondent: string;
+  pages: number;
+  status: 'success' | 'error' | 'pending' | 'sending';
 }
 
 export interface AvailableOption {

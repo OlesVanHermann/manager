@@ -7,9 +7,9 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../../services/api';
 import type { WordPress } from './wordpress.types';
-import { GeneralTab, DomainsTab, PerformanceTab, ExtensionsTab, BackupsTab, TasksTab } from './tabs';
-import { CreateWebsiteModal } from './modals/CreateWebsiteModal';
-import { ImportWebsiteModal } from './modals/ImportWebsiteModal';
+import { GeneralTab, DomainsTab, PerformanceTab, ExtensionsTab, BackupsTab, TasksTab } from './tabs.ts';
+import { CreateWebsiteModal } from './CreateWebsiteModal';
+import { ImportWebsiteModal } from './ImportWebsiteModal';
 import Onboarding from './Onboarding';
 import './wordpress.css';
 
@@ -99,16 +99,12 @@ export default function WordPressPage() {
     svc.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Onboarding si aucun service
-  if (!loading && services.length === 0) {
-    return (
-      <>
-        <Onboarding onCreate={() => setShowCreateModal(true)} onImport={() => setShowImportModal(true)} />
-        <CreateWebsiteModal serviceName="" isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onSuccess={() => { setShowCreateModal(false); loadServices(); }} />
-        <ImportWebsiteModal serviceName="" isOpen={showImportModal} onClose={() => setShowImportModal(false)} onSuccess={() => { setShowImportModal(false); loadServices(); }} />
-      </>
-    );
-  }
+  // Flag pour afficher onboarding dans le main
+  // Mode normal: onboarding si aucun service
+  const forceOnboarding = false;
+  const showOnboarding = !loading && (forceOnboarding || services.length === 0);
+  // Erreur à afficher seulement si on a des services mais le détail échoue
+  const showError = !forceOnboarding && error && services.length > 0;
 
   const renderTab = () => {
     if (!selectedService || !details) return null;
@@ -151,6 +147,7 @@ export default function WordPressPage() {
                 placeholder={t('common.search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={showOnboarding}
               />
             </div>
           </div>
@@ -158,30 +155,37 @@ export default function WordPressPage() {
             <span>{filteredServices.length} {t('common.sites', { count: filteredServices.length })}</span>
           </div>
           <div className="wp-service-items">
-            {filteredServices.map(svc => {
-              const svcDetails = svc === selectedService ? details : null;
-              const stateInfo = svcDetails ? getStateInfo(svcDetails.state) : null;
-              return (
-                <div
-                  key={svc}
-                  className={`wp-service-item ${svc === selectedService ? 'selected' : ''}`}
-                  onClick={() => handleSelectService(svc)}
-                >
-                  <span className="wp-service-icon">🌐</span>
-                  <div className="wp-service-info">
-                    <div className="wp-service-name">{svcDetails?.displayName || svc}</div>
-                    <div className="wp-service-version">WordPress {svcDetails?.wordpressVersion || svcDetails?.wpVersion || '--'}</div>
-                    {stateInfo && (
-                      <div className="wp-service-state">
-                        <span className="wp-state-dot" style={{ backgroundColor: stateInfo.color }} />
-                        <span>{stateInfo.label}</span>
-                      </div>
-                    )}
-                    <div className="wp-service-offer">{svcDetails?.offer || 'WordPress'} · {svcDetails?.datacenter || '--'}</div>
+            {showOnboarding ? (
+              <div className="wp-sidebar-empty">
+                <span className="wp-sidebar-empty-icon">📭</span>
+                <span className="wp-sidebar-empty-text">{t('noResults')}</span>
+              </div>
+            ) : (
+              filteredServices.map(svc => {
+                const svcDetails = svc === selectedService ? details : null;
+                const stateInfo = svcDetails ? getStateInfo(svcDetails.state) : null;
+                return (
+                  <div
+                    key={svc}
+                    className={`wp-service-item ${svc === selectedService ? 'selected' : ''}`}
+                    onClick={() => handleSelectService(svc)}
+                  >
+                    <span className="wp-service-icon">🌐</span>
+                    <div className="wp-service-info">
+                      <div className="wp-service-name">{svcDetails?.displayName || svc}</div>
+                      <div className="wp-service-version">WordPress {svcDetails?.wordpressVersion || svcDetails?.wpVersion || '--'}</div>
+                      {stateInfo && (
+                        <div className="wp-service-state">
+                          <span className="wp-state-dot" style={{ backgroundColor: stateInfo.color }} />
+                          <span>{stateInfo.label}</span>
+                        </div>
+                      )}
+                      <div className="wp-service-offer">{svcDetails?.offer || 'WordPress'} · {svcDetails?.datacenter || '--'}</div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
           <div className="wp-sidebar-actions">
             <button className="wp-btn wp-btn-primary wp-btn-block" onClick={() => setShowCreateModal(true)}>
@@ -190,11 +194,13 @@ export default function WordPressPage() {
           </div>
         </aside>
 
-        {/* RIGHT PANEL - Details du site */}
+        {/* RIGHT PANEL - Details du site ou Onboarding */}
         <main className="wp-main">
           {loading ? (
             <div className="wp-page-loading">{t('common.loading')}</div>
-          ) : error ? (
+          ) : showOnboarding ? (
+            <Onboarding onCreate={() => setShowCreateModal(true)} onImport={() => setShowImportModal(true)} />
+          ) : showError ? (
             <div className="wp-page-error">{error}</div>
           ) : selectedService && details ? (
             <div className="wp-detail">

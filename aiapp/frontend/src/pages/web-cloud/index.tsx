@@ -145,7 +145,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
         countApi("/email/pro"),
         countApi("/email/exchange"),
         countApi("/license/office"),
-        countApi("/email/zimbra"),
+        Promise.resolve(0), // Zimbra désactivé - API n'existe pas pour tous les comptes
         countApi("/telephony"),
         countApi("/sms"),
         countApi("/freefax"),
@@ -275,7 +275,7 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
             <div className="wc-group-arrow">→</div>
           </div>
           <div className="wc-group-detail">
-            Pack xDSL: {formatCount(counts.packXdsl)} • OverTheBox: {formatCount(counts.overthebox)}
+            {t("services.connections")}: {formatCount(counts.packXdsl)} • OverTheBox: {formatCount(counts.overthebox)}
           </div>
         </div>
       </div>

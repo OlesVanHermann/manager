@@ -404,23 +404,18 @@ echo "Création new_manager.web-cloud.emails.zimbra.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.zimbra.tar \
     ./src/pages/web-cloud/emails/zimbra
 
-# --- HEBERGEMENT (core: index.tsx, styles.css) ---
+# --- HOSTING (core: index.tsx, styles.css) ---
 
-echo "Création new_manager.web-cloud.hebergement.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.tar \
-    ./src/pages/web-cloud/hebergement
+echo "Création new_manager.web-cloud.hosting.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.hosting.tar \
+    ./src/pages/web-cloud/hosting
 
-echo "Création new_manager.web-cloud.hebergement.hosting.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.hosting.tar \
-    ./src/pages/web-cloud/hebergement/hosting
 
-echo "Création new_manager.web-cloud.hebergement.managed-wordpress.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.managed-wordpress.tar \
-    ./src/pages/web-cloud/hebergement/managed-wordpress
+# --- WORDPRESS (core: index.tsx, styles.css) ---
 
-echo "Création new_manager.web-cloud.hebergement.private-database.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.hebergement.private-database.tar \
-    ./src/pages/web-cloud/hebergement/private-database
+echo "Création new_manager.web-cloud.wordpress.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.wordpress.tar \
+    ./src/pages/web-cloud/wordpress
 
 # --- TELECOM (core: index.tsx, index.css) ---
 

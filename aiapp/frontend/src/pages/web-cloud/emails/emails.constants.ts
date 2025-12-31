@@ -2,7 +2,22 @@
 // CONSTANTS - Emails (Configuration des offres et tabs)
 // ============================================================
 
-import { EmailOffer, OfferConfig, EmailTab } from "./types";
+import { EmailOffer, OfferConfig, EmailTab, Nav3Mode, GeneralTab, PacksTab } from "./types";
+
+// ---------- NAV3 CONFIGURATION ----------
+
+export interface Nav3Config {
+  id: Nav3Mode;
+  labelKey: string;
+  icon: string;
+}
+
+export const NAV3_CONFIG: Nav3Config[] = [
+  { id: "general", labelKey: "nav3.general", icon: "📧" },
+  { id: "packs", labelKey: "nav3.packs", icon: "📦" },
+];
+
+export const DEFAULT_NAV3_MODE: Nav3Mode = "general";
 
 // ---------- CONFIGURATION DES OFFRES ----------
 
@@ -41,7 +56,7 @@ export const OFFER_CONFIG: Record<EmailOffer, OfferConfig> = {
   },
 };
 
-// ---------- TABS NAV3 ----------
+// ---------- TABS NAV4 (selon NAV3) ----------
 
 export interface TabConfig {
   id: EmailTab;
@@ -50,15 +65,28 @@ export interface TabConfig {
   hasSubTabs: boolean;
 }
 
-export const TABS_CONFIG: TabConfig[] = [
+// NAV3=General → 7 NAV4 tabs
+export const GENERAL_TABS_CONFIG: TabConfig[] = [
   { id: "accounts", labelKey: "tabs.accounts", offers: "all", hasSubTabs: false },
   { id: "redirections", labelKey: "tabs.redirections", offers: "all", hasSubTabs: false },
   { id: "responders", labelKey: "tabs.responders", offers: "all", hasSubTabs: false },
   { id: "lists", labelKey: "tabs.lists", offers: ["mx-plan", "email-pro", "exchange"], hasSubTabs: false },
   { id: "security", labelKey: "tabs.security", offers: ["email-pro", "exchange", "zimbra"], hasSubTabs: true },
   { id: "advanced", labelKey: "tabs.advanced", offers: ["exchange"], hasSubTabs: true },
-  { id: "licenses", labelKey: "tabs.licenses", offers: "all", hasSubTabs: true },
   { id: "tasks", labelKey: "tabs.tasks", offers: "all", hasSubTabs: false },
+];
+
+// NAV3=Packs → 3 NAV4 tabs
+export const PACKS_TABS_CONFIG: TabConfig[] = [
+  { id: "packs", labelKey: "tabs.packs", offers: "all", hasSubTabs: false },
+  { id: "alacarte", labelKey: "tabs.alacarte", offers: "all", hasSubTabs: false },
+  { id: "history", labelKey: "tabs.history", offers: "all", hasSubTabs: false },
+];
+
+// Legacy: all tabs (for backwards compatibility)
+export const TABS_CONFIG: TabConfig[] = [
+  ...GENERAL_TABS_CONFIG,
+  { id: "licenses", labelKey: "tabs.licenses", offers: "all", hasSubTabs: true },
 ];
 
 // ---------- SOUS-TABS NAV4 ----------
@@ -108,14 +136,23 @@ export const STATUS_CONFIG = {
 // ---------- DEFAULT VALUES ----------
 
 export const DEFAULT_VIEW_MODE = "domain" as const;
-export const DEFAULT_TAB = "accounts" as const;
+export const DEFAULT_GENERAL_TAB = "accounts" as const;
+export const DEFAULT_PACKS_TAB = "packs" as const;
+export const DEFAULT_TAB = DEFAULT_GENERAL_TAB;
+
 export const DEFAULT_SUB_TABS: Record<EmailTab, string> = {
+  // General tabs
   accounts: "",
   redirections: "",
   responders: "",
   lists: "",
   security: "dns",
   advanced: "resources",
-  licenses: "packs",
   tasks: "",
+  // Packs tabs
+  packs: "",
+  alacarte: "",
+  history: "",
+  // Legacy
+  licenses: "packs",
 };

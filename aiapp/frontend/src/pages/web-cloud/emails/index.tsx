@@ -1,40 +1,64 @@
 // ============================================================
-// EMAILS - Page unifiée (Vue par domaine / Vue par licence)
+// EMAILS - Page unifiée avec NAV3 [General] [Packs]
+// NAV3 dans LeftPanel, NAV4 tabs dans RightPanel
 // ============================================================
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
-import { ViewMode, EmailTab, EmailOffer } from "./types";
-import { TABS_CONFIG, DEFAULT_VIEW_MODE, DEFAULT_TAB, DEFAULT_SUB_TABS } from "./emails.constants";
-import { useEmailDomains } from "./hooks/useEmailDomains";
-import { useEmailLicenses } from "./hooks/useEmailLicenses";
-import { LeftPanel } from "./components/LeftPanel";
+import { Nav3Mode, EmailTab, EmailOffer } from "./types";
+import {
+  GENERAL_TABS_CONFIG,
+  PACKS_TABS_CONFIG,
+  DEFAULT_NAV3_MODE,
+  DEFAULT_GENERAL_TAB,
+  DEFAULT_PACKS_TAB,
+  DEFAULT_SUB_TABS,
+} from "./emails.constants";
+import { useEmailDomains } from "./useEmailDomains";
+import { useEmailLicenses } from "./useEmailLicenses";
+import { LeftPanel } from "./LeftPanel";
 import { RightPanelHeader } from "./RightPanelHeader";
 import { Onboarding } from "./Onboarding";
 import "./styles.css";
-import "./components/LeftPanel/LeftPanel.css";
-import "./tabs/tabs.css";
-import "./modals/modals.css";
+import "./LeftPanel.css";
+import "./general/general.css";
+import "./modals.css";
 
-// Import tabs (lazy loaded en production)
-import AccountsTab from "./tabs/AccountsTab";
-import RedirectionsTab from "./tabs/RedirectionsTab";
-import RespondersTab from "./tabs/RespondersTab";
-import ListsTab from "./tabs/ListsTab";
-import SecurityTab from "./tabs/security/SecurityTab";
-import AdvancedTab from "./tabs/advanced/AdvancedTab";
-import LicensesTab from "./tabs/licenses/LicensesTab";
-import TasksTab from "./tabs/TasksTab";
+// Lazy load tabs for code-splitting (amélioration performance)
+// NAV3=General tabs
+const AccountsTab = lazy(() => import("./general/AccountsTab"));
+const RedirectionsTab = lazy(() => import("./general/RedirectionsTab"));
+const RespondersTab = lazy(() => import("./general/RespondersTab"));
+const ListsTab = lazy(() => import("./general/ListsTab"));
+const SecurityTab = lazy(() => import("./general/security/SecurityTab"));
+const AdvancedTab = lazy(() => import("./general/advanced/AdvancedTab"));
+const TasksTab = lazy(() => import("./general/TasksTab"));
+// NAV3=Packs tabs
+const PacksTab = lazy(() => import("./packs/PacksTab"));
+const AlacarteTab = lazy(() => import("./packs/AlacarteTab"));
+const HistoryTab = lazy(() => import("./packs/HistoryTab"));
 
-/** Page principale Emails - Vue unifiée multi-offres. */
+/** Skeleton de chargement pour les tabs */
+function TabSkeleton() {
+  return (
+    <div className="tab-skeleton">
+      <div className="skeleton skeleton-header" />
+      <div className="skeleton skeleton-row" />
+      <div className="skeleton skeleton-row" />
+      <div className="skeleton skeleton-row" />
+    </div>
+  );
+}
+
+/** Page principale Emails - Vue unifiée avec NAV3 [General] [Packs]. */
 export default function EmailsPage() {
   const { t } = useTranslation("web-cloud/emails/index");
 
   // ---------- STATE ----------
 
-  const [viewMode, setViewMode] = useState<ViewMode>(DEFAULT_VIEW_MODE);
-  const [activeTab, setActiveTab] = useState<EmailTab>(DEFAULT_TAB);
-  const [activeSubTab, setActiveSubTab] = useState<string>(DEFAULT_SUB_TABS[DEFAULT_TAB]);
+  const [nav3Mode, setNav3Mode] = useState<Nav3Mode>(DEFAULT_NAV3_MODE);
+  const [activeTab, setActiveTab] = useState<EmailTab>(DEFAULT_GENERAL_TAB);
+  const [activeSubTab, setActiveSubTab] = useState<string>(DEFAULT_SUB_TABS[DEFAULT_GENERAL_TAB]);
 
   // ---------- HOOKS DATA ----------
 
@@ -59,23 +83,34 @@ export default function EmailsPage() {
   const loading = domainsLoading || licensesLoading;
 
   const availableOffers = useMemo<EmailOffer[]>(() => {
-    if (viewMode === "domain" && selectedDomain) {
+    if (nav3Mode === "general" && selectedDomain) {
       return selectedDomain.offers;
     }
-    if (viewMode === "license" && selectedLicense) {
+    if (nav3Mode === "packs" && selectedLicense) {
       return [selectedLicense.offer];
     }
     return ["exchange", "email-pro", "zimbra", "mx-plan"];
-  }, [viewMode, selectedDomain, selectedLicense]);
+  }, [nav3Mode, selectedDomain, selectedLicense]);
+
+  // NAV4 tabs selon NAV3 sélectionnée
+  const currentTabsConfig = nav3Mode === "general" ? GENERAL_TABS_CONFIG : PACKS_TABS_CONFIG;
 
   const visibleTabs = useMemo(() => {
-    return TABS_CONFIG.filter((tab) => {
+    return currentTabsConfig.filter((tab) => {
       if (tab.offers === "all") return true;
       return tab.offers.some((offer) => availableOffers.includes(offer));
     });
-  }, [availableOffers]);
+  }, [currentTabsConfig, availableOffers]);
 
   // ---------- HANDLERS ----------
+
+  const handleNav3ModeChange = (mode: Nav3Mode) => {
+    setNav3Mode(mode);
+    // Reset to default tab for this NAV3
+    const defaultTab = mode === "general" ? DEFAULT_GENERAL_TAB : DEFAULT_PACKS_TAB;
+    setActiveTab(defaultTab);
+    setActiveSubTab(DEFAULT_SUB_TABS[defaultTab] || "");
+  };
 
   const handleTabChange = (tab: EmailTab) => {
     setActiveTab(tab);
@@ -101,10 +136,11 @@ export default function EmailsPage() {
   // ---------- RENDER TAB CONTENT ----------
 
   const renderTabContent = () => {
-    const domain = viewMode === "domain" ? selectedDomain?.name : undefined;
-    const licenseId = viewMode === "license" ? selectedLicense?.id : undefined;
+    const domain = nav3Mode === "general" ? selectedDomain?.name : undefined;
+    const licenseId = nav3Mode === "packs" ? selectedLicense?.id : undefined;
 
     switch (activeTab) {
+      // NAV3=General tabs
       case "accounts":
         return <AccountsTab domain={domain} licenseId={licenseId} offers={availableOffers} />;
       case "redirections":
@@ -130,15 +166,15 @@ export default function EmailsPage() {
             onSubTabChange={setActiveSubTab}
           />
         );
-      case "licenses":
-        return (
-          <LicensesTab
-            activeSubTab={activeSubTab}
-            onSubTabChange={setActiveSubTab}
-          />
-        );
       case "tasks":
         return <TasksTab domain={domain} />;
+      // NAV3=Packs tabs
+      case "packs":
+        return <PacksTab />;
+      case "alacarte":
+        return <AlacarteTab />;
+      case "history":
+        return <HistoryTab />;
       default:
         return null;
     }
@@ -150,8 +186,8 @@ export default function EmailsPage() {
     <div className="emails-page">
       {/* ---------- LEFT PANEL ---------- */}
       <LeftPanel
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        nav3Mode={nav3Mode}
+        onNav3ModeChange={handleNav3ModeChange}
         domains={domains}
         licenses={[...packs, ...alacarte]}
         selectedDomain={selectedDomain?.name || null}
@@ -159,18 +195,20 @@ export default function EmailsPage() {
         onSelectDomain={selectDomain}
         onSelectLicense={selectLicense}
         loading={loading}
+        onAddDomain={handleAddDomain}
+        onOrderPack={handleOrderPack}
       />
 
       {/* ---------- RIGHT PANEL ---------- */}
       <main className="emails-right-panel">
         {/* Header */}
         <RightPanelHeader
-          viewMode={viewMode}
+          nav3Mode={nav3Mode}
           selectedDomain={selectedDomain}
           selectedLicense={selectedLicense}
         />
 
-        {/* NAV3 Tabs */}
+        {/* NAV4 Tabs */}
         <nav className="emails-tabs">
           {visibleTabs.map((tab) => (
             <button
@@ -183,11 +221,26 @@ export default function EmailsPage() {
           ))}
         </nav>
 
-        {/* Tab Content */}
+        {/* Tab Content with Suspense for lazy-loaded tabs */}
         <div className="emails-tab-content">
-          {renderTabContent()}
+          <Suspense fallback={<TabSkeleton />}>
+            {renderTabContent()}
+          </Suspense>
         </div>
       </main>
     </div>
   );
 }
+
+// Re-export modals for use in tabs
+export { CreateAccountModal } from "./CreateAccountModal";
+export { EditAccountModal } from "./EditAccountModal";
+export { DeleteAccountModal } from "./DeleteAccountModal";
+export { CreateRedirectionModal } from "./CreateRedirectionModal";
+export { CreateResponderModal } from "./CreateResponderModal";
+export { CreateListModal } from "./CreateListModal";
+export { AddListMemberModal } from "./AddListMemberModal";
+export { AddAliasModal } from "./AddAliasModal";
+export { ChangePasswordModal } from "./ChangePasswordModal";
+export { DeleteModal } from "./DeleteModal";
+export { ConfigureDmarcModal } from "./ConfigureDmarcModal";

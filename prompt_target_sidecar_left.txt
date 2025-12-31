@@ -1,0 +1,593 @@
+================================================================================
+PROMPT TARGET - SIDECAR LEFT (LEFT PANEL)
+================================================================================
+
+Version: v1 (2025-12-31)
+Parent:  prompt_target_check.txt (specs layout)
+
+Ce document definit l'architecture cible pour tous les sidecars (left panels)
+du New Manager. Chaque aspect a ete analyse et la meilleure option selectionnee.
+
+================================================================================
+# 1. TABLEAU COMPARATIF DETAILLE
+================================================================================
+
+## 1.1 Vue d'ensemble
+
+| #  | Aspect              | Hosting           | Emails            | Domains           | TARGET            |
+|----|---------------------|-------------------|-------------------|-------------------|-------------------|
+| 1  | API calls mount     | N+1               | 10-50+            | 2 paralleles      | 2 paralleles      |
+| 2  | API calls selection | 0                 | Variable          | 3 max (lazy)      | Lazy on-select    |
+| 3  | Caching             | Aucun             | TTL 60s           | Aucun             | TTL 60s optionnel |
+| 4  | State management    | useState          | Custom hooks      | useState          | Custom hooks      |
+| 5  | Sidebar component   | Inline            | Separe            | Inline            | Separe            |
+| 6  | Service architecture| 1 service         | 2 svc + hooks     | 1 page + N tabs   | 1 page + N tabs   |
+| 7  | Lazy loading tabs   | React.lazy()      | Import direct     | Import direct     | React.lazy()      |
+| 8  | Pagination          | Client-side       | Non               | Non               | Client-side       |
+| 9  | Search              | useMemo           | Non               | useMemo           | useMemo           |
+| 10 | Filter dropdown     | Non               | Non               | Oui               | Oui               |
+| 11 | Tab visibility      | Fixe              | Dynamique         | Dynamique         | Dynamique         |
+| 12 | Selection model     | ID string         | Objet complet     | ID string         | ID string         |
+| 13 | Refresh             | Callback          | Hook .refresh()   | Callback          | Hook .refresh()   |
+| 14 | Types de service    | 1                 | 2                 | 3                 | N dynamique       |
+
+## 1.2 Analyse detaillee par aspect
+
+--------------------------------------------------------------------------------
+### #1 API CALLS MOUNT
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | N+1 (liste+details)| ECART    | A CORRIGER  |
+| Emails  | 10-50+ (mapping)  | ECART     | A CORRIGER  |
+| Domains | 2 (paralleles)    | OK        | Reference   |
+| TARGET  | **2 paralleles**  | -         | -           |
+
+**Justification TARGET:** Charger N+1 ou 10-50 appels au mount degrade les perfs.
+2 appels paralleles (listes seulement) = temps de chargement minimal.
+
+**Corrections:**
+- Hosting: Supprimer le chargement des details au mount, lazy load on-select
+- Emails: Supprimer le mapping multi-offres au mount, lazy load on-select
+
+--------------------------------------------------------------------------------
+### #2 API CALLS SELECTION
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | 0 (deja charge)   | ECART     | A CORRIGER  |
+| Emails  | Variable          | ECART     | A CORRIGER  |
+| Domains | 3 max (lazy)      | OK        | Reference   |
+| TARGET  | **Lazy on-select**| -         | -           |
+
+**Justification TARGET:** Lazy loading = charge uniquement ce qui est necessaire.
+Evite de surcharger le mount avec des details jamais consultes.
+
+**Corrections:**
+- Hosting: Deplacer chargement details dans useEffect on selectedId
+- Emails: Standardiser sur 1-3 appels max par selection
+
+--------------------------------------------------------------------------------
+### #3 CACHING
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | Aucun             | ECART     | A AJOUTER   |
+| Emails  | TTL 60s           | OK        | Reference   |
+| Domains | Aucun             | ECART     | A AJOUTER   |
+| TARGET  | **TTL 60s opt.**  | -         | -           |
+
+**Justification TARGET:** Cache TTL evite les appels redondants lors de
+navigations frequentes. 60s = bon compromis freshness/performance.
+Optionnel car pas toujours necessaire (donnees rarement consultees).
+
+**Corrections:**
+- Hosting: Ajouter cache TTL 60s sur listes
+- Domains: Ajouter cache TTL 60s sur listes
+
+--------------------------------------------------------------------------------
+### #4 STATE MANAGEMENT
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | useState direct   | ECART     | A CORRIGER  |
+| Emails  | Custom hooks      | OK        | Reference   |
+| Domains | useState direct   | ECART     | A CORRIGER  |
+| TARGET  | **Custom hooks**  | -         | -           |
+
+**Justification TARGET:** Custom hooks = logique reutilisable, testable,
+separation des concerns. useState direct = code duplique entre pages.
+
+**Corrections:**
+- Hosting: Migrer vers useLeftPanel hook
+- Domains: Migrer vers useLeftPanel hook
+
+--------------------------------------------------------------------------------
+### #5 SIDEBAR COMPONENT
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | Inline            | ECART     | A CORRIGER  |
+| Emails  | Separe (LeftPanel)| OK        | Reference   |
+| Domains | Inline            | ECART     | A CORRIGER  |
+| TARGET  | **Separe**        | -         | -           |
+
+**Justification TARGET:** Composant separe = reutilisable, maintenable,
+testable. Inline = duplication de code entre pages.
+
+**Corrections:**
+- Hosting: Extraire sidebar vers composant LeftPanel
+- Domains: Extraire sidebar vers composant LeftPanel
+
+--------------------------------------------------------------------------------
+### #6 SERVICE ARCHITECTURE
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | 1 service global  | ECART     | A CORRIGER  |
+| Emails  | 2 services + hooks| ECART     | A CORRIGER  |
+| Domains | 1 page + N tabs   | OK        | Reference   |
+| TARGET  | **1 page + N tabs**| -        | -           |
+
+**Justification TARGET:** 1 service page pour orchestration + 1 service par tab
+= separation claire, pas de service monolithique, chaque tab autonome.
+
+**Corrections:**
+- Hosting: Refactorer vers 1 pageService + N tabServices
+- Emails: Simplifier vers 1 pageService + N tabServices
+
+--------------------------------------------------------------------------------
+### #7 LAZY LOADING TABS
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | React.lazy()      | OK        | Reference   |
+| Emails  | Import direct     | ECART     | A CORRIGER  |
+| Domains | Import direct     | ECART     | A CORRIGER  |
+| TARGET  | **React.lazy()**  | -         | -           |
+
+**Justification TARGET:** React.lazy() = code splitting, bundle initial plus
+leger, tabs charges uniquement quand necessaires.
+
+**Corrections:**
+- Emails: Migrer imports vers React.lazy() + Suspense
+- Domains: Migrer imports vers React.lazy() + Suspense
+
+--------------------------------------------------------------------------------
+### #8 PAGINATION
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | Client-side       | OK        | Reference   |
+| Emails  | Non implemente    | ECART     | A AJOUTER   |
+| Domains | Non implemente    | ECART     | A AJOUTER   |
+| TARGET  | **Client-side**   | -         | -           |
+
+**Justification TARGET:** Pagination client-side = UX fluide pour listes > 20
+items, evite scroll infini lent, navigation rapide.
+
+**Corrections:**
+- Emails: Ajouter pagination client-side (20 items/page)
+- Domains: Ajouter pagination client-side (20 items/page)
+
+--------------------------------------------------------------------------------
+### #9 SEARCH
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | useMemo filter    | OK        | Reference   |
+| Emails  | Non implemente    | ECART     | A AJOUTER   |
+| Domains | useMemo filter    | OK        | Reference   |
+| TARGET  | **useMemo filter**| -         | -           |
+
+**Justification TARGET:** useMemo = filtrage performant sans re-render inutiles.
+Recherche instantanee cote client.
+
+**Corrections:**
+- Emails: Ajouter search avec useMemo dans LeftPanel
+
+--------------------------------------------------------------------------------
+### #10 FILTER DROPDOWN
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | Non               | ECART     | A AJOUTER   |
+| Emails  | Non               | ECART     | A AJOUTER   |
+| Domains | Oui (type)        | OK        | Reference   |
+| TARGET  | **Oui (si multi)**| -         | -           |
+
+**Justification TARGET:** Dropdown filtre necessaire si plusieurs types de
+service (domain/zone, mxplan/exchange, hosting/cdn...).
+
+**Corrections:**
+- Hosting: Ajouter si multi-types (hosting seul = pas necessaire)
+- Emails: Ajouter dropdown domain/license
+
+--------------------------------------------------------------------------------
+### #11 TAB VISIBILITY
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | Fixe (16 tabs)    | ECART     | A CORRIGER  |
+| Emails  | Dynamique (offres)| OK        | Reference   |
+| Domains | Dynamique (cond.) | OK        | Reference   |
+| TARGET  | **Dynamique**     | -         | -           |
+
+**Justification TARGET:** Tabs conditionnels = UX propre, pas de tabs vides
+ou non pertinents affiches.
+
+**Corrections:**
+- Hosting: Ajouter conditions de visibilite sur tabs
+
+--------------------------------------------------------------------------------
+### #12 SELECTION MODEL
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | ID string         | OK        | Reference   |
+| Emails  | Objet complet     | ECART     | A CORRIGER  |
+| Domains | ID string         | OK        | Reference   |
+| TARGET  | **ID string**     | -         | -           |
+
+**Justification TARGET:** ID string = simple, serialisable (URL), pas de
+probleme de reference. Objet complet = risque de stale data.
+
+**Corrections:**
+- Emails: Migrer selection vers ID string, lookup objet via useMemo
+
+--------------------------------------------------------------------------------
+### #13 REFRESH
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | Callback manuel   | ECART     | A CORRIGER  |
+| Emails  | Hook .refresh()   | OK        | Reference   |
+| Domains | Callback manuel   | ECART     | A CORRIGER  |
+| TARGET  | **Hook .refresh()**| -        | -           |
+
+**Justification TARGET:** Hook .refresh() = API propre, encapsule la logique
+de rafraichissement, reutilisable.
+
+**Corrections:**
+- Hosting: Migrer vers useLeftPanel avec .refresh()
+- Domains: Migrer vers useLeftPanel avec .refresh()
+
+--------------------------------------------------------------------------------
+### #14 TYPES DE SERVICE
+--------------------------------------------------------------------------------
+| Source  | Valeur            | vs TARGET | Action      |
+|---------|-------------------|-----------|-------------|
+| Hosting | 1 type            | OK        | Justifie    |
+| Emails  | 2 types           | OK        | Justifie    |
+| Domains | 3 types           | OK        | Reference   |
+| TARGET  | **N dynamique**   | -         | -           |
+
+**Justification TARGET:** Le nombre de types depend du domaine metier.
+L'architecture doit supporter N types sans modification.
+
+**Pas de correction:** Chaque page a son nombre de types, c'est normal.
+
+## 1.3 Resume des corrections
+
+| Page    | Corrections requises                                              | Priorite | Status      |
+|---------|-------------------------------------------------------------------|----------|-------------|
+| Hosting | API lazy, cache, hooks, LeftPanel, tab conditions, refresh       | Haute    | ✅ FAIT     |
+| Emails  | Cas special: deja aligne (view modes justifient LeftPanel local) | -        | ✅ ALIGNE   |
+| Domains | Cache, hooks, LeftPanel, lazy tabs, pagination, refresh          | Moyenne  | ✅ FAIT     |
+
+### Note sur Emails
+
+Emails utilise son propre LeftPanel local car il a des fonctionnalites uniques:
+- **View modes** (domain/license) non supportes par le LeftPanel partage
+- **Multi-offres** (MX Plan, Email Pro, Exchange, Zimbra) avec agregation complexe
+- Deja implemente: React.lazy, pagination, search, filter, cache TTL 5min, refresh()
+
+C'est un cas justifie de ne pas utiliser le LeftPanel partage.
+
+================================================================================
+# 2. ARCHITECTURE TARGET
+================================================================================
+
+```
+src/components/LeftPanel/
+├── LeftPanel.tsx           # Composant principal reutilisable
+├── LeftPanel.css           # Styles isoles prefixe .lp-
+├── LeftPanelItem.tsx       # Item de liste
+├── LeftPanelSearch.tsx     # Barre de recherche
+├── LeftPanelFilter.tsx     # Dropdown filtre
+├── LeftPanelPagination.tsx # Pagination client
+├── useLeftPanel.ts         # Hook de gestion d'etat
+└── index.ts                # Exports
+```
+
+================================================================================
+# 3. SPECS TECHNIQUES
+================================================================================
+
+## 3.1 API Pattern
+
+```typescript
+// AU MOUNT : 2 appels paralleles max (listes seulement)
+const [list1, list2] = await Promise.all([
+  service.getList1(),
+  service.getList2()
+]);
+
+// ON SELECTION : Lazy load details (1-3 appels)
+useEffect(() => {
+  if (selectedId) {
+    loadDetails(selectedId);
+  }
+}, [selectedId]);
+```
+
+## 3.2 Hook useLeftPanel
+
+```typescript
+interface UseLeftPanelOptions<T> {
+  fetchList: () => Promise<T[]>;
+  fetchDetails?: (id: string) => Promise<any>;
+  cacheKey?: string;
+  cacheTTL?: number;  // 60000 par defaut (60s)
+  pageSize?: number;  // 20 par defaut
+}
+
+interface UseLeftPanelResult<T> {
+  // Liste
+  items: T[];
+  filteredItems: T[];
+  loading: boolean;
+  error: string | null;
+
+  // Selection
+  selectedId: string | null;
+  selectedItem: T | null;
+  setSelectedId: (id: string | null) => void;
+
+  // Details (lazy loaded)
+  details: any | null;
+  detailsLoading: boolean;
+
+  // Search & Filter
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+  filterValue: string;
+  setFilterValue: (v: string) => void;
+
+  // Pagination
+  currentPage: number;
+  totalPages: number;
+  setCurrentPage: (p: number) => void;
+  paginatedItems: T[];
+
+  // Actions
+  refresh: () => Promise<void>;
+}
+```
+
+## 3.3 Composant LeftPanel
+
+```typescript
+interface LeftPanelProps<T> {
+  // Data
+  items: T[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+
+  // Render
+  renderItem: (item: T, isSelected: boolean) => React.ReactNode;
+  getItemId: (item: T) => string;
+
+  // Search
+  searchQuery?: string;
+  onSearchChange?: (q: string) => void;
+  searchPlaceholder?: string;
+
+  // Filter
+  filterOptions?: { value: string; label: string }[];
+  filterValue?: string;
+  onFilterChange?: (v: string) => void;
+
+  // Pagination
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (p: number) => void;
+
+  // State
+  loading?: boolean;
+  emptyMessage?: string;
+  itemCount?: number;
+}
+```
+
+## 3.4 Layout CSS
+
+```css
+/* Specs from prompt_target.txt */
+.lp-container {
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  height: 765px;           /* Content area height */
+  flex-shrink: 0;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Gap avec right panel = 16px */
+.page-layout {
+  display: flex;
+  gap: 16px;
+  padding: 15px 24px 24px 24px;  /* top=15px (gap NAV2), sides=24px, bottom=24px */
+}
+```
+
+## 3.5 NAV3 Group Selector (sections complexes)
+
+Pour les sections avec 10+ tabs, un sélecteur NAV3 peut être ajouté
+AU-DESSUS de la barre de recherche dans le LEFT PANEL :
+
+```
+┌─────────────────────────────────────┐
+│  [Général]  [Sites]  [Expert]       │  ← NAV3 selector (optionnel)
+├─────────────────────────────────────┤
+│  🔍 Rechercher...                   │  ← Search (standard)
+├─────────────────────────────────────┤
+│  Filtrer ▾              N services  │
+├─────────────────────────────────────┤
+│  ...items...                        │
+└─────────────────────────────────────┘
+```
+
+**Comportement par défaut :** [Général] est sélectionné au chargement.
+
+**Implémentation :**
+```typescript
+interface LeftPanelProps<T> {
+  // ... existing props ...
+
+  // NAV3 Group Selector (optional)
+  nav3Groups?: { id: string; label: string }[];
+  activeNav3?: string;
+  onNav3Change?: (nav3Id: string) => void;
+  defaultNav3?: string;  // Default: first group or "general"
+}
+```
+
+Voir prompt_target.web-cloud.hosting.txt pour exemple complet (Hébergement).
+
+================================================================================
+# 4. TABS PATTERN
+================================================================================
+
+## 4.1 Definition des tabs
+
+```typescript
+interface TabDef {
+  id: string;
+  labelKey: string;  // Cle i18n
+  condition: (entry: Entry) => boolean;  // Visibilite conditionnelle
+  component: React.LazyExoticComponent<any>;  // Lazy loaded
+}
+
+const TABS: TabDef[] = [
+  {
+    id: "general",
+    labelKey: "tabs.general",
+    condition: (e) => e.hasFeatureX,
+    component: React.lazy(() => import("./tabs/general/GeneralTab"))
+  },
+  // ...
+];
+```
+
+## 4.2 Rendu des tabs
+
+```tsx
+<Suspense fallback={<TabSkeleton />}>
+  {availableTabs.map(tab => (
+    <button
+      key={tab.id}
+      className={activeTab === tab.id ? "active" : ""}
+      onClick={() => setActiveTab(tab.id)}
+    >
+      {t(tab.labelKey)}
+    </button>
+  ))}
+</Suspense>
+
+<div className="tab-content">
+  <Suspense fallback={<ContentSkeleton />}>
+    {renderActiveTab()}
+  </Suspense>
+</div>
+```
+
+================================================================================
+# 5. CACHING (OPTIONNEL)
+================================================================================
+
+```typescript
+// Cache simple en memoire avec TTL
+const cache = new Map<string, { data: any; timestamp: number }>();
+
+function getCached<T>(key: string, ttl: number): T | null {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > ttl) {
+    cache.delete(key);
+    return null;
+  }
+  return entry.data as T;
+}
+
+function setCache<T>(key: string, data: T): void {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+```
+
+================================================================================
+# 6. CHECKLIST IMPLEMENTATION
+================================================================================
+
+Pour chaque page avec sidecar left :
+
+[ ] Layout: padding-top 15px, gap 16px, sidebar 280px
+[ ] API mount: 2 appels paralleles max (listes)
+[ ] API select: Lazy load details on selection
+[ ] Composant: Utiliser LeftPanel reutilisable
+[ ] Search: useMemo filter implemente
+[ ] Filter: Dropdown si plusieurs types de service
+[ ] Pagination: Client-side si > 20 items
+[ ] Tabs: React.lazy() + Suspense
+[ ] Tabs: Conditions de visibilite dynamiques
+[ ] Selection: Par ID string (pas objet complet)
+[ ] Refresh: Via hook .refresh()
+[ ] Cache: TTL 60s si appels frequents
+
+================================================================================
+# 7. PAGES CONCERNEES
+================================================================================
+
+| NAV1/NAV2           | Sidecar | Status       | Priority | Notes                    |
+|---------------------|---------|--------------|----------|--------------------------|
+| web-cloud/domains   | Oui     | ✅ FAIT      | -        | Reference + LeftPanel    |
+| web-cloud/hosting   | Oui     | ✅ FAIT      | -        | LeftPanel + lazy API     |
+| web-cloud/emails    | Oui     | ✅ ALIGNE    | -        | LeftPanel local (view modes) |
+| web-cloud/voip      | Oui     | A verifier   | Moyenne  |                          |
+| web-cloud/access    | Oui     | A verifier   | Moyenne  |                          |
+| bare-metal/dedicated| Oui     | A verifier   | Basse    |                          |
+| bare-metal/vps      | Oui     | A verifier   | Basse    |                          |
+
+================================================================================
+# 8. MIGRATION STEPS
+================================================================================
+
+Phase 1: Creer composant LeftPanel reutilisable         ✅ FAIT (2025-12-31)
+Phase 2: Creer hook useLeftPanel                        ✅ FAIT (2025-12-31)
+Phase 3: Migrer web-cloud/domains (validation reference)✅ FAIT (2025-12-31)
+Phase 4: Migrer web-cloud/hosting                       ✅ FAIT (2025-12-31)
+Phase 5: Verifier web-cloud/emails                      ✅ ALIGNE (deja conforme)
+Phase 6: Migrer autres pages                            ⏳ A FAIRE
+
+### Fichiers crees/modifies
+
+```
+src/components/LeftPanel/
+├── LeftPanel.tsx       ← NOUVEAU (composant reutilisable)
+├── LeftPanel.css       ← NOUVEAU (styles prefix .lp-)
+├── useLeftPanel.ts     ← NOUVEAU (hook avec cache TTL)
+└── index.ts            ← NOUVEAU (exports)
+
+src/pages/web-cloud/domains/index.tsx  ← MODIFIE (utilise LeftPanel + React.lazy)
+src/pages/web-cloud/hosting/index.tsx  ← MODIFIE (utilise LeftPanel + lazy API)
+src/pages/web-cloud/emails/            ← INCHANGE (deja conforme, LeftPanel local)
+```
+
+================================================================================
+FIN PROMPT TARGET SIDECAR LEFT
+================================================================================

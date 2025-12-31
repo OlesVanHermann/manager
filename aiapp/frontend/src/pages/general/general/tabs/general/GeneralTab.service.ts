@@ -55,41 +55,39 @@ export function getUser(): UserInfo | null {
 // ============ API CALLS ============
 
 async function getServicesSummary(): Promise<ServiceSummary> {
+  // OPTIMISATION: 1 seul appel API - juste compter les services
+  // Les détails par type sont chargés à la demande (lazy)
   const services = await ovhGet<string[]>("/services");
-  const typeCounts: Record<string, number> = {};
-  
-  for (const serviceId of services.slice(0, 50)) {
-    try {
-      const svc = await ovhGet<{ serviceId: string; resource: { name: string }; route?: { path?: string } }>(`/services/${serviceId}`);
-      const type = svc.route?.path?.split("/")[1] || "other";
-      typeCounts[type] = (typeCounts[type] || 0) + 1;
-    } catch {
-      // Ignorer les erreurs individuelles
-    }
-  }
 
-  const types = Object.entries(typeCounts)
-    .map(([type, count]) => ({ type, count }))
-    .sort((a, b) => b.count - a.count);
-
-  return { total: services.length, types };
+  // Retourner seulement le total, pas de N+1
+  return {
+    total: services.length,
+    types: [] // Types chargés à la demande via l'onglet Services
+  };
 }
 
 async function getBills(options: { limit?: number } = {}): Promise<Bill[]> {
+  // OPTIMISATION: Pour le dashboard, on ne charge que la dernière facture
+  // Les factures complètes sont dans l'onglet Facturation (lazy load)
   const billIds = await ovhGet<string[]>("/me/bill");
-  const limitedIds = billIds.slice(0, options.limit || 10);
-  
-  const bills = await Promise.all(
-    limitedIds.map(async (id) => {
-      try {
-        return await ovhGet<Bill>(`/me/bill/${id}`);
-      } catch {
-        return null;
-      }
-    })
-  );
-  
-  return bills.filter((b): b is Bill => b !== null);
+
+  if (billIds.length === 0) return [];
+
+  // Charger seulement la facture la plus récente (1 appel)
+  const limit = options.limit || 1;
+  const idsToFetch = billIds.slice(0, Math.min(limit, 1));
+
+  const bills: Bill[] = [];
+  for (const id of idsToFetch) {
+    try {
+      const bill = await ovhGet<Bill>(`/me/bill/${id}`);
+      bills.push(bill);
+    } catch {
+      // Ignorer les erreurs
+    }
+  }
+
+  return bills;
 }
 
 async function getDebtAccount(): Promise<DebtAccount | null> {
@@ -101,11 +99,14 @@ async function getDebtAccount(): Promise<DebtAccount | null> {
 }
 
 async function getDashboardAlerts(): Promise<DashboardAlerts> {
+  // OPTIMISATION: Limiter les appels pour le dashboard
+  // Détails complets disponibles dans les onglets dédiés (lazy load)
   const alerts: DashboardAlerts = {};
-  
+
   try {
     const orderIds = await ovhGet<number[]>("/me/order");
     if (orderIds.length > 0) {
+      // 1 seul appel pour la dernière commande
       const order = await ovhGet<Order>(`/me/order/${orderIds[0]}`);
       alerts.lastOrder = { order };
     }
@@ -114,13 +115,15 @@ async function getDashboardAlerts(): Promise<DashboardAlerts> {
   }
 
   try {
+    // Juste compter les tickets ouverts, pas de fetch individuel
     const ticketIds = await ovhGet<number[]>("/support/tickets?status=open");
-    if (ticketIds.length > 0) {
-      const tickets = await Promise.all(
-        ticketIds.slice(0, 5).map((id) => ovhGet<Ticket>(`/support/tickets/${id}`).catch(() => null))
-      );
-      alerts.openTickets = tickets.filter((t): t is Ticket => t !== null);
-    }
+    // Créer des tickets "placeholder" avec juste l'ID pour afficher le compteur
+    alerts.openTickets = ticketIds.slice(0, 5).map(id => ({
+      ticketId: id,
+      subject: "", // Sera chargé à la demande dans l'onglet Support
+      state: "open",
+      creationDate: "",
+    } as Ticket));
   } catch {
     // Ignorer
   }

@@ -1,0 +1,1077 @@
+================================================================================
+PROMPT TARGET - Web Cloud > Emails
+================================================================================
+
+| Element                            | Valeur                                                      |
+|------------------------------------|-------------------------------------------------------------|
+| **Prompt**                         | /home/ubuntu/prompt_target.web-cloud.emails.txt             |
+| **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/emails/           |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/emails/ |
+
+Version: v2 (2025-12-31)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+CHANGELOG v2:
+- NAV3 refactoré : 2 modes [General] / [Packs] au lieu de 8 tabs avec Licences
+- Terminologie : "Par domaine/Par licence" → "General/Packs"
+- Arborescence fichiers alignée avec implémentation React
+
+================================================================================
+
+##############################################################################
+# 0. VISION PRODUIT - EMAIL UNIFIÉ
+##############################################################################
+
+### Principes fondamentaux
+
+1. **Vision utilisateur** : L'utilisateur voit "Email", pas "Exchange/Pro/Zimbra"
+2. **Mix & Match** : Chaque boîte mail a son propre niveau de service
+3. **Facturation flexible** :
+   - À la carte : 1 boîte = 1 licence = 1 prix
+   - Par pack : X boîtes = 1 pack = 1 prix fixe (remise volume)
+4. **Scope des packs** :
+   - Multi-domaine : Licences utilisables sur tous les domaines
+   - Mono-domaine : Licences réservées à un domaine spécifique
+5. **Liberté commerciale** : Toutes combinaisons possibles
+
+### Offres techniques (backend)
+
+| Offre | Badge | Couleur | Quota | Features clés |
+|-------|-------|---------|-------|---------------|
+| Exchange | 🟠 | #F59E0B | 50 Go | Calendrier, MFA, Ressources, Audit |
+| Email Pro | 🔵 | #3B82F6 | 10 Go | Alias, Signature, Délégation, Archivage |
+| Zimbra | 🟣 | #8B5CF6 | 10 Go | Collaboration, Webmail avancé |
+| MX Plan | ⚪ | #6B7280 | 5 Go | Features basiques (inclus domaine) |
+
+### Modèle de données
+
+```
+COMPTE CLIENT
+├── INVENTAIRE LICENCES
+│   ├── Packs (Exchange Biz 10, Email Pro 5, ...)
+│   │   ├── scope: multi-domain | single-domain
+│   │   ├── totalLicenses / usedLicenses
+│   │   └── accounts[]
+│   ├── À la carte (licences individuelles)
+│   └── Inclus (MX Plan gratuits avec domaine)
+│
+├── DOMAINES (containers logiques)
+│   ├── example.com → 12 boîtes (5 Exch + 4 Pro + 2 Zimbra + 1 MX)
+│   ├── monsite.fr → 7 boîtes (3 Exch + 4 Pro)
+│   └── boutique.eu → 2 boîtes (2 Pro)
+│
+└── BOÎTES MAIL (unités consommant des licences)
+    ├── ceo@example.com → Exchange → Pack "Exchange Biz 10"
+    ├── contact@example.com → Email Pro → Pack "Email Pro 5"
+    ├── dev@example.com → Exchange → Licence à la carte
+    └── info@monsite.fr → Exchange → Pack "Exchange Biz 10"
+```
+
+##############################################################################
+# 1. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+❌ INTERDIT : Afficher le SVG dans la conversation
+✅ OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 2. ARBORESCENCE NAV COMPLÈTE (v2 - REFACTORISÉE)
+##############################################################################
+
+```
+NAV1: Web Cloud (x=510)
+│
+└── NAV2: Emails (indicateur sous "Emails")
+    │
+    ├── /web-cloud/emails (INDEX)
+    │   │
+    │   │   LEFT PANEL: Toggle NAV3 (2 modes)
+    │   │     [📧 General] ← Gestion quotidienne par domaine (défaut)
+    │   │     [📦 Packs]   ← Gestion licences/facturation
+    │   │
+    │   │   RIGHT PANEL: Contenu selon NAV3 mode + sélection
+    │   │
+    │   ├── NAV3: [General] ← 7 onglets NAV4 (gestion par domaine)
+    │   │   │
+    │   │   │   LEFT PANEL: Liste domaines avec détail offres
+    │   │   │   Sélection: 1 domaine → affiche ses tabs
+    │   │   │
+    │   │   └── NAV4 TABS:
+    │   │       │
+    │   │       ├── [1] Boîtes mail (/accounts) ← TOUJOURS
+    │   │       │   │   Toutes les boîtes du domaine sélectionné
+    │   │       │   │   Colonne "Offre" + Colonne "Licence/Pack"
+    │   │       │   │   Actions inline selon offre de CHAQUE boîte
+    │   │       │   └── ACTIONS: [+ Créer] [📥 Import] [📤 Export]
+    │   │       │       Par boîte: [✎] [🔑] [📧 Alias] [📤 Délég.] [🔐 MFA] [×]
+    │   │       │
+    │   │       ├── [2] Redirections (/redirections) ← TOUJOURS
+    │   │       │   │   Toutes les redirections du domaine
+    │   │       │   └── ACTIONS: [+ Ajouter] [✎ Modifier] [× Supprimer]
+    │   │       │
+    │   │       ├── [3] Répondeurs (/responders) ← TOUJOURS
+    │   │       │   │   Réponses automatiques par boîte
+    │   │       │   └── ACTIONS: [+ Configurer] [✎ Modifier] [× Désactiver]
+    │   │       │
+    │   │       ├── [4] Listes (/lists) ← MX Plan, Email Pro, Exchange (pas Zimbra)
+    │   │       │   │   Mailing lists ou Groupes distribution
+    │   │       │   └── ACTIONS: [+ Créer] [👥 Membres] [× Supprimer]
+    │   │       │
+    │   │       ├── [5] Sécurité (/security) ← Email Pro, Exchange, Zimbra (pas MX Plan)
+    │   │       │   │
+    │   │       │   └── SUB-TABS:
+    │   │       │       ├── DNS Config (défaut) → DKIM, SPF, MX, DMARC
+    │   │       │       ├── Antispam → Filtres, quarantaine, règles
+    │   │       │       └── Signature → Disclaimer entreprise
+    │   │       │
+    │   │       ├── [6] Avancé (/advanced) ← Exchange SEULEMENT
+    │   │       │   │
+    │   │       │   └── SUB-TABS:
+    │   │       │       ├── Ressources (défaut) → Salles, équipements
+    │   │       │       ├── Contacts ext. → Carnet d'adresses externe
+    │   │       │       ├── Audit → Logs activité
+    │   │       │       └── Appareils → ActiveSync devices
+    │   │       │
+    │   │       └── [7] Tâches (/tasks) ← TOUJOURS
+    │   │           │   Opérations en cours et historique
+    │   │           └── ACTIONS: [↻ Rafraîchir]
+    │   │
+    │   └── NAV3: [Packs] ← 3 onglets NAV4 (gestion licences)
+    │       │
+    │       │   LEFT PANEL: Liste packs + licences à la carte
+    │       │   Sélection: 1 pack → affiche ses boîtes assignées
+    │       │
+    │       └── NAV4 TABS:
+    │           │
+    │           ├── [1] Mes packs (/packs) ← défaut
+    │           │   │   Liste des packs achetés avec utilisation
+    │           │   └── ACTIONS: [+ Commander] [⚙ Gérer] [↑ Upgrade] [× Résilier]
+    │           │
+    │           ├── [2] À la carte (/alacarte)
+    │           │   │   Licences individuelles
+    │           │   └── ACTIONS: [+ Ajouter licence] [× Supprimer]
+    │           │
+    │           └── [3] Historique (/history)
+    │               │   Factures, changements, consommation
+    │               └── ACTIONS: [📤 Exporter] [📄 Télécharger facture]
+```
+
+### RÉCAPITULATIF NIVEAUX NAV (v2)
+
+| Niveau | Visuel | Position | Exemples Emails |
+|--------|--------|----------|-----------------|
+| **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
+| **NAV2** | Sous-header blanc 40px | y=50 | Emails (x=430) |
+| **NAV3** | Toggle LeftPanel | Top LeftPanel | [📧 General] / [📦 Packs] |
+| **NAV4** | Tabs right panel | y=38 dans right panel | Accounts, Redirections, Security... |
+| **NAV5** | Sous-tabs (si hasSubTabs) | y=70 dans right panel | DNS, Antispam, Signature... |
+| **ACTIONS** | Boutons + inline + modals | Variable | +, ✎, 🔑, ×, ↻, 📥, 📤 |
+
+### DISPONIBILITÉ TABS PAR OFFRE
+
+| Tab | MX Plan | Email Pro | Exchange | Zimbra |
+|-----|:-------:|:---------:|:--------:|:------:|
+| Boîtes mail | ✅ | ✅ | ✅ | ✅ |
+| Redirections | ✅ | ✅ | ✅ | ✅ |
+| Répondeurs | ✅ | ✅ | ✅ | ✅ |
+| Listes | ✅ | ✅ | ✅ | 🚫 |
+| Sécurité | 🚫 | ✅ | ✅ | ✅ |
+| Avancé | 🚫 | 🚫 | ✅ | 🚫 |
+| Licences | ✅ | ✅ | ✅ | ✅ |
+| Tâches | ✅ | ✅ | ✅ | ✅ |
+
+Note: Un domaine avec MIX d'offres affiche tous les tabs pertinents.
+Exemple: example.com avec Exchange + MX Plan → affiche Avancé (pour les Exchange)
+
+##############################################################################
+# 3. NAV1 - HEADER OVH
+##############################################################################
+
+Item actif: "Web Cloud" (x=510)
+
+```svg
+<!-- NAV1 - Web Cloud actif -->
+<rect width="1440" height="50" class="bg-header"/>
+<text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>
+<text x="110" y="32" class="text-white" font-size="14" opacity="0.7">Public Cloud</text>
+<text x="210" y="32" class="text-white" font-size="14" opacity="0.7">Hosted Private Cloud</text>
+<text x="370" y="32" class="text-white" font-size="14" opacity="0.7">Bare Metal Cloud</text>
+<text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+<rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
+<text x="620" y="32" class="text-white" font-size="14" opacity="0.7">Network</text>
+<text x="700" y="32" class="text-white" font-size="14" opacity="0.7">IAM / Securite</text>
+<text x="810" y="32" class="text-white" font-size="14" opacity="0.7">Licences</text>
+```
+
+##############################################################################
+# 4. NAV2 - WEB CLOUD
+##############################################################################
+
+Position: y=50, height=40px, background=#FFFFFF, border-bottom=#E5E7EB
+Item actif: "Emails" (indicateur bleu dessous)
+
+| Item            | X    | État           |
+|-----------------|------|----------------|
+| Accueil         | 40   | muted          |
+| Domaines et DNS | 110  | muted          |
+| Hébergement     | 240  | muted          |
+| Wordpress       | 345  | muted          |
+| Emails          | 430  | **active**     |
+| VoIP            | 500  | muted          |
+| Accès           | 550  | muted          |
+| Guides          | 1350 | primary        |
+
+```svg
+<!-- NAV2 WEB CLOUD - Emails actif -->
+<rect x="0" y="50" width="1440" height="40" class="bg-white"/>
+<line x1="0" y1="89" x2="1440" y2="89" stroke="#E5E7EB"/>
+<text x="40" y="75" class="text-muted" font-size="14">Accueil</text>
+<text x="110" y="75" class="text-muted" font-size="14">Domaines et DNS</text>
+<text x="240" y="75" class="text-muted" font-size="14">Hébergement</text>
+<text x="345" y="75" class="text-muted" font-size="14">Wordpress</text>
+<text x="430" y="75" class="text-primary" font-size="14" font-weight="600">Emails</text>
+<rect x="425" y="85" width="50" height="3" fill="#0050D7"/>
+<text x="500" y="75" class="text-muted" font-size="14">VoIP</text>
+<text x="550" y="75" class="text-muted" font-size="14">Accès</text>
+<text x="1350" y="75" class="text-primary" font-size="13">Guides</text>
+```
+
+##############################################################################
+# 5. NAV3 - TABS EMAILS (8 onglets)
+##############################################################################
+
+Route: /web-cloud/emails/{domain}/{tab}
+
+| #  | Tab          | X    | W   | Route          | Condition                |
+|----|--------------|------|-----|----------------|--------------------------|
+| 1  | Boîtes mail  | 0    | 85  | /accounts      | Toujours                 |
+| 2  | Redirections | 89   | 90  | /redirections  | Toujours                 |
+| 3  | Répondeurs   | 183  | 80  | /responders    | Toujours                 |
+| 4  | Listes       | 267  | 50  | /lists         | MX Plan, Pro, Exchange   |
+| 5  | Sécurité     | 321  | 65  | /security      | Pro, Exchange, Zimbra    |
+| 6  | Avancé       | 390  | 55  | /advanced      | Exchange only            |
+| 7  | Licences     | 449  | 65  | /licenses      | Toujours                 |
+| 8  | Tâches       | 518  | 55  | /tasks         | Toujours                 |
+
+```svg
+<!-- NAV3 EMAILS - 8 tabs, Boîtes mail actif par défaut -->
+<g transform="translate(0, 38)">
+  <!-- Tab actif: fond bleu, texte blanc -->
+  <rect x="0" y="0" width="85" height="26" rx="4" class="bg-primary"/>
+  <text x="42" y="17" class="text-white" font-size="11" text-anchor="middle">Boîtes mail</text>
+  
+  <!-- Tabs inactifs -->
+  <rect x="89" y="0" width="90" height="26" rx="4" class="btn-outline"/>
+  <text x="134" y="17" class="text-primary" font-size="11" text-anchor="middle">Redirections</text>
+  
+  <rect x="183" y="0" width="80" height="26" rx="4" class="btn-outline"/>
+  <text x="223" y="17" class="text-primary" font-size="11" text-anchor="middle">Répondeurs</text>
+  
+  <rect x="267" y="0" width="50" height="26" rx="4" class="btn-outline"/>
+  <text x="292" y="17" class="text-primary" font-size="11" text-anchor="middle">Listes</text>
+  
+  <rect x="321" y="0" width="65" height="26" rx="4" class="btn-outline"/>
+  <text x="353" y="17" class="text-primary" font-size="11" text-anchor="middle">Sécurité</text>
+  
+  <rect x="390" y="0" width="55" height="26" rx="4" class="btn-outline"/>
+  <text x="417" y="17" class="text-primary" font-size="11" text-anchor="middle">Avancé</text>
+  
+  <rect x="449" y="0" width="65" height="26" rx="4" class="btn-outline"/>
+  <text x="481" y="17" class="text-primary" font-size="11" text-anchor="middle">Licences</text>
+  
+  <rect x="518" y="0" width="55" height="26" rx="4" class="btn-outline"/>
+  <text x="545" y="17" class="text-primary" font-size="11" text-anchor="middle">Tâches</text>
+</g>
+```
+
+##############################################################################
+# 6. NAV5 - SOUS-TABS PAR SECTION (v2)
+##############################################################################
+
+Note: NAV5 = sous-tabs de NAV4 (hasSubTabs: true dans la config)
+
+### 6.1 Sécurité (NAV4=security) - 3 sous-tabs NAV5
+
+| # | Tab         | Route               | Composant               |
+|---|-------------|---------------------|-------------------------|
+| 1 | DNS Config  | /security           | DnsConfigTab.tsx        |
+| 2 | Antispam    | /security-antispam  | AntispamTab.tsx         |
+| 3 | Signature   | /security-signature | SignatureTab.tsx        |
+
+### 6.2 Avancé (NAV4=advanced) - 4 sous-tabs NAV5 (Exchange only)
+
+| # | Tab            | Route              | Composant               |
+|---|----------------|---------------------|-------------------------|
+| 1 | Ressources     | /advanced           | ResourcesTab.tsx        |
+| 2 | Contacts ext.  | /advanced-contacts  | ContactsTab.tsx         |
+| 3 | Audit          | /advanced-audit     | AuditTab.tsx            |
+| 4 | Appareils      | /advanced-devices   | DevicesTab.tsx          |
+
+### 6.3 Packs (NAV3=packs) - 3 tabs NAV4
+
+Note: Dans NAV3=Packs, les tabs sont au niveau NAV4 (pas de NAV5)
+
+| # | Tab         | Route              | Composant               |
+|---|-------------|---------------------|-------------------------|
+| 1 | Mes packs   | /packs              | PacksTab.tsx            |
+| 2 | À la carte  | /alacarte           | AlacarteTab.tsx         |
+| 3 | Historique  | /history            | HistoryTab.tsx          |
+
+##############################################################################
+# 7. LEFT PANEL - NAV3 TOGGLE (v2)
+##############################################################################
+
+Position: x=24, y=105, width=280px, height=780px
+
+### 7.1 Toggle NAV3
+
+```svg
+<!-- Toggle NAV3 en haut du left panel -->
+<g transform="translate(12, 12)">
+  <rect x="0" y="0" width="256" height="32" rx="6" fill="#F3F4F6"/>
+
+  <!-- NAV3=General (active) -->
+  <rect x="2" y="2" width="125" height="28" rx="5" fill="#FFFFFF" filter="shadow"/>
+  <text x="64" y="21" class="text-dark" font-size="11" text-anchor="middle" font-weight="500">📧 General</text>
+
+  <!-- NAV3=Packs (inactive) -->
+  <text x="191" y="21" class="text-muted" font-size="11" text-anchor="middle">📦 Packs</text>
+</g>
+```
+
+### 7.2 NAV3=General (vue par domaine)
+
+```
+┌─────────────────────────────────┐
+│ [📧 General ✓] [📦 Packs]       │ Toggle NAV3
+├─────────────────────────────────┤
+│ 🔍 Rechercher un domaine...     │
+├─────────────────────────────────┤
+│ Filtrer par offre ▾  5 domaines │
+├─────────────────────────────────┤
+│ ╔═══════════════════════════════╗
+│ ║ 📧 example.com                ║ ← Sélectionné
+│ ║ ─────────────────────────────║
+│ ║ 🟠  5  Exchange  │ Pack Biz10 ║
+│ ║ 🔵  4  Pro       │ Pack Pro5  ║
+│ ║ 🟣  2  Zimbra    │ À la carte ║
+│ ║ ⚪  1  MX Plan   │ Inclus     ║
+│ ║ ─────────────────────────────║
+│ ║ 12 boîtes · 67 Go · 4 sources║
+│ ╚═══════════════════════════════╝
+│ ┌───────────────────────────────┐
+│ │ 📧 monsite.fr                 │
+│ │ ─────────────────────────────│
+│ │ 🟠  3  Exchange  │ Pack Biz10 │
+│ │ 🔵  4  Pro       │ À la carte │
+│ │ ─────────────────────────────│
+│ │ 7 boîtes · 28 Go             │
+│ └───────────────────────────────┘
+│ ┌───────────────────────────────┐
+│ │ 📧 boutique.eu                │
+│ │ ─────────────────────────────│
+│ │ 🔵  2  Pro       │ À la carte │
+│ │ ─────────────────────────────│
+│ │ 2 boîtes · 8 Go              │
+│ └───────────────────────────────┘
+├─────────────────────────────────┤
+│ [+ Ajouter domaine]             │
+└─────────────────────────────────┘
+```
+
+### 7.3 NAV3=Packs (vue licences)
+
+```
+┌─────────────────────────────────┐
+│ [📧 General] [📦 Packs ✓]       │ Toggle NAV3
+├─────────────────────────────────┤
+│ 🔍 Rechercher...                │
+├─────────────────────────────────┤
+│ ══ PACKS ════════════════════   │
+│ ╔═══════════════════════════════╗
+│ ║ 📦 Exchange Business 10       ║ ← Sélectionné
+│ ║ ─────────────────────────────║
+│ ║ 🟠 Multi-domaine              ║
+│ ║ [███████░░░] 7/10 utilisées   ║
+│ ║ ─────────────────────────────║
+│ ║ 49,90 €/mois                  ║
+│ ╚═══════════════════════════════╝
+│ ┌───────────────────────────────┐
+│ │ 📦 Email Pro 5                │
+│ │ ─────────────────────────────│
+│ │ 🔵 Mono: example.com          │
+│ │ [████░░░░░░] 4/5 utilisées    │
+│ │ ─────────────────────────────│
+│ │ 14,90 €/mois                  │
+│ └───────────────────────────────┘
+├─────────────────────────────────┤
+│ ══ À LA CARTE ═══════════════   │
+│ ┌───────────────────────────────┐
+│ │ 🟠 Exchange × 3   17,97 €/m   │
+│ ├───────────────────────────────┤
+│ │ 🟣 Zimbra × 2     7,98 €/m    │
+│ ├───────────────────────────────┤
+│ │ ⚪ MX Plan × 5    Inclus      │
+│ └───────────────────────────────┘
+├─────────────────────────────────┤
+│ [+ Commander pack]              │
+│ [+ Ajouter licence]             │
+├─────────────────────────────────┤
+│ Total: 90,75 €/mois             │
+└─────────────────────────────────┘
+```
+
+### 7.4 Service Item - Vue Domaine (SVG)
+
+```svg
+<!-- Service item domaine sélectionné -->
+<g transform="translate(6, 80)">
+  <rect x="0" y="0" width="268" height="110" rx="6" class="row-selected"/>
+  
+  <!-- Header -->
+  <text x="12" y="20" font-size="14">📧</text>
+  <text x="32" y="20" class="text-dark" font-size="13" font-weight="600">{domain}</text>
+  
+  <!-- Détail par offre -->
+  <g transform="translate(12, 32)">
+    <circle cx="6" cy="6" r="5" fill="#F59E0B"/>
+    <text x="16" y="10" class="text-dark" font-size="10">5  Exchange</text>
+    <text x="90" y="10" class="text-muted" font-size="9">Pack Biz10</text>
+    
+    <circle cx="6" cy="20" r="5" fill="#3B82F6"/>
+    <text x="16" y="24" class="text-dark" font-size="10">4  Pro</text>
+    <text x="90" y="24" class="text-muted" font-size="9">Pack Pro5</text>
+    
+    <circle cx="6" cy="34" r="5" fill="#8B5CF6"/>
+    <text x="16" y="38" class="text-dark" font-size="10">2  Zimbra</text>
+    <text x="90" y="38" class="text-muted" font-size="9">À la carte</text>
+    
+    <circle cx="6" cy="48" r="5" fill="#6B7280"/>
+    <text x="16" y="52" class="text-dark" font-size="10">1  MX Plan</text>
+    <text x="90" y="52" class="text-muted" font-size="9">Inclus</text>
+  </g>
+  
+  <!-- Footer -->
+  <line x1="12" y1="90" x2="256" y2="90" stroke="#E5E7EB"/>
+  <text x="12" y="104" class="text-muted" font-size="10">12 boîtes · 67 Go · 4 sources</text>
+</g>
+```
+
+### 7.5 Service Item - Vue Licence/Pack (SVG)
+
+```svg
+<!-- Service item pack sélectionné -->
+<g transform="translate(6, 80)">
+  <rect x="0" y="0" width="268" height="90" rx="6" class="row-selected"/>
+  
+  <!-- Header -->
+  <text x="12" y="20" font-size="14">📦</text>
+  <text x="32" y="20" class="text-dark" font-size="12" font-weight="600">{packName}</text>
+  
+  <!-- Offre + Scope -->
+  <circle cx="18" cy="38" r="6" fill="#F59E0B"/>
+  <text x="30" y="42" class="text-muted" font-size="10">Multi-domaine</text>
+  
+  <!-- Barre utilisation -->
+  <rect x="12" y="52" width="244" height="8" rx="4" fill="#E5E7EB"/>
+  <rect x="12" y="52" width="170" height="8" rx="4" fill="#F59E0B"/>
+  <text x="12" y="72" class="text-dark" font-size="10">7/10 utilisées</text>
+  
+  <!-- Prix -->
+  <text x="256" y="72" class="text-primary" font-size="11" text-anchor="end" font-weight="600">49,90 €/mois</text>
+</g>
+```
+
+##############################################################################
+# 8. RIGHT PANEL - STRUCTURE
+##############################################################################
+
+Position: x=320, y=105, width=1096px, height=780px
+
+### 8.1 Header Right Panel
+
+```
+Vue Domaine:
+┌─────────────────────────────────────────────────────────────────────────┐
+│ example.com                                              [↗ Webmail]    │
+│ 12 boîtes · 4 offres · 67 Go utilisés                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Vue Licence (Pack):
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Pack "Exchange Business 10"                              [⚙ Gérer]      │
+│ 7/10 licences · Multi-domaine · 49,90 €/mois                            │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 8.2 Tab Boîtes mail - Table
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ [+ Créer boîte ▾]  [📥 Importer]  [📤 Exporter]            🔍 Filtrer   │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Filtrer: [Toutes ▾] [🟠 Exchange] [🔵 Pro] [🟣 Zimbra] [⚪ MX Plan]     │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Email              │ Offre      │ Licence         │ Quota  │ Actions    │
+├────────────────────┼────────────┼─────────────────┼────────┼────────────┤
+│ 📬 ceo@...         │ 🟠 Exchange│ Pack Biz 10     │ 50 Go  │✎🔑📧📤🔐⋯│
+│   ↳ 3 alias, MFA   │            │ 1/10            │ [███░] │ [↓ Down]   │
+├────────────────────┼────────────┼─────────────────┼────────┼────────────┤
+│ 📬 contact@...     │ 🔵 Pro     │ Pack Pro 5      │ 10 Go  │✎🔑📧📤  ⋯│
+│   ↳ 2 alias        │            │ 1/5             │ [██░░] │ [↑ Up]     │
+├────────────────────┼────────────┼─────────────────┼────────┼────────────┤
+│ 📬 dev@...         │ 🟣 Zimbra  │ À la carte #47  │ 10 Go  │✎🔑📧    ⋯│
+│   ↳ 1 alias        │            │                 │ [█░░░] │ [↑ Up]     │
+├────────────────────┼────────────┼─────────────────┼────────┼────────────┤
+│ 📬 info@...        │ ⚪ MX Plan │ Inclus domaine  │ 5 Go   │✎🔑      ⋯│
+│                    │            │ Gratuit         │ [█░░░] │ [↑ Up]     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Légende actions inline:
+✎ = Modifier    🔑 = Mot de passe    📧 = Alias (Pro/Exch/Zimbra)
+📤 = Délégation (Pro/Exch)    🔐 = MFA (Exch only)    ⋯ = Plus d'actions
+[↑ Up] = Upgrader    [↓ Down] = Downgrader
+```
+
+### 8.3 Actions par offre (matrice)
+
+| Icône | Action | MX Plan | Email Pro | Exchange | Zimbra |
+|:-----:|--------|:-------:|:---------:|:--------:|:------:|
+| ✎ | Modifier | ✅ | ✅ | ✅ | ✅ |
+| 🔑 | Mot de passe | ✅ | ✅ | ✅ | ✅ |
+| 📧 | Alias | ❌ | ✅ | ✅ | ✅ |
+| 📤 | Délégation | ❌ | ✅ | ✅ | ❌ |
+| 🔐 | MFA | ❌ | ❌ | ✅ | ❌ |
+| 📦 | Archivage | ❌ | ✅ | ✅ | ❌ |
+| 📅 | Calendrier partagé | ❌ | ❌ | ✅ | ✅ |
+| ↑ | Upgrader | ✅ | ✅ | ❌ | ✅ |
+| ↓ | Downgrader | ❌ | ✅ | ✅ | ✅ |
+| 🔀 | Changer de pack | ✅ | ✅ | ✅ | ✅ |
+| × | Supprimer | ✅ | ✅ | ✅ | ✅ |
+
+##############################################################################
+# 9. MODALES PRINCIPALES
+##############################################################################
+
+### 9.1 Modal Créer boîte (avec choix licence)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Créer une boîte mail sur example.com                             [×]   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│ Adresse email                                                           │
+│ ┌─────────────────────────────────────┐                                 │
+│ │ nouveau                             │ @ example.com                   │
+│ └─────────────────────────────────────┘                                 │
+│                                                                         │
+│ ═══════════════════════════════════════════════════════════════════════ │
+│ UTILISER UNE LICENCE EXISTANTE                                          │
+│ ═══════════════════════════════════════════════════════════════════════ │
+│                                                                         │
+│ ┌───────────────────────────────────────────────────────────────────┐   │
+│ │ ● 📦 Pack "Exchange Business 10"              3 dispo / 10        │   │
+│ │      🟠 Exchange · 50 Go · Toutes features                        │   │
+│ │      Inclus dans votre abonnement                                 │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ ○ 📦 Pack "Email Pro 5"                       1 dispo / 5         │   │
+│ │      🔵 Email Pro · 10 Go · Alias, signature                      │   │
+│ │      ⚠️ Réservé à example.com                                      │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ ○ ⚪ MX Plan (inclus domaine)                 2 dispo / 5         │   │
+│ │      5 Go · Features basiques · Gratuit                           │   │
+│ └───────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│ ═══════════════════════════════════════════════════════════════════════ │
+│ OU ACHETER UNE NOUVELLE LICENCE                                         │
+│ ═══════════════════════════════════════════════════════════════════════ │
+│                                                                         │
+│ ┌───────────────────────────────────────────────────────────────────┐   │
+│ │ ○ 🟠 Exchange à la carte                           + 5,99 €/mois  │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ ○ 🔵 Email Pro à la carte                          + 2,99 €/mois  │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ ○ 🟣 Zimbra à la carte                             + 3,99 €/mois  │   │
+│ └───────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│ 💡 Besoin de plusieurs boîtes ? [Commander un pack →]                   │
+│                                                                         │
+│ Mot de passe                                                            │
+│ ┌─────────────────────────────────────────────────────────────────┐     │
+│ │ ••••••••••••                                            👁      │     │
+│ └─────────────────────────────────────────────────────────────────┘     │
+│                                                                         │
+│                    Récap: nouveau@example.com · Exchange · Pack Biz 10  │
+│                                                                         │
+│                                        [Annuler]  [Créer la boîte]      │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 9.2 Modal Changer d'offre (Upgrade/Downgrade)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Changer l'offre de contact@example.com                           [×]   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│ Offre actuelle: 🔵 Email Pro (Pack Pro 5) · 10 Go · 2,99 €/mois         │
+│                                                                         │
+│ ┌───────────────────────────────────────────────────────────────────┐   │
+│ │ ⚪ MX Plan                              ↓ Downgrade    Gratuit    │   │
+│ │    ⚠️ Vous perdrez: alias, signature, archivage                   │   │
+│ │    ⚠️ Quota réduit à 5 Go (actuellement 3 Go utilisés ✓)          │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ 🔵 Email Pro                            ● Actuel                  │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ 🟠 Exchange                             ↑ Upgrade                 │   │
+│ │    ✓ Vous gagnez: calendrier partagé, MFA, 50 Go                  │   │
+│ │    ✓ Vos données sont conservées                                  │   │
+│ │    ┌─────────────────────────────────────────────────────────┐    │   │
+│ │    │ ● Utiliser Pack "Exchange Biz 10" (3 dispo)   Inclus    │    │   │
+│ │    │ ○ Nouvelle licence à la carte              +5,99 €/mois │    │   │
+│ │    └─────────────────────────────────────────────────────────┘    │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ 🟣 Zimbra                               ↔ Migration   3,99 €/mois │   │
+│ │    ⚠️ Migration technique requise (webmail différent)             │   │
+│ └───────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│ ⚠️ La licence libérée dans Pack Pro 5 sera disponible pour une autre   │
+│    boîte sur example.com.                                              │
+│                                                                         │
+│                                        [Annuler]  [Confirmer]           │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 9.3 Modal Commander un pack
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Commander un pack email                                          [×]   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│ Choisissez l'offre                                                      │
+│ ┌───────────────────────────────────────────────────────────────────┐   │
+│ │ 🟠 EXCHANGE               🔵 EMAIL PRO            🟣 ZIMBRA       │   │
+│ │    ▔▔▔▔▔▔▔▔▔                                                      │   │
+│ └───────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│ Choisissez la taille du pack                                            │
+│ ┌───────────────────────────────────────────────────────────────────┐   │
+│ │ ○ Pack 5 licences                                   24,95 €/mois  │   │
+│ │      (4,99 €/licence)                                             │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ ● Pack 10 licences                                  44,90 €/mois  │   │
+│ │      (4,49 €/licence) ✨ -10%                                      │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ ○ Pack 25 licences                                  99,75 €/mois  │   │
+│ │      (3,99 €/licence) ✨ -20%                                      │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ ○ Pack 50 licences                                 174,50 €/mois  │   │
+│ │      (3,49 €/licence) ✨ -30%                                      │   │
+│ └───────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│ Scope du pack                                                           │
+│ ┌───────────────────────────────────────────────────────────────────┐   │
+│ │ ● Multi-domaine                                                   │   │
+│ │   Utilisable sur tous vos domaines actuels et futurs              │   │
+│ ├───────────────────────────────────────────────────────────────────┤   │
+│ │ ○ Mono-domaine                                     -5% sur le pack│   │
+│ │   ┌───────────────────────────────────────────────────────────┐   │   │
+│ │   │ example.com                                            ▾  │   │   │
+│ │   └───────────────────────────────────────────────────────────┘   │   │
+│ └───────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│ ┌───────────────────────────────────────────────────────────────────┐   │
+│ │ RÉCAP: Pack Exchange 10 licences · Multi-domaine                  │   │
+│ │        44,90 €/mois HT · Renouvelé automatiquement                │   │
+│ └───────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│                                        [Annuler]  [Commander]           │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+##############################################################################
+# 10. TAB LICENCES - GESTION INVENTAIRE
+##############################################################################
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Licences & Packs                                [+ Commander] [📊 Fact]│
+├─────────────────────────────────────────────────────────────────────────┤
+│ NAV4: [Mes packs] | À la carte | Historique                             │
+│       ▔▔▔▔▔▔▔▔▔▔▔                                                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  VOS PACKS                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │ Pack               │ Type        │ Scope       │ Utilisé │ Prix    ││
+│  ├────────────────────┼─────────────┼─────────────┼─────────┼─────────┤│
+│  │ 📦 Exchange Biz 10 │ 🟠 Exchange │ Multi-dom.  │ 7/10    │ 49,90 € ││
+│  │    Exp: 15/03/2025 │             │ Tous        │ [███░]  │ /mois   ││
+│  │                    │             │             │         │ ⚙ ↑ ×   ││
+│  ├────────────────────┼─────────────┼─────────────┼─────────┼─────────┤│
+│  │ 📦 Email Pro 5     │ 🔵 Pro      │ Mono-dom.   │ 4/5     │ 14,90 € ││
+│  │    Exp: 22/06/2025 │             │ example.com │ [████]  │ /mois   ││
+│  │                    │             │             │         │ ⚙ ↑ ×   ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                         │
+│  LICENCES À LA CARTE                                                    │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │ Offre          │ Qté │ Assignées à                   │ Total       ││
+│  ├────────────────┼─────┼───────────────────────────────┼─────────────┤│
+│  │ 🟠 Exchange    │ 3   │ dev@example.com, test@...     │ 17,97 €/m   ││
+│  ├────────────────┼─────┼───────────────────────────────┼─────────────┤│
+│  │ 🟣 Zimbra      │ 2   │ team@example.com, collab@...  │ 7,98 €/m    ││
+│  ├────────────────┼─────┼───────────────────────────────┼─────────────┤│
+│  │ ⚪ MX Plan     │ 5   │ (inclus avec domaines)        │ Gratuit     ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │ RÉCAPITULATIF MENSUEL                                             │  │
+│  │ ─────────────────────────────────────────────────────────────────│  │
+│  │ Packs:      49,90 € + 14,90 € = 64,80 €                          │  │
+│  │ À la carte: 17,97 € + 7,98 €  = 25,95 €                          │  │
+│  │ ─────────────────────────────────────────────────────────────────│  │
+│  │ TOTAL:      90,75 €/mois HT   │  27 boîtes actives               │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+##############################################################################
+# 11. APIs EMAILS
+##############################################################################
+
+### 11.1 APIs Inventaire / Licences
+| Méthode | Endpoint                              | Description             |
+|---------|---------------------------------------|-------------------------|
+| GET     | /email/licenses                       | Liste toutes licences   |
+| GET     | /email/licenses/packs                 | Liste packs             |
+| GET     | /email/licenses/packs/{id}            | Détails pack            |
+| POST    | /email/licenses/packs                 | Commander pack          |
+| PUT     | /email/licenses/packs/{id}            | Modifier pack (upgrade) |
+| DELETE  | /email/licenses/packs/{id}            | Résilier pack           |
+| GET     | /email/licenses/alacarte              | Licences à la carte     |
+| POST    | /email/licenses/alacarte              | Ajouter licence         |
+| DELETE  | /email/licenses/alacarte/{id}         | Supprimer licence       |
+
+### 11.2 APIs Domaines Email
+| Méthode | Endpoint                              | Description             |
+|---------|---------------------------------------|-------------------------|
+| GET     | /email/domains                        | Liste domaines email    |
+| GET     | /email/domains/{domain}               | Détails domaine         |
+| GET     | /email/domains/{domain}/summary       | Résumé (counts, quotas) |
+| POST    | /email/domains                        | Ajouter domaine         |
+| DELETE  | /email/domains/{domain}               | Supprimer domaine       |
+
+### 11.3 APIs Comptes Email (unifiées)
+| Méthode | Endpoint                                | Description             |
+|---------|-----------------------------------------|-------------------------|
+| GET     | /email/domains/{domain}/accounts        | Liste comptes           |
+| GET     | /email/domains/{domain}/accounts/{email}| Détails compte          |
+| POST    | /email/domains/{domain}/accounts        | Créer compte            |
+| PUT     | /email/domains/{domain}/accounts/{email}| Modifier compte         |
+| DELETE  | /email/domains/{domain}/accounts/{email}| Supprimer compte        |
+| POST    | /email/domains/{d}/accounts/{e}/password| Changer MDP             |
+| POST    | /email/domains/{d}/accounts/{e}/upgrade | Upgrader offre          |
+| POST    | /email/domains/{d}/accounts/{e}/downgrade| Downgrader offre       |
+| POST    | /email/domains/{d}/accounts/{e}/move    | Changer de pack         |
+
+### 11.4 APIs Alias
+| Méthode | Endpoint                                      | Description       |
+|---------|-----------------------------------------------|-------------------|
+| GET     | /email/domains/{d}/accounts/{e}/aliases       | Liste alias       |
+| POST    | /email/domains/{d}/accounts/{e}/aliases       | Ajouter alias     |
+| DELETE  | /email/domains/{d}/accounts/{e}/aliases/{a}   | Supprimer alias   |
+
+### 11.5 APIs Redirections
+| Méthode | Endpoint                                | Description             |
+|---------|-----------------------------------------|-------------------------|
+| GET     | /email/domains/{domain}/redirections    | Liste redirections      |
+| POST    | /email/domains/{domain}/redirections    | Créer redirection       |
+| PUT     | /email/domains/{d}/redirections/{id}    | Modifier redirection    |
+| DELETE  | /email/domains/{d}/redirections/{id}    | Supprimer redirection   |
+
+### 11.6 APIs Répondeurs
+| Méthode | Endpoint                                | Description             |
+|---------|-----------------------------------------|-------------------------|
+| GET     | /email/domains/{d}/accounts/{e}/responder| État répondeur         |
+| PUT     | /email/domains/{d}/accounts/{e}/responder| Configurer répondeur   |
+| DELETE  | /email/domains/{d}/accounts/{e}/responder| Désactiver répondeur   |
+
+### 11.7 APIs Listes / Groupes
+| Méthode | Endpoint                                | Description             |
+|---------|-----------------------------------------|-------------------------|
+| GET     | /email/domains/{domain}/lists           | Liste mailing lists     |
+| POST    | /email/domains/{domain}/lists           | Créer liste             |
+| GET     | /email/domains/{d}/lists/{l}            | Détails liste           |
+| PUT     | /email/domains/{d}/lists/{l}            | Modifier liste          |
+| DELETE  | /email/domains/{d}/lists/{l}            | Supprimer liste         |
+| GET     | /email/domains/{d}/lists/{l}/members    | Membres liste           |
+| POST    | /email/domains/{d}/lists/{l}/members    | Ajouter membre          |
+| DELETE  | /email/domains/{d}/lists/{l}/members/{m}| Retirer membre          |
+| GET     | /email/domains/{d}/lists/{l}/moderators | Modérateurs             |
+
+### 11.8 APIs Sécurité DNS
+| Méthode | Endpoint                                | Description             |
+|---------|-----------------------------------------|-------------------------|
+| GET     | /email/domains/{domain}/dns/dkim        | État DKIM               |
+| POST    | /email/domains/{domain}/dns/dkim        | Configurer DKIM         |
+| POST    | /email/domains/{domain}/dns/dkim/regenerate | Régénérer DKIM      |
+| GET     | /email/domains/{domain}/dns/spf         | État SPF                |
+| POST    | /email/domains/{domain}/dns/spf         | Auto-configurer SPF     |
+| GET     | /email/domains/{domain}/dns/mx          | État MX                 |
+| POST    | /email/domains/{domain}/dns/mx          | Auto-configurer MX      |
+| GET     | /email/domains/{domain}/dns/diagnostic  | Diagnostic complet      |
+
+### 11.9 APIs Signature / Disclaimer
+| Méthode | Endpoint                                | Description             |
+|---------|-----------------------------------------|-------------------------|
+| GET     | /email/domains/{domain}/signature       | Signature entreprise    |
+| PUT     | /email/domains/{domain}/signature       | Configurer signature    |
+| DELETE  | /email/domains/{domain}/signature       | Supprimer signature     |
+
+### 11.10 APIs Avancé (Exchange only)
+| Méthode | Endpoint                                      | Description         |
+|---------|-----------------------------------------------|---------------------|
+| GET     | /email/domains/{domain}/resources             | Liste ressources    |
+| POST    | /email/domains/{domain}/resources             | Créer ressource     |
+| PUT     | /email/domains/{domain}/resources/{id}        | Modifier ressource  |
+| DELETE  | /email/domains/{domain}/resources/{id}        | Supprimer ressource |
+| GET     | /email/domains/{domain}/externalContacts      | Contacts externes   |
+| POST    | /email/domains/{domain}/externalContacts      | Ajouter contact     |
+| GET     | /email/domains/{domain}/audit                 | Logs audit          |
+| GET     | /email/domains/{d}/accounts/{e}/devices       | Appareils ActiveSync|
+| POST    | /email/domains/{d}/accounts/{e}/devices/{id}/wipe | Wipe appareil   |
+
+### 11.11 APIs Tâches
+| Méthode | Endpoint                                | Description             |
+|---------|-----------------------------------------|-------------------------|
+| GET     | /email/domains/{domain}/tasks           | Liste tâches            |
+| GET     | /email/domains/{domain}/tasks/{id}      | Détails tâche           |
+
+##############################################################################
+# 12. VARIABLES DYNAMIQUES
+##############################################################################
+
+| Variable           | Source                                        |
+|--------------------|-----------------------------------------------|
+| {domain}           | Domaine sélectionné                           |
+| {email}            | Adresse email                                 |
+| {offer}            | exchange, email-pro, zimbra, mx-plan          |
+| {offerBadge}       | 🟠, 🔵, 🟣, ⚪                                  |
+| {offerColor}       | #F59E0B, #3B82F6, #8B5CF6, #6B7280            |
+| {packName}         | Nom du pack                                   |
+| {packId}           | ID du pack                                    |
+| {packScope}        | multi-domain, single-domain                   |
+| {packTotal}        | Nombre total de licences                      |
+| {packUsed}         | Nombre utilisées                              |
+| {packPrice}        | Prix mensuel                                  |
+| {quotaUsed}        | Quota utilisé (Go)                            |
+| {quotaTotal}       | Quota total (Go)                              |
+| {aliasCount}       | Nombre d'alias                                |
+| {domainCount}      | Nombre de domaines                            |
+| {accountCount}     | Nombre de boîtes                              |
+| {monthlyTotal}     | Total mensuel HT                              |
+| {nicHandle}        | Session utilisateur                           |
+
+##############################################################################
+# 13. ARBORESCENCE FICHIERS TARGET (v3 - MISE À JOUR 2025-12-31)
+##############################################################################
+
+Convention de nommage: `target_.NAV1.NAV2.NAV3.NAV4[-NAV5].{svg|txt|json}`
+
+Fichiers existants dans /home/ubuntu/target_manager_svg/web-cloud/emails/
+
+```
+/home/ubuntu/target_manager_svg/web-cloud/emails/
+│
+├── target_.web-cloud.emails.index.svg              ✅  NAV2 (page principale)
+├── target_.web-cloud.emails.index.txt              ✅
+├── target_.web-cloud.emails.onboarding.svg         ✅  NAV2 (onboarding)
+├── target_.web-cloud.emails.onboarding.txt         ✅
+│
+├── general/                                         ← NAV3=General
+│   ├── accounts/
+│   │   ├── target_.web-cloud.emails.general.accounts.svg     ✅
+│   │   └── target_.web-cloud.emails.general.accounts.txt     ✅
+│   │
+│   ├── redirections/
+│   │   ├── target_.web-cloud.emails.general.redirections.svg ✅
+│   │   └── target_.web-cloud.emails.general.redirections.txt ✅
+│   │
+│   ├── responders/
+│   │   ├── target_.web-cloud.emails.general.responders.svg   ✅
+│   │   └── target_.web-cloud.emails.general.responders.txt   ✅
+│   │
+│   ├── lists/
+│   │   ├── target_.web-cloud.emails.general.lists.svg        ✅
+│   │   └── target_.web-cloud.emails.general.lists.txt        ✅
+│   │
+│   ├── security/                                    ← NAV4 avec sous-tabs NAV5
+│   │   ├── target_.web-cloud.emails.general.security.svg            ✅ (DNS Config)
+│   │   ├── target_.web-cloud.emails.general.security.txt            ✅
+│   │   ├── target_.web-cloud.emails.general.security-antispam.svg   ✅
+│   │   ├── target_.web-cloud.emails.general.security-antispam.txt   ✅
+│   │   ├── target_.web-cloud.emails.general.security-signature.svg  ✅
+│   │   └── target_.web-cloud.emails.general.security-signature.txt  ✅
+│   │
+│   ├── advanced/                                    ← NAV4 avec sous-tabs NAV5
+│   │   ├── target_.web-cloud.emails.general.advanced.svg            ✅ (Resources)
+│   │   ├── target_.web-cloud.emails.general.advanced.txt            ✅
+│   │   ├── target_.web-cloud.emails.general.advanced-contacts.svg   ✅
+│   │   ├── target_.web-cloud.emails.general.advanced-contacts.txt   ✅
+│   │   ├── target_.web-cloud.emails.general.advanced-audit.svg      ✅
+│   │   ├── target_.web-cloud.emails.general.advanced-audit.txt      ✅
+│   │   ├── target_.web-cloud.emails.general.advanced-devices.svg    ✅
+│   │   └── target_.web-cloud.emails.general.advanced-devices.txt    ✅
+│   │
+│   └── tasks/
+│       ├── target_.web-cloud.emails.general.tasks.svg        ✅
+│       └── target_.web-cloud.emails.general.tasks.txt        ✅
+│
+├── packs/                                           ← NAV3=Packs
+│   ├── index/
+│   │   ├── target_.web-cloud.emails.packs.index.svg          ✅ (Mes packs)
+│   │   └── target_.web-cloud.emails.packs.index.txt          ✅
+│   │
+│   ├── alacarte/
+│   │   ├── target_.web-cloud.emails.packs.alacarte.svg       ✅
+│   │   └── target_.web-cloud.emails.packs.alacarte.txt       ✅
+│   │
+│   └── history/
+│       ├── target_.web-cloud.emails.packs.history.svg        ✅
+│       └── target_.web-cloud.emails.packs.history.txt        ✅
+│
+└── modals/                                          ← Modales (format .modal.)
+    ├── target_.web-cloud.emails.modal.create-account.svg     ✅
+    ├── target_.web-cloud.emails.modal.create-account.txt     ✅
+    ├── target_.web-cloud.emails.modal.change-password.svg    ✅
+    ├── target_.web-cloud.emails.modal.change-password.txt    ✅
+    ├── target_.web-cloud.emails.modal.add-alias.svg          ✅
+    ├── target_.web-cloud.emails.modal.add-alias.txt          ✅
+    ├── target_.web-cloud.emails.modal.create-redirection.svg ✅
+    ├── target_.web-cloud.emails.modal.create-redirection.txt ✅
+    ├── target_.web-cloud.emails.modal.create-redirection.json✅
+    ├── target_.web-cloud.emails.modal.create-responder.svg   ✅
+    ├── target_.web-cloud.emails.modal.create-responder.txt   ✅
+    ├── target_.web-cloud.emails.modal.create-responder.json  ✅
+    ├── target_.web-cloud.emails.modal.create-list.svg        ✅
+    ├── target_.web-cloud.emails.modal.create-list.txt        ✅
+    ├── target_.web-cloud.emails.modal.create-list.json       ✅
+    ├── target_.web-cloud.emails.modal.add-list-member.svg    ✅
+    ├── target_.web-cloud.emails.modal.add-list-member.txt    ✅
+    ├── target_.web-cloud.emails.modal.add-list-member.json   ✅
+    ├── target_.web-cloud.emails.modal.configure-dmarc.svg    ✅
+    ├── target_.web-cloud.emails.modal.configure-dmarc.txt    ✅
+    ├── target_.web-cloud.emails.modal.delete.svg             ✅
+    ├── target_.web-cloud.emails.modal.delete.txt             ✅
+    └── target_.web-cloud.emails.modal.delete.json            ✅
+```
+
+TOTAL: 26 SVG + 26 TXT + 5 JSON = 57 fichiers
+
+### MAPPING SVG → COMPOSANTS REACT
+
+| SVG Target (NAV3.NAV4) | Composant React | Locale |
+|------------------------|-----------------|--------|
+| emails.index | index.tsx | index.json |
+| emails.onboarding | Onboarding.tsx | onboarding.json |
+| **general/** | | |
+| general.accounts | general/AccountsTab.tsx | accounts.json |
+| general.redirections | general/RedirectionsTab.tsx | redirections.json |
+| general.responders | general/RespondersTab.tsx | responders.json |
+| general.lists | general/ListsTab.tsx | lists.json |
+| general.security | general/security/SecurityTab.tsx | security.json |
+| general.security-antispam | general/security/AntispamTab.tsx | security.json |
+| general.security-signature | general/security/SignatureTab.tsx | security.json |
+| general.advanced | general/advanced/AdvancedTab.tsx | advanced.json |
+| general.advanced-contacts | general/advanced/ContactsTab.tsx | advanced.json |
+| general.advanced-audit | general/advanced/AuditTab.tsx | advanced.json |
+| general.advanced-devices | general/advanced/DevicesTab.tsx | advanced.json |
+| general.tasks | general/TasksTab.tsx | tasks.json |
+| **packs/** | | |
+| packs.index | packs/PacksTab.tsx | licenses.json |
+| packs.alacarte | packs/AlacarteTab.tsx | licenses.json |
+| packs.history | packs/HistoryTab.tsx | licenses.json |
+| **modals/** | | |
+| modal.create-account | CreateAccountModal.tsx | modals.json |
+| modal.change-password | ChangePasswordModal.tsx | modals.json |
+| modal.add-alias | AddAliasModal.tsx | modals.json |
+| modal.create-redirection | CreateRedirectionModal.tsx | modals.json |
+| modal.create-responder | CreateResponderModal.tsx | modals.json |
+| modal.create-list | CreateListModal.tsx | modals.json |
+| modal.add-list-member | AddListMemberModal.tsx | modals.json |
+| modal.configure-dmarc | ConfigureDmarcModal.tsx | modals.json |
+| modal.delete | DeleteModal.tsx | modals.json |
+
+**Couverture Target: 26/26 = 100%**
+
+### COMPOSANTS REACT SANS TARGET (à créer si besoin)
+
+| Composant React | Target à créer |
+|-----------------|----------------|
+| packs/LicensesTab.tsx | packs.licenses (vue globale?) |
+| CreateContactModal.tsx | modal.create-contact |
+| CreateResourceModal.tsx | modal.create-resource |
+| DeleteAccountModal.tsx | modal.delete-account |
+| EditAccountModal.tsx | modal.edit-account |
+| OrderPackModal.tsx | modal.order-pack |
+
+##############################################################################
+# 14. WORKFLOW GÉNÉRATION
+##############################################################################
+
+Pour chaque écran:
+□ Lire prompt_target.txt (design system)
+□ Lire ce fichier (NAV, APIs)
+□ Consulter SVG existants si dispo
+□ Générer SVG avec shell template + NAV appropriées
+□ Générer TXT documentation
+□ Sauvegarder dans /mnt/user-data/outputs/target_manager_svg/web-cloud/emails/
+
+### Ordre de génération recommandé
+
+**Phase 1 - Structure principale (NAV2)**
+1. target_.web-cloud.emails.index (vue domaine)
+2. target_.web-cloud.emails.index (vue licence)
+3. target_.web-cloud.emails.onboarding
+
+**Phase 2 - NAV3=General, tabs principaux (NAV4)**
+4. target_.web-cloud.emails.general.accounts
+5. target_.web-cloud.emails.general.redirections
+6. target_.web-cloud.emails.general.responders
+7. target_.web-cloud.emails.general.lists
+8. target_.web-cloud.emails.general.tasks
+
+**Phase 3 - NAV3=General, Sécurité (NAV4+NAV5)**
+9. target_.web-cloud.emails.general.security (DNS Config)
+10. target_.web-cloud.emails.general.security-antispam
+11. target_.web-cloud.emails.general.security-signature
+
+**Phase 4 - NAV3=General, Avancé (NAV4+NAV5, Exchange only)**
+12. target_.web-cloud.emails.general.advanced (Resources)
+13. target_.web-cloud.emails.general.advanced-contacts
+14. target_.web-cloud.emails.general.advanced-audit
+15. target_.web-cloud.emails.general.advanced-devices
+
+**Phase 5 - NAV3=Packs (gestion licences)**
+16. target_.web-cloud.emails.packs.index (Mes packs)
+17. target_.web-cloud.emails.packs.alacarte
+18. target_.web-cloud.emails.packs.history
+
+**Phase 6 - Modales**
+19. target_.web-cloud.emails.modal.create-account
+20. target_.web-cloud.emails.modal.change-password
+21. target_.web-cloud.emails.modal.add-alias
+22. target_.web-cloud.emails.modal.create-redirection
+23. target_.web-cloud.emails.modal.create-responder
+24. target_.web-cloud.emails.modal.create-list
+25. target_.web-cloud.emails.modal.add-list-member
+26. target_.web-cloud.emails.modal.configure-dmarc
+27. target_.web-cloud.emails.modal.delete
+
+================================================================================
+FIN PROMPT TARGET WEB CLOUD > EMAILS
+================================================================================

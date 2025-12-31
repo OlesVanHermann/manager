@@ -10,6 +10,7 @@ import OverTheBoxPage from "./overthebox";
 import "./index.css";
 
 type ServiceType = "connection" | "overthebox";
+type CategoryFilter = "all" | "connection" | "overthebox";
 
 interface ServiceItem {
   id: string;
@@ -34,6 +35,7 @@ export default function AccessPage() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<ServiceItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
 
   const load = useCallback(async () => {
     try {
@@ -92,10 +94,12 @@ export default function AccessPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const filteredServices = services.filter(s =>
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredServices = services.filter(s => {
+    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || s.type === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
   const connectionCount = services.filter(s => s.type === "connection").length;
   const otbCount = services.filter(s => s.type === "overthebox").length;
@@ -173,9 +177,31 @@ export default function AccessPage() {
           />
         </div>
 
+        {/* Catégories */}
+        <div className="access-categories">
+          <button
+            className={`access-category-btn ${categoryFilter === "all" ? "active" : ""}`}
+            onClick={() => setCategoryFilter("all")}
+          >
+            {t("categories.all")} ({services.length})
+          </button>
+          <button
+            className={`access-category-btn ${categoryFilter === "connection" ? "active" : ""}`}
+            onClick={() => setCategoryFilter("connection")}
+          >
+            {t("categories.connections")} ({connectionCount})
+          </button>
+          <button
+            className={`access-category-btn ${categoryFilter === "overthebox" ? "active" : ""}`}
+            onClick={() => setCategoryFilter("overthebox")}
+          >
+            {t("categories.overthebox")} ({otbCount})
+          </button>
+        </div>
+
         {/* Compteur */}
         <div className="access-counter">
-          {connectionCount} {t("counter.connections")} · {otbCount} {t("counter.overthebox")}
+          {filteredServices.length} {t("counter.results")}
         </div>
 
         {/* Liste des services */}
@@ -237,7 +263,23 @@ export default function AccessPage() {
 
           {filteredServices.length === 0 && (
             <div className="access-empty">
-              <p>{t("empty.noResults")}</p>
+              {categoryFilter === "connection" && connectionCount === 0 ? (
+                <>
+                  <p>{t("empty.noConnections")}</p>
+                  <a href="https://www.ovh.com/fr/offre-internet/" target="_blank" rel="noopener noreferrer" className="access-order-link">
+                    {t("empty.orderConnection")}
+                  </a>
+                </>
+              ) : categoryFilter === "overthebox" && otbCount === 0 ? (
+                <>
+                  <p>{t("empty.noOverthebox")}</p>
+                  <a href="https://www.ovhtelecom.fr/overthebox/" target="_blank" rel="noopener noreferrer" className="access-order-link">
+                    {t("empty.orderOverthebox")}
+                  </a>
+                </>
+              ) : (
+                <p>{t("empty.noResults")}</p>
+              )}
             </div>
           )}
         </div>

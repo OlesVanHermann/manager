@@ -1,21 +1,23 @@
 // ============================================================
-// OVERTHEBOX PAGE - Container avec 3 tabs NAV3
+// OVERTHEBOX PAGE - Container avec 5 tabs NAV3
 // ============================================================
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ovhApi } from "../../../../services/api";
 import type { OverTheBoxService } from "./overthebox.types";
-import { GeneralTab } from "./tabs/general/GeneralTab";
-import { RemotesTab } from "./tabs/remotes/RemotesTab";
-import { TasksTab } from "./tabs/tasks/TasksTab";
+import { GeneralTab } from "./GeneralTab";
+import { RemotesTab } from "./RemotesTab";
+import { ConfigureTab } from "./ConfigureTab";
+import { LogsTab } from "./LogsTab";
+import { TasksTab } from "./TasksTab";
 import "./overthebox.css";
 
 interface OverTheBoxPageProps {
   serviceName: string;
 }
 
-type TabId = "general" | "remotes" | "tasks";
+type TabId = "general" | "remotes" | "configure" | "logs" | "tasks";
 
 async function getService(serviceName: string): Promise<OverTheBoxService> {
   return ovhApi.get<OverTheBoxService>(`/overTheBox/${serviceName}`);
@@ -48,6 +50,8 @@ export default function OverTheBoxPage({ serviceName }: OverTheBoxPageProps) {
   const tabs: { id: TabId; labelKey: string }[] = [
     { id: "general", labelKey: "tabs.general" },
     { id: "remotes", labelKey: "tabs.remotes" },
+    { id: "configure", labelKey: "tabs.configure" },
+    { id: "logs", labelKey: "tabs.logs" },
     { id: "tasks", labelKey: "tabs.tasks" },
   ];
 
@@ -124,6 +128,12 @@ export default function OverTheBoxPage({ serviceName }: OverTheBoxPageProps) {
         )}
         {activeTab === "remotes" && (
           <RemotesTab serviceName={serviceName} />
+        )}
+        {activeTab === "configure" && (
+          <ConfigureTab serviceName={serviceName} />
+        )}
+        {activeTab === "logs" && (
+          <LogsTab serviceName={serviceName} />
         )}
         {activeTab === "tasks" && (
           <TasksTab serviceName={serviceName} />

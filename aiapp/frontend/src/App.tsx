@@ -61,7 +61,7 @@ const DomainsDnsPage = lazy(() => import("./pages/web-cloud/domains"));
 const HostingPage = lazy(() => import("./pages/web-cloud/hosting"));
 const WordPressPage = lazy(() => import("./pages/web-cloud/wordpress"));
 const EmailsPage = lazy(() => import("./pages/web-cloud/emails"));
-const TelecomPage = lazy(() => import("./pages/web-cloud/telecom"));
+const VoipPage = lazy(() => import("./pages/web-cloud/voip"));
 const AccessPage = lazy(() => import("./pages/web-cloud/access"));
 
 // Network
@@ -227,7 +227,7 @@ function AppContent() {
         case "web-hosting": return <HostingPage />;
         case "web-wordpress": return <WordPressPage />;
         case "web-emails": return <EmailsPage />;
-        case "web-voip": return <TelecomPage />;
+        case "web-voip": return <VoipPage />;
         case "web-access": return <AccessPage />;
         default: return <WebCloudDashboard onNavigate={nav.handleNavigate} />;
       }
