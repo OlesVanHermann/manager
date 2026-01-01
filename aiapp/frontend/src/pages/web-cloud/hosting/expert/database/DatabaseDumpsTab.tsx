@@ -47,7 +47,6 @@ export function DatabaseDumpsTab({ serviceName, databaseName }: DatabaseDumpsTab
       }));
       setDumps(mappedDumps);
     } catch (err) {
-      console.error("[DatabaseDumpsTab] Error:", err);
       // Mock data for display
       setDumps([
         { id: 1, creationDate: "2025-12-27T03:00:00Z", type: "auto", size: 45200000, status: "available", expirationDate: "2026-01-26" },

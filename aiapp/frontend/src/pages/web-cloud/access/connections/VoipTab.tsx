@@ -88,49 +88,40 @@ export function VoipTab({ connectionId }: VoipTabProps) {
   // Handlers - Lines
   const handleAddLine = useCallback(() => {
     // TODO: Open order tunnel
-    console.log("Add line");
   }, []);
 
   const handleConfigureLine = useCallback((line: VoipLine) => {
     // TODO: Open modal
-    console.log("Configure line:", line);
   }, []);
 
   const handleViewHistory = useCallback((line: VoipLine) => {
     // TODO: Navigate to history
-    console.log("View history:", line);
   }, []);
 
   const handleViewDetails = useCallback(() => {
     // TODO: Navigate to stats page
-    console.log("View details");
   }, []);
 
   // Handlers - EcoFax
   const handleSaveConfig = useCallback(async (config: EcoFaxConfig) => {
     // TODO: API call to save config
-    console.log("Save config:", config);
     setEcoFax(prev => prev ? { ...prev, ...config } : null);
   }, []);
 
   const handleSendFax = useCallback(async (number: string, file: File) => {
     // TODO: API call to send fax
-    console.log("Send fax to:", number, file);
   }, []);
 
   const handleDownloadFax = useCallback((faxId: string) => {
     // TODO: Download fax file
-    console.log("Download fax:", faxId);
   }, []);
 
   const handleResendFax = useCallback(async (faxId: string) => {
     // TODO: API call to resend fax
-    console.log("Resend fax:", faxId);
   }, []);
 
   const handleEnableEcoFax = useCallback(() => {
     // TODO: Open modal or tunnel
-    console.log("Enable EcoFax");
   }, []);
 
   if (loading) {

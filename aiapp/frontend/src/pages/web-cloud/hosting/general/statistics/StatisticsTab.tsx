@@ -37,7 +37,6 @@ export function StatisticsTab({ serviceName }: StatisticsTabProps) {
       const data = await generalService.getStatistics(serviceName, statType, period);
       setChartData(data || { labels: [], values: [] });
     } catch (err) {
-      console.error("[StatisticsTab] Error:", err);
       setChartData({ labels: [], values: [] });
     } finally {
       setLoading(false);

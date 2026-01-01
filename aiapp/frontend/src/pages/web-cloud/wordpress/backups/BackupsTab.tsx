@@ -80,7 +80,9 @@ export function BackupsTab({ serviceName }: Props) {
   };
 
   const handleDelete = async (backupId: string) => {
-    if (!confirm(t('backups.confirmDelete'))) return;
+    if (!confirm(t('backups.confirmDelete'))) {
+      return;
+    }
     try {
       await backupsService.deleteBackup(serviceName, backupId);
       loadData();

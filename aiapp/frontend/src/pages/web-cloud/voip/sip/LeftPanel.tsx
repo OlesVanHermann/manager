@@ -112,21 +112,27 @@ export function LeftPanel({ groups, selectedId, onSelect, loading, smsAccounts =
       <div className="voip-left-panel-filters">
         <button
           className={`voip-filter-btn ${activeFilter === 'voip' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('voip')}
+          onClick={() => {
+            setActiveFilter('voip');
+          }}
         >
           📞 VoIP
           <span className="voip-filter-count">{counts.voip}</span>
         </button>
         <button
           className={`voip-filter-btn ${activeFilter === 'sms' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('sms')}
+          onClick={() => {
+            setActiveFilter('sms');
+          }}
         >
           💬 SMS
           <span className="voip-filter-count">{counts.sms}</span>
         </button>
         <button
           className={`voip-filter-btn ${activeFilter === 'fax' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('fax')}
+          onClick={() => {
+            setActiveFilter('fax');
+          }}
         >
           📠 FAX
           <span className="voip-filter-count">{counts.fax}</span>
@@ -139,7 +145,9 @@ export function LeftPanel({ groups, selectedId, onSelect, loading, smsAccounts =
           type="text"
           placeholder={t('search.placeholder')}
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
         />
       </div>
 
@@ -154,7 +162,9 @@ export function LeftPanel({ groups, selectedId, onSelect, loading, smsAccounts =
           <div
             key={item.id}
             className={`voip-left-panel-item ${selectedId === item.id ? 'selected' : ''}`}
-            onClick={() => onSelect(item.id)}
+            onClick={() => {
+              onSelect(item.id);
+            }}
           >
             {/* Avatar selon type */}
             <div className={`voip-left-panel-item-avatar ${item.type}`}>

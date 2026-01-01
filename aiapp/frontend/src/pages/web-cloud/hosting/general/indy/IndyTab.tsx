@@ -31,7 +31,6 @@ export function IndyTab({ serviceName }: IndyTabProps) {
       const data = await generalService.getIndys(serviceName);
       setIndys(data || []);
     } catch (err) {
-      console.error("[IndyTab] Error:", err);
       setIndys([]);
     } finally {
       setLoading(false);
@@ -48,7 +47,6 @@ export function IndyTab({ serviceName }: IndyTabProps) {
   const totalPages = Math.ceil(filtered.length / perPage);
 
   const handleDomainClick = (domain: string) => {
-    console.log("[IndyTab] Navigate to domain:", domain);
   };
 
   return (

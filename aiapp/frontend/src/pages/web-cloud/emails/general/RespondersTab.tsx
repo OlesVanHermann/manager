@@ -43,7 +43,6 @@ export default function RespondersTab({ domain }: RespondersTabProps) {
 
   const handleEdit = (responder: typeof responders[0]) => {
     // TODO: Implement edit modal
-    console.log("Edit responder", responder.id);
   };
 
   const handleToggle = async (responder: typeof responders[0]) => {
@@ -52,7 +51,6 @@ export default function RespondersTab({ domain }: RespondersTabProps) {
       await emailsService.toggleResponder(domain, responder.id, !responder.active);
       refresh();
     } catch (err) {
-      console.error("Toggle responder error:", err);
     }
   };
 
@@ -63,7 +61,6 @@ export default function RespondersTab({ domain }: RespondersTabProps) {
       await emailsService.deleteResponder(domain, responder.id);
       refresh();
     } catch (err) {
-      console.error("Delete responder error:", err);
     }
   };
 

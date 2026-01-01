@@ -33,7 +33,9 @@ export function DomainView({ domains, selectedDomain, onSelect }: DomainViewProp
           key={domain.name}
           domain={domain}
           isSelected={domain.name === selectedDomain}
-          onSelect={() => onSelect(domain.name)}
+          onSelect={() => {
+            onSelect(domain.name);
+          }}
         />
       ))}
     </div>

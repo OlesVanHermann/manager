@@ -156,9 +156,12 @@ export default function DomainsPage() {
   // -------- NAV3 Group State --------
   const [activeNav3, setActiveNav3] = useState<Nav3Group>("general");
 
+  // -------- DEBUG LOGGING --------
+  const logAction = (action: string, data?: Record<string, unknown>) => {
+  };
+
   // -------- Memoized callbacks for useLeftPanel (prevent infinite loops) --------
   const fetchList = useCallback(async () => {
-    console.log("[DomainsPage] fetchList called");
     // 2 API calls paralleles (target pattern)
     const [domains, zones] = await Promise.all([
       domainsPageService.listDomains(),
@@ -201,7 +204,6 @@ export default function DomainsPage() {
   }, []);
 
   const fetchDetails = useCallback(async (name: string) => {
-    console.log("[DomainsPage] fetchDetails called for:", name);
     // Lazy load: 3 appels max on selection
     const [domain, serviceInfos, zone] = await Promise.all([
       domainsPageService.getDomain(name).catch(() => null),
@@ -260,6 +262,47 @@ export default function DomainsPage() {
   // -------- Active Tab --------
   const [activeTab, setActiveTab] = useState<string>("general");
 
+  // -------- Wrapped Handlers with Logging --------
+  const handleNav3Change = (group: Nav3Group) => {
+    logAction("NAV3_CHANGE", { from: activeNav3, to: group });
+    setActiveNav3(group);
+  };
+
+  const handleTabChange = (tabId: string) => {
+    logAction("TAB_CHANGE", { from: activeTab, to: tabId, nav3: activeNav3 });
+    setActiveTab(tabId);
+  };
+
+  const handleDomainSelect = (name: string | null) => {
+    logAction("DOMAIN_SELECT", { domain: name, previousDomain: selectedName });
+    setSelectedName(name);
+  };
+
+  const handleSearchChange = (query: string) => {
+    logAction("SEARCH_CHANGE", { query });
+    setSearchQuery(query);
+  };
+
+  const handleFilterChange = (filter: string) => {
+    logAction("FILTER_CHANGE", { filter });
+    setFilterType(filter);
+  };
+
+  const handlePageChange = (page: number) => {
+    logAction("PAGE_CHANGE", { from: currentPage, to: page });
+    setCurrentPage(page);
+  };
+
+  const handleRefresh = () => {
+    logAction("REFRESH_LIST");
+    refresh();
+  };
+
+  const handleRefreshDetails = () => {
+    logAction("REFRESH_DETAILS", { domain: selectedName });
+    refreshDetails();
+  };
+
   // -------- Available Tabs for current NAV3 group --------
   const availableTabs = useMemo(() => {
     if (!selectedEntry) return [];
@@ -293,7 +336,7 @@ export default function DomainsPage() {
     switch (activeTab) {
       // GENERAL group
       case "general":
-        return <GeneralTab domain={selectedEntry.name} details={domain || undefined} serviceInfos={serviceInfos || undefined} loading={detailsLoading} onRefresh={refreshDetails} onTabChange={setActiveTab} />;
+        return <GeneralTab domain={selectedEntry.name} details={domain || undefined} serviceInfos={serviceInfos || undefined} loading={detailsLoading} onRefresh={handleRefreshDetails} onTabChange={handleTabChange} />;
       case "contacts":
         return <ContactsTab domain={selectedEntry.name} serviceInfos={serviceInfos || undefined} />;
       case "alldom":
@@ -323,7 +366,7 @@ export default function DomainsPage() {
       case "dynhost":
         return <DynHostTab zoneName={selectedEntry.name} />;
       case "anycast":
-        return <AnycastTab domain={selectedEntry.name} zoneName={selectedEntry.name} onNavigateToDnsServers={() => setActiveTab("dns-servers")} />;
+        return <AnycastTab domain={selectedEntry.name} zoneName={selectedEntry.name} onNavigateToDnsServers={() => handleTabChange("dns-servers")} />;
 
       // EXPERT group
       case "glue":
@@ -347,7 +390,7 @@ export default function DomainsPage() {
         <LeftPanel
           items={paginatedItems}
           selectedId={selectedName}
-          onSelect={setSelectedName}
+          onSelect={handleDomainSelect}
           getItemId={(entry) => entry.name}
           renderItem={(entry, isSelected) => (
             <LeftPanelItemContent
@@ -363,17 +406,17 @@ export default function DomainsPage() {
             />
           )}
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
           searchPlaceholder={t("actions.searchPlaceholder")}
           filterOptions={FILTER_OPTIONS.map(opt => ({
             value: opt.value,
             label: t(`filter.${opt.value}`) || opt.label,
           }))}
           filterValue={filterType}
-          onFilterChange={setFilterType}
+          onFilterChange={handleFilterChange}
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          onPageChange={handlePageChange}
           showPagination={totalPages > 1}
           loading={loading}
           error={error}
@@ -384,7 +427,7 @@ export default function DomainsPage() {
           // NAV3 Selector
           nav3Groups={NAV3_GROUPS.map(g => ({ id: g.id, label: t(g.labelKey) }))}
           activeNav3={activeNav3}
-          onNav3Change={(id) => setActiveNav3(id as Nav3Group)}
+          onNav3Change={(id) => handleNav3Change(id as Nav3Group)}
         />
 
         {/* ============ RIGHT PANEL ============ */}
@@ -402,7 +445,7 @@ export default function DomainsPage() {
                   <button
                     key={tab.id}
                     className={`dom-nav3-btn ${activeTab === tab.id ? "active" : ""}`}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabChange(tab.id)}
                   >
                     {t(tab.labelKey)}
                   </button>

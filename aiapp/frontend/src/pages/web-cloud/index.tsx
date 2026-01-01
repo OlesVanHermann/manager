@@ -174,7 +174,6 @@ export default function WebCloudDashboard({ onNavigate }: WebCloudDashboardProps
         alldom,
       });
     } catch (err) {
-      console.error("[WebCloud] Error loading counts:", err);
     } finally {
       setLoading(false);
     }

@@ -68,7 +68,9 @@ export function LicenseView({ licenses, selectedLicense, onSelect, currentPage, 
               key={license.id}
               license={license}
               isSelected={license.id === selectedLicense}
-              onSelect={() => onSelect(license.id)}
+              onSelect={() => {
+                onSelect(license.id);
+              }}
             />
           ))}
         </div>
@@ -83,7 +85,9 @@ export function LicenseView({ licenses, selectedLicense, onSelect, currentPage, 
               key={license.id}
               license={license}
               isSelected={license.id === selectedLicense}
-              onSelect={() => onSelect(license.id)}
+              onSelect={() => {
+                onSelect(license.id);
+              }}
             />
           ))}
         </div>
@@ -98,7 +102,9 @@ export function LicenseView({ licenses, selectedLicense, onSelect, currentPage, 
               key={license.id}
               license={license}
               isSelected={license.id === selectedLicense}
-              onSelect={() => onSelect(license.id)}
+              onSelect={() => {
+                onSelect(license.id);
+              }}
             />
           ))}
         </div>

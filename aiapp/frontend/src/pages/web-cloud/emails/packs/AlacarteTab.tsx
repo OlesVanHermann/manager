@@ -76,19 +76,15 @@ export default function AlacarteTab() {
   }, [licenses]);
 
   const handleAddLicense = () => {
-    console.log("Add new license");
   };
 
   const handleEdit = (license: AlacarteLicense) => {
-    console.log("Edit license", license.id);
   };
 
   const handleCancel = (license: AlacarteLicense) => {
-    console.log("Cancel license", license.id);
   };
 
   const handleConvertToPack = () => {
-    console.log("Convert to pack");
   };
 
   const formatDate = (dateStr: string) => {

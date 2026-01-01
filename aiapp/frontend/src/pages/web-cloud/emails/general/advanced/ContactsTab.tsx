@@ -91,27 +91,21 @@ export default function ContactsTab({ domain }: ContactsTabProps) {
   }, [contacts, selectedFolder, search]);
 
   const handleCreateContact = () => {
-    console.log("Create contact");
   };
 
   const handleCreateFolder = () => {
-    console.log("Create folder");
   };
 
   const handleEditContact = (contact: SharedContact) => {
-    console.log("Edit contact", contact.id);
   };
 
   const handleDeleteContact = (contact: SharedContact) => {
-    console.log("Delete contact", contact.id);
   };
 
   const handleImport = () => {
-    console.log("Import contacts");
   };
 
   const handleExport = () => {
-    console.log("Export contacts");
   };
 
   return (

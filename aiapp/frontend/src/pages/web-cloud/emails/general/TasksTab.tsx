@@ -88,11 +88,9 @@ export default function TasksTab({ domain }: TasksTabProps) {
   const activeTasks = tasks.filter((t) => t.status === "pending" || t.status === "running");
 
   const handleRetry = (task: Task) => {
-    console.log("Retry task", task.id);
   };
 
   const handleCancel = (task: Task) => {
-    console.log("Cancel task", task.id);
   };
 
   const formatDate = (dateStr: string) => {

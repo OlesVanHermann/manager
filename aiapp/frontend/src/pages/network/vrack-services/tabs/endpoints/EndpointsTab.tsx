@@ -42,7 +42,6 @@ export default function EndpointsTab({ serviceId }: EndpointsTabProps) {
       await vrackservicesEndpointsService.deleteEndpoint(serviceId, endpointId);
       loadEndpoints();
     } catch (err) {
-      console.error("Erreur suppression:", err);
     }
   };
 

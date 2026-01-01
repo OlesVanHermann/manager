@@ -176,10 +176,10 @@ export function GeneralTab({ serviceName, details }: Props) {
         <div className="otb-section-header">
           <h3>{t("connections.title")}</h3>
           <div className="otb-section-actions">
-            <button className="otb-btn-secondary">
+            <button className="otb-btn-secondary" onClick={() => console.log("[OTB GeneralTab] Action clicked: managePriorities", serviceName)}>
               {t("connections.managePriorities")}
             </button>
-            <button className="otb-btn-primary">
+            <button className="otb-btn-primary" onClick={() => console.log("[OTB GeneralTab] Action clicked: addConnection", serviceName)}>
               + {t("connections.add")}
             </button>
           </div>
@@ -261,7 +261,7 @@ export function GeneralTab({ serviceName, details }: Props) {
             <label>{t("service.name")}</label>
             <div className="otb-info-editable">
               <span>{details?.customerDescription || serviceName}</span>
-              <button className="otb-edit-btn" title={t("edit")}>✎</button>
+              <button className="otb-edit-btn" title={t("edit")} onClick={() => console.log("[OTB GeneralTab] Action clicked: editName", serviceName)}>✎</button>
             </div>
           </div>
         </div>
@@ -271,19 +271,19 @@ export function GeneralTab({ serviceName, details }: Props) {
       <section className="otb-section">
         <h3>{t("actions.title")}</h3>
         <div className="otb-actions-grid">
-          <button className="otb-action-btn">
+          <button className="otb-action-btn" onClick={() => console.log("[OTB GeneralTab] Action clicked: reboot", serviceName)}>
             <span className="otb-action-icon">🔄</span>
             <span className="otb-action-label">{t("actions.reboot")}</span>
           </button>
-          <button className="otb-action-btn">
+          <button className="otb-action-btn" onClick={() => console.log("[OTB GeneralTab] Action clicked: statistics", serviceName)}>
             <span className="otb-action-icon">📈</span>
             <span className="otb-action-label">{t("actions.statistics")}</span>
           </button>
-          <button className="otb-action-btn">
+          <button className="otb-action-btn" onClick={() => console.log("[OTB GeneralTab] Action clicked: documentation", serviceName)}>
             <span className="otb-action-icon">📖</span>
             <span className="otb-action-label">{t("actions.documentation")}</span>
           </button>
-          <button className="otb-action-btn otb-action-danger">
+          <button className="otb-action-btn otb-action-danger" onClick={() => console.log("[OTB GeneralTab] Action clicked: cancel", serviceName)}>
             <span className="otb-action-icon">⛔</span>
             <span className="otb-action-label">{t("actions.cancel")}</span>
           </button>

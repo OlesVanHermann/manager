@@ -35,7 +35,6 @@ export function MigrationModal({ serviceName, isOpen, onClose, onSuccess }: Migr
           setDestination(filtered[0]);
         }
       } catch (err) {
-        console.error("[MigrationModal] Error:", err);
         setError(t("loadError"));
       } finally {
         setLoading(false);
@@ -52,7 +51,6 @@ export function MigrationModal({ serviceName, isOpen, onClose, onSuccess }: Migr
       onSuccess?.();
       onClose();
     } catch (err) {
-      console.error("[MigrationModal] Error:", err);
       setError(t("migrateError"));
     } finally {
       setSubmitting(false);

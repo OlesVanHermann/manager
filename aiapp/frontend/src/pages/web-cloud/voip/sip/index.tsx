@@ -102,10 +102,18 @@ export default function VoipIndexPage() {
 
   // Actions rapides
   const quickActions = [
-    { label: t('actions.orderNumber'), onClick: () => navigate(`/web-cloud/voip/${selectedGroup}/order`) },
-    { label: t('actions.viewInvoices'), onClick: () => setActiveTab('billing') },
-    { label: t('actions.portability'), onClick: () => navigate(`/web-cloud/voip/${selectedGroup}/portability`) },
-    { label: t('actions.abbreviated'), onClick: () => navigate(`/web-cloud/voip/${selectedGroup}/abbreviated`) },
+    { label: t('actions.orderNumber'), onClick: () => {
+      navigate(`/web-cloud/voip/${selectedGroup}/order`);
+    }},
+    { label: t('actions.viewInvoices'), onClick: () => {
+      setActiveTab('billing');
+    }},
+    { label: t('actions.portability'), onClick: () => {
+      navigate(`/web-cloud/voip/${selectedGroup}/portability`);
+    }},
+    { label: t('actions.abbreviated'), onClick: () => {
+      navigate(`/web-cloud/voip/${selectedGroup}/abbreviated`);
+    }},
   ];
 
   // Onboarding si aucun service (VoIP, SMS, FAX)
@@ -156,7 +164,9 @@ export default function VoipIndexPage() {
               {/* CTA */}
               <button
                 className="voip-onboarding-cta"
-                onClick={() => window.open('https://www.ovhcloud.com/fr/telephony/', '_blank')}
+                onClick={() => {
+                  window.open('https://www.ovhcloud.com/fr/telephony/', '_blank');
+                }}
               >
                 {t('onboarding.cta')}
               </button>
@@ -255,8 +265,8 @@ export default function VoipIndexPage() {
                         {item.status === 'paid' ? t('dashboard.history.yes') : t('dashboard.history.no')}
                       </td>
                       <td>
-                        <span className="link">📄 PDF</span>
-                        <span className="link" style={{ marginLeft: 16 }}>
+                        <span className="link" onClick={() => console.log('[VoIP:Index] Export PDF clicked', { date: item.date, price: item.price.value })}>📄 PDF</span>
+                        <span className="link" style={{ marginLeft: 16 }} onClick={() => console.log('[VoIP:Index] Export CSV clicked', { date: item.date, price: item.price.value })}>
                           📊 CSV
                         </span>
                       </td>
@@ -343,7 +353,9 @@ export default function VoipIndexPage() {
       <LeftPanel
         groups={groups}
         selectedId={selectedGroup}
-        onSelect={setSelectedGroup}
+        onSelect={(id) => {
+          setSelectedGroup(id);
+        }}
         loading={loading}
         smsAccounts={smsAccounts}
         faxServices={faxServices}
@@ -356,10 +368,13 @@ export default function VoipIndexPage() {
           subtitle={currentGroup.billingAccount}
           tabs={tabs}
           activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as GroupTabId)}
+          onTabChange={(id) => {
+            setActiveTab(id as GroupTabId);
+          }}
           loading={loading}
           actions={
-            <button className="btn btn-primary">+ {t('actions.order')}</button>
+            <button className="btn btn-primary" onClick={() => {
+            }}>+ {t('actions.order')}</button>
           }
         >
           {renderTabContent()}

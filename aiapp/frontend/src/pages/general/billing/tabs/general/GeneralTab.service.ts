@@ -100,7 +100,6 @@ export async function getServicesSummary(): Promise<ServiceSummary> {
 
     return { total: response.data.length, types };
   } catch (error) {
-    console.warn("2API /billing/services non disponible, fallback APIv6:", error);
     return getServicesSummaryFallback();
   }
 }

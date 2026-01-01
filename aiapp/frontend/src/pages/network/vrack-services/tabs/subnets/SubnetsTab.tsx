@@ -42,7 +42,6 @@ export default function SubnetsTab({ serviceId }: SubnetsTabProps) {
       await vrackservicesSubnetsService.deleteSubnet(serviceId, subnetId);
       loadSubnets();
     } catch (err) {
-      console.error("Erreur suppression:", err);
     }
   };
 

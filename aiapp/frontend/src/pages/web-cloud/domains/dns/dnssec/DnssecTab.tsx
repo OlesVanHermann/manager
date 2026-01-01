@@ -64,6 +64,10 @@ export function DnssecTab({ domain }: Props) {
   const { t } = useTranslation("web-cloud/domains/index");
   const { t: tCommon } = useTranslation("common");
 
+  // ---------- DEBUG LOGGING ----------
+  const logAction = (action: string, data?: Record<string, unknown>) => {
+  };
+
   // ---------- STATE STATUS ----------
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,31 +127,56 @@ export function DnssecTab({ domain }: Props) {
 
   // ---------- TOGGLE DNSSEC ----------
   const handleToggle = async () => {
+    const targetStatus = status === "enabled" ? "disabled" : "enabled";
+    logAction("TOGGLE_DNSSEC_START", { currentStatus: status, targetStatus });
     try {
       setToggling(true);
       setError(null);
       if (status === "enabled") {
         await dnssecService.disableDnssec(domain);
+        logAction("DISABLE_DNSSEC_SUCCESS");
       } else {
         await dnssecService.enableDnssec(domain);
+        logAction("ENABLE_DNSSEC_SUCCESS");
       }
       await loadStatus();
     } catch (err) {
+      logAction("TOGGLE_DNSSEC_ERROR", { error: String(err) });
       setError(String(err));
     } finally {
       setToggling(false);
     }
   };
 
+  // ---------- REFRESH ----------
+  const handleRefresh = () => {
+    logAction("REFRESH");
+    loadStatus();
+    loadDsRecords();
+  };
+
   // ---------- DELETE DS RECORD ----------
+  const handleDeleteClick = (record: DsRecord) => {
+    logAction("DELETE_DS_RECORD_CLICK", { recordId: record.id, tag: record.tag });
+    setDeleteRecord(record);
+  };
+
+  const handleDeleteCancel = () => {
+    logAction("DELETE_DS_RECORD_CANCEL", { recordId: deleteRecord?.id });
+    setDeleteRecord(null);
+  };
+
   const handleDeleteConfirm = async () => {
     if (!deleteRecord) return;
+    logAction("DELETE_DS_RECORD_CONFIRM", { recordId: deleteRecord.id, tag: deleteRecord.tag });
     try {
       setDeleting(true);
       await dnssecService.deleteDsRecord(domain, deleteRecord.id);
+      logAction("DELETE_DS_RECORD_SUCCESS", { recordId: deleteRecord.id });
       setDeleteRecord(null);
       await loadDsRecords();
     } catch (err) {
+      logAction("DELETE_DS_RECORD_ERROR", { recordId: deleteRecord.id, error: String(err) });
       alert(String(err));
     } finally {
       setDeleting(false);
@@ -182,7 +211,7 @@ export function DnssecTab({ domain }: Props) {
           <p className="dnssec-description">{t("dnssec.description")}</p>
         </div>
         <div className="dnssec-header-actions">
-          <button className="dnssec-btn-secondary" onClick={() => { loadStatus(); loadDsRecords(); }}>
+          <button className="dnssec-btn-secondary" onClick={handleRefresh}>
             <RefreshIcon /> {tCommon("actions.refresh")}
           </button>
           {isSupported && !isInProgress && (
@@ -260,7 +289,7 @@ export function DnssecTab({ domain }: Props) {
                     <code className="dnssec-key" title={record.publicKey}>{truncateKey(record.publicKey)}</code>
                   </td>
                   <td>
-                    <button className="dnssec-btn-icon danger" onClick={() => setDeleteRecord(record)} title={tCommon("actions.delete")}>
+                    <button className="dnssec-btn-icon danger" onClick={() => handleDeleteClick(record)} title={tCommon("actions.delete")}>
                       <TrashIcon />
                     </button>
                   </td>
@@ -279,11 +308,11 @@ export function DnssecTab({ domain }: Props) {
 
       {/* Delete Confirm Modal */}
       {deleteRecord && (
-        <div className="dnssec-modal-overlay" onClick={() => setDeleteRecord(null)}>
+        <div className="dnssec-modal-overlay" onClick={handleDeleteCancel}>
           <div className="dnssec-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="dnssec-modal-header">
               <h3>{t("dnssec.confirmDeleteTitle")}</h3>
-              <button className="dnssec-btn-icon" onClick={() => setDeleteRecord(null)}><CloseIcon /></button>
+              <button className="dnssec-btn-icon" onClick={handleDeleteCancel}><CloseIcon /></button>
             </div>
             <div className="dnssec-modal-body">
               <p>{t("dnssec.confirmDeleteMessage")}</p>
@@ -292,7 +321,7 @@ export function DnssecTab({ domain }: Props) {
               </div>
             </div>
             <div className="dnssec-modal-footer">
-              <button className="dnssec-btn-secondary" onClick={() => setDeleteRecord(null)}>{tCommon("actions.cancel")}</button>
+              <button className="dnssec-btn-secondary" onClick={handleDeleteCancel}>{tCommon("actions.cancel")}</button>
               <button className="dnssec-btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>
                 {deleting ? tCommon("loading") : tCommon("actions.delete")}
               </button>

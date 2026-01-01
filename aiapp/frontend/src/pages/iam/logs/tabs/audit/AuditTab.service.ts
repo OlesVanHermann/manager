@@ -25,7 +25,6 @@ export async function getLogKinds(): Promise<string[]> {
     const result = await ovhGet<string[]>(LOG_CONFIG.kind);
     return result || ["default"];
   } catch (err) {
-    console.error("Error fetching log kinds:", err);
     return ["default"];
   }
 }
@@ -35,7 +34,6 @@ export async function getLogUrl(kind: string = "default"): Promise<{ url: string
   try {
     return await ovhPost<{ url: string }>(`${LOG_CONFIG.log}?kind=${encodeURIComponent(kind)}`);
   } catch (err) {
-    console.error("Error fetching log URL:", err);
     return null;
   }
 }

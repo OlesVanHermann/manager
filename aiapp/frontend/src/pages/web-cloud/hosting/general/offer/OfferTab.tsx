@@ -48,7 +48,6 @@ export function OfferTab({ serviceName }: OfferTabProps) {
       const offers = await generalService.getAvailableOffers(serviceName);
       setAvailableOffers(offers || []);
     } catch (err) {
-      console.error("[OfferTab] Error:", err);
     } finally {
       setLoading(false);
     }
@@ -84,7 +83,6 @@ export function OfferTab({ serviceName }: OfferTabProps) {
       await generalService.orderUpgrade(serviceName, selectedOffer!.planCode, selectedDuration);
       alert(t("orderSuccess"));
     } catch (err) {
-      console.error("[OfferTab] Order error:", err);
       alert(t("orderError"));
     } finally {
       setOrdering(false);

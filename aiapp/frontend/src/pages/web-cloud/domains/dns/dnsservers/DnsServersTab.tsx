@@ -62,6 +62,10 @@ export function DnsServersTab({ domain }: Props) {
   const { t } = useTranslation("web-cloud/domains/index");
   const { t: tCommon } = useTranslation("common");
 
+  // ---------- DEBUG LOGGING ----------
+  const logAction = (action: string, data?: Record<string, unknown>) => {
+  };
+
   // ---------- STATE ----------
   const [servers, setServers] = useState<DnsServer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +102,7 @@ export function DnsServersTab({ domain }: Props) {
 
   // ---------- MODAL HANDLERS ----------
   const openEditModal = () => {
+    logAction("OPEN_EDIT_MODAL", { currentServersCount: servers.length });
     // Initialize form with current servers
     const initialServers = servers.map((s) => ({
       host: s.host,
@@ -113,6 +118,7 @@ export function DnsServersTab({ domain }: Props) {
   };
 
   const closeModal = () => {
+    logAction("CLOSE_MODAL");
     setModalOpen(false);
     setFormError(null);
   };
@@ -128,11 +134,13 @@ export function DnsServersTab({ domain }: Props) {
 
   const addServerRow = () => {
     if (formServers.length >= 6) return; // Max 6 servers
+    logAction("ADD_SERVER_ROW", { newCount: formServers.length + 1 });
     setFormServers((prev) => [...prev, { host: '', ip: '' }]);
   };
 
   const removeServerRow = (index: number) => {
     if (formServers.length <= 2) return; // Min 2 servers
+    logAction("REMOVE_SERVER_ROW", { index, newCount: formServers.length - 1 });
     setFormServers((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -141,6 +149,7 @@ export function DnsServersTab({ domain }: Props) {
     // Validate: at least 2 non-empty hosts
     const validServers = formServers.filter((s) => s.host.trim());
     if (validServers.length < 2) {
+      logAction("SAVE_ERROR_MIN_SERVERS", { count: validServers.length });
       setFormError(t("dnsServers.errorMinServers"));
       return;
     }
@@ -149,11 +158,13 @@ export function DnsServersTab({ domain }: Props) {
     const hostnameRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/;
     for (const server of validServers) {
       if (!hostnameRegex.test(server.host)) {
+        logAction("SAVE_ERROR_INVALID_HOSTNAME", { host: server.host });
         setFormError(t("dnsServers.errorInvalidHostname", { host: server.host }));
         return;
       }
     }
 
+    logAction("SAVE_DNS_SERVERS_START", { serversCount: validServers.length, servers: validServers });
     try {
       setSaving(true);
       setFormError(null);
@@ -164,10 +175,12 @@ export function DnsServersTab({ domain }: Props) {
       }));
 
       await dnsServersService.updateDnsServers(domain, nameServers);
+      logAction("SAVE_DNS_SERVERS_SUCCESS", { serversCount: nameServers.length });
       closeModal();
       // Reload after a short delay (task is async)
       setTimeout(() => loadServers(), 2000);
     } catch (err) {
+      logAction("SAVE_DNS_SERVERS_ERROR", { error: String(err) });
       setFormError(String(err));
     } finally {
       setSaving(false);

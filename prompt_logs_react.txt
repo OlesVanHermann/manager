@@ -1,0 +1,245 @@
+================================================================================
+PROMPT LOGS REACT - Conventions de logging dans le code
+================================================================================
+Référence: prompt_logs.txt pour l'exploitation des logs
+================================================================================
+
+##############################################################################
+# CE QUI EST LOGGÉ AUTOMATIQUEMENT
+##############################################################################
+
+| Élément                | Auto | Où              | Détails                    |
+|------------------------|------|-----------------|----------------------------|
+| API calls ovhFetch     | ✓    | api.ts          | method, endpoint, status, ms, error |
+| API calls ovh2api      | ✓    | api.ts          | method, endpoint, status, ms, error |
+| API calls ovhDirect    | ✓    | api.ts          | method, endpoint, status, ms, error |
+| NAV1 (universe)        | ✓    | App.tsx         | activeUniverseId           |
+| NAV2 (section)         | ✓    | App.tsx         | activeSectionId            |
+| userId (nichandle)     | ✓    | App.tsx         | user.nichandle             |
+| Clicks sur boutons     | ✓    | logger.ts       | text, tag, id              |
+| Erreurs globales       | ✓    | logger.ts       | window.onerror             |
+| Promesses rejetées     | ✓    | logger.ts       | unhandledrejection         |
+| console.error          | ✓    | logger.ts       | Capture automatique        |
+| console.warn           | ✓    | logger.ts       | Capture automatique        |
+| Traductions manquantes | ✓    | i18n/index.ts   | missingKeyHandler          |
+| Fichiers i18n non chargés | ✓ | i18n/index.ts   | failedLoading (403, 404)   |
+| NAV3 (groupe)          | ✗    | Chaque page     | À ajouter manuellement     |
+| NAV4 (tab)             | ✗    | Chaque page     | À ajouter manuellement     |
+| service                | ✗    | Chaque page     | À ajouter manuellement     |
+
+##############################################################################
+# ARCHITECTURE NAV
+##############################################################################
+
+| Niveau | Géré par          | Variable           | Exemple                    |
+|--------|-------------------|--------------------|----------------------------|
+| NAV1   | App.tsx (auto)    | activeUniverseId   | web-cloud                  |
+| NAV2   | App.tsx (auto)    | activeSectionId    | web-hosting                |
+| NAV3   | Page (manuel)     | activeNav3/group   | general, sites, expert     |
+| NAV4   | Page (manuel)     | activeTab          | ftp, ssl, cdn, database    |
+| service| Page (manuel)     | selectedService    | di2amp.com                 |
+
+##############################################################################
+# IMPORT
+##############################################################################
+
+// Méthode 1 : log global (pour usage ponctuel)
+import { log } from '../services/logger';
+
+// Méthode 2 : logger préfixé (recommandé pour composants)
+import { createLogger } from '../services/logger';
+const logger = createLogger('MonComposant');
+
+##############################################################################
+# MÉTHODES DISPONIBLES
+##############################################################################
+
+| Méthode         | Usage                                    |
+|-----------------|------------------------------------------|
+| log.debug()     | Traces internes, état, lifecycle         |
+| log.info()      | Information utile                        |
+| log.warn()      | Avertissement, fallback utilisé          |
+| log.error()     | Erreur catchée                           |
+| log.action()    | Action utilisateur (click, select, etc.) |
+| log.setNav3()   | Définir NAV3 (catégorie/groupe)          |
+| log.setNav4()   | Définir NAV4 (tab actif)                 |
+| log.setService()| Définir le service sélectionné           |
+
+# Avec log global
+log.debug('Source', 'message', data?);
+log.action('Source', 'ACTION_NAME', data?);
+log.setNav3('general');
+log.setNav4('ftp');
+log.setService('di2amp.com');
+
+# Avec logger préfixé
+logger.debug('message', data?);
+logger.action('ACTION_NAME', data?);
+
+##############################################################################
+# AJOUTER NAV3/NAV4/SERVICE DANS UNE PAGE
+##############################################################################
+
+Chaque page qui a des onglets (NAV3/NAV4) ou un service sélectionné
+DOIT synchroniser ces valeurs avec le logger.
+
+### Pattern à ajouter (après les useState)
+
+import { log } from '../../../services/logger';
+
+// Dans le composant :
+useEffect(() => { log.setNav3(activeNav3); }, [activeNav3]);
+useEffect(() => { log.setNav4(activeTab); }, [activeTab]);
+useEffect(() => { log.setService(selectedService); }, [selectedService]);
+
+### Exemple complet (HostingPage)
+
+import { useEffect } from 'react';
+import { log } from '../../../services/logger';
+
+export function HostingPage() {
+  const [activeNav3, setActiveNav3] = useState('general');
+  const [activeTab, setActiveTab] = useState('general');
+  const [selectedHosting, setSelectedHosting] = useState<string | null>(null);
+
+  // ========== LOGGER NAV3 ==========
+  useEffect(() => {
+    log.setNav3(activeNav3);
+  }, [activeNav3]);
+
+  // ========== LOGGER NAV4 ==========
+  useEffect(() => {
+    log.setNav4(activeTab);
+  }, [activeTab]);
+
+  // ========== LOGGER SERVICE ==========
+  useEffect(() => {
+    log.setService(selectedHosting);
+  }, [selectedHosting]);
+
+  // ... reste du composant
+}
+
+##############################################################################
+# NAV5/NAV6 - SOUS-TABS (CONCATÉNATION DANS NAV4)
+##############################################################################
+
+Le logger ne gère que 4 niveaux (nav1/nav2/nav3/nav4).
+Pour les niveaux supplémentaires, on CONCATÈNE dans NAV4 avec ":" comme séparateur.
+
+### Format
+
+| Niveaux présents       | Format NAV4                    |
+|------------------------|--------------------------------|
+| NAV4 seul              | `activeTab`                    |
+| NAV4 + NAV5            | `activeTab:activeSubTab`       |
+| NAV4 + NAV5 + NAV6     | `activeTab:subTab:subSubTab`   |
+
+### Exemples
+
+| Situation                      | NAV4 résultant        |
+|--------------------------------|-----------------------|
+| Onglet Comptes                 | `accounts`            |
+| Onglet Sécurité > DNS          | `security:dns`        |
+| Onglet DynHost > Records       | `dynhost:records`     |
+| Onglet Expert > BDD > Users    | `database:users`      |
+
+### Implémentation
+```typescript
+useEffect(() => {
+  let nav4 = activeTab;
+  if (activeSubTab) {
+    nav4 += `:${activeSubTab}`;
+    if (activeSubSubTab) {
+      nav4 += `:${activeSubSubTab}`;
+    }
+  }
+  log.setNav4(nav4);
+}, [activeTab, activeSubTab, activeSubSubTab]);
+```
+
+##############################################################################
+# TRACKING DES CLICKS (AUTOMATIQUE)
+##############################################################################
+
+Tous les clicks sur <button>, <a>, [role="button"] sont loggés automatiquement.
+
+Ne pas utiliser data-track, le tracking automatique par texte suffit.
+
+##############################################################################
+# QUAND NE PAS LOGGER MANUELLEMENT
+##############################################################################
+
+Ces éléments sont DÉJÀ capturés automatiquement :
+- API calls (avec message d'erreur si status >= 400) → api.ts
+- Clicks sur boutons → logger.ts
+- console.error/warn → logger.ts  
+- Erreurs non catchées → logger.ts
+- Traductions manquantes → i18n/index.ts
+- Fichiers traduction non chargés → i18n/index.ts
+
+##############################################################################
+# QUAND AJOUTER DES LOGS MANUELS
+##############################################################################
+
+### 1. NAV3/NAV4/SERVICE dans les pages avec onglets
+
+useEffect(() => { log.setNav3(activeNav3); }, [activeNav3]);
+useEffect(() => { log.setNav4(activeTab); }, [activeTab]);
+useEffect(() => { log.setService(selectedService); }, [selectedService]);
+
+### 2. Actions non capturées par click (sélections, drag&drop, etc.)
+
+const handleSelect = (item: Item) => {
+  logger.action('SELECT', { id: item.id, name: item.name });
+  setSelected(item);
+};
+
+### 3. Debug pour tracer le flux
+
+useEffect(() => {
+  logger.debug('Data loaded', { count: data.length });
+}, [data]);
+
+##############################################################################
+# CONVENTIONS DE NOMMAGE
+##############################################################################
+
+### Source (createLogger ou premier argument)
+- Composant : 'GeneralTab', 'SslTab', 'DomainModal'
+- Hook : 'useLeftPanel', 'useDomainData'
+- Service : 'HostingService', 'DomainService'
+
+### Action (log.action)
+- UPPER_SNAKE_CASE
+- Exemples : SELECT, DELETE, SUBMIT, SAVE, REFRESH, TAB_CHANGE, OPEN_MODAL
+
+### Data (objet optionnel)
+- Clés en camelCase
+- Pas de données sensibles (passwords, tokens)
+- Garder petit (pas d'objets > 100 items)
+
+##############################################################################
+# CHECKLIST POUR NOUVELLE PAGE AVEC ONGLETS
+##############################################################################
+
+[ ] Import log : import { log } from '../../../services/logger';
+[ ] useEffect NAV3 : log.setNav3(activeNav3)
+[ ] useEffect NAV4 : log.setNav4(activeTab)
+[ ] useEffect service : log.setService(selectedService)
+[ ] Si sous-tabs : concaténer dans NAV4 avec ":"
+
+##############################################################################
+# FICHIERS DU SYSTÈME DE LOGGING
+##############################################################################
+
+| Fichier                          | Rôle                              |
+|----------------------------------|-----------------------------------|
+| src/services/logger.ts           | Logger principal                  |
+| src/services/api.ts              | Logging API automatique           |
+| src/i18n/index.ts                | Traductions manquantes + erreurs  |
+| src/App.tsx                      | NAV1/NAV2 + userId                |
+| /etc/nginx/ovh/logs.lua          | Collecteur serveur                |
+| /var/log/new-manager/*.jsonl     | Fichiers de logs                  |
+
+================================================================================

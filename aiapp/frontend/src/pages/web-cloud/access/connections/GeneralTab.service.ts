@@ -70,7 +70,8 @@ export const generalService = {
     if (accessNames.length > 0) {
       xdslData = await ovhApi.get<any>(`/xdsl/${accessNames[0]}`);
     }
-    return mapToConnection(pack, xdslData);
+    const result = mapToConnection(pack, xdslData);
+    return result;
   },
 
   /** Renommer une connexion. */

@@ -53,7 +53,9 @@ export function PluginsTab({ serviceName }: Props) {
     const pluginsWithUpdate = plugins.filter(p => p.hasUpdate);
     if (pluginsWithUpdate.length === 0) return;
 
-    if (!confirm(t('extensions.confirmUpdateAll', { count: pluginsWithUpdate.length }))) return;
+    if (!confirm(t('extensions.confirmUpdateAll', { count: pluginsWithUpdate.length }))) {
+      return;
+    }
 
     setUpdatingAll(true);
     try {
@@ -127,7 +129,9 @@ export function PluginsTab({ serviceName }: Props) {
               {updatingAll ? '...' : t('extensions.updateAll')}
             </button>
           )}
-          <button className="ext-btn ext-btn-outline ext-btn-sm" onClick={loadPlugins}>
+          <button className="ext-btn ext-btn-outline ext-btn-sm" onClick={() => {
+            loadPlugins();
+          }}>
             {t('common.refresh')}
           </button>
         </div>

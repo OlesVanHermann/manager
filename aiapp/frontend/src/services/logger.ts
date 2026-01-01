@@ -1,0 +1,336 @@
+// ============================================================
+// LOGGER - Observabilité New Manager
+// ============================================================
+
+type LogType = 'api' | 'nav' | 'action' | 'debug' | 'info' | 'warn' | 'error';
+
+interface NavContext {
+  nav1: string | null;
+  nav2: string | null;
+  nav3: string | null;
+  nav4: string | null;
+  service: string | null;
+}
+
+interface LogEntry {
+  ts: string;
+  type: LogType;
+  user: string | null;
+  sess: string;
+  nav: string;
+  src: string;
+  method?: string;
+  endpoint?: string;
+  status?: number;
+  ms?: number;
+  service?: string;
+  action?: string;
+  msg?: string;
+  data?: unknown;
+  stack?: string;
+}
+
+class Logger {
+  private static instance: Logger;
+  private buffer: LogEntry[] = [];
+  private flushInterval = 5000;
+  private flushTimer: ReturnType<typeof setInterval> | null = null;
+  private session: string;
+  private sessionShort: string;
+  private navContext: NavContext = { nav1: null, nav2: null, nav3: null, nav4: null, service: null };
+  private userId: string | null = null;
+  private endpoint = '/api/logs';
+  private enabled = true;
+
+  private constructor() {
+    this.session = this.generateSessionId();
+    this.sessionShort = this.session.substring(0, 8);
+    this.setupFlush();
+    this.setupGlobalErrorHandlers();
+    this.setupClickTracking();
+    this.setupConsoleCapture();
+  }
+
+  static getInstance(): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger();
+    }
+    return Logger.instance;
+  }
+
+  private generateSessionId(): string {
+    return `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`;
+  }
+
+  private getTimestamp(): string {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    return `${h}:${m}:${s}.${ms}`;
+  }
+
+  private getNavString(): string {
+    const parts: string[] = [];
+    if (this.navContext.nav1) parts.push(this.navContext.nav1);
+    if (this.navContext.nav2) parts.push(this.navContext.nav2);
+    if (this.navContext.nav3) parts.push(this.navContext.nav3);
+    if (this.navContext.nav4) parts.push(this.navContext.nav4);
+    return parts.join('/') || '-';
+  }
+
+  private createBaseEntry(type: LogType, src: string): LogEntry {
+    return {
+      ts: this.getTimestamp(),
+      type,
+      user: this.userId,
+      sess: this.sessionShort,
+      nav: this.getNavString(),
+      src,
+    };
+  }
+
+  private serializeEntry(e: LogEntry): string {
+    const parts: string[] = [
+      `"ts":"${e.ts}"`,
+      `"type":"${e.type}"`,
+      `"user":${e.user ? `"${e.user}"` : 'null'}`,
+      `"sess":"${e.sess}"`,
+      `"nav":"${e.nav}"`,
+      `"src":"${e.src}"`,
+    ];
+    
+    if (e.method !== undefined) parts.push(`"method":"${e.method}"`);
+    if (e.endpoint !== undefined) parts.push(`"endpoint":"${e.endpoint}"`);
+    if (e.status !== undefined) parts.push(`"status":${e.status}`);
+    if (e.ms !== undefined) parts.push(`"ms":${e.ms}`);
+    if (e.service !== undefined) parts.push(`"service":"${e.service}"`);
+    if (e.action !== undefined) parts.push(`"action":${JSON.stringify(e.action)}`);
+    if (e.msg !== undefined) parts.push(`"msg":${JSON.stringify(e.msg)}`);
+    if (e.data !== undefined) parts.push(`"data":${JSON.stringify(e.data)}`);
+    if (e.stack !== undefined) parts.push(`"stack":${JSON.stringify(e.stack)}`);
+    
+    return `{${parts.join(',')}}`;
+  }
+
+  // ============ NAV CONTEXT ============
+
+  setNav(nav: Partial<NavContext>) {
+    const oldNav = this.getNavString();
+    const oldService = this.navContext.service;
+    
+    this.navContext = { ...this.navContext, ...nav };
+    
+    const newNav = this.getNavString();
+    const newService = this.navContext.service;
+    
+    if (oldNav !== newNav || oldService !== newService) {
+      const entry = this.createBaseEntry('nav', 'nav');
+      if (newService) entry.service = newService;
+      this.buffer.push(entry);
+    }
+  }
+
+  setNav1(v: string | null) { this.setNav({ nav1: v }); }
+  setNav2(v: string | null) { this.setNav({ nav2: v }); }
+  setNav3(v: string | null) { this.setNav({ nav3: v }); }
+  setNav4(v: string | null) { this.setNav({ nav4: v }); }
+  setService(v: string | null) { this.setNav({ service: v }); }
+
+  getNav(): NavContext { return { ...this.navContext }; }
+
+  // ============ USER ID ============
+
+  setUserId(id: string | null) { this.userId = id; }
+  getUserId(): string | null { return this.userId; }
+
+  // ============ LOG METHODS ============
+
+  api(src: string, method: string, endpoint: string, status: number, ms: number, error?: string) {
+    if (!this.enabled) return;
+    const entry = this.createBaseEntry('api', src);
+    entry.method = method;
+    entry.endpoint = endpoint;
+    entry.status = status;
+    entry.ms = ms;
+    if (error) entry.msg = error;
+    this.buffer.push(entry);
+  }
+
+  action(src: string, action: string, data?: unknown) {
+    if (!this.enabled) return;
+    const entry = this.createBaseEntry('action', src);
+    entry.action = action;
+    if (data !== undefined) entry.data = data;
+    this.buffer.push(entry);
+  }
+
+  debug(src: string, msg: string, data?: unknown) {
+    if (!this.enabled) return;
+    const entry = this.createBaseEntry('debug', src);
+    entry.msg = msg;
+    if (data !== undefined) entry.data = data;
+    this.buffer.push(entry);
+  }
+
+  info(src: string, msg: string, data?: unknown) {
+    if (!this.enabled) return;
+    const entry = this.createBaseEntry('info', src);
+    entry.msg = msg;
+    if (data !== undefined) entry.data = data;
+    this.buffer.push(entry);
+  }
+
+  warn(src: string, msg: string, data?: unknown) {
+    if (!this.enabled) return;
+    const entry = this.createBaseEntry('warn', src);
+    entry.msg = msg;
+    if (data !== undefined) entry.data = data;
+    this.buffer.push(entry);
+  }
+
+  error(src: string, msg: string, data?: unknown, stack?: string) {
+    if (!this.enabled) return;
+    const entry = this.createBaseEntry('error', src);
+    entry.msg = msg;
+    if (data !== undefined) entry.data = data;
+    if (stack) entry.stack = stack;
+    this.buffer.push(entry);
+    this.flush();
+  }
+
+  // ============ GLOBAL ERROR HANDLERS ============
+
+  private setupGlobalErrorHandlers() {
+    window.addEventListener('error', (event) => {
+      this.error('window', event.message, { 
+        filename: event.filename, 
+        line: event.lineno 
+      }, event.error?.stack);
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      const reason = event.reason;
+      this.error('promise', reason?.message || String(reason), undefined, reason?.stack);
+    });
+  }
+
+  // ============ CLICK TRACKING ============
+
+  private setupClickTracking() {
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const clickable = target.closest('button, a, [role="button"], [data-track]');
+      if (!clickable) return;
+      
+      const el = clickable as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+      const text = el.innerText?.trim().slice(0, 50) || '';
+      const id = el.id || undefined;
+      const dataTrack = el.getAttribute('data-track') || undefined;
+      
+      if (tag === 'a' && !dataTrack) return;
+      
+      this.action('click', dataTrack || text || tag, {
+        tag,
+        ...(id && { id }),
+        ...(text && { text }),
+      });
+    }, { capture: true });
+  }
+
+  // ============ CONSOLE CAPTURE ============
+
+  private setupConsoleCapture() {
+    const originalError = console.error.bind(console);
+    const originalWarn = console.warn.bind(console);
+    
+    console.error = (...args: unknown[]) => {
+      originalError(...args);
+      const msg = args.map(a => 
+        typeof a === 'string' ? a : 
+        a instanceof Error ? a.message : 
+        JSON.stringify(a)
+      ).join(' ').slice(0, 500);
+      this.error('console', msg);
+    };
+
+    console.warn = (...args: unknown[]) => {
+      originalWarn(...args);
+      const msg = args.map(a => 
+        typeof a === 'string' ? a : 
+        JSON.stringify(a)
+      ).join(' ').slice(0, 500);
+      this.warn('console', msg);
+    };
+  }
+
+  // ============ FLUSH ============
+
+  private setupFlush() {
+    this.flushTimer = setInterval(() => this.flush(), this.flushInterval);
+    window.addEventListener('beforeunload', () => this.flush());
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') this.flush();
+    });
+  }
+
+  async flush(): Promise<void> {
+    if (this.buffer.length === 0 || !this.enabled) return;
+    const logs = [...this.buffer];
+    this.buffer = [];
+    
+    const serializedLogs = logs.map(e => this.serializeEntry(e));
+    const body = `{"logs":[${serializedLogs.join(',')}]}`;
+    
+    try {
+      await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        keepalive: true,
+      });
+    } catch {
+      this.buffer = [...logs.slice(-50), ...this.buffer.slice(-50)];
+    }
+  }
+
+  setEnabled(enabled: boolean) { this.enabled = enabled; }
+  getSession(): string { return this.session; }
+}
+
+// ============ EXPORTS ============
+
+export const logger = Logger.getInstance();
+
+export function createLogger(src: string) {
+  return {
+    debug: (msg: string, data?: unknown) => logger.debug(src, msg, data),
+    info: (msg: string, data?: unknown) => logger.info(src, msg, data),
+    warn: (msg: string, data?: unknown) => logger.warn(src, msg, data),
+    error: (msg: string, data?: unknown) => logger.error(src, msg, data),
+    action: (action: string, data?: unknown) => logger.action(src, action, data),
+  };
+}
+
+export const log = {
+  debug: (src: string, msg: string, data?: unknown) => logger.debug(src, msg, data),
+  info: (src: string, msg: string, data?: unknown) => logger.info(src, msg, data),
+  warn: (src: string, msg: string, data?: unknown) => logger.warn(src, msg, data),
+  error: (src: string, msg: string, data?: unknown) => logger.error(src, msg, data),
+  action: (src: string, action: string, data?: unknown) => logger.action(src, action, data),
+  api: (src: string, method: string, endpoint: string, status: number, ms: number, error?: string) => 
+    logger.api(src, method, endpoint, status, ms, error),
+  setNav: (nav: Partial<NavContext>) => logger.setNav(nav),
+  setNav1: (v: string | null) => logger.setNav1(v),
+  setNav2: (v: string | null) => logger.setNav2(v),
+  setNav3: (v: string | null) => logger.setNav3(v),
+  setNav4: (v: string | null) => logger.setNav4(v),
+  setService: (v: string | null) => logger.setService(v),
+  getNav: () => logger.getNav(),
+  setUserId: (id: string | null) => logger.setUserId(id),
+  getUserId: () => logger.getUserId(),
+};
+
+export type { LogType, NavContext, LogEntry };

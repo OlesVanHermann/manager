@@ -39,7 +39,6 @@ export function UserLogsTab({ serviceName }: UserLogsTabProps) {
       }));
       setUsers(mappedUsers);
     } catch (err) {
-      console.error("[UserLogsTab] Error:", err);
       // Mock data for display
       setUsers([
         { login: "admin-stats", description: "Administrateur des statistiques", creationDate: "2025-12-15T10:30:00Z" },
@@ -63,7 +62,6 @@ export function UserLogsTab({ serviceName }: UserLogsTabProps) {
   }, [openMenuLogin]);
 
   const handleEdit = (user: LogUser) => {
-    console.log("[UserLogsTab] Edit:", user.login);
     setOpenMenuLogin(null);
   };
 

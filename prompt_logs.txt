@@ -1,0 +1,277 @@
+================================================================================
+PROMPT LOGS - Exploitation des logs New Manager
+================================================================================
+
+##############################################################################
+# ARCHITECTURE
+##############################################################################
+
+Frontend React → POST /api/logs → nginx Lua → /var/log/new-manager/*.jsonl
+
+Flush automatique toutes les 5 secondes + flush immédiat sur erreur/fermeture.
+
+##############################################################################
+# FICHIERS DE LOGS
+##############################################################################
+
+/var/log/new-manager/
+├── YYYY-MM-DD.jsonl    # Logs du jour (ex: 2026-01-01.jsonl)
+└── live.jsonl          # Buffer circulaire pour tail -f
+
+##############################################################################
+# FORMAT JSONL
+##############################################################################
+
+Champs communs : ts, type, user, sess, nav, src
+Champs spécifiques selon le type.
+
+### API call
+{"ts":"10:30:40.123","type":"api","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-hosting/expert/ftp","src":"api","method":"GET","endpoint":"/hosting/web/di2amp.com","status":200,"ms":47}
+
+### Navigation
+{"ts":"10:30:35.456","type":"nav","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-hosting/expert/ftp","src":"nav","service":"di2amp.com"}
+
+### Click (automatique)
+{"ts":"10:30:36.789","type":"action","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-hosting/expert/ftp","src":"click","action":"Supprimer","data":{"tag":"button","text":"Supprimer"}}
+
+### Action utilisateur (manuel)
+{"ts":"10:31:00.789","type":"action","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-hosting/expert/ftp","src":"FtpTab","action":"USER_DELETE","data":{"user":"ftpuser1"}}
+
+### Traduction manquante (i18n)
+{"ts":"10:30:38.100","type":"warn","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-domains-dns/dns/anycast","src":"i18n","msg":"Missing: web-cloud/domains/anycast:orderTitle","data":{"ns":"web-cloud/domains/anycast","key":"orderTitle"}}
+
+### Fichier traduction non chargé (403, 404)
+{"ts":"10:30:38.200","type":"error","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-domains-dns/dns/anycast","src":"i18n-load","msg":"Failed to load: fr/web-cloud/domains/anycast","data":{"lng":"fr","ns":"web-cloud/domains/anycast"}}
+
+### Console error/warn
+{"ts":"10:31:02.345","type":"error","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-hosting/expert/ftp","src":"console","msg":"Error: Got an invalid (or empty) URL"}
+
+### Erreur globale (window.onerror)
+{"ts":"10:31:05.012","type":"error","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-hosting/expert/ftp","src":"window","msg":"TypeError: Cannot read x","data":{"filename":"app.js","line":123}}
+
+### Promise rejection
+{"ts":"10:31:06.789","type":"error","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-hosting/expert/ftp","src":"promise","msg":"Network error"}
+
+### Debug
+{"ts":"10:30:38.345","type":"debug","user":"ko51027-ovh","sess":"mjvb0p72","nav":"web-cloud/web-hosting/expert/ftp","src":"GeneralTab","msg":"Data loaded","data":{"count":5}}
+
+##############################################################################
+# STRUCTURE NAV
+##############################################################################
+
+nav = "nav1/nav2/nav3/nav4" (ou nav4:subtab:subsubtab)
+
+| Niveau | Nom       | Exemple                      |
+|--------|-----------|------------------------------|
+| nav1   | Universe  | web-cloud, bare-metal        |
+| nav2   | Section   | web-hosting, web-domains-dns |
+| nav3   | Catégorie | general, sites, expert       |
+| nav4   | Tab       | ftp, ssl, cdn, database      |
+| nav4+  | Sous-tabs | security:dns, database:users |
+
+Exemples :
+- web-cloud/web-hosting/general/modules
+- web-cloud/web-hosting/expert/ftp
+- web-cloud/web-domains-dns/dns/anycast
+- web-cloud/web-domains-dns/dns/dynhost:records
+
+##############################################################################
+# TYPES DE LOGS ET SOURCES
+##############################################################################
+
+| Type   | Source              | Description                          |
+|--------|---------------------|--------------------------------------|
+| api    | api, 2api           | Appel API (proxy ou 2api)            |
+| nav    | nav                 | Changement navigation                |
+| action | click, Component    | Action utilisateur                   |
+| debug  | Component           | Log de debug manuel                  |
+| info   | Component           | Information                          |
+| warn   | i18n, console       | Avertissement, traduction manquante  |
+| error  | i18n-load, console, window, promise | Erreur             |
+
+##############################################################################
+# COMMANDES DE BASE
+##############################################################################
+
+# Logs temps réel
+tail -f /var/log/new-manager/live.jsonl | jq -C '.'
+
+# Logs temps réel (compact)
+tail -f /var/log/new-manager/live.jsonl | jq -C '{ts,type,src,msg:.msg//.action//.endpoint}'
+
+# Logs du jour
+cat /var/log/new-manager/$(date +%Y-%m-%d).jsonl | jq -C '.'
+
+# Derniers 50 logs
+tail -n 50 /var/log/new-manager/live.jsonl | jq -C '.'
+
+# Compter les logs du jour
+wc -l /var/log/new-manager/$(date +%Y-%m-%d).jsonl
+
+##############################################################################
+# FILTRES PAR TYPE
+##############################################################################
+
+# Erreurs uniquement
+jq 'select(.type == "error")' /var/log/new-manager/*.jsonl
+
+# API calls uniquement
+jq 'select(.type == "api")' /var/log/new-manager/*.jsonl
+
+# Actions utilisateur (clicks + actions manuelles)
+jq 'select(.type == "action")' /var/log/new-manager/*.jsonl
+
+# Clicks uniquement
+jq 'select(.src == "click")' /var/log/new-manager/*.jsonl
+
+# Navigation
+jq 'select(.type == "nav")' /var/log/new-manager/*.jsonl
+
+# Warnings
+jq 'select(.type == "warn")' /var/log/new-manager/*.jsonl
+
+##############################################################################
+# TRADUCTIONS (i18n)
+##############################################################################
+
+# Clés manquantes
+jq 'select(.src == "i18n")' /var/log/new-manager/*.jsonl
+
+# Fichiers non chargés (403, 404)
+jq 'select(.src == "i18n-load")' /var/log/new-manager/*.jsonl
+
+# Tous les problèmes i18n
+jq 'select(.src | startswith("i18n"))' /var/log/new-manager/*.jsonl
+
+# Liste unique des clés manquantes
+jq -r 'select(.src == "i18n") | "\(.data.ns):\(.data.key)"' /var/log/new-manager/*.jsonl | sort -u
+
+# Liste unique des fichiers non chargés
+jq -r 'select(.src == "i18n-load") | "\(.data.lng)/\(.data.ns)"' /var/log/new-manager/*.jsonl | sort -u
+
+# Compter par namespace
+jq -r 'select(.src == "i18n") | .data.ns' /var/log/new-manager/*.jsonl | sort | uniq -c | sort -rn
+
+##############################################################################
+# ERREURS (toutes sources)
+##############################################################################
+
+# Toutes les erreurs
+jq 'select(.type == "error")' /var/log/new-manager/*.jsonl
+
+# Erreurs console
+jq 'select(.src == "console" and .type == "error")' /var/log/new-manager/*.jsonl
+
+# Erreurs window (uncaught)
+jq 'select(.src == "window")' /var/log/new-manager/*.jsonl
+
+# Erreurs promise (unhandled rejection)
+jq 'select(.src == "promise")' /var/log/new-manager/*.jsonl
+
+# Erreurs chargement i18n
+jq 'select(.src == "i18n-load")' /var/log/new-manager/*.jsonl
+
+##############################################################################
+# CLICKS UTILISATEUR
+##############################################################################
+
+# Tous les clicks
+jq 'select(.src == "click")' /var/log/new-manager/*.jsonl
+
+# Clicks sur une section
+jq 'select(.src == "click") | select(.nav | contains("web-hosting"))' /var/log/new-manager/*.jsonl
+
+# Boutons les plus cliqués
+jq -r 'select(.src == "click") | .action' /var/log/new-manager/*.jsonl | sort | uniq -c | sort -rn | head -20
+
+##############################################################################
+# FILTRES PAR NAVIGATION
+##############################################################################
+
+# Par NAV1 (universe)
+jq 'select(.nav | startswith("web-cloud"))' /var/log/new-manager/*.jsonl
+
+# Par NAV2 (section)
+jq 'select(.nav | contains("web-hosting"))' /var/log/new-manager/*.jsonl
+
+# Par NAV3 (catégorie)
+jq 'select(.nav | contains("expert"))' /var/log/new-manager/*.jsonl
+
+# Par NAV4 (tab)
+jq 'select(.nav | endswith("ftp"))' /var/log/new-manager/*.jsonl
+
+# Par sous-tab (nav4:subtab)
+jq 'select(.nav | contains("dynhost:records"))' /var/log/new-manager/*.jsonl
+
+##############################################################################
+# ANALYSE API
+##############################################################################
+
+# Appels lents (>500ms)
+jq 'select(.type == "api" and .ms > 500)' /var/log/new-manager/*.jsonl
+
+# Appels très lents (>1000ms)
+jq 'select(.type == "api" and .ms > 1000)' /var/log/new-manager/*.jsonl
+
+# Erreurs API (status >= 400)
+jq 'select(.type == "api" and .status >= 400)' /var/log/new-manager/*.jsonl
+
+# 404 uniquement
+jq 'select(.type == "api" and .status == 404)' /var/log/new-manager/*.jsonl
+
+# Erreurs réseau (CORS, timeout) - status = 0
+jq 'select(.type == "api" and .status == 0)' /var/log/new-manager/*.jsonl
+
+# Stats par endpoint (top 20)
+jq -r 'select(.type == "api") | .endpoint' /var/log/new-manager/*.jsonl | sort | uniq -c | sort -rn | head -20
+
+# Stats par status
+jq -r 'select(.type == "api") | .status' /var/log/new-manager/*.jsonl | sort | uniq -c | sort -rn
+
+##############################################################################
+# SUIVI DE SESSION
+##############################################################################
+
+# Lister les sessions actives
+jq -r '.sess' /var/log/new-manager/$(date +%Y-%m-%d).jsonl | sort | uniq -c | sort -rn | head -20
+
+# Timeline d'une session
+jq 'select(.sess == "mjvb0p72")' /var/log/new-manager/*.jsonl
+
+# Timeline compacte
+jq 'select(.sess == "mjvb0p72") | {ts,type,src,msg:.msg//.action//.endpoint}' /var/log/new-manager/*.jsonl
+
+# Erreurs d'une session
+jq 'select(.sess == "mjvb0p72" and .type == "error")' /var/log/new-manager/*.jsonl
+
+##############################################################################
+# SUIVI UTILISATEUR
+##############################################################################
+
+# Tous les logs d'un utilisateur
+jq 'select(.user == "ko51027-ovh")' /var/log/new-manager/*.jsonl
+
+# Sessions d'un utilisateur
+jq -r 'select(.user == "ko51027-ovh") | .sess' /var/log/new-manager/*.jsonl | sort -u
+
+# Erreurs d'un utilisateur
+jq 'select(.user == "ko51027-ovh" and .type == "error")' /var/log/new-manager/*.jsonl
+
+##############################################################################
+# NETTOYAGE / MAINTENANCE
+##############################################################################
+
+# Taille des fichiers
+du -sh /var/log/new-manager/*
+
+# Supprimer les logs > 7 jours
+find /var/log/new-manager -name "*.jsonl" -mtime +7 -delete
+
+# Vider le fichier live
+> /var/log/new-manager/live.jsonl
+
+# Permissions
+sudo chown -R www-data:www-data /var/log/new-manager
+sudo chmod 755 /var/log/new-manager
+
+================================================================================

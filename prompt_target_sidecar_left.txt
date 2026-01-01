@@ -2,8 +2,11 @@
 PROMPT TARGET - SIDECAR LEFT (LEFT PANEL)
 ================================================================================
 
-Version: v1 (2025-12-31)
+Version: v2 (2026-01-01)
 Parent:  prompt_target_check.txt (specs layout)
+Changelog:
+- v2: Ajout NAV3 selector en sidebar (section 3.5), mise à jour statuts
+- v1: Version initiale
 
 Ce document definit l'architecture cible pour tous les sidecars (left panels)
 du New Manager. Chaque aspect a ete analyse et la meilleure option selectionnee.
@@ -30,8 +33,12 @@ du New Manager. Chaque aspect a ete analyse et la meilleure option selectionnee.
 | 12 | Selection model     | ID string         | Objet complet     | ID string         | ID string         |
 | 13 | Refresh             | Callback          | Hook .refresh()   | Callback          | Hook .refresh()   |
 | 14 | Types de service    | 1                 | 2                 | 3                 | N dynamique       |
+| 15 | NAV3 selector       | Oui (3 groupes)   | Non               | Non               | Si 8+ tabs        |
 
-## 1.2 Analyse detaillee par aspect
+## 1.2 Analyse detaillee par aspect (historique)
+
+Note: Cette section documente l'analyse ORIGINALE. Voir section 1.3 pour le
+statut ACTUEL des corrections.
 
 --------------------------------------------------------------------------------
 ### #1 API CALLS MOUNT
@@ -428,37 +435,176 @@ interface LeftPanelProps<T> {
 
 ## 3.5 NAV3 Group Selector (sections complexes)
 
-Pour les sections avec 10+ tabs, un sélecteur NAV3 peut être ajouté
-AU-DESSUS de la barre de recherche dans le LEFT PANEL :
+Pour les sections avec 10+ tabs, un sélecteur NAV3 est ajouté **AU-DESSUS** de la
+barre de recherche dans le LEFT PANEL. Ce pattern est utilisé quand le nombre de
+tabs rendrait la navigation confuse (ex: Hébergement avec 16+ tabs).
+
+### Structure visuelle standard
 
 ```
 ┌─────────────────────────────────────┐
-│  [Général]  [Sites]  [Expert]       │  ← NAV3 selector (optionnel)
+│  [Général]  [Sites]  [Expert]       │  ← NAV3 selector (boutons toggle)
 ├─────────────────────────────────────┤
 │  🔍 Rechercher...                   │  ← Search (standard)
 ├─────────────────────────────────────┤
-│  Filtrer ▾              N services  │
+│  Filtrer ▾              N services  │  ← Filter + count
 ├─────────────────────────────────────┤
-│  ...items...                        │
+│  🌐  service.example.com     [Actif]│  ← Service items (scrollable)
+│      Offre Pro                      │
+├─────────────────────────────────────┤
+│  Page 1/N    ‹  1  2  3  ›          │  ← Pagination
 └─────────────────────────────────────┘
 ```
 
-**Comportement par défaut :** [Général] est sélectionné au chargement.
+### Comportement
 
-**Implémentation :**
-```typescript
-interface LeftPanelProps<T> {
-  // ... existing props ...
+| Élément | Comportement |
+|---------|--------------|
+| NAV3 default | [Général] sélectionné au chargement |
+| NAV3 click | Filtre les NAV4 tabs dans RIGHT PANEL |
+| Liste services | Reste identique quel que soit le NAV3 |
+| Sélection service | Préservée lors du changement de NAV3 |
+| Premier tab NAV4 | Auto-sélectionné après changement NAV3 |
 
-  // NAV3 Group Selector (optional)
-  nav3Groups?: { id: string; label: string }[];
-  activeNav3?: string;
-  onNav3Change?: (nav3Id: string) => void;
-  defaultNav3?: string;  // Default: first group or "general"
+### CSS Standard (prefix: `.{section}-`)
+
+```css
+/* NAV3 Selector Container */
+.{prefix}-nav3-selector {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+  flex-shrink: 0;
+}
+
+/* NAV3 Button (inactif) */
+.{prefix}-nav3-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: #6B7280;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+/* NAV3 Button hover */
+.{prefix}-nav3-btn:hover {
+  background: #F3F4F6;
+  color: #374151;
+  border-color: #D1D5DB;
+}
+
+/* NAV3 Button (actif) */
+.{prefix}-nav3-btn.active {
+  background: #0050D7;
+  color: #FFFFFF;
+  border-color: #0050D7;
 }
 ```
 
-Voir prompt_target.web-cloud.hosting.txt pour exemple complet (Hébergement).
+### Implémentation React
+
+```typescript
+// Types
+interface Nav3Group {
+  id: string;
+  label: string;
+}
+
+interface Tab {
+  id: string;
+  label: string;
+  group: string;  // Référence au NAV3 group
+}
+
+// State
+const [activeNav3, setActiveNav3] = useState("general");
+const [activeTab, setActiveTab] = useState("general");
+
+// NAV4 tabs filtrés par NAV3 sélectionné
+const filteredTabs = useMemo(() => {
+  return TABS.filter(tab => tab.group === activeNav3);
+}, [activeNav3]);
+
+// Handler changement NAV3
+const handleNav3Change = useCallback((groupId: string) => {
+  setActiveNav3(groupId);
+  // Sélectionner le premier tab du nouveau groupe
+  const firstTab = TABS.find(t => t.group === groupId);
+  if (firstTab) {
+    setActiveTab(firstTab.id);
+  }
+}, []);
+```
+
+### Props LeftPanel étendu
+
+```typescript
+interface LeftPanelProps<T> {
+  // ... existing props (items, selectedId, onSelect, etc.) ...
+
+  // NAV3 Group Selector (optionnel, pour sections complexes)
+  nav3Groups?: Nav3Group[];      // [{id: "general", label: "Général"}, ...]
+  activeNav3?: string;           // "general" | "sites" | "expert"
+  onNav3Change?: (nav3Id: string) => void;
+  defaultNav3?: string;          // Default: "general" ou premier groupe
+}
+```
+
+### Exemple: Hébergement (3 groupes, 16 tabs)
+
+```typescript
+const NAV3_GROUPS = [
+  { id: "general", label: "Général" },
+  { id: "sites", label: "Sites" },
+  { id: "expert", label: "Expert" },
+];
+
+const TABS = [
+  // NAV3: [Général] - 7 tabs
+  { id: "general", label: "Home", group: "general" },
+  { id: "statistics", label: "Statistiques", group: "general" },
+  { id: "indy", label: "Indy", group: "general" },
+  { id: "offer", label: "Offre", group: "general" },
+  { id: "modules", label: "Modules", group: "general" },
+  { id: "logs", label: "Logs", group: "general" },
+  { id: "localseo", label: "SEO", group: "general" },
+
+  // NAV3: [Sites] - 2 tabs
+  { id: "multisite", label: "Multisite", group: "sites" },
+  { id: "ssl", label: "SSL", group: "sites" },
+
+  // NAV3: [Expert] - 10 tabs
+  { id: "ftp", label: "FTP-SSH", group: "expert" },
+  { id: "database", label: "BDD", group: "expert" },
+  { id: "clouddb", label: "BDD Cloud", group: "expert" },
+  { id: "cdn", label: "CDN", group: "expert" },
+  { id: "boost", label: "Boost", group: "expert" },
+  { id: "emails", label: "Emails", group: "expert" },
+  { id: "envvars", label: "Variables", group: "expert" },
+  { id: "runtimes", label: "Runtimes", group: "expert" },
+  { id: "cron", label: "Cron", group: "expert" },
+  { id: "tasks", label: "Tâches", group: "expert" },
+];
+```
+
+### Quand utiliser le NAV3 Selector
+
+| Critère | Sans NAV3 | Avec NAV3 |
+|---------|-----------|-----------|
+| Nombre de tabs | < 8 tabs | 8+ tabs |
+| Groupes logiques | Non distinct | Groupes clairs |
+| Complexité section | Simple/Moyenne | Complexe |
+| Exemples | Domains, Emails | Hosting, VoIP |
+
+Voir prompt_target.web-cloud.hosting.txt pour l'implémentation complète.
 
 ================================================================================
 # 4. TABS PATTERN
@@ -536,32 +682,53 @@ function setCache<T>(key: string, data: T): void {
 
 Pour chaque page avec sidecar left :
 
-[ ] Layout: padding-top 15px, gap 16px, sidebar 280px
+### Layout & Dimensions
+[ ] padding-top 15px, gap 16px, sidebar 280px
+[ ] NAV3 selector en haut si 8+ tabs (voir section 3.5)
+
+### API Pattern
 [ ] API mount: 2 appels paralleles max (listes)
 [ ] API select: Lazy load details on selection
-[ ] Composant: Utiliser LeftPanel reutilisable
+[ ] Cache: TTL 60s si appels frequents
+
+### Composants
+[ ] Utiliser LeftPanel reutilisable (ou local si cas special)
 [ ] Search: useMemo filter implemente
 [ ] Filter: Dropdown si plusieurs types de service
 [ ] Pagination: Client-side si > 20 items
-[ ] Tabs: React.lazy() + Suspense
-[ ] Tabs: Conditions de visibilite dynamiques
+
+### Tabs
+[ ] React.lazy() + Suspense
+[ ] Conditions de visibilite dynamiques
+[ ] Si NAV3: filteredTabs = TABS.filter(t => t.group === activeNav3)
+
+### State
 [ ] Selection: Par ID string (pas objet complet)
 [ ] Refresh: Via hook .refresh()
-[ ] Cache: TTL 60s si appels frequents
+[ ] NAV3: Auto-select premier tab au changement de groupe
 
 ================================================================================
 # 7. PAGES CONCERNEES
 ================================================================================
 
-| NAV1/NAV2           | Sidecar | Status       | Priority | Notes                    |
-|---------------------|---------|--------------|----------|--------------------------|
-| web-cloud/domains   | Oui     | ✅ FAIT      | -        | Reference + LeftPanel    |
-| web-cloud/hosting   | Oui     | ✅ FAIT      | -        | LeftPanel + lazy API     |
-| web-cloud/emails    | Oui     | ✅ ALIGNE    | -        | LeftPanel local (view modes) |
-| web-cloud/voip      | Oui     | A verifier   | Moyenne  |                          |
-| web-cloud/access    | Oui     | A verifier   | Moyenne  |                          |
-| bare-metal/dedicated| Oui     | A verifier   | Basse    |                          |
-| bare-metal/vps      | Oui     | A verifier   | Basse    |                          |
+| NAV1/NAV2           | Sidecar | NAV3 Selector | Status       | Notes                    |
+|---------------------|---------|---------------|--------------|--------------------------|
+| web-cloud/domains   | Oui     | Non (7 tabs)  | ✅ FAIT      | Reference + LeftPanel    |
+| web-cloud/hosting   | Oui     | **Oui (16+)** | ✅ FAIT      | NAV3 [Général/Sites/Expert] |
+| web-cloud/emails    | Oui     | Non (5 tabs)  | ✅ ALIGNE    | LeftPanel local (view modes) |
+| web-cloud/voip      | Oui     | A evaluer     | A verifier   | Potentiellement 10+ tabs |
+| web-cloud/access    | Oui     | Non           | A verifier   |                          |
+| bare-metal/dedicated| Oui     | A evaluer     | A verifier   |                          |
+| bare-metal/vps      | Oui     | Non           | A verifier   |                          |
+
+### Criteres pour activer NAV3 Selector
+
+1. **Nombre de tabs** : 8+ tabs dans la section
+2. **Groupes logiques** : Les tabs peuvent etre regroupes en categories claires
+3. **Complexite** : La section gere plusieurs aspects distincts du service
+
+**Actuellement avec NAV3 :**
+- `web-cloud/hosting` : [Général] 7 tabs + [Sites] 2 tabs + [Expert] 10 tabs = 19 tabs total
 
 ================================================================================
 # 8. MIGRATION STEPS

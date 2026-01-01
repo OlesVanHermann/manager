@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Génération des tars new_manager ==="
+echo "=== Génération des tars new_manager (v2) ==="
 cd /home/ubuntu/aiapp/frontend
 
 rm -f /home/ubuntu/new_manager.*.tar
@@ -193,6 +193,10 @@ echo "Création new_manager.license.directadmin.tar..."
 tar -cf /home/ubuntu/new_manager.license.directadmin.tar \
     ./src/pages/license/directadmin
 
+echo "Création new_manager.license.office.tar..."
+tar -cf /home/ubuntu/new_manager.license.office.tar \
+    ./src/pages/license/office
+
 echo "Création new_manager.license.plesk.tar..."
 tar -cf /home/ubuntu/new_manager.license.plesk.tar \
     ./src/pages/license/plesk
@@ -354,90 +358,109 @@ tar -cf /home/ubuntu/new_manager.web-cloud.core.tar \
     ./src/pages/web-cloud/index.tsx \
     ./src/pages/web-cloud/index.css
 
-# --- ACCESS (core: index.tsx, index.css, access.service.ts) ---
+# --- ACCESS (core: index.tsx, index.css, access.service.ts, access.types.ts) ---
 
 echo "Création new_manager.web-cloud.access.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.access.tar \
     ./src/pages/web-cloud/access
 
+echo "Création new_manager.web-cloud.access.connections.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.access.connections.tar \
+    ./src/pages/web-cloud/access/connections
+
 echo "Création new_manager.web-cloud.access.overthebox.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.access.overthebox.tar \
     ./src/pages/web-cloud/access/overthebox
 
-echo "Création new_manager.web-cloud.access.pack-xdsl.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.access.pack-xdsl.tar \
-    ./src/pages/web-cloud/access/pack-xdsl
-
-# --- DOMAINS (core: index.tsx, domains.service.ts, domains.types.ts) ---
+# --- DOMAINS (core: index.tsx, domains.service.ts, domains.types.ts, domains.css) ---
 
 echo "Création new_manager.web-cloud.domains.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.domains.tar \
     ./src/pages/web-cloud/domains
 
-echo "Création new_manager.web-cloud.domains.alldom.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.domains.alldom.tar \
-    ./src/pages/web-cloud/domains/tabs/alldom
+echo "Création new_manager.web-cloud.domains.dns.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.domains.dns.tar \
+    ./src/pages/web-cloud/domains/dns
 
-# --- EMAILS (core: index.tsx, emailsPage.service.ts) ---
+echo "Création new_manager.web-cloud.domains.expert.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.domains.expert.tar \
+    ./src/pages/web-cloud/domains/expert
+
+echo "Création new_manager.web-cloud.domains.general.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.domains.general.tar \
+    ./src/pages/web-cloud/domains/general
+
+# --- EMAILS (tout est à plat, pas de sous-dossiers structurés) ---
 
 echo "Création new_manager.web-cloud.emails.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.tar \
     ./src/pages/web-cloud/emails
 
-echo "Création new_manager.web-cloud.emails.email-domain.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.emails.email-domain.tar \
-    ./src/pages/web-cloud/emails/email-domain
-
-echo "Création new_manager.web-cloud.emails.email-pro.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.emails.email-pro.tar \
-    ./src/pages/web-cloud/emails/email-pro
-
-echo "Création new_manager.web-cloud.emails.exchange.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.emails.exchange.tar \
-    ./src/pages/web-cloud/emails/exchange
-
-echo "Création new_manager.web-cloud.emails.office.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.emails.office.tar \
-    ./src/pages/web-cloud/emails/office
-
-echo "Création new_manager.web-cloud.emails.zimbra.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.emails.zimbra.tar \
-    ./src/pages/web-cloud/emails/zimbra
-
-# --- HOSTING (core: index.tsx, styles.css) ---
+# --- HOSTING (anciennement hebergement) ---
 
 echo "Création new_manager.web-cloud.hosting.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.hosting.tar \
     ./src/pages/web-cloud/hosting
 
+echo "Création new_manager.web-cloud.hosting.expert.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.hosting.expert.tar \
+    ./src/pages/web-cloud/hosting/expert
 
-# --- WORDPRESS (core: index.tsx, styles.css) ---
+echo "Création new_manager.web-cloud.hosting.general.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.hosting.general.tar \
+    ./src/pages/web-cloud/hosting/general
+
+echo "Création new_manager.web-cloud.hosting.sites.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.hosting.sites.tar \
+    ./src/pages/web-cloud/hosting/sites
+
+# --- VOIP (anciennement telecom) ---
+
+echo "Création new_manager.web-cloud.voip.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.voip.tar \
+    ./src/pages/web-cloud/voip
+
+echo "Création new_manager.web-cloud.voip.carrier-sip.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.voip.carrier-sip.tar \
+    ./src/pages/web-cloud/voip/carrier-sip
+
+echo "Création new_manager.web-cloud.voip.fax.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.voip.fax.tar \
+    ./src/pages/web-cloud/voip/fax
+
+echo "Création new_manager.web-cloud.voip.sip.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.voip.sip.tar \
+    ./src/pages/web-cloud/voip/sip
+
+echo "Création new_manager.web-cloud.voip.sms.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.voip.sms.tar \
+    ./src/pages/web-cloud/voip/sms
+
+# --- WORDPRESS ---
 
 echo "Création new_manager.web-cloud.wordpress.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.wordpress.tar \
     ./src/pages/web-cloud/wordpress
 
-# --- TELECOM (core: index.tsx, index.css) ---
+echo "Création new_manager.web-cloud.wordpress.backups.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.wordpress.backups.tar \
+    ./src/pages/web-cloud/wordpress/backups
 
-echo "Création new_manager.web-cloud.telecom.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.telecom.tar \
-    ./src/pages/web-cloud/telecom
+echo "Création new_manager.web-cloud.wordpress.domains.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.wordpress.domains.tar \
+    ./src/pages/web-cloud/wordpress/domains
 
-echo "Création new_manager.web-cloud.telecom.carrier-sip.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.telecom.carrier-sip.tar \
-    ./src/pages/web-cloud/telecom/carrier-sip
+echo "Création new_manager.web-cloud.wordpress.extensions.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.wordpress.extensions.tar \
+    ./src/pages/web-cloud/wordpress/extensions
 
-echo "Création new_manager.web-cloud.telecom.fax.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.telecom.fax.tar \
-    ./src/pages/web-cloud/telecom/fax
+echo "Création new_manager.web-cloud.wordpress.performance.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.wordpress.performance.tar \
+    ./src/pages/web-cloud/wordpress/performance
 
-echo "Création new_manager.web-cloud.telecom.sms.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.telecom.sms.tar \
-    ./src/pages/web-cloud/telecom/sms
-
-echo "Création new_manager.web-cloud.telecom.voip.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.telecom.voip.tar \
-    ./src/pages/web-cloud/telecom/voip
+echo "Création new_manager.web-cloud.wordpress.tasks.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.wordpress.tasks.tar \
+    ./src/pages/web-cloud/wordpress/tasks
 
 # ============================================================
 # RÉSUMÉ

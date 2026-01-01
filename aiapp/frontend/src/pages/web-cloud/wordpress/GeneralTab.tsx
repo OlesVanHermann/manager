@@ -28,7 +28,6 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
       const infos = await generalService.getServiceInfos(serviceName);
       setServiceInfos(infos);
     } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -52,7 +51,9 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
   };
 
   const handleResetPassword = async () => {
-    if (!confirm(t('general.confirmResetPassword'))) return;
+    if (!confirm(t('general.confirmResetPassword'))) {
+      return;
+    }
     setActionLoading('password');
     try {
       await generalService.resetAdminPassword(serviceName);
@@ -66,7 +67,9 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
   };
 
   const handleUpdateWordPress = async () => {
-    if (!confirm(t('general.confirmUpdate'))) return;
+    if (!confirm(t('general.confirmUpdate'))) {
+      return;
+    }
     setActionLoading('update');
     try {
       await generalService.updateWordPress(serviceName);
@@ -117,6 +120,7 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             className="general-btn general-btn-outline"
+            onClick={() => console.log('[GeneralTab] QuickActions: Opening Admin WP', { url: details.adminUrl || `${details.url}/wp-admin` })}
           >
             {t('general.accessAdmin')}
           </a>
@@ -125,6 +129,7 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             className="general-btn general-btn-outline"
+            onClick={() => console.log('[GeneralTab] QuickActions: Opening site', { url: details.url })}
           >
             {t('general.visitSite')}
           </a>
@@ -242,7 +247,9 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
           <h4>{t('general.dangerZone')}</h4>
           <button
             className="general-btn general-btn-danger"
-            onClick={() => setShowDeleteModal(true)}
+            onClick={() => {
+              setShowDeleteModal(true);
+            }}
           >
             {t('general.delete')}
           </button>

@@ -89,6 +89,10 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
   const { t } = useTranslation("web-cloud/domains/contacts");
   const { t: tCommon } = useTranslation("common");
 
+  // ---------- DEBUG LOGGING ----------
+  const logAction = (action: string, data?: Record<string, unknown>) => {
+  };
+
   // ---------- VIEW MODE ----------
   const [viewMode, setViewMode] = useState<ViewMode>("contacts");
 
@@ -168,8 +172,15 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
     loadOwoState();
   }, [loadContacts, loadOwoState]);
 
+  // ---------- VIEW HANDLERS ----------
+  const handleViewChange = (view: ViewMode) => {
+    logAction("VIEW_CHANGE", { from: viewMode, to: view });
+    setViewMode(view);
+  };
+
   // ---------- OWO HANDLERS ----------
   const handleOwoToggle = (contactType: keyof OwoState) => {
+    logAction("OWO_TOGGLE", { contactType, newValue: !owoState[contactType] });
     setOwoState((prev) => ({
       ...prev,
       [contactType]: !prev[contactType],
@@ -177,26 +188,34 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
   };
 
   const handleOwoSave = async () => {
+    logAction("OWO_SAVE_START", { owoState });
     try {
       setOwoSaving(true);
       await contactsService.updateOwoState(domain, owoState);
+      logAction("OWO_SAVE_SUCCESS");
       setOwoInitial(owoState);
     } catch (err) {
-      console.error("Failed to save OWO state:", err);
+      logAction("OWO_SAVE_ERROR", { error: String(err) });
     } finally {
       setOwoSaving(false);
     }
   };
 
   const handleRegenerate = async (contactType: string) => {
+    logAction("OWO_REGENERATE_START", { contactType });
     try {
       setRegeneratingContact(contactType);
       await contactsService.regenerateOwo(domain, contactType);
+      logAction("OWO_REGENERATE_SUCCESS", { contactType });
     } catch (err) {
-      console.error("Failed to regenerate OWO:", err);
+      logAction("OWO_REGENERATE_ERROR", { contactType, error: String(err) });
     } finally {
       setRegeneratingContact(null);
     }
+  };
+
+  const handleExternalLink = (linkType: string) => {
+    logAction("EXTERNAL_LINK_CLICK", { linkType, url: getContactUrl() });
   };
 
   const hasOwoChanges = JSON.stringify(owoState) !== JSON.stringify(owoInitial);
@@ -210,13 +229,13 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
       <div className="contacts-nav4">
         <button
           className={`contacts-nav4-btn ${viewMode === "contacts" ? "active" : ""}`}
-          onClick={() => setViewMode("contacts")}
+          onClick={() => handleViewChange("contacts")}
         >
           {t("nav4.contacts")}
         </button>
         <button
           className={`contacts-nav4-btn ${viewMode === "owo" ? "active" : ""}`}
-          onClick={() => setViewMode("owo")}
+          onClick={() => handleViewChange("owo")}
         >
           {t("nav4.owo")}
         </button>
@@ -231,7 +250,7 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
               <p className="contacts-description">{t("description")}</p>
             </div>
             <div className="contacts-header-actions">
-              <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-btn-primary">
+              <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-btn-primary" onClick={() => handleExternalLink("reassignContacts")}>
                 {t("reassignContacts")} <ExternalLinkIcon />
               </a>
             </div>

@@ -100,7 +100,6 @@ export function ConfigureTab({ serviceName }: Props) {
     try {
       // await ovhApi.put(`/overthebox/${serviceName}/config`, { network: {...} });
       await new Promise(r => setTimeout(r, 500));
-      console.log("Network config saved");
     } finally {
       setSaving(false);
     }
@@ -110,7 +109,6 @@ export function ConfigureTab({ serviceName }: Props) {
     setSaving(true);
     try {
       await new Promise(r => setTimeout(r, 500));
-      console.log("Aggregation config saved");
     } finally {
       setSaving(false);
     }
@@ -118,23 +116,19 @@ export function ConfigureTab({ serviceName }: Props) {
 
   const handleBackup = useCallback(async () => {
     // POST /overthebox/{id}/config/backup
-    console.log("Creating backup...");
   }, [serviceName]);
 
   const handleDownload = useCallback(async () => {
     // GET /overthebox/{id}/config/backup
-    console.log("Downloading backup...");
   }, [serviceName]);
 
   const handleRestore = useCallback(async () => {
     // PUT /overthebox/{id}/config/backup
-    console.log("Restoring backup...");
   }, [serviceName]);
 
   const handleReset = useCallback(async () => {
     if (window.confirm(t("backup.confirmReset"))) {
       // POST /overthebox/{id}/config/reset
-      console.log("Resetting to factory...");
     }
   }, [serviceName, t]);
 

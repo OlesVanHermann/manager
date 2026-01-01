@@ -123,13 +123,17 @@ export function TasksTab({ serviceName }: Props) {
             <input
               type="checkbox"
               checked={autoRefresh}
-              onChange={e => setAutoRefresh(e.target.checked)}
+              onChange={e => {
+                setAutoRefresh(e.target.checked);
+              }}
             />
             <span>{t('tasks.autoRefresh')}</span>
           </label>
           <button
             className="tasks-btn tasks-btn-outline tasks-btn-sm"
-            onClick={() => loadTasks()}
+            onClick={() => {
+              loadTasks();
+            }}
             title={t('tasks.refresh')}
           >
             ↻ {t('common.refresh')}
@@ -141,19 +145,25 @@ export function TasksTab({ serviceName }: Props) {
       <div className="tasks-filters">
         <button
           className={`tasks-filter ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
+          onClick={() => {
+            setFilter('all');
+          }}
         >
           {t('tasks.filterAll')} ({tasks.length})
         </button>
         <button
           className={`tasks-filter ${filter === 'pending' ? 'active' : ''}`}
-          onClick={() => setFilter('pending')}
+          onClick={() => {
+            setFilter('pending');
+          }}
         >
           {t('tasks.filterPending')} ({pendingCount})
         </button>
         <button
           className={`tasks-filter ${filter === 'completed' ? 'active' : ''}`}
-          onClick={() => setFilter('completed')}
+          onClick={() => {
+            setFilter('completed');
+          }}
         >
           {t('tasks.filterCompleted')} ({tasks.length - pendingCount})
         </button>

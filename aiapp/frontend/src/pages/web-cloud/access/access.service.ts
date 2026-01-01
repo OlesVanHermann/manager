@@ -13,12 +13,14 @@ class AccessService {
 
   /** Liste toutes les connexions pack xDSL. */
   async listConnections(): Promise<string[]> {
-    return ovhApi.get<string[]>('/pack/xdsl');
+    const result = await ovhApi.get<string[]>('/pack/xdsl');
+    return result;
   }
 
   /** Liste tous les services OverTheBox. */
   async listOvertheboxServices(): Promise<string[]> {
-    return ovhApi.get<string[]>('/overTheBox');
+    const result = await ovhApi.get<string[]>('/overTheBox');
+    return result;
   }
 
   /** Détails basiques d'une connexion (pour le listing). */
@@ -38,7 +40,7 @@ class AccessService {
     if (accessNames.length > 0) {
       xdslData = await ovhApi.get<any>(`/xdsl/${accessNames[0]}`);
     }
-    return {
+    const result = {
       id: pack.packName,
       name: pack.description || pack.packName,
       techType: this.mapTechType(xdslData?.accessType),
@@ -48,6 +50,7 @@ class AccessService {
       upSpeed: xdslData?.accessCurrentSpeed?.up || 0,
       modem: null,
     };
+    return result;
   }
 
   // ============================================================

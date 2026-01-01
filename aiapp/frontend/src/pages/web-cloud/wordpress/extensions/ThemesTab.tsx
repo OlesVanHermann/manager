@@ -85,7 +85,9 @@ export function ThemesTab({ serviceName }: Props) {
             {themes.length} {t('extensions.themesInstalled')}
           </p>
         </div>
-        <button className="ext-btn ext-btn-outline ext-btn-sm" onClick={loadThemes}>
+        <button className="ext-btn ext-btn-outline ext-btn-sm" onClick={() => {
+          loadThemes();
+        }}>
           {t('common.refresh')}
         </button>
       </div>

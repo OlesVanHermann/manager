@@ -35,7 +35,6 @@ export const SpfTab: React.FC<SpfTabProps> = ({ zoneName }) => {
           setConfig(spfService.parseSpfRecord(spf.target));
         }
       } catch (err) {
-        console.error("Failed to load SPF:", err);
       } finally {
         setLoading(false);
       }
@@ -55,7 +54,6 @@ export const SpfTab: React.FC<SpfTabProps> = ({ zoneName }) => {
       const spf = await spfService.getCurrentSpf(zoneName);
       setCurrentSpf(spf);
     } catch (err) {
-      console.error("Failed to save SPF:", err);
     } finally {
       setSaving(false);
     }

@@ -53,6 +53,10 @@ export function GlueTab({ domain }: Props) {
   const { t } = useTranslation("web-cloud/domains/index");
   const { t: tCommon } = useTranslation("common");
 
+  // ---------- DEBUG LOGGING ----------
+  const logAction = (action: string, data?: Record<string, unknown>) => {
+  };
+
   // ---------- STATE ----------
   const [records, setRecords] = useState<GlueRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,12 +97,14 @@ export function GlueTab({ domain }: Props) {
 
   // ---------- MODAL HANDLERS ----------
   const openCreateModal = () => {
+    logAction("OPEN_CREATE_MODAL");
     setFormData(DEFAULT_FORM);
     setFormError(null);
     setModalOpen(true);
   };
 
   const openEditModal = (record: GlueRecord) => {
+    logAction("OPEN_EDIT_MODAL", { host: record.host });
     const ipv4 = record.ips.find(ip => ip.includes('.')) || '';
     const ipv6 = record.ips.find(ip => ip.includes(':')) || '';
     setFormData({
@@ -112,6 +118,7 @@ export function GlueTab({ domain }: Props) {
   };
 
   const closeModal = () => {
+    logAction("CLOSE_MODAL", { isEdit: formData.isEdit });
     setModalOpen(false);
     setFormError(null);
   };
@@ -124,10 +131,12 @@ export function GlueTab({ domain }: Props) {
   // ---------- SAVE ----------
   const handleSave = async () => {
     if (!formData.isEdit && !formData.host.trim()) {
+      logAction("SAVE_ERROR_HOST_REQUIRED");
       setFormError(t("glue.errorHostRequired"));
       return;
     }
     if (!formData.ipv4.trim() && !formData.ipv6.trim()) {
+      logAction("SAVE_ERROR_IP_REQUIRED");
       setFormError(t("glue.errorIpRequired"));
       return;
     }
@@ -136,18 +145,22 @@ export function GlueTab({ domain }: Props) {
     if (formData.ipv4.trim()) ips.push(formData.ipv4.trim());
     if (formData.ipv6.trim()) ips.push(formData.ipv6.trim());
 
+    logAction("SAVE_GLUE_START", { mode: formData.isEdit ? "edit" : "create", formData });
     try {
       setSaving(true);
       setFormError(null);
       if (formData.isEdit) {
         await glueService.updateGlueRecord(domain, formData.host, ips);
+        logAction("UPDATE_GLUE_SUCCESS", { host: formData.host });
       } else {
         const fullHost = formData.host.includes('.') ? formData.host : `${formData.host}.${domain}`;
         await glueService.createGlueRecord(domain, { host: fullHost, ips });
+        logAction("CREATE_GLUE_SUCCESS", { host: fullHost });
       }
       closeModal();
       await loadRecords();
     } catch (err) {
+      logAction("SAVE_GLUE_ERROR", { error: String(err) });
       setFormError(String(err));
     } finally {
       setSaving(false);
@@ -156,17 +169,26 @@ export function GlueTab({ domain }: Props) {
 
   // ---------- DELETE ----------
   const handleDeleteClick = (record: GlueRecord) => {
+    logAction("DELETE_GLUE_CLICK", { host: record.host });
     setDeleteConfirm(record);
+  };
+
+  const handleDeleteCancel = () => {
+    logAction("DELETE_GLUE_CANCEL", { host: deleteConfirm?.host });
+    setDeleteConfirm(null);
   };
 
   const handleDeleteConfirm = async () => {
     if (!deleteConfirm) return;
+    logAction("DELETE_GLUE_CONFIRM", { host: deleteConfirm.host });
     try {
       setDeleting(true);
       await glueService.deleteGlueRecord(domain, deleteConfirm.host);
+      logAction("DELETE_GLUE_SUCCESS", { host: deleteConfirm.host });
       setDeleteConfirm(null);
       await loadRecords();
     } catch (err) {
+      logAction("DELETE_GLUE_ERROR", { host: deleteConfirm.host, error: String(err) });
       setError(String(err));
     } finally {
       setDeleting(false);
@@ -307,11 +329,11 @@ export function GlueTab({ domain }: Props) {
 
       {/* Modal Delete Confirm */}
       {deleteConfirm && (
-        <div className="glue-modal-overlay" onClick={() => setDeleteConfirm(null)}>
+        <div className="glue-modal-overlay" onClick={handleDeleteCancel}>
           <div className="glue-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="glue-modal-header">
               <h3>{t("glue.confirmDeleteTitle")}</h3>
-              <button className="glue-btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
+              <button className="glue-btn-icon" onClick={handleDeleteCancel}><CloseIcon /></button>
             </div>
             <div className="glue-modal-body">
               <p>{t("glue.confirmDeleteMessage")}</p>
@@ -320,7 +342,7 @@ export function GlueTab({ domain }: Props) {
               </div>
             </div>
             <div className="glue-modal-footer">
-              <button className="glue-btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
+              <button className="glue-btn-secondary" onClick={handleDeleteCancel}>{tCommon("actions.cancel")}</button>
               <button className="glue-btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>
                 {deleting ? tCommon("loading") : tCommon("actions.delete")}
               </button>

@@ -41,7 +41,9 @@ export function DomainsTab({ serviceName }: Props) {
   }, [loadDomains]);
 
   const handleDeleteDomain = async (domain: string) => {
-    if (!confirm(t('domains.confirmDelete', { domain }))) return;
+    if (!confirm(t('domains.confirmDelete', { domain }))) {
+      return;
+    }
     try {
       await domainsService.deleteDomain(serviceName, domain);
       loadDomains();
@@ -104,7 +106,9 @@ CNAME   www       ${domains.find(d => d.type === 'primary')?.domain || 'example.
       {/* Header */}
       <div className="domains-header">
         <h3>{t('domains.title')}</h3>
-        <button className="domains-btn domains-btn-primary" onClick={() => setShowAddModal(true)}>
+        <button className="domains-btn domains-btn-primary" onClick={() => {
+          setShowAddModal(true);
+        }}>
           + {t('domains.addDomain')}
         </button>
       </div>

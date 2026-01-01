@@ -113,7 +113,6 @@ export default function AuditTab({ domain }: AuditTabProps) {
   }, [logs, filterAction, filterResult]);
 
   const handleExport = () => {
-    console.log("Export audit logs");
   };
 
   const formatDate = (dateStr: string) => {

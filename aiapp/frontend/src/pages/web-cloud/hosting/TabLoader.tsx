@@ -28,7 +28,6 @@ class TabErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState>
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error(`[TabError] ${this.props.tabId}:`, error, errorInfo);
   }
 
   handleRetry = () => {

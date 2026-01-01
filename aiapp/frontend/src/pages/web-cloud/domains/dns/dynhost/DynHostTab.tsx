@@ -72,6 +72,10 @@ export function DynHostTab({ zoneName }: Props) {
   const { t } = useTranslation("web-cloud/domains/index");
   const { t: tCommon } = useTranslation("common");
 
+  // ---------- DEBUG LOGGING ----------
+  const logAction = (action: string, data?: Record<string, unknown>) => {
+  };
+
   // ---------- VIEW STATE ----------
   const [activeView, setActiveView] = useState<"records" | "logins">("records");
 
@@ -133,7 +137,6 @@ export function DynHostTab({ zoneName }: Props) {
       const details = await Promise.all(loginNames.map((login) => dynHostService.getDynHostLogin(zoneName, login)));
       setLogins(details);
     } catch (err) {
-      console.error("Failed to load logins:", err);
       setLogins([]);
     } finally {
       setLoginsLoading(false);
@@ -145,8 +148,25 @@ export function DynHostTab({ zoneName }: Props) {
     loadLogins();
   }, [loadRecords, loadLogins]);
 
+  // ---------- VIEW HANDLERS ----------
+  const handleViewChange = (view: "records" | "logins") => {
+    logAction("VIEW_CHANGE", { from: activeView, to: view });
+    setActiveView(view);
+  };
+
+  const handleRefreshRecords = () => {
+    logAction("REFRESH_RECORDS");
+    loadRecords();
+  };
+
+  const handleRefreshLogins = () => {
+    logAction("REFRESH_LOGINS");
+    loadLogins();
+  };
+
   // ---------- RECORD MODAL HANDLERS ----------
   const openCreateModal = () => {
+    logAction("OPEN_CREATE_RECORD_MODAL");
     setFormData(DEFAULT_FORM);
     setFormError(null);
     setModalMode("create");
@@ -154,6 +174,7 @@ export function DynHostTab({ zoneName }: Props) {
   };
 
   const openEditModal = (record: DynHostRecord) => {
+    logAction("OPEN_EDIT_RECORD_MODAL", { recordId: record.id, subDomain: record.subDomain });
     setFormData({ id: record.id, subDomain: record.subDomain, ip: record.ip });
     setFormError(null);
     setModalMode("edit");
@@ -161,6 +182,7 @@ export function DynHostTab({ zoneName }: Props) {
   };
 
   const closeModal = () => {
+    logAction("CLOSE_RECORD_MODAL", { mode: modalMode });
     setModalOpen(false);
     setFormError(null);
   };
@@ -173,25 +195,31 @@ export function DynHostTab({ zoneName }: Props) {
   // ---------- SAVE RECORD ----------
   const handleSave = async () => {
     if (!formData.ip.trim()) {
+      logAction("SAVE_RECORD_ERROR_IP_REQUIRED");
       setFormError(t("dynhost.errorIpRequired"));
       return;
     }
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (!ipRegex.test(formData.ip.trim())) {
+      logAction("SAVE_RECORD_ERROR_INVALID_IP", { ip: formData.ip });
       setFormError(t("dynhost.errorInvalidIp"));
       return;
     }
+    logAction("SAVE_RECORD_START", { mode: modalMode, formData });
     try {
       setSaving(true);
       setFormError(null);
       if (modalMode === "create") {
         await dynHostService.createDynHostRecord(zoneName, { subDomain: formData.subDomain, ip: formData.ip.trim() });
+        logAction("CREATE_RECORD_SUCCESS", { formData });
       } else if (formData.id) {
         await dynHostService.updateDynHostRecord(zoneName, formData.id, { ip: formData.ip.trim() });
+        logAction("UPDATE_RECORD_SUCCESS", { recordId: formData.id });
       }
       closeModal();
       await loadRecords();
     } catch (err) {
+      logAction("SAVE_RECORD_ERROR", { error: String(err) });
       setFormError(String(err));
     } finally {
       setSaving(false);
@@ -199,14 +227,27 @@ export function DynHostTab({ zoneName }: Props) {
   };
 
   // ---------- DELETE RECORD ----------
+  const handleDeleteClick = (record: DynHostRecord) => {
+    logAction("DELETE_RECORD_CLICK", { recordId: record.id, subDomain: record.subDomain });
+    setDeleteConfirm(record);
+  };
+
+  const handleDeleteCancel = () => {
+    logAction("DELETE_RECORD_CANCEL", { recordId: deleteConfirm?.id });
+    setDeleteConfirm(null);
+  };
+
   const handleDeleteConfirm = async () => {
     if (!deleteConfirm) return;
+    logAction("DELETE_RECORD_CONFIRM", { recordId: deleteConfirm.id, subDomain: deleteConfirm.subDomain });
     try {
       setDeleting(true);
       await dynHostService.deleteDynHostRecord(zoneName, deleteConfirm.id);
+      logAction("DELETE_RECORD_SUCCESS", { recordId: deleteConfirm.id });
       setDeleteConfirm(null);
       await loadRecords();
     } catch (err) {
+      logAction("DELETE_RECORD_ERROR", { recordId: deleteConfirm.id, error: String(err) });
       setError(String(err));
     } finally {
       setDeleting(false);
@@ -215,12 +256,14 @@ export function DynHostTab({ zoneName }: Props) {
 
   // ---------- LOGIN MODAL HANDLERS ----------
   const openLoginModal = () => {
+    logAction("OPEN_CREATE_LOGIN_MODAL");
     setLoginForm(DEFAULT_LOGIN_FORM);
     setLoginFormError(null);
     setLoginModalOpen(true);
   };
 
   const closeLoginModal = () => {
+    logAction("CLOSE_LOGIN_MODAL");
     setLoginModalOpen(false);
     setLoginFormError(null);
   };
@@ -233,9 +276,11 @@ export function DynHostTab({ zoneName }: Props) {
   // ---------- SAVE LOGIN ----------
   const handleSaveLogin = async () => {
     if (!loginForm.loginSuffix.trim() || !loginForm.password.trim()) {
+      logAction("SAVE_LOGIN_ERROR_REQUIRED");
       setLoginFormError(t("dynhost.errorLoginRequired"));
       return;
     }
+    logAction("SAVE_LOGIN_START", { loginSuffix: loginForm.loginSuffix, subDomain: loginForm.subDomain });
     try {
       setSavingLogin(true);
       setLoginFormError(null);
@@ -244,9 +289,11 @@ export function DynHostTab({ zoneName }: Props) {
         password: loginForm.password,
         subDomain: loginForm.subDomain.trim(),
       });
+      logAction("SAVE_LOGIN_SUCCESS", { loginSuffix: loginForm.loginSuffix });
       closeLoginModal();
       await loadLogins();
     } catch (err) {
+      logAction("SAVE_LOGIN_ERROR", { error: String(err) });
       setLoginFormError(String(err));
     } finally {
       setSavingLogin(false);
@@ -254,14 +301,27 @@ export function DynHostTab({ zoneName }: Props) {
   };
 
   // ---------- DELETE LOGIN ----------
+  const handleDeleteLoginClick = (login: DynHostLogin) => {
+    logAction("DELETE_LOGIN_CLICK", { login: login.login });
+    setDeleteLoginConfirm(login);
+  };
+
+  const handleDeleteLoginCancel = () => {
+    logAction("DELETE_LOGIN_CANCEL", { login: deleteLoginConfirm?.login });
+    setDeleteLoginConfirm(null);
+  };
+
   const handleDeleteLoginConfirm = async () => {
     if (!deleteLoginConfirm) return;
+    logAction("DELETE_LOGIN_CONFIRM", { login: deleteLoginConfirm.login });
     try {
       setDeleting(true);
       await dynHostService.deleteDynHostLogin(zoneName, deleteLoginConfirm.login);
+      logAction("DELETE_LOGIN_SUCCESS", { login: deleteLoginConfirm.login });
       setDeleteLoginConfirm(null);
       await loadLogins();
     } catch (err) {
+      logAction("DELETE_LOGIN_ERROR", { login: deleteLoginConfirm.login, error: String(err) });
       setError(String(err));
     } finally {
       setDeleting(false);
@@ -294,13 +354,13 @@ export function DynHostTab({ zoneName }: Props) {
       <div className="dynhost-subtabs">
         <button
           className={`dynhost-subtab ${activeView === "records" ? "active" : ""}`}
-          onClick={() => setActiveView("records")}
+          onClick={() => handleViewChange("records")}
         >
           {t("dynhost.records")}
         </button>
         <button
           className={`dynhost-subtab ${activeView === "logins" ? "active" : ""}`}
-          onClick={() => setActiveView("logins")}
+          onClick={() => handleViewChange("logins")}
         >
           <UserIcon /> {t("dynhost.logins")}
         </button>
@@ -317,7 +377,7 @@ export function DynHostTab({ zoneName }: Props) {
               <p className="dynhost-section-desc">{t("dynhost.description")}</p>
             </div>
             <div className="dynhost-header-actions">
-              <button className="dynhost-btn-secondary" onClick={() => loadRecords()}>
+              <button className="dynhost-btn-secondary" onClick={handleRefreshRecords}>
                 <RefreshIcon />
               </button>
               <button className="dynhost-btn-primary" onClick={openCreateModal}>
@@ -371,7 +431,7 @@ export function DynHostTab({ zoneName }: Props) {
                           </button>
                           <button
                             className="dynhost-btn-icon danger"
-                            onClick={() => setDeleteConfirm(record)}
+                            onClick={() => handleDeleteClick(record)}
                             title={t("dynhost.delete")}
                           >
                             <TrashIcon />
@@ -396,7 +456,7 @@ export function DynHostTab({ zoneName }: Props) {
               <p className="dynhost-section-desc">{t("dynhost.loginsHint")}</p>
             </div>
             <div className="dynhost-header-actions">
-              <button className="dynhost-btn-secondary" onClick={() => loadLogins()}>
+              <button className="dynhost-btn-secondary" onClick={handleRefreshLogins}>
                 <RefreshIcon />
               </button>
               <button className="dynhost-btn-primary" onClick={openLoginModal}>
@@ -443,7 +503,7 @@ export function DynHostTab({ zoneName }: Props) {
                         <div className="dynhost-actions-cell">
                           <button
                             className="dynhost-btn-icon danger"
-                            onClick={() => setDeleteLoginConfirm(login)}
+                            onClick={() => handleDeleteLoginClick(login)}
                             title={t("dynhost.delete")}
                           >
                             <TrashIcon />
@@ -568,11 +628,11 @@ export function DynHostTab({ zoneName }: Props) {
 
       {/* Delete Record Confirm */}
       {deleteConfirm && (
-        <div className="dynhost-modal-overlay" onClick={() => setDeleteConfirm(null)}>
+        <div className="dynhost-modal-overlay" onClick={handleDeleteCancel}>
           <div className="dynhost-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="dynhost-modal-header">
               <h3>{t("dynhost.confirmDeleteTitle")}</h3>
-              <button className="dynhost-btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
+              <button className="dynhost-btn-icon" onClick={handleDeleteCancel}><CloseIcon /></button>
             </div>
             <div className="dynhost-modal-body">
               <p>{t("dynhost.confirmDeleteMessage")}</p>
@@ -581,7 +641,7 @@ export function DynHostTab({ zoneName }: Props) {
               </div>
             </div>
             <div className="dynhost-modal-footer">
-              <button className="dynhost-btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
+              <button className="dynhost-btn-secondary" onClick={handleDeleteCancel}>{tCommon("actions.cancel")}</button>
               <button className="dynhost-btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>
                 {deleting ? tCommon("loading") : tCommon("actions.delete")}
               </button>
@@ -592,11 +652,11 @@ export function DynHostTab({ zoneName }: Props) {
 
       {/* Delete Login Confirm */}
       {deleteLoginConfirm && (
-        <div className="dynhost-modal-overlay" onClick={() => setDeleteLoginConfirm(null)}>
+        <div className="dynhost-modal-overlay" onClick={handleDeleteLoginCancel}>
           <div className="dynhost-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="dynhost-modal-header">
               <h3>{t("dynhost.confirmDeleteLoginTitle")}</h3>
-              <button className="dynhost-btn-icon" onClick={() => setDeleteLoginConfirm(null)}><CloseIcon /></button>
+              <button className="dynhost-btn-icon" onClick={handleDeleteLoginCancel}><CloseIcon /></button>
             </div>
             <div className="dynhost-modal-body">
               <p>{t("dynhost.confirmDeleteLoginMessage")}</p>
@@ -605,7 +665,7 @@ export function DynHostTab({ zoneName }: Props) {
               </div>
             </div>
             <div className="dynhost-modal-footer">
-              <button className="dynhost-btn-secondary" onClick={() => setDeleteLoginConfirm(null)}>{tCommon("actions.cancel")}</button>
+              <button className="dynhost-btn-secondary" onClick={handleDeleteLoginCancel}>{tCommon("actions.cancel")}</button>
               <button className="dynhost-btn-danger" onClick={handleDeleteLoginConfirm} disabled={deleting}>
                 {deleting ? tCommon("loading") : tCommon("actions.delete")}
               </button>

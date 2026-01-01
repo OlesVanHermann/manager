@@ -43,7 +43,6 @@ export function BoostTab({ serviceName, details }: Props) {
         { offer: hostingData.offer || "Performance 1", boostOffer: "Performance 2", startDate: "2025-11-15", endDate: "2025-11-22" }
       ]);
     } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }

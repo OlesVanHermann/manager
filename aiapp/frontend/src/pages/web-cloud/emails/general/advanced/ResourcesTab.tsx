@@ -85,19 +85,15 @@ export default function ResourcesTab({ domain }: ResourcesTabProps) {
   }, [resources, search, filterType]);
 
   const handleCreate = () => {
-    console.log("Create resource");
   };
 
   const handleEdit = (resource: Resource) => {
-    console.log("Edit resource", resource.id);
   };
 
   const handleDelete = (resource: Resource) => {
-    console.log("Delete resource", resource.id);
   };
 
   const handleViewCalendar = (resource: Resource) => {
-    console.log("View calendar", resource.id);
   };
 
   return (

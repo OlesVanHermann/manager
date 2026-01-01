@@ -56,6 +56,10 @@ export function ZoneTab({ zoneName }: Props) {
   const { t } = useTranslation("web-cloud/domains/index");
   const { t: tCommon } = useTranslation("common");
 
+  // ---------- DEBUG LOGGING ----------
+  const logAction = (action: string, data?: Record<string, unknown>) => {
+  };
+
   // ---------- STATE VIEW ----------
   const [view, setView] = useState<"records" | "history">("records");
 
@@ -120,7 +124,6 @@ export function ZoneTab({ zoneName }: Props) {
       setHistory(dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime()));
       setHistoryLoaded(true);
     } catch (err) {
-      console.error("Failed to load history:", err);
       setHistory([]);
     } finally {
       setHistoryLoading(false);
@@ -129,17 +132,26 @@ export function ZoneTab({ zoneName }: Props) {
 
   // ---------- HANDLERS VIEW ----------
   const handleShowHistory = () => {
+    logAction("SHOW_HISTORY");
     setView("history");
     loadHistory();
   };
 
+  const handleBackToRecords = () => {
+    logAction("BACK_TO_RECORDS");
+    setView("records");
+  };
+
   // ---------- REFRESH ZONE ----------
   const handleRefreshZone = async () => {
+    logAction("REFRESH_ZONE_START");
     try {
       setRefreshing(true);
       await zoneService.refreshZone(zoneName);
+      logAction("REFRESH_ZONE_SUCCESS");
       await loadRecords();
     } catch (err) {
+      logAction("REFRESH_ZONE_ERROR", { error: String(err) });
       setError(String(err));
     } finally {
       setRefreshing(false);
@@ -148,15 +160,22 @@ export function ZoneTab({ zoneName }: Props) {
 
   // ---------- RESTORE HISTORY ----------
   const handleRestore = async (createdAt: string) => {
-    if (!confirm(t("history.confirmRestore"))) return;
+    logAction("RESTORE_HISTORY_CONFIRM", { createdAt });
+    if (!confirm(t("history.confirmRestore"))) {
+      logAction("RESTORE_HISTORY_CANCELLED");
+      return;
+    }
+    logAction("RESTORE_HISTORY_START", { createdAt });
     try {
       setRestoring(createdAt);
       await zoneService.restoreHistory(zoneName, createdAt);
+      logAction("RESTORE_HISTORY_SUCCESS", { createdAt });
       alert(t("history.restored"));
       setHistoryLoaded(false);
       setView("records");
       await loadRecords();
     } catch (err) {
+      logAction("RESTORE_HISTORY_ERROR", { createdAt, error: String(err) });
       alert(String(err));
     } finally {
       setRestoring(null);
@@ -165,18 +184,21 @@ export function ZoneTab({ zoneName }: Props) {
 
   // ---------- MODAL HANDLERS ----------
   const openCreateModal = () => {
+    logAction("OPEN_CREATE_MODAL");
     setFormData({ fieldType: "A", subDomain: "", target: "", ttl: DEFAULT_TTL });
     setModalMode("create");
     setModalOpen(true);
   };
 
   const openEditModal = (record: DnsRecord) => {
+    logAction("OPEN_EDIT_MODAL", { recordId: record.id, recordType: record.fieldType, subDomain: record.subDomain });
     setFormData({ id: record.id, fieldType: record.fieldType, subDomain: record.subDomain, target: record.target, ttl: record.ttl });
     setModalMode("edit");
     setModalOpen(true);
   };
 
   const closeModal = () => {
+    logAction("CLOSE_MODAL", { mode: modalMode });
     setModalOpen(false);
     setFormData({ fieldType: "A", subDomain: "", target: "", ttl: DEFAULT_TTL });
   };
@@ -187,19 +209,24 @@ export function ZoneTab({ zoneName }: Props) {
 
   const handleSave = async () => {
     if (!formData.target.trim()) {
+      logAction("SAVE_ERROR_TARGET_REQUIRED");
       alert(t("zone.errorTargetRequired"));
       return;
     }
+    logAction("SAVE_RECORD_START", { mode: modalMode, formData });
     try {
       setSaving(true);
       if (modalMode === "create") {
         await zoneService.createRecord(zoneName, { fieldType: formData.fieldType, subDomain: formData.subDomain, target: formData.target, ttl: formData.ttl });
+        logAction("CREATE_RECORD_SUCCESS", { formData });
       } else if (formData.id) {
         await zoneService.updateRecord(zoneName, formData.id, { subDomain: formData.subDomain, target: formData.target, ttl: formData.ttl });
+        logAction("UPDATE_RECORD_SUCCESS", { recordId: formData.id, formData });
       }
       closeModal();
       await loadRecords();
     } catch (err) {
+      logAction("SAVE_RECORD_ERROR", { error: String(err) });
       alert(String(err));
     } finally {
       setSaving(false);
@@ -208,21 +235,41 @@ export function ZoneTab({ zoneName }: Props) {
 
   // ---------- DELETE HANDLERS ----------
   const handleDeleteClick = (record: DnsRecord) => {
+    logAction("DELETE_RECORD_CLICK", { recordId: record.id, recordType: record.fieldType, subDomain: record.subDomain });
     setDeleteConfirm(record);
+  };
+
+  const handleDeleteCancel = () => {
+    logAction("DELETE_RECORD_CANCEL", { recordId: deleteConfirm?.id });
+    setDeleteConfirm(null);
   };
 
   const handleDeleteConfirm = async () => {
     if (!deleteConfirm) return;
+    logAction("DELETE_RECORD_CONFIRM", { recordId: deleteConfirm.id, recordType: deleteConfirm.fieldType, subDomain: deleteConfirm.subDomain });
     try {
       setDeleting(true);
       await zoneService.deleteRecord(zoneName, deleteConfirm.id);
+      logAction("DELETE_RECORD_SUCCESS", { recordId: deleteConfirm.id });
       setDeleteConfirm(null);
       await loadRecords();
     } catch (err) {
+      logAction("DELETE_RECORD_ERROR", { recordId: deleteConfirm.id, error: String(err) });
       alert(String(err));
     } finally {
       setDeleting(false);
     }
+  };
+
+  // ---------- FILTER HANDLERS ----------
+  const handleFilterTypeChange = (type: string) => {
+    logAction("FILTER_TYPE_CHANGE", { type });
+    setFilterType(type);
+  };
+
+  const handleFilterSubdomainChange = (subdomain: string) => {
+    logAction("FILTER_SUBDOMAIN_CHANGE", { subdomain });
+    setFilterSubdomain(subdomain);
   };
 
   // ---------- FILTERED RECORDS ----------
@@ -245,7 +292,7 @@ export function ZoneTab({ zoneName }: Props) {
             <h3>{t("history.title")}</h3>
             <p className="zone-description">{t("history.description")}</p>
           </div>
-          <button className="zone-btn-secondary" onClick={() => setView("records")}>← {t("zone.backToRecords")}</button>
+          <button className="zone-btn-secondary" onClick={handleBackToRecords}>← {t("zone.backToRecords")}</button>
         </div>
         {historyLoading ? (
           <div className="zone-loading"><div className="zone-skeleton" /><div className="zone-skeleton" /></div>
@@ -308,11 +355,11 @@ export function ZoneTab({ zoneName }: Props) {
 
       {/* Filters */}
       <div className="zone-filters-row">
-        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="zone-filter-select">
+        <select value={filterType} onChange={(e) => handleFilterTypeChange(e.target.value)} className="zone-filter-select">
           <option value="">{t("zone.allTypes")}</option>
           {RECORD_TYPES.map((type) => (<option key={type} value={type}>{type}</option>))}
         </select>
-        <input type="text" placeholder={t("zone.filterSubdomain")} value={filterSubdomain} onChange={(e) => setFilterSubdomain(e.target.value)} className="zone-filter-input" />
+        <input type="text" placeholder={t("zone.filterSubdomain")} value={filterSubdomain} onChange={(e) => handleFilterSubdomainChange(e.target.value)} className="zone-filter-input" />
         <span className="zone-records-count">{loading ? `${loadedCount}/${totalCount}` : `${filteredRecords.length}`} {t("zone.records")}</span>
       </div>
 
@@ -404,11 +451,11 @@ export function ZoneTab({ zoneName }: Props) {
 
       {/* Modal Delete Confirm */}
       {deleteConfirm && (
-        <div className="zone-modal-overlay" onClick={() => setDeleteConfirm(null)}>
+        <div className="zone-modal-overlay" onClick={handleDeleteCancel}>
           <div className="zone-modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
             <div className="zone-modal-header">
               <h3>{t("zone.confirmDeleteTitle")}</h3>
-              <button className="zone-btn-icon" onClick={() => setDeleteConfirm(null)}><CloseIcon /></button>
+              <button className="zone-btn-icon" onClick={handleDeleteCancel}><CloseIcon /></button>
             </div>
             <div className="zone-modal-body">
               <p>{t("zone.confirmDeleteMessage")}</p>
@@ -417,7 +464,7 @@ export function ZoneTab({ zoneName }: Props) {
               </div>
             </div>
             <div className="zone-modal-footer">
-              <button className="zone-btn-secondary" onClick={() => setDeleteConfirm(null)}>{tCommon("actions.cancel")}</button>
+              <button className="zone-btn-secondary" onClick={handleDeleteCancel}>{tCommon("actions.cancel")}</button>
               <button className="zone-btn-danger" onClick={handleDeleteConfirm} disabled={deleting}>{deleting ? tCommon("loading") : tCommon("actions.delete")}</button>
             </div>
           </div>

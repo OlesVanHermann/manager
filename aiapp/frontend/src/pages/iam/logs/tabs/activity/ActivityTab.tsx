@@ -47,7 +47,6 @@ export default function ActivityTab() {
         setSelectedKind(data[0]);
       }
     } catch (err) {
-      console.error("Error loading log kinds:", err);
     } finally {
       setLoading(false);
     }
@@ -140,7 +139,6 @@ function LiveTail({ kind, description, onGoToDataStreams }: LiveTailProps) {
       }
       setError(null);
     } catch (err) {
-      console.error("Error fetching logs:", err);
     }
   }, []);
 

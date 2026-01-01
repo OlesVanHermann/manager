@@ -126,14 +126,14 @@ export function GeneralTab({ connectionId, connection }: GeneralTabProps) {
                     </span>
                   </div>
                 </div>
-                <button className="btn-link">
+                <button className="btn-link" onClick={() => console.log("[GeneralTab] Action clicked: configure modem", connectionId)}>
                   {t("modem.configure")} →
                 </button>
               </>
             ) : (
               <div className="modem-empty">
                 <p>{t("modem.none")}</p>
-                <button className="btn-link">
+                <button className="btn-link" onClick={() => console.log("[GeneralTab] Action clicked: declare modem", connectionId)}>
                   {t("modem.declare")} →
                 </button>
               </div>
@@ -165,7 +165,7 @@ export function GeneralTab({ connectionId, connection }: GeneralTabProps) {
                     </div>
                   ))}
                 </div>
-                <button className="btn-link">
+                <button className="btn-link" onClick={() => console.log("[GeneralTab] Action clicked: manage services", connectionId)}>
                   {t("services.manage")} →
                 </button>
               </>
@@ -182,7 +182,7 @@ export function GeneralTab({ connectionId, connection }: GeneralTabProps) {
       <div className="general-card options-card">
         <div className="card-header">
           <h3>{t("options.title")}</h3>
-          <button className="btn-add">+ {t("options.add")}</button>
+          <button className="btn-add" onClick={() => console.log("[GeneralTab] Action clicked: add option", connectionId)}>+ {t("options.add")}</button>
         </div>
         <div className="card-content">
           {connection.options.length > 0 ? (
@@ -230,13 +230,15 @@ export function GeneralTab({ connectionId, connection }: GeneralTabProps) {
 
       {/* Actions */}
       <div className="general-actions">
-        <button className="btn-action" onClick={() => setShowRenameModal(true)}>
+        <button className="btn-action" onClick={() => {
+          setShowRenameModal(true);
+        }}>
           ✎ {t("actions.rename")}
         </button>
-        <button className="btn-action">
+        <button className="btn-action" onClick={() => console.log("[GeneralTab] Action clicked: contacts", connectionId)}>
           📋 {t("actions.contacts")}
         </button>
-        <button className="btn-action btn-danger">
+        <button className="btn-action btn-danger" onClick={() => console.log("[GeneralTab] Action clicked: cancel", connectionId)}>
           × {t("actions.cancel")}
         </button>
       </div>

@@ -21,6 +21,7 @@ import { universes } from "./components/Sidebar";
 import { AccountSidebar } from "./components/AccountSidebar";
 import { UniversTabs, SectionTabs, UserMenu, LoadingFallback } from "./components/HeaderNav";
 import { useAppNavigation } from "./hooks/useAppNavigation";
+import { log } from "./services/logger";
 import * as authService from "./services/auth";
 import type { OvhCredentials, OvhUser } from "./types/auth.types";
 import "./design-system/tokens.css";
@@ -102,6 +103,16 @@ function AppContent() {
 
   // ---------- NAVIGATION ----------
   const nav = useAppNavigation();
+
+  // ---------- LOGGER NAV1/NAV2 ----------
+  useEffect(() => {
+    log.setNav({ nav1: nav.activeUniverseId, nav2: nav.activeSectionId });
+  }, [nav.activeUniverseId, nav.activeSectionId]);
+
+  // ---------- LOGGER USER ID ----------
+  useEffect(() => {
+    if (user?.nichandle) log.setUserId(user.nichandle);
+  }, [user]);
 
   // ---------- AUTH CHECK ----------
   useEffect(() => {

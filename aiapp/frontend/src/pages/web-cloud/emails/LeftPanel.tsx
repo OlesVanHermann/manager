@@ -128,7 +128,9 @@ export function LeftPanel({
         <div className="pagination-buttons">
           <button
             className="pagination-btn"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            onClick={() => {
+              setCurrentPage(p => Math.max(1, p - 1));
+            }}
             disabled={currentPage === 1}
           >
             ‹
@@ -140,7 +142,9 @@ export function LeftPanel({
               <button
                 key={page}
                 className={`pagination-btn ${currentPage === page ? "active" : ""}`}
-                onClick={() => setCurrentPage(page)}
+                onClick={() => {
+                  setCurrentPage(page);
+                }}
               >
                 {page}
               </button>
@@ -148,7 +152,9 @@ export function LeftPanel({
           ))}
           <button
             className="pagination-btn"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => {
+              setCurrentPage(p => Math.min(totalPages, p + 1));
+            }}
             disabled={currentPage === totalPages}
           >
             ›
@@ -232,7 +238,9 @@ export function LeftPanel({
           <div className="filter-dropdown-container">
             <button
               className={`filter-dropdown-btn ${offerFilter ? "active" : ""}`}
-              onClick={() => setShowFilterMenu(!showFilterMenu)}
+              onClick={() => {
+                setShowFilterMenu(!showFilterMenu);
+              }}
             >
               {offerFilter ? OFFER_CONFIG[offerFilter].label : t("leftPanel.filter")} ▾
             </button>
@@ -290,11 +298,15 @@ export function LeftPanel({
       {/* ---------- ACTIONS ---------- */}
       <div className="left-panel-actions">
         {nav3Mode === "general" ? (
-          <button className="btn btn-outline btn-add" onClick={onAddDomain}>
+          <button className="btn btn-outline btn-add" onClick={() => {
+            onAddDomain?.();
+          }}>
             <span>+</span> {t("leftPanel.addDomain")}
           </button>
         ) : (
-          <button className="btn btn-primary btn-add" onClick={onOrderPack}>
+          <button className="btn btn-primary btn-add" onClick={() => {
+            onOrderPack?.();
+          }}>
             <span>+</span> {t("leftPanel.orderPack")}
           </button>
         )}

@@ -61,19 +61,15 @@ export default function SignatureTab({ domain, offers }: SignatureTabProps) {
   ], []);
 
   const handleCreate = () => {
-    console.log("Create signature");
   };
 
   const handleEdit = (signature: EmailSignature) => {
-    console.log("Edit signature", signature.id);
   };
 
   const handleDelete = (signature: EmailSignature) => {
-    console.log("Delete signature", signature.id);
   };
 
   const handleSetDefault = (signature: EmailSignature) => {
-    console.log("Set as default", signature.id);
   };
 
   const handlePreview = (signature: EmailSignature) => {

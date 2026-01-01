@@ -27,7 +27,6 @@ export const BimiTab: React.FC<BimiTabProps> = ({ zoneName }) => {
         setCurrentBimi(bimi);
         if (bimi) setConfig(bimiService.parseBimiRecord(bimi.target));
       } catch (err) {
-        console.error("Failed to load BIMI:", err);
       } finally {
         setLoading(false);
       }
@@ -48,7 +47,6 @@ export const BimiTab: React.FC<BimiTabProps> = ({ zoneName }) => {
       const bimi = await bimiService.getCurrentBimi(zoneName);
       setCurrentBimi(bimi);
     } catch (err) {
-      console.error("Failed to save BIMI:", err);
     } finally {
       setSaving(false);
     }

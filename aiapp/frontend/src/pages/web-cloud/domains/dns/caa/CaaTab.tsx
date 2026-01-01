@@ -39,7 +39,6 @@ export const CaaTab: React.FC<CaaTabProps> = ({ zoneName }) => {
       const data = await caaService.getCaaRecords(zoneName);
       setRecords(data);
     } catch (err) {
-      console.error("Failed to load CAA:", err);
     } finally {
       setLoading(false);
     }
@@ -54,7 +53,6 @@ export const CaaTab: React.FC<CaaTabProps> = ({ zoneName }) => {
       setShowAddForm(false);
       setNewCa("");
     } catch (err) {
-      console.error("Failed to add CAA:", err);
     } finally {
       setSaving(false);
     }
@@ -66,7 +64,6 @@ export const CaaTab: React.FC<CaaTabProps> = ({ zoneName }) => {
       await caaService.deleteCaa(zoneName, record.id);
       await loadRecords();
     } catch (err) {
-      console.error("Failed to delete CAA:", err);
     }
   };
 

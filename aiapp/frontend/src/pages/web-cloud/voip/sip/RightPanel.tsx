@@ -76,7 +76,9 @@ export function RightPanel({
           <button
             key={tab.id}
             className={`voip-right-panel-tab ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => {
+              onTabChange(tab.id);
+            }}
           >
             {tab.label}
           </button>
@@ -115,7 +117,9 @@ interface ActionItemProps {
 
 export function ActionItem({ label, onClick }: ActionItemProps) {
   return (
-    <div className="voip-action-item" onClick={onClick}>
+    <div className="voip-action-item" onClick={() => {
+      onClick();
+    }}>
       <span>{label}</span>
       <span className="voip-action-item-arrow">→</span>
     </div>

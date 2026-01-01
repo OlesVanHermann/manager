@@ -42,7 +42,6 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
       await cdnDomainsService.deleteDomain(serviceId, domain);
       loadDomains();
     } catch (err) {
-      console.error("Erreur suppression:", err);
     }
   };
 
@@ -50,7 +49,6 @@ export default function DomainsTab({ serviceId }: DomainsTabProps) {
     try {
       await cdnDomainsService.purgeDomain(serviceId, domain);
     } catch (err) {
-      console.error("Erreur purge:", err);
     }
   };
 

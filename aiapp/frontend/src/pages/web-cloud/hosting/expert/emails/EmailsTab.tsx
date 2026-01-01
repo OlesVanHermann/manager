@@ -140,7 +140,6 @@ async function fetchPrometheusData(serviceName: string): Promise<ChartDataPoint[
     });
 
   } catch (err) {
-    console.error("Error fetching Prometheus data:", err);
     return [];
   }
 }
@@ -186,7 +185,6 @@ export function EmailsTab({ serviceName }: Props) {
         setEmailInfo({ state: "ok", bounce: "", maxPerDay: 200, sent: 0, sentToday: 0, errors: 0, total: 0 });
       }
     } catch (err) {
-      console.error("Error loading email data:", err);
     } finally {
       setLoading(false);
     }

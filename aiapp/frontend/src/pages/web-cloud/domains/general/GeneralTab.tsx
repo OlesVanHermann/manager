@@ -46,6 +46,10 @@ const getContactsUrl = (domain: string) => `${OVH_MANAGER_BASE}/#/dedicated/cont
 export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, onTabChange }: Props) {
   const { t } = useTranslation("web-cloud/domains/general");
 
+  // ---------- DEBUG LOGGING ----------
+  const logAction = (action: string, data?: Record<string, unknown>) => {
+  };
+
   // ---------- STATE ----------
   const [toggling, setToggling] = useState(false);
   const [showAuthInfo, setShowAuthInfo] = useState(false);
@@ -87,19 +91,42 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
   // ---------- HANDLERS ----------
   const handleToggleLock = async () => {
     if (toggling || isLocking) return;
+    logAction("TOGGLE_LOCK_START", { currentStatus: isLocked ? "locked" : "unlocked", targetStatus: isLocked ? "unlocked" : "locked" });
     setToggling(true);
     try {
       if (isLocked) {
         await generalService.unlockDomain(domain);
+        logAction("UNLOCK_SUCCESS");
       } else {
         await generalService.lockDomain(domain);
+        logAction("LOCK_SUCCESS");
       }
       onRefresh?.();
     } catch (err) {
-      console.error("Toggle lock error:", err);
+      logAction("TOGGLE_LOCK_ERROR", { error: String(err) });
     } finally {
       setToggling(false);
     }
+  };
+
+  const handleShowAuthInfo = () => {
+    logAction("SHOW_AUTH_INFO");
+    setShowAuthInfo(true);
+  };
+
+  const handleCloseAuthInfo = () => {
+    logAction("CLOSE_AUTH_INFO");
+    setShowAuthInfo(false);
+  };
+
+  const handleNavigateToTab = (tab: string) => {
+    logAction("NAVIGATE_TO_TAB", { tab });
+    onTabChange?.(tab);
+  };
+
+  const handleExternalLink = (linkType: string, url: string) => {
+    logAction("EXTERNAL_LINK_CLICK", { linkType, url });
+    // Le lien s'ouvre via href, pas de code supplémentaire nécessaire
   };
 
   // ---------- LOADING STATE ----------
@@ -128,7 +155,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
           <WarningIcon />
           <div className="general-warning-content-v3">
             <span>{t("warnings.pendingTasks", { count: pendingTasksCount })}</span>
-            <button className="general-btn-link-v3" onClick={() => onTabChange?.("tasks")}>{t("actions.viewTasks")}</button>
+            <button className="general-btn-link-v3" onClick={() => handleNavigateToTab("tasks")}>{t("actions.viewTasks")}</button>
           </div>
         </div>
       )}
@@ -176,7 +203,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
                 {nameServersCount > 0 ? `${nameServersCount} ${t("values.servers")}` : "..."}
               </span>
             </div>
-            <button className="general-btn-more-v3" onClick={() => onTabChange?.("dns-servers")} title={t("actions.manage")}><MoreIcon /></button>
+            <button className="general-btn-more-v3" onClick={() => handleNavigateToTab("dns-servers")} title={t("actions.manage")}><MoreIcon /></button>
           </div>
 
           <div className="general-field-row-action">
@@ -186,7 +213,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
                 {dnssecEnabled ? t("values.enabled") : t("values.disabled")}
               </span>
             </div>
-            <button className="general-btn-more-v3" onClick={() => onTabChange?.("dnssec")} title={t("actions.manage")}><MoreIcon /></button>
+            <button className="general-btn-more-v3" onClick={() => handleNavigateToTab("dnssec")} title={t("actions.manage")}><MoreIcon /></button>
           </div>
 
           <div className="general-field-row-action">
@@ -202,7 +229,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
             <span className="general-field-value">{recordsCount} {t("values.records")}</span>
           </div>
 
-          <button className="general-btn-link-primary" onClick={() => onTabChange?.("zone")}>
+          <button className="general-btn-link-primary" onClick={() => handleNavigateToTab("zone")}>
             › {t("actions.manageZone")}
           </button>
         </div>
@@ -228,7 +255,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
                 {details?.owoSupported ? t("values.enabled") : t("values.notSupported")}
               </span>
             </div>
-            <button className="general-btn-more-v3" onClick={() => onTabChange?.("contacts")} title={t("actions.manage")}><MoreIcon /></button>
+            <button className="general-btn-more-v3" onClick={() => handleNavigateToTab("contacts")} title={t("actions.manage")}><MoreIcon /></button>
           </div>
 
           <div className="general-field-row-action">
@@ -237,7 +264,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
               <span className="general-field-value">••••••••••</span>
             </div>
             {canShowAuthInfo && (
-              <button className="general-btn-show" onClick={() => setShowAuthInfo(true)}>{t("actions.show")}</button>
+              <button className="general-btn-show" onClick={handleShowAuthInfo}>{t("actions.show")}</button>
             )}
           </div>
 
@@ -272,7 +299,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
                 {serviceInfos?.renew?.automatic ? t("values.automatic") : t("values.manual")} - {serviceInfos ? formatDate(serviceInfos.expiration) : "..."}
               </span>
             </div>
-            <a href={getAutorenewUrl(domain)} target="_blank" rel="noopener noreferrer" className="general-btn-more-v3"><MoreIcon /></a>
+            <a href={getAutorenewUrl(domain)} target="_blank" rel="noopener noreferrer" className="general-btn-more-v3" onClick={() => handleExternalLink("autorenew", getAutorenewUrl(domain))}><MoreIcon /></a>
           </div>
         </div>
 
@@ -280,7 +307,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
         <div className="dom-general-info-card-v3">
           <div className="general-card-header-action">
             <h3 className="general-card-title-v3">{t("sections.contacts")}</h3>
-            <a href={getContactsUrl(domain)} target="_blank" rel="noopener noreferrer" className="general-btn-more-v3"><MoreIcon /></a>
+            <a href={getContactsUrl(domain)} target="_blank" rel="noopener noreferrer" className="general-btn-more-v3" onClick={() => handleExternalLink("contacts", getContactsUrl(domain))}><MoreIcon /></a>
           </div>
 
           <div className="general-contacts-grid">
@@ -312,7 +339,7 @@ export function GeneralTab({ domain, details, serviceInfos, loading, onRefresh, 
 
       {/* ============ MODAL AUTHINFO ============ */}
       {showAuthInfo && (
-        <AuthInfoModal domain={domain} onClose={() => setShowAuthInfo(false)} />
+        <AuthInfoModal domain={domain} onClose={handleCloseAuthInfo} />
       )}
     </div>
   );

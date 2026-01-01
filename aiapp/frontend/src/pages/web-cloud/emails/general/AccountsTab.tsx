@@ -84,7 +84,6 @@ export default function AccountsTab({ domain, licenseId, offers }: AccountsTabPr
     sendWelcomeEmail: boolean;
   }) => {
     // TODO: Appel API pour créer le compte
-    console.log("Create account:", data);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     refresh();
   };
@@ -95,14 +94,12 @@ export default function AccountsTab({ domain, licenseId, offers }: AccountsTabPr
     newPassword?: string;
   }) => {
     // TODO: Appel API pour modifier le compte
-    console.log("Edit account:", selectedAccount?.id, data);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     refresh();
   };
 
   const handleDeleteSubmit = async () => {
     // TODO: Appel API pour supprimer le compte
-    console.log("Delete account:", selectedAccount?.id);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     refresh();
   };
@@ -126,7 +123,9 @@ export default function AccountsTab({ domain, licenseId, offers }: AccountsTabPr
         <div className="emails-error">
           <span className="error-icon">⚠️</span>
           <p>{error}</p>
-          <button className="btn btn-outline" onClick={refresh}>
+          <button className="btn btn-outline" onClick={() => {
+            refresh();
+          }}>
             {t("retry")}
           </button>
         </div>
@@ -155,7 +154,9 @@ export default function AccountsTab({ domain, licenseId, offers }: AccountsTabPr
           <div className="filter-chips">
             <button
               className={`filter-chip ${filterOffer === "all" ? "active" : ""}`}
-              onClick={() => setFilterOffer("all")}
+              onClick={() => {
+                setFilterOffer("all");
+              }}
             >
               {t("filters.allOffers")}
             </button>
@@ -163,7 +164,9 @@ export default function AccountsTab({ domain, licenseId, offers }: AccountsTabPr
               <button
                 key={offer}
                 className={`filter-chip ${filterOffer === offer ? "active" : ""}`}
-                onClick={() => setFilterOffer(offer)}
+                onClick={() => {
+                  setFilterOffer(offer);
+                }}
               >
                 <OfferBadge offer={offer} size="sm" />
               </button>

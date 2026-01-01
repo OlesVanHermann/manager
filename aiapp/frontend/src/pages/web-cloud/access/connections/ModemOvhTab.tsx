@@ -175,7 +175,6 @@ export function ModemOvhTab({ connectionId }: ModemOvhTabProps) {
       const modemData = await modemOvhService.getModem(connectionId);
       setModem(modemData);
     } catch (err) {
-      console.error("Reboot failed:", err);
     }
   }, [connectionId]);
 
@@ -184,7 +183,6 @@ export function ModemOvhTab({ connectionId }: ModemOvhTabProps) {
     try {
       await modemOvhService.resetModemFactory(connectionId);
     } catch (err) {
-      console.error("Reset failed:", err);
     }
   }, [connectionId, t]);
 
@@ -224,7 +222,6 @@ export function ModemOvhTab({ connectionId }: ModemOvhTabProps) {
 
   const handleReserveLease = useCallback((lease: DhcpLease) => {
     // TODO: Open modal for reservation
-    console.log("Reserve lease:", lease);
   }, []);
 
   const handleDeleteReservation = useCallback((mac: string) => {
@@ -234,18 +231,15 @@ export function ModemOvhTab({ connectionId }: ModemOvhTabProps) {
 
   const handleAddReservation = useCallback(() => {
     // TODO: Open modal for new reservation
-    console.log("Add reservation");
   }, []);
 
   // Handlers - NAT
   const handleAddNatRule = useCallback(() => {
     // TODO: Open modal
-    console.log("Add NAT rule");
   }, []);
 
   const handleEditNatRule = useCallback((rule: ModemNatRule) => {
     // TODO: Open modal
-    console.log("Edit NAT rule:", rule);
   }, []);
 
   const handleDeleteNatRule = useCallback(async (ruleId: string) => {
@@ -253,7 +247,6 @@ export function ModemOvhTab({ connectionId }: ModemOvhTabProps) {
       await modemOvhService.deleteModemNatRule(connectionId, ruleId);
       setNatRules(prev => prev.filter(r => r.id !== ruleId));
     } catch (err) {
-      console.error("Delete NAT rule failed:", err);
     }
   }, [connectionId]);
 
@@ -269,7 +262,6 @@ export function ModemOvhTab({ connectionId }: ModemOvhTabProps) {
 
   const handleConfigureDmz = useCallback(() => {
     // TODO: Open modal
-    console.log("Configure DMZ");
   }, []);
 
   // Handlers - Router
@@ -288,12 +280,10 @@ export function ModemOvhTab({ connectionId }: ModemOvhTabProps) {
 
   const handleAddRoute = useCallback(() => {
     // TODO: Open modal
-    console.log("Add route");
   }, []);
 
   const handleEditRoute = useCallback((route: StaticRoute) => {
     // TODO: Open modal
-    console.log("Edit route:", route);
   }, []);
 
   const handleDeleteRoute = useCallback((routeId: string) => {

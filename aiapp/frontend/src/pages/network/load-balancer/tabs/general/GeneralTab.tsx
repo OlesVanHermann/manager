@@ -34,7 +34,6 @@ export default function GeneralTab({ serviceName }: GeneralTabProps) {
       setLb(lbData);
       setServiceInfos(infos);
     } catch (err) {
-      console.error("Erreur chargement:", err);
     } finally {
       setLoading(false);
     }

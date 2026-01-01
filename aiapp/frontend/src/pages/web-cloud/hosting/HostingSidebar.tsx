@@ -35,7 +35,6 @@ function HostingSidebarInner() {
           setLoading(false);
         }
       } catch (err) {
-        console.error("[Sidebar] Error:", err);
         if (mounted) setLoading(false);
       }
     };
@@ -108,6 +107,7 @@ function HostingSidebarInner() {
               key={h.serviceName}
               to={`/web-cloud/hosting/${h.serviceName}`}
               className={`service-item ${serviceName === h.serviceName ? "selected" : ""}`}
+              onClick={() => console.log('[HostingSidebar] Sélection', { serviceName: h.serviceName, displayName: h.displayName })}
             >
               <div className="service-icon">🌐</div>
               <div className="service-info">
@@ -127,7 +127,7 @@ function HostingSidebarInner() {
           <div className="pagination-buttons">
             <button
               className="pagination-btn"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => { console.log('[HostingSidebar] Page précédente'); setCurrentPage(p => Math.max(1, p - 1)); }}
               disabled={currentPage === 1}
             >‹</button>
             {[...Array(Math.min(3, totalPages))].map((_, i) => {
@@ -137,13 +137,13 @@ function HostingSidebarInner() {
                 <button
                   key={page}
                   className={`pagination-btn ${currentPage === page ? "active" : ""}`}
-                  onClick={() => setCurrentPage(page)}
+                  onClick={() => { console.log('[HostingSidebar] Page', { page }); setCurrentPage(page); }}
                 >{page}</button>
               );
             })}
             <button
               className="pagination-btn"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => { console.log('[HostingSidebar] Page suivante'); setCurrentPage(p => Math.min(totalPages, p + 1)); }}
               disabled={currentPage === totalPages}
             >›</button>
           </div>

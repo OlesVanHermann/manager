@@ -63,7 +63,6 @@ export function EditDomainWizard({ serviceName, domain, hasCdn, isOpen, onClose,
       const domains = await multisiteService.listAttachedDomains(serviceName);
       setAvailableDomains(domains);
     } catch (err) {
-      console.error("Error loading domains:", err);
     }
   };
 

@@ -24,7 +24,6 @@ export function LocalSeoTab({ serviceName }: Props) {
         setLocations(data);
       }
     } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }

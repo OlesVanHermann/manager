@@ -286,7 +286,7 @@ export function HostingPage() {
               <div className="hosting-pagination-buttons">
                 <button
                   className="hosting-pagination-btn"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  onClick={() => { console.log('[Hosting] Sidebar: page précédente'); setCurrentPage(p => Math.max(1, p - 1)); }}
                   disabled={currentPage === 1}
                 >‹</button>
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -304,7 +304,7 @@ export function HostingPage() {
                     <button
                       key={page}
                       className={`hosting-pagination-btn ${currentPage === page ? "active" : ""}`}
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => { console.log('[Hosting] Sidebar: page', { page }); setCurrentPage(page); }}
                     >
                       {page}
                     </button>
@@ -312,7 +312,7 @@ export function HostingPage() {
                 })}
                 <button
                   className="hosting-pagination-btn"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() => { console.log('[Hosting] Sidebar: page suivante'); setCurrentPage(p => Math.min(totalPages, p + 1)); }}
                   disabled={currentPage === totalPages}
                 >›</button>
               </div>
@@ -340,7 +340,7 @@ export function HostingPage() {
                   <button
                     key={tab.id}
                     className={`hosting-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => { console.log('[Hosting] Tab: changement', { tabId: tab.id, tabLabel: tab.label, group: tab.group }); setActiveTab(tab.id); }}
                   >
                     {tab.label}
                   </button>

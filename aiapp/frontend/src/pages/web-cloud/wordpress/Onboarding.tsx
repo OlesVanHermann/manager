@@ -69,7 +69,9 @@ export function Onboarding({ onCreate, onImport }: OnboardingProps) {
           <div className="wp-offers-grid">
             <div
               className={`wp-offer-card ${selectedOffer === 'start' ? 'selected' : ''}`}
-              onClick={() => setSelectedOffer('start')}
+              onClick={() => {
+                setSelectedOffer('start');
+              }}
             >
               <div className="wp-offer-name">{t('onboarding.offers.start.title')}</div>
               <div className="wp-offer-price">{t('onboarding.offers.start.price')}</div>
@@ -81,7 +83,9 @@ export function Onboarding({ onCreate, onImport }: OnboardingProps) {
             </div>
             <div
               className={`wp-offer-card recommended ${selectedOffer === 'pro' ? 'selected' : ''}`}
-              onClick={() => setSelectedOffer('pro')}
+              onClick={() => {
+                setSelectedOffer('pro');
+              }}
             >
               <div className="wp-offer-badge">{t('onboarding.offers.recommended')}</div>
               <div className="wp-offer-name">{t('onboarding.offers.pro.title')}</div>
@@ -94,7 +98,9 @@ export function Onboarding({ onCreate, onImport }: OnboardingProps) {
             </div>
             <div
               className={`wp-offer-card ${selectedOffer === 'business' ? 'selected' : ''}`}
-              onClick={() => setSelectedOffer('business')}
+              onClick={() => {
+                setSelectedOffer('business');
+              }}
             >
               <div className="wp-offer-name">{t('onboarding.offers.business.title')}</div>
               <div className="wp-offer-price">{t('onboarding.offers.business.price')}</div>
@@ -115,7 +121,9 @@ export function Onboarding({ onCreate, onImport }: OnboardingProps) {
             </button>
           )}
           {onImport && (
-            <button className="wp-btn wp-btn-outline wp-btn-lg" onClick={onImport}>
+            <button className="wp-btn wp-btn-outline wp-btn-lg" onClick={() => {
+              onImport();
+            }}>
               {t('onboarding.importSite')}
             </button>
           )}

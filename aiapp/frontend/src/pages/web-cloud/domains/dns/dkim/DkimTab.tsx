@@ -31,7 +31,6 @@ export const DkimTab: React.FC<DkimTabProps> = ({ zoneName }) => {
       const data = await dkimService.getDkimRecords(zoneName);
       setRecords(data);
     } catch (err) {
-      console.error("Failed to load DKIM:", err);
     } finally {
       setLoading(false);
     }
@@ -47,7 +46,6 @@ export const DkimTab: React.FC<DkimTabProps> = ({ zoneName }) => {
       setSelector("");
       setPublicKey("");
     } catch (err) {
-      console.error("Failed to add DKIM:", err);
     } finally {
       setSaving(false);
     }
@@ -59,7 +57,6 @@ export const DkimTab: React.FC<DkimTabProps> = ({ zoneName }) => {
       await dkimService.deleteDkim(zoneName, record.id);
       await loadRecords();
     } catch (err) {
-      console.error("Failed to delete DKIM:", err);
     }
   };
 

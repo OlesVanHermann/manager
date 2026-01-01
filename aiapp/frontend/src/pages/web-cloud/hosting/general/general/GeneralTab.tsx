@@ -44,7 +44,7 @@ function Badge({ status }: { status: "active" | "disabled" }) {
 
 function Link({ label, onClick }: { label: string; onClick?: () => void }) {
   return (
-    <span className="general-link" onClick={onClick}>{label}</span>
+    <span className="general-link" onClick={() => { console.log('[GeneralTab] Action: clic lien', { label }); onClick?.(); }}>{label}</span>
   );
 }
 

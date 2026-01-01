@@ -73,7 +73,6 @@ export function CdnSettingsTab({ serviceName, domain }: CdnSettingsTabProps) {
         setRules(rulesData);
       }
     } catch (err) {
-      console.error("[CdnSettingsTab] Error:", err);
     } finally {
       setLoading(false);
     }

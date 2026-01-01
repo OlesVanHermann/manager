@@ -75,7 +75,6 @@ class EmailsService {
         }
       }
     } catch (err) {
-      console.error("Error fetching MX Plan legacy domains:", err);
     }
 
     // 1b. MX Plan hébergé - /email/mxplan (serviceId = mxplan-xxx)
@@ -90,7 +89,6 @@ class EmailsService {
         if (result) mappings.push(...result);
       }
     } catch (err) {
-      console.error("Error fetching MX Plan hosted services:", err);
     }
 
     // 2. Email Pro - service → domaines
@@ -105,7 +103,6 @@ class EmailsService {
         if (result) mappings.push(...result);
       }
     } catch (err) {
-      console.error("Error fetching Email Pro services:", err);
     }
 
     // 3. Exchange - org → service → domaines
@@ -132,7 +129,6 @@ class EmailsService {
         if (result) mappings.push(...result);
       }
     } catch (err) {
-      console.error("Error fetching Exchange orgs:", err);
     }
 
     // 4. Zimbra - désactivé car l'API /email/zimbra n'existe pas pour ce compte
@@ -151,7 +147,6 @@ class EmailsService {
       return !hostedDomains.has(m.domain);
     });
 
-    console.log("[EmailsService] Domain mapping built:", deduped.length, "entries (deduped from", mappings.length, ")");
     domainMappingCache = deduped;
     cacheTimestamp = now;
     return deduped;
@@ -205,7 +200,6 @@ class EmailsService {
         const filtered = svcAccounts.filter(acc => acc.email.endsWith(`@${domain}`));
         accounts.push(...filtered);
       } catch (err) {
-        console.error(`Error fetching accounts for ${svc.offer}/${svc.serviceId}:`, err);
       }
     }
 
@@ -295,7 +289,6 @@ class EmailsService {
                 serviceId,
               } as EmailAccount;
             } catch (err) {
-              console.error(`Error loading MX Plan account ${accountId}:`, err);
               return null;
             }
           })
@@ -305,7 +298,6 @@ class EmailsService {
 
       return accounts;
     } catch (err) {
-      console.error(`getMxPlanAccounts(${serviceId}) error:`, err);
       return [];
     }
   }
@@ -343,7 +335,6 @@ class EmailsService {
 
       return results.filter((a): a is EmailAccount => a !== null);
     } catch (err) {
-      console.error(`getEmailProAccounts(${service}) error:`, err);
       return [];
     }
   }
@@ -385,7 +376,6 @@ class EmailsService {
 
       return results.filter((a): a is EmailAccount => a !== null);
     } catch (err) {
-      console.error(`getExchangeAccounts(${org}/${service}) error:`, err);
       return [];
     }
   }
@@ -420,7 +410,6 @@ class EmailsService {
         };
       });
     } catch (err) {
-      console.error(`getZimbraAccounts(${platform}) error:`, err);
       return [];
     }
   }
@@ -458,12 +447,10 @@ class EmailsService {
             domain,
           });
         } catch (err) {
-          console.error(`Error loading redirection ${id}:`, err);
         }
       }
       return redirections;
     } catch (err) {
-      console.error(`getRedirections(${domain}) error:`, err);
       return [];
     }
   }
@@ -509,12 +496,10 @@ class EmailsService {
             domain,
           });
         } catch (err) {
-          console.error(`Error loading responder ${name}:`, err);
         }
       }
       return responders;
     } catch (err) {
-      console.error(`getResponders(${domain}) error:`, err);
       return [];
     }
   }
@@ -578,12 +563,10 @@ class EmailsService {
             offer: "mx-plan",
           });
         } catch (err) {
-          console.error(`Error loading mailing list ${name}:`, err);
         }
       }
       return lists;
     } catch (err) {
-      console.error(`getLists(${domain}) error:`, err);
       return [];
     }
   }
@@ -642,12 +625,10 @@ class EmailsService {
             domain,
           });
         } catch (err) {
-          console.error(`Error loading task ${id}:`, err);
         }
       }
       return tasks.sort((a, b) => (b.id || 0) - (a.id || 0));
     } catch (err) {
-      console.error(`getTasks(${domain}) error:`, err);
       return [];
     }
   }

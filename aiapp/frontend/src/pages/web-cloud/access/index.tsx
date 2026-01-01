@@ -157,7 +157,9 @@ export default function AccessPage() {
       <div className="access-page">
         <div className="access-error">
           <p>{t("error")}: {error}</p>
-          <button onClick={load}>{t("retry")}</button>
+          <button onClick={() => {
+            load();
+          }}>{t("retry")}</button>
         </div>
       </div>
     );
@@ -173,7 +175,9 @@ export default function AccessPage() {
             type="text"
             placeholder={t("search.placeholder")}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+            }}
           />
         </div>
 
@@ -181,19 +185,25 @@ export default function AccessPage() {
         <div className="access-categories">
           <button
             className={`access-category-btn ${categoryFilter === "all" ? "active" : ""}`}
-            onClick={() => setCategoryFilter("all")}
+            onClick={() => {
+              setCategoryFilter("all");
+            }}
           >
             {t("categories.all")} ({services.length})
           </button>
           <button
             className={`access-category-btn ${categoryFilter === "connection" ? "active" : ""}`}
-            onClick={() => setCategoryFilter("connection")}
+            onClick={() => {
+              setCategoryFilter("connection");
+            }}
           >
             {t("categories.connections")} ({connectionCount})
           </button>
           <button
             className={`access-category-btn ${categoryFilter === "overthebox" ? "active" : ""}`}
-            onClick={() => setCategoryFilter("overthebox")}
+            onClick={() => {
+              setCategoryFilter("overthebox");
+            }}
           >
             {t("categories.overthebox")} ({otbCount})
           </button>
@@ -210,7 +220,10 @@ export default function AccessPage() {
             <div
               key={`${service.type}-${service.id}`}
               className={`access-item ${selected?.id === service.id && selected?.type === service.type ? "selected" : ""}`}
-              onClick={() => setSelected(service)}
+              onClick={() => {
+                log.action('AccessPage', 'SELECT_SERVICE', { id: service.id, type: service.type });
+                setSelected(service);
+              }}
             >
               {service.type === "connection" ? (
                 <>

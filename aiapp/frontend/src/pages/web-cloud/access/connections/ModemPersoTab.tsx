@@ -117,7 +117,6 @@ export function ModemPersoTab({ connectionId }: ModemPersoTabProps) {
       // TODO: API call to regenerate password
       // const newCreds = await modemPersoService.regeneratePppoePassword(connectionId);
       // setCredentials(newCreds);
-      console.log("Regenerate password");
     } finally {
       setRegenerating(false);
     }
@@ -125,22 +124,18 @@ export function ModemPersoTab({ connectionId }: ModemPersoTabProps) {
 
   const handleEditModem = useCallback(() => {
     // TODO: Open modal
-    console.log("Edit modem");
   }, []);
 
   const handleDeleteModem = useCallback(async () => {
     if (!confirm(t("infos.confirmDelete"))) return;
     try {
       // TODO: API call to delete custom modem
-      console.log("Delete modem");
     } catch (err) {
-      console.error("Delete failed:", err);
     }
   }, [t]);
 
   const handleDeclareModem = useCallback(() => {
     // TODO: Open modal
-    console.log("Declare modem");
   }, []);
 
   if (loading) {

@@ -70,7 +70,6 @@ export const dnsInfoService = {
         hasMx,
       };
     } catch (error) {
-      console.error("Failed to get DNS summary:", error);
       throw error;
     }
   },

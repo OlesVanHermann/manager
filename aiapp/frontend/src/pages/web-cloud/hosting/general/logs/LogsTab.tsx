@@ -43,7 +43,6 @@ export function LogsTab({ serviceName, details }: Props) {
         setOwnLogs(logsData.filter(Boolean) as OwnLog[]);
       }
     } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }

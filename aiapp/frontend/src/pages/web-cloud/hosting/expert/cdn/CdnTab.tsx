@@ -152,7 +152,6 @@ export function CdnTab({ serviceName, details }: Props) {
       }
 
     } catch (err) {
-      console.error("Error loading CDN data:", err);
     } finally {
       setLoading(false);
     }

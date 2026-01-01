@@ -24,7 +24,6 @@ export const DnsInfoTab: React.FC<DnsInfoTabProps> = ({ zoneName }) => {
         const data = await dnsInfoService.getSummary(zoneName);
         setSummary(data);
       } catch (err) {
-        console.error("Failed to load DNS info:", err);
       } finally {
         setLoading(false);
       }

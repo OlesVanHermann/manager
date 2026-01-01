@@ -40,7 +40,6 @@ export function DatabaseStatisticsTab({ serviceName }: DatabaseStatisticsTabProp
           setSelectedDb(dbs[0]);
         }
       } catch (err) {
-        console.error("[DatabaseStatisticsTab] Error loading databases:", err);
       }
     };
     loadDatabases();
@@ -54,7 +53,6 @@ export function DatabaseStatisticsTab({ serviceName }: DatabaseStatisticsTabProp
       const data = await databaseService.getDatabaseStatistics(serviceName, selectedDb, period);
       setStats(data || { labels: [], values: [] });
     } catch (err) {
-      console.error("[DatabaseStatisticsTab] Error:", err);
       setStats({ labels: [], values: [] });
     } finally {
       setLoading(false);

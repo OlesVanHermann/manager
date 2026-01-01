@@ -67,7 +67,6 @@ export function OptionsTab({ connectionId }: OptionsTabProps) {
       setActiveOptions(active);
       setAvailableOptions(available);
     } catch (err) {
-      console.error("Add option failed:", err);
     }
   };
 
@@ -77,7 +76,6 @@ export function OptionsTab({ connectionId }: OptionsTabProps) {
       await optionsService.removeOption(connectionId, optionId);
       setActiveOptions(activeOptions.filter((o) => o.id !== optionId));
     } catch (err) {
-      console.error("Remove option failed:", err);
     }
   };
 

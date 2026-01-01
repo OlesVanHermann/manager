@@ -41,7 +41,6 @@ export default function RedirectionsTab({ domain }: RedirectionsTabProps) {
 
   const handleEdit = (redirection: typeof redirections[0]) => {
     // TODO: Implement edit modal
-    console.log("Edit redirection", redirection.id);
   };
 
   const handleDelete = async (redirection: typeof redirections[0]) => {
@@ -51,7 +50,6 @@ export default function RedirectionsTab({ domain }: RedirectionsTabProps) {
       await emailsService.deleteRedirection(domain, redirection.id);
       refresh();
     } catch (err) {
-      console.error("Delete redirection error:", err);
     }
   };
 

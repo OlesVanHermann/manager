@@ -72,7 +72,6 @@ export default function WordPressPage() {
       const data = await pageService.getService(selectedService);
       setDetails(data);
     } catch (err) {
-      console.error(err);
     }
   }, [selectedService]);
 
@@ -87,7 +86,9 @@ export default function WordPressPage() {
     setActiveTab(tab);
     setSearchParams({ tab });
   };
-  const handleRefresh = () => { loadDetails(); };
+  const handleRefresh = () => {
+    loadDetails();
+  };
   const handleSelectService = (svc: string) => {
     setSelectedService(svc);
     setActiveTab('general');
@@ -188,7 +189,9 @@ export default function WordPressPage() {
             )}
           </div>
           <div className="wp-sidebar-actions">
-            <button className="wp-btn wp-btn-primary wp-btn-block" onClick={() => setShowCreateModal(true)}>
+            <button className="wp-btn wp-btn-primary wp-btn-block" onClick={() => {
+              setShowCreateModal(true);
+            }}>
               + {t('actions.newSite')}
             </button>
           </div>
@@ -215,13 +218,17 @@ export default function WordPressPage() {
                 <div className="wp-detail-header-actions">
                   <button
                     className="wp-btn wp-btn-outline"
-                    onClick={() => window.open(details.adminUrl || `${details.url}/wp-admin`, '_blank')}
+                    onClick={() => {
+                      window.open(details.adminUrl || `${details.url}/wp-admin`, '_blank');
+                    }}
                   >
                     Admin WP
                   </button>
                   <button
                     className="wp-btn wp-btn-outline"
-                    onClick={() => window.open(details.url, '_blank')}
+                    onClick={() => {
+                      window.open(details.url, '_blank');
+                    }}
                   >
                     {t('actions.visitSite')}
                   </button>

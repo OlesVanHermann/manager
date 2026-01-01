@@ -78,17 +78,14 @@ export default function AntispamTab({ domain, offers }: AntispamTabProps) {
   const blacklistRules = rules.filter((r) => r.type === "blacklist");
 
   const handleSaveSettings = () => {
-    console.log("Save antispam settings", settings);
   };
 
   const handleAddRule = () => {
     if (!newRule.trim()) return;
-    console.log("Add rule", { type: newRuleType, value: newRule });
     setNewRule("");
   };
 
   const handleDeleteRule = (rule: AntispamRule) => {
-    console.log("Delete rule", rule.id);
   };
 
   // Check if antispam is available for these offers

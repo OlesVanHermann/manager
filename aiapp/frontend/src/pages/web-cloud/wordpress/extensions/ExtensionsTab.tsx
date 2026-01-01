@@ -24,13 +24,17 @@ export function ExtensionsTab({ serviceName }: Props) {
       <div className="extensions-nav4">
         <button
           className={`ext-nav4-tab ${activeSubTab === 'themes' ? 'active' : ''}`}
-          onClick={() => setActiveSubTab('themes')}
+          onClick={() => {
+            setActiveSubTab('themes');
+          }}
         >
           {t('extensions.themes')}
         </button>
         <button
           className={`ext-nav4-tab ${activeSubTab === 'plugins' ? 'active' : ''}`}
-          onClick={() => setActiveSubTab('plugins')}
+          onClick={() => {
+            setActiveSubTab('plugins');
+          }}
         >
           {t('extensions.plugins')}
         </button>

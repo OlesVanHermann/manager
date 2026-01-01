@@ -3,7 +3,7 @@ interface Props { serviceName: string; databaseName: string; isOpen: boolean; on
 export function DumpDatabaseModal({ serviceName, databaseName, isOpen, onClose, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   if (!isOpen) return null;
-  const handleDump = async () => { setLoading(true); try { await new Promise(r => setTimeout(r, 500)); onSuccess(); } catch {} finally { setLoading(false); } };
+  const handleDump = async () => { console.log('[Modal:DumpDatabase] Action: exporter', { serviceName, databaseName }); setLoading(true); try { await new Promise(r => setTimeout(r, 500)); onSuccess(); } catch {} finally { setLoading(false); } };
   return (
     <div className="modal-overlay" onClick={onClose}><div className="modal-container" onClick={e => e.stopPropagation()}>
       <div className="modal-header"><h2>Exporter la base de données</h2><button className="modal-close" onClick={onClose}>×</button></div>

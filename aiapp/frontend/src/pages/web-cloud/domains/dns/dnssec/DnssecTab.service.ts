@@ -2,7 +2,7 @@
 // SERVICE ISOLÉ : DnssecTab - Gestion DNSSEC + DS Records
 // ============================================================
 
-import { ovhGet, ovhPost, ovhDelete } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhDelete, ovh2apiPut } from "../../../../../services/api";
 import type { DnssecStatus } from "../../domains.types";
 
 // ============ TYPES DS RECORD ============
@@ -24,12 +24,20 @@ class DnssecService {
     return ovhGet<DnssecStatus>(`/domain/zone/${zone}/dnssec`);
   }
 
-  async enableDnssec(zone: string): Promise<void> {
-    await ovhPost(`/domain/zone/${zone}/dnssec`, {});
+  async enableDnssec(domain: string): Promise<void> {
+    // PUT /sws/domains/dnssec (2api) - Identique old_manager
+    await ovh2apiPut("/sws/domains/dnssec", {
+      domains: [domain],
+      newState: true,
+    });
   }
 
-  async disableDnssec(zone: string): Promise<void> {
-    await ovhDelete(`/domain/zone/${zone}/dnssec`);
+  async disableDnssec(domain: string): Promise<void> {
+    // PUT /sws/domains/dnssec (2api) - Identique old_manager
+    await ovh2apiPut("/sws/domains/dnssec", {
+      domains: [domain],
+      newState: false,
+    });
   }
 
   // ----- DOMAIN DS RECORDS -----

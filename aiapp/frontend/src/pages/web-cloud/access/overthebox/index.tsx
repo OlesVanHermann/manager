@@ -103,8 +103,8 @@ export default function OverTheBoxPage({ serviceName }: OverTheBoxPageProps) {
           </div>
         </div>
         <div className="overthebox-header-actions">
-          <button className="btn-secondary">{t("actions.reboot")}</button>
-          <button className="btn-secondary">{t("actions.logs")}</button>
+          <button className="btn-secondary" onClick={() => console.log("[OverTheBoxPage] Action clicked: reboot", serviceName)}>{t("actions.reboot")}</button>
+          <button className="btn-secondary" onClick={() => console.log("[OverTheBoxPage] Action clicked: logs", serviceName)}>{t("actions.logs")}</button>
         </div>
       </div>
 
@@ -114,7 +114,9 @@ export default function OverTheBoxPage({ serviceName }: OverTheBoxPageProps) {
           <button
             key={tab.id}
             className={`overthebox-tab ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id);
+            }}
           >
             {t(tab.labelKey)}
           </button>

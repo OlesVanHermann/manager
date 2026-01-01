@@ -91,12 +91,10 @@ export default function HistoryTab() {
   }, [events, filterType]);
 
   const handleViewInvoice = (invoiceId: string) => {
-    console.log("View invoice", invoiceId);
     window.open(`/billing/invoices/${invoiceId}`, "_blank");
   };
 
   const handleExport = () => {
-    console.log("Export history");
   };
 
   const formatDate = (dateStr: string) => {

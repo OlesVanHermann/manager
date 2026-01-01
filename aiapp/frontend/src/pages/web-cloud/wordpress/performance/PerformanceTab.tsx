@@ -36,7 +36,6 @@ export function PerformanceTab({ serviceName, offer }: Props) {
       setCacheStatus(cache);
       setOptimizations(performanceService.getOptimizations(offer));
     } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -61,6 +60,7 @@ export function PerformanceTab({ serviceName, offer }: Props) {
 
   const handleToggleCdn = async () => {
     if (!cdnStatus) return;
+    const action = cdnStatus.enabled ? 'disable' : 'enable';
     setActionLoading('cdn');
     try {
       if (cdnStatus.enabled) {
@@ -130,7 +130,9 @@ export function PerformanceTab({ serviceName, offer }: Props) {
                 </div>
               )}
               <div className="performance-actions">
-                <button className="perf-btn perf-btn-outline perf-btn-sm" onClick={() => setShowCdnModal(true)}>
+                <button className="perf-btn perf-btn-outline perf-btn-sm" onClick={() => {
+                  setShowCdnModal(true);
+                }}>
                   {t('performance.configureCdn')}
                 </button>
                 <button

@@ -92,11 +92,9 @@ export default function DnsConfigTab({ domain }: DnsConfigTabProps) {
   }, [dnsRecords]);
 
   const handleFixRecord = (record: DnsRecord) => {
-    console.log("Fix DNS record", record.id);
   };
 
   const handleRefresh = () => {
-    console.log("Refresh DNS records");
   };
 
   const getStatusIcon = (status: string) => {

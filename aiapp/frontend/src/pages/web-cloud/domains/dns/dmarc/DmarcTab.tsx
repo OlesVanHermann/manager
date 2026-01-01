@@ -35,7 +35,6 @@ export const DmarcTab: React.FC<DmarcTabProps> = ({ zoneName }) => {
           setConfig(dmarcService.parseDmarcRecord(dmarc.target));
         }
       } catch (err) {
-        console.error("Failed to load DMARC:", err);
       } finally {
         setLoading(false);
       }
@@ -55,7 +54,6 @@ export const DmarcTab: React.FC<DmarcTabProps> = ({ zoneName }) => {
       const dmarc = await dmarcService.getCurrentDmarc(zoneName);
       setCurrentDmarc(dmarc);
     } catch (err) {
-      console.error("Failed to save DMARC:", err);
     } finally {
       setSaving(false);
     }

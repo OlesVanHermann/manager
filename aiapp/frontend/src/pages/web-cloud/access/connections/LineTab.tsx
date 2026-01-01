@@ -95,7 +95,6 @@ export function LineTab({ connectionId }: LineTabProps) {
       const status = await lineService.getLineStatus(connectionId);
       setLineStatus(status);
     } catch (err) {
-      console.error("Resync failed:", err);
     }
   }, [connectionId]);
 
@@ -105,7 +104,6 @@ export function LineTab({ connectionId }: LineTabProps) {
       const status = await lineService.getLineStatus(connectionId);
       setLineStatus(status);
     } catch (err) {
-      console.error("Reset failed:", err);
     }
   }, [connectionId]);
 
@@ -116,7 +114,6 @@ export function LineTab({ connectionId }: LineTabProps) {
       const result = await lineService.runDiagnostic(connectionId);
       setDiagnostic(result);
     } catch (err) {
-      console.error("Diagnostic failed:", err);
     } finally {
       setDiagLoading(false);
     }
@@ -124,7 +121,6 @@ export function LineTab({ connectionId }: LineTabProps) {
 
   const handleViewHistory = useCallback(() => {
     // TODO: Ouvrir modal historique ou naviguer
-    console.log("View diagnostic history");
   }, []);
 
   // Handlers pour LineStats
@@ -134,7 +130,6 @@ export function LineTab({ connectionId }: LineTabProps) {
       const newStats = await lineService.getLineStats(connectionId, period);
       setStats(newStats);
     } catch (err) {
-      console.error("Stats load failed:", err);
     } finally {
       setStatsLoading(false);
     }
@@ -142,18 +137,15 @@ export function LineTab({ connectionId }: LineTabProps) {
 
   const handleExport = useCallback(() => {
     // TODO: Télécharger CSV
-    console.log("Export stats to CSV");
   }, []);
 
   // Handlers pour LineAlerts
   const handleAddAlert = useCallback(() => {
     // TODO: Ouvrir modal ajout
-    console.log("Add alert");
   }, []);
 
   const handleEditAlert = useCallback((alert: LineAlert) => {
     // TODO: Ouvrir modal édition
-    console.log("Edit alert", alert.id);
   }, []);
 
   const handleDeleteAlert = useCallback(async (alertId: string) => {
@@ -161,7 +153,6 @@ export function LineTab({ connectionId }: LineTabProps) {
       await lineService.deleteLineAlert?.(connectionId, alertId);
       setAlerts(prev => prev.filter(a => a.id !== alertId));
     } catch (err) {
-      console.error("Delete alert failed:", err);
     }
   }, [connectionId]);
 

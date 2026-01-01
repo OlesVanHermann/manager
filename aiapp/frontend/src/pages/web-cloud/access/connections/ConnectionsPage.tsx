@@ -110,8 +110,8 @@ export default function ConnectionsPage({ connectionId }: ConnectionsPageProps) 
           </div>
         </div>
         <div className="connections-header-actions">
-          <button className="btn-secondary">{t("actions.move")}</button>
-          <button className="btn-secondary">{t("actions.migrate")}</button>
+          <button className="btn-secondary" onClick={() => console.log("[ConnectionsPage] Action clicked: move", connectionId)}>{t("actions.move")}</button>
+          <button className="btn-secondary" onClick={() => console.log("[ConnectionsPage] Action clicked: migrate", connectionId)}>{t("actions.migrate")}</button>
         </div>
       </div>
 
@@ -121,7 +121,9 @@ export default function ConnectionsPage({ connectionId }: ConnectionsPageProps) 
           <button
             key={tab.id}
             className={`connections-tab ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id);
+            }}
           >
             {t(tab.labelKey)}
           </button>

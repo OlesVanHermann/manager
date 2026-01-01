@@ -27,6 +27,7 @@ export function RightPanelHeader({ nav3Mode, selectedDomain, selectedLicense }: 
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-outline btn-sm"
+            onClick={() => console.log("[RightPanelHeader] Action: Webmail clicked for domain", selectedDomain.name)}
           >
             ↗ Webmail
           </a>
@@ -63,7 +64,7 @@ export function RightPanelHeader({ nav3Mode, selectedDomain, selectedLicense }: 
           <h1 className="right-panel-title">
             Pack "{selectedLicense.name}"
           </h1>
-          <button className="btn btn-outline btn-sm">⚙ {t("rightPanel.manage")}</button>
+          <button className="btn btn-outline btn-sm" onClick={() => console.log("[RightPanelHeader] Action: Manage pack clicked", selectedLicense?.id)}>⚙ {t("rightPanel.manage")}</button>
         </div>
         <p className="right-panel-subtitle">
           <span className="offer-dot" style={{ backgroundColor: config.color }} />

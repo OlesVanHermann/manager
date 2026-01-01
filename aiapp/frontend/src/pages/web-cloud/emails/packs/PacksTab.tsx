@@ -69,19 +69,15 @@ export default function PacksTab() {
   ], []);
 
   const handleAddPack = () => {
-    console.log("Add new pack");
   };
 
   const handleUpgrade = (pack: LicensePack) => {
-    console.log("Upgrade pack", pack.id);
   };
 
   const handleManage = (pack: LicensePack) => {
-    console.log("Manage pack", pack.id);
   };
 
   const handleRenew = (pack: LicensePack) => {
-    console.log("Renew pack", pack.id);
   };
 
   const formatDate = (dateStr: string) => {

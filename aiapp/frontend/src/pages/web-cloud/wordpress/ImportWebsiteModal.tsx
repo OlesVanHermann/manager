@@ -208,7 +208,9 @@ export function ImportWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
               <button
                 type="button"
                 className="modal-btn modal-btn-outline"
-                onClick={() => setStep(s => s - 1)}
+                onClick={() => {
+                  setStep(s => s - 1);
+                }}
               >
                 ← {t('common.previous')}
               </button>
@@ -217,7 +219,9 @@ export function ImportWebsiteModal({ serviceName, isOpen, onClose, onSuccess }: 
               <button
                 type="button"
                 className="modal-btn modal-btn-primary"
-                onClick={() => setStep(s => s + 1)}
+                onClick={() => {
+                  setStep(s => s + 1);
+                }}
                 disabled={!canGoNext()}
               >
                 {t('common.next')} →

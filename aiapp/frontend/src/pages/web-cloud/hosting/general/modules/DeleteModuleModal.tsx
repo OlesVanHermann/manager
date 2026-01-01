@@ -24,7 +24,6 @@ export function DeleteModuleModal({ moduleName, isOpen, onClose, onConfirm }: Pr
       await onConfirm();
       onClose();
     } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }

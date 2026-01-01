@@ -1,9 +1,10 @@
 ================================================================================
-PROMPT TARGET v3 - Génération SVG Manager OVH
+PROMPT TARGET v4 - Génération SVG Manager OVH
 ================================================================================
 
-Version: v3 (2025-12-29)
+Version: v4 (2026-01-01)
 Changelog:
+- v4: NAV3 selector en sidebar pour sections complexes (8+ tabs)
 - v3: Standardisation NAV1-NAV4, dimensions unifiées
 - v2: Ajout composants réutilisables
 - v1: Version initiale
@@ -184,7 +185,62 @@ NAV3 ──► Groupes dans LEFT PANEL ([Général] [Sites] [Expert])
         └─► NAV5 ──► Sous-tabs RIGHT PANEL (équivalent NAV4 standard)
 ```
 
+### Structure LEFT PANEL avec NAV3 (sections complexes)
+
+Quand une section a 10+ tabs, le sélecteur NAV3 est placé **AU-DESSUS** de la
+barre de recherche dans le LEFT PANEL (sidebar) :
+
+```
+┌─────────────────────────────────────┐
+│  [Général]  [Sites]  [Expert]       │  ← NAV3 selector (boutons toggle)
+├─────────────────────────────────────┤
+│  🔍 Rechercher...                   │  ← Search (standard)
+├─────────────────────────────────────┤
+│  Filtrer ▾              N services  │  ← Filter + count
+├─────────────────────────────────────┤
+│  🌐  service.example.com     [Actif]│  ← Service items
+│      Offre Pro                      │
+├─────────────────────────────────────┤
+│  Page 1/N    ‹  1  2  3  ›          │  ← Pagination
+└─────────────────────────────────────┘
+```
+
+**Comportement :**
+- NAV3 sélectionné → filtre les NAV4 tabs affichés dans le RIGHT PANEL
+- [Général] est le groupe par défaut au chargement
+- La liste des services reste la même, seuls les tabs changent
+
+**CSS NAV3 Selector :**
+```css
+.{prefix}-nav3-selector {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.{prefix}-nav3-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: #6B7280;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.{prefix}-nav3-btn.active {
+  background: #0050D7;
+  color: #FFFFFF;
+  border-color: #0050D7;
+}
+```
+
 Voir prompt_target.web-cloud.hosting.txt pour l'implémentation complète.
+Voir prompt_target_sidecar_left.txt pour les specs du LEFT PANEL.
 
 ##############################################################################
 # 4. NAV1 - HEADER OVH (commun à tous)
@@ -357,15 +413,28 @@ Style: Texte souligné, actif=primary+underline, inactif=muted
       <!-- LEFT PANEL -->
       <rect x="0" y="0" width="280" height="765" rx="8" class="bg-white"/>
       <rect x="0" y="0" width="280" height="765" rx="8" class="border"/>
-      
-      <!-- Recherche -->
+
+      <!-- NAV3 Selector (OPTIONNEL - si 8+ tabs) -->
+      <!-- Décommenter si la section a 8+ tabs regroupés -->
+      <!--
+      <rect x="0" y="0" width="280" height="44" rx="8" fill="#F9FAFB"/>
+      <rect x="12" y="10" width="80" height="24" rx="4" fill="#0050D7"/>
+      <text x="52" y="26" class="text-white" font-size="11" text-anchor="middle">Général</text>
+      <rect x="96" y="10" width="80" height="24" rx="4" fill="#FFFFFF" stroke="#E5E7EB"/>
+      <text x="136" y="26" class="text-muted" font-size="11" text-anchor="middle">Sites</text>
+      <rect x="180" y="10" width="80" height="24" rx="4" fill="#FFFFFF" stroke="#E5E7EB"/>
+      <text x="220" y="26" class="text-muted" font-size="11" text-anchor="middle">Expert</text>
+      <line x1="0" y1="44" x2="280" y2="44" class="divider"/>
+      -->
+
+      <!-- Recherche (y=12 sans NAV3, y=56 avec NAV3) -->
       <rect x="12" y="12" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
       <text x="26" y="34" class="text-muted" font-size="12">🔍 Rechercher...</text>
-      
-      <!-- Compteur -->
+
+      <!-- Compteur (y=68 sans NAV3, y=112 avec NAV3) -->
       <text x="12" y="68" class="text-muted" font-size="11">{serviceCount} services</text>
-      
-      <!-- Service items (à partir de y=80) -->
+
+      <!-- Service items (y=80 sans NAV3, y=124 avec NAV3) -->
       
     </g>
     

@@ -34,11 +34,16 @@ export interface FilterOption {
   label: string;
 }
 
+export interface Nav3Group {
+  id: string;
+  label: string;
+}
+
 export interface LeftPanelProps<T> {
   // Data
   items: T[];
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  onSelect: (id: string | null) => void;
 
   // Render
   renderItem: (item: T, isSelected: boolean) => React.ReactNode;
@@ -53,6 +58,11 @@ export interface LeftPanelProps<T> {
   filterOptions?: FilterOption[];
   filterValue?: string;
   onFilterChange?: (v: string) => void;
+
+  // NAV3 Selector
+  nav3Groups?: Nav3Group[];
+  activeNav3?: string;
+  onNav3Change?: (id: string) => void;
 
   // Pagination
   currentPage?: number;
@@ -83,6 +93,9 @@ export function LeftPanel<T>({
   filterOptions,
   filterValue = "all",
   onFilterChange,
+  nav3Groups,
+  activeNav3,
+  onNav3Change,
   currentPage = 1,
   totalPages = 1,
   onPageChange,
@@ -122,6 +135,21 @@ export function LeftPanel<T>({
   // -------- Render --------
   return (
     <div className="lp-container">
+      {/* NAV3 Selector - EN HAUT */}
+      {nav3Groups && nav3Groups.length > 0 && onNav3Change && (
+        <div className="lp-nav3-selector">
+          {nav3Groups.map((group) => (
+            <button
+              key={group.id}
+              className={`lp-nav3-btn ${activeNav3 === group.id ? "active" : ""}`}
+              onClick={() => onNav3Change(group.id)}
+            >
+              {group.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Search */}
       {onSearchChange && (
         <div className="lp-search">

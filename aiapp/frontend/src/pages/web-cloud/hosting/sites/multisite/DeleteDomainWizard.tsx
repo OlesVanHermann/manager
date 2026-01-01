@@ -54,7 +54,6 @@ export function DeleteDomainWizard({ serviceName, domain, isOpen, onClose, onSuc
           setAutoconfigure(false);
         }
       } catch (err) {
-        console.error("Error checking options:", err);
       } finally {
         setChecking(false);
       }

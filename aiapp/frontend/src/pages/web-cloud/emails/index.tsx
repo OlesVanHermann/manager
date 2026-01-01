@@ -119,12 +119,10 @@ export default function EmailsPage() {
 
   const handleAddDomain = () => {
     // TODO: Open modal add domain
-    console.log("Add domain");
   };
 
   const handleOrderPack = () => {
     // TODO: Open modal order pack
-    console.log("Order pack");
   };
 
   // ---------- ONBOARDING ----------

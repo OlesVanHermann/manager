@@ -44,12 +44,10 @@ export default function ListsTab({ domain, offers }: ListsTabProps) {
 
   const handleManageMembers = (list: typeof lists[0]) => {
     // TODO: Open members management panel
-    console.log("Manage members", list.id);
   };
 
   const handleEdit = (list: typeof lists[0]) => {
     // TODO: Implement edit modal
-    console.log("Edit list", list.id);
   };
 
   const handleDelete = async (list: typeof lists[0]) => {
@@ -59,7 +57,6 @@ export default function ListsTab({ domain, offers }: ListsTabProps) {
       await emailsService.deleteMailingList(domain, list.id);
       refresh();
     } catch (err) {
-      console.error("Delete list error:", err);
     }
   };
 

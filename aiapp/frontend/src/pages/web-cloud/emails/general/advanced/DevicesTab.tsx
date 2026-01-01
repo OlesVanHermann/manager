@@ -106,21 +106,17 @@ export default function DevicesTab({ domain }: DevicesTabProps) {
   }, [devices, search, filterStatus]);
 
   const handleAllow = (device: ConnectedDevice) => {
-    console.log("Allow device", device.id);
   };
 
   const handleBlock = (device: ConnectedDevice) => {
-    console.log("Block device", device.id);
   };
 
   const handleWipe = (device: ConnectedDevice) => {
     if (window.confirm(t("devices.confirmWipe"))) {
-      console.log("Wipe device", device.id);
     }
   };
 
   const handleDelete = (device: ConnectedDevice) => {
-    console.log("Delete device", device.id);
   };
 
   const formatDate = (dateStr: string) => {
