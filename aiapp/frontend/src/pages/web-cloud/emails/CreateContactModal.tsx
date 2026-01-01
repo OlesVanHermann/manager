@@ -111,7 +111,7 @@ export function CreateContactModal({
           <div className="modal-body">
             {/* Exchange only badge */}
             <div className="feature-badge feature-badge-exchange">
-              <OfferBadge offer="exchange" size="small" />
+              <OfferBadge offer="exchange" size="sm" />
               <span className="feature-text">{t("createContact.exchangeOnly")}</span>
               <span className="feature-domain">{domain}</span>
             </div>

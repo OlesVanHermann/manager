@@ -30,6 +30,7 @@ const ArcTab = React.lazy(() => import("./dns/arc/ArcTab").then(m => ({ default:
 const BimiTab = React.lazy(() => import("./dns/bimi/BimiTab").then(m => ({ default: m.BimiTab })));
 const CaaTab = React.lazy(() => import("./dns/caa/CaaTab").then(m => ({ default: m.CaaTab })));
 const DynHostTab = React.lazy(() => import("./dns/dynhost/DynHostTab").then(m => ({ default: m.DynHostTab })));
+const AnycastTab = React.lazy(() => import("./dns/anycast/AnycastTab").then(m => ({ default: m.AnycastTab })));
 
 // EXPERT group (./expert/NAV4)
 const GlueTab = React.lazy(() => import("./expert/glue/GlueTab").then(m => ({ default: m.GlueTab })));
@@ -101,6 +102,7 @@ const ALL_TABS: TabDef[] = [
   { id: "bimi", labelKey: "tabs.bimi", group: "dns", condition: (e) => e.hasZone },
   { id: "caa", labelKey: "tabs.caa", group: "dns", condition: (e) => e.hasZone },
   { id: "dynhost", labelKey: "tabs.dynhost", group: "dns", condition: (e) => e.hasZone },
+  { id: "anycast", labelKey: "tabs.anycast", group: "dns", condition: (e) => e.hasDomain },
 
   // EXPERT group (2 tabs)
   { id: "glue", labelKey: "tabs.glue", group: "expert", condition: (e) => e.hasDomain },
@@ -154,6 +156,76 @@ export default function DomainsPage() {
   // -------- NAV3 Group State --------
   const [activeNav3, setActiveNav3] = useState<Nav3Group>("general");
 
+  // -------- Memoized callbacks for useLeftPanel (prevent infinite loops) --------
+  const fetchList = useCallback(async () => {
+    console.log("[DomainsPage] fetchList called");
+    // 2 API calls paralleles (target pattern)
+    const [domains, zones] = await Promise.all([
+      domainsPageService.listDomains(),
+      domainsPageService.listZones(),
+    ]);
+
+    const domainSet = new Set(domains);
+    const zoneSet = new Set(zones);
+    const allNames = new Set([...domains, ...zones]);
+
+    const list: DomainEntry[] = [];
+
+    for (const name of allNames) {
+      const hasDomain = domainSet.has(name);
+      const hasZone = zoneSet.has(name);
+      const extension = name.split(".").pop() || "";
+
+      // Dates simulees (en production: appel API lazy)
+      const now = Date.now();
+      const expDate = new Date(now + Math.random() * 365 * 24 * 60 * 60 * 1000);
+      const daysUntilExp = Math.floor((expDate.getTime() - now) / (24 * 60 * 60 * 1000));
+
+      let status: "active" | "expiring" | "expired" = "active";
+      if (daysUntilExp < 0) status = "expired";
+      else if (daysUntilExp < 30) status = "expiring";
+
+      list.push({
+        name,
+        type: hasDomain && hasZone ? "both" : hasDomain ? "domain" : "zone",
+        hasDomain,
+        hasZone,
+        extension: extension.toLowerCase(),
+        status,
+        expiration: expDate.toLocaleDateString("fr-FR"),
+      });
+    }
+
+    list.sort((a, b) => a.name.localeCompare(b.name));
+    return list;
+  }, []);
+
+  const fetchDetails = useCallback(async (name: string) => {
+    console.log("[DomainsPage] fetchDetails called for:", name);
+    // Lazy load: 3 appels max on selection
+    const [domain, serviceInfos, zone] = await Promise.all([
+      domainsPageService.getDomain(name).catch(() => null),
+      domainsPageService.getServiceInfos(name).catch(() => null),
+      domainsPageService.getZone(name).catch(() => null),
+    ]);
+
+    return { domain, serviceInfos, zone };
+  }, []);
+
+  const getItemId = useCallback((entry: DomainEntry) => entry.name, []);
+
+  const filterFn = useCallback((entry: DomainEntry, query: string, filter: string) => {
+    // Filter by type
+    if (filter === "domain" && !entry.hasDomain) return false;
+    if (filter === "zone" && (!entry.hasZone || entry.hasDomain)) return false;
+
+    // Filter by search
+    if (query.trim()) {
+      return entry.name.toLowerCase().includes(query.toLowerCase());
+    }
+    return true;
+  }, []);
+
   // -------- useLeftPanel Hook --------
   const {
     items: entries,
@@ -176,73 +248,10 @@ export default function DomainsPage() {
     refresh,
     refreshDetails,
   } = useLeftPanel<DomainEntry, DomainDetails>({
-    fetchList: async () => {
-      // 2 API calls paralleles (target pattern)
-      const [domains, zones] = await Promise.all([
-        domainsPageService.listDomains(),
-        domainsPageService.listZones(),
-      ]);
-
-      const domainSet = new Set(domains);
-      const zoneSet = new Set(zones);
-      const allNames = new Set([...domains, ...zones]);
-
-      const list: DomainEntry[] = [];
-
-      for (const name of allNames) {
-        const hasDomain = domainSet.has(name);
-        const hasZone = zoneSet.has(name);
-        const extension = name.split(".").pop() || "";
-
-        // Dates simulees (en production: appel API lazy)
-        const now = Date.now();
-        const expDate = new Date(now + Math.random() * 365 * 24 * 60 * 60 * 1000);
-        const daysUntilExp = Math.floor((expDate.getTime() - now) / (24 * 60 * 60 * 1000));
-
-        let status: "active" | "expiring" | "expired" = "active";
-        if (daysUntilExp < 0) status = "expired";
-        else if (daysUntilExp < 30) status = "expiring";
-
-        list.push({
-          name,
-          type: hasDomain && hasZone ? "both" : hasDomain ? "domain" : "zone",
-          hasDomain,
-          hasZone,
-          extension: extension.toLowerCase(),
-          status,
-          expiration: expDate.toLocaleDateString("fr-FR"),
-        });
-      }
-
-      list.sort((a, b) => a.name.localeCompare(b.name));
-      return list;
-    },
-
-    fetchDetails: async (name: string) => {
-      // Lazy load: 3 appels max on selection
-      const [domain, serviceInfos, zone] = await Promise.all([
-        domainsPageService.getDomain(name).catch(() => null),
-        domainsPageService.getServiceInfos(name).catch(() => null),
-        domainsPageService.getZone(name).catch(() => null),
-      ]);
-
-      return { domain, serviceInfos, zone };
-    },
-
-    getItemId: (entry) => entry.name,
-
-    filterFn: (entry, query, filter) => {
-      // Filter by type
-      if (filter === "domain" && !entry.hasDomain) return false;
-      if (filter === "zone" && (!entry.hasZone || entry.hasDomain)) return false;
-
-      // Filter by search
-      if (query.trim()) {
-        return entry.name.toLowerCase().includes(query.toLowerCase());
-      }
-      return true;
-    },
-
+    fetchList,
+    fetchDetails,
+    getItemId,
+    filterFn,
     cacheKey: "domains-list",
     cacheTTL: 60000, // 60s
     pageSize: 20,
@@ -313,6 +322,8 @@ export default function DomainsPage() {
         return <CaaTab zoneName={selectedEntry.name} />;
       case "dynhost":
         return <DynHostTab zoneName={selectedEntry.name} />;
+      case "anycast":
+        return <AnycastTab domain={selectedEntry.name} zoneName={selectedEntry.name} onNavigateToDnsServers={() => setActiveTab("dns-servers")} />;
 
       // EXPERT group
       case "glue":

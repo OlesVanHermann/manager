@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { EmailOffer } from "../types";
+import { EmailOffer } from "./types";
 import { OfferBadge } from "./OfferBadge";
 
 interface CreateAccountModalProps {

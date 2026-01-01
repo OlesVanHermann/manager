@@ -4,9 +4,8 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { EmailOffer } from "../types";
+import { EmailOffer } from "./types";
 import { OfferBadge } from "./OfferBadge";
-import { OFFER_CONFIG } from "./emails.constants";
 
 interface EditAccountModalProps {
   isOpen: boolean;

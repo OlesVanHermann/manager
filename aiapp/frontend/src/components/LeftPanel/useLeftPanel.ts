@@ -124,6 +124,7 @@ export function useLeftPanel<T, D = unknown>(
 
   // -------- Load List --------
   const loadList = useCallback(async (useCache = true) => {
+    console.log("[useLeftPanel] loadList called, useCache:", useCache);
     try {
       setLoading(true);
       setError(null);
@@ -132,9 +133,11 @@ export function useLeftPanel<T, D = unknown>(
       if (useCache && cacheKey) {
         const cached = getCached<T[]>(cacheKey, cacheTTL);
         if (cached) {
+          console.log("[useLeftPanel] Using cached data, items:", cached.length);
           setItems(cached);
           // Auto-select first item if none selected (une seule fois)
           if (cached.length > 0 && !hasAutoSelectedRef.current) {
+            console.log("[useLeftPanel] Auto-selecting first item:", getItemId(cached[0]));
             hasAutoSelectedRef.current = true;
             setSelectedId(getItemId(cached[0]));
           }
@@ -142,6 +145,7 @@ export function useLeftPanel<T, D = unknown>(
           return;
         }
       }
+      console.log("[useLeftPanel] Cache miss, fetching from API...");
 
       const data = await fetchList();
 
@@ -171,6 +175,7 @@ export function useLeftPanel<T, D = unknown>(
 
   // -------- Load Details (lazy) --------
   const loadDetails = useCallback(async (id: string) => {
+    console.log("[useLeftPanel] loadDetails called for:", id);
     if (!fetchDetails) return;
 
     // Cancel previous request
@@ -199,6 +204,7 @@ export function useLeftPanel<T, D = unknown>(
 
   // -------- Effects --------
   useEffect(() => {
+    console.log("[useLeftPanel] Effect #1: mount/loadList triggered");
     mountedRef.current = true;
     loadList();
     return () => {
@@ -207,6 +213,7 @@ export function useLeftPanel<T, D = unknown>(
   }, [loadList]);
 
   useEffect(() => {
+    console.log("[useLeftPanel] Effect #2: selectedId changed to:", selectedId);
     if (selectedId) {
       loadDetails(selectedId);
     } else {

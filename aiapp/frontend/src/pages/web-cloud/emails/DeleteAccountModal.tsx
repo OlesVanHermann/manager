@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { EmailOffer } from "../types";
+import { EmailOffer } from "./types";
 import { OfferBadge } from "./OfferBadge";
 
 interface DeleteAccountModalProps {
@@ -100,7 +100,7 @@ export function DeleteAccountModal({
               <div className="account-details">
                 <span className="account-email">{account.email}</span>
                 <span className="account-pack">
-                  <OfferBadge offer={account.offer} size="small" />
+                  <OfferBadge offer={account.offer} size="sm" />
                   {account.packName && <span className="pack-name">{account.packName}</span>}
                 </span>
               </div>

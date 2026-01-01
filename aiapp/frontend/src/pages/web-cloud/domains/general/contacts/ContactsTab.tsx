@@ -1,6 +1,7 @@
 // ============================================================
 import "./ContactsTab.css";
-// TAB: CONTACTS - Gestion des 4 contacts du domaine
+// TAB: CONTACTS - Gestion des 4 contacts du domaine + OWO
+// NAV4: contacts | owo (obfuscation)
 // ============================================================
 
 import { useState, useEffect, useCallback } from "react";
@@ -16,9 +17,19 @@ interface Props {
 interface ContactInfo {
   type: "owner" | "admin" | "tech" | "billing";
   nic: string;
+  email?: string;
   details?: DomainContact;
   loading: boolean;
 }
+
+interface OwoState {
+  owner: boolean;
+  admin: boolean;
+  tech: boolean;
+  billing: boolean;
+}
+
+type ViewMode = "contacts" | "owo";
 
 // ============ ICONS ============
 
@@ -52,6 +63,12 @@ const ExternalLinkIcon = () => (
   </svg>
 );
 
+const RefreshIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+  </svg>
+);
+
 const CONTACT_ICONS: Record<string, () => JSX.Element> = {
   owner: BuildingIcon,
   admin: ShieldIcon,
@@ -59,7 +76,6 @@ const CONTACT_ICONS: Record<string, () => JSX.Element> = {
   billing: CreditCardIcon,
 };
 
-// Utilise les classes CSS préfixées
 const CONTACT_VARIANTS: Record<string, string> = {
   owner: "contacts-variant-enterprise",
   admin: "contacts-variant-primary",
@@ -71,7 +87,12 @@ const OVH_MANAGER_BASE = "https://www.ovh.com/manager";
 
 export function ContactsTab({ domain, serviceInfos }: Props) {
   const { t } = useTranslation("web-cloud/domains/contacts");
+  const { t: tCommon } = useTranslation("common");
 
+  // ---------- VIEW MODE ----------
+  const [viewMode, setViewMode] = useState<ViewMode>("contacts");
+
+  // ---------- CONTACTS STATE ----------
   const [contacts, setContacts] = useState<ContactInfo[]>([
     { type: "owner", nic: "", loading: true },
     { type: "admin", nic: "", loading: true },
@@ -79,6 +100,24 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
     { type: "billing", nic: "", loading: true },
   ]);
 
+  // ---------- OWO STATE ----------
+  const [owoState, setOwoState] = useState<OwoState>({
+    owner: false,
+    admin: false,
+    tech: false,
+    billing: false,
+  });
+  const [owoInitial, setOwoInitial] = useState<OwoState>({
+    owner: false,
+    admin: false,
+    tech: false,
+    billing: false,
+  });
+  const [owoLoading, setOwoLoading] = useState(true);
+  const [owoSaving, setOwoSaving] = useState(false);
+  const [regeneratingContact, setRegeneratingContact] = useState<string | null>(null);
+
+  // ---------- LOAD CONTACTS ----------
   const loadContacts = useCallback(async () => {
     if (!serviceInfos) return;
 
@@ -100,7 +139,7 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
       try {
         const details = await contactsService.getContact(nics[type]);
         setContacts((prev) =>
-          prev.map((c) => (c.type === type ? { ...c, details, loading: false } : c))
+          prev.map((c) => (c.type === type ? { ...c, details, email: details.email, loading: false } : c))
         );
       } catch {
         setContacts((prev) =>
@@ -110,63 +149,205 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
     }
   }, [serviceInfos]);
 
+  // ---------- LOAD OWO STATE ----------
+  const loadOwoState = useCallback(async () => {
+    try {
+      setOwoLoading(true);
+      const state = await contactsService.getOwoState(domain);
+      setOwoState(state);
+      setOwoInitial(state);
+    } catch {
+      // OWO not available or error
+    } finally {
+      setOwoLoading(false);
+    }
+  }, [domain]);
+
   useEffect(() => {
     loadContacts();
-  }, [loadContacts]);
+    loadOwoState();
+  }, [loadContacts, loadOwoState]);
+
+  // ---------- OWO HANDLERS ----------
+  const handleOwoToggle = (contactType: keyof OwoState) => {
+    setOwoState((prev) => ({
+      ...prev,
+      [contactType]: !prev[contactType],
+    }));
+  };
+
+  const handleOwoSave = async () => {
+    try {
+      setOwoSaving(true);
+      await contactsService.updateOwoState(domain, owoState);
+      setOwoInitial(owoState);
+    } catch (err) {
+      console.error("Failed to save OWO state:", err);
+    } finally {
+      setOwoSaving(false);
+    }
+  };
+
+  const handleRegenerate = async (contactType: string) => {
+    try {
+      setRegeneratingContact(contactType);
+      await contactsService.regenerateOwo(domain, contactType);
+    } catch (err) {
+      console.error("Failed to regenerate OWO:", err);
+    } finally {
+      setRegeneratingContact(null);
+    }
+  };
+
+  const hasOwoChanges = JSON.stringify(owoState) !== JSON.stringify(owoInitial);
 
   const getContactUrl = () => `${OVH_MANAGER_BASE}/#/dedicated/contacts/services?serviceName=${encodeURIComponent(domain)}`;
 
+  // ============ RENDER ============
   return (
     <div className="contacts-tab">
-      <div className="contacts-header">
-        <div>
-          <h3>{t("title")}</h3>
-          <p className="contacts-description">{t("description")}</p>
-        </div>
-        <div className="contacts-header-actions">
-          <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-btn-primary">
-            {t("reassignContacts")} <ExternalLinkIcon />
-          </a>
-        </div>
+      {/* NAV4 View Selector */}
+      <div className="contacts-nav4">
+        <button
+          className={`contacts-nav4-btn ${viewMode === "contacts" ? "active" : ""}`}
+          onClick={() => setViewMode("contacts")}
+        >
+          {t("nav4.contacts")}
+        </button>
+        <button
+          className={`contacts-nav4-btn ${viewMode === "owo" ? "active" : ""}`}
+          onClick={() => setViewMode("owo")}
+        >
+          {t("nav4.owo")}
+        </button>
       </div>
 
-      <div className="contacts-grid">
-        {contacts.map((contact) => {
-          const IconComponent = CONTACT_ICONS[contact.type];
-          const variantClass = CONTACT_VARIANTS[contact.type];
-
-          return (
-            <div key={contact.type} className="contacts-card">
-              <div className={`contacts-icon ${variantClass}`}>
-                <IconComponent />
-              </div>
-              <div className="contacts-content">
-                <div className="contacts-type">{t(`types.${contact.type}`)}</div>
-                {contact.loading ? (
-                  <div className="contacts-skeleton contacts-skeleton-text" />
-                ) : (
-                  <>
-                    <div className="contacts-nic">{contact.nic}</div>
-                    {contact.details && (
-                      <div className="contacts-name">
-                        {contact.details.firstName} {contact.details.lastName}
-                      </div>
-                    )}
-                  </>
-                )}
-                <div className="contacts-role">{t(`roles.${contact.type}`)}</div>
-              </div>
-              <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-edit">
-                {t("modify")} →
+      {/* CONTACTS VIEW */}
+      {viewMode === "contacts" && (
+        <>
+          <div className="contacts-header">
+            <div>
+              <h3>{t("title")}</h3>
+              <p className="contacts-description">{t("description")}</p>
+            </div>
+            <div className="contacts-header-actions">
+              <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-btn-primary">
+                {t("reassignContacts")} <ExternalLinkIcon />
               </a>
             </div>
-          );
-        })}
-      </div>
+          </div>
 
-      <div className="contacts-info-box">
-        <p>{t("info")}</p>
-      </div>
+          <div className="contacts-grid">
+            {contacts.map((contact) => {
+              const IconComponent = CONTACT_ICONS[contact.type];
+              const variantClass = CONTACT_VARIANTS[contact.type];
+
+              return (
+                <div key={contact.type} className="contacts-card">
+                  <div className={`contacts-icon ${variantClass}`}>
+                    <IconComponent />
+                  </div>
+                  <div className="contacts-content">
+                    <div className="contacts-type">{t(`types.${contact.type}`)}</div>
+                    {contact.loading ? (
+                      <div className="contacts-skeleton contacts-skeleton-text" />
+                    ) : (
+                      <>
+                        <div className="contacts-nic">{contact.nic}</div>
+                        {contact.details && (
+                          <div className="contacts-name">
+                            {contact.details.firstName} {contact.details.lastName}
+                          </div>
+                        )}
+                      </>
+                    )}
+                    <div className="contacts-role">{t(`roles.${contact.type}`)}</div>
+                  </div>
+                  <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-edit">
+                    {t("modify")} →
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="contacts-info-box">
+            <p>{t("info")}</p>
+          </div>
+        </>
+      )}
+
+      {/* OWO VIEW */}
+      {viewMode === "owo" && (
+        <>
+          <div className="contacts-header">
+            <div>
+              <h3>{t("owo.title")}</h3>
+              <p className="contacts-description">{t("owo.description")}</p>
+            </div>
+          </div>
+
+          {owoLoading ? (
+            <div className="contacts-loading">
+              <div className="contacts-skeleton" style={{ height: 280 }} />
+            </div>
+          ) : (
+            <>
+              <div className="contacts-owo-table">
+                <div className="contacts-owo-header">
+                  <span className="col-contact">{t("owo.colContact")}</span>
+                  <span className="col-email">{t("owo.colEmail")}</span>
+                  <span className="col-obfuscation">{t("owo.colObfuscation")}</span>
+                  <span className="col-action">{t("owo.colAction")}</span>
+                </div>
+
+                {contacts.map((contact) => (
+                  <div key={contact.type} className="contacts-owo-row">
+                    <span className="col-contact">{t(`types.${contact.type}`)}</span>
+                    <span className="col-email">{contact.email || contact.nic}</span>
+                    <div className="col-obfuscation">
+                      <button
+                        className={`contacts-toggle ${owoState[contact.type] ? "on" : "off"}`}
+                        onClick={() => handleOwoToggle(contact.type)}
+                        aria-label={owoState[contact.type] ? t("owo.enabled") : t("owo.disabled")}
+                      >
+                        <span className="contacts-toggle-circle" />
+                      </button>
+                      <span className="contacts-toggle-label">
+                        {owoState[contact.type] ? t("owo.enabled") : t("owo.disabled")}
+                      </span>
+                    </div>
+                    <div className="col-action">
+                      <button
+                        className="contacts-btn-link"
+                        onClick={() => handleRegenerate(contact.type)}
+                        disabled={regeneratingContact === contact.type}
+                      >
+                        <RefreshIcon />
+                        {regeneratingContact === contact.type ? tCommon("loading") : t("owo.regenerate")}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="contacts-owo-actions">
+                <button
+                  className="contacts-btn-primary"
+                  onClick={handleOwoSave}
+                  disabled={!hasOwoChanges || owoSaving}
+                >
+                  {owoSaving ? tCommon("loading") : t("owo.save")}
+                </button>
+              </div>
+
+              <div className="contacts-info-box">
+                <p>{t("owo.info")}</p>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
