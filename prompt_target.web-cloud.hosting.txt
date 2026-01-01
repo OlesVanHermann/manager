@@ -8,8 +8,66 @@ PROMPT TARGET - Web Cloud > Hébergement
 | **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/hosting/         |
 | **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/hosting/|
 
-Version: v2 (2025-12-31) - Structure NAV3/NAV4 mise à jour
+Version: v5.3 (2026-01-01) - Restructuration NAV3/NAV4 (suppression NAV5 Home)
 Parent:  prompt_target.txt (design system, shell template, composants)
+
+CHANGELOG v5.3:
+- RESTRUCTURATION MAJEURE: Suppression NAV5 sous Home → promotion en NAV4
+- NOUVEAU NAV3: [Offre] - Abonnement et facturation
+- NAV3 passent de 3 à 4: [Général] [Sites] [Offre] [Expert]
+- NAV4 redistribuées:
+  - [Général] 5 tabs: General, Statistiques, Logs, Modules, SEO
+  - [Sites] 5 tabs: Multisite, SSL, FTP-SSH, BDD, CDN
+  - [Offre] 4 tabs: Offre, Changement, Migration, Résiliation
+  - [Expert] 10 tabs: General, Boost, Indy, Emails, Variables, OvhConfig, Runtimes, Cron, Tâches, CloudDb
+- NAV5 réduites à 3 contextes: Logs (2), BDD (3), CDN (2)
+- Mise à jour sections 1, 4, 5 avec nouvelle structure
+
+CHANGELOG v5.2:
+- AJOUT Section 9.25: APIs Git Integration (documentation complète)
+  - Tableau APIs avec méthodes, endpoints et descriptions
+  - Paramètres clés typés (TypeScript)
+  - Flow association Git en 6 étapes
+  - Gestion erreurs SSH (404/403 → auto-create, 500 → not available)
+- MISE À JOUR Section 11.B: APIs non documentées
+  - Ajout 8 APIs Git (website/*, key/ssh, vcs/webhooks)
+  - Référence fichiers old_manager sources
+
+CHANGELOG v5.1:
+- FIX: Duplicate key "orderUpgrade" dans GeneralTab.service.ts
+  - orderUpgrade: POST /order/upgrade/webHosting/{sn}/{planCode} (upgrade direct)
+  - orderUpgradeCart: POST /order/cartServiceOption/webHosting/{sn} (via panier)
+- AJOUT Section 9.24: Distinction Upgrade vs Cart (documentation méthodes)
+
+CHANGELOG v5:
+- AJOUT APIs GIT INTEGRATION (4 fichiers old_manager audités)
+  - GET/POST /hosting/web/{sn}/key/ssh (clé SSH)
+  - GET /hosting/web/{sn}/vcs/webhooks (webhooks VCS)
+  - GET/POST /hosting/web/{sn}/website (associations VCS)
+  - PUT /hosting/web/{sn}/website/{id} (modifier VCS branch)
+  - POST /hosting/web/{sn}/website/{id}/deploy (déployer)
+  - DELETE /hosting/web/{sn}/website/{id} (supprimer association)
+- AJOUT APIs database copy/restore
+  - POST /hosting/web/{sn}/database/{name}/copy (vide)
+  - POST /hosting/web/{sn}/database/{name}/copyRestore
+  - POST /hosting/privateDatabase/{sn}/database/{name}/copy
+  - POST /hosting/privateDatabase/{sn}/database/{name}/copyRestore
+- AJOUT APIs dumps avec iceberg
+  - GET /hosting/web/{sn}/database/{name}/dump/{id}
+  - DELETE /hosting/web/{sn}/database/{name}/dump/{id}
+  - POST /hosting/web/{sn}/database/{name}/dump/{id}/restore
+- Full audit 30 fichiers old_manager → 15 fichiers new_manager
+- Mapping complet old_manager_files.txt documenté
+
+CHANGELOG v4:
+- Ajout APIs upgrade: GET/POST /order/upgrade/webHosting/{sn}/{planCode}
+- Ajout iceberg pagination pour: attachedDomain, database/dump, envVar, zone/record
+- Fix: PUT /ownLogs/{id}/userLogs/{login} (update user logs)
+- Fix: serviceInfo → serviceInfos (avec 's')
+- Fix: updateCron strip "./" from command
+- Fix: createEnvVar/updateEnvVar avec String(value)
+- Ajout CDN upgrade via /services/{id}/upgrade/{plan}/execute
+- Ajout Prometheus queries pour statistics
 
 ================================================================================
 
@@ -17,9 +75,9 @@ Parent:  prompt_target.txt (design system, shell template, composants)
 # 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
 ##############################################################################
 
-❌ INTERDIT : Afficher le SVG dans la conversation
-✅ OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
-✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+INTERDIT : Afficher le SVG dans la conversation
+OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
 
 ##############################################################################
 # 1. ARBORESCENCE NAV COMPLÈTE
@@ -35,48 +93,21 @@ NAV1: Web Cloud (x=510)
     │   │   LEFT: Liste hébergements (sidebar)
     │   │   RIGHT: Détails hébergement sélectionné
     │   │
-    │   └── NAV3: [Général] [Sites] [Expert] (sélecteur dans sidebar)
+    │   └── NAV3: [Général] [Sites] [Offre] [Expert] (sélecteur dans sidebar)
     │       │
-    │       │   ┌─────────────────────────────────────┐
-    │       │   │  [Général]  [Sites]  [Expert]       │  ← NAV3 selector
-    │       │   ├─────────────────────────────────────┤
-    │       │   │  🔍 Rechercher...                   │
-    │       │   └─────────────────────────────────────┘
+    │       │   ┌─────────────────────────────────────────────┐
+    │       │   │ [Général] [Sites] [Offre] [Expert]          │  ← NAV3 selector (4 boutons)
+    │       │   ├─────────────────────────────────────────────┤
+    │       │   │  🔍 Rechercher...                           │
+    │       │   └─────────────────────────────────────────────┘
     │       │
-    │       ├── NAV3: [Général] - Vue par défaut (7 tabs + 2 liens)
+    │       ├── NAV3: [Général] - Dashboard et monitoring (5 tabs)
     │       │   │
-    │       │   ├── NAV4: Home (/general)
-    │       │   │   └── NAV5: [Général] | Statistiques | Indy | Offre | OvhConfig | Migration | Résiliation
-    │       │   │       ├── Général (défaut)
-    │       │   │       │   └── ACTIONS: [✎ Renommer] [🔑 Config SSH] [📤 Restaurer snapshot] [⚙ OvhConfig]
-    │       │   │       ├── Statistiques (/statistics)
-    │       │   │       │   └── ACTIONS: [↻ Rafraîchir] [📥 Exporter]
-    │       │   │       ├── Indy (/indy)
-    │       │   │       │   └── ACTIONS: [+ Ajouter domaine indépendant]
-    │       │   │       ├── Offre (/offer)
-    │       │   │       │   └── ACTIONS: [↑ Changer d'offre]
-    │       │   │       ├── OvhConfig (/ovhconfig)
-    │       │   │       │   └── ACTIONS: [⚙ Modifier configuration]
-    │       │   │       ├── Migration (/migration)
-    │       │   │       │   └── ACTIONS: [🚀 Lancer migration]
-    │       │   │       └── Résiliation (/terminate)
-    │       │   │           └── ACTIONS: [× Résilier hébergement]
+    │       │   ├── NAV4: General (/general)
+    │       │   │   └── ACTIONS: [✎ Renommer] [🔑 Config SSH] [📤 Restaurer snapshot]
     │       │   │
-    │       │   ├── NAV4: Modules (/modules)
-    │       │   │   └── ACTIONS: [+ Installer module] [🔑 Changer MDP admin] [× Supprimer]
-    │       │   │
-    │       │   ├── NAV4: FTP-SSH (/ftp) ⟷ aussi dans [Sites]
-    │       │   │   └── ACTIONS: [+ Créer utilisateur] [✎ Modifier] [🔑 Changer MDP] [× Supprimer]
-    │       │   │
-    │       │   ├── NAV4: BDD (/database) ⟷ aussi dans [Sites]
-    │       │   │   └── NAV5: [Liste] | Statistiques | Dumps
-    │       │   │       ├── Liste (défaut)
-    │       │   │       │   └── ACTIONS: [+ Créer BDD] [✎ Modifier] [🔑 Changer MDP] [📤 Importer SQL]
-    │       │   │       │                 [📋 Copier] [📥 Dump] [↻ Restaurer] [× Supprimer]
-    │       │   │       ├── Statistiques (/database-statistics)
-    │       │   │       │   └── ACTIONS: [↻ Rafraîchir]
-    │       │   │       └── Dumps (/database-dumps)
-    │       │   │           └── ACTIONS: [📥 Télécharger] [↻ Restaurer] [× Supprimer]
+    │       │   ├── NAV4: Statistiques (/statistics)
+    │       │   │   └── ACTIONS: [↻ Rafraîchir] [📥 Exporter]
     │       │   │
     │       │   ├── NAV4: Logs (/logs)
     │       │   │   └── NAV5: [Logs OVH] | User Logs
@@ -85,18 +116,11 @@ NAV1: Web Cloud (x=510)
     │       │   │       └── User Logs (/user-logs)
     │       │   │           └── ACTIONS: [+ Créer accès logs] [🔑 Changer MDP] [× Supprimer]
     │       │   │
-    │       │   ├── NAV4: CDN (/cdn) ⟷ aussi dans [Expert]
-    │       │   │   └── NAV5: [État] | Paramètres
-    │       │   │       ├── État (défaut)
-    │       │   │       │   └── ACTIONS: [✓ Activer] [× Désactiver] [↻ Vider cache]
-    │       │   │       └── Paramètres (/cdn-settings)
-    │       │   │           └── ACTIONS: [⚙ Configurer règles]
+    │       │   ├── NAV4: Modules (/modules)
+    │       │   │   └── ACTIONS: [+ Installer module] [🔑 Changer MDP admin] [× Supprimer]
     │       │   │
-    │       │   ├── NAV4: SEO (/localseo)
-    │       │   │   └── ACTIONS: [+ Commander Local SEO] [→ Gérer]
-    │       │   │
-    │       │   ├── [→] Sites → Bascule vers NAV3 [Sites]
-    │       │   └── [→] Expert → Bascule vers NAV3 [Expert]
+    │       │   └── NAV4: SEO (/localseo)
+    │       │       └── ACTIONS: [+ Commander Local SEO] [→ Gérer]
     │       │
     │       ├── NAV3: [Sites] - Gestion domaines (5 tabs)
     │       │   │
@@ -106,27 +130,50 @@ NAV1: Web Cloud (x=510)
     │       │   ├── NAV4: SSL (/ssl)
     │       │   │   └── ACTIONS: [+ Commander SSL] [📤 Importer] [↻ Régénérer] [× Supprimer]
     │       │   │
-    │       │   ├── NAV4: FTP-SSH (/ftp) ⟷ aussi dans [Général]
+    │       │   ├── NAV4: FTP-SSH (/ftp)
     │       │   │   └── ACTIONS: [+ Créer utilisateur] [✎ Modifier] [🔑 Changer MDP] [× Supprimer]
     │       │   │
-    │       │   ├── NAV4: BDD (/database) ⟷ aussi dans [Général]
-    │       │   │   └── (voir NAV5 dans NAV3 Général)
+    │       │   ├── NAV4: BDD (/database)
+    │       │   │   └── NAV5: [Liste] | Statistiques | Dumps
+    │       │   │       ├── Liste (défaut)
+    │       │   │       │   └── ACTIONS: [+ Créer BDD] [✎ Modifier] [🔑 Changer MDP] [📤 Importer SQL]
+    │       │   │       │                 [📋 Copier] [📥 Dump] [↻ Restaurer] [× Supprimer]
+    │       │   │       ├── Statistiques (/database-statistics)
+    │       │   │       │   └── ACTIONS: [↻ Rafraîchir]
+    │       │   │       └── Dumps (/database-dumps)
+    │       │   │           └── ACTIONS: [📥 Télécharger] [↻ Restaurer] [× Supprimer]
     │       │   │
-    │       │   └── NAV4: CloudDb (/clouddb) ⟷ aussi dans [Expert]
-    │       │       └── ACTIONS: [+ Créer CloudDb] [✎ Configurer] [📊 Statistiques] [× Supprimer]
-    │       │       └── Note: MIGRATION - L'ancien "private-database" (/web-cloud/private-database)
-    │       │                 est intégré en NAV4 comme "CloudDb" (/web-cloud/hosting/CloudDb)
+    │       │   └── NAV4: CDN (/cdn)
+    │       │       └── NAV5: [État] | Paramètres
+    │       │           ├── État (défaut)
+    │       │           │   └── ACTIONS: [✓ Activer] [× Désactiver] [↻ Vider cache]
+    │       │           └── Paramètres (/cdn-settings)
+    │       │               └── ACTIONS: [⚙ Configurer règles]
     │       │
-    │       └── NAV3: [Expert] - Configuration avancée (8 tabs)
+    │       ├── NAV3: [Offre] - Abonnement et facturation (4 tabs)
+    │       │   │
+    │       │   ├── NAV4: Offre (/offer)
+    │       │   │   └── ACTIONS: [↑ Upgrade] [↓ Downgrade]
+    │       │   │
+    │       │   ├── NAV4: Changement (/change)
+    │       │   │   └── ACTIONS: [↻ Changer d'offre]
+    │       │   │
+    │       │   ├── NAV4: Migration (/migration)
+    │       │   │   └── ACTIONS: [🚀 Lancer migration]
+    │       │   │
+    │       │   └── NAV4: Résiliation (/terminate)
+    │       │       └── ACTIONS: [× Résilier hébergement]
+    │       │
+    │       └── NAV3: [Expert] - Configuration avancée (10 tabs)
     │           │
-    │           ├── NAV4: CDN (/cdn) ⟷ aussi dans [Général]
-    │           │   └── (voir NAV5 dans NAV3 Général)
-    │           │
-    │           ├── NAV4: CloudDb (/clouddb) ⟷ aussi dans [Sites]
-    │           │   └── ACTIONS: [+ Créer CloudDb] [✎ Configurer] [📊 Statistiques] [× Supprimer]
+    │           ├── NAV4: General (/expert-general)
+    │           │   └── Dashboard configuration technique
     │           │
     │           ├── NAV4: Boost (/boost)
     │           │   └── ACTIONS: [✓ Activer boost] [× Désactiver boost]
+    │           │
+    │           ├── NAV4: Indy (/indy)
+    │           │   └── ACTIONS: [+ Ajouter IP dédiée] [× Supprimer]
     │           │
     │           ├── NAV4: Emails (/emails)
     │           │   └── ACTIONS: [⚙ Configurer] [🚫 Bloquer/Débloquer] [↻ Purger]
@@ -134,14 +181,20 @@ NAV1: Web Cloud (x=510)
     │           ├── NAV4: Variables (/envvars)
     │           │   └── ACTIONS: [+ Ajouter variable] [✎ Modifier] [× Supprimer]
     │           │
+    │           ├── NAV4: OvhConfig (/ovhconfig)
+    │           │   └── ACTIONS: [⚙ Modifier configuration PHP/Moteur]
+    │           │
     │           ├── NAV4: Runtimes (/runtimes)
     │           │   └── ACTIONS: [+ Créer runtime] [✎ Modifier] [× Supprimer]
     │           │
     │           ├── NAV4: Cron (/cron)
     │           │   └── ACTIONS: [+ Créer cron] [✎ Modifier] [× Supprimer]
     │           │
-    │           └── NAV4: Taches (/tasks)
-    │               └── ACTIONS: [↻ Rafraîchir]
+    │           ├── NAV4: Tâches (/tasks)
+    │           │   └── ACTIONS: [↻ Rafraîchir]
+    │           │
+    │           └── NAV4: CloudDb (/clouddb)
+    │               └── ACTIONS: [+ Créer CloudDb] [✎ Configurer] [📊 Statistiques] [× Supprimer]
 ```
 
 ### RÉCAPITULATIF NIVEAUX NAV
@@ -150,29 +203,29 @@ NAV1: Web Cloud (x=510)
 |--------|--------|----------|------------------|
 | **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
 | **NAV2** | Sous-header blanc 40px | y=50 | Hébergement (x=240) |
-| **NAV3** | Sélecteur [Général] [Sites] [Expert] | Sidebar, au-dessus recherche | Filtre les NAV4 affichées |
-| **NAV4** | Tabs right panel (selon NAV3) | y=38 dans right panel | Général: 7+2, Sites: 5, Expert: 8 |
-| **NAV5** | Sous-tabs contextuels | y=70 dans right panel | Statistiques, Paramètres CDN... |
+| **NAV3** | Sélecteur [Général] [Sites] [Offre] [Expert] | Sidebar, au-dessus recherche | 4 boutons sur 1 ligne |
+| **NAV4** | Tabs right panel (selon NAV3) | y=38 dans right panel | Général:5, Sites:5, Offre:4, Expert:10 |
+| **NAV5** | Sous-tabs contextuels | y=70 dans right panel | Logs, BDD, CDN |
 | **ACTIONS** | Boutons header + inline + modals | Variable | +, ✎, 🔑, ×, ↻, 📥, 📤 |
 
-### STRUCTURE SIDEBAR AVEC GROUPES
+### STRUCTURE SIDEBAR AVEC GROUPES (4 NAV3)
 
 ```
-┌─────────────────────────────────────┐
-│  [Général]  [Sites]  [Expert]       │  ← GROUPE selector (nouveau)
-├─────────────────────────────────────┤
-│  🔍 Rechercher...                   │
-├─────────────────────────────────────┤
-│  Filtrer par statut ▾   N services  │
-├─────────────────────────────────────┤
-│  🌐  service1.ovh.net        [Actif]│
-│      Performance 1                  │
-├─────────────────────────────────────┤
-│  🌐  service2.ovh.net        [Actif]│
-│      Perso                          │
-├─────────────────────────────────────┤
-│  Page 1/N    ‹  1  2  3  ›          │
-└─────────────────────────────────────┘
+┌───────────────────────────────────────────┐
+│ [Général] [Sites] [Offre] [Expert]        │  ← 4 boutons sur 1 ligne
+├───────────────────────────────────────────┤
+│  🔍 Rechercher...                         │
+├───────────────────────────────────────────┤
+│  Filtrer par statut ▾         N services  │
+├───────────────────────────────────────────┤
+│  🌐  service1.ovh.net              [Actif]│
+│      Performance 1                        │
+├───────────────────────────────────────────┤
+│  🌐  service2.ovh.net              [Actif]│
+│      Perso                                │
+├───────────────────────────────────────────┤
+│  Page 1/N    ‹  1  2  3  ›                │
+└───────────────────────────────────────────┘
 ```
 
 ##############################################################################
@@ -239,115 +292,80 @@ Item actif: "Hébergement" (indicateur bleu dessous)
 
 Route: /web-cloud/hosting/{serviceName}/{nav3}/{nav4}/{nav5}
 
-### NAV3 - GROUPES (sélecteur dans sidebar)
+### NAV3 - GROUPES (sélecteur dans sidebar - 4 boutons)
 
-| NAV3       | Description              | Nombre NAV4 |
-|------------|--------------------------|-------------|
-| [Général]  | Vue par défaut           | 7 + 2 liens |
-| [Sites]    | Gestion domaines         | 5           |
-| [Expert]   | Configuration avancée    | 8           |
+| NAV3       | Description                | Nombre NAV4 |
+|------------|----------------------------|-------------|
+| [Général]  | Dashboard et monitoring    | 5           |
+| [Sites]    | Gestion domaines           | 5           |
+| [Offre]    | Abonnement et facturation  | 4           |
+| [Expert]   | Configuration avancée      | 10          |
 
 ### NAV4 PAR NAV3
 
-**NAV3: [Général]** - Vue par défaut (7 tabs + 2 liens NAV3)
-| #  | NAV4     | Route      | Type   | NAV5                    |
-|----|----------|------------|--------|-------------------------|
-| 1  | Home     | /general   | LOCAL  | Général, Stats, Indy, Offre, OvhConfig, Migration, Résiliation |
-| 2  | Modules  | /modules   | LOCAL  | -                       |
-| 3  | FTP-SSH  | /ftp       | LINK→Expert | -                  |
-| 4  | BDD      | /database  | LINK→Expert | Liste, Stats, Dumps |
-| 5  | Logs     | /logs      | LOCAL  | Logs OVH, User Logs     |
-| 6  | CDN      | /cdn       | LINK→Expert | État, Paramètres   |
-| 7  | SEO      | /localseo  | LOCAL  | -                       |
-| →  | Sites    | -          | NAV3   | Bascule vers [Sites]    |
-| →  | Expert   | -          | NAV3   | Bascule vers [Expert]   |
+**NAV3: [Général]** - Dashboard et monitoring (5 tabs)
+| #  | NAV4         | Route        | NAV5                |
+|----|--------------|--------------|---------------------|
+| 1  | General      | /general     | -                   |
+| 2  | Statistiques | /statistics  | -                   |
+| 3  | Logs         | /logs        | Logs OVH, User Logs |
+| 4  | Modules      | /modules     | -                   |
+| 5  | SEO          | /localseo    | -                   |
 
 **NAV3: [Sites]** - Gestion domaines (5 tabs)
-| #  | NAV4     | Route      | Type   | NAV5                    |
-|----|----------|------------|--------|-------------------------|
-| 1  | Multisite| /multisite | LOCAL  | -                       |
-| 2  | SSL      | /ssl       | LOCAL  | -                       |
-| 3  | FTP-SSH  | /ftp       | LINK→Expert | -                  |
-| 4  | BDD      | /database  | LINK→Expert | Liste, Stats, Dumps |
-| 5  | CloudDb  | /clouddb   | LINK→Expert | -                  |
+| #  | NAV4      | Route      | NAV5                    |
+|----|-----------|------------|-------------------------|
+| 1  | Multisite | /multisite | -                       |
+| 2  | SSL       | /ssl       | -                       |
+| 3  | FTP-SSH   | /ftp       | -                       |
+| 4  | BDD       | /database  | Liste, Stats, Dumps     |
+| 5  | CDN       | /cdn       | État, Paramètres        |
 
-**NAV3: [Expert]** - Configuration avancée (12 tabs = 4 sources + 8 locales)
-| #  | NAV4     | Route      | Type   | NAV5                    |
-|----|----------|------------|--------|-------------------------|
-| 1  | FTP-SSH  | /ftp       | SOURCE | -                       |
-| 2  | BDD      | /database  | SOURCE | Liste, Statistiques, Dumps |
-| 3  | CDN      | /cdn       | SOURCE | État, Paramètres        |
-| 4  | CloudDb  | /clouddb   | SOURCE | -                       |
-| 5  | Boost    | /boost     | LOCAL  | -                       |
-| 6  | Emails   | /emails    | LOCAL  | -                       |
-| 7  | Variables| /envvars   | LOCAL  | -                       |
-| 8  | Runtimes | /runtimes  | LOCAL  | -                       |
-| 9  | Cron     | /cron      | LOCAL  | -                       |
-| 10 | Taches   | /tasks     | LOCAL  | -                       |
+**NAV3: [Offre]** - Abonnement et facturation (4 tabs)
+| #  | NAV4        | Route      | NAV5 |
+|----|-------------|------------|------|
+| 1  | Offre       | /offer     | -    |
+| 2  | Changement  | /change    | -    |
+| 3  | Migration   | /migration | -    |
+| 4  | Résiliation | /terminate | -    |
 
-**Légende Types :**
-- `LOCAL` : NAV4 propre à ce NAV3, fichiers dans ce répertoire
-- `SOURCE` : NAV4 partagée, fichiers sources ici (dans [Expert])
-- `LINK→Expert` : Affiche le composant Expert.NAV4, NAV3 reste inchangé visuellement
-- `NAV3` : Lien pour basculer vers un autre groupe NAV3
+**NAV3: [Expert]** - Configuration avancée (10 tabs)
+| #  | NAV4      | Route           | NAV5 |
+|----|-----------|-----------------|------|
+| 1  | General   | /expert-general | -    |
+| 2  | Boost     | /boost          | -    |
+| 3  | Indy      | /indy           | -    |
+| 4  | Emails    | /emails         | -    |
+| 5  | Variables | /envvars        | -    |
+| 6  | OvhConfig | /ovhconfig      | -    |
+| 7  | Runtimes  | /runtimes       | -    |
+| 8  | Cron      | /cron           | -    |
+| 9  | Tâches    | /tasks          | -    |
+| 10 | CloudDb   | /clouddb        | -    |
 
-### NAV4 PARTAGÉES - Règle de placement
-
-**RÈGLE : Les NAV4 présentes dans 2+ NAV3 sont placées dans [Expert].**
-Les autres NAV3 utilisent un LINK vers Expert.
-
-| NAV4     | NAV3 principal | Links depuis         |
-|----------|----------------|----------------------|
-| FTP-SSH  | **[Expert]**   | [Général], [Sites]   |
-| BDD      | **[Expert]**   | [Général], [Sites]   |
-| CDN      | **[Expert]**   | [Général]            |
-| CloudDb  | **[Expert]**   | [Sites]              |
-
-### COMPORTEMENT DU LINK
+### Visuel NAV3
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  LINK = Affichage TRANSPARENT (pas une redirection)                 │
-│                                                                      │
-│  Exemple : Utilisateur sur NAV3=[Général], clique sur "BDD"         │
-│                                                                      │
-│  ✓ Le contenu de [Expert].BDD s'affiche                             │
-│  ✓ Le sélecteur NAV3 reste visuellement sur [Général]               │
-│  ✓ L'utilisateur ne voit PAS qu'il utilise Expert.BDD               │
-│  ✓ C'est une INCLUSION du composant, pas un changement de NAV3      │
-│                                                                      │
-│  Techniquement : import { BddTab } from '../expert/nav4/bdd'        │
-│  Visuellement  : NAV3=[Général] reste actif                         │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Visuel NAV3 avec links
-
-```
-NAV3: [Général]                    NAV3: [Sites]                    NAV3: [Expert]
-├── Home                           ├── Multisite                    ├── FTP ⬅️ source
-├── Modules                        ├── SSL                          ├── BDD ⬅️ source
-├── FTP ──────link──────────────────────────link────────────────────┤    └── nav5/
-├── BDD ──────link──────────────────────────link────────────────────┤
-│   └── nav5/                      ├── CloudDb ────link─────────────├── CDN ⬅️ source
-├── Logs                           │                                │    └── nav5/
-├── CDN ──────link─────────────────────────────────────────────────├── CloudDb ⬅️ source
-│   └── nav5/                                                       ├── Boost
-├── SEO                                                             ├── Emails
-├── [→Sites]                                                        ├── Variables
-└── [→Expert]                                                       ├── Runtimes
-                                                                    ├── Cron
-                                                                    └── Taches
+[Général] 5 tabs    [Sites] 5 tabs     [Offre] 4 tabs     [Expert] 10 tabs
+├── General         ├── Multisite      ├── Offre          ├── General
+├── Statistiques    ├── SSL            ├── Changement     ├── Boost
+├── Logs            ├── FTP-SSH        ├── Migration      ├── Indy
+│   └── nav5/       ├── BDD            └── Résiliation    ├── Emails
+├── Modules         │   └── nav5/                         ├── Variables
+└── SEO             └── CDN                               ├── OvhConfig
+                        └── nav5/                         ├── Runtimes
+                                                          ├── Cron
+                                                          ├── Tâches
+                                                          └── CloudDb
 ```
 
 ### NAV5 - SOUS-TABS (contextuelles)
 
-| NAV4   | NAV5                                                      |
-|--------|-----------------------------------------------------------|
-| Home   | [Général] Statistiques, Indy, Offre, OvhConfig, Migration, Résiliation |
-| BDD    | [Liste] Statistiques, Dumps                               |
-| Logs   | [Logs OVH] User Logs                                      |
-| CDN    | [État] Paramètres                                         |
+| NAV4   | NAV5                          |
+|--------|-------------------------------|
+| Logs   | [Logs OVH] User Logs          |
+| BDD    | [Liste] Statistiques, Dumps   |
+| CDN    | [État] Paramètres             |
 
 ```svg
 <!-- NAV3 HOSTING - Groupe [Général] actif, Home actif -->
@@ -388,39 +406,29 @@ NAV3: [Général]                    NAV3: [Sites]                    NAV3: [Exp
 # 5. NAV5 - SOUS-TABS PAR NAV4
 ##############################################################################
 
-### 5.1 NAV4: Home → 7 NAV5
+Note: Après restructuration v5.3, seuls 3 NAV4 ont des NAV5 (plus de Home avec 7 NAV5).
 
-| # | NAV5          | Route        |
-|---|---------------|--------------|
-| 1 | Général       | /general     |
-| 2 | Statistiques  | /statistics  |
-| 3 | Indy          | /indy        |
-| 4 | Offre         | /offer       |
-| 5 | OvhConfig     | /ovhconfig   |
-| 6 | Migration     | /migration   |
-| 7 | Résiliation   | /terminate   |
-
-### 5.2 NAV4: CDN → 2 NAV5
-
-| # | NAV5       | Route          |
-|---|------------|----------------|
-| 1 | État       | /cdn           |
-| 2 | Paramètres | /cdn-settings  |
-
-### 5.3 NAV4: Logs → 2 NAV5
+### 5.1 NAV4: Logs → 2 NAV5 (NAV3: [Général])
 
 | # | NAV5      | Route       |
 |---|-----------|-------------|
 | 1 | Logs OVH  | /logs       |
 | 2 | User Logs | /user-logs  |
 
-### 5.4 NAV4: BDD → 3 NAV5
+### 5.2 NAV4: BDD → 3 NAV5 (NAV3: [Sites])
 
 | # | NAV5         | Route                 |
 |---|--------------|-----------------------|
 | 1 | Liste        | /database             |
 | 2 | Statistiques | /database-statistics  |
 | 3 | Dumps        | /database-dumps       |
+
+### 5.3 NAV4: CDN → 2 NAV5 (NAV3: [Sites])
+
+| # | NAV5       | Route          |
+|---|------------|----------------|
+| 1 | État       | /cdn           |
+| 2 | Paramètres | /cdn-settings  |
 
 ##############################################################################
 # 6. LEFT PANEL - SIDEBAR
@@ -461,16 +469,16 @@ Position: x=24, y=105, width=280px, height=765px
 <g transform="translate(24, 105)">
   <rect x="0" y="0" width="280" height="765" rx="8" class="bg-white"/>
   <rect x="0" y="0" width="280" height="765" rx="8" class="border"/>
-  
+
   <!-- Search -->
   <rect x="12" y="12" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
   <text x="40" y="34" class="text-muted" font-size="12">Rechercher...</text>
   <text x="24" y="34" class="text-muted" font-size="14">🔍</text>
-  
+
   <!-- Filter -->
   <text x="12" y="68" class="text-muted" font-size="11">Filtrer par statut ▾</text>
   <text x="268" y="68" class="text-muted" font-size="11" text-anchor="end">{count} services</text>
-  
+
   <!-- Service sélectionné -->
   <rect x="6" y="80" width="268" height="56" rx="6" class="row-selected"/>
   <circle cx="28" cy="108" r="14" fill="#0050D7"/>
@@ -479,7 +487,7 @@ Position: x=24, y=105, width=280px, height=765px
   <text x="52" y="116" class="text-muted" font-size="11">{offer}</text>
   <rect x="210" y="96" width="46" height="18" rx="9" fill="#DEF7EC"/>
   <text x="233" y="109" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
-  
+
   <!-- Service non sélectionné -->
   <rect x="6" y="142" width="268" height="56" rx="6" fill="#FFFFFF"/>
   <circle cx="28" cy="170" r="14" fill="#0050D7"/>
@@ -535,7 +543,7 @@ Position: x=320, y=105, width=1096px, height=765px
   <rect x="0" y="0" width="1056" height="{height}" rx="8" class="bg-white"/>
   <rect x="0" y="0" width="1056" height="{height}" rx="8" class="border"/>
   <text x="20" y="28" class="text-dark" font-size="15" font-weight="700">{blocTitle}</text>
-  
+
   <!-- 5 colonnes avec dividers -->
   <g transform="translate(20, 45)">
     <!-- Dividers verticaux -->
@@ -543,152 +551,551 @@ Position: x=320, y=105, width=1096px, height=765px
     <line x1="400" y1="0" x2="400" y2="{contentHeight}" stroke="#E5E7EB"/>
     <line x1="600" y1="0" x2="600" y2="{contentHeight}" stroke="#E5E7EB"/>
     <line x1="800" y1="0" x2="800" y2="{contentHeight}" stroke="#E5E7EB"/>
-    
+
     <!-- Colonne 1 -->
     <g transform="translate(0, 0)">
       <text x="0" y="0" class="text-muted" font-size="10" font-weight="600">{THEME}</text>
       <!-- Lignes info -->
     </g>
-    
+
     <!-- Colonnes 2-5 similaires -->
   </g>
 </g>
 ```
 
 ##############################################################################
-# 8. APIs HOSTING
+# 8. MAPPING FICHIERS SERVICE : old_manager → new_manager
 ##############################################################################
 
-### 8.1 APIs Service
-| Méthode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /hosting/web                          | Liste hébergements    |
-| GET     | /hosting/web/{serviceName}            | Détails hébergement   |
-| GET     | /hosting/web/{serviceName}/serviceInfos | Infos facturation   |
-| PUT     | /hosting/web/{serviceName}            | Modifier (displayName)|
-| DELETE  | /hosting/web/{serviceName}/terminate  | Résilier              |
+### 8.0 Fichiers source old_manager
 
-### 8.2 APIs Configuration
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/ovhConfig                 | Config PHP/moteur     |
-| PUT     | /hosting/web/{sn}/ovhConfig                 | Modifier config       |
-| GET     | /hosting/web/{sn}/dump                      | Liste snapshots       |
-| POST    | /hosting/web/{sn}/dump/{id}/restore         | Restaurer snapshot    |
+Chemin: /home/ubuntu/manager/packages/manager/apps/web/client/app/hosting/
 
-### 8.3 APIs Multisite
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/attachedDomain            | Liste domaines        |
-| GET     | /hosting/web/{sn}/attachedDomain/{domain}   | Détails domaine       |
-| POST    | /hosting/web/{sn}/attachedDomain            | Ajouter domaine       |
-| PUT     | /hosting/web/{sn}/attachedDomain/{domain}   | Modifier domaine      |
-| DELETE  | /hosting/web/{sn}/attachedDomain/{domain}   | Supprimer domaine     |
-
-### 8.4 APIs FTP/SSH
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/user                      | Liste utilisateurs    |
-| GET     | /hosting/web/{sn}/user/{login}              | Détails utilisateur   |
-| POST    | /hosting/web/{sn}/user                      | Créer utilisateur     |
-| PUT     | /hosting/web/{sn}/user/{login}              | Modifier utilisateur  |
-| POST    | /hosting/web/{sn}/user/{login}/changePassword| Changer MDP          |
-| DELETE  | /hosting/web/{sn}/user/{login}              | Supprimer utilisateur |
-
-### 8.5 APIs Database
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/database                  | Liste BDD             |
-| GET     | /hosting/web/{sn}/database/{name}           | Détails BDD           |
-| POST    | /hosting/web/{sn}/database                  | Créer BDD             |
-| PUT     | /hosting/web/{sn}/database/{name}           | Modifier BDD          |
-| POST    | /hosting/web/{sn}/database/{name}/changePassword | Changer MDP      |
-| POST    | /hosting/web/{sn}/database/{name}/dump      | Créer dump            |
-| POST    | /hosting/web/{sn}/database/{name}/import    | Importer SQL          |
-| POST    | /hosting/web/{sn}/database/{name}/restore   | Restaurer             |
-| DELETE  | /hosting/web/{sn}/database/{name}           | Supprimer BDD         |
-
-### 8.6 APIs Modules
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/module                    | Liste modules         |
-| GET     | /hosting/web/{sn}/module/{id}               | Détails module        |
-| POST    | /hosting/web/{sn}/module                    | Installer module      |
-| POST    | /hosting/web/{sn}/module/{id}/changePassword| Changer MDP admin    |
-| DELETE  | /hosting/web/{sn}/module/{id}               | Supprimer module      |
-
-### 8.7 APIs Cron
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/cron                      | Liste crons           |
-| GET     | /hosting/web/{sn}/cron/{id}                 | Détails cron          |
-| POST    | /hosting/web/{sn}/cron                      | Créer cron            |
-| PUT     | /hosting/web/{sn}/cron/{id}                 | Modifier cron         |
-| DELETE  | /hosting/web/{sn}/cron/{id}                 | Supprimer cron        |
-
-### 8.8 APIs SSL
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/ssl                       | Détails SSL           |
-| POST    | /hosting/web/{sn}/ssl                       | Commander/Importer    |
-| POST    | /hosting/web/{sn}/ssl/regenerate            | Régénérer             |
-| DELETE  | /hosting/web/{sn}/ssl                       | Supprimer             |
-
-### 8.9 APIs CDN
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/cdn                       | État CDN              |
-| POST    | /hosting/web/{sn}/cdn/enable                | Activer CDN           |
-| POST    | /hosting/web/{sn}/cdn/disable               | Désactiver CDN        |
-| POST    | /hosting/web/{sn}/cdn/flush                 | Vider cache           |
-
-### 8.10 APIs Boost
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/boostHistory              | Historique boost      |
-| POST    | /hosting/web/{sn}/request                   | Activer boost         |
-
-### 8.11 APIs Variables d'environnement
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/envVar                    | Liste variables       |
-| GET     | /hosting/web/{sn}/envVar/{key}              | Détails variable      |
-| POST    | /hosting/web/{sn}/envVar                    | Créer variable        |
-| PUT     | /hosting/web/{sn}/envVar/{key}              | Modifier variable     |
-| DELETE  | /hosting/web/{sn}/envVar/{key}              | Supprimer variable    |
-
-### 8.12 APIs Runtimes
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/runtime                   | Liste runtimes        |
-| GET     | /hosting/web/{sn}/runtime/{id}              | Détails runtime       |
-| POST    | /hosting/web/{sn}/runtime                   | Créer runtime         |
-| PUT     | /hosting/web/{sn}/runtime/{id}              | Modifier runtime      |
-| DELETE  | /hosting/web/{sn}/runtime/{id}              | Supprimer runtime     |
-
-### 8.13 APIs Emails automatiques
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/email                     | État emails           |
-| PUT     | /hosting/web/{sn}/email                     | Configurer            |
-| POST    | /hosting/web/{sn}/email/request             | Débloquer             |
-
-### 8.14 APIs Tâches
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/tasks                     | Liste tâches          |
-| GET     | /hosting/web/{sn}/tasks/{id}                | Détails tâche         |
-
-### 8.15 APIs Logs
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /hosting/web/{sn}/userLogs                  | Liste accès logs      |
-| POST    | /hosting/web/{sn}/userLogs                  | Créer accès           |
-| PUT     | /hosting/web/{sn}/userLogs/{login}          | Modifier accès        |
-| DELETE  | /hosting/web/{sn}/userLogs/{login}          | Supprimer accès       |
+| old_manager (AngularJS)                        | new_manager (React)                  | NAV3/NAV4         |
+|------------------------------------------------|--------------------------------------|-------------------|
+| `dashboard/hosting.service.js`                 | `general/general/GeneralTab.service.ts` | Général/Home   |
+| `multisite/hosting-multisite.service.js`       | `sites/multisite/MultisiteTab.service.ts` | Sites/Multisite |
+| `ssl/hosting-ssl.service.js`                   | `sites/ssl/SslTab.service.ts`        | Sites/SSL         |
+| `database/hosting-database.service.js`         | `expert/database/DatabaseTab.service.ts` | Expert/BDD     |
+| `ftp/hosting-ftp.service.js`                   | `expert/ftp/FtpTab.service.ts`       | Expert/FTP        |
+| `cron/hosting-cron.service.js`                 | `expert/cron/CronTab.service.ts`     | Expert/Cron       |
+| `runtimes/hosting-runtimes.service.js`         | `expert/runtimes/RuntimesTab.service.ts` | Expert/Runtimes |
+| `envvars/hosting-envvars.service.js`           | `expert/envvars/EnvvarsTab.service.ts` | Expert/Envvars  |
+| `cdn/shared/hosting-cdn-shared-settings.service.js` | `expert/cdn/CdnTab.service.ts`  | Expert/CDN        |
+| `boost/hosting-boost.service.js`               | `expert/boost/BoostTab.service.ts`   | Expert/Boost      |
+| `task/hosting-task.service.js`                 | `expert/tasks/TasksTab.service.ts`   | Expert/Tasks      |
+| `email/hosting-email.service.js`               | `expert/emails/EmailsTab.service.ts` | Expert/Emails     |
+| `automated-emails/hosting-automated-emails.service.js` | `expert/emails/EmailsTab.service.ts` | Expert/Emails |
+| `local-seo/hosting-local-seo.service.js`       | `general/seo/LocalSeoTab.service.ts` | Général/SEO       |
+| `module/hosting-module.service.js`             | `general/modules/ModulesTab.service.ts` | Général/Modules |
+| `statistics/hosting-statistics.service.js`     | `general/logs/LogsTab.service.ts`    | Général/Logs      |
 
 ##############################################################################
-# 9. VARIABLES DYNAMIQUES
+# 9. APIs HOSTING - COMPLÈTES (APIv6 + 2API)
+##############################################################################
+
+### 9.1 APIs Service (hosting principal)
+| Méthode | Endpoint                              | Description           | Service        |
+|---------|---------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web                          | Liste hébergements    | GeneralTab     |
+| GET     | /hosting/web/{sn}                     | Détails hébergement   | GeneralTab     |
+| GET     | /hosting/web/{sn}/serviceInfos        | Infos facturation     | GeneralTab     |
+| PUT     | /hosting/web/{sn}                     | Modifier (displayName)| GeneralTab     |
+| POST    | /hosting/web/{sn}/terminate           | Résilier              | GeneralTab     |
+| POST    | /hosting/web/{sn}/request             | Actions (FLUSH_CACHE) | GeneralTab     |
+| GET     | /hosting/web/{sn}/metricsToken        | Token stats Warp10    | GeneralTab     |
+
+### 9.2 APIs OvhConfig
+| Méthode | Endpoint                                    | Description           | Service        |
+|---------|---------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/ovhConfig                 | Config PHP/moteur     | GeneralTab     |
+| PUT     | /hosting/web/{sn}/ovhConfig                 | Modifier config       | GeneralTab     |
+| POST    | /hosting/web/{sn}/ovhConfig/{id}/changeConfiguration | Changer config | GeneralTab  |
+| POST    | /hosting/web/{sn}/ovhConfig/{id}/rollback   | Rollback config       | GeneralTab     |
+
+### 9.3 APIs Snapshots
+| Méthode | Endpoint                                    | Description           | Service        |
+|---------|---------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/dump                      | Liste snapshots       | FtpTab         |
+| GET     | /hosting/web/{sn}/dump/{date}               | Détails snapshot      | FtpTab         |
+| POST    | /hosting/web/{sn}/restoreSnapshot           | Restaurer snapshot    | FtpTab         |
+
+### 9.4 APIs Multisite (attachedDomain)
+| Méthode | Endpoint                                              | Description           | Service        |
+|---------|-------------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/attachedDomain                      | Liste domaines        | MultisiteTab   |
+| GET     | /hosting/web/{sn}/attachedDomain/{domain}             | Détails domaine       | MultisiteTab   |
+| POST    | /hosting/web/{sn}/attachedDomain                      | Ajouter domaine       | MultisiteTab   |
+| PUT     | /hosting/web/{sn}/attachedDomain/{domain}             | Modifier domaine      | MultisiteTab   |
+| DELETE  | /hosting/web/{sn}/attachedDomain/{domain}             | Supprimer domaine     | MultisiteTab   |
+| GET     | /hosting/web/{sn}/attachedDomain/{domain}/digStatus   | Diagnostic DNS        | MultisiteTab   |
+| POST    | /hosting/web/{sn}/attachedDomain/{domain}/restart     | Restart vhost         | MultisiteTab   |
+| GET     | /hosting/web/{sn}/websiteCreationCapabilities         | Capabilities git      | MultisiteTab   |
+| GET     | /hosting/web/{sn}/website                             | Websites associés     | MultisiteTab   |
+
+### 9.5 APIs FTP/SSH (users)
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/user                          | Liste utilisateurs    | FtpTab         |
+| GET     | /hosting/web/{sn}/user/{login}                  | Détails utilisateur   | FtpTab         |
+| POST    | /hosting/web/{sn}/user                          | Créer utilisateur     | FtpTab         |
+| PUT     | /hosting/web/{sn}/user/{login}                  | Modifier utilisateur  | FtpTab         |
+| POST    | /hosting/web/{sn}/user/{login}/changePassword   | Changer MDP           | FtpTab         |
+| DELETE  | /hosting/web/{sn}/user/{login}                  | Supprimer utilisateur | FtpTab         |
+| GET     | /hosting/web.json                               | Modèles (sshState)    | FtpTab         |
+
+### 9.6 APIs Database
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/database                      | Liste BDD             | DatabaseTab    |
+| GET     | /hosting/web/{sn}/database/{name}               | Détails BDD           | DatabaseTab    |
+| POST    | /hosting/web/{sn}/database                      | Créer BDD             | DatabaseTab    |
+| PUT     | /hosting/web/{sn}/database/{name}               | Modifier BDD          | DatabaseTab    |
+| POST    | /hosting/web/{sn}/database/{name}/changePassword | Changer MDP          | DatabaseTab    |
+| POST    | /hosting/web/{sn}/database/{name}/dump          | Créer dump            | DatabaseTab    |
+| POST    | /hosting/web/{sn}/database/{name}/import        | Importer SQL          | DatabaseTab    |
+| POST    | /hosting/web/{sn}/database/{name}/restore       | Restaurer             | DatabaseTab    |
+| DELETE  | /hosting/web/{sn}/database/{name}               | Supprimer BDD         | DatabaseTab    |
+| GET     | /hosting/web/{sn}/databaseCreationCapabilities  | Capacités création    | DatabaseTab    |
+| GET     | /hosting/web/{sn}/databaseAvailableType         | Types disponibles     | DatabaseTab    |
+
+### 9.7 APIs Modules
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/module                        | Liste modules         | ModulesTab     |
+| GET     | /hosting/web/{sn}/module/{id}                   | Détails module        | ModulesTab     |
+| POST    | /hosting/web/{sn}/module                        | Installer module      | ModulesTab     |
+| POST    | /hosting/web/{sn}/module/{id}/changePassword    | Changer MDP admin     | ModulesTab     |
+| DELETE  | /hosting/web/{sn}/module/{id}                   | Supprimer module      | ModulesTab     |
+| GET     | /hosting/web/moduleList                         | Catalogue modules     | ModulesTab     |
+| GET     | /hosting/web/moduleList?active=true&latest=true | Modules récents       | ModulesTab     |
+| GET     | /hosting/web/moduleList/{id}                    | Détails catalogue     | ModulesTab     |
+
+### 9.8 APIs Cron
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/cron                          | Liste crons           | CronTab        |
+| GET     | /hosting/web/{sn}/cron/{id}                     | Détails cron          | CronTab        |
+| POST    | /hosting/web/{sn}/cron                          | Créer cron            | CronTab        |
+| PUT     | /hosting/web/{sn}/cron/{id}                     | Modifier cron         | CronTab        |
+| DELETE  | /hosting/web/{sn}/cron/{id}                     | Supprimer cron        | CronTab        |
+| GET     | /hosting/web/{sn}/cronAvailableLanguage         | Langages dispo        | CronTab        |
+
+### 9.9 APIs SSL
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/ssl                           | Détails SSL           | SslTab         |
+| GET     | /hosting/web/{sn}/ssl/domains                   | Domaines liés         | SslTab         |
+| GET     | /hosting/web/{sn}/ssl/report                    | Rapport validation    | SslTab         |
+| POST    | /hosting/web/{sn}/ssl                           | Commander/Importer    | SslTab         |
+| POST    | /hosting/web/{sn}/ssl/regenerate                | Régénérer             | SslTab         |
+| DELETE  | /hosting/web/{sn}/ssl                           | Supprimer             | SslTab         |
+
+### 9.10 APIs CDN (standard)
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/cdn                           | État CDN              | CdnTab         |
+| POST    | /hosting/web/{sn}/cdn/flush                     | Vider cache           | CdnTab         |
+| POST    | /hosting/web/{sn}/cdn/terminate                 | Résilier CDN          | CdnTab         |
+| GET     | /hosting/web/{sn}/cdn/serviceInfos              | Service info CDN      | CdnTab         |
+| GET     | /hosting/web/{sn}/cdn/operation                 | Liste opérations      | CdnTab         |
+| GET     | /hosting/web/{sn}/cdn/operation/{id}            | Détails opération     | CdnTab         |
+
+### 9.11 APIs CDN Shared v2 (options par domaine)
+| Méthode | Endpoint                                                    | Description           | Service        |
+|---------|-------------------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/cdn/availableOptions                      | Options disponibles   | CdnTab         |
+| GET     | /hosting/web/{sn}/cdn/domain                                | Liste domaines CDN    | CdnTab         |
+| GET     | /hosting/web/{sn}/cdn/domain/{domain}                       | Détails domaine       | CdnTab         |
+| GET     | /hosting/web/{sn}/cdn/domain/{domain}/option                | Liste options         | CdnTab         |
+| POST    | /hosting/web/{sn}/cdn/domain/{domain}/option                | Ajouter option        | CdnTab         |
+| GET     | /hosting/web/{sn}/cdn/domain/{domain}/option/{opt}          | Détails option        | CdnTab         |
+| PUT     | /hosting/web/{sn}/cdn/domain/{domain}/option/{opt}          | Modifier option       | CdnTab         |
+| DELETE  | /hosting/web/{sn}/cdn/domain/{domain}/option/{opt}          | Supprimer option      | CdnTab         |
+| POST    | /hosting/web/{sn}/cdn/domain/{domain}/purge                 | Purge cache domaine   | CdnTab         |
+| POST    | /hosting/web/{sn}/cdn/domain/{domain}/refresh               | Appliquer settings    | CdnTab         |
+
+### 9.12 APIs Boost
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/boostHistory                  | Historique boost      | BoostTab       |
+| GET     | /hosting/web/{sn}/boostHistory/{date}           | Détails historique    | BoostTab       |
+| GET     | /hosting/web/{sn}/availableBoostOffer           | Offres disponibles    | BoostTab       |
+| POST    | /hosting/web/{sn}/requestBoost                  | Activer/Désactiver    | BoostTab       |
+| GET     | /order/catalog/public/webHosting                | Prix boost (catalog)  | BoostTab       |
+
+### 9.13 APIs Variables d'environnement
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/envVar                        | Liste variables       | EnvvarsTab     |
+| GET     | /hosting/web/{sn}/envVar/{key}                  | Détails variable      | EnvvarsTab     |
+| POST    | /hosting/web/{sn}/envVar                        | Créer variable        | EnvvarsTab     |
+| PUT     | /hosting/web/{sn}/envVar/{key}                  | Modifier variable     | EnvvarsTab     |
+| DELETE  | /hosting/web/{sn}/envVar/{key}                  | Supprimer variable    | EnvvarsTab     |
+
+### 9.14 APIs Runtimes
+| Méthode | Endpoint                                            | Description           | Service        |
+|---------|-----------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/runtime                           | Liste runtimes        | RuntimesTab    |
+| GET     | /hosting/web/{sn}/runtime/{id}                      | Détails runtime       | RuntimesTab    |
+| POST    | /hosting/web/{sn}/runtime                           | Créer runtime         | RuntimesTab    |
+| PUT     | /hosting/web/{sn}/runtime/{id}                      | Modifier runtime      | RuntimesTab    |
+| DELETE  | /hosting/web/{sn}/runtime/{id}                      | Supprimer runtime     | RuntimesTab    |
+| GET     | /hosting/web/{sn}/runtime/{id}/attachedDomains      | Domaines liés         | RuntimesTab    |
+| GET     | /hosting/web/{sn}/runtimeAvailableTypes             | Types disponibles     | RuntimesTab    |
+
+### 9.15 APIs Emails automatiques
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/email                         | État emails           | EmailsTab      |
+| PUT     | /hosting/web/{sn}/email                         | Modifier email        | EmailsTab      |
+| POST    | /hosting/web/{sn}/email/request                 | Action (BLOCK/UNBLOCK/PURGE) | EmailsTab |
+| GET     | /hosting/web/{sn}/email/bounces                 | Liste bounces         | EmailsTab      |
+
+### 9.16 APIs Email Options (commande)
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/emailOption                   | Liste options         | EmailsTab      |
+| GET     | /hosting/web/{sn}/emailOption/{id}              | Détails option        | EmailsTab      |
+| GET     | /hosting/web/{sn}/emailOption/{id}/serviceInfo  | Service info          | EmailsTab      |
+| POST    | /hosting/web/{sn}/emailOption/{id}/terminate    | Résilier option       | EmailsTab      |
+
+### 9.17 APIs Tâches
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/tasks                         | Liste tâches          | TasksTab       |
+| GET     | /hosting/web/{sn}/tasks/{id}                    | Détails tâche         | TasksTab       |
+
+### 9.18 APIs Logs (ownLogs + userLogs)
+| Méthode | Endpoint                                                    | Description           | Service        |
+|---------|-------------------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/ownLogs                                   | Liste ownLogs         | LogsTab        |
+| GET     | /hosting/web/{sn}/ownLogs/{id}                              | Détails ownLog        | LogsTab        |
+| GET     | /hosting/web/{sn}/ownLogs/{id}/userLogs                     | Liste userLogs        | LogsTab        |
+| GET     | /hosting/web/{sn}/ownLogs/{id}/userLogs/{login}             | Détails userLog       | LogsTab        |
+| POST    | /hosting/web/{sn}/ownLogs/{id}/userLogs                     | Créer userLog         | LogsTab        |
+| **PUT** | **/hosting/web/{sn}/ownLogs/{id}/userLogs/{login}**         | **Modifier userLog**  | LogsTab        |
+| DELETE  | /hosting/web/{sn}/ownLogs/{id}/userLogs/{login}             | Supprimer userLog     | LogsTab        |
+| POST    | /hosting/web/{sn}/ownLogs/{id}/userLogs/{login}/changePassword | Changer MDP        | LogsTab        |
+| GET     | /hosting/web/{sn}/userLogs                                  | Liste userLogs (legacy)| LogsTab       |
+| GET     | /hosting/web/{sn}/userLogsToken                             | Token accès logs      | LogsTab        |
+
+### 9.19 APIs Local SEO
+| Méthode | Endpoint                                            | Description           | Service        |
+|---------|-----------------------------------------------------|-----------------------|----------------|
+| GET     | /hosting/web/{sn}/localSeo/account                  | Liste comptes         | LocalSeoTab    |
+| GET     | /hosting/web/{sn}/localSeo/account/{id}             | Détails compte        | LocalSeoTab    |
+| POST    | /hosting/web/{sn}/localSeo/account/{id}/login       | SSO login             | LocalSeoTab    |
+| GET     | /hosting/web/{sn}/localSeo/location                 | Liste locations       | LocalSeoTab    |
+| GET     | /hosting/web/{sn}/localSeo/location/{id}            | Détails location      | LocalSeoTab    |
+| POST    | /hosting/web/{sn}/localSeo/location/{id}/terminate  | Résilier location     | LocalSeoTab    |
+
+### 9.20 APIs Zone DNS (pour multisite)
+| Méthode | Endpoint                                        | Description           | Service        |
+|---------|-------------------------------------------------|-----------------------|----------------|
+| GET     | /domain/zone                                    | Liste zones           | MultisiteTab   |
+| GET     | /domain/zone/{zone}/record                      | Liste records         | MultisiteTab   |
+| GET     | /domain/zone/{zone}/record/{id}                 | Détails record        | MultisiteTab   |
+| GET     | /domain/zone/{zone}/serviceInfos                | Service info zone     | MultisiteTab   |
+
+### 9.21 APIs Upgrade Hosting (NOUVEAU v4)
+| Méthode | Endpoint                                        | Description                | Service        |
+|---------|-------------------------------------------------|----------------------------|----------------|
+| GET     | /order/upgrade/webHosting/{sn}                  | Upgrades disponibles       | GeneralTab     |
+| GET     | /order/upgrade/webHosting/{sn}/{planCode}       | Prix upgrade plan          | GeneralTab     |
+| POST    | /order/upgrade/webHosting/{sn}/{planCode}       | Commander upgrade          | GeneralTab     |
+| GET     | /domain/{domain}/serviceInfos                   | Service info (START_10_M)  | GeneralTab     |
+
+### 9.22 APIs Upgrade CDN via Services (NOUVEAU v4)
+| Méthode | Endpoint                                              | Description                | Service        |
+|---------|-------------------------------------------------------|----------------------------|----------------|
+| GET     | /services/{serviceId}/upgrade                         | Plans upgrade dispo        | CdnTab         |
+| GET     | /services/{serviceId}/options                         | Options service            | CdnTab         |
+| POST    | /services/{serviceId}/upgrade/{planCode}/simulate     | Simuler upgrade            | CdnTab         |
+| POST    | /services/{serviceId}/upgrade/{planCode}/execute      | Exécuter upgrade           | CdnTab         |
+| GET     | /me/order/{orderId}/status                            | Statut commande            | CdnTab         |
+
+### 9.23 APIs Cart Service Options (NOUVEAU v4)
+| Méthode | Endpoint                                        | Description                | Service        |
+|---------|-------------------------------------------------|----------------------------|----------------|
+| GET     | /order/cartServiceOption/webHosting/{sn}        | Options panier disponibles | DatabaseTab    |
+| POST    | /order/cartServiceOption/webHosting/{sn}        | Commander via panier       | GeneralTab     |
+
+Note: Utilisé pour hasPrivateSqlToActivate (vérifier si private SQL disponible)
+
+### 9.24 IMPORTANT: Distinction Upgrade vs Cart (NOUVEAU v5-fix)
+
+**ATTENTION:** Il existe DEUX méthodes différentes pour upgrader un hébergement:
+
+| Méthode service    | Endpoint API                                    | Usage                           |
+|--------------------|-------------------------------------------------|---------------------------------|
+| `orderUpgrade`     | POST /order/upgrade/webHosting/{sn}/{planCode}  | Upgrade direct (plan complet)   |
+| `orderUpgradeCart` | POST /order/cartServiceOption/webHosting/{sn}   | Commande via panier (options)   |
+
+- **orderUpgrade**: Change l'offre hosting (ex: Perso → Pro). Requiert `planCode` et `autoPayWithPreferredPaymentMethod`.
+- **orderUpgradeCart**: Ajoute des options au panier (ex: SSL, CDN, Local SEO). Requiert `planCode` et `quantity`.
+
+### 9.25 APIs Git Integration (NOUVEAU v5)
+
+Association VCS (Git/GitHub/GitLab/Bitbucket) pour déploiement automatique.
+Source: old_manager git-association.service.js, git-deployment.service.js, git-removal.service.js
+
+| Méthode | Endpoint                                        | Description                | Service        |
+|---------|-------------------------------------------------|----------------------------|----------------|
+| GET     | /hosting/web/{sn}/key/ssh                       | Clé SSH publique hosting   | MultisiteTab   |
+| POST    | /hosting/web/{sn}/key/ssh                       | Créer clé SSH si absente   | MultisiteTab   |
+| GET     | /hosting/web/{sn}/vcs/webhooks                  | URLs webhooks (push/tag)   | MultisiteTab   |
+| GET     | /hosting/web/{sn}/websiteCreationCapabilities   | Capabilities git           | MultisiteTab   |
+| GET     | /hosting/web/{sn}/website                       | Liste websites (VCS)       | MultisiteTab   |
+| GET     | /hosting/web/{sn}/website/{id}                  | Détails website            | MultisiteTab   |
+| POST    | /hosting/web/{sn}/website                       | Créer association VCS      | MultisiteTab   |
+| PUT     | /hosting/web/{sn}/website/{id}                  | Modifier branche VCS       | MultisiteTab   |
+| POST    | /hosting/web/{sn}/website/{id}/deploy           | Déployer depuis VCS        | MultisiteTab   |
+| DELETE  | /hosting/web/{sn}/website/{id}                  | Supprimer association      | MultisiteTab   |
+
+**Paramètres clés:**
+
+```typescript
+// GET /vcs/webhooks - params
+{ path: string, vcs: "github" | "gitlab" | "bitbucket" }
+
+// POST /website - body
+{
+  path: string,              // Chemin du domaine attaché
+  vcsUrl: string,            // URL clone SSH du repo
+  vcsBranch: string,         // Branche à déployer
+  autoDeploy: boolean        // Déploiement auto sur push
+}
+
+// POST /website/{id}/deploy - body
+{ reset?: boolean }          // true = reset working directory
+```
+
+**Flow association Git:**
+```
+1. GET /key/ssh              → récupérer clé SSH (auto-create si 404)
+2. Utilisateur ajoute la clé dans son repo Git
+3. GET /vcs/webhooks         → récupérer URLs webhooks
+4. Utilisateur configure webhooks dans son repo Git
+5. POST /website             → créer association
+6. POST /website/{id}/deploy → premier déploiement
+```
+
+**Gestion erreurs SSH:**
+```typescript
+// Si GET /key/ssh retourne 404 ou 403 → POST /key/ssh pour créer
+// Si POST /key/ssh retourne 500 → clé non disponible pour cette offre
+```
+
+##############################################################################
+# 9.A ICEBERG PAGINATION (NOUVEAU v4)
+##############################################################################
+
+Les endpoints suivants supportent la pagination Iceberg via headers X-Pagination-*
+
+### Headers Iceberg
+```
+X-Pagination-Mode: CachedObjectList-Pages
+X-Pagination-Size: 25
+X-Pagination-Number: 1
+X-Pagination-Sort: field
+X-Pagination-Sort-Order: ASC|DESC
+X-Pagination-Filter: field:comparator=value
+```
+
+### Endpoints avec Iceberg
+| Endpoint                                        | PageSize default | Service        |
+|-------------------------------------------------|------------------|----------------|
+| /hosting/web/{sn}/attachedDomain                | **50000**        | MultisiteTab   |
+| /hosting/web/{sn}/database/{name}/dump          | 25               | DatabaseTab    |
+| /hosting/web/{sn}/extraSqlPerso                 | 25               | DatabaseTab    |
+| /hosting/web/{sn}/database                      | 25               | DatabaseTab    |
+| /hosting/web/{sn}/envVar                        | 25               | EnvvarsTab     |
+| /domain/zone/{zone}/record                      | 100              | MultisiteTab   |
+| /hosting/web/{sn}/tasks                         | 25               | TasksTab       |
+
+Note: old_manager utilise pageSize=50000 pour attachedDomain pour charger tout d'un coup.
+
+##############################################################################
+# 9.B COMPORTEMENTS SPÉCIAUX (NOUVEAU v4)
+##############################################################################
+
+### Normalisation des données
+
+| API                            | Comportement                              | Service        |
+|--------------------------------|-------------------------------------------|----------------|
+| PUT /cron/{id}                 | Strip "./" du début de command            | CronTab        |
+| POST /envVar                   | value = String(value)                     | EnvvarsTab     |
+| PUT /envVar/{key}              | value = String(value)                     | EnvvarsTab     |
+| POST /database/{name}/dump     | date = date.toLowerCase().replace(/_/g,".") | DatabaseTab  |
+
+### Paths avec correction
+| API                                    | Ancien (faux)    | Correct           |
+|----------------------------------------|------------------|-------------------|
+| GET /emailOption/{id}/serviceInfo      | serviceInfo      | **serviceInfos**  |
+
+### Request actions
+| API                              | action value     | Description         |
+|----------------------------------|------------------|---------------------|
+| POST /hosting/web/{sn}/request   | FLUSH_CACHE      | Vider cache hosting |
+| POST /database/{name}/request    | CHECK_QUOTA      | Vérifier quota BDD  |
+| POST /email/request              | BLOCK            | Bloquer emails      |
+| POST /email/request              | UNBLOCK          | Débloquer emails    |
+| POST /email/request              | PURGE            | Purger queue        |
+
+##############################################################################
+# 10. 2API ENDPOINTS (Engine/SWS)
+##############################################################################
+
+Base URL: https://www.ovh.com/engine/2api-m/sws/
+
+### 10.1 2API Dashboard
+| Endpoint                                        | Description           | Service        |
+|-------------------------------------------------|-----------------------|----------------|
+| GET /sws/hosting/web/{sn}                       | Dashboard complet     | GeneralTab     |
+| GET /sws/hosting/web/{sn}/domains               | Liste domaines        | MultisiteTab   |
+| GET /sws/hosting/web/{sn}/databases             | Liste BDD             | DatabaseTab    |
+| GET /sws/hosting/web/{sn}/ftp                   | Liste FTP users       | FtpTab         |
+
+### 10.2 2API Database Statistics
+| Endpoint                                                  | Description           | Service        |
+|-----------------------------------------------------------|-----------------------|----------------|
+| GET /sws/hosting/web/{sn}/databases/{name}/statistics     | Stats BDD             | DatabaseTab    |
+| GET /sws/hosting/web/{sn}/databases/{name}/chart          | Graphiques BDD        | DatabaseTab    |
+
+### 10.3 2API Domain (multisite)
+| Endpoint                                              | Description           | Service        |
+|-------------------------------------------------------|-----------------------|----------------|
+| GET /sws/hosting/web/{sn}/add-domain-existing         | Domaines existants    | MultisiteTab   |
+| GET /sws/domain/{domain}/zone/records                 | Records zone (AAAA)   | MultisiteTab   |
+
+##############################################################################
+# 11. ORDER FLOWS (Cart API)
+##############################################################################
+
+### 11.1 Order Email Option
+```
+1. POST /order/cart                           → { cartId }
+2. POST /order/cart/{cartId}/assign           → void
+3. GET  /order/cartServiceOption/webHosting/{sn} → options[]
+4. POST /order/cartServiceOption/webHosting/{sn} → { itemId }
+5. POST /order/cart/{cartId}/item/{itemId}/configuration → void
+6. GET  /order/cart/{cartId}/checkout         → { prices, contracts }
+7. POST /order/cart/{cartId}/checkout         → { orderId, url }
+```
+
+### 11.2 Order SSL
+```
+1. POST /order/cart                           → { cartId }
+2. POST /order/cart/{cartId}/assign           → void
+3. POST /order/cartServiceOption/webHosting/{sn} avec planCode=ssl-{type}
+4. POST /order/cart/{cartId}/checkout         → { orderId, url }
+```
+
+### 11.3 Order CDN
+```
+1. POST /order/cartServiceOption/webHosting/{sn} avec planCode=cdn-{type}
+   → { orderId, url }
+```
+
+### 11.4 Order Local SEO
+```
+1. POST /order/cartServiceOption/webHosting/{sn} avec planCode=localSeo-{country}
+   → { orderId, url }
+```
+
+### 11.5 Upgrade CDN (via services)
+```
+1. GET  /services/{serviceId}/options          → options avec billing.plan.code=cdn*
+2. GET  /services/{serviceId}/upgrade          → upgrades disponibles
+3. POST /services/{serviceId}/upgrade/{planCode}/simulate → cart simulation
+4. POST /services/{serviceId}/upgrade/{planCode}/execute  → order
+```
+
+##############################################################################
+# 11.A PROMETHEUS QUERIES (NOUVEAU v4)
+##############################################################################
+
+### Statistiques hosting via metricsToken
+Token obtenu via: GET /hosting/web/{sn}/metricsToken → { token, warpUrl }
+
+### Types de statistiques
+| Type                      | Description            | Unit            |
+|---------------------------|------------------------|-----------------|
+| IN_FTP_COMMANDS           | Commandes FTP          | command         |
+| IN_HTTP_HITS              | Requêtes HTTP (défaut) | hits/min        |
+| IN_HTTP_MEAN_RESPONSE_TIME| Temps réponse moyen    | ms              |
+| OUT_TCP_CONN              | Connexions TCP         | cnx/min         |
+| SYS_CPU_USAGE             | Usage CPU              | sec/min         |
+| SYS_WORKER_SPAWN_OVERLOAD | Surcharge workers      | overload        |
+
+### Périodes
+| Label   | Value  | Step  | RawStep | TimeRange            |
+|---------|--------|-------|---------|----------------------|
+| DAILY   | 1d     | 15m   | 15      | -24h                 |
+| WEEKLY  | 7d     | 15m   | 15      | -7j (défaut)         |
+| MONTHLY | 30d    | 15m   | 15      | -30j                 |
+| YEARLY  | 365d   | 60m   | 60      | -365j                |
+
+### Couleurs codes HTTP
+```javascript
+colors = {
+  "2xx": { bg: "rgba(234,247,255, .4)", border: "#00748E" },
+  "3xx": { bg: "rgba(0,106,130, .4)",   border: "#006A82" },
+  "4xx": { bg: "rgba(244,186,77, .4)",  border: "#F4BA4D" },
+  "5xx": { bg: "rgba(218,59,58, .4)",   border: "#DA3B3A" },
+}
+```
+
+### Exemple query Prometheus (IN_HTTP_HITS)
+```promql
+sum without(cluster, statusCode, cluster_name, datacenter, host, host_type, hw_profile, service_name, user) (
+  label_replace(
+    sum_over_time(aggregator_stats_in_httpHits_value{service_name="${serviceName}"}[${step}]),
+    "status_code", "${1}xx", "statusCode", "([0-9]).."
+  )
+) / ${rawStep}
+```
+
+##############################################################################
+# 11.B APIs NON DOCUMENTÉES (trouvées dans old_manager)
+##############################################################################
+
+Ces APIs sont utilisées dans old_manager mais pas documentées officiellement :
+
+| Endpoint                                              | Description                | old_manager file           |
+|-------------------------------------------------------|----------------------------|----------------------------|
+| GET  /hosting/web/{sn}/indy                           | IPs dédiées                | hosting.service.js         |
+| GET  /hosting/web/{sn}/ovhConfig                      | Configs PHP                | hosting-ovhconfig.service.js |
+| GET  /hosting/web/{sn}/ovhConfig/{id}                 | Détails config             | hosting-ovhconfig.service.js |
+| POST /hosting/web/{sn}/ovhConfig/{id}/changeConfiguration | Modifier config       | hosting-ovhconfig.service.js |
+| POST /hosting/web/{sn}/ovhConfig/{id}/rollback        | Rollback config            | hosting-ovhconfig.service.js |
+| POST /hosting/web/{sn}/ovhConfigRefresh               | Sync après modif FTP       | hosting-ovhconfig.service.js |
+| GET  /hosting/web/{sn}/ovhConfigCapabilities          | Capacités config           | hosting-ovhconfig.service.js |
+| GET  /hosting/web/{sn}/dump                           | Snapshots FTP              | hosting-ftp.service.js     |
+| GET  /hosting/web/{sn}/dump/{date}                    | Détails snapshot           | hosting-ftp.service.js     |
+| POST /hosting/web/{sn}/restoreSnapshot                | Restaurer snapshot         | hosting-ftp.service.js     |
+| GET  /hosting/web/{sn}/website                        | Websites associés          | hosting-multisite.service.js |
+| GET  /hosting/web/{sn}/website/{id}                   | Détails website            | git-association.service.js |
+| POST /hosting/web/{sn}/website                        | Créer association VCS      | git-association.service.js |
+| PUT  /hosting/web/{sn}/website/{id}                   | Modifier branche VCS       | git-association.service.js |
+| POST /hosting/web/{sn}/website/{id}/deploy            | Déployer depuis VCS        | git-deployment.service.js  |
+| DELETE /hosting/web/{sn}/website/{id}                 | Supprimer association VCS  | git-removal.service.js     |
+| GET  /hosting/web/{sn}/key/ssh                        | Clé SSH publique           | git-association.service.js |
+| POST /hosting/web/{sn}/key/ssh                        | Créer clé SSH              | git-association.service.js |
+| GET  /hosting/web/{sn}/vcs/webhooks                   | URLs webhooks VCS          | git-association.service.js |
+| GET  /hosting/web/{sn}/websiteCreationCapabilities    | Capabilities git/deploy    | hosting-multisite.service.js |
+| GET  /hosting/web/{sn}/cdn/operation                  | Opérations CDN en cours    | hosting-cdn.service.js     |
+| GET  /hosting/web/{sn}/cdn/operation/{id}             | Détails opération CDN      | hosting-cdn.service.js     |
+| POST /hosting/web/{sn}/cdn/domain/{domain}/purge      | Purge cache domaine        | hosting-cdn.service.js     |
+| POST /hosting/web/{sn}/cdn/domain/{domain}/refresh    | Appliquer settings         | hosting-cdn.service.js     |
+| GET  /hosting/web/{sn}/extraSqlPerso                  | Extra SQL perso            | hosting-database.service.js |
+| GET  /hosting/web/{sn}/abuseState                     | État abus/suspension       | hosting.service.js         |
+
+Note: Ces APIs sont implémentées dans new_manager même si non documentées officiellement.
+
+##############################################################################
+# 12. VARIABLES DYNAMIQUES
 ##############################################################################
 
 | Variable           | Source API                                    |
@@ -720,7 +1127,7 @@ Position: x=320, y=105, width=1096px, height=765px
 | {nicHandle}        | Session utilisateur                           |
 
 ##############################################################################
-# 10. ARBORESCENCE FICHIERS TARGET
+# 13. ARBORESCENCE FICHIERS TARGET
 ##############################################################################
 
 ### Convention de nommage (mise à jour 2025-12-31)
@@ -766,7 +1173,7 @@ NAV3 disponibles:
 ├── target_.web-cloud.hosting.general.home.ovhconfig.txt
 ├── target_.web-cloud.hosting.general.home.migration.svg    # NAV5: Migration
 ├── target_.web-cloud.hosting.general.home.migration.txt
-├── target_.web-cloud.hosting.general.home.terminate.svg    # NAV5: Résiliation (À CRÉER)
+├── target_.web-cloud.hosting.general.home.terminate.svg    # NAV5: Résiliation
 ├── target_.web-cloud.hosting.general.home.terminate.txt
 │
 │   # NAV4: Modules
@@ -814,7 +1221,7 @@ NAV3 disponibles:
 ├── target_.web-cloud.hosting.expert.cdn.parametres.txt
 │
 │   # NAV4: CloudDb (SOURCE pour LINK)
-├── target_.web-cloud.hosting.expert.clouddb.svg            # À CRÉER
+├── target_.web-cloud.hosting.expert.clouddb.svg
 ├── target_.web-cloud.hosting.expert.clouddb.txt
 │
 │   # NAV4: Boost
@@ -849,7 +1256,7 @@ Les fichiers LINK (.txt uniquement) ne sont PAS nécessaires car:
 - Pas de fichiers SVG distincts pour les LINK
 
 ##############################################################################
-# 11. ARBORESCENCE FRONTEND (mise à jour 2025-12-31)
+# 14. ARBORESCENCE FRONTEND (mise à jour 2026-01-01)
 ##############################################################################
 
 ### CONVENTION RÉELLE : Modals FLAT (pas de sous-dossier modals/)
@@ -872,7 +1279,7 @@ aiapp/frontend/src/pages/web-cloud/hosting/
 │   │   ├── GeneralTab.tsx
 │   │   ├── GeneralTab.css
 │   │   ├── GeneralTab.service.ts
-│   │   ├── EditDisplayNameModal.tsx    # ⚠️ FLAT (pas dans modals/)
+│   │   ├── EditDisplayNameModal.tsx
 │   │   ├── ConfigureSshModal.tsx
 │   │   ├── RestoreSnapshotModal.tsx
 │   │   ├── OvhConfigModal.tsx
@@ -881,27 +1288,11 @@ aiapp/frontend/src/pages/web-cloud/hosting/
 │   │   ├── OrderSslModal.tsx
 │   │   └── EditPathModal.tsx
 │   │
-│   ├── statistics/                  # NAV4: Statistiques
-│   │   ├── index.ts
-│   │   ├── StatisticsTab.tsx
-│   │   └── StatisticsTab.css
-│   │
-│   ├── indy/                        # NAV4: Indy
-│   │   ├── index.ts
-│   │   ├── IndyTab.tsx
-│   │   └── IndyTab.css
-│   │
-│   ├── offer/                       # NAV4: Offre
-│   │   ├── index.ts
-│   │   ├── OfferTab.tsx
-│   │   └── OfferTab.css
-│   │
 │   ├── modules/                     # NAV4: Modules
 │   │   ├── index.ts
 │   │   ├── ModulesTab.tsx
 │   │   ├── ModulesTab.css
-│   │   ├── ModulesTab.service.ts
-│   │   ├── modals.ts                   # Re-export des modals
+│   │   ├── ModulesTab.service.ts    # ← APIs: moduleList, active, latest
 │   │   ├── InstallModuleModal.tsx
 │   │   ├── ChangePasswordModal.tsx
 │   │   └── DeleteModuleModal.tsx
@@ -911,15 +1302,14 @@ aiapp/frontend/src/pages/web-cloud/hosting/
 │   │   ├── LogsTab.tsx
 │   │   ├── LogsTab.css
 │   │   ├── LogsTab.service.ts
-│   │   ├── UserLogsTab.tsx             # NAV5: User Logs
+│   │   ├── UserLogsTab.tsx
 │   │   ├── UserLogsTab.css
-│   │   ├── modals.ts
 │   │   ├── DownloadLogsModal.tsx
 │   │   └── UserLogsModal.tsx
 │   │
 │   └── seo/                         # NAV4: SEO
 │       ├── index.ts
-│       ├── LocalSeoTab.tsx             # ⚠️ Nommé LocalSeoTab (pas SeoTab)
+│       ├── LocalSeoTab.tsx
 │       ├── LocalSeoTab.css
 │       └── LocalSeoTab.service.ts
 │
@@ -929,13 +1319,10 @@ aiapp/frontend/src/pages/web-cloud/hosting/
 │   │   ├── index.ts
 │   │   ├── MultisiteTab.tsx
 │   │   ├── MultisiteTab.css
-│   │   ├── MultisiteTab.service.ts
-│   │   ├── modals.ts
+│   │   ├── MultisiteTab.service.ts  # ← APIs: attachedDomain, 2API existing
 │   │   ├── AddDomainModal.tsx
 │   │   ├── EditDomainModal.tsx
-│   │   ├── EditDomainWizard.tsx
 │   │   ├── DeleteDomainModal.tsx
-│   │   ├── DeleteDomainWizard.tsx
 │   │   ├── DiagnosticModal.tsx
 │   │   └── FlushCdnWizard.tsx
 │   │
@@ -944,9 +1331,7 @@ aiapp/frontend/src/pages/web-cloud/hosting/
 │       ├── SslTab.tsx
 │       ├── SslTab.css
 │       ├── SslTab.service.ts
-│       ├── modals.ts
 │       ├── OrderSslModal.tsx
-│       ├── OrderSslWizard.tsx
 │       ├── ImportSslModal.tsx
 │       ├── RegenerateSslModal.tsx
 │       └── DeleteSslModal.tsx
@@ -957,8 +1342,7 @@ aiapp/frontend/src/pages/web-cloud/hosting/
     │   ├── index.ts
     │   ├── FtpTab.tsx
     │   ├── FtpTab.css
-    │   ├── FtpTab.service.ts
-    │   ├── modals.ts
+    │   ├── FtpTab.service.ts        # ← APIs: user, dump, restoreSnapshot
     │   ├── CreateFtpUserModal.tsx
     │   ├── EditFtpUserModal.tsx
     │   ├── ChangePasswordModal.tsx
@@ -968,11 +1352,10 @@ aiapp/frontend/src/pages/web-cloud/hosting/
     │   ├── index.ts
     │   ├── DatabaseTab.tsx
     │   ├── DatabaseTab.css
-    │   ├── DatabaseTab.service.ts
-    │   ├── DatabaseDumpsTab.tsx        # NAV5: Dumps (dans même dossier)
+    │   ├── DatabaseTab.service.ts   # ← APIs: database, 2API stats
+    │   ├── DatabaseDumpsTab.tsx
     │   ├── DatabaseDumpsTab.css
-    │   ├── DatabaseStatisticsTab.tsx   # NAV5: Statistics (dans même dossier)
-    │   ├── modals.ts
+    │   ├── DatabaseStatisticsTab.tsx
     │   ├── CreateDatabaseModal.tsx
     │   ├── EditDatabaseModal.tsx
     │   ├── ChangePasswordModal.tsx
@@ -986,8 +1369,8 @@ aiapp/frontend/src/pages/web-cloud/hosting/
     │   ├── index.ts
     │   ├── CdnTab.tsx
     │   ├── CdnTab.css
-    │   ├── CdnTab.service.ts
-    │   ├── CdnSettingsTab.tsx          # NAV5: Settings (dans même dossier)
+    │   ├── CdnTab.service.ts        # ← APIs: cdn, cdn/domain, cdn/domain/option
+    │   ├── CdnSettingsTab.tsx
     │   ├── CdnSettingsTab.css
     │   ├── ActivateCdnModal.tsx
     │   ├── DeactivateCdnModal.tsx
@@ -1002,7 +1385,7 @@ aiapp/frontend/src/pages/web-cloud/hosting/
     │   ├── index.ts
     │   ├── BoostTab.tsx
     │   ├── BoostTab.css
-    │   ├── BoostTab.service.ts
+    │   ├── BoostTab.service.ts      # ← APIs: boostHistory, requestBoost
     │   ├── ActivateBoostModal.tsx
     │   └── DeactivateBoostModal.tsx
     │
@@ -1010,14 +1393,13 @@ aiapp/frontend/src/pages/web-cloud/hosting/
     │   ├── index.ts
     │   ├── EmailsTab.tsx
     │   ├── EmailsTab.css
-    │   └── EmailsTab.service.ts
+    │   └── EmailsTab.service.ts     # ← APIs: email, emailOption, order cart
     │
     ├── envvars/                     # NAV4: Variables
     │   ├── index.ts
     │   ├── EnvvarsTab.tsx
     │   ├── EnvvarsTab.css
     │   ├── EnvvarsTab.service.ts
-    │   ├── modals.ts
     │   ├── CreateEnvvarModal.tsx
     │   ├── EditEnvvarModal.tsx
     │   └── DeleteEnvvarModal.tsx
@@ -1026,8 +1408,7 @@ aiapp/frontend/src/pages/web-cloud/hosting/
     │   ├── index.ts
     │   ├── RuntimesTab.tsx
     │   ├── RuntimesTab.css
-    │   ├── RuntimesTab.service.ts
-    │   ├── modals.ts
+    │   ├── RuntimesTab.service.ts   # ← APIs: runtime, runtimeAvailableTypes
     │   ├── CreateRuntimeModal.tsx
     │   ├── EditRuntimeModal.tsx
     │   └── DeleteRuntimeModal.tsx
@@ -1036,8 +1417,7 @@ aiapp/frontend/src/pages/web-cloud/hosting/
     │   ├── index.ts
     │   ├── CronTab.tsx
     │   ├── CronTab.css
-    │   ├── CronTab.service.ts
-    │   ├── modals.ts
+    │   ├── CronTab.service.ts       # ← APIs: cron, cronAvailableLanguage
     │   ├── CreateCronModal.tsx
     │   ├── EditCronModal.tsx
     │   └── DeleteCronModal.tsx
@@ -1046,48 +1426,11 @@ aiapp/frontend/src/pages/web-cloud/hosting/
         ├── index.ts
         ├── TasksTab.tsx
         ├── TasksTab.css
-        └── TasksTab.service.ts
-```
-
-### Import des tabs dans index.tsx
-```typescript
-// index.tsx - Structure des imports lazy
-// Note: database inclut DatabaseDumpsTab et DatabaseStatisticsTab
-// Note: cdn inclut CdnSettingsTab
-const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<...>> = {
-  // NAV3: [Général]
-  general: React.lazy(() => import("./general/general")),
-  statistics: React.lazy(() => import("./general/statistics")),
-  indy: React.lazy(() => import("./general/indy")),
-  offer: React.lazy(() => import("./general/offer")),
-  modules: React.lazy(() => import("./general/modules")),
-  logs: React.lazy(() => import("./general/logs")),
-  userlogs: React.lazy(() => import("./general/logs")),  // UserLogsTab
-  seo: React.lazy(() => import("./general/seo")),
-
-  // NAV3: [Sites]
-  multisite: React.lazy(() => import("./sites/multisite")),
-  ssl: React.lazy(() => import("./sites/ssl")),
-
-  // NAV3: [Expert]
-  ftp: React.lazy(() => import("./expert/ftp")),
-  database: React.lazy(() => import("./expert/database")),
-  databasedumps: React.lazy(() => import("./expert/database")),      // Dans database/
-  databasestatistics: React.lazy(() => import("./expert/database")), // Dans database/
-  cdn: React.lazy(() => import("./expert/cdn")),
-  cdnsettings: React.lazy(() => import("./expert/cdn")),             // Dans cdn/
-  clouddb: React.lazy(() => import("./expert/clouddb")),
-  boost: React.lazy(() => import("./expert/boost")),
-  emails: React.lazy(() => import("./expert/emails")),
-  envvars: React.lazy(() => import("./expert/envvars")),
-  runtimes: React.lazy(() => import("./expert/runtimes")),
-  cron: React.lazy(() => import("./expert/cron")),
-  tasks: React.lazy(() => import("./expert/tasks")),
-};
+        └── TasksTab.service.ts      # ← APIs: tasks
 ```
 
 ##############################################################################
-# 12. ARBORESCENCE LOCALES (CONVENTION FLAT)
+# 15. ARBORESCENCE LOCALES (CONVENTION FLAT)
 ##############################################################################
 
 ### CONVENTION RÉELLE : Fichiers FLAT avec préfixe web-cloud.hosting.*
@@ -1115,23 +1458,14 @@ aiapp/frontend/public/locales/
 │           │   # ══════ NAV3: [Expert] ══════
 │           ├── web-cloud.hosting.ftp.json          # FtpTab (SOURCE)
 │           ├── web-cloud.hosting.database.json     # DatabaseTab + Dumps + Stats (SOURCE)
+│           ├── web-cloud.hosting.cdn.json          # CdnTab + CdnSettings (SOURCE)
 │           ├── web-cloud.hosting.clouddb.json      # CloudDbTab (SOURCE)
 │           ├── web-cloud.hosting.boost.json        # BoostTab
 │           ├── web-cloud.hosting.emails.json       # EmailsTab
 │           ├── web-cloud.hosting.envvars.json      # EnvvarsTab
 │           ├── web-cloud.hosting.runtimes.json     # RuntimesTab
 │           ├── web-cloud.hosting.cron.json         # CronTab
-│           ├── web-cloud.hosting.tasks.json        # TasksTab
-│           │
-│           │   # ══════ Sous-dossiers spécifiques ══════
-│           ├── modals/
-│           │   └── migration.json                  # MigrationModal
-│           │
-│           └── tabs/
-│               ├── database-statistics.json        # DatabaseStatisticsTab
-│               ├── indy.json                       # IndyTab
-│               ├── offer.json                      # OfferTab
-│               └── statistics.json                 # StatisticsTab
+│           └── web-cloud.hosting.tasks.json        # TasksTab
 │
 └── fr/
     └── web-cloud/
@@ -1139,15 +1473,11 @@ aiapp/frontend/public/locales/
             └── (même structure que en/)
 ```
 
-### ⚠️ FICHIERS VÉRIFIÉS (2025-12-31)
-- ✅ `web-cloud.hosting.cdn.json` - Créé (Traductions CDN + CdnSettings)
-- ✅ Pas besoin de `tabs/userlogs.json` - UserLogsTab utilise `web-cloud.hosting.logs.json`
-
 ##############################################################################
-# 13. WORKFLOW GÉNÉRATION
+# 16. WORKFLOW GÉNÉRATION
 ##############################################################################
 
-### Fichiers existants (28 paires SVG+TXT) - Vérifié 2025-12-31
+### Fichiers existants (28 paires SVG+TXT) - Vérifié 2026-01-01
 
 **INDEX**
 - [x] target_.web-cloud.hosting.index
@@ -1159,7 +1489,7 @@ aiapp/frontend/public/locales/
 - [x] target_.web-cloud.hosting.expert.bdd.dumps
 - [x] target_.web-cloud.hosting.expert.cdn
 - [x] target_.web-cloud.hosting.expert.cdn.parametres
-- [x] target_.web-cloud.hosting.expert.clouddb ✅ CRÉÉ 2025-12-31
+- [x] target_.web-cloud.hosting.expert.clouddb
 - [x] target_.web-cloud.hosting.expert.boost
 - [x] target_.web-cloud.hosting.expert.emails
 - [x] target_.web-cloud.hosting.expert.envvars
@@ -1174,7 +1504,7 @@ aiapp/frontend/public/locales/
 - [x] target_.web-cloud.hosting.general.home.offer
 - [x] target_.web-cloud.hosting.general.home.ovhconfig
 - [x] target_.web-cloud.hosting.general.home.migration
-- [x] target_.web-cloud.hosting.general.home.terminate ✅ CRÉÉ 2025-12-31
+- [x] target_.web-cloud.hosting.general.home.terminate
 - [x] target_.web-cloud.hosting.general.modules
 - [x] target_.web-cloud.hosting.general.logs
 - [x] target_.web-cloud.hosting.general.logs.user
@@ -1184,7 +1514,7 @@ aiapp/frontend/public/locales/
 - [x] target_.web-cloud.hosting.sites.multisite
 - [x] target_.web-cloud.hosting.sites.ssl
 
-### Tous les fichiers créés ✅
+### Tous les fichiers créés
 
 ================================================================================
 FIN PROMPT TARGET WEB CLOUD > HÉBERGEMENT

@@ -33,15 +33,17 @@ export function useEmailDomains(): UseEmailDomainsResult {
     try {
       const result = await emailsService.getDomains();
       setDomains(result);
-      if (result.length > 0 && !selectedDomainName) {
-        setSelectedDomainName(result[0].name);
-      }
+      // Auto-sélection du premier domaine (utilise updater pour éviter dépendance)
+      setSelectedDomainName((prev) => {
+        if (prev) return prev; // Déjà sélectionné
+        return result.length > 0 ? result[0].name : null;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur de chargement");
     } finally {
       setLoading(false);
     }
-  }, [selectedDomainName]);
+  }, []); // Pas de dépendance - évite le double appel
 
   useEffect(() => {
     loadDomains();

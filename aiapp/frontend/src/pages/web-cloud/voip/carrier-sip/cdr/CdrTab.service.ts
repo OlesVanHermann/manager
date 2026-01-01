@@ -2,19 +2,22 @@
 // CDR TAB SERVICE - Service ISOLÉ (défactorisé)
 // ============================================================
 
-import { ovhApi } from "../../../../../../services/api";
-import type { CdrRecord } from "../../carrier-sip.types";
+import { ovhApi } from "../../../../../services/api";
+import type { CdrRecord } from "../carrier-sip.types";
 
 // ============================================================
 // SERVICE ISOLÉ - Aucun import croisé entre tabs
 // ============================================================
 
-async function getCdrRecords(billingAccount: string): Promise<CdrRecord[]> {
-  return ovhApi.get<CdrRecord[]>(`/telephony/${billingAccount}/cdr`).catch(() => []);
+// GET /telephony/{ba}/carrierSip/{sn}/cdrs - Récupérer les CDR (Call Detail Records)
+async function getCdrRecords(billingAccount: string, serviceName: string): Promise<CdrRecord[]> {
+  // API correcte: GET /telephony/{ba}/carrierSip/{sn}/cdrs
+  return ovhApi.get<CdrRecord[]>(`/telephony/${billingAccount}/carrierSip/${serviceName}/cdrs`).catch(() => []);
 }
 
 async function getCdr(billingAccount: string, serviceName: string): Promise<CdrRecord[]> {
-  return ovhApi.get<CdrRecord[]>(`/telephony/${billingAccount}/carrierSip/${serviceName}/cdr`).catch(() => []);
+  // API correcte: GET /telephony/{ba}/carrierSip/{sn}/cdrs
+  return ovhApi.get<CdrRecord[]>(`/telephony/${billingAccount}/carrierSip/${serviceName}/cdrs`).catch(() => []);
 }
 
 // Helper DUPLIQUÉ volontairement (défactorisation)

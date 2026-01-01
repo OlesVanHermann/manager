@@ -4,9 +4,10 @@
 // Exchange ONLY feature
 // ============================================================
 
-import { apiFetch } from "../../../../../services/api";
+import { apiFetch, ovh2apiGet, ovh2apiPut } from "../../../../../services/api";
 
 const BASE = "/email/exchange";
+const BASE_2API = "/sws/exchange";
 
 // ---------- TYPES ----------
 
@@ -87,3 +88,94 @@ export async function remove(id: string, serviceId: string): Promise<void> {
 }
 
 export { remove as delete };
+
+// ============================================================
+// 2API ENDPOINTS - Pagination serveur & données agrégées
+// Ces endpoints utilisent /sws/exchange/* (2API)
+// ============================================================
+
+// ---------- 2API TYPES ----------
+
+export interface ResourceListResult {
+  list: {
+    results: ExchangeResource[];
+    count: number;
+  };
+}
+
+export interface ResourceDelegationRight {
+  account: string;
+  allowedAccountMember?: boolean;
+}
+
+export interface ResourceDelegationRightsResult {
+  list: {
+    results: ResourceDelegationRight[];
+    count: number;
+  };
+}
+
+// ---------- 2API HELPERS ----------
+
+function get2apiPath(serviceId: string): string {
+  const [org, exchange] = serviceId.includes("/")
+    ? serviceId.split("/")
+    : [serviceId, serviceId];
+  return `${BASE_2API}/${org}/${exchange}`;
+}
+
+// ---------- 2API CALLS ----------
+
+/**
+ * Liste paginée des resources (2API)
+ * Équivalent old_manager: retrievingResources
+ */
+export async function list2api(
+  serviceId: string,
+  options?: { count?: number; offset?: number; search?: string }
+): Promise<ResourceListResult> {
+  const path = get2apiPath(serviceId);
+  return ovh2apiGet<ResourceListResult>(`${path}/resources`, {
+    count: options?.count ?? 25,
+    offset: options?.offset ?? 0,
+    search: options?.search ?? "",
+  });
+}
+
+/**
+ * Droits de délégation d'une resource (2API)
+ * Équivalent old_manager: getAccountsByResource
+ */
+export async function getResourceRights(
+  serviceId: string,
+  resourceEmailAddress: string,
+  options?: { count?: number; offset?: number; search?: string }
+): Promise<ResourceDelegationRightsResult> {
+  const path = get2apiPath(serviceId);
+  return ovh2apiGet<ResourceDelegationRightsResult>(
+    `${path}/resources/${resourceEmailAddress}/rights`,
+    {
+      count: options?.count ?? 25,
+      offset: options?.offset ?? 0,
+      search: options?.search ?? "",
+    }
+  );
+}
+
+/**
+ * Mise à jour des droits de délégation d'une resource (2API)
+ * Équivalent old_manager: updateResourceDelegation
+ */
+export async function updateResourceRights(
+  serviceId: string,
+  resourceEmailAddress: string,
+  delegationModel: {
+    allowedAccountMember?: string[];
+  }
+): Promise<void> {
+  const path = get2apiPath(serviceId);
+  await ovh2apiPut(
+    `${path}/resources/${resourceEmailAddress}/rights-update`,
+    delegationModel
+  );
+}

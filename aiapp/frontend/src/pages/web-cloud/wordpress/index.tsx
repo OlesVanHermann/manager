@@ -1,31 +1,32 @@
 // ============================================================
 // WORDPRESS - Page principale
+// Architecture alignée sur OLD_MANAGER: Resource -> Website[]
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { apiClient } from '../../../services/api';
-import type { WordPress } from './wordpress.types';
+import { wordpressApi } from './wordpress.api';
+import type {
+  ManagedWordpressResource,
+  ManagedWordpressWebsiteDetails,
+  WordPress,
+} from './wordpress.types';
 import { GeneralTab, DomainsTab, PerformanceTab, ExtensionsTab, BackupsTab, TasksTab } from './tabs.ts';
 import { CreateWebsiteModal } from './CreateWebsiteModal';
 import { ImportWebsiteModal } from './ImportWebsiteModal';
 import Onboarding from './Onboarding';
 import './wordpress.css';
 
-const BASE_PATH = '/managedCMS/resource';
-const API_OPTIONS = { apiVersion: 'v2' as const };
-
-// Service local pour la page principale
-const pageService = {
-  async listServices(): Promise<string[]> {
-    const response = await apiClient.get<{ serviceName: string }[]>(BASE_PATH, API_OPTIONS);
-    return response.map(r => r.serviceName);
-  },
-  async getService(serviceName: string): Promise<WordPress> {
-    return apiClient.get(`${BASE_PATH}/${serviceName}`, API_OPTIONS);
-  },
-};
+// Structure locale pour le panneau gauche
+interface WebsiteListItem {
+  id: string;
+  resourceId: string;
+  fqdn: string;
+  status: string;
+  phpVersion: string;
+  plan: string;
+}
 
 type TabKey = 'general' | 'domains' | 'performance' | 'extensions' | 'backups' | 'tasks';
 
@@ -40,12 +41,17 @@ const TABS: { key: TabKey; labelKey: string }[] = [
 
 export default function WordPressPage() {
   const { t } = useTranslation('web-cloud/wordpress/index');
-  const { serviceName: paramServiceName } = useParams<{ serviceName?: string }>();
+  const { serviceName: _paramServiceName } = useParams<{ serviceName?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [services, setServices] = useState<string[]>([]);
-  const [selectedService, setSelectedService] = useState<string | null>(paramServiceName || null);
-  const [details, setDetails] = useState<WordPress | null>(null);
+  // State pour les resources et websites
+  const [resources, setResources] = useState<ManagedWordpressResource[]>([]);
+  const [websites, setWebsites] = useState<WebsiteListItem[]>([]);
+  const [selectedWebsite, setSelectedWebsite] = useState<WebsiteListItem | null>(null);
+  const [websiteDetails, setWebsiteDetails] = useState<ManagedWordpressWebsiteDetails | null>(null);
+  const [currentResource, setCurrentResource] = useState<ManagedWordpressResource | null>(null);
+
+  // State UI
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>((searchParams.get('tab') as TabKey) || 'general');
@@ -53,30 +59,71 @@ export default function WordPressPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const loadServices = useCallback(async () => {
+  // Charger les resources et leurs websites
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const list = await pageService.listServices();
-      setServices(list);
-      if (list.length > 0 && !selectedService) setSelectedService(list[0]);
+      setError(null);
+
+      // 1. Charger toutes les resources
+      const resourceList = await wordpressApi.listResources();
+      setResources(resourceList);
+
+      // 2. Pour chaque resource, charger les websites
+      const allWebsites: WebsiteListItem[] = [];
+      for (const resource of resourceList) {
+        try {
+          const websiteList = await wordpressApi.listAllWebsites(resource.id);
+          for (const website of websiteList) {
+            allWebsites.push({
+              id: website.id,
+              resourceId: resource.id,
+              fqdn: website.currentState.defaultFQDN || 'En cours de création...',
+              status: website.resourceStatus,
+              phpVersion: website.currentState.phpVersion,
+              plan: resource.currentState.plan.replace('managed-cms-alpha-', '').replace('managed-cms-', ''),
+            });
+          }
+        } catch {
+          // Ignorer les erreurs pour une resource individuelle
+        }
+      }
+      setWebsites(allWebsites);
+
+      // 3. Sélectionner le premier website si aucun n'est sélectionné
+      if (allWebsites.length > 0 && !selectedWebsite) {
+        const firstWebsite = allWebsites[0];
+        setSelectedWebsite(firstWebsite);
+      }
     } catch (err) {
       setError(String(err));
     } finally {
       setLoading(false);
     }
-  }, [selectedService]);
+  }, [selectedWebsite]);
 
-  const loadDetails = useCallback(async () => {
-    if (!selectedService) return;
-    try {
-      const data = await pageService.getService(selectedService);
-      setDetails(data);
-    } catch (err) {
+  // Charger les détails du website sélectionné
+  const loadWebsiteDetails = useCallback(async () => {
+    if (!selectedWebsite) {
+      setWebsiteDetails(null);
+      setCurrentResource(null);
+      return;
     }
-  }, [selectedService]);
 
-  useEffect(() => { loadServices(); }, [loadServices]);
-  useEffect(() => { loadDetails(); }, [loadDetails]);
+    try {
+      const [details, resource] = await Promise.all([
+        wordpressApi.getWebsite(selectedWebsite.resourceId, selectedWebsite.id),
+        wordpressApi.getResource(selectedWebsite.resourceId),
+      ]);
+      setWebsiteDetails(details);
+      setCurrentResource(resource);
+    } catch (err) {
+      console.error('Erreur chargement détails:', err);
+    }
+  }, [selectedWebsite]);
+
+  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadWebsiteDetails(); }, [loadWebsiteDetails]);
   useEffect(() => {
     const tab = searchParams.get('tab') as TabKey;
     if (tab && TABS.some(t => t.key === tab)) setActiveTab(tab);
@@ -86,60 +133,99 @@ export default function WordPressPage() {
     setActiveTab(tab);
     setSearchParams({ tab });
   };
+
   const handleRefresh = () => {
-    loadDetails();
+    loadWebsiteDetails();
   };
-  const handleSelectService = (svc: string) => {
-    setSelectedService(svc);
+
+  const handleSelectWebsite = (website: WebsiteListItem) => {
+    setSelectedWebsite(website);
     setActiveTab('general');
     setSearchParams({ tab: 'general' });
   };
 
   // Filtre de recherche
-  const filteredServices = services.filter(svc =>
-    svc.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredWebsites = websites.filter(ws =>
+    ws.fqdn.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Flag pour afficher onboarding dans le main
-  // Mode normal: onboarding si aucun service
-  const forceOnboarding = false;
-  const showOnboarding = !loading && (forceOnboarding || services.length === 0);
-  // Erreur à afficher seulement si on a des services mais le détail échoue
-  const showError = !forceOnboarding && error && services.length > 0;
+  // Flag pour afficher onboarding
+  const showOnboarding = !loading && websites.length === 0;
+  const showError = error && websites.length === 0;
+
+  // Convertir pour les tabs legacy
+  const legacyDetails: WordPress | null = websiteDetails && currentResource
+    ? {
+        serviceName: websiteDetails.id,
+        displayName: websiteDetails.currentState.defaultFQDN,
+        state: mapStatus(websiteDetails.resourceStatus),
+        offer: currentResource.currentState.plan.replace('managed-cms-alpha-', '').replace('managed-cms-', ''),
+        datacenter: 'gra',
+        url: `https://${websiteDetails.currentState.defaultFQDN}`,
+        adminUrl: `https://${websiteDetails.currentState.defaultFQDN}/wp-admin`,
+        phpVersion: websiteDetails.currentState.phpVersion,
+        wordpressVersion: websiteDetails.currentState.import?.checkResult?.cmsSpecific?.wordpress?.version,
+        creationDate: websiteDetails.currentState.createdAt,
+        sslEnabled: true,
+        cdnEnabled: false,
+        autoUpdate: true,
+        updateAvailable: false,
+      }
+    : null;
 
   const renderTab = () => {
-    if (!selectedService || !details) return null;
+    if (!selectedWebsite || !legacyDetails) return null;
+    // Passer resourceId ET websiteId pour les actions
+    const serviceName = selectedWebsite.resourceId;
+    const websiteId = selectedWebsite.id;
+
     switch (activeTab) {
-      case 'general': return <GeneralTab serviceName={selectedService} details={details} onRefresh={handleRefresh} />;
-      case 'domains': return <DomainsTab serviceName={selectedService} />;
-      case 'performance': return <PerformanceTab serviceName={selectedService} offer={details.offer} />;
-      case 'extensions': return <ExtensionsTab serviceName={selectedService} />;
-      case 'backups': return <BackupsTab serviceName={selectedService} offer={details.offer} />;
-      case 'tasks': return <TasksTab serviceName={selectedService} />;
-      default: return null;
+      case 'general':
+        return (
+          <GeneralTab
+            serviceName={serviceName}
+            websiteId={websiteId}
+            details={legacyDetails}
+            onRefresh={handleRefresh}
+          />
+        );
+      case 'domains':
+        return <DomainsTab serviceName={serviceName} />;
+      case 'performance':
+        return <PerformanceTab serviceName={serviceName} offer={legacyDetails.offer} />;
+      case 'extensions':
+        return <ExtensionsTab serviceName={serviceName} />;
+      case 'backups':
+        return <BackupsTab serviceName={serviceName} offer={legacyDetails.offer} />;
+      case 'tasks':
+        return <TasksTab serviceName={serviceName} />;
+      default:
+        return null;
     }
   };
 
-  // Etat du site pour l'affichage
-  const getStateInfo = (state: string) => {
+  const getStateInfo = (status: string) => {
     const states: Record<string, { label: string; color: string; className: string }> = {
-      active: { label: t('states.active'), color: '#10B981', className: 'success' },
-      installing: { label: t('states.installing'), color: '#F59E0B', className: 'warning' },
-      updating: { label: t('states.updating'), color: '#F59E0B', className: 'warning' },
-      suspended: { label: t('states.suspended'), color: '#EF4444', className: 'error' },
-      error: { label: t('states.error'), color: '#EF4444', className: 'error' },
-      creating: { label: t('states.creating'), color: '#F59E0B', className: 'warning' },
-      deleting: { label: t('states.deleting'), color: '#F59E0B', className: 'warning' },
-      importing: { label: t('states.importing'), color: '#F59E0B', className: 'warning' },
+      READY: { label: t('states.active'), color: '#10B981', className: 'success' },
+      CREATING: { label: t('states.creating'), color: '#F59E0B', className: 'warning' },
+      UPDATING: { label: t('states.updating'), color: '#F59E0B', className: 'warning' },
+      DELETING: { label: t('states.deleting'), color: '#F59E0B', className: 'warning' },
+      ERROR: { label: t('states.error'), color: '#EF4444', className: 'error' },
     };
-    return states[state] || { label: state, color: '#6B7280', className: 'muted' };
+    return states[status] || { label: status, color: '#6B7280', className: 'muted' };
   };
 
   return (
     <div className="wp-page">
       <div className="wp-split">
-        {/* LEFT PANEL - Liste des sites */}
+        {/* LEFT PANEL - Liste des websites */}
         <aside className="wp-sidebar">
+          {/* NAV3 Selector - Un seul groupe "Général" */}
+          <div className="wp-nav3-selector">
+            <button className="wp-nav3-btn active">
+              {t('nav3.general')}
+            </button>
+          </div>
           <div className="wp-sidebar-search">
             <div className="wp-search-wrapper">
               <span className="wp-search-icon">🔍</span>
@@ -153,7 +239,7 @@ export default function WordPressPage() {
             </div>
           </div>
           <div className="wp-sidebar-filter">
-            <span>{filteredServices.length} {t('common.sites', { count: filteredServices.length })}</span>
+            <span>{filteredWebsites.length} {t('common.sites', { count: filteredWebsites.length })}</span>
           </div>
           <div className="wp-service-items">
             {showOnboarding ? (
@@ -162,26 +248,24 @@ export default function WordPressPage() {
                 <span className="wp-sidebar-empty-text">{t('noResults')}</span>
               </div>
             ) : (
-              filteredServices.map(svc => {
-                const svcDetails = svc === selectedService ? details : null;
-                const stateInfo = svcDetails ? getStateInfo(svcDetails.state) : null;
+              filteredWebsites.map(ws => {
+                const stateInfo = getStateInfo(ws.status);
+                const isSelected = selectedWebsite?.id === ws.id;
                 return (
                   <div
-                    key={svc}
-                    className={`wp-service-item ${svc === selectedService ? 'selected' : ''}`}
-                    onClick={() => handleSelectService(svc)}
+                    key={ws.id}
+                    className={`wp-service-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => handleSelectWebsite(ws)}
                   >
                     <span className="wp-service-icon">🌐</span>
                     <div className="wp-service-info">
-                      <div className="wp-service-name">{svcDetails?.displayName || svc}</div>
-                      <div className="wp-service-version">WordPress {svcDetails?.wordpressVersion || svcDetails?.wpVersion || '--'}</div>
-                      {stateInfo && (
-                        <div className="wp-service-state">
-                          <span className="wp-state-dot" style={{ backgroundColor: stateInfo.color }} />
-                          <span>{stateInfo.label}</span>
-                        </div>
-                      )}
-                      <div className="wp-service-offer">{svcDetails?.offer || 'WordPress'} · {svcDetails?.datacenter || '--'}</div>
+                      <div className="wp-service-name">{ws.fqdn}</div>
+                      <div className="wp-service-version">PHP {ws.phpVersion}</div>
+                      <div className="wp-service-state">
+                        <span className="wp-state-dot" style={{ backgroundColor: stateInfo.color }} />
+                        <span>{stateInfo.label}</span>
+                      </div>
+                      <div className="wp-service-offer">{ws.plan} sites</div>
                     </div>
                   </div>
                 );
@@ -189,90 +273,118 @@ export default function WordPressPage() {
             )}
           </div>
           <div className="wp-sidebar-actions">
-            <button className="wp-btn wp-btn-primary wp-btn-block" onClick={() => {
-              setShowCreateModal(true);
-            }}>
+            <button
+              className="wp-btn wp-btn-primary wp-btn-block"
+              onClick={() => setShowCreateModal(true)}
+              disabled={resources.length === 0}
+            >
               + {t('actions.newSite')}
             </button>
           </div>
         </aside>
 
-        {/* RIGHT PANEL - Details du site ou Onboarding */}
+        {/* RIGHT PANEL - Toujours afficher header + NAV3 */}
         <main className="wp-main">
-          {loading ? (
-            <div className="wp-page-loading">{t('common.loading')}</div>
-          ) : showOnboarding ? (
-            <Onboarding onCreate={() => setShowCreateModal(true)} onImport={() => setShowImportModal(true)} />
-          ) : showError ? (
-            <div className="wp-page-error">{error}</div>
-          ) : selectedService && details ? (
-            <div className="wp-detail">
-              {/* Header */}
-              <div className="wp-detail-header">
-                <div className="wp-detail-header-info">
-                  <h2>{details.displayName || details.serviceName}</h2>
-                  <span className="wp-detail-header-meta">
-                    WordPress {details.wordpressVersion || details.wpVersion} · PHP {details.phpVersion} · {details.offer}
-                  </span>
-                </div>
+          <div className="wp-detail">
+            {/* Header - Titre dynamique selon sélection */}
+            <div className="wp-detail-header">
+              <div className="wp-detail-header-info">
+                {selectedWebsite && legacyDetails ? (
+                  <>
+                    <h2>{legacyDetails.displayName || selectedWebsite.fqdn}</h2>
+                    <span className="wp-detail-header-meta">
+                      PHP {legacyDetails.phpVersion} · {selectedWebsite.plan} sites
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <h2>{t('title')}</h2>
+                    <span className="wp-detail-header-meta">{t('subtitle')}</span>
+                  </>
+                )}
+              </div>
+              {selectedWebsite && legacyDetails && (
                 <div className="wp-detail-header-actions">
                   <button
                     className="wp-btn wp-btn-outline"
-                    onClick={() => {
-                      window.open(details.adminUrl || `${details.url}/wp-admin`, '_blank');
-                    }}
+                    onClick={() => window.open(legacyDetails.adminUrl, '_blank')}
                   >
                     Admin WP
                   </button>
                   <button
                     className="wp-btn wp-btn-outline"
-                    onClick={() => {
-                      window.open(details.url, '_blank');
-                    }}
+                    onClick={() => window.open(legacyDetails.url, '_blank')}
                   >
                     {t('actions.visitSite')}
                   </button>
                 </div>
-              </div>
-
-              {/* NAV3 Tabs */}
-              <div className="wp-tabs">
-                {TABS.map(tab => (
-                  <button
-                    key={tab.key}
-                    className={`wp-tab-btn ${activeTab === tab.key ? 'active' : ''}`}
-                    onClick={() => handleTabChange(tab.key)}
-                  >
-                    {t(tab.labelKey)}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab Content */}
-              <div className="wp-tab-content">{renderTab()}</div>
+              )}
             </div>
-          ) : (
-            <div className="wp-empty">
-              <span className="wp-empty-icon">🌐</span>
-              <h3>{t('common.selectService')}</h3>
+
+            {/* NAV4 Fonction - Tabs dans le RIGHT PANEL */}
+            <div className="wp-tabs">
+              {TABS.map(tab => (
+                <button
+                  key={tab.key}
+                  className={`wp-tab-btn ${activeTab === tab.key ? 'active' : ''}`}
+                  onClick={() => handleTabChange(tab.key)}
+                >
+                  {t(tab.labelKey)}
+                </button>
+              ))}
             </div>
-          )}
+
+            {/* Tab Content */}
+            <div className="wp-tab-content">
+              {loading ? (
+                <div className="wp-page-loading">{t('common.loading')}</div>
+              ) : !selectedWebsite ? (
+                activeTab === 'general' ? (
+                  <Onboarding
+                    onCreate={() => setShowCreateModal(true)}
+                    onImport={() => setShowImportModal(true)}
+                  />
+                ) : null
+              ) : showError ? (
+                <div className="wp-page-error">{error}</div>
+              ) : legacyDetails ? (
+                renderTab()
+              ) : null}
+            </div>
+          </div>
         </main>
       </div>
 
       {/* Modales */}
       <CreateWebsiteModal
-        serviceName={selectedService || ''}
+        serviceName={resources[0]?.id || ''}
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onSuccess={() => { setShowCreateModal(false); loadServices(); }}
+        onSuccess={() => {
+          setShowCreateModal(false);
+          loadData();
+        }}
       />
       <ImportWebsiteModal
-        serviceName={selectedService || ''}
+        serviceName={resources[0]?.id || ''}
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
-        onSuccess={() => { setShowImportModal(false); loadServices(); }}
+        onSuccess={() => {
+          setShowImportModal(false);
+          loadData();
+        }}
       />
     </div>
   );
+}
+
+function mapStatus(status: string): 'active' | 'creating' | 'deleting' | 'error' | 'updating' {
+  const map: Record<string, 'active' | 'creating' | 'deleting' | 'error' | 'updating'> = {
+    READY: 'active',
+    CREATING: 'creating',
+    DELETING: 'deleting',
+    ERROR: 'error',
+    UPDATING: 'updating',
+  };
+  return map[status] || 'active';
 }

@@ -1,11 +1,13 @@
 // ============================================================
 // API EXCHANGE - Comptes email
-// Endpoints: /email/exchange/{org}/service/{service}/account/*
+// Endpoints apiv6: /email/exchange/{org}/service/{service}/account/*
+// Endpoints 2API: /sws/exchange/{org}/{exchange}/*
 // ============================================================
 
-import { apiFetch } from "../../../../../services/api";
+import { apiFetch, ovh2apiGet, ovh2apiPost, ovh2apiPut } from "../../../../../services/api";
 
 const BASE = "/email/exchange";
+const BASE_2API = "/sws/exchange";
 
 // ---------- TYPES ----------
 
@@ -140,4 +142,176 @@ export async function enableMfa(id: string, serviceId: string): Promise<void> {
     method: "PUT",
     body: JSON.stringify({ IMAP: false, POP: false, webMail: true }),
   });
+}
+
+// ============================================================
+// 2API ENDPOINTS - Pagination serveur & données agrégées
+// Ces endpoints utilisent /sws/exchange/* (2API)
+// ============================================================
+
+// ---------- 2API TYPES ----------
+
+export interface AccountListResult {
+  list: {
+    results: ExchangeAccount[];
+    count: number;
+  };
+}
+
+export interface AccountCreationOptions {
+  availableDomains: Array<{ name: string; displayName: string }>;
+  availableLicenses: string[];
+  maxQuota: number;
+}
+
+export interface AccountDelegationRight {
+  account: string;
+  sendRights: boolean;
+  fullAccessRights: boolean;
+  sendOnBehalfRights: boolean;
+}
+
+export interface DelegationRightsResult {
+  list: {
+    results: AccountDelegationRight[];
+    count: number;
+  };
+}
+
+// ---------- 2API HELPERS ----------
+
+function get2apiPath(serviceId: string): string {
+  const [org, exchange] = serviceId.includes("/")
+    ? serviceId.split("/")
+    : [serviceId, serviceId];
+  return `${BASE_2API}/${org}/${exchange}`;
+}
+
+// ---------- 2API CALLS ----------
+
+/**
+ * Liste paginée des comptes (2API) - pagination serveur
+ * Équivalent old_manager: getAccountsForExchange
+ */
+export async function list2api(
+  serviceId: string,
+  options?: {
+    count?: number;
+    offset?: number;
+    search?: string;
+    configurableOnly?: number;
+    typeLicence?: string;
+  }
+): Promise<AccountListResult> {
+  const path = get2apiPath(serviceId);
+  return ovh2apiGet<AccountListResult>(`${path}/accounts`, {
+    count: options?.count ?? 25,
+    offset: options?.offset ?? 0,
+    search: options?.search ?? "",
+    configurableOnly: options?.configurableOnly ?? 0,
+    typeLicence: options?.typeLicence ?? "",
+  });
+}
+
+/**
+ * Liste comptes + contacts (2API)
+ * Équivalent old_manager: getAccountsAndContacts
+ */
+export async function listWithContacts(
+  serviceId: string,
+  options?: { count?: number; offset?: number; search?: string }
+): Promise<AccountListResult> {
+  const path = get2apiPath(serviceId);
+  return ovh2apiGet<AccountListResult>(`${path}/accounts/contacts`, {
+    count: options?.count ?? 25,
+    offset: options?.offset ?? 0,
+    search: options?.search ?? "",
+  });
+}
+
+/**
+ * Options de création de compte (2API)
+ * Équivalent old_manager: fetchingAccountCreationOptions
+ */
+export async function getCreationOptions(serviceId: string): Promise<AccountCreationOptions> {
+  const path = get2apiPath(serviceId);
+  return ovh2apiGet<AccountCreationOptions>(`${path}/accounts/options`);
+}
+
+/**
+ * Renouvellement batch des comptes (2API)
+ * Équivalent old_manager: updateRenew
+ */
+export async function renewAccounts(
+  serviceId: string,
+  accounts: Array<{ primaryEmailAddress: string; renewPeriod?: string }>
+): Promise<void> {
+  const path = get2apiPath(serviceId);
+  await ovh2apiPut(`${path}/accounts/renew`, { modelList: accounts });
+}
+
+/**
+ * Droits de délégation d'un compte (2API)
+ * Équivalent old_manager: retrieveAccountDelegationRight
+ */
+export async function getDelegationRights(
+  serviceId: string,
+  account: string,
+  options?: { count?: number; offset?: number; search?: string }
+): Promise<DelegationRightsResult> {
+  const path = get2apiPath(serviceId);
+  return ovh2apiGet<DelegationRightsResult>(`${path}/accounts/${account}/rights`, {
+    count: options?.count ?? 25,
+    offset: options?.offset ?? 0,
+    search: options?.search ?? "",
+  });
+}
+
+/**
+ * Mise à jour des droits de délégation (2API)
+ * Équivalent old_manager: updatingAccountDelegationRights
+ */
+export async function updateDelegationRights(
+  serviceId: string,
+  account: string,
+  rights: {
+    sendRights?: string[];
+    fullAccessRights?: string[];
+    sendOnBehalfRights?: string[];
+  }
+): Promise<void> {
+  const path = get2apiPath(serviceId);
+  await ovh2apiPost(`${path}/accounts/${account}/rights-update`, rights);
+}
+
+/**
+ * Options pour alias (2API)
+ * Équivalent old_manager: getNewAliasOptions
+ */
+export async function getAliasOptions(
+  serviceId: string,
+  emailAddress?: string,
+  subType?: string
+): Promise<{ availableDomains: Array<{ name: string; displayName: string }> }> {
+  const path = get2apiPath(serviceId);
+  return ovh2apiGet(`${path}/aliasOptions`, {
+    emailAddress: emailAddress ?? "",
+    subType: subType ?? "",
+  });
+}
+
+// ============================================================
+// APIv6 - Fonctions supplémentaires
+// ============================================================
+
+/**
+ * Tâches en cours pour un compte (APIv6)
+ * Équivalent old_manager: getTasks (account.service.js)
+ */
+export async function getAccountTasks(
+  serviceId: string,
+  primaryEmailAddress: string
+): Promise<number[]> {
+  const basePath = getServicePath(serviceId);
+  return apiFetch<number[]>(`${basePath}/account/${primaryEmailAddress}/tasks`);
 }

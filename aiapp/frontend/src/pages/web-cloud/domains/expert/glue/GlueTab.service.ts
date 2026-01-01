@@ -2,7 +2,7 @@
 // SERVICE ISOLÉ : GlueTab - Gestion Glue Records
 // ============================================================
 
-import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhDelete } from "../../../../../services/api";
 import type { GlueRecord } from "../../domains.types";
 
 // ============ SERVICE ============
@@ -21,7 +21,8 @@ class GlueService {
   }
 
   async updateGlueRecord(domain: string, host: string, ips: string[]): Promise<void> {
-    await ovhPut(`/domain/${domain}/glueRecord/${host}`, { ips });
+    // POST /domain/{domain}/glueRecord/{host}/update - Identique old_manager
+    await ovhPost(`/domain/${domain}/glueRecord/${host}/update`, { ips });
   }
 
   async deleteGlueRecord(domain: string, host: string): Promise<void> {

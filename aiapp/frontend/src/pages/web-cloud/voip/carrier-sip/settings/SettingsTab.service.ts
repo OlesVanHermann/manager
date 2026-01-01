@@ -2,7 +2,7 @@
 // SETTINGS TAB SERVICE - API calls isolés
 // ============================================================
 
-import { ovhApi } from '../../../../../../services/api';
+import { ovhApi } from '../../../../../services/api';
 
 interface CarrierSipSettings {
   description: string;
@@ -19,10 +19,11 @@ interface CarrierSipCredentials {
 }
 
 export const settingsService = {
+  // GET /telephony/{ba}/carrierSip/{sn}/settings - Récupérer les paramètres
   async getSettings(billingAccount: string, serviceName: string): Promise<CarrierSipSettings> {
     try {
       return await ovhApi.get<CarrierSipSettings>(
-        `/telephony/${billingAccount}/carrierSip/${serviceName}`
+        `/telephony/${billingAccount}/carrierSip/${serviceName}/settings`
       );
     } catch {
       return {
@@ -35,13 +36,14 @@ export const settingsService = {
     }
   },
 
+  // PUT /telephony/{ba}/carrierSip/{sn}/settings - Modifier les paramètres
   async updateSettings(
     billingAccount: string,
     serviceName: string,
     settings: Partial<CarrierSipSettings>
   ): Promise<void> {
     await ovhApi.put(
-      `/telephony/${billingAccount}/carrierSip/${serviceName}`,
+      `/telephony/${billingAccount}/carrierSip/${serviceName}/settings`,
       settings
     );
   },

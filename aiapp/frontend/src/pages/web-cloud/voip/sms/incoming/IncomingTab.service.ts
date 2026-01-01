@@ -2,7 +2,7 @@
 // INCOMING TAB SERVICE - Service ISOLÉ (défactorisé)
 // ============================================================
 
-import { ovhApi } from '../../../../../../services/api';
+import { ovhApi } from '../../../../../services/api';
 import type { SmsIncoming } from '../../sms.types';
 
 // ============================================================

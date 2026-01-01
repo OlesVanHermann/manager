@@ -2,7 +2,7 @@
 // OFFICE/DOMAINS - Service local isolé
 // ============================================================
 
-import { ovhApi } from '../../../../../../services/api';
+import { ovhApi } from '../../../../../services/api';
 import type { OfficeDomain } from '../../office.types';
 
 export async function listDomains(serviceName: string): Promise<string[]> {

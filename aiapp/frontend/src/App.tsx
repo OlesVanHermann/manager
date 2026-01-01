@@ -92,7 +92,7 @@ const STORAGE_KEY = "ovh_credentials";
 // ============================================================
 function AppContent() {
   const { t } = useTranslation('common');
-  const { t: tNav } = useTranslation('navigation');
+  const { t: _tNav } = useTranslation('navigation');
   const { isLoading, logout } = useAuth();
 
   // ---------- AUTH STATE ----------
@@ -104,9 +104,9 @@ function AppContent() {
   // ---------- NAVIGATION ----------
   const nav = useAppNavigation();
 
-  // ---------- LOGGER NAV1/NAV2 ----------
+  // ---------- LOGGER NAV1/NAV2 (reset NAV3/NAV4 on section change) ----------
   useEffect(() => {
-    log.setNav({ nav1: nav.activeUniverseId, nav2: nav.activeSectionId });
+    log.setNav({ nav1: nav.activeUniverseId, nav2: nav.activeSectionId, nav3: null, nav4: null });
   }, [nav.activeUniverseId, nav.activeSectionId]);
 
   // ---------- LOGGER USER ID ----------
@@ -162,13 +162,13 @@ function AppContent() {
     // GENERAL Universe (ex-HOME)
     if (nav.activeUniverseId === "general") {
       switch (nav.activeSectionId) {
-        case "general-general": return <GeneralPage onNavigate={nav.handleNavigate} />;
+        case "general-general": return <GeneralPage />;
         case "general-account": return <AccountPage user={user} isActive={true} onNavigate={nav.handleNavigate} initialTab={nav.activeTabId} />;
         case "general-billing": return <BillingPage isActive={true} initialTab={nav.activeTabId} />;
         case "general-support": return <SupportPage initialTab={nav.activeTabId} />;
         case "general-carbon": return <CarbonPage />;
         case "general-api": return <ApiPage initialTab={nav.activeTabId} />;
-        default: return <GeneralPage onNavigate={nav.handleNavigate} />;
+        default: return <GeneralPage />;
       }
     }
 

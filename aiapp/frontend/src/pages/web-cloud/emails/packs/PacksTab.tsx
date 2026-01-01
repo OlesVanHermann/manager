@@ -93,9 +93,9 @@ export default function PacksTab() {
   };
 
   const getUsageColor = (percent: number) => {
-    if (percent >= 100) return "#EF4444";
-    if (percent >= 80) return "#F59E0B";
-    return "#10B981";
+    if (percent >= 100) return "#DC2626";
+    if (percent >= 80) return "#D97706";
+    return "#059669";
   };
 
   return (

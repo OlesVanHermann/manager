@@ -34,8 +34,36 @@ export const runtimesService = {
     ovhPut<void>(`${BASE}/${sn}/runtime/${id}`, { isDefault: true }),
 
   // --- Available Runtime Types ---
-  getAvailableRuntimeTypes: (sn: string) => 
+  getAvailableRuntimeTypes: (sn: string) =>
     ovhGet<string[]>(`${BASE}/${sn}/runtimeAvailableTypes`).catch(() => ["phpfpm", "nodejs", "python", "ruby"]),
+
+  // ============ METHODS FROM OLD_MANAGER ============
+
+  // Get runtime attached domains (from old_manager getAttachedDomains)
+  getAttachedDomains: (sn: string, runtimeId: number) =>
+    ovhGet<string[]>(`${BASE}/${sn}/runtime/${runtimeId}/attachedDomains`),
+
+  // Get default runtime (from old_manager getDefault)
+  getDefaultRuntime: async (sn: string) => {
+    const ids = await ovhGet<number[]>(`${BASE}/${sn}/runtime`);
+    if (ids.length === 0) return null;
+
+    const runtimes = await Promise.all(
+      ids.map((id: number) => ovhGet<Runtime>(`${BASE}/${sn}/runtime/${id}`))
+    );
+
+    return runtimes.find((runtime) => runtime.isDefault) || null;
+  },
+
+  // Get all runtimes with details
+  getAllRuntimes: async (sn: string) => {
+    const ids = await ovhGet<number[]>(`${BASE}/${sn}/runtime`);
+    if (ids.length === 0) return [];
+
+    return Promise.all(
+      ids.map((id: number) => ovhGet<Runtime>(`${BASE}/${sn}/runtime/${id}`))
+    );
+  },
 };
 
 export default runtimesService;

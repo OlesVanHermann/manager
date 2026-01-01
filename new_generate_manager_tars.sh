@@ -364,9 +364,13 @@ echo "Création new_manager.web-cloud.access.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.access.tar \
     ./src/pages/web-cloud/access
 
-echo "Création new_manager.web-cloud.access.connections.tar..."
-tar -cf /home/ubuntu/new_manager.web-cloud.access.connections.tar \
-    ./src/pages/web-cloud/access/connections
+echo "Création new_manager.web-cloud.access.api.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.access.api.tar \
+    ./src/pages/web-cloud/access/api
+
+echo "Création new_manager.web-cloud.access.general.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.access.general.tar \
+    ./src/pages/web-cloud/access/general
 
 echo "Création new_manager.web-cloud.access.overthebox.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.access.overthebox.tar \
@@ -390,11 +394,23 @@ echo "Création new_manager.web-cloud.domains.general.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.domains.general.tar \
     ./src/pages/web-cloud/domains/general
 
-# --- EMAILS (tout est à plat, pas de sous-dossiers structurés) ---
+# --- EMAILS (core: fichiers directs + sous-dossiers api, general, packs) ---
 
 echo "Création new_manager.web-cloud.emails.tar..."
 tar -cf /home/ubuntu/new_manager.web-cloud.emails.tar \
     ./src/pages/web-cloud/emails
+
+echo "Création new_manager.web-cloud.emails.api.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.emails.api.tar \
+    ./src/pages/web-cloud/emails/api
+
+echo "Création new_manager.web-cloud.emails.general.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.emails.general.tar \
+    ./src/pages/web-cloud/emails/general
+
+echo "Création new_manager.web-cloud.emails.packs.tar..."
+tar -cf /home/ubuntu/new_manager.web-cloud.emails.packs.tar \
+    ./src/pages/web-cloud/emails/packs
 
 # --- HOSTING (anciennement hebergement) ---
 

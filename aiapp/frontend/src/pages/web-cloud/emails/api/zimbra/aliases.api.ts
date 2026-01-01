@@ -6,6 +6,7 @@
 import { apiFetch } from "../../../../../services/api";
 
 const BASE = "/email/zimbra";
+const BASE_V2 = "/v2/email/zimbra/platform";
 
 // ---------- TYPES ----------
 
@@ -74,3 +75,62 @@ export async function listByAccount(accountId: string, serviceId: string): Promi
   const all = await list(serviceId);
   return all.filter(a => a.targetAccountId === accountId);
 }
+
+// ============================================================
+// API V2 ENDPOINTS - Pagination native Iceberg
+// Ces endpoints utilisent /v2/email/zimbra/platform/* (API v2)
+// ============================================================
+
+export interface AliasListResultV2 {
+  data: ZimbraAlias[];
+  links: {
+    next?: { href: string };
+    prev?: { href: string };
+    self: { href: string };
+  };
+  currentCursor?: string;
+  nextCursor?: string;
+}
+
+/**
+ * Liste paginée des alias (API v2) - pagination Iceberg native
+ */
+export async function listV2(
+  platformId: string,
+  options?: { pageSize?: number; cursor?: string }
+): Promise<AliasListResultV2> {
+  const params = new URLSearchParams();
+  if (options?.pageSize) params.set("pageSize", String(options.pageSize));
+  if (options?.cursor) params.set("cursor", options.cursor);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiFetch<AliasListResultV2>(`${BASE_V2}/${platformId}/alias${query}`);
+}
+
+/**
+ * Détails d'un alias (API v2)
+ */
+export async function getV2(platformId: string, aliasId: string): Promise<ZimbraAlias> {
+  return apiFetch<ZimbraAlias>(`${BASE_V2}/${platformId}/alias/${aliasId}`);
+}
+
+/**
+ * Création d'alias (API v2)
+ */
+export async function createV2(platformId: string, data: CreateAliasParams): Promise<ZimbraAlias> {
+  return apiFetch<ZimbraAlias>(`${BASE_V2}/${platformId}/alias`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Suppression d'alias (API v2)
+ */
+export async function removeV2(platformId: string, aliasId: string): Promise<void> {
+  await apiFetch(`${BASE_V2}/${platformId}/alias/${aliasId}`, {
+    method: "DELETE",
+  });
+}
+
+export { removeV2 as deleteV2 };

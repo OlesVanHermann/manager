@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { domainsService } from './domains/DomainsTab.service';
-import type { SslConfig } from '../wordpress.types';
+import type { SslConfig } from './wordpress.types';
 import './Modals.css';
 
 interface Props {

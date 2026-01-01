@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { WordPressBackup, RestoreOptions } from '../wordpress.types';
+import type { WordPressBackup, RestoreOptions } from './wordpress.types';
 import './Modals.css';
 
 interface Props {

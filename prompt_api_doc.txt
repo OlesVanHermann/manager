@@ -1,0 +1,399 @@
+# PROMPT API DOC - Documentation des APIs OVHcloud
+
+## 1. Objectif
+
+Générer une **documentation statique HTML** des APIs OVHcloud organisée par navigation (NAV1.NAV2.NAV3).
+
+Pour chaque page du Manager (NAV3), lister tous les appels API utilisés avec leurs paramètres, exemples et réponses.
+
+---
+
+## 2. Sources et destinations
+
+| Élément | Chemin |
+|---------|--------|
+| **Old Manager (source)** | `/home/ubuntu/manager/` |
+| **New Manager (référence)** | `/home/ubuntu/aiapp/frontend/src/` |
+| **Documentation (destination)** | `/var/www/aiapp/doc/` |
+| **URL publique** | `https://manager.di2amp.com/doc/` |
+
+---
+
+## 3. Les 8 NAV1 (ordre d'affichage)
+
+| # | NAV1 | Dossier frontend | Description |
+|---|------|------------------|-------------|
+| 1 | **home** | `pages/home/` | Compte, Facturation, Support, Carbon, API |
+| 2 | **public-cloud** | `pages/public-cloud/` | Project, Instances, Storage, K8s, AI, Databases, Registry, LB |
+| 3 | **private-cloud** | `pages/private-cloud/` | VMware, Nutanix, SAP, Veeam, Managed Bare Metal |
+| 4 | **bare-metal** | `pages/bare-metal/` | Dedicated, VPS, Housing, NAS-HA, NetApp |
+| 5 | **web-cloud** | `pages/web-cloud/` | Domains, Hosting, Emails, VoIP, SMS, Fax, Access, WordPress |
+| 6 | **network** | `pages/network/` | IP, vRack, CDN, Cloud Connect, vRack Services, Load Balancer |
+| 7 | **iam** | `pages/iam/` | Identités, Policies, Logs, Secret, OKMS, DBaaS-Logs |
+| 8 | **licenses** | `pages/license/` | Windows, cPanel, Plesk, SQL Server, Virtuozzo, DirectAdmin |
+
+---
+
+## 3.1 Types d'API
+
+| Type | Base URL | Description |
+|------|----------|-------------|
+| **apiv6** | `/1.0/...` | API REST classique OVHcloud |
+| **2API** | `/v2/...` | Nouvelle API (IAM, services modernes) |
+| **Engin** | `/engine/...` | API interne (baremetal, PCI) |
+
+## 3.2 Régions
+
+| Région | Base URL | Subsidiaires |
+|--------|----------|--------------|
+| **EU** | `eu.api.ovh.com` | FR, DE, ES, IT, PL, PT, UK, IE, NL, BE, CZ |
+| **CA** | `ca.api.ovh.com` | CA, QC, WE, WS |
+| **US** | `us.api.ovh.com` | US |
+
+---
+
+## 4. Arborescence de la documentation
+
+### 4.1 Structure des fichiers
+
+```
+/var/www/aiapp/doc/
+├── index.html                          # Application SPA (3 panneaux)
+├── style.css                           # Styles avec Design System OVH
+│
+├── data/                               # JSON des endpoints par NAV1
+│   ├── A-home.json                     # Endpoints home
+│   ├── B-iam.json                      # Endpoints IAM
+│   ├── C-license.json                  # Endpoints licenses
+│   ├── D-public-cloud.json             # Endpoints public-cloud
+│   ├── E-private-cloud.json            # Endpoints private-cloud
+│   ├── F-bare-metal.json               # Endpoints bare-metal
+│   ├── G-web-cloud.json                # Endpoints web-cloud
+│   ├── H-network.json                  # Endpoints network
+│   └── I-unused.json                   # Endpoints orphelins
+│   │
+│   ├── home/                           # Détails par NAV2
+│   │   ├── account.json
+│   │   ├── billing.json
+│   │   └── ...
+│   ├── web-cloud/
+│   │   ├── domains.json
+│   │   ├── hosting.json
+│   │   ├── emails.json
+│   │   ├── voip.json
+│   │   ├── access.json
+│   │   └── wordpress.json
+│   └── ...
+```
+
+### 4.2 Résumé des 9 NAV1
+
+| ID | NAV1 | Préfixes API principaux |
+|----|------|-------------------------|
+| A | home | `/me/*`, `/services`, `/support/*` |
+| B | iam | `/iam/*`, `/me/identity/*`, `/me/logs`, `/okms/*`, `/secret/*` |
+| C | license | `/license/*` |
+| D | public-cloud | `/cloud/project/*` |
+| E | private-cloud | `/dedicatedCloud/*`, `/nutanix/*`, `/veeam/*` |
+| F | bare-metal | `/dedicated/server/*`, `/vps/*`, `/dedicated/nasha/*` |
+| G | web-cloud | `/domain/*`, `/hosting/*`, `/email/*`, `/telephony/*`, `/sms/*` |
+| H | network | `/ip/*`, `/vrack/*`, `/cdn/*`, `/ipLoadbalancing/*` |
+| I | unused | Endpoints non rattachés |
+
+---
+
+## 5. Layout de la documentation (4 barres + 2 colonnes)
+
+### 5.1 Structure visuelle
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  API Docs │ Home │ Public Cloud │ Private Cloud │ Bare Metal │ Web Cloud │ ... │ [EU ▼]
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  domains │ emails │ hosting │ wordpress │ voip │ access                         │
+├───────────────────────────┬─────────────────────────────────────────────────────┤
+│ [General] [DNS] [Expert]  │                                                     │
+├───────────────────────────┤  GET /domain/{serviceName}                 [apiv6]  │
+│  🔍 Rechercher...         │  ═══════════════════════════════════════════════    │
+├───────────────────────────┤                                                     │
+│                           │  Description                                        │
+│  /domain                  │  ─────────────────────────────────────────────────  │
+│  /domain/{serviceName}    │  Récupère les détails du domaine.                   │
+│  /domain/{}/serviceInfos  │                                                     │
+│  /domain/{}/contact       │  Type d'API: apiv6                                  │
+│  /domain/{}/task          │  Régions: EU, CA, US                                │
+│                           │  Page: General                                      │
+│                           │                                                     │
+│                           │  Base URL                                           │
+│                           │  ─────────────────────────────────────────────────  │
+│                           │  https://eu.api.ovh.com/1.0/domain/{serviceName}    │
+│                           │                                                     │
+│  SIDEBAR 30%              │  CONTENU 70%                                        │
+├───────────────────────────┴─────────────────────────────────────────────────────┤
+│  Documentation OVHcloud │ Console API │ GitHub Manager │ Status API             │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Les 4 barres horizontales
+
+| Barre | Hauteur | Contenu |
+|-------|---------|---------|
+| **NAV1** | 50px | 8 onglets (Home → Licenses) + Switch région [EU/CA/US] |
+| **NAV2** | 40px | Sous-sections du NAV1 actif (account, billing, support...) |
+| **NAV3** | 36px | Pages/onglets au sein du NAV2 (General, DNS, Expert...) |
+| **Footer** | 50px | Liens externes |
+
+### 5.3 Comportement
+
+| Zone | Contenu | Interaction |
+|------|---------|-------------|
+| **Barre NAV1** | 8 onglets + [EU▼] | Clic → charge NAV2, met à jour sidebar |
+| **Barre NAV2** | Sous-sections | Clic → charge NAV3, filtre endpoints |
+| **Barre NAV3** | Pages/onglets | Clic → filtre endpoints par catégorie |
+| **Switch région** | EU / CA / US | Change la base URL dans les exemples |
+| **Sidebar (30%)** | Liste endpoints filtrés par NAV3 | Clic → affiche doc détaillée |
+| **Contenu (70%)** | Doc endpoint + badge type API | Scroll indépendant |
+| **Footer** | Liens externes | Navigation externe |
+
+### 5.4 Badge type API
+
+| Badge | Couleur | Signification |
+|-------|---------|---------------|
+| `[apiv6]` | Vert | API REST classique `/1.0/` |
+| `[2API]` | Bleu | Nouvelle API `/v2/` |
+| `[Engin]` | Orange | API interne `/engine/` |
+
+### 5.5 Footer - Liens externes
+
+| Lien | URL |
+|------|-----|
+| Documentation OVHcloud | https://docs.ovh.com/ |
+| Console API | https://api.ovh.com/console/ |
+| GitHub Manager | https://github.com/ovh/manager |
+| Status API | https://status.ovh.com/ |
+
+---
+
+## 6. Format JSON des endpoints
+
+Structure JSON par NAV1.NAV2 avec type d'API et région.
+
+### 6.1 Emplacement
+
+```
+/var/www/aiapp/doc/data/
+├── A-home.json              # Liste simple tous endpoints home
+├── home/
+│   ├── account.json         # Détails endpoints account
+│   ├── billing.json         # Détails endpoints billing
+│   └── ...
+├── G-web-cloud.json         # Liste simple tous endpoints web-cloud
+├── web-cloud/
+│   ├── domains.json         # Détails endpoints domains
+│   ├── hosting.json
+│   ├── emails.json
+│   ├── voip.json
+│   ├── access.json
+│   └── wordpress.json
+└── ...
+```
+
+### 6.2 Format JSON simple (fichiers principaux X-nav1.json)
+
+```json
+[
+  {"path": "/domain", "method": "GET"},
+  {"path": "/domain/{}", "method": "GET"},
+  {"path": "/domain/{}", "method": "PUT"}
+]
+```
+
+### 6.3 Format JSON enrichi (fichiers nav1/nav2.json)
+
+```json
+[
+  {
+    "path": "/domain",
+    "method": "GET",
+    "api_type": "apiv6",
+    "nav3": "General",
+    "description": "List registered domains"
+  },
+  {
+    "path": "/domain/{serviceName}",
+    "method": "GET",
+    "api_type": "apiv6",
+    "nav3": "General",
+    "description": "Get domain details"
+  },
+  {
+    "path": "/domain/zone/{zoneName}/record",
+    "method": "GET",
+    "api_type": "apiv6",
+    "nav3": "DNS",
+    "description": "List DNS zone records"
+  }
+]
+```
+
+---
+
+## 7. Méthodologie d'extraction
+
+### 7.1 Sources à analyser
+
+| Source | Chemin | Contenu |
+|--------|--------|---------|
+| **New Manager services** | `/home/ubuntu/aiapp/frontend/src/services/*.ts` | Appels API actuels |
+| **New Manager pages** | `/home/ubuntu/aiapp/frontend/src/pages/**/*.tsx` | Utilisation des services |
+| **Old Manager modules** | `/home/ubuntu/manager/packages/manager/modules/` | Appels API legacy |
+| **Old Manager apps** | `/home/ubuntu/manager/packages/manager/apps/` | Apps complètes |
+
+### 7.2 Commandes d'extraction
+
+```bash
+# Chercher les appels API dans new_manager
+cd /home/ubuntu/aiapp/frontend/src
+grep -rn "fetch\|api\." services/
+
+# Chercher les appels API dans old_manager
+cd /home/ubuntu/manager
+grep -rn "api\.get\|api\.post\|api\.put\|api\.delete" packages/manager/
+
+# Chercher les endpoints spécifiques
+grep -rn '"/me/' packages/manager/
+grep -rn '"/domain/' packages/manager/
+grep -rn '"/hosting/' packages/manager/
+
+# Chercher les interfaces TypeScript
+grep -rn "export interface" packages/manager/modules/billing/src/
+```
+
+### 7.3 Fichiers clés par NAV1
+
+| NAV1 | Chemins old_manager |
+|------|---------------------|
+| A-home | `modules/account/`, `modules/billing/`, `apps/hub/` |
+| B-iam | `apps/iam/`, `modules/iam/` |
+| C-license | `apps/dedicated/`, `modules/license/` |
+| D-public-cloud | `apps/pci/`, `modules/pci/` |
+| E-private-cloud | `apps/dedicated/`, `modules/dedicatedCloud/` |
+| F-bare-metal | `apps/dedicated/`, `apps/vps/`, `modules/nasha/` |
+| G-web-cloud | `apps/web/`, `modules/hosting/`, `modules/email-domain/`, `apps/telecom/` |
+| H-network | `apps/dedicated/`, `modules/ip/`, `modules/vrack/` |
+
+---
+
+## 8. Workflow
+
+### 8.1 Pipeline
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   old_manager   │────▶│    DISCOVER     │────▶│     EXTRACT     │────▶│    GENERATE     │
+│   new_manager   │     │  (list calls)   │     │   (JSON data)   │     │  (HTML pages)   │
+└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
+     SOURCE                 ENDPOINTS              METADATA              DOCUMENTATION
+   grep + read            liste brute            JSON enrichi            HTML navigable
+```
+
+### 8.2 Commandes
+
+```
+----------+----------------------------+------------------------------------------
+action    | params                     | description
+----------+----------------------------+------------------------------------------
+init      |                            | reload prompt_api_doc.txt
+menu      |                            | afficher ce menu
+----------+----------------------------+------------------------------------------
+discover  | <NAV1>                     | lister tous les endpoints d'un NAV1
+discover  | <NAV1>.<NAV2>              | lister endpoints d'un NAV2
+discover  | <NAV1>.<NAV2>.<NAV3>       | lister endpoints d'une page
+discover  | all                        | lister TOUS les endpoints
+----------+----------------------------+------------------------------------------
+extract   | <NAV1>.<NAV2>.<NAV3>       | créer JSON pour une page
+extract   | <NAV1>.<NAV2>              | créer JSON pour une section
+extract   | <NAV1>                     | créer JSON pour un univers
+----------+----------------------------+------------------------------------------
+generate  | <NAV1>.<NAV2>.<NAV3>       | générer HTML d'une page
+generate  | <NAV1>.<NAV2>              | générer HTML d'une section
+generate  | <NAV1>                     | générer HTML d'un univers
+generate  | all                        | générer toute la documentation
+----------+----------------------------+------------------------------------------
+qualify   | <endpoint>                 | rattacher un endpoint orphelin à un NAV
+----------+----------------------------+------------------------------------------
+status    |                            | état de la documentation
+status    | <NAV1>                     | état d'un univers
+orphans   |                            | lister les endpoints non rattachés
+----------+----------------------------+------------------------------------------
+deploy    |                            | déployer vers /var/www/aiapp/doc/
+----------+----------------------------+------------------------------------------
+```
+
+---
+
+## 9. Règles critiques
+
+### 9.1 Extraction
+
+- **TOUJOURS** vérifier les types TypeScript pour input/output
+- **TOUJOURS** inclure un exemple de réponse réaliste
+- **JAMAIS** inventer des champs non présents dans le code
+- **TOUJOURS** rattacher chaque endpoint à un NAV2
+
+### 9.2 Qualification
+
+- Chaque endpoint DOIT être rattaché à exactement UN NAV2
+- Si un endpoint est utilisé par plusieurs NAV2, le documenter dans chaque
+- Le type d'API (apiv6, 2API, Engin) doit être spécifié
+
+### 9.3 Génération
+
+- **Un fichier JSON par NAV1.NAV2**
+- **Nommage** : `{nav1}/{nav2}.json`
+- Inclure le champ `api_type` pour chaque endpoint
+
+### 9.4 Organisation
+
+- Index par NAV1 listant tous les NAV2
+- Chaque NAV2 contient ses endpoints
+- Switch région (EU/CA/US) dans le header
+
+---
+
+## 10. Référence des endpoints
+
+Les endpoints sont maintenant stockés dans les fichiers JSON :
+
+| NAV1 | Fichier principal | Fichiers détaillés |
+|------|-------------------|-------------------|
+| A-home | `data/A-home.json` | `data/home/*.json` |
+| B-iam | `data/B-iam.json` | `data/iam/*.json` |
+| C-license | `data/C-license.json` | `data/licenses/*.json` |
+| D-public-cloud | `data/D-public-cloud.json` | `data/public-cloud/*.json` |
+| E-private-cloud | `data/E-private-cloud.json` | `data/private-cloud/*.json` |
+| F-bare-metal | `data/F-bare-metal.json` | `data/bare-metal/*.json` |
+| G-web-cloud | `data/G-web-cloud.json` | `data/web-cloud/*.json` |
+| H-network | `data/H-network.json` | `data/network/*.json` |
+| I-unused | `data/I-unused.json` | - |
+
+Pour consulter les endpoints, utiliser :
+```bash
+cat /var/www/aiapp/doc/data/G-web-cloud.json | jq '.'
+cat /var/www/aiapp/doc/data/web-cloud/domains.json | jq '.'
+```
+
+---
+
+## 11. NAV2 par NAV1
+
+| NAV1 | NAV2 (ordre d'affichage) |
+|------|--------------------------|
+| **home** | account, billing, support, carbon, api |
+| **public-cloud** | project, instances, block-storage, object-storage, databases, kubernetes, ai, registry, load-balancer |
+| **private-cloud** | vmware, nutanix, sap, veeam |
+| **bare-metal** | dedicated, vps, housing, nasha, netapp |
+| **web-cloud** | domains, emails, hosting, wordpress, voip, access |
+| **network** | ip, vrack, vrack-services, cdn, cloud-connect, load-balancer, security |
+| **iam** | identities, policies, logs, secret, okms, dbaas-logs |
+| **licenses** | windows, cpanel, plesk, sqlserver, virtuozzo, directadmin, cloudlinux, office |

@@ -1,3 +1,4 @@
+export { MultisiteTab as default } from './MultisiteTab';
 export { AddDomainModal } from './AddDomainModal';
 export { EditDomainModal } from './EditDomainModal';
 export { DeleteDomainModal } from './DeleteDomainModal';

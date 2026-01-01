@@ -62,10 +62,10 @@ export function ChangePasswordModal({
 
   const passwordStrength = useMemo(() => {
     const count = validRequirements.length;
-    if (count <= 1) return { level: "weak", label: t("changePassword.strength.weak"), color: "#EF4444", width: "25%" };
-    if (count === 2) return { level: "fair", label: t("changePassword.strength.fair"), color: "#F97316", width: "50%" };
-    if (count === 3 || count === 4) return { level: "good", label: t("changePassword.strength.good"), color: "#EAB308", width: "75%" };
-    return { level: "strong", label: t("changePassword.strength.strong"), color: "#22C55E", width: "100%" };
+    if (count <= 1) return { level: "weak", label: t("changePassword.strength.weak"), color: "#DC2626", width: "25%" };
+    if (count === 2) return { level: "fair", label: t("changePassword.strength.fair"), color: "#D97706", width: "50%" };
+    if (count === 3 || count === 4) return { level: "good", label: t("changePassword.strength.good"), color: "#D97706", width: "75%" };
+    return { level: "strong", label: t("changePassword.strength.strong"), color: "#059669", width: "100%" };
   }, [validRequirements, t]);
 
   const isValid = useMemo(() => {

@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import type { OvhUser } from "../../../../types/auth.types";
+import type { OvhUser } from "../../../types/auth.types";
 import { GeneralTab } from "./tabs/general/GeneralTab";
 import { SecurityTab } from "./tabs/security/SecurityTab";
 import { PrivacyTab } from "./tabs/privacy/PrivacyTab";
@@ -39,7 +39,7 @@ const tabIdMap: Record<string, string> = {
 // ============ COMPOSANT ============
 
 /** Page Mon Compte avec 7 onglets. */
-export default function AccountPage({ user, isActive = true, onNavigate, initialTab = "general" }: AccountPageProps) {
+export default function AccountPage({ user, isActive: _isActive = true, onNavigate: _onNavigate, initialTab = "general" }: AccountPageProps) {
   const { t } = useTranslation("general/account/index");
   const [activeTab, setActiveTab] = useState(initialTab);
 

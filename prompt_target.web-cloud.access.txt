@@ -8,8 +8,55 @@ PROMPT TARGET - Web Cloud > Accès (Internet)
 | **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/access/           |
 | **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/access/ |
 
-Version: v4 (2025-12-31)
+Version: v9 (2026-01-01)
 Parent:  prompt_target.txt (design system, shell template, composants)
+
+CHANGELOG v9:
+- CSS: NAV3 btn font-size corrigé 12px → 11px (aligné prompt_target.txt)
+- CSS: Search padding corrigé 16px → 12px (aligné hosting)
+- CSS: Item selected bg corrigé #E8F0FE → #EFF6FF (aligné hosting)
+- CSS: Item selected border simplifié (supprimé border conflictuel)
+- CSS: Pages internes (.connections-page, .overthebox-page) background supprimé (hérité)
+- CSS: Item hover aligné #F3F4F6 → #F9FAFB (aligné hosting)
+- Aussi: LeftPanel.css partagé corrigé (font-size 11px)
+
+CHANGELOG v8:
+- Section 0a enrichie avec tables NAV4/NAV5 tabs détaillées
+- Ajout clés i18n pour tous les tabs et sous-tabs
+- Ajout ACTIONS HEADER et ACTIONS PAR TAB complètes
+- Ajout structure fichiers i18n (locales)
+- Section 2: Labels OTB corrigés (Accès distants, Configuration, Journaux)
+- Section 2: Modem Perso 4 sous-tabs (ajout Identifiants, VLAN)
+- Section 2: Ajout clés i18n dans arborescence
+- Section 2: HEADER ACTIONS ajoutées pour Connexions et OTB
+
+CHANGELOG v7:
+- Section 2 "ARBORESCENCE NAV" entièrement réécrite
+- Ajout schéma ASCII architecture LEFT/RIGHT PANEL
+- Clarification: NAV3 = selector LEFT PANEL, NAV4 = tabs RIGHT PANEL
+- Renommage NAV4→NAV5 pour sous-tabs (Ligne, Modem, VoIP)
+- Ajout table NAV3 selector avec clés i18n
+- Ajout table LIENS EXTERNES (commander accès, commander OTB)
+- Ajout table DISPONIBILITÉ NAV4 OVERTHEBOX
+- Mise à jour RÉCAPITULATIF NIVEAUX NAV
+
+CHANGELOG v6:
+- LEFT PANEL: NAV3 selector (Général/OTB) AU-DESSUS de la recherche
+- LEFT PANEL: Suppression du bouton "Tout" - choix explicite Général/OTB
+- LEFT PANEL: Libellé "Connexions" → "Général" pour cohérence UX
+- LEFT PANEL: Style NAV3 selector aligné (fond #F9FAFB, boutons pill)
+- RIGHT PANEL: Toujours affiché selon categoryFilter (même sans service)
+- RIGHT PANEL: NAV4 tabs style PILL (prompt_target.txt section 6)
+- CSS: gap 16px, padding 15px 24px 24px 24px, border-radius 8px
+- CSS: .btn-primary:hover avec box-shadow et color: #FFFFFF !important
+
+CHANGELOG v5:
+- Section 10 (APIs) réécrite avec les VRAIS endpoints OVH API
+- Ajout 21 sous-sections API avec 100+ endpoints documentés
+- Ajout section 10b: Mapping services new_manager → endpoints
+- Endpoints alignés avec old_manager (audit complet)
+- Ajout colonne "Service" pour référence code TypeScript
+- Notes techniques: /pack/xdsl vs /xdsl, actions OTB
 
 CHANGELOG v4:
 - Ajout 2 modales manquantes: move (déménager), cancel (résilier)
@@ -28,6 +75,217 @@ CHANGELOG v2:
 - Ajout APIs Configure et Logs pour OverTheBox
 - Ajout 5 warning states OverTheBox
 - Mise à jour arborescence fichiers target (45 paires = 90 fichiers)
+
+================================================================================
+
+##############################################################################
+# 0a. IMPLÉMENTATION REACT - STATUT
+##############################################################################
+
+### Fichiers implémentés
+
+```
+src/pages/web-cloud/access/
+├── index.tsx                    # Page principale (LEFT+RIGHT panels)
+├── index.css                    # Styles alignés sur prompt_target_sidecar_left.txt
+├── access.service.ts            # API service
+│
+├── general/                     # CONNEXIONS (NAV3: Général)
+│   ├── ConnectionsPage.tsx      # Container NAV4 tabs (7 onglets)
+│   ├── connections.css          # Styles tabs PILL
+│   ├── connections.types.ts     # Types Connection, Modem, etc.
+│   ├── GeneralTab.tsx           # [1] Général
+│   ├── GeneralTab.service.ts
+│   ├── line/                    # [2] Ligne (4 NAV5 sous-tabs)
+│   │   ├── LineTab.tsx
+│   │   ├── LineStatus.tsx
+│   │   ├── LineDiagnostic.tsx
+│   │   ├── LineStats.tsx
+│   │   └── LineAlerts.tsx
+│   ├── modem/                   # [3] Modem (OVH: 5 / Perso: 4 NAV5 sous-tabs)
+│   │   ├── ModemOvhTab.tsx
+│   │   ├── ModemPersoTab.tsx
+│   │   ├── ModemDashboard.tsx
+│   │   ├── ModemWifi.tsx
+│   │   ├── ModemDhcp.tsx
+│   │   ├── ModemNat.tsx
+│   │   ├── ModemRouter.tsx
+│   │   ├── ModemParams.tsx
+│   │   └── ModemGuides.tsx
+│   ├── ServicesTab.tsx          # [4] Services
+│   ├── voip/                    # [5] VoIP (2 NAV5 sous-tabs)
+│   │   ├── VoipTab.tsx
+│   │   ├── VoipLines.tsx
+│   │   └── VoipEcoFax.tsx
+│   ├── OptionsTab.tsx           # [6] Options
+│   └── TasksTab.tsx             # [7] Tâches
+│
+└── overthebox/                  # OVERTHEBOX (NAV3: OTB)
+    ├── index.tsx                # Container NAV4 tabs (5 onglets)
+    ├── overthebox.css           # Styles tabs PILL
+    ├── overthebox.types.ts      # Types OverTheBoxService
+    ├── GeneralTab.tsx           # [1] Général
+    ├── RemotesTab.tsx           # [2] Accès distants
+    ├── ConfigureTab.tsx         # [3] Configuration
+    ├── LogsTab.tsx              # [4] Journaux
+    ├── TasksTab.tsx             # [5] Tâches
+    └── warnings/                # États warning
+        └── Warnings.css
+```
+
+### NAV4 TABS CONNEXIONS (implémentés)
+
+| # | Tab ID | Label FR | Clé i18n | Visible |
+|---|--------|----------|----------|---------|
+| 1 | `general` | Général | `tabs.general` | TOUJOURS |
+| 2 | `line` | Ligne | `tabs.line` | TOUJOURS |
+| 3 | `modem` | Modem | `tabs.modem` | SI modem déclaré |
+| 4 | `services` | Services | `tabs.services` | SI services > 0 |
+| 5 | `voip` | VoIP | `tabs.voip` | SI service VoIP |
+| 6 | `options` | Options | `tabs.options` | TOUJOURS |
+| 7 | `tasks` | Tâches | `tabs.tasks` | TOUJOURS |
+
+### NAV5 SOUS-TABS CONNEXIONS (implémentés)
+
+**Ligne** (4 sous-tabs):
+| Tab | Label FR | Clé i18n |
+|-----|----------|----------|
+| status | Statut | `line.tabs.status` |
+| diagnostic | Diagnostic | `line.tabs.diagnostic` |
+| stats | Statistiques | `line.tabs.stats` |
+| alerts | Alertes | `line.tabs.alerts` |
+
+**Modem OVH** (5 sous-tabs):
+| Tab | Label FR | Clé i18n |
+|-----|----------|----------|
+| dashboard | Tableau de bord | `modem.tabs.dashboard` |
+| wifi | WiFi | `modem.tabs.wifi` |
+| dhcp | DHCP | `modem.tabs.dhcp` |
+| nat | NAT/Ports | `modem.tabs.nat` |
+| router | Routeur | `modem.tabs.router` |
+
+**Modem Perso** (4 sous-tabs):
+| Tab | Label FR | Clé i18n |
+|-----|----------|----------|
+| infos | Informations | `modemPerso.tabs.infos` |
+| credentials | Identifiants | `modemPerso.tabs.credentials` |
+| vlan | VLAN | `modemPerso.tabs.vlan` |
+| guides | Guides | `modemPerso.tabs.guides` |
+
+**VoIP** (2 sous-tabs):
+| Tab | Label FR | Clé i18n |
+|-----|----------|----------|
+| lines | Lignes | `voip.tabs.lines` |
+| ecofax | EcoFax | `voip.tabs.ecofax` |
+
+### NAV4 TABS OVERTHEBOX (implémentés)
+
+| # | Tab ID | Label FR | Clé i18n |
+|---|--------|----------|----------|
+| 1 | `general` | Général | `tabs.general` |
+| 2 | `remotes` | Accès distants | `tabs.remotes` |
+| 3 | `configure` | Configuration | `tabs.configure` |
+| 4 | `logs` | Journaux | `tabs.logs` |
+| 5 | `tasks` | Tâches | `tabs.tasks` |
+
+### ACTIONS HEADER (implémentées)
+
+**Connexions** (ConnectionsPage.tsx:167-170):
+| Action | Label FR | Clé i18n |
+|--------|----------|----------|
+| move | Déménager | `actions.move` |
+| migrate | Migrer | `actions.migrate` |
+
+**OverTheBox** (overthebox/index.tsx:149-151):
+| Action | Label FR | Clé i18n |
+|--------|----------|----------|
+| reboot | Redémarrer | `actions.reboot` |
+| logs | Journaux | `actions.logs` |
+
+### ACTIONS PAR TAB (principales)
+
+**GeneralTab Connexions**:
+- Renommer (`general.actions.rename`)
+- Contacts (`general.actions.contacts`)
+- Résilier (`general.actions.cancel`)
+
+**LineTab**:
+- Resynchroniser (`line.actions.resync`)
+- Réinitialiser (`line.actions.reset`)
+- Exporter (`line.stats.export`)
+- Ajouter une alerte (`line.alerts.add`)
+
+**ModemOvhTab**:
+- Redémarrer (`modem.actions.reboot`)
+- Réinitialiser (`modem.actions.reset`)
+- Mettre à jour (`modem.actions.update`)
+- Ajouter une règle NAT (`modem.nat.addRule`)
+- Ajouter un bail DHCP (`modem.dhcp.addLease`)
+
+**ModemPersoTab**:
+- Déclarer un modem (`modemPerso.infos.declareModem`)
+- Régénérer le mot de passe (`modemPerso.credentials.regenerate`)
+
+**VoipTab**:
+- Ajouter une ligne (`voip.lines.add`)
+- Configurer (`voip.lines.configure`)
+- Activer EcoFax (`voip.ecofax.enable`)
+- Envoyer un fax (`voip.ecofax.sendFax`)
+
+**TasksTab**:
+- Actualiser (`tasks.refresh`)
+
+### Specs CSS implémentées
+
+| Element | Spec | Status |
+|---------|------|--------|
+| **Page layout** | gap: 16px, padding: 15px 24px 24px 24px | ✅ |
+| **Left panel** | 280px, border-radius: 8px, border: 1px solid | ✅ |
+| **Right panel** | flex: 1, border-radius: 8px, border: 1px solid | ✅ |
+| **NAV3 selector** | AU-DESSUS search, fond #F9FAFB, boutons pill | ✅ |
+| **NAV3 btn active** | bg: #0050D7, color: #FFFFFF | ✅ |
+| **NAV4 tabs** | Style PILL, font-size: 11px, height: 26px, rx: 4px | ✅ |
+| **NAV4 tab active** | bg: #0050D7, color: #FFFFFF | ✅ |
+| **NAV4 tab inactive** | bg: #FFFFFF, border: 1px solid #0050D7, color #0050D7 | ✅ |
+| **Filter row** | justify-content: flex-end, font-size: 11px | ✅ |
+| **Item selected** | bg: #EFF6FF, border-left: 3px solid #0050D7 | ✅ |
+
+### Comportement implémenté
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| NAV3 selector sans "Tout" | ✅ | Choix explicite Général/OTB |
+| Right panel toujours visible | ✅ | Affiche tabs + empty state si pas de service |
+| connectionId optionnel | ✅ | ConnectionsPage gère undefined |
+| serviceName optionnel | ✅ | OverTheBoxPage gère undefined |
+| Reset sélection au changement NAV3 | ✅ | setSelected(null) |
+
+### Fichiers i18n
+
+```
+public/locales/{fr,en}/web-cloud/access/
+├── index.json                   # Page principale + LEFT PANEL
+├── connections.json             # Connexions (tous les tabs)
+├── connections/                 # Sous-fichiers par tab
+│   ├── general.json
+│   ├── line.json
+│   ├── modem.json
+│   ├── modemPerso.json
+│   ├── services.json
+│   ├── voip.json
+│   ├── options.json
+│   └── tasks.json
+├── overthebox/
+│   ├── index.json               # OTB container + tabs
+│   ├── general.json
+│   ├── remotes.json
+│   ├── configure.json
+│   ├── logs.json
+│   ├── tasks.json
+│   ├── modals.json
+│   └── warnings.json
+└── modals.json                  # Modales partagées
+```
 
 ================================================================================
 
@@ -117,185 +375,279 @@ COMPTE CLIENT
 # 2. ARBORESCENCE NAV COMPLÈTE
 ##############################################################################
 
+### ARCHITECTURE PAGE ACCESS
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ NAV1: Web Cloud                                               (Header bleu) │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV2: Accès                                                   (Sous-header) │
+├───────────────────────────┬─────────────────────────────────────────────────┤
+│      LEFT PANEL (280px)   │              RIGHT PANEL (flex: 1)              │
+│                           │                                                 │
+│  ┌─────────────────────┐  │  ┌───────────────────────────────────────────┐  │
+│  │ NAV3 SELECTOR       │  │  │ HEADER: Titre service + Actions          │  │
+│  │ [Général] [OTB]     │  │  └───────────────────────────────────────────┘  │
+│  └─────────────────────┘  │  ┌───────────────────────────────────────────┐  │
+│  ┌─────────────────────┐  │  │ NAV4 TABS (style PILL)                    │  │
+│  │ Recherche...        │  │  │ [Tab1] [Tab2] [Tab3] ...                  │  │
+│  └─────────────────────┘  │  └───────────────────────────────────────────┘  │
+│  ┌─────────────────────┐  │  ┌───────────────────────────────────────────┐  │
+│  │ Compteur résultats  │  │  │                                           │  │
+│  └─────────────────────┘  │  │         CONTENU TAB ACTIF                 │  │
+│  ┌─────────────────────┐  │  │         (NAV5 si sous-tabs)               │  │
+│  │ Liste services      │  │  │                                           │  │
+│  │ • Service 1         │  │  │                                           │  │
+│  │ • Service 2 ←actif  │  │  │                                           │  │
+│  │ • Service 3         │  │  │                                           │  │
+│  └─────────────────────┘  │  └───────────────────────────────────────────┘  │
+└───────────────────────────┴─────────────────────────────────────────────────┘
+```
+
+### NAV3 SELECTOR (LEFT PANEL)
+
+Le NAV3 est un sélecteur de catégorie dans le LEFT PANEL, AU-DESSUS de la recherche.
+Il contrôle quel type de service est affiché et quels NAV4 tabs apparaissent.
+
+| Bouton NAV3 | Clé i18n | Label FR | Label EN | Contrôle |
+|-------------|----------|----------|----------|----------|
+| **Général** | `categories.general` | Général | General | Affiche connexions + NAV4 Connexions |
+| **OTB** | `categories.overthebox` | OTB | OTB | Affiche OverTheBox + NAV4 OTB |
+
+**Comportement:**
+- Pas de bouton "Tout" - choix explicite obligatoire
+- Au changement de NAV3, la sélection de service est réinitialisée
+- Le RIGHT PANEL affiche toujours les NAV4 tabs (même sans service sélectionné)
+- Sans service sélectionné: affiche état vide "Sélectionnez un service..."
+
+### ARBORESCENCE DÉTAILLÉE
+
 ```
 NAV1: Web Cloud (x=510)
 │
 └── NAV2: Accès (indicateur sous "Accès")
     │
-    ├── /web-cloud/access (INDEX)
-    │   │
-    │   │   LEFT PANEL: Liste des connexions OU OverTheBox
-    │   │   RIGHT PANEL: Détails service sélectionné + tabs adaptés
-    │   │
-    │   ├── CONNEXIONS (/connections)
-    │   │   │
-    │   │   │   Chaque connexion = 1 accès Internet (peu importe le type)
-    │   │   │
-    │   │   └── NAV3: 7 onglets (disponibilité selon config)
-    │   │       │
-    │   │       ├── [1] Général (/general) ← TOUJOURS
-    │   │       │   │
-    │   │       │   │   Dashboard connexion: offre, type, adresse, statut
-    │   │       │   │   Infos abonnement, expiration, contacts
-    │   │       │   │   Badge type techno discret (FTTH, VDSL2, 4G...)
-    │   │       │   │
-    │   │       │   └── ACTIONS:
-    │   │       │       [✎ Renommer] [📋 Modifier contacts]
-    │   │       │       [🔄 Migrer offre] [🚚 Déménager] [× Résilier]
-    │   │       │
-    │   │       ├── [2] Ligne (/line) ← TOUJOURS
-    │   │       │   │
-    │   │       │   │   Statut connexion, IPs, débits synchronisation
-    │   │       │   │
-    │   │       │   └── NAV4: [Statut] | Diagnostic | Statistiques | Alertes
-    │   │       │       │
-    │   │       │       ├── Statut (défaut)
-    │   │       │       │   │   🟢 Connecté / 🔴 Déconnecté
-    │   │       │       │   │   IPv4, IPv6, débit sync, atténuation, marge bruit
-    │   │       │       │   │   Adresse installation, NRA, distance
-    │   │       │       │   └── ACTIONS: [🔄 Resynchroniser] [🔧 Réinitialiser]
-    │   │       │       │
-    │   │       │       ├── Diagnostic (/line-diagnostic)
-    │   │       │       │   │   Tests de ligne, latence, paquets perdus
-    │   │       │       │   └── ACTIONS: [▶ Lancer diagnostic] [📋 Historique]
-    │   │       │       │
-    │   │       │       ├── Statistiques (/line-stats)
-    │   │       │       │   │   Graphiques débit, uptime, historique connexions
-    │   │       │       │   └── ACTIONS: [📤 Exporter] [📅 Période]
-    │   │       │       │
-    │   │       │       └── Alertes (/line-alerts)
-    │   │       │           │   Notifications email/SMS sur événements ligne
-    │   │       │           └── ACTIONS: [+ Ajouter alerte] [✎ Modifier] [× Supprimer]
-    │   │       │
-    │   │       ├── [3] Modem (/modem) ← SI modem déclaré (OVH ou perso)
-    │   │       │   │
-    │   │       │   │   MODEM OVH: Configuration complète
-    │   │       │   │   MODEM PERSO: Infos déclarées + paramètres connexion
-    │   │       │   │
-    │   │       │   └── NAV4 (modem OVH): [Dashboard] | WiFi | DHCP | NAT | Routeur
-    │   │       │   │   │
-    │   │       │   │   ├── Dashboard (défaut)
-    │   │       │   │   │   │   Modèle, firmware, uptime
-    │   │       │   │   │   └── ACTIONS: [🔄 Redémarrer] [⬆ Mise à jour firmware]
-    │   │       │   │   │
-    │   │       │   │   ├── WiFi (/modem-wifi)
-    │   │       │   │   │   │   SSID 2.4GHz + 5GHz, sécurité, canal
-    │   │       │   │   │   └── ACTIONS: [⚙ Configurer WiFi] [🔑 Changer MDP]
-    │   │       │   │   │
-    │   │       │   │   ├── DHCP (/modem-dhcp)
-    │   │       │   │   │   │   Plage IP, baux actifs, réservations
-    │   │       │   │   │   └── ACTIONS: [⚙ Configurer DHCP] [+ Réservation] [📋 Baux]
-    │   │       │   │   │
-    │   │       │   │   ├── NAT/Ports (/modem-nat)
-    │   │       │   │   │   │   Redirections de ports, UPnP
-    │   │       │   │   │   └── ACTIONS: [+ Ajouter règle] [✎ Modifier] [× Supprimer]
-    │   │       │   │   │
-    │   │       │   │   └── Routeur (/modem-router)
-    │   │       │   │       │   Mode routeur/bridge, DMZ, firewall
-    │   │       │   │       └── ACTIONS: [⚙ Changer mode] [🔄 Reset config]
-    │   │       │   │
-    │   │       │   └── NAV4 (modem perso): [Infos] | Paramètres | Guides
-    │   │       │       │
-    │   │       │       ├── Infos (défaut)
-    │   │       │       │   │   Marque, modèle, MAC déclarés
-    │   │       │       │   └── ACTIONS: [✎ Modifier infos]
-    │   │       │       │
-    │   │       │       ├── Paramètres (/modem-params)
-    │   │       │       │   │   PPPoE, identifiants, VLAN
-    │   │       │       │   └── ACTIONS: [👁 Afficher MDP] [📋 Copier paramètres]
-    │   │       │       │
-    │   │       │       └── Guides (/modem-guides)
-    │   │       │           │   Guides configuration par marque/modèle
-    │   │       │           └── ACTIONS: [📖 Voir guide]
-    │   │       │
-    │   │       ├── [4] Services (/services) ← SI pack ou services activés
-    │   │       │   │
-    │   │       │   │   Services inclus dans le pack OU activés à la carte
-    │   │       │   │   Domaine, emails, VoIP, hébergement...
-    │   │       │   │
-    │   │       │   └── ACTIONS:
-    │   │       │       [+ Activer service] [× Désactiver] [→ Gérer]
-    │   │       │       [↑ Upgrader] (ex: MX Plan → Email Pro)
-    │   │       │
-    │   │       ├── [5] VoIP (/voip) ← SI VoIP incluse ou activée
-    │   │       │   │
-    │   │       │   │   Lignes téléphoniques et fax du pack
-    │   │       │   │
-    │   │       │   └── NAV4: [Lignes] | EcoFax
-    │   │       │       │
-    │   │       │       ├── Lignes (défaut)
-    │   │       │       │   │   Numéros VoIP, statut, config
-    │   │       │       │   └── ACTIONS: [⚙ Configurer] [→ Gérer dans VoIP]
-    │   │       │       │
-    │   │       │       └── EcoFax (/voip-ecofax)
-    │   │       │           │   Service fax virtuel
-    │   │       │           └── ACTIONS: [✓ Activer] [× Désactiver] [⚙ Configurer]
-    │   │       │
-    │   │       ├── [6] Options (/options) ← TOUJOURS
-    │   │       │   │
-    │   │       │   │   Options techniques actives et disponibles
-    │   │       │   │   IP fixe, IPv6, GTR, backup 4G, QoS, Anti-DDoS...
-    │   │       │   │
-    │   │       │   └── ACTIONS:
-    │   │       │       [+ Ajouter option] [× Désactiver]
-    │   │       │       [⚙ Configurer] [📦 Commander modem OVH]
-    │   │       │
-    │   │       └── [7] Tâches (/tasks) ← TOUJOURS
-    │   │           │
-    │   │           │   Opérations en cours et historique
-    │   │           │
-    │   │           └── ACTIONS: [↻ Rafraîchir]
-    │   │
-    │   └── OVERTHEBOX (/overthebox)
-    │       │
-    │       └── NAV3: 5 onglets
-    │           │
-    │           ├── [1] Général (/general) ← Défaut
-    │           │   │
-    │           │   │   Dashboard: statut boîtier, débit agrégé total
-    │           │   │   Infos: modèle, firmware, abonnement
-    │           │   │   Liaison appareil physique
-    │           │   │
-    │           │   └── ACTIONS:
-    │           │       [🔄 Redémarrer] [⬆ Mise à jour]
-    │           │       [🔗 Lier appareil] [× Délier]
-    │           │
-    │           ├── [2] Connexions (/remotes)
-    │           │   │
-    │           │   │   WAN agrégés: liste des connexions
-    │           │   │   Statut, débit, priorité par connexion
-    │           │   │   Répartition trafic (graphique)
-    │           │   │   Configuration failover
-    │           │   │
-    │           │   └── ACTIONS:
-    │           │       [+ Ajouter connexion] [× Retirer]
-    │           │       [⚙ Configurer priorités] [🔄 Tester failover]
-    │           │
-    │           ├── [3] Configure (/configure)
-    │           │   │
-    │           │   │   Configuration avancée du boîtier
-    │           │   │   Paramètres réseau, DNS, DHCP
-    │           │   │   Migration vers nouveau hardware
-    │           │   │
-    │           │   └── ACTIONS:
-    │           │       [⚙ Modifier config] [🔄 Appliquer]
-    │           │       [📦 Migrer appareil]
-    │           │
-    │           ├── [4] Logs (/logs)
-    │           │   │
-    │           │   │   Journaux système du boîtier
-    │           │   │   Filtres: Error, Warning, Info
-    │           │   │   Historique événements
-    │           │   │
-    │           │   └── ACTIONS:
-    │           │       [🔍 Filtrer] [📤 Exporter]
-    │           │       [↻ Rafraîchir]
-    │           │
-    │           └── [5] Tâches (/tasks)
-    │               │
-    │               │   Opérations en cours et historique
-    │               │
-    │               └── ACTIONS: [↻ Rafraîchir]
+    └── /web-cloud/access (INDEX)
+        │
+        ├── LEFT PANEL
+        │   │
+        │   ├── NAV3 SELECTOR
+        │   │   ├── [Général] ← Affiche connexions xDSL/Fibre
+        │   │   └── [OTB]     ← Affiche services OverTheBox
+        │   │
+        │   ├── RECHERCHE (placeholder: "Rechercher...")
+        │   │
+        │   ├── COMPTEUR RÉSULTATS (ex: "3 service(s)")
+        │   │
+        │   └── LISTE SERVICES
+        │       │   Affiche selon NAV3 sélectionné
+        │       │
+        │       ├── Si Général: Liste connexions
+        │       │   └── Item: Nom | Type | Offre | Status | Vitesse | Modem
+        │       │
+        │       └── Si OTB: Liste OverTheBox
+        │           └── Item: Nom | Modèle | Status | Remotes
+        │
+        └── RIGHT PANEL
+            │
+            ├── HEADER
+            │   └── Titre service sélectionné + boutons actions
+            │
+            ├── NAV4 TABS (style PILL - dépend du NAV3)
+            │
+            └── CONTENU (selon tab actif)
+
+═══════════════════════════════════════════════════════════════════════════════
+NAV3: GÉNÉRAL → RIGHT PANEL = CONNEXIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+HEADER ACTIONS: [Déménager] [Migrer]
+
+NAV4 TABS (7 onglets):
+
+├── [1] Général ← Défaut, TOUJOURS visible
+│   │   (tabs.general)
+│   │
+│   │   Dashboard connexion: offre, type, adresse, statut
+│   │   Infos abonnement, expiration, contacts
+│   │   Badge type techno discret (FTTH, VDSL2, 4G...)
+│   │
+│   └── ACTIONS:
+│       [✎ Renommer] [📋 Contacts] [× Résilier]
+│
+├── [2] Ligne ← TOUJOURS visible
+│   │   (tabs.line)
+│   │
+│   │   Statut connexion, IPs, débits synchronisation
+│   │
+│   └── NAV5 SOUS-TABS: [Statut] | [Diagnostic] | [Statistiques] | [Alertes]
+│       │
+│       ├── Statut (défaut) (line.tabs.status)
+│       │   │   🟢 Connecté / 🔴 Déconnecté
+│       │   │   IPv4, IPv6, débit sync, atténuation, marge bruit
+│       │   │   Adresse installation, NRA, distance
+│       │   └── ACTIONS: [🔄 Resynchroniser] [🔧 Réinitialiser]
+│       │
+│       ├── Diagnostic (line.tabs.diagnostic)
+│       │   │   Tests de ligne, latence, paquets perdus
+│       │   └── ACTIONS: [▶ Lancer diagnostic] [📋 Voir l'historique]
+│       │
+│       ├── Statistiques (line.tabs.stats)
+│       │   │   Graphiques débit, uptime, historique connexions
+│       │   └── ACTIONS: [📤 Exporter] [📅 Période]
+│       │
+│       └── Alertes (line.tabs.alerts)
+│           │   Notifications email/SMS sur événements ligne
+│           └── ACTIONS: [+ Ajouter alerte] [✎ Modifier] [× Supprimer]
+│
+├── [3] Modem ← SI modem déclaré (OVH ou perso)
+│   │   (tabs.modem)
+│   │
+│   │   MODEM OVH: Configuration complète (5 sous-tabs)
+│   │   MODEM PERSO: Infos déclarées + paramètres (4 sous-tabs)
+│   │
+│   ├── NAV5 (modem OVH): [Tableau de bord] | [WiFi] | [DHCP] | [NAT/Ports] | [Routeur]
+│   │   │
+│   │   ├── Tableau de bord (défaut) (modem.tabs.dashboard)
+│   │   │   │   Modèle, firmware, uptime
+│   │   │   └── ACTIONS: [🔄 Redémarrer] [🔧 Réinitialiser] [⬆ Mettre à jour]
+│   │   │
+│   │   ├── WiFi (modem.tabs.wifi)
+│   │   │   │   SSID 2.4GHz + 5GHz, sécurité, canal
+│   │   │   └── ACTIONS: [⚙ Configurer WiFi] [🔑 Changer MDP]
+│   │   │
+│   │   ├── DHCP (modem.tabs.dhcp)
+│   │   │   │   Plage IP, baux actifs, réservations
+│   │   │   └── ACTIONS: [⚙ Configurer DHCP] [+ Ajouter un bail] [📋 Baux]
+│   │   │
+│   │   ├── NAT/Ports (modem.tabs.nat)
+│   │   │   │   Redirections de ports, UPnP
+│   │   │   └── ACTIONS: [+ Ajouter règle] [✎ Modifier] [× Supprimer]
+│   │   │
+│   │   └── Routeur (modem.tabs.router)
+│   │       │   Mode routeur/bridge, DMZ, firewall
+│   │       └── ACTIONS: [⚙ Changer mode] [🔄 Reset config]
+│   │
+│   └── NAV5 (modem perso): [Informations] | [Identifiants] | [VLAN] | [Guides]
+│       │
+│       ├── Informations (défaut) (modemPerso.tabs.infos)
+│       │   │   Marque, modèle, MAC déclarés
+│       │   └── ACTIONS: [✎ Modifier] [× Supprimer] [+ Déclarer un modem]
+│       │
+│       ├── Identifiants (modemPerso.tabs.credentials)
+│       │   │   PPPoE: identifiant, mot de passe
+│       │   │   Serveurs DNS OVHcloud
+│       │   └── ACTIONS: [🔄 Régénérer le mot de passe]
+│       │
+│       ├── VLAN (modemPerso.tabs.vlan)
+│       │   │   Configuration VLAN pour fibre OVHcloud
+│       │   └── ACTIONS: -
+│       │
+│       └── Guides (modemPerso.tabs.guides)
+│           │   Guides configuration par marque/modèle
+│           └── ACTIONS: [📖 Consulter guide]
+│
+├── [4] Services ← SI pack ou services activés
+│   │   (tabs.services)
+│   │
+│   │   Services inclus dans le pack OU activés à la carte
+│   │   Domaine, emails, VoIP, hébergement...
+│   │
+│   └── ACTIONS:
+│       [+ Ajouter un service] [→ Gérer]
+│       [Découvrir les services disponibles]
+│
+├── [5] VoIP ← SI VoIP incluse ou activée
+│   │   (tabs.voip)
+│   │
+│   │   Lignes téléphoniques et fax du pack
+│   │
+│   └── NAV5 SOUS-TABS: [Lignes] | [EcoFax]
+│       │
+│       ├── Lignes (défaut) (voip.tabs.lines)
+│       │   │   Numéros VoIP, statut, config
+│       │   └── ACTIONS: [+ Ajouter une ligne] [⚙ Configurer] [📋 Historique]
+│       │
+│       └── EcoFax (voip.tabs.ecofax)
+│           │   Service fax virtuel (envoi/réception par email)
+│           └── ACTIONS: [✓ Activer EcoFax] [📤 Envoyer un fax] [✎ Modifier]
+│
+├── [6] Options ← TOUJOURS visible
+│   │   (tabs.options)
+│   │
+│   │   Options techniques actives et disponibles
+│   │   IP fixe, IPv6, GTR, backup 4G, QoS, Anti-DDoS...
+│   │
+│   └── ACTIONS:
+│       [+ Ajouter] [× Supprimer]
+│
+└── [7] Tâches ← TOUJOURS visible
+    │   (tabs.tasks)
+    │
+    │   Opérations en cours et historique
+    │   Filtres: Toutes | En cours | Terminées | Erreurs
+    │
+    └── ACTIONS: [↻ Actualiser]
+
+═══════════════════════════════════════════════════════════════════════════════
+NAV3: OTB → RIGHT PANEL = OVERTHEBOX
+═══════════════════════════════════════════════════════════════════════════════
+
+HEADER ACTIONS: [Redémarrer] [Journaux]
+
+NAV4 TABS (5 onglets):
+
+├── [1] Général ← Défaut
+│   │   (tabs.general)
+│   │
+│   │   Dashboard: statut boîtier, débit agrégé total
+│   │   Infos: modèle, firmware, abonnement
+│   │   Liaison appareil physique
+│   │
+│   └── ACTIONS:
+│       [🔄 Redémarrer] [⬆ Mise à jour]
+│       [🔗 Lier appareil] [× Délier]
+│
+├── [2] Accès distants ← Liste WAN agrégés
+│   │   (tabs.remotes)
+│   │
+│   │   WAN agrégés: liste des connexions
+│   │   Statut, débit, priorité par connexion
+│   │   Répartition trafic (graphique)
+│   │   Configuration failover
+│   │
+│   └── ACTIONS:
+│       [+ Ajouter connexion] [× Retirer]
+│       [⚙ Configurer priorités] [🔄 Tester failover]
+│
+├── [3] Configuration ← Configuration avancée
+│   │   (tabs.configure)
+│   │
+│   │   Configuration avancée du boîtier
+│   │   Paramètres réseau, DNS, DHCP
+│   │   Migration vers nouveau hardware
+│   │
+│   └── ACTIONS:
+│       [⚙ Modifier config] [🔄 Appliquer]
+│       [📦 Migrer appareil]
+│
+├── [4] Journaux ← Logs système
+│   │   (tabs.logs)
+│   │
+│   │   Journaux système du boîtier
+│   │   Filtres: Error, Warning, Info
+│   │   Historique événements
+│   │
+│   └── ACTIONS:
+│       [🔍 Filtrer] [📤 Exporter]
+│       [↻ Rafraîchir]
+│
+└── [5] Tâches ← Opérations
+    │   (tabs.tasks)
+    │
+    │   Opérations en cours et historique
+    │
+    └── ACTIONS: [↻ Actualiser]
 ```
 
 ### RÉCAPITULATIF NIVEAUX NAV
@@ -304,11 +656,19 @@ NAV1: Web Cloud (x=510)
 |--------|--------|----------|-----------------|
 | **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
 | **NAV2** | Sous-header blanc 40px | y=50 | Accès (x=550) |
-| **NAV3** | Tabs right panel | y=38 dans right | Général, Ligne, Modem... |
-| **NAV4** | Sous-tabs | y=70 dans right | Statut, Diagnostic, Stats... |
+| **NAV3** | Selector LEFT PANEL | Au-dessus recherche | [Général] [OTB] |
+| **NAV4** | Tabs PILL RIGHT PANEL | Sous header | Général, Ligne, Modem... (Connexions) / Général, Connexions, Configure... (OTB) |
+| **NAV5** | Sous-tabs RIGHT PANEL | Dans contenu tab | Statut, Diagnostic, Stats... (dans Ligne) |
 | **ACTIONS** | Boutons + inline | Variable | +, ✎, 🔄, ×, ↻ |
 
-### DISPONIBILITÉ TABS PAR CONFIGURATION
+### LIENS EXTERNES
+
+| Action | URL | Contexte |
+|--------|-----|----------|
+| Commander accès internet | https://www.ovh.com/fr/offre-internet/ | Liste vide Général |
+| Commander OverTheBox | https://www.ovhtelecom.fr/overthebox/ | Liste vide OTB |
+
+### DISPONIBILITÉ NAV4 TABS (CONNEXIONS)
 
 | Tab | Toujours | Pack | Accès seul | Modem OVH | Modem perso | VoIP |
 |-----|:--------:|:----:|:----------:|:---------:|:-----------:|:----:|
@@ -319,6 +679,16 @@ NAV1: Web Cloud (x=510)
 | VoIP | - | - | - | - | - | ✅ |
 | Options | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Tâches | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### DISPONIBILITÉ NAV4 TABS (OVERTHEBOX)
+
+| Tab | Toujours | Service lié | Service non lié |
+|-----|:--------:|:-----------:|:---------------:|
+| Général | ✅ | ✅ | ✅ |
+| Connexions | ✅ | ✅ | ⚠️ (vide) |
+| Configure | ✅ | ✅ | ✅ |
+| Logs | ✅ | ✅ | ⚠️ (vide) |
+| Tâches | ✅ | ✅ | ✅ |
 
 ##############################################################################
 # 3. NAV1 - HEADER OVH
@@ -882,119 +1252,284 @@ OverTheBox:
 ```
 
 ##############################################################################
-# 10. APIs ACCÈS INTERNET
+# 10. APIs OVH RÉELLES - ACCÈS INTERNET
 ##############################################################################
 
-### 11.1 APIs Connexions
-| Méthode | Endpoint                              | Description             |
-|---------|---------------------------------------|-------------------------|
-| GET     | /access/connections                   | Liste toutes connexions |
-| GET     | /access/connections/{id}              | Détails connexion       |
-| PUT     | /access/connections/{id}              | Modifier (nom, contacts)|
-| DELETE  | /access/connections/{id}              | Résilier                |
-| POST    | /access/connections/{id}/rename       | Renommer                |
-| POST    | /access/connections/{id}/migrate      | Migrer offre            |
-| POST    | /access/connections/{id}/move         | Déménager               |
+Note: Ces endpoints sont les VRAIS endpoints API OVH (api.ovh.com), alignés avec
+old_manager. Les services new_manager utilisent un wrapper ovhApi qui préfixe
+automatiquement avec le base URL.
 
-### 11.2 APIs Ligne
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /access/connections/{id}/line               | Statut ligne          |
-| POST    | /access/connections/{id}/line/resync        | Resynchroniser        |
-| POST    | /access/connections/{id}/line/reset         | Réinitialiser         |
-| GET     | /access/connections/{id}/line/diagnostic    | Lancer diagnostic     |
-| GET     | /access/connections/{id}/line/stats         | Statistiques          |
-| GET     | /access/connections/{id}/line/alerts        | Liste alertes         |
-| POST    | /access/connections/{id}/line/alerts        | Ajouter alerte        |
-| DELETE  | /access/connections/{id}/line/alerts/{aid}  | Supprimer alerte      |
+Variable: {packId} = ID du pack xDSL (ex: "pack-xdsl-abc123")
+Variable: {accessId} = ID de l'accès xDSL (récupéré via /pack/xdsl/{packId}/xdslAccess/services)
+Variable: {serviceName} = ID du service OverTheBox
 
-### 11.3 APIs Modem OVH
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /access/connections/{id}/modem              | Infos modem           |
-| POST    | /access/connections/{id}/modem/reboot       | Redémarrer            |
-| POST    | /access/connections/{id}/modem/update       | Mise à jour firmware  |
-| GET     | /access/connections/{id}/modem/wifi         | Config WiFi           |
-| PUT     | /access/connections/{id}/modem/wifi         | Modifier WiFi         |
-| GET     | /access/connections/{id}/modem/dhcp         | Config DHCP           |
-| PUT     | /access/connections/{id}/modem/dhcp         | Modifier DHCP         |
-| GET     | /access/connections/{id}/modem/dhcp/leases  | Baux DHCP             |
-| GET     | /access/connections/{id}/modem/nat          | Règles NAT            |
-| POST    | /access/connections/{id}/modem/nat          | Ajouter règle NAT     |
-| DELETE  | /access/connections/{id}/modem/nat/{rid}    | Supprimer règle NAT   |
-| GET     | /access/connections/{id}/modem/router       | Mode routeur          |
-| PUT     | /access/connections/{id}/modem/router       | Changer mode          |
+### 10.1 APIs Pack xDSL - Listing & Général
 
-### 11.4 APIs Modem Personnel
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /access/connections/{id}/modem/custom       | Infos modem perso     |
-| PUT     | /access/connections/{id}/modem/custom       | Modifier infos        |
-| GET     | /access/connections/{id}/modem/credentials  | Paramètres connexion  |
+| Méthode | Endpoint OVH                                    | Description                    | Service                |
+|---------|-------------------------------------------------|--------------------------------|------------------------|
+| GET     | /pack/xdsl                                      | Liste tous les packs           | access.service.ts      |
+| GET     | /pack/xdsl/{packId}                             | Détails du pack                | generalService         |
+| PUT     | /pack/xdsl/{packId}                             | Modifier (description)         | generalService         |
+| GET     | /pack/xdsl/{packId}/xdslAccess/services         | IDs des accès xDSL du pack     | access.service.ts      |
+| GET     | /xdsl/{accessId}                                | Détails de l'accès xDSL        | access.service.ts      |
 
-### 11.5 APIs Services
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /access/connections/{id}/services           | Liste services        |
-| POST    | /access/connections/{id}/services           | Activer service       |
-| DELETE  | /access/connections/{id}/services/{sid}     | Désactiver service    |
+### 10.2 APIs Résiliation (OvhApiPackXdslResiliation)
 
-### 11.6 APIs VoIP
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /access/connections/{id}/voip/lines         | Lignes VoIP           |
-| GET     | /access/connections/{id}/voip/ecofax        | EcoFax                |
-| PUT     | /access/connections/{id}/voip/ecofax        | Configurer EcoFax     |
+| Méthode | Endpoint OVH                                    | Description                    | Service                |
+|---------|-------------------------------------------------|--------------------------------|------------------------|
+| GET     | /pack/xdsl/{packId}/canCancelResiliation        | Peut annuler résiliation?      | connectionsService     |
+| POST    | /pack/xdsl/{packId}/cancelResiliation           | Annuler résiliation            | connectionsService     |
+| GET     | /pack/xdsl/{packId}/resiliationTerms            | Termes de résiliation          | connectionsService     |
+| GET     | /pack/xdsl/{packId}/resiliationFollowUp         | Suivi de résiliation           | connectionsService     |
+| POST    | /pack/xdsl/{packId}/resiliate                   | Résilier le pack               | connectionsService     |
 
-### 11.7 APIs Options
-| Méthode | Endpoint                                    | Description           |
-|---------|---------------------------------------------|-----------------------|
-| GET     | /access/connections/{id}/options            | Options actives       |
-| GET     | /access/connections/{id}/options/available  | Options disponibles   |
-| POST    | /access/connections/{id}/options            | Ajouter option        |
-| DELETE  | /access/connections/{id}/options/{oid}      | Supprimer option      |
+### 10.3 APIs Migration (OvhApiPackXdsl migration)
 
-### 11.8 APIs OverTheBox
-| Méthode | Endpoint                              | Description             |
-|---------|---------------------------------------|-------------------------|
-| GET     | /overTheBox                           | Liste services OTB      |
-| GET     | /overTheBox/{id}                      | Détails OTB             |
-| PUT     | /overTheBox/{id}                      | Modifier (nom)          |
-| POST    | /overTheBox/{id}/reboot               | Redémarrer              |
-| POST    | /overTheBox/{id}/update               | Mise à jour firmware    |
-| POST    | /overTheBox/{id}/link                 | Lier appareil           |
-| POST    | /overTheBox/{id}/unlink               | Délier appareil         |
-| DELETE  | /overTheBox/{id}                      | Résilier                |
+| Méthode | Endpoint OVH                                    | Description                    | Service                |
+|---------|-------------------------------------------------|--------------------------------|------------------------|
+| POST    | /pack/xdsl/{packId}/migration/offers            | Offres de migration (POST!)    | connectionsService     |
+| POST    | /pack/xdsl/{packId}/migration/servicesToDelete  | Services à supprimer           | connectionsService     |
+| POST    | /pack/xdsl/{packId}/migration/migrate           | Effectuer la migration         | connectionsService     |
 
-### 11.8.1 APIs OverTheBox - Remotes (Connexions WAN)
-| Méthode | Endpoint                              | Description             |
-|---------|---------------------------------------|-------------------------|
-| GET     | /overTheBox/{id}/remotes              | Connexions WAN          |
-| POST    | /overTheBox/{id}/remotes              | Ajouter connexion       |
-| DELETE  | /overTheBox/{id}/remotes/{rid}        | Retirer connexion       |
-| PUT     | /overTheBox/{id}/remotes/priorities   | Config priorités        |
-| POST    | /overTheBox/{id}/remotes/testFailover | Tester failover         |
+### 10.4 APIs Déménagement (OvhApiPackXdslMove)
 
-### 11.8.2 APIs OverTheBox - Configure
-| Méthode | Endpoint                              | Description             |
-|---------|---------------------------------------|-------------------------|
-| GET     | /overTheBox/{id}/configuration        | Config actuelle         |
-| PUT     | /overTheBox/{id}/configuration        | Modifier config         |
-| POST    | /overTheBox/{id}/configuration/apply  | Appliquer config        |
-| GET     | /overTheBox/{id}/device               | Info appareil lié       |
-| POST    | /overTheBox/{id}/migrate              | Migrer vers nouveau HW  |
+| Méthode | Endpoint OVH                                    | Description                    | Service                |
+|---------|-------------------------------------------------|--------------------------------|------------------------|
+| POST    | /pack/xdsl/{packId}/addressMove/eligibility     | Vérifier éligibilité           | connectionsService     |
+| POST    | /pack/xdsl/{packId}/addressMove/offers          | Offres de déménagement         | connectionsService     |
+| POST    | /pack/xdsl/{packId}/addressMove/servicesToDelete| Services à supprimer           | connectionsService     |
+| POST    | /pack/xdsl/{packId}/addressMove/moveOffer       | Soumettre offre déménagement   | connectionsService     |
+| POST    | /pack/xdsl/{packId}/addressMove/move            | Exécuter le déménagement       | connectionsService     |
 
-### 11.8.3 APIs OverTheBox - Logs
-| Méthode | Endpoint                              | Description             |
-|---------|---------------------------------------|-------------------------|
-| GET     | /overTheBox/{id}/logs                 | Liste logs              |
-| GET     | /overTheBox/{id}/logs/export          | Exporter logs           |
+### 10.5 APIs Ligne xDSL (OvhApiXdsl, OvhApiXdslLines)
 
-### 11.9 APIs Tâches
-| Méthode | Endpoint                              | Description             |
-|---------|---------------------------------------|-------------------------|
-| GET     | /access/connections/{id}/tasks        | Liste tâches connexion  |
-| GET     | /overTheBox/{id}/tasks                | Liste tâches OTB        |
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /xdsl/{accessId}                                       | Infos accès (status, speed) | lineService          |
+| GET     | /xdsl/{accessId}/ips                                   | IPs de l'accès              | lineService          |
+| POST    | /xdsl/{accessId}/requestPPPLoginLogs                   | Resynchroniser ligne        | lineService          |
+| GET     | /xdsl/{accessId}/diagnostic                            | Récupérer diagnostic        | lineService          |
+| POST    | /xdsl/{accessId}/diagnostic                            | Lancer diagnostic           | lineService          |
+| GET     | /xdsl/{accessId}/statistics                            | Statistiques ligne          | lineService          |
+| POST    | /xdsl/{accessId}/resetDslStats                         | Reset stats DSL             | lineService          |
+| GET     | /xdsl/{accessId}/incident                              | Incident en cours           | lineService          |
+| GET     | /xdsl/{accessId}/lines                                 | Liste des lignes            | lineService          |
+| GET     | /xdsl/{accessId}/lines/{lineNum}                       | Infos ligne spécifique      | lineService          |
+| GET     | /xdsl/{accessId}/lines/{lineNum}/statistics            | Stats ligne détaillées      | lineService          |
+| GET     | /xdsl/{accessId}/lines/{lineNum}/dslamPort/availableProfiles | Profils DSLAM dispo   | lineService          |
+| POST    | /xdsl/{accessId}/lines/{lineNum}/dslamPort/changeProfile     | Changer profil DSLAM  | lineService          |
+| POST    | /xdsl/{accessId}/lines/{lineNum}/dslamPort/reset             | Reset port DSLAM      | lineService          |
+| GET     | /xdsl/{accessId}/orderFollowup                         | Suivi commande              | lineService          |
+
+### 10.6 APIs Alertes Ligne (OvhApiXdslNotifications)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /xdsl/{accessId}/monitoringNotifications               | Liste IDs alertes           | lineService          |
+| GET     | /xdsl/{accessId}/monitoringNotifications/{id}          | Détails alerte              | lineService          |
+| POST    | /xdsl/{accessId}/monitoringNotifications               | Ajouter alerte              | connectionsService   |
+| PUT     | /xdsl/{accessId}/monitoringNotifications/{id}          | Modifier alerte             | connectionsService   |
+| DELETE  | /xdsl/{accessId}/monitoringNotifications/{id}          | Supprimer alerte            | connectionsService   |
+
+### 10.7 APIs Modem OVH (OvhApiXdslModem)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /xdsl/{accessId}/modem                                 | Infos modem                 | modemOvhService      |
+| PUT     | /xdsl/{accessId}/modem                                 | Modifier config modem       | modemOvhService      |
+| POST    | /xdsl/{accessId}/modem/reboot                          | Redémarrer modem            | modemOvhService      |
+| POST    | /xdsl/{accessId}/modem/reset                           | Reset usine modem           | modemOvhService      |
+| POST    | /xdsl/{accessId}/modem/reconfigureVoip                 | Reconfigurer VoIP           | connectionsService   |
+| GET     | /xdsl/{accessId}/modem/comfortExchange                 | Infos échange confort       | lineService          |
+| POST    | /xdsl/{accessId}/modem/comfortExchange                 | Commander échange           | lineService          |
+| GET     | /xdsl/{accessId}/modem/connectedDevices                | Appareils connectés         | modemOvhService      |
+
+### 10.8 APIs Modem WiFi (OvhApiXdslModemWifi)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /xdsl/{accessId}/modem/wifi                            | Liste IDs WiFi              | modemOvhService      |
+| GET     | /xdsl/{accessId}/modem/wifi/{wifiId}                   | Config WiFi                 | modemOvhService      |
+| PUT     | /xdsl/{accessId}/modem/wifi/{wifiId}                   | Modifier WiFi               | modemOvhService      |
+
+### 10.9 APIs Modem LAN/DHCP (OvhApiXdslModemLan)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /xdsl/{accessId}/modem/lan                             | Liste IDs LAN               | modemOvhService      |
+| GET     | /xdsl/{accessId}/modem/lan/{lanId}/dhcp                | Liste IDs DHCP              | modemOvhService      |
+| GET     | /xdsl/{accessId}/modem/lan/{lanId}/dhcp/{dhcpId}       | Config DHCP                 | modemOvhService      |
+| PUT     | /xdsl/{accessId}/modem/lan/{lanId}/dhcp/{dhcpId}       | Modifier DHCP               | modemOvhService      |
+
+### 10.10 APIs Modem NAT/Ports (OvhApiXdslModemPortMappings)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /xdsl/{accessId}/modem/portMappings                    | Liste IDs règles NAT        | modemOvhService      |
+| GET     | /xdsl/{accessId}/modem/portMappings/{id}               | Détails règle NAT           | modemOvhService      |
+| POST    | /xdsl/{accessId}/modem/portMappings                    | Ajouter règle NAT           | modemOvhService      |
+| DELETE  | /xdsl/{accessId}/modem/portMappings/{id}               | Supprimer règle NAT         | modemOvhService      |
+
+### 10.11 APIs Services Pack (OvhApiPackXdsl*)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /pack/xdsl/{packId}/services                           | Résumé services (quota)     | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/domain/services                    | Domaines du pack            | servicesTabService   |
+| POST    | /pack/xdsl/{packId}/domain/services                    | Créer domaine               | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/domain/options/tlds                | TLDs disponibles            | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/emailPro/services                  | Comptes Email Pro           | servicesTabService   |
+| POST    | /pack/xdsl/{packId}/emailPro/services                  | Créer compte Email Pro      | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/emailPro/options/domains           | Domaines pour Email Pro     | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/emailPro/options/isEmailAvailable  | Vérifier email dispo        | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/voipLine/services                  | Lignes VoIP                 | voipService          |
+| POST    | /pack/xdsl/{packId}/voipLine/services                  | Créer ligne VoIP            | voipService          |
+| GET     | /pack/xdsl/{packId}/voipLine/options/hardwares         | Matériels VoIP              | voipService          |
+| GET     | /pack/xdsl/{packId}/voipLine/options/shippingAddresses | Adresses livraison          | voipService          |
+| GET     | /pack/xdsl/{packId}/voipEcofax/services                | Services EcoFax             | voipService          |
+| POST    | /pack/xdsl/{packId}/voipEcofax/services                | Créer EcoFax                | voipService          |
+| GET     | /pack/xdsl/{packId}/hostedEmail/services               | Comptes Hosted Email        | servicesTabService   |
+| POST    | /pack/xdsl/{packId}/hostedEmail/services               | Créer Hosted Email          | servicesTabService   |
+| DELETE  | /pack/xdsl/{packId}/hostedEmail/services/{domain}      | Supprimer Hosted Email      | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/hostedEmail/options/domains        | Domaines pour Hosted Email  | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/hostedEmail/services/{domain}/account      | Détails compte      | servicesTabService   |
+| POST    | /pack/xdsl/{packId}/hostedEmail/services/{domain}/changePassword| Changer MDP        | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/hostedEmail/services/{domain}/configuration | Config email       | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/exchangeAccount/services           | Comptes Exchange            | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/exchangeLite/services              | Comptes Exchange Lite       | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/hubic/services                     | Comptes Hubic               | servicesTabService   |
+| GET     | /pack/xdsl/{packId}/siteBuilderStart/services          | Sites SiteBuilder           | servicesTabService   |
+
+### 10.12 APIs Options Pack
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| POST    | /pack/xdsl/{packId}/options                            | Ajouter option              | optionsService       |
+| DELETE  | /pack/xdsl/{packId}/options/{optionId}                 | Supprimer option            | optionsService       |
+
+### 10.13 APIs Tâches Pack
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /pack/xdsl/{packId}/tasks                              | Liste IDs tâches            | tasksService         |
+| GET     | /pack/xdsl/{packId}/tasks/{taskId}                     | Détails tâche               | tasksService         |
+| GET     | /xdsl/{accessId}/tasks                                 | Tâches accès xDSL           | lineService          |
+
+### 10.14 APIs Divers Pack
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /pack/xdsl/{packId}/shippingAddresses?context={ctx}    | Adresses livraison          | connectionsService   |
+| GET     | /pack/xdsl/{packId}/contactOwner                       | Contact propriétaire        | connectionsService   |
+
+### 10.15 APIs OverTheBox - Service (OvhApiOverTheBox.v6)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /overTheBox                                            | Liste tous les OTB          | access.service.ts    |
+| GET     | /overTheBox/{serviceName}                              | Détails service OTB         | generalService (OTB) |
+| PUT     | /overTheBox/{serviceName}                              | Modifier (description, etc) | generalService (OTB) |
+| DELETE  | /overTheBox/{serviceName}                              | Résilier service            | generalService (OTB) |
+| POST    | /overTheBox/{serviceName}/cancelResiliation            | Annuler résiliation         | generalService (OTB) |
+| GET     | /overTheBox/{serviceName}/serviceInfos                 | Infos service (billing)     | generalService (OTB) |
+| PUT     | /overTheBox/{serviceName}/serviceInfos                 | Modifier infos service      | generalService (OTB) |
+| GET     | /overTheBox/availableOffers                            | Offres OTB disponibles      | generalService (OTB) |
+| GET     | /overTheBox/{serviceName}/migration/offers             | Offres migration            | generalService (OTB) |
+| GET     | /overTheBox/{serviceName}/availableReleaseChannels     | Canaux release dispo        | generalService (OTB) |
+
+### 10.16 APIs OverTheBox - Device (OvhApiOverTheBox.v6 device)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /overTheBox/{serviceName}/device                       | Infos device (IP, lastSeen) | generalService (OTB) |
+| DELETE  | /overTheBox/{serviceName}/device                       | Délier device               | generalService (OTB) |
+| GET     | /overTheBox/{serviceName}/device/hardware              | Infos hardware device       | configureService     |
+| GET     | /overTheBox/{serviceName}/device/availableActions      | Actions disponibles         | generalService (OTB) |
+| POST    | /overTheBox/{serviceName}/device/actions               | Lancer action (reboot, etc) | generalService (OTB) |
+| POST    | /overTheBox/{serviceName}/device/logs                  | Récupérer URL logs          | logsService          |
+
+Note: Le reboot se fait via POST /device/actions avec body { "name": "reboot" }
+Note: Les infos de connexions WAN sont dans device.networkInterfaces
+
+### 10.17 APIs OverTheBox - Link Device
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| POST    | /overTheBox/devices                                    | Vérifier devices disponibles| generalService (OTB) |
+| POST    | /overTheBox/{serviceName}/linkDevice                   | Lier un device              | generalService (OTB) |
+
+### 10.18 APIs OverTheBox - Remotes (accès distants)
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /overTheBox/{serviceName}/remoteAccesses               | Liste IDs accès distants    | remotesService       |
+| GET     | /overTheBox/{serviceName}/remoteAccesses/{id}          | Détails accès distant       | remotesService       |
+| POST    | /overTheBox/{serviceName}/remoteAccesses               | Créer accès distant         | remotesService       |
+| DELETE  | /overTheBox/{serviceName}/remoteAccesses/{id}          | Supprimer accès distant     | remotesService       |
+| POST    | /overTheBox/{serviceName}/remoteAccesses/{id}/authorize| Autoriser accès             | remotesService       |
+
+### 10.19 APIs OverTheBox - IPs & IPv6
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /overTheBox/{serviceName}/ips                          | Liste IPs du service        | generalService (OTB) |
+| PUT     | /overTheBox/{serviceName}/ipv6                         | Activer/désactiver IPv6     | generalService (OTB) |
+
+### 10.20 APIs OverTheBox - Statistics
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /overTheBox/{serviceName}/statistics?period=X&metricsType=Y | Statistiques trafic   | generalService (OTB) |
+
+Paramètres: period = hourly|daily|weekly|monthly, metricsType = traffic|bandwidth|device
+
+### 10.21 APIs OverTheBox - Tâches
+
+| Méthode | Endpoint OVH                                           | Description                 | Service              |
+|---------|--------------------------------------------------------|-----------------------------|----------------------|
+| GET     | /overTheBox/{serviceName}/tasks                        | Liste IDs tâches            | tasksService (OTB)   |
+| GET     | /overTheBox/{serviceName}/tasks/{taskId}               | Détails tâche               | tasksService (OTB)   |
+
+##############################################################################
+# 10b. MAPPING SERVICES NEW_MANAGER → ENDPOINTS
+##############################################################################
+
+### Structure des services (aiapp/frontend/src/pages/web-cloud/access/)
+
+```
+access/
+├── access.service.ts           # Listing /pack/xdsl, /overTheBox
+├── general/
+│   ├── GeneralTab.service.ts   # Dashboard connexion
+│   ├── TasksTab.service.ts     # /pack/xdsl/{id}/tasks
+│   ├── OptionsTab.service.ts   # Options pack
+│   ├── ServicesTab.service.ts  # Services pack (domain, email, etc.)
+│   ├── connections.service.ts  # Opérations transversales (résiliation, migration, move)
+│   ├── line/
+│   │   └── LineTab.service.ts  # Ligne, diagnostic, DSLAM, alertes
+│   ├── modem/
+│   │   ├── ModemOvhTab.service.ts   # Modem OVH (wifi, dhcp, nat)
+│   │   └── ModemPersoTab.service.ts # Modem personnel
+│   └── voip/
+│       └── VoipTab.service.ts  # VoIP + EcoFax
+└── overthebox/
+    ├── GeneralTab.service.ts   # Service OTB, device, actions
+    ├── ConfigureTab.service.ts # Config OTB, statistics, IPs
+    ├── RemotesTab.service.ts   # Accès distants
+    ├── LogsTab.service.ts      # Logs device
+    └── TasksTab.service.ts     # Tâches OTB
+```
+
+### Règle importante: /pack/xdsl vs /xdsl
+
+- `/pack/xdsl/{packId}/*` → Opérations au niveau pack (services, résiliation, etc.)
+- `/xdsl/{accessId}/*` → Opérations au niveau accès (modem, ligne, alertes)
+
+Pour obtenir {accessId} depuis {packId}:
+```typescript
+const accessNames = await ovhApi.get<string[]>(`/pack/xdsl/${packId}/xdslAccess/services`);
+const accessId = accessNames[0]; // Premier accès du pack
+```
 
 ##############################################################################
 # 11. VARIABLES DYNAMIQUES
@@ -1271,5 +1806,5 @@ Pour chaque écran:
 Note: Tous les noms ci-dessus sont préfixés par `target_.web-cloud.access.`
 
 ================================================================================
-FIN PROMPT TARGET WEB CLOUD > ACCÈS (v4)
+FIN PROMPT TARGET WEB CLOUD > ACCÈS (v5)
 ================================================================================

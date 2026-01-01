@@ -2,7 +2,7 @@
 // FAX CONSUMPTION TAB SERVICE - API calls isolés
 // ============================================================
 
-import { ovhApi } from '../../../../../../services/api';
+import { ovhApi } from '../../../../../services/api';
 
 interface FaxConsumption {
   id: string;

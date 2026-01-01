@@ -127,9 +127,9 @@ export const ACTIONS_BY_OFFER: Record<EmailOffer, AccountAction[]> = {
 // ---------- STATUTS ----------
 
 export const STATUS_CONFIG = {
-  ok: { label: "Actif", color: "#10B981", icon: "✓" },
-  suspended: { label: "Suspendu", color: "#EF4444", icon: "⏸" },
-  pending: { label: "En attente", color: "#F59E0B", icon: "⏳" },
+  ok: { label: "Actif", color: "#059669", icon: "✓" },
+  suspended: { label: "Suspendu", color: "#DC2626", icon: "⏸" },
+  pending: { label: "En attente", color: "#D97706", icon: "⏳" },
   deleting: { label: "Suppression", color: "#6B7280", icon: "🗑" },
 };
 

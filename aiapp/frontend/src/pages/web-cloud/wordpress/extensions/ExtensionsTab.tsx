@@ -1,49 +1,45 @@
 // ============================================================
-// WORDPRESS TAB: EXTENSIONS (NAV4 Container)
+// WORDPRESS TAB: EXTENSIONS
+// ⚠️ API NON DISPONIBLE - Les endpoints /theme et /plugin n'existent pas dans l'API OLD MANAGER
 // ============================================================
 
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ThemesTab from './ThemesTab';
-import PluginsTab from './PluginsTab';
 import './Extensions.css';
 
 interface Props {
   serviceName: string;
 }
 
-type SubTab = 'themes' | 'plugins';
+// ============================================================
+// FEATURE DÉSACTIVÉE - API NON DISPONIBLE
+// Les endpoints suivants n'existent pas dans l'API OVH:
+// - GET /managedCMS/resource/{sn}/theme
+// - POST /managedCMS/resource/{sn}/theme/{name}/update
+// - GET /managedCMS/resource/{sn}/plugin
+// - POST /managedCMS/resource/{sn}/plugin/{name}/update
+// - POST /managedCMS/resource/{sn}/plugin/{name}/activate
+// - POST /managedCMS/resource/{sn}/plugin/{name}/deactivate
+// - POST /managedCMS/resource/{sn}/plugin/updateAll
+// ============================================================
 
 export function ExtensionsTab({ serviceName }: Props) {
   const { t } = useTranslation('web-cloud/wordpress/index');
-  const [activeSubTab, setActiveSubTab] = useState<SubTab>('themes');
+  void serviceName; // Unused but kept for interface compatibility
 
   return (
     <div className="extensions-tab">
-      {/* NAV4 - Sub-tabs */}
-      <div className="extensions-nav4">
-        <button
-          className={`ext-nav4-tab ${activeSubTab === 'themes' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveSubTab('themes');
-          }}
+      <div className="extensions-unavailable">
+        <div className="extensions-unavailable-icon">🔒</div>
+        <h3>{t('extensions.unavailable.title') || 'Gestion des extensions non disponible'}</h3>
+        <p>{t('extensions.unavailable.message') || 'Cette fonctionnalité n\'est pas disponible via l\'API. Utilisez le Manager OVH ou l\'admin WordPress pour gérer vos extensions.'}</p>
+        <a
+          href="https://www.ovh.com/manager/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ext-btn ext-btn-outline"
         >
-          {t('extensions.themes')}
-        </button>
-        <button
-          className={`ext-nav4-tab ${activeSubTab === 'plugins' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveSubTab('plugins');
-          }}
-        >
-          {t('extensions.plugins')}
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="extensions-content">
-        {activeSubTab === 'themes' && <ThemesTab serviceName={serviceName} />}
-        {activeSubTab === 'plugins' && <PluginsTab serviceName={serviceName} />}
+          {t('common.openManager') || 'Ouvrir le Manager OVH'}
+        </a>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 // SERVICE ISOLÉ : ContactsTab - Gestion des contacts domaine + OWO
 // ============================================================
 
-import { ovhGet, ovhPost } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhPut } from "../../../../../services/api";
 import type { DomainContact } from "../../domains.types";
 
 interface OwoState {
@@ -10,6 +10,28 @@ interface OwoState {
   admin: boolean;
   tech: boolean;
   billing: boolean;
+}
+
+// ============ TYPES CONTACT FIELDS ============
+
+export interface ContactField {
+  fieldName: string;
+  mandatory: boolean;
+  readOnly: boolean;
+  type: string;
+}
+
+// ============ TYPES CONFIGURATION RULE ============
+
+export interface ConfigurationRule {
+  allowedValues?: string[];
+  type: string;
+  fields?: Record<string, unknown>;
+}
+
+export interface ConfigurationRuleCheck {
+  valid: boolean;
+  errors?: string[];
 }
 
 // ============ SERVICE ============
@@ -24,10 +46,35 @@ class ContactsService {
   }
 
   /**
+   * Get domain owner contact - Pattern identique old_manager
+   * 1. GET /domain/{domain} pour obtenir whoisOwner ID
+   * 2. GET /me/contact/{whoisOwner} pour obtenir les détails
+   */
+  async getOwner(domain: string): Promise<DomainContact & { contactId?: number } | null> {
+    try {
+      // Step 1: Get domain info with whoisOwner
+      const domainInfo = await ovhGet<{ whoisOwner?: string | number }>(`/domain/${encodeURIComponent(domain)}`);
+
+      // whoisOwner can be a number (contact ID) or empty
+      if (domainInfo.whoisOwner && !isNaN(Number(domainInfo.whoisOwner))) {
+        const contactId = Number(domainInfo.whoisOwner);
+        // Step 2: Get contact details
+        const ownerContact = await ovhGet<DomainContact>(`/me/contact/${contactId}`);
+        return { ...ownerContact, contactId };
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Get OWO (email obfuscation) state for a domain
    * GET /domain/{domain}/owo
+   * @returns OwoState with available flag, or null if OWO not available for this TLD
    */
-  async getOwoState(domain: string): Promise<OwoState> {
+  async getOwoState(domain: string): Promise<{ state: OwoState; available: boolean }> {
     try {
       const fields = await ovhGet<string[]>(`/domain/${encodeURIComponent(domain)}/owo`);
       // API returns array of obfuscated field names
@@ -37,35 +84,120 @@ class ContactsService {
         tech: fields.includes("tech") || fields.includes("TECH"),
         billing: fields.includes("billing") || fields.includes("BILLING"),
       };
-      return state;
+      return { state, available: true };
     } catch {
-      // OWO not available for this TLD
-      return { owner: false, admin: false, tech: false, billing: false };
+      // OWO not available for this TLD (404) - return unavailable
+      return {
+        state: { owner: false, admin: false, tech: false, billing: false },
+        available: false
+      };
     }
   }
 
   /**
    * Update OWO state for a domain
    * POST /domain/{domain}/owo
+   * Note: 404 = OWO non disponible pour ce TLD (géré gracieusement)
    */
-  async updateOwoState(domain: string, state: OwoState): Promise<void> {
-    const fields: string[] = [];
-    if (state.owner) fields.push("owner");
-    if (state.admin) fields.push("admin");
-    if (state.tech) fields.push("tech");
-    if (state.billing) fields.push("billing");
+  async updateOwoState(domain: string, state: OwoState): Promise<boolean> {
+    try {
+      const fields: string[] = [];
+      if (state.owner) fields.push("owner");
+      if (state.admin) fields.push("admin");
+      if (state.tech) fields.push("tech");
+      if (state.billing) fields.push("billing");
 
-    await ovhPost(`/domain/${encodeURIComponent(domain)}/owo`, {
-      obfuscate: fields,
-    });
+      await ovhPost(`/domain/${encodeURIComponent(domain)}/owo`, {
+        obfuscate: fields,
+      });
+      return true;
+    } catch {
+      // OWO not available for this TLD - return false silently
+      return false;
+    }
   }
 
   /**
    * Regenerate OWO email for a specific contact
    * POST /domain/{domain}/owo/{contact}/regenerate
+   * Note: 404 = OWO non disponible pour ce TLD (géré gracieusement)
    */
-  async regenerateOwo(domain: string, contactType: string): Promise<void> {
-    await ovhPost(`/domain/${encodeURIComponent(domain)}/owo/${contactType}/regenerate`, {});
+  async regenerateOwo(domain: string, contactType: string): Promise<boolean> {
+    try {
+      await ovhPost(`/domain/${encodeURIComponent(domain)}/owo/${contactType}/regenerate`, {});
+      return true;
+    } catch {
+      // OWO not available for this TLD - return false silently
+      return false;
+    }
+  }
+
+  /**
+   * Change contact for a domain - Identique old_manager
+   * POST /domain/{domain}/changeContact
+   * @param contactType - "admin" | "tech" | "billing"
+   * @param newNic - Le nouveau NIC handle (ex: ab12345-ovh)
+   */
+  async changeContact(domain: string, contactType: "admin" | "tech" | "billing", newNic: string): Promise<number[]> {
+    const body: Record<string, string> = {};
+    if (contactType === "admin") body.contactAdmin = newNic;
+    if (contactType === "tech") body.contactTech = newNic;
+    if (contactType === "billing") body.contactBilling = newNic;
+
+    return ovhPost<number[]>(`/domain/${encodeURIComponent(domain)}/changeContact`, body);
+  }
+
+  // -------- CONTACT FIELDS (Identique old_manager) --------
+  /**
+   * Get contact fields metadata
+   * GET /me/contact/{contactId}/fields - Identique old_manager
+   */
+  async getContactFields(contactId: string): Promise<ContactField[]> {
+    return ovhGet<ContactField[]>(`/me/contact/${contactId}/fields`);
+  }
+
+  // -------- DOMAIN CONTACT (différent de /me/contact) --------
+  /**
+   * Get domain contact informations
+   * GET /domain/contact/{contactId} - Identique old_manager
+   * Note: Cette API est différente de /me/contact !
+   */
+  async getDomainContactInformations(contactId: string): Promise<DomainContact> {
+    return ovhGet<DomainContact>(`/domain/contact/${contactId}`);
+  }
+
+  /**
+   * Update domain contact
+   * PUT /domain/contact/{contactId} - Identique old_manager
+   */
+  async updateDomainContact(contactId: string, params: Partial<DomainContact>): Promise<DomainContact> {
+    return ovhPut<DomainContact>(`/domain/contact/${contactId}`, params);
+  }
+
+  // -------- CONFIGURATION RULES (Identique old_manager) --------
+  /**
+   * Get domain configuration rule for an action
+   * GET /domain/configurationRule?action={action}&domain={domain} - Identique old_manager
+   */
+  async getDomainConfigurationRule(action: string, domain: string): Promise<ConfigurationRule> {
+    return ovhGet<ConfigurationRule>(
+      `/domain/configurationRule?action=${encodeURIComponent(action)}&domain=${encodeURIComponent(domain)}`
+    );
+  }
+
+  /**
+   * Check domain configuration rule
+   * POST /domain/configurationRule/check?action={action}&domain={domain} - Identique old_manager
+   */
+  async checkDomainConfigurationRule(
+    action: string,
+    domain: string,
+    params: Record<string, unknown>
+  ): Promise<ConfigurationRuleCheck> {
+    return ovhPost<ConfigurationRuleCheck>(
+      `/domain/configurationRule/check?action=${encodeURIComponent(action)}&domain=${encodeURIComponent(domain)}`,
+      params
+    );
   }
 }
 

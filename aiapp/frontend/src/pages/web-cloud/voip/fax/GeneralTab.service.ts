@@ -2,7 +2,7 @@
 // GENERAL TAB SERVICE - Isolé pour GeneralTab (Fax)
 // ============================================================
 
-import { ovhApi } from '../../../../../../services/api';
+import { ovhApi } from '../../../../services/api';
 import type { FreefaxAccount } from '../../fax.types';
 
 class GeneralService {

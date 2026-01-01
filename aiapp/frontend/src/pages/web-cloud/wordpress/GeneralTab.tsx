@@ -5,20 +5,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { generalService } from './GeneralTab.service';
-import type { WordPress, ServiceInfos } from '../wordpress.types';
+import type { WordPress, ServiceInfos } from './wordpress.types';
 import { DeleteWebsiteModal } from './DeleteWebsiteModal';
 import './GeneralTab.css';
 
 interface Props {
   serviceName: string;
+  websiteId: string;
   details: WordPress;
   onRefresh: () => void;
 }
 
-export function GeneralTab({ serviceName, details, onRefresh }: Props) {
+export function GeneralTab({ serviceName, websiteId, details, onRefresh }: Props) {
   const { t } = useTranslation('web-cloud/wordpress/index');
   const [serviceInfos, setServiceInfos] = useState<ServiceInfos | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -260,7 +261,8 @@ export function GeneralTab({ serviceName, details, onRefresh }: Props) {
       {/* Delete Modal */}
       <DeleteWebsiteModal
         serviceName={serviceName}
-        displayName={details.displayName || serviceName}
+        websiteId={websiteId}
+        websiteName={details.displayName || details.url?.replace('https://', '') || websiteId}
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onSuccess={() => {

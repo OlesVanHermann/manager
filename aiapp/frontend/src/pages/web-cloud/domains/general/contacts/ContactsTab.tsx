@@ -7,6 +7,7 @@ import "./ContactsTab.css";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { contactsService } from "./ContactsTab.service";
+import { ContactChangeModal } from "../ContactChangeModal";
 import type { DomainServiceInfos, DomainContact } from "../../domains.types";
 
 interface Props {
@@ -57,12 +58,6 @@ const CreditCardIcon = () => (
   </svg>
 );
 
-const ExternalLinkIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-  </svg>
-);
-
 const RefreshIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
@@ -82,8 +77,6 @@ const CONTACT_VARIANTS: Record<string, string> = {
   tech: "contacts-variant-success",
   billing: "contacts-variant-warning",
 };
-
-const OVH_MANAGER_BASE = "https://www.ovh.com/manager";
 
 export function ContactsTab({ domain, serviceInfos }: Props) {
   const { t } = useTranslation("web-cloud/domains/contacts");
@@ -119,7 +112,16 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
   });
   const [owoLoading, setOwoLoading] = useState(true);
   const [owoSaving, setOwoSaving] = useState(false);
+  const [owoAvailable, setOwoAvailable] = useState(true);
   const [regeneratingContact, setRegeneratingContact] = useState<string | null>(null);
+
+  // ---------- MODAL STATE ----------
+  const [editingContact, setEditingContact] = useState<{
+    type: "admin" | "tech" | "billing";
+    nic: string;
+    name?: string;
+    email?: string;
+  } | null>(null);
 
   // ---------- LOAD CONTACTS ----------
   const loadContacts = useCallback(async () => {
@@ -141,7 +143,8 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
 
     for (const type of ["admin", "tech", "billing"] as const) {
       try {
-        const details = await contactsService.getContact(nics[type]);
+        // Utiliser /domain/contact/{nichandle} - Identique old_manager
+        const details = await contactsService.getDomainContactInformations(nics[type]);
         setContacts((prev) =>
           prev.map((c) => (c.type === type ? { ...c, details, email: details.email, loading: false } : c))
         );
@@ -155,16 +158,12 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
 
   // ---------- LOAD OWO STATE ----------
   const loadOwoState = useCallback(async () => {
-    try {
-      setOwoLoading(true);
-      const state = await contactsService.getOwoState(domain);
-      setOwoState(state);
-      setOwoInitial(state);
-    } catch {
-      // OWO not available or error
-    } finally {
-      setOwoLoading(false);
-    }
+    setOwoLoading(true);
+    const result = await contactsService.getOwoState(domain);
+    setOwoState(result.state);
+    setOwoInitial(result.state);
+    setOwoAvailable(result.available);
+    setOwoLoading(false);
   }, [domain]);
 
   useEffect(() => {
@@ -189,38 +188,48 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
 
   const handleOwoSave = async () => {
     logAction("OWO_SAVE_START", { owoState });
-    try {
-      setOwoSaving(true);
-      await contactsService.updateOwoState(domain, owoState);
+    setOwoSaving(true);
+    const success = await contactsService.updateOwoState(domain, owoState);
+    if (success) {
       logAction("OWO_SAVE_SUCCESS");
       setOwoInitial(owoState);
-    } catch (err) {
-      logAction("OWO_SAVE_ERROR", { error: String(err) });
-    } finally {
-      setOwoSaving(false);
+    } else {
+      logAction("OWO_SAVE_UNAVAILABLE", { reason: "OWO not available for this TLD" });
+      // Reset to initial state since OWO is not available
+      setOwoState(owoInitial);
     }
+    setOwoSaving(false);
   };
 
   const handleRegenerate = async (contactType: string) => {
     logAction("OWO_REGENERATE_START", { contactType });
-    try {
-      setRegeneratingContact(contactType);
-      await contactsService.regenerateOwo(domain, contactType);
+    setRegeneratingContact(contactType);
+    const success = await contactsService.regenerateOwo(domain, contactType);
+    if (success) {
       logAction("OWO_REGENERATE_SUCCESS", { contactType });
-    } catch (err) {
-      logAction("OWO_REGENERATE_ERROR", { contactType, error: String(err) });
-    } finally {
-      setRegeneratingContact(null);
+    } else {
+      logAction("OWO_REGENERATE_UNAVAILABLE", { contactType, reason: "OWO not available for this TLD" });
     }
+    setRegeneratingContact(null);
   };
 
-  const handleExternalLink = (linkType: string) => {
-    logAction("EXTERNAL_LINK_CLICK", { linkType, url: getContactUrl() });
+  const handleEditContact = (contact: ContactInfo) => {
+    if (contact.type === "owner") return; // Owner non modifiable
+    logAction("EDIT_CONTACT_CLICK", { type: contact.type, nic: contact.nic });
+    setEditingContact({
+      type: contact.type,
+      nic: contact.nic,
+      name: contact.details ? `${contact.details.firstName} ${contact.details.lastName}` : undefined,
+      email: contact.email,
+    });
+  };
+
+  const handleContactChanged = () => {
+    logAction("CONTACT_CHANGED_SUCCESS");
+    loadContacts();
   };
 
   const hasOwoChanges = JSON.stringify(owoState) !== JSON.stringify(owoInitial);
-
-  const getContactUrl = () => `${OVH_MANAGER_BASE}/#/dedicated/contacts/services?serviceName=${encodeURIComponent(domain)}`;
 
   // ============ RENDER ============
   return (
@@ -250,9 +259,15 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
               <p className="contacts-description">{t("description")}</p>
             </div>
             <div className="contacts-header-actions">
-              <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-btn-primary" onClick={() => handleExternalLink("reassignContacts")}>
-                {t("reassignContacts")} <ExternalLinkIcon />
-              </a>
+              <button
+                className="contacts-btn-primary"
+                onClick={() => {
+                  const adminContact = contacts.find(c => c.type === "admin");
+                  if (adminContact) handleEditContact(adminContact);
+                }}
+              >
+                {t("reassignContacts")}
+              </button>
             </div>
           </div>
 
@@ -282,9 +297,11 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
                     )}
                     <div className="contacts-role">{t(`roles.${contact.type}`)}</div>
                   </div>
-                  <a href={getContactUrl()} target="_blank" rel="noopener noreferrer" className="contacts-edit">
-                    {t("modify")} →
-                  </a>
+                  {contact.type !== "owner" && (
+                    <button className="contacts-edit" onClick={() => handleEditContact(contact)}>
+                      {t("modify")} →
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -309,6 +326,10 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
           {owoLoading ? (
             <div className="contacts-loading">
               <div className="contacts-skeleton" style={{ height: 280 }} />
+            </div>
+          ) : !owoAvailable ? (
+            <div className="contacts-info-box contacts-info-warning">
+              <p>{t("owo.notAvailable")}</p>
             </div>
           ) : (
             <>
@@ -366,6 +387,19 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
             </>
           )}
         </>
+      )}
+
+      {/* ============ MODAL CHANGEMENT CONTACT ============ */}
+      {editingContact && (
+        <ContactChangeModal
+          domain={domain}
+          contactType={editingContact.type}
+          currentNic={editingContact.nic}
+          currentName={editingContact.name}
+          currentEmail={editingContact.email}
+          onClose={() => setEditingContact(null)}
+          onSuccess={handleContactChanged}
+        />
       )}
     </div>
   );

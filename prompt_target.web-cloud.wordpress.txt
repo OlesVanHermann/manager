@@ -8,8 +8,29 @@ PROMPT TARGET - Web Cloud > Wordpress
 | **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/wordpress/          |
 | **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/wordpress/|
 
-Version: v4 (2025-12-31) - Harmonisation nommage NAV3.NAV4 (points partout)
+Version: v8 (2026-01-01) - Conformité NAV3/NAV4 terminologie + CSS specs
 Parent:  prompt_target.txt (design system, shell template, composants)
+
+Changelog v8:
+- FIX: `.wp-nav3-btn { font-size: 11px }` (aligné prompt_target.txt NAV3=11px)
+- FIX: Terminologie clarifiée - NAV3 dans LEFT PANEL, NAV4 dans RIGHT PANEL
+- FIX: `--font-family` priorité 'Source Sans Pro' dans globals.css
+
+Changelog v7:
+- FIX: `.wp-sidebar` ajout `flex-shrink: 0` (empêche compression)
+- FIX: `.wp-main` ajout `min-width: 0` (empêche débordement)
+- FIX: `.wp-nav3-btn` ajout `flex: 1` (boutons égaux)
+- Clarification terminologie: NAV3=sidebar selector, NAV4=right panel tabs
+
+Changelog v6:
+- NAV3 selector dans sidebar (bouton "Général" actif, largeur auto)
+- NAV4 tabs toujours visibles ET CLIQUABLES dans right panel
+- Sans service: Général=Onboarding, autres tabs=contenu vide
+- Header dynamique: titre service OU "WordPress Managé" + subtitle
+
+Changelog v5:
+- NAV3 selector ajouté dans sidebar
+- NAV4 tabs toujours visibles dans right panel
 
 ================================================================================
 
@@ -92,7 +113,7 @@ SITE WORDPRESS
 ✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
 
 ##############################################################################
-# 2. ARBORESCENCE NAV COMPLÈTE
+# 2. ARBORESCENCE NAV COMPLÈTE (IMPLÉMENTATION RÉELLE v6)
 ##############################################################################
 
 ```
@@ -102,81 +123,92 @@ NAV1: Web Cloud (x=510)
     │
     ├── /web-cloud/wordpress (INDEX)
     │   │
-    │   │   LEFT PANEL: Liste des sites WordPress
-    │   │   RIGHT PANEL: Détails site sélectionné + tabs
+    │   │   LEFT PANEL (280px)
+    │   │   ├── NAV3 Selector: [Général] (1 bouton actif)
+    │   │   ├── 🔍 Rechercher...
+    │   │   ├── N site(s)
+    │   │   ├── Liste services (scrollable)
+    │   │   └── [+ Nouveau site] → Modal CreateWebsite
     │   │
-    │   └── NAV3: 6 onglets
+    │   │   RIGHT PANEL (flex)
+    │   │   ├── Header dynamique (titre + actions)
+    │   │   ├── NAV3 Tabs (6 boutons cliquables)
+    │   │   └── Contenu tab actif
+    │   │
+    │   └── NAV3: 6 onglets (TOUS CLIQUABLES)
     │       │
-    │       ├── [1] Général (/general) ← Défaut
+    │       ├── [1] Général (/general) ← Défaut ✅ FONCTIONNEL
     │       │   │
-    │       │   │   Dashboard: état, versions WP/PHP, URL, admin
-    │       │   │   Quick actions: Accès admin, Visiter site, Vider cache
-    │       │   │   Infos techniques: offre, datacenter, SSL, CDN, auto-update
-    │       │   │   Abonnement: création, expiration
-    │       │   │   Zone danger: supprimer
+    │       │   │   Sans service → ONBOARDING (offres + création)
+    │       │   │   Avec service → DASHBOARD:
     │       │   │
-    │       │   └── ACTIONS:
-    │       │       [📝 Accès admin WP] [🌐 Visiter site]
-    │       │       [🗑 Vider cache] [🔑 Reset MDP]
-    │       │       [⬆ Mettre à jour WP] [🗑 Supprimer]
+    │       │   ├── QUICK ACTIONS (4 boutons):
+    │       │   │   [Accéder admin] → lien externe /wp-admin
+    │       │   │   [Visiter site] → lien externe URL site
+    │       │   │   [Vider cache] → API flushCache
+    │       │   │   [Reset MDP] → API resetAdminPassword
+    │       │   │
+    │       │   ├── INFO WORDPRESS (card gauche):
+    │       │   │   État (🟢/🟡/🔴), Version WP, PHP, URL, Admin
+    │       │   │   [Mettre à jour WP] si updateAvailable
+    │       │   │
+    │       │   ├── INFO TECHNIQUE (card droite):
+    │       │   │   Offre, Datacenter, SSL, CDN, Auto-update
+    │       │   │   Création, Expiration
+    │       │   │
+    │       │   └── ZONE DANGER:
+    │       │       [Supprimer] → Modal DeleteWebsite
     │       │
-    │       ├── [2] Domaines (/domains)
+    │       ├── [2] Domaines (/domains) ⚠️ API NON DISPONIBLE
     │       │   │
-    │       │   │   Domaine principal + domaines alias
-    │       │   │   Configuration SSL par domaine (Let's Encrypt)
-    │       │   │   Statut DNS par domaine
-    │       │   │   Guide configuration DNS
+    │       │   │   Message: "Gestion des domaines non disponible"
+    │       │   │   [Ouvrir le Manager OVH] → lien externe
     │       │   │
-    │       │   └── ACTIONS:
-    │       │       [+ Ajouter domaine] [🔒 Configurer SSL]
-    │       │       [× Supprimer alias] [📋 Copier config DNS]
+    │       │   └── APIs manquantes:
+    │       │       GET/POST/DELETE /managedCMS/resource/{sn}/domains
     │       │
-    │       ├── [3] Performances (/performance)
+    │       ├── [3] Performance (/performance) ⚠️ API NON DISPONIBLE
     │       │   │
-    │       │   │   CDN: statut, fournisseur, bande passante (Pro/Business)
-    │       │   │   Cache: serveur, navigateur, dernière purge
-    │       │   │   Optimisations: GZIP, Brotli, HTTP/2, HTTP/3
-    │       │   │   Recommandations plugins
+    │       │   │   Message: "Statistiques non disponibles"
+    │       │   │   [Ouvrir le Manager OVH] → lien externe
     │       │   │
-    │       │   └── ACTIONS:
-    │       │       [🗑 Vider cache] [🌍 CDN On/Off]
-    │       │       [⚙ Configurer CDN]
+    │       │   └── APIs manquantes:
+    │       │       GET/POST /managedCMS/resource/{sn}/cdn
+    │       │       GET/POST /managedCMS/resource/{sn}/cache
     │       │
-    │       ├── [4] Extensions (/extensions)
+    │       ├── [4] Extensions (/extensions) ⚠️ API NON DISPONIBLE
     │       │   │
-    │       │   │   Thèmes et plugins installés
-    │       │   │   Mises à jour disponibles
+    │       │   │   Message: "Gestion extensions non disponible"
+    │       │   │   [Ouvrir le Manager OVH] → lien externe
+    │       │   │   ⚠️ PAS DE NAV4 (API non disponible)
     │       │   │
-    │       │   └── NAV4: [Thèmes] | Plugins
-    │       │       │
-    │       │       ├── Thèmes (défaut)
-    │       │       │   │   Liste thèmes avec aperçu visuel
-    │       │       │   │   Thème actif marqué
-    │       │       │   └── ACTIONS: [⬆ Mettre à jour]
-    │       │       │
-    │       │       └── Plugins (/extensions-plugins)
-    │       │           │   Liste plugins avec statut
-    │       │           │   Compteur MAJ disponibles
-    │       │           └── ACTIONS:
-    │       │               [⬆ Mettre à jour] [⬆ Tout MAJ]
-    │       │               [▶ Activer] [⏸ Désactiver]
+    │       │   └── APIs manquantes:
+    │       │       GET/POST /managedCMS/resource/{sn}/theme
+    │       │       GET/POST /managedCMS/resource/{sn}/plugin
     │       │
-    │       ├── [5] Sauvegardes (/backups)
+    │       ├── [5] Sauvegardes (/backups) ⚠️ API NON DISPONIBLE
     │       │   │
-    │       │   │   Liste sauvegardes automatiques + manuelles
-    │       │   │   Infos: date, type, taille, statut
-    │       │   │   Espace utilisé / quota
+    │       │   │   Message: "Sauvegardes non disponibles"
+    │       │   │   [Ouvrir le Manager OVH] → lien externe
     │       │   │
-    │       │   └── ACTIONS:
-    │       │       [+ Créer sauvegarde] [↩ Restaurer]
-    │       │       [× Supprimer] (manuel uniquement)
+    │       │   └── APIs manquantes:
+    │       │       GET/POST/DELETE /managedCMS/resource/{sn}/backup
     │       │
-    │       └── [6] Tâches (/tasks)
+    │       └── [6] Tâches (/tasks) ✅ FONCTIONNEL
     │           │
-    │           │   Opérations en cours et historique
-    │           │   Types: installation, mise à jour, sauvegarde, restauration
+    │           ├── HEADER:
+    │           │   Titre + badge "N en cours"
+    │           │   [✓ Auto-refresh] toggle
+    │           │   [↻ Actualiser] bouton
     │           │
-    │           └── ACTIONS: [↻ Rafraîchir]
+    │           ├── FILTRES (3 boutons toggle):
+    │           │   [Toutes (N)] [En cours (N)] [Terminées (N)]
+    │           │
+    │           ├── TABLE:
+    │           │   Opération | Statut | Début | Fin
+    │           │
+    │           └── INFO:
+    │               "Actualisation auto toutes les 30s"
 ```
 
 ### RÉCAPITULATIF NIVEAUX NAV
@@ -185,9 +217,37 @@ NAV1: Web Cloud (x=510)
 |--------|--------|----------|-------------------|
 | **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
 | **NAV2** | Sous-header blanc 40px | y=50 | Wordpress (x=345) |
-| **NAV3** | Tabs right panel (6 boutons) | y=38 dans right | Général, Domaines, Performances... |
-| **NAV4** | Sous-tabs | y=70 dans right | Thèmes, Plugins |
-| **ACTIONS** | Boutons + inline | Variable | +, ⬆, ▶, ⏸, ×, ↩ |
+| **NAV3** | Bouton toggle dans LEFT PANEL | top left panel | [Général] |
+| **NAV4** | 6 boutons dans RIGHT PANEL | après header | Général, Domaines, Performance... |
+| **Sous-tabs** | Sous-tabs NAV4 (non implémenté) | - | ⚠️ Extensions: Thèmes/Plugins (API manquante) |
+| **ACTIONS** | Boutons + liens | Variable | Quick actions, Zone danger, Filtres |
+
+### MODALES DISPONIBLES
+
+| Modal | Déclencheur | Status |
+|-------|-------------|--------|
+| CreateWebsiteModal | Sidebar [+ Nouveau site] | ✅ |
+| ImportWebsiteModal | Onboarding [Importer] | ✅ |
+| DeleteWebsiteModal | GeneralTab [Supprimer] | ✅ |
+| AddDomainModal | - | ⚠️ Non utilisé (API manquante) |
+| ConfigureSslModal | - | ⚠️ Non utilisé (API manquante) |
+| ConfigureCdnModal | - | ⚠️ Non utilisé (API manquante) |
+| RestoreBackupModal | - | ⚠️ Non utilisé (API manquante) |
+
+### APIs FONCTIONNELLES (implémentées)
+
+| Endpoint | Usage |
+|----------|-------|
+| GET /managedCMS/resource | Liste resources |
+| GET /managedCMS/resource/{id} | Détails resource |
+| GET /managedCMS/resource/{id}/website | Liste websites |
+| GET /managedCMS/resource/{id}/website/{wid} | Détails website |
+| POST /managedCMS/resource/{id}/website | Créer website |
+| DELETE /managedCMS/resource/{id}/website/{wid} | Supprimer website |
+| GET /managedCMS/resource/{id}/website/{wid}/task | Liste tâches |
+| POST /managedCMS/resource/{id}/flushCache | Vider cache |
+| POST /managedCMS/resource/{id}/resetAdminPassword | Reset MDP |
+| POST /managedCMS/resource/{id}/update | MAJ WordPress |
 
 ##############################################################################
 # 3. NAV1 - HEADER OVH
@@ -241,38 +301,47 @@ Item actif: "Wordpress" (indicateur bleu dessous)
 ```
 
 ##############################################################################
-# 5. NAV3 - TABS WORDPRESS (6 onglets)
+# 5. NAV4 - TABS WORDPRESS dans RIGHT PANEL (6 onglets)
 ##############################################################################
 
 Route: /web-cloud/wordpress/{serviceName}/{tab}
 
-| #  | Tab          | X    | W    | Route         |
-|----|--------------|------|------|---------------|
-| 1  | Général      | 0    | 65   | /general      |
-| 2  | Domaines     | 69   | 70   | /domains      |
-| 3  | Performances | 143  | 95   | /performance  |
-| 4  | Extensions   | 242  | 80   | /extensions   |
-| 5  | Sauvegardes  | 326  | 90   | /backups      |
-| 6  | Tâches       | 420  | 55   | /tasks        |
+**TERMINOLOGIE OFFICIELLE:**
+- NAV3 = Groupement dans LEFT PANEL (bouton "Général" au-dessus de recherche)
+- NAV4 = Fonction dans RIGHT PANEL (les 6 tabs: Général, Domaines, etc.)
+
+**RÈGLE: NAV4 TOUJOURS VISIBLE ET CLIQUABLE**
+- Tous les tabs sont cliquables, avec ou sans service sélectionné
+- Sans service: clic sur tab → contenu vide (sauf Général → Onboarding)
+- Avec service: clic sur tab → affiche le contenu correspondant
+
+| #  | Tab          | X    | W    | Route         | Sans service (contenu) |
+|----|--------------|------|------|---------------|------------------------|
+| 1  | Général      | 0    | 65   | /general      | Onboarding             |
+| 2  | Domaines     | 69   | 70   | /domains      | Vide                   |
+| 3  | Performance  | 143  | 95   | /performance  | Vide                   |
+| 4  | Extensions   | 242  | 80   | /extensions   | Vide                   |
+| 5  | Sauvegardes  | 326  | 90   | /backups      | Vide                   |
+| 6  | Tâches       | 420  | 55   | /tasks        | Vide                   |
 
 ```svg
-<!-- NAV3 WORDPRESS - Général actif -->
+<!-- NAV4 WORDPRESS (RIGHT PANEL) - Général actif -->
 <g transform="translate(0, 38)">
   <rect x="0" y="0" width="65" height="26" rx="4" class="bg-primary"/>
   <text x="32" y="17" class="text-white" font-size="11" text-anchor="middle">Général</text>
-  
+
   <rect x="69" y="0" width="70" height="26" rx="4" class="btn-outline"/>
   <text x="104" y="17" class="text-primary" font-size="11" text-anchor="middle">Domaines</text>
-  
+
   <rect x="143" y="0" width="95" height="26" rx="4" class="btn-outline"/>
-  <text x="190" y="17" class="text-primary" font-size="11" text-anchor="middle">Performances</text>
-  
+  <text x="190" y="17" class="text-primary" font-size="11" text-anchor="middle">Performance</text>
+
   <rect x="242" y="0" width="80" height="26" rx="4" class="btn-outline"/>
   <text x="282" y="17" class="text-primary" font-size="11" text-anchor="middle">Extensions</text>
-  
+
   <rect x="326" y="0" width="90" height="26" rx="4" class="btn-outline"/>
   <text x="371" y="17" class="text-primary" font-size="11" text-anchor="middle">Sauvegardes</text>
-  
+
   <rect x="420" y="0" width="55" height="26" rx="4" class="btn-outline"/>
   <text x="447" y="17" class="text-primary" font-size="11" text-anchor="middle">Tâches</text>
 </g>
@@ -304,6 +373,71 @@ Route: /web-cloud/wordpress/{serviceName}/{tab}
 ##############################################################################
 
 Position: x=24, y=105, width=280px
+
+### 7.0 Structure Left Panel
+
+```
+┌─────────────────────────────────────┐
+│  [Général]                          │  ← NAV3 selector (1 bouton actif)
+├─────────────────────────────────────┤
+│  🔍 Rechercher...                   │  ← Search
+├─────────────────────────────────────┤
+│  N site(s)                          │  ← Count
+├─────────────────────────────────────┤
+│  🌐  mon-blog.fr              [Actif]│  ← Service items (scrollable)
+│      PHP 8.2 · Pro                  │
+├─────────────────────────────────────┤
+│  [+ Nouveau site]                   │  ← Action button
+└─────────────────────────────────────┘
+```
+
+### CSS Specs Critiques (v7)
+
+```css
+/* LEFT PANEL - Sidebar */
+.wp-sidebar {
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  flex-shrink: 0;  /* CRITIQUE: empêche compression */
+}
+
+/* RIGHT PANEL - Main */
+.wp-main {
+  flex: 1;
+  min-width: 0;    /* CRITIQUE: empêche débordement */
+}
+
+/* NAV3 Selector (dans sidebar) */
+.wp-nav3-selector {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+  flex-shrink: 0;
+}
+
+.wp-nav3-btn {
+  flex: 1;         /* CRITIQUE: boutons égaux */
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: #6B7280;
+  font-size: 11px; /* SPEC: NAV3 tabs = 11px (prompt_target.txt) */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.wp-nav3-btn.active {
+  background: #0050D7;
+  color: #FFFFFF;
+  border-color: #0050D7;
+}
+```
 
 ### 7.1 Service Item WordPress
 
@@ -376,8 +510,36 @@ Position: x=24, y=105, width=280px
 
 Position: x=320, y=105, width=1096px
 
+### 8.0 Comportement général
+
+**RÈGLE CRITIQUE: Header + NAV4 TOUJOURS VISIBLES ET CLIQUABLES**
+
+Le right panel affiche TOUJOURS:
+1. Header (titre dynamique + actions si service sélectionné)
+2. NAV4 tabs (6 boutons, TOUS cliquables)
+3. Contenu du tab actif (ou vide si pas de service)
+
+| État | Header | NAV4 | Contenu tab |
+|------|--------|------|-------------|
+| Aucun service + Général | "WordPress Managé" + subtitle | Tous cliquables | **Onboarding** |
+| Aucun service + autre tab | "WordPress Managé" + subtitle | Tous cliquables | **Vide** |
+| Service sélectionné | Nom site + meta + actions | Tous cliquables | Tab correspondant |
+
+### Logique de rendu du contenu
+
+```
+if (loading) → Spinner
+else if (!selectedWebsite) →
+    if (activeTab === 'general') → Onboarding
+    else → null (vide)
+else if (error) → Message erreur
+else if (legacyDetails) → renderTab()
+else → null
+```
+
 ### 8.1 Header Right Panel
 
+**Avec service sélectionné:**
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ mon-blog.fr                                          [📝 Admin WP]     │
@@ -385,7 +547,55 @@ Position: x=320, y=105, width=1096px
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+**Sans service (ou aucun service):**
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ WordPress Managé                                                        │
+│ Hébergement WordPress optimisé avec mises à jour automatiques          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
 ### 8.2 Tab Général
+
+**Comportement conditionnel:**
+- Service sélectionné → Affiche dashboard WordPress
+- Aucun service → Affiche **Onboarding** (voir section 8.2.1)
+
+#### 8.2.1 Général SANS service (Onboarding)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ WordPress Managé                                                        │
+│ Hébergement WordPress optimisé avec mises à jour automatiques          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  NAV4: [Général✓] [Domaines○] [Performances○] [Extensions○] [Sauv○] [Tâches○] │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│                              🌐                                         │
+│                        WordPress Managé                                 │
+│    Créez et gérez vos sites WordPress avec un hébergement optimisé,   │
+│    des mises à jour automatiques et des sauvegardes quotidiennes.      │
+│                                                                         │
+│    ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐  │
+│    │ 🚀           │ │ 🔒           │ │ 🔄           │ │ 💾           │  │
+│    │ Performance  │ │ Sécurité     │ │ MAJ auto     │ │ Backups      │  │
+│    │ optimisée    │ │ renforcée    │ │              │ │ quotidiens   │  │
+│    └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘  │
+│                                                                         │
+│    ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐          │
+│    │     Start       │ │   ⭐ Pro        │ │    Business     │          │
+│    │  4,99€/mois     │ │   9,99€/mois    │ │  24,99€/mois    │          │
+│    │  · 1 site WP    │ │  · 5 sites WP   │ │  · 10 sites WP  │          │
+│    │  · 20 Go        │ │  · 100 Go       │ │  · 500 Go       │          │
+│    │  · SSL          │ │  · CDN inclus   │ │  · CDN + HTTP/3 │          │
+│    └─────────────────┘ └─────────────────┘ └─────────────────┘          │
+│                                                                         │
+│              [+ Créer un site]    [Importer un site]                    │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 8.2.2 Général AVEC service sélectionné
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -909,8 +1119,27 @@ Position: x=320, y=105, width=1096px
 # 12. ARBORESCENCE REACT IMPLÉMENTÉE (new_manager)
 ##############################################################################
 
-Status: ✅ COMPLET (2025-12-31)
-Couverture: 98% des targets SVG
+Status: ✅ STRUCTURE COMPLÈTE (2026-01-01)
+Couverture UI: 100% | APIs fonctionnelles: 2/6 tabs (Général, Tâches)
+
+### Comportement NAV3 (index.tsx v6)
+
+| État | Header | NAV4 tabs | Contenu |
+|------|--------|-----------|---------|
+| Loading | "WordPress Managé" + subtitle | Tous cliquables | Spinner |
+| Aucun service + Général | "WordPress Managé" + subtitle | Tous cliquables | **Onboarding.tsx** |
+| Aucun service + autre | "WordPress Managé" + subtitle | Tous cliquables | **Vide (null)** |
+| Service + Général | Nom site + actions | Tous cliquables | GeneralTab.tsx |
+| Service + Domaines | Nom site + actions | Tous cliquables | DomainsTab.tsx |
+| Service + Performance | Nom site + actions | Tous cliquables | PerformanceTab.tsx |
+| Service + Extensions | Nom site + actions | Tous cliquables | ExtensionsTab.tsx (sous-tabs) |
+| Service + Sauvegardes | Nom site + actions | Tous cliquables | BackupsTab.tsx |
+| Service + Tâches | Nom site + actions | Tous cliquables | TasksTab.tsx |
+
+### Clés i18n utilisées
+- `title`: "WordPress Managé"
+- `subtitle`: "Hébergement WordPress optimisé avec mises à jour automatiques"
+- `nav3.general`: "Général" (bouton sidebar)
 
 ### Structure fichiers React
 
@@ -1000,9 +1229,14 @@ TOTAL: 33 fichiers (tsx/ts/css)
 | Spec | Valeur | Status |
 |------|--------|--------|
 | Left panel width | 280px | ✅ |
+| Left panel flex-shrink | 0 (empêche compression) | ✅ |
+| Right panel min-width | 0 (empêche débordement) | ✅ |
+| NAV3 sidebar selector | 1 bouton "Général" avec `flex: 1`, font-size: 11px | ✅ |
 | Gap panels | 16px | ✅ |
 | Margin top après NAV2 | 15px | ✅ |
-| NAV3 tabs | 6 boutons outline/filled | ✅ |
+| NAV4 tabs (right panel) | 6 boutons outline/filled, tous cliquables, font-size: 12px | ✅ |
+| NAV4 comportement sans service | Général=Onboarding, autres=vide | ✅ |
+| Header dynamique | titre/subtitle conditionnel | ✅ |
 | Service item | ~88px height | ✅ |
 
 ##############################################################################

@@ -2,7 +2,7 @@
 // SERVICE UNIFIÉ - Emails (Agrégation multi-offres)
 // ============================================================
 
-import { ovhGet, ovhPost, ovhDelete } from "../../../services/api";
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../services/api";
 import {
   EmailAccount,
   EmailDomain,
@@ -64,71 +64,86 @@ class EmailsService {
       return domainMappingCache;
     }
 
+    // OPTIMISATION: Lancer les 4 appels de liste en PARALLÈLE
+    const [mxDomainsResult, mxplanServicesResult, proServicesResult, exchangeOrgsResult] = await Promise.allSettled([
+      ovhGet<string[]>("/email/domain"),
+      ovhGet<string[]>("/email/mxplan"),
+      ovhGet<string[]>("/email/pro"),
+      ovhGet<string[]>("/email/exchange"),
+    ]);
+
     const mappings: DomainServiceMapping[] = [];
 
     // 1a. MX Plan legacy - /email/domain (serviceId = domain)
-    try {
-      const mxDomains = await ovhGet<string[]>("/email/domain");
-      for (const item of mxDomains) {
+    if (mxDomainsResult.status === "fulfilled" && mxDomainsResult.value) {
+      for (const item of mxDomainsResult.value) {
         if (!item.startsWith("mxplan-")) {
           mappings.push({ domain: item, offer: "mx-plan", serviceId: item });
         }
       }
-    } catch (err) {
     }
 
+    // Préparer les appels de niveau 2 en parallèle
+    const level2Promises: Promise<DomainServiceMapping[]>[] = [];
+
     // 1b. MX Plan hébergé - /email/mxplan (serviceId = mxplan-xxx)
-    // BATCH: Fetch all services in parallel
-    try {
-      const mxplanServices = await ovhGet<string[]>("/email/mxplan");
-      const mxplanResults = await batchFetch(mxplanServices, async (serviceId) => {
-        const domains = await ovhGet<string[]>(`/email/mxplan/${serviceId}/domain`);
-        return domains.map(domain => ({ domain, offer: "mx-plan" as EmailOffer, serviceId }));
-      });
-      for (const result of mxplanResults) {
-        if (result) mappings.push(...result);
+    if (mxplanServicesResult.status === "fulfilled" && mxplanServicesResult.value) {
+      for (const serviceId of mxplanServicesResult.value) {
+        level2Promises.push(
+          ovhGet<string[]>(`/email/mxplan/${serviceId}/domain`)
+            .then(domains => domains.map(domain => ({ domain, offer: "mx-plan" as EmailOffer, serviceId })))
+            .catch(() => [])
+        );
       }
-    } catch (err) {
     }
 
     // 2. Email Pro - service → domaines
-    // BATCH: Fetch all services in parallel
-    try {
-      const proServices = await ovhGet<string[]>("/email/pro");
-      const proResults = await batchFetch(proServices, async (service) => {
-        const domains = await ovhGet<string[]>(`/email/pro/${service}/domain`);
-        return domains.map(domain => ({ domain, offer: "email-pro" as EmailOffer, serviceId: service }));
-      });
-      for (const result of proResults) {
-        if (result) mappings.push(...result);
+    if (proServicesResult.status === "fulfilled" && proServicesResult.value) {
+      for (const service of proServicesResult.value) {
+        level2Promises.push(
+          ovhGet<string[]>(`/email/pro/${service}/domain`)
+            .then(domains => domains.map(domain => ({ domain, offer: "email-pro" as EmailOffer, serviceId: service })))
+            .catch(() => [])
+        );
       }
-    } catch (err) {
     }
 
-    // 3. Exchange - org → service → domaines
-    // BATCH: Fetch all orgs, then services, then domains in parallel
-    try {
-      const exchangeOrgs = await ovhGet<string[]>("/email/exchange");
-
-      // First level: get all services per org in parallel
-      const orgServicePairs: { org: string; service: string }[] = [];
-      const servicesResults = await batchFetch(exchangeOrgs, async (org) => {
-        const services = await ovhGet<string[]>(`/email/exchange/${org}/service`);
-        return services.map(service => ({ org, service }));
-      });
-      for (const result of servicesResults) {
-        if (result) orgServicePairs.push(...result);
+    // 3. Exchange - org → service (niveau 2a)
+    const exchangeServicePromises: Promise<{ org: string; service: string }[]>[] = [];
+    if (exchangeOrgsResult.status === "fulfilled" && exchangeOrgsResult.value) {
+      for (const org of exchangeOrgsResult.value) {
+        exchangeServicePromises.push(
+          ovhGet<string[]>(`/email/exchange/${org}/service`)
+            .then(services => services.map(service => ({ org, service })))
+            .catch(() => [])
+        );
       }
+    }
 
-      // Second level: get all domains per service in parallel
-      const exchangeResults = await batchFetch(orgServicePairs, async ({ org, service }) => {
-        const domains = await ovhGet<string[]>(`/email/exchange/${org}/service/${service}/domain`);
-        return domains.map(domain => ({ domain, offer: "exchange" as EmailOffer, serviceId: service, org }));
-      });
-      for (const result of exchangeResults) {
-        if (result) mappings.push(...result);
+    // Attendre niveau 2 (MXPlan domains, EmailPro domains, Exchange services)
+    const [level2Results, exchangeServicesResults] = await Promise.all([
+      Promise.all(level2Promises),
+      Promise.all(exchangeServicePromises),
+    ]);
+
+    // Ajouter les résultats niveau 2
+    for (const result of level2Results) {
+      mappings.push(...result);
+    }
+
+    // 3b. Exchange - service → domaines (niveau 3)
+    const orgServicePairs = exchangeServicesResults.flat();
+    if (orgServicePairs.length > 0) {
+      const exchangeDomainResults = await Promise.all(
+        orgServicePairs.map(({ org, service }) =>
+          ovhGet<string[]>(`/email/exchange/${org}/service/${service}/domain`)
+            .then(domains => domains.map(domain => ({ domain, offer: "exchange" as EmailOffer, serviceId: service, org })))
+            .catch(() => [])
+        )
+      );
+      for (const result of exchangeDomainResults) {
+        mappings.push(...result);
       }
-    } catch (err) {
     }
 
     // 4. Zimbra - désactivé car l'API /email/zimbra n'existe pas pour ce compte
@@ -427,30 +442,37 @@ class EmailsService {
       const ids = await ovhGet<string[]>(`/email/domain/${domain}/redirection`);
       if (!ids || ids.length === 0) return [];
 
-      const redirections: EmailRedirection[] = [];
-      for (const id of ids) {
-        try {
-          const details = await ovhGet<{
-            id: string;
-            from: string;
-            to: string;
-            localCopy?: boolean;
-          }>(`/email/domain/${domain}/redirection/${id}`);
+      // OPTIMISATION: Fetch tous les détails en parallèle (élimine N+1)
+      const results = await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const details = await ovhGet<{
+              id: string;
+              from: string;
+              to: string;
+              localCopy?: boolean;
+            }>(`/email/domain/${domain}/redirection/${id}`);
 
-          redirections.push({
-            id: details.id,
-            from: details.from.includes("@") ? details.from : `${details.from}@${domain}`,
-            to: details.to,
-            type: details.to.endsWith(`@${domain}`) ? "local" : "external",
-            keepCopy: details.localCopy || false,
-            createdAt: new Date().toISOString(),
-            domain,
-          });
-        } catch (err) {
-        }
-      }
-      return redirections;
-    } catch (err) {
+            return {
+              id: details.id,
+              from: details.from.includes("@") ? details.from : `${details.from}@${domain}`,
+              to: details.to,
+              type: details.to.endsWith(`@${domain}`) ? "local" : "external",
+              keepCopy: details.localCopy || false,
+              createdAt: new Date().toISOString(),
+              domain,
+            } as EmailRedirection;
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      // Tri stable par 'from' pour éviter les changements d'ordre au reload
+      return results
+        .filter((r): r is EmailRedirection => r !== null)
+        .sort((a, b) => a.from.localeCompare(b.from));
+    } catch {
       return [];
     }
   }
@@ -458,6 +480,32 @@ class EmailsService {
   async createRedirection(domain: string, data: { from: string; to: string; keepCopy: boolean }): Promise<void> {
     await ovhPost(`/email/domain/${domain}/redirection`, {
       from: data.from,
+      to: data.to,
+      localCopy: data.keepCopy,
+    });
+  }
+
+  async updateRedirection(domain: string, id: string, data: { to: string; keepCopy: boolean }, from?: string): Promise<void> {
+    // NOTE: L'API OVH /email/domain/{domain}/redirection/{id} ne supporte PAS PUT !
+    // On doit DELETE l'ancienne et POST la nouvelle
+
+    // Si 'from' n'est pas fourni, on doit d'abord récupérer l'ancienne redirection
+    let sourceFrom = from;
+    if (!sourceFrom) {
+      try {
+        const existing = await ovhGet<{ from: string }>(`/email/domain/${domain}/redirection/${id}`);
+        sourceFrom = existing.from;
+      } catch {
+        throw new Error("Impossible de récupérer la redirection à modifier");
+      }
+    }
+
+    // 1. Supprimer l'ancienne redirection
+    await ovhDelete(`/email/domain/${domain}/redirection/${id}`);
+
+    // 2. Créer la nouvelle avec les données mises à jour
+    await ovhPost(`/email/domain/${domain}/redirection`, {
+      from: sourceFrom,
       to: data.to,
       localCopy: data.keepCopy,
     });
@@ -474,32 +522,36 @@ class EmailsService {
       const names = await ovhGet<string[]>(`/email/domain/${domain}/responder`);
       if (!names || names.length === 0) return [];
 
-      const responders: EmailResponder[] = [];
-      for (const name of names) {
-        try {
-          const details = await ovhGet<{
-            account: string;
-            content: string;
-            from?: string;
-            to?: string;
-            copy: boolean;
-          }>(`/email/domain/${domain}/responder/${name}`);
+      // OPTIMISATION: Fetch tous les détails en parallèle (élimine N+1)
+      const results = await Promise.all(
+        names.map(async (name) => {
+          try {
+            const details = await ovhGet<{
+              account: string;
+              content: string;
+              from?: string;
+              to?: string;
+              copy: boolean;
+            }>(`/email/domain/${domain}/responder/${name}`);
 
-          responders.push({
-            id: `${domain}-${name}`,
-            email: `${details.account}@${domain}`,
-            content: details.content,
-            startDate: details.from || new Date().toISOString(),
-            endDate: details.to || null,
-            active: true,
-            createdAt: new Date().toISOString(),
-            domain,
-          });
-        } catch (err) {
-        }
-      }
-      return responders;
-    } catch (err) {
+            return {
+              id: `${domain}-${name}`,
+              email: `${details.account}@${domain}`,
+              content: details.content,
+              startDate: details.from || new Date().toISOString(),
+              endDate: details.to || null,
+              active: true,
+              createdAt: new Date().toISOString(),
+              domain,
+            } as EmailResponder;
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      return results.filter((r): r is EmailResponder => r !== null);
+    } catch {
       return [];
     }
   }
@@ -534,39 +586,43 @@ class EmailsService {
       const names = await ovhGet<string[]>(`/email/domain/${domain}/mailingList`);
       if (!names || names.length === 0) return [];
 
-      const lists: EmailList[] = [];
-      for (const name of names) {
-        try {
-          const details = await ovhGet<{
-            name: string;
-            nbSubscribers?: number;
-            options?: {
-              moderatorMessage?: boolean;
-              subscribeByModerator?: boolean;
-            };
-          }>(`/email/domain/${domain}/mailingList/${name}`);
+      // OPTIMISATION: Fetch tous les détails en parallèle (élimine N+1)
+      const results = await Promise.all(
+        names.map(async (name) => {
+          try {
+            const details = await ovhGet<{
+              name: string;
+              nbSubscribers?: number;
+              options?: {
+                moderatorMessage?: boolean;
+                subscribeByModerator?: boolean;
+              };
+            }>(`/email/domain/${domain}/mailingList/${name}`);
 
-          let moderationType: "open" | "moderated" | "closed" = "open";
-          if (details.options?.subscribeByModerator) {
-            moderationType = details.options.moderatorMessage ? "moderated" : "closed";
+            let moderationType: "open" | "moderated" | "closed" = "open";
+            if (details.options?.subscribeByModerator) {
+              moderationType = details.options.moderatorMessage ? "moderated" : "closed";
+            }
+
+            return {
+              id: `${domain}-${name}`,
+              name: details.name,
+              email: `${details.name}@${domain}`,
+              type: "mailinglist",
+              membersCount: details.nbSubscribers || 0,
+              moderationType,
+              createdAt: new Date().toISOString(),
+              domain,
+              offer: "mx-plan",
+            } as EmailList;
+          } catch {
+            return null;
           }
+        })
+      );
 
-          lists.push({
-            id: `${domain}-${name}`,
-            name: details.name,
-            email: `${details.name}@${domain}`,
-            type: "mailinglist",
-            membersCount: details.nbSubscribers || 0,
-            moderationType,
-            createdAt: new Date().toISOString(),
-            domain,
-            offer: "mx-plan",
-          });
-        } catch (err) {
-        }
-      }
-      return lists;
-    } catch (err) {
+      return results.filter((l): l is EmailList => l !== null);
+    } catch {
       return [];
     }
   }
@@ -605,30 +661,38 @@ class EmailsService {
       const ids = await ovhGet<number[]>(`/email/domain/${domain}/task`);
       if (!ids || ids.length === 0) return [];
 
-      const tasks: EmailTask[] = [];
-      for (const id of ids.slice(0, 50)) {
-        try {
-          const task = await ovhGet<{
-            id: number;
-            function: string;
-            status: string;
-            todoDate?: string;
-            doneDate?: string;
-          }>(`/email/domain/${domain}/task/${id}`);
+      // OPTIMISATION: Fetch tous les détails en parallèle (élimine N+1)
+      // Limité aux 50 dernières tâches
+      const limitedIds = ids.slice(0, 50);
+      const results = await Promise.all(
+        limitedIds.map(async (id) => {
+          try {
+            const task = await ovhGet<{
+              id: number;
+              function: string;
+              status: string;
+              todoDate?: string;
+              doneDate?: string;
+            }>(`/email/domain/${domain}/task/${id}`);
 
-          tasks.push({
-            id: task.id,
-            function: task.function,
-            status: task.status as EmailTask["status"],
-            todoDate: task.todoDate,
-            doneDate: task.doneDate,
-            domain,
-          });
-        } catch (err) {
-        }
-      }
-      return tasks.sort((a, b) => (b.id || 0) - (a.id || 0));
-    } catch (err) {
+            return {
+              id: task.id,
+              function: task.function,
+              status: task.status as EmailTask["status"],
+              todoDate: task.todoDate,
+              doneDate: task.doneDate,
+              domain,
+            } as EmailTask;
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      return results
+        .filter((t): t is EmailTask => t !== null)
+        .sort((a, b) => (b.id || 0) - (a.id || 0));
+    } catch {
       return [];
     }
   }

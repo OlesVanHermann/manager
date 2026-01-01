@@ -5,6 +5,8 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { CreateRedirectionModal } from "../CreateRedirectionModal";
+import { EditRedirectionModal } from "../EditRedirectionModal";
+import { DeleteModal } from "../DeleteModal";
 import { useEmailRedirections } from "../useEmailRedirections";
 import { emailsService } from "../emails.service";
 import "./general.css";
@@ -21,6 +23,8 @@ export default function RedirectionsTab({ domain }: RedirectionsTabProps) {
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editTarget, setEditTarget] = useState<typeof redirections[0] | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<typeof redirections[0] | null>(null);
 
   // Chargement dynamique des redirections
   const { redirections, loading, error, refresh } = useEmailRedirections(domain);
@@ -40,17 +44,11 @@ export default function RedirectionsTab({ domain }: RedirectionsTabProps) {
   };
 
   const handleEdit = (redirection: typeof redirections[0]) => {
-    // TODO: Implement edit modal
+    setEditTarget(redirection);
   };
 
-  const handleDelete = async (redirection: typeof redirections[0]) => {
-    if (!domain) return;
-    // TODO: Implement delete confirmation modal
-    try {
-      await emailsService.deleteRedirection(domain, redirection.id);
-      refresh();
-    } catch (err) {
-    }
+  const handleDelete = (redirection: typeof redirections[0]) => {
+    setDeleteTarget(redirection);
   };
 
   const handleCreateSubmit = async (data: {
@@ -60,6 +58,21 @@ export default function RedirectionsTab({ domain }: RedirectionsTabProps) {
   }) => {
     if (!domain) return;
     await emailsService.createRedirection(domain, data);
+    refresh();
+  };
+
+  const handleEditSubmit = async (id: string, data: { to: string; keepCopy: boolean }) => {
+    if (!domain || !editTarget) return;
+    // Passer le 'from' pour éviter un appel GET supplémentaire
+    await emailsService.updateRedirection(domain, id, data, editTarget.from);
+    refresh();
+  };
+
+  const handleDeleteSubmit = async () => {
+    if (!domain || !deleteTarget) return;
+
+    await emailsService.deleteRedirection(domain, deleteTarget.id);
+    setDeleteTarget(null);
     refresh();
   };
 
@@ -194,6 +207,26 @@ export default function RedirectionsTab({ domain }: RedirectionsTabProps) {
         domain={domain || ""}
         existingEmails={redirections.map((r) => r.from)}
         onSubmit={handleCreateSubmit}
+      />
+
+      <EditRedirectionModal
+        isOpen={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        domain={domain || ""}
+        redirection={editTarget}
+        onSubmit={handleEditSubmit}
+      />
+
+      <DeleteModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        itemType="redirection"
+        itemName={deleteTarget?.from || ""}
+        consequences={[
+          t("delete.consequences.noMoreRedirect"),
+          t("delete.consequences.emailsLost"),
+        ]}
+        onSubmit={handleDeleteSubmit}
       />
     </div>
   );

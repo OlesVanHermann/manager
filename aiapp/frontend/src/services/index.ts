@@ -2,4 +2,6 @@
 // SERVICES - Index exports
 // ============================================================
 
-export * from "./web-cloud.private-database";
+export * from "./api";
+export * from "./auth";
+export { log } from "./logger";

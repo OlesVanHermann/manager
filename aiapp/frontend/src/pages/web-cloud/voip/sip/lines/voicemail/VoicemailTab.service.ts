@@ -3,7 +3,7 @@
 // DEFACTORISATION: Ce service est ISOLÉ et ne doit pas être partagé
 // ============================================================
 
-import { ovhApi } from '../../../../../../../services/api';
+import { ovhApi } from '../../../../../../services/api';
 
 export interface VoicemailConfig {
   active: boolean;
@@ -24,8 +24,10 @@ export interface VoicemailMessage {
 }
 
 export const voicemailTabService = {
+  // GET /telephony/{ba}/voicemail/{sn}/settings - Récupérer les paramètres
   async getVoicemailConfig(billingAccount: string, serviceName: string): Promise<VoicemailConfig> {
     try {
+      // API correcte: GET /telephony/{ba}/voicemail/{sn}/settings
       return await ovhApi.get(`/telephony/${billingAccount}/voicemail/${serviceName}/settings`);
     } catch {
       return {
@@ -40,12 +42,16 @@ export const voicemailTabService = {
     }
   },
 
+  // PUT /telephony/{ba}/voicemail/{sn}/settings - Modifier les paramètres
   async updateVoicemailConfig(billingAccount: string, serviceName: string, config: Partial<VoicemailConfig>): Promise<void> {
+    // API correcte: PUT /telephony/{ba}/voicemail/{sn}/settings
     return ovhApi.put(`/telephony/${billingAccount}/voicemail/${serviceName}/settings`, config);
   },
 
+  // POST /telephony/{ba}/voicemail/{sn}/settings/changePassword - Changer mot de passe
   async changeVoicemailPassword(billingAccount: string, serviceName: string, password: string): Promise<void> {
-    return ovhApi.post(`/telephony/${billingAccount}/voicemail/${serviceName}/changePassword`, { password });
+    // API correcte: POST /telephony/{ba}/voicemail/{sn}/settings/changePassword
+    return ovhApi.post(`/telephony/${billingAccount}/voicemail/${serviceName}/settings/changePassword`, { password });
   },
 
   async getVoicemailMessages(billingAccount: string, serviceName: string): Promise<VoicemailMessage[]> {

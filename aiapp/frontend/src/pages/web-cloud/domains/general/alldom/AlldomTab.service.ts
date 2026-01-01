@@ -2,7 +2,7 @@
 // DOMAINS/ALLDOM - Service local isolé
 // ============================================================
 
-import { ovhApi } from '../../../../../services/api';
+import { ovhApi, ovh2apiPut } from '../../../../../services/api';
 import type { AllDomPack, AllDomServiceInfo, AllDomEntry, AllDomDomain } from '../../domains.types';
 
 // ============ API CALLS ============
@@ -11,8 +11,17 @@ export async function listAllDomPacks(): Promise<string[]> {
   return ovhApi.get<string[]>('/allDom');
 }
 
+/**
+ * Get AllDom models (enum values, etc.)
+ * GET /allDom.json - Identique old_manager
+ */
+export async function getAllDomModels(): Promise<unknown> {
+  return ovhApi.get('/allDom.json');
+}
+
 export async function getAllDomResource(serviceName: string): Promise<{ currentState: AllDomPack }> {
-  return ovh2Api.get<{ currentState: AllDomPack }>(`/domain/alldom/${serviceName}`);
+  // GET /allDom/{serviceName} - Identique old_manager (majuscule D)
+  return ovhApi.get<{ currentState: AllDomPack }>(`/allDom/${serviceName}`);
 }
 
 export async function getServiceInfo(serviceName: string): Promise<AllDomServiceInfo> {
@@ -28,6 +37,51 @@ export async function getServiceInfo(serviceName: string): Promise<AllDomService
     contactBilling: infos.contactBilling,
     isTerminating: infos.renew?.deleteAtExpiration || false,
   };
+}
+
+/**
+ * Get domains list for an AllDom pack
+ * GET /allDom/{serviceName}/domain - Identique old_manager
+ */
+export async function getAllDomDomains(serviceName: string): Promise<string[]> {
+  return ovhApi.get<string[]>(`/allDom/${serviceName}/domain`);
+}
+
+/**
+ * Get specific domain details in an AllDom pack
+ * GET /allDom/{serviceName}/domain/{domain} - Identique old_manager
+ */
+export async function getAllDomDomain(serviceName: string, domain: string): Promise<AllDomDomain> {
+  return ovhApi.get<AllDomDomain>(`/allDom/${serviceName}/domain/${encodeURIComponent(domain)}`);
+}
+
+/**
+ * Get all domains with their details (Pattern N+1 identique old_manager)
+ */
+export async function getAllDomDomainsWithDetails(serviceName: string): Promise<AllDomDomain[]> {
+  const domains = await getAllDomDomains(serviceName);
+  if (domains.length === 0) return [];
+  return Promise.all(domains.map((domain) => getAllDomDomain(serviceName, domain)));
+}
+
+/**
+ * Get domains with their serviceInfos (Pattern identique old_manager getDomainsWithServiceInfo)
+ */
+export async function getDomainsWithServiceInfo(serviceName: string): Promise<Array<{ name: string; serviceInfo: unknown }>> {
+  const domains = await getAllDomDomains(serviceName);
+  if (domains.length === 0) return [];
+
+  const results = await Promise.all(
+    domains.map(async (domain) => {
+      try {
+        const serviceInfo = await ovhApi.get(`/domain/${domain}/serviceInfos`);
+        return { name: domain, serviceInfo };
+      } catch {
+        return { name: domain, serviceInfo: null };
+      }
+    })
+  );
+  return results;
 }
 
 export async function getAllDomEntry(serviceName: string): Promise<AllDomEntry> {
@@ -98,11 +152,12 @@ class AlldomService {
   }
 
   async batchLock(domains: string[], action: "lock" | "unlock"): Promise<void> {
+    // PUT /domain/{domain} avec transferLockStatus - Identique old_manager
     await Promise.all(
       domains.map((domain) =>
-        action === "lock"
-          ? ovhApi.post(`/domain/${domain}/lock`, {})
-          : ovhApi.delete(`/domain/${domain}/lock`)
+        ovhApi.put(`/domain/${domain}`, {
+          transferLockStatus: action === "lock" ? "locked" : "unlocked",
+        })
       )
     );
   }
@@ -128,13 +183,11 @@ class AlldomService {
   }
 
   async batchDnssec(domains: string[], action: "enable" | "disable"): Promise<void> {
-    await Promise.all(
-      domains.map((domain) =>
-        action === "enable"
-          ? ovhApi.post(`/domain/${domain}/activateDnssec`, {})
-          : ovhApi.post(`/domain/${domain}/deactivateDnssec`, {})
-      )
-    );
+    // PUT /sws/domains/dnssec (2api) - Identique old_manager (batch)
+    await ovh2apiPut("/sws/domains/dnssec", {
+      domains,
+      newState: action === "enable",
+    });
   }
 
   // -------- BATCH RENEW --------

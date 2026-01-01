@@ -2,7 +2,7 @@
 // SMS CAMPAIGNS TAB SERVICE - API calls isolés
 // ============================================================
 
-import { ovhApi } from '../../../../../../services/api';
+import { ovhApi } from '../../../../../services/api';
 
 interface Campaign {
   id: string;

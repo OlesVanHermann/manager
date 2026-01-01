@@ -34,7 +34,7 @@ class Logger {
   private static instance: Logger;
   private buffer: LogEntry[] = [];
   private flushInterval = 5000;
-  private flushTimer: ReturnType<typeof setInterval> | null = null;
+  private _flushTimer: ReturnType<typeof setInterval> | null = null;
   private session: string;
   private sessionShort: string;
   private navContext: NavContext = { nav1: null, nav2: null, nav3: null, nav4: null, service: null };
@@ -71,13 +71,23 @@ class Logger {
     return `${h}:${m}:${s}.${ms}`;
   }
 
+  private cleanNav2(nav2: string): string {
+    // Enlever les préfixes redondants
+    return nav2
+      .replace(/^web-/, '')
+      .replace(/^bm-/, '')
+      .replace(/-dns$/, '')
+      .replace(/domains-/, '')
+      .replace(/dedicated$/, 'dedicated');
+  }
+
   private getNavString(): string {
     const parts: string[] = [];
     if (this.navContext.nav1) parts.push(this.navContext.nav1);
-    if (this.navContext.nav2) parts.push(this.navContext.nav2);
+    if (this.navContext.nav2) parts.push(this.cleanNav2(this.navContext.nav2));
     if (this.navContext.nav3) parts.push(this.navContext.nav3);
     if (this.navContext.nav4) parts.push(this.navContext.nav4);
-    return parts.join('/') || '-';
+    return parts.join('.') || '-';
   }
 
   private createBaseEntry(type: LogType, src: string): LogEntry {
@@ -269,7 +279,7 @@ class Logger {
   // ============ FLUSH ============
 
   private setupFlush() {
-    this.flushTimer = setInterval(() => this.flush(), this.flushInterval);
+    this._flushTimer = setInterval(() => this.flush(), this.flushInterval);
     window.addEventListener('beforeunload', () => this.flush());
     window.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') this.flush();

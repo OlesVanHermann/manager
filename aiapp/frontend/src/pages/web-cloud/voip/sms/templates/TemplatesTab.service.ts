@@ -2,8 +2,6 @@
 // SMS TEMPLATES TAB SERVICE - API calls isolés
 // ============================================================
 
-import { ovhApi } from '../../../../../../services/api';
-
 interface Template {
   id: string;
   name: string;

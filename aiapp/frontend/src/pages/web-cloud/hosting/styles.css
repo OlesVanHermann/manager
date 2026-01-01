@@ -10,9 +10,17 @@
 .hosting-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
   min-height: 0;
   overflow: hidden;
+  /* WORKAROUND: Neutraliser le padding de .content-area (index.css:276)
+   * La classe .content-area--split existe mais n'est pas utilisée dynamiquement.
+   * Cette compensation permet à .hosting-split de gérer son propre padding
+   * conformément à prompt_split_layout_method.txt.
+   * TODO: Migrer vers content-area--split dans App.tsx pour éviter ce hack.
+   */
+  margin: -15px -24px -24px -24px;
+  height: calc(100% + 15px + 24px);  /* Compenser: top(15) + bottom(24) */
+  width: calc(100% + 48px);          /* Compenser: left(24) + right(24) */
 }
 
 .hosting-split {
@@ -21,6 +29,7 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  padding: 15px 24px 24px 24px; /* top=15px (gap NAV2), sides=24px, bottom=24px selon prompt_split_layout_method.txt */
   gap: 16px; /* Gap entre LEFT PANEL et RIGHT PANEL selon prompt_target.txt */
 }
 
@@ -29,15 +38,56 @@
    ============================================================ */
 
 .hosting-sidebar {
+  /* === SPECS CRITIQUES (prompt_split_layout_method.txt) === */
   width: 280px;
   min-width: 280px;
   max-width: 280px;
+  flex-shrink: 0;
+  /* Style card selon prompt_target.txt */
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  /* Layout interne */
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #E5E7EB;
-  background: #FFFFFF;
   overflow: hidden;
+}
+
+/* NAV3 Selector - AU-DESSUS de la recherche */
+.hosting-nav3-selector {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+  flex-shrink: 0;
+}
+
+.hosting-nav3-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: #6B7280;
+  font-size: 11px;  /* Spec: prompt_target.txt NAV3 tabs = 11px */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.hosting-nav3-btn:hover {
+  background: #F3F4F6;
+  color: #374151;
+  border-color: #D1D5DB;
+}
+
+.hosting-nav3-btn.active {
+  background: #0050D7;
+  color: #FFFFFF;
+  border-color: #0050D7;
 }
 
 .hosting-sidebar-search {
@@ -113,7 +163,7 @@
 }
 
 .hosting-service-item.selected {
-  background: #EFF6FF;
+  background: #E8F0FE;  /* Spec: row-selected (prompt_target.txt) */
   border-left: 3px solid #0050D7;
 }
 
@@ -226,11 +276,16 @@
    ============================================================ */
 
 .hosting-main {
+  /* === SPECS CRITIQUES (prompt_split_layout_method.txt) === */
   flex: 1;
   min-width: 0;
+  /* Style card selon prompt_target.txt */
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  /* Layout interne */
   height: 100%;
   overflow-y: auto;
-  background: #F6F6F9;
   display: flex;
   flex-direction: column;
 }
@@ -278,7 +333,7 @@
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 12px 16px;
+  padding: 12px 20px;  /* Spec: RIGHT PANEL internal x=20px (prompt_target.txt §8) */
   background: #FFFFFF;
   border-bottom: 1px solid #E5E7EB;
   flex-shrink: 0;
@@ -300,11 +355,11 @@
   text-overflow: ellipsis;
 }
 
-/* NAV3 - TABS */
+/* NAV4 - TABS (RIGHT PANEL) */
 .hosting-tabs {
   display: flex;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 20px;  /* Spec: RIGHT PANEL internal x=20px (prompt_target.txt §8) */
   background: #FFFFFF;
   border-bottom: 1px solid #E5E7EB;
   overflow-x: auto;
@@ -336,12 +391,24 @@
   color: #FFFFFF;
 }
 
+/* Liens vers autres NAV3 (Sites →, Expert →) - style différent */
+.hosting-tab-btn.hosting-tab-nav3link {
+  background: #F3F4F6;
+  border: 1px solid #9CA3AF;
+  color: #6B7280;
+}
+
+.hosting-tab-btn.hosting-tab-nav3link:hover {
+  background: #E5E7EB;
+  color: #374151;
+}
+
 /* TAB CONTENT */
 .hosting-tab-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  background: #F6F6F9;
+  padding: 20px;  /* Spec: RIGHT PANEL internal x=20px (prompt_target.txt §8) */
+  background: transparent;  /* Hérite du blanc du main panel */
   min-height: 0;
 }
 
@@ -478,4 +545,111 @@
 .hosting-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ============================================================
+   NAV5 - SOUS-TABS (contextuelles)
+   ============================================================ */
+
+.hosting-nav5-tabs {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.hosting-nav5-btn {
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  color: #6B7280;
+  font-size: 12px;  /* Spec: prompt_target.txt NAV4 sous-tabs = 12px */
+  font-weight: 400;
+  cursor: pointer;
+  transition: color 0.15s;
+  white-space: nowrap;
+  position: relative;
+}
+
+.hosting-nav5-btn:hover {
+  color: #374151;
+}
+
+.hosting-nav5-btn.active {
+  color: #0050D7;
+  font-weight: 500;
+}
+
+/* Underline pour NAV5 actif - Spec: prompt_target.txt section 7 */
+.hosting-nav5-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #0050D7;
+}
+
+/* Style texte pour le premier NAV5 actif: [Label] */
+.hosting-nav5-btn.active:first-child {
+  color: #0050D7;
+}
+
+/* Séparateur visuel entre NAV5 (pipe |) */
+.hosting-nav5-btn:not(:first-child)::before {
+  content: "|";
+  position: absolute;
+  left: -10px;
+  color: #D1D5DB;
+  font-weight: 300;
+}
+
+/* ============================================================
+   PLACEHOLDER - Composants en cours de développement
+   ============================================================ */
+
+.hosting-tab-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px dashed #D1D5DB;
+  margin: 16px;
+}
+
+.hosting-tab-placeholder .placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.hosting-tab-placeholder h3 {
+  margin: 0 0 8px 0;
+  color: #374151;
+  font-size: 18px;
+}
+
+.hosting-tab-placeholder p {
+  margin: 4px 0;
+  color: #6B7280;
+  font-size: 14px;
+}
+
+.hosting-tab-placeholder .placeholder-note {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #FEF3C7;
+  border-radius: 4px;
+  color: #92400E;
+  font-size: 12px;
+  font-weight: 500;
 }

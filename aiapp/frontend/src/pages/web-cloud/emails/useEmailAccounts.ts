@@ -2,7 +2,7 @@
 // HOOK - useEmailAccounts (Comptes email par domaine)
 // ============================================================
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { EmailAccount, EmailOffer } from "../types";
 import { emailsService } from "./emails.service";
 
@@ -29,6 +29,13 @@ export function useEmailAccounts({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Stabilise la référence de offers pour éviter les re-renders inutiles
+  const offersKey = offers?.sort().join(",") || "";
+  const offersRef = useRef(offers);
+  if (offersKey !== (offersRef.current?.sort().join(",") || "")) {
+    offersRef.current = offers;
+  }
+
   const loadAccounts = useCallback(async () => {
     if (!domain && !licenseId) {
       setAccounts([]);
@@ -47,9 +54,10 @@ export function useEmailAccounts({
         result = await emailsService.getAccountsByLicense(licenseId);
       }
 
-      // Filtrer par offres si spécifié
-      if (offers && offers.length > 0) {
-        result = result.filter((acc) => offers.includes(acc.offer));
+      // Filtrer par offres si spécifié (utilise ref stabilisée)
+      const currentOffers = offersRef.current;
+      if (currentOffers && currentOffers.length > 0) {
+        result = result.filter((acc) => currentOffers.includes(acc.offer));
       }
 
       setAccounts(result);
@@ -59,7 +67,7 @@ export function useEmailAccounts({
     } finally {
       setLoading(false);
     }
-  }, [domain, licenseId, offers]);
+  }, [domain, licenseId, offersKey]); // offersKey string au lieu de offers array
 
   useEffect(() => {
     loadAccounts();

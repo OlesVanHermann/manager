@@ -311,7 +311,7 @@ function QuotaCell({ used, total }: { used: number; total: number }) {
   const usedBytes = used * 1024 * 1024;
   const totalBytes = total * 1024 * 1024;
   const percent = total > 0 ? (used / total) * 100 : 0;
-  const color = percent > 90 ? "#EF4444" : percent > 70 ? "#F59E0B" : "#10B981";
+  const color = percent > 90 ? "#DC2626" : percent > 70 ? "#D97706" : "#059669";
 
   return (
     <div className="quota-cell">

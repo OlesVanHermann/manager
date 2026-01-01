@@ -1,5 +1,16 @@
 # CONSIGNES REACT - NEW MANAGER OVHcloud
 
+Version: v4.0 (2026-01-01)
+Remplace: prompt_react.txt (v3)
+
+Changelog v3->v4:
+- Terminologie officielle NAV1-NAV4 avec positions fixes
+- Structure fichiers avec groupements (NAV3) et fonctions (NAV4)
+- Services isoles par NAV4 (plus de services partages NAV2)
+- Specs CSS layout integrees
+- References aux prompts complementaires
+- Regles d'isolation documentees
+
 ## 1. Contexte du projet
 
 Interface **New Manager** pour la gestion des services OVHcloud : Cloud, Hebergement Web, Email, DNS, Domaines, VPS, Serveurs dedies.
@@ -23,7 +34,54 @@ Le **Old Manager** est accessible en production sur : `https://manager.eu.ovhclo
 
 ---
 
-## 2. Regles de travail
+## 2. Terminologie officielle NAV1-NAV4
+
+| Niveau | Nom | Position | Description |
+|--------|-----|----------|-------------|
+| **NAV1** | Univers | Header bleu OVH | Web Cloud, Public Cloud, Network... |
+| **NAV2** | Produit | Sous-header blanc | Domaines, Hebergement, Emails... |
+| **NAV3** | Groupement | **LEFT PANEL** (au-dessus recherche) | [General][Sites][Expert] |
+| **NAV4** | Fonction | **RIGHT PANEL** (tabs) | FTP, SSL, BDD, CDN, Cron... |
+
+### Structure visuelle
+
+```
++---------------------------------------------------------------------------+
+| NAV1 - Univers (Header bleu OVH)                                          |
+|---------------------------------------------------------------------------+
+| NAV2 - Produit (Sous-header blanc)                                        |
+|-----------------------+---------------------------------------------------|
+| LEFT PANEL (280px)    | RIGHT PANEL (flex: 1)                             |
+| +-------------------+ | +-------------------------------------------------+
+| | NAV3 - Groupement | | | Titre service                                   |
+| | [General][Sites]  | | |-------------------------------------------------|
+| |-------------------| | | NAV4 - Fonction                                 |
+| | Rechercher...     | | | [FTP] [SSL] [BDD] [CDN] [Cron]                  |
+| |-------------------| | |-------------------------------------------------|
+| | Liste services    | | | Contenu de l'onglet selectionne                 |
+| +-------------------+ | +-------------------------------------------------+
++-----------------------+---------------------------------------------------+
+```
+
+**IMPORTANT :**
+- NAV3 (Groupement) est TOUJOURS dans le LEFT PANEL, AU-DESSUS de la recherche
+- NAV4 (Fonction) est TOUJOURS dans le RIGHT PANEL (tabs principaux)
+
+---
+
+## 3. Specs CSS critiques
+
+| Propriete | Valeur | Usage |
+|-----------|--------|-------|
+| padding split | `15px 24px 24px 24px` | top=15px (gap NAV2), autres=24px |
+| gap panels | `16px` | Entre sidebar et main |
+| sidebar width | `280px` | LEFT PANEL (min/max aussi) |
+
+Details complets -> `prompt_split_layout_method.txt`
+
+---
+
+## 4. Regles de travail
 
 1. **Lire et analyser** le code fourni. Ne pas partager l'analyse sauf demande explicite.
 2. **Ne rien faire** sans autorisation.
@@ -34,10 +92,74 @@ Le **Old Manager** est accessible en production sur : `https://manager.eu.ovhclo
 7. **Conserver** le design system existant, ne pas reinventer les composants UI.
 8. **Erreur 401 API** : rediriger vers l'auth OVH, pas d'erreur affichee.
 9. **i18n** : tous les textes visibles doivent utiliser `useTranslation()` (voir section 17).
+10. **Isolation** : chaque NAV4 est une ile isolee (voir section 5).
 
 ---
 
-## 3. Structure des repertoires
+## 5. Regles d'isolation (DEFACTORISATION)
+
+### 5.1 Principe
+
+**DEFACTORISATION** = L'inverse de la factorisation/mutualisation.
+Au lieu de partager le code commun, on le **DUPLIQUE VOLONTAIREMENT** pour garantir l'**INDEPENDANCE TOTALE**.
+
+> **"Chaque fonction (NAV4) est une ile. Chaque groupement (NAV3) est un archipel.**
+> **Aucun pont entre les iles. Ni en JS, ni en CSS."**
+
+### 5.2 INTERDIT (JS)
+
+```typescript
+// INTERDIT - Import croise entre fonctions (NAV4)
+import { sslService } from "../../sites/ssl/SslTab.service";
+
+// INTERDIT - Service partage au niveau NAV2
+import { hostingService } from "../hosting.service";
+
+// INTERDIT - Hooks partages NAV2
+import { useHostingData } from "../useHostingData";
+```
+
+### 5.3 AUTORISE (JS)
+
+```typescript
+// AUTORISE - API globale
+import { ovhGet, ovhPost } from "@/services/api";
+
+// AUTORISE - Types partages NAV2 (SEUL partage JS)
+import type { HostingInfo } from "../../hosting.types";
+
+// AUTORISE - Service local isole
+import { ftpService } from "./FtpTab.service";
+
+// AUTORISE - Modales du meme groupement (NAV3)
+import { AddRecordModal } from "../AddRecordModal";
+```
+
+### 5.4 INTERDIT (CSS)
+
+```css
+/* INTERDIT - Import CSS d'une autre fonction */
+import "../../sites/ssl/SslTab.css";
+
+/* INTERDIT - Classes sans prefixe */
+.modal-overlay { }
+.card { }
+```
+
+### 5.5 AUTORISE (CSS)
+
+```css
+/* AUTORISE - Prefixe par fonction */
+.ftp-table { }
+.ftp-modal-form { }
+.ssl-card { }
+```
+
+Details complets -> `prompt_split.txt` sections D-F
+
+---
+
+## 6. Structure des repertoires
 
 | Element | Chemin |
 |---------|--------|
@@ -46,15 +168,15 @@ Le **Old Manager** est accessible en production sur : `https://manager.eu.ovhclo
 
 ---
 
-## 4. New Manager
+## 7. New Manager
 
-### 4.1 Archive
+### 7.1 Archive
 ```bash
 cd /home/ubuntu/
 tar -cvf new_manager.tar --exclude='*2025*' --exclude='*.bak' aiapp/frontend/src/ aiapp/frontend/public/
 ```
 
-### 4.2 Build
+### 7.2 Build
 
 **Developpement :**
 ```bash
@@ -68,210 +190,191 @@ node /home/ubuntu/aiapp/frontend/scripts/check-i18n.cjs
 ```bash
 cd /home/ubuntu/aiapp/frontend
 npm run build:prod
-/home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh
-# ou
 /home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh --from-dist
 ```
 
-### 4.3 Arborescence du framework
+### 7.3 Arborescence du framework
 ```
 /home/ubuntu/aiapp/frontend/src/
-├── App.tsx                       # App principale + routing
-├── main.tsx                      # Bootstrap React
-├── index.css                     # Styles racine
-│
-├── components/                   # Composants reutilisables
-│   ├── Header/                   # Header global
-│   │   ├── index.tsx
-│   │   └── styles.css
-│   ├── AccountSidebar/           # Sidebar droite (menu utilisateur)
-│   │   ├── AccountSidebar.tsx
-│   │   ├── UserInfos.tsx
-│   │   ├── Shortcuts.tsx
-│   │   └── UsefulLinks.tsx
-│   ├── Layout/                   # Layout wrapper
-│   ├── LoadingSpinner/           # Spinner de chargement
-│   ├── HeaderNav.tsx             # Navigation header
-│   ├── ServiceIcons.tsx          # Icones services
-│   ├── Skeleton.tsx              # Skeleton loading
-│   └── Skeleton.css
-│
-├── contexts/                     # Contexts React
-│   └── AuthContext.tsx           # Contexte authentification
-│
-├── design-system/                # Design System OVH
-│   ├── index.ts                  # Exports principaux
-│   ├── tokens.css                # Variables CSS
-│   ├── globals.css               # Styles globaux
-│   ├── tokens/
-│   │   └── index.ts
-│   ├── COMPONENTS.md             # Doc composants
-│   ├── DESIGN_TOKENS.md          # Doc tokens
-│   ├── ICONS.md                  # Doc icones
-│   └── PATTERNS.md               # Doc patterns
-│
-├── hooks/                        # Hooks globaux
-│   └── useAppNavigation.ts       # Navigation applicative
-│
-├── i18n/                         # Internationalisation
-│   ├── index.ts                  # Config i18next
-│   └── LanguageSelector.tsx      # Selecteur langue
-│
-├── lib/                          # Utilitaires
-│   ├── constants.ts              # Constantes globales
-│   ├── types.ts                  # Types globaux
-│   ├── useTabs.ts                # Hook gestion tabs
-│   └── ResetSlot.tsx             # Reset slot component
-│
-├── styles/                       # Styles globaux
-│   ├── globals.css
-│   └── pages-common.css
-│
-├── types/                        # Types TypeScript
-│   ├── auth.types.ts
-│   └── services.types.ts
-│
-├── services/                     # Services API (~65 fichiers)
-│   ├── api.ts                    # Client API base
-│   ├── auth.ts                   # Authentification
-│   ├── home.account.ts
-│   ├── home.account.security.ts
-│   ├── home.account.contacts.ts
-│   ├── home.account.procedures.ts
-│   ├── home.billing.ts
-│   ├── home.billing.services.ts
-│   ├── home.billing.orders.ts
-│   ├── home.billing.agreements.ts
-│   ├── home.support.ts
-│   ├── home.support.communication.ts
-│   ├── home.notifications.ts
-│   ├── home.carbon.ts
-│   ├── home.api.ts
-│   ├── iam.ts
-│   ├── iam.logs.ts
-│   ├── iam.secret.ts
-│   ├── iam.okms.ts
-│   ├── iam.hsm.ts
-│   ├── iam.dbaas-logs.ts
-│   ├── iam.metrics.ts
-│   ├── license.ts
-│   ├── public-cloud.ts
-│   ├── public-cloud.instances.ts
-│   ├── public-cloud.block-storage.ts
-│   ├── public-cloud.object-storage.ts
-│   ├── public-cloud.databases.ts
-│   ├── public-cloud.kubernetes.ts
-│   ├── public-cloud.ai.ts
-│   ├── public-cloud.registry.ts
-│   ├── public-cloud.load-balancer.ts
-│   ├── private-cloud.ts
-│   ├── private-cloud.vmware.ts
-│   ├── private-cloud.nutanix.ts
-│   ├── bare-metal.dedicated.ts
-│   ├── bare-metal.vps.ts
-│   ├── bare-metal.housing.ts
-│   ├── bare-metal.nasha.ts
-│   ├── bare-metal.netapp.ts
-│   ├── web-cloud.domains.ts
-│   ├── web-cloud.dns-zones.ts
-│   ├── web-cloud.hosting.ts
-│   ├── web-cloud.private-database.ts
-│   ├── web-cloud.email-domain.ts
-│   ├── web-cloud.email-pro.ts
-│   ├── web-cloud.exchange.ts
-│   ├── web-cloud.zimbra.ts
-│   ├── web-cloud.office.ts
-│   ├── web-cloud.sms.ts
-│   ├── web-cloud.voip.ts
-│   ├── web-cloud.fax.ts
-│   ├── web-cloud.pack-xdsl.ts
-│   ├── web-cloud.overthebox.ts
-│   ├── web-cloud.carrier-sip.ts
-│   ├── network.ts
-│   ├── network.cdn.ts
-│   ├── network.cloud-connect.ts
-│   ├── network.vrack-services.ts
-│   └── network.security.ts
-│
-└── pages/                        # Pages - 8 univers
-    ├── _placeholder/             # Template pages non implementees
-    ├── Login.tsx                 # Page login
-    ├── home/                     # A) HOME
-    ├── iam/                      # B) IAM
-    ├── license/                  # C) LICENSE
-    ├── public-cloud/             # D) PUBLIC CLOUD
-    ├── private-cloud/            # E) PRIVATE CLOUD
-    ├── bare-metal/               # F) BARE METAL
-    ├── web-cloud/                # G) WEB CLOUD
-    └── network/                  # H) NETWORK
+|-- App.tsx                       # App principale + routing
+|-- main.tsx                      # Bootstrap React
+|-- index.css                     # Styles racine
+|
+|-- components/                   # Composants reutilisables
+|   |-- Header/                   # Header global
+|   |-- AccountSidebar/           # Sidebar droite (menu utilisateur)
+|   |-- Layout/                   # Layout wrapper
+|   |-- LoadingSpinner/           # Spinner de chargement
+|   |-- Skeleton.tsx              # Skeleton loading
+|   +-- ...
+|
+|-- contexts/                     # Contexts React
+|   +-- AuthContext.tsx           # Contexte authentification
+|
+|-- design-system/                # Design System OVH
+|   |-- index.ts                  # Exports principaux
+|   |-- tokens.css                # Variables CSS
+|   +-- ...
+|
+|-- hooks/                        # Hooks globaux
+|   +-- useAppNavigation.ts       # Navigation applicative
+|
+|-- i18n/                         # Internationalisation
+|   |-- index.ts                  # Config i18next
+|   +-- LanguageSelector.tsx      # Selecteur langue
+|
+|-- lib/                          # Utilitaires
+|   |-- constants.ts              # Constantes globales
+|   |-- types.ts                  # Types globaux
+|   +-- useTabs.ts                # Hook gestion tabs
+|
+|-- styles/                       # Styles globaux
+|   |-- globals.css
+|   +-- pages-common.css
+|
+|-- services/                     # Services API GLOBAUX uniquement
+|   |-- api.ts                    # Client API base (ovhGet, ovhPost, etc.)
+|   +-- auth.ts                   # Authentification
+|
++-- pages/                        # Pages - 8 univers
+    |-- _placeholder/             # Template pages non implementees
+    |-- Login.tsx                 # Page login
+    |-- general/                  # A) GENERAL (ex-HOME)
+    |-- iam/                      # B) IAM
+    |-- license/                  # C) LICENSE
+    |-- public-cloud/             # D) PUBLIC CLOUD
+    |-- private-cloud/            # E) PRIVATE CLOUD
+    |-- bare-metal/               # F) BARE METAL
+    |-- web-cloud/                # G) WEB CLOUD
+    +-- network/                  # H) NETWORK
 ```
 
-### 4.4 Convention de nommage des fichiers
+### 7.4 Structure d'un NAV2 (Produit)
+
+```
+src/pages/{NAV1}/{NAV2}/
+|
+|-- {nav2}.types.ts              # Types partages (SEUL partage JS autorise)
+|-- index.tsx                    # Layout + routing NAV3/NAV4
+|-- styles.css                   # CSS layout uniquement
+|
+|-- {Nav2}Sidebar.tsx            # Composant sidebar avec NAV3 (optionnel)
+|-- LeftPanel.tsx                # Alternative a Sidebar (optionnel)
+|-- Onboarding.tsx               # Etat vide / accueil (optionnel)
+|
+|-- {nav3 groupement}/           # === NAV3 dans LEFT PANEL ===
+|   |-- index.ts                 # Exports modales du groupement
+|   |-- *Modal.tsx               # Modales partagees du groupement
+|   |
+|   +-- {nav4 fonction}/         # === NAV4 dans RIGHT PANEL ===
+|       |-- index.ts             # Barrel export
+|       |-- {Nav4}Tab.tsx        # Composant principal
+|       |-- {Nav4}Tab.service.ts # Service API ISOLE
+|       |-- {Nav4}Tab.css        # Styles isoles (.{nav4}-*)
+|       |-- {Nav4}Tab.helpers.ts # Helpers locaux (optionnel)
+|       +-- *Modal.tsx           # Modales locales
+|
++-- api/                         # APIs multi-providers (optionnel)
+    |-- index.ts                 # Factory/Router
+    |-- {provider1}/
+    +-- {provider2}/
+```
+
+### 7.5 Convention de nommage des fichiers
 
 | Element | Convention | Exemple |
 |---------|------------|---------|
 | Repertoire univers (NAV1) | `kebab-case` | `public-cloud/`, `bare-metal/` |
-| Repertoire section (NAV2) | `kebab-case` | `account/`, `billing/` |
-| Repertoire groupement | `kebab-case` | `hebergement/`, `emails/`, `telecom/` |
-| Page principale section | `index.tsx` | `pages/home/account/index.tsx` |
-| Tab (NAV3) | `PascalCaseTab.tsx` | `SecurityTab.tsx`, `OrdersTab.tsx` |
-| Composant local | `PascalCase.tsx` | `ProfileTile.tsx` |
-| Hook local | `use*.ts` | `useSecurityData.ts`, `usePeriodNavigation.ts` |
-| Styles section | `styles.css` | `pages/home/account/styles.css` |
-| Traduction page | `index.json` | `locales/fr/home/account/index.json` |
-| Traduction tab | `{tab}.json` | `locales/fr/home/billing/invoices.json` |
-| Fichiers a ignorer | `*.bak`, `*.2025*` | Backups et timestamps |
+| Repertoire produit (NAV2) | `kebab-case` | `hosting/`, `domains/` |
+| Repertoire groupement (NAV3) | `kebab-case` | `general/`, `sites/`, `expert/` |
+| Repertoire fonction (NAV4) | `kebab-case` | `ftp/`, `ssl/`, `database/` |
+| Composant NAV4 | `{Nav4}Tab.tsx` | `FtpTab.tsx`, `SslTab.tsx` |
+| Service NAV4 | `{Nav4}Tab.service.ts` | `FtpTab.service.ts` |
+| CSS NAV4 | `{Nav4}Tab.css` | `FtpTab.css` |
+| Types NAV2 | `{nav2}.types.ts` | `hosting.types.ts` |
+| Modale | `{Action}{Entity}Modal.tsx` | `CreateFtpUserModal.tsx` |
+| Traduction | `{nav4}.json` | `ftp.json`, `ssl.json` |
 
-### 4.5 Imports dans App.tsx
-```typescript
-// Univers HOME (A)
-import HomePage from "./pages/home";
-import AccountPage from "./pages/home/account";
-import BillingPage from "./pages/home/billing";
-import SupportPage from "./pages/home/support";
-import CarbonPage from "./pages/home/carbon";
-import ApiPage from "./pages/home/api";
+### 7.6 Exemple concret : web-cloud/hosting
 
-// Univers IAM (B)
-import IamPage from "./pages/iam";
-
-// Placeholder pour univers non implementes
-import { PlaceholderPage } from "./pages/_placeholder";
-
-// i18n
-import "./i18n";
 ```
-
-### 4.6 Chemins d'imports relatifs
-
-| Depuis | Vers services/ | Vers types/ | Vers lib/ |
-|--------|---------------|-------------|-----------|
-| `pages/home/index.tsx` | `../../services/` | `../../types/` | `../../lib/` |
-| `pages/home/account/index.tsx` | `../../../services/` | `../../../types/` | `../../../lib/` |
-| `pages/home/account/SecurityTab.tsx` | `../../../services/` | `../../../types/` | `../../../lib/` |
-| `pages/home/account/security/PasswordSection.tsx` | `../../../../services/` | `../../../../types/` | `../../../../lib/` |
-| `pages/web-cloud/hebergement/hosting/index.tsx` | `../../../../services/` | `../../../../types/` | `../../../../lib/` |
-
-### 4.7 Convention de nommage des services
-
-| Pattern | Usage | Exemple |
-|---------|-------|---------|
-| `api.ts`, `auth.ts` | Utilitaires transverses | `services/api.ts` |
-| `NAV1.ts` | Service d'univers | `services/iam.ts`, `services/network.ts` |
-| `NAV1.NAV2.ts` | Service de section | `services/home.billing.ts`, `services/bare-metal.vps.ts` |
-| `NAV1.NAV2.NAV3.ts` | Service de tab specifique | `services/home.account.security.ts` |
-
-**Regles :**
-- Utiliser le point `.` comme separateur (pas `-` ni `/`)
-- NAV1 = univers (`home`, `iam`, `public-cloud`, `bare-metal`, etc.)
-- NAV2 = section (`billing`, `account`, `vps`, `domains`, etc.)
-- NAV3 = tab si logique metier specifique (`security`, `orders`, `communication`)
+src/pages/web-cloud/hosting/
+|
+|-- hosting.types.ts             # Types partages
+|-- index.tsx                    # Layout + routing
+|-- styles.css                   # CSS layout (sidebar, split, tabs)
+|-- HostingSidebar.tsx           # Sidebar avec NAV3 Groupement
+|-- Onboarding.tsx               # Etat vide
+|
+|-- general/                     # NAV3 GROUPEMENT: [General]
+|   |-- index.ts
+|   |
+|   |-- general/                 # NAV4 FONCTION: Home
+|   |   |-- index.ts
+|   |   |-- GeneralTab.tsx
+|   |   |-- GeneralTab.service.ts
+|   |   +-- GeneralTab.css
+|   |
+|   |-- modules/                 # NAV4 FONCTION: Modules
+|   |   |-- index.ts
+|   |   |-- ModulesTab.tsx
+|   |   |-- ModulesTab.service.ts
+|   |   |-- ModulesTab.css
+|   |   |-- InstallModuleModal.tsx
+|   |   +-- DeleteModuleModal.tsx
+|   |
+|   +-- logs/                    # NAV4 FONCTION: Logs
+|       |-- index.ts
+|       |-- LogsTab.tsx
+|       |-- LogsTab.service.ts
+|       +-- LogsTab.css
+|
+|-- sites/                       # NAV3 GROUPEMENT: [Sites]
+|   |-- index.ts
+|   |
+|   |-- multisite/               # NAV4 FONCTION: Multisite
+|   |   |-- index.ts
+|   |   |-- MultisiteTab.tsx
+|   |   |-- MultisiteTab.service.ts
+|   |   |-- MultisiteTab.css
+|   |   |-- AddDomainModal.tsx
+|   |   +-- DeleteDomainModal.tsx
+|   |
+|   +-- ssl/                     # NAV4 FONCTION: SSL
+|       |-- index.ts
+|       |-- SslTab.tsx
+|       |-- SslTab.service.ts
+|       |-- SslTab.css
+|       +-- OrderSslModal.tsx
+|
++-- expert/                      # NAV3 GROUPEMENT: [Expert]
+    |-- index.ts
+    |
+    |-- ftp/                     # NAV4 FONCTION: FTP
+    |   |-- index.ts
+    |   |-- FtpTab.tsx
+    |   |-- FtpTab.service.ts
+    |   |-- FtpTab.css
+    |   |-- CreateFtpUserModal.tsx
+    |   +-- DeleteFtpUserModal.tsx
+    |
+    |-- database/                # NAV4 FONCTION: BDD
+    |   |-- index.ts
+    |   |-- DatabaseTab.tsx
+    |   |-- DatabaseTab.service.ts
+    |   +-- DatabaseTab.css
+    |
+    |-- cdn/                     # NAV4 FONCTION: CDN
+    |-- cron/                    # NAV4 FONCTION: Cron
+    |-- envvars/                 # NAV4 FONCTION: Variables
+    +-- tasks/                   # NAV4 FONCTION: Taches
+```
 
 ---
 
-## 5. Design System (OVH Classic Blue)
+## 8. Design System (OVH Classic Blue)
 
-### 5.1 Couleurs primaires (tokens.css)
+### 8.1 Couleurs primaires (tokens.css)
 
 | Token | Valeur | Usage |
 |-------|--------|-------|
@@ -282,7 +385,7 @@ import "./i18n";
 | `--color-primary-300` | `#85A5FF` | Light |
 | `--color-primary-100` | `#D6E4FF` | Background |
 
-### 5.2 Regle d'utilisation
+### 8.2 Regle d'utilisation
 
 Utiliser **uniquement** les variables CSS **sans fallback** :
 ```css
@@ -293,7 +396,7 @@ color: var(--color-primary-500);
 color: var(--color-primary-500, #0050D7);
 ```
 
-### 5.3 Stack technique
+### 8.3 Stack technique
 
 | Composant | Source |
 |-----------|--------|
@@ -303,7 +406,7 @@ color: var(--color-primary-500, #0050D7);
 | CSS | Variables CSS custom (tokens.css) |
 | i18n | `react-i18next` + `i18next` |
 
-### 5.4 Classes CSS disponibles
+### 8.4 Classes CSS disponibles
 ```css
 /* Boutons */
 .btn  .btn-primary  .btn-secondary  .btn-outline
@@ -320,27 +423,42 @@ color: var(--color-primary-500, #0050D7);
 /* Formulaires */
 .toggle-switch  .toggle-slider
 
-/* Securite */
-.security-card  .two-factor-method
-
 /* Tableaux */
 .bills-table  .method-table
 ```
 
-### 5.5 Documentation Design System
+### 8.5 Pattern CSS boutons (OBLIGATOIRE)
 
-Fichiers de reference dans `/src/design-system/` :
+```css
+/* Etat normal */
+.btn-primary {
+  background: var(--color-primary-500);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
 
-| Fichier | Contenu |
-|---------|---------|
-| `COMPONENTS.md` | Catalogue des composants disponibles |
-| `DESIGN_TOKENS.md` | Variables CSS et tokens |
-| `ICONS.md` | Icones disponibles et usage |
-| `PATTERNS.md` | Patterns de conception recommandes |
+/* Etat hover - IMPORTANT: color !important pour eviter conflits */
+.btn-primary:hover {
+  background: #003399;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(0, 80, 215, 0.4);
+}
 
-### 5.6 CHARGEMENT PROGRESSIF (Streaming UI)
+/* Etat disabled */
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+```
 
-**Cas d'usage :** Quand l'API OVH retourne une liste d'IDs puis necessite N appels pour les details (ex: /me/deposit, /me/bill).
+### 8.6 CHARGEMENT PROGRESSIF (Streaming UI)
+
+**Cas d'usage :** Quand l'API OVH retourne une liste d'IDs puis necessite N appels pour les details.
 
 **Structure du state :**
 ```typescript
@@ -358,27 +476,18 @@ const abortRef = useRef(false);
 
 **Flux de chargement :**
 ```
-1. GET /me/deposit → liste d'IDs (rapide)
+1. GET /me/deposit -> liste d'IDs (rapide)
 2. Afficher tableau avec IDs + skeletons
 3. Charger details par batches de 10 (Promise.all)
 4. Mettre a jour chaque ligne des reception
 5. Afficher compteur: {loadedCount}/{total}
 ```
 
-**Gestion du changement de filtres :**
-```typescript
-abortRef.current = true;
-await new Promise(r => setTimeout(r, 50));
-abortRef.current = false;
-setLoadedCount(0);
-setRows(new Map());
-```
-
 ---
 
-## 6. Architecture technique
+## 9. Architecture technique
 
-### 6.1 Proxy Nginx
+### 9.1 Proxy Nginx
 
 Le frontend communique avec l'API OVH via un proxy Nginx :
 ```
@@ -387,7 +496,7 @@ Le frontend communique avec l'API OVH via un proxy Nginx :
 
 La signature des requetes est geree automatiquement cote serveur.
 
-### 6.2 Layout principal (App.tsx)
+### 9.2 Layout principal (App.tsx)
 ```
 +-------------------------------------------------------------------------------------------+
 | +-----------------------------------------------------------------------+ +-----------+ |
@@ -396,17 +505,15 @@ La signature des requetes est geree automatiquement cote serveur.
 | | [Accueil] [Compte] [Facturation] [Support] [Carbone] [API]  <- NAV2   | +-----------+ |
 | +-----------------------------------------------------------------------+               |
 | |                                                                       |               |
-| |    PAGE AVEC SES PROPRES ONGLETS NAV3 INTERNES                        |               |
-| |    (AccountPage, BillingPage, etc.)                                   |               |
-| |                                                                       |               |
-| |    +---------------------------------------------------------------+  |               |
-| |    | [Tab1] [Tab2] [Tab3] ...                        <- NAV3       |  |               |
-| |    +---------------------------------------------------------------+  |               |
-| |    |                                                               |  |               |
-| |    |                    CONTENU DE LA PAGE                         |  |               |
-| |    |                                                               |  |               |
-| |    +---------------------------------------------------------------+  |               |
-| |                                                                       |               |
+| | +---------------------+  +------------------------------------------+ |               |
+| | | LEFT PANEL          |  | RIGHT PANEL                              | |               |
+| | | [NAV3 Groupement]   |  | Titre + [NAV4 Tabs]                      | |               |
+| | | [General][Sites]    |  | [FTP] [SSL] [BDD] [CDN]                  | |               |
+| | |---------------------|  |------------------------------------------| |               |
+| | | Rechercher...       |  |                                          | |               |
+| | |---------------------|  |  CONTENU DE LA FONCTION SELECTIONNEE     | |               |
+| | | Liste services      |  |                                          | |               |
+| | +---------------------+  +------------------------------------------+ |               |
 | +-----------------------------------------------------------------------+               |
 +-------------------------------------------------------------------------------------------+
 ```
@@ -417,29 +524,30 @@ La signature des requetes est geree automatiquement cote serveur.
 |------|-----------|-------------|
 | Niveau 1 (NAV1) | `Header` | Onglets univers OVH (HOME, PUBLIC CLOUD, etc.) |
 | Niveau 2 (NAV2) | `SectionTabs` | Sections de l'univers selectionne |
-| Niveau 3 (NAV3) | `PageTabs` | **DANS chaque page** (pas dans le header global) |
+| Niveau 3 (NAV3) | `LeftPanel` / `Sidebar` | Groupements dans le LEFT PANEL |
+| Niveau 4 (NAV4) | `TabsNav` | Fonctions (tabs) dans le RIGHT PANEL |
 | Menu utilisateur | `AccountSidebar` | Avatar + menu deroulant droite |
 
-### 6.3 Univers (NAV1)
+### 9.3 Univers (NAV1)
 
 | ID | Univers | Dossier | Sections principales |
 |----|---------|---------|----------------------|
-| A | **HOME** | `pages/home/` | Dashboard, Account, Billing, Support, Carbon, API |
-| B | **IAM** | `pages/iam/` | Identites, Policies, Groups, Logs, Secret, OKMS, HSM, DBaaS-Logs, Metrics |
-| C | **LICENSE** | `pages/license/` | Windows, cPanel, Plesk, SQL Server, Virtuozzo, DirectAdmin, CloudLinux |
-| D | **PUBLIC CLOUD** | `pages/public-cloud/` | Project, Instances, Storage, K8s, AI, Databases, Registry, LB |
-| E | **PRIVATE CLOUD** | `pages/private-cloud/` | VMware, Nutanix, SAP, Veeam, Managed Bare Metal |
-| F | **BARE METAL** | `pages/bare-metal/` | Dedicated, VPS, Housing, NAS-HA, NetApp |
-| G | **WEB CLOUD** | `pages/web-cloud/` | Domains, Hebergement, Emails, Telecom, Access |
-| H | **NETWORK** | `pages/network/` | IP, vRack, CDN, Cloud Connect, vRack Services, Security, LB |
+| A | **GENERAL** | `pages/general/` | Dashboard, Account, Billing, Support, Carbon, API |
+| B | **IAM** | `pages/iam/` | Identites, Policies, Groups, Logs, Secret, OKMS |
+| C | **LICENSE** | `pages/license/` | Windows, cPanel, Plesk, SQL Server |
+| D | **PUBLIC CLOUD** | `pages/public-cloud/` | Project, Instances, Storage, K8s, AI |
+| E | **PRIVATE CLOUD** | `pages/private-cloud/` | VMware, Nutanix, SAP, Veeam |
+| F | **BARE METAL** | `pages/bare-metal/` | Dedicated, VPS, Housing, NAS-HA |
+| G | **WEB CLOUD** | `pages/web-cloud/` | Domains, Hosting, Emails, VoIP, Access |
+| H | **NETWORK** | `pages/network/` | IP, vRack, CDN, Cloud Connect |
 
 ---
 
-## 7. Univers HOME (A)
+## 10. Univers GENERAL (A) - ex-HOME
 
-### 7.1 Sections
+### 10.1 Sections
 
-| Section | Fichier | Description |
+| Section | Dossier | Description |
 |---------|---------|-------------|
 | Dashboard | `index.tsx` | Accueil avec tuiles |
 | Account | `account/` | Profil, Securite, Contacts, KYC |
@@ -448,670 +556,241 @@ La signature des requetes est geree automatiquement cote serveur.
 | Carbon | `carbon/` | Empreinte carbone |
 | API | `api/` | Playground API OVH |
 
-**Services:** `home.account.ts`, `home.account.security.ts`, `home.account.contacts.ts`, `home.billing.ts`, `home.billing.services.ts`, `home.billing.orders.ts`, `home.support.ts`, `home.carbon.ts`, `home.api.ts`
-
-### 7.2 Structure Account
+### 10.2 Structure Account (avec isolation NAV4)
 ```
-pages/home/account/
-├── index.tsx                   # Page principale avec tabs
-├── styles.css
-├── components/
-│   ├── ProfileTile.tsx
-│   ├── LastBillTile.tsx
-│   └── ShortcutsTile.tsx
-├── EditTab.tsx
-├── AdvancedTab.tsx
-├── PrivacyTab.tsx
-├── KycTab.tsx
-├── ContactsServicesTab.tsx
-├── ContactsRequestsTab.tsx
-├── SecurityTab.tsx
-└── security/                   # Module Security refactorise
-    ├── index.ts
-    ├── useSecurityData.ts
-    ├── SecurityIcons.tsx
-    ├── PasswordSection.tsx
-    ├── TwoFactorSection.tsx
-    ├── IpRestrictionsSection.tsx
-    └── modals/
-        └── SecurityModals.tsx
-```
-
-### 7.3 Structure Billing
-```
-pages/home/billing/
-├── index.tsx
-├── styles.css
-├── utils.tsx
-├── icons.tsx
-├── shared/
-│   ├── index.ts
-│   ├── constants.ts
-│   ├── periodHelpers.ts
-│   ├── PeriodToolbar.tsx
-│   └── usePeriodNavigation.ts
-└── tabs/
-    ├── index.ts
-    ├── ServicesTab.tsx
-    ├── InvoicesTab.tsx
-    ├── RefundsTab.tsx
-    ├── PaymentsTab.tsx
-    ├── OrdersTab.tsx
-    ├── ReferencesTab.tsx
-    ├── MethodsTab.tsx
-    ├── PrepaidTab.tsx
-    ├── VouchersTab.tsx
-    ├── FidelityTab.tsx
-    └── ContractsTab.tsx
-```
-
-### 7.4 Structure Support
-```
-pages/home/support/
-├── index.tsx
-├── styles.css
-├── utils.tsx
-└── tabs/
-    ├── index.ts
-    ├── TicketsTab.tsx
-    ├── CreateTab.tsx
-    ├── LevelTab.tsx
-    ├── CommunicationsTab.tsx
-    └── BroadcastTab.tsx
-```
-
-### 7.5 Structure API Playground
-```
-pages/home/api/
-├── index.tsx
-├── styles.css
-├── utils.ts
-└── tabs/
-    ├── index.ts
-    ├── ApiTab.tsx
-    └── AdvancedTab.tsx
+pages/general/account/
+|-- account.types.ts            # Types partages
+|-- index.tsx                   # Layout + routing
+|-- styles.css                  # CSS layout
+|
+|-- general/                    # NAV3 GROUPEMENT
+|   |-- profile/                # NAV4: Profil
+|   |   |-- ProfileTab.tsx
+|   |   |-- ProfileTab.service.ts
+|   |   +-- ProfileTab.css
+|   |
+|   |-- edit/                   # NAV4: Edition
+|   |-- privacy/                # NAV4: Privacy
+|   +-- kyc/                    # NAV4: KYC
+|
+|-- security/                   # NAV3 GROUPEMENT
+|   |-- password/               # NAV4: Password
+|   |-- twofactor/              # NAV4: 2FA
+|   +-- restrictions/           # NAV4: IP Restrictions
+|
++-- contacts/                   # NAV3 GROUPEMENT
+    |-- services/               # NAV4: Services
+    +-- requests/               # NAV4: Requests
 ```
 
 ---
 
-## 8. Univers IAM (B)
+## 11. Univers WEB CLOUD (G)
 
-### 8.1 Structure principale
-```
-pages/iam/
-├── index.tsx
-├── styles.css
-├── utils.tsx
-├── tabs/                       # Tabs page principale
-│   ├── index.ts
-│   ├── IdentitiesTab.tsx
-│   ├── PoliciesTab.tsx
-│   ├── GroupsTab.tsx
-│   └── LogsTab.tsx
-├── components/
-│   ├── index.ts
-│   ├── DelegationModal.tsx
-│   ├── SelectModal.tsx
-│   └── IdentitySelector/
-│       ├── index.tsx
-│       ├── AccountIdentities.tsx
-│       ├── UserIdentities.tsx
-│       ├── GroupIdentities.tsx
-│       └── ServiceAccountIdentities.tsx
-├── logs/
-│   ├── index.tsx
-│   ├── styles.css
-│   ├── tabs/
-│   │   ├── index.ts
-│   │   ├── ActivityTab.tsx
-│   │   ├── AuditTab.tsx
-│   │   └── AccessPolicyTab.tsx
-│   └── components/
-│       ├── DataStreams.tsx
-│       └── LiveTail.tsx
-├── secret/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── SecretsTab.tsx
-│       ├── VersionsTab.tsx
-│       └── AccessTab.tsx
-├── okms/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── KeysTab.tsx
-│       └── CredentialsTab.tsx
-├── hsm/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── PartitionsTab.tsx
-│       └── TasksTab.tsx
-├── dbaas-logs/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── StreamsTab.tsx
-│       ├── IndicesTab.tsx
-│       ├── DashboardsTab.tsx
-│       ├── InputsTab.tsx
-│       └── AliasesTab.tsx
-└── metrics/
-    ├── index.tsx
-    ├── styles.css
-    └── tabs/
-        ├── index.ts
-        ├── GeneralTab.tsx
-        ├── TokensTab.tsx
-        └── TasksTab.tsx
-```
-
-**Services:** `iam.ts`, `iam.logs.ts`, `iam.secret.ts`, `iam.okms.ts`, `iam.hsm.ts`, `iam.dbaas-logs.ts`, `iam.metrics.ts`
-
----
-
-## 9. Univers LICENSE (C)
-
-### 9.1 Structure
-```
-pages/license/
-├── index.tsx
-├── styles.css
-├── windows/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       └── TasksTab.tsx
-├── cpanel/
-│   ├── index.tsx
-│   └── tabs/
-├── plesk/
-│   ├── index.tsx
-│   └── tabs/
-├── sqlserver/
-│   ├── index.tsx
-│   └── tabs/
-├── virtuozzo/
-│   ├── index.tsx
-│   └── tabs/
-├── directadmin/
-│   ├── index.tsx
-│   └── tabs/
-└── cloudlinux/
-    ├── index.tsx
-    └── tabs/
-```
-
-**Services:** `license.ts`
-
----
-
-## 10. Univers PUBLIC CLOUD (D)
-
-### 10.1 Structure
-```
-pages/public-cloud/
-├── index.tsx
-├── styles.css
-├── project/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── InstancesTab.tsx
-│       ├── VolumesTab.tsx
-│       ├── StorageTab.tsx
-│       ├── NetworksTab.tsx
-│       ├── SnapshotsTab.tsx
-│       ├── SshKeysTab.tsx
-│       └── QuotaTab.tsx
-├── instances/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── NetworkTab.tsx
-│       ├── ConsoleTab.tsx
-│       └── SnapshotsTab.tsx
-├── block-storage/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       └── SnapshotsTab.tsx
-├── object-storage/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── ObjectsTab.tsx
-│       └── UsersTab.tsx
-├── databases/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── UsersTab.tsx
-│       ├── BackupsTab.tsx
-│       └── MetricsTab.tsx
-├── kubernetes/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── NodePoolsTab.tsx
-│       └── KubeconfigTab.tsx
-├── ai/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── NotebooksTab.tsx
-│       ├── JobsTab.tsx
-│       └── AppsTab.tsx
-├── registry/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── ImagesTab.tsx
-│       └── UsersTab.tsx
-└── load-balancer/
-    ├── index.tsx
-    └── tabs/
-        ├── index.ts
-        ├── GeneralTab.tsx
-        ├── ListenersTab.tsx
-        └── PoolsTab.tsx
-```
-
-**Services:** `public-cloud.ts`, `public-cloud.instances.ts`, `public-cloud.block-storage.ts`, `public-cloud.object-storage.ts`, `public-cloud.databases.ts`, `public-cloud.kubernetes.ts`, `public-cloud.ai.ts`, `public-cloud.registry.ts`, `public-cloud.load-balancer.ts`
-
----
-
-## 11. Univers PRIVATE CLOUD (E)
-
-### 11.1 Structure
-```
-pages/private-cloud/
-├── index.tsx
-├── styles.css
-├── vmware/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── DatacentersTab.tsx
-│       ├── HostsTab.tsx
-│       ├── DatastoresTab.tsx
-│       ├── UsersTab.tsx
-│       ├── SecurityTab.tsx
-│       ├── LicenseTab.tsx
-│       ├── OperationsTab.tsx
-│       └── TasksTab.tsx
-├── nutanix/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── NodesTab.tsx
-│       ├── IpsTab.tsx
-│       └── TasksTab.tsx
-├── sap/
-│   ├── index.tsx
-│   └── tabs/
-├── veeam/
-│   ├── index.tsx
-│   └── tabs/
-└── managed-baremetal/
-    ├── index.tsx
-    └── tabs/
-```
-
-**Services:** `private-cloud.ts`, `private-cloud.vmware.ts`, `private-cloud.nutanix.ts`
-
----
-
-## 12. Univers BARE METAL (F)
-
-### 12.1 Structure
-```
-pages/bare-metal/
-├── index.tsx
-├── styles.css
-├── dedicated/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── NetworkTab.tsx
-│       ├── IpmiTab.tsx
-│       ├── InterventionsTab.tsx
-│       └── TasksTab.tsx
-├── vps/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── DisksTab.tsx
-│       ├── BackupsTab.tsx
-│       ├── SnapshotTab.tsx
-│       ├── IpsTab.tsx
-│       └── TasksTab.tsx
-├── housing/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       └── TasksTab.tsx
-├── nasha/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── PartitionsTab.tsx
-│       ├── SnapshotsTab.tsx
-│       ├── AccessesTab.tsx
-│       └── TasksTab.tsx
-└── netapp/
-    ├── index.tsx
-    ├── styles.css
-    └── tabs/
-        ├── index.ts
-        ├── GeneralTab.tsx
-        ├── VolumesTab.tsx
-        ├── SnapshotsTab.tsx
-        └── TasksTab.tsx
-```
-
-**Services:** `bare-metal.dedicated.ts`, `bare-metal.vps.ts`, `bare-metal.housing.ts`, `bare-metal.nasha.ts`, `bare-metal.netapp.ts`
-
----
-
-## 13. Univers WEB CLOUD (G)
-
-### 13.1 Structure avec groupements
+### 11.1 Structure avec groupements NAV3/NAV4
 ```
 pages/web-cloud/
-├── index.tsx
-├── styles.css
-├── shared/                     # Composants partages
-│   ├── index.ts
-│   ├── types.ts
-│   ├── TasksTab.tsx
-│   └── ServiceListPage.tsx
-│
-├── domains/                    # Domaines (section directe)
-│   ├── index.tsx
-│   ├── styles.css
-│   ├── components/
-│   │   └── ServiceItemBadge.tsx
-│   ├── hooks/
-│   │   └── useDomainZoneList.ts
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── ZoneTab.tsx
-│       ├── DnsServersTab.tsx
-│       ├── DnssecTab.tsx
-│       ├── GlueTab.tsx
-│       ├── DynHostTab.tsx
-│       ├── RedirectionTab.tsx
-│       └── TasksTab.tsx
-│
-├── hebergement/                # GROUPEMENT Hebergement
-│   ├── index.tsx
-│   ├── hosting/
-│   │   ├── index.tsx
-│   │   ├── styles.css
-│   │   └── tabs/
-│   │       ├── index.ts
-│   │       ├── GeneralTab.tsx
-│   │       ├── MultisiteTab.tsx
-│   │       ├── FtpTab.tsx
-│   │       ├── DatabaseTab.tsx
-│   │       ├── SslTab.tsx
-│   │       ├── ModulesTab.tsx
-│   │       ├── CronTab.tsx
-│   │       ├── EnvvarsTab.tsx
-│   │       ├── RuntimesTab.tsx
-│   │       ├── EmailsTab.tsx
-│   │       ├── LogsTab.tsx
-│   │       └── TasksTab.tsx
-│   └── private-database/
-│       ├── index.tsx
-│       └── tabs/
-│           ├── index.ts
-│           ├── GeneralTab.tsx
-│           ├── DatabasesTab.tsx
-│           ├── UsersTab.tsx
-│           ├── WhitelistTab.tsx
-│           └── TasksTab.tsx
-│
-├── emails/                     # GROUPEMENT Emails
-│   ├── index.tsx
-│   ├── email-domain/
-│   │   ├── index.tsx
-│   │   ├── styles.css
-│   │   └── tabs/
-│   │       ├── index.ts
-│   │       ├── AccountsTab.tsx
-│   │       ├── RedirectionsTab.tsx
-│   │       ├── MailingListsTab.tsx
-│   │       └── TasksTab.tsx
-│   ├── email-pro/
-│   │   ├── index.tsx
-│   │   ├── styles.css
-│   │   └── tabs/
-│   │       ├── index.ts
-│   │       ├── AccountsTab.tsx
-│   │       ├── DomainsTab.tsx
-│   │       └── TasksTab.tsx
-│   ├── exchange/
-│   │   ├── index.tsx
-│   │   ├── styles.css
-│   │   └── tabs/
-│   │       ├── index.ts
-│   │       ├── AccountsTab.tsx
-│   │       ├── DomainsTab.tsx
-│   │       ├── GroupsTab.tsx
-│   │       ├── ResourcesTab.tsx
-│   │       └── TasksTab.tsx
-│   ├── zimbra/
-│   │   ├── index.tsx
-│   │   ├── styles.css
-│   │   └── tabs/
-│   │       ├── index.ts
-│   │       ├── AccountsTab.tsx
-│   │       ├── DomainsTab.tsx
-│   │       ├── AliasesTab.tsx
-│   │       └── TasksTab.tsx
-│   └── office/
-│       ├── index.tsx
-│       ├── styles.css
-│       └── tabs/
-│           ├── index.ts
-│           ├── UsersTab.tsx
-│           ├── DomainsTab.tsx
-│           └── TasksTab.tsx
-│
-├── telecom/                    # GROUPEMENT Telecom
-│   ├── index.tsx
-│   ├── voip/
-│   │   ├── index.tsx
-│   │   ├── styles.css
-│   │   └── tabs/
-│   │       ├── index.ts
-│   │       ├── LinesTab.tsx
-│   │       ├── NumbersTab.tsx
-│   │       └── VoicemailsTab.tsx
-│   ├── sms/
-│   │   ├── index.tsx
-│   │   ├── styles.css
-│   │   └── tabs/
-│   │       ├── index.ts
-│   │       ├── OutgoingTab.tsx
-│   │       ├── IncomingTab.tsx
-│   │       └── SendersTab.tsx
-│   ├── fax/
-│   │   ├── index.tsx
-│   │   └── styles.css
-│   └── carrier-sip/
-│       ├── index.tsx
-│       ├── styles.css
-│       └── tabs/
-│           ├── index.ts
-│           ├── GeneralTab.tsx
-│           ├── EndpointsTab.tsx
-│           └── CdrTab.tsx
-│
-└── access/                     # GROUPEMENT Acces Internet
-    ├── index.tsx
-    ├── pack-xdsl/
-    │   ├── index.tsx
-    │   ├── styles.css
-    │   └── tabs/
-    │       ├── index.ts
-    │       ├── GeneralTab.tsx
-    │       ├── AccessTab.tsx
-    │       ├── ServicesTab.tsx
-    │       ├── VoipTab.tsx
-    │       └── TasksTab.tsx
-    └── overthebox/
-        ├── index.tsx
-        ├── styles.css
-        └── tabs/
-            ├── index.ts
-            ├── GeneralTab.tsx
-            ├── RemotesTab.tsx
-            └── TasksTab.tsx
+|-- index.tsx
+|-- styles.css
+|
+|-- domains/                    # NAV2 PRODUIT: Domaines
+|   |-- domains.types.ts
+|   |-- index.tsx
+|   |-- styles.css
+|   |
+|   |-- general/                # NAV3 GROUPEMENT
+|   |   |-- general/            # NAV4: General
+|   |   |-- contacts/           # NAV4: Contacts
+|   |   +-- alldom/             # NAV4: Alldom
+|   |
+|   |-- dns/                    # NAV3 GROUPEMENT
+|   |   |-- zone/               # NAV4: Zone
+|   |   |-- dnssec/             # NAV4: DNSSEC
+|   |   |-- dnsservers/         # NAV4: DNS Servers
+|   |   +-- dynhost/            # NAV4: DynHost
+|   |
+|   +-- expert/                 # NAV3 GROUPEMENT
+|       |-- glue/               # NAV4: Glue
+|       +-- tasks/              # NAV4: Tasks
+|
+|-- hosting/                    # NAV2 PRODUIT: Hebergement
+|   |-- hosting.types.ts
+|   |-- index.tsx
+|   |-- styles.css
+|   |
+|   |-- general/                # NAV3 GROUPEMENT
+|   |   |-- general/            # NAV4: General
+|   |   |-- modules/            # NAV4: Modules
+|   |   +-- logs/               # NAV4: Logs
+|   |
+|   |-- sites/                  # NAV3 GROUPEMENT
+|   |   |-- multisite/          # NAV4: Multisite
+|   |   +-- ssl/                # NAV4: SSL
+|   |
+|   +-- expert/                 # NAV3 GROUPEMENT
+|       |-- ftp/                # NAV4: FTP
+|       |-- database/           # NAV4: BDD
+|       |-- cdn/                # NAV4: CDN
+|       |-- cron/               # NAV4: Cron
+|       +-- tasks/              # NAV4: Tasks
+|
+|-- emails/                     # NAV2 PRODUIT: Emails
+|   |-- emails.types.ts
+|   |-- index.tsx
+|   |-- styles.css
+|   |-- api/                    # APIs multi-providers
+|   |   |-- index.ts
+|   |   |-- mxplan/
+|   |   |-- exchange/
+|   |   |-- emailpro/
+|   |   +-- zimbra/
+|   |
+|   |-- general/                # NAV3 GROUPEMENT
+|   |   |-- accounts/           # NAV4: Accounts
+|   |   |-- redirections/       # NAV4: Redirections
+|   |   +-- tasks/              # NAV4: Tasks
+|   |
+|   +-- advanced/               # NAV3 GROUPEMENT
+|       |-- security/           # NAV4: Security
+|       +-- resources/          # NAV4: Resources
+|
+|-- voip/                       # NAV2 PRODUIT: VoIP
+|   +-- ...
+|
+|-- access/                     # NAV2 PRODUIT: Acces Internet
+|   +-- ...
+|
++-- wordpress/                  # NAV2 PRODUIT: Wordpress
+    +-- ...
 ```
-
-**Services:** `web-cloud.domains.ts`, `web-cloud.dns-zones.ts`, `web-cloud.hosting.ts`, `web-cloud.private-database.ts`, `web-cloud.email-domain.ts`, `web-cloud.email-pro.ts`, `web-cloud.exchange.ts`, `web-cloud.zimbra.ts`, `web-cloud.office.ts`, `web-cloud.sms.ts`, `web-cloud.voip.ts`, `web-cloud.fax.ts`, `web-cloud.pack-xdsl.ts`, `web-cloud.overthebox.ts`, `web-cloud.carrier-sip.ts`
 
 ---
 
-## 14. Univers NETWORK (H)
+## 12. Service API isole (pattern)
 
-### 14.1 Structure
-```
-pages/network/
-├── index.tsx
-├── styles.css
-├── ip/
-│   ├── index.tsx
-│   └── styles.css
-├── vrack/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── ServicesTab.tsx
-│       └── TasksTab.tsx
-├── vrack-services/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── SubnetsTab.tsx
-│       └── EndpointsTab.tsx
-├── cdn/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── DomainsTab.tsx
-│       ├── StatisticsTab.tsx
-│       └── TasksTab.tsx
-├── cloud-connect/
-│   ├── index.tsx
-│   └── tabs/
-│       ├── index.ts
-│       ├── GeneralTab.tsx
-│       ├── InterfacesTab.tsx
-│       └── TasksTab.tsx
-├── load-balancer/
-│   ├── index.tsx
-│   ├── styles.css
-│   └── tabs/
-│       ├── index.ts
-│       ├── FrontendsTab.tsx
-│       └── FarmsTab.tsx
-└── security/
-    ├── index.tsx
-    └── tabs/
-        ├── index.ts
-        ├── OverviewTab.tsx
-        ├── AttacksTab.tsx
-        └── FirewallTab.tsx
+### 12.1 Structure d'un service NAV4
+
+```typescript
+// expert/ftp/FtpTab.service.ts
+
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "@/services/api";
+import type { FtpUser } from "../../hosting.types";
+
+// ============================================================
+// TYPES LOCAUX
+// ============================================================
+
+interface CreateFtpUserParams {
+  login: string;
+  password: string;
+  home: string;
+}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+export const ftpService = {
+  // Liste des utilisateurs FTP
+  async getUsers(serviceName: string): Promise<string[]> {
+    return ovhGet(`/hosting/web/${serviceName}/user`);
+  },
+
+  // Details d'un utilisateur
+  async getUser(serviceName: string, login: string): Promise<FtpUser> {
+    return ovhGet(`/hosting/web/${serviceName}/user/${login}`);
+  },
+
+  // Creer un utilisateur
+  async createUser(serviceName: string, params: CreateFtpUserParams): Promise<void> {
+    return ovhPost(`/hosting/web/${serviceName}/user`, params);
+  },
+
+  // Supprimer un utilisateur
+  async deleteUser(serviceName: string, login: string): Promise<void> {
+    return ovhDelete(`/hosting/web/${serviceName}/user/${login}`);
+  },
+
+  // Changer mot de passe
+  async changePassword(serviceName: string, login: string, password: string): Promise<void> {
+    return ovhPost(`/hosting/web/${serviceName}/user/${login}/changePassword`, { password });
+  },
+};
 ```
 
-**Services:** `network.ts`, `network.cdn.ts`, `network.cloud-connect.ts`, `network.vrack-services.ts`, `network.security.ts`
+### 12.2 Usage dans le composant
+
+```typescript
+// expert/ftp/FtpTab.tsx
+
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import type { FtpUser } from "../../hosting.types";
+import { ftpService } from "./FtpTab.service";
+import "./FtpTab.css";
+
+export default function FtpTab({ serviceName }: { serviceName: string }) {
+  const { t } = useTranslation("web-cloud/hosting/ftp");
+  const [users, setUsers] = useState<FtpUser[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadUsers();
+  }, [serviceName]);
+
+  const loadUsers = async () => {
+    setLoading(true);
+    const ids = await ftpService.getUsers(serviceName);
+    const details = await Promise.all(
+      ids.map(id => ftpService.getUser(serviceName, id))
+    );
+    setUsers(details);
+    setLoading(false);
+  };
+
+  return (
+    <div className="ftp-container">
+      <h2>{t("title")}</h2>
+      {/* ... */}
+    </div>
+  );
+}
+```
 
 ---
 
-## 15. APIs OVH
+## 13. APIs OVH
 
-> **Référence complète : voir prompt_api.txt**
+> **Reference complete : voir prompt_api.txt**
 
 Le fichier `prompt_api.txt` contient la documentation exhaustive des APIs :
-- Architecture et URLs par région (EU, CA, US)
-- Proxy frontend (`/api/ovh/* → eu.api.ovh.com`)
+- Architecture et URLs par region (EU, CA, US)
+- Proxy frontend (`/api/ovh/* -> eu.api.ovh.com`)
 - Authentification (cookies session, gestion 401)
 - Pagination (Iceberg headers, 2API params)
-- Endpoints par catégorie (Compte, Sécurité, RGPD, Facturation, Support, IAM, Domaines, Hébergement, Email, VPS, Serveurs, Cloud)
+- Endpoints par categorie
 - Hooks React (`useOvhApi`, `useIceberg`, `use2api`)
 - Debug et reverse engineering
 
 ---
 
-## 16. Old Manager (Reference)
+## 14. Old Manager (Reference)
 
 **Production** : `https://manager.eu.ovhcloud.com`
 **Code source** : `/home/ubuntu/manager/`
 
-### 16.1 Structure principale
+### 14.1 Structure principale
 ```
 /home/ubuntu/manager/packages/manager/
-├── core/          # Utilitaires fondamentaux
-├── modules/       # Modules metier reutilisables
-└── apps/          # Applications completes
+|-- core/          # Utilitaires fondamentaux
+|-- modules/       # Modules metier reutilisables
++-- apps/          # Applications completes
 ```
 
-### 16.2 Core (`packages/manager/core/`)
-```
-api, application, ovh-product-icons, request-tagger,
-shell-client, sso, url-builder, utils
-```
-
-### 16.3 Modules (`packages/manager/modules/`)
-```
-account, billing, billing-components, iam, support, order,
-exchange, emailpro, email-domain, nasha, netapp, pci,
-vps, vrack, carbon-calculator, mfa-enrollment, ...
-```
-
-### 16.4 Apps (`packages/manager/apps/`)
-```
-account, billing, dedicated, dedicated-servers, hub,
-iam, pci, public-cloud, vps, vrack, web, web-hosting,
-support, sms, telecom, exchange, email-pro, ...
-```
-
-### 16.5 Methodologie : Trouver les appels API
+### 14.2 Methodologie : Trouver les appels API
 
 **IMPORTANT : Ne jamais rediriger vers manager.eu.ovhcloud.com**
 
-Pour chaque fonctionnalite a migrer, identifier les appels API dans le old manager :
 ```bash
 # 1. Chercher les endpoints API dans un module
 cd /home/ubuntu/manager
@@ -1120,22 +799,15 @@ grep -r "api.get\|api.post\|api.put\|api.delete" packages/manager/modules/billin
 # 2. Chercher les appels /me/* (compte utilisateur)
 grep -rn "/me/" packages/manager/apps/account/
 
-# 3. Chercher les services API d'un module (via index pré-généré ou tar)
-grep "billing.*\(service\.ts\|api.*\.ts\)$" /home/ubuntu/old_manager_files.txt
-# OU: tar tvf old_manager.general.billing.tar | grep -E "(service|api)\.ts$"
-
-# 4. Chercher une fonctionnalite specifique
-grep -rn "refund\|avoir" packages/manager/modules/billing/
-
-# 5. Voir les types/interfaces d'un endpoint
+# 3. Chercher les types/interfaces d'un endpoint
 grep -rn "interface.*Bill\|type.*Bill" packages/manager/modules/billing/
 ```
 
 ---
 
-## 17. Internationalisation (i18n)
+## 15. Internationalisation (i18n)
 
-### 17.1 Stack technique
+### 15.1 Stack technique
 
 | Package | Version | Role |
 |---------|---------|------|
@@ -1144,136 +816,43 @@ grep -rn "interface.*Bill\|type.*Bill" packages/manager/modules/billing/
 | `i18next-http-backend` | ^2.x | Chargement lazy JSON |
 | `i18next-browser-languagedetector` | ^7.x | Detection langue navigateur |
 
-### 17.2 Structure des fichiers de traduction
+### 15.2 Structure des fichiers de traduction
 
 **IMPORTANT : Les locales doivent etre dans `public/locales/` (pas `src/locales/`)**
+
 ```
 /public/locales/
-├── fr/
-│   ├── common.json
-│   ├── navigation.json
-│   ├── login.json
-│   ├── placeholder.json
-│   ├── home/
-│   │   ├── index.json
-│   │   ├── dashboard.json
-│   │   ├── account/
-│   │   │   ├── index.json
-│   │   │   ├── security.json
-│   │   │   ├── edit.json
-│   │   │   ├── privacy.json
-│   │   │   ├── advanced.json
-│   │   │   ├── contacts-services.json
-│   │   │   ├── contacts-requests.json
-│   │   │   └── kyc.json
-│   │   ├── billing/
-│   │   │   ├── index.json
-│   │   │   └── tabs.json
-│   │   ├── support/
-│   │   │   └── index.json
-│   │   ├── carbon/
-│   │   │   └── index.json
-│   │   └── api/
-│   │       └── index.json
-│   ├── iam/
-│   ├── license/
-│   ├── public-cloud/
-│   ├── private-cloud/
-│   ├── bare-metal/
-│   ├── web-cloud/
-│   │   ├── index.json
-│   │   ├── domains/
-│   │   ├── hebergement/
-│   │   │   ├── index.json
-│   │   │   ├── hosting/
-│   │   │   └── private-database/
-│   │   ├── emails/
-│   │   │   ├── index.json
-│   │   │   ├── email-domain/
-│   │   │   ├── email-pro/
-│   │   │   ├── exchange/
-│   │   │   ├── zimbra/
-│   │   │   └── office/
-│   │   ├── telecom/
-│   │   │   ├── index.json
-│   │   │   ├── voip/
-│   │   │   ├── sms/
-│   │   │   ├── fax/
-│   │   │   └── carrier-sip/
-│   │   └── access/
-│   │       ├── index.json
-│   │       ├── pack-xdsl/
-│   │       └── overthebox/
-│   └── network/
-└── en/
-    └── (meme structure exacte)
+|-- fr/
+|   |-- common.json
+|   |-- navigation.json
+|   |-- web-cloud/
+|   |   |-- index.json
+|   |   |-- hosting/
+|   |   |   |-- index.json        # Commun hosting
+|   |   |   |-- ftp.json          # NAV4: FTP
+|   |   |   |-- ssl.json          # NAV4: SSL
+|   |   |   |-- database.json     # NAV4: BDD
+|   |   |   +-- ...
+|   |   |-- domains/
+|   |   |   |-- index.json
+|   |   |   |-- zone.json
+|   |   |   +-- ...
+|   |   +-- emails/
+|   +-- ...
++-- en/
+    +-- (meme structure exacte)
 ```
 
-### 17.3 Configuration i18next
-```typescript
-// /src/i18n/index.ts
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import HttpBackend from 'i18next-http-backend';
-import LanguageDetector from 'i18next-browser-languagedetector';
+### 15.3 Usage dans les composants
 
-i18n
-  .use(HttpBackend)
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    supportedLngs: ['fr', 'en', 'de'],
-    fallbackLng: 'fr',
-    defaultNS: 'common',
-    ns: ['common', 'navigation'],
-    
-    backend: {
-      loadPath: './locales/{{lng}}/{{ns}}.json',
-    },
-    
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-    },
-    
-    interpolation: {
-      escapeValue: false,
-    },
-    
-    react: {
-      useSuspense: true,
-    },
-  });
-
-export default i18n;
-```
-
-### 17.4 Usage dans les composants
-
-**Page principale :**
 ```typescript
 import { useTranslation } from 'react-i18next';
 
-export default function BillingPage() {
-  const { t } = useTranslation('home/billing/index');
-  
-  const tabs = [
-    { id: 'services', label: t('tabs.services') },
-    { id: 'invoices', label: t('tabs.invoices') },
-  ];
-  
-  return <div>{/* ... */}</div>;
-}
-```
-
-**Tab :**
-```typescript
-import { useTranslation } from 'react-i18next';
-
-export function InvoicesTab() {
-  const { t } = useTranslation('home/billing/invoices');
+export default function FtpTab() {
+  // Namespace = chemin vers le fichier JSON
+  const { t } = useTranslation('web-cloud/hosting/ftp');
   const { t: tCommon } = useTranslation('common');
-  
+
   return (
     <div>
       <h2>{t('title')}</h2>
@@ -1283,26 +862,14 @@ export function InvoicesTab() {
 }
 ```
 
-### 17.5 Bonnes pratiques i18n
-
-| Regle | Application |
-|-------|-------------|
-| **Pas de texte en dur** | Tous les textes visibles via `t()` |
-| **Namespace = fichier** | 1 Tab = 1 fichier JSON |
-| **Interpolation** | `t('count', { n: 5 })` |
-| **Pluralisation** | `t('item', { count })` avec `item_one`, `item_other` |
-| **Dates/Nombres** | Utiliser Intl.DateTimeFormat, Intl.NumberFormat |
-| **Pas de concatenation** | `t('hello', { name })` pas `t('hello') + name` |
-| **Cles semantiques** | `columns.ref` pas `table_header_1` |
-
-### 17.6 Verification i18n
+### 15.4 Verification i18n
 ```bash
 node /home/ubuntu/aiapp/frontend/scripts/check-i18n.cjs
 ```
 
 ---
 
-## 18. Conventions de code
+## 16. Conventions de code
 
 | Regle | Application |
 |-------|-------------|
@@ -1313,32 +880,33 @@ node /home/ubuntu/aiapp/frontend/scripts/check-i18n.cjs
 | **Nommage repertoires** | kebab-case |
 | **Structure fichiers** | Un composant = un fichier |
 | **Exports** | Default pour pages, nommes pour composants |
-| **Appels API** | Dans `services/`, jamais dans les composants |
-| **NAV3 (onglets internes)** | Geres par chaque page, pas dans App.tsx |
+| **Appels API** | Dans `{Nav4}Tab.service.ts`, jamais dans les composants |
+| **NAV3 (groupements)** | Dans le LEFT PANEL |
+| **NAV4 (fonctions)** | Dans le RIGHT PANEL, geres par chaque page |
 | **Textes UI** | Toujours via `t()` de react-i18next |
+| **Isolation** | Chaque NAV4 est une ile (voir section 5) |
 
-### 18.1 Securite
+### 16.1 Securite
 
 **JAMAIS de secrets dans le code frontend :**
 - Pas de cles API, tokens, mots de passe ou credentials en dur
 - Pas de secrets dans les variables d'environnement exposees au client (`VITE_*`)
 - L'authentification passe par le flow OAuth OVH (cookies httpOnly cote serveur)
-- Les appels API utilisent les credentials de session, pas de tokens hardcodes
 
 ---
 
-## 19. Commentaires et lisibilite du code
+## 17. Commentaires et lisibilite du code
 
-### 19.1 Regles fondamentales
+### 17.1 Regles fondamentales
 
 | Regle | Application |
 |-------|-------------|
 | **Ne jamais supprimer** | Conserver TOUS les commentaires existants |
-| **Ne jamais raccourcir** | Pas de `// ...reste inchange...` ou `{/* ... */}` |
-| **Une seule ligne** | Commentaires courts, jamais de blocs multi-lignes |
-| **Code complet** | JAMAIS de `// ... comme avant` ou `/* fichier inchange */` |
+| **Ne jamais raccourcir** | Pas de `// ...reste inchange...` |
+| **Une seule ligne** | Commentaires courts |
+| **Code complet** | JAMAIS de `// ... comme avant` |
 
-### 19.2 Separateurs de sections
+### 17.2 Separateurs de sections
 
 **Niveau 1 - Sections principales (===)** :
 ```typescript
@@ -1346,178 +914,94 @@ node /home/ubuntu/aiapp/frontend/scripts/check-i18n.cjs
 // TYPES
 // ============================================================
 
-interface Bill { ... }
-
 // ============================================================
 // COMPOSANT PRINCIPAL
 // ============================================================
-
-export default function InvoicesTab() { ... }
 ```
 
 **Niveau 2 - Sous-sections dans un composant (---)** :
 ```typescript
-export default function InvoicesTab() {
+export default function FtpTab() {
   // ---------- STATE ----------
-  const [bills, setBills] = useState<Bill[]>([]);
+  const [users, setUsers] = useState([]);
 
   // ---------- EFFECTS ----------
   useEffect(() => { ... }, []);
 
   // ---------- HANDLERS ----------
-  const handleExport = () => { ... };
+  const handleDelete = () => { ... };
 
   // ---------- RENDER ----------
   return ( ... );
 }
 ```
 
-### 19.3 JSDoc pour fonctions et composants
-
-Chaque fonction/composant exporte doit avoir un JSDoc sur UNE SEULE LIGNE :
-```typescript
-/** Liste paginee des factures avec export CSV/PDF. Charge les IDs puis les details par batch de 10. */
-export default function InvoicesTab() { ... }
-
-/** Recupere les factures entre deux dates. Retourne trie par date decroissante. */
-export async function getBills(options?: { from?: string; to?: string }): Promise<Bill[]> { ... }
-```
-
-### 19.4 Ordre des sections dans un fichier
-```
-1. Commentaire header (// ======= TITRE =======)
-2. Imports
-3. Types/Interfaces locaux
-4. Constantes
-5. Hooks custom (si applicable)
-6. Composant(s) / Fonction(s) principale(s)
-7. Export default (si applicable)
-```
-
-### 19.5 Limite de taille des fichiers
+### 17.3 Limite de taille des fichiers
 
 | Seuil | Action |
 |-------|--------|
 | < 200 lignes | OK |
-| 200-250 lignes | **WARNING** : fichier volumineux |
-| > 250 lignes | **ALERTE** : fichier trop volumineux |
-
-**Lors de la generation de code, si le fichier depasse 200 lignes :**
-
-1. Afficher un WARNING : "Ce fichier fait X lignes (limite recommandee : 200)"
-2. Proposer une strategie de division avec les fichiers cibles
-3. **ATTENDRE la validation** avant toute action
-4. Ne generer les fichiers divises QUE si l'utilisateur accepte
-
-**REGLE ABSOLUE :** Ne JAMAIS diviser un fichier sans autorisation explicite.
-
-**Strategies de division proposables :**
-
-| Situation | Solution |
-|-----------|----------|
-| Composant avec plusieurs sous-composants | Extraire dans `components/SubComponent.tsx` |
-| Logique API complexe | Extraire dans un hook `useXxxData.ts` |
-| Beaucoup de types | Extraire dans `types.ts` ou `xxx.types.ts` |
-| Helpers/utilitaires | Extraire dans `utils.ts` |
-| Plusieurs sections visuelles | Un fichier par section |
+| 200-250 lignes | WARNING |
+| > 250 lignes | ALERTE - proposer division |
 
 ---
 
-## 20. Hooks et utilitaires partages
+## 18. LEFT PANEL (Sidebar) - Specs
 
-### 20.1 Hooks globaux (`/src/hooks/`)
+> **Reference complete : voir prompt_target_sidecar_left.txt**
 
-| Hook | Usage |
-|------|-------|
-| `useAppNavigation.ts` | Navigation entre univers/sections |
+### 18.1 Hook useLeftPanel
 
-### 20.2 Hooks de page
-
-| Hook | Localisation | Usage |
-|------|--------------|-------|
-| `useHomeData.ts` | `pages/home/` | Donnees dashboard HOME |
-| `useSecurityData.ts` | `pages/home/account/security/` | Donnees securite 2FA |
-| `usePeriodNavigation.ts` | `pages/home/billing/shared/` | Navigation par periode |
-| `useDomainZoneList.ts` | `pages/web-cloud/domains/hooks/` | Liste zones DNS |
-
-### 20.3 Utilitaires (`/src/lib/`)
-
-| Fichier | Usage |
-|---------|-------|
-| `constants.ts` | Constantes globales |
-| `types.ts` | Types globaux |
-| `useTabs.ts` | Hook gestion des onglets |
-| `ResetSlot.tsx` | Composant reset slot |
-
-### 20.4 Composants partages par univers
-
-| Univers | Dossier shared | Contenu |
-|---------|----------------|---------|
-| HOME/Billing | `billing/shared/` | PeriodToolbar, periodHelpers, constants |
-| WEB CLOUD | `web-cloud/shared/` | TasksTab, ServiceListPage, types |
-| IAM | `iam/components/` | IdentitySelector, DelegationModal, SelectModal |
-
----
-
-## 21. AccountSidebar (Menu utilisateur)
-
-Accessible via l'avatar/NIC en haut a droite :
-
-### 21.1 Structure des composants
-```
-components/AccountSidebar/
-├── index.ts
-├── AccountSidebar.tsx      # Conteneur principal
-├── UserInfos.tsx           # Infos utilisateur (nom, email, NIC)
-├── Shortcuts.tsx           # Raccourcis facturation/compte
-├── UsefulLinks.tsx         # Liens externes (doc, status)
-└── styles.css
+```typescript
+interface UseLeftPanelReturn {
+  services: Service[];
+  selectedService: Service | null;
+  selectedGroup: string;
+  searchQuery: string;
+  loading: boolean;
+  error: string | null;
+  setSelectedService: (service: Service) => void;
+  setSelectedGroup: (group: string) => void;
+  setSearchQuery: (query: string) => void;
+  refresh: () => void;
+}
 ```
 
-### 21.2 Contenu du menu
-```
-+----------------------------+
-|        [Avatar OK]         |
-|       Jean Dupont          |
-|     [Administrateur]       |
-|         Acme Corp          |
-|   jean.dupont@example.com  |
-|        ab12345-ovh         |
-|        [Standard]          |
-+----------------------------+
-| Voir mes factures        > |
-| Verifier mes paiements   > |
-| Suivre mes commandes     > |
-| Renouveller mes services > |
-| Mes moyens de paiement   > |
-| Valider mes contrats     > |
------------------------------+
-| Voir mon profil          > |
-| Changer mon mot de passe > |
-| 2FA, Restriction IP      > |
-| KYC Know Your Customer   > |
------------------------------+
-| Creer un ticket support  > |
-| Voir mes tickets         > |
------------------------------+
-| Playground API           > |
-+----------------------------+
-| Documentation            > |
-| Etat des services        > |
-+----------------------------+
-|       Se deconnecter       |
-+----------------------------+
+### 18.2 API Pattern (mount)
+
+```typescript
+// Au mount du composant parent (index.tsx du NAV2)
+useEffect(() => {
+  // Appel 1: Liste des services (rapide)
+  const services = await ovhGet(`/hosting/web`);
+
+  // Appel 2: Details du premier service (si existe)
+  if (services.length > 0) {
+    const details = await ovhGet(`/hosting/web/${services[0]}`);
+    setSelectedService(details);
+  }
+}, []);
 ```
 
 ---
 
-## 22. Reference rapide
+## 19. Prompts complementaires
 
-### 22.1 Build New Manager
+| Prompt | Contenu |
+|--------|---------|
+| `prompt_api.txt` | APIs OVH, endpoints, pagination |
+| `prompt_split.txt` | Architecture modulaire, regles isolation |
+| `prompt_split_layout_method.txt` | Specs CSS layout |
+| `prompt_target.txt` | Design system SVG |
+| `prompt_target_sidecar_left.txt` | LEFT PANEL, useLeftPanel |
+| `prompt_target.web-cloud.*.txt` | Specs par section |
+
+---
+
+## 20. Reference rapide
+
+### 20.1 Build New Manager
 ```bash
-# Creer archive new manager
-cd /home/ubuntu && tar -cvf new_manager.tar --exclude='*2025*' --exclude='*.bak' aiapp/frontend/src/ aiapp/frontend/public/
-
 # Build dev
 cd /home/ubuntu/aiapp/frontend && npm run build:dev
 node /home/ubuntu/aiapp/frontend/scripts/check-i18n.cjs
@@ -1528,133 +1012,46 @@ cd /home/ubuntu/aiapp/frontend && npm run build:prod
 /home/ubuntu/aiapp/scripts/D2-promote_dev_to_prod.sh --from-dist
 ```
 
-### 22.2 Recherche dans le Old Manager
+### 20.2 Creer une nouvelle fonction (NAV4)
 ```bash
-cd /home/ubuntu/manager
+# Structure
+mkdir -p src/pages/web-cloud/hosting/expert/newfunc
+touch src/pages/web-cloud/hosting/expert/newfunc/index.ts
+touch src/pages/web-cloud/hosting/expert/newfunc/NewfuncTab.tsx
+touch src/pages/web-cloud/hosting/expert/newfunc/NewfuncTab.service.ts
+touch src/pages/web-cloud/hosting/expert/newfunc/NewfuncTab.css
 
-# Chercher les appels API d'un module
-grep -r "api.get\|api.post" packages/manager/modules/MODULE_NAME/
-
-# Chercher les endpoints /me/*
-grep -rn '"/me/' packages/manager/apps/APP_NAME/
-
-# Chercher les types/interfaces
-grep -rn "interface\|type" packages/manager/modules/MODULE_NAME/src/types/
+# Traductions
+touch public/locales/fr/web-cloud/hosting/newfunc.json
+touch public/locales/en/web-cloud/hosting/newfunc.json
 ```
 
-### 22.3 Creer un nouveau Tab
-```bash
-# Creer le fichier Tab
-touch /home/ubuntu/aiapp/frontend/src/pages/UNIVERS/SECTION/tabs/NewTab.tsx
+### 20.3 Generation et modification de fichiers
 
-# Creer les locales
-touch /home/ubuntu/aiapp/frontend/public/locales/fr/UNIVERS/SECTION/newtab.json
-touch /home/ubuntu/aiapp/frontend/public/locales/en/UNIVERS/SECTION/newtab.json
-```
-
-
-### 22.4 Generation et modification de fichiers
-
-#### Choix de methode
-
-| Situation | Methode |
-|-----------|---------|
-| Nouveau fichier | cp+tee |
-| Fichier existant, petite modif (< 30 lignes) | super-patch |
-| Fichier existant, gros changements | cp+tee (reecriture complete) |
-
----
-
-#### Creer/reecrire un fichier avec cp+tee
+#### cp+tee (creation)
 
 ```bash
-cp --backup=numbered /chemin/complet/fichier.tsx /home/ubuntu/action-target/tmp/ 2>/dev/null || true
-tee /chemin/complet/fichier.tsx > /dev/null <<'DELIM'
+cp --backup=numbered /chemin/fichier.tsx /home/ubuntu/action-code/tmp/ 2>/dev/null || true
+tee /chemin/fichier.tsx > /dev/null <<'DELIM'
 // Contenu COMPLET du fichier
-// JAMAIS de "... comme avant"
-// JAMAIS de sections tronquees
 DELIM
 ```
 
-**Regle CRITIQUE :** Le `cp` est OBLIGATOIRE meme si le fichier n'existe pas. La commande peut echouer (`|| true`), ce n'est pas grave. Cela garantit une sauvegarde systematique si le fichier existe.
-
-**Rappels anti-casse cp+tee :**
-- Delimiteur final (DELIM, EOF, etc.) en debut de ligne, colonne 0, **sans espace**
-- Pas de guillemets "intelligents" - utiliser `'DELIM'` avec apostrophes simples ASCII
-- Pas d'indentation avant `tee ... <<'DELIM'` ni avant le delimiteur final
-- Si le fichier n'existe pas, `tee` le cree ; s'il existe, il est ecrase
-- **ATTENTION aux delimiteurs doubles** : si le contenu genere contient lui-meme un heredoc (ex: un script bash avec `<<'EOF'`), utiliser un delimiteur DIFFERENT pour l'enveloppe externe (ex: `SCRIPT_END`, `FILE_EOF`, `OUTER_DELIM`)
-
-**Exemples de conflits de delimiteurs :**
-
-MAUVAIS (FS dans FS) :
-```bash
-tee /chemin/script.sh > /dev/null <<'FS'
-#!/bin/bash
-cat > config.txt <<'FS'   # <-- CONFLIT ! Le shell ferme le heredoc ici
-contenu
-FS
-FS
-```
-
-BON (delimiteurs differents) :
-```bash
-tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
-#!/bin/bash
-cat > config.txt <<'FS'
-contenu
-FS
-SCRIPT_END
-```
-
----
-
-#### Modifier un fichier existant avec super-patch
+#### super-patch (modification)
 
 ```bash
 super-patch <<'PATCH_EOF'
---- /chemin/complet/fichier.tsx
-+++ /chemin/complet/fichier.tsx
+--- /chemin/fichier.tsx
++++ /chemin/fichier.tsx
 @@
- ligne de contexte avant (sans +/-)
--ancienne ligne a supprimer
-+nouvelle ligne a ajouter
- ligne de contexte apres (sans +/-)
+ ligne de contexte avant
+-ancienne ligne
++nouvelle ligne
+ ligne de contexte apres
 PATCH_EOF
 ```
 
-**Rappels anti-casse super-patch :**
-- Delimiteur final colonne 0, sans espace
-- TOUJOURS au moins une ligne de contexte (sans `-/+`) **avant ET apres** chaque bloc `@@`
-- Utiliser des chemins absolus `/home/ubuntu/...` (jamais `~`)
-- Le contexte doit correspondre EXACTEMENT au fichier existant
-- **ATTENTION aux delimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
-
-**Exemple MAUVAIS (pas de contexte) :**
-```
-@@
--old
-+new
-EOF
-```
-
-**Exemple BON (avec contexte) :**
-```
-@@
- const x = 1;
--old
-+new
- return x;
-EOF
-```
-
----
-
-#### Regles absolues de generation
-
-1. **JAMAIS** de `// ... comme avant` ou `/* reste inchange */`
-2. **JAMAIS** de sections tronquees avec `...`
-3. **TOUJOURS** le code complet, tous les imports, tous les commentaires
-4. **TOUJOURS** un seul bloc de code markdown par fichier genere
-5. **TOUJOURS** des chemins absolus (`/home/ubuntu/...`)
-6. **TOUJOURS** verifier qu'aucun delimiteur interne ne conflit avec l'externe
+**Regles absolues :**
+1. **JAMAIS** de `// ... comme avant`
+2. **TOUJOURS** le code complet
+3. **TOUJOURS** des chemins absolus

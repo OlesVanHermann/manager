@@ -77,8 +77,8 @@ export function CreateRedirectionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="modal-container">
         <div className="modal-header">
           <h2 className="modal-title">{t("createRedirection.title")}</h2>
           <button className="modal-close" onClick={handleClose}>×</button>
@@ -167,7 +167,7 @@ export function CreateRedirectionModal({
                   type="checkbox"
                   checked={keepCopy}
                   onChange={(e) => setKeepCopy(e.target.checked)}
-                  disabled={loading || fromType === "new"}
+                  disabled={loading}
                 />
                 {t("createRedirection.fields.keepCopy")}
               </label>

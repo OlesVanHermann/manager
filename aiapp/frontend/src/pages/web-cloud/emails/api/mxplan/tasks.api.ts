@@ -3,9 +3,10 @@
 // Endpoints: /email/domain/{domain}/task/*
 // ============================================================
 
-import { apiFetch } from "../../../../../services/api";
+import { apiFetch, ovh2apiGet } from "../../../../../services/api";
 
 const BASE = "/email/domain";
+const BASE_2API = "/sws/email-domain";
 
 // ---------- TYPES ----------
 
@@ -32,4 +33,37 @@ export async function list(domain: string): Promise<MxPlanTask[]> {
 
 export async function get(domain: string, id: number): Promise<MxPlanTask> {
   return apiFetch<MxPlanTask>(`${BASE}/${domain}/task/${id}`);
+}
+
+// ============================================================
+// 2API ENDPOINTS - Pagination serveur
+// Ces endpoints utilisent /sws/email-domain/* (2API)
+// ============================================================
+
+export interface TaskListResult {
+  list: {
+    results: Array<{
+      id: number;
+      todoDate: string;
+      finishDate?: string;
+      function: string;
+      status: string;
+      account?: string;
+    }>;
+    count: number;
+  };
+}
+
+/**
+ * Liste paginée des tâches (2API) - pagination serveur
+ * Équivalent old_manager: getTasks avec pagination
+ */
+export async function list2api(
+  domain: string,
+  options?: { count?: number; offset?: number }
+): Promise<TaskListResult> {
+  return ovh2apiGet<TaskListResult>(`${BASE_2API}/${domain}/tasks`, {
+    count: options?.count ?? 25,
+    offset: options?.offset ?? 0,
+  });
 }

@@ -2,7 +2,7 @@
 // SERVICE: ANYCAST - API calls pour DNS Anycast
 // ============================================================
 
-import { ovhGet, ovhPost, ovhDelete } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhPut } from "../../../../../services/api";
 
 interface AnycastStatus {
   active: boolean;
@@ -108,10 +108,43 @@ export const anycastService = {
   },
 
   /**
-   * Terminate DNS Anycast
-   * DELETE /domain/{domain}/option/dnsAnycast
+   * Get DNS Anycast service details
+   * GET /domain/zone/{zone}/option/anycast/serviceInfos - Identique old_manager
    */
-  async terminateAnycast(domain: string): Promise<void> {
-    await ovhDelete(`/domain/${encodeURIComponent(domain)}/option/dnsAnycast`);
+  async getAnycastDetails(zone: string): Promise<{
+    expiration: string;
+    creation: string;
+    renew: { automatic: boolean; deleteAtExpiration: boolean; period?: string };
+    contactAdmin: string;
+    contactTech: string;
+    contactBilling: string;
+  }> {
+    return ovhGet(`/domain/zone/${encodeURIComponent(zone)}/option/anycast/serviceInfos`);
+  },
+
+  /**
+   * Terminate DNS Anycast
+   * PUT /domain/zone/{zone}/option/anycast/serviceInfos - Identique old_manager
+   */
+  async terminateAnycast(zone: string): Promise<void> {
+    await ovhPut(`/domain/zone/${encodeURIComponent(zone)}/option/anycast/serviceInfos`, {
+      renew: {
+        automatic: false,
+        deleteAtExpiration: true,
+      },
+    });
+  },
+
+  /**
+   * Renew Anycast (re-enable auto-renew)
+   * PUT /domain/zone/{zone}/option/anycast/serviceInfos - Identique old_manager
+   */
+  async renewAnycast(zone: string): Promise<void> {
+    await ovhPut(`/domain/zone/${encodeURIComponent(zone)}/option/anycast/serviceInfos`, {
+      renew: {
+        automatic: true,
+        deleteAtExpiration: false,
+      },
+    });
   },
 };

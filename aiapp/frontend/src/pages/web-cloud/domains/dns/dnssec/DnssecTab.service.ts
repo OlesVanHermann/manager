@@ -60,6 +60,28 @@ class DnssecService {
   async deleteDsRecord(domain: string, id: number): Promise<void> {
     await ovhDelete(`/domain/${domain}/dsRecord/${id}`);
   }
+
+  /**
+   * Save DS Records list (batch create/update) - Identique old_manager saveDnssecList()
+   * POST /domain/{domain}/dsRecord - avec keys array
+   * @param domain - Domain name
+   * @param keys - Array of DS records to save
+   */
+  async saveDsRecordsList(domain: string, keys: Array<{ algorithm: number; flags: number; publicKey: string; tag: number }>): Promise<void> {
+    // POST /domain/{domain}/dsRecord - Identique old_manager
+    // Accepts array of DS records in the keys parameter
+    await ovhPost(`/domain/${domain}/dsRecord`, { keys });
+  }
+
+  /**
+   * Get all DS records with details (N+1 pattern) - Identique old_manager
+   */
+  async listDsRecordsDetailed(domain: string): Promise<DsRecord[]> {
+    const ids = await this.listDsRecords(domain);
+    if (ids.length === 0) return [];
+    const records = await Promise.all(ids.map(id => this.getDsRecord(domain, id)));
+    return records;
+  }
 }
 
 export const dnssecService = new DnssecService();

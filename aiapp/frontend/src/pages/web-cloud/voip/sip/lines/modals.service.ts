@@ -47,22 +47,6 @@ export const modalsService = {
     );
   },
 
-  // ========== CALL FILTERS ==========
-  async addCallFilter(
-    billingAccount: string,
-    serviceName: string,
-    filter: {
-      type: 'whitelist' | 'blacklist';
-      callerIdNumber: string;
-      description?: string;
-    }
-  ): Promise<void> {
-    await ovhApi.post(
-      `/telephony/${billingAccount}/line/${serviceName}/calls/filtering`,
-      filter
-    );
-  },
-
   // ========== VOICEMAIL GREETING ==========
   async uploadVoicemailGreeting(
     billingAccount: string,

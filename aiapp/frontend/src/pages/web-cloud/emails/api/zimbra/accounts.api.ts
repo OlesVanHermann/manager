@@ -6,6 +6,7 @@
 import { apiFetch } from "../../../../../services/api";
 
 const BASE = "/email/zimbra";
+const BASE_V2 = "/v2/email/zimbra/platform";
 
 // ---------- TYPES ----------
 
@@ -94,6 +95,97 @@ export { remove as delete };
 export async function changePassword(id: string, serviceId: string, password: string): Promise<void> {
   const { org, platform } = parsePlatformId(serviceId);
   await apiFetch(`${BASE}/${org}/${platform}/account/${id}/changePassword`, {
+    method: "POST",
+    body: JSON.stringify({ password }),
+  });
+}
+
+// ============================================================
+// API V2 ENDPOINTS - Pagination native Iceberg
+// Ces endpoints utilisent /v2/email/zimbra/platform/* (API v2)
+// ============================================================
+
+export interface AccountListResultV2 {
+  data: ZimbraAccount[];
+  links: {
+    next?: { href: string };
+    prev?: { href: string };
+    self: { href: string };
+  };
+  currentCursor?: string;
+  nextCursor?: string;
+}
+
+/**
+ * Liste paginée des comptes (API v2) - pagination Iceberg native
+ * Équivalent old_manager: getAccounts avec pagination
+ */
+export async function listV2(
+  platformId: string,
+  options?: { pageSize?: number; cursor?: string }
+): Promise<AccountListResultV2> {
+  const params = new URLSearchParams();
+  if (options?.pageSize) params.set("pageSize", String(options.pageSize));
+  if (options?.cursor) params.set("cursor", options.cursor);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiFetch<AccountListResultV2>(`${BASE_V2}/${platformId}/account${query}`);
+}
+
+/**
+ * Détails d'un compte (API v2)
+ */
+export async function getV2(platformId: string, accountId: string): Promise<ZimbraAccount> {
+  return apiFetch<ZimbraAccount>(`${BASE_V2}/${platformId}/account/${accountId}`);
+}
+
+/**
+ * Création de compte (API v2)
+ */
+export async function createV2(
+  platformId: string,
+  data: Omit<CreateAccountParams, "offer"> & { offerId?: string }
+): Promise<ZimbraAccount> {
+  return apiFetch<ZimbraAccount>(`${BASE_V2}/${platformId}/account`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Mise à jour compte (API v2)
+ */
+export async function updateV2(
+  platformId: string,
+  accountId: string,
+  data: Partial<ZimbraAccount>
+): Promise<ZimbraAccount> {
+  return apiFetch<ZimbraAccount>(`${BASE_V2}/${platformId}/account/${accountId}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Suppression compte (API v2)
+ */
+export async function removeV2(platformId: string, accountId: string): Promise<void> {
+  await apiFetch(`${BASE_V2}/${platformId}/account/${accountId}`, {
+    method: "DELETE",
+  });
+}
+
+export { removeV2 as deleteV2 };
+
+/**
+ * Changement mot de passe (API v2)
+ */
+export async function changePasswordV2(
+  platformId: string,
+  accountId: string,
+  password: string
+): Promise<void> {
+  await apiFetch(`${BASE_V2}/${platformId}/account/${accountId}/changePassword`, {
     method: "POST",
     body: JSON.stringify({ password }),
   });

@@ -1,3 +1,4 @@
+export { DatabaseTab as default } from './DatabaseTab';
 export { CreateDatabaseModal } from './CreateDatabaseModal';
 export { EditDatabaseModal } from './EditDatabaseModal';
 export { DeleteDatabaseModal } from './DeleteDatabaseModal';

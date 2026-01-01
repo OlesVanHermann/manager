@@ -267,3 +267,118 @@ export interface SmsJob {
   createdAt: string;
   sentAt: string | null;
 }
+
+// ---------- TIME CONDITION ----------
+
+export interface TelephonyTimeConditionOptions {
+  slot1Number: string;
+  slot1Type: 'number' | 'voicemail';
+  slot2Number: string;
+  slot2Type: 'number' | 'voicemail';
+  slot3Number: string;
+  slot3Type: 'number' | 'voicemail';
+  unavailableNumber: string;
+  unavailableType: 'number' | 'voicemail';
+  timeout: number;
+}
+
+export interface TelephonyTimeCondition {
+  id: number;
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  hourBegin: string;
+  hourEnd: string;
+  policy: 'available' | 'slot1' | 'slot2' | 'slot3';
+  status: 'enabled' | 'disabled';
+}
+
+export interface TelephonyTimeConditionCreate {
+  day: TelephonyTimeCondition['day'];
+  hourBegin: string;
+  hourEnd: string;
+  policy: TelephonyTimeCondition['policy'];
+}
+
+// ---------- SCREEN (filtrage appels) ----------
+
+export interface TelephonyScreen {
+  incomingScreenList: 'allowed' | 'denied' | 'disabled';
+  outgoingScreenList: 'allowed' | 'denied' | 'disabled';
+}
+
+export interface TelephonyScreenList {
+  id: number;
+  callNumber: string;
+  nature: 'national' | 'international' | 'special';
+  type: 'incoming' | 'outgoing';
+  status: 'allowed' | 'denied';
+}
+
+export interface TelephonyScreenListCreate {
+  callNumber: string;
+  nature: TelephonyScreenList['nature'];
+  type: TelephonyScreenList['type'];
+  status: TelephonyScreenList['status'];
+}
+
+// ---------- PHONEBOOK ----------
+
+export interface TelephonyPhonebook {
+  bookKey: string;
+  name: string;
+  phoneKey: string;
+}
+
+export interface TelephonyPhonebookContact {
+  id: number;
+  group: string;
+  name: string;
+  surname: string;
+  homeMobile: string;
+  homePhone: string;
+  workMobile: string;
+  workPhone: string;
+}
+
+export interface TelephonyPhonebookContactCreate {
+  group: string;
+  name: string;
+  surname: string;
+  homeMobile?: string;
+  homePhone?: string;
+  workMobile?: string;
+  workPhone?: string;
+}
+
+// ---------- TRUNK ----------
+
+export interface TelephonyTrunk {
+  serviceName: string;
+  description: string;
+  simultaneousLines: number;
+  outboundCallsPerLine: number;
+}
+
+export interface TelephonyTrunkExternalNumber {
+  number: string;
+  createdAt: string;
+  status: 'enabled' | 'pending' | 'disabled';
+}
+
+// ---------- OFFER TASK ----------
+
+export interface TelephonyOfferTask {
+  taskId: number;
+  action: string;
+  status: 'todo' | 'doing' | 'done' | 'error' | 'pause';
+  type: string;
+  executionDate: string;
+}
+
+// ---------- HISTORY CONSUMPTION ----------
+
+export interface TelephonyHistoryRepaymentConsumption {
+  date: string;
+  price: { value: number; currencyCode: string };
+  consumedCredits: number;
+  status: 'paid' | 'pending';
+}

@@ -3,8 +3,8 @@
 // DEFACTORISATION: Ce service est ISOLÉ et ne doit pas être partagé
 // ============================================================
 
-import { ovhApi } from '../../../../../../../services/api';
-import type { TelephonyLine } from '../../../voip.types';
+import { ovhApi } from '../../../../../services/api';
+import type { TelephonyLine } from '../voip.types';
 
 export interface LineServiceInfos {
   domain: string;

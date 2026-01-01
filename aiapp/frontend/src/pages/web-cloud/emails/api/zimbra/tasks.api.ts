@@ -6,6 +6,7 @@
 import { apiFetch } from "../../../../../services/api";
 
 const BASE = "/email/zimbra";
+const BASE_V2 = "/v2/email/zimbra/platform";
 
 // ---------- TYPES ----------
 
@@ -54,4 +55,43 @@ export async function get(domain: string, id: string | number, serviceId?: strin
 
   const { org, platform } = parsePlatformId(serviceId);
   return apiFetch<ZimbraTask>(`${BASE}/${org}/${platform}/task/${id}`);
+}
+
+// ============================================================
+// API V2 ENDPOINTS - Pagination native Iceberg
+// Ces endpoints utilisent /v2/email/zimbra/platform/* (API v2)
+// ============================================================
+
+export interface TaskListResultV2 {
+  data: ZimbraTask[];
+  links: {
+    next?: { href: string };
+    prev?: { href: string };
+    self: { href: string };
+  };
+  currentCursor?: string;
+  nextCursor?: string;
+}
+
+/**
+ * Liste paginée des tâches (API v2) - pagination Iceberg native
+ * Équivalent old_manager: getTasks avec pagination
+ */
+export async function listV2(
+  platformId: string,
+  options?: { pageSize?: number; cursor?: string }
+): Promise<TaskListResultV2> {
+  const params = new URLSearchParams();
+  if (options?.pageSize) params.set("pageSize", String(options.pageSize));
+  if (options?.cursor) params.set("cursor", options.cursor);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiFetch<TaskListResultV2>(`${BASE_V2}/${platformId}/task${query}`);
+}
+
+/**
+ * Détails d'une tâche (API v2)
+ */
+export async function getV2(platformId: string, taskId: string): Promise<ZimbraTask> {
+  return apiFetch<ZimbraTask>(`${BASE_V2}/${platformId}/task/${taskId}`);
 }

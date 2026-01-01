@@ -3,7 +3,7 @@
 // DEFACTORISATION: Ce service est ISOLÉ et ne doit pas être partagé
 // ============================================================
 
-import { ovhApi } from '../../../../../../../services/api';
+import { ovhApi } from '../../../../../../services/api';
 
 export interface NumberAgent {
   agentNumber: string;
@@ -17,13 +17,15 @@ export interface NumberAgent {
 }
 
 export const agentsTabService = {
+  // GET /telephony/{ba}/easyHunting/{sn}/hunting/agent - Retourne number[] (agentId)
   async getAgents(billingAccount: string, serviceName: string): Promise<NumberAgent[]> {
     try {
-      const numbers = await ovhApi.get<string[]>(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent`);
+      // API correcte: retourne un tableau de number (agentId), pas de string
+      const agentIds = await ovhApi.get<number[]>(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent`);
       const agents = await Promise.all(
-        numbers.map(async (agentNumber) => {
+        agentIds.map(async (agentId) => {
           try {
-            return await ovhApi.get<NumberAgent>(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent/${agentNumber}`);
+            return await ovhApi.get<NumberAgent>(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent/${agentId}`);
           } catch {
             return null;
           }
@@ -35,15 +37,18 @@ export const agentsTabService = {
     }
   },
 
-  async updateAgent(billingAccount: string, serviceName: string, agentNumber: string, data: Partial<NumberAgent>): Promise<void> {
-    return ovhApi.put(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent/${agentNumber}`, data);
+  // PUT /telephony/{ba}/easyHunting/{sn}/hunting/agent/{agentId}
+  async updateAgent(billingAccount: string, serviceName: string, agentId: number, data: Partial<NumberAgent>): Promise<void> {
+    return ovhApi.put(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent/${agentId}`, data);
   },
 
+  // POST /telephony/{ba}/easyHunting/{sn}/hunting/agent
   async addAgent(billingAccount: string, serviceName: string, data: Partial<NumberAgent>): Promise<NumberAgent> {
     return ovhApi.post<NumberAgent>(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent`, data);
   },
 
-  async deleteAgent(billingAccount: string, serviceName: string, agentNumber: string): Promise<void> {
-    return ovhApi.delete(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent/${agentNumber}`);
+  // DELETE /telephony/{ba}/easyHunting/{sn}/hunting/agent/{agentId}
+  async deleteAgent(billingAccount: string, serviceName: string, agentId: number): Promise<void> {
+    return ovhApi.delete(`/telephony/${billingAccount}/easyHunting/${serviceName}/hunting/agent/${agentId}`);
   },
 };

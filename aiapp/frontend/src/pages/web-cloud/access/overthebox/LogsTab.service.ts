@@ -1,35 +1,37 @@
 // ============================================================
 // SERVICE LOGS TAB - Isolé pour logs OverTheBox
+// Endpoints alignés avec old_manager (OvhApiOverTheBox.getLogs)
 // ============================================================
 
 import { ovhApi } from '../../../../services/api';
-import type { OtbLogEntry, LogLevel, LogPeriod } from '../overthebox.types';
+
+// ---------- TYPES LOCAUX ----------
+
+interface LogsResponse {
+  url: string;
+}
 
 // ---------- SERVICE ----------
 
 export const logsService = {
-  /** Récupérer les logs. */
-  async getLogs(serviceName: string, options?: {
-    level?: LogLevel;
-    period?: LogPeriod;
-    search?: string;
-    limit?: number;
-  }): Promise<OtbLogEntry[]> {
-    const params = new URLSearchParams();
-    if (options?.level) params.append('level', options.level);
-    if (options?.period) params.append('period', options.period);
-    if (options?.search) params.append('search', options.search);
-    if (options?.limit) params.append('limit', String(options.limit));
-
-    const query = params.toString();
-    const url = `/overTheBox/${serviceName}/logs${query ? `?${query}` : ''}`;
-    return ovhApi.get<OtbLogEntry[]>(url);
+  /**
+   * Récupérer l'URL des logs (old_manager: getLogs via TailLogs).
+   * Note: old_manager utilise POST /device/logs qui retourne une URL
+   * que TailLogs poll ensuite pour afficher les logs en temps réel.
+   */
+  async getLogsUrl(serviceName: string): Promise<string> {
+    // Endpoint aligné old_manager: POST /overTheBox/{serviceName}/device/logs
+    const response = await ovhApi.post<LogsResponse>(`/overTheBox/${serviceName}/device/logs`, {});
+    return response.url;
   },
 
-  /** Exporter les logs. */
-  async exportLogs(serviceName: string, format: 'txt' | 'json' = 'txt'): Promise<Blob> {
-    return ovhApi.get<Blob>(`/overTheBox/${serviceName}/logs/export?format=${format}`, {
-      responseType: 'blob',
-    });
+  /**
+   * Récupérer les logs disponibles.
+   * Utilise l'URL retournée par getLogsUrl.
+   */
+  async fetchLogsFromUrl(url: string): Promise<string> {
+    // L'URL retournée est externe, on la fetch directement
+    const response = await fetch(url);
+    return response.text();
   },
 };

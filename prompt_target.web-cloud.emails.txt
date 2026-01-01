@@ -8,8 +8,46 @@ PROMPT TARGET - Web Cloud > Emails
 | **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/emails/           |
 | **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/emails/ |
 
-Version: v2 (2025-12-31)
+Version: v6.1 (2026-01-01)
 Parent:  prompt_target.txt (design system, shell template, composants)
+
+CHANGELOG v6.1:
+- NAV3 toggle font-size corrigé: 12px → 11px (aligné avec prompt_target.txt)
+
+CHANGELOG v6:
+- Section 2 refactorisée: ARBORESCENCE NAV alignée avec code React
+  - NAV3: 2 modes (general, packs) avec labels FR
+  - NAV4: 7 tabs mode General + 3 tabs mode Packs
+  - NAV5: Sub-tabs pour Security et Advanced
+  - Actions par tab et par offre documentées
+  - Fichiers React correspondants listés
+- CSS LAYOUT & STYLING: Section 7.6 ajoutée avec tous les styles React
+- Valeurs HARDCODÉES obligatoires (pas de CSS variables avec fallback)
+- Layout: padding 15px 24px, gap 16px, background #F6F6F9
+- Left/Right panels: border-radius 8px, border all sides
+- NAV4 tabs: border-radius 4px, font-size 11px, outline style
+- Buttons: hover avec box-shadow
+
+CHANGELOG v5:
+- MXPlan Legacy: TOUS les endpoints APIv6 documentés (filters, responders, service, acl, dkim, delegation, migration)
+- Exchange: MFA via MsServices (API non documentée) ajoutée
+- Structure fichiers API mise à jour avec tous les nouveaux fichiers
+- Section "APIs NON DOCUMENTÉES" ajoutée
+- Ajout types TypeScript pour filters, responders, delegation, migration
+- Ajout helpers pour MFA et delegation detection
+
+CHANGELOG v4:
+- Exchange: ajout Resources, Devices, Audit APIs complets
+- Zimbra: documentation API v2 avec pagination Iceberg native
+- MXPlan Modern: clarification 2API avec paramètre isMXPlan=1
+- Ajout TypeScript interfaces pour tous les types
+- Ajout section Usage & Import patterns
+
+CHANGELOG v3:
+- APIs réelles OVH documentées (APIv6 + 2API)
+- 5 types d'offres clarifiés (Exchange, EmailPro, MXPlan Modern/Legacy, Zimbra)
+- Structure fichiers API alignée avec new_manager
+- Dispatcher détection automatique du type de service
 
 CHANGELOG v2:
 - NAV3 refactoré : 2 modes [General] / [Packs] au lieu de 8 tabs avec Licences
@@ -76,113 +114,168 @@ COMPTE CLIENT
 ✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
 
 ##############################################################################
-# 2. ARBORESCENCE NAV COMPLÈTE (v2 - REFACTORISÉE)
+# 2. ARBORESCENCE NAV COMPLÈTE (v6 - ALIGNÉE CODE REACT)
 ##############################################################################
+
+### STRUCTURE NAVIGATION
 
 ```
 NAV1: Web Cloud (x=510)
 │
-└── NAV2: Emails (indicateur sous "Emails")
+└── NAV2: Emails (indicateur sous "Emails", x=430)
     │
-    ├── /web-cloud/emails (INDEX)
-    │   │
-    │   │   LEFT PANEL: Toggle NAV3 (2 modes)
-    │   │     [📧 General] ← Gestion quotidienne par domaine (défaut)
-    │   │     [📦 Packs]   ← Gestion licences/facturation
-    │   │
-    │   │   RIGHT PANEL: Contenu selon NAV3 mode + sélection
-    │   │
-    │   ├── NAV3: [General] ← 7 onglets NAV4 (gestion par domaine)
-    │   │   │
-    │   │   │   LEFT PANEL: Liste domaines avec détail offres
-    │   │   │   Sélection: 1 domaine → affiche ses tabs
-    │   │   │
-    │   │   └── NAV4 TABS:
-    │   │       │
-    │   │       ├── [1] Boîtes mail (/accounts) ← TOUJOURS
-    │   │       │   │   Toutes les boîtes du domaine sélectionné
-    │   │       │   │   Colonne "Offre" + Colonne "Licence/Pack"
-    │   │       │   │   Actions inline selon offre de CHAQUE boîte
-    │   │       │   └── ACTIONS: [+ Créer] [📥 Import] [📤 Export]
-    │   │       │       Par boîte: [✎] [🔑] [📧 Alias] [📤 Délég.] [🔐 MFA] [×]
-    │   │       │
-    │   │       ├── [2] Redirections (/redirections) ← TOUJOURS
-    │   │       │   │   Toutes les redirections du domaine
-    │   │       │   └── ACTIONS: [+ Ajouter] [✎ Modifier] [× Supprimer]
-    │   │       │
-    │   │       ├── [3] Répondeurs (/responders) ← TOUJOURS
-    │   │       │   │   Réponses automatiques par boîte
-    │   │       │   └── ACTIONS: [+ Configurer] [✎ Modifier] [× Désactiver]
-    │   │       │
-    │   │       ├── [4] Listes (/lists) ← MX Plan, Email Pro, Exchange (pas Zimbra)
-    │   │       │   │   Mailing lists ou Groupes distribution
-    │   │       │   └── ACTIONS: [+ Créer] [👥 Membres] [× Supprimer]
-    │   │       │
-    │   │       ├── [5] Sécurité (/security) ← Email Pro, Exchange, Zimbra (pas MX Plan)
-    │   │       │   │
-    │   │       │   └── SUB-TABS:
-    │   │       │       ├── DNS Config (défaut) → DKIM, SPF, MX, DMARC
-    │   │       │       ├── Antispam → Filtres, quarantaine, règles
-    │   │       │       └── Signature → Disclaimer entreprise
-    │   │       │
-    │   │       ├── [6] Avancé (/advanced) ← Exchange SEULEMENT
-    │   │       │   │
-    │   │       │   └── SUB-TABS:
-    │   │       │       ├── Ressources (défaut) → Salles, équipements
-    │   │       │       ├── Contacts ext. → Carnet d'adresses externe
-    │   │       │       ├── Audit → Logs activité
-    │   │       │       └── Appareils → ActiveSync devices
-    │   │       │
-    │   │       └── [7] Tâches (/tasks) ← TOUJOURS
-    │   │           │   Opérations en cours et historique
-    │   │           └── ACTIONS: [↻ Rafraîchir]
-    │   │
-    │   └── NAV3: [Packs] ← 3 onglets NAV4 (gestion licences)
-    │       │
-    │       │   LEFT PANEL: Liste packs + licences à la carte
-    │       │   Sélection: 1 pack → affiche ses boîtes assignées
-    │       │
-    │       └── NAV4 TABS:
-    │           │
-    │           ├── [1] Mes packs (/packs) ← défaut
-    │           │   │   Liste des packs achetés avec utilisation
-    │           │   └── ACTIONS: [+ Commander] [⚙ Gérer] [↑ Upgrade] [× Résilier]
-    │           │
-    │           ├── [2] À la carte (/alacarte)
-    │           │   │   Licences individuelles
-    │           │   └── ACTIONS: [+ Ajouter licence] [× Supprimer]
-    │           │
-    │           └── [3] Historique (/history)
-    │               │   Factures, changements, consommation
-    │               └── ACTIONS: [📤 Exporter] [📄 Télécharger facture]
+    └── /web-cloud/emails (PAGE UNIQUE)
+        │
+        ├── LEFT PANEL (280px)
+        │   │
+        │   ├── NAV3 Toggle: [📧 Général] [📦 Packs]
+        │   │   Mode défaut: "general"
+        │   │
+        │   ├── Recherche + Filtre
+        │   │
+        │   ├── Liste items (selon NAV3)
+        │   │   NAV3=general → Liste domaines
+        │   │   NAV3=packs   → Liste packs + à la carte
+        │   │
+        │   └── Pagination + Actions bas
+        │
+        └── RIGHT PANEL (flex: 1)
+            │
+            ├── Header: Titre + Infos service
+            │
+            ├── NAV4 Tabs (selon NAV3 sélectionné)
+            │
+            └── Contenu Tab (avec NAV5 si hasSubTabs)
 ```
 
-### RÉCAPITULATIF NIVEAUX NAV (v2)
+### NAV3 - TOGGLE LEFT PANEL
 
-| Niveau | Visuel | Position | Exemples Emails |
-|--------|--------|----------|-----------------|
-| **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
-| **NAV2** | Sous-header blanc 40px | y=50 | Emails (x=430) |
-| **NAV3** | Toggle LeftPanel | Top LeftPanel | [📧 General] / [📦 Packs] |
-| **NAV4** | Tabs right panel | y=38 dans right panel | Accounts, Redirections, Security... |
-| **NAV5** | Sous-tabs (si hasSubTabs) | y=70 dans right panel | DNS, Antispam, Signature... |
-| **ACTIONS** | Boutons + inline + modals | Variable | +, ✎, 🔑, ×, ↻, 📥, 📤 |
+| id | labelKey | Label FR | icon | Défaut |
+|----|----------|----------|------|--------|
+| `general` | nav3.general | Général | 📧 | ✅ |
+| `packs` | nav3.packs | Packs | 📦 | |
+
+### NAV4 TABS - MODE GENERAL (7 tabs)
+
+| # | id | labelKey | Label FR | offers | hasSubTabs | Route |
+|---|-----|----------|----------|--------|------------|-------|
+| 1 | `accounts` | tabs.accounts | Comptes | all | ❌ | /accounts |
+| 2 | `redirections` | tabs.redirections | Redirections | all | ❌ | /redirections |
+| 3 | `responders` | tabs.responders | Répondeurs | all | ❌ | /responders |
+| 4 | `lists` | tabs.lists | Listes | mx-plan, email-pro, exchange | ❌ | /lists |
+| 5 | `security` | tabs.security | Sécurité | email-pro, exchange, zimbra | ✅ | /security |
+| 6 | `advanced` | tabs.advanced | Avancé | exchange | ✅ | /advanced |
+| 7 | `tasks` | tabs.tasks | Tâches | all | ❌ | /tasks |
+
+### NAV4 TABS - MODE PACKS (3 tabs)
+
+| # | id | labelKey | Label FR | offers | hasSubTabs | Route |
+|---|-----|----------|----------|--------|------------|-------|
+| 1 | `packs` | tabs.packs | Mes packs | all | ❌ | /packs |
+| 2 | `alacarte` | tabs.alacarte | À la carte | all | ❌ | /alacarte |
+| 3 | `history` | tabs.history | Historique | all | ❌ | /history |
+
+### NAV5 SUB-TABS (quand hasSubTabs=true)
+
+#### Tab Security (id=security)
+
+| id | parentTab | labelKey | Label FR | Défaut |
+|----|-----------|----------|----------|--------|
+| `dns` | security | security.dns | DNS Config | ✅ |
+| `antispam` | security | security.antispam | Antispam | |
+| `signature` | security | security.signature | Signature | |
+
+#### Tab Advanced (id=advanced) - Exchange uniquement
+
+| id | parentTab | labelKey | Label FR | Défaut |
+|----|-----------|----------|----------|--------|
+| `resources` | advanced | advanced.resources | Ressources | ✅ |
+| `contacts` | advanced | advanced.contacts | Contacts ext. | |
+| `audit` | advanced | advanced.audit | Audit | |
+| `devices` | advanced | advanced.devices | Appareils | |
+
+### ACTIONS PAR TAB
+
+| Tab | Actions toolbar | Actions par ligne |
+|-----|-----------------|-------------------|
+| **Comptes** | [+ Créer] [📥 Import] [📤 Export] | [✎] [🔑] [📧 Alias] [📤 Délég.] [🔐 MFA] [×] |
+| **Redirections** | [+ Créer une redirection] | [✎] [×] |
+| **Répondeurs** | [+ Configurer] | [✎] [× Désactiver] |
+| **Listes** | [+ Créer liste] | [👥 Membres] [✎] [×] |
+| **Sécurité** | [↻ Vérifier DNS] | Actions selon sub-tab |
+| **Avancé** | Selon sub-tab | Selon sub-tab |
+| **Tâches** | [↻ Rafraîchir] | - |
+| **Mes packs** | [+ Commander pack] | [⚙ Gérer] [↑ Upgrade] [× Résilier] |
+| **À la carte** | [+ Ajouter licence] | [×] |
+| **Historique** | [📤 Exporter] | [📄 Télécharger] |
+
+### ACTIONS PAR OFFRE (inline compte)
+
+| Action | MX Plan | Email Pro | Exchange | Zimbra |
+|--------|:-------:|:---------:|:--------:|:------:|
+| edit (✎) | ✅ | ✅ | ✅ | ✅ |
+| password (🔑) | ✅ | ✅ | ✅ | ✅ |
+| alias (📧) | ❌ | ✅ | ✅ | ✅ |
+| delegation (📤) | ❌ | ✅ | ✅ | ❌ |
+| mfa (🔐) | ❌ | ❌ | ✅ | ❌ |
+| archive | ❌ | ✅ | ✅ | ❌ |
+| calendar | ❌ | ❌ | ✅ | ✅ |
+| upgrade (↑) | ✅ | ✅ | ❌ | ✅ |
+| downgrade (↓) | ❌ | ✅ | ✅ | ✅ |
+| changePack | ✅ | ✅ | ✅ | ✅ |
+| delete (×) | ✅ | ✅ | ✅ | ✅ |
 
 ### DISPONIBILITÉ TABS PAR OFFRE
 
 | Tab | MX Plan | Email Pro | Exchange | Zimbra |
 |-----|:-------:|:---------:|:--------:|:------:|
-| Boîtes mail | ✅ | ✅ | ✅ | ✅ |
+| Comptes | ✅ | ✅ | ✅ | ✅ |
 | Redirections | ✅ | ✅ | ✅ | ✅ |
 | Répondeurs | ✅ | ✅ | ✅ | ✅ |
-| Listes | ✅ | ✅ | ✅ | 🚫 |
-| Sécurité | 🚫 | ✅ | ✅ | ✅ |
-| Avancé | 🚫 | 🚫 | ✅ | 🚫 |
-| Licences | ✅ | ✅ | ✅ | ✅ |
+| Listes | ✅ | ✅ | ✅ | ❌ |
+| Sécurité | ❌ | ✅ | ✅ | ✅ |
+| Avancé | ❌ | ❌ | ✅ | ❌ |
 | Tâches | ✅ | ✅ | ✅ | ✅ |
 
-Note: Un domaine avec MIX d'offres affiche tous les tabs pertinents.
-Exemple: example.com avec Exchange + MX Plan → affiche Avancé (pour les Exchange)
+**Note:** Un domaine avec MIX d'offres affiche tous les tabs pertinents.
+Exemple: example.com avec Exchange + MX Plan → affiche Avancé (pour les comptes Exchange)
+
+### RÉCAPITULATIF NIVEAUX NAV
+
+| Niveau | Composant | Position | Fichier |
+|--------|-----------|----------|---------|
+| **NAV1** | Header bleu OVH | y=0, h=50px | App.tsx (global) |
+| **NAV2** | Sous-header blanc | y=50, h=40px | App.tsx (global) |
+| **NAV3** | Toggle dans LeftPanel | Top LeftPanel | LeftPanel.tsx |
+| **NAV4** | Tabs dans RightPanel | padding: 12px 20px | index.tsx |
+| **NAV5** | Sub-tabs (optionnel) | Sous NAV4 | SecurityTab.tsx, AdvancedTab.tsx |
+
+### FICHIERS REACT CORRESPONDANTS
+
+```
+src/pages/web-cloud/emails/
+├── index.tsx                 # Page principale, gestion NAV3/NAV4
+├── types.ts                  # Types: Nav3Mode, EmailTab, GeneralTab, PacksTab
+├── emails.constants.ts       # Config: NAV3_CONFIG, GENERAL_TABS_CONFIG, PACKS_TABS_CONFIG
+├── LeftPanel.tsx             # NAV3 toggle + liste services
+├── LeftPanel.css             # Styles left panel
+├── RightPanelHeader.tsx      # Header selon sélection
+├── styles.css                # Styles page + right panel + NAV4 tabs
+├── general/
+│   ├── AccountsTab.tsx       # NAV4: Comptes
+│   ├── RedirectionsTab.tsx   # NAV4: Redirections
+│   ├── RespondersTab.tsx     # NAV4: Répondeurs
+│   ├── ListsTab.tsx          # NAV4: Listes
+│   ├── TasksTab.tsx          # NAV4: Tâches
+│   ├── security/
+│   │   └── SecurityTab.tsx   # NAV4: Sécurité + NAV5 sub-tabs
+│   └── advanced/
+│       └── AdvancedTab.tsx   # NAV4: Avancé + NAV5 sub-tabs
+└── packs/
+    ├── PacksTab.tsx          # NAV4: Mes packs
+    ├── AlacarteTab.tsx       # NAV4: À la carte
+    └── HistoryTab.tsx        # NAV4: Historique
+```
 
 ##############################################################################
 # 3. NAV1 - HEADER OVH
@@ -260,26 +353,26 @@ Route: /web-cloud/emails/{domain}/{tab}
   <!-- Tab actif: fond bleu, texte blanc -->
   <rect x="0" y="0" width="85" height="26" rx="4" class="bg-primary"/>
   <text x="42" y="17" class="text-white" font-size="11" text-anchor="middle">Boîtes mail</text>
-  
+
   <!-- Tabs inactifs -->
   <rect x="89" y="0" width="90" height="26" rx="4" class="btn-outline"/>
   <text x="134" y="17" class="text-primary" font-size="11" text-anchor="middle">Redirections</text>
-  
+
   <rect x="183" y="0" width="80" height="26" rx="4" class="btn-outline"/>
   <text x="223" y="17" class="text-primary" font-size="11" text-anchor="middle">Répondeurs</text>
-  
+
   <rect x="267" y="0" width="50" height="26" rx="4" class="btn-outline"/>
   <text x="292" y="17" class="text-primary" font-size="11" text-anchor="middle">Listes</text>
-  
+
   <rect x="321" y="0" width="65" height="26" rx="4" class="btn-outline"/>
   <text x="353" y="17" class="text-primary" font-size="11" text-anchor="middle">Sécurité</text>
-  
+
   <rect x="390" y="0" width="55" height="26" rx="4" class="btn-outline"/>
   <text x="417" y="17" class="text-primary" font-size="11" text-anchor="middle">Avancé</text>
-  
+
   <rect x="449" y="0" width="65" height="26" rx="4" class="btn-outline"/>
   <text x="481" y="17" class="text-primary" font-size="11" text-anchor="middle">Licences</text>
-  
+
   <rect x="518" y="0" width="55" height="26" rx="4" class="btn-outline"/>
   <text x="545" y="17" class="text-primary" font-size="11" text-anchor="middle">Tâches</text>
 </g>
@@ -428,30 +521,30 @@ Position: x=24, y=105, width=280px, height=780px
 <!-- Service item domaine sélectionné -->
 <g transform="translate(6, 80)">
   <rect x="0" y="0" width="268" height="110" rx="6" class="row-selected"/>
-  
+
   <!-- Header -->
   <text x="12" y="20" font-size="14">📧</text>
   <text x="32" y="20" class="text-dark" font-size="13" font-weight="600">{domain}</text>
-  
+
   <!-- Détail par offre -->
   <g transform="translate(12, 32)">
     <circle cx="6" cy="6" r="5" fill="#F59E0B"/>
     <text x="16" y="10" class="text-dark" font-size="10">5  Exchange</text>
     <text x="90" y="10" class="text-muted" font-size="9">Pack Biz10</text>
-    
+
     <circle cx="6" cy="20" r="5" fill="#3B82F6"/>
     <text x="16" y="24" class="text-dark" font-size="10">4  Pro</text>
     <text x="90" y="24" class="text-muted" font-size="9">Pack Pro5</text>
-    
+
     <circle cx="6" cy="34" r="5" fill="#8B5CF6"/>
     <text x="16" y="38" class="text-dark" font-size="10">2  Zimbra</text>
     <text x="90" y="38" class="text-muted" font-size="9">À la carte</text>
-    
+
     <circle cx="6" cy="48" r="5" fill="#6B7280"/>
     <text x="16" y="52" class="text-dark" font-size="10">1  MX Plan</text>
     <text x="90" y="52" class="text-muted" font-size="9">Inclus</text>
   </g>
-  
+
   <!-- Footer -->
   <line x1="12" y1="90" x2="256" y2="90" stroke="#E5E7EB"/>
   <text x="12" y="104" class="text-muted" font-size="10">12 boîtes · 67 Go · 4 sources</text>
@@ -464,23 +557,250 @@ Position: x=24, y=105, width=280px, height=780px
 <!-- Service item pack sélectionné -->
 <g transform="translate(6, 80)">
   <rect x="0" y="0" width="268" height="90" rx="6" class="row-selected"/>
-  
+
   <!-- Header -->
   <text x="12" y="20" font-size="14">📦</text>
   <text x="32" y="20" class="text-dark" font-size="12" font-weight="600">{packName}</text>
-  
+
   <!-- Offre + Scope -->
   <circle cx="18" cy="38" r="6" fill="#F59E0B"/>
   <text x="30" y="42" class="text-muted" font-size="10">Multi-domaine</text>
-  
+
   <!-- Barre utilisation -->
   <rect x="12" y="52" width="244" height="8" rx="4" fill="#E5E7EB"/>
   <rect x="12" y="52" width="170" height="8" rx="4" fill="#F59E0B"/>
   <text x="12" y="72" class="text-dark" font-size="10">7/10 utilisées</text>
-  
+
   <!-- Prix -->
   <text x="256" y="72" class="text-primary" font-size="11" text-anchor="end" font-weight="600">49,90 €/mois</text>
 </g>
+```
+
+### 7.6 CSS LAYOUT & STYLING (v6 - 2026-01-01)
+
+**Règle critique : Utiliser des valeurs HARDCODÉES, pas de CSS variables avec fallback.**
+
+#### Page Layout (`.emails-page`)
+
+```css
+.emails-page {
+  display: flex;
+  gap: 16px;
+  padding: 15px 24px 24px 24px;  /* 15px top = gap NAV2 */
+  min-height: calc(100vh - 90px);
+  background: #F6F6F9;           /* bg-main */
+}
+```
+
+#### Left Panel Container (`.emails-left-panel`)
+
+```css
+.emails-left-panel {
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;            /* bg-white */
+  border: 1px solid #E5E7EB;      /* border all sides */
+  border-radius: 8px;             /* rx-card */
+  overflow: hidden;
+}
+```
+
+#### NAV3 Toggle (`.nav3-toggle`)
+
+```css
+.nav3-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.nav3-toggle-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: #6B7280;
+  font-size: 11px;  /* NAV3 tabs = 11px (prompt_target.txt) */
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.nav3-toggle-btn:hover {
+  background: #F3F4F6;
+  color: #374151;
+  border-color: #D1D5DB;
+}
+
+.nav3-toggle-btn.active {
+  background: #0050D7;
+  color: #FFFFFF;
+  border-color: #0050D7;
+}
+```
+
+#### Search Input
+
+```css
+.search-input {
+  width: 100%;
+  padding: 8px 32px;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  font-size: 12px;
+  background: #F9FAFB;
+  color: #1F2937;
+}
+
+.search-input::placeholder {
+  color: #6B7280;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #0050D7;
+}
+```
+
+#### Domain/License Items
+
+```css
+.domain-item,
+.license-item {
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: #FFFFFF;
+  cursor: pointer;
+}
+
+.domain-item:hover,
+.license-item:hover {
+  border-color: #E5E7EB;
+  background: #F9FAFB;
+}
+
+.domain-item.selected,
+.license-item.selected {
+  border-color: #0050D7;
+  background: #E8F0FE;           /* row-selected */
+}
+
+.domain-item-name,
+.license-item-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1F2937;                /* text-dark */
+}
+```
+
+#### Pagination
+
+```css
+.pagination-btn {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  background: #FFFFFF;
+  font-size: 11px;
+  color: #6B7280;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #F3F4F6;
+  color: #1F2937;
+}
+
+.pagination-btn.active {
+  background: #0050D7;
+  border-color: #0050D7;
+  color: #FFFFFF;
+}
+```
+
+#### Right Panel Container (`.emails-right-panel`)
+
+```css
+.emails-right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+}
+```
+
+#### Right Panel Title
+
+```css
+.right-panel-title {
+  font-size: 18px;              /* Page title = 18px */
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+```
+
+#### NAV4 Tabs (`.emails-tabs`)
+
+```css
+.emails-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 20px;
+  overflow-x: auto;
+}
+
+.emails-tab-btn {
+  padding: 6px 14px;
+  border: 1px solid #0050D7;    /* outline style */
+  border-radius: 4px;           /* rx-button */
+  background: #FFFFFF;
+  color: #0050D7;
+  font-size: 11px;              /* NAV3 tabs = 11px */
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.emails-tab-btn:hover {
+  background: #F0F7FF;
+}
+
+.emails-tab-btn.active {
+  background: #0050D7;
+  border-color: #0050D7;
+  color: #FFFFFF;
+}
+```
+
+#### Buttons
+
+```css
+.btn-primary {
+  padding: 8px 16px;
+  background: #0050D7;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background: #003399;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(0, 80, 215, 0.4);
+}
 ```
 
 ##############################################################################
@@ -740,119 +1060,941 @@ Légende actions inline:
 ```
 
 ##############################################################################
-# 11. APIs EMAILS
+# 11. APIs EMAILS OVH - DOCUMENTATION TECHNIQUE
 ##############################################################################
 
-### 11.1 APIs Inventaire / Licences
-| Méthode | Endpoint                              | Description             |
-|---------|---------------------------------------|-------------------------|
-| GET     | /email/licenses                       | Liste toutes licences   |
-| GET     | /email/licenses/packs                 | Liste packs             |
-| GET     | /email/licenses/packs/{id}            | Détails pack            |
-| POST    | /email/licenses/packs                 | Commander pack          |
-| PUT     | /email/licenses/packs/{id}            | Modifier pack (upgrade) |
-| DELETE  | /email/licenses/packs/{id}            | Résilier pack           |
-| GET     | /email/licenses/alacarte              | Licences à la carte     |
-| POST    | /email/licenses/alacarte              | Ajouter licence         |
-| DELETE  | /email/licenses/alacarte/{id}         | Supprimer licence       |
+### 11.0 ARCHITECTURE API
 
-### 11.2 APIs Domaines Email
-| Méthode | Endpoint                              | Description             |
-|---------|---------------------------------------|-------------------------|
-| GET     | /email/domains                        | Liste domaines email    |
-| GET     | /email/domains/{domain}               | Détails domaine         |
-| GET     | /email/domains/{domain}/summary       | Résumé (counts, quotas) |
-| POST    | /email/domains                        | Ajouter domaine         |
-| DELETE  | /email/domains/{domain}               | Supprimer domaine       |
+OVH utilise 3 types d'APIs pour les emails :
 
-### 11.3 APIs Comptes Email (unifiées)
-| Méthode | Endpoint                                | Description             |
-|---------|-----------------------------------------|-------------------------|
-| GET     | /email/domains/{domain}/accounts        | Liste comptes           |
-| GET     | /email/domains/{domain}/accounts/{email}| Détails compte          |
-| POST    | /email/domains/{domain}/accounts        | Créer compte            |
-| PUT     | /email/domains/{domain}/accounts/{email}| Modifier compte         |
-| DELETE  | /email/domains/{domain}/accounts/{email}| Supprimer compte        |
-| POST    | /email/domains/{d}/accounts/{e}/password| Changer MDP             |
-| POST    | /email/domains/{d}/accounts/{e}/upgrade | Upgrader offre          |
-| POST    | /email/domains/{d}/accounts/{e}/downgrade| Downgrader offre       |
-| POST    | /email/domains/{d}/accounts/{e}/move    | Changer de pack         |
+| Type | Base Path | Usage | Authentification |
+|------|-----------|-------|------------------|
+| **APIv6** | `/email/{offre}/{service}/*` | CRUD standard, opérations unitaires | OAuth/API Keys |
+| **2API** | `/sws/{offre}/{service}/*` | Pagination serveur, données agrégées | Session OVH |
+| **MsServices** | `/msServices/{service}/*` | MFA Exchange (non documenté) | Session OVH |
 
-### 11.4 APIs Alias
-| Méthode | Endpoint                                      | Description       |
-|---------|-----------------------------------------------|-------------------|
-| GET     | /email/domains/{d}/accounts/{e}/aliases       | Liste alias       |
-| POST    | /email/domains/{d}/accounts/{e}/aliases       | Ajouter alias     |
-| DELETE  | /email/domains/{d}/accounts/{e}/aliases/{a}   | Supprimer alias   |
+**Règle critique** : Reproduire les calls API exactement comme dans old_manager.
+Le new_manager doit appeler les mêmes endpoints avec les mêmes paramètres.
 
-### 11.5 APIs Redirections
-| Méthode | Endpoint                                | Description             |
-|---------|-----------------------------------------|-------------------------|
-| GET     | /email/domains/{domain}/redirections    | Liste redirections      |
-| POST    | /email/domains/{domain}/redirections    | Créer redirection       |
-| PUT     | /email/domains/{d}/redirections/{id}    | Modifier redirection    |
-| DELETE  | /email/domains/{d}/redirections/{id}    | Supprimer redirection   |
+### 11.1 TYPES D'OFFRES EMAIL
 
-### 11.6 APIs Répondeurs
-| Méthode | Endpoint                                | Description             |
-|---------|-----------------------------------------|-------------------------|
-| GET     | /email/domains/{d}/accounts/{e}/responder| État répondeur         |
-| PUT     | /email/domains/{d}/accounts/{e}/responder| Configurer répondeur   |
-| DELETE  | /email/domains/{d}/accounts/{e}/responder| Désactiver répondeur   |
+| Offre | API Base | 2API Base | Dossier new_manager |
+|-------|----------|-----------|---------------------|
+| **Exchange** | `/email/exchange/{org}/service/{service}` | `/sws/exchange/{org}/{service}` | `api/exchange/` |
+| **Email Pro** | `/email/pro/{service}` | `/sws/emailpro/{service}` | `api/emailpro/` |
+| **MXPlan Modern** | `/email/mxplan/{service}` | `/sws/emailpro/{service}` (isMXPlan=1) | `api/mxplan-modern/` |
+| **MXPlan Legacy** | `/email/domain/{domain}` | `/sws/email-domain/{domain}` | `api/mxplan/` |
+| **Zimbra** | `/email/zimbra/{org}/{platform}` | `/v2/email/zimbra/platform/{id}` | `api/zimbra/` |
 
-### 11.7 APIs Listes / Groupes
-| Méthode | Endpoint                                | Description             |
-|---------|-----------------------------------------|-------------------------|
-| GET     | /email/domains/{domain}/lists           | Liste mailing lists     |
-| POST    | /email/domains/{domain}/lists           | Créer liste             |
-| GET     | /email/domains/{d}/lists/{l}            | Détails liste           |
-| PUT     | /email/domains/{d}/lists/{l}            | Modifier liste          |
-| DELETE  | /email/domains/{d}/lists/{l}            | Supprimer liste         |
-| GET     | /email/domains/{d}/lists/{l}/members    | Membres liste           |
-| POST    | /email/domains/{d}/lists/{l}/members    | Ajouter membre          |
-| DELETE  | /email/domains/{d}/lists/{l}/members/{m}| Retirer membre          |
-| GET     | /email/domains/{d}/lists/{l}/moderators | Modérateurs             |
+**Détection automatique** : Utiliser `dispatcher.ts` pour détecter le type de service.
 
-### 11.8 APIs Sécurité DNS
-| Méthode | Endpoint                                | Description             |
-|---------|-----------------------------------------|-------------------------|
-| GET     | /email/domains/{domain}/dns/dkim        | État DKIM               |
-| POST    | /email/domains/{domain}/dns/dkim        | Configurer DKIM         |
-| POST    | /email/domains/{domain}/dns/dkim/regenerate | Régénérer DKIM      |
-| GET     | /email/domains/{domain}/dns/spf         | État SPF                |
-| POST    | /email/domains/{domain}/dns/spf         | Auto-configurer SPF     |
-| GET     | /email/domains/{domain}/dns/mx          | État MX                 |
-| POST    | /email/domains/{domain}/dns/mx          | Auto-configurer MX      |
-| GET     | /email/domains/{domain}/dns/diagnostic  | Diagnostic complet      |
+### 11.2 EXCHANGE - APIv6
 
-### 11.9 APIs Signature / Disclaimer
-| Méthode | Endpoint                                | Description             |
-|---------|-----------------------------------------|-------------------------|
-| GET     | /email/domains/{domain}/signature       | Signature entreprise    |
-| PUT     | /email/domains/{domain}/signature       | Configurer signature    |
-| DELETE  | /email/domains/{domain}/signature       | Supprimer signature     |
+#### Comptes
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/exchange/{org}/service/{service}/account` | accounts.api.ts |
+| GET | `/email/exchange/{org}/service/{service}/account/{email}` | accounts.api.ts |
+| POST | `/email/exchange/{org}/service/{service}/account` | accounts.api.ts |
+| PUT | `/email/exchange/{org}/service/{service}/account/{email}` | accounts.api.ts |
+| DELETE | `/email/exchange/{org}/service/{service}/account/{email}` | accounts.api.ts |
+| POST | `.../account/{email}/changePassword` | accounts.api.ts |
+| GET | `.../account/{email}/tasks` | accounts.api.ts |
+| GET | `.../account/{email}/alias` | accounts.api.ts |
+| POST | `.../account/{email}/alias` | accounts.api.ts |
+| DELETE | `.../account/{email}/alias/{alias}` | accounts.api.ts |
 
-### 11.10 APIs Avancé (Exchange only)
-| Méthode | Endpoint                                      | Description         |
-|---------|-----------------------------------------------|---------------------|
-| GET     | /email/domains/{domain}/resources             | Liste ressources    |
-| POST    | /email/domains/{domain}/resources             | Créer ressource     |
-| PUT     | /email/domains/{domain}/resources/{id}        | Modifier ressource  |
-| DELETE  | /email/domains/{domain}/resources/{id}        | Supprimer ressource |
-| GET     | /email/domains/{domain}/externalContacts      | Contacts externes   |
-| POST    | /email/domains/{domain}/externalContacts      | Ajouter contact     |
-| GET     | /email/domains/{domain}/audit                 | Logs audit          |
-| GET     | /email/domains/{d}/accounts/{e}/devices       | Appareils ActiveSync|
-| POST    | /email/domains/{d}/accounts/{e}/devices/{id}/wipe | Wipe appareil   |
+#### Service
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/exchange/{org}/service/{service}` | service.api.ts |
+| PUT | `/email/exchange/{org}/service/{service}` | service.api.ts |
+| GET | `.../server` | service.api.ts |
+| PUT | `.../server` | service.api.ts |
+| GET | `.../dcvEmails` | service.api.ts |
+| POST | `.../renewSSL` | service.api.ts |
+| POST | `.../updateFlagsOnAllAccounts` | service.api.ts |
+| GET | `/email/exchange.json` | service.api.ts |
 
-### 11.11 APIs Tâches
-| Méthode | Endpoint                                | Description             |
-|---------|-----------------------------------------|-------------------------|
-| GET     | /email/domains/{domain}/tasks           | Liste tâches            |
-| GET     | /email/domains/{domain}/tasks/{id}      | Détails tâche           |
+#### Domaines
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `.../domain` | domains.api.ts |
+| GET | `.../domain/{name}` | domains.api.ts |
+| POST | `.../domain` | domains.api.ts |
+| PUT | `.../domain/{name}` | domains.api.ts |
+| DELETE | `.../domain/{name}` | domains.api.ts |
+
+#### Groupes (Mailing Lists)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `.../mailingList` | groups.api.ts |
+| GET | `.../mailingList/{address}` | groups.api.ts |
+| POST | `.../mailingList` | groups.api.ts |
+| PUT | `.../mailingList/{address}` | groups.api.ts |
+| DELETE | `.../mailingList/{address}` | groups.api.ts |
+| DELETE | `.../mailingList/{addr}/manager/account/{id}` | groups.api.ts |
+| DELETE | `.../mailingList/{addr}/member/account/{id}` | groups.api.ts |
+| DELETE | `.../mailingList/{addr}/member/contact/{id}` | groups.api.ts |
+| POST | `.../mailingList/{addr}/alias` | groups.api.ts |
+| DELETE | `.../mailingList/{addr}/alias/{alias}` | groups.api.ts |
+
+#### Disclaimers (Signatures)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `.../domain/{domain}/disclaimer` | disclaimers.api.ts |
+| POST | `.../domain/{domain}/disclaimer` | disclaimers.api.ts |
+| PUT | `.../domain/{domain}/disclaimer` | disclaimers.api.ts |
+| DELETE | `.../domain/{domain}/disclaimer` | disclaimers.api.ts |
+
+#### Contacts externes
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `.../externalContact` | externalContacts.api.ts |
+| GET | `.../externalContact/{email}` | externalContacts.api.ts |
+| POST | `.../externalContact` | externalContacts.api.ts |
+| PUT | `.../externalContact/{email}` | externalContacts.api.ts |
+| DELETE | `.../externalContact/{email}` | externalContacts.api.ts |
+
+#### Commandes (Order)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/order/email/exchange/{org}/service/{service}/account/{duration}` | order.api.ts |
+| POST | `/order/email/exchange/{org}/service/{service}/account/{duration}` | order.api.ts |
+| GET | `.../diskSpace` | order.api.ts |
+| POST | `.../diskSpace` | order.api.ts |
+| GET | `.../accountUpgrade/{duration}` | order.api.ts |
+| POST | `.../accountUpgrade/{duration}` | order.api.ts |
+| GET | `.../upgrade` | order.api.ts |
+| POST | `.../upgrade` | order.api.ts |
+| GET | `.../outlook/{duration}` | order.api.ts |
+| POST | `.../outlook/{duration}` | order.api.ts |
+
+#### Ressources (salles, équipements) - Exchange ONLY
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `.../resourceAccount` | resources.api.ts |
+| GET | `.../resourceAccount/{email}` | resources.api.ts |
+| POST | `.../resourceAccount` | resources.api.ts |
+| PUT | `.../resourceAccount/{email}` | resources.api.ts |
+| DELETE | `.../resourceAccount/{email}` | resources.api.ts |
+
+Types: `room` (salle de réunion), `equipment` (équipement partagé)
+Propriétés: capacity, location, bookingWindow, allowConflict, etc.
+
+#### Appareils ActiveSync - Exchange ONLY
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `.../device` | devices.api.ts |
+| GET | `.../device/{identity}` | devices.api.ts |
+| PUT | `.../device/{identity}` | devices.api.ts |
+| DELETE | `.../device/{identity}` | devices.api.ts |
+| POST | `.../device/{identity}/clearDevice` | devices.api.ts |
+
+États: `allowed`, `blocked`, `quarantined`, `deviceDiscovery`
+Action clearDevice: Remote wipe de l'appareil
+
+#### Audit Logs - Exchange ONLY
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `.../audit` | audit.api.ts |
+
+Filtres: startDate, endDate, action, user
+Actions trackées: account.*, group.*, resource.*, service.*
+
+#### MFA (Multi-Factor Authentication) - Exchange ONLY - API NON DOCUMENTÉE
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| POST | `/msServices/{service}/account/{user}/mfa` | mfa.api.ts |
+| POST | `/msServices/{service}/account/{user}/mfa/enable` | mfa.api.ts |
+| POST | `/msServices/{service}/account/{user}/mfa/disable` | mfa.api.ts |
+| DELETE | `/msServices/{service}/account/{user}/mfa` | mfa.api.ts |
+| POST | `/msServices/{service}/account/{user}/mfa/reset` | mfa.api.ts |
+| POST | `/msServices/{service}/createMfaOnAllUsers` | mfa.api.ts |
+| DELETE | `/msServices/{service}/removeMfaOnAllUsers` | mfa.api.ts |
+
+**Note** : API MsServices non documentée, basée sur OvhApiMsServices (AngularJS old_manager)
+
+### 11.3 EXCHANGE - 2API
+
+| Méthode | Endpoint | Params | Fichier |
+|---------|----------|--------|---------|
+| GET | `/sws/exchange/{org}/{service}` | - | service.api.ts |
+| GET | `/sws/exchange/{org}/{service}/accounts` | count, offset, search, configurableOnly, typeLicence | accounts.api.ts |
+| GET | `/sws/exchange/{org}/{service}/accounts/contacts` | count, offset, search | accounts.api.ts |
+| GET | `/sws/exchange/{org}/{service}/accounts/options` | - | accounts.api.ts |
+| PUT | `/sws/exchange/{org}/{service}/accounts/renew` | modelList | accounts.api.ts |
+| GET | `/sws/exchange/{org}/{service}/accounts/{account}/rights` | count, offset, search | accounts.api.ts |
+| POST | `/sws/exchange/{org}/{service}/accounts/{account}/rights-update` | sendRights, fullAccessRights, sendOnBehalfRights | accounts.api.ts |
+| GET | `/sws/exchange/{org}/{service}/aliasOptions` | emailAddress, subType | accounts.api.ts |
+| GET | `/sws/exchange/{org}/{service}/groups` | count, offset, search | groups.api.ts |
+| POST | `/sws/exchange/{org}/{service}/groups-add` | ... | groups.api.ts |
+| PUT | `/sws/exchange/{org}/{service}/groups/{group}/update` | ... | groups.api.ts |
+| GET | `/sws/exchange/{org}/{service}/groups/{list}/rights` | count, offset, search | groups.api.ts |
+| PUT | `/sws/exchange/{org}/{service}/groups/{list}/rights-update` | sendRights, sendOnBehalfRights | groups.api.ts |
+| GET | `/sws/exchange/{org}/{service}/groups/{list}/accounts` | count, offset, search | groups.api.ts |
+| GET | `/sws/exchange/{org}/{service}/groups/{list}/managers` | count, offset, search | groups.api.ts |
+| GET | `/sws/exchange/{org}/{service}/groups/{list}/members` | count, offset, search | groups.api.ts |
+| GET | `/sws/exchange/{org}/{service}/group/{group}/alias` | count, offset | groups.api.ts |
+| GET | `/sws/exchange/{org}/{service}/resources` | count, offset, search | resources.api.ts |
+| GET | `/sws/exchange/{org}/{service}/resources/{email}/rights` | count, offset | resources.api.ts |
+| PUT | `/sws/exchange/{org}/{service}/resources/{email}/rights-update` | delegates | resources.api.ts |
+| GET | `/sws/exchange/{org}/{service}/disclaimers` | count, offset | disclaimers.api.ts |
+| GET | `/sws/exchange/{org}/{service}/disclaimers/new/options` | - | disclaimers.api.ts |
+| PUT | `/sws/exchange/{org}/{service}/deleteAtExpiration` | renewType | service.api.ts |
+| GET | `/sws/exchange/{org}/{service}/tasks` | count, offset | tasks.api.ts |
+
+### 11.4 EMAIL PRO - APIv6
+
+#### Comptes
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/pro/{service}/account` | accounts.api.ts |
+| GET | `/email/pro/{service}/account/{email}` | accounts.api.ts |
+| POST | `/email/pro/{service}/account` | accounts.api.ts |
+| PUT | `/email/pro/{service}/account/{email}` | accounts.api.ts |
+| DELETE | `/email/pro/{service}/account/{email}` | accounts.api.ts |
+| POST | `.../account/{email}/changePassword` | accounts.api.ts |
+| GET | `.../account/{email}/alias` | accounts.api.ts |
+| POST | `.../account/{email}/alias` | accounts.api.ts |
+| DELETE | `.../account/{email}/alias/{alias}` | accounts.api.ts |
+| GET | `.../account/{email}/capabilities` | accounts.api.ts |
+| GET | `/email/pro/{service}/billingMigrated` | service.api.ts (détection MXPlan) |
+
+#### Groupes (Mailing Lists)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/pro/{service}/mailingList` | groups.api.ts |
+| GET | `/email/pro/{service}/mailingList/{address}` | groups.api.ts |
+| POST | `/email/pro/{service}/mailingList` | groups.api.ts |
+| PUT | `/email/pro/{service}/mailingList/{address}` | groups.api.ts |
+| DELETE | `/email/pro/{service}/mailingList/{address}` | groups.api.ts |
+| DELETE | `.../mailingList/{addr}/manager/account/{id}` | groups.api.ts |
+| DELETE | `.../mailingList/{addr}/member/account/{id}` | groups.api.ts |
+| DELETE | `.../mailingList/{addr}/member/contact/{id}` | groups.api.ts |
+| POST | `.../mailingList/{addr}/alias` | groups.api.ts |
+| DELETE | `.../mailingList/{addr}/alias/{alias}` | groups.api.ts |
+
+#### Commandes (Order)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/order/email/pro/{service}/account` | order.api.ts |
+| GET | `/order/email/pro/{service}/account/{duration}` | order.api.ts |
+| POST | `/order/email/pro/{service}/account/{duration}` | order.api.ts |
+
+### 11.5 EMAIL PRO - 2API
+
+| Méthode | Endpoint | Params | Fichier |
+|---------|----------|--------|---------|
+| GET | `/sws/emailpro/{service}` | - | service.api.ts |
+| GET | `/sws/emailpro/{service}/tasks` | count, offset | tasks.api.ts |
+| GET | `/sws/emailpro/{service}/accounts` | count, offset, search, configurableOnly | accounts.api.ts |
+| GET | `/sws/emailpro/{service}/accounts/contacts` | count, offset, search | accounts.api.ts |
+| GET | `/sws/emailpro/{service}/accounts/options` | - | accounts.api.ts |
+| GET | `/sws/emailpro/{service}/accounts/orders` | - | accounts.api.ts |
+| PUT | `/sws/emailpro/{service}/accounts/renew` | modelList | accounts.api.ts |
+| GET | `/sws/emailpro/{service}/accounts/{account}/rights` | count, offset, search | accounts.api.ts |
+| POST | `/sws/emailpro/{service}/accounts/{account}/rights-update` | sendRights, fullAccessRights, sendOnBehalfRights | accounts.api.ts |
+| GET | `/sws/emailpro/{service}/accounts/{account}/alias` | count, offset | accounts.api.ts |
+| GET | `/sws/emailpro/{service}/aliasOptions` | emailAddress | accounts.api.ts |
+| GET | `/sws/emailpro/{service}/groups` | count, offset, search | groups.api.ts |
+| GET | `/sws/emailpro/{service}/groups/{list}/rights` | count, offset, search | groups.api.ts |
+| PUT | `/sws/emailpro/{service}/groups/{list}/rights-update` | sendRights, sendOnBehalfRights | groups.api.ts |
+| GET | `/sws/emailpro/{service}/groups/{list}/accounts` | count, offset, search | groups.api.ts |
+| GET | `/sws/emailpro/{service}/groups/{list}/managers` | count, offset, search | groups.api.ts |
+| GET | `/sws/emailpro/{service}/groups/{list}/members` | count, offset, search | groups.api.ts |
+| GET | `/sws/emailpro/{service}/group/{group}/alias` | count, offset | groups.api.ts |
+| GET | `/sws/emailpro/{service}/disclaimers` | count, offset | disclaimers.api.ts |
+| GET | `/sws/emailpro/{service}/disclaimers/new/options` | - | disclaimers.api.ts |
+| PUT | `/sws/emailpro/{service}/deleteAtExpiration` | renewType | service.api.ts |
+
+### 11.6 MXPLAN MODERN - APIv6
+
+**Note** : MXPlan Modern utilise `/email/mxplan/{service}` et partage la 2API avec EmailPro (param isMXPlan=1)
+
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/mxplan/{service}` | service.api.ts |
+| PUT | `/email/mxplan/{service}` | service.api.ts |
+| GET | `/email/mxplan/{service}/domain` | domains.api.ts |
+| GET | `/email/mxplan/{service}/domain/{name}` | domains.api.ts |
+| GET | `/email/mxplan/{service}/account` | accounts.api.ts |
+| GET | `/email/mxplan/{service}/account/{email}` | accounts.api.ts |
+| POST | `/email/mxplan/{service}/account` | accounts.api.ts |
+| PUT | `/email/mxplan/{service}/account/{email}` | accounts.api.ts |
+| DELETE | `/email/mxplan/{service}/account/{email}` | accounts.api.ts |
+| POST | `.../account/{email}/changePassword` | accounts.api.ts |
+| GET | `.../account/{email}/alias` | accounts.api.ts |
+| POST | `.../account/{email}/alias` | accounts.api.ts |
+| DELETE | `.../account/{email}/alias/{alias}` | accounts.api.ts |
+| GET | `/email/mxplan/{service}/task` | tasks.api.ts |
+| GET | `/email/mxplan/{service}/task/{id}` | tasks.api.ts |
+| GET | `/email/mxplan/{service}/redirection` | redirections.api.ts |
+| GET | `/email/mxplan/{service}/redirection/{id}` | redirections.api.ts |
+| POST | `/email/mxplan/{service}/redirection` | redirections.api.ts |
+| DELETE | `/email/mxplan/{service}/redirection/{id}` | redirections.api.ts |
+
+#### MXPLAN MODERN - 2API (via EmailPro + isMXPlan=1)
+
+**IMPORTANT**: MXPlan Modern utilise les MÊMES endpoints 2API que EmailPro,
+mais avec le paramètre `isMXPlan=1` pour différencier le comportement.
+
+| Méthode | Endpoint | Params spécifiques | Fichier |
+|---------|----------|-------------------|---------|
+| GET | `/sws/emailpro/{service}/accounts` | **isMXPlan=1**, count, offset | accounts.api.ts |
+| GET | `/sws/emailpro/{service}/domains` | **isMXPlan=1**, count, offset | domains.api.ts |
+| GET | `/sws/emailpro/{service}/tasks` | **isMXPlan=1**, count, offset | tasks.api.ts |
+| GET | `/sws/emailpro/{service}` | **isMXPlan=1** | service.api.ts |
+
+Exemple d'appel dans new_manager:
+```typescript
+// mxplan-modern/accounts.api.ts
+export async function list2api(serviceId: string, options?: {count?: number; offset?: number}) {
+  return ovh2apiGet(`/sws/emailpro/${serviceId}/accounts`, {
+    count: options?.count ?? 25,
+    offset: options?.offset ?? 0,
+    isMXPlan: 1,  // ← Paramètre critique pour MXPlan Modern
+  });
+}
+```
+
+### 11.7 MXPLAN LEGACY - APIv6 (COMPLET v5)
+
+**Note** : MXPlan Legacy utilise `/email/domain/{domain}` (lié au domaine, pas au service)
+
+#### Comptes
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/account` | accounts.api.ts |
+| GET | `/email/domain/{domain}/account/{name}` | accounts.api.ts |
+| POST | `/email/domain/{domain}/account` | accounts.api.ts |
+| PUT | `/email/domain/{domain}/account/{name}` | accounts.api.ts |
+| DELETE | `/email/domain/{domain}/account/{name}` | accounts.api.ts |
+| POST | `/email/domain/{domain}/account/{name}/changePassword` | accounts.api.ts |
+| GET | `/email/domain/{domain}/account/{name}/usage` | accounts.api.ts |
+| POST | `/email/domain/{domain}/account/{name}/updateUsage` | accounts.api.ts |
+
+#### Filtres (v5 - NOUVEAU)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/account/{name}/filter` | filters.api.ts |
+| GET | `/email/domain/{domain}/account/{name}/filter/{filterName}` | filters.api.ts |
+| POST | `/email/domain/{domain}/account/{name}/filter` | filters.api.ts |
+| PUT | `/email/domain/{domain}/account/{name}/filter/{filterName}` | filters.api.ts |
+| DELETE | `/email/domain/{domain}/account/{name}/filter/{filterName}` | filters.api.ts |
+| POST | `.../filter/{filterName}/changeActivity` | filters.api.ts |
+| POST | `.../filter/{filterName}/changePriority` | filters.api.ts |
+| GET | `.../filter/{filterName}/rule` | filters.api.ts |
+| POST | `.../filter/{filterName}/rule` | filters.api.ts |
+| DELETE | `.../filter/{filterName}/rule/{ruleId}` | filters.api.ts |
+
+Types filtre: `action` = "accept" | "redirect" | "delete" | "localCopy"
+Operand: "contains" | "containsNot" | "matches" | "matchesNot" | "startWith" | "endWith" | "is" | "isNot"
+
+#### Répondeurs (v5 - NOUVEAU)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/responder` | responders.api.ts |
+| GET | `/email/domain/{domain}/responder/{account}` | responders.api.ts |
+| POST | `/email/domain/{domain}/responder` | responders.api.ts |
+| PUT | `/email/domain/{domain}/responder/{account}` | responders.api.ts |
+| DELETE | `/email/domain/{domain}/responder/{account}` | responders.api.ts |
+
+Propriétés: content, copy, copyTo, from, to (dates)
+
+#### Service Info (v5 - NOUVEAU)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}` | service.api.ts |
+| GET | `/email/domain/{domain}/serviceInfos` | service.api.ts |
+| GET | `/email/domain/{domain}/summary` | service.api.ts |
+| GET | `/email/domain/{domain}/quota` | service.api.ts |
+| GET | `/email/domain/{domain}/dnsMXFilter` | service.api.ts |
+| POST | `/email/domain/{domain}/changeDnsMXFilter` | service.api.ts |
+| GET | `/email/domain/{domain}/dnsMXRecords` | service.api.ts |
+| GET | `/email/domain/{domain}/recommendedDNSRecords` | service.api.ts |
+
+#### ACL - Access Control List (v5 - NOUVEAU)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/acl` | acl.api.ts |
+| GET | `/email/domain/{domain}/acl/{accountId}` | acl.api.ts |
+| POST | `/email/domain/{domain}/acl` | acl.api.ts |
+| DELETE | `/email/domain/{domain}/acl/{accountId}` | acl.api.ts |
+
+#### DKIM (v5 - NOUVEAU)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/dkim` | dkim.api.ts |
+| POST | `/email/domain/{domain}/dkim` | dkim.api.ts |
+| DELETE | `/email/domain/{domain}/dkim` | dkim.api.ts |
+
+#### Délégation (v5 - NOUVEAU)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/account/{name}/delegation` | delegation.api.ts |
+| GET | `/email/domain/{domain}/account/{name}/delegation/{accountId}` | delegation.api.ts |
+| POST | `/email/domain/{domain}/account/{name}/delegation` | delegation.api.ts |
+| DELETE | `/email/domain/{domain}/account/{name}/delegation/{accountId}` | delegation.api.ts |
+
+#### Comptes Délégués (v5 - NOUVEAU)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/delegatedAccount` | delegation.api.ts |
+| GET | `/email/domain/delegatedAccount/{email}` | delegation.api.ts |
+| PUT | `/email/domain/delegatedAccount/{email}` | delegation.api.ts |
+| POST | `/email/domain/delegatedAccount/{email}/changePassword` | delegation.api.ts |
+| POST | `/email/domain/delegatedAccount/{email}/updateUsage` | delegation.api.ts |
+| POST | `/email/domain/delegatedAccount/{email}/usage` | delegation.api.ts |
+| GET | `/email/domain/delegatedAccount/{email}/filter` | delegation.api.ts |
+| GET | `/email/domain/delegatedAccount/{email}/filter/{name}` | delegation.api.ts |
+| POST | `/email/domain/delegatedAccount/{email}/filter` | delegation.api.ts |
+| DELETE | `/email/domain/delegatedAccount/{email}/filter/{name}` | delegation.api.ts |
+| POST | `.../filter/{name}/changeActivity` | delegation.api.ts |
+| POST | `.../filter/{name}/changePriority` | delegation.api.ts |
+| GET | `/email/domain/delegatedAccount/{email}/responder` | delegation.api.ts |
+| POST | `/email/domain/delegatedAccount/{email}/responder` | delegation.api.ts |
+| PUT | `/email/domain/delegatedAccount/{email}/responder` | delegation.api.ts |
+| DELETE | `/email/domain/delegatedAccount/{email}/responder` | delegation.api.ts |
+
+#### Migration (v5 - NOUVEAU)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/account/{name}/migrate` | migration.api.ts |
+| GET | `.../migrate/{destService}` | migration.api.ts |
+| GET | `.../migrate/{destService}/destinationEmailAddress` | migration.api.ts |
+| GET | `.../migrate/{destService}/destinationEmailAddress/{dest}/checkMigrate` | migration.api.ts |
+| POST | `.../migrate/{destService}/destinationEmailAddress/{dest}/migrate` | migration.api.ts |
+
+Types destination: "EMAIL_PRO" | "EXCHANGE" | "HOSTED_EXCHANGE" | "PROVIDER_EXCHANGE"
+
+#### Tâches
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/task` | tasks.api.ts |
+| GET | `/email/domain/{domain}/task/{id}` | tasks.api.ts |
+
+#### Redirections
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/redirection` | redirections.api.ts |
+| POST | `/email/domain/{domain}/redirection` | redirections.api.ts |
+| DELETE | `/email/domain/{domain}/redirection/{id}` | redirections.api.ts |
+
+#### Mailing Lists
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/domain/{domain}/mailingList` | lists.api.ts |
+| GET | `/email/domain/{domain}/mailingList/{name}` | lists.api.ts |
+| POST | `/email/domain/{domain}/mailingList` | lists.api.ts |
+| DELETE | `/email/domain/{domain}/mailingList/{name}` | lists.api.ts |
+| GET | `/email/domain/{domain}/mailingList/{name}/subscriber` | lists.api.ts |
+| POST | `/email/domain/{domain}/mailingList/{name}/subscriber` | lists.api.ts |
+| DELETE | `/email/domain/{domain}/mailingList/{name}/subscriber/{email}` | lists.api.ts |
+
+### 11.7.1 MXPLAN LEGACY - 2API
+
+| Méthode | Endpoint | Params | Fichier |
+|---------|----------|--------|---------|
+| GET | `/sws/email-domain/{domain}/accounts` | count, offset, search | accounts.api.ts |
+
+### 11.8 ZIMBRA - APIv6 + API v2
+
+**Note** : Zimbra utilise 2 APIs:
+- APIv6: `/email/zimbra/{org}/{platform}/*` (format classique)
+- API v2: `/v2/email/zimbra/platform/{platformId}/*` (pagination Iceberg native)
+
+#### Comptes (APIv6)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/zimbra/{org}/{platform}/account` | accounts.api.ts |
+| GET | `/email/zimbra/{org}/{platform}/account/{id}` | accounts.api.ts |
+| POST | `/email/zimbra/{org}/{platform}/account` | accounts.api.ts |
+| PUT | `/email/zimbra/{org}/{platform}/account/{id}` | accounts.api.ts |
+| DELETE | `/email/zimbra/{org}/{platform}/account/{id}` | accounts.api.ts |
+| POST | `.../account/{id}/changePassword` | accounts.api.ts |
+
+#### Comptes (API v2 - Iceberg)
+| Méthode | Endpoint | Params | Fichier |
+|---------|----------|--------|---------|
+| GET | `/v2/email/zimbra/platform/{id}/account` | pageSize, cursor | accounts.api.ts (listV2) |
+| GET | `/v2/email/zimbra/platform/{id}/account/{accountId}` | - | accounts.api.ts (getV2) |
+| POST | `/v2/email/zimbra/platform/{id}/account` | - | accounts.api.ts (createV2) |
+| PUT | `/v2/email/zimbra/platform/{id}/account/{accountId}` | - | accounts.api.ts (updateV2) |
+| DELETE | `/v2/email/zimbra/platform/{id}/account/{accountId}` | - | accounts.api.ts (deleteV2) |
+| POST | `.../account/{accountId}/changePassword` | - | accounts.api.ts (changePasswordV2) |
+
+Réponse paginée (Iceberg):
+```json
+{
+  "data": [...],
+  "links": { "next": {"href": "..."}, "self": {"href": "..."} },
+  "currentCursor": "...",
+  "nextCursor": "..."
+}
+```
+
+#### Platform/Service (API v2)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/v2/email/zimbra/platform` | service.api.ts (listPlatforms) |
+| GET | `/v2/email/zimbra/platform/{id}` | service.api.ts (getPlatform) |
+| PUT | `/v2/email/zimbra/platform/{id}` | service.api.ts (updatePlatform) |
+| GET | `/v2/email/zimbra/platform/{id}/organization` | service.api.ts (getOrganization) |
+| GET | `/v2/email/zimbra/platform/{id}/domain` | service.api.ts (listDomains) |
+
+#### Alias (APIv6)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/zimbra/{org}/{platform}/account/{id}/alias` | aliases.api.ts |
+| POST | `/email/zimbra/{org}/{platform}/account/{id}/alias` | aliases.api.ts |
+| DELETE | `/email/zimbra/{org}/{platform}/account/{id}/alias/{alias}` | aliases.api.ts |
+
+#### Tasks (APIv6)
+| Méthode | Endpoint | Fichier |
+|---------|----------|---------|
+| GET | `/email/zimbra/{org}/{platform}/task` | tasks.api.ts |
+| GET | `/email/zimbra/{org}/{platform}/task/{id}` | tasks.api.ts |
+
+**Note**: Zimbra n'a PAS de mailing lists natives dans l'API OVH.
+
+### 11.9 STRUCTURE FICHIERS API (new_manager) - v5 COMPLÈTE
+
+```
+/home/ubuntu/aiapp/frontend/src/pages/web-cloud/emails/api/
+├── index.ts                    # Dispatcher principal
+├── dispatcher.ts               # Détection automatique du type de service
+│
+├── exchange/
+│   ├── index.ts
+│   ├── accounts.api.ts         # Comptes + alias + délégation
+│   ├── groups.api.ts           # Groupes distribution (+ alias, membres, managers)
+│   ├── tasks.api.ts            # Tâches
+│   ├── service.api.ts          # Service + serveur + SSL
+│   ├── domains.api.ts          # Domaines
+│   ├── externalContacts.api.ts # Contacts externes
+│   ├── resources.api.ts        # Ressources (salles, équipements) + 2API
+│   ├── devices.api.ts          # Appareils ActiveSync
+│   ├── audit.api.ts            # Logs audit
+│   ├── disclaimers.api.ts      # Signatures
+│   ├── redirections.api.ts     # Redirections
+│   ├── order.api.ts            # Commandes
+│   └── mfa.api.ts              # MFA (MsServices) - NON DOCUMENTÉE
+│
+├── emailpro/
+│   ├── index.ts
+│   ├── accounts.api.ts         # Comptes + alias + délégation
+│   ├── groups.api.ts           # Mailing lists
+│   ├── tasks.api.ts            # Tâches
+│   ├── service.api.ts          # Service
+│   ├── disclaimers.api.ts      # Signatures
+│   ├── externalContacts.api.ts # Contacts externes
+│   ├── redirections.api.ts     # Redirections
+│   └── order.api.ts            # Commandes
+│
+├── mxplan-modern/              # MXPlan migré (/email/mxplan)
+│   ├── index.ts
+│   ├── accounts.api.ts
+│   ├── tasks.api.ts
+│   ├── service.api.ts
+│   ├── domains.api.ts
+│   └── redirections.api.ts
+│
+├── mxplan/                     # MXPlan legacy (/email/domain) - v5 COMPLET
+│   ├── index.ts
+│   ├── accounts.api.ts         # + getUsage, updateUsage
+│   ├── tasks.api.ts
+│   ├── lists.api.ts
+│   ├── redirections.api.ts
+│   ├── filters.api.ts          # v5 - NOUVEAU (CRUD + rules)
+│   ├── responders.api.ts       # v5 - NOUVEAU (CRUD)
+│   ├── service.api.ts          # v5 - NOUVEAU (info, summary, quota, DNS)
+│   ├── acl.api.ts              # v5 - NOUVEAU (Access Control List)
+│   ├── dkim.api.ts             # v5 - NOUVEAU (enable/disable)
+│   ├── delegation.api.ts       # v5 - NOUVEAU (délégation + comptes délégués)
+│   └── migration.api.ts        # v5 - NOUVEAU (vers EmailPro/Exchange)
+│
+└── zimbra/
+    ├── index.ts
+    ├── accounts.api.ts
+    ├── tasks.api.ts
+    ├── service.api.ts
+    ├── aliases.api.ts
+    └── redirections.api.ts
+```
+
+### 11.10 DISPATCHER - DÉTECTION AUTOMATIQUE
+
+```typescript
+// dispatcher.ts
+export type EmailServiceType =
+  | "exchange"       // Microsoft Exchange
+  | "emailpro"       // Email Pro standard
+  | "mxplan-modern"  // /email/mxplan (migré)
+  | "mxplan-legacy"  // /email/domain (ancien)
+  | "zimbra";        // Zimbra
+
+export async function detectServiceType(serviceId: string): Promise<EmailServiceType> {
+  // 1. Format org/service → Exchange ou Zimbra
+  if (serviceId.includes("/")) {
+    const [org] = serviceId.split("/");
+    if (org.includes("zimbra")) return "zimbra";
+    return "exchange";
+  }
+
+  // 2. Tester EmailPro vs MXPlan
+  try {
+    await apiFetch(`/email/pro/${serviceId}/billingMigrated`);
+    return "emailpro";
+  } catch {
+    // 3. MXPlan Modern ou Legacy
+    try {
+      await apiFetch(`/email/mxplan/${serviceId}`);
+      return "mxplan-modern";
+    } catch {
+      return "mxplan-legacy";
+    }
+  }
+}
+```
+
+### 11.11 FONCTIONS HELPERS PAR TYPE
+
+| Fonction | Description |
+|----------|-------------|
+| `isMXPlan(type)` | Retourne true si mxplan-modern ou mxplan-legacy |
+| `supportsMailingLists(type)` | Retourne true sauf pour Zimbra |
+| `supportsResources(type)` | Retourne true seulement pour Exchange |
+| `supportsDevices(type)` | Retourne true seulement pour Exchange |
+| `supportsMFA(type)` | Retourne true seulement pour Exchange (v5) |
+| `supportsExternalContacts(type)` | Retourne true pour Exchange et EmailPro |
+| `supportsDisclaimers(type)` | Retourne true pour Exchange et EmailPro |
+| `supportsAccountOrdering(type)` | Retourne true pour Exchange et EmailPro |
+| `supportsDelegation(type)` | Retourne true pour Exchange, EmailPro et MXPlan (v5) |
+| `supportsFilters(type)` | Retourne true pour MXPlan (v5) |
+| `supportsMigration(type)` | Retourne true pour MXPlan Legacy (v5) |
+
+### 11.12 TYPESCRIPT INTERFACES PRINCIPALES
+
+#### EmailServiceType (dispatcher.ts)
+```typescript
+export type EmailServiceType =
+  | "exchange"       // Microsoft Exchange (org/service)
+  | "emailpro"       // Email Pro standard
+  | "mxplan-modern"  // /email/mxplan (migré)
+  | "mxplan-legacy"  // /email/domain (ancien)
+  | "zimbra";        // Zimbra collaborative
+```
+
+#### EmailServiceInfo (dispatcher.ts)
+```typescript
+export interface EmailServiceInfo {
+  type: EmailServiceType;
+  serviceId: string;
+  apiBase: string;       // ex: "/email/exchange"
+  api2Base: string;      // ex: "/sws/exchange"
+  displayName: string;   // ex: "Microsoft Exchange"
+}
+```
+
+#### Account Types par offre
+```typescript
+// Exchange
+interface ExchangeAccount {
+  primaryEmailAddress: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  state: "ok" | "inMaintenance" | "suspended" | "deleting";
+  quota: number;
+  currentUsage?: number;
+  accountLicense: "basic" | "enterprise" | "standard";
+  outlookLicense: boolean;
+  mailingFilter?: ("vaderetro" | "spamassassin")[];
+  taskPendingId?: number;
+}
+
+// Zimbra
+interface ZimbraAccount {
+  id: string;
+  emailAddress: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  organizationId: string;
+  offer: "starter" | "business" | "enterprise";
+  quota: number;
+  currentUsage?: number;
+  status: "ok" | "suspended" | "deleting";
+}
+
+// MXPlan Modern
+interface MxPlanModernAccount {
+  id: string;
+  email: string;
+  displayName?: string;
+  state: "ok" | "deleting";
+  quota: number;
+  currentUsage?: number;
+  taskPendingId?: number;
+}
+
+// MXPlan Legacy
+interface MxPlanAccount {
+  accountName: string;
+  domain: string;
+  email: string;
+  description?: string;
+  size: number;
+  quota?: number;
+  isBlocked: boolean;
+}
+```
+
+#### Ressource Exchange (Exchange only)
+```typescript
+interface ExchangeResource {
+  resourceEmailAddress: string;
+  displayName?: string;
+  type: "room" | "equipment";
+  capacity?: number;
+  location?: string;
+  addOrganizerToSubject: boolean;
+  allowConflict: boolean;
+  bookingWindow?: number;
+  state: "ok" | "deleting";
+}
+```
+
+#### Device Exchange (Exchange only)
+```typescript
+interface ExchangeDevice {
+  identity: string;
+  deviceId: string;
+  deviceType: string;
+  deviceModel?: string;
+  state: "allowed" | "blocked" | "quarantined" | "deviceDiscovery";
+  lastSuccessSync?: string;
+}
+```
+
+#### Filter MXPlan (v5 - NOUVEAU)
+```typescript
+interface MxPlanFilter {
+  name: string;
+  action: "accept" | "redirect" | "delete" | "localCopy";
+  actionParam?: string;
+  active: boolean;
+  header: string;
+  operand: "contains" | "containsNot" | "matches" | "matchesNot" |
+           "startWith" | "endWith" | "is" | "isNot";
+  priority: number;
+  value: string;
+}
+
+interface MxPlanFilterRule {
+  id: number;
+  header: string;
+  operand: string;
+  value: string;
+}
+```
+
+#### Responder MXPlan (v5 - NOUVEAU)
+```typescript
+interface MxPlanResponder {
+  account: string;
+  content: string;
+  copy: boolean;
+  copyTo?: string;
+  from?: string;  // Date début
+  to?: string;    // Date fin
+}
+```
+
+#### Delegation MXPlan (v5 - NOUVEAU)
+```typescript
+interface MxPlanDelegation {
+  accountId: string;
+}
+
+interface DelegatedAccount {
+  accountName: string;
+  allowedAccountSize: number[];
+  domain: string;
+  email: string;
+  size: number;
+  description?: string;
+  isBlocked: boolean;
+}
+
+interface DelegatedFilter {
+  name: string;
+  action: "accept" | "redirect" | "delete" | "localCopy";
+  actionParam?: string;
+  active: boolean;
+  header: string;
+  operand: string;
+  priority: number;
+  value: string;
+}
+
+interface DelegatedResponder {
+  account: string;
+  content: string;
+  copy: boolean;
+  copyTo?: string;
+  from?: string;
+  to?: string;
+}
+```
+
+#### Migration MXPlan (v5 - NOUVEAU)
+```typescript
+interface MigrationDestinationService {
+  name: string;
+  type: "EMAIL_PRO" | "EXCHANGE" | "HOSTED_EXCHANGE" | "PROVIDER_EXCHANGE";
+}
+
+interface MigrationDestinationDetails {
+  destination: string;
+  quota: number;
+}
+
+interface MigrationCheckResult {
+  error?: string[];
+  warning?: string[];
+}
+```
+
+#### MFA Exchange (v5 - NOUVEAU)
+```typescript
+interface MfaStatus {
+  status: "disabled" | "enabled" | "needsReset";
+  lastUpdate?: string;
+}
+```
+
+### 11.13 USAGE & IMPORT PATTERNS
+
+#### Import du dispatcher
+```typescript
+import {
+  detectServiceType,
+  getServiceInfo,
+  isMXPlan,
+  supportsMailingLists,
+  supportsResources,
+  supportsMFA,           // v5
+  supportsDelegation,    // v5
+  supportsFilters,       // v5
+} from "../api/dispatcher";
+
+// Détection automatique
+const serviceType = await detectServiceType(serviceId);
+
+// Info complète
+const info = await getServiceInfo(serviceId);
+console.log(info.apiBase); // "/email/exchange"
+```
+
+#### Import d'une API spécifique
+```typescript
+// Import direct
+import * as exchangeAccounts from "../api/exchange/accounts.api";
+const accounts = await exchangeAccounts.list(serviceId);
+
+// Import via index
+import { exchange, emailpro, zimbra, mxplan } from "../api";
+const tasks = await exchange.tasks.list(serviceId);
+
+// Import MFA (v5)
+import * as mfa from "../api/exchange/mfa.api";
+await mfa.enable(serviceName, userPrincipalName);
+
+// Import filters/responders MXPlan (v5)
+import * as filters from "../api/mxplan/filters.api";
+import * as responders from "../api/mxplan/responders.api";
+```
+
+#### Pattern conditionnel par type
+```typescript
+const type = await detectServiceType(serviceId);
+
+if (supportsResources(type)) {
+  // Exchange only
+  const resources = await exchange.resources.list(serviceId);
+}
+
+if (supportsMFA(type)) {
+  // Exchange only via MsServices
+  const mfaStatus = await exchange.mfa.get(serviceId, email);
+}
+
+if (supportsFilters(type)) {
+  // MXPlan only
+  const filters = await mxplan.filters.list(domain, accountName);
+}
+
+if (supportsMailingLists(type)) {
+  // All except Zimbra
+  const lists = type === "exchange"
+    ? await exchange.groups.list(serviceId)
+    : await emailpro.groups.list(serviceId);
+}
+```
 
 ##############################################################################
-# 12. VARIABLES DYNAMIQUES
+# 12. APIs NON DOCUMENTÉES (v5 - NOUVEAU)
+##############################################################################
+
+### 12.1 MsServices - MFA Exchange
+
+Cette API n'est pas documentée officiellement par OVH mais est utilisée dans
+l'old_manager via `OvhApiMsServices`. Elle gère le MFA (Multi-Factor Authentication)
+pour les comptes Exchange.
+
+**Base Path**: `/msServices/{serviceName}`
+
+| Méthode | Endpoint | Description | Fichier |
+|---------|----------|-------------|---------|
+| POST | `/msServices/{service}/account/{user}/mfa` | Configurer MFA | mfa.api.ts |
+| POST | `.../mfa/enable` | Activer MFA | mfa.api.ts |
+| POST | `.../mfa/disable` | Désactiver MFA (période optionnelle) | mfa.api.ts |
+| DELETE | `.../mfa` | Supprimer MFA | mfa.api.ts |
+| POST | `.../mfa/reset` | Réinitialiser MFA | mfa.api.ts |
+| POST | `/msServices/{service}/createMfaOnAllUsers` | Activer MFA global | mfa.api.ts |
+| DELETE | `/msServices/{service}/removeMfaOnAllUsers` | Désactiver MFA global | mfa.api.ts |
+
+**Exemple d'utilisation**:
+```typescript
+// exchange/mfa.api.ts
+import { apiFetch } from "../../../../../services/api";
+
+const BASE = "/msServices";
+
+export async function enable(serviceName: string, userPrincipalName: string): Promise<void> {
+  await apiFetch(`${BASE}/${serviceName}/account/${userPrincipalName}/mfa/enable`, {
+    method: "POST",
+  });
+}
+
+export async function disable(
+  serviceName: string,
+  userPrincipalName: string,
+  period?: number
+): Promise<void> {
+  await apiFetch(`${BASE}/${serviceName}/account/${userPrincipalName}/mfa/disable`, {
+    method: "POST",
+    body: period ? JSON.stringify({ period }) : undefined,
+  });
+}
+```
+
+**Source old_manager**: `OvhApiMsServices.Account().Mfa().v6()`
+
+##############################################################################
+# 13. VARIABLES DYNAMIQUES
 ##############################################################################
 
 | Variable           | Source                                        |
@@ -877,7 +2019,7 @@ Légende actions inline:
 | {nicHandle}        | Session utilisateur                           |
 
 ##############################################################################
-# 13. ARBORESCENCE FICHIERS TARGET (v3 - MISE À JOUR 2025-12-31)
+# 14. ARBORESCENCE FICHIERS TARGET (v3 - MISE À JOUR 2025-12-31)
 ##############################################################################
 
 Convention de nommage: `target_.NAV1.NAV2.NAV3.NAV4[-NAV5].{svg|txt|json}`
@@ -969,6 +2111,12 @@ Fichiers existants dans /home/ubuntu/target_manager_svg/web-cloud/emails/
     ├── target_.web-cloud.emails.modal.add-list-member.json   ✅
     ├── target_.web-cloud.emails.modal.configure-dmarc.svg    ✅
     ├── target_.web-cloud.emails.modal.configure-dmarc.txt    ✅
+    ├── target_.web-cloud.emails.modal.configure-mfa.svg      ⏳ À CRÉER (Exchange)
+    ├── target_.web-cloud.emails.modal.configure-mfa.txt      ⏳ À CRÉER
+    ├── target_.web-cloud.emails.modal.create-filter.svg      ⏳ À CRÉER (MXPlan)
+    ├── target_.web-cloud.emails.modal.create-filter.txt      ⏳ À CRÉER
+    ├── target_.web-cloud.emails.modal.migrate-account.svg    ⏳ À CRÉER (MXPlan)
+    ├── target_.web-cloud.emails.modal.migrate-account.txt    ⏳ À CRÉER
     ├── target_.web-cloud.emails.modal.create-contact.svg     ⏳ À CRÉER (Exchange)
     ├── target_.web-cloud.emails.modal.create-contact.txt     ⏳ À CRÉER
     ├── target_.web-cloud.emails.modal.create-resource.svg    ⏳ À CRÉER (Exchange)
@@ -981,8 +2129,8 @@ Fichiers existants dans /home/ubuntu/target_manager_svg/web-cloud/emails/
 ```
 
 TOTAL: 26 SVG + 26 TXT + 5 JSON = 57 fichiers (existants)
-       + 10 SVG + 10 TXT = 20 fichiers (à créer)
-       = 77 fichiers (cible)
+       + 16 SVG + 16 TXT = 32 fichiers (à créer, incluant nouvelles modales v5)
+       = 89 fichiers (cible v5)
 
 ### MAPPING SVG → COMPOSANTS REACT
 
@@ -1016,6 +2164,9 @@ TOTAL: 26 SVG + 26 TXT + 5 JSON = 57 fichiers (existants)
 | modal.create-list | CreateListModal.tsx | modals.json |
 | modal.add-list-member | AddListMemberModal.tsx | modals.json |
 | modal.configure-dmarc | ConfigureDmarcModal.tsx | modals.json |
+| modal.configure-mfa | ConfigureMfaModal.tsx | modals.json |
+| modal.create-filter | CreateFilterModal.tsx | modals.json |
+| modal.migrate-account | MigrateAccountModal.tsx | modals.json |
 | modal.delete | DeleteModal.tsx | modals.json |
 | modal.edit-account | EditAccountModal.tsx | modals.json |
 | modal.delete-account | DeleteAccountModal.tsx | modals.json |
@@ -1023,7 +2174,7 @@ TOTAL: 26 SVG + 26 TXT + 5 JSON = 57 fichiers (existants)
 | modal.create-resource | CreateResourceModal.tsx | modals.json |
 | modal.order-pack | OrderPackModal.tsx | modals.json |
 
-**Couverture Target: 26/31 = 84%** (5 modals à créer)
+**Couverture Target v5: 26/34 = 76%** (8 modals à créer)
 
 ### COMPOSANTS REACT SANS TARGET SVG
 
@@ -1035,12 +2186,15 @@ TOTAL: 26 SVG + 26 TXT + 5 JSON = 57 fichiers (existants)
 | LicenseView.tsx | - | Composant interne, pas de target | - |
 | EditAccountModal.tsx | modal.edit-account | Modifier boîte mail | Haute |
 | DeleteAccountModal.tsx | modal.delete-account | Supprimer boîte mail | Haute |
+| ConfigureMfaModal.tsx | modal.configure-mfa | MFA Exchange (v5) | Haute |
+| CreateFilterModal.tsx | modal.create-filter | Filtre MXPlan (v5) | Moyenne |
+| MigrateAccountModal.tsx | modal.migrate-account | Migration MXPlan (v5) | Moyenne |
 | CreateContactModal.tsx | modal.create-contact | Créer contact externe (Exchange) | Moyenne |
 | CreateResourceModal.tsx | modal.create-resource | Créer ressource salle/équipement (Exchange) | Moyenne |
 | OrderPackModal.tsx | modal.order-pack | Commander pack licences | Haute |
 
 ##############################################################################
-# 14. WORKFLOW GÉNÉRATION
+# 15. WORKFLOW GÉNÉRATION
 ##############################################################################
 
 Pour chaque écran:
@@ -1092,13 +2246,16 @@ Pour chaque écran:
 26. target_.web-cloud.emails.modal.configure-dmarc     ✅
 27. target_.web-cloud.emails.modal.delete              ✅
 
-**Phase 7 - Modales à créer** (5 fichiers SVG+TXT)
+**Phase 7 - Modales à créer** (8 fichiers SVG+TXT)
 28. target_.web-cloud.emails.modal.edit-account        ⏳ Modifier boîte mail
 29. target_.web-cloud.emails.modal.delete-account      ⏳ Confirmation suppression boîte
-30. target_.web-cloud.emails.modal.create-contact      ⏳ Créer contact externe (Exchange)
-31. target_.web-cloud.emails.modal.create-resource     ⏳ Créer ressource salle (Exchange)
-32. target_.web-cloud.emails.modal.order-pack          ⏳ Commander pack licences
+30. target_.web-cloud.emails.modal.configure-mfa       ⏳ MFA Exchange (v5)
+31. target_.web-cloud.emails.modal.create-filter       ⏳ Filtre MXPlan (v5)
+32. target_.web-cloud.emails.modal.migrate-account     ⏳ Migration MXPlan (v5)
+33. target_.web-cloud.emails.modal.create-contact      ⏳ Créer contact externe (Exchange)
+34. target_.web-cloud.emails.modal.create-resource     ⏳ Créer ressource salle (Exchange)
+35. target_.web-cloud.emails.modal.order-pack          ⏳ Commander pack licences
 
 ================================================================================
-FIN PROMPT TARGET WEB CLOUD > EMAILS
+FIN PROMPT TARGET WEB CLOUD > EMAILS (v5)
 ================================================================================

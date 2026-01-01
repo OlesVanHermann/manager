@@ -1,8 +1,9 @@
 // ============================================================
 // BIMI SERVICE - BIMI record management
+// Pattern N+1 identique old_manager: list IDs puis fetch details
 // ============================================================
 
-import { ovhApi } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhPut } from "../../../../../services/api";
 
 export interface BimiRecord {
   id: number;
@@ -15,28 +16,47 @@ export interface BimiConfig {
 }
 
 export const bimiService = {
+  /**
+   * Get current BIMI record
+   * Pattern N+1 identique old_manager:
+   * 1. GET /domain/zone/{zone}/record?fieldType=TXT&subDomain=default._bimi -> retourne IDs
+   * 2. GET /domain/zone/{zone}/record/{id} pour le premier ID
+   */
   async getCurrentBimi(zoneName: string): Promise<BimiRecord | null> {
     try {
-      const records = await ovhApi.get<{ id: number; subDomain: string; target: string }[]>(
+      // Step 1: Get record IDs (API returns number[], not objects)
+      const ids = await ovhGet<number[]>(
         `/domain/zone/${zoneName}/record?fieldType=TXT&subDomain=default._bimi`
       );
-      if (Array.isArray(records) && records.length > 0) {
-        return { id: records[0].id, target: records[0].target };
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return null;
       }
-      return null;
+      // Step 2: Fetch first record details
+      const record = await ovhGet<{ id: number; subDomain: string; target: string }>(
+        `/domain/zone/${zoneName}/record/${ids[0]}`
+      );
+      return { id: record.id, target: record.target };
     } catch {
       return null;
     }
   },
 
+  /**
+   * Create BIMI record
+   * POST /domain/zone/{zone}/record - Identique old_manager
+   */
   async createBimi(zoneName: string, target: string): Promise<void> {
-    await ovhApi.post(`/domain/zone/${zoneName}/record`, { fieldType: "TXT", subDomain: "default._bimi", target, ttl: 3600 });
-    await ovhApi.post(`/domain/zone/${zoneName}/refresh`, {});
+    await ovhPost(`/domain/zone/${zoneName}/record`, { fieldType: "TXT", subDomain: "default._bimi", target, ttl: 3600 });
+    await ovhPost(`/domain/zone/${zoneName}/refresh`, {});
   },
 
+  /**
+   * Update BIMI record
+   * PUT /domain/zone/{zone}/record/{id} - Identique old_manager
+   */
   async updateBimi(zoneName: string, recordId: number, target: string): Promise<void> {
-    await ovhApi.put(`/domain/zone/${zoneName}/record/${recordId}`, { target });
-    await ovhApi.post(`/domain/zone/${zoneName}/refresh`, {});
+    await ovhPut(`/domain/zone/${zoneName}/record/${recordId}`, { target });
+    await ovhPost(`/domain/zone/${zoneName}/refresh`, {});
   },
 
   parseBimiRecord(target: string): BimiConfig {

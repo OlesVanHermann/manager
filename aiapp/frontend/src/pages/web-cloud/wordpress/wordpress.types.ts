@@ -1,9 +1,214 @@
 // ============================================================
-// TYPES PARTAGÉS : WordPress
+// TYPES WORDPRESS - Alignés sur OLD_MANAGER
+// Source: /home/ubuntu/manager/packages/manager/apps/web-hosting/src/data/types/product/managedWordpress/
 // ============================================================
 
-// ---------- SITE PRINCIPAL ----------
+// ============================================================
+// REFERENCE TYPES
+// ============================================================
 
+export type PHPVersion = string; // ex: "8.2", "8.1", "8.0"
+
+export interface AvailableLanguage {
+  code: string;  // ex: "fr_FR", "en_US"
+  name: string;  // ex: "Français", "English (US)"
+}
+
+// ============================================================
+// RESOURCE TYPES (conteneur de plan)
+// ============================================================
+
+export interface ManagedWordpressResource {
+  id: string;
+  resourceStatus: ResourceStatus;
+  currentState: ResourceCurrentState;
+  currentTasks: ResourceTask[];
+  iam?: {
+    displayName?: string;
+    urn: string;
+  };
+}
+
+export interface ResourceCurrentState {
+  plan: string;
+  quotas: {
+    websites: { planQuota: number; totalUsage: number };
+    disk: { planQuotaBytes: number; totalUsageBytes: number };
+    visits?: { planQuota: number; totalUsage: number };
+  };
+  dashboards: {
+    wordpress?: string;
+  };
+  createdAt: string;
+}
+
+export interface ResourceTask {
+  id: string;
+  type: string;
+  status: string;
+  link: string;
+}
+
+export type ResourceStatus = 'READY' | 'CREATING' | 'DELETING' | 'ERROR' | 'UPDATING';
+
+// ============================================================
+// WEBSITE TYPES (site WordPress individuel)
+// ============================================================
+
+export interface ManagedWordpressWebsite {
+  id: string;
+  resourceStatus: ResourceStatus;
+  currentState: WebsiteCurrentState;
+  currentTasks?: WebsiteTask[];
+}
+
+export interface ManagedWordpressWebsiteDetails extends ManagedWordpressWebsite {
+  targetSpec?: {
+    creation?: CreationSpec;
+    import?: ImportSpec;
+  };
+}
+
+export interface WebsiteCurrentState {
+  cms: 'WORDPRESS';
+  defaultFQDN: string;
+  phpVersion: string;
+  diskUsageBytes: number;
+  createdAt: string;
+  import?: {
+    checkResult: {
+      cmsSpecific: {
+        wordpress: {
+          plugins: PluginInfo[];
+          themes: ThemeInfo[];
+          version?: string;
+        };
+      };
+    };
+  };
+}
+
+export interface WebsiteTask {
+  id: string;
+  type: string;
+  status: string;
+}
+
+export interface PluginInfo {
+  name: string;
+  version: string;
+  enabled: boolean;
+}
+
+export interface ThemeInfo {
+  name: string;
+  version: string;
+  active: boolean;
+}
+
+// ============================================================
+// CREATION / IMPORT PAYLOADS
+// ============================================================
+
+export interface CreationSpec {
+  adminLogin: string;
+  adminPassword: string;
+  cms: 'WORDPRESS';
+  cmsSpecific?: {
+    wordpress?: {
+      language?: string;
+      url?: string;
+    };
+  };
+  phpVersion?: string;
+}
+
+export interface ImportSpec {
+  adminLogin: string;
+  adminPassword: string;
+  adminURL?: string;
+  cms: 'WORDPRESS';
+}
+
+// Payload pour POST /managedCMS/resource/{serviceName}/website (création)
+export interface PostCreatePayload {
+  targetSpec: {
+    creation: CreationSpec;
+  };
+}
+
+// Payload pour POST /managedCMS/resource/{serviceName}/website (import)
+export interface PostImportPayload {
+  targetSpec: {
+    import: ImportSpec;
+  };
+}
+
+// Payload pour PUT /managedCMS/resource/{serviceName}/task/{taskId} (import step 2)
+export interface PostImportTaskPayload {
+  inputs: {
+    'import.cmsSpecific.wordpress.selection': ImportSelection;
+  };
+}
+
+export interface ImportSelection {
+  plugins: { name: string; version: string; enabled: boolean }[];
+  themes: { name: string; version: string; active: boolean }[];
+  wholeDatabase: boolean;
+  media: boolean;
+  posts: boolean;
+  pages: boolean;
+  comments: boolean;
+  tags: boolean;
+  users: boolean;
+}
+
+// ============================================================
+// TASK TYPES
+// ============================================================
+
+export interface WordPressTask {
+  id: string;
+  type: TaskType;
+  status: TaskStatus;
+  function?: string;
+  message?: string;
+  progress?: number;
+  link?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  startDate?: string;
+  doneDate?: string;
+}
+
+export type TaskType =
+  | 'CREATION'
+  | 'IMPORT'
+  | 'DELETION'
+  | 'UPDATE'
+  | 'BACKUP'
+  | 'RESTORE'
+  | 'SSL'
+  | 'CACHE_FLUSH'
+  | string;
+
+export type TaskStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'DONE'
+  | 'ERROR'
+  | 'CANCELLED'
+  | 'WAITING_USER_INPUT'
+  | string;
+
+// ============================================================
+// LEGACY TYPES (pour compatibilité avec le code existant)
+// ============================================================
+
+/**
+ * @deprecated Utiliser ManagedWordpressWebsiteDetails à la place
+ * Ce type est conservé pour la compatibilité avec le code existant
+ */
 export interface WordPress {
   serviceName: string;
   displayName?: string;
@@ -89,8 +294,10 @@ export interface WordPressTheme {
   version: string;
   active: boolean;
   updateAvailable?: boolean;
+  hasUpdate?: boolean;
   newVersion?: string;
   thumbnail?: string;
+  status?: 'active' | 'inactive' | 'update_available';
 }
 
 export interface WordPressPlugin {
@@ -99,7 +306,9 @@ export interface WordPressPlugin {
   version: string;
   active: boolean;
   updateAvailable?: boolean;
+  hasUpdate?: boolean;
   newVersion?: string;
+  status?: 'active' | 'inactive' | 'update_available';
 }
 
 // ---------- SAUVEGARDES ----------
@@ -123,51 +332,26 @@ export interface BackupStorage {
 }
 
 export interface RestoreOptions {
-  restoreType: 'all' | 'files' | 'database';
+  restoreType?: 'all' | 'files' | 'database';
+  files?: boolean;
+  database?: boolean;
+  configuration?: boolean;
 }
 
-// ---------- TACHES ----------
+// ---------- FORM DATA ----------
 
-export interface WordPressTask {
-  id: number | string;
-  function: string;
-  type?: TaskType;
-  description?: string;
-  status: TaskStatus;
-  startDate?: string;
-  doneDate?: string;
-  progress?: number;
-}
-
-export type TaskType = 'backup' | 'update' | 'ssl' | 'restore' | 'install' | 'import' | 'plugin' | 'theme' | 'cache';
-export type TaskStatus = 'todo' | 'init' | 'doing' | 'done' | 'error' | 'cancelled' | 'running' | 'pending';
-
-// ---------- CREATION / IMPORT ----------
-
-export interface CreateWebsiteParams {
-  displayName?: string;
-  domain: string;
-  offer?: WordPressOffer;
-  datacenter?: string;
-  adminEmail: string;
-  adminUser?: string;
+export interface CreateWebsiteFormData {
+  adminLogin: string;
   adminPassword: string;
-  language?: string;
-  title?: string;
+  language: string;
+  url: string;
+  phpVersion?: string;
 }
 
-export interface ImportWebsiteParams {
-  sourceUrl?: string;
-  domain: string;
-  ftpUrl: string;
-  ftpUser: string;
-  ftpPassword: string;
-  ftpPort?: number;
-  dbUrl?: string;
-  dbUser?: string;
-  dbPassword?: string;
-  dbName?: string;
-  dbPort?: number;
+export interface ImportWebsiteFormData {
+  adminLogin: string;
+  adminPassword: string;
+  adminURL?: string;
 }
 
 // ---------- API RESPONSES ----------
@@ -180,4 +364,48 @@ export interface ApiListResponse<T> {
 export interface ApiTaskResponse {
   taskId: string;
   status: TaskStatus;
+}
+
+// ============================================================
+// HELPER: Convertir Website vers WordPress legacy
+// ============================================================
+
+export function websiteToLegacy(
+  website: ManagedWordpressWebsiteDetails,
+  resource?: ManagedWordpressResource
+): WordPress {
+  const state = website.currentState;
+  const importData = state.import?.checkResult?.cmsSpecific?.wordpress;
+
+  return {
+    serviceName: website.id,
+    displayName: state.defaultFQDN,
+    state: mapResourceStatus(website.resourceStatus),
+    offer: resource?.currentState?.plan?.replace('managed-cms-alpha-', '') || 'WordPress',
+    datacenter: 'gra', // Non disponible dans l'API, valeur par défaut
+    url: `https://${state.defaultFQDN}`,
+    adminUrl: `https://${state.defaultFQDN}/wp-admin`,
+    phpVersion: state.phpVersion,
+    wordpressVersion: importData?.version,
+    creationDate: state.createdAt,
+    quota: {
+      used: state.diskUsageBytes,
+      size: resource?.currentState?.quotas?.disk?.planQuotaBytes || 0,
+    },
+    sslEnabled: true, // Par défaut sur managed WordPress
+    cdnEnabled: false,
+    autoUpdate: true,
+    updateAvailable: false,
+  };
+}
+
+function mapResourceStatus(status: ResourceStatus): WordPressState {
+  const map: Record<ResourceStatus, WordPressState> = {
+    READY: 'active',
+    CREATING: 'creating',
+    DELETING: 'deleting',
+    ERROR: 'error',
+    UPDATING: 'updating',
+  };
+  return map[status] || 'active';
 }

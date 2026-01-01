@@ -8,11 +8,11 @@ import { useTranslation } from "react-i18next";
 import { icons, Resource } from "./navigationTree";
 import "./styles.css";
 
-interface SidebarProps {
-  resources: Resource[];
+export interface SidebarProps {
+  resources?: Resource[];
   selectedResourceId?: string;
-  onResourceSelect: (resource: Resource | null) => void;
-  onHomeClick: () => void;
+  onResourceSelect?: (resource: Resource | null) => void;
+  onHomeClick?: () => void;
 }
 
 type ViewMode = "list" | "grid";
@@ -27,7 +27,12 @@ function Icon({ name, className = "" }: { name: string; className?: string }) {
   );
 }
 
-export default function Sidebar({ resources, selectedResourceId, onResourceSelect, onHomeClick }: SidebarProps) {
+export default function Sidebar({
+  resources = [],
+  selectedResourceId,
+  onResourceSelect = () => {},
+  onHomeClick = () => {}
+}: SidebarProps) {
   const { t } = useTranslation('navigation');
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchQuery, setSearchQuery] = useState("");

@@ -195,7 +195,7 @@ export function TasksTab({ serviceName }: Props) {
                     <td>
                       <div className="tasks-operation">
                         <span className="tasks-operation-icon">{status.icon}</span>
-                        <span className="tasks-operation-name">{formatFunction(task.function)}</span>
+                        <span className="tasks-operation-name">{formatFunction(task.function || task.type || 'unknown')}</span>
                       </div>
                     </td>
                     <td>

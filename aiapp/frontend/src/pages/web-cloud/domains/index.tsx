@@ -125,30 +125,8 @@ const TabSkeleton = () => (
   </div>
 );
 
-// ============ NAV3 SELECTOR COMPONENT ============
-
-interface Nav3SelectorProps {
-  groups: { id: Nav3Group; labelKey: string }[];
-  activeGroup: Nav3Group;
-  onGroupChange: (group: Nav3Group) => void;
-  t: (key: string) => string;
-}
-
-const Nav3Selector: React.FC<Nav3SelectorProps> = ({ groups, activeGroup, onGroupChange, t }) => (
-  <div className="dom-nav3-selector">
-    {groups.map((group) => (
-      <button
-        key={group.id}
-        className={`dom-nav3-group-btn ${activeGroup === group.id ? "active" : ""}`}
-        onClick={() => onGroupChange(group.id)}
-      >
-        {t(group.labelKey)}
-      </button>
-    ))}
-  </div>
-);
-
 // ============ COMPOSANT PRINCIPAL ============
+// Note: NAV3 Selector est géré par LeftPanel via la prop nav3Groups
 
 export default function DomainsPage() {
   const { t } = useTranslation("web-cloud/domains/index");
@@ -439,12 +417,12 @@ export default function DomainsPage() {
                 <h2>{selectedEntry.name}</h2>
               </div>
 
-              {/* NAV3: Tabs for current group */}
-              <div className="dom-nav3">
+              {/* NAV4: Tabs Fonction for current NAV3 group */}
+              <div className="dom-nav4">
                 {availableTabs.map((tab) => (
                   <button
                     key={tab.id}
-                    className={`dom-nav3-btn ${activeTab === tab.id ? "active" : ""}`}
+                    className={`dom-nav4-btn ${activeTab === tab.id ? "active" : ""}`}
                     onClick={() => handleTabChange(tab.id)}
                   >
                     {t(tab.labelKey)}

@@ -1,12 +1,47 @@
-# OVHcloud API Reference - Frontend React (Sans Backend)
+# OVHcloud API Reference - Frontend React
 
-## Prérequis
+Version: v2.0 (2026-01-01)
+Remplace: prompt_api.txt (v1)
 
-L'utilisateur DOIT être connecté au Manager OVHcloud. Les APIs utilisent les cookies de session.
-Pas de AK/AS/CK nécessaire - l'auth est gérée par les cookies.
+Changelog v1->v2:
+- Terminologie officielle NAV1-NAV4 ajoutee
+- Structure fichiers mise a jour (services isoles par NAV4)
+- Clarification services globaux vs isoles
+- References aux prompts complementaires
+- Pattern service isole documente
 
-Si l'app n'est pas hébergée sur un domaine OVH, les cookies cross-site seront bloqués (SameSite/CORS).
-Solution : héberger sur un sous-domaine OVH, utiliser un reverse proxy, ou intégrer dans le Manager.
+---
+
+## Prompts complementaires
+
+| Prompt | Contenu |
+|--------|---------|
+| `prompt_react.txt` | Conventions React, structure pages |
+| `prompt_split.txt` | Architecture modulaire, regles isolation |
+| `prompt_split_layout_method.txt` | Specs CSS layout |
+
+---
+
+## Terminologie NAV1-NAV4 (resume)
+
+| Niveau | Nom | Position | Exemple |
+|--------|-----|----------|---------|
+| **NAV1** | Univers | Header bleu | `web-cloud` |
+| **NAV2** | Produit | Sous-header | `hosting` |
+| **NAV3** | Groupement | LEFT PANEL | `expert` |
+| **NAV4** | Fonction | RIGHT PANEL | `ftp` |
+
+Details complets -> `prompt_split.txt`
+
+---
+
+## Prerequis
+
+L'utilisateur DOIT etre connecte au Manager OVHcloud. Les APIs utilisent les cookies de session.
+Pas de AK/AS/CK necessaire - l'auth est geree par les cookies.
+
+Si l'app n'est pas hebergee sur un domaine OVH, les cookies cross-site seront bloques (SameSite/CORS).
+Solution : heberger sur un sous-domaine OVH, utiliser un reverse proxy, ou integrer dans le Manager.
 
 ---
 
@@ -16,22 +51,22 @@ Solution : héberger sur un sous-domaine OVH, utiliser un reverse proxy, ou int�
 
 Le frontend communique avec l'API OVH via un proxy Nginx :
 ```
-/api/ovh/*  →  https://eu.api.ovh.com/1.0/*
+/api/ovh/*  ->  https://eu.api.ovh.com/1.0/*
 ```
 
-La signature des requêtes est gérée automatiquement côté serveur.
+La signature des requetes est geree automatiquement cote serveur.
 
-### Régions et URLs de base
+### Regions et URLs de base
 
-| Région | APIv6 (Iceberg) | 2API | Engine API |
+| Region | APIv6 (Iceberg) | 2API | Engine API |
 |--------|-----------------|------|------------|
 | EU | https://www.ovh.com/engine/apiv6 | https://www.ovh.com/engine/2api-m | https://www.ovh.com/engine/api |
 | CA | https://ca.ovh.com/engine/apiv6 | https://ca.ovh.com/engine/2api-m | https://ca.ovh.com/engine/api |
 | US | https://us.ovhcloud.com/engine/apiv6 | https://us.ovhcloud.com/engine/2api-m | https://us.ovhcloud.com/engine/api |
 
-### URLs Manager alternatives (équivalentes)
+### URLs Manager alternatives (equivalentes)
 
-| Région | Manager Engine |
+| Region | Manager Engine |
 |--------|----------------|
 | EU | https://manager.eu.ovhcloud.com/engine/api/v1 |
 | CA | https://manager.ca.ovhcloud.com/engine/api/v1 |
@@ -39,7 +74,7 @@ La signature des requêtes est gérée automatiquement côté serveur.
 
 ### URLs Auth (redirection si 401)
 
-| Région | URL Auth |
+| Region | URL Auth |
 |--------|----------|
 | EU | https://www.ovh.com/auth/?onsuccess=https%3A%2F%2Fwww.ovh.com%2Fmanager |
 | CA | https://ca.ovh.com/auth/?onsuccess=https%3A%2F%2Fca.ovh.com%2Fmanager |
@@ -49,8 +84,8 @@ La signature des requêtes est gérée automatiquement côté serveur.
 
 | API | Usage | Auth | Pagination |
 |-----|-------|------|------------|
-| apiv6 | API standard, accès direct aux ressources | Cookies session | Headers X-Pagination (Iceberg) |
-| 2API (AAPI) | API agrégée/enrichie pour le Manager | Cookies session | Params count/offset |
+| apiv6 | API standard, acces direct aux ressources | Cookies session | Headers X-Pagination (Iceberg) |
+| 2API (AAPI) | API agregee/enrichie pour le Manager | Cookies session | Params count/offset |
 | Engine API | BFF interne Manager | Cookies session | Standard |
 
 ---
@@ -59,7 +94,7 @@ La signature des requêtes est gérée automatiquement côté serveur.
 
 ### Mode Cookies de Session
 
-L'authentification est gérée automatiquement par les cookies de session OVHcloud.
+L'authentification est geree automatiquement par les cookies de session OVHcloud.
 ```typescript
 // OBLIGATOIRE : credentials: 'include' pour envoyer les cookies
 fetch(url, {
@@ -70,7 +105,7 @@ fetch(url, {
 
 ### Gestion du 401
 
-Si un appel API retourne 401 (non authentifié), rediriger vers la page de login :
+Si un appel API retourne 401 (non authentifie), rediriger vers la page de login :
 ```typescript
 if (response.status === 401) {
   window.location.href = AUTH_URLS[region];
@@ -79,13 +114,13 @@ if (response.status === 401) {
 
 ---
 
-## 2API - API Agrégée du Manager
+## 2API - API Agregee du Manager
 
 ### Description
 
-La 2API est une couche BFF (Backend For Frontend) interne qui agrège et transforme les données de l'APIv6 pour les besoins du Manager. Elle offre des endpoints optimisés avec pagination intégrée.
+La 2API est une couche BFF (Backend For Frontend) interne qui agrege et transforme les donnees de l'APIv6 pour les besoins du Manager. Elle offre des endpoints optimises avec pagination integree.
 
-### Endpoints 2API identifiés (reverse engineering)
+### Endpoints 2API identifies (reverse engineering)
 ```typescript
 GET /billing/services?count=10&offset=0&sort=serviceId&sortOrder=asc
 GET /billing/autorenew
@@ -100,12 +135,12 @@ GET /banner
 GET /ovhProduct
 ```
 
-### Paramètres de pagination 2API
+### Parametres de pagination 2API
 
-| Param | Description | Défaut |
+| Param | Description | Defaut |
 |-------|-------------|--------|
-| count | Nombre d'éléments | 25 |
-| offset | Décalage | 0 |
+| count | Nombre d'elements | 25 |
+| offset | Decalage | 0 |
 | sort | Champ de tri | - |
 | sortOrder | 'asc' ou 'desc' | 'asc' |
 
@@ -113,7 +148,7 @@ GET /ovhProduct
 
 ## Iceberg - Pagination moderne (APIv6)
 
-### Headers de requête
+### Headers de requete
 ```typescript
 const headers = {
   'X-Pagination-Mode': 'CachedObjectList-Pages',
@@ -124,49 +159,49 @@ const headers = {
 };
 ```
 
-### Headers de réponse
+### Headers de reponse
 ```typescript
-'X-Pagination-Elements': '150'  // total d'éléments
+'X-Pagination-Elements': '150'  // total d'elements
 'X-Pagination-Number': '1'      // page actuelle
 'X-Pagination-Size': '25'       // taille page
 ```
 
 ---
 
-## Endpoints par catégorie
+## Endpoints par categorie
 
 ### Authentification
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | POST | `/auth/credential` | Demande de consumer key |
 | GET | `/me` | Informations utilisateur |
 
 ### Compte utilisateur (/me)
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/me` | Informations générales |
-| PUT | `/me` | Éditer mon compte |
+| GET | `/me` | Informations generales |
+| PUT | `/me` | Editer mon compte |
 | GET | `/me/contact` | Mes services (contacts) |
 | GET | `/me/task/contactChange` | Mes demandes (contact change) |
-| GET | `/me/preferences` | Paramètres avancés |
+| GET | `/me/preferences` | Parametres avances |
 | GET | `/me/supportLevel` | Niveau support |
 | GET | `/me/api/application` | Apps API |
 | GET | `/me/autorenew` | Config renouvellement |
 
-### Sécurité (2FA)
+### Securite (2FA)
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/me/accessRestriction/sms` | Liste SMS 2FA |
 | GET | `/me/accessRestriction/totp` | Liste TOTP (app mobile) |
-| GET | `/me/accessRestriction/u2f` | Liste clés U2F |
+| GET | `/me/accessRestriction/u2f` | Liste cles U2F |
 | GET | `/me/accessRestriction/backupCode` | Codes de secours |
 
-### Données personnelles (RGPD)
+### Donnees personnelles (RGPD)
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/me/privacy/requests` | Demandes RGPD |
 | POST | `/me/privacy/requests/erasure` | Demande suppression |
@@ -174,64 +209,64 @@ const headers = {
 
 ### Facturation
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/services` | Mes services (IDs) |
-| GET | `/services/{serviceId}` | Détail complet |
+| GET | `/services/{serviceId}` | Detail complet |
 | GET | `/me/bill` | Factures |
-| GET | `/me/bill/{billId}` | Détails facture |
+| GET | `/me/bill/{billId}` | Details facture |
 | GET | `/me/refund` | Avoirs |
 | GET | `/me/deposit` | Paiements |
-| GET | `/me/deposit/{depositId}` | Détails paiement |
+| GET | `/me/deposit/{depositId}` | Details paiement |
 | GET | `/me/order` | Commandes |
 | GET | `/me/payment/method` | Moyens de paiement |
 | GET | `/me/debtAccount` | Encours/dette |
-| GET | `/me/ovhAccount` | Compte prépayé |
+| GET | `/me/ovhAccount` | Compte prepaye |
 | GET | `/me/voucherAccount` | Bons d'achat |
-| GET | `/me/fidelityAccount` | Points fidélité |
+| GET | `/me/fidelityAccount` | Points fidelite |
 | GET | `/me/agreements` | Contrats |
 
 ### Support
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/support/tickets` | Mes tickets |
-| POST | `/support/tickets` | Créer ticket |
-| GET | `/support/tickets/{ticketId}` | Détails ticket |
+| POST | `/support/tickets` | Creer ticket |
+| GET | `/support/tickets/{ticketId}` | Details ticket |
 | GET | `/me/supportLevel` | Niveau de support |
 | GET | `/me/notification` | Mes communications |
-| GET/PUT | `/me/notification/preferences` | Paramètres diffusion |
+| GET/PUT | `/me/notification/preferences` | Parametres diffusion |
 
 ### IAM
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/me/identity/user` | Liste identités |
+| GET | `/me/identity/user` | Liste identites |
 | GET | `/iam/policy` | Liste politiques |
 | GET | `/me/identity/group` | Liste groupes |
 | GET | `/me/logs` | Logs audit |
 
 ### Domaines
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/domain` | Liste domaines |
-| GET | `/domain/{domain}` | Détail domaine |
+| GET | `/domain/{domain}` | Detail domaine |
 | GET | `/domain/zone/{zoneName}` | Zone DNS |
 | GET | `/domain/zone/{zoneName}/record` | Records DNS |
 
-### Hébergement Web
+### Hebergement Web
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/hosting/web` | Liste hébergements |
-| GET | `/hosting/web/{serviceName}` | Détail |
+| GET | `/hosting/web` | Liste hebergements |
+| GET | `/hosting/web/{serviceName}` | Detail |
 | GET | `/hosting/web/{serviceName}/user` | Utilisateurs FTP |
-| GET | `/hosting/web/{serviceName}/database` | Bases de données |
+| GET | `/hosting/web/{serviceName}/database` | Bases de donnees |
 
 ### Email
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/email/domain` | Domaines email |
 | GET | `/email/domain/{domain}/account` | Comptes |
@@ -240,123 +275,268 @@ const headers = {
 
 ### VPS
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/vps` | Liste VPS |
-| GET | `/vps/{serviceName}` | Détail |
+| GET | `/vps/{serviceName}` | Detail |
 | GET | `/vps/{serviceName}/ips` | IPs |
 | GET | `/vps/{serviceName}/datacenter` | Datacenter |
 
-### Serveurs Dédiés
+### Serveurs Dedies
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/dedicated/server` | Liste serveurs |
-| GET | `/dedicated/server/{serviceName}` | Détail |
+| GET | `/dedicated/server/{serviceName}` | Detail |
 | GET | `/dedicated/server/{serviceName}/specifications/hardware` | Specs |
 | GET | `/dedicated/server/{serviceName}/ips` | IPs |
 
 ### Cloud (Public Cloud)
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/cloud/project` | Liste projets |
-| GET | `/cloud/project/{serviceName}` | Détail projet |
+| GET | `/cloud/project/{serviceName}` | Detail projet |
 | GET | `/cloud/project/{serviceName}/instance` | Instances |
 | GET | `/cloud/project/{serviceName}/storage` | Storage |
 
 ### Dedicated Cloud (VMware)
 
-| Méthode | Endpoint | Description |
+| Methode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | `/dedicatedCloud` | Liste |
-| GET | `/dedicatedCloud/{serviceName}` | Détail |
+| GET | `/dedicatedCloud/{serviceName}` | Detail |
 
 ---
 
-## Configuration React
+## Services API - Architecture
 
-### Service API complet
+### Service API Global (AUTORISE)
+
+Un seul service API global est autorise dans `/src/services/api.ts` :
+
 ```typescript
-// src/services/ovhApi.ts
+// src/services/api.ts - SEUL service global autorise
+
 type Region = 'EU' | 'CA' | 'US';
 
-const API_URLS: Record<Region, { apiv6: string; api2: string; engine: string }> = {
-  EU: {
-    apiv6: 'https://www.ovh.com/engine/apiv6',
-    api2: 'https://www.ovh.com/engine/2api-m',
-    engine: 'https://www.ovh.com/engine/api',
-  },
-  CA: {
-    apiv6: 'https://ca.ovh.com/engine/apiv6',
-    api2: 'https://ca.ovh.com/engine/2api-m',
-    engine: 'https://ca.ovh.com/engine/api',
-  },
-  US: {
-    apiv6: 'https://us.ovhcloud.com/engine/apiv6',
-    api2: 'https://us.ovhcloud.com/engine/2api-m',
-    engine: 'https://us.ovhcloud.com/engine/api',
-  },
-};
+const API_BASE = '/api/ovh';  // Proxy Nginx
 
-const AUTH_URLS: Record<Region, string> = {
-  EU: 'https://www.ovh.com/auth/?onsuccess=https%3A%2F%2Fwww.ovh.com%2Fmanager',
-  CA: 'https://ca.ovh.com/auth/?onsuccess=https%3A%2F%2Fca.ovh.com%2Fmanager',
-  US: 'https://us.ovhcloud.com/auth/?onsuccess=https%3A%2F%2Fus.ovhcloud.com%2Fmanager',
-};
-
-class OvhApi {
-  private region: Region = 'EU';
-  setRegion(region: Region) { this.region = region; }
-  getRegion(): Region { return this.region; }
-
-  private async request<T>(baseUrl: string, method: string, path: string, options?: { body?: any; headers?: Record<string, string> }): Promise<T> {
-    const response = await fetch(`${baseUrl}${path}`, {
-      method,
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', ...options?.headers },
-      body: options?.body ? JSON.stringify(options.body) : undefined,
-    });
-    if (response.status === 401) {
-      window.location.href = AUTH_URLS[this.region];
-      throw new Error('Non authentifié');
-    }
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `Erreur ${response.status}`);
-    }
-    return response.json();
+export async function ovhGet<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (response.status === 401) {
+    window.location.href = AUTH_URLS[region];
+    throw new Error('Non authentifie');
   }
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || `Erreur ${response.status}`);
+  }
+  return response.json();
+}
 
-  async get<T>(path: string): Promise<T> { return this.request(API_URLS[this.region].apiv6, 'GET', path); }
-  async post<T>(path: string, body: any): Promise<T> { return this.request(API_URLS[this.region].apiv6, 'POST', path, { body }); }
-  async put<T>(path: string, body: any): Promise<T> { return this.request(API_URLS[this.region].apiv6, 'PUT', path, { body }); }
-  async delete<T>(path: string): Promise<T> { return this.request(API_URLS[this.region].apiv6, 'DELETE', path); }
+export async function ovhPost<T>(path: string, body: any): Promise<T> { ... }
+export async function ovhPut<T>(path: string, body: any): Promise<T> { ... }
+export async function ovhDelete<T>(path: string): Promise<T> { ... }
+```
 
-  async getIceberg<T>(path: string, options: { page?: number; pageSize?: number; sort?: string; sortOrder?: 'ASC' | 'DESC' } = {}): Promise<{ data: T[]; total: number; page: number }> {
-    const { page = 1, pageSize = 25, sort, sortOrder = 'ASC' } = options;
+### Services Metier Isoles (OBLIGATOIRE)
+
+Chaque fonction (NAV4) a son propre service isole :
+
+```
+src/pages/{NAV1}/{NAV2}/{nav3}/{nav4}/{Nav4}Tab.service.ts
+```
+
+**Exemple : FtpTab.service.ts**
+
+```typescript
+// src/pages/web-cloud/hosting/expert/ftp/FtpTab.service.ts
+
+import { ovhGet, ovhPost, ovhPut, ovhDelete } from "@/services/api";
+import type { FtpUser } from "../../hosting.types";
+
+// ============================================================
+// TYPES LOCAUX
+// ============================================================
+
+interface CreateFtpUserParams {
+  login: string;
+  password: string;
+  home: string;
+}
+
+// ============================================================
+// SERVICE ISOLE
+// ============================================================
+
+export const ftpService = {
+  async getUsers(serviceName: string): Promise<string[]> {
+    return ovhGet(`/hosting/web/${serviceName}/user`);
+  },
+
+  async getUser(serviceName: string, login: string): Promise<FtpUser> {
+    return ovhGet(`/hosting/web/${serviceName}/user/${login}`);
+  },
+
+  async createUser(serviceName: string, params: CreateFtpUserParams): Promise<void> {
+    return ovhPost(`/hosting/web/${serviceName}/user`, params);
+  },
+
+  async deleteUser(serviceName: string, login: string): Promise<void> {
+    return ovhDelete(`/hosting/web/${serviceName}/user/${login}`);
+  },
+
+  async changePassword(serviceName: string, login: string, password: string): Promise<void> {
+    return ovhPost(`/hosting/web/${serviceName}/user/${login}/changePassword`, { password });
+  },
+};
+```
+
+### INTERDIT : Services partages NAV2
+
+```typescript
+// INTERDIT - Pas de service partage au niveau NAV2
+// src/pages/web-cloud/hosting/hosting.service.ts  <- INTERDIT
+
+// INTERDIT - Import croise entre fonctions
+import { sslService } from "../../sites/ssl/SslTab.service";  // <- INTERDIT
+```
+
+Details complets -> `prompt_split.txt` sections D-F
+
+---
+
+## APIs Multi-Providers
+
+Pour les produits avec plusieurs providers (ex: emails), utiliser un dossier `api/` :
+
+```
+src/pages/{NAV1}/{NAV2}/api/
+|-- index.ts              # Factory/Router
+|-- {provider1}/
+|   |-- index.ts
+|   |-- accounts.api.ts
+|   +-- tasks.api.ts
++-- {provider2}/
+    +-- ...
+```
+
+**Exemple : Emails**
+
+```typescript
+// src/pages/web-cloud/emails/api/index.ts
+
+import * as mxplan from "./mxplan";
+import * as exchange from "./exchange";
+import * as emailpro from "./emailpro";
+import * as zimbra from "./zimbra";
+
+export type EmailProvider = "mxplan" | "exchange" | "emailpro" | "zimbra";
+
+const providers = { mxplan, exchange, emailpro, zimbra };
+
+export const getApi = (provider: EmailProvider) => providers[provider];
+```
+
+```typescript
+// src/pages/web-cloud/emails/api/mxplan/accounts.api.ts
+
+import { ovhGet, ovhPost, ovhDelete } from "@/services/api";
+
+export const accountsApi = {
+  async getAccounts(domain: string): Promise<string[]> {
+    return ovhGet(`/email/domain/${domain}/account`);
+  },
+
+  async getAccount(domain: string, name: string): Promise<Account> {
+    return ovhGet(`/email/domain/${domain}/account/${name}`);
+  },
+
+  async createAccount(domain: string, params: CreateAccountParams): Promise<void> {
+    return ovhPost(`/email/domain/${domain}/account`, params);
+  },
+
+  async deleteAccount(domain: string, name: string): Promise<void> {
+    return ovhDelete(`/email/domain/${domain}/account/${name}`);
+  },
+};
+```
+
+---
+
+## Hooks React
+
+### useOvhApi (simple)
+
+```typescript
+import { useState, useEffect } from 'react';
+import { ovhGet } from '@/services/api';
+
+export function useOvhApi<T>(path: string) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    ovhGet<T>(path)
+      .then(setData)
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [path]);
+
+  return { data, loading, error };
+}
+```
+
+### useIceberg (pagination)
+
+```typescript
+import { useState, useEffect } from 'react';
+
+interface IcebergOptions {
+  page?: number;
+  pageSize?: number;
+  sort?: string;
+  sortOrder?: 'ASC' | 'DESC';
+}
+
+export function useIceberg<T>(path: string, options: IcebergOptions = {}) {
+  const { page = 1, pageSize = 25, sort, sortOrder = 'ASC' } = options;
+  const [data, setData] = useState<T[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
     const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
       'X-Pagination-Mode': 'CachedObjectList-Pages',
       'X-Pagination-Size': String(pageSize),
       'X-Pagination-Number': String(page),
     };
-    if (sort) { headers['X-Pagination-Sort'] = sort; headers['X-Pagination-Sort-Order'] = sortOrder; }
-    const response = await fetch(`${API_URLS[this.region].apiv6}${path}`, { credentials: 'include', headers: { 'Content-Type': 'application/json', ...headers } });
-    if (response.status === 401) { window.location.href = AUTH_URLS[this.region]; throw new Error('Non authentifié'); }
-    if (!response.ok) { const error = await response.json().catch(() => ({})); throw new Error(error.message || `Erreur ${response.status}`); }
-    return { data: await response.json(), total: parseInt(response.headers.get('X-Pagination-Elements') || '0'), page: parseInt(response.headers.get('X-Pagination-Number') || '1') };
-  }
+    if (sort) {
+      headers['X-Pagination-Sort'] = sort;
+      headers['X-Pagination-Sort-Order'] = sortOrder;
+    }
 
-  async get2api<T>(path: string, params?: { count?: number; offset?: number; sort?: string; sortOrder?: 'asc' | 'desc' }): Promise<T> {
-    const searchParams = params ? '?' + new URLSearchParams(params as Record<string, string>).toString() : '';
-    return this.request(API_URLS[this.region].api2, 'GET', `${path}${searchParams}`);
-  }
-  async post2api<T>(path: string, body: any): Promise<T> { return this.request(API_URLS[this.region].api2, 'POST', path, { body }); }
-  async put2api<T>(path: string, body: any): Promise<T> { return this.request(API_URLS[this.region].api2, 'PUT', path, { body }); }
-  async delete2api<T>(path: string): Promise<T> { return this.request(API_URLS[this.region].api2, 'DELETE', path); }
+    fetch(`/api/ovh${path}`, { credentials: 'include', headers })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`Erreur ${response.status}`);
+        const items = await response.json();
+        setData(items);
+        setTotal(parseInt(response.headers.get('X-Pagination-Elements') || '0'));
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [path, page, pageSize, sort, sortOrder]);
+
+  return { data, total, page, loading, error };
 }
-
-export const ovhApi = new OvhApi();
 ```
 
 ---
@@ -367,7 +547,7 @@ export const ovhApi = new OvhApi();
 2. **Code source Manager** : Chercher `rootPath: '2api'` ou `.Aapi()`
 3. **Repos** : https://github.com/ovh/manager
 
-**Recommandation** : Préférer Iceberg (pagination headers) plutôt que 2API pour les nouvelles features.
+**Recommandation** : Preferer Iceberg (pagination headers) plutot que 2API pour les nouvelles features.
 
 ---
 
@@ -376,3 +556,121 @@ export const ovhApi = new OvhApi();
 - Console API : https://api.ovh.com/console/
 - GitHub Manager : https://github.com/ovh/manager
 - Guides : https://docs.ovh.com/
+
+---
+
+## Sources des endpoints API
+
+### 1. Code source - New Manager (React)
+
+Structure des services isoles par NAV4 :
+```
+/home/ubuntu/aiapp/frontend/src/pages/{NAV1}/{NAV2}/{nav3}/{nav4}/{Nav4}Tab.service.ts
+```
+
+Exemple d'appels :
+```typescript
+// expert/ftp/FtpTab.service.ts
+ovhGet(`/hosting/web/${serviceName}/user`)
+ovhPost(`/hosting/web/${serviceName}/user`, data)
+ovhDelete(`/hosting/web/${serviceName}/user/${login}`)
+```
+
+APIs multi-providers :
+```
+/home/ubuntu/aiapp/frontend/src/pages/{NAV1}/{NAV2}/api/{provider}/*.api.ts
+```
+
+### 2. Code source - Old Manager (Angular)
+
+```
+/home/ubuntu/manager/packages/manager/modules/
+```
+
+Archives par NAV1/NAV2 :
+```
+/home/ubuntu/old_manager.{NAV1}.tar
+/home/ubuntu/old_manager.{NAV1}.{NAV2}.tar
+```
+
+Les appels sont dans les fichiers `*.service.js` et `*.controller.js`.
+
+### 3. Documentation generee (JSON)
+
+```
+/var/www/aiapp/doc/data/
+|-- G-web-cloud.json      # 710 endpoints (domain, hosting, email, voip, sms, xdsl, otb)
+|-- G-bare-metal.json     # dedicated, vps, nasha, netapp
+|-- G-general.json        # account, billing, support
+|-- G-iam.json            # IAM, logs, secrets
+|-- G-public-cloud.json   # instances, storage, kubernetes
+|-- G-private-cloud.json  # vmware, nutanix, veeam
+|-- G-network.json        # vrack, ip, load-balancer, cdn
++-- G-license.json        # cpanel, plesk, windows, office
+```
+
+Format JSON :
+```json
+[
+  {"path": "/domain/{}", "method": "GET"},
+  {"path": "/domain/{}", "method": "PUT"},
+  {"path": "/domain/{}/nameServer", "method": "POST"}
+]
+```
+
+### 4. Flux de generation de la doc
+
+```
++---------------------+     +---------------------+     +---------------------+
+|   old_manager/      |     |   new_manager/      |     |  api.ovh.com/       |
+|   *.service.js      |---->|   *Tab.service.ts   |---->|  console/           |
+|   (Angular)         |     |   (React)           |     |  (Reference)        |
++---------------------+     +---------------------+     +---------------------+
+           |                          |                          |
+           +-----------------------------------------------------+
+                                      |
+                                      v
+                    +---------------------------------+
+                    |  /var/www/aiapp/doc/data/       |
+                    |  G-{NAV1}.json                  |
+                    +---------------------------------+
+```
+
+### 5. Commandes pour analyser les endpoints
+
+```bash
+# Lister les endpoints dans new_manager (services isoles)
+grep -rh "ovhGet\|ovhPost\|ovhPut\|ovhDelete" \
+  /home/ubuntu/aiapp/frontend/src/pages/web-cloud/**/\*.service.ts \
+  | grep -oE '`[^`]+`' | sort -u
+
+# Lister les endpoints dans old_manager
+grep -rh "\$http\.\(get\|post\|put\|delete\)" \
+  /home/ubuntu/manager/packages/manager/modules/ \
+  | grep -oE "'/[^']+'" | sort -u
+
+# Compter les endpoints dans la doc
+grep -c '"method"' /var/www/aiapp/doc/data/G-web-cloud.json
+```
+
+---
+
+## Resume des regles
+
+### AUTORISE
+
+| Element | Localisation |
+|---------|--------------|
+| Service API global | `/src/services/api.ts` |
+| Service isole NAV4 | `{nav4}/{Nav4}Tab.service.ts` |
+| APIs multi-providers | `{nav2}/api/{provider}/` |
+
+### INTERDIT
+
+| Element | Raison |
+|---------|--------|
+| Service partage NAV2 | `hosting.service.ts` - viole isolation |
+| Import croise NAV4 | `import { sslService } from "../ssl/"` - viole isolation |
+| Hooks partages NAV2 | `useHostingData.ts` - viole isolation |
+
+Details complets -> `prompt_split.txt`

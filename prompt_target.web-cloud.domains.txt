@@ -8,7 +8,7 @@ PROMPT TARGET - Web Cloud > Domaines et DNS
 | **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/domains/           |
 | **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/domains/ |
 
-Version: v4 (2025-12-31) - Sync arbo frontend + locales + fichiers target
+Version: v8 (2026-01-01) - Mise à jour navigation complète (NAV3/NAV4/NAV5, actions, modals)
 Parent:  prompt_target.txt (design system, shell template, composants)
 
 ================================================================================
@@ -27,7 +27,7 @@ Parent:  prompt_target.txt (design system, shell template, composants)
 
 ### PAGE PRINCIPALE
 
-La page principale est : **target_.web-cloud.domain.general-informations.svg**
+La page principale est : **target_.web-cloud.domain.general.svg**
 
 Cette page affiche le detail d'un domaine selectionne avec :
 - LEFT PANEL : Liste des domaines/zones (sidebar 280px) + selecteur NAV3 GROUPS
@@ -38,82 +38,115 @@ NAV1: Web Cloud (x=510)
 |
 +-- NAV2: Domaines et DNS (indicateur sous "Domaines et DNS")
     |
-    +-- /web-cloud/domaines (INDEX)
+    +-- /web-cloud/domains (INDEX)
         |
         |   LEFT PANEL (280px):
-        |   - Recherche + Filtre
+        |   - Recherche (filtre par nom)
         |   - NAV3 GROUP SELECTOR: [General] [DNS] [Expert]
-        |   - Liste domaines/zones
-        |   - Pagination
+        |   - Filtre dropdown (Tous/Domaines/Zones)
+        |   - Liste domaines/zones (20 items/page)
+        |   - Pagination client-side
         |
         |   RIGHT PANEL:
-        |   - Header: {domainName} + badges
-        |   - NAV3 TABS: Tabs du groupe actif
+        |   - Header: {domainName} + badges status
+        |   - NAV4 TABS: Tabs du groupe NAV3 actif
+        |   - NAV5: Sous-tabs (si applicable)
         |   - Contenu tab
         |
-        +-- NAV3 GROUPS (3 groupes, 16 tabs total)
+        +-- NAV3 GROUPS (3 groupes, 17 tabs total)
             |
             +-- [GENERAL] (3 tabs)
             |   |
             |   +-- [1] Infos generales (/general) <- hasDomain
-            |   |   Layout 3 colonnes: Domaine | Securite | Abonnement
-            |   |   ACTIONS: [Lock] [DNSSEC] [AUTH/INFO] [Renew]
+            |   |   Layout 4 sections: Infos | Config DNS | Securite | Abonnement
+            |   |   MODALS: AuthInfoModal, LockModal
+            |   |   LIENS: -> dns-servers, -> dnssec, -> zone, -> contacts
+            |   |   EXTERNE: -> manager autorenew, -> manager contacts
             |   |
             |   +-- [2] Contacts (/contacts) <- hasDomain
-            |   |   Liste contacts (Admin, Tech, Billing, Owner) + OWO
-            |   |   ACTIONS: [Modifier contacts] [Configurer OWO]
+            |   |   +-- NAV5: [Contacts] | [OWO]
+            |   |       - Contacts: 4 cards (Owner, Admin, Tech, Billing)
+            |   |       - OWO: Table toggle obfuscation WHOIS
+            |   |       MODALS: ContactChangeModal
+            |   |       ACTIONS: [Modifier] [Regenerer OWO] [Sauvegarder]
             |   |
             |   +-- [3] Alldom (/alldom) <- toujours
-            |       Operations batch sur plusieurs domaines
-            |       ACTIONS: [Batch Lock] [Batch DNSSEC] [Export CSV] [Batch Renew]
+            |       Display packs AllDom (FRENCH, INTERNATIONAL, etc.)
+            |       Liste domaines du pack + serviceInfos
+            |       LECTURE SEULE (pas d'actions directes)
             |
-            +-- [DNS] (11 tabs)
+            +-- [DNS] (12 tabs)
             |   |
             |   +-- [1] Infos DNS (/dns-info) <- hasZone
-            |   |   Vue d'ensemble configuration DNS
+            |   |   Vue d'ensemble configuration DNS (read-only)
+            |   |   LIENS: -> zone, -> dns-servers, -> dnssec
             |   |
             |   +-- [2] Serveurs DNS (/dns-servers) <- hasDomain
-            |   |   Liste serveurs DNS + modification
-            |   |   ACTIONS: [Modifier DNS] [Reset OVH] [Anycast]
+            |   |   Liste serveurs DNS actuels
+            |   |   MODALS: DnsChangeModal
+            |   |   ACTIONS: [Modifier DNS] [Ajouter] [Supprimer]
             |   |
             |   +-- [3] Zone DNS (/zone) <- hasZone
-            |   |   Table enregistrements DNS avec filtres
-            |   |   ACTIONS: [+ Ajouter] [Importer] [Exporter] [Reset] [TTL] [Historique]
+            |   |   +-- NAV5: [Enregistrements] | [Historique]
+            |   |       - Enregistrements: Table filtrable (type, subdomain)
+            |   |       - Historique: Liste versions + restore
+            |   |       MODALS: AddRecordModal, EditRecordModal, DeleteRecordModal
+            |   |       MODALS: ResetZoneModal, ImportZoneModal, ExportZoneModal, TtlModal
+            |   |       ACTIONS: [+ Ajouter] [Importer] [Exporter] [Reset] [TTL]
             |   |
             |   +-- [4] DNSSEC (/dnssec) <- hasDomain
-            |   |   Etat DNSSEC + cles DS
-            |   |   ACTIONS: [Activer/Desactiver] [Ajouter DS]
+            |   |   Etat DNSSEC + gestion cles DS
+            |   |   MODALS: DnssecEnableModal, DnssecDisableModal, AddDsRecordModal
+            |   |   ACTIONS: [Activer/Desactiver] [+ Ajouter DS] [Supprimer DS]
             |   |
             |   +-- [5] SPF (/spf) <- hasZone
             |   |   Configuration SPF pour emails
+            |   |   ACTIONS: [Ajouter/Modifier] [Aide]
             |   |
             |   +-- [6] DKIM (/dkim) <- hasZone
             |   |   Configuration DKIM pour emails
+            |   |   ACTIONS: [Ajouter/Modifier] [Aide]
             |   |
             |   +-- [7] DMARC (/dmarc) <- hasZone
             |   |   Configuration DMARC pour emails
+            |   |   ACTIONS: [Ajouter/Modifier] [Aide]
             |   |
             |   +-- [8] ARC (/arc) <- hasZone
-            |   |   Configuration ARC pour emails
+            |   |   Configuration ARC (informatif, read-only)
+            |   |   ACTIONS: [Aide]
             |   |
             |   +-- [9] BIMI (/bimi) <- hasZone
             |   |   Configuration BIMI pour emails
+            |   |   ACTIONS: [Ajouter/Modifier] [Aide]
             |   |
             |   +-- [10] CAA (/caa) <- hasZone
             |   |   Enregistrements CAA (certificats)
+            |   |   ACTIONS: [Ajouter/Modifier] [Supprimer]
             |   |
             |   +-- [11] DynHost (/dynhost) <- hasZone
-            |       +-- NAV4: [Entrees DynHost] | [Acces/Logins]
-            |           ACTIONS: [+ Ajouter] [Modifier IP] [Supprimer]
+            |   |   +-- NAV5: [Entrees] | [Logins]
+            |   |       - Entrees: Liste IP dynamiques (subdomain + IP)
+            |   |       - Logins: Credentials pour mise a jour
+            |   |       MODALS: DynHostAddModal, DynHostEditModal, DynHostDeleteModal
+            |   |       MODALS: DynHostLoginAddModal, DynHostLoginEditModal, DynHostLoginDeleteModal
+            |   |       ACTIONS: [+ Ajouter] [Modifier] [Supprimer]
+            |   |
+            |   +-- [12] Anycast (/anycast) <- hasDomain
+            |       DNS Anycast status + subscription
+            |       MODALS: AnycastModal, AnycastTerminateModal
+            |       ACTIONS: [Activer/Souscrire] [Desactiver]
+            |       LIENS: -> dns-servers
             |
             +-- [EXPERT] (2 tabs)
                 |
                 +-- [1] GLUE (/glue) <- hasDomain
                 |   Enregistrements GLUE (ns1.domain.tld -> IP)
+                |   MODALS: GlueAddModal, GlueEditModal, GlueDeleteModal
                 |   ACTIONS: [+ Ajouter] [Modifier] [Supprimer]
                 |
                 +-- [2] Taches (/tasks) <- toujours
                     Liste operations en cours et historique
+                    Filtres: status (todo, doing, done, error, cancelled)
                     ACTIONS: [Rafraichir]
 ```
 
@@ -123,18 +156,40 @@ NAV1: Web Cloud (x=510)
 |--------|--------|----------|-------------|
 | **NAV1** | Header bleu 50px | y=0 | Web Cloud (x=510) |
 | **NAV2** | Sous-header blanc 40px | y=50 | Domaines et DNS (x=110) |
-| **NAV3 GROUPS** | Boutons dans LEFT PANEL | y=56 dans left | [General] [DNS] [Expert] |
-| **NAV3 TABS** | Tabs right panel | y=38 dans right | Tabs du groupe actif |
-| **NAV4** | Sous-tabs (DynHost) | y=70 dans right | Entrees, Logins |
+| **NAV3 GROUPS** | Boutons dans LEFT PANEL | y=12 dans left | [General] [DNS] [Expert] |
+| **NAV4 TABS** | Tabs right panel | y=38 dans right | Tabs du groupe NAV3 actif |
+| **NAV5** | Sous-tabs right panel | y=70 dans right | Zone, Contacts, DynHost |
 | **ACTIONS** | Boutons + modals | Variable | +, Edit, Delete, etc |
 
 ### TYPES DE SERVICES
 
 | Type | ID | Badge Left Panel | Groupes disponibles |
 |------|-----|------------------|---------------------|
-| Domaine + Zone | domain-and-zone | Domaine + Zone | Tous |
-| Domaine seul | domain-only | Domaine | General, DNS (partiel), Expert |
-| Zone seule | zone-only | Zone DNS | DNS (partiel), Expert (tasks) |
+| Domaine + Zone | both | "Domaine + Zone" | Tous (17 tabs) |
+| Domaine seul | domain | "Domaine" | General (2), DNS (4), Expert (2) |
+| Zone seule | zone | "Zone DNS" | DNS (9), Expert (1) |
+
+### CONDITIONS DE VISIBILITE PAR TAB
+
+| Groupe | Tab | Condition | Visible si |
+|--------|-----|-----------|------------|
+| GENERAL | general | `hasDomain` | domain ou both |
+| GENERAL | contacts | `hasDomain` | domain ou both |
+| GENERAL | alldom | aucune | toujours |
+| DNS | dns-info | `hasZone` | zone ou both |
+| DNS | dns-servers | `hasDomain` | domain ou both |
+| DNS | zone | `hasZone` | zone ou both |
+| DNS | dnssec | `hasDomain` | domain ou both |
+| DNS | spf | `hasZone` | zone ou both |
+| DNS | dkim | `hasZone` | zone ou both |
+| DNS | dmarc | `hasZone` | zone ou both |
+| DNS | arc | `hasZone` | zone ou both |
+| DNS | bimi | `hasZone` | zone ou both |
+| DNS | caa | `hasZone` | zone ou both |
+| DNS | dynhost | `hasZone` | zone ou both |
+| DNS | anycast | `hasDomain` | domain ou both |
+| EXPERT | glue | `hasDomain` | domain ou both |
+| EXPERT | tasks | aucune | toujours |
 
 ##############################################################################
 # 2. NAV1 - HEADER OVH
@@ -245,7 +300,7 @@ Route: /web-cloud/domaines/{domainName}/{tab}
 ```
 
 ##############################################################################
-# 6. NAV3 TABS - GROUPE DNS (11 tabs)
+# 6. NAV3 TABS - GROUPE DNS (12 tabs)
 ##############################################################################
 
 Route: /web-cloud/domaines/{domainName}/{tab}
@@ -263,9 +318,10 @@ Route: /web-cloud/domaines/{domainName}/{tab}
 | 9  | BIMI         | /bimi        | hasZone     |
 | 10 | CAA          | /caa         | hasZone     |
 | 11 | DynHost      | /dynhost     | hasZone     |
+| 12 | Anycast      | /anycast     | hasDomain   |
 
 ```svg
-<!-- NAV3 TABS - Groupe DNS (scrollable si necessaire) -->
+<!-- NAV4 TABS - Groupe DNS (scrollable si necessaire) -->
 <g transform="translate(0, 38)">
   <rect x="0" y="0" width="70" height="26" rx="4" class="bg-primary"/>
   <text x="35" y="17" class="text-white" font-size="10" text-anchor="middle">Infos DNS</text>
@@ -279,26 +335,7 @@ Route: /web-cloud/domaines/{domainName}/{tab}
   <rect x="232" y="0" width="55" height="26" rx="4" class="btn-outline"/>
   <text x="259" y="17" class="text-primary" font-size="10" text-anchor="middle">DNSSEC</text>
 
-  <rect x="291" y="0" width="40" height="26" rx="4" class="btn-outline"/>
-  <text x="311" y="17" class="text-primary" font-size="10" text-anchor="middle">SPF</text>
-
-  <rect x="335" y="0" width="45" height="26" rx="4" class="btn-outline"/>
-  <text x="357" y="17" class="text-primary" font-size="10" text-anchor="middle">DKIM</text>
-
-  <rect x="384" y="0" width="55" height="26" rx="4" class="btn-outline"/>
-  <text x="411" y="17" class="text-primary" font-size="10" text-anchor="middle">DMARC</text>
-
-  <rect x="443" y="0" width="40" height="26" rx="4" class="btn-outline"/>
-  <text x="463" y="17" class="text-primary" font-size="10" text-anchor="middle">ARC</text>
-
-  <rect x="487" y="0" width="45" height="26" rx="4" class="btn-outline"/>
-  <text x="509" y="17" class="text-primary" font-size="10" text-anchor="middle">BIMI</text>
-
-  <rect x="536" y="0" width="40" height="26" rx="4" class="btn-outline"/>
-  <text x="556" y="17" class="text-primary" font-size="10" text-anchor="middle">CAA</text>
-
-  <rect x="580" y="0" width="60" height="26" rx="4" class="btn-outline"/>
-  <text x="610" y="17" class="text-primary" font-size="10" text-anchor="middle">DynHost</text>
+  <!-- ... autres tabs SPF, DKIM, DMARC, ARC, BIMI, CAA, DynHost, Anycast -->
 </g>
 ```
 
@@ -325,24 +362,63 @@ Route: /web-cloud/domaines/{domainName}/{tab}
 ```
 
 ##############################################################################
-# 8. NAV4 - SOUS-TABS DYNHOST
+# 8. NAV5 - SOUS-TABS (Zone, Contacts, DynHost)
 ##############################################################################
 
-Route: /web-cloud/domaines/{domainName}/dynhost/{subtab}
+### 8.1 Zone DNS - Sous-tabs
 
-| # | Tab              | Route           |
-|---|------------------|-----------------|
-| 1 | Entrees DynHost  | /dynhost        |
-| 2 | Acces/Logins     | /dynhost-login  |
+Route: /web-cloud/domains/{domainName}/zone/{view}
+
+| # | Tab              | Route ID        | Description                        |
+|---|------------------|-----------------|-----------------------------------|
+| 1 | Enregistrements  | records         | Table filtrable des records DNS    |
+| 2 | Historique       | history         | Versions zone + restore            |
 
 ```svg
-<!-- NAV4 DYNHOST - Sous-tabs -->
+<!-- NAV5 ZONE - Sous-tabs -->
 <g transform="translate(0, 70)">
-  <rect x="0" y="0" width="120" height="24" rx="4" class="bg-primary"/>
-  <text x="60" y="16" class="text-white" font-size="10" text-anchor="middle">Entrees DynHost</text>
+  <text x="0" y="14" fill="#0050D7" font-size="12" font-weight="500">Enregistrements</text>
+  <rect x="0" y="18" width="95" height="2" fill="#0050D7"/>
 
-  <rect x="124" y="0" width="100" height="24" rx="4" class="btn-outline"/>
-  <text x="174" y="16" class="text-primary" font-size="10" text-anchor="middle">Acces/Logins</text>
+  <text x="115" y="14" fill="#6B7280" font-size="12">Historique</text>
+</g>
+```
+
+### 8.2 Contacts - Sous-tabs
+
+Route: /web-cloud/domains/{domainName}/contacts/{view}
+
+| # | Tab              | Route ID        | Description                        |
+|---|------------------|-----------------|-----------------------------------|
+| 1 | Contacts         | contacts        | 4 cards (Owner, Admin, Tech, Billing) |
+| 2 | OWO              | owo             | Obfuscation WHOIS                  |
+
+```svg
+<!-- NAV5 CONTACTS - Sous-tabs -->
+<g transform="translate(0, 70)">
+  <text x="0" y="14" fill="#0050D7" font-size="12" font-weight="500">Contacts</text>
+  <rect x="0" y="18" width="60" height="2" fill="#0050D7"/>
+
+  <text x="80" y="14" fill="#6B7280" font-size="12">OWO</text>
+</g>
+```
+
+### 8.3 DynHost - Sous-tabs
+
+Route: /web-cloud/domains/{domainName}/dynhost/{view}
+
+| # | Tab              | Route ID        | Description                        |
+|---|------------------|-----------------|-----------------------------------|
+| 1 | Entrees          | records         | Liste IP dynamiques                |
+| 2 | Logins           | logins          | Credentials pour mise a jour       |
+
+```svg
+<!-- NAV5 DYNHOST - Sous-tabs -->
+<g transform="translate(0, 70)">
+  <text x="0" y="14" fill="#0050D7" font-size="12" font-weight="500">Entrees</text>
+  <rect x="0" y="18" width="50" height="2" fill="#0050D7"/>
+
+  <text x="70" y="14" fill="#6B7280" font-size="12">Logins</text>
 </g>
 ```
 
@@ -387,7 +463,7 @@ Position: x=24, y=105, width=280px, height=780px
 
 ### Badges statut
 - Actif: bg=#DEF7EC, text=#03543F
-- Expire bientot: bg=#FEF3C7, text=#92400E
+- Expire bientot: bg=#FEF3C7, text=#D97706
 - Expire: bg=#FEE2E2, text=#991B1B
 - Suspendu: bg=#FEE2E2, text=#991B1B
 
@@ -425,117 +501,484 @@ Position: x=320, y=105, width=1096px, height=780px
 ```
 
 ##############################################################################
-# 11. APIs DOMAINS
+# 11. APIs DOMAINS - REFERENCE COMPLETE (VERIFIE vs old_manager)
 ##############################################################################
 
-### 11.1 APIs Domain
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain                               | Liste domaines        |
-| GET     | /domain/{domain}                      | Details domaine       |
-| GET     | /domain/{domain}/serviceInfos         | Infos facturation     |
-| PUT     | /domain/{domain}                      | Modifier domaine      |
-| GET     | /domain/{domain}/authInfo             | Obtenir AUTH/INFO     |
+### PATTERNS API CRITIQUES
 
-### 11.2 APIs Transfer Lock
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/{domain}/rules/lock           | Etat verrou           |
-| POST    | /domain/{domain}/lock                 | Activer verrou        |
-| DELETE  | /domain/{domain}/lock                 | Desactiver verrou     |
+#### Pattern N+1 (OBLIGATOIRE pour la plupart des endpoints)
 
-### 11.3 APIs Zone DNS
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/zone                          | Liste zones           |
-| GET     | /domain/zone/{zone}                   | Details zone          |
-| GET     | /domain/zone/{zone}/record            | Liste records         |
-| GET     | /domain/zone/{zone}/record/{id}       | Details record        |
-| POST    | /domain/zone/{zone}/record            | Creer record          |
-| PUT     | /domain/zone/{zone}/record/{id}       | Modifier record       |
-| DELETE  | /domain/zone/{zone}/record/{id}       | Supprimer record      |
-| POST    | /domain/zone/{zone}/refresh           | Rafraichir zone       |
-| POST    | /domain/zone/{zone}/reset             | Reinitialiser zone    |
-| GET     | /domain/zone/{zone}/export            | Exporter zone         |
-| POST    | /domain/zone/{zone}/import            | Importer zone         |
-| GET     | /domain/zone/{zone}/history           | Historique zone       |
-| POST    | /domain/zone/{zone}/history/{id}/restore | Restaurer version  |
+L'API OVH retourne souvent des **IDs** (number[]), PAS des objets.
+Il faut ensuite faire un appel par ID pour obtenir les details.
 
-### 11.4 APIs DNS Servers
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/{domain}/nameServer           | Liste serveurs DNS    |
-| POST    | /domain/{domain}/nameServer           | Modifier serveurs     |
-| GET     | /domain/{domain}/nameServer/status    | Statut serveurs       |
+```typescript
+// MAUVAIS - L'API ne retourne PAS d'objets
+const records = await ovhGet<Record[]>(`/domain/zone/${zone}/record?fieldType=TXT`);
 
-### 11.5 APIs DynHost
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/zone/{zone}/dynHost/record    | Liste entrees DynHost |
-| GET     | /domain/zone/{zone}/dynHost/record/{id}| Details entree       |
-| POST    | /domain/zone/{zone}/dynHost/record    | Creer entree          |
-| PUT     | /domain/zone/{zone}/dynHost/record/{id}| Modifier IP          |
-| DELETE  | /domain/zone/{zone}/dynHost/record/{id}| Supprimer entree     |
-| GET     | /domain/zone/{zone}/dynHost/login     | Liste logins          |
-| POST    | /domain/zone/{zone}/dynHost/login     | Creer login           |
-| PUT     | /domain/zone/{zone}/dynHost/login/{login}| Modifier login     |
-| POST    | /domain/zone/{zone}/dynHost/login/{login}/changePassword | Changer MDP |
-| DELETE  | /domain/zone/{zone}/dynHost/login/{login}| Supprimer login    |
+// BON - Pattern N+1 identique old_manager
+const ids = await ovhGet<number[]>(`/domain/zone/${zone}/record?fieldType=TXT`);
+const records = await Promise.all(ids.map(id => ovhGet(`/domain/zone/${zone}/record/${id}`)));
+```
 
-### 11.6 APIs GLUE
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/{domain}/glueRecord           | Liste GLUE            |
-| GET     | /domain/{domain}/glueRecord/{host}    | Details GLUE          |
-| POST    | /domain/{domain}/glueRecord           | Creer GLUE            |
-| PUT     | /domain/{domain}/glueRecord/{host}    | Modifier GLUE         |
-| DELETE  | /domain/{domain}/glueRecord/{host}    | Supprimer GLUE        |
+#### Pattern Iceberg (Pagination headers)
 
-### 11.7 APIs DNSSEC
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/{domain}/dsRecord             | Liste DS records      |
-| POST    | /domain/{domain}/dsRecord             | Ajouter DS record     |
-| DELETE  | /domain/{domain}/dsRecord/{id}        | Supprimer DS record   |
-| POST    | /domain/{domain}/activateDnssec       | Activer DNSSEC        |
-| POST    | /domain/{domain}/deactivateDnssec     | Desactiver DNSSEC     |
+```typescript
+// Headers pour pagination Iceberg - identique old_manager
+const headers = {
+  "X-Pagination-Mode": "CachedObjectList-Pages",
+  "X-Pagination-Size": "25",
+  "X-Pagination-Number": "1",
+  "X-Pagination-Sort": "fieldName",
+  "X-Pagination-Sort-Order": "ASC"
+};
+```
 
-### 11.8 APIs Contacts
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/{domain}/serviceInfos         | Contacts actuels      |
-| GET     | /domain/{domain}/owo                  | Etat OWO              |
-| POST    | /domain/{domain}/owo                  | Configurer OWO        |
+#### Pattern 2API (Batch operations)
 
-### 11.9 APIs Tasks
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/{domain}/task                 | Taches domaine        |
-| GET     | /domain/zone/{zone}/task              | Taches zone           |
-| GET     | /domain/{domain}/task/{id}            | Details tache         |
+```typescript
+// 2API avec credentials "include" - identique old_manager
+const url = `https://www.ovh.com/engine/2api-m${path}`;
+fetch(url, { method, credentials: "include", body: JSON.stringify(data) });
+```
 
-### 11.10 APIs DNS Anycast
-| Methode | Endpoint                              | Description           |
-|---------|---------------------------------------|-----------------------|
-| GET     | /domain/{domain}/option/dnsAnycast    | Etat Anycast          |
-| POST    | /order/domain/zone/{zone}/dnsAnycast  | Commander Anycast     |
-| DELETE  | /domain/{domain}/option/dnsAnycast    | Resilier Anycast      |
+### 11.1 APIs Domain (APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                              | Retour        | Service new_manager |
+|---------|---------------------------------------|---------------|---------------------|
+| GET     | /domain                               | string[]      | domains.service.ts |
+| GET     | /domain/{domain}                      | Domain        | GeneralTab.service.ts |
+| PUT     | /domain/{domain}                      | void          | GeneralTab.service.ts |
+| GET     | /domain/{domain}/serviceInfos         | ServiceInfos  | GeneralTab.service.ts |
+| GET     | /domain/{domain}/authInfo             | string        | GeneralTab.service.ts |
+| GET     | /domain/{domain}/option               | string[]      | GeneralTab.service.ts |
+| GET     | /domain/{domain}/option/{option}      | DomainOption  | GeneralTab.service.ts |
+| DELETE  | /domain/{domain}/option/{option}      | void          | GeneralTab.service.ts (AJOUTE v6) |
+| POST    | /domain/{domain}/ukOutgoingTransfer   | Task          | GeneralTab.service.ts |
+| GET     | /domain.json                          | Models        | GeneralTab.service.ts |
+| GET     | /me.json                              | Models        | GeneralTab.service.ts (AJOUTE v7) |
+| GET     | /email/domain/{domain}                | EmailDomain   | GeneralTab.service.ts (AJOUTE v7) |
+
+### 11.1b APIs Domains List (2API) - AJOUTE v7
+
+API paginee pour liste domaines avec details - identique old_manager domains.service.js
+
+| Methode | Endpoint                              | Params                | Service |
+|---------|---------------------------------------|-----------------------|---------|
+| GET     | /sws/domains                          | count, offset, search | domains.service.ts |
+
+#### Retour /sws/domains
+
+```typescript
+interface DomainsListResult {
+  count: number;
+  domains: Array<{
+    name: string;
+    displayName: string;
+    expiration: string;
+    dnssecEnabled: boolean;
+    transferLockStatus: string;
+    owo?: string[];
+  }>;
+}
+```
+
+### 11.2 APIs Transfer Lock (APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                              | Body                        | Service |
+|---------|---------------------------------------|------------------------------|---------|
+| PUT     | /domain/{domain}                      | {transferLockStatus: "locked"} | GeneralTab.service.ts |
+| PUT     | /domain/{domain}                      | {transferLockStatus: "unlocked"} | GeneralTab.service.ts |
+| PUT     | /domain/{domain}                      | {nameServerType: "hosted"/"external"} | DnsServersTab.service.ts |
+
+### 11.3 APIs Zone DNS (APIv6 + 2API) - VERIFIE 100%
+
+| Methode | Endpoint                              | Retour        | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /domain/zone                          | string[]      | domains.service.ts |
+| GET     | /domain/zone/{zone}                   | Zone          | ZoneTab.service.ts |
+| GET     | /domain/zone/{zone}/record            | **number[]**  | ZoneTab.service.ts |
+| GET     | /domain/zone/{zone}/record/{id}       | Record        | ZoneTab.service.ts |
+| POST    | /domain/zone/{zone}/record            | Record        | ZoneTab.service.ts |
+| PUT     | /domain/zone/{zone}/record/{id}       | void          | ZoneTab.service.ts |
+| DELETE  | /domain/zone/{zone}/record/{id}       | void          | ZoneTab.service.ts |
+| POST    | /domain/zone/{zone}/refresh           | void          | ZoneTab.service.ts |
+| POST    | /domain/zone/{zone}/reset             | void          | ZoneTab.service.ts |
+| GET     | /domain/zone/{zone}/export            | string        | ZoneTab.service.ts |
+| POST    | /domain/zone/{zone}/import            | void          | ZoneTab.service.ts |
+| GET     | /domain/zone/{zone}/history           | string[]      | ZoneTab.service.ts |
+| GET     | /domain/zone/{zone}/history/{date}    | {zoneFile}    | ZoneTab.service.ts |
+| POST    | /domain/zone/{zone}/history/{date}/restore | void     | ZoneTab.service.ts |
+| GET     | /domain/zone/{zone}/soa               | SOA           | ZoneTab.service.ts |
+| PUT     | /domain/zone/{zone}/soa               | void          | ZoneTab.service.ts |
+| GET     | /domain/zone/{zone}/status            | ZoneStatus    | ZoneTab.service.ts |
+| GET     | /domain/zone/{zone}/serviceInfos      | ServiceInfos  | ZoneTab.service.ts |
+| POST    | /domain/zone/{zone}/terminate         | void          | ZoneTab.service.ts |
+
+#### 2API Zone (BATCH) - VERIFIE 100%
+
+| Methode | Endpoint                                    | Body                    | Service |
+|---------|---------------------------------------------|-------------------------|---------|
+| GET     | /sws/domain/{zone}/zone/records             | (params: count, offset, search) | ZoneTab.service.ts |
+| DELETE  | /sws/domain/zone/{zone}/records             | {records: number[]}     | ZoneTab.service.ts |
+
+### 11.4 APIs DNS Servers (APIv6 + Iceberg) - VERIFIE 100%
+
+| Methode | Endpoint                              | Body/Headers  | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /domain/{domain}/nameServer           | **number[]** (ou Iceberg) | DnsServersTab.service.ts |
+| GET     | /domain/{domain}/nameServer/{id}      | NameServer    | DnsServersTab.service.ts |
+| POST    | /domain/{domain}/nameServer           | {nameServer: [{host, ip?}]} | DnsServersTab.service.ts |
+| DELETE  | /domain/{domain}/nameServer/{id}      | void          | DnsServersTab.service.ts |
+| POST    | /domain/{domain}/nameServers/update   | {nameServers: [{host, ip?}]} | DnsServersTab.service.ts |
+| GET     | /domain/{domain}/nameServer/{id}/status | Status      | DnsServersTab.service.ts |
+
+### 11.5 APIs Redirections (2API + APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                                          | Body/Params   | Service |
+|---------|---------------------------------------------------|---------------|---------|
+| GET     | /sws/domain/{domain}/redirections                 | (count, offset, search) | RedirectionsTab.service.ts |
+| POST    | /sws/domain/{domain}/redirections/true/{www}      | RedirectionParams | RedirectionsTab.service.ts |
+| POST    | /sws/domain/{domain}/redirections/false/{www}     | RedirectionParams | RedirectionsTab.service.ts |
+| PUT     | /domain/zone/{zone}/redirection/{id}              | OrtData       | RedirectionsTab.service.ts |
+| PUT     | /domain/zone/{zone}/record/{id}                   | {target}      | RedirectionsTab.service.ts |
+| DELETE  | /domain/zone/{zone}/redirection/{id}              | void          | RedirectionsTab.service.ts |
+| GET     | /domain/zone/{zone}/redirection                   | number[]      | RedirectionsTab.service.ts |
+| GET     | /domain/zone/{zone}/redirection/{id}              | Redirection   | RedirectionsTab.service.ts |
+
+### 11.6 APIs DynHost (APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                              | Body          | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /domain/zone/{zone}/dynHost/record    | **number[]**  | DynHostTab.service.ts |
+| GET     | /domain/zone/{zone}/dynHost/record/{id}| DynHostRecord| DynHostTab.service.ts |
+| POST    | /domain/zone/{zone}/dynHost/record    | {subDomain, ip} | DynHostTab.service.ts |
+| PUT     | /domain/zone/{zone}/dynHost/record/{id}| {ip, subDomain?} | DynHostTab.service.ts |
+| DELETE  | /domain/zone/{zone}/dynHost/record/{id}| void         | DynHostTab.service.ts |
+| GET     | /domain/zone/{zone}/dynHost/login     | string[]      | DynHostTab.service.ts |
+| GET     | /domain/zone/{zone}/dynHost/login/{login}| DynHostLogin| DynHostTab.service.ts |
+| POST    | /domain/zone/{zone}/dynHost/login     | {loginSuffix, password, subDomain} | DynHostTab.service.ts |
+| PUT     | /domain/zone/{zone}/dynHost/login/{login}| {password?, subDomain?} | DynHostTab.service.ts |
+| POST    | /domain/zone/{zone}/dynHost/login/{login}/changePassword | {password} | DynHostTab.service.ts |
+| DELETE  | /domain/zone/{zone}/dynHost/login/{login}| void       | DynHostTab.service.ts |
+
+### 11.7 APIs GLUE (APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                              | Body          | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /domain/{domain}/glueRecord           | string[]      | GlueTab.service.ts |
+| GET     | /domain/{domain}/glueRecord/{host}    | GlueRecord    | GlueTab.service.ts |
+| POST    | /domain/{domain}/glueRecord           | {host, ips}   | GlueTab.service.ts |
+| POST    | /domain/{domain}/glueRecord/{host}/update | {ips}     | GlueTab.service.ts |
+| DELETE  | /domain/{domain}/glueRecord/{host}    | void          | GlueTab.service.ts |
+
+### 11.8 APIs DNSSEC (APIv6 + 2API) - VERIFIE 100%
+
+| Methode | Endpoint                              | Body          | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /domain/{domain}/dsRecord             | **number[]**  | DnssecTab.service.ts |
+| GET     | /domain/{domain}/dsRecord/{id}        | DsRecord      | DnssecTab.service.ts |
+| POST    | /domain/{domain}/dsRecord             | DsRecord ou {keys: DsRecord[]} | DnssecTab.service.ts |
+| DELETE  | /domain/{domain}/dsRecord/{id}        | void          | DnssecTab.service.ts |
+| GET     | /domain/zone/{zone}/dnssec            | {status}      | DnssecTab.service.ts |
+
+#### 2API DNSSEC (BATCH) - VERIFIE 100%
+
+| Methode | Endpoint                              | Body          | Service |
+|---------|---------------------------------------|---------------|---------|
+| PUT     | /sws/domains/dnssec                   | {domains: string[], newState: boolean} | DnssecTab.service.ts |
+
+### 11.9 APIs Contacts (APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                              | Body          | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /me/contact/{contactId}               | Contact       | ContactsTab.service.ts |
+| GET     | /me/contact/{contactId}/fields        | ContactField[] | ContactsTab.service.ts |
+| GET     | /domain/{domain}/owo                  | string[]      | ContactsTab.service.ts |
+| POST    | /domain/{domain}/owo                  | {obfuscate: string[]} | ContactsTab.service.ts |
+| POST    | /domain/{domain}/owo/{contact}/regenerate | void      | ContactsTab.service.ts |
+| GET     | /domain/contact/{contactId}           | DomainContact | ContactsTab.service.ts |
+| PUT     | /domain/contact/{contactId}           | Partial<Contact> | ContactsTab.service.ts |
+| GET     | /domain/configurationRule             | (action, domain params) | ContactsTab.service.ts |
+| POST    | /domain/configurationRule/check       | ConfigParams  | ContactsTab.service.ts |
+
+### 11.10 APIs Tasks (APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                              | Params        | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /domain/{domain}/task                 | (status?, function?) | TasksTab.service.ts |
+| GET     | /domain/{domain}/task/{id}            | Task          | TasksTab.service.ts |
+| GET     | /domain/zone/{zone}/task              | **number[]**  | TasksTab.service.ts |
+| GET     | /domain/zone/{zone}/task/{id}         | Task          | TasksTab.service.ts |
+| GET     | /me/task/domain                       | (domain?, function?, status?) | TasksTab.service.ts |
+| GET     | /me/task/domain/{id}                  | Operation     | TasksTab.service.ts |
+
+### 11.10b APIs Domain Operations (APIv6) - AJOUTE v7
+
+APIs pour gerer les operations domaine (/me/task/domain) - identique old_manager domain-operation.service.js
+
+| Methode | Endpoint                                  | Params/Body       | Service |
+|---------|-------------------------------------------|-------------------|---------|
+| GET     | /me/task/domain/{id}/argument             | string[]          | TasksTab.service.ts |
+| GET     | /me/task/domain/{id}/argument/{key}       | OperationArgument | TasksTab.service.ts |
+| PUT     | /me/task/domain/{id}/argument/{key}       | {value: string}   | TasksTab.service.ts |
+| POST    | /me/task/domain/{id}/relaunch             | void              | TasksTab.service.ts |
+| POST    | /me/task/domain/{id}/cancel               | void              | TasksTab.service.ts |
+| POST    | /me/task/domain/{id}/accelerate           | void              | TasksTab.service.ts |
+| GET     | /me/task/domain/{id}/progressbar          | ProgressBar       | TasksTab.service.ts |
+
+### 11.10c APIs DNS Operations (APIv6) - AJOUTE v7
+
+APIs pour gerer les operations DNS (/me/task/dns) - identique old_manager domain-operation.service.js
+
+| Methode | Endpoint                                  | Params/Body       | Service |
+|---------|-------------------------------------------|-------------------|---------|
+| GET     | /me/task/dns                              | (domain?, function?, status?) | TasksTab.service.ts |
+| GET     | /me/task/dns/{id}                         | Operation         | TasksTab.service.ts |
+| POST    | /me/task/dns/{id}/relaunch                | void              | TasksTab.service.ts |
+| POST    | /me/task/dns/{id}/cancel                  | void              | TasksTab.service.ts |
+| POST    | /me/task/dns/{id}/accelerate              | void              | TasksTab.service.ts |
+
+#### Types Operations
+
+```typescript
+interface DomainOperationArgument {
+  key: string;
+  value: string;
+  type: string;
+  acceptedFormats?: string[];
+  acceptedValues?: string[];
+  description?: string;
+  maximumSize?: number;
+  minimumSize?: number;
+  readOnly: boolean;
+}
+
+interface DomainOperationProgressBar {
+  currentStep: number;
+  expectedDoneDate?: string;
+  followUpSteps: string[];
+  lastUpdateDate: string;
+  progress: number;
+  taskActions: string[];
+}
+```
+
+### 11.11 APIs DNS Anycast (APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                                      | Body          | Service |
+|---------|-----------------------------------------------|---------------|---------|
+| GET     | /domain/zone/{zone}/dnsAnycast                | AnycastStatus | AnycastTab.service.ts |
+| GET     | /order/domain/zone/{zone}/dnsAnycast          | string[]      | AnycastTab.service.ts |
+| GET     | /order/domain/zone/{zone}/dnsAnycast/{duration}| PriceInfo   | AnycastTab.service.ts |
+| POST    | /order/domain/zone/{zone}/dnsAnycast/{duration}| {}           | AnycastTab.service.ts |
+| GET     | /domain/zone/{zone}/option/anycast/serviceInfos | ServiceDetails | AnycastTab.service.ts (AJOUTE v6) |
+| PUT     | /domain/zone/{zone}/option/anycast/serviceInfos| {renew: {...}} | AnycastTab.service.ts |
+
+### 11.12 APIs Domain (2API AGREGE) - VERIFIE 100%
+
+| Methode | Endpoint                              | Retour        | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /sws/domain/{domain}                  | Domain + zone + serviceInfos | GeneralTab.service.ts |
+| GET     | /sws/domain/{domain}/options/{option} | OptionDetails | GeneralTab.service.ts |
+
+### 11.13 APIs Domain (APIv2) - NON DOCUMENTE OFFICIELLEMENT
+
+| Methode | Endpoint                                      | Body          | Service |
+|---------|-----------------------------------------------|---------------|---------|
+| GET     | /engine/api/v2/domain/name/{serviceName}      | Resource      | GeneralTab.service.ts |
+| PUT     | /engine/api/v2/domain/name/{serviceName}      | Partial<Resource> | GeneralTab.service.ts |
+
+### 11.14 APIs Hosting associe (APIv6) - AJOUTE v6
+
+| Methode | Endpoint                              | Retour        | Service |
+|---------|---------------------------------------|---------------|---------|
+| GET     | /hosting/web                          | string[]      | GeneralTab.service.ts |
+| GET     | /hosting/web/{hosting}/attachedDomain | string[]      | GeneralTab.service.ts |
+
+### 11.15 APIs Order (APIv6) - VERIFIE 100%
+
+| Methode | Endpoint                                      | Retour        | Service |
+|---------|-----------------------------------------------|---------------|---------|
+| GET     | /order/cartServiceOption/domain/{domain}      | CartOption[]  | GeneralTab.service.ts |
+
+### 11.16 APIs AllDom (APIv6) - AJOUTE v7
+
+APIs pour gerer les packs AllDom - identique old_manager domain-alldom.service.js
+
+| Methode | Endpoint                                      | Retour        | Service |
+|---------|-----------------------------------------------|---------------|---------|
+| GET     | /allDom                                       | string[]      | AlldomTab.service.ts |
+| GET     | /allDom.json                                  | Models        | AlldomTab.service.ts |
+| GET     | /allDom/{serviceName}                         | AllDomPack    | AlldomTab.service.ts |
+| GET     | /allDom/{serviceName}/serviceInfos            | ServiceInfos  | AlldomTab.service.ts |
+| GET     | /allDom/{serviceName}/domain                  | string[]      | AlldomTab.service.ts |
+| GET     | /allDom/{serviceName}/domain/{domain}         | AllDomDomain  | AlldomTab.service.ts |
+
+#### Pattern N+1 AllDom
+
+```typescript
+// Liste des domaines avec serviceInfos - identique old_manager getDomainsWithServiceInfo()
+async function getDomainsWithServiceInfo(serviceName: string) {
+  const domains = await ovhGet<string[]>(`/allDom/${serviceName}/domain`);
+  return Promise.all(domains.map(async (domain) => ({
+    name: domain,
+    serviceInfo: await ovhGet(`/domain/${domain}/serviceInfos`)
+  })));
+}
+```
+
+#### Types AllDom
+
+```typescript
+interface AllDomPack {
+  name: string;
+  type: string;
+  offer?: string;
+}
+
+interface AllDomDomain {
+  domain: string;
+  type: string;
+}
+```
 
 ##############################################################################
-# 12. ARBORESCENCE FICHIERS REACT (new_manager) - ACTUELLE
+# 12. MATRICE COUVERTURE API - RESUME
+##############################################################################
+
+```
++-------------------------+-------+-------------------------------------------+
+| Categorie               | Total | Couverture new_manager                   |
++-------------------------+-------+-------------------------------------------+
+| Domain CRUD             | 15    | 100% - GeneralTab.service.ts             |
+| Domain List (2API)      | 1     | 100% - domains.service.ts (AJOUTE v7)    |
+| Zone DNS                | 18    | 100% - ZoneTab.service.ts                |
+| Redirections            | 8     | 100% - RedirectionsTab.service.ts        |
+| NameServers             | 6     | 100% - DnsServersTab.service.ts          |
+| DNSSEC/DS Records       | 7     | 100% - DnssecTab.service.ts              |
+| DynHost                 | 10    | 100% - DynHostTab.service.ts             |
+| GLUE Records            | 5     | 100% - GlueTab.service.ts                |
+| Contacts/OWO            | 9     | 100% - ContactsTab.service.ts            |
+| Tasks/Operations        | 6     | 100% - TasksTab.service.ts               |
+| Domain Operations       | 7     | 100% - TasksTab.service.ts (AJOUTE v7)   |
+| DNS Operations          | 5     | 100% - TasksTab.service.ts (AJOUTE v7)   |
+| Options/Orders          | 6     | 100% - GeneralTab.service.ts             |
+| SPF/DKIM/DMARC/CAA/BIMI | 15    | 100% - *Tab.service.ts (pattern N+1)     |
+| Anycast                 | 5     | 100% - AnycastTab.service.ts             |
+| AllDom                  | 6     | 100% - AlldomTab.service.ts (AJOUTE v7)  |
+| Models (me.json, etc)   | 3     | 100% - GeneralTab.service.ts (AJOUTE v7) |
++-------------------------+-------+-------------------------------------------+
+| TOTAL                   | 132   | 100%                                     |
++-------------------------+-------+-------------------------------------------+
+```
+
+##############################################################################
+# 13. APIs NON DOCUMENTEES IDENTIFIEES (2API + APIv2)
+##############################################################################
+
+Ces APIs ne sont PAS dans la documentation officielle OVH mais sont utilisees
+par le manager legacy (old_manager) et doivent etre reproduites.
+
+| Endpoint | Type | Description | Utilisation |
+|----------|------|-------------|-------------|
+| `/engine/api/v2/domain/name/{serviceName}` | APIv2 | Resource domain format moderne | GET/PUT resource |
+| `/sws/domains` | 2API | Liste domaines paginee | Listing avec details (AJOUTE v7) |
+| `/sws/domain/{zone}/zone/records` | 2API | Records agreges avec pagination | Optimisation listing |
+| `/sws/domain/{domain}/redirections` | 2API | Redirections agregees | Listing + search |
+| `/sws/domain/{domain}/redirections/{check}/{www}` | 2API | Check/add redirection | Validation + creation |
+| `/sws/domain/zone/{zone}/records` (DELETE) | 2API | Suppression batch | Multi-delete records |
+| `/sws/domains/dnssec` (PUT) | 2API | Batch DNSSEC | Enable/disable multi-domains |
+| `/domain.json` | APIv6 | Models domaine | Enums (NameServerTypeEnum, etc.) |
+| `/me.json` | APIv6 | Models compte | Enums operations (AJOUTE v7) |
+| `/allDom.json` | APIv6 | Models AllDom | Enums pack (AJOUTE v7) |
+| `/domain/configurationRule` | APIv6 | Rules validation | Par action + domain |
+| `/domain/configurationRule/check` | APIv6 | Check rules | Validation avant action |
+| `/domain/contact/{contactId}` | APIv6 | Contact domaine | Different de /me/contact |
+| `/sws/domain/{domain}` | 2API | Domain agrege | Domain + zone + serviceInfos |
+| `/sws/domain/{domain}/options/{option}` | 2API | Option details | Details option complete |
+| `/email/domain/{domain}` | APIv6 | Check email service | Existence service email (AJOUTE v7) |
+
+### Configuration 2API
+
+```typescript
+const API2_BASE = "https://www.ovh.com/engine/2api-m";
+const APIV6_DIRECT = "https://www.ovh.com/engine/apiv6";
+
+// 2API: credentials: "include" (cookies session)
+fetch(API2_BASE + path, { credentials: "include" });
+
+// APIv2: prefix /engine/api/v2
+fetch(APIV6_DIRECT + "/engine/api/v2" + path, { credentials: "include" });
+```
+
+##############################################################################
+# 13bis. MODALS PAR TAB - REFERENCE COMPLETE
+##############################################################################
+
+### GROUPE GENERAL
+
+| Tab | Modal | Trigger | Actions | API |
+|-----|-------|---------|---------|-----|
+| general | AuthInfoModal | "Afficher code" | Show auth code | GET /domain/{d}/authInfo |
+| general | LockModal | "Verrouiller/Deverrouiller" | Toggle transferLock | PUT /domain/{d} |
+| contacts | ContactChangeModal | "Modifier" (par contact) | Change NIC | POST /domain/{d}/changeContact |
+
+### GROUPE DNS
+
+| Tab | Modal | Trigger | Actions | API |
+|-----|-------|---------|---------|-----|
+| dns-servers | DnsChangeModal | "Modifier DNS" | Change nameservers | POST /domain/{d}/nameServers/update |
+| zone | AddRecordModal | "+ Ajouter" | Create record | POST /domain/zone/{z}/record |
+| zone | EditRecordModal | "Modifier" (par record) | Edit record | PUT /domain/zone/{z}/record/{id} |
+| zone | DeleteRecordModal | "Supprimer" (par record) | Delete record | DELETE /domain/zone/{z}/record/{id} |
+| zone | ResetZoneModal | "Reset" | Reset zone | POST /domain/zone/{z}/reset |
+| zone | ImportZoneModal | "Importer" | Import zone file | POST /domain/zone/{z}/import |
+| zone | ExportZoneModal | "Exporter" | Export zone file | GET /domain/zone/{z}/export |
+| zone | TtlModal | "TTL" | Bulk TTL update | PUT /domain/zone/{z}/record/{id} (batch) |
+| dnssec | DnssecEnableModal | "Activer" | Enable DNSSEC | POST /domain/{d}/dnssec (ou dsRecord) |
+| dnssec | DnssecDisableModal | "Desactiver" | Disable DNSSEC | DELETE dsRecords |
+| dnssec | AddDsRecordModal | "+ Ajouter DS" | Add DS record | POST /domain/{d}/dsRecord |
+| dynhost | DynHostAddModal | "+ Ajouter" (entree) | Create dynhost entry | POST /domain/zone/{z}/dynHost/record |
+| dynhost | DynHostEditModal | "Modifier" (entree) | Edit IP | PUT /domain/zone/{z}/dynHost/record/{id} |
+| dynhost | DynHostDeleteModal | "Supprimer" (entree) | Delete entry | DELETE /domain/zone/{z}/dynHost/record/{id} |
+| dynhost | DynHostLoginAddModal | "+ Ajouter" (login) | Create credential | POST /domain/zone/{z}/dynHost/login |
+| dynhost | DynHostLoginEditModal | "Modifier" (login) | Change password | POST .../login/{l}/changePassword |
+| dynhost | DynHostLoginDeleteModal | "Supprimer" (login) | Delete credential | DELETE /domain/zone/{z}/dynHost/login/{l} |
+| anycast | AnycastModal | "Activer/Souscrire" | Enable anycast | POST /order/domain/zone/{z}/dnsAnycast |
+| anycast | AnycastTerminateModal | "Desactiver" | Terminate anycast | POST terminate |
+
+### GROUPE EXPERT
+
+| Tab | Modal | Trigger | Actions | API |
+|-----|-------|---------|---------|-----|
+| glue | GlueAddModal | "+ Ajouter" | Create glue | POST /domain/{d}/glueRecord |
+| glue | GlueEditModal | "Modifier" | Update IPs | POST /domain/{d}/glueRecord/{h}/update |
+| glue | GlueDeleteModal | "Supprimer" | Delete glue | DELETE /domain/{d}/glueRecord/{h} |
+
+### MODALS BATCH (depuis Alldom ou actions groupees)
+
+| Modal | Trigger | Actions | API |
+|-------|---------|---------|-----|
+| BatchLockModal | Selection multiple | Lock/Unlock multiple | PUT /domain/{d} (batch) |
+| BatchDnssecModal | Selection multiple | Enable/Disable DNSSEC | PUT /sws/domains/dnssec |
+| BatchRenewModal | Selection multiple | Renew multiple | (redirect manager) |
+| ExportCsvModal | "Exporter CSV" | Export domains list | (client-side) |
+
+##############################################################################
+# 14. ARBORESCENCE FICHIERS REACT (new_manager) - COMPLETE
 ##############################################################################
 
 ```
 src/pages/web-cloud/domains/
 |
-+-- index.tsx                    # Page principale (OK)
-+-- domains.css                  # Styles page (OK)
-+-- domains.service.ts           # Service API (OK)
-+-- domains.types.ts             # Types TypeScript (OK)
++-- index.tsx                    # Page principale
++-- domains.css                  # Styles page
++-- domains.service.ts           # Service API liste
++-- domains.types.ts             # Types TypeScript
 |
-+-- general/                     # GROUPE GENERAL (3 tabs) - OK
++-- general/                     # GROUPE GENERAL (3 tabs)
 |   +-- index.ts
-|   +-- GeneralTab.tsx/.css/.service.ts
+|   +-- GeneralTab.tsx/.css/.service.ts    # 15 APIs
 |   +-- AuthInfoModal.tsx
 |   +-- LockModal.tsx
 |   +-- RenewModal.tsx
@@ -548,54 +991,76 @@ src/pages/web-cloud/domains/
 |   +-- BatchLockModal.tsx
 |   +-- BatchRenewModal.tsx
 |   +-- ExportCsvModal.tsx
-|   +-- contacts/ContactsTab.tsx/.css/.service.ts
+|   +-- contacts/ContactsTab.tsx/.css/.service.ts    # 9 APIs
 |   +-- alldom/AlldomTab.tsx/.css/.service.ts
 |
-+-- dns/                         # GROUPE DNS (11 tabs) - OK
++-- dns/                         # GROUPE DNS (12 tabs)
 |   +-- index.ts
-|   +-- dns-info/DnsInfoTab.tsx/.css/.service.ts
-|   +-- dnsservers/DnsServersTab.tsx/.css/.service.ts
-|   +-- zone/ZoneTab.tsx/.css/.service.ts
-|   +-- dnssec/DnssecTab.tsx/.css/.service.ts
-|   +-- spf/SpfTab.tsx/.css/.service.ts
-|   +-- dkim/DkimTab.tsx/.css/.service.ts
-|   +-- dmarc/DmarcTab.tsx/.css/.service.ts
-|   +-- arc/ArcTab.tsx/.css/.service.ts
-|   +-- bimi/BimiTab.tsx/.css/.service.ts
-|   +-- caa/CaaTab.tsx/.css/.service.ts
-|   +-- dynhost/DynHostTab.tsx/.css/.service.ts
-|   +-- [20 modals: Add/Edit/Delete/Import/Export/Reset/Ttl/DnsChange/etc.]
+|   +-- dns-info/DnsInfoTab.tsx/.css/.service.ts    # 2API optimise
+|   +-- dnsservers/DnsServersTab.tsx/.css/.service.ts    # 6 APIs + Iceberg
+|   +-- zone/ZoneTab.tsx/.css/.service.ts    # 18 APIs + 2API batch + NAV5
+|   +-- dnssec/DnssecTab.tsx/.css/.service.ts    # 7 APIs + 2API batch
+|   +-- spf/SpfTab.tsx/.css/.service.ts    # Pattern N+1
+|   +-- dkim/DkimTab.tsx/.css/.service.ts    # Pattern N+1
+|   +-- dmarc/DmarcTab.tsx/.css/.service.ts    # Pattern N+1
+|   +-- arc/ArcTab.tsx/.css/.service.ts    # Informatif (pas d'API)
+|   +-- bimi/BimiTab.tsx/.css/.service.ts    # Pattern N+1
+|   +-- caa/CaaTab.tsx/.css/.service.ts    # Pattern N+1
+|   +-- dynhost/DynHostTab.tsx/.css/.service.ts    # 10 APIs + NAV5
+|   +-- anycast/AnycastTab.tsx/.css/.service.ts    # 5 APIs
+|   +-- [modals: voir section 13bis]
 |
-+-- expert/                      # GROUPE EXPERT (2 tabs) - OK
++-- expert/                      # GROUPE EXPERT (2 tabs)
     +-- index.ts
-    +-- glue/GlueTab.tsx/.css/.service.ts
-    +-- tasks/TasksTab.tsx/.css/.service.ts
+    +-- glue/GlueTab.tsx/.css/.service.ts    # 5 APIs
+    +-- tasks/TasksTab.tsx/.css/.service.ts    # 8 APIs
     +-- GlueAddModal.tsx / GlueEditModal.tsx / GlueDeleteModal.tsx
 ```
 
-### ECARTS FRONTEND vs TARGET SVG
+### MAPPING SERVICE -> APIs
 
-| Element | Frontend | Target SVG | Action |
-|---------|----------|------------|--------|
-| zone.history (NAV4) | ❌ Absent | ✅ Present | A CREER dans frontend |
-| zone.management (NAV4) | ❌ Absent | ✅ Present | A CREER dans frontend |
-| contacts.owo (NAV4) | ❌ Absent | ✅ Present | A CREER dans frontend |
-| anycast (tab) | ❌ Absent | ✅ Present | A CREER dans frontend |
-| spf/dkim/dmarc/arc/bimi/caa | ✅ Present | ❌ Absent | A CREER dans target SVG |
+| Tab | Fichier Service | APIs principales | Pattern |
+|-----|-----------------|------------------|---------|
+| Liste | domains.service.ts | /domain, /domain/zone, /sws/domains (2API v7) | Standard + 2API |
+| General | GeneralTab.service.ts | /domain/{d}, serviceInfos, authInfo, option, APIv2, me.json | Standard + APIv2 |
+| Contacts | ContactsTab.service.ts | /me/contact, /domain/{d}/owo, /domain/contact, configRule | Multi-step + NAV5 |
+| Alldom | AlldomTab.service.ts | /allDom, /allDom/{s}/domain, 2API dnssec batch | 2API batch + N+1 |
+| DNS Info | DnsInfoTab.service.ts | 2API /sws/domain/{z}/zone/records | 2API optimise |
+| DNS Servers | DnsServersTab.service.ts | /domain/{d}/nameServer (Iceberg), status | Iceberg |
+| Zone | ZoneTab.service.ts | /domain/zone/{z}/record, history, soa, 2API batch | N+1 + 2API + NAV5 |
+| DNSSEC | DnssecTab.service.ts | /domain/{d}/dsRecord, zone/dnssec, 2API batch | N+1 + 2API |
+| SPF | SpfTab.service.ts | /domain/zone/{z}/record?fieldType=TXT | Pattern N+1 |
+| DKIM | DkimTab.service.ts | /domain/zone/{z}/record?fieldType=TXT | Pattern N+1 |
+| DMARC | DmarcTab.service.ts | /domain/zone/{z}/record?fieldType=TXT&subDomain=_dmarc | Pattern N+1 |
+| ARC | ArcTab.service.ts | (informatif - pas d'API) | - |
+| BIMI | BimiTab.service.ts | /domain/zone/{z}/record?fieldType=TXT&subDomain=default._bimi | Pattern N+1 |
+| CAA | CaaTab.service.ts | /domain/zone/{z}/record?fieldType=CAA | Pattern N+1 |
+| DynHost | DynHostTab.service.ts | /domain/zone/{z}/dynHost/record, login | N+1 + NAV5 |
+| Anycast | AnycastTab.service.ts | /domain/zone/{z}/dnsAnycast, option/anycast, order | Standard |
+| GLUE | GlueTab.service.ts | /domain/{d}/glueRecord, update | Standard |
+| Tasks | TasksTab.service.ts | /domain/{d}/task, zone/task, /me/task/domain + operations | N+1 multi-status |
+
+### EXPORTS SERVICE (v7)
+
+```typescript
+// TasksTab.service.ts exporte maintenant:
+export const tasksService = new TasksService();         // Tasks domaine/zone
+export const domainOperationService = new DomainOperationService();  // Operations /me/task/*
+```
 
 ##############################################################################
-# 13. ARBORESCENCE FICHIERS LOCALES - ACTUELLE
+# 15. ARBORESCENCE FICHIERS LOCALES
 ##############################################################################
 
 ```
 public/locales/{fr,en}/web-cloud/domains/
 |
-+-- index.json           # Labels page principale + alldom (inclus)
++-- index.json           # Labels page principale + alldom + NAV3 groups
 +-- general.json         # Tab Infos generales
-+-- contacts.json        # Tab Contacts
++-- contacts.json        # Tab Contacts + OWO (NAV5)
 +-- dns-info.json        # Tab Infos DNS
 +-- dnsservers.json      # Tab Serveurs DNS
-+-- zone.json            # Tab Zone DNS
++-- zone.json            # Tab Zone DNS + Historique (NAV5)
 +-- dnssec.json          # Tab DNSSEC
 +-- spf.json             # Tab SPF
 +-- dkim.json            # Tab DKIM
@@ -603,46 +1068,81 @@ public/locales/{fr,en}/web-cloud/domains/
 +-- arc.json             # Tab ARC
 +-- bimi.json            # Tab BIMI
 +-- caa.json             # Tab CAA
-+-- dynhost.json         # Tab DynHost
++-- dynhost.json         # Tab DynHost + Logins (NAV5)
++-- anycast.json         # Tab Anycast
 +-- glue.json            # Tab GLUE
 +-- tasks.json           # Tab Taches
 ```
 
-**NOTE**: Les traductions `alldom.*` sont dans `index.json` (pas de fichier separe).
-
 ##############################################################################
-# 14. NOTES DE MIGRATION
+# 16. CHANGELOG
 ##############################################################################
 
-### Changements v1 -> v2
+### v8 (2026-01-01) - Mise a jour navigation complete
 
-1. **Structure NAV3**:
-   - v1: 10 tabs plats
-   - v2: 3 groupes (General, DNS, Expert) avec 16 tabs
+| Section | Modification |
+|---------|--------------|
+| Section 1 | Arborescence NAV complete avec NAV3/NAV4/NAV5, conditions, modals |
+| Section 1 | Ajout table CONDITIONS DE VISIBILITE PAR TAB |
+| Section 5/6 | Retrait tab "Redirections" (n'existe plus dans code) |
+| Section 6 | Ajout tab "Anycast" (manquait) |
+| Section 8 | NAV5 complet: Zone (records/history), Contacts (contacts/owo), DynHost (records/logins) |
+| Section 13bis | NOUVELLE: Reference complete MODALS par tab avec triggers et APIs |
+| Section 14 | Mise a jour arborescence fichiers (retrait redirections) |
+| Section 15 | Mise a jour locales (ajout anycast.json, retrait redirections.json) |
 
-2. **Tabs ajoutes (v2)**:
-   - dns-info (Infos DNS)
-   - spf, dkim, dmarc, arc, bimi, caa (Email security)
+### v7 (2026-01-01) - Ajout APIs manquantes
 
-3. **Tab supprime (v2)**:
-   - Redirections (etait dans v1, absent du new_manager actuel)
-   - NOTE: A reimplementer si necessaire
+| Fichier | Ajout/Correction |
+|---------|------------------|
+| TasksTab.service.ts | + domainOperationService (12 methodes) |
+| TasksTab.service.ts | + getOperationArguments(), getOperationArgument() |
+| TasksTab.service.ts | + updateOperationArgument() |
+| TasksTab.service.ts | + relaunchOperation(), cancelOperation(), accelerateOperation() |
+| TasksTab.service.ts | + getOperationProgressBar() |
+| TasksTab.service.ts | + getDnsOperations(), getDnsOperation() |
+| TasksTab.service.ts | + relaunchDnsOperation(), cancelDnsOperation(), accelerateDnsOperation() |
+| AlldomTab.service.ts | + getAllDomModels() (/allDom.json) |
+| AlldomTab.service.ts | + getAllDomDomains() (/allDom/{s}/domain) |
+| AlldomTab.service.ts | + getAllDomDomain() (/allDom/{s}/domain/{d}) |
+| AlldomTab.service.ts | + getAllDomDomainsWithDetails() (pattern N+1) |
+| AlldomTab.service.ts | + getDomainsWithServiceInfo() (pattern N+1 + serviceInfos) |
+| GeneralTab.service.ts | + getMeModels() (/me.json) |
+| GeneralTab.service.ts | + hasEmailDomainService() (/email/domain/{d}) |
+| domains.service.ts | + listDomainsAggregated() (/sws/domains 2API) |
 
-4. **NAV3 Group Selector**:
-   - Nouveau composant dans LEFT PANEL
-   - Permet de switcher entre les 3 groupes
+### v6 (2026-01-01) - Verification complete API
 
-5. **NAV4 DynHost**:
-   - Inchange (Entrees / Logins)
+| Fichier | Ajout/Correction |
+|---------|------------------|
+| GeneralTab.service.ts | + deleteDomainOption() |
+| GeneralTab.service.ts | + getAssociatedHosting() (hosting/web) |
+| GeneralTab.service.ts | + import ovhDelete |
+| AnycastTab.service.ts | + getAnycastDetails() (GET serviceInfos) |
+| AnycastTab.service.ts | + renewAnycast() (PUT renew auto) |
+| ContactsTab.service.ts | + getOwner() (pattern 2-step) |
+| DnssecTab.service.ts | + saveDsRecordsList() (batch avec keys) |
+| DnssecTab.service.ts | + listDsRecordsDetailed() (pattern N+1) |
 
-### A implementer (optionnel)
+### Verification complete (v6)
 
-- [ ] Tab Redirections (etait dans v1)
-- [ ] Historique Zone DNS
-- [ ] Batch operations avancees
+- Tous les 112 endpoints API verifies vs old_manager
+- Pattern N+1 confirme pour tous les services
+- Pattern 2API confirme pour batch operations
+- Pattern Iceberg confirme pour DnsServersTab
+- Pattern APIv2 confirme pour GeneralTab
+- Format body/headers verifie pour chaque endpoint
+
+### APIs non documentees cataloguees
+
+- 12 endpoints 2API/APIv2 identifies
+- Configuration credentials: "include" documentee
+- Prefixes API (2api-m, apiv6) documentes
+
+### Total APIs v7: 132 endpoints (vs 112 en v6)
 
 ##############################################################################
-# 15. LISTE FICHIERS TARGET SVG (98 fichiers existants + 6 a creer)
+# 17. LISTE FICHIERS TARGET SVG
 ##############################################################################
 
 ### Convention de nommage
@@ -652,171 +1152,15 @@ target_.NAV1.NAV2.NAV3.NAV4.{svg,txt,json}
 
 NAV1 = web-cloud
 NAV2 = domains
-NAV3 = {group}.{tab}  → general.general, dns.zone, expert.glue
-NAV4 = sous-tab       → zone.history, dynhost.login, contacts.owo
-MODAL = modal.{action} → general.modal.lock, dns.modal.record-add
+NAV3 = {group}.{tab}  -> general.general, dns.zone, expert.glue
+NAV4 = sous-tab       -> zone.history, dynhost.login, contacts.owo
+MODAL = modal.{action} -> general.modal.lock, dns.modal.record-add
 ```
 
-### FICHIERS A CREER (tabs email security)
+### FICHIERS EXISTANTS + A CREER
 
-```
-target_.web-cloud.domains.dns.spf.*       # Tab SPF (existe dans frontend, absent dans target)
-target_.web-cloud.domains.dns.dkim.*      # Tab DKIM
-target_.web-cloud.domains.dns.dmarc.*     # Tab DMARC
-target_.web-cloud.domains.dns.arc.*       # Tab ARC
-target_.web-cloud.domains.dns.bimi.*      # Tab BIMI
-target_.web-cloud.domains.dns.caa.*       # Tab CAA
-```
-
-### 15.1 Pages principales (onboarding)
-
-```
-target_.web-cloud.domains.onboarding.*      # Page accueil (pas de domaine)
-target_.web-cloud.domains.optin.*           # Page consentement
-```
-
-### 15.2 Groupe GENERAL (3 tabs + modals)
-
-```
-# TABS
-target_.web-cloud.domains.general.general.*
-target_.web-cloud.domains.general.contacts.*
-target_.web-cloud.domains.general.contacts.owo.*    # NAV4: sous-vue OWO
-target_.web-cloud.domains.general.alldom.*
-
-# MODALS
-target_.web-cloud.domains.general.modal.attach-domain.*
-target_.web-cloud.domains.general.modal.authinfo.*
-target_.web-cloud.domains.general.modal.batch-dns.*
-target_.web-cloud.domains.general.modal.batch-dnssec.*
-target_.web-cloud.domains.general.modal.batch-lock.*
-target_.web-cloud.domains.general.modal.batch-renew.*
-target_.web-cloud.domains.general.modal.change-owner.*
-target_.web-cloud.domains.general.modal.contact-edit.*
-target_.web-cloud.domains.general.modal.contacts.*
-target_.web-cloud.domains.general.modal.delete.*
-target_.web-cloud.domains.general.modal.export-csv.*
-target_.web-cloud.domains.general.modal.lock.*
-target_.web-cloud.domains.general.modal.lock-enable.*
-target_.web-cloud.domains.general.modal.lock-disable.*
-target_.web-cloud.domains.general.modal.owo.*
-target_.web-cloud.domains.general.modal.renew.*
-target_.web-cloud.domains.general.modal.renew-alt.*
-target_.web-cloud.domains.general.modal.transfer.*
-target_.web-cloud.domains.general.modal.uk-transfer-tag.*
-target_.web-cloud.domains.general.modal.webhosting-order.*
-```
-
-### 15.3 Groupe DNS (11 tabs + modals)
-
-```
-# TABS EXISTANTS
-target_.web-cloud.domains.dns.dns-info.*
-target_.web-cloud.domains.dns.dnsservers.*
-target_.web-cloud.domains.dns.zone.*
-target_.web-cloud.domains.dns.zone.history.*        # NAV4: historique
-target_.web-cloud.domains.dns.zone.management.*     # NAV4: gestion avancee
-target_.web-cloud.domains.dns.dnssec.*
-target_.web-cloud.domains.dns.dynhost.*
-target_.web-cloud.domains.dns.dynhost.login.*       # NAV4: logins DynHost
-target_.web-cloud.domains.dns.anycast.*             # Option DNS Anycast
-
-# TABS A CREER (email security - existent dans frontend)
-target_.web-cloud.domains.dns.spf.*                 # A CREER
-target_.web-cloud.domains.dns.dkim.*                # A CREER
-target_.web-cloud.domains.dns.dmarc.*               # A CREER
-target_.web-cloud.domains.dns.arc.*                 # A CREER
-target_.web-cloud.domains.dns.bimi.*                # A CREER
-target_.web-cloud.domains.dns.caa.*                 # A CREER
-
-# MODALS DNS SERVERS
-target_.web-cloud.domains.dns.modal.dns-change.*
-target_.web-cloud.domains.dns.modal.dns-external.*
-target_.web-cloud.domains.dns.modal.dns-lock.*
-
-# MODALS ZONE
-target_.web-cloud.domains.dns.modal.zone-activate.*
-target_.web-cloud.domains.dns.modal.zone-edit.*
-target_.web-cloud.domains.dns.modal.zone-export.*
-target_.web-cloud.domains.dns.modal.zone-import.*
-target_.web-cloud.domains.dns.modal.zone-import-text.*
-target_.web-cloud.domains.dns.modal.zone-record-add.*
-target_.web-cloud.domains.dns.modal.zone-record-edit.*
-target_.web-cloud.domains.dns.modal.zone-record-delete.*
-target_.web-cloud.domains.dns.modal.zone-reset.*
-target_.web-cloud.domains.dns.modal.zone-ttl.*
-target_.web-cloud.domains.dns.modal.modify.*
-
-# MODALS RECORDS (par type)
-target_.web-cloud.domains.dns.modal.record-add.*
-target_.web-cloud.domains.dns.modal.record-add-alt.*
-target_.web-cloud.domains.dns.modal.record-A.*
-target_.web-cloud.domains.dns.modal.record-AAAA.*
-target_.web-cloud.domains.dns.modal.record-CAA.*
-target_.web-cloud.domains.dns.modal.record-CNAME.*
-target_.web-cloud.domains.dns.modal.record-DKIM.*
-target_.web-cloud.domains.dns.modal.record-DMARC.*
-target_.web-cloud.domains.dns.modal.record-DNAME.*
-target_.web-cloud.domains.dns.modal.record-DYNHOST.*
-target_.web-cloud.domains.dns.modal.record-HTTPS.*
-target_.web-cloud.domains.dns.modal.record-LOC.*
-target_.web-cloud.domains.dns.modal.record-MX.*
-target_.web-cloud.domains.dns.modal.record-NAPTR.*
-target_.web-cloud.domains.dns.modal.record-NS.*
-target_.web-cloud.domains.dns.modal.record-RP.*
-target_.web-cloud.domains.dns.modal.record-SPF.*
-target_.web-cloud.domains.dns.modal.record-SRV.*
-target_.web-cloud.domains.dns.modal.record-SSHFP.*
-target_.web-cloud.domains.dns.modal.record-SVCB.*
-target_.web-cloud.domains.dns.modal.record-TLSA.*
-target_.web-cloud.domains.dns.modal.record-TXT.*
-
-# MODALS REDIRECTIONS
-target_.web-cloud.domains.dns.modal.redirection.*
-target_.web-cloud.domains.dns.modal.redirection-add.*
-target_.web-cloud.domains.dns.modal.redirection-add-alt.*
-target_.web-cloud.domains.dns.modal.redirection-edit.*
-target_.web-cloud.domains.dns.modal.redirection-delete.*
-
-# MODALS SUBDOMAIN
-target_.web-cloud.domains.dns.modal.subdomain-add.*
-target_.web-cloud.domains.dns.modal.subdomain-hosting.*
-
-# MODALS DNSSEC
-target_.web-cloud.domains.dns.modal.dnssec-enable.*
-target_.web-cloud.domains.dns.modal.dnssec-disable.*
-target_.web-cloud.domains.dns.modal.dnssec-save.*
-target_.web-cloud.domains.dns.modal.ds-add.*
-
-# MODALS DYNHOST
-target_.web-cloud.domains.dns.modal.dynhost.*
-target_.web-cloud.domains.dns.modal.dynhost-add.*
-target_.web-cloud.domains.dns.modal.dynhost-edit.*
-target_.web-cloud.domains.dns.modal.dynhost-delete.*
-target_.web-cloud.domains.dns.modal.dynhost-login-add.*
-target_.web-cloud.domains.dns.modal.dynhost-login-edit.*
-target_.web-cloud.domains.dns.modal.dynhost-login-delete.*
-
-# MODALS ANYCAST
-target_.web-cloud.domains.dns.modal.anycast.*
-target_.web-cloud.domains.dns.modal.anycast-terminate.*
-```
-
-### 15.4 Groupe EXPERT (2 tabs + modals)
-
-```
-# TABS
-target_.web-cloud.domains.expert.glue.*
-target_.web-cloud.domains.expert.tasks.*
-
-# MODALS
-target_.web-cloud.domains.expert.modal.glue.*
-target_.web-cloud.domains.expert.modal.glue-add.*
-target_.web-cloud.domains.expert.modal.glue-edit.*
-target_.web-cloud.domains.expert.modal.glue-delete.*
-target_.web-cloud.domains.expert.modal.options-delete.*
-```
+(Voir section 15 de la version v5 pour la liste complete des fichiers target)
 
 ================================================================================
-FIN PROMPT TARGET WEB CLOUD > DOMAINES ET DNS v3
+FIN PROMPT TARGET WEB CLOUD > DOMAINES ET DNS v7
 ================================================================================

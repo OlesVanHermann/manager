@@ -1,0 +1,384 @@
+################################################################################
+#                    MÉTHODE DE DÉFACTORISATION COHÉRENTE
+#                         prompt_layout_method.txt
+################################################################################
+
+##############################################################################
+# 0. TERMINOLOGIE OFFICIELLE
+##############################################################################
+
+┌─────────┬──────────────┬──────────────┬─────────────────────────────────────────┐
+│ Niveau  │ Nom          │ Position     │ Description                             │
+├─────────┼──────────────┼──────────────┼─────────────────────────────────────────┤
+│ NAV1    │ Univers      │ Header       │ Header OVH (Web Cloud, Public Cloud...) │
+│ NAV2    │ Produit      │ Sous-header  │ Section (Domaines, Hébergement...)      │
+│ NAV3    │ Groupement   │ LEFT PANEL   │ Toggle TOUJOURS en sidebar,             │
+│         │              │ (au-dessus   │ AU-DESSUS de [Rechercher]               │
+│         │              │ de search)   │ ([Général][Sites][Expert]...)           │
+│ NAV4    │ Fonction     │ RIGHT PANEL  │ Onglets TOUJOURS dans le panel          │
+│         │              │ (tabs)       │ principal (FTP, SSL, BDD...)            │
+└─────────┴──────────────┴──────────────┴─────────────────────────────────────────┘
+
+RÈGLES DE POSITION :
+
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │ NAV1 - Univers (Header bleu OVH)                                            │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │ NAV2 - Produit (Sous-header blanc)                                          │
+  ├───────────────────────┬─────────────────────────────────────────────────────┤
+  │ LEFT PANEL (280px)    │ RIGHT PANEL (flex: 1)                               │
+  │ ┌───────────────────┐ │ ┌─────────────────────────────────────────────────┐ │
+  │ │ NAV3 - Groupement │ │ │ Titre service                                   │ │
+  │ │ [Général][Sites]  │ │ ├─────────────────────────────────────────────────┤ │
+  │ ├───────────────────┤ │ │ NAV4 - Fonction                                 │ │
+  │ │ 🔍 Rechercher...  │ │ │ [FTP] [SSL] [BDD] [CDN] [Cron]                  │ │
+  │ ├───────────────────┤ │ ├─────────────────────────────────────────────────┤ │
+  │ │ Liste services    │ │ │ Contenu de l'onglet sélectionné                 │ │
+  │ └───────────────────┘ │ └─────────────────────────────────────────────────┘ │
+  └───────────────────────┴─────────────────────────────────────────────────────┘
+
+IMPORTANT :
+- NAV3 (Groupement) est TOUJOURS dans le LEFT PANEL, AU-DESSUS de la recherche
+- NAV4 (Fonction) est TOUJOURS dans le RIGHT PANEL (tabs principaux)
+
+##############################################################################
+# 1. PRINCIPE DE LA DÉFACTORISATION
+##############################################################################
+
+La défactorisation signifie que chaque section (domains, hosting, emails...)
+a son propre CSS COMPLET et AUTONOME, sans dépendance à des styles partagés.
+
+AVANTAGES:
+- Isolation totale (pas de conflits CSS)
+- Maintenance simplifiée par section
+- Possibilité de modifier une section sans impacter les autres
+
+RISQUE:
+- Incohérence visuelle entre sections si les specs ne sont pas respectées
+
+SOLUTION:
+- Template de layout obligatoire pour chaque nouvelle section
+- Script de vérification automatique (prompt_target_check.py)
+
+##############################################################################
+# 2. TEMPLATE DE LAYOUT OBLIGATOIRE
+##############################################################################
+
+Chaque section DOIT avoir ces 4 éléments de layout avec les specs exactes:
+
+### 2.1 CONTAINER (.{prefix}-page ou .{prefix}-layout)
+
+```css
+.{prefix}-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  /* PAS DE PADDING ICI - c'est le conteneur racine */
+}
+```
+
+### 2.2 SPLIT (.{prefix}-split ou .{prefix}-detail-container)
+
+```css
+.{prefix}-split {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  
+  /* === SPECS CRITIQUES === */
+  padding: 15px 24px 24px 24px;  /* top=15px (gap NAV2), autres=24px */
+  gap: 16px;                     /* entre sidebar et main */
+}
+```
+
+### 2.3 SIDEBAR (.{prefix}-sidebar ou .{prefix}-left-panel)
+
+```css
+.{prefix}-sidebar {
+  /* === SPECS CRITIQUES === */
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  flex-shrink: 0;
+  
+  /* Reste du style */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  overflow: hidden;
+}
+```
+
+### 2.4 MAIN (.{prefix}-main ou .{prefix}-right-panel)
+
+```css
+.{prefix}-main {
+  /* === SPECS CRITIQUES === */
+  flex: 1;
+  min-width: 0;
+  
+  /* Reste du style */
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+```
+
+##############################################################################
+# 3. STRUCTURE JSX CORRESPONDANTE
+##############################################################################
+
+```tsx
+// {Section}Layout.tsx
+import './{section}.css';
+
+export function {Section}Layout() {
+  return (
+    <div className="{prefix}-page">           {/* CONTAINER */}
+      <div className="{prefix}-split">        {/* SPLIT avec padding + gap */}
+        <{Section}Sidebar />                  {/* SIDEBAR 280px */}
+        <div className="{prefix}-main">       {/* MAIN flex:1 */}
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+##############################################################################
+# 4. CHECKLIST DE CRÉATION D'UNE NOUVELLE SECTION
+##############################################################################
+
+Avant de merger une nouvelle section, vérifier:
+
+□ Container .{prefix}-page existe avec display: flex; flex-direction: column;
+□ Split .{prefix}-split existe avec:
+    □ display: flex
+    □ padding: 15px 24px 24px 24px
+    □ gap: 16px
+□ Sidebar .{prefix}-sidebar existe avec:
+    □ width: 280px
+    □ min-width: 280px
+    □ max-width: 280px
+□ Main .{prefix}-main existe avec:
+    □ flex: 1
+□ Exécuter: python3 prompt_target_check.py src/pages/web-cloud
+□ Zéro erreur critique
+
+##############################################################################
+# 5. SCRIPT DE VÉRIFICATION
+##############################################################################
+
+### Usage
+
+```bash
+# Vérifier toutes les sections de web-cloud
+python3 prompt_target_check.py /home/ubuntu/aiapp/frontend/src/pages/web-cloud
+
+# Intégrer dans le build
+npm run build && python3 prompt_target_check.py src/pages/web-cloud || exit 1
+```
+
+### Ce que le script vérifie
+
+1. COMPLÉTUDE: Chaque section a les 4 éléments (container, split, sidebar, main)
+2. CONFORMITÉ: Chaque propriété a la valeur exacte des specs
+3. COHÉRENCE: Toutes les sections ont les mêmes valeurs
+
+### Output attendu (succès)
+
+```
+================================================================================
+  📋 TABLEAU DE COMPARAISON
+================================================================================
+
+  Élément              |   domains    |   hosting    |    emails    |  wordpress  
+  ------------------------------------------------------------------------------------
+  split.padding-top    |     15px     |     15px     |     15px     |     15px    
+  split.gap            |     16px     |     16px     |     16px     |     16px    
+  sidebar.width        |    280px     |    280px     |    280px     |    280px    
+
+  ✅ TOUS LES LAYOUTS SONT COHÉRENTS ET CONFORMES!
+```
+
+##############################################################################
+# 6. ERREURS COURANTES ET SOLUTIONS
+##############################################################################
+
+### Erreur 1: padding: 24px au lieu de 15px 24px 24px 24px
+
+```css
+/* ❌ INCORRECT */
+.dom-detail-container {
+  padding: 24px;  /* padding-top est 24px au lieu de 15px */
+}
+
+/* ✅ CORRECT */
+.dom-detail-container {
+  padding: 15px 24px 24px 24px;  /* top right bottom left */
+}
+```
+
+### Erreur 2: gap manquant sur le split
+
+```css
+/* ❌ INCORRECT */
+.hosting-split {
+  display: flex;
+  /* gap manquant! */
+}
+
+/* ✅ CORRECT */
+.hosting-split {
+  display: flex;
+  gap: 16px;
+}
+```
+
+### Erreur 3: padding sur le mauvais conteneur
+
+```css
+/* ❌ INCORRECT - padding sur le container au lieu du split */
+.hosting-page {
+  padding: 15px 24px 24px 24px;
+}
+.hosting-split {
+  /* pas de padding */
+}
+
+/* ✅ CORRECT - padding sur le split */
+.hosting-page {
+  /* pas de padding */
+}
+.hosting-split {
+  padding: 15px 24px 24px 24px;
+}
+```
+
+### Erreur 4: Sidebar avec mauvaise largeur
+
+```css
+/* ❌ INCORRECT */
+.access-left-panel {
+  width: 320px;  /* trop large! */
+}
+
+/* ✅ CORRECT */
+.access-left-panel {
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+}
+```
+
+### Erreur 5: Classe manquante dans le CSS
+
+Le JSX utilise `.hosting-layout` mais le CSS définit `.hosting-page`:
+
+```tsx
+// ❌ INCORRECT
+<div className="hosting-layout">  // Cette classe n'existe pas!
+```
+
+```tsx
+// ✅ CORRECT - utiliser la classe définie dans le CSS
+<div className="hosting-page">
+```
+
+Ou ajouter la classe manquante dans le CSS.
+
+##############################################################################
+# 7. VARIABLES CSS PARTAGÉES (OPTIONNEL)
+##############################################################################
+
+Pour faciliter la maintenance, on peut définir des variables CSS globales
+dans un fichier partagé, MAIS chaque section doit quand même redéfinir
+ses classes localement (défactorisation).
+
+```css
+/* src/styles/layout-vars.css (optionnel, pour référence) */
+:root {
+  /* Specs Layout */
+  --layout-nav1-height: 50px;
+  --layout-nav2-height: 40px;
+  --layout-gap-nav2-content: 15px;
+  --layout-margin-lateral: 24px;
+  --layout-sidebar-width: 280px;
+  --layout-gap-panels: 16px;
+  
+  /* Utilisation dans les sections */
+  --layout-split-padding: 15px 24px 24px 24px;
+}
+```
+
+Puis dans chaque section (copier les valeurs, pas les variables):
+
+```css
+/* domains/domains.css */
+.dom-detail-container {
+  padding: 15px 24px 24px 24px;  /* Valeur en dur, pas var() */
+  gap: 16px;
+}
+```
+
+##############################################################################
+# 8. WORKFLOW RECOMMANDÉ
+##############################################################################
+
+### Pour créer une nouvelle section:
+
+1. COPIER le template de layout
+2. REMPLACER le préfixe ({prefix} → nom de la section)
+3. AJOUTER les styles spécifiques
+4. VÉRIFIER avec prompt_target_check.py
+5. CORRIGER les erreurs
+6. MERGER
+
+### Pour modifier une section existante:
+
+1. NE PAS toucher aux valeurs critiques (padding, gap, width)
+2. Si modification nécessaire, appliquer à TOUTES les sections
+3. VÉRIFIER la cohérence avec prompt_target_check.py
+
+### Pour le CI/CD:
+
+```yaml
+# .github/workflows/build.yml
+- name: Check layout consistency
+  run: python3 scripts/prompt_target_check.py src/pages/web-cloud
+  
+- name: Build
+  run: npm run build
+```
+
+##############################################################################
+# 9. RÉSUMÉ DES SPECS (À MÉMORISER)
+##############################################################################
+
+┌─────────────────────────────────────────────────────────────┐
+│                    SPECS CRITIQUES                          │
+├─────────────────────────────────────────────────────────────┤
+│  NAV1 height       │  50px                                  │
+│  NAV2 height       │  40px                                  │
+│  Gap NAV2→Content  │  15px (padding-top du split)           │
+│  Margins latérales │  24px (padding left/right du split)    │
+│  Sidebar width     │  280px (min/max aussi)                 │
+│  Gap panels        │  16px (entre sidebar et main)          │
+├─────────────────────────────────────────────────────────────┤
+│  .{prefix}-split {                                          │
+│    padding: 15px 24px 24px 24px;                            │
+│    gap: 16px;                                               │
+│  }                                                          │
+│  .{prefix}-sidebar {                                        │
+│    width: 280px;                                            │
+│  }                                                          │
+└─────────────────────────────────────────────────────────────┘

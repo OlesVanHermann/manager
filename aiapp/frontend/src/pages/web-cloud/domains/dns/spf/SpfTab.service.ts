@@ -1,5 +1,6 @@
 // ============================================================
 // SPF SERVICE - SPF record management
+// Pattern N+1 identique old_manager: list IDs puis fetch details
 // ============================================================
 
 import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../services/api";
@@ -23,14 +24,27 @@ export interface SpfConfig {
 export const spfService = {
   /**
    * Get current SPF record
+   * Pattern N+1 identique old_manager:
+   * 1. GET /domain/zone/{zone}/record?fieldType=TXT&subDomain= -> retourne IDs
+   * 2. GET /domain/zone/{zone}/record/{id} pour chaque ID
    */
   async getCurrentSpf(zoneName: string): Promise<SpfRecord | null> {
     try {
-      const records = await ovhGet<SpfRecord[]>(`/domain/zone/${zoneName}/record?fieldType=TXT&subDomain=`);
-      if (Array.isArray(records)) {
-        return records.find((r) => r.target?.startsWith("v=spf1")) || null;
+      // Step 1: Get record IDs (API returns number[], not objects)
+      const ids = await ovhGet<number[]>(
+        `/domain/zone/${zoneName}/record?fieldType=TXT&subDomain=`
+      );
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return null;
       }
-      return null;
+      // Step 2: Fetch each record details (N+1 pattern like old_manager)
+      const records = await Promise.all(
+        ids.map((id) =>
+          ovhGet<SpfRecord>(`/domain/zone/${zoneName}/record/${id}`)
+        )
+      );
+      // Find SPF record
+      return records.find((r) => r.target?.startsWith("v=spf1")) || null;
     } catch {
       return null;
     }

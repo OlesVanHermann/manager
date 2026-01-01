@@ -3,7 +3,7 @@
 // DEFACTORISATION: Ce service est ISOLÉ et ne doit pas être partagé
 // ============================================================
 
-import { ovhApi } from '../../../../../../../services/api';
+import { ovhApi } from '../../../../../../services/api';
 import type { TelephonyPhone } from '../../../voip.types';
 
 export interface PhoneFunctionKey {

@@ -1,8 +1,9 @@
 // ============================================================
 // DKIM SERVICE - DKIM record management
+// Pattern N+1 identique old_manager: list IDs puis fetch details
 // ============================================================
 
-import { ovhApi } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhDelete } from "../../../../../services/api";
 
 export interface DkimRecord {
   id: number;
@@ -14,24 +15,37 @@ export interface DkimRecord {
 export const dkimService = {
   /**
    * Get DKIM records
+   * Pattern N+1 identique old_manager:
+   * 1. GET /domain/zone/{zone}/record?fieldType=TXT -> retourne IDs
+   * 2. GET /domain/zone/{zone}/record/{id} pour chaque ID
+   * 3. Filter ceux qui ont _domainkey dans subDomain
    */
   async getDkimRecords(zoneName: string): Promise<DkimRecord[]> {
     try {
-      const records = await ovhApi.get<{ id: number; fieldType: string; subDomain: string; target: string }[]>(
+      // Step 1: Get record IDs (API returns number[], not objects)
+      const ids = await ovhGet<number[]>(
         `/domain/zone/${zoneName}/record?fieldType=TXT`
       );
-
-      if (Array.isArray(records)) {
-        return records
-          .filter((r) => r.subDomain?.includes("._domainkey"))
-          .map((r) => ({
-            id: r.id,
-            selector: r.subDomain.replace("._domainkey", ""),
-            subDomain: r.subDomain,
-            target: r.target,
-          }));
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return [];
       }
-      return [];
+      // Step 2: Fetch each record details (N+1 pattern like old_manager)
+      const records = await Promise.all(
+        ids.map((id) =>
+          ovhGet<{ id: number; fieldType: string; subDomain: string; target: string }>(
+            `/domain/zone/${zoneName}/record/${id}`
+          )
+        )
+      );
+      // Step 3: Filter DKIM records and map
+      return records
+        .filter((r) => r.subDomain?.includes("._domainkey"))
+        .map((r) => ({
+          id: r.id,
+          selector: r.subDomain.replace("._domainkey", ""),
+          subDomain: r.subDomain,
+          target: r.target,
+        }));
     } catch {
       return [];
     }
@@ -39,24 +53,28 @@ export const dkimService = {
 
   /**
    * Create DKIM record
+   * POST /domain/zone/{zone}/record - Identique old_manager
+   * POST /domain/zone/{zone}/refresh - Identique old_manager
    */
   async createDkim(zoneName: string, selector: string, publicKey: string): Promise<void> {
     const target = `v=DKIM1; k=rsa; p=${publicKey}`;
-    await ovhApi.post(`/domain/zone/${zoneName}/record`, {
+    await ovhPost(`/domain/zone/${zoneName}/record`, {
       fieldType: "TXT",
       subDomain: `${selector}._domainkey`,
       target,
       ttl: 3600,
     });
-    await ovhApi.post(`/domain/zone/${zoneName}/refresh`, {});
+    await ovhPost(`/domain/zone/${zoneName}/refresh`, {});
   },
 
   /**
    * Delete DKIM record
+   * DELETE /domain/zone/{zone}/record/{id} - Identique old_manager
+   * POST /domain/zone/{zone}/refresh - Identique old_manager
    */
   async deleteDkim(zoneName: string, recordId: number): Promise<void> {
-    await ovhApi.delete(`/domain/zone/${zoneName}/record/${recordId}`);
-    await ovhApi.post(`/domain/zone/${zoneName}/refresh`, {});
+    await ovhDelete(`/domain/zone/${zoneName}/record/${recordId}`);
+    await ovhPost(`/domain/zone/${zoneName}/refresh`, {});
   },
 
   /**

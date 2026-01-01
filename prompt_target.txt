@@ -1,9 +1,10 @@
 ================================================================================
-PROMPT TARGET v4 - Génération SVG Manager OVH
+PROMPT TARGET v5 - Génération SVG Manager OVH
 ================================================================================
 
-Version: v4 (2026-01-01)
+Version: v5 (2026-01-01)
 Changelog:
+- v5: Terminologie officielle NAV1-NAV4 avec positions fixes
 - v4: NAV3 selector en sidebar pour sections complexes (8+ tabs)
 - v3: Standardisation NAV1-NAV4, dimensions unifiées
 - v2: Ajout composants réutilisables
@@ -149,52 +150,75 @@ x=0 x=24                 x=304 x=320                        x=1416 x=1440
 | 105 | 105 | 765px |
 
 ##############################################################################
-# 3. HIÉRARCHIE NAV STANDARDISÉE
+# 3. TERMINOLOGIE OFFICIELLE & HIÉRARCHIE NAV
 ##############################################################################
+
+### Terminologie officielle
+
+┌─────────┬──────────────┬──────────────┬─────────────────────────────────────────┐
+│ Niveau  │ Nom          │ Position     │ Description                             │
+├─────────┼──────────────┼──────────────┼─────────────────────────────────────────┤
+│ NAV1    │ Univers      │ Header       │ Header OVH (Web Cloud, Public Cloud...) │
+│ NAV2    │ Produit      │ Sous-header  │ Section (Domaines, Hébergement...)      │
+│ NAV3    │ Groupement   │ LEFT PANEL   │ Toggle TOUJOURS en sidebar,             │
+│         │              │ (au-dessus   │ AU-DESSUS de [Rechercher]               │
+│         │              │ de search)   │ ([Général][Sites][Expert]...)           │
+│ NAV4    │ Fonction     │ RIGHT PANEL  │ Onglets TOUJOURS dans le panel          │
+│         │              │ (tabs)       │ principal (FTP, SSL, BDD...)            │
+└─────────┴──────────────┴──────────────┴─────────────────────────────────────────┘
+
+### Règles de position
+
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │ NAV1 - Univers (Header bleu OVH)                                            │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │ NAV2 - Produit (Sous-header blanc)                                          │
+  ├───────────────────────┬─────────────────────────────────────────────────────┤
+  │ LEFT PANEL (280px)    │ RIGHT PANEL (flex: 1)                               │
+  │ ┌───────────────────┐ │ ┌─────────────────────────────────────────────────┐ │
+  │ │ NAV3 - Groupement │ │ │ Titre service                                   │ │
+  │ │ [Général][Sites]  │ │ ├─────────────────────────────────────────────────┤ │
+  │ ├───────────────────┤ │ │ NAV4 - Fonction                                 │ │
+  │ │ 🔍 Rechercher...  │ │ │ [FTP] [SSL] [BDD] [CDN] [Cron]                  │ │
+  │ ├───────────────────┤ │ ├─────────────────────────────────────────────────┤ │
+  │ │ Liste services    │ │ │ Contenu de l'onglet sélectionné                 │ │
+  │ └───────────────────┘ │ └─────────────────────────────────────────────────┘ │
+  └───────────────────────┴─────────────────────────────────────────────────────┘
+
+IMPORTANT :
+- NAV3 (Groupement) est TOUJOURS dans le LEFT PANEL, AU-DESSUS de la recherche
+- NAV4 (Fonction) est TOUJOURS dans le RIGHT PANEL (tabs principaux)
 
 ### Modèle de navigation
 ```
-NAV1 ──► Header OVH (univers: Web Cloud, Public Cloud, Network, etc.)
+NAV1 ──► Univers (Header OVH: Web Cloud, Public Cloud, Network, etc.)
   │
-  └─► NAV2 ──► Section (Domaines, Hébergement, Emails, VoIP, Accès, etc.)
+  └─► NAV2 ──► Produit (Domaines, Hébergement, Emails, VoIP, Accès, etc.)
         │
-        └─► NAV3 ──► Tabs RIGHT PANEL (onglets principaux)
+        └─► NAV3 ──► Groupement dans LEFT PANEL ([Général][Sites][Expert])
               │
-              └─► NAV4 ──► Sous-tabs RIGHT PANEL (si nécessaire)
+              └─► NAV4 ──► Fonction dans RIGHT PANEL (FTP, SSL, BDD...)
 ```
 
-### Définitions
-| Niveau | Position | Rôle | Exemple |
-|--------|----------|------|---------|
-| **NAV1** | y=0, h=50px | Univers OVH | Web Cloud, Public Cloud, Network |
-| **NAV2** | y=50, h=40px | Section dans univers | Domaines, Hébergement, Emails |
-| **NAV3** | y=38 dans right panel | Tabs principaux | Général, Zone DNS, Sauvegardes |
-| **NAV4** | y=70 dans right panel | Sous-tabs (optionnel) | Statut, Diagnostic, Stats |
-| **ACTIONS** | Variable | Boutons d'action | +, ✎, ×, 🔄 |
+### Dimensions
+| Niveau | Position | Height | Exemple |
+|--------|----------|--------|---------|
+| **NAV1** Univers | y=0 | 50px | Web Cloud, Public Cloud, Network |
+| **NAV2** Produit | y=50 | 40px | Domaines, Hébergement, Emails |
+| **NAV3** Groupement | LEFT PANEL (top) | ~44px | [Général] [Sites] [Expert] |
+| **NAV4** Fonction | RIGHT PANEL y=38 | ~26px | FTP, SSL, BDD, CDN, Cron |
+| **ACTIONS** | Variable | - | +, ✎, ×, 🔄 |
 
-### Extension NAV3 → NAV4 → NAV5 (sections complexes)
+### Structure LEFT PANEL avec NAV3 Groupement
 
-Pour les sections avec beaucoup de tabs (ex: Hébergement 16+ tabs), la hiérarchie
-peut être étendue à 3 niveaux avec un sélecteur de groupe dans le LEFT PANEL :
-
-```
-NAV3 ──► Groupes dans LEFT PANEL ([Général] [Sites] [Expert])
-  │
-  └─► NAV4 ──► Tabs RIGHT PANEL (équivalent NAV3 standard)
-        │
-        └─► NAV5 ──► Sous-tabs RIGHT PANEL (équivalent NAV4 standard)
-```
-
-### Structure LEFT PANEL avec NAV3 (sections complexes)
-
-Quand une section a 10+ tabs, le sélecteur NAV3 est placé **AU-DESSUS** de la
-barre de recherche dans le LEFT PANEL (sidebar) :
+Le sélecteur NAV3 (Groupement) est TOUJOURS placé **AU-DESSUS** de la barre de
+recherche dans le LEFT PANEL (sidebar) :
 
 ```
 ┌─────────────────────────────────────┐
-│  [Général]  [Sites]  [Expert]       │  ← NAV3 selector (boutons toggle)
+│  [Général]  [Sites]  [Expert]       │  ← NAV3 Groupement (TOUJOURS ici)
 ├─────────────────────────────────────┤
-│  🔍 Rechercher...                   │  ← Search (standard)
+│  🔍 Rechercher...                   │  ← Search
 ├─────────────────────────────────────┤
 │  Filtrer ▾              N services  │  ← Filter + count
 ├─────────────────────────────────────┤
@@ -206,11 +230,11 @@ barre de recherche dans le LEFT PANEL (sidebar) :
 ```
 
 **Comportement :**
-- NAV3 sélectionné → filtre les NAV4 tabs affichés dans le RIGHT PANEL
+- NAV3 Groupement sélectionné → filtre les NAV4 Fonction affichés dans le RIGHT PANEL
 - [Général] est le groupe par défaut au chargement
-- La liste des services reste la même, seuls les tabs changent
+- La liste des services reste la même, seuls les tabs NAV4 changent
 
-**CSS NAV3 Selector :**
+**CSS NAV3 Groupement :**
 ```css
 .{prefix}-nav3-selector {
   display: flex;
@@ -322,44 +346,47 @@ Indicateur actif: rect height=3px, fill=#0050D7, y=85
 ```
 
 ##############################################################################
-# 6. NAV3 - TABS RIGHT PANEL
+# 6. NAV4 FONCTION - TABS RIGHT PANEL
 ##############################################################################
 
 Position: y=38 dans le right panel (relatif à transform)
 Style: Boutons pill, actif=bg-primary, inactif=btn-outline
 
+NOTE: NAV4 (Fonction) est TOUJOURS dans le RIGHT PANEL.
+      NAV3 (Groupement) est dans le LEFT PANEL et filtre les NAV4 affichés.
+
 ```svg
-<!-- NAV3 - Tabs right panel (dans <g transform="translate(320, 105)">) -->
+<!-- NAV4 Fonction - Tabs right panel (dans <g transform="translate(320, 105)">) -->
 <g transform="translate(0, 38)">
   <!-- Tab actif -->
   <rect x="0" y="0" width="65" height="26" rx="4" fill="#0050D7"/>
-  <text x="32" y="17" fill="#FFFFFF" font-size="11" text-anchor="middle">Général</text>
-  
+  <text x="32" y="17" fill="#FFFFFF" font-size="11" text-anchor="middle">FTP</text>
+
   <!-- Tab inactif -->
   <rect x="69" y="0" width="70" height="26" rx="4" fill="#FFFFFF" stroke="#0050D7"/>
-  <text x="104" y="17" fill="#0050D7" font-size="11" text-anchor="middle">Zone DNS</text>
-  
-  <!-- Autres tabs... -->
+  <text x="104" y="17" fill="#0050D7" font-size="11" text-anchor="middle">SSL</text>
+
+  <!-- Autres tabs NAV4... -->
 </g>
 ```
 
 ##############################################################################
-# 7. NAV4 - SOUS-TABS RIGHT PANEL
+# 7. SOUS-TABS (optionnel, sous NAV4)
 ##############################################################################
 
-Position: y=70 dans le right panel (sous NAV3)
+Position: y=70 dans le right panel (sous NAV4)
 Style: Texte souligné, actif=primary+underline, inactif=muted
 
 ```svg
-<!-- NAV4 - Sous-tabs (dans le même groupe que NAV3) -->
+<!-- Sous-tabs (dans le même groupe que NAV4) -->
 <g transform="translate(0, 70)">
   <!-- Sous-tab actif -->
   <text x="0" y="14" fill="#0050D7" font-size="12" font-weight="500">Statut</text>
   <rect x="0" y="18" width="40" height="2" fill="#0050D7"/>
-  
+
   <!-- Sous-tab inactif -->
   <text x="60" y="14" fill="#6B7280" font-size="12">Diagnostic</text>
-  
+
   <!-- Autres sous-tabs... -->
 </g>
 ```
@@ -414,9 +441,7 @@ Style: Texte souligné, actif=primary+underline, inactif=muted
       <rect x="0" y="0" width="280" height="765" rx="8" class="bg-white"/>
       <rect x="0" y="0" width="280" height="765" rx="8" class="border"/>
 
-      <!-- NAV3 Selector (OPTIONNEL - si 8+ tabs) -->
-      <!-- Décommenter si la section a 8+ tabs regroupés -->
-      <!--
+      <!-- NAV3 Groupement (TOUJOURS au-dessus de recherche) -->
       <rect x="0" y="0" width="280" height="44" rx="8" fill="#F9FAFB"/>
       <rect x="12" y="10" width="80" height="24" rx="4" fill="#0050D7"/>
       <text x="52" y="26" class="text-white" font-size="11" text-anchor="middle">Général</text>
@@ -425,16 +450,15 @@ Style: Texte souligné, actif=primary+underline, inactif=muted
       <rect x="180" y="10" width="80" height="24" rx="4" fill="#FFFFFF" stroke="#E5E7EB"/>
       <text x="220" y="26" class="text-muted" font-size="11" text-anchor="middle">Expert</text>
       <line x1="0" y1="44" x2="280" y2="44" class="divider"/>
-      -->
 
-      <!-- Recherche (y=12 sans NAV3, y=56 avec NAV3) -->
-      <rect x="12" y="12" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
-      <text x="26" y="34" class="text-muted" font-size="12">🔍 Rechercher...</text>
+      <!-- Recherche (y=56, sous NAV3 Groupement) -->
+      <rect x="12" y="56" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+      <text x="26" y="78" class="text-muted" font-size="12">🔍 Rechercher...</text>
 
-      <!-- Compteur (y=68 sans NAV3, y=112 avec NAV3) -->
-      <text x="12" y="68" class="text-muted" font-size="11">{serviceCount} services</text>
+      <!-- Compteur (y=112, sous recherche) -->
+      <text x="12" y="112" class="text-muted" font-size="11">{serviceCount} services</text>
 
-      <!-- Service items (y=80 sans NAV3, y=124 avec NAV3) -->
+      <!-- Service items (y=124, sous compteur) -->
       
     </g>
     
@@ -447,18 +471,19 @@ Style: Texte souligné, actif=primary+underline, inactif=muted
       <g transform="translate(20, 0)">
         <!-- HEADER PAGE (y=0 à y=35) -->
         <text x="0" y="24" class="text-dark" font-size="18" font-weight="600">{serviceName}</text>
-        
-        <!-- NAV3 TABS (y=38) -->
+
+        <!-- NAV4 FONCTION - TABS (y=38) -->
+        <!-- Note: NAV3 Groupement est dans le LEFT PANEL -->
         <g transform="translate(0, 38)">
-          <!-- Tabs -->
+          <!-- Tabs NAV4 Fonction -->
         </g>
 
-        <!-- NAV4 SOUS-TABS (y=70, si nécessaire) -->
+        <!-- SOUS-TABS (y=70, si nécessaire) -->
         <g transform="translate(0, 70)">
-          <!-- Sous-tabs -->
+          <!-- Sous-tabs optionnels -->
         </g>
 
-        <!-- CONTENU (y=100 ou y=90 si pas de NAV4) -->
+        <!-- CONTENU (y=100 ou y=90 si pas de sous-tabs) -->
         <g transform="translate(0, 100)">
           <!-- Contenu page -->
         </g>
@@ -650,5 +675,5 @@ Pour chaque écran:
 □ Sauvegarder via tee + present_files
 
 ================================================================================
-FIN PROMPT TARGET v3
+FIN PROMPT TARGET v5
 ================================================================================

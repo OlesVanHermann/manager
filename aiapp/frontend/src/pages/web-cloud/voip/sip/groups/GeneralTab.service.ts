@@ -4,8 +4,8 @@
 // DEFACTORISATION: Ce service est ISOLÉ et ne doit pas être partagé
 // ============================================================
 
-import { ovhApi } from '../../../../../../../services/api';
-import type { TelephonyBillingAccount } from '../../../voip.types';
+import { ovhApi } from '../../../../../services/api';
+import type { TelephonyBillingAccount } from '../voip.types';
 
 // Types locaux pour ce tab
 export interface GeneralServiceInfos {

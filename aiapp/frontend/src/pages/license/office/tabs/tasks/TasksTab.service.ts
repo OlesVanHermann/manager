@@ -2,7 +2,7 @@
 // OFFICE/TASKS - Service local isolé
 // ============================================================
 
-import { ovhApi } from '../../../../../../services/api';
+import { ovhApi } from '../../../../../services/api';
 import type { OfficeTask } from '../../office.types';
 
 export async function listTasks(serviceName: string): Promise<number[]> {

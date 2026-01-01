@@ -4,13 +4,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { log } from "../../../services/logger";
 import { accessService } from "./access.service";
-import ConnectionsPage from "./connections";
+import ConnectionsPage from "./general";
 import OverTheBoxPage from "./overthebox";
 import "./index.css";
 
 type ServiceType = "connection" | "overthebox";
-type CategoryFilter = "all" | "connection" | "overthebox";
+type CategoryFilter = "connection" | "overthebox";  // Pas de "all" - NAV3 = choix explicite
 
 interface ServiceItem {
   id: string;
@@ -35,7 +36,7 @@ export default function AccessPage() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<ServiceItem | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("connection");
 
   const load = useCallback(async () => {
     try {
@@ -97,7 +98,7 @@ export default function AccessPage() {
   const filteredServices = services.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || s.type === categoryFilter;
+    const matchesCategory = s.type === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
@@ -167,8 +168,31 @@ export default function AccessPage() {
 
   return (
     <div className="access-page">
+      <div className="access-content">
       {/* LEFT PANEL */}
       <div className="access-left-panel">
+        {/* NAV3 Selector - Général / OTB (pas de "Tout") */}
+        <div className="access-nav3-selector">
+          <button
+            className={`access-nav3-btn ${categoryFilter === "connection" ? "active" : ""}`}
+            onClick={() => {
+              setCategoryFilter("connection");
+              setSelected(null);  // Reset sélection au changement de catégorie
+            }}
+          >
+            {t("categories.general")}
+          </button>
+          <button
+            className={`access-nav3-btn ${categoryFilter === "overthebox" ? "active" : ""}`}
+            onClick={() => {
+              setCategoryFilter("overthebox");
+              setSelected(null);  // Reset sélection au changement de catégorie
+            }}
+          >
+            {t("categories.overthebox")}
+          </button>
+        </div>
+
         {/* Recherche */}
         <div className="access-search">
           <input
@@ -181,36 +205,8 @@ export default function AccessPage() {
           />
         </div>
 
-        {/* Catégories */}
-        <div className="access-categories">
-          <button
-            className={`access-category-btn ${categoryFilter === "all" ? "active" : ""}`}
-            onClick={() => {
-              setCategoryFilter("all");
-            }}
-          >
-            {t("categories.all")} ({services.length})
-          </button>
-          <button
-            className={`access-category-btn ${categoryFilter === "connection" ? "active" : ""}`}
-            onClick={() => {
-              setCategoryFilter("connection");
-            }}
-          >
-            {t("categories.connections")} ({connectionCount})
-          </button>
-          <button
-            className={`access-category-btn ${categoryFilter === "overthebox" ? "active" : ""}`}
-            onClick={() => {
-              setCategoryFilter("overthebox");
-            }}
-          >
-            {t("categories.overthebox")} ({otbCount})
-          </button>
-        </div>
-
-        {/* Compteur */}
-        <div className="access-counter">
+        {/* Filter + Compteur */}
+        <div className="access-filter-row">
           {filteredServices.length} {t("counter.results")}
         </div>
 
@@ -298,19 +294,14 @@ export default function AccessPage() {
         </div>
       </div>
 
-      {/* RIGHT PANEL */}
+      {/* RIGHT PANEL - Toujours afficher selon categoryFilter */}
       <div className="access-right-panel">
-        {selected ? (
-          selected.type === "connection" ? (
-            <ConnectionsPage connectionId={selected.id} />
-          ) : (
-            <OverTheBoxPage serviceName={selected.id} />
-          )
+        {categoryFilter === "connection" ? (
+          <ConnectionsPage connectionId={selected?.type === "connection" ? selected.id : undefined} />
         ) : (
-          <div className="access-no-selection">
-            <p>{t("noSelection")}</p>
-          </div>
+          <OverTheBoxPage serviceName={selected?.type === "overthebox" ? selected.id : undefined} />
         )}
+      </div>
       </div>
     </div>
   );

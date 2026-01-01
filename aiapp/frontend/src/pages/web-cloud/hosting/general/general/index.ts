@@ -1,3 +1,4 @@
+export { GeneralTab as default } from './GeneralTab';
 export { RestoreSnapshotModal } from './RestoreSnapshotModal';
 export { OvhConfigModal } from './OvhConfigModal';
 export { TerminateModal } from './TerminateModal';

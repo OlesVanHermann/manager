@@ -14,7 +14,7 @@ import { TasksTab } from "./TasksTab";
 import "./overthebox.css";
 
 interface OverTheBoxPageProps {
-  serviceName: string;
+  serviceName?: string;  // Optionnel: affiche tabs + empty state si undefined
 }
 
 type TabId = "general" | "remotes" | "configure" | "logs" | "tasks";
@@ -27,11 +27,19 @@ export default function OverTheBoxPage({ serviceName }: OverTheBoxPageProps) {
   const { t } = useTranslation("web-cloud/access/overthebox/index");
 
   const [service, setService] = useState<OverTheBoxService | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("general");
 
   useEffect(() => {
+    // Si pas de serviceName, reset et ne pas charger
+    if (!serviceName) {
+      setService(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     const load = async () => {
       try {
         setLoading(true);
@@ -55,6 +63,7 @@ export default function OverTheBoxPage({ serviceName }: OverTheBoxPageProps) {
     { id: "tasks", labelKey: "tabs.tasks" },
   ];
 
+  // État loading
   if (loading) {
     return (
       <div className="overthebox-page">
@@ -66,11 +75,46 @@ export default function OverTheBoxPage({ serviceName }: OverTheBoxPageProps) {
     );
   }
 
-  if (error || !service) {
+  // État erreur (seulement si on a essayé de charger)
+  if (error && serviceName) {
     return (
       <div className="overthebox-page">
         <div className="overthebox-error">
           <p>{t("error")}: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // État: pas de service sélectionné - afficher tabs + empty state
+  if (!service) {
+    return (
+      <div className="overthebox-page">
+        {/* Header vide */}
+        <div className="overthebox-header">
+          <div className="overthebox-header-left">
+            <h1 className="overthebox-title">{t("noSelection.title", "OverTheBox")}</h1>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="overthebox-tabs">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`overthebox-tab ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {t(tab.labelKey)}
+            </button>
+          ))}
+        </div>
+
+        {/* Empty state */}
+        <div className="overthebox-content">
+          <div className="overthebox-empty-state">
+            <p>{t("noSelection.message", "Sélectionnez un service OverTheBox dans la liste")}</p>
+          </div>
         </div>
       </div>
     );

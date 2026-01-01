@@ -14,7 +14,7 @@ interface DeleteModalProps {
   onSubmit: () => Promise<void>;
 }
 
-/** Modal de suppression générique avec confirmation. */
+/** Modal de suppression générique avec confirmation simplifiée. */
 export function DeleteModal({
   isOpen,
   onClose,
@@ -27,10 +27,6 @@ export function DeleteModal({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmText, setConfirmText] = useState("");
-
-  const confirmWord = t("delete.confirmWord");
-  const isConfirmed = confirmText === confirmWord;
 
   // Default consequences based on item type
   const defaultConsequences = useMemo(() => {
@@ -73,11 +69,6 @@ export function DeleteModal({
     e.preventDefault();
     setError(null);
 
-    if (!isConfirmed) {
-      setError(t("delete.errors.confirmRequired"));
-      return;
-    }
-
     setLoading(true);
     try {
       await onSubmit();
@@ -90,7 +81,6 @@ export function DeleteModal({
   };
 
   const handleClose = () => {
-    setConfirmText("");
     setError(null);
     onClose();
   };
@@ -98,8 +88,8 @@ export function DeleteModal({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-container modal-danger" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="modal-container modal-danger">
         <div className="modal-header">
           <h2 className="modal-title">{t(`delete.titles.${itemType}`)}</h2>
           <button className="modal-close" onClick={handleClose}>×</button>
@@ -113,15 +103,6 @@ export function DeleteModal({
                 {error}
               </div>
             )}
-
-            {/* Warning */}
-            <div className="delete-warning">
-              <span className="warning-icon">⚠</span>
-              <div>
-                <p className="warning-title">{t("delete.warning.title")}</p>
-                <p className="warning-text">{t("delete.warning.text")}</p>
-              </div>
-            </div>
 
             {/* Item info */}
             <div className="delete-item">
@@ -140,29 +121,13 @@ export function DeleteModal({
                 </ul>
               </div>
             )}
-
-            {/* Confirmation input */}
-            <div className="form-group">
-              <label className="form-label">
-                {t("delete.confirmLabel", { word: confirmWord })}
-              </label>
-              <input
-                type="text"
-                className="form-input form-input-danger"
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                placeholder={confirmWord}
-                disabled={loading}
-                autoComplete="off"
-              />
-            </div>
           </div>
 
           <div className="modal-footer">
             <button type="button" className="btn btn-outline" onClick={handleClose} disabled={loading}>
               {t("common.cancel")}
             </button>
-            <button type="submit" className="btn btn-danger" disabled={loading || !isConfirmed}>
+            <button type="submit" className="btn btn-danger" disabled={loading}>
               {loading ? t("common.deleting") : t("delete.submit")}
             </button>
           </div>

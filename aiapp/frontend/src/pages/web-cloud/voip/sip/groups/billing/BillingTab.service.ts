@@ -4,7 +4,7 @@
 // DEFACTORISATION: Ce service est ISOLÉ et ne doit pas être partagé
 // ============================================================
 
-import { ovhApi } from '../../../../../../../services/api';
+import { ovhApi } from '../../../../../../services/api';
 import type { TelephonyHistoryConsumption } from '../../../voip.types';
 
 // Service isolé pour BillingTab
