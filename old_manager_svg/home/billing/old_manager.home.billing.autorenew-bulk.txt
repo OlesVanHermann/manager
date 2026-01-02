@@ -1,0 +1,122 @@
+# Cahier des Charges : home/billing/autorenew-bulk
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.autorenew-bulk.svg |
+| **NAV1** | home |
+| **NAV2** | billing |
+| **Type** | Page action groupée |
+| **Description** | Page de renouvellement groupé de plusieurs services |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full width (pas de sidebar) |
+| Titre | Renouvellement groupé |
+
+---
+
+## 3. BANNIÈRE RÉCAPITULATIF
+
+| Dimensions | 1360×80px |
+| Background | #DBEAFE (info) |
+| Border | 1px #0050D7 |
+
+### 3.1 Contenu
+
+| Élément | Valeur |
+|---------|--------|
+| Titre | 3 services sélectionnés |
+| Sous-titre | Coût total du renouvellement : 25,97 € |
+
+### 3.2 Action
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Renouveler tout | Primary | 180×40px | Droite |
+
+---
+
+## 4. TABLEAU SERVICES
+
+| Dimensions | 1360×400px |
+| Colonnes | 4 + checkbox |
+
+### 4.1 Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| (checkbox) | 40px | Sélection multiple |
+| Service | 340px | Nom du service |
+| Expiration | 200px | Date d'expiration |
+| Durée | 200px | Select durée renouvellement |
+| Prix | 580px | Prix du renouvellement |
+
+### 4.2 Select durée
+
+| Options | 1 mois, 3 mois, 6 mois, 1 an, 2 ans |
+| Dimensions | 100×26px |
+
+### 4.3 Données exemple
+
+| Service | Expiration | Durée | Prix |
+|---------|------------|-------|------|
+| domain.example.com | 15/03/2026 | 1 an | 9,99 € |
+| hosting-pro-123 | 01/02/2026 | 1 mois | 5,99 € |
+| email-pro-456 | 20/01/2026 | 1 an | 9,99 € |
+
+---
+
+## 5. APIS & ENDPOINTS
+
+### 5.1 Lister les services à renouveler
+
+```
+GET /service?status=toRenew
+```
+
+### 5.2 Calculer le prix de renouvellement
+
+```
+POST /service/{serviceId}/renew/simulate
+{
+  "duration": "P1Y"
+}
+```
+
+### 5.3 Renouveler les services
+
+```
+POST /service/bulk/renew
+{
+  "services": [
+    { "serviceId": "domain.example.com", "duration": "P1Y" },
+    { "serviceId": "hosting-pro-123", "duration": "P1M" }
+  ]
+}
+```
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `bulk_renew_title` | Renouvellement groupé |
+| `bulk_renew_selected` | {count} services sélectionnés |
+| `bulk_renew_total` | Coût total du renouvellement : {amount} |
+| `bulk_renew_all` | Renouveler tout |
+| `bulk_renew_col_service` | Service |
+| `bulk_renew_col_expiration` | Expiration |
+| `bulk_renew_col_duration` | Durée |
+| `bulk_renew_col_price` | Prix |
+| `bulk_renew_1month` | 1 mois |
+| `bulk_renew_3months` | 3 mois |
+| `bulk_renew_6months` | 6 mois |
+| `bulk_renew_1year` | 1 an |
+| `bulk_renew_2years` | 2 ans |

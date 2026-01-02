@@ -60,3 +60,4 @@ echo
 info "✅ Dev déployé"
 echo " - Release : $RELEASE_DIR"
 echo " - Devroot : $DEVROOT"
+echo > /var/log/new-manager/live.jsonl
