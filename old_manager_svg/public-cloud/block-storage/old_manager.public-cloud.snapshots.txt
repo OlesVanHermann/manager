@@ -1,0 +1,143 @@
+# Cahier des Charges : public-cloud/block-storage/snapshots
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.snapshots.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | block-storage |
+| **Type** | Page listing |
+| **Description** | Liste des snapshots de volumes Block Storage |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full width (pas de sidebar) |
+| Titre | Volume Snapshot |
+| Bouton guides | Position droite |
+
+---
+
+## 3. ACTIONS
+
+### 3.1 Bouton principal
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| + Créer un snapshot de volume | Secondary | 220×36px | Gauche sous titre |
+
+### 3.2 Bouton guides
+
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Guides ↗ | Secondary | Droite |
+
+---
+
+## 4. DATAGRID
+
+| Dimensions | 1392×500px |
+| Colonnes | 8 |
+
+### 4.1 Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Nom | 160px | Nom du snapshot |
+| ID | 250px | UUID tronqué |
+| Localisation | 150px | Région (GRA11, SBG5, etc.) |
+| Volume | 180px | Nom du volume source |
+| Capacité | 100px | Taille en GiB |
+| Date de création | 170px | Date et heure |
+| Statut | 130px | Badge statut |
+| Actions | 100px | Menu ⋮ |
+
+### 4.2 Statuts
+
+| Statut | Background | Couleur texte |
+|--------|------------|---------------|
+| OK | #DEF7EC | #059669 |
+| Création en cours | #FEF3C7 | #D97706 |
+| Erreur | #FEE2E2 | #DC2626 |
+
+### 4.3 Données exemple
+
+| Nom | ID | Localisation | Volume | Capacité | Date | Statut |
+|-----|----|--------------|--------|----------|------|--------|
+| snapshot-vol-prod-01 | a3f8c1e2-4b6d-... | Gravelines (GRA11) | vol-production | 100 GiB | 02/01/2026 08:30 | OK |
+| snapshot-backup-db | b7d9e3f1-5c8a-... | Strasbourg (SBG5) | vol-database | 250 GiB | 01/01/2026 22:00 | OK |
+| snap-web-frontend | c2e4f6a8-9d1b-... | Roubaix (RBX1) | vol-web-data | 50 GiB | 31/12/2025 14:15 | Création en cours |
+| snapshot-logs-archive | d5f7g9h2-3e6c-... | Paris (PAR1) | vol-logs | 500 GiB | 30/12/2025 10:45 | OK |
+
+---
+
+## 5. MENU ACTIONS
+
+| Action | Description |
+|--------|-------------|
+| Créer un volume | Créer un nouveau volume à partir du snapshot |
+| Supprimer | Supprimer le snapshot |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Lister les snapshots
+
+```
+GET /cloud/project/{projectId}/volume/snapshot
+```
+
+### 6.2 Créer un snapshot
+
+```
+POST /cloud/project/{projectId}/volume/{volumeId}/snapshot
+{
+  "name": "snapshot-name"
+}
+```
+
+### 6.3 Supprimer un snapshot
+
+```
+DELETE /cloud/project/{projectId}/volume/snapshot/{snapshotId}
+```
+
+### 6.4 Créer un volume depuis snapshot
+
+```
+POST /cloud/project/{projectId}/volume
+{
+  "name": "vol-name",
+  "snapshotId": "snapshot-uuid",
+  "size": 100
+}
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_snapshots_title` | Volume Snapshot |
+| `pci_snapshots_create` | Créer un snapshot de volume |
+| `pci_snapshots_guides` | Guides |
+| `pci_snapshots_col_name` | Nom |
+| `pci_snapshots_col_id` | ID |
+| `pci_snapshots_col_region` | Localisation |
+| `pci_snapshots_col_volume` | Volume |
+| `pci_snapshots_col_size` | Capacité |
+| `pci_snapshots_col_date` | Date de création |
+| `pci_snapshots_col_status` | Statut |
+| `pci_snapshots_col_actions` | Actions |
+| `pci_snapshots_status_ok` | OK |
+| `pci_snapshots_status_creating` | Création en cours |
+| `pci_snapshots_status_error` | Erreur |
+| `pci_snapshots_action_create_volume` | Créer un volume |
+| `pci_snapshots_action_delete` | Supprimer |
+| `pci_snapshots_pagination` | {start} - {end} sur {total} éléments |

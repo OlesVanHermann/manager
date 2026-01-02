@@ -1,0 +1,162 @@
+# Cahier des Charges : public-cloud/other/private-network/wizard-create
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.private-network.wizard-create.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | private-network |
+| **Type** | Wizard formulaire |
+| **Description** | Assistant de création d'un réseau privé - étape 2 Configuration |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full width avec breadcrumb |
+| Breadcrumb | ← Voir tous les réseaux privés |
+| Titre | Créer un réseau privé |
+
+---
+
+## 3. STEPPER
+
+| Étape | Numéro | État | Label |
+|-------|--------|------|-------|
+| 1 | ✓ | Terminé (vert) | Localisation |
+| 2 | 2 | Actif (bleu) | Configuration |
+| 3 | 3 | Inactif (gris) | Résumé |
+
+---
+
+## 4. FORMULAIRE - CONFIGURATION RÉSEAU PRIVÉ
+
+### 4.1 Nom du réseau privé
+
+| Label | Nom du réseau privé |
+| Type | Input text |
+| Dimensions | 400×40px |
+| Placeholder | Saisir un nom de réseau privé |
+
+### 4.2 Adresse réseau (CIDR)
+
+| Label | Adresse de réseau privé (CIDR) |
+| Type | Input text + select masque |
+| Input IP | 200×40px, valeur 192.168.0.0 |
+| Label masque | Masque |
+| Select masque | 120×40px, valeur /24 |
+
+### 4.3 ID VLAN (optionnel)
+
+| Type | Checkbox + input conditionnel |
+| Checkbox | Définir un ID de VLAN |
+| Info | Entre 0 et 4000 |
+
+---
+
+## 5. SECTION DHCP
+
+| Titre | Options de distribution des adresses DHCP |
+
+### 5.1 Activer DHCP
+
+| Type | Checkbox coché |
+| Label | Activer DHCP pour ce réseau privé |
+
+### 5.2 Option passerelle DHCP
+
+| Type | Checkbox non coché |
+| Label | Annoncer la première adresse d'un CIDR donné comme passerelle par défaut (DHCP option 3) |
+
+---
+
+## 6. SECTION GATEWAY
+
+| Titre | Options de passerelle réseau |
+
+### 6.1 Assigner une Gateway
+
+| Type | Checkbox non coché |
+| Label | Assigner une Gateway et connectez-vous au réseau privé |
+| Info | Cette option permet d'accéder à Internet à partir d'instances de réseau privé. |
+
+---
+
+## 7. PANNEAU RÉCAPITULATIF (droite)
+
+| Dimensions | 466×150px |
+| Position | Colonne droite |
+
+### 7.1 Contenu
+
+| Titre | Localisation sélectionnée |
+| Valeur | Gravelines (GRA11) |
+| Lien | Modifier cette étape |
+
+---
+
+## 8. ACTIONS
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Secondary | 100×36px | Gauche |
+| Suivant | Primary | 100×36px | Droite |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Créer un réseau privé
+
+```
+POST /cloud/project/{projectId}/network/private
+{
+  "name": "network-name",
+  "vlanId": null,
+  "regions": ["GRA11"]
+}
+```
+
+### 9.2 Créer un sous-réseau avec DHCP
+
+```
+POST /cloud/project/{projectId}/network/private/{networkId}/subnet
+{
+  "dhcp": true,
+  "network": "192.168.0.0/24",
+  "region": "GRA11",
+  "noGateway": false
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_private_network_create_title` | Créer un réseau privé |
+| `pci_private_network_create_back` | Voir tous les réseaux privés |
+| `pci_private_network_step_location` | Localisation |
+| `pci_private_network_step_config` | Configuration |
+| `pci_private_network_step_summary` | Résumé |
+| `pci_private_network_config_title` | Configurez votre réseau privé |
+| `pci_private_network_config_name` | Nom du réseau privé |
+| `pci_private_network_config_name_placeholder` | Saisir un nom de réseau privé |
+| `pci_private_network_config_cidr` | Adresse de réseau privé (CIDR) |
+| `pci_private_network_config_mask` | Masque |
+| `pci_private_network_config_vlan` | Définir un ID de VLAN |
+| `pci_private_network_config_vlan_info` | Entre 0 et 4000 |
+| `pci_private_network_dhcp_title` | Options de distribution des adresses DHCP |
+| `pci_private_network_dhcp_enable` | Activer DHCP pour ce réseau privé |
+| `pci_private_network_dhcp_gateway` | Annoncer la première adresse d'un CIDR donné comme passerelle par défaut (DHCP option 3) |
+| `pci_private_network_gateway_title` | Options de passerelle réseau |
+| `pci_private_network_gateway_assign` | Assigner une Gateway et connectez-vous au réseau privé |
+| `pci_private_network_gateway_info` | Cette option permet d'accéder à Internet à partir d'instances de réseau privé. |
+| `pci_private_network_summary_location` | Localisation sélectionnée |
+| `pci_private_network_summary_edit` | Modifier cette étape |
+| `pci_private_network_cancel` | Annuler |
+| `pci_private_network_next` | Suivant |
