@@ -8,11 +8,33 @@
 - **Univers (NAV1)**: Bare Metal Cloud
 - **Produit (NAV2)**: IP
 - **Description**: Gestion des blocs IP, Failover, protection DDoS
-- **Complexité**: Moyenne (5 tabs service, sécurité avancée)
+- **Complexité**: Moyenne (5 tabs service, sécurité réseau)
 
 ================================================================================
 ## 2. STRUCTURE DE NAVIGATION
 ================================================================================
+
+### NAV2 (Sous-header Produits)
+```
+[General] [Dedicated Server] [VPS] [NAS-HA] [NetApp] [Housing] [IP•] [vRack] [...]
+```
+
+### LEFT PANEL (280px)
+```
+┌─────────────────────────┐
+│ 🌍 ALL Regions        ▼ │
+├─────────────────────────┤
+│ 🔍 Rechercher...        │
+├─────────────────────────┤
+│ ● All (52)              │
+│ ○ 51.68.42.0/28         │
+│   Failover | GRA        │
+│ ○ 54.36.10.0/29         │
+│   RIPE | RBX            │
+│ ○ 91.121.xxx.0/24       │
+│   RIPE | RBX            │
+└─────────────────────────┘
+```
 
 ### NAV4 - Vue "All"
 ```
@@ -29,31 +51,102 @@
 ================================================================================
 
 ### Tab: Reverse
-Configuration reverse DNS par IP
+| Bloc | Contenu |
+|------|---------|
+| Liste IPs | Chaque IP du bloc avec son reverse DNS |
+| Actions | [Éditer reverse] par IP |
 
 ### Tab: Firewall
-Règles firewall par IP (permit/deny, port, protocol)
+| Bloc | Contenu |
+|------|---------|
+| État par IP | Firewall activé/désactivé |
+| Règles | Liste règles (action, proto, port, source) |
+| Actions | [Activer/Désactiver] [+ Ajouter règle] |
 
 ### Tab: Antispam
-Monitoring et déblocage spam
+| Bloc | Contenu |
+|------|---------|
+| État par IP | Monitoring spam |
+| Historique | Incidents détectés, IP bloquées |
+| Actions | [Débloquer IP] |
 
 ### Tab: Antihack
-Détection intrusion, alertes
+| Bloc | Contenu |
+|------|---------|
+| Détection | Alertes intrusion par IP |
+| Seuils | Configuration alertes |
+| Historique | Incidents |
 
 ### Tab: DDoS
-Protection VAC Anti-DDoS OVHcloud
+| Bloc | Contenu |
+|------|---------|
+| Protection VAC | État Anti-DDoS OVHcloud |
+| Mode | Permanent / Automatique |
+| Historique | Attaques mitigées |
 
 ================================================================================
-## 4. APIS & ENDPOINTS
+## 4. TYPES DE BLOCS IP
+================================================================================
+
+| Type | Description | Usage |
+|------|-------------|-------|
+| RIPE | Bloc alloué par le RIPE NCC | Principal |
+| Failover | IPs mobiles entre services | HA, migration |
+| Additional | IPs supplémentaires | Multi-sites |
+
+================================================================================
+## 5. RÈGLES FIREWALL
+================================================================================
+
+| Champ | Options |
+|-------|---------|
+| Action | permit, deny |
+| Protocol | tcp, udp, icmp, gre, esp, ah, any |
+| Port | 1-65535, range (ex: 80-443), any |
+| Source | IP/CIDR ou any |
+
+================================================================================
+## 6. APIS & ENDPOINTS
 ================================================================================
 
 ```
 GET  /ip                                    # Liste blocs
 GET  /ip/{ip}                               # Détails bloc
-PUT  /ip/{ip}/reverse                       # Modifier reverse
-GET  /ip/{ip}/firewall                      # État firewall
+GET  /ip/{ip}/reverse                       # Reverses
+PUT  /ip/{ip}/reverse/{ipReverse}           # Modifier reverse
+GET  /ip/{ip}/firewall/{ipOnFirewall}       # État firewall
 POST /ip/{ip}/firewall/{ipOnFirewall}/rule  # Ajouter règle
-GET  /ip/{ip}/mitigation                    # État DDoS
+GET  /ip/{ip}/spam/{ipSpamming}             # État spam
+POST /ip/{ip}/spam/{ipSpamming}/unblock     # Débloquer
+GET  /ip/{ip}/mitigation/{ipOnMitigation}   # État DDoS
+PUT  /ip/{ip}/mitigation/{ipOnMitigation}   # Configurer mitigation
 ```
+
+================================================================================
+## 7. MODALS
+================================================================================
+
+| Modal | Trigger | Contenu |
+|-------|---------|---------|
+| Éditer reverse | [✏️] | Nouveau hostname reverse |
+| Ajouter règle FW | [+ Ajouter] | Action, proto, port, source |
+| Supprimer règle | [×] | Confirmation |
+| Activer firewall | [Activer] | Confirmation |
+| Débloquer IP spam | [Débloquer] | Confirmation + captcha |
+| Configurer mitigation | [Configurer] | Mode permanent/auto |
+
+================================================================================
+## 8. PROTECTION DDoS (VAC)
+================================================================================
+
+| Mode | Description |
+|------|-------------|
+| Automatique | Activation lors d'une attaque détectée |
+| Permanent | Protection active en permanence |
+
+Types d'attaques mitigées:
+- Volumétrique (UDP flood, amplification)
+- Protocole (SYN flood, fragmentation)
+- Application (HTTP flood, slowloris)
 
 ================================================================================

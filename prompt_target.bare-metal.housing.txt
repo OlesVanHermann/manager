@@ -8,7 +8,7 @@
 - **Univers (NAV1)**: Bare Metal Cloud
 - **Produit (NAV2)**: Housing
 - **Description**: Colocation de serveurs physiques en datacenter OVHcloud
-- **Complexité**: Basse (4 tabs service, gestion réseau/backup)
+- **Complexité**: Moyenne (4 tabs service, accès physique)
 
 ================================================================================
 ## 2. STRUCTURE DE NAVIGATION
@@ -16,10 +16,10 @@
 
 ### NAV2 (Sous-header Produits)
 ```
-[General] [Dedicated Server] [VPS] [NAS-HA] [NetApp] [Housing•] [IP] [...]
+[General] [Dedicated Server] [VPS] [NAS-HA] [NetApp] [Housing•] [IP] [vRack] [...]
 ```
 
-### LEFT PANEL
+### LEFT PANEL (280px)
 ```
 ┌─────────────────────────┐
 │ 🌍 ALL Regions        ▼ │
@@ -31,6 +31,8 @@
 │   1/4 Rack | RBX        │
 │ ○ housing-bay-02        │
 │   1 Baie | GRA          │
+│ ○ housing-half-03       │
+│   1/2 Rack | RBX        │
 └─────────────────────────┘
 ```
 
@@ -51,49 +53,76 @@
 ### Tab: General
 | Carte | Champs |
 |-------|--------|
-| EMPLACEMENT | Type (Rack/Baie), Taille, DC, Salle, Rack |
-| ALIMENTATION | Puissance, Consommation, Redondance |
-| ACCÈS | Badges autorisés, Procédure d'accès |
-| CONTRAT | Date, Prix, Options |
+| EMPLACEMENT | Type, Taille (U), DC, Salle, Baie, Position |
+| ALIMENTATION | Puissance max, Consommation, Redondance A+B |
+| ACCÈS PHYSIQUE | Badges autorisés, Contact, Procédure |
+| CONTRAT | Date création, Prix, Engagement, Options |
+
+Actions:
+- [Demander accès] : Formulaire demande d'accès DC
+- [Gérer badges] : Ajouter/supprimer badges
 
 ### Tab: Réseau
 | Bloc | Contenu |
 |------|---------|
-| Ports | Liste ports réseau fournis |
-| Bandwidth | Bande passante contractuelle |
-| IPs | Blocs IP associés |
+| Ports physiques | Liste ports (eth0, eth1...), type, vitesse |
+| Bande passante | Garantie, burst, quota |
+| Blocs IP | IPs associées à l'espace housing |
+| vRack | Attachement réseau privé |
 
 ### Tab: Backup
 | Bloc | Contenu |
 |------|---------|
-| Storage | Espace backup inclus |
-| Accès FTP | Identifiants backup |
+| Espace FTP | URL, identifiants, quota |
+| Utilisation | Espace utilisé / total |
 
 ### Tab: Tâches
 | Bloc | Contenu |
 |------|---------|
-| Interventions | Demandes d'accès, maintenance |
-| Historique | Actions passées |
+| Demandes accès | Historique demandes DC |
+| Interventions | Maintenances, incidents |
+| Tâches réseau | Changements configuration |
 
 ================================================================================
-## 4. TYPES HOUSING
+## 4. TYPES D'ESPACES HOUSING
 ================================================================================
 
-| Type | Description |
-|------|-------------|
-| 1/4 Rack | 10U |
-| 1/2 Rack | 21U |
-| Full Rack | 42U |
-| Baie complète | Baie dédiée |
+| Type | Taille | Description |
+|------|--------|-------------|
+| 1/4 Rack | 10U | Quart de baie |
+| 1/2 Rack | 21U | Demi baie |
+| Full Rack | 42U | Baie complète |
+| Baie dédiée | 42U+ | Baie avec services |
 
 ================================================================================
-## 5. APIS & ENDPOINTS
+## 5. ALIMENTATION
+================================================================================
+
+| Option | Description |
+|--------|-------------|
+| Simple (A) | Une seule arrivée |
+| Redondante (A+B) | Deux arrivées indépendantes |
+| Ondulé | UPS dédié |
+
+================================================================================
+## 6. APIS & ENDPOINTS
 ================================================================================
 
 ```
-GET  /dedicated/housing                     # Liste
+GET  /dedicated/housing                     # Liste espaces
 GET  /dedicated/housing/{serviceName}       # Détails
 GET  /dedicated/housing/{serviceName}/task  # Tâches
+POST /dedicated/housing/{serviceName}/access # Demande accès
 ```
+
+================================================================================
+## 7. MODALS
+================================================================================
+
+| Modal | Trigger | Contenu |
+|-------|---------|---------|
+| Demander accès | [Demander accès] | Date, heure, personnes, motif |
+| Gérer badges | [Gérer badges] | Liste badges, ajout/suppression |
+| Ajouter IP | [+ Ajouter] | Commander bloc IP |
 
 ================================================================================

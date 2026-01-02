@@ -1,32 +1,110 @@
 # PROMPT TARGET: Bare Metal Cloud > vRack
 # NAV1: bare-metal | NAV2: vrack
 
-## VUE D'ENSEMBLE
-- Produit: vRack (réseau privé L2)
-- Description: Réseau privé inter-services et inter-DC
+================================================================================
+## 1. VUE D'ENSEMBLE
+================================================================================
 
-## NAV4 - Vue "All"
+- **Univers (NAV1)**: Bare Metal Cloud
+- **Produit (NAV2)**: vRack
+- **Description**: Réseau privé L2 inter-services et inter-datacenter
+- **Complexité**: Moyenne (3 tabs service, multi-services)
+
+================================================================================
+## 2. STRUCTURE DE NAVIGATION
+================================================================================
+
+### NAV2 (Sous-header Produits)
+```
+[General] [Dedicated Server] [VPS] [NAS-HA] [NetApp] [Housing] [IP] [vRack•] [...]
+```
+
+### LEFT PANEL (280px)
+```
+┌─────────────────────────┐
+│ 🌍 ALL Regions        ▼ │
+├─────────────────────────┤
+│ 🔍 Rechercher...        │
+├─────────────────────────┤
+│ ● All (38)              │
+│ ○ pn-123456             │
+│   12 services           │
+│ ○ pn-789012             │
+│   8 services            │
+│ ○ vrack-prod            │
+│   25 services           │
+└─────────────────────────┘
+```
+
+### NAV4 - Vue "All"
+```
 [General•]
+```
 
-## NAV4 - Vue Service
+### NAV4 - Vue Service
+```
 [Services] [VLAN] [IPv6]
+```
 
-## TABS VUE SERVICE
+================================================================================
+## 3. NAV4 TABS - VUE SERVICE
+================================================================================
 
 ### Tab: Services
-- Liste services attachés (Dedicated, VPS, PCI, etc.)
-- Actions: [+ Ajouter] [Détacher]
+| Bloc | Contenu |
+|------|---------|
+| Liste services | Type, Nom, DC, État connexion |
+| Types supportés | Dedicated, VPS, PCI, Cloud, Housing, NAS |
+| Actions | [+ Ajouter service] [Détacher] |
 
 ### Tab: VLAN
-- VLANs configurés (1-4000)
-- Actions: [+ Créer VLAN]
+| Bloc | Contenu |
+|------|---------|
+| VLANs configurés | ID (1-4000), Nom, Services |
+| Actions | [+ Créer VLAN] [Supprimer] |
 
 ### Tab: IPv6
-- Bloc IPv6 privé
-- Configuration routing
+| Bloc | Contenu |
+|------|---------|
+| Bloc IPv6 | Bloc /48 assigné au vRack |
+| Configuration | Routing, délégation |
 
-## APIS
-GET  /vrack
-GET  /vrack/{serviceName}
-GET  /vrack/{serviceName}/dedicatedServer
-POST /vrack/{serviceName}/dedicatedServer
+================================================================================
+## 4. TYPES DE SERVICES COMPATIBLES
+================================================================================
+
+| Type | Description |
+|------|-------------|
+| Dedicated Server | Serveurs dédiés OVHcloud |
+| VPS | Serveurs virtuels |
+| Public Cloud | Instances, Load Balancer |
+| Hosted Private Cloud | VMware, Nutanix |
+| NAS-HA | Stockage NAS |
+| Housing | Colocation |
+
+================================================================================
+## 5. APIS & ENDPOINTS
+================================================================================
+
+```
+GET  /vrack                                 # Liste vRacks
+GET  /vrack/{serviceName}                   # Détails
+GET  /vrack/{serviceName}/allowedServices   # Services compatibles
+GET  /vrack/{serviceName}/dedicatedServer   # Serveurs attachés
+POST /vrack/{serviceName}/dedicatedServer   # Attacher serveur
+DELETE /vrack/{serviceName}/dedicatedServer/{server} # Détacher
+GET  /vrack/{serviceName}/cloudProject      # Projets Cloud
+```
+
+================================================================================
+## 6. MODALS
+================================================================================
+
+| Modal | Trigger | Contenu |
+|-------|---------|---------|
+| Ajouter service | [+ Ajouter] | Type, sélection service |
+| Détacher service | [Détacher] | Confirmation |
+| Créer VLAN | [+ Créer] | ID, nom |
+| Supprimer VLAN | [Supprimer] | Confirmation |
+
+================================================================================

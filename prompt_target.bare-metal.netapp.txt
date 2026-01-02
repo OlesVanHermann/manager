@@ -7,8 +7,8 @@
 
 - **Univers (NAV1)**: Bare Metal Cloud
 - **Produit (NAV2)**: NetApp
-- **Description**: Stockage Enterprise NetApp ONTAP
-- **Complexité**: Haute (volumes, snapshots, ACLs avancées)
+- **Description**: Stockage Enterprise NetApp ONTAP managé par OVHcloud
+- **Complexité**: Haute (volumes, snapshots, ACLs, multi-protocole)
 
 ================================================================================
 ## 2. STRUCTURE DE NAVIGATION
@@ -16,10 +16,10 @@
 
 ### NAV2 (Sous-header Produits)
 ```
-[General] [Dedicated Server] [VPS] [NAS-HA] [NetApp•] [Housing] [IP] [...]
+[General] [Dedicated Server] [VPS] [NAS-HA] [NetApp•] [Housing] [IP] [vRack] [...]
 ```
 
-### LEFT PANEL
+### LEFT PANEL (280px)
 ```
 ┌─────────────────────────┐
 │ 🌍 ALL Regions        ▼ │
@@ -51,38 +51,41 @@
 ### Tab: General
 | Carte | Champs |
 |-------|--------|
-| INFORMATIONS | Nom, Type (Performance/Capacity), DC |
-| CAPACITÉ | Total, Utilisé, Disponible |
-| PERFORMANCE | IOPS max, Throughput |
-| CONTRAT | Prix, Engagement |
+| INFORMATIONS | Nom, Type (Performance/Capacity), DC, Version ONTAP |
+| CAPACITÉ | Total, Utilisé, Disponible, Réserve snapshot |
+| PERFORMANCE | IOPS max, Throughput, Latence |
+| CONNECTIVITÉ | IP management, IP data |
+| CONTRAT | Date, Prix, Engagement |
 
 ### Tab: Volumes
 | Bloc | Contenu |
 |------|---------|
-| Liste volumes | Nom, Taille, Protocole (NFS/CIFS/iSCSI) |
-| Actions | [+ Créer] [Modifier] [Supprimer] |
+| Liste volumes | Nom, Taille, Protocole (NFS/CIFS/iSCSI), Utilisé |
+| Actions | [+ Créer] [Redimensionner] [Supprimer] |
 
 ### Tab: Snapshots
 | Bloc | Contenu |
 |------|---------|
-| Politique NetApp | Schedule, Rétention |
-| Snapshots par volume | Liste avec restauration |
+| Politique | Schedule (hourly/daily/weekly), Rétention |
+| Réserve | % espace réservé |
+| Snapshots par volume | Liste expandable |
+| Actions | [+ Créer] [Restaurer] [Supprimer] |
 
 ### Tab: ACL
 | Bloc | Contenu |
 |------|---------|
-| Export policies | Règles NFS |
-| Share permissions | Permissions CIFS |
-| iSCSI initiators | LUNs et initiateurs |
+| Export Policies (NFS) | Client, droits (ro/rw), options |
+| CIFS Shares | Partages Windows, permissions AD |
+| iSCSI Initiators | LUNs, igroups, mapping |
 
 ================================================================================
 ## 4. TYPES NETAPP
 ================================================================================
 
-| Type | Usage | IOPS |
-|------|-------|------|
-| Performance | Bases de données, VM | Élevé |
-| Capacity | Archives, backup | Standard |
+| Type | IOPS | Latence | Usage |
+|------|------|---------|-------|
+| Performance | 50,000+ | <1ms | BDD, VMs |
+| Capacity | 5,000+ | <10ms | Archives, backup |
 
 ================================================================================
 ## 5. PROTOCOLES
@@ -90,8 +93,8 @@
 
 | Protocole | Port | Usage |
 |-----------|------|-------|
-| NFS v3/v4 | 2049 | Linux/VMware |
-| CIFS/SMB | 445 | Windows |
+| NFS v3/v4.1 | 2049 | Linux/VMware |
+| CIFS/SMB 3.0 | 445 | Windows |
 | iSCSI | 3260 | Block storage |
 
 ================================================================================
@@ -99,11 +102,26 @@
 ================================================================================
 
 ```
-GET  /storage/netapp                        # Liste
-GET  /storage/netapp/{serviceName}          # Détails
-GET  /storage/netapp/{serviceName}/volume   # Volumes
-POST /storage/netapp/{serviceName}/volume   # Créer volume
-GET  /storage/netapp/{serviceName}/snapshot # Snapshots
+GET  /storage/netapp                              # Liste
+GET  /storage/netapp/{serviceName}                # Détails
+GET  /storage/netapp/{serviceName}/share          # Volumes
+POST /storage/netapp/{serviceName}/share          # Créer volume
+GET  /storage/netapp/{serviceName}/share/{id}/snapshot  # Snapshots
+GET  /storage/netapp/{serviceName}/share/{id}/acl       # ACLs
 ```
+
+================================================================================
+## 7. MODALS
+================================================================================
+
+| Modal | Trigger | Contenu |
+|-------|---------|---------|
+| Créer volume | [+ Créer] | Nom, Taille, Protocole, Policy |
+| Redimensionner | [Redimensionner] | Nouvelle taille |
+| Créer snapshot | [+ Créer] | Nom snapshot |
+| Restaurer | [Restaurer] | Confirmation |
+| Ajouter export NFS | [+ Ajouter] | Client IP/CIDR, droits |
+| Créer share CIFS | [+ Créer] | Nom, path, permissions |
+| Mapper LUN iSCSI | [+ Mapper] | LUN, igroup, IQN |
 
 ================================================================================
