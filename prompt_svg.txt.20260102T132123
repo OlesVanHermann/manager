@@ -1,0 +1,374 @@
+# PROMPT SVG - Generation de Maquettes SVG depuis Manager OVH
+
+## Fichiers et chemins
+
+| Element | Valeur |
+|---------|--------|
+| **Prompt** | /home/ubuntu/prompt_svg.txt |
+| **Destination finale utilisateur** | /home/ubuntu/{PREFIX}_svg/{NAV1}/{NAV2}/ |
+| **Destination Claude (outputs)** | /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/ |
+
+---
+
+## Arborescence NAV1 existante
+
+| NAV1 | Description | Exemples NAV2 |
+|------|-------------|---------------|
+| `home` | Espace client, compte, facturation | account, billing, support, carbon |
+| `web-cloud` | Hebergement web, bases de donnees | hebergement, private-database |
+| `bare-metal` | Serveurs dedies, Private Cloud | dedicated, nutanix |
+
+---
+
+## ⚠️ REGLES CRITIQUES - LIRE EN PREMIER ⚠️
+
+### REGLE 0 : ZERO HALLUCINATION
+**INTERDIT ABSOLU** d'inventer des elements absents du code source.
+- Pas dans le code -> PAS dans le SVG
+- Pas dans les traductions -> PAS de label invente
+- En cas de doute -> `grep` pour verifier
+- **Chaque pixel doit etre justifiable par une ligne de code**
+
+### REGLE 1 : GENERATION DIRECTE OBLIGATOIRE
+**INTERDICTION** d'afficher le SVG dans la conversation.
+
+| ❌ INTERDIT | ✅ OBLIGATOIRE |
+|-------------|----------------|
+| Afficher le SVG brut | Ecrire avec `tee` dans `/mnt/user-data/outputs/` |
+| "Voici le SVG, copiez-le..." | Appeler `present_files` apres generation |
+| Attendre copier-coller | Fournir lien de telechargement |
+
+**Raison** : L'utilisateur ne peut PAS copier-coller. Afficher = PERTE DE TEMPS.
+
+### REGLE 2 : EXPOSER LES ACTIONS CACHEES (Menu ⋮)
+**OBLIGATOIRE** : Afficher TOUS les ActionMenu **OUVERTS** avec leurs actions visibles.
+```typescript
+// Chercher : ActionMenu, items={[...]}, actions={[...]}
+<ActionMenu items={[
+  { label: t('edit') },
+  { label: t('delete') },
+]} />
+// -> Menu OUVERT dans le SVG avec toutes les actions
+```
+
+### REGLE 3 : DESIGN SYSTEM TOKENS
+**JAMAIS hardcoder les couleurs** - utiliser les variables CSS.
+
+---
+
+## WORKFLOW OBLIGATOIRE
+
+### Phase 1 : Detection du contexte
+```
+Input : old_manager.web-cloud.hosting.tar
+
+PREFIX = old_manager
+NAV1 = web-cloud
+NAV2 = hosting
+```
+
+### Phase 2 : Analyse du code
+| Priorite | Fichier | Information |
+|----------|---------|-------------|
+| 1 | layout.tsx | Structure, breadcrumb, tabs |
+| 2 | *.page.tsx | Contenu principal |
+| 3 | components/*.tsx | Elements UI |
+| 4 | useDatagridColumn.tsx | Colonnes + ActionMenu |
+| 5 | Messages_fr_FR.json | Traductions FR |
+| 6 | styles.css | Styles specifiques |
+
+### Phase 3 : Generation SVG
+```bash
+# 1. Creer arborescence dans outputs
+mkdir -p /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}
+
+# 2. Ecrire le SVG
+tee /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/{PREFIX}.{NAV1}.{NAV2}.svg << 'EOFSVG'
+<svg ...>
+</svg>
+EOFSVG
+
+# 3. Appeler present_files avec le chemin du fichier
+```
+
+### Phase 4 : Confirmation
+```
+✅ SVG genere : {PREFIX}.{NAV1}.{NAV2}.svg
+   Chemin : /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/
+   Taille : XX Ko
+   Elements : [liste]
+   ActionMenu : [actions exposees]
+```
+
+---
+
+## Convention de nommage
+
+### Patterns de fichiers SVG
+
+| Pattern | Usage | Exemple |
+|---------|-------|---------|
+| `{PREFIX}.{NAV1}.{NAV2}.svg` | Page principale / dashboard | `old_manager.home.billing.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.tab-{nom}.svg` | Onglet specifique | `old_manager.web-cloud.hebergement.tab-ssl.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.modal-{action}.svg` | Modal / dialog | `old_manager.home.billing.modal-terminate.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.list-{nom}.svg` | Liste d'elements | `old_manager.web-cloud.hebergement.list-hostings.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.{nom}-detail.svg` | Page de detail | `old_manager.home.support.ticket-detail.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.onboarding.svg` | Page onboarding / empty state | `old_manager.web-cloud.hebergement.onboarding.svg` |
+| `{PREFIX}.{NAV1}.{NAV2}.state-{etat}.svg` | Etat specifique (empty, error, loading) | `old_manager.web-cloud.hosting.state-empty.svg` |
+
+### Arborescence complete
+```
+/mnt/user-data/outputs/{PREFIX}_svg/
+  ├── home/
+  │   ├── account/
+  │   │   ├── old_manager.home.account.svg
+  │   │   ├── old_manager.home.account.tab-infos.svg
+  │   │   ├── old_manager.home.account.tab-security.svg
+  │   │   ├── old_manager.home.account.modal-2fa-totp.svg
+  │   │   └── old_manager.home.account.modal-change-password.svg
+  │   ├── billing/
+  │   │   ├── old_manager.home.billing.svg
+  │   │   ├── old_manager.home.billing.tab-history.svg
+  │   │   ├── old_manager.home.billing.tab-autorenew.svg
+  │   │   ├── old_manager.home.billing.modal-terminate.svg
+  │   │   └── old_manager.home.billing.modal-export-csv.svg
+  │   └── support/
+  │       ├── old_manager.home.support.svg
+  │       ├── old_manager.home.support.ticket-detail.svg
+  │       ├── old_manager.home.support.modal-new-ticket.svg
+  │       └── old_manager.home.support.modal-close-ticket.svg
+  ├── web-cloud/
+  │   ├── hebergement/
+  │   │   ├── old_manager.web-cloud.hebergement.svg
+  │   │   ├── old_manager.web-cloud.hebergement.list-hostings.svg
+  │   │   ├── old_manager.web-cloud.hebergement.onboarding.svg
+  │   │   ├── old_manager.web-cloud.hebergement.tab-general.svg
+  │   │   ├── old_manager.web-cloud.hebergement.tab-multisite.svg
+  │   │   └── old_manager.web-cloud.hebergement.tab-database.svg
+  │   └── private-database/
+  │       ├── old_manager.web-cloud.private-database.svg
+  │       ├── old_manager.web-cloud.private-database.onboarding.svg
+  │       ├── old_manager.web-cloud.private-database.tab-user.svg
+  │       ├── old_manager.web-cloud.private-database.modal-add-user.svg
+  │       └── old_manager.web-cloud.private-database.modal-oom.svg
+  └── bare-metal/
+      └── dedicated/
+          ├── old_manager.bare-metal.dedicated.svg
+          ├── old_manager.bare-metal.dedicated.tab-operations.svg
+          └── old_manager.bare-metal.dedicated.modal-terminate.svg
+```
+
+### Exemple concret
+```
+Input : old_manager.web-cloud.hosting.tar
+
+Output :
+/mnt/user-data/outputs/old_manager_svg/web-cloud/hosting/
+  ├── old_manager.web-cloud.hosting.svg
+  ├── old_manager.web-cloud.hosting.list-hostings.svg
+  ├── old_manager.web-cloud.hosting.onboarding.svg
+  ├── old_manager.web-cloud.hosting.tab-ssl.svg
+  ├── old_manager.web-cloud.hosting.tab-database.svg
+  └── old_manager.web-cloud.hosting.modal-order.svg
+```
+
+---
+
+## Design System Tokens
+
+### Source
+```
+/home/ubuntu/aiapp/frontend/src/design-system/tokens.css
+/home/ubuntu/aiapp/frontend/src/design-system/globals.css
+```
+
+### Couleurs
+| Token | Usage |
+|-------|-------|
+| `--color-primary-500` | Bleu OVH (#0050D7) |
+| `--color-primary-100` | Bleu clair selection (#E8F0FE) |
+| `--color-text` | Texte principal (#1F2937) |
+| `--color-text-muted` | Texte secondaire (#6B7280) |
+| `--color-bg-muted` | Background page (#F9FAFB) |
+| `--color-neutral-100` | Header tableau (#F3F4F6) |
+| `--color-neutral-200` | Bordures (#E5E7EB) |
+| `--color-header` | Header OVH (#000E9C) |
+| `--color-success-100/700` | Badge succes |
+| `--color-warning-100/700` | Badge warning |
+| `--color-error-100/700` | Badge erreur |
+
+### Dimensions
+- Largeur : 1440px
+- Header : 60px
+- Sidebar : 240px
+- Padding content : 40px
+- Hauteur : variable (min 900px)
+
+### Template SVG
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 {HEIGHT}" width="1440" height="{HEIGHT}">
+  <defs>
+    <style>
+      :root {
+        --color-primary-500: #0050D7;
+        --color-primary-100: #E8F0FE;
+        --color-text: #1F2937;
+        --color-text-muted: #6B7280;
+        --color-bg-muted: #F9FAFB;
+        --color-neutral-100: #F3F4F6;
+        --color-neutral-200: #E5E7EB;
+        --color-header: #000E9C;
+        --color-success-100: #DEF7EC;
+        --color-success-700: #03543F;
+        --color-warning-100: #FEF3C7;
+        --color-warning-700: #92400E;
+        --color-error-100: #FEE2E2;
+        --color-error-700: #991B1B;
+        --font-family: 'Source Sans Pro', sans-serif;
+      }
+      .bg-primary { fill: var(--color-primary-500); }
+      .bg-muted { fill: var(--color-bg-muted); }
+      .bg-white { fill: #FFFFFF; }
+      .bg-header { fill: var(--color-header); }
+      .text-body { font-family: var(--font-family); font-size: 14px; fill: var(--color-text); }
+      .text-muted { font-family: var(--font-family); font-size: 14px; fill: var(--color-text-muted); }
+      .text-link { font-family: var(--font-family); font-size: 14px; fill: var(--color-primary-500); }
+      .text-white { font-family: var(--font-family); fill: #FFFFFF; }
+      .border { stroke: var(--color-neutral-200); stroke-width: 1; }
+      .action-menu-dropdown { fill: #FFFFFF; stroke: var(--color-neutral-200); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+    </style>
+  </defs>
+  
+  <rect width="1440" height="{HEIGHT}" class="bg-muted"/>
+  <g id="header"><rect width="1440" height="60" class="bg-header"/></g>
+  <g id="sidebar" transform="translate(0, 60)"><rect width="240" height="{HEIGHT-60}" class="bg-white"/></g>
+  <g id="content" transform="translate(240, 60)"><!-- Contenu --></g>
+</svg>
+```
+
+---
+
+## Detection des elements
+
+### Boutons
+```typescript
+<OdsButton variant="primary" label={t('action_label')} />
+```
+
+### Datagrid
+```typescript
+const columns = [
+  { id: 'name', label: t('column_name') },
+  { id: 'status', label: t('column_status') },
+];
+```
+
+### Tabs
+```typescript
+const tabs = [
+  { name: 'general', label: t('tab_general') },
+  { name: 'ssl', label: t('tab_ssl') },
+];
+```
+
+### Modals
+```typescript
+<OdsModal open={showModal}>...</OdsModal>
+// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.modal-{action}.svg
+```
+
+### ActionMenu (⋮) - TOUJOURS OUVERT
+```typescript
+<ActionMenu items={[
+  { label: t('edit') },
+  { label: t('delete') },
+]} />
+```
+**Rendu SVG :**
+```xml
+<g id="action-menu-open">
+  <text>⋮</text>
+  <g id="dropdown">
+    <rect class="action-menu-dropdown" />
+    <text>Modifier</text>
+    <text>Supprimer</text>
+  </g>
+</g>
+```
+
+### Onboarding / Empty State
+```typescript
+<Onboarding ... />
+// ou
+{data.length === 0 && <EmptyState />}
+// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.onboarding.svg
+```
+
+### Page de detail
+```typescript
+// Route : /support/tickets/:ticketId
+<TicketDetail ticket={ticket} />
+// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.ticket-detail.svg
+```
+
+### Liste / Listing
+```typescript
+// Page qui liste plusieurs ressources avant selection
+<HostingList hostings={hostings} />
+// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.list-hostings.svg
+```
+
+---
+
+## Rapport de generation
+```
+=== CONTEXTE ===
+PREFIX : old_manager
+NAV1 : web-cloud
+NAV2 : hosting
+
+=== ELEMENTS DETECTES ===
+- Breadcrumb : [...]
+- Tabs : [...]
+- Boutons : [...]
+- Colonnes : [...]
+- ActionMenu (⋮) : [TOUTES LES ACTIONS]
+- Modals : [...]
+- Onboarding : [oui/non]
+- Pages detail : [...]
+- Listes : [...]
+
+=== SVG GENERES ===
+1. ✅ old_manager.web-cloud.hosting.svg (XX Ko)
+2. ✅ old_manager.web-cloud.hosting.list-hostings.svg (XX Ko)
+3. ✅ old_manager.web-cloud.hosting.onboarding.svg (XX Ko)
+4. ✅ old_manager.web-cloud.hosting.tab-ssl.svg (XX Ko)
+5. ✅ old_manager.web-cloud.hosting.modal-order.svg (XX Ko)
+```
+
+---
+
+## Checklist finale
+
+- [ ] PREFIX detecte (old_manager / new_manager)
+- [ ] NAV1 identifie (home / web-cloud / bare-metal)
+- [ ] NAV2 identifie
+- [ ] Arborescence creee dans `/mnt/user-data/outputs/`
+- [ ] SVG ecrit avec `tee` (pas affiche)
+- [ ] `present_files` appele
+- [ ] ZERO hallucination
+- [ ] Tokens CSS utilises (pas de hex hardcode)
+- [ ] ActionMenu affiches OUVERTS
+- [ ] Textes en francais
+- [ ] Onboarding genere si present
+- [ ] Pages detail generees si presentes
+- [ ] Listes generees si presentes
+
+---
+
+## Anti-depassement
+
+Si SVG trop complexe (>100 Ko) :
+1. Limiter datagrids a 3-5 lignes exemple
+2. Decouper en plusieurs SVG
+3. Page principale d'abord, modals ensuite

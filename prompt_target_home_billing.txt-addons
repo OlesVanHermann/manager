@@ -1,0 +1,1219 @@
+# BILLING PERIOD NAVIGATION PATTERN
+# =================================
+# Pattern de tableau avec navigation par période (mois/année)
+# Utilisé par: Factures, Avoirs, Paiements, Commandes
+# Ce pattern est NOUVEAU (pas dans old_manager)
+
+# ============================================================
+# 1. SCREENSHOT ASCII - TOOLBAR
+# ============================================================
+
+```
++-------------------------------------------------------------------------------------------+
+|  TOOLBAR                                                                                  |
++-------------------------------------------------------------------------------------------+
+|                                                                                           |
+|  [2024]  [<]  [Jan v]  ->  [Dec v]  [>]  [reset]          [CSV] [PDF]   "3 resultats"    |
+|                                                                                           |
+|   ^       ^      ^            ^       ^     ^                ^     ^           ^          |
+|   |       |      |            |       |     |                |     |           |          |
+|  year  prev   startMonth   endMonth  next  reset           export export    count        |
+|              (select)      (select)       (conditionnel)                                  |
+|                                                                                           |
++-------------------------------------------------------------------------------------------+
+
+Comportement:
+- [<] : recule d'un bloc (mois, trimestre, semestre selon windowSize)
+- [>] : avance d'un bloc (bloque si on depasse mois courant de l'annee courante)
+- [reset] : apparait SEULEMENT si on a navigue depuis le chargement initial (anchor)
+- [Jan v] [Dec v] : selects pour choisir mois debut/fin dans l'annee
+- [CSV] [PDF] : exports, affichés SEULEMENT si data.length > 0
+```
+
+# ============================================================
+# 2. SCREENSHOT ASCII - TABLEAU FACTURES
+# ============================================================
+
+```
++-------------------------------------------------------------------------------------------+
+|  TABLEAU FACTURES                                                                         |
++-------------------------------------------------------------------------------------------+
+|                                                                                           |
+|  +-------+---------------+--------------+----------+--------------+----------+            |
+|  | ID    | Date          | Montant HT   | TVA      | Montant TTC  | Actions  |            |
+|  +-------+---------------+--------------+----------+--------------+----------+            |
+|  | FR-123| 15 dec. 2024  | 100,00 EUR   | 20,00 EUR| 120,00 EUR   | [PDF]    |            |
+|  | FR-122| 10 dec. 2024  | 50,00 EUR    | 10,00 EUR| 60,00 EUR    | [PDF]    |            |
+|  | FR-121| 5 dec. 2024   | 75,00 EUR    | 15,00 EUR| 90,00 EUR    | [PDF]    |            |
+|  +-------+---------------+--------------+----------+--------------+----------+            |
+|                                                                                           |
++-------------------------------------------------------------------------------------------+
+
+Colonnes par page:
+- INVOICES:  id, date, amountHT, tax, amountTTC, actions(PDF)
+- REFUNDS:   id, date, amountHT, tax, amountTTC, originalBill, actions(PDF)
+- PAYMENTS:  id, date, amount, type, status(badge), bill
+- ORDERS:    id, date, amountHT, tax, amountTTC, expiration, actions(PDF)
+```
+
+# ============================================================
+# 3. SCREENSHOT ASCII - ETATS VIDES/LOADING/ERROR
+# ============================================================
+
+```
++-------------------------------------------------------------------------------------------+
+|  LOADING STATE                                                                            |
++-------------------------------------------------------------------------------------------+
+|                                                                                           |
+|                              [spinner animation]                                          |
+|                              Chargement...                                                |
+|                                                                                           |
++-------------------------------------------------------------------------------------------+
+
++-------------------------------------------------------------------------------------------+
+|  EMPTY STATE                                                                              |
++-------------------------------------------------------------------------------------------+
+|                                                                                           |
+|                              [FileTextIcon]                                               |
+|                              Aucune facture                                               |
+|                              Aucune facture pour cette periode                            |
+|                                                                                           |
++-------------------------------------------------------------------------------------------+
+
++-------------------------------------------------------------------------------------------+
+|  ERROR STATE                                                                              |
++-------------------------------------------------------------------------------------------+
+|                                                                                           |
+|  [!] Erreur de chargement                                    [Reessayer]                  |
+|                                                                                           |
++-------------------------------------------------------------------------------------------+
+```
+
+# ============================================================
+# 4. ARCHITECTURE FICHIERS (par page)
+# ============================================================
+
+```
+/src/pages/general/billing/tabs/
+├── invoices/
+│   ├── InvoicesTab.tsx          # Composant + hook usePeriodNavigation
+│   ├── InvoicesTab.service.ts   # API + helpers periode
+│   ├── InvoicesTab.css          # Styles isoles
+│   └── InvoicesTab.icons.tsx    # Icones SVG
+├── refunds/
+│   ├── RefundsTab.tsx
+│   ├── RefundsTab.service.ts
+│   ├── RefundsTab.css
+│   └── RefundsTab.icons.tsx
+├── payments/
+│   ├── PaymentsTab.tsx
+│   ├── PaymentsTab.service.ts
+│   ├── PaymentsTab.css
+│   └── PaymentsTab.icons.tsx
+└── orders/
+    ├── OrdersTab.tsx
+    ├── OrdersTab.service.ts
+    ├── OrdersTab.css
+    └── OrdersTab.icons.tsx
+
+REGLE: Chaque page est COMPLETEMENT ISOLEE (defactorisee)
+       Le hook et les helpers sont COPIES dans chaque page
+       Les CSS ont un prefixe unique: .billing-{invoices|refunds|payments|orders}-
+```
+
+# ============================================================
+# 5. TYPES ET INTERFACES
+# ============================================================
+
+```typescript
+// === STATE DE PERIODE ===
+interface PeriodState {
+  year: number;                    // Annee courante affichee
+  startMonth: number;              // Mois debut (0-11)
+  endMonth: number;                // Mois fin (0-11)
+  anchorYear: number | null;       // Annee au moment du chargement reussi
+  anchorStartMonth: number | null; // Mois debut au moment du chargement
+  anchorEndMonth: number | null;   // Mois fin au moment du chargement
+}
+
+// === TYPES API PAR PAGE ===
+
+// INVOICES (Factures)
+interface Bill {
+  billId: string;
+  date: string;
+  orderId: number;
+  password: string;
+  pdfUrl: string;
+  priceWithTax: { currencyCode: string; text: string; value: number };
+  priceWithoutTax: { currencyCode: string; text: string; value: number };
+  tax: { currencyCode: string; text: string; value: number };
+  url: string;
+}
+
+// REFUNDS (Avoirs)
+interface Refund {
+  refundId: string;
+  date: string;
+  orderId?: number;
+  originalBillId?: string;         // Lien vers facture origine
+  pdfUrl: string;
+  priceWithTax: { currencyCode: string; text: string; value: number };
+  priceWithoutTax: { currencyCode: string; text: string; value: number };
+  tax: { currencyCode: string; text: string; value: number };
+  url: string;
+}
+
+// PAYMENTS (Paiements)
+interface Payment {
+  paymentId: string;
+  date: string;
+  amount: { currencyCode: string; text: string; value: number };
+  paymentType: string;
+  status: "PAID" | "PENDING" | "CANCELLED" | "FAILED";
+  billId?: string;
+  orderId?: number;
+}
+
+// ORDERS (Commandes)
+interface Order {
+  orderId: number;                 // number, pas string!
+  date: string;
+  expirationDate?: string;
+  password?: string;
+  pdfUrl: string;
+  priceWithTax: { currencyCode: string; text: string; value: number };
+  priceWithoutTax: { currencyCode: string; text: string; value: number };
+  tax: { currencyCode: string; text: string; value: number };
+  url: string;
+  retractionDate?: string;
+}
+```
+
+# ============================================================
+# 6. CONSTANTES
+# ============================================================
+
+```typescript
+export const MIN_YEAR = 2020;              // Annee minimum pour navigation
+export const BATCH_SIZE = 10;              // Taille batch pour API calls
+export const VALID_WINDOW_SIZES = [1, 2, 3, 4, 6, 12];  // Tailles de fenetre valides
+```
+
+# ============================================================
+# 7. COMPORTEMENT DYNAMIQUE DU WINDOWSIZE (CONCEPT CLE)
+# ============================================================
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  LE WINDOWSIZE EST RECALCULE A CHAQUE RENDER                                │
+│  C'est un systeme ADAPTATIF - la granularite de navigation s'adapte        │
+│  a ce que l'utilisateur selectionne dans les dropdowns                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  DANS LE CODE:                                                              │
+│  const monthCount = period.endMonth - period.startMonth + 1;                │
+│  const windowSize = service.getWindowSizeFromRange(monthCount);             │
+│                                                                             │
+│  → Ces 2 lignes sont HORS du useState, recalculees a chaque render!         │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  CYCLE COMPLET:                                                             │
+│                                                                             │
+│  1. INIT                                                                    │
+│     startMonth = endMonth = currentMonth (ex: Dec = 11)                     │
+│     monthCount = 1                                                          │
+│     windowSize = 1                                                          │
+│     blocks = [[0,0], [1,1], ..., [11,11]] (12 blocs de 1 mois)              │
+│     → < > bougent de 1 mois                                                 │
+│                                                                             │
+│  2. USER MODIFIE SELECT: startMonth=Jan(0), endMonth=Mar(2)                 │
+│     monthCount = 2 - 0 + 1 = 3                                              │
+│     windowSize = 3                                                          │
+│     blocks = [[0,2], [3,5], [6,8], [9,11]] (4 trimestres)                   │
+│     → < > bougent maintenant par TRIMESTRE                                  │
+│                                                                             │
+│  3. USER CLICK <                                                            │
+│     idx actuel = 0 (Jan-Mar)                                                │
+│     idx - 1 n'existe pas → year - 1, dernier bloc                           │
+│     → Passe a year-1, Oct-Dec (9-11)                                        │
+│     monthCount = 3, windowSize = 3 (inchange)                               │
+│                                                                             │
+│  4. USER MODIFIE SELECT: startMonth=Jan(0), endMonth=Jun(5)                 │
+│     monthCount = 6                                                          │
+│     windowSize = 6                                                          │
+│     blocks = [[0,5], [6,11]] (2 semestres)                                  │
+│     → < > bougent maintenant par SEMESTRE                                   │
+│                                                                             │
+│  5. RESET (bouton apparait car position != anchor)                          │
+│     Revient a anchorYear, anchorStartMonth, anchorEndMonth                  │
+│     monthCount recalcule selon anchor                                       │
+│     windowSize recalcule selon anchor                                       │
+│     → Retour a la granularite originale                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+VALID_WINDOW_SIZES = [1, 2, 3, 4, 6, 12]
+
+Mapping monthCount → windowSize:
+  1 mois   → 1  (mensuel)
+  2 mois   → 2  (bimestre)
+  3 mois   → 3  (trimestre)
+  4-5 mois → 4  (quadrimestre)
+  6-11 mois→ 6  (semestre)
+  12 mois  → 12 (annuel)
+
+getWindowSizeFromRange cherche le plus grand VALID_WINDOW_SIZE <= monthCount
+```
+
+# ============================================================
+# 7b. EXEMPLES DETAILLES - CAS NORMAUX ET TORDUS
+# ============================================================
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  EXEMPLE 1: CAS NORMAL - Janvier → Mars (ALIGNE)                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  startMonth = 0 (Jan), endMonth = 2 (Mar)                                   │
+│  monthCount = 2 - 0 + 1 = 3                                                 │
+│  windowSize = 3                                                             │
+│                                                                             │
+│  blocks = getBlocks(3):                                                     │
+│    i=0:  [0, 2]   → Jan-Mar                                                 │
+│    i=3:  [3, 5]   → Avr-Jun                                                 │
+│    i=6:  [6, 8]   → Jul-Sep                                                 │
+│    i=9:  [9, 11]  → Oct-Dec                                                 │
+│    blocks = [[0,2], [3,5], [6,8], [9,11]]                                   │
+│                                                                             │
+│  Click < :                                                                  │
+│    idx = findIndex(s === 0) = 0                                             │
+│    idx === 0 → passe a year-1, dernier bloc [9,11]                          │
+│    → Affiche: Oct-Dec de l'annee precedente                                 │
+│                                                                             │
+│  Click > :                                                                  │
+│    idx = 0, idx < 3 → passe au bloc suivant [3,5]                           │
+│    → Affiche: Avr-Jun de la meme annee                                      │
+│                                                                             │
+│  RESULTAT: < et > fonctionnent car startMonth=0 est le DEBUT d'un bloc      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  EXEMPLE 2: CAS TORDU - Avril → Juillet (DESALIGNE)                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  startMonth = 3 (Avr), endMonth = 6 (Jul)                                   │
+│  monthCount = 6 - 3 + 1 = 4                                                 │
+│  windowSize = 4                                                             │
+│                                                                             │
+│  blocks = getBlocks(4):                                                     │
+│    i=0:  [0, 3]   → Jan-Avr                                                 │
+│    i=4:  [4, 7]   → Mai-Aout                                                │
+│    i=8:  [8, 11]  → Sep-Dec                                                 │
+│    blocks = [[0,3], [4,7], [8,11]]                                          │
+│                                                                             │
+│  Click < :                                                                  │
+│    idx = findIndex(s === 3) = ???                                           │
+│    - bloc[0]: s=0, pas 3                                                    │
+│    - bloc[1]: s=4, pas 3                                                    │
+│    - bloc[2]: s=8, pas 3                                                    │
+│    → idx = -1 (AUCUN BLOC NE COMMENCE PAR 3!)                               │
+│                                                                             │
+│    if (idx > 0) { ... }        // Non                                       │
+│    else if (idx === 0) { ... } // Non                                       │
+│    return p;                   // Rien ne se passe!                         │
+│                                                                             │
+│  RESULTAT: < et > NE FONT RIEN car startMonth=3 n'est pas un debut de bloc  │
+│            L'utilisateur est "coince" dans une position desalignee          │
+│            Il doit manuellement realigner via les selects                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  EXEMPLE 3: CAS TORDU - Fevrier → Avril (DESALIGNE MEME AVEC 3 MOIS)        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  startMonth = 1 (Fev), endMonth = 3 (Avr)                                   │
+│  monthCount = 3 - 1 + 1 = 3                                                 │
+│  windowSize = 3                                                             │
+│                                                                             │
+│  blocks = [[0,2], [3,5], [6,8], [9,11]] (trimestres standards)              │
+│                                                                             │
+│  Click < :                                                                  │
+│    idx = findIndex(s === 1) = -1 (aucun bloc ne commence par 1!)            │
+│    → < NE FAIT RIEN                                                         │
+│                                                                             │
+│  PIEGE: Meme si monthCount=3 correspond au trimestre, la POSITION           │
+│         n'est pas alignee sur un trimestre standard (Jan-Mar, Avr-Jun...)   │
+│                                                                             │
+│  Pour que < > marchent, il faudrait:                                        │
+│    - Jan-Mar (0-2) ✓                                                        │
+│    - Avr-Jun (3-5) ✓                                                        │
+│    - Jul-Sep (6-8) ✓                                                        │
+│    - Oct-Dec (9-11) ✓                                                       │
+│    Mais PAS Fev-Avr (1-3) ✗                                                 │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  EXEMPLE 4: CAS SPECIAL - Mai → Mai (1 MOIS, TOUJOURS ALIGNE)               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  startMonth = 4 (Mai), endMonth = 4 (Mai)                                   │
+│  monthCount = 1                                                             │
+│  windowSize = 1                                                             │
+│                                                                             │
+│  blocks = getBlocks(1):                                                     │
+│    [[0,0], [1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7],                 │
+│     [8,8], [9,9], [10,10], [11,11]]                                         │
+│    (12 blocs d'un mois chacun)                                              │
+│                                                                             │
+│  Click < :                                                                  │
+│    idx = findIndex(s === 4) = 4                                             │
+│    idx > 0 → passe au bloc precedent [3,3]                                  │
+│    → Affiche: Avril seul                                                    │
+│                                                                             │
+│  RESULTAT: Avec windowSize=1, TOUS les mois sont alignes                    │
+│            < et > fonctionnent toujours car chaque mois est un bloc         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  EXEMPLE 5: CAS ANNEE - Janvier → Decembre (12 MOIS)                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  startMonth = 0 (Jan), endMonth = 11 (Dec)                                  │
+│  monthCount = 12                                                            │
+│  windowSize = 12                                                            │
+│                                                                             │
+│  blocks = getBlocks(12):                                                    │
+│    i=0: [0, 11] → Jan-Dec (toute l'annee)                                   │
+│    blocks = [[0,11]] (UN SEUL BLOC!)                                        │
+│                                                                             │
+│  Click < :                                                                  │
+│    idx = findIndex(s === 0) = 0                                             │
+│    idx === 0 → passe a year-1, dernier bloc [0,11]                          │
+│    → Affiche: Toute l'annee precedente                                      │
+│                                                                             │
+│  Click > :                                                                  │
+│    idx = 0, mais idx === blocks.length - 1 (dernier bloc)                   │
+│    → passe a year+1, premier bloc [0,11]                                    │
+│    → Affiche: Toute l'annee suivante                                        │
+│                                                                             │
+│  RESULTAT: Navigation annuelle complete                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  EXEMPLE 6: SEQUENCE COMPLETE D'UTILISATION                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Etat initial (31 decembre 2024):                                           │
+│    startMonth=11, endMonth=11, year=2024                                    │
+│    monthCount=1, windowSize=1                                               │
+│    Affiche: [2024] [<] [Dec v] -> [Dec v] [>]                               │
+│                                                                             │
+│  User click < :                                                             │
+│    Passe a Nov-Nov                                                          │
+│    Affiche: [2024] [<] [Nov v] -> [Nov v] [>] [reset]                       │
+│    (reset apparait car position != anchor)                                  │
+│                                                                             │
+│  User change select: Jan -> Mar :                                           │
+│    startMonth=0, endMonth=2                                                 │
+│    monthCount=3, windowSize=3 (CHANGE!)                                     │
+│    Affiche: [2024] [<] [Jan v] -> [Mar v] [>] [reset]                       │
+│                                                                             │
+│  User click < :                                                             │
+│    blocks = [[0,2], [3,5], [6,8], [9,11]]                                   │
+│    idx = 0 → passe a 2023, bloc [9,11]                                      │
+│    Affiche: [2023] [<] [Oct v] -> [Dec v] [>] [reset]                       │
+│    (windowSize reste 3 car monthCount=3)                                    │
+│                                                                             │
+│  User click reset :                                                         │
+│    Revient a anchor (Dec-Dec 2024)                                          │
+│    monthCount=1, windowSize=1 (RECALCULE!)                                  │
+│    Affiche: [2024] [<] [Dec v] -> [Dec v] [>]                               │
+│    (reset disparait car position === anchor)                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  RESUME: GESTION ALIGNEMENT / DESALIGNEMENT                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Positions ALIGNEES par windowSize (startMonth au debut d'un bloc):         │
+│                                                                             │
+│    windowSize=1:  0,1,2,3,4,5,6,7,8,9,10,11 (tous les mois)                 │
+│    windowSize=2:  0,2,4,6,8,10 (bimestres)                                  │
+│    windowSize=3:  0,3,6,9 (trimestres)                                      │
+│    windowSize=4:  0,4,8 (quadrimestres)                                     │
+│    windowSize=6:  0,6 (semestres)                                           │
+│    windowSize=12: 0 (annee)                                                 │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  SI ALIGNE:                                                                 │
+│    < : bloc precedent (ou year-1 si premier bloc)                           │
+│    > : bloc suivant (ou year+1 si dernier bloc)                             │
+│                                                                             │
+│  SI DESALIGNE:                                                              │
+│    < : SNAP vers le bloc B ou B.start < startMonth (strictement avant)      │
+│        - Prendre le plus proche (dernier qui satisfait)                     │
+│        - Si AUCUN trouve → year-1, dernier bloc                             │
+│                                                                             │
+│    > : SNAP vers le bloc B ou B.end > endMonth (strictement apres)          │
+│        - Prendre le plus proche (premier qui satisfait)                     │
+│        - Si AUCUN trouve → year+1, premier bloc                             │
+│                                                                             │
+│  EXEMPLES DESALIGNES:                                                       │
+│    Oct-Nov (9-10), ws=2: < → Sep-Oct (8-9), > → Nov-Dec (10-11)             │
+│    Jan-Jul (0-6), ws=6:  < → Jul-Dec year-1, > → Jul-Dec (6-11)             │
+│    Feb-Apr (1-3), ws=3:  < → Jan-Mar (0-2), > → Apr-Jun (3-5)               │
+│    Sep-Nov (8-10), ws=3: < → Jul-Sep (6-8), > → Oct-Dec (9-11)              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+# ============================================================
+# 8. ALGORITHME NAVIGATION - HELPERS DE PERIODE (CODE COMPLET)
+# ============================================================
+
+```typescript
+// === getWindowSizeFromRange ===
+// Determine la taille de fenetre selon le nombre de mois selectionnes
+// Ex: 3 mois -> windowSize 3 (trimestre)
+//     5 mois -> windowSize 4 (car 6 > 5, on prend le plus grand <= 5)
+export function getWindowSizeFromRange(monthCount: number): number {
+  for (let i = VALID_WINDOW_SIZES.length - 1; i >= 0; i--) {
+    if (VALID_WINDOW_SIZES[i] <= monthCount) return VALID_WINDOW_SIZES[i];
+  }
+  return 1;
+}
+
+// === getBlocks ===
+// Divise l'annee en blocs selon windowSize
+// Ex: windowSize=3 -> [[0,2], [3,5], [6,8], [9,11]] (4 trimestres)
+//     windowSize=6 -> [[0,5], [6,11]] (2 semestres)
+//     windowSize=1 -> [[0,0], [1,1], ..., [11,11]] (12 mois)
+export function getBlocks(windowSize: number): [number, number][] {
+  const blocks: [number, number][] = [];
+  for (let i = 0; i < 12; i += windowSize) {
+    blocks.push([i, Math.min(i + windowSize - 1, 11)]);
+  }
+  return blocks;
+}
+
+// === getDateRange ===
+// Convertit annee + mois debut/fin en format ISO pour API
+// Ex: (2024, 0, 2) -> { from: "2024-01-01", to: "2024-03-31" }
+export function getDateRange(year: number, startMonth: number, endMonth: number): { from: string; to: string } {
+  const from = `${year}-${String(startMonth + 1).padStart(2, "0")}-01`;
+  const lastDay = new Date(year, endMonth + 1, 0).getDate();  // Dernier jour du mois
+  const to = `${year}-${String(endMonth + 1).padStart(2, "0")}-${lastDay}`;
+  return { from, to };
+}
+
+// === getLastCompleteBlock (optionnel, utilise dans certaines variantes) ===
+// Trouve le dernier bloc complet avant ou egal au mois donne
+export function getLastCompleteBlock(month: number, windowSize: number): [number, number] | null {
+  const blocks = getBlocks(windowSize);
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    if (blocks[i][1] <= month) return blocks[i];
+  }
+  return null;
+}
+
+// === calculateAnchor (optionnel) ===
+export function calculateAnchor(currentMonth: number, windowSize: number): { startMonth: number; endMonth: number } {
+  const blocks = getBlocks(windowSize);
+  const currentBlockIndex = blocks.findIndex(([s, e]) => s <= currentMonth && currentMonth <= e);
+  const currentBlock = blocks[currentBlockIndex];
+  if (currentBlock[1] <= currentMonth) return { startMonth: currentBlock[0], endMonth: currentBlock[1] };
+  if (currentBlockIndex > 0) {
+    const prevBlock = blocks[currentBlockIndex - 1];
+    return { startMonth: prevBlock[0], endMonth: currentMonth };
+  }
+  return { startMonth: 0, endMonth: currentMonth };
+}
+```
+
+# ============================================================
+# 8. HOOK usePeriodNavigation (CODE COMPLET)
+# ============================================================
+
+```typescript
+function usePeriodNavigation() {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+
+  // === STATE ===
+  // Seules ces valeurs sont DANS le state (persistees entre renders)
+  const [period, setPeriod] = useState<PeriodState>({
+    year: currentYear,
+    startMonth: currentMonth,      // Init: mois courant
+    endMonth: currentMonth,        // Init: mois courant (donc monthCount=1 au depart)
+    anchorYear: null,
+    anchorStartMonth: null,
+    anchorEndMonth: null,
+  });
+
+  // === VALEURS DERIVEES (recalculees a CHAQUE RENDER!) ===
+  // CRUCIAL: Ces lignes sont HORS du useState!
+  // A chaque changement de startMonth ou endMonth (via select OU via < >),
+  // le composant re-render et monthCount/windowSize sont automatiquement recalcules.
+  // C'est ce qui rend le systeme ADAPTATIF.
+  const monthCount = period.endMonth - period.startMonth + 1;
+  const windowSize = service.getWindowSizeFromRange(monthCount);
+  // Exemples:
+  //   User selectionne Dec-Dec   → monthCount=1 → windowSize=1 → nav mensuelle
+  //   User selectionne Jan-Mar   → monthCount=3 → windowSize=3 → nav trimestrielle
+  //   User selectionne Jan-Jun   → monthCount=6 → windowSize=6 → nav semestrielle
+  //   User fait < ou >           → startMonth/endMonth changent → windowSize recalcule
+
+  // === LOGIQUE canGoPrevious ===
+  // On peut reculer si:
+  // - On n'est pas en annee MIN_YEAR avec startMonth = 0
+  const canGoPrevious = period.year > service.MIN_YEAR || period.startMonth > 0;
+
+  // === LOGIQUE canGoNext ===
+  // On peut avancer si:
+  // - On est dans une annee passee (period.year < currentYear)
+  // - OU on est dans l'annee courante MAIS le bloc cible ne depasse pas le mois courant
+  // IMPORTANT: Gere aussi les cas DESALIGNES!
+  const canGoNext = (() => {
+    if (period.year < currentYear) return true;
+    if (period.year === currentYear) {
+      const blocks = service.getBlocks(windowSize);
+      const isAligned = blocks.some(([s, e]) => s === period.startMonth && e === period.endMonth);
+
+      if (isAligned) {
+        // ALIGNE: verifier si le bloc suivant est accessible
+        const idx = blocks.findIndex(([s]) => s === period.startMonth);
+        if (idx >= 0 && idx < blocks.length - 1) {
+          return blocks[idx + 1][1] <= currentMonth;
+        }
+      } else {
+        // DESALIGNE: verifier si un bloc avec B.end > endMonth existe et est accessible
+        const candidates = blocks.filter(([, e]) => e > period.endMonth);
+        if (candidates.length > 0) {
+          return candidates[0][1] <= currentMonth;
+        }
+      }
+    }
+    return false;
+  })();
+
+  // === LOGIQUE showReset ===
+  // Afficher le bouton reset SEULEMENT si:
+  // - Un anchor existe (chargement reussi au moins une fois)
+  // - ET la periode actuelle differe de l'anchor
+  const showReset = period.anchorYear !== null &&
+    (period.year !== period.anchorYear ||
+     period.startMonth !== period.anchorStartMonth ||
+     period.endMonth !== period.anchorEndMonth);
+
+  // === goToPrevious ===
+  const goToPrevious = useCallback(() => {
+    if (!canGoPrevious) return;
+    setPeriod((p) => {
+      const blocks = service.getBlocks(windowSize);
+      const isAligned = blocks.some(([s, e]) => s === p.startMonth && e === p.endMonth);
+
+      if (isAligned) {
+        // ALIGNE: comportement normal - bloc precedent
+        const idx = blocks.findIndex(([s]) => s === p.startMonth);
+        if (idx > 0) {
+          const [s, e] = blocks[idx - 1];
+          return { ...p, startMonth: s, endMonth: e };
+        } else {
+          // Premier bloc -> annee precedente, dernier bloc
+          const [s, e] = blocks[blocks.length - 1];
+          return { ...p, year: p.year - 1, startMonth: s, endMonth: e };
+        }
+      } else {
+        // DESALIGNE: snap vers le bloc strictement avant (B.start < startMonth)
+        const candidates = blocks.filter(([s]) => s < p.startMonth);
+        if (candidates.length > 0) {
+          const [s, e] = candidates[candidates.length - 1]; // le plus proche
+          return { ...p, startMonth: s, endMonth: e };
+        } else {
+          // Aucun bloc avant -> annee precedente, dernier bloc
+          const [s, e] = blocks[blocks.length - 1];
+          return { ...p, year: p.year - 1, startMonth: s, endMonth: e };
+        }
+      }
+    });
+  }, [canGoPrevious, windowSize]);
+
+  // === goToNext ===
+  const goToNext = useCallback(() => {
+    if (!canGoNext) return;
+    setPeriod((p) => {
+      const blocks = service.getBlocks(windowSize);
+      const isAligned = blocks.some(([s, e]) => s === p.startMonth && e === p.endMonth);
+
+      if (isAligned) {
+        // ALIGNE: comportement normal - bloc suivant
+        const idx = blocks.findIndex(([s]) => s === p.startMonth);
+        if (idx < blocks.length - 1) {
+          const [s, e] = blocks[idx + 1];
+          return { ...p, startMonth: s, endMonth: e };
+        } else {
+          // Dernier bloc -> annee suivante, premier bloc
+          const [s, e] = blocks[0];
+          return { ...p, year: p.year + 1, startMonth: s, endMonth: e };
+        }
+      } else {
+        // DESALIGNE: snap vers le bloc strictement apres (B.end > endMonth)
+        const candidates = blocks.filter(([, e]) => e > p.endMonth);
+        if (candidates.length > 0) {
+          const [s, e] = candidates[0]; // le plus proche
+          return { ...p, startMonth: s, endMonth: e };
+        } else {
+          // Aucun bloc apres -> annee suivante, premier bloc
+          const [s, e] = blocks[0];
+          return { ...p, year: p.year + 1, startMonth: s, endMonth: e };
+        }
+      }
+    });
+  }, [canGoNext, windowSize]);
+
+  // === resetToAnchor ===
+  const resetToAnchor = useCallback(() => {
+    setPeriod((p) => {
+      if (p.anchorYear === null) return p;
+      return {
+        ...p,
+        year: p.anchorYear,
+        startMonth: p.anchorStartMonth!,
+        endMonth: p.anchorEndMonth!
+      };
+    });
+  }, []);
+
+  // === setAnchor ===
+  // Appele apres un chargement reussi pour memoriser la position
+  const setAnchor = useCallback(() => {
+    setPeriod((p) => ({
+      ...p,
+      anchorYear: p.year,
+      anchorStartMonth: p.startMonth,
+      anchorEndMonth: p.endMonth
+    }));
+  }, []);
+
+  // === Handlers pour les selects ===
+  const handleStartMonthChange = useCallback((v: number) => {
+    setPeriod((p) => ({ ...p, startMonth: v }));
+  }, []);
+
+  const handleEndMonthChange = useCallback((v: number) => {
+    setPeriod((p) => ({ ...p, endMonth: v }));
+  }, []);
+
+  // === getDateRangeISO ===
+  const getDateRangeISO = useCallback(() => {
+    return service.getDateRange(period.year, period.startMonth, period.endMonth);
+  }, [period.year, period.startMonth, period.endMonth]);
+
+  return {
+    year: period.year,
+    startMonth: period.startMonth,
+    endMonth: period.endMonth,
+    canGoPrevious,
+    canGoNext,
+    showReset,
+    goToPrevious,
+    goToNext,
+    resetToAnchor,
+    setAnchor,
+    handleStartMonthChange,
+    handleEndMonthChange,
+    getDateRangeISO,
+  };
+}
+```
+
+# ============================================================
+# 9. EXPORT CSV (CODE COMPLET)
+# ============================================================
+
+```typescript
+const exportCSV = () => {
+  // Headers specifiques par page
+  const headers = ["ID", "Date", "Montant HT", "TVA", "Montant TTC"];  // Adapter selon page
+
+  // Mapper les donnees
+  const rows = data.map((item) => [
+    item.id,
+    service.formatDate(item.date),
+    item.priceWithoutTax.text,
+    item.tax.text,
+    item.priceWithTax.text,
+  ]);
+
+  // Generer le CSV avec separateur point-virgule (format FR)
+  const csv = [headers, ...rows].map((row) => row.join(";")).join("\n");
+
+  // Telecharger
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `factures_${nav.year}_${nav.startMonth + 1}-${nav.endMonth + 1}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+```
+
+# ============================================================
+# 10. EXPORT PDF (CODE COMPLET)
+# ============================================================
+
+```typescript
+const exportPDF = () => {
+  // Ouvre tous les PDF dans des nouveaux onglets
+  data.forEach((item) => {
+    if (item.pdfUrl) window.open(item.pdfUrl, "_blank");
+  });
+};
+```
+
+# ============================================================
+# 11. HELPERS FORMATAGE
+# ============================================================
+
+```typescript
+// Format date francais: "15 dec. 2024"
+export const formatDate = (d: string) =>
+  new Date(d).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+
+// Format ISO: "2024-12-15"
+export const formatDateISO = (d: string) =>
+  new Date(d).toISOString().split("T")[0];
+
+// Format montant avec devise
+export const formatAmount = (v: number, c: string) => {
+  if (!c || c.toLowerCase() === "points") return `${v.toLocaleString("fr-FR")} pts`;
+  try {
+    return new Intl.NumberFormat("fr-FR", { style: "currency", currency: c }).format(v);
+  } catch {
+    return `${v.toLocaleString("fr-FR")} ${c}`;
+  }
+};
+```
+
+# ============================================================
+# 12. API CALLS PATTERN
+# ============================================================
+
+```typescript
+// PATTERN GENERAL:
+// 1. GET /me/{resource} avec date.from et date.to -> liste d'IDs
+// 2. GET /me/{resource}/{id} pour chaque ID -> details
+// 3. Batching par BATCH_SIZE (10) pour eviter surcharge
+
+// === INVOICES ===
+// GET /me/bill?date.from=2024-01-01&date.to=2024-03-31 -> ["FR-123", "FR-122", ...]
+// GET /me/bill/FR-123 -> { billId, date, priceWithTax, ... }
+
+// === REFUNDS ===
+// GET /me/refund?date.from=...&date.to=... -> ["RF-001", ...]
+// GET /me/refund/RF-001 -> { refundId, date, originalBillId, ... }
+
+// === PAYMENTS ===
+// GET /me/payment?date.from=...&date.to=... -> ["PAY-001", ...]
+// GET /me/payment/PAY-001 -> { paymentId, date, amount, status, ... }
+
+// === ORDERS ===
+// GET /me/order?date.from=...&date.to=... -> [12345, 12346, ...]  // NUMBERS!
+// GET /me/order/12345 -> { orderId, date, expirationDate, ... }
+
+// Code de fetch avec batching:
+export async function getItems(options?: { "date.from"?: string; "date.to"?: string }): Promise<Item[]> {
+  const ids = await getItemIds(options);
+  const items: Item[] = [];
+
+  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+    const batch = ids.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map((id) => getItem(id).catch(() => null))
+    );
+    items.push(...results.filter((item): item is Item => item !== null));
+  }
+
+  // Tri par date decroissante
+  return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+```
+
+# ============================================================
+# 13. EFFECT DE CHARGEMENT
+# ============================================================
+
+```typescript
+const loadData = useCallback(async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const range = nav.getDateRangeISO();
+    const data = await service.getData({
+      "date.from": range.from,
+      "date.to": range.to
+    });
+    setData(data);
+    nav.setAnchor();  // IMPORTANT: memoriser la position apres succes
+  } catch (err) {
+    setError(err instanceof Error ? err.message : t("errors.loadError"));
+  } finally {
+    setLoading(false);
+  }
+}, [nav.getDateRangeISO, nav.setAnchor, t]);
+
+// Declencher le chargement quand la periode change
+useEffect(() => {
+  loadData();
+}, [nav.year, nav.startMonth, nav.endMonth]);
+```
+
+# ============================================================
+# 14. RENDER TOOLBAR JSX
+# ============================================================
+
+```tsx
+<div className="billing-{page}-toolbar">
+  <div className="billing-{page}-toolbar-left">
+    {/* Annee */}
+    <span className="billing-{page}-year-label">{nav.year}</span>
+
+    {/* Bouton Previous */}
+    <button
+      className="billing-{page}-btn {page}-nav-btn"
+      onClick={nav.goToPrevious}
+      disabled={!nav.canGoPrevious}
+      title={t("nav.previous")}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    {/* Select mois debut */}
+    <select
+      className="billing-{page}-period-select"
+      value={nav.startMonth}
+      onChange={(e) => nav.handleStartMonthChange(Number(e.target.value))}
+    >
+      {MONTHS_SHORT.map((m, i) => <option key={`start-${i}`} value={i}>{m}</option>)}
+    </select>
+
+    {/* Separateur */}
+    <span className="billing-{page}-date-separator">-></span>
+
+    {/* Select mois fin */}
+    <select
+      className="billing-{page}-period-select"
+      value={nav.endMonth}
+      onChange={(e) => nav.handleEndMonthChange(Number(e.target.value))}
+    >
+      {MONTHS_SHORT.map((m, i) => <option key={`end-${i}`} value={i}>{m}</option>)}
+    </select>
+
+    {/* Bouton Next */}
+    <button
+      className="billing-{page}-btn {page}-nav-btn"
+      onClick={nav.goToNext}
+      disabled={!nav.canGoNext}
+      title={t("nav.next")}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+
+    {/* Bouton Reset (conditionnel) */}
+    {nav.showReset && (
+      <button
+        className="billing-{page}-btn {page}-reset-btn"
+        onClick={nav.resetToAnchor}
+        title={t("nav.reset")}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+      </button>
+    )}
+  </div>
+
+  <div className="billing-{page}-toolbar-right">
+    {/* Boutons export (conditionnels) */}
+    {data.length > 0 && (
+      <>
+        <button className="billing-{page}-btn {page}-btn-sm {page}-btn-secondary" onClick={exportCSV}>
+          <FileTextIcon /> CSV
+        </button>
+        <button className="billing-{page}-btn {page}-btn-sm {page}-btn-secondary" onClick={exportPDF}>
+          <FileIcon /> PDF
+        </button>
+      </>
+    )}
+
+    {/* Compteur */}
+    <span className="billing-{page}-result-count">{t("count", { count: data.length })}</span>
+  </div>
+</div>
+```
+
+# ============================================================
+# 15. TRADUCTIONS I18N REQUISES
+# ============================================================
+
+```json
+{
+  "loading": "Chargement...",
+  "count": "{{count}} resultat(s)",
+  "months": {
+    "short": ["Jan", "Fev", "Mar", "Avr", "Mai", "Juin", "Juil", "Aout", "Sep", "Oct", "Nov", "Dec"]
+  },
+  "nav": {
+    "previous": "Periode precedente",
+    "next": "Periode suivante",
+    "reset": "Retour a la periode initiale"
+  },
+  "export": {
+    "csv": "Exporter en CSV",
+    "pdf": "Telecharger les PDF"
+  },
+  "columns": {
+    "id": "Reference",
+    "date": "Date",
+    "amountHT": "Montant HT",
+    "tax": "TVA",
+    "amountTTC": "Montant TTC",
+    "actions": "Actions"
+  },
+  "empty": {
+    "title": "Aucune facture",
+    "description": "Aucune facture pour cette periode"
+  },
+  "errors": {
+    "loadError": "Erreur lors du chargement"
+  }
+}
+```
+
+# ============================================================
+# 16. CSS PATTERN (PREFIXE OBLIGATOIRE)
+# ============================================================
+
+```css
+/* REGLE: Chaque page a son prefixe unique */
+/* .billing-invoices-  pour InvoicesTab */
+/* .billing-refunds-   pour RefundsTab */
+/* .billing-payments-  pour PaymentsTab */
+/* .billing-orders-    pour OrdersTab */
+
+/* Layout */
+.billing-{page}-tab-panel { padding: 1.5rem; }
+
+/* Toolbar */
+.billing-{page}-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.billing-{page}-toolbar-left,
+.billing-{page}-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Boutons */
+.billing-{page}-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border, #ddd);
+  background: var(--color-background, #fff);
+  border-radius: var(--border-radius-md, 4px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.billing-{page}-btn:hover:not(:disabled) {
+  background: var(--color-background-subtle, #f5f5f5);
+  border-color: var(--color-primary, #0050d7);
+}
+.billing-{page}-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Selects */
+.billing-{page}-period-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--border-radius-md);
+  background: var(--color-neutral-000);
+  cursor: pointer;
+}
+
+/* Tableau */
+.billing-{page}-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--border-radius-md);
+}
+.billing-{page}-data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.billing-{page}-data-table th {
+  text-align: left;
+  padding: 1rem;
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-info-100);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.billing-{page}-data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+.billing-{page}-data-table tbody tr:hover {
+  background: var(--color-neutral-050);
+}
+
+/* Loading */
+.billing-{page}-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem;
+}
+.billing-{page}-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid var(--color-neutral-200);
+  border-top-color: var(--color-primary-500);
+  border-radius: 50%;
+  animation: {page}-spin 0.8s linear infinite;
+}
+@keyframes {page}-spin { to { transform: rotate(360deg); } }
+
+/* Empty */
+.billing-{page}-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+/* Error */
+.billing-{page}-error-banner {
+  background: var(--color-critical-100);
+  border: 1px solid var(--color-critical-500);
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-md);
+}
+```
+
+# ============================================================
+# 17. ICONS SVG (INLINE)
+# ============================================================
+
+```typescript
+// Chevron gauche (<)
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <path d="M15 18l-6-6 6-6"/>
+</svg>
+
+// Chevron droit (>)
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <path d="M9 18l6-6-6-6"/>
+</svg>
+
+// Reset (fleche circulaire)
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+  <path d="M3 3v5h5"/>
+</svg>
+
+// FileText (CSV)
+export function FileTextIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+    </svg>
+  );
+}
+
+// File (PDF)
+export function FileIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="16" height="16">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+    </svg>
+  );
+}
+```
+
+# ============================================================
+# 18. DIFFERENCES PAR PAGE
+# ============================================================
+
+```
+| Page     | Endpoint      | ID type | Colonnes specifiques        | Export PDF |
+|----------|---------------|---------|-----------------------------| -----------|
+| invoices | /me/bill      | string  | amountHT, tax, amountTTC    | Oui        |
+| refunds  | /me/refund    | string  | + originalBillId            | Oui        |
+| payments | /me/payment   | string  | amount, type, status(badge) | Non        |
+| orders   | /me/order     | number  | + expirationDate            | Oui        |
+
+Status badges (payments only):
+- PAID      -> badge-success (vert)
+- PENDING   -> badge-warning (orange)
+- CANCELLED -> badge-neutral (gris)
+- FAILED    -> badge-error (rouge)
+```
+
+# ============================================================
+# 19. CHECKLIST IMPLEMENTATION
+# ============================================================
+
+Pour creer une nouvelle page avec ce pattern:
+
+1. [ ] Creer le dossier /tabs/{newpage}/
+2. [ ] Creer {NewPage}Tab.tsx avec:
+   - [ ] Interface PeriodState
+   - [ ] Hook usePeriodNavigation() (copier entier)
+   - [ ] Composant principal avec states (data, loading, error)
+   - [ ] loadData avec useCallback + useEffect
+   - [ ] exportCSV + exportPDF
+   - [ ] Render: loading state, error state, toolbar, table/empty
+3. [ ] Creer {NewPage}Tab.service.ts avec:
+   - [ ] Constantes MIN_YEAR, BATCH_SIZE, VALID_WINDOW_SIZES
+   - [ ] Interface du type API
+   - [ ] Helpers: getWindowSizeFromRange, getBlocks, getDateRange
+   - [ ] Helpers: formatDate, formatAmount
+   - [ ] API: getIds, getItem, getItems (avec batching)
+4. [ ] Creer {NewPage}Tab.css avec prefixe .billing-{newpage}-
+5. [ ] Creer {NewPage}Tab.icons.tsx avec les icones necessaires
+6. [ ] Ajouter les traductions dans /public/locales/{lang}/general/billing/{newpage}.json
+
+# ============================================================
+# FIN DU PATTERN
+# ============================================================
