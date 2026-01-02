@@ -1,0 +1,237 @@
+# Cahier des Charges : bare-metal/dedicated/cluster-node-bandwidth-order
+
+## 1. RESUME EXECUTIF
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.cluster-node-bandwidth-order.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated |
+| **Type** | Wizard (commande bande passante) |
+| **Description** | Wizard de commande de bande passante privée (vRack) pour un noeud de cluster dédié |
+| **Users cibles** | Administrateurs de clusters de serveurs dédiés |
+
+---
+
+## 2. ARCHITECTURE NAV
+
+### 2.1 Classification
+
+| Niveau | Valeur | Position |
+|--------|--------|----------|
+| NAV1 | bare-metal | Header OVH (Bare Metal Cloud) |
+| NAV2 | dedicated | Sous-header (Serveurs dédiés) |
+| NAV3 | - | Pas de groupement (wizard modal) |
+| NAV4 | - | Pas d'onglet (wizard modal) |
+
+### 2.2 Contexte de navigation
+
+Ce wizard est accessible depuis :
+- Dashboard du noeud de cluster
+- Page Interfaces du noeud de cluster
+
+Route : `app.dedicated-cluster.cluster.node.dashboard.bandwidth-private-order`
+URL : `/bandwidth-private-order`
+
+---
+
+## 3. ARCHITECTURE FICHIERS (Angular)
+
+```
+/manager/packages/manager/apps/dedicated/client/app/dedicated/dedicated-server/clusters/nodes/
+├── bandwidth/
+│   ├── bandwidth.module.js
+│   ├── private-order/
+│   │   ├── index.js
+│   │   ├── private-order.module.js
+│   │   ├── private-order.routing.js
+│   │   └── private-order.component.js
+│   └── public-order/
+│       ├── index.js
+│       ├── public-order.module.js
+│       ├── public-order.routing.js
+│       └── public-order.controller.js
+```
+
+---
+
+## 4. LAYOUT & STRUCTURE
+
+### 4.1 Dimensions
+
+| Zone | Position | Dimensions |
+|------|----------|------------|
+| Canvas | - | 1440 x 900 px |
+| LEFT PANEL | x=24, y=105 | 280 x 765 px |
+| RIGHT PANEL | x=320, y=105 | 1096 x 765 px |
+
+### 4.2 Structure visuelle
+
+Le wizard s'affiche dans le RIGHT PANEL avec :
+- Breadcrumb : `dedicated-cluster-01 / node-01 / Bande passante privée`
+- Titre : "Commander de la bande passante privée"
+- Stepper 2 étapes
+
+---
+
+## 5. COMPOSANTS UI
+
+### 5.1 Stepper
+
+| Etape | Label | Etat |
+|-------|-------|------|
+| 1 | Sélection | Actif (cercle bleu #0050D7) |
+| 2 | Confirmation | Inactif (cercle blanc bordure grise) |
+
+### 5.2 Options de sélection (Radio)
+
+| Option | Label | Prix |
+|--------|-------|------|
+| 1 | Bande passante privée 3 Gbps | 99,00 € HT/mois |
+| 2 | Bande passante privée 10 Gbps | 299,00 € HT/mois |
+| 3 | Bande passante privée 25 Gbps | 599,00 € HT/mois |
+
+### 5.3 Messages d'information
+
+| Type | Couleur | Message |
+|------|---------|---------|
+| Info | Bleu (#DBEAFE / #1E40AF) | La bande passante privée permet d'améliorer les performances réseau entre vos serveurs au sein du même vRack. |
+| Warning | Orange (#FEF3C7 / #D97706) | Attention : Cette opération peut nécessiter un redémarrage du serveur. Pour un cluster, il est recommandé de commander la même bande passante sur tous les nœuds. |
+
+### 5.4 Boutons d'action
+
+| Bouton | Style | Label |
+|--------|-------|-------|
+| Primary | Bleu plein (#0050D7) | Suivant |
+| Secondary | Outline bleu | Annuler |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Récupération des options disponibles
+
+```
+GET /services/{serviceId}/options
+```
+
+**Resolve dans routing.js :**
+```javascript
+serviceId: /* @ngInject */ ($http, serviceInfos) =>
+  $http
+    .get(`/services/${serviceInfos.serviceId}/options`)
+    .then(({ data: options }) =>
+      options.find((option) =>
+        option.billing.plan.code.startsWith('vrack-bandwidth') ||
+        option.billing.plan.code.startsWith('cluster-vrack-bandwidth')
+      )?.serviceId
+    )
+```
+
+### 6.2 Vérification méthode de paiement
+
+```
+GET /me/paymentMethod?default=true
+```
+
+**Via service :** `ovhPaymentMethod.hasDefaultPaymentMethod()`
+
+### 6.3 Récupération des plans disponibles
+
+**Service :** `BandwidthVrackOrderService.getOrderableBandwidths(productId)`
+
+### 6.4 Passage de commande
+
+```
+POST /order/cart
+POST /order/cart/{cartId}/item
+POST /order/cart/{cartId}/checkout
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+### 7.1 Titres et labels
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_bandwidth_vrack_order_title` | Commander de la bande passante privée |
+| `dedicated_server_bandwidth_step_select` | Sélection |
+| `dedicated_server_bandwidth_step_confirm` | Confirmation |
+| `dedicated_server_bandwidth_vrack_select_label` | Sélectionnez votre bande passante vRack |
+
+### 7.2 Options
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_bandwidth_vrack_3g` | Bande passante privée 3 Gbps |
+| `dedicated_server_bandwidth_vrack_10g` | Bande passante privée 10 Gbps |
+| `dedicated_server_bandwidth_vrack_25g` | Bande passante privée 25 Gbps |
+
+### 7.3 Messages
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_bandwidth_info` | La bande passante privée permet d'améliorer les performances réseau entre vos serveurs au sein du même vRack. |
+| `dedicated_server_bandwidth_warning_reboot` | Attention : Cette opération peut nécessiter un redémarrage du serveur. |
+| `dedicated_server_bandwidth_warning_cluster` | Pour un cluster, il est recommandé de commander la même bande passante sur tous les nœuds. |
+
+### 7.4 Boutons
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `common_next` | Suivant |
+| `common_cancel` | Annuler |
+
+### 7.5 Erreurs
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `server_error_bandwidth_order` | Erreur lors de la commande de bande passante |
+
+---
+
+## 8. REGLES METIER
+
+### 8.1 Prérequis
+
+- Le noeud doit appartenir à un cluster
+- Une méthode de paiement par défaut doit être configurée
+
+### 8.2 Validations
+
+- Une seule option de bande passante peut être sélectionnée
+- L'option actuelle (si existante) doit être différente de la nouvelle
+
+### 8.3 Etats
+
+| Etat | Comportement |
+|------|--------------|
+| Loading | Spinner pendant le chargement des options |
+| Error | Message d'erreur si échec API |
+| Success | Redirection vers le panier ou confirmation |
+
+### 8.4 Tracking
+
+Préfixe : `dedicated::node::interfaces::bandwidth-private-order::`
+
+---
+
+## 9. MAPPING TARGET
+
+| Fichier source | Fichier cible |
+|----------------|---------------|
+| old_manager.bare-metal.dedicated.cluster-node-bandwidth-order.txt | target_.bare-metal.dedicated.cluster-node-bandwidth-order.svg |
+
+### Architecture React cible
+
+```
+src/pages/bare-metal/dedicated/
+├── clusters/
+│   └── nodes/
+│       └── bandwidth/
+│           ├── BandwidthPrivateOrder.tsx
+│           ├── BandwidthPrivateOrder.service.ts
+│           └── BandwidthPrivateOrder.css
+```

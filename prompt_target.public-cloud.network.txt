@@ -1,0 +1,615 @@
+# ============================================================================
+# PROMPT TARGET - PUBLIC CLOUD > NETWORK
+# ============================================================================
+# NAV1: Public Cloud
+# NAV2: Network
+# Version: 1.0
+# ============================================================================
+
+## 1. VUE D'ENSEMBLE
+
+### 1.1 Positionnement
+- **NAV1** : Public Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : Network (Sous-header blanc, 40px) - Actif parmi [Projet, Compute, Storage, Databases, Containers, AI/ML, Network]
+- **NAV3** : Filtres dropdown dans sidecar (Region + Projet)
+- **NAV4** : Tabs contextuels dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion de l'infrastructure réseau : Private Networks, Load Balancers, Floating IPs, Security Groups, vRack, et Gateways.
+
+### 1.3 URL Pattern
+```
+/public-cloud/network                              → Dashboard (General ALL)
+/public-cloud/network/private-networks             → Liste Private Networks
+/public-cloud/network/load-balancers               → Liste Load Balancers
+/public-cloud/network/floating-ips                 → Liste Floating IPs
+/public-cloud/network/security-groups              → Liste Security Groups
+/public-cloud/network/gateways                     → Liste Gateways
+/public-cloud/network/vrack                        → Configuration vRack
+/public-cloud/network/private-network/{networkId}  → Détail Private Network
+/public-cloud/network/load-balancer/{lbId}         → Détail Load Balancer
+```
+
+---
+
+## 2. STRUCTURE NAV3 (SIDECAR - LEFT PANEL 280px)
+
+### 2.1 Filtres (haut de sidecar)
+```
+┌───────────────────────┐
+│ NAV3 - Filtres        │
+│ [🌍 Region: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+│ [🗂️ Projet: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+├───────────────────────┤
+│ 🔍 Rechercher...      │
+├───────────────────────┤
+│  📊 General (ALL)     │  ← Toujours présent, retour dashboard
+│  ─────────────────    │
+│  (liste ressources)   │  ← Filtrée par NAV3
+└───────────────────────┘
+```
+
+### 2.2 Dropdown Region
+Source: `/api/regions.json`
+
+### 2.3 Dropdown Projet
+- **ALL** : Tous les projets (défaut)
+- Liste dynamique des projets de l'utilisateur
+
+### 2.4 Liste ressources (sidecar)
+Affiche toutes les ressources réseau filtrées par NAV3 avec icône par type :
+- 🔒 Private Networks
+- ⚖️ Load Balancers
+- 🌐 Floating IPs
+- 🛡️ Security Groups
+- 🚪 Gateways
+
+---
+
+## 3. STRUCTURE NAV4 (RIGHT PANEL - TABS)
+
+### 3.1 NAV4 - Vue General (ALL) sélectionné dans sidecar
+```
+[General] Private Networks  Load Balancers  Floating IPs  Security Groups  Gateways  vRack
+```
+
+| Tab | Description | Action |
+|-----|-------------|--------|
+| **General** | Dashboard récapitulatif | Vue par défaut |
+| **Private Networks** | Liste réseaux privés | [+ Créer] |
+| **Load Balancers** | Liste load balancers | [+ Créer] |
+| **Floating IPs** | Liste IPs flottantes | [+ Créer] |
+| **Security Groups** | Liste groupes sécurité | [+ Créer] |
+| **Gateways** | Liste gateways NAT/SNAT | [+ Créer] |
+| **vRack** | Configuration vRack global | [Configurer] |
+
+### 3.2 NAV4 - Private Network sélectionné dans sidecar
+```
+[General]  Subnets  Ports  DHCP  Settings
+```
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Informations réseau, CIDR, VLAN |
+| **Subnets** | Sous-réseaux configurés |
+| **Ports** | Ports/interfaces connectés |
+| **DHCP** | Configuration DHCP |
+| **Settings** | Paramètres avancés |
+
+### 3.3 NAV4 - Load Balancer sélectionné
+```
+[General]  Listeners  Pools  Health Monitors  Logs  Certificates
+```
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Informations, VIP, status |
+| **Listeners** | Ports d'écoute (HTTP, HTTPS, TCP) |
+| **Pools** | Groupes de backends |
+| **Health Monitors** | Checks de santé |
+| **Logs** | Logs d'accès |
+| **Certificates** | Certificats SSL/TLS |
+
+### 3.4 NAV4 - Security Group sélectionné
+```
+[General]  Inbound Rules  Outbound Rules  Instances
+```
+
+---
+
+## 4. TYPES DE RESSOURCES
+
+### 4.1 Private Networks (🔒)
+- **Description** : Réseaux privés isolés (OpenStack Neutron)
+- **Features** :
+  - VLAN isolation
+  - Multiple subnets
+  - DHCP managed
+  - vRack connectivity
+  - Inter-region peering
+- **CIDR** : /16 à /28
+
+### 4.2 Load Balancers (⚖️)
+- **Description** : Octavia Load Balancer as a Service
+- **Types** :
+  - HTTP/HTTPS (Layer 7)
+  - TCP/UDP (Layer 4)
+- **Features** :
+  - SSL termination
+  - Health checks
+  - Session persistence
+  - Weighted round-robin
+  - Least connections
+- **Flavors** : Small, Medium, Large
+
+### 4.3 Floating IPs (🌐)
+- **Description** : IPs publiques attachables/détachables
+- **Features** :
+  - Association à instances
+  - Association à load balancers
+  - Failover rapide
+- **Billing** : Par IP réservée (même non attachée)
+
+### 4.4 Security Groups (🛡️)
+- **Description** : Firewall virtuel (niveau instance)
+- **Rules** :
+  - Direction : Ingress / Egress
+  - Protocol : TCP, UDP, ICMP, Any
+  - Port range : single, range, all
+  - Source/Dest : CIDR, Security Group, Any
+- **Default** : Deny all ingress, allow all egress
+
+### 4.5 Gateways (🚪)
+- **Description** : NAT Gateway pour sortie internet
+- **Types** :
+  - SNAT Gateway (outbound only)
+  - NAT Gateway (bi-directional)
+- **Features** :
+  - High availability
+  - Bandwidth configurable
+
+### 4.6 vRack (🔗)
+- **Description** : Réseau privé dédié inter-datacenter
+- **Features** :
+  - Connexion entre régions OVHcloud
+  - Connexion avec Dedicated Servers
+  - Connexion avec autres services (Hosted Private Cloud)
+  - VLAN tagging
+  - Bandwidth garantie
+
+---
+
+## 5. CONTENU PAR TAB
+
+### 5.1 Dashboard (General ALL)
+```
+┌─────────────────────────────────────────────────────────┐
+│ Dashboard Network                                       │
+│                                                         │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
+│ │    12    │  │     5    │  │    18    │  │     8    │ │
+│ │ Private  │  │  Load    │  │ Floating │  │ Security │ │
+│ │ Networks │  │ Balancers│  │   IPs    │  │  Groups  │ │
+│ └──────────┘  └──────────┘  └──────────┘  └──────────┘ │
+│                                                         │
+│ Load Balancers status                                   │
+│ ─────────────────────────────────────────               │
+│ • lb-prod-web: 🟢 Active (3 backends healthy)          │
+│ • lb-prod-api: 🟢 Active (2 backends healthy)          │
+│ • lb-staging: ⚠️ Degraded (1/3 backends unhealthy)     │
+│                                                         │
+│ Floating IPs: 15 attached, 3 unattached                │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Liste Private Networks
+```
+┌─────────────────────────────────────────────────────────┐
+│ Private Networks                        [+ Créer]       │
+│                                                         │
+│ Nom           │ Projet │ Région │ CIDR         │ VLAN│⋮│
+│ ──────────────┼────────┼────────┼──────────────┼─────┼─│
+│ net-prod      │ Prod   │ GRA    │ 10.0.0.0/16  │ 100 │⋮│
+│ net-prod-db   │ Prod   │ GRA    │ 10.1.0.0/16  │ 101 │⋮│
+│ net-staging   │ Dev    │ SBG    │ 10.2.0.0/16  │ 200 │⋮│
+│ net-dev       │ Dev    │ GRA    │ 10.3.0.0/16  │ 201 │⋮│
+│ net-vrack-prod│ Prod   │ Multi  │ 192.168.0.0/24│ 10 │⋮│
+│                                                         │
+│ Affichage 1-5 sur 12                         < 1 2 3 > │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.3 Liste Load Balancers
+```
+┌─────────────────────────────────────────────────────────┐
+│ Load Balancers                          [+ Créer]       │
+│                                                         │
+│ Nom          │ Projet │ Région │ VIP        │ Status│ ⋮│
+│ ─────────────┼────────┼────────┼────────────┼───────┼──│
+│ lb-prod-web  │ Prod   │ GRA    │ 1.2.3.4    │ 🟢    │ ⋮│
+│ lb-prod-api  │ Prod   │ GRA    │ 1.2.3.5    │ 🟢    │ ⋮│
+│ lb-staging   │ Dev    │ SBG    │ 5.6.7.8    │ ⚠️    │ ⋮│
+│ lb-internal  │ Prod   │ GRA    │ 10.0.0.100 │ 🟢    │ ⋮│
+│ lb-dev       │ Dev    │ GRA    │ 9.8.7.6    │ 🟢    │ ⋮│
+│                                                         │
+│ Affichage 1-5 sur 5                          < 1 >     │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.4 Liste Floating IPs
+```
+┌─────────────────────────────────────────────────────────┐
+│ Floating IPs                            [+ Créer]       │
+│                                                         │
+│ [Toutes] [Attached] [Unattached]                       │
+│                                                         │
+│ IP            │ Projet │ Région │ Attaché à      │ ⋮   │
+│ ──────────────┼────────┼────────┼────────────────┼─────│
+│ 1.2.3.10      │ Prod   │ GRA    │ web-server-01  │ ⋮   │
+│ 1.2.3.11      │ Prod   │ GRA    │ web-server-02  │ ⋮   │
+│ 1.2.3.12      │ Prod   │ GRA    │ api-server-01  │ ⋮   │
+│ 1.2.3.20      │ Prod   │ GRA    │ (non attachée) │ ⋮   │
+│ 5.6.7.10      │ Dev    │ SBG    │ staging-app    │ ⋮   │
+│                                                         │
+│ Affichage 1-5 sur 18                      < 1 2 3 4 >  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.5 Liste Security Groups
+```
+┌─────────────────────────────────────────────────────────┐
+│ Security Groups                         [+ Créer]       │
+│                                                         │
+│ Nom            │ Projet │ Rules │ Instances │ ⋮        │
+│ ───────────────┼────────┼───────┼───────────┼──────────│
+│ default        │ Prod   │ 4     │ 15        │ ⋮        │
+│ web-servers    │ Prod   │ 6     │ 8         │ ⋮        │
+│ database       │ Prod   │ 3     │ 4         │ ⋮        │
+│ ssh-only       │ Dev    │ 2     │ 12        │ ⋮        │
+│ monitoring     │ Prod   │ 5     │ 3         │ ⋮        │
+│                                                         │
+│ Affichage 1-5 sur 8                          < 1 2 >   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.6 Détail Private Network - General
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   net-prod                        🟢 ACTIVE   │
+├─────────────────────────────────────────────────────────┤
+│ [General]  Subnets  Ports  DHCP  Settings              │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Informations            │ │ Configuration           │ │
+│ ├─────────────────────────┤ ├─────────────────────────┤ │
+│ │ Nom: net-prod           │ │ CIDR: 10.0.0.0/16       │ │
+│ │ ID: net-a1b2c3d4        │ │ VLAN ID: 100            │ │
+│ │ Projet: Prod            │ │ Gateway: 10.0.0.1       │ │
+│ │ Région: GRA             │ │ DHCP: Enabled           │ │
+│ │ Type: Private           │ │ DNS: 213.186.33.99      │ │
+│ │ Créé: 01/06/2024        │ │                         │ │
+│ │ vRack: vrack-prod-01    │ │                         │ │
+│ └─────────────────────────┘ └─────────────────────────┘ │
+│                                                         │
+│ Connected resources:                                    │
+│ • 15 instances                                         │
+│ • 2 load balancers                                     │
+│ • 1 gateway                                            │
+│                                                         │
+│ [🗑️ Supprimer]                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.7 Détail Private Network - Subnets
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   net-prod                        🟢 ACTIVE   │
+├─────────────────────────────────────────────────────────┤
+│ General  [Subnets]  Ports  DHCP  Settings              │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Subnets                                 [+ Ajouter]    │
+│                                                         │
+│ Nom           │ CIDR          │ Gateway    │ DHCP │ ⋮  │
+│ ──────────────┼───────────────┼────────────┼──────┼────│
+│ subnet-web    │ 10.0.1.0/24   │ 10.0.1.1   │ ✓    │ ⋮  │
+│ subnet-api    │ 10.0.2.0/24   │ 10.0.2.1   │ ✓    │ ⋮  │
+│ subnet-db     │ 10.0.3.0/24   │ 10.0.3.1   │ ✗    │ ⋮  │
+│ subnet-mgmt   │ 10.0.255.0/24 │ 10.0.255.1 │ ✓    │ ⋮  │
+│                                                         │
+│ Allocation pools:                                       │
+│ • subnet-web: 10.0.1.10 - 10.0.1.250                   │
+│ • subnet-api: 10.0.2.10 - 10.0.2.250                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.8 Détail Load Balancer - General
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   lb-prod-web                     🟢 ACTIVE   │
+├─────────────────────────────────────────────────────────┤
+│ [General] Listeners Pools Health Monitors Logs Certificates│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Informations            │ │ VIP                     │ │
+│ ├─────────────────────────┤ ├─────────────────────────┤ │
+│ │ Nom: lb-prod-web        │ │ IP: 1.2.3.4             │ │
+│ │ Flavor: Medium          │ │ Type: Public            │ │
+│ │ Projet: Prod            │ │ Network: Ext-Net        │ │
+│ │ Région: GRA             │ │                         │ │
+│ │ Provider: Octavia       │ │                         │ │
+│ │ Créé: 15/03/2024        │ │                         │ │
+│ └─────────────────────────┘ └─────────────────────────┘ │
+│                                                         │
+│ Traffic (last 24h):                                     │
+│ • Requests: 1,234,567                                  │
+│ • Bandwidth IN: 45 GB                                  │
+│ • Bandwidth OUT: 120 GB                                │
+│                                                         │
+│ [🗑️ Supprimer]                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.9 Détail Load Balancer - Listeners
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   lb-prod-web                     🟢 ACTIVE   │
+├─────────────────────────────────────────────────────────┤
+│ General [Listeners] Pools Health Monitors Logs Certificates│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Listeners                               [+ Ajouter]    │
+│                                                         │
+│ Nom        │ Protocol │ Port │ Pool        │ Status│ ⋮ │
+│ ───────────┼──────────┼──────┼─────────────┼───────┼───│
+│ http       │ HTTP     │ 80   │ pool-web    │ 🟢    │ ⋮ │
+│ https      │ HTTPS    │ 443  │ pool-web    │ 🟢    │ ⋮ │
+│                                                         │
+│ HTTPS Configuration:                                    │
+│ • Certificate: *.example.com (expires 15/06/2026)      │
+│ • TLS versions: 1.2, 1.3                               │
+│ • Cipher suites: Modern                                │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.10 Détail Load Balancer - Pools
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   lb-prod-web                     🟢 ACTIVE   │
+├─────────────────────────────────────────────────────────┤
+│ General Listeners [Pools] Health Monitors Logs Certificates│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Pools                                   [+ Ajouter]    │
+│                                                         │
+│ Pool: pool-web                                    [⋮]  │
+│ Algorithm: Round Robin │ Session: Source IP            │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Members                              [+ Ajouter]    │ │
+│ │                                                      │ │
+│ │ Adresse        │ Port │ Weight │ Status            │ │
+│ │ ───────────────┼──────┼────────┼───────────────────│ │
+│ │ 10.0.1.10      │ 8080 │ 1      │ 🟢 Healthy        │ │
+│ │ 10.0.1.11      │ 8080 │ 1      │ 🟢 Healthy        │ │
+│ │ 10.0.1.12      │ 8080 │ 1      │ 🟢 Healthy        │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ Pool: pool-api                                    [⋮]  │
+│ Algorithm: Least Connections │ Session: None           │
+│ • 2 members (2 healthy)                                │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.11 Détail Security Group - Rules
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   web-servers                                 │
+├─────────────────────────────────────────────────────────┤
+│ General  [Inbound Rules]  Outbound Rules  Instances    │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Inbound Rules                           [+ Ajouter]    │
+│                                                         │
+│ Protocol │ Port    │ Source          │ Description │ ⋮ │
+│ ─────────┼─────────┼─────────────────┼─────────────┼───│
+│ TCP      │ 22      │ 10.0.0.0/8      │ SSH internal│ ⋮ │
+│ TCP      │ 80      │ 0.0.0.0/0       │ HTTP        │ ⋮ │
+│ TCP      │ 443     │ 0.0.0.0/0       │ HTTPS       │ ⋮ │
+│ TCP      │ 8080    │ sg:lb-security  │ From LB     │ ⋮ │
+│ ICMP     │ All     │ 10.0.0.0/8      │ Ping intern │ ⋮ │
+│                                                         │
+│ ⚠️ All other inbound traffic is denied by default      │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Private Networks
+```
+GET    /cloud/project/{projectId}/network/private
+GET    /cloud/project/{projectId}/network/private/{networkId}
+POST   /cloud/project/{projectId}/network/private
+DELETE /cloud/project/{projectId}/network/private/{networkId}
+GET    /cloud/project/{projectId}/network/private/{networkId}/subnet
+POST   /cloud/project/{projectId}/network/private/{networkId}/subnet
+```
+
+### 6.2 Load Balancers
+```
+GET    /cloud/project/{projectId}/loadbalancer
+GET    /cloud/project/{projectId}/loadbalancer/{loadBalancerId}
+POST   /cloud/project/{projectId}/loadbalancer
+DELETE /cloud/project/{projectId}/loadbalancer/{loadBalancerId}
+GET    /cloud/project/{projectId}/loadbalancer/{loadBalancerId}/listener
+POST   /cloud/project/{projectId}/loadbalancer/{loadBalancerId}/listener
+GET    /cloud/project/{projectId}/loadbalancer/{loadBalancerId}/pool
+POST   /cloud/project/{projectId}/loadbalancer/{loadBalancerId}/pool
+```
+
+### 6.3 Floating IPs
+```
+GET    /cloud/project/{projectId}/ip/floating
+POST   /cloud/project/{projectId}/ip/floating
+DELETE /cloud/project/{projectId}/ip/floating/{floatingIpId}
+POST   /cloud/project/{projectId}/ip/floating/{floatingIpId}/attach
+POST   /cloud/project/{projectId}/ip/floating/{floatingIpId}/detach
+```
+
+### 6.4 Security Groups
+```
+GET    /cloud/project/{projectId}/network/security/group
+GET    /cloud/project/{projectId}/network/security/group/{groupId}
+POST   /cloud/project/{projectId}/network/security/group
+DELETE /cloud/project/{projectId}/network/security/group/{groupId}
+GET    /cloud/project/{projectId}/network/security/group/{groupId}/rule
+POST   /cloud/project/{projectId}/network/security/group/{groupId}/rule
+DELETE /cloud/project/{projectId}/network/security/group/{groupId}/rule/{ruleId}
+```
+
+### 6.5 Gateways
+```
+GET    /cloud/project/{projectId}/gateway
+GET    /cloud/project/{projectId}/gateway/{gatewayId}
+POST   /cloud/project/{projectId}/gateway
+DELETE /cloud/project/{projectId}/gateway/{gatewayId}
+```
+
+### 6.6 vRack
+```
+GET    /cloud/project/{projectId}/vrack
+POST   /cloud/project/{projectId}/vrack
+DELETE /cloud/project/{projectId}/vrack
+```
+
+---
+
+## 7. COMPOSANTS UI
+
+### 7.1 Datagrid colonnes Private Networks
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du réseau (lien) |
+| Projet | Nom du projet |
+| Région | Code région (GRA, SBG...) |
+| CIDR | Plage d'adresses |
+| VLAN | ID VLAN |
+| ⋮ | Menu actions |
+
+### 7.2 Badges statut Load Balancer
+| Statut | Couleur | Icône |
+|--------|---------|-------|
+| ACTIVE | Vert | 🟢 |
+| DEGRADED | Jaune | ⚠️ |
+| ERROR | Rouge | 🔴 |
+| PENDING | Jaune | 🟡 |
+| OFFLINE | Gris | ⚪ |
+
+### 7.3 Health status Members
+```
+🟢 Healthy   - Backend répond correctement
+⚠️ Draining  - Backend en cours de vidage
+🔴 Unhealthy - Backend ne répond pas
+⚪ Disabled  - Backend désactivé manuellement
+```
+
+### 7.4 Icônes par type
+| Type | Icône | Couleur |
+|------|-------|---------|
+| Private Network | 🔒 | #6366F1 |
+| Load Balancer | ⚖️ | #10B981 |
+| Floating IP | 🌐 | #3B82F6 |
+| Security Group | 🛡️ | #EF4444 |
+| Gateway | 🚪 | #F59E0B |
+| vRack | 🔗 | #8B5CF6 |
+
+---
+
+## 8. COMPORTEMENTS
+
+### 8.1 Filtrage NAV3
+- Changement Region → Filtre liste ressources
+- Changement Projet → Filtre liste ressources
+- Combinaison AND des deux filtres
+- Note: vRack est cross-region
+
+### 8.2 Navigation sidecar → RIGHT PANEL
+- Clic "General (ALL)" → NAV4 = [General] Private Networks Load Balancers Floating IPs Security Groups Gateways vRack
+- Clic private network → NAV4 = [General] Subnets Ports DHCP Settings
+- Clic load balancer → NAV4 = [General] Listeners Pools Health Monitors Logs Certificates
+- Clic security group → NAV4 = [General] Inbound Rules Outbound Rules Instances
+
+### 8.3 Actions Floating IP
+- Attach : Sélection instance ou port
+- Detach : Libère l'IP (reste réservée)
+- Release : Supprime la réservation
+
+### 8.4 Security Groups
+- Règles appliquées immédiatement
+- Ordre des règles non significatif (évaluation OR)
+- Default deny pour ingress
+
+---
+
+## 9. MODALS
+
+### 9.1 Modal Créer Private Network
+Champs :
+- Projet (dropdown)
+- Région (dropdown)
+- Nom (text)
+- CIDR (text, ex: 10.0.0.0/16)
+- VLAN ID (optionnel, auto si vide)
+- Gateway (optionnel)
+- Enable DHCP (toggle)
+- vRack (optionnel, dropdown)
+
+### 9.2 Modal Créer Load Balancer
+- Projet
+- Région
+- Nom
+- Flavor (Small, Medium, Large)
+- Network (Private network ou public)
+- Listener initial (protocol, port)
+- Pool initial (algorithm, members)
+
+### 9.3 Modal Créer Security Group Rule
+- Direction (Ingress/Egress)
+- Protocol (TCP, UDP, ICMP, Any)
+- Port (single, range, all)
+- Source/Destination (CIDR, Security Group, Any)
+- Description
+
+### 9.4 Modal Attach Floating IP
+- Floating IP (readonly)
+- Target type (Instance, Port, Load Balancer)
+- Target (dropdown selon type)
+
+---
+
+## 10. ESTIMATIONS FICHIERS SVG
+
+| Écran | Fichier |
+|-------|---------|
+| Dashboard Network | target_.public-cloud.network.svg |
+| Liste Private Networks | target_.public-cloud.network.private.svg |
+| Liste Load Balancers | target_.public-cloud.network.loadbalancers.svg |
+| Liste Floating IPs | target_.public-cloud.network.floatingips.svg |
+| Liste Security Groups | target_.public-cloud.network.securitygroups.svg |
+| Liste Gateways | target_.public-cloud.network.gateways.svg |
+| vRack | target_.public-cloud.network.vrack.svg |
+| Détail Private Network | target_.public-cloud.network.private.detail.svg |
+| Private Network - Subnets | target_.public-cloud.network.private.subnets.svg |
+| Détail Load Balancer | target_.public-cloud.network.lb.detail.svg |
+| Load Balancer - Listeners | target_.public-cloud.network.lb.listeners.svg |
+| Load Balancer - Pools | target_.public-cloud.network.lb.pools.svg |
+| Détail Security Group | target_.public-cloud.network.sg.detail.svg |
+| Security Group - Rules | target_.public-cloud.network.sg.rules.svg |
+| Modal Créer Network | target_.public-cloud.network.private.create.svg |
+| Modal Créer LB | target_.public-cloud.network.lb.create.svg |
+| Modal Créer SG Rule | target_.public-cloud.network.sg.rule.create.svg |
+
+**Total estimé : ~20-25 fichiers SVG + TXT**

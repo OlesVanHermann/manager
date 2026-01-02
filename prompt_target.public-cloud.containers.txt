@@ -1,0 +1,522 @@
+# ============================================================================
+# PROMPT TARGET - PUBLIC CLOUD > CONTAINERS
+# ============================================================================
+# NAV1: Public Cloud
+# NAV2: Containers
+# Version: 1.0
+# ============================================================================
+
+## 1. VUE D'ENSEMBLE
+
+### 1.1 Positionnement
+- **NAV1** : Public Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : Containers (Sous-header blanc, 40px) - Actif parmi [Projet, Compute, Storage, Databases, Containers, AI/ML, Network]
+- **NAV3** : Filtres dropdown dans sidecar (Region + Projet)
+- **NAV4** : Tabs contextuels dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion des services de conteneurisation : Kubernetes (Managed Kubernetes Service), Container Registry, et Serverless Containers.
+
+### 1.3 URL Pattern
+```
+/public-cloud/containers                           → Dashboard (General ALL)
+/public-cloud/containers/kubernetes                → Liste clusters Kubernetes
+/public-cloud/containers/registry                  → Liste registries
+/public-cloud/containers/serverless                → Liste services serverless
+/public-cloud/containers/kubernetes/{clusterId}    → Détail cluster
+/public-cloud/containers/kubernetes/{clusterId}/nodes → Nodes du cluster
+/public-cloud/containers/kubernetes/{clusterId}/pools → Node pools
+/public-cloud/containers/registry/{registryId}     → Détail registry
+```
+
+---
+
+## 2. STRUCTURE NAV3 (SIDECAR - LEFT PANEL 280px)
+
+### 2.1 Filtres (haut de sidecar)
+```
+┌───────────────────────┐
+│ NAV3 - Filtres        │
+│ [🌍 Region: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+│ [🗂️ Projet: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+├───────────────────────┤
+│ 🔍 Rechercher...      │
+├───────────────────────┤
+│  📊 General (ALL)     │  ← Toujours présent, retour dashboard
+│  ─────────────────    │
+│  (liste services)     │  ← Filtrée par NAV3
+└───────────────────────┘
+```
+
+### 2.2 Dropdown Region
+Source: `/api/regions.json` (mêmes régions que autres services)
+
+### 2.3 Dropdown Projet
+- **ALL** : Tous les projets (défaut)
+- Liste dynamique des projets de l'utilisateur
+
+### 2.4 Liste services (sidecar)
+Affiche tous les services containers filtrés par NAV3 avec icône par type :
+- ☸️ Clusters Kubernetes
+- 📦 Container Registries
+- ⚡ Serverless Containers
+
+---
+
+## 3. STRUCTURE NAV4 (RIGHT PANEL - TABS)
+
+### 3.1 NAV4 - Vue General (ALL) sélectionné dans sidecar
+```
+[General] Kubernetes  Registry  Serverless
+```
+
+| Tab | Description | Action |
+|-----|-------------|--------|
+| **General** | Dashboard récapitulatif | Vue par défaut |
+| **Kubernetes** | Liste clusters MKS | [+ Créer] |
+| **Registry** | Liste registries | [+ Créer] |
+| **Serverless** | Liste containers serverless | [+ Créer] |
+
+### 3.2 NAV4 - Cluster Kubernetes sélectionné dans sidecar
+```
+[General]  Nodes  Pools  Network  RBAC  Logs  Kubeconfig
+```
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Informations cluster, version, endpoint |
+| **Nodes** | Liste des nodes actifs |
+| **Pools** | Node pools (groupes de nodes) |
+| **Network** | Configuration réseau, Load Balancers |
+| **RBAC** | Utilisateurs et permissions |
+| **Logs** | Logs du control plane |
+| **Kubeconfig** | Téléchargement kubeconfig |
+
+### 3.3 NAV4 - Registry sélectionné dans sidecar
+```
+[General]  Images  Users  Quotas  Settings
+```
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Informations registry, URL |
+| **Images** | Liste des images/tags |
+| **Users** | Utilisateurs et tokens |
+| **Quotas** | Utilisation storage |
+| **Settings** | Configuration, rétention |
+
+### 3.4 NAV4 - Serverless Container sélectionné
+```
+[General]  Deployments  Logs  Metrics  Scaling  Domains
+```
+
+---
+
+## 4. TYPES DE SERVICES
+
+### 4.1 Managed Kubernetes Service (☸️)
+- **Versions** : 1.30, 1.29, 1.28, 1.27
+- **Features** : 
+  - Control plane managé (haute disponibilité)
+  - Node pools autoscaling
+  - Integration Private Network (vRack)
+  - Load Balancer as a Service
+  - Persistent Volumes (Cinder)
+  - Container Storage Interface (CSI)
+- **Certifications** : CNCF Certified Kubernetes
+
+### 4.2 Container Registry (📦)
+- **Types** : Harbor-based registry
+- **Features** :
+  - Images Docker OCI
+  - Vulnerability scanning
+  - Image signing
+  - Replication cross-region
+  - Garbage collection
+- **Quotas** : Selon plan (10GB, 200GB, unlimited)
+
+### 4.3 Serverless Containers (⚡)
+- **Features** :
+  - Scale to zero
+  - Auto-scaling basé sur les requêtes
+  - Custom domains
+  - Environment variables / Secrets
+  - Gestion des révisions
+- **Billing** : Pay per use (vCPU-seconds, GB-seconds)
+
+---
+
+## 5. CONTENU PAR TAB
+
+### 5.1 Dashboard (General ALL)
+```
+┌─────────────────────────────────────────────────────────┐
+│ Dashboard Containers                                    │
+│                                                         │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
+│ │     5    │  │    156   │  │     3    │  │  ~180€   │ │
+│ │ Clusters │  │  Nodes   │  │Registries│  │ Coût/mois│ │
+│ └──────────┘  └──────────┘  └──────────┘  └──────────┘ │
+│                                                         │
+│ Kubernetes clusters                                     │
+│ ─────────────────────────────────────────               │
+│ • k8s-prod-main: 50 nodes, v1.30 (GRA)                 │
+│ • k8s-staging: 10 nodes, v1.29 (SBG)                   │
+│ • k8s-dev: 3 nodes, v1.28 (GRA)                        │
+│                                                         │
+│ Registries: 450 images, 125 GB utilisés                │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Liste Kubernetes
+```
+┌─────────────────────────────────────────────────────────┐
+│ Kubernetes Clusters                     [+ Créer]       │
+│                                                         │
+│ Nom          │ Projet │ Région │Version│ Nodes │ Stat │⋮│
+│ ─────────────┼────────┼────────┼───────┼───────┼──────┼─│
+│ k8s-prod-main│ Prod   │ GRA    │ 1.30  │ 50    │ 🟢   │⋮│
+│ k8s-prod-dr  │ Prod   │ SBG    │ 1.30  │ 20    │ 🟢   │⋮│
+│ k8s-staging  │ Dev    │ SBG    │ 1.29  │ 10    │ 🟢   │⋮│
+│ k8s-dev      │ Dev    │ GRA    │ 1.28  │ 3     │ 🟢   │⋮│
+│ k8s-test     │ Dev    │ GRA    │ 1.30  │ 2     │ ⚠️   │⋮│
+│                                                         │
+│ Affichage 1-5 sur 5                          < 1 >     │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.3 Liste Registry
+```
+┌─────────────────────────────────────────────────────────┐
+│ Container Registries                    [+ Créer]       │
+│                                                         │
+│ Nom           │ Projet │ Région │ Images │ Storage │ ⋮ │
+│ ──────────────┼────────┼────────┼────────┼─────────┼───│
+│ registry-prod │ Prod   │ GRA    │ 250    │ 85 GB   │ ⋮ │
+│ registry-dev  │ Dev    │ GRA    │ 180    │ 35 GB   │ ⋮ │
+│ registry-ci   │ Prod   │ SBG    │ 20     │ 5 GB    │ ⋮ │
+│                                                         │
+│ URL: https://{registry}.{region}.container.cloud.ovh.net│
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.4 Détail Cluster Kubernetes - General
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   k8s-prod-main                   🟢 READY    │
+├─────────────────────────────────────────────────────────┤
+│ [General] Nodes  Pools  Network  RBAC  Logs  Kubeconfig│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Informations            │ │ API Server              │ │
+│ ├─────────────────────────┤ ├─────────────────────────┤ │
+│ │ Nom: k8s-prod-main      │ │ Endpoint:               │ │
+│ │ Version: 1.30.2         │ │ https://xxx.k8s.ovh.net │ │
+│ │ Projet: Prod            │ │                         │ │
+│ │ Région: GRA             │ │ Status: Healthy ✓       │ │
+│ │ Nodes: 50               │ │ Uptime: 99.99%          │ │
+│ │ Créé: 01/03/2024        │ │                         │ │
+│ │ Network: vrack-prod     │ │ [📋 Copier endpoint]    │ │
+│ └─────────────────────────┘ └─────────────────────────┘ │
+│                                                         │
+│ ┌───────────────────────────────────────────────────────┐│
+│ │ Actions                                               ││
+│ │ [📈 Upgrade] [🔄 Reset kubeconfig] [🗑️ Supprimer]    ││
+│ └───────────────────────────────────────────────────────┘│
+│                                                         │
+│ ⚠️ Upgrade disponible: 1.30.2 → 1.30.4                  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.5 Détail Cluster - Nodes
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   k8s-prod-main                   🟢 READY    │
+├─────────────────────────────────────────────────────────┤
+│ General  [Nodes]  Pools  Network  RBAC  Logs  Kubeconfig│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Nodes (50)                                              │
+│                                                         │
+│ Nom                  │ Pool    │ Flavor │ Status │ Age │
+│ ─────────────────────┼─────────┼────────┼────────┼─────│
+│ node-pool-web-abc123 │ web     │ b2-30  │ 🟢 Ready│ 45d │
+│ node-pool-web-def456 │ web     │ b2-30  │ 🟢 Ready│ 45d │
+│ node-pool-web-ghi789 │ web     │ b2-30  │ 🟢 Ready│ 45d │
+│ node-pool-api-jkl012 │ api     │ c2-30  │ 🟢 Ready│ 30d │
+│ node-pool-api-mno345 │ api     │ c2-30  │ 🟢 Ready│ 30d │
+│ node-pool-db-pqr678  │ database│ r2-60  │ 🟢 Ready│ 60d │
+│ ...                                                     │
+│                                                         │
+│ Affichage 1-6 sur 50                      < 1 2 3 ... > │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.6 Détail Cluster - Pools
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   k8s-prod-main                   🟢 READY    │
+├─────────────────────────────────────────────────────────┤
+│ General  Nodes  [Pools]  Network  RBAC  Logs  Kubeconfig│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Node Pools                              [+ Créer pool]  │
+│                                                         │
+│ Pool     │ Flavor │ Nodes │ Autoscale     │ Status │ ⋮ │
+│ ─────────┼────────┼───────┼───────────────┼────────┼───│
+│ web      │ b2-30  │ 20    │ 10-30 enabled │ 🟢     │ ⋮ │
+│ api      │ c2-30  │ 15    │ 5-20 enabled  │ 🟢     │ ⋮ │
+│ database │ r2-60  │ 10    │ disabled      │ 🟢     │ ⋮ │
+│ workers  │ b2-15  │ 5     │ 2-10 enabled  │ 🟢     │ ⋮ │
+│                                                         │
+│ Labels & Taints par pool:                               │
+│ • web: node-type=web, tolerations=web-only             │
+│ • database: node-type=database, NoSchedule             │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.7 Détail Cluster - Kubeconfig
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   k8s-prod-main                   🟢 READY    │
+├─────────────────────────────────────────────────────────┤
+│ General  Nodes  Pools  Network  RBAC  Logs  [Kubeconfig]│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Configuration kubectl                                   │
+│                                                         │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ 1. Téléchargez le fichier kubeconfig                │ │
+│ │    [📥 Télécharger kubeconfig]                      │ │
+│ │                                                      │ │
+│ │ 2. Configurez kubectl:                              │ │
+│ │    export KUBECONFIG=/path/to/kubeconfig.yml       │ │
+│ │                                                      │ │
+│ │ 3. Testez la connexion:                             │ │
+│ │    kubectl get nodes                                │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ ⚠️ Le kubeconfig contient des credentials sensibles.   │
+│    Ne le partagez pas et stockez-le de manière sécurisée│
+│                                                         │
+│ 🔄 [Régénérer kubeconfig] (invalidera l'ancien)        │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.8 Détail Registry - General
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   registry-prod                   🟢 READY    │
+├─────────────────────────────────────────────────────────┤
+│ [General]  Images  Users  Quotas  Settings             │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Informations            │ │ Connexion               │ │
+│ ├─────────────────────────┤ ├─────────────────────────┤ │
+│ │ Nom: registry-prod      │ │ URL:                    │ │
+│ │ Projet: Prod            │ │ xxx.gra.container.ovh.net│
+│ │ Région: GRA             │ │                         │ │
+│ │ Images: 250             │ │ docker login xxx.gra... │ │
+│ │ Storage: 85 GB / 200 GB │ │                         │ │
+│ │ Plan: Standard          │ │ [📋 Copier commande]    │ │
+│ │ Créé: 15/01/2024        │ └─────────────────────────┘ │
+│ └─────────────────────────┘                             │
+│                                                         │
+│ Push example:                                           │
+│ docker tag myimage xxx.gra.container.ovh.net/myimage   │
+│ docker push xxx.gra.container.ovh.net/myimage          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.9 Détail Registry - Images
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   registry-prod                   🟢 READY    │
+├─────────────────────────────────────────────────────────┤
+│ General  [Images]  Users  Quotas  Settings             │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Images                                  🔍 [Rechercher] │
+│                                                         │
+│ Repository        │ Tags │ Size   │ Last push   │ ⋮    │
+│ ──────────────────┼──────┼────────┼─────────────┼──────│
+│ frontend/webapp   │ 45   │ 12 GB  │ il y a 2h   │ ⋮    │
+│ backend/api       │ 38   │ 8 GB   │ il y a 1h   │ ⋮    │
+│ backend/worker    │ 25   │ 6 GB   │ il y a 3h   │ ⋮    │
+│ services/auth     │ 20   │ 4 GB   │ il y a 1j   │ ⋮    │
+│ base/python       │ 12   │ 15 GB  │ il y a 7j   │ ⋮    │
+│ base/node         │ 10   │ 10 GB  │ il y a 7j   │ ⋮    │
+│                                                         │
+│ Actions: Voir tags, Scanner vulnérabilités, Supprimer  │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Kubernetes Clusters
+```
+GET    /cloud/project/{projectId}/kube
+GET    /cloud/project/{projectId}/kube/{kubeId}
+POST   /cloud/project/{projectId}/kube
+DELETE /cloud/project/{projectId}/kube/{kubeId}
+POST   /cloud/project/{projectId}/kube/{kubeId}/update
+POST   /cloud/project/{projectId}/kube/{kubeId}/kubeconfig
+POST   /cloud/project/{projectId}/kube/{kubeId}/reset
+```
+
+### 6.2 Node Pools
+```
+GET    /cloud/project/{projectId}/kube/{kubeId}/nodepool
+GET    /cloud/project/{projectId}/kube/{kubeId}/nodepool/{nodePoolId}
+POST   /cloud/project/{projectId}/kube/{kubeId}/nodepool
+PUT    /cloud/project/{projectId}/kube/{kubeId}/nodepool/{nodePoolId}
+DELETE /cloud/project/{projectId}/kube/{kubeId}/nodepool/{nodePoolId}
+```
+
+### 6.3 Nodes
+```
+GET    /cloud/project/{projectId}/kube/{kubeId}/node
+GET    /cloud/project/{projectId}/kube/{kubeId}/node/{nodeId}
+DELETE /cloud/project/{projectId}/kube/{kubeId}/node/{nodeId}
+```
+
+### 6.4 Container Registry
+```
+GET    /cloud/project/{projectId}/containerRegistry
+GET    /cloud/project/{projectId}/containerRegistry/{registryId}
+POST   /cloud/project/{projectId}/containerRegistry
+DELETE /cloud/project/{projectId}/containerRegistry/{registryId}
+GET    /cloud/project/{projectId}/containerRegistry/{registryId}/users
+POST   /cloud/project/{projectId}/containerRegistry/{registryId}/users
+```
+
+---
+
+## 7. COMPOSANTS UI
+
+### 7.1 Datagrid colonnes Kubernetes
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du cluster (lien) |
+| Projet | Nom du projet |
+| Région | Code région |
+| Version | Version Kubernetes |
+| Nodes | Nombre total de nodes |
+| Statut | Badge (READY, UPDATING...) |
+| ⋮ | Menu actions |
+
+### 7.2 Badges statut Kubernetes
+| Statut | Couleur | Icône |
+|--------|---------|-------|
+| READY | Vert | 🟢 |
+| UPDATING | Jaune | 🟡 |
+| INSTALLING | Jaune | 🟡 |
+| ERROR | Rouge | 🔴 |
+| SUSPENDED | Gris | ⚪ |
+
+### 7.3 Card Node Pool
+```
+┌─────────────────────────────────────────────────────┐
+│ Pool: web                                      [⋮]  │
+├─────────────────────────────────────────────────────┤
+│ Flavor: b2-30 (8 vCPU, 30 GB)                      │
+│ Nodes: 20 / Autoscale: 10-30                       │
+│ Status: 🟢 20/20 Ready                             │
+│                                                     │
+│ Labels: node-type=web                              │
+│ Taints: -                                          │
+└─────────────────────────────────────────────────────┘
+```
+
+### 7.4 Icônes par type
+| Type | Icône | Couleur |
+|------|-------|---------|
+| Kubernetes | ☸️ | #326CE5 |
+| Registry | 📦 | #1D63ED |
+| Serverless | ⚡ | #FF6B35 |
+
+---
+
+## 8. COMPORTEMENTS
+
+### 8.1 Filtrage NAV3
+- Changement Region → Filtre liste clusters/registries
+- Changement Projet → Filtre liste clusters/registries
+- Combinaison AND des deux filtres
+
+### 8.2 Navigation sidecar → RIGHT PANEL
+- Clic "General (ALL)" → NAV4 = [General] Kubernetes Registry Serverless
+- Clic cluster → NAV4 = [General] Nodes Pools Network RBAC Logs Kubeconfig
+- Clic registry → NAV4 = [General] Images Users Quotas Settings
+
+### 8.3 Actions cluster
+- Upgrade : Modal sélection version + warning
+- Reset kubeconfig : Confirmation (invalidera ancien)
+- Delete : Saisie nom pour confirmer
+
+### 8.4 Kubeconfig
+- Téléchargement fichier YAML
+- Token inclus pour authentification
+- Option régénération (révoque l'ancien)
+
+---
+
+## 9. MODALS
+
+### 9.1 Modal Créer Cluster Kubernetes
+Champs :
+- Projet (dropdown)
+- Région (dropdown)
+- Nom (text)
+- Version (dropdown: 1.30, 1.29, 1.28...)
+- Network (public, private vRack)
+- Node pool initial :
+  - Nom pool
+  - Flavor (dropdown)
+  - Nombre nodes (min/max si autoscale)
+  - Autoscale (toggle + min/max)
+
+### 9.2 Modal Créer Node Pool
+- Nom
+- Flavor
+- Nombre nodes initial
+- Autoscale (enabled/disabled)
+- Min/Max nodes (si autoscale)
+- Labels (key=value)
+- Taints (key=value:effect)
+
+### 9.3 Modal Upgrade Cluster
+- Version actuelle (readonly)
+- Version cible (dropdown versions disponibles)
+- Warning: nodes seront redémarrés progressivement
+- Checkbox confirmation
+
+---
+
+## 10. ESTIMATIONS FICHIERS SVG
+
+| Écran | Fichier |
+|-------|---------|
+| Dashboard Containers | target_.public-cloud.containers.svg |
+| Liste Kubernetes | target_.public-cloud.containers.kubernetes.svg |
+| Liste Registry | target_.public-cloud.containers.registry.svg |
+| Liste Serverless | target_.public-cloud.containers.serverless.svg |
+| Détail Cluster | target_.public-cloud.containers.kubernetes.detail.svg |
+| Cluster - Nodes | target_.public-cloud.containers.kubernetes.nodes.svg |
+| Cluster - Pools | target_.public-cloud.containers.kubernetes.pools.svg |
+| Cluster - Network | target_.public-cloud.containers.kubernetes.network.svg |
+| Cluster - RBAC | target_.public-cloud.containers.kubernetes.rbac.svg |
+| Cluster - Kubeconfig | target_.public-cloud.containers.kubernetes.kubeconfig.svg |
+| Détail Registry | target_.public-cloud.containers.registry.detail.svg |
+| Registry - Images | target_.public-cloud.containers.registry.images.svg |
+| Registry - Users | target_.public-cloud.containers.registry.users.svg |
+| Modal Créer Cluster | target_.public-cloud.containers.kubernetes.create.svg |
+| Modal Créer Pool | target_.public-cloud.containers.kubernetes.pool.create.svg |
+| Modal Upgrade | target_.public-cloud.containers.kubernetes.upgrade.svg |
+| Modal Delete | target_.public-cloud.containers.delete.svg |
+
+**Total estimé : ~20-25 fichiers SVG + TXT**

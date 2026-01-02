@@ -1,0 +1,410 @@
+################################################################################
+#                                                                              #
+#                  PROMPT TARGET - NETWORK > ANTI-DDOS VAC                     #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+Anti-DDoS VAC (Vacuum and Clean) est la protection DDoS incluse avec tous
+les services OVHcloud :
+- Protection automatique contre les attaques volumétriques
+- Mitigation en temps réel
+- Configuration des seuils de détection
+- Règles de scrubbing permanentes
+- Statistiques et historique des attaques
+
+L'interface permet de :
+- Visualiser l'état de protection par IP/subnet
+- Configurer le mode de mitigation
+- Définir des règles de filtrage permanentes
+- Consulter l'historique des attaques
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Network
+NAV2: Anti-DDoS VAC (sélectionné)
+NAV3: Region (dropdown dans LEFT PANEL)
+NAV4: [Général] [Statistiques] [Scrubbing] [Trafic] [Tâches]
+
+## 1.1 Position dans la hiérarchie
+
+```
+Network (NAV1)
+├── Subnet
+├── vRack
+├── Load Balancer
+├── CDN
+├── OVHcloud Connect
+├── Anti-DDoS VAC* (NAV2 actif)
+└── Anti-DDoS Game
+```
+
+## 1.2 URLs
+
+| Écran | URL |
+|-------|-----|
+| Vue d'ensemble | /network/anti-ddos-vac |
+| Détail IP/Subnet | /network/anti-ddos-vac/{ip} |
+| Tab Statistiques | /network/anti-ddos-vac/{ip}/stats |
+| Tab Scrubbing | /network/anti-ddos-vac/{ip}/scrubbing |
+| Tab Trafic | /network/anti-ddos-vac/{ip}/traffic |
+| Tab Tâches | /network/anti-ddos-vac/{ip}/tasks |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ Region          [▼] │  ← NAV3 : Filtre par région
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche IP
+├─────────────────────┤
+│ ●Général (ALL)      │  ← Vue d'ensemble (toujours visible)
+├─────────────────────┤
+│ ○51.210.123.0/24    │  ← Liste des subnets/IPs protégés
+│   🟢 Auto           │
+│ ○51.210.45.67       │
+│   🟢 Auto           │
+│ ○141.94.12.0/28     │
+│   🟡 Permanent      │
+│ ○57.128.99.1        │
+│   🔴 Désactivé      │
+└─────────────────────┘
+```
+
+## 2.2 NAV3 : Filtre Region
+
+Filtre les IP/subnets par région du datacenter.
+
+## 2.3 Format élément
+
+```
+○ 51.210.123.0/24    ← IP ou Subnet
+  🟢 Auto            ← Mode mitigation
+```
+
+Modes de mitigation :
+- 🟢 **Auto** : Mitigation automatique sur détection d'attaque
+- 🟡 **Permanent** : Mitigation permanente active
+- 🔴 **Désactivé** : Protection désactivée (déconseillé)
+
+
+# 3. RIGHT PANEL - TAB GÉNÉRAL (Vue d'ensemble)
+################################################################################
+
+Quand "Général (ALL)" est sélectionné dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+Anti-DDoS VAC - Vue d'ensemble
+Protection DDoS incluse avec vos services
+```
+
+## 3.2 Cartes statistiques
+
+| Carte | Contenu |
+|-------|---------|
+| IPs protégées | {protected_count} |
+| Attaques (30j) | {attacks_count} |
+| Volume bloqué | {volume_blocked} TB |
+
+## 3.3 Section "Attaques par type (30j)"
+
+| Type | Count |
+|------|-------|
+| UDP Flood | {count} |
+| SYN Flood | {count} |
+| DNS Amplification | {count} |
+| NTP Amplification | {count} |
+| ICMP Flood | {count} |
+
+## 3.4 Section "Historique (7j)"
+
+Timeline des attaques sur les 7 derniers jours.
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ L   M   M   J   V   S   D                                  │
+│ █   ░   ██  ░   █   ░   ░                                  │
+│ 3       5       2                                          │
+└────────────────────────────────────────────────────────────┘
+```
+
+
+# 4. RIGHT PANEL - TAB GÉNÉRAL (IP/Subnet sélectionné)
+################################################################################
+
+## 4.1 Header
+
+```
+51.210.123.0/24                                         [⋮]
+🟢 Protection active • Mode: Auto
+```
+
+## 4.2 Section "Informations"
+
+| Champ | Valeur |
+|-------|--------|
+| IP/Subnet | {ip}/{cidr} |
+| Mode mitigation | 🟢 Auto / 🟡 Permanent / 🔴 Désactivé |
+| Seuil détection | {threshold} Mbps |
+| Règles permanentes | {rules_count} |
+| Région | {region} |
+
+## 4.3 Section "Résumé (30j)"
+
+| Métrique | Valeur |
+|----------|--------|
+| Attaques | {attacks_count} |
+| Volume bloqué | {volume} GB |
+| Durée totale | {duration} |
+| Dernière attaque | {last_attack_date} |
+
+
+# 5. RIGHT PANEL - TAB STATISTIQUES
+################################################################################
+
+## 5.1 Sélection période
+
+```
+[24h] [7j] [30j*] [90j] [Personnalisé]
+```
+
+## 5.2 Cartes métriques
+
+| Carte | Contenu |
+|-------|---------|
+| Attaques | {count} |
+| Volume bloqué | {volume} |
+| Durée moyenne | {avg_duration} |
+
+## 5.3 Section "Attaques par type"
+
+```
+UDP Flood          ████████████████░░░░  45%
+SYN Flood          ████████░░░░░░░░░░░░  28%
+DNS Amplification  ████░░░░░░░░░░░░░░░░  15%
+Autres             ██░░░░░░░░░░░░░░░░░░  12%
+```
+
+## 5.4 Tableau "Attaques récentes"
+
+| Date | Type | Volume | Durée | Statut |
+|------|------|--------|-------|--------|
+| {date} | UDP Flood | 15 Gbps | 12min | ✅ Mitigé |
+| {date} | SYN Flood | 8 Gbps | 5min | ✅ Mitigé |
+| {date} | DNS Amp. | 22 Gbps | 45min | ✅ Mitigé |
+
+
+# 6. RIGHT PANEL - TAB SCRUBBING
+################################################################################
+
+## 6.1 Description
+
+Configuration du mode de mitigation et règles de filtrage permanentes.
+
+## 6.2 Section "Mode de mitigation"
+
+```
+○ Automatique (recommandé)
+  Mitigation activée uniquement lors d'une attaque détectée
+  
+● Permanent
+  Tout le trafic passe par le scrubbing center en permanence
+  
+○ Désactivé
+  ⚠️ Non recommandé - Aucune protection active
+```
+
+## 6.3 Section "Règles de filtrage permanent"
+
+Tableau des règles :
+
+| Règle | Protocole | Port | Action | Statut | Actions |
+|-------|-----------|------|--------|--------|---------|
+| Block GRE | GRE | * | Bloquer | 🟢 | ⋮ |
+| Block ICMP | ICMP | * | Bloquer | 🟢 | ⋮ |
+| Limit UDP:53 | UDP | 53 | Rate limit | 🟢 | ⋮ |
+
+## 6.4 Actions
+
+```
+[+ Ajouter règle]
+```
+
+
+# 7. RIGHT PANEL - TAB TRAFIC
+################################################################################
+
+## 7.1 Sélection période
+
+```
+[1h] [6h] [24h*] [7j]
+```
+
+## 7.2 Graphique "Trafic entrant"
+
+Courbe du trafic avec zones d'attaque en surbrillance.
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                    ▓▓▓▓                                    │
+│         ╱╲        ▓████▓                                  │
+│ Clean ╱╲╱  ╲╱╲╱╲╱╲▓████▓╱╲╱╲                              │
+│      ╱              ▓▓▓▓     ╲╱╲                          │
+├────────────────────────────────────────────────────────────┤
+│ Légende: ─ Clean traffic  ▓ Attack mitigation             │
+└────────────────────────────────────────────────────────────┘
+```
+
+## 7.3 Métriques temps réel
+
+| Métrique | Valeur |
+|----------|--------|
+| Trafic actuel | {current} Mbps |
+| Pic (24h) | {peak} Mbps |
+| Moyenne (24h) | {avg} Mbps |
+
+
+# 8. RIGHT PANEL - TAB TÂCHES
+################################################################################
+
+## 8.1 Tableau des tâches
+
+| Date | Opération | Cible | Statut |
+|------|-----------|-------|--------|
+| {date} | Changement mode | Permanent | ✅ |
+| {date} | Ajout règle | Block GRE | ✅ |
+| {date} | Suppression règle | - | ✅ |
+
+
+# 9. APIS & ENDPOINTS
+################################################################################
+
+## 9.1 Anti-DDoS
+
+```
+GET /ip/{ip}/mitigation
+PUT /ip/{ip}/mitigation
+GET /ip/{ip}/mitigation/stats
+```
+
+## 9.2 Règles permanentes
+
+```
+GET /ip/{ip}/mitigation/permanentMitigation
+POST /ip/{ip}/mitigation/permanentMitigation
+DELETE /ip/{ip}/mitigation/permanentMitigation/{id}
+```
+
+## 9.3 Statistiques
+
+```
+GET /ip/{ip}/mitigation/stats
+GET /ip/{ip}/antihack
+```
+
+
+# 10. VARIABLES DYNAMIQUES
+################################################################################
+
+| Variable | Source | Exemple |
+|----------|--------|---------|
+| {ip} | Paramètre | 51.210.123.0 |
+| {cidr} | Paramètre | 24 |
+| {mode} | API | auto / permanent / off |
+| {threshold} | API | 1000 |
+| {protected_count} | Comptage | 248 |
+| {attacks_count} | API stats | 15 |
+| {volume_blocked} | API stats | 2.4 TB |
+| {last_attack_date} | API stats | 01/01/2026 |
+
+
+# 11. MODALES
+################################################################################
+
+## 11.1 modal-change-mode
+
+| Champ | Type | Options |
+|-------|------|---------|
+| IP/Subnet | Readonly | - |
+| Mode | Radio | Auto / Permanent / Désactivé |
+
+Actions: [Annuler] [Appliquer]
+
+## 11.2 modal-add-rule
+
+| Champ | Type | Options |
+|-------|------|---------|
+| Protocole | Select | TCP/UDP/ICMP/GRE/ALL |
+| Port | Input | 1-65535 ou * |
+| Action | Select | Bloquer / Rate limit |
+| Seuil | Input | (si Rate limit) |
+| Description | Input | Optionnel |
+
+Actions: [Annuler] [Ajouter]
+
+## 11.3 modal-delete-rule
+
+| Champ | Type |
+|-------|------|
+| Règle | Readonly |
+| Confirmation | Checkbox |
+
+Actions: [Annuler] [Supprimer]
+
+
+# 12. RÈGLES MÉTIER
+################################################################################
+
+## 12.1 Modes de mitigation
+
+- **Auto** : Mode par défaut, recommandé
+- **Permanent** : Pour les cibles fréquemment attaquées
+- **Désactivé** : Déconseillé, à utiliser avec précaution
+
+## 12.2 Règles permanentes
+
+- Appliquées même hors attaque
+- Utiles pour bloquer protocoles non utilisés
+- Rate limiting pour limiter certains trafics
+
+## 12.3 Seuils
+
+- Seuil de détection configurable
+- Défaut : 1 Gbps pour la plupart des services
+
+
+# 13. COMPOSANTS ODS UTILISÉS
+################################################################################
+
+- OdsTabs : NAV4 tabs
+- OdsRadio : Sélection mode
+- OdsSelect : Protocoles, actions
+- OdsDatagrid : Tableaux
+- OdsCard : Métriques
+- OdsBadge : Statuts, modes
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsCharts : Graphiques trafic
+
+
+# 14. FICHIERS ASSOCIÉS
+################################################################################
+
+Documentation : prompt_target.network.anti-ddos-vac.txt (ce fichier)
+Screenshots : prompt_target.network.anti-ddos-vac-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

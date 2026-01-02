@@ -1,0 +1,268 @@
+# PROMPT TARGET: Bare Metal Cloud > Dedicated Server
+# NAV1: bare-metal | NAV2: dedicated-server
+
+================================================================================
+## 1. VUE D'ENSEMBLE
+================================================================================
+
+- **Univers (NAV1)**: Bare Metal Cloud
+- **Produit (NAV2)**: Dedicated Server
+- **Description**: Gestion des serveurs dédiés physiques OVHcloud
+- **Complexité**: Haute (9 tabs, nombreuses fonctionnalités)
+
+================================================================================
+## 2. STRUCTURE DE NAVIGATION
+================================================================================
+
+### NAV1 (Header Univers)
+```
+[Bare Metal Cloud ▼] [Hosted Private Cloud] [Public Cloud] [Web Cloud]
+```
+
+### NAV2 (Sous-header Produits)
+```
+[General] [Dedicated Server•] [VPS] [NAS-HA] [NetApp] [Housing] [IP] [vRack] [...]
+```
+
+### LEFT PANEL (280px)
+```
+┌─────────────────────────┐
+│ NAV3: Région            │
+│ ┌─────────────────────┐ │
+│ │ 🌍 ALL Regions    ▼ │ │
+│ └─────────────────────┘ │
+├─────────────────────────┤
+│ 🔍 Rechercher...        │
+├─────────────────────────┤
+│ ● All (156)             │  ← Vue résumé
+│ ○ ns12345.ip-51-68      │  ← Vue service
+│   RISE-1 | GRA          │
+│ ○ ns67890.ip-54-36      │
+│   ADVANCE-1 | RBX       │
+│ ○ web-prod-01           │
+│   SCALE-3 | BHS         │
+└─────────────────────────┘
+```
+
+### NAV4 - Vue "All" (résumé multi-services)
+```
+[General•]
+```
+Contenu: Dashboard agrégé, stats globales, répartition par DC/gamme, tâches récentes
+
+### NAV4 - Vue Service (détail d'un serveur)
+```
+[General] [KVM] [IPMI] [Réseau] [Subnet] [DNS] [Licence] [Interv.] [Tâches]
+```
+
+================================================================================
+## 3. NAV3 - FILTRE RÉGION
+================================================================================
+
+Dropdown avec groupes de régions (depuis regions.json):
+
+| Groupe | Régions |
+|--------|---------|
+| ALL | Toutes les régions (défaut) |
+| EUROPE | PAR, GRA, RBX, SBG, LIM, ERI, WAW, MIL |
+| EUROPE SOUVERAIN | RBX-SOV, SBG-SOV, GRA-SOV, PAR-SOV, MIL-SOV |
+| NORTH AMERICA | VIN, HIL, BHS, TOR |
+| ASIA PACIFIC | SGP, SYD, MUM |
+
+================================================================================
+## 4. NAV4 TABS - VUE "ALL"
+================================================================================
+
+### Tab: General (vue résumé)
+| Bloc | Contenu |
+|------|---------|
+| KPIs | Total serveurs, Actifs, Alertes |
+| Répartition DC | Graphique barres par datacenter |
+| Répartition Gamme | RISE, ADVANCE, SCALE, HGR, GAME, STOR |
+| Tâches récentes | Liste 3-5 dernières tâches |
+
+Actions toolbar:
+- [+ Commander] : Ouvre page commande
+- [↻] : Rafraîchir
+
+================================================================================
+## 5. NAV4 TABS - VUE SERVICE
+================================================================================
+
+### Tab: General
+| Carte | Champs |
+|-------|--------|
+| MATÉRIEL | Référence, CPU, Cores, RAM, Disks, RAID, Bandwidth |
+| RÉSEAU | IPv4, IPv6, Gateway, MAC, Datacenter, Rack |
+| SYSTÈME | OS, Boot mode, Rescue, Monitoring + Actions |
+| CONTRAT | Date création, Renouvellement, Prix, Engagement |
+
+Actions:
+- [Redémarrer] : Reboot soft
+- [Rescue] : Boot rescue mode
+- [Réinstaller] : Reinstall OS
+
+### Tab: KVM
+| Bloc | Contenu |
+|------|---------|
+| Accès console | Type (HTML5, Java, SOL/SSH) + [Lancer] |
+| Sessions actives | Liste sessions en cours |
+| Historique | Dernières sessions KVM |
+
+### Tab: IPMI
+| Bloc | Contenu |
+|------|---------|
+| État IPMI | Disponibilité + [Redémarrer IPMI] [Tester] |
+| Logs matériel (SEL) | Tableau Date/Sensor/Event |
+| Capteurs | CPU temp, Inlet, Exhaust, Fans RPM |
+
+### Tab: Réseau
+| Bloc | Contenu |
+|------|---------|
+| Interfaces | Liste interfaces réseau (eth0, eth1...) |
+| Configuration | Speed, Duplex, MTU |
+| vRack | Attachement vRack si applicable |
+| OLA | OVHcloud Link Aggregation si activé |
+
+### Tab: Subnet
+| Bloc | Contenu |
+|------|---------|
+| Blocs IP | Tableau Bloc/Type/Utilisé + [Commander] |
+| IPs Failover | Tableau IP/Reverse/MAC virtuelle |
+| Bloc IPv6 | Bloc /48 assigné + délégation |
+
+### Tab: DNS
+| Bloc | Contenu |
+|------|---------|
+| DNS secondaire | Configuration DNS secondaire OVH |
+| Reverse DNS | Configuration reverse pour IPs |
+
+### Tab: Licence
+| Bloc | Contenu |
+|------|---------|
+| Licences actives | Tableau Type/Clé/Expiration |
+| Licences disponibles | Windows, cPanel, Plesk, SQL Server, DirectAdmin |
+
+### Tab: Interventions
+| Bloc | Contenu |
+|------|---------|
+| Historique | Interventions datacenter (maintenance, incidents) |
+| Planifiées | Interventions à venir |
+
+### Tab: Tâches
+| Bloc | Contenu |
+|------|---------|
+| En cours | Tâches actives (reboot, reinstall...) |
+| Historique | Tâches terminées |
+
+================================================================================
+## 6. COMPOSANTS ODS UTILISÉS
+================================================================================
+
+| Composant | Usage |
+|-----------|-------|
+| OdsBreadcrumb | Navigation fil d'ariane |
+| OdsTabs | Navigation NAV4 |
+| OdsCard | Cartes d'information |
+| OdsBadge | États (Démarré, Arrêté, Rescue) |
+| OdsButton | Actions (primary, secondary, ghost) |
+| OdsInput | Recherche, formulaires |
+| OdsSelect | Dropdown région, filtres |
+| OdsDatagrid | Tableaux (IPs, tâches, licences) |
+| OdsClipboard | Copie IPs, clés |
+| OdsChart | Graphiques (répartition, trafic) |
+| OdsModal | Confirmations, formulaires |
+| OdsSpinner | États de chargement |
+| OdsMessage | Alertes, notifications |
+
+================================================================================
+## 7. APIS & ENDPOINTS
+================================================================================
+
+### Liste et détails
+```
+GET  /dedicated/server                              # Liste serveurs
+GET  /dedicated/server/{serviceName}                # Détails serveur
+GET  /dedicated/server/{serviceName}/serviceInfos   # Infos contrat
+GET  /dedicated/server/{serviceName}/specifications/hardware  # Hardware
+```
+
+### Actions
+```
+POST /dedicated/server/{serviceName}/reboot         # Reboot
+POST /dedicated/server/{serviceName}/ipmi/access    # Accès IPMI
+POST /dedicated/server/{serviceName}/terminate      # Résiliation
+```
+
+### Réseau
+```
+GET  /dedicated/server/{serviceName}/ips            # Liste IPs
+GET  /dedicated/server/{serviceName}/virtualNetworkInterface  # vRack
+POST /dedicated/server/{serviceName}/ipMove         # Déplacer IP
+```
+
+### Tâches
+```
+GET  /dedicated/server/{serviceName}/task           # Liste tâches
+GET  /dedicated/server/{serviceName}/task/{taskId}  # Détail tâche
+```
+
+================================================================================
+## 8. ÉTATS ET BADGES
+================================================================================
+
+| État | Badge | Couleur |
+|------|-------|---------|
+| Démarré / Running | success | Vert |
+| Arrêté / Stopped | error | Rouge |
+| Rescue | warning | Orange |
+| Reboot en cours | info | Bleu |
+| Maintenance | neutral | Gris |
+
+================================================================================
+## 9. MODALS
+================================================================================
+
+| Modal | Trigger | Contenu |
+|-------|---------|---------|
+| Confirmer reboot | [Redémarrer] | Confirmation + type (soft/hard) |
+| Mode rescue | [Rescue] | Choix image rescue + SSH key |
+| Réinstaller | [Réinstaller] | Choix OS + options |
+| Commander IP | [+ Commander] | Type bloc + quantité |
+| Commander licence | [Commander] | Type licence + durée |
+| Éditer reverse | Click sur IP | Input nouveau reverse |
+
+================================================================================
+## 10. GAMMES SERVEURS
+================================================================================
+
+| Gamme | Description | Cas d'usage |
+|-------|-------------|-------------|
+| RISE | Entrée de gamme | Web, dev, test |
+| ADVANCE | Polyvalent | Production standard |
+| SCALE | Haute performance | Bases de données |
+| HGR | High Grade | Applications critiques |
+| GAME | Optimisé gaming | Serveurs de jeux |
+| STOR | Stockage | Backup, archivage |
+
+================================================================================
+## 11. DATACENTERS
+================================================================================
+
+| Code | Ville | Pays | Groupe |
+|------|-------|------|--------|
+| GRA | Gravelines | 🇫🇷 FR | EUROPE |
+| RBX | Roubaix | 🇫🇷 FR | EUROPE |
+| SBG | Strasbourg | 🇫🇷 FR | EUROPE |
+| PAR | Paris | 🇫🇷 FR | EUROPE |
+| LIM | Limburg | 🇩🇪 DE | EUROPE |
+| WAW | Warsaw | 🇵🇱 PL | EUROPE |
+| ERI | London | 🇬🇧 UK | EUROPE |
+| MIL | Milan | 🇮🇹 IT | EUROPE |
+| BHS | Beauharnois | 🇨🇦 CA | NORTH AMERICA |
+| VIN | Virginia | 🇺🇸 US | NORTH AMERICA |
+| HIL | Hillsboro | 🇺🇸 US | NORTH AMERICA |
+| SGP | Singapore | 🇸🇬 SG | ASIA PACIFIC |
+| SYD | Sydney | 🇦🇺 AU | ASIA PACIFIC |
+
+================================================================================

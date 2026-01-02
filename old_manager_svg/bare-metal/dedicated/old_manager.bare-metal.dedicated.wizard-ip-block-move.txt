@@ -1,0 +1,118 @@
+# Cahier des Charges : bare-metal/dedicated/wizard-ip-block-move
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.wizard-ip-block-move.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated (IP) |
+| **Type** | Modal wizard (2 étapes) |
+| **Description** | Assistant de déplacement d'un bloc IP vers un autre service |
+
+---
+
+## 2. DIMENSIONS
+
+| Élément | Valeur |
+|---------|--------|
+| Largeur modal | 700px |
+| Hauteur modal | 500px |
+| Position | Centré (x=370, y=180) |
+
+---
+
+## 3. HEADER MODAL
+
+| Élément | Valeur |
+|---------|--------|
+| Barre latérale | 4px bleu #0050D7 |
+| Titre | Déplacer le bloc IP {ip/mask} |
+| Bouton fermer | × |
+
+---
+
+## 4. STEPPER
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Sélection | Actif |
+| 2 | Confirmation | Inactif |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Question
+
+| Texte |
+|-------|
+| Où souhaitez-vous déplacer le bloc IP {ip/mask} ? |
+
+### 5.2 Champs
+
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Depuis | Readonly | {serviceName} (Serveur dédié) |
+| Vers | Select | Sélectionner un service... |
+| Nexthop (optionnel) | Select | Sélectionner une IP... |
+
+### 5.3 Message d'avertissement
+
+| Type | Contenu |
+|------|---------|
+| Warning (#FEF3C7) | **Attention** : Sélectionner "Parking" placera le bloc IP en attente sans routage actif. |
+
+---
+
+## 6. FOOTER MODAL
+
+| Bouton | Style | Label |
+|--------|-------|-------|
+| Annuler | Outline | Annuler |
+| Suivant | Primary | Suivant |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Liste des services compatibles
+
+```
+GET /ip/{ip}/destination
+```
+
+### 7.2 Déplacer le bloc IP
+
+```
+POST /ip/{ip}/move
+{
+  "to": "ns123456.ip-192-168-1.eu",
+  "nexthop": "192.168.1.1"
+}
+```
+
+### 7.3 Mettre en parking
+
+```
+POST /ip/{ip}/park
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_ip_move_title` | Déplacer le bloc IP {ip} |
+| `dedicated_ip_move_step1` | Sélection |
+| `dedicated_ip_move_step2` | Confirmation |
+| `dedicated_ip_move_question` | Où souhaitez-vous déplacer le bloc IP {ip} ? |
+| `dedicated_ip_move_from` | Depuis |
+| `dedicated_ip_move_to` | Vers |
+| `dedicated_ip_move_to_placeholder` | Sélectionner un service... |
+| `dedicated_ip_move_nexthop` | Nexthop (optionnel) |
+| `dedicated_ip_move_nexthop_placeholder` | Sélectionner une IP... |
+| `dedicated_ip_move_parking_warning` | Sélectionner "Parking" placera le bloc IP en attente sans routage actif. |
+| `common_cancel` | Annuler |
+| `common_next` | Suivant |

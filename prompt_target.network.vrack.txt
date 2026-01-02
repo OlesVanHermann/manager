@@ -1,0 +1,496 @@
+################################################################################
+#                                                                              #
+#                     PROMPT TARGET - NETWORK > VRACK                          #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+vRack (Virtual Rack) est le réseau privé OVHcloud permettant d'interconnecter
+les services du client à travers les datacenters :
+- Serveurs dédiés
+- Public Cloud (instances, Kubernetes, etc.)
+- Load Balancer
+- Services managés (DB, Registry, etc.)
+- OVHcloud Connect
+
+Cette interface fusionne vRack et vRack Services pour une gestion unifiée :
+- Services connectés au vRack
+- Subnets privés
+- Endpoints (services managés)
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Network
+NAV2: vRack (sélectionné)
+NAV3: Region (dropdown dans LEFT PANEL)
+NAV4: [Général] [Services] [Subnets] [Endpoints] [Tâches]
+
+## 1.1 Position dans la hiérarchie
+
+```
+Network (NAV1)
+├── Subnet
+├── vRack* (NAV2 actif)
+├── Load Balancer
+├── CDN
+├── OVHcloud Connect
+├── Anti-DDoS VAC
+└── Anti-DDoS Game
+```
+
+## 1.2 URLs
+
+| Écran | URL |
+|-------|-----|
+| Vue d'ensemble | /network/vrack |
+| Détail vRack | /network/vrack/{serviceName} |
+| Tab Services | /network/vrack/{serviceName}/services |
+| Tab Subnets | /network/vrack/{serviceName}/subnets |
+| Tab Endpoints | /network/vrack/{serviceName}/endpoints |
+| Tab Tâches | /network/vrack/{serviceName}/tasks |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ Region          [▼] │  ← NAV3 : Filtre par région
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche nom/description
+├─────────────────────┤
+│ ●Général (ALL)      │  ← Vue d'ensemble (toujours visible)
+├─────────────────────┤
+│ ○pn-123456          │  ← Liste des vRack
+│   Production        │
+│ ○pn-789012          │
+│   Staging           │
+│ ○pn-345678          │
+│   Dev               │
+└─────────────────────┘
+```
+
+## 2.2 NAV3 : Filtre Region
+
+Filtre les vRack selon les services qu'ils contiennent dans la région.
+
+Comportement:
+- "ALL" : Affiche tous les vRack
+- Région sélectionnée : Affiche les vRack ayant au moins un service dans cette région
+- Les compteurs sont mis à jour selon le filtre
+
+## 2.3 Élément "Général (ALL)"
+
+Toujours en première position, non filtrable.
+Affiche la vue d'ensemble avec statistiques globales de tous les vRack.
+
+## 2.4 Format élément vRack
+
+```
+○ pn-123456          ← Nom technique
+  Production         ← Description (si définie)
+```
+
+
+# 3. RIGHT PANEL - TAB GÉNÉRAL (Vue d'ensemble)
+################################################################################
+
+Quand "Général (ALL)" est sélectionné dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+vRack - Vue d'ensemble                           [+ Commander]
+```
+
+## 3.2 Cartes statistiques (row 1)
+
+| Carte | Contenu |
+|-------|---------|
+| vRack | {vrack_count} |
+| Services | {services_count} total |
+| Subnets | {subnets_count} |
+
+## 3.3 Cartes statistiques (row 2)
+
+| Carte | Contenu |
+|-------|---------|
+| Endpoints | {endpoints_count} |
+| Régions | {regions_count} |
+
+## 3.4 Section "Services par type"
+
+Barres horizontales montrant la répartition :
+- 🖥️ Serveurs dédiés : {count}
+- ☁️ Public Cloud : {count}
+- ⚖️ Load Balancer : {count}
+- 🗄️ Managed Services : {count}
+
+## 3.5 Section "Répartition par vRack"
+
+Barres horizontales par vRack :
+- pn-123456 (Prod) : {count} services
+- pn-789012 (Stag) : {count} services
+- etc.
+
+
+# 4. RIGHT PANEL - TAB GÉNÉRAL (vRack sélectionné)
+################################################################################
+
+Quand un vRack est sélectionné dans le LEFT PANEL.
+
+## 4.1 Header
+
+```
+pn-123456                                 [Modifier] [↻]
+Production network
+```
+
+## 4.2 Section "Informations"
+
+| Champ | Valeur |
+|-------|--------|
+| Nom | {name} |
+| Description | {description} |
+| Date création | {creation_date} |
+| Services | {services_count} |
+| Subnets | {subnets_count} |
+| Endpoints | {endpoints_count} |
+
+## 4.3 Section "Répartition par région"
+
+Barres horizontales :
+- GRA : {count} services
+- RBX : {count} services
+- etc.
+
+
+# 5. RIGHT PANEL - TAB SERVICES
+################################################################################
+
+## 5.1 Header section
+
+```
+Services associés ({count})                  [+ Ajouter service]
+```
+
+## 5.2 Tableau des services
+
+| Service | Type | Région | Statut | Actions |
+|---------|------|--------|--------|---------|
+| {name} | 🖥️ Dedicated | {region} | 🟢 | ⋮ |
+| {name} | ☁️ Public Cloud | {region} | 🟢 | ⋮ |
+| {name} | ⚖️ Load Balancer | {region} | 🟢 | ⋮ |
+
+## 5.3 Types de services supportés
+
+| Type | Icône | API |
+|------|-------|-----|
+| Serveur dédié | 🖥️ | /vrack/{sn}/dedicatedServer |
+| Public Cloud | ☁️ | /vrack/{sn}/cloudProject |
+| Load Balancer | ⚖️ | /vrack/{sn}/ipLoadbalancing |
+| Hosted Private Cloud | 🏢 | /vrack/{sn}/dedicatedCloud |
+| IP Block | 🌐 | /vrack/{sn}/ip |
+
+## 5.4 Actions par service
+
+| Action | Description |
+|--------|-------------|
+| Voir détails | Accéder au service |
+| Retirer du vRack | Supprimer l'association |
+| Déplacer | Vers autre vRack |
+
+
+# 6. RIGHT PANEL - TAB SUBNETS
+################################################################################
+
+## 6.1 Description
+
+Gestion des subnets privés dans le vRack (via vRack Services).
+
+## 6.2 Header section
+
+```
+Subnets privés ({count})                        [+ Ajouter]
+```
+
+## 6.3 Tableau des subnets
+
+| Subnet | Région | VLAN | Utilisé | Actions |
+|--------|--------|------|---------|---------|
+| 10.0.1.0/24 | GRA | 100 | 45/254 | ⋮ |
+| 10.0.2.0/24 | GRA | 200 | 12/254 | ⋮ |
+| 192.168.0.0/16 | ALL | 500 | 156/65534 | ⋮ |
+
+## 6.4 Section "Utilisation globale"
+
+```
+████████████░░░░░░░░░░░░  221 / 66296 (0.3%)
+```
+
+## 6.5 Actions par subnet
+
+| Action | Description |
+|--------|-------------|
+| Modifier | Changer VLAN, description |
+| Voir IPs | Liste des IPs utilisées |
+| Supprimer | Retirer le subnet |
+
+
+# 7. RIGHT PANEL - TAB ENDPOINTS
+################################################################################
+
+## 7.1 Description
+
+Endpoints = services managés connectés au vRack via vRack Services.
+
+## 7.2 Header section
+
+```
+Endpoints (services managés connectés)            [+ Ajouter]
+```
+
+## 7.3 Tableau des endpoints
+
+| Service | Type | Région | Subnet | Actions |
+|---------|------|--------|--------|---------|
+| lb-prod | ⚖️ Load Balancer | GRA | 10.0.1.0/24 | ⋮ |
+| mysql-prod | 🗄️ Managed DB | GRA | 10.0.1.0/24 | ⋮ |
+| k8s-cluster | ☸️ Managed K8s | GRA | 10.0.2.0/24 | ⋮ |
+| registry-1 | 📦 Registry | GRA | 10.0.1.0/24 | ⋮ |
+
+## 7.4 Types d'endpoints
+
+| Type | Icône | Description |
+|------|-------|-------------|
+| Load Balancer | ⚖️ | IP Load Balancing |
+| Managed DB | 🗄️ | Bases de données managées |
+| Managed K8s | ☸️ | Kubernetes managé |
+| Registry | 📦 | Container Registry |
+| OVHcloud Connect | 🔗 | Connexion hybride |
+| Vault | 🔒 | Secret Manager |
+
+## 7.5 Actions par endpoint
+
+| Action | Description |
+|--------|-------------|
+| Voir détails | Accéder au service |
+| Changer subnet | Modifier le subnet associé |
+| Retirer | Supprimer l'endpoint |
+
+
+# 8. RIGHT PANEL - TAB TÂCHES
+################################################################################
+
+## 8.1 Description
+
+Historique des opérations sur le vRack.
+
+## 8.2 Tableau des tâches
+
+| Date | Opération | Cible | Statut | Durée |
+|------|-----------|-------|--------|-------|
+| {date} | Ajout service | ns123.ovh | ✅ | 2s |
+| {date} | Création subnet | 10.0.3.0/24 | ✅ | 1s |
+| {date} | Ajout endpoint | lb-staging | 🔄 | - |
+
+## 8.3 Statuts
+
+| Statut | Icône | Description |
+|--------|-------|-------------|
+| En cours | 🔄 | Opération en cours |
+| Succès | ✅ | Terminé avec succès |
+| Erreur | ❌ | Échec |
+| Annulé | ⚪ | Annulé |
+
+
+# 9. APIS & ENDPOINTS
+################################################################################
+
+## 9.1 vRack
+
+```
+GET /vrack
+GET /vrack/{serviceName}
+GET /vrack/{serviceName}/serviceInfos
+PUT /vrack/{serviceName}
+```
+
+## 9.2 Services associés
+
+```
+GET /vrack/{serviceName}/dedicatedServer
+POST /vrack/{serviceName}/dedicatedServer
+DELETE /vrack/{serviceName}/dedicatedServer/{dedicatedServer}
+
+GET /vrack/{serviceName}/cloudProject
+POST /vrack/{serviceName}/cloudProject
+DELETE /vrack/{serviceName}/cloudProject/{project}
+
+GET /vrack/{serviceName}/ipLoadbalancing
+POST /vrack/{serviceName}/ipLoadbalancing
+DELETE /vrack/{serviceName}/ipLoadbalancing/{ipLoadbalancing}
+
+GET /vrack/{serviceName}/dedicatedCloud
+POST /vrack/{serviceName}/dedicatedCloud
+DELETE /vrack/{serviceName}/dedicatedCloud/{dedicatedCloud}
+```
+
+## 9.3 vRack Services (Subnets & Endpoints)
+
+```
+GET /vrackServices/{serviceName}
+GET /vrackServices/{serviceName}/resource
+GET /vrackServices/{serviceName}/subnet
+POST /vrackServices/{serviceName}/subnet
+DELETE /vrackServices/{serviceName}/subnet/{subnetId}
+
+GET /vrackServices/{serviceName}/endpoint
+POST /vrackServices/{serviceName}/endpoint
+DELETE /vrackServices/{serviceName}/endpoint/{endpointId}
+```
+
+## 9.4 Tâches
+
+```
+GET /vrack/{serviceName}/task
+GET /vrack/{serviceName}/task/{taskId}
+```
+
+
+# 10. VARIABLES DYNAMIQUES
+################################################################################
+
+| Variable | Source | Exemple |
+|----------|--------|---------|
+| {serviceName} | API /vrack | pn-123456 |
+| {description} | API /vrack/{sn} | Production network |
+| {vrack_count} | Comptage | 3 |
+| {services_count} | Comptage | 24 |
+| {subnets_count} | API vrackServices | 12 |
+| {endpoints_count} | API vrackServices | 8 |
+| {regions_count} | Comptage distinct | 4 |
+| {creation_date} | API serviceInfos | 15/01/2024 |
+
+
+# 11. MODALES
+################################################################################
+
+## 11.1 modal-add-service
+
+Ajouter un service au vRack.
+
+| Champ | Type | Options |
+|-------|------|---------|
+| Type de service | Select | Dedicated, Cloud, LB, etc. |
+| Service | Select | Liste services disponibles |
+
+Actions: [Annuler] [Ajouter]
+
+## 11.2 modal-remove-service
+
+Retirer un service du vRack.
+
+| Champ | Type |
+|-------|------|
+| Service | Readonly |
+| Confirmation | Checkbox |
+
+Actions: [Annuler] [Retirer]
+
+## 11.3 modal-add-subnet
+
+Créer un subnet privé.
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Subnet (CIDR) | Input | Format CIDR valide |
+| VLAN ID | Input | 1-4094 |
+| Région | Select | Liste régions |
+| Description | Input | Optionnel |
+
+Actions: [Annuler] [Créer]
+
+## 11.4 modal-add-endpoint
+
+Ajouter un endpoint au vRack.
+
+| Champ | Type | Options |
+|-------|------|---------|
+| Type | Select | LB, DB, K8s, etc. |
+| Service | Select | Services disponibles |
+| Subnet | Select | Subnets existants |
+
+Actions: [Annuler] [Ajouter]
+
+## 11.5 modal-edit-vrack
+
+Modifier les informations du vRack.
+
+| Champ | Type |
+|-------|------|
+| Description | Input |
+
+Actions: [Annuler] [Enregistrer]
+
+
+# 12. RÈGLES MÉTIER
+################################################################################
+
+## 12.1 vRack
+
+- Un vRack peut contenir des services de plusieurs régions
+- Les services communiquent via le réseau privé L2
+- Gratuit (inclus avec les services)
+
+## 12.2 Subnets
+
+- Gérés via vRack Services
+- Un subnet est lié à une région spécifique
+- VLAN ID unique par vRack
+- Plages privées RFC1918 recommandées
+
+## 12.3 Endpoints
+
+- Nécessitent un subnet existant
+- Liaison automatique de l'IP privée
+- Dépendent de vRack Services
+
+## 12.4 Filtrage région
+
+- Filtre basé sur les services contenus
+- Un vRack multi-région apparaît dans plusieurs filtres
+- "Général (ALL)" affiche toujours la vue complète
+
+
+# 13. COMPOSANTS ODS UTILISÉS
+################################################################################
+
+- OdsTabs : NAV4 tabs
+- OdsInput : Recherche, formulaires
+- OdsSelect : Filtre région (NAV3), sélection services
+- OdsDatagrid : Tableaux (services, subnets, endpoints, tâches)
+- OdsCard : Cartes statistiques
+- OdsBadge : Types, statuts
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsProgressBar : Utilisation subnets
+
+
+# 14. FICHIERS ASSOCIÉS
+################################################################################
+
+Documentation : prompt_target.network.vrack.txt (ce fichier)
+Screenshots : prompt_target.network.vrack-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

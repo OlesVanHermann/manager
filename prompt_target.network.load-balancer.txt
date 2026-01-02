@@ -1,0 +1,525 @@
+################################################################################
+#                                                                              #
+#                  PROMPT TARGET - NETWORK > LOAD BALANCER                     #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+Load Balancer (IP Load Balancing) est le service de répartition de charge
+OVHcloud permettant de :
+- Distribuer le trafic sur plusieurs serveurs backends
+- Gérer la haute disponibilité
+- Terminer SSL/TLS
+- Surveiller l'état des serveurs (health checks)
+- Collecter les logs et métriques
+
+L'interface permet de gérer :
+- Frontends (points d'entrée publics)
+- Fermes (groupes de serveurs backends)
+- Certificats SSL
+- Configuration réseau (IP, vRack)
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Network
+NAV2: Load Balancer (sélectionné)
+NAV3: Region (dropdown dans LEFT PANEL)
+NAV4: [Général] [Subnet] [Fermes] [Frontends] [SSL] [Logs] [Graphiques] [Tâches]
+
+## 1.1 Position dans la hiérarchie
+
+```
+Network (NAV1)
+├── Subnet
+├── vRack
+├── Load Balancer* (NAV2 actif)
+├── CDN
+├── OVHcloud Connect
+├── Anti-DDoS VAC
+└── Anti-DDoS Game
+```
+
+## 1.2 URLs
+
+| Écran | URL |
+|-------|-----|
+| Vue d'ensemble | /network/load-balancer |
+| Détail LB | /network/load-balancer/{serviceName} |
+| Tab Subnet | /network/load-balancer/{serviceName}/subnet |
+| Tab Fermes | /network/load-balancer/{serviceName}/farms |
+| Tab Frontends | /network/load-balancer/{serviceName}/frontends |
+| Tab SSL | /network/load-balancer/{serviceName}/ssl |
+| Tab Logs | /network/load-balancer/{serviceName}/logs |
+| Tab Graphiques | /network/load-balancer/{serviceName}/graphs |
+| Tab Tâches | /network/load-balancer/{serviceName}/tasks |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ Region          [▼] │  ← NAV3 : Filtre par région
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche nom/IP
+├─────────────────────┤
+│ ●Général (ALL)      │  ← Vue d'ensemble (toujours visible)
+├─────────────────────┤
+│ ○lb-prod            │  ← Liste des Load Balancers
+│   🟢 GRA,RBX        │
+│ ○lb-staging         │
+│   🟢 GRA            │
+│ ○lb-dev             │
+│   🟡 GRA            │
+└─────────────────────┘
+```
+
+## 2.2 NAV3 : Filtre Region
+
+Filtre les Load Balancers par zone de déploiement.
+
+## 2.3 Format élément LB
+
+```
+○ lb-prod            ← Nom du LB
+  🟢 GRA,RBX         ← Statut + Zones déployées
+```
+
+Indicateurs de statut :
+- 🟢 OK : Tous les frontends/fermes fonctionnent
+- 🟡 Warning : Certains backends down
+- 🔴 Critical : Service dégradé
+
+
+# 3. RIGHT PANEL - TAB GÉNÉRAL (Vue d'ensemble)
+################################################################################
+
+Quand "Général (ALL)" est sélectionné dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+Load Balancer - Vue d'ensemble               [+ Commander]
+```
+
+## 3.2 Cartes statistiques
+
+| Carte | Contenu |
+|-------|---------|
+| Total | {lb_count} |
+| 🟢 Actifs | {active_count} |
+| 🟡 Warning | {warning_count} |
+
+## 3.3 Section "Par région"
+
+Barres horizontales :
+- GRA : {count}
+- RBX : {count}
+- etc.
+
+## 3.4 Section "Trafic global (7j)"
+
+Graphique sparkline du trafic total.
+Total : {total_bandwidth} GB
+
+
+# 4. RIGHT PANEL - TAB GÉNÉRAL (LB sélectionné)
+################################################################################
+
+## 4.1 Header
+
+```
+LB Production                                        [↻]
+IP: 51.210.x.x • GRA,RBX • 🟢 ok
+```
+
+## 4.2 Cartes métriques
+
+| Carte | Contenu |
+|-------|---------|
+| Frontends | {frontend_count} activés |
+| Fermes | {farm_count} activées |
+| Serveurs | {server_active}/{server_total} actifs |
+
+## 4.3 Cartes par zone
+
+Pour chaque zone déployée :
+| Zone | Bande passante |
+|------|---------------|
+| GRA | {bandwidth}/10 GB |
+| RBX | {bandwidth}/10 GB |
+
+## 4.4 Section "Graphique trafic"
+
+Mini-graphique du trafic 24h.
+
+
+# 5. RIGHT PANEL - TAB SUBNET
+################################################################################
+
+## 5.1 Description
+
+Configuration réseau du Load Balancer (IPs publiques et vRack).
+
+## 5.2 Section "IP publiques"
+
+| Type | IP | Zone | Statut |
+|------|-----|------|--------|
+| Anycast | 51.210.123.45 | ALL | 🟢 |
+| Failover | 51.210.123.46 | GRA | 🟢 |
+| Failover | 51.210.123.47 | RBX | 🟢 |
+
+## 5.3 Section "IP vRack (privées)"
+
+| vRack | Subnet | IP LB |
+|-------|--------|-------|
+| pn-123456 | 10.0.1.0/24 | 10.0.1.10 |
+| pn-123456 | 10.0.2.0/24 | 10.0.2.10 |
+
+## 5.4 Actions
+
+```
+[+ Ajouter IP] [Configurer vRack]
+```
+
+
+# 6. RIGHT PANEL - TAB FERMES
+################################################################################
+
+## 6.1 Description
+
+Fermes = groupes de serveurs backends recevant le trafic.
+
+## 6.2 Header section
+
+```
+Fermes de serveurs ({count})                    [+ Créer]
+```
+
+## 6.3 Tableau des fermes
+
+| Ferme | Port | Protocole | Serveurs | Statut | Actions |
+|-------|------|-----------|----------|--------|---------|
+| farm-web | 80 | HTTP | 4/4 🟢 | Actif | ⋮ |
+| farm-api | 8080 | HTTP | 3/4 🟡 | Actif | ⋮ |
+| farm-ws | 443 | TCP | 2/2 🟢 | Actif | ⋮ |
+
+## 6.4 Détail ferme (expansion)
+
+| Serveur | IP | Port | Poids | Statut |
+|---------|-----|------|-------|--------|
+| server-1 | 10.0.1.11 | 80 | 100 | 🟢 UP |
+| server-2 | 10.0.1.12 | 80 | 100 | 🟢 UP |
+| server-3 | 10.0.1.13 | 80 | 100 | 🔴 DOWN |
+
+## 6.5 Algorithmes de répartition
+
+| Algorithme | Description |
+|------------|-------------|
+| roundrobin | Distribution cyclique |
+| leastconn | Moins de connexions |
+| source | Hash IP source |
+| uri | Hash URI |
+
+
+# 7. RIGHT PANEL - TAB FRONTENDS
+################################################################################
+
+## 7.1 Description
+
+Frontends = points d'entrée du trafic (IPs et ports publics).
+
+## 7.2 Header section
+
+```
+Frontends ({count})                             [+ Créer]
+```
+
+## 7.3 Tableau des frontends
+
+| Frontend | Port | Protocole | Ferme | SSL | Statut | Actions |
+|----------|------|-----------|-------|-----|--------|---------|
+| front-https | 443 | HTTPS | farm-web | ✅ | 🟢 | ⋮ |
+| front-http | 80 | HTTP | farm-web | ❌ | 🟢 | ⋮ |
+| front-api | 8443 | HTTPS | farm-api | ✅ | 🟢 | ⋮ |
+
+## 7.4 Configuration frontend
+
+| Option | Description |
+|--------|-------------|
+| Port | Port d'écoute (1-65535) |
+| Protocole | HTTP, HTTPS, TCP |
+| Ferme défaut | Ferme par défaut |
+| SSL | Certificat associé |
+| Redirect HTTP→HTTPS | Redirection automatique |
+
+
+# 8. RIGHT PANEL - TAB SSL
+################################################################################
+
+## 8.1 Description
+
+Gestion des certificats SSL/TLS pour le Load Balancer.
+
+## 8.2 Header section
+
+```
+Certificats SSL ({count})                    [+ Ajouter]
+```
+
+## 8.3 Tableau des certificats
+
+| Domaine | Type | Expiration | Statut | Actions |
+|---------|------|------------|--------|---------|
+| *.example.com | Let's Encrypt | 15/03/2026 | 🟢 | ⋮ |
+| api.example.com | Custom | 01/06/2026 | 🟢 | ⋮ |
+| legacy.example.com | Custom | 15/01/2026 | 🟡 | ⋮ |
+
+## 8.4 Types de certificats
+
+| Type | Description |
+|------|-------------|
+| Let's Encrypt | Gratuit, renouvellement auto |
+| Custom | Certificat importé |
+| OVHcloud SSL | Certificat OVHcloud |
+
+## 8.5 Actions
+
+```
+[+ Importer certificat] [+ Générer Let's Encrypt]
+```
+
+
+# 9. RIGHT PANEL - TAB LOGS
+################################################################################
+
+## 9.1 Description
+
+Logs d'accès et de trafic du Load Balancer.
+
+## 9.2 Sous-tabs (NAV5)
+
+```
+[Logs] [Livetail] [Datastreams]
+```
+
+## 9.3 Section Logs
+
+Tableau des logs récents avec filtres :
+- Période
+- Code HTTP
+- Frontend
+- Ferme
+
+## 9.4 Section Livetail
+
+Flux de logs en temps réel.
+
+## 9.5 Section Datastreams
+
+Configuration export vers Logs Data Platform.
+
+
+# 10. RIGHT PANEL - TAB GRAPHIQUES
+################################################################################
+
+## 10.1 Description
+
+Métriques et graphiques de performance.
+
+## 10.2 Métriques disponibles
+
+| Métrique | Description |
+|----------|-------------|
+| Requêtes/s | Nombre de requêtes par seconde |
+| Bande passante | Trafic entrant/sortant |
+| Latence | Temps de réponse |
+| Connexions | Connexions actives |
+| Codes HTTP | Répartition 2xx/3xx/4xx/5xx |
+
+## 10.3 Sélection période
+
+```
+[1h] [6h] [24h] [7j] [30j] [Personnalisé]
+```
+
+
+# 11. RIGHT PANEL - TAB TÂCHES
+################################################################################
+
+## 11.1 Tableau des tâches
+
+| Date | Opération | Cible | Statut | Durée |
+|------|-----------|-------|--------|-------|
+| {date} | Ajout serveur | farm-web | ✅ | 2s |
+| {date} | Création frontend | front-api | ✅ | 1s |
+| {date} | Appliquer config | - | 🔄 | - |
+
+
+# 12. APIS & ENDPOINTS
+################################################################################
+
+## 12.1 Load Balancer
+
+```
+GET /ipLoadbalancing
+GET /ipLoadbalancing/{serviceName}
+GET /ipLoadbalancing/{serviceName}/serviceInfos
+```
+
+## 12.2 Fermes
+
+```
+GET /ipLoadbalancing/{serviceName}/http/farm
+POST /ipLoadbalancing/{serviceName}/http/farm
+GET /ipLoadbalancing/{serviceName}/http/farm/{farmId}
+PUT /ipLoadbalancing/{serviceName}/http/farm/{farmId}
+DELETE /ipLoadbalancing/{serviceName}/http/farm/{farmId}
+
+GET /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server
+POST /ipLoadbalancing/{serviceName}/http/farm/{farmId}/server
+```
+
+## 12.3 Frontends
+
+```
+GET /ipLoadbalancing/{serviceName}/http/frontend
+POST /ipLoadbalancing/{serviceName}/http/frontend
+GET /ipLoadbalancing/{serviceName}/http/frontend/{frontendId}
+PUT /ipLoadbalancing/{serviceName}/http/frontend/{frontendId}
+DELETE /ipLoadbalancing/{serviceName}/http/frontend/{frontendId}
+```
+
+## 12.4 SSL
+
+```
+GET /ipLoadbalancing/{serviceName}/ssl
+POST /ipLoadbalancing/{serviceName}/ssl
+DELETE /ipLoadbalancing/{serviceName}/ssl/{id}
+```
+
+## 12.5 Refresh
+
+```
+POST /ipLoadbalancing/{serviceName}/refresh
+```
+
+
+# 13. VARIABLES DYNAMIQUES
+################################################################################
+
+| Variable | Source | Exemple |
+|----------|--------|---------|
+| {serviceName} | API | loadbalancer-xxx |
+| {displayName} | API | LB Production |
+| {ip} | API | 51.210.123.45 |
+| {zones} | API | GRA,RBX |
+| {state} | API | ok / warning / critical |
+| {frontend_count} | Comptage | 3 |
+| {farm_count} | Comptage | 2 |
+| {server_active} | Comptage | 7 |
+| {server_total} | Comptage | 8 |
+
+
+# 14. MODALES
+################################################################################
+
+## 14.1 modal-create-farm
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Nom | Input | Requis |
+| Port | Input | 1-65535 |
+| Protocole | Select | HTTP/TCP |
+| Balance | Select | roundrobin/leastconn/source |
+| Zone | Select | Liste zones |
+
+## 14.2 modal-add-server
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Adresse | Input | IP valide |
+| Port | Input | 1-65535 |
+| Poids | Input | 1-256 |
+| Backup | Toggle | Serveur backup |
+
+## 14.3 modal-create-frontend
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Nom | Input | Requis |
+| Port | Input | 1-65535 |
+| Protocole | Select | HTTP/HTTPS/TCP |
+| Ferme | Select | Fermes existantes |
+| Certificat SSL | Select | Si HTTPS |
+
+## 14.4 modal-add-ssl
+
+| Champ | Type |
+|-------|------|
+| Type | Radio (Let's Encrypt / Import) |
+| Domaine | Input (Let's Encrypt) |
+| Certificat | Textarea (Import) |
+| Clé privée | Textarea (Import) |
+| Chaîne | Textarea (Import, optionnel) |
+
+
+# 15. RÈGLES MÉTIER
+################################################################################
+
+## 15.1 Zones
+
+- Un LB peut être déployé sur plusieurs zones
+- Chaque zone a sa propre IP failover
+- IP Anycast pour toutes les zones
+
+## 15.2 Fermes
+
+- Une ferme = un backend
+- Protocole HTTP ou TCP
+- Serveurs avec poids et backup
+
+## 15.3 Frontends
+
+- Frontend → Ferme (1:1)
+- SSL optionnel
+- Redirection HTTP→HTTPS
+
+## 15.4 Refresh
+
+- Toute modification nécessite un "refresh"
+- Le refresh applique la configuration
+
+
+# 16. COMPOSANTS ODS UTILISÉS
+################################################################################
+
+- OdsTabs : NAV4 tabs
+- OdsInput : Formulaires
+- OdsSelect : Protocoles, zones
+- OdsDatagrid : Tableaux
+- OdsCard : Métriques
+- OdsBadge : Statuts
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsToggle : Options
+- OdsCharts : Graphiques
+
+
+# 17. FICHIERS ASSOCIÉS
+################################################################################
+
+Documentation : prompt_target.network.load-balancer.txt (ce fichier)
+Screenshots : prompt_target.network.load-balancer-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

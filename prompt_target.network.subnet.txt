@@ -1,0 +1,505 @@
+################################################################################
+#                                                                              #
+#                    PROMPT TARGET - NETWORK > SUBNET                          #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+Subnet est la vue unifiée de toutes les adresses IP du client OVHcloud :
+- Blocs IP (Failover, vRack, BYOIP)
+- IP unitaires (Dedicated Server, VPS, Public Cloud, etc.)
+- IPv4 et IPv6 dans la même interface
+
+L'objectif est de donner une vision centralisée du patrimoine IP avec :
+- Gestion des reverses DNS
+- Opérations sur les blocs (split/join)
+- Configuration BYOIP (Bring Your Own IP)
+- Lien vers le service associé (serveur, VPS, instance, etc.)
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Network
+NAV2: Subnet (sélectionné)
+NAV3: Region (dropdown dans LEFT PANEL)
+NAV4: [Général] [Reverse] [Opérations] [BYOIP]
+
+## 1.1 Position dans la hiérarchie
+
+```
+Network (NAV1)
+├── Subnet* (NAV2 actif)
+├── vRack
+├── Load Balancer
+├── CDN
+├── OVHcloud Connect
+├── Anti-DDoS VAC
+└── Anti-DDoS Game
+```
+
+## 1.2 URLs
+
+| Écran | URL |
+|-------|-----|
+| Vue d'ensemble | /network/subnet |
+| Bloc IP | /network/subnet/{ip}/{cidr} |
+| IP unitaire | /network/subnet/{ip} |
+| Tab Reverse | /network/subnet/{ip}/reverse |
+| Tab Opérations | /network/subnet/{ip}/operations |
+| Tab BYOIP | /network/subnet/{ip}/byoip |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ Region          [▼] │  ← NAV3 : Filtre par région
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche IP/nom
+├─────────────────────┤
+│ ●Général (ALL)      │  ← Vue d'ensemble (toujours visible)
+├─────────────────────┤
+│ Blocs               │  ← Section blocs IP
+│ ○51.210.x.x/24      │
+│   Failover /24      │
+│ ○10.0.0.0/16        │
+│   vRack privé       │
+│ ○192.99.x.x/28      │
+│   BYOIP             │
+├─────────────────────┤
+│ IP unitaires        │  ← Section IP individuelles
+│ ○51.210.45.67       │
+│   🖥️ ns123.ovh      │
+│ ○141.94.12.34       │
+│   💻 vps-abc        │
+│ ○57.128.99.1        │
+│   ☁️ instance-1     │
+└─────────────────────┘
+```
+
+## 2.2 NAV3 : Filtre Region
+
+Source données: /api/regions.json
+
+| Groupe | Options |
+|--------|---------|
+| (défaut) | ALL |
+| EUROPE | EU-West (PAR.FR), EU-West (GRA.FR), EU-West (RBX.FR), EU-Central (SBG.FR), EU-Central (LIM.DE), EU-West (ERI.UK), EU-East (WAW.PL), EU-South (MIL.IT) |
+| EUROPE SOUVERAIN | EU-West (RBX.FR-SOV), EU-Central (SBG.FR-SOV), EU-West (GRA.FR-SOV), EU-West (PAR.FR-SOV), EU-South (MIL.IT-SOV) |
+| NORTH AMERICA | US-East (VIN.US), US-West (HIL.US), CA-East (BHS.CA), CA-East (TOR.CA) |
+| ASIA PACIFIC | AP-Southeast (SGP.SG), AP-Southeast (SYD.AU), AP-South (MUM.IN) |
+
+Comportement:
+- Filtre la liste des IP/blocs dans le LEFT PANEL
+- Met à jour les compteurs dans la vue d'ensemble
+- Persistance via URL: ?region=eu-west-gra
+
+## 2.3 Types d'éléments
+
+| Type | Icône | Description |
+|------|-------|-------------|
+| Bloc Failover | 🔀 | IP Failover commandées |
+| Bloc vRack | 🔗 | IP privées vRack |
+| Bloc BYOIP | 📦 | Bring Your Own IP |
+| IP Dedicated Server | 🖥️ | Serveur dédié |
+| IP VPS | 💻 | VPS |
+| IP Public Cloud | ☁️ | Instance Public Cloud |
+| IP Hosted Private Cloud | 🏢 | VMware/Nutanix |
+| IPv6 | 🌐 | Adresse IPv6 |
+
+## 2.4 Élément "Général (ALL)"
+
+Toujours en première position, non filtrable.
+Affiche la vue d'ensemble avec statistiques globales.
+
+
+# 3. RIGHT PANEL - TAB GÉNÉRAL (Vue d'ensemble)
+################################################################################
+
+Quand "Général (ALL)" est sélectionné dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+Subnet - Vue d'ensemble                    [+ Commander]
+```
+
+## 3.2 Cartes statistiques (row 1)
+
+| Carte | Contenu |
+|-------|---------|
+| Total | {total} blocs + IP |
+| IPv4 | {ipv4_count} |
+| IPv6 | {ipv6_count} |
+
+## 3.3 Cartes statistiques (row 2)
+
+| Carte | Contenu |
+|-------|---------|
+| Failover | {failover_count} |
+| vRack | {vrack_count} |
+| BYOIP | {byoip_count} |
+
+## 3.4 Section "Par type"
+
+Barres horizontales montrant la répartition :
+- 🖥️ Dedicated Server : {count} IP
+- 💻 VPS : {count} IP
+- ☁️ Public Cloud : {count} IP
+- 🔀 Failover : {count} IP
+- 🔗 vRack : {count} IP
+- 📦 BYOIP : {count} IP
+
+## 3.5 Section "Par région"
+
+Barres horizontales :
+- GRA : {count}
+- RBX : {count}
+- PAR : {count}
+- etc.
+
+
+# 4. RIGHT PANEL - TAB GÉNÉRAL (Bloc/IP sélectionné)
+################################################################################
+
+Quand un bloc ou une IP est sélectionné dans le LEFT PANEL.
+
+## 4.1 Header
+
+```
+{ip}/{cidr} ou {ip}                                    [⋮]
+{type} • {version} • {region}
+```
+
+## 4.2 Section "Informations"
+
+| Champ | Valeur |
+|-------|--------|
+| Bloc / Adresse IP | {ip}/{cidr} ou {ip} |
+| Version | IPv4 / IPv6 |
+| Type | Failover / vRack / BYOIP / Principale |
+| Région | {region_label} {flag} |
+| Firewall | 🟢 Actif / 🔴 Inactif |
+| Mitigation | 🟢 Auto / 🟡 Permanent / 🔴 Désactivé |
+
+## 4.3 Section "Attachement" (pour IP unitaires)
+
+| Champ | Valeur |
+|-------|--------|
+| Type | 🖥️ Serveur dédié / 💻 VPS / ☁️ Public Cloud |
+| Nom | {service_name} |
+| Offre | {offer} |
+| Datacenter | {datacenter} |
+| Statut | 🟢 Attaché / ⚪ Non attaché |
+
+## 4.4 Actions
+
+```
+[Configurer FW] [Gérer mitigation] [Déplacer IP]
+```
+
+
+# 5. RIGHT PANEL - TAB REVERSE
+################################################################################
+
+## 5.1 Description
+
+Gestion des enregistrements DNS inverses (PTR) pour le bloc ou l'IP.
+
+## 5.2 Pour un bloc
+
+Tableau des reverses :
+
+| IP | Reverse | Statut | Actions |
+|----|---------|--------|---------|
+| {ip} | {reverse} | 🟢 | [✏️] [🗑️] |
+
+## 5.3 Pour une IP unitaire
+
+| Champ | Valeur | Action |
+|-------|--------|--------|
+| IP | {ip} | - |
+| Reverse actuel | {reverse} | [✏️ Modifier] |
+| Statut | 🟢 Propagé / 🟡 En attente | - |
+
+## 5.4 Actions
+
+```
+[+ Ajouter reverse] [Appliquer à tout le bloc]
+```
+
+
+# 6. RIGHT PANEL - TAB OPÉRATIONS
+################################################################################
+
+## 6.1 Description
+
+Opérations avancées sur les blocs IP : division (split) et fusion (join).
+
+## 6.2 Section "Diviser (Split)"
+
+Disponible uniquement pour les blocs >= /30
+
+```
+Diviser {ip}/{cidr} en :
+○ 2 × /{cidr+1}
+○ 4 × /{cidr+2}
+○ 8 × /{cidr+3}
+
+                                    [Diviser le bloc]
+```
+
+## 6.3 Section "Fusionner (Join)"
+
+Disponible si blocs adjacents existent.
+
+```
+Blocs adjacents disponibles :
+☑ {adjacent_ip}/{cidr}
+→ Résultat : {merged_ip}/{cidr-1}
+
+                                    [Fusionner blocs]
+```
+
+## 6.4 Historique des opérations
+
+| Date | Opération | Détails | Statut |
+|------|-----------|---------|--------|
+| {date} | Split | /24 → 2×/25 | ✅ |
+| {date} | Join | 2×/25 → /24 | ✅ |
+
+
+# 7. RIGHT PANEL - TAB BYOIP
+################################################################################
+
+## 7.1 Description
+
+Configuration pour les blocs "Bring Your Own IP" importés depuis un RIR.
+
+## 7.2 Section "Configuration BYOIP"
+
+| Champ | Valeur |
+|-------|--------|
+| Bloc BYOIP | {ip}/{cidr} |
+| RIR d'origine | RIPE / ARIN / APNIC / etc. |
+| ASN | AS{number} |
+| Statut import | 🟢 Actif / 🟡 En cours / 🔴 Erreur |
+| Date import | {date} |
+
+## 7.3 Section "Annonces BGP"
+
+| Préfixe | Next-hop | Statut |
+|---------|----------|--------|
+| {prefix} | {next_hop} | 🟢 Annoncé / 🔴 Retiré |
+
+## 7.4 Actions
+
+```
+[Modifier annonce] [Retirer BYOIP]
+```
+
+
+# 8. APIS & ENDPOINTS
+################################################################################
+
+## 8.1 Liste des IP
+
+```
+GET /ip
+GET /ip?type=failover
+GET /ip?type=vrack
+GET /ip?routedTo.serviceName={serviceName}
+```
+
+## 8.2 Détails IP
+
+```
+GET /ip/{ip}
+GET /ip/{ip}/reverse
+GET /ip/{ip}/delegation
+GET /ip/{ip}/firewall
+GET /ip/{ip}/mitigation
+```
+
+## 8.3 Services associés
+
+```
+GET /dedicated/server/{serviceName}/ips
+GET /vps/{serviceName}/ips
+GET /cloud/project/{serviceName}/ip
+```
+
+## 8.4 Opérations
+
+```
+POST /ip/{ip}/move
+POST /ip/{ip}/split
+POST /ip/{ip}/join
+PUT /ip/{ip}/reverse/{ipReverse}
+```
+
+## 8.5 BYOIP
+
+```
+GET /ip/byoip/{ip}
+POST /ip/byoip/{ip}/announce
+DELETE /ip/byoip/{ip}/announce
+```
+
+
+# 9. VARIABLES DYNAMIQUES
+################################################################################
+
+| Variable | Source | Exemple |
+|----------|--------|---------|
+| {ip} | API /ip | 51.210.123.0 |
+| {cidr} | API /ip | 24 |
+| {type} | API /ip/{ip}.type | failover |
+| {version} | Calcul | IPv4 / IPv6 |
+| {region} | API /ip/{ip}.routedTo | eu-west-gra |
+| {region_label} | /api/regions.json | EU-West (GRA.FR) |
+| {flag} | /api/regions.json | 🇫🇷 |
+| {service_name} | API /ip/{ip}.routedTo.serviceName | ns1234567.ip-51-210-123.eu |
+| {service_type} | API | dedicated / vps / cloud |
+| {reverse} | API /ip/{ip}/reverse | mail.example.com |
+| {firewall_status} | API /ip/{ip}/firewall | enabled / disabled |
+| {mitigation_status} | API /ip/{ip}/mitigation | auto / permanent / off |
+| {total} | Comptage | 312 |
+| {ipv4_count} | Comptage | 248 |
+| {ipv6_count} | Comptage | 64 |
+
+
+# 10. MODALES
+################################################################################
+
+## 10.1 modal-add-reverse
+
+Ajouter/modifier un reverse DNS.
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| IP | Readonly | - |
+| Reverse | Input | FQDN valide |
+
+Actions: [Annuler] [Valider]
+
+## 10.2 modal-move-ip
+
+Déplacer une IP vers un autre service.
+
+| Champ | Type | Options |
+|-------|------|---------|
+| IP | Readonly | - |
+| Service destination | Select | Liste services compatibles |
+
+Actions: [Annuler] [Déplacer]
+
+## 10.3 modal-split-block
+
+Diviser un bloc IP.
+
+| Champ | Type | Options |
+|-------|------|---------|
+| Bloc | Readonly | - |
+| Division | Radio | 2×, 4×, 8× |
+
+Actions: [Annuler] [Diviser]
+
+## 10.4 modal-join-blocks
+
+Fusionner des blocs IP adjacents.
+
+| Champ | Type | Options |
+|-------|------|---------|
+| Bloc principal | Readonly | - |
+| Blocs adjacents | Checkbox | Liste blocs adjacents |
+| Résultat | Readonly | Bloc fusionné |
+
+Actions: [Annuler] [Fusionner]
+
+## 10.5 modal-configure-firewall
+
+Configurer le firewall réseau.
+
+| Champ | Type | Options |
+|-------|------|---------|
+| IP | Readonly | - |
+| Statut | Toggle | Actif / Inactif |
+
+Actions: [Annuler] [Appliquer]
+
+## 10.6 modal-configure-mitigation
+
+Configurer la mitigation Anti-DDoS.
+
+| Champ | Type | Options |
+|-------|------|---------|
+| IP | Readonly | - |
+| Mode | Radio | Auto / Permanent / Désactivé |
+
+Actions: [Annuler] [Appliquer]
+
+
+# 11. RÈGLES MÉTIER
+################################################################################
+
+## 11.1 Affichage
+
+- IPv4 et IPv6 dans la même liste
+- Tri par défaut : blocs en premier, puis IP unitaires
+- Groupement par type dans le LEFT PANEL (sections)
+
+## 11.2 Filtrage région
+
+- "Général (ALL)" toujours visible même avec filtre actif
+- Filtre appliqué sur la région du datacenter de rattachement
+- Compteurs mis à jour selon le filtre
+
+## 11.3 Opérations Split/Join
+
+- Split disponible uniquement pour blocs >= /30
+- Join disponible uniquement si blocs adjacents du même propriétaire
+- Opérations asynchrones (tâche créée)
+
+## 11.4 BYOIP
+
+- Tab BYOIP visible uniquement pour les blocs de type BYOIP
+- Nécessite configuration BGP préalable
+- Annonces gérées par bloc, pas par IP
+
+
+# 12. COMPOSANTS ODS UTILISÉS
+################################################################################
+
+- OdsBreadcrumb : Navigation contextuelle
+- OdsTabs : NAV4 tabs
+- OdsInput : Recherche, formulaires
+- OdsSelect : Filtre région (NAV3)
+- OdsDatagrid : Tableaux (reverses, historique)
+- OdsCard : Cartes statistiques
+- OdsBadge : Statuts (IPv4/IPv6, type)
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsToggle : Activation firewall/mitigation
+- OdsRadio : Options split
+- OdsCheckbox : Sélection blocs join
+- OdsProgressBar : Répartition par type/région
+
+
+# 13. FICHIERS ASSOCIÉS
+################################################################################
+
+Documentation : prompt_target.network.subnet.txt (ce fichier)
+Screenshots : prompt_target.network.subnet-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

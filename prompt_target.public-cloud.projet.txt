@@ -1,0 +1,406 @@
+# ============================================================================
+# PROMPT TARGET - PUBLIC CLOUD > PROJET
+# ============================================================================
+# NAV1: Public Cloud
+# NAV2: Projet
+# Version: 1.0
+# ============================================================================
+
+## 1. VUE D'ENSEMBLE
+
+### 1.1 Positionnement
+- **NAV1** : Public Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : Projet (Sous-header blanc, 40px) - Actif parmi [Projet, Compute, Storage, Databases, Containers, AI/ML, Network]
+- **NAV3** : Filtre dropdown Region uniquement (pas de filtre Projet ici)
+- **NAV4** : Tabs contextuels dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion des projets Public Cloud : vue d'ensemble, ressources, quotas, IAM, KMS, observabilité et facturation.
+
+### 1.3 URL Pattern
+```
+/public-cloud/projet                            → Dashboard tous projets (General ALL)
+/public-cloud/projet/resources                  → Resources tous projets
+/public-cloud/projet/quota                      → Quotas tous projets
+/public-cloud/projet/iam                        → IAM global
+/public-cloud/projet/{projectId}                → Dashboard projet spécifique
+/public-cloud/projet/{projectId}/resources      → Resources du projet
+/public-cloud/projet/{projectId}/quota          → Quotas du projet
+/public-cloud/projet/{projectId}/iam            → IAM du projet
+/public-cloud/projet/{projectId}/kms            → KMS du projet
+/public-cloud/projet/{projectId}/observability  → Observabilité du projet
+/public-cloud/projet/{projectId}/billing        → Facturation du projet
+```
+
+---
+
+## 2. STRUCTURE NAV3 (SIDECAR - LEFT PANEL 280px)
+
+### 2.1 Filtres (haut de sidecar)
+```
+┌───────────────────────┐
+│ NAV3 - Filtres        │
+│ [🌍 Region: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+├───────────────────────┤
+│ 🔍 Rechercher...      │
+├───────────────────────┤
+│  📊 General (ALL)     │  ← Toujours présent, vue tous projets
+│  ─────────────────    │
+│  (liste projets)      │  ← Filtrée par région si applicable
+└───────────────────────┘
+```
+
+### 2.2 Dropdown Region
+Source: `/api/regions.json`
+
+| Groupe | Options |
+|--------|---------|
+| (défaut) | 🌍 ALL |
+| EUROPE | EU-West (PAR.FR), EU-West (GRA.FR), EU-West (RBX.FR), EU-Central (SBG.FR), EU-Central (LIM.DE), EU-West (ERI.UK), EU-East (WAW.PL), EU-South (MIL.IT) |
+| EUROPE SOUVERAIN | EU-West (RBX.FR-SOV) 🛡️SNC, EU-Central (SBG.FR-SOV) 🛡️SNC, EU-West (GRA.FR-SOV) 🛡️SNC, EU-West (PAR.FR-SOV) 🛡️SNC, EU-South (MIL.IT-SOV) 🛡️G5 |
+| NORTH AMERICA | US-East (VIN.US), US-West (HIL.US), CA-East (BHS.CA), CA-East (TOR.CA) |
+| ASIA PACIFIC | AP-Southeast (SGP.SG), AP-Southeast (SYD.AU), AP-South (MUM.IN) |
+
+### 2.3 Bouton Reset (×)
+- Visible uniquement si Region ≠ ALL
+- Clic → Reset vers ALL
+- Position : à droite du dropdown
+
+### 2.4 Liste projets (sidecar)
+Affiche tous les projets de l'utilisateur :
+- 🗂️ Mon Projet Prod
+- 🗂️ Projet Dev
+- 🗂️ Test Environment
+- ...
+
+Note : Le filtre Region affecte les compteurs et ressources affichées, pas la liste des projets elle-même.
+
+---
+
+## 3. STRUCTURE NAV4 (RIGHT PANEL - TABS)
+
+### 3.1 NAV4 - Vue General (ALL) sélectionné dans sidecar
+```
+[Dashboard] Resources  Quota  IAM  KMS  Obs  Facturation
+```
+
+| Tab | Description | Contenu |
+|-----|-------------|---------|
+| **Dashboard** | Vue d'ensemble tous projets | Liste projets, stats globales |
+| **Resources** | Ressources par région | Compute/Storage/DB par région |
+| **Quota** | Quotas globaux | Tableau quotas tous projets |
+| **IAM** | Gestion accès global | Utilisateurs, rôles globaux |
+| **KMS** | Clés de chiffrement | Clés partagées |
+| **Obs** | Observabilité | Métriques globales, alertes |
+| **Facturation** | Coûts globaux | Facturation tous projets |
+
+### 3.2 NAV4 - Projet spécifique sélectionné dans sidecar
+```
+[Dashboard] Resources  Quota  IAM  KMS  Obs  Facturation
+```
+
+| Tab | Description | Contenu |
+|-----|-------------|---------|
+| **Dashboard** | Vue d'ensemble projet | Stats, activité récente |
+| **Resources** | Ressources du projet | Par région, par type |
+| **Quota** | Quotas du projet | Par région, demande augmentation |
+| **IAM** | Gestion accès projet | Utilisateurs, rôles, permissions |
+| **KMS** | Clés du projet | Clés de chiffrement projet |
+| **Obs** | Observabilité projet | Métriques, logs, alertes |
+| **Facturation** | Coûts du projet | Détail facturation |
+
+---
+
+## 4. CONTENU PAR TAB
+
+### 4.1 Dashboard (General ALL)
+```
+┌─────────────────────────────────────────────────────────┐
+│ Vue globale (tous projets)                              │
+│                                                         │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐               │
+│ │    3     │  │    5     │  │  4.5 To  │               │
+│ │ Projets  │  │ Régions  │  │ Storage  │               │
+│ └──────────┘  └──────────┘  └──────────┘               │
+│                                                         │
+│ Projets                                                 │
+│ ─────────────────────────────────────────               │
+│ Nom             │ Région │ Services │ Coût/mois        │
+│ Mon Projet Prod │ GRA    │ 15       │ 450€             │
+│ Projet Dev      │ SBG    │ 8        │ 120€             │
+│ Test Environment│ GRA    │ 3        │ 25€              │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 4.2 Dashboard (Projet spécifique)
+```
+┌─────────────────────────────────────────────────────────┐
+│ Mon Projet Prod                                         │
+│                                                         │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐               │
+│ │    12    │  │     3    │  │   2 To   │               │
+│ │Instances │  │Databases │  │ Storage  │               │
+│ └──────────┘  └──────────┘  └──────────┘               │
+│                                                         │
+│ Activité récente                                        │
+│ ─────────────────────────────────────────               │
+│ • Instance web-01 créée          il y a 2h             │
+│ • Volume backup-vol attaché      il y a 1j             │
+│ • Database db-prod mise à jour   il y a 3j             │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 4.3 Resources
+**Vue General (ALL)**
+```
+Resources par région (tous projets)
+
+┌─────────────────────────────────────────────────────────┐
+│ GRA (Gravelines)                                        │
+│ Compute: 18 instances | Storage: 2.1 To                 │
+│ Databases: 4 | Containers: 2 clusters                   │
+└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│ SBG (Strasbourg)                                        │
+│ Compute: 6 instances | Storage: 1.8 To                  │
+│ Databases: 1 | Containers: 0 clusters                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Vue Projet spécifique**
+```
+Resources par région (Mon Projet Prod)
+
+┌─────────────────────────────────────────────────────────┐
+│ GRA (Gravelines)                                        │
+│ Compute: 10 instances | Storage: 1.5 To                 │
+│ Databases: 2 | Containers: 1 cluster                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 4.4 Quota
+**Vue General (ALL)**
+```
+Quotas globaux (tous projets)
+
+Projet          │ Inst. │ vCPUs  │ Storage
+────────────────┼───────┼────────┼─────────────
+Mon Projet Prod │ 12/20 │ 48/100 │ 2/5 To
+Projet Dev      │ 8/20  │ 32/100 │ 1.8/5 To
+Test Environment│ 3/20  │ 12/100 │ 0.6/5 To
+────────────────┼───────┼────────┼─────────────
+TOTAL           │ 23/60 │ 92/300 │ 4.4/15 To
+
+                          [Demander + de quota]
+```
+
+**Vue Projet spécifique**
+```
+Quotas par région (Mon Projet Prod)
+
+┌─────────────────────────────────────────────────────────┐
+│ GRA                                    [Augmenter]      │
+│ Instances: 10/20    ██████████░░ 50%                    │
+│ vCPUs: 40/100       ████░░░░░░░░ 40%                    │
+│ RAM: 80/200 Go      ████░░░░░░░░ 40%                    │
+│ Storage: 1.5/5 To   ███░░░░░░░░░ 30%                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 4.5 IAM
+```
+Permissions IAM
+
+Utilisateur         │ Rôle        │ Scope
+────────────────────┼─────────────┼─────────────
+admin@company.com   │ Admin       │ Global
+dev@company.com     │ Opérateur   │ Projet Prod
+ops@company.com     │ Lecteur     │ Tous projets
+
+[+ Ajouter utilisateur]
+
+Rôles disponibles:
+• Admin: Tous les droits
+• Opérateur: Lecture + Actions
+• Lecteur: Lecture seule
+```
+
+### 4.6 KMS
+```
+Clés de chiffrement
+
+Nom               │ Type    │ Région │ Statut
+──────────────────┼─────────┼────────┼─────────
+key-prod-main     │ AES-256 │ GRA    │ 🟢 Active
+key-backup        │ AES-256 │ SBG    │ 🟢 Active
+key-dev           │ AES-256 │ GRA    │ ⚪ Inactive
+
+[+ Créer clé]
+```
+
+### 4.7 Observabilité (Obs)
+```
+Métriques et Alertes
+
+┌─────────────────────────────────────────────────────────┐
+│ CPU Usage (moyenne)                                     │
+│ ████████████████░░░░░░░░░░░░░░ 45%                     │
+└─────────────────────────────────────────────────────────┘
+
+Alertes actives: 2
+• ⚠️ CPU > 80% sur web-server-01        il y a 15min
+• ⚠️ Disk > 90% sur db-server           il y a 1h
+
+[Configurer alertes]  [Voir logs]
+```
+
+### 4.8 Facturation
+**Vue General (ALL)**
+```
+Facturation globale
+
+Période: Janvier 2026
+
+Projet          │ Compute │ Storage │ Network │ Total
+────────────────┼─────────┼─────────┼─────────┼────────
+Mon Projet Prod │ 320€    │ 85€     │ 45€     │ 450€
+Projet Dev      │ 80€     │ 30€     │ 10€     │ 120€
+Test Environment│ 15€     │ 8€      │ 2€      │ 25€
+────────────────┼─────────┼─────────┼─────────┼────────
+TOTAL           │ 415€    │ 123€    │ 57€     │ 595€
+
+[Télécharger facture]  [Historique]
+```
+
+---
+
+## 5. APIS & ENDPOINTS
+
+### 5.1 Projets
+```
+GET    /cloud/project
+GET    /cloud/project/{projectId}
+POST   /cloud/project
+PUT    /cloud/project/{projectId}
+DELETE /cloud/project/{projectId}
+```
+
+### 5.2 Quotas
+```
+GET    /cloud/project/{projectId}/quota
+POST   /cloud/project/{projectId}/quota     (demande augmentation)
+```
+
+### 5.3 IAM
+```
+GET    /cloud/project/{projectId}/user
+POST   /cloud/project/{projectId}/user
+DELETE /cloud/project/{projectId}/user/{userId}
+GET    /cloud/project/{projectId}/role
+```
+
+### 5.4 KMS
+```
+GET    /cloud/project/{projectId}/kms/key
+POST   /cloud/project/{projectId}/kms/key
+DELETE /cloud/project/{projectId}/kms/key/{keyId}
+```
+
+### 5.5 Facturation
+```
+GET    /cloud/project/{projectId}/bill
+GET    /cloud/project/{projectId}/consumption
+GET    /cloud/project/{projectId}/forecast
+```
+
+### 5.6 Resources (agrégation)
+```
+GET    /cloud/project/{projectId}/instance    (Compute)
+GET    /cloud/project/{projectId}/volume      (Block Storage)
+GET    /cloud/project/{projectId}/storage     (Object Storage)
+GET    /cloud/project/{projectId}/database    (Databases)
+GET    /cloud/project/{projectId}/kube        (Kubernetes)
+```
+
+---
+
+## 6. COMPOSANTS UI
+
+### 6.1 Cards statistiques
+```
+┌──────────┐
+│    12    │  ← Valeur (font-size: 32px, font-weight: 600)
+│Instances │  ← Label (font-size: 14px, color: muted)
+└──────────┘
+```
+
+### 6.2 Datagrid projets
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du projet (lien) |
+| Région | Région principale |
+| Services | Nombre total de services |
+| Coût/mois | Estimation mensuelle |
+| ⋮ | Menu actions |
+
+### 6.3 Progress bars (Quotas)
+```
+Instances: 10/20    ██████████░░ 50%
+                    ▲           ▲
+                    Utilisé     Disponible
+```
+
+Couleurs :
+- < 60% : Vert (#10B981)
+- 60-80% : Jaune (#F59E0B)
+- > 80% : Rouge (#EF4444)
+
+### 6.4 Timeline activité
+```
+• Instance web-01 créée          il y a 2h
+  ▲                              ▲
+  Description                    Temps relatif
+```
+
+---
+
+## 7. COMPORTEMENTS
+
+### 7.1 Filtrage NAV3 (Region)
+- Changement Region → Filtre les compteurs dans Resources
+- La liste des projets reste complète (projets = multi-région)
+- Les stats Dashboard sont filtrées par région
+
+### 7.2 Navigation sidecar → RIGHT PANEL
+- Clic "General (ALL)" → Vue globale tous projets
+- Clic projet → Vue spécifique du projet
+
+### 7.3 Persistance NAV4
+- Changement de projet dans sidecar → NAV4 conservé
+- Exemple : Si sur Quota du Projet A, clic Projet B → reste sur Quota
+
+### 7.4 Création projet
+- Depuis NAV4 Dashboard (General ALL) : Bouton [+ Créer projet]
+- Modal avec : Nom, Description, Région par défaut
+
+---
+
+## 8. ESTIMATIONS FICHIERS SVG
+
+| Écran | Fichier |
+|-------|---------|
+| Dashboard tous projets | target_.public-cloud.projet.svg |
+| Dashboard projet | target_.public-cloud.projet.detail.svg |
+| Resources tous projets | target_.public-cloud.projet.resources.svg |
+| Resources projet | target_.public-cloud.projet.detail.resources.svg |
+| Quota tous projets | target_.public-cloud.projet.quota.svg |
+| Quota projet | target_.public-cloud.projet.detail.quota.svg |
+| IAM | target_.public-cloud.projet.iam.svg |
+| KMS | target_.public-cloud.projet.kms.svg |
+| Observabilité | target_.public-cloud.projet.observability.svg |
+| Facturation tous | target_.public-cloud.projet.billing.svg |
+| Facturation projet | target_.public-cloud.projet.detail.billing.svg |
+| Modal Créer projet | target_.public-cloud.projet.create.svg |
+| Modal Supprimer projet | target_.public-cloud.projet.delete.svg |
+
+**Total estimé : ~15-18 fichiers SVG + TXT**

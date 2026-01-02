@@ -1,0 +1,152 @@
+# Cahier des Charges : bare-metal/dedicated/cluster-node-intervention
+
+## 1. RESUME EXECUTIF
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.cluster-node-intervention.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated |
+| **Type** | Page liste (Historique interventions) |
+| **Description** | Liste des interventions datacenter sur un noeud de cluster |
+| **Users cibles** | Administrateurs de serveurs dédiés |
+
+---
+
+## 2. ARCHITECTURE NAV
+
+### 2.1 Classification
+
+| Niveau | Valeur | Position |
+|--------|--------|----------|
+| NAV1 | bare-metal | Header OVH (Bare Metal Cloud) |
+| NAV2 | dedicated | Sous-header (Serveurs dédiés) |
+| NAV3 | - | Pas de groupement visible |
+| NAV4 | intervention | Onglet Interventions |
+
+### 2.2 Contexte
+
+Route : `app.dedicated-cluster.cluster.node.intervention`
+Breadcrumb : `dedicated-cluster-01 / node-01 / Interventions`
+
+---
+
+## 3. LAYOUT & STRUCTURE
+
+### 3.1 Dimensions
+
+| Zone | Position | Dimensions |
+|------|----------|------------|
+| Canvas | - | 1440 x 900 px |
+| LEFT PANEL | x=24, y=105 | 280 x 765 px |
+| RIGHT PANEL | x=320, y=105 | 1096 x 765 px |
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 En-tête
+
+| Élément | Valeur |
+|---------|--------|
+| Titre | Interventions datacenter |
+| Sous-titre | Historique des interventions techniques sur ce serveur |
+
+### 4.2 Tableau (Datagrid)
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Date | ~200px | Format: JJ mois AAAA, HH:mm:ss |
+| Type d'intervention | ~600px | Description de l'intervention |
+
+### 4.3 Pagination
+
+| Élément | Valeur |
+|---------|--------|
+| Label | 1 - 5 sur 12 interventions |
+| Boutons | ‹ 1 2 3 › |
+
+---
+
+## 5. DONNEES & COLONNES
+
+### 5.1 Structure intervention
+
+```typescript
+interface Intervention {
+  date: Date;             // Date de l'intervention
+  type: string;           // Type d'intervention
+  description?: string;   // Description optionnelle
+}
+```
+
+### 5.2 Types d'interventions courants
+
+| Type | Description |
+|------|-------------|
+| Remplacement disque dur | Changement d'un disque défaillant |
+| Maintenance préventive | Contrôle périodique du matériel |
+| Remplacement alimentation | Changement PSU |
+| Diagnostic réseau | Vérification connexions réseau |
+| Remplacement mémoire RAM | Changement de barrettes RAM |
+
+---
+
+## 6. ACTIONS & INTERACTIONS
+
+| Action | Déclencheur | Comportement |
+|--------|-------------|--------------|
+| Pagination | Clic sur page | Charge la page correspondante |
+| Tri par date | Clic sur en-tête | Tri ascendant/descendant |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Liste des interventions
+
+```
+GET /dedicated/server/{serverName}/intervention
+```
+
+**Paramètres de pagination :**
+```
+?pageSize=5&page=1
+```
+
+**Réponse :**
+```json
+[123456, 123457, 123458]  // IDs des interventions
+```
+
+### 7.2 Détails d'une intervention
+
+```
+GET /dedicated/server/{serverName}/intervention/{interventionId}
+```
+
+**Réponse :**
+```json
+{
+  "interventionId": 123456,
+  "date": "2024-12-15T14:32:10+01:00",
+  "type": "Remplacement disque dur"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_intervention_title` | Interventions datacenter |
+| `dedicated_server_intervention_subtitle` | Historique des interventions techniques sur ce serveur |
+| `dedicated_server_intervention_date` | Date |
+| `dedicated_server_intervention_type` | Type d'intervention |
+| `dedicated_server_intervention_pagination` | {start} - {end} sur {total} interventions |
+| `dedicated_server_intervention_type_disk` | Remplacement disque dur |
+| `dedicated_server_intervention_type_maintenance` | Maintenance préventive |
+| `dedicated_server_intervention_type_psu` | Remplacement alimentation |
+| `dedicated_server_intervention_type_network` | Diagnostic réseau |
+| `dedicated_server_intervention_type_ram` | Remplacement mémoire RAM |

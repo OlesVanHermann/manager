@@ -1,0 +1,423 @@
+################################################################################
+#                                                                              #
+#                       PROMPT TARGET - NETWORK > CDN                          #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+CDN (Content Delivery Network) est le service de distribution de contenu
+OVHcloud permettant de :
+- Accélérer la distribution de contenu statique
+- Réduire la latence pour les utilisateurs finaux
+- Décharger les serveurs d'origine
+- Gérer les certificats SSL
+- Purger le cache à la demande
+
+L'interface permet de gérer :
+- Domaines configurés
+- Règles de cache (TTL, invalidation)
+- Certificats SSL
+- Statistiques de trafic
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Network
+NAV2: CDN (sélectionné)
+NAV3: POP (dropdown dans LEFT PANEL) - Points of Presence
+NAV4: [Général] [Domaines] [Cache] [SSL] [Statistiques] [Tâches]
+
+## 1.1 Position dans la hiérarchie
+
+```
+Network (NAV1)
+├── Subnet
+├── vRack
+├── Load Balancer
+├── CDN* (NAV2 actif)
+├── OVHcloud Connect
+├── Anti-DDoS VAC
+└── Anti-DDoS Game
+```
+
+## 1.2 URLs
+
+| Écran | URL |
+|-------|-----|
+| Vue d'ensemble | /network/cdn |
+| Détail CDN | /network/cdn/{serviceName} |
+| Tab Domaines | /network/cdn/{serviceName}/domains |
+| Tab Cache | /network/cdn/{serviceName}/cache |
+| Tab SSL | /network/cdn/{serviceName}/ssl |
+| Tab Statistiques | /network/cdn/{serviceName}/stats |
+| Tab Tâches | /network/cdn/{serviceName}/tasks |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ POP             [▼] │  ← NAV3 : Filtre par Point of Presence
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche nom
+├─────────────────────┤
+│ ●Général (ALL)      │  ← Vue d'ensemble (toujours visible)
+├─────────────────────┤
+│ ○cdn-prod           │  ← Liste des CDN
+│   🟢 ok             │
+│ ○cdn-staging        │
+│   🟢 ok             │
+│ ○cdn-legacy         │
+│   🟢 ok             │
+└─────────────────────┘
+```
+
+## 2.2 NAV3 : Filtre POP
+
+Points of Presence = emplacements géographiques des caches CDN.
+
+Liste des POPs (exemples) :
+- ALL (par défaut)
+- Europe : Paris, Frankfurt, London, Amsterdam, Madrid
+- North America : New York, Los Angeles, Toronto
+- Asia Pacific : Singapore, Tokyo, Sydney
+
+## 2.3 Format élément CDN
+
+```
+○ cdn-prod            ← Nom du CDN
+  🟢 ok               ← Statut
+```
+
+
+# 3. RIGHT PANEL - TAB GÉNÉRAL (Vue d'ensemble)
+################################################################################
+
+Quand "Général (ALL)" est sélectionné dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+CDN - Vue d'ensemble                         [+ Commander]
+```
+
+## 3.2 Cartes statistiques
+
+| Carte | Contenu |
+|-------|---------|
+| Total | {cdn_count} |
+| Domaines | {domains_count} |
+| Bande passante | {bandwidth}/mois |
+
+## 3.3 Section "Trafic par CDN (30j)"
+
+Barres horizontales :
+- cdn-prod : {traffic} TB
+- cdn-staging : {traffic} TB
+- etc.
+
+## 3.4 Section "Cache Hit Rate global"
+
+```
+████████████████████████░░░░░░  87.3%
+```
+
+
+# 4. RIGHT PANEL - TAB GÉNÉRAL (CDN sélectionné)
+################################################################################
+
+## 4.1 Header
+
+```
+cdn-prod.ovh.net                           [Vider cache]
+🟢 ok • Anycast: 1.2.3.4
+```
+
+## 4.2 Section "Informations"
+
+| Champ | Valeur |
+|-------|--------|
+| Service | {serviceName} |
+| Anycast | {anycast_ip} |
+| Offre | CDN Infrastructure |
+| Domaines | {domains_count} configurés |
+| Statut | 🟢 ok |
+
+## 4.3 Actions
+
+```
+[🔄 Rafraîchir] [🗑️ Vider cache]
+```
+
+
+# 5. RIGHT PANEL - TAB DOMAINES
+################################################################################
+
+## 5.1 Header section
+
+```
+Domaines configurés ({count})                [+ Ajouter]
+```
+
+## 5.2 Tableau des domaines
+
+| Domaine | Origine | SSL | Cache | Statut | Actions |
+|---------|---------|-----|-------|--------|---------|
+| www.example.com | 51.210.x.x | ✅ | 24h | 🟢 | ⋮ |
+| static.example.com | s3.ovh.net | ✅ | 7j | 🟢 | ⋮ |
+| api.example.com | 51.210.x.x | ✅ | 0 | 🟢 | ⋮ |
+
+## 5.3 Configuration domaine
+
+| Option | Description |
+|--------|-------------|
+| Origine | Serveur d'origine (IP ou hostname) |
+| Port origine | Port du serveur d'origine |
+| SSL backend | HTTPS vers l'origine |
+| TTL par défaut | Durée de cache |
+
+
+# 6. RIGHT PANEL - TAB CACHE
+################################################################################
+
+## 6.1 Description
+
+Gestion des règles de cache et purge.
+
+## 6.2 Section "Règles de cache"
+
+| Règle | Pattern | TTL | Actions |
+|-------|---------|-----|---------|
+| Images | *.jpg, *.png, *.gif | 30j | ⋮ |
+| CSS/JS | *.css, *.js | 7j | ⋮ |
+| HTML | *.html | 1h | ⋮ |
+| API | /api/* | 0 (no-cache) | ⋮ |
+
+## 6.3 Section "Purge du cache"
+
+```
+Purger par :
+○ URL spécifique
+○ Pattern (wildcard)
+○ Domaine entier
+○ Tout le CDN
+
+URL/Pattern : [________________________]
+
+                                    [Purger]
+```
+
+## 6.4 Section "Historique des purges"
+
+| Date | Type | Cible | Statut |
+|------|------|-------|--------|
+| {date} | URL | /assets/logo.png | ✅ |
+| {date} | Domaine | www.example.com | ✅ |
+
+
+# 7. RIGHT PANEL - TAB SSL
+################################################################################
+
+## 7.1 Tableau des certificats
+
+| Domaine | Type | Expiration | Statut | Actions |
+|---------|------|------------|--------|---------|
+| www.example.com | Let's Encrypt | 15/03/2026 | 🟢 | ⋮ |
+| *.example.com | Custom | 01/06/2026 | 🟢 | ⋮ |
+
+## 7.2 Actions
+
+```
+[+ Générer Let's Encrypt] [+ Importer certificat]
+```
+
+
+# 8. RIGHT PANEL - TAB STATISTIQUES
+################################################################################
+
+## 8.1 Sélection période
+
+```
+[1h] [6h] [24h] [7j] [30j*] [Personnalisé]
+```
+
+## 8.2 Cartes métriques
+
+| Carte | Contenu |
+|-------|---------|
+| Requêtes | {requests_count} |
+| Bande passante | {bandwidth} TB |
+| Cache Hit Rate | {hit_rate}% |
+
+## 8.3 Graphique "Trafic"
+
+Courbe du trafic sur la période.
+
+## 8.4 Graphique "Cache Hit Rate"
+
+```
+Hit  ████████████████████████  87%
+Miss ████░░░░░░░░░░░░░░░░░░░░  13%
+```
+
+## 8.5 Section "Top domaines"
+
+| Domaine | Requêtes | Bande passante |
+|---------|----------|----------------|
+| www.example.com | 1.2M | 450 GB |
+| static.example.com | 890k | 1.2 TB |
+
+
+# 9. RIGHT PANEL - TAB TÂCHES
+################################################################################
+
+## 9.1 Tableau des tâches
+
+| Date | Opération | Cible | Statut |
+|------|-----------|-------|--------|
+| {date} | Purge cache | www.example.com | ✅ |
+| {date} | Ajout domaine | api.example.com | ✅ |
+| {date} | SSL renouvelé | *.example.com | ✅ |
+
+
+# 10. APIS & ENDPOINTS
+################################################################################
+
+## 10.1 CDN
+
+```
+GET /cdn/dedicated
+GET /cdn/dedicated/{serviceName}
+GET /cdn/dedicated/{serviceName}/serviceInfos
+```
+
+## 10.2 Domaines
+
+```
+GET /cdn/dedicated/{serviceName}/domains
+POST /cdn/dedicated/{serviceName}/domains
+GET /cdn/dedicated/{serviceName}/domains/{domain}
+PUT /cdn/dedicated/{serviceName}/domains/{domain}
+DELETE /cdn/dedicated/{serviceName}/domains/{domain}
+```
+
+## 10.3 Cache
+
+```
+POST /cdn/dedicated/{serviceName}/flush
+POST /cdn/dedicated/{serviceName}/domains/{domain}/flush
+```
+
+## 10.4 SSL
+
+```
+GET /cdn/dedicated/{serviceName}/ssl
+POST /cdn/dedicated/{serviceName}/ssl
+DELETE /cdn/dedicated/{serviceName}/ssl
+```
+
+## 10.5 Statistiques
+
+```
+GET /cdn/dedicated/{serviceName}/statistics
+```
+
+
+# 11. VARIABLES DYNAMIQUES
+################################################################################
+
+| Variable | Source | Exemple |
+|----------|--------|---------|
+| {serviceName} | API | cdn-xxx |
+| {anycast_ip} | API | 1.2.3.4 |
+| {domains_count} | Comptage | 12 |
+| {bandwidth} | API stats | 2.4 TB |
+| {hit_rate} | API stats | 87.3% |
+| {requests_count} | API stats | 45.2M |
+
+
+# 12. MODALES
+################################################################################
+
+## 12.1 modal-add-domain
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Domaine | Input | FQDN valide |
+| Origine | Input | IP ou hostname |
+| Port origine | Input | 1-65535 |
+| SSL backend | Toggle | HTTPS vers origine |
+| TTL par défaut | Select | 0/1h/24h/7j/30j |
+
+## 12.2 modal-purge-cache
+
+| Champ | Type |
+|-------|------|
+| Type | Radio (URL/Pattern/Domaine/Tout) |
+| Cible | Input (si URL/Pattern) |
+| Domaine | Select (si Domaine) |
+
+## 12.3 modal-add-ssl
+
+| Champ | Type |
+|-------|------|
+| Type | Radio (Let's Encrypt / Import) |
+| Domaine | Input |
+| Certificat | Textarea (Import) |
+| Clé privée | Textarea (Import) |
+
+
+# 13. RÈGLES MÉTIER
+################################################################################
+
+## 13.1 Cache
+
+- TTL 0 = pas de cache (pass-through)
+- Purge propage sur tous les POPs
+- Wildcard supporté pour purge
+
+## 13.2 SSL
+
+- Let's Encrypt gratuit et auto-renouvelé
+- Certificat custom à renouveler manuellement
+- HTTPS obligatoire pour certains domaines
+
+## 13.3 Origine
+
+- IP ou hostname supportés
+- HTTP ou HTTPS vers l'origine
+- Health check sur l'origine
+
+
+# 14. COMPOSANTS ODS UTILISÉS
+################################################################################
+
+- OdsTabs : NAV4 tabs
+- OdsInput : Formulaires
+- OdsSelect : TTL, types
+- OdsDatagrid : Tableaux
+- OdsCard : Métriques
+- OdsBadge : Statuts
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsRadio : Options purge
+- OdsCharts : Graphiques stats
+
+
+# 15. FICHIERS ASSOCIÉS
+################################################################################
+
+Documentation : prompt_target.network.cdn.txt (ce fichier)
+Screenshots : prompt_target.network.cdn-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

@@ -1,0 +1,214 @@
+# Cahier des Charges : bare-metal/dedicated/cluster-node-ipmi
+
+## 1. RESUME EXECUTIF
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.cluster-node-ipmi.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated |
+| **Type** | Page de gestion (Console IPMI) |
+| **Description** | Accès aux consoles de gestion à distance (IPMI, KVM, SOL) |
+| **Users cibles** | Administrateurs serveurs dédiés |
+
+---
+
+## 2. ARCHITECTURE NAV
+
+### 2.1 Classification
+
+| Niveau | Valeur | Position |
+|--------|--------|----------|
+| NAV1 | bare-metal | Header OVH (Bare Metal Cloud) |
+| NAV2 | dedicated | Sous-header (Serveurs dédiés) |
+| NAV3 | - | Pas de groupement visible |
+| NAV4 | ipmi | Onglet IPMI |
+
+### 2.2 Contexte
+
+Route : `app.dedicated-cluster.cluster.node.ipmi`
+Breadcrumb : `dedicated-cluster-01 / node-01 / IPMI`
+
+---
+
+## 3. LAYOUT & STRUCTURE
+
+### 3.1 Dimensions
+
+| Zone | Position | Dimensions |
+|------|----------|------------|
+| Canvas | - | 1440 x 900 px |
+| LEFT PANEL | x=24, y=105 | 280 x 765 px |
+| RIGHT PANEL | x=320, y=105 | 1096 x 765 px |
+
+### 3.2 Disposition des tuiles
+
+3 tuiles de 330 x 280 px disposées horizontalement avec gap de 20px.
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 Tuile IPMI
+
+| Élément | Contenu |
+|---------|---------|
+| Titre | IPMI |
+| Description | Interface de gestion à distance |
+| Lien guide | Guide de configuration IPMI ↗ |
+| Bouton 1 | Redémarrer l'interface IPMI |
+| Bouton 2 | Lancer le test IPMI |
+| Tests | ✓ HTTP, ✓ Password, ✓ Ping |
+
+### 4.2 Tuile KVM
+
+| Élément | Contenu |
+|---------|---------|
+| Titre | KVM |
+| Description | Console graphique distante |
+| Bouton Primary | Ouvrir KVM (HTML5) |
+| Bouton Secondary | Télécharger KVM (Java) |
+| Warning | La session KVM bloque le monitoring pendant son utilisation |
+
+### 4.3 Tuile SOL (Serial Over LAN)
+
+| Élément | Contenu |
+|---------|---------|
+| Titre | Serial Over LAN (SOL) |
+| Description | Console série via le réseau |
+| Bouton 1 | Démarrer SOL via navigateur |
+| Titre section | Accès SSH SOL |
+| Bouton 2 | Ajouter une clé SSH |
+| Commande SSH | ssh sol@rbx1-123.ovh.net (avec bouton copie) |
+
+---
+
+## 5. DONNEES
+
+### 5.1 Structure tests IPMI
+
+```typescript
+interface IpmiTests {
+  http: boolean;
+  password: boolean;
+  ping: boolean;
+}
+
+interface IpmiInfo {
+  supported: boolean;
+  available: boolean;
+  tests: IpmiTests;
+}
+```
+
+---
+
+## 6. ACTIONS & INTERACTIONS
+
+| Action | Déclencheur | Comportement |
+|--------|-------------|--------------|
+| Redémarrer IPMI | Bouton | POST restart, affiche spinner |
+| Lancer test IPMI | Bouton | Lance tests HTTP/Password/Ping |
+| Ouvrir KVM HTML5 | Bouton primary | Ouvre KVM dans nouvel onglet |
+| Télécharger KVM Java | Bouton | Télécharge fichier .jnlp |
+| Démarrer SOL navigateur | Bouton | Ouvre console SOL dans nouvel onglet |
+| Ajouter clé SSH | Bouton | Ouvre modal ajout clé SSH |
+| Copier commande SSH | Icône 📋 | Copie dans presse-papier |
+| Voir guide | Lien | Ouvre documentation externe |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Récupération état IPMI
+
+```
+GET /dedicated/server/{serverName}/features/ipmi
+```
+
+**Réponse :**
+```json
+{
+  "activated": true,
+  "supportedFeatures": ["kvmipHtml5URL", "kvmipJnlp", "sshSOL"]
+}
+```
+
+### 7.2 Test IPMI
+
+```
+GET /dedicated/server/{serverName}/features/ipmi/test
+POST /dedicated/server/{serverName}/features/ipmi/test
+```
+
+**Résultat test :**
+```json
+{
+  "http": {"result": true},
+  "password": {"result": true},
+  "ping": {"result": true}
+}
+```
+
+### 7.3 Redémarrer IPMI
+
+```
+POST /dedicated/server/{serverName}/features/ipmi/resetInterface
+```
+
+### 7.4 Accès KVM
+
+```
+POST /dedicated/server/{serverName}/features/ipmi/access
+{
+  "type": "kvmipHtml5URL" | "kvmipJnlp"
+}
+```
+
+**Réponse :**
+```json
+{
+  "value": "https://kvm.ovh.net/...",
+  "expiration": "2024-01-15T12:00:00Z"
+}
+```
+
+### 7.5 Accès SOL
+
+```
+POST /dedicated/server/{serverName}/features/ipmi/access
+{
+  "type": "sshSOL",
+  "sshKey": "ssh-rsa AAAAB3..."
+}
+```
+
+### 7.6 Gestion clés SSH pour SOL
+
+```
+GET /me/sshKey
+POST /me/sshKey
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_ipmi_title` | Console IPMI |
+| `dedicated_server_ipmi_description` | Interface de gestion à distance |
+| `dedicated_server_ipmi_guide` | Guide de configuration IPMI |
+| `dedicated_server_ipmi_restart` | Redémarrer l'interface IPMI |
+| `dedicated_server_ipmi_test` | Lancer le test IPMI |
+| `dedicated_server_ipmi_tests_title` | Tests de connectivité |
+| `dedicated_server_kvm_title` | KVM |
+| `dedicated_server_kvm_description` | Console graphique distante |
+| `dedicated_server_kvm_html5` | Ouvrir KVM (HTML5) |
+| `dedicated_server_kvm_java` | Télécharger KVM (Java) |
+| `dedicated_server_kvm_warning` | Attention : la session KVM bloque le monitoring pendant son utilisation. |
+| `dedicated_server_sol_title` | Serial Over LAN (SOL) |
+| `dedicated_server_sol_description` | Console série via le réseau |
+| `dedicated_server_sol_browser` | Démarrer SOL via navigateur |
+| `dedicated_server_sol_ssh_title` | Accès SSH SOL |
+| `dedicated_server_sol_add_ssh` | Ajouter une clé SSH |

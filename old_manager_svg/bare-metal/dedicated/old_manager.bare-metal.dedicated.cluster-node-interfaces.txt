@@ -1,0 +1,198 @@
+# Cahier des Charges : bare-metal/dedicated/cluster-node-interfaces
+
+## 1. RESUME EXECUTIF
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.cluster-node-interfaces.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated |
+| **Type** | Page de détail (Interfaces réseau) |
+| **Description** | Gestion des interfaces réseau d'un noeud de cluster dédié |
+| **Users cibles** | Administrateurs réseau de serveurs dédiés |
+
+---
+
+## 2. ARCHITECTURE NAV
+
+### 2.1 Classification
+
+| Niveau | Valeur | Position |
+|--------|--------|----------|
+| NAV1 | bare-metal | Header OVH (Bare Metal Cloud) |
+| NAV2 | dedicated | Sous-header (Serveurs dédiés) |
+| NAV3 | - | Pas de groupement visible |
+| NAV4 | interfaces | Onglet Réseau/Interfaces |
+
+### 2.2 Contexte
+
+Route : `app.dedicated-cluster.cluster.node.interfaces`
+Breadcrumb : `dedicated-cluster-01 / node-01 / Réseau`
+
+---
+
+## 3. LAYOUT & STRUCTURE
+
+### 3.1 Dimensions
+
+| Zone | Position | Dimensions |
+|------|----------|------------|
+| Canvas | - | 1440 x 900 px |
+| LEFT PANEL | x=24, y=105 | 280 x 765 px |
+| RIGHT PANEL | x=320, y=105 | 1096 x 765 px |
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 Tuile OLA (OVHcloud Link Aggregation)
+
+| Champ | Valeur |
+|-------|--------|
+| Titre | OVHcloud Link Aggregation |
+| Description | Agrégation de liens pour haute disponibilité |
+| État | Badge vert "Actif" |
+| Mode | LACP (802.3ad) |
+| Action | Voir le guide |
+
+### 4.2 Tuile Bande passante
+
+| Champ | Valeur |
+|-------|--------|
+| Titre | Bande passante |
+| Description | Capacité réseau du serveur |
+| Avertissement | OLA activé : bande passante dépend de la configuration |
+| Public | 1 Gbps |
+| Privé (vRack) | 10 Gbps + bouton "Commander" |
+
+### 4.3 Tableau des interfaces
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Interface | ~100px | eth0, eth1, eth2 |
+| MAC | ~160px | Adresse MAC |
+| Type | ~120px | Public, vRack |
+| Vitesse | ~100px | 1 Gbps, 10 Gbps |
+| État | ~80px | Badge Up/Down |
+
+### 4.4 Graphiques MRTG
+
+Zone graphique (700 x 150px) affichant la consommation réseau.
+
+---
+
+## 5. DONNEES & COLONNES
+
+### 5.1 Structure interface réseau
+
+```typescript
+interface NetworkInterface {
+  name: string;           // "eth0"
+  mac: string;            // "00:1A:2B:3C:4D:5E"
+  type: 'public' | 'vrack';
+  speed: number;          // 1000 (Mbps) ou 10000
+  status: 'up' | 'down';
+}
+
+interface BandwidthInfo {
+  public: number;         // Mbps
+  private: number;        // Mbps (vRack)
+  olaEnabled: boolean;
+  olaMode?: string;       // "LACP (802.3ad)"
+}
+```
+
+---
+
+## 6. ACTIONS & INTERACTIONS
+
+| Action | Déclencheur | Comportement |
+|--------|-------------|--------------|
+| Voir guide OLA | Lien texte | Ouvre documentation externe |
+| Commander bande passante | Bouton "Commander" | Ouvre wizard bandwidth-order |
+| Afficher graphiques MRTG | Automatique | Charge graphiques de consommation |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Récupération des interfaces
+
+```
+GET /dedicated/server/{serverName}/networkInterfaceController
+```
+
+### 7.2 Détails d'une interface
+
+```
+GET /dedicated/server/{serverName}/networkInterfaceController/{mac}
+```
+
+### 7.3 Récupération bande passante
+
+```
+GET /dedicated/server/{serverName}/specifications/network
+```
+
+**Réponse :**
+```json
+{
+  "bandwidth": {
+    "OvhToOvh": {"value": 1000, "unit": "Mbps"},
+    "OvhToInternet": {"value": 500, "unit": "Mbps"},
+    "type": "included"
+  },
+  "connection": "1000Mbps",
+  "ola": {
+    "available": true,
+    "supportedModes": ["lacp", "bonding"]
+  }
+}
+```
+
+### 7.4 État OLA
+
+```
+GET /dedicated/server/{serverName}/ola
+```
+
+### 7.5 Options bande passante vRack
+
+```
+GET /dedicated/server/{serverName}/option/BANDWIDTH_VRACK
+GET /order/upgrade/baremetalPrivateBandwidth/{serviceName}
+```
+
+### 7.6 Graphiques MRTG
+
+```
+GET /dedicated/server/{serverName}/mrtg?period=daily&type=traffic:download
+GET /dedicated/server/{serverName}/mrtg?period=daily&type=traffic:upload
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_interfaces_title` | Interfaces réseau |
+| `dedicated_server_ola_title` | OVHcloud Link Aggregation |
+| `dedicated_server_ola_description` | Agrégation de liens pour haute disponibilité |
+| `dedicated_server_ola_mode` | Mode |
+| `dedicated_server_ola_guide` | Voir le guide |
+| `dedicated_server_bandwidth_title` | Bande passante |
+| `dedicated_server_bandwidth_description` | Capacité réseau du serveur |
+| `dedicated_server_bandwidth_ola_warning` | OLA activé : bande passante dépend de la configuration |
+| `dedicated_server_bandwidth_public` | Public |
+| `dedicated_server_bandwidth_private` | Privé (vRack) |
+| `dedicated_server_bandwidth_order` | Commander |
+| `dedicated_server_interfaces_list_title` | Interfaces |
+| `dedicated_server_interface_name` | Interface |
+| `dedicated_server_interface_mac` | MAC |
+| `dedicated_server_interface_type` | Type |
+| `dedicated_server_interface_speed` | Vitesse |
+| `dedicated_server_interface_status` | État |
+| `dedicated_server_interface_status_up` | Up |
+| `dedicated_server_interface_status_down` | Down |
+| `dedicated_server_mrtg_title` | Graphiques MRTG |

@@ -1,0 +1,576 @@
+# ============================================================================
+# PROMPT TARGET - PUBLIC CLOUD > AI/ML
+# ============================================================================
+# NAV1: Public Cloud
+# NAV2: AI/ML
+# Version: 1.0
+# ============================================================================
+
+## 1. VUE D'ENSEMBLE
+
+### 1.1 Positionnement
+- **NAV1** : Public Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : AI/ML (Sous-header blanc, 40px) - Actif parmi [Projet, Compute, Storage, Databases, Containers, AI/ML, Network]
+- **NAV3** : Filtres dropdown dans sidecar (Region + Projet)
+- **NAV4** : Tabs contextuels dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion des services d'Intelligence Artificielle et Machine Learning : AI Notebooks, AI Training, AI Deploy, AI Endpoints (LLM), et Data Processing.
+
+### 1.3 URL Pattern
+```
+/public-cloud/ai-ml                              → Dashboard (General ALL)
+/public-cloud/ai-ml/notebooks                    → Liste notebooks
+/public-cloud/ai-ml/training                     → Liste jobs training
+/public-cloud/ai-ml/deploy                       → Liste deployments
+/public-cloud/ai-ml/endpoints                    → Liste AI Endpoints (LLM)
+/public-cloud/ai-ml/data-processing              → Liste jobs Spark/Flink
+/public-cloud/ai-ml/notebooks/{notebookId}       → Détail notebook
+/public-cloud/ai-ml/training/{jobId}             → Détail job training
+/public-cloud/ai-ml/deploy/{deployId}            → Détail deployment
+```
+
+---
+
+## 2. STRUCTURE NAV3 (SIDECAR - LEFT PANEL 280px)
+
+### 2.1 Filtres (haut de sidecar)
+```
+┌───────────────────────┐
+│ NAV3 - Filtres        │
+│ [🌍 Region: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+│ [🗂️ Projet: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+├───────────────────────┤
+│ 🔍 Rechercher...      │
+├───────────────────────┤
+│  📊 General (ALL)     │  ← Toujours présent, retour dashboard
+│  ─────────────────    │
+│  (liste services)     │  ← Filtrée par NAV3
+└───────────────────────┘
+```
+
+### 2.2 Dropdown Region
+Source: `/api/regions.json`
+Note: AI/ML disponible sur régions sélectionnées (GRA, BHS principalement)
+
+### 2.3 Dropdown Projet
+- **ALL** : Tous les projets (défaut)
+- Liste dynamique des projets de l'utilisateur
+
+### 2.4 Liste services (sidecar)
+Affiche tous les services AI/ML filtrés par NAV3 avec icône par type :
+- 📓 Notebooks
+- 🏋️ Training jobs
+- 🚀 Deployments
+- 🤖 AI Endpoints
+- ⚙️ Data Processing jobs
+
+---
+
+## 3. STRUCTURE NAV4 (RIGHT PANEL - TABS)
+
+### 3.1 NAV4 - Vue General (ALL) sélectionné dans sidecar
+```
+[General] Notebooks  Training  Deploy  Endpoints  Data Processing
+```
+
+| Tab | Description | Action |
+|-----|-------------|--------|
+| **General** | Dashboard récapitulatif | Vue par défaut |
+| **Notebooks** | Liste notebooks Jupyter | [+ Créer] |
+| **Training** | Liste jobs d'entraînement | [+ Créer] |
+| **Deploy** | Liste modèles déployés | [+ Créer] |
+| **Endpoints** | AI Endpoints (LLM) | [+ Créer] |
+| **Data Processing** | Jobs Spark/Flink | [+ Créer] |
+
+### 3.2 NAV4 - Notebook sélectionné dans sidecar
+```
+[General]  Logs  Metrics  Data  Git  Settings
+```
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Informations notebook, URL JupyterLab, actions |
+| **Logs** | Logs du container |
+| **Metrics** | CPU/GPU/RAM usage |
+| **Data** | Volumes montés, datasets |
+| **Git** | Repository Git associé |
+| **Settings** | Configuration, environnement |
+
+### 3.3 NAV4 - Training Job sélectionné
+```
+[General]  Logs  Metrics  Artifacts  Checkpoints  TensorBoard
+```
+
+### 3.4 NAV4 - Deployment sélectionné
+```
+[General]  Logs  Metrics  Scaling  API  Versions
+```
+
+### 3.5 NAV4 - AI Endpoint sélectionné
+```
+[General]  Usage  Logs  API  Settings
+```
+
+---
+
+## 4. TYPES DE SERVICES
+
+### 4.1 AI Notebooks (📓)
+- **Description** : Environnements JupyterLab managés
+- **Frameworks** : PyTorch, TensorFlow, JAX, Hugging Face
+- **GPU** : NVIDIA T4, V100, A100
+- **Features** :
+  - Volumes persistants
+  - Git integration
+  - SSH access
+  - Collaborative editing
+- **Billing** : Par heure (GPU + storage)
+
+### 4.2 AI Training (🏋️)
+- **Description** : Jobs d'entraînement distribué
+- **Frameworks** : PyTorch, TensorFlow, JAX, custom
+- **Features** :
+  - Multi-GPU / Multi-node
+  - Checkpointing automatique
+  - TensorBoard intégré
+  - MLflow tracking
+  - Hyperparameter tuning
+- **Billing** : Par GPU-heure
+
+### 4.3 AI Deploy (🚀)
+- **Description** : Serving de modèles ML
+- **Frameworks** : TensorFlow Serving, Triton, TorchServe, custom
+- **Features** :
+  - Auto-scaling
+  - A/B testing
+  - Blue/green deployments
+  - Monitoring intégré
+  - API REST/gRPC
+- **Billing** : Par replica-heure + requests
+
+### 4.4 AI Endpoints (🤖)
+- **Description** : LLM as a Service (API)
+- **Modèles** :
+  - Llama 3.1 (8B, 70B, 405B)
+  - Mistral (7B, 8x7B)
+  - CodeLlama
+  - Embeddings models
+- **Features** :
+  - API OpenAI-compatible
+  - Streaming responses
+  - Function calling
+  - Rate limiting
+- **Billing** : Par token (input/output)
+
+### 4.5 Data Processing (⚙️)
+- **Description** : Jobs Spark/Flink managés
+- **Engines** : Apache Spark, Apache Flink
+- **Features** :
+  - Connexion S3/Swift
+  - Jupyter notebooks Spark
+  - Scheduled jobs
+  - Auto-termination
+- **Billing** : Par executor-heure
+
+---
+
+## 5. CONTENU PAR TAB
+
+### 5.1 Dashboard (General ALL)
+```
+┌─────────────────────────────────────────────────────────┐
+│ Dashboard AI/ML                                         │
+│                                                         │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
+│ │     8    │  │    12    │  │     5    │  │  ~450€   │ │
+│ │Notebooks │  │ Training │  │ Deploy   │  │ Coût/mois│ │
+│ │ actifs   │  │ jobs     │  │ actifs   │  │          │ │
+│ └──────────┘  └──────────┘  └──────────┘  └──────────┘ │
+│                                                         │
+│ GPU Utilization                                         │
+│ ─────────────────────────────────────────               │
+│ • T4: 12/20 disponibles                                │
+│ • V100: 4/8 disponibles                                │
+│ • A100: 2/4 disponibles                                │
+│                                                         │
+│ Recent activity                                         │
+│ • Training job "bert-finetune" completed    il y a 2h  │
+│ • Notebook "research-01" started            il y a 4h  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Liste Notebooks
+```
+┌─────────────────────────────────────────────────────────┐
+│ AI Notebooks                            [+ Créer]       │
+│                                                         │
+│ Nom           │ Projet │ GPU    │ Framework │ Status │⋮│
+│ ──────────────┼────────┼────────┼───────────┼────────┼─│
+│ research-01   │ Prod   │ T4     │ PyTorch   │ 🟢 Run │⋮│
+│ experiment-02 │ Prod   │ V100   │ TensorFlow│ 🟢 Run │⋮│
+│ data-analysis │ Dev    │ -      │ Python    │ 🟢 Run │⋮│
+│ nlp-dev       │ Dev    │ T4     │ HuggingFace│⚪ Stop│⋮│
+│ cv-training   │ Prod   │ A100   │ PyTorch   │ 🟢 Run │⋮│
+│                                                         │
+│ Affichage 1-5 sur 8                          < 1 2 >   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.3 Liste Training Jobs
+```
+┌─────────────────────────────────────────────────────────┐
+│ AI Training                             [+ Créer]       │
+│                                                         │
+│ [Tous] [Running] [Completed] [Failed]                  │
+│                                                         │
+│ Nom              │ Projet │ GPU   │ Duration │ Status │⋮│
+│ ─────────────────┼────────┼───────┼──────────┼────────┼─│
+│ bert-finetune-v3 │ Prod   │ 4×V100│ 4h 32m   │ ✅ Done│⋮│
+│ llm-train-001    │ Prod   │ 8×A100│ running  │ 🟢 Run │⋮│
+│ image-class-exp  │ Dev    │ 2×T4  │ 1h 15m   │ ✅ Done│⋮│
+│ rl-agent-v2      │ Dev    │ 1×V100│ 45m      │ ❌ Fail│⋮│
+│ embedding-train  │ Prod   │ 4×A100│ running  │ 🟢 Run │⋮│
+│                                                         │
+│ Affichage 1-5 sur 12                         < 1 2 3 > │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.4 Liste AI Endpoints
+```
+┌─────────────────────────────────────────────────────────┐
+│ AI Endpoints (LLM)                      [+ Créer]       │
+│                                                         │
+│ Modèle          │ Projet │ Région │ Requests/day│Status│⋮│
+│ ────────────────┼────────┼────────┼─────────────┼──────┼─│
+│ llama-3.1-70b   │ Prod   │ GRA    │ 15,420      │ 🟢   │⋮│
+│ mistral-8x7b    │ Prod   │ GRA    │ 8,230       │ 🟢   │⋮│
+│ codellama-34b   │ Dev    │ GRA    │ 2,150       │ 🟢   │⋮│
+│ embedding-v2    │ Prod   │ GRA    │ 45,000      │ 🟢   │⋮│
+│                                                         │
+│ 💡 API OpenAI-compatible: POST /v1/chat/completions    │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.5 Détail Notebook - General
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   research-01                     🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ [General]  Logs  Metrics  Data  Git  Settings          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Informations            │ │ Accès                   │ │
+│ ├─────────────────────────┤ ├─────────────────────────┤ │
+│ │ Nom: research-01        │ │ JupyterLab:             │ │
+│ │ Framework: PyTorch 2.1  │ │ https://xxx.notebook... │ │
+│ │ GPU: NVIDIA T4 (1×)     │ │                         │ │
+│ │ RAM: 16 GB              │ │ [🔗 Ouvrir JupyterLab]  │ │
+│ │ Storage: 50 GB          │ │                         │ │
+│ │ Projet: Prod            │ │ SSH:                    │ │
+│ │ Région: GRA             │ │ ssh user@xxx -p 22      │ │
+│ │ Créé: 15/12/2025        │ │ [📋 Copier commande]    │ │
+│ │ Uptime: 4h 32m          │ └─────────────────────────┘ │
+│ └─────────────────────────┘                             │
+│                                                         │
+│ ┌───────────────────────────────────────────────────────┐│
+│ │ Actions                                               ││
+│ │ [⏹ Stop] [🔄 Restart] [📐 Resize] [🗑️ Delete]       ││
+│ └───────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.6 Détail Notebook - Metrics
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   research-01                     🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ General  Logs  [Metrics]  Data  Git  Settings          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Période: [Dernière heure ▼]                            │
+│                                                         │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ GPU Utilization (T4)                    Avg: 75%    │ │
+│ │ ████████████████████████████████████░░░░░░░░░░░░░░ │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ GPU Memory                              12/16 GB    │ │
+│ │ ████████████████████████████████████████░░░░░░░░░░ │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ RAM Usage                               10/16 GB    │ │
+│ │ ██████████████████████████████░░░░░░░░░░░░░░░░░░░░ │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Disk I/O                                            │ │
+│ │ Read:  ████░░░░░░  45 MB/s                         │ │
+│ │ Write: ██░░░░░░░░  18 MB/s                         │ │
+│ └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.7 Détail Training Job - General
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   llm-train-001                   🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ [General]  Logs  Metrics  Artifacts  Checkpoints  TBoard│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Configuration           │ │ Progress                │ │
+│ ├─────────────────────────┤ ├─────────────────────────┤ │
+│ │ Framework: PyTorch 2.1  │ │ Epoch: 3/10             │ │
+│ │ GPU: 8× NVIDIA A100     │ │ Step: 15,420/50,000     │ │
+│ │ Nodes: 2                │ │                         │ │
+│ │ Image: custom-trainer   │ │ ████████░░░░░░░░ 31%   │ │
+│ │ Dataset: s3://data/...  │ │                         │ │
+│ │ Output: s3://models/... │ │ ETA: ~8h 45m            │ │
+│ └─────────────────────────┘ └─────────────────────────┘ │
+│                                                         │
+│ Current metrics:                                        │
+│ • Loss: 0.342 (↓ from 0.891)                           │
+│ • Learning rate: 1e-4                                  │
+│ • Throughput: 1,240 samples/sec                        │
+│                                                         │
+│ [⏹ Stop]  [📊 TensorBoard]  [💾 Save checkpoint]       │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.8 Détail AI Endpoint - General
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   llama-3.1-70b                   🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ [General]  Usage  Logs  API  Settings                  │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Modèle                  │ │ API Endpoint            │ │
+│ ├─────────────────────────┤ ├─────────────────────────┤ │
+│ │ Nom: Llama 3.1 70B      │ │ URL:                    │ │
+│ │ Provider: Meta          │ │ https://xxx.ai.ovh.net  │ │
+│ │ Context: 128K tokens    │ │                         │ │
+│ │ Projet: Prod            │ │ Compatible: OpenAI API  │ │
+│ │ Région: GRA             │ │                         │ │
+│ └─────────────────────────┘ │ [📋 Copier URL]         │ │
+│                             │ [🔑 Voir API Key]       │ │
+│ Pricing (tokens):           └─────────────────────────┘ │
+│ • Input: 0.0008€ / 1K tokens                           │
+│ • Output: 0.0024€ / 1K tokens                          │
+│                                                         │
+│ Today's usage:                                          │
+│ • Requests: 15,420                                     │
+│ • Input tokens: 2.3M                                   │
+│ • Output tokens: 890K                                  │
+│ • Cost: ~4.50€                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.9 Détail AI Endpoint - API
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   llama-3.1-70b                   🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ General  Usage  Logs  [API]  Settings                  │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ API Reference                                           │
+│                                                         │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ POST /v1/chat/completions                           │ │
+│ │                                                      │ │
+│ │ curl https://xxx.ai.ovh.net/v1/chat/completions \   │ │
+│ │   -H "Authorization: Bearer $API_KEY" \             │ │
+│ │   -H "Content-Type: application/json" \             │ │
+│ │   -d '{                                             │ │
+│ │     "model": "llama-3.1-70b",                       │ │
+│ │     "messages": [                                   │ │
+│ │       {"role": "user", "content": "Hello!"}         │ │
+│ │     ],                                              │ │
+│ │     "stream": true                                  │ │
+│ │   }'                                                │ │
+│ │                                          [📋 Copier]│ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ Features: ✓ Streaming  ✓ Function calling  ✓ JSON mode │
+│                                                         │
+│ [📖 Documentation complète]                            │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Notebooks
+```
+GET    /cloud/project/{projectId}/ai/notebook
+GET    /cloud/project/{projectId}/ai/notebook/{notebookId}
+POST   /cloud/project/{projectId}/ai/notebook
+DELETE /cloud/project/{projectId}/ai/notebook/{notebookId}
+POST   /cloud/project/{projectId}/ai/notebook/{notebookId}/start
+POST   /cloud/project/{projectId}/ai/notebook/{notebookId}/stop
+```
+
+### 6.2 Training Jobs
+```
+GET    /cloud/project/{projectId}/ai/job
+GET    /cloud/project/{projectId}/ai/job/{jobId}
+POST   /cloud/project/{projectId}/ai/job
+DELETE /cloud/project/{projectId}/ai/job/{jobId}
+POST   /cloud/project/{projectId}/ai/job/{jobId}/stop
+GET    /cloud/project/{projectId}/ai/job/{jobId}/log
+```
+
+### 6.3 Deployments
+```
+GET    /cloud/project/{projectId}/ai/deploy
+GET    /cloud/project/{projectId}/ai/deploy/{deployId}
+POST   /cloud/project/{projectId}/ai/deploy
+PUT    /cloud/project/{projectId}/ai/deploy/{deployId}
+DELETE /cloud/project/{projectId}/ai/deploy/{deployId}
+POST   /cloud/project/{projectId}/ai/deploy/{deployId}/scale
+```
+
+### 6.4 AI Endpoints
+```
+GET    /cloud/project/{projectId}/ai/endpoint
+GET    /cloud/project/{projectId}/ai/endpoint/{endpointId}
+POST   /cloud/project/{projectId}/ai/endpoint
+DELETE /cloud/project/{projectId}/ai/endpoint/{endpointId}
+GET    /cloud/project/{projectId}/ai/endpoint/{endpointId}/usage
+```
+
+### 6.5 Data Processing
+```
+GET    /cloud/project/{projectId}/dataProcessing/job
+POST   /cloud/project/{projectId}/dataProcessing/job
+DELETE /cloud/project/{projectId}/dataProcessing/job/{jobId}
+```
+
+---
+
+## 7. COMPOSANTS UI
+
+### 7.1 Datagrid colonnes Notebooks
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du notebook (lien) |
+| Projet | Nom du projet |
+| GPU | Type GPU (T4, V100, A100, -) |
+| Framework | PyTorch, TensorFlow, etc |
+| Status | Badge |
+| ⋮ | Menu actions |
+
+### 7.2 Badges statut
+| Statut | Couleur | Icône |
+|--------|---------|-------|
+| RUNNING | Vert | 🟢 |
+| STOPPED | Gris | ⚪ |
+| STARTING | Jaune | 🟡 |
+| ERROR | Rouge | 🔴 |
+| COMPLETED | Vert check | ✅ |
+| FAILED | Rouge | ❌ |
+
+### 7.3 Progress bar Training
+```
+┌─────────────────────────────────────────────────────┐
+│ Epoch: 3/10    Step: 15,420/50,000                 │
+│ ████████░░░░░░░░ 31%            ETA: ~8h 45m       │
+└─────────────────────────────────────────────────────┘
+```
+
+### 7.4 Icônes par type
+| Type | Icône | Couleur |
+|------|-------|---------|
+| Notebook | 📓 | #F37626 |
+| Training | 🏋️ | #4A90D9 |
+| Deploy | 🚀 | #10B981 |
+| Endpoint | 🤖 | #8B5CF6 |
+| Data Processing | ⚙️ | #F59E0B |
+
+---
+
+## 8. COMPORTEMENTS
+
+### 8.1 Filtrage NAV3
+- Changement Region → Filtre liste services
+- Changement Projet → Filtre liste services
+- Combinaison AND des deux filtres
+
+### 8.2 Navigation sidecar → RIGHT PANEL
+- Clic "General (ALL)" → NAV4 = [General] Notebooks Training Deploy Endpoints Data Processing
+- Clic notebook → NAV4 = [General] Logs Metrics Data Git Settings
+- Clic training job → NAV4 = [General] Logs Metrics Artifacts Checkpoints TensorBoard
+- Clic endpoint → NAV4 = [General] Usage Logs API Settings
+
+### 8.3 Actions Notebook
+- Start/Stop : Démarrage/arrêt du container
+- Resize : Changement GPU/RAM (nécessite restart)
+- Ouvrir JupyterLab : Nouvelle fenêtre
+
+### 8.4 Training Jobs
+- Stop : Arrêt propre avec sauvegarde checkpoint
+- Logs en temps réel (streaming)
+- TensorBoard intégré
+
+---
+
+## 9. MODALS
+
+### 9.1 Modal Créer Notebook
+Champs :
+- Projet (dropdown)
+- Région (dropdown)
+- Nom (text)
+- Framework (PyTorch, TensorFlow, HuggingFace, JAX, Python)
+- GPU (None, T4, V100, A100)
+- GPU count (1, 2, 4)
+- RAM (8GB, 16GB, 32GB, 64GB)
+- Storage (20GB, 50GB, 100GB, 200GB)
+- Git repository (optionnel)
+
+### 9.2 Modal Créer Training Job
+- Nom
+- Framework
+- Docker image (preset ou custom)
+- GPU type & count
+- Multi-node (toggle)
+- Dataset path (S3/Swift)
+- Output path
+- Environment variables
+- Command / entrypoint
+
+### 9.3 Modal Créer AI Endpoint
+- Projet
+- Région
+- Modèle (dropdown: Llama, Mistral, CodeLlama, Embeddings)
+- Variante (7B, 8B, 70B, 8x7B...)
+- Rate limit (requests/min)
+
+---
+
+## 10. ESTIMATIONS FICHIERS SVG
+
+| Écran | Fichier |
+|-------|---------|
+| Dashboard AI/ML | target_.public-cloud.ai-ml.svg |
+| Liste Notebooks | target_.public-cloud.ai-ml.notebooks.svg |
+| Liste Training | target_.public-cloud.ai-ml.training.svg |
+| Liste Deploy | target_.public-cloud.ai-ml.deploy.svg |
+| Liste Endpoints | target_.public-cloud.ai-ml.endpoints.svg |
+| Liste Data Processing | target_.public-cloud.ai-ml.data-processing.svg |
+| Détail Notebook | target_.public-cloud.ai-ml.notebook.detail.svg |
+| Notebook - Metrics | target_.public-cloud.ai-ml.notebook.metrics.svg |
+| Détail Training | target_.public-cloud.ai-ml.training.detail.svg |
+| Training - Logs | target_.public-cloud.ai-ml.training.logs.svg |
+| Détail Endpoint | target_.public-cloud.ai-ml.endpoint.detail.svg |
+| Endpoint - API | target_.public-cloud.ai-ml.endpoint.api.svg |
+| Modal Créer Notebook | target_.public-cloud.ai-ml.notebook.create.svg |
+| Modal Créer Training | target_.public-cloud.ai-ml.training.create.svg |
+| Modal Créer Endpoint | target_.public-cloud.ai-ml.endpoint.create.svg |
+
+**Total estimé : ~20-25 fichiers SVG + TXT**

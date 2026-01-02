@@ -1,0 +1,261 @@
+# PROMPT TARGET: Bare Metal Cloud > VPS
+# NAV1: bare-metal | NAV2: vps
+
+================================================================================
+## 1. VUE D'ENSEMBLE
+================================================================================
+
+- **Univers (NAV1)**: Bare Metal Cloud
+- **Produit (NAV2)**: VPS
+- **Description**: Gestion des serveurs virtuels privés OVHcloud
+- **Complexité**: Moyenne (6 tabs service, gammes multiples)
+
+================================================================================
+## 2. STRUCTURE DE NAVIGATION
+================================================================================
+
+### NAV1 (Header Univers)
+```
+[Bare Metal Cloud ▼] [Hosted Private Cloud] [Public Cloud] [Web Cloud]
+```
+
+### NAV2 (Sous-header Produits)
+```
+[General] [Dedicated Server] [VPS•] [NAS-HA] [NetApp] [Housing] [IP] [vRack] [...]
+```
+
+### LEFT PANEL (280px)
+```
+┌─────────────────────────┐
+│ NAV3: Région            │
+│ ┌─────────────────────┐ │
+│ │ 🌍 ALL Regions    ▼ │ │
+│ └─────────────────────┘ │
+├─────────────────────────┤
+│ 🔍 Rechercher...        │
+├─────────────────────────┤
+│ ● All (89)              │  ← Vue résumé
+│ ○ vps-abc123.vps.ovh    │  ← Vue service
+│   Starter | GRA         │
+│ ○ vps-def456.vps.ovh    │
+│   Value | RBX           │
+│ ○ vps-ghi789.vps.ovh    │
+│   Essential | BHS       │
+└─────────────────────────┘
+```
+
+### NAV4 - Vue "All" (résumé multi-services)
+```
+[General•]
+```
+Contenu: Dashboard agrégé, stats globales, répartition par gamme/DC
+
+### NAV4 - Vue Service (détail d'un VPS)
+```
+[General] [Disques] [IPs] [Backup] [Snapshot] [Options]
+```
+
+================================================================================
+## 3. NAV4 TABS - VUE "ALL"
+================================================================================
+
+### Tab: General (vue résumé)
+| Bloc | Contenu |
+|------|---------|
+| KPIs | Total VPS, Running, Stopped, Alertes |
+| Répartition DC | Graphique barres par datacenter |
+| Répartition Gamme | Starter, Value, Essential, Comfort, Elite |
+| Ressources totales | vCPU, RAM, Disque agrégés |
+| Tâches récentes | Liste 3-5 dernières tâches |
+
+Actions toolbar:
+- [+ Commander] : Ouvre page commande VPS
+- [↻] : Rafraîchir
+
+================================================================================
+## 4. NAV4 TABS - VUE SERVICE
+================================================================================
+
+### Tab: General
+| Carte | Champs |
+|-------|--------|
+| CONFIGURATION | Offre, vCPU, RAM, Disque, Bandwidth |
+| RÉSEAU | IPv4, IPv6, Gateway, Datacenter |
+| SYSTÈME | OS, État, Uptime + Actions |
+| CONTRAT | Date création, Renouvellement, Prix |
+
+Actions:
+- [Redémarrer] : Reboot VPS
+- [Rescue] : Boot rescue mode
+- [Réinstaller] : Reinstall OS
+- [Upgrade] : Changer de gamme
+
+### Tab: Disques
+| Bloc | Contenu |
+|------|---------|
+| Disque principal | Taille, utilisation, IOPS |
+| Disques additionnels | Liste disques ajoutés |
+| Actions | [+ Ajouter disque] |
+
+### Tab: IPs
+| Bloc | Contenu |
+|------|---------|
+| IPv4 principale | Adresse + reverse |
+| IPv6 | Bloc /128 |
+| IPs additionnelles | Failover IPs |
+| Actions | [+ Ajouter IP] [Éditer reverse] |
+
+### Tab: Backup
+| Bloc | Contenu |
+|------|---------|
+| Automated Backup | État, fréquence, rétention |
+| Backups disponibles | Liste avec date/taille |
+| Actions | [Activer] [Restaurer] [Supprimer] |
+
+### Tab: Snapshot
+| Bloc | Contenu |
+|------|---------|
+| Snapshot actuel | Date, taille |
+| Actions | [Créer snapshot] [Restaurer] [Supprimer] |
+| Note | 1 snapshot max par VPS |
+
+### Tab: Options
+| Bloc | Contenu |
+|------|---------|
+| Options actives | Automated Backup, Additional IP, etc. |
+| Options disponibles | Liste options commandables |
+
+================================================================================
+## 5. GAMMES VPS
+================================================================================
+
+| Gamme | vCPU | RAM | Disque | Prix indicatif |
+|-------|------|-----|--------|----------------|
+| Starter | 1 | 2 GB | 20 GB | 3,50 €/mois |
+| Value | 1 | 2 GB | 40 GB | 5,50 €/mois |
+| Essential | 2 | 4 GB | 80 GB | 10,50 €/mois |
+| Comfort | 4 | 8 GB | 160 GB | 21,00 €/mois |
+| Elite | 8 | 16 GB | 320 GB | 42,00 €/mois |
+
+================================================================================
+## 6. COMPOSANTS ODS UTILISÉS
+================================================================================
+
+| Composant | Usage |
+|-----------|-------|
+| OdsBreadcrumb | Navigation fil d'ariane |
+| OdsTabs | Navigation NAV4 |
+| OdsCard | Cartes d'information |
+| OdsBadge | États (Running, Stopped, Rescue) |
+| OdsButton | Actions (primary, secondary) |
+| OdsInput | Recherche |
+| OdsSelect | Dropdown région |
+| OdsDatagrid | Tableaux (disques, IPs, backups) |
+| OdsClipboard | Copie IPs |
+| OdsChart | Graphiques (répartition, usage) |
+| OdsProgress | Utilisation disque/RAM |
+| OdsModal | Confirmations, formulaires |
+
+================================================================================
+## 7. APIS & ENDPOINTS
+================================================================================
+
+### Liste et détails
+```
+GET  /vps                                    # Liste VPS
+GET  /vps/{serviceName}                      # Détails VPS
+GET  /vps/{serviceName}/serviceInfos         # Infos contrat
+GET  /vps/{serviceName}/datacenter           # Datacenter
+```
+
+### Actions
+```
+POST /vps/{serviceName}/reboot               # Reboot
+POST /vps/{serviceName}/start                # Start
+POST /vps/{serviceName}/stop                 # Stop
+POST /vps/{serviceName}/reinstall            # Reinstall
+```
+
+### Disques
+```
+GET  /vps/{serviceName}/disks                # Liste disques
+POST /vps/{serviceName}/disks                # Ajouter disque
+```
+
+### IPs
+```
+GET  /vps/{serviceName}/ips                  # Liste IPs
+POST /vps/{serviceName}/secondaryDnsDomains  # DNS secondaire
+```
+
+### Backup & Snapshot
+```
+GET  /vps/{serviceName}/automatedBackup      # État backup auto
+POST /vps/{serviceName}/automatedBackup/restore  # Restaurer
+GET  /vps/{serviceName}/snapshot             # État snapshot
+POST /vps/{serviceName}/createSnapshot       # Créer snapshot
+```
+
+### Tâches
+```
+GET  /vps/{serviceName}/tasks                # Liste tâches
+GET  /vps/{serviceName}/tasks/{id}           # Détail tâche
+```
+
+================================================================================
+## 8. ÉTATS ET BADGES
+================================================================================
+
+| État | Badge | Couleur |
+|------|-------|---------|
+| Running | success | Vert |
+| Stopped | error | Rouge |
+| Rescue | warning | Orange |
+| Installing | info | Bleu |
+| Maintenance | neutral | Gris |
+
+================================================================================
+## 9. MODALS
+================================================================================
+
+| Modal | Trigger | Contenu |
+|-------|---------|---------|
+| Confirmer reboot | [Redémarrer] | Confirmation simple |
+| Mode rescue | [Rescue] | Choix image + mot de passe |
+| Réinstaller | [Réinstaller] | Choix OS + SSH key |
+| Upgrade | [Upgrade] | Choix nouvelle gamme + prix |
+| Créer snapshot | [Créer] | Confirmation + nom optionnel |
+| Restaurer backup | [Restaurer] | Choix backup + confirmation |
+| Ajouter disque | [+ Ajouter] | Taille + confirmation |
+| Ajouter IP | [+ Ajouter] | Type IP (failover) |
+
+================================================================================
+## 10. SYSTÈMES D'EXPLOITATION DISPONIBLES
+================================================================================
+
+| Catégorie | OS |
+|-----------|-----|
+| Linux | Ubuntu 22.04, 24.04 |
+| Linux | Debian 11, 12 |
+| Linux | CentOS Stream 8, 9 |
+| Linux | AlmaLinux 8, 9 |
+| Linux | Rocky Linux 8, 9 |
+| Linux | Fedora 39, 40 |
+| Windows | Windows Server 2019, 2022 |
+| Panels | Plesk, cPanel |
+
+================================================================================
+## 11. DATACENTERS VPS
+================================================================================
+
+| Code | Ville | Pays |
+|------|-------|------|
+| GRA | Gravelines | 🇫🇷 FR |
+| RBX | Roubaix | 🇫🇷 FR |
+| SBG | Strasbourg | 🇫🇷 FR |
+| BHS | Beauharnois | 🇨🇦 CA |
+| WAW | Warsaw | 🇵🇱 PL |
+| SGP | Singapore | 🇸🇬 SG |
+| SYD | Sydney | 🇦🇺 AU |
+
+================================================================================

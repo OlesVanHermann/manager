@@ -1,0 +1,436 @@
+################################################################################
+#                                                                              #
+#                  PROMPT TARGET - NETWORK > OVHCLOUD CONNECT                  #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+OVHcloud Connect (OCC) est le service de connectivité hybride permettant de :
+- Connecter l'infrastructure on-premise au réseau OVHcloud
+- Établir des liens privés dédiés (Direct) ou via opérateurs (Provider)
+- Garantir une bande passante et latence prévisibles
+- Sécuriser les échanges de données
+- Étendre le réseau privé (vRack) jusqu'aux locaux du client
+
+L'interface permet de gérer :
+- Connexions aux datacenters OVHcloud
+- Points of Presence (POPs)
+- Interfaces et ports
+- Clés de service pour les partenaires
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Network
+NAV2: OVHcloud Connect (sélectionné)
+NAV3: Region (dropdown) + POP (dropdown) dans LEFT PANEL
+NAV4: [Général] [Datacenter] [POP] [Interfaces] [Clés] [Tâches]
+
+## 1.1 Position dans la hiérarchie
+
+```
+Network (NAV1)
+├── Subnet
+├── vRack
+├── Load Balancer
+├── CDN
+├── OVHcloud Connect* (NAV2 actif)
+├── Anti-DDoS VAC
+└── Anti-DDoS Game
+```
+
+## 1.2 URLs
+
+| Écran | URL |
+|-------|-----|
+| Vue d'ensemble | /network/ovhcloud-connect |
+| Détail OCC | /network/ovhcloud-connect/{serviceName} |
+| Tab Datacenter | /network/ovhcloud-connect/{serviceName}/datacenter |
+| Tab POP | /network/ovhcloud-connect/{serviceName}/pop |
+| Tab Interfaces | /network/ovhcloud-connect/{serviceName}/interfaces |
+| Tab Clés | /network/ovhcloud-connect/{serviceName}/keys |
+| Tab Tâches | /network/ovhcloud-connect/{serviceName}/tasks |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ Region          [▼] │  ← NAV3 : Filtre par région datacenter
+├─────────────────────┤
+│ POP             [▼] │  ← NAV3 : Filtre par Point of Presence
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche nom
+├─────────────────────┤
+│ ●Général (ALL)      │  ← Vue d'ensemble (toujours visible)
+├─────────────────────┤
+│ ○occ-prod-par       │  ← Liste des OCC
+│   🟢 Direct • PAR   │
+│ ○occ-backup-fra     │
+│   🟢 Provider • FRA │
+│ ○occ-dev-rbx        │
+│   🟡 Direct • RBX   │
+└─────────────────────┘
+```
+
+## 2.2 NAV3 : Double filtre
+
+OVHcloud Connect utilise deux filtres NAV3 :
+- **Region** : Filtre par datacenter de destination (GRA, RBX, PAR, etc.)
+- **POP** : Filtre par Point of Presence physique (Equinix PA3, Telehouse, etc.)
+
+## 2.3 Format élément OCC
+
+```
+○ occ-prod-par        ← Nom du service
+  🟢 Direct • PAR     ← Statut + Type + Datacenter
+```
+
+Types :
+- **Direct** : Connexion directe au datacenter OVHcloud
+- **Provider** : Connexion via un opérateur partenaire
+
+
+# 3. RIGHT PANEL - TAB GÉNÉRAL (Vue d'ensemble)
+################################################################################
+
+Quand "Général (ALL)" est sélectionné dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+OVHcloud Connect - Vue d'ensemble            [+ Commander]
+```
+
+## 3.2 Cartes statistiques
+
+| Carte | Contenu |
+|-------|---------|
+| Total | {occ_count} |
+| Direct | {direct_count} |
+| Provider | {provider_count} |
+
+## 3.3 Section "Par datacenter"
+
+Barres horizontales :
+- PAR : {count}
+- FRA : {count}
+- RBX : {count}
+- etc.
+
+## 3.4 Section "Bande passante totale"
+
+```
+Configurée : 20 Gbps
+Utilisée : 8.5 Gbps  ████████░░░░░░░░░░░░  42%
+```
+
+
+# 4. RIGHT PANEL - TAB GÉNÉRAL (OCC sélectionné)
+################################################################################
+
+## 4.1 Header
+
+```
+OCC Production Paris                         [⋮]
+🟢 ok • Direct • Equinix PA3 → PAR DC
+```
+
+## 4.2 Section "Informations"
+
+| Champ | Valeur |
+|-------|--------|
+| Service | {serviceName} |
+| Type | Direct / Provider |
+| Statut | 🟢 ok |
+| POP | Equinix PA3 |
+| Datacenter | PAR DC |
+| Bande passante | 10 Gbps |
+| vRack | pn-123456 |
+
+## 4.3 Section "Utilisation"
+
+```
+Bande passante : 3.2 / 10 Gbps
+████████░░░░░░░░░░░░  32%
+```
+
+
+# 5. RIGHT PANEL - TAB DATACENTER
+################################################################################
+
+## 5.1 Description
+
+Configuration côté datacenter OVHcloud.
+
+## 5.2 Section "Datacenter de destination"
+
+| Champ | Valeur |
+|-------|--------|
+| Datacenter | {datacenter_name} |
+| Région | {region} |
+| Statut | 🟢 Connecté |
+
+## 5.3 Section "Configuration vRack"
+
+| Champ | Valeur |
+|-------|--------|
+| vRack | {vrack_name} |
+| Subnet | {subnet} |
+| VLAN ID | {vlan_id} |
+
+## 5.4 Actions
+
+```
+[Modifier vRack] [Modifier VLAN]
+```
+
+
+# 6. RIGHT PANEL - TAB POP
+################################################################################
+
+## 6.1 Description
+
+Configuration côté Point of Presence (POP).
+
+## 6.2 Section "Point of Presence"
+
+| Champ | Valeur |
+|-------|--------|
+| POP | {pop_name} |
+| Adresse | {pop_address} |
+| Opérateur | Equinix / Telehouse / etc. |
+| Port | {port_id} |
+
+## 6.3 Section "Connexion physique"
+
+| Champ | Valeur |
+|-------|--------|
+| Type connecteur | LC/UPC |
+| Débit | 10 Gbps |
+| Statut link | 🟢 UP |
+
+## 6.4 Letter of Authorization (LOA)
+
+```
+[📄 Télécharger LOA]
+```
+
+
+# 7. RIGHT PANEL - TAB INTERFACES
+################################################################################
+
+## 7.1 Description
+
+Gestion des interfaces réseau et configuration BGP.
+
+## 7.2 Tableau des interfaces
+
+| Interface | Type | IP | Peer IP | Statut | Actions |
+|-----------|------|-----|---------|--------|---------|
+| eth0 | BGP | 10.0.0.1/30 | 10.0.0.2 | 🟢 | ⋮ |
+| eth1 | Static | 10.0.1.1/24 | - | 🟢 | ⋮ |
+
+## 7.3 Configuration BGP
+
+| Champ | Valeur |
+|-------|--------|
+| Local AS | 65000 |
+| Remote AS | 64512 |
+| Peer IP | 10.0.0.2 |
+| Statut BGP | 🟢 Established |
+
+## 7.4 Actions
+
+```
+[+ Ajouter interface] [Configurer BGP]
+```
+
+
+# 8. RIGHT PANEL - TAB CLÉS
+################################################################################
+
+## 8.1 Description
+
+Clés de service pour l'activation chez les partenaires (Provider Connect).
+
+## 8.2 Tableau des clés
+
+| Clé | Partenaire | Statut | Créée | Actions |
+|-----|-----------|--------|-------|---------|
+| sk-xxx-001 | Equinix | 🟢 Utilisée | 15/01/24 | ⋮ |
+| sk-xxx-002 | Megaport | ⚪ Disponible | 20/12/24 | ⋮ |
+
+## 8.3 Actions
+
+```
+[+ Générer clé]
+```
+
+
+# 9. RIGHT PANEL - TAB TÂCHES
+################################################################################
+
+## 9.1 Tableau des tâches
+
+| Date | Opération | Cible | Statut |
+|------|-----------|-------|--------|
+| {date} | Modif BGP | AS 65000 | ✅ |
+| {date} | Ajout interface | eth1 | ✅ |
+| {date} | Génération LOA | - | ✅ |
+
+
+# 10. APIS & ENDPOINTS
+################################################################################
+
+## 10.1 OVHcloud Connect
+
+```
+GET /ovhCloudConnect
+GET /ovhCloudConnect/{serviceName}
+GET /ovhCloudConnect/{serviceName}/serviceInfos
+```
+
+## 10.2 Configuration
+
+```
+GET /ovhCloudConnect/{serviceName}/config/pop
+GET /ovhCloudConnect/{serviceName}/config/datacenter
+
+PUT /ovhCloudConnect/{serviceName}/config/pop
+PUT /ovhCloudConnect/{serviceName}/config/datacenter
+```
+
+## 10.3 Interfaces
+
+```
+GET /ovhCloudConnect/{serviceName}/interface
+POST /ovhCloudConnect/{serviceName}/interface
+DELETE /ovhCloudConnect/{serviceName}/interface/{id}
+```
+
+## 10.4 Clés de service
+
+```
+GET /ovhCloudConnect/{serviceName}/serviceKey
+POST /ovhCloudConnect/{serviceName}/serviceKey
+DELETE /ovhCloudConnect/{serviceName}/serviceKey/{id}
+```
+
+## 10.5 LOA
+
+```
+GET /ovhCloudConnect/{serviceName}/loa
+```
+
+
+# 11. VARIABLES DYNAMIQUES
+################################################################################
+
+| Variable | Source | Exemple |
+|----------|--------|---------|
+| {serviceName} | API | occ-xxx |
+| {type} | API | direct / provider |
+| {pop_name} | API | Equinix PA3 |
+| {pop_address} | API | 114 rue Ambroise... |
+| {datacenter_name} | API | PAR DC |
+| {bandwidth} | API | 10 Gbps |
+| {vrack_name} | API | pn-123456 |
+| {local_as} | API | 65000 |
+| {remote_as} | API | 64512 |
+
+
+# 12. MODALES
+################################################################################
+
+## 12.1 modal-configure-bgp
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Local AS | Input | Numéro AS valide |
+| Remote AS | Input | Numéro AS valide |
+| Peer IP | Input | IP valide |
+| MD5 Key | Input | Optionnel |
+
+## 12.2 modal-add-interface
+
+| Champ | Type |
+|-------|------|
+| Type | Select (BGP/Static) |
+| IP locale | Input |
+| Peer IP | Input (si BGP) |
+| Description | Input |
+
+## 12.3 modal-generate-key
+
+| Champ | Type |
+|-------|------|
+| Partenaire | Select |
+| Description | Input |
+
+## 12.4 modal-modify-vrack
+
+| Champ | Type |
+|-------|------|
+| vRack | Select |
+| VLAN ID | Input |
+
+
+# 13. RÈGLES MÉTIER
+################################################################################
+
+## 13.1 Types de connexion
+
+- **Direct** : Connexion physique directe dans le POP
+- **Provider** : Via opérateur partenaire (Equinix Fabric, Megaport, etc.)
+
+## 13.2 LOA (Letter of Authorization)
+
+- Requis pour la mise en service physique
+- Fourni par OVHcloud
+- À transmettre à l'opérateur du POP
+
+## 13.3 Clés de service
+
+- Utilisées uniquement pour Provider Connect
+- Transmises au partenaire pour activation
+- Une clé = une connexion virtuelle
+
+## 13.4 BGP
+
+- Obligatoire pour le routage dynamique
+- AS privés ou publics supportés
+- MD5 optionnel mais recommandé
+
+
+# 14. COMPOSANTS ODS UTILISÉS
+################################################################################
+
+- OdsTabs : NAV4 tabs
+- OdsInput : Formulaires
+- OdsSelect : vRack, partenaires
+- OdsDatagrid : Tableaux
+- OdsCard : Métriques
+- OdsBadge : Statuts, types
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsProgressBar : Utilisation bande passante
+
+
+# 15. FICHIERS ASSOCIÉS
+################################################################################
+
+Documentation : prompt_target.network.ovhcloud-connect.txt (ce fichier)
+Screenshots : prompt_target.network.ovhcloud-connect-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

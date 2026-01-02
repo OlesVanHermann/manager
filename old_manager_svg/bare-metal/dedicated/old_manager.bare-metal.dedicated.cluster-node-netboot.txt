@@ -1,0 +1,209 @@
+# Cahier des Charges : bare-metal/dedicated/cluster-node-netboot
+
+## 1. RESUME EXECUTIF
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.cluster-node-netboot.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated |
+| **Type** | Wizard (Configuration netboot) |
+| **Description** | Configuration du mode de démarrage (disque dur, rescue, network) |
+| **Users cibles** | Administrateurs serveurs dédiés |
+
+---
+
+## 2. ARCHITECTURE NAV
+
+### 2.1 Classification
+
+| Niveau | Valeur | Position |
+|--------|--------|----------|
+| NAV1 | bare-metal | Header OVH (Bare Metal Cloud) |
+| NAV2 | dedicated | Sous-header (Serveurs dédiés) |
+| NAV3 | - | Pas de groupement (wizard) |
+| NAV4 | netboot | Configuration netboot |
+
+### 2.2 Contexte
+
+Route : `app.dedicated-cluster.cluster.node.netboot`
+Titre retour : ← Configuration netboot
+
+---
+
+## 3. LAYOUT & STRUCTURE
+
+### 3.1 Stepper
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Configuration du mode de démarrage | Actif |
+| 2 | Confirmation | Inactif |
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 Info configuration actuelle
+
+| Élément | Contenu |
+|---------|---------|
+| Label | Configuration actuelle pour ns12345.ip-51-123-45.eu : |
+| Valeur | Disque dur |
+
+### 4.2 Options de boot (Radio cards)
+
+| Option | Description | Sélectionné |
+|--------|-------------|-------------|
+| Disque dur | Boot sur disque principal | Oui (default) |
+| Rescue | Mode diagnostic | Non |
+| Network | Boot réseau (PXE) | Non |
+
+### 4.3 Message info (conditionnel si Rescue)
+
+| Type | Contenu |
+|------|---------|
+| Info | Mode Rescue : démarrage sur un système live pour diagnostic matériel. |
+| Lien | Voir le guide de diagnostic matériel ↗ |
+
+### 4.4 Options conditionnelles (si Rescue)
+
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Kernel rescue | Select | Liste des kernels disponibles |
+| Méthode d'authentification | Radio cards | Mot de passe / Clé SSH / Les deux |
+| Email de notification | Input text | Optionnel |
+
+### 4.5 Boutons d'action
+
+| Bouton | Style | Label |
+|--------|-------|-------|
+| Primary | Bleu plein | Suivant |
+| Secondary | Outline | Annuler |
+
+---
+
+## 5. DONNEES
+
+### 5.1 Types de netboot
+
+```typescript
+type NetbootType = 'harddisk' | 'rescue' | 'network';
+
+interface NetbootConfig {
+  current: NetbootType;
+  selected: NetbootType;
+  rescueKernel?: string;
+  authMethod?: 'password' | 'sshKey' | 'both';
+  notificationEmail?: string;
+}
+```
+
+### 5.2 Kernels rescue disponibles
+
+```typescript
+interface RescueKernel {
+  id: string;
+  name: string;
+  arch: 'x86_64' | 'i386';
+}
+```
+
+---
+
+## 6. ACTIONS & INTERACTIONS
+
+| Action | Déclencheur | Comportement |
+|--------|-------------|--------------|
+| Changer mode boot | Clic sur radio card | Met à jour selected, affiche options si rescue |
+| Suivant | Bouton primary | Valide étape 1, passe à confirmation |
+| Annuler | Bouton outline | Retour à la page précédente |
+| Voir guide | Lien | Ouvre documentation externe |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Configuration netboot actuelle
+
+```
+GET /dedicated/server/{serverName}/boot/{bootId}
+GET /dedicated/server/{serverName}
+```
+
+**Réponse server :**
+```json
+{
+  "bootId": 1,
+  "bootType": "harddisk"
+}
+```
+
+### 7.2 Liste des boots disponibles
+
+```
+GET /dedicated/server/{serverName}/boot?bootType=rescue
+GET /dedicated/server/{serverName}/boot?bootType=harddisk
+GET /dedicated/server/{serverName}/boot?bootType=network
+```
+
+### 7.3 Détails d'un boot
+
+```
+GET /dedicated/server/{serverName}/boot/{bootId}
+```
+
+**Réponse :**
+```json
+{
+  "bootId": 123,
+  "bootType": "rescue",
+  "kernel": "rescue64-pro",
+  "description": "Rescue mode 64-bit"
+}
+```
+
+### 7.4 Modifier le netboot
+
+```
+PUT /dedicated/server/{serverName}
+{
+  "bootId": 123
+}
+```
+
+### 7.5 Configurer l'accès rescue
+
+```
+POST /dedicated/server/{serverName}/features/rescue
+{
+  "rescue": true,
+  "sshKey": "keyName",
+  "notifyEmail": "admin@example.com"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_netboot_title` | Configuration netboot |
+| `dedicated_server_netboot_current` | Configuration actuelle pour {serverName} : |
+| `dedicated_server_netboot_step1` | Configuration du mode de démarrage |
+| `dedicated_server_netboot_step2` | Confirmation |
+| `dedicated_server_netboot_harddisk` | Disque dur |
+| `dedicated_server_netboot_rescue` | Rescue |
+| `dedicated_server_netboot_network` | Network |
+| `dedicated_server_netboot_rescue_info` | Mode Rescue : démarrage sur un système live pour diagnostic matériel. |
+| `dedicated_server_netboot_rescue_guide` | Voir le guide de diagnostic matériel |
+| `dedicated_server_netboot_kernel` | Kernel rescue (si mode rescue) |
+| `dedicated_server_netboot_kernel_placeholder` | Sélectionner un kernel... |
+| `dedicated_server_netboot_auth` | Méthode d'authentification |
+| `dedicated_server_netboot_auth_password` | Mot de passe |
+| `dedicated_server_netboot_auth_ssh` | Clé SSH |
+| `dedicated_server_netboot_auth_both` | Les deux |
+| `dedicated_server_netboot_email` | Email de notification (optionnel) |
+| `common_next` | Suivant |
+| `common_cancel` | Annuler |

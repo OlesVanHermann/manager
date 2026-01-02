@@ -1,0 +1,111 @@
+# Cahier des Charges : bare-metal/dedicated/modal-arp-status
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.modal-arp-status.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated (IP) |
+| **Type** | Modal |
+| **Description** | Affichage du statut ARP et logs d'incident pour une IP bloquée par protection ARP |
+
+---
+
+## 2. DIMENSIONS
+
+| Élément | Valeur |
+|---------|--------|
+| Largeur modal | 600px |
+| Hauteur modal | 450px |
+| Position | Centré (x=420, y=200) |
+
+---
+
+## 3. HEADER MODAL
+
+| Élément | Valeur |
+|---------|--------|
+| Barre latérale | 4px bleu #0050D7 |
+| Titre | Statut ARP |
+| Bouton fermer | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Informations de statut
+
+| Champ | Valeur |
+|-------|--------|
+| Statut | Badge rouge "Bloqué" (#FEE2E2 / #DC2626) |
+| Bloqué depuis | 02/01/2026 11:22:08 |
+| Temps restant | 1h 30min |
+
+### 4.2 Section Logs
+
+| Élément | Valeur |
+|---------|--------|
+| Titre | Logs de l'incident |
+| Zone logs | 552 x 160px, fond gris #F3F4F6 |
+| Police logs | Monospace, 11px |
+
+### 4.3 Exemple de logs
+
+```
+[2026-01-02 11:22:08] ARP spoofing detected
+[2026-01-02 11:22:08] Source MAC: aa:bb:cc:dd:ee:ff
+[2026-01-02 11:22:09] Multiple ARP replies detected
+[2026-01-02 11:22:09] IP blocked by ARP protection
+[2026-01-02 11:22:09] Block duration: 4 hours
+```
+
+---
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Label |
+|--------|-------|-------|
+| Débloquer l'IP | Outline (#0050D7 border) | Débloquer l'IP |
+| Fermer | Primary (#0050D7 fill) | Fermer |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Récupérer statut ARP
+
+```
+GET /ip/{ip}/arp/{ipBlocked}
+```
+
+**Réponse :**
+```json
+{
+  "ipBlocked": "123.45.67.89",
+  "blockedSince": "2026-01-02T11:22:08+01:00",
+  "state": "blocked",
+  "time": 5400
+}
+```
+
+### 6.2 Débloquer une IP
+
+```
+DELETE /ip/{ip}/arp/{ipBlocked}
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_ip_arp_title` | Statut ARP |
+| `dedicated_ip_arp_status` | Statut |
+| `dedicated_ip_arp_blocked` | Bloqué |
+| `dedicated_ip_arp_blocked_since` | Bloqué depuis |
+| `dedicated_ip_arp_time_remaining` | Temps restant |
+| `dedicated_ip_arp_logs` | Logs de l'incident |
+| `dedicated_ip_arp_unblock` | Débloquer l'IP |
+| `common_close` | Fermer |

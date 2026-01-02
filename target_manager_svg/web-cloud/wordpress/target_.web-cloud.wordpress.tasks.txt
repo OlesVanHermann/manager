@@ -3,62 +3,79 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.wordpress.tasks.svg
 Route:   /web-cloud/wordpress/{serviceName}/tasks
-Version: v1 (2026-01-02)
+Version: v3 (2026-01-02) - Conformite NAV3+NAV4
 ================================================================================
 
 DONNEES DYNAMIQUES
 | Exemple SVG                   | Source API                                    |
 |-------------------------------|-----------------------------------------------|
-| {nicHandle}                   | Session user                                  |
-| mwp-abc123def456              | URL param serviceName                         |
-| #12345                        | GET /hosting/wordpress/{id}/task → id         |
-| Creation site                 | GET /hosting/wordpress/{id}/task → type       |
-| DONE                          | GET /hosting/wordpress/{id}/task → status     |
-| 02/01/2026 10:30              | GET /hosting/wordpress/{id}/task → date       |
+| ab12345-ovh                   | Session user nicHandle                        |
+| mon-blog.fr                   | GET /managedCMS/resource/{id}/website → fqdn  |
+| WordPress 6.4.2               | GET /managedCMS/resource/{id}/website → wpVer |
+| 1 en cours                    | Comptage tasks avec status=running            |
+| Mise a jour WordPress         | GET /managedCMS/.../task → function           |
+| EN COURS                      | GET /managedCMS/.../task → status             |
+| 02/01/2026 14:30              | GET /managedCMS/.../task → startDate          |
 
 ================================================================================
 
 # STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Web Cloud (Wordpress actif)
-3. LEFT PANEL
-   - Recherche
-   - Liste services
-4. RIGHT PANEL
-   - Header: serviceName
-   - NAV4: [Mes sites] [Taches] (Taches actif)
-   - Toolbar: Refresh + Search
-   - Table: Historique taches
+1. NAV1 - Header OVH (Web Cloud actif, y=0, h=50px, bg=#000E9C)
+2. NAV2 - Web Cloud (Wordpress actif, y=50, h=40px, bg=#FFFFFF)
+3. CONTENT AREA (y=105, gap 15px)
+   - LEFT PANEL (x=24, w=280px, h=765px)
+     - NAV3 Groupement [General] (y=0, h=44px, bg=#F9FAFB)
+     - Recherche (y=56)
+     - Compteur services (y=112)
+     - Liste sites WordPress (y=124)
+     - Bouton [+ Nouveau site]
+   - RIGHT PANEL (x=320, w=1096px, h=765px)
+     - Header: nom site + version + boutons externes
+     - NAV4: 6 tabs (Taches actif)
+     - Contenu: Header + Filtres + Table + Info
 
-# NAV4 TABS
-| Tab       | Description                    |
-|-----------|--------------------------------|
-| Mes sites | Liste des sites WordPress      |
-| Taches    | Historique operations (ACTIF)  |
+# NAV4 TABS (RIGHT PANEL)
+| # | Tab          | Width | Route         | Actif |
+|---|--------------|-------|---------------|-------|
+| 1 | General      | 65px  | /general      | -     |
+| 2 | Domaines     | 70px  | /domains      | -     |
+| 3 | Performance  | 95px  | /performance  | -     |
+| 4 | Extensions   | 80px  | /extensions   | -     |
+| 5 | Sauvegardes  | 95px  | /backups      | -     |
+| 6 | Taches       | 60px  | /tasks        | OUI   |
+
+# CONTENU TAB TACHES
+| Section           | Description                                |
+|-------------------|--------------------------------------------|
+| Header            | Titre + badge "N en cours" + controls      |
+| Auto-refresh      | Toggle ON/OFF + bouton Actualiser          |
+| Filtres           | Toutes / En cours / Terminees              |
+| Table             | Operation, Statut, Debut, Fin              |
+| Info banner       | "Actualisation auto toutes les 30s"        |
 
 # COLONNES TABLE
-| Colonne | Description                    |
-|---------|--------------------------------|
-| ID      | Identifiant tache              |
-| TYPE    | Creation, Import, Backup, SSL  |
-| FQDN    | Site concerne                  |
-| STATUT  | DONE, PENDING, ERROR           |
-| DATE    | Date/heure operation           |
+| Colonne   | Description                    |
+|-----------|--------------------------------|
+| OPERATION | Type de tache                  |
+| STATUT    | EN COURS, DONE, ERROR          |
+| DEBUT     | Date/heure de debut            |
+| FIN       | Date/heure de fin (ou -)       |
 
 # STATUTS TACHES
-| Statut  | Couleur | Description            |
-|---------|---------|------------------------|
-| DONE    | Vert    | Tache terminee         |
-| PENDING | Jaune   | En cours               |
-| ERROR   | Rouge   | Echec                  |
+| Statut    | Badge     | Couleur | Description     |
+|-----------|-----------|---------|-----------------|
+| EN COURS  | #FEF3C7   | Jaune   | En progression  |
+| DONE      | #DEF7EC   | Vert    | Terminee        |
+| ERROR     | #FEE2E2   | Rouge   | Echec           |
 
 # INTERACTIONS
-- Clic tab Mes sites → Retour liste sites
-- Clic refresh → Recharge liste taches
-- Recherche → Filtre taches
+- Clic tab NAV4 → Navigation vers tab correspondant
+- Toggle Auto-refresh → Active/desactive actualisation
+- Clic Actualiser → Recharge liste taches
+- Clic filtre → Filtre par statut
 
 # API ENDPOINTS
-GET /hosting/wordpress/{serviceName}/task - Liste taches
-GET /hosting/wordpress/{serviceName}/task/{id} - Details tache
+GET /managedCMS/resource/{id}/website/{wid}/task - Liste taches
+GET /managedCMS/resource/{id}/website/{wid}/task/{tid} - Details tache
 
 ================================================================================

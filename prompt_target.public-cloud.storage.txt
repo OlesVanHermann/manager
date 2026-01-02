@@ -1,0 +1,286 @@
+# ============================================================================
+# PROMPT TARGET - PUBLIC CLOUD > STORAGE
+# ============================================================================
+# NAV1: Public Cloud
+# NAV2: Storage
+# Version: 1.0
+# ============================================================================
+
+## 1. VUE D'ENSEMBLE
+
+### 1.1 Positionnement
+- **NAV1** : Public Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : Storage (Sous-header blanc, 40px) - Actif parmi [Projet, Compute, Storage, Databases, Containers, AI/ML, Network]
+- **NAV3** : Filtres dropdown dans sidecar (Region + Projet)
+- **NAV4** : Tabs contextuels dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion unifiée de tous les services de stockage : Block Storage, Object Storage, File Storage, Archive, Snapshots et Backups.
+
+### 1.3 URL Pattern
+```
+/public-cloud/storage                           → Dashboard (General ALL)
+/public-cloud/storage/block                     → Liste Block Storage
+/public-cloud/storage/object                    → Liste Object Storage
+/public-cloud/storage/file                      → Liste File Storage
+/public-cloud/storage/archive                   → Liste Archive
+/public-cloud/storage/snapshot                  → Liste tous Snapshots
+/public-cloud/storage/backup                    → Liste tous Backups
+/public-cloud/storage/block/{volumeId}          → Détail volume
+/public-cloud/storage/snapshot/{snapshotId}     → Détail snapshot
+```
+
+---
+
+## 2. STRUCTURE NAV3 (SIDECAR - LEFT PANEL 280px)
+
+### 2.1 Filtres (haut de sidecar)
+```
+┌───────────────────────┐
+│ NAV3 - Filtres        │
+│ [🌍 Region: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+│ [🗂️ Projet: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+├───────────────────────┤
+│ 🔍 Rechercher...      │
+├───────────────────────┤
+│  📊 General (ALL)     │  ← Toujours présent, retour dashboard
+│  ─────────────────    │
+│  (liste services)     │  ← Filtrée par NAV3
+└───────────────────────┘
+```
+
+### 2.2 Dropdown Region
+Source: `/api/regions.json`
+
+| Groupe | Options |
+|--------|---------|
+| (défaut) | 🌍 ALL |
+| EUROPE | EU-West (PAR.FR), EU-West (GRA.FR), EU-West (RBX.FR), EU-Central (SBG.FR), EU-Central (LIM.DE), EU-West (ERI.UK), EU-East (WAW.PL), EU-South (MIL.IT) |
+| EUROPE SOUVERAIN | EU-West (RBX.FR-SOV) 🛡️SNC, EU-Central (SBG.FR-SOV) 🛡️SNC, EU-West (GRA.FR-SOV) 🛡️SNC, EU-West (PAR.FR-SOV) 🛡️SNC, EU-South (MIL.IT-SOV) 🛡️G5 |
+| NORTH AMERICA | US-East (VIN.US), US-West (HIL.US), CA-East (BHS.CA), CA-East (TOR.CA) |
+| ASIA PACIFIC | AP-Southeast (SGP.SG), AP-Southeast (SYD.AU), AP-South (MUM.IN) |
+
+### 2.3 Dropdown Projet
+- **ALL** : Tous les projets (défaut)
+- Liste dynamique des projets de l'utilisateur
+
+### 2.4 Bouton Reset (×)
+- Visible uniquement si valeur ≠ ALL
+- Clic → Reset vers ALL
+- Position : à droite du dropdown
+
+### 2.5 Liste services (sidecar)
+Affiche tous les services Storage filtrés par NAV3 :
+- 📦 Volumes (Block Storage)
+- 🪣 Buckets (Object Storage)
+- 📁 Shares (File Storage)
+- 🗄️ Archives
+- 📸 Snapshots
+- 💾 Backups
+
+---
+
+## 3. STRUCTURE NAV4 (RIGHT PANEL - TABS)
+
+### 3.1 NAV4 - Vue General (ALL) sélectionné dans sidecar
+```
+[General] Block  Object  File  Archive  Snap  Bkp
+```
+
+| Tab | Description | Action |
+|-----|-------------|--------|
+| **General** | Dashboard récapitulatif | Vue par défaut |
+| **Block** | Liste Block Storage | [+ Créer] |
+| **Object** | Liste Object Storage | [+ Créer] |
+| **File** | Liste File Storage | [+ Créer] |
+| **Archive** | Liste Archive Storage | [+ Créer] |
+| **Snap** | Liste tous Snapshots | [+ Snapshot] |
+| **Bkp** | Liste tous Backups | [+ Backup] |
+
+### 3.2 NAV4 - Service sélectionné dans sidecar
+```
+[General]  IAM   KMS   Observabilité  Snap  Bkp
+```
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Informations du service, actions |
+| **IAM** | Permissions, rôles, utilisateurs |
+| **KMS** | Chiffrement, clés |
+| **Observabilité** | Métriques, logs, alertes |
+| **Snap** | Snapshots de ce service |
+| **Bkp** | Backups de ce service |
+
+---
+
+## 4. TYPES DE SERVICES STORAGE
+
+### 4.1 Block Storage (📦)
+- **Description** : Volumes attachables aux instances
+- **Types** : Classic, High-speed, High-speed-gen2
+- **Actions** : Attacher, Détacher, Redimensionner, Snapshot, Backup, Supprimer
+
+### 4.2 Object Storage (🪣)
+- **Description** : Stockage objet compatible S3
+- **Classes** : Standard, High Performance
+- **Actions** : Gérer accès, Politique, Versioning, Lifecycle, Supprimer
+
+### 4.3 File Storage (📁)
+- **Description** : Partages NFS/CIFS
+- **Actions** : Gérer ACL, Redimensionner, Snapshot, Supprimer
+
+### 4.4 Archive (🗄️)
+- **Description** : Stockage froid longue durée
+- **Actions** : Restaurer, Supprimer
+
+### 4.5 Snapshot (📸)
+- **Description** : Image instantanée d'un volume
+- **Actions** : Créer volume depuis snapshot, Supprimer
+
+### 4.6 Backup (💾)
+- **Description** : Sauvegarde planifiée
+- **Actions** : Restaurer, Créer volume, Supprimer
+
+---
+
+## 5. APIS & ENDPOINTS
+
+### 5.1 Block Storage
+```
+GET    /cloud/project/{projectId}/volume
+GET    /cloud/project/{projectId}/volume/{volumeId}
+POST   /cloud/project/{projectId}/volume
+PUT    /cloud/project/{projectId}/volume/{volumeId}
+DELETE /cloud/project/{projectId}/volume/{volumeId}
+POST   /cloud/project/{projectId}/volume/{volumeId}/attach
+POST   /cloud/project/{projectId}/volume/{volumeId}/detach
+POST   /cloud/project/{projectId}/volume/{volumeId}/snapshot
+```
+
+### 5.2 Object Storage
+```
+GET    /cloud/project/{projectId}/storage
+GET    /cloud/project/{projectId}/storage/container/{containerId}
+POST   /cloud/project/{projectId}/storage
+DELETE /cloud/project/{projectId}/storage/container/{containerId}
+```
+
+### 5.3 Snapshots
+```
+GET    /cloud/project/{projectId}/volume/snapshot
+GET    /cloud/project/{projectId}/volume/snapshot/{snapshotId}
+POST   /cloud/project/{projectId}/volume/snapshot
+DELETE /cloud/project/{projectId}/volume/snapshot/{snapshotId}
+```
+
+### 5.4 Backups
+```
+GET    /cloud/project/{projectId}/volume/backup
+POST   /cloud/project/{projectId}/volume/{volumeId}/backup
+DELETE /cloud/project/{projectId}/volume/backup/{backupId}
+POST   /cloud/project/{projectId}/volume/backup/{backupId}/restore
+```
+
+---
+
+## 6. COMPOSANTS UI
+
+### 6.1 Datagrid colonnes par type
+
+**Block Storage**
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du volume (lien) |
+| Projet | Nom du projet |
+| Région | Code région (GRA, SBG...) |
+| Type | Classic, High-speed |
+| Taille | En Go/To |
+| Instance | Instance attachée ou "-" |
+| Statut | in-use, available |
+| ⋮ | Menu actions |
+
+**Object Storage**
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du bucket |
+| Projet | Nom du projet |
+| Région | Code région |
+| Classe | Standard, High Perf |
+| Objets | Nombre d'objets |
+| Taille | Taille totale |
+| ⋮ | Menu actions |
+
+**Snapshots**
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du snapshot |
+| Volume source | Volume d'origine |
+| Projet | Nom du projet |
+| Région | Code région |
+| Taille | Taille snapshot |
+| Date | Date création |
+| ⋮ | Menu actions |
+
+### 6.2 Cards détail service
+
+**Card Informations**
+- Nom, ID, Projet, Région, Type, Taille, Statut, Date création
+
+**Card Instance attachée** (Block Storage)
+- Nom instance, lien vers instance, bouton Détacher
+
+**Card Actions**
+- Boutons contextuels selon type service
+
+### 6.3 Badges statut
+| Statut | Couleur | Classe |
+|--------|---------|--------|
+| in-use | Vert | badge-success |
+| available | Gris | badge-default |
+| creating | Jaune | badge-warning |
+| error | Rouge | badge-error |
+
+---
+
+## 7. COMPORTEMENTS
+
+### 7.1 Filtrage NAV3
+- Changement Region → Filtre liste sidecar + RIGHT PANEL
+- Changement Projet → Filtre liste sidecar + RIGHT PANEL
+- Les deux filtres sont combinés (AND)
+- Reset × → Retour à ALL pour ce filtre
+
+### 7.2 Navigation sidecar → RIGHT PANEL
+- Clic "General (ALL)" → NAV4 = [General] Block Object File Archive Snap Bkp
+- Clic service → NAV4 = [General] IAM KMS Observabilité Snap Bkp
+
+### 7.3 Persistance NAV4
+- Changement de service dans sidecar → NAV4 reset à General
+- Changement de filtre NAV3 → NAV4 conservé si "General (ALL)" sinon reset
+
+### 7.4 Création service
+- Depuis NAV4 General (ALL) : Clic sur tab Block/Object/File → Bouton [+ Créer]
+- Modal ou page de création selon complexité
+
+---
+
+## 8. ESTIMATIONS FICHIERS SVG
+
+| Écran | Fichier |
+|-------|---------|
+| Dashboard Storage | target_.public-cloud.storage.svg |
+| Liste Block | target_.public-cloud.storage.block.svg |
+| Liste Object | target_.public-cloud.storage.object.svg |
+| Liste File | target_.public-cloud.storage.file.svg |
+| Liste Archive | target_.public-cloud.storage.archive.svg |
+| Liste Snap | target_.public-cloud.storage.snap.svg |
+| Liste Backup | target_.public-cloud.storage.backup.svg |
+| Détail Volume | target_.public-cloud.storage.block.detail.svg |
+| Détail Volume - IAM | target_.public-cloud.storage.block.detail.iam.svg |
+| Détail Volume - Snap | target_.public-cloud.storage.block.detail.snap.svg |
+| Détail Snapshot | target_.public-cloud.storage.snap.detail.svg |
+| Modal Créer Volume | target_.public-cloud.storage.block.create.svg |
+| Modal Attacher | target_.public-cloud.storage.block.attach.svg |
+| Modal Supprimer | target_.public-cloud.storage.block.delete.svg |
+
+**Total estimé : ~25-30 fichiers SVG + TXT**

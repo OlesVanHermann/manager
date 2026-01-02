@@ -1,0 +1,179 @@
+# Cahier des Charges : bare-metal/dedicated/cluster-node-ftp-backup
+
+## 1. RESUME EXECUTIF
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.cluster-node-ftp-backup.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated |
+| **Type** | Page de détail (Backup Storage) |
+| **Description** | Gestion du stockage de sauvegarde FTP pour un noeud de cluster |
+| **Users cibles** | Administrateurs de serveurs dédiés en cluster |
+
+---
+
+## 2. ARCHITECTURE NAV
+
+### 2.1 Classification
+
+| Niveau | Valeur | Position |
+|--------|--------|----------|
+| NAV1 | bare-metal | Header OVH (Bare Metal Cloud) |
+| NAV2 | dedicated | Sous-header (Serveurs dédiés) |
+| NAV3 | - | Pas de groupement visible |
+| NAV4 | ftp-backup | Onglet Backup Storage |
+
+### 2.2 Contexte
+
+Route : `app.dedicated-cluster.cluster.node.ftp-backup`
+Breadcrumb : `dedicated-cluster-01 / node-01 / Backup Storage`
+
+---
+
+## 3. LAYOUT & STRUCTURE
+
+### 3.1 Dimensions
+
+| Zone | Position | Dimensions |
+|------|----------|------------|
+| Canvas | - | 1440 x 900 px |
+| LEFT PANEL | x=24, y=105 | 280 x 765 px |
+| RIGHT PANEL | x=320, y=105 | 1096 x 765 px |
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 Tuile de statut
+
+| Champ | Valeur |
+|-------|--------|
+| État du service | Badge vert "Actif" |
+| Espace utilisé | 125 Go / 500 Go |
+| Quota | 500 Go |
+| Serveur FTP | ftpback-rbx1-123.ovh.net |
+
+### 4.2 Boutons d'action
+
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Ajouter un accès | Primary (#0050D7) | Ouvre modal d'ajout |
+| Réinitialiser mot de passe | Outline | Ouvre modal password reset |
+| Désactiver | Outline | Ouvre modal de désactivation |
+
+### 4.3 Tableau des accès autorisés
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| IP / Bloc CIDR | ~200px | Adresse IP ou bloc CIDR |
+| Protocoles | ~180px | FTP, FTPS, NFS, CIFS |
+| Date d'ajout | ~180px | Format: JJ/MM/AAAA |
+| Actions | ~150px | Modifier, Supprimer |
+
+---
+
+## 5. DONNEES & COLONNES
+
+### 5.1 Structure des accès
+
+```typescript
+interface BackupFtpAccess {
+  ipBlock: string;        // "192.168.1.0/24"
+  protocols: string[];    // ["FTP", "FTPS", "NFS", "CIFS"]
+  createdAt: Date;        // Date d'ajout
+}
+```
+
+---
+
+## 6. ACTIONS & INTERACTIONS
+
+### 6.1 Actions disponibles
+
+| Action | Déclencheur | Comportement |
+|--------|-------------|--------------|
+| Ajouter un accès | Bouton primary | Modal avec formulaire IP + protocoles |
+| Modifier | Lien dans tableau | Modal de modification |
+| Supprimer | Lien rouge | Modal de confirmation |
+| Réinitialiser mot de passe | Bouton outline | Modal avec nouveau password |
+| Désactiver | Bouton outline | Modal de confirmation |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Récupération du backup FTP
+
+```
+GET /dedicated/server/{serverName}/features/backupFTP
+```
+
+**Réponse :**
+```json
+{
+  "ftpBackupName": "ftpback-rbx1-123.ovh.net",
+  "quota": 500,
+  "usage": 125,
+  "readOnlyDate": null
+}
+```
+
+### 7.2 Liste des accès
+
+```
+GET /dedicated/server/{serverName}/features/backupFTP/access
+```
+
+### 7.3 Ajouter un accès
+
+```
+POST /dedicated/server/{serverName}/features/backupFTP/access
+{
+  "ipBlockOrIp": "192.168.1.0/24",
+  "ftp": true,
+  "cifs": true,
+  "nfs": true
+}
+```
+
+### 7.4 Supprimer un accès
+
+```
+DELETE /dedicated/server/{serverName}/features/backupFTP/access/{ipBlock}
+```
+
+### 7.5 Réinitialiser mot de passe
+
+```
+POST /dedicated/server/{serverName}/features/backupFTP/password
+```
+
+### 7.6 Activer/Désactiver le backup
+
+```
+POST /dedicated/server/{serverName}/features/backupFTP/activate
+DELETE /dedicated/server/{serverName}/features/backupFTP
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_ftp_backup_title` | Backup Storage (FTP) |
+| `dedicated_server_ftp_backup_status` | État du service |
+| `dedicated_server_ftp_backup_status_active` | Actif |
+| `dedicated_server_ftp_backup_usage` | Espace utilisé |
+| `dedicated_server_ftp_backup_quota` | Quota |
+| `dedicated_server_ftp_backup_server` | Serveur FTP |
+| `dedicated_server_ftp_backup_add_access` | Ajouter un accès |
+| `dedicated_server_ftp_backup_reset_password` | Réinitialiser mot de passe |
+| `dedicated_server_ftp_backup_disable` | Désactiver |
+| `dedicated_server_ftp_backup_access_title` | Accès autorisés |
+| `dedicated_server_ftp_backup_ip_cidr` | IP / Bloc CIDR |
+| `dedicated_server_ftp_backup_protocols` | Protocoles |
+| `dedicated_server_ftp_backup_date_added` | Date d'ajout |
+| `dedicated_server_ftp_backup_modify` | Modifier |
+| `dedicated_server_ftp_backup_delete` | Supprimer |

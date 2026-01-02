@@ -1,0 +1,517 @@
+# ============================================================================
+# PROMPT TARGET - PUBLIC CLOUD > DATABASES
+# ============================================================================
+# NAV1: Public Cloud
+# NAV2: Databases
+# Version: 1.0
+# ============================================================================
+
+## 1. VUE D'ENSEMBLE
+
+### 1.1 Positionnement
+- **NAV1** : Public Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : Databases (Sous-header blanc, 40px) - Actif parmi [Projet, Compute, Storage, Databases, Containers, AI/ML, Network]
+- **NAV3** : Filtres dropdown dans sidecar (Region + Projet)
+- **NAV4** : Tabs contextuels dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion des bases de données managées : MySQL, PostgreSQL, MongoDB, Redis, Kafka, OpenSearch, Cassandra, M3db.
+
+### 1.3 URL Pattern
+```
+/public-cloud/databases                           → Dashboard (General ALL)
+/public-cloud/databases/mysql                     → Liste MySQL
+/public-cloud/databases/postgresql                → Liste PostgreSQL
+/public-cloud/databases/mongodb                   → Liste MongoDB
+/public-cloud/databases/redis                     → Liste Redis
+/public-cloud/databases/kafka                     → Liste Kafka
+/public-cloud/databases/opensearch                → Liste OpenSearch
+/public-cloud/databases/{serviceId}               → Détail service
+/public-cloud/databases/{serviceId}/users         → Utilisateurs
+/public-cloud/databases/{serviceId}/backups       → Backups
+```
+
+---
+
+## 2. STRUCTURE NAV3 (SIDECAR - LEFT PANEL 280px)
+
+### 2.1 Filtres (haut de sidecar)
+```
+┌───────────────────────┐
+│ NAV3 - Filtres        │
+│ [🌍 Region: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+│ [🗂️ Projet: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
+├───────────────────────┤
+│ 🔍 Rechercher...      │
+├───────────────────────┤
+│  📊 General (ALL)     │  ← Toujours présent, retour dashboard
+│  ─────────────────    │
+│  (liste databases)    │  ← Filtrée par NAV3
+└───────────────────────┘
+```
+
+### 2.2 Dropdown Region
+Source: `/api/regions.json` (mêmes régions que Compute/Storage)
+
+### 2.3 Dropdown Projet
+- **ALL** : Tous les projets (défaut)
+- Liste dynamique des projets de l'utilisateur
+
+### 2.4 Liste services (sidecar)
+Affiche toutes les bases de données filtrées par NAV3 avec icône par type :
+- 🐬 MySQL instances
+- 🐘 PostgreSQL instances
+- 🍃 MongoDB instances
+- 🔴 Redis instances
+- 📨 Kafka clusters
+- 🔍 OpenSearch instances
+
+---
+
+## 3. STRUCTURE NAV4 (RIGHT PANEL - TABS)
+
+### 3.1 NAV4 - Vue General (ALL) sélectionné dans sidecar
+```
+[General] MySQL  PostgreSQL  MongoDB  Redis  Kafka  OpenSearch
+```
+
+| Tab | Description | Action |
+|-----|-------------|--------|
+| **General** | Dashboard récapitulatif | Vue par défaut |
+| **MySQL** | Liste instances MySQL | [+ Créer] |
+| **PostgreSQL** | Liste instances PostgreSQL | [+ Créer] |
+| **MongoDB** | Liste instances MongoDB | [+ Créer] |
+| **Redis** | Liste instances Redis | [+ Créer] |
+| **Kafka** | Liste clusters Kafka | [+ Créer] |
+| **OpenSearch** | Liste instances OpenSearch | [+ Créer] |
+
+### 3.2 NAV4 - Database sélectionnée dans sidecar
+```
+[General]  Users  Backups  Logs  Metrics  Settings  Pools
+```
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Informations service, connection strings, actions |
+| **Users** | Utilisateurs/rôles de la base |
+| **Backups** | Sauvegardes automatiques et manuelles |
+| **Logs** | Logs du service |
+| **Metrics** | Métriques CPU/RAM/Connections/Queries |
+| **Settings** | Configuration avancée |
+| **Pools** | Connection pools (PostgreSQL) |
+
+Note: Certains tabs varient selon le type de database (ex: Pools uniquement PostgreSQL, Topics pour Kafka)
+
+---
+
+## 4. TYPES DE DATABASES
+
+### 4.1 MySQL (🐬)
+- **Versions** : 8.0, 5.7
+- **Plans** : Essential, Business, Enterprise
+- **Features** : Replicas, Backups automatiques, SSL
+- **Ports** : 3306 (default), 3307 (read replica)
+
+### 4.2 PostgreSQL (🐘)
+- **Versions** : 16, 15, 14, 13
+- **Plans** : Essential, Business, Enterprise
+- **Features** : Replicas, Connection Pooling (PgBouncer), Extensions
+- **Ports** : 5432 (default), 6432 (pooler)
+
+### 4.3 MongoDB (🍃)
+- **Versions** : 7.0, 6.0, 5.0
+- **Plans** : Essential, Business, Enterprise
+- **Features** : Replica Sets, Sharding (Enterprise)
+- **Ports** : 27017
+
+### 4.4 Redis (🔴)
+- **Versions** : 7.2, 7.0, 6.2
+- **Plans** : Essential, Business
+- **Features** : Cluster mode, Persistence, TLS
+- **Ports** : 6379
+
+### 4.5 Kafka (📨)
+- **Versions** : 3.6, 3.5, 3.4
+- **Plans** : Business, Enterprise
+- **Features** : Topics, Partitions, ACLs, Schema Registry
+- **Ports** : 9092 (plaintext), 9093 (TLS)
+
+### 4.6 OpenSearch (🔍)
+- **Versions** : 2.11, 2.9
+- **Plans** : Essential, Business, Enterprise
+- **Features** : Dashboards, Alerting, ISM Policies
+- **Ports** : 9200 (REST), 5601 (Dashboards)
+
+---
+
+## 5. CONTENU PAR TAB
+
+### 5.1 Dashboard (General ALL)
+```
+┌─────────────────────────────────────────────────────────┐
+│ Dashboard Databases                                     │
+│                                                         │
+│ ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
+│ │    12    │  │    10    │  │     2    │  │  ~350€   │ │
+│ │ Services │  │ 🟢 Active│  │ ⚠️ Maint.│  │ Coût/mois│ │
+│ └──────────┘  └──────────┘  └──────────┘  └──────────┘ │
+│                                                         │
+│ Par type                                                │
+│ ─────────────────────────────────────────               │
+│ • 🐘 PostgreSQL: 5 instances                           │
+│ • 🐬 MySQL: 3 instances                                │
+│ • 🔴 Redis: 2 instances                                │
+│ • 📨 Kafka: 1 cluster                                  │
+│ • 🔍 OpenSearch: 1 instance                            │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Liste par type (ex: PostgreSQL)
+```
+┌─────────────────────────────────────────────────────────┐
+│ PostgreSQL                              [+ Créer]       │
+│                                                         │
+│ Nom          │ Projet │ Région │ Version │ Plan   │ ⋮  │
+│ ─────────────┼────────┼────────┼─────────┼────────┼────│
+│ db-prod-main │ Prod   │ GRA    │ 16      │Business│ ⋮  │
+│ db-prod-read │ Prod   │ GRA    │ 16      │Business│ ⋮  │
+│ db-staging   │ Dev    │ SBG    │ 15      │Essential│⋮  │
+│ db-analytics │ Prod   │ GRA    │ 16      │Enterprise│⋮ │
+│ db-test      │ Dev    │ GRA    │ 14      │Essential│⋮  │
+│                                                         │
+│ Affichage 1-5 sur 5                          < 1 >     │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.3 Détail Database - General
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   db-prod-main                    🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ [General] Users  Backups  Logs  Metrics  Settings Pools│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ ┌─────────────────────────┐ ┌─────────────────────────┐ │
+│ │ Informations            │ │ Connection              │ │
+│ ├─────────────────────────┤ ├─────────────────────────┤ │
+│ │ Nom: db-prod-main       │ │ Host: xxx.db.ovh.net    │ │
+│ │ Type: PostgreSQL 16     │ │ Port: 5432              │ │
+│ │ Plan: Business          │ │ SSL: Required           │ │
+│ │ Projet: Prod            │ │                         │ │
+│ │ Région: GRA             │ │ [Copier URI]            │ │
+│ │ Nodes: 2 (1 primary,    │ └─────────────────────────┘ │
+│ │        1 replica)       │                             │
+│ │ Storage: 100 Go         │ ┌─────────────────────────┐ │
+│ │ Créé: 15/06/2024        │ │ Actions                 │ │
+│ └─────────────────────────┘ ├─────────────────────────┤ │
+│                             │ [🔄 Restart]            │ │
+│ Endpoint primaire:          │ [📈 Upgrade]            │ │
+│ postgresql://user@host/db   │ [💾 Backup now]         │ │
+│                             │ [🗑️ Supprimer]          │ │
+│                             └─────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.4 Détail Database - Users
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   db-prod-main                    🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ General  [Users]  Backups  Logs  Metrics  Settings Pools│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Utilisateurs                            [+ Créer user] │
+│                                                         │
+│ Username     │ Rôle        │ Bases       │ Créé     │ ⋮│
+│ ─────────────┼─────────────┼─────────────┼──────────┼──│
+│ admin        │ superuser   │ *           │ 15/06/24 │ ⋮│
+│ app_user     │ readwrite   │ app_db      │ 20/06/24 │ ⋮│
+│ readonly     │ read        │ app_db      │ 01/07/24 │ ⋮│
+│ backup_user  │ backup      │ *           │ 15/06/24 │ ⋮│
+│                                                         │
+│ Actions: Reset password, Modifier permissions, Supprimer│
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.5 Détail Database - Backups
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   db-prod-main                    🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ General  Users  [Backups]  Logs  Metrics  Settings Pools│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Configuration backup                                    │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Rétention: 7 jours │ Fréquence: Quotidien 02:00 UTC│ │
+│ │ Point-in-time recovery: Activé (dernières 24h)     │ │
+│ │                                    [Modifier]      │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                         │
+│ Backups disponibles                    [+ Backup now]  │
+│                                                         │
+│ Date              │ Type      │ Taille │ Statut    │ ⋮ │
+│ ──────────────────┼───────────┼────────┼───────────┼───│
+│ 02/01/2026 02:00  │ Auto      │ 2.3 Go │ 🟢 Ready  │ ⋮ │
+│ 01/01/2026 02:00  │ Auto      │ 2.2 Go │ 🟢 Ready  │ ⋮ │
+│ 31/12/2025 14:30  │ Manuel    │ 2.2 Go │ 🟢 Ready  │ ⋮ │
+│ 31/12/2025 02:00  │ Auto      │ 2.1 Go │ 🟢 Ready  │ ⋮ │
+│                                                         │
+│ Actions: Restaurer, Télécharger, Supprimer (manuel)    │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.6 Détail Database - Metrics
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   db-prod-main                    🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ General  Users  Backups  Logs  [Metrics]  Settings Pools│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Période: [Dernière heure ▼]                            │
+│                                                         │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ CPU Usage                           Avg: 25%        │ │
+│ │ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄               │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Memory Usage                        Avg: 68%        │ │
+│ │ ████████████████████████████████████████████░░░░░░ │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Active Connections                  Current: 45     │ │
+│ │ ███████████░░░░░░░░░░░░░░░░░░░░░░ 45/200           │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Queries/sec                         Avg: 1,234      │ │
+│ │ ▄█▄▄█▄▄▄█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄                   │ │
+│ └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.7 Détail Database - Settings
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   db-prod-main                    🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ General  Users  Backups  Logs  Metrics  [Settings] Pools│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Configuration PostgreSQL                                │
+│                                                         │
+│ Paramètre              │ Valeur     │ Défaut   │ ⋮     │
+│ ───────────────────────┼────────────┼──────────┼───────│
+│ max_connections        │ 200        │ 100      │ ⋮     │
+│ shared_buffers         │ 256MB      │ 128MB    │ ⋮     │
+│ work_mem               │ 16MB       │ 4MB      │ ⋮     │
+│ maintenance_work_mem   │ 512MB      │ 64MB     │ ⋮     │
+│ effective_cache_size   │ 1GB        │ 512MB    │ ⋮     │
+│ log_min_duration_stmt  │ 1000ms     │ -1       │ ⋮     │
+│                                                         │
+│ ⚠️ Certains changements nécessitent un redémarrage     │
+│                                                         │
+│ [Réinitialiser défauts]            [Appliquer]         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.8 Détail Database - Pools (PostgreSQL)
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Retour   db-prod-main                    🟢 RUNNING  │
+├─────────────────────────────────────────────────────────┤
+│ General  Users  Backups  Logs  Metrics  Settings [Pools]│
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│ Connection Pooling (PgBouncer)         [+ Créer pool]  │
+│                                                         │
+│ Pool           │ Database │ Mode       │ Size │ Active│⋮│
+│ ───────────────┼──────────┼────────────┼──────┼───────┼─│
+│ pool-default   │ app_db   │ transaction│ 20   │ 12    │⋮│
+│ pool-readonly  │ app_db   │ session    │ 10   │ 5     │⋮│
+│                                                         │
+│ Endpoint pooler: postgresql://user@host:6432/pool      │
+│                                                         │
+│ Modes disponibles:                                      │
+│ • session: 1 connection = 1 session client             │
+│ • transaction: connection partagée entre transactions  │
+│ • statement: connection partagée entre statements      │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Services Database
+```
+GET    /cloud/project/{projectId}/database/service
+GET    /cloud/project/{projectId}/database/service/{serviceId}
+POST   /cloud/project/{projectId}/database/service
+PUT    /cloud/project/{projectId}/database/service/{serviceId}
+DELETE /cloud/project/{projectId}/database/service/{serviceId}
+POST   /cloud/project/{projectId}/database/service/{serviceId}/restart
+```
+
+### 6.2 Users
+```
+GET    /cloud/project/{projectId}/database/service/{serviceId}/user
+GET    /cloud/project/{projectId}/database/service/{serviceId}/user/{userId}
+POST   /cloud/project/{projectId}/database/service/{serviceId}/user
+DELETE /cloud/project/{projectId}/database/service/{serviceId}/user/{userId}
+POST   /cloud/project/{projectId}/database/service/{serviceId}/user/{userId}/credentials/reset
+```
+
+### 6.3 Backups
+```
+GET    /cloud/project/{projectId}/database/service/{serviceId}/backup
+POST   /cloud/project/{projectId}/database/service/{serviceId}/backup
+DELETE /cloud/project/{projectId}/database/service/{serviceId}/backup/{backupId}
+POST   /cloud/project/{projectId}/database/service/{serviceId}/backup/{backupId}/restore
+```
+
+### 6.4 Logs & Metrics
+```
+GET    /cloud/project/{projectId}/database/service/{serviceId}/log
+GET    /cloud/project/{projectId}/database/service/{serviceId}/metric
+```
+
+### 6.5 Settings
+```
+GET    /cloud/project/{projectId}/database/service/{serviceId}/advancedConfiguration
+PUT    /cloud/project/{projectId}/database/service/{serviceId}/advancedConfiguration
+```
+
+### 6.6 Connection Pools (PostgreSQL)
+```
+GET    /cloud/project/{projectId}/database/service/{serviceId}/connectionPool
+POST   /cloud/project/{projectId}/database/service/{serviceId}/connectionPool
+DELETE /cloud/project/{projectId}/database/service/{serviceId}/connectionPool/{poolId}
+```
+
+---
+
+## 7. COMPOSANTS UI
+
+### 7.1 Datagrid colonnes Databases
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du service (lien) |
+| Projet | Nom du projet |
+| Région | Code région (GRA, SBG...) |
+| Version | Version du moteur |
+| Plan | Essential, Business, Enterprise |
+| Statut | Badge (RUNNING, MAINTENANCE...) |
+| ⋮ | Menu actions |
+
+### 7.2 Badges statut Database
+| Statut | Couleur | Icône |
+|--------|---------|-------|
+| RUNNING | Vert | 🟢 |
+| MAINTENANCE | Jaune | ⚠️ |
+| CREATING | Jaune | 🟡 |
+| UPDATING | Jaune | 🟡 |
+| ERROR | Rouge | 🔴 |
+| STOPPED | Gris | ⚪ |
+
+### 7.3 Connection String Card
+```
+┌─────────────────────────────────────────────────────┐
+│ Connection                                          │
+├─────────────────────────────────────────────────────┤
+│ Host: db-xxx.db.ovh.net                            │
+│ Port: 5432                                          │
+│ SSL: Required ✓                                     │
+│                                                     │
+│ URI:                                                │
+│ postgresql://user:***@host:5432/defaultdb?sslmode=require │
+│                                     [📋 Copier]    │
+└─────────────────────────────────────────────────────┘
+```
+
+### 7.4 Icônes par type
+| Type | Icône | Couleur |
+|------|-------|---------|
+| MySQL | 🐬 | #4479A1 |
+| PostgreSQL | 🐘 | #336791 |
+| MongoDB | 🍃 | #47A248 |
+| Redis | 🔴 | #DC382D |
+| Kafka | 📨 | #231F20 |
+| OpenSearch | 🔍 | #005EB8 |
+
+---
+
+## 8. COMPORTEMENTS
+
+### 8.1 Filtrage NAV3
+- Changement Region → Filtre liste databases + dashboard
+- Changement Projet → Filtre liste databases + dashboard
+- Combinaison AND des deux filtres
+
+### 8.2 Navigation sidecar → RIGHT PANEL
+- Clic "General (ALL)" → NAV4 = [General] MySQL PostgreSQL MongoDB Redis Kafka OpenSearch
+- Clic database → NAV4 = [General] Users Backups Logs Metrics Settings [Pools]
+
+### 8.3 Tabs conditionnels
+- **Pools** : Uniquement pour PostgreSQL
+- **Topics** : Uniquement pour Kafka (remplace Users)
+- **Indexes** : Uniquement pour OpenSearch
+
+### 8.4 Actions sensibles
+- Restart : Confirmation simple
+- Upgrade : Sélection version + confirmation
+- Delete : Saisie du nom pour confirmer
+
+---
+
+## 9. MODALS
+
+### 9.1 Modal Créer Database
+Champs :
+- Projet (dropdown)
+- Région (dropdown)
+- Nom (text)
+- Type (MySQL, PostgreSQL, MongoDB, Redis, Kafka, OpenSearch)
+- Version (dropdown selon type)
+- Plan (Essential, Business, Enterprise)
+- Nodes (nombre selon plan)
+- Storage (slider, selon plan)
+- Network (public, private vRack)
+
+### 9.2 Modal Créer User
+- Username
+- Password (généré ou custom)
+- Rôle (superuser, readwrite, read, backup)
+- Bases autorisées (multi-select)
+
+### 9.3 Modal Backup Restore
+- Backup source (dropdown)
+- Options : nouveau service ou écraser existant
+- Avertissement : données actuelles écrasées
+
+---
+
+## 10. ESTIMATIONS FICHIERS SVG
+
+| Écran | Fichier |
+|-------|---------|
+| Dashboard Databases | target_.public-cloud.databases.svg |
+| Liste MySQL | target_.public-cloud.databases.mysql.svg |
+| Liste PostgreSQL | target_.public-cloud.databases.postgresql.svg |
+| Liste MongoDB | target_.public-cloud.databases.mongodb.svg |
+| Liste Redis | target_.public-cloud.databases.redis.svg |
+| Liste Kafka | target_.public-cloud.databases.kafka.svg |
+| Liste OpenSearch | target_.public-cloud.databases.opensearch.svg |
+| Détail Database | target_.public-cloud.databases.detail.svg |
+| Database - Users | target_.public-cloud.databases.detail.users.svg |
+| Database - Backups | target_.public-cloud.databases.detail.backups.svg |
+| Database - Logs | target_.public-cloud.databases.detail.logs.svg |
+| Database - Metrics | target_.public-cloud.databases.detail.metrics.svg |
+| Database - Settings | target_.public-cloud.databases.detail.settings.svg |
+| Database - Pools | target_.public-cloud.databases.detail.pools.svg |
+| Modal Créer | target_.public-cloud.databases.create.svg |
+| Modal User | target_.public-cloud.databases.user.create.svg |
+| Modal Restore | target_.public-cloud.databases.backup.restore.svg |
+| Modal Delete | target_.public-cloud.databases.delete.svg |
+
+**Total estimé : ~20-25 fichiers SVG + TXT**

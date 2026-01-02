@@ -1,0 +1,112 @@
+# Cahier des Charges : bare-metal/other/cda-page-edit-user-permissions
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.cda.page-edit-user-permissions.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | Cloud Disk Array (CDA) |
+| **Type** | Page d'édition |
+| **Description** | Formulaire de modification des permissions d'un utilisateur sur les pools |
+
+---
+
+## 2. ARCHITECTURE NAV
+
+| Niveau | Valeur | Commentaire |
+|--------|--------|-------------|
+| NAV1 | bare-metal | Univers Bare Metal Cloud |
+| NAV2 | Cloud Disk Array | Produit CDA |
+| LEFT PANEL | Liste clusters | Service sélectionné |
+| RIGHT PANEL | Éditeur permissions | Checkboxes par pool |
+
+---
+
+## 3. LAYOUT & STRUCTURE
+
+| Zone | Dimensions |
+|------|------------|
+| Canvas | 1440 x 900 px |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096px |
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 Navigation
+
+| Élément | Valeur |
+|---------|--------|
+| Lien retour | ← Retour aux permissions |
+| Titre | Modifier les permissions |
+
+### 4.2 Informations utilisateur
+
+| Label | Valeur |
+|-------|--------|
+| Utilisateur | admin-backup |
+
+### 4.3 Permissions par pool
+
+Pour chaque pool, une section avec checkboxes :
+
+| Permission | Description |
+|------------|-------------|
+| Lecture | Droit de lecture (r) |
+| Écriture | Droit d'écriture (w) |
+| Exécution | Droit d'exécution (x) |
+| Class Read | Lecture des classes |
+| Class Write | Écriture des classes |
+
+### 4.4 Pools exemple
+
+| Pool | Lecture | Écriture | Exécution | Class Read | Class Write |
+|------|---------|----------|-----------|------------|-------------|
+| data-pool-1 | ✓ | ✓ | ○ | ✓ | ○ |
+| backup-pool | ✓ | ✓ | ✓ | ✓ | ✓ |
+| metadata-pool | ✓ | ○ | ○ | ○ | ○ |
+
+### 4.5 Bouton d'action
+
+| Bouton | Style |
+|--------|-------|
+| Modifier | Primary |
+
+---
+
+## 5. APIS & ENDPOINTS
+
+### 5.1 Modifier les permissions utilisateur
+
+```
+PUT /dedicated/ceph/{serviceName}/user/{userName}/pool
+{
+  "poolName": "data-pool-1",
+  "permissions": ["read", "write", "classRead"]
+}
+```
+
+### 5.2 Récupérer les permissions actuelles
+
+```
+GET /dedicated/ceph/{serviceName}/user/{userName}/pool
+```
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cda_edit_permissions_title` | Modifier les permissions |
+| `cda_edit_permissions_back` | Retour aux permissions |
+| `cda_edit_permissions_user` | Utilisateur |
+| `cda_edit_permissions_select` | Sélectionnez les permissions |
+| `cda_permission_read` | Lecture |
+| `cda_permission_write` | Écriture |
+| `cda_permission_execute` | Exécution |
+| `cda_permission_class_read` | Class Read |
+| `cda_permission_class_write` | Class Write |
+| `common_edit` | Modifier |

@@ -2,64 +2,72 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.wordpress.general.svg
-Route:   /web-cloud/wordpress/{serviceName}
-Version: v1 (2026-01-02)
+Route:   /web-cloud/wordpress/{serviceName}/general
+Version: v3 (2026-01-02) - Conformite NAV3+NAV4
 ================================================================================
 
 DONNEES DYNAMIQUES
 | Exemple SVG                   | Source API                                    |
 |-------------------------------|-----------------------------------------------|
-| {nicHandle}                   | Session user                                  |
-| mwp-abc123def456              | URL param serviceName                         |
-| 3 / 5 sites                   | GET /hosting/wordpress/{id} → siteCount/max   |
-| www.monsite-wordpress.com     | GET /hosting/wordpress/{id}/website → fqdn    |
-| READY                         | GET /hosting/wordpress/{id}/website → status  |
+| ab12345-ovh                   | Session user nicHandle                        |
+| mon-blog.fr                   | GET /managedCMS/resource/{id}/website → fqdn  |
+| WordPress 6.4.2               | GET /managedCMS/resource/{id}/website → wpVer |
+| PHP 8.2                       | GET /managedCMS/resource/{id}/website → phpVer|
+| Pro                           | GET /managedCMS/resource/{id} → offer         |
+| rbx1                          | GET /managedCMS/resource/{id} → datacenter    |
+| Actif                         | GET /managedCMS/resource/{id}/website → state |
 
 ================================================================================
 
 # STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Web Cloud (Wordpress actif)
-3. LEFT PANEL
-   - Recherche
-   - Liste services
-4. RIGHT PANEL
-   - Header: serviceName
-   - NAV4: [Mes sites] [Taches]
-   - Description
-   - Actions: Creer, Importer, Gerer
-   - Table: Liste sites
+1. NAV1 - Header OVH (Web Cloud actif, y=0, h=50px, bg=#000E9C)
+2. NAV2 - Web Cloud (Wordpress actif, y=50, h=40px, bg=#FFFFFF)
+3. CONTENT AREA (y=105, gap 15px)
+   - LEFT PANEL (x=24, w=280px, h=765px)
+     - NAV3 Groupement [General] (y=0, h=44px, bg=#F9FAFB)
+     - Recherche (y=56)
+     - Compteur services (y=112)
+     - Liste sites WordPress (y=124)
+     - Bouton [+ Nouveau site]
+   - RIGHT PANEL (x=320, w=1096px, h=765px)
+     - Header: nom site + version + boutons externes
+     - NAV4: 6 tabs (General actif)
+     - Contenu: Quick Actions + Info WordPress + Info Technique + Zone Danger
 
-# NAV4 TABS
-| Tab       | Description                    |
-|-----------|--------------------------------|
-| Mes sites | Liste des sites WordPress      |
-| Taches    | Historique operations          |
+# NAV4 TABS (RIGHT PANEL)
+| # | Tab          | Width | Route         | Actif |
+|---|--------------|-------|---------------|-------|
+| 1 | General      | 65px  | /general      | OUI   |
+| 2 | Domaines     | 70px  | /domains      | -     |
+| 3 | Performance  | 95px  | /performance  | -     |
+| 4 | Extensions   | 80px  | /extensions   | -     |
+| 5 | Sauvegardes  | 95px  | /backups      | -     |
+| 6 | Taches       | 60px  | /tasks        | -     |
 
-# COLONNES TABLE
-| Colonne | Description                    |
-|---------|--------------------------------|
-| FQDN    | Nom de domaine du site         |
-| STATUT  | READY, ERROR, CREATING         |
-| ACTIONS | Menu contextuel                |
-
-# ACTIONS BOUTONS
-| Bouton        | Action                       |
-|---------------|------------------------------|
-| + Creer       | Modal creation site          |
-| Importer      | Modal import site existant   |
-| Gerer mes sites | Lien externe gestionnaire  |
+# CONTENU TAB GENERAL
+| Section              | Description                              |
+|----------------------|------------------------------------------|
+| ACTIONS RAPIDES      | 4 boutons: Admin WP, Visiter, Cache, MDP |
+| INFO WORDPRESS       | Etat, Version WP/PHP, URLs, Admin        |
+| INFO TECHNIQUE       | Offre, Datacenter, SSL, CDN, MAJ auto    |
+| ZONE DANGER          | Bouton supprimer site                    |
 
 # INTERACTIONS
-- Clic tab → Change onglet actif
-- Clic Creer → Modal modal.create
-- Clic Importer → Modal modal.import
-- Clic menu actions → Dropdown (SSL, CDN, Backup, Delete)
+- Clic tab NAV4 → Navigation vers tab correspondant
+- Clic Acceder admin → Lien externe /wp-admin
+- Clic Visiter site → Lien externe URL site
+- Clic Vider cache → POST /managedCMS/resource/{id}/flushCache
+- Clic Reset mot de passe → POST /managedCMS/resource/{id}/resetAdminPassword
+- Clic Supprimer → Modal DeleteWebsite
 
 # API ENDPOINTS
-GET /hosting/wordpress/{serviceName} - Info service
-GET /hosting/wordpress/{serviceName}/website - Liste sites
-POST /hosting/wordpress/{serviceName}/website - Creer site
-DELETE /hosting/wordpress/{serviceName}/website/{id} - Supprimer
+GET /managedCMS/resource - Liste resources
+GET /managedCMS/resource/{id} - Details resource
+GET /managedCMS/resource/{id}/website - Liste websites
+GET /managedCMS/resource/{id}/website/{wid} - Details website
+POST /managedCMS/resource/{id}/flushCache - Vider cache
+POST /managedCMS/resource/{id}/resetAdminPassword - Reset MDP
+POST /managedCMS/resource/{id}/update - MAJ WordPress
+DELETE /managedCMS/resource/{id}/website/{wid} - Supprimer
 
 ================================================================================

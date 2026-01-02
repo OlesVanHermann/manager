@@ -1,0 +1,191 @@
+# Cahier des Charges : bare-metal/dedicated/cluster-node-tasks
+
+## 1. RESUME EXECUTIF
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.dedicated.cluster-node-tasks.svg |
+| **NAV1** | bare-metal |
+| **NAV2** | dedicated |
+| **Type** | Page liste (Tâches en cours) |
+| **Description** | Liste des tâches planifiées et en cours sur un noeud de cluster |
+| **Users cibles** | Administrateurs serveurs dédiés |
+
+---
+
+## 2. ARCHITECTURE NAV
+
+### 2.1 Classification
+
+| Niveau | Valeur | Position |
+|--------|--------|----------|
+| NAV1 | bare-metal | Header OVH (Bare Metal Cloud) |
+| NAV2 | dedicated | Sous-header (Serveurs dédiés) |
+| NAV3 | - | Pas de groupement visible |
+| NAV4 | tasks | Onglet Tâches |
+
+### 2.2 Contexte
+
+Route : `app.dedicated-cluster.cluster.node.tasks`
+Breadcrumb : `dedicated-cluster-01 / node-01 / Tâches`
+
+---
+
+## 3. LAYOUT & STRUCTURE
+
+### 3.1 Dimensions
+
+| Zone | Position | Dimensions |
+|------|----------|------------|
+| Canvas | - | 1440 x 900 px |
+| LEFT PANEL | x=24, y=105 | 280 x 765 px |
+| RIGHT PANEL | x=320, y=105 | 1096 x 765 px |
+
+---
+
+## 4. COMPOSANTS UI
+
+### 4.1 Barre d'outils
+
+| Élément | Type | Contenu |
+|---------|------|---------|
+| Filtre statut | Select | Tous les statuts ▼ |
+| Actualiser | Bouton outline | ↻ Actualiser |
+
+### 4.2 Tableau (Datagrid)
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Dernière action | ~180px | Date/heure format long |
+| Fonction | ~200px | Nom de la tâche (function) |
+| Commentaire | ~280px | Description de la tâche |
+| Statut | ~100px | Badge coloré |
+
+### 4.3 Badges de statut
+
+| Statut | Couleur fond | Couleur texte |
+|--------|--------------|---------------|
+| En cours | #DBEAFE (bleu clair) | #1E40AF |
+| Terminé | #DEF7EC (vert clair) | #059669 |
+| En attente | #FEF3C7 (orange clair) | #D97706 |
+
+### 4.4 Pagination
+
+| Élément | Valeur |
+|---------|--------|
+| Label | 1 - 5 sur 23 tâches |
+| Boutons | ‹ 1 2 › |
+
+---
+
+## 5. DONNEES & COLONNES
+
+### 5.1 Structure tâche
+
+```typescript
+interface ServerTask {
+  taskId: number;
+  function: string;          // "reinstallServer", "changeNetboot", etc.
+  status: TaskStatus;
+  comment?: string;
+  lastUpdate: Date;
+  doneDate?: Date;
+  startDate?: Date;
+}
+
+type TaskStatus = 'todo' | 'doing' | 'done' | 'cancelled' | 'error';
+```
+
+### 5.2 Fonctions courantes
+
+| Fonction | Description |
+|----------|-------------|
+| reinstallServer | Installation/réinstallation OS |
+| changeNetboot | Changement mode boot |
+| hardReboot | Redémarrage forcé |
+| addBackupFtp | Activation backup FTP |
+| updateBandwidth | Modification bande passante |
+
+---
+
+## 6. ACTIONS & INTERACTIONS
+
+| Action | Déclencheur | Comportement |
+|--------|-------------|--------------|
+| Filtrer par statut | Select | Filtre le tableau |
+| Actualiser | Bouton | Recharge la liste des tâches |
+| Pagination | Clic page | Navigue entre les pages |
+| Tri | Clic en-tête | Tri par colonne |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Liste des tâches
+
+```
+GET /dedicated/server/{serverName}/task
+```
+
+**Paramètres optionnels :**
+```
+?status=doing    # Filtrer par statut
+```
+
+**Réponse :**
+```json
+[12345, 12346, 12347]  // IDs des tâches
+```
+
+### 7.2 Détails d'une tâche
+
+```
+GET /dedicated/server/{serverName}/task/{taskId}
+```
+
+**Réponse :**
+```json
+{
+  "taskId": 12345,
+  "function": "reinstallServer",
+  "status": "doing",
+  "comment": "Installation en cours...",
+  "lastUpdate": "2026-01-02T10:15:32+01:00",
+  "startDate": "2026-01-02T10:10:00+01:00",
+  "doneDate": null
+}
+```
+
+### 7.3 Annuler une tâche (si possible)
+
+```
+POST /dedicated/server/{serverName}/task/{taskId}/cancel
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `dedicated_server_tasks_title` | Tâches en cours |
+| `dedicated_server_tasks_filter_all` | Tous les statuts |
+| `dedicated_server_tasks_filter_doing` | En cours |
+| `dedicated_server_tasks_filter_done` | Terminé |
+| `dedicated_server_tasks_filter_todo` | En attente |
+| `dedicated_server_tasks_refresh` | Actualiser |
+| `dedicated_server_tasks_last_action` | Dernière action |
+| `dedicated_server_tasks_function` | Fonction |
+| `dedicated_server_tasks_comment` | Commentaire |
+| `dedicated_server_tasks_status` | Statut |
+| `dedicated_server_tasks_status_doing` | En cours |
+| `dedicated_server_tasks_status_done` | Terminé |
+| `dedicated_server_tasks_status_todo` | En attente |
+| `dedicated_server_tasks_status_cancelled` | Annulé |
+| `dedicated_server_tasks_status_error` | Erreur |
+| `dedicated_server_tasks_pagination` | {start} - {end} sur {total} tâches |
+| `dedicated_server_task_reinstall` | reinstallServer |
+| `dedicated_server_task_netboot` | changeNetboot |
+| `dedicated_server_task_reboot` | hardReboot |
+| `dedicated_server_task_backup` | addBackupFtp |
+| `dedicated_server_task_bandwidth` | updateBandwidth |

@@ -1,0 +1,183 @@
+# PROMPT TARGET: Bare Metal Cloud > NAS-HA
+# NAV1: bare-metal | NAV2: nasha
+
+================================================================================
+## 1. VUE D'ENSEMBLE
+================================================================================
+
+- **Univers (NAV1)**: Bare Metal Cloud
+- **Produit (NAV2)**: NAS-HA
+- **Description**: Stockage NAS haute disponibilité (ZFS)
+- **Complexité**: Moyenne (5 tabs service, gestion partitions)
+
+================================================================================
+## 2. STRUCTURE DE NAVIGATION
+================================================================================
+
+### NAV1 (Header Univers)
+```
+[Bare Metal Cloud ▼] [Hosted Private Cloud] [Public Cloud] [Web Cloud]
+```
+
+### NAV2 (Sous-header Produits)
+```
+[General] [Dedicated Server] [VPS] [NAS-HA•] [NetApp] [Housing] [IP] [vRack] [...]
+```
+
+### LEFT PANEL (280px)
+```
+┌─────────────────────────┐
+│ NAV3: Région            │
+│ ┌─────────────────────┐ │
+│ │ 🌍 ALL Regions    ▼ │ │
+│ └─────────────────────┘ │
+├─────────────────────────┤
+│ 🔍 Rechercher...        │
+├─────────────────────────┤
+│ ● All (12)              │  ← Vue résumé
+│ ○ zpool-123456-1        │  ← Vue service
+│   3 TB | GRA            │
+│ ○ zpool-789012-2        │
+│   10 TB | RBX           │
+└─────────────────────────┘
+```
+
+### NAV4 - Vue "All"
+```
+[General•]
+```
+
+### NAV4 - Vue Service
+```
+[General] [Partitions] [Snapshots] [Accès] [Tâches]
+```
+
+================================================================================
+## 3. NAV4 TABS - VUE "ALL"
+================================================================================
+
+### Tab: General (vue résumé)
+| Bloc | Contenu |
+|------|---------|
+| KPIs | Total NAS, Capacité totale, Utilisé, Disponible |
+| Répartition DC | Graphique par datacenter |
+| Utilisation | Jauge globale % utilisé |
+| Partitions | Nombre total de partitions |
+
+================================================================================
+## 4. NAV4 TABS - VUE SERVICE
+================================================================================
+
+### Tab: General
+| Carte | Champs |
+|-------|--------|
+| INFORMATIONS | Nom, Datacenter, IP d'accès |
+| CAPACITÉ | Total, Utilisé, Disponible, % |
+| OPTIONS ZFS | Compression, Déduplication |
+| CONTRAT | Date création, Renouvellement, Prix |
+
+### Tab: Partitions
+| Bloc | Contenu |
+|------|---------|
+| Liste partitions | Nom, Taille, Protocole (NFS/CIFS), Utilisé |
+| Actions | [+ Créer partition] [Modifier] [Supprimer] |
+
+### Tab: Snapshots
+| Bloc | Contenu |
+|------|---------|
+| Politique automatique | Fréquence, Rétention |
+| Snapshots manuels | Liste avec date/taille |
+| Actions | [Créer] [Restaurer] [Supprimer] |
+
+### Tab: Accès
+| Bloc | Contenu |
+|------|---------|
+| ACLs par partition | IP/Réseau autorisés |
+| Protocoles | NFS, CIFS/SMB |
+| Actions | [+ Ajouter accès] [Modifier] [Supprimer] |
+
+### Tab: Tâches
+| Bloc | Contenu |
+|------|---------|
+| En cours | Tâches actives |
+| Historique | Tâches terminées |
+
+================================================================================
+## 5. PROTOCOLES D'ACCÈS
+================================================================================
+
+| Protocole | Port | Usage |
+|-----------|------|-------|
+| NFS v3 | 2049 | Linux/Unix |
+| NFS v4 | 2049 | Linux/Unix (ACL avancées) |
+| CIFS/SMB | 445 | Windows |
+
+================================================================================
+## 6. OFFRES NAS-HA
+================================================================================
+
+| Capacité | Prix indicatif |
+|----------|----------------|
+| 1.2 TB | ~15 €/mois |
+| 2.4 TB | ~25 €/mois |
+| 3.6 TB | ~40 €/mois |
+| 13.2 TB | ~120 €/mois |
+| 26 TB | ~200 €/mois |
+
+================================================================================
+## 7. COMPOSANTS ODS UTILISÉS
+================================================================================
+
+| Composant | Usage |
+|-----------|-------|
+| OdsTabs | Navigation NAV4 |
+| OdsCard | Cartes d'information |
+| OdsProgress | Jauge utilisation |
+| OdsDatagrid | Tableaux (partitions, ACLs) |
+| OdsButton | Actions |
+| OdsModal | Formulaires création/édition |
+| OdsInput | Nom partition, taille |
+| OdsSelect | Protocole, snapshot policy |
+
+================================================================================
+## 8. APIS & ENDPOINTS
+================================================================================
+
+```
+GET  /dedicated/nasha                           # Liste NAS
+GET  /dedicated/nasha/{serviceName}             # Détails
+GET  /dedicated/nasha/{serviceName}/partition   # Partitions
+POST /dedicated/nasha/{serviceName}/partition   # Créer partition
+GET  /dedicated/nasha/{serviceName}/partition/{name}/access  # ACLs
+POST /dedicated/nasha/{serviceName}/partition/{name}/access  # Ajouter accès
+GET  /dedicated/nasha/{serviceName}/partition/{name}/snapshot # Snapshots
+POST /dedicated/nasha/{serviceName}/partition/{name}/snapshot # Créer snapshot
+GET  /dedicated/nasha/{serviceName}/task        # Tâches
+```
+
+================================================================================
+## 9. OPTIONS ZFS
+================================================================================
+
+| Option | Valeurs |
+|--------|---------|
+| Compression | off, lz4, gzip, zstd |
+| Sync | standard, disabled, always |
+| Atime | on, off |
+| Record size | 4K, 8K, 16K, 32K, 64K, 128K |
+
+================================================================================
+## 10. MODALS
+================================================================================
+
+| Modal | Trigger | Contenu |
+|-------|---------|---------|
+| Créer partition | [+ Créer] | Nom, Taille, Protocole |
+| Modifier partition | [Modifier] | Taille (extension) |
+| Supprimer partition | [Supprimer] | Confirmation |
+| Ajouter accès | [+ Ajouter] | IP/CIDR, Protocole, Droits |
+| Créer snapshot | [Créer] | Confirmation |
+| Restaurer snapshot | [Restaurer] | Choix partition cible |
+| Politique snapshot | [Configurer] | Fréquence, Rétention |
+
+================================================================================
