@@ -1,0 +1,119 @@
+# Cahier des Charges : web-cloud/emails - Modal Add Alias
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Ajouter un alias email à un compte
+**Contexte:** Action depuis la liste des comptes ou détail compte
+
+## 2. DIMENSIONS
+
+- Modal: 500x420px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Ajouter un alias"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Boutons alignés gauche/droite
+
+## 4. CONTENU
+
+### Info banner
+- Background: #DBEAFE
+- Dimensions: 452x50px
+- Icône: ℹ️
+- Texte ligne 1: "Un alias permet de recevoir des emails sur une adresse alternative"
+- Texte ligne 2: "qui redirige vers la boîte principale."
+
+### Compte principal
+- Label: "Compte principal"
+- Box info: 452x44px, background #F3F4F6
+- Contenu:
+  - Avatar: cercle 28px avec lettre offre (E/P/Z/M)
+  - Email: "jean@example.com"
+  - Info: "Exchange - 50 Go"
+
+### Nouvel alias
+- Label: "Nouvel alias *"
+- Layout: Input + suffixe domaine
+- Input: 280x40px
+- Placeholder: "contact"
+- Suffixe: "@example.com" (background #F3F4F6, 162x40px)
+- Aide: "L'alias sera contact@example.com → jean@example.com"
+
+### Alias existants
+- Label: "Alias existants pour ce compte:"
+- Liste de pills avec bouton ×
+
+| Alias | Action |
+|-------|--------|
+| j.doe@example.com | × supprimer |
+| commercial@example.com | × supprimer |
+
+- Pills: background #F3F4F6, border-radius 12px
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 130x40px |
+| Ajouter | btn-primary | 130x40px |
+
+## 6. VALIDATION
+
+- L'alias ne doit pas exister déjà
+- Format email valide (partie locale)
+- Pas de caractères spéciaux interdits
+
+## 7. APIS & ENDPOINTS
+
+```
+# Exchange
+GET /email/exchange/{organization}/service/{serviceName}/account/{email}/alias
+→ Liste des alias existants
+
+POST /email/exchange/{organization}/service/{serviceName}/account/{email}/alias
+Body: { alias: "contact@example.com" }
+→ Crée un alias
+
+DELETE /email/exchange/{organization}/service/{serviceName}/account/{email}/alias/{alias}
+→ Supprime un alias
+
+# Email Pro
+GET /email/pro/{service}/account/{email}/alias
+POST /email/pro/{service}/account/{email}/alias
+DELETE /email/pro/{service}/account/{email}/alias/{alias}
+
+# MX Plan (redirections, pas d'alias natif)
+# Utiliser les redirections pour simuler des alias
+
+# Zimbra
+GET /email/zimbra/{serviceName}/account/{email}/alias
+POST /email/zimbra/{serviceName}/account/{email}/alias
+DELETE /email/zimbra/{serviceName}/account/{email}/alias/{alias}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Ajouter un alias |
+| info_line1 | Un alias permet de recevoir des emails sur une adresse alternative |
+| info_line2 | qui redirige vers la boîte principale. |
+| field_account | Compte principal |
+| field_alias | Nouvel alias |
+| alias_placeholder | contact |
+| help_text | L'alias sera {alias} → {email} |
+| existing_aliases | Alias existants pour ce compte: |
+| btn_cancel | Annuler |
+| btn_add | Ajouter |
+| error_exists | Cet alias existe déjà |
+| error_invalid | Format d'alias invalide |

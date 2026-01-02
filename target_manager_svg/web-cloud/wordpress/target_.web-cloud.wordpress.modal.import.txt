@@ -1,73 +1,52 @@
 ================================================================================
 TARGET SVG DOCUMENTATION
 ================================================================================
-Fichier: target_.web-cloud.wordpress.modal-import.svg
-Route:   /web-cloud/wordpress/import (modal)
-Version: v1 (2025-12-30)
+Fichier: target_.web-cloud.wordpress.modal.import.svg
+Route:   /web-cloud/wordpress/{serviceName} (modal)
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| https://mon-ancien...    | user input → POST body.sourceUrl              |
-| ftp.hebergeur.com        | user input → POST body.ftpHost                |
-| 21                       | user input → POST body.ftpPort                |
-| ftp_user                 | user input → POST body.ftpUser                |
-| ••••••••••••             | user input → POST body.ftpPassword            |
-| db.hebergeur.com         | user input → POST body.dbHost                 |
-| 3306                     | user input → POST body.dbPort                 |
-| db_user                  | user input → POST body.dbUser                 |
-| ••••••••••••             | user input → POST body.dbPassword             |
-| nom_base_de_donnees      | user input → POST body.dbName                 |
-| Pro                      | user input → POST body.offer                  |
-| gra1                     | user input → POST body.datacenter             |
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| {nicHandle}                     | Session user                            |
+| https://www.monsite-existant.com| User input                              |
+| ftp.monsite.com                 | User input                              |
+| user_ftp                        | User input                              |
+
 ================================================================================
 
-STRUCTURE MODAL
-1. HEADER - Titre "Importer un site WordPress existant" + bouton fermer (x)
-2. FORMULAIRE:
-   - URL du site actuel: Input text
-   - Section "Acces FTP/SFTP":
-     * Hote + Port
-     * Utilisateur + Mot de passe
-   - Section "Acces base de donnees":
-     * Hote + Port
-     * Utilisateur + Mot de passe
-     * Nom de la base
-   - Offre destination: Dropdown
-   - Datacenter: Dropdown
-3. BANNIERE WARNING - Avertissement duree import
-4. FOOTER - Boutons Annuler + Lancer l'import
+# STRUCTURE MODAL
+- Overlay semi-transparent
+- Modal centree 500x520
+- Header: Titre + bouton fermer
+- Banniere info (bleue): Description import
+- Champs:
+  - URL site source (input, required)
+  - Hote FTP (input, required)
+  - Port (input, default 21)
+  - Utilisateur FTP (input, required)
+  - Mot de passe (input password, required)
+  - Chemin WordPress (input, default /www)
+- Footer: Annuler + Importer
 
-CHAMPS FTP
-| Champ       | Type     | Requis | Defaut |
-|-------------|----------|--------|--------|
-| Hote        | text     | Oui    | -      |
-| Port        | number   | Oui    | 21     |
-| Utilisateur | text     | Oui    | -      |
-| Mot de passe| password | Oui    | -      |
+# CHAMPS FORMULAIRE
+| Champ           | Type     | Validation       |
+|-----------------|----------|------------------|
+| URL source      | Input    | Required, URL    |
+| Hote FTP        | Input    | Required         |
+| Port            | Input    | Default: 21      |
+| Utilisateur FTP | Input    | Required         |
+| Mot de passe    | Password | Required         |
+| Chemin WP       | Input    | Default: /www    |
 
-CHAMPS BASE DE DONNEES
-| Champ       | Type     | Requis | Defaut |
-|-------------|----------|--------|--------|
-| Hote        | text     | Oui    | -      |
-| Port        | number   | Oui    | 3306   |
-| Utilisateur | text     | Oui    | -      |
-| Mot de passe| password | Oui    | -      |
-| Nom base    | text     | Oui    | -      |
+# INTERACTIONS
+- Clic Annuler → Ferme modal
+- Clic Importer → POST API import site
+- Clic X → Ferme modal
 
-INTERACTIONS
-- Clic "x" → Fermer modal
-- Clic "👁" password → Toggle visibilite
-- Clic dropdown → Afficher options
-- Clic "Annuler" → Fermer modal
-- Clic "Lancer l'import" → POST /managedCMS/resource/import
-
-API ENDPOINTS
-POST /managedCMS/resource/import             - Lancer import
-Body: { sourceUrl, ftpHost, ftpPort, ftpUser, ftpPassword,
-        dbHost, dbPort, dbUser, dbPassword, dbName, offer, datacenter }
-
-GET  /managedCMS/resource/import/{id}/status - Statut import
+# API ENDPOINTS
+POST /hosting/wordpress/{serviceName}/website/import
+Payload: { sourceUrl, ftpHost, ftpPort, ftpUser, ftpPassword, wpPath }
 
 ================================================================================

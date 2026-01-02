@@ -1,156 +1,75 @@
-# Cahier des Charges : web-cloud/voip/line - Forward (Transferts)
+================================================================================
+CAHIER DES CHARGES - OLD MANAGER
+================================================================================
+Composant : telecom.line.forward
+Fichier   : old_manager.telecom.line.forward.txt
+SVG       : old_manager.telecom.line.forward.svg
+Date      : 2025-01-XX
+================================================================================
 
-## 1. VUE D'ENSEMBLE
+## 1. RESUME EXECUTIF
 
-**Type:** Page paramètres avec sections et toggles
-**Fonction:** Configurer les transferts d'appels
-**Contexte:** Onglet Transferts d'une ligne VoIP
+### Perimetre fonctionnel
+Configuration renvois d'appels selon conditions.
 
-## 2. NAVIGATION
+--------------------------------------------------------------------------------
 
-### NAV1 (Header)
-Web Cloud (actif)
+## 2. ARCHITECTURE
 
-### NAV2 (Sous-header)
-VoIP (actif)
+### Fichiers sources
+line/calls/forward/
 
-### NAV3 Tabs
-General | Telephone | Appels | **Transferts** (actif) | Messagerie | Consommation | Options
+--------------------------------------------------------------------------------
 
-### NAV4 Sub-tabs
-**Inconditionnel** (actif) | Occupation | Non-reponse
+## 3. PAGES & NAVIGATION
 
-## 3. LAYOUT
+### Route
+...calls.forward
 
-### Panneau gauche (280px)
-- Recherche lignes
-- Liste des lignes avec téléphone associé
+--------------------------------------------------------------------------------
 
-### Panneau droit (1096px)
-- Header ligne
-- Tabs + sub-tabs
-- Sections de configuration transfert
+## 4. COMPOSANTS UI
 
-## 4. HEADER LIGNE
+- oui-switch : Activation
+- oui-select : Type destination
+- telephony-number-selector : Numero destination
 
-- Numéro: "0033912345678"
-- Description: "Poste Direction / Transferts"
+--------------------------------------------------------------------------------
 
-## 5. CARTE RENVOI INCONDITIONNEL (1036x180px)
+## 5. APIs & DONNEES
 
-### Titre
-"Renvoi inconditionnel"
-
-### Toggle (position droite)
-- État: OFF (gris)
-- Dimensions: 50x26px
-
-### Description
-- "Tous les appels entrants sont automatiquement renvoyes vers un autre numero."
-- "Le telephone de cette ligne ne sonnera pas."
-
-### Champs
-
-| Champ | Type | Valeur | Dimensions |
-|-------|------|--------|------------|
-| Numero de renvoi | Input | +33 ... | 250x34px |
-| Activer | btn-primary | - | 100x34px |
-
-## 6. BANNIÈRE INFO STATUT (1036x70px)
-
-- Background: #DBEAFE (info)
-- Texte: "Le renvoi inconditionnel est actuellement desactive. Les appels sonnent normalement sur votre telephone."
-
-## 7. CARTES APERÇU AUTRES RENVOIS (2 cartes)
-
-### Carte Renvoi sur occupation (505x150px)
-
-| Élément | Valeur |
-|---------|--------|
-| Titre | "Renvoi sur occupation" |
-| Toggle | ON (vert) |
-| Description | "Renvoi si la ligne est occupee vers:" |
-| Numéro | +33 6 12 34 56 78 |
-| Lien | "Configurer ->" |
-
-### Carte Renvoi sur non-réponse (511x150px)
-
-| Élément | Valeur |
-|---------|--------|
-| Titre | "Renvoi sur non-reponse" |
-| Toggle | ON (vert) |
-| Description | "Renvoi apres 20 secondes sans reponse vers:" |
-| Numéro | +33 6 12 34 56 78 |
-| Lien | "Configurer ->" |
-
-## 8. BANNIÈRE INFO MODIFICATIONS (1036x45px)
-
-- Background: #DBEAFE (info)
-- Texte: "Les modifications de renvoi sont appliquees immediatement sur votre ligne."
-
-## 9. APIS & ENDPOINTS
-
-```
-# Récupérer configuration transferts
-GET /telephony/{billingAccount}/line/{serviceName}/forward
-→ {
-  unconditional: {
-    enabled: false,
-    number: null
-  },
-  busy: {
-    enabled: true,
-    number: "+33612345678"
-  },
-  noAnswer: {
-    enabled: true,
-    number: "+33612345678",
-    timeout: 20
-  }
-}
-
-# Activer/désactiver renvoi inconditionnel
-PUT /telephony/{billingAccount}/line/{serviceName}/forward/unconditional
+PUT /telephony/:billingAccount/line/:serviceName/options
 Body: {
-  enabled: true,
-  number: "+33612345678"
+  forwardUnconditional: ForwardConfig,
+  forwardBusy: ForwardConfig,
+  forwardNoReply: ForwardConfig,
+  forwardNoReplyDelay: number,
+  forwardBackup: ForwardConfig
 }
 
-# Configurer renvoi sur occupation
-PUT /telephony/{billingAccount}/line/{serviceName}/forward/busy
-Body: {
-  enabled: true,
-  number: "+33612345678"
+interface ForwardConfig {
+  enable: boolean;
+  nature: "number" | "voicemail" | "external";
+  number: string;
 }
 
-# Configurer renvoi sur non-réponse
-PUT /telephony/{billingAccount}/line/{serviceName}/forward/noAnswer
-Body: {
-  enabled: true,
-  number: "+33612345678",
-  timeout: 20
-}
-```
+--------------------------------------------------------------------------------
 
-## 10. TRADUCTIONS (i18n)
+## 6. TRADUCTIONS (FR)
 
-| Clé | FR |
-|-----|-----|
-| tab_forward | Transferts |
-| subtab_unconditional | Inconditionnel |
-| subtab_busy | Occupation |
-| subtab_no_answer | Non-reponse |
-| card_unconditional | Renvoi inconditionnel |
-| desc_unconditional_1 | Tous les appels entrants sont automatiquement renvoyes vers un autre numero. |
-| desc_unconditional_2 | Le telephone de cette ligne ne sonnera pas. |
-| field_forward_number | Numero de renvoi |
-| btn_activate | Activer |
-| btn_deactivate | Desactiver |
-| info_disabled | Le renvoi inconditionnel est actuellement desactive. Les appels sonnent normalement sur votre telephone. |
-| info_enabled | Le renvoi inconditionnel est actif. Tous les appels sont renvoyes vers {number}. |
-| card_busy | Renvoi sur occupation |
-| desc_busy | Renvoi si la ligne est occupee vers: |
-| card_no_answer | Renvoi sur non-reponse |
-| desc_no_answer | Renvoi apres {seconds} secondes sans reponse vers: |
-| link_configure | Configurer |
-| info_immediate | Les modifications de renvoi sont appliquees immediatement sur votre ligne. |
+telephony_line_forward_unconditional = "Renvoi tous les appels"
+telephony_line_forward_busy = "Renvoi si occupe"
+telephony_line_forward_no_reply = "Renvoi sans reponse"
+telephony_line_forward_backup = "Renvoi si injoignable"
+
+--------------------------------------------------------------------------------
+
+## 7. REGLES METIER
+
+- Delai sans reponse : 5-60 secondes
+- Destinations : number, voicemail, external
+- Pas de boucle (renvoi vers soi)
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

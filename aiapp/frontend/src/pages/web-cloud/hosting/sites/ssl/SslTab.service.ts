@@ -3,7 +3,7 @@
 // (from old_manager hosting-ssl.service.js)
 // ============================================================
 
-import { ovhGet, ovhPost, ovhPut, ovhDelete } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhPostNoBody, ovhPut, ovhDelete } from "../../../../../services/api";
 import type { AttachedDomain, SslCertificate } from "../../hosting.types";
 
 const BASE = "/hosting/web";
@@ -22,8 +22,9 @@ export const sslService = {
     ovhGet<any>(`${BASE}/${sn}/ssl/report`).catch(() => null),
 
   // Regenerate SSL (from old_manager regeneratingCertificate)
+  // Note: POST sans body - cf old_manager hosting-ssl.service.js:44
   regenerateSsl: (sn: string) =>
-    ovhPost<void>(`${BASE}/${sn}/ssl/regenerate`, {}),
+    ovhPostNoBody<void>(`${BASE}/${sn}/ssl/regenerate`),
 
   // Delete SSL (from old_manager deletingCertificate)
   deleteSsl: (sn: string) =>

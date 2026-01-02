@@ -1,72 +1,49 @@
 ================================================================================
 TARGET SVG DOCUMENTATION
 ================================================================================
-Fichier: target_.web-cloud.wordpress.modal-cdn.svg
-Route:   /web-cloud/wordpress/{serviceName}/performance/cdn (modal)
-Version: v1 (2025-12-30)
+Fichier: target_.web-cloud.wordpress.modal.cdn.svg
+Route:   /web-cloud/wordpress/{serviceName} (modal)
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| CDN Actif                | GET /managedCMS/resource/{sn}/cdn → enabled   |
-| 19 points de presence    | GET /managedCMS/resource/{sn}/cdn → pops      |
-| Cache statique ON        | cdn.options.staticCache                       |
-| Cache HTML OFF           | cdn.options.htmlCache                         |
-| Compression Brotli ON    | cdn.options.brotli                            |
-| 24 heures                | cdn.options.ttl                               |
-| 29/12/2025 14:32         | cdn.lastPurge                                 |
+| Exemple SVG           | Source API                                    |
+|-----------------------|-----------------------------------------------|
+| {nicHandle}           | Session user                                  |
+| CDN enabled           | GET /hosting/wordpress/{id}/cdn → enabled     |
+| Cache options         | GET /hosting/wordpress/{id}/cdn → options     |
+
 ================================================================================
 
-STRUCTURE MODAL
-1. HEADER - Titre "Configurer le CDN" + bouton fermer (x)
-2. CONTENU:
-   - Statut CDN: Badge actif/inactif + toggle ON/OFF
-   - Options de cache:
-     * Cache fichiers statiques (toggle) - recommande
-     * Cache pages HTML (toggle) - attention contenu dynamique
-     * Compression Brotli (toggle)
-   - Duree de cache (TTL): Dropdown
-   - Purger le cache: Bouton + derniere purge
-3. BANNIERE INFO - Explication CDN
-4. FOOTER - Boutons Annuler + Enregistrer
+# STRUCTURE MODAL
+- Overlay semi-transparent
+- Modal centree 500x420
+- Header: Titre + bouton fermer
+- Banniere info (bleue): Description CDN
+- Checkbox: Activer le CDN
+- Section Options de cache:
+  - Mise en cache des images (checked)
+  - Mise en cache CSS/JS (checked)
+  - Mise en cache des pages (unchecked, avance)
+- Footer: Annuler + Enregistrer
 
-OPTIONS CDN
-| Option           | Defaut | Description                              |
-|------------------|--------|------------------------------------------|
-| Cache statique   | ON     | Images, CSS, JS                          |
-| Cache HTML       | OFF    | Pages completes (attention dynamique)    |
-| Brotli           | ON     | Compression avancee                      |
+# OPTIONS CDN
+| Option              | Default | Description                    |
+|---------------------|---------|--------------------------------|
+| Activer CDN         | true    | Active/desactive CDN           |
+| Cache images        | true    | Cache images statiques         |
+| Cache CSS/JS        | true    | Cache fichiers CSS et JS       |
+| Cache pages         | false   | Cache pages HTML (avance)      |
 
-VALEURS TTL
-| Option        | Valeur |
-|---------------|--------|
-| 1 heure       | 3600   |
-| 6 heures      | 21600  |
-| 12 heures     | 43200  |
-| 24 heures     | 86400  |
-| 7 jours       | 604800 |
+# INTERACTIONS
+- Toggle checkbox → Change valeur option
+- Clic Annuler → Ferme modal
+- Clic Enregistrer → PUT API update CDN config
+- Clic X → Ferme modal
 
-INTERACTIONS
-- Clic "x" → Fermer modal
-- Toggle CDN → Activer/desactiver CDN global
-- Toggle options → Activer/desactiver option individuelle
-- Clic dropdown TTL → Afficher options duree
-- Clic "🗑 Vider le cache" → POST /cache/flush
-- Clic "Annuler" → Fermer modal
-- Clic "Enregistrer" → PUT /managedCMS/resource/{sn}/cdn
-
-API ENDPOINTS
-GET  /managedCMS/resource/{sn}/cdn           - Etat CDN
-POST /managedCMS/resource/{sn}/cdn/enable    - Activer CDN
-POST /managedCMS/resource/{sn}/cdn/disable   - Desactiver CDN
-PUT  /managedCMS/resource/{sn}/cdn           - Modifier options CDN
-Body: { staticCache, htmlCache, brotli, ttl }
-POST /managedCMS/resource/{sn}/cache/flush   - Purger cache
-
-DISPONIBILITE CDN
-- Start: NON
-- Pro: OUI
-- Business: OUI
+# API ENDPOINTS
+GET /hosting/wordpress/{serviceName}/website/{id}/cdn - Get CDN config
+PUT /hosting/wordpress/{serviceName}/website/{id}/cdn - Update CDN config
+Payload: { enabled, cacheImages, cacheCssJs, cachePages }
 
 ================================================================================

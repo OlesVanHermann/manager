@@ -3,51 +3,93 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.voip.dashboard.svg
 Route:   /web-cloud/voip
-Version: v1 (2025-12-30)
+Version: v1 (2026-01-02)
 ================================================================================
 
-⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG           | Source API                                    |
-|-----------------------|-----------------------------------------------|
-| {nicHandle}           | Session utilisateur                           |
-| voip-ab12345          | GET /telephony → item                         |
-| Téléphonie Siège      | GET /telephony/{ba} → description             |
-| 3 lignes              | GET /telephony/{ba}/line → count              |
-| 2 numéros             | GET /telephony/{ba}/number → count            |
-| 1 fax                 | GET /telephony/{ba}/fax → count               |
-| 50,00 €               | GET /telephony/{ba} → creditThreshold         |
-| 12,50 € hors forfait  | GET /telephony/{ba}/serviceInfos → outplanCost|
-| Derniers relevés      | GET /telephony/{ba}/historyConsumption        |
+DONNEES DYNAMIQUES
+| Exemple SVG               | Source API                              |
+|---------------------------|-----------------------------------------|
+| {nicHandle}               | Session utilisateur                     |
+| OVH-TELECOM-12345         | GET /telephony → item                   |
+| Téléphonie Bureau Paris   | GET /telephony/{ba} → description       |
+| 4 lignes                  | GET /telephony/{ba}/line → count        |
+| 2 numéros                 | GET /telephony/{ba}/number → count      |
+| 1 fax                     | GET /telephony/{ba}/fax → count         |
+| 3 groupes VoIP            | GET /telephony → length                 |
+| Actif/Suspendu            | GET /telephony/{ba}/serviceInfos → status |
+| 12,50 € hors forfait      | GET /telephony/{ba}/historyConsumption  |
+| Cisco CP-8845             | GET /telephony/{ba}/line/{sn}/phone     |
+| 45,99 €                   | GET /telephony/{ba}/historyConsumption  |
 
 ================================================================================
 
-# STRUCTURE PAGE
+STRUCTURE PAGE
+
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Web Cloud (VoIP actif avec indicateur bleu x=495)
-3. LEFT PANEL - Liste des groupes VoIP avec recherche
-4. RIGHT PANEL
-   - Header: Nom groupe + bouton Commander
-   - NAV3: [Dashboard] | Services | Répertoire | Facturation | Administration
-   - Contenu:
-     * Tile "Je veux..." (actions rapides)
-     * Tile "Informations générales" (état, compteurs)
-     * Tile "Consommation du mois" (graphique circulaire)
-     * Table "Mes 5 derniers relevés"
-     * Section "Mon parc VoIP" (cartes téléphones)
+   - y=0, height=50px, background=#000E9C
+   - Indicateur blanc sous "Web Cloud"
 
-# INTERACTIONS
-- Clic groupe LEFT PANEL → Sélection et affichage détails
-- Clic tab NAV3 → Navigation vers section
-- Clic action rapide → Navigation vers fonctionnalité
-- Clic PDF/CSV → Téléchargement document
+2. NAV2 - Web Cloud (VoIP actif)
+   - y=50, height=40px, background=#FFFFFF
+   - Indicateur bleu sous "VoIP"
 
-# API ENDPOINTS
-GET /telephony                          → Liste groupes
-GET /telephony/{ba}                     → Détails groupe
-GET /telephony/{ba}/serviceInfos        → Infos facturation
-GET /telephony/{ba}/line                → Liste lignes
-GET /telephony/{ba}/number              → Liste numéros
-GET /telephony/{ba}/fax                 → Liste fax
-GET /telephony/{ba}/historyConsumption  → Historique conso
+3. LEFT PANEL (280px)
+   - NAV3: [SIP] [SMS] [FAX] [Trunk] (boutons horizontaux)
+   - Recherche: Barre de recherche
+   - Compteur: "3 groupes VoIP"
+   - Liste des groupes VoIP avec badge status
+
+4. RIGHT PANEL (1096px)
+   - Header: Nom du groupe + description + badge status
+   - NAV4: [Général] [Groupes] [Lignes] [Numéros] [Services]
+   - Contenu Dashboard:
+     * Row 1: Stats (lignes, numéros, fax)
+     * Row 2: Actions rapides + Consommation (pie chart)
+     * Row 3: Parc téléphones (cartes équipements)
+     * Row 4: Dernières factures (table)
+
+================================================================================
+
+INTERACTIONS
+
+- Clic NAV3 → Change le type de service affiché (SIP/SMS/FAX/Trunk)
+- Clic groupe (left panel) → Charge les détails du groupe
+- Clic NAV4 tab → Navigation vers l'onglet correspondant
+- Clic action rapide → Ouvre la fonctionnalité
+- Clic téléphone → Détails de la ligne
+- Clic facture → Télécharge le PDF
+
+================================================================================
+
+API ENDPOINTS
+
+Groupes VoIP:
+- GET /telephony → Liste billingAccounts
+- GET /telephony/{ba} → Détails groupe
+- GET /telephony/{ba}/serviceInfos → Statut facturation
+
+Services du groupe:
+- GET /telephony/{ba}/line → Liste lignes
+- GET /telephony/{ba}/number → Liste numéros
+- GET /telephony/{ba}/fax → Liste fax
+
+Consommation:
+- GET /telephony/{ba}/historyConsumption → Historique
+
+Téléphones:
+- GET /telephony/{ba}/line/{sn}/phone → Infos téléphone
+
+================================================================================
+
+DIMENSIONS CONFORMITE (prompt_target_check.txt)
+
+| Element       | Valeur   | Conforme |
+|---------------|----------|----------|
+| NAV1 height   | 50px     | OK       |
+| NAV2 height   | 40px     | OK       |
+| Gap NAV2→     | 15px     | OK       |
+| LEFT PANEL    | 280px    | OK       |
+| Gap panels    | 16px     | OK       |
+| RIGHT PANEL   | 1096px   | OK       |
 
 ================================================================================

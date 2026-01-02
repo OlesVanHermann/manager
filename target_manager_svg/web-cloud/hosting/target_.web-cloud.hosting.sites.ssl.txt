@@ -1,65 +1,50 @@
 ================================================================================
 TARGET SVG DOCUMENTATION
 ================================================================================
-Fichier: target_.web-cloud.hosting.ssl.svg
-Route:   /web-cloud/hebergement/hosting/{serviceName}/ssl
-Version: v1 (2025-12-30)
+Fichier: target_.web-cloud.hosting.sites.ssl.svg
+Route:   /web-cloud/hosting/{serviceName}/sites/ssl
+Version: v1 (2026-01-02)
 ================================================================================
 
-⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG                        | Source API                                  |
-|------------------------------------|---------------------------------------------|
-| Let's Encrypt                      | GET /hosting/web/{sn}/ssl → provider        |
-| Let's Encrypt Authority X3         | GET /hosting/web/{sn}/ssl → authority       |
-| 15 décembre 2025 à 10:30           | GET /hosting/web/{sn}/ssl → creationDate    |
-| 15 mars 2026 à 10:30               | GET /hosting/web/{sn}/ssl → expirationDate  |
-| Automatique                        | GET /hosting/web/{sn}/ssl → renewalType     |
-| www.monsiteweb.com, blog...        | GET /hosting/web/{sn}/ssl → domains[]       |
-| Actif                              | GET /hosting/web/{sn}/ssl → status          |
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| monsite.example.com      | GET /hosting/web → serviceName                   |
+| Let's Encrypt (gratuit)  | GET /hosting/web/{sn}/ssl → provider             |
+| Actif                    | GET /hosting/web/{sn}/ssl → status               |
+| 15/03/2026               | GET /hosting/web/{sn}/ssl → expiration           |
+| Renouvellement auto      | GET /hosting/web/{sn}/ssl → regenerable          |
+
 ================================================================================
 
-# STRUCTURE PAGE
+STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Hébergement actif
-3. LEFT PANEL - Liste hébergements
-4. RIGHT PANEL
-   - Header: Nom service
-   - NAV3: 16 tabs (SSL actif)
-   - TITRE + BOUTONS ACTIONS
-   - BLOC ÉTAT: Type, Fournisseur, Dates, Renouvellement
-   - BLOC DOMAINES: Liste domaines couverts
-   - PANNEAU INFO: Explications Let's Encrypt
+2. NAV2 - Section (Hebergement actif)
+3. LEFT PANEL (280px)
+   - NAV3 Groupement: General [Sites] Offre Expert
+   - Recherche + Liste services
+4. RIGHT PANEL (1096px)
+   - Header: Titre service
+   - NAV4: Multisite [SSL] FTP-SSH BDD CDN
+   - Contenu:
+     - Banniere info SSL
+     - Bloc Statut certificat (type, statut, domaine, expiration, renouvellement)
+     - Actions: Regenerer, Commander, Supprimer
+     - Table domaines couverts
+     - Pagination
 
-# BOUTONS ACTIONS
-| Bouton          | Style     | Action                        |
-|-----------------|-----------|-------------------------------|
-| Régénérer SSL   | Outline   | POST .../ssl/regenerate       |
-| Commander SSL   | Secondary | Redirection commande          |
-| Supprimer SSL   | Danger    | DELETE .../ssl                |
+INTERACTIONS
+- Bouton Regenerer SSL -> Regeneration certificat
+- Bouton Commander SSL -> Modal commande certificat payant
+- Bouton Supprimer SSL -> Modal confirmation suppression
+- Clic Regenerer domaine -> Regeneration pour ce domaine specifique
 
-# BLOC ÉTAT CERTIFICAT
-| Champ          | Contenu                           |
-|----------------|-----------------------------------|
-| Type           | Let's Encrypt / Sectigo / etc.    |
-| Fournisseur    | Autorité de certification         |
-| Création       | Date/heure création               |
-| Expiration     | Date/heure expiration             |
-| Renouvellement | Badge Automatique / Manuel        |
-
-# BLOC DOMAINES COUVERTS
-- Liste avec indicateur vert (●)
-- Tous les domaines inclus dans le certificat
-- Généralement: domaine principal + sous-domaines
-
-# INTERACTIONS
-- Clic "Régénérer SSL" → Régénération du certificat
-- Clic "Commander SSL" → Page commande certificat payant
-- Clic "Supprimer SSL" → Modal confirmation suppression
-
-# API ENDPOINTS
-GET /hosting/web/{sn}/ssl              - État du certificat
-POST /hosting/web/{sn}/ssl/regenerate  - Régénérer certificat
-POST /hosting/web/{sn}/ssl             - Commander nouveau
-DELETE /hosting/web/{sn}/ssl           - Supprimer certificat
+API ENDPOINTS
+GET /hosting/web/{sn}                      # Details hebergement
+GET /hosting/web/{sn}/ssl                  # Details certificat SSL
+POST /hosting/web/{sn}/ssl                 # Commander/Regenerer SSL
+DELETE /hosting/web/{sn}/ssl               # Supprimer SSL
+GET /hosting/web/{sn}/ssl/domains          # Domaines couverts
+POST /hosting/web/{sn}/ssl/regenerate      # Regenerer certificat
 
 ================================================================================

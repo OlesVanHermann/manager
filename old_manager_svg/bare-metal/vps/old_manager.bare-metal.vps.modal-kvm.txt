@@ -1,55 +1,60 @@
-# Cahier des Charges : bare-metal/vps - Modal KVM
+# Cahier des Charges : vps - Modal console KVM
 
 ## 1. VUE D'ENSEMBLE
-- **Modal** : Console KVM (noVNC)
-- **Type** : Terminal intégré
-- **Objectif** : Accéder à la console du VPS via KVM
+- **Type** : Modal avec console interactive
+- **Contexte** : Dashboard VPS
+- **Objectif** : Accéder à la console KVM du VPS
 
-## 2. STRUCTURE MODAL
-- Header avec titre + bouton fermer
-- Zone terminal (fond noir)
-- Avertissement clavier
-- Lien ouvrir nouvelle fenêtre
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Modal largeur | 550px |
+| Modal hauteur | 490px |
 
 ## 3. COMPOSANTS UI
-- **OdsModal** : Container (700x520px)
-- **Zone terminal** : Fond sombre avec texte vert/orange
-- **OdsMessage** : Avertissement
-- **OdsLink** : Ouvrir nouvelle fenêtre
+- **OdsModal** : Container principal
+- **iframe** : Console KVM embarquée
+- **OdsText** : Note clavier
+- **OdsLink** : Ouvrir dans nouvelle fenêtre
 
-## 4. TERMINAL
-### Style
-- Fond : #1F2937 (gris sombre)
-- Texte principal : #10B981 (vert)
-- Prompt : #F59E0B (orange/jaune)
-- Police : monospace (Consolas, Monaco)
+## 4. HEADER MODAL
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Console KVM" |
+| Fond | Bleu (#0050D7) |
+| Couleur texte | Blanc |
+| Bouton fermer | × |
 
-### Contenu exemple
-```
-Ubuntu 22.04.3 LTS vps-abc123def tty1
+## 5. ZONE CONSOLE
 
-vps-abc123def login: root
-Password:
-Last login: Thu Dec 26 10:15:32 2024 from 192.168.1.1
+### Container console
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 500px |
+| Hauteur | 380px |
+| Fond | Noir (#1a1a2e) |
+| Bordure | #E5E7EB |
 
-root@vps-abc123def:~# █
-```
+### Contenu terminal
+| Élément | Description |
+|---------|-------------|
+| Texte prompt | Vert (#00ff00), police monospace |
+| Messages système | Gris (#888) |
+| Curseur | Clignotant |
 
-## 5. MESSAGES
-### Avertissement
-"⚠️ Attention : la disposition du clavier peut différer selon votre configuration locale"
+## 6. NOTE CLAVIER
+| Texte |
+|-------|
+| "Note: Le mapping clavier peut varier selon votre configuration locale." |
 
-### Action
-"↗ Ouvrir dans une nouvelle fenêtre" (lien bleu)
+## 7. LIEN EXTERNE
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | "Ouvrir dans une nouvelle fenêtre ↗" |
+| Style | Lien bleu souligné |
+| Action | Ouvre la console dans un nouvel onglet |
 
-## 6. FONCTIONNALITÉS KVM
-- noVNC pour accès web
-- Pas de plugin Java requis
-- Session temps réel
-- Support copier-coller
+## 8. APIS & ENDPOINTS
+- GET /vps/{serviceName}/getConsoleUrl - URL de la console KVM
+- POST /vps/{serviceName}/openConsoleAccess - Ouvrir accès console
 
-## 7. APIS & ENDPOINTS
-- GET /vps/{serviceName}/console
-  - Génère URL console KVM
-- POST /vps/{serviceName}/openConsole
-  - Ouvre session console

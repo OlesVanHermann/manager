@@ -26,30 +26,41 @@ interface OrderResult {
  */
 export const anycastService = {
   /**
-   * Get Anycast status for a zone
-   * GET /domain/zone/{zoneName}/dnsAnycast
+   * Get Anycast status for a domain
+   * GET /domain/{domain}/option - Identique old_manager + DnsServersTab.service.ts
+   * Returns array of active options, check if "dnsAnycast" is present
    */
-  async getAnycastStatus(zoneName: string): Promise<AnycastStatus> {
+  async getAnycastStatus(domain: string): Promise<AnycastStatus> {
     try {
-      const response = await ovhGet<{ active: boolean; expirationDate?: string }>(
-        `/domain/zone/${encodeURIComponent(zoneName)}/dnsAnycast`
-      );
-      return {
-        active: response.active || false,
-        expirationDate: response.expirationDate,
-      };
-    } catch (error: unknown) {
-      // 404 means anycast is not active
-      if (error && typeof error === "object" && "status" in error && error.status === 404) {
-        return { active: false };
+      // Pattern identique old_manager: GET /domain/{domain}/option
+      const options = await ovhGet<string[]>(`/domain/${encodeURIComponent(domain)}/option`);
+      const active = options.includes("dnsAnycast");
+
+      // If active, get service details for expiration date
+      if (active) {
+        try {
+          const details = await this.getAnycastDetails(domain);
+          return {
+            active: true,
+            expirationDate: details.expiration,
+          };
+        } catch {
+          // Service details not available, but anycast is still active
+          return { active: true };
+        }
       }
-      throw error;
+
+      return { active: false };
+    } catch {
+      // API error or option endpoint not available
+      return { active: false };
     }
   },
 
   /**
    * Get Anycast pricing
    * GET /order/domain/zone/{zoneName}/dnsAnycast
+   * Returns empty array if no valid durations available (no mock data)
    */
   async getAnycastPrices(zoneName: string): Promise<AnycastPrice[]> {
     try {
@@ -57,6 +68,11 @@ export const anycastService = {
       const durations = await ovhGet<string[]>(
         `/order/domain/zone/${encodeURIComponent(zoneName)}/dnsAnycast`
       );
+
+      // No durations available
+      if (!durations || durations.length === 0) {
+        return [];
+      }
 
       // Get price for each duration
       const prices: AnycastPrice[] = [];
@@ -79,19 +95,10 @@ export const anycastService = {
         }
       }
 
-      // If no prices found, return mock data for development
-      if (prices.length === 0) {
-        return [
-          { duration: "P1Y", priceHT: 2.99, priceTTC: 3.59, currency: "EUR" },
-        ];
-      }
-
       return prices;
     } catch {
-      // Return mock data for development
-      return [
-        { duration: "P1Y", priceHT: 2.99, priceTTC: 3.59, currency: "EUR" },
-      ];
+      // API error - return empty array (no mock data to avoid invalid order attempts)
+      return [];
     }
   },
 

@@ -1,69 +1,48 @@
 ================================================================================
 TARGET SVG DOCUMENTATION
 ================================================================================
-Fichier: target_.web-cloud.wordpress.modal-create.svg
-Route:   /web-cloud/wordpress/create (modal)
-Version: v1 (2025-12-30)
+Fichier: target_.web-cloud.wordpress.modal.create.svg
+Route:   /web-cloud/wordpress/{serviceName} (modal)
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| mon-nouveau-blog         | user input → POST body.displayName            |
-| mon-nouveau-blog.fr      | user input → POST body.domain                 |
-| Pro (selected)           | user input → POST body.offer                  |
-| gra1                     | user input → POST body.datacenter             |
-| admin                    | user input → POST body.adminUser              |
-| ••••••••••••             | user input → POST body.adminPassword          |
+| Exemple SVG                     | Source API                              |
+|---------------------------------|-----------------------------------------|
+| {nicHandle}                     | Session user                            |
+| mon-nouveau-site                | User input                              |
+| .cluster.ovh.net                | GET /hosting/wordpress/{id} → cluster   |
+| admin@example.com               | User input                              |
+
 ================================================================================
 
-STRUCTURE MODAL
-1. HEADER - Titre "Creer un site WordPress" + bouton fermer (x)
-2. FORMULAIRE:
-   - Nom du site: Input text
-   - Domaine: Input text + hint
-   - Offre: 3 radio buttons (Start, Pro, Business)
-     * Start: 10 Go, SSL, Backup quotidien - 4,99 €/mois
-     * Pro: 50 Go, SSL, CDN, Backup - 9,99 €/mois (defaut)
-     * Business: 100 Go, SSL, CDN, Staging, Backup horaire - 19,99 €/mois
-   - Datacenter: Dropdown (gra1, rbx1, sbg1)
-   - Identifiants admin: Username + Password (avec toggle visibilite et refresh)
-3. BANNIERE INFO - Message de confirmation delai
-4. FOOTER - Boutons Annuler + Creer le site
+# STRUCTURE MODAL
+- Overlay semi-transparent
+- Modal centree 500x480
+- Header: Titre + bouton fermer
+- Banniere info (bleue): Description creation
+- Champs:
+  - Nom du site (input, required)
+  - Domaine (dropdown, cluster par defaut)
+  - Email administrateur (input, required)
+  - Langue (dropdown)
+- Footer: Annuler + Creer
 
-OFFRES WORDPRESS
-| Offre    | Stockage | SSL | CDN | Staging | Backup    | Prix      |
-|----------|----------|-----|-----|---------|-----------|-----------|
-| Start    | 10 Go    | Oui | Non | Non     | Quotidien | 4,99 €    |
-| Pro      | 50 Go    | Oui | Oui | Non     | Quotidien | 9,99 €    |
-| Business | 100 Go   | Oui | Oui | Oui     | Horaire   | 19,99 €   |
+# CHAMPS FORMULAIRE
+| Champ              | Type     | Validation       |
+|--------------------|----------|------------------|
+| Nom du site        | Input    | Required         |
+| Domaine            | Dropdown | Default: cluster |
+| Email admin        | Input    | Required, Email  |
+| Langue             | Dropdown | Default: FR      |
 
-DATACENTERS DISPONIBLES
-- Gravelines (gra1) - France
-- Roubaix (rbx1) - France
-- Strasbourg (sbg1) - France
+# INTERACTIONS
+- Clic Annuler → Ferme modal
+- Clic Creer → POST API creation site
+- Clic X → Ferme modal
 
-VALIDATION FORMULAIRE
-- Nom du site: Requis, alphanumerique + tirets
-- Domaine: Requis, format domaine valide
-- Offre: Requis, une option selectionnee
-- Datacenter: Requis, une option selectionnee
-- Username: Requis, min 3 caracteres
-- Password: Requis, min 8 caracteres, complexite
-
-INTERACTIONS
-- Clic "x" → Fermer modal
-- Selection offre → Highlight radio + bordure bleue
-- Clic dropdown datacenter → Afficher options
-- Clic "👁" password → Toggle visibilite
-- Clic "🔄" password → Generer nouveau mot de passe
-- Clic "Annuler" → Fermer modal
-- Clic "Creer le site" → POST /managedCMS/resource
-
-API ENDPOINTS
-POST /managedCMS/resource                    - Creer site WordPress
-Body: { displayName, domain, offer, datacenter, adminUser, adminPassword }
-
-Response: { serviceName, status: "installing", estimatedTime }
+# API ENDPOINTS
+POST /hosting/wordpress/{serviceName}/website
+Payload: { name, domain, adminEmail, language }
 
 ================================================================================

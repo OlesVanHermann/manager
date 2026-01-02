@@ -3,7 +3,7 @@
 // Source: /home/ubuntu/manager/packages/manager/apps/web-hosting/src/data/api/managedWordpress.ts
 // ============================================================
 
-import { ovhGet, ovhPost, ovhPut, ovhDelete, ovhIceberg, ovh2apiGet } from '../../../services/api';
+import { ovh2apiGet, ovh2apiPost, ovh2apiPut, ovh2apiDelete } from '../../../services/api';
 import type {
   ManagedWordpressResource,
   ManagedWordpressWebsite,
@@ -47,7 +47,7 @@ export async function getAvailableLanguages(): Promise<AvailableLanguage[]> {
  * Liste toutes les resources (conteneurs de plan WordPress)
  */
 export async function listResources(): Promise<ManagedWordpressResource[]> {
-  return ovhGet<ManagedWordpressResource[]>(`${BASE_PATH}/resource`);
+  return ovh2apiGet<ManagedWordpressResource[]>(`${BASE_PATH}/resource`);
 }
 
 /**
@@ -55,7 +55,7 @@ export async function listResources(): Promise<ManagedWordpressResource[]> {
  * Détails d'une resource
  */
 export async function getResource(serviceName: string): Promise<ManagedWordpressResource> {
-  return ovhGet<ManagedWordpressResource>(`${BASE_PATH}/resource/${serviceName}`);
+  return ovh2apiGet<ManagedWordpressResource>(`${BASE_PATH}/resource/${serviceName}`);
 }
 
 // ============================================================
@@ -70,20 +70,21 @@ export async function listWebsites(
   serviceName: string,
   options?: { pageSize?: number; cursor?: string; defaultFQDN?: string }
 ): Promise<{ data: ManagedWordpressWebsite[]; cursorNext?: string }> {
-  const { pageSize = 25, cursor: _cursor, defaultFQDN } = options || {};
+  const { pageSize = 25, cursor, defaultFQDN } = options || {};
 
-  // Construire les query params
-  const params = new URLSearchParams();
-  if (defaultFQDN) params.append('defaultFQDN', defaultFQDN);
+  // Construire les query params pour 2API
+  const params: Record<string, string | number> = { count: pageSize };
+  if (cursor) params.offset = parseInt(cursor, 10) * pageSize;
+  if (defaultFQDN) params.defaultFQDN = defaultFQDN;
 
-  const queryString = params.toString();
-  const path = `${BASE_PATH}/resource/${serviceName}/website${queryString ? `?${queryString}` : ''}`;
+  const data = await ovh2apiGet<ManagedWordpressWebsite[]>(
+    `${BASE_PATH}/resource/${serviceName}/website`,
+    params
+  );
 
-  // Utiliser Iceberg pour la pagination
-  const result = await ovhIceberg<ManagedWordpressWebsite>(path, { pageSize });
   return {
-    data: result.data,
-    cursorNext: result.totalCount > result.data.length ? String(result.page + 1) : undefined,
+    data,
+    cursorNext: data.length === pageSize ? String((parseInt(cursor || '0', 10) + 1)) : undefined,
   };
 }
 
@@ -92,11 +93,10 @@ export async function listWebsites(
  * Pour charger tous les websites d'un coup
  */
 export async function listAllWebsites(serviceName: string): Promise<ManagedWordpressWebsite[]> {
-  const result = await ovhIceberg<ManagedWordpressWebsite>(
+  return ovh2apiGet<ManagedWordpressWebsite[]>(
     `${BASE_PATH}/resource/${serviceName}/website`,
-    { pageSize: 100 }
+    { count: 100 }
   );
-  return result.data;
 }
 
 /**
@@ -107,7 +107,7 @@ export async function getWebsite(
   serviceName: string,
   websiteId: string
 ): Promise<ManagedWordpressWebsiteDetails> {
-  return ovhGet<ManagedWordpressWebsiteDetails>(
+  return ovh2apiGet<ManagedWordpressWebsiteDetails>(
     `${BASE_PATH}/resource/${serviceName}/website/${websiteId}`
   );
 }
@@ -120,7 +120,7 @@ export async function createWebsite(
   serviceName: string,
   payload: PostCreatePayload
 ): Promise<{ id: string }> {
-  return ovhPost<{ id: string }>(
+  return ovh2apiPost<{ id: string }>(
     `${BASE_PATH}/resource/${serviceName}/website`,
     payload
   );
@@ -134,7 +134,7 @@ export async function importWebsite(
   serviceName: string,
   payload: PostImportPayload
 ): Promise<{ id: string }> {
-  return ovhPost<{ id: string }>(
+  return ovh2apiPost<{ id: string }>(
     `${BASE_PATH}/resource/${serviceName}/website`,
     payload
   );
@@ -148,7 +148,7 @@ export async function deleteWebsite(
   serviceName: string,
   websiteId: string
 ): Promise<void> {
-  return ovhDelete<void>(`${BASE_PATH}/resource/${serviceName}/website/${websiteId}`);
+  return ovh2apiDelete<void>(`${BASE_PATH}/resource/${serviceName}/website/${websiteId}`);
 }
 
 // ============================================================
@@ -160,7 +160,7 @@ export async function deleteWebsite(
  * Liste les tâches d'une resource
  */
 export async function listTasks(serviceName: string): Promise<WordPressTask[]> {
-  return ovhGet<WordPressTask[]>(`${BASE_PATH}/resource/${serviceName}/task`);
+  return ovh2apiGet<WordPressTask[]>(`${BASE_PATH}/resource/${serviceName}/task`);
 }
 
 /**
@@ -168,7 +168,7 @@ export async function listTasks(serviceName: string): Promise<WordPressTask[]> {
  * Détails d'une tâche
  */
 export async function getTask(serviceName: string, taskId: string): Promise<WordPressTask> {
-  return ovhGet<WordPressTask>(`${BASE_PATH}/resource/${serviceName}/task/${taskId}`);
+  return ovh2apiGet<WordPressTask>(`${BASE_PATH}/resource/${serviceName}/task/${taskId}`);
 }
 
 /**
@@ -180,7 +180,7 @@ export async function updateTask(
   taskId: string,
   payload: PostImportTaskPayload
 ): Promise<void> {
-  return ovhPut<void>(
+  return ovh2apiPut<void>(
     `${BASE_PATH}/resource/${serviceName}/task/${taskId}`,
     payload
   );

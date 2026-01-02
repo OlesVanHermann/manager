@@ -1,4 +1,69 @@
-# CONSIGNES STATIC - Site Navigable depuis SVG Target
+# PROMPT STATIC v2 - Site Navigable depuis SVG Target (Aligné Terminologie Officielle)
+
+Version: v2.0 (2026-01-02)
+Remplace: prompt_static.txt v1
+Aligné sur: prompt_target.txt v5, prompt_split.txt v3
+
+Changelog v1→v2:
+- Terminologie officielle NAV1-NAV4 avec positions fixes
+- NAV3 = Groupement (LEFT PANEL, au-dessus recherche)
+- NAV4 = Fonction (RIGHT PANEL, tabs principaux)
+- SUBTABS = sous-onglets (optionnel, sous NAV4)
+- Nouvelle convention de nommage fichiers avec NAV3
+- Structure JSON alignée
+
+---
+
+## 0. TERMINOLOGIE OFFICIELLE
+
+### 0.1 Définitions et positions
+
+┌─────────┬──────────────┬──────────────┬─────────────────────────────────────────┐
+│ Niveau  │ Nom          │ Position     │ Description                             │
+├─────────┼──────────────┼──────────────┼─────────────────────────────────────────┤
+│ NAV1    │ Univers      │ Header bleu  │ Web Cloud, Public Cloud, Network...    │
+│         │              │ (y=0-50)     │                                         │
+│ NAV2    │ Produit      │ Sous-header  │ Domaines, Hébergement, Emails, VoIP... │
+│         │              │ (y=50-90)    │                                         │
+│ NAV3    │ Groupement   │ LEFT PANEL   │ [Général] [Sites] [Expert]              │
+│         │              │ (au-dessus   │ Filtre les NAV4 affichés                │
+│         │              │ recherche)   │                                         │
+│ NAV4    │ Fonction     │ RIGHT PANEL  │ FTP, SSL, BDD, CDN, Cron...            │
+│         │              │ (tabs)       │ Onglets principaux                      │
+│ SUBTABS │ Sous-tabs    │ RIGHT PANEL  │ Statut, Diagnostic, Thèmes, Plugins    │
+│         │              │ (sous NAV4)  │ Optionnel                               │
+└─────────┴──────────────┴──────────────┴─────────────────────────────────────────┘
+
+### 0.2 Structure visuelle
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ NAV1 - Univers (Header bleu OVH, y=0-50)                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV2 - Produit (Sous-header blanc, y=50-90)                                 │
+├───────────────────────┬─────────────────────────────────────────────────────┤
+│ LEFT PANEL (280px)    │ RIGHT PANEL (flex: 1)                               │
+│ ┌───────────────────┐ │ ┌─────────────────────────────────────────────────┐ │
+│ │ NAV3 - Groupement │ │ │ Titre service                                   │ │
+│ │ [Général][Sites]  │ │ ├─────────────────────────────────────────────────┤ │
+│ ├───────────────────┤ │ │ NAV4 - Fonction                                 │ │
+│ │ 🔍 Rechercher...  │ │ │ [FTP] [SSL] [BDD] [CDN] [Cron]                  │ │
+│ ├───────────────────┤ │ ├─────────────────────────────────────────────────┤ │
+│ │ Liste services    │ │ │ SUBTABS (optionnel)                             │ │
+│ │                   │ │ │ [Statut] [Diagnostic]                           │ │
+│ │                   │ │ ├─────────────────────────────────────────────────┤ │
+│ │                   │ │ │ Contenu de l'onglet sélectionné                 │ │
+│ └───────────────────┘ │ └─────────────────────────────────────────────────┘ │
+└───────────────────────┴─────────────────────────────────────────────────────┘
+```
+
+### 0.3 Règles de position CRITIQUES
+
+- **NAV3** (Groupement) est **TOUJOURS** dans le LEFT PANEL, **AU-DESSUS** de la recherche
+- **NAV4** (Fonction) est **TOUJOURS** dans le RIGHT PANEL (tabs principaux)
+- **SUBTABS** sont **TOUJOURS** sous les NAV4 tabs, dans le RIGHT PANEL
+
+---
 
 ## 1. Contexte et objectif
 
@@ -34,7 +99,9 @@ Générer un **site HTML statique navigable** à partir des SVG target_ du New M
 2. Identifier TOUTES les zones cliquables :
    - NAV1 (header bleu, y≈32)
    - NAV2 (sous-header, y≈75)
-   - NAV3 (tabs contextuels)
+   - NAV3 (groupement dans LEFT PANEL, y≈10-44)
+   - NAV4 (tabs dans RIGHT PANEL)
+   - SUBTABS (sous NAV4, optionnel)
    - **ACTIONS** (boutons, liens texte dans le contenu)
 3. Extraire les coordonnées X/Y de chaque élément
 4. Créer le fichier JSON avec URLs cibles
@@ -59,9 +126,9 @@ Générer un **site HTML statique navigable** à partir des SVG target_ du New M
 **Chaque page a 3 fichiers dans le même répertoire :**
 
 ```
-target_.web-cloud.domain.general.svg   # Visuel (source)
-target_.web-cloud.domain.general.txt   # Description textuelle
-target_.web-cloud.domain.general.json  # Configuration des liens (créé par DISCOVER)
+target_.web-cloud.hosting.expert.ftp.svg   # Visuel (source)
+target_.web-cloud.hosting.expert.ftp.txt   # Description textuelle
+target_.web-cloud.hosting.expert.ftp.json  # Configuration des liens (créé par DISCOVER)
 ```
 
 | Fichier | Rôle | Créé par |
@@ -72,20 +139,21 @@ target_.web-cloud.domain.general.json  # Configuration des liens (créé par DIS
 
 ---
 
-## 4. FORMAT JSON - Configuration des liens
+## 4. FORMAT JSON - Configuration des liens (aligné terminologie)
 
 ### 4.1 Structure complète
 
 ```json
 {
   "meta": {
-    "svg_source": "target_.web-cloud.domain.general.svg",
-    "html_target": "/static/web-cloud/domain/general.html",
-    "section": "web-cloud",
-    "subsection": "domain",
-    "page": "general",
-    "title": "Infos générales",
-    "last_updated": "2025-12-29T14:00:00"
+    "svg_source": "target_.web-cloud.hosting.expert.ftp.svg",
+    "html_target": "/static/web-cloud/hosting/expert/ftp.html",
+    "nav1": "web-cloud",
+    "nav2": "hosting",
+    "nav3": "expert",
+    "nav4": "ftp",
+    "title": "FTP-SSH",
+    "last_updated": "2026-01-02T14:00:00"
   },
   "nav1": {
     "active": "Web Cloud",
@@ -96,29 +164,57 @@ target_.web-cloud.domain.general.json  # Configuration des liens (créé par DIS
     ]
   },
   "nav2": {
-    "active": "Domaines et DNS",
+    "active": "Hébergement",
     "items": [
       {"label": "Accueil", "url": "/static/web-cloud/index.html", "x": 40, "y": 75},
       {"label": "Domaines et DNS", "url": "/static/web-cloud/domain/index.html", "x": 110, "y": 75},
-      {"label": "Hebergement", "url": "/static/web-cloud/hosting/general.html", "x": 240, "y": 75}
+      {"label": "Hébergement", "url": "/static/web-cloud/hosting/index.html", "x": 240, "y": 75}
     ]
   },
   "nav3": {
-    "active": "Infos generales",
+    "active": "Expert",
+    "position": "left_panel",
+    "description": "Groupement - filtre les NAV4 affichés",
     "items": [
-      {"label": "Infos generales", "url": "/static/web-cloud/domain/general.html"},
-      {"label": "Zone DNS", "url": "/static/web-cloud/domain/zone.html"},
-      {"label": "Serveurs DNS", "url": "/static/web-cloud/domain/dns-servers.html"}
+      {"label": "Général", "id": "general", "url": "/static/web-cloud/hosting/general/general.html"},
+      {"label": "Sites", "id": "sites", "url": "/static/web-cloud/hosting/sites/multisite.html"},
+      {"label": "Expert", "id": "expert", "url": "/static/web-cloud/hosting/expert/ftp.html"}
+    ]
+  },
+  "nav4": {
+    "active": "FTP",
+    "position": "right_panel",
+    "group": "expert",
+    "description": "Fonction - tabs principaux filtrés par NAV3",
+    "items": [
+      {"label": "FTP", "url": "/static/web-cloud/hosting/expert/ftp.html"},
+      {"label": "BDD", "url": "/static/web-cloud/hosting/expert/database.html"},
+      {"label": "BDD Cloud", "url": "/static/web-cloud/hosting/expert/clouddb.html"},
+      {"label": "CDN", "url": "/static/web-cloud/hosting/expert/cdn.html"},
+      {"label": "Boost", "url": "/static/web-cloud/hosting/expert/boost.html"},
+      {"label": "Emails", "url": "/static/web-cloud/hosting/expert/emails.html"},
+      {"label": "Variables", "url": "/static/web-cloud/hosting/expert/envvars.html"},
+      {"label": "Runtimes", "url": "/static/web-cloud/hosting/expert/runtimes.html"},
+      {"label": "Cron", "url": "/static/web-cloud/hosting/expert/cron.html"},
+      {"label": "Tâches", "url": "/static/web-cloud/hosting/expert/tasks.html"}
+    ]
+  },
+  "subtabs": {
+    "active": "Statut",
+    "parent": "ftp",
+    "description": "Sous-tabs optionnels sous NAV4",
+    "items": [
+      {"label": "Statut", "url": "/static/web-cloud/hosting/expert/ftp.html"},
+      {"label": "Diagnostic", "url": "/static/web-cloud/hosting/expert/ftp-diagnostic.html"}
     ]
   },
   "actions": [
-    {"label": "Modifier →", "type": "link", "x": 180, "y": 185, "url": "/static/web-cloud/domain/dns-servers.html"},
-    {"label": "↻ Renouveler", "type": "refresh", "x": 795, "y": 170, "url": "/static/web-cloud/domain/modal-renew.html"},
-    {"label": "+ Commander hébergement", "type": "add", "x": 805, "y": 339, "url": "/static/web-cloud/hosting/general.html"},
-    {"label": "Désactiver", "type": "deactivate", "x": 505, "y": 96, "url": "#"}
+    {"label": "Modifier →", "type": "link", "x": 180, "y": 185, "url": "/static/web-cloud/hosting/expert/ftp-edit.html"},
+    {"label": "↻ Rafraîchir", "type": "refresh", "x": 795, "y": 170, "url": "/static/web-cloud/hosting/expert/tasks.html"},
+    {"label": "+ Ajouter utilisateur", "type": "add", "x": 805, "y": 339, "url": "/static/web-cloud/hosting/expert/ftp-modal-create.html"}
   ],
   "sidebar": {
-    "type": "domain-list",
+    "type": "service-list",
     "clickable": false
   }
 }
@@ -140,7 +236,7 @@ Elles permettent un matching précis et évitent les erreurs de liens dupliqués
 |------|---------------|---------|
 | `link` | `... →` | `Modifier →`, `Zone DNS →`, `Commander →` |
 | `add` | `+ ...` | `+ Ajouter une entrée`, `+ Commander hébergement` |
-| `refresh` | `↻ ...` | `↻ Renouveler` |
+| `refresh` | `↻ ...` | `↻ Rafraîchir` |
 | `edit` | `Modifier ...` | `Modifier TTL` |
 | `delete` | `Supprimer ...` | `Supprimer l'enregistrement` |
 | `activate` | `Activer ...` | `Activer DNSSEC` |
@@ -151,17 +247,51 @@ Elles permettent un matching précis et évitent les erreurs de liens dupliqués
 
 ---
 
-## 5. DÉTECTION DES ACTIONS (Phase DISCOVER)
+## 5. DÉTECTION DES ÉLÉMENTS (Phase DISCOVER)
 
-### 5.1 Patterns de détection
+### 5.1 Patterns de détection par niveau
 
-Les actions sont détectées par leur texte dans le SVG :
+**NAV1 - Header bleu (y ≈ 32) :**
+```python
+# Textes avec y proche de 32, dans le header bleu
+nav1_pattern = r'<text[^>]*y="3[0-4]"[^>]*>([^<]+)</text>'
+```
+
+**NAV2 - Sous-header (y ≈ 75) :**
+```python
+# Textes avec y proche de 75, dans le sous-header blanc
+nav2_pattern = r'<text[^>]*y="7[3-7]"[^>]*>([^<]+)</text>'
+```
+
+**NAV3 - Groupement LEFT PANEL (y ≈ 10-44 dans le groupe translate) :**
+```python
+# Dans le LEFT PANEL, au-dessus de la recherche
+# Généralement dans <g transform="translate(24, 105)">
+# Boutons toggle: [Général] [Sites] [Expert]
+nav3_pattern = r'<text[^>]*y="(1[0-9]|2[0-9]|3[0-9]|4[0-4])"[^>]*text-anchor="middle"[^>]*>([^<]+)</text>'
+```
+
+**NAV4 - Fonction RIGHT PANEL (y ≈ 17 dans le groupe tabs) :**
+```python
+# Dans le RIGHT PANEL, ligne de tabs
+# Généralement dans <g transform="translate(0, 38)">
+nav4_pattern = r'<text[^>]*y="17"[^>]*text-anchor="middle"[^>]*>([^<]+)</text>'
+```
+
+**SUBTABS (y ≈ 14 dans le groupe sous-tabs) :**
+```python
+# Sous les NAV4, généralement y=14
+# Pas de text-anchor="middle" (aligné à gauche)
+subtabs_pattern = r'<text[^>]*y="14"[^>]*class="text-(primary|muted)"[^>]*>([^<]+)</text>'
+```
+
+### 5.2 Patterns de détection des ACTIONS
 
 ```python
 action_patterns = [
     (r'.*→$', 'link'),           # Modifier →, Zone DNS →, Commander →
     (r'^\+\s+.*', 'add'),        # + Ajouter une entrée
-    (r'^↻\s+.*', 'refresh'),     # ↻ Renouveler
+    (r'^↻\s+.*', 'refresh'),     # ↻ Rafraîchir
     (r'^Modifier\b', 'edit'),    # Modifier, Modifier TTL
     (r'^Supprimer\b', 'delete'),
     (r'^Activer\b', 'activate'),
@@ -177,9 +307,9 @@ action_patterns = [
 ]
 ```
 
-### 5.2 Extraction des coordonnées
+### 5.3 Extraction des coordonnées
 
-Pour chaque `<text>` détecté comme action, extraire X et Y :
+Pour chaque `<text>` détecté, extraire X et Y :
 
 ```xml
 <text x="180" y="185" class="text-primary" font-size="11">Modifier →</text>
@@ -189,31 +319,6 @@ Pour chaque `<text>` détecté comme action, extraire X et Y :
 ```json
 {"label": "Modifier →", "type": "link", "x": 180, "y": 185, "url": "..."}
 ```
-
-### 5.3 Mapping des URLs
-
-| Label | URL cible |
-|-------|-----------|
-| `Modifier →` (DNS) | `/static/web-cloud/domain/dns-servers.html` |
-| `Zone DNS →` | `/static/web-cloud/domain/zone.html` |
-| `Commander →` | `/static/web-cloud/hosting/general.html` |
-| `↻ Renouveler` | `/static/web-cloud/domain/modal-renew.html` |
-| `+ Ajouter une entrée` | `/static/web-cloud/domain/modal-zone-record-add.html` |
-| `+ Ajouter une entree` | `/static/web-cloud/domain/modal-zone-record-add.html` |
-| `Modifier TTL` | `/static/web-cloud/domain/modal-zone-ttl.html` |
-| `+ Commander hébergement` | `/static/web-cloud/hosting/general.html` |
-| `+ Commander emails` | `/static/web-cloud/emails/index.html` |
-| `Désactiver` | `#` (pas de lien, action locale) |
-
-### 5.4 Actions sans URL
-
-Certaines actions n'ont pas de page cible (actions API) :
-
-```json
-{"label": "Désactiver", "type": "deactivate", "x": 505, "y": 96, "url": "#"}
-```
-
-Ces actions sont ignorées lors de la génération HTML.
 
 ---
 
@@ -230,24 +335,26 @@ def find_and_wrap_text(svg_content, label, url, x, y, tolerance=5):
     et l'enveloppe avec <a href>
     """
     # Pattern avec coordonnées exactes
-    pattern = rf'(<text[^>]*x="{x}"[^>]*y="{y}"[^>]*>){label}(</text>)'
+    pattern = rf'(<text[^>]*x="{x}"[^>]*y="{y}"[^>]*>){re.escape(label)}(</text>)'
 
     # Si pas trouvé, essayer avec tolérance ±5 pixels
     for dx in range(-tolerance, tolerance+1):
         for dy in range(-tolerance, tolerance+1):
-            pattern = rf'(<text[^>]*x="{x+dx}"[^>]*y="{y+dy}"[^>]*>){label}(</text>)'
+            pattern = rf'(<text[^>]*x="{x+dx}"[^>]*y="{y+dy}"[^>]*>){re.escape(label)}(</text>)'
             if re.search(pattern, svg_content):
                 replacement = rf'<a href="{url}" style="cursor:pointer">\1{label}\2</a>'
                 return re.sub(pattern, replacement, svg_content, count=1)
+    return svg_content
 ```
 
 ### 6.2 Ordre de traitement
 
 1. NAV1 (avec coordonnées)
 2. NAV2 (avec coordonnées)
-3. NAV3 (avec text-anchor="middle")
-4. ACTIONS (avec coordonnées)
-5. Conseils (optionnel)
+3. NAV3 (dans LEFT PANEL, avec text-anchor="middle")
+4. NAV4 (dans RIGHT PANEL, avec text-anchor="middle")
+5. SUBTABS (sous NAV4)
+6. ACTIONS (avec coordonnées)
 
 ### 6.3 Template HTML final
 
@@ -270,30 +377,56 @@ def find_and_wrap_text(svg_content, label, url, x, y, tolerance=5):
 
 ---
 
-## 7. Convention de nommage
+## 7. Convention de nommage (alignée NAV3/NAV4)
 
-### 7.1 Mapping SVG → HTML
+### 7.1 Mapping SVG → HTML (avec NAV3)
 
 | Pattern SVG | Chemin HTML |
 |-------------|-------------|
-| `target_.{univers}.{section}.{tab}.svg` | `/{univers}/{section}/{tab}.html` |
-| `target_.{univers}.{section}.index.svg` | `/{univers}/{section}/index.html` |
-| `target_.{univers}.index.svg` | `/{univers}/index.html` |
+| `target_.{nav1}.{nav2}.{nav3}.{nav4}.svg` | `/{nav1}/{nav2}/{nav3}/{nav4}.html` |
+| `target_.{nav1}.{nav2}.{nav3}.{nav4}.modal-{action}.svg` | `/{nav1}/{nav2}/{nav3}/{nav4}/modal-{action}.html` |
+| `target_.{nav1}.{nav2}.index.svg` | `/{nav1}/{nav2}/index.html` |
+| `target_.{nav1}.index.svg` | `/{nav1}/index.html` |
 
-### 7.2 Exemples concrets
+### 7.2 Exemples concrets (Hosting)
+
+| Fichier SVG | Fichier HTML | NAV3 | NAV4 |
+|-------------|--------------|------|------|
+| `target_.web-cloud.hosting.general.general.svg` | `/web-cloud/hosting/general/general.html` | general | general |
+| `target_.web-cloud.hosting.general.offer.svg` | `/web-cloud/hosting/general/offer.html` | general | offer |
+| `target_.web-cloud.hosting.general.statistics.svg` | `/web-cloud/hosting/general/statistics.html` | general | statistics |
+| `target_.web-cloud.hosting.sites.multisite.svg` | `/web-cloud/hosting/sites/multisite.html` | sites | multisite |
+| `target_.web-cloud.hosting.sites.ssl.svg` | `/web-cloud/hosting/sites/ssl.html` | sites | ssl |
+| `target_.web-cloud.hosting.expert.ftp.svg` | `/web-cloud/hosting/expert/ftp.html` | expert | ftp |
+| `target_.web-cloud.hosting.expert.database.svg` | `/web-cloud/hosting/expert/database.html` | expert | database |
+| `target_.web-cloud.hosting.expert.cdn.svg` | `/web-cloud/hosting/expert/cdn.html` | expert | cdn |
+
+### 7.3 Exemples concrets (Domain)
+
+| Fichier SVG | Fichier HTML | NAV3 | NAV4 |
+|-------------|--------------|------|------|
+| `target_.web-cloud.domain.general.general.svg` | `/web-cloud/domain/general/general.html` | general | general |
+| `target_.web-cloud.domain.general.contacts.svg` | `/web-cloud/domain/general/contacts.html` | general | contacts |
+| `target_.web-cloud.domain.dns.zone.svg` | `/web-cloud/domain/dns/zone.html` | dns | zone |
+| `target_.web-cloud.domain.dns.dnssec.svg` | `/web-cloud/domain/dns/dnssec.html` | dns | dnssec |
+| `target_.web-cloud.domain.expert.glue.svg` | `/web-cloud/domain/expert/glue.html` | expert | glue |
+| `target_.web-cloud.domain.expert.tasks.svg` | `/web-cloud/domain/expert/tasks.html` | expert | tasks |
+
+### 7.4 Modales
 
 | Fichier SVG | Fichier HTML |
 |-------------|--------------|
-| `target_.web-cloud.domain.general.svg` | `/web-cloud/domain/general.html` |
-| `target_.web-cloud.domain.zone.svg` | `/web-cloud/domain/zone.html` |
-| `target_.web-cloud.hosting.ftp.svg` | `/web-cloud/hosting/ftp.html` |
-| `target_.web-cloud.voip.line.general.svg` | `/web-cloud/voip/line/general.html` |
+| `target_.web-cloud.hosting.expert.ftp.modal-create.svg` | `/web-cloud/hosting/expert/ftp/modal-create.html` |
+| `target_.web-cloud.hosting.expert.ftp.modal-delete.svg` | `/web-cloud/hosting/expert/ftp/modal-delete.html` |
+| `target_.web-cloud.domain.dns.zone.modal-add.svg` | `/web-cloud/domain/dns/zone/modal-add.html` |
 
 ---
 
-## 8. Navigation (NAV1, NAV2, NAV3)
+## 8. Navigation complète (NAV1, NAV2, NAV3, NAV4, SUBTABS)
 
 ### 8.1 NAV1 - Header bleu (y ≈ 32)
+
+Position: y=0-50, background=#000E9C
 
 | Label | URL | X |
 |-------|-----|---|
@@ -308,30 +441,125 @@ def find_and_wrap_text(svg_content, label, url, x, y, tolerance=5):
 
 ### 8.2 NAV2 - Sous-header (y ≈ 75)
 
+Position: y=50-90, background=#FFFFFF
+
 **Web Cloud :**
 
 | Label | URL | X |
 |-------|-----|---|
 | Accueil | `/static/web-cloud/index.html` | 40 |
 | Domaines et DNS | `/static/web-cloud/domain/index.html` | 110 |
-| Hebergement | `/static/web-cloud/hosting/general.html` | 240 |
+| Hébergement | `/static/web-cloud/hosting/index.html` | 240 |
 | Wordpress | `/static/web-cloud/wordpress/index.html` | 345 |
 | Emails | `/static/web-cloud/emails/index.html` | 430 |
-| VoIP | `/static/web-cloud/voip/lines/general.html` | 500 |
-| Acces | `/static/web-cloud/access/pack-xdsl/list.html` | 550 |
+| VoIP | `/static/web-cloud/voip/index.html` | 500 |
+| Accès | `/static/web-cloud/access/index.html` | 550 |
 
-### 8.3 NAV3 - Tabs contextuels
+### 8.3 NAV3 - Groupement (LEFT PANEL)
 
-Les tabs NAV3 utilisent `text-anchor="middle"`, pas besoin de coordonnées X.
+**Position :** Dans le LEFT PANEL (280px), **AU-DESSUS** de la barre de recherche.
+**Rôle :** Filtre les NAV4 (tabs) affichés dans le RIGHT PANEL.
+**Style :** Boutons toggle avec `text-anchor="middle"`.
 
-**Domain tabs :**
-`general`, `zone`, `dns-servers`, `redirections`, `dynhost`, `glue`, `dnssec`, `contacts`, `tasks`, `alldom`
+| Section (NAV2) | NAV3 disponibles | Description |
+|----------------|------------------|-------------|
+| Hosting | [Général] [Sites] [Expert] | 3 groupements |
+| Domain | [Général] [DNS] [Expert] | 3 groupements |
+| Emails | [Comptes] [Sécurité] [Avancé] | 3 groupements |
+| VoIP Lines | [Général] [Appels] [Options] | 3 groupements |
+| VoIP Groups | [Dashboard] [Services] [Admin] | 3 groupements |
+| Wordpress | [Général] [Extensions] | 2 groupements |
 
-**Hosting tabs :**
-`general`, `multisite`, `ftp`, `database`, `cron`, `modules`, `ssl`, `cdn`, `tasks`
+**Comportement :**
+- Clic sur NAV3 → filtre les NAV4 affichés dans RIGHT PANEL
+- La liste des services (sidebar) reste identique
+- [Général] est le groupement par défaut au chargement
+- Le premier NAV4 du groupement est auto-sélectionné
 
-**VoIP Line tabs :**
-`general`, `phone`, `calls`, `forward`, `voicemail`, `consumption`, `options`
+**JSON :**
+```json
+"nav3": {
+  "active": "Expert",
+  "position": "left_panel",
+  "items": [
+    {"label": "Général", "id": "general", "url": "/static/web-cloud/hosting/general/general.html"},
+    {"label": "Sites", "id": "sites", "url": "/static/web-cloud/hosting/sites/multisite.html"},
+    {"label": "Expert", "id": "expert", "url": "/static/web-cloud/hosting/expert/ftp.html"}
+  ]
+}
+```
+
+### 8.4 NAV4 - Fonction (RIGHT PANEL tabs)
+
+**Position :** Dans le RIGHT PANEL, sous le titre du service.
+**Rôle :** Tabs principaux de navigation par fonction.
+**Style :** Boutons pill avec `text-anchor="middle"`.
+
+**Hosting - NAV4 par groupement NAV3 :**
+
+| NAV3 (Groupement) | NAV4 (Fonction) disponibles |
+|-------------------|----------------------------|
+| **Général** | general, offer, statistics, modules, logs, seo, indy |
+| **Sites** | multisite, ssl |
+| **Expert** | ftp, database, clouddb, cdn, boost, emails, envvars, runtimes, cron, tasks |
+
+**Domain - NAV4 par groupement NAV3 :**
+
+| NAV3 (Groupement) | NAV4 (Fonction) disponibles |
+|-------------------|----------------------------|
+| **Général** | general, contacts, alldom |
+| **DNS** | zone, dnssec, dnsservers, dynhost, spf, dkim, dmarc, arc, caa, bimi |
+| **Expert** | glue, tasks |
+
+**Emails - NAV4 par groupement NAV3 :**
+
+| NAV3 (Groupement) | NAV4 (Fonction) disponibles |
+|-------------------|----------------------------|
+| **Comptes** | accounts, redirections, responders, lists |
+| **Sécurité** | dns-config, antispam, signature |
+| **Avancé** | resources, contacts, audit, devices, tasks |
+
+**JSON :**
+```json
+"nav4": {
+  "active": "FTP",
+  "position": "right_panel",
+  "group": "expert",
+  "items": [
+    {"label": "FTP", "url": "/static/web-cloud/hosting/expert/ftp.html"},
+    {"label": "BDD", "url": "/static/web-cloud/hosting/expert/database.html"},
+    {"label": "CDN", "url": "/static/web-cloud/hosting/expert/cdn.html"}
+  ]
+}
+```
+
+### 8.5 SUBTABS (sous NAV4, optionnel)
+
+**Position :** Sous les tabs NAV4, dans le RIGHT PANEL.
+**Rôle :** Sous-navigation au sein d'une fonction NAV4.
+**Style :** Texte souligné, actif=primary+underline, inactif=muted.
+
+**Exemples de SUBTABS :**
+
+| NAV4 (Fonction) | SUBTABS disponibles |
+|-----------------|---------------------|
+| Database | [Statut] [Statistiques] [Dumps] |
+| Logs | [Logs Web] [Logs Erreurs] |
+| Extensions (WordPress) | [Thèmes] [Plugins] |
+| Consommation (VoIP) | [Appels entrants] [Appels sortants] |
+
+**JSON :**
+```json
+"subtabs": {
+  "active": "Statut",
+  "parent": "database",
+  "items": [
+    {"label": "Statut", "url": "/static/web-cloud/hosting/expert/database.html"},
+    {"label": "Statistiques", "url": "/static/web-cloud/hosting/expert/database-stats.html"},
+    {"label": "Dumps", "url": "/static/web-cloud/hosting/expert/database-dumps.html"}
+  ]
+}
+```
 
 ---
 
@@ -339,10 +567,11 @@ Les tabs NAV3 utilisent `text-anchor="middle"`, pas besoin de coordonnées X.
 
 ### 9.1 discover_json_v2.py
 
-Phase 1 : Analyse SVG → Crée JSON
+Phase 1 : Analyse SVG → Crée JSON (aligné nouvelle terminologie)
 
 ```bash
-python3 /home/ubuntu/action-static/discover_json_v2.py web-cloud/domain
+python3 /home/ubuntu/action-static/discover_json_v2.py web-cloud/hosting
+python3 /home/ubuntu/action-static/discover_json_v2.py web-cloud/hosting/expert/ftp
 ```
 
 ### 9.2 generate_batch_html_v2.py
@@ -350,7 +579,8 @@ python3 /home/ubuntu/action-static/discover_json_v2.py web-cloud/domain
 Phase 2 : SVG + JSON → HTML
 
 ```bash
-python3 /home/ubuntu/action-static/generate_batch_html_v2.py web-cloud/domain
+python3 /home/ubuntu/action-static/generate_batch_html_v2.py web-cloud/hosting
+python3 /home/ubuntu/action-static/generate_batch_html_v2.py web-cloud/hosting/expert/ftp
 ```
 
 ---
@@ -358,13 +588,14 @@ python3 /home/ubuntu/action-static/generate_batch_html_v2.py web-cloud/domain
 ## 10. Workflow complet
 
 ```
-1. DISCOVER   → python3 discover_json_v2.py <section>
+1. DISCOVER   → python3 discover_json_v2.py <nav1>/<nav2>
                Analyse SVG, crée les fichiers JSON
 
 2. VÉRIFIER   → Inspecter les JSON générés
+               Vérifier nav3, nav4, subtabs, actions
                Corriger manuellement si nécessaire
 
-3. GENERATE   → python3 generate_batch_html_v2.py <section>
+3. GENERATE   → python3 generate_batch_html_v2.py <nav1>/<nav2>
                Combine SVG + JSON → HTML avec liens
 
 4. DÉPLOYER   → /home/ubuntu/aiapp/scripts/D3-deploy_static.sh
@@ -408,13 +639,11 @@ Toujours extraire les coordonnées pour :
 - NAV2 (x, y=75)
 - ACTIONS (x, y variables)
 
-### 12.3 Détecter TOUTES les actions
+### 12.3 Respecter la hiérarchie NAV3/NAV4
 
-Ne pas oublier les patterns :
-- `→` (flèche droite)
-- `+` (ajout)
-- `↻` (refresh)
-- Verbes : Modifier, Supprimer, Activer, Désactiver, Commander, Exporter, Importer
+- NAV3 = Groupement (LEFT PANEL) → filtre les NAV4
+- NAV4 = Fonction (RIGHT PANEL) → tabs principaux
+- Ne pas confondre avec l'ancienne terminologie
 
 ### 12.4 Gérer les accents
 
@@ -430,19 +659,23 @@ Supporter les variantes avec/sans accents :
 ### 13.1 Vérifier le JSON généré
 
 ```bash
-cat /home/ubuntu/target_manager_svg/web-cloud/domain/target_.web-cloud.domain.general.json | jq '.actions'
+# Vérifier structure NAV3/NAV4
+cat /home/ubuntu/target_manager_svg/web-cloud/hosting/expert/target_.web-cloud.hosting.expert.ftp.json | jq '.nav3, .nav4'
+
+# Vérifier les actions
+cat fichier.json | jq '.actions'
 ```
 
 ### 13.2 Compter les liens dans le HTML
 
 ```bash
-grep -c '<a href=' /home/ubuntu/aiapp/static/web-cloud/domain/general.html
+grep -c '<a href=' /home/ubuntu/aiapp/static/web-cloud/hosting/expert/ftp.html
 ```
 
 ### 13.3 Vérifier une action spécifique
 
 ```bash
-grep -E 'Modifier|Renouveler|Commander' /home/ubuntu/aiapp/static/web-cloud/domain/general.html
+grep -E 'Modifier|Rafraîchir|Ajouter' /home/ubuntu/aiapp/static/web-cloud/hosting/expert/ftp.html
 ```
 
 ---
@@ -451,8 +684,10 @@ grep -E 'Modifier|Renouveler|Commander' /home/ubuntu/aiapp/static/web-cloud/doma
 
 | Commande | Phase | Description |
 |----------|-------|-------------|
-| `discover <section>` | 1 | Analyse SVG → crée JSON |
-| `generate <section>` | 2 | SVG + JSON → HTML |
+| `discover <nav1>/<nav2>` | 1 | Analyse SVG → crée JSON |
+| `discover <nav1>/<nav2>/<nav3>/<nav4>` | 1 | Analyse un SVG spécifique |
+| `generate <nav1>/<nav2>` | 2 | SVG + JSON → HTML |
+| `generate <nav1>/<nav2>/<nav3>/<nav4>` | 2 | Génère un HTML spécifique |
 | `deploy` | - | Déploie vers prod |
 | `status` | - | État actuel (SVG/JSON/HTML) |
 | `diff` | - | Liste les fichiers obsolètes |
@@ -466,12 +701,18 @@ grep -E 'Modifier|Renouveler|Commander' /home/ubuntu/aiapp/static/web-cloud/doma
 Après chaque DISCOVER, vérifier :
 
 ```bash
-# 1. Vérifier que toutes les URLs pointent vers des pages existantes
-for json in /home/ubuntu/target_manager_svg/web-cloud/<section>/*/*.json; do
-  grep -oP '"url": "/static/[^"]+\.html"' "$json" | \
-  while read url; do
-    target=$(echo "$url" | sed 's/"url": "\/static\///' | tr -d '"')
-    if [ ! -f "/home/ubuntu/aiapp/static/$target" ]; then
+# 1. Vérifier que nav3 et nav4 sont présents
+for json in /home/ubuntu/target_manager_svg/web-cloud/<section>/**/*.json; do
+  nav3=$(jq -r '.nav3.active // "MISSING"' "$json")
+  nav4=$(jq -r '.nav4.active // "MISSING"' "$json")
+  echo "$json: nav3=$nav3, nav4=$nav4"
+done
+
+# 2. Vérifier que toutes les URLs pointent vers des pages existantes
+for json in /home/ubuntu/target_manager_svg/web-cloud/<section>/**/*.json; do
+  jq -r '.. | .url? // empty' "$json" | while read url; do
+    target="${url#/static/}"
+    if [ ! -f "/home/ubuntu/aiapp/static/$target" ] && [ "$url" != "#" ]; then
       echo "❌ MANQUANT: $target (référencé dans $json)"
     fi
   done
@@ -482,22 +723,10 @@ done
 
 | Erreur | Cause | Solution |
 |--------|-------|----------|
-| URL vers `optin.html` | Ancien naming | Corriger vers `modal-xxx.html` |
-| URL vers `#` pour action | Action sans page | OK, comportement attendu |
-| URL vers page inexistante | SVG modal manquant | Créer le SVG ou corriger l'URL |
-| Doublon de coordonnées | Même X/Y pour 2 liens | Vérifier le SVG source |
-
-### 15.3 Correction manuelle du JSON
-
-Si une URL est incorrecte dans le JSON :
-
-```bash
-# Éditer directement le JSON
-nano /home/ubuntu/target_manager_svg/web-cloud/<section>/<page>/target_.<page>.json
-
-# Ou via sed
-sed -i 's|/static/web-cloud/wordpress/optin.html|/static/web-cloud/wordpress/modal-cdn.html|g' fichier.json
-```
+| `nav3` manquant | Ancien format JSON | Régénérer avec nouveau discover |
+| `nav4` au lieu de tabs | Ancien naming | Migrer JSON |
+| URL vers `#` | Action sans page | OK si action API, sinon corriger |
+| URL vers page inexistante | SVG manquant | Créer le SVG ou corriger l'URL |
 
 ---
 
@@ -505,36 +734,17 @@ sed -i 's|/static/web-cloud/wordpress/optin.html|/static/web-cloud/wordpress/mod
 
 ### 16.1 Cas identifié : index.svg vs general.svg
 
-Certaines sections ont deux pages avec le même contenu NAV3 :
+Certaines sections ont deux pages avec le même contenu :
 - `index.svg` : point d'entrée (landing page)
-- `general.svg` : onglet "Général" (info détaillée)
-
-**Exemple WordPress :**
-```
-target_.web-cloud.wordpress.index.svg      → /static/web-cloud/wordpress/index.html
-target_.web-cloud.wordpress.general.svg    → /static/web-cloud/wordpress/general.html
-```
-
-Ces deux pages ont le même NAV3 (6 onglets) mais des contenus différents.
+- `general.svg` : onglet "Général" (première fonction NAV4)
 
 ### 16.2 Règle de gestion
 
 | Situation | Action |
 |-----------|--------|
-| `index.svg` = landing page vide | Rediriger vers `general.html` |
+| `index.svg` = landing page vide | Rediriger vers `general/general.html` |
 | `index.svg` = contenu différent | Garder les deux |
 | `index.svg` = doublon exact | Supprimer `index.svg` |
-
-### 16.3 Comment détecter les doublons
-
-```bash
-# Comparer le NAV3 de index vs general
-diff <(grep 'nav3' index.json) <(grep 'nav3' general.json)
-
-# Si identique, comparer le contenu principal
-diff -y <(sed -n '/<g transform="translate(0, 95)">/,/<\/g>/p' index.svg) \
-        <(sed -n '/<g transform="translate(0, 95)">/,/<\/g>/p' general.svg)
-```
 
 ---
 
@@ -543,251 +753,139 @@ diff -y <(sed -n '/<g transform="translate(0, 95)">/,/<\/g>/p' index.svg) \
 ### 17.1 Pourquoi des mappings spécifiques ?
 
 Chaque section a ses propres conventions d'actions et URLs cibles.
-Le script `discover_json_v2.py` utilise un dictionnaire `subsection_mapping`.
+Le script `discover_json_v2.py` utilise un dictionnaire `section_mapping`.
 
-### 17.2 Mapping WordPress
+### 17.2 Mapping Hosting (avec NAV3)
 
 ```python
-"wordpress": {
-    "configurer cdn": "/static/web-cloud/wordpress/modal-cdn.html",
-    "creer un site": "/static/web-cloud/wordpress/modal-create.html",
-    "créer un site": "/static/web-cloud/wordpress/modal-create.html",
-    "importer un site": "/static/web-cloud/wordpress/modal-import.html",
-    "supprimer le site": "/static/web-cloud/wordpress/modal-delete.html",
-    "+ ajouter domaine": "/static/web-cloud/wordpress/modal-domain-add.html",
-    "restaurer": "/static/web-cloud/wordpress/modal-backup-restore.html",
-    "configurer ssl": "/static/web-cloud/wordpress/modal-ssl.html",
-    "+ creer une sauvegarde": "/static/web-cloud/wordpress/modal-backup-restore.html",
-    "acceder a l'admin": None,  # Lien externe, pas de page
+"hosting": {
+    # Actions groupement Expert
+    "modifier utilisateur ftp": "/static/web-cloud/hosting/expert/ftp/modal-edit.html",
+    "ajouter utilisateur ftp": "/static/web-cloud/hosting/expert/ftp/modal-create.html",
+    "créer base de données": "/static/web-cloud/hosting/expert/database/modal-create.html",
+
+    # Actions groupement Sites
+    "ajouter un domaine": "/static/web-cloud/hosting/sites/multisite/modal-add.html",
+    "commander ssl": "/static/web-cloud/hosting/sites/ssl/modal-order.html",
+
+    # Actions groupement Général
+    "modifier l'offre": "/static/web-cloud/hosting/general/offer/modal-change.html",
 }
 ```
 
-### 17.3 Mapping Domain
+### 17.3 Mapping Domain (avec NAV3)
 
 ```python
 "domain": {
-    "modifier →": "/static/web-cloud/domain/dns-servers.html",
-    "zone dns →": "/static/web-cloud/domain/zone.html",
-    "↻ renouveler": "/static/web-cloud/domain/modal-renew.html",
-    "+ ajouter une entrée": "/static/web-cloud/domain/modal-zone-record-add.html",
-    "modifier ttl": "/static/web-cloud/domain/modal-zone-ttl.html",
-    "activer dnssec": "/static/web-cloud/domain/modal-dnssec.html",
-}
-```
+    # Actions groupement Général
+    "modifier →": "/static/web-cloud/domain/general/contacts.html",
+    "↻ renouveler": "/static/web-cloud/domain/general/general/modal-renew.html",
 
-### 17.4 Mapping VoIP
-
-```python
-"voip": {
-    "configurer renvoi": "/static/web-cloud/voip/lines/forward.html",
-    "modifier mot de passe": "/static/web-cloud/voip/lines/modal-password.html",
-    "commander telephone": "/static/web-cloud/voip/lines/modal-phone-order.html",
-    "renouveler": "/static/web-cloud/voip/groups/modal-renew.html",
-}
-```
-
-### 17.5 Comment ajouter un nouveau mapping
-
-1. Identifier les actions uniques de la section
-2. Ajouter au dictionnaire `subsection_mapping` dans `discover_json_v2.py`
-3. Re-exécuter DISCOVER sur la section
-4. Valider les JSON générés
-
-```python
-# Dans discover_json_v2.py, fonction determine_action_url()
-subsection_mapping = {
-    "nouvelle_section": {
-        "action label": "/static/path/to/target.html",
-    }
+    # Actions groupement DNS
+    "+ ajouter une entrée": "/static/web-cloud/domain/dns/zone/modal-add.html",
+    "modifier ttl": "/static/web-cloud/domain/dns/zone/modal-ttl.html",
+    "activer dnssec": "/static/web-cloud/domain/dns/dnssec/modal-enable.html",
 }
 ```
 
 ---
 
-## 18. Résumé des bonnes pratiques
+## 18. RÉPERTOIRES DE SUIVI
 
-### 18.1 Avant DISCOVER
-- Vérifier que tous les SVG source existent
-- S'assurer que les modals ont leur SVG
-
-### 18.2 Après DISCOVER
-- Valider les JSON générés
-- Vérifier les URLs (pas de `optin.html` ou URLs cassées)
-- Corriger manuellement si nécessaire
-
-### 18.3 Après GENERATE
-- Tester les liens en local
-- Vérifier le nombre de `<a href>` dans les HTML
-- Déployer et tester en prod
-
----
-
-## 19. RÉPERTOIRES DE SUIVI
-
-### 19.1 Structure
+### 18.1 Structure
 
 ```
 /home/ubuntu/action-static/
 ├── todo/                    # SVG à créer (pages manquantes)
-│   ├── wordpress-missing.txt
-│   ├── domain-missing.txt
-│   └── voip-missing.txt
+│   ├── web-cloud.hosting.txt
+│   ├── web-cloud.domain.txt
+│   └── web-cloud.voip.txt
 ├── toremove/                # SVG à supprimer (doublons)
-│   ├── wordpress-duplicates.txt
-│   └── hosting-duplicates.txt
+│   └── duplicates.txt
 └── tmp/                     # Backups temporaires
 ```
 
-### 19.2 Répertoire todo/ - Pages manquantes
+### 18.2 Format fichiers todo (avec NAV3/NAV4)
 
-Contient les fichiers listant les SVG à créer :
-
-```bash
-# Format du fichier <section>-missing.txt
-=== Analyse <Section> - SVG manquants ===
-
-MANQUANT: modal-xxx.html (SVG: target_.web-cloud.xxx.modal-xxx.svg)
-  Référencé dans: page.json
 ```
+=== SVG manquants pour web-cloud.hosting ===
+Date: 2026-01-02
 
-**Quand ajouter :**
-- Action dans un JSON pointe vers une page sans SVG
-- Nouveau bouton ajouté dans un SVG existant
+NAV3: expert
+❌ target_.web-cloud.hosting.expert.ftp.modal-create.svg
+❌ target_.web-cloud.hosting.expert.database.modal-create.svg
 
-**Script de détection :**
-```bash
-# Trouver les pages référencées sans SVG
-for json in /home/ubuntu/target_manager_svg/web-cloud/<section>/*/*.json; do
-  grep -oP '"url": "/static/[^"]+\.html"' "$json" | while read url; do
-    page=$(echo "$url" | sed 's|.*/||' | tr -d '"')
-    svg_name="target_.web-cloud.<section>.${page%.html}.svg"
-    if ! find /home/ubuntu/target_manager_svg -name "$svg_name" | grep -q .; then
-      echo "MANQUANT: $page"
-    fi
-  done
-done
-```
+NAV3: sites
+❌ target_.web-cloud.hosting.sites.ssl.modal-order.svg
 
-### 19.3 Répertoire toremove/ - Doublons
-
-Contient les fichiers listant les SVG redondants :
-
-```bash
-# Format du fichier <section>-duplicates.txt
-=== <Section> - Doublons potentiels ===
-
-Fichiers comparés:
-  - index.svg: 238 lignes
-  - general.svg: 196 lignes
-
-NAV3 identiques? OUI
-
-RECOMMANDATION:
-  index.svg peut être supprimé ou redirigé vers general.html
-  Fichier: /path/to/index.svg
-```
-
-**Cas typiques de doublons :**
-
-| Doublon | Original | Action |
-|---------|----------|--------|
-| `index.svg` | `general.svg` | Supprimer index, rediriger |
-| `dashboard.svg` | `general.svg` | Garder si contenu différent |
-| `list.svg` | `index.svg` | Vérifier le contenu |
-
-### 19.4 Workflow de nettoyage
-
-```bash
-# 1. Analyser une section
-python3 discover_json_v2.py web-cloud/<section>
-
-# 2. Vérifier les manquants
-cat /home/ubuntu/action-static/todo/<section>-missing.txt
-
-# 3. Vérifier les doublons
-cat /home/ubuntu/action-static/toremove/<section>-duplicates.txt
-
-# 4. Créer les SVG manquants ou corriger les JSON
-# 5. Supprimer les doublons après validation
-
-# 6. Régénérer
-python3 generate_batch_html_v2.py web-cloud/<section>
-```
-
-### 19.5 Ne jamais supprimer sans vérification
-
-Avant de supprimer un fichier listé dans `toremove/` :
-
-1. Vérifier qu'aucun lien ne pointe vers cette page
-2. Vérifier que le contenu est vraiment dupliqué
-3. Mettre en place une redirection si nécessaire
-4. Faire un backup dans `tmp/`
-
-```bash
-# Backup avant suppression
-cp --backup=numbered fichier.svg /home/ubuntu/action-static/tmp/
+NAV3: general
+✅ Tous les SVG présents
 ```
 
 ---
 
-## 20. NAV4 - SUB-TABS
+## 19. SUBTABS (anciennement NAV4 dans v1)
 
-### 20.1 Définition
+### 19.1 Définition
 
-NAV4 = sous-onglets à l'intérieur d'un NAV3. Exemple : Extensions → Thèmes / Plugins
+SUBTABS = sous-onglets à l'intérieur d'un NAV4 (Fonction).
+Ce ne sont **PAS** des NAV4, mais un niveau optionnel de sous-navigation.
 
-### 20.2 Détection
+### 19.2 Détection
 
-- Position : sous NAV3 (y ≈ 14 dans le groupe translate)
-- PAS de `text-anchor="middle"`
-- Classe `text-primary` ou `text-dark`
+- Position : sous les tabs NAV4 (y variable selon page)
+- PAS de `text-anchor="middle"` (aligné à gauche généralement)
+- Classe `text-primary` (actif) ou `text-muted` (inactif)
 
 ```xml
-<g transform="translate(0, 95)">
+<g transform="translate(0, 70)">
   <text x="16" y="14" class="text-primary" font-size="12" font-weight="600">Thèmes</text>
   <text x="80" y="14" class="text-muted" font-size="12">Plugins</text>
 </g>
 ```
 
-### 20.3 JSON
+### 19.3 JSON
 
 ```json
-"nav4": {
+"subtabs": {
   "active": "Thèmes",
+  "parent": "extensions",
   "items": [
-    {"label": "Thèmes", "url": "/static/web-cloud/wordpress/extensions-themes.html"},
-    {"label": "Plugins", "url": "/static/web-cloud/wordpress/extensions-plugins.html"}
+    {"label": "Thèmes", "url": "/static/web-cloud/wordpress/extensions/themes.html"},
+    {"label": "Plugins", "url": "/static/web-cloud/wordpress/extensions/plugins.html"}
   ]
 }
 ```
 
-### 20.4 Sections avec NAV4
+### 19.4 Sections avec SUBTABS
 
-| Section | NAV3 parent | NAV4 items |
-|---------|-------------|------------|
+| Section | NAV4 parent | SUBTABS |
+|---------|-------------|---------|
 | WordPress | Extensions | Thèmes, Plugins |
+| Hosting | Database | Statut, Statistiques, Dumps |
+| Hosting | Logs | Logs Web, Logs Erreurs |
 | VoIP | Consommation | Appels entrants, Appels sortants |
 
 ---
 
-## 21. LIENS EXTERNES
+## 20. LIENS EXTERNES
 
-### 21.1 Définition
+### 20.1 Définition
 
 Liens qui pointent vers des ressources externes (pas de page HTML interne).
 
-**RÈGLE :** Tous les liens externes pointent vers `/static/lien_externe.html` (même onglet)
+**RÈGLE :** Tous les liens externes pointent vers `/static/lien_externe.html`
 
-### 21.2 Types de liens externes
+### 20.2 Types de liens externes
 
-| Label | Type | Comportement |
-|-------|------|--------------|
-| `📝 Admin WP` | Lien externe | Ouvre l'admin WordPress du client |
-| `🌐 Visiter` | Lien externe | Ouvre le site du client |
-| `Guides` | Lien externe | Ouvre la documentation OVH |
-| `https://...` | URL affichée | Lien vers le site |
+| Label | Type | Destination |
+|-------|------|-------------|
+| `📝 Admin WP` | Externe | `/static/lien_externe.html` |
+| `🌐 Visiter` | Externe | `/static/lien_externe.html` |
+| `Guides` | Externe | `/static/lien_externe.html` |
+| `https://...` | URL affichée | `/static/lien_externe.html` |
 
-### 21.3 JSON
+### 20.3 JSON
 
 ```json
 {
@@ -799,72 +897,47 @@ Liens qui pointent vers des ressources externes (pas de page HTML interne).
 }
 ```
 
-### 21.4 Génération HTML
-
-- Tous les liens externes → `/static/lien_externe.html` (même onglet)
-- Une seule page pour tous les liens externes (standardisé)
-
-```html
-<a href="/static/lien_externe.html" style="cursor:pointer" title="Lien externe">
-  <text>📝 Admin WP</text>
-</a>
-```
-
-### 21.5 Page lien_externe.html
-
-Fichier : `/home/ubuntu/aiapp/static/lien_externe.html`
-
-Cette page informe l'utilisateur qu'il s'agit d'un prototype et que le lien externe n'est pas disponible.
-
 ---
 
-## 22. BOUTONS MODAUX
+## 21. BOUTONS MODAUX
 
-### 22.1 Définition
+### 21.1 Définition
 
 Boutons dans les modales (Annuler, Créer, Supprimer, etc.).
 
-### 22.2 Types de boutons
+### 21.2 Types de boutons
 
 | Label | Type | URL cible |
 |-------|------|-----------|
 | `Annuler` | cancel | Page parent |
 | `Fermer` | close | Page parent |
-| `Créer le site` | submit | `#` (action API) |
-| `Enregistrer` | submit | `#` |
-| `Supprimer` | danger | `#` |
-| `Réinitialiser` | submit | `#` |
+| `Créer` | submit | `tasks.html` |
+| `Enregistrer` | submit | Page parent |
+| `Supprimer` | danger | `tasks.html` puis `index.html` |
 
-### 22.3 Détection
+### 21.3 Détermination de l'URL parent (avec NAV3/NAV4)
 
-- Position : bas de la modale (y > 300 généralement)
-- Dans un footer après `<line>` de séparation
-- `text-anchor="middle"` souvent
+```python
+def get_parent_page(modal_filepath):
+    """
+    /web-cloud/hosting/expert/ftp/modal-create.html
+    → /web-cloud/hosting/expert/ftp.html
 
-### 22.4 JSON
-
-```json
-"modal_buttons": [
-  {"label": "Annuler", "type": "cancel", "url": "/static/web-cloud/wordpress/general.html"},
-  {"label": "Créer le site", "type": "submit", "url": "#"}
-]
-```
-
-### 22.5 Détermination de l'URL parent
-
-Pour les boutons `cancel` et `close`, l'URL parent est déduite du nom de fichier :
-
-```
-modal-create.html → parent = general.html ou index.html
-modal-delete.html → parent = general.html
-modal-domain-add.html → parent = domains.html
+    /web-cloud/domain/dns/zone/modal-add.html
+    → /web-cloud/domain/dns/zone.html
+    """
+    # Remonter d'un niveau depuis le dossier modal
+    parent_dir = os.path.dirname(modal_filepath)
+    nav4 = os.path.basename(parent_dir)
+    parent_parent = os.path.dirname(parent_dir)
+    return f"{parent_parent}/{nav4}.html"
 ```
 
 ---
 
-## 23. EMOJIS DANS LES LABELS
+## 22. EMOJIS DANS LES LABELS
 
-### 23.1 Emojis courants
+### 22.1 Emojis courants
 
 | Emoji | Signification | Type d'action |
 |-------|---------------|---------------|
@@ -878,492 +951,256 @@ modal-domain-add.html → parent = domains.html
 | 💡 | Conseil | Informatif (non cliquable) |
 | ⚠️ | Avertissement | Informatif (non cliquable) |
 
-### 23.2 Détection
-
-Les emojis peuvent être au début ou à la fin du label :
-- `📝 Admin WP` → Emoji préfixe
-- `Vider le cache 🗑` → Emoji suffixe
-
-### 23.3 Normalisation pour matching
-
-```python
-# Retirer les emojis pour le matching si nécessaire
-import re
-label_clean = re.sub(r'[\U0001F300-\U0001F9FF]', '', label).strip()
-```
-
 ---
 
-## 24. CATÉGORIES D'ÉLÉMENTS NON CLIQUABLES
+## 23. CATÉGORIES D'ÉLÉMENTS NON CLIQUABLES
 
-### 24.1 Classification
+### 23.1 Classification
 
-| Catégorie | Exemples | Raison | Action |
-|-----------|----------|--------|--------|
-| **Externe** | Admin WP, Visiter, Guides | Pointe hors du manager | `href="#"` avec title |
-| **JS** | Générer, Copier config, Vérifier | Action JavaScript locale | `href="#"` |
-| **Modal** | Restaurer, SSL, Supprimer | Devrait ouvrir une modale | Corriger vers `modal-xxx.html` |
-| **Informatif** | URLs affichées, badges | Pas une action | Ne pas wrapper |
+| Catégorie | Exemples | Action |
+|-----------|----------|--------|
+| **Externe** | Admin WP, Visiter, Guides | `href="/static/lien_externe.html"` |
+| **API** | Vider cache, MAJ, Rafraîchir | `href="tasks.html"` |
+| **Modal** | Restaurer, SSL, Supprimer | `href="modal-xxx.html"` |
+| **Informatif** | URLs affichées, badges | Ne pas wrapper |
 
-### 24.2 Analyse automatique
-
-```bash
-# Trouver les <text class="text-primary"> sans <a href>
-grep -E '<text[^>]*class="text-primary"[^>]*>[^<]+</text>' page.html | grep -v '<a href'
-```
-
-### 24.3 Résolution
+### 23.2 Résolution
 
 | Si catégorie | Alors |
 |--------------|-------|
-| Externe | Ajouter `<a href="/static/lien_externe.html">` |
-| JS | Ajouter `<a href="#">` |
-| Modal | Corriger JSON avec URL de la modale |
+| Externe | `<a href="/static/lien_externe.html">` |
+| API | `<a href="tasks.html">` |
+| Modal | `<a href="modal-xxx.html">` |
 | Informatif | Laisser tel quel |
 
 ---
 
-## 25. FORMAT FICHIERS TODO
+## 24. FORMAT FICHIERS TODO (avec NAV3/NAV4)
 
-### 25.1 Nouveau format de nommage
+### 24.1 Nouveau format de nommage
 
-**Ancien :** `<section>-missing.txt`
-**Nouveau :** `NAV1.NAV2.NAV3.txt`
+**Format :** `{nav1}.{nav2}.txt`
 
 Exemples :
-- `web-cloud.wordpress.txt` (toutes les pages WordPress)
-- `web-cloud.domain.general.txt` (une page spécifique)
-- `bare-metal.dedicated.txt`
+- `web-cloud.hosting.txt`
+- `web-cloud.domain.txt`
+- `web-cloud.voip.txt`
 
-### 25.2 Contenu du fichier
+### 24.2 Contenu du fichier
 
 ```
-=== SVG manquants pour web-cloud.wordpress ===
-Date: 2025-12-29
+=== SVG manquants pour web-cloud.hosting ===
+Date: 2026-01-02
 
-Pages HTML créées manuellement (sans SVG source):
-- modal-password.html (créé le 2025-12-29)
+NAV3: general (Groupement Général)
+├── NAV4: general ✅
+├── NAV4: offer ✅
+├── NAV4: statistics ✅
+├── NAV4: modules ✅
+│   └── modal-install ❌ MANQUANT
+├── NAV4: logs ✅
+├── NAV4: seo ✅
+└── NAV4: indy ✅
 
-SVG existants (16 fichiers):
-✅ target_.web-cloud.wordpress.index.svg
-✅ target_.web-cloud.wordpress.general.svg
+NAV3: sites (Groupement Sites)
+├── NAV4: multisite ✅
+│   ├── modal-add ❌ MANQUANT
+│   └── modal-edit ✅
+└── NAV4: ssl ✅
+    └── modal-order ❌ MANQUANT
+
+NAV3: expert (Groupement Expert)
+├── NAV4: ftp ✅
+│   ├── modal-create ❌ MANQUANT
+│   └── modal-delete ✅
+├── NAV4: database ✅
 ...
 
-SVG à créer:
-❌ target_.web-cloud.wordpress.modal-password.svg
+Total: 4 SVG manquants
 ```
-
-### 25.3 Quand créer un fichier todo
-
-1. Après DISCOVER d'une section
-2. Quand une page HTML est créée manuellement
-3. Quand un lien pointe vers une page sans SVG source
 
 ---
 
-## 26. MODES D'EXÉCUTION
+## 25. MODES D'EXÉCUTION
 
-### 26.1 Deux environnements
+### 25.1 Deux environnements
 
-| Mode | Interface | Prompt chargé via | Actions disponibles |
-|------|-----------|-------------------|---------------------|
-| **Web** | claude.ai/chat | Copier-coller ou upload fichier | Toutes |
-| **Shell** | `claude` CLI | CLAUDE.md automatique | Toutes + filesystem direct |
+| Mode | Interface | Actions disponibles |
+|------|-----------|---------------------|
+| **Web** | claude.ai/chat | Toutes |
+| **Shell** | `claude` CLI | Toutes + filesystem direct |
 
-### 26.2 Différences clés
-
-| Aspect | Web | Shell |
-|--------|-----|-------|
-| Accès filesystem | Via upload/download | Direct |
-| Exécution bash | Non | Oui |
-| CLAUDE.md | À coller manuellement | Auto-chargé |
-| Persistence | Session chat | Session terminal |
-| Interruption | Fermer onglet | Ctrl+C |
-
-### 26.3 Format homogène des commandes
-
-Pour garantir l'interopérabilité, les commandes suivent ce format :
+### 25.2 Format homogène des commandes
 
 ```
-<action> [<cible>] [--options]
+<action> [<chemin>] [--options]
 ```
+
+**Chemins (alignés NAV1/NAV2/NAV3/NAV4) :**
+- `web-cloud` → Tout l'univers
+- `web-cloud/hosting` → Toute la section
+- `web-cloud/hosting/expert` → Tout le groupement NAV3
+- `web-cloud/hosting/expert/ftp` → Une fonction NAV4 spécifique
 
 **Exemples :**
-- `menu` → Affiche les actions disponibles
-- `status` → État actuel
-- `discover wordpress` → Analyse la section wordpress
-- `generate wordpress --force` → Régénère même si à jour
-
-### 26.4 Adaptation automatique
-
-Le prompt détecte le mode et adapte son comportement :
-
-| Si mode | Alors |
-|---------|-------|
-| Web | Proposer les commandes textuelles, afficher les résultats |
-| Shell | Exécuter directement, écrire les fichiers |
-
-### 26.5 Comment démarrer
-
-**Mode Web :**
-```
-1. Ouvrir claude.ai
-2. Coller le contenu de prompt_static.txt
-3. Ou uploader le fichier
-4. Taper: menu
-```
-
-**Mode Shell :**
-```bash
-cd /home/ubuntu/action-static
-claude
-# CLAUDE.md est chargé automatiquement
-# Taper: menu
-```
+- `discover web-cloud/hosting` → Analyse tous les SVG hosting
+- `generate web-cloud/hosting/expert/ftp` → Génère ftp.html uniquement
+- `check web-cloud/domain/dns` → Vérifie le groupement DNS
 
 ---
 
-## 27. ACTIONS STANDARD
+## 26. ACTIONS STANDARD
 
-### 27.1 Action `menu`
+### 26.1 Action `menu`
 
 Affiche toutes les actions disponibles avec leur description.
-
-**Commande :** `menu`
 
 **Output attendu :**
 ```
 ----------------*--------------------------*--------------------------------------------------------------------------------
                               STATIC SITE GENERATOR - SVG → JSON → HTML
+                              (Aligné terminologie NAV1/NAV2/NAV3/NAV4)
 ----------------*--------------------------*--------------------------------------------------------------------------------
 action          | parametres               | explication
 ----------------*--------------------------*--------------------------------------------------------------------------------
                 |                          |
     NAVIGATION  |                          |
 ----------------*--------------------------*--------------------------------------------------------------------------------
-init            |                          | reload les prompts: CLAUDE.md + prompt_static.txt
+init            |                          | reload les prompts
 menu            |                          | afficher ce menu
-help            | <action>                 | aide détaillée sur une action
-context         | NAV1                     | changer le contexte de travail (ex: context web-cloud)
-context         | NAV1/NAV2                | changer le contexte (ex: context wordpress)
+context         | <chemin>                 | changer le contexte (ex: context web-cloud/hosting)
 ----------------*--------------------------*--------------------------------------------------------------------------------
                 |                          |
     ANALYSE     |                          |
 ----------------*--------------------------*--------------------------------------------------------------------------------
 status          |                          | état global: compter SVG/JSON/HTML
-status          | NAV1                     | état d'un univers (ex: status web-cloud)
-status          | NAV1/NAV2                | état d'une section (ex: status wordpress)
-diff            |                          | comparer dates SVG/JSON/HTML, lister obsolètes
-diff            | NAV1/NAV2                | comparer une section spécifique
-list            | svg                      | lister tous les SVG
-list            | svg NAV1/NAV2            | lister SVG d'une section (ex: list svg wordpress)
-list            | json NAV1/NAV2           | lister JSON d'une section
-list            | html NAV1/NAV2           | lister HTML d'une section
-check           | NAV1/NAV2                | vérifier liens 404, éléments non cliquables d'une section
-check           | NAV1/NAV2/NAV3           | vérifier une page spécifique (ex: check wordpress/general)
-analyze         | NAV1/NAV2/NAV3           | analyse détaillée d'une page (liens, NAV, actions)
-todo            |                          | afficher tous les SVG manquants (dossier todo/)
-todo            | NAV1/NAV2                | SVG manquants d'une section
+status          | NAV1/NAV2                | état d'une section
+status          | NAV1/NAV2/NAV3           | état d'un groupement
+diff            |                          | comparer dates SVG/JSON/HTML
+check           | <chemin>                 | vérifier liens 404, nav3/nav4 manquants
+analyze         | NAV1/NAV2/NAV3/NAV4      | analyse détaillée d'une page
+todo            |                          | afficher tous les SVG manquants
 ----------------*--------------------------*--------------------------------------------------------------------------------
                 |                          |
     GÉNÉRATION  |                          |
 ----------------*--------------------------*--------------------------------------------------------------------------------
-discover        | NAV1/NAV2                | Phase 1: analyser SVG → créer JSON pour une section
-discover        | NAV1/NAV2/NAV3           | Phase 1: analyser un SVG spécifique → créer JSON
-generate        | NAV1/NAV2                | Phase 2: SVG + JSON → HTML pour une section
-generate        | NAV1/NAV2/NAV3           | Phase 2: générer un HTML spécifique
-generate        | NAV1/NAV2 --force        | régénérer même si à jour
-fix             | NAV1/NAV2                | corriger automatiquement les problèmes d'une section
-fix             | NAV1/NAV2/NAV3           | corriger une page spécifique
-fix             | NAV1/NAV2 --dry-run      | simuler sans écrire
+discover        | <chemin>                 | Phase 1: SVG → JSON
+generate        | <chemin>                 | Phase 2: JSON → HTML
+fix             | <chemin>                 | corriger automatiquement
 ----------------*--------------------------*--------------------------------------------------------------------------------
                 |                          |
     DÉPLOIEMENT |                          |
 ----------------*--------------------------*--------------------------------------------------------------------------------
-deploy          |                          | déployer tout vers prod (https://manager.di2amp.com/static/)
+deploy          |                          | déployer tout vers prod
 ----------------*--------------------------*--------------------------------------------------------------------------------
 
 📍 Contexte actuel: {CONTEXT}
-💡 Raccourcis: si contexte=wordpress, "discover general" = "discover wordpress/general"
 
 Exemples:
-  discover wordpress              → analyse tous les SVG wordpress, crée les JSON
-  generate wordpress --force      → régénère tous les HTML wordpress
-  check wordpress/general         → vérifie liens et éléments de general.html
-  analyze wordpress/backups       → analyse détaillée de backups.html
-  fix wordpress                   → corrige automatiquement les problèmes
-
-----------------*--------------------------*--------------------------------------------------------------------------------
+  discover web-cloud/hosting              → analyse tous les SVG, crée les JSON
+  generate web-cloud/hosting/expert/ftp   → génère ftp.html uniquement
+  check web-cloud/domain/dns              → vérifie le groupement DNS
 ```
 
-### 27.2 Liste des actions
+### 26.2 Actions par niveau
 
-| Action | Syntaxe | Niveau | Description |
-|--------|---------|--------|-------------|
-| `menu` | `menu` | - | Affiche les actions disponibles |
-| `help` | `help <action>` | - | Aide sur une action spécifique |
-| `context` | `context <path>` | NAV1-2 | Change le contexte de travail |
-| `status` | `status [path]` | NAV1-2 | État actuel (SVG/JSON/HTML) |
-| `diff` | `diff [path]` | NAV1-2 | Compare dates, liste obsolètes |
-| `list` | `list <type> [path]` | NAV1-2 | Liste fichiers (svg/json/html) |
-| `todo` | `todo [path]` | NAV1-2 | Affiche SVG manquants |
-| `discover` | `discover <path>` | NAV1-3 | Phase 1: SVG → JSON |
-| `generate` | `generate <path>` | NAV1-3 | Phase 2: JSON → HTML |
-| `check` | `check <path>` | NAV1-3 | Vérifie liens 404, non cliquables |
-| `fix` | `fix <path>` | NAV2-3 | Corrige problèmes automatiquement |
-| `analyze` | `analyze <page>` | NAV3 | Analyse détaillée d'une page |
-| `deploy` | `deploy` | NAV1 | Déploie vers prod |
-
-### 27.3 Action `check`
-
-Vérifie une section ou page pour détecter les problèmes.
-
-**Commande :** `check <path>`
-
-**Exemples :**
-```
-check wordpress           # Toute la section
-check wordpress/general   # Une page spécifique
-```
-
-**Output attendu :**
-```
-=== CHECK wordpress ===
-
-📄 Pages analysées: 16
-
-❌ Liens 404 (1):
-   general.html → modal-password.html (MANQUANT)
-
-⚠️ Éléments non cliquables (12):
-   backups.html:
-   - "↩ Restaurer" (x5) → Type: Modal
-   - "Guides" → Type: Externe
-
-   domains.html:
-   - "🔒 SSL" (x3) → Type: Modal
-   - "📋 Copier config" → Type: JS
-
-✅ Pages OK: 14/16
-
-Recommandation:
-→ fix wordpress/backups  (ajouter liens modaux)
-→ Créer modal-password.svg
-```
-
-### 27.4 Action `fix`
-
-Corrige automatiquement les problèmes simples.
-
-**Commande :** `fix <path>`
-
-**Ce qui est corrigé :**
-- Liens externes → `<a href="/static/lien_externe.html">`
-- Actions JS → `<a href="#">`
-- Boutons modaux → Lien vers modal-xxx.html si existe
-
-**Ce qui N'est PAS corrigé (nécessite intervention) :**
-- SVG manquants
-- URLs vers pages inexistantes
-- Structure NAV incorrecte
-
-### 27.5 Action `analyze`
-
-Analyse détaillée d'une page spécifique.
-
-**Commande :** `analyze <page>`
-
-**Output attendu :**
-```
-=== ANALYZE wordpress/general ===
-
-📄 Fichiers:
-   SVG: ✅ target_.web-cloud.wordpress.general.svg
-   JSON: ✅ target_.web-cloud.wordpress.general.json
-   HTML: ✅ /static/web-cloud/wordpress/general.html
-
-🔗 Liens (30 total):
-   NAV1: 6 liens ✅
-   NAV2: 7 liens ✅
-   NAV3: 6 liens ✅
-   NAV4: 0 liens
-   Actions: 11 liens
-
-⚠️ Non cliquables (2):
-   - "📝 Accéder à l'admin WordPress" → Externe
-   - "🌐 Visiter le site" → Externe
-
-📊 Score: 28/30 (93%)
-```
-
-### 27.6 Action `list`
-
-Liste les fichiers d'un type dans une section.
-
-**Commande :** `list <type> [path]`
-
-**Types :** `svg`, `json`, `html`, `all`
-
-**Exemples :**
-```
-list svg wordpress        # SVG de wordpress
-list json web-cloud       # Tous les JSON web-cloud
-list html                 # Tous les HTML
-list all wordpress        # SVG + JSON + HTML
-```
-
-### 27.7 Action `todo`
-
-Affiche le contenu des fichiers todo/.
-
-**Commande :** `todo`
-
-**Output attendu :**
-```
-=== TODO - SVG MANQUANTS ===
-
-📁 web-cloud.wordpress.txt (1 manquant):
-   ❌ target_.web-cloud.wordpress.modal-password.svg
-
-📁 web-cloud.domain.txt (3 manquants):
-   ❌ target_.web-cloud.domain.modal-renew.svg
-   ❌ target_.web-cloud.domain.modal-transfer.svg
-   ❌ target_.web-cloud.domain.modal-dnssec.svg
-
-Total: 4 SVG à créer
-```
-
-### 27.8 Options communes
-
-| Option | Description | Applicable à |
-|--------|-------------|--------------|
-| `--force` | Régénère même si à jour | generate |
-| `--dry-run` | Simule sans écrire | fix, generate |
-| `--verbose` | Affichage détaillé | tous |
-| `--quiet` | Affichage minimal | tous |
-
-**Exemples :**
-```
-generate wordpress --force      # Force régénération
-fix wordpress --dry-run         # Simule les corrections
-check wordpress --verbose       # Détails complets
-```
+| Action | NAV1 | NAV2 | NAV3 | NAV4 | Description |
+|--------|:----:|:----:|:----:|:----:|-------------|
+| `status` | ✅ | ✅ | ✅ | ❌ | État global ou section |
+| `diff` | ✅ | ✅ | ✅ | ❌ | Compare au niveau section |
+| `discover` | ✅ | ✅ | ✅ | ✅ | Analyse SVG |
+| `generate` | ✅ | ✅ | ✅ | ✅ | Génère HTML |
+| `check` | ✅ | ✅ | ✅ | ✅ | Vérifie liens |
+| `analyze` | ❌ | ❌ | ❌ | ✅ | Analyse une page |
+| `fix` | ❌ | ✅ | ✅ | ✅ | Corrige problèmes |
+| `todo` | ✅ | ✅ | ✅ | ❌ | SVG manquants |
+| `deploy` | ✅ | ❌ | ❌ | ❌ | Déploie tout |
 
 ---
 
-## 28. CONTEXTE DE NAVIGATION (NAV1/NAV2/NAV3)
+## 27. CONTEXTE DE NAVIGATION (aligné NAV1/NAV2/NAV3/NAV4)
 
-### 28.1 Hiérarchie des chemins
-
-Les actions utilisent un chemin qui reflète la navigation :
+### 27.1 Hiérarchie des chemins
 
 ```
-<NAV1>/<NAV2>/<NAV3>
+<NAV1>/<NAV2>/<NAV3>/<NAV4>
 ```
 
 | Niveau | Exemple | Description |
 |--------|---------|-------------|
 | NAV1 | `web-cloud` | Univers principal |
-| NAV2 | `web-cloud/wordpress` | Section |
-| NAV3 | `web-cloud/wordpress/general` | Page/Onglet |
+| NAV2 | `web-cloud/hosting` | Section (Produit) |
+| NAV3 | `web-cloud/hosting/expert` | Groupement (LEFT PANEL) |
+| NAV4 | `web-cloud/hosting/expert/ftp` | Fonction (RIGHT PANEL) |
 
-### 28.2 Syntaxe des chemins
-
-```bash
-# NAV1 seul → Tout l'univers
-check web-cloud
-
-# NAV1/NAV2 → Toute la section
-check web-cloud/wordpress
-discover wordpress              # Raccourci si NAV1 = web-cloud
-
-# NAV1/NAV2/NAV3 → Page spécifique
-analyze web-cloud/wordpress/general
-analyze wordpress/general       # Raccourci
-```
-
-### 28.3 Raccourcis par contexte
-
-Si le contexte NAV1 est évident (ex: travail sur web-cloud), les raccourcis sont autorisés :
-
-| Chemin complet | Raccourci | Contexte implicite |
-|----------------|-----------|-------------------|
-| `web-cloud/wordpress` | `wordpress` | NAV1 = web-cloud |
-| `web-cloud/wordpress/general` | `wordpress/general` | NAV1 = web-cloud |
-| `web-cloud/domain/zone` | `domain/zone` | NAV1 = web-cloud |
-| `bare-metal/dedicated/list` | `dedicated/list` | NAV1 = bare-metal |
-
-### 28.4 Actions par niveau
-
-| Action | NAV1 | NAV2 | NAV3 | Description |
-|--------|:----:|:----:|:----:|-------------|
-| `status` | ✅ | ✅ | ❌ | État global ou section |
-| `diff` | ✅ | ✅ | ❌ | Compare au niveau section |
-| `discover` | ✅ | ✅ | ✅ | Analyse un ou plusieurs SVG |
-| `generate` | ✅ | ✅ | ✅ | Génère un ou plusieurs HTML |
-| `check` | ✅ | ✅ | ✅ | Vérifie liens et éléments |
-| `analyze` | ❌ | ❌ | ✅ | Analyse une page spécifique |
-| `fix` | ❌ | ✅ | ✅ | Corrige section ou page |
-| `list` | ✅ | ✅ | ❌ | Liste fichiers |
-| `todo` | ✅ | ✅ | ❌ | SVG manquants |
-| `deploy` | ✅ | ❌ | ❌ | Déploie tout |
-
-### 28.5 Exemples par niveau
-
-**Niveau NAV1 (univers) :**
-```bash
-status web-cloud              # État de tout web-cloud
-list svg public-cloud         # Tous les SVG public-cloud
-deploy                        # Déploie tout
-```
-
-**Niveau NAV2 (section) :**
-```bash
-discover wordpress            # Analyse tous les SVG wordpress
-generate domain               # Génère tous les HTML domain
-check voip                    # Vérifie toute la section VoIP
-todo hosting                  # SVG manquants pour hosting
-```
-
-**Niveau NAV3 (page) :**
-```bash
-analyze wordpress/general     # Analyse détaillée de general.html
-fix wordpress/backups         # Corrige backups.html
-discover domain/zone          # Analyse zone.svg uniquement
-generate hosting/ssl          # Génère ssl.html uniquement
-```
-
-### 28.6 Arborescence NAV complète
+### 27.2 Arborescence NAV complète
 
 ```
 NAV1: web-cloud/
-├── NAV2: domain/
-│   ├── NAV3: general, zone, dns-servers, redirections, dynhost,
-│   │         glue, dnssec, contacts, tasks, alldom
-│   └── Modals: modal-renew, modal-transfer, modal-zone-add...
 │
 ├── NAV2: hosting/
-│   ├── NAV3: general, multisite, ftp, database, cron, modules,
-│   │         ssl, cdn, tasks
-│   └── Modals: modal-database-add, modal-ssl-order...
+│   ├── NAV3: general/                    # Groupement [Général]
+│   │   ├── NAV4: general                 # Tab Home
+│   │   ├── NAV4: offer                   # Tab Offre
+│   │   ├── NAV4: statistics              # Tab Statistiques
+│   │   ├── NAV4: modules                 # Tab Modules
+│   │   ├── NAV4: logs                    # Tab Logs
+│   │   │   └── subtabs: web, errors
+│   │   ├── NAV4: seo                     # Tab SEO
+│   │   └── NAV4: indy                    # Tab Indy
+│   │
+│   ├── NAV3: sites/                      # Groupement [Sites]
+│   │   ├── NAV4: multisite               # Tab Multisite
+│   │   └── NAV4: ssl                     # Tab SSL
+│   │
+│   └── NAV3: expert/                     # Groupement [Expert]
+│       ├── NAV4: ftp                     # Tab FTP-SSH
+│       ├── NAV4: database                # Tab BDD
+│       │   └── subtabs: status, stats, dumps
+│       ├── NAV4: clouddb                 # Tab BDD Cloud
+│       ├── NAV4: cdn                     # Tab CDN
+│       ├── NAV4: boost                   # Tab Boost
+│       ├── NAV4: emails                  # Tab Emails
+│       ├── NAV4: envvars                 # Tab Variables
+│       ├── NAV4: runtimes                # Tab Runtimes
+│       ├── NAV4: cron                    # Tab Cron
+│       └── NAV4: tasks                   # Tab Tâches
+│
+├── NAV2: domain/
+│   ├── NAV3: general/
+│   │   └── NAV4: general, contacts, alldom
+│   ├── NAV3: dns/
+│   │   └── NAV4: zone, dnssec, dnsservers, dynhost, spf, dkim, dmarc, arc, caa, bimi
+│   └── NAV3: expert/
+│       └── NAV4: glue, tasks
 │
 ├── NAV2: wordpress/
-│   ├── NAV3: general, domains, performance, extensions, backups, tasks
-│   ├── NAV4: extensions → themes, plugins
-│   └── Modals: modal-create, modal-delete, modal-cdn, modal-ssl...
+│   ├── NAV3: general/
+│   │   └── NAV4: general, domains, performance, backups, tasks
+│   └── NAV3: extensions/
+│       └── NAV4: extensions
+│           └── subtabs: themes, plugins
 │
 ├── NAV2: emails/
-│   ├── NAV3: accounts, redirections, filters, autoresponders
-│   └── Modals: modal-add-account, modal-add-redirect...
+│   ├── NAV3: general/
+│   │   └── NAV4: accounts, redirections, responders, lists
+│   ├── NAV3: security/
+│   │   └── NAV4: dns-config, antispam, signature
+│   └── NAV3: advanced/
+│       └── NAV4: resources, contacts, audit, devices, tasks
 │
-├── NAV2: voip/
-│   ├── NAV3-lines: general, phone, calls, forward, voicemail...
-│   ├── NAV3-groups: dashboard, services, phonebook, billing, admin
-│   ├── NAV3-numbers: general, redirect, queue, ivr, conference...
-│   └── NAV3-fax: general, send, campaigns, incoming, outgoing...
-│
-└── NAV2: access/
-    └── NAV3: pack-xdsl, overthebox...
+└── NAV2: voip/
+    ├── lines/
+    │   ├── NAV3: general/
+    │   │   └── NAV4: general, phone, consumption, options
+    │   └── NAV3: calls/
+    │       └── NAV4: calls, forward, voicemail
+    ├── groups/
+    │   └── NAV3: ...
+    ├── numbers/
+    │   └── NAV3: ...
+    └── fax/
+        └── NAV3: ...
 
 NAV1: public-cloud/
 ├── NAV2: instances, block-storage, object-storage, databases...
@@ -1378,257 +1215,125 @@ NAV1: network/
 ├── NAV2: cdn, iplb, vrack...
 ```
 
-### 28.7 Détection automatique du contexte
+---
 
-Le système détecte le contexte actuel :
+## 28. RÈGLES DE LIENS OBLIGATOIRES
+
+### 28.1 Principe fondamental
+
+**TOUT élément visuellement cliquable DOIT avoir un `<a href>`.**
+
+### 28.2 Mapping des destinations par type
+
+| Bouton | Destination |
+|--------|-------------|
+| **× (close)** | Page parent NAV4 |
+| **Annuler** | Page parent NAV4 |
+| **Enregistrer** | Page parent NAV4 |
+| **Supprimer** (danger) | `tasks.html` |
+| **Créer** | `tasks.html` |
+| **Actions API** | `tasks.html` |
+| **Liens externes** | `/static/lien_externe.html` |
+
+### 28.3 INTERDICTION DE `href="#"`
+
+**RÈGLE ABSOLUE:** Le lien `href="#"` est **INTERDIT** car il ne navigue nulle part.
+
+**Remplacement obligatoire :**
+
+| Type d'élément | Destination correcte |
+|----------------|----------------------|
+| Icône 🌐 | `/static/lien_externe.html` |
+| Liens domaine | `/static/lien_externe.html` |
+| Actions API | `tasks.html` |
+| Boutons modaux | Page parent ou `tasks.html` |
+
+---
+
+## 29. MIGRATION DEPUIS v1
+
+### 29.1 Correspondance ancienne/nouvelle terminologie
+
+| Ancien (v1) | Nouveau (v2) | Position |
+|-------------|--------------|----------|
+| `nav3` (tabs) | `nav4` | RIGHT PANEL |
+| `nav4` (sub-tabs) | `subtabs` | RIGHT PANEL (sous nav4) |
+| - | `nav3` (nouveau) | LEFT PANEL |
+
+### 29.2 Script de migration JSON
+
+```python
+# migrate_json_v1_to_v2.py
+
+def migrate(json_data):
+    # 1. Renommer nav3 → nav4
+    if 'nav3' in json_data:
+        json_data['nav4'] = json_data.pop('nav3')
+        json_data['nav4']['position'] = 'right_panel'
+
+    # 2. Renommer nav4 → subtabs
+    if 'nav4' in json_data and is_subtabs(json_data['nav4']):
+        json_data['subtabs'] = json_data.pop('nav4')
+
+    # 3. Ajouter nav3 groupement
+    nav3_id = infer_nav3_from_filename(json_data['meta']['svg_source'])
+    json_data['nav3'] = {
+        'active': nav3_id.capitalize(),
+        'position': 'left_panel',
+        'items': get_nav3_items_for_section(json_data['meta']['nav2'])
+    }
+
+    # 4. Mettre à jour meta
+    json_data['meta']['nav3'] = nav3_id
+    json_data['meta']['nav4'] = infer_nav4_from_filename(json_data['meta']['svg_source'])
+
+    return json_data
+```
+
+### 29.3 Script de renommage fichiers SVG
 
 ```bash
-# Si dernier travail = wordpress
-> discover general
-# Interprété comme: discover wordpress/general
+# rename_svg_v1_to_v2.sh
 
-# Pour changer de contexte
-> context domain
-# Maintenant les raccourcis s'appliquent à domain
+# Exemple: target_.web-cloud.hosting.ftp.svg
+# Devient: target_.web-cloud.hosting.expert.ftp.svg
 
-# Ou spécifier explicitement
-> discover hosting/ssl
-# Force le contexte hosting
-```
-
-### 28.8 Affichage du contexte dans menu
-
-```
-═══════════════════════════════════════════════════════════════
-   STATIC SITE GENERATOR - ACTIONS DISPONIBLES
-═══════════════════════════════════════════════════════════════
-
-📍 Contexte actuel: web-cloud/wordpress
-
-📋 NAVIGATION
-   menu              Affiche ce menu
-   context <path>    Change le contexte NAV
-   ...
+# Mapping par défaut
+declare -A NAV3_MAP=(
+  ["ftp"]="expert" ["database"]="expert" ["cdn"]="expert" ["cron"]="expert"
+  ["ssl"]="sites" ["multisite"]="sites"
+  ["general"]="general" ["offer"]="general" ["statistics"]="general"
+)
 ```
 
 ---
 
-## 29. RÈGLES DE LIENS OBLIGATOIRES
+## 30. CHECKLIST FINALE
 
-### 29.1 Principe fondamental
+### Avant DISCOVER
+- [ ] SVG source existe avec convention `target_.{nav1}.{nav2}.{nav3}.{nav4}.svg`
+- [ ] TXT documentation existe
 
-**TOUT élément visuellement cliquable DOIT avoir un `<a href>`.**
+### Après DISCOVER
+- [ ] JSON contient `nav3` (groupement, LEFT PANEL)
+- [ ] JSON contient `nav4` (fonction, RIGHT PANEL)
+- [ ] JSON contient `subtabs` si applicable
+- [ ] JSON contient `actions` avec coordonnées X/Y
+- [ ] Toutes les URLs pointent vers des pages existantes ou `tasks.html`
+- [ ] Pas de `href="#"`
 
-Un élément est visuellement cliquable si :
-- Il ressemble à un bouton (`<rect>` + `<text>`)
-- Il a une couleur d'action (`text-primary`, `text-error`, `text-white` sur `btn-primary`)
-- Il utilise un verbe d'action (Supprimer, Enregistrer, Créer, etc.)
-- Il a un emoji d'action (🗑, ↩, 🔒, ⬆, etc.)
+### Après GENERATE
+- [ ] HTML généré avec tous les liens
+- [ ] NAV1, NAV2, NAV3, NAV4 cliquables
+- [ ] Actions cliquables
+- [ ] Test navigation fonctionnel
 
-### 29.2 Règle des boutons (rect + text)
+### Avant DEPLOY
+- [ ] `check <section>` sans erreur
+- [ ] Test local OK
 
-**TOUJOURS wrapper le `<text>` avec `<a href>` :**
+---
 
-```xml
-<!-- ❌ INTERDIT -->
-<rect class="btn-primary"/>
-<text>Enregistrer</text>
-
-<!-- ✅ CORRECT -->
-<rect class="btn-primary"/>
-<a href="..."><text>Enregistrer</text></a>
-```
-
-### 29.3 Mapping des destinations par type de bouton
-
-| Bouton | Contexte | Destination |
-|--------|----------|-------------|
-| **× (close)** | Modal header | Page parent |
-| **× (delete)** | Ligne tableau | modal-delete.html |
-| **Annuler** | Modal footer | Page parent |
-| **Enregistrer** | Modal footer | Page parent (action = retour) |
-| **Supprimer** | Modal footer danger | Page liste (index.html) |
-| **Créer** | Modal footer | Page créée ou index |
-| **Mettre à jour** | Bouton action | tasks.html |
-| **Restaurer** | Tableau backups | modal-backup-restore.html |
-| **🔒 SSL** | Tableau domains | modal-ssl.html |
-
-### 29.4 Détermination de la page parent
-
-Pour les modals, la page parent est déduite du nom de fichier :
-
-```python
-def get_parent_page(modal_filename):
-    """
-    modal-create.html → index.html ou general.html
-    modal-delete.html → general.html
-    modal-ssl.html → domains.html
-    modal-domain-add.html → domains.html
-    modal-backup-restore.html → backups.html
-    modal-cdn.html → performance.html
-    """
-    mappings = {
-        "modal-create": "index",
-        "modal-delete": "general",
-        "modal-ssl": "domains",
-        "modal-domain-add": "domains",
-        "modal-backup-restore": "backups",
-        "modal-cdn": "performance",
-        "modal-import": "onboarding",
-        "modal-password": "general",
-    }
-    base = modal_filename.replace(".html", "")
-    return mappings.get(base, "general") + ".html"
-```
-
-### 29.5 Actions de confirmation (modal danger)
-
-Pour les modals de suppression/danger, le bouton d'action mène à la liste :
-
-```
-modal-delete.html → "Supprimer" → index.html (la ressource n'existe plus)
-```
-
-### 29.6 Actions de sauvegarde
-
-Pour les modals de configuration, le bouton d'action mène à la page parent :
-
-```
-modal-ssl.html → "Enregistrer" → domains.html (retour avec modification)
-modal-cdn.html → "Enregistrer" → performance.html
-```
-
-### 29.7 Checklist de validation
-
-Après chaque génération, vérifier :
-
-```bash
-# 1. Trouver les <text> dans des boutons sans <a href>
-grep -E '<rect[^>]*(btn-primary|btn-outline|btn-danger)' page.html -A1 | grep '<text' | grep -v '<a href'
-
-# 2. Trouver les × sans lien
-grep -E '<text[^>]*>×</text>' page.html | grep -v '<a href'
-
-# 3. Trouver les boutons d'action sans lien
-grep -E '<text[^>]*>(Enregistrer|Supprimer|Créer|Annuler)</text>' page.html | grep -v '<a href'
-```
-
-### 29.8 Script de correction automatique
-
-Pour chaque page HTML, le script `fix` doit :
-
-1. **Identifier les boutons sans lien :**
-   - `<rect class="btn-*">` suivi de `<text>` sans `<a>`
-
-2. **Appliquer le mapping :**
-   - × dans modal header → page parent
-   - × dans tableau → modal-delete.html
-   - Enregistrer → page parent
-   - Supprimer → index.html
-   - Annuler → page parent
-
-3. **Wrapper avec `<a href>` :**
-   ```python
-   text_element = '<text ...>Label</text>'
-   wrapped = f'<a href="{destination}" style="cursor:pointer">{text_element}</a>'
-   ```
-
-### 29.9 Actions API → tasks.html
-
-Certaines actions sont des appels API sans page cible dédiée.
-
-**RÈGLE:** Ces actions naviguent vers `tasks.html` pour montrer la tâche en cours.
-
-| Action | Destination |
-|--------|-------------|
-| `Vider le cache` | `tasks.html` |
-| `📋 Copier config` | `tasks.html` |
-| `Générer` | `tasks.html` |
-| `Vérifier maintenant` | `tasks.html` |
-| `Tout mettre à jour` | `tasks.html` |
-| `Créer le site` | `tasks.html` |
-| `Restaurer` | `tasks.html` |
-| `Réinitialiser` | `tasks.html` |
-
-**Exemple:**
-```xml
-<a href="/static/web-cloud/wordpress/tasks.html" style="cursor:pointer">
-  <text>🗑 Vider le cache</text>
-</a>
-```
-
-### 29.10 Synthèse des règles
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  RÈGLE: TOUT BOUTON → <a href>                                  │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  1. × modal header → page parent                                │
-│  2. × table row → modal-delete.html                             │
-│  3. Annuler → page parent                                       │
-│  4. Enregistrer → page parent                                   │
-│  5. Supprimer (danger) → index.html                             │
-│  6. Actions JS → tasks.html (montre tâche en cours)             │
-│  7. Liens externes → /static/lien_externe.html                  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 29.11 INTERDICTION DE `href="#"` (CRITIQUE)
-
-**RÈGLE ABSOLUE:** Le lien `href="#"` est INTERDIT car il ne navigue nulle part.
-
-**Détection dans l'action `check` :**
-```bash
-# Trouver tous les href="#" dans une section
-grep -r 'href="#"' /home/ubuntu/aiapp/static/web-cloud/<section>/ --include="*.html"
-```
-
-**Remplacement obligatoire :**
-
-| Type d'élément | Pattern | Destination correcte |
-|----------------|---------|----------------------|
-| **Icône 🌐** | Icône site dans sidebar | `/static/lien_externe.html` |
-| **Liens domaine** | `mon-blog.fr`, URLs affichées | `/static/lien_externe.html` |
-| **Boutons externes** | Admin WP, Visiter, Guides | `/static/lien_externe.html` |
-| **Actions API** | Vider cache, MAJ, Tout mettre à jour, Rafraîchir | `tasks.html` |
-| **Boutons modale** | Créer, Restaurer, Lancer l'import, Réinitialiser | `tasks.html` |
-| **Titres modaux** | Texte titre non cliquable | **Supprimer le `<a>`** |
-| **Texte input** | SUPPRIMER (dans input de confirmation) | **Supprimer le `<a>`** |
-
-**Script de correction automatique :**
-```python
-# Dans fix_href_hash()
-replacements = {
-    # Icônes et liens externes
-    r'<a href="#"[^>]*>(<text[^>]*>[🌐📝]': '<a href="/static/lien_externe.html" title="Lien externe" style="cursor:pointer">\1',
-
-    # Actions → tasks.html
-    r'(<a href=")#("[^>]*><text[^>]*>(Vider|MAJ|Tout mettre|Rafraîchir|Créer le site|Restaurer|Lancer|Réinitialiser|Supprimer|Générer))': r'\1/static/web-cloud/wordpress/tasks.html\2',
-
-    # Titres modaux → supprimer le lien
-    r'<a href="#"[^>]*>(<text[^>]*font-weight="600"[^>]*>[^<]+</text>)</a>': r'\1',
-}
-```
-
-**Checklist `check` mise à jour :**
-```
-1. ❌ Liens 404 (pages inexistantes)
-2. ❌ href="#" (liens morts) ← NOUVEAU
-3. ⚠️ Éléments non cliquables
-```
-
-**Exemple d'output `check` :**
-```
-=== CHECK wordpress ===
-
-❌ Liens morts href="#" (15):
-   backups.html:81  - <a href="#"><text>🌐</text></a> → lien_externe.html
-   backups.html:166 - <a href="#"><text>× Supprimer</text></a> → tasks.html
-   domains.html:85  - <a href="#"><text>🌐</text></a> → lien_externe.html
-   ...
-
-Commande de correction:
-  fix wordpress --href
-```
+================================================================================
+FIN PROMPT STATIC v2 (Aligné terminologie officielle NAV1-NAV4)
+================================================================================

@@ -1,0 +1,167 @@
+# Cahier des Charges : web-cloud/voip/line - Consumption (Consommation)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page statistiques avec cartes et tableau détaillé
+**Fonction:** Consulter la consommation d'une ligne
+**Contexte:** Onglet Consommation d'une ligne VoIP
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Telephone | Appels | Transferts | Messagerie | **Consommation** (actif) | Options
+
+### NAV4 Sub-tabs
+**Appels emis** (actif) | Appels recus | Fax emis | Fax recus
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche lignes
+- Liste des lignes
+
+### Panneau droit (1096px)
+- Header ligne
+- Tabs + sub-tabs
+- Sélecteur période
+- Cartes statistiques
+- Tableau détaillé
+
+## 4. HEADER LIGNE
+
+- Numéro: "0033912345678"
+- Description: "Poste Direction / Consommation"
+
+## 5. SÉLECTEUR PÉRIODE (200x30px)
+
+- Type: Select dropdown
+- Valeur: "Decembre 2025"
+- Position: droite, aligné avec sub-tabs
+
+## 6. CARTES STATISTIQUES (4 cartes)
+
+| Carte | Valeur | Style | Dimensions |
+|-------|--------|-------|------------|
+| Total appels | 127 | Normal | 245x90px |
+| Duree totale | 5h 34min | Normal | 245x90px |
+| Cout total | 12,50€ | Normal | 245x90px |
+| Hors forfait | 2,30€ | Rouge (bg + text) | 247x90px |
+
+## 7. TABLEAU CONSOMMATION (1036x420px)
+
+### Colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date | 130px | DD/MM HH:mm |
+| Numero appele | 200px | Format international |
+| Destination | 200px | Type destination |
+| Duree | 130px | Format M:SS |
+| Cout | 120px | Prix EUR (rouge si > 0) |
+| Type | 130px | Badge forfait/hors forfait |
+| Actions | 100px | Lien détails |
+
+### Types de facturation
+
+| Type | Couleur |
+|------|---------|
+| Forfait | #DEF7EC (vert) |
+| Hors forfait | #FEE2E2 (rouge) |
+| Gratuit | #F3F4F6 (gris) |
+
+### Destinations
+
+| Destination | Description |
+|-------------|-------------|
+| Mobile France | Appel mobile national |
+| Fixe France | Appel fixe national |
+| Royaume-Uni | Appel international |
+| Numero vert | Appel gratuit |
+
+### Données exemple
+
+| Date | Numero | Destination | Duree | Cout | Type |
+|------|--------|-------------|-------|------|------|
+| 30/12 14:32 | +33 6 12 34 56 78 | Mobile France | 5:23 | 0,00€ | Forfait |
+| 30/12 11:15 | +33 1 23 45 67 89 | Fixe France | 12:45 | 0,00€ | Forfait |
+| 30/12 09:30 | +44 20 1234 5678 | Royaume-Uni | 3:12 | 0,85€ | Hors forfait |
+| 29/12 16:45 | +33 8 00 12 34 56 | Numero vert | 1:30 | 0,00€ | Gratuit |
+| 29/12 14:20 | +33 6 98 76 54 32 | Mobile France | 8:15 | 0,00€ | Forfait |
+
+## 8. PAGINATION
+
+- Navigation: < 1 2 3 >
+- Style: boutons numérotés
+
+## 9. BOUTON EXPORT (140x34px)
+
+- "Exporter CSV" (btn-outline)
+- Position: bas gauche
+
+## 10. APIS & ENDPOINTS
+
+```
+# Statistiques consommation
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/statistics
+Query: { month: "2025-12" }
+→ {
+  totalCalls: 127,
+  totalDuration: "05:34:00",
+  totalCost: 12.50,
+  outOfPlan: 2.30
+}
+
+# Détail consommation
+GET /telephony/{billingAccount}/line/{serviceName}/consumption
+Query: { month, direction: "outgoing", limit, offset }
+→ [{
+  id: "cdr-123",
+  datetime: "2024-12-30T14:32:00",
+  calledNumber: "+33612345678",
+  destination: "mobile_france",
+  duration: 323,
+  cost: 0.00,
+  type: "included"
+}]
+
+# Export consommation
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/export
+Query: { month: "2025-12", direction, format: "csv" }
+→ CSV file
+```
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_consumption | Consommation |
+| subtab_outgoing | Appels emis |
+| subtab_incoming | Appels recus |
+| subtab_fax_out | Fax emis |
+| subtab_fax_in | Fax recus |
+| stat_total_calls | Total appels |
+| stat_total_duration | Duree totale |
+| stat_total_cost | Cout total |
+| stat_out_of_plan | Hors forfait |
+| col_date | Date |
+| col_called_number | Numero appele |
+| col_destination | Destination |
+| col_duration | Duree |
+| col_cost | Cout |
+| col_type | Type |
+| col_actions | Actions |
+| type_included | Forfait |
+| type_out_of_plan | Hors forfait |
+| type_free | Gratuit |
+| dest_mobile_france | Mobile France |
+| dest_landline_france | Fixe France |
+| dest_international | International |
+| dest_tollfree | Numero vert |
+| action_details | Details |
+| btn_export | Exporter CSV |

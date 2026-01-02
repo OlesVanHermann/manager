@@ -10,7 +10,7 @@ export interface Domain {
   transferLockStatus: "locked" | "unlocked" | "locking" | "unlocking";
   offer?: string;
   owoSupported: boolean;
-  whoisOwner?: string;
+  whoisOwner?: number;  // ID numérique du contact owner (pour /domain/contact/{id})
   dnssecSupported?: boolean;
 }
 

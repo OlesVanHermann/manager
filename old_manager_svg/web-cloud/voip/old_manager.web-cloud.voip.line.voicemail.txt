@@ -1,196 +1,70 @@
-# Cahier des Charges : web-cloud/voip/line - Voicemail (Messagerie)
+================================================================================
+CAHIER DES CHARGES - OLD MANAGER
+================================================================================
+Composant : telecom.line.voicemail
+Fichier   : old_manager.telecom.line.voicemail.txt
+SVG       : old_manager.telecom.line.voicemail.svg
+Date      : 2025-01-XX
+================================================================================
 
-## 1. VUE D'ENSEMBLE
+## 1. RESUME EXECUTIF
 
-**Type:** Page paramètres avec cartes et liste messages
-**Fonction:** Gérer la messagerie vocale de la ligne
-**Contexte:** Onglet Messagerie d'une ligne VoIP
+### Perimetre fonctionnel
+Gestion repondeur : messages, annonce, notifications.
 
-## 2. NAVIGATION
+--------------------------------------------------------------------------------
 
-### NAV1 (Header)
-Web Cloud (actif)
+## 2. ARCHITECTURE
 
-### NAV2 (Sous-header)
-VoIP (actif)
+### Fichiers sources
+line/answer/
+├── defaultVoicemail/
+├── voicemailManagement/
+├── voicemailOptions/
+└── voicemailPassword/
 
-### NAV3 Tabs
-General | Telephone | Appels | Transferts | **Messagerie** (actif) | Consommation | Options
+--------------------------------------------------------------------------------
 
-### NAV4 Sub-tabs
-**Options** (actif) | Messages | Annonce
+## 3. PAGES & NAVIGATION
 
-## 3. LAYOUT
+### Actions
+- Messagerie par defaut
+- Mot de passe
+- Configuration
+- Gestion messages
 
-### Panneau gauche (280px)
-- Recherche lignes
-- Liste des lignes
+--------------------------------------------------------------------------------
 
-### Panneau droit (1096px)
-- Header ligne
-- Tabs + sub-tabs
-- Cartes configuration
-- Tableau messages récents
-- Bannière info
+## 4. COMPOSANTS UI
 
-## 4. HEADER LIGNE
+- oui-datagrid : Liste messages
+- oui-file : Upload annonce
+- audio player : Lecture
 
-- Numéro: "0033912345678"
-- Description: "Poste Direction / Messagerie"
+--------------------------------------------------------------------------------
 
-## 5. CARTES CONFIGURATION (3 cartes)
+## 5. APIs & DONNEES
 
-### Carte 1: Messagerie par défaut (340x160px)
+GET/PUT /telephony/:billingAccount/voicemail/:serviceName/settings
+GET /telephony/:billingAccount/voicemail/:serviceName/directories
+POST /telephony/:billingAccount/voicemail/:serviceName/settings/changePassword
 
-| Élément | Valeur |
-|---------|--------|
-| Titre | "Messagerie par defaut" |
-| Description | "Choisissez la messagerie utilisee par defaut" |
-| Valeur actuelle | "Messagerie OVHcloud" |
-| Lien | "Modifier ->" |
+--------------------------------------------------------------------------------
 
-### Carte 2: Mot de passe (340x160px)
+## 6. TRADUCTIONS (FR)
 
-| Élément | Valeur |
-|---------|--------|
-| Titre | "Mot de passe" |
-| Description | "Mot de passe d'acces a votre repondeur" |
-| Valeur actuelle | "******" |
-| Lien | "Modifier ->" |
+telephony_voicemail_messages = "Messages"
+telephony_voicemail_greeting = "Annonce"
+telephony_voicemail_password = "Code PIN"
 
-### Carte 3: Configuration (324x160px)
+--------------------------------------------------------------------------------
 
-| Élément | Valeur |
-|---------|--------|
-| Titre | "Configuration" |
-| Description | "Options avancees du repondeur" |
-| Badge | "Active" (vert) |
-| Lien | "Configurer ->" |
+## 7. REGLES METIER
 
-## 6. SECTION MESSAGES RÉCENTS
+- PIN : 4 chiffres
+- Annonce : MP3/WAV max 5Mo 2min
+- Retention : 30 jours inbox, 90 jours archives
 
-### Titre
-"Messages recents"
-
-### Tableau (1036x300px)
-
-#### Colonnes
-
-| Colonne | Largeur | Description |
-|---------|---------|-------------|
-| Date | 160px | DD/MM/YYYY HH:mm |
-| Appelant | 200px | Numéro ou "Numero masque" |
-| Duree | 100px | Format M:SS |
-| Etat | 100px | Badge Nouveau/Lu |
-| Actions | 300px | Liens actions |
-
-#### États
-
-| État | Couleur |
-|------|---------|
-| Nouveau | #DBEAFE (bleu) |
-| Lu | #DEF7EC (vert) |
-
-#### Actions disponibles
-- Ecouter
-- Telecharger
-- Supprimer
-
-#### Données exemple
-
-| Date | Appelant | Duree | Etat | Actions |
-|------|----------|-------|------|---------|
-| 30/12/2024 14:32 | +33 6 12 34 56 78 | 0:45 | Nouveau | Ecouter, Telecharger, Supprimer |
-| 30/12/2024 10:15 | +33 1 23 45 67 89 | 1:23 | Lu | Ecouter, Telecharger, Supprimer |
-| 29/12/2024 16:45 | Numero masque | 0:12 | Lu | Ecouter, Telecharger, Supprimer |
-| 28/12/2024 09:30 | +33 9 87 65 43 21 | 2:05 | Lu | Ecouter, Telecharger, Supprimer |
-
-### Pagination
-- Format: "1 - 4 sur 12 messages"
-- Lien: "Voir tous ->"
-
-## 7. BANNIÈRE INFO (1036x45px)
-
-- Background: #DBEAFE (info)
-- Texte: "Accedez a vos messages en appelant le 3203 depuis votre ligne ou consultez-les depuis votre telephone."
-
-## 8. APIS & ENDPOINTS
-
-```
-# Configuration messagerie
-GET /telephony/{billingAccount}/line/{serviceName}/voicemail/settings
-→ {
-  defaultMailbox: "ovhcloud",
-  enabled: true,
-  password: "******"
-}
-
-# Modifier paramètres
-PUT /telephony/{billingAccount}/line/{serviceName}/voicemail/settings
-Body: {
-  defaultMailbox: "ovhcloud",
-  enabled: true
-}
-
-# Modifier mot de passe
-PUT /telephony/{billingAccount}/line/{serviceName}/voicemail/password
-Body: { password: "newPassword" }
-
-# Liste des messages
-GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages
-Query: { limit, offset }
-→ [{
-  id: "msg-123",
-  datetime: "2024-12-30T14:32:00",
-  caller: "+33612345678",
-  duration: 45,
-  status: "new"
-}]
-
-# Écouter message
-GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{messageId}/audio
-→ Audio stream
-
-# Télécharger message
-GET /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{messageId}/download
-→ Audio file
-
-# Supprimer message
-DELETE /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{messageId}
-
-# Marquer comme lu
-PUT /telephony/{billingAccount}/line/{serviceName}/voicemail/messages/{messageId}/read
-```
-
-## 9. TRADUCTIONS (i18n)
-
-| Clé | FR |
-|-----|-----|
-| tab_voicemail | Messagerie |
-| subtab_options | Options |
-| subtab_messages | Messages |
-| subtab_greeting | Annonce |
-| card_default | Messagerie par defaut |
-| card_default_desc | Choisissez la messagerie utilisee par defaut |
-| mailbox_ovhcloud | Messagerie OVHcloud |
-| card_password | Mot de passe |
-| card_password_desc | Mot de passe d'acces a votre repondeur |
-| card_config | Configuration |
-| card_config_desc | Options avancees du repondeur |
-| link_edit | Modifier |
-| link_configure | Configurer |
-| section_messages | Messages recents |
-| col_date | Date |
-| col_caller | Appelant |
-| col_duration | Duree |
-| col_status | Etat |
-| col_actions | Actions |
-| status_new | Nouveau |
-| status_read | Lu |
-| caller_hidden | Numero masque |
-| action_listen | Ecouter |
-| action_download | Telecharger |
-| action_delete | Supprimer |
-| pagination | {start} - {end} sur {total} messages |
-| link_view_all | Voir tous |
-| info_access | Accedez a vos messages en appelant le 3203 depuis votre ligne ou consultez-les depuis votre telephone. |
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

@@ -1,0 +1,60 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.hosting.modal-automated-emails-error.svg
+Route:   /web-cloud/hosting/{serviceName}/emails (modal error details)
+Version: v1 (2026-01-02)
+================================================================================
+
+DONNEES DYNAMIQUES
+| Exemple SVG                  | Source API                                    |
+|------------------------------|-----------------------------------------------|
+| Raison blocage               | GET /hosting/web/{sn}/automatedMailsState     |
+| Date blocage                 | automatedMailsState → blockedDate             |
+| Taux erreur                  | automatedMailsState → bounceRate              |
+| Détails erreurs              | GET /hosting/web/{sn}/email/bounces           |
+| Codes SMTP                   | bounces → errorCode                           |
+
+================================================================================
+
+STRUCTURE MODAL
+1. Header erreur (rouge)
+2. Bannière alerte blocage
+3. Raison et statistiques
+4. Tableau détail erreurs SMTP
+5. Section solutions
+6. Footer avec boutons
+
+RAISONS BLOCAGE
+| Raison              | Description                          |
+|---------------------|--------------------------------------|
+| Bounce élevé        | Trop d'emails en erreur              |
+| Spam détecté        | Contenu suspect                      |
+| Volume excessif     | Trop d'envois en peu de temps        |
+| Compromission       | Activité malveillante détectée       |
+
+CODES ERREUR SMTP
+| Code | Signification           | Action                    |
+|------|-------------------------|---------------------------|
+| 550  | Utilisateur inconnu     | Supprimer de la liste     |
+| 552  | Boîte pleine            | Réessayer plus tard       |
+| 554  | Rejeté par serveur      | Vérifier réputation       |
+| 421  | Service indisponible    | Réessayer plus tard       |
+
+BOUTONS FOOTER
+| Bouton             | Action                     |
+|--------------------|----------------------------|
+| Fermer             | Fermer modal               |
+| Voir les logs      | Navigation logs emails     |
+| Demander déblocage | POST unblock request       |
+
+INTERACTIONS
+- Clic Voir les logs → Navigation
+- Clic Demander déblocage → POST request
+
+API ENDPOINTS
+GET /hosting/web/{sn}/automatedMailsState        → État emails auto
+GET /hosting/web/{sn}/email/bounces              → Liste erreurs
+POST /hosting/web/{sn}/automatedMailsState/unblock → Demander déblocage
+
+================================================================================

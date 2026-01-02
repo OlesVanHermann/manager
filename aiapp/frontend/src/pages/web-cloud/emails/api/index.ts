@@ -11,6 +11,12 @@ import * as exchange from "./exchange";
 import * as emailpro from "./emailpro";
 import * as zimbra from "./zimbra";
 
+// Import des API Packs (services, billing, license, orders)
+import * as services from "./services.api";
+import * as billing from "./billing.api";
+import * as license from "./license.api";
+import * as orders from "./orders.api";
+
 // Import du dispatcher de détection automatique
 export * from "./dispatcher";
 export {
@@ -108,3 +114,12 @@ export { mxplan, mxplanModern, exchange, emailpro, zimbra };
 // Alias pour clarté
 export { mxplan as mxplanLegacy };  // /email/domain
 export { mxplanModern as mxplanNew }; // /email/mxplan
+
+// ---------- PACKS APIs (services, billing, license, orders) ----------
+export { services, billing, license, orders };
+
+// Re-export des types et fonctions principales des Packs APIs
+export type { EmailServiceSummary, EmailServiceType } from "./services.api";
+export type { AccountBilling, RenewPeriod, LicenseType } from "./billing.api";
+export type { LicenseHistory, LicenseSeries, LicensePeriod } from "./license.api";
+export type { OrderHistoryItem, OrderResult, AccountOrderOptions } from "./orders.api";

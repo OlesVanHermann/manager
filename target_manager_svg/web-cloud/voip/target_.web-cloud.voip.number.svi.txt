@@ -1,0 +1,88 @@
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: target_.web-cloud.voip.number.svi.svg
+Route:   /web-cloud/voip/number/{serviceId}/svi
+Version: v1 (2026-01-02)
+================================================================================
+
+DONNÉES DYNAMIQUES
+| Exemple SVG              | Source API                                    |
+|--------------------------|-----------------------------------------------|
+| 0033800123456            | GET /telephony/{ba}/number/{id} → serviceName |
+| Menu principal           | GET /telephony/{ba}/ovhPabx/{id}/menu → name  |
+| Bienvenue sur le service | GET /telephony/{ba}/ovhPabx/{id}/menu → greetSound |
+| 3                        | GET /telephony/{ba}/ovhPabx/{id}/menu/entries → count |
+| 1 - Commercial           | GET /telephony/{ba}/ovhPabx/{id}/menu/{id}/entry → dtmf + action |
+| Transfert vers file      | GET /telephony/{ba}/ovhPabx/{id}/menu/{id}/entry → actionType |
+
+================================================================================
+
+STRUCTURE PAGE
+
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (VoIP actif)
+
+3. LEFT PANEL (280px)
+   - NAV3 Groupement: [Lignes] [Numéros actif] [Fax] [SMS]
+   - Recherche: "Rechercher un numéro..."
+   - Liste: Numéros avec type et statut
+
+4. RIGHT PANEL (1096px)
+   - Titre: "Numéro {numéro}" + badge statut
+   - Bouton: "+ Ajouter menu"
+   - NAV4 Fonction: [Général] [Planificateur] [Sons] [Agents] [DDI] [SVI actif]
+   - Bannière info SVI
+   - Visualisation arborescence SVI (menus imbriqués)
+   - Table: Liste des menus configurés
+
+================================================================================
+
+INTERACTIONS
+
+- Clic "+ Ajouter menu" → Modal création nouveau menu
+- Clic sur noeud arborescence → Sélection et détails du menu
+- Clic ✎ sur menu → Modal édition menu (nom, annonce, options)
+- Clic × sur menu → Supprimer menu (confirmation si enfants)
+- Clic sur option DTMF → Configurer action (transfert, sous-menu, raccrocher)
+- Drag & drop → Réorganiser structure arborescence
+- Clic "Dupliquer" → Copier menu avec ses options
+
+================================================================================
+
+API ENDPOINTS
+
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}
+  → Configuration PABX (type SVI)
+
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/menu
+  → Liste des menus SVI
+
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/menu
+  → Créer un nouveau menu
+
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}
+  → Détails menu (nom, annonce d'accueil, timeout)
+
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}
+  → Modifier menu
+
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}
+  → Supprimer menu
+
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}/entry
+  → Liste des entrées (options DTMF)
+
+POST /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}/entry
+  → Ajouter une entrée DTMF
+
+PUT /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}/entry/{entryId}
+  → Modifier entrée
+
+DELETE /telephony/{billingAccount}/ovhPabx/{serviceName}/menu/{menuId}/entry/{entryId}
+  → Supprimer entrée
+
+GET /telephony/{billingAccount}/ovhPabx/{serviceName}/sound
+  → Liste des sons disponibles pour les annonces
+
+================================================================================

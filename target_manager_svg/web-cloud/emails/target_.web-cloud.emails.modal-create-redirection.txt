@@ -1,0 +1,121 @@
+# Cahier des Charges : web-cloud/emails - Modal Create Redirection
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Créer une redirection email
+**Contexte:** Action depuis l'onglet Redirections
+
+## 2. DIMENSIONS
+
+- Modal: 500x480px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Créer une redirection"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Boutons alignés gauche/droite
+
+## 4. CONTENU
+
+### Adresse source
+- Label: "Adresse source *"
+- Layout: Input + suffixe domaine
+- Input: 280x40px
+- Placeholder: "info"
+- Suffixe: "@example.com" (background #F3F4F6, 162x40px)
+- Aide: "Cette adresse recevra les emails et les transférera"
+
+### Flèche de direction
+- Icône: ↓ (bleu #0050D7, taille 24px)
+- Position: centré entre source et destination
+
+### Adresse destination
+- Label: "Destination *"
+- Input: 452x40px
+- Placeholder: "destinataire@externe.com"
+- Aide: "Peut être une adresse interne ou externe au domaine"
+
+### Section Options
+- Label: "Options"
+- Checkbox avec description:
+  - ✓ "Conserver une copie locale" (coché par défaut)
+  - Aide: "Les emails seront aussi stockés dans la boîte source"
+
+### Info bannière
+- Background: #DBEAFE
+- Dimensions: 452x60px
+- Icône: 💡
+- Texte ligne 1: "Astuce : vous pouvez ajouter plusieurs destinations en les"
+- Texte ligne 2: "séparant par des virgules (max 100 destinations)."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 130x40px |
+| Créer | btn-primary | 130x40px |
+
+## 6. VALIDATION
+
+- Adresse source valide (partie locale)
+- Destination email valide
+- Source ne doit pas être déjà redirigée
+
+## 7. APIS & ENDPOINTS
+
+```
+# Exchange - Créer redirection
+POST /email/exchange/{organization}/service/{serviceName}/account/{email}/forward
+Body: {
+  forwardTo: "destinataire@externe.com",
+  keepCopy: true
+}
+→ Configure la redirection Exchange
+
+# Email Pro
+POST /email/pro/{service}/account/{email}/forward
+Body: {
+  forwardTo: "destinataire@externe.com",
+  keepCopy: true
+}
+
+# MX Plan - Créer redirection
+POST /email/domain/{domain}/redirection
+Body: {
+  from: "info@example.com",
+  to: "destinataire@externe.com",
+  localCopy: true
+}
+
+# Lister redirections existantes
+GET /email/domain/{domain}/redirection
+GET /email/exchange/{organization}/service/{serviceName}/account/{email}
+→ Champ forwardTo
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Créer une redirection |
+| field_source | Adresse source |
+| source_help | Cette adresse recevra les emails et les transférera |
+| field_destination | Destination |
+| destination_help | Peut être une adresse interne ou externe au domaine |
+| section_options | Options |
+| option_local_copy | Conserver une copie locale |
+| local_copy_help | Les emails seront aussi stockés dans la boîte source |
+| tip_multiple | Astuce : vous pouvez ajouter plusieurs destinations en les séparant par des virgules (max 100 destinations). |
+| btn_cancel | Annuler |
+| btn_create | Créer |
+| error_source_exists | Une redirection existe déjà pour cette adresse |
+| error_invalid_destination | Adresse de destination invalide |

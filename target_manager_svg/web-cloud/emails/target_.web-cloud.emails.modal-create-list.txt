@@ -1,0 +1,147 @@
+# Cahier des Charges : web-cloud/emails - Modal Create List
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal formulaire
+**Fonction:** Créer une liste de diffusion ou groupe
+**Contexte:** Action depuis l'onglet Listes
+
+## 2. DIMENSIONS
+
+- Modal: 600x620px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header
+- Background: #F9FAFB
+- Titre: "Créer une liste de diffusion"
+- Bouton fermer: × (coin droit)
+
+### Content
+- Padding: 24px
+
+### Footer
+- Boutons alignés gauche/droite
+
+## 4. CONTENU
+
+### Type de liste
+- Label: "Type de liste"
+- 2 cartes horizontales (270x70px chacune)
+
+#### Groupe Exchange (sélectionné)
+- Border: #F59E0B (orange), 2px, background #FFFBEB
+- Avatar: cercle orange "E"
+- Titre: "Groupe Exchange"
+- Description: "Distribution Outlook"
+- Radio checked: cercle orange avec ✓
+
+#### Mailing list
+- Border: #E5E7EB
+- Avatar: cercle bleu "M"
+- Titre: "Mailing list"
+- Description: "Liste simple"
+- Radio unchecked
+
+### Adresse de la liste
+- Label: "Adresse de la liste *"
+- Layout: Input + suffixe domaine
+- Input: 350x40px
+- Placeholder: "equipe"
+- Suffixe: "@example.com" (background #F3F4F6, 192x40px)
+
+### Nom d'affichage
+- Label: "Nom d'affichage"
+- Input: 552x40px
+- Placeholder: "Équipe Marketing"
+
+### Section Modération
+- Label: "Modération"
+- Checkbox: "Activer la modération des messages" (coché)
+- Sous-section: "Modérateur(s)"
+- Input: 552x36px avec bouton "+ Ajouter"
+- Valeur: "admin@example.com"
+
+### Section Options
+- Label: "Options"
+- 3 checkboxes:
+
+| Option | État |
+|--------|------|
+| Autoriser les expéditeurs externes | non coché |
+| Masquer la liste dans le carnet d'adresses global | coché ✓ |
+| Autoriser uniquement les membres à envoyer | non coché |
+
+### Info bannière
+- Background: #DBEAFE
+- Dimensions: 552x40px
+- Texte: "ℹ️ Vous pourrez ajouter des membres après la création de la liste."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline | 130x40px |
+| Créer | btn-primary | 130x40px |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Exchange - Créer groupe de distribution
+POST /email/exchange/{organization}/service/{serviceName}/mailingList
+Body: {
+  displayName: "Équipe Marketing",
+  mailingListAddress: "equipe@example.com",
+  senderAuthentification: true,
+  hiddenFromGAL: true
+}
+→ Crée un groupe Exchange
+
+# Email Pro - Créer mailing list
+POST /email/pro/{service}/mailingList
+Body: {
+  name: "equipe",
+  displayName: "Équipe Marketing",
+  language: "fr"
+}
+
+# MX Plan - Créer mailing list
+POST /email/domain/{domain}/mailingList
+Body: {
+  name: "equipe",
+  language: "fr",
+  options: {
+    moderatorMessage: false,
+    subscribeByModerator: false
+  }
+}
+
+# Définir modérateur
+POST /email/exchange/{organization}/service/{serviceName}/mailingList/{name}/manager/account
+Body: { email: "admin@example.com" }
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Créer une liste de diffusion |
+| field_type | Type de liste |
+| type_exchange | Groupe Exchange |
+| type_exchange_desc | Distribution Outlook |
+| type_mailing | Mailing list |
+| type_mailing_desc | Liste simple |
+| field_address | Adresse de la liste |
+| field_display_name | Nom d'affichage |
+| section_moderation | Modération |
+| enable_moderation | Activer la modération des messages |
+| moderators | Modérateur(s) |
+| btn_add_moderator | + Ajouter |
+| section_options | Options |
+| option_external | Autoriser les expéditeurs externes |
+| option_hidden | Masquer la liste dans le carnet d'adresses global |
+| option_members_only | Autoriser uniquement les membres à envoyer |
+| info_members | Vous pourrez ajouter des membres après la création de la liste. |
+| btn_cancel | Annuler |
+| btn_create | Créer |

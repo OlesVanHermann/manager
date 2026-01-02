@@ -1,0 +1,74 @@
+# Cahier des Charges : web-cloud/access/pack-xdsl - Modem Router
+
+## 1. VUE D'ENSEMBLE
+- **Type** : Page configuration réseau complète
+- **URL** : /pack/{packId}/xdsl/{serviceName}/modem/router
+- **Objectif** : Configurer LAN, DHCP, ports
+
+## 2. STRUCTURE PAGE
+- Section Configuration LAN
+- Section Configuration DHCP
+- Section Redirections de ports
+- Bouton enregistrer global
+
+## 3. COMPOSANTS UI
+- **OdsCard** : Conteneurs sections
+- **OdsInput** : Champs IP, masque
+- **OdsSwitch** : Activation DHCP
+- **OdsDatagrid** : Tableau ports
+- **OdsButton** : Ajouter, Enregistrer
+
+## 4. SECTION LAN
+| Champ | Type | Valeur exemple |
+|-------|------|----------------|
+| Adresse IP | Input | 192.168.1.1 |
+| Masque | Select | 255.255.255.0 (/24) |
+
+## 5. SECTION DHCP
+| Champ | Type | Valeur exemple |
+|-------|------|----------------|
+| Activer DHCP | Switch | On |
+| IP début | Input | 192.168.1.100 |
+| IP fin | Input | 192.168.1.254 |
+| DNS primaire | Input | 213.186.33.99 |
+| DNS secondaire | Input | 8.8.8.8 |
+| Durée bail | Select | 86400 (24h) |
+
+## 6. SECTION PORTS
+### Colonnes tableau
+| Colonne | Type | Largeur |
+|---------|------|---------|
+| Nom | Texte | 150px |
+| Protocole | Select | 100px |
+| Port externe | Input | 100px |
+| IP destination | Input | 150px |
+| Port interne | Input | 100px |
+| Actions | ActionMenu | 80px |
+
+### Bouton ajout
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Ajouter une redirection" |
+| Icône | + |
+
+## 7. DONNÉES EXEMPLE PORTS
+| Nom | Protocole | Port ext | IP dest | Port int |
+|-----|-----------|----------|---------|----------|
+| HTTP | TCP | 80 | 192.168.1.100 | 80 |
+| SSH | TCP | 22 | 192.168.1.100 | 22 |
+
+## 8. BOUTON GLOBAL
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Enregistrer la configuration" |
+| Style | Primary |
+| Position | Bas de page |
+
+## 9. APIS & ENDPOINTS
+- GET /xdsl/{serviceName}/modem/lan - Config LAN
+- PUT /xdsl/{serviceName}/modem/lan/{lanName} - Modifier LAN
+- GET /xdsl/{serviceName}/modem/lan/{lanName}/dhcp - Config DHCP
+- PUT /xdsl/{serviceName}/modem/lan/{lanName}/dhcp - Modifier DHCP
+- GET /xdsl/{serviceName}/modem/portMappings - Liste ports
+- POST /xdsl/{serviceName}/modem/portMappings - Créer redirection
+- DELETE /xdsl/{serviceName}/modem/portMappings/{name} - Supprimer

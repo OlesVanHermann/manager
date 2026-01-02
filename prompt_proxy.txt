@@ -1,37 +1,122 @@
 # Proxy OVH API
 
-## Endpoint
+Version: v2.0 (2026-01-01)
+Remplace: prompt_proxy.txt (v1)
+
+Changelog v1->v2:
+- Contexte d'utilisation ajoute (New Manager vs Apps externes)
+- Clarification des deux modeles d'authentification
+- Integration avec /src/services/api.ts documentee
+- References aux prompts complementaires
+
+---
+
+## Prompts complementaires
+
+| Prompt | Contenu |
+|--------|---------|
+| `prompt_api.txt` | Architecture API globale, endpoints, hooks React |
+| `prompt_react.txt` | Conventions React, structure pages |
+
+---
+
+## Contexte d'utilisation
+
+### Deux proxies disponibles
+
+| Contexte | Proxy | Auth | Usage |
+|----------|-------|------|-------|
+| **New Manager** | `/engine/apiv6/` | Cookies session | Frontend React principal |
+| **Apps externes** | `/api/ovh/` | Headers AK/AS/CK | Apps standalone, scripts, debug |
+
+### Quand utiliser quel proxy ?
+
+**`/engine/apiv6/` (cookies) - RECOMMANDE pour le New Manager**
+- L'utilisateur est connecte au Manager OVHcloud
+- Auth automatique via cookies de session
+- Pas de credentials a gerer cote frontend
+- Utilise par `/src/services/api.ts`
+
+**`/api/ovh/` (headers AK/AS/CK) - Apps externes**
+- Apps hebergees hors domaine OVH
+- Scripts de test/debug
+- Integrations tierces
+- Necessite credentials explicites
+
+---
+
+## PROXY 1 : /engine/apiv6/ (New Manager)
+
+### Principe
+
+Le proxy du New Manager utilise les cookies de session OVH. L'utilisateur doit etre connecte au Manager.
+
+### Integration React
+
+```typescript
+// /src/services/api.ts
+const API_BASE = '/engine/apiv6';
+
+export async function ovhGet<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: 'GET',
+    credentials: 'include',  // Cookies automatiques
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!response.ok) throw new Error(`API Error: ${response.status}`);
+  return response.json();
+}
+```
+
+### Utilisation dans un service isole NAV4
+
+```typescript
+// src/pages/web-cloud/hosting/expert/ftp/FtpTab.service.ts
+import { ovhGet, ovhPost, ovhDelete } from '@/services/api';
+
+export const ftpService = {
+  async getUsers(serviceName: string): Promise<string[]> {
+    return ovhGet(`/hosting/web/${serviceName}/user`);
+  }
+};
+```
+
+---
+
+## PROXY 2 : /api/ovh/ (Apps externes)
+
+### Endpoint
 
 ```
 /api/ovh/
 ```
 
-## Principe
+### Principe
 
-Le serveur nginx agit comme proxy vers l'API OVH. Il intercepte les requêtes vers `/api/ovh/*`, calcule la signature d'authentification OVH côté serveur, puis transmet la requête à `https://eu.api.ovh.com/1.0/*`.
+Le serveur nginx agit comme proxy vers l'API OVH. Il intercepte les requetes vers `/api/ovh/*`, calcule la signature d'authentification OVH cote serveur, puis transmet la requete a `https://eu.api.ovh.com/1.0/*`.
 
-## Headers à envoyer
+### Headers a envoyer
 
 | Header | Obligatoire | Description |
 |--------|-------------|-------------|
 | `X-Ovh-App-Key` | Oui | Application Key OVH |
 | `X-Ovh-App-Secret` | Oui | Application Secret OVH |
-| `X-Ovh-Consumer-Key` | Non | Consumer Key (requis pour les appels authentifiés) |
+| `X-Ovh-Consumer-Key` | Non | Consumer Key (requis pour les appels authentifies) |
 
-## Mapping des URLs
+### Mapping des URLs
 
-Le préfixe `/api/ovh` est remplacé par `https://eu.api.ovh.com/1.0` :
+Le prefixe `/api/ovh` est remplace par `https://eu.api.ovh.com/1.0` :
 
 ```
-/api/ovh/me                    → https://eu.api.ovh.com/1.0/me
-/api/ovh/domain                → https://eu.api.ovh.com/1.0/domain
-/api/ovh/cloud/project         → https://eu.api.ovh.com/1.0/cloud/project
-/api/ovh/domain/zone/{zone}    → https://eu.api.ovh.com/1.0/domain/zone/{zone}
+/api/ovh/me                    -> https://eu.api.ovh.com/1.0/me
+/api/ovh/domain                -> https://eu.api.ovh.com/1.0/domain
+/api/ovh/cloud/project         -> https://eu.api.ovh.com/1.0/cloud/project
+/api/ovh/domain/zone/{zone}    -> https://eu.api.ovh.com/1.0/domain/zone/{zone}
 ```
 
 Les query parameters sont transmis automatiquement.
 
-## Exemple d'utilisation
+### Exemple d'utilisation (JavaScript)
 
 ```javascript
 const credentials = {
@@ -53,14 +138,14 @@ const response = await fetch('/api/ovh/me', {
 const data = await response.json();
 ```
 
-## Méthodes HTTP supportées
+### Methodes HTTP supportees
 
-- `GET` : lecture de données
-- `POST` : création de ressources
+- `GET` : lecture de donnees
+- `POST` : creation de ressources
 - `PUT` : modification de ressources
 - `DELETE` : suppression de ressources
 
-Pour les méthodes avec body (POST, PUT), envoyer le JSON dans le body de la requête :
+Pour les methodes avec body (POST, PUT), envoyer le JSON dans le body de la requete :
 
 ```javascript
 await fetch('/api/ovh/domain/zone/example.com/record', {
@@ -79,22 +164,41 @@ await fetch('/api/ovh/domain/zone/example.com/record', {
 });
 ```
 
-## Réponses d'erreur
+---
 
-Erreur du proxy (credentials manquants) :
+## Reponses d'erreur
+
+### Erreurs du proxy
+
+Credentials manquants :
 ```json
 {"error": "Missing OVH credentials"}
 ```
 
-Erreurs de l'API OVH (transmises directement) :
+### Erreurs de l'API OVH (transmises directement)
+
 ```json
 {"message": "Invalid signature"}
 {"message": "This credential is not valid"}
 {"message": "Not authenticated"}
 ```
 
-## Sécurité
+---
 
-- Les credentials (`appSecret`) ne sont jamais envoyés à l'API OVH
-- La signature est calculée côté serveur nginx
-- Seule la signature hashée est transmise à OVH
+## Securite
+
+- Les credentials (`appSecret`) ne sont jamais envoyes a l'API OVH
+- La signature est calculee cote serveur nginx
+- Seule la signature hashee est transmise a OVH
+- Pour le New Manager, privilegier `/engine/apiv6/` (pas de secrets cote client)
+
+---
+
+## Resume
+
+| Question | Reponse |
+|----------|---------|
+| Je developpe le New Manager ? | Utiliser `/engine/apiv6/` + cookies |
+| Je developpe une app externe ? | Utiliser `/api/ovh/` + headers AK/AS/CK |
+| Ou est le code API React ? | `/src/services/api.ts` |
+| Comment creer un service isole ? | Voir `prompt_api.txt` section "Services isoles" |

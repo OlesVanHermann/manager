@@ -1,153 +1,83 @@
-# Cahier des Charges : web-cloud/voip/fax - Settings
+================================================================================
+CAHIER DES CHARGES - OLD MANAGER
+================================================================================
+Composant : telecom.fax.settings
+Fichier   : old_manager.telecom.fax.settings.txt
+SVG       : old_manager.telecom.fax.settings.svg
+Date      : 2025-01-XX
+================================================================================
 
-## 1. VUE D'ENSEMBLE
+## 1. RESUME EXECUTIF
 
-**Type:** Page formulaire avec sections
-**Fonction:** Configurer les paramètres du service fax
-**Contexte:** Configuration envoi/réception fax
+### Perimetre fonctionnel
+Configuration du service fax : qualite, en-tete, notifications.
 
-## 2. NAVIGATION
+--------------------------------------------------------------------------------
 
-### NAV3 Tabs
-General | **Parametres** (actif) | Campagnes | Consommation | Filtrage | Logo | Notifications
+## 2. ARCHITECTURE
 
-## 3. LAYOUT
+### Fichiers sources
+fax/settings/
+├── settings.controller.js
+├── settings.html
+└── translations/
 
-### Panneau gauche (280px)
-- Liste des fax
+--------------------------------------------------------------------------------
 
-### Panneau droit (1096px)
-- Header + tabs
-- Formulaire paramètres
+## 3. PAGES & NAVIGATION
 
-## 4. HEADER FAX
+### Route
+...fax.settings
+URL: /settings
 
-- Numéro: "0033972999888"
-- Description: "Fax Bureau / Paramètres"
+--------------------------------------------------------------------------------
 
-## 5. SECTION PARAMÈTRES D'ENVOI (1036x180px)
+## 4. COMPOSANTS UI
 
-### Titre
-"Paramètres d'envoi"
+### Formulaire configuration
+- Qualite envoi (normal/high/best)
+- Nombre tentatives (1-5)
+- En-tete personnalise
+- Format reception (PDF/TIFF)
+- Emails notification (max 5)
 
-### Champs
+--------------------------------------------------------------------------------
 
-| Champ | Type | Valeur | Largeur |
-|-------|------|--------|---------|
-| Qualité d'envoi | Select | Normale | 200px |
-| Tentatives d'envoi | Select | 3 | 80px |
-| En-tête du fax | Input | Mon Entreprise - 0033972999888 | 580px |
-| Délai entre tentatives | Select | 5 min | 100px |
+## 5. APIs & DONNEES
 
-### Options qualité
-- Normale
-- Haute
-- Fine
-
-### Options tentatives
-- 1, 2, 3, 4, 5
-
-### Options délai
-- 2 min, 5 min, 10 min, 15 min
-
-## 6. SECTION PARAMÈTRES DE RÉCEPTION (1036x130px)
-
-### Titre
-"Paramètres de réception"
-
-### Champs
-
-| Champ | Type | Valeur | Largeur |
-|-------|------|--------|---------|
-| Format des pièces jointes | Select | PDF | 200px |
-| Taille max fichier | Input (readonly) | 10 Mo | 100px |
-| Email de réception | Input | contact@entreprise.fr | 400px |
-
-### Options format
-- PDF
-- TIFF
-- PDF + TIFF
-
-## 7. SECTION SÉCURITÉ (1036x80px)
-
-### Titre
-"Sécurité"
-
-### Champs
-
-| Champ | Valeur | Actions |
-|-------|--------|---------|
-| Mot de passe fax | ........ | Bouton "Modifier" |
-| Domaines autorisés | entreprise.fr, *.ovh.net | Lien "Gérer" |
-
-## 8. BOUTONS ACTION
-
-- "Enregistrer" (btn-primary, 140x36px)
-- "Annuler" (btn-outline, 100x36px)
-
-## 9. APIS & ENDPOINTS
-
-```
-# Récupérer les paramètres
-GET /telephony/{billingAccount}/fax/{serviceName}/settings
-→ {
-  quality: "normal",
-  retries: 3,
-  header: "Mon Entreprise - 0033972999888",
-  retryDelay: 5,
-  emailFormat: "pdf",
-  maxFileSize: 10485760,
-  notificationEmail: "contact@entreprise.fr"
+GET /telephony/:billingAccount/fax/:serviceName/settings
+Response: {
+  quality: "normal" | "high" | "best",
+  maxTries: number,
+  fromName: string,
+  fromEmail: string,
+  format: "PDF" | "TIFF",
+  redirectionEmail: string[]
 }
 
-# Modifier les paramètres
-PUT /telephony/{billingAccount}/fax/{serviceName}/settings
-Body: {
-  quality: "normal",
-  retries: 3,
-  header: "Mon Entreprise",
-  retryDelay: 5,
-  emailFormat: "pdf",
-  notificationEmail: "contact@entreprise.fr"
-}
+PUT /telephony/:billingAccount/fax/:serviceName/settings
 
-# Modifier le mot de passe fax
-PUT /telephony/{billingAccount}/fax/{serviceName}/settings/password
-Body: { password: "newPassword" }
+--------------------------------------------------------------------------------
 
-# Récupérer les domaines autorisés
-GET /telephony/{billingAccount}/fax/{serviceName}/settings/allowedDomains
-→ ["entreprise.fr", "*.ovh.net"]
+## 6. TRADUCTIONS (FR)
 
-# Modifier les domaines autorisés
-PUT /telephony/{billingAccount}/fax/{serviceName}/settings/allowedDomains
-Body: { domains: ["entreprise.fr", "partner.com"] }
-```
+telephony_fax_settings_quality = "Qualite d'envoi"
+telephony_fax_settings_quality_normal = "Normal (100 dpi)"
+telephony_fax_settings_quality_high = "Haute (200 dpi)"
+telephony_fax_settings_quality_best = "Optimale (300 dpi)"
+telephony_fax_settings_tries = "Tentatives maximum"
+telephony_fax_settings_header = "En-tete"
+telephony_fax_settings_format = "Format reception"
+telephony_fax_settings_notifications = "Notifications email"
 
-## 10. TRADUCTIONS (i18n)
+--------------------------------------------------------------------------------
 
-| Clé | FR |
-|-----|-----|
-| tab_settings | Paramètres |
-| section_send | Paramètres d'envoi |
-| field_quality | Qualité d'envoi |
-| quality_normal | Normale |
-| quality_high | Haute |
-| quality_fine | Fine |
-| field_retries | Tentatives d'envoi |
-| field_header | En-tête du fax |
-| field_retry_delay | Délai entre tentatives |
-| section_receive | Paramètres de réception |
-| field_format | Format des pièces jointes |
-| format_pdf | PDF |
-| format_tiff | TIFF |
-| format_both | PDF + TIFF |
-| field_max_size | Taille max fichier |
-| field_email | Email de réception |
-| section_security | Sécurité |
-| field_password | Mot de passe fax |
-| btn_change_password | Modifier |
-| field_domains | Domaines autorisés |
-| link_manage | Gérer |
-| btn_save | Enregistrer |
-| btn_cancel | Annuler |
+## 7. REGLES METIER
+
+- Qualite : normal (100dpi), high (200dpi), best (300dpi)
+- Tentatives : 1-5
+- Emails max : 5
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

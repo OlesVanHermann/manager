@@ -1,0 +1,133 @@
+# Cahier des Charges : web-cloud/access - Line Alerts
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page listing avec datagrid
+**Fonction:** Gérer les alertes de ligne xDSL/FTTH
+**Contexte:** Notifications par email/SMS sur événements ligne
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Tableau alertes: 1030x380px
+
+## 3. LAYOUT & STRUCTURE
+
+### NAV3 Tabs
+| Onglet | État |
+|--------|------|
+| Général | Inactif |
+| Ligne | Actif |
+| Modem | Inactif |
+| Services | Inactif |
+
+### NAV4 Sous-tabs
+| Sous-onglet | État |
+|-------------|------|
+| Statut | Inactif |
+| Diagnostic | Inactif |
+| Statistiques | Inactif |
+| Alertes | Actif |
+
+## 4. TOOLBAR
+
+### Bouton action
+- "+ Ajouter alerte" (btn-primary, 130x32px)
+
+## 5. BANNIÈRE INFO
+
+### Style
+- Background: #DBEAFE
+- Border-radius: 6px
+- Dimensions: 1030x45px
+
+### Contenu
+- Texte: "Recevez des notifications par email ou SMS lors d'événements sur votre ligne (déconnexion, resynchronisation, etc.)"
+
+## 6. DATAGRID ALERTES
+
+### Colonnes
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Type d'événement | 280px | Type + description |
+| Canal | 150px | Badge Email/SMS |
+| Destinataire | 250px | Email ou téléphone |
+| Statut | 150px | Badge Actif |
+| Actions | 180px | Modifier / Supprimer |
+
+### Types d'événements
+- Déconnexion
+- Resynchronisation
+- Dégradation qualité
+- Incident OVH
+
+### Badges canal
+- Email: Background #F3F4F6
+- SMS: Background #F3F4F6
+
+### Badge statut
+- Actif: Background #DEF7EC, text #03543F
+
+## 7. INFO SMS
+
+### Bannière warning
+- Background: #FEF3C7
+- Texte: "Les alertes SMS sont facturées 0,10€/SMS. Solde actuel : 50 SMS prépayés."
+- Lien: "Recharger"
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/monitoringNotifications
+→ Liste des alertes configurées
+
+POST /xdsl/{serviceName}/monitoringNotifications
+Body: {
+  type: "down" | "resync" | "degradation" | "incident",
+  frequency: "once" | "always",
+  email: "admin@example.com",
+  sms: "+33612345678"
+}
+→ Crée une alerte
+
+PUT /xdsl/{serviceName}/monitoringNotifications/{id}
+→ Modifie une alerte
+
+DELETE /xdsl/{serviceName}/monitoringNotifications/{id}
+→ Supprime une alerte
+
+GET /xdsl/{serviceName}/notificationsSmsHistory
+→ Historique SMS envoyés
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| subtab_status | Statut |
+| subtab_diagnostic | Diagnostic |
+| subtab_stats | Statistiques |
+| subtab_alerts | Alertes |
+| btn_add_alert | Ajouter alerte |
+| info_banner | Recevez des notifications par email ou SMS lors d'événements sur votre ligne. |
+| col_event_type | Type d'événement |
+| col_channel | Canal |
+| col_recipient | Destinataire |
+| col_status | Statut |
+| col_actions | Actions |
+| event_disconnection | Déconnexion |
+| event_disconnection_desc | Alerte si la ligne perd la synchronisation |
+| event_resync | Resynchronisation |
+| event_resync_desc | Alerte lors d'une resynchronisation de la ligne |
+| event_degradation | Dégradation qualité |
+| event_degradation_desc | Alerte si la qualité de ligne se dégrade |
+| event_incident | Incident OVH |
+| event_incident_desc | Alerte en cas d'incident côté OVH |
+| channel_email | Email |
+| channel_sms | SMS |
+| status_active | Actif |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| sms_warning | Les alertes SMS sont facturées 0,10€/SMS. |
+| sms_balance | Solde actuel : {n} SMS prépayés. |
+| link_recharge | Recharger |

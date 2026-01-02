@@ -1,144 +1,86 @@
-# Cahier des Charges : web-cloud/voip/fax - Campaigns
+================================================================================
+CAHIER DES CHARGES - OLD MANAGER
+================================================================================
+Composant : telecom.fax.campaigns
+Fichier   : old_manager.telecom.fax.campaigns.txt
+SVG       : old_manager.telecom.fax.campaigns.svg
+Date      : 2025-01-XX
+================================================================================
 
-## 1. VUE D'ENSEMBLE
+## 1. RESUME EXECUTIF
 
-**Type:** Page liste avec datagrid
-**Fonction:** Gérer les campagnes de fax
-**Contexte:** Envoi de fax en masse
+### Perimetre fonctionnel
+Gestion des campagnes de fax en masse : creation, planification, suivi.
 
-## 2. NAVIGATION
+--------------------------------------------------------------------------------
 
-### NAV3 Tabs
-General | Parametres | **Campagnes** (actif) | Consommation | Filtrage | Logo | Notifications
+## 2. ARCHITECTURE
 
-## 3. LAYOUT
+### Fichiers sources
+fax/campaigns/
+├── campaigns.controller.js
+├── campaigns.html
+└── translations/
 
-### Panneau gauche (280px)
-- Liste des fax
-- Fax sélectionné: 0033972999888
+--------------------------------------------------------------------------------
 
-### Panneau droit (1096px)
-- Header fax + tabs
-- Table campagnes
+## 3. PAGES & NAVIGATION
 
-## 4. HEADER FAX
+### Route
+...fax.campaigns
+URL: /telecom/telephony/:billingAccount/fax/:serviceName/campaigns
 
-- Numéro: "0033972999888"
-- Description: "Fax Bureau / Campagnes"
+--------------------------------------------------------------------------------
 
-## 5. BARRE D'OUTILS
+## 4. COMPOSANTS UI
 
-### Bouton ajout (186x32px)
-- "+ Nouvelle campagne" (btn-primary)
+### Creation campagne
+- Nom campagne
+- Upload PDF
+- Liste destinataires (CSV ou saisie)
+- Planification date/heure
 
-## 6. DATAGRID CAMPAGNES (1036x480px)
+### Composants
+- oui-stepper : Wizard creation
+- oui-file : Upload PDF/CSV
+- oui-calendar : Planification
+- oui-datagrid : Liste campagnes
 
-### Colonnes
+--------------------------------------------------------------------------------
 
-| Colonne | Largeur | Description |
-|---------|---------|-------------|
-| Nom | 180px | Nom de la campagne |
-| Date création | 150px | DD/MM/YYYY |
-| Destinataires | 130px | Nombre total |
-| Envoyés | 100px | Succès (vert) |
-| Échoués | 100px | Échecs (rouge) |
-| Statut | 100px | Badge statut |
-| Actions | 180px | Voir/Copier/Modifier/Supprimer |
+## 5. APIs & DONNEES
 
-### Statuts campagne
-
-| Statut | Couleur | Description |
-|--------|---------|-------------|
-| Terminée | #DEF7EC (vert) | Envoi terminé |
-| En cours | #FEF3C7 (orange) | Envoi en cours |
-| Planifiée | #F3F4F6 (gris) | Programmée |
-
-### Données exemple
-
-| Nom | Date | Dest. | Envoyés | Échoués | Statut |
-|-----|------|-------|---------|---------|--------|
-| Promotion Janvier | 15/01/2025 | 250 | 245 | 5 | Terminée |
-| Newsletter Q4 | 01/12/2024 | 180 | 180 | 0 | Terminée |
-| Offre spéciale | 28/12/2025 | 500 | 127 | 3 | En cours |
-| Voeux 2025 | 30/12/2025 | 1000 | 0 | 0 | Planifiée |
-
-### Actions par statut
-
-| Statut | Actions disponibles |
-|--------|---------------------|
-| Terminée | Voir, Copier, x |
-| En cours | Voir, Pause, x |
-| Planifiée | Voir, Modifier, x |
-
-### Pagination
-"1 - 4 sur 4 campagnes"
-
-## 7. APIS & ENDPOINTS
-
-```
-# Liste des campagnes
-GET /telephony/{billingAccount}/fax/{serviceName}/campaigns
-→ [{
-  id: "camp-123",
-  name: "Promotion Janvier",
-  createdAt: "2025-01-15",
-  recipientsCount: 250,
-  sentCount: 245,
-  failedCount: 5,
-  status: "completed"
-}]
-
-# Créer une campagne
-POST /telephony/{billingAccount}/fax/{serviceName}/campaigns
+GET /telephony/:billingAccount/fax/:serviceName/campaigns
+POST /telephony/:billingAccount/fax/:serviceName/campaigns
 Body: {
-  name: "Nouvelle campagne",
-  recipients: ["+33123456789", ...],
-  documentUrl: "https://...",
-  scheduledAt: "2025-01-20T09:00:00"
+  name: string,
+  recipientsList: string[],
+  sendDate: string
 }
 
-# Détails d'une campagne
-GET /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}
-→ {
-  id: "camp-123",
-  name: "Promotion Janvier",
-  status: "completed",
-  recipients: [...],
-  logs: [...]
-}
+POST /telephony/:billingAccount/fax/:serviceName/campaigns/:id/start
+POST /telephony/:billingAccount/fax/:serviceName/campaigns/:id/stop
 
-# Dupliquer une campagne
-POST /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}/duplicate
+### Statuts
+- todo, doing, done, error, stopped
 
-# Mettre en pause/reprendre
-PUT /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}/status
-Body: { status: "paused" | "running" }
+--------------------------------------------------------------------------------
 
-# Supprimer une campagne
-DELETE /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}
-```
+## 6. TRADUCTIONS (FR)
 
-## 8. TRADUCTIONS (i18n)
+telephony_fax_campaign_create = "Creer une campagne"
+telephony_fax_campaign_name = "Nom de la campagne"
+telephony_fax_campaign_recipients = "Destinataires"
+telephony_fax_campaign_schedule = "Planification"
 
-| Clé | FR |
-|-----|-----|
-| tab_campaigns | Campagnes |
-| btn_new_campaign | Nouvelle campagne |
-| col_name | Nom |
-| col_created_date | Date création |
-| col_recipients | Destinataires |
-| col_sent | Envoyés |
-| col_failed | Échoués |
-| col_status | Statut |
-| col_actions | Actions |
-| status_completed | Terminée |
-| status_running | En cours |
-| status_scheduled | Planifiée |
-| status_paused | En pause |
-| action_view | Voir |
-| action_copy | Copier |
-| action_pause | Pause |
-| action_resume | Reprendre |
-| action_edit | Modifier |
-| action_delete | Supprimer |
-| pagination | {start} - {end} sur {total} campagnes |
+--------------------------------------------------------------------------------
+
+## 7. REGLES METIER
+
+- Max 1000 destinataires
+- PDF max 10 Mo
+- Actions : start, stop
+
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

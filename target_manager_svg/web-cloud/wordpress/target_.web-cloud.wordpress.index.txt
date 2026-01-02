@@ -3,52 +3,56 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.wordpress.index.svg
 Route:   /web-cloud/wordpress
-Version: v1 (2025-12-30)
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| mon-blog.fr              | GET /managedCMS/resource → displayName        |
-| WordPress 6.4.2          | GET /managedCMS/resource/{sn} → wordpressVersion |
-| Pro                      | GET /managedCMS/resource/{sn} → offer         |
-| rbx1                     | GET /managedCMS/resource/{sn} → datacenter    |
-| Actif                    | GET /managedCMS/resource/{sn} → state         |
-| 3 sites WordPress        | GET /managedCMS/resource → count              |
-| ab12345-ovh              | Session → nicHandle                           |
+| Exemple SVG           | Source API                              |
+|-----------------------|-----------------------------------------|
+| {nicHandle}           | Session user                            |
+| mwp-abc123def456      | GET /hosting/wordpress → serviceName    |
+| 5 sites               | GET /hosting/wordpress/{id} → maxSites  |
+| READY                 | GET /hosting/wordpress/{id} → status    |
+| 3 / 5                 | GET /hosting/wordpress/{id} → siteCount |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif x=510)
-2. NAV2 - Web Cloud (Wordpress actif x=345)
-3. LEFT PANEL - Liste des sites WordPress
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Wordpress actif)
+3. LEFT PANEL
    - Recherche
-   - Compteur sites
-   - Items sites (88px height chacun)
-   - Bouton "Nouveau site"
+   - Liste services WordPress
 4. RIGHT PANEL
-   - Header: Nom site + version + offre
-   - Quick actions header (Admin WP, Visiter)
-   - NAV3: 6 tabs (General actif)
-   - Contenu General:
-     * Actions rapides (4 boutons)
-     * Bloc WORDPRESS (infos site)
-     * Bloc TECHNIQUE (infos serveur)
-     * Zone Danger (suppression)
+   - Header: Titre + description
+   - Toolbar: Refresh + Commander
+   - Table: Liste ressources
+   - Pagination
 
-INTERACTIONS
-- Clic item left panel → Selection site
-- Clic tab NAV3 → Navigation vers tab
-- Clic "Admin WP" → Ouvre /wp-admin
-- Clic "Visiter le site" → Ouvre URL site
-- Clic "Vider le cache" → POST flushCache
-- Clic "Supprimer" → Modal confirmation
+# COLONNES TABLE
+| Colonne         | Description                    |
+|-----------------|--------------------------------|
+| RESSOURCE       | serviceName (lien)             |
+| OFFRE           | Quota max sites                |
+| STATUT          | READY, CREATING, ERROR         |
+| SITES INSTALLES | Nb sites / quota max           |
+| ACTIONS         | Menu contextuel                |
 
-API ENDPOINTS
-GET    /managedCMS/resource                    - Liste sites
-GET    /managedCMS/resource/{serviceName}      - Details site
-POST   /managedCMS/resource/{sn}/flushCache    - Vider cache
-POST   /managedCMS/resource/{sn}/resetAdminPassword - Reset MDP
-DELETE /managedCMS/resource/{serviceName}      - Supprimer site
+# STATUTS
+| Statut   | Couleur | Description            |
+|----------|---------|------------------------|
+| READY    | Vert    | Service operationnel   |
+| CREATING | Jaune   | Creation en cours      |
+| ERROR    | Rouge   | Erreur                 |
+
+# INTERACTIONS
+- Clic service LEFT PANEL → Charge detail
+- Clic ressource table → Navigation vers general
+- Clic Commander → Modal commande
+- Clic menu actions → Dropdown
+
+# API ENDPOINTS
+GET /hosting/wordpress - Liste des services
+GET /hosting/wordpress/{serviceName} - Details service
 
 ================================================================================

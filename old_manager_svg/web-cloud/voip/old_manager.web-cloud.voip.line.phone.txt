@@ -1,177 +1,76 @@
-# Cahier des Charges : web-cloud/voip/line - Phone (Téléphone)
+================================================================================
+CAHIER DES CHARGES - OLD MANAGER
+================================================================================
+Composant : telecom.line.phone
+Fichier   : old_manager.telecom.line.phone.txt
+SVG       : old_manager.telecom.line.phone.svg
+Date      : 2025-01-XX
+================================================================================
 
-## 1. VUE D'ENSEMBLE
+## 1. RESUME EXECUTIF
 
-**Type:** Page paramètres avec cartes
-**Fonction:** Gérer le téléphone associé à la ligne
-**Contexte:** Onglet Téléphone d'une ligne VoIP
+### Perimetre fonctionnel
+Gestion telephone physique : config, touches, codecs, reboot.
 
-## 2. NAVIGATION
+--------------------------------------------------------------------------------
 
-### NAV1 (Header)
-Web Cloud (actif)
+## 2. ARCHITECTURE
 
-### NAV2 (Sous-header)
-VoIP (actif)
+### Fichiers sources
+line/phone/
+├── accessories/
+├── codec/
+├── configuration/
+├── order/
+├── phonebook/
+├── programmableKeys/
+└── reboot/
 
-### NAV3 Tabs
-General | **Telephone** (actif) | Appels | Transferts | Messagerie | Consommation | Options
+--------------------------------------------------------------------------------
 
-## 3. LAYOUT
+## 3. PAGES & NAVIGATION
 
-### Panneau gauche (280px)
-- Recherche lignes
-- Liste des lignes
+### Actions
+- Informations telephone
+- Codecs
+- Touches programmables
+- Carnets contacts
+- Redemarrer
+- Commander telephone
 
-### Panneau droit (1096px)
-- Header ligne
-- Tabs navigation
-- Cartes informations/configuration
-- Sections commander/rattachement
+--------------------------------------------------------------------------------
 
-## 4. HEADER LIGNE
+## 4. COMPOSANTS UI
 
-- Numéro: "0033912345678"
-- Description: "Poste Direction / Telephone"
+- oui-tile : Infos telephone
+- oui-datagrid : Touches, contacts
 
-## 5. CARTE INFORMATIONS GÉNÉRALES (510x250px)
+--------------------------------------------------------------------------------
 
-### Titre
-"Informations generales"
+## 5. APIs & DONNEES
 
-### Champs
+GET /telephony/:billingAccount/line/:serviceName/phone
+POST /telephony/:billingAccount/line/:serviceName/phone/reboot
+GET/PUT /telephony/:billingAccount/line/:serviceName/phone/functionKey/:keyNum
 
-| Champ | Valeur |
-|-------|--------|
-| Modele | Yealink T46U |
-| Adresse MAC | AA:BB:CC:DD:EE:01 |
-| Adresse IP | 192.168.1.100 |
-| Firmware | 86.86.0.15 |
-| Etat | Badge "Connecte" (vert) |
+--------------------------------------------------------------------------------
 
-### Actions (2 boutons)
-- "Redemarrer" (btn-outline, 100x30px)
-- "Mise a jour firmware" (btn-outline, 140x30px)
+## 6. TRADUCTIONS (FR)
 
-## 6. CARTE CONFIGURATION (510x250px)
+telephony_line_phone_reboot = "Redemarrer"
+telephony_line_phone_keys = "Touches programmables"
+telephony_line_phone_phonebook = "Carnets contacts"
 
-### Titre
-"Configuration"
+--------------------------------------------------------------------------------
 
-### Options configurables (3 liens)
+## 7. REGLES METIER
 
-| Option | Navigation |
-|--------|------------|
-| Touches programmables | → programmable-keys |
-| Codecs audio | → codecs |
-| Carnets de contacts | → contacts |
+### Marques supportees
+Yealink, Cisco, Polycom, Gigaset
 
-Format: Carte grisée (478x50px) avec texte + flèche
+### Fonctions touches
+BLF, SpeedDial, Line, Park, Intercom, Transfer
 
-## 7. SECTION COMMANDER
-
-### Titre
-"Commander"
-
-### Cartes (3 cartes, 340x110px)
-
-| Carte | Titre | Description |
-|-------|-------|-------------|
-| 1 | Nouveau telephone | Commandez un telephone pour cette ligne |
-| 2 | Casque audio | Casques compatibles avec votre telephone |
-| 3 | Accessoires | Cables, alimentations, modules d'extension |
-
-Chaque carte a un lien "Commander ->"
-
-## 8. SECTION RATTACHEMENT
-
-### Titre
-"Rattachement"
-
-### Cartes (2 cartes, 510x100px)
-
-| Carte | Titre | Description |
-|-------|-------|-------------|
-| 1 | Rattacher a un equipement existant | Associez cette ligne a un telephone que vous possedez deja |
-| 2 | Detacher le telephone actuel | Dissociez cette ligne de son telephone actuel |
-
-Chaque carte a un lien "Rattacher ->" ou "Detacher ->"
-
-## 9. APIS & ENDPOINTS
-
-```
-# Informations téléphone
-GET /telephony/{billingAccount}/line/{serviceName}/phone
-→ {
-  model: "Yealink T46U",
-  macAddress: "AA:BB:CC:DD:EE:01",
-  ipAddress: "192.168.1.100",
-  firmware: "86.86.0.15",
-  status: "connected"
-}
-
-# Redémarrer téléphone
-POST /telephony/{billingAccount}/line/{serviceName}/phone/reboot
-
-# Mise à jour firmware
-POST /telephony/{billingAccount}/line/{serviceName}/phone/firmware/update
-
-# Configuration touches programmables
-GET /telephony/{billingAccount}/line/{serviceName}/phone/programmableKeys
-→ [{
-  key: 1,
-  type: "blf",
-  value: "0033912345679"
-}]
-
-PUT /telephony/{billingAccount}/line/{serviceName}/phone/programmableKeys
-Body: [{ key: 1, type: "blf", value: "..." }]
-
-# Codecs audio
-GET /telephony/{billingAccount}/line/{serviceName}/phone/codecs
-→ ["G711", "G722", "G729"]
-
-# Rattacher téléphone
-POST /telephony/{billingAccount}/line/{serviceName}/phone/attach
-Body: { macAddress: "AA:BB:CC:DD:EE:FF" }
-
-# Détacher téléphone
-DELETE /telephony/{billingAccount}/line/{serviceName}/phone/detach
-```
-
-## 10. TRADUCTIONS (i18n)
-
-| Clé | FR |
-|-----|-----|
-| tab_phone | Telephone |
-| card_info | Informations generales |
-| field_model | Modele |
-| field_mac | Adresse MAC |
-| field_ip | Adresse IP |
-| field_firmware | Firmware |
-| field_status | Etat |
-| status_connected | Connecte |
-| status_disconnected | Deconnecte |
-| btn_reboot | Redemarrer |
-| btn_update_firmware | Mise a jour firmware |
-| card_config | Configuration |
-| config_keys | Touches programmables |
-| config_codecs | Codecs audio |
-| config_contacts | Carnets de contacts |
-| link_configure | Configurer |
-| link_manage | Gerer |
-| section_order | Commander |
-| order_phone | Nouveau telephone |
-| order_phone_desc | Commandez un telephone pour cette ligne |
-| order_headset | Casque audio |
-| order_headset_desc | Casques compatibles avec votre telephone |
-| order_accessories | Accessoires |
-| order_accessories_desc | Cables, alimentations, modules d'extension |
-| link_order | Commander |
-| section_attach | Rattachement |
-| attach_existing | Rattacher a un equipement existant |
-| attach_existing_desc | Associez cette ligne a un telephone que vous possedez deja |
-| detach_current | Detacher le telephone actuel |
-| detach_current_desc | Dissociez cette ligne de son telephone actuel |
-| link_attach | Rattacher |
-| link_detach | Detacher |
+================================================================================
+FIN DU CAHIER DES CHARGES
+================================================================================

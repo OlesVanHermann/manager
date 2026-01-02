@@ -3,7 +3,7 @@
 // Endpoints: /email/domain/{domain}/task/*
 // ============================================================
 
-import { apiFetch, ovh2apiGet } from "../../../../../services/api";
+import { ovhGet, ovh2apiGet } from "../../../../../services/api";
 
 const BASE = "/email/domain";
 const BASE_2API = "/sws/email-domain";
@@ -22,7 +22,7 @@ export interface MxPlanTask {
 // ---------- API CALLS ----------
 
 export async function list(domain: string): Promise<MxPlanTask[]> {
-  const ids = await apiFetch<number[]>(`${BASE}/${domain}/task`);
+  const ids = await ovhGet<number[]>(`${BASE}/${domain}/task`);
 
   const tasks = await Promise.all(
     ids.map(id => get(domain, id))
@@ -32,7 +32,7 @@ export async function list(domain: string): Promise<MxPlanTask[]> {
 }
 
 export async function get(domain: string, id: number): Promise<MxPlanTask> {
-  return apiFetch<MxPlanTask>(`${BASE}/${domain}/task/${id}`);
+  return ovhGet<MxPlanTask>(`${BASE}/${domain}/task/${id}`);
 }
 
 // ============================================================

@@ -1,94 +1,147 @@
 // ============================================================
-// SUB-TAB - Packs (Packs de licences groupées)
+// SUB-TAB - Packs (Services email groupés)
 // ============================================================
 
-import { useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { OfferBadge } from "../OfferBadge";
-import { EmailOffer } from "../types";
+import { services, billing } from "../api";
+import type { EmailServiceSummary, EmailServiceType } from "../api";
+import type { EmailOffer } from "../types";
 
-interface LicensePack {
+interface PackDisplay {
   id: string;
   name: string;
+  displayName: string;
   offer: EmailOffer;
+  offerDetail?: string;
+  type: EmailServiceType;
+  organization?: string;
   totalLicenses: number;
   usedLicenses: number;
-  pricePerLicense: number;
-  totalPrice: number;
-  scope: "single-domain" | "multi-domain";
   domains: string[];
-  renewalDate: string;
-  status: "active" | "suspended" | "expiring";
+  renewalDate?: string;
+  state: "active" | "suspended" | "expiring";
 }
 
-/** Sous-onglet Packs - Gestion des packs de licences. */
+/** Sous-onglet Packs - Gestion des services email. */
 export default function PacksTab() {
-  const { t } = useTranslation("web-cloud/emails/licenses");
+  const { t } = useTranslation("web-cloud/emails/modals");
 
-  // Mock data - remplacer par appel API
-  const packs: LicensePack[] = useMemo(() => [
-    {
-      id: "1",
-      name: "Pack Exchange Pro",
-      offer: "exchange",
-      totalLicenses: 25,
-      usedLicenses: 18,
-      pricePerLicense: 4.99,
-      totalPrice: 124.75,
-      scope: "multi-domain",
-      domains: ["example.com", "example.fr", "example.net"],
-      renewalDate: "2024-06-15T00:00:00Z",
-      status: "active",
-    },
-    {
-      id: "2",
-      name: "Pack Email Pro Startup",
-      offer: "email-pro",
-      totalLicenses: 10,
-      usedLicenses: 10,
-      pricePerLicense: 2.99,
-      totalPrice: 29.90,
-      scope: "single-domain",
-      domains: ["startup.io"],
-      renewalDate: "2024-02-01T00:00:00Z",
-      status: "expiring",
-    },
-    {
-      id: "3",
-      name: "Pack Zimbra Team",
-      offer: "zimbra",
-      totalLicenses: 5,
-      usedLicenses: 3,
-      pricePerLicense: 3.99,
-      totalPrice: 19.95,
-      scope: "single-domain",
-      domains: ["team.org"],
-      renewalDate: "2024-12-01T00:00:00Z",
-      status: "active",
-    },
-  ], []);
+  const [packs, setPacks] = useState<PackDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Chargement des services email
+  const loadServices = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Récupérer tous les services email
+      const allServices = await services.getAllEmailServices();
+
+      // Enrichir avec les infos de comptes
+      const packsWithDetails: PackDisplay[] = await Promise.all(
+        allServices.map(async (svc: EmailServiceSummary) => {
+          let usedLicenses = 0;
+          let totalLicenses = 0;
+
+          try {
+            // Récupérer le nombre de comptes
+            const accountsCount = await services.getServiceAccountsCount(svc);
+            usedLicenses = accountsCount;
+
+            // Pour Exchange/EmailPro, récupérer les détails de facturation
+            if (svc.type === "exchange" || svc.type === "emailpro") {
+              const accounts = await billing.getAccountsBillingForService(
+                svc.type,
+                svc.id,
+                svc.organization,
+                { count: 1000 }
+              );
+              totalLicenses = accounts.length;
+              usedLicenses = accounts.filter(a => a.state === "ok").length;
+            } else {
+              totalLicenses = accountsCount;
+            }
+          } catch {
+            // Fallback si erreur
+            totalLicenses = svc.accountsCount || 0;
+            usedLicenses = svc.accountsCount || 0;
+          }
+
+          // Mapper l'état
+          let state: PackDisplay["state"] = "active";
+          if (svc.state === "suspended") state = "suspended";
+          else if (svc.state === "expired") state = "expiring";
+
+          // Mapper l'offre
+          let offer: EmailOffer = "mx-plan";
+          if (svc.type === "exchange") offer = "exchange";
+          else if (svc.type === "emailpro") offer = "email-pro";
+          else if (svc.type === "zimbra") offer = "zimbra";
+
+          return {
+            id: svc.id,
+            name: svc.name,
+            displayName: svc.displayName,
+            offer,
+            offerDetail: svc.offerDetail,
+            type: svc.type,
+            organization: svc.organization,
+            totalLicenses,
+            usedLicenses,
+            domains: [svc.domain],
+            renewalDate: svc.renewalDate,
+            state,
+          };
+        })
+      );
+
+      setPacks(packsWithDetails);
+    } catch (err) {
+      console.error("Failed to load email services:", err);
+      setError(err instanceof Error ? err.message : "Erreur de chargement");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadServices();
+  }, [loadServices]);
 
   const handleAddPack = () => {
+    // Ouvre la page de commande OVH emails
+    window.open("https://www.ovh.com/fr/emails/", "_blank");
   };
 
-  const handleUpgrade = (pack: LicensePack) => {
+  const handleUpgrade = (pack: PackDisplay) => {
+    // URL vers le manager pour ajouter des licences
+    // Format: /web/email-{type}/{org}/{service}/account/add
+    const typeSlug = pack.type === "exchange" ? "exchange" : pack.type === "emailpro" ? "email-pro" : pack.type;
+    const org = pack.organization || pack.id;
+    const managerUrl = `https://www.ovh.com/manager/web/#/email-${typeSlug}/${org}/${pack.id}/account/add`;
+    window.open(managerUrl, "_blank");
   };
 
-  const handleManage = (pack: LicensePack) => {
+  const handleManage = (pack: PackDisplay) => {
+    // URL vers le manager pour gérer le service
+    const typeSlug = pack.type === "exchange" ? "exchange" : pack.type === "emailpro" ? "email-pro" : pack.type;
+    const org = pack.organization || pack.id;
+    const managerUrl = `https://www.ovh.com/manager/web/#/email-${typeSlug}/${org}/${pack.id}`;
+    window.open(managerUrl, "_blank");
   };
 
-  const handleRenew = (pack: LicensePack) => {
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+  const handleRenew = (pack: PackDisplay) => {
+    // URL vers le manager pour renouveler le service
+    const managerUrl = `https://www.ovh.com/manager/dedicated/#/billing/autoRenew?searchText=${encodeURIComponent(pack.id)}`;
+    window.open(managerUrl, "_blank");
   };
 
   const getUsagePercent = (used: number, total: number) => {
+    if (total === 0) return 0;
     return Math.round((used / total) * 100);
   };
 
@@ -98,13 +151,49 @@ export default function PacksTab() {
     return "#059669";
   };
 
+  const getOfferLabel = (pack: PackDisplay): string => {
+    if (pack.offerDetail) {
+      return `${pack.offer === "exchange" ? "Exchange" : pack.offer === "email-pro" ? "Email Pro" : pack.offer} ${pack.offerDetail}`;
+    }
+    return pack.offer === "exchange" ? "Exchange" : pack.offer === "email-pro" ? "Email Pro" : pack.offer === "zimbra" ? "Zimbra" : "MX Plan";
+  };
+
+  if (loading) {
+    return (
+      <div className="packs-tab">
+        <div className="emails-loading">
+          <div className="loading-spinner" />
+          <p>{t("loading", "Chargement des services...")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="packs-tab">
+        <div className="emails-error">
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={loadServices}>
+            {t("retry", "Réessayer")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="packs-tab">
       {/* Toolbar */}
       <div className="emails-toolbar">
         <div className="emails-toolbar-left">
           <button className="btn btn-primary" onClick={handleAddPack}>
-            + {t("packs.actions.addPack")}
+            + {t("packs.actions.addPack", "Commander un service")}
+          </button>
+        </div>
+        <div className="emails-toolbar-right">
+          <button className="btn btn-outline" onClick={loadServices}>
+            ↻ {t("refresh", "Actualiser")}
           </button>
         </div>
       </div>
@@ -113,10 +202,10 @@ export default function PacksTab() {
       {packs.length === 0 ? (
         <div className="emails-empty">
           <div className="emails-empty-icon">📦</div>
-          <h3 className="emails-empty-title">{t("packs.empty.title")}</h3>
-          <p className="emails-empty-text">{t("packs.empty.description")}</p>
+          <h3 className="emails-empty-title">{t("packs.empty.title", "Aucun service email")}</h3>
+          <p className="emails-empty-text">{t("packs.empty.description", "Vous n'avez pas encore de service email. Commandez-en un pour commencer.")}</p>
           <button className="btn btn-primary" onClick={handleAddPack}>
-            + {t("packs.actions.addPack")}
+            + {t("packs.actions.addPack", "Commander un service")}
           </button>
         </div>
       ) : (
@@ -126,72 +215,70 @@ export default function PacksTab() {
             const usageColor = getUsageColor(usagePercent);
 
             return (
-              <div key={pack.id} className={`pack-card ${pack.status}`}>
+              <div key={pack.id} className={`pack-card ${pack.state}`}>
                 <div className="pack-header">
                   <div className="pack-title">
-                    <h3>{pack.name}</h3>
+                    <h3>{pack.displayName || pack.name}</h3>
                     <OfferBadge offer={pack.offer} />
                   </div>
-                  <span className={`status-badge ${pack.status === "active" ? "ok" : pack.status === "expiring" ? "pending" : "suspended"}`}>
-                    {pack.status === "active" ? "Actif" : pack.status === "expiring" ? "Expire bientôt" : "Suspendu"}
+                  <span className={`status-badge ${pack.state === "active" ? "ok" : pack.state === "expiring" ? "pending" : "suspended"}`}>
+                    {pack.state === "active" ? t("status.active", "Actif") : pack.state === "expiring" ? t("status.expiring", "Expire bientôt") : t("status.suspended", "Suspendu")}
                   </span>
                 </div>
 
                 <div className="pack-usage">
                   <div className="usage-header">
-                    <span className="usage-label">{t("packs.usage")}</span>
+                    <span className="usage-label">{t("packs.usage", "Utilisation")}</span>
                     <span className="usage-value">
-                      {pack.usedLicenses} / {pack.totalLicenses} {t("packs.licenses")}
+                      {pack.usedLicenses} / {pack.totalLicenses} {t("packs.accounts", "comptes")}
                     </span>
                   </div>
                   <div className="usage-bar">
                     <div
                       className="usage-bar-fill"
-                      style={{ width: `${usagePercent}%`, backgroundColor: usageColor }}
+                      style={{ width: `${Math.min(usagePercent, 100)}%`, backgroundColor: usageColor }}
                     />
                   </div>
                 </div>
 
                 <div className="pack-details">
                   <div className="detail-row">
-                    <span className="detail-label">{t("packs.scope")}:</span>
-                    <span className="detail-value">
-                      {pack.scope === "multi-domain" ? "Multi-domaine" : "Mono-domaine"}
-                    </span>
+                    <span className="detail-label">{t("packs.type", "Type")}:</span>
+                    <span className="detail-value">{getOfferLabel(pack)}</span>
                   </div>
                   <div className="detail-row">
-                    <span className="detail-label">{t("packs.domains")}:</span>
+                    <span className="detail-label">{t("packs.domains", "Domaines")}:</span>
                     <span className="detail-value domains-list">
                       {pack.domains.join(", ")}
                     </span>
                   </div>
-                  <div className="detail-row">
-                    <span className="detail-label">{t("packs.renewal")}:</span>
-                    <span className={`detail-value ${pack.status === "expiring" ? "text-warning" : ""}`}>
-                      {formatDate(pack.renewalDate)}
-                    </span>
-                  </div>
-                  <div className="detail-row price">
-                    <span className="detail-label">{t("packs.price")}:</span>
-                    <span className="detail-value price-value">
-                      {pack.totalPrice.toFixed(2)} €/mois
-                    </span>
-                  </div>
+                  {pack.renewalDate && (
+                    <div className="detail-row">
+                      <span className="detail-label">{t("packs.renewal", "Renouvellement")}:</span>
+                      <span className={`detail-value ${pack.state === "expiring" ? "text-warning" : ""}`}>
+                        {new Date(pack.renewalDate).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pack-actions">
-                  {usagePercent >= 80 && (
+                  {usagePercent >= 80 && pack.totalLicenses > 0 && (
                     <button className="btn btn-primary btn-sm" onClick={() => handleUpgrade(pack)}>
-                      ↑ {t("packs.actions.upgrade")}
+                      ↑ {t("packs.actions.upgrade", "Ajouter des comptes")}
                     </button>
                   )}
-                  {pack.status === "expiring" && (
+                  {pack.state === "expiring" && (
                     <button className="btn btn-primary btn-sm" onClick={() => handleRenew(pack)}>
-                      ↻ {t("packs.actions.renew")}
+                      ↻ {t("packs.actions.renew", "Renouveler")}
                     </button>
                   )}
                   <button className="btn btn-outline btn-sm" onClick={() => handleManage(pack)}>
-                    ⚙ {t("packs.actions.manage")}
+                    ⚙ {t("packs.actions.manage", "Gérer")}
                   </button>
                 </div>
               </div>

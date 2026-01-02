@@ -81,7 +81,9 @@ export function AnycastTab({ domain, zoneName, onNavigateToDnsServers }: Props) 
       setLoading(true);
       setError(null);
       const [statusData, pricesData] = await Promise.all([
-        anycastService.getAnycastStatus(zoneName),
+        // getAnycastStatus uses /domain/{domain}/option (domain-level)
+        anycastService.getAnycastStatus(domain),
+        // getAnycastPrices uses /order/domain/zone/{zoneName}/dnsAnycast (zone-level)
         anycastService.getAnycastPrices(zoneName),
       ]);
       setStatus(statusData);
@@ -91,7 +93,7 @@ export function AnycastTab({ domain, zoneName, onNavigateToDnsServers }: Props) 
     } finally {
       setLoading(false);
     }
-  }, [zoneName]);
+  }, [domain, zoneName]);
 
   useEffect(() => {
     loadStatus();
@@ -204,6 +206,13 @@ export function AnycastTab({ domain, zoneName, onNavigateToDnsServers }: Props) 
 
       {error && <div className="anycast-error">{error}</div>}
 
+      {/* No prices available - cannot order */}
+      {prices.length === 0 && !orderSuccess && (
+        <div className="anycast-info-message">
+          <p>{t("noPricesAvailable", { defaultValue: "L'option DNS Anycast n'est pas disponible pour cette zone actuellement." })}</p>
+        </div>
+      )}
+
       {orderSuccess ? (
         <div className="anycast-success">
           <CheckIcon />
@@ -212,7 +221,7 @@ export function AnycastTab({ domain, zoneName, onNavigateToDnsServers }: Props) 
             <p>{t("orderSuccessDesc")}</p>
           </div>
         </div>
-      ) : (
+      ) : prices.length > 0 ? (
         <div className="anycast-order-layout">
           {/* Stepper */}
           <div className="anycast-stepper">
@@ -319,7 +328,7 @@ export function AnycastTab({ domain, zoneName, onNavigateToDnsServers }: Props) 
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

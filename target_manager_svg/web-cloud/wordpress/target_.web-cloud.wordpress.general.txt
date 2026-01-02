@@ -2,59 +2,64 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.wordpress.general.svg
-Route:   /web-cloud/wordpress/{serviceName}/general
-Version: v1 (2025-12-30)
+Route:   /web-cloud/wordpress/{serviceName}
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| mon-blog.fr              | GET /managedCMS/resource/{sn} → displayName   |
-| WordPress 6.4.2          | GET /managedCMS/resource/{sn} → wordpressVersion |
-| PHP 8.2                  | GET /managedCMS/resource/{sn} → phpVersion    |
-| Pro                      | GET /managedCMS/resource/{sn} → offer         |
-| rbx1 (Roubaix)           | GET /managedCMS/resource/{sn} → datacenter    |
-| Actif                    | GET /managedCMS/resource/{sn} → state         |
-| Let's Encrypt            | GET /managedCMS/resource/{sn} → sslEnabled    |
-| CDN Actif                | GET /managedCMS/resource/{sn} → cdnEnabled    |
-| Auto-update Active       | GET /managedCMS/resource/{sn} → autoUpdate    |
-| admin                    | GET /managedCMS/resource/{sn} → adminUser     |
-| 15/01/2024               | GET /managedCMS/resource/{sn}/serviceInfos → creation |
-| 15/01/2025               | GET /managedCMS/resource/{sn}/serviceInfos → expiration |
+| Exemple SVG                   | Source API                                    |
+|-------------------------------|-----------------------------------------------|
+| {nicHandle}                   | Session user                                  |
+| mwp-abc123def456              | URL param serviceName                         |
+| 3 / 5 sites                   | GET /hosting/wordpress/{id} → siteCount/max   |
+| www.monsite-wordpress.com     | GET /hosting/wordpress/{id}/website → fqdn    |
+| READY                         | GET /hosting/wordpress/{id}/website → status  |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif x=510)
-2. NAV2 - Web Cloud (Wordpress actif x=345)
-3. LEFT PANEL - Liste des sites WordPress
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Wordpress actif)
+3. LEFT PANEL
    - Recherche
-   - Compteur sites
-   - Items sites (site selectionne en bleu)
-   - Bouton "Nouveau site"
+   - Liste services
 4. RIGHT PANEL
-   - Header: Nom site + version + offre
-   - Quick actions header (Admin WP, Visiter)
-   - NAV3: 6 tabs (General actif)
-   - Contenu General:
-     * Actions rapides (4 boutons inline)
-     * Bloc WORDPRESS (infos site WP)
-     * Bloc TECHNIQUE (infos serveur/offre)
-     * Zone Danger (suppression)
+   - Header: serviceName
+   - NAV4: [Mes sites] [Taches]
+   - Description
+   - Actions: Creer, Importer, Gerer
+   - Table: Liste sites
 
-INTERACTIONS
-- Clic "Admin WP" → window.open(adminUrl)
-- Clic "Visiter le site" → window.open(url)
-- Clic "Vider le cache" → POST flushCache
-- Clic "Reinitialiser mot de passe" → Modal reset password
-- Clic "Mettre a jour WP" → POST update (si MAJ dispo)
-- Clic "Supprimer" → Modal confirmation suppression
+# NAV4 TABS
+| Tab       | Description                    |
+|-----------|--------------------------------|
+| Mes sites | Liste des sites WordPress      |
+| Taches    | Historique operations          |
 
-API ENDPOINTS
-GET    /managedCMS/resource/{serviceName}           - Details site
-GET    /managedCMS/resource/{serviceName}/serviceInfos - Infos abonnement
-POST   /managedCMS/resource/{sn}/flushCache         - Vider cache
-POST   /managedCMS/resource/{sn}/resetAdminPassword - Reset MDP
-POST   /managedCMS/resource/{sn}/update             - MAJ WordPress
-DELETE /managedCMS/resource/{serviceName}           - Supprimer
+# COLONNES TABLE
+| Colonne | Description                    |
+|---------|--------------------------------|
+| FQDN    | Nom de domaine du site         |
+| STATUT  | READY, ERROR, CREATING         |
+| ACTIONS | Menu contextuel                |
+
+# ACTIONS BOUTONS
+| Bouton        | Action                       |
+|---------------|------------------------------|
+| + Creer       | Modal creation site          |
+| Importer      | Modal import site existant   |
+| Gerer mes sites | Lien externe gestionnaire  |
+
+# INTERACTIONS
+- Clic tab → Change onglet actif
+- Clic Creer → Modal modal.create
+- Clic Importer → Modal modal.import
+- Clic menu actions → Dropdown (SSL, CDN, Backup, Delete)
+
+# API ENDPOINTS
+GET /hosting/wordpress/{serviceName} - Info service
+GET /hosting/wordpress/{serviceName}/website - Liste sites
+POST /hosting/wordpress/{serviceName}/website - Creer site
+DELETE /hosting/wordpress/{serviceName}/website/{id} - Supprimer
 
 ================================================================================

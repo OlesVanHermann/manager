@@ -1,4 +1,11 @@
-# PROMPT RESUME - Generation de Cahier des Charges depuis Old Manager
+# PROMPT RESUME v2 - Generation de Cahier des Charges depuis Old Manager
+
+================================================================================
+Version: v2.0 (2026-01-02)
+Changelog:
+- v2.0: Alignement terminologie NAV1-NAV4, références prompts, specs layout
+- v1.0: Version initiale
+================================================================================
 
 ## Emplacement des fichiers
 
@@ -18,6 +25,79 @@ Analyser un tar extrait de l old_manager OVHcloud et produire un **cahier des ch
 
 ---
 
+## Terminologie officielle NAV1-NAV4
+
+┌─────────┬──────────────┬──────────────┬─────────────────────────────────────────┐
+│ Niveau  │ Nom          │ Position     │ Description                             │
+├─────────┼──────────────┼──────────────┼─────────────────────────────────────────┤
+│ NAV1    │ Univers      │ Header       │ Header OVH (Web Cloud, Public Cloud...) │
+│ NAV2    │ Produit      │ Sous-header  │ Section (Domaines, Hébergement...)      │
+│ NAV3    │ Groupement   │ LEFT PANEL   │ Toggle TOUJOURS en sidebar,             │
+│         │              │ (au-dessus   │ AU-DESSUS de [Rechercher]               │
+│         │              │ de search)   │ ([Général][Sites][Expert]...)           │
+│ NAV4    │ Fonction     │ RIGHT PANEL  │ Onglets TOUJOURS dans le panel          │
+│         │              │ (tabs)       │ principal (FTP, SSL, BDD...)            │
+└─────────┴──────────────┴──────────────┴─────────────────────────────────────────┘
+
+**RÈGLES DE POSITION :**
+- NAV3 (Groupement) est TOUJOURS dans le LEFT PANEL, AU-DESSUS de la recherche
+- NAV4 (Fonction) est TOUJOURS dans le RIGHT PANEL (tabs principaux)
+
+**Modèle de navigation :**
+```
+NAV1 ──► Univers (Header OVH: Web Cloud, Public Cloud, Network, etc.)
+  │
+  └─► NAV2 ──► Produit (Domaines, Hébergement, Emails, VoIP, Accès, etc.)
+        │
+        └─► NAV3 ──► Groupement dans LEFT PANEL ([Général][Sites][Expert])
+              │
+              └─► NAV4 ──► Fonction dans RIGHT PANEL (FTP, SSL, BDD...)
+```
+
+---
+
+## Prompts complementaires (OBLIGATOIRE)
+
+Le cahier des charges DOIT etre coherent avec ces prompts :
+
+| Prompt | Contenu | Usage |
+|--------|---------|-------|
+| prompt_target.txt | Design system SVG, dimensions canvas | Specs visuelles maquettes |
+| prompt_split.txt | Architecture React, defactorisation | Structure code cible |
+| prompt_target_sidecar_left.txt | Specs LEFT PANEL, useLeftPanel | Architecture sidebar |
+| prompt_split_layout_method.txt | Specs CSS layout | Dimensions CSS critiques |
+
+**Lecture OBLIGATOIRE** avant redaction du cahier des charges.
+
+---
+
+## Specs layout CSS (ref: prompt_split_layout_method.txt)
+
+| Element | Valeur | Description |
+|---------|--------|-------------|
+| NAV1 height | 50px | Header bleu OVH |
+| NAV2 height | 40px | Sous-header blanc |
+| Gap NAV2→Content | 15px | padding-top du split |
+| Sidebar width | 280px | min-width, max-width identiques |
+| Gap panels | 16px | Entre LEFT PANEL et RIGHT PANEL |
+| Margins laterales | 24px | padding left/right |
+| Content height | 765px | Zone panels |
+
+**CSS Split obligatoire :**
+```css
+.{prefix}-split {
+  padding: 15px 24px 24px 24px;  /* top right bottom left */
+  gap: 16px;
+}
+.{prefix}-sidebar {
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+}
+```
+
+---
+
 ## Methodologie d analyse
 
 ### 1) FRONTEND
@@ -26,17 +106,20 @@ Analyser un tar extrait de l old_manager OVHcloud et produire un **cahier des ch
 - Layout general (grilles, colonnes, espacements)
 - Hierarchie visuelle (titres, sections, cartes)
 - Etats visuels (loading, error, empty, success)
+- **Mapping vers NAV1/NAV2/NAV3/NAV4**
 
 **UX :**
 - Parcours utilisateur (navigation entre pages)
 - Flux modaux (ouverture, etapes, fermeture)
 - Feedback utilisateur (notifications, messages, spinners)
+- **Position NAV3 (LEFT PANEL) vs NAV4 (RIGHT PANEL)**
 
 **Design System :**
 - Composants ODS utilises (@ovhcloud/ods-react)
 - Composants manager-react-components utilises
 - Classes Tailwind recurrentes
 - Tokens CSS (couleurs, espacements)
+- **Ref: prompt_target.txt pour design tokens**
 
 **Ergonomie :**
 - Actions disponibles par contexte (menus, boutons)
@@ -56,6 +139,7 @@ Analyser un tar extrait de l old_manager OVHcloud et produire un **cahier des ch
 - Ordre des appels (sequentiel vs parallele)
 - Dependances entre appels (ex: recuperer serviceId avant update)
 - Batch / Promise.all patterns
+- **Ref: prompt_target_sidecar_left.txt - 2 appels max au mount**
 
 **Types de donnees :**
 - Interfaces TypeScript (request/response)
@@ -82,6 +166,7 @@ Analyser un tar extrait de l old_manager OVHcloud et produire un **cahier des ch
 - useQuery / useQueries (lecture)
 - useMutation (ecriture)
 - Cache keys et invalidation
+- **Ref: prompt_target_sidecar_left.txt - useLeftPanel hook**
 
 **Declencheurs :**
 - Au montage (useEffect, queryFn)
@@ -126,13 +211,13 @@ python3 /home/ubuntu/old_manager/check_api_coverage.py /tmp/dir --markdown
 - Me (Compte) : /me/*
 - 2API (SWS) : /sws/*
 
-## Patterns de detection API - MISE A JOUR
+### Patterns de detection API - MISE A JOUR
 
-### Probleme
+**Probleme :**
 Les controllers Angular appellent des services abstraits (Domain.xxx(), OvhApiDomain.v6().xxx()).
 Les vrais endpoints REST sont dans les fichiers de service (Domain.service.js, etc.)
 
-### Solution : Chercher les vrais endpoints
+**Solution : Chercher les vrais endpoints**
 
 **Patterns prioritaires (vrais endpoints REST)** :
 
@@ -170,12 +255,6 @@ Quand on trouve un appel de service abstrait, documenter :
 3. Le vrai endpoint REST (ex: GET /domain/{domain})
 4. Les parametres
 
-
-**Le vrai fix** : ton tar doit inclure les fichiers `.service.js` du dossier :
-```
-packages/manager/modules/web-universe-components/src/
-
-
 ### Workflow de verification
 
 1. Extraire le tar dans /tmp
@@ -200,13 +279,89 @@ packages/manager/modules/web-universe-components/src/
 
 | # | Section | Contenu |
 |---|---------|---------|
-| 1 | **RESUME EXECUTIF** | Perimetre, objectif fonctionnel, users cibles |
-| 2 | **ARCHITECTURE** | Arborescence fichiers, patterns, dependances |
-| 3 | **PAGES & NAVIGATION** | Routes, params, breadcrumb, flux |
-| 4 | **COMPOSANTS UI** | Liste avec props, comportement, ODS mapping |
+| 1 | **RESUME EXECUTIF** | Perimetre, NAV1/NAV2 concernes, users cibles |
+| 2 | **ARCHITECTURE** | Structure NAV3/NAV4, defactorisation (ref: prompt_split.txt) |
+| 3 | **PAGES & NAVIGATION** | Routes NAV1→NAV2→NAV3→NAV4, positions LEFT/RIGHT |
+| 4 | **COMPOSANTS UI** | Design tokens, dimensions (ref: prompt_target.txt) |
 | 5 | **APIs & DONNEES** | Endpoints, sequences, types complets |
-| 6 | **TRADUCTIONS** | Cles i18n avec valeurs FR (et EN si dispo) |
+| 6 | **TRADUCTIONS** | Cles i18n par NAV4 ({nav4}.json) |
 | 7 | **REGLES METIER** | Validations, conditions, etats, permissions |
+
+### Detail Section 2 - ARCHITECTURE (alignee prompt_split.txt)
+
+```
+src/pages/{NAV1}/{NAV2}/
+├── {nav2}.types.ts              # Types partages (SEUL partage JS autorise)
+├── index.tsx                    # Layout + routing NAV3/NAV4
+├── styles.css                   # CSS layout uniquement
+│
+├── {nav3 groupement}/           # NAV3 dans LEFT PANEL
+│   ├── index.ts                 # Barrel exports modales
+│   ├── {Modal}Modal.tsx         # Modales partagees du groupement
+│   │
+│   └── {nav4 fonction}/         # NAV4 dans RIGHT PANEL (ISOLE)
+│       ├── index.ts
+│       ├── {Nav4}Tab.tsx
+│       ├── {Nav4}Tab.service.ts # Service ISOLE
+│       ├── {Nav4}Tab.css        # CSS ISOLE (prefixe .{nav4}-*)
+│       └── *Modal.tsx           # Modales locales
+```
+
+### Detail Section 3 - PAGES & NAVIGATION
+
+Pour chaque page identifiee, documenter :
+
+| Champ | Description | Exemple |
+|-------|-------------|---------|
+| NAV1 | Univers | web-cloud |
+| NAV2 | Produit | hosting |
+| NAV3 | Groupement (LEFT PANEL) | expert |
+| NAV4 | Fonction (RIGHT PANEL) | ftp |
+| Route | Chemin URL | /web-cloud/hosting/{id}/ftp |
+| Fichier cible | Emplacement new_manager | expert/ftp/FtpTab.tsx |
+
+### Detail Section 4 - COMPOSANTS UI (ref: prompt_target.txt)
+
+**Design tokens a documenter :**
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| bg-header | #000E9C | NAV1 header OVH |
+| bg-main | #F6F6F9 | Fond page |
+| bg-white | #FFFFFF | Cards, panels |
+| bg-primary | #0050D7 | Boutons actifs |
+| text-dark | #1F2937 | Titres |
+| text-muted | #6B7280 | Labels |
+| border | #E5E7EB | Bordures |
+
+**Dimensions canvas SVG :**
+- Largeur: 1440px
+- Hauteur: 900px
+- LEFT PANEL: x=24, width=280px
+- RIGHT PANEL: x=320, width=1096px
+
+---
+
+## Checklist defactorisation (ref: prompt_split.txt)
+
+Pour chaque NAV4 Fonction identifie dans le cahier :
+
+### Structure fichiers
+- [ ] Service isole : {Nav4}Tab.service.ts
+- [ ] CSS isole : {Nav4}Tab.css (prefixe .{nav4}-*)
+- [ ] Composant : {Nav4}Tab.tsx
+- [ ] Barrel export : index.ts
+
+### Isolation JS
+- [ ] Pas d import croise entre NAV4
+- [ ] Pas d import croise entre NAV3
+- [ ] Types partages UNIQUEMENT dans {nav2}.types.ts
+- [ ] Pas de service partage NAV2 ({nav2}.service.ts INTERDIT)
+
+### Isolation CSS
+- [ ] Pas d import CSS croise
+- [ ] Classes prefixees .{nav4}-*
+- [ ] Pas de classes generiques (.card, .modal, .table)
 
 ---
 
@@ -244,7 +399,6 @@ old_manager.bare-metal.tar             ->  old_manager.bare-metal.txt
 
 ---
 
-
 ### Creer un nouveau fichier avec cp+tee
 ```bash
 mkdir -p /home/ubuntu/old_manager
@@ -264,28 +418,6 @@ DELIM
 - Pas d indentation avant tee ... <<'DELIM' ni avant le delimiteur final
 - Si le fichier n existe pas, tee le cree ; s il existe, il est ecrase
 - **ATTENTION aux delimiteurs doubles** : si le contenu genere contient lui-meme un heredoc (ex: un script bash avec `<<'EOF'`), utiliser un delimiteur DIFFERENT pour l'enveloppe externe (ex: `CDC_EOF`, `MODULE_END`, `OUTER_DELIM`)
-
-**Exemples de conflits de delimiteurs :**
-
-MAUVAIS (FS dans FS) :
-```bash
-tee /chemin/script.sh > /dev/null <<'FS'
-#!/bin/bash
-cat > config.txt <<'FS'   # <-- CONFLIT ! Le shell ferme le heredoc ici
-contenu
-FS
-FS
-```
-
-BON (delimiteurs differents) :
-```bash
-tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
-#!/bin/bash
-cat > config.txt <<'FS'
-contenu
-FS
-SCRIPT_END
-```
 
 ---
 
@@ -307,25 +439,6 @@ PATCH_EOF
 - TOUJOURS au moins une ligne de contexte (sans -/+) avant ET apres chaque bloc @@
 - Utiliser des chemins absolus
 - Le contexte doit correspondre EXACTEMENT au fichier existant
-- **ATTENTION aux delimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
-
-**Exemple MAUVAIS (pas de contexte) :**
-```
-@@
--old
-+new
-EOF
-```
-
-**Exemple BON (avec contexte) :**
-```
-@@
- ligne avant
--old
-+new
- ligne apres
-EOF
-```
 
 ---
 
@@ -339,6 +452,8 @@ Le cahier des charges est **complet** si un developpeur peut :
 - [ ] Appliquer les traductions exactes
 - [ ] Comprendre le sequencement des appels API
 - [ ] Gerer tous les etats (loading, error, empty, success)
+- [ ] **Respecter la structure NAV3/NAV4 (ref: prompt_split.txt)**
+- [ ] **Respecter les specs layout CSS (ref: prompt_split_layout_method.txt)**
 
 **Criteres specifiques APIs :**
 - [ ] Script check_api_coverage.py lance sur le tar
@@ -346,20 +461,28 @@ Le cahier des charges est **complet** si un developpeur peut :
 - [ ] Methodes HTTP verifiees (GET vs POST vs PUT vs DELETE)
 - [ ] Version API verifiee (apiv6 vs 2api vs apiv2)
 
+**Criteres specifiques defactorisation :**
+- [ ] Chaque NAV4 a son service isole
+- [ ] Chaque NAV4 a son CSS isole avec prefixe
+- [ ] Pas d import croise entre NAV4 documente
+- [ ] Types partages identifies dans {nav2}.types.ts
+
 ---
 
 ## Workflow
 
 1. **RECEVOIR** le tar uploade
 2. **EXTRAIRE** dans /tmp pour analyse
-3. **IDENTIFIER** : pages, composants, hooks, APIs, types, traductions
-4. **VERIFIER APIs** : lancer check_api_coverage.py (OBLIGATOIRE)
-5. **ANALYSER** : sequencement, dependances, regles metier
-6. **REDIGER** le cahier des charges (7 sections)
-7. **COMPARER** APIs script vs cahier (aucun oubli)
-8. **PROPOSER** la structure au user pour validation
-9. **ATTENDRE** confirmation avant generation
-10. **GENERER** avec cp+tee apres GO explicite
+3. **LIRE** les prompts complementaires (prompt_target.txt, prompt_split.txt, etc.)
+4. **IDENTIFIER** : NAV1/NAV2/NAV3/NAV4, pages, composants, hooks, APIs, types
+5. **VERIFIER APIs** : lancer check_api_coverage.py (OBLIGATOIRE)
+6. **ANALYSER** : sequencement, dependances, regles metier
+7. **MAPPER** : old_manager → structure NAV3/NAV4 cible
+8. **REDIGER** le cahier des charges (7 sections)
+9. **COMPARER** APIs script vs cahier (aucun oubli)
+10. **PROPOSER** la structure au user pour validation
+11. **ATTENDRE** confirmation avant generation
+12. **GENERER** avec cp+tee apres GO explicite
 
 ---
 
@@ -371,6 +494,8 @@ Le cahier des charges est **complet** si un developpeur peut :
 - **TOUJOURS** proposer avant de pousser
 - **TOUJOURS** verifier les delimiteurs pour eviter les conflits
 - **TOUJOURS** lancer check_api_coverage.py avant de finaliser
+- **TOUJOURS** mapper vers la terminologie NAV1-NAV4
+- **TOUJOURS** respecter les positions : NAV3=LEFT PANEL, NAV4=RIGHT PANEL
 
 ---
 
@@ -646,8 +771,13 @@ if __name__ == '__main__':
 
 Pour installer le script :
 ```bash
-cp /home/ubuntu/old_manager/check_api_coverage.py /home/ubuntu/old_manager/check_api_coverage.py 2>/dev/null || cat > /home/ubuntu/old_manager/check_api_coverage.py << 'SCRIPT_END'
+mkdir -p /home/ubuntu/old_manager
+cat > /home/ubuntu/old_manager/check_api_coverage.py << 'SCRIPT_END'
 # Coller le code ci-dessus
 SCRIPT_END
 chmod +x /home/ubuntu/old_manager/check_api_coverage.py
 ```
+
+================================================================================
+FIN PROMPT RESUME v2.0
+================================================================================

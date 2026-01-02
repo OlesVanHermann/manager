@@ -1,0 +1,194 @@
+# Cahier des Charges : web-cloud/access - Modem DHCP
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration DHCP
+**Fonction:** Gérer le serveur DHCP et les baux
+**Contexte:** Onglet Modem > DHCP
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Zone contenu: 1096x765px
+- Card configuration: 1030x170px
+- Card baux actifs: 1030x320px
+- Card DNS: 1030x100px
+
+## 3. NAVIGATION
+
+### NAV3 Tabs
+| Onglet | État |
+|--------|------|
+| Général | Inactif |
+| Ligne | Inactif |
+| Modem | Actif |
+
+### NAV4 Sous-tabs
+| Sous-onglet | État |
+|-------------|------|
+| Dashboard | Inactif |
+| WiFi | Inactif |
+| DHCP | Actif |
+| NAT/Ports | Inactif |
+| Routeur | Inactif |
+| Paramètres | Inactif |
+| Guides | Inactif |
+
+## 4. CARD CONFIGURATION DHCP
+
+### Header
+- Titre: "CONFIGURATION DHCP"
+- Toggle ON/OFF: Position droite
+- Toggle état: ON (vert #10B981)
+
+### Champs configuration (grille 2 colonnes)
+
+| Label | Valeur | Largeur input |
+|-------|--------|---------------|
+| IP du routeur | 192.168.1.1 | 180px |
+| Masque | 255.255.255.0 | 180px |
+| Plage DHCP début | 192.168.1.10 | 180px |
+| Plage DHCP fin | 192.168.1.254 | 180px |
+| Durée bail | 24 heures | 120px (dropdown) |
+
+### Bouton Appliquer
+- Style: btn-primary (160x36px)
+- Position: droite
+- Texte: "Appliquer"
+
+## 5. CARD BAUX ACTIFS
+
+### Header
+- Titre: "BAUX ACTIFS"
+- Compteur: "20 appareils"
+- Bouton: "+ Réservation" (btn-outline)
+
+### Colonnes datagrid
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| APPAREIL | 200px | Nom de l'appareil |
+| ADRESSE IP | 130px | IP attribuée |
+| ADRESSE MAC | 180px | MAC address |
+| EXPIRE | 130px | Temps restant |
+| TYPE | 80px | Badge DHCP/Réservé |
+| ACTIONS | 100px | Lien action |
+
+### Types de bail
+- DHCP: Badge gris #F3F4F6
+- Réservé: Badge vert #DEF7EC
+
+### Actions par type
+- DHCP: "Réserver" (text-primary)
+- Réservé: "Supprimer" (text-error)
+
+### Pagination
+- Texte: "Affichage 1-4 sur 20"
+- Bouton suivant: › (btn-outline)
+
+## 6. CARD SERVEURS DNS
+
+### Header
+- Titre: "SERVEURS DNS"
+
+### Champs
+
+| Label | Valeur | Largeur |
+|-------|--------|---------|
+| DNS primaire | 213.186.33.99 | 200px |
+| DNS secondaire | 213.186.33.98 | 200px |
+
+### Bouton
+- "Modifier DNS" (btn-outline, 160x36px)
+
+## 7. COMPOSANTS UI
+
+### Toggle switch
+- Dimensions: 60x28px
+- ON: Background #DEF7EC, cercle vert
+- Texte: "ON" / "OFF"
+
+### Input readonly
+- Background: #F3F4F6
+- Border-radius: 4px
+- Height: 28px
+
+### Badge type bail
+- Border-radius: 10px
+- Padding: 4px 12px
+- Font-size: 10px
+
+## 8. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/modem/lan
+→ Configuration réseau (IP routeur, masque)
+
+GET /xdsl/{serviceName}/modem/dhcp
+→ Configuration DHCP (plage, durée bail)
+
+PUT /xdsl/{serviceName}/modem/dhcp
+Body: {
+  enabled: true,
+  startIp: "192.168.1.10",
+  endIp: "192.168.1.254",
+  leaseTime: 86400
+}
+→ Applique la configuration
+
+GET /xdsl/{serviceName}/modem/connectedDevices
+→ Liste des appareils connectés (baux actifs)
+
+POST /xdsl/{serviceName}/modem/dhcp/reservation
+Body: {
+  macAddress: "AA:BB:CC:DD:EE:FF",
+  ipAddress: "192.168.1.100",
+  name: "Imprimante"
+}
+→ Crée une réservation DHCP
+
+DELETE /xdsl/{serviceName}/modem/dhcp/reservation/{id}
+→ Supprime une réservation
+
+GET /xdsl/{serviceName}/modem/dns
+→ Serveurs DNS configurés
+
+PUT /xdsl/{serviceName}/modem/dns
+Body: {
+  primary: "213.186.33.99",
+  secondary: "213.186.33.98"
+}
+→ Modifie les serveurs DNS
+```
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| nav_dhcp | DHCP |
+| section_config | Configuration DHCP |
+| toggle_dhcp | DHCP activé |
+| field_router_ip | IP du routeur |
+| field_mask | Masque |
+| field_dhcp_start | Plage DHCP début |
+| field_dhcp_end | Plage DHCP fin |
+| field_lease | Durée bail |
+| btn_apply | Appliquer |
+| section_leases | Baux actifs |
+| devices_count | {n} appareils |
+| btn_reservation | + Réservation |
+| col_device | Appareil |
+| col_ip | Adresse IP |
+| col_mac | Adresse MAC |
+| col_expires | Expire |
+| col_type | Type |
+| col_actions | Actions |
+| type_dhcp | DHCP |
+| type_reserved | Réservé |
+| action_reserve | Réserver |
+| action_delete | Supprimer |
+| pagination | Affichage {start}-{end} sur {total} |
+| section_dns | Serveurs DNS |
+| field_dns_primary | DNS primaire |
+| field_dns_secondary | DNS secondaire |
+| btn_modify_dns | Modifier DNS |

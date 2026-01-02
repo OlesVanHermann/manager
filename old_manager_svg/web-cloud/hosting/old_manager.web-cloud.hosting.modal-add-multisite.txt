@@ -1,69 +1,84 @@
-# Cahier des Charges : web-cloud/hosting - Modal Ajouter un domaine (Multisite)
+# Cahier des Charges : web - Modal Ajout Multisite
 
 ## 1. VUE D'ENSEMBLE
-- **Modal** : Ajout d'un domaine à l'hébergement
-- **Type** : Wizard 3 étapes
-- **Objectif** : Associer un nouveau domaine (OVH ou externe)
+- **Modal** : Ajouter un domaine multisite
+- **Type** : Formulaire création
+- **Objectif** : Attacher un domaine à l'hébergement
 
 ## 2. STRUCTURE MODAL
-- Header avec titre et bouton fermer (×)
-- Stepper horizontal 3 étapes
-- Zone formulaire (gauche)
-- Panneau informations (droite)
-- Footer avec boutons
+- Dimensions : 600x600px
+- Header avec titre
+- Bannière info
+- Formulaire avec radio/select/input
+- Checkboxes options
+- Footer boutons
 
 ## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur avec overlay
-- **OdsStepper** : 3 étapes
-- **OdsRadio** : Choix type de domaine
-- **OdsInput** : Recherche domaine
-- **OdsSelect** : Liste déroulante domaines OVH
-- **OdsMessage** : Warning limite atteinte
-- **OdsButton** : Annuler, Suivant
+- **OdsModal** : Container
+- **OdsMessage** : Bannière info
+- **OdsRadio** : Type de domaine
+- **OdsSelect** : Sélection domaine
+- **OdsInput** : Sous-domaine, Dossier racine
+- **OdsCheckbox** : Options SSL, Firewall
+- **OdsButton** : Annuler, Ajouter
 
-## 4. ÉTAPES WIZARD
-| Étape | Nom | État |
-|-------|-----|------|
-| 1 | Choix du domaine | Actif |
-| 2 | Configuration | À venir |
-| 3 | Résumé | À venir |
+## 4. HEADER
+| Élément | Valeur |
+|---------|--------|
+| Titre | "Ajouter un domaine" |
+| Fond | Gris clair |
+| Bouton fermer | ✕ |
 
-## 5. FORMULAIRE ÉTAPE 1
-### Question
-"Quel domaine souhaitez-vous associer à l'hébergement hosting123.cluster042.hosting.ovh.net ?"
+## 5. BANNIÈRE INFO
+| Propriété | Valeur |
+|-----------|--------|
+| Style | Info (bleu) |
+| Icône | ℹ️ |
+| Texte 1 | "Attachez un domaine ou sous-domaine à votre hébergement" |
+| Texte 2 | "pour publier un site web supplémentaire." |
 
-### Options
-| Option | Description |
-|--------|-------------|
-| Domaine OVHcloud | Configuration DNS automatique |
-| Domaine externe | Configuration DNS manuelle |
+## 6. CHAMPS FORMULAIRE
+### Type de domaine (Radio)
+| Option | Sélectionné | Description |
+|--------|-------------|-------------|
+| Domaine enregistré chez OVHcloud | ✓ | Domaine du compte |
+| Domaine externe | | Domaine autre registrar |
 
-### Recherche domaine (si OVH)
-- Input recherche avec icône 🔍
-- Liste déroulante des domaines disponibles
-- Domaine sélectionné surligné en bleu
+### Domaine (Select)
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Domaine *" |
+| Placeholder | "Sélectionner un domaine" |
+| Obligatoire | Oui |
 
-### Domaines exemple
-- example.com (sélectionné)
-- monsite.fr
-- boutique.net
-- blog.org
+### Sous-domaine (Input)
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Sous-domaine (optionnel)" |
+| Placeholder | "Ex: blog, shop, api..." |
+| Obligatoire | Non |
 
-## 6. PANNEAU INFORMATIONS
-### Sections
-- **Domaine OVHcloud** : Config DNS automatique
-- **Domaine externe** : Configurer CNAME ou A manuellement
-- **Sous-domaine** : www.example.com ou blog.example.com acceptés
+### Dossier racine (Input)
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Dossier racine *" |
+| Valeur défaut | "/www" |
+| Obligatoire | Oui |
 
-### Warning limite
-- "⚠️ Limite atteinte : 8/10 domaines attachés."
-- "Mettez à niveau votre offre pour en ajouter."
+## 7. OPTIONS (Checkboxes)
+| Option | Coché | Description |
+|--------|-------|-------------|
+| Activer SSL (Let's Encrypt) | ✓ | Certificat SSL gratuit |
+| Activer le firewall applicatif | ☐ | Protection WAF |
 
-## 7. BOUTONS FOOTER
-- Annuler (secondaire)
-- Suivant → (primaire)
+## 8. FOOTER
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Outline | Gauche |
+| Ajouter | Primary | Droite |
 
-## 8. APIS & ENDPOINTS
-- GET /domain : Liste domaines OVH du compte
-- POST /hosting/web/{serviceName}/attachedDomain : Attacher domaine
-- GET /hosting/web/{serviceName}/attachedDomain : Liste domaines attachés
+## 9. APIS & ENDPOINTS
+- GET /domain - Liste domaines du compte
+- POST /hosting/web/{serviceName}/attachedDomain - Créer multisite
+- POST /hosting/web/{serviceName}/attachedDomain/{domain}/regenerateSsl - Activer SSL
+

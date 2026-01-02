@@ -1,64 +1,475 @@
-# PROMPT SVG - Generation de Maquettes SVG depuis Manager OVH
+# PROMPT SVG v2 - Génération de Maquettes SVG Manager OVH
+
+================================================================================
+Version: v2.0 (2026-01-02)
+Remplace: prompt_svg.txt (v1)
+Changelog:
+- v2.0: Alignement terminologie NAV1-NAV4, dimensions corrigées, structure LEFT/RIGHT PANEL
+- v1.0: Version initiale
+================================================================================
 
 ## Fichiers et chemins
 
 | Element | Valeur |
 |---------|--------|
 | **Prompt** | /home/ubuntu/prompt_svg.txt |
-| **Destination finale utilisateur** | /home/ubuntu/{PREFIX}_svg/{NAV1}/{NAV2}/ |
-| **Destination Claude (outputs)** | /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/ |
+| **Destination finale** | /home/ubuntu/{PREFIX}_svg/{NAV1}/{NAV2}/{NAV3}/ |
+| **Destination Claude (outputs)** | /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/{NAV3}/ |
 
 ---
 
-## Arborescence NAV1 existante
+## 0. TERMINOLOGIE OFFICIELLE NAV1-NAV4
+
+### Définitions et positions
+
+┌─────────┬──────────────┬──────────────┬─────────────────────────────────────────┐
+│ Niveau  │ Nom          │ Position     │ Description                             │
+├─────────┼──────────────┼──────────────┼─────────────────────────────────────────┤
+│ NAV1    │ Univers      │ Header       │ Header OVH (Web Cloud, Public Cloud...) │
+│ NAV2    │ Produit      │ Sous-header  │ Section (Domaines, Hébergement...)      │
+│ NAV3    │ Groupement   │ LEFT PANEL   │ Toggle AU-DESSUS de [Rechercher]        │
+│         │              │ (au-dessus   │ ([Général][Sites][Expert]...)           │
+│         │              │ de search)   │ Utilisé si 8+ tabs                      │
+│ NAV4    │ Fonction     │ RIGHT PANEL  │ Onglets TOUJOURS dans le panel          │
+│         │              │ (tabs)       │ principal (FTP, SSL, BDD...)            │
+└─────────┴──────────────┴──────────────┴─────────────────────────────────────────┘
+
+### Structure visuelle
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ NAV1 - Univers (Header bleu OVH, y=0, h=50px)                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV2 - Produit (Sous-header blanc, y=50, h=40px)                            │
+├───────────────────────┬─────────────────────────────────────────────────────┤
+│ LEFT PANEL (280px)    │ RIGHT PANEL (1096px)                                │
+│ ┌───────────────────┐ │ ┌─────────────────────────────────────────────────┐ │
+│ │ NAV3 - Groupement │ │ │ Titre service                                   │ │
+│ │ [Général][Sites]  │ │ ├─────────────────────────────────────────────────┤ │
+│ ├───────────────────┤ │ │ NAV4 - Fonction                                 │ │
+│ │ 🔍 Rechercher...  │ │ │ [FTP] [SSL] [BDD] [CDN] [Cron]                  │ │
+│ ├───────────────────┤ │ ├─────────────────────────────────────────────────┤ │
+│ │ Liste services    │ │ │ Contenu de l'onglet sélectionné                 │ │
+│ └───────────────────┘ │ └─────────────────────────────────────────────────┘ │
+└───────────────────────┴─────────────────────────────────────────────────────┘
+```
+
+### Modèle de navigation
+
+```
+NAV1 ──► Univers (Header OVH: Web Cloud, Public Cloud, Network, etc.)
+  │
+  └─► NAV2 ──► Produit (Domaines, Hébergement, Emails, VoIP, Accès, etc.)
+        │
+        └─► NAV3 ──► Groupement dans LEFT PANEL ([Général][Sites][Expert])
+              │
+              └─► NAV4 ──► Fonction dans RIGHT PANEL (FTP, SSL, BDD...)
+```
+
+---
+
+## 1. ARBORESCENCE NAV1 EXISTANTE
 
 | NAV1 | Description | Exemples NAV2 |
 |------|-------------|---------------|
 | `home` | Espace client, compte, facturation | account, billing, support, carbon |
-| `web-cloud` | Hebergement web, bases de donnees | hebergement, private-database |
-| `bare-metal` | Serveurs dedies, Private Cloud | dedicated, nutanix |
+| `web-cloud` | Hébergement web, bases de données | hosting, domains, emails, voip |
+| `bare-metal` | Serveurs dédiés, Private Cloud | dedicated, nutanix |
 
 ---
 
-## ⚠️ REGLES CRITIQUES - LIRE EN PREMIER ⚠️
+## 2. RÈGLES CRITIQUES
 
-### REGLE 0 : ZERO HALLUCINATION
-**INTERDIT ABSOLU** d'inventer des elements absents du code source.
-- Pas dans le code -> PAS dans le SVG
-- Pas dans les traductions -> PAS de label invente
-- En cas de doute -> `grep` pour verifier
-- **Chaque pixel doit etre justifiable par une ligne de code**
+### RÈGLE 0 : ZÉRO HALLUCINATION
+**INTERDIT ABSOLU** d'inventer des éléments absents du code source.
+- Pas dans le code → PAS dans le SVG
+- Pas dans les traductions → PAS de label inventé
+- En cas de doute → `grep` pour vérifier
+- **Chaque pixel doit être justifiable par une ligne de code**
 
-### REGLE 1 : GENERATION DIRECTE OBLIGATOIRE
+### RÈGLE 1 : GÉNÉRATION DIRECTE OBLIGATOIRE
 **INTERDICTION** d'afficher le SVG dans la conversation.
 
 | ❌ INTERDIT | ✅ OBLIGATOIRE |
 |-------------|----------------|
-| Afficher le SVG brut | Ecrire avec `tee` dans `/mnt/user-data/outputs/` |
-| "Voici le SVG, copiez-le..." | Appeler `present_files` apres generation |
-| Attendre copier-coller | Fournir lien de telechargement |
+| Afficher le SVG brut | Écrire avec `tee` dans `/mnt/user-data/outputs/` |
+| "Voici le SVG, copiez-le..." | Appeler `present_files` après génération |
+| Attendre copier-coller | Fournir lien de téléchargement |
 
-**Raison** : L'utilisateur ne peut PAS copier-coller. Afficher = PERTE DE TEMPS.
-
-### REGLE 2 : EXPOSER LES ACTIONS CACHEES (Menu ⋮)
+### RÈGLE 2 : EXPOSER LES ACTIONS CACHÉES (Menu ⋮)
 **OBLIGATOIRE** : Afficher TOUS les ActionMenu **OUVERTS** avec leurs actions visibles.
-```typescript
-// Chercher : ActionMenu, items={[...]}, actions={[...]}
-<ActionMenu items={[
-  { label: t('edit') },
-  { label: t('delete') },
-]} />
-// -> Menu OUVERT dans le SVG avec toutes les actions
-```
 
-### REGLE 3 : DESIGN SYSTEM TOKENS
-**JAMAIS hardcoder les couleurs** - utiliser les variables CSS.
+### RÈGLE 3 : DESIGN SYSTEM TOKENS
+**JAMAIS hardcoder les couleurs** - utiliser les tokens définis.
+
+### RÈGLE 4 : FICHIERS PAR PAIRE (SVG + TXT)
+**OBLIGATOIRE** : Chaque SVG doit avoir son fichier .txt de documentation.
+
+| Fichier | Contenu |
+|---------|---------|
+| `{route}.svg` | Le visuel (maquette) |
+| `{route}.txt` | Documentation : structure, données dynamiques, API endpoints |
 
 ---
 
-## WORKFLOW OBLIGATOIRE
+## 3. DIMENSIONS & LAYOUT (SPECS CRITIQUES - TOLÉRANCE 0px)
 
-### Phase 1 : Detection du contexte
+### Canvas
+
+```
+Largeur: 1440px
+Hauteur: 900px
+```
+
+### Structure Verticale (Y)
+
+| Zone | Y Start | Height | Y End | Description |
+|------|---------|--------|-------|-------------|
+| NAV1 | 0 | 50px | 50 | Header bleu OVH |
+| NAV2 | 50 | 40px | 90 | Sous-header blanc |
+| Gap | 90 | 15px | 105 | Marge supérieure |
+| Content | 105 | 765px | 870 | Zone panels |
+| Margin | 870 | 30px | 900 | Marge inférieure |
+
+### Structure Horizontale (X)
+
+```
+│24px│◄────── 280px ──────►│16px│◄────────── 1096px ──────────►│24px│
+│    │     LEFT PANEL      │    │         RIGHT PANEL          │    │
+x=0 x=24                 x=304 x=320                        x=1416 x=1440
+```
+
+| Zone | X Start | Width | X End |
+|------|---------|-------|-------|
+| Margin L | 0 | 24px | 24 |
+| LEFT PANEL | 24 | 280px | 304 |
+| Gap | 304 | 16px | 320 |
+| RIGHT PANEL | 320 | 1096px | 1416 |
+| Margin R | 1416 | 24px | 1440 |
+
+### Récapitulatif specs critiques
+
+| Élément | Propriété | Valeur |
+|---------|-----------|--------|
+| NAV1 | height | 50px |
+| NAV2 | height | 40px |
+| Gap NAV2→Content | padding-top | 15px |
+| Margins latérales | padding-left/right | 24px |
+| LEFT PANEL | width, min-width, max-width | 280px |
+| Gap LEFT↔RIGHT | gap | 16px |
+| Panels | height | 765px |
+
+---
+
+## 4. DESIGN SYSTEM TOKENS
+
+### Couleurs
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| bg-header | #000E9C | NAV1 header OVH |
+| bg-main | #F6F6F9 | Fond page |
+| bg-white | #FFFFFF | Cards, panels |
+| bg-primary | #0050D7 | Boutons actifs, accents |
+| bg-neutral-100 | #F3F4F6 | Inputs, cellules |
+| bg-info | #DBEAFE | Bannière info |
+| bg-success | #DEF7EC | Badge "Actif" |
+| bg-error | #FEE2E2 | Erreurs |
+| bg-warning | #FEF3C7 | Warnings |
+| btn-disabled | #E5E7EB | Bouton désactivé |
+| row-selected | #E8F0FE | Ligne sélectionnée |
+| table-header | #F9FAFB | Header tableau |
+| border | #E5E7EB | Bordures, dividers |
+
+### Textes
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| text-white | #FFFFFF | Sur fond sombre |
+| text-dark | #1F2937 | Titres, principal |
+| text-muted | #6B7280 | Labels, secondaire |
+| text-primary | #0050D7 | Liens, actions |
+| text-success | #059669 | Statuts ON |
+| text-error | #DC2626 | Delete, erreurs |
+| text-info | #1E40AF | Bannière info |
+| text-warning | #D97706 | Warnings |
+
+### Typographie (Source Sans Pro)
+
+| Element | Size | Weight |
+|---------|------|--------|
+| NAV1 items | 14px | 400/600 |
+| NAV2 items | 14px | 400/600 |
+| NAV3 tabs (LEFT PANEL) | 11px | 400/500 |
+| NAV4 tabs (RIGHT PANEL) | 12px | 400/500 |
+| Page title | 18px | 600 |
+| Bloc title | 15px | 700 |
+| Section title | 13px | 600 |
+| Label/Value | 11px | 400 |
+| Table header | 11px | 600 |
+| Small | 9px | 400 |
+
+### Rayons & Espacements
+
+| Element | Value |
+|---------|-------|
+| rx-card | 8px |
+| rx-button | 4px |
+| rx-badge | 9px |
+| rx-pill | 18px |
+| row-height | 45px |
+| gap panels | 16px |
+
+---
+
+## 5. TEMPLATE SVG
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900">
+  <defs>
+    <style>
+      .bg-header { fill: #000E9C; }
+      .bg-main { fill: #F6F6F9; }
+      .bg-white { fill: #FFFFFF; }
+      .bg-primary { fill: #0050D7; }
+      .bg-neutral-100 { fill: #F3F4F6; }
+      .bg-info { fill: #DBEAFE; }
+      .bg-success { fill: #DEF7EC; }
+      .bg-error { fill: #FEE2E2; }
+      .bg-warning { fill: #FEF3C7; }
+      .border { stroke: #E5E7EB; stroke-width: 1; fill: none; }
+      .divider { stroke: #E5E7EB; stroke-width: 1; }
+      .btn-outline { stroke: #0050D7; stroke-width: 1; fill: #FFFFFF; }
+      .btn-primary { fill: #0050D7; }
+      .btn-disabled { fill: #E5E7EB; }
+      .row-selected { fill: #E8F0FE; }
+      .table-header { fill: #F9FAFB; }
+      .text-white { fill: #FFFFFF; font-family: 'Source Sans Pro', sans-serif; }
+      .text-dark { fill: #1F2937; font-family: 'Source Sans Pro', sans-serif; }
+      .text-muted { fill: #6B7280; font-family: 'Source Sans Pro', sans-serif; }
+      .text-primary { fill: #0050D7; font-family: 'Source Sans Pro', sans-serif; }
+      .text-success { fill: #059669; font-family: 'Source Sans Pro', sans-serif; }
+      .text-error { fill: #DC2626; font-family: 'Source Sans Pro', sans-serif; }
+      .text-info { fill: #1E40AF; font-family: 'Source Sans Pro', sans-serif; }
+      .text-warning { fill: #D97706; font-family: 'Source Sans Pro', sans-serif; }
+      .action-menu-dropdown { fill: #FFFFFF; stroke: #E5E7EB; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1440" height="900" class="bg-main"/>
+
+  <!-- NAV1 - Header OVH (y=0, h=50) -->
+  <rect width="1440" height="50" class="bg-header"/>
+  <text x="40" y="32" class="text-white" font-size="14" opacity="0.7">Accueil</text>
+  <text x="110" y="32" class="text-white" font-size="14" opacity="0.7">Public Cloud</text>
+  <text x="210" y="32" class="text-white" font-size="14" opacity="0.7">Hosted Private Cloud</text>
+  <text x="370" y="32" class="text-white" font-size="14" opacity="0.7">Bare Metal Cloud</text>
+  <text x="510" y="32" class="text-white" font-size="14" font-weight="600">Web Cloud</text>
+  <rect x="505" y="46" width="75" height="3" fill="#FFFFFF"/>
+  <text x="620" y="32" class="text-white" font-size="14" opacity="0.7">Network</text>
+  <!-- Badge utilisateur -->
+  <rect x="1280" y="12" width="140" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
+  <text x="1320" y="29" class="text-white" font-size="12">{nicHandle}</text>
+
+  <!-- NAV2 - Sous-header (y=50, h=40) -->
+  <rect x="0" y="50" width="1440" height="40" class="bg-white"/>
+  <line x1="0" y1="89" x2="1440" y2="89" class="divider"/>
+  <text x="40" y="75" class="text-muted" font-size="14">Accueil</text>
+  <text x="110" y="75" class="text-muted" font-size="14">Domaines et DNS</text>
+  <text x="240" y="75" class="text-primary" font-size="14" font-weight="600">Hébergement</text>
+  <rect x="235" y="85" width="85" height="3" fill="#0050D7"/>
+  <text x="345" y="75" class="text-muted" font-size="14">Wordpress</text>
+  <text x="430" y="75" class="text-muted" font-size="14">Emails</text>
+  <text x="500" y="75" class="text-muted" font-size="14">VoIP</text>
+  <text x="550" y="75" class="text-muted" font-size="14">Accès</text>
+  <text x="1350" y="75" class="text-primary" font-size="13">Guides</text>
+
+  <!-- CONTENT AREA (y=105) -->
+  <g transform="translate(0, 105)">
+    <g transform="translate(24, 0)">
+
+      <!-- LEFT PANEL (280px x 765px) -->
+      <rect x="0" y="0" width="280" height="765" rx="8" class="bg-white"/>
+      <rect x="0" y="0" width="280" height="765" rx="8" class="border"/>
+
+      <!-- NAV3 Groupement (si 8+ tabs, au-dessus de recherche) -->
+      <rect x="0" y="0" width="280" height="44" rx="8" fill="#F9FAFB"/>
+      <rect x="12" y="10" width="80" height="24" rx="4" fill="#0050D7"/>
+      <text x="52" y="26" class="text-white" font-size="11" text-anchor="middle">Général</text>
+      <rect x="96" y="10" width="80" height="24" rx="4" fill="#FFFFFF" stroke="#E5E7EB"/>
+      <text x="136" y="26" class="text-muted" font-size="11" text-anchor="middle">Sites</text>
+      <rect x="180" y="10" width="80" height="24" rx="4" fill="#FFFFFF" stroke="#E5E7EB"/>
+      <text x="220" y="26" class="text-muted" font-size="11" text-anchor="middle">Expert</text>
+      <line x1="0" y1="44" x2="280" y2="44" class="divider"/>
+
+      <!-- Recherche (y=56, sous NAV3) -->
+      <rect x="12" y="56" width="256" height="34" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+      <text x="26" y="78" class="text-muted" font-size="12">🔍 Rechercher...</text>
+
+      <!-- Compteur (y=100) -->
+      <text x="12" y="112" class="text-muted" font-size="11">{serviceCount} services</text>
+
+      <!-- Service items (y=124, scrollable) -->
+      <!-- ... liste des services ... -->
+
+    </g>
+
+    <g transform="translate(320, 0)">
+
+      <!-- RIGHT PANEL (1096px x 765px) -->
+      <rect x="0" y="0" width="1096" height="765" rx="8" class="bg-white"/>
+      <rect x="0" y="0" width="1096" height="765" rx="8" class="border"/>
+
+      <g transform="translate(20, 0)">
+        <!-- HEADER PAGE (y=0 à y=35) -->
+        <text x="0" y="24" class="text-dark" font-size="18" font-weight="600">{serviceName}</text>
+
+        <!-- NAV4 FONCTION - TABS (y=38) -->
+        <g transform="translate(0, 38)">
+          <!-- Tab actif -->
+          <rect x="0" y="0" width="65" height="26" rx="4" fill="#0050D7"/>
+          <text x="32" y="17" fill="#FFFFFF" font-size="12" text-anchor="middle">FTP</text>
+
+          <!-- Tab inactif -->
+          <rect x="69" y="0" width="70" height="26" rx="4" fill="#FFFFFF" stroke="#0050D7"/>
+          <text x="104" y="17" fill="#0050D7" font-size="12" text-anchor="middle">SSL</text>
+
+          <!-- Autres tabs NAV4... -->
+        </g>
+
+        <!-- SOUS-TABS (y=70, optionnel) -->
+        <g transform="translate(0, 70)">
+          <!-- Sous-tab actif -->
+          <text x="0" y="14" fill="#0050D7" font-size="12" font-weight="500">Statut</text>
+          <rect x="0" y="18" width="40" height="2" fill="#0050D7"/>
+
+          <!-- Sous-tab inactif -->
+          <text x="60" y="14" fill="#6B7280" font-size="12">Diagnostic</text>
+        </g>
+
+        <!-- CONTENU (y=100 ou y=90 si pas de sous-tabs) -->
+        <g transform="translate(0, 100)">
+          <!-- Contenu page -->
+        </g>
+      </g>
+
+    </g>
+  </g>
+</svg>
+```
+
+---
+
+## 6. STRUCTURE LEFT PANEL (280px)
+
+### Avec NAV3 Groupement (si 8+ tabs)
+
+```
+┌─────────────────────────────────────┐ y=0
+│  [Général]  [Sites]  [Expert]       │  ← NAV3 Groupement (h=44px)
+├─────────────────────────────────────┤ y=44
+│  🔍 Rechercher...                   │  ← Search (y=56, h=34px)
+├─────────────────────────────────────┤ y=100
+│  N services                         │  ← Compteur (y=112)
+├─────────────────────────────────────┤ y=124
+│  🌐  service.example.com     [Actif]│  ← Items (scrollable)
+│      Offre Pro                      │
+├─────────────────────────────────────┤
+│  Page 1/N    ‹  1  2  3  ›          │  ← Pagination
+└─────────────────────────────────────┘
+```
+
+### Sans NAV3 (si < 8 tabs)
+
+```
+┌─────────────────────────────────────┐ y=0
+│  🔍 Rechercher...                   │  ← Search (y=12, h=34px)
+├─────────────────────────────────────┤ y=56
+│  N services                         │  ← Compteur
+├─────────────────────────────────────┤ y=80
+│  Liste services                     │  ← Items (scrollable)
+├─────────────────────────────────────┤
+│  Pagination                         │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 7. STRUCTURE RIGHT PANEL (1096px)
+
+```
+┌─────────────────────────────────────────────────────────────────┐ y=0
+│  {serviceName}                                    [Actions]     │  ← Header (h=35px)
+├─────────────────────────────────────────────────────────────────┤ y=38
+│  [Tab1] [Tab2] [Tab3] [Tab4] [Tab5]                             │  ← NAV4 Fonction (h=26px)
+├─────────────────────────────────────────────────────────────────┤ y=70
+│  Sous-tab1  Sous-tab2  Sous-tab3                                │  ← Sous-tabs optionnel
+├─────────────────────────────────────────────────────────────────┤ y=100
+│                                                                 │
+│  Contenu de l'onglet sélectionné                                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 8. CONVENTION DE NOMMAGE
+
+### Patterns de fichiers
+
+| Pattern | Usage | Exemple |
+|---------|-------|---------|
+| `{PREFIX}_.{NAV1}.{NAV2}.dashboard.svg` | Page principale / dashboard | `old_manager_.web-cloud.hosting.dashboard.svg` |
+| `{PREFIX}_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.svg` | Onglet spécifique | `old_manager_.web-cloud.hosting.expert.ftp.svg` |
+| `{PREFIX}_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.modal-{action}.svg` | Modal / dialog | `old_manager_.web-cloud.hosting.expert.ftp.modal-create.svg` |
+| `{PREFIX}_.{NAV1}.{NAV2}.onboarding.svg` | Page onboarding / empty state | `old_manager_.web-cloud.hosting.onboarding.svg` |
+
+### Arborescence complète
+
+```
+/{PREFIX}_svg/
+  ├── home/
+  │   ├── billing/
+  │   │   ├── general/
+  │   │   │   ├── old_manager_.home.billing.general.history.svg
+  │   │   │   ├── old_manager_.home.billing.general.history.txt
+  │   │   │   ├── old_manager_.home.billing.general.autorenew.svg
+  │   │   │   └── old_manager_.home.billing.general.autorenew.txt
+  │   │   └── ...
+  │   └── ...
+  ├── web-cloud/
+  │   ├── hosting/
+  │   │   ├── general/
+  │   │   │   ├── old_manager_.web-cloud.hosting.general.general.svg
+  │   │   │   ├── old_manager_.web-cloud.hosting.general.general.txt
+  │   │   │   ├── old_manager_.web-cloud.hosting.general.offer.svg
+  │   │   │   └── old_manager_.web-cloud.hosting.general.offer.txt
+  │   │   ├── sites/
+  │   │   │   ├── old_manager_.web-cloud.hosting.sites.multisite.svg
+  │   │   │   ├── old_manager_.web-cloud.hosting.sites.multisite.txt
+  │   │   │   ├── old_manager_.web-cloud.hosting.sites.ssl.svg
+  │   │   │   └── old_manager_.web-cloud.hosting.sites.ssl.txt
+  │   │   ├── expert/
+  │   │   │   ├── old_manager_.web-cloud.hosting.expert.ftp.svg
+  │   │   │   ├── old_manager_.web-cloud.hosting.expert.ftp.txt
+  │   │   │   ├── old_manager_.web-cloud.hosting.expert.database.svg
+  │   │   │   └── old_manager_.web-cloud.hosting.expert.database.txt
+  │   │   ├── old_manager_.web-cloud.hosting.dashboard.svg
+  │   │   ├── old_manager_.web-cloud.hosting.dashboard.txt
+  │   │   ├── old_manager_.web-cloud.hosting.onboarding.svg
+  │   │   └── old_manager_.web-cloud.hosting.onboarding.txt
+  │   └── ...
+  └── bare-metal/
+      └── ...
+```
+
+---
+
+## 9. WORKFLOW OBLIGATOIRE
+
+### Phase 1 : Détection du contexte
+
 ```
 Input : old_manager.web-cloud.hosting.tar
 
@@ -68,194 +479,73 @@ NAV2 = hosting
 ```
 
 ### Phase 2 : Analyse du code
-| Priorite | Fichier | Information |
+
+| Priorité | Fichier | Information |
 |----------|---------|-------------|
-| 1 | layout.tsx | Structure, breadcrumb, tabs |
+| 1 | layout.tsx | Structure, breadcrumb, NAV3/NAV4 |
 | 2 | *.page.tsx | Contenu principal |
-| 3 | components/*.tsx | Elements UI |
+| 3 | components/*.tsx | Éléments UI |
 | 4 | useDatagridColumn.tsx | Colonnes + ActionMenu |
 | 5 | Messages_fr_FR.json | Traductions FR |
-| 6 | styles.css | Styles specifiques |
+| 6 | styles.css | Styles spécifiques |
 
-### Phase 3 : Generation SVG
+### Phase 3 : Génération SVG + TXT
+
 ```bash
-# 1. Creer arborescence dans outputs
-mkdir -p /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}
+# 1. Créer arborescence dans outputs (avec NAV3)
+mkdir -p /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/{NAV3}
 
-# 2. Ecrire le SVG
-tee /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/{PREFIX}.{NAV1}.{NAV2}.svg << 'EOFSVG'
+# 2. Écrire le SVG
+tee /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/{NAV3}/{PREFIX}_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.svg << 'EOFSVG'
 <svg ...>
 </svg>
 EOFSVG
 
-# 3. Appeler present_files avec le chemin du fichier
+# 3. Écrire le TXT documentation
+tee /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/{NAV3}/{PREFIX}_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.txt << 'EOFTXT'
+================================================================================
+TARGET SVG DOCUMENTATION
+================================================================================
+Fichier: {PREFIX}_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.svg
+Route:   /{NAV1}/{NAV2}/{NAV3}/{NAV4}
+Version: v1 (YYYY-MM-DD)
+================================================================================
+
+⚠️ DONNÉES DYNAMIQUES
+| Exemple SVG           | Source API                      |
+|-----------------------|---------------------------------|
+| {exemple}             | GET /path → field               |
+
+================================================================================
+EOFTXT
+
+# 4. Appeler present_files avec le chemin du fichier
 ```
 
 ### Phase 4 : Confirmation
+
 ```
-✅ SVG genere : {PREFIX}.{NAV1}.{NAV2}.svg
-   Chemin : /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/
-   Taille : XX Ko
-   Elements : [liste]
-   ActionMenu : [actions exposees]
-```
+✅ SVG générés :
+   1. {PREFIX}_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.svg (XX Ko)
+   2. {PREFIX}_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.txt
 
----
-
-## Convention de nommage
-
-### Patterns de fichiers SVG
-
-| Pattern | Usage | Exemple |
-|---------|-------|---------|
-| `{PREFIX}.{NAV1}.{NAV2}.svg` | Page principale / dashboard | `old_manager.home.billing.svg` |
-| `{PREFIX}.{NAV1}.{NAV2}.tab-{nom}.svg` | Onglet specifique | `old_manager.web-cloud.hebergement.tab-ssl.svg` |
-| `{PREFIX}.{NAV1}.{NAV2}.modal-{action}.svg` | Modal / dialog | `old_manager.home.billing.modal-terminate.svg` |
-| `{PREFIX}.{NAV1}.{NAV2}.list-{nom}.svg` | Liste d'elements | `old_manager.web-cloud.hebergement.list-hostings.svg` |
-| `{PREFIX}.{NAV1}.{NAV2}.{nom}-detail.svg` | Page de detail | `old_manager.home.support.ticket-detail.svg` |
-| `{PREFIX}.{NAV1}.{NAV2}.onboarding.svg` | Page onboarding / empty state | `old_manager.web-cloud.hebergement.onboarding.svg` |
-| `{PREFIX}.{NAV1}.{NAV2}.state-{etat}.svg` | Etat specifique (empty, error, loading) | `old_manager.web-cloud.hosting.state-empty.svg` |
-
-### Arborescence complete
-```
-/mnt/user-data/outputs/{PREFIX}_svg/
-  ├── home/
-  │   ├── account/
-  │   │   ├── old_manager.home.account.svg
-  │   │   ├── old_manager.home.account.tab-infos.svg
-  │   │   ├── old_manager.home.account.tab-security.svg
-  │   │   ├── old_manager.home.account.modal-2fa-totp.svg
-  │   │   └── old_manager.home.account.modal-change-password.svg
-  │   ├── billing/
-  │   │   ├── old_manager.home.billing.svg
-  │   │   ├── old_manager.home.billing.tab-history.svg
-  │   │   ├── old_manager.home.billing.tab-autorenew.svg
-  │   │   ├── old_manager.home.billing.modal-terminate.svg
-  │   │   └── old_manager.home.billing.modal-export-csv.svg
-  │   └── support/
-  │       ├── old_manager.home.support.svg
-  │       ├── old_manager.home.support.ticket-detail.svg
-  │       ├── old_manager.home.support.modal-new-ticket.svg
-  │       └── old_manager.home.support.modal-close-ticket.svg
-  ├── web-cloud/
-  │   ├── hebergement/
-  │   │   ├── old_manager.web-cloud.hebergement.svg
-  │   │   ├── old_manager.web-cloud.hebergement.list-hostings.svg
-  │   │   ├── old_manager.web-cloud.hebergement.onboarding.svg
-  │   │   ├── old_manager.web-cloud.hebergement.tab-general.svg
-  │   │   ├── old_manager.web-cloud.hebergement.tab-multisite.svg
-  │   │   └── old_manager.web-cloud.hebergement.tab-database.svg
-  │   └── private-database/
-  │       ├── old_manager.web-cloud.private-database.svg
-  │       ├── old_manager.web-cloud.private-database.onboarding.svg
-  │       ├── old_manager.web-cloud.private-database.tab-user.svg
-  │       ├── old_manager.web-cloud.private-database.modal-add-user.svg
-  │       └── old_manager.web-cloud.private-database.modal-oom.svg
-  └── bare-metal/
-      └── dedicated/
-          ├── old_manager.bare-metal.dedicated.svg
-          ├── old_manager.bare-metal.dedicated.tab-operations.svg
-          └── old_manager.bare-metal.dedicated.modal-terminate.svg
-```
-
-### Exemple concret
-```
-Input : old_manager.web-cloud.hosting.tar
-
-Output :
-/mnt/user-data/outputs/old_manager_svg/web-cloud/hosting/
-  ├── old_manager.web-cloud.hosting.svg
-  ├── old_manager.web-cloud.hosting.list-hostings.svg
-  ├── old_manager.web-cloud.hosting.onboarding.svg
-  ├── old_manager.web-cloud.hosting.tab-ssl.svg
-  ├── old_manager.web-cloud.hosting.tab-database.svg
-  └── old_manager.web-cloud.hosting.modal-order.svg
+   Chemin : /mnt/user-data/outputs/{PREFIX}_svg/{NAV1}/{NAV2}/{NAV3}/
+   Éléments : [liste]
+   ActionMenu : [actions exposées]
 ```
 
 ---
 
-## Design System Tokens
-
-### Source
-```
-/home/ubuntu/aiapp/frontend/src/design-system/tokens.css
-/home/ubuntu/aiapp/frontend/src/design-system/globals.css
-```
-
-### Couleurs
-| Token | Usage |
-|-------|-------|
-| `--color-primary-500` | Bleu OVH (#0050D7) |
-| `--color-primary-100` | Bleu clair selection (#E8F0FE) |
-| `--color-text` | Texte principal (#1F2937) |
-| `--color-text-muted` | Texte secondaire (#6B7280) |
-| `--color-bg-muted` | Background page (#F9FAFB) |
-| `--color-neutral-100` | Header tableau (#F3F4F6) |
-| `--color-neutral-200` | Bordures (#E5E7EB) |
-| `--color-header` | Header OVH (#000E9C) |
-| `--color-success-100/700` | Badge succes |
-| `--color-warning-100/700` | Badge warning |
-| `--color-error-100/700` | Badge erreur |
-
-### Dimensions
-- Largeur : 1440px
-- Header : 60px
-- Sidebar : 240px
-- Padding content : 40px
-- Hauteur : variable (min 900px)
-
-### Template SVG
-```xml
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 {HEIGHT}" width="1440" height="{HEIGHT}">
-  <defs>
-    <style>
-      :root {
-        --color-primary-500: #0050D7;
-        --color-primary-100: #E8F0FE;
-        --color-text: #1F2937;
-        --color-text-muted: #6B7280;
-        --color-bg-muted: #F9FAFB;
-        --color-neutral-100: #F3F4F6;
-        --color-neutral-200: #E5E7EB;
-        --color-header: #000E9C;
-        --color-success-100: #DEF7EC;
-        --color-success-700: #03543F;
-        --color-warning-100: #FEF3C7;
-        --color-warning-700: #92400E;
-        --color-error-100: #FEE2E2;
-        --color-error-700: #991B1B;
-        --font-family: 'Source Sans Pro', sans-serif;
-      }
-      .bg-primary { fill: var(--color-primary-500); }
-      .bg-muted { fill: var(--color-bg-muted); }
-      .bg-white { fill: #FFFFFF; }
-      .bg-header { fill: var(--color-header); }
-      .text-body { font-family: var(--font-family); font-size: 14px; fill: var(--color-text); }
-      .text-muted { font-family: var(--font-family); font-size: 14px; fill: var(--color-text-muted); }
-      .text-link { font-family: var(--font-family); font-size: 14px; fill: var(--color-primary-500); }
-      .text-white { font-family: var(--font-family); fill: #FFFFFF; }
-      .border { stroke: var(--color-neutral-200); stroke-width: 1; }
-      .action-menu-dropdown { fill: #FFFFFF; stroke: var(--color-neutral-200); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
-    </style>
-  </defs>
-  
-  <rect width="1440" height="{HEIGHT}" class="bg-muted"/>
-  <g id="header"><rect width="1440" height="60" class="bg-header"/></g>
-  <g id="sidebar" transform="translate(0, 60)"><rect width="240" height="{HEIGHT-60}" class="bg-white"/></g>
-  <g id="content" transform="translate(240, 60)"><!-- Contenu --></g>
-</svg>
-```
-
----
-
-## Detection des elements
+## 10. DÉTECTION DES ÉLÉMENTS
 
 ### Boutons
+
 ```typescript
 <OdsButton variant="primary" label={t('action_label')} />
 ```
 
 ### Datagrid
+
 ```typescript
 const columns = [
   { id: 'name', label: t('column_name') },
@@ -263,27 +553,31 @@ const columns = [
 ];
 ```
 
-### Tabs
+### Tabs (NAV4 Fonction)
+
 ```typescript
 const tabs = [
-  { name: 'general', label: t('tab_general') },
-  { name: 'ssl', label: t('tab_ssl') },
+  { name: 'general', label: t('tab_general'), group: 'general' },
+  { name: 'ftp', label: t('tab_ftp'), group: 'expert' },
 ];
 ```
 
 ### Modals
+
 ```typescript
 <OdsModal open={showModal}>...</OdsModal>
-// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.modal-{action}.svg
+// → SVG séparé : {PREFIX}_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.modal-{action}.svg
 ```
 
 ### ActionMenu (⋮) - TOUJOURS OUVERT
+
 ```typescript
 <ActionMenu items={[
   { label: t('edit') },
   { label: t('delete') },
 ]} />
 ```
+
 **Rendu SVG :**
 ```xml
 <g id="action-menu-open">
@@ -297,78 +591,163 @@ const tabs = [
 ```
 
 ### Onboarding / Empty State
+
 ```typescript
 <Onboarding ... />
-// ou
-{data.length === 0 && <EmptyState />}
-// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.onboarding.svg
-```
-
-### Page de detail
-```typescript
-// Route : /support/tickets/:ticketId
-<TicketDetail ticket={ticket} />
-// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.ticket-detail.svg
-```
-
-### Liste / Listing
-```typescript
-// Page qui liste plusieurs ressources avant selection
-<HostingList hostings={hostings} />
-// -> SVG separe : {PREFIX}.{NAV1}.{NAV2}.list-hostings.svg
+// → SVG séparé : {PREFIX}_.{NAV1}.{NAV2}.onboarding.svg
 ```
 
 ---
 
-## Rapport de generation
+## 11. COMPOSANTS RÉUTILISABLES
+
+### Toolbar
+
+```xml
+<g transform="translate(0, 0)">
+  <rect x="0" y="0" width="32" height="32" rx="4" class="btn-outline"/>
+  <text x="16" y="22" class="text-primary" font-size="14" text-anchor="middle">↻</text>
+
+  <rect x="40" y="0" width="180" height="32" rx="4" fill="#F9FAFB" stroke="#E5E7EB"/>
+  <text x="52" y="21" class="text-muted" font-size="11">{searchPlaceholder}</text>
+
+  <rect x="228" y="0" width="150" height="32" rx="4" class="btn-primary"/>
+  <text x="303" y="21" class="text-white" font-size="11" text-anchor="middle">+ {addLabel}</text>
+</g>
+```
+
+### Pagination
+
+```xml
+<g>
+  <text x="0" y="16" class="text-muted" font-size="11">Affichage {start}-{end} sur {total}</text>
+  <text x="250" y="16" class="text-muted" font-size="11">Par page:</text>
+  <rect x="300" y="0" width="50" height="26" rx="4" stroke="#E5E7EB" fill="#FFFFFF"/>
+  <text x="318" y="17" class="text-dark" font-size="11">{perPage}</text>
+  <text x="340" y="17" class="text-muted" font-size="10">▼</text>
+  <g transform="translate(880, 0)">
+    <rect x="0" y="0" width="28" height="26" rx="4" class="btn-disabled"/>
+    <text x="14" y="17" class="text-muted" font-size="12" text-anchor="middle">‹</text>
+    <rect x="34" y="0" width="28" height="26" rx="4" class="bg-primary"/>
+    <text x="48" y="17" class="text-white" font-size="11" text-anchor="middle">1</text>
+    <rect x="68" y="0" width="28" height="26" rx="4" class="btn-outline"/>
+    <text x="82" y="17" class="text-primary" font-size="11" text-anchor="middle">2</text>
+    <rect x="102" y="0" width="28" height="26" rx="4" class="btn-outline"/>
+    <text x="116" y="17" class="text-primary" font-size="12" text-anchor="middle">›</text>
+  </g>
+</g>
+```
+
+### Badges statut
+
+```xml
+<!-- Actif -->
+<rect x="0" y="0" width="46" height="18" rx="9" fill="#DEF7EC"/>
+<text x="23" y="13" fill="#03543F" font-size="10" text-anchor="middle">Actif</text>
+
+<!-- Inactif -->
+<rect x="0" y="0" width="46" height="18" rx="9" fill="#F3F4F6"/>
+<text x="23" y="13" fill="#6B7280" font-size="10" text-anchor="middle">Inactif</text>
+
+<!-- Erreur -->
+<rect x="0" y="0" width="46" height="18" rx="9" fill="#FEE2E2"/>
+<text x="23" y="13" fill="#DC2626" font-size="10" text-anchor="middle">Erreur</text>
+```
+
+### Bannières
+
+```xml
+<!-- Info -->
+<rect x="0" y="0" width="1056" height="40" rx="6" class="bg-info"/>
+<text x="20" y="25" class="text-info" font-size="12">ℹ️ {message}</text>
+
+<!-- Warning -->
+<rect x="0" y="0" width="1056" height="40" rx="6" class="bg-warning"/>
+<text x="20" y="25" class="text-warning" font-size="12">⚠️ {message}</text>
+
+<!-- Error -->
+<rect x="0" y="0" width="1056" height="40" rx="6" class="bg-error"/>
+<text x="20" y="25" class="text-error" font-size="12">❌ {message}</text>
+```
+
+---
+
+## 12. RAPPORT DE GÉNÉRATION
+
 ```
 === CONTEXTE ===
 PREFIX : old_manager
 NAV1 : web-cloud
 NAV2 : hosting
 
-=== ELEMENTS DETECTES ===
+=== STRUCTURE NAV ===
+- NAV3 Groupement : [Général, Sites, Expert]
+- NAV4 Fonction par groupe :
+  - Général : [general, offer, modules, logs, statistics, seo, indy]
+  - Sites : [multisite, ssl]
+  - Expert : [ftp, database, cdn, boost, cron, envvars, runtimes, emails, tasks]
+
+=== ÉLÉMENTS DÉTECTÉS ===
 - Breadcrumb : [...]
-- Tabs : [...]
+- NAV4 Tabs : [...]
 - Boutons : [...]
 - Colonnes : [...]
 - ActionMenu (⋮) : [TOUTES LES ACTIONS]
 - Modals : [...]
 - Onboarding : [oui/non]
-- Pages detail : [...]
-- Listes : [...]
 
-=== SVG GENERES ===
-1. ✅ old_manager.web-cloud.hosting.svg (XX Ko)
-2. ✅ old_manager.web-cloud.hosting.list-hostings.svg (XX Ko)
-3. ✅ old_manager.web-cloud.hosting.onboarding.svg (XX Ko)
-4. ✅ old_manager.web-cloud.hosting.tab-ssl.svg (XX Ko)
-5. ✅ old_manager.web-cloud.hosting.modal-order.svg (XX Ko)
+=== SVG + TXT GÉNÉRÉS ===
+1. ✅ old_manager_.web-cloud.hosting.general.general.svg + .txt (XX Ko)
+2. ✅ old_manager_.web-cloud.hosting.expert.ftp.svg + .txt (XX Ko)
+3. ✅ old_manager_.web-cloud.hosting.onboarding.svg + .txt (XX Ko)
+...
 ```
 
 ---
 
-## Checklist finale
+## 13. CHECKLIST FINALE
 
-- [ ] PREFIX detecte (old_manager / new_manager)
-- [ ] NAV1 identifie (home / web-cloud / bare-metal)
-- [ ] NAV2 identifie
-- [ ] Arborescence creee dans `/mnt/user-data/outputs/`
-- [ ] SVG ecrit avec `tee` (pas affiche)
-- [ ] `present_files` appele
-- [ ] ZERO hallucination
-- [ ] Tokens CSS utilises (pas de hex hardcode)
-- [ ] ActionMenu affiches OUVERTS
-- [ ] Textes en francais
-- [ ] Onboarding genere si present
-- [ ] Pages detail generees si presentes
-- [ ] Listes generees si presentes
+### Contexte
+- [ ] PREFIX détecté (old_manager / new_manager / target)
+- [ ] NAV1 identifié (home / web-cloud / bare-metal)
+- [ ] NAV2 identifié
+- [ ] NAV3 identifiés (si 8+ tabs)
+- [ ] NAV4 identifiés
+
+### Génération
+- [ ] Arborescence créée avec NAV3 dans `/mnt/user-data/outputs/`
+- [ ] SVG écrit avec `tee` (pas affiché)
+- [ ] TXT documentation créé (paire obligatoire)
+- [ ] `present_files` appelé
+
+### Qualité
+- [ ] ZÉRO hallucination
+- [ ] Tokens CSS utilisés (pas de hex hardcodé)
+- [ ] ActionMenu affichés OUVERTS
+- [ ] Textes en français
+
+### Dimensions
+- [ ] Canvas 1440×900
+- [ ] NAV1 header 50px
+- [ ] NAV2 sous-header 40px
+- [ ] LEFT PANEL 280px
+- [ ] Gap 16px
+- [ ] Padding 15px 24px 24px 24px
+
+### Pages spéciales
+- [ ] Onboarding généré si présent
+- [ ] Pages détail générées si présentes
+- [ ] Modals générés séparément
 
 ---
 
-## Anti-depassement
+## 14. ANTI-DÉPASSEMENT
 
 Si SVG trop complexe (>100 Ko) :
-1. Limiter datagrids a 3-5 lignes exemple
-2. Decouper en plusieurs SVG
+1. Limiter datagrids à 3-5 lignes exemple
+2. Découper en plusieurs SVG
 3. Page principale d'abord, modals ensuite
+
+================================================================================
+FIN PROMPT SVG v2.0
+================================================================================

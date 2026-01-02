@@ -156,21 +156,33 @@ class ContactsService {
     return ovhGet<ContactField[]>(`/me/contact/${contactId}/fields`);
   }
 
-  // -------- DOMAIN CONTACT (différent de /me/contact) --------
+  // -------- CONTACT BY NIC HANDLE --------
   /**
-   * Get domain contact informations
-   * GET /domain/contact/{contactId} - Identique old_manager
-   * Note: Cette API est différente de /me/contact !
+   * Get contact details by NIC handle (admin, tech, billing)
+   * GET /me/contact/{nicHandle}
+   * Note: Pour les contacts admin/tech/billing qui sont des NIC handles (ex: "ab12345-ovh")
    */
-  async getDomainContactInformations(contactId: string): Promise<DomainContact> {
+  async getContactByNicHandle(nicHandle: string): Promise<DomainContact> {
+    return ovhGet<DomainContact>(`/me/contact/${encodeURIComponent(nicHandle)}`);
+  }
+
+  // -------- DOMAIN CONTACT BY ID (Owner) --------
+  /**
+   * Get domain owner contact by numeric ID
+   * GET /domain/contact/{contactId} - Identique old_manager
+   * Note: Pour le owner uniquement, qui a un ID numérique (whoisOwner)
+   * @param contactId - ID numérique (number), pas un NIC handle !
+   */
+  async getDomainContactById(contactId: number): Promise<DomainContact> {
     return ovhGet<DomainContact>(`/domain/contact/${contactId}`);
   }
 
   /**
-   * Update domain contact
+   * Update domain owner contact
    * PUT /domain/contact/{contactId} - Identique old_manager
+   * @param contactId - ID numérique (number)
    */
-  async updateDomainContact(contactId: string, params: Partial<DomainContact>): Promise<DomainContact> {
+  async updateDomainContact(contactId: number, params: Partial<DomainContact>): Promise<DomainContact> {
     return ovhPut<DomainContact>(`/domain/contact/${contactId}`, params);
   }
 

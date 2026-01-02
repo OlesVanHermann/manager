@@ -124,6 +124,9 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
   } | null>(null);
 
   // ---------- LOAD CONTACTS ----------
+  // Pattern identique old_manager: afficher uniquement le NIC handle pour admin/tech/billing
+  // L'API /me/contact/{id} attend un ID numérique, pas un NIC handle
+  // Seul le owner a un ID numérique (whoisOwner) permettant de récupérer les détails
   const loadContacts = useCallback(async () => {
     if (!serviceInfos) return;
 
@@ -133,27 +136,15 @@ export function ContactsTab({ domain, serviceInfos }: Props) {
       billing: serviceInfos.contactBilling,
     };
 
+    // Pattern identique old_manager: pas d'appel API pour admin/tech/billing
+    // On affiche simplement le NIC handle sans détails supplémentaires
     const updated: ContactInfo[] = [
       { type: "owner", nic: "OVHcloud", loading: false },
-      { type: "admin", nic: nics.admin, loading: true },
-      { type: "tech", nic: nics.tech, loading: true },
-      { type: "billing", nic: nics.billing, loading: true },
+      { type: "admin", nic: nics.admin, loading: false },
+      { type: "tech", nic: nics.tech, loading: false },
+      { type: "billing", nic: nics.billing, loading: false },
     ];
     setContacts(updated);
-
-    for (const type of ["admin", "tech", "billing"] as const) {
-      try {
-        // Utiliser /domain/contact/{nichandle} - Identique old_manager
-        const details = await contactsService.getDomainContactInformations(nics[type]);
-        setContacts((prev) =>
-          prev.map((c) => (c.type === type ? { ...c, details, email: details.email, loading: false } : c))
-        );
-      } catch {
-        setContacts((prev) =>
-          prev.map((c) => (c.type === type ? { ...c, loading: false } : c))
-        );
-      }
-    }
   }, [serviceInfos]);
 
   // ---------- LOAD OWO STATE ----------

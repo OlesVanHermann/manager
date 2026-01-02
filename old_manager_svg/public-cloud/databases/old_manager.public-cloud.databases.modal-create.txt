@@ -1,81 +1,92 @@
-# Cahier des Charges : public-cloud/databases - Modal Créer service
+# Cahier des Charges : public/databases - Modal Create
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Databases - Wizard création service
-- **Type** : Modal wizard pleine page
-- **Objectif** : Créer un nouveau service de base de données
+- **Type** : Modal création database
+- **Contexte** : Public Cloud Databases
+- **Objectif** : Créer un service de base de données managée
 
-## 2. STRUCTURE MODAL
-- Overlay sombre
-- Modal 840x800px centrée
-- Header avec titre et bouton fermer
-- Contenu avec stepper 5 étapes
-- Footer avec estimation et boutons
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Modal largeur | 550px |
+| Modal hauteur | 560px |
+| Overlay | rgba(0,0,0,0.5) |
+| Border radius | 8px |
 
 ## 3. COMPOSANTS UI
-- **OdsModal** : Conteneur pleine page (840x800px)
-- **OdsStepper** : 5 étapes (cercles + titres)
-- **OdsCard** : Sélection engines (4)
-- **OdsCard** : Sélection plans (3)
-- **OdsChip** : Sélection régions (4)
-- **OdsSelect** : Flavor dropdown
-- **OdsInput** : Nom du service
-- **OdsButton** : Annuler (outline)
-- **OdsButton** : Créer (primaire)
+- **OdsModal** : Conteneur modal
+- **OdsText** : Titres et labels
+- **OdsSelect** : Région, Stockage
+- **OdsInput** : Nom service
+- **OdsButton** : Annuler, Créer
+- **Cards sélection** : Moteurs, Plans
 
-## 4. TITRE
-"Créer un service de base de données"
+## 4. HEADER MODAL
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #F9FAFB |
+| Titre | "Créer une base de données" |
+| Bouton fermer | × en #6B7280 |
 
-## 5. STEPPER - 5 ÉTAPES
+## 5. SÉLECTION MOTEUR
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Moteur" |
+| Disposition | Cartes horizontales |
+| Carte taille | 115×50px |
 
-### Étape 1 : Sélectionnez un moteur (✓)
-Cartes engines (4) :
-| Engine | Description | État |
-|--------|-------------|------|
-| 🐘 PostgreSQL | Base relationnelle | Sélectionné (bordure bleue) |
-| 🐬 MySQL | Base relationnelle | Non sélectionné |
-| 🍃 MongoDB | Base documents | Non sélectionné |
-| 🔴 Redis | Clé-valeur | Non sélectionné |
+### Moteurs disponibles
+| Moteur | Versions |
+|--------|----------|
+| PostgreSQL | v15, v16 |
+| MySQL | v8.0 |
+| MongoDB | v6.0, v7.0 |
+| Redis | v7.0, v7.2 |
 
-### Étape 2 : Sélectionnez un plan (✓)
-Cartes plans (3) :
-| Plan | Description | Prix | État |
-|------|-------------|------|------|
-| Essential | 1 nœud, dev/test | À partir de 8€/mois | Non sélectionné |
-| Business | 3 nœuds, haute dispo | À partir de 45€/mois | Sélectionné |
-| Enterprise | Production critique | À partir de 150€/mois | Non sélectionné |
+## 6. SÉLECTION PLAN
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Plan" |
+| Disposition | Cartes horizontales |
+| Carte taille | 155×65px |
 
-### Étape 3 : Sélectionnez une région (actif)
-Chips régions :
-| Région | État |
-|--------|------|
-| GRA | Sélectionné (bordure bleue) |
-| SBG | Non sélectionné |
-| WAW | Non sélectionné |
-| BHS | Non sélectionné |
+### Plans disponibles
+| Plan | vCPU | RAM | Prix |
+|------|------|-----|------|
+| Essential | 2 | 4 GB | €35/mois |
+| Business | 4 | 15 GB | €95/mois |
+| Enterprise | 8 | 60 GB | €250/mois |
 
-### Étape 4 : Flavor et stockage (en attente)
-- Select dropdown: "db1-7 (2 vCores, 7 Go RAM)"
+## 7. SELECT RÉGION
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Région" |
+| Largeur | 500px |
+| Exemple | "🇫🇷 GRA (Gravelines)" |
 
-### Étape 5 : Nom du service (en attente)
-- Input: "prod-postgresql"
+## 8. INPUT NOM SERVICE
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Nom du service" |
+| Largeur | 500px |
+| Placeholder | "Ex: db-production" |
 
-## 6. FOOTER
-- Fond gris (#F3F4F6)
-- Label: "Estimation :"
-- Prix: "~89,00€ HT/mois" (bleu, 20px, bold)
+## 9. INPUT STOCKAGE
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Stockage" |
+| Largeur | 150px |
+| Valeur par défaut | "50 GB" |
+| Info prix | "+ €0.10/GB/mois" |
 
-## 7. BOUTONS
-| Bouton | Style | Position |
-|--------|-------|----------|
-| Annuler | Outline | Centre-droite |
-| Créer | Primaire bleu | Droite |
+## 10. BOUTONS FOOTER
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Outline #E5E7EB | Fermer modal |
+| Créer | Primary #0050D7 | POST création |
 
-## 8. APIS & ENDPOINTS
-- GET /cloud/project/{projectId}/database/availability
-  - Engines, plans, régions, flavors disponibles
-- GET /cloud/project/{projectId}/database/capabilities
-  - Capacités par engine
-- POST /cloud/project/{projectId}/database/service
-  - Body: { engine, plan, region, flavor, name }
-  - Création du service
+## 11. APIS & ENDPOINTS
+- GET /cloud/project/{id}/database/engine - Moteurs disponibles
+- GET /cloud/project/{id}/database/flavor - Plans/flavors
+- POST /cloud/project/{id}/database - Créer database
+

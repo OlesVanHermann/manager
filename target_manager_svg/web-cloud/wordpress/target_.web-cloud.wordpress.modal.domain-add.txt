@@ -1,59 +1,51 @@
 ================================================================================
 TARGET SVG DOCUMENTATION
 ================================================================================
-Fichier: target_.web-cloud.wordpress.modal-domain-add.svg
-Route:   /web-cloud/wordpress/{serviceName}/domains/add (modal)
-Version: v1 (2025-12-30)
+Fichier: target_.web-cloud.wordpress.modal.domain-add.svg
+Route:   /web-cloud/wordpress/{serviceName} (modal)
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| www.monautre-domaine.com | user input → POST body.domain                 |
-| Alias (selected)         | user input → POST body.type                   |
-| 1.2.3.4                  | GET /managedCMS/resource/{sn} → serverIp      |
-| mon-blog.fr.             | GET /managedCMS/resource/{sn} → primaryDomain |
-| SSL checked              | user input → POST body.sslEnabled             |
+| Exemple SVG           | Source API                              |
+|-----------------------|-----------------------------------------|
+| {nicHandle}           | Session user                            |
+| www.mondomaine.com    | User input                              |
+
 ================================================================================
 
-STRUCTURE MODAL
-1. HEADER - Titre "Ajouter un domaine" + bouton fermer (x)
-2. FORMULAIRE:
-   - Domaine a ajouter: Input text
-   - Type: 2 radio buttons
-     * Alias (redirige vers domaine principal)
-     * Multisite (installation WP separee - Business uniquement)
-   - Banniere DNS: Configuration requise avec tableau
-     * Type A: @ → IP serveur
-     * Type CNAME: www → domaine principal
-     * Bouton copier
-   - Checkbox SSL: Activer Let's Encrypt automatiquement
-3. FOOTER - Boutons Annuler + Ajouter
+# STRUCTURE MODAL
+- Overlay semi-transparent
+- Modal centree 500x440
+- Header: Titre + bouton fermer
+- Banniere info (bleue): Description association domaine
+- Champs:
+  - Nom de domaine (input, required)
+  - Certificat SSL (radio buttons)
+    - Let's Encrypt (gratuit) - default
+    - Certificat personnalise
+- Footer: Annuler + Ajouter
 
-TYPES DE DOMAINE
-| Type      | Description                        | Offres         |
-|-----------|------------------------------------|----------------|
-| Alias     | Redirection vers domaine principal | Toutes         |
-| Multisite | Installation WP independante       | Business only  |
+# CHAMPS FORMULAIRE
+| Champ              | Type   | Validation       |
+|--------------------|--------|------------------|
+| Nom de domaine     | Input  | Required, FQDN   |
+| Certificat SSL     | Radio  | Required         |
 
-CONFIGURATION DNS REQUISE
-| Type   | Nom  | Valeur                    |
-|--------|------|---------------------------|
-| A      | @    | {serverIp}                |
-| CNAME  | www  | {primaryDomain}.          |
+# OPTIONS SSL
+| Option               | Description                    |
+|----------------------|--------------------------------|
+| Let's Encrypt        | Certificat gratuit automatique |
+| Personnalise         | Import certificat custom       |
 
-INTERACTIONS
-- Clic "x" → Fermer modal
-- Selection type → Highlight radio
-- Clic "📋 Copier" → Copier config DNS dans presse-papier
-- Toggle checkbox SSL → Activer/desactiver SSL auto
-- Clic "Annuler" → Fermer modal
-- Clic "Ajouter" → POST /managedCMS/resource/{sn}/domains
+# INTERACTIONS
+- Clic radio → Change selection SSL
+- Clic Annuler → Ferme modal
+- Clic Ajouter → POST API add domain
+- Clic X → Ferme modal
 
-API ENDPOINTS
-POST /managedCMS/resource/{sn}/domains       - Ajouter domaine
-Body: { domain, type: "alias"|"multisite", sslEnabled: boolean }
-
-GET  /managedCMS/resource/{sn}               - Infos serveur (IP, domaine principal)
+# API ENDPOINTS
+POST /hosting/wordpress/{serviceName}/website/{id}/domain
+Payload: { domain, sslType }
 
 ================================================================================

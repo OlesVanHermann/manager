@@ -1,186 +1,100 @@
-# Cahier des Charges : web-cloud/voip/sms - Entrants
+# old_manager.telecom.sms.incoming.txt
+# Cahier des charges - SMS Reçus
+# Généré depuis : old_manager_web-cloud_telecom_sms.tar
 
-## 1. VUE D'ENSEMBLE
+---
 
-**Type:** Page liste avec datagrid et configuration
-**Fonction:** Consulter les SMS entrants reçus
-**Contexte:** Onglet Entrants d'un compte SMS
+## 1. RÉSUMÉ EXÉCUTIF
 
-## 2. NAVIGATION
+### Périmètre
+Page d'historique des SMS reçus d'un compte SMS.
 
-### NAV1 (Header)
-Web Cloud (actif)
+### Objectif fonctionnel
+Permettre la consultation des SMS entrants (réponses des destinataires).
 
-### NAV2 (Sous-header)
-VoIP (actif)
+### Note
+Le code source n'est pas fourni. Spécification basée sur les SVG existants.
 
-### NAV3 Tabs
-General | Envoyer | Campagnes | **Entrants** (actif) | Historique | Modeles
+---
 
-## 3. LAYOUT
+## 2. ARCHITECTURE
 
-### Panneau gauche (280px)
-- Recherche comptes
-- Liste des comptes
+### Pages liées (SVG existants)
+- old_manager.telecom.sms.incoming.svg - Historique SMS reçus
 
-### Panneau droit (1096px)
-- Header compte
-- Tabs navigation
-- Section configuration réception
-- Toolbar avec filtres
-- Cartes statistiques
-- Tableau SMS entrants
+### Documentation associée
+Guide : "Gérer les SMS avec réponse" (sms_onboarding_guide3_title)
 
-## 4. SECTION CONFIGURATION RÉCEPTION (1036x120px)
+---
 
-### Titre
-"Configuration de reception"
+## 3. PAGES & NAVIGATION
 
-### Champs
+### Route probable
+| Propriété | Valeur |
+|-----------|--------|
+| State | sms.service.incoming |
+| URL | /sms/:serviceName/incoming |
 
-| Champ | Valeur | Badge/Action |
-|-------|--------|--------------|
-| Numero de reception | +33 6 00 00 00 00 | Badge "Actif" (vert) |
-| Webhook URL | https://api.example.com/sms/incoming | - |
+---
 
-### Lien
-"Configurer la reception"
+## 4. COMPOSANTS UI
 
-## 5. TOOLBAR
+### Filtres
+| Filtre | Type | Description |
+|--------|------|-------------|
+| Période | Date range | Du / Au |
+| Expéditeur | Input | Recherche par numéro |
 
-### Éléments
-- Bouton refresh (32x32px, outline)
-- Champ recherche "Rechercher un numero..." (200x32px)
-- Select période "7 derniers jours" (130x32px)
-- Bouton "Exporter CSV" (btn-outline, 180x32px)
+### Historique (Datagrid)
+| Colonne | Description |
+|---------|-------------|
+| Date | Date/heure réception |
+| Expéditeur | Numéro de l'envoyeur |
+| Message | Contenu du SMS |
+| Actions | Voir détail / Supprimer |
 
-## 6. CARTES STATISTIQUES (3 cartes)
+---
 
-| Carte | Titre | Valeur | Dimensions |
-|-------|-------|--------|------------|
-| 1 | SMS recus (7j) | 127 | 340x60px |
-| 2 | Expediteurs uniques | 89 | 340x60px |
-| 3 | Webhooks delivres | 100% (vert) | 332x60px |
+## 5. APIs & DONNÉES
 
-## 7. TABLEAU SMS ENTRANTS (1036x350px)
+### Endpoints probables
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /sms/{serviceName}/incoming | Liste SMS reçus |
+| GET | /sms/{serviceName}/incoming/{id} | Détail SMS |
+| DELETE | /sms/{serviceName}/incoming/{id} | Suppression |
 
-### Colonnes
-
-| Colonne | Largeur | Description |
-|---------|---------|-------------|
-| Date/Heure | 130px | Format DD/MM HH:mm |
-| Expediteur | 150px | Numéro |
-| Message | 450px | Contenu tronqué |
-| Webhook | 150px | Badge statut |
-| Actions | 106px | Liens |
-
-### États webhook
-
-| État | Couleur |
-|------|---------|
-| Delivre | #DEF7EC (vert) |
-| Echec | #FEE2E2 (rouge) |
-| En attente | #FEF3C7 (jaune) |
-
-### Actions
-- Voir
-- Supprimer (x)
-
-### Données exemple
-
-| Date/Heure | Expediteur | Message | Webhook | Actions |
-|------------|------------|---------|---------|---------|
-| 30/12 15:42 | +33 6 12 34 56 78 | STOP - Je souhaite me desabonner... | Delivre | Voir, x |
-| 30/12 14:18 | +33 6 98 76 54 32 | OUI - Confirmation de rendez-vous... | Delivre | Voir, x |
-| 30/12 11:05 | +33 6 55 44 33 22 | INFO - Demande d'information... | Delivre | Voir, x |
-| 29/12 16:33 | +33 6 11 22 33 44 | Merci pour votre message... | Delivre | Voir, x |
-
-### Pagination
-- Format: "Affichage 1-50 sur 127"
-- Navigation: < 1 2 >
-
-## 8. APIS & ENDPOINTS
-
-```
-# Configuration réception
-GET /sms/{serviceName}/receivers
-→ [{
-  number: "+33600000000",
-  status: "active",
-  webhookUrl: "https://api.example.com/sms/incoming"
-}]
-
-# Liste des SMS entrants
-GET /sms/{serviceName}/incoming
-Query: {
-  period: "7d",
-  limit: 50,
-  offset: 0,
-  search: "+33612345678"
+### Modèle de données probable
+```typescript
+interface SmsIncoming {
+  id: number;
+  creationDatetime: string;
+  message: string;
+  sender: string;
 }
-→ [{
-  messageId: "msg-001",
-  datetime: "2025-12-30T15:42:00",
-  sender: "+33612345678",
-  message: "STOP - Je souhaite me desabonner...",
-  webhookStatus: "delivered"
-}]
-
-# Statistiques entrants
-GET /sms/{serviceName}/incoming/statistics
-Query: { period: "7d" }
-→ {
-  receivedCount: 127,
-  uniqueSenders: 89,
-  webhookSuccess: 100
-}
-
-# Détail d'un SMS
-GET /sms/{serviceName}/incoming/{messageId}
-→ {
-  messageId: "msg-001",
-  datetime: "2025-12-30T15:42:00",
-  sender: "+33612345678",
-  message: "STOP - Je souhaite me desabonner de vos communications",
-  webhookStatus: "delivered",
-  webhookResponseCode: 200
-}
-
-# Supprimer un SMS
-DELETE /sms/{serviceName}/incoming/{messageId}
-
-# Exporter CSV
-GET /sms/{serviceName}/incoming/export
-Query: { period: "7d", format: "csv" }
-→ CSV file
 ```
 
-## 9. TRADUCTIONS (i18n)
+---
 
+## 6. TRADUCTIONS
+
+### Clés i18n probables
+| Clé | FR (estimé) |
+|-----|-----|
+| sms_incoming_title | "SMS reçus" |
+| sms_incoming_empty | "Aucun SMS reçu sur cette période" |
+
+### Référence guide
 | Clé | FR |
 |-----|-----|
-| tab_incoming | Entrants |
-| section_config | Configuration de reception |
-| field_receive_number | Numero de reception |
-| field_webhook | Webhook URL |
-| link_configure | Configurer la reception |
-| search_number | Rechercher un numero... |
-| period_select | Periode |
-| period_7d | 7 derniers jours |
-| period_30d | 30 derniers jours |
-| period_custom | Personnalise |
-| btn_export | Exporter CSV |
-| stat_received | SMS recus (7j) |
-| stat_unique_senders | Expediteurs uniques |
-| stat_webhook_success | Webhooks delivres |
-| col_datetime | Date/Heure |
-| col_sender | Expediteur |
-| col_message | Message |
-| col_webhook | Webhook |
-| col_actions | Actions |
-| webhook_delivered | Delivre |
-| webhook_failed | Echec |
-| webhook_pending | En attente |
-| action_view | Voir |
-| action_delete | Supprimer |
-| pagination | Affichage {start}-{end} sur {total} |
+| sms_onboarding_guide3_title | "Gérer les SMS avec réponse" |
+
+---
+
+## 7. RÈGLES MÉTIER
+
+### Prérequis
+L'option "SMS avec réponse" doit être activée sur le compte.
+
+### Note importante
+CODE SOURCE NON FOURNI - Spécification basée sur les SVG existants.

@@ -1,74 +1,43 @@
-# Cahier des Charges : web-cloud/hosting - Modal Delete Database
+# Cahier des Charges : web/hosting - Modal supprimer base de données
 
 ## 1. VUE D'ENSEMBLE
-
-**Type:** Modal confirmation danger avec saisie
-**Fonction:** Supprimer une base de données avec confirmation textuelle
-**Contexte:** Action depuis l'onglet BDD
+- **Type** : Page de confirmation avec warning
+- **Contexte** : Hébergement web - Bases de données
+- **Objectif** : Supprimer une base de données
 
 ## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 550px |
+| Hauteur | 300px |
 
-- Modal: 500x280px
-- Overlay: rgba(0,0,0,0.5)
+## 3. COMPOSANTS UI
+- **OdsText** : Titre, question
+- **OdsMessage** : Warning irréversible
+- **OdsButton** : Annuler, Supprimer
 
-## 3. HEADER MODAL
+## 4. HEADER
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | "Supprimer la base de données" |
 
-- Background: #FEE2E2 (rouge pâle)
-- Hauteur: 56px
-- Titre: "Supprimer la base de données" (couleur #DC2626)
-- Bouton fermer: × (position droite)
+## 5. QUESTION DE CONFIRMATION
+| Texte |
+|-------|
+| "Voulez-vous supprimer la base de données {databaseName} ?" |
 
-## 4. CONTENU
+## 6. MESSAGE WARNING
+| Type | Contenu |
+|------|---------|
+| Warning (jaune) | "⚠ Attention" |
+| | "Cette action est irréversible. Toutes les données contenues dans cette base de données seront définitivement supprimées." |
 
-### Message principal
-- Texte: "Vous êtes sur le point de supprimer la base de données :"
-- Nom BDD: "monsite_prod (MySQL 8.0)" (font-weight 600)
+## 7. FOOTER
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Secondary | Retour |
+| Supprimer | Danger (rouge) | Supprime la base |
 
-### Bannière warning (452x50px)
-- Background: #FEF3C7 (jaune)
-- Icône: !
-- Texte ligne 1: "Cette action est irréversible. Toutes les données seront"
-- Texte ligne 2: "définitivement supprimées."
-- Couleur texte: #D97706
+## 8. APIS & ENDPOINTS
+- DELETE /hosting/web/{serviceName}/database/{name} - Supprimer base de données
 
-### Champ confirmation
-- Label: "Tapez \"SUPPRIMER\" pour confirmer :"
-- Input: 452x36px, background #F9FAFB
-
-## 5. FOOTER MODAL
-
-- Bouton gauche: "Annuler" (btn-outline gris, 100x36px)
-- Bouton droit: "Supprimer" (btn-disabled #E5E7EB → btn-danger quand SUPPRIMER saisi)
-
-## 6. VALIDATION
-
-| Condition | État bouton |
-|-----------|-------------|
-| Champ vide | Désactivé (gris) |
-| Texte != "SUPPRIMER" | Désactivé (gris) |
-| Texte == "SUPPRIMER" | Activé (rouge #DC2626) |
-
-## 7. APIS & ENDPOINTS
-
-```
-# Supprimer base de données
-DELETE /hosting/web/{serviceName}/database/{name}
-→ Tâche de suppression
-
-# Vérifier dépendances avant suppression
-GET /hosting/web/{serviceName}/database/{name}/dump
-→ Proposer sauvegarde avant suppression
-```
-
-## 8. TRADUCTIONS (i18n)
-
-| Clé | FR |
-|-----|-----|
-| modal_title | Supprimer la base de données |
-| message | Vous êtes sur le point de supprimer la base de données : |
-| warning_irreversible | Cette action est irréversible. |
-| warning_data_loss | Toutes les données seront définitivement supprimées. |
-| confirm_label | Tapez "SUPPRIMER" pour confirmer : |
-| confirm_word | SUPPRIMER |
-| btn_cancel | Annuler |
-| btn_delete | Supprimer |

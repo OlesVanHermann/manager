@@ -1,119 +1,60 @@
-# Cahier des Charges : bare-metal/dedicated - Dashboard Serveur
+# Cahier des Charges : dedicated - Dashboard serveur dédié
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Serveur Dédié - Informations générales
-- **Type** : Page dashboard avec tiles
-- **Objectif** : Vue d'ensemble d'un serveur dédié
+- **Page** : Informations générales serveur dédié
+- **Type** : Dashboard avec onglets
+- **Objectif** : Vue globale d'un serveur dédié
 
 ## 2. STRUCTURE PAGE
-- Header OVHcloud
-- Sidebar (Serveurs dédiés actif)
-- Breadcrumb
-- Titre (nom du serveur)
-- Onglets navigation
-- Grille de tiles (6 tiles)
+- Header avec nom serveur + badge gamme
+- Menu déroulant Actions
+- Onglets (Informations, Réseau, IPMI, Reinstall, Backup, Firewall, Interventions)
+- 3 cartes (Hardware, Système, Monitoring)
 
 ## 3. COMPOSANTS UI
-- **OdsBreadcrumb** : Navigation
-- **OdsText** : Titre, labels, valeurs
-- **OdsTabs** : Onglets serveur
-- **OdsCard** : Tiles informations
-- **OdsBadge** : États (Actif, Terminée)
-- **OdsActionMenu** : Menu ⋮ sur tiles
-- **OdsClipboard** : Copie IP
+- **OdsBadge** : Gamme (Advance, Eco, Scale)
+- **OdsTabs** : Navigation onglets
+- **OdsCard** : Cartes informations
+- **OdsProgress** : Barres CPU/RAM/Disque
+- **OdsSelect** : Menu Actions
 
-## 4. SIDEBAR
-Menu Bare Metal :
-| Élément | État |
-|---------|------|
-| Serveurs dédiés | ✅ Actif |
-| VPS | - |
-| IP | - |
-| Vrack | - |
+## 4. HEADER
+| Élément | Type | Valeur |
+|---------|------|--------|
+| Badge | Badge bleu | Advance |
+| Titre | H1 | ns1234567.ip-1-2-3.eu |
+| Sous-titre | Text muted | Serveur dédié • Gravelines (GRA1) |
+| Actions | Select | Redémarrer, Réinstaller... |
 
-## 5. ONGLETS
-| Onglet | État |
-|--------|------|
-| Informations générales | ✅ Actif (souligné bleu) |
-| Tâches | - |
-| Interfaces réseau | - |
-| IPMI | - |
-| Sauvegardes | - |
+## 5. CARTE CONFIGURATION MATÉRIELLE
+| Info | Valeur |
+|------|--------|
+| Processeur | Intel Xeon E-2386G |
+| Détail CPU | 6 cores @ 3.5 GHz |
+| Mémoire RAM | 64 Go DDR4 ECC |
+| Stockage | 2 × 960 Go SSD NVMe |
+| RAID | RAID 1 (Software) |
+| Bande passante | 1 Gbps illimité |
 
-## 6. TILES
+## 6. CARTE SYSTÈME
+| Info | Valeur |
+|------|--------|
+| OS | Debian 12 (Bookworm) |
+| Statut | Badge OK (vert) |
+| IPv4 | 1.2.3.4 |
+| IPv6 | 2001:41d0:1:1b00::1/64 |
+| Lien | Gérer les IPs → |
 
-### Tile 1 : Informations générales
-| Champ | Valeur |
-|-------|--------|
-| Nom | ns1234567.ip-192-168-1.eu |
-| État | Actif (badge vert) |
-| Commercialisation | Advance-1 Gen2 |
-| Datacenter | RBX7 |
-| Rack | A12B34 |
-| Reverse DNS | server.example.com (lien Éditer) |
+## 7. CARTE MONITORING
+| Métrique | Valeur | Barre |
+|----------|--------|-------|
+| CPU | 25% | Progress bleu |
+| RAM | 60% (38.4/64 Go) | Progress bleu |
+| Disque | 45% (432/960 Go) | Progress bleu |
+| Uptime | 45 jours, 12 heures | Text |
 
-Menu ⋮ disponible
+## 8. APIS & ENDPOINTS
+- GET /dedicated/server/{serviceName} - Infos serveur
+- GET /dedicated/server/{serviceName}/statistics - Stats
+- GET /dedicated/server/{serviceName}/ips - IPs
 
-### Tile 2 : Configuration matérielle
-| Champ | Valeur |
-|-------|--------|
-| CPU | Intel Xeon E-2388G |
-| Cœurs / Threads | 8c / 16t @ 3.2 GHz |
-| Mémoire | 64 Go DDR4 ECC |
-| Stockage | 2x 960 Go NVMe SSD |
-| RAID | RAID 1 (Matériel) |
-| Bande passante | 1 Gbit/s illimité |
-
-### Tile 3 : IP
-| Champ | Valeur |
-|-------|--------|
-| IPv4 principale | 192.168.1.123 (📋 copie) |
-| IPv6 | 2001:41d0:1:1b00:: (📋 copie) |
-| Gateway | 192.168.1.254 |
-| IP Failover | 3 IPs configurées (lien Voir) |
-| MAC virtuelle | 02:00:00:ab:cd:ef |
-
-**Menu ⋮ (ouvert)** :
-- Gérer les IPs
-- Commander des IPs
-- Éditer reverse DNS
-- Gérer vMAC
-
-### Tile 4 : Système d'exploitation
-| Champ | Valeur |
-|-------|--------|
-| OS | Ubuntu 22.04 LTS |
-| Kernel | 5.15.0-67-generic |
-| Dernière install. | 15 janvier 2024 |
-
-Lien : "Réinstaller"
-
-### Tile 5 : Abonnement
-| Champ | Valeur |
-|-------|--------|
-| Date de création | 15 décembre 2023 |
-| Expiration | 15 janvier 2025 |
-| Prix mensuel | 89,99 € HT/mois |
-
-Lien : "Gérer le renouvellement"
-
-### Tile 6 : Interventions
-| Champ | Valeur |
-|-------|--------|
-| Dernière intervention | 10 janvier 2024 |
-| Type | Maintenance planifiée |
-| État | Terminée (badge vert) |
-
-Lien : "Créer une intervention"
-
-## 7. APIS & ENDPOINTS
-- GET /dedicated/server/{serviceName}
-  - Informations générales du serveur
-- GET /dedicated/server/{serviceName}/specifications/hardware
-  - Configuration matérielle
-- GET /dedicated/server/{serviceName}/specifications/ip
-  - Informations IP
-- GET /dedicated/server/{serviceName}/serviceInfos
-  - Informations abonnement
-- GET /dedicated/server/{serviceName}/intervention
-  - Liste des interventions

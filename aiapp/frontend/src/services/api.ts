@@ -107,10 +107,25 @@ export async function ovhFetch<T>(
 }
 
 // Options type partagé pour les appels API (apiVersion est ignoré mais accepté pour compatibilité)
-type ApiOptions = { skipAuthRedirect?: boolean; apiVersion?: string };
+type ApiOptions = {
+  skipAuthRedirect?: boolean;
+  apiVersion?: string;
+  params?: Record<string, string | number | boolean>;
+};
 
 export async function ovhGet<T>(path: string, options?: ApiOptions): Promise<T> {
-  return ovhFetch<T>("GET", path, options);
+  let url = path;
+  if (options?.params) {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(options.params)) {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    }
+    const qs = searchParams.toString();
+    if (qs) url += (url.includes('?') ? '&' : '?') + qs;
+  }
+  return ovhFetch<T>("GET", url, options);
 }
 
 export async function ovhPost<T>(path: string, body: unknown, options?: ApiOptions): Promise<T> {

@@ -1,78 +1,64 @@
-================================================================================
-TARGET SVG DOCUMENTATION
-================================================================================
-Fichier: target_.web-cloud.access.overthebox-details.svg
-Route:   /web-cloud/access/overthebox/{id}/connections
-Version: v1 (2025-12-30)
-================================================================================
+# Cahier des Charges : web-cloud/access/overthebox - Détails
 
-⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG              | Source API                                       |
-|--------------------------|--------------------------------------------------|
-| Fibre Pro Paris          | GET /overthebox/{id}/connections → conns[].name  |
-| Actif                    | → conns[].status                                 |
-| Prio: 1                  | → conns[].priority                               |
-| FTTH                     | → conns[].type                                   |
-| OVH                      | → conns[].provider                               |
-| pack-ftth-abc123         | → conns[].connectionId                           |
-| 500 Mbps                 | → conns[].bandwidth.down                         |
-| 200 Mbps                 | → conns[].bandwidth.up                           |
-| 4 ms                     | → conns[].latency                                |
-| 0.0%                     | → conns[].packetLoss                             |
-| 91.134.xxx.1             | → conns[].wanIp                                  |
-| 91.134.xxx.254           | → conns[].gateway                                |
-| -85 dBm                  | → conns[].signal (4G only)                       |
+## 1. VUE D'ENSEMBLE
+- **Écran** : Onglet Détails d'une OverTheBox
+- **Objectif** : Afficher informations générales, appareil et interfaces réseau
+- **Contexte** : Onglet par défaut du dashboard OTB
 
-================================================================================
+## 2. LAYOUT & STRUCTURE
+- Bannière info (mise à jour disponible)
+- 2 colonnes : Infos générales | Infos appareil
+- Section pleine largeur : Interfaces réseau
 
-# STRUCTURE PAGE
+## 3. COMPOSANTS UI
+- **OdsMessage** : Bannière info (bleu) pour mise à jour
+- **OdsCard** : 3 cartes (infos générales, appareil, interfaces)
+- **OdsButton** : "Résilier", "Changer d'offre"
+- **OdsToggle** : Activation IPv6
+- **OdsTable** : Liste interfaces réseau
+- **OdsBadge** : Statut interfaces (Actif/Inactif)
 
-1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Section (Accès actif)
-3. LEFT PANEL - Liste OverTheBox
-4. RIGHT PANEL
-   - Header: Nom OTB
-   - NAV3: 6 tabs (Connexions actif)
-   - Contenu:
-     - TOOLBAR: Bouton + Lier une connexion
-     - CONNEXIONS (cards détaillées):
-       - Header: Nom + Statut + Priorité
-       - Type, Opérateur, ID Connexion
-       - Débit down/up, Latence, Perte paquets
-       - IP WAN, Gateway
-       - Signal (si 4G)
-       - Warning (si dégradé)
-       - Boutons: Configurer, Délier
+## 4. DONNÉES
 
-# TYPES CONNEXIONS
-- FTTH: Fibre optique
-- VDSL2/ADSL: DSL
-- SDSL: DSL symétrique
-- 4G LTE / 5G: Mobile
-- Satellite: Liaison satellite
-- Ethernet: Connexion directe
+### Informations générales
+| Champ | Type | Description |
+|-------|------|-------------|
+| État appareil | status | Activé (vert) / Désactivé |
+| Date facturation | date | Format DD/MM/YYYY |
+| Offre | text | Nom offre (ex: OverTheBox IT v1) |
 
-# STATUTS CONNEXION
-- Actif: Fonctionnement normal (vert)
-- Dégradé: Problème détecté (jaune)
-- Hors ligne: Non connecté (rouge)
+### Informations appareil
+| Champ | Type | Description |
+|-------|------|-------------|
+| Identifiant service | text | otb-xxx |
+| Identifiant appareil | text | device-xxx |
+| Version système | text | vX.X.X |
+| IP publique | text | Adresse IPv4 |
+| IPv6 | toggle | Activé/Désactivé |
 
-# MÉTRIQUES CONNEXION
-- Débit: Bande passante réelle mesurée
-- Latence: Temps de réponse (ping)
-- Perte paquets: % paquets perdus
-- Signal: Niveau signal (4G/5G uniquement)
+### Interfaces réseau (tableau)
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Interface | text | if0, if1, if2... |
+| Type | text | WAN (DHCP), WAN (PPPoE), 4G (USB) |
+| IP | text | Adresse IP |
+| Passerelle | text | Gateway ou "-" |
+| Débit | text | ↓ X Mbps / ↑ Y Mbps |
+| Statut | badge | Actif (vert) / Inactif (rouge) |
 
-# INTERACTIONS
-- + Lier une connexion → Modal liaison
-- Configurer → Modal configuration avancée
-- Délier → Confirmation + DELETE
+## 5. ACTIONS & INTERACTIONS
+- Bouton "Résilier" → Modal résiliation
+- Bouton "Changer d'offre" → overthebox.migration
+- Toggle IPv6 → Activer/désactiver IPv6
 
-# API ENDPOINTS
-GET  /overthebox/{id}/connections           - Liste connexions
-GET  /overthebox/{id}/connections/{connId}  - Détail connexion
-POST /overthebox/{id}/connections           - Lier connexion
-PUT  /overthebox/{id}/connections/{connId}  - Configurer connexion
-DELETE /overthebox/{id}/connections/{connId} - Délier connexion
+## 6. APIS & ENDPOINTS
+- GET /overthebox/{serviceName} : Infos service
+- GET /overthebox/{serviceName}/device : Infos appareil
+- GET /overthebox/{serviceName}/device/interfaces : Liste interfaces
+- PUT /overthebox/{serviceName}/device : Modifier config (IPv6)
+- POST /overthebox/{serviceName}/terminate : Résilier
 
-================================================================================
+## 7. ÉTATS
+- Mise à jour disponible → Bannière bleue visible
+- Appareil non lié → Afficher warning-device-link
+- Appareil non trouvé → Afficher warning-not-found

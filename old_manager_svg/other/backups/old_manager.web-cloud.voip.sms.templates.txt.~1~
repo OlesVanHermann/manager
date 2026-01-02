@@ -1,0 +1,138 @@
+# Cahier des Charges : web-cloud/voip/sms - Modeles (Templates)
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page grille de cartes
+**Fonction:** Gérer les modèles de SMS
+**Contexte:** Onglet Modeles d'un compte SMS
+
+## 2. NAVIGATION
+
+### NAV1 (Header)
+Web Cloud (actif)
+
+### NAV2 (Sous-header)
+VoIP (actif)
+
+### NAV3 Tabs
+General | Envoyer | Campagnes | Entrants | Historique | **Modeles** (actif)
+
+## 3. LAYOUT
+
+### Panneau gauche (280px)
+- Recherche comptes
+- Liste des comptes
+
+### Panneau droit (1096px)
+- Header compte
+- Tabs navigation
+- Toolbar
+- Bannière info
+- Grille de modèles (3 colonnes)
+
+## 4. TOOLBAR
+
+### Éléments
+- Bouton refresh (32x32px, outline)
+- Champ recherche "Rechercher un modele..." (200x32px)
+- Bouton "+ Creer un modele" (btn-primary, 180x32px)
+
+## 5. BANNIÈRE INFO (1036x45px)
+
+- Background: #DBEAFE (info)
+- Texte: "Les modeles vous permettent de reutiliser facilement vos messages frequents. Utilisez des variables comme {NOM} pour personnaliser."
+
+## 6. GRILLE MODÈLES
+
+### Carte modèle (330x180px)
+
+#### Header
+- Titre: Nom du modèle (bold)
+- Badge type: "Transactionnel" (vert) ou "Marketing" (bleu)
+
+#### Contenu
+- Aperçu du message (3 lignes, tronqué)
+
+#### Footer
+- Compteur: "X caracteres - Y SMS"
+- Actions: "Utiliser" | "Modifier" | "x"
+
+### Types de modèle
+
+| Type | Couleur badge |
+|------|---------------|
+| Transactionnel | #DEF7EC (vert) |
+| Marketing | #DBEAFE (bleu) |
+
+### Données exemple
+
+| Nom | Type | Aperçu | Compteur |
+|-----|------|--------|----------|
+| Confirmation commande | Transactionnel | Bonjour {NOM}, votre commande #{REF}... | 85 caracteres - 1 SMS |
+| Rappel rendez-vous | Transactionnel | Bonjour {NOM}, nous vous rappelons... | 92 caracteres - 1 SMS |
+| Code verification | Transactionnel | Votre code de verification est... | 78 caracteres - 1 SMS |
+| Promo flash | Marketing | PROMO FLASH ! -{REDUCTION}%... | 112 caracteres - 1 SMS |
+| Livraison en cours | Transactionnel | Votre colis {REF} est en cours... | 75 caracteres - 1 SMS |
+
+### Carte création
+- Style: Bordure pointillée (#E5E7EB)
+- Icône: + (grande)
+- Texte: "Creer un modele"
+
+## 7. APIS & ENDPOINTS
+
+```
+# Liste des modèles
+GET /sms/{serviceName}/templates
+Query: { search: "...", limit, offset }
+→ [{
+  templateId: "tpl-001",
+  name: "Confirmation commande",
+  type: "transactional",
+  message: "Bonjour {NOM}, votre commande #{REF}...",
+  charCount: 85,
+  smsCount: 1
+}]
+
+# Créer un modèle
+POST /sms/{serviceName}/templates
+Body: {
+  name: "Nouveau modele",
+  type: "transactional",
+  message: "Contenu du message"
+}
+
+# Modifier un modèle
+PUT /sms/{serviceName}/templates/{templateId}
+Body: {
+  name: "Nom modifie",
+  message: "Nouveau contenu"
+}
+
+# Supprimer un modèle
+DELETE /sms/{serviceName}/templates/{templateId}
+
+# Utiliser un modèle (pré-remplir formulaire envoi)
+GET /sms/{serviceName}/templates/{templateId}/use
+→ {
+  templateId: "tpl-001",
+  message: "Bonjour {NOM}, votre commande...",
+  variables: ["NOM", "REF", "DATE"]
+}
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_templates | Modeles |
+| btn_create | Creer un modele |
+| search_template | Rechercher un modele... |
+| banner_info | Les modeles vous permettent de reutiliser facilement vos messages frequents. Utilisez des variables comme {NOM} pour personnaliser. |
+| type_transactional | Transactionnel |
+| type_marketing | Marketing |
+| counter_chars | {count} caracteres - {sms} SMS |
+| action_use | Utiliser |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| card_create | Creer un modele |

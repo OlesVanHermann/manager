@@ -1,0 +1,102 @@
+# Cahier des Charges : web-cloud/emails - Modal Delete
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Modal confirmation danger
+**Fonction:** Confirmer la suppression d'un compte email
+**Contexte:** Action depuis ActionMenu d'un compte
+
+## 2. DIMENSIONS
+
+- Modal: 500x380px
+- Position: centrée avec overlay
+
+## 3. STRUCTURE MODAL
+
+### Header avec icône danger
+- Icône: cercle rouge (#FEE2E2) avec ⚠️
+- Dimensions icône: 60x60px, centré
+
+### Content
+- Padding: 40px
+- Centré verticalement
+
+### Footer
+- Boutons alignés gauche/droite
+
+## 4. CONTENU
+
+### Titre
+- "Supprimer le compte ?"
+- Font-size: 18px, font-weight 600
+- Centré
+
+### Description
+- Texte: "Vous êtes sur le point de supprimer le compte :"
+- Email: "jean@example.com" (font-weight 600)
+- Centré
+
+### Warning box
+- Background: #FEE2E2
+- Dimensions: 420x80px
+- Titre: "⚠️ Cette action est irréversible" (rouge, font-weight 600)
+- Liste:
+  - "• Tous les emails seront définitivement supprimés"
+  - "• Les redirections vers ce compte seront supprimées"
+
+### Confirmation input
+- Label: "Pour confirmer, tapez **SUPPRIMER**"
+- Input: 420x36px
+- Placeholder: "Tapez SUPPRIMER..."
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | btn-outline (gris) | 140x40px |
+| Supprimer | btn-danger (#DC2626) | 140x40px |
+
+## 6. COMPORTEMENT
+
+- Bouton Supprimer désactivé tant que "SUPPRIMER" n'est pas tapé
+- Fermeture sur clic overlay ou Annuler
+- Redirection vers liste après suppression
+
+## 7. APIS & ENDPOINTS
+
+```
+# Exchange
+DELETE /email/exchange/{organization}/service/{serviceName}/account/{email}
+→ Supprime le compte Exchange
+
+# Email Pro
+DELETE /email/pro/{service}/account/{email}
+
+# Zimbra
+DELETE /email/zimbra/{serviceName}/account/{email}
+
+# MX Plan
+DELETE /email/domain/{domain}/account/{email}
+
+# Vérifier dépendances avant suppression
+GET /email/exchange/{organization}/service/{serviceName}/account/{email}/alias
+GET /email/domain/{domain}/redirection?from={email}
+→ Liste les alias et redirections liés
+```
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| modal_title | Supprimer le compte ? |
+| description | Vous êtes sur le point de supprimer le compte : |
+| warning_title | Cette action est irréversible |
+| warning_emails | Tous les emails seront définitivement supprimés |
+| warning_redirections | Les redirections vers ce compte seront supprimées |
+| confirm_label | Pour confirmer, tapez |
+| confirm_word | SUPPRIMER |
+| confirm_placeholder | Tapez SUPPRIMER... |
+| btn_cancel | Annuler |
+| btn_delete | Supprimer |
+| error_confirm | Veuillez taper SUPPRIMER pour confirmer |
+| success | Compte supprimé avec succès |

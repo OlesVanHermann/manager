@@ -1,70 +1,53 @@
 ================================================================================
 TARGET SVG DOCUMENTATION
 ================================================================================
-Fichier: target_.web-cloud.wordpress.modal-backup-restore.svg
-Route:   /web-cloud/wordpress/{serviceName}/backups/{backupId}/restore (modal)
-Version: v1 (2025-12-30)
+Fichier: target_.web-cloud.wordpress.modal.backup-restore.svg
+Route:   /web-cloud/wordpress/{serviceName} (modal)
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| 27/12/2025 15:42         | GET /backups/{id} → date                      |
-| Manuel                   | backup.type (automatic / manual)              |
-| 242 Mo                   | backup.size                                   |
-| Avant mise a jour...     | backup.note (manuel uniquement)               |
-| Tout (selected)          | user input → POST body.scope                  |
+| Exemple SVG                   | Source API                                    |
+|-------------------------------|-----------------------------------------------|
+| {nicHandle}                   | Session user                                  |
+| www.monsite-wordpress.com     | Selected website FQDN                         |
+| 02/01/2026 03:00              | GET /hosting/wordpress/{id}/backup → date     |
+| Automatique                   | GET /hosting/wordpress/{id}/backup → type     |
+| 256 MB                        | GET /hosting/wordpress/{id}/backup → size     |
+
 ================================================================================
 
-STRUCTURE MODAL
-1. HEADER - Titre "Restaurer une sauvegarde" + bouton fermer (x)
-2. SAUVEGARDE SELECTIONNEE - Banniere info avec:
-   - Date et heure
-   - Type (Auto/Manuel) + taille
-   - Note (si manuel)
-3. OPTIONS DE RESTAURATION - 3 radio buttons:
-   - Tout (fichiers + base de donnees) - defaut
-   - Fichiers uniquement
-   - Base de donnees uniquement
-4. BANNIERE WARNING - Avertissements:
-   - Remplacement donnees actuelles
-   - Sauvegarde auto avant restauration
-   - Indisponibilite temporaire
-   - Duree estimee
-5. BANNIERE INFO - Possibilite d'annulation
-6. FOOTER - Boutons Annuler + Restaurer
+# STRUCTURE MODAL
+- Overlay semi-transparent
+- Modal centree 600x450
+- Header: Titre + bouton fermer
+- Banniere warning (jaune): Avertissement irreversible
+- Info site
+- Liste sauvegardes (radio buttons)
+- Checkboxes elements a restaurer
+- Footer: Annuler + Restaurer
 
-OPTIONS DE RESTAURATION
-| Option           | Scope    | Description                           |
-|------------------|----------|---------------------------------------|
-| Tout             | full     | Fichiers + base de donnees            |
-| Fichiers         | files    | wp-content (themes, plugins, uploads) |
-| Base de donnees  | database | Contenu, parametres, utilisateurs     |
+# LISTE SAUVEGARDES
+| Champ     | Description                    |
+|-----------|--------------------------------|
+| Date      | Date/heure sauvegarde          |
+| Type      | Automatique ou Manuelle        |
+| Taille    | Taille en MB                   |
 
-PROCESSUS RESTAURATION
-1. Creation sauvegarde automatique pre-restauration
-2. Mise en maintenance du site
-3. Restauration des fichiers et/ou BDD selon option
-4. Verification integrite
-5. Remise en ligne du site
-6. Notification utilisateur
+# OPTIONS RESTAURATION
+| Option           | Description                    |
+|------------------|--------------------------------|
+| Fichiers         | Restaurer fichiers WP          |
+| Base de donnees  | Restaurer BDD MySQL            |
 
-INTERACTIONS
-- Clic "x" → Fermer modal
-- Selection option → Highlight radio
-- Clic "Annuler" → Fermer modal
-- Clic "Restaurer" → POST /managedCMS/resource/{sn}/backups/{id}/restore
+# INTERACTIONS
+- Clic radio → Selectionne sauvegarde
+- Clic checkbox → Toggle option
+- Clic Annuler → Ferme modal
+- Clic Restaurer → POST API restore
 
-API ENDPOINTS
-GET  /managedCMS/resource/{sn}/backups/{id}          - Details sauvegarde
-POST /managedCMS/resource/{sn}/backups/{id}/restore  - Lancer restauration
-Body: { scope: "full"|"files"|"database" }
-
-DUREES ESTIMEES
-| Taille site | Duree estimee |
-|-------------|---------------|
-| < 500 Mo    | 5-10 minutes  |
-| 500 Mo - 2 Go | 10-20 minutes |
-| > 2 Go      | 20-45 minutes |
+# API ENDPOINTS
+GET /hosting/wordpress/{serviceName}/website/{id}/backup - Liste sauvegardes
+POST /hosting/wordpress/{serviceName}/website/{id}/backup/{backupId}/restore
 
 ================================================================================

@@ -2,7 +2,7 @@
 // MULTISITE TAB SERVICE - API calls for MultisiteTab
 // ============================================================
 
-import { ovhGet, ovhPost, ovhPut, ovhDelete, ovh2apiGet, ovhIceberg, type IcebergResult } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhPostNoBody, ovhPut, ovhDelete, ovh2apiGet, ovhIceberg, type IcebergResult } from "../../../../../services/api";
 import type { AttachedDomain } from "../../hosting.types";
 
 const BASE = "/hosting/web";
@@ -95,8 +95,9 @@ export const multisiteService = {
   },
 
   // --- SSL ---
-  regenerateSsl: (sn: string) => 
-    ovhPost<void>(`${BASE}/${sn}/ssl/regenerate`, {}),
+  // NOTE: POST sans body (API rejette les body vides avec 400)
+  regenerateSsl: (sn: string) =>
+    ovhPostNoBody<void>(`${BASE}/${sn}/ssl/regenerate`),
 
   activateDomainSsl: (sn: string, domain: string) => 
     ovhPut<void>(`${BASE}/${sn}/attachedDomain/${domain}`, { ssl: true }),

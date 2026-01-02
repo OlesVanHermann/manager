@@ -1,75 +1,41 @@
-================================================================================
-TARGET SVG DOCUMENTATION
-================================================================================
-Fichier: target_.web-cloud.access.overthebox-list.svg
-Route:   /web-cloud/access/overthebox
-Version: v1 (2025-12-30)
-================================================================================
+# Cahier des Charges : web-cloud/access/overthebox - Liste
 
-⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG              | Source API                                       |
-|--------------------------|--------------------------------------------------|
-| OTB Siège Paris          | GET /overthebox → services[].name                |
-| OverTheBox Plus          | → services[].offer                               |
-| otb-abc123xyz            | → services[].serviceId                           |
-| 91.134.xxx.xxx           | → services[].publicIp                            |
-| 3 actives                | → services[].connections.active                  |
-| FTTH + ADSL + 4G         | → services[].connections.types                   |
-| 850 Mbps / 350 Mbps      | → services[].bandwidth.down/up                   |
-| Actif                    | → services[].status                              |
-| 3 services               | → total                                          |
+## 1. VUE D'ENSEMBLE
+- **Écran** : Liste des services OverTheBox
+- **Objectif** : Afficher tous les services OTB du compte avec possibilité de commander
+- **Contexte** : Page d'entrée du module OverTheBox
 
-================================================================================
+## 2. LAYOUT & STRUCTURE
+- Header OVHcloud avec menu Telecom
+- Titre "OverTheBox" + bouton Changelog
+- Datagrid avec liste des services
 
-# STRUCTURE PAGE
+## 3. COMPOSANTS UI
+- **OdsButton** : "Commander" (secondaire)
+- **OdsButton** : "Changelog" (secondaire, aligné droite)
+- **OdsDatagrid** : Liste des services
+- **OdsBadge** : Statut (Actif, Création)
+- **OdsActionMenu** : Menu contextuel (⋮)
 
-1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Section (Accès actif)
-3. SOUS-NAV - Connexions / OverTheBox (OverTheBox actif)
-4. CONTENT (pleine largeur):
-   - TOOLBAR:
-     - Bouton refresh
-     - Recherche
-     - Bouton + Commander
-   - MES OVERTHEBOX (table):
-     - Nom + Offre
-     - Service ID
-     - IP publique
-     - Connexions (count + types)
-     - Bande passante (down/up)
-     - Statut
-     - Actions
-     - Pagination
+## 4. DONNÉES & COLONNES
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom | link | Identifiant service (otb-xxx), cliquable |
+| Description | text | Nom personnalisé ou "(non défini)" |
+| Statut | badge | Actif (vert), Création (jaune) |
+| Actions | menu | Menu contextuel |
 
-# OFFRES OVERTHEBOX
-- OverTheBox IT: Usage bureautique
-- OverTheBox Plus: Usage intensif
-- OverTheBox Business: Entreprise
+## 5. ACTIONS & INTERACTIONS
+- Bouton "Commander" → overthebox.order
+- Clic sur nom → overthebox (dashboard)
+- Menu ⋮ → Actions contextuelles
+- Pagination en bas
 
-# STATUTS
-- Actif: Fonctionnement normal
-- Dégradé: Une ou plusieurs connexions en panne
-- Hors ligne: Appareil déconnecté
-- En configuration: Provisioning en cours
+## 6. APIS & ENDPOINTS
+- GET /overthebox : Liste des services
+- Réponse : Array<{serviceName, description, status}>
 
-# TYPES CONNEXIONS
-- FTTH: Fibre optique
-- ADSL/VDSL: DSL
-- SDSL: DSL symétrique
-- 4G/5G: Mobile
-- Satellite: Liaison satellite
-
-# INTERACTIONS
-- ↻ Refresh → Recharge la liste
-- Recherche → Filtre par nom ou ID
-- + Commander → Tunnel de commande
-- Gérer → /overthebox/{id}/general
-- ••• → Menu contextuel (Renommer, Supprimer)
-
-# API ENDPOINTS
-GET  /overthebox                     - Liste OverTheBox
-GET  /overthebox/{id}                - Détail OverTheBox
-POST /overthebox                     - Commander OverTheBox
-DELETE /overthebox/{id}              - Supprimer OverTheBox
-
-================================================================================
+## 7. ÉTATS
+- Liste vide → Afficher onboarding
+- Liste avec données → Afficher datagrid
+- Statuts : active, creating, suspended

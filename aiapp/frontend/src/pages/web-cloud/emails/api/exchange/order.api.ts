@@ -3,7 +3,7 @@
 // Endpoints: /order/email/exchange/{org}/service/{service}/*
 // ============================================================
 
-import { apiFetch } from "../../../../../services/api";
+import { ovhGet, ovhPost } from "../../../../../services/api";
 
 const BASE = "/order/email/exchange";
 
@@ -73,7 +73,7 @@ export async function getAccountOptions(
   storageQuota?: number[];
 }> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch(`${basePath}/account/${duration}`);
+  return ovhGet(`${basePath}/account/${duration}`);
 }
 
 /**
@@ -90,10 +90,7 @@ export async function orderAccounts(
   }
 ): Promise<Order> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch<Order>(`${basePath}/account/${duration}`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  return ovhPost<Order>(`${basePath}/account/${duration}`, data);
 }
 
 // ---------- DISK SPACE ORDER ----------
@@ -106,7 +103,7 @@ export async function getDiskSpaceOptions(serviceId: string): Promise<{
   quota: number[];
 }> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch(`${basePath}/diskSpace`);
+  return ovhGet(`${basePath}/diskSpace`);
 }
 
 /**
@@ -118,10 +115,7 @@ export async function orderDiskSpace(
   quota: number
 ): Promise<Order> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch<Order>(`${basePath}/diskSpace`, {
-    method: "POST",
-    body: JSON.stringify({ quota }),
-  });
+  return ovhPost<Order>(`${basePath}/diskSpace`, { quota });
 }
 
 // ---------- ACCOUNT UPGRADE ----------
@@ -138,7 +132,7 @@ export async function getAccountUpgradeOptions(
   primaryEmailAddress: string[];
 }> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch(`${basePath}/accountUpgrade/${duration}`);
+  return ovhGet(`${basePath}/accountUpgrade/${duration}`);
 }
 
 /**
@@ -154,10 +148,7 @@ export async function orderAccountUpgrade(
   }
 ): Promise<Order> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch<Order>(`${basePath}/accountUpgrade/${duration}`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  return ovhPost<Order>(`${basePath}/accountUpgrade/${duration}`, data);
 }
 
 // ---------- SERVICE UPGRADE ----------
@@ -170,7 +161,7 @@ export async function getServiceUpgradeOptions(serviceId: string): Promise<{
   offer: string[];
 }> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch(`${basePath}/upgrade`);
+  return ovhGet(`${basePath}/upgrade`);
 }
 
 /**
@@ -182,10 +173,7 @@ export async function orderServiceUpgrade(
   offer: string
 ): Promise<Order> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch<Order>(`${basePath}/upgrade`, {
-    method: "POST",
-    body: JSON.stringify({ offer }),
-  });
+  return ovhPost<Order>(`${basePath}/upgrade`, { offer });
 }
 
 // ---------- OUTLOOK LICENSE ----------
@@ -201,7 +189,7 @@ export async function getOutlookOptions(
   primaryEmailAddress: string[];
 }> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch(`${basePath}/outlook/${duration}`);
+  return ovhGet(`${basePath}/outlook/${duration}`);
 }
 
 /**
@@ -214,10 +202,7 @@ export async function orderOutlook(
   primaryEmailAddress: string
 ): Promise<Order> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch<Order>(`${basePath}/outlook/${duration}`, {
-    method: "POST",
-    body: JSON.stringify({ primaryEmailAddress }),
-  });
+  return ovhPost<Order>(`${basePath}/outlook/${duration}`, { primaryEmailAddress });
 }
 
 // ---------- DURATIONS ----------
@@ -230,5 +215,5 @@ export async function getAvailableDurations(
   orderType: "account" | "accountUpgrade" | "outlook"
 ): Promise<string[]> {
   const basePath = getOrderPath(serviceId);
-  return apiFetch<string[]>(`${basePath}/${orderType}`);
+  return ovhGet<string[]>(`${basePath}/${orderType}`);
 }

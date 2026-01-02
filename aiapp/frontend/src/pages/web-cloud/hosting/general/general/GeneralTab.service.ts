@@ -2,7 +2,7 @@
 // GENERAL TAB SERVICE - API calls for GeneralTab
 // ============================================================
 
-import { ovhGet, ovhPost, ovhPut, ovhDelete, ovh2apiGet } from "../../../../../services/api";
+import { ovhGet, ovhPost, ovhPostNoBody, ovhPut, ovhDelete, ovh2apiGet } from "../../../../../services/api";
 import type { Hosting, AttachedDomain, FtpUser, SslCertificate } from "../../hosting.types";
 
 const BASE = "/hosting/web";
@@ -79,8 +79,9 @@ export const generalService = {
   getSsl: (sn: string) => 
     ovhGet<SslCertificate>(`${BASE}/${sn}/ssl`).catch(() => null),
 
-  regenerateSsl: (sn: string) => 
-    ovhPost<void>(`${BASE}/${sn}/ssl/regenerate`, {}),
+  // Note: POST sans body - cf old_manager hosting-ssl.service.js:44
+  regenerateSsl: (sn: string) =>
+    ovhPostNoBody<void>(`${BASE}/${sn}/ssl/regenerate`),
 
   // --- OvhConfig (from old_manager hosting-ovhconfig.service.js) ---
 
@@ -151,8 +152,16 @@ export const generalService = {
     ovhGet<string[]>(`${BASE}/${sn}/ovhConfig/availableVersions`).catch(() => ["7.4", "8.0", "8.1", "8.2", "8.3"]),
 
   // --- Statistics ---
-  getStatistics: (sn: string) => 
-    ovhGet<any>(`${BASE}/${sn}/statistics`).catch(() => null),
+  // Params obligatoires: type (IN_HTTP_HITS, etc.) et period (daily, weekly, monthly, yearly)
+  // cf old_manager: utilise metricsToken + Prometheus, pas cet endpoint directement
+  getStatistics: (sn: string, type?: string, period?: string) =>
+    ovhGet<any>(`${BASE}/${sn}/statistics`, {
+      params: { type: type || "IN_HTTP_HITS", period: period || "weekly" }
+    } as any).catch(() => null),
+
+  // Metrics Token pour Prometheus (from old_manager hosting-statistics.service.js)
+  getMetricsToken: (sn: string) =>
+    ovhGet<{ endpoint: string; token: string }>(`${BASE}/${sn}/metricsToken`).catch(() => null),
 
   // --- Indys (IP dédiées) ---
   getIndys: (sn: string) => 

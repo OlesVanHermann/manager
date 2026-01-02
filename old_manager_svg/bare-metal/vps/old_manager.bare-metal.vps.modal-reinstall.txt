@@ -1,69 +1,77 @@
-# Cahier des Charges : bare-metal/vps - Modal Réinstaller
+# Cahier des Charges : vps - Modal Réinstallation
 
 ## 1. VUE D'ENSEMBLE
-- **Modal** : Réinstaller mon VPS
-- **Type** : Formulaire de réinstallation
-- **Objectif** : Choisir l'OS et réinstaller le VPS
+- **Modal** : Confirmation réinstallation VPS
+- **Type** : Modal de confirmation danger
+- **Objectif** : Confirmer la réinstallation
 
 ## 2. STRUCTURE MODAL
-- Header avec titre + bouton fermer
-- Formulaire (OS, packages, langue, SSH)
-- Option envoi mot de passe
-- Boutons Annuler / Confirmer
+- Dimensions : 700x520px
+- Header avec titre
+- Avertissement danger
+- Formulaire sélection
+- Checkbox confirmation
+- Footer avec boutons
 
 ## 3. COMPOSANTS UI
-- **OdsModal** : Container (700x580px)
-- **OdsSelect** : OS, langue, clé SSH
-- **OdsMessage** : Info packages (fond bleu)
-- **OdsCheckbox** : Envoi mot de passe
-- **OdsButton** : Annuler (outline), Confirmer (primary)
+- **OdsModal** : Container
+- **OdsMessage** : Warning danger
+- **OdsSelect** : Image, Clé SSH, Langue
+- **OdsCheckbox** : Confirmation obligatoire
+- **OdsButton** : Annuler, Réinstaller
 
-## 4. CHAMPS FORMULAIRE
-
-### Système d'exploitation
+## 4. HEADER
 | Élément | Valeur |
 |---------|--------|
-| Label | Quel système d'exploitation souhaitez-vous installer ? |
-| Aide | L'option Windows n'est pas incluse dans votre offre |
-| Valeur par défaut | Ubuntu 22.04 LTS (64 bits) |
+| Titre | "Réinstaller le VPS" |
+| Fond | Gris clair |
+| Bouton fermer | ✕ |
 
-### Packages disponibles (info box)
-| Package | Version |
-|---------|---------|
-| Apache | 2.4.52 |
-| PHP | 8.1.2 |
-| MySQL | 8.0.31 |
-| Node.js | 18.12.1 |
-| Docker | 24.0.5 |
+## 5. AVERTISSEMENT
+| Propriété | Valeur |
+|-----------|--------|
+| Style | Danger (rouge) |
+| Icône | ⚠ |
+| Titre | "Attention : Toutes les données seront supprimées !" |
+| Message | "Pensez à sauvegarder vos données avant de continuer." |
 
-### Langue du système
-| Élément | Valeur |
-|---------|--------|
-| Label | Langue du système |
-| Valeur par défaut | Français (fr_FR) |
+## 6. CHAMPS FORMULAIRE
+| Champ | Type | Obligatoire |
+|-------|------|-------------|
+| Image à installer | Select | ✓ |
+| Clé SSH | Select | Non |
+| Langue | Select | Non |
 
-### Clé SSH
-| Élément | Valeur |
-|---------|--------|
-| Label | Clé SSH (optionnel) |
-| Placeholder | Sélectionner une clé SSH... |
+### Options Image
+- Debian 12 (Bookworm)
+- Ubuntu 24.04 LTS
+- Rocky Linux 9
+- ...
 
-## 5. OPTIONS
-| Option | État par défaut |
-|--------|-----------------|
-| M'envoyer le mot de passe par e-mail | ☐ Non coché |
-| Note | Le mot de passe sera envoyé à l'adresse e-mail de votre compte |
+### Options Langue
+- Français
+- English
+- Deutsch
+- ...
 
-## 6. BOUTONS
-| Bouton | Style |
-|--------|-------|
-| Annuler | Outline |
-| Confirmer | Primary |
+## 7. CHECKBOX CONFIRMATION
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Je confirme vouloir réinstaller mon VPS" |
+| Obligatoire | Oui (pour activer bouton) |
 
-## 7. APIS & ENDPOINTS
-- GET /vps/{serviceName}/availableImages
-  - Liste des OS disponibles
-- GET /me/sshKey
-  - Clés SSH du compte
-- POST /vps/{serviceName}/reinstall
-  - Body: { imageId, language, sshKey?, sendPassword }
+## 8. FOOTER
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Default (outline) | Gauche |
+| Réinstaller | Danger (rouge) | Droite |
+
+## 9. VALIDATION
+- Bouton "Réinstaller" désactivé tant que checkbox non cochée
+- Image obligatoire sélectionnée
+
+## 10. APIS & ENDPOINTS
+- GET /vps/{serviceName}/templates - Images disponibles
+- GET /me/sshKey - Clés SSH
+- POST /vps/{serviceName}/reinstall - Lancer réinstallation
+

@@ -1,53 +1,100 @@
-# LA MÉTHODE - Migration Old Manager → New Manager
+# LA METHODE - Migration Old Manager -> New Manager
+
+Version: v2.0 (2026-01-01)
+Remplace: prompt_methode.txt (v1)
+
+Changelog v1->v2:
+- Terminologie officielle NAV1-NAV4 ajoutee
+- Structure fichiers mise a jour (NAV1/NAV2/nav3/nav4)
+- Clarification services globaux vs isoles
+- Regles d'isolation INTERDIT/AUTORISE
+- Contexte AI Web vs AI Shell precise
+- References aux prompts complementaires
+
+---
+
+## Prompts complementaires
+
+| Prompt | Contenu |
+|--------|---------|
+| `prompt_react.txt` | Conventions React, structure pages, composants |
+| `prompt_api.txt` | Appels API OVH, endpoints, hooks |
+| `prompt_split.txt` | Architecture modulaire, regles isolation |
+| `prompt_split_layout_method.txt` | Specs CSS layout (padding, gap, sidebar) |
+
+---
+
+## Terminologie NAV1-NAV4 (resume)
+
+| Niveau | Nom | Position | Exemple |
+|--------|-----|----------|---------|
+| **NAV1** | Univers | Header bleu | `web-cloud`, `bare-metal` |
+| **NAV2** | Produit | Sous-header | `hosting`, `domains`, `emails` |
+| **NAV3** | Groupement | LEFT PANEL (toggle) | `general`, `expert`, `sites` |
+| **NAV4** | Fonction | RIGHT PANEL (tabs) | `ftp`, `ssl`, `cron`, `database` |
+
+Details complets -> `prompt_split.txt`
+
+---
 
 ## Vue d'ensemble
 
-Méthodologie systématique pour migrer les features de l'ancien manager OVHcloud (Angular) vers le nouveau manager (React).
+Methodologie systematique pour migrer les features de l'ancien manager OVHcloud (Angular) vers le nouveau manager (React).
+
+**Principe fondamental : DEFACTORISATION**
+Chaque NAV4 (fonction) est une ile isolee avec son propre service, CSS et logique.
 
 ---
 
 ## PHASE 1 : IDENTIFICATION
 
-### 1.1 Cibler la feature
-Décider précisément quelle partie de l'interface on veut migrer (page, composant, fonctionnalité).
+### 1.1 Cibler le NAV4 (fonction)
+
+Decider precisement quelle fonction migrer en identifiant :
+- **NAV1** : Quel univers ? (web-cloud, bare-metal, iam...)
+- **NAV2** : Quel produit ? (hosting, domains, emails...)
+- **NAV3** : Quel groupement ? (general, expert, sites...)
+- **NAV4** : Quelle fonction ? (ftp, ssl, cron, database...)
+
+Exemple : `web-cloud/hosting/expert/ftp` = onglet FTP dans la section Expert de l'hebergement
 
 ### 1.2 Localiser les fichiers sources
+
 Rechercher dans le monorepo par texte visible dans l'UI :
 
 ```bash
 grep -r "texte_visible_dans_UI" /home/ubuntu/manager/ --include="*.json" --include="*.html" --include="*.js"
 ```
 
-**Si plusieurs grep à exécuter, les séparer avec `echo "===="`** pour une meilleure lisibilité :
+**Si plusieurs grep a executer, les separer avec `echo "===="`** pour une meilleure lisibilite :
 
 ```bash
 grep -r "premier_terme" /home/ubuntu/manager/ --include="*.json" --include="*.html"
 echo "===="
 grep -r "deuxieme_terme" /home/ubuntu/manager/ --include="*.js"
-echo "===="
-grep -r "troisieme_terme" /home/ubuntu/manager/ --include="*.json"
 ```
 
-**Fichiers à identifier :**
+**Fichiers a identifier :**
+
 | Type | Extension | Contenu |
 |------|-----------|---------|
 | Template | `.html` | Structure Angular |
-| Logique | `.controller.js`, `.component.js` | État et handlers |
+| Logique | `.controller.js`, `.component.js` | Etat et handlers |
 | Services | `.service.js` | Appels API |
 | Traductions | `Messages_fr_FR.json` | Textes i18n |
-| Styles | `.less`, `.scss` | CSS spécifique |
+| Styles | `.less`, `.scss` | CSS specifique |
 
 ---
 
 ## PHASE 2 : EXTRACTION
 
-### 2.1 Créer l'archive des sources
+### 2.1 Creer l'archive des sources
 ```bash
 cd /home/ubuntu/
 tar cvf feature_name.tar <liste_fichiers_et_repertoires>
 ```
 
-### 2.2 Transférer et uploader
+### 2.2 Transferer et uploader
 ```bash
 # Depuis la machine locale
 scp ubuntu@mx4.di2amp.com:/home/ubuntu/feature_name.tar ./
@@ -59,36 +106,106 @@ Puis uploader `feature_name.tar` dans le chat Claude.
 
 ## PHASE 3 : ANALYSE
 
-### 3.1 Décortiquer les sources Angular
+### 3.1 Decortiquer les sources Angular
 
-**Template HTML → JSX**
-- `ng-if` → `{condition && ...}`
-- `ng-repeat` → `.map()`
-- `ng-click` → `onClick`
-- `ng-model` → `useState` + `onChange`
+**Template HTML -> JSX**
+- `ng-if` -> `{condition && ...}`
+- `ng-repeat` -> `.map()`
+- `ng-click` -> `onClick`
+- `ng-model` -> `useState` + `onChange`
 
-**Textes i18n → Français hardcodé**
-- Extraire les clés de traduction
-- Remplacer par les valeurs françaises directement
+**Textes i18n -> Francais hardcode**
+- Extraire les cles de traduction
+- Remplacer par les valeurs francaises directement
 
-**Appels API → Format OVH**
-- Identifier les endpoints (`/dedicated/server/{serviceName}/...`)
-- Adapter au client API du new_manager (`/src/api.ts`)
-- Vérifier l'authentification (cookies SSO)
+**Appels API -> Services isoles**
 
-**Styles → Design System**
-- Utiliser les tokens de `/src/design-system/tokens.css`
-- Utiliser les composants ODS existants (@ovhcloud/ods-react)
-- Respecter les variables `--color-*`, `--space-*`, `--font-*`
+| Type | Fichier | Usage |
+|------|---------|-------|
+| Global | `/src/services/api.ts` | `ovhGet`, `ovhPost`, `ovhPut`, `ovhDelete` |
+| Isole | `{Nav4}Tab.service.ts` | Service specifique au NAV4 |
+
+Exemple service isole :
+```typescript
+// src/pages/web-cloud/hosting/expert/ftp/FtpTab.service.ts
+import { ovhGet, ovhPost, ovhDelete } from "@/services/api";
+import type { FtpUser } from "../../hosting.types";
+
+export const ftpService = {
+  async getUsers(serviceName: string): Promise<string[]> {
+    return ovhGet(`/hosting/web/${serviceName}/user`);
+  },
+  async getUser(serviceName: string, login: string): Promise<FtpUser> {
+    return ovhGet(`/hosting/web/${serviceName}/user/${login}`);
+  },
+  async deleteUser(serviceName: string, login: string): Promise<void> {
+    return ovhDelete(`/hosting/web/${serviceName}/user/${login}`);
+  }
+};
+```
+
+**Styles -> CSS isole**
+- Chaque NAV4 a son propre `{Nav4}Tab.css`
+- Prefixer les classes : `.ftp-`, `.ssl-`, `.cron-`
+- Respecter les specs layout (voir prompt_split_layout_method.txt)
 
 ---
 
-## PHASE 4 : GÉNÉRATION
+## PHASE 4 : GENERATION
 
-### 4.1 Créer un nouveau fichier avec cp+tee
+### 4.1 Structure fichiers cible
+
+```
+src/pages/{NAV1}/{NAV2}/
+|-- {nav2}.types.ts              # SEUL partage JS autorise
+|-- index.tsx                    # Layout + routing
+|-- index.css                    # CSS du layout NAV2
+|-- {nav3 groupement}/
+|   +-- {nav4 fonction}/
+|       |-- {Nav4}Tab.tsx        # Composant principal
+|       |-- {Nav4}Tab.service.ts # Service ISOLE
+|       +-- {Nav4}Tab.css        # Styles ISOLES
+```
+
+Exemple concret :
+```
+src/pages/web-cloud/hosting/
+|-- hosting.types.ts
+|-- index.tsx
+|-- index.css
+|-- expert/
+|   |-- ftp/
+|   |   |-- FtpTab.tsx
+|   |   |-- FtpTab.service.ts
+|   |   +-- FtpTab.css
+|   |-- ssl/
+|   |   |-- SslTab.tsx
+|   |   |-- SslTab.service.ts
+|   |   +-- SslTab.css
+|   +-- cron/
+|       |-- CronTab.tsx
+|       |-- CronTab.service.ts
+|       +-- CronTab.css
+```
+
+### 4.2 Regles d'isolation (CRITIQUE)
+
+| INTERDIT | AUTORISE |
+|----------|----------|
+| Import depuis autre NAV4 | Import depuis `{nav2}.types.ts` |
+| Service partage NAV2 | Service isole `{Nav4}Tab.service.ts` |
+| CSS partage NAV2 | CSS isole `{Nav4}Tab.css` |
+| Composant partage NAV3 | Composant isole dans son NAV4 |
+
+**Pourquoi ?** Defactorisation = chaque NAV4 est independant.
+Duplication volontaire pour isolation totale.
+
+### 4.3 Creer un nouveau fichier avec cp+tee
+
+**Contexte : AI Web (chat) ET AI Shell (Claude Code)**
 
 ```bash
-cp --backup=numbered /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx /home/ubuntu/action-target/tmp/ 2>/dev/null || true
+cp --backup=numbered /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx /home/ubuntu/action-code/tmp/ 2>/dev/null || true
 tee /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx > /dev/null <<'FS'
 // Code React COMPLET ici
 // JAMAIS de "... comme avant"
@@ -96,38 +213,20 @@ tee /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx > /dev/null <<'FS'
 FS
 ```
 
-**Règle CRITIQUE :** Le `cp` est OBLIGATOIRE même si le fichier n'existe pas. La commande peut échouer (`|| true`), ce n'est pas grave. Cela garantit une sauvegarde systématique si le fichier existe.
+**Regle CRITIQUE :** Le `cp` est OBLIGATOIRE meme si le fichier n'existe pas. La commande peut echouer (`|| true`), ce n'est pas grave. Cela garantit une sauvegarde systematique si le fichier existe.
 
 **Rappels anti-casse cp+tee :**
-- `FS` final en début de ligne, sans espace
+- `FS` final en debut de ligne, sans espace
 - Pas de guillemets "intelligents" - garder `'FS'` avec apostrophes simples
 - Pas d'indentation avant `tee ... <<'FS'` ni avant `FS`
-- Si le fichier n'existe pas, tee le crée ; s'il existe, il est écrasé
-- **ATTENTION aux délimiteurs doubles** : si le contenu généré contient lui-même un heredoc (ex: `<<'EOF'`), utiliser un délimiteur DIFFÉRENT pour l'enveloppe externe (ex: `SCRIPT_END`, `FILE_EOF`, `OUTER_FS`)
+- Si le fichier n'existe pas, tee le cree ; s'il existe, il est ecrase
+- **ATTENTION aux delimiteurs doubles** : si le contenu genere contient lui-meme un heredoc (ex: `<<'EOF'`), utiliser un delimiteur DIFFERENT pour l'enveloppe externe (ex: `SCRIPT_END`, `FILE_EOF`, `OUTER_FS`)
 
-**Exemples de conflits de délimiteurs :**
+### 4.4 Modifier un fichier existant avec super-patch
 
-MAUVAIS (FS dans FS) :
-```bash
-tee /chemin/script.sh > /dev/null <<'FS'
-#!/bin/bash
-cat > config.txt <<'FS'   # <-- CONFLIT ! Le shell ferme le heredoc ici
-contenu
-FS
-FS
-```
+**Contexte : AI Web UNIQUEMENT**
 
-BON (délimiteurs différents) :
-```bash
-tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
-#!/bin/bash
-cat > config.txt <<'FS'
-contenu
-FS
-SCRIPT_END
-```
-
-### 4.2 Modifier un fichier existant avec super-patch
+En AI Shell (Claude Code CLI), utiliser les outils natifs `Read`, `Edit`, `Write` a la place.
 
 ```bash
 super-patch <<'PATCH_EOF'
@@ -135,49 +234,30 @@ super-patch <<'PATCH_EOF'
 +++ /home/ubuntu/aiapp/frontend/src/pages/Feature.tsx
 @@
  ligne de contexte avant
--ancienne ligne à supprimer
-+nouvelle ligne à ajouter
- ligne de contexte après
+-ancienne ligne a supprimer
++nouvelle ligne a ajouter
+ ligne de contexte apres
 PATCH_EOF
 ```
 
 **Rappels anti-casse super-patch :**
-- Délimiteur final colonne 0, sans espace
-- TOUJOURS une ligne de contexte (sans `-/+`) avant et après `@@`
+- Delimiteur final colonne 0, sans espace
+- TOUJOURS une ligne de contexte (sans `-/+`) avant et apres `@@`
 - Utiliser des chemins absolus
-- **ATTENTION aux délimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
+- **ATTENTION aux delimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
 
-**Exemple MAUVAIS :**
-```
-@@
--old
-+new
-EOF
-```
+### 4.5 AI Shell (Claude Code) - Outils natifs
 
-**Exemple BON :**
-```
-@@
- const x = 1;
--old
-+new
- return x;
-EOF
-```
+En AI Shell, privilegier les outils natifs :
 
-```
+| Outil | Usage |
+|-------|-------|
+| `Read` | Lire un fichier |
+| `Edit` | Modifier une partie (remplacement exact) |
+| `Write` | Creer/reecrire un fichier complet |
+| `Bash` | Commandes shell (git, npm, tar tf...) |
 
-### 4.3 Structure type d'un composant
-
-```
-/home/ubuntu/aiapp/frontend/src/pages/FeatureName/
-├── FeatureName.page.tsx      # Page principale
-├── components/
-│   └── SubComponent.tsx      # Sous-composants
-├── hooks/
-│   └── useFeatureData.ts     # Hooks custom (API calls)
-└── index.ts                  # Export
-```
+**Avantages :** Gestion automatique des erreurs, contexte preserve, pas de probleme de delimiteurs.
 
 ---
 
@@ -195,42 +275,56 @@ node /home/ubuntu/aiapp/frontend/scripts/check-i18n.cjs
 Ouvrir : **https://manager.di2amp.com/dev/**
 
 **Checklist de validation :**
-- [ ] Rendu visuel conforme à l'original
-- [ ] Appels API fonctionnels (vérifier Network tab)
+- [ ] Rendu visuel conforme au target SVG
+- [ ] Appels API fonctionnels (verifier Network tab)
 - [ ] Pas d'erreurs console
 - [ ] Navigation correcte
-- [ ] États de chargement/erreur gérés
+- [ ] Etats de chargement/erreur geres
+- [ ] CSS conforme aux specs (padding 15px 24px 24px 24px, gap 16px, sidebar 280px)
 
 ---
 
-## RÉSUMÉ EXPRESS
+## RESUME EXPRESS
 
 ```
-1. CIBLER    → Quelle feature migrer ?
-2. GREP      → Trouver les fichiers sources
-3. TAR+SCP   → Extraire et transférer
-4. UPLOAD    → Partager avec Claude
-5. ANALYSER  → HTML→JSX, i18n→FR, API→nouveau format
-6. GÉNÉRER   → cp+tee (nouveau) ou super-patch (modif)
-7. BUILD     → npm run build:dev + D1-build_frontend_dev.sh
-8. TESTER    → https://manager.di2amp.com/dev/
+1. CIBLER    -> Quel NAV4 migrer ? (NAV1/NAV2/NAV3/NAV4)
+2. GREP      -> Trouver les fichiers sources Angular
+3. TAR+SCP   -> Extraire et transferer
+4. UPLOAD    -> Partager avec Claude (AI Web)
+5. ANALYSER  -> HTML->JSX, i18n->FR, API->service isole
+6. GENERER   -> cp+tee (nouveau) ou Edit (modif en AI Shell)
+7. BUILD     -> npm run build:dev + D1-build_frontend_dev.sh
+8. TESTER    -> https://manager.di2amp.com/dev/
 ```
 
 ---
 
-## CHOIX DE MÉTHODE
+## CHOIX DE METHODE
 
-| Situation | Méthode |
+### AI Web (chat Claude)
+
+| Situation | Methode |
 |-----------|---------|
 | Nouveau fichier | `cp+tee` |
 | Fichier existant, petite modif | `super-patch` |
-| Fichier existant, gros changements | `cp+tee` (réécriture complète) |
+| Fichier existant, gros changements | `cp+tee` (reecriture complete) |
+
+### AI Shell (Claude Code CLI)
+
+| Situation | Methode |
+|-----------|---------|
+| Nouveau fichier | `Write` (ou `cp+tee` pour backup) |
+| Fichier existant, petite modif | `Edit` |
+| Fichier existant, gros changements | `Write` |
+| Backup avant modif | `cp fichier fichier.$(date +%Y%m%dT%H%M%S)` |
 
 ---
 
 ## NOTES
 
-- Toujours vérifier les endpoints API dans la doc OVH (https://api.ovh.com/console/)
-- Privilégier les composants ODS (@ovhcloud/ods-react v19.2.1)
-- Garder la structure de fichiers cohérente avec `/src/` existant
+- Toujours verifier les endpoints API dans la doc OVH (https://api.ovh.com/console/)
+- Privilegier les composants ODS (@ovhcloud/ods-react v19.2.1)
 - Design system : `/src/design-system/DESIGN_TOKENS.md`
+- Specs layout : voir `prompt_split_layout_method.txt`
+- Architecture services : voir `prompt_api.txt`
+- Conventions React : voir `prompt_react.txt`

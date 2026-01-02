@@ -1,0 +1,153 @@
+# Cahier des Charges : web-cloud/emails - Security
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page dashboard configuration DNS
+**Fonction:** Vue d'ensemble sécurité email (MX, SPF, DKIM, DMARC, SRV)
+**Contexte:** Sous-onglet DNS Config de l'onglet Sécurité
+
+## 2. NAVIGATION
+
+### NAV1
+- Menu: Web Cloud (actif)
+
+### NAV2
+- Menu: Emails (actif)
+
+### NAV3
+- Onglets: Boîtes mail | Redirections | Répondeurs | Listes | Sécurité (actif) | Avancé | Licences | Tâches
+
+### NAV4
+- Sous-onglets: DNS Config (actif) | Antispam | Signature
+
+## 3. TOOLBAR
+
+- Bouton: "Diagnostiquer" (btn-primary, 140x32px)
+  - Lance le diagnostic de tous les enregistrements DNS
+
+## 4. CARTES DNS (6 cartes, 2 colonnes)
+
+### Carte MX (500x140px)
+- Titre: "Enregistrement MX"
+- Badge: "Valide" (vert #DEF7EC)
+- Description: "Serveurs de réception email"
+- Box valeur: background #F3F4F6
+- Valeur: "mx1.mail.ovh.net (10)" + "Configuré" (vert)
+- Lien: "Auto-configurer MX"
+
+### Carte SPF (500x140px)
+- Titre: "Enregistrement SPF"
+- Badge: "Valide" (vert #DEF7EC)
+- Description: "Authentification des serveurs d'envoi"
+- Box valeur: "v=spf1 include:mx.ovh.com ~all" + "Configuré" (vert)
+- Lien: "Auto-configurer SPF"
+
+### Carte DKIM (500x140px)
+- Titre: "Enregistrement DKIM"
+- Badge: "Actif" (vert #DEF7EC)
+- Description: "Signature cryptographique des emails"
+- Box valeur: "ovhex123456-selector._domainkey" + "Publié" (vert)
+- Lien: "Régénérer DKIM"
+
+### Carte DMARC (500x140px)
+- Titre: "Enregistrement DMARC"
+- Badge: "Non configuré" (rouge #FEE2E2)
+- Border: rouge #FEE2E2
+- Description: "Politique anti-usurpation"
+- Box valeur: background #FEF3C7
+- Message: "Aucun enregistrement DMARC détecté" (orange)
+- Lien: "Configurer DMARC"
+
+### Carte SRV Autodiscover (500x140px)
+- Titre: "Enregistrement SRV (Autodiscover)"
+- Badge: "Valide" (vert #DEF7EC)
+- Description: "Configuration automatique Outlook"
+- Box valeur: "_autodiscover._tcp autodiscover.mail.ovh.net"
+- Lien: "Auto-configurer SRV"
+
+### Carte Résumé (500x140px)
+- Background: #DBEAFE
+- Border: #93C5FD
+- Titre: "Résumé sécurité"
+- Points:
+  - ✓ MX correctement configuré
+  - ✓ SPF protège contre le spoofing
+  - ✓ DKIM signe vos emails
+  - ⚠ DMARC recommandé pour une protection complète
+
+## 5. BADGES ÉTAT
+
+| État | Background | Couleur |
+|------|------------|---------|
+| Valide | #DEF7EC | #03543F |
+| Actif | #DEF7EC | #03543F |
+| Publié | #DEF7EC | #03543F |
+| Non configuré | #FEE2E2 | #DC2626 |
+| En attente | #FEF3C7 | #D97706 |
+
+## 6. APIS & ENDPOINTS
+
+```
+# Diagnostic DNS
+GET /email/exchange/{organization}/service/{serviceName}/domain/{domain}/diagnose
+→ Diagnostic complet MX/SPF/DKIM/DMARC/SRV
+
+# Enregistrements DNS actuels
+GET /domain/zone/{zoneName}/record?fieldType=MX
+GET /domain/zone/{zoneName}/record?fieldType=TXT&subDomain=
+GET /domain/zone/{zoneName}/record?fieldType=TXT&subDomain=_dmarc
+GET /domain/zone/{zoneName}/record?fieldType=SRV
+
+# Auto-configuration
+POST /email/exchange/{organization}/service/{serviceName}/domain/{domain}/configureAutodiscover
+→ Configure SRV autodiscover
+
+POST /email/exchange/{organization}/service/{serviceName}/domain/{domain}/configureDKIM
+→ Configure DKIM
+
+# Régénérer DKIM
+POST /email/exchange/{organization}/service/{serviceName}/domain/{domain}/renewDKIM
+
+# Créer enregistrement DNS
+POST /domain/zone/{zoneName}/record
+Body: { fieldType: "TXT", subDomain: "_dmarc", target: "v=DMARC1;..." }
+
+POST /domain/zone/{zoneName}/refresh
+→ Applique les changements DNS
+```
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| tab_title | Sécurité |
+| subtab_dns | DNS Config |
+| subtab_antispam | Antispam |
+| subtab_signature | Signature |
+| btn_diagnose | Diagnostiquer |
+| card_mx | Enregistrement MX |
+| mx_desc | Serveurs de réception email |
+| card_spf | Enregistrement SPF |
+| spf_desc | Authentification des serveurs d'envoi |
+| card_dkim | Enregistrement DKIM |
+| dkim_desc | Signature cryptographique des emails |
+| card_dmarc | Enregistrement DMARC |
+| dmarc_desc | Politique anti-usurpation |
+| card_srv | Enregistrement SRV (Autodiscover) |
+| srv_desc | Configuration automatique Outlook |
+| card_summary | Résumé sécurité |
+| status_valid | Valide |
+| status_active | Actif |
+| status_published | Publié |
+| status_configured | Configuré |
+| status_not_configured | Non configuré |
+| status_pending | En attente |
+| link_auto_mx | Auto-configurer MX |
+| link_auto_spf | Auto-configurer SPF |
+| link_regenerate_dkim | Régénérer DKIM |
+| link_configure_dmarc | Configurer DMARC |
+| link_auto_srv | Auto-configurer SRV |
+| summary_mx | MX correctement configuré |
+| summary_spf | SPF protège contre le spoofing |
+| summary_dkim | DKIM signe vos emails |
+| summary_dmarc | DMARC recommandé pour une protection complète |

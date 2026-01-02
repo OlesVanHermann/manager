@@ -1,77 +1,74 @@
-# Cahier des Charges : bare-metal/vps - Dashboard Tiles
+# Cahier des Charges : vps - Dashboard VPS
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Dashboard VPS (vue tiles)
-- **Type** : Page détail avec tuiles
-- **Objectif** : Informations essentielles en tuiles
+- **Page** : Dashboard VPS avec tabs
+- **Type** : Vue détaillée avec onglets
+- **Objectif** : Gérer un VPS spécifique
 
 ## 2. STRUCTURE PAGE
-- Header + sidebar
-- Breadcrumb
-- Titre + badge Running
-- Onglets
-- 2 rangées de tiles
+- Badge gamme (Starter/Value/Essential)
+- Titre : nom DNS du VPS
+- Sous-titre : VPS • Datacenter
+- Bouton Actions (dropdown)
+- Onglets de navigation
+- 3 cartes de configuration
+- Zone actions rapides
 
 ## 3. COMPOSANTS UI
-- **OdsBreadcrumb** : Navigation
-- **OdsTabs** : 6 onglets
-- **OdsBadge** : Running (success)
-- **OdsTile** : 5 tuiles
-- **OdsButton** : Actions outline (4)
-- **OdsLink** : Afficher toutes les IPs
+- **OdsBadge** : Gamme, Statut
+- **OdsTabs** : Navigation onglets
+- **OdsCard** : Tuiles info
+- **OdsProgress** : Utilisation ressources
+- **OdsButton** : Actions rapides
 
 ## 4. ONGLETS
-| Onglet | État |
-|--------|------|
-| Accueil | ✅ Actif |
-| Snapshot | - |
-| Backup storage | - |
-| Disque additionnel | - |
-| Veeam | - |
-| DNS secondaire | - |
+| Onglet | Description |
+|--------|-------------|
+| Accueil | Dashboard principal |
+| Snapshots | Gestion snapshots |
+| Backup automatique | Sauvegardes |
+| Reinstallation | Réinstaller OS |
+| Monitoring | Métriques |
+| DNS secondaire | Config DNS |
 
-## 5. TILE INFORMATIONS
-| Champ | Valeur |
-|-------|--------|
-| Nom | vps-abc123def.vps.ovh.net |
-| Modèle | VPS Essential 4 |
-| Région | 🇫🇷 Gravelines (GRA) |
-| Système d'exploitation | Ubuntu 22.04 LTS |
+## 5. CARTE CONFIGURATION
+| Info | Exemple |
+|------|---------|
+| Modèle | VPS Starter |
+| vCPU | 2 vCores |
+| Mémoire RAM | 4 Go |
+| Stockage | 80 Go SSD NVMe |
+| Lien | Changer d'offre → |
 
-## 6. TILE CONFIGURATION
-| Champ | Valeur |
-|-------|--------|
-| vCores | 4 vCores |
-| Mémoire vive | 8 Go |
-| Stockage | 160 Go SSD NVMe |
-| Bande passante | 2 Gbit/s |
+## 6. CARTE SYSTÈME
+| Info | Exemple |
+|------|---------|
+| Système d'exploitation | Ubuntu 24.04 LTS |
+| Statut | Badge "Démarré" (vert) |
+| Adresse IPv4 | 51.178.123.45 |
+| Adresse IPv6 | 2001:41d0:305:2100::1/128 |
+| Lien | Gérer les IPs → |
 
-## 7. TILE RACCOURCIS
-| Bouton | Style |
-|--------|-------|
-| Résilier | Outline link |
-| Redémarrer (mode rescue) | Outline link |
-| Redémarrer | Outline link |
-| Réinstaller | Outline link |
+## 7. CARTE RESSOURCES
+| Métrique | Valeur | Progress |
+|----------|--------|----------|
+| CPU | 30% | Barre bleue |
+| RAM | 50% (2 Go / 4 Go) | Barre bleue |
+| Disque | 40% (32 Go / 80 Go) | Barre bleue |
+| Uptime | 12 jours, 5 heures | - |
 
-## 8. TILE RÉSEAU
-| Champ | Valeur |
-|-------|--------|
-| IPv4 | 51.210.123.45 |
-| IPv6 | 2001:41d0:305:2100::1234 |
-| Action | Afficher toutes les IPs (lien) |
+## 8. ACTIONS RAPIDES
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Redémarrer | Primary | Reboot soft |
+| Créer un snapshot | Default | Snapshot manuel |
+| Réinstaller | Default | Modal réinstall |
+| Console VNC | Default | Accès KVM |
+| Éteindre | Danger | Arrêt VPS |
 
-## 9. TILE ABONNEMENT
-| Champ | Valeur |
-|-------|--------|
-| Date de création | 15/03/2024 |
-| Prochaine facturation | 15/01/2025 |
-| Renouvellement | Automatique |
+## 9. APIS & ENDPOINTS
+- GET /vps/{serviceName} - Infos VPS
+- GET /vps/{serviceName}/monitoring - Métriques
+- POST /vps/{serviceName}/reboot - Redémarrer
+- POST /vps/{serviceName}/stop - Arrêter
 
-## 10. APIS & ENDPOINTS
-- GET /vps/{serviceName}
-  - Détails VPS
-- GET /vps/{serviceName}/serviceInfos
-  - Infos abonnement
-- GET /vps/{serviceName}/ips
-  - Liste des IPs

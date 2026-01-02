@@ -103,7 +103,37 @@ export interface EmailList {
   offer: EmailOffer;
 }
 
+// ---------- SERVICE / PACK ----------
+
+/** Type de service email */
+export type EmailServiceType = "exchange" | "emailpro" | "mxplan" | "zimbra";
+
+/** État d'un service */
+export type ServiceState = "active" | "suspended" | "expired" | "inCreation";
+
+/** Résumé d'un service email pour affichage */
+export interface EmailServiceDisplay {
+  id: string;
+  name: string;
+  displayName: string;
+  type: EmailServiceType;
+  offer: EmailOffer;
+  offerDetail?: string;
+  organization?: string;
+  domain: string;
+  state: ServiceState;
+  accountsCount: number;
+  totalAccounts?: number;
+  renewalDate?: string;
+}
+
 // ---------- LICENCE / PACK ----------
+
+/** Type de licence (Exchange) */
+export type LicenseType = "basic" | "standard" | "enterprise";
+
+/** Période de renouvellement */
+export type RenewPeriod = "MONTHLY" | "YEARLY" | "DELETE_AT_EXPIRATION";
 
 export interface EmailLicense {
   id: string;
@@ -119,13 +149,50 @@ export interface EmailLicense {
   serviceId: string;
 }
 
-export interface LicenseHistory {
+/** Informations de facturation d'un compte */
+export interface AccountBillingInfo {
+  email: string;
+  displayName?: string;
+  license: LicenseType;
+  renewPeriod: RenewPeriod;
+  deleteAtExpiration: boolean;
+  expirationDate?: string;
+  quota: number;
+  usedQuota: number;
+  state: "ok" | "suspended" | "deleting";
+}
+
+/** Historique local des licences (pour affichage) */
+export interface LicenseHistoryEntry {
   id: string;
   date: string;
   action: "purchase" | "upgrade" | "downgrade" | "cancel" | "renew";
   license: string;
   amount: number;
   invoiceId?: string;
+}
+
+// ---------- COMMANDES ----------
+
+/** Statut d'une commande */
+export type OrderStatus = "notPaid" | "unpaid" | "paid" | "cancelled" | "refunded" | "expired";
+
+/** Type d'événement historique */
+export type HistoryEventType = "purchase" | "upgrade" | "downgrade" | "renewal" | "cancellation" | "migration" | "other";
+
+/** Événement dans l'historique */
+export interface HistoryEvent {
+  id: string;
+  type: HistoryEventType;
+  description: string;
+  offer?: EmailOffer;
+  domain?: string;
+  amount?: number;
+  currency?: string;
+  date: string;
+  orderId?: number;
+  status?: OrderStatus;
+  pdfUrl?: string;
 }
 
 // ---------- SÉCURITÉ ----------

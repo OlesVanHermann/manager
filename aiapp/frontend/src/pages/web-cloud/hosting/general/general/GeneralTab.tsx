@@ -127,10 +127,13 @@ export function GeneralTab({ serviceName, onTabChange }: Props) {
     try {
       const [s, c] = await Promise.allSettled([
         generalService.getSslInfo(serviceName),
-        fetch(`/api/ovh/hosting/web/${serviceName}/cdn`).then(r => r.json())
+        // CDN: 404 si pas de CDN activé (comportement normal)
+        fetch(`/api/ovh/hosting/web/${serviceName}/cdn`)
+          .then(r => r.ok ? r.json() : null)
+          .catch(() => null)
       ]);
       if (s.status === "fulfilled") setSsl(s.value);
-      if (c.status === "fulfilled") setCdn(c.value);
+      if (c.status === "fulfilled" && c.value) setCdn(c.value);
     } catch {}
   }, [serviceName]);
 

@@ -1,4 +1,13 @@
-# PROMPT RESUME - Generation de Cahier des Charges depuis Old Manager
+# PROMPT SVG2TXT v2 - Generation de Cahier des Charges depuis Old Manager
+
+================================================================================
+Version: v2.0 (2026-01-02)
+Parent: prompt_target.txt v5, prompt_split.txt v3
+Changelog:
+- v2.0: Alignement terminologie NAV1-NAV4, conventions nommage revisees,
+        8 sections cahier, references croisees, mapping old->target
+- v1.0: Version initiale
+================================================================================
 
 ## Fichiers et chemins
 
@@ -11,7 +20,96 @@
 
 ---
 
-## Arborescence NAV1 existante
+## PROMPTS COMPLEMENTAIRES (references croisees)
+
+| Prompt | Usage | Quand l'utiliser |
+|--------|-------|------------------|
+| prompt_target.txt | Design system SVG (couleurs, typo, composants) | Generer les target_.*.svg |
+| prompt_split.txt | Architecture React defactorisee | Comprendre la structure cible |
+| prompt_split_layout_method.txt | Specs CSS layout (dimensions) | Verifier padding, gap, sidebar |
+| prompt_target_sidecar_left.txt | LEFT PANEL / useLeftPanel hook | Architecture sidebar |
+
+---
+
+##############################################################################
+# 0. TERMINOLOGIE OFFICIELLE NAV1-NAV4
+##############################################################################
+
+### Definitions et positions
+
+┌─────────┬──────────────┬──────────────┬─────────────────────────────────────────┐
+│ Niveau  │ Nom          │ Position     │ Description                             │
+├─────────┼──────────────┼──────────────┼─────────────────────────────────────────┤
+│ NAV1    │ Univers      │ Header       │ Header OVH (Web Cloud, Public Cloud...) │
+│ NAV2    │ Produit      │ Sous-header  │ Section (Domaines, Hebergement...)      │
+│ NAV3    │ Groupement   │ LEFT PANEL   │ Toggle TOUJOURS en sidebar,             │
+│         │              │ (au-dessus   │ AU-DESSUS de [Rechercher]               │
+│         │              │ de search)   │ ([General][Sites][Expert]...)           │
+│ NAV4    │ Fonction     │ RIGHT PANEL  │ Onglets TOUJOURS dans le panel          │
+│         │              │ (tabs)       │ principal (FTP, SSL, BDD...)            │
+└─────────┴──────────────┴──────────────┴─────────────────────────────────────────┘
+
+### Structure visuelle
+
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │ NAV1 - Univers (Header bleu OVH)                                            │
+  ├─────────────────────────────────────────────────────────────────────────────┤
+  │ NAV2 - Produit (Sous-header blanc)                                          │
+  ├───────────────────────┬─────────────────────────────────────────────────────┤
+  │ LEFT PANEL (280px)    │ RIGHT PANEL (flex: 1)                               │
+  │ ┌───────────────────┐ │ ┌─────────────────────────────────────────────────┐ │
+  │ │ NAV3 - Groupement │ │ │ Titre service                                   │ │
+  │ │ [General][Sites]  │ │ ├─────────────────────────────────────────────────┤ │
+  │ ├───────────────────┤ │ │ NAV4 - Fonction                                 │ │
+  │ │ 🔍 Rechercher...  │ │ │ [FTP] [SSL] [BDD] [CDN] [Cron]                  │ │
+  │ ├───────────────────┤ │ ├─────────────────────────────────────────────────┤ │
+  │ │ Liste services    │ │ │ Contenu de l'onglet selectionne                 │ │
+  │ └───────────────────┘ │ └─────────────────────────────────────────────────┘ │
+  └───────────────────────┴─────────────────────────────────────────────────────┘
+
+### Regles de position CRITIQUES
+
+- **NAV3 (Groupement)** est TOUJOURS dans le **LEFT PANEL**, AU-DESSUS de la recherche
+- **NAV4 (Fonction)** est TOUJOURS dans le **RIGHT PANEL** (tabs principaux)
+- NE JAMAIS confondre NAV3 et NAV4
+
+### Modele de navigation hierarchique
+
+```
+NAV1 ──► Univers (Header OVH: Web Cloud, Public Cloud, Network, etc.)
+  │
+  └─► NAV2 ──► Produit (Domaines, Hebergement, Emails, VoIP, Acces, etc.)
+        │
+        └─► NAV3 ──► Groupement dans LEFT PANEL ([General][Sites][Expert])
+              │
+              └─► NAV4 ──► Fonction dans RIGHT PANEL (FTP, SSL, BDD...)
+```
+
+### Dimensions de reference
+
+| Niveau | Position | Height | Exemple |
+|--------|----------|--------|---------|
+| **NAV1** Univers | y=0 | 50px | Web Cloud, Public Cloud, Network |
+| **NAV2** Produit | y=50 | 40px | Domaines, Hebergement, Emails |
+| **NAV3** Groupement | LEFT PANEL (top) | ~44px | [General] [Sites] [Expert] |
+| **NAV4** Fonction | RIGHT PANEL y=38 | ~26px | FTP, SSL, BDD, CDN, Cron |
+
+### Specs CSS layout (prompt_split_layout_method.txt)
+
+| Propriete | Valeur | Usage |
+|-----------|--------|-------|
+| NAV1 height | 50px | Header bleu OVH |
+| NAV2 height | 40px | Sous-header blanc |
+| Gap NAV2→Content | 15px | padding-top du split |
+| Margins laterales | 24px | padding left/right |
+| Sidebar width | 280px | LEFT PANEL (min/max) |
+| Gap panels | 16px | entre sidebar et main |
+
+---
+
+##############################################################################
+# 1. ARBORESCENCE NAV1 EXISTANTE
+##############################################################################
 
 | NAV1 | Description | Exemples NAV2 |
 |------|-------------|---------------|
@@ -30,7 +128,9 @@
 
 ---
 
-## ⚠️ REGLES CRITIQUES - LIRE EN PREMIER ⚠️
+##############################################################################
+# 2. REGLES CRITIQUES - LIRE EN PREMIER
+##############################################################################
 
 ### REGLE 0 : ZERO HALLUCINATION
 **INTERDIT ABSOLU** d'inventer des elements absents du code source.
@@ -42,95 +142,151 @@
 ### REGLE 1 : GENERATION DIRECTE OBLIGATOIRE
 **INTERDICTION** d'afficher le contenu dans la conversation.
 
-| ❌ INTERDIT | ✅ OBLIGATOIRE |
-|-------------|----------------|
+| INTERDIT | OBLIGATOIRE |
+|----------|-------------|
 | Afficher le TXT brut | Ecrire avec `tee` dans `/mnt/user-data/outputs/` |
 | "Voici le cahier, copiez-le..." | Appeler `present_files` apres generation |
 | Attendre copier-coller | Fournir lien de telechargement |
 
 **Raison** : L'utilisateur ne peut PAS copier-coller. Afficher = PERTE DE TEMPS.
 
-### REGLE 2 : PARALLELISME SVG ↔ TXT
+### REGLE 2 : PARALLELISME SVG <-> TXT
 **OBLIGATOIRE** : Pour chaque SVG, un TXT correspondant avec le MEME nom.
 
 ```
-old_manager.{NAV1}.{NAV2}.svg           -> old_manager.{NAV1}.{NAV2}.txt
-old_manager.{NAV1}.{NAV2}.tab-xxx.svg   -> old_manager.{NAV1}.{NAV2}.tab-xxx.txt
-old_manager.{NAV1}.{NAV2}.modal-xxx.svg -> old_manager.{NAV1}.{NAV2}.modal-xxx.txt
+old_manager.{NAV1}.{NAV2}.svg               -> old_manager.{NAV1}.{NAV2}.txt
+old_manager.{NAV1}.{NAV2}.nav3-xxx.svg      -> old_manager.{NAV1}.{NAV2}.nav3-xxx.txt
+old_manager.{NAV1}.{NAV2}.nav4-xxx.svg      -> old_manager.{NAV1}.{NAV2}.nav4-xxx.txt
+old_manager.{NAV1}.{NAV2}.modal-xxx.svg     -> old_manager.{NAV1}.{NAV2}.modal-xxx.txt
 ```
 
 ### REGLE 3 : MEME REPERTOIRE QUE LES SVG
 Les TXT doivent etre dans le MEME dossier que les SVG correspondants.
 
+### REGLE 4 : CLASSIFICATION NAV3/NAV4 OBLIGATOIRE
+**OBLIGATOIRE** : Identifier si un onglet est NAV3 (Groupement) ou NAV4 (Fonction).
+
+| Critere | NAV3 (Groupement) | NAV4 (Fonction) |
+|---------|-------------------|-----------------|
+| Position | LEFT PANEL | RIGHT PANEL |
+| Role | Filtre les NAV4 affiches | Action/vue specifique |
+| Exemples | [General], [Sites], [Expert] | FTP, SSL, BDD, CDN |
+| Nombre | 2-4 max par NAV2 | 5-20+ par NAV3 |
+
 ---
 
-## Objectif
+##############################################################################
+# 3. CONVENTION DE NOMMAGE (REVISEE v2)
+##############################################################################
 
-Analyser un tar extrait de l'old_manager OVHcloud et produire un **cahier des charges complet** permettant de recoder la fonctionnalite dans le new_manager **sans jamais rouvrir le code source original**.
+### Patterns de fichiers TXT/SVG
 
----
+| Pattern | Type | Usage | Exemple |
+|---------|------|-------|---------|
+| `{PREFIX}.{NAV1}.{NAV2}.txt` | Dashboard | Page principale sans service selectionne | `old_manager.web-cloud.hosting.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.general.txt` | NAV4 | Page generale (1er onglet) avec service | `old_manager.web-cloud.hosting.general.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.nav3-{groupe}.txt` | NAV3 | Groupement (LEFT PANEL) | `old_manager.web-cloud.hosting.nav3-expert.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.nav4-{fonction}.txt` | NAV4 | Fonction/onglet (RIGHT PANEL) | `old_manager.web-cloud.hosting.nav4-ssl.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.modal-{nav4}-{action}.txt` | Modal | Dialog lie a une fonction | `old_manager.web-cloud.hosting.modal-ssl-order.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.modal-{action}.txt` | Modal | Dialog global | `old_manager.home.billing.modal-terminate.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.onboarding.txt` | Onboarding | Page empty state | `old_manager.web-cloud.hosting.onboarding.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.state-{etat}.txt` | State | Etat specifique (empty, error, loading) | `old_manager.web-cloud.hosting.state-empty.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.create.txt` | Create | Page de creation | `old_manager.public-cloud.kubernetes.create.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.{nom}-detail.txt` | Detail | Page de detail | `old_manager.home.support.ticket-detail.txt` |
+| `{PREFIX}.{NAV1}.{NAV2}.list-{nom}.txt` | List | Liste d'elements | `old_manager.web-cloud.hosting.list-hostings.txt` |
 
-## Convention de nommage
+### IMPORTANT : Migration tab-xxx -> nav4-xxx
 
-### Patterns de fichiers TXT (identiques aux SVG)
-
-| Pattern | Usage | Exemple |
-|---------|-------|---------|
-| `{PREFIX}.{NAV1}.{NAV2}.txt` | Page principale / dashboard | `old_manager.home.billing.txt` |
-| `{PREFIX}.{NAV1}.{NAV2}.tab-{nom}.txt` | Onglet specifique | `old_manager.web-cloud.hebergement.tab-ssl.txt` |
-| `{PREFIX}.{NAV1}.{NAV2}.modal-{action}.txt` | Modal / dialog | `old_manager.home.billing.modal-terminate.txt` |
-| `{PREFIX}.{NAV1}.{NAV2}.list-{nom}.txt` | Liste d'elements | `old_manager.web-cloud.hebergement.list-hostings.txt` |
-| `{PREFIX}.{NAV1}.{NAV2}.{nom}-detail.txt` | Page de detail | `old_manager.home.support.ticket-detail.txt` |
-| `{PREFIX}.{NAV1}.{NAV2}.onboarding.txt` | Page onboarding / empty state | `old_manager.web-cloud.hebergement.onboarding.txt` |
-| `{PREFIX}.{NAV1}.{NAV2}.state-{etat}.txt` | Etat specifique (empty, error, loading) | `old_manager.web-cloud.hosting.state-empty.txt` |
-| `{PREFIX}.{NAV1}.{NAV2}.create.txt` | Page de creation | `old_manager.public-cloud.kubernetes.create.txt` |
-| `{PREFIX}.{NAV1}.{NAV2}.{nom}.txt.~1~` | Variante alternative #1 | `old_manager.bare-metal.vps.dashboard.txt.~1~` |
-| `{PREFIX}.{NAV1}.{NAV2}.{nom}.txt.~2~` | Variante alternative #2 | `old_manager.bare-metal.vps.dashboard.txt.~2~` |
+| Ancien (v1) | Nouveau (v2) | Raison |
+|-------------|--------------|--------|
+| `tab-ssl` | `nav4-ssl` | SSL est une FONCTION dans le RIGHT PANEL |
+| `tab-ftp` | `nav4-ftp` | FTP est une FONCTION dans le RIGHT PANEL |
+| `tab-general` | `general` | General est le 1er NAV4 (pas de prefixe) |
+| (nouveau) | `nav3-expert` | Expert est un GROUPEMENT dans le LEFT PANEL |
 
 ### Arborescence complete (exemple)
+
 ```
 /mnt/user-data/outputs/old_manager_svg/
-  ├── home/
-  │   ├── account/
-  │   │   ├── old_manager.home.account.svg
-  │   │   ├── old_manager.home.account.txt              ← CAHIER DES CHARGES
-  │   │   ├── old_manager.home.account.tab-infos.svg
-  │   │   ├── old_manager.home.account.tab-infos.txt    ← CAHIER DES CHARGES
-  │   │   ├── old_manager.home.account.tab-security.svg
-  │   │   ├── old_manager.home.account.tab-security.txt ← CAHIER DES CHARGES
-  │   │   ├── old_manager.home.account.modal-2fa-totp.svg
-  │   │   ├── old_manager.home.account.modal-2fa-totp.txt ← CAHIER DES CHARGES
-  │   │   └── ...
-  │   ├── billing/
-  │   │   ├── old_manager.home.billing.svg
-  │   │   ├── old_manager.home.billing.txt
-  │   │   └── ...
-  │   └── support/
-  │       ├── old_manager.home.support.svg
-  │       ├── old_manager.home.support.txt
-  │       ├── old_manager.home.support.ticket-detail.svg
-  │       ├── old_manager.home.support.ticket-detail.txt
+  ├── web-cloud/
+  │   └── hosting/
+  │       ├── old_manager.web-cloud.hosting.svg              # Dashboard
+  │       ├── old_manager.web-cloud.hosting.txt
+  │       │
+  │       ├── old_manager.web-cloud.hosting.onboarding.svg   # Onboarding
+  │       ├── old_manager.web-cloud.hosting.onboarding.txt
+  │       │
+  │       ├── old_manager.web-cloud.hosting.general.svg      # NAV4: General (1er onglet)
+  │       ├── old_manager.web-cloud.hosting.general.txt
+  │       │
+  │       ├── old_manager.web-cloud.hosting.nav3-general.svg # NAV3: Groupement [General]
+  │       ├── old_manager.web-cloud.hosting.nav3-general.txt
+  │       ├── old_manager.web-cloud.hosting.nav3-sites.svg   # NAV3: Groupement [Sites]
+  │       ├── old_manager.web-cloud.hosting.nav3-sites.txt
+  │       ├── old_manager.web-cloud.hosting.nav3-expert.svg  # NAV3: Groupement [Expert]
+  │       ├── old_manager.web-cloud.hosting.nav3-expert.txt
+  │       │
+  │       ├── old_manager.web-cloud.hosting.nav4-ssl.svg     # NAV4: SSL (RIGHT PANEL)
+  │       ├── old_manager.web-cloud.hosting.nav4-ssl.txt
+  │       ├── old_manager.web-cloud.hosting.nav4-ftp.svg     # NAV4: FTP (RIGHT PANEL)
+  │       ├── old_manager.web-cloud.hosting.nav4-ftp.txt
+  │       ├── old_manager.web-cloud.hosting.nav4-database.svg
+  │       ├── old_manager.web-cloud.hosting.nav4-database.txt
+  │       │
+  │       ├── old_manager.web-cloud.hosting.modal-ssl-order.svg    # Modal SSL
+  │       ├── old_manager.web-cloud.hosting.modal-ssl-order.txt
+  │       ├── old_manager.web-cloud.hosting.modal-ftp-create.svg   # Modal FTP
+  │       ├── old_manager.web-cloud.hosting.modal-ftp-create.txt
   │       └── ...
-  ├── public-cloud/
-  │   ├── kubernetes/
-  │   │   ├── old_manager.public-cloud.kubernetes.svg
-  │   │   ├── old_manager.public-cloud.kubernetes.txt
-  │   │   ├── old_manager.public-cloud.kubernetes.onboarding.svg
-  │   │   ├── old_manager.public-cloud.kubernetes.onboarding.txt
-  │   │   ├── old_manager.public-cloud.kubernetes.create.svg
-  │   │   ├── old_manager.public-cloud.kubernetes.create.txt
-  │   │   ├── old_manager.public-cloud.kubernetes.tab-nodepools.svg
-  │   │   ├── old_manager.public-cloud.kubernetes.tab-nodepools.txt
-  │   │   ├── old_manager.public-cloud.kubernetes.modal-add-nodepool.svg
-  │   │   ├── old_manager.public-cloud.kubernetes.modal-add-nodepool.txt
-  │   │   └── ...
-  │   └── ...
-  └── ...
+  │
+  └── home/
+      └── billing/
+          ├── old_manager.home.billing.svg
+          ├── old_manager.home.billing.txt
+          ├── old_manager.home.billing.modal-terminate.svg
+          ├── old_manager.home.billing.modal-terminate.txt
+          └── ...
 ```
 
 ---
 
-## WORKFLOW OBLIGATOIRE
+##############################################################################
+# 4. MAPPING OLD MANAGER -> TARGET MANAGER
+##############################################################################
+
+### Correspondance fichiers old -> target
+
+| old_manager (analyse) | target_ (generation) | Type |
+|-----------------------|---------------------|------|
+| `old_manager.web-cloud.hosting.txt` | `target_.web-cloud.hosting.dashboard.svg` | Dashboard |
+| `old_manager.web-cloud.hosting.general.txt` | `target_.web-cloud.hosting.general.svg` | NAV4 |
+| `old_manager.web-cloud.hosting.nav3-expert.txt` | (integre dans LeftPanel) | NAV3 |
+| `old_manager.web-cloud.hosting.nav4-ssl.txt` | `target_.web-cloud.hosting.ssl.svg` | NAV4 |
+| `old_manager.web-cloud.hosting.modal-ssl-order.txt` | (modale dans sites/ssl/) | Modal |
+
+### Correspondance architecture
+
+| old_manager | prompt_split.txt (architecture cible) |
+|-------------|--------------------------------------|
+| NAV1: web-cloud | `src/pages/web-cloud/` |
+| NAV2: hosting | `src/pages/web-cloud/hosting/` |
+| NAV3: expert | `src/pages/web-cloud/hosting/expert/` (dossier groupement) |
+| NAV4: ssl | `src/pages/web-cloud/hosting/sites/ssl/SslTab.tsx` |
+| modal-ssl-order | `src/pages/web-cloud/hosting/sites/ssl/OrderSslModal.tsx` |
+
+### Tableau de mapping NAV3 -> NAV4 (exemple Hosting)
+
+| NAV3 Groupement | NAV4 Fonctions (RIGHT PANEL) |
+|-----------------|------------------------------|
+| **[General]** | general, statistics, indy, offer, modules, logs, seo |
+| **[Sites]** | multisite, ssl |
+| **[Expert]** | ftp, database, clouddb, cdn, boost, emails, envvars, runtimes, cron, tasks |
+
+---
+
+##############################################################################
+# 5. WORKFLOW OBLIGATOIRE
+##############################################################################
 
 ### Phase 1 : Detection du contexte
 ```
@@ -144,7 +300,7 @@ NAV2 = hosting
 ### Phase 2 : Analyse du code
 | Priorite | Fichier | Information |
 |----------|---------|-------------|
-| 1 | layout.tsx | Structure, breadcrumb, tabs |
+| 1 | layout.tsx | Structure, breadcrumb, NAV3/NAV4 tabs |
 | 2 | *.page.tsx | Contenu principal |
 | 3 | components/*.tsx | Elements UI |
 | 4 | useDatagridColumn.tsx | Colonnes + ActionMenu |
@@ -153,38 +309,63 @@ NAV2 = hosting
 | 7 | *.service.js | Vrais endpoints API |
 | 8 | api/*.ts | Hooks et appels API |
 
-### Phase 3 : Verification APIs (OBLIGATOIRE)
+### Phase 3 : Classification NAV3/NAV4 (NOUVEAU)
+```bash
+# Identifier les groupements (NAV3) dans le LEFT PANEL
+grep -rn "groupement\|toggle\|selector" --include="*.tsx" /tmp/extract/
+
+# Identifier les fonctions (NAV4) dans le RIGHT PANEL
+grep -rn "tabs\|TabPanel\|activeTab" --include="*.tsx" /tmp/extract/
+```
+
+### Phase 4 : Verification APIs (OBLIGATOIRE)
 ```bash
 # Lancer le script sur le repertoire extrait
 python3 /home/ubuntu/old_manager/check_api_coverage.py /tmp/old_manager_analysis
 ```
 
-### Phase 4 : Generation TXT
+### Phase 5 : Generation TXT
 ```bash
 # 1. Creer arborescence dans outputs (meme que SVG)
 mkdir -p /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}
 
 # 2. Ecrire le TXT
-tee /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/{PREFIX}.{NAV1}.{NAV2}.txt << 'CDC_EOF'
+tee /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/{PREFIX}.{NAV1}.{NAV2}.txt > /dev/null << 'CDC_EOF'
 # Contenu du cahier des charges
 CDC_EOF
 
 # 3. Appeler present_files avec le chemin du fichier
 ```
 
-### Phase 5 : Confirmation
+### Phase 6 : Confirmation
 ```
-✅ TXT genere : {PREFIX}.{NAV1}.{NAV2}.txt
-   Chemin : /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/
-   Taille : XX Ko
-   Sections : [liste des 7 sections]
-   APIs documentees : [nombre]
-   SVG correspondant : [oui/non]
+CONTEXTE :
+  PREFIX : old_manager
+  NAV1 : web-cloud
+  NAV2 : hosting
+
+NAV3 IDENTIFIES (LEFT PANEL) :
+  - [General] : 7 NAV4
+  - [Sites] : 2 NAV4
+  - [Expert] : 10 NAV4
+
+NAV4 IDENTIFIES (RIGHT PANEL) :
+  [General] : general, statistics, indy, offer, modules, logs, seo
+  [Sites] : multisite, ssl
+  [Expert] : ftp, database, clouddb, cdn, boost, emails, envvars, runtimes, cron, tasks
+
+TXT GENERES :
+  1. old_manager.web-cloud.hosting.txt (XX Ko) - 8 sections, YY APIs
+  2. old_manager.web-cloud.hosting.nav4-ssl.txt (XX Ko)
+  3. old_manager.web-cloud.hosting.nav4-ftp.txt (XX Ko)
+  ...
 ```
 
 ---
 
-## Methodologie d'analyse
+##############################################################################
+# 6. METHODOLOGIE D'ANALYSE
+##############################################################################
 
 ### 1) FRONTEND
 
@@ -198,7 +379,7 @@ CDC_EOF
 - Flux modaux (ouverture, etapes, fermeture)
 - Feedback utilisateur (notifications, messages, spinners)
 
-**Design System :**
+**Design System (ref: prompt_target.txt) :**
 - Composants ODS utilises (@ovhcloud/ods-react)
 - Composants manager-react-components utilises
 - Classes Tailwind recurrentes
@@ -261,7 +442,59 @@ CDC_EOF
 
 ---
 
-## Verification des APIs (OBLIGATOIRE)
+##############################################################################
+# 7. STRUCTURE DU CAHIER DES CHARGES (8 sections)
+##############################################################################
+
+| # | Section | Contenu |
+|---|---------|---------|
+| 1 | **RESUME EXECUTIF** | Perimetre, objectif fonctionnel, users cibles |
+| 2 | **ARCHITECTURE NAV** | **NOUVEAU** : Classification NAV1→NAV4, positions, mapping |
+| 3 | **ARCHITECTURE FICHIERS** | Arborescence fichiers, patterns, dependances |
+| 4 | **PAGES & NAVIGATION** | Routes, params, breadcrumb, flux |
+| 5 | **COMPOSANTS UI** | Liste avec props, comportement, ODS mapping |
+| 6 | **APIs & DONNEES** | Endpoints, sequences, types complets |
+| 7 | **TRADUCTIONS** | Cles i18n avec valeurs FR (et EN si dispo) |
+| 8 | **REGLES METIER** | Validations, conditions, etats, permissions |
+
+### Section 2 - ARCHITECTURE NAV (template)
+
+```markdown
+## 2. ARCHITECTURE NAV
+
+### 2.1 Classification
+
+| Niveau | Valeur | Position |
+|--------|--------|----------|
+| NAV1 | web-cloud | Header OVH |
+| NAV2 | hosting | Sous-header |
+| NAV3 | [General], [Sites], [Expert] | LEFT PANEL |
+| NAV4 | ftp, ssl, database, ... | RIGHT PANEL |
+
+### 2.2 Mapping NAV3 -> NAV4
+
+| NAV3 Groupement | NAV4 Fonctions |
+|-----------------|----------------|
+| [General] | general, statistics, indy, offer, modules, logs, seo |
+| [Sites] | multisite, ssl |
+| [Expert] | ftp, database, clouddb, cdn, boost, emails, envvars, runtimes, cron, tasks |
+
+### 2.3 Correspondance architecture cible (prompt_split.txt)
+
+| Element | Chemin cible |
+|---------|--------------|
+| NAV2 Layout | src/pages/web-cloud/hosting/index.tsx |
+| NAV2 Types | src/pages/web-cloud/hosting/hosting.types.ts |
+| NAV3 [Expert] | src/pages/web-cloud/hosting/expert/ |
+| NAV4 FTP | src/pages/web-cloud/hosting/expert/ftp/FtpTab.tsx |
+| Modal FTP | src/pages/web-cloud/hosting/expert/ftp/CreateFtpUserModal.tsx |
+```
+
+---
+
+##############################################################################
+# 8. VERIFICATION DES APIs (OBLIGATOIRE)
+##############################################################################
 
 ### Script check_api_coverage.py
 
@@ -292,51 +525,6 @@ python3 /home/ubuntu/old_manager/check_api_coverage.py /tmp/dir --markdown
 - Me (Compte) : /me/*
 - 2API (SWS) : /sws/*
 
-### Patterns de detection API - MISE A JOUR
-
-**Probleme :**
-Les controllers Angular appellent des services abstraits (Domain.xxx(), OvhApiDomain.v6().xxx()).
-Les vrais endpoints REST sont dans les fichiers de service (Domain.service.js, etc.)
-
-**Solution : Chercher les vrais endpoints**
-
-**Patterns prioritaires (vrais endpoints REST)** :
-
-| Pattern | Exemple | Resultat |
-|---------|---------|----------|
-| URL directe dans OvhHttp | OvhHttp.get('/domain/{domain}') | /domain/{domain} |
-| URL directe dans $http | $http.post('/domain/zone/{zone}/refresh') | /domain/zone/{zone}/refresh |
-| Template literal | \`/domain/zone/\${zoneName}/record\` | /domain/zone/{zone}/record |
-| rootPath + path | rootPath: 'apiv6', path: '/domain' | apiv6: /domain |
-
-**Fichiers sources a inclure dans le tar** :
-
-Pour avoir les vrais endpoints, le tar DOIT inclure :
-- packages/manager/modules/web-universe-components/src/domain/Domain.service.js
-- packages/manager/modules/web-universe-components/src/zone/Zone.service.js
-- Tout fichier *.service.js ou *Api.js
-
-**Grep recommande pour extraction** :
-```bash
-# Vrais endpoints (URLs directes)
-grep -rhnE "['\"]/[a-z]+/[^'\"]*['\"]" --include="*.js" | grep -iE "domain|zone|me/|service"
-
-# Dans les services
-grep -rhnE "(get|post|put|delete)\s*\(\s*['\"\`]/" --include="*.service.js"
-
-# Template literals
-grep -rhnE "\`/[a-z]+/" --include="*.js"
-```
-
-### Workflow de verification
-
-1. Extraire le tar dans /tmp
-2. Lancer le script sur le repertoire extrait
-3. Analyser le rapport genere
-4. Comparer avec les APIs documentees dans le cahier
-5. Identifier les manques (trouvees mais non documentees)
-6. Identifier les orphelines (documentees mais non trouvees)
-
 ### Checklist de verification API
 
 - [ ] Script check_api_coverage.py lance
@@ -348,35 +536,17 @@ grep -rhnE "\`/[a-z]+/" --include="*.js"
 
 ---
 
-## Structure du Cahier des Charges (7 sections)
-
-| # | Section | Contenu |
-|---|---------|---------|
-| 1 | **RESUME EXECUTIF** | Perimetre, objectif fonctionnel, users cibles |
-| 2 | **ARCHITECTURE** | Arborescence fichiers, patterns, dependances |
-| 3 | **PAGES & NAVIGATION** | Routes, params, breadcrumb, flux |
-| 4 | **COMPOSANTS UI** | Liste avec props, comportement, ODS mapping |
-| 5 | **APIs & DONNEES** | Endpoints, sequences, types complets |
-| 6 | **TRADUCTIONS** | Cles i18n avec valeurs FR (et EN si dispo) |
-| 7 | **REGLES METIER** | Validations, conditions, etats, permissions |
-
----
-
-## Format de sortie
+##############################################################################
+# 9. FORMAT DE SORTIE
+##############################################################################
 
 **Nom du fichier :** Identique au SVG correspondant, extension .txt
-```
-old_manager.<NAV1>.<NAV2>.svg           ->  old_manager.<NAV1>.<NAV2>.txt
-old_manager.<NAV1>.<NAV2>.tab-xxx.svg   ->  old_manager.<NAV1>.<NAV2>.tab-xxx.txt
-old_manager.<NAV1>.<NAV2>.modal-xxx.svg ->  old_manager.<NAV1>.<NAV2>.modal-xxx.txt
-```
 
-**Exemples :**
 ```
-old_manager.web-cloud.domains.svg           ->  old_manager.web-cloud.domains.txt
-old_manager.web-cloud.hosting.tab-ssl.svg   ->  old_manager.web-cloud.hosting.tab-ssl.txt
-old_manager.home.billing.modal-terminate.svg ->  old_manager.home.billing.modal-terminate.txt
-old_manager.public-cloud.kubernetes.create.svg -> old_manager.public-cloud.kubernetes.create.txt
+old_manager.<NAV1>.<NAV2>.svg                    ->  old_manager.<NAV1>.<NAV2>.txt
+old_manager.<NAV1>.<NAV2>.nav3-xxx.svg           ->  old_manager.<NAV1>.<NAV2>.nav3-xxx.txt
+old_manager.<NAV1>.<NAV2>.nav4-xxx.svg           ->  old_manager.<NAV1>.<NAV2>.nav4-xxx.txt
+old_manager.<NAV1>.<NAV2>.modal-{nav4}-{action}.svg ->  old_manager.<NAV1>.<NAV2>.modal-{nav4}-{action}.txt
 ```
 
 **Destination :**
@@ -387,7 +557,9 @@ old_manager.public-cloud.kubernetes.create.svg -> old_manager.public-cloud.kuber
 
 ---
 
-## Generation et modification de fichiers
+##############################################################################
+# 10. GENERATION ET MODIFICATION DE FICHIERS
+##############################################################################
 
 ### Choix de methode
 
@@ -400,10 +572,11 @@ old_manager.public-cloud.kubernetes.create.svg -> old_manager.public-cloud.kuber
 ---
 
 ### Creer un nouveau fichier avec cp+tee
+
 ```bash
 mkdir -p /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}
 cp --backup=numbered /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt /home/ubuntu/action-target/tmp/ 2>/dev/null || true
-tee /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt > /dev/null <<'CDC_EOF'
+tee /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt > /dev/null << 'CDC_EOF'
 # Contenu COMPLET du cahier des charges
 # JAMAIS de "... comme avant"
 # JAMAIS de sections tronquees
@@ -415,37 +588,16 @@ CDC_EOF
 **Rappels anti-casse cp+tee :**
 - Delimiteur final (CDC_EOF, EOF, etc.) en debut de ligne, colonne 0, sans espace
 - Pas de guillemets intelligents - utiliser 'CDC_EOF' avec apostrophes simples ASCII
-- Pas d'indentation avant tee ... <<'CDC_EOF' ni avant le delimiteur final
+- Pas d'indentation avant tee ... << 'CDC_EOF' ni avant le delimiteur final
 - Si le fichier n'existe pas, tee le cree ; s'il existe, il est ecrase
-- **ATTENTION aux delimiteurs doubles** : si le contenu genere contient lui-meme un heredoc (ex: un script bash avec `<<'EOF'`), utiliser un delimiteur DIFFERENT pour l'enveloppe externe (ex: `CDC_EOF`, `MODULE_END`, `OUTER_DELIM`)
-
-**Exemples de conflits de delimiteurs :**
-
-MAUVAIS (EOF dans EOF) :
-```bash
-tee /chemin/script.sh > /dev/null <<'EOF'
-#!/bin/bash
-cat > config.txt <<'EOF'   # <-- CONFLIT ! Le shell ferme le heredoc ici
-contenu
-EOF
-EOF
-```
-
-BON (delimiteurs differents) :
-```bash
-tee /chemin/script.sh > /dev/null <<'SCRIPT_END'
-#!/bin/bash
-cat > config.txt <<'EOF'
-contenu
-EOF
-SCRIPT_END
-```
+- **ATTENTION aux delimiteurs doubles** : si le contenu genere contient lui-meme un heredoc (ex: un script bash avec `<< 'EOF'`), utiliser un delimiteur DIFFERENT pour l'enveloppe externe (ex: `CDC_EOF`, `MODULE_END`, `OUTER_DELIM`)
 
 ---
 
 ### Modifier un fichier existant avec super-patch
+
 ```bash
-super-patch <<'PATCH_EOF'
+super-patch << 'PATCH_EOF'
 --- /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt
 +++ /mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/<nom>.txt
 @@
@@ -456,25 +608,22 @@ super-patch <<'PATCH_EOF'
 PATCH_EOF
 ```
 
-**Rappels anti-casse super-patch :**
-- Delimiteur final colonne 0, sans espace
-- TOUJOURS au moins une ligne de contexte (sans -/+) avant ET apres chaque bloc @@
-- Utiliser des chemins absolus
-- Le contexte doit correspondre EXACTEMENT au fichier existant
-- **ATTENTION aux delimiteurs doubles** : si le patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
-
 ---
 
-## Criteres de qualite
+##############################################################################
+# 11. CRITERES DE QUALITE
+##############################################################################
 
 Le cahier des charges est **complet** si un developpeur peut :
 - [ ] Recreer toutes les pages sans voir l'original
+- [ ] Identifier clairement NAV3 (Groupement) vs NAV4 (Fonction)
 - [ ] Implementer tous les appels API correctement
 - [ ] Reproduire le comportement UX identique
 - [ ] Utiliser les bons composants ODS
 - [ ] Appliquer les traductions exactes
 - [ ] Comprendre le sequencement des appels API
 - [ ] Gerer tous les etats (loading, error, empty, success)
+- [ ] Mapper vers l'architecture cible (prompt_split.txt)
 
 **Criteres specifiques APIs :**
 - [ ] Script check_api_coverage.py lance sur le tar
@@ -484,57 +633,41 @@ Le cahier des charges est **complet** si un developpeur peut :
 
 ---
 
-## Workflow complet
+##############################################################################
+# 12. RAPPORT DE GENERATION
+##############################################################################
 
-1. **RECEVOIR** le tar uploade
-2. **EXTRAIRE** dans /tmp pour analyse
-3. **IDENTIFIER** : PREFIX, NAV1, NAV2 depuis le nom du tar
-4. **LISTER** les SVG existants dans old_manager_svg/{NAV1}/{NAV2}/
-5. **VERIFIER APIs** : lancer check_api_coverage.py (OBLIGATOIRE)
-6. **ANALYSER** : pages, composants, hooks, APIs, types, traductions
-7. **REDIGER** le cahier des charges (7 sections) pour CHAQUE SVG
-8. **COMPARER** APIs script vs cahier (aucun oubli)
-9. **PROPOSER** la structure au user pour validation
-10. **ATTENDRE** confirmation avant generation
-11. **GENERER** avec cp+tee apres GO explicite dans le MEME repertoire que les SVG
-12. **APPELER** present_files pour fournir les liens
-
----
-
-## Regles absolues
-
-- **NE JAMAIS** generer de code sans validation prealable
-- **NE JAMAIS** tronquer le contenu avec "..." ou "comme avant"
-- **TOUJOURS** utiliser des chemins absolus
-- **TOUJOURS** proposer avant de pousser
-- **TOUJOURS** verifier les delimiteurs pour eviter les conflits
-- **TOUJOURS** lancer check_api_coverage.py avant de finaliser
-- **TOUJOURS** placer les TXT dans le MEME repertoire que les SVG
-- **TOUJOURS** nommer les TXT de maniere identique aux SVG (sauf extension)
-
----
-
-## Rapport de generation
 ```
 === CONTEXTE ===
 PREFIX : old_manager
 NAV1 : web-cloud
 NAV2 : hosting
 
+=== ARCHITECTURE NAV ===
+NAV3 (LEFT PANEL) :
+  [General] -> 7 fonctions
+  [Sites] -> 2 fonctions
+  [Expert] -> 10 fonctions
+
+NAV4 (RIGHT PANEL) :
+  [General] : general, statistics, indy, offer, modules, logs, seo
+  [Sites] : multisite, ssl
+  [Expert] : ftp, database, clouddb, cdn, boost, emails, envvars, runtimes, cron, tasks
+
 === SVG EXISTANTS ===
 1. old_manager.web-cloud.hosting.svg
 2. old_manager.web-cloud.hosting.onboarding.svg
-3. old_manager.web-cloud.hosting.tab-multisite.svg
-4. old_manager.web-cloud.hosting.tab-database.svg
-5. old_manager.web-cloud.hosting.modal-add-multisite.svg
+3. old_manager.web-cloud.hosting.nav4-ssl.svg
+4. old_manager.web-cloud.hosting.nav4-ftp.svg
+5. old_manager.web-cloud.hosting.modal-ssl-order.svg
 ...
 
-=== TXT A GENERER ===
-1. ✅ old_manager.web-cloud.hosting.txt (XX Ko) - 7 sections, YY APIs
-2. ✅ old_manager.web-cloud.hosting.onboarding.txt (XX Ko)
-3. ✅ old_manager.web-cloud.hosting.tab-multisite.txt (XX Ko)
-4. ✅ old_manager.web-cloud.hosting.tab-database.txt (XX Ko)
-5. ✅ old_manager.web-cloud.hosting.modal-add-multisite.txt (XX Ko)
+=== TXT GENERES ===
+1. old_manager.web-cloud.hosting.txt (XX Ko) - 8 sections, YY APIs
+2. old_manager.web-cloud.hosting.onboarding.txt (XX Ko)
+3. old_manager.web-cloud.hosting.nav4-ssl.txt (XX Ko)
+4. old_manager.web-cloud.hosting.nav4-ftp.txt (XX Ko)
+5. old_manager.web-cloud.hosting.modal-ssl-order.txt (XX Ko)
 ...
 
 === VERIFICATION APIs ===
@@ -542,30 +675,67 @@ NAV2 : hosting
 - APIs documentees dans TXT : ZZ
 - Manquantes : 0
 - Orphelines : 0
+
+=== MAPPING TARGET ===
+- old_manager.web-cloud.hosting.nav4-ssl.txt -> target_.web-cloud.hosting.ssl.svg
+- old_manager.web-cloud.hosting.nav4-ftp.txt -> target_.web-cloud.hosting.ftp.svg
+...
 ```
 
 ---
 
-## Checklist finale
+##############################################################################
+# 13. CHECKLIST FINALE
+##############################################################################
 
+### Contexte
 - [ ] PREFIX detecte (old_manager / new_manager)
-- [ ] NAV1 identifie (home / web-cloud / bare-metal / public-cloud / network / telecom / iam / ...)
+- [ ] NAV1 identifie
 - [ ] NAV2 identifie
+- [ ] NAV3 identifies et documentes (Groupements dans LEFT PANEL)
+- [ ] NAV4 identifies et documentes (Fonctions dans RIGHT PANEL)
+
+### Fichiers
 - [ ] SVG existants listes dans old_manager_svg/{NAV1}/{NAV2}/
 - [ ] Arborescence creee dans `/mnt/user-data/outputs/old_manager_svg/{NAV1}/{NAV2}/`
 - [ ] TXT ecrits avec `tee` (pas affiches)
 - [ ] TXT dans le MEME repertoire que les SVG
-- [ ] Nommage TXT identique aux SVG (sauf extension)
-- [ ] `present_files` appele
+- [ ] Nommage TXT avec prefixes nav3-/nav4-/modal- corrects
+
+### Contenu
+- [ ] 8 sections presentes dans chaque TXT principal
+- [ ] Section ARCHITECTURE NAV remplie (mapping NAV3->NAV4)
 - [ ] ZERO hallucination
 - [ ] check_api_coverage.py lance
 - [ ] Textes en francais
-- [ ] 7 sections presentes dans chaque TXT principal
+
+### Qualite
+- [ ] `present_files` appele
+- [ ] Mapping old->target documente
 - [ ] Variantes .~1~ .~2~ traitees si necessaire
 
 ---
 
-## Script check_api_coverage.py (code complet)
+##############################################################################
+# 14. REGLES ABSOLUES
+##############################################################################
+
+- **NE JAMAIS** generer de code sans validation prealable
+- **NE JAMAIS** tronquer le contenu avec "..." ou "comme avant"
+- **NE JAMAIS** confondre NAV3 (LEFT PANEL) et NAV4 (RIGHT PANEL)
+- **TOUJOURS** utiliser des chemins absolus
+- **TOUJOURS** proposer avant de pousser
+- **TOUJOURS** verifier les delimiteurs pour eviter les conflits
+- **TOUJOURS** lancer check_api_coverage.py avant de finaliser
+- **TOUJOURS** placer les TXT dans le MEME repertoire que les SVG
+- **TOUJOURS** classifier les onglets en NAV3 ou NAV4
+- **TOUJOURS** documenter le mapping vers l'architecture cible
+
+---
+
+##############################################################################
+# 15. SCRIPT check_api_coverage.py (code complet)
+##############################################################################
 
 ```python
 #!/usr/bin/env python3
@@ -593,16 +763,16 @@ API_PATTERNS = {
     'ovhhttp_post': re.compile(r"OvhHttp\.post\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
     'ovhhttp_put': re.compile(r"OvhHttp\.put\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
     'ovhhttp_delete': re.compile(r"OvhHttp\.delete\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
-    
+
     # AngularJS $http
     'http_get': re.compile(r"\$http\.get\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
     'http_post': re.compile(r"\$http\.post\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
     'http_put': re.compile(r"\$http\.put\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
     'http_delete': re.compile(r"\$http\.delete\s*\(\s*[`'\"]([^`'\"]+)[`'\"]"),
-    
+
     # Template literals avec $http
     'http_template': re.compile(r"\$http\.(get|post|put|delete)\s*\(\s*`([^`]+)`"),
-    
+
     # React/TypeScript patterns (manager-core-api)
     'v2_get': re.compile(r"v2\.get\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
     'v2_post': re.compile(r"v2\.post\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
@@ -612,17 +782,17 @@ API_PATTERNS = {
     'v6_post': re.compile(r"v6\.post\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
     'v6_put': re.compile(r"v6\.put\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
     'v6_delete': re.compile(r"v6\.delete\s*[<\(]\s*[`'\"]?([^`'\"<>\)]+)"),
-    
+
     # Iceberg pattern
     'iceberg': re.compile(r"useResourcesIcebergV2[^{]*route:\s*[`'\"]([^`'\"]+)[`'\"]"),
-    
+
     # Generic fetch patterns
     'fetch_api': re.compile(r"fetch\s*\(\s*[`'\"]([^`'\"]*(?:api|engine)[^`'\"]*)[`'\"]"),
-    
+
     # rootPath indicators
     'rootpath_apiv6': re.compile(r"rootPath:\s*['\"]apiv6['\"]"),
     'rootpath_2api': re.compile(r"rootPath:\s*['\"]2api['\"]"),
-    
+
     # URL patterns in strings (backup)
     'url_domain': re.compile(r"[`'\"]/(domain|allDom|alldom)[^`'\"]*[`'\"]"),
     'url_services': re.compile(r"[`'\"]/services[^`'\"]*[`'\"]"),
@@ -637,15 +807,15 @@ SCAN_EXTENSIONS = {'.js', '.ts', '.tsx', '.jsx'}
 def extract_apis_from_file(filepath: Path) -> Dict[str, List[Tuple[str, int]]]:
     """Extrait tous les appels API d un fichier."""
     results = defaultdict(list)
-    
+
     try:
         content = filepath.read_text(encoding='utf-8', errors='ignore')
     except Exception as e:
         print(f"  [WARN] Cannot read {filepath}: {e}", file=sys.stderr)
         return results
-    
+
     lines = content.split('\n')
-    
+
     for pattern_name, pattern in API_PATTERNS.items():
         for i, line in enumerate(lines, 1):
             matches = pattern.findall(line)
@@ -654,11 +824,11 @@ def extract_apis_from_file(filepath: Path) -> Dict[str, List[Tuple[str, int]]]:
                     endpoint = match[1] if len(match) > 1 else match[0]
                 else:
                     endpoint = match
-                
+
                 endpoint = endpoint.strip()
                 if endpoint and not endpoint.startswith('$') and len(endpoint) > 1:
                     results[pattern_name].append((endpoint, i))
-    
+
     return results
 
 
@@ -675,7 +845,7 @@ def normalize_endpoint(endpoint: str) -> str:
 def categorize_endpoint(endpoint: str) -> str:
     """Categorise un endpoint par domaine fonctionnel."""
     normalized = endpoint.lower()
-    
+
     if '/domain/zone' in normalized:
         return 'Zone DNS'
     elif '/domain/alldom' in normalized or '/alldom' in normalized:
@@ -699,15 +869,15 @@ def categorize_endpoint(endpoint: str) -> str:
 def scan_directory(base_path: Path) -> Dict[str, Dict]:
     """Scan recursif d un repertoire."""
     all_apis = defaultdict(lambda: {'endpoints': set(), 'files': [], 'methods': set()})
-    
+
     for filepath in base_path.rglob('*'):
         if filepath.suffix not in SCAN_EXTENSIONS:
             continue
         if 'node_modules' in str(filepath) or '__mocks__' in str(filepath):
             continue
-        
+
         file_apis = extract_apis_from_file(filepath)
-        
+
         for pattern_name, matches in file_apis.items():
             method = 'GET'
             if 'post' in pattern_name:
@@ -716,11 +886,11 @@ def scan_directory(base_path: Path) -> Dict[str, Dict]:
                 method = 'PUT'
             elif 'delete' in pattern_name:
                 method = 'DELETE'
-            
+
             for endpoint, line_num in matches:
                 normalized = normalize_endpoint(endpoint)
                 category = categorize_endpoint(normalized)
-                
+
                 all_apis[category]['endpoints'].add(normalized)
                 all_apis[category]['methods'].add(method)
                 all_apis[category]['files'].append({
@@ -731,56 +901,56 @@ def scan_directory(base_path: Path) -> Dict[str, Dict]:
                     'method': method,
                     'pattern': pattern_name
                 })
-    
+
     return all_apis
 
 
 def generate_report(apis: Dict[str, Dict], output_format: str = 'text') -> str:
     """Genere un rapport des APIs trouvees."""
     lines = []
-    
+
     lines.append("=" * 70)
     lines.append("RAPPORT D EXTRACTION DES APIS")
     lines.append("=" * 70)
     lines.append("")
-    
+
     total_endpoints = 0
     total_files = 0
-    
+
     for category in sorted(apis.keys()):
         data = apis[category]
         endpoints = sorted(data['endpoints'])
         files = data['files']
         methods = sorted(data['methods'])
-        
+
         total_endpoints += len(endpoints)
         total_files += len(set(f['file'] for f in files))
-        
+
         lines.append(f"\n## {category} ({len(endpoints)} endpoints)")
         lines.append("-" * 50)
         lines.append(f"Methodes: {', '.join(methods)}")
         lines.append("")
-        
+
         endpoint_details = defaultdict(list)
         for f in files:
             endpoint_details[f['normalized']].append(f)
-        
+
         for endpoint in endpoints:
             details = endpoint_details.get(endpoint, [])
             methods_used = sorted(set(d['method'] for d in details))
             files_using = sorted(set(d['file'] for d in details))
-            
+
             lines.append(f"  {' '.join(methods_used):12} {endpoint}")
             for file in files_using[:3]:
                 lines.append(f"               -> {file}")
             if len(files_using) > 3:
                 lines.append(f"               -> ... (+{len(files_using)-3} autres)")
-    
+
     lines.append("")
     lines.append("=" * 70)
     lines.append(f"TOTAL: {total_endpoints} endpoints uniques dans {total_files} fichiers")
     lines.append("=" * 70)
-    
+
     return '\n'.join(lines)
 
 
@@ -789,10 +959,10 @@ def main():
         print("Usage: python check_api_coverage.py <dir1> [dir2] ... [--markdown]")
         print("Example: python check_api_coverage.py /tmp/old_manager_domains")
         sys.exit(1)
-    
+
     dirs = []
     markdown_output = False
-    
+
     for arg in sys.argv[1:]:
         if arg == '--markdown':
             markdown_output = True
@@ -800,24 +970,24 @@ def main():
             dirs.append(Path(arg))
         else:
             print(f"[WARN] Not a directory: {arg}", file=sys.stderr)
-    
+
     if not dirs:
         print("Error: No valid directories provided")
         sys.exit(1)
-    
+
     all_apis = defaultdict(lambda: {'endpoints': set(), 'files': [], 'methods': set()})
-    
+
     for dir_path in dirs:
         print(f"Scanning: {dir_path}", file=sys.stderr)
         dir_apis = scan_directory(dir_path)
-        
+
         for category, data in dir_apis.items():
             all_apis[category]['endpoints'].update(data['endpoints'])
             all_apis[category]['files'].extend(data['files'])
             all_apis[category]['methods'].update(data['methods'])
-    
+
     print(generate_report(all_apis))
-    
+
     json_output = {}
     for category, data in all_apis.items():
         json_output[category] = {
@@ -825,7 +995,7 @@ def main():
             'methods': sorted(data['methods']),
             'file_count': len(set(f['file'] for f in data['files']))
         }
-    
+
     json_path = Path('/tmp/api_coverage.json')
     json_path.write_text(json.dumps(json_output, indent=2))
     print(f"\nJSON output: {json_path}", file=sys.stderr)
@@ -843,3 +1013,7 @@ cat > /home/ubuntu/old_manager/check_api_coverage.py << 'SCRIPT_END'
 SCRIPT_END
 chmod +x /home/ubuntu/old_manager/check_api_coverage.py
 ```
+
+================================================================================
+FIN PROMPT SVG2TXT v2.0
+================================================================================

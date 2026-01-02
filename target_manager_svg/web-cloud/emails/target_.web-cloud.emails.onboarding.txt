@@ -1,61 +1,161 @@
-================================================================================
-TARGET SVG DOCUMENTATION
-================================================================================
-Fichier: target_.web-cloud.emails.onboarding.svg
-Route:   /web-cloud/emails (état: pas de service)
-Version: v1 (2025-12-30)
-================================================================================
+# Cahier des Charges : web-cloud/emails - Onboarding
 
-⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG           | Source API                              |
-|-----------------------|-----------------------------------------|
-| 2,99 €/mois           | Catalogue produits → prix Email Pro     |
-| 5,99 €/mois           | Catalogue produits → prix Exchange      |
-| 3,99 €/mois           | Catalogue produits → prix Zimbra        |
-| ab12345-ovh           | Session → nicHandle                     |
+## 1. VUE D'ENSEMBLE
 
-================================================================================
+**Type:** Page onboarding / empty state
+**Fonction:** Présentation des offres email pour nouveau client
+**Contexte:** Première visite sans service email actif
 
-# STRUCTURE PAGE
+## 2. NAVIGATION
 
-1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Web Cloud (Emails actif)
-3. CONTENT AREA (sans left panel, centré)
-   - Illustration email
-   - Titre + sous-titre
-   - 4 cartes offres: MX Plan, Email Pro, Exchange, Zimbra
-   - Boutons CTA: Commander un pack, Comparer les offres
-   - Bannière info MX Plan gratuit
-   - Guides pour démarrer
+### NAV1
+- Menu: Web Cloud (actif)
 
-# AFFICHAGE CONDITIONNEL
+### NAV2
+- Menu: Emails (actif)
 
-Cette page s'affiche UNIQUEMENT quand:
-- L'utilisateur n'a aucun service email actif
-- OU arrive via lien "Commander email"
+## 3. DIMENSIONS
 
-Sinon → redirection vers target_.web-cloud.emails.index.svg
+- Conteneur: 1200x740px, centré
+- Background: blanc avec border radius 12px
 
-# OFFRES PRÉSENTÉES
+## 4. CONTENU PRINCIPAL
 
-| Offre    | Badge       | Prix       | Quota | Features clés              |
-|----------|-------------|------------|-------|----------------------------|
-| MX Plan  | ⚪ Gris     | Gratuit    | 5 Go  | Basique, inclus domaine    |
-| Email Pro| 🔵 Bleu     | 2,99 €/m   | 10 Go | Alias, signature, déléga.  |
-| Exchange | 🟠 Orange   | 5,99 €/m   | 50 Go | Calendrier, MFA, Outlook   |
-| Zimbra   | 🟣 Violet   | 3,99 €/m   | 10 Go | Webmail avancé, collab     |
+### Illustration
+- Zone: 400x140px, background #EFF6FF, centré
+- Icône: ✉ (email, taille 72px, couleur #3B82F6)
 
-# INTERACTIONS
+### Titre
+- "Messagerie Email OVHcloud"
+- Font-size: 28px, font-weight 600
+- Centré
 
-- Clic carte offre → Met en surbrillance
-- Clic "Commander un pack" → Modal commander pack
-- Clic "Comparer les offres" → Page comparatif ou modal
-- Clic guide → Ouverture documentation externe
+### Sous-titre
+- Ligne 1: "Créez des adresses email professionnelles avec votre nom de domaine."
+- Ligne 2: "Choisissez l'offre adaptée à vos besoins : de la messagerie basique à Exchange."
+- Font-size: 14px, couleur #6B7280
+- Centré
 
-# API ENDPOINTS
+## 5. CARTES OFFRES (4 cartes)
 
-GET  /email/catalog                       → Catalogue offres + prix
-POST /email/licenses/packs                → Commander pack
-GET  /email/domains                       → Vérifier si services existants
+Layout: 4 cartes horizontales (260x220px chacune)
 
-================================================================================
+### MX Plan
+- Border: #E5E7EB
+- Avatar: double cercle gris
+- Titre: "MX Plan"
+- Sous-titre: "Inclus avec domaine"
+- Séparateur horizontal
+- Features:
+  - ✓ 5 Go / compte
+  - ✓ Webmail
+  - ✓ IMAP/POP/SMTP
+- Prix: "Gratuit" (vert #059669)
+
+### Email Pro
+- Border: #3B82F6 (bleu), 2px
+- Avatar: double cercle bleu
+- Titre: "Email Pro"
+- Sous-titre: "Professionnel"
+- Features:
+  - ✓ 10 Go / compte
+  - ✓ Alias illimités
+  - ✓ Signature, délégation
+- Prix: "2,99 EUR/mois" (bleu)
+
+### Exchange (Populaire)
+- Border: #F59E0B (orange), 2px
+- Badge: "Populaire" (pill orange en haut droite)
+- Avatar: double cercle orange
+- Titre: "Exchange"
+- Sous-titre: "Entreprise"
+- Features:
+  - ✓ 50 Go / compte
+  - ✓ Calendrier partagé, MFA
+  - ✓ Ressources, audit, Outlook
+- Prix: "5,99 EUR/mois" (orange)
+
+### Zimbra
+- Border: #E5E7EB
+- Avatar: double cercle violet
+- Titre: "Zimbra"
+- Sous-titre: "Collaboration"
+- Features:
+  - ✓ 10 Go / compte
+  - ✓ Webmail avancé
+  - ✓ Collaboration intégrée
+- Prix: "3,99 EUR/mois" (violet)
+
+## 6. BOUTONS CTA
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Commander un pack | btn-primary | 200x44px |
+| Comparer les offres | btn-outline | 200x44px |
+
+## 7. BANNIÈRE INFO
+
+- Background: #DBEAFE
+- Dimensions: 1040x50px
+- Texte: "Vous avez déjà un domaine OVHcloud ? Des boîtes MX Plan gratuites sont peut-être disponibles. Ajoutez votre domaine pour les activer."
+
+## 8. SECTION GUIDES
+
+### Titre
+- "Guides pour bien démarrer"
+- Font-size: 15px, font-weight 600
+
+### 3 liens guides (260x36px chacun)
+- Background: #F9FAFB, border #E5E7EB
+- Liens bleus
+
+| Guide |
+|-------|
+| Premiers pas avec votre messagerie |
+| Configurer Outlook / Mail |
+| Configurer sur mobile |
+
+## 9. APIS & ENDPOINTS
+
+```
+# Vérifier domaines avec MX Plan inclus
+GET /email/domain
+→ Liste des domaines avec email inclus
+
+# Obtenir catalogue prix
+GET /order/catalog/formatted/exchange
+GET /order/catalog/formatted/emailPro
+GET /order/catalog/formatted/zimbra
+→ Prix actuels des offres
+
+# Commander
+POST /order/cart
+POST /order/cart/{cartId}/exchange
+POST /order/cart/{cartId}/emailPro
+POST /order/cart/{cartId}/checkout
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| page_title | Messagerie Email OVHcloud |
+| subtitle_1 | Créez des adresses email professionnelles avec votre nom de domaine. |
+| subtitle_2 | Choisissez l'offre adaptée à vos besoins : de la messagerie basique à Exchange. |
+| mxplan_title | MX Plan |
+| mxplan_subtitle | Inclus avec domaine |
+| emailpro_title | Email Pro |
+| emailpro_subtitle | Professionnel |
+| exchange_title | Exchange |
+| exchange_subtitle | Entreprise |
+| zimbra_title | Zimbra |
+| zimbra_subtitle | Collaboration |
+| badge_popular | Populaire |
+| price_free | Gratuit |
+| btn_order | Commander un pack |
+| btn_compare | Comparer les offres |
+| banner_mxplan | Vous avez déjà un domaine OVHcloud ? Des boîtes MX Plan gratuites sont peut-être disponibles. Ajoutez votre domaine pour les activer. |
+| guides_title | Guides pour bien démarrer |
+| guide_start | Premiers pas avec votre messagerie |
+| guide_outlook | Configurer Outlook / Mail |
+| guide_mobile | Configurer sur mobile |

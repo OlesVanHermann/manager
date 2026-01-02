@@ -4,7 +4,43 @@ Générer 2 scripts bash pour créer des archives tar granulaires des managers (
 # Emplacement de ce prompt
 Ce fichier se trouve en local : /home/ubuntu/prompt_tar.txt
 
-# RÈGLES ABSOLUES (LIRE EN PREMIER)
+================================================================================
+# 0. TERMINOLOGIE OFFICIELLE NAV1-NAV4 (rappel)
+================================================================================
+
+Ce prompt utilise la même terminologie que les autres prompts du projet.
+
+| Niveau | Nom | Position | Couverture tar |
+|--------|-----|----------|----------------|
+| **NAV1** | Univers | Header bleu OVH | `{prefix}.{NAV1}.core.tar` |
+| **NAV2** | Produit | Sous-header blanc | `{prefix}.{NAV1}.{NAV2}.tar` |
+| **NAV3** | Groupement | LEFT PANEL (au-dessus recherche) | Inclus dans tar NAV2 |
+| **NAV4** | Fonction | RIGHT PANEL (tabs) | Inclus dans tar NAV2 |
+
+**Règle importante** : Chaque tar NAV2 contient TOUS les NAV3 (groupements) et NAV4 (fonctions) de ce produit.
+
+Exemple pour `new_manager.web-cloud.hosting.tar` :
+```
+src/pages/web-cloud/hosting/
+├── hosting.types.ts
+├── index.tsx
+├── styles.css
+├── general/                    # NAV3 Groupement
+│   ├── general/                # NAV4 Fonction
+│   ├── offer/                  # NAV4 Fonction
+│   └── modules/                # NAV4 Fonction
+├── sites/                      # NAV3 Groupement
+│   ├── multisite/              # NAV4 Fonction
+│   └── ssl/                    # NAV4 Fonction
+└── expert/                     # NAV3 Groupement
+    ├── ftp/                    # NAV4 Fonction
+    ├── database/               # NAV4 Fonction
+    └── ...
+```
+
+================================================================================
+# 1. RÈGLES ABSOLUES (LIRE EN PREMIER)
+================================================================================
 
 ## Règle 1 : Extraction stricte - JAMAIS inventer
 INTERDIT d'inventer ou déduire des chemins.
@@ -102,34 +138,59 @@ Si le résultat est vide -> NE PAS inclure, signaler comme absent.
 ### Gestion des chemins absents
 Si un chemin old_manager n'existe pas :
 - Créer quand même le tar (peut être vide ou avec ce qui existe)
-- Signaler dans le rapport : "⚠️ ABSENT dans old_manager"
+- Signaler dans le rapport : "ABSENT dans old_manager"
 - NE PAS chercher d'alternative, NE PAS proposer d'option
 
-# Entrées
+================================================================================
+# 2. ENTRÉES ET CHEMINS
+================================================================================
+
+## Entrées
 - Liste de fichiers new_manager (fichier joint)
 - Liste de fichiers old_manager (fichier joint)
 
-# Chemins réels
+## Chemins réels
 - new_manager = /home/ubuntu/aiapp/frontend (React/Vite)
 - old_manager = /home/ubuntu/manager/ (Angular monorepo avec packages/)
 
-# Nommage des tars (CRITIQUE)
-Format OBLIGATOIRE : {prefix}.{domaine}.tar
-- Séparateur entre prefix et domaine : . (POINT, pas underscore)
-- Séparateur entre NAV1 et NAV2 : . (POINT)
-- JAMAIS de _ (underscore) après le prefix
+================================================================================
+# 3. NOMMAGE DES TARS (CRITIQUE)
+================================================================================
 
-Exemples CORRECTS : new_manager.core.tar, new_manager.home.billing.tar
-Exemples INCORRECTS : new_manager_core.tar, new_manager_home.billing.tar
+## Format des tars
+Format OBLIGATOIRE : `{prefix}.{NAV1}.{NAV2}.tar`
+- Séparateur entre prefix et domaine : `.` (POINT, pas underscore)
+- Séparateur entre NAV1 et NAV2 : `.` (POINT)
+- JAMAIS de `_` (underscore) après le prefix
 
-# Structure des tars
+Exemples CORRECTS :
+- `new_manager.core.tar`
+- `new_manager.web-cloud.core.tar`
+- `new_manager.web-cloud.hosting.tar`
+- `new_manager.web-cloud.voip.tar`
+
+Exemples INCORRECTS :
+- `new_manager_core.tar` (underscore au lieu de point)
+- `new_manager.web-cloud.telecom.voip.tar` (niveau intermédiaire inutile)
+
+## Distinction avec les fichiers SVG target
+Les fichiers SVG target utilisent un format DIFFÉRENT :
+- Format SVG : `target_.{NAV1}.{NAV2}.{NAV3}.{NAV4}.svg`
+- Underscore après "target", puis points entre niveaux
+- Exemple : `target_.web-cloud.voip.line.general.svg`
+
+Les tars restent au niveau NAV2, les SVG descendent jusqu'à NAV4.
+
+================================================================================
+# 4. STRUCTURE DES TARS
+================================================================================
 
 ## Niveaux de granularité
-1. {prefix}.core.tar : Config globale + design-system + lib + services + components + contexts + types + hooks + i18n + styles + scripts
-2. {prefix}.locales.tar : Toutes les traductions (public/locales/)
-3. {prefix}.{NAV1}.core.tar : Structure de base du domaine NAV1 (index, styles, shared, components directs)
-4. {prefix}.{NAV1}.{NAV2}.tar : Sous-domaine complet - UN TAR PAR NAV2 (même XS ou S)
-5. {prefix}.all.tar : Tous les fichiers (refactoring global)
+1. `{prefix}.core.tar` : Config globale + design-system + lib + services + components + contexts + types + hooks + i18n + styles + scripts
+2. `{prefix}.locales.tar` : Toutes les traductions (public/locales/)
+3. `{prefix}.{NAV1}.core.tar` : Structure de base du domaine NAV1 (index, styles, shared, components directs)
+4. `{prefix}.{NAV1}.{NAV2}.tar` : Sous-domaine complet - UN TAR PAR NAV2 (même XS ou S)
+5. `{prefix}.all.tar` : Tous les fichiers (refactoring global)
 
 ## Découverte dynamique des NAV1/NAV2
 Le LLM DOIT analyser les listes de fichiers pour :
@@ -156,7 +217,12 @@ NE PAS inclure les sous-dossiers NAV2 (billing/, account/, etc.)
 Inclure uniquement le dossier NAV2 complet : ./src/pages/{NAV1}/{NAV2}/
 Le shared du parent est dans le tar NAV1.core.
 
-# Correspondance new <-> old (CRITIQUE)
+**Rappel** : Chaque tar NAV2 contient automatiquement tous les NAV3 (groupements) et NAV4 (fonctions) car ce sont des sous-dossiers.
+
+================================================================================
+# 5. CORRESPONDANCE NEW <-> OLD (CRITIQUE)
+================================================================================
+
 old_manager DOIT avoir un tar pour CHAQUE tar de new_manager.
 
 ## Mapping par FONCTION (pas par nom)
@@ -170,7 +236,9 @@ Exemple INCORRECT :
 - Inclure `web-domains` entier dans alldom.tar (trop large)
 - Proposer plusieurs options de mapping (interdit)
 
-## Mappings de référence vérifiés
+================================================================================
+# 6. MAPPINGS DE RÉFÉRENCE VÉRIFIÉS
+================================================================================
 
 ### core (new_manager)
 ```
@@ -260,7 +328,7 @@ Exemple INCORRECT :
 |------|-------------|-------------|
 | core | ./src/pages/iam/index.tsx, ./src/pages/iam/styles.css, ./src/pages/iam/utils.tsx, ./src/pages/iam/tabs/, ./src/pages/iam/components/ | ./packages/manager/apps/iam, ./packages/manager/apps/identity-access-management, ./packages/manager/modules/iam |
 | dbaas-logs | ./src/pages/iam/dbaas-logs/ | ./packages/manager/apps/dbaas-logs, ./packages/manager/modules/dbaas-logs |
-| hsm | ./src/pages/iam/hsm/ | ⚠️ ABSENT dans old_manager |
+| hsm | ./src/pages/iam/hsm/ | ABSENT dans old_manager |
 | logs | ./src/pages/iam/logs/ | ./packages/manager/modules/logs-to-customer, ./packages/manager/modules/log-to-customer |
 | metrics | ./src/pages/iam/metrics/ | ./packages/manager/apps/metrics, ./packages/manager/modules/metrics |
 | okms | ./src/pages/iam/okms/ | ./packages/manager/apps/okms |
@@ -314,29 +382,29 @@ Exemple INCORRECT :
 | project | ./src/pages/public-cloud/project/ | ./packages/manager/apps/pci, ./packages/manager/apps/public-cloud, ./packages/manager/apps/pci-private-network, ./packages/manager/apps/pci-public-ip, ./packages/manager/apps/pci-gateway, ./packages/manager/apps/pci-workflow, ./packages/manager/apps/pci-dataplatform, ./packages/manager/apps/pci-savings-plan |
 | registry | ./src/pages/public-cloud/registry/ | ./packages/manager/apps/pci-private-registry |
 
-### web-cloud
+### web-cloud (STRUCTURE CORRIGÉE)
+
+**IMPORTANT** : Les NAV2 de web-cloud sont des produits DIRECTS, pas des sous-niveaux.
+Selon la terminologie officielle :
+- NAV2 = Produit affiché dans le sous-header blanc
+- Domaines, Hébergement, Emails, VoIP, Accès sont des NAV2 distincts
+
 | NAV2 | new_manager | old_manager |
 |------|-------------|-------------|
 | core | ./src/pages/web-cloud/index.tsx, ./src/pages/web-cloud/styles.css, ./src/pages/web-cloud/shared/ | ./packages/manager/apps/web, ./packages/manager/modules/web-universe-components |
-| access | ./src/pages/web-cloud/access/index.tsx | ./packages/manager/apps/telecom |
-| access.overthebox | ./src/pages/web-cloud/access/overthebox/ | ./packages/manager/apps/overthebox, ./packages/manager/modules/overthebox |
-| access.pack-xdsl | ./src/pages/web-cloud/access/pack-xdsl/ | ./packages/manager/apps/telecom |
 | alldom | ./src/pages/web-cloud/alldom/ | ./packages/manager/apps/web-domains/src/alldoms |
 | domains | ./src/pages/web-cloud/domains/ | ./packages/manager/apps/web/client/app/domain, ./packages/manager/apps/web/client/app/domains, ./packages/manager/apps/web/client/app/domain-operation, ./packages/manager/apps/web/client/app/dns-zone, ./packages/manager/apps/web-ongoing-operations, ./packages/manager/modules/domain, ./packages/manager/modules/dns-zone |
-| emails | ./src/pages/web-cloud/emails/index.tsx | ./packages/manager/apps/web |
-| emails.email-domain | ./src/pages/web-cloud/emails/email-domain/ | ./packages/manager/apps/email-domain, ./packages/manager/modules/email-domain |
-| emails.email-pro | ./src/pages/web-cloud/emails/email-pro/ | ./packages/manager/apps/email-pro, ./packages/manager/modules/emailpro |
-| emails.exchange | ./src/pages/web-cloud/emails/exchange/ | ./packages/manager/apps/exchange, ./packages/manager/modules/exchange |
-| emails.office | ./src/pages/web-cloud/emails/office/ | ./packages/manager/apps/web-office |
-| emails.zimbra | ./src/pages/web-cloud/emails/zimbra/ | ./packages/manager/apps/zimbra |
-| hebergement | ./src/pages/web-cloud/hebergement/index.tsx | ./packages/manager/apps/web-hosting |
-| hebergement.hosting | ./src/pages/web-cloud/hebergement/hosting/ | ./packages/manager/apps/web-hosting, ./packages/manager/apps/web/client/app/hosting |
-| hebergement.private-database | ./src/pages/web-cloud/hebergement/private-database/ | ./packages/manager/apps/web/client/app/private-database |
-| telecom | ./src/pages/web-cloud/telecom/index.tsx | ./packages/manager/apps/telecom, ./packages/manager/apps/telecom-dashboard, ./packages/manager/modules/telecom-dashboard, ./packages/manager/modules/telecom-styles, ./packages/manager/modules/telecom-universe-components, ./packages/manager/modules/telecom-task, ./packages/manager/apps/telecom-task |
-| telecom.carrier-sip | ./src/pages/web-cloud/telecom/carrier-sip/ | ./packages/manager/apps/carrier-sip, ./packages/manager/modules/carrier-sip |
-| telecom.fax | ./src/pages/web-cloud/telecom/fax/ | ./packages/manager/apps/freefax, ./packages/manager/modules/freefax |
-| telecom.sms | ./src/pages/web-cloud/telecom/sms/ | ./packages/manager/apps/sms, ./packages/manager/modules/sms |
-| telecom.voip | ./src/pages/web-cloud/telecom/voip/ | ./packages/manager/apps/telecom |
+| hosting | ./src/pages/web-cloud/hosting/ | ./packages/manager/apps/web-hosting, ./packages/manager/apps/web/client/app/hosting, ./packages/manager/modules/hosting |
+| wordpress | ./src/pages/web-cloud/wordpress/ | ./packages/manager/apps/web/client/app/hosting |
+| private-database | ./src/pages/web-cloud/private-database/ | ./packages/manager/apps/web/client/app/private-database |
+| emails | ./src/pages/web-cloud/emails/ | ./packages/manager/apps/web, ./packages/manager/apps/email-domain, ./packages/manager/modules/email-domain, ./packages/manager/apps/email-pro, ./packages/manager/modules/emailpro, ./packages/manager/apps/exchange, ./packages/manager/modules/exchange, ./packages/manager/apps/web-office, ./packages/manager/apps/zimbra |
+| voip | ./src/pages/web-cloud/voip/ | ./packages/manager/apps/telecom, ./packages/manager/modules/telecom-dashboard, ./packages/manager/modules/telecom-universe-components |
+| access | ./src/pages/web-cloud/access/ | ./packages/manager/apps/telecom, ./packages/manager/apps/overthebox, ./packages/manager/modules/overthebox |
+| carrier-sip | ./src/pages/web-cloud/carrier-sip/ | ./packages/manager/apps/carrier-sip, ./packages/manager/modules/carrier-sip |
+| fax | ./src/pages/web-cloud/fax/ | ./packages/manager/apps/freefax, ./packages/manager/modules/freefax |
+| sms | ./src/pages/web-cloud/sms/ | ./packages/manager/apps/sms, ./packages/manager/modules/sms |
+
+**Note** : Si la structure réelle diffère (ex: voip sous telecom/), ajuster selon les fichiers existants dans new_manager_files.txt.
 
 ### Autres tars spéciaux
 | Tar | new_manager | old_manager |
@@ -359,7 +427,7 @@ Ces modules contiennent les définitions des vrais appels REST ($http, $resource
 | ip | ./packages/manager/modules/ip |
 | dedicated | ./packages/manager/modules/dedicated-server, ./packages/manager/modules/server |
 | pci | ./packages/manager/modules/pci, ./packages/manager/modules/manager-pci-common |
-| telecom | ./packages/manager/modules/telecom-dashboard, ./packages/manager/modules/telecom-universe-components |
+| telecom/voip | ./packages/manager/modules/telecom-dashboard, ./packages/manager/modules/telecom-universe-components |
 
 **AVANT de générer chaque tar old_manager, VÉRIFIER :**
 ```bash
@@ -372,13 +440,15 @@ grep -E "^./packages/manager/modules/dns-zone($|/)" old_manager_files.txt
 ```
 ./packages/manager/modules/domain/
 ├── src/
-│   ├── domain.service.js      ← $http.get('/domain/{serviceName}')
-│   ├── domain.resource.js     ← $resource('/domain/:serviceName')
-│   ├── zone.service.js        ← Endpoints zone DNS
-│   └── index.js               ← Export du module Angular
+│   ├── domain.service.js      <- $http.get('/domain/{serviceName}')
+│   ├── domain.resource.js     <- $resource('/domain/:serviceName')
+│   ├── zone.service.js        <- Endpoints zone DNS
+│   └── index.js               <- Export du module Angular
 ```
 
-# Scripts à générer
+================================================================================
+# 7. SCRIPTS À GÉNÉRER
+================================================================================
 
 ## Script 1 : /home/ubuntu/new_generate_manager_tars.sh
 - Travaille dans /home/ubuntu/aiapp/frontend
@@ -393,20 +463,25 @@ grep -E "^./packages/manager/modules/dns-zone($|/)" old_manager_files.txt
 - DOIT inclure les exclusions (voir ci-dessous)
 
 CRITIQUE - Isolation des rm :
-- new_generate_manager_tars.sh : rm -f /home/ubuntu/new_manager.*.tar
-- old_generate_manager_tars.sh : rm -f /home/ubuntu/old_manager.*.tar
-- INTERDIT de faire rm -f /home/ubuntu/*manager*.tar ou similaire
+- new_generate_manager_tars.sh : `rm -f /home/ubuntu/new_manager.*.tar`
+- old_generate_manager_tars.sh : `rm -f /home/ubuntu/old_manager.*.tar`
+- INTERDIT de faire `rm -f /home/ubuntu/*manager*.tar` ou similaire
 
-# Options tar
-- Utiliser tar -cf (création simple)
-- NE PAS utiliser -v (verbose pollue la sortie)
-- NE PAS utiliser 2>/dev/null (masque les erreurs)
+## Options tar
+- Utiliser `tar -cf` (création simple)
+- NE PAS utiliser `-v` (verbose pollue la sortie)
+- NE PAS utiliser `2>/dev/null` (masque les erreurs)
 
-# Exclusions OBLIGATOIRES pour old_manager
+## Exclusions OBLIGATOIRES pour old_manager
 Chaque commande tar dans old_generate_manager_tars.sh DOIT inclure ces exclusions :
+```
 --exclude='node_modules' --exclude='.git' --exclude='dist' --exclude='coverage' --exclude='*.lock' --exclude='yarn.lock' --exclude='package-lock.json' --exclude='*.map' --exclude='.cache'
+```
 
-# Liste des INTERDIT
+================================================================================
+# 8. LISTE DES INTERDIT
+================================================================================
+
 - Wildcards *.ts dans tar (non interprétés)
 - Option -v dans tar
 - 2>/dev/null qui masque les erreurs
@@ -425,7 +500,9 @@ Chaque commande tar dans old_generate_manager_tars.sh DOIT inclure ces exclusion
 - Sur-compliquer les mappings simples
 - **OUBLIER LES MODULES DE SERVICES** : un tar old_manager avec uniquement des apps/ sans les modules/ correspondants est INCOMPLET (manque les vrais endpoints API)
 
-# Tâches
+================================================================================
+# 9. TÂCHES
+================================================================================
 
 ## 1. Analyse de structure
 Depuis les listes fournies :
@@ -462,7 +539,9 @@ Après le "GO" :
 ## 7. Vérification d'exhaustivité (OBLIGATOIRE après GO)
 Après génération des scripts, TOUJOURS exécuter le script de vérification Python.
 
-# Format de génération (cp+tee)
+================================================================================
+# 10. FORMAT DE GÉNÉRATION (cp+tee)
+================================================================================
 
 Pattern OBLIGATOIRE pour les scripts :
 ```
@@ -527,26 +606,6 @@ PATCH_EOF
 - Utiliser des chemins absolus /home/ubuntu (pas ~)
 - **ATTENTION aux délimiteurs doubles** : si le contenu du patch contient `EOF`, utiliser `PATCH_EOF` ou `PATCH_END`
 
-**Exemple MAUVAIS (pas de contexte) :**
-```
-@@
--old
-+new
-EOF
-```
-
-**Exemple BON (avec contexte) :**
-```
-@@
- local TAR_DIR="/home/ubuntu"
--rm -f $TAR_DIR/*.tar
-+rm -f $TAR_DIR/new_manager.*.tar
- cd /home/ubuntu/aiapp/frontend
-EOF
-```
-
-```
-
 ## Choix cp+tee vs super-patch
 
 | Situation | Outil |
@@ -557,7 +616,9 @@ EOF
 | Ajout de section | super-patch |
 | Correction ponctuelle | super-patch |
 
-# Vérification d'exhaustivité
+================================================================================
+# 11. VÉRIFICATION D'EXHAUSTIVITÉ
+================================================================================
 
 ## Principe
 Après génération des scripts tar, un script Python vérifie que 100% des fichiers sont couverts.
@@ -588,12 +649,12 @@ def parse_file_list(filepath):
 def parse_tar_script(filepath):
     """Extrait les chemins des commandes tar du script."""
     tar_contents = {}
-    
+
     with open(filepath, 'r') as f:
         content = f.read()
-    
+
     lines = content.replace('\\\n', ' ').split('\n')
-    
+
     for line in lines:
         line = line.strip()
         if line.startswith('tar -cf'):
@@ -601,15 +662,15 @@ def parse_tar_script(filepath):
             if match:
                 tar_path = match.group(1)
                 tar_name = Path(tar_path).name
-                
+
                 paths_part = re.sub(r'--exclude=\'[^\']+\'', '', line)
                 paths_part = re.sub(r'\$EXCLUDES', '', paths_part)
                 paths_part = re.sub(r'tar -cf\s+/[^\s]+\.tar', '', paths_part)
-                
+
                 paths = [p.strip() for p in paths_part.split() if p.strip().startswith('./')]
-                
+
                 tar_contents[tar_name] = paths
-    
+
     return tar_contents
 
 def expand_directories(paths, all_files):
@@ -635,57 +696,57 @@ def main():
     if len(sys.argv) < 3:
         print("Usage: python3 verify_tar_coverage.py <files_list.txt> <generate_script.sh> [--excludes node_modules,dist,.git]")
         sys.exit(1)
-    
+
     files_list = sys.argv[1]
     script_path = sys.argv[2]
-    
+
     excludes = ['node_modules', '.git', 'dist', 'coverage', '.cache', 'package-lock.json', 'yarn.lock']
-    
+
     for i, arg in enumerate(sys.argv):
         if arg == '--excludes' and i + 1 < len(sys.argv):
             excludes = sys.argv[i + 1].split(',')
-    
+
     print(f"=== Vérification de couverture ===")
     print(f"Liste fichiers : {files_list}")
     print(f"Script tar     : {script_path}")
     print(f"Exclusions     : {excludes}")
     print()
-    
+
     all_files = parse_file_list(files_list)
     print(f"Fichiers totaux dans la liste : {len(all_files)}")
-    
+
     filtered_files = {f for f in all_files if not should_exclude(f, excludes)}
     print(f"Fichiers après exclusions     : {len(filtered_files)}")
-    
+
     only_files = {f for f in filtered_files if not any(
         other.startswith(f + '/') for other in filtered_files if other != f
     )}
     print(f"Fichiers (feuilles uniquement): {len(only_files)}")
     print()
-    
+
     tar_contents = parse_tar_script(script_path)
     print(f"Tars trouvés : {len(tar_contents)}")
     for tar_name, paths in sorted(tar_contents.items()):
         print(f"  - {tar_name}: {len(paths)} chemins")
     print()
-    
+
     all_covered = set()
     coverage_by_tar = {}
-    
+
     for tar_name, paths in tar_contents.items():
         covered = expand_directories(paths, only_files)
         coverage_by_tar[tar_name] = covered
         all_covered.update(covered)
-    
+
     orphans = only_files - all_covered
-    
+
     print(f"=== RAPPORT DE COUVERTURE ===")
     print(f"Fichiers couverts   : {len(all_covered)} / {len(only_files)}")
     if only_files:
         print(f"Couverture          : {100 * len(all_covered) / len(only_files):.1f}%")
     print(f"Fichiers orphelins  : {len(orphans)}")
     print()
-    
+
     if orphans:
         print("=== FICHIERS ORPHELINS (non couverts) ===")
         for f in sorted(orphans)[:100]:
@@ -693,7 +754,7 @@ def main():
         if len(orphans) > 100:
             print(f"  ... et {len(orphans) - 100} autres")
         print()
-        
+
         print("=== SUGGESTION ===")
         orphan_dirs = set()
         for f in orphans:
@@ -705,8 +766,8 @@ def main():
             count = sum(1 for f in orphans if f.startswith(d))
             print(f"  {d} ({count} fichiers)")
     else:
-        print("✅ COUVERTURE 100% - Aucun fichier orphelin")
-    
+        print("COUVERTURE 100% - Aucun fichier orphelin")
+
     sys.exit(0 if not orphans else 1)
 
 if __name__ == '__main__':
@@ -739,7 +800,9 @@ python3 /home/ubuntu/verify_tar_coverage.py \
 3. Modifier le script de génération
 4. Relancer la vérification
 
-# Sortie attendue
+================================================================================
+# 12. SORTIE ATTENDUE
+================================================================================
 
 1. Tableau NAV1/NAV2 de new_manager avec comptage fichiers
 2. Tableau mapping new -> old avec vérification grep (OBLIGATOIRE)
@@ -753,11 +816,13 @@ python3 /home/ubuntu/verify_tar_coverage.py \
 10. (après GO) Exécution du script de vérification Python
 11. (après GO) Confirmation couverture 100% ou liste des ajustements
 
-# Checklist finale avant scripts
+================================================================================
+# 13. CHECKLIST FINALE AVANT SCRIPTS
+================================================================================
 
 Avant de générer, vérifier :
 - [ ] Tous les chemins existent dans les listes fournies (vérifiés par grep)
-- [ ] Format des noms : {prefix}.{domaine}.tar avec POINT (pas underscore)
+- [ ] Format des noms : {prefix}.{NAV1}.{NAV2}.tar avec POINT (pas underscore)
 - [ ] Exclusions présentes pour old_manager
 - [ ] Utilisation de dossiers plutôt que fichiers individuels
 - [ ] Shared du domaine parent inclus dans les tars NAV1.core
@@ -772,3 +837,26 @@ Avant de générer, vérifier :
 - [ ] Script de vérification Python exécuté après génération
 - [ ] **SERVICES ANGULAR INCLUS** : chaque tar old_manager contient les modules de services correspondants (pas juste les apps/controllers)
 - [ ] **VRAIS ENDPOINTS VÉRIFIÉS** : les modules dans ./packages/manager/modules/{domain}/ sont inclus pour accéder aux fichiers *.service.js, *.resource.js
+
+================================================================================
+# 14. RÉFÉRENCES CROISÉES
+================================================================================
+
+Ce prompt est utilisé en complément de :
+
+| Fichier | Contenu | Lien avec prompt_tar.txt |
+|---------|---------|--------------------------|
+| `prompt_target.txt` | Design system SVG (NAV1-NAV4) | Structure des écrans cibles |
+| `prompt_split.txt` | Architecture React/TypeScript | Structure des fichiers dans les tars NAV2 |
+| `prompt_target_sidecar_left.txt` | LEFT PANEL (NAV3 selector) | Contenu des dossiers NAV3 |
+| `prompt_split_layout_method.txt` | CSS layout cohérent | Structure CSS dans les tars |
+| `CLAUDE.md` | Instructions générales | Terminologie NAV1-NAV4 |
+
+**Cohérence importante** :
+- Les tars NAV2 contiennent la structure définie dans `prompt_split.txt`
+- Chaque tar NAV2 inclut tous les NAV3 (groupements) et NAV4 (fonctions)
+- Les fichiers SVG générés par `prompt_target.txt` suivent la structure des tars
+
+================================================================================
+FIN PROMPT TAR v2.0 (2026-01-02)
+================================================================================

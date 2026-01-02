@@ -2,86 +2,57 @@
 TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.hosting.expert.clouddb.svg
-Route:   /web-cloud/hebergement/hosting/{serviceName}/clouddb
-Version: v1 (2025-12-31)
+Route:   /web-cloud/hosting/{serviceName}/expert/clouddb
+Version: v1 (2026-01-02)
 ================================================================================
 
-⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG                        | Source API                                    |
-|------------------------------------|-----------------------------------------------|
-| clouddb-abc123.hosting.ovh.net     | GET /hosting/privateDatabase → serviceName    |
-| MySQL / PostgreSQL / MariaDB       | GET /hosting/privateDatabase/{sn} → type      |
-| 8.0 / 15 / 10.11                   | GET /hosting/privateDatabase/{sn} → version   |
-| 2 Go / 4 Go / 1 Go                 | GET /hosting/privateDatabase/{sn} → ram       |
-| 10 Go / 50 Go                      | GET /hosting/privateDatabase/{sn} → quota*    |
-| Actif / Maintenance                | GET /hosting/privateDatabase/{sn} → state     |
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| monsite.example.com      | GET /hosting/web → serviceName                   |
+| clouddb-abc123.ovh.net   | GET /hosting/privateDatabase → serviceName       |
+| MySQL 8.0                | GET /hosting/privateDatabase/{sn} → type+version |
+| 35123                    | GET /hosting/privateDatabase/{sn} → port         |
+| 512 Mo                   | GET /hosting/privateDatabase/{sn} → ram          |
+| prod_database            | GET /hosting/privateDatabase/{sn}/database → name|
+| 1.2 Go                   | GET /hosting/privateDatabase/{sn}/database/{n} → quotaUsed |
+| dbuser_prod              | GET /hosting/privateDatabase/{sn}/user → user    |
+
 ================================================================================
 
-# STRUCTURE PAGE
+STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Hébergement actif
-3. LEFT PANEL - Liste hébergements
-4. RIGHT PANEL
-   - Header: Nom service
-   - NAV3: 16 tabs (CloudDb actif)
-   - TITRE + BOUTON "Commander CloudDb"
-   - BANDEAU INFO: Présentation CloudDb
-   - TABLE: Liste des CloudDb liées
-   - BLOC AVANTAGES: 3 cartes
+2. NAV2 - Section (Hebergement actif)
+3. LEFT PANEL (280px)
+   - NAV3 Groupement: General Sites Offre [Expert]
+   - Recherche + Liste services
+4. RIGHT PANEL (1096px)
+   - Header: Titre service
+   - NAV4: General Boost Indy Emails Variables OvhConfig Runtimes Cron Taches [CloudDb]
+   - Contenu:
+     - Banniere info CloudDb
+     - Toolbar: Refresh, + Commander CloudDb
+     - Bloc CloudDb associe (serveur, type, port, RAM, statut)
+     - Actions: Statistiques, Configuration, Gerer les BDD
+     - Bloc Bases de donnees: Table + jauge espace
 
-# BOUTON ACTION HEADER
-| Bouton              | Action                              |
-|---------------------|-------------------------------------|
-| + Commander CloudDb | Modal/Page commande nouvelle CloudDb|
+INTERACTIONS
+- Bouton + Commander CloudDb -> Tunnel vers order CloudDb
+- Bouton Statistiques -> Page statistiques CloudDb
+- Bouton Configuration -> Modal configuration serveur
+- Bouton Gerer les BDD -> Liste complete des bases
+- Clic ✎ -> Modal modification base
+- Clic 📥 -> Telecharger dump
+- Clic × -> Modal confirmation suppression
 
-# TABLE CLOUDDB
-| Colonne      | Largeur | Contenu                          |
-|--------------|---------|----------------------------------|
-| Nom service  | 200px   | Nom complet du CloudDb           |
-| Moteur       | 130px   | Badge MySQL/PostgreSQL/MariaDB   |
-| Version      | 100px   | Numéro de version                |
-| RAM          | 100px   | RAM allouée (Go)                 |
-| Stockage     | 130px   | Utilisé / Total                  |
-| Statut       | 120px   | Badge état                       |
-| Actions      | 130px   | Boutons Gérer/Stats              |
-
-# BADGES MOTEUR
-| Moteur     | Couleur fond | Couleur texte |
-|------------|--------------|---------------|
-| MySQL      | #EDE9FE      | #7C3AED       |
-| PostgreSQL | #DBEAFE      | #1E40AF       |
-| MariaDB    | #FEE2E2      | #991B1B       |
-
-# BADGES STATUT
-| État        | Couleur fond | Couleur texte |
-|-------------|--------------|---------------|
-| Actif       | #DEF7EC      | #03543F       |
-| Maintenance | #FEF3C7      | #D97706       |
-| Arrêté      | #FEE2E2      | #991B1B       |
-
-# BLOC AVANTAGES (3 cartes)
-| Carte                    | Icône | Description                        |
-|--------------------------|-------|------------------------------------|
-| Performances dédiées     | 🚀    | RAM/CPU garantis                   |
-| Sauvegardes automatiques | 💾    | Backup quotidien 30j               |
-| Sécurité renforcée       | 🔒    | SSL, whitelist IP, isolation       |
-
-# INTERACTIONS
-- Clic "Commander CloudDb" → Modal/Page commande
-- Clic "Gérer" → Page détails CloudDb
-- Clic "Stats" → Page statistiques CloudDb
-
-# API ENDPOINTS
-GET /hosting/privateDatabase                    - Liste CloudDb du compte
-GET /hosting/privateDatabase/{sn}               - Détails CloudDb
-GET /hosting/privateDatabase/{sn}/database      - Bases de la CloudDb
-GET /hosting/privateDatabase/{sn}/user          - Utilisateurs
-GET /hosting/privateDatabase/{sn}/whitelist     - IP autorisées
-POST /hosting/privateDatabase                   - Commander CloudDb
-
-# NOTE MIGRATION
-L'ancien chemin /web-cloud/private-database est intégré ici comme NAV4
-dans le contexte d'un hébergement. Les CloudDb "standalone" restent
-accessibles via leur propre section.
+API ENDPOINTS
+GET /hosting/web/{sn}                                  # Details hebergement
+GET /hosting/privateDatabase                           # Liste CloudDb
+GET /hosting/privateDatabase/{sn}                      # Details serveur
+GET /hosting/privateDatabase/{sn}/database             # Liste bases
+GET /hosting/privateDatabase/{sn}/database/{name}      # Details base
+GET /hosting/privateDatabase/{sn}/user                 # Liste utilisateurs
+POST /hosting/privateDatabase/{sn}/database            # Creer base
+DELETE /hosting/privateDatabase/{sn}/database/{name}   # Supprimer base
 
 ================================================================================

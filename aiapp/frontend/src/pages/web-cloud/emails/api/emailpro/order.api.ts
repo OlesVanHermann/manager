@@ -3,7 +3,7 @@
 // Endpoints: /order/email/pro/{service}/*
 // ============================================================
 
-import { apiFetch } from "../../../../../services/api";
+import { ovhGet, ovhPost } from "../../../../../services/api";
 
 const BASE = "/order/email/pro";
 
@@ -40,7 +40,7 @@ export interface Order {
  * Récupérer les durées disponibles pour commander des comptes
  */
 export async function getAvailableDurations(serviceId: string): Promise<string[]> {
-  return apiFetch<string[]>(`${BASE}/${serviceId}/account`);
+  return ovhGet<string[]>(`${BASE}/${serviceId}/account`);
 }
 
 /**
@@ -53,7 +53,7 @@ export async function getAccountOptions(
 ): Promise<{
   number: number[];
 }> {
-  return apiFetch(`${BASE}/${serviceId}/account/${duration}`);
+  return ovhGet(`${BASE}/${serviceId}/account/${duration}`);
 }
 
 /**
@@ -67,8 +67,5 @@ export async function orderAccounts(
     number: number;
   }
 ): Promise<Order> {
-  return apiFetch<Order>(`${BASE}/${serviceId}/account/${duration}`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  return ovhPost<Order>(`${BASE}/${serviceId}/account/${duration}`, data);
 }

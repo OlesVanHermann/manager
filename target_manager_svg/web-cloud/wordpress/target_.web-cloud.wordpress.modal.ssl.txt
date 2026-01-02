@@ -1,57 +1,55 @@
 ================================================================================
 TARGET SVG DOCUMENTATION
 ================================================================================
-Fichier: target_.web-cloud.wordpress.modal-ssl.svg
-Route:   /web-cloud/wordpress/{serviceName}/domains/{domain}/ssl (modal)
-Version: v1 (2025-12-30)
+Fichier: target_.web-cloud.wordpress.modal.ssl.svg
+Route:   /web-cloud/wordpress/{serviceName} (modal)
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| monblog.com              | route param domain                            |
-| Let's Encrypt (selected) | user input → POST body.type                   |
-| Oui (selected)           | user input → POST body.forceHttps             |
+| Exemple SVG                   | Source API                                    |
+|-------------------------------|-----------------------------------------------|
+| {nicHandle}                   | Session user                                  |
+| monsite.cluster.ovh.net       | GET /hosting/wordpress/{id}/ssl → domain      |
+| 28/03/2026                    | GET /hosting/wordpress/{id}/ssl → expiresAt   |
+| Forcer HTTPS                  | GET /hosting/wordpress/{id}/ssl → forceHttps  |
+
 ================================================================================
 
-STRUCTURE MODAL
-1. HEADER - Titre "Configurer SSL pour {domain}" + bouton fermer (x)
-2. FORMULAIRE:
-   - Certificat SSL: 2 radio buttons
-     * Let's Encrypt (gratuit, renouvellement auto) - defaut
-     * Certificat personnalise (import)
-   - Forcer HTTPS: 2 radio buttons
-     * Oui (recommande) - redirection HTTP → HTTPS - defaut
-     * Non - autoriser HTTP et HTTPS
-3. BANNIERE INFO - Informations sur le processus
-4. FOOTER - Boutons Annuler + Activer SSL
+# STRUCTURE MODAL
+- Overlay semi-transparent
+- Modal centree 450x380
+- Header: Titre + bouton fermer
+- Banniere succes (verte): Statut certificat
+- Champs:
+  - Domaine (readonly, fond gris)
+  - Date expiration
+  - Checkbox Forcer HTTPS
+- Footer: Regenerer + Enregistrer
 
-TYPES CERTIFICAT
-| Type                 | Prix    | Renouvellement | Details                |
-|----------------------|---------|----------------|------------------------|
-| Let's Encrypt        | Gratuit | Automatique    | Validation domaine     |
-| Certificat perso     | -       | Manuel         | Import CRT + KEY + CA  |
+# INFORMATIONS SSL
+| Champ        | Description                    |
+|--------------|--------------------------------|
+| Domaine      | FQDN du certificat             |
+| Expire le    | Date expiration certificat     |
+| Forcer HTTPS | Redirection automatique HTTP→HTTPS |
 
-OPTIONS HTTPS
-| Option | Description                           | Recommande |
-|--------|---------------------------------------|------------|
-| Oui    | Redirection HTTP → HTTPS automatique  | Oui        |
-| Non    | HTTP et HTTPS disponibles             | Non        |
+# STATUTS SSL
+| Statut              | Couleur | Description            |
+|---------------------|---------|------------------------|
+| Actif               | Vert    | Certificat valide      |
+| Expiring soon       | Jaune   | Expire dans < 30j      |
+| Expired             | Rouge   | Certificat expire      |
 
-INTERACTIONS
-- Clic "x" → Fermer modal
-- Selection certificat → Highlight radio
-  * Si "Certificat personnalise" → Afficher champs upload
-- Selection forcer HTTPS → Highlight radio
-- Clic "Annuler" → Fermer modal
-- Clic "Activer SSL" → POST /managedCMS/resource/{sn}/domains/{d}/ssl
+# INTERACTIONS
+- Toggle Forcer HTTPS → Change configuration
+- Clic Regenerer → POST API regenerate cert
+- Clic Enregistrer → PUT API update SSL config
+- Clic X → Ferme modal
 
-API ENDPOINTS
-GET  /managedCMS/resource/{sn}/domains/{d}/ssl   - Etat SSL actuel
-POST /managedCMS/resource/{sn}/domains/{d}/ssl   - Activer/configurer SSL
-Body: { type: "letsencrypt"|"custom", forceHttps: boolean }
-
-Pour certificat personnalise:
-Body: { type: "custom", certificate, privateKey, chainCertificate, forceHttps }
+# API ENDPOINTS
+GET /hosting/wordpress/{serviceName}/website/{id}/ssl - Get SSL info
+PUT /hosting/wordpress/{serviceName}/website/{id}/ssl - Update config
+POST /hosting/wordpress/{serviceName}/website/{id}/ssl/regenerate - Regenerate
 
 ================================================================================

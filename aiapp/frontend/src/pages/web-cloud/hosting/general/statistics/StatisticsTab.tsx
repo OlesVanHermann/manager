@@ -19,6 +19,16 @@ interface ChartData {
   values: number[];
 }
 
+// Mapping UI values -> API OVH StatisticsTypeEnum values
+// cf https://eu.api.ovh.com/1.0/hosting/web.json -> hosting.web.StatisticsTypeEnum
+const STAT_TYPE_API_MAP: Record<StatType, string> = {
+  "IN_HTTP_HITS": "in.httpHits",
+  "IN_HTTP_MEAN_RESPONSE_TIME": "in.httpMeanResponseTime",
+  "OUT_TCP_CONN": "out.tcpConn",
+  "SYS_CPU_USAGE": "sys.cpuUsage",
+  "SYS_WORKER_SPAWN_OVERLOAD": "sys.workerSpawnOverload",
+};
+
 const STAT_TYPES: StatType[] = ["IN_HTTP_HITS", "IN_HTTP_MEAN_RESPONSE_TIME", "OUT_TCP_CONN", "SYS_CPU_USAGE", "SYS_WORKER_SPAWN_OVERLOAD"];
 const PERIODS: Period[] = ["daily", "weekly", "monthly", "yearly"];
 const AGGREGATE_MODES: AggregateMode[] = ["none", "daily", "hourly"];
@@ -34,7 +44,9 @@ export function StatisticsTab({ serviceName }: StatisticsTabProps) {
   const loadChart = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await generalService.getStatistics(serviceName, statType, period);
+      // Convertir le type UI vers la valeur API OVH
+      const apiType = STAT_TYPE_API_MAP[statType];
+      const data = await generalService.getStatistics(serviceName, apiType, period);
       setChartData(data || { labels: [], values: [] });
     } catch (err) {
       setChartData({ labels: [], values: [] });

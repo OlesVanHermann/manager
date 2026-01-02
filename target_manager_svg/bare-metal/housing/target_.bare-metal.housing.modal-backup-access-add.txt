@@ -1,58 +1,55 @@
-# Cahier des Charges : bare-metal/housing - Ajouter accès backup
+# Cahier des Charges : bare-metal/dedicated - Modal Ajouter Accès Backup
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Ajout d'un accès
-- **Type** : Modal formulaire
-- **Objectif** : Ajouter un accès IP au backup storage
+- **Type** : Modal wizard 2 étapes
+- **Contexte** : Gestion backup FTP housing
+- **Objectif** : Ajouter un accès FTP pour une IP
 
-## 2. STRUCTURE MODAL
-- Header avec titre + bouton fermer
-- Texte explicatif
-- Sélection bloc IP
-- Checkboxes protocoles
-- Message info
-- Résumé droits
-- Footer avec boutons
+## 2. DIMENSIONS
+| Propriété | Valeur |
+|-----------|--------|
+| Modal largeur | 500px |
+| Modal hauteur | 390px |
 
 ## 3. COMPOSANTS UI
-- **OdsModal** : Modal principale
-- **OdsSelect** : Bloc IP concerné
-- **OdsCheckbox** : CIFS, FTP, NFS
-- **OdsMessage** : Info (bleu)
-- **OdsText** : Résumé droits appliqués
-- **OdsButton** : Annuler (outline), Ajouter (primary)
+- **OdsModal** : Container principal
+- **OdsStepper** : Étapes 1-2
+- **OdsCheckbox** : Sélection IP et protocoles
+- **OdsButton** : Annuler, Suivant
 
-## 4. SÉLECTION BLOC IP
+## 4. HEADER MODAL
 | Propriété | Valeur |
 |-----------|--------|
-| Label | Block concerné : |
-| Type | Select |
-| Options | Liste des blocs IP du housing |
+| Titre | "Ajouter un accès FTP backup" |
+| Fond | #F9FAFB |
 
-## 5. PROTOCOLES
-| Checkbox | Description |
-|----------|-------------|
-| CIFS | Common Internet File System (Windows) |
-| FTP | File Transfer Protocol |
-| NFS | Network File System (Linux) |
+## 5. STEPPER
+| Étape | Libellé | État |
+|-------|---------|------|
+| 1 | Configuration | Actif (bleu) |
+| 2 | Confirmation | Inactif (gris) |
 
-## 6. MESSAGE INFO
+## 6. CONTENU ÉTAPE 1
+
+### Sélection IP
 | Propriété | Valeur |
 |-----------|--------|
-| Type | Info (bleu) |
-| Icône | ℹ |
-| Texte 1 | Vous devez au moins autoriser un protocole car par défaut, les blocks d'IP n'ayant pas de règle sont refusées. |
-| Texte 2 | La modification peut prendre quelques minutes. |
+| Label | "Adresses IP" |
+| Type | Liste checkboxes |
+| Options | IPs disponibles du housing |
 
-## 7. RÉSUMÉ
-Block 123.45.67.0/24 → CIFS ✓ | FTP ✓ | NFS ✗
+### Protocoles
+| Propriété | Valeur |
+|-----------|--------|
+| Label | "Protocoles autorisés" |
+| Options | CIFS, FTP, NFS (checkboxes) |
 
-## 8. BOUTONS
-| Bouton | Style | Position |
-|--------|-------|----------|
-| Annuler | Outline | Gauche |
-| Ajouter | Primary | Droite |
+## 7. FOOTER MODAL
+| Bouton | Style | Action |
+|--------|-------|--------|
+| Annuler | Secondary | Ferme modal |
+| Suivant | Primary #0050D7 | Passe à étape 2 |
 
-## 9. APIS & ENDPOINTS
-- POST /dedicated/housing/{serviceName}/features/backupFTP/access
-  - Paramètres : ipBlock (string), cifs (boolean), ftp (boolean), nfs (boolean)
+## 8. APIS & ENDPOINTS
+- GET /dedicated/housing/{serviceName}/features/backupFTP/authorizableBlocks - IPs disponibles
+- POST /dedicated/housing/{serviceName}/features/backupFTP/access - Créer accès

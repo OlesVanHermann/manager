@@ -1,92 +1,79 @@
-# Cahier des Charges : bare-metal/vps - Dashboard VPS
+# Cahier des Charges : vps - Dashboard Principal
 
 ## 1. VUE D'ENSEMBLE
-- **Page** : Dashboard VPS
-- **Type** : Page détail avec onglets et graphiques
-- **Objectif** : Vue complète du VPS sélectionné
+- **Page** : Dashboard VPS (6 tuiles)
+- **Type** : Vue d'ensemble complète
+- **Objectif** : Résumé rapide d'un VPS
 
 ## 2. STRUCTURE PAGE
-- Header OVHcloud + sidebar
-- Breadcrumb (Bare Metal Cloud > VPS > vps-abc123)
-- Titre + badge état (Démarré)
+- Breadcrumb avec navigation
+- Titre + Badge statut
 - Onglets navigation
-- Cartes informations (3 colonnes)
-- Graphiques performances (CPU, RAM)
-- Bande passante
+- 6 tuiles en grille 3x2
 
 ## 3. COMPOSANTS UI
-- **OdsBreadcrumb** : Navigation
-- **OdsTabs** : 6 onglets
-- **OdsBadge** : État (Démarré - success)
-- **OdsCard** : 3 cartes infos + graphiques
-- **OdsButton** : Redémarrer (primary), Arrêter, Réinstaller, KVM, Réinitialiser MDP
-- **OdsChart** : CPU, RAM
-- **OdsProgressBar** : Quota bande passante
+- **OdsBadge** : Statut Actif
+- **OdsTabs** : Navigation
+- **OdsCard** : 6 tuiles
+- **OdsProgress** : Utilisation
+- **OdsButton** : Actions
 
 ## 4. ONGLETS
-| Onglet | État |
-|--------|------|
-| Tableau de bord | ✅ Actif |
-| Backup | - |
-| Snapshot | - |
-| IP | - |
-| Disques | - |
-| Monitoring | - |
+| Onglet | Actif |
+|--------|-------|
+| Accueil | ✓ |
+| Monitoring | |
+| IPs | |
+| Sauvegardes | |
+| Disques additionnels | |
 
-## 5. CARTE INFORMATIONS GÉNÉRALES
-| Champ | Valeur |
-|-------|--------|
-| Nom | vps-abc123 |
+## 5. TUILE 1 : ÉTAT DU VPS
+| Info | Valeur |
+|------|--------|
+| État | Badge "Actif" (vert) |
 | Modèle | VPS Starter |
+| Actions | Bouton Redémarrer, KVM |
+
+## 6. TUILE 2 : CONFIGURATION
+| Info | Valeur |
+|------|--------|
 | vCPU | 2 vCores |
-| RAM | 4 GB |
-| Stockage | 80 GB SSD NVMe |
-| Datacenter | rbx (Roubaix) |
+| RAM | 4 Go |
+| Stockage | 80 Go SSD NVMe |
+| Bande passante | 500 Mbps |
+| Lien | Changer d'offre → |
 
-## 6. CARTE SYSTÈME & ACCÈS
-| Champ | Valeur |
-|-------|--------|
-| OS | Ubuntu 22.04 LTS |
-| IPv4 | 51.38.123.45 (lien cliquable) |
-| IPv6 | 2001:41d0:xxx::1 |
-| Reverse DNS | vps-abc123.vps.ovh.net |
-| Boutons | KVM, Réinitialiser MDP |
+## 7. TUILE 3 : RÉSEAU
+| Info | Valeur |
+|------|--------|
+| IPv4 | 51.38.123.45 |
+| IPv6 | 2001:41d0:305:2100::/128 |
+| Reverse DNS | vps-abc123.vps.ovh.net ✎ |
 
-## 7. CARTE ÉTAT ACTUEL
-| Champ | Valeur |
-|-------|--------|
-| État | Démarré ✅ |
-| Uptime | 15 jours 3h 45min |
-| Renouvellement | 15/01/2026 |
-| Actions | Redémarrer, Arrêter, Réinstaller |
+## 8. TUILE 4 : SYSTÈME
+| Info | Valeur |
+|------|--------|
+| Distribution | Debian 12 |
+| Mode de démarrage | Disque dur |
+| Action | Bouton Réinstaller |
 
-## 8. GRAPHIQUES
-### CPU
-- Graphe ligne sur 1 heure
-- Échelle 0-100%
-- Moyenne affichée (23%)
+## 9. TUILE 5 : UTILISATION
+| Métrique | Pourcentage |
+|----------|-------------|
+| CPU | 30% |
+| RAM | 60% |
+| Disque | 40% |
 
-### RAM
-- Graphe ligne sur 1 heure
-- Échelle 0-4 GB
-- Utilisé: 2.1 GB / 4 GB (52%)
+## 10. TUILE 6 : ABONNEMENT
+| Info | Valeur |
+|------|--------|
+| Offre | VPS Starter 2024 |
+| Renouvellement | Automatique - mensuel |
+| Prix | 5,99 € HT/mois |
 
-## 9. BANDE PASSANTE
-| Champ | Valeur |
-|-------|--------|
-| Quota mensuel | 350 GB / 1 TB (barre progression) |
-| Trafic entrant | 125 GB |
-| Trafic sortant | 225 GB |
-| Renouvellement quota | 1er janvier 2026 |
+## 11. APIS & ENDPOINTS
+- GET /vps/{serviceName} - Infos générales
+- GET /vps/{serviceName}/ips - Adresses IP
+- GET /vps/{serviceName}/monitoring - Métriques
+- GET /vps/{serviceName}/serviceInfos - Abonnement
 
-## 10. APIS & ENDPOINTS
-- GET /vps/{serviceName}
-  - Informations VPS
-- GET /vps/{serviceName}/status
-  - État du VPS
-- GET /vps/{serviceName}/monitoring
-  - Métriques CPU/RAM
-- POST /vps/{serviceName}/reboot
-  - Redémarrer le VPS
-- POST /vps/{serviceName}/stop
-  - Arrêter le VPS

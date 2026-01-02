@@ -1,60 +1,51 @@
 ================================================================================
 TARGET SVG DOCUMENTATION
 ================================================================================
-Fichier: target_.web-cloud.hosting.tasks.svg
-Route:   /web-cloud/hebergement/hosting/{serviceName}/tasks
-Version: v1 (2025-12-30)
+Fichier: target_.web-cloud.hosting.expert.tasks.svg
+Route:   /web-cloud/hosting/{serviceName}/expert/tasks
+Version: v1 (2026-01-02)
 ================================================================================
 
-⚠️ DONNÉES DYNAMIQUES
-| Exemple SVG                    | Source API                                  |
-|--------------------------------|---------------------------------------------|
-| #847392                        | GET /hosting/web/{sn}/tasks → id            |
-| Régénération certificat SSL    | GET /hosting/web/{sn}/tasks/{id} → function |
-| 30/12/2025 09:15               | GET /hosting/web/{sn}/tasks/{id} → startDate|
-| 30/12/2025 09:18               | GET /hosting/web/{sn}/tasks/{id} → doneDate |
-| 3 min                          | Calculé: doneDate - startDate               |
-| Terminé/En cours/Erreur        | GET /hosting/web/{sn}/tasks/{id} → status   |
+DONNEES DYNAMIQUES
+| Exemple SVG              | Source API                                       |
+|--------------------------|--------------------------------------------------|
+| monsite.example.com      | GET /hosting/web → serviceName                   |
+| #12456789                | GET /hosting/web/{sn}/tasks → id                 |
+| Deploiement FTP          | GET /hosting/web/{sn}/tasks/{id} → function      |
+| 02/01/2026 14:32         | GET /hosting/web/{sn}/tasks/{id} → startDate     |
+| done/doing/error         | GET /hosting/web/{sn}/tasks/{id} → status        |
+| 67%                      | GET /hosting/web/{sn}/tasks/{id} → doneDate (calcul) |
+
 ================================================================================
 
-# STRUCTURE PAGE
+STRUCTURE PAGE
 1. NAV1 - Header OVH (Web Cloud actif)
-2. NAV2 - Hébergement actif
-3. LEFT PANEL - Liste hébergements
-4. RIGHT PANEL
-   - Header: Nom service
-   - NAV3: 16 tabs (Taches actif)
-   - TOOLBAR: Refresh | Filtre par état | Recherche
-   - TABLE: ID, Type, Date début, Date fin, Durée, État, Détails
-   - PAGINATION
+2. NAV2 - Section (Hebergement actif)
+3. LEFT PANEL (280px)
+   - NAV3 Groupement: General Sites Offre [Expert]
+   - Recherche + Liste services
+4. RIGHT PANEL (1096px)
+   - Header: Titre service
+   - NAV4: General Boost Indy Emails Variables OvhConfig Runtimes Cron [Taches] +1
+   - Contenu:
+     - Banniere info taches
+     - Toolbar: Refresh, Recherche, Filtre statut
+     - Table: ID, Type, Date creation, Date fin, Statut, Progression
+     - Pagination
+     - Bloc Info types de taches
 
-# COLONNES TABLE
-| Colonne          | Largeur | Contenu                          |
-|------------------|---------|----------------------------------|
-| ID               | 90px    | Numéro tâche (#XXXXXX)           |
-| Type d'opération | 270px   | Description de l'opération       |
-| Date de début    | 170px   | Date/heure début                 |
-| Date de fin      | 170px   | Date/heure fin (ou -)            |
-| Durée            | 100px   | Durée calculée                   |
-| État             | 130px   | Badge statut                     |
-| Détails          | 80px    | Lien "Voir"                      |
+INTERACTIONS
+- Bouton ↻ -> Rafraichit la liste des taches
+- Filtre statut -> Filtre Tous/En cours/Termine/Erreur
+- Clic ligne -> Details de la tache (read-only)
+- Progression -> Barre de progression animee pour taches en cours
 
-# ÉTATS POSSIBLES
-| État      | Couleur badge | Code couleur |
-|-----------|---------------|--------------|
-| Terminé   | Vert          | #DEF7EC      |
-| En cours  | Orange        | #FEF3C7      |
-| Erreur    | Rouge         | #FEE2E2      |
-| Planifié  | Bleu          | #DBEAFE      |
-| Annulé    | Gris          | #F3F4F6      |
+API ENDPOINTS
+GET /hosting/web/{sn}                      # Details hebergement
+GET /hosting/web/{sn}/tasks                # Liste taches
+GET /hosting/web/{sn}/tasks/{id}           # Details tache
 
-# INTERACTIONS
-- Clic ↻ → Rafraîchir liste
-- Clic "Voir" → Modal détails tâche
-- Sélection filtre → Filtrer par état
-
-# API ENDPOINTS
-GET /hosting/web/{sn}/tasks               - Liste tâches
-GET /hosting/web/{sn}/tasks/{id}          - Détails tâche
+NOTE: Les taches sont en lecture seule, pas de creation/modification manuelle.
+Les taches sont generees automatiquement lors d'operations (FTP, BDD, SSL...).
 
 ================================================================================

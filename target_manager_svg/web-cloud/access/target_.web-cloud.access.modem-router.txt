@@ -1,0 +1,206 @@
+# Cahier des Charges : web-cloud/access - Modem Router
+
+## 1. VUE D'ENSEMBLE
+
+**Type:** Page configuration routeur
+**Fonction:** Gérer le mode routeur, firewall et routes statiques
+**Contexte:** Onglet Modem > Routeur
+
+## 2. DIMENSIONS
+
+- Page: 1440x900px
+- Zone contenu: 1096x765px
+- Card mode: 1030x180px
+- Card firewall: 1030x150px
+- Card routes: 1030x200px
+- Info banner: 1030x50px
+
+## 3. NAVIGATION
+
+### NAV3 Tabs
+| Onglet | État |
+|--------|------|
+| Général | Inactif |
+| Ligne | Inactif |
+| Modem | Actif |
+| Services | Inactif |
+
+### NAV4 Sous-tabs
+| Sous-onglet | État |
+|-------------|------|
+| Dashboard | Inactif |
+| WiFi | Inactif |
+| DHCP | Inactif |
+| NAT/Ports | Inactif |
+| Routeur | Actif |
+| Paramètres | Inactif |
+| Guides | Inactif |
+
+## 4. CARD MODE DE FONCTIONNEMENT
+
+### Titre
+"MODE DE FONCTIONNEMENT"
+
+### Options (2 colonnes)
+
+#### Mode Routeur (sélectionné)
+- Border: 2px #0050D7
+- Background: #E8F0FE
+- Radio: checked bleu
+- Titre: "Mode Routeur"
+- Description: "Le modem gère le réseau local (NAT, DHCP, firewall)."
+- Sous-texte: "Recommandé pour la plupart des usages."
+- Badge: "Actif" (success)
+
+#### Mode Bridge
+- Border: #E5E7EB
+- Background: #FFFFFF
+- Radio: unchecked
+- Titre: "Mode Bridge"
+- Description: "Le modem transfère l'IP publique à un équipement."
+- Sous-texte: "Pour routeur/firewall personnel."
+- Badge: "Inactif" (gris)
+
+## 5. CARD FIREWALL
+
+### Header
+- Titre: "FIREWALL"
+- Toggle: ON (vert)
+
+### Champs
+
+| Label | Valeur |
+|-------|--------|
+| Niveau de protection | Moyen (recommandé) - dropdown |
+| Règles actives | 5 règles - Lien "Voir" |
+| Protection DoS | ON (badge success) |
+| Ping WAN | OFF (badge danger) |
+
+### Bouton
+- "Appliquer" (btn-primary, 160x36px)
+
+## 6. CARD ROUTES STATIQUES
+
+### Header
+- Titre: "ROUTES STATIQUES"
+- Bouton: "+ Ajouter route" (btn-outline)
+
+### Colonnes datagrid
+
+| Colonne | Largeur |
+|---------|---------|
+| DESTINATION | 150px |
+| MASQUE | 150px |
+| PASSERELLE | 150px |
+| INTERFACE | 120px |
+| MÉTRIQUE | 80px |
+| ACTIONS | 150px |
+
+### Exemples de données
+
+| Destination | Masque | Passerelle | Interface | Métrique |
+|-------------|--------|------------|-----------|----------|
+| 10.0.0.0 | 255.0.0.0 | 192.168.1.254 | LAN | 10 |
+| 172.16.0.0 | 255.240.0.0 | 192.168.1.254 | LAN | 10 |
+
+### Actions
+- "Modifier" (text-primary)
+- "Supprimer" (text-error)
+
+## 7. INFO BANNER
+
+- Background: #DBEAFE
+- Texte: "Le changement de mode nécessite un redémarrage du modem et peut entraîner une coupure temporaire."
+
+## 8. COMPOSANTS UI
+
+### Mode card
+- Dimensions: 480x100px
+- Border-radius: 6px
+- Sélectionné: Border 2px #0050D7
+
+### Radio button
+- Checked: Cercle bleu #0050D7 avec point blanc
+- Unchecked: Cercle gris border
+
+### Dropdown niveau firewall
+- Options: Faible, Moyen (recommandé), Élevé, Personnalisé
+
+## 9. APIS & ENDPOINTS
+
+```
+GET /xdsl/{serviceName}/modem/mode
+→ Mode actuel (router/bridge)
+
+PUT /xdsl/{serviceName}/modem/mode
+Body: { mode: "router" | "bridge" }
+→ Change le mode (redémarre modem)
+
+GET /xdsl/{serviceName}/modem/firewall
+→ Configuration firewall
+
+PUT /xdsl/{serviceName}/modem/firewall
+Body: {
+  enabled: true,
+  level: "medium",
+  dosProtection: true,
+  wanPing: false
+}
+→ Applique la configuration firewall
+
+GET /xdsl/{serviceName}/modem/firewall/rules
+→ Liste des règles firewall
+
+GET /xdsl/{serviceName}/modem/routes
+→ Liste des routes statiques
+
+POST /xdsl/{serviceName}/modem/routes
+Body: {
+  destination: "10.0.0.0",
+  mask: "255.0.0.0",
+  gateway: "192.168.1.254",
+  interface: "LAN",
+  metric: 10
+}
+→ Ajoute une route statique
+
+DELETE /xdsl/{serviceName}/modem/routes/{id}
+→ Supprime une route
+```
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | FR |
+|-----|-----|
+| nav_router | Routeur |
+| section_mode | Mode de fonctionnement |
+| mode_router | Mode Routeur |
+| mode_router_desc | Le modem gère le réseau local (NAT, DHCP, firewall). |
+| mode_router_hint | Recommandé pour la plupart des usages. |
+| mode_bridge | Mode Bridge |
+| mode_bridge_desc | Le modem transfère l'IP publique à un équipement. |
+| mode_bridge_hint | Pour routeur/firewall personnel. |
+| status_active | Actif |
+| status_inactive | Inactif |
+| section_firewall | Firewall |
+| field_protection_level | Niveau de protection |
+| level_low | Faible |
+| level_medium | Moyen (recommandé) |
+| level_high | Élevé |
+| level_custom | Personnalisé |
+| active_rules | Règles actives |
+| btn_view | Voir |
+| dos_protection | Protection DoS |
+| wan_ping | Ping WAN |
+| btn_apply | Appliquer |
+| section_routes | Routes statiques |
+| btn_add_route | + Ajouter route |
+| col_destination | Destination |
+| col_mask | Masque |
+| col_gateway | Passerelle |
+| col_interface | Interface |
+| col_metric | Métrique |
+| col_actions | Actions |
+| action_edit | Modifier |
+| action_delete | Supprimer |
+| info_mode_change | Le changement de mode nécessite un redémarrage du modem et peut entraîner une coupure temporaire. |

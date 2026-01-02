@@ -3,56 +3,62 @@ TARGET SVG DOCUMENTATION
 ================================================================================
 Fichier: target_.web-cloud.wordpress.tasks.svg
 Route:   /web-cloud/wordpress/{serviceName}/tasks
-Version: v1 (2025-12-30)
+Version: v1 (2026-01-02)
 ================================================================================
 
 DONNEES DYNAMIQUES
-| Exemple SVG              | Source API                                    |
-|--------------------------|-----------------------------------------------|
-| 29/12/2025 14:32         | task.date                                     |
-| Sauvegarde               | task.type (backup, update, ssl, restore...)   |
-| Creation sauvegarde...   | task.description                              |
-| En cours / Termine       | task.status (running, done, error)            |
-| 1-6 sur 24               | pagination info                               |
+| Exemple SVG                   | Source API                                    |
+|-------------------------------|-----------------------------------------------|
+| {nicHandle}                   | Session user                                  |
+| mwp-abc123def456              | URL param serviceName                         |
+| #12345                        | GET /hosting/wordpress/{id}/task → id         |
+| Creation site                 | GET /hosting/wordpress/{id}/task → type       |
+| DONE                          | GET /hosting/wordpress/{id}/task → status     |
+| 02/01/2026 10:30              | GET /hosting/wordpress/{id}/task → date       |
+
 ================================================================================
 
-STRUCTURE PAGE
-1. NAV1 - Header OVH (Web Cloud actif x=510)
-2. NAV2 - Web Cloud (Wordpress actif x=345)
-3. LEFT PANEL - Liste des sites WordPress
+# STRUCTURE PAGE
+1. NAV1 - Header OVH (Web Cloud actif)
+2. NAV2 - Web Cloud (Wordpress actif)
+3. LEFT PANEL
+   - Recherche
+   - Liste services
 4. RIGHT PANEL
-   - Header: Nom site + version + offre
-   - NAV3: 6 tabs (Taches actif)
-   - Contenu Taches:
-     * Header "Taches" + description + bouton "Rafraichir"
-     * Table taches:
-       - Colonne DATE
-       - Colonne TYPE (Sauvegarde, MAJ plugin, SSL, etc.)
-       - Colonne DESCRIPTION
-       - Colonne STATUT (badge)
-     * Pagination
+   - Header: serviceName
+   - NAV4: [Mes sites] [Taches] (Taches actif)
+   - Toolbar: Refresh + Search
+   - Table: Historique taches
 
-TYPES DE TACHES
-- Sauvegarde (automatique ou manuelle)
-- Mise a jour plugin
-- Mise a jour theme
-- Mise a jour WordPress
-- Configuration SSL
-- Restauration
-- Installation
-- Import
+# NAV4 TABS
+| Tab       | Description                    |
+|-----------|--------------------------------|
+| Mes sites | Liste des sites WordPress      |
+| Taches    | Historique operations (ACTIF)  |
 
-STATUTS
-- En cours: badge jaune (#FEF3C7), texte orange
-- Termine: badge vert (#DEF7EC), texte vert
-- Echec: badge rouge (#FEE2E2), texte rouge
+# COLONNES TABLE
+| Colonne | Description                    |
+|---------|--------------------------------|
+| ID      | Identifiant tache              |
+| TYPE    | Creation, Import, Backup, SSL  |
+| FQDN    | Site concerne                  |
+| STATUT  | DONE, PENDING, ERROR           |
+| DATE    | Date/heure operation           |
 
-INTERACTIONS
-- Clic "Rafraichir" → GET /tasks (refresh liste)
-- Pagination → Navigation pages
+# STATUTS TACHES
+| Statut  | Couleur | Description            |
+|---------|---------|------------------------|
+| DONE    | Vert    | Tache terminee         |
+| PENDING | Jaune   | En cours               |
+| ERROR   | Rouge   | Echec                  |
 
-API ENDPOINTS
-GET /managedCMS/resource/{sn}/tasks       - Liste taches
-GET /managedCMS/resource/{sn}/tasks/{id}  - Details tache
+# INTERACTIONS
+- Clic tab Mes sites → Retour liste sites
+- Clic refresh → Recharge liste taches
+- Recherche → Filtre taches
+
+# API ENDPOINTS
+GET /hosting/wordpress/{serviceName}/task - Liste taches
+GET /hosting/wordpress/{serviceName}/task/{id} - Details tache
 
 ================================================================================
