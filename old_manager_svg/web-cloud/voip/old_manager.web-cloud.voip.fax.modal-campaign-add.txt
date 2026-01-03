@@ -1,0 +1,175 @@
+# Cahier des Charges : web-cloud/voip/fax/modal-campaign-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.fax.modal-campaign-add.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Modal formulaire |
+| **Description** | Modal d'ajout d'une campagne de fax depuis la section Fax |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 600px |
+| Position | Centrée (x: 370, y: 120) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Ajouter une campagne de fax |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × (position droite) |
+| Séparateur | Ligne 1px #E5E7EB |
+
+---
+
+## 4. CONTENU DU FORMULAIRE
+
+### 4.1 Ligne 1 - Nom et Qualité
+
+| Champ | Propriétés |
+|-------|------------|
+| Nom de la campagne | Input text, 300×40px, placeholder "Nom de la campagne" |
+| Qualité du fax | Select dropdown, 300×40px, options: "Haute qualité" |
+
+### 4.2 Ligne 2 - Document et Type d'envoi
+
+| Champ | Propriétés |
+|-------|------------|
+| Document PDF à envoyer | Input file, 300×40px, lien bleu "Télécharger un fichier PDF" |
+| Type d'envoi | Select dropdown, 300×40px, options: "Envoi immédiat", "Programmé" |
+
+### 4.3 Destinataires (radio buttons)
+
+| Option | État |
+|--------|------|
+| Saisir une liste de numéros | Sélectionné (#0050D7) |
+| Importer un fichier texte | Non sélectionné |
+
+### 4.4 Liste des numéros
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Liste des numéros |
+| Type | Textarea |
+| Dimensions | 652×100px |
+| Placeholder ligne 1 | Entrez les numéros de fax séparés par des virgules ou des retours à la ligne. |
+| Placeholder ligne 2 | Exemple: +33912345678, +33912345679 |
+
+### 4.5 Texte d'aide
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Le document PDF sera converti et envoyé à tous les destinataires de la liste. |
+| Couleur | #6B7280 |
+| Font-size | 10px |
+
+---
+
+## 5. FOOTER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Séparateur | Ligne 1px #E5E7EB en haut |
+
+### 5.1 Boutons
+
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Lien texte bleu | Gauche |
+| Ajouter | Primary (#0050D7), 120×36px | Droite |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Créer une campagne de fax
+
+```
+POST /telephony/{billingAccount}/fax/{serviceName}/campaigns
+```
+
+Body (multipart/form-data):
+```json
+{
+  "name": "Campagne Janvier 2026",
+  "document": "<fichier PDF>",
+  "quality": "high",
+  "sendType": "immediate",
+  "recipients": ["+33912345678", "+33912345679"]
+}
+```
+
+### 6.2 Options de qualité
+
+| Valeur API | Libellé |
+|------------|---------|
+| normal | Qualité normale |
+| high | Haute qualité |
+
+### 6.3 Options de type d'envoi
+
+| Valeur API | Libellé |
+|------------|---------|
+| immediate | Envoi immédiat |
+| scheduled | Programmé |
+
+---
+
+## 7. VALIDATION
+
+| Champ | Règle |
+|-------|-------|
+| Nom de la campagne | Requis, non vide |
+| Document PDF | Requis, format PDF uniquement, max 5 Mo |
+| Liste des numéros | Au moins 1 numéro valide |
+| Format numéro | Format international (ex: +33912345678) |
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_fax_campaign_modal_title` | Ajouter une campagne de fax |
+| `voip_fax_campaign_modal_name` | Nom de la campagne |
+| `voip_fax_campaign_modal_quality` | Qualité du fax |
+| `voip_fax_campaign_modal_quality_normal` | Qualité normale |
+| `voip_fax_campaign_modal_quality_high` | Haute qualité |
+| `voip_fax_campaign_modal_document` | Document PDF à envoyer |
+| `voip_fax_campaign_modal_upload` | Télécharger un fichier PDF |
+| `voip_fax_campaign_modal_send_type` | Type d'envoi |
+| `voip_fax_campaign_modal_send_immediate` | Envoi immédiat |
+| `voip_fax_campaign_modal_send_scheduled` | Programmé |
+| `voip_fax_campaign_modal_recipients` | Destinataires |
+| `voip_fax_campaign_modal_recipients_list` | Saisir une liste de numéros |
+| `voip_fax_campaign_modal_recipients_file` | Importer un fichier texte |
+| `voip_fax_campaign_modal_numbers_label` | Liste des numéros |
+| `voip_fax_campaign_modal_numbers_hint` | Entrez les numéros de fax séparés par des virgules ou des retours à la ligne. |
+| `voip_fax_campaign_modal_help` | Le document PDF sera converti et envoyé à tous les destinataires de la liste. |
+| `voip_fax_campaign_modal_cancel` | Annuler |
+| `voip_fax_campaign_modal_submit` | Ajouter |

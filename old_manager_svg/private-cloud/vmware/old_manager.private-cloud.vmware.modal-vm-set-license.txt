@@ -1,0 +1,150 @@
+# Cahier des Charges : private-cloud/vmware/modal-vm-set-license
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-vm-set-license.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal formulaire avec select |
+| **Description** | Modal pour attribuer une licence Windows/SQL à une machine virtuelle |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 280px |
+| Position | Centrée (x: 420, y: 280) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Attribuer une licence |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Select licence
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Sélectionner une licence |
+| Font-weight label | 500 |
+| Dimensions select | 560×44px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | Choisir une licence... |
+| Icône | ▼ |
+
+### 4.2 Licences disponibles
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Licences disponibles : |
+| Couleur | #6B7280 |
+| Font-size | 12px |
+
+| Licence |
+|---------|
+| • Windows Server 2019 Standard |
+| • Windows Server 2022 Datacenter |
+| • SQL Server 2019 Standard |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position | État |
+|--------|-------|------------|----------|------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche | Actif |
+| Attribuer | Disabled (#E5E7EB) | 100×40px | Droite | Désactivé |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Sélection licence | Activer bouton Attribuer |
+| Clic Attribuer | Attribuer la licence à la VM |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les licences disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/spla/licenses
+```
+
+Response:
+```json
+[
+  {
+    "id": "win-2019-std",
+    "name": "Windows Server 2019 Standard"
+  },
+  {
+    "id": "win-2022-dc",
+    "name": "Windows Server 2022 Datacenter"
+  },
+  {
+    "id": "sql-2019-std",
+    "name": "SQL Server 2019 Standard"
+  }
+]
+```
+
+### 7.2 Attribuer une licence à une VM
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/vm/{vmId}/license
+```
+
+Body:
+```json
+{
+  "licenseId": "win-2022-dc"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_vm_license_title` | Attribuer une licence |
+| `vmware_vm_license_select` | Sélectionner une licence |
+| `vmware_vm_license_placeholder` | Choisir une licence... |
+| `vmware_vm_license_available` | Licences disponibles |
+| `vmware_vm_license_cancel` | Annuler |
+| `vmware_vm_license_submit` | Attribuer |

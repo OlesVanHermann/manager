@@ -1,0 +1,194 @@
+# Cahier des Charges : private-cloud/vmware/modal-upgrade-range
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-upgrade-range.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Wizard page avec stepper (3 étapes) et carte offre |
+| **Description** | Assistant pour mettre à niveau un Private Cloud vers une offre supérieure (Premier) |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width page |
+| Background | #F6F6F9 |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour |
+| Couleur | #0050D7 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Mise à niveau Private Cloud |
+| Font-size | 20px |
+| Font-weight | 600 |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Structure
+
+| Étape | Numéro | Libellé | État |
+|-------|--------|---------|------|
+| 1 | 1 | Sélection de l'offre | Active (cercle #0050D7) |
+| 2 | 2 | Contrats | Inactive |
+| 3 | 3 | Récapitulatif | Inactive |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Mise à niveau vers Premier |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+### 5.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Sélectionnez l'offre vers laquelle vous souhaitez migrer votre infrastructure. |
+| Couleur | #6B7280 |
+| Font-size | 13px |
+
+---
+
+## 6. CARTE OFFRE PREMIER (sélectionnée)
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 350×280px |
+| Background | #FFFFFF |
+| Border | 2px #0050D7 |
+| Border radius | 8px |
+
+### 6.2 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Height | 50px |
+| Background | #E8F0FE |
+| Titre | Offre Premier |
+| Couleur titre | #0050D7 |
+| Indicateur | Cercle checkmark #0050D7 |
+
+### 6.3 Sections contenu
+
+| Section | Titre | Description |
+|---------|-------|-------------|
+| Hôtes | Accès à la gamme complète d'hôtes, | incluant les configurations haute performance |
+| Datastores | Stockage NVMe et configurations | haute disponibilité incluses |
+| Bande passante | Bande passante étendue jusqu'à 25 Gbps | - |
+
+### 6.4 Prix
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | + 150,00 € HT/mois |
+| Couleur | #DC2626 |
+| Font-weight | 600 |
+| Position | Bas droite |
+
+---
+
+## 7. FOOTER
+
+### 7.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Suivant | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic carte offre | Sélectionner cette offre |
+| Clic Annuler | Retour au dashboard |
+| Clic Suivant | Passer à l'étape 2 (Contrats) |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les offres de mise à niveau
+
+```
+GET /dedicatedCloud/{serviceName}/upgradeOptions
+```
+
+Response:
+```json
+[
+  {
+    "name": "Premier",
+    "features": {
+      "hosts": "Accès à la gamme complète d'hôtes",
+      "datastores": "Stockage NVMe et haute disponibilité",
+      "bandwidth": "Jusqu'à 25 Gbps"
+    },
+    "additionalPrice": {
+      "value": 150,
+      "currency": "EUR",
+      "text": "+ 150,00 € HT/mois"
+    }
+  }
+]
+```
+
+### 9.2 Initier la mise à niveau
+
+```
+POST /dedicatedCloud/{serviceName}/upgrade
+```
+
+Body:
+```json
+{
+  "targetOffer": "Premier"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_upgrade_title` | Mise à niveau Private Cloud |
+| `vmware_upgrade_step1` | Sélection de l'offre |
+| `vmware_upgrade_step2` | Contrats |
+| `vmware_upgrade_step3` | Récapitulatif |
+| `vmware_upgrade_to_premier` | Mise à niveau vers Premier |
+| `vmware_upgrade_desc` | Sélectionnez l'offre vers laquelle vous souhaitez migrer votre infrastructure. |
+| `vmware_upgrade_offer_premier` | Offre Premier |
+| `vmware_upgrade_hosts` | Hôtes |
+| `vmware_upgrade_datastores` | Datastores |
+| `vmware_upgrade_bandwidth` | Bande passante |
+| `vmware_upgrade_cancel` | Annuler |
+| `vmware_upgrade_next` | Suivant |

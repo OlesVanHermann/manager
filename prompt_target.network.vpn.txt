@@ -1,0 +1,378 @@
+################################################################################
+#                                                                              #
+#                      PROMPT TARGET - NETWORK > VPN                           #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# MAPPING REPERTOIRES (ACTION REQUISE)
+################################################################################
+#
+# Les fichiers VPN sont actuellement dans le dossier "other".
+# Un agent AI doit les deplacer vers un dossier dedie :
+#
+#   old_manager_svg/network/other/old_manager.network.vpn.*
+#       →  old_manager_svg/network/vpn/
+#
+# Fichiers concernes : 7 fichiers (5 pages + 2 modales)
+#
+# BACKUP OBLIGATOIRE avant toute modification :
+#   cp fichier.txt fichier.txt.$(date +%Y%m%dT%H%M%S)
+#
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+VPN permet de creer des tunnels VPN site-to-site entre l'infrastructure
+OVHcloud et des sites distants (AWS, Azure, GCP, on-premise, etc.) :
+- Tunnels IPSec IKEv2 (standard)
+- Tunnels WireGuard (moderne, rapide)
+- Configuration Phase 1 / Phase 2
+- Logs et monitoring des connexions
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Network
+NAV2: VPN (selectionne)
+NAV3: General (dans LEFT PANEL)
+NAV4: [Tunnels] [Logs] (vue liste) / [General] [Logs] (vue detail)
+
+## 1.1 Position dans la hierarchie
+
+```
+Network (NAV1)
+├── Subnet
+├── vRack
+├── Load Balancer
+├── CDN
+├── OVHcloud Connect
+├── VPN* (NAV2 actif)
+├── Anti-DDoS VAC
+└── Anti-DDoS Game
+```
+
+## 1.2 URLs
+
+| Ecran | URL |
+|-------|-----|
+| Liste tunnels | /network/vpn |
+| Detail tunnel | /network/vpn/{tunnelId} |
+| Config tunnel | /network/vpn/{tunnelId}/config |
+| Logs tunnel | /network/vpn/{tunnelId}/logs |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ [General]           │  ← NAV3
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche nom tunnel
+├─────────────────────┤
+│ ●Tous (4)           │  ← Vue liste (toujours visible)
+│ ○vpn-aws-prod       │  ← Liste des tunnels
+│ ○vpn-azure-dr       │
+│ ○vpn-paris-01       │
+│ ○vpn-gcp-dev        │
+└─────────────────────┘
+```
+
+## 2.2 Element "Tous"
+
+Toujours en premiere position, non filtrable.
+Affiche la liste de tous les tunnels dans le RIGHT PANEL.
+
+## 2.3 Format element tunnel
+
+```
+○ vpn-aws-prod        ← Nom du tunnel
+```
+
+
+# 3. RIGHT PANEL - LISTE TUNNELS
+################################################################################
+
+Quand "Tous" est selectionne dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+VPN Tunnels                                   [+ Creer tunnel]
+Connexions VPN site-to-site et IPSec
+```
+
+## 3.2 NAV4
+
+```
+[Tunnels*] [Logs]
+```
+
+## 3.3 Colonnes tableau
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Nom | 160px | Nom tunnel (bold) |
+| Type | 100px | Badge IPSec/WireGuard |
+| Endpoint local | 150px | IP locale |
+| Endpoint distant | 150px | IP distante |
+| Etat | 120px | Dot + texte |
+| Actions | 60px | Menu ⋮ |
+
+## 3.4 Types de tunnel
+
+| Type | Badge couleur |
+|------|---------------|
+| IPSec | Bleu #DBEAFE |
+| WireGuard | Vert #DCFCE7 |
+
+## 3.5 Etats tunnel
+
+| Etat | Couleur | Description |
+|------|---------|-------------|
+| Connected | 🟢 #16A34A | Tunnel actif |
+| Down | 🔴 #DC2626 | Tunnel inactif |
+| Connecting | 🟡 #F59E0B | Connexion en cours |
+
+## 3.6 Menu actions
+
+| Action | Style |
+|--------|-------|
+| Configurer | Normal |
+| Voir logs | Normal |
+| Regenerer PSK | Normal |
+| Redemarrer | Normal |
+| --- | Separateur |
+| Supprimer | Danger |
+
+
+# 4. RIGHT PANEL - DETAIL TUNNEL
+################################################################################
+
+Quand un tunnel est selectionne dans le LEFT PANEL.
+
+## 4.1 Header
+
+```
+vpn-aws-prod                                  [Sauvegarder]
+IPSec IKEv2 • 🟢 Connected
+```
+
+## 4.2 NAV4
+
+```
+[General*] [Logs]
+```
+
+## 4.3 Section Phase 1 (IKE)
+
+| Parametre | Type | Options |
+|-----------|------|---------|
+| Encryption | Select | AES-128, AES-256, 3DES |
+| Hash | Select | SHA-1, SHA-256, SHA-384 |
+| DH Group | Select | Group 2, 14, 19, 20 |
+| Lifetime | Input | Secondes (defaut: 28800) |
+
+## 4.4 Section Phase 2 (ESP)
+
+| Parametre | Type | Options |
+|-----------|------|---------|
+| Encryption | Select | AES-128, AES-256, 3DES |
+| Hash | Select | SHA-1, SHA-256, SHA-384 |
+| PFS Group | Select | Disabled, Group 2, 14, 19 |
+| Lifetime | Input | Secondes (defaut: 3600) |
+
+## 4.5 Section Reseaux
+
+| Champ | Type | Exemple |
+|-------|------|---------|
+| Reseau local | Input CIDR | 192.168.0.0/16 |
+| Reseau distant | Input CIDR | 10.0.0.0/8 |
+
+## 4.6 Options avancees
+
+| Option | Type | Defaut |
+|--------|------|--------|
+| NAT-Traversal | Toggle | Active |
+| Dead Peer Detection | Toggle | Active |
+| Force UDP encapsulation | Toggle | Desactive |
+
+
+# 5. RIGHT PANEL - LOGS TUNNEL
+################################################################################
+
+## 5.1 Header
+
+```
+vpn-aws-prod                                  [Exporter]
+Logs VPN
+```
+
+## 5.2 NAV4
+
+```
+[General] [Logs*]
+```
+
+## 5.3 Filtres
+
+| Filtre | Type | Options |
+|--------|------|---------|
+| Recherche IP | Input | Filtre par IP |
+| Evenement | Select | Tous, Connected, Failed |
+| Periode | Select | 1h, 24h, 7j |
+
+## 5.4 Terminal logs
+
+| Propriete | Valeur |
+|-----------|--------|
+| Fond | #1F2937 (sombre) |
+| Police | Monospace, 10px |
+
+## 5.5 Couleurs evenements
+
+| Evenement | Couleur |
+|-----------|---------|
+| CONNECTED | 🟢 #16A34A |
+| DISCONNECTED | 🔴 #DC2626 |
+| FAILED | 🔴 #DC2626 |
+| HANDSHAKE | 🟡 #F59E0B |
+| ATTEMPT | 🔵 #0EA5E9 |
+| REKEY | 🟡 #F59E0B |
+| DOWN | 🔴 #DC2626 |
+
+## 5.6 Footer
+
+```
+11 of 1,234 events │ 🟢 456 │ 🔴 23
+```
+
+
+# 6. APIS & ENDPOINTS
+################################################################################
+
+## 6.1 Tunnels VPN
+
+```
+GET /vpn - Liste tunnels VPN
+GET /vpn/{id} - Detail tunnel
+POST /vpn - Creer tunnel
+DELETE /vpn/{id} - Supprimer tunnel
+POST /vpn/{id}/restart - Redemarrer tunnel
+```
+
+## 6.2 Configuration IPSec
+
+```
+GET /ip/{ip}/ipsec/{tunnelId} - Config tunnel
+PUT /ip/{ip}/ipsec/{tunnelId} - Modifier config
+PUT /ip/{ip}/ipsec/{tunnelId}/phase1 - Config Phase 1
+PUT /ip/{ip}/ipsec/{tunnelId}/phase2 - Config Phase 2
+```
+
+## 6.3 Logs et stats
+
+```
+GET /vpn/{id}/statistics - Statistiques trafic
+GET /ip/{ip}/ipsec/{tunnelId}/log - Logs tunnel
+```
+
+## 6.4 Utilitaires
+
+```
+GET /vpn/availableEndpoints - Endpoints locaux disponibles
+POST /vpn/generatePSK - Generer Pre-shared Key
+```
+
+
+# 7. MODALES
+################################################################################
+
+## 7.1 modal-create-tunnel
+
+Creer un nouveau tunnel VPN.
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Nom du tunnel | Input | Requis, unique |
+| Type VPN | Cards | IPSec IKEv2 / WireGuard |
+| Endpoint local | Select | IPs disponibles |
+| Endpoint distant | Input | IP valide |
+| Pre-shared Key | Password | + bouton Generer |
+
+Actions: [Annuler] [Creer]
+
+## 7.2 modal-delete-tunnel
+
+Confirmer suppression tunnel.
+
+| Champ | Type |
+|-------|------|
+| Nom tunnel | Readonly |
+| Confirmation | Checkbox |
+
+Actions: [Annuler] [Supprimer]
+
+## 7.3 modal-regenerate-psk
+
+Regenerer la Pre-shared Key.
+
+| Champ | Type |
+|-------|------|
+| Tunnel | Readonly |
+| Nouvelle PSK | Password + Copier |
+| Warning | Message attention |
+
+Actions: [Annuler] [Regenerer]
+
+
+# 8. REGLES METIER
+################################################################################
+
+## 8.1 Types de tunnel
+
+- IPSec IKEv2 : Standard, compatible tous fournisseurs
+- WireGuard : Plus rapide, plus simple, moderne
+
+## 8.2 Configuration Phase 1/2
+
+- Phase 1 (IKE) : Negociation cles principales
+- Phase 2 (ESP) : Negociation chiffrement donnees
+- Lifetimes : Renouvellement automatique des cles
+
+## 8.3 Endpoints
+
+- Endpoint local : IP OVHcloud du client
+- Endpoint distant : IP publique du peer
+- Un seul tunnel par paire d'endpoints
+
+
+# 9. COMPOSANTS ODS UTILISES
+################################################################################
+
+- OdsTabs : NAV4 tabs
+- OdsInput : Recherche, CIDR, noms
+- OdsSelect : Algorithmes, groupes, filtres
+- OdsDatagrid : Liste tunnels
+- OdsBadge : Types (IPSec/WireGuard), etats
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsToggle : Options avancees
+- OdsCard : Selection type VPN
+
+
+# 10. FICHIERS ASSOCIES
+################################################################################
+
+Documentation : prompt_target.network.vpn.txt (ce fichier)
+Screenshots : prompt_target.network.vpn-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

@@ -1,0 +1,230 @@
+# Cahier des Charges : home/iam-identities
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.iam-identities.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | iam-identities |
+| **Type** | Page avec KPIs et liste |
+| **Description** | Page de gestion des identités avec tuiles de statistiques et liste d'utilisateurs |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×80px | x: 40, y: 115 |
+| KPI tiles | 4×330px | y: 210 |
+| User list | 1360×400px | y: 340 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | IAM - Identités |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Gestion des identités |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. NAV4 TABS
+
+| Onglet | Largeur | État | Style |
+|--------|---------|------|-------|
+| Utilisateurs | 120px | Actif | Primary #0050D7 |
+| Groupes | 100px | Inactif | Outline #E5E7EB |
+| SSO | 80px | Inactif | Outline #E5E7EB |
+
+---
+
+## 5. TUILES KPI
+
+### 5.1 Tuile Utilisateurs actifs
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 330×100px |
+| Background | #DEF7EC |
+| Border | 1px #059669 |
+| Label | Utilisateurs actifs |
+| Valeur | 8 |
+| Couleur texte | #059669 |
+
+### 5.2 Tuile En attente
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 330×100px |
+| Background | #FEF3C7 |
+| Border | 1px #D97706 |
+| Label | En attente de validation |
+| Valeur | 2 |
+| Couleur texte | #D97706 |
+
+### 5.3 Tuile Désactivés
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 330×100px |
+| Background | #FEE2E2 |
+| Border | 1px #DC2626 |
+| Label | Désactivés |
+| Valeur | 1 |
+| Couleur texte | #DC2626 |
+
+### 5.4 Tuile Action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 310×100px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Bouton | + Ajouter (150×40px, Primary) |
+
+---
+
+## 6. LISTE DES UTILISATEURS
+
+### 6.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×400px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Liste des utilisateurs |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 6.3 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 300×36px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Placeholder | 🔍 Rechercher un utilisateur... |
+
+### 6.4 Structure des lignes
+
+| Élément | Position X | Contenu |
+|---------|------------|---------|
+| Email | 20px | Email (font-weight: 600) |
+| Nom | 300px | Nom complet |
+| Badge groupe | 500px | Badge coloré |
+| Dernière connexion | 700px | Date/heure |
+| Modifier | 1100px | Lien bleu |
+| Désactiver | 1180px | Lien rouge |
+
+### 6.5 Badges groupe
+
+| Groupe | Background | Couleur |
+|--------|------------|---------|
+| Admin | #DEF7EC | #059669 |
+| Developers | #DBEAFE | #1E40AF |
+| Support | #DBEAFE | #1E40AF |
+
+### 6.6 Données exemple
+
+| Email | Nom | Groupe | Dernière connexion |
+|-------|-----|--------|-------------------|
+| admin@company.com | Administrateur | Admin | 02/01 10:30 |
+| john.doe@company.com | John Doe | Developers | 02/01 09:45 |
+| jane.smith@company.com | Jane Smith | Support | 01/01 16:20 |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic onglet Groupes | Naviguer vers user-groups |
+| Clic onglet SSO | Naviguer vers sso |
+| Clic + Ajouter | Ouvrir modal-add-user |
+| Clic Modifier | Ouvrir modal-update-user |
+| Clic Désactiver | Ouvrir modal confirmation |
+| Saisie recherche | Filtrer la liste |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Statistiques utilisateurs
+
+```
+GET /me/identity/user/stats
+```
+
+Response:
+```json
+{
+  "active": 8,
+  "pending": 2,
+  "disabled": 1
+}
+```
+
+### 8.2 Lister les utilisateurs
+
+```
+GET /me/identity/user
+```
+
+Response:
+```json
+[
+  {
+    "userId": "user-001",
+    "email": "admin@company.com",
+    "login": "Administrateur",
+    "group": "Admin",
+    "lastLogin": "2026-01-02T10:30:00Z",
+    "status": "active"
+  }
+]
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_identities_title` | Gestion des identités |
+| `iam_identities_tab_users` | Utilisateurs |
+| `iam_identities_tab_groups` | Groupes |
+| `iam_identities_tab_sso` | SSO |
+| `iam_identities_kpi_active` | Utilisateurs actifs |
+| `iam_identities_kpi_pending` | En attente de validation |
+| `iam_identities_kpi_disabled` | Désactivés |
+| `iam_identities_add` | + Ajouter |
+| `iam_identities_list_title` | Liste des utilisateurs |
+| `iam_identities_search` | Rechercher un utilisateur... |
+| `iam_identities_last_login` | Dernière connexion: {date} |
+| `iam_identities_edit` | Modifier |
+| `iam_identities_disable` | Désactiver |

@@ -1,0 +1,202 @@
+# Cahier des Charges : bare-metal/nutanix/modal-node-bandwidth-order
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.nutanix.modal-node-bandwidth-order.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | nutanix (Nutanix) |
+| **Type** | Page formulaire avec LEFT PANEL |
+| **Description** | Page pour commander de la bande passante privée pour un nœud Nutanix |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Placeholder | Rechercher... |
+| Background | #F3F4F6 |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | nutanix-cluster-01 |
+| Sous-titre | rbx - 3 nœuds |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL - HEADER
+
+### 4.1 Breadcrumb
+
+| Segment | Type |
+|---------|------|
+| nutanix-cluster-01 | Lien bleu |
+| / | Séparateur |
+| node-01 | Lien bleu |
+| / | Séparateur |
+| Bande passante | Texte actif |
+
+### 4.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commander de la bande passante privée |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. INFORMATION NŒUD
+
+### 5.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 500×60px |
+| Background | #F3F4F6 |
+| Border radius | 4px |
+
+### 5.2 Informations
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nœud |
+| Font-size label | 11px |
+| Couleur label | #6B7280 |
+| Valeur | ns12345.ip-51-123-45.eu (node-01) |
+| Font-weight valeur | 500 |
+
+---
+
+## 6. FORMULAIRE
+
+### 6.1 Bande passante souhaitée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Bande passante souhaitée |
+| Font-weight label | 500 |
+| Type | Select dropdown |
+| Dimensions | 400×36px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur sélectionnée | 10 Gbps |
+| Icône dropdown | ▼ |
+
+| Options disponibles |
+|---------------------|
+| 1 Gbps |
+| 3 Gbps |
+| 10 Gbps |
+| 25 Gbps |
+
+### 6.2 Durée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Durée |
+| Font-weight label | 500 |
+| Type | Radio buttons |
+
+| Option | Prix | État |
+|--------|------|------|
+| Mensuel - 99,00 € HT/mois | 99,00 € | Sélectionné |
+
+### 6.3 Style radio
+
+| État | Style cercle | Style point |
+|------|--------------|-------------|
+| Sélectionné | Border #0050D7 | Fill #0050D7 |
+
+---
+
+## 7. ACTIONS
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Commander | Primary (#0050D7) | 120×36px |
+| Annuler | Outline (#0050D7) | 100×36px |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Sélection bande passante | Mettre à jour le prix |
+| Clic Commander | Soumettre commande bande passante |
+| Clic Annuler | Retour à la page du nœud |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir options bande passante
+
+```
+GET /nutanix/{serviceName}/nodes/{nodeId}/bandwidth/options
+```
+
+Response:
+```json
+{
+  "currentBandwidth": null,
+  "availableOptions": [
+    {"bandwidth": "1g", "price": 29.00},
+    {"bandwidth": "3g", "price": 59.00},
+    {"bandwidth": "10g", "price": 99.00},
+    {"bandwidth": "25g", "price": 199.00}
+  ]
+}
+```
+
+### 9.2 Commander bande passante
+
+```
+POST /order/cart/{cartId}/nutanix/{serviceName}/nodes/{nodeId}/bandwidth
+```
+
+Body:
+```json
+{
+  "bandwidth": "10g",
+  "duration": "monthly"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `nutanix_bandwidth_order_title` | Commander de la bande passante privée |
+| `nutanix_bandwidth_order_node` | Nœud |
+| `nutanix_bandwidth_order_select` | Bande passante souhaitée |
+| `nutanix_bandwidth_order_duration` | Durée |
+| `nutanix_bandwidth_order_monthly` | Mensuel |
+| `nutanix_bandwidth_order_1g` | 1 Gbps |
+| `nutanix_bandwidth_order_3g` | 3 Gbps |
+| `nutanix_bandwidth_order_10g` | 10 Gbps |
+| `nutanix_bandwidth_order_25g` | 25 Gbps |
+| `nutanix_bandwidth_order_submit` | Commander |
+| `nutanix_bandwidth_order_cancel` | Annuler |

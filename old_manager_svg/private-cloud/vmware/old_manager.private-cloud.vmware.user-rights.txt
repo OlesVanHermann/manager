@@ -1,0 +1,179 @@
+# Cahier des Charges : private-cloud/vmware/user-rights
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.user-rights.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page datagrid |
+| **Description** | Page de gestion des droits d'un utilisateur par datacenter |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Gestion des droits pour : admin-pcc |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+
+---
+
+## 4. DATAGRID
+
+### 4.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1320×175px |
+
+### 4.2 En-têtes colonnes
+
+| Colonne | Type |
+|---------|------|
+| Datacenter | Texte |
+| Accès vSphere | Texte |
+| Ajouter des ressources | Oui/Non |
+| Réseau VM | Texte |
+| Réseau NSX | Texte |
+| Actions | Menu ⋮ |
+
+### 4.3 Header style
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 40px |
+| Background | #F9FAFB |
+| Font-size | 11px |
+| Font-weight | 600 |
+| Couleur | #6B7280 |
+
+### 4.4 Données exemple
+
+| Datacenter | Accès vSphere | Ajouter ressources | Réseau VM | Réseau NSX |
+|------------|---------------|-------------------|-----------|------------|
+| dc-rbx-1 | Administrateur | Oui (#059669) | Administrateur | Administrateur |
+| dc-gra-2 | Lecture seule | Non (#DC2626) | Lecture seule | Aucun |
+| dc-sbg-1 | Opérateur | Oui (#059669) | Opérateur | Lecture seule |
+
+### 4.5 ActionMenu
+
+| Option | Couleur |
+|--------|---------|
+| Modifier les droits | #1F2937 |
+
+---
+
+## 5. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte gauche | Page 1 sur 1 |
+| Texte droite | 3 datacenters |
+
+---
+
+## 6. NIVEAUX DE DROITS
+
+| Niveau | Description |
+|--------|-------------|
+| Administrateur | Tous les droits |
+| Opérateur | Droits d'opération sans administration |
+| Lecture seule | Visualisation uniquement |
+| Aucun | Pas d'accès |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic ⋮ | Ouvrir ActionMenu |
+| Clic Modifier les droits | Ouvrir modal modification droits |
+| Clic lien retour | Retour à la liste des utilisateurs |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir les droits d'un utilisateur
+
+```
+GET /dedicatedCloud/{serviceName}/user/{userId}/rights
+```
+
+Response:
+```json
+[
+  {
+    "datacenter": "dc-rbx-1",
+    "vsphereAccess": "admin",
+    "canAddResources": true,
+    "vmNetwork": "admin",
+    "nsxNetwork": "admin"
+  },
+  {
+    "datacenter": "dc-gra-2",
+    "vsphereAccess": "readonly",
+    "canAddResources": false,
+    "vmNetwork": "readonly",
+    "nsxNetwork": "none"
+  }
+]
+```
+
+### 8.2 Modifier les droits
+
+```
+PUT /dedicatedCloud/{serviceName}/user/{userId}/rights/{datacenterId}
+```
+
+Body:
+```json
+{
+  "vsphereAccess": "operator",
+  "canAddResources": true,
+  "vmNetwork": "operator",
+  "nsxNetwork": "readonly"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_user_rights_title` | Gestion des droits pour |
+| `vmware_user_rights_col_dc` | Datacenter |
+| `vmware_user_rights_col_vsphere` | Accès vSphere |
+| `vmware_user_rights_col_resources` | Ajouter des ressources |
+| `vmware_user_rights_col_vm_network` | Réseau VM |
+| `vmware_user_rights_col_nsx_network` | Réseau NSX |
+| `vmware_user_rights_admin` | Administrateur |
+| `vmware_user_rights_operator` | Opérateur |
+| `vmware_user_rights_readonly` | Lecture seule |
+| `vmware_user_rights_none` | Aucun |
+| `vmware_user_rights_yes` | Oui |
+| `vmware_user_rights_no` | Non |
+| `vmware_user_rights_modify` | Modifier les droits |
+| `vmware_user_rights_page` | Page |
+| `vmware_user_rights_datacenters` | datacenters |

@@ -1,0 +1,521 @@
+================================================================================
+PROMPT TARGET - Private Cloud > SAP HANA
+================================================================================
+
+| Element                            | Valeur                                                      |
+|------------------------------------|-------------------------------------------------------------|
+| **Prompt**                         | prompt_target.private-cloud.sap.txt                         |
+| **Destination finale utilisateur** | ~/target_manager_svg/private-cloud/sap/                     |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/private-cloud/sap/|
+
+Version: v1.0 (2026-01-03)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+INTERDIT : Afficher le SVG dans la conversation
+OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. VUE D'ENSEMBLE
+##############################################################################
+
+### 1.1 Positionnement
+- **NAV1** : Hosted Private Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : SAP HANA (Sous-header blanc, 40px) - Actif parmi [General, VMware, Nutanix, Managed Bare Metal, SAP, Veeam, Storage]
+- **NAV3** : [Général] (sélecteur dans LEFT PANEL)
+- **NAV4** : Tabs dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion des instances SAP HANA on OVHcloud : dashboard, serveurs physiques et stockage NVMe.
+
+### 1.3 URL Pattern
+```
+/private-cloud/sap                                    → General (All) dashboard
+/private-cloud/sap?id={serviceName}                   → Dashboard service
+/private-cloud/sap?id={serviceName}&tab=servers       → Servers du service
+/private-cloud/sap?id={serviceName}&tab=storage       → Storage du service
+```
+
+##############################################################################
+# 2. STRUCTURE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Hosted Private Cloud (x=510)
+│
+└── NAV2: SAP HANA (indicateur sous "SAP")
+    │
+    ├── LEFT PANEL (280px)
+    │   │
+    │   ├── NAV3: [Général•] (sélecteur)
+    │   │
+    │   ├── 🔍 Rechercher...
+    │   │
+    │   ├── 📊 General (All)  ← Vue agrégée tous services
+    │   │   ─ ─ ─ ─ ─ ─ ─ ─
+    │   ├── ● sap-hana-abc123
+    │   └── ● sap-hana-xyz789
+    │
+    └── RIGHT PANEL (1096px)
+        │
+        ├── Header: Titre instance + serviceName + [Guides ▼]
+        │
+        └── NAV4: [Dashboard][Servers][Storage]
+            │
+            ├── Dashboard  → Tiles (Infos, Ressources, Réseau, Abonnement, Support)
+            ├── Servers    → Tableau serveurs physiques (Master/Worker)
+            └── Storage    → Tableau volumes NVMe (Data/Log/Shared/Backup)
+```
+
+##############################################################################
+# 3. STRUCTURE LEFT PANEL
+##############################################################################
+
+### 3.1 Layout vertical
+
+```
+┌─────────────────────────────┐
+│ NAV3 - Groupement           │  y=105
+│ ┌─────────────────────────┐ │
+│ │ Général            ▼  • │ │  40px height
+│ └─────────────────────────┘ │
+├─────────────────────────────┤  y=160
+│ 🔍 Rechercher...            │  40px height
+├─────────────────────────────┤  y=210
+│ ┌─────────────────────────┐ │
+│ │ 📊 General (All)        │ │  Card spéciale - vue agrégée
+│ │    Vue d'ensemble       │ │  64px height
+│ └─────────────────────────┘ │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │  Séparateur
+│ ┌─────────────────────────┐ │
+│ │ 🖥️ SAP HANA Production  │ │  Card service
+│ │    sap-hana-abc123      │ │  80px height
+│ │    Roubaix | 🟢 Actif   │ │
+│ └─────────────────────────┘ │
+│ ┌─────────────────────────┐ │
+│ │ 🖥️ SAP HANA Dev         │ │
+│ │    sap-hana-xyz789      │ │
+│ │    Gravelines | 🟢 Actif│ │
+│ └─────────────────────────┘ │
+├─────────────────────────────┤
+│ Affichage 1-2 sur 2         │  Pagination
+└─────────────────────────────┘
+```
+
+### 3.2 Card service - Anatomie
+
+```
+┌─────────────────────────────────────────────────┐
+│ 🖥️  SAP HANA Production                    80px │
+│     sap-hana-abc123                             │
+│     Roubaix | 🟢 Actif                          │
+└─────────────────────────────────────────────────┘
+```
+
+| Élément | Style |
+|---------|-------|
+| Icon | 🖥️ Server icon, 20×20px |
+| Display Name | 14px, #1F2937, font-weight: 600 |
+| Service Name | 12px, #6B7280, font-family: monospace |
+| Location | 12px, #6B7280 |
+| Status badge | 10px, pill shape |
+
+##############################################################################
+# 4. STRUCTURE RIGHT PANEL - HEADER
+##############################################################################
+
+### 4.1 Header service sélectionné
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│ ← Retour à la liste                                           [Guides ▼]  │
+│                                                                            │
+│ SAP HANA Production ✎                                                      │
+│ sap-hana-abc123                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+| Élément | Style |
+|---------|-------|
+| Back link | 14px, #0050D7, hover underline |
+| Title | 24px, #1F2937, font-weight: 700 |
+| Edit icon | ✎ 16px, #6B7280 |
+| Service name | 14px, #6B7280, monospace |
+| Guides button | Outline, dropdown avec liens documentation |
+
+##############################################################################
+# 5. NAV4 - TABS
+##############################################################################
+
+### 5.1 Configuration tabs
+
+| Tab | ID | Description |
+|-----|----|-------------|
+| Dashboard | `tab-dashboard` | Vue dashboard avec tiles d'informations |
+| Servers | `tab-servers` | Tableau des serveurs physiques |
+| Storage | `tab-storage` | Tableau des volumes NVMe |
+
+### 5.2 Style tabs
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  [Dashboard•]  [Servers]  [Storage]                          │
+└──────────────────────────────────────────────────────────────┘
+```
+
+| État | Background | Text | Border |
+|------|------------|------|--------|
+| Active | #0050D7 | #FFFFFF | none |
+| Inactive | transparent | #0050D7 | 1px #0050D7 |
+| Hover | #E8F0FE | #0050D7 | 1px #0050D7 |
+
+##############################################################################
+# 6. TAB: DASHBOARD
+##############################################################################
+
+### 6.1 Layout tiles
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐  │
+│  │ Informations        │  │ Ressources          │  │ Abonnement          │  │
+│  │ générales           │  │                     │  │                     │  │
+│  │                     │  │ Mémoire    2 TB     │  │ Création  15/01/24  │  │
+│  │ Nom service   ...   │  │ Stockage   10 TB    │  │ Renouv.   15/01/25  │  │
+│  │ Nom commercial...   │  │ CPU        4× Xeon  │  │                     │  │
+│  │ Version HANA  ...   │  │ vCPU       160      │  │ [Gérer →]           │  │
+│  │ Serveurs      2     │  ├─────────────────────┤  ├─────────────────────┤  │
+│  │ Datacenter    RBX   │  │ Réseau              │  │ Support             │  │
+│  │ Statut        🟢    │  │                     │  │                     │  │
+│  │                     │  │ IP publique ...     │  │ Niveau    Premium   │  │
+│  │ [SAP Studio ↗]      │  │ VLAN privé  ...     │  │ Travaux   Aucun     │  │
+│  │                     │  │ Bande pass. 25Gbps  │  │                     │  │
+│  │                     │  │                     │  │ [Créer ticket →]    │  │
+│  └─────────────────────┘  └─────────────────────┘  └─────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 6.2 Tile: Informations générales
+
+| Champ | Valeur exemple | Format |
+|-------|----------------|--------|
+| Nom du service | SAP HANA Production | Text, editable |
+| Nom commercial | SAP HANA Large | Text |
+| Version SAP HANA | SAP HANA 2.0 SPS06 | Text |
+| Nombre de serveurs | 2 serveurs | Number |
+| Datacenter | Roubaix (RBX7) | Text |
+| Statut | 🟢 Actif | Badge |
+| Action | Accéder à SAP HANA Studio ↗ | External link |
+
+### 6.3 Tile: Ressources
+
+| Champ | Valeur exemple |
+|-------|----------------|
+| Mémoire totale | 2 TB RAM |
+| Stockage | 10 TB NVMe |
+| CPU | 4 × Intel Xeon Platinum 8380 |
+| vCPU | 160 vCPU |
+
+### 6.4 Tile: Réseau
+
+| Champ | Valeur exemple |
+|-------|----------------|
+| IP publique | 192.0.2.200 |
+| VLAN privé | vlan-sap-123 |
+| Bande passante | 25 Gbps |
+
+### 6.5 Tile: Abonnement
+
+| Champ | Valeur exemple | Action |
+|-------|----------------|--------|
+| Date de création | 15/01/2024 | - |
+| Date de renouvellement | 15/01/2025 | - |
+| Action | Gérer l'abonnement → | Link |
+
+### 6.6 Tile: Support
+
+| Champ | Valeur exemple | Action |
+|-------|----------------|--------|
+| Niveau de support | Premium | - |
+| Travaux en cours | Aucun | - |
+| Action | Créer un ticket → | Link |
+
+##############################################################################
+# 7. TAB: SERVERS
+##############################################################################
+
+### 7.1 Toolbar
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ [↻]  🔍 Rechercher...                                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 7.2 Datagrid colonnes
+
+| Colonne | Largeur | Sortable | Description |
+|---------|---------|----------|-------------|
+| Nom du serveur | 200px | ✓ | Identifiant serveur |
+| Rôle | 120px | ✓ | Master / Worker |
+| Mémoire | 120px | ✓ | RAM allouée |
+| CPU | 200px | - | Modèle processeur |
+| Stockage | 120px | ✓ | Capacité locale |
+| IP | 140px | - | Adresse IP |
+| Statut | 100px | ✓ | Badge état |
+| Actions | 80px | - | Menu ⋮ |
+
+### 7.3 Données exemple
+
+| Serveur | Rôle | Mémoire | CPU | Stockage | IP | Statut |
+|---------|------|---------|-----|----------|-----|--------|
+| sap-hana-node01 | Master | 1 TB RAM | 2× Intel Xeon 8380 | 5 TB NVMe | 192.0.2.201 | 🟢 Actif |
+| sap-hana-node02 | Worker | 1 TB RAM | 2× Intel Xeon 8380 | 5 TB NVMe | 192.0.2.202 | 🟢 Actif |
+
+### 7.4 Action menu serveur
+
+```
+┌────────────────────┐
+│ Voir les détails   │
+│ Redémarrer         │
+│ Console KVM        │
+└────────────────────┘
+```
+
+### 7.5 Badge rôle
+
+| Rôle | Background | Text |
+|------|------------|------|
+| Master | #DBEAFE | #1D4ED8 |
+| Worker | #E5E7EB | #6B7280 |
+
+##############################################################################
+# 8. TAB: STORAGE
+##############################################################################
+
+### 8.1 Toolbar
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ [↻]  🔍 Rechercher...                                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 8.2 Datagrid colonnes
+
+| Colonne | Largeur | Sortable | Description |
+|---------|---------|----------|-------------|
+| Volume | 180px | ✓ | Identifiant volume |
+| Type | 100px | ✓ | Data/Log/Shared/Backup |
+| Capacité | 120px | ✓ | Taille totale |
+| Utilisation | 200px | ✓ | Barre progression + % |
+| Serveur | 160px | ✓ | Serveur attaché |
+| Statut | 100px | ✓ | Badge état |
+| Actions | 80px | - | Menu ⋮ |
+
+### 8.3 Données exemple
+
+| Volume | Type | Capacité | Utilisation | Serveur | Statut |
+|--------|------|----------|-------------|---------|--------|
+| data-vol-001 | Data | 5 TB NVMe | ████████░░ 70% | sap-hana-node01 | 🟢 Actif |
+| log-vol-001 | Log | 2 TB NVMe | ███░░░░░░░ 30% | sap-hana-node01 | 🟢 Actif |
+| shared-vol-001 | Shared | 1 TB NVMe | █████░░░░░ 50% | Tous | 🟢 Actif |
+| backup-vol-001 | Backup | 2 TB NVMe | ██░░░░░░░░ 25% | sap-hana-node02 | 🟢 Actif |
+
+### 8.4 Barre de progression
+
+```
+┌──────────────────────────────────────┐
+│ ████████████████░░░░░░░░  70%       │
+└──────────────────────────────────────┘
+```
+
+| Seuil | Couleur fill |
+|-------|--------------|
+| 0-70% | #0050D7 (blue) |
+| 71-85% | #F59E0B (warning) |
+| 86-100% | #DC2626 (danger) |
+
+### 8.5 Badge type volume
+
+| Type | Background | Text |
+|------|------------|------|
+| Data | #DBEAFE | #1D4ED8 |
+| Log | #FEF3C7 | #D97706 |
+| Shared | #E0E7FF | #4338CA |
+| Backup | #D1FAE5 | #059669 |
+
+### 8.6 Action menu volume
+
+```
+┌────────────────────┐
+│ Voir les détails   │
+│ Étendre le volume  │
+└────────────────────┘
+```
+
+##############################################################################
+# 9. VUE GÉNÉRALE (ALL)
+##############################################################################
+
+### 9.1 KPIs agrégés
+
+```
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│   INSTANCES  │ │   SERVEURS   │ │   STOCKAGE   │ │    MÉMOIRE   │
+│      2       │ │      4       │ │    20 TB     │ │     4 TB     │
+│   2 actives  │ │   4 actifs   │ │   45% util.  │ │   65% util.  │
+└──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
+```
+
+### 9.2 Tableau instances
+
+| Instance | Datacenter | Serveurs | Mémoire | Stockage | Statut |
+|----------|------------|----------|---------|----------|--------|
+| SAP HANA Production | Roubaix | 2 | 2 TB | 10 TB | 🟢 Actif |
+| SAP HANA Dev | Gravelines | 2 | 2 TB | 10 TB | 🟢 Actif |
+
+##############################################################################
+# 10. APIS & ENDPOINTS
+##############################################################################
+
+### 10.1 Liste des instances
+
+```
+GET /sap-hana
+```
+
+Response:
+```json
+[
+  {
+    "serviceName": "sap-hana-abc123",
+    "displayName": "SAP HANA Production",
+    "datacenter": "RBX7",
+    "status": "active"
+  }
+]
+```
+
+### 10.2 Détails instance
+
+```
+GET /sap-hana/{serviceName}
+```
+
+### 10.3 Ressources
+
+```
+GET /sap-hana/{serviceName}/resources
+```
+
+### 10.4 Réseau
+
+```
+GET /sap-hana/{serviceName}/network
+```
+
+### 10.5 Serveurs
+
+```
+GET /sap-hana/{serviceName}/servers
+```
+
+### 10.6 Volumes stockage
+
+```
+GET /sap-hana/{serviceName}/storage
+```
+
+### 10.7 Redémarrer serveur
+
+```
+POST /sap-hana/{serviceName}/servers/{serverId}/reboot
+```
+
+### 10.8 Étendre volume
+
+```
+POST /sap-hana/{serviceName}/storage/{volumeId}/extend
+Body: { "newCapacity": "10TB" }
+```
+
+##############################################################################
+# 11. TRADUCTIONS (i18n)
+##############################################################################
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `sap_nav2_title` | SAP HANA |
+| `sap_tab_dashboard` | Dashboard |
+| `sap_tab_servers` | Serveurs |
+| `sap_tab_storage` | Stockage |
+| `sap_back_to_list` | Retour à la liste |
+| `sap_general_title` | Informations générales |
+| `sap_service_name` | Nom du service |
+| `sap_commercial_name` | Nom commercial |
+| `sap_version` | Version SAP HANA |
+| `sap_server_count` | Nombre de serveurs |
+| `sap_datacenter` | Datacenter |
+| `sap_status` | Statut |
+| `sap_studio_link` | Accéder à SAP HANA Studio |
+| `sap_resources_title` | Ressources |
+| `sap_memory` | Mémoire totale |
+| `sap_storage` | Stockage |
+| `sap_cpu` | CPU |
+| `sap_vcpu` | vCPU |
+| `sap_network_title` | Réseau |
+| `sap_public_ip` | IP publique |
+| `sap_vlan` | VLAN privé |
+| `sap_bandwidth` | Bande passante |
+| `sap_subscription_title` | Abonnement |
+| `sap_creation_date` | Date de création |
+| `sap_renewal_date` | Date de renouvellement |
+| `sap_manage_subscription` | Gérer l'abonnement |
+| `sap_support_title` | Support |
+| `sap_support_level` | Niveau de support |
+| `sap_works` | Travaux en cours |
+| `sap_create_ticket` | Créer un ticket |
+| `sap_server_name` | Nom du serveur |
+| `sap_server_role` | Rôle |
+| `sap_server_memory` | Mémoire |
+| `sap_server_ip` | IP |
+| `sap_role_master` | Master |
+| `sap_role_worker` | Worker |
+| `sap_action_details` | Voir les détails |
+| `sap_action_reboot` | Redémarrer |
+| `sap_action_kvm` | Console KVM |
+| `sap_volume` | Volume |
+| `sap_volume_type` | Type |
+| `sap_capacity` | Capacité |
+| `sap_usage` | Utilisation |
+| `sap_attached_server` | Serveur |
+| `sap_type_data` | Data |
+| `sap_type_log` | Log |
+| `sap_type_shared` | Shared |
+| `sap_type_backup` | Backup |
+| `sap_action_extend` | Étendre le volume |
+| `sap_all_servers` | Tous |
+
+##############################################################################
+# 12. ÉCRANS À PRODUIRE
+##############################################################################
+
+| # | Route | Fichier | Description |
+|---|-------|---------|-------------|
+| 1 | `/private-cloud/sap` | `target_.sap.general-all.svg` | Vue générale agrégée |
+| 2 | `/private-cloud/sap?id=sap-hana-abc123` | `target_.sap.dashboard.svg` | Dashboard service |
+| 3 | `/private-cloud/sap?id=sap-hana-abc123&tab=servers` | `target_.sap.servers.svg` | Tab Serveurs |
+| 4 | `/private-cloud/sap?id=sap-hana-abc123&tab=storage` | `target_.sap.storage.svg` | Tab Stockage |
+
+================================================================================
+FIN DU DOCUMENT
+================================================================================

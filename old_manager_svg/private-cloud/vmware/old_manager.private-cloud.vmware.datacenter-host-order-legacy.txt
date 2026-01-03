@@ -1,0 +1,206 @@
+# Cahier des Charges : private-cloud/vmware/datacenter-host-order-legacy
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.datacenter-host-order-legacy.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page wizard avec stepper (2 étapes) |
+| **Description** | Page legacy pour commander des hôtes avec sélection profil et quantité |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width |
+| Padding | 24px |
+| Background | #F6F6F9 |
+
+---
+
+## 3. HEADER
+
+### 3.1 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Commander des hôtes |
+| Couleur | #0050D7 |
+
+---
+
+## 4. STEPPER
+
+| Étape | Numéro | Libellé | État |
+|-------|--------|---------|------|
+| 1 | 1 | Sélection du profil | Active (cercle #0050D7) |
+| 2 | 2 | Récapitulatif | Inactive |
+
+### 4.1 Style stepper
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle actif | #0050D7 rempli |
+| Cercle inactif | #FFFFFF, border #E5E7EB |
+| Ligne connexion | #E5E7EB |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Quel hôte souhaitez-vous commander ? |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+---
+
+## 6. DATAGRID SÉLECTION
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1200×200px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| (Radio) | 60px |
+| Hôte | 180px |
+| Fréquence | 120px |
+| Mémoire (ECC) | 150px |
+| Cœurs | 100px |
+| Tarif mensuel | 200px |
+
+### 6.3 Données exemple
+
+| Hôte | Fréquence | Mémoire | Cœurs | Tarif |
+|------|-----------|---------|-------|-------|
+| SDDC-128 | 2.1 GHz | 128 Go | 12 | 450,00 € HT |
+| SDDC-256 | 2.3 GHz | 256 Go | 18 | 750,00 € HT |
+| SDDC-512-SAP | 2.5 GHz | 512 Go | 24 | 1 200,00 € HT |
+
+### 6.4 Style ligne sélectionnée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Radio | Cercle rempli #0050D7 avec point blanc |
+
+### 6.5 Style tarif
+
+| Propriété | Valeur |
+|-----------|--------|
+| Couleur | #DC2626 |
+| Font-weight | 500 |
+
+---
+
+## 7. INFO BANNER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 700×40px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Icône | ℹ️ |
+| Message | Vous pouvez commander jusqu'à 20 hôtes à la fois. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 8. SÉLECTEUR QUANTITÉ
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Quantité |
+| Font-weight | 500 |
+| Dimensions input | 120×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Bouton moins | − |
+| Valeur | 1 |
+| Bouton plus | + |
+
+---
+
+## 9. BOUTONS NAVIGATION
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Suivant | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 10. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic radio | Sélectionner ce profil |
+| Clic − | Diminuer quantité (min 1) |
+| Clic + | Augmenter quantité (max 20) |
+| Clic Annuler | Retour page précédente |
+| Clic Suivant | Passer à l'étape 2 (récapitulatif) |
+
+---
+
+## 11. APIS & ENDPOINTS
+
+### 11.1 Obtenir les profils hôtes
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/host/profiles
+```
+
+Response:
+```json
+[
+  {
+    "name": "SDDC-128",
+    "frequency": "2.1 GHz",
+    "memory": "128 Go",
+    "cores": 12,
+    "monthlyPrice": { "value": 450, "text": "450,00 € HT" }
+  },
+  {
+    "name": "SDDC-256",
+    "frequency": "2.3 GHz",
+    "memory": "256 Go",
+    "cores": 18,
+    "monthlyPrice": { "value": 750, "text": "750,00 € HT" }
+  }
+]
+```
+
+---
+
+## 12. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_host_legacy_title` | Commander des hôtes |
+| `vmware_host_legacy_step1` | Sélection du profil |
+| `vmware_host_legacy_step2` | Récapitulatif |
+| `vmware_host_legacy_question` | Quel hôte souhaitez-vous commander ? |
+| `vmware_host_legacy_col_host` | Hôte |
+| `vmware_host_legacy_col_freq` | Fréquence |
+| `vmware_host_legacy_col_memory` | Mémoire (ECC) |
+| `vmware_host_legacy_col_cores` | Cœurs |
+| `vmware_host_legacy_col_price` | Tarif mensuel |
+| `vmware_host_legacy_info` | Vous pouvez commander jusqu'à 20 hôtes à la fois. |
+| `vmware_host_legacy_quantity` | Quantité |
+| `vmware_host_legacy_cancel` | Annuler |
+| `vmware_host_legacy_next` | Suivant |

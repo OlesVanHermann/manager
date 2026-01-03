@@ -8,34 +8,14 @@ PROMPT TARGET - Web Cloud > VoIP
 | **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/web-cloud/voip/           |
 | **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/web-cloud/voip/ |
 
-Version: v14 (2026-01-01) - NAV3 font-size corrigé
+Version: v15 (2026-01-03) - Restructuration NAV3a/NAV3b/NAV4
 Parent:  prompt_target.txt (design system, shell template, composants)
 
-NOTE: Ce prompt a été mis à jour après corrections front-end VoIP.
-      Basé sur /home/ubuntu/aiapp/frontend/src/pages/web-cloud/voip/
-
-SESSION 2026-01-01 (v14):
-- ✅ CSS: NAV3 font-size corrigé 12px → 11px (conformité prompt_target.txt)
-- ✅ DOC: Section 2.5 Specs CSS Layout mise à jour
-
-SESSION 2026-01-01 (v13):
-- ✅ CSS: Ajout `flex-shrink: 0` sur `.voip-left-panel` (conformité prompt_split_layout_method.txt)
-- ✅ CSS: Ajout `min-width: 0` sur `.voip-right-panel` (conformité prompt_split_layout_method.txt)
-- ✅ DOC: Conformité layout vérifiée à 100% vs standards
-
-SESSION 2026-01-01 (v12):
-- ✅ NAV3: Layout grid 2x2 → flex horizontal 4 colonnes
-- ✅ NAV3: Boutons compacts (padding: 6px 4px, font-size: 10px)
-- ✅ NAV3: Labels simplifiés (emojis supprimés, "Carrier" → "Trunk")
-- ✅ NAV3: Count badge réduit (font-size: 9px)
-- ✅ DOC: Section 2 entièrement réécrite (structure NAV réelle)
-- ✅ DOC: NAV3/NAV4 clarifiés avec schémas ASCII
-- ✅ DOC: Actions header + états vides documentés
-
-SESSION 2026-01-01 (v11):
-- ✅ CSS: Pattern .btn-primary:hover unifié (13 fichiers)
-- ✅ i18n: Clés manquantes ajoutées (sip/sms/fax/carrier)
-- ✅ Actions: Boutons header avec onClick handlers
+SESSION 2026-01-03 (v15):
+- ✅ RESTRUCTURATION: NAV3a (SIP/SMS/FAX/Trunk) + NAV3b (Groups/Lignes/Numéros/Services)
+- ✅ NAV4: Tabs du RIGHT PANEL selon sélection NAV3a+NAV3b
+- ✅ DOC: Section 2 entièrement réécrite avec nouvelle hiérarchie
+- ✅ DOC: Schémas ASCII mis à jour
 
 ================================================================================
 
@@ -50,17 +30,16 @@ SESSION 2026-01-01 (v11):
 3. **Numéros** : Alias/DID avec configs (redirection, file d'attente, SVI, conférence)
 4. **Fax** : Service fax virtuel avec campagnes et historique
 5. **SMS** : Service d'envoi de SMS avec crédits, campagnes et templates
-6. **Numéros abrégés** : Annuaire interne du groupe
-7. **Carrier-SIP** : Trunks SIP pour usage professionnel
+6. **Carrier-SIP** : Trunks SIP pour usage professionnel
 
 ### Types de services
 
 | Type | Badge | Icône | Description |
 |------|-------|-------|-------------|
-| **Ligne** | `Ligne` | ☎️ | Ligne SIP avec téléphone |
+| **Groupe** | `Groupe` | 👥 | Groupe de facturation VoIP |
+| **Ligne** | `Ligne` | 📞 | Ligne SIP avec téléphone |
 | **Numéro** | `Numéro` | 🔢 | Alias/DID configurable |
 | **Fax** | `Fax` | 📠 | Service fax virtuel |
-| **VoiceFax** | `VoiceFax` | 📠☎️ | Fax + messagerie vocale |
 | **SMS** | `SMS` | 💬 | Service SMS avec crédits |
 | **CarrierSip** | `Trunk` | 🔗 | Trunk SIP carrier |
 
@@ -74,46 +53,6 @@ SESSION 2026-01-01 (v11):
 | **Conférence** | `Conf` | Salle de conférence |
 | **Alias simple** | `Alias` | Numéro non configuré |
 
-### Modèle de données
-
-```
-COMPTE CLIENT
-│
-├── GROUPES VOIP (billingAccount)
-│   │
-│   ├── Groupe 1: "OVH-TELECOM-12345"
-│   │   ├── Description: "Téléphonie Bureau Paris"
-│   │   ├── Crédit: 50,00 €
-│   │   │
-│   │   ├── LIGNES
-│   │   │   ├── 0033972101234: Ligne SIP + Yealink T46G
-│   │   │   └── 0033972101235: Ligne SIP + Softphone
-│   │   │
-│   │   ├── NUMÉROS
-│   │   │   ├── 0033972109999: File d'attente (5 membres)
-│   │   │   ├── 0033972109900: SVI (menu principal)
-│   │   │   └── 0033972108000: Redirection → 0033612345678
-│   │   │
-│   │   ├── FAX
-│   │   │   └── 0033972107777: Fax virtuel
-│   │   │
-│   │   ├── SMS
-│   │   │   └── sms-ab12345: 500 crédits
-│   │   │
-│   │   └── ABRÉGÉS
-│   │       ├── *100 → 0033972101234 (Direction)
-│   │       └── *101 → 0033972101235 (Accueil)
-│   │
-│   └── Groupe 2: "OVH-TELECOM-67890"
-│       └── ...
-│
-├── CARRIER-SIP (hors groupe)
-│   └── carrier-sip-12345: Trunk SIP 50 canaux
-│
-└── SMS (hors groupe)
-    └── sms-standalone: 1000 crédits
-```
-
 ##############################################################################
 # 1. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
 ##############################################################################
@@ -121,90 +60,170 @@ COMPTE CLIENT
 ✅ FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
 
 ##############################################################################
-# 2. ARBORESCENCE NAV COMPLÈTE (v12 - ALIGNÉE AVEC FRONTEND)
+# 2. ARBORESCENCE NAV COMPLÈTE (v15 - NAV3a/NAV3b/NAV4)
 ##############################################################################
 
-NOTE: Cette section reflète l'implémentation RÉELLE dans:
-      /home/ubuntu/aiapp/frontend/src/pages/web-cloud/voip/
-
-Mise à jour: 2026-01-01 (v12) - Structure NAV3/NAV4 corrigée
-
-### 2.1 STRUCTURE GLOBALE
+### 2.1 STRUCTURE GLOBALE AVEC NAV3a/NAV3b
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│ NAV1: Web Cloud                                          (Header bleu)  │
-├─────────────────────────────────────────────────────────────────────────┤
-│ NAV2: VoIP                                          (Sous-header blanc) │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌──────────────────────┐  ┌────────────────────────────────────────┐   │
-│  │     LEFT PANEL       │  │           RIGHT PANEL                  │   │
-│  │     (280px fixe)     │  │           (flex: 1)                    │   │
-│  │                      │  │                                        │   │
-│  │  ┌────┬────┬────┬───┐│  │  ┌─────────────────────────────────┐   │   │
-│  │  │SIP │SMS │FAX │Trk││  │  │ HEADER: Titre + Actions          │   │   │
-│  │  └────┴────┴────┴───┘│  │  └─────────────────────────────────┘   │   │
-│  │       NAV3           │  │  ┌─────────────────────────────────┐   │   │
-│  │                      │  │  │ NAV4: Onglets du service         │   │   │
-│  │  🔍 Recherche...     │  │  └─────────────────────────────────┘   │   │
-│  │                      │  │  ┌─────────────────────────────────┐   │   │
-│  │  ┌──────────────────┐│  │  │                                 │   │   │
-│  │  │ Service 1        ││  │  │         CONTENT                 │   │   │
-│  │  │ Service 2   [sel]││  │  │                                 │   │   │
-│  │  │ Service 3        ││  │  │                                 │   │   │
-│  │  └──────────────────┘│  │  └─────────────────────────────────┘   │   │
-│  └──────────────────────┘  └────────────────────────────────────────┘   │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ NAV1: Web Cloud                                            (Header bleu)    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV2: VoIP                                            (Sous-header blanc)   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌───────────────────────┐  ┌──────────────────────────────────────────┐   │
+│  │     LEFT PANEL        │  │           RIGHT PANEL                    │   │
+│  │     (280px fixe)      │  │           (flex: 1)                      │   │
+│  │                       │  │                                          │   │
+│  │  ┌─────┬─────┬────┬──┐│  │  ┌───────────────────────────────────┐   │   │
+│  │  │ SIP │ SMS │FAX │Tk││  │  │ HEADER: Titre + Badge + Actions   │   │   │
+│  │  └─────┴─────┴────┴──┘│  │  └───────────────────────────────────┘   │   │
+│  │       NAV3a           │  │  ┌───────────────────────────────────┐   │   │
+│  │                       │  │  │ NAV4: Onglets selon NAV3a+NAV3b   │   │   │
+│  │  🔍 Recherche...      │  │  └───────────────────────────────────┘   │   │
+│  │                       │  │  ┌───────────────────────────────────┐   │   │
+│  │  ┌─────────┬─────────┐│  │  │                                   │   │   │
+│  │  │ Groups  │ Lignes  ││  │  │         CONTENT                   │   │   │
+│  │  ├─────────┼─────────┤│  │  │                                   │   │   │
+│  │  │ Numéros │Services ││  │  │                                   │   │   │
+│  │  └─────────┴─────────┘│  │  └───────────────────────────────────┘   │   │
+│  │       NAV3b (SIP only)│  │                                          │   │
+│  │                       │  │                                          │   │
+│  │  2 groupes            │  │                                          │   │
+│  │                       │  │                                          │   │
+│  │  ┌───────────────────┐│  │                                          │   │
+│  │  │ 👥 Bureau Paris   ││  │                                          │   │
+│  │  │    OVH-TELECOM... ││  │                                          │   │
+│  │  └───────────────────┘│  │                                          │   │
+│  │  ┌───────────────────┐│  │                                          │   │
+│  │  │ 👥 Agence Lyon    ││  │                                          │   │
+│  │  │    OVH-TELECOM... ││  │                                          │   │
+│  │  └───────────────────┘│  │                                          │   │
+│  └───────────────────────┘  └──────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2 NAV3 - LEFT PANEL (4 boutons horizontaux)
+### 2.2 NAV3a - TYPE DE SERVICE (4 boutons horizontaux)
 
-Position: Top du left panel
-Fichier: `/voip/index.tsx` + `/voip/index.css`
-CSS class: `.voip-nav3-tabs` (flex horizontal)
-
-```
-┌─────┬─────┬─────┬─────┐
-│ SIP │ SMS │ FAX │Trunk│  ← NAV3 tabs (boutons compacts)
-│  2  │  1  │  0  │  0  │  ← Count badges
-└─────┴─────┴─────┴─────┘
-```
-
-| NAV3 | ID | Label | Fichier Panel | Description |
-|------|----|-------|---------------|-------------|
-| SIP | `sip` | SIP | `SipPanel.tsx` | Groupes VoIP, Lignes, Numéros |
-| SMS | `sms` | SMS | `SmsPanel.tsx` | Comptes SMS |
-| FAX | `fax` | FAX | `FaxPanel.tsx` | Services Freefax |
-| Trunk | `carrier-sip` | Trunk | `CarrierSipPanel.tsx` | Trunks SIP professionnels |
-
-### 2.3 NAV4 - RIGHT PANEL (onglets par NAV3)
-
-Position: Sous le header du right panel
-CSS class: `.voip-right-panel-tabs`
-
-#### NAV4 pour SIP (SipPanel.tsx)
+Position: Top du LEFT PANEL
+CSS class: `.voip-nav3a-tabs`
 
 ```
-┌─────────┬────────┬────────┬─────────┬──────────┐
-│ Général │ Groups │ Lignes │ Numéros │ Services │
-│         │   (1)  │  (2)   │   (3)   │   (4)    │
-└─────────┴────────┴────────┴─────────┴──────────┘
+┌─────┬─────┬─────┬───────┐
+│ SIP │ SMS │ FAX │ Trunk │  ← NAV3a (type de service)
+│ (2) │ (1) │ (1) │  (1)  │  ← Count badges
+└─────┴─────┴─────┴───────┘
 ```
 
-| Tab | ID | Label | Composant | Count |
-|-----|----|-------|-----------|-------|
-| 1 | `general` | Général | Inline (résumé) | - |
-| 2 | `groups` | Groups | `GroupsTab.tsx` | groupsCount |
-| 3 | `lines` | Lignes | `LinesTab.tsx` | linesCount |
-| 4 | `numbers` | Numéros | `NumbersTab.tsx` | numbersCount |
-| 5 | `services` | Services | `ServicesTab.tsx` | servicesCount |
+| NAV3a | ID | Label | Description |
+|-------|----|-------|-------------|
+| SIP | `sip` | SIP | Groupes VoIP (affiche NAV3b) |
+| SMS | `sms` | SMS | Comptes SMS |
+| FAX | `fax` | FAX | Services Freefax |
+| Trunk | `carrier-sip` | Trunk | Trunks SIP professionnels |
 
-**Actions header SIP:**
-- Badge status (Actif/Expiré)
+### 2.3 NAV3b - SOUS-TYPE SIP (4 boutons - UNIQUEMENT si NAV3a=SIP)
 
-#### NAV4 pour SMS (SmsPanel.tsx)
+Position: Sous la recherche, dans le LEFT PANEL
+CSS class: `.voip-nav3b-tabs`
+Condition: Visible UNIQUEMENT quand NAV3a = SIP
+
+```
+┌─────────┬─────────┐
+│ Groups  │ Lignes  │  ← NAV3b (sous-type SIP)
+│   (2)   │   (5)   │
+├─────────┼─────────┤
+│ Numéros │Services │
+│   (8)   │  (14)   │
+└─────────┴─────────┘
+```
+
+| NAV3b | ID | Label | Description |
+|-------|----|-------|-------------|
+| Groups | `groups` | Groups | Groupes de facturation |
+| Lignes | `lines` | Lignes | Lignes téléphoniques |
+| Numéros | `numbers` | Numéros | Numéros/Alias/DID |
+| Services | `services` | Services | Vue globale tous services |
+
+### 2.4 NAV4 - TABS DU RIGHT PANEL (selon NAV3a + NAV3b)
+
+Position: Sous le header du RIGHT PANEL
+CSS class: `.voip-nav5-tabs`
+
+#### NAV4 pour SIP > Groups (7 tabs)
+
+```
+┌─────────┬──────────┬───────────┬─────────────┬─────────────┬───────────────┬──────────┐
+│ Général │ Services │ Commandes │ Portabilité │ Facturation │ Remboursements│ Sécurité │
+└─────────┴──────────┴───────────┴─────────────┴─────────────┴───────────────┴──────────┘
+```
+
+| # | Tab ID | Label | Description |
+|---|--------|-------|-------------|
+| 1 | `general` | Général | Informations du groupe |
+| 2 | `services` | Services | Liste services du groupe |
+| 3 | `orders` | Commandes | Commandes en cours |
+| 4 | `portability` | Portabilité | Demandes de portabilité |
+| 5 | `billing` | Facturation | Historique facturation |
+| 6 | `repayments` | Remboursements | Demandes de remboursement |
+| 7 | `security` | Sécurité | Paramètres sécurité |
+
+#### NAV4 pour SIP > Lignes (7 tabs)
+
+```
+┌─────────┬───────────┬────────┬─────────┬───────────┬─────────────┬─────────┐
+│ Général │ Téléphone │ Appels │ Renvois │ Messagerie│ Consommation│ Options │
+└─────────┴───────────┴────────┴─────────┴───────────┴─────────────┴─────────┘
+```
+
+| # | Tab ID | Label | Description |
+|---|--------|-------|-------------|
+| 1 | `general` | Général | Informations de la ligne |
+| 2 | `phone` | Téléphone | Configuration téléphone |
+| 3 | `calls` | Appels | Historique des appels |
+| 4 | `forward` | Renvois | Configuration renvois |
+| 5 | `voicemail` | Messagerie | Messagerie vocale |
+| 6 | `consumption` | Consommation | Consommation/factures |
+| 7 | `options` | Options | Options de la ligne |
+
+#### NAV4 pour SIP > Numéros (12 tabs)
+
+```
+┌─────────┬────────┬────────┬───────┬──────────┬─────────┬───────┬────────┬─────┬──────┬───────┬─────┐
+│ Général │ Config │ Appels │ Conso │ Planning │ Options │ Enreg │ Agents │ DDI │ Sons │ Stats │ SVI │
+└─────────┴────────┴────────┴───────┴──────────┴─────────┴───────┴────────┴─────┴──────┴───────┴─────┘
+```
+
+| # | Tab ID | Label | Description |
+|---|--------|-------|-------------|
+| 1 | `general` | Général | Informations du numéro |
+| 2 | `configuration` | Config | Type (redirect/queue/SVI) |
+| 3 | `calls` | Appels | Historique des appels |
+| 4 | `consumption` | Conso | Consommation |
+| 5 | `scheduler` | Planning | Plages horaires |
+| 6 | `options` | Options | Options du numéro |
+| 7 | `records` | Enreg | Enregistrements d'appels |
+| 8 | `agents` | Agents | Agents file d'attente |
+| 9 | `ddi` | DDI | Configuration DDI |
+| 10 | `sounds` | Sons | Sons personnalisés |
+| 11 | `stats` | Stats | Statistiques |
+| 12 | `svi` | SVI | Serveur vocal interactif |
+
+#### NAV4 pour SIP > Services (PAS DE TABS)
+
+```
+┌───────────────────────────────────────────────────────────────────────────┐
+│  [Tous (14)]  [Lignes (5)]  [Numéros (8)]  [Fax (1)]      🔍 Filtrer...  │
+├───────────────────────────────────────────────────────────────────────────┤
+│  TABLE avec tous les services du groupe                                   │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+Note: Pas de NAV4 tabs - juste une table filtrable avec filtres inline.
+
+#### NAV4 pour SMS (7 tabs)
 
 ```
 ┌─────────┬─────────┬───────────┬──────────┬──────────┬─────────────┬─────────┐
@@ -212,40 +231,33 @@ CSS class: `.voip-right-panel-tabs`
 └─────────┴─────────┴───────────┴──────────┴──────────┴─────────────┴─────────┘
 ```
 
-| Tab | ID | Label | Composant |
-|-----|----|-------|-----------|
-| 1 | `general` | Général | `GeneralTab.tsx` |
-| 2 | `send` | Envoyer | `send/SendTab.tsx` |
-| 3 | `campaigns` | Campagnes | `campaigns/CampaignsTab.tsx` |
-| 4 | `outgoing` | Sortants | `outgoing/OutgoingTab.tsx` |
-| 5 | `incoming` | Entrants | `incoming/IncomingTab.tsx` |
-| 6 | `senders` | Expéditeurs | `senders/SendersTab.tsx` |
-| 7 | `templates` | Modèles | `templates/TemplatesTab.tsx` |
+| # | Tab ID | Label | Description |
+|---|--------|-------|-------------|
+| 1 | `general` | Général | Informations compte SMS |
+| 2 | `send` | Envoyer | Formulaire envoi SMS |
+| 3 | `campaigns` | Campagnes | Campagnes SMS |
+| 4 | `outgoing` | Sortants | Historique SMS envoyés |
+| 5 | `incoming` | Entrants | SMS reçus |
+| 6 | `senders` | Expéditeurs | Gestion expéditeurs |
+| 7 | `templates` | Modèles | Modèles de messages |
 
-**Actions header SMS:**
-- Badge crédits (ex: "1,234 crédits")
-- Bouton "Acheter" → `window.open('https://www.ovhtelecom.fr/sms/')`
-
-#### NAV4 pour FAX (FaxPanel.tsx)
+#### NAV4 pour FAX (5 tabs)
 
 ```
 ┌─────────┬───────────┬─────────────┬────────────┬──────┐
-│ Général │ Campagnes │ Consommation │ Paramètres │ Logo │
+│ Général │ Campagnes │ Consommation│ Paramètres │ Logo │
 └─────────┴───────────┴─────────────┴────────────┴──────┘
 ```
 
-| Tab | ID | Label | Composant |
-|-----|----|-------|-----------|
-| 1 | `general` | Général | `GeneralTab.tsx` |
-| 2 | `campaigns` | Campagnes | `campaigns/CampaignsTab.tsx` |
-| 3 | `consumption` | Consommation | `consumption/ConsumptionTab.tsx` |
-| 4 | `settings` | Paramètres | `settings/SettingsTab.tsx` |
-| 5 | `logo` | Logo | `logo/LogoTab.tsx` |
+| # | Tab ID | Label | Description |
+|---|--------|-------|-------------|
+| 1 | `general` | Général | Informations service fax |
+| 2 | `campaigns` | Campagnes | Envoi et historique fax |
+| 3 | `consumption` | Consommation | Consommation fax |
+| 4 | `settings` | Paramètres | Paramètres du service |
+| 5 | `logo` | Logo | Logo sur page de garde |
 
-**Actions header FAX:**
-- Bouton "Envoyer" → `setActiveTab('campaigns')`
-
-#### NAV4 pour CARRIER-SIP / Trunk (CarrierSipPanel.tsx)
+#### NAV4 pour CARRIER-SIP / Trunk (5 tabs)
 
 ```
 ┌─────────┬─────┬───────────┬─────────┬──────────┐
@@ -253,61 +265,245 @@ CSS class: `.voip-right-panel-tabs`
 └─────────┴─────┴───────────┴─────────┴──────────┘
 ```
 
-| Tab | ID | Label | Composant |
-|-----|----|-------|-----------|
-| 1 | `general` | Général | `GeneralTab.tsx` |
-| 2 | `cdr` | CDR | `cdr/CdrTab.tsx` |
-| 3 | `endpoints` | Endpoints | `endpoints/EndpointsTab.tsx` |
-| 4 | `routing` | Routing | `routing/RoutingTab.tsx` |
-| 5 | `settings` | Settings | `settings/SettingsTab.tsx` |
+| # | Tab ID | Label | Description |
+|---|--------|-------|-------------|
+| 1 | `general` | Général | Informations trunk |
+| 2 | `cdr` | CDR | Call Detail Records |
+| 3 | `endpoints` | Endpoints | Configuration endpoints |
+| 4 | `routing` | Routing | Règles de routage |
+| 5 | `settings` | Settings | Paramètres avancés |
 
-**Actions header Carrier-SIP:**
-- Badge appels: "{currentCalls}/{maxCalls} appels"
+### 2.5 RÉCAPITULATIF COMPLET NAV
 
-### 2.4 RÉCAPITULATIF NIVEAUX NAV
+| Niveau | Élément | Position | Visible si |
+|--------|---------|----------|------------|
+| **NAV1** | Header bleu 50px | y=0 | Toujours |
+| **NAV2** | Sous-header blanc 40px | y=50 | Toujours |
+| **NAV3a** | [SIP][SMS][FAX][Trunk] | Top LEFT PANEL | Toujours |
+| **NAV3b** | [Groups][Lignes][Numéros][Services] | LEFT PANEL (sous recherche) | NAV3a=SIP uniquement |
+| **NAV4** | Tabs RIGHT PANEL | Sous header RIGHT | Selon NAV3a+NAV3b |
 
-| Niveau | Élément | Position | Composant/Class |
-|--------|---------|----------|-----------------|
-| **NAV1** | Header bleu 50px | y=0 | `<Header>` global |
-| **NAV2** | Sous-header blanc 40px | y=50 | `<SubNav>` global |
-| **NAV3** | Boutons left panel | Top left panel | `.voip-nav3-tabs` |
-| **NAV4** | Onglets right panel | Sous header right | `.voip-right-panel-tabs` |
-| **CONTENT** | Contenu onglet | Zone principale | `.voip-right-panel-content` |
+### 2.6 LISTE DES ITEMS DANS LEFT PANEL
 
-### 2.5 SPECS CSS LAYOUT (conformité prompt_split_layout_method.txt)
+La liste des items change selon NAV3a et NAV3b :
+
+| NAV3a | NAV3b | Items affichés | Icône |
+|-------|-------|----------------|-------|
+| SIP | Groups | Groupes de facturation | 👥 |
+| SIP | Lignes | Lignes téléphoniques | 📞 |
+| SIP | Numéros | Numéros/Alias | 🔢 |
+| SIP | Services | Tous services (mixte) | 📋 |
+| SMS | - | Comptes SMS | 💬 |
+| FAX | - | Services Freefax | 📠 |
+| Trunk | - | Trunks Carrier-SIP | 🔗 |
+
+### 2.7 ACTIONS HEADER PAR SERVICE
+
+| NAV3a | NAV3b | Badge | Bouton |
+|-------|-------|-------|--------|
+| SIP | Groups | [Actif] | [+ Ajouter ligne] [+ Commander numéro] |
+| SIP | Lignes | [Actif/Inactif] | [📞 Appeler] |
+| SIP | Numéros | [Type: Queue/SVI/...] | [⚙ Configurer] |
+| SIP | Services | - | - |
+| SMS | - | [1,234 crédits] | [+ Acheter] |
+| FAX | - | [Actif] | [+ Envoyer] |
+| Trunk | - | [12/50 appels] | - |
+
+### 2.8 SPECS CSS LAYOUT
 
 | Élément | Classe CSS | Propriétés critiques |
 |---------|------------|----------------------|
 | **Container** | `.voip-layout` | `display: flex; gap: 16px; padding: 15px 24px 24px 24px` |
-| **Left Panel** | `.voip-left-panel` | `width: 280px; min-width: 280px; max-width: 280px; flex-shrink: 0` |
+| **Left Panel** | `.voip-left-panel` | `width: 280px; flex-shrink: 0` |
 | **Right Panel** | `.voip-right-panel` | `flex: 1; min-width: 0` |
-| **NAV3 tabs** | `.voip-nav3-tabs` | `padding: 12px; background: #F9FAFB; gap: 4px` |
-| **NAV3 button** | `.voip-nav3-tab` | `flex: 1; padding: 8px 12px; font-size: 11px; border-radius: 6px` |
-| **NAV3 active** | `.voip-nav3-tab.active` | `background: #0050D7; color: #FFFFFF` |
-| **NAV4 tabs** | `.voip-right-panel-tabs` | `padding: 12px 20px; gap: 4px` |
-| **NAV4 button** | `.voip-right-panel-tab` | `padding: 6px 14px; font-size: 11px; border: 1px solid #0050D7` |
+| **NAV3a tabs** | `.voip-nav3a-tabs` | `display: flex; gap: 4px; padding: 12px` |
+| **NAV3a button** | `.voip-nav3a-tab` | `flex: 1; padding: 8px 4px; font-size: 11px` |
+| **NAV3b tabs** | `.voip-nav3b-tabs` | `display: grid; grid-template-columns: 1fr 1fr; gap: 4px` |
+| **NAV3b button** | `.voip-nav3b-tab` | `padding: 8px 12px; font-size: 11px` |
+| **NAV4 tabs** | `.voip-nav5-tabs` | `display: flex; gap: 4px; padding: 12px 20px` |
+| **NAV4 button** | `.voip-nav5-tab` | `padding: 6px 14px; font-size: 11px` |
 
-### 2.6 FICHIERS PRINCIPAUX
+##############################################################################
+# 3. MOCK DATA
+##############################################################################
+
+### 3.1 Groupe VoIP sélectionné
+
+```json
+{
+  "billingAccount": "OVH-TELECOM-12345",
+  "description": "Téléphonie Bureau Paris",
+  "status": "active",
+  "credit": 50.00,
+  "linesCount": 5,
+  "numbersCount": 8,
+  "faxCount": 1,
+  "creation": "2022-03-15",
+  "expiration": "2026-03-15"
+}
+```
+
+### 3.2 Liste groupes (NAV3b = Groups)
+
+```json
+[
+  {
+    "billingAccount": "OVH-TELECOM-12345",
+    "description": "Bureau Paris",
+    "counts": "☎️ 5 · 🔢 8 · 📠 1",
+    "badge": "Actif",
+    "selected": true
+  },
+  {
+    "billingAccount": "OVH-TELECOM-67890",
+    "description": "Agence Lyon",
+    "counts": "☎️ 3 · 🔢 4 · 📠 0",
+    "badge": "Actif",
+    "selected": false
+  }
+]
+```
+
+### 3.3 Liste lignes (NAV3b = Lignes)
+
+```json
+[
+  {
+    "serviceName": "+33 9 72 10 12 34",
+    "description": "Ligne Accueil",
+    "phone": "Cisco IP Phone 8845",
+    "status": "registered",
+    "selected": true
+  },
+  {
+    "serviceName": "+33 9 72 10 12 35",
+    "description": "Ligne Direction",
+    "phone": "Yealink T46S",
+    "status": "registered",
+    "selected": false
+  },
+  {
+    "serviceName": "+33 9 72 10 12 36",
+    "description": "Ligne Commercial",
+    "phone": "Softphone",
+    "status": "registered",
+    "selected": false
+  }
+]
+```
+
+### 3.4 Liste numéros (NAV3b = Numéros)
+
+```json
+[
+  {
+    "serviceName": "+33 1 84 88 00 00",
+    "description": "Numéro Principal",
+    "type": "queue",
+    "badge": "File d'attente",
+    "selected": true
+  },
+  {
+    "serviceName": "+33 1 84 88 00 01",
+    "description": "Accueil",
+    "type": "redirect",
+    "badge": "Redirection",
+    "selected": false
+  },
+  {
+    "serviceName": "+33 1 84 88 00 02",
+    "description": "Support",
+    "type": "svi",
+    "badge": "SVI",
+    "selected": false
+  }
+]
+```
+
+### 3.5 Compte SMS sélectionné
+
+```json
+{
+  "serviceName": "sms-ab12345",
+  "description": "Marketing",
+  "creditsLeft": 1234,
+  "status": "active"
+}
+```
+
+### 3.6 Service FAX sélectionné
+
+```json
+{
+  "serviceName": "0033972107777",
+  "description": "Fax Bureau",
+  "type": "freefax",
+  "status": "active"
+}
+```
+
+### 3.7 Trunk Carrier SIP sélectionné
+
+```json
+{
+  "serviceName": "carrier-sip-98765",
+  "description": "Trunk Principal",
+  "currentCalls": 12,
+  "maxCalls": 50,
+  "status": "active"
+}
+```
+
+##############################################################################
+# 4. ARBORESCENCE FICHIERS
+##############################################################################
 
 ```
 /voip/
-├── index.tsx              ← Page principale (NAV3 + routing)
+├── index.tsx              ← Page principale (NAV3a routing)
 ├── index.css              ← Styles globaux VoIP
 │
 ├── sip/
-│   ├── SipPanel.tsx       ← Panel SIP (NAV4: 5 tabs)
-│   ├── SipPanel.css
+│   ├── SipPanel.tsx       ← Panel SIP (gère NAV3b + NAV4)
 │   ├── groups/
-│   │   └── GroupsTab.tsx  ← Liste groupes
+│   │   ├── index.tsx      ← Page groupe (7 NAV4 tabs)
+│   │   ├── GeneralTab.tsx
+│   │   ├── billing/BillingTab.tsx
+│   │   ├── orders/OrdersTab.tsx
+│   │   ├── portability/PortabilityTab.tsx
+│   │   ├── repayments/RepaymentsTab.tsx
+│   │   └── security/SecurityTab.tsx
+│   │
 │   ├── lines/
-│   │   └── LinesTab.tsx   ← Liste lignes
+│   │   ├── index.tsx      ← Page ligne (7 NAV4 tabs)
+│   │   ├── GeneralTab.tsx
+│   │   ├── phone/PhoneTab.tsx
+│   │   ├── calls/CallsTab.tsx
+│   │   ├── forward/ForwardTab.tsx
+│   │   ├── voicemail/VoicemailTab.tsx
+│   │   ├── consumption/ConsumptionTab.tsx
+│   │   └── options/OptionsTab.tsx
+│   │
 │   ├── numbers/
-│   │   └── NumbersTab.tsx ← Liste numéros
+│   │   ├── index.tsx      ← Page numéro (12 NAV4 tabs)
+│   │   ├── GeneralTab.tsx
+│   │   ├── configuration/ConfigurationTab.tsx
+│   │   ├── calls/CallsTab.tsx
+│   │   ├── consumption/ConsumptionTab.tsx
+│   │   ├── scheduler/SchedulerTab.tsx
+│   │   ├── options/OptionsTab.tsx
+│   │   ├── records/RecordsTab.tsx
+│   │   ├── agents/AgentsTab.tsx
+│   │   ├── ddi/DdiTab.tsx
+│   │   ├── sounds/SoundsTab.tsx
+│   │   ├── stats/StatsTab.tsx
+│   │   └── svi/SviTab.tsx
+│   │
 │   └── services/
-│       └── ServicesTab.tsx ← Liste services
+│       └── ServicesTab.tsx ← Table filtrable (pas de NAV4)
 │
 ├── sms/
-│   ├── SmsPanel.tsx       ← Panel SMS (NAV4: 7 tabs)
+│   ├── SmsPanel.tsx       ← Panel SMS (7 NAV4 tabs)
 │   ├── GeneralTab.tsx
 │   ├── send/SendTab.tsx
 │   ├── campaigns/CampaignsTab.tsx
@@ -317,7 +513,7 @@ CSS class: `.voip-right-panel-tabs`
 │   └── templates/TemplatesTab.tsx
 │
 ├── fax/
-│   ├── FaxPanel.tsx       ← Panel FAX (NAV4: 5 tabs)
+│   ├── FaxPanel.tsx       ← Panel FAX (5 NAV4 tabs)
 │   ├── GeneralTab.tsx
 │   ├── campaigns/CampaignsTab.tsx
 │   ├── consumption/ConsumptionTab.tsx
@@ -325,7 +521,7 @@ CSS class: `.voip-right-panel-tabs`
 │   └── logo/LogoTab.tsx
 │
 └── carrier-sip/
-    ├── CarrierSipPanel.tsx ← Panel Carrier (NAV4: 5 tabs)
+    ├── CarrierSipPanel.tsx ← Panel Carrier (5 NAV4 tabs)
     ├── GeneralTab.tsx
     ├── cdr/CdrTab.tsx
     ├── endpoints/EndpointsTab.tsx
@@ -333,919 +529,38 @@ CSS class: `.voip-right-panel-tabs`
     └── settings/SettingsTab.tsx
 ```
 
-### 2.7 ACTIONS PAR SERVICE
-
-| NAV3 | Header Actions | Boutons | onClick |
-|------|----------------|---------|---------|
-| SIP | Badge status | - | - |
-| SMS | Badge crédits + Bouton | "Acheter" | `window.open(ovhtelecom.fr/sms)` |
-| FAX | Bouton | "Envoyer" | `setActiveTab('campaigns')` |
-| Trunk | Badge appels | - | - |
-
-### 2.8 ÉTATS VIDES (Empty States)
-
-Chaque NAV3 affiche un état vide quand aucun service n'est sélectionné:
-
-| NAV3 | Icône | Titre | Description |
-|------|-------|-------|-------------|
-| SIP | 📞 | "Aucun service SIP" | "Sélectionnez un service..." |
-| SMS | 📱 | "Aucun service SMS" | "Sélectionnez un service..." |
-| FAX | 📠 | "Aucun service FAX" | "Sélectionnez un service..." |
-| Trunk | 🌐 | "Aucun service Carrier SIP" | "Sélectionnez un service..." |
-
 ##############################################################################
-# 10. ⚠️ RÉFÉRENTIEL API COMPLET - AUDIT 2026-01-01 (v9)
+# 5. COMPTEUR DE TABS
 ##############################################################################
 
-Cette section documente TOUS les endpoints API OVH utilisés par VoIP.
-Basé sur l'audit comparatif old_manager vs new_manager du 2026-01-01.
-
-### 10.0 ⛔ RÈGLES CRITIQUES API
-
-#### Pattern LIST + DETAILS obligatoire
-La plupart des endpoints OVH retournent une LISTE D'IDs, pas les objets complets.
-Il faut ensuite récupérer chaque détail individuellement.
-
-```typescript
-// ❌ INCORRECT - L'API ne retourne PAS directement les objets
-const items = await ovhApi.get<Item[]>(`/path/to/items`);
-
-// ✅ CORRECT - Récupérer IDs puis détails
-const ids = await ovhApi.get<number[]>(`/path/to/items`);
-const items = await Promise.all(
-  ids.map(id => ovhApi.get<Item>(`/path/to/items/${id}`))
-);
-```
-
-#### Types d'IDs
-| Ressource | Type ID | Exemple |
-|-----------|---------|---------|
-| **Agents easyHunting** | `number` | 123456 |
-| **Endpoints carrier-sip** | `number` | 789012 |
-| **Phonebook contacts** | `number` | 456789 |
-| **Offer tasks** | `number` | 111222 |
-| **Abbreviated numbers** | `number` | 100 |
-| **Portability** | `number` | 333444 |
-| **Orders** | `number` | 555666 |
-| **CDR records** | `CdrRecord[]` | array direct |
-| **Participants conference** | `number` | 777888 |
-| **WebAccess conference** | `number` | 999000 |
-
-#### ⛔ ERREURS CORRIGÉES (Audit 2026-01-01)
-
-| Fichier | Erreur | Correction | Status |
-|---------|--------|------------|--------|
-| `carrier-sip/settings/SettingsTab.service.ts` | `/telephony/{ba}/carrierSip/{sn}` | `/telephony/{ba}/carrierSip/{sn}/settings` | ✅ Déjà corrigé (v9) |
-| `fax/campaigns/CampaignsTab.service.ts` | `/freefax/{sn}/voicemail/campaigns` | `/telephony/{ba}/fax/{sn}/campaigns` | ✅ Déjà corrigé (v9) |
-| `sip/lines/lines.service.ts:124-129` | `/telephony/{ba}/line/{sn}/statistics/consumption` | `/telephony/{ba}/service/{sn}/voiceConsumption` | ✅ Corrigé (v10) |
-
-#### ⛔ ENDPOINTS QUI N'EXISTENT PAS
-Ces endpoints ont été inventés et ne fonctionneront JAMAIS :
-
-| Endpoint inventé | Correction |
-|------------------|------------|
-| `/telephony/{ba}/line/{sn}/calls/filtering` | ❌ N'existe pas - filtrage via options |
-| `/telephony/{ba}/line/{sn}/statistics/consumption` | ✅ Utiliser `/telephony/{ba}/service/{sn}/voiceConsumption` |
-| `/telephony/{ba}/voicemail/{sn}/changePassword` | ✅ Utiliser `/telephony/{ba}/voicemail/{sn}/settings/changePassword` |
-| `/telephony/{ba}/cdr` | ✅ Utiliser `/telephony/{ba}/carrierSip/{sn}/cdrs` |
-| `/freefax/{sn}/settings` (pour telephony fax) | ✅ Utiliser `/telephony/{ba}/fax/{sn}/settings` |
-| `/freefax/{sn}/voicemail/campaigns` (pour telephony fax) | ✅ Utiliser `/telephony/{ba}/fax/{sn}/campaigns` |
-
----
-
-### 10.1 APIs GROUPE (billingAccount)
-
-#### Lecture
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony` | `string[]` | Liste billingAccounts |
-| GET | `/telephony/{ba}` | `TelephonyBillingAccount` | Détails groupe |
-| PUT | `/telephony/{ba}` | `void` | Modifier groupe |
-| GET | `/telephony/{ba}/serviceInfos` | `ServiceInfos` | Infos facturation |
-
-#### Services du groupe
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line` | `string[]` | Liste serviceName lignes |
-| GET | `/telephony/{ba}/number` | `string[]` | Liste serviceName numéros |
-| GET | `/telephony/{ba}/fax` | `string[]` | Liste serviceName fax |
-| GET | `/telephony/{ba}/carrierSip` | `string[]` | Liste serviceName carrier-sip |
-| GET | `/telephony/{ba}/voicemail` | `string[]` | Liste messageries vocales |
-| GET | `/telephony/{ba}/service` | `string[]` | Tous les services |
-| GET | `/telephony/{ba}/service/{sn}` | `Service` | Détail service |
-| PUT | `/telephony/{ba}/service/{sn}` | `void` | Modifier service |
-| DELETE | `/telephony/{ba}/service/{sn}` | `void` | Résilier service |
-| POST | `/telephony/{ba}/service/{sn}/cancelTermination` | `void` | Annuler résiliation |
-
-#### Numéros abrégés
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/abbreviatedNumber` | `number[]` | Liste IDs abrégés |
-| GET | `/telephony/{ba}/abbreviatedNumber/{id}` | `AbbreviatedNumber` | Détail abrégé |
-| POST | `/telephony/{ba}/abbreviatedNumber` | `AbbreviatedNumber` | Créer abrégé |
-| PUT | `/telephony/{ba}/abbreviatedNumber/{id}` | `void` | Modifier abrégé |
-| DELETE | `/telephony/{ba}/abbreviatedNumber/{id}` | `void` | Supprimer abrégé |
-
-#### Historique & Facturation
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/historyConsumption` | `HistoryConsumption[]` | Historique conso |
-| GET | `/telephony/{ba}/historyConsumption/{date}` | `HistoryDetail` | Détail par date |
-| GET | `/telephony/{ba}/historyConsumption/{date}/file` | `{url: string}` | Télécharger fichier |
-| GET | `/telephony/{ba}/historyTollfreeConsumption` | `HistoryConsumption[]` | Conso numéros verts |
-| GET | `/telephony/{ba}/historyRepaymentConsumption` | `Repayment[]` | Historique remboursements |
-| POST | `/telephony/{ba}/repaymentConsumption` | `void` | Demander remboursement |
-
-#### Portabilité
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/portability` | `number[]` | Liste IDs portabilités |
-| GET | `/telephony/{ba}/portability/{id}` | `Portability` | Détail portabilité |
-| POST | `/telephony/{ba}/portability` | `Portability` | Créer demande |
-
-#### Commandes
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/order` | `number[]` | Liste IDs commandes |
-| GET | `/telephony/{ba}/order/{id}` | `Order` | Détail commande |
-
-#### Tâches (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/task` | `number[]` | Liste IDs tâches |
-| GET | `/telephony/{ba}/task/{id}` | `Task` | Détail tâche |
-
-#### Sécurité - Event Tokens
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/eventToken` | `string[]` | Liste tokens |
-| GET | `/telephony/{ba}/eventToken/{token}` | `EventToken` | Détail token |
-| POST | `/telephony/{ba}/eventToken` | `EventToken` | Créer token |
-| DELETE | `/telephony/{ba}/eventToken/{token}` | `void` | Supprimer token |
-
-#### Phonebook (groupe)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/phonebook` | `string[]` | Liste bookKeys |
-| GET | `/telephony/{ba}/phonebook/{bookKey}` | `Phonebook` | Détail phonebook |
-| POST | `/telephony/{ba}/phonebook` | `{bookKey: string}` | Créer phonebook |
-| PUT | `/telephony/{ba}/phonebook/{bookKey}` | `void` | Modifier phonebook |
-| DELETE | `/telephony/{ba}/phonebook/{bookKey}` | `void` | Supprimer phonebook |
-| GET | `/telephony/{ba}/phonebook/{bookKey}/export` | `{url: string}` | Exporter (csv/goosip) |
-| POST | `/telephony/{ba}/phonebook/{bookKey}/import` | `void` | Importer |
-
-#### Phonebook Contacts
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/phonebook/{bookKey}/phonebookContact` | `number[]` | Liste IDs contacts |
-| GET | `/telephony/{ba}/phonebook/{bookKey}/phonebookContact/{id}` | `Contact` | Détail contact |
-| POST | `/telephony/{ba}/phonebook/{bookKey}/phonebookContact` | `Contact` | Créer contact |
-| PUT | `/telephony/{ba}/phonebook/{bookKey}/phonebookContact/{id}` | `void` | Modifier contact |
-| DELETE | `/telephony/{ba}/phonebook/{bookKey}/phonebookContact/{id}` | `void` | Supprimer contact |
-
-#### Offer Tasks
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/offerTask` | `number[]` | Liste IDs tâches |
-| GET | `/telephony/{ba}/offerTask/{id}` | `OfferTask` | Détail tâche |
-
-#### Gestion groupe (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/allowedCreditThreshold` | `CreditThreshold[]` | Seuils crédit |
-| POST | `/telephony/{ba}/transferSecurityDeposit` | `void` | Transférer dépôt |
-| POST | `/telephony/{ba}/cancelTermination` | `void` | Annuler résiliation groupe |
-| DELETE | `/telephony/{ba}` | `void` | Résilier groupe |
-| POST | `/telephony/{ba}/changeContact` | `number[]` | Changer contacts |
-
-#### Spare phones (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/spare` | `string[]` | Liste téléphones spare |
-| GET | `/telephony/spare/{spare}` | `SparePhone` | Détail spare |
-| DELETE | `/telephony/spare/{spare}` | `void` | Supprimer spare |
-| POST | `/telephony/spare/{spare}/replace` | `void` | Remplacer téléphone |
-
-#### Domaines SIP (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/availableDefaultSipDomains` | `SipDomain[]` | Domaines dispos |
-| POST | `/telephony/setDefaultSipDomain` | `void` | Définir domaine |
-
-#### Accessoires (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/accessories` | `Accessory[]` | Liste accessoires |
-
----
-
-### 10.2 APIs LIGNE (line)
-
-#### Lecture
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}` | `TelephonyLine` | Détails ligne |
-| GET | `/telephony/{ba}/line/{sn}/serviceInfos` | `ServiceInfos` | Infos facturation |
-| PUT | `/telephony/{ba}/line/{sn}` | `void` | Modifier ligne |
-
-#### Offre & Options
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}/offer` | `LineOffer` | Détails offre |
-| GET | `/telephony/{ba}/line/{sn}/options` | `LineOptions` | Options ligne |
-| PUT | `/telephony/{ba}/line/{sn}/options` | `void` | Modifier options |
-| GET | `/telephony/{ba}/line/{sn}/availableSipDomains` | `string[]` | Domaines SIP dispos |
-
-#### Authentification
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| POST | `/telephony/{ba}/line/{sn}/changePassword` | `void` | Changer MDP SIP |
-| GET | `/telephony/{ba}/line/{sn}/canChangePassword` | `boolean` | Peut changer MDP |
-| GET | `/telephony/{ba}/line/{sn}/lastRegistrations` | `Registration[]` | Dernières connexions |
-| GET | `/telephony/{ba}/line/{sn}/ips` | `string[]` | IPs autorisées |
-
-#### Trafic (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| POST | `/telephony/{ba}/line/{sn}/activateTraffic` | `void` | Activer trafic |
-| POST | `/telephony/{ba}/line/{sn}/deactivateTraffic` | `void` | Désactiver trafic |
-
-#### Équipements (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| POST | `/telephony/{ba}/line/{sn}/associateDevice` | `void` | Associer équipement |
-| POST | `/telephony/{ba}/line/{sn}/dissociateDevice` | `void` | Dissocier équipement |
-
-#### Téléphone
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}/phone` | `Phone` | Infos téléphone |
-| PUT | `/telephony/{ba}/line/{sn}/phone` | `void` | Modifier téléphone |
-| POST | `/telephony/{ba}/line/{sn}/phone/reboot` | `void` | Redémarrer |
-| POST | `/telephony/{ba}/line/{sn}/phone/resetConfig` | `void` | Réinitialiser config |
-| GET | `/telephony/{ba}/line/{sn}/phone/supportsPhonebook` | `boolean` | Support phonebook |
-| GET | `/telephony/{ba}/line/{sn}/phone/merchandiseAvailable` | `Merchandise[]` | Équipements dispos |
-| POST | `/telephony/{ba}/line/{sn}/phone/changePhoneConfiguration` | `void` | Appliquer config |
-
-#### Phone Phonebook (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}/phone/phonebook` | `string[]` | Liste annuaires |
-| GET | `/telephony/{ba}/line/{sn}/phone/phonebook/{bookKey}` | `Phonebook` | Détail annuaire |
-| POST | `/telephony/{ba}/line/{sn}/phone/phonebook` | `{bookKey}` | Créer annuaire |
-| DELETE | `/telephony/{ba}/line/{sn}/phone/phonebook/{bookKey}` | `void` | Supprimer |
-
-#### Phone Function Keys (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}/phone/functionKey` | `number[]` | Liste touches |
-| GET | `/telephony/{ba}/line/{sn}/phone/functionKey/{keyNum}` | `FunctionKey` | Détail touche |
-| PUT | `/telephony/{ba}/line/{sn}/phone/functionKey/{keyNum}` | `void` | Modifier touche |
-| GET | `/telephony/{ba}/line/{sn}/phone/functionKey/{keyNum}/availableFunction` | `string[]` | Fonctions dispos |
-
-#### Abbreviated Numbers ligne (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}/abbreviatedNumber` | `number[]` | Liste abrégés |
-| GET | `/telephony/{ba}/line/{sn}/abbreviatedNumber/{id}` | `AbbreviatedNumber` | Détail |
-| POST | `/telephony/{ba}/line/{sn}/abbreviatedNumber` | `void` | Créer |
-| PUT | `/telephony/{ba}/line/{sn}/abbreviatedNumber/{id}` | `void` | Modifier |
-| DELETE | `/telephony/{ba}/line/{sn}/abbreviatedNumber/{id}` | `void` | Supprimer |
-
-#### Appels
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}/calls` | `string[]` | Liste IDs appels |
-| GET | `/telephony/{ba}/line/{sn}/calls/{id}` | `Call` | Détail appel |
-| POST | `/telephony/{ba}/line/{sn}/click2CallUser` | `void` | Lancer Click2Call |
-| GET | `/telephony/{ba}/line/{sn}/click2CallUser` | `Click2CallUser[]` | Liste users C2C |
-| POST | `/telephony/{ba}/line/{sn}/automaticCall` | `{taskId}` | Appel automatique |
-
-#### Codecs & Tonalités
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}/tones` | `LineTones` | Tonalités configurées |
-| PUT | `/telephony/{ba}/line/{sn}/tones` | `void` | Modifier tonalités |
-| POST | `/telephony/{ba}/line/{sn}/tones/toneUpload` | `void` | Upload tonalité custom |
-| GET | `/telephony/{ba}/line/{sn}/availableCodecs` | `string[]` | Codecs disponibles |
-| GET | `/telephony/{ba}/line/{sn}/defaultCodecs` | `string[]` | Codecs par défaut |
-
-#### Lignes simultanées
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/line/{sn}/simultaneousChannelsDetails` | `ChannelsDetails` | Détails canaux |
-| GET | `/telephony/{ba}/line/{sn}/maximumAvailableSimultaneousLines` | `number` | Max lignes simultanées |
-
-#### Conversion & Résiliation
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| POST | `/telephony/{ba}/line/{sn}/convertToNumber` | `OfferTask` | Convertir en numéro |
-| POST | `/telephony/{ba}/line/{sn}/cancelConvertToNumber` | `void` | Annuler conversion |
-| DELETE | `/telephony/{ba}/line/{sn}` | `void` | Résilier ligne |
-| POST | `/telephony/{ba}/line/{sn}/cancelTermination` | `void` | Annuler résiliation |
-
----
-
-### 10.3 APIs VOICEMAIL
-
-⚠️ **ATTENTION** : Le voicemail est un service SÉPARÉ de la ligne !
-Le serviceName voicemail peut être différent du serviceName ligne.
-
-#### Configuration
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/voicemail/{sn}` | `Voicemail` | Détails voicemail |
-| GET | `/telephony/{ba}/voicemail/{sn}/settings` | `VoicemailSettings` | Paramètres |
-| PUT | `/telephony/{ba}/voicemail/{sn}/settings` | `void` | Modifier paramètres |
-| POST | `/telephony/{ba}/voicemail/{sn}/settings/changePassword` | `void` | ⚠️ Changer MDP |
-| POST | `/telephony/{ba}/voicemail/{sn}/settings/changeRouting` | `void` | Changer routage |
-| GET | `/telephony/{ba}/voicemail/{sn}/settings/voicemailNumbers` | `{internal, external}` | Numéros VM |
-| GET | `/telephony/{ba}/voicemail/{sn}/settings/routing` | `VoicemailRouting` | Routage |
-
-#### Numéros voicemail liés
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/voicemail/{sn}/numbers` | `string[]` | Numéros associés |
-| GET | `/telephony/{ba}/voicemail/{sn}/routing` | `VoicemailRouting` | Routage actuel |
-
-#### Messages
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/voicemail/{sn}/directories` | `number[]` | Liste IDs messages |
-| GET | `/telephony/{ba}/voicemail/{sn}/directories/{id}` | `VoicemailMessage` | Détail message |
-| DELETE | `/telephony/{ba}/voicemail/{sn}/directories/{id}` | `void` | Supprimer message |
-| POST | `/telephony/{ba}/voicemail/{sn}/directories/{id}/move` | `void` | Déplacer message |
-| GET | `/telephony/{ba}/voicemail/{sn}/directories/{id}/download` | `{url: string}` | Télécharger audio |
-
-#### Annonces
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/voicemail/{sn}/greetings` | `number[]` | Liste IDs annonces |
-| GET | `/telephony/{ba}/voicemail/{sn}/greetings/{id}` | `Greeting` | Détail annonce |
-| POST | `/telephony/{ba}/voicemail/{sn}/greetings` | `Greeting` | Créer annonce |
-| DELETE | `/telephony/{ba}/voicemail/{sn}/greetings/{id}` | `void` | Supprimer annonce |
-| GET | `/telephony/{ba}/voicemail/{sn}/greetings/{id}/download` | `{url: string}` | Télécharger annonce |
-
----
-
-### 10.4 APIs NUMÉRO (number) & EASYHUNTING
-
-#### Lecture numéro
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/number/{sn}` | `TelephonyNumber` | Détails numéro |
-| GET | `/telephony/{ba}/number/{sn}/serviceInfos` | `ServiceInfos` | Infos facturation |
-| PUT | `/telephony/{ba}/number/{sn}` | `void` | Modifier numéro |
-| POST | `/telephony/{ba}/number/{sn}/changeFeatureType` | `OfferTask` | Changer type feature |
-| POST | `/telephony/{ba}/number/{sn}/convertToLine` | `OfferTask` | Convertir en ligne |
-
-#### EasyHunting (File d'attente)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/easyHunting/{sn}` | `EasyHunting` | Config easyHunting |
-| PUT | `/telephony/{ba}/easyHunting/{sn}` | `void` | Modifier config |
-| GET | `/telephony/{ba}/easyHunting/{sn}/hunting` | `HuntingConfig` | Config hunting |
-| PUT | `/telephony/{ba}/easyHunting/{sn}/hunting` | `void` | Modifier hunting |
-
-#### Agents (membres file d'attente)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/easyHunting/{sn}/hunting/agent` | `number[]` | ⚠️ Liste IDs (number!) |
-| GET | `/telephony/{ba}/easyHunting/{sn}/hunting/agent/{id}` | `Agent` | Détail agent |
-| POST | `/telephony/{ba}/easyHunting/{sn}/hunting/agent` | `Agent` | Créer agent |
-| PUT | `/telephony/{ba}/easyHunting/{sn}/hunting/agent/{id}` | `void` | Modifier agent |
-| DELETE | `/telephony/{ba}/easyHunting/{sn}/hunting/agent/{id}` | `void` | Supprimer agent |
-| GET | `/telephony/{ba}/easyHunting/{sn}/hunting/agent/{id}/queue` | `AgentQueue[]` | Files de l'agent |
-| POST | `/telephony/{ba}/easyHunting/{sn}/hunting/agent/{id}/liveStatus` | `void` | Changer statut live |
-
-#### Queues (files)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/easyHunting/{sn}/hunting/queue` | `number[]` | Liste IDs queues |
-| GET | `/telephony/{ba}/easyHunting/{sn}/hunting/queue/{id}` | `Queue` | Détail queue |
-| POST | `/telephony/{ba}/easyHunting/{sn}/hunting/queue` | `Queue` | Créer queue |
-| PUT | `/telephony/{ba}/easyHunting/{sn}/hunting/queue/{id}` | `void` | Modifier queue |
-| DELETE | `/telephony/{ba}/easyHunting/{sn}/hunting/queue/{id}` | `void` | Supprimer queue |
-| GET | `/telephony/{ba}/easyHunting/{sn}/hunting/queue/{id}/liveCalls` | `LiveCall[]` | Appels en cours |
-
-#### Sons personnalisés
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/easyHunting/{sn}/sound` | `number[]` | Liste IDs sons |
-| GET | `/telephony/{ba}/easyHunting/{sn}/sound/{id}` | `Sound` | Détail son |
-| POST | `/telephony/{ba}/easyHunting/{sn}/soundUpload` | `void` | Upload son |
-| DELETE | `/telephony/{ba}/easyHunting/{sn}/sound/{id}` | `void` | Supprimer son |
-
-#### Enregistrements
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/easyHunting/{sn}/records` | `number[]` | Liste IDs enregistrements |
-| GET | `/telephony/{ba}/easyHunting/{sn}/records/{id}` | `Record` | Détail enregistrement |
-| DELETE | `/telephony/{ba}/easyHunting/{sn}/records/{id}` | `void` | Supprimer |
-
-#### Conditions horaires & Screening
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/easyHunting/{sn}/timeConditions/conditions` | `number[]` | Liste IDs conditions |
-| GET | `/telephony/{ba}/easyHunting/{sn}/timeConditions/conditions/{id}` | `TimeCondition` | Détail condition |
-| GET | `/telephony/{ba}/easyHunting/{sn}/screenListConditions/conditions` | `number[]` | Liste screening |
-| GET | `/telephony/{ba}/easyHunting/{sn}/screenListConditions/conditions/{id}` | `ScreenCondition` | Détail screening |
-
----
-
-### 10.5 APIs CONFERENCE (NOUVEAU v9)
-
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/conference/{sn}` | `Conference` | Détails conférence |
-| PUT | `/telephony/{ba}/conference/{sn}` | `void` | Modifier conférence |
-
-#### Participants
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/conference/{sn}/participants` | `number[]` | Liste IDs participants |
-| GET | `/telephony/{ba}/conference/{sn}/participants/{id}` | `Participant` | Détail participant |
-| POST | `/telephony/{ba}/conference/{sn}/participants/{id}/kick` | `void` | Exclure |
-| POST | `/telephony/{ba}/conference/{sn}/participants/{id}/mute` | `void` | Couper micro |
-| POST | `/telephony/{ba}/conference/{sn}/participants/{id}/unmute` | `void` | Rétablir micro |
-| POST | `/telephony/{ba}/conference/{sn}/participants/{id}/deaf` | `void` | Rendre sourd |
-| POST | `/telephony/{ba}/conference/{sn}/participants/{id}/undeaf` | `void` | Rétablir audio |
-
-#### WebAccess
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/conference/{sn}/webAccess` | `number[]` | Liste accès web |
-| GET | `/telephony/{ba}/conference/{sn}/webAccess/{id}` | `WebAccess` | Détail accès |
-| POST | `/telephony/{ba}/conference/{sn}/webAccess` | `WebAccess` | Créer accès |
-| DELETE | `/telephony/{ba}/conference/{sn}/webAccess/{id}` | `void` | Supprimer accès |
-
----
-
-### 10.6 APIs REDIRECT (NOUVEAU v9)
-
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/redirect/{sn}` | `Redirect` | Détails redirection |
-| PUT | `/telephony/{ba}/redirect/{sn}` | `void` | Modifier destination |
-
----
-
-### 10.7 APIs OVH PABX (SVI)
-
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/ovhPabx/{sn}` | `OvhPabx` | Config PABX |
-| PUT | `/telephony/{ba}/ovhPabx/{sn}` | `void` | Modifier PABX |
-| GET | `/telephony/{ba}/ovhPabx/{sn}/hunting` | `HuntingConfig` | Config hunting |
-| PUT | `/telephony/{ba}/ovhPabx/{sn}/hunting` | `void` | Modifier hunting |
-
-#### Menus SVI
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/ovhPabx/{sn}/menu` | `number[]` | Liste menus SVI |
-| GET | `/telephony/{ba}/ovhPabx/{sn}/menu/{id}` | `Menu` | Détail menu |
-| POST | `/telephony/{ba}/ovhPabx/{sn}/menu` | `Menu` | Créer menu |
-| PUT | `/telephony/{ba}/ovhPabx/{sn}/menu/{id}` | `void` | Modifier menu |
-| DELETE | `/telephony/{ba}/ovhPabx/{sn}/menu/{id}` | `void` | Supprimer menu |
-| GET | `/telephony/{ba}/ovhPabx/{sn}/menu/{id}/entry` | `number[]` | Entrées menu |
-
-#### Dialplans
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/ovhPabx/{sn}/dialplan` | `number[]` | Liste dialplans |
-| GET | `/telephony/{ba}/ovhPabx/{sn}/dialplan/{id}` | `Dialplan` | Détail dialplan |
-
-#### Sons & TTS
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/ovhPabx/{sn}/sound` | `number[]` | Liste sons PABX |
-| GET | `/telephony/{ba}/ovhPabx/{sn}/tts` | `number[]` | Liste TTS |
-| GET | `/telephony/{ba}/ovhPabx/{sn}/tts/{id}` | `Tts` | Détail TTS |
-| POST | `/telephony/{ba}/ovhPabx/{sn}/tts` | `Tts` | Créer TTS |
-
----
-
-### 10.8 APIs MINI PABX & EASY PABX (NOUVEAU v9)
-
-#### Mini PABX
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/miniPabx/{sn}` | `MiniPabx` | Détails mini PABX |
-| GET | `/telephony/{ba}/miniPabx/{sn}/hunting` | `MiniPabxHunting` | Config hunting |
-| PUT | `/telephony/{ba}/miniPabx/{sn}/hunting` | `void` | Modifier hunting |
-
-#### Easy PABX
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/easyPabx/{sn}` | `EasyPabx` | Détails easy PABX |
-| GET | `/telephony/{ba}/easyPabx/{sn}/hunting` | `EasyPabxHunting` | Config hunting |
-
----
-
-### 10.9 APIs CONSOMMATION (service)
-
-⚠️ La consommation voix est sur `/service/{sn}` et non `/line/{sn}` !
-
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/service/{sn}/voiceConsumption` | `number[]` | Liste IDs conso |
-| GET | `/telephony/{ba}/service/{sn}/voiceConsumption/{id}` | `VoiceConsumption` | Détail conso |
-| GET | `/telephony/{ba}/service/{sn}/faxConsumption` | `number[]` | Liste conso fax |
-| GET | `/telephony/{ba}/service/{sn}/faxConsumption/{id}` | `FaxConsumption` | Détail conso fax |
-| GET | `/telephony/{ba}/service/{sn}/repaymentConsumption` | `Repayment[]` | Remboursements |
-| GET | `/telephony/{ba}/service/{sn}/diagnosticReports` | `Report[]` | Rapports diagnostic |
-
----
-
-### 10.10 APIs FAX
-
-⚠️ **DISTINCTION IMPORTANTE** :
-- `/freefax/{sn}` = Fax GRATUIT (offre freefax standalone)
-- `/telephony/{ba}/fax/{sn}` = Fax TÉLÉPHONIE (dans un groupe VoIP)
-
-#### Fax Téléphonie (dans groupe VoIP)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/fax/{sn}` | `TelephonyFax` | Détails fax |
-| PUT | `/telephony/{ba}/fax/{sn}` | `void` | Modifier fax |
-| GET | `/telephony/{ba}/fax/{sn}/settings` | `FaxSettings` | ⚠️ Paramètres |
-| PUT | `/telephony/{ba}/fax/{sn}/settings` | `void` | Modifier paramètres |
-| POST | `/telephony/{ba}/fax/{sn}/settings/changePassword` | `void` | Changer MDP |
-| POST | `/telephony/{ba}/fax/{sn}/settings/sendFax` | `void` | Envoyer fax |
-
-#### ScreenLists (filtres) - NOUVEAU v9
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/fax/{sn}/screenLists` | `ScreenList[]` | Liste filtres |
-| POST | `/telephony/{ba}/fax/{sn}/screenLists` | `void` | Créer filtre |
-| PUT | `/telephony/{ba}/fax/{sn}/screenLists` | `void` | Modifier filtre |
-| DELETE | `/telephony/{ba}/fax/{sn}/screenLists` | `void` | Supprimer filtre |
-| POST | `/telephony/{ba}/fax/{sn}/screenLists/reset` | `void` | Réinitialiser |
-
-#### Campagnes Fax
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/fax/{sn}/campaigns` | `number[]` | Liste IDs campagnes |
-| GET | `/telephony/{ba}/fax/{sn}/campaigns/{id}` | `Campaign` | Détail campagne |
-| GET | `/telephony/{ba}/fax/{sn}/campaigns/{id}/detail` | `number[]` | IDs détails |
-| GET | `/telephony/{ba}/fax/{sn}/campaigns/{id}/detail/{detailId}` | `CampaignDetail` | Détail envoi |
-| POST | `/telephony/{ba}/fax/{sn}/campaigns` | `Campaign` | Créer campagne |
-| DELETE | `/telephony/{ba}/fax/{sn}/campaigns/{id}` | `void` | Annuler campagne |
-| POST | `/telephony/{ba}/fax/{sn}/campaigns/{id}/start` | `void` | Démarrer campagne |
-| POST | `/telephony/{ba}/fax/{sn}/campaigns/{id}/stop` | `void` | Stopper campagne |
-
----
-
-### 10.11 APIs CARRIER-SIP
-
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/carrierSip/{sn}` | `CarrierSip` | Détails trunk |
-| PUT | `/telephony/{ba}/carrierSip/{sn}` | `void` | Modifier trunk |
-| GET | `/telephony/{ba}/carrierSip/{sn}/settings` | `CarrierSettings` | ⚠️ Paramètres |
-| PUT | `/telephony/{ba}/carrierSip/{sn}/settings` | `void` | Modifier paramètres |
-| GET | `/telephony/{ba}/carrierSip/{sn}/clusterDetails` | `ClusterDetails` | Détails cluster SIP |
-
-#### CDR (Call Detail Records)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/carrierSip/{sn}/cdrs` | `CdrRecord[]` | ⚠️ Liste CDRs (array direct!) |
-
-#### Endpoints
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/{ba}/carrierSip/{sn}/endpoints` | `number[]` | ⚠️ Liste IDs (number!) |
-| GET | `/telephony/{ba}/carrierSip/{sn}/endpoints/{id}` | `Endpoint` | Détail endpoint |
-| POST | `/telephony/{ba}/carrierSip/{sn}/endpoints` | `Endpoint` | Créer endpoint |
-| PUT | `/telephony/{ba}/carrierSip/{sn}/endpoints/{id}` | `void` | Modifier endpoint |
-| DELETE | `/telephony/{ba}/carrierSip/{sn}/endpoints/{id}` | `void` | Supprimer endpoint |
-
-#### ServiceInfos (NOUVEAU v9)
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/telephony/lines/{sn}/serviceInfos` | `ServiceInfos` | Infos service carrier |
-
----
-
-### 10.12 APIs SMS
-
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/sms` | `string[]` | Liste comptes SMS |
-| GET | `/sms/{sn}` | `SmsAccount` | Détails compte |
-| GET | `/sms/{sn}/serviceInfos` | `ServiceInfos` | Infos facturation |
-| PUT | `/sms/{sn}` | `void` | Modifier compte |
-| GET | `/sms/{sn}/seeOffers` | `Offer[]` | Offres disponibles |
-| GET | `/sms/{sn}/document` | `string` | Document (facture) |
-| GET | `/sms/{sn}/sendersAvailableForValidation` | `string[]` | Senders en attente |
-
-#### Envoi SMS
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| POST | `/sms/{sn}/jobs` | `Job` | Envoyer SMS |
-| GET | `/sms/{sn}/jobs` | `number[]` | Liste jobs |
-| GET | `/sms/{sn}/jobs/{id}` | `Job` | Détail job |
-| DELETE | `/sms/{sn}/jobs/{id}` | `void` | Annuler job |
-
-#### Historique
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/sms/{sn}/incoming` | `number[]` | SMS reçus |
-| GET | `/sms/{sn}/incoming/{id}` | `IncomingSms` | Détail reçu |
-| DELETE | `/sms/{sn}/incoming/{id}` | `void` | Supprimer reçu |
-| GET | `/sms/{sn}/outgoing` | `number[]` | SMS envoyés |
-| GET | `/sms/{sn}/outgoing/{id}` | `OutgoingSms` | Détail envoyé |
-| DELETE | `/sms/{sn}/outgoing/{id}` | `void` | Supprimer envoyé |
-| GET | `/sms/{sn}/outgoing/{id}/hlr` | `HlrInfo` | Info HLR (NOUVEAU v9) |
-
-#### Expéditeurs
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/sms/{sn}/senders` | `string[]` | Liste senders |
-| GET | `/sms/{sn}/senders/{sender}` | `Sender` | Détail sender |
-| POST | `/sms/{sn}/senders` | `Sender` | Créer sender |
-| PUT | `/sms/{sn}/senders/{sender}` | `void` | Modifier sender |
-| DELETE | `/sms/{sn}/senders/{sender}` | `void` | Supprimer sender |
-| POST | `/sms/{sn}/senders/{sender}/validate` | `void` | Valider sender |
-
-#### Destinataires
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/sms/{sn}/receivers` | `number[]` | Liste receivers |
-| GET | `/sms/{sn}/receivers/{id}` | `Receiver` | Détail receiver |
-| POST | `/sms/{sn}/receivers` | `Receiver` | Créer liste |
-| PUT | `/sms/{sn}/receivers/{id}` | `void` | Modifier liste |
-| DELETE | `/sms/{sn}/receivers/{id}` | `void` | Supprimer liste |
-| GET | `/sms/{sn}/receivers/{id}/csv` | `{url: string}` | Télécharger CSV |
-
-#### Templates
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/sms/{sn}/templatesControl` | `string[]` | Liste templates |
-| GET | `/sms/{sn}/templatesControl/{name}` | `Template` | Détail template |
-| POST | `/sms/{sn}/templatesControl` | `Template` | Créer template |
-| PUT | `/sms/{sn}/templatesControl/{name}` | `void` | Modifier template |
-| DELETE | `/sms/{sn}/templatesControl/{name}` | `void` | Supprimer template |
-
-#### Campagnes
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| GET | `/sms/{sn}/batches` | `number[]` | Liste campagnes |
-| GET | `/sms/{sn}/batches/{id}` | `Batch` | Détail campagne |
-| POST | `/sms/{sn}/batches` | `Batch` | Créer campagne |
-| PUT | `/sms/{sn}/batches/{id}` | `void` | Modifier campagne |
-| DELETE | `/sms/{sn}/batches/{id}` | `void` | Supprimer campagne |
-| POST | `/sms/{sn}/batches/{id}/start` | `void` | Démarrer campagne |
-
-#### Crédits
-| Méthode | Endpoint | Retour | Description |
-|---------|----------|--------|-------------|
-| POST | `/sms/{sn}/transferCredits` | `void` | Transférer crédits |
-| GET | `/sms/{sn}/users` | `string[]` | Utilisateurs API |
-
----
-
-### 10.13 Patterns de code TypeScript
-
-#### Pattern correct pour LIST + DETAILS
-```typescript
-async function getItems(billingAccount: string): Promise<Item[]> {
-  try {
-    // Étape 1: Récupérer les IDs
-    const ids = await ovhApi.get<number[]>(
-      `/telephony/${billingAccount}/items`
-    );
-
-    // Étape 2: Récupérer les détails en parallèle
-    const items = await Promise.all(
-      ids.map(async (id) => {
-        try {
-          return await ovhApi.get<Item>(
-            `/telephony/${billingAccount}/items/${id}`
-          );
-        } catch {
-          return null;
-        }
-      })
-    );
-
-    // Étape 3: Filtrer les nulls
-    return items.filter((item): item is Item => item !== null);
-  } catch {
-    return [];
-  }
-}
-```
-
-#### Pattern avec limitation
-```typescript
-async function getItemsLimited(billingAccount: string, limit = 50): Promise<Item[]> {
-  try {
-    const ids = await ovhApi.get<number[]>(`/path/to/items`);
-
-    // Limiter pour éviter surcharge
-    const items = await Promise.all(
-      ids.slice(0, limit).map(async (id) => {
-        try {
-          return await ovhApi.get<Item>(`/path/to/items/${id}`);
-        } catch {
-          return null;
-        }
-      })
-    );
-
-    return items.filter((item): item is Item => item !== null);
-  } catch {
-    return [];
-  }
-}
-```
-
-#### Pattern avec encodeURIComponent (pour senders SMS)
-```typescript
-async function deleteSender(accountName: string, sender: string): Promise<void> {
-  // ⚠️ Le sender peut contenir des caractères spéciaux
-  return ovhApi.delete(`/sms/${accountName}/senders/${encodeURIComponent(sender)}`);
-}
-```
-
----
-
-### 10.14 ⚠️ APIs NON IMPLÉMENTÉES (Features avancées)
-
-Ces APIs existent dans old_manager mais ne sont pas encore dans new_manager :
-
-| API | Description | Priorité |
-|-----|-------------|----------|
-| `X-Ovh-Batch header` | Requêtes batch via header | Moyenne |
-| `Iceberg queries` | Pagination avec curseur | Basse |
-| `/telephony/{ba}/rsva/{sn}` | Services RSVA | Basse |
-| `/telephony/{ba}/vxml/{sn}` | Services VXML | Basse |
-| `/sms/{sn}/phonebooks` | Annuaires SMS | Moyenne |
-| `/sms/{sn}/blacklists` | Listes noires SMS | Moyenne |
-| `/sms/{sn}/virtualNumbers` | Numéros virtuels SMS | Moyenne |
-
----
-
-### 10.15 MAPPING OLD_MANAGER → NEW_MANAGER (NOUVEAU v10)
-
-Ce mapping documente la correspondance entre les répertoires de l'ancien et du nouveau manager.
-
-| old_manager (AngularJS) | new_manager (React) | Statut |
-|-------------------------|---------------------|--------|
-| `apps/telecom/src/app/telecom/telephony/billingAccount/` | `sip/groups/` | ✅ Migré |
-| `apps/telecom/src/app/telecom/telephony/billingAccount/line/` | `sip/lines/` | ✅ Migré |
-| `apps/telecom/src/app/telecom/telephony/billingAccount/alias/` | `sip/numbers/` | ✅ Migré |
-| `modules/carrier-sip/src/` | `carrier-sip/` | ✅ Migré |
-| `modules/sms/src/sms/` | `sms/` | ✅ Migré |
-| `apps/telecom/src/app/telecom/telephony/fax/` | `fax/` | ✅ Migré |
-| `modules/telecom-universe-components/src/telecom/voip/` | (Distribué dans services) | ✅ Intégré |
-| `ovh-api-services/src/api/telephony/` | (Référence endpoints) | 📖 Documentation |
-
-#### Fichiers de référence old_manager
-
-| Section | Fichier principal old_manager | Usage |
-|---------|-------------------------------|-------|
-| **VoIP Global** | `modules/telecom-universe-components/src/telecom/voip/billingAccount/voip-billing-account.service.js` | APIs groupe |
-| **Lignes** | `modules/telecom-universe-components/src/telecom/voip/service/line/voip-service-line.service.js` | APIs ligne |
-| **Carrier-SIP** | `modules/carrier-sip/src/carrier-sip.service.js` | APIs carrier-sip |
-| **SMS** | `modules/sms/src/sms/telecom-sms.service.js` | APIs SMS |
-| **API Definitions** | `ovh-api-services/src/api/telephony/*.v6.service.js` | Endpoints exacts |
-
----
-
-### 10.16 STATISTIQUES DE COUVERTURE API (NOUVEAU v10)
-
-Résultat de l'audit exhaustif du 2026-01-01.
-
-#### Fichiers analysés
-
-| Section | Fichiers service.ts | Lignes de code | Statut |
-|---------|---------------------|----------------|--------|
-| `carrier-sip/` | 5 | ~200 | ✅ VALIDÉ |
-| `fax/` | 6 | ~300 | ✅ VALIDÉ |
-| `sms/` | 7 | ~400 | ✅ VALIDÉ |
-| `sip/groups/` | 8 | ~700 | ✅ VALIDÉ |
-| `sip/lines/` | 13 | ~950 | ✅ CORRIGÉ |
-| `sip/numbers/` | 16 | ~1300 | ✅ VALIDÉ |
-| **TOTAL** | **56** | **~3850** | ✅ |
-
-#### Résumé corrections
-
-| Type | Nombre | Détails |
-|------|--------|---------|
-| Erreurs trouvées | 1 | `lines.service.ts` endpoint consommation |
-| Corrections appliquées | 1 | Pattern LIST+DETAILS correct |
-| Fichiers déjà corrects | 55 | Validation confirmée |
-
-#### Endpoints potentiellement inexistants (avec fallbacks)
-
-Ces endpoints sont appelés mais retournent probablement des erreurs 404 (catchés) :
-
-| Fichier | Endpoint | Impact |
-|---------|----------|--------|
-| `numbers.service.ts:153` | `/telephony/{ba}/number/{sn}/calls` | ⚠️ Probablement inexistant, fallback [] |
-| `numbers.service.ts:164` | `/telephony/{ba}/number/{sn}/consumption` | ⚠️ Probablement inexistant, fallback [] |
-
-**Note:** Ces endpoints ont des `catch(() => [])` donc ne causent pas d'erreur visible à l'utilisateur.
+| NAV3a | NAV3b | NAV4 tabs | Total |
+|-------|-------|-----------|-------|
+| SIP | Groups | 7 | 7 |
+| SIP | Lignes | 7 | 7 |
+| SIP | Numéros | 12 | 12 |
+| SIP | Services | 0 | 0 |
+| SMS | - | 7 | 7 |
+| FAX | - | 5 | 5 |
+| Trunk | - | 5 | 5 |
+| **TOTAL** | | | **43** |
 
 ##############################################################################
-# 11. VARIABLES DYNAMIQUES
+# 6. CHANGELOG
 ##############################################################################
 
-| Variable | Source API |
-|----------|------------|
-| {billingAccount} | /telephony → item |
-| {description} | /telephony/{ba} → description |
-| {nicHandle} | Session utilisateur |
-| {lines} | /telephony/{ba}/line → count |
-| {numbers} | /telephony/{ba}/number → count |
-| {fax} | /telephony/{ba}/fax → count |
-| {serviceName} | /telephony/{ba}/line/{sn} → serviceName |
-| {offerType} | /telephony/{ba}/line/{sn} → offerType |
-| {phoneModel} | /telephony/{ba}/line/{sn}/phone → brand+model |
-| {macAddress} | /telephony/{ba}/line/{sn}/phone → macAddress |
-| {status} | /telephony/{ba}/serviceInfos → status |
-| {credit} | /telephony/{ba} → creditThreshold |
-| {smsAccount} | /sms → item |
-| {smsCredits} | /sms/{sn} → creditsLeft |
-| {smsName} | /sms/{sn} → name |
+### v15 (2026-01-03) - RESTRUCTURATION NAV3a/NAV3b/NAV4
+- ✅ NEW: NAV3a = Sélecteur type service (SIP/SMS/FAX/Trunk) - haut LEFT PANEL
+- ✅ NEW: NAV3b = Sélecteur sous-type (Groups/Lignes/Numéros/Services) - sous recherche
+- ✅ NEW: NAV3b visible UNIQUEMENT si NAV3a=SIP
+- ✅ NEW: NAV4 = Tabs RIGHT PANEL selon sélection NAV3a+NAV3b
+- ✅ DOC: Section 2 entièrement réécrite
+- ✅ DOC: Schémas ASCII avec NAV3a/NAV3b/NAV4
+- ✅ DOC: Tableaux récapitulatifs complets
+- ✅ RENAME: Ancien NAV4 → NAV4 (tabs du right panel)
 
-##############################################################################
-# 12-13. [SECTIONS INCHANGÉES - ARBORESCENCE FICHIERS, WORKFLOW]
-##############################################################################
-
-[... sections 12-13 identiques à v8 ...]
-
-##############################################################################
-# 14. CHANGELOG
-##############################################################################
-
-### v14 (2026-01-01) - NAV3 FONT-SIZE
-- ✅ FIX: `.voip-nav3-tab` font-size corrigé (12px → 11px)
-- ✅ DOC: Section 2.5 mise à jour avec valeur correcte
-- ✅ CONFORMITÉ: NAV3 tabs maintenant conformes à prompt_target.txt (11px)
-
-### v13 (2026-01-01) - CONFORMITÉ LAYOUT 100%
-- ✅ CSS: `.voip-left-panel` ajout `flex-shrink: 0` (empêche shrink sur petits écrans)
-- ✅ CSS: `.voip-right-panel` ajout `min-width: 0` (empêche overflow texte long)
-- ✅ AUDIT: Conformité layout vérifiée à 100% vs prompt_split_layout_method.txt
-- ✅ AUDIT: Toutes couleurs conformes à prompt_target.txt
-- ✅ AUDIT: NAV3/NAV4 CSS conformes à prompt_target_sidecar_left.txt
-
-### v12 (2026-01-01) - NAV3 HORIZONTAL + DOC NAVIGATION
-- ✅ UX: NAV3 tabs sur une seule ligne (4 boutons compacts)
-- ✅ CSS: Grid 2x2 → Flex horizontal avec `flex: 1`
-- ✅ CSS: Boutons padding réduit (8px 6px → 6px 4px)
-- ✅ CSS: Font-size réduit (11px → 10px tabs, 10px → 9px count)
-- ✅ Labels: Emojis supprimés (📞💬📠🔗 → rien)
-- ✅ Labels: "Carrier" → "Trunk" (plus court)
-- ✅ DOC: Section 2 réécrite avec structure NAV réelle
-- ✅ DOC: NAV3 = left panel (SIP/SMS/FAX/Trunk)
-- ✅ DOC: NAV4 = right panel tabs par service
-- ✅ DOC: Actions header documentées (badges, boutons)
-- ✅ DOC: Arborescence fichiers complète
-- ✅ DOC: États vides documentés
-
-### v11 (2026-01-01) - CSS + i18n + Actions
-- ✅ CSS: Pattern .btn-primary:hover unifié (color: #FFFFFF !important)
-- ✅ i18n: Clés sip/sms/fax/carrier.title et .noService
-- ✅ Actions: onClick handlers sur boutons header (SmsPanel, FaxPanel)
-
-### v10 (2026-01-01) - AUDIT EXHAUSTIF
-- ✅ AUDIT: 56 fichiers service.ts analysés (~3000+ lignes)
-- ✅ FIX: `sip/lines/lines.service.ts:124-129` - endpoint consommation corrigé
-  - Avant: `/telephony/{ba}/line/{sn}/statistics/consumption` (INEXISTANT)
-  - Après: `/telephony/{ba}/service/{sn}/voiceConsumption` + pattern LIST+DETAILS
-- ✅ VALIDÉ: carrier-sip/ (5 fichiers) - CORRECT
-- ✅ VALIDÉ: fax/ (6 fichiers) - CORRECT (distinction freefax/telephony fax)
-- ✅ VALIDÉ: sms/ (7 fichiers) - CORRECT + encodeURIComponent pour senders
-- ✅ VALIDÉ: sip/groups/ (8 fichiers) - COMPLET (639 lignes groups.service.ts)
-- ✅ VALIDÉ: sip/lines/ (13 fichiers) - CORRIGÉ (905 lignes lines.service.ts)
-- ✅ VALIDÉ: sip/numbers/ (16 fichiers) - COMPLET (1238 lignes numbers.service.ts)
-- ✅ ADD: Section 10.15 - Mapping old_manager → new_manager
-- ✅ ADD: Section 10.16 - Statistiques de couverture API
-
-### v9 (2026-01-01)
-- ✅ FIX: Endpoint carrier-sip/settings corrigé (/settings manquant)
-- ✅ FIX: Endpoints fax/campaigns corrigés (/telephony/{ba}/fax/{sn}/campaigns)
-- ✅ ADD: 115+ nouveaux endpoints documentés
-- ✅ ADD: Section Conference (participants, webAccess)
-- ✅ ADD: Section Redirect
-- ✅ ADD: Section Mini PABX & Easy PABX
-- ✅ ADD: APIs ligne (changePassword, traffic, device, phonebook, functionKey)
-- ✅ ADD: APIs groupe (task, spare, domains, accessories, credit)
-- ✅ ADD: APIs SMS (seeOffers, document, HLR, validate sender)
-- ✅ ADD: APIs FAX (screenLists CRUD, campaign details)
-- ✅ ADD: Pattern encodeURIComponent pour senders
-- ✅ ADD: Section APIs non implémentées
-
-### v8 (2026-01-01)
-- Section API AUDIT COMPLET avec patterns corrects
-
-### v7
-- Version initiale alignée avec frontend
+### v14 et antérieures
+- Voir historique dans version précédente
 
 ================================================================================
-FIN PROMPT TARGET WEB CLOUD > VOIP - v14
+FIN PROMPT TARGET WEB CLOUD > VOIP - v15
 ================================================================================

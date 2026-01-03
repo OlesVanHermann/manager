@@ -1,0 +1,188 @@
+# Cahier des Charges : bare-metal/nutanix/page-node-netboot
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.nutanix.page-node-netboot.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | nutanix (Nutanix) |
+| **Type** | Page configuration avec LEFT PANEL |
+| **Description** | Page de configuration du mode de démarrage (netboot) d'un nœud Nutanix |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Placeholder | Rechercher... |
+| Background | #F3F4F6 |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | nutanix-cluster-01 |
+| Sous-titre | rbx - 3 nœuds |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL - HEADER
+
+### 4.1 Breadcrumb
+
+| Segment | Type |
+|---------|------|
+| nutanix-cluster-01 | Lien bleu |
+| / | Séparateur |
+| node-01 | Lien bleu |
+| / | Séparateur |
+| Netboot | Texte actif |
+
+### 4.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Configuration Netboot |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. CONFIGURATION ACTUELLE
+
+### 5.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 500×80px |
+| Background | #F3F4F6 |
+| Border radius | 4px |
+
+### 5.2 Informations
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Configuration actuelle |
+| Valeur | Disque dur |
+| Description | Le serveur démarre depuis son disque local |
+
+---
+
+## 6. FORMULAIRE
+
+### 6.1 Mode de démarrage
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Mode de démarrage |
+| Type | Select dropdown |
+| Dimensions | 400×36px |
+| Valeur par défaut | Disque dur |
+
+| Options disponibles |
+|---------------------|
+| Disque dur |
+| Rescue |
+| Network |
+
+### 6.2 Kernel (conditionnel)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Kernel (mode rescue uniquement) |
+| Type | Select dropdown |
+| Dimensions | 400×36px |
+| État | Désactivé si mode != rescue |
+| Background désactivé | #E5E7EB |
+| Texte désactivé | Non applicable |
+
+### 6.3 Root device (conditionnel)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Root device (mode rescue uniquement) |
+| Type | Select dropdown |
+| Dimensions | 400×36px |
+| État | Désactivé si mode != rescue |
+| Background désactivé | #E5E7EB |
+| Texte désactivé | Non applicable |
+
+---
+
+## 7. ACTIONS
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Appliquer | Primary (#0050D7) | 120×36px |
+| Annuler | Outline (#0050D7) | 100×36px |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir configuration netboot
+
+```
+GET /nutanix/{serviceName}/nodes/{nodeId}/boot
+```
+
+Response:
+```json
+{
+  "bootMode": "harddisk",
+  "kernel": null,
+  "rootDevice": null,
+  "availableModes": ["harddisk", "rescue", "network"],
+  "availableKernels": ["rescue64-pro", "rescue-customer"],
+  "availableRootDevices": ["hd0", "hd1", "hd2"]
+}
+```
+
+### 8.2 Configurer netboot
+
+```
+PUT /nutanix/{serviceName}/nodes/{nodeId}/boot
+```
+
+Body:
+```json
+{
+  "bootMode": "rescue",
+  "kernel": "rescue64-pro",
+  "rootDevice": "hd0"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `nutanix_netboot_title` | Configuration Netboot |
+| `nutanix_netboot_current` | Configuration actuelle |
+| `nutanix_netboot_harddisk` | Disque dur |
+| `nutanix_netboot_harddisk_desc` | Le serveur démarre depuis son disque local |
+| `nutanix_netboot_mode` | Mode de démarrage |
+| `nutanix_netboot_kernel` | Kernel (mode rescue uniquement) |
+| `nutanix_netboot_rootdevice` | Root device (mode rescue uniquement) |
+| `nutanix_netboot_na` | Non applicable |
+| `nutanix_netboot_apply` | Appliquer |
+| `nutanix_netboot_cancel` | Annuler |

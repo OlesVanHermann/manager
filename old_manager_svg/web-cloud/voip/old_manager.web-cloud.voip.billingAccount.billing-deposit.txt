@@ -1,0 +1,201 @@
+# Cahier des Charges : web-cloud/voip/billingAccount/billing-deposit
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.billingAccount.billing-deposit.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page formulaire |
+| **Description** | Page pour augmenter le plafond de dépôt de garantie du groupe |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px (avec liste groupes) |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Groupe sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Nom | ab12345-ovh-1 |
+| Description | Groupe principal |
+| Compteur | 3 groupes |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien | ← Retour à la facturation |
+| Couleur | #0050D7 |
+
+### 4.2 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Augmenter le plafond de dépôt de garantie |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. SECTION INFORMATIONS
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 550×120px |
+| Titre | Informations |
+| Séparateur | Ligne sous le titre |
+
+### 5.2 Champs
+
+| Label | Valeur exemple |
+|-------|----------------|
+| Groupe de téléphonie | ab12345-ovh-1 |
+| Dépôt de garantie actuel | 150,00 € HT |
+
+---
+
+## 6. SECTION COMMANDE
+
+### 6.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 550×200px |
+| Titre | Commande |
+| Séparateur | Ligne sous le titre |
+
+### 6.2 Sélection du montant
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Somme à ajouter : |
+| Type | Select dropdown |
+| Dimensions | 300×36px |
+| Options exemple | 50,00 € HT, 100,00 € HT, 200,00 € HT, 500,00 € HT |
+| Valeur sélectionnée | 100,00 € HT |
+
+### 6.3 Résultat calculé
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Dépôt de garantie après ajout : |
+| Valeur | 250,00 € HT |
+| Font-weight | 500 |
+
+### 6.4 Checkbox CGV
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Checkbox |
+| État | Coché (#0050D7) |
+| Label | Conditions Générales de Vente OVHcloud |
+| Lien | Vers les CGV |
+
+### 6.5 Bouton commander
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commander |
+| Style | Primary (#0050D7) |
+| Dimensions | 120×36px |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir le dépôt actuel
+
+```
+GET /telephony/{billingAccount}
+```
+
+Response:
+```json
+{
+  "billingAccount": "ab12345-ovh-1",
+  "description": "Groupe principal",
+  "securityDeposit": 150.00
+}
+```
+
+### 7.2 Obtenir les montants disponibles
+
+```
+GET /telephony/{billingAccount}/securityDeposit/amounts
+```
+
+Response:
+```json
+{
+  "amounts": [50.00, 100.00, 200.00, 500.00]
+}
+```
+
+### 7.3 Commander un ajout de dépôt
+
+```
+POST /telephony/{billingAccount}/securityDeposit/order
+```
+
+Body:
+```json
+{
+  "amount": 100.00,
+  "acceptCgv": true
+}
+```
+
+Response:
+```json
+{
+  "orderId": "78542365",
+  "orderUrl": "https://www.ovh.com/order/...",
+  "newTotal": 250.00
+}
+```
+
+---
+
+## 8. VALIDATION
+
+| Champ | Règle |
+|-------|-------|
+| Montant | Requis, sélection obligatoire |
+| CGV | Requis, doit être coché |
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_deposit_back` | Retour à la facturation |
+| `voip_deposit_title` | Augmenter le plafond de dépôt de garantie |
+| `voip_deposit_info_title` | Informations |
+| `voip_deposit_info_group` | Groupe de téléphonie |
+| `voip_deposit_info_current` | Dépôt de garantie actuel |
+| `voip_deposit_order_title` | Commande |
+| `voip_deposit_order_amount` | Somme à ajouter |
+| `voip_deposit_order_result` | Dépôt de garantie après ajout |
+| `voip_deposit_order_cgv` | Conditions Générales de Vente OVHcloud |
+| `voip_deposit_order_submit` | Commander |
+| `voip_deposit_success` | Commande effectuée avec succès |

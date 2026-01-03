@@ -1,0 +1,209 @@
+# Cahier des Charges : private-cloud/vmware/modal-move-nsxt-edge
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-move-nsxt-edge.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour relocaliser un NSX Edge vers un autre datastore |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 360px |
+| Position | Centrée (x: 420, y: 220) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Relocaliser un NSX Edge |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. FORMULAIRE
+
+### 4.1 Champ NSX Edge
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Sélectionner un NSX Edge |
+| Font-size label | 13px |
+| Font-weight | 500 |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Dimensions | 560×44px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | edge-gateway-01 |
+| Icône | ▼ |
+
+### 4.2 Champ Datastore
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Sélectionner un datastore |
+| Font-size label | 13px |
+| Font-weight | 500 |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Dimensions | 560×44px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | Choisir un datastore... |
+| Icône | ▼ |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position | État |
+|--------|-------|------------|----------|------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche | Actif |
+| Relocaliser | Disabled (#E5E7EB) | 100×40px | Droite | Désactivé |
+
+### 5.2 État bouton Relocaliser
+
+| Condition | État |
+|-----------|------|
+| Datastore non sélectionné | Désactivé (#E5E7EB, texte #6B7280) |
+| Datastore sélectionné | Actif (#0050D7, texte #FFFFFF) |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic dropdown NSX Edge | Afficher liste des NSX Edges |
+| Clic dropdown Datastore | Afficher liste des datastores disponibles |
+| Sélection datastore | Activer le bouton Relocaliser |
+| Clic Relocaliser | Lancer la relocalisation |
+
+---
+
+## 7. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| NSX Edge | Obligatoire, doit être sélectionné |
+| Datastore | Obligatoire, doit être différent de l'actuel |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les NSX Edges
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsxt/edges
+```
+
+Response:
+```json
+[
+  {
+    "id": "edge-001",
+    "name": "edge-gateway-01",
+    "currentDatastore": "ds-001",
+    "status": "running"
+  },
+  {
+    "id": "edge-002",
+    "name": "edge-gateway-02",
+    "currentDatastore": "ds-002",
+    "status": "running"
+  }
+]
+```
+
+### 8.2 Lister les datastores disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/datastores
+```
+
+Response:
+```json
+[
+  {
+    "id": "ds-001",
+    "name": "datastore-ssd-01",
+    "freeSpace": "500GB",
+    "type": "ssd"
+  },
+  {
+    "id": "ds-002",
+    "name": "datastore-ssd-02",
+    "freeSpace": "1TB",
+    "type": "ssd"
+  }
+]
+```
+
+### 8.3 Relocaliser un NSX Edge
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsxt/edges/{edgeId}/move
+```
+
+Body:
+```json
+{
+  "targetDatastoreId": "ds-002"
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-123456",
+  "status": "pending",
+  "estimatedDuration": "5 minutes"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_edge_move_title` | Relocaliser un NSX Edge |
+| `vmware_edge_move_select_edge` | Sélectionner un NSX Edge |
+| `vmware_edge_move_select_ds` | Sélectionner un datastore |
+| `vmware_edge_move_placeholder` | Choisir un datastore... |
+| `vmware_edge_move_cancel` | Annuler |
+| `vmware_edge_move_submit` | Relocaliser |

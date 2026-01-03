@@ -1,0 +1,433 @@
+# PROMPT TARGET - NAV1: bare-metal / NAV2: cloudstore
+
+Version: v1.0 (2026-01-03)
+
+================================================================================
+## 1. ARBORESCENCE
+================================================================================
+
+### NAV1: bare-metal
+Position: Header bleu OVH (height: 50px)
+Label: Bare Metal Cloud
+
+### NAV2: cloudstore
+Position: Sous-header blanc (height: 40px)
+Label: CloudStore
+Tabs NAV2: [CloudStore] (seul pour l'instant, extensible)
+
+### NAV3: Groupements (LEFT PANEL)
+Position: Au-dessus de [Rechercher...] dans sidebar 280px
+
+| NAV3 | Label FR | Icone | Description |
+|------|----------|-------|-------------|
+| cda | CDA | database | Cloud Disk Array (CEPH) |
+
+Note: NAV3 extensible pour futurs produits (NAS-HA, NetApp...)
+
+### Region (LEFT PANEL)
+Position: En dessous de NAV3, au-dessus de Rechercher
+Type: Dropdown selecteur
+Options: Toutes les regions, EU-West (GRA), EU-West (SBG), EU-West (PAR), CA-East (BHS), ...
+Default: Toutes les regions
+Comportement: Filtre la liste des services par datacenter/region
+
+### NAV4: Fonctions par NAV3 (RIGHT PANEL)
+
+#### NAV3: cda
+
+**Selection "Tous les services" (premier element sidecar):**
+| NAV4 | Label FR | Description | APIs principales |
+|------|----------|-------------|------------------|
+| overview | Vue d'ensemble | Agregation tous clusters | GET /dedicated/ceph |
+
+**Selection service individuel:**
+| NAV4 | Label FR | Description | APIs principales |
+|------|----------|-------------|------------------|
+| dashboard | Tableau de bord | Vue generale cluster | GET /dedicated/ceph/{id} |
+| health | Sante | Etat OSDs, monitors, PGs | GET /dedicated/ceph/{id}/health |
+| pools | Pools | Pools de stockage | GET /dedicated/ceph/{id}/pool |
+| ips | IPs | Controle acces IP (ACL) | GET /dedicated/ceph/{id}/acl |
+| users | Utilisateurs | Users et permissions | GET /dedicated/ceph/{id}/user |
+| space | Espace | Utilisation stockage | GET /dedicated/ceph/{id}/pool (usage) |
+| tasks | Taches | Scrub, recovery, etc. | GET /dedicated/ceph/{id}/task |
+
+================================================================================
+## 2. SPECS LAYOUT
+================================================================================
+
+### Dimensions (TOLERANCE: 0px)
+| Element | Valeur |
+|---------|--------|
+| NAV1 height | 50px |
+| NAV2 height | 40px |
+| Gap NAV2->Content | 15px |
+| Sidebar width | 280px |
+| Gap panels | 16px |
+| Margins | 24px |
+| Right panel width | flex: 1 (min 800px) |
+
+### Couleurs
+| Element | Couleur |
+|---------|---------|
+| Primary | #0050D7 |
+| Success | #16A34A |
+| Warning | #F59E0B |
+| Danger | #DC2626 |
+| Background | #F9FAFB |
+| Border | #E5E7EB |
+| Text primary | #1F2937 |
+| Text secondary | #6B7280 |
+
+================================================================================
+## 3. PAGES DETAILLEES
+================================================================================
+
+### 3.0 NAV4: overview (Vue d'ensemble - "Tous les services")
+
+Layout: Tableau agregeant tous les clusters CDA
+
+#### Header
+| Element | Valeur |
+|---------|--------|
+| Titre | Cloud Disk Array - Vue d'ensemble |
+| Sous-titre | {count} clusters |
+
+#### Tableau clusters
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Nom | 200px | Nom du cluster (lien vers dashboard) |
+| Statut | 100px | Badge Actif/Inactif |
+| Sante | 100px | Badge HEALTHY/WARNING/ERROR |
+| Datacenter | 100px | GRA1, SBG1, etc. |
+| Espace utilise | 200px | Progress bar + "X / Y TB (Z%)" |
+| OSDs | 100px | "X / Y" |
+| Pools | 80px | Nombre de pools |
+| Actions | 80px | Menu ⋮ |
+
+#### Actions menu par ligne
+| Action | Description |
+|--------|-------------|
+| Voir details | Navigue vers dashboard du cluster |
+| Modifier | Ouvre modal modifier cluster |
+
+#### APIs
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicated/ceph | Liste tous les clusters |
+| GET | /dedicated/ceph/{id} | Details par cluster (pour sante, espace) |
+
+---
+
+### 3.1 NAV4: dashboard (Tableau de bord)
+
+Layout: 3 tuiles + section tableau
+
+#### Tuile 1: Details
+| Champ | Valeur |
+|-------|--------|
+| Titre | Details + icone edit |
+| Statut | Badge "Actif" (vert) |
+| Crush Tunables | optimal / argonaut / bobtail / firefly |
+| Datacenter | GRA1, SBG1, etc. |
+
+#### Tuile 2: Sante
+| Champ | Valeur |
+|-------|--------|
+| Titre | Sante |
+| Etat general | Badge "HEALTHY" (vert) |
+| OSDs actifs | "48 / 48" |
+| Monitors | "3 / 3" |
+
+#### Tuile 3: Utilisation espace
+| Champ | Valeur |
+|-------|--------|
+| Titre | Utilisation de l'espace |
+| Progress bar | Bleu sur gris |
+| Legende | Utilise: X To (Y%) / Disponible: X To |
+
+#### Section: Taches recentes
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Date | 180px | Date et heure |
+| Type | 300px | createPool, addUser, scrub, etc. |
+| Statut | 200px | Badge (Terminee, En cours, Erreur) |
+| Details | flex | Description resultat |
+
+---
+
+### 3.2 NAV4: health (Sante)
+
+Layout: Cartes statut + tableau evenements
+
+#### Cartes statut (4 colonnes)
+| Carte | Contenu |
+|-------|---------|
+| Etat global | Badge "Sain" (vert) |
+| OSDs | "{actifs} / {total}" + sous-texte |
+| Monitors | "{actifs} / {total}" + "Quorum OK" |
+| Placement Groups | "{count}" + "100% active+clean" |
+
+#### Utilisation stockage
+| Element | Description |
+|---------|-------------|
+| Progress bar | Bleu #0050D7 sur gris #E5E7EB |
+| Label | "Utilise: {used} / {total} ({percent}%)" |
+| Sous-label | "Disponible: {available}" |
+
+#### Tableau evenements recents
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Date | Date | Format "DD/MM/YYYY HH:mm" |
+| Type | Badge | INFO (vert), WARN (jaune), ERROR (rouge) |
+| Message | Texte | "Scrubbing completed on OSD.5" |
+
+---
+
+### 3.3 NAV4: pools (Pools)
+
+Layout: Message info + bouton + tableau
+
+#### Message info (bleu)
+Texte 1: Vous pouvez creer vos pools ici.
+Texte 2: Les pools sont des "containers" pour vos donnees. L'acces aux pools peut etre controle par utilisateur.
+
+#### Bouton
+Label: Ajouter un pool
+Style: Primary
+
+#### Tableau pools
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom | Text | Nom du pool |
+| Type | Text | replicated, erasure |
+| Repliques | Number | Ex: 3 |
+| Min. repliques actives | Number | Ex: 2 |
+| Actions | ActionMenu | Supprimer (danger) |
+
+---
+
+### 3.4 NAV4: ips (IPs / Controle acces)
+
+Layout: Message info + bouton + tableau
+
+#### Message info (bleu)
+Texte 1: Vous pouvez creer vos controles d'acces IP ici.
+Texte 2: Votre cluster acceptera seulement le trafic reseau concordant avec les acces crees.
+
+#### Bouton
+Label: Ajouter un controle d'acces
+Style: Primary
+
+#### Tableau IPs
+| Colonne | Type | Description |
+|---------|------|-------------|
+| IP | Text | IP avec masque CIDR (192.168.1.0/24) |
+| Actions | ActionMenu | Supprimer (danger) |
+
+---
+
+### 3.5 NAV4: users (Utilisateurs)
+
+Layout: Message info + bouton + tableau
+
+#### Message info (bleu)
+Texte: Vos utilisateurs peuvent utiliser le cluster avec des permissions specifiques par pool.
+
+#### Bouton
+Label: Ajouter un utilisateur
+Style: Primary
+
+#### Tableau utilisateurs
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom | Text | Nom utilisateur |
+| Cle | Text (masked) | Cle tronquee ****...*** |
+| Pools | Text | Liste pools autorises |
+| Actions | ActionMenu | Voir permissions, Supprimer (danger) |
+
+---
+
+### 3.6 NAV4: space (Espace)
+
+Layout: Graphique donut + barres par pool + alertes
+
+#### Graphique donut
+| Element | Valeur |
+|---------|--------|
+| Centre | "{percent}% utilise" |
+| Legende utilisee | Bleu #0050D7 |
+| Legende disponible | Gris #E5E7EB |
+| Labels | "Utilise: 18.4 TB", "Disponible: 27.6 TB", "Capacite: 46 TB" |
+
+#### Barres par pool
+| Pool | Couleur | Format |
+|------|---------|--------|
+| data | Bleu #0050D7 | Nom + barre + % |
+| backup | Vert #10B981 | Nom + barre + % |
+| archive | Orange #F59E0B | Nom + barre + % |
+
+#### Alertes espace
+| Niveau | Seuil | Couleur badge |
+|--------|-------|---------------|
+| Info | < 60% | Vert |
+| Attention | 60-80% | Jaune |
+| Critique | > 80% | Rouge |
+
+---
+
+### 3.7 NAV4: tasks (Taches)
+
+Layout: Tableau taches
+
+#### Tableau taches
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| ID | 100px | Identifiant tache |
+| Nom | 250px | scrub, deep-scrub, recovery |
+| Progression | 250px | Barre de progression + % |
+
+================================================================================
+## 4. MODALES
+================================================================================
+
+### 4.1 Modal: Ajouter pool
+| Element | Valeur |
+|---------|--------|
+| Titre | Ajouter un pool |
+| Champ | Nom * (input text, placeholder: my-pool-name) |
+| Validation | Pas d'espaces, max 50 caracteres |
+| Boutons | Annuler (outline), Ajouter (primary) |
+| API | POST /dedicated/ceph/{id}/pool |
+
+### 4.2 Modal: Supprimer pool
+| Element | Valeur |
+|---------|--------|
+| Titre | Supprimer (bandeau danger) |
+| Recap | Nom du pool |
+| Question | Etes-vous certain de vouloir supprimer ce pool? |
+| Warning | Message rouge "Action irreversible. Donnees perdues." |
+| Boutons | Annuler (outline), Supprimer (danger) |
+| API | DELETE /dedicated/ceph/{id}/pool/{poolName} |
+
+### 4.3 Modal: Ajouter controle acces IP
+| Element | Valeur |
+|---------|--------|
+| Titre | Ajouter un controle d'acces |
+| Champ | IP avec masque * (placeholder: 192.168.1.0/24) |
+| Aide | Format : 192.168.1.0/24 |
+| Boutons | Annuler (outline), Ajouter (primary) |
+| API | POST /dedicated/ceph/{id}/acl |
+
+### 4.4 Modal: Supprimer IP
+| Element | Valeur |
+|---------|--------|
+| Titre | Supprimer l'adresse IP |
+| Recap | Adresse IP: {ip}/{cidr} |
+| Question | Confirmez-vous la suppression de cette IP ? |
+| Boutons | Annuler (secondary), Supprimer (danger) |
+| API | DELETE /dedicated/ceph/{id}/acl/{aclId} |
+
+### 4.5 Modal: Ajouter utilisateur
+| Element | Valeur |
+|---------|--------|
+| Titre | Ajouter un utilisateur |
+| Champ | Nom * (placeholder: admin-user) |
+| Validation | Pas d'espaces, max 50 caracteres |
+| Info | Message bleu "Cle generee auto. Permissions apres creation." |
+| Boutons | Annuler (outline), Ajouter (primary) |
+| API | POST /dedicated/ceph/{id}/user |
+
+### 4.6 Modal: Supprimer utilisateur
+| Element | Valeur |
+|---------|--------|
+| Titre | Supprimer |
+| Recap | Utilisateur: {userName} |
+| Question | Etes-vous sur de vouloir supprimer cet utilisateur ? |
+| Boutons | Annuler (outline), Supprimer (danger) |
+| API | DELETE /dedicated/ceph/{id}/user/{userName} |
+
+### 4.7 Modal: Modifier cluster
+| Element | Valeur |
+|---------|--------|
+| Titre | Modifier le cluster |
+| Champ 1 | Nom d'affichage (input text) |
+| Champ 2 | Profil CRUSH (select: optimal, argonaut, bobtail, firefly) |
+| Boutons | Annuler (outline), Modifier (primary) |
+| API | PUT /dedicated/ceph/{id} |
+
+================================================================================
+## 5. ONBOARDING (Empty state)
+================================================================================
+
+| Element | Valeur |
+|---------|--------|
+| Illustration | Icone Cloud sur fond bleu clair |
+| Titre | Cloud Disk Array powered by CEPH |
+| Sous-titre | Stockage evolutif nouvelle generation |
+| Bouton | Commander (primary) |
+| Guides | FAQ, Utiliser Ceph avec Proxmox |
+| API | GET /order/catalog/formatted/ceph |
+
+================================================================================
+## 6. APIS COMPLETES
+================================================================================
+
+### Cluster
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicated/ceph/{serviceName} | Infos cluster |
+| PUT | /dedicated/ceph/{serviceName} | Modifier (label, crushTunables) |
+
+### Sante
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicated/ceph/{serviceName}/health | Etat sante |
+
+### Pools
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicated/ceph/{serviceName}/pool | Liste pools |
+| POST | /dedicated/ceph/{serviceName}/pool | Creer pool |
+| DELETE | /dedicated/ceph/{serviceName}/pool/{poolName} | Supprimer pool |
+
+### ACL (IPs)
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicated/ceph/{serviceName}/acl | Liste ACL |
+| POST | /dedicated/ceph/{serviceName}/acl | Ajouter ACL |
+| DELETE | /dedicated/ceph/{serviceName}/acl/{aclId} | Supprimer ACL |
+
+### Utilisateurs
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicated/ceph/{serviceName}/user | Liste users |
+| POST | /dedicated/ceph/{serviceName}/user | Creer user |
+| DELETE | /dedicated/ceph/{serviceName}/user/{userName} | Supprimer user |
+| GET | /dedicated/ceph/{serviceName}/user/{userName}/pool | Permissions |
+
+### Taches
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicated/ceph/{serviceName}/task | Liste taches |
+| GET | /dedicated/ceph/{serviceName}/task/{taskId} | Detail tache |
+
+================================================================================
+## 7. LIENS ENTRE PAGES
+================================================================================
+
+| Depuis | Action | Vers |
+|--------|--------|------|
+| dashboard | Click tuile Details edit | Modal: Modifier cluster |
+| dashboard | Click tuile Sante | NAV4: health |
+| dashboard | Click tuile Espace | NAV4: space |
+| pools | Click Ajouter | Modal: Ajouter pool |
+| pools | Click Supprimer | Modal: Supprimer pool |
+| ips | Click Ajouter | Modal: Ajouter IP |
+| ips | Click Supprimer | Modal: Supprimer IP |
+| users | Click Ajouter | Modal: Ajouter utilisateur |
+| users | Click Voir permissions | Page: permissions user |
+| users | Click Supprimer | Modal: Supprimer utilisateur |
+
+================================================================================
+FIN PROMPT TARGET
+================================================================================

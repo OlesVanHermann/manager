@@ -1,0 +1,256 @@
+# Cahier des Charges : private-cloud/vmware/network
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.network.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page dashboard avec tiles et datagrid |
+| **Description** | Page réseau avec configuration vRack, NSX-T, blocs IP et segments réseau |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Placeholder | Rechercher... |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | pcc-192-0-2-1 |
+| Sous-titre | dc-gra1 |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Réseau |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 Info banner NSX-T
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×60px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Ligne 1 | ℹ️ NSX-T est activé sur votre datacenter virtuel. Vous pouvez gérer vos segments réseau et vos configurations. |
+| Ligne 2 | Accéder à la documentation NSX-T → |
+| Couleur texte | #1E40AF |
+
+---
+
+## 5. TILES RÉSEAU (3 colonnes)
+
+### 5.1 Tile vRack
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×200px |
+| Header | vRack (background #F9FAFB) |
+
+| Champ | Valeur |
+|-------|--------|
+| vRack associé | pn-123456 |
+| VLAN ID Range | 1 - 4094 |
+
+| Bouton | Style |
+|--------|-------|
+| Configurer | Outline #E5E7EB, 120×32px |
+
+### 5.2 Tile NSX-T
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×200px |
+| Header | NSX-T (background #F9FAFB) |
+| Badge | Activé (#DEF7EC / #059669) |
+
+| Champ | Valeur |
+|-------|--------|
+| Version | NSX-T 3.2.2 |
+| Segments | 5 segments configurés |
+
+| Bouton | Style |
+|--------|-------|
+| Gérer les segments | Primary #0050D7, 140×32px |
+
+### 5.3 Tile Blocs IP
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 336×200px |
+| Header | Blocs IP (background #F9FAFB) |
+
+| Champ | Valeur |
+|-------|--------|
+| IP publiques | 192.0.2.0/28 (16 IPs) |
+| IP privées | 10.0.0.0/16 |
+
+| Bouton | Style |
+|--------|-------|
+| Commander des IPs | Outline #E5E7EB, 140×32px |
+
+---
+
+## 6. SECTION SEGMENTS RÉSEAU
+
+### 6.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Segments réseau |
+| Font-size | 15px |
+| Font-weight | 600 |
+
+### 6.2 Bouton ajout
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Ajouter un segment |
+| Dimensions | 140×36px |
+| Style | Outline #E5E7EB |
+
+### 6.3 Datagrid segments
+
+| Colonne | Largeur |
+|---------|---------|
+| Nom | 184px |
+| Type | 150px |
+| VLAN ID | 100px |
+| Subnet | 150px |
+| Gateway | 180px |
+| État | 100px |
+| Actions | 60px |
+
+### 6.4 Données exemple
+
+| Nom | Type | VLAN ID | Subnet | Gateway | État |
+|-----|------|---------|--------|---------|------|
+| segment-prod-web | Overlay | 100 | 192.168.100.0/24 | 192.168.100.1 | Actif |
+| segment-prod-db | Overlay | 200 | 192.168.200.0/24 | 192.168.200.1 | Actif |
+
+### 6.5 Badge état
+
+| État | Background | Couleur |
+|------|------------|---------|
+| Actif | #DEF7EC | #059669 |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Configurer (vRack) | Ouvrir configuration vRack |
+| Clic Gérer les segments | Naviguer vers gestion segments NSX |
+| Clic Commander des IPs | Ouvrir wizard commande IP |
+| Clic Ajouter un segment | Ouvrir modal création segment |
+| Clic lien documentation | Ouvrir doc NSX-T (nouvel onglet) |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir configuration réseau
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/network
+```
+
+Response:
+```json
+{
+  "vrack": {
+    "name": "pn-123456",
+    "vlanRange": { "min": 1, "max": 4094 }
+  },
+  "nsx": {
+    "enabled": true,
+    "version": "3.2.2",
+    "segmentCount": 5
+  },
+  "ipBlocks": {
+    "public": "192.0.2.0/28",
+    "publicCount": 16,
+    "private": "10.0.0.0/16"
+  }
+}
+```
+
+### 8.2 Lister les segments réseau
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsx/segments
+```
+
+Response:
+```json
+[
+  {
+    "name": "segment-prod-web",
+    "type": "overlay",
+    "vlanId": 100,
+    "subnet": "192.168.100.0/24",
+    "gateway": "192.168.100.1",
+    "state": "active"
+  }
+]
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_network_title` | Réseau |
+| `vmware_network_nsx_info` | NSX-T est activé sur votre datacenter virtuel. Vous pouvez gérer vos segments réseau et vos configurations. |
+| `vmware_network_nsx_doc` | Accéder à la documentation NSX-T |
+| `vmware_network_vrack` | vRack |
+| `vmware_network_vrack_associated` | vRack associé |
+| `vmware_network_vlan_range` | VLAN ID Range |
+| `vmware_network_configure` | Configurer |
+| `vmware_network_nsx` | NSX-T |
+| `vmware_network_version` | Version |
+| `vmware_network_segments_count` | {count} segments configurés |
+| `vmware_network_manage_segments` | Gérer les segments |
+| `vmware_network_ip_blocks` | Blocs IP |
+| `vmware_network_public_ip` | IP publiques |
+| `vmware_network_private_ip` | IP privées |
+| `vmware_network_order_ip` | Commander des IPs |
+| `vmware_network_segments_title` | Segments réseau |
+| `vmware_network_add_segment` | Ajouter un segment |
+| `vmware_network_col_name` | Nom |
+| `vmware_network_col_type` | Type |
+| `vmware_network_col_vlan` | VLAN ID |
+| `vmware_network_col_subnet` | Subnet |
+| `vmware_network_col_gateway` | Gateway |
+| `vmware_network_col_state` | État |
+| `vmware_network_active` | Actif |

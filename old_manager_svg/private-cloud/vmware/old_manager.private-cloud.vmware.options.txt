@@ -1,0 +1,218 @@
+# Cahier des Charges : private-cloud/vmware/options
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.options.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page dashboard avec LEFT PANEL et tiles |
+| **Description** | Page affichant les options et conformités du service VMware avec statuts et actions contextuelles |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+| Padding | 24px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Placeholder | Rechercher... |
+
+### 3.2 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nom | pcc-192-0-2-1 |
+| Description | VMware on OVHcloud |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | pcc-192-0-2-1 |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. TILE CONFORMITÉ
+
+### 5.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×150px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Header tile
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Titre | Conformité |
+| Font-weight | 700 |
+
+### 5.3 Contenu
+
+| Label | Valeur |
+|-------|--------|
+| Conformité spécifique par secteur d'activité | Aucune |
+| Lien externe | Découvrir nos certifications ↗ |
+
+### 5.4 ActionMenu
+
+| Option | Couleur |
+|--------|---------|
+| Activer la mise en conformité | #1F2937 |
+| Configurer | #1F2937 |
+
+---
+
+## 6. TILE OPTIONS
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×400px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Position Y | 220px |
+
+### 6.2 Header tile
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Titre | Options |
+| Font-weight | 700 |
+
+### 6.3 Liste des options
+
+| Option | Badge | Sous-statuts | ActionMenu |
+|--------|-------|--------------|------------|
+| Zerto | Activé (#DEF7EC/#03543F) | - | ⋮ |
+| Veeam Managed Backup | Activé (#DEF7EC/#03543F) | - | - |
+| Virtualisation des réseaux et de la sécurité (NSX-T) | Activé (#DEF7EC/#03543F) | dc-gra1: Actif, dc-sbg3: Actif | ⋮ |
+| Logs | Activé (#DEF7EC/#03543F) | - | ⋮ |
+
+### 6.4 Styles badges
+
+| État | Background | Couleur texte |
+|------|------------|---------------|
+| Activé | #DEF7EC | #03543F |
+| Actif (sous-status) | #DEF7EC | #03543F |
+
+### 6.5 ActionMenu Logs (ouvert)
+
+| Option | Couleur |
+|--------|---------|
+| Désactiver | #DC2626 |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic service LEFT PANEL | Changer de service |
+| Clic ActionMenu ⋮ | Ouvrir menu contextuel |
+| Clic Activer la mise en conformité | Ouvrir modal activation |
+| Clic Configurer | Ouvrir page configuration |
+| Clic Désactiver | Ouvrir modal désactivation option |
+| Clic Découvrir nos certifications | Ouvrir page externe (nouvel onglet) |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir les options du service
+
+```
+GET /dedicatedCloud/{serviceName}/options
+```
+
+Response:
+```json
+{
+  "compliance": {
+    "current": null,
+    "available": ["HDS", "PCI-DSS", "SNC"]
+  },
+  "options": {
+    "zerto": {
+      "enabled": true,
+      "status": "active"
+    },
+    "veeam": {
+      "enabled": true,
+      "status": "active"
+    },
+    "nsxt": {
+      "enabled": true,
+      "datacenters": [
+        { "name": "dc-gra1", "status": "active" },
+        { "name": "dc-sbg3", "status": "active" }
+      ]
+    },
+    "logs": {
+      "enabled": true,
+      "status": "active"
+    }
+  }
+}
+```
+
+### 8.2 Désactiver une option
+
+```
+POST /dedicatedCloud/{serviceName}/options/{optionName}/disable
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_options_compliance` | Conformité |
+| `vmware_options_compliance_desc` | Conformité spécifique par secteur d'activité |
+| `vmware_options_compliance_none` | Aucune |
+| `vmware_options_certifications` | Découvrir nos certifications |
+| `vmware_options_title` | Options |
+| `vmware_options_zerto` | Zerto |
+| `vmware_options_veeam` | Veeam Managed Backup |
+| `vmware_options_nsxt` | Virtualisation des réseaux et de la sécurité (NSX-T) |
+| `vmware_options_logs` | Logs |
+| `vmware_options_enabled` | Activé |
+| `vmware_options_active` | Actif |
+| `vmware_options_activate_compliance` | Activer la mise en conformité |
+| `vmware_options_configure` | Configurer |
+| `vmware_options_disable` | Désactiver |

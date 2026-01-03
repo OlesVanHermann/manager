@@ -1,0 +1,170 @@
+# Cahier des Charges : private-cloud/vmware/modal-backup-upgrade
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-backup-upgrade.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal confirmation avec warning et checkbox |
+| **Description** | Modal pour changer l'offre de sauvegarde (upgrade Standard → Advanced) |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 520px |
+| Position | Centrée (x: 370, y: 150) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Changement de l'offre de sauvegarde |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. WARNING BANNER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×50px |
+| Background | #FEF3C7 |
+| Border radius | 6px |
+| Icône | ⚠️ |
+| Texte | Si vous avez activé la sauvegarde sur d'autres datacentres de ce Private Cloud, cette offre leur sera également appliquée. |
+| Couleur texte | #D97706 |
+
+---
+
+## 5. CONTENU
+
+### 5.1 Description changement
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Vous souhaitez changer votre offre de sauvegarde de l'offre Standard à l'offre Advanced. |
+| Ligne 2 | Vous aurez désormais les paramètres suivants : |
+| Font-size | 13px |
+
+### 5.2 Carte détails offre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×140px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Titre | Advanced |
+| Feature 1 | • 28 points de restauration |
+| Feature 2 | • Rétention quotidienne : 14 jours |
+| Feature 3 | • Rétention hebdomadaire : 14 jours |
+| Feature 4 | • Rapport quotidien basique |
+| Prix | 15€ HT/mois |
+| Couleur prix | #0050D7 |
+
+### 5.3 Question confirmation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Êtes-vous sûr(e) de vouloir changer d'offre ? |
+| Font-weight | 600 |
+| Sous-texte | Vous serez facturé(e) selon le nombre et la taille des machines virtuelles sauvegardées. |
+| Couleur sous-texte | #6B7280 |
+
+### 5.4 Checkbox validation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 18×18px |
+| État | Coché |
+| Background coché | #0050D7 |
+| Icône | ✓ |
+| Label | Je valide la réplication des données |
+| Font-weight label | 600 |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Passer à l'offre Advanced | Primary (#0050D7) | 220×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Toggle checkbox | Activer/désactiver validation |
+| Clic Passer à l'offre | Changer l'offre de backup (si checkbox cochée) |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Changer l'offre backup
+
+```
+PUT /dedicatedCloud/{serviceName}/backup/offer
+```
+
+Body:
+```json
+{
+  "targetOffer": "Advanced",
+  "replicationValidated": true
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-789",
+  "status": "todo",
+  "message": "Backup offer upgrade requested"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_backup_upgrade_title` | Changement de l'offre de sauvegarde |
+| `vmware_backup_upgrade_warning` | Si vous avez activé la sauvegarde sur d'autres datacentres de ce Private Cloud, cette offre leur sera également appliquée. |
+| `vmware_backup_upgrade_from_to` | Vous souhaitez changer votre offre de sauvegarde de l'offre {from} à l'offre {to}. |
+| `vmware_backup_upgrade_new_params` | Vous aurez désormais les paramètres suivants : |
+| `vmware_backup_upgrade_confirm_question` | Êtes-vous sûr(e) de vouloir changer d'offre ? |
+| `vmware_backup_upgrade_billing_info` | Vous serez facturé(e) selon le nombre et la taille des machines virtuelles sauvegardées. |
+| `vmware_backup_upgrade_validate` | Je valide la réplication des données |
+| `vmware_backup_upgrade_cancel` | Annuler |
+| `vmware_backup_upgrade_submit` | Passer à l'offre {offer} |

@@ -1,0 +1,206 @@
+# Cahier des Charges : home/iam-identities/user-groups
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.iam-identities.user-groups.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | iam-identities |
+| **NAV4** | user-groups |
+| **Type** | Page full-width avec datagrid |
+| **Description** | Page de gestion des groupes d'utilisateurs IAM |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Content area | 1360×600px | x: 40, y: 115 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | IAM - Groupes |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Gestion des identités |
+| Font-size | 24px |
+| Font-weight | 600 |
+| Couleur | #1F2937 |
+
+---
+
+## 4. NAV4 TABS
+
+| Onglet | Largeur | État | Style |
+|--------|---------|------|-------|
+| Utilisateurs | 120px | Inactif | Outline #E5E7EB |
+| Groupes | 100px | Actif | Primary #0050D7 |
+| SSO | 80px | Inactif | Outline #E5E7EB |
+
+---
+
+## 5. BOUTON ACTION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | + Créer un groupe |
+| Type | Primary button |
+| Dimensions | 180×36px |
+| Background | #0050D7 |
+| Position | Droite, y: 25 |
+
+---
+
+## 6. DATAGRID GROUPES
+
+### 6.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×500px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Border radius | 8px 8px 0 0 |
+
+### 6.3 Colonnes
+
+| # | Colonne | Position X | Largeur | Alignement |
+|---|---------|------------|---------|------------|
+| 1 | Nom du groupe | 20px | 280px | Gauche |
+| 2 | Description | 300px | 400px | Gauche |
+| 3 | Membres | 700px | 150px | Gauche |
+| 4 | Politiques | 850px | 150px | Gauche |
+| 5 | Créé le | 1000px | 150px | Gauche |
+| 6 | Actions | 1150px | 150px | Gauche |
+
+### 6.4 Données exemple
+
+| Nom | Description | Membres | Politiques | Créé le |
+|-----|-------------|---------|------------|---------|
+| Admin | Administrateurs avec accès complet | 2 utilisateurs | FullAccess | 15/01/2025 |
+| Developers | Équipe de développement | 4 utilisateurs | ReadWrite | 20/02/2025 |
+| Support | Équipe support technique | 2 utilisateurs | ReadOnly | 01/03/2025 |
+
+### 6.5 Colonnes actions
+
+| Lien | Couleur | Action |
+|------|---------|--------|
+| Modifier | #0050D7 | Ouvrir modal édition groupe |
+| Supprimer | #DC2626 | Ouvrir modal suppression |
+
+### 6.6 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 50px |
+| Background | #FFFFFF |
+| Séparateur | 1px #E5E7EB |
+| Font-size header | 11px |
+| Font-size body | 12px |
+| Font-weight nom | 600 |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic onglet Utilisateurs | Naviguer vers liste utilisateurs |
+| Clic onglet SSO | Naviguer vers configuration SSO |
+| Clic Créer un groupe | Ouvrir modal création groupe |
+| Clic Modifier | Ouvrir modal édition groupe |
+| Clic Supprimer | Ouvrir modal-delete-group |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les groupes
+
+```
+GET /me/identity/group
+```
+
+Response:
+```json
+[
+  {
+    "groupId": "group-001",
+    "name": "Admin",
+    "description": "Administrateurs avec accès complet",
+    "membersCount": 2,
+    "policies": ["FullAccess"],
+    "creationDate": "2025-01-15T10:30:00Z"
+  },
+  {
+    "groupId": "group-002",
+    "name": "Developers",
+    "description": "Équipe de développement",
+    "membersCount": 4,
+    "policies": ["ReadWrite"],
+    "creationDate": "2025-02-20T14:00:00Z"
+  }
+]
+```
+
+### 8.2 Créer un groupe
+
+```
+POST /me/identity/group
+```
+
+Body:
+```json
+{
+  "name": "NewGroup",
+  "description": "Description du groupe",
+  "policies": ["ReadOnly"]
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_identities_title` | Gestion des identités |
+| `iam_identities_tab_users` | Utilisateurs |
+| `iam_identities_tab_groups` | Groupes |
+| `iam_identities_tab_sso` | SSO |
+| `iam_groups_create` | + Créer un groupe |
+| `iam_groups_col_name` | Nom du groupe |
+| `iam_groups_col_description` | Description |
+| `iam_groups_col_members` | Membres |
+| `iam_groups_col_policies` | Politiques |
+| `iam_groups_col_created` | Créé le |
+| `iam_groups_col_actions` | Actions |
+| `iam_groups_members_count` | {count} utilisateurs |
+| `iam_groups_edit` | Modifier |
+| `iam_groups_delete` | Supprimer |

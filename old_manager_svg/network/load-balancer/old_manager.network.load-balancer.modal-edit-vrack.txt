@@ -1,0 +1,184 @@
+# Cahier des Charges : network/load-balancer/modal-edit-vrack
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.network.load-balancer.modal-edit-vrack.svg |
+| **NAV1** | network (Network) |
+| **NAV2** | load-balancer |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour modifier un réseau privé (vRack) |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 550px |
+| Hauteur | 500px |
+| Position | Centrée |
+| Border radius | 8px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 50px |
+| Background | #000E9C |
+| Border radius | 8px 8px 0 0 |
+| Titre | Modifier un réseau privé |
+| Couleur titre | #FFFFFF |
+| Font-size | 15px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. FORMULAIRE
+
+### 4.1 Champ Nom
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom (facultatif) |
+| Type | Text input |
+| Dimensions | 500×36px |
+| Background | #F9FAFB |
+| Valeur exemple | Mon réseau privé |
+
+### 4.2 Champ VLAN ID
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | VLAN ID (facultatif) |
+| Description | 1 à 4000 (0 si le réseau privé n'est pas dans un VLAN) |
+| Type | Number input |
+| Dimensions | 120×36px |
+| Valeur exemple | 100 |
+
+### 4.3 Champ Subnet
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Subnet |
+| Description | Ex. : 10.0.0.0/8 |
+| Type | Text input |
+| Dimensions | 200×36px |
+| Valeur exemple | 10.0.0.0/8 |
+
+### 4.4 Champ NatIP
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | NatIP |
+| Description | Ex. : 10.0.0.0/24 |
+| Type | Text input |
+| Dimensions | 200×36px |
+| Valeur exemple | 10.0.0.0/24 |
+
+### 4.5 Champ Fermes liées
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Fermes de serveurs liées |
+| Sous-label | Nom |
+| Type | Select dropdown |
+| Dimensions | 350×36px |
+| Valeur exemple | farm-backend-123456 |
+| Bouton + | Ajouter une ferme (36×36px, #0050D7) |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Séparateur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | y: 450 |
+| Width | 100% |
+| Stroke | 1px #E5E7EB |
+
+### 5.2 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Secondary | 100×32px | Gauche |
+| Modifier | Primary (#0050D7) | 100×32px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic × | Fermer modal |
+| Clic Annuler | Fermer modal |
+| Clic + | Ajouter une nouvelle ferme au select |
+| Clic Modifier | Valider et sauvegarder |
+
+---
+
+## 7. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Nom | Optionnel |
+| VLAN ID | Optionnel, entier 0-4000 |
+| Subnet | Obligatoire, format CIDR valide |
+| NatIP | Obligatoire, format CIDR valide |
+| Fermes liées | Au moins une ferme |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Modifier le réseau privé
+
+```
+PUT /ipLoadbalancing/{serviceName}/vrack/network/{vrackNetworkId}
+```
+
+Body:
+```json
+{
+  "displayName": "Mon réseau privé",
+  "vlan": 100,
+  "subnet": "10.0.0.0/8",
+  "natIp": "10.0.0.0/24",
+  "farmId": [123456]
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `lb_vrack_modal_edit_title` | Modifier un réseau privé |
+| `lb_vrack_modal_name` | Nom (facultatif) |
+| `lb_vrack_modal_vlan` | VLAN ID (facultatif) |
+| `lb_vrack_modal_vlan_desc` | 1 à 4000 (0 si le réseau privé n'est pas dans un VLAN) |
+| `lb_vrack_modal_subnet` | Subnet |
+| `lb_vrack_modal_subnet_desc` | Ex. : 10.0.0.0/8 |
+| `lb_vrack_modal_natip` | NatIP |
+| `lb_vrack_modal_natip_desc` | Ex. : 10.0.0.0/24 |
+| `lb_vrack_modal_farms` | Fermes de serveurs liées |
+| `lb_vrack_modal_farms_name` | Nom |
+| `lb_vrack_modal_cancel` | Annuler |
+| `lb_vrack_modal_submit` | Modifier |

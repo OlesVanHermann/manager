@@ -1,0 +1,171 @@
+# Cahier des Charges : public-cloud/storage/snapshots/listing
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.storage.snapshots.listing.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | storage |
+| **Type** | Listing / Datagrid |
+| **Description** | Liste des snapshots de volumes Block Storage |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| Breadcrumb | mon-projet / Stockage / Volume Snapshot |
+
+---
+
+## 3. HEADER
+
+| Titre | Volume Snapshot |
+| Font-size | 22px |
+| Font-weight | 600 |
+| Bouton guides | 📖 Guides (100×32px, outline) |
+
+---
+
+## 4. ACTIONS
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| + Créer un snapshot | Outline | 220×36px |
+| ↻ (refresh) | Outline | 40×36px |
+
+---
+
+## 5. TABLEAU VOLUME SNAPSHOTS
+
+### 5.1 Dimensions
+
+| Largeur | 1392px |
+| Hauteur | 500px |
+
+### 5.2 Colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| NOM | 184px |
+| ID | 220px |
+| RÉGION | 140px |
+| VOLUME | 160px |
+| TAILLE | 130px |
+| DATE DE CRÉATION | 200px |
+| STATUT | 230px |
+| ACTIONS | 80px |
+
+### 5.3 Statuts
+
+| Statut | Badge | Background | Texte |
+|--------|-------|------------|-------|
+| Disponible | success | #DEF7EC | #059669 |
+| Création | warning | #FEF3C7 | #D97706 |
+| Erreur | error | #FEE2E2 | #DC2626 |
+
+---
+
+## 6. DONNÉES EXEMPLE
+
+| Nom | ID | Région | Volume | Taille | Date | Statut |
+|-----|----|--------|--------|--------|------|--------|
+| snap-vol-data-20260101 | snap-abc123-def456 | GRA11 | data-volume-01 | 100 GiB | 01 janv. 2026 à 04:00 | Disponible |
+| snap-db-weekly | snap-xyz789-uvw012 | SBG5 | database-volume | 250 GiB | 28 déc. 2025 à 02:00 | Disponible |
+| snap-new-project | snap-new456-cre789 | BHS5 | project-vol | — | 02 janv. 2026 à 11:30 | Création |
+| snap-old-failed | snap-err123-fai456 | WAW1 | legacy-volume | — | 15 déc. 2025 à 08:45 | Erreur |
+
+---
+
+## 7. MENU ACTIONS
+
+| Dimensions | 180×80px |
+
+| Option | Groupe |
+|--------|--------|
+| Créer un volume | - |
+| --- | Séparateur |
+| Supprimer | Danger |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les snapshots de volumes
+
+```
+GET /cloud/project/{projectId}/volume/snapshot
+```
+
+Response:
+```json
+[
+  {
+    "id": "snap-abc123-def456",
+    "name": "snap-vol-data-20260101",
+    "region": "GRA11",
+    "volumeId": "vol-data-01",
+    "size": 100,
+    "creationDate": "2026-01-01T04:00:00Z",
+    "status": "available"
+  }
+]
+```
+
+### 8.2 Créer un snapshot
+
+```
+POST /cloud/project/{projectId}/volume/{volumeId}/snapshot
+```
+
+Body:
+```json
+{
+  "name": "snap-vol-data-20260102"
+}
+```
+
+### 8.3 Créer un volume depuis un snapshot
+
+```
+POST /cloud/project/{projectId}/volume
+```
+
+Body:
+```json
+{
+  "name": "vol-from-snap",
+  "snapshotId": "snap-abc123-def456",
+  "region": "GRA11"
+}
+```
+
+### 8.4 Supprimer un snapshot
+
+```
+DELETE /cloud/project/{projectId}/volume/snapshot/{snapshotId}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_storage_snapshots_title` | Volume Snapshot |
+| `pci_storage_snapshots_create` | Créer un snapshot |
+| `pci_storage_snapshots_col_name` | NOM |
+| `pci_storage_snapshots_col_id` | ID |
+| `pci_storage_snapshots_col_region` | RÉGION |
+| `pci_storage_snapshots_col_volume` | VOLUME |
+| `pci_storage_snapshots_col_size` | TAILLE |
+| `pci_storage_snapshots_col_created` | DATE DE CRÉATION |
+| `pci_storage_snapshots_col_status` | STATUT |
+| `pci_storage_snapshots_status_available` | Disponible |
+| `pci_storage_snapshots_status_creating` | Création |
+| `pci_storage_snapshots_status_error` | Erreur |
+| `pci_storage_snapshots_action_create_volume` | Créer un volume |
+| `pci_storage_snapshots_action_delete` | Supprimer |

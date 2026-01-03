@@ -1,0 +1,232 @@
+# Cahier des Charges : web-cloud/cdn/domain-rules
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.cdn.domain-rules.svg |
+| **NAV1** | web-cloud (Web Cloud) |
+| **NAV2** | cdn |
+| **Type** | Page 2 colonnes avec tabs |
+| **Description** | Page de gestion des règles de cache CDN pour un domaine |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096px |
+| Gap | 16px |
+| Background | #F6F6F9 |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 280×765px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 3.2 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Placeholder | Rechercher... |
+
+### 3.3 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Titre | cdn-12345 |
+| Sous-titre | CDN Dedicated |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | www.example.com |
+| Badge | ON (#DEF7EC, #059669) |
+
+### 4.2 NAV4 - Tabs
+
+| Tab | État |
+|-----|------|
+| Statistiques | Outline |
+| Règles | **Active** (#0050D7, souligné) |
+| Logs | Outline |
+
+---
+
+## 5. CONTENU RÈGLES
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Règles de cache |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 5.2 Recherche règles
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 200×32px |
+| Placeholder | Rechercher une règle... |
+| Icône | 🔍 |
+
+---
+
+## 6. DATAGRID RÈGLES
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 780×450px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| Type | 130px |
+| Règle | 200px |
+| Cache | 150px |
+| TTL | 100px |
+| Statut | 100px |
+| Actions | 50px |
+
+### 6.3 Données exemple
+
+| Type | Règle | Cache | TTL | Statut |
+|------|-------|-------|-----|--------|
+| Extension | *.jpg, *.png, *.gif | Force cache | 86400 | ON (vert) |
+| Extension | *.css, *.js | Force cache | 3600 | ON (vert) |
+| Dossier | /api/* | No cache | - | ON (vert) |
+| Fichier | /robots.txt | Force cache | 604800 | OFF (rouge) |
+| Extension | *.woff2, *.woff | Force cache | 2592000 | ON (vert) |
+
+### 6.4 Badges statut
+
+| Statut | Background | Couleur |
+|--------|------------|---------|
+| ON | #DEF7EC | #059669 |
+| OFF | #FEE2E2 | #DC2626 |
+
+### 6.5 ActionMenu
+
+| Option |
+|--------|
+| ⋮ (menu contextuel) |
+
+---
+
+## 7. SIDEBAR ACTIONS
+
+### 7.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×450px |
+| Position | Droite du datagrid |
+
+### 7.2 Boutons actions
+
+| Bouton | Style |
+|--------|-------|
+| Créer une règle | Outline |
+| Désactiver toutes | Outline |
+| Activer toutes | Outline |
+| Purger le cache | Outline |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic tab | Changer d'onglet |
+| Clic ⋮ | Ouvrir ActionMenu |
+| Clic Créer une règle | Ouvrir modal création |
+| Clic Désactiver toutes | Ouvrir modal confirmation |
+| Clic Activer toutes | Ouvrir modal confirmation |
+| Clic Purger le cache | Ouvrir modal purge |
+| Recherche | Filtrer les règles |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les règles
+
+```
+GET /cdn/{serviceName}/domain/{domainName}/rules
+```
+
+Response:
+```json
+[
+  {
+    "id": "rule-001",
+    "type": "extension",
+    "pattern": "*.jpg, *.png, *.gif",
+    "cacheType": "forceCache",
+    "ttl": 86400,
+    "status": "on"
+  }
+]
+```
+
+### 9.2 Toggle statut règle
+
+```
+PUT /cdn/{serviceName}/domain/{domainName}/rule/{ruleId}/status
+```
+
+### 9.3 Purger le cache
+
+```
+POST /cdn/{serviceName}/domain/{domainName}/purge
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_rules_title` | Règles de cache |
+| `cdn_rules_search` | Rechercher une règle... |
+| `cdn_rules_col_type` | Type |
+| `cdn_rules_col_rule` | Règle |
+| `cdn_rules_col_cache` | Cache |
+| `cdn_rules_col_ttl` | TTL |
+| `cdn_rules_col_status` | Statut |
+| `cdn_rules_col_actions` | Actions |
+| `cdn_rules_type_extension` | Extension |
+| `cdn_rules_type_folder` | Dossier |
+| `cdn_rules_type_file` | Fichier |
+| `cdn_rules_cache_force` | Force cache |
+| `cdn_rules_cache_no` | No cache |
+| `cdn_rules_create` | Créer une règle |
+| `cdn_rules_deactivate_all` | Désactiver toutes |
+| `cdn_rules_activate_all` | Activer toutes |
+| `cdn_rules_purge` | Purger le cache |

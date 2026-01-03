@@ -1,0 +1,153 @@
+# Cahier des Charges : private-cloud/nutanix/modal-poweroff
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.nutanix.modal-poweroff.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | nutanix (Nutanix) |
+| **Type** | Modal warning avec confirmation |
+| **Description** | Modal de confirmation pour éteindre un nœud Nutanix avec saisie obligatoire |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 480px |
+| Position | Centrée (x: 420, y: 180) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Background | #FFFFFF |
+| Titre | Eteindre le node |
+| Font-size titre | 18px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Warning box
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 552×100px |
+| Background | #FEF3C7 |
+| Border | 1px #D97706 |
+| Border radius | 4px |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Icône | Cercle orange avec ! |
+| Ligne 1 | L'extinction du node arrêtera toutes les machines virtuelles |
+| Ligne 2 | hébergées sur ce node. Cette action peut entraîner une |
+| Ligne 3 | interruption de service. |
+| Lien | Consulter le guide ↗ |
+
+### 4.2 Texte confirmation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Vous êtes sur le point d'éteindre le node : |
+| Nom node | nutanix-node-abc123 (bleu, font-weight 600) |
+
+### 4.3 Champ de confirmation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Pour confirmer, tapez "POWEROFF" * |
+| Type | Input text |
+| Dimensions | 552×40px |
+| Valeur attendue | POWEROFF |
+
+### 4.4 Aide
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Les champs marqués d'un astérisque (*) sont obligatoires. |
+| Couleur | #6B7280 |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#0050D7) | 100×36px | Gauche |
+| Eteindre | Warning (#D97706) | 100×36px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Saisie != "POWEROFF" | Bouton Eteindre désactivé |
+| Saisie == "POWEROFF" | Bouton Eteindre activé |
+| Clic Annuler | Fermer modal |
+| Clic × | Fermer modal |
+| Clic Eteindre | Exécuter extinction nœud |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Éteindre un nœud
+
+```
+POST /nutanix/{serviceName}/nodes/{nodeId}/powerOff
+```
+
+Body:
+```json
+{
+  "confirmation": "POWEROFF"
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-xyz-789",
+  "status": "pending"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `nutanix_poweroff_title` | Eteindre le node |
+| `nutanix_poweroff_warning1` | L'extinction du node arrêtera toutes les machines virtuelles |
+| `nutanix_poweroff_warning2` | hébergées sur ce node. Cette action peut entraîner une |
+| `nutanix_poweroff_warning3` | interruption de service. |
+| `nutanix_poweroff_guide` | Consulter le guide |
+| `nutanix_poweroff_confirm_text` | Vous êtes sur le point d'éteindre le node : |
+| `nutanix_poweroff_confirm_label` | Pour confirmer, tapez "POWEROFF" |
+| `nutanix_poweroff_required` | Les champs marqués d'un astérisque (*) sont obligatoires. |
+| `nutanix_poweroff_cancel` | Annuler |
+| `nutanix_poweroff_submit` | Eteindre |

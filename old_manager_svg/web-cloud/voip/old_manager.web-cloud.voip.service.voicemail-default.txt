@@ -1,0 +1,144 @@
+# Cahier des Charges : web-cloud/voip/service/voicemail-default
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.voicemail-default.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page formulaire |
+| **Description** | Page de configuration du répondeur par défaut d'une ligne |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 9 72 12 34 56 |
+| Description | Ligne SIP |
+
+---
+
+## 4. RIGHT PANEL - SECTION RÉPONDEUR
+
+### 4.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 500×220px |
+| Titre | Répondeur par défaut |
+| Séparateur | Ligne sous le titre |
+
+### 4.2 Sélection du répondeur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Répondeur par défaut : |
+| Type | Autocomplete / Select |
+| Dimensions | 350×40px |
+| Valeur exemple | +33 9 72 12 34 56 |
+
+### 4.3 Lien action groupée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Appliquer à plusieurs services |
+| Couleur | #0050D7 |
+| Position | Sous le séparateur |
+
+### 4.4 Boutons
+
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Modifier | Primary (#0050D7), 150×36px | Gauche |
+| Annuler | Lien texte bleu | À droite du bouton |
+
+---
+
+## 5. APIS & ENDPOINTS
+
+### 5.1 Obtenir le répondeur par défaut
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/voicemail/defaultVoicemail
+```
+
+Response:
+```json
+{
+  "defaultVoicemail": "+33972123456"
+}
+```
+
+### 5.2 Modifier le répondeur par défaut
+
+```
+PUT /telephony/{billingAccount}/line/{serviceName}/phone/voicemail/defaultVoicemail
+```
+
+Body:
+```json
+{
+  "defaultVoicemail": "+33972123456"
+}
+```
+
+### 5.3 Lister les répondeurs disponibles
+
+```
+GET /telephony/{billingAccount}/voicemail
+```
+
+Response:
+```json
+{
+  "voicemails": [
+    {
+      "serviceName": "+33972123456",
+      "description": "Répondeur principal"
+    }
+  ]
+}
+```
+
+### 5.4 Appliquer à plusieurs services
+
+```
+POST /telephony/{billingAccount}/line/voicemail/defaultVoicemail/bulk
+```
+
+Body:
+```json
+{
+  "lineIds": ["line1", "line2"],
+  "defaultVoicemail": "+33972123456"
+}
+```
+
+---
+
+## 6. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_voicemail_default_title` | Répondeur par défaut |
+| `voip_voicemail_default_label` | Répondeur par défaut |
+| `voip_voicemail_default_bulk` | Appliquer à plusieurs services |
+| `voip_voicemail_default_submit` | Modifier |
+| `voip_voicemail_default_cancel` | Annuler |
+| `voip_voicemail_default_success` | Répondeur par défaut modifié avec succès |

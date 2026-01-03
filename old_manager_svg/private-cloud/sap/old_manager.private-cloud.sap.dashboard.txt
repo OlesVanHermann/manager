@@ -1,0 +1,249 @@
+# Cahier des Charges : private-cloud/sap/dashboard
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.sap.dashboard.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | sap (SAP HANA) |
+| **Type** | Page dashboard avec tiles |
+| **Description** | Dashboard principal d'une instance SAP HANA avec informations générales, ressources, réseau et abonnement |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width RIGHT PANEL |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | SAP HANA Production |
+| Font-size | 20px |
+| Font-weight | 600 |
+| Bouton édition | ✎ (24×24px) |
+
+### 3.2 Sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | sap-hana-abc123 |
+| Couleur | #6B7280 |
+
+### 3.3 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour a la liste |
+| Couleur | #0050D7 |
+
+---
+
+## 4. NAV4 - TABS
+
+| Tab | État | Style |
+|-----|------|-------|
+| Informations generales | Actif | Background #0050D7, texte blanc |
+| Serveurs | Inactif | Border #0050D7, texte #0050D7 |
+| Stockage | Inactif | Border #0050D7, texte #0050D7 |
+
+---
+
+## 5. TILES DASHBOARD
+
+### 5.1 Tile Informations générales
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Colonne 1 |
+| Dimensions | 420×380px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur |
+|-------|--------|
+| Titre | Informations generales |
+| Nom du service | SAP HANA Production |
+| Nom commercial | SAP HANA Large |
+| Version SAP HANA | SAP HANA 2.0 SPS06 |
+| Nombre de serveurs | 2 serveurs |
+| Datacenter | Roubaix (RBX7) |
+| Statut | Actif (badge vert) |
+| Lien | Acceder a SAP HANA Studio ↗ |
+
+### 5.2 Tile Ressources
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Colonne 2, ligne 1 |
+| Dimensions | 420×180px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur |
+|-------|--------|
+| Titre | Ressources |
+| Memoire totale | 2 TB RAM |
+| Stockage | 10 TB NVMe |
+| CPU | 4 x Intel Xeon Platinum 8380 |
+| vCPU | 160 vCPU |
+
+### 5.3 Tile Réseau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Colonne 2, ligne 2 |
+| Dimensions | 420×180px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur |
+|-------|--------|
+| Titre | Reseau |
+| IP publique | 192.0.2.200 |
+| VLAN prive | vlan-sap-123 |
+| Bande passante | 25 Gbps |
+
+### 5.4 Tile Abonnement
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Colonne 3, ligne 1 |
+| Dimensions | 420×180px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur | Action |
+|-------|--------|--------|
+| Titre | Abonnement | - |
+| Date de creation | 15/01/2024 | - |
+| Date de renouvellement | 15/01/2025 | - |
+| Gérer | Gerer l'abonnement → | Lien |
+
+### 5.5 Tile Support
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Colonne 3, ligne 2 |
+| Dimensions | 420×180px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur | Action |
+|-------|--------|--------|
+| Titre | Support | - |
+| Niveau de support | Premium | - |
+| Travaux en cours | Aucun | - |
+| Créer ticket | Creer un ticket → | Lien |
+
+---
+
+## 6. BADGES
+
+| Badge | Background | Couleur texte |
+|-------|------------|---------------|
+| Actif | #DEF7EC | #059669 |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir détails instance SAP HANA
+
+```
+GET /sap-hana/{serviceName}
+```
+
+Response:
+```json
+{
+  "serviceName": "sap-hana-abc123",
+  "displayName": "SAP HANA Production",
+  "commercialName": "SAP HANA Large",
+  "version": "SAP HANA 2.0 SPS06",
+  "serverCount": 2,
+  "datacenter": "RBX7",
+  "datacenterName": "Roubaix",
+  "status": "active"
+}
+```
+
+### 7.2 Obtenir ressources
+
+```
+GET /sap-hana/{serviceName}/resources
+```
+
+Response:
+```json
+{
+  "totalMemory": "2TB",
+  "totalStorage": "10TB",
+  "storageType": "NVMe",
+  "cpu": "4 x Intel Xeon Platinum 8380",
+  "vCpu": 160
+}
+```
+
+### 7.3 Obtenir informations réseau
+
+```
+GET /sap-hana/{serviceName}/network
+```
+
+Response:
+```json
+{
+  "publicIp": "192.0.2.200",
+  "privateVlan": "vlan-sap-123",
+  "bandwidth": "25g"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `sap_dashboard_tab_general` | Informations generales |
+| `sap_dashboard_tab_servers` | Serveurs |
+| `sap_dashboard_tab_storage` | Stockage |
+| `sap_dashboard_back` | Retour a la liste |
+| `sap_dashboard_general_title` | Informations generales |
+| `sap_dashboard_service_name` | Nom du service |
+| `sap_dashboard_commercial_name` | Nom commercial |
+| `sap_dashboard_version` | Version SAP HANA |
+| `sap_dashboard_servers` | Nombre de serveurs |
+| `sap_dashboard_datacenter` | Datacenter |
+| `sap_dashboard_status` | Statut |
+| `sap_dashboard_studio` | Acceder a SAP HANA Studio |
+| `sap_dashboard_resources_title` | Ressources |
+| `sap_dashboard_memory` | Memoire totale |
+| `sap_dashboard_storage` | Stockage |
+| `sap_dashboard_cpu` | CPU |
+| `sap_dashboard_vcpu` | vCPU |
+| `sap_dashboard_network_title` | Reseau |
+| `sap_dashboard_public_ip` | IP publique |
+| `sap_dashboard_vlan` | VLAN prive |
+| `sap_dashboard_bandwidth` | Bande passante |
+| `sap_dashboard_subscription_title` | Abonnement |
+| `sap_dashboard_creation_date` | Date de creation |
+| `sap_dashboard_renewal_date` | Date de renouvellement |
+| `sap_dashboard_manage_subscription` | Gerer l'abonnement |
+| `sap_dashboard_support_title` | Support |
+| `sap_dashboard_support_level` | Niveau de support |
+| `sap_dashboard_works` | Travaux en cours |
+| `sap_dashboard_create_ticket` | Creer un ticket |

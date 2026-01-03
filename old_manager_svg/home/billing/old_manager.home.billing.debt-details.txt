@@ -1,0 +1,198 @@
+# Cahier des Charges : home/billing/debt-details
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.debt-details.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | debt-details |
+| **Type** | Page alerte avec liste |
+| **Description** | Détail des impayés avec alerte danger et actions de paiement |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Titre page | 1360×40px | x: 40, y: 115 |
+| Bannière alerte | 1360×120px | x: 40, y: 180 |
+| Carte détail | 1360×400px | x: 40, y: 330 |
+
+---
+
+## 3. HEADER PAGE
+
+| Propriété | Valeur |
+|-----------|--------|
+| Breadcrumb | Facturation |
+| Couleur breadcrumb | #0050D7 |
+| Titre | Impayés |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. BANNIÈRE ALERTE
+
+### 4.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×120px |
+| Background | #FEE2E2 |
+| Border | 1px #DC2626 |
+| Border radius | 8px |
+
+### 4.2 Contenu
+
+| Élément | Valeur |
+|---------|--------|
+| Icône | ⚠ |
+| Titre | Vous avez des factures impayées |
+| Couleur titre | #DC2626 |
+| Font-weight titre | 700 |
+| Montant | Montant total dû : 89,99 € |
+| Message | Veuillez régulariser votre situation pour éviter la suspension de vos services. |
+
+### 4.3 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Payer maintenant |
+| Dimensions | 180×40px |
+| Background | #DC2626 |
+| Couleur texte | #FFFFFF |
+| Border radius | 4px |
+| Position | x: 1100, y: 40 |
+
+---
+
+## 5. CARTE DÉTAIL DES IMPAYÉS
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×400px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Détail des impayés |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 5.3 Colonnes
+
+| Colonne | Position X |
+|---------|------------|
+| Facture | x: 20 |
+| Date | x: 300 |
+| Montant | x: 500 |
+| Échéance | x: 700 |
+| Statut | x: 900 |
+| Actions | x: 1100 |
+
+### 5.4 Style référence facture
+
+| Propriété | Valeur |
+|-----------|--------|
+| Couleur | #DC2626 |
+| Font-weight | 600 |
+
+### 5.5 Badge statut
+
+| Statut | Background | Couleur |
+|--------|------------|---------|
+| En retard | #FEE2E2 | #DC2626 |
+| À payer | #FEF3C7 | #D97706 |
+
+### 5.6 Actions
+
+| Action | Couleur |
+|--------|---------|
+| Payer | #0050D7 |
+| Détails | #0050D7 |
+
+---
+
+## 6. DONNÉES EXEMPLE
+
+| Facture | Date | Montant | Échéance | Statut |
+|---------|------|---------|----------|--------|
+| FR2026010001 | 01/01/2026 | 89,99 € | 15/01/2026 | En retard |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Lister les impayés
+
+```
+GET /me/debtAccount
+```
+
+Response:
+```json
+{
+  "totalAmount": 89.99,
+  "currency": "EUR",
+  "debts": [
+    {
+      "debtId": "debt-001",
+      "billId": "FR2026010001",
+      "date": "2026-01-01",
+      "amount": 89.99,
+      "dueDate": "2026-01-15",
+      "status": "late"
+    }
+  ]
+}
+```
+
+### 7.2 Payer un impayé
+
+```
+POST /me/debtAccount/pay
+```
+
+Body:
+```json
+{
+  "debtIds": ["debt-001"],
+  "paymentMethodId": "pm-card-001"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_debt_title` | Impayés |
+| `billing_debt_alert_title` | Vous avez des factures impayées |
+| `billing_debt_alert_total` | Montant total dû : {amount} |
+| `billing_debt_alert_message` | Veuillez régulariser votre situation pour éviter la suspension de vos services. |
+| `billing_debt_pay_now` | Payer maintenant |
+| `billing_debt_details_title` | Détail des impayés |
+| `billing_debt_col_invoice` | Facture |
+| `billing_debt_col_date` | Date |
+| `billing_debt_col_amount` | Montant |
+| `billing_debt_col_due` | Échéance |
+| `billing_debt_col_status` | Statut |
+| `billing_debt_status_late` | En retard |
+| `billing_debt_status_pending` | À payer |
+| `billing_debt_action_pay` | Payer |
+| `billing_debt_action_details` | Détails |

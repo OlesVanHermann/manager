@@ -1,0 +1,222 @@
+# Cahier des Charges : private-cloud/vmware/wizard-backup-new
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.wizard-backup-new.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page wizard avec stepper vertical |
+| **Description** | Wizard d'activation du backup Veeam avec choix entre 3 offres |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Placeholder | Rechercher... |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | pcc-192-0-2-1 |
+| Sous-titre | dc-gra1 |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Activation du backup Veeam |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Il semblerait que vous n'avez pas activé de service de sauvegarde |
+| Ligne 2 | Vous pouvez choisir entre 3 nouvelles offres pour la sauvegarde de vos machines virtuelles (VM) : Standard, Advanced ou Premium. |
+| Couleur | #6B7280 |
+
+### 4.3 Lien tarifs
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Consulter le détail des tarifs disponibles pour le backup Veeam → |
+| Couleur | #0050D7 |
+| Font-weight | 500 |
+
+---
+
+## 5. STEPPER VERTICAL
+
+| Étape | Numéro | Libellé | État |
+|-------|--------|---------|------|
+| 1 | 1 | Choix de l'offre de sauvegarde | Active (cercle #0050D7) |
+| 2 | 2 | Validation des conditions d'utilisation | Inactive |
+
+---
+
+## 6. CARTES OFFRES (3 colonnes)
+
+### 6.1 Carte Standard
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 330×180px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Header | Standard (#F9FAFB) |
+| Feature 1 | 14 points de restauration |
+| Feature 2 | Rétention quotidienne 7 jours |
+| Feature 3 | Rétention hebdomadaire 7 jours |
+| Prix | Gratuit |
+
+### 6.2 Carte Advanced (sélectionnée)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 330×180px |
+| Background | #E8F0FE |
+| Border | 2px #0050D7 |
+| Header | Advanced (#0050D7, texte blanc) |
+| Feature 1 | 28 points de restauration |
+| Feature 2 | Rétention quotidienne 14 jours |
+| Feature 3 | Rétention hebdomadaire 14 jours |
+| Feature 4 | Rapport quotidien basique |
+| Prix | 15€ HT/mois |
+| Couleur prix | #0050D7 |
+
+### 6.3 Carte Premium
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 330×180px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Header | Premium (#F9FAFB) |
+| Feature 1 | 56 points de restauration |
+| Feature 2 | Rétention quotidienne 28 jours |
+| Feature 3 | Rétention hebdomadaire 28 jours |
+| Feature 4 | Rapport quotidien complet |
+| Prix | 30€ HT/mois |
+
+---
+
+## 7. BOUTON ACTION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Choisir l'offre |
+| Dimensions | 160×40px |
+| Background | #0050D7 |
+| Border radius | 4px |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic carte offre | Sélectionner cette offre |
+| Clic lien tarifs | Ouvrir page détail tarifs |
+| Clic Choisir l'offre | Passer à l'étape 2 (conditions) |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les offres backup disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/backup/offers
+```
+
+Response:
+```json
+[
+  {
+    "name": "Standard",
+    "restorePoints": 14,
+    "dailyRetention": 7,
+    "weeklyRetention": 7,
+    "report": null,
+    "price": { "value": 0, "text": "Gratuit" }
+  },
+  {
+    "name": "Advanced",
+    "restorePoints": 28,
+    "dailyRetention": 14,
+    "weeklyRetention": 14,
+    "report": "basic",
+    "price": { "value": 15, "text": "15€ HT/mois" }
+  },
+  {
+    "name": "Premium",
+    "restorePoints": 56,
+    "dailyRetention": 28,
+    "weeklyRetention": 28,
+    "report": "full",
+    "price": { "value": 30, "text": "30€ HT/mois" }
+  }
+]
+```
+
+### 9.2 Activer l'offre backup
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/backup/enable
+```
+
+Body:
+```json
+{
+  "offer": "Advanced"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_backup_new_title` | Activation du backup Veeam |
+| `vmware_backup_new_no_service` | Il semblerait que vous n'avez pas activé de service de sauvegarde |
+| `vmware_backup_new_offers` | Vous pouvez choisir entre 3 nouvelles offres |
+| `vmware_backup_new_pricing` | Consulter le détail des tarifs disponibles pour le backup Veeam |
+| `vmware_backup_new_step1` | Choix de l'offre de sauvegarde |
+| `vmware_backup_new_step2` | Validation des conditions d'utilisation |
+| `vmware_backup_new_standard` | Standard |
+| `vmware_backup_new_advanced` | Advanced |
+| `vmware_backup_new_premium` | Premium |
+| `vmware_backup_new_restore_points` | {count} points de restauration |
+| `vmware_backup_new_daily` | Rétention quotidienne {days} jours |
+| `vmware_backup_new_weekly` | Rétention hebdomadaire {days} jours |
+| `vmware_backup_new_report_basic` | Rapport quotidien basique |
+| `vmware_backup_new_report_full` | Rapport quotidien complet |
+| `vmware_backup_new_free` | Gratuit |
+| `vmware_backup_new_choose` | Choisir l'offre |

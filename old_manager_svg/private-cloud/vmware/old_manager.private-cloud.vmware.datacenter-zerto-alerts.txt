@@ -1,0 +1,170 @@
+# Cahier des Charges : private-cloud/vmware/datacenter-zerto-alerts
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.datacenter-zerto-alerts.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page dashboard avec alertes et carte statut |
+| **Description** | Page Zerto Disaster Recovery avec alertes de statut et informations de réplication |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width sans LEFT PANEL |
+| Background | #F6F6F9 |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Zerto Disaster Recovery |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 4. ALERTES
+
+### 4.1 Alerte Success
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1000×70px |
+| Background | #DEF7EC |
+| Barre gauche | 4px #059669 |
+| Border radius | 6px |
+| Icône | ✓ |
+| Titre | Zerto est activé et opérationnel |
+| Font-weight titre | 500 |
+| Ligne 1 | La réplication vers le site distant pcc-987-654-321 est active. |
+| Ligne 2 | Un email de confirmation a été envoyé à admin@example.com. |
+| Bouton fermer | × |
+| Couleur texte | #059669 |
+
+### 4.2 Alerte Info
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1000×50px |
+| Background | #DBEAFE |
+| Barre gauche | 4px #1E40AF |
+| Border radius | 6px |
+| Icône | ℹ️ |
+| Titre | Configuration en cours de déploiement |
+| Message | Veuillez consulter les tâches en cours pour suivre la progression. |
+| Couleur texte | #1E40AF |
+
+### 4.3 Alerte Warning
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1000×50px |
+| Background | #FEF3C7 |
+| Barre gauche | 4px #D97706 |
+| Border radius | 6px |
+| Icône | ⚠️ |
+| Titre | Configuration VPN requise |
+| Message | Veuillez configurer le VPN pour finaliser la mise en place de Zerto. |
+| Lien | configurer le VPN (souligné, cliquable) |
+| Couleur texte | #D97706 |
+
+---
+
+## 5. CARTE ÉTAT RÉPLICATION
+
+### 5.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 500×200px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Titre carte
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | État de la réplication |
+| Font-size | 15px |
+| Font-weight | 600 |
+
+### 5.3 Champs
+
+| Champ | Valeur | Badge |
+|-------|--------|-------|
+| Type de DRP | OVHcloud to OVHcloud | - |
+| Statut | - | Actif (#DEF7EC / #059669) |
+| Site principal | dc-rbx-01 | - |
+| Site de réplication | dc-sbg-02 | - |
+| VPN | - | Non configuré (#FEF3C7 / #D97706) |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic × sur alerte success | Fermer l'alerte |
+| Clic lien VPN | Ouvrir configuration VPN |
+| Clic consulter tâches | Naviguer vers onglet tâches |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir statut Zerto
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/zerto/status
+```
+
+Response:
+```json
+{
+  "enabled": true,
+  "operational": true,
+  "drpType": "ovhcloud_to_ovhcloud",
+  "primarySite": "dc-rbx-01",
+  "secondarySite": "dc-sbg-02",
+  "vpnConfigured": false,
+  "notifications": {
+    "email": "admin@example.com",
+    "confirmationSent": true
+  }
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_zerto_title` | Zerto Disaster Recovery |
+| `vmware_zerto_alert_success` | Zerto est activé et opérationnel |
+| `vmware_zerto_alert_replication` | La réplication vers le site distant {site} est active. |
+| `vmware_zerto_alert_email` | Un email de confirmation a été envoyé à {email}. |
+| `vmware_zerto_alert_deploying` | Configuration en cours de déploiement |
+| `vmware_zerto_alert_tasks` | Veuillez consulter les tâches en cours pour suivre la progression. |
+| `vmware_zerto_alert_vpn` | Configuration VPN requise |
+| `vmware_zerto_alert_vpn_link` | configurer le VPN |
+| `vmware_zerto_status_title` | État de la réplication |
+| `vmware_zerto_drp_type` | Type de DRP |
+| `vmware_zerto_status` | Statut |
+| `vmware_zerto_primary` | Site principal |
+| `vmware_zerto_secondary` | Site de réplication |
+| `vmware_zerto_vpn` | VPN |
+| `vmware_zerto_active` | Actif |
+| `vmware_zerto_vpn_not_configured` | Non configuré |

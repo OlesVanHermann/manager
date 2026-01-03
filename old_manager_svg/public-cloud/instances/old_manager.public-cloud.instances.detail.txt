@@ -1,0 +1,181 @@
+# Cahier des Charges : public-cloud/instances/detail
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.instances.detail.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | instances |
+| **Type** | Page détail |
+| **Description** | Page de détail d'une instance Public Cloud |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| Breadcrumb | mon-projet / Instances / web-server-01 |
+| Colonnes | 2 colonnes (680px + 680px) |
+
+---
+
+## 3. HEADER
+
+| Titre | web-server-01 |
+| Font-size | 22px |
+| Font-weight | 600 |
+| Badge | Activée (success, à droite du titre) |
+| Bouton actions | ⋮ Actions (100×32px, outline) |
+
+---
+
+## 4. COLONNE GAUCHE - INFORMATIONS
+
+### 4.1 Section Informations générales
+
+| Champ | Exemple |
+|-------|---------|
+| ID | abc123-def456-ghi789-jkl012 (📋 Copier) |
+| Nom | web-server-01 |
+| Statut | Badge Activée (success) |
+| Région | GRA11 - Gravelines |
+| Créée le | 02/01/2026 à 10:30 |
+
+### 4.2 Section Modèle
+
+| Champ | Exemple |
+|-------|---------|
+| Type | b2-15 (Général) |
+| vCPU | 4 vCores |
+| Mémoire | 15 Go |
+| Stockage | 100 Go SSD NVMe |
+
+### 4.3 Section Image
+
+| Champ | Exemple |
+|-------|---------|
+| Système | Ubuntu 22.04 LTS |
+| Distribution | Linux |
+
+### 4.4 Section Facturation
+
+| Champ | Exemple |
+|-------|---------|
+| Mode | Horaire |
+| Prix estimé | 0,0372€ HT/heure (~26,78€ HT/mois) |
+| Lien | Passer en facturation mensuelle (souligné) |
+
+---
+
+## 5. COLONNE DROITE - RÉSEAU ET VOLUMES
+
+### 5.1 Card Réseau
+
+| Champ | Exemple |
+|-------|---------|
+| IP publique (IPv4) | 51.210.45.123 (📋) |
+| IP publique (IPv6) | 2001:41d0:801:1000::1234 (📋) |
+| IP privée | 192.168.0.10 |
+| Réseau privé | my-private-network (lien) |
+| Clé SSH - Nom | my-ssh-key |
+| Clé SSH - Empreinte | SHA256:xxxxxYYYYYzzzzz... |
+
+### 5.2 Card Volumes attachés
+
+| Colonne | Largeur |
+|---------|---------|
+| NOM | 150px |
+| TAILLE | 100px |
+| TYPE | 120px |
+| STATUT | 100px |
+
+| Données exemple |
+|-----------------|
+| data-vol-01 | 100 Go | High Speed | Attaché (success) |
+
+| Lien | + Attacher un volume |
+
+### 5.3 Card Console VNC
+
+| Description | Accédez à votre instance via une console VNC dans votre navigateur. |
+| Bouton | Ouvrir la console VNC (180×36px, outline) |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Obtenir les détails de l'instance
+
+```
+GET /cloud/project/{projectId}/instance/{instanceId}
+```
+
+Response:
+```json
+{
+  "id": "abc123-def456-ghi789-jkl012",
+  "name": "web-server-01",
+  "status": "ACTIVE",
+  "region": "GRA11",
+  "created": "2026-01-02T10:30:00Z",
+  "flavorId": "b2-15",
+  "imageId": "ubuntu-22.04",
+  "ipAddresses": [...],
+  "sshKey": {...},
+  "monthlyBilling": false
+}
+```
+
+### 6.2 Lister les volumes attachés
+
+```
+GET /cloud/project/{projectId}/instance/{instanceId}/interface
+```
+
+### 6.3 Obtenir l'URL VNC
+
+```
+POST /cloud/project/{projectId}/instance/{instanceId}/vnc
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_instances_detail_actions` | Actions |
+| `pci_instances_detail_info_title` | Informations générales |
+| `pci_instances_detail_id` | ID |
+| `pci_instances_detail_name` | Nom |
+| `pci_instances_detail_status` | Statut |
+| `pci_instances_detail_region` | Région |
+| `pci_instances_detail_created` | Créée le |
+| `pci_instances_detail_flavor_title` | Modèle |
+| `pci_instances_detail_flavor_type` | Type |
+| `pci_instances_detail_flavor_vcpu` | vCPU |
+| `pci_instances_detail_flavor_memory` | Mémoire |
+| `pci_instances_detail_flavor_storage` | Stockage |
+| `pci_instances_detail_image_title` | Image |
+| `pci_instances_detail_image_os` | Système |
+| `pci_instances_detail_image_distro` | Distribution |
+| `pci_instances_detail_billing_title` | Facturation |
+| `pci_instances_detail_billing_mode` | Mode |
+| `pci_instances_detail_billing_price` | Prix estimé |
+| `pci_instances_detail_billing_switch` | Passer en facturation mensuelle |
+| `pci_instances_detail_network_title` | Réseau |
+| `pci_instances_detail_network_ipv4` | IP publique (IPv4) |
+| `pci_instances_detail_network_ipv6` | IP publique (IPv6) |
+| `pci_instances_detail_network_private` | IP privée |
+| `pci_instances_detail_network_vlan` | Réseau privé |
+| `pci_instances_detail_ssh_title` | Clé SSH |
+| `pci_instances_detail_ssh_name` | Nom |
+| `pci_instances_detail_ssh_fingerprint` | Empreinte |
+| `pci_instances_detail_volumes_title` | Volumes attachés |
+| `pci_instances_detail_volumes_attach` | Attacher un volume |
+| `pci_instances_detail_vnc_title` | Console VNC |
+| `pci_instances_detail_vnc_desc` | Accédez à votre instance via une console VNC dans votre navigateur. |
+| `pci_instances_detail_vnc_open` | Ouvrir la console VNC |

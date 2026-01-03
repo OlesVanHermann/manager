@@ -1,0 +1,183 @@
+# Cahier des Charges : home/billing/ssh-keys
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.ssh-keys.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | ssh-keys |
+| **Type** | Page full-width avec datagrid |
+| **Description** | Gestion des clés SSH associées au compte OVH |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×50px | x: 40, y: 115 |
+| Datagrid | 1360×450px | x: 40, y: 180 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Facturation |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre et action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Clés SSH |
+| Font-size | 24px |
+| Font-weight | 600 |
+| Bouton | + Ajouter |
+| Bouton style | Primary |
+| Bouton dimensions | 120×36px |
+
+---
+
+## 4. DATAGRID CLÉS SSH
+
+### 4.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×450px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 4.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Border radius | 8px 8px 0 0 |
+
+### 4.3 Colonnes
+
+| # | Colonne | Position X | Largeur |
+|---|---------|------------|---------|
+| 1 | Nom | 20px | 230px |
+| 2 | Type | 250px | 150px |
+| 3 | Empreinte | 400px | 400px |
+| 4 | Ajoutée le | 800px | 200px |
+| 5 | Usage | 1000px | 200px |
+| 6 | Actions | 1200px | 150px |
+
+### 4.4 Badges Type
+
+| Type | Background | Couleur | Dimensions |
+|------|------------|---------|------------|
+| RSA | #DBEAFE | #1E40AF | 60×22px |
+| ED25519 | #F3E8FF | #7C3AED | 80×22px |
+
+### 4.5 Badges Usage
+
+| Usage | Background | Couleur | Dimensions |
+|-------|------------|---------|------------|
+| Cloud | #DEF7EC | #059669 | 80×22px |
+| Dedicated | #FEF3C7 | #D97706 | 80×22px |
+
+### 4.6 Données exemple
+
+| Nom | Type | Empreinte | Ajoutée | Usage |
+|-----|------|-----------|---------|-------|
+| ma-cle-principale | RSA | SHA256:xY7k9...vB2mQ | 15/10/2025 | Cloud |
+| serveur-prod | ED25519 | SHA256:aB3c4...pQ9rS | 20/11/2025 | Dedicated |
+
+### 4.7 Actions
+
+| Action | Couleur |
+|--------|---------|
+| Voir | #0050D7 |
+| Supprimer | #DC2626 |
+
+---
+
+## 5. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic + Ajouter | Ouvrir modal ajout clé SSH |
+| Clic Voir | Afficher la clé publique complète |
+| Clic Supprimer | Ouvrir modal confirmation suppression |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Lister les clés SSH
+
+```
+GET /me/sshKey
+```
+
+Response:
+```json
+[
+  {
+    "keyName": "ma-cle-principale",
+    "keyType": "rsa",
+    "fingerprint": "SHA256:xY7k9...vB2mQ",
+    "creationDate": "2025-10-15T10:00:00Z",
+    "usage": "cloud"
+  }
+]
+```
+
+### 6.2 Ajouter une clé SSH
+
+```
+POST /me/sshKey
+```
+
+Body:
+```json
+{
+  "keyName": "ma-cle",
+  "key": "ssh-rsa AAAAB3..."
+}
+```
+
+### 6.3 Supprimer une clé SSH
+
+```
+DELETE /me/sshKey/{keyName}
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_ssh_title` | Clés SSH |
+| `billing_ssh_add` | + Ajouter |
+| `billing_ssh_col_name` | Nom |
+| `billing_ssh_col_type` | Type |
+| `billing_ssh_col_fingerprint` | Empreinte |
+| `billing_ssh_col_created` | Ajoutée le |
+| `billing_ssh_col_usage` | Usage |
+| `billing_ssh_col_actions` | Actions |
+| `billing_ssh_type_rsa` | RSA |
+| `billing_ssh_type_ed25519` | ED25519 |
+| `billing_ssh_usage_cloud` | Cloud |
+| `billing_ssh_usage_dedicated` | Dedicated |
+| `billing_ssh_view` | Voir |
+| `billing_ssh_delete` | Supprimer |

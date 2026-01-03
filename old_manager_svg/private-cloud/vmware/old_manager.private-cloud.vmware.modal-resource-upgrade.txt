@@ -1,0 +1,222 @@
+# Cahier des Charges : private-cloud/vmware/modal-resource-upgrade
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-resource-upgrade.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour convertir une ressource spécifique au forfait mensuel avec sélection de période |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 480px |
+| Position | Centrée (x: 420, y: 180) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Passer au forfait mensuel |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Info Banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 560×70px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Barre latérale | 4px #1E40AF |
+| Titre | ℹ️ Information |
+| Ligne 1 | Le passage au forfait mensuel vous permet de bénéficier d'un tarif préférentiel |
+| Ligne 2 | avec un engagement sur la durée sélectionnée. |
+| Couleur texte | #1E40AF |
+
+### 4.2 Section Ressource
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Ressource concernée |
+| Font-size label | 13px |
+| Font-weight | 500 |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 560×50px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Titre | Host L-32 (Intel Xeon Gold) |
+| Sous-titre | dc-rbx-01 |
+
+### 4.3 Section Période de renouvellement
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Période de renouvellement |
+| Font-size label | 13px |
+| Font-weight | 500 |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Dimensions | 560×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur par défaut | 12 mois |
+| Icône | ▼ |
+
+### 4.4 Options période
+
+| Valeur | Description |
+|--------|-------------|
+| 1 mois | Engagement 1 mois |
+| 3 mois | Engagement 3 mois |
+| 6 mois | Engagement 6 mois |
+| 12 mois | Engagement 12 mois |
+
+### 4.5 Résumé prix
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 560×80px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+
+| Ligne | Label | Valeur | Style |
+|-------|-------|--------|-------|
+| 1 | Prix horaire actuel | 0,50 €/heure | #1F2937 |
+| 2 | Nouveau prix mensuel | 250,00 €/mois | #0050D7, bold |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Séparateur | 1px #E5E7EB |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Confirmer | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic dropdown période | Afficher les options |
+| Changement période | Recalculer le prix mensuel |
+| Clic Confirmer | Valider le passage au forfait |
+
+---
+
+## 7. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Période | Une période doit être sélectionnée |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir les informations de la ressource
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/host/{hostId}/billing
+```
+
+Response:
+```json
+{
+  "hostId": "host-001",
+  "name": "Host L-32",
+  "description": "Intel Xeon Gold",
+  "datacenter": "dc-rbx-01",
+  "currentBilling": {
+    "type": "hourly",
+    "price": { "value": 0.50, "text": "0,50 €/heure" }
+  },
+  "monthlyOptions": [
+    { "period": 1, "price": { "value": 280, "text": "280,00 €/mois" } },
+    { "period": 3, "price": { "value": 270, "text": "270,00 €/mois" } },
+    { "period": 6, "price": { "value": 260, "text": "260,00 €/mois" } },
+    { "period": 12, "price": { "value": 250, "text": "250,00 €/mois" } }
+  ]
+}
+```
+
+### 8.2 Convertir au forfait mensuel
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/host/{hostId}/upgradeToMonthly
+```
+
+Body:
+```json
+{
+  "renewalPeriod": 12
+}
+```
+
+Response:
+```json
+{
+  "orderId": "order-123456",
+  "taskId": "task-789",
+  "status": "pending"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_upgrade_title` | Passer au forfait mensuel |
+| `vmware_upgrade_info_1` | Le passage au forfait mensuel vous permet de bénéficier d'un tarif préférentiel |
+| `vmware_upgrade_info_2` | avec un engagement sur la durée sélectionnée. |
+| `vmware_upgrade_resource` | Ressource concernée |
+| `vmware_upgrade_period` | Période de renouvellement |
+| `vmware_upgrade_current` | Prix horaire actuel |
+| `vmware_upgrade_new` | Nouveau prix mensuel |
+| `vmware_upgrade_months` | mois |
+| `vmware_upgrade_cancel` | Annuler |
+| `vmware_upgrade_confirm` | Confirmer |

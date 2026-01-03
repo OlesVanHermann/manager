@@ -1,0 +1,238 @@
+# Cahier des Charges : private-cloud/vmware/operations
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.operations.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page avec tabs NAV4 |
+| **Description** | Page de suivi des opérations/tâches avec datagrid et filtres |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre principal | Production VMware |
+| Icône édition | ✎ |
+| Sous-titre | pcc-192-0-2-1 |
+| Lien retour | ← Retour à la liste |
+
+---
+
+## 4. NAV4 - TABS SERVICE
+
+| Tab | État |
+|-----|------|
+| Informations générales | Outline |
+| Datacentres | Outline |
+| Utilisateurs | Outline |
+| Sécurité | Outline |
+| Opérations | **Active** (#0050D7) |
+| Licence Windows | Outline |
+| Logs | Outline + Badge BETA |
+
+---
+
+## 5. CONTENU OPÉRATIONS
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Opérations |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+### 5.2 Toolbar
+
+| Élément | Type | Dimensions | Contenu |
+|---------|------|------------|---------|
+| Filtre progression | Dropdown | 160×32px | Progression ▼ |
+| Rafraîchir | Bouton | 100×32px | ↻ Rafraîchir |
+
+---
+
+## 6. DATAGRID
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1320×200px |
+
+### 6.2 En-têtes colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Référence | 70px | ID de la tâche |
+| Nom | 150px | Nom de l'opération |
+| Type | 100px | Type d'opération |
+| Progression | 100px | Badge statut |
+| Commentaire | 160px | Description |
+| Services affectés | 140px | Services impactés |
+| Créé de | 80px | Source |
+| Créé par | 80px | Utilisateur |
+| Traitement | 110px | Date début |
+| Fin | 110px | Date fin |
+| Mis à jour | 100px | Dernière MAJ |
+| Actions | 40px | Menu ⋮ |
+
+### 6.3 Header style
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 40px |
+| Background | #F9FAFB |
+| Font-size | 10px |
+| Font-weight | 600 |
+| Couleur | #1F2937 |
+
+### 6.4 Données exemple
+
+| Référence | Nom | Type | Progression | Commentaire | Services | Créé de | Créé par | Traitement | Fin |
+|-----------|-----|------|-------------|-------------|----------|---------|----------|------------|-----|
+| 123456 | addHost | Générique | Terminé (vert) | Ajout d'un host | Host : esxi-01 | API | admin | 02/01 10:30 | 02/01 10:45 |
+| 123457 | upgradeHost | Maintenance | En cours 45% (orange) | Mise à jour du host | Host : esxi-02 | Scheduler | system | 02/01 11:00 | - |
+| 123458 | addDatastore | Générique | Erreur (rouge) | Échec ajout datastore | Datacentre : dc-1 | API | dev-user | 01/01 15:00 | 01/01 15:10 |
+
+### 6.5 Badges progression
+
+| Statut | Background | Couleur | Dimensions |
+|--------|------------|---------|------------|
+| Terminé | #DEF7EC | #059669 | 60×20px |
+| En cours (45%) | #FEF3C7 | #D97706 | 80×20px |
+| Erreur | #FEE2E2 | #DC2626 | 50×20px |
+
+### 6.6 ActionMenu
+
+| Option | Couleur |
+|--------|---------|
+| Modifier la date de traitement | #1F2937 |
+
+---
+
+## 7. PAGINATION
+
+| Élément | Valeur |
+|---------|--------|
+| Texte gauche | Affichage 1-3 sur 3 |
+| Par page | Dropdown : 10 |
+| Navigation | ‹ [1] › |
+
+### 7.1 Style navigation
+
+| Élément | Style |
+|---------|-------|
+| Bouton inactif | Background #E5E7EB, texte #6B7280 |
+| Bouton page actif | Background #0050D7, texte #FFFFFF |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic tab | Changer d'onglet |
+| Clic filtre Progression | Ouvrir dropdown filtres |
+| Clic Rafraîchir | Recharger les données |
+| Clic ⋮ | Ouvrir ActionMenu |
+| Clic Modifier date | Ouvrir modal modification date |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les opérations
+
+```
+GET /dedicatedCloud/{serviceName}/operations
+```
+
+Query params:
+- `state` (optionnel): done, doing, error, cancelled
+- `page`: numéro de page
+- `pageSize`: nombre par page
+
+Response:
+```json
+{
+  "data": [
+    {
+      "taskId": 123456,
+      "name": "addHost",
+      "type": "generic",
+      "state": "done",
+      "progress": 100,
+      "comment": "Ajout d'un host",
+      "affectedServices": [{ "type": "host", "name": "esxi-01" }],
+      "createdFrom": "api",
+      "createdBy": "admin",
+      "startDate": "2026-01-02T10:30:00Z",
+      "endDate": "2026-01-02T10:45:00Z",
+      "lastUpdate": "2026-01-02T10:45:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 10,
+    "total": 3
+  }
+}
+```
+
+### 9.2 Modifier la date de traitement
+
+```
+PUT /dedicatedCloud/{serviceName}/operations/{taskId}/executionDate
+```
+
+Body:
+```json
+{
+  "executionDate": "2026-01-03T10:00:00Z"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_operations_title` | Opérations |
+| `vmware_operations_filter_progress` | Progression |
+| `vmware_operations_refresh` | Rafraîchir |
+| `vmware_operations_col_ref` | Référence |
+| `vmware_operations_col_name` | Nom |
+| `vmware_operations_col_type` | Type |
+| `vmware_operations_col_progress` | Progression |
+| `vmware_operations_col_comment` | Commentaire |
+| `vmware_operations_col_services` | Services affectés |
+| `vmware_operations_col_created_from` | Créé de |
+| `vmware_operations_col_created_by` | Créé par |
+| `vmware_operations_col_start` | Traitement |
+| `vmware_operations_col_end` | Fin |
+| `vmware_operations_col_updated` | Mis à jour |
+| `vmware_operations_status_done` | Terminé |
+| `vmware_operations_status_doing` | En cours |
+| `vmware_operations_status_error` | Erreur |
+| `vmware_operations_edit_date` | Modifier la date de traitement |

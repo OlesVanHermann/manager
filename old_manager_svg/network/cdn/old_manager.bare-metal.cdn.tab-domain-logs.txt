@@ -1,0 +1,185 @@
+# Cahier des Charges : bare-metal/cdn/tab-domain-logs
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.cdn.tab-domain-logs.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | cdn |
+| **NAV4** | logs (onglet domaine) |
+| **Type** | Tab contenu |
+| **Description** | Onglet affichant les logs d'accès d'un domaine CDN en temps réel |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| LEFT PANEL | 280×765px | x: 24 |
+| RIGHT PANEL | 1096×765px | x: 320 |
+| Gap | 16px | - |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F3F4F6 |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | Rechercher... |
+
+### 3.2 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 50px |
+| Background | #E8F0FE |
+| Nom | cdn-abc123 |
+| Description | rbx - 5 domaines |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Breadcrumb
+
+| Position | Label | Style |
+|----------|-------|-------|
+| 1 | cdn-abc123 | Lien #0050D7 |
+| Séparateur | / | #6B7280 |
+| 2 | example.com | Lien #0050D7 |
+
+### 4.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | example.com |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.3 NAV4 Tabs (style button)
+
+| Onglet | Style | État |
+|--------|-------|------|
+| Général | Outline (#0050D7) | Inactif |
+| Règles | Outline (#0050D7) | Inactif |
+| Statistiques | Outline (#0050D7) | Inactif |
+| **Logs** | **Primary (#0050D7)** | **Actif** |
+
+---
+
+## 5. LOGS CONTAINER
+
+### 5.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×500px |
+| Background | #1F2937 (dark) |
+| Border radius | 4px |
+| Font-family | 'Courier New', monospace |
+| Font-size | 10px |
+
+### 5.2 Format des logs
+
+```
+{IP} - {user} [{date} {time}] "{method} {url} HTTP/1.1" {status} {size} "{referer}" "{user_agent}" {cache_status}
+```
+
+### 5.3 Codes couleur par type
+
+| Type | Couleur | Exemples status |
+|------|---------|-----------------|
+| Success | #059669 (text-success) | 200, HIT |
+| Warning | #D97706 (text-warning) | 301, 404, MISS |
+| Danger | #DC2626 (text-danger) | 500, erreurs serveur |
+
+### 5.4 Exemples de logs
+
+| IP | User | Date | Méthode | URL | Status | Size | User Agent | Cache |
+|----|------|------|---------|-----|--------|------|------------|-------|
+| 192.168.1.100 | user1 | 02/01/2026 14:30 | GET | /api/data | 200 | 1234 | Mozilla/5.0 | HIT |
+| 192.168.1.101 | - | 02/01/2026 14:30 | GET | /assets/style.css | 200 | 5678 | Chrome/120 | HIT |
+| 10.0.0.50 | - | 02/01/2026 14:29 | GET | /old-page | 301 | 0 | Googlebot/2.1 | MISS |
+| 192.168.1.102 | admin | 02/01/2026 14:29 | POST | /api/login | 200 | 256 | Firefox/121 | MISS |
+| 172.16.0.10 | - | 02/01/2026 14:28 | GET | /missing | 404 | 128 | curl/7.88 | MISS |
+| 192.168.1.200 | - | 02/01/2026 14:28 | GET | /error | 500 | 64 | Python/3.10 | MISS |
+| 192.168.1.105 | - | 02/01/2026 14:27 | GET | /images/logo.png | 200 | 15234 | Safari/17 | HIT |
+| 10.0.0.25 | - | 02/01/2026 14:27 | GET | / | 200 | 8192 | Chrome/120 | HIT |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Scroll | Défilement dans le conteneur logs |
+| Auto-refresh | Mise à jour temps réel (WebSocket ou polling) |
+| Cache HIT | Coloré en vert (succès) |
+| Cache MISS | Coloré en orange (warning) |
+| Erreur 5xx | Coloré en rouge (danger) |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Récupérer les logs d'un domaine
+
+```
+GET /cdn/{serviceName}/domain/{domainName}/logs
+```
+
+Query params:
+```
+?limit=100&offset=0&startDate=2026-01-02T00:00:00Z&endDate=2026-01-02T23:59:59Z
+```
+
+Response:
+```json
+{
+  "logs": [
+    {
+      "timestamp": "2026-01-02T14:30:00Z",
+      "clientIp": "192.168.1.100",
+      "user": "user1",
+      "method": "GET",
+      "url": "https://example.com/api/data",
+      "status": 200,
+      "size": 1234,
+      "referer": "-",
+      "userAgent": "Mozilla/5.0",
+      "cacheStatus": "HIT"
+    }
+  ],
+  "total": 1000,
+  "hasMore": true
+}
+```
+
+### 7.2 WebSocket pour logs temps réel
+
+```
+wss://logs.cdn.ovh.net/{serviceName}/{domainName}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_domain_logs_title` | Logs |
+| `cdn_domain_logs_tab_general` | Général |
+| `cdn_domain_logs_tab_rules` | Règles |
+| `cdn_domain_logs_tab_stats` | Statistiques |
+| `cdn_domain_logs_tab_logs` | Logs |
+| `cdn_domain_logs_cache_hit` | HIT |
+| `cdn_domain_logs_cache_miss` | MISS |
+| `cdn_domain_logs_empty` | Aucun log disponible |

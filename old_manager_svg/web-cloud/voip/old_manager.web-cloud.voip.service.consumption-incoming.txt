@@ -1,0 +1,196 @@
+# Cahier des Charges : web-cloud/voip/service/consumption-incoming
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.consumption-incoming.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page datagrid |
+| **Description** | Page de consultation des appels entrants avec détails |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 1 23 45 67 89 |
+| Description | Ligne principale |
+| Badge | Actif (#DEF7EC) |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Consommation - Appels entrants |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 Résumé
+
+| Propriété | Valeur exemple |
+|-----------|----------------|
+| Période | 01/12/2025 - 31/12/2025 |
+| Total | 312 appels reçus - Durée totale : 18:45:23 |
+
+### 4.3 Bouton filtre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Filtrer |
+| Dimensions | 100×32px |
+| Style | Outline |
+| Position | Aligné droite |
+
+---
+
+## 5. DATAGRID APPELS ENTRANTS
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×550px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #F9FAFB |
+| Hauteur | 35px |
+
+### 5.3 Colonnes
+
+| Colonne | Position | Largeur |
+|---------|----------|---------|
+| Date | x: 16 | 180px |
+| Appelant | x: 200 | 200px |
+| Numéro composé | x: 400 | 200px |
+| Durée | x: 600 | 200px |
+| Type | x: 800 | 200px |
+
+### 5.4 Données exemple
+
+| Date | Appelant | Numéro composé | Durée | Type |
+|------|----------|----------------|-------|------|
+| 02/01/2026 15:45 | +33 6 12 34 56 78 | - | 00:08:34 | Entrant |
+| 02/01/2026 14:20 | +33 1 45 67 89 01 | - | 00:03:12 | Entrant |
+| 02/01/2026 11:30 | Numéro masqué | - | 00:00:45 | Manqué |
+| 02/01/2026 10:15 | +33 6 98 76 54 32 | +33 1 23 45 67 90 | 00:15:20 | Transfert |
+| 01/01/2026 17:00 | +33 1 00 00 00 00 | - | 00:02:00 | Entrant |
+| 01/01/2026 15:30 | +33 6 55 44 33 22 | - | 00:00:00 | Manqué |
+
+### 5.5 Hauteur lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 45px |
+
+---
+
+## 6. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Page 1 sur 20 |
+| Boutons | ‹ 1 2 3 › |
+| Style actif | Background #0050D7, texte blanc |
+| Style inactif | Border #E5E7EB, texte dark |
+| Dimensions bouton | 28×28px |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les appels entrants
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/calls/incoming
+```
+
+Query params:
+- `startDate`: Date début (ISO 8601)
+- `endDate`: Date fin (ISO 8601)
+- `page`: Numéro de page
+- `pageSize`: Nombre par page
+
+Response:
+```json
+{
+  "summary": {
+    "totalCalls": 312,
+    "totalDuration": "18:45:23"
+  },
+  "calls": [
+    {
+      "id": "call-123",
+      "date": "2026-01-02T15:45:00Z",
+      "caller": "+33612345678",
+      "calledNumber": null,
+      "duration": "00:08:34",
+      "type": "incoming"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 20,
+    "totalItems": 312
+  }
+}
+```
+
+---
+
+## 8. TYPES D'APPELS
+
+| Type | Description |
+|------|-------------|
+| Entrant | Appel reçu et décroché |
+| Manqué | Appel non décroché |
+| Transfert | Appel transféré vers un autre numéro |
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_consumption_incoming_title` | Consommation - Appels entrants |
+| `voip_consumption_incoming_period` | Période |
+| `voip_consumption_incoming_total` | Total |
+| `voip_consumption_incoming_calls` | appels reçus |
+| `voip_consumption_incoming_duration` | Durée totale |
+| `voip_consumption_incoming_filter` | Filtrer |
+| `voip_consumption_incoming_col_date` | Date |
+| `voip_consumption_incoming_col_caller` | Appelant |
+| `voip_consumption_incoming_col_called` | Numéro composé |
+| `voip_consumption_incoming_col_duration` | Durée |
+| `voip_consumption_incoming_col_type` | Type |
+| `voip_consumption_incoming_type_incoming` | Entrant |
+| `voip_consumption_incoming_type_missed` | Manqué |
+| `voip_consumption_incoming_type_transfer` | Transfert |
+| `voip_consumption_incoming_anonymous` | Numéro masqué |
+| `voip_consumption_incoming_page` | Page |
+| `voip_consumption_incoming_of` | sur |

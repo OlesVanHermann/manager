@@ -1,0 +1,244 @@
+# Cahier des Charges : web-cloud/voip/service/fax-settings
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.fax-settings.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page formulaire multi-sections |
+| **Description** | Page de configuration des paramètres d'un service Fax |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 9 72 12 34 56 |
+| Description | Fax |
+
+---
+
+## 4. SECTION OPTIONS GÉNÉRALES (haut gauche)
+
+### 4.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 500×180px |
+| Titre | Options générales |
+| Séparateur | Ligne sous le titre |
+
+### 4.2 Champs
+
+| Champ | Type | Valeur exemple |
+|-------|------|----------------|
+| Qualité du fax | Select dropdown (250×36px) | Normale |
+| Nombre de tentatives d'envoi | Select dropdown (100×36px) | 3 |
+
+---
+
+## 5. SECTION EN-TÊTE (haut droite)
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 520×180px |
+| Titre | En-tête du fax |
+| Séparateur | Ligne sous le titre |
+
+### 5.2 Champs
+
+| Champ | Type | Valeur exemple |
+|-------|------|----------------|
+| En-tête du fax | Input text (460×36px) | Mon Entreprise - #01# - #02# |
+
+### 5.3 Lien aide
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Afficher l'aide sur les variables |
+| Couleur | #0050D7 |
+
+---
+
+## 6. SECTION NOTIFICATIONS (bas gauche)
+
+### 6.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 500×220px |
+| Titre | Options de notification |
+| Séparateur | Ligne sous le titre |
+
+### 6.2 Champs
+
+| Champ | Type | Valeur exemple |
+|-------|------|----------------|
+| Nom de l'expéditeur | Input text (250×36px) | Mon Entreprise |
+| Email de l'expéditeur | Input text (250×36px) | fax@monentreprise.fr |
+| Format du mail | Select dropdown (180×36px) | PDF |
+
+---
+
+## 7. SECTION ADRESSES (bas droite)
+
+### 7.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 520×220px |
+| Titre | Adresses à notifier |
+| Séparateur | Ligne sous le titre |
+
+### 7.2 Liste d'adresses
+
+| Email | Action |
+|-------|--------|
+| contact@monentreprise.fr | × (supprimer) |
+| fax@monentreprise.fr | × (supprimer) |
+
+### 7.3 Bouton ajouter
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Ajouter une adresse |
+| Style | Primary (#0050D7) |
+| Dimensions | 200×36px |
+
+---
+
+## 8. ACTIONS GLOBALES
+
+### 8.1 Séparateur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Ligne horizontale |
+| Largeur | 1040px |
+
+### 8.2 Lien action groupée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Appliquer à plusieurs services |
+| Couleur | #0050D7 |
+
+### 8.3 Bouton sauvegarder
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Mettre à jour les paramètres |
+| Style | Primary (#0050D7) |
+| Dimensions | 200×40px |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les paramètres du fax
+
+```
+GET /telephony/{billingAccount}/fax/{serviceName}/settings
+```
+
+Response:
+```json
+{
+  "quality": "normal",
+  "maxTries": 3,
+  "faxHeader": "Mon Entreprise - #01# - #02#",
+  "fromName": "Mon Entreprise",
+  "fromEmail": "fax@monentreprise.fr",
+  "mailFormat": "pdf",
+  "notificationEmails": ["contact@monentreprise.fr", "fax@monentreprise.fr"]
+}
+```
+
+### 9.2 Modifier les paramètres
+
+```
+PUT /telephony/{billingAccount}/fax/{serviceName}/settings
+```
+
+Body:
+```json
+{
+  "quality": "normal",
+  "maxTries": 3,
+  "faxHeader": "Mon Entreprise - #01# - #02#",
+  "fromName": "Mon Entreprise",
+  "fromEmail": "fax@monentreprise.fr",
+  "mailFormat": "pdf"
+}
+```
+
+### 9.3 Ajouter une adresse email
+
+```
+POST /telephony/{billingAccount}/fax/{serviceName}/settings/notificationEmails
+```
+
+Body:
+```json
+{
+  "email": "new@monentreprise.fr"
+}
+```
+
+### 9.4 Supprimer une adresse email
+
+```
+DELETE /telephony/{billingAccount}/fax/{serviceName}/settings/notificationEmails/{email}
+```
+
+---
+
+## 10. VARIABLES D'EN-TÊTE
+
+| Variable | Description |
+|----------|-------------|
+| #01# | Numéro du fax source |
+| #02# | Date et heure |
+| #03# | Numéro de page |
+| #04# | Nombre total de pages |
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_fax_settings_general_title` | Options générales |
+| `voip_fax_settings_quality` | Qualité du fax |
+| `voip_fax_settings_quality_normal` | Normale |
+| `voip_fax_settings_quality_high` | Haute |
+| `voip_fax_settings_tries` | Nombre de tentatives d'envoi |
+| `voip_fax_settings_header_title` | En-tête du fax |
+| `voip_fax_settings_header_label` | En-tête du fax |
+| `voip_fax_settings_header_help` | Afficher l'aide sur les variables |
+| `voip_fax_settings_notif_title` | Options de notification |
+| `voip_fax_settings_notif_from_name` | Nom de l'expéditeur |
+| `voip_fax_settings_notif_from_email` | Email de l'expéditeur |
+| `voip_fax_settings_notif_format` | Format du mail |
+| `voip_fax_settings_emails_title` | Adresses à notifier |
+| `voip_fax_settings_emails_add` | Ajouter une adresse |
+| `voip_fax_settings_bulk` | Appliquer à plusieurs services |
+| `voip_fax_settings_submit` | Mettre à jour les paramètres |

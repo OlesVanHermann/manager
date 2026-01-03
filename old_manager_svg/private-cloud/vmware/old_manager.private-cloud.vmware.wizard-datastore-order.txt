@@ -1,0 +1,182 @@
+# Cahier des Charges : private-cloud/vmware/wizard-datastore-order
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.wizard-datastore-order.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page wizard avec LEFT PANEL et datagrid sélection |
+| **Description** | Wizard de commande de datastore avec sélection du type et de la quantité |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Placeholder | Rechercher... |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | pcc-192-0-2-1 |
+| Sous-titre | dc-gra1 |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | ← Commander un datastore |
+| Couleur lien | #0050D7 |
+
+### 4.2 Info banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×40px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Message | ℹ️ Les prix affichés sont indicatifs. Des réductions peuvent s'appliquer selon votre engagement. |
+| Couleur texte | #1E40AF |
+
+### 4.3 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Sélectionnez le type de datastore que vous souhaitez commander pour votre datacentre. |
+| Ligne 2 | Veuillez sélectionner un datastore : |
+
+---
+
+## 5. DATAGRID SÉLECTION
+
+### 5.1 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| (Radio) | 50px |
+| Type | 600px |
+| Prix | 300px |
+
+### 5.2 Données exemple
+
+| Type | Prix mensuel | Prix horaire |
+|------|--------------|--------------|
+| filer-ssd-3200-2 | 250,00 € HT/mois | + 0,50 € HT/heure |
+| filer-ssd-6400-2 | 500,00 € HT/mois | + 0,90 € HT/heure |
+| filer-nvme-1500-2 | 350,00 € HT/mois | + 0,70 € HT/heure |
+| filer-hdd-4000 | 180,00 € HT/mois | + 0,30 € HT/heure |
+
+### 5.3 Style ligne sélectionnée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Border | 2px #0050D7 |
+| Radio | Cercle rempli #0050D7 |
+
+---
+
+## 6. SÉLECTEUR QUANTITÉ
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Quantité souhaitée : |
+| Dimensions | 120×40px |
+| Bouton moins | − |
+| Valeur par défaut | 1 |
+| Bouton plus | + |
+
+---
+
+## 7. BOUTON ACTION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commander |
+| Dimensions | 140×40px |
+| Background | #0050D7 |
+| Border radius | 4px |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic radio | Sélectionner ce type de datastore |
+| Clic − | Diminuer quantité (min 1) |
+| Clic + | Augmenter quantité |
+| Clic Commander | Valider la commande |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les types de datastore
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/filer/profiles
+```
+
+Response:
+```json
+[
+  {
+    "name": "filer-ssd-3200-2",
+    "monthlyPrice": { "value": 250, "text": "250,00 € HT/mois" },
+    "hourlyPrice": { "value": 0.5, "text": "+ 0,50 € HT/heure" }
+  }
+]
+```
+
+### 9.2 Commander un datastore
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderNewFiler
+```
+
+Body:
+```json
+{
+  "profile": "filer-ssd-3200-2",
+  "quantity": 1
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_ds_wizard_title` | Commander un datastore |
+| `vmware_ds_wizard_info` | Les prix affichés sont indicatifs. Des réductions peuvent s'appliquer selon votre engagement. |
+| `vmware_ds_wizard_select` | Sélectionnez le type de datastore que vous souhaitez commander |
+| `vmware_ds_wizard_col_type` | Type |
+| `vmware_ds_wizard_col_price` | Prix |
+| `vmware_ds_wizard_quantity` | Quantité souhaitée |
+| `vmware_ds_wizard_order` | Commander |

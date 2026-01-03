@@ -1,0 +1,170 @@
+# Cahier des Charges : private-cloud/vmware/datacenter-datastore-order
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.datacenter-datastore-order.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page commande avec datagrid et sélection quantité |
+| **Description** | Page pour commander un datastore avec choix du type et de la quantité |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width (RIGHT PANEL uniquement) |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | ← Commander un datastore |
+| Couleur lien | #0050D7 |
+
+---
+
+## 4. INFO BANNER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1320×50px |
+| Background | #DBEAFE |
+| Border | 1px #1E40AF |
+| Border radius | 4px |
+| Icône | i (cercle bleu) |
+| Message | Les prix affiches sont hors taxes. Le prix final sera calcule lors de la confirmation de commande. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 5. CONTENU
+
+### 5.1 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Selectionnez le type de datastore que vous souhaitez commander pour votre datacenter. |
+| Ligne 2 | Selectionnez une offre : |
+| Font-weight ligne 2 | 500 |
+
+---
+
+## 6. DATAGRID SÉLECTION
+
+### 6.1 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| (Radio) | 40px |
+| Type | 500px |
+| Prix | 300px |
+
+### 6.2 Données exemple
+
+| Type | Description | Prix | Engagement |
+|------|-------------|------|------------|
+| ds-ssd-256g | SSD 256 GB - High Performance | 29,99 € HT/mois | Mensuel |
+| ds-ssd-512g | SSD 512 GB - High Performance | 54,99 € HT/mois | Mensuel |
+| ds-nvme-1t | NVMe 1 TB - Ultra Performance | 99,99 € HT/mois | Mensuel |
+| ds-nvme-2t | NVMe 2 TB - Ultra Performance | 179,99 € HT/mois | Mensuel |
+
+### 6.3 Style ligne sélectionnée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Radio | Cercle rempli #0050D7 |
+
+---
+
+## 7. SÉLECTEUR QUANTITÉ
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Selectionnez la quantite : |
+| Bouton moins | − (40×36px) |
+| Input valeur | 60×36px |
+| Bouton plus | + (40×36px) |
+| Valeur par défaut | 1 |
+
+---
+
+## 8. BOUTON ACTION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Confirmer la commande |
+| Dimensions | 200×44px |
+| Background | #0050D7 |
+| Border radius | 4px |
+
+---
+
+## 9. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic radio | Sélectionner ce type de datastore |
+| Clic − | Diminuer quantité (min 1) |
+| Clic + | Augmenter quantité |
+| Clic Confirmer | Valider la commande |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Obtenir les offres datastore
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/filer/profiles
+```
+
+Response:
+```json
+[
+  {
+    "name": "ds-ssd-256g",
+    "description": "SSD 256 GB - High Performance",
+    "price": { "value": 29.99, "text": "29,99 € HT/mois" },
+    "commitment": "monthly"
+  }
+]
+```
+
+### 10.2 Commander un datastore
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderNewFiler
+```
+
+Body:
+```json
+{
+  "profile": "ds-ssd-256g",
+  "quantity": 1
+}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_ds_order_title` | Commander un datastore |
+| `vmware_ds_order_info` | Les prix affiches sont hors taxes. Le prix final sera calcule lors de la confirmation de commande. |
+| `vmware_ds_order_select` | Selectionnez le type de datastore que vous souhaitez commander |
+| `vmware_ds_order_col_type` | Type |
+| `vmware_ds_order_col_price` | Prix |
+| `vmware_ds_order_quantity` | Selectionnez la quantite |
+| `vmware_ds_order_confirm` | Confirmer la commande |

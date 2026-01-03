@@ -1,0 +1,154 @@
+# Cahier des Charges : public-cloud/storage/instance-backups/listing
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.storage.instance-backups.listing.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | storage |
+| **Type** | Listing / Datagrid |
+| **Description** | Liste des sauvegardes d'instances (Instance Backup) |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| Breadcrumb | mon-projet / Stockage / Instance Backup |
+
+---
+
+## 3. HEADER
+
+| Titre | Instance Backup |
+| Font-size | 22px |
+| Font-weight | 600 |
+| Bouton guides | 📖 Guides (100×32px, outline) |
+
+---
+
+## 4. ACTIONS
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| + Créer un backup | Outline | 200×36px |
+| ↻ (refresh) | Outline | 40×36px |
+
+---
+
+## 5. TABLEAU INSTANCE BACKUPS
+
+### 5.1 Dimensions
+
+| Largeur | 1392px |
+| Hauteur | 450px |
+
+### 5.2 Colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| NOM | 234px |
+| ID | 250px |
+| RÉGION | 150px |
+| TAILLE | 150px |
+| DATE DE CRÉATION | 250px |
+| STATUT | 230px |
+| ACTIONS | 80px |
+
+### 5.3 Statuts
+
+| Statut | Badge | Background | Texte |
+|--------|-------|------------|-------|
+| Actif | success | #DEF7EC | #059669 |
+| Création | warning | #FEF3C7 | #D97706 |
+
+---
+
+## 6. DONNÉES EXEMPLE
+
+| Nom | ID | Région | Taille | Date | Statut |
+|-----|----|--------|--------|------|--------|
+| web-server-backup-20260101 | bkp-abc123-def456 | GRA11 - Gravelines | 50 GiB | 01 janv. 2026 à 03:00 | Actif |
+| db-backup-weekly | bkp-xyz789-uvw012 | SBG5 - Strasbourg | 100 GiB | 28 déc. 2025 à 02:00 | Actif |
+| api-server-snapshot | bkp-new123-snap456 | BHS5 - Beauharnois | — | 02 janv. 2026 à 10:15 | Création |
+
+---
+
+## 7. MENU ACTIONS
+
+| Dimensions | 180×80px |
+
+| Option | Groupe |
+|--------|--------|
+| Créer une instance | - |
+| --- | Séparateur |
+| Supprimer | Danger |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les backups d'instances
+
+```
+GET /cloud/project/{projectId}/image?type=backup
+```
+
+Response:
+```json
+[
+  {
+    "id": "bkp-abc123-def456",
+    "name": "web-server-backup-20260101",
+    "region": "GRA11",
+    "size": 53687091200,
+    "creationDate": "2026-01-01T03:00:00Z",
+    "status": "active",
+    "type": "backup"
+  }
+]
+```
+
+### 8.2 Créer une instance depuis un backup
+
+```
+POST /cloud/project/{projectId}/instance
+```
+
+Body:
+```json
+{
+  "name": "instance-from-backup",
+  "imageId": "bkp-abc123-def456",
+  "flavorId": "b2-15",
+  "region": "GRA11"
+}
+```
+
+### 8.3 Supprimer un backup
+
+```
+DELETE /cloud/project/{projectId}/image/{imageId}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_storage_instance_backup_title` | Instance Backup |
+| `pci_storage_instance_backup_create` | Créer un backup |
+| `pci_storage_instance_backup_col_name` | NOM |
+| `pci_storage_instance_backup_col_id` | ID |
+| `pci_storage_instance_backup_col_region` | RÉGION |
+| `pci_storage_instance_backup_col_size` | TAILLE |
+| `pci_storage_instance_backup_col_created` | DATE DE CRÉATION |
+| `pci_storage_instance_backup_col_status` | STATUT |
+| `pci_storage_instance_backup_status_active` | Actif |
+| `pci_storage_instance_backup_status_creating` | Création |
+| `pci_storage_instance_backup_action_create_instance` | Créer une instance |
+| `pci_storage_instance_backup_action_delete` | Supprimer |

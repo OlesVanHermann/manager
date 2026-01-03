@@ -1,0 +1,184 @@
+# Cahier des Charges : private-cloud/vmware/wizard-security-options
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.wizard-security-options.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal wizard avec stepper (4 étapes) |
+| **Description** | Wizard pour activer les options de sécurité avec vérification des prérequis |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 800px |
+| Hauteur | 580px |
+| Position | Centrée (x: 320, y: 130) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Activation des options de sécurité |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. STEPPER (4 étapes)
+
+| Étape | Numéro | Libellé suggéré | État |
+|-------|--------|-----------------|------|
+| 1 | 1 | Prérequis | Active (#0050D7) |
+| 2 | 2 | Configuration | Inactive |
+| 3 | 3 | Validation | Inactive |
+| 4 | 4 | Confirmation | Inactive |
+
+---
+
+## 5. CONTENU ÉTAPE 1 (Prérequis)
+
+### 5.1 Introduction
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Vérification des prérequis avant activation des options de sécurité. |
+| Font-size | 14px |
+
+### 5.2 Checklist prérequis
+
+| Prérequis | Statut | Badge |
+|-----------|--------|-------|
+| NSX | Activé | ✓ (#059669 sur #DEF7EC) |
+| vROps | Activé | ✓ (#059669 sur #DEF7EC) |
+
+### 5.3 Style item checklist
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 760×50px |
+| Background | #DEF7EC |
+| Border radius | 4px |
+| Gap entre items | 10px |
+
+### 5.4 Icône check
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Cercle avec ✓ |
+| Background | #059669 |
+| Dimensions | 24×24px |
+| Couleur icône | #FFFFFF |
+
+### 5.5 Message validation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Toutes les options requises sont activées. Vous pouvez continuer. |
+| Couleur | #6B7280 |
+| Font-size | 12px |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Suivant | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic Suivant | Passer à l'étape 2 (si tous prérequis validés) |
+
+---
+
+## 8. PRÉREQUIS DÉTAILLÉS
+
+| Prérequis | Description | Obligatoire |
+|-----------|-------------|-------------|
+| NSX | Virtualisation réseau et sécurité | Oui |
+| vROps | Monitoring et opérations | Oui |
+| Zerto | Disaster Recovery (optionnel) | Non |
+| Veeam | Backup (optionnel) | Non |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Vérifier les prérequis
+
+```
+GET /dedicatedCloud/{serviceName}/securityOptions/prerequisites
+```
+
+Response:
+```json
+{
+  "prerequisites": [
+    { "name": "NSX", "enabled": true, "required": true },
+    { "name": "vROps", "enabled": true, "required": true }
+  ],
+  "allMet": true
+}
+```
+
+### 9.2 Activer les options de sécurité
+
+```
+POST /dedicatedCloud/{serviceName}/securityOptions/enable
+```
+
+Body:
+```json
+{
+  "options": ["hds", "pcidss"]
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_security_wizard_title` | Activation des options de sécurité |
+| `vmware_security_step1` | Prérequis |
+| `vmware_security_step2` | Configuration |
+| `vmware_security_step3` | Validation |
+| `vmware_security_step4` | Confirmation |
+| `vmware_security_prereq_desc` | Vérification des prérequis avant activation des options de sécurité. |
+| `vmware_security_nsx` | NSX |
+| `vmware_security_vrops` | vROps |
+| `vmware_security_enabled` | Activé |
+| `vmware_security_all_met` | Toutes les options requises sont activées. Vous pouvez continuer. |
+| `vmware_security_cancel` | Annuler |
+| `vmware_security_next` | Suivant |

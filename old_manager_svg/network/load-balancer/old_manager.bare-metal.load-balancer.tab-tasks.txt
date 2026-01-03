@@ -1,0 +1,194 @@
+# Cahier des Charges : bare-metal/load-balancer/tab-tasks
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.load-balancer.tab-tasks.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | load-balancer |
+| **NAV4** | tâches |
+| **Type** | Tab contenu avec datagrid |
+| **Description** | Onglet affichant la liste des tâches du Load Balancer |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| LEFT PANEL | 280×765px | x: 24 |
+| RIGHT PANEL | 1096×765px | x: 320 |
+| Gap | 16px | - |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F3F4F6 |
+| Placeholder | Rechercher... |
+
+### 3.2 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nom | loadbalancer-abc123 |
+| Description | rbx - 2 zones |
+| Background | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | loadbalancer-abc123 |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 NAV4 Tabs (style button)
+
+| Onglet | Style | État |
+|--------|-------|------|
+| Accueil | Outline (#0050D7) | Inactif |
+| Frontends | Outline (#0050D7) | Inactif |
+| Fermes | Outline (#0050D7) | Inactif |
+| **Tâches** | **Primary (#0050D7)** | **Actif** |
+
+---
+
+## 5. CONTENU
+
+### 5.1 Introduction
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Les tâches en cours pour votre Load Balancer sont automatiquement retirées de cette liste 48 h après avoir été complétées. |
+| Font-size | 12px |
+| Couleur | #6B7280 |
+
+---
+
+## 6. DATAGRID TÂCHES
+
+### 6.1 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 36px |
+| Background | #F9FAFB |
+
+### 6.2 Colonnes
+
+| # | Colonne | Largeur | Alignement |
+|---|---------|---------|------------|
+| 1 | Date de création | 180px | Gauche |
+| 2 | Tâche | 200px | Gauche |
+| 3 | Progression | 150px | Gauche |
+| 4 | État | 150px | Gauche |
+| 5 | Action | 100px | Gauche |
+
+### 6.3 Données exemple
+
+| Date de création | Tâche | Progression | État | Action |
+|------------------|-------|-------------|------|--------|
+| 15/12/2025 14:30 | addZone | 100% | done (success) | Voir |
+| 15/12/2025 13:45 | addFrontend | 65% | running (warning) | Voir |
+| 15/12/2025 12:00 | deleteServer | 100% | done (success) | Voir |
+
+### 6.4 Badges état
+
+| État | Background | Texte | Dimensions |
+|------|------------|-------|------------|
+| done | #DEF7EC | #059669 | 50×20px |
+| running | #FEF3C7 | #D97706 | 65×20px |
+
+### 6.5 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 45px |
+| Background | #FFFFFF |
+| Séparateur | 1px #E5E7EB |
+| Font-size | 11px |
+
+### 6.6 Lien action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Voir |
+| Couleur | #0050D7 |
+| Action | Ouvrir modal-task-preview |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic onglet | Changer d'onglet |
+| Clic Voir | Ouvrir modal aperçu tâche |
+| Auto-refresh | Mise à jour périodique de la progression |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les tâches
+
+```
+GET /ipLoadbalancing/{serviceName}/task
+```
+
+Query params:
+```
+?status=running,done,error
+```
+
+Response:
+```json
+[
+  {
+    "taskId": 123456789,
+    "action": "addZone",
+    "creationDate": "2025-12-15T14:30:00Z",
+    "progress": 100,
+    "status": "done"
+  },
+  {
+    "taskId": 123456788,
+    "action": "addFrontend",
+    "creationDate": "2025-12-15T13:45:00Z",
+    "progress": 65,
+    "status": "running"
+  }
+]
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `lb_tasks_tab` | Tâches |
+| `lb_tasks_intro` | Les tâches en cours pour votre Load Balancer sont automatiquement retirées de cette liste 48 h après avoir été complétées. |
+| `lb_tasks_col_date` | Date de création |
+| `lb_tasks_col_action` | Tâche |
+| `lb_tasks_col_progress` | Progression |
+| `lb_tasks_col_status` | État |
+| `lb_tasks_col_actions` | Action |
+| `lb_tasks_view` | Voir |
+| `lb_tasks_status_done` | done |
+| `lb_tasks_status_running` | running |
+| `lb_tasks_status_error` | error |
+| `lb_tasks_action_addZone` | addZone |
+| `lb_tasks_action_addFrontend` | addFrontend |
+| `lb_tasks_action_deleteServer` | deleteServer |

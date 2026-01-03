@@ -1,0 +1,234 @@
+# Cahier des Charges : private-cloud/vmware/modal-kms-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-kms-add.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal wizard 2 étapes |
+| **Description** | Modal pour ajouter un serveur KMS pour le chiffrement VM Encryption |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 520px |
+| Position | Centrée (x: 370, y: 150) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Ajouter un nouveau serveur KMS |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Centrée horizontalement |
+| Position Y | 76px |
+| Nombre d'étapes | 2 |
+
+### 4.2 Étapes
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Configuration | Active (#0050D7) |
+| 2 | Confirmation | Inactive (outline) |
+
+### 4.3 Style stepper
+
+| Élément | Propriété | Valeur |
+|---------|-----------|--------|
+| Cercle actif | Fill | #0050D7 |
+| Cercle actif | Dimensions | r=12px |
+| Cercle inactif | Fill | #FFFFFF |
+| Cercle inactif | Stroke | #E5E7EB |
+| Ligne connexion | Stroke | #E5E7EB |
+| Ligne connexion | Stroke-width | 2px |
+
+---
+
+## 5. FORMULAIRE
+
+### 5.1 Champ IP
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | IP * |
+| Obligatoire | Oui |
+| Dimensions input | 660×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | 192.168.1.100 |
+
+### 5.2 Champ Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Description (optionnel) |
+| Obligatoire | Non |
+| Dimensions input | 660×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | Serveur KMS production |
+
+### 5.3 Champ SSL Thumbprint
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | SSL Thumbprint * |
+| Obligatoire | Oui |
+| Dimensions input | 660×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90 |
+
+### 5.4 Checkbox confirmation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 16×16px |
+| Border radius | 3px |
+| État | Coché (#0050D7) |
+| Icône check | ✓ blanc |
+| Ligne 1 | J'ai lu et j'ai compris la documentation VM Encryption et les actions que je vais |
+| Ligne 2 | devoir effectuer de mon côté. |
+
+### 5.5 Lien documentation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Documentation VM Encryption ↗ |
+| Couleur | #0050D7 |
+| Style | Souligné |
+| Action | Ouvrir documentation (nouvel onglet) |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Suivant | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic checkbox | Toggle acceptation |
+| Clic lien doc | Ouvrir documentation |
+| Clic Suivant | Passer à l'étape confirmation (si valide) |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| IP | Obligatoire, format IPv4 valide |
+| Description | Optionnel, max 255 caractères |
+| SSL Thumbprint | Obligatoire, format hexadécimal avec : séparateurs |
+| Checkbox | Doit être coché pour continuer |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Ajouter un serveur KMS
+
+```
+POST /dedicatedCloud/{serviceName}/kms
+```
+
+Body:
+```json
+{
+  "ip": "192.168.1.100",
+  "description": "Serveur KMS production",
+  "sslThumbprint": "AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90"
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-123456",
+  "kmsId": "kms-001",
+  "status": "pending"
+}
+```
+
+### 9.2 Vérifier la connectivité KMS
+
+```
+POST /dedicatedCloud/{serviceName}/kms/test
+```
+
+Body:
+```json
+{
+  "ip": "192.168.1.100",
+  "sslThumbprint": "AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90"
+}
+```
+
+Response:
+```json
+{
+  "reachable": true,
+  "validCertificate": true
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_kms_add_title` | Ajouter un nouveau serveur KMS |
+| `vmware_kms_add_step_config` | Configuration |
+| `vmware_kms_add_step_confirm` | Confirmation |
+| `vmware_kms_add_ip` | IP |
+| `vmware_kms_add_desc` | Description |
+| `vmware_kms_add_optional` | optionnel |
+| `vmware_kms_add_thumbprint` | SSL Thumbprint |
+| `vmware_kms_add_checkbox_1` | J'ai lu et j'ai compris la documentation VM Encryption et les actions que je vais |
+| `vmware_kms_add_checkbox_2` | devoir effectuer de mon côté. |
+| `vmware_kms_add_doc_link` | Documentation VM Encryption |
+| `vmware_kms_add_cancel` | Annuler |
+| `vmware_kms_add_next` | Suivant |

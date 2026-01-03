@@ -1,0 +1,213 @@
+# Cahier des Charges : network/ip/wizard-order-ipv4-step2
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.network.ip.wizard-order-ipv4-step2.svg |
+| **NAV1** | network (Network) |
+| **NAV2** | ip |
+| **Type** | Wizard page (étape 2/4) |
+| **Description** | Deuxième étape du wizard - Choix de l'offre et quantité |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Content Card | 1392×520px | x: 24, y: 280 |
+| Full-width | Oui | - |
+
+---
+
+## 3. STEPPER
+
+### 3.1 Étapes
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Service | **Done** (#059669, ✓) |
+| 2 | Offre | **Active** (#0050D7) |
+| 3 | Localisation | Inactive |
+| 4 | Organisation | Inactive |
+
+### 3.2 Style complété
+
+| Élément | Propriété | Valeur |
+|---------|-----------|--------|
+| Cercle done | Fill | #059669 |
+| Icône | ✓ | Blanc |
+| Ligne done | Stroke | #059669 |
+| Label done | Color | #059669 |
+
+---
+
+## 4. RÉSUMÉ SÉLECTION
+
+### 4.1 Info Banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1344×50px |
+| Background | #DBEAFE |
+| Border radius | 4px |
+
+### 4.2 Contenu
+
+| Label | Valeur | Action |
+|-------|--------|--------|
+| Service sélectionné : | ns123456.ip-123-45-67.eu (Serveur dédié) | Modifier (#0050D7) |
+
+---
+
+## 5. CONTENU ÉTAPE 2
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Choisissez votre offre |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+### 5.2 Offer Pickers
+
+| Offre | Description | Prix |
+|-------|-------------|------|
+| **Additional IP** (sélectionné) | IP additionnelle individuelle. Idéal pour la redondance et la migration de services | À partir de 2,00 € HT/mois par IP |
+| Bloc Additional IP | Bloc d'IPs contiguës. Pour les besoins avancés et infrastructures complexes | À partir de 2,00 € HT/mois par IP (blocs /28 à /24) |
+
+### 5.3 Style picker offre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 320×180px |
+| Border radius | 8px |
+| Border sélectionné | 2px #0050D7 |
+| Séparateur prix | 1px #E5E7EB |
+
+---
+
+## 6. SÉLECTION QUANTITÉ
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 400×60px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+
+### 6.2 Éléments
+
+| Élément | Style | Valeur |
+|---------|-------|--------|
+| Label | Texte | Additional IP |
+| Bouton - | Secondary | 30×30px |
+| Input quantité | Number | 50×30px, valeur: 1 |
+| Bouton + | Secondary | 30×30px |
+| Prix total | Bold | 2,00 € HT/mois |
+
+---
+
+## 7. FOOTER WIZARD
+
+### 7.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Précédent | Secondary | 100×36px | Gauche |
+| Suivant | Primary (#0050D7) | 100×36px | Gauche (+120px) |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Modifier | Retour à l'étape 1 |
+| Sélectionner offre | Mettre à jour le sélecteur de quantité |
+| Clic - | Diminuer quantité (min: 1) |
+| Clic + | Augmenter quantité |
+| Clic Précédent | Retour étape 1 |
+| Clic Suivant | Passer à l'étape 3 |
+
+---
+
+## 9. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Offre | Une offre doit être sélectionnée |
+| Quantité | >= 1, <= limite du compte |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Obtenir les offres disponibles
+
+```
+GET /ip/order/offers
+```
+
+Query params:
+```
+?serviceName=ns123456.ip-123-45-67.eu
+```
+
+Response:
+```json
+[
+  {
+    "type": "failover",
+    "label": "Additional IP",
+    "description": "IP additionnelle individuelle",
+    "price": { "value": 2, "currency": "EUR", "text": "2,00 € HT/mois" },
+    "maxQuantity": 256
+  },
+  {
+    "type": "block",
+    "label": "Bloc Additional IP",
+    "description": "Bloc d'IPs contiguës",
+    "sizes": ["/28", "/27", "/26", "/25", "/24"]
+  }
+]
+```
+
+### 10.2 Calculer le prix
+
+```
+POST /ip/order/quote
+```
+
+Body:
+```json
+{
+  "serviceName": "ns123456.ip-123-45-67.eu",
+  "offerType": "failover",
+  "quantity": 1
+}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `ip_order_step2_title` | Choisissez votre offre |
+| `ip_order_selected_service` | Service sélectionné : |
+| `ip_order_modify` | Modifier |
+| `ip_order_offer_failover` | Additional IP |
+| `ip_order_offer_failover_desc` | IP additionnelle individuelle |
+| `ip_order_offer_failover_use` | Idéal pour la redondance et la migration de services |
+| `ip_order_offer_block` | Bloc Additional IP |
+| `ip_order_offer_block_desc` | Bloc d'IPs contiguës |
+| `ip_order_offer_block_use` | Pour les besoins avancés et infrastructures complexes |
+| `ip_order_from_price` | À partir de |
+| `ip_order_per_ip` | par IP |
+| `ip_order_quantity` | Sélectionnez la quantité |
+| `ip_order_previous` | Précédent |

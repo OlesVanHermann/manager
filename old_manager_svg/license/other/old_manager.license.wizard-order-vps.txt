@@ -1,0 +1,224 @@
+# Cahier des Charges : license/wizard-order-vps
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.license.wizard-order-vps.svg |
+| **NAV1** | license (Licences) |
+| **NAV2** | - |
+| **Type** | Page wizard en 4 étapes |
+| **Description** | Formulaire de commande d'une licence pour VPS |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| RIGHT PANEL | 1392×765px |
+
+---
+
+## 3. HEADER
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commander une licence |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 3.2 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour à la gestion des licenses |
+| Couleur | #0050D7 |
+
+---
+
+## 4. ÉTAPE 1 : CHOISISSEZ UNE IP ET UN TYPE
+
+### 4.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 1. Choisissez une ip et un type de licence |
+| Font-weight | 600 |
+
+### 4.2 Champs IP
+
+| Champ | Type | Dimensions | Valeur exemple |
+|-------|------|------------|----------------|
+| Ip Block | Select dropdown | 400×40px | VPS Block - vps-abc123.vps.ovh.net |
+| Ip | Input text | 400×40px | 192.168.1.50 |
+
+### 4.3 Types de licence (Cards)
+
+| Type | Dimensions | État |
+|------|------------|------|
+| cPanel | 120×100px | Normal |
+| Plesk | 120×100px | Sélectionné (bg #E8F0FE, border #0050D7) |
+| DirectAdmin | 120×100px | Normal |
+| SQL Server | 120×100px | Normal |
+
+---
+
+## 5. ÉTAPE 2 : CHOISISSEZ VOS OPTIONS
+
+### 5.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 2. Choisissez vos options |
+| Font-weight | 600 |
+
+### 5.2 Champ Version
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Version * |
+| Type | Select dropdown |
+| Dimensions | 400×40px |
+| Valeur exemple | Plesk - Edition Web Admin pour VPS |
+| Obligatoire | Oui |
+
+---
+
+## 6. ÉTAPE 3 : CHOISISSEZ UNE DURÉE
+
+### 6.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 3. Choisissez une durée |
+| Font-weight | 600 |
+
+### 6.2 Options de durée
+
+| Option | Prix exemple | État |
+|--------|--------------|------|
+| 1 mois | 9,99 € HT | Sélectionné |
+| 12 mois | 99,99 € HT | Non sélectionné |
+
+---
+
+## 7. WARNING BOX
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 600×40px |
+| Background | #FEF3C7 (warning) |
+| Icône | ⚠️ |
+| Texte | Les prix affichés sont HT et peuvent varier. |
+| Couleur texte | #D97706 |
+
+---
+
+## 8. ÉTAPE 4 : VALIDATION
+
+### 8.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 4. Validation |
+| Font-weight | 600 |
+
+### 8.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Cliquez sur "Générer le bon de commande" pour commander votre licence. |
+
+### 8.3 Bouton
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Générer le bon de commande |
+| Style | Primary (#0050D7) |
+| Dimensions | 220×44px |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les VPS disponibles
+
+```
+GET /license/vps/available
+```
+
+Response:
+```json
+{
+  "vpsBlocks": [
+    {
+      "serviceName": "vps-abc123.vps.ovh.net",
+      "ips": ["192.168.1.50", "192.168.1.51"]
+    }
+  ]
+}
+```
+
+### 9.2 Obtenir les types de licence pour VPS
+
+```
+GET /license/vps/{serviceName}/available
+```
+
+Response:
+```json
+{
+  "licenseTypes": [
+    {
+      "type": "cpanel",
+      "versions": [
+        {"id": "admin-vps", "name": "cPanel - Edition Admin pour VPS"}
+      ]
+    },
+    {
+      "type": "plesk",
+      "versions": [
+        {"id": "web-admin-vps", "name": "Plesk - Edition Web Admin pour VPS"}
+      ]
+    }
+  ]
+}
+```
+
+### 9.3 Commander une licence VPS
+
+```
+POST /order/cart/{cartId}/license/vps
+```
+
+Body:
+```json
+{
+  "vpsServiceName": "vps-abc123.vps.ovh.net",
+  "ip": "192.168.1.50",
+  "licenseType": "plesk",
+  "version": "web-admin-vps",
+  "duration": "P1M"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `license_order_vps_title` | Commander une licence |
+| `license_vps_step1` | Choisissez une ip et un type de licence |
+| `license_vps_ip_block` | Ip Block |
+| `license_vps_ip` | Ip |
+| `license_vps_step2` | Choisissez vos options |
+| `license_vps_version` | Version |
+| `license_vps_step3` | Choisissez une durée |
+| `license_vps_step4` | Validation |
+| `license_vps_warning` | Les prix affichés sont HT et peuvent varier. |
+| `license_vps_submit` | Générer le bon de commande |

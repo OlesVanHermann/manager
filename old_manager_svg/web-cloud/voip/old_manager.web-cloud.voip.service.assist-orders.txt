@@ -1,0 +1,234 @@
+# Cahier des Charges : web-cloud/voip/service/assist-orders
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.assist-orders.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page listing |
+| **Description** | Page de suivi des bons de commande d'une ligne |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 9 72 12 34 56 |
+| Description | Ligne SIP |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien | ← Assistance et logs |
+| Couleur | #0050D7 |
+
+### 4.2 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Suivi des bons de commande |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. DATAGRID COMMANDES
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×400px |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #F9FAFB |
+| Hauteur | 40px |
+
+### 5.3 Colonnes
+
+| Colonne | Position | Tri |
+|---------|----------|-----|
+| Date | x: 30 | ↓ (descendant) |
+| Numéro de commande | x: 220 | - |
+| État | x: 500 | - |
+| Actions | x: 950 | - |
+
+### 5.4 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 50px |
+| Ligne paire | Background #F9FAFB |
+| Ligne impaire | Background #FFFFFF |
+| Séparateur | Ligne 1px #E5E7EB |
+
+### 5.5 Données exemple
+
+| Date | Numéro de commande | État | Actions |
+|------|-------------------|------|---------|
+| 15/12/2025 | 78542365 | Finalisée (vert) | 📄 |
+| 10/12/2025 | 78541890 | Livraison en cours (orange) | 📄 |
+| 05/12/2025 | 78540012 | Finalisée (vert) | 📄 |
+| 28/11/2025 | 78538456 | Annulée (rouge) | 📄 |
+| 20/11/2025 | 78536789 | Finalisée (vert) | 📄 |
+
+---
+
+## 6. BADGES ÉTAT
+
+| État | Background | Couleur texte | Dimensions |
+|------|------------|---------------|------------|
+| Finalisée | #DEF7EC | #059669 | 75×24px |
+| Livraison en cours | #FEF3C7 | #D97706 | 105×24px |
+| Annulée | #FEE2E2 | #DC2626 | 65×24px |
+| En attente | #DBEAFE | #1E40AF | 80×24px |
+
+---
+
+## 7. ACTIONS
+
+### 7.1 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 30×28px |
+| Icône | 📄 (document) |
+| Couleur icône | #0050D7 |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Background | #FFFFFF |
+
+### 7.2 Action au clic
+
+| Action | Description |
+|--------|-------------|
+| Consulter | Ouvre le détail du bon de commande |
+
+---
+
+## 8. PAGINATION
+
+### 8.1 Compteur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Affichage 1-5 sur 12 bons de commande |
+| Position | Gauche |
+| Font-size | 11px |
+| Couleur | #6B7280 |
+
+### 8.2 Navigation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Style boutons | 28×28px, border radius 4px |
+| Bouton actif | Background #0050D7, texte blanc |
+| Bouton inactif | Background #FFFFFF, border #E5E7EB |
+| Pages affichées | 1, 2, 3 |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les bons de commande
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/orders
+```
+
+Response:
+```json
+{
+  "orders": [
+    {
+      "orderId": "78542365",
+      "date": "2025-12-15",
+      "status": "done",
+      "description": "Activation ligne SIP"
+    }
+  ],
+  "total": 12,
+  "currentPage": 1,
+  "totalPages": 3
+}
+```
+
+### 9.2 Obtenir le détail d'une commande
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/orders/{orderId}
+```
+
+Response:
+```json
+{
+  "orderId": "78542365",
+  "date": "2025-12-15",
+  "status": "done",
+  "description": "Activation ligne SIP",
+  "items": [
+    {
+      "name": "Ligne SIP",
+      "quantity": 1,
+      "unitPrice": 4.99
+    }
+  ],
+  "total": 4.99
+}
+```
+
+---
+
+## 10. ÉTATS DES COMMANDES
+
+| État API | Libellé FR | Badge |
+|----------|------------|-------|
+| done | Finalisée | Success (vert) |
+| delivering | Livraison en cours | Warning (orange) |
+| cancelled | Annulée | Danger (rouge) |
+| pending | En attente | Info (bleu) |
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_assist_orders_back` | Assistance et logs |
+| `voip_assist_orders_title` | Suivi des bons de commande |
+| `voip_assist_orders_col_date` | Date |
+| `voip_assist_orders_col_number` | Numéro de commande |
+| `voip_assist_orders_col_status` | État |
+| `voip_assist_orders_col_actions` | Actions |
+| `voip_assist_orders_status_done` | Finalisée |
+| `voip_assist_orders_status_delivering` | Livraison en cours |
+| `voip_assist_orders_status_cancelled` | Annulée |
+| `voip_assist_orders_status_pending` | En attente |
+| `voip_assist_orders_action_view` | Consulter le bon de commande |
+| `voip_assist_orders_pagination` | Affichage {start}-{end} sur {total} bons de commande |

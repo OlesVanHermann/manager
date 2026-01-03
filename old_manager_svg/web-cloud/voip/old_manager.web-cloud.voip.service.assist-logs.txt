@@ -1,0 +1,252 @@
+# Cahier des Charges : web-cloud/voip/service/assist-logs
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.assist-logs.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page deux colonnes |
+| **Description** | Page de configuration et historique des journaux de notifications |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 1 23 45 67 89 |
+| Description | Ligne principale |
+| Badge | Actif (#DEF7EC, texte #059669) |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien | ← Retour à l'assistance |
+| Couleur | #0050D7 |
+
+### 4.2 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Journaux de notifications |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.3 Bandeau info
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×40px |
+| Background | #DBEAFE |
+| Texte | Les journaux permettent de recevoir par email des informations sur l'activité de votre ligne. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 5. COLONNE GAUCHE - CONFIGURATION
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 520×280px |
+| Titre | Configuration des notifications |
+| Séparateur | Ligne sous le titre |
+
+### 5.2 Champs configuration
+
+| Champ | Valeur exemple |
+|-------|----------------|
+| Fréquence d'envoi | Quotidien |
+| Envoyer même sans logs | Non |
+| Email de notification | admin@example.com |
+
+### 5.3 Bouton configurer
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Configurer |
+| Style | Primary (#0050D7) |
+| Dimensions | 120×36px |
+
+### 5.4 Lien action groupée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Appliquer cette configuration sur plusieurs lignes |
+| Couleur | #0050D7 |
+| Position | Bas de la card |
+
+---
+
+## 6. COLONNE DROITE - HISTORIQUE
+
+### 6.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 516×500px |
+| Titre | Historique des logs |
+| Séparateur | Ligne sous le titre |
+
+### 6.2 Filtre période
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Période : |
+| Type | Select dropdown |
+| Options | 7 derniers jours, 30 derniers jours, 3 mois |
+| Dimensions | 140×28px |
+
+### 6.3 Entrées de logs
+
+Chaque entrée contient :
+
+| Élément | Description |
+|---------|-------------|
+| Icône | Cercle coloré selon le type |
+| Titre | Nom de l'événement (font-weight 500) |
+| Date | Format DD/MM/YYYY HH:mm |
+| Description | Détail de l'événement (muted) |
+
+### 6.4 Types de logs
+
+| Type | Couleur icône | Couleur texte |
+|------|---------------|---------------|
+| Warning | #FEF3C7 | #D97706 |
+| Error | #FEE2E2 | #DC2626 |
+| Info | #DBEAFE | #1E40AF |
+
+### 6.5 Exemples de logs
+
+| Titre | Date | Description |
+|-------|------|-------------|
+| Registration failed | 02/01/2026 14:23 | Échec d'enregistrement SIP - tentative 3/5 |
+| Call failure | 02/01/2026 10:15 | Appel vers +33612345678 - Échec réseau |
+| Configuration updated | 01/01/2026 16:42 | Renvoi d'appel activé vers +33698765432 |
+| Voicemail accessed | 01/01/2026 09:30 | Accès messagerie vocale - 3 messages écoutés |
+| High usage alert | 31/12/2025 18:00 | Consommation élevée - 80% du forfait atteint |
+
+### 6.6 Pagination
+
+| Propriété | Valeur |
+|-----------|--------|
+| Compteur | Page 1 sur 3 |
+| Style boutons | 28×28px, border radius 4px |
+| Bouton actif | Background #0050D7, texte blanc |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir la configuration des notifications
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/notifications/settings
+```
+
+Response:
+```json
+{
+  "frequency": "daily",
+  "sendEmpty": false,
+  "email": "admin@example.com"
+}
+```
+
+### 7.2 Modifier la configuration
+
+```
+PUT /telephony/{billingAccount}/line/{serviceName}/notifications/settings
+```
+
+Body:
+```json
+{
+  "frequency": "daily",
+  "sendEmpty": false,
+  "email": "admin@example.com"
+}
+```
+
+### 7.3 Lister les logs
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/notifications/logs?period=7d
+```
+
+Response:
+```json
+{
+  "logs": [
+    {
+      "id": "log-001",
+      "type": "warning",
+      "title": "Registration failed",
+      "date": "2026-01-02T14:23:00Z",
+      "description": "Échec d'enregistrement SIP - tentative 3/5"
+    }
+  ],
+  "totalPages": 3,
+  "currentPage": 1
+}
+```
+
+### 7.4 Appliquer config sur plusieurs lignes
+
+```
+POST /telephony/{billingAccount}/notifications/settings/bulk
+```
+
+Body:
+```json
+{
+  "lineIds": ["line1", "line2", "line3"],
+  "settings": {
+    "frequency": "daily",
+    "sendEmpty": false,
+    "email": "admin@example.com"
+  }
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_assist_logs_back` | Retour à l'assistance |
+| `voip_assist_logs_title` | Journaux de notifications |
+| `voip_assist_logs_info` | Les journaux permettent de recevoir par email des informations sur l'activité de votre ligne. |
+| `voip_assist_logs_config_title` | Configuration des notifications |
+| `voip_assist_logs_config_frequency` | Fréquence d'envoi |
+| `voip_assist_logs_config_send_empty` | Envoyer même sans logs |
+| `voip_assist_logs_config_email` | Email de notification |
+| `voip_assist_logs_config_submit` | Configurer |
+| `voip_assist_logs_config_bulk` | Appliquer cette configuration sur plusieurs lignes |
+| `voip_assist_logs_history_title` | Historique des logs |
+| `voip_assist_logs_history_period` | Période |
+| `voip_assist_logs_history_7d` | 7 derniers jours |
+| `voip_assist_logs_history_30d` | 30 derniers jours |
+| `voip_assist_logs_history_3m` | 3 mois |

@@ -1,0 +1,200 @@
+# Cahier des Charges : home/billing/refunds
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.refunds.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | refunds |
+| **Type** | Page avec carte action et historique |
+| **Description** | Demande de remboursement et historique des remboursements |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×40px | x: 40, y: 115 |
+| Carte demande | 1360×150px | x: 40, y: 170 |
+| Carte historique | 1360×400px | x: 40, y: 350 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Facturation |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Remboursements |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. CARTE DEMANDE DE REMBOURSEMENT
+
+### 4.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×150px |
+| Background | #DBEAFE |
+| Border | 1px #0050D7 |
+| Border radius | 8px |
+
+### 4.2 Contenu
+
+| Élément | Valeur |
+|---------|--------|
+| Titre | Demander un remboursement |
+| Font-size titre | 15px |
+| Font-weight titre | 700 |
+| Texte info | Vous pouvez demander le remboursement de votre solde créditeur si celui-ci dépasse 10€. |
+| Solde | Solde actuel : 125,50 € |
+| Couleur texte | #1E40AF |
+
+### 4.3 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Demander un remboursement |
+| Type | Primary |
+| Dimensions | 180×32px |
+| Background | #0050D7 |
+
+---
+
+## 5. CARTE HISTORIQUE REMBOURSEMENTS
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×400px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Historique des remboursements |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 5.3 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Position | y: 55 dans la carte |
+
+### 5.4 Colonnes
+
+| # | Colonne | Position X | Largeur |
+|---|---------|------------|---------|
+| 1 | Date | 20px | 180px |
+| 2 | Référence | 200px | 250px |
+| 3 | Montant | 450px | 200px |
+| 4 | Mode | 650px | 250px |
+| 5 | Statut | 900px | 200px |
+
+### 5.5 Badges Statut
+
+| État | Background | Couleur | Dimensions |
+|------|------------|---------|------------|
+| Effectué | #DEF7EC | #059669 | 80×22px |
+| En cours | #DBEAFE | #1E40AF | 80×22px |
+| Refusé | #FEE2E2 | #DC2626 | 80×22px |
+
+### 5.6 Données exemple
+
+| Date | Référence | Montant | Mode | Statut |
+|------|-----------|---------|------|--------|
+| 15/10/2025 | RMB-2025-001234 | 50,00 € | Virement bancaire | Effectué |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Demander un remboursement | Ouvrir modal demande de remboursement |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Historique des remboursements
+
+```
+GET /me/refund
+```
+
+Response:
+```json
+[
+  {
+    "refundId": "RMB-2025-001234",
+    "date": "2025-10-15T10:00:00Z",
+    "amount": 50.00,
+    "paymentMethod": "bankTransfer",
+    "status": "completed"
+  }
+]
+```
+
+### 7.2 Demander un remboursement
+
+```
+POST /me/refund
+```
+
+Body:
+```json
+{
+  "amount": 50.00,
+  "paymentMethod": "bankTransfer"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_refunds_title` | Remboursements |
+| `billing_refunds_request_title` | Demander un remboursement |
+| `billing_refunds_request_info` | Vous pouvez demander le remboursement de votre solde créditeur si celui-ci dépasse 10€. |
+| `billing_refunds_request_balance` | Solde actuel : {amount} € |
+| `billing_refunds_request_button` | Demander un remboursement |
+| `billing_refunds_history` | Historique des remboursements |
+| `billing_refunds_col_date` | Date |
+| `billing_refunds_col_ref` | Référence |
+| `billing_refunds_col_amount` | Montant |
+| `billing_refunds_col_mode` | Mode |
+| `billing_refunds_col_status` | Statut |
+| `billing_refunds_status_completed` | Effectué |
+| `billing_refunds_status_processing` | En cours |
+| `billing_refunds_status_rejected` | Refusé |
+| `billing_refunds_mode_transfer` | Virement bancaire |

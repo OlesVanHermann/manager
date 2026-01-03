@@ -1,0 +1,221 @@
+# Cahier des Charges : home/iam-identities/users
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.iam-identities.users.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | iam-identities |
+| **NAV4** | users |
+| **Type** | Page full-width avec datagrid |
+| **Description** | Page de gestion des utilisateurs IAM avec liste complète |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×40px | x: 40, y: 115 |
+| Datagrid | 1360×550px | x: 40, y: 170 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | IAM - Utilisateurs |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Utilisateurs |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+### 3.3 Bouton Ajouter
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | + Ajouter |
+| Type | Primary |
+| Dimensions | 160×36px |
+| Background | #0050D7 |
+| Position | Droite |
+
+---
+
+## 4. DATAGRID UTILISATEURS
+
+### 4.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×550px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 4.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Border radius | 8px 8px 0 0 |
+
+### 4.3 Colonnes
+
+| # | Colonne | Position X | Largeur |
+|---|---------|------------|---------|
+| 1 | Email | 20px | 260px |
+| 2 | Nom | 280px | 170px |
+| 3 | Groupe | 450px | 150px |
+| 4 | MFA | 600px | 120px |
+| 5 | Dernière connexion | 720px | 200px |
+| 6 | Statut | 920px | 130px |
+| 7 | Actions | 1050px | 260px |
+
+### 4.4 Badges Groupe
+
+| Groupe | Background | Couleur |
+|--------|------------|---------|
+| Admin | #F3E8FF | #7C3AED |
+| Developers | #DBEAFE | #1E40AF |
+| Support | #FEF3C7 | #D97706 |
+
+### 4.5 Badges MFA
+
+| État | Background | Couleur | Icône |
+|------|------------|---------|-------|
+| Activé | #DEF7EC | #059669 | ✓ |
+| Désactivé | #FEE2E2 | #DC2626 | ✗ |
+
+### 4.6 Badges Statut
+
+| État | Background | Couleur | Dimensions |
+|------|------------|---------|------------|
+| Actif | #DEF7EC | #059669 | 60×22px |
+| Désactivé | #FEE2E2 | #DC2626 | 80×22px |
+
+### 4.7 Colonnes actions
+
+| Action | Couleur | Visible si |
+|--------|---------|------------|
+| Modifier | #0050D7 | Toujours |
+| Désact. | #6B7280 | Statut = Actif |
+| Réactiver | #0050D7 | Statut = Désactivé |
+| Suppr. | #DC2626 | Toujours |
+
+### 4.8 Données exemple
+
+| Email | Nom | Groupe | MFA | Dernière connexion | Statut |
+|-------|-----|--------|-----|-------------------|--------|
+| admin@company.com | Administrateur | Admin | ✓ | 02/01/2026 10:30 | Actif |
+| john.doe@company.com | John Doe | Developers | ✓ | 02/01/2026 09:45 | Actif |
+| jane.smith@company.com | Jane Smith | Support | ✗ | 01/01/2026 16:20 | Actif |
+| bob.wilson@company.com | Bob Wilson | Developers | ✗ | 31/12/2025 11:00 | Désactivé |
+
+### 4.9 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 50px |
+| Background | #FFFFFF |
+| Séparateur | 1px #E5E7EB |
+| Font-size header | 11px, font-weight: 600 |
+| Font-size body | 12px |
+
+---
+
+## 5. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic + Ajouter | Ouvrir modal création utilisateur |
+| Clic Modifier | Ouvrir modal-update-user |
+| Clic Désact. | Ouvrir modal confirmation désactivation |
+| Clic Réactiver | Ouvrir modal-enable-user |
+| Clic Suppr. | Ouvrir modal-delete-entity |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Lister les utilisateurs
+
+```
+GET /me/identity/user
+```
+
+Response:
+```json
+[
+  {
+    "userId": "user-001",
+    "email": "admin@company.com",
+    "login": "Administrateur",
+    "group": "Admin",
+    "mfaEnabled": true,
+    "lastLogin": "2026-01-02T10:30:00Z",
+    "status": "active"
+  }
+]
+```
+
+### 6.2 Créer un utilisateur
+
+```
+POST /me/identity/user
+```
+
+Body:
+```json
+{
+  "email": "new.user@company.com",
+  "login": "New User",
+  "group": "Developers"
+}
+```
+
+### 6.3 Désactiver un utilisateur
+
+```
+POST /me/identity/user/{userId}/disable
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_users_title` | Utilisateurs |
+| `iam_users_add` | + Ajouter |
+| `iam_users_col_email` | Email |
+| `iam_users_col_name` | Nom |
+| `iam_users_col_group` | Groupe |
+| `iam_users_col_mfa` | MFA |
+| `iam_users_col_last_login` | Dernière connexion |
+| `iam_users_col_status` | Statut |
+| `iam_users_col_actions` | Actions |
+| `iam_users_status_active` | Actif |
+| `iam_users_status_disabled` | Désactivé |
+| `iam_users_mfa_enabled` | Activé |
+| `iam_users_mfa_disabled` | Désactivé |
+| `iam_users_action_edit` | Modifier |
+| `iam_users_action_disable` | Désact. |
+| `iam_users_action_enable` | Réactiver |
+| `iam_users_action_delete` | Suppr. |

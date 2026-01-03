@@ -1,0 +1,177 @@
+# Cahier des Charges : web-cloud/voip/billingAccount/convert-to-voice-fax
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.billingAccount.convert-to-voice-fax.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page formulaire |
+| **Description** | Page de conversion d'un Ecofax perso en Ecofax pro |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px (avec liste groupes) |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Groupe sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Nom | ab12345-ovh-1 |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien | ← Gestion du groupe |
+| Couleur | #0050D7 |
+
+### 4.2 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Convertir un Ecofax perso |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. SECTION INFORMATIONS
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 600×120px |
+| Titre | Informations |
+| Séparateur | Ligne sous le titre |
+
+### 5.2 Bandeau info
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 560×50px |
+| Background | #DBEAFE |
+| Icône | ℹ️ |
+| Ligne 1 | Les Ecofax perso sont convertibles en Ecofax pro. |
+| Ligne 2 | Après la conversion, le service vous sera facturé 0,99 € HT par mois. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 6. SECTION LISTE
+
+### 6.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 600×180px |
+| Titre | Liste des Ecofax convertibles du groupe |
+| Séparateur | Ligne sous le titre |
+
+### 6.2 Sélection du numéro
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Sélectionnez votre numéro : |
+| Type | Select dropdown |
+| Dimensions | 350×36px |
+| Valeur exemple | +33 9 72 12 34 56 - Ecofax perso |
+
+### 6.3 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Générer le bon de commande |
+| Style | Primary (#0050D7) |
+| Dimensions | 200×36px |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Lister les Ecofax convertibles
+
+```
+GET /telephony/{billingAccount}/fax?convertible=true
+```
+
+Response:
+```json
+{
+  "faxLines": [
+    {
+      "serviceName": "0033972123456",
+      "description": "Ecofax perso",
+      "type": "ecofax_perso",
+      "convertible": true
+    }
+  ]
+}
+```
+
+### 7.2 Générer le bon de commande de conversion
+
+```
+POST /telephony/{billingAccount}/fax/{serviceName}/convertToVoicefax
+```
+
+Response:
+```json
+{
+  "orderId": "78542365",
+  "orderUrl": "https://www.ovh.com/order/...",
+  "monthlyPrice": 0.99
+}
+```
+
+---
+
+## 8. COMPORTEMENT
+
+### 8.1 États du bouton
+
+| Condition | État du bouton |
+|-----------|----------------|
+| Aucun numéro sélectionné | Désactivé |
+| Numéro sélectionné | Activé |
+
+### 8.2 Actions post-conversion
+
+| Action | Description |
+|--------|-------------|
+| Succès | Redirection vers le bon de commande |
+| Erreur | Toast d'erreur avec message |
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_convert_fax_back` | Gestion du groupe |
+| `voip_convert_fax_title` | Convertir un Ecofax perso |
+| `voip_convert_fax_info_title` | Informations |
+| `voip_convert_fax_info_line1` | Les Ecofax perso sont convertibles en Ecofax pro. |
+| `voip_convert_fax_info_line2` | Après la conversion, le service vous sera facturé {price} € HT par mois. |
+| `voip_convert_fax_list_title` | Liste des Ecofax convertibles du groupe |
+| `voip_convert_fax_select_label` | Sélectionnez votre numéro |
+| `voip_convert_fax_submit` | Générer le bon de commande |
+| `voip_convert_fax_success` | Bon de commande généré avec succès |
+| `voip_convert_fax_error` | Erreur lors de la génération du bon de commande |

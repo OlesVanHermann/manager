@@ -1,0 +1,251 @@
+# Cahier des Charges : private-cloud/vmware/modal-user-edit
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-user-edit.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour modifier les informations et permissions d'un utilisateur VMware |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 740px |
+| Position | Centrée (x: 370, y: 60) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+| Shadow | dropShadow dx=0 dy=4 stdDeviation=16 |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Background | #FFFFFF |
+| Titre | Modifier l'utilisateur |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+| Séparateur | 1px #E5E7EB |
+
+---
+
+## 4. FORMULAIRE - INFORMATIONS
+
+### 4.1 Champ Prénom
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Prénom |
+| Dimensions input | 652×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | Jean |
+
+### 4.2 Champ Nom
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom |
+| Dimensions input | 652×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | Dupont |
+
+### 4.3 Champ Email
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Email |
+| Dimensions input | 652×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | jean.dupont@example.com |
+
+### 4.4 Champ Téléphone
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Téléphone |
+| Dimensions input | 652×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | +33 1 23 45 67 89 |
+
+---
+
+## 5. SECTION PERMISSIONS
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Permissions |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 5.2 Toggles permissions
+
+| Permission | État | Description |
+|------------|------|-------------|
+| Validation de token | ON | Validation des tokens d'API |
+| Gérer les IP | OFF | Gestion des adresses IP |
+| Gérer les IP Failover | ON | Gestion des IP Failover |
+| Droit NSX | OFF | Accès aux fonctionnalités NSX |
+| Droit Encryption | OFF | Accès au chiffrement VM |
+
+### 5.3 Style toggle ON
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 44×24px |
+| Background | #0050D7 |
+| Border radius | 12px |
+| Position cercle | Droite (x: 612) |
+| Cercle | r=10px, #FFFFFF |
+
+### 5.4 Style toggle OFF
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 44×24px |
+| Background | #E5E7EB |
+| Border radius | 12px |
+| Position cercle | Gauche (x: 592) |
+| Cercle | r=10px, #FFFFFF |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Séparateur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position Y | 676px |
+| Couleur | #E5E7EB |
+
+### 6.2 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Fermer | Outline (#0050D7) | 100×36px | Gauche |
+| Confirmer | Primary (#0050D7) | 100×36px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Fermer | Fermer modal sans sauvegarder |
+| Clic × | Fermer modal |
+| Clic toggle | Basculer état ON/OFF |
+| Clic Confirmer | Sauvegarder les modifications |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Prénom | Obligatoire, max 50 caractères |
+| Nom | Obligatoire, max 50 caractères |
+| Email | Format email valide |
+| Téléphone | Format téléphone international optionnel |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les informations utilisateur
+
+```
+GET /dedicatedCloud/{serviceName}/user/{userId}
+```
+
+Response:
+```json
+{
+  "userId": "user-123",
+  "firstName": "Jean",
+  "lastName": "Dupont",
+  "email": "jean.dupont@example.com",
+  "phone": "+33 1 23 45 67 89",
+  "permissions": {
+    "tokenValidation": true,
+    "manageIp": false,
+    "manageIpFailover": true,
+    "nsxAccess": false,
+    "encryptionAccess": false
+  }
+}
+```
+
+### 9.2 Modifier l'utilisateur
+
+```
+PUT /dedicatedCloud/{serviceName}/user/{userId}
+```
+
+Body:
+```json
+{
+  "firstName": "Jean",
+  "lastName": "Dupont",
+  "email": "jean.dupont@example.com",
+  "phone": "+33 1 23 45 67 89",
+  "permissions": {
+    "tokenValidation": true,
+    "manageIp": false,
+    "manageIpFailover": true,
+    "nsxAccess": false,
+    "encryptionAccess": false
+  }
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-123456",
+  "status": "pending"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_user_edit_title` | Modifier l'utilisateur |
+| `vmware_user_edit_firstname` | Prénom |
+| `vmware_user_edit_lastname` | Nom |
+| `vmware_user_edit_email` | Email |
+| `vmware_user_edit_phone` | Téléphone |
+| `vmware_user_edit_permissions` | Permissions |
+| `vmware_user_edit_token` | Validation de token |
+| `vmware_user_edit_ip` | Gérer les IP |
+| `vmware_user_edit_failover` | Gérer les IP Failover |
+| `vmware_user_edit_nsx` | Droit NSX |
+| `vmware_user_edit_encryption` | Droit Encryption |
+| `vmware_user_edit_close` | Fermer |
+| `vmware_user_edit_confirm` | Confirmer |

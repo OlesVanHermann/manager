@@ -1,0 +1,210 @@
+# Cahier des Charges : private-cloud/vmware/datacenter-zerto-listing
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.datacenter-zerto-listing.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page datagrid avec NAV4 tabs datacenter |
+| **Description** | Liste des sites Zerto Replication configurés pour un datacenter |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width RIGHT PANEL |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | ← Retour aux datacentres |
+| Couleur | #0050D7 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | dc-1 |
+| Font-size | 20px |
+| Font-weight | 600 |
+| Bouton édition | ✎ (24×24px) |
+
+### 3.3 Sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Production VMware > pcc-192-0-2-1 |
+| Couleur | #6B7280 |
+
+---
+
+## 4. NAV4 - TABS DATACENTER
+
+| Tab | État | Dimensions |
+|-----|------|------------|
+| Dashboard | Inactif | 80×32px |
+| Hosts | Inactif | 70×32px |
+| Datastores | Inactif | 90×32px |
+| Machines virtuelles | Inactif | 120×32px |
+| Backup | Inactif | 70×32px |
+| Reseau | Inactif | 70×32px |
+| Zerto Replication | Actif | 100×32px |
+
+### Style tabs
+
+| État | Style |
+|------|-------|
+| Actif | Background #0050D7, texte #FFFFFF |
+| Inactif | Border #0050D7, background #FFFFFF |
+
+---
+
+## 5. SECTION ZERTO
+
+### 5.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Zerto |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+### 5.2 Bouton ajout
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Ajouter un site |
+| Dimensions | 120×36px |
+| Background | #0050D7 |
+| Border radius | 4px |
+
+---
+
+## 6. DATAGRID
+
+### 6.1 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| Label | 184px |
+| Statut | 150px |
+| IP Publique | 200px |
+| Datacentre VRA | 250px |
+| IP ZVM | 200px |
+| Actions | 100px |
+
+### 6.2 Données exemple
+
+| Label | Statut | IP Publique | Datacentre VRA | IP ZVM |
+|-------|--------|-------------|----------------|--------|
+| zerto-site-rbx | Delivered | 192.0.2.100 | dc-rbx-2 | 10.0.0.50 |
+| zerto-site-sbg | Delivered | 192.0.2.101 | dc-sbg-1 | 10.0.1.50 |
+| zerto-site-gra | Delivering | 192.0.2.102 | dc-gra-1 | 10.0.2.50 |
+
+### 6.3 Badges statut
+
+| Statut | Background | Couleur texte |
+|--------|------------|---------------|
+| Delivered | #DEF7EC | #059669 |
+| Delivering | #FEF3C7 | #D97706 |
+
+### 6.4 Actions
+
+| État site | Bouton suppression |
+|-----------|-------------------|
+| Delivered | Background #FEE2E2, icône 🗑 rouge #DC2626 |
+| Delivering | Background #F3F4F6, icône 🗑 gris #6B7280 (disabled) |
+
+---
+
+## 7. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Sous le tableau |
+| Texte gauche | Page 1 sur 1 |
+| Texte droite | 3 resultats |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Ajouter un site | Ouvrir modal d'ajout site Zerto |
+| Clic 🗑 (enabled) | Ouvrir modal confirmation suppression |
+| Clic 🗑 (disabled) | Aucune action (site en cours de livraison) |
+| Clic tab NAV4 | Naviguer vers l'onglet sélectionné |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les sites Zerto
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/zerto
+```
+
+Response:
+```json
+[
+  {
+    "label": "zerto-site-rbx",
+    "status": "delivered",
+    "publicIp": "192.0.2.100",
+    "vraDatacenter": "dc-rbx-2",
+    "zvmIp": "10.0.0.50"
+  },
+  {
+    "label": "zerto-site-sbg",
+    "status": "delivered",
+    "publicIp": "192.0.2.101",
+    "vraDatacenter": "dc-sbg-1",
+    "zvmIp": "10.0.1.50"
+  }
+]
+```
+
+### 9.2 Ajouter un site Zerto
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/zerto
+```
+
+### 9.3 Supprimer un site Zerto
+
+```
+DELETE /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/zerto/{zertoId}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_dc_zerto_title` | Zerto |
+| `vmware_dc_zerto_tab` | Zerto Replication |
+| `vmware_dc_zerto_add` | Ajouter un site |
+| `vmware_dc_zerto_col_label` | Label |
+| `vmware_dc_zerto_col_status` | Statut |
+| `vmware_dc_zerto_col_public_ip` | IP Publique |
+| `vmware_dc_zerto_col_vra` | Datacentre VRA |
+| `vmware_dc_zerto_col_zvm` | IP ZVM |
+| `vmware_dc_zerto_delivered` | Delivered |
+| `vmware_dc_zerto_delivering` | Delivering |
+| `vmware_dc_zerto_back` | Retour aux datacentres |

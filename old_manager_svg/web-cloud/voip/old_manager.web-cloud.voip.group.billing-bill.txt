@@ -1,0 +1,228 @@
+# Cahier des Charges : web-cloud/voip/group/billing-bill
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.group.billing-bill.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page listing |
+| **Description** | Page d'historique des factures d'un groupe de téléphonie |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px (avec liste groupes) |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Groupe sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Nom | ab12345-ovh-1 |
+| Description | Groupe principal |
+| Badge | Actif (#DEF7EC) |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien | ← Retour à la facturation |
+| Couleur | #0050D7 |
+
+### 4.2 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Factures |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. DATAGRID FACTURES
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×500px |
+| Titre | Historique des factures |
+| Séparateur | Ligne sous le titre |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #F9FAFB |
+| Hauteur | 30px |
+
+### 5.3 Colonnes
+
+| Colonne | Position |
+|---------|----------|
+| Date | x: 16 |
+| Montant HT | x: 200 |
+| Statut | x: 400 |
+| Actions | x: 600 |
+
+### 5.4 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 50px |
+| Séparateur | Ligne 1px #E5E7EB |
+
+### 5.5 Données exemple
+
+| Date | Montant HT | Statut | Actions |
+|------|-----------|--------|---------|
+| 01/12/2025 | 145.80 EUR | Payé (badge vert) | Télécharger ▼ |
+| 01/11/2025 | 132.50 EUR | Payé | Télécharger ▼ |
+| 01/10/2025 | 128.90 EUR | Payé | Télécharger ▼ |
+| 01/09/2025 | 156.20 EUR | Payé | Télécharger ▼ |
+| 01/08/2025 | 142.75 EUR | Payé | Télécharger ▼ |
+| 01/07/2025 | 138.40 EUR | Payé | Télécharger ▼ |
+
+### 5.6 Badge statut
+
+| Statut | Background | Couleur texte |
+|--------|------------|---------------|
+| Payé | #DEF7EC | #059669 |
+| En attente | #FEF3C7 | #D97706 |
+| Impayé | #FEE2E2 | #DC2626 |
+
+---
+
+## 6. MENU ACTIONS (Dropdown)
+
+### 6.1 Bouton déclencheur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 100×30px |
+| Texte | Télécharger |
+| Icône | Chevron down |
+
+### 6.2 Menu déroulant
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 160×90px |
+| Border radius | 4px |
+| Shadow | Oui |
+
+### 6.3 Options du menu
+
+| Action | Description |
+|--------|-------------|
+| Télécharger PDF | Télécharger la facture au format PDF |
+| Télécharger CSV émis | Export CSV des appels émis |
+| Télécharger CSV reçu | Export CSV des appels reçus |
+
+---
+
+## 7. PAGINATION
+
+### 7.1 Compteur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Page 1 sur 5 |
+| Position | Gauche |
+
+### 7.2 Navigation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Style boutons | 28×28px, border radius 4px |
+| Bouton actif | Background #0050D7, texte blanc |
+| Bouton inactif | Background #FFFFFF, border #E5E7EB |
+| Pages affichées | 1, 2, 3 |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les factures
+
+```
+GET /telephony/{billingAccount}/historyBill
+```
+
+Response:
+```json
+{
+  "bills": [
+    {
+      "id": "bill-2025-12",
+      "date": "2025-12-01",
+      "amountExcludingTax": 145.80,
+      "currency": "EUR",
+      "status": "paid"
+    }
+  ],
+  "totalPages": 5,
+  "currentPage": 1
+}
+```
+
+### 8.2 Télécharger la facture PDF
+
+```
+GET /telephony/{billingAccount}/historyBill/{billId}/document
+```
+
+Response: Binary PDF file
+
+### 8.3 Exporter les appels émis (CSV)
+
+```
+GET /telephony/{billingAccount}/historyBill/{billId}/export?type=outgoing
+```
+
+Response: Binary CSV file
+
+### 8.4 Exporter les appels reçus (CSV)
+
+```
+GET /telephony/{billingAccount}/historyBill/{billId}/export?type=incoming
+```
+
+Response: Binary CSV file
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_billing_bill_back` | Retour à la facturation |
+| `voip_billing_bill_title` | Factures |
+| `voip_billing_bill_history` | Historique des factures |
+| `voip_billing_bill_col_date` | Date |
+| `voip_billing_bill_col_amount` | Montant HT |
+| `voip_billing_bill_col_status` | Statut |
+| `voip_billing_bill_col_actions` | Actions |
+| `voip_billing_bill_status_paid` | Payé |
+| `voip_billing_bill_status_pending` | En attente |
+| `voip_billing_bill_status_unpaid` | Impayé |
+| `voip_billing_bill_download` | Télécharger |
+| `voip_billing_bill_download_pdf` | Télécharger PDF |
+| `voip_billing_bill_download_csv_out` | Télécharger CSV émis |
+| `voip_billing_bill_download_csv_in` | Télécharger CSV reçu |
+| `voip_billing_bill_pagination` | Page {current} sur {total} |

@@ -1,0 +1,300 @@
+================================================================================
+PROMPT TARGET - General > Facturation
+================================================================================
+
+| Element                            | Valeur                                                     |
+|------------------------------------|------------------------------------------------------------|
+| **NAV1**                           | General                                                    |
+| **NAV2**                           | Facturation                                                |
+| **Reference specs**                | prompt_target.general.billing.txt                          |
+| **Destination**                    | /mnt/user-data/outputs/target_manager_svg/general/billing/ |
+
+Version: v2.0 (2026-01-03) - Restructuration NAV3 (3 groupes) + NAV4 partagees
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+CHANGELOG v2.0:
+- RESTRUCTURATION MAJEURE: 3 NAV3 au lieu de 1
+- NAV3: [General] [Facturation] [Renouvellement]
+- NAV4 partagees: Moyens paiement, Prepaye, Fidelite (master dans Renouvellement, import dans Facturation)
+- Suppression: References (parrainage) - move to account
+- LEFT PANEL: NAV3 selector (3 tabs), pas de liste de services
+
+================================================================================
+# 1. ARBORESCENCE NAV COMPLETE
+================================================================================
+
+```
+NAV1: General (header bleu)
+|
++-- NAV2: Facturation (sous-header blanc)
+    |
+    +-- LEFT PANEL (280px)
+    |   |
+    |   +-- NAV3 Selector: [General] [Facturation] [Renouvellement]
+    |   |
+    |   +-- (pas de liste de services)
+    |
+    +-- RIGHT PANEL (flex:1)
+        |
+        +-- Header: "Facturation" + description + Guide
+        |
+        +-- NAV4 Tabs (selon NAV3 actif)
+        |
+        +-- Contenu
+```
+
+================================================================================
+# 2. STRUCTURE NAV3 + NAV4
+================================================================================
+
+## NAV3: General (default)
+| NAV4 | Label | Description | Route |
+|------|-------|-------------|-------|
+| dashboard | Dashboard | Vue d'ensemble facturation | /general/billing/general/dashboard |
+| bons | Bons | Codes reduction, vouchers | /general/billing/general/bons |
+| contrats | Contrats | CGV acceptes, accords | /general/billing/general/contrats |
+
+**Default:** dashboard
+
+## NAV3: Facturation
+| NAV4 | Label | Description | Route |
+|------|-------|-------------|-------|
+| factures | Factures | Liste factures emises | /general/billing/facturation/factures |
+| commandes | Commandes | Historique commandes | /general/billing/facturation/commandes |
+| paiements | Paiements | Historique paiements | /general/billing/facturation/paiements |
+| avoirs | Avoirs | Remboursements, credits | /general/billing/facturation/avoirs |
+| dettes | Dettes | Impayes, reglement | /general/billing/facturation/dettes |
+| moyens-paiement | Moyens paiement | SHARED from Renouvellement | /general/billing/renouvellement/moyens-paiement |
+| prepaye | Prepaye | SHARED from Renouvellement | /general/billing/renouvellement/prepaye |
+| fidelite | Fidelite | SHARED from Renouvellement | /general/billing/renouvellement/fidelite |
+
+**Default:** factures
+**Note:** Les 3 derniers NAV4 sont affiches mais le contenu vient de Renouvellement (pas de duplication)
+
+## NAV3: Renouvellement
+| NAV4 | Label | Description | Route |
+|------|-------|-------------|-------|
+| services | Services | Tous services actifs | /general/billing/renouvellement/services |
+| expirations | Expirations | Services expirant bientot | /general/billing/renouvellement/expirations |
+| resiliations | Resiliations | Resiliations programmees | /general/billing/renouvellement/resiliations |
+| moyens-paiement | Moyens paiement | Cartes, SEPA, PayPal (MASTER) | /general/billing/renouvellement/moyens-paiement |
+| prepaye | Prepaye | Compte prepaye OVH (MASTER) | /general/billing/renouvellement/prepaye |
+| fidelite | Fidelite | Points fidelite (MASTER) | /general/billing/renouvellement/fidelite |
+
+**Default:** services
+**Note:** Moyens paiement, Prepaye, Fidelite sont les pages MASTER (source unique)
+
+================================================================================
+# 3. NAVIGATION PAR DEFAUT
+================================================================================
+
+| Action | NAV3 | NAV4 |
+|--------|------|------|
+| Clic sur "Facturation" (NAV2) | General | dashboard |
+| Clic sur NAV3=Facturation | Facturation | factures |
+| Clic sur NAV3=Renouvellement | Renouvellement | services |
+
+================================================================================
+# 4. NAV4 PARTAGEES (SHARED)
+================================================================================
+
+Les NAV4 "Moyens paiement", "Prepaye", "Fidelite" apparaissent dans:
+- NAV3=Facturation (tabs affiches, route vers Renouvellement)
+- NAV3=Renouvellement (master, code source)
+
+Comportement:
+- Depuis Facturation: NAV3 reste sur "Facturation" visuellement
+- Le contenu est identique (meme composant React importe)
+- Route: toujours /general/billing/renouvellement/{nav4}
+
+================================================================================
+# 5. SPECS LAYOUT
+================================================================================
+
+## Dimensions (TOLERANCE: 0px)
+| Element | Valeur |
+|---------|--------|
+| NAV1 height | 50px |
+| NAV2 height | 40px |
+| Gap NAV2->Content | 15px |
+| LEFT PANEL width | 280px |
+| Gap panels | 16px |
+| Margins | 24px |
+| RIGHT PANEL | flex:1 |
+
+## LEFT PANEL Structure
+```
++----------------------------------+
+|                                  |
+|  +--------+-----------+--------+ |
+|  |[General]|Facturation|Renouv. | |  <- NAV3 (3 tabs)
+|  +--------+-----------+--------+ |
+|                                  |
+|  (pas de liste de services)      |
+|  (pas de recherche)              |
+|                                  |
++----------------------------------+
+```
+
+## RIGHT PANEL Structure
+```
++------------------------------------------------------------------+
+| Facturation                                         [Guide]       |
+| Gerez vos factures, paiements et services                        |
++------------------------------------------------------------------+
+| [NAV4-1] [NAV4-2] [NAV4-3] ...                                   |
++------------------------------------------------------------------+
+| Contenu (datagrid, cards, etc.)                                  |
++------------------------------------------------------------------+
+```
+
+================================================================================
+# 6. APIS PRINCIPALES
+================================================================================
+
+## General
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /me/bill | GET | Factures recentes (dashboard) |
+| /me/paymentMethod | GET | Moyens de paiement (dashboard) |
+| /me/voucher | GET | Bons de reduction |
+| /me/agreements | GET | Contrats acceptes |
+
+## Facturation
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /me/bill | GET | Liste factures |
+| /me/bill/{id} | GET | Detail facture |
+| /me/bill/{id}/download | GET | PDF facture |
+| /me/order | GET | Liste commandes |
+| /me/order/{id} | GET | Detail commande |
+| /me/payment | GET | Historique paiements |
+| /me/credit | GET | Avoirs |
+| /me/debtAccount | GET | Dettes |
+| /me/debtAccount/pay | POST | Payer dette |
+
+## Renouvellement
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /services | GET | Liste services |
+| /services/{id} | PUT | Modifier renouvellement |
+| /services/{id}/renew | POST | Renouveler |
+| /services/{id}/terminate | POST | Resilier |
+| /me/paymentMethod | GET/POST/DELETE | Moyens paiement |
+| /me/ovhAccount | GET | Compte prepaye |
+| /me/ovhAccount/creditOrder | POST | Recharger |
+| /me/fidelityAccount | GET | Points fidelite |
+
+================================================================================
+# 7. MODALES
+================================================================================
+
+| Modal | Declencheur | Description |
+|-------|-------------|-------------|
+| modal-pay-invoice | Bouton "Payer" sur facture impayee | Payer une facture |
+| modal-payment-add | Bouton "+ Ajouter" moyens paiement | Ajouter carte/SEPA/PayPal |
+| modal-payment-delete | Action "Supprimer" sur moyen | Confirmer suppression |
+| modal-prepaid-recharge | Bouton "Recharger" | Recharger compte prepaye |
+| modal-voucher-add | Bouton "Ajouter" bons | Saisir code promo |
+| modal-fidelity-convert | Bouton "Echanger" fidelite | Convertir points |
+| modal-renew | Action "Renouveler" sur service | Renouveler un service |
+| modal-terminate | Action "Resilier" sur service | Resilier un service |
+| modal-export-csv | Bouton "Export" | Exporter factures en CSV |
+
+================================================================================
+# 8. DONNEES MOCK
+================================================================================
+
+## Utilisateur
+```json
+{
+  "nichandle": "ab12345-ovh",
+  "firstname": "Jean",
+  "name": "DUPONT"
+}
+```
+
+## Factures
+```json
+[
+  { "id": "FR12345678", "date": "01/01/2026", "amountHT": 204.99, "amountTTC": 245.99, "status": "paid" },
+  { "id": "FR12345677", "date": "01/12/2025", "amountHT": 157.92, "amountTTC": 189.50, "status": "paid" },
+  { "id": "FR12345676", "date": "01/11/2025", "amountHT": 175.00, "amountTTC": 210.00, "status": "unpaid" }
+]
+```
+
+## Services
+```json
+[
+  { "name": "ns123.ip-1-2-3.eu", "type": "VPS", "expiry": "15/01/2026", "renew": "auto", "price": 9.99 },
+  { "name": "mon-domaine.com", "type": "Domain", "expiry": "20/01/2026", "renew": "auto", "price": 12.00 },
+  { "name": "web-hosting-pro", "type": "Hosting", "expiry": "01/02/2026", "renew": "manual", "price": 15.99 }
+]
+```
+
+## Moyens de paiement
+```json
+[
+  { "type": "card", "brand": "Visa", "last4": "4242", "expiry": "12/2027", "default": true },
+  { "type": "card", "brand": "Mastercard", "last4": "5555", "expiry": "06/2026", "default": false },
+  { "type": "sepa", "iban": "FR76****8421", "default": false },
+  { "type": "paypal", "email": "jean.dupont@email.com", "default": false }
+]
+```
+
+## Compte prepaye
+```json
+{
+  "balance": 127.45,
+  "currency": "EUR"
+}
+```
+
+## Fidelite
+```json
+{
+  "points": 12450,
+  "level": "SILVER",
+  "nextLevel": "GOLD",
+  "pointsToNext": 550
+}
+```
+
+================================================================================
+# 9. LISTE DES FICHIERS SVG A GENERER
+================================================================================
+
+## NAV3: General (3 fichiers)
+- general.dashboard.svg
+- general.bons.svg
+- general.contrats.svg
+
+## NAV3: Facturation (5 fichiers)
+- facturation.factures.svg
+- facturation.commandes.svg
+- facturation.paiements.svg
+- facturation.avoirs.svg
+- facturation.dettes.svg
+
+## NAV3: Renouvellement (6 fichiers)
+- renouvellement.services.svg
+- renouvellement.expirations.svg
+- renouvellement.resiliations.svg
+- renouvellement.moyens-paiement.svg (MASTER)
+- renouvellement.prepaye.svg (MASTER)
+- renouvellement.fidelite.svg (MASTER)
+
+## Modales (9 fichiers)
+- modal.pay-invoice.svg
+- modal.payment-add.svg
+- modal.payment-delete.svg
+- modal.prepaid-recharge.svg
+- modal.voucher-add.svg
+- modal.fidelity-convert.svg
+- modal.renew.svg
+- modal.terminate.svg
+- modal.export-csv.svg
+
+**TOTAL: 23 fichiers SVG**
+
+================================================================================

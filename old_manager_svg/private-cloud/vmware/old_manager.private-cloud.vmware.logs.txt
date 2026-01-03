@@ -1,0 +1,243 @@
+# Cahier des Charges : private-cloud/vmware/logs
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.logs.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page avec tabs NAV4 |
+| **Description** | Page des logs d'activité avec filtres et datagrid (fonctionnalité BETA) |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre principal | Production VMware |
+| Icône édition | ✎ |
+| Sous-titre | pcc-192-0-2-1 |
+| Lien retour | ← Retour à la liste |
+
+---
+
+## 4. NAV4 - TABS SERVICE
+
+| Tab | État |
+|-----|------|
+| Informations générales | Outline |
+| Datacentres | Outline |
+| Utilisateurs | Outline |
+| Sécurité | Outline |
+| Opérations | Outline |
+| Licence Windows | Outline |
+| Logs | **Active** (#0050D7) + Badge BETA |
+
+### 4.1 Badge BETA
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 30×14px |
+| Background | #DBEAFE |
+| Border radius | 7px |
+| Texte | BETA |
+| Font-size | 8px |
+| Couleur | #1E40AF |
+| Position | Après le tab Logs |
+
+---
+
+## 5. CONTENU LOGS
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Logs |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+### 5.2 Info Banner BETA
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 800×50px |
+| Background | #DBEAFE |
+| Border radius | 8px |
+| Icône | ℹ |
+| Message | Cette fonctionnalité est en version beta. Les logs sont disponibles pour les 30 derniers jours. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 6. BARRE DE FILTRES
+
+### 6.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position Y | 110px sous le titre |
+| Hauteur | 36px |
+
+### 6.2 Filtres disponibles
+
+| Filtre | Type | Dimensions | Placeholder |
+|--------|------|------------|-------------|
+| Type de log | Select dropdown | 200×36px | Type de log ▼ |
+| Date de début | Date picker | 200×36px | Date de début ▼ |
+| Date de fin | Date picker | 200×36px | Date de fin ▼ |
+
+### 6.3 Bouton Filtrer
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 100×36px |
+| Background | #0050D7 |
+| Texte | Filtrer |
+| Border radius | 4px |
+
+---
+
+## 7. DATAGRID
+
+### 7.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1320×220px |
+
+### 7.2 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| Date | 180px |
+| Type | 140px |
+| Utilisateur | 200px |
+| Description | Reste |
+
+### 7.3 Header style
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 40px |
+| Background | #F9FAFB |
+| Font-size | 11px |
+| Font-weight | 600 |
+| Couleur | #6B7280 |
+
+### 7.4 Données exemple
+
+| Date | Type | Utilisateur | Description |
+|------|------|-------------|-------------|
+| 2025-12-28 14:32:15 | Login (vert) | admin@pcc-192-0-2-1 | Connexion réussie depuis 192.0.2.50 |
+| 2025-12-28 14:30:42 | VM (bleu) | admin@pcc-192-0-2-1 | Création de la VM vm-web-prod-02 |
+| 2025-12-28 13:45:00 | Security (orange) | security-user | Modification de la politique de sécurité |
+| 2025-12-28 12:15:30 | Host (bleu) | admin@pcc-192-0-2-1 | Ajout du host esxi-05.pcc.ovh.net |
+
+### 7.5 Badges type
+
+| Type | Background | Couleur |
+|------|------------|---------|
+| Login | #DEF7EC | #059669 |
+| VM | #DBEAFE | #1E40AF |
+| Security | #FEF3C7 | #D97706 |
+| Host | #DBEAFE | #1E40AF |
+
+---
+
+## 8. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte gauche | Page 1 sur 15 |
+| Texte droite | 148 résultats |
+
+---
+
+## 9. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic tab | Changer d'onglet |
+| Clic Type de log ▼ | Ouvrir dropdown filtres |
+| Clic Date ▼ | Ouvrir date picker |
+| Clic Filtrer | Appliquer les filtres |
+| Navigation pagination | Changer de page |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Obtenir les logs
+
+```
+GET /dedicatedCloud/{serviceName}/logs
+```
+
+Query params:
+- `type` (optionnel): login, vm, security, host, network
+- `startDate` (optionnel): ISO date
+- `endDate` (optionnel): ISO date
+- `page`: numéro de page
+- `pageSize`: nombre de résultats par page
+
+Response:
+```json
+{
+  "data": [
+    {
+      "id": "log-001",
+      "timestamp": "2025-12-28T14:32:15Z",
+      "type": "login",
+      "user": "admin@pcc-192-0-2-1",
+      "description": "Connexion réussie depuis 192.0.2.50",
+      "ipAddress": "192.0.2.50"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 15,
+    "totalResults": 148
+  }
+}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_logs_title` | Logs |
+| `vmware_logs_beta_info` | Cette fonctionnalité est en version beta. Les logs sont disponibles pour les 30 derniers jours. |
+| `vmware_logs_filter_type` | Type de log |
+| `vmware_logs_filter_start` | Date de début |
+| `vmware_logs_filter_end` | Date de fin |
+| `vmware_logs_filter_btn` | Filtrer |
+| `vmware_logs_col_date` | Date |
+| `vmware_logs_col_type` | Type |
+| `vmware_logs_col_user` | Utilisateur |
+| `vmware_logs_col_desc` | Description |
+| `vmware_logs_type_login` | Login |
+| `vmware_logs_type_vm` | VM |
+| `vmware_logs_type_security` | Security |
+| `vmware_logs_type_host` | Host |
+| `vmware_logs_page` | Page |
+| `vmware_logs_results` | résultats |

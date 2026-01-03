@@ -1,0 +1,221 @@
+# Cahier des Charges : private-cloud/vmware/security
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.security.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page avec tabs NAV4 et tables |
+| **Description** | Page de gestion de la sécurité avec paramètres session, plages IP autorisées et serveurs KMS |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre principal | Production VMware |
+| Icône édition | ✎ |
+| Sous-titre | pcc-192-0-2-1 |
+| Lien retour | ← Retour à la liste |
+
+---
+
+## 4. NAV4 - TABS SERVICE
+
+| Tab | Largeur | État |
+|-----|---------|------|
+| Informations générales | 140px | Outline |
+| Datacentres | 100px | Outline |
+| Utilisateurs | 90px | Outline |
+| Sécurité | 80px | **Active** (#0050D7) |
+| Opérations | 90px | Outline |
+| Licence Windows | 120px | Outline |
+| Logs | 60px | Outline + Badge BETA |
+
+---
+
+## 5. CONTENU SÉCURITÉ
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Sécurité |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+### 5.2 Paramètres session
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Délai d'expiration d'une session | 1440 minutes |
+| Nombre de connexions simultanées | 25 |
+| Politique d'accès au vCenter | Ouverte (badge #DEF7EC/#059669) |
+| Politique de déconnexion | Déconnexion du premier utilisateur connecté |
+
+---
+
+## 6. TABLE IP AUTORISÉES
+
+### 6.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | IP et blocs autorisés à se connecter au Private Cloud : |
+
+### 6.2 En-têtes colonnes
+
+| Colonne | Type |
+|---------|------|
+| (Checkbox) | Sélection |
+| Nom IP | Texte |
+| Droit | Badge |
+| Description | Texte |
+| Actions | Menu ⋮ |
+
+### 6.3 Données exemple
+
+| IP | Droit | Description |
+|----|-------|-------------|
+| 192.168.1.0/24 | Autorisé (#DEF7EC) | Bureau principal |
+| 10.0.0.0/8 | Autorisé (#DEF7EC) | VPN entreprise |
+
+### 6.4 ActionMenu
+
+| Option | Couleur |
+|--------|---------|
+| Modifier la plage d'IP | #1F2937 |
+| Supprimer la plage d'IP | #DC2626 |
+
+---
+
+## 7. TABLE KMS
+
+### 7.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Virtual Machine Encryption Key Management Servers |
+| Font-weight | 600 |
+
+### 7.2 Bouton ajout
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | + Ajouter un nouveau serveur KMS |
+| Dimensions | 220×32px |
+| Style | Outline #E5E7EB |
+
+### 7.3 En-têtes colonnes
+
+| Colonne | Type |
+|---------|------|
+| ID | Numéro |
+| Description | Texte |
+| IP | Adresse IP |
+| Port | Numéro |
+| SSL Thumbprint | Hash |
+| Statut | Badge |
+| Actions | Menu ⋮ |
+
+### 7.4 Données exemple
+
+| ID | Description | IP | Port | Thumbprint | Statut |
+|----|-------------|-----|------|------------|--------|
+| 1 | Production KMS | 192.168.10.50 | 5696 | AB:CD:EF:12:34:56:78:90 | Livré (#DEF7EC) |
+
+---
+
+## 8. BOUTONS ACTIONS (colonne droite)
+
+| Bouton | État |
+|--------|------|
+| Modifier le délai d'expiration d'une session | Actif |
+| Modifier le nombre de connexions simultanées | Actif |
+| Modifier la politique de déconnexion | Actif |
+| Ajouter une plage d'IP | Actif |
+| Supprimer la plage d'IP sélectionnée | Désactivé (#E5E7EB) |
+
+---
+
+## 9. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic tab | Changer d'onglet |
+| Clic checkbox | Sélectionner la ligne |
+| Clic ⋮ | Ouvrir ActionMenu |
+| Clic Modifier délai | Ouvrir modal session-timeout |
+| Clic Ajouter plage IP | Ouvrir modal ajout IP |
+| Clic Ajouter KMS | Ouvrir modal ajout KMS |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Obtenir les paramètres de sécurité
+
+```
+GET /dedicatedCloud/{serviceName}/security
+```
+
+Response:
+```json
+{
+  "sessionTimeout": 1440,
+  "maxConcurrentConnections": 25,
+  "accessPolicy": "open",
+  "disconnectionPolicy": "first"
+}
+```
+
+### 10.2 Lister les plages IP autorisées
+
+```
+GET /dedicatedCloud/{serviceName}/security/ipRanges
+```
+
+### 10.3 Lister les serveurs KMS
+
+```
+GET /dedicatedCloud/{serviceName}/security/kms
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_security_title` | Sécurité |
+| `vmware_security_session_timeout` | Délai d'expiration d'une session |
+| `vmware_security_concurrent` | Nombre de connexions simultanées |
+| `vmware_security_access_policy` | Politique d'accès au vCenter |
+| `vmware_security_disconnect_policy` | Politique de déconnexion |
+| `vmware_security_open` | Ouverte |
+| `vmware_security_ip_title` | IP et blocs autorisés à se connecter au Private Cloud |
+| `vmware_security_ip_name` | Nom IP |
+| `vmware_security_ip_right` | Droit |
+| `vmware_security_ip_desc` | Description |
+| `vmware_security_authorized` | Autorisé |
+| `vmware_security_kms_title` | Virtual Machine Encryption Key Management Servers |
+| `vmware_security_kms_add` | Ajouter un nouveau serveur KMS |
+| `vmware_security_kms_delivered` | Livré |

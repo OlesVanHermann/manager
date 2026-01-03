@@ -1,0 +1,226 @@
+# Cahier des Charges : home/iam-identities/modal-update-user
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.iam-identities.modal-update-user.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | iam-identities |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour modifier les informations d'un utilisateur IAM |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 620px |
+| Position | Centrée (x: 420, y: 100) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 55px |
+| Background | #0050D7 |
+| Border radius | 8px 8px 0 0 |
+| Titre | Modifier l'utilisateur |
+| Couleur titre | #FFFFFF |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. FORMULAIRE
+
+### 4.1 Champ Email (lecture seule)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Email |
+| Type | Text input (disabled) |
+| Dimensions | 560×40px |
+| Background | #F3F4F6 |
+| Valeur exemple | john.doe@company.com |
+| Note | Non modifiable |
+
+### 4.2 Champ Nom complet
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom complet |
+| Type | Text input |
+| Dimensions | 560×40px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | John Doe |
+
+### 4.3 Champ Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Description |
+| Type | Textarea |
+| Dimensions | 560×60px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | Développeur senior - Équipe Backend |
+
+### 4.4 Champ Groupe
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Groupe |
+| Type | Select dropdown |
+| Dimensions | 560×40px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | Developers |
+| Icône | ▼ (chevron) |
+
+### 4.5 Champ Statut (Toggle buttons)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Statut |
+| Type | Toggle button group |
+
+| Option | Dimensions | État | Style |
+|--------|------------|------|-------|
+| Actif | 120×32px | Sélectionné | Primary #0050D7, texte blanc |
+| Désactivé | 120×32px | Non sélectionné | Outline #E5E7EB, texte #6B7280 |
+
+### 4.6 Bouton réinitialisation mot de passe
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Réinitialiser le mot de passe |
+| Texte bouton | Envoyer un lien |
+| Type | Outline button |
+| Dimensions | 200×32px |
+| Border | 1px #E5E7EB |
+| Couleur texte | #0050D7 |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Séparateur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | y: 560 |
+| Width | 600px |
+| Stroke | 1px #E5E7EB |
+
+### 5.2 Boutons
+
+| Bouton | Style | Dimensions | Background |
+|--------|-------|------------|------------|
+| Annuler | Secondary | 120×36px | #FFFFFF, border #E5E7EB |
+| Enregistrer | Primary | 120×36px | #0050D7 |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic × | Fermer modal |
+| Clic Annuler | Fermer modal sans sauvegarder |
+| Clic toggle Actif/Désactivé | Changer le statut utilisateur |
+| Clic Envoyer un lien | Envoyer email de réinitialisation |
+| Clic Enregistrer | Valider et mettre à jour l'utilisateur |
+
+---
+
+## 7. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Email | Non modifiable |
+| Nom complet | Obligatoire |
+| Description | Optionnel |
+| Groupe | Obligatoire |
+| Statut | Un choix requis |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir les détails d'un utilisateur
+
+```
+GET /me/identity/user/{userId}
+```
+
+Response:
+```json
+{
+  "userId": "abc123",
+  "email": "john.doe@company.com",
+  "login": "john.doe",
+  "description": "Développeur senior - Équipe Backend",
+  "group": "Developers",
+  "status": "active",
+  "creationDate": "2025-06-15T10:30:00Z"
+}
+```
+
+### 8.2 Modifier un utilisateur
+
+```
+PUT /me/identity/user/{userId}
+```
+
+Body:
+```json
+{
+  "login": "John Doe",
+  "description": "Développeur senior - Équipe Backend",
+  "group": "Developers",
+  "status": "active"
+}
+```
+
+### 8.3 Réinitialiser le mot de passe
+
+```
+POST /me/identity/user/{userId}/password/reset
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_user_modal_edit_title` | Modifier l'utilisateur |
+| `iam_user_modal_email` | Email |
+| `iam_user_modal_email_readonly` | Non modifiable |
+| `iam_user_modal_fullname` | Nom complet |
+| `iam_user_modal_description` | Description |
+| `iam_user_modal_group` | Groupe |
+| `iam_user_modal_status` | Statut |
+| `iam_user_modal_status_active` | Actif |
+| `iam_user_modal_status_disabled` | Désactivé |
+| `iam_user_modal_reset_password` | Réinitialiser le mot de passe |
+| `iam_user_modal_reset_send_link` | Envoyer un lien |
+| `iam_user_modal_cancel` | Annuler |
+| `iam_user_modal_submit` | Enregistrer |

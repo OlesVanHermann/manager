@@ -1,0 +1,248 @@
+# Cahier des Charges : private-cloud/managed-baremetal/dashboard
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.managed-baremetal.dashboard.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | managed-baremetal (Managed Bare Metal) |
+| **Type** | Page dashboard avec tiles |
+| **Description** | Dashboard principal d'un service Managed Bare Metal avec actions, configuration, ressources et sécurité |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width RIGHT PANEL |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Production Baremetal |
+| Font-size | 20px |
+| Font-weight | 600 |
+| Bouton édition | ✎ (24×24px) |
+
+### 3.2 Sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | mbm-abc12345 |
+| Couleur | #6B7280 |
+
+### 3.3 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour a la liste |
+| Couleur | #0050D7 |
+
+---
+
+## 4. TILES DASHBOARD (2 lignes x 3 colonnes)
+
+### 4.1 Tile Actions rapides (ligne 1, col 1)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 420×240px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Ajouter un datacenter | Outline #0050D7 | 380×40px |
+| Commander des ressources | Outline #0050D7 | 380×40px |
+| Resilier le service | Outline #DC2626 (danger) | 380×40px |
+
+### 4.2 Tile Configuration (ligne 1, col 2)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 420×240px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur |
+|-------|--------|
+| Titre | Configuration |
+| Nom du service | Production Baremetal |
+| Gamme | Essentials |
+| Datacenters | 2 datacenters |
+| Localisation | Roubaix (RBX3) |
+
+### 4.3 Tile Abonnement (ligne 1, col 3)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 420×240px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Menu ⋮ | Présent |
+
+| Champ | Valeur |
+|-------|--------|
+| Titre | Abonnement |
+| Renouvellement automatique | 15/02/2026 |
+| Contact Admin | admin@example.com |
+| Contact Facturation | billing@example.com |
+| Contact Technique | tech@example.com |
+| Date de creation | 15/02/2024 |
+
+### 4.4 Tile Ressources (ligne 2, col 1)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 420×200px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur |
+|-------|--------|
+| Titre | Ressources |
+| Hosts | 8 hosts |
+| Datastores | 12 datastores |
+| VMs | 48 machines virtuelles |
+| Statut | Actif (badge vert) |
+
+### 4.5 Tile Réseau (ligne 2, col 2)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 420×200px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur | Action |
+|-------|--------|--------|
+| Titre | Reseau | - |
+| IP publiques | 4 blocs IP | - |
+| vRack | pn-123456 | - |
+| VLANs prives | 3 VLANs configures | - |
+| Gérer | Gerer le reseau → | Lien |
+
+### 4.6 Tile Sécurité (ligne 2, col 3)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 420×200px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+| Champ | Valeur | Action |
+|-------|--------|--------|
+| Titre | Securite | - |
+| Politique de securite | 8 regles actives | - |
+| Utilisateurs | 5 utilisateurs | - |
+| Certificat SSL | Valide (badge vert) | - |
+| Gérer | Gerer la securite → | Lien |
+
+---
+
+## 5. BADGES
+
+| Badge | Background | Couleur texte |
+|-------|------------|---------------|
+| Actif | #DEF7EC | #059669 |
+| Valide | #DEF7EC | #059669 |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Obtenir détails service
+
+```
+GET /managedBareMetal/{serviceName}
+```
+
+Response:
+```json
+{
+  "serviceName": "mbm-abc12345",
+  "displayName": "Production Baremetal",
+  "range": "Essentials",
+  "datacenterCount": 2,
+  "location": "rbx3",
+  "locationName": "Roubaix (RBX3)",
+  "status": "active"
+}
+```
+
+### 6.2 Obtenir ressources
+
+```
+GET /managedBareMetal/{serviceName}/resources
+```
+
+Response:
+```json
+{
+  "hosts": 8,
+  "datastores": 12,
+  "vms": 48
+}
+```
+
+### 6.3 Obtenir informations réseau
+
+```
+GET /managedBareMetal/{serviceName}/network
+```
+
+Response:
+```json
+{
+  "publicIpBlocks": 4,
+  "vrack": "pn-123456",
+  "vlans": 3
+}
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `mbm_dashboard_back` | Retour a la liste |
+| `mbm_dashboard_actions_title` | Actions rapides |
+| `mbm_dashboard_add_dc` | Ajouter un datacenter |
+| `mbm_dashboard_order_resources` | Commander des ressources |
+| `mbm_dashboard_terminate` | Resilier le service |
+| `mbm_dashboard_config_title` | Configuration |
+| `mbm_dashboard_service_name` | Nom du service |
+| `mbm_dashboard_range` | Gamme |
+| `mbm_dashboard_datacenters` | Datacenters |
+| `mbm_dashboard_location` | Localisation |
+| `mbm_dashboard_subscription_title` | Abonnement |
+| `mbm_dashboard_renewal` | Renouvellement automatique |
+| `mbm_dashboard_contact` | Contact |
+| `mbm_dashboard_creation` | Date de creation |
+| `mbm_dashboard_resources_title` | Ressources |
+| `mbm_dashboard_hosts` | Hosts |
+| `mbm_dashboard_datastores` | Datastores |
+| `mbm_dashboard_vms` | VMs |
+| `mbm_dashboard_status` | Statut |
+| `mbm_dashboard_network_title` | Reseau |
+| `mbm_dashboard_public_ips` | IP publiques |
+| `mbm_dashboard_vrack` | vRack |
+| `mbm_dashboard_vlans` | VLANs prives |
+| `mbm_dashboard_manage_network` | Gerer le reseau |
+| `mbm_dashboard_security_title` | Securite |
+| `mbm_dashboard_security_policy` | Politique de securite |
+| `mbm_dashboard_users` | Utilisateurs |
+| `mbm_dashboard_ssl` | Certificat SSL |
+| `mbm_dashboard_manage_security` | Gerer la securite |

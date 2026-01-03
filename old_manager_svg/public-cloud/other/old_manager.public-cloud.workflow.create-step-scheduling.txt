@@ -1,0 +1,160 @@
+# Cahier des Charges : public-cloud/other/workflow/create-step-scheduling
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.workflow.create-step-scheduling.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | workflow |
+| **Type** | Wizard - Étape 4 |
+| **Description** | Étape de définition de l'ordonnancement dans le wizard de création de workflow |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Deux colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280px - Liste des projets |
+| RIGHT PANEL | flex:1 - Wizard avec stepper |
+| Breadcrumb | my-project-123456 > Workflow > Créer |
+
+---
+
+## 3. STEPPER
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Sélectionnez un Workflow | ✓ Complété |
+| 2 | Sélectionnez une ressource ciblée | ✓ Complété |
+| 3 | Donnez un nom à votre horaire | ✓ Complété |
+| 4 | Définir l'ordonnancement | Actif |
+
+---
+
+## 4. FORMULAIRE ORDONNANCEMENT
+
+### 4.1 Titre section
+
+| Texte | Personnalisé - Format UNIX Cron |
+| Font-size | 15px |
+| Font-weight | 700 |
+| Sous-titre | Fuseau horaire : UTC |
+
+### 4.2 Champs CRON
+
+| Champ | Label | Largeur | Valeur exemple |
+|-------|-------|---------|----------------|
+| Minute | minute(0-59) | 100px | 0 |
+| Heure | heure(0-23) | 100px | 2 |
+| Jour du mois | jour du mois(1-31) | 100px | * |
+| Mois | mois | 100px | * |
+| Jour de la semaine | jour de la semaine | 100px | * |
+
+### 4.3 Résultat CRON
+
+| Background | #DBEAFE (info) |
+| Dimensions | 600×40px |
+| Texte | Expression CRON : 0 2 * * * (Tous les jours à 02:00 UTC) |
+| Couleur texte | #1E40AF |
+
+---
+
+## 5. ROTATION
+
+| Label | Rotation |
+| Description | Nombre de sauvegardes à conserver |
+| Type | Input number |
+| Dimensions | 150×36px |
+| Valeur défaut | 7 |
+
+---
+
+## 6. NOMBRE D'EXÉCUTIONS
+
+| Label | Nombre d'exécutions |
+| Description | Zéro(0) signifie que le travail ne se terminera jamais. |
+| Type | Input number |
+| Dimensions | 150×36px |
+| Valeur défaut | 0 |
+
+---
+
+## 7. OPTIONS
+
+### 7.1 Checkbox backup distant
+
+| Type | Checkbox |
+| Label | Ajouter un backup distant |
+| État défaut | Décoché |
+
+---
+
+## 8. FOOTER
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | Outline primary | 100×40px |
+| Créer | Primary | 100×40px |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Créer un workflow de sauvegarde
+
+```
+POST /cloud/project/{projectId}/workflow/backup
+{
+  "name": "backup-daily",
+  "instanceId": "instance-id",
+  "cron": "0 2 * * *",
+  "rotation": 7,
+  "maxExecutionCount": 0,
+  "backupType": "local"
+}
+```
+
+### 9.2 Avec backup distant
+
+```
+POST /cloud/project/{projectId}/workflow/backup
+{
+  "name": "backup-daily",
+  "instanceId": "instance-id",
+  "cron": "0 2 * * *",
+  "rotation": 7,
+  "maxExecutionCount": 0,
+  "backupType": "both",
+  "targetRegion": "SBG5"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_workflow_create_title` | Créer une planification |
+| `pci_workflow_create_step_1` | Sélectionnez un Workflow |
+| `pci_workflow_create_step_2` | Sélectionnez une ressource ciblée |
+| `pci_workflow_create_step_3` | Donnez un nom à votre horaire |
+| `pci_workflow_create_step_4` | Définir l'ordonnancement |
+| `pci_workflow_scheduling_title` | Personnalisé - Format UNIX Cron |
+| `pci_workflow_scheduling_timezone` | Fuseau horaire : UTC |
+| `pci_workflow_cron_minute` | minute(0-59) |
+| `pci_workflow_cron_hour` | heure(0-23) |
+| `pci_workflow_cron_day_month` | jour du mois(1-31) |
+| `pci_workflow_cron_month` | mois |
+| `pci_workflow_cron_day_week` | jour de la semaine |
+| `pci_workflow_cron_result` | Expression CRON : {cron} ({description}) |
+| `pci_workflow_rotation` | Rotation |
+| `pci_workflow_rotation_desc` | Nombre de sauvegardes à conserver |
+| `pci_workflow_exec_count` | Nombre d'exécutions |
+| `pci_workflow_exec_count_desc` | Zéro(0) signifie que le travail ne se terminera jamais. |
+| `pci_workflow_distant_backup` | Ajouter un backup distant |
+| `pci_workflow_cancel` | Annuler |
+| `pci_workflow_submit` | Créer |

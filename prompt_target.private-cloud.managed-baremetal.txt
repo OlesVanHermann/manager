@@ -1,0 +1,465 @@
+================================================================================
+PROMPT TARGET - Private Cloud > Managed Bare Metal
+================================================================================
+
+| Element                            | Valeur                                                      |
+|------------------------------------|-------------------------------------------------------------|
+| **Prompt**                         | prompt_target.private-cloud.managed-baremetal.txt           |
+| **Destination finale utilisateur** | ~/target_manager_svg/private-cloud/managed-baremetal/       |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/private-cloud/managed-baremetal/ |
+
+Version: v1.0 (2026-01-03)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+INTERDIT : Afficher le SVG dans la conversation
+OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. VUE D'ENSEMBLE
+##############################################################################
+
+### 1.1 Positionnement
+- **NAV1** : Hosted Private Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : Managed Bare Metal (Sous-header blanc, 40px) - Actif parmi [General, VMware, Nutanix, Managed Bare Metal, SAP, Veeam, Storage]
+- **NAV3** : [Général] (sélecteur dans LEFT PANEL, au-dessus de Region)
+- **NAV4** : Tabs dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion des services Managed Bare Metal (anciennement Dedicated Cloud) :
+infrastructure dédiée VMware avec vSphere, gérée par OVHcloud.
+
+### 1.3 Historique produit
+Managed Bare Metal est le rebranding de l'offre Dedicated Cloud. C'est une
+infrastructure VMware dédiée, similaire à "VMware on OVHcloud" mais avec
+une gamme de services et un modèle de facturation différents.
+
+### 1.4 URL Pattern
+```
+/private-cloud/managed-baremetal                              → General (All) dashboard
+/private-cloud/managed-baremetal?id={serviceName}             → Dashboard service
+/private-cloud/managed-baremetal?id={serviceName}&tab=hosts   → Hosts
+/private-cloud/managed-baremetal?id={serviceName}&tab=datastores → Datastores
+/private-cloud/managed-baremetal?id={serviceName}&tab=users   → Users
+/private-cloud/managed-baremetal?id={serviceName}&tab=security → Security
+/private-cloud/managed-baremetal?id={serviceName}&tab=operations → Operations
+/private-cloud/managed-baremetal?id={serviceName}&tab=tasks   → Tasks
+```
+
+##############################################################################
+# 2. STRUCTURE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Hosted Private Cloud
+│
+└── NAV2: Managed Bare Metal (indicateur sous "Managed Bare Metal")
+    │
+    ├── LEFT PANEL (280px)
+    │   │
+    │   ├── NAV3: [Général•] (sélecteur - extensible futur)
+    │   │
+    │   ├── Filtre Region
+    │   │   └── [🌍 Region: ALL ▼] (dropdown + bouton × si ≠ ALL)
+    │   │
+    │   ├── 🔍 Rechercher...
+    │   │
+    │   ├── 📊 General (All)  ← Vue agrégée tous services
+    │   │   ─ ─ ─ ─ ─ ─ ─ ─
+    │   ├── 🏗️ mbm-prod-001
+    │   ├── 🏗️ mbm-staging-002
+    │   └── 🏗️ mbm-test-003
+    │
+    └── RIGHT PANEL (1096px)
+        │
+        ├── Header: Titre service + metadata + [Guides ▼]
+        │
+        └── NAV4: [General][Hosts][Datastores][Users][Security][Operations][Tasks]
+            │
+            ├── General    → Dashboard tiles (Actions, Config, Ressources, Réseau, Sécurité, Abonnement)
+            ├── Hosts      → Tableau hosts
+            ├── Datastores → Tableau datastores
+            ├── Users      → IAM (toggle) + vSphere users
+            ├── Security   → Politique accès + IPs autorisées
+            ├── Operations → Opérations maintenance OVHcloud
+            └── Tasks      → Historique tâches API
+```
+
+##############################################################################
+# 3. STRUCTURE LEFT PANEL
+##############################################################################
+
+### 3.1 Layout vertical
+
+```
+┌─────────────────────────────┐
+│ NAV3 - Groupement           │  y=105
+│ ┌─────────────────────────┐ │
+│ │ [Général•]              │ │
+│ └─────────────────────────┘ │
+├─────────────────────────────┤  y=145
+│ Filtre Region               │
+│ ┌─────────────────────────┐ │
+│ │ 🌍 Region: ALL        ▼ │ │
+│ └─────────────────────────┘ │
+├─────────────────────────────┤  y=185
+│ 🔍 Rechercher...            │
+├─────────────────────────────┤  y=225
+│ ┌─────────────────────────┐ │
+│ │ 📊 General (All)        │ │
+│ └─────────────────────────┘ │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │
+│ ┌─────────────────────────┐ │
+│ │ 🏗️ mbm-prod-001         │ │  ← Service sélectionné
+│ │   Roubaix │ 🟢 Active   │ │
+│ └─────────────────────────┘ │
+│ ┌─────────────────────────┐ │
+│ │   mbm-staging-002       │ │
+│ │   Gravelines │ 🟢       │ │
+│ └─────────────────────────┘ │
+├─────────────────────────────┤
+│ Affichage 1-2 sur 2         │
+└─────────────────────────────┘
+```
+
+### 3.2 Card service
+
+```
+┌─────────────────────────────┐
+│ 🏗️ mbm-prod-001             │  ← Icône MBM + serviceName
+│   Roubaix │ 🟢 Active       │  ← Location │ État badge
+└─────────────────────────────┘
+```
+
+États possibles:
+- 🟢 active (vert)
+- 🟡 maintenance (jaune)
+- 🔴 suspended / error (rouge)
+
+##############################################################################
+# 4. NAV4 - TABS DÉTAIL
+##############################################################################
+
+### 4.1 Liste des tabs
+
+| Tab | ID | Description |
+|-----|----|-------------|
+| General | general | Dashboard tiles (6 tiles) |
+| Hosts | hosts | Tableau hosts du service |
+| Datastores | datastores | Tableau datastores |
+| Users | users | IAM (toggle) + vSphere users (page longue) |
+| Security | security | Politique accès + IPs autorisées |
+| Operations | operations | Opérations maintenance OVHcloud |
+| Tasks | tasks | Historique tâches API |
+
+### 4.2 Tab: General (Dashboard)
+
+#### Layout 2×3 tiles
+
+```
+┌────────────────────────┐ ┌────────────────────────┐ ┌────────────────────────┐
+│ Actions rapides        │ │ Configuration          │ │ Abonnement             │
+│                        │ │                        │ │                        │
+│ [Ajouter datacenter]   │ │ Nom: Production        │ │ Renouvellement:        │
+│ [Commander ressources] │ │ Gamme: Essentials      │ │   15/02/2026           │
+│ [Résilier service]     │ │ Datacenters: 2         │ │ Contact admin:         │
+│                        │ │ Location: Roubaix      │ │   admin@example.com    │
+│                        │ │                        │ │ Date création: 15/02/24│
+└────────────────────────┘ └────────────────────────┘ └────────────────────────┘
+
+┌────────────────────────┐ ┌────────────────────────┐ ┌────────────────────────┐
+│ Ressources             │ │ Réseau                 │ │ Sécurité               │
+│                        │ │                        │ │                        │
+│ Hosts: 8               │ │ IP publiques: 4 blocs  │ │ Politique: 8 règles    │
+│ Datastores: 12         │ │ vRack: pn-123456       │ │ Utilisateurs: 5        │
+│ VMs: 48                │ │ VLANs: 3 configurés    │ │ SSL: 🟢 Valide         │
+│ Statut: 🟢 Actif       │ │                        │ │                        │
+│                        │ │ [Gérer le réseau →]    │ │ [Gérer la sécurité →]  │
+└────────────────────────┘ └────────────────────────┘ └────────────────────────┘
+```
+
+### 4.3 Tab: Hosts
+
+#### Toolbar
+```
+[↻]  [🔍 Rechercher...]           [+ Commander un host]
+```
+
+#### Tableau
+
+| Colonne | Source | Width |
+|---------|--------|-------|
+| Nom | host.name | 150px |
+| Datacenter | host.datacenterId | 120px |
+| CPU | host.cpu | 140px |
+| RAM | host.ram | 100px |
+| Gamme | host.profile | 100px |
+| État | host.state | 80px |
+| Actions | ⋮ menu | 50px |
+
+### 4.4 Tab: Datastores
+
+#### Toolbar
+```
+[↻]  [🔍 Rechercher...]          [+ Commander un datastore]
+```
+
+#### Tableau
+
+| Colonne | Source | Width |
+|---------|--------|-------|
+| Nom | datastore.name | 150px |
+| Datacenter | datastore.datacenterId | 120px |
+| Type | datastore.type | 80px |
+| Capacité | datastore.capacity | 100px |
+| Utilisé | datastore.used (%) | 100px |
+| Actions | ⋮ menu | 50px |
+
+### 4.5 Tab: Users (Page longue)
+
+#### Section 1: GESTION IAM (en haut)
+
+**État OFF (minimaliste):**
+```
+┌────────────────────────────────────────────────────────────┐
+│ GESTION IAM                                     [⚪ OFF]   │
+├────────────────────────────────────────────────────────────┤
+│ ℹ️ Activez IAM pour gérer les accès via les identités     │
+│    OVHcloud et les policies de votre compte.              │
+└────────────────────────────────────────────────────────────┘
+```
+
+**État ON (tableau déployé):**
+```
+┌────────────────────────────────────────────────────────────┐
+│ GESTION IAM                                      [🔵 ON]   │
+├────────────────────────────────────────────────────────────┤
+│ [↻]  [🔍 Rechercher...]              [+ Lier une identité] │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │  Identité URN          │ Rôle IAM      │ Lié le    │⋮ │ │
+│ └────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────┘
+```
+
+#### Section 2: UTILISATEURS vSPHERE (en bas)
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ UTILISATEURS vSPHERE                                       │
+├────────────────────────────────────────────────────────────┤
+│ [↻]  [🔍 Rechercher...]            [+ Ajouter utilisateur] │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │  Login         │ Nom complet      │ Rôle     │ État │⋮ │ │
+│ └────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────┘
+```
+
+### 4.6 Tab: Security
+
+#### Section 1: Politique d'accès
+
+```
+┌──────────────────────────────────┐ ┌──────────────────────────────┐
+│ Politique d'accès                │ │ Sessions                     │
+│                                  │ │                              │
+│ Mode: Restreint              [✎] │ │ Max connexions: 50       [✎] │
+│ Token validation: ● ON           │ │ Timeout: 30 min          [✎] │
+│                                  │ │ Actives: 12                  │
+│ [Modifier la politique →]        │ │                              │
+└──────────────────────────────────┘ └──────────────────────────────┘
+```
+
+#### Section 2: IPs autorisées
+
+```
+IPs autorisées                                       [+ Ajouter IP]
+┌──────────────────────────────────────────────────────────────────┐
+│  IP / CIDR           │ Description        │ Ajouté le      │ ⋮  │
+├──────────────────────────────────────────────────────────────────┤
+│  203.0.113.0/24      │ Bureau Paris       │ 2024-06-15     │ ⋮  │
+│  198.51.100.50/32    │ VPN Admin          │ 2024-08-20     │ ⋮  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 4.7 Tab: Operations
+
+```
+ℹ️ Opérations de maintenance planifiées par OVHcloud
+
+[↻]  [🔍 Rechercher...]  Filtre: [Toutes ▼] [En attente ▼]
+
+┌──────────────────────────────────────────────────────────────┐
+│  ID         │ Type           │ Date prévue  │ État       │⋮ │
+├──────────────────────────────────────────────────────────────┤
+│  OP-45678   │ Host upgrade   │ 2026-01-20   │ 🟡 Planifié│⋮ │
+│  OP-45600   │ Security patch │ 2025-12-15   │ 🟢 Terminé │⋮ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### 4.8 Tab: Tasks
+
+```
+[↻]  [🔍 Rechercher...]   Filtre: [Toutes ▼]  [7 derniers jours]
+
+┌──────────────────────────────────────────────────────────────┐
+│  ID        │ Action              │ Date       │ État     │⋯ │
+├──────────────────────────────────────────────────────────────┤
+│  TSK-1234  │ addHost             │ 03/01 14:30│ 🟢 Done   │⋯ │
+│  TSK-1233  │ createUser          │ 02/01 16:45│ 🟢 Done   │⋯ │
+│  TSK-1230  │ updateSecurityPolicy│ 01/01 09:30│ 🟢 Done   │⋯ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+##############################################################################
+# 5. GENERAL (ALL) - VUE AGRÉGÉE
+##############################################################################
+
+### 5.1 NAV4: General (All) → Dashboard agrégé
+
+```
+📊 Managed Bare Metal — Vue d'ensemble
+2 services │ 2 régions │ 🟢 2 actifs
+
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│ SERVICES    │ │ HOSTS       │ │ DATASTORES  │ │ VMs         │
+│     2       │ │    16       │ │    24       │ │    96       │
+│   total     │ │   total     │ │   total     │ │   total     │
+│ 🟢 2        │ │ 🟢 15 🟡 1  │ │ ⚠️ 1 >85%   │ │ 🟢 running  │
+└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
+
+RÉPARTITION PAR SERVICE
+┌──────────────────────────────────────────────────────────────┐
+│  Service        │ Region    │ Hosts │ DS  │ VMs  │ État     │
+├──────────────────────────────────────────────────────────────┤
+│  mbm-prod-001   │ Roubaix   │ 8     │ 12  │ 48   │ 🟢       │
+│  mbm-staging-002│ Gravelines│ 8     │ 12  │ 48   │ 🟢       │
+└──────────────────────────────────────────────────────────────┘
+```
+
+##############################################################################
+# 6. APIS
+##############################################################################
+
+### 6.1 Service principal
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /managedBareMetal | Liste tous les services |
+| GET | /managedBareMetal/{serviceName} | Détails service |
+| PUT | /managedBareMetal/{serviceName} | Modifier service |
+| DELETE | /managedBareMetal/{serviceName} | Résilier service |
+| GET | /managedBareMetal/{serviceName}/serviceInfos | Infos facturation |
+
+### 6.2 Datacenters
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /managedBareMetal/{sn}/datacenter | Liste datacenters |
+| GET | /managedBareMetal/{sn}/datacenter/{id} | Détails datacenter |
+| POST | /managedBareMetal/{sn}/datacenter | Ajouter datacenter |
+| DELETE | /managedBareMetal/{sn}/datacenter/{id} | Supprimer datacenter |
+
+### 6.3 Hosts
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /managedBareMetal/{sn}/datacenter/{dc}/host | Liste hosts |
+| GET | /managedBareMetal/{sn}/datacenter/{dc}/host/{id} | Détails host |
+| POST | /managedBareMetal/{sn}/datacenter/{dc}/host | Commander host |
+| DELETE | /managedBareMetal/{sn}/datacenter/{dc}/host/{id} | Supprimer host |
+
+### 6.4 Datastores
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /managedBareMetal/{sn}/datacenter/{dc}/datastore | Liste datastores |
+| POST | /managedBareMetal/{sn}/datacenter/{dc}/datastore | Commander datastore |
+| DELETE | /managedBareMetal/{sn}/datacenter/{dc}/datastore/{id} | Supprimer datastore |
+
+### 6.5 Users
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /managedBareMetal/{sn}/user | Liste users |
+| POST | /managedBareMetal/{sn}/user | Créer user |
+| PUT | /managedBareMetal/{sn}/user/{id} | Modifier user |
+| DELETE | /managedBareMetal/{sn}/user/{id} | Supprimer user |
+
+### 6.6 IAM
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /managedBareMetal/{sn}/iam | Statut IAM |
+| POST | /managedBareMetal/{sn}/iam/enable | Activer IAM |
+| POST | /managedBareMetal/{sn}/iam/disable | Désactiver IAM |
+
+### 6.7 Security
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /managedBareMetal/{sn}/securityPolicy | Politique accès |
+| PUT | /managedBareMetal/{sn}/securityPolicy | Modifier politique |
+| GET | /managedBareMetal/{sn}/allowedNetwork | Liste IPs autorisées |
+| POST | /managedBareMetal/{sn}/allowedNetwork | Ajouter IP |
+| DELETE | /managedBareMetal/{sn}/allowedNetwork/{id} | Supprimer IP |
+
+### 6.8 Tasks
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /managedBareMetal/{sn}/task | Liste tâches |
+| GET | /managedBareMetal/{sn}/task/{id} | Détails tâche |
+
+##############################################################################
+# 7. DONNÉES DYNAMIQUES
+##############################################################################
+
+| Exemple SVG | Source API |
+|-------------|------------|
+| mbm-prod-001 | GET /managedBareMetal → serviceName |
+| Production Baremetal | GET /managedBareMetal/{sn} → displayName |
+| Essentials | GET /managedBareMetal/{sn} → range |
+| 2 datacenters | GET /managedBareMetal/{sn} → datacenterCount |
+| Roubaix (RBX3) | GET /managedBareMetal/{sn} → locationName |
+| 8 hosts | GET /managedBareMetal/{sn}/resources → hosts |
+| 12 datastores | GET /managedBareMetal/{sn}/resources → datastores |
+| 48 VMs | GET /managedBareMetal/{sn}/resources → vms |
+
+##############################################################################
+# 8. INTERACTIONS
+##############################################################################
+
+| Action | Comportement |
+|--------|--------------|
+| Clic "General (All)" | Affiche vue agrégée tous services |
+| Clic service | Affiche détails du service sélectionné |
+| Clic NAV4 tab | Change contenu RIGHT PANEL |
+| Clic "Ajouter datacenter" | Ouvre modal création datacenter |
+| Clic "Commander ressources" | Ouvre modal commande hosts/datastores |
+| Clic "Résilier service" | Ouvre modal confirmation résiliation |
+| Toggle IAM ON/OFF | Déploie/replie section IAM |
+
+##############################################################################
+# 9. DIFFÉRENCES AVEC VMWARE
+##############################################################################
+
+| Aspect | VMware on OVHcloud | Managed Bare Metal |
+|--------|--------------------|--------------------|
+| Gammes | Premier, Essential | Essentials |
+| Licence SPLA | Oui (tab dédié) | Non |
+| KMS | Oui | Non |
+| Modèle | Pay-as-you-go | Engagement |
+| Support | Standard | Premium inclus |
+| vCenter | Dédié | Partagé ou dédié |
+
+Note: Managed Bare Metal n'a PAS de tab "Licence" car pas de SPLA Windows.
+
+================================================================================
+FIN PROMPT TARGET - Private Cloud > Managed Bare Metal v1.0
+================================================================================

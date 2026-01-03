@@ -1,0 +1,233 @@
+# Cahier des Charges : network/ip/modal-migration
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.network.ip.modal-migration.svg |
+| **NAV1** | network (Network) |
+| **NAV2** | ip |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour importer des adresses IP depuis SYS vers OVHcloud |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 550px |
+| Position | Centrée (x: 370, y: 150) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Background | #F9FAFB |
+| Border radius | 8px 8px 0 0 |
+| Titre | Importer mes adresses IP de SYS vers OVHcloud |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+| Séparateur | 1px #E5E7EB |
+
+---
+
+## 4. INFO BANNER
+
+### 4.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 650×70px |
+| Background | #DBEAFE |
+| Border radius | 4px |
+
+### 4.2 Contenu
+
+| Ligne | Texte |
+|-------|-------|
+| 1 | Pour procéder à l'importation d'une IP, vous devez connaître la clé (token) |
+| 2 | générée par le manager du serveur qui est actuellement associé à l'IP |
+| 3 | que vous souhaitez migrer. |
+
+---
+
+## 5. ÉTAPE 1 - INFORMATIONS MIGRATION
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Étape 1 : Informations de migration |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 5.2 Champs
+
+| Champ | Type | Dimensions | Placeholder |
+|-------|------|------------|-------------|
+| IP ou bloc IP | Text input | 300×40px | Ex: 192.168.1.0/24 |
+| Token | Text input | 300×40px | Clé de migration |
+
+---
+
+## 6. ÉTAPE 2 - SERVEUR DESTINATION
+
+### 6.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Étape 2 : Serveur de destination |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 6.2 Champ
+
+| Champ | Type | Dimensions | Placeholder |
+|-------|------|------------|-------------|
+| Serveur de destination | Select dropdown | 620×40px | Sélectionnez... |
+
+---
+
+## 7. VÉRIFICATION ÉLIGIBILITÉ
+
+### 7.1 Success Banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 620×40px |
+| Background | #DEF7EC |
+| Border radius | 4px |
+| Icône | ✓ |
+| Message | Vérification de l'éligibilité réussie |
+| Couleur texte | #059669 |
+
+---
+
+## 8. FOOTER
+
+### 8.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 80px |
+| Background | #F9FAFB |
+| Border radius | 0 0 8px 8px |
+
+### 8.2 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Secondary | 100×36px | Gauche |
+| Migrer | Primary (#0050D7) | 100×36px | Droite |
+
+---
+
+## 9. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic × | Fermer modal |
+| Clic Annuler | Fermer modal |
+| Saisie IP + Token | Vérifier éligibilité automatiquement |
+| Sélection serveur | Afficher statut éligibilité |
+| Éligibilité OK | Activer bouton Migrer |
+| Clic Migrer | Lancer la migration |
+
+---
+
+## 10. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| IP ou bloc IP | Obligatoire, format IP ou CIDR valide |
+| Token | Obligatoire, format token SYS |
+| Serveur destination | Obligatoire |
+
+---
+
+## 11. APIS & ENDPOINTS
+
+### 11.1 Vérifier l'éligibilité
+
+```
+POST /ip/migration/check
+```
+
+Body:
+```json
+{
+  "ip": "192.168.1.0/24",
+  "token": "migration-token-xyz",
+  "destination": "ns123456.ip-123-45-67.eu"
+}
+```
+
+Response:
+```json
+{
+  "eligible": true,
+  "source": "sys",
+  "ipCount": 1
+}
+```
+
+### 11.2 Effectuer la migration
+
+```
+POST /ip/migration/migrate
+```
+
+Body:
+```json
+{
+  "ip": "192.168.1.0/24",
+  "token": "migration-token-xyz",
+  "destination": "ns123456.ip-123-45-67.eu"
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-123456",
+  "status": "pending"
+}
+```
+
+---
+
+## 12. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `ip_migration_title` | Importer mes adresses IP de SYS vers OVHcloud |
+| `ip_migration_info_1` | Pour procéder à l'importation d'une IP, vous devez connaître la clé (token) |
+| `ip_migration_info_2` | générée par le manager du serveur qui est actuellement associé à l'IP |
+| `ip_migration_info_3` | que vous souhaitez migrer. |
+| `ip_migration_step1` | Étape 1 : Informations de migration |
+| `ip_migration_ip_label` | IP ou bloc IP |
+| `ip_migration_ip_placeholder` | Ex: 192.168.1.0/24 |
+| `ip_migration_token_label` | Token |
+| `ip_migration_token_placeholder` | Clé de migration |
+| `ip_migration_step2` | Étape 2 : Serveur de destination |
+| `ip_migration_server_label` | Serveur de destination |
+| `ip_migration_server_placeholder` | Sélectionnez... |
+| `ip_migration_check_success` | Vérification de l'éligibilité réussie |
+| `ip_migration_cancel` | Annuler |
+| `ip_migration_submit` | Migrer |

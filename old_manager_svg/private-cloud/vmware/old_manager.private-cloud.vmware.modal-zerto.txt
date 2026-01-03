@@ -1,0 +1,213 @@
+# Cahier des Charges : private-cloud/vmware/modal-zerto
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-zerto.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal formulaire avec radio buttons et select |
+| **Description** | Modal pour activer Zerto Disaster Recovery avec choix du type de réplication |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 480px |
+| Position | Centrée (x: 370, y: 180) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Activer Zerto Disaster Recovery |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Info banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×60px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Icône | ℹ️ |
+| Ligne 1 | Zerto permet de répliquer vos machines virtuelles vers un site secondaire |
+| Ligne 2 | pour assurer la continuité de vos services en cas de sinistre. |
+| Couleur texte | #1E40AF |
+
+### 4.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Configuration du plan de reprise d'activité (PRA) |
+| Font-size | 13px |
+| Couleur | #1F2937 |
+
+---
+
+## 5. TYPE DE RÉPLICATION (Radio buttons)
+
+### 5.1 Label
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Type de réplication |
+| Font-size | 12px |
+| Font-weight | 500 |
+
+### 5.2 Options
+
+| Option | État | Style |
+|--------|------|-------|
+| OVHcloud vers OVHcloud | Sélectionné | Cercle #0050D7 avec point blanc |
+| Site externe vers OVHcloud (on-premise) | Non sélectionné | Cercle border #E5E7EB |
+
+### 5.3 Style radio
+
+| État | Cercle externe | Cercle interne |
+|------|----------------|----------------|
+| Sélectionné | 20px #0050D7 | 8px #FFFFFF |
+| Non sélectionné | 20px border #E5E7EB | - |
+
+---
+
+## 6. SELECT SITE SECONDAIRE
+
+### 6.1 Label
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Site de réplication secondaire |
+| Font-size | 12px |
+| Font-weight | 500 |
+
+### 6.2 Input select
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 400×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | pcc-192-0-2-2 (dc-sbg1) |
+| Icône | ▼ |
+
+---
+
+## 7. PRICING INFO
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×50px |
+| Background | #F9FAFB |
+| Border radius | 6px |
+| Label | Tarification Zerto |
+| Couleur label | #6B7280 |
+| Prix | 0,50€ HT/VM/mois + 0,01€ HT/Go/mois pour la réplication |
+| Font-weight prix | 500 |
+
+---
+
+## 8. FOOTER
+
+### 8.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Activer Zerto | Primary (#0050D7) | 140×40px | Droite |
+
+---
+
+## 9. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic radio | Sélectionner type de réplication |
+| Clic select | Ouvrir dropdown sites disponibles |
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic Activer Zerto | Activer Zerto + fermer modal |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Lister les sites disponibles pour réplication
+
+```
+GET /dedicatedCloud/{serviceName}/zerto/availableTargets
+```
+
+Response:
+```json
+[
+  {
+    "serviceName": "pcc-192-0-2-2",
+    "datacenter": "dc-sbg1",
+    "location": "Strasbourg"
+  },
+  {
+    "serviceName": "pcc-192-0-2-3",
+    "datacenter": "dc-rbx2",
+    "location": "Roubaix"
+  }
+]
+```
+
+### 10.2 Activer Zerto
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/zerto/enable
+```
+
+Body:
+```json
+{
+  "replicationType": "ovhcloud_to_ovhcloud",
+  "targetServiceName": "pcc-192-0-2-2",
+  "targetDatacenter": "dc-sbg1"
+}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_zerto_enable_title` | Activer Zerto Disaster Recovery |
+| `vmware_zerto_enable_info1` | Zerto permet de répliquer vos machines virtuelles vers un site secondaire |
+| `vmware_zerto_enable_info2` | pour assurer la continuité de vos services en cas de sinistre. |
+| `vmware_zerto_enable_desc` | Configuration du plan de reprise d'activité (PRA) |
+| `vmware_zerto_type_label` | Type de réplication |
+| `vmware_zerto_type_ovh` | OVHcloud vers OVHcloud |
+| `vmware_zerto_type_onprem` | Site externe vers OVHcloud (on-premise) |
+| `vmware_zerto_target_label` | Site de réplication secondaire |
+| `vmware_zerto_pricing_label` | Tarification Zerto |
+| `vmware_zerto_pricing_value` | 0,50€ HT/VM/mois + 0,01€ HT/Go/mois pour la réplication |
+| `vmware_zerto_cancel` | Annuler |
+| `vmware_zerto_submit` | Activer Zerto |

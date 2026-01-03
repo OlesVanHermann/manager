@@ -1,0 +1,225 @@
+# Cahier des Charges : private-cloud/vmware/modal-host-order
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-host-order.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal avec sélection par cartes |
+| **Description** | Modal pour commander un hôte avec sélection parmi 4 profils et choix du mode de facturation |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 1000px |
+| Hauteur | 620px |
+| Position | Centrée (x: 220, y: 140) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER MODAL
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Commander un host |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Sous-titre | Sélectionnez le type de host à ajouter au datacentre dc-1 |
+| Couleur sous-titre | #6B7280 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CARTES HÔTES
+
+### 4.1 Container cartes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Layout | 4 cartes horizontales |
+| Gap | 20px |
+| Padding | 30px |
+
+### 4.2 Dimensions carte
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 220px |
+| Hauteur | 380px |
+| Border radius | 8px |
+| Border sélectionnée | 2px #0050D7 |
+| Border non sélectionnée | 1px #E5E7EB |
+
+### 4.3 Profils disponibles
+
+| Profil | RAM | Processeur | Stockage | Prix mensuel | Prix horaire |
+|--------|-----|------------|----------|--------------|--------------|
+| HOST-128-L+ | 128 GB | Intel Xeon E5 | 2 x 960GB SSD | 250.00 EUR HT | 0.35 EUR HT/h |
+| HOST-256-L+ | 256 GB | Intel Xeon Gold | 2 x 1.92TB SSD | 450.00 EUR HT | 0.62 EUR HT/h |
+| HOST-512-L+ | 512 GB | Intel Xeon Platinum | 4 x 1.92TB SSD | 850.00 EUR HT | 1.18 EUR HT/h |
+| HOST-1024-L+ | 1 TB | AMD EPYC | 6 x 3.84TB SSD | 1,500.00 EUR HT | 2.08 EUR HT/h |
+
+### 4.4 Structure carte
+
+| Élément | Font-size | Font-weight |
+|---------|-----------|-------------|
+| Nom profil | 14px | 600 |
+| RAM | 11px | 400 |
+| Processeur | 11px | 400 |
+| Stockage | 11px | 400 |
+| Titre specs | 10px | 400 |
+| Specs liste | 10px | 400 |
+| Label prix | 10px | 400 |
+| Prix mensuel | 14px | 600 |
+| Prix horaire | 12px | 400 |
+
+### 4.5 Spécifications détaillées
+
+**HOST-128-L+:**
+- 2 x Intel Xeon E5-2697
+- 128 GB DDR4 ECC
+- 2 x 960GB SSD SATA
+- 2 x 10Gbps NIC
+
+**HOST-256-L+:**
+- 2 x Intel Xeon Gold 6248
+- 256 GB DDR4 ECC
+- 2 x 1.92TB SSD NVMe
+- 2 x 25Gbps NIC
+
+**HOST-512-L+:**
+- 2 x Intel Xeon Platinum 8280
+- 512 GB DDR4 ECC
+- 4 x 1.92TB SSD NVMe
+- 4 x 25Gbps NIC
+
+**HOST-1024-L+:**
+- 2 x AMD EPYC 7742
+- 1024 GB DDR4 ECC
+- 6 x 3.84TB SSD NVMe
+- 4 x 100Gbps NIC
+
+### 4.6 Radio sélection
+
+| État | Style |
+|------|-------|
+| Sélectionné | Cercle #0050D7 avec point blanc |
+| Non sélectionné | Cercle border #E5E7EB |
+
+---
+
+## 5. MODE DE FACTURATION
+
+### 5.1 Toggle buttons
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Mode de facturation: |
+| Position | Bas gauche |
+
+| Bouton | État | Style |
+|--------|------|-------|
+| Mensuel | Actif | #0050D7 fond, texte blanc |
+| Horaire | Inactif | Blanc, border #E5E7EB |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Commander | Primary (#0050D7) | 140×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic carte | Sélectionner ce profil |
+| Clic Mensuel | Activer facturation mensuelle |
+| Clic Horaire | Activer facturation horaire |
+| Clic Commander | Passer la commande |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir les profils hôtes disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderableHostProfiles
+```
+
+Response:
+```json
+[
+  {
+    "name": "HOST-128-L+",
+    "memory": "128 GB",
+    "processor": "Intel Xeon E5",
+    "storage": "2 x 960GB SSD",
+    "specs": {
+      "cpu": "2 x Intel Xeon E5-2697",
+      "ram": "128 GB DDR4 ECC",
+      "disk": "2 x 960GB SSD SATA",
+      "network": "2 x 10Gbps NIC"
+    },
+    "pricing": {
+      "monthly": { "value": 250, "text": "250.00 EUR HT" },
+      "hourly": { "value": 0.35, "text": "0.35 EUR HT/h" }
+    }
+  }
+]
+```
+
+### 8.2 Commander un hôte
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/host/order
+```
+
+Body:
+```json
+{
+  "profileName": "HOST-128-L+",
+  "billingMode": "monthly"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_host_order_title` | Commander un host |
+| `vmware_host_order_subtitle` | Sélectionnez le type de host à ajouter au datacentre |
+| `vmware_host_order_specs` | Spécifications: |
+| `vmware_host_order_monthly` | Prix mensuel: |
+| `vmware_host_order_hourly` | Prix horaire: |
+| `vmware_host_order_billing` | Mode de facturation: |
+| `vmware_host_order_billing_monthly` | Mensuel |
+| `vmware_host_order_billing_hourly` | Horaire |
+| `vmware_host_order_cancel` | Annuler |
+| `vmware_host_order_submit` | Commander |

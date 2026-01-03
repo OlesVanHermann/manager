@@ -1,0 +1,222 @@
+# Cahier des Charges : license/listing
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.license.listing.svg |
+| **NAV1** | license (Licences) |
+| **NAV2** | - |
+| **Type** | Page listing Datagrid |
+| **Description** | Page principale de gestion des licences avec datagrid et actions |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| RIGHT PANEL | 1392×765px |
+
+---
+
+## 3. HEADER
+
+### 3.1 NAV1
+
+| Propriété | Valeur |
+|-----------|--------|
+| Univers actif | Licences |
+| Indicateur | Barre blanche 3px |
+
+### 3.2 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre principal | Licences |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Sous-titre | Gérer mes licences |
+| Font-weight sous-titre | 700 |
+
+### 3.3 ActionMenu global
+
+| Propriété | Valeur |
+|-----------|--------|
+| Bouton | Actions ▼ |
+| Style | Primary (#0050D7) |
+| Dimensions | 100×32px |
+
+### 3.4 Options ActionMenu global
+
+| Option | Action |
+|--------|--------|
+| Commander | Ouvrir wizard commande |
+| Ajouter une licence SPLA | Ouvrir wizard SPLA |
+
+---
+
+## 4. DATAGRID
+
+### 4.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1344×500px |
+| Header hauteur | 40px |
+| Row hauteur | 45px |
+
+### 4.2 Colonnes
+
+| Colonne | Largeur | Type |
+|---------|---------|------|
+| Type | 160px | Texte |
+| Nom | 270px | Texte |
+| ID licence | 150px | Texte |
+| IP | 180px | Texte |
+| Service | 220px | Texte |
+| Expiration | 100px | Badge date |
+| Actions | 44px | Menu ⋮ |
+
+### 4.3 Données exemple
+
+| Type | Nom | ID licence | IP | Service | Expiration |
+|------|-----|------------|-----|---------|------------|
+| Cpanel | cPanel license Admin Cloud | 12345678 | 192.168.1.100 | ns1234567.ip-192-168-1.eu | 15/03/2026 (vert) |
+| Plesk | Plesk - Edition Web Pro | 23456789 | 192.168.1.101 | vps-abc123.vps.ovh.net | 22/06/2026 (vert) |
+| SQL Server | SQL Server 2019 Standard (4 cores) | 34567890 | 192.168.1.102 | ns9876543.ip-192-168-1.eu | 01/02/2026 (jaune) |
+| Windows | Windows Server 2022 Standard | 45678901 | 192.168.1.103 | dedicated-srv.ovh.net | 30/09/2026 (vert) |
+| SPLA | Licence SPLA Windows | - | - | ns5555555.ip-192-168-1.eu | Utilisée (vert) |
+
+### 4.4 Badges expiration
+
+| État | Background | Couleur texte |
+|------|------------|---------------|
+| Valide (>30j) | #DEF7EC | #059669 |
+| Proche (<30j) | #FEF3C7 | #D97706 |
+| Expiré | #FEE2E2 | #DC2626 |
+| SPLA Utilisée | #DEF7EC | #059669 |
+
+---
+
+## 5. ACTIONMENU PAR LIGNE
+
+### 5.1 Bouton
+
+| Propriété | Valeur |
+|-----------|--------|
+| Icône | ⋮ |
+| Position | Dernière colonne |
+
+### 5.2 Options (ouvert)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 180×152px |
+| Background | #FFFFFF |
+| Shadow | 0 4px 8px rgba(0,0,0,0.15) |
+
+| Option | Couleur |
+|--------|---------|
+| Voir les détails | #1F2937 |
+| Déplacer | #1F2937 |
+| Upgrader | #1F2937 |
+| Résilier | #DC2626 (danger) |
+
+---
+
+## 6. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Affichage | Affichage 1-5 sur 12 |
+| Par page | 10 (dropdown) |
+| Pages | 1 (actif), 2, flèches ‹ › |
+
+### 6.1 Boutons pagination
+
+| Élément | Style | Dimensions |
+|---------|-------|------------|
+| Page active | Primary (#0050D7) | 28×26px |
+| Page inactive | Outline (#0050D7) | 28×26px |
+| Flèche inactive | Background #E5E7EB | 28×26px |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic ligne | Sélection ligne (highlight) |
+| Clic ⋮ | Afficher ActionMenu ligne |
+| Clic Voir les détails | Navigation page détail |
+| Clic Déplacer | Ouvrir modal déplacement IP |
+| Clic Upgrader | Navigation page upgrade |
+| Clic Résilier | Ouvrir modal confirmation |
+| Clic Actions global | Afficher menu Commander/SPLA |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les licences
+
+```
+GET /license
+```
+
+Query params:
+- `type`: cpanel, plesk, sqlserver, windows, virtuozzo, directadmin, cloudlinux, spla
+- `status`: active, expired, pending
+- `offset`: pagination
+- `limit`: pagination
+
+Response:
+```json
+{
+  "count": 12,
+  "data": [
+    {
+      "type": "cpanel",
+      "name": "cPanel license Admin Cloud",
+      "licenseId": "12345678",
+      "ip": "192.168.1.100",
+      "serviceName": "ns1234567.ip-192-168-1.eu",
+      "expirationDate": "2026-03-15",
+      "status": "active"
+    }
+  ]
+}
+```
+
+### 8.2 Résilier une licence
+
+```
+DELETE /license/{licenseType}/{serviceName}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `license_listing_title` | Licences |
+| `license_listing_subtitle` | Gérer mes licences |
+| `license_listing_actions` | Actions |
+| `license_listing_order` | Commander |
+| `license_listing_add_spla` | Ajouter une licence SPLA |
+| `license_col_type` | Type |
+| `license_col_name` | Nom |
+| `license_col_id` | ID licence |
+| `license_col_ip` | IP |
+| `license_col_service` | Service |
+| `license_col_expiration` | Expiration |
+| `license_action_details` | Voir les détails |
+| `license_action_move` | Déplacer |
+| `license_action_upgrade` | Upgrader |
+| `license_action_terminate` | Résilier |
+| `license_pagination_display` | Affichage |
+| `license_pagination_of` | sur |
+| `license_pagination_per_page` | Par page |

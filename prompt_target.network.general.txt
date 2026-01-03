@@ -1,0 +1,202 @@
+################################################################################
+#                                                                              #
+#                    PROMPT TARGET - NETWORK > GENERAL (HUB)                   #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+Page Hub de NAV1=Network. Affichee quand l'utilisateur clique sur "Network"
+sans selectionner de NAV2 specifique.
+
+Objectifs :
+- Vue d'ensemble de toutes les ressources reseau
+- Acces rapide aux differents produits (NAV2)
+- Compteurs globaux par type de service
+- Filtrage par region
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Network (selectionne)
+NAV2: (aucun - page hub)
+NAV3: General (dans LEFT PANEL)
+NAV4: (aucun)
+
+## 1.1 Position dans la hierarchie
+
+```
+Network* (NAV1 actif - HUB)
+├── Subnet
+├── vRack
+├── Load Balancer
+├── CDN
+├── OVHcloud Connect
+├── VPN
+├── Anti-DDoS VAC
+└── Anti-DDoS Game
+```
+
+## 1.2 URLs
+
+| Ecran | URL |
+|-------|-----|
+| Hub Network | /network |
+| Hub filtre region | /network?region=eu-west-gra |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ [General]           │  ← NAV3 (seul choix)
+├─────────────────────┤
+│ Region          [▼] │  ← Filtre region
+│ ALL                 │
+├─────────────────────┤
+│                     │
+│   (pas de liste     │  ← Pas de services listés
+│    de services)     │     sur la page hub
+│                     │
+└─────────────────────┘
+```
+
+## 2.2 NAV3 : General
+
+Seul groupement disponible sur la page hub.
+Pas d'autres NAV3 car c'est une vue globale.
+
+## 2.3 Filtre Region
+
+Source donnees: /api/regions.json
+
+| Groupe | Options |
+|--------|---------|
+| (defaut) | ALL |
+| EUROPE | EU-West (PAR.FR), EU-West (GRA.FR), EU-West (RBX.FR), etc. |
+| NORTH AMERICA | US-East (VIN.US), CA-East (BHS.CA), etc. |
+| ASIA PACIFIC | AP-Southeast (SGP.SG), AP-Southeast (SYD.AU), etc. |
+
+Comportement:
+- Filtre les compteurs dans les cartes NAV2
+- Persistance via URL: ?region=eu-west-gra
+
+
+# 3. RIGHT PANEL - HUB NETWORK
+################################################################################
+
+## 3.1 Header
+
+```
+Network
+Gerez vos ressources reseau OVHcloud
+```
+
+## 3.2 Cartes NAV2 (row 1)
+
+| Carte | Icone | Compteur | Lien |
+|-------|-------|----------|------|
+| Subnet | 🌐 | {ip_count} IPs, {block_count} blocs | /network/subnet |
+| vRack | 🔗 | {vrack_count} vRack, {services_count} services | /network/vrack |
+| Load Balancer | ⚖️ | {lb_count} services | /network/load-balancer |
+
+## 3.3 Cartes NAV2 (row 2)
+
+| Carte | Icone | Compteur | Lien |
+|-------|-------|----------|------|
+| CDN | 📡 | {cdn_count} services | /network/cdn |
+| OVHcloud Connect | 🔌 | {occ_count} connexions | /network/ovhcloud-connect |
+| VPN | 🔒 | {vpn_count} tunnels | /network/vpn |
+
+## 3.4 Cartes NAV2 (row 3)
+
+| Carte | Icone | Compteur | Lien |
+|-------|-------|----------|------|
+| Anti-DDoS VAC | 🛡️ | Protection auto | /network/anti-ddos-vac |
+| Anti-DDoS Game | 🎮 | {game_count} IPs protegees | /network/anti-ddos-game |
+
+## 3.5 Section Guides
+
+```
+Guides
+┌────────────────────────────────────────────────────────────┐
+│ 📖 Configurer un vRack     │ 📖 Proteger avec Anti-DDoS   │
+│ 📖 Creer un tunnel VPN     │ 📖 Configurer Load Balancer  │
+└────────────────────────────────────────────────────────────┘
+```
+
+
+# 4. APIS & ENDPOINTS
+################################################################################
+
+## 4.1 Compteurs
+
+```
+GET /ip - Comptage IPs
+GET /vrack - Comptage vRack
+GET /ipLoadbalancing - Comptage Load Balancer
+GET /cdn/dedicated - Comptage CDN
+GET /ovhCloudConnect - Comptage OVHcloud Connect
+GET /vpn - Comptage VPN
+GET /ip/{ip}/game - IPs Game protegees
+```
+
+
+# 5. VARIABLES DYNAMIQUES
+################################################################################
+
+| Variable | Source | Exemple |
+|----------|--------|---------|
+| {ip_count} | Comptage /ip | 312 |
+| {block_count} | Comptage blocs | 24 |
+| {vrack_count} | Comptage /vrack | 3 |
+| {services_count} | Comptage services vrack | 24 |
+| {lb_count} | Comptage /ipLoadbalancing | 5 |
+| {cdn_count} | Comptage /cdn | 2 |
+| {occ_count} | Comptage /ovhCloudConnect | 1 |
+| {vpn_count} | Comptage /vpn | 4 |
+| {game_count} | Comptage IPs game | 2 |
+
+
+# 6. REGLES METIER
+################################################################################
+
+## 6.1 Affichage cartes
+
+- Toutes les cartes sont toujours visibles
+- Compteur "0" si aucun service
+- Clic sur carte → navigation vers NAV2
+
+## 6.2 Filtrage region
+
+- Filtre applique sur tous les compteurs
+- Certains services (vRack, CDN) peuvent etre multi-region
+- "ALL" affiche les totaux globaux
+
+
+# 7. COMPOSANTS ODS UTILISES
+################################################################################
+
+- OdsCard : Cartes NAV2 cliquables
+- OdsSelect : Filtre region
+- OdsBadge : Compteurs
+- OdsText : Titres, descriptions
+- OdsLink : Liens guides
+
+
+# 8. FICHIERS ASSOCIES
+################################################################################
+
+Documentation : prompt_target.network.general.txt (ce fichier)
+Screenshots : prompt_target.network.general-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

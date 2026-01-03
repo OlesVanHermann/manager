@@ -1,0 +1,196 @@
+# Cahier des Charges : home/iam-api-keys
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.iam-api-keys.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | iam-api-keys |
+| **Type** | Page full-width avec datagrid |
+| **Description** | Page de gestion des clés API avec liste complète |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×50px | x: 40, y: 115 |
+| Datagrid | 1360×500px | x: 40, y: 180 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | IAM - Clés API |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+
+### 3.2 Titre et sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Clés API |
+| Font-size titre | 24px |
+| Sous-titre | Gérez vos tokens d'accès à l'API OVHcloud |
+| Font-size sous-titre | 13px |
+| Couleur sous-titre | #6B7280 |
+
+### 3.3 Bouton Créer
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | + Créer une clé |
+| Type | Primary |
+| Dimensions | 160×36px |
+| Background | #0050D7 |
+| Position | Droite |
+
+---
+
+## 4. DATAGRID CLÉS API
+
+### 4.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×500px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 4.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Border radius | 8px 8px 0 0 |
+
+### 4.3 Colonnes
+
+| # | Colonne | Position X | Largeur |
+|---|---------|------------|---------|
+| 1 | Nom | 20px | 180px |
+| 2 | Application Key | 200px | 250px |
+| 3 | Description | 450px | 250px |
+| 4 | Créée le | 700px | 150px |
+| 5 | Expiration | 850px | 150px |
+| 6 | Statut | 1000px | 100px |
+| 7 | Actions | 1150px | 150px |
+
+### 4.4 Badges Statut
+
+| État | Background | Couleur | Dimensions |
+|------|------------|---------|------------|
+| Actif | #DEF7EC | #059669 | 60×22px |
+| Expiré | #FEE2E2 | #DC2626 | 60×22px |
+
+### 4.5 Données exemple
+
+| Nom | App Key | Description | Créée | Expiration | Statut |
+|-----|---------|-------------|-------|------------|--------|
+| terraform-prod | aK7x9...bQ2mN | Infrastructure as Code | 15/06/2025 | 15/06/2026 | Actif |
+| monitoring-script | cD4e5...fG6hJ | Script de surveillance | 20/08/2025 | 20/08/2026 | Actif |
+| old-integration | iK8lM...nO9pQ | Ancienne intégration CI/CD | 01/03/2024 | 01/03/2025 | Expiré |
+
+### 4.6 Colonnes actions
+
+| Action | Couleur | Visible si |
+|--------|---------|------------|
+| Modifier | #0050D7 | Statut = Actif |
+| Révoquer | #DC2626 | Statut = Actif |
+| Renouveler | #0050D7 | Statut = Expiré |
+| Suppr. | #DC2626 | Statut = Expiré |
+
+### 4.7 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 50px |
+| Background | #FFFFFF |
+| Séparateur | 1px #E5E7EB |
+| Font-size | 11-12px |
+| App Key style | Tronqué avec ... |
+
+---
+
+## 5. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic + Créer une clé | Ouvrir wizard création |
+| Clic Modifier | Ouvrir modal édition |
+| Clic Révoquer | Ouvrir modal confirmation révocation |
+| Clic Renouveler | Ouvrir modal renouvellement |
+| Clic Suppr. | Ouvrir modal confirmation suppression |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Lister les clés API
+
+```
+GET /me/api/credential
+```
+
+Response:
+```json
+[
+  {
+    "credentialId": 123456,
+    "applicationId": "app-001",
+    "name": "terraform-prod",
+    "applicationKey": "aK7x9...bQ2mN",
+    "description": "Infrastructure as Code",
+    "creationDate": "2025-06-15T10:30:00Z",
+    "expirationDate": "2026-06-15T10:30:00Z",
+    "status": "active"
+  }
+]
+```
+
+### 6.2 Créer une clé API
+
+```
+POST /me/api/credential
+```
+
+### 6.3 Révoquer une clé API
+
+```
+DELETE /me/api/credential/{credentialId}
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_api_keys_title` | Clés API |
+| `iam_api_keys_subtitle` | Gérez vos tokens d'accès à l'API OVHcloud |
+| `iam_api_keys_create` | + Créer une clé |
+| `iam_api_keys_col_name` | Nom |
+| `iam_api_keys_col_app_key` | Application Key |
+| `iam_api_keys_col_description` | Description |
+| `iam_api_keys_col_created` | Créée le |
+| `iam_api_keys_col_expiration` | Expiration |
+| `iam_api_keys_col_status` | Statut |
+| `iam_api_keys_col_actions` | Actions |
+| `iam_api_keys_status_active` | Actif |
+| `iam_api_keys_status_expired` | Expiré |
+| `iam_api_keys_edit` | Modifier |
+| `iam_api_keys_revoke` | Révoquer |
+| `iam_api_keys_renew` | Renouveler |
+| `iam_api_keys_delete` | Suppr. |

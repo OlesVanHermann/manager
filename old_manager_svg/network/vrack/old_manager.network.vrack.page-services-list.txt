@@ -1,0 +1,214 @@
+# Cahier des Charges : network/vrack/page-services-list
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.network.vrack.page-services-list.svg |
+| **NAV1** | network (Network) |
+| **NAV2** | vrack |
+| **Type** | Page datagrid avec tabs |
+| **Description** | Page listant les services attachés à un vRack avec actions |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width |
+| Dimensions | 1392×550px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre principal | pn-12345 |
+| Icône édition | ✎ (#0050D7) |
+| Sous-titre | Mon réseau privé principal |
+
+### 3.2 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | + Ajouter un service |
+| Dimensions | 180×36px |
+| Background | #0050D7 |
+| Position | Droite |
+
+---
+
+## 4. NAV4 - TABS
+
+| Tab | État |
+|-----|------|
+| Services | **Active** (#0050D7, souligné) |
+| IPv6 | Outline |
+| Tâches | Outline |
+
+---
+
+## 5. DATAGRID
+
+### 5.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1392×450px |
+
+### 5.2 En-têtes colonnes
+
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Service | 350px | Nom du service |
+| Type | 200px | Type de service |
+| Datacenter | 200px | Localisation |
+| Status | 150px | Badge statut |
+| Ajouté le | 200px | Date d'ajout |
+| Actions | 100px | Bouton Retirer |
+
+### 5.3 Header style
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Font-size | 12px |
+| Font-weight | 600 |
+| Couleur | #1F2937 |
+
+### 5.4 Données exemple
+
+| Service | Type | Datacenter | Status | Ajouté le |
+|---------|------|------------|--------|-----------|
+| ns12345.ip-123-45-67.eu | Serveur dédié | Gravelines (GRA) | Actif | 15/03/2024 |
+| vps-abc123.vps.ovh.net | VPS | Roubaix (RBX) | Actif | 10/02/2024 |
+| pcc-192-168-1-100.ovh.com | Hosted Private Cloud | Strasbourg (SBG) | Actif | 05/01/2024 |
+| ip-failover-block-192.168.0.0/28 | Additional IP Block | Gravelines (GRA) | Actif | 20/12/2023 |
+| cloud-project-xyz789 | Public Cloud | Beauharnois (BHS) | Actif | 18/11/2023 |
+
+### 5.5 Badge statut
+
+| Statut | Background | Couleur | Dimensions |
+|--------|------------|---------|------------|
+| Actif | #DEF7EC | #059669 | 50×22px |
+
+### 5.6 Bouton Retirer
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 80×30px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Texte | Retirer |
+
+---
+
+## 6. PAGINATION
+
+| Élément | Valeur |
+|---------|--------|
+| Texte gauche | Affichage 1-5 sur 5 services |
+| Navigation | ‹ [1] › |
+
+### 6.1 Style navigation
+
+| Élément | Style |
+|---------|-------|
+| Bouton inactif | Background #FFFFFF, border #E5E7EB |
+| Bouton page actif | Background #0050D7, texte #FFFFFF |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic tab | Changer d'onglet |
+| Clic Ajouter un service | Ouvrir modal d'ajout |
+| Clic Retirer | Retirer le service du vRack |
+| Clic ✎ | Modifier le nom du vRack |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les services du vRack
+
+```
+GET /vrack/{serviceName}/services
+```
+
+Response:
+```json
+[
+  {
+    "id": "ns12345",
+    "name": "ns12345.ip-123-45-67.eu",
+    "type": "dedicatedServer",
+    "datacenter": "gra",
+    "datacenterName": "Gravelines (GRA)",
+    "status": "active",
+    "addedDate": "2024-03-15"
+  }
+]
+```
+
+### 8.2 Retirer un service
+
+```
+DELETE /vrack/{serviceName}/services/{serviceType}/{serviceId}
+```
+
+Response:
+```json
+{
+  "taskId": "task-123456",
+  "status": "pending"
+}
+```
+
+### 8.3 Ajouter un service
+
+```
+POST /vrack/{serviceName}/services
+```
+
+Body:
+```json
+{
+  "serviceType": "dedicatedServer",
+  "serviceId": "ns12345"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vrack_services_title` | Services |
+| `vrack_services_add` | Ajouter un service |
+| `vrack_services_col_service` | Service |
+| `vrack_services_col_type` | Type |
+| `vrack_services_col_dc` | Datacenter |
+| `vrack_services_col_status` | Status |
+| `vrack_services_col_added` | Ajouté le |
+| `vrack_services_col_actions` | Actions |
+| `vrack_services_status_active` | Actif |
+| `vrack_services_remove` | Retirer |
+| `vrack_services_type_dedicated` | Serveur dédié |
+| `vrack_services_type_vps` | VPS |
+| `vrack_services_type_pcc` | Hosted Private Cloud |
+| `vrack_services_type_ip` | Additional IP Block |
+| `vrack_services_type_cloud` | Public Cloud |
+| `vrack_services_count` | services |

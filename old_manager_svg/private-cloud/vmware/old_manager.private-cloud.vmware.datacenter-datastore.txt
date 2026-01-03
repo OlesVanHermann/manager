@@ -1,0 +1,198 @@
+# Cahier des Charges : private-cloud/vmware/datacenter-datastore
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.datacenter-datastore.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page datagrid avec progress bars |
+| **Description** | Liste des datastores d'un datacenter VMware avec utilisation et informations |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Placeholder | Rechercher... |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | pcc-192-0-2-1 |
+| Sous-titre | dc-gra1 |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Datastores |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 Info texte
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Un datastore global est un datastore monté sur l'ensemble des clusters / datacentres virtuels d'une infrastructure VMware. |
+| Font-size | 11px |
+| Couleur | #6B7280 |
+
+### 4.3 Bouton commande
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commander un datastore |
+| Dimensions | 200×36px |
+| Style | Outline (#E5E7EB) |
+
+---
+
+## 5. DATAGRID
+
+### 5.1 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| Nom | 120px |
+| Profil | 140px |
+| Taille | 80px |
+| Utilisation | 160px |
+| Noeud actuel | 120px |
+| Paiement | 100px |
+| État | 80px |
+| Portée | 100px |
+| Baie | 80px |
+| Actions | 50px |
+
+### 5.2 Données exemple
+
+| Nom | Profil | Taille | Utilisation | Noeud | Paiement | État | Portée | Baie |
+|-----|--------|--------|-------------|-------|----------|------|--------|------|
+| ds-001 | SSD-NVMe 3.2TB | 3.2 TB | 50% | Primaire (node01) | Au mois | Actif | Global | R3A-B01 |
+| ds-002 | SSD-NVMe 3.2TB | 3.2 TB | 75% | Primaire (node01) | A l'heure | Actif | Non global | R3A-B02 |
+| ds-003 | HDD-SATA 4TB | 4 TB | 20% | Réplicat (node02) | Au mois | Actif | Non global | R3A-B03 |
+
+### 5.3 Progress bar utilisation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 120×16px |
+| Background vide | #E5E7EB |
+| Background rempli | #0050D7 |
+| Border radius | 4px |
+| Texte | Pourcentage centré |
+| Couleur texte | #FFFFFF (si >30%) ou #1F2937 |
+
+### 5.4 Badge état
+
+| État | Background | Couleur |
+|------|------------|---------|
+| Actif | #DEF7EC | #059669 |
+
+### 5.5 ActionMenu
+
+| Propriété | Valeur |
+|-----------|--------|
+| Icône trigger | ⋮ |
+| Position | Dernière colonne |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Commander | Ouvrir wizard commande datastore |
+| Clic ⋮ | Ouvrir ActionMenu |
+| Clic ligne | Afficher détails datastore |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Lister les datastores
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/filer
+```
+
+Response:
+```json
+[
+  {
+    "filerId": 1,
+    "name": "ds-001",
+    "profile": "SSD-NVMe 3.2TB",
+    "size": 3200,
+    "usedSpace": 1600,
+    "usagePercent": 50,
+    "primaryNode": "node01",
+    "billing": "monthly",
+    "state": "active",
+    "global": true,
+    "rack": "R3A-B01"
+  }
+]
+```
+
+### 7.2 Commander un datastore
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderNewFilerHourly
+```
+
+ou
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderNewFiler
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_dc_datastore_title` | Datastores |
+| `vmware_dc_datastore_info` | Un datastore global est un datastore monté sur l'ensemble des clusters / datacentres virtuels d'une infrastructure VMware. |
+| `vmware_dc_datastore_order` | Commander un datastore |
+| `vmware_dc_datastore_col_name` | Nom |
+| `vmware_dc_datastore_col_profile` | Profil |
+| `vmware_dc_datastore_col_size` | Taille |
+| `vmware_dc_datastore_col_usage` | Utilisation |
+| `vmware_dc_datastore_col_node` | Noeud actuel |
+| `vmware_dc_datastore_col_billing` | Paiement |
+| `vmware_dc_datastore_col_state` | État |
+| `vmware_dc_datastore_col_scope` | Portée |
+| `vmware_dc_datastore_col_rack` | Baie |
+| `vmware_dc_datastore_monthly` | Au mois |
+| `vmware_dc_datastore_hourly` | A l'heure |
+| `vmware_dc_datastore_active` | Actif |
+| `vmware_dc_datastore_global` | Global |
+| `vmware_dc_datastore_not_global` | Non global |
+| `vmware_dc_datastore_primary` | Primaire |
+| `vmware_dc_datastore_replica` | Réplicat |

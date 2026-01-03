@@ -1,0 +1,213 @@
+# Cahier des Charges : private-cloud/vmware/wizard-host-order
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.wizard-host-order.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page commande avec LEFT PANEL et datagrid sélection |
+| **Description** | Wizard pour commander un host ESXi avec sélection du type et quantité |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Placeholder | Rechercher... |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | pcc-192-0-2-1 |
+| Sous-titre | dc-gra1 |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Commander un host |
+| Couleur | #0050D7 |
+
+### 4.2 Info banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×40px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Icône | ℹ️ |
+| Message | Les prix affichés sont indicatifs. Des réductions peuvent s'appliquer selon votre engagement. |
+| Couleur texte | #1E40AF |
+
+### 4.3 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Sélectionnez le type de host que vous souhaitez commander pour votre datacentre. |
+| Ligne 2 | Veuillez sélectionner un host : |
+
+---
+
+## 5. DATAGRID SÉLECTION HOSTS
+
+### 5.1 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| (Radio) | 50px |
+| Host | 240px |
+| Fréquence | 120px |
+| Mémoire | 120px |
+| Coeurs | 160px |
+| Prix | 300px |
+
+### 5.2 Données exemple
+
+| Host | Fréquence | Mémoire | Coeurs | Prix mensuel | Prix horaire |
+|------|-----------|---------|--------|--------------|--------------|
+| AMD EPYC 7502 | 2.5 GHz | 512 GB | 32 | 750,00 € HT/mois | + 1,20 € HT/heure |
+| AMD EPYC 7543 | 2.8 GHz | 768 GB | 64 | 1 200,00 € HT/mois | + 1,80 € HT/heure |
+| Intel Xeon Gold 6248 | 2.5 GHz | 384 GB | 40 | 950,00 € HT/mois | + 1,50 € HT/heure |
+| Intel Xeon Platinum 8358 | 2.6 GHz | 1 TB | 64 | 1 800,00 € HT/mois | + 2,50 € HT/heure |
+
+### 5.3 Style ligne sélectionnée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Border | 2px #0050D7 |
+| Radio | Cercle #0050D7 avec point blanc |
+
+### 5.4 Style ligne non sélectionnée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #FFFFFF |
+| Border bottom | 1px #E5E7EB |
+| Radio | Cercle border #E5E7EB |
+
+---
+
+## 6. SÉLECTEUR QUANTITÉ
+
+### 6.1 Label
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Quantité souhaitée : |
+| Font-size | 12px |
+
+### 6.2 Input stepper
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 120×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Bouton − | Gauche |
+| Valeur | Centre (1) |
+| Bouton + | Droite |
+
+---
+
+## 7. FOOTER
+
+### 7.1 Bouton commande
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commander |
+| Dimensions | 140×40px |
+| Background | #0050D7 |
+| Border radius | 4px |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic ligne host | Sélectionner ce type de host |
+| Clic − | Décrémenter quantité (min: 1) |
+| Clic + | Incrémenter quantité |
+| Clic Commander | Valider la commande |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les types de hosts disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderableHostProfiles
+```
+
+Response:
+```json
+[
+  {
+    "profile": "AMD EPYC 7502",
+    "frequency": "2.5 GHz",
+    "memory": "512 GB",
+    "cores": 32,
+    "monthlyPrice": { "value": 750, "text": "750,00 € HT/mois" },
+    "hourlyPrice": { "value": 1.20, "text": "+ 1,20 € HT/heure" }
+  }
+]
+```
+
+### 9.2 Commander un host
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/orderNewHostHourly
+```
+
+Body:
+```json
+{
+  "profile": "AMD EPYC 7502",
+  "quantity": 1
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_host_order_title` | Commander un host |
+| `vmware_host_order_info` | Les prix affichés sont indicatifs. Des réductions peuvent s'appliquer selon votre engagement. |
+| `vmware_host_order_desc` | Sélectionnez le type de host que vous souhaitez commander pour votre datacentre. |
+| `vmware_host_order_select` | Veuillez sélectionner un host : |
+| `vmware_host_order_col_host` | Host |
+| `vmware_host_order_col_freq` | Fréquence |
+| `vmware_host_order_col_mem` | Mémoire |
+| `vmware_host_order_col_cores` | Coeurs |
+| `vmware_host_order_col_price` | Prix |
+| `vmware_host_order_quantity` | Quantité souhaitée : |
+| `vmware_host_order_submit` | Commander |

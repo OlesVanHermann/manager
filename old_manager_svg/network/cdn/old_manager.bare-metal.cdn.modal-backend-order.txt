@@ -1,0 +1,257 @@
+# Cahier des Charges : bare-metal/cdn/modal-backend-order
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.cdn.modal-backend-order.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | cdn |
+| **Type** | Modal wizard 4 étapes |
+| **Description** | Modal wizard pour commander des backends CDN supplémentaires |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 800px |
+| Hauteur | 560px |
+| Position | Centrée (x: 320, y: 150) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #FFFFFF |
+| Barre latérale | 4px #0050D7 |
+| Titre | Commander des backends supplémentaires |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+| Séparateur | 1px #E5E7EB |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nombre d'étapes | 4 |
+| Position | Sous le header |
+
+### 4.2 Étapes
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Quantité | Active (#0050D7) |
+| 2 | Durée | Inactive (outline) |
+| 3 | Confirmation | Inactive (outline) |
+| 4 | Bon de commande | Inactive (outline) |
+
+### 4.3 Style stepper
+
+| Élément | Propriété | Valeur |
+|---------|-----------|--------|
+| Cercle actif | Fill | #0050D7 |
+| Cercle actif | Dimensions | r=15px |
+| Cercle inactif | Fill | #FFFFFF |
+| Cercle inactif | Stroke | #E5E7EB, 2px |
+| Ligne | Stroke | #E5E7EB |
+| Ligne | Stroke-width | 2px |
+
+---
+
+## 5. CONTENU ÉTAPE 1 (Quantité)
+
+### 5.1 Question
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Combien de backends supplémentaires souhaitez-vous commander ? |
+| Font-size | 13px |
+
+### 5.2 Champ quantité
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nombre de backends |
+| Type | Number input |
+| Dimensions | 200×40px |
+| Background | #F3F4F6 |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | 5 |
+
+### 5.3 Information prix
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Tarification : |
+| Valeur | 15,00 € HT / backend / mois |
+| Couleur prix | #DC2626 |
+| Font-weight | 500 |
+
+### 5.4 Sélection durée (preview étape 2)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Durée d'engagement |
+| Font-weight | 500 |
+
+### 5.5 Options durée
+
+| Option | Prix total | État |
+|--------|------------|------|
+| 12 mois - Total : 900,00 € HT | 5×15×12 | Sélectionné |
+| 6 mois - Total : 450,00 € HT | 5×15×6 | Non sélectionné |
+| 1 mois - Total : 75,00 € HT | 5×15×1 | Non sélectionné |
+
+### 5.6 Style radio
+
+| Élément | Propriété | Valeur |
+|---------|-----------|--------|
+| Radio sélectionné | Cercle ext. | Border 2px #0050D7 |
+| Radio sélectionné | Cercle int. | Fill #0050D7, r=4px |
+| Radio non sélectionné | Cercle | Border 2px #E5E7EB |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#0050D7) | 90×36px | Droite (-) |
+| Suivant | Primary (#0050D7) | 96×36px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Modifier quantité | Recalculer prix total |
+| Sélectionner durée | Recalculer prix total |
+| Clic Suivant | Passer à l'étape suivante |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Nombre de backends | Obligatoire, entier >= 1 |
+| Durée | Une option doit être sélectionnée |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les prix des backends
+
+```
+GET /cdn/{serviceName}/backend/pricing
+```
+
+Response:
+```json
+{
+  "pricePerBackendPerMonth": {
+    "value": 15,
+    "currency": "EUR",
+    "text": "15,00 € HT"
+  },
+  "availableDurations": [1, 6, 12]
+}
+```
+
+### 9.2 Calculer le devis
+
+```
+POST /cdn/{serviceName}/backend/quote
+```
+
+Body:
+```json
+{
+  "quantity": 5,
+  "duration": 12
+}
+```
+
+Response:
+```json
+{
+  "quantity": 5,
+  "duration": 12,
+  "pricePerUnit": 15,
+  "total": {
+    "value": 900,
+    "currency": "EUR",
+    "text": "900,00 € HT"
+  }
+}
+```
+
+### 9.3 Commander les backends
+
+```
+POST /cdn/{serviceName}/backend/order
+```
+
+Body:
+```json
+{
+  "quantity": 5,
+  "duration": 12
+}
+```
+
+Response:
+```json
+{
+  "orderId": "order-123456",
+  "url": "https://www.ovh.com/order/..."
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_backend_order_title` | Commander des backends supplémentaires |
+| `cdn_backend_order_step_quantity` | Quantité |
+| `cdn_backend_order_step_duration` | Durée |
+| `cdn_backend_order_step_confirm` | Confirmation |
+| `cdn_backend_order_step_order` | Bon de commande |
+| `cdn_backend_order_question` | Combien de backends supplémentaires souhaitez-vous commander ? |
+| `cdn_backend_order_label` | Nombre de backends |
+| `cdn_backend_order_pricing` | Tarification : |
+| `cdn_backend_order_duration` | Durée d'engagement |
+| `cdn_backend_order_months` | mois |
+| `cdn_backend_order_total` | Total |
+| `cdn_backend_order_cancel` | Annuler |
+| `cdn_backend_order_next` | Suivant |

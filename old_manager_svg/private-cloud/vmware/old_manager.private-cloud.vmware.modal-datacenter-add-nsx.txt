@@ -1,0 +1,212 @@
+# Cahier des Charges : private-cloud/vmware/modal-datacenter-add-nsx
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-datacenter-add-nsx.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page commande avec LEFT PANEL et carte sélection |
+| **Description** | Page pour commander des nœuds NSX Edge pour un datacenter |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Placeholder | Rechercher... |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | pcc-192-0-2-1 |
+| Sous-titre | dc-gra1 |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour |
+| Couleur | #0050D7 |
+
+### 4.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Ajouter des noeuds NSX Edge |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.3 Description
+
+| Ligne | Texte |
+|-------|-------|
+| 1 | Par défaut, tous les datacenters virtuels (VDC) NSX disposent d'un cluster NSX Edge composé de deux NSX Edge medium. |
+| 2 | Vous avez ensuite la possibilité de modifier la taille des Edges, sous réserve de disposer des ressources nécessaires. |
+| 3 | Cette interface vous permet d'ajouter des NSX Edge Nodes. Ceux-ci sont facturés au tarif de **0,02€ HT** par vCPU et par mois. |
+
+---
+
+## 5. CARTE NSX EDGE (sélectionnée)
+
+### 5.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×280px |
+| Background | #E8F0FE |
+| Border | 2px #0050D7 |
+| Border radius | 8px |
+
+### 5.2 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Height | 50px |
+| Background | #0050D7 |
+| Titre | NSX Edge medium |
+| Couleur titre | #FFFFFF |
+| Font-weight | 600 |
+
+### 5.3 Radio sélection
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle externe | 20px #FFFFFF |
+| Cercle interne | 10px #0050D7 |
+
+### 5.4 Description carte
+
+| Ligne | Texte |
+|-------|-------|
+| 1 | Convient lorsque seules les fonctionnalités |
+| 2 | L2 à L4 telles que NAT, le routage, le pare-feu L4, |
+| 3 | l'équilibreur de charge L4 sont requises et que |
+| 4 | le débit total est inférieur à 2 Gbits/s. |
+
+### 5.5 Spécifications
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Medium - Taille du dispositif par nœud |
+| Specs | 4 vCPU - 8Go RAM - 200 Go |
+| Prix | à partir de 0,02€ HT/vCPU/mois |
+| Couleur prix | #0050D7 |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | Outline (#E5E7EB) | 100×40px |
+| Commander | Primary (#0050D7) | 140×40px |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic carte taille | Sélectionner cette taille d'Edge |
+| Clic Annuler | Retour au dashboard datacenter |
+| Clic Commander | Lancer la commande NSX Edge |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Commander des nœuds NSX Edge
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsx/edges
+```
+
+Body:
+```json
+{
+  "size": "medium",
+  "quantity": 2
+}
+```
+
+Response:
+```json
+{
+  "orderId": "order-456",
+  "price": {
+    "value": 0.16,
+    "currency": "EUR",
+    "text": "0,16€ HT/mois"
+  }
+}
+```
+
+### 8.2 Obtenir les tailles disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsx/edges/sizes
+```
+
+Response:
+```json
+[
+  {
+    "size": "medium",
+    "vcpu": 4,
+    "ram": "8Go",
+    "storage": "200Go",
+    "pricePerVcpu": 0.02,
+    "description": "Convient pour les fonctionnalités L2-L4"
+  },
+  {
+    "size": "large",
+    "vcpu": 8,
+    "ram": "16Go",
+    "storage": "400Go",
+    "pricePerVcpu": 0.02,
+    "description": "Pour charges plus importantes"
+  }
+]
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_nsx_edge_add_title` | Ajouter des noeuds NSX Edge |
+| `vmware_nsx_edge_desc1` | Par défaut, tous les datacenters virtuels (VDC) NSX disposent d'un cluster NSX Edge composé de deux NSX Edge medium. |
+| `vmware_nsx_edge_desc2` | Vous avez ensuite la possibilité de modifier la taille des Edges, sous réserve de disposer des ressources nécessaires. |
+| `vmware_nsx_edge_price_info` | Cette interface vous permet d'ajouter des NSX Edge Nodes. Ceux-ci sont facturés au tarif de {price} par vCPU et par mois. |
+| `vmware_nsx_edge_medium` | NSX Edge medium |
+| `vmware_nsx_edge_medium_desc` | Convient lorsque seules les fonctionnalités L2 à L4 telles que NAT, le routage, le pare-feu L4, l'équilibreur de charge L4 sont requises et que le débit total est inférieur à 2 Gbits/s. |
+| `vmware_nsx_edge_specs` | {vcpu} vCPU - {ram} RAM - {storage} |
+| `vmware_nsx_edge_cancel` | Annuler |
+| `vmware_nsx_edge_order` | Commander |

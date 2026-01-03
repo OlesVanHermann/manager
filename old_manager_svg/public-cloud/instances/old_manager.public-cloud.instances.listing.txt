@@ -1,0 +1,195 @@
+# Cahier des Charges : public-cloud/instances/listing
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.instances.listing.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | instances |
+| **Type** | Listing / Datagrid |
+| **Description** | Liste des instances Public Cloud avec actions |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| Breadcrumb | mon-projet / Instances |
+| NAV2 | Instances (actif), Block Storage |
+
+---
+
+## 3. HEADER
+
+| Titre | Instances |
+| Font-size | 22px |
+| Font-weight | 600 |
+| Bouton guides | 📖 Guides (100×32px, outline) |
+| Bouton créer | + Créer une instance (180×36px, outline) |
+| Bouton refresh | ↻ (40×36px, outline) |
+
+---
+
+## 4. BANDEAU VRACK
+
+| Dimensions | 1392×45px |
+| Background | #DBEAFE (info) |
+| Message | ℹ️ Aucun vRack n'est associé à ce projet. Créez-en un pour bénéficier d'un réseau privé entre vos instances. |
+| Lien | Créer un vRack (souligné, primary) |
+
+---
+
+## 5. TABLEAU INSTANCES
+
+### 5.1 Dimensions
+
+| Largeur | 1392px |
+| Hauteur | 500px |
+| Border-radius | 8px |
+
+### 5.2 Colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| NOM/ID | 180px |
+| LOCALISATION | 120px |
+| MODÈLE | 120px |
+| IMAGE | 160px |
+| IP PUBLIQUE | 140px |
+| IP PRIVÉE | 120px |
+| VOLUME(S) | 120px |
+| STATUT | 120px |
+| ACTIONS | 80px |
+
+### 5.3 Header tableau
+
+| Background | #F9FAFB |
+| Hauteur | 45px |
+| Font-size | 10px |
+| Font-weight | 600 |
+
+---
+
+## 6. STATUTS INSTANCE
+
+| Statut | Badge | Background | Texte |
+|--------|-------|------------|-------|
+| Activée | success | #DEF7EC | #059669 |
+| Création | warning | #FEF3C7 | #D97706 |
+| En erreur | error | #FEE2E2 | #DC2626 |
+
+---
+
+## 7. DONNÉES EXEMPLE
+
+| Nom | Localisation | Modèle | Image | IP Publique | Statut |
+|-----|--------------|--------|-------|-------------|--------|
+| web-server-01 | GRA11 | b2-15 | Ubuntu 22.04 | 51.210.45.123 | Activée |
+| api-backend-02 | SBG5 | b2-30 | Debian 12 | 51.210.89.45 | Activée |
+| db-server-new | GRA11 | r2-60 | Ubuntu 22.04 | — | Création |
+| test-instance-old | BHS5 | d2-8 | CentOS 7 | — | En erreur |
+
+---
+
+## 8. MENU ACTIONS
+
+| Dimensions | 200×280px |
+| Border-radius | 6px |
+
+### Options
+
+| Option | Groupe |
+|--------|--------|
+| Détail de l'instance | - |
+| Modifier | - |
+| Attribuer une IP flottante | - |
+| Passer en facturation mensuelle | - |
+| Créer un backup | - |
+| --- | Séparateur |
+| Démarrer | Alimentation |
+| Arrêter | Alimentation |
+| --- | Séparateur |
+| Mode rescue | Maintenance |
+| Redémarrer (soft) | Maintenance |
+| --- | Séparateur |
+| Supprimer | Danger |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les instances
+
+```
+GET /cloud/project/{projectId}/instance
+```
+
+Response:
+```json
+[
+  {
+    "id": "instance-id",
+    "name": "web-server-01",
+    "region": "GRA11",
+    "flavorId": "b2-15",
+    "imageId": "ubuntu-22.04",
+    "ipAddresses": [...],
+    "status": "ACTIVE"
+  }
+]
+```
+
+### 9.2 Créer une instance
+
+```
+POST /cloud/project/{projectId}/instance
+```
+
+### 9.3 Supprimer une instance
+
+```
+DELETE /cloud/project/{projectId}/instance/{instanceId}
+```
+
+### 9.4 Démarrer/Arrêter une instance
+
+```
+POST /cloud/project/{projectId}/instance/{instanceId}/start
+POST /cloud/project/{projectId}/instance/{instanceId}/stop
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_instances_title` | Instances |
+| `pci_instances_guides` | Guides |
+| `pci_instances_create` | Créer une instance |
+| `pci_instances_vrack_info` | Aucun vRack n'est associé à ce projet. Créez-en un pour bénéficier d'un réseau privé entre vos instances. |
+| `pci_instances_vrack_create` | Créer un vRack |
+| `pci_instances_col_name` | NOM/ID |
+| `pci_instances_col_region` | LOCALISATION |
+| `pci_instances_col_flavor` | MODÈLE |
+| `pci_instances_col_image` | IMAGE |
+| `pci_instances_col_public_ip` | IP PUBLIQUE |
+| `pci_instances_col_private_ip` | IP PRIVÉE |
+| `pci_instances_col_volumes` | VOLUME(S) |
+| `pci_instances_col_status` | STATUT |
+| `pci_instances_status_active` | Activée |
+| `pci_instances_status_building` | Création |
+| `pci_instances_status_error` | En erreur |
+| `pci_instances_action_detail` | Détail de l'instance |
+| `pci_instances_action_edit` | Modifier |
+| `pci_instances_action_floating_ip` | Attribuer une IP flottante |
+| `pci_instances_action_monthly` | Passer en facturation mensuelle |
+| `pci_instances_action_backup` | Créer un backup |
+| `pci_instances_action_start` | Démarrer |
+| `pci_instances_action_stop` | Arrêter |
+| `pci_instances_action_rescue` | Mode rescue |
+| `pci_instances_action_reboot` | Redémarrer (soft) |
+| `pci_instances_action_delete` | Supprimer |

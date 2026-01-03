@@ -1,0 +1,470 @@
+================================================================================
+PROMPT TARGET - NAV1: Licence
+================================================================================
+
+Version: v1.0 (2026-01-03)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+CHANGELOG v1.0:
+- Création initiale: NAV1 Licence comme univers autonome (sorti de Bare Metal)
+- 9 NAV2: Dashboard, cPanel, Plesk, DirectAdmin, CloudLinux, Windows, SQL Server, Virtuozzo, Office 365
+- Pattern "Général (All)" en tête de sidebar pour vue récapitulative
+- NAV3: [Général] systématique dans LEFT PANEL
+- NAV4 dynamiques selon sélection (All vs licence spécifique)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+INTERDIT : Afficher le SVG dans la conversation
+OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. POSITION NAV1 DANS LE HEADER OVH
+##############################################################################
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│  ≡  OVHcloud  │ Hosted Private Cloud │ Bare Metal │ Public Cloud │ Licence● │ ...  │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+                                                                      ▲
+                                                                      │
+                                                              NAV1 actif (x=~950)
+```
+
+| NAV1 Item | Position X | Description |
+|-----------|------------|-------------|
+| Hosted Private Cloud | ~220 | VMware, Nutanix |
+| Bare Metal | ~420 | Serveurs dédiés, VPS |
+| Public Cloud | ~560 | Instances, Storage |
+| **Licence** | **~700** | **Licences logicielles** |
+| Network | ~820 | vRack, Load Balancer |
+| IAM | ~920 | Identités, Policies |
+
+##############################################################################
+# 2. ARBORESCENCE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Licence (header bleu OVH)
+│
+├── NAV2: Dashboard (/licence)
+│   │
+│   │   PAGE SPÉCIALE: Pas de sidebar
+│   │   Vue cards avec compteurs par type de licence
+│   │
+│   └── Cards: [cPanel] [Plesk] [DirectAdmin] [CloudLinux] [Windows] [SQL Server] [Virtuozzo] [Office]
+│
+├── NAV2: cPanel (/licence/cpanel)
+│   │
+│   │   LEFT PANEL (280px):
+│   │   ┌───────────────────┐
+│   │   │ NAV3: [Général●]  │
+│   │   ├───────────────────┤
+│   │   │ 🔍 Rechercher...  │
+│   │   ├───────────────────┤
+│   │   │ ★ Général (All)   │  ← Vue récapitulative
+│   │   │ ○ cp-123456       │  ← Licences individuelles
+│   │   │ ○ cp-789012       │
+│   │   └───────────────────┘
+│   │
+│   │   RIGHT PANEL:
+│   │   ├── SI "Général (All)" sélectionné:
+│   │   │   └── NAV4: [Récapitulatif●] [Tâches]
+│   │   │
+│   │   └── SI licence spécifique:
+│   │       └── NAV4: [Général●] [Historique] [Tâches]
+│   │
+│   └── ACTIONS: [+ Commander] [Renouveler] [Changer IP] [Upgrade] [Résilier]
+│
+├── NAV2: Plesk (/licence/plesk)
+│   │
+│   │   LEFT PANEL: NAV3 [Général●] + ★ Général (All) + liste
+│   │   RIGHT PANEL:
+│   │   ├── "Général (All)" → NAV4: [Récapitulatif●] [Tâches]
+│   │   └── Licence spécifique → NAV4: [Général●] [Extensions] [Tâches]
+│   │
+│   └── ACTIONS: [+ Commander] [Renouveler] [Changer IP] [Upgrade] [+ Extension] [Résilier]
+│
+├── NAV2: DirectAdmin (/licence/directadmin)
+│   │
+│   │   LEFT PANEL: NAV3 [Général●] + ★ Général (All) + liste
+│   │   RIGHT PANEL:
+│   │   ├── "Général (All)" → NAV4: [Récapitulatif●] [Tâches]
+│   │   └── Licence spécifique → NAV4: [Général●] [Skins] [Tâches]
+│   │
+│   └── ACTIONS: [+ Commander] [Renouveler] [Changer IP] [Changer OS] [Upgrade] [Résilier]
+│
+├── NAV2: CloudLinux (/licence/cloudlinux)
+│   │
+│   │   LEFT PANEL: NAV3 [Général●] + ★ Général (All) + liste
+│   │   RIGHT PANEL:
+│   │   ├── "Général (All)" → NAV4: [Récapitulatif●] [Tâches]
+│   │   └── Licence spécifique → NAV4: [Général●] [KernelCare] [Tâches]
+│   │
+│   └── ACTIONS: [+ Commander] [Renouveler] [Changer IP] [Upgrade] [Résilier]
+│
+├── NAV2: Windows (/licence/windows)
+│   │
+│   │   LEFT PANEL: NAV3 [Général●] + ★ Général (All) + liste
+│   │   RIGHT PANEL:
+│   │   ├── "Général (All)" → NAV4: [Récapitulatif●] [Tâches]
+│   │   └── Licence spécifique → NAV4: [Général●] [Activation] [Tâches]
+│   │
+│   └── ACTIONS: [+ Commander] [Renouveler] [Upgrade] [Résilier]
+│
+├── NAV2: SQL Server (/licence/sqlserver)
+│   │
+│   │   LEFT PANEL: NAV3 [Général●] + ★ Général (All) + liste
+│   │   RIGHT PANEL:
+│   │   ├── "Général (All)" → NAV4: [Récapitulatif●] [Tâches]
+│   │   └── Licence spécifique → NAV4: [Général●] [Historique] [Tâches]
+│   │
+│   └── ACTIONS: [+ Commander] [Renouveler] [Upgrade] [Résilier]
+│
+├── NAV2: Virtuozzo (/licence/virtuozzo)
+│   │
+│   │   LEFT PANEL: NAV3 [Général●] + ★ Général (All) + liste
+│   │   RIGHT PANEL:
+│   │   ├── "Général (All)" → NAV4: [Récapitulatif●] [Tâches]
+│   │   └── Licence spécifique → NAV4: [Général●] [Tâches]
+│   │
+│   └── ACTIONS: [+ Commander] [Renouveler] [Changer IP] [Upgrade] [Résilier]
+│
+└── NAV2: Office 365 (/licence/office)
+    │
+    │   LEFT PANEL: NAV3 [Général●] + ★ Général (All) + liste tenants
+    │   RIGHT PANEL:
+    │   ├── "Général (All)" → NAV4: [Récapitulatif●] [Tâches]
+    │   └── Tenant spécifique → NAV4: [Utilisateurs●] [Domaines] [Tâches]
+    │
+    └── ACTIONS: [+ Commander] [+ Utilisateur] [+ Domaine] [Modifier] [Résilier]
+```
+
+##############################################################################
+# 3. RÉCAPITULATIF NAV PAR TYPE
+##############################################################################
+
+| NAV2 | NAV3 | NAV4 (All) | NAV4 (Spécifique) |
+|------|------|------------|-------------------|
+| Dashboard | - | - | - |
+| cPanel | [Général] | [Récapitulatif] [Tâches] | [Général] [Historique] [Tâches] |
+| Plesk | [Général] | [Récapitulatif] [Tâches] | [Général] [Extensions] [Tâches] |
+| DirectAdmin | [Général] | [Récapitulatif] [Tâches] | [Général] [Skins] [Tâches] |
+| CloudLinux | [Général] | [Récapitulatif] [Tâches] | [Général] [KernelCare] [Tâches] |
+| Windows | [Général] | [Récapitulatif] [Tâches] | [Général] [Activation] [Tâches] |
+| SQL Server | [Général] | [Récapitulatif] [Tâches] | [Général] [Historique] [Tâches] |
+| Virtuozzo | [Général] | [Récapitulatif] [Tâches] | [Général] [Tâches] |
+| Office 365 | [Général] | [Récapitulatif] [Tâches] | [Utilisateurs] [Domaines] [Tâches] |
+
+##############################################################################
+# 4. PATTERN LEFT PANEL (SIDEBAR)
+##############################################################################
+
+### Structure standard (280px)
+
+```
+┌─────────────────────────────────┐  y=105 (après NAV1+NAV2+gap)
+│ NAV3: [Général●]                │  h=36px, bouton toggle
+├─────────────────────────────────┤  y=141
+│ 🔍 Rechercher...                │  h=36px, input search
+├─────────────────────────────────┤  y=177
+│ ★ Général (All)            ←    │  h=40px, item spécial (toujours 1er)
+├─────────────────────────────────┤  y=217
+│ ○ licence-123456                │  h=40px, item licence
+│ ○ licence-789012                │
+│ ● licence-345678           ←    │  sélectionné
+│ ○ licence-...                   │
+│                                 │
+│         (scrollable)            │
+│                                 │
+└─────────────────────────────────┘  y=870
+
+Largeur: 280px (fixe)
+X: 24px → 304px
+```
+
+### Item "Général (All)" - Style spécial
+
+```svg
+<!-- Item Général (All) - toujours en premier -->
+<g transform="translate(0, 0)">
+  <rect x="0" y="0" width="256" height="40" rx="6" fill="#F0F5FF"/>
+  <text x="12" y="25" fill="#0050D7" font-size="11" font-weight="600">★ Général (All)</text>
+  <text x="244" y="25" fill="#6B7280" font-size="11">›</text>
+</g>
+```
+
+### Item licence standard
+
+```svg
+<!-- Item licence non sélectionné -->
+<g transform="translate(0, 44)">
+  <rect x="0" y="0" width="256" height="40" rx="6" fill="transparent"/>
+  <text x="12" y="25" fill="#1F2937" font-size="11">cp-123456</text>
+  <circle cx="240" cy="20" r="4" fill="#10B981"/>  <!-- Status dot -->
+</g>
+
+<!-- Item licence sélectionné -->
+<g transform="translate(0, 88)">
+  <rect x="0" y="0" width="256" height="40" rx="6" fill="#E8F0FE"/>
+  <rect x="0" y="0" width="3" height="40" rx="1" fill="#0050D7"/>
+  <text x="12" y="25" fill="#0050D7" font-size="11" font-weight="600">cp-789012</text>
+  <circle cx="240" cy="20" r="4" fill="#10B981"/>
+</g>
+```
+
+##############################################################################
+# 5. PATTERN RIGHT PANEL - VUE "GÉNÉRAL (ALL)"
+##############################################################################
+
+### Structure NAV4 Récapitulatif
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Licences {type} - Vue d'ensemble                           [+ Commander]    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV4: [Récapitulatif●] [Tâches]                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐               │
+│  │  Actives   │ │  Expire    │ │   Coût     │ │  Alertes   │               │
+│  │    12      │ │  bientôt 2 │ │ €156/mois  │ │     1      │               │
+│  └────────────┘ └────────────┘ └────────────┘ └────────────┘               │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ Licence      │ Serveur     │ Version │ IP          │ Exp.    │ Stat │   │
+│  ├──────────────┼─────────────┼─────────┼─────────────┼─────────┼──────┤   │
+│  │ cp-123456    │ ns385421    │ Pro     │ 192.168.x.x │ 25 déc  │  ✓   │   │
+│  │ cp-789012    │ ns412789    │ Admin   │ 10.0.0.x    │ 3 jan   │  ⚠   │   │
+│  │ cp-345678    │ ns398654    │ Solo    │ 172.16.x.x  │ 15 fév  │  ✓   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  Affichage 1-10 sur 12                              [‹] [1] [2] [›]        │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Cartes métriques
+
+| Carte | Icône | Couleur fond | Couleur texte |
+|-------|-------|--------------|---------------|
+| Actives | ✓ | #DEF7EC | #03543F |
+| Expire bientôt | ⏰ | #FEF3C7 | #92400E |
+| Coût mensuel | € | #DBEAFE | #1E40AF |
+| Alertes | ⚠ | #FEE2E2 | #DC2626 |
+
+##############################################################################
+# 6. PATTERN RIGHT PANEL - VUE LICENCE SPÉCIFIQUE
+##############################################################################
+
+### Structure type (ex: cPanel)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Licence cPanel Pro - cp-123456                              [⋮ Actions]     │
+│ IP: 192.168.1.x  •  Version: 11.102  •  ✓ Actif                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ NAV4: [Général●] [Historique] [Tâches]                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────┐  ┌─────────────────────────────┐          │
+│  │ Informations générales      │  │ Fonctionnalités incluses    │          │
+│  │ ─────────────────────────── │  │ ─────────────────────────── │          │
+│  │ Serveur:     ns385421.ip    │  │ ✓ Comptes illimités         │          │
+│  │ IP:          192.168.1.100  │  │ ✓ WHM inclus                │          │
+│  │ Version:     cPanel Pro     │  │ ✓ SSL AutoInstall           │          │
+│  │ Création:    12/01/2024     │  │ ✓ Softaculous inclus        │          │
+│  │ Expiration:  12/01/2025     │  │ ✓ Site Publisher            │          │
+│  │ Renouvellement: ○ Auto      │  │ ✓ ImunifyAV                 │          │
+│  │ Coût:        €15.99 HT/mois │  │ ✓ Backup & Restore          │          │
+│  └─────────────────────────────┘  └─────────────────────────────┘          │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ Actions rapides                                                      │   │
+│  │ [Renouveler] [Changer IP] [Upgrade] [Résilier]                      │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+##############################################################################
+# 7. APIS & ENDPOINTS PAR TYPE
+##############################################################################
+
+### cPanel
+```
+GET    /licence/cpanel                     # Liste toutes les licences
+GET    /licence/cpanel/{serviceName}       # Détail licence
+PUT    /licence/cpanel/{serviceName}       # Modifier licence
+DELETE /licence/cpanel/{serviceName}       # Résilier
+POST   /licence/cpanel/{serviceName}/changeIp  # Changer IP
+GET    /licence/cpanel/{serviceName}/tasks # Tâches en cours
+POST   /order/cart/{cartId}/licence/cpanel # Commander
+GET    /order/catalog/product/licencesCpanel # Catalogue produits
+```
+
+### Plesk
+```
+GET    /licence/plesk                      # Liste
+GET    /licence/plesk/{serviceName}        # Détail
+PUT    /licence/plesk/{serviceName}        # Modifier
+DELETE /licence/plesk/{serviceName}        # Résilier
+POST   /licence/plesk/{serviceName}/changeIp   # Changer IP
+GET    /licence/plesk/{serviceName}/option     # Extensions actives
+POST   /licence/plesk/{serviceName}/option     # Ajouter extension
+DELETE /licence/plesk/{serviceName}/option/{option}  # Supprimer extension
+GET    /licence/plesk/{serviceName}/tasks  # Tâches
+```
+
+### DirectAdmin
+```
+GET    /licence/directadmin                # Liste
+GET    /licence/directadmin/{serviceName}  # Détail
+PUT    /licence/directadmin/{serviceName}  # Modifier
+DELETE /licence/directadmin/{serviceName}  # Résilier
+POST   /licence/directadmin/{serviceName}/changeIp  # Changer IP
+POST   /licence/directadmin/{serviceName}/changeOs  # Changer OS
+GET    /licence/directadmin/{serviceName}/tasks     # Tâches
+```
+
+### CloudLinux
+```
+GET    /licence/cloudLinux                 # Liste
+GET    /licence/cloudLinux/{serviceName}   # Détail
+PUT    /licence/cloudLinux/{serviceName}   # Modifier
+DELETE /licence/cloudLinux/{serviceName}   # Résilier
+POST   /licence/cloudLinux/{serviceName}/changeIp  # Changer IP
+GET    /licence/cloudLinux/{serviceName}/tasks     # Tâches
+```
+
+### Windows
+```
+GET    /licence/windows                    # Liste
+GET    /licence/windows/{serviceName}      # Détail
+PUT    /licence/windows/{serviceName}      # Modifier
+DELETE /licence/windows/{serviceName}      # Résilier
+GET    /licence/windows/{serviceName}/tasks        # Tâches
+```
+
+### SQL Server
+```
+GET    /licence/sqlserver                  # Liste
+GET    /licence/sqlserver/{serviceName}    # Détail
+PUT    /licence/sqlserver/{serviceName}    # Modifier
+DELETE /licence/sqlserver/{serviceName}    # Résilier
+GET    /licence/sqlserver/{serviceName}/tasks      # Tâches
+```
+
+### Virtuozzo
+```
+GET    /licence/virtuozzo                  # Liste
+GET    /licence/virtuozzo/{serviceName}    # Détail
+PUT    /licence/virtuozzo/{serviceName}    # Modifier
+DELETE /licence/virtuozzo/{serviceName}    # Résilier
+POST   /licence/virtuozzo/{serviceName}/changeIp   # Changer IP
+GET    /licence/virtuozzo/{serviceName}/tasks      # Tâches
+```
+
+### Office 365
+```
+GET    /licence/office/domain              # Liste tenants
+GET    /licence/office/domain/{domain}     # Détail tenant
+GET    /licence/office/domain/{domain}/account     # Utilisateurs
+POST   /licence/office/domain/{domain}/account     # Ajouter user
+PUT    /licence/office/domain/{domain}/account/{id}    # Modifier user
+DELETE /licence/office/domain/{domain}/account/{id}    # Supprimer user
+GET    /licence/office/domain/{domain}/tasks       # Tâches
+```
+
+##############################################################################
+# 8. PROMPTS COMPLÉMENTAIRES (FICHIERS PAR NAV2)
+##############################################################################
+
+| Fichier | Section | Screenshots |
+|---------|---------|-------------|
+| prompt_target.licence.dashboard.txt | Dashboard NAV2 | prompt_target.licence.dashboard-screenshot.txt |
+| prompt_target.licence.cpanel.txt | cPanel | prompt_target.licence.cpanel-screenshot.txt |
+| prompt_target.licence.plesk.txt | Plesk | prompt_target.licence.plesk-screenshot.txt |
+| prompt_target.licence.directadmin.txt | DirectAdmin | prompt_target.licence.directadmin-screenshot.txt |
+| prompt_target.licence.cloudlinux.txt | CloudLinux | prompt_target.licence.cloudlinux-screenshot.txt |
+| prompt_target.licence.windows.txt | Windows | prompt_target.licence.windows-screenshot.txt |
+| prompt_target.licence.sqlserver.txt | SQL Server | prompt_target.licence.sqlserver-screenshot.txt |
+| prompt_target.licence.virtuozzo.txt | Virtuozzo | prompt_target.licence.virtuozzo-screenshot.txt |
+| prompt_target.licence.office.txt | Office 365 | prompt_target.licence.office-screenshot.txt |
+
+##############################################################################
+# 9. MODALS COMMUNS (TOUS TYPES)
+##############################################################################
+
+### Modal Commander (+)
+- Sélection type de licence
+- Sélection version/offre
+- IP cible (optionnel)
+- Récapitulatif prix
+- Boutons: [Annuler] [Commander]
+
+### Modal Renouveler
+- Période de renouvellement (1/3/6/12 mois)
+- Prix calculé
+- Boutons: [Annuler] [Renouveler]
+
+### Modal Changer IP
+- IP actuelle (readonly)
+- Nouvelle IP (input)
+- Boutons: [Annuler] [Valider]
+
+### Modal Upgrade
+- Offre actuelle
+- Liste offres disponibles
+- Différence de prix
+- Boutons: [Annuler] [Upgrade]
+
+### Modal Résilier
+- Warning message
+- Date de fin
+- Checkbox confirmation
+- Boutons: [Annuler] [Résilier]
+
+##############################################################################
+# 10. BADGES STATUT (COMMUNS)
+##############################################################################
+
+| Statut | Fond | Texte | Label |
+|--------|------|-------|-------|
+| Actif | #DEF7EC | #03543F | Actif |
+| Expirant | #FEF3C7 | #92400E | Expire bientôt |
+| Expiré | #FEE2E2 | #DC2626 | Expiré |
+| Suspendu | #F3F4F6 | #6B7280 | Suspendu |
+| En cours | #DBEAFE | #1E40AF | En cours |
+
+##############################################################################
+# 11. CHECKLIST IMPLEMENTATION
+##############################################################################
+
+Pour chaque page licence:
+
+### Layout
+[ ] NAV1 "Licence" actif dans header
+[ ] NAV2 type de licence actif
+[ ] LEFT PANEL 280px avec NAV3 [Général]
+[ ] Item "★ Général (All)" en premier dans liste
+[ ] RIGHT PANEL avec NAV4 dynamiques
+
+### Fonctionnalités
+[ ] Search dans sidebar
+[ ] Sélection item → chargement détails
+[ ] NAV4 change selon sélection (All vs spécifique)
+[ ] Actions contextuelles dans header
+[ ] Pagination si > 10 items
+
+### APIs
+[ ] Liste au mount (lazy)
+[ ] Détails on-select
+[ ] Refresh après action
+[ ] Gestion erreurs
+
+================================================================================
+FIN PROMPT TARGET NAV1 LICENCE v1.0
+================================================================================

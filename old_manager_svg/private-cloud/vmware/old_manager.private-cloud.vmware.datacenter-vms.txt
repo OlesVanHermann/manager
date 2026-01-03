@@ -1,0 +1,238 @@
+# Cahier des Charges : private-cloud/vmware/datacenter-vms
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.datacenter-vms.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page datagrid avec tabs NAV4 |
+| **Description** | Liste des machines virtuelles d'un datacenter avec gestion des licences et backups |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | ← Retour aux datacentres |
+| Couleur | #0050D7 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre principal | dc-1 |
+| Font-size | 20px |
+| Font-weight | 600 |
+| Icône édition | ✎ (dans carré 24×24px) |
+
+### 3.3 Sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Production VMware > pcc-192-0-2-1 |
+| Couleur | #6B7280 |
+
+---
+
+## 4. NAV4 - TABS DATACENTER
+
+| Tab | Dimensions | État |
+|-----|------------|------|
+| Dashboard | 80×32px | Outline |
+| Hosts | 70×32px | Outline |
+| Datastores | 90×32px | Outline |
+| Machines virtuelles | 120×32px | **Active** (#0050D7 fond) |
+| Backup | 70×32px | Outline |
+| Réseau | 70×32px | Outline |
+
+---
+
+## 5. CONTENU VMs
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Machines virtuelles |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+---
+
+## 6. DATAGRID
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1320×220px |
+| Border | 1px #E5E7EB |
+
+### 6.2 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| Nom | 180px |
+| vCPU | 70px |
+| Mémoire | 90px |
+| Stockage | 90px |
+| Système d'exploitation | 200px |
+| Licence | 130px |
+| Backup | 170px |
+| Actions | 100px |
+
+### 6.3 Header style
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 40px |
+| Background | #F9FAFB |
+| Font-size | 11px |
+| Font-weight | 600 |
+| Couleur | #6B7280 |
+
+### 6.4 Données exemple
+
+| Nom | vCPU | Mémoire | Stockage | OS | Licence | Backup |
+|-----|------|---------|----------|----|---------| ------|
+| vm-web-prod-01 | 4 | 16 GB | 500 GB | Windows Server 2019 | Windows SPLA | Active (5 pts) |
+| vm-db-prod-01 | 8 | 64 GB | 2 TB | Windows Server 2022 | Windows SPLA | Active (7 pts) |
+| vm-app-prod-01 | 4 | 8 GB | 250 GB | CentOS 8 | Désactivée | Aucun |
+| vm-mail-prod-01 | 2 | 4 GB | 100 GB | Debian 11 | Désactivée | Active (3 pts) |
+
+### 6.5 Styles badges
+
+| Type | Badge | Background | Couleur |
+|------|-------|------------|---------|
+| Licence Windows | Windows SPLA | #DBEAFE | #1E40AF |
+| Licence inactive | Désactivée | #F3F4F6 | #6B7280 |
+| Backup actif | Active (X pts) | #DEF7EC | #059669 |
+| Backup inactif | Aucun | #F3F4F6 | #6B7280 |
+
+### 6.6 ActionMenu
+
+| Position | Icon |
+|----------|------|
+| Dernière colonne | ⋮ |
+
+| Option | Couleur |
+|--------|---------|
+| Activer la licence | #1F2937 |
+| Désactiver la licence | #1F2937 |
+
+---
+
+## 7. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Bas du datagrid |
+| Texte gauche | Page 1 sur 3 |
+| Texte droite | 12 résultats |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic tab | Changer d'onglet datacenter |
+| Clic ⋮ | Ouvrir ActionMenu |
+| Clic Activer la licence | Ouvrir modal d'attribution licence |
+| Clic Désactiver la licence | Ouvrir modal de confirmation |
+| Clic pagination | Changer de page |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les VMs du datacenter
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/vm
+```
+
+Response:
+```json
+[
+  {
+    "vmId": "vm-123",
+    "name": "vm-web-prod-01",
+    "vcpu": 4,
+    "memory": "16 GB",
+    "storage": "500 GB",
+    "os": "Windows Server 2019",
+    "license": {
+      "type": "SPLA",
+      "name": "Windows SPLA"
+    },
+    "backup": {
+      "enabled": true,
+      "restorePoints": 5
+    }
+  }
+]
+```
+
+### 9.2 Activer licence sur une VM
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/vm/{vmId}/license
+```
+
+Body:
+```json
+{
+  "licenseId": "win-2019-std"
+}
+```
+
+### 9.3 Désactiver licence sur une VM
+
+```
+DELETE /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/vm/{vmId}/license
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_vms_title` | Machines virtuelles |
+| `vmware_vms_col_name` | Nom |
+| `vmware_vms_col_vcpu` | vCPU |
+| `vmware_vms_col_memory` | Mémoire |
+| `vmware_vms_col_storage` | Stockage |
+| `vmware_vms_col_os` | Système d'exploitation |
+| `vmware_vms_col_license` | Licence |
+| `vmware_vms_col_backup` | Backup |
+| `vmware_vms_col_actions` | Actions |
+| `vmware_vms_license_spla` | Windows SPLA |
+| `vmware_vms_license_disabled` | Désactivée |
+| `vmware_vms_backup_active` | Active |
+| `vmware_vms_backup_none` | Aucun |
+| `vmware_vms_backup_points` | pts |
+| `vmware_vms_action_enable_license` | Activer la licence |
+| `vmware_vms_action_disable_license` | Désactiver la licence |
+| `vmware_vms_page` | Page |
+| `vmware_vms_of` | sur |
+| `vmware_vms_results` | résultats |

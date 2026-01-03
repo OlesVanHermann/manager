@@ -1,0 +1,237 @@
+# Cahier des Charges : bare-metal/cdn/modal-rule-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.cdn.modal-rule-add.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | cdn |
+| **Type** | Modal wizard 2 étapes |
+| **Description** | Modal wizard pour créer une règle de cache CDN |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 800px |
+| Hauteur | 580px |
+| Position | Centrée (x: 320, y: 150) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #FFFFFF |
+| Barre latérale | 4px #0050D7 |
+| Titre | Créer une règle de cache |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+| Séparateur | 1px #E5E7EB |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nombre d'étapes | 2 |
+| Position | Sous le header |
+
+### 4.2 Étapes
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Configuration | Active (#0050D7) |
+| 2 | Confirmation | Inactive (outline) |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Définissez les paramètres de la règle de mise en cache. |
+| Font-size | 13px |
+
+### 5.2 Type de fichier
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Type de fichier |
+| Type | Select dropdown |
+| Dimensions | 350×40px |
+| Options | Extension, Dossier, URL exacte |
+| Valeur exemple | Extension |
+
+### 5.3 Correspondance
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Correspondance |
+| Type | Text input |
+| Dimensions | 352×40px |
+| Background | #F3F4F6 |
+| Placeholder | Extensions séparées par des virgules |
+| Valeur exemple | .jpg,.png,.gif,.webp |
+
+### 5.4 Type de cache (radio)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Type de cache |
+| Type | Radio buttons (3 options) |
+
+| Option | Description | État |
+|--------|-------------|------|
+| Cache activé | Mettre en cache les fichiers correspondants | Sélectionné |
+| Pas de cache | Ne jamais mettre en cache | Non sélectionné |
+| Forcer le cache | Ignorer les headers Cache-Control | Non sélectionné |
+
+### 5.5 TTL
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | TTL (durée de vie en cache) |
+| Type | Number input |
+| Dimensions | 200×40px |
+| Background | #F3F4F6 |
+| Suffix | secondes |
+| Valeur exemple | 3600 |
+
+### 5.6 Warning Banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 752×50px |
+| Background | #FEE2E2 |
+| Border radius | 4px |
+| Titre | Information sur le type Extension : |
+| Message | Les extensions sont sensibles à la casse. Assurez-vous d'inclure toutes les variantes. |
+| Couleur texte | #DC2626 |
+| Font-size | 11px |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#0050D7) | 90×36px | Droite (-) |
+| Suivant | Primary (#0050D7) | 96×36px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Sélectionner type | Afficher warning contextuel si nécessaire |
+| Modifier correspondance | Valider format selon type sélectionné |
+| Sélectionner cache | Activer/désactiver champ TTL |
+| Clic Suivant | Passer à l'étape Confirmation |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Type de fichier | Obligatoire |
+| Correspondance | Obligatoire, format valide selon type |
+| Type de cache | Une option doit être sélectionnée |
+| TTL | Obligatoire si cache activé, entier > 0 |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Créer une règle de cache
+
+```
+POST /cdn/{serviceName}/domain/{domainName}/rule
+```
+
+Body:
+```json
+{
+  "fileType": "extension",
+  "fileMatch": ".jpg,.png,.gif,.webp",
+  "cacheType": "enabled",
+  "ttl": 3600
+}
+```
+
+Response:
+```json
+{
+  "ruleId": "rule-123456",
+  "taskId": "task-789",
+  "status": "pending"
+}
+```
+
+### 9.2 Types de fichiers disponibles
+
+```
+GET /cdn/{serviceName}/domain/{domainName}/rule/types
+```
+
+Response:
+```json
+[
+  { "type": "extension", "label": "Extension" },
+  { "type": "folder", "label": "Dossier" },
+  { "type": "url", "label": "URL exacte" }
+]
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_rule_add_title` | Créer une règle de cache |
+| `cdn_rule_add_step_config` | Configuration |
+| `cdn_rule_add_step_confirm` | Confirmation |
+| `cdn_rule_add_description` | Définissez les paramètres de la règle de mise en cache. |
+| `cdn_rule_add_file_type` | Type de fichier |
+| `cdn_rule_add_file_match` | Correspondance |
+| `cdn_rule_add_cache_type` | Type de cache |
+| `cdn_rule_add_cache_enabled` | Cache activé |
+| `cdn_rule_add_cache_disabled` | Pas de cache |
+| `cdn_rule_add_cache_forced` | Forcer le cache |
+| `cdn_rule_add_ttl` | TTL (durée de vie en cache) |
+| `cdn_rule_add_ttl_unit` | secondes |
+| `cdn_rule_add_warning_extension` | Les extensions sont sensibles à la casse. Assurez-vous d'inclure toutes les variantes. |
+| `cdn_rule_add_cancel` | Annuler |
+| `cdn_rule_add_next` | Suivant |
+| `cdn_rule_add_type_extension` | Extension |
+| `cdn_rule_add_type_folder` | Dossier |
+| `cdn_rule_add_type_url` | URL exacte |

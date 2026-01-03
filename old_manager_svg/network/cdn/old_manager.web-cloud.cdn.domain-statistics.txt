@@ -1,0 +1,258 @@
+# Cahier des Charges : web-cloud/cdn/domain-statistics
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.cdn.domain-statistics.svg |
+| **NAV1** | web-cloud (Web Cloud) |
+| **NAV2** | cdn |
+| **NAV4** | statistiques (domaine) |
+| **Type** | Page statistiques domaine |
+| **Description** | Page affichant les statistiques d'un domaine CDN spécifique |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| LEFT PANEL | 280×765px | x: 24 |
+| RIGHT PANEL | 1096×765px | x: 320 |
+| Gap | 16px | - |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | Rechercher... |
+
+### 3.2 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 55px |
+| Background | #E8F0FE |
+| Nom | cdn-12345 |
+| Description | CDN Dedicated |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Header domaine
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | www.example.com |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Badge | ON (#DEF7EC, #059669) |
+
+### 4.2 NAV4 Tabs
+
+| Onglet | État |
+|--------|------|
+| **Statistiques** | **Actif** (#0050D7) |
+| Règles | Inactif |
+| Logs | Inactif |
+
+---
+
+## 5. TILES ROW
+
+### 5.1 Tile Statistiques
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×150px |
+| Titre | Statistiques |
+
+| Label | Valeur |
+|-------|--------|
+| CNAME | cdn-12345.cdn.ovh.net |
+| Type | CDN Dedicated |
+| Cache | 5 règles actives |
+
+### 5.2 Tile Réseau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×150px |
+| Titre | Réseau |
+
+| Label | Valeur | Action |
+|-------|--------|--------|
+| Domaine | www.example.com | Menu ⋮ |
+| IPv4 Anycast | 198.51.100.1 | - |
+| Serveur backend | 192.168.1.100 | Menu ⋮ |
+
+---
+
+## 6. GRAPHIQUE REQUÊTES
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×350px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Filtres
+
+| Filtre | Type | Options | Défaut |
+|--------|------|---------|--------|
+| Visualiser | Select | Requêtes, Bande passante, Cache HIT/MISS | Requêtes |
+| Depuis | Select | 24 heures, 1 semaine, 1 mois | 24 heures |
+
+### 6.3 Style select
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 150×28px / 120×28px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+
+### 6.4 Zone graphique
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 996×240px |
+| Background | #F9FAFB |
+| Border radius | 4px |
+
+### 6.5 Axe Y (Requêtes)
+
+| Label | Position |
+|-------|----------|
+| 10K | Haut |
+| 7.5K | - |
+| 5K | - |
+| 2.5K | - |
+| 0 | Bas |
+
+### 6.6 Axe X (Heures - 24h)
+
+| Label |
+|-------|
+| 00:00 |
+| 04:00 |
+| 08:00 |
+| 12:00 |
+| 16:00 |
+| 20:00 |
+
+### 6.7 Style area chart
+
+| Propriété | Valeur |
+|-----------|--------|
+| Stroke | #0050D7 |
+| Stroke-width | 2px |
+| Fill | #0050D7 |
+| Fill-opacity | 0.2 |
+
+### 6.8 Grid
+
+| Propriété | Valeur |
+|-----------|--------|
+| Stroke | #E5E7EB |
+| Stroke-dasharray | 4 |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les informations du domaine
+
+```
+GET /cdn/{serviceName}/domain/{domainName}
+```
+
+Response:
+```json
+{
+  "domain": "www.example.com",
+  "cname": "cdn-12345.cdn.ovh.net",
+  "type": "dedicated",
+  "status": "on",
+  "ipv4": "198.51.100.1",
+  "backend": "192.168.1.100",
+  "activeRules": 5
+}
+```
+
+### 7.2 Obtenir les statistiques du domaine
+
+```
+GET /cdn/{serviceName}/domain/{domainName}/statistics
+```
+
+Query params:
+```
+?type=requests&period=day
+```
+
+Response:
+```json
+{
+  "period": "day",
+  "type": "requests",
+  "data": [
+    { "timestamp": "2026-01-02T00:00:00Z", "value": 5200 },
+    { "timestamp": "2026-01-02T04:00:00Z", "value": 4100 },
+    { "timestamp": "2026-01-02T08:00:00Z", "value": 7800 },
+    { "timestamp": "2026-01-02T12:00:00Z", "value": 6500 },
+    { "timestamp": "2026-01-02T16:00:00Z", "value": 8200 },
+    { "timestamp": "2026-01-02T20:00:00Z", "value": 7100 }
+  ]
+}
+```
+
+### 7.3 Mettre à jour le backend
+
+```
+PUT /cdn/{serviceName}/domain/{domainName}/backend
+```
+
+Body:
+```json
+{
+  "ip": "192.168.1.101"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_domain_stats_tab_stats` | Statistiques |
+| `cdn_domain_stats_tab_rules` | Règles |
+| `cdn_domain_stats_tab_logs` | Logs |
+| `cdn_domain_stats_tile_stats` | Statistiques |
+| `cdn_domain_stats_tile_network` | Réseau |
+| `cdn_domain_stats_cname` | CNAME |
+| `cdn_domain_stats_type` | Type |
+| `cdn_domain_stats_cache` | Cache |
+| `cdn_domain_stats_rules_active` | règles actives |
+| `cdn_domain_stats_domain` | Domaine |
+| `cdn_domain_stats_ipv4` | IPv4 Anycast |
+| `cdn_domain_stats_backend` | Serveur backend |
+| `cdn_domain_stats_filter_view` | Visualiser : |
+| `cdn_domain_stats_filter_since` | Depuis : |
+| `cdn_domain_stats_requests` | Requêtes |
+| `cdn_domain_stats_bandwidth` | Bande passante |
+| `cdn_domain_stats_24h` | 24 heures |
+| `cdn_domain_stats_status_on` | ON |

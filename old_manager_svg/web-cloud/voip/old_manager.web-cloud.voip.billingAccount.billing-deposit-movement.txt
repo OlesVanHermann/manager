@@ -1,0 +1,187 @@
+# Cahier des Charges : web-cloud/voip/billingAccount/billing-deposit-movement
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.billingAccount.billing-deposit-movement.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page formulaire |
+| **Description** | Page de transfert de dépôts de garantie entre groupes de téléphonie |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px (avec liste groupes) |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Groupe sélectionné
+
+| Background | #E8F0FE |
+| Nom | ab12345-ovh-1 |
+| Description | Groupe principal |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Retour
+
+| Lien | ← Retour à la facturation |
+| Couleur | #0050D7 |
+
+### 4.2 Titre page
+
+| Texte | Transfert de vos dépôts de garantie entre groupes |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.3 Description
+
+| Texte | Gérer le mouvement de vos dépôts de garantie entre vos différents groupes. |
+| Font-size | 12px |
+| Couleur | muted |
+
+---
+
+## 5. SECTION SOURCE
+
+### 5.1 Card
+
+| Dimensions | 550×120px |
+| Titre | Source |
+
+### 5.2 Sélection groupe source
+
+| Label | Groupes : |
+| Type | Select dropdown |
+| Dimensions | 300×36px |
+| Valeur exemple | ab12345-ovh-1 - Groupe principal |
+
+---
+
+## 6. SECTION MONTANT
+
+### 6.1 Card
+
+| Dimensions | 550×90px |
+| Titre | Montant |
+
+### 6.2 Champ montant
+
+| Label | Montant : |
+| Type | Input number |
+| Dimensions | 120×36px |
+| Valeur exemple | 50 |
+| Suffixe | € HT |
+
+---
+
+## 7. SECTION DESTINATION
+
+### 7.1 Card
+
+| Dimensions | 550×160px |
+| Titre | Destination |
+
+### 7.2 Sélection groupe destination
+
+| Label | Groupes : |
+| Type | Select dropdown |
+| Dimensions | 300×36px |
+| Valeur exemple | ab12345-ovh-2 - Groupe secondaire |
+
+### 7.3 Information dépôt actuel
+
+| Label | Dépôt de garantie actuel : |
+| Valeur | 100,00 € HT |
+| Couleur | dark |
+
+### 7.4 Estimation après validation
+
+| Label | Estimation après validation : |
+| Valeur | 150,00 € HT |
+| Couleur | #D97706 (warning) |
+| Font-weight | 600 |
+
+---
+
+## 8. ACTIONS
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Valider | Primary | 100×36px |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les groupes
+
+```
+GET /telephony
+```
+
+### 9.2 Obtenir le dépôt de garantie d'un groupe
+
+```
+GET /telephony/{billingAccount}
+```
+
+Response:
+```json
+{
+  "securityDeposit": 100.00
+}
+```
+
+### 9.3 Transférer le dépôt de garantie
+
+```
+POST /telephony/{billingAccount}/transferSecurityDeposit
+```
+
+Body:
+```json
+{
+  "targetBillingAccount": "ab12345-ovh-2",
+  "amount": 50.00
+}
+```
+
+---
+
+## 10. VALIDATION
+
+| Champ | Règle |
+|-------|-------|
+| Montant | > 0 |
+| Montant | <= dépôt source disponible |
+| Groupe destination | Différent du groupe source |
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_deposit_transfer_back` | Retour à la facturation |
+| `voip_deposit_transfer_title` | Transfert de vos dépôts de garantie entre groupes |
+| `voip_deposit_transfer_desc` | Gérer le mouvement de vos dépôts de garantie entre vos différents groupes. |
+| `voip_deposit_transfer_source` | Source |
+| `voip_deposit_transfer_groups` | Groupes |
+| `voip_deposit_transfer_amount_title` | Montant |
+| `voip_deposit_transfer_amount_label` | Montant |
+| `voip_deposit_transfer_dest` | Destination |
+| `voip_deposit_transfer_current` | Dépôt de garantie actuel |
+| `voip_deposit_transfer_estimate` | Estimation après validation |
+| `voip_deposit_transfer_submit` | Valider |

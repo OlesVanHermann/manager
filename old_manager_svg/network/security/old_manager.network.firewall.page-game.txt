@@ -1,0 +1,224 @@
+# Cahier des Charges : network/firewall/page-game
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.network.firewall.page-game.svg |
+| **NAV1** | network (Network) |
+| **NAV2** | firewall |
+| **Type** | Page liste |
+| **Description** | Page de configuration de la protection anti-DDoS Game |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Content | 1392×400px | x: 24, y: 320 |
+| Full-width | Oui | - |
+
+---
+
+## 3. NAVIGATION
+
+### 3.1 NAV2 Sous-header
+
+| Onglet | État |
+|--------|------|
+| IP | Inactif |
+| **Firewall** | **Actif** (#0050D7) |
+
+### 3.2 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour à la liste des IPs |
+| Couleur | #0050D7 |
+
+---
+
+## 4. HEADER PAGE
+
+### 4.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Protection anti-DDoS Game |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+### 4.2 Description
+
+| Ligne | Texte |
+|-------|-------|
+| 1 | La protection anti-DDoS Game permet de protéger vos serveurs de jeux contre les attaques DDoS. |
+| 2 | Configurez les règles pour autoriser uniquement le trafic légitime sur les ports de vos jeux. |
+
+---
+
+## 5. BARRE D'ACTIONS
+
+### 5.1 Bouton ajout
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | + Ajouter une règle |
+| Style | Primary (#0050D7) |
+| Dimensions | 150×36px |
+
+### 5.2 Toggle politique
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Appliquer la politique par défaut |
+| Type | Switch toggle |
+| État | Activé (#0050D7) |
+| Dimensions switch | 44×24px |
+| Position | Droite |
+
+---
+
+## 6. DATAGRID RÈGLES
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1392×400px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+
+### 6.3 Colonnes
+
+| # | Colonne | Largeur | Alignement |
+|---|---------|---------|------------|
+| 1 | Protocole | 250px | Gauche |
+| 2 | Port début | 200px | Gauche |
+| 3 | Port fin | 200px | Gauche |
+| 4 | Statut | 200px | Gauche |
+| 5 | Actions | 100px | Centre |
+
+### 6.4 Données exemple
+
+| Protocole | Port début | Port fin | Statut | Actions |
+|-----------|------------|----------|--------|---------|
+| Minecraft | 25565 | 25565 | Actif (success) | 🗑 |
+| Source Engine (UDP) | 27015 | 27020 | Actif (success) | 🗑 |
+| FiveM (TCP) | 30120 | 30120 | En attente (info) | 🗑 |
+| Ark Survival (UDP) | 7777 | 7778 | Actif (success) | 🗑 |
+
+### 6.5 Badges statut
+
+| Statut | Background | Texte |
+|--------|------------|-------|
+| Actif | #DEF7EC | #059669 |
+| En attente | #DBEAFE | #1E40AF |
+
+---
+
+## 7. FOOTER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 4 règles configurées |
+| Font-size | 12px |
+| Couleur | #6B7280 |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic ← Retour | Retour à la liste des IPs |
+| Clic + Ajouter une règle | Ouvrir modal ajout règle |
+| Toggle politique | Activer/désactiver la politique par défaut |
+| Clic 🗑 | Ouvrir modal confirmation suppression |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les règles Game
+
+```
+GET /ip/{ipAddress}/game/rule
+```
+
+Response:
+```json
+[
+  {
+    "id": 1,
+    "protocol": "Minecraft",
+    "portStart": 25565,
+    "portEnd": 25565,
+    "status": "active"
+  }
+]
+```
+
+### 9.2 Créer une règle
+
+```
+POST /ip/{ipAddress}/game/rule
+```
+
+Body:
+```json
+{
+  "protocol": "minecraft",
+  "portStart": 25565,
+  "portEnd": 25565
+}
+```
+
+### 9.3 Supprimer une règle
+
+```
+DELETE /ip/{ipAddress}/game/rule/{ruleId}
+```
+
+### 9.4 Activer/désactiver la politique
+
+```
+PUT /ip/{ipAddress}/game/policy
+```
+
+Body:
+```json
+{
+  "enabled": true
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `firewall_game_back` | Retour à la liste des IPs |
+| `firewall_game_title` | Protection anti-DDoS Game |
+| `firewall_game_desc_1` | La protection anti-DDoS Game permet de protéger vos serveurs de jeux contre les attaques DDoS. |
+| `firewall_game_desc_2` | Configurez les règles pour autoriser uniquement le trafic légitime sur les ports de vos jeux. |
+| `firewall_game_add_rule` | Ajouter une règle |
+| `firewall_game_policy` | Appliquer la politique par défaut |
+| `firewall_game_col_protocol` | Protocole |
+| `firewall_game_col_port_start` | Port début |
+| `firewall_game_col_port_end` | Port fin |
+| `firewall_game_col_status` | Statut |
+| `firewall_game_col_actions` | Actions |
+| `firewall_game_status_active` | Actif |
+| `firewall_game_status_pending` | En attente |
+| `firewall_game_rules_count` | règles configurées |

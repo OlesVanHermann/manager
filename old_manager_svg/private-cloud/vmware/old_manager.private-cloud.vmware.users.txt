@@ -1,0 +1,233 @@
+# Cahier des Charges : private-cloud/vmware/users
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.users.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page liste avec onglets et datagrid |
+| **Description** | Gestion des utilisateurs vSphere et rôles IAM pour un Private Cloud VMware |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width RIGHT PANEL |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Production VMware |
+| Font-size | 20px |
+| Font-weight | 600 |
+| Bouton édition | ✎ (24×24px) |
+
+### 3.2 Sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | pcc-192-0-2-1 |
+| Couleur | #6B7280 |
+
+### 3.3 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour a la liste |
+| Couleur | #0050D7 |
+
+---
+
+## 4. NAV4 - TABS PRINCIPAUX
+
+| Tab | État | Style |
+|-----|------|-------|
+| Informations generales | Inactif | Border #0050D7 |
+| Datacentres | Inactif | Border #0050D7 |
+| Utilisateurs | Actif | Background #0050D7 |
+| Securite | Inactif | Border #0050D7 |
+| Operations | Inactif | Border #0050D7 |
+| Licence Windows | Inactif | Border #0050D7 |
+| Logs | Inactif | Border #0050D7, badge BETA |
+
+---
+
+## 5. SOUS-ONGLETS
+
+| Tab | État |
+|-----|------|
+| Utilisateurs vSphere | Actif (souligné #0050D7) |
+| IAM | Inactif |
+
+---
+
+## 6. TOOLBAR
+
+### 6.1 Boutons
+
+| Bouton | Dimensions | Style |
+|--------|------------|-------|
+| + Creer un utilisateur | 150×32px | Outline #E5E7EB |
+| + Creer un role IAM | 130×32px | Outline #E5E7EB |
+| ↻ (Refresh) | 36×32px | Outline #E5E7EB |
+
+---
+
+## 7. DATAGRID
+
+### 7.1 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| Identifiant | 164px |
+| Mail | 200px |
+| Token validator | 120px |
+| Ip | 60px |
+| Ip FailOver | 100px |
+| Interface NSX | 120px |
+| Gestion du chiffrement | 160px |
+| Etat | 100px |
+| Actions | 40px |
+
+### 7.2 Données exemple
+
+| Identifiant | Mail | Token | Ip | IpFO | NSX | Chiffrement | Etat |
+|-------------|------|-------|-----|------|-----|-------------|------|
+| admin | admin@example.com | Oui | Oui | Oui | Oui | Oui | Active |
+| dev-user | dev@example.com | Non | Non | Non | Non | Non | Active |
+| backup-operator (IAM OVHcloud) | - | Non | Non | Non | Non | Non | Active |
+
+### 7.3 Badge état
+
+| État | Background | Couleur texte |
+|------|------------|---------------|
+| Active | #DEF7EC | #059669 |
+
+---
+
+## 8. ACTIONMENU
+
+### 8.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 200×130px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+| Shadow | drop-shadow |
+
+### 8.2 Options
+
+| Option | Couleur |
+|--------|---------|
+| Modifier | #1F2937 |
+| Voir / Modifier les droits par DC | #1F2937 |
+| Changer le mot de passe | #1F2937 |
+| Supprimer cet utilisateur | #DC2626 (danger) |
+
+---
+
+## 9. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Affichage 1-3 sur 3 |
+| Par page | Select avec valeur 10 |
+| Navigation | ‹ [1] › |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Lister les utilisateurs vSphere
+
+```
+GET /dedicatedCloud/{serviceName}/user
+```
+
+Response:
+```json
+[
+  {
+    "userId": "admin",
+    "email": "admin@example.com",
+    "canManageIpFailOver": true,
+    "canManageNetwork": true,
+    "nsxInterfaceAccess": true,
+    "encryptionManagement": true,
+    "tokenValidator": true,
+    "state": "active"
+  },
+  {
+    "userId": "dev-user",
+    "email": "dev@example.com",
+    "canManageIpFailOver": false,
+    "canManageNetwork": false,
+    "nsxInterfaceAccess": false,
+    "encryptionManagement": false,
+    "tokenValidator": false,
+    "state": "active"
+  }
+]
+```
+
+### 10.2 Créer un utilisateur
+
+```
+POST /dedicatedCloud/{serviceName}/user
+```
+
+Body:
+```json
+{
+  "name": "new-user",
+  "email": "newuser@example.com",
+  "password": "********"
+}
+```
+
+### 10.3 Supprimer un utilisateur
+
+```
+DELETE /dedicatedCloud/{serviceName}/user/{userId}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_users_tab` | Utilisateurs |
+| `vmware_users_vsphere` | Utilisateurs vSphere |
+| `vmware_users_iam` | IAM |
+| `vmware_users_create` | Creer un utilisateur |
+| `vmware_users_create_iam` | Creer un role IAM |
+| `vmware_users_col_id` | Identifiant |
+| `vmware_users_col_mail` | Mail |
+| `vmware_users_col_token` | Token validator |
+| `vmware_users_col_ip` | Ip |
+| `vmware_users_col_ipfo` | Ip FailOver |
+| `vmware_users_col_nsx` | Interface NSX |
+| `vmware_users_col_encryption` | Gestion du chiffrement |
+| `vmware_users_col_state` | Etat |
+| `vmware_users_iam_badge` | IAM OVHcloud |
+| `vmware_users_action_edit` | Modifier |
+| `vmware_users_action_rights` | Voir / Modifier les droits par DC |
+| `vmware_users_action_password` | Changer le mot de passe |
+| `vmware_users_action_delete` | Supprimer cet utilisateur |
+| `vmware_users_state_active` | Active |

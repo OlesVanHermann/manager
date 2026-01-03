@@ -1,0 +1,155 @@
+# Cahier des Charges : private-cloud/vmware/modal-license-enable-legacy
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-license-enable-legacy.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal formulaire avec checkbox et liens contrats |
+| **Description** | Modal pour activer les licences SPLA avec acceptation des conditions contractuelles |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 320px |
+| Position | Centrée (x: 420, y: 250) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Activer les licences SPLA |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Pour activer les licences SPLA sur votre infrastructure, veuillez accepter les conditions contractuelles ci-dessous. |
+| Font-size | 13px |
+
+### 4.2 Checkbox
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 16×16px |
+| Border | 1px #E5E7EB |
+| Border radius | 3px |
+| État | Non coché |
+| Label | J'accepte les conditions générales de vente |
+
+### 4.3 Liste contrats
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Contrats à accepter : |
+| Couleur titre | #6B7280 |
+
+| Contrat | Lien |
+|---------|------|
+| Conditions Générales SPLA Microsoft | ↗ |
+| Conditions Particulières Licences OVHcloud | ↗ |
+| Annexe Tarification SPLA | ↗ |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position | État |
+|--------|-------|------------|----------|------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche | Actif |
+| Confirmer | Disabled (#E5E7EB) | 100×40px | Droite | Désactivé |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic checkbox | Toggle état + activer/désactiver bouton Confirmer |
+| Clic lien contrat | Ouvrir contrat (nouvel onglet) |
+| Clic Confirmer | Activer les licences SPLA (si checkbox coché) |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les contrats à accepter
+
+```
+GET /dedicatedCloud/{serviceName}/spla/contracts
+```
+
+Response:
+```json
+[
+  {
+    "name": "Conditions Générales SPLA Microsoft",
+    "url": "https://contracts.ovh.com/spla-microsoft"
+  },
+  {
+    "name": "Conditions Particulières Licences OVHcloud",
+    "url": "https://contracts.ovh.com/licenses"
+  },
+  {
+    "name": "Annexe Tarification SPLA",
+    "url": "https://contracts.ovh.com/spla-pricing"
+  }
+]
+```
+
+### 7.2 Activer les licences SPLA
+
+```
+POST /dedicatedCloud/{serviceName}/spla/enable
+```
+
+Body:
+```json
+{
+  "contractsAccepted": true
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_spla_title` | Activer les licences SPLA |
+| `vmware_spla_desc` | Pour activer les licences SPLA sur votre infrastructure, veuillez accepter les conditions contractuelles ci-dessous. |
+| `vmware_spla_accept` | J'accepte les conditions générales de vente |
+| `vmware_spla_contracts` | Contrats à accepter |
+| `vmware_spla_cancel` | Annuler |
+| `vmware_spla_confirm` | Confirmer |

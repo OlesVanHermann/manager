@@ -1,0 +1,167 @@
+# Cahier des Charges : private-cloud/vmware/modal-security-session-timeout
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-security-session-timeout.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal wizard avec stepper (2 étapes) |
+| **Description** | Modal pour modifier le délai d'expiration des sessions vSphere |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 320px |
+| Position | Centrée (x: 420, y: 250) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Modifier le délai d'expiration d'une session |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. STEPPER
+
+| Étape | Numéro | État |
+|-------|--------|------|
+| 1 | 1 | Active (#0050D7) |
+| 2 | 2 | Inactive (border #E5E7EB) |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Checkbox "jamais expire"
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions checkbox | 16×16px |
+| Border | 1px #E5E7EB |
+| Border radius | 3px |
+| État | Non coché |
+| Label | la session n'expire jamais |
+
+### 5.2 Input nombre de minutes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nombre de minutes avant l'expiration d'une session |
+| Font-size label | 13px |
+| Dimensions input | 200×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Type | Number avec spinner |
+| Valeur | 30 |
+| Icônes spinner | ▲ ▼ |
+
+### 5.3 Information valeur actuelle
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Valeur actuelle : 30 minutes |
+| Couleur | #6B7280 |
+| Font-size | 12px |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Suivant | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic checkbox | Toggle "jamais expire" et désactiver/activer input |
+| Clic ▲ | Incrémenter valeur |
+| Clic ▼ | Décrémenter valeur |
+| Saisie directe | Modifier valeur (validation min/max) |
+| Clic Suivant | Passer à l'étape 2 (confirmation) |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Minutes | Min: 5, Max: 1440 (24h), ou "jamais" si checkbox coché |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir le timeout actuel
+
+```
+GET /dedicatedCloud/{serviceName}/security/sessionTimeout
+```
+
+Response:
+```json
+{
+  "timeout": 30,
+  "neverExpires": false
+}
+```
+
+### 9.2 Modifier le timeout
+
+```
+PUT /dedicatedCloud/{serviceName}/security/sessionTimeout
+```
+
+Body:
+```json
+{
+  "timeout": 60,
+  "neverExpires": false
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_session_timeout_title` | Modifier le délai d'expiration d'une session |
+| `vmware_session_timeout_never` | la session n'expire jamais |
+| `vmware_session_timeout_minutes` | Nombre de minutes avant l'expiration d'une session |
+| `vmware_session_timeout_current` | Valeur actuelle |
+| `vmware_session_timeout_min` | minutes |
+| `vmware_session_timeout_cancel` | Annuler |
+| `vmware_session_timeout_next` | Suivant |

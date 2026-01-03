@@ -1,0 +1,204 @@
+# Cahier des Charges : home/billing/invoices
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.invoices.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | invoices |
+| **Type** | Page full-width avec datagrid |
+| **Description** | Liste complète des factures avec recherche et export |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×40px | x: 40, y: 115 |
+| Barre filtres | 1360×40px | x: 40, y: 160 |
+| Datagrid | 1360×500px | x: 40, y: 220 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Facturation |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Mes factures |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. BARRE FILTRES
+
+### 4.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Search input |
+| Dimensions | 300×40px |
+| Placeholder | 🔍 Rechercher une facture... |
+| Background | #F3F4F6 |
+| Border | 1px #E5E7EB |
+
+### 4.2 Filtre date
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Dimensions | 150×40px |
+| Position | x: 320 |
+| Valeur par défaut | Toutes les dates |
+| Icône | ▼ |
+
+### 4.3 Bouton Export
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 📥 Exporter |
+| Type | Primary |
+| Dimensions | 150×40px |
+| Position | Droite (x: 1210) |
+| Action | Ouvrir modal-export-csv |
+
+---
+
+## 5. DATAGRID FACTURES
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×500px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Border radius | 8px 8px 0 0 |
+
+### 5.3 Colonnes
+
+| # | Colonne | Position X | Largeur |
+|---|---------|------------|---------|
+| 1 | Référence | 20px | 180px |
+| 2 | Date | 200px | 150px |
+| 3 | Période | 350px | 200px |
+| 4 | Montant HT | 550px | 150px |
+| 5 | TVA | 700px | 150px |
+| 6 | Montant TTC | 850px | 150px |
+| 7 | Statut | 1000px | 150px |
+| 8 | Actions | 1150px | 150px |
+
+### 5.4 Badges Statut
+
+| État | Background | Couleur | Dimensions |
+|------|------------|---------|------------|
+| Payée | #DEF7EC | #059669 | 60×22px |
+| Impayée | #FEE2E2 | #DC2626 | 60×22px |
+| En attente | #FEF3C7 | #D97706 | 80×22px |
+
+### 5.5 Données exemple
+
+| Référence | Date | Période | HT | TVA | TTC | Statut |
+|-----------|------|---------|-----|-----|-----|--------|
+| FR2026010001 | 01/01/2026 | Déc. 2025 | 74,99 € | 15,00 € | 89,99 € | Payée |
+| FR2025120001 | 01/12/2025 | Nov. 2025 | 103,75 € | 20,75 € | 124,50 € | Payée |
+
+### 5.6 Style référence
+
+| Propriété | Valeur |
+|-----------|--------|
+| Couleur | #0050D7 |
+| Cursor | pointer |
+
+### 5.7 Actions
+
+| Action | Couleur |
+|--------|---------|
+| PDF | #0050D7 |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Saisie recherche | Filtrer la liste |
+| Changer filtre date | Filtrer par période |
+| Clic Exporter | Ouvrir modal-export-csv |
+| Clic référence | Ouvrir détail facture |
+| Clic PDF | Télécharger la facture |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Lister les factures
+
+```
+GET /me/bill
+```
+
+Response:
+```json
+[
+  {
+    "billId": "FR2026010001",
+    "date": "2026-01-01",
+    "period": "2025-12",
+    "priceWithoutTax": 74.99,
+    "tax": 15.00,
+    "priceWithTax": 89.99,
+    "status": "paid",
+    "pdfUrl": "/me/bill/FR2026010001/download"
+  }
+]
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_invoices_title` | Mes factures |
+| `billing_invoices_search` | Rechercher une facture... |
+| `billing_invoices_all_dates` | Toutes les dates |
+| `billing_invoices_export` | Exporter |
+| `billing_invoices_col_ref` | Référence |
+| `billing_invoices_col_date` | Date |
+| `billing_invoices_col_period` | Période |
+| `billing_invoices_col_ht` | Montant HT |
+| `billing_invoices_col_vat` | TVA |
+| `billing_invoices_col_ttc` | Montant TTC |
+| `billing_invoices_col_status` | Statut |
+| `billing_invoices_col_actions` | Actions |
+| `billing_invoices_status_paid` | Payée |
+| `billing_invoices_status_unpaid` | Impayée |
+| `billing_invoices_status_pending` | En attente |
+| `billing_invoices_pdf` | PDF |

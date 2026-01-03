@@ -1,0 +1,184 @@
+# Cahier des Charges : private-cloud/vmware/modal-license-enable
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-license-enable.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal avec sélection par radio datagrid |
+| **Description** | Modal pour activer les licences SPLA avec sélection du type et acceptation des CGV |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 480px |
+| Position | Centrée (x: 370, y: 180) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Activer les licences SPLA |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. DATAGRID LICENCES
+
+### 4.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 640×280px |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+
+### 4.2 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| (Radio) | 40px |
+| Type de licence | 400px |
+| Prix | 150px |
+
+### 4.3 Licences disponibles
+
+| Licence | Prix | Unité |
+|---------|------|-------|
+| Windows Server 2022 Standard | 25,00 € HT/mois | par cœur |
+| Windows Server 2022 Datacenter | 85,00 € HT/mois | par cœur |
+| SQL Server 2022 Standard | 150,00 € HT/mois | par cœur |
+| SQL Server 2022 Enterprise | 450,00 € HT/mois | par cœur |
+
+### 4.4 Style ligne sélectionnée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Radio | Cercle rempli #0050D7 avec point blanc |
+
+### 4.5 Style prix
+
+| Propriété | Valeur |
+|-----------|--------|
+| Couleur prix | #DC2626 |
+| Font-weight | 500 |
+| Couleur unité | #6B7280 |
+
+---
+
+## 5. CHECKBOX CGV
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 16×16px |
+| Border radius | 3px |
+| État | Coché (#0050D7) |
+| Icône check | ✓ blanc |
+| Label | J'accepte les conditions générales de vente |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Commander | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic ligne | Sélectionner cette licence |
+| Clic checkbox | Toggle acceptation CGV |
+| Clic Commander | Activer la licence sélectionnée (si CGV acceptées) |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Licence | Une licence doit être sélectionnée |
+| CGV | Checkbox doit être coché |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les licences disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/spla/availableLicenses
+```
+
+Response:
+```json
+[
+  {
+    "id": "win-2022-std",
+    "name": "Windows Server 2022 Standard",
+    "pricePerCore": { "value": 25, "text": "25,00 € HT/mois" }
+  },
+  {
+    "id": "win-2022-dc",
+    "name": "Windows Server 2022 Datacenter",
+    "pricePerCore": { "value": 85, "text": "85,00 € HT/mois" }
+  }
+]
+```
+
+### 9.2 Activer une licence SPLA
+
+```
+POST /dedicatedCloud/{serviceName}/spla/enable
+```
+
+Body:
+```json
+{
+  "licenseType": "win-2022-std",
+  "acceptedTerms": true
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_license_enable_title` | Activer les licences SPLA |
+| `vmware_license_enable_col_type` | Type de licence |
+| `vmware_license_enable_col_price` | Prix |
+| `vmware_license_enable_per_core` | par cœur |
+| `vmware_license_enable_terms` | J'accepte les conditions générales de vente |
+| `vmware_license_enable_cancel` | Annuler |
+| `vmware_license_enable_submit` | Commander |

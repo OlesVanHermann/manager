@@ -1,0 +1,188 @@
+# Cahier des Charges : bare-metal/cdn/modal-quota-order
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.cdn.modal-quota-order.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | cdn |
+| **Type** | Modal wizard 3 étapes |
+| **Description** | Modal wizard pour commander du quota CDN supplémentaire |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 800px |
+| Hauteur | 500px |
+| Position | Centrée (x: 320, y: 180) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #FFFFFF |
+| Barre latérale | 4px #0050D7 |
+| Titre | Commander du quota supplémentaire |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+| Séparateur | 1px #E5E7EB |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nombre d'étapes | 3 |
+| Position | Sous le header |
+
+### 4.2 Étapes
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Choix du quota | Active (#0050D7) |
+| 2 | Confirmation | Inactive (outline) |
+| 3 | Bon de commande | Inactive (outline) |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Sélectionnez le quota à commander : |
+| Font-size | 13px |
+| Font-weight | 500 |
+
+### 5.2 Options quota
+
+| Quota | Prix |
+|-------|------|
+| 100 Go | 10,00 € HT |
+| 500 Go | 45,00 € HT |
+| 1 To | 80,00 € HT |
+| 5 To | 350,00 € HT |
+| 10 To | 650,00 € HT |
+
+### 5.3 Style radio sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle extérieur | Border 2px #0050D7 |
+| Cercle intérieur | Fill #0050D7, r=4px |
+
+### 5.4 Style radio non sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle | Border 2px #E5E7EB |
+
+### 5.5 Note information
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Le quota commandé sera ajouté à votre quota actuel et valide pour le mois en cours. |
+| Font-size | 11px |
+| Couleur | #6B7280 |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#0050D7) | 90×36px | Gauche |
+| Suivant | Primary (#0050D7) | 96×36px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic option quota | Sélectionner ce quota |
+| Clic Suivant | Passer à l'étape Confirmation |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Quota | Une option doit être sélectionnée |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les options de quota
+
+```
+GET /cdn/{serviceName}/quota/options
+```
+
+Response:
+```json
+[
+  { "size": "100GB", "price": { "value": 10, "text": "10,00 € HT" } },
+  { "size": "500GB", "price": { "value": 45, "text": "45,00 € HT" } },
+  { "size": "1TB", "price": { "value": 80, "text": "80,00 € HT" } },
+  { "size": "5TB", "price": { "value": 350, "text": "350,00 € HT" } },
+  { "size": "10TB", "price": { "value": 650, "text": "650,00 € HT" } }
+]
+```
+
+### 9.2 Commander du quota
+
+```
+POST /cdn/{serviceName}/quota/order
+```
+
+Body:
+```json
+{
+  "quotaSize": "100GB"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_quota_order_title` | Commander du quota supplémentaire |
+| `cdn_quota_order_step_choice` | Choix du quota |
+| `cdn_quota_order_step_confirm` | Confirmation |
+| `cdn_quota_order_step_order` | Bon de commande |
+| `cdn_quota_order_select` | Sélectionnez le quota à commander |
+| `cdn_quota_order_note` | Le quota commandé sera ajouté à votre quota actuel et valide pour le mois en cours. |
+| `cdn_quota_order_cancel` | Annuler |
+| `cdn_quota_order_next` | Suivant |

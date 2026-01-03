@@ -1,0 +1,199 @@
+# Cahier des Charges : home/billing/sla
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.sla.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | sla |
+| **Type** | Page avec bannière et 2 cartes |
+| **Description** | Page des engagements de service (SLA) et suivi de disponibilité |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×40px | x: 40, y: 115 |
+| Bannière statut | 1360×120px | x: 40, y: 180 |
+| Carte SLA actifs | 660×350px | x: 40, y: 330 |
+| Carte historique | 660×350px | x: 720, y: 330 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Facturation |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | SLA - Engagement de service |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. BANNIÈRE STATUT GLOBAL
+
+### 4.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×120px |
+| Background | #DEF7EC |
+| Border | 1px #059669 |
+| Border radius | 8px |
+
+### 4.2 Contenu
+
+| Élément | Valeur |
+|---------|--------|
+| Icône titre | ✓ |
+| Titre | Tous les engagements sont respectés |
+| Font-size titre | 15px |
+| Font-weight titre | 700 |
+| Ligne 1 | Disponibilité moyenne sur les 12 derniers mois : 99,98% |
+| Ligne 2 | Aucun crédit SLA à réclamer |
+| Couleur | #059669 |
+
+---
+
+## 5. CARTE VOS SLA ACTIFS
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×350px |
+| Position | x: 40, y: 330 |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Vos SLA actifs |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 5.3 Structure ligne SLA
+
+| Élément | Position | Contenu |
+|---------|----------|---------|
+| Service | 20px | Nom du service |
+| SLA garanti | 400px | Ex: SLA 99,9% |
+| Disponibilité réelle | 520px | Badge avec % réel |
+
+### 5.4 Badge disponibilité
+
+| Condition | Background | Couleur |
+|-----------|------------|---------|
+| ≥ SLA | #DEF7EC | #059669 |
+| < SLA | #FEE2E2 | #DC2626 |
+
+### 5.5 Données exemple
+
+| Service | SLA garanti | Disponibilité |
+|---------|-------------|---------------|
+| Hébergement Web Pro | SLA 99,9% | 99,99% |
+| VPS Cloud Premium | SLA 99,95% | 100% |
+| Serveur dédié | SLA 99,9% | 99,97% |
+
+---
+
+## 6. CARTE HISTORIQUE DES INCIDENTS
+
+### 6.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×350px |
+| Position | x: 720, y: 330 |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Historique des incidents |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 6.3 État vide
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Aucun incident majeur |
+| Ligne 2 | sur les 12 derniers mois |
+| Couleur | #6B7280 |
+| Position | Centré |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic sur service | Naviguer vers détail du service |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Résumé SLA
+
+```
+GET /me/sla/summary
+```
+
+Response:
+```json
+{
+  "globalCompliance": true,
+  "averageAvailability": 99.98,
+  "pendingCredits": 0,
+  "services": [
+    {
+      "serviceName": "Hébergement Web Pro",
+      "slaGuarantee": 99.9,
+      "actualAvailability": 99.99
+    }
+  ],
+  "incidents": []
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_sla_title` | SLA - Engagement de service |
+| `billing_sla_compliant` | Tous les engagements sont respectés |
+| `billing_sla_average` | Disponibilité moyenne sur les 12 derniers mois : {percent}% |
+| `billing_sla_no_credits` | Aucun crédit SLA à réclamer |
+| `billing_sla_active` | Vos SLA actifs |
+| `billing_sla_history` | Historique des incidents |
+| `billing_sla_no_incidents` | Aucun incident majeur |
+| `billing_sla_no_incidents_period` | sur les 12 derniers mois |

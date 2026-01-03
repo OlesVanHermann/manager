@@ -1,0 +1,197 @@
+# Cahier des Charges : web-cloud/voip/service/modal-fax-campaign-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.modal-fax-campaign-add.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Modal formulaire |
+| **Description** | Modal d'ajout d'une nouvelle campagne de fax |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 660px |
+| Position | Centrée (x: 370, y: 120) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.4) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 50px |
+| Bouton fermeture | × (position droite) |
+| Séparateur | Ligne 1px #E5E7EB |
+
+---
+
+## 4. CONTENU DU FORMULAIRE
+
+### 4.1 Nom de la campagne
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom de la campagne |
+| Type | Input text |
+| Dimensions | 640×40px |
+| Placeholder | Nom de la campagne |
+
+### 4.2 Document à faxer
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Document à faxer (format pdf) |
+| Type | File input |
+| Dimensions | 200×36px |
+| Placeholder | Fichier... |
+
+### 4.3 Qualité d'envoi
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Qualité d'envoi |
+| Type | Select dropdown |
+| Dimensions | 300×40px |
+| Options | Normale, Haute |
+| Valeur défaut | Normale |
+
+### 4.4 Type d'envoi
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Type d'envoi |
+| Type | Select dropdown |
+| Dimensions | 300×40px |
+| Options | Automatique, Programmé |
+| Valeur défaut | Automatique |
+
+### 4.5 Destinataires (radio buttons)
+
+| Option | État |
+|--------|------|
+| Entrer les destinataires manuellement | Sélectionné (#0050D7) |
+| Fichier de destinataires (format txt) | Non sélectionné |
+
+### 4.6 Zone de saisie destinataires
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Destinataires |
+| Type | Textarea |
+| Dimensions | 640×90px |
+| Placeholder ligne 1 | Liste de numéros séparée par une virgule, point-virgule ou retour à la ligne. |
+| Placeholder ligne 2 | Composition des numéros : 6 à 17 chiffres pouvant commencer par un + |
+
+---
+
+## 5. FOOTER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Séparateur | Ligne 1px #E5E7EB en haut |
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Default (outline) | 100×36px | Gauche |
+| Valider | Primary (#0050D7) | 100×36px | Droite |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Créer une campagne de fax
+
+```
+POST /telephony/{billingAccount}/fax/{serviceName}/campaigns
+```
+
+Body (multipart/form-data):
+```json
+{
+  "campaignName": "Campagne Janvier 2026",
+  "document": "<fichier PDF>",
+  "quality": "normal",
+  "sendType": "automatic",
+  "recipients": ["+33123456789", "+33987654321"]
+}
+```
+
+Response:
+```json
+{
+  "campaignId": "camp-12345",
+  "status": "pending",
+  "recipientsCount": 2
+}
+```
+
+### 6.2 Créer une campagne avec fichier de destinataires
+
+```
+POST /telephony/{billingAccount}/fax/{serviceName}/campaigns
+```
+
+Body (multipart/form-data):
+```json
+{
+  "campaignName": "Campagne Janvier 2026",
+  "document": "<fichier PDF>",
+  "quality": "normal",
+  "sendType": "automatic",
+  "recipientsFile": "<fichier TXT>"
+}
+```
+
+---
+
+## 7. VALIDATION
+
+| Champ | Règle |
+|-------|-------|
+| Nom de la campagne | Requis, non vide |
+| Document | Requis, format PDF uniquement |
+| Destinataires | Au moins 1 numéro valide |
+| Format numéro | 6-17 chiffres, peut commencer par + |
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_fax_campaign_add_title` | Ajouter une nouvelle campagne |
+| `voip_fax_campaign_add_name` | Nom de la campagne |
+| `voip_fax_campaign_add_document` | Document à faxer (format pdf) |
+| `voip_fax_campaign_add_quality` | Qualité d'envoi |
+| `voip_fax_campaign_add_quality_normal` | Normale |
+| `voip_fax_campaign_add_quality_high` | Haute |
+| `voip_fax_campaign_add_type` | Type d'envoi |
+| `voip_fax_campaign_add_type_auto` | Automatique |
+| `voip_fax_campaign_add_type_scheduled` | Programmé |
+| `voip_fax_campaign_add_recipients` | Destinataires |
+| `voip_fax_campaign_add_recipients_manual` | Entrer les destinataires manuellement |
+| `voip_fax_campaign_add_recipients_file` | Fichier de destinataires (format txt) |
+| `voip_fax_campaign_add_recipients_hint` | Liste de numéros séparée par une virgule, point-virgule ou retour à la ligne. |
+| `voip_fax_campaign_add_recipients_format` | Composition des numéros : 6 à 17 chiffres pouvant commencer par un + |
+| `voip_fax_campaign_add_cancel` | Annuler |
+| `voip_fax_campaign_add_submit` | Valider |

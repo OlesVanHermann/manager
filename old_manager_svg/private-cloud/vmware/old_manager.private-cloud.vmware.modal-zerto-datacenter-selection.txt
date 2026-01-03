@@ -1,0 +1,206 @@
+# Cahier des Charges : private-cloud/vmware/modal-zerto-datacenter-selection
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-zerto-datacenter-selection.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour sélectionner le datacenter où configurer Zerto Disaster Recovery |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 380px |
+| Position | Centrée (x: 420, y: 220) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Sélection du datacenter Zerto |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Info Banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 560×60px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Barre latérale | 4px #1E40AF |
+| Titre | ℹ️ Zerto Disaster Recovery |
+| Message | Sélectionnez le datacenter sur lequel configurer Zerto pour la réplication. |
+| Couleur texte | #1E40AF |
+
+### 4.2 Select Datacenter
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Datacenter |
+| Font-size label | 13px |
+| Font-weight | 500 |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Dimensions | 560×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | dc-rbx-01 |
+| Icône | ▼ |
+
+### 4.3 Carte informations datacenter
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 560×80px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+
+### 4.4 Champs informations
+
+| Label | Valeur |
+|-------|--------|
+| Localisation | Roubaix, France |
+| Hosts disponibles | 4 hosts |
+| Statut Zerto | Non configuré |
+
+### 4.5 Style informations
+
+| Propriété | Valeur |
+|-----------|--------|
+| Font-size label | 11px |
+| Couleur label | #6B7280 |
+| Font-size valeur | 12px |
+| Couleur valeur | #1F2937 |
+| Espacement lignes | 25px |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Continuer | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic dropdown | Afficher liste des datacenters |
+| Sélection datacenter | Mettre à jour la carte informations |
+| Clic Continuer | Passer à l'étape suivante de configuration Zerto |
+
+---
+
+## 7. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Datacenter | Obligatoire, doit être sélectionné |
+| Statut Zerto | Le datacenter ne doit pas déjà avoir Zerto actif |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les datacenters éligibles
+
+```
+GET /dedicatedCloud/{serviceName}/datacenters/zerto/eligible
+```
+
+Response:
+```json
+[
+  {
+    "id": "dc-001",
+    "name": "dc-rbx-01",
+    "location": "Roubaix, France",
+    "availableHosts": 4,
+    "zertoStatus": "notConfigured"
+  },
+  {
+    "id": "dc-002",
+    "name": "dc-gra-01",
+    "location": "Gravelines, France",
+    "availableHosts": 2,
+    "zertoStatus": "active"
+  }
+]
+```
+
+### 8.2 Obtenir les détails d'un datacenter
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}
+```
+
+Response:
+```json
+{
+  "id": "dc-001",
+  "name": "dc-rbx-01",
+  "location": "Roubaix, France",
+  "hosts": {
+    "total": 4,
+    "active": 4
+  },
+  "zerto": {
+    "status": "notConfigured",
+    "eligible": true
+  }
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_zerto_dc_title` | Sélection du datacenter Zerto |
+| `vmware_zerto_dc_info` | Sélectionnez le datacenter sur lequel configurer Zerto pour la réplication. |
+| `vmware_zerto_dc_label` | Datacenter |
+| `vmware_zerto_dc_location` | Localisation |
+| `vmware_zerto_dc_hosts` | Hosts disponibles |
+| `vmware_zerto_dc_status` | Statut Zerto |
+| `vmware_zerto_dc_not_configured` | Non configuré |
+| `vmware_zerto_dc_active` | Actif |
+| `vmware_zerto_dc_cancel` | Annuler |
+| `vmware_zerto_dc_continue` | Continuer |

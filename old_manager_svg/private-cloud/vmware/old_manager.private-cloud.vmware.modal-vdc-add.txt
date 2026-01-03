@@ -1,0 +1,210 @@
+# Cahier des Charges : private-cloud/vmware/modal-vdc-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-vdc-add.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Wizard page avec stepper et cartes sélection |
+| **Description** | Assistant pour ajouter un datacenter virtuel (VDC) avec choix du type |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width page |
+| Background | #F6F6F9 |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Ajouter un datacenter virtuel |
+| Font-size | 20px |
+| Font-weight | 600 |
+
+### 3.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Sélectionnez le type de datacenter virtuel que vous souhaitez créer. |
+| Couleur | #6B7280 |
+| Font-size | 13px |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Structure
+
+| Étape | Numéro | Libellé | État |
+|-------|--------|---------|------|
+| 1 | 1 | Type de datacenter | Active (cercle #0050D7) |
+| 2 | 2 | Type d'hôte | Inactive (cercle border #E5E7EB) |
+
+### 4.2 Style
+
+| État | Cercle | Texte |
+|------|--------|-------|
+| Active | Background #0050D7 | #FFFFFF |
+| Inactive | Border #E5E7EB | #6B7280 |
+
+---
+
+## 5. CARTES TYPE VDC
+
+### 5.1 Carte NSX (sélectionnée)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 320×200px |
+| Border | 2px #0050D7 |
+| Header background | #E8F0FE |
+| Titre | NSX |
+| Indicateur | Cercle checkmark #0050D7 |
+
+| Contenu |
+|---------|
+| Datacenter avec NSX-T pour la virtualisation |
+| réseau avancée et la micro-segmentation. |
+| Idéal pour les environnements nécessitant |
+| une sécurité réseau granulaire. |
+
+### 5.2 Carte vSphere Standard
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 320×200px |
+| Border | 1px #E5E7EB |
+| Header background | #F9FAFB |
+| Titre | vSphere Standard |
+
+| Contenu |
+|---------|
+| Datacenter classique avec vSphere |
+| pour la virtualisation de serveurs. |
+| Configuration traditionnelle pour les |
+| charges de travail standard. |
+
+### 5.3 Carte SAP HANA
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 320×200px |
+| Border | 1px #E5E7EB |
+| Header background | #F9FAFB |
+| Titre | SAP HANA |
+
+| Contenu |
+|---------|
+| Datacenter optimisé pour SAP HANA |
+| avec hôtes certifiés. |
+| Configuration haute performance pour |
+| les environnements SAP critiques. |
+
+---
+
+## 6. INFO BANNER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 700×50px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Icône | ℹ️ |
+| Ligne 1 | Pour NSX, assurez-vous d'avoir un datastore global disponible pour le déploiement |
+| Ligne 2 | des composants NSX Edge. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 7. FOOTER
+
+### 7.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Suivant | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic carte type | Sélectionner ce type de VDC |
+| Clic Annuler | Retour à la liste des datacenters |
+| Clic Suivant | Passer à l'étape 2 (Type d'hôte) |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir les types de VDC disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/vdc/availableTypes
+```
+
+Response:
+```json
+[
+  {
+    "type": "nsx",
+    "name": "NSX",
+    "description": "Datacenter avec NSX-T pour la virtualisation réseau",
+    "requirements": ["globalDatastore"]
+  },
+  {
+    "type": "vsphere",
+    "name": "vSphere Standard",
+    "description": "Datacenter classique avec vSphere"
+  },
+  {
+    "type": "sap",
+    "name": "SAP HANA",
+    "description": "Datacenter optimisé pour SAP HANA"
+  }
+]
+```
+
+### 9.2 Commander un VDC
+
+```
+POST /dedicatedCloud/{serviceName}/vdc
+```
+
+Body:
+```json
+{
+  "type": "nsx",
+  "hostType": "dedicated"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_vdc_add_title` | Ajouter un datacenter virtuel |
+| `vmware_vdc_add_desc` | Sélectionnez le type de datacenter virtuel que vous souhaitez créer. |
+| `vmware_vdc_step1` | Type de datacenter |
+| `vmware_vdc_step2` | Type d'hôte |
+| `vmware_vdc_nsx` | NSX |
+| `vmware_vdc_vsphere` | vSphere Standard |
+| `vmware_vdc_sap` | SAP HANA |
+| `vmware_vdc_nsx_info` | Pour NSX, assurez-vous d'avoir un datastore global disponible pour le déploiement des composants NSX Edge. |
+| `vmware_vdc_cancel` | Annuler |
+| `vmware_vdc_next` | Suivant |

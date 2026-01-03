@@ -1,0 +1,243 @@
+# Cahier des Charges : home/billing
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **Type** | Dashboard avec KPIs et sections |
+| **Description** | Tableau de bord principal de la facturation |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×40px | x: 40, y: 115 |
+| KPI tiles | 4×320px | y: 180 |
+| Carte factures | 660×300px | x: 40, y: 360 |
+| Carte paiements | 660×300px | x: 720, y: 360 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Facturation |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Tableau de bord facturation |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. TUILES KPI
+
+### 4.1 Structure commune
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 320×150px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 4.2 Tuile Solde compte
+
+| Élément | Valeur |
+|---------|--------|
+| Titre | Solde compte |
+| Valeur | 125,50 € |
+| Font-size valeur | 28px |
+| Sous-texte | Crédit disponible |
+| Position | x: 40 |
+
+### 4.3 Tuile Prochaine facture
+
+| Élément | Valeur |
+|---------|--------|
+| Titre | Prochaine facture |
+| Valeur | 89,99 € |
+| Font-size valeur | 28px |
+| Sous-texte | Estimée le 01/02/2026 |
+| Position | x: 380 |
+
+### 4.4 Tuile Services actifs
+
+| Élément | Valeur |
+|---------|--------|
+| Titre | Services actifs |
+| Valeur | 12 |
+| Font-size valeur | 28px |
+| Sous-texte | En renouvellement auto |
+| Position | x: 720 |
+
+### 4.5 Tuile Alertes
+
+| Élément | Valeur |
+|---------|--------|
+| Titre | Alertes |
+| Valeur | 2 |
+| Couleur valeur | #D97706 |
+| Sous-texte | Services à renouveler |
+| Position | x: 1060 |
+
+---
+
+## 5. CARTE DERNIÈRES FACTURES
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×300px |
+| Position | x: 40, y: 360 |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Dernières factures |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 5.3 Données exemple
+
+| Référence | Date | Montant |
+|-----------|------|---------|
+| FR2026010001 | 01/01/2026 | 89,99 € |
+| FR2025120001 | 01/12/2025 | 124,50 € |
+| FR2025110001 | 01/11/2025 | 89,99 € |
+
+### 5.4 Lien
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Voir toutes les factures → |
+| Couleur | #0050D7 |
+| Position | Centré en bas |
+
+---
+
+## 6. CARTE MOYENS DE PAIEMENT
+
+### 6.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×300px |
+| Position | x: 720, y: 360 |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Moyens de paiement |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 6.3 Méthodes
+
+| Méthode | Badge |
+|---------|-------|
+| 💳 Visa •••• 4242 | Par défaut (#DEF7EC) |
+| 🏦 Prélèvement SEPA | - |
+
+### 6.4 Lien
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Gérer les moyens de paiement → |
+| Couleur | #0050D7 |
+| Position | Centré en bas |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic sur facture | Naviguer vers détail facture |
+| Clic "Voir toutes les factures" | Naviguer vers invoices |
+| Clic "Gérer les moyens de paiement" | Naviguer vers payment-methods |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Dashboard facturation
+
+```
+GET /me/billing/dashboard
+```
+
+Response:
+```json
+{
+  "balance": 125.50,
+  "nextInvoice": {
+    "estimatedAmount": 89.99,
+    "estimatedDate": "2026-02-01"
+  },
+  "activeServices": 12,
+  "alerts": 2,
+  "recentInvoices": [
+    {
+      "reference": "FR2026010001",
+      "date": "2026-01-01",
+      "amount": 89.99
+    }
+  ],
+  "paymentMethods": [
+    {
+      "type": "card",
+      "label": "Visa •••• 4242",
+      "isDefault": true
+    }
+  ]
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_dashboard_title` | Tableau de bord facturation |
+| `billing_dashboard_balance` | Solde compte |
+| `billing_dashboard_balance_desc` | Crédit disponible |
+| `billing_dashboard_next_invoice` | Prochaine facture |
+| `billing_dashboard_next_invoice_desc` | Estimée le {date} |
+| `billing_dashboard_services` | Services actifs |
+| `billing_dashboard_services_desc` | En renouvellement auto |
+| `billing_dashboard_alerts` | Alertes |
+| `billing_dashboard_alerts_desc` | Services à renouveler |
+| `billing_dashboard_invoices` | Dernières factures |
+| `billing_dashboard_invoices_link` | Voir toutes les factures |
+| `billing_dashboard_payments` | Moyens de paiement |
+| `billing_dashboard_payments_link` | Gérer les moyens de paiement |
+| `billing_dashboard_default` | Par défaut |

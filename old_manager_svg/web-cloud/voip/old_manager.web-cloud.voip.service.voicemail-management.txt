@@ -1,0 +1,236 @@
+# Cahier des Charges : web-cloud/voip/service/voicemail-management
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.voicemail-management.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page listing interactive |
+| **Description** | Page de gestion des messages vocaux avec actions multiples |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 1 23 45 67 89 |
+| Description | Ligne principale |
+| Badge | Actif (#DEF7EC) |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Gestion des messages vocaux |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. ACTIONS GROUPÉES
+
+### 5.1 Bouton supprimer sélection
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Supprimer la sélection |
+| Style | Outline (#FFFFFF, border #E5E7EB) |
+| Dimensions | 180×36px |
+
+---
+
+## 6. DATAGRID MESSAGES VOCAUX
+
+### 6.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×550px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #F9FAFB |
+| Hauteur | 35px |
+| Border radius | 8px (haut) |
+
+### 6.3 Colonnes
+
+| Colonne | Position |
+|---------|----------|
+| Checkbox | x: 16 |
+| Appelant | x: 50 |
+| Date | x: 250 |
+| Durée | x: 450 |
+| Actions | x: 600 |
+
+### 6.4 Bouton rafraîchir
+
+| Propriété | Valeur |
+|-----------|--------|
+| Icône | ↻ |
+| Couleur | #0050D7 |
+| Position | Droite du header |
+
+### 6.5 Style checkbox
+
+| État | Style |
+|------|-------|
+| Non sélectionné | Border #E5E7EB, background blanc |
+| Sélectionné | Border #0050D7, background blanc, coche bleue |
+
+### 6.6 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 50px |
+| Séparateur | Ligne 1px #E5E7EB |
+| Background | #FFFFFF |
+
+### 6.7 Données exemple
+
+| Appelant | Date | Durée |
+|----------|------|-------|
+| +33 6 12 34 56 78 | 02/01/2026 14:32:15 | 01:23 |
+| +33 1 45 67 89 01 | 02/01/2026 11:15:00 | 00:45 |
+| +33 6 98 76 54 32 | 01/01/2026 16:42:30 | 02:10 |
+| +33 1 00 00 00 00 | 01/01/2026 09:30:00 | 00:30 |
+| Numéro masqué | 31/12/2025 18:00:00 | 00:15 |
+
+---
+
+## 7. ACTIONS PAR MESSAGE
+
+### 7.1 Icônes d'action
+
+| Icône | Action | Couleur |
+|-------|--------|---------|
+| ▶ | Écouter le message | #0050D7 |
+| 👁 | Voir les détails | #0050D7 |
+| ⬇ | Télécharger le fichier audio | #0050D7 |
+| 🗑 | Supprimer le message | #DC2626 |
+
+---
+
+## 8. PAGINATION
+
+### 8.1 Compteur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 5 messages vocaux |
+| Position | Gauche |
+| Font-size | 11px |
+| Couleur | #6B7280 |
+
+### 8.2 Navigation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Style boutons | 28×28px, border radius 4px |
+| Bouton actif | Background #0050D7, texte blanc |
+| Bouton inactif | Background #FFFFFF, border #E5E7EB |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les messages vocaux
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/voicemail/messages
+```
+
+Response:
+```json
+{
+  "messages": [
+    {
+      "id": "vm-001",
+      "callerNumber": "+33612345678",
+      "date": "2026-01-02T14:32:15Z",
+      "duration": "01:23",
+      "read": false
+    }
+  ],
+  "total": 5
+}
+```
+
+### 9.2 Écouter un message (stream)
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/voicemail/messages/{messageId}/audio
+```
+
+Response: Audio stream
+
+### 9.3 Télécharger un message
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/phone/voicemail/messages/{messageId}/download
+```
+
+Response: Binary audio file (MP3/WAV)
+
+### 9.4 Supprimer un message
+
+```
+DELETE /telephony/{billingAccount}/line/{serviceName}/phone/voicemail/messages/{messageId}
+```
+
+### 9.5 Supprimer plusieurs messages
+
+```
+POST /telephony/{billingAccount}/line/{serviceName}/phone/voicemail/messages/delete
+```
+
+Body:
+```json
+{
+  "messageIds": ["vm-001", "vm-002"]
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_voicemail_mgmt_title` | Gestion des messages vocaux |
+| `voip_voicemail_mgmt_delete_selection` | Supprimer la sélection |
+| `voip_voicemail_mgmt_col_caller` | Appelant |
+| `voip_voicemail_mgmt_col_date` | Date |
+| `voip_voicemail_mgmt_col_duration` | Durée |
+| `voip_voicemail_mgmt_col_actions` | Actions |
+| `voip_voicemail_mgmt_action_play` | Écouter |
+| `voip_voicemail_mgmt_action_view` | Voir les détails |
+| `voip_voicemail_mgmt_action_download` | Télécharger |
+| `voip_voicemail_mgmt_action_delete` | Supprimer |
+| `voip_voicemail_mgmt_refresh` | Rafraîchir la liste |
+| `voip_voicemail_mgmt_hidden_number` | Numéro masqué |
+| `voip_voicemail_mgmt_count` | {count} messages vocaux |

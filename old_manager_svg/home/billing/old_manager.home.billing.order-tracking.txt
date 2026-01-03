@@ -1,0 +1,228 @@
+# Cahier des Charges : home/billing/order-tracking
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.order-tracking.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | order-tracking |
+| **Type** | Page avec stepper et cartes |
+| **Description** | Suivi visuel de l'état d'une commande avec timeline |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Titre + sous-titre | 1360×50px | x: 40, y: 115 |
+| Stepper progress | 1360×120px | x: 40, y: 180 |
+| Carte détails | 660×250px | x: 40, y: 330 |
+| Carte produits | 680×250px | x: 720, y: 330 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Suivi de commande |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+### 3.2 Sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commande ORD-2026-001234 |
+| Font-size | 13px |
+| Couleur | #6B7280 |
+
+---
+
+## 4. STEPPER PROGRESS
+
+### 4.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×120px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 4.2 Étapes
+
+| Étape | Icône | État | Couleur | Timestamp |
+|-------|-------|------|---------|-----------|
+| Commande | ✓ | Terminé | #059669 | 02/01 10:30 |
+| Paiement | ✓ | Terminé | #059669 | 02/01 10:32 |
+| Livraison | ... | En cours | #0050D7 | En cours |
+| Terminé | - | À venir | #E5E7EB | - |
+
+### 4.3 Style étape terminée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle fill | #059669 |
+| Icône | ✓ (blanc) |
+| Ligne après | #059669 (3px) |
+
+### 4.4 Style étape en cours
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle fill | #0050D7 |
+| Icône | ... (blanc) |
+
+### 4.5 Style étape à venir
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle fill | #FFFFFF |
+| Cercle stroke | #E5E7EB (2px) |
+| Ligne avant | #E5E7EB (3px) |
+
+### 4.6 Dimensions stepper
+
+| Propriété | Valeur |
+|-----------|--------|
+| Rayon cercle | 20px |
+| Longueur ligne | 260px |
+| Épaisseur ligne | 3px |
+
+---
+
+## 5. CARTE DÉTAILS
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×250px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Détails de la commande |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 5.3 Champs
+
+| Label | Valeur |
+|-------|--------|
+| Référence | ORD-2026-001234 |
+| Date de commande | 02/01/2026 10:30:45 |
+| Montant | 49,99 € TTC |
+| Statut paiement | Badge "Payé" |
+
+### 5.4 Badge statut paiement
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Payé |
+| Background | #DEF7EC |
+| Couleur | #059669 |
+| Border radius | 11px |
+
+---
+
+## 6. CARTE PRODUITS
+
+### 6.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 680×250px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Produits commandés |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 6.3 Liste produits
+
+| Produit | Description | Prix |
+|---------|-------------|------|
+| Domaine example.fr | Renouvellement 1 an | 9,99 € |
+| Hébergement Web Pro | Création - 12 mois | 40,00 € |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Suivi de commande
+
+```
+GET /me/order/{orderId}/status
+```
+
+Response:
+```json
+{
+  "orderId": "ORD-2026-001234",
+  "currentStep": "delivery",
+  "steps": [
+    {
+      "name": "order",
+      "status": "completed",
+      "timestamp": "2026-01-02T10:30:00Z"
+    },
+    {
+      "name": "payment",
+      "status": "completed",
+      "timestamp": "2026-01-02T10:32:00Z"
+    },
+    {
+      "name": "delivery",
+      "status": "in_progress",
+      "timestamp": null
+    },
+    {
+      "name": "completed",
+      "status": "pending",
+      "timestamp": null
+    }
+  ]
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_order_tracking_title` | Suivi de commande |
+| `billing_order_tracking_subtitle` | Commande {orderId} |
+| `billing_order_tracking_step_order` | Commande |
+| `billing_order_tracking_step_payment` | Paiement |
+| `billing_order_tracking_step_delivery` | Livraison |
+| `billing_order_tracking_step_completed` | Terminé |
+| `billing_order_tracking_step_in_progress` | En cours |
+| `billing_order_tracking_details` | Détails de la commande |
+| `billing_order_tracking_ref` | Référence |
+| `billing_order_tracking_date` | Date de commande |
+| `billing_order_tracking_amount` | Montant |
+| `billing_order_tracking_payment_status` | Statut paiement |
+| `billing_order_tracking_paid` | Payé |
+| `billing_order_tracking_products` | Produits commandés |

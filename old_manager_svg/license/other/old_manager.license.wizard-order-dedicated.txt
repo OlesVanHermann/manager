@@ -1,0 +1,235 @@
+# Cahier des Charges : license/wizard-order-dedicated
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.license.wizard-order-dedicated.svg |
+| **NAV1** | license (Licences) |
+| **NAV2** | - |
+| **Type** | Page wizard commande |
+| **Description** | Wizard de commande de licence pour serveur dédié avec sélection IP et type |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| RIGHT PANEL | 1392×765px |
+
+---
+
+## 3. HEADER
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commander une licence |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 3.2 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour à la gestion des licenses |
+| Couleur | #0050D7 |
+
+---
+
+## 4. ÉTAPE 1 : IP ET TYPE
+
+### 4.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 1. Choisissez une ip et un type de licence |
+| Font-weight | 600 |
+
+### 4.2 Champ IP Block
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Ip Block |
+| Type | Select dropdown |
+| Dimensions | 400×40px |
+| Valeur exemple | Dedicated Block - ns123456.ip-192-168-1.eu |
+
+### 4.3 Filtre IP Block (tooltip ouvert)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 300×160px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Titre | Filtrer les blocs IP |
+| Font-weight titre | 600 |
+
+| Champ | Type | Valeur |
+|-------|------|--------|
+| Type de bloc | Select | Tous les types |
+| Recherche | Input | Rechercher... |
+
+### 4.4 Champ IP
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Ip |
+| Type | Input (lecture seule) |
+| Dimensions | 400×40px |
+| Valeur exemple | 192.168.1.100 |
+
+### 4.5 Types de licences (Image cards)
+
+| Type | Style sélectionné | Style non sélectionné |
+|------|-------------------|----------------------|
+| cPanel | Background #E8F0FE, Border 2px #0050D7 | Background #F9FAFB, Border 1px #E5E7EB |
+| Plesk | Non sélectionné | Background #F9FAFB |
+| DirectAdmin | Non sélectionné | Background #F9FAFB |
+| Windows | Non sélectionné | Background #F9FAFB |
+| SQL Server | Non sélectionné | Background #F9FAFB |
+
+| Propriété carte | Valeur |
+|-----------------|--------|
+| Dimensions | 100×80px |
+| Border radius | 8px |
+| Espacement | 15px |
+
+---
+
+## 5. ÉTAPE 2 : OPTIONS
+
+### 5.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 2. Choisissez vos options |
+| Font-weight | 600 |
+
+### 5.2 Champ Version
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Version * |
+| Type | Select dropdown |
+| Dimensions | 400×40px |
+| Valeur exemple | cPanel license Premier Cloud (100 comptes) |
+| Obligatoire | Oui (astérisque rouge) |
+
+---
+
+## 6. ÉTAPE 3 : DURÉE
+
+### 6.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 3. Choisissez une durée |
+| Font-weight | 600 |
+
+### 6.2 Options durée (Radio buttons)
+
+| Option | Prix | État |
+|--------|------|------|
+| 1 mois | 39,99 € HT | Sélectionné |
+| 12 mois | 399,99 € HT | Non sélectionné |
+
+---
+
+## 7. ÉTAPE 4 : VALIDATION
+
+### 7.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 4. Validation |
+| Font-weight | 600 |
+| Position | Colonne droite |
+
+### 7.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Cliquez sur "Générer le bon de commande" pour commander votre licence. |
+
+### 7.3 Bouton
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Générer le bon de commande |
+| Style | Primary (#0050D7) |
+| Dimensions | 220×44px |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les blocs IP
+
+```
+GET /ip
+```
+
+Query params:
+- `type`: dedicated, vps, cloud
+- `search`: recherche textuelle
+
+Response:
+```json
+{
+  "data": [
+    {
+      "ip": "192.168.1.0/24",
+      "type": "dedicated",
+      "routedTo": "ns123456.ip-192-168-1.eu"
+    }
+  ]
+}
+```
+
+### 8.2 Commander licence dedicated
+
+```
+POST /order/cart/{cartId}/license/{licenseType}
+```
+
+Body:
+```json
+{
+  "ip": "192.168.1.100",
+  "version": "premier-cloud-100",
+  "duration": "P1M"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `license_order_dedicated_title` | Commander une licence |
+| `license_order_dedicated_back` | Retour à la gestion des licenses |
+| `license_order_dedicated_step1` | Choisissez une ip et un type de licence |
+| `license_order_dedicated_ip_block` | Ip Block |
+| `license_order_dedicated_ip` | Ip |
+| `license_order_dedicated_filter_title` | Filtrer les blocs IP |
+| `license_order_dedicated_filter_type` | Type de bloc |
+| `license_order_dedicated_filter_all` | Tous les types |
+| `license_order_dedicated_filter_search` | Rechercher... |
+| `license_order_dedicated_type_cpanel` | cPanel |
+| `license_order_dedicated_type_plesk` | Plesk |
+| `license_order_dedicated_type_directadmin` | DirectAdmin |
+| `license_order_dedicated_type_windows` | Windows |
+| `license_order_dedicated_type_sqlserver` | SQL Server |
+| `license_order_dedicated_step2` | Choisissez vos options |
+| `license_order_dedicated_version` | Version |
+| `license_order_dedicated_step3` | Choisissez une durée |
+| `license_order_dedicated_1month` | 1 mois |
+| `license_order_dedicated_12months` | 12 mois |
+| `license_order_dedicated_step4` | Validation |
+| `license_order_dedicated_desc` | Cliquez sur "Générer le bon de commande" pour commander votre licence. |
+| `license_order_dedicated_submit` | Générer le bon de commande |

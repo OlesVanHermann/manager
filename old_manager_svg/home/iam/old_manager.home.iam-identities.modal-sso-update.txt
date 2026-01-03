@@ -1,0 +1,228 @@
+# Cahier des Charges : home/iam-identities/modal-sso-update
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.iam-identities.modal-sso-update.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | iam-identities |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour modifier une configuration SSO (Azure AD, Okta, etc.) |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 680px |
+| Position | Centrée (x: 370, y: 80) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 55px |
+| Background | #0050D7 |
+| Border radius | 8px 8px 0 0 |
+| Titre | Modifier Azure Active Directory |
+| Couleur titre | #FFFFFF |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. FORMULAIRE
+
+### 4.1 Champ Nom d'affichage
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom d'affichage |
+| Type | Text input |
+| Dimensions | 660×40px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | Azure Active Directory |
+
+### 4.2 Champ Entity ID
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Entity ID (Issuer) |
+| Type | Text input |
+| Dimensions | 660×40px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | https://login.microsoftonline.com/abc123/saml2 |
+
+### 4.3 Champ SSO URL
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | SSO URL |
+| Type | Text input |
+| Dimensions | 660×40px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | https://login.microsoftonline.com/abc123/saml2/sso |
+
+### 4.4 Champ Certificat X.509
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Certificat X.509 |
+| Type | Textarea (code) |
+| Dimensions | 660×80px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Placeholder | -----BEGIN CERTIFICATE----- |
+| Contenu exemple | MIIDqDCCApC... (certificat actuel) |
+
+### 4.5 Bouton mise à jour certificat
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Mettre à jour le certificat |
+| Type | Outline button |
+| Dimensions | 200×32px |
+| Border | 1px #0050D7 |
+| Couleur texte | #0050D7 |
+
+### 4.6 Champ Statut (Toggle buttons)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Statut |
+| Type | Toggle button group |
+
+| Option | Dimensions | État | Style |
+|--------|------------|------|-------|
+| Actif | 100×32px | Sélectionné | Primary #0050D7 |
+| Désactivé | 100×32px | Non sélectionné | Outline #E5E7EB |
+
+### 4.7 Message d'avertissement
+
+| Propriété | Valeur |
+|-----------|--------|
+| Icône | ⚠ |
+| Texte | Désactiver le SSO empêchera les utilisateurs de se connecter via ce fournisseur. |
+| Couleur | #6B7280 |
+| Font-size | 11px |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Séparateur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | y: 620 |
+| Width | 700px |
+| Stroke | 1px #E5E7EB |
+
+### 5.2 Boutons
+
+| Bouton | Style | Dimensions | Background |
+|--------|-------|------------|------------|
+| Annuler | Secondary | 120×36px | #FFFFFF, border #E5E7EB |
+| Enregistrer | Primary | 120×36px | #0050D7 |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic × | Fermer modal |
+| Clic Annuler | Fermer modal sans sauvegarder |
+| Clic Mettre à jour le certificat | Upload nouveau certificat |
+| Clic toggle Actif/Désactivé | Changer le statut SSO |
+| Clic Enregistrer | Valider et mettre à jour la configuration |
+
+---
+
+## 7. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Nom d'affichage | Obligatoire |
+| Entity ID | Obligatoire, URL valide |
+| SSO URL | Obligatoire, URL HTTPS valide |
+| Certificat | Obligatoire, format X.509 PEM |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir la configuration SSO
+
+```
+GET /me/identity/provider/{providerId}
+```
+
+Response:
+```json
+{
+  "providerId": "sso-azure-001",
+  "displayName": "Azure Active Directory",
+  "type": "saml",
+  "entityId": "https://login.microsoftonline.com/abc123/saml2",
+  "ssoUrl": "https://login.microsoftonline.com/abc123/saml2/sso",
+  "certificate": "MIIDqDCCApC...",
+  "status": "active",
+  "createdAt": "2025-01-15T10:30:00Z"
+}
+```
+
+### 8.2 Modifier la configuration SSO
+
+```
+PUT /me/identity/provider/{providerId}
+```
+
+Body:
+```json
+{
+  "displayName": "Azure Active Directory",
+  "entityId": "https://login.microsoftonline.com/abc123/saml2",
+  "ssoUrl": "https://login.microsoftonline.com/abc123/saml2/sso",
+  "certificate": "MIIDqDCCApC...",
+  "status": "active"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_sso_modal_edit_title` | Modifier {providerName} |
+| `iam_sso_modal_displayname` | Nom d'affichage |
+| `iam_sso_modal_entity_id` | Entity ID (Issuer) |
+| `iam_sso_modal_sso_url` | SSO URL |
+| `iam_sso_modal_certificate` | Certificat X.509 |
+| `iam_sso_modal_update_cert` | Mettre à jour le certificat |
+| `iam_sso_modal_status` | Statut |
+| `iam_sso_modal_status_active` | Actif |
+| `iam_sso_modal_status_disabled` | Désactivé |
+| `iam_sso_modal_warning_disable` | Désactiver le SSO empêchera les utilisateurs de se connecter via ce fournisseur. |
+| `iam_sso_modal_cancel` | Annuler |
+| `iam_sso_modal_submit` | Enregistrer |

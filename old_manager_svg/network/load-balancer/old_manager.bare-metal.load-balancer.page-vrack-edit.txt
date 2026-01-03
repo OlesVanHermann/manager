@@ -1,0 +1,198 @@
+# Cahier des Charges : bare-metal/load-balancer/page-vrack-edit
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.load-balancer.page-vrack-edit.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | load-balancer |
+| **Type** | Page formulaire |
+| **Description** | Page de modification d'un réseau privé (vRack) associé au Load Balancer |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| LEFT PANEL | 280×765px | x: 24 |
+| RIGHT PANEL | 1096×765px | x: 320 |
+| Gap | 16px | - |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F3F4F6 |
+| Placeholder | Rechercher... |
+
+### 3.2 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nom | loadbalancer-abc123 |
+| Description | rbx - 2 zones |
+| Background | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Modifier le réseau privé |
+| Couleur | #0050D7 |
+
+---
+
+## 5. FORMULAIRE
+
+### 5.1 Champ Nom d'affichage
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom d'affichage |
+| Type | Text input |
+| Dimensions | 400×36px |
+| Background | #F3F4F6 |
+| Valeur exemple | private-network-1 |
+
+### 5.2 Champ VLAN
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | VLAN |
+| Description | Numéro du VLAN (optionnel) |
+| Type | Number input |
+| Dimensions | 120×36px |
+| Valeur exemple | 100 |
+
+### 5.3 Champ Sous-réseau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Sous-réseau |
+| Description | Format CIDR (ex: 192.168.1.0/24) |
+| Type | Text input |
+| Dimensions | 250×36px |
+| Valeur exemple | 10.0.0.0/24 |
+
+### 5.4 Champ IP NAT
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | IP NAT |
+| Description | Adresse IP pour le NAT |
+| Type | Text input |
+| Dimensions | 250×36px |
+| Valeur exemple | 10.0.0.1 |
+
+### 5.5 Champ Ferme associée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Ferme associée |
+| Type | Select dropdown |
+| Dimensions | 350×36px |
+| Valeur exemple | farm-web-prod |
+| Bouton + | Ajouter une ferme (36×36px) |
+
+---
+
+## 6. ACTIONS
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Modifier | Primary (#0050D7) | 100×36px | Gauche |
+| Annuler | Outline (#6B7280) | 100×36px | Gauche (+120px) |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic ← | Retour à la page précédente |
+| Modifier champs | Valider format |
+| Clic + (ferme) | Ouvrir modal ajout ferme |
+| Clic Modifier | Sauvegarder les modifications |
+| Clic Annuler | Annuler et retourner |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Nom d'affichage | Optionnel, max 50 caractères |
+| VLAN | Optionnel, entier 0-4000 |
+| Sous-réseau | Format CIDR valide |
+| IP NAT | Format IP valide, dans le sous-réseau |
+| Ferme associée | Au moins une ferme |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Obtenir le réseau privé
+
+```
+GET /ipLoadbalancing/{serviceName}/vrack/network/{vrackNetworkId}
+```
+
+Response:
+```json
+{
+  "vrackNetworkId": 123456,
+  "displayName": "private-network-1",
+  "vlan": 100,
+  "subnet": "10.0.0.0/24",
+  "natIp": "10.0.0.1",
+  "farmId": [789, 790]
+}
+```
+
+### 9.2 Modifier le réseau privé
+
+```
+PUT /ipLoadbalancing/{serviceName}/vrack/network/{vrackNetworkId}
+```
+
+Body:
+```json
+{
+  "displayName": "private-network-1",
+  "vlan": 100,
+  "subnet": "10.0.0.0/24",
+  "natIp": "10.0.0.1",
+  "farmId": [789, 790]
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `lb_vrack_edit_back` | Modifier le réseau privé |
+| `lb_vrack_edit_name` | Nom d'affichage |
+| `lb_vrack_edit_vlan` | VLAN |
+| `lb_vrack_edit_vlan_desc` | Numéro du VLAN (optionnel) |
+| `lb_vrack_edit_subnet` | Sous-réseau |
+| `lb_vrack_edit_subnet_desc` | Format CIDR (ex: 192.168.1.0/24) |
+| `lb_vrack_edit_natip` | IP NAT |
+| `lb_vrack_edit_natip_desc` | Adresse IP pour le NAT |
+| `lb_vrack_edit_farm` | Ferme associée |
+| `lb_vrack_edit_submit` | Modifier |
+| `lb_vrack_edit_cancel` | Annuler |

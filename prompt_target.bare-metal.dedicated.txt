@@ -1,0 +1,427 @@
+################################################################################
+#                                                                              #
+#                   PROMPT TARGET - BARE-METAL > DEDICATED                     #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+Dedicated permet de gerer les serveurs dedies OVHcloud :
+- Vue d'ensemble de tous les serveurs
+- Dashboard avec configuration materielle et monitoring
+- Gestion reseau (IPs, vRack, interfaces)
+- Acces IPMI (KVM over IP)
+- Backup FTP
+- Firewall OVHcloud
+- Reinstallation OS
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Bare Metal
+NAV2: Dedicated (selectionne)
+NAV3: General (dans LEFT PANEL)
+NAV4: [General] [Reseau] [IPMI] [Backup] [Firewall] (vue detail)
+
+## 1.1 Position dans la hierarchie
+
+```
+Bare Metal (NAV1)
+├── Dedicated* (NAV2 actif)
+├── VPS
+├── NAS-HA
+├── NetApp
+└── Housing
+```
+
+## 1.2 URLs
+
+| Ecran | URL |
+|-------|-----|
+| Liste serveurs | /bare-metal/dedicated |
+| Dashboard serveur | /bare-metal/dedicated/{serviceName} |
+| Onglet Reseau | /bare-metal/dedicated/{serviceName}/network |
+| Onglet IPMI | /bare-metal/dedicated/{serviceName}/ipmi |
+| Onglet Backup | /bare-metal/dedicated/{serviceName}/backup |
+| Onglet Firewall | /bare-metal/dedicated/{serviceName}/firewall |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ [General]           │  ← NAV3 (seul choix)
+├─────────────────────┤
+│ Region          [▼] │  ← Filtre region
+│ EU-West (GRA.FR)    │
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche nom serveur
+├─────────────────────┤
+│ ●Tous (5)           │  ← Vue liste (toujours visible)
+│ ○ns1234567          │  ← Liste des serveurs
+│ ○ns9876543          │
+│ ○ns5555555          │
+└─────────────────────┘
+```
+
+## 2.2 Filtre Region
+
+Source donnees: /api/regions.json
+Format affichage: EU-West (GRA.FR), EU-Central (SBG.FR), etc.
+
+Comportement:
+- Filtre les serveurs dans la liste et le tableau
+- Persistance via URL: ?region=eu-west-gra
+
+
+# 3. RIGHT PANEL - LISTE SERVEURS
+################################################################################
+
+Quand "Tous" est selectionne dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+Serveurs Dedies                              [+ Commander]
+Gerez vos serveurs dedies OVHcloud
+```
+
+## 3.2 Bandeau filtre actif
+
+Si une region est selectionnee dans le sidecar:
+```
+Filtre: EU-West (GRA.FR)                    [✕ Effacer]
+```
+
+## 3.3 Colonnes tableau
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Nom | 200px | Nom serveur (lien) |
+| IP | 130px | IP principale |
+| Datacenter | 60px | Code court (GRA, SBG...) |
+| OS | 120px | Systeme d'exploitation |
+| Etat | 80px | Dot couleur |
+| Actions | 60px | Menu ⋮ |
+
+## 3.4 Etats serveur
+
+| Etat | Couleur | Description |
+|------|---------|-------------|
+| OK | 🟢 #16A34A | Serveur operationnel |
+| Maintenance | 🟡 #F59E0B | Intervention en cours |
+| Error | 🔴 #DC2626 | Probleme detecte |
+| Hacked | 🔴 #DC2626 | Serveur compromis |
+
+## 3.5 Footer
+
+```
+5 serveurs | 🟢 3 OK | 🟡 1 Maintenance | 🔴 1 Error
+```
+
+
+# 4. RIGHT PANEL - DASHBOARD SERVEUR
+################################################################################
+
+Quand un serveur est selectionne dans le LEFT PANEL.
+
+## 4.1 Header
+
+```
+ns1234567.ip-51-210-xxx.eu                  [Actions ▼]
+Advance • Gravelines (GRA1) • 🟢 OK
+```
+
+## 4.2 Menu Actions
+
+| Action | Style |
+|--------|-------|
+| Redemarrer (soft) | Normal |
+| Redemarrer (hard) | Normal |
+| Netboot | Normal |
+| --- | Separateur |
+| Reinstaller | Warning |
+| Resilier | Danger |
+
+## 4.3 NAV4
+
+```
+[General*] [Reseau] [IPMI] [Backup] [Firewall]
+```
+
+
+# 5. NAV4 - GENERAL
+################################################################################
+
+## 5.1 Tile Configuration
+
+| Champ | Valeur |
+|-------|--------|
+| CPU | Intel Xeon E-2386G |
+| Cores | 6 cores @ 3.5 GHz |
+| RAM | 64 Go DDR4 ECC |
+| Disques | 2 x 960 Go SSD NVMe |
+| RAID | RAID 1 (Software) |
+| Bande passante | 1 Gbps illimite |
+
+## 5.2 Tile Systeme
+
+| Champ | Valeur |
+|-------|--------|
+| OS | Debian 12 (Bookworm) |
+| IPv4 | 51.210.123.45 |
+| IPv6 | 2001:41d0::1/64 |
+| Reverse | srv.example.com |
+
+Lien: [Gerer IPs →]
+
+## 5.3 Tile Monitoring
+
+Barres de progression pour:
+- CPU: pourcentage utilisation
+- RAM: XX/YY Go (pourcentage)
+- Disk: XX/YY Go (pourcentage)
+- Uptime: XX jours, YY heures
+
+
+# 6. NAV4 - RESEAU
+################################################################################
+
+## 6.1 Carte IPs
+
+| Colonne | Description |
+|---------|-------------|
+| Adresse | IP (monospace) |
+| Version | IPv4 / IPv6 |
+| Reverse | Nom DNS inverse |
+| Actions | Modifier reverse |
+
+## 6.2 Carte vRack
+
+Liste des vRack associes.
+Bouton [+ Associer vRack]
+
+## 6.3 Carte Interfaces
+
+| Interface | Type | Vitesse |
+|-----------|------|---------|
+| eth0 | Public | 1 Gbps |
+| eth1 | vRack | 10 Gbps |
+
+
+# 7. NAV4 - IPMI
+################################################################################
+
+Acces console KVM over IP.
+
+## 7.1 Modes
+
+| Mode | Description |
+|------|-------------|
+| KVMoverIP (Java) | Applet Java (legacy) |
+| KVMoverIP (HTML5) | Console navigateur |
+| Serial over LAN | Console serie |
+
+## 7.2 Actions
+
+| Action | Description |
+|--------|-------------|
+| Ouvrir console | Lance KVM |
+| Reboot IPMI | Redemarre module IPMI |
+| Reset password | Nouveau mot de passe IPMI |
+
+
+# 8. NAV4 - BACKUP
+################################################################################
+
+Backup FTP OVHcloud.
+
+## 8.1 Statut
+
+| Champ | Valeur |
+|-------|--------|
+| Espace | 500 Go |
+| Utilise | 123 Go (24.6%) |
+| Serveur FTP | ftpback-xxx.ovh.net |
+
+## 8.2 Acces
+
+Liste des acces autorises (IP).
+Bouton [+ Ajouter acces]
+
+
+# 9. NAV4 - FIREWALL
+################################################################################
+
+## 9.1 Statut Firewall
+
+| Champ | Valeur |
+|-------|--------|
+| Etat | Active (toggle) |
+| Anti-DDoS | Inclus |
+| Paquets bloques (24h) | 12,456 |
+
+## 9.2 Regles Firewall
+
+| Colonne | Description |
+|---------|-------------|
+| # | Priorite (ordre) |
+| Action | Allow (vert) / Block (rouge) |
+| Protocole | TCP, UDP, ICMP, * |
+| Source | IP ou CIDR |
+| Port | Port(s) destination |
+| Description | Note |
+
+## 9.3 Regle par defaut
+
+La derniere regle (∞) est toujours "Block * *" implicite.
+
+
+# 10. MODALES
+################################################################################
+
+## 10.1 modal-reinstall
+
+Reinstaller le systeme d'exploitation.
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Serveur | Readonly | Affichage nom |
+| OS | Cards | Selection OS |
+| RAID | Select | Configuration RAID |
+| Cle SSH | Select | Cle existante |
+| Confirmation | Input | Taper "REINSTALL" |
+
+Warning: Action destructive (fond rouge clair)
+Actions: [Annuler] [Reinstaller]
+
+## 10.2 modal-reboot
+
+Redemarrer le serveur.
+
+| Champ | Type |
+|-------|------|
+| Type | Radio: Soft / Hard |
+| Warning | Message attention |
+
+Actions: [Annuler] [Redemarrer]
+
+## 10.3 modal-firewall-add
+
+Ajouter une regle firewall.
+
+| Champ | Type |
+|-------|------|
+| Action | Select: Allow / Block |
+| Protocole | Select: TCP / UDP / ICMP |
+| Source | Input: IP ou CIDR |
+| Port | Input: Port(s) |
+| Description | Input: Note |
+
+Actions: [Annuler] [Ajouter]
+
+
+# 11. APIS & ENDPOINTS
+################################################################################
+
+## 11.1 Serveurs
+
+```
+GET /dedicated/server - Liste serveurs
+GET /dedicated/server/{serviceName} - Detail serveur
+GET /dedicated/server/{serviceName}/statistics - Stats monitoring
+POST /dedicated/server/{serviceName}/reboot - Redemarrer
+POST /dedicated/server/{serviceName}/install/start - Reinstaller
+```
+
+## 11.2 Reseau
+
+```
+GET /dedicated/server/{serviceName}/ips - Liste IPs
+PUT /ip/{ip}/reverse - Modifier reverse DNS
+GET /dedicated/server/{serviceName}/vrack - vRacks associes
+```
+
+## 11.3 IPMI
+
+```
+GET /dedicated/server/{serviceName}/features/ipmi - Statut IPMI
+POST /dedicated/server/{serviceName}/features/ipmi/access - Ouvrir acces
+POST /dedicated/server/{serviceName}/features/ipmi/resetInterface - Reset IPMI
+```
+
+## 11.4 Backup
+
+```
+GET /dedicated/server/{serviceName}/features/backupFTP - Statut backup
+GET /dedicated/server/{serviceName}/features/backupFTP/access - Acces
+POST /dedicated/server/{serviceName}/features/backupFTP/access - Ajouter acces
+```
+
+## 11.5 Firewall
+
+```
+GET /ip/{ip}/firewall - Statut firewall
+PUT /ip/{ip}/firewall - Activer/desactiver
+GET /ip/{ip}/firewall/{ipOnFirewall}/rule - Liste regles
+POST /ip/{ip}/firewall/{ipOnFirewall}/rule - Ajouter regle
+DELETE /ip/{ip}/firewall/{ipOnFirewall}/rule/{sequence} - Supprimer
+```
+
+
+# 12. REGLES METIER
+################################################################################
+
+## 12.1 Gammes serveur
+
+| Gamme | Badge couleur |
+|-------|---------------|
+| Eco | Gris |
+| Advance | Bleu |
+| Scale | Violet |
+| High Grade | Orange |
+
+## 12.2 Actions destructives
+
+- Reinstaller: confirmation "REINSTALL" requise
+- Resilier: confirmation nom serveur requise
+- Toutes affichent warning fond rouge clair
+
+## 12.3 Firewall
+
+- Regle par defaut implicite: Block all
+- Ordre = priorite (1 = plus prioritaire)
+- Maximum 20 regles
+
+
+# 13. COMPOSANTS ODS UTILISES
+################################################################################
+
+- OdsTabs : NAV4 tabs
+- OdsInput : Recherche, ports, IPs
+- OdsSelect : Region, OS, RAID
+- OdsDatagrid : Liste serveurs, regles firewall
+- OdsBadge : Etat, Gamme, Action (Allow/Block)
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsCard : Tiles dashboard
+- OdsProgress : Barres monitoring
+- OdsToggle : Firewall on/off
+
+
+# 14. FICHIERS ASSOCIES
+################################################################################
+
+Documentation : prompt_target.bare-metal.dedicated.txt (ce fichier)
+Screenshots : prompt_target.bare-metal.dedicated-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

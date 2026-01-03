@@ -1,0 +1,346 @@
+# PROMPT DOC API v1.0 - Documentation des APIs par NAV1.NAV2.NAV3
+
+================================================================================
+Version: v1.0 (2026-01-03)
+Evolue depuis: prompt_resume.txt v2.0
+Agent: action-doc-api
+================================================================================
+
+## Objectif
+
+Generer la **documentation des APIs OVHcloud** organisee par NAV1.NAV2.NAV3.
+
+Pour chaque section du Manager, consolider :
+1. Les APIs definies dans `prompt_target.NAV1.NAV2.txt` (specs cibles)
+2. Les APIs trouvees dans `old_manager_svg/*.txt` (cahiers existants)
+3. Les APIs detectees dans `old_manager/` (code source Angular)
+
+**Output** : Fichiers JSON dans `/var/www/aiapp/doc/data/`
+
+---
+
+## Sources (ordre de priorite)
+
+| # | Source | Chemin | Priorite |
+|---|--------|--------|----------|
+| 1 | **prompt_target.NAV1.NAV2.txt** | `/home/ubuntu/` | HAUTE - specs cibles |
+| 2 | **old_manager_svg/*.txt** | `/home/ubuntu/old_manager_svg/` | MOYENNE - cahiers |
+| 3 | **old_manager (grep)** | `/home/ubuntu/manager/` | BASSE - backup |
+
+**Regle** : Si une API est dans prompt_target, elle est confirmee.
+Si elle n'est que dans old_manager, verifier si elle est encore utilisee.
+
+---
+
+## Destination
+
+```
+/var/www/aiapp/doc/
+├── index.html
+├── style.css
+├── data/
+│   ├── A-home.json           # Index NAV1
+│   ├── B-iam.json
+│   ├── ...
+│   ├── G-web-cloud.json
+│   ├── H-network.json
+│   │
+│   ├── home/
+│   │   ├── account.json      # APIs par NAV2 (contient NAV3)
+│   │   └── billing.json
+│   │
+│   ├── web-cloud/
+│   │   ├── domains.json
+│   │   ├── hosting.json
+│   │   ├── emails.json
+│   │   ├── voip.json
+│   │   ├── access.json
+│   │   └── wordpress.json
+│   │
+│   └── ...
+```
+
+---
+
+## Methodologie par NAV1.NAV2
+
+### Etape 1 : Lire prompt_target.NAV1.NAV2.txt
+
+```bash
+cat /home/ubuntu/prompt_target.{NAV1}.{NAV2}.txt
+```
+
+Extraire :
+- Liste des NAV3 (section "ARBORESCENCE")
+- Liste des NAV4 par NAV3
+- APIs listees par NAV4 (section "APIs")
+
+### Etape 2 : Lire old_manager_svg/*.txt
+
+```bash
+ls /home/ubuntu/old_manager_svg/{NAV1}/{NAV2}/*.txt
+```
+
+Pour chaque TXT, extraire la section APIs.
+
+### Etape 3 : Grep old_manager (validation)
+
+```bash
+# Chercher APIs dans le code Angular
+grep -rhn "OvhHttp\.\|\.get(\|\.post(\|\.put(\|\.delete(" \
+  /home/ubuntu/manager/packages/manager/modules/{module}/ \
+  --include="*.js" --include="*.ts" | head -100
+```
+
+### Etape 4 : Consolider
+
+Pour chaque NAV3, creer la liste des endpoints :
+- Methode (GET/POST/PUT/DELETE)
+- Path (/hosting/web/{serviceName}/user)
+- Params
+- NAV4 qui l'utilise
+- Source (prompt_target, old_manager_svg, grep)
+
+### Etape 5 : Generer JSON
+
+```bash
+tee /var/www/aiapp/doc/data/{NAV1}/{nav2}.json > /dev/null << 'EOF'
+{
+  "nav1": "web-cloud",
+  "nav2": "hosting",
+  "generated": "2026-01-03",
+  "nav3_list": [
+    {
+      "nav3": "general",
+      "label": "General",
+      "nav4_list": ["dashboard", "settings", "modules", "logs"]
+    },
+    {
+      "nav3": "sites",
+      "label": "Sites",
+      "nav4_list": ["multisite", "ssl", "ipv6"]
+    },
+    {
+      "nav3": "expert",
+      "label": "Expert",
+      "nav4_list": ["ftp", "database", "cron", "env"]
+    }
+  ],
+  "endpoints": [
+    {
+      "nav3": "general",
+      "nav4": "dashboard",
+      "method": "GET",
+      "path": "/hosting/web/{serviceName}",
+      "params": [
+        {"name": "serviceName", "type": "string", "required": true}
+      ],
+      "description": "Informations generales de l'hebergement",
+      "source": "prompt_target"
+    },
+    {
+      "nav3": "expert",
+      "nav4": "ftp",
+      "method": "GET",
+      "path": "/hosting/web/{serviceName}/user",
+      "params": [
+        {"name": "serviceName", "type": "string", "required": true}
+      ],
+      "description": "Liste des utilisateurs FTP",
+      "source": "prompt_target"
+    }
+  ]
+}
+EOF
+```
+
+---
+
+## Format JSON Endpoint
+
+```json
+{
+  "nav3": "expert",
+  "nav4": "ftp",
+  "method": "GET",
+  "path": "/hosting/web/{serviceName}/user",
+  "params": [
+    {
+      "name": "serviceName",
+      "type": "string",
+      "required": true,
+      "description": "Nom du service d'hebergement"
+    }
+  ],
+  "response": {
+    "type": "array",
+    "items": "string",
+    "example": ["admin", "deploy", "backup"]
+  },
+  "description": "Liste des utilisateurs FTP du service",
+  "source": "prompt_target",
+  "source_file": "prompt_target.web-cloud.hosting.txt"
+}
+```
+
+---
+
+## Format JSON Index NAV1
+
+```json
+{
+  "nav1": "web-cloud",
+  "letter": "G",
+  "label": "Web Cloud",
+  "description": "Hebergement web, domaines, emails, telephonie",
+  "nav2_list": [
+    {
+      "nav2": "domains",
+      "label": "Domaines",
+      "endpoint_count": 45,
+      "nav3_count": 3
+    },
+    {
+      "nav2": "hosting",
+      "label": "Hebergement",
+      "endpoint_count": 78,
+      "nav3_count": 3
+    }
+  ],
+  "api_prefixes": ["/domain/*", "/hosting/*", "/email/*", "/telephony/*"]
+}
+```
+
+---
+
+## NAV1 et prefixes API
+
+| ID | NAV1 | Label | Prefixes API |
+|----|------|-------|--------------|
+| A | home | Accueil | `/me/*`, `/services/*`, `/support/*` |
+| B | iam | IAM | `/iam/*`, `/me/identity/*`, `/me/api/*` |
+| C | license | Licences | `/license/*` |
+| D | public-cloud | Public Cloud | `/cloud/project/*` |
+| E | private-cloud | Private Cloud | `/dedicatedCloud/*`, `/nutanix/*` |
+| F | bare-metal | Bare Metal | `/dedicated/server/*`, `/vps/*`, `/dedicated/nasha/*` |
+| G | web-cloud | Web Cloud | `/domain/*`, `/hosting/*`, `/email/*`, `/telephony/*`, `/sms/*` |
+| H | network | Network | `/ip/*`, `/vrack/*`, `/cdn/*`, `/ipLoadbalancing/*` |
+
+---
+
+## Types d'API OVH
+
+| Type | Base | Description |
+|------|------|-------------|
+| **apiv6** | `/1.0/...` | API REST classique |
+| **2api** | `/v2/...` | Nouvelle API |
+| **engine** | `/engine/...` | API interne |
+
+---
+
+## Patterns detection API (grep)
+
+```bash
+# AngularJS
+grep -rhn "OvhHttp\.get\|OvhHttp\.post" --include="*.js"
+grep -rhn "\$http\.get\|\$http\.post" --include="*.js"
+
+# React/TypeScript
+grep -rhn "v6\.get\|v6\.post" --include="*.ts" --include="*.tsx"
+grep -rhn "apiClient\.get\|apiClient\.post" --include="*.ts"
+
+# Template literals
+grep -rhn "\`/[a-z]" --include="*.js" --include="*.ts"
+```
+
+---
+
+## Workflow complet
+
+```
+1. INIT
+   - Lire prompt_target.{NAV1}.{NAV2}.txt si existe
+   - Lister old_manager_svg/{NAV1}/{NAV2}/*.txt
+
+2. EXTRACT
+   - Pour chaque source, extraire les APIs
+   - Tagger la source (prompt_target, old_manager_svg, grep)
+
+3. CONSOLIDATE
+   - Fusionner par endpoint unique (method + path)
+   - Garder la source la plus fiable (prompt_target > old_manager_svg > grep)
+   - Grouper par NAV3/NAV4
+
+4. GENERATE
+   - Creer {nav2}.json dans /var/www/aiapp/doc/data/{NAV1}/
+   - Mettre a jour {letter}-{NAV1}.json (index)
+
+5. VERIFY
+   - Compter endpoints par NAV3
+   - Verifier coherence avec prompt_target
+```
+
+---
+
+## Regles critiques
+
+### REGLE 1 : PROMPT_TARGET EST LA VERITE
+
+Si une API est dans prompt_target.NAV1.NAV2.txt, elle DOIT etre dans la doc.
+Si une API n'est PAS dans prompt_target mais dans old_manager, elle est "legacy".
+
+### REGLE 2 : ZERO HALLUCINATION
+
+- API pas trouvee → PAS dans la doc
+- En cas de doute → grep pour verifier
+- Si grep ne trouve pas → marquer "source: manual"
+
+### REGLE 3 : ORGANISATION NAV3
+
+Chaque endpoint DOIT etre rattache a un NAV3.NAV4.
+Si NAV4 inconnu → utiliser NAV3="other"
+
+---
+
+## Verification post-generation
+
+```bash
+# Verifier structure JSON
+python3 -m json.tool /var/www/aiapp/doc/data/{NAV1}/{nav2}.json
+
+# Compter endpoints
+jq '.endpoints | length' /var/www/aiapp/doc/data/{NAV1}/{nav2}.json
+
+# Lister NAV3
+jq '.nav3_list[].nav3' /var/www/aiapp/doc/data/{NAV1}/{nav2}.json
+```
+
+---
+
+## Commandes action-doc-api
+
+```
+init                    - Charger CLAUDE.md + prompt_doc_api.txt
+list <NAV1>             - Lister NAV2 disponibles
+analyze <NAV1>/<NAV2>   - Extraire APIs des 3 sources
+generate <NAV1>/<NAV2>  - Generer JSON dans /var/www/aiapp/doc/data/
+verify <NAV1>/<NAV2>    - Verifier couverture vs prompt_target
+```
+
+---
+
+## Lien avec prompt_resume.txt
+
+`prompt_resume.txt` reste disponible pour :
+- Audit bulk d'un TAR sans prompt_target
+- Generation de cahiers des charges complets (7 sections)
+- Analyse exhaustive code Angular
+
+`prompt_doc_api.txt` (ce prompt) est pour :
+- Documentation API structuree JSON
+- Consolidation prompt_target + old_manager_svg + grep
+- Output dans /var/www/aiapp/doc/
+
+================================================================================
+FIN PROMPT DOC API v1.0
+================================================================================

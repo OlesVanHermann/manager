@@ -1,0 +1,163 @@
+# Cahier des Charges : private-cloud/vmware/modal-zerto-add-site
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-zerto-add-site.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page formulaire avec résumé |
+| **Description** | Formulaire pour ajouter un site Zerto On-Premise avec configuration VPN |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width |
+| Padding | 24px |
+| Background | #F6F6F9 |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Ajouter un site Zerto |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 4. RÉSUMÉ CONFIGURATION
+
+### 4.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 600×80px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+| Padding | 20px |
+
+### 4.2 Informations affichées
+
+| Label | Valeur exemple |
+|-------|----------------|
+| Type de DRP | On-Premise |
+| Datacenter principal | dc-rbx-01 |
+| Private Cloud | pcc-123-456-789 |
+
+---
+
+## 5. FORMULAIRE
+
+### 5.1 Champs
+
+| Champ | Type | Requis | Placeholder/Valeur |
+|-------|------|--------|-------------------|
+| Label du site | text | Oui (*) | site-onprem-paris |
+| Clé pré-partagée VPN | password | Oui (*) | •••••••••••••••• |
+| IP publique du endpoint distant | text | Oui (*) | 203.0.113.50 |
+| Réseau VRA distant | text | Oui (*) | 10.0.0.0/24 |
+| IP interne du ZVM distant | text | Oui (*) | 10.0.0.10 |
+
+### 5.2 Style champs
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur input | 500px |
+| Hauteur input | 40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Font-size label | 13px |
+| Font-weight label | 500 |
+| Gap entre champs | 80px (vertical) |
+
+---
+
+## 6. BOUTONS
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Valider | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Retour page précédente |
+| Clic Valider | Créer le site Zerto avec configuration VPN |
+| Validation | Tous les champs requis doivent être remplis |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Label du site | Non vide, caractères alphanumériques et tirets |
+| Clé pré-partagée VPN | Min 16 caractères |
+| IP publique endpoint | Format IPv4 valide |
+| Réseau VRA distant | Format CIDR valide (ex: 10.0.0.0/24) |
+| IP interne ZVM | Format IPv4 valide, doit être dans le réseau VRA |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Ajouter un site Zerto On-Premise
+
+```
+POST /dedicatedCloud/{serviceName}/zerto/sites
+```
+
+Body:
+```json
+{
+  "type": "onpremise",
+  "label": "site-onprem-paris",
+  "datacenterId": "dc-rbx-01",
+  "vpn": {
+    "preSharedKey": "...",
+    "remoteEndpointIp": "203.0.113.50",
+    "vraNetwork": "10.0.0.0/24",
+    "zvmIp": "10.0.0.10"
+  }
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-789",
+  "siteId": "site-456",
+  "status": "creating"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_zerto_add_site_title` | Ajouter un site Zerto |
+| `vmware_zerto_add_site_drp_type` | Type de DRP |
+| `vmware_zerto_add_site_dc` | Datacenter principal |
+| `vmware_zerto_add_site_pcc` | Private Cloud |
+| `vmware_zerto_add_site_label` | Label du site |
+| `vmware_zerto_add_site_psk` | Clé pré-partagée VPN |
+| `vmware_zerto_add_site_remote_ip` | IP publique du endpoint distant |
+| `vmware_zerto_add_site_vra_network` | Réseau VRA distant |
+| `vmware_zerto_add_site_zvm_ip` | IP interne du ZVM distant |
+| `vmware_zerto_add_site_cancel` | Annuler |
+| `vmware_zerto_add_site_submit` | Valider |
+| `vmware_zerto_add_site_onpremise` | On-Premise |

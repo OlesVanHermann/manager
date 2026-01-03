@@ -1,0 +1,165 @@
+# Cahier des Charges : private-cloud/vmware/modal-user-iam-role
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-user-iam-role.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal wizard avec stepper (3 étapes) |
+| **Description** | Modal pour créer un nouveau rôle IAM OVHcloud associé à un utilisateur vSphere |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 520px |
+| Position | Centrée (x: 370, y: 150) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Créer un nouveau rôle IAM OVHcloud |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. STEPPER
+
+| Étape | Numéro | État |
+|-------|--------|------|
+| 1 | 1 | Active (#0050D7) |
+| 2 | 2 | Inactive (border #E5E7EB) |
+| 3 | 3 | Inactive (border #E5E7EB) |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Info Banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×70px |
+| Background | #DBEAFE |
+| Border left | 4px #1E40AF |
+| Icône | ℹ️ |
+| Titre | Information |
+| Ligne 1 | Le rôle IAM créé sera associé à l'utilisateur vSphere sélectionné. |
+| Ligne 2 | Ce rôle permettra de gérer les accès via les politiques IAM OVHcloud. |
+| Couleur texte | #1E40AF |
+
+### 5.2 Champ nom du rôle
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom du rôle IAM |
+| Font-weight label | 500 |
+| Dimensions input | 660×40px |
+| Préfixe (readonly) | pcc-XXX-XXX-XXX-XXX/ |
+| Background préfixe | #F3F4F6 |
+| Largeur préfixe | 200px |
+| Valeur saisie | admin-role |
+
+### 5.3 Aide saisie
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Le nom du rôle doit être unique et ne peut contenir que des lettres, chiffres et tirets. |
+| Couleur | #6B7280 |
+| Font-size | 11px |
+
+### 5.4 Utilisateur associé (readonly)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Utilisateur vSphere associé |
+| Dimensions | 660×40px |
+| Background | #F3F4F6 |
+| Valeur | admin@vsphere.local |
+| État | Readonly |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Suivant | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Saisie nom rôle | Validation format (alphanumériques et tirets) |
+| Clic Suivant | Passer à l'étape 2 |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Créer un rôle IAM
+
+```
+POST /dedicatedCloud/{serviceName}/iam/roles
+```
+
+Body:
+```json
+{
+  "name": "admin-role",
+  "vsphereUser": "admin@vsphere.local"
+}
+```
+
+Response:
+```json
+{
+  "roleId": "pcc-XXX-XXX-XXX-XXX/admin-role",
+  "status": "creating"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_iam_role_title` | Créer un nouveau rôle IAM OVHcloud |
+| `vmware_iam_role_info_title` | Information |
+| `vmware_iam_role_info_1` | Le rôle IAM créé sera associé à l'utilisateur vSphere sélectionné. |
+| `vmware_iam_role_info_2` | Ce rôle permettra de gérer les accès via les politiques IAM OVHcloud. |
+| `vmware_iam_role_name` | Nom du rôle IAM |
+| `vmware_iam_role_name_help` | Le nom du rôle doit être unique et ne peut contenir que des lettres, chiffres et tirets. |
+| `vmware_iam_role_user` | Utilisateur vSphere associé |
+| `vmware_iam_role_cancel` | Annuler |
+| `vmware_iam_role_next` | Suivant |

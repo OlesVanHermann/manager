@@ -1,0 +1,204 @@
+# Cahier des Charges : web-cloud/cdn/modal-domain-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.cdn.modal-domain-add.svg |
+| **NAV1** | web-cloud (Web Cloud) |
+| **NAV2** | cdn |
+| **Type** | Modal wizard 3 étapes |
+| **Description** | Modal wizard pour ajouter un domaine au CDN |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 500px |
+| Position | Centrée (x: 370, y: 150) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Ajouter un domaine |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+| Séparateur | 1px #E5E7EB |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Nombre d'étapes | 3 |
+| Position | Sous le header |
+
+### 4.2 Étapes
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Domaine | Active (#0050D7) |
+| 2 | Backend | Inactive (outline) |
+| 3 | Confirmation | Inactive (outline) |
+
+### 4.3 Style stepper
+
+| Élément | Propriété | Valeur |
+|---------|-----------|--------|
+| Cercle actif | Fill | #0050D7 |
+| Cercle actif | Dimensions | r=16px |
+| Cercle inactif | Fill | #FFFFFF |
+| Cercle inactif | Stroke | #E5E7EB, 2px |
+| Ligne | Stroke | #E5E7EB |
+| Ligne | Stroke-width | 2px |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Question
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Quel domaine souhaitez-vous ajouter au CDN ? |
+| Font-size | 14px |
+
+### 5.2 Champ domaine
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom de domaine |
+| Type | Text input |
+| Dimensions | 400×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | www.example.com |
+
+### 5.3 Note validation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Le domaine doit être un nom de domaine valide (ex: www.example.com) |
+| Font-size | 11px |
+| Couleur | #6B7280 |
+
+### 5.4 Info Banner CNAME
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 652×80px |
+| Background | #DBEAFE |
+| Border radius | 4px |
+| Ligne 1 | Après l'ajout du domaine, vous devrez configurer un enregistrement CNAME |
+| Ligne 2 | pointant vers votre CDN pour activer la mise en cache. |
+| Ligne 3 | CNAME: cdn-12345.cdn.ovh.net |
+| Couleur texte | #1E40AF |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Éléments
+
+| Élément | Style | Position |
+|---------|-------|----------|
+| Annuler | Lien texte #0050D7 | Gauche |
+| Suivant → | Primary button (#0050D7, 120×36px) | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic Suivant → | Passer à l'étape Backend (si domaine valide) |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Nom de domaine | Obligatoire, format domaine valide (FQDN) |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Vérifier la disponibilité du domaine
+
+```
+POST /cdn/{serviceName}/domain/check
+```
+
+Body:
+```json
+{
+  "domain": "www.example.com"
+}
+```
+
+Response:
+```json
+{
+  "available": true,
+  "cname": "cdn-12345.cdn.ovh.net"
+}
+```
+
+### 9.2 Ajouter un domaine
+
+```
+POST /cdn/{serviceName}/domain
+```
+
+Body:
+```json
+{
+  "domain": "www.example.com",
+  "backend": "origin.example.com"
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_domain_add_title` | Ajouter un domaine |
+| `cdn_domain_add_step_domain` | Domaine |
+| `cdn_domain_add_step_backend` | Backend |
+| `cdn_domain_add_step_confirm` | Confirmation |
+| `cdn_domain_add_question` | Quel domaine souhaitez-vous ajouter au CDN ? |
+| `cdn_domain_add_label` | Nom de domaine |
+| `cdn_domain_add_hint` | Le domaine doit être un nom de domaine valide (ex: www.example.com) |
+| `cdn_domain_add_cname_1` | Après l'ajout du domaine, vous devrez configurer un enregistrement CNAME |
+| `cdn_domain_add_cname_2` | pointant vers votre CDN pour activer la mise en cache. |
+| `cdn_domain_add_cname_label` | CNAME |
+| `cdn_domain_add_cancel` | Annuler |
+| `cdn_domain_add_next` | Suivant → |

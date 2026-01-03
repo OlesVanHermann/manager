@@ -1,0 +1,229 @@
+# Cahier des Charges : home/iam-identities/modal-update-group
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.iam-identities.modal-update-group.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | iam-identities |
+| **Type** | Modal formulaire avec liste |
+| **Description** | Modal pour modifier un groupe IAM et gérer ses membres |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 620px |
+| Position | Centrée (x: 370, y: 100) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 55px |
+| Background | #0050D7 |
+| Border radius | 8px 8px 0 0 |
+| Titre | Modifier le groupe "Developers" |
+| Couleur titre | #FFFFFF |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. FORMULAIRE
+
+### 4.1 Champ Nom du groupe
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom du groupe |
+| Type | Text input |
+| Dimensions | 660×40px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | Developers |
+
+### 4.2 Champ Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Description |
+| Type | Textarea |
+| Dimensions | 660×60px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | Équipe de développement - Accès aux environnements dev/staging |
+
+### 4.3 Champ Politiques associées
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Politiques associées |
+| Type | Select dropdown |
+| Dimensions | 660×40px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | ReadWrite |
+| Icône | ▼ |
+
+---
+
+## 5. LISTE DES MEMBRES
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Membres du groupe (4) |
+| Font-size | 12px |
+| Font-weight | 600 |
+
+### 5.2 Conteneur liste
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×180px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+
+### 5.3 Structure ligne membre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 640×35px |
+| Background | #FFFFFF |
+| Border radius | 4px |
+| Texte | Email utilisateur |
+| Action | Lien "Retirer" (#DC2626) |
+
+### 5.4 Membres exemple
+
+| Email |
+|-------|
+| john.doe@company.com |
+| alice.martin@company.com |
+| bob.wilson@company.com |
+
+### 5.5 Bouton Ajouter membre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | + Ajouter un membre |
+| Type | Outline button |
+| Dimensions | 200×32px |
+| Border | 1px #0050D7 |
+| Couleur texte | #0050D7 |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Séparateur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | y: 560 |
+| Width | 700px |
+| Stroke | 1px #E5E7EB |
+
+### 6.2 Boutons
+
+| Bouton | Style | Dimensions | Background |
+|--------|-------|------------|------------|
+| Annuler | Secondary | 120×36px | #FFFFFF, border #E5E7EB |
+| Enregistrer | Primary | 120×36px | #0050D7 |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic × | Fermer modal |
+| Clic Annuler | Fermer modal sans sauvegarder |
+| Clic Retirer | Retirer l'utilisateur du groupe |
+| Clic + Ajouter un membre | Ouvrir sélecteur d'utilisateurs |
+| Clic Enregistrer | Sauvegarder les modifications |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Nom du groupe | Obligatoire |
+| Description | Optionnel |
+| Politiques | Au moins une |
+| Membres | Au moins un membre |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Modifier un groupe
+
+```
+PUT /me/identity/group/{groupId}
+```
+
+Body:
+```json
+{
+  "name": "Developers",
+  "description": "Équipe de développement - Accès aux environnements dev/staging",
+  "policies": ["ReadWrite"]
+}
+```
+
+### 9.2 Ajouter un membre
+
+```
+POST /me/identity/group/{groupId}/member
+```
+
+Body:
+```json
+{
+  "userId": "user-123"
+}
+```
+
+### 9.3 Retirer un membre
+
+```
+DELETE /me/identity/group/{groupId}/member/{userId}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_group_modal_edit_title` | Modifier le groupe "{groupName}" |
+| `iam_group_modal_name` | Nom du groupe |
+| `iam_group_modal_description` | Description |
+| `iam_group_modal_policies` | Politiques associées |
+| `iam_group_modal_members` | Membres du groupe ({count}) |
+| `iam_group_modal_member_remove` | Retirer |
+| `iam_group_modal_member_add` | + Ajouter un membre |
+| `iam_group_modal_cancel` | Annuler |
+| `iam_group_modal_submit` | Enregistrer |

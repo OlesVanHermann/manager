@@ -1,0 +1,135 @@
+# Cahier des Charges : iam/components/account-delegation
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.iam.components.account-delegation.svg |
+| **NAV1** | iam |
+| **NAV2** | components |
+| **Type** | Modal |
+| **Description** | Modal d'ajout d'un compte OVHcloud externe pour délégation |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 280px |
+| Position | Centrée (x: 420, y: 250) |
+| Border radius | 8px |
+| Shadow | drop-shadow(0 4px 20px rgba(0,0,0,0.15)) |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER MODAL
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Titre | Ajouter un compte OVHcloud |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermer | × (position droite) |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Champ Compte client
+
+| Label | Compte client OVHcloud |
+| Type | Input text |
+| Dimensions | 552×36px |
+| Valeur exemple | ab12345-ovh |
+
+### 4.2 Aide format
+
+| Texte | Format attendu : xx12345-ovh |
+| Font-size | 10px |
+| Couleur | #6B7280 (muted) |
+
+### 4.3 Message d'erreur
+
+| Dimensions | 552×32px |
+| Background | #FEE2E2 |
+| Border radius | 4px |
+| Texte | Le format du compte n'est pas valide. Format attendu : xx12345-ovh |
+| Font-size | 10px |
+| Couleur texte | #DC2626 |
+
+---
+
+## 5. FOOTER MODAL
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline | 100×36px | Centre-droite |
+| Ajouter | Primary | 96×36px | Droite |
+
+---
+
+## 6. VALIDATION
+
+### 6.1 Règles de validation
+
+| Règle | Pattern |
+|-------|---------|
+| Format NIC | ^[a-z]{2}[0-9]+-ovh$ |
+| Longueur min | 8 caractères |
+| Longueur max | 20 caractères |
+
+### 6.2 États du bouton
+
+| État | Condition |
+|------|-----------|
+| Disabled | Champ vide ou format invalide |
+| Enabled | Format valide |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Ajouter un compte délégué
+
+```
+POST /me/iam/policy/{policyId}/identity
+```
+
+Body:
+```json
+{
+  "type": "account",
+  "urn": "urn:v1:eu:identity:account:ab12345-ovh"
+}
+```
+
+### 7.2 Vérifier l'existence du compte
+
+```
+GET /me/identity/account/{nichandle}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_delegation_title` | Ajouter un compte OVHcloud |
+| `iam_delegation_label` | Compte client OVHcloud |
+| `iam_delegation_format` | Format attendu : xx12345-ovh |
+| `iam_delegation_error_format` | Le format du compte n'est pas valide. Format attendu : xx12345-ovh |
+| `iam_delegation_error_notfound` | Ce compte OVHcloud n'existe pas |
+| `iam_delegation_cancel` | Annuler |
+| `iam_delegation_submit` | Ajouter |

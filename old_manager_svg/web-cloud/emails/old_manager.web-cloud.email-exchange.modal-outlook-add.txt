@@ -1,0 +1,240 @@
+# Cahier des Charges : web-cloud/email-exchange/modal-outlook-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.email-exchange.modal-outlook-add.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | emails (Emails) |
+| **Type** | Modal wizard 3 étapes |
+| **Description** | Wizard de commande de licences Outlook pour Exchange |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 800px |
+| Hauteur | 500px |
+| Position | Centrée (x: 320, y: 150) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Commander des licences Outlook |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × (position droite) |
+| Séparateur | Ligne 1px #E5E7EB |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position Y | 76px |
+| Nombre d'étapes | 3 |
+
+### 4.2 Étapes
+
+| # | Label | État |
+|---|-------|------|
+| 1 | Durée | Actif (cercle bleu #0050D7) |
+| 2 | Résumé | Inactif (cercle bordure grise) |
+| 3 | Bon de commande | Inactif (cercle bordure grise) |
+
+### 4.3 Style étape active
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle | 32px, fill #0050D7 |
+| Numéro | Blanc |
+| Label | #0050D7, font-weight 600 |
+
+### 4.4 Style étape inactive
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle | 32px, stroke #E5E7EB |
+| Numéro | #6B7280 |
+| Label | #6B7280 |
+
+### 4.5 Connecteurs
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Ligne horizontale |
+| Couleur | #E5E7EB |
+| Largeur | 110px |
+
+---
+
+## 5. ÉTAPE 1 : DURÉE
+
+### 5.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Choisir la durée d'engagement |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 5.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Vous allez commander des licences Outlook pour votre compte Exchange. |
+
+### 5.3 Radio buttons durée
+
+| Option | Sélectionnée | Description |
+|--------|--------------|-------------|
+| 1 mois | Oui (défaut) | Sans engagement |
+| 12 mois | Non | 10% de réduction |
+| 24 mois | Non | 20% de réduction |
+
+### 5.4 Bannière info
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 752×50px |
+| Background | #DBEAFE |
+| Ligne 1 | Les licences Outlook seront associées aux comptes Exchange de votre organisation. |
+| Ligne 2 | Vous pourrez les attribuer depuis l'onglet Comptes Email. |
+| Couleur texte | #1E40AF |
+
+### 5.5 Nombre de licences
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nombre de licences |
+| Input | 120×40px, valeur défaut: 1 |
+| Info | comptes éligibles: 25 |
+
+---
+
+## 6. FOOTER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Séparateur | Ligne 1px #E5E7EB en haut |
+
+### 6.1 Boutons
+
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Annuler | Lien texte bleu | Gauche |
+| Suivant | Primary (#0050D7), 80×36px | Droite |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les comptes éligibles
+
+```
+GET /email/exchange/{organizationName}/service/{exchangeService}/account?outlookEligible=true
+```
+
+Response:
+```json
+{
+  "eligibleCount": 25,
+  "accounts": [
+    {
+      "primaryEmailAddress": "john.doe@example.com",
+      "hasOutlook": false
+    }
+  ]
+}
+```
+
+### 7.2 Obtenir les tarifs
+
+```
+GET /order/cart/{cartId}/outlookLicense
+```
+
+Response:
+```json
+{
+  "prices": [
+    {
+      "duration": "P1M",
+      "price": 2.99,
+      "discount": 0
+    },
+    {
+      "duration": "P12M",
+      "price": 32.29,
+      "discount": 10
+    },
+    {
+      "duration": "P24M",
+      "price": 57.42,
+      "discount": 20
+    }
+  ]
+}
+```
+
+### 7.3 Commander les licences
+
+```
+POST /order/cart/{cartId}/outlookLicense
+```
+
+Body:
+```json
+{
+  "exchangeService": "exchange-xxxxx",
+  "duration": "P12M",
+  "quantity": 5
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `exchange_outlook_modal_title` | Commander des licences Outlook |
+| `exchange_outlook_step_duration` | Durée |
+| `exchange_outlook_step_summary` | Résumé |
+| `exchange_outlook_step_order` | Bon de commande |
+| `exchange_outlook_duration_title` | Choisir la durée d'engagement |
+| `exchange_outlook_duration_desc` | Vous allez commander des licences Outlook pour votre compte Exchange. |
+| `exchange_outlook_duration_label` | Durée d'engagement |
+| `exchange_outlook_duration_1m` | 1 mois |
+| `exchange_outlook_duration_12m` | 12 mois |
+| `exchange_outlook_duration_24m` | 24 mois |
+| `exchange_outlook_duration_no_commit` | Sans engagement |
+| `exchange_outlook_duration_discount` | de réduction |
+| `exchange_outlook_info_line1` | Les licences Outlook seront associées aux comptes Exchange de votre organisation. |
+| `exchange_outlook_info_line2` | Vous pourrez les attribuer depuis l'onglet Comptes Email. |
+| `exchange_outlook_quantity` | Nombre de licences |
+| `exchange_outlook_eligible` | comptes éligibles |
+| `exchange_outlook_cancel` | Annuler |
+| `exchange_outlook_next` | Suivant |

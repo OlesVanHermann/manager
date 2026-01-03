@@ -1,0 +1,587 @@
+================================================================================
+PROMPT TARGET - General > Mon compte
+================================================================================
+
+| Element                            | Valeur                                                      |
+|------------------------------------|-------------------------------------------------------------|
+| **Prompt**                         | /home/ubuntu/prompt_target.general.account.txt              |
+| **Screenshots**                    | /home/ubuntu/prompt_target.general.account-screenshot.txt   |
+| **Destination finale utilisateur** | /home/ubuntu/target_manager_svg/general/account/            |
+
+Version: v2.0 (2026-01-03) - Restructuration NAV3a/NAV3b/NAV4
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+SESSION 2026-01-03 (v2.0):
+- RESTRUCTURATION: NAV3a (Profil/Securite/Expert) + NAV3b (sous-groupes)
+- NAV4: Tabs du RIGHT PANEL selon selection NAV3a+NAV3b
+- DOC: Section 2 entierement reecrite avec nouvelle hierarchie
+
+================================================================================
+
+##############################################################################
+# 0. VISION PRODUIT - MON COMPTE OVH
+##############################################################################
+
+### Principes fondamentaux
+
+1. **Profil**: Gestion des informations personnelles, documents KYC, contacts
+2. **Securite**: Protection du compte (2FA, SSH, IP, sessions)
+3. **Expert**: Fonctionnalites avancees (API, support, IAM)
+
+### Organisation
+
+| NAV3a | Description | Icone |
+|-------|-------------|-------|
+| **Profil** | Informations utilisateur | person |
+| **Securite** | Protection compte | shield |
+| **Expert** | Parametres avances | settings |
+
+##############################################################################
+# 1. RAPPEL REGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 2. ARBORESCENCE NAV COMPLETE (v2.0 - NAV3a/NAV3b/NAV4)
+##############################################################################
+
+### 2.1 STRUCTURE GLOBALE AVEC NAV3a/NAV3b
+
+```
++---------------------------------------------------------------------------+
+| NAV1: General                                            (Header bleu)    |
++---------------------------------------------------------------------------+
+| NAV2: Mon compte                                   (Sous-header blanc)    |
++---------------------------------------------------------------------------+
+|                                                                           |
+|  +--- LEFT PANEL (280px) ---+  +--- RIGHT PANEL (flex:1) -------------+  |
+|  |                          |  |                                      |  |
+|  |  +--------+--------+---+ |  |  +--- HEADER ----------------------+ |  |
+|  |  | Profil |Securite|Exp| |  |  | Titre + Description             | |  |
+|  |  +--------+--------+---+ |  |  +----------------------------------+ |  |
+|  |        NAV3a             |  |  +--- NAV4 -------------------------+ |  |
+|  |                          |  |  | [Tab1*] Tab2 | Tab3              | |  |
+|  |  +----------+----------+ |  |  +----------------------------------+ |  |
+|  |  | Identite | Documents| |  |  +--- CONTENT ----------------------+ |  |
+|  |  +----------+----------+ |  |  |                                  | |  |
+|  |  | Contacts |  Comms   | |  |  |     Contenu selon NAV4           | |  |
+|  |  +----------+----------+ |  |  |                                  | |  |
+|  |        NAV3b             |  |  +----------------------------------+ |  |
+|  |                          |  |                                      |  |
+|  +--------------------------+  +--------------------------------------+  |
+|                                                                           |
++---------------------------------------------------------------------------+
+```
+
+### 2.2 NAV3a - TYPE DE SECTION (3 boutons horizontaux)
+
+Position: Top du LEFT PANEL
+CSS class: `.account-nav3a-tabs`
+
+```
++----------+----------+----------+
+|  Profil  | Securite |  Expert  |  <- NAV3a
++----------+----------+----------+
+```
+
+| NAV3a | ID | Label | Description |
+|-------|----|-------|-------------|
+| Profil | `profile` | Profil | Informations utilisateur |
+| Securite | `security` | Securite | Protection du compte |
+| Expert | `expert` | Expert | Parametres avances |
+
+### 2.3 NAV3b - SOUS-SECTIONS (grille 2x2)
+
+Position: Sous NAV3a dans le LEFT PANEL
+CSS class: `.account-nav3b-tabs`
+
+#### NAV3b pour PROFIL (4 sous-sections)
+
+```
++-------------+---------------+
+|  Identite   |   Documents   |
++-------------+---------------+
+|  Contacts   | Communications|
++-------------+---------------+
+```
+
+| NAV3b | ID | Label | Description |
+|-------|----|-------|-------------|
+| Identite | `identity` | Identite | Infos personnelles |
+| Documents | `documents` | Documents | KYC, pieces d'identite |
+| Contacts | `contacts` | Contacts | Gestion contacts services |
+| Communications | `comms` | Communications | Emails, RGPD, preferences |
+
+#### NAV3b pour SECURITE (3 sous-sections)
+
+```
++----------------+-------------+
+| Authentification|   Acces    |
++----------------+-------------+
+|    Sessions    |             |
++----------------+-------------+
+```
+
+| NAV3b | ID | Label | Description |
+|-------|----|-------|-------------|
+| Authentification | `auth` | Authentification | 2FA, codes secours |
+| Acces | `access` | Acces | SSH, restrictions IP |
+| Sessions | `sessions` | Sessions | Connexions, historique |
+
+#### NAV3b pour EXPERT (3 sous-sections)
+
+```
++----------+----------+
+|   API    | Support  |
++----------+----------+
+|  Compte  |          |
++----------+----------+
+```
+
+| NAV3b | ID | Label | Description |
+|-------|----|-------|-------------|
+| API | `api` | API | Tokens d'acces |
+| Support | `support` | Support | Niveau de support |
+| Compte | `account` | Compte | IAM, suppression |
+
+### 2.4 NAV4 - TABS DU RIGHT PANEL (selon NAV3a + NAV3b)
+
+Position: Sous le header du RIGHT PANEL
+CSS class: `.account-nav4-tabs`
+
+#### NAV4 pour PROFIL > Identite (3 tabs)
+
+```
++---------------+---------+-------------+
+| Informations* | Adresse | Mot de passe|
++---------------+---------+-------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `infos` | Informations | Infos personnelles | Civilite, Prenom, Nom, Email, Telephone |
+| 2 | `address` | Adresse | Adresse postale | Rue, CP, Ville, Pays |
+| 3 | `password` | Mot de passe | Gestion MDP | Derniere modif, bouton changer |
+
+#### NAV4 pour PROFIL > Documents (2 tabs)
+
+```
++-------------------+--------------+
+| Piece d'identite* | Justificatifs|
++-------------------+--------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `id-card` | Piece d'identite | CNI, Passeport | Upload, statut validation |
+| 2 | `proofs` | Justificatifs | Domicile, entreprise | Upload, statut validation |
+
+#### NAV4 pour PROFIL > Contacts (3 tabs)
+
+```
++--------------+------------------+-------------------+
+| Mes services*| Demandes recues | Demandes envoyees |
++--------------+------------------+-------------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `services` | Mes services | Contacts par service | Table services + contacts admin/tech/billing |
+| 2 | `received` | Demandes recues | Demandes a traiter | Liste demandes + Accepter/Refuser |
+| 3 | `sent` | Demandes envoyees | Mes demandes | Liste demandes + statut |
+
+#### NAV4 pour PROFIL > Communications (3 tabs)
+
+```
++-------------+--------------+-------------+
+| Preferences*| Emails recus | Export RGPD |
++-------------+--------------+-------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `prefs` | Preferences | Preferences email | Checkboxes newsletters, alertes |
+| 2 | `emails` | Emails recus | Historique emails | Table emails OVH recus |
+| 3 | `gdpr` | Export RGPD | Export donnees | Bouton export, dernier export |
+
+#### NAV4 pour SECURITE > Authentification (2 tabs)
+
+```
++--------------+---------------+
+| Double auth* | Codes secours |
++--------------+---------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `2fa` | Double auth | Methodes 2FA | TOTP, SMS, U2F + statuts |
+| 2 | `backup` | Codes secours | Codes de backup | Liste codes, regenerer |
+
+#### NAV4 pour SECURITE > Acces (2 tabs)
+
+```
++------------+-----------------+
+| Cles SSH*  | Restrictions IP |
++------------+-----------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `ssh` | Cles SSH | Gestion cles SSH | Table cles + ajouter |
+| 2 | `ip` | Restrictions IP | Regles IP | Table regles ACCEPT/DENY |
+
+#### NAV4 pour SECURITE > Sessions (2 tabs)
+
+```
++----------+------------+
+| Actives* | Historique |
++----------+------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `active` | Actives | Sessions en cours | Liste sessions + deconnecter |
+| 2 | `history` | Historique | Historique connexions | Table connexions + signaler |
+
+#### NAV4 pour EXPERT > API (2 tabs)
+
+```
++----------+-------------+
+| Tokens*  | Credentials |
++----------+-------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `tokens` | Tokens | Tokens API | Table tokens + creer/revoquer |
+| 2 | `credentials` | Credentials | Application keys | Cles applicatives |
+
+#### NAV4 pour EXPERT > Support (2 tabs)
+
+```
++----------------+----------+
+| Niveau actuel* | Tickets  |
++----------------+----------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `level` | Niveau actuel | Niveau support | Badge niveau + upgrade |
+| 2 | `tickets` | Tickets | Historique tickets | Lien vers support |
+
+#### NAV4 pour EXPERT > Compte (2 tabs)
+
+```
++------+-------------+
+| IAM* | Suppression |
++------+-------------+
+```
+
+| # | Tab ID | Label | Description | Contenu |
+|---|--------|-------|-------------|---------|
+| 1 | `iam` | IAM | Gestion identites | Lien vers IAM |
+| 2 | `delete` | Suppression | Supprimer compte | Zone danger + confirmation |
+
+### 2.5 RECAPITULATIF COMPLET NAV
+
+| Niveau | Element | Position | Visible si |
+|--------|---------|----------|------------|
+| **NAV1** | Header bleu 50px | y=0 | Toujours |
+| **NAV2** | Sous-header blanc 40px | y=50 | Toujours |
+| **NAV3a** | [Profil][Securite][Expert] | Top LEFT PANEL | Toujours |
+| **NAV3b** | Sous-sections (grille 2x2) | LEFT PANEL | Selon NAV3a |
+| **NAV4** | Tabs RIGHT PANEL | Sous header RIGHT | Selon NAV3a+NAV3b |
+
+### 2.6 ETATS PAR DEFAUT
+
+| Action | NAV3a | NAV3b | NAV4 |
+|--------|-------|-------|------|
+| Clic sur "Mon compte" | **Profil** | **Identite** | **Informations** |
+| Clic sur "Securite" | **Securite** | **Authentification** | **Double auth** |
+| Clic sur "Expert" | **Expert** | **API** | **Tokens** |
+
+### 2.7 COMPTEUR DE TABS
+
+| NAV3a | NAV3b | NAV4 tabs | Total |
+|-------|-------|-----------|-------|
+| Profil | Identite | 3 | |
+| Profil | Documents | 2 | |
+| Profil | Contacts | 3 | |
+| Profil | Communications | 3 | **11** |
+| Securite | Authentification | 2 | |
+| Securite | Acces | 2 | |
+| Securite | Sessions | 2 | **6** |
+| Expert | API | 2 | |
+| Expert | Support | 2 | |
+| Expert | Compte | 2 | **6** |
+| **TOTAL** | **10 NAV3b** | | **23 tabs** |
+
+##############################################################################
+# 3. MOCK DATA
+##############################################################################
+
+### 3.1 Utilisateur
+
+```json
+{
+  "nichandle": "ab12345-ovh",
+  "firstname": "Jean",
+  "name": "DUPONT",
+  "sex": "male",
+  "email": "jean.dupont@email.com",
+  "phone": "+33 6 12 34 56 78",
+  "address": "123 rue de la Paix",
+  "zip": "75001",
+  "city": "Paris",
+  "country": "FR",
+  "language": "fr_FR",
+  "currency": "EUR"
+}
+```
+
+### 3.2 Securite 2FA
+
+```json
+{
+  "status": "enabled",
+  "methods": [
+    { "type": "totp", "name": "Google Authenticator", "status": "active", "createdAt": "2024-10-15" },
+    { "type": "sms", "phone": "+33 6 ** ** 78", "status": "active", "createdAt": "2024-10-20" },
+    { "type": "u2f", "name": null, "status": "inactive" }
+  ],
+  "backupCodes": {
+    "remaining": 7,
+    "total": 8
+  }
+}
+```
+
+### 3.3 Sessions
+
+```json
+[
+  { "id": 1, "date": "2026-01-03 14:30", "ip": "92.184.x.***", "location": "Paris, FR", "device": "Chrome/Windows", "status": "current" },
+  { "id": 2, "date": "2026-01-03 10:15", "ip": "92.184.x.***", "location": "Paris, FR", "device": "App iOS", "status": "active" },
+  { "id": 3, "date": "2026-01-02 23:45", "ip": "185.22.x.***", "location": "Moscou, RU", "device": "Firefox", "status": "failed" }
+]
+```
+
+### 3.4 Documents KYC
+
+```json
+[
+  { "type": "id_card", "name": "Carte d'identite", "status": "validated", "uploadDate": "2024-10-15", "expiryDate": "2034-10-15" },
+  { "type": "proof_address", "name": "Facture EDF", "status": "pending", "uploadDate": "2024-12-28" }
+]
+```
+
+### 3.5 Contacts services
+
+```json
+[
+  { "service": "example.com", "admin": "ab12345-ovh", "tech": "cd67890-ovh", "billing": "ab12345-ovh" },
+  { "service": "mysite.fr", "admin": "ab12345-ovh", "tech": "ab12345-ovh", "billing": "ab12345-ovh" },
+  { "service": "vps-abc123", "admin": "ab12345-ovh", "tech": "ef11223-ovh", "billing": "ab12345-ovh" }
+]
+```
+
+### 3.6 Tokens API
+
+```json
+[
+  { "name": "app-1", "applicationId": "12345", "createdAt": "2024-10-15", "lastUsed": "2026-01-02" },
+  { "name": "script", "applicationId": "67890", "createdAt": "2024-11-20", "lastUsed": "2026-01-01" },
+  { "name": "ci-cd", "applicationId": "11223", "createdAt": "2024-12-01", "lastUsed": "2025-12-30" }
+]
+```
+
+##############################################################################
+# 4. APIS & ENDPOINTS
+##############################################################################
+
+### Profil > Identite
+- GET /me - Informations compte
+- PUT /me - Modifier informations
+- POST /me/changePassword - Changer mot de passe
+
+### Profil > Documents
+- GET /me/document - Liste documents
+- POST /me/document - Upload document
+- DELETE /me/document/{id} - Supprimer document
+
+### Profil > Contacts
+- GET /me/contact - Liste contacts
+- PUT /me/contact/{id} - Modifier contact
+- GET /me/task/contactChange - Demandes de changement
+
+### Profil > Communications
+- GET /me/document?type=email - Emails recus
+- GET /me/consent - Preferences RGPD
+- PUT /me/consent/{id} - Modifier preference
+- POST /me/gdprExport - Export RGPD
+
+### Securite > Authentification
+- GET /me/accessRestriction/totp - Liste TOTP
+- POST /me/accessRestriction/totp - Ajouter TOTP
+- DELETE /me/accessRestriction/totp/{id} - Supprimer TOTP
+- GET /me/accessRestriction/sms - Liste SMS
+- GET /me/accessRestriction/u2f - Liste U2F
+- GET /me/accessRestriction/backupCode - Codes secours
+- POST /me/accessRestriction/backupCode/regenerate - Regenerer codes
+
+### Securite > Acces
+- GET /me/sshKey - Liste cles SSH
+- POST /me/sshKey - Ajouter cle SSH
+- DELETE /me/sshKey/{keyName} - Supprimer cle
+- GET /me/accessRestriction/ip - Liste restrictions IP
+- POST /me/accessRestriction/ip - Ajouter restriction
+- DELETE /me/accessRestriction/ip/{id} - Supprimer restriction
+
+### Securite > Sessions
+- GET /me/login/history - Historique connexions
+- DELETE /me/login/history/{id} - Deconnecter session
+- POST /me/login/history/{id}/report - Signaler activite suspecte
+
+### Expert > API
+- GET /me/api/application - Liste applications
+- POST /me/api/application - Creer application
+- DELETE /me/api/application/{id} - Supprimer application
+- GET /me/api/credential - Liste credentials
+
+### Expert > Support
+- GET /me/supportLevel - Niveau support
+
+### Expert > Compte
+- DELETE /me/terminate - Supprimer compte
+
+##############################################################################
+# 5. MODALES
+##############################################################################
+
+### Profil
+- modal-edit-infos: Modifier informations personnelles
+- modal-edit-address: Modifier adresse
+- modal-change-password: Changer mot de passe
+- modal-upload-document: Telecharger document
+- modal-edit-contact: Modifier contact service
+
+### Securite
+- modal-add-totp: Ajouter TOTP (QR code)
+- modal-add-sms: Ajouter SMS
+- modal-add-u2f: Ajouter cle U2F
+- modal-backup-codes: Voir/regenerer codes secours
+- modal-add-ssh: Ajouter cle SSH
+- modal-add-ip: Ajouter restriction IP
+- modal-disconnect-session: Deconnecter session
+
+### Expert
+- modal-create-token: Creer token API
+- modal-revoke-token: Revoquer token
+- modal-delete-account: Confirmer suppression compte
+
+##############################################################################
+# 6. SPECS CSS LAYOUT
+##############################################################################
+
+| Element | Classe CSS | Proprietes critiques |
+|---------|------------|----------------------|
+| **Container** | `.account-layout` | `display: flex; gap: 16px; padding: 15px 24px 24px 24px` |
+| **Left Panel** | `.account-left-panel` | `width: 280px; flex-shrink: 0` |
+| **Right Panel** | `.account-right-panel` | `flex: 1; min-width: 0` |
+| **NAV3a tabs** | `.account-nav3a-tabs` | `display: flex; gap: 4px; padding: 12px` |
+| **NAV3a button** | `.account-nav3a-tab` | `flex: 1; padding: 8px 4px; font-size: 11px` |
+| **NAV3b tabs** | `.account-nav3b-tabs` | `display: grid; grid-template-columns: 1fr 1fr; gap: 4px` |
+| **NAV3b button** | `.account-nav3b-tab` | `padding: 8px 12px; font-size: 11px` |
+| **NAV4 tabs** | `.account-nav4-tabs` | `display: flex; gap: 4px; padding: 12px 20px` |
+| **NAV4 button** | `.account-nav4-tab` | `padding: 6px 14px; font-size: 11px` |
+
+##############################################################################
+# 7. ARBORESCENCE FICHIERS
+##############################################################################
+
+```
+/general/account/
+|-- index.tsx              <- Page principale (NAV3a routing)
+|-- index.css              <- Styles globaux Account
+|
+|-- profile/
+|   |-- ProfilePanel.tsx   <- Panel Profil (gere NAV3b + NAV4)
+|   |-- identity/
+|   |   |-- index.tsx      <- Page identite (3 NAV4 tabs)
+|   |   |-- InfosTab.tsx
+|   |   |-- AddressTab.tsx
+|   |   |-- PasswordTab.tsx
+|   |
+|   |-- documents/
+|   |   |-- index.tsx      <- Page documents (2 NAV4 tabs)
+|   |   |-- IdCardTab.tsx
+|   |   |-- ProofsTab.tsx
+|   |
+|   |-- contacts/
+|   |   |-- index.tsx      <- Page contacts (3 NAV4 tabs)
+|   |   |-- ServicesTab.tsx
+|   |   |-- ReceivedTab.tsx
+|   |   |-- SentTab.tsx
+|   |
+|   |-- communications/
+|       |-- index.tsx      <- Page communications (3 NAV4 tabs)
+|       |-- PrefsTab.tsx
+|       |-- EmailsTab.tsx
+|       |-- GdprTab.tsx
+|
+|-- security/
+|   |-- SecurityPanel.tsx  <- Panel Securite (gere NAV3b + NAV4)
+|   |-- auth/
+|   |   |-- index.tsx      <- Page auth (2 NAV4 tabs)
+|   |   |-- TwoFaTab.tsx
+|   |   |-- BackupTab.tsx
+|   |
+|   |-- access/
+|   |   |-- index.tsx      <- Page acces (2 NAV4 tabs)
+|   |   |-- SshTab.tsx
+|   |   |-- IpTab.tsx
+|   |
+|   |-- sessions/
+|       |-- index.tsx      <- Page sessions (2 NAV4 tabs)
+|       |-- ActiveTab.tsx
+|       |-- HistoryTab.tsx
+|
+|-- expert/
+    |-- ExpertPanel.tsx    <- Panel Expert (gere NAV3b + NAV4)
+    |-- api/
+    |   |-- index.tsx      <- Page API (2 NAV4 tabs)
+    |   |-- TokensTab.tsx
+    |   |-- CredentialsTab.tsx
+    |
+    |-- support/
+    |   |-- index.tsx      <- Page support (2 NAV4 tabs)
+    |   |-- LevelTab.tsx
+    |   |-- TicketsTab.tsx
+    |
+    |-- account/
+        |-- index.tsx      <- Page compte (2 NAV4 tabs)
+        |-- IamTab.tsx
+        |-- DeleteTab.tsx
+```
+
+##############################################################################
+# 8. CHANGELOG
+##############################################################################
+
+### v2.0 (2026-01-03) - RESTRUCTURATION NAV3a/NAV3b/NAV4
+- NEW: NAV3a = Selecteur section (Profil/Securite/Expert) - haut LEFT PANEL
+- NEW: NAV3b = Sous-sections (grille 2x2) - sous NAV3a
+- NEW: NAV4 = Tabs RIGHT PANEL selon selection NAV3a+NAV3b
+- DOC: Section 2 entierement reecrite
+- DOC: Schemas ASCII avec NAV3a/NAV3b/NAV4
+- DOC: Tableaux recapitulatifs complets
+- TOTAL: 3 NAV3a, 10 NAV3b, 23 NAV4 tabs
+
+### v1.0 (precedent)
+- Structure initiale avec NAV3 unique "General"
+- 6 NAV4 tabs: Identite, Securite, Contacts, Documents, Vie privee, Avance
+
+================================================================================
+FIN PROMPT TARGET GENERAL > MON COMPTE - v2.0
+================================================================================

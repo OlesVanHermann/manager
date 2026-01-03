@@ -1,0 +1,191 @@
+# PROMPT TARGET - NAV1: license / NAV2: cpanel
+
+Version: v1.0 (2026-01-03)
+
+---
+
+## 1. ARBORESCENCE
+
+### NAV1: Licences
+Position: Header bleu OVH (height: 50px)
+
+### NAV2: cPanel
+Position: Sous-header blanc (height: 40px)
+Tabs: [Tableau de bord] [cPanel] [Plesk] [Windows] [SQL Server] [CloudLinux] [DirectAdmin] [SPLA]
+
+### NAV3: Groupements (LEFT PANEL)
+Position: Au-dessus de [Rechercher...] dans sidebar 280px
+
+| NAV3 | Label FR | Description |
+|------|----------|-------------|
+| general | Général | Groupement unique |
+
+### Filtre Région
+Position: En dessous de NAV3, au-dessus de Rechercher
+Selecteur: Dropdown avec régions OVH (Toutes par défaut)
+
+### NAV4: Fonctions (RIGHT PANEL)
+
+#### Sidecar "Toutes les licences" sélectionné
+Pas de NAV4 - Affichage datagrid listing
+
+#### Sidecar licence individuelle sélectionnée
+| NAV4 | Label FR | Description |
+|------|----------|-------------|
+| informations | Informations | Détails licence + fonctionnalités |
+| historique | Historique | Journal des actions |
+
+---
+
+## 2. SPECS LAYOUT
+
+### Dimensions (TOLERANCE: 0px)
+| Element | Valeur |
+|---------|--------|
+| NAV1 height | 50px |
+| NAV2 height | 40px |
+| Gap NAV2->Content | 15px |
+| Sidebar width | 280px |
+| Gap panels | 16px |
+| Margins | 24px |
+
+---
+
+## 3. PAGES
+
+### 3.1 Page Listing (Toutes les licences)
+
+#### Métriques
+| Carte | Contenu |
+|-------|---------|
+| Licences actives | Nombre total |
+| Coût mensuel | Somme € HT |
+
+#### Datagrid
+| Colonne | Largeur | Description |
+|---------|---------|-------------|
+| Licence | 120px | ID licence (cp-XXXXXXXX) |
+| Serveur | 140px | Nom serveur associé |
+| Version | 80px | Solo/Pro/Admin |
+| IP | 100px | Adresse IP masquée |
+| Coût | 60px | Prix mensuel HT |
+| Actions | 40px | Menu ⋮ |
+
+#### Menu Actions (⋮)
+| Option | Style |
+|--------|-------|
+| Voir détails | Normal |
+| Changer IP | Normal |
+| Changer d'offre | Normal |
+| Renouveler | Normal |
+| Résilier | Danger (rouge) |
+
+### 3.2 Page Détail (licence sélectionnée)
+
+#### Header
+| Élément | Contenu |
+|---------|---------|
+| Titre | "Licence cPanel {edition}" |
+| Sous-titre | ID licence |
+| Badge | Statut (Active/Expirée) |
+| Bouton | [Actions ▼] |
+
+#### Carte Informations générales
+| Champ | Description |
+|-------|-------------|
+| Serveur | Nom du serveur associé |
+| IP | Adresse IP (masquée) |
+| Version | Version cPanel installée |
+| Création | Date de création |
+| Expiration | Date d'expiration |
+| Renouvellement | Switch Auto/Manuel |
+| Coût mensuel | Prix HT |
+
+#### Carte Fonctionnalités incluses
+Liste avec ✓ vert des fonctionnalités selon l'édition.
+Bouton [Changer d'offre].
+
+### 3.3 Page Historique (NAV4)
+
+#### Datagrid
+| Colonne | Description |
+|---------|-------------|
+| Date | Date de l'action |
+| Action | Type (Création, Renouvellement, Changement IP, Upgrade) |
+| Détails | Description détaillée |
+
+### 3.4 Page Onboarding (aucune licence)
+| Élément | Contenu |
+|---------|---------|
+| Icône | Cercle gris + emoji 🔧 |
+| Titre | "Aucune licence cPanel" |
+| Description | Texte marketing cPanel |
+| CTA | [Commander une licence cPanel] |
+
+---
+
+## 4. MODALES
+
+### 4.1 Modal Commander
+| Champ | Type | Obligatoire |
+|-------|------|-------------|
+| Édition | Radio cards | Oui |
+| Adresse IP | Input texte | Oui |
+
+#### Éditions
+| Édition | Description | Prix |
+|---------|-------------|------|
+| Solo | 1 compte | € 12/mois |
+| Pro | 100 comptes, WHM | € 15/mois |
+| Admin | Illimité | € 25/mois |
+
+### 4.2 Modal Résilier
+| Élément | Description |
+|---------|-------------|
+| Warning | Icône ⚠️ + texte attention |
+| Récapitulatif | Carte avec infos licence |
+| Checkbox | "Je comprends..." obligatoire |
+| Bouton | [Résilier] rouge, désactivé si checkbox non cochée |
+
+### 4.3 Modal Changer IP
+| Champ | Type |
+|-------|------|
+| IP actuelle | Readonly |
+| Nouvelle IP | Input obligatoire |
+
+### 4.4 Modal Changer d'offre
+| Élément | Description |
+|---------|-------------|
+| Offre actuelle | Carte readonly |
+| Nouvelles offres | Radio cards (exclut offre actuelle) |
+| Différence | Affichage +/- € |
+
+---
+
+## 5. APIS & ENDPOINTS
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /license/cpanel | GET | Liste licences |
+| /license/cpanel | POST | Commander |
+| /license/cpanel/{id} | GET | Détail |
+| /license/cpanel/{id} | PUT | Modifier (renouvellement) |
+| /license/cpanel/{id} | DELETE | Résilier |
+| /license/cpanel/{id}/ip | PUT | Changer IP |
+| /license/cpanel/{id}/upgrade | PUT | Changer offre |
+| /license/cpanel/{id}/history | GET | Historique |
+| /license/cpanel/editions | GET | Liste éditions |
+
+---
+
+## 6. LIENS ENTRE PAGES
+
+| Action | Navigation |
+|--------|------------|
+| Clic ligne datagrid | Sélectionne dans sidecar → page détail |
+| Clic sidecar licence | Affiche page détail |
+| Clic "Toutes les licences" | Affiche page listing |
+| Clic NAV4 tab | Change contenu RIGHT PANEL |
+| Clic [Commander] | Ouvre modal |
+| Clic menu action | Ouvre modal correspondante |
+

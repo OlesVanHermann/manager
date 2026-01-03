@@ -1,0 +1,277 @@
+# Cahier des Charges : network/ip/page-manage-organisations-detail
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.network.ip.page-manage-organisations-detail.svg |
+| **NAV1** | network (Network) |
+| **NAV2** | ip |
+| **Type** | Page liste avec expansion |
+| **Description** | Page de gestion des organisations IP (RIPE) avec lignes extensibles |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Content | 1392×520px | x: 24, y: 260 |
+| Full-width | Oui | - |
+
+---
+
+## 3. NAVIGATION
+
+### 3.1 NAV1 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #000E9C |
+| Hauteur | 50px |
+| Actif | Network |
+
+### 3.2 NAV2 Sous-header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #FFFFFF |
+| Hauteur | 40px |
+
+| Onglet | État |
+|--------|------|
+| **IP** | **Actif** (#0050D7) |
+| vRack | Inactif |
+| Load Balancer | Inactif |
+
+---
+
+## 4. HEADER PAGE
+
+### 4.1 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Gérer les IPs |
+| Couleur | #0050D7 |
+| Position | x: 24, y: 130 |
+
+### 4.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Gérer mes organisations |
+| Font-size | 24px |
+| Font-weight | 600 |
+| Position | x: 24, y: 175 |
+
+### 4.3 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | + Ajouter une organisation |
+| Style | Primary (#0050D7) |
+| Dimensions | 180×36px |
+| Position | x: 24, y: 200 |
+
+---
+
+## 5. DATAGRID ORGANISATIONS
+
+### 5.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1392×520px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Position | x: 24, y: 260 |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Border radius | 8px 8px 0 0 |
+
+### 5.3 Colonnes
+
+| # | Colonne | Largeur | Alignement |
+|---|---------|---------|------------|
+| 1 | (expand) | 50px | Centre |
+| 2 | Organisation | 200px | Gauche |
+| 3 | Type | 150px | Gauche |
+| 4 | Nom | 200px | Gauche |
+| 5 | Abuse | 400px | Gauche |
+| 6 | Actions | 100px | Centre |
+
+### 5.4 Style colonnes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Font-size header | 12px |
+| Font-weight header | 600 |
+| Font-size contenu | 13px |
+
+---
+
+## 6. LIGNE EXPANDABLE
+
+### 6.1 Ligne principale
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Chevron fermé | ▶ |
+| Chevron ouvert | ▼ |
+
+### 6.2 Zone expansion
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px (supplémentaire) |
+| Background | #F3F4F6 |
+| Total hauteur expanded | 90px |
+
+### 6.3 Détails expansion
+
+| Label | Exemple |
+|-------|---------|
+| Téléphone | +33 1 23 45 67 89 |
+| Adresse | 123 Rue Example, 75001 Paris, France |
+
+---
+
+## 7. DONNÉES EXEMPLE
+
+| Organisation | Type | Nom | Abuse | Actions |
+|--------------|------|-----|-------|---------|
+| ORG-OVH-FR1 | RIPE | Jean Dupont | abuse@example.com | Modifier |
+| ORG-ACME-FR1 | RIPE | ACME Corp | abuse@acme.com | Modifier |
+| ORG-DEV-EU1 | RIPE | DevTeam SAS | abuse@devteam.eu | Modifier |
+| ORG-TEST-EU2 | RIPE | Test Company Ltd | noc@testcompany.co.uk | Modifier |
+
+---
+
+## 8. BOUTON MODIFIER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Style | Secondary (outline) |
+| Dimensions | 80×30px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+
+---
+
+## 9. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Bas du container |
+| Texte info | Affichage 1-4 sur 4 organisations |
+| Boutons | ‹ [1] › |
+| Style bouton actif | Primary (#0050D7) |
+| Style bouton inactif | Secondary (outline) |
+| Dimensions boutons | 36×36px |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Lister les organisations
+
+```
+GET /ip/organisation
+```
+
+Response:
+```json
+[
+  {
+    "organisationId": "ORG-OVH-FR1",
+    "type": "RIPE",
+    "name": "Jean Dupont",
+    "abuse": "abuse@example.com",
+    "phone": "+33 1 23 45 67 89",
+    "address": "123 Rue Example, 75001 Paris, France"
+  }
+]
+```
+
+### 10.2 Obtenir une organisation
+
+```
+GET /ip/organisation/{organisationId}
+```
+
+Response:
+```json
+{
+  "organisationId": "ORG-OVH-FR1",
+  "type": "RIPE",
+  "name": "Jean Dupont",
+  "firstname": "Jean",
+  "lastname": "Dupont",
+  "abuse": "abuse@example.com",
+  "phone": "+33 1 23 45 67 89",
+  "address": "123 Rue Example",
+  "city": "Paris",
+  "zip": "75001",
+  "country": "FR"
+}
+```
+
+### 10.3 Créer une organisation
+
+```
+POST /ip/organisation
+```
+
+Body:
+```json
+{
+  "firstname": "Jean",
+  "lastname": "Dupont",
+  "abuse": "abuse@example.com",
+  "phone": "+33 1 23 45 67 89",
+  "address": "123 Rue Example",
+  "city": "Paris",
+  "zip": "75001",
+  "country": "FR"
+}
+```
+
+### 10.4 Modifier une organisation
+
+```
+PUT /ip/organisation/{organisationId}
+```
+
+### 10.5 Supprimer une organisation
+
+```
+DELETE /ip/organisation/{organisationId}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `ip_org_back` | Gérer les IPs |
+| `ip_org_title` | Gérer mes organisations |
+| `ip_org_add` | Ajouter une organisation |
+| `ip_org_col_organisation` | Organisation |
+| `ip_org_col_type` | Type |
+| `ip_org_col_name` | Nom |
+| `ip_org_col_abuse` | Abuse |
+| `ip_org_col_actions` | Actions |
+| `ip_org_edit` | Modifier |
+| `ip_org_phone` | Téléphone |
+| `ip_org_address` | Adresse |
+| `ip_org_pagination` | Affichage {start}-{end} sur {total} organisations |

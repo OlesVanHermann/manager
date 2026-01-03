@@ -1,0 +1,617 @@
+================================================================================
+PROMPT TARGET - Private Cloud > VMware
+================================================================================
+
+| Element                            | Valeur                                                      |
+|------------------------------------|-------------------------------------------------------------|
+| **Prompt**                         | prompt_target.private-cloud.vmware.txt                      |
+| **Destination finale utilisateur** | ~/target_manager_svg/private-cloud/vmware/                  |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/private-cloud/vmware/ |
+
+Version: v1.0 (2026-01-03)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+INTERDIT : Afficher le SVG dans la conversation
+OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. VUE D'ENSEMBLE
+##############################################################################
+
+### 1.1 Positionnement
+- **NAV1** : Hosted Private Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : VMware (Sous-header blanc, 40px) - Actif parmi [General, VMware, Nutanix, Managed Bare Metal, SAP, Veeam, Storage]
+- **NAV3** : [Général] (sélecteur dans LEFT PANEL, au-dessus de Region)
+- **NAV4** : Tabs dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion des services VMware on OVHcloud (Dedicated Cloud / Private Cloud) : 
+dashboard, hosts, datastores, utilisateurs, sécurité, licences, opérations et tâches.
+
+### 1.3 URL Pattern
+```
+/private-cloud/vmware                                    → General (All) dashboard
+/private-cloud/vmware?id={serviceName}                   → Dashboard service
+/private-cloud/vmware?id={serviceName}&tab=hosts         → Hosts du service
+/private-cloud/vmware?id={serviceName}&tab=datastores    → Datastores du service
+/private-cloud/vmware?id={serviceName}&tab=users         → Users du service
+/private-cloud/vmware?id={serviceName}&tab=security      → Security du service
+/private-cloud/vmware?id={serviceName}&tab=licence       → Licence du service
+/private-cloud/vmware?id={serviceName}&tab=operations    → Operations du service
+/private-cloud/vmware?id={serviceName}&tab=tasks         → Tasks du service
+```
+
+##############################################################################
+# 2. STRUCTURE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Hosted Private Cloud (x=510)
+│
+└── NAV2: VMware (indicateur sous "VMware")
+    │
+    ├── LEFT PANEL (280px)
+    │   │
+    │   ├── NAV3: [Général•] (sélecteur - extensible futur)
+    │   │
+    │   ├── Filtre Region
+    │   │   └── [🌍 Region: ALL ▼] (dropdown + bouton × si ≠ ALL)
+    │   │
+    │   ├── 🔍 Rechercher...
+    │   │
+    │   ├── 📊 General (All)  ← Vue agrégée tous services
+    │   │   ─ ─ ─ ─ ─ ─ ─ ─
+    │   ├── ● pcc-xxx-001     ← Services individuels
+    │   ├── ● pcc-xxx-002
+    │   └── ● pcc-xxx-003
+    │
+    └── RIGHT PANEL (1096px)
+        │
+        ├── Header: Titre service + metadata + [Guides ▼]
+        │
+        └── NAV4: [General][Hosts][Datastores][Users][Security][Licence][Operations][Tasks]
+            │
+            ├── General     → Dashboard tiles (Infos, Réseau, Sécurité, Abonnement)
+            ├── Hosts       → Tableau hosts ESXi
+            ├── Datastores  → Tableau datastores
+            ├── Users       → Section IAM (toggle) + Section vSphere
+            ├── Security    → Politique accès + IPs autorisées + KMS
+            ├── Licence     → SPLA Windows + VMs licensées
+            ├── Operations  → Opérations maintenance OVHcloud
+            └── Tasks       → Historique tâches API
+```
+
+##############################################################################
+# 3. STRUCTURE LEFT PANEL
+##############################################################################
+
+### 3.1 Layout vertical
+
+```
+┌─────────────────────────────┐
+│ NAV3 - Groupement           │  y=105
+│ ┌─────────────────────────┐ │
+│ │ [Général•]              │ │  ← Bouton toggle (seul pour l'instant)
+│ └─────────────────────────┘ │
+├─────────────────────────────┤  y=145
+│ Filtre Region               │
+│ ┌─────────────────────────┐ │
+│ │ 🌍 Region: ALL        ▼ │ │  ← Dropdown
+│ └─────────────────────────┘ │
+├─────────────────────────────┤  y=185
+│ 🔍 Rechercher...            │  ← Search input
+├─────────────────────────────┤  y=225
+│ ┌─────────────────────────┐ │
+│ │ 📊 General (All)        │ │  ← Vue agrégée (toujours visible)
+│ └─────────────────────────┘ │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │  ← Séparateur
+│ ┌─────────────────────────┐ │
+│ │ ● pcc-192-0-2-1         │ │  ← Service sélectionné
+│ │   Roubaix │ 🟢          │ │
+│ └─────────────────────────┘ │
+│ ┌─────────────────────────┐ │
+│ │   pcc-192-0-2-50        │ │
+│ │   Gravelines │ 🟡       │ │
+│ └─────────────────────────┘ │
+├─────────────────────────────┤
+│ Affichage 1-3 sur 3         │
+└─────────────────────────────┘
+```
+
+### 3.2 Dropdown Region
+
+| Groupe | Options |
+|--------|---------|
+| (défaut) | 🌍 ALL |
+| FRANCE | Roubaix (RBX), Gravelines (GRA), Strasbourg (SBG) |
+| EUROPE | Francfort (FRA), Londres (LON), Varsovie (WAW) |
+| NORTH AMERICA | Beauharnois (BHS) |
+
+### 3.3 Card service
+
+```
+┌─────────────────────────────┐
+│ ● pcc-192-0-2-1             │  ← Indicateur sélection + serviceName
+│   Roubaix │ 🟢              │  ← Location │ État badge
+└─────────────────────────────┘
+```
+
+États possibles:
+- 🟢 delivered (vert)
+- 🟡 toDeliver / maintenance (jaune)
+- 🔴 disabled / error (rouge)
+
+##############################################################################
+# 4. NAV4 - TABS DÉTAIL
+##############################################################################
+
+### 4.1 Liste des tabs
+
+| Tab | ID | Description | NAV5 |
+|-----|----|-------------|------|
+| General | general | Dashboard tiles | - |
+| Hosts | hosts | Tableau hosts ESXi | - |
+| Datastores | datastores | Tableau datastores | - |
+| Users | users | IAM + vSphere (page longue) | - |
+| Security | security | Politique + IPs + KMS (page longue) | - |
+| Licence | licence | SPLA Windows | - |
+| Operations | operations | Maintenance OVHcloud | - |
+| Tasks | tasks | Historique tâches | - |
+
+### 4.2 Tab: General (Dashboard)
+
+#### Layout 2x2 tiles
+
+```
+┌──────────────────────────┐ ┌──────────────────────────┐
+│ Informations générales   │ │ Réseau                   │
+│                          │ │                          │
+│ Nom: {description}       │ │ vRack: {vrack}           │
+│ Location: {location}     │ │ Bandwidth: {bandwidth}   │
+│ Version: {version}       │ │ IP block: {ipBlock}      │
+│ Gamme: {commercialRange} │ │                          │
+│ État: {state}            │ │ [Gérer le réseau →]      │
+│                          │ │                          │
+│ [Modifier ✎]             │ └──────────────────────────┘
+└──────────────────────────┘
+
+┌──────────────────────────┐ ┌──────────────────────────┐
+│ Sécurité                 │ │ Abonnement               │
+│                          │ │                          │
+│ Politique: {policy}      │ │ Date création: {created} │
+│ VM encryption: {vmEnc}   │ │ Prochaine fact: {billing}│
+│ IPs autorisées: {count}  │ │ Coût mensuel: {price}    │
+│                          │ │                          │
+│ [Configurer →]           │ │ [Gérer l'offre →]        │
+└──────────────────────────┘ └──────────────────────────┘
+```
+
+### 4.3 Tab: Hosts
+
+#### Toolbar
+```
+[↻]  [🔍 Rechercher...]           [+ Commander un host]
+```
+
+#### Tableau
+
+| Colonne | Source | Width |
+|---------|--------|-------|
+| Nom | host.name | 150px |
+| Datacenter | host.datacenterId | 120px |
+| CPU | host.cpu | 140px |
+| RAM | host.ram | 100px |
+| État | host.state | 80px |
+| Actions | ⋮ menu | 50px |
+
+### 4.4 Tab: Datastores
+
+#### Toolbar
+```
+[↻]  [🔍 Rechercher...]          [+ Commander un datastore]
+```
+
+#### Tableau
+
+| Colonne | Source | Width |
+|---------|--------|-------|
+| Nom | datastore.name | 150px |
+| Datacenter | datastore.datacenterId | 120px |
+| Type | datastore.type (SSD/NVMe/HDD/NFS) | 80px |
+| Capacité | datastore.capacity | 100px |
+| Utilisé | datastore.used (%) | 100px |
+| Actions | ⋮ menu | 50px |
+
+### 4.5 Tab: Users (Page longue)
+
+#### Section 1: GESTION IAM (en haut)
+
+**État OFF (minimaliste):**
+```
+┌────────────────────────────────────────────────────────────┐
+│ GESTION IAM                                     [⚪ OFF]   │
+├────────────────────────────────────────────────────────────┤
+│ ℹ️ Activez IAM pour gérer les accès via les identités     │
+│    OVHcloud et les policies de votre compte.              │
+└────────────────────────────────────────────────────────────┘
+```
+
+**État ON (tableau déployé):**
+```
+┌────────────────────────────────────────────────────────────┐
+│ GESTION IAM                                      [🔵 ON]   │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│ [↻]  [🔍 Rechercher...]              [+ Lier une identité] │
+│                                                            │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │  Identité URN          │ Rôle IAM      │ Lié le    │⋮ │ │
+│ ├────────────────────────────────────────────────────────┤ │
+│ │  urn:v1:...:user:xx123 │ pcc-admin     │ 2024-12-01│⋮ │ │
+│ │  urn:v1:...:user:yy456 │ pcc-readonly  │ 2024-11-15│⋮ │ │
+│ └────────────────────────────────────────────────────────┘ │
+│                                                            │
+│ Affichage 1-2 sur 2                                        │
+└────────────────────────────────────────────────────────────┘
+```
+
+#### Section 2: UTILISATEURS vSPHERE (en bas)
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ UTILISATEURS vSPHERE                                       │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│ [↻]  [🔍 Rechercher...]            [+ Ajouter utilisateur] │
+│                                                            │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │  Login         │ Nom complet      │ Rôle     │ État │⋮ │ │
+│ ├────────────────────────────────────────────────────────┤ │
+│ │  admin         │ Administrateur   │ Admin    │ 🟢   │⋮ │ │
+│ │  operator-01   │ Jean Dupont      │ Operator │ 🟢   │⋮ │ │
+│ │  readonly-user │ Marie Martin     │ ReadOnly │ 🟢   │⋮ │ │
+│ └────────────────────────────────────────────────────────┘ │
+│                                                            │
+│ Affichage 1-3 sur 5                                        │
+└────────────────────────────────────────────────────────────┘
+```
+
+### 4.6 Tab: Security (Page longue)
+
+#### Section 1: Politique d'accès + Sessions
+
+```
+┌──────────────────────────────┐ ┌──────────────────────────┐
+│ Politique d'accès            │ │ Sessions                 │
+│                              │ │                          │
+│ Mode: {accessPolicy}     [✎] │ │ Max connexions: {max}[✎] │
+│ Token validation: {token}    │ │ Timeout: {timeout}   [✎] │
+│ Session timeout: {timeout}   │ │ Actives: {count}         │
+│                              │ │                          │
+│ [Modifier la politique →]    │ │ [Déconnecter tout →]     │
+└──────────────────────────────┘ └──────────────────────────┘
+```
+
+#### Section 2: IPs autorisées
+
+```
+IPs autorisées                                  [+ Ajouter IP]
+┌──────────────────────────────────────────────────────────────┐
+│  IP / CIDR           │ Description        │ Ajouté le  │ ⋮  │
+├──────────────────────────────────────────────────────────────┤
+│  203.0.113.0/24      │ Bureau Paris       │ 2024-06-15 │ ⋮  │
+│  198.51.100.50/32    │ VPN Admin          │ 2024-08-20 │ ⋮  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+#### Section 3: KMS (Key Management Service)
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ KMS - Chiffrement VM                                       │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│ Statut: {kmsStatus}                        [+ Ajouter KMS] │
+│                                                            │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │  Nom           │ IP             │ État    │ Actions   │ │
+│ ├────────────────────────────────────────────────────────┤ │
+│ │  kms-prod      │ 10.0.0.50      │ 🟢 OK   │ [✎] [×]   │ │
+│ └────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────┘
+```
+
+### 4.7 Tab: Licence
+
+#### Section 1: Activation SPLA
+
+```
+┌──────────────────────────────┐ ┌──────────────────────────┐
+│ Activation SPLA              │ │ Résumé facturation       │
+│                              │ │                          │
+│ Statut: 🟢 Activé            │ │ Licences actives: {count}│
+│ Activé le: {activationDate}  │ │ Coût estimé: {cost}/mois │
+│                              │ │                          │
+│ [Désactiver SPLA]            │ │ [Voir détails →]         │
+└──────────────────────────────┘ └──────────────────────────┘
+```
+
+#### Section 2: VMs avec licence Windows
+
+```
+VMs avec licence Windows                         [+ Activer VM]
+┌──────────────────────────────────────────────────────────────┐
+│  VM                │ Datacenter │ OS              │ État │⋮ │
+├──────────────────────────────────────────────────────────────┤
+│  vm-web-01         │ dc-rbx-001 │ Win Server 2022 │ 🟢   │⋮ │
+│  vm-sql-01         │ dc-rbx-001 │ Win Server 2022 │ 🟢   │⋮ │
+│  vm-ad-01          │ dc-rbx-001 │ Win Server 2019 │ 🟢   │⋮ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### 4.8 Tab: Operations
+
+```
+ℹ️ Opérations de maintenance planifiées par OVHcloud
+
+[↻]  [🔍 Rechercher...]  Filtre: [Toutes ▼] [En attente ▼]
+
+┌──────────────────────────────────────────────────────────────┐
+│  ID         │ Type           │ Date prévue  │ État       │⋮ │
+├──────────────────────────────────────────────────────────────┤
+│  OP-12345   │ Host upgrade   │ 2026-01-15   │ 🟡 Planifié│⋮ │
+│  OP-12340   │ Security patch │ 2026-01-10   │ 🟡 Planifié│⋮ │
+│  OP-12298   │ vCenter update │ 2025-12-20   │ 🟢 Terminé │⋮ │
+└──────────────────────────────────────────────────────────────┘
+
+⚠️ 2 opérations en attente de validation
+```
+
+### 4.9 Tab: Tasks
+
+```
+[↻]  [🔍 Rechercher...]   Filtre: [Toutes ▼]  [7 derniers jours]
+
+┌──────────────────────────────────────────────────────────────┐
+│  ID        │ Action              │ Date       │ État     │⋯ │
+├──────────────────────────────────────────────────────────────┤
+│  TSK-9871  │ addHost             │ 03/01 14:30│ 🔵 Running│⋯ │
+│  TSK-9870  │ addDatastore        │ 03/01 14:25│ 🟢 Done   │⋯ │
+│  TSK-9865  │ createUser          │ 03/01 10:15│ 🟢 Done   │⋯ │
+│  TSK-9860  │ updateSecurityPolicy│ 02/01 16:45│ 🟢 Done   │⋯ │
+│  TSK-9855  │ enableSpla          │ 02/01 09:30│ 🟢 Done   │⋯ │
+│  TSK-9840  │ removeHost          │ 01/01 18:00│ 🔴 Error  │⋯ │
+└──────────────────────────────────────────────────────────────┘
+
+🔵 1 tâche en cours │ 🔴 1 erreur récente
+```
+
+##############################################################################
+# 5. GENERAL (ALL) - VUE AGRÉGÉE
+##############################################################################
+
+### 5.1 Principe
+
+Quand "📊 General (All)" est sélectionné dans le LEFT PANEL, le RIGHT PANEL
+affiche une vue agrégée de TOUS les services VMware du compte.
+
+### 5.2 NAV4: General (All) → Dashboard agrégé
+
+```
+📊 VMware — Vue d'ensemble
+3 services │ 2 régions │ 🟢 2 actifs │ 🟡 1 warning
+
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│ SERVICES    │ │ HOSTS       │ │ DATASTORES  │ │ USERS       │
+│     3       │ │    12       │ │    24       │ │    15       │
+│   total     │ │   total     │ │   total     │ │   total     │
+│ 🟢 2  🟡 1  │ │ 🟢 11 🟡 1  │ │ ⚠️ 2 >85%   │ │ 🟢 14 🔴 1  │
+└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
+
+RÉPARTITION PAR SERVICE
+┌──────────────────────────────────────────────────────────────┐
+│  Service         │ Region    │ Hosts │ DS  │ Users │ État  │
+├──────────────────────────────────────────────────────────────┤
+│  pcc-192-0-2-1   │ Roubaix   │ 6     │ 12  │ 5     │ 🟢    │
+│  pcc-192-0-2-50  │ Gravelines│ 4     │ 8   │ 8     │ 🟡    │
+│  pcc-test-dev    │ Strasbourg│ 2     │ 4   │ 2     │ 🔴    │
+└──────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────┐ ┌─────────────────────────────┐
+│ OPÉRATIONS                  │ │ TÂCHES RÉCENTES             │
+│ 🟡 2 planifiées             │ │ 🔵 1 en cours               │
+│ 📅 Prochaine: 10/01/2026    │ │ 🔴 1 erreur (il y a 2h)     │
+│ [Voir toutes →]             │ │ [Voir toutes →]             │
+└─────────────────────────────┘ └─────────────────────────────┘
+
+┌─────────────────────────────┐ ┌─────────────────────────────┐
+│ SÉCURITÉ                    │ │ LICENCES                    │
+│ IAM activé: 2/3 services    │ │ SPLA activé: 2/3 services   │
+│ IPs autorisées: 12 total    │ │ VMs licensées: 18           │
+│ [Configurer →]              │ │ Coût estimé: 540€/mois      │
+└─────────────────────────────┘ └─────────────────────────────┘
+```
+
+### 5.3 NAV4: General (All) → Autres tabs
+
+Pour Hosts, Datastores, Users, etc. en mode "General (All)":
+- Tableau avec colonne "Service" ajoutée
+- Filtre dropdown "Service: [Tous ▼]"
+- Agrégation des données de tous les services
+
+##############################################################################
+# 6. APIS
+##############################################################################
+
+### 6.1 Service principal
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud | Liste tous les services |
+| GET | /dedicatedCloud/{serviceName} | Détails service |
+| PUT | /dedicatedCloud/{serviceName} | Modifier service |
+| GET | /dedicatedCloud/{serviceName}/serviceInfos | Infos facturation |
+
+### 6.2 Datacenters
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud/{sn}/datacenter | Liste datacenters |
+| GET | /dedicatedCloud/{sn}/datacenter/{id} | Détails datacenter |
+| POST | /dedicatedCloud/{sn}/datacenter | Ajouter datacenter |
+| DELETE | /dedicatedCloud/{sn}/datacenter/{id} | Supprimer datacenter |
+
+### 6.3 Hosts
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud/{sn}/datacenter/{dcId}/host | Liste hosts |
+| GET | /dedicatedCloud/{sn}/datacenter/{dcId}/host/{id} | Détails host |
+| POST | /dedicatedCloud/{sn}/datacenter/{dcId}/host | Commander host |
+| DELETE | /dedicatedCloud/{sn}/datacenter/{dcId}/host/{id} | Supprimer host |
+
+### 6.4 Datastores
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud/{sn}/datacenter/{dcId}/datastore | Liste datastores |
+| GET | /dedicatedCloud/{sn}/datacenter/{dcId}/datastore/{id} | Détails datastore |
+| POST | /dedicatedCloud/{sn}/datacenter/{dcId}/datastore | Commander datastore |
+| DELETE | /dedicatedCloud/{sn}/datacenter/{dcId}/datastore/{id} | Supprimer datastore |
+
+### 6.5 Users vSphere
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud/{sn}/user | Liste users |
+| GET | /dedicatedCloud/{sn}/user/{userId} | Détails user |
+| POST | /dedicatedCloud/{sn}/user | Créer user |
+| PUT | /dedicatedCloud/{sn}/user/{userId} | Modifier user |
+| DELETE | /dedicatedCloud/{sn}/user/{userId} | Supprimer user |
+| POST | /dedicatedCloud/{sn}/user/{userId}/changePassword | Reset password |
+| PUT | /dedicatedCloud/{sn}/user/{userId}/enable | Activer user |
+| PUT | /dedicatedCloud/{sn}/user/{userId}/disable | Désactiver user |
+
+### 6.6 IAM
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud/{sn}/iam | Statut IAM |
+| POST | /dedicatedCloud/{sn}/iam/enable | Activer IAM |
+| POST | /dedicatedCloud/{sn}/iam/disable | Désactiver IAM |
+| GET | /dedicatedCloud/{sn}/iam/identity | Liste identités liées |
+| POST | /dedicatedCloud/{sn}/iam/identity | Lier identité |
+| DELETE | /dedicatedCloud/{sn}/iam/identity/{id} | Délier identité |
+
+### 6.7 Security
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud/{sn}/securityPolicy | Politique accès |
+| PUT | /dedicatedCloud/{sn}/securityPolicy | Modifier politique |
+| GET | /dedicatedCloud/{sn}/allowedNetwork | Liste IPs autorisées |
+| POST | /dedicatedCloud/{sn}/allowedNetwork | Ajouter IP |
+| DELETE | /dedicatedCloud/{sn}/allowedNetwork/{id} | Supprimer IP |
+| GET | /dedicatedCloud/{sn}/kms | Liste KMS |
+| POST | /dedicatedCloud/{sn}/kms | Ajouter KMS |
+| DELETE | /dedicatedCloud/{sn}/kms/{id} | Supprimer KMS |
+
+### 6.8 Licence
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud/{sn}/spla | Statut SPLA |
+| POST | /dedicatedCloud/{sn}/spla/enable | Activer SPLA |
+| POST | /dedicatedCloud/{sn}/spla/disable | Désactiver SPLA |
+| GET | /dedicatedCloud/{sn}/datacenter/{dc}/vm | Liste VMs |
+| PUT | /dedicatedCloud/{sn}/datacenter/{dc}/vm/{id}/spla | Activer licence VM |
+
+### 6.9 Operations & Tasks
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /dedicatedCloud/{sn}/robot | Liste opérations |
+| GET | /dedicatedCloud/{sn}/robot/{id} | Détails opération |
+| PUT | /dedicatedCloud/{sn}/robot/{id} | Modifier date opération |
+| GET | /dedicatedCloud/{sn}/task | Liste tâches |
+| GET | /dedicatedCloud/{sn}/task/{id} | Détails tâche |
+
+##############################################################################
+# 7. DONNÉES DYNAMIQUES
+##############################################################################
+
+| Exemple SVG | Source API |
+|-------------|------------|
+| pcc-192-0-2-1 | GET /dedicatedCloud → serviceName |
+| Production VMware | GET /dedicatedCloud/{sn} → description |
+| Roubaix | GET /dedicatedCloud/{sn} → location |
+| 7.0 | GET /dedicatedCloud/{sn} → version |
+| Premier | GET /dedicatedCloud/{sn} → commercialRange |
+| delivered | GET /dedicatedCloud/{sn} → state |
+| pn-12345 | GET /dedicatedCloud/{sn} → vrack |
+| host-001 | GET /dedicatedCloud/{sn}/datacenter/{dc}/host → name |
+| ds-ssd-001 | GET /dedicatedCloud/{sn}/datacenter/{dc}/datastore → name |
+| admin | GET /dedicatedCloud/{sn}/user → name |
+| OP-12345 | GET /dedicatedCloud/{sn}/robot → id |
+| TSK-9871 | GET /dedicatedCloud/{sn}/task → taskId |
+
+##############################################################################
+# 8. INTERACTIONS
+##############################################################################
+
+| Action | Comportement |
+|--------|--------------|
+| Clic "General (All)" | Affiche vue agrégée tous services |
+| Clic service | Affiche détails du service sélectionné |
+| Clic NAV4 tab | Change contenu RIGHT PANEL |
+| Clic dropdown Region | Filtre liste services |
+| Toggle IAM ON/OFF | Déploie/replie section IAM |
+| Clic [+ Commander] | Ouvre modal commande |
+| Clic ⋮ menu ligne | Affiche actions contextuelles |
+| Clic [Modifier ✎] | Ouvre modal édition |
+
+##############################################################################
+# 9. MODALES PRINCIPALES
+##############################################################################
+
+### 9.1 Commander un host
+- Sélection datacenter
+- Choix gamme CPU
+- Choix RAM
+- Confirmation prix
+- Validation
+
+### 9.2 Commander un datastore
+- Sélection datacenter
+- Type (SSD/NVMe/HDD/NFS)
+- Capacité
+- Global ou local
+- Confirmation
+
+### 9.3 Ajouter utilisateur vSphere
+- Login
+- Nom complet
+- Email
+- Rôle (Admin/Operator/ReadOnly/Backup)
+- Mot de passe initial
+
+### 9.4 Lier identité IAM
+- Recherche identité (URN)
+- Attribution rôle IAM
+- Confirmation
+
+### 9.5 Ajouter IP autorisée
+- IP ou CIDR
+- Description
+- Confirmation
+
+================================================================================
+FIN PROMPT TARGET - Private Cloud > VMware v1.0
+================================================================================

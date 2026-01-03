@@ -1,0 +1,176 @@
+# Cahier des Charges : web-cloud/voip/service/modal-time-condition-import
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.modal-time-condition-import.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Modal import |
+| **Description** | Modal d'import d'une configuration de plages horaires au format JSON |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 280px |
+| Position | Centrée (x: 420, y: 250) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.4) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 50px |
+| Bouton fermeture | × (position droite) |
+| Séparateur | Ligne 1px #E5E7EB |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Importer une configuration |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+### 4.2 Champ upload
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | File input |
+| Dimensions | 200×40px |
+| Placeholder | Fichier... |
+
+### 4.3 Informations
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Format de fichier : JSON |
+| Ligne 2 | Importez un fichier de configuration précédemment exporté. |
+| Couleur | #6B7280 |
+| Font-size | 11-12px |
+
+---
+
+## 5. FOOTER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Séparateur | Ligne 1px #E5E7EB en haut |
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Default (outline) | 100×36px | Gauche |
+| Valider | Primary (#0050D7) | 100×36px | Droite |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Importer une configuration
+
+```
+POST /telephony/{billingAccount}/line/{serviceName}/timeCondition/import
+```
+
+Body (multipart/form-data):
+```json
+{
+  "file": "<fichier JSON>"
+}
+```
+
+### 6.2 Format du fichier JSON attendu
+
+```json
+{
+  "timeConditions": [
+    {
+      "day": "monday",
+      "hourBegin": "08:00",
+      "hourEnd": "12:00",
+      "policy": "open"
+    },
+    {
+      "day": "monday",
+      "hourBegin": "14:00",
+      "hourEnd": "18:00",
+      "policy": "open"
+    }
+  ],
+  "exceptionalClosures": [
+    {
+      "date": "2026-01-01",
+      "description": "Jour de l'an"
+    }
+  ]
+}
+```
+
+---
+
+## 7. VALIDATION
+
+| Champ | Règle |
+|-------|-------|
+| Fichier | Requis |
+| Format | JSON uniquement |
+| Contenu | Structure JSON valide avec timeConditions |
+
+---
+
+## 8. COMPORTEMENT
+
+### 8.1 États
+
+| État | Comportement |
+|------|--------------|
+| Aucun fichier | Bouton Valider désactivé |
+| Fichier sélectionné | Bouton Valider activé |
+| Import en cours | Spinner sur le bouton Valider |
+
+### 8.2 Messages
+
+| Type | Message |
+|------|---------|
+| Succès | Configuration importée avec succès |
+| Erreur format | Format de fichier invalide. Utilisez un fichier JSON. |
+| Erreur structure | Le fichier ne contient pas une configuration valide. |
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_time_condition_import_title` | Importer une configuration |
+| `voip_time_condition_import_file` | Fichier |
+| `voip_time_condition_import_format` | Format de fichier : JSON |
+| `voip_time_condition_import_hint` | Importez un fichier de configuration précédemment exporté. |
+| `voip_time_condition_import_cancel` | Annuler |
+| `voip_time_condition_import_submit` | Valider |
+| `voip_time_condition_import_success` | Configuration importée avec succès |
+| `voip_time_condition_import_error_format` | Format de fichier invalide. Utilisez un fichier JSON. |
+| `voip_time_condition_import_error_structure` | Le fichier ne contient pas une configuration valide. |

@@ -1,0 +1,300 @@
+# Cahier des Charges : web-cloud/cdn/dashboard
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.cdn.dashboard.svg |
+| **NAV1** | web-cloud (Web Cloud) |
+| **NAV2** | cdn |
+| **NAV4** | statistiques (dashboard) |
+| **Type** | Page dashboard |
+| **Description** | Dashboard principal d'un service CDN avec KPIs et graphiques |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| LEFT PANEL | 280×765px | x: 24 |
+| RIGHT PANEL | 1096×765px | x: 320 |
+| Gap | 16px | - |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | Rechercher... |
+
+### 3.2 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 55px |
+| Background | #E8F0FE |
+| Nom | cdn-12345 |
+| Description | CDN Dedicated |
+| Badge | Actif (#DEF7EC, #059669) |
+
+### 3.3 Autres services
+
+| Nom | Description |
+|-----|-------------|
+| cdn-67890 | CDN Dedicated |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | cdn-12345 |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 NAV4 Tabs
+
+| Onglet | État |
+|--------|------|
+| **Statistiques** | **Actif** (#0050D7) |
+| SSL | Inactif |
+| Logs | Inactif |
+| Domaines | Inactif |
+
+---
+
+## 5. TILES ROW
+
+### 5.1 Tile Informations
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×150px |
+| Titre | Informations |
+
+| Label | Valeur |
+|-------|--------|
+| Service | cdn-12345 |
+| Type | CDN Dedicated |
+| Quota | 1 TB / mois |
+
+### 5.2 Tile Backend
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×150px |
+| Titre | Backend |
+
+| Label | Valeur |
+|-------|--------|
+| Serveurs | 2 serveurs configurés |
+| IP principale | 192.168.1.100 |
+| Lien | Commander un backend supplémentaire (#0050D7) |
+
+### 5.3 Tile Domaines
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 336×150px |
+| Titre | Domaines |
+
+| Label | Valeur |
+|-------|--------|
+| Domaines actifs | 5 (font-weight: 600) |
+| Règles de cache | 12 règles |
+| Lien | Ajouter un domaine (#0050D7) |
+
+---
+
+## 6. GRAPHIQUE TRAFIC
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×350px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+| Titre | Statistiques de trafic |
+
+### 6.2 Filtres
+
+| Filtre | Type | Options | Défaut |
+|--------|------|---------|--------|
+| Visualiser | Select | Bande passante, Requêtes, Cache HIT/MISS | Bande passante |
+| Depuis | Select | 24h, 1 semaine, 1 mois, 3 mois | 1 semaine |
+
+### 6.3 Style select
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 150×28px / 120×28px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Chevron | ▼ #6B7280 |
+
+### 6.4 Zone graphique
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 996×200px |
+| Background | #F9FAFB |
+| Border radius | 4px |
+
+### 6.5 Axe Y (Bande passante)
+
+| Label | Position |
+|-------|----------|
+| 1 TB | Haut |
+| 750 GB | - |
+| 500 GB | - |
+| 250 GB | - |
+| 0 | Bas |
+
+### 6.6 Axe X (Jours semaine)
+
+| Label |
+|-------|
+| Lun |
+| Mar |
+| Mer |
+| Jeu |
+| Ven |
+| Sam |
+| Dim |
+
+### 6.7 Style ligne
+
+| Propriété | Valeur |
+|-----------|--------|
+| Stroke | #0050D7 |
+| Stroke-width | 2px |
+| Fill | none |
+
+### 6.8 Grid
+
+| Propriété | Valeur |
+|-----------|--------|
+| Stroke | #E5E7EB |
+| Stroke-dasharray | 4 |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les informations du CDN
+
+```
+GET /cdn/{serviceName}
+```
+
+Response:
+```json
+{
+  "serviceName": "cdn-12345",
+  "type": "dedicated",
+  "quota": {
+    "total": 1099511627776,
+    "used": 549755813888,
+    "unit": "bytes"
+  },
+  "status": "active"
+}
+```
+
+### 7.2 Obtenir les backends
+
+```
+GET /cdn/{serviceName}/backend
+```
+
+Response:
+```json
+{
+  "count": 2,
+  "backends": [
+    { "ip": "192.168.1.100", "primary": true },
+    { "ip": "192.168.1.101", "primary": false }
+  ]
+}
+```
+
+### 7.3 Compter les domaines
+
+```
+GET /cdn/{serviceName}/domain
+```
+
+Response:
+```json
+{
+  "count": 5,
+  "domains": ["www.example.com", "api.example.com", "cdn.example.com", "static.example.com", "assets.example.com"]
+}
+```
+
+### 7.4 Obtenir les statistiques de trafic
+
+```
+GET /cdn/{serviceName}/statistics
+```
+
+Query params:
+```
+?type=bandwidth&period=week
+```
+
+Response:
+```json
+{
+  "period": "week",
+  "type": "bandwidth",
+  "data": [
+    { "date": "2026-01-06", "value": 412316860416, "unit": "bytes" },
+    { "date": "2026-01-07", "value": 386547056640, "unit": "bytes" }
+  ]
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_dashboard_title` | Statistiques |
+| `cdn_dashboard_tab_stats` | Statistiques |
+| `cdn_dashboard_tab_ssl` | SSL |
+| `cdn_dashboard_tab_logs` | Logs |
+| `cdn_dashboard_tab_domains` | Domaines |
+| `cdn_dashboard_tile_info` | Informations |
+| `cdn_dashboard_tile_backend` | Backend |
+| `cdn_dashboard_tile_domains` | Domaines |
+| `cdn_dashboard_service` | Service |
+| `cdn_dashboard_type` | Type |
+| `cdn_dashboard_quota` | Quota |
+| `cdn_dashboard_servers` | Serveurs |
+| `cdn_dashboard_primary_ip` | IP principale |
+| `cdn_dashboard_order_backend` | Commander un backend supplémentaire |
+| `cdn_dashboard_active_domains` | Domaines actifs |
+| `cdn_dashboard_cache_rules` | Règles de cache |
+| `cdn_dashboard_add_domain` | Ajouter un domaine |
+| `cdn_dashboard_traffic_title` | Statistiques de trafic |
+| `cdn_dashboard_filter_view` | Visualiser : |
+| `cdn_dashboard_filter_since` | Depuis : |
+| `cdn_dashboard_bandwidth` | Bande passante |
+| `cdn_dashboard_requests` | Requêtes |
+| `cdn_dashboard_1_week` | 1 semaine |

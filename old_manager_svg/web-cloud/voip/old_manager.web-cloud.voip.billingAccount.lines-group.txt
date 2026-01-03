@@ -1,0 +1,201 @@
+# Cahier des Charges : web-cloud/voip/billingAccount/lines-group
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.billingAccount.lines-group.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page sélection |
+| **Description** | Page de regroupement de lignes et numéros depuis d'autres groupes |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px (avec liste groupes) |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Groupe sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Nom | ab12345-ovh-1 |
+| Description | Groupe principal |
+| Compteur | 3 groupes |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien | ← Retour à l'administration de groupe |
+| Couleur | #0050D7 |
+
+### 4.2 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Regroupement de lignes |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. SECTION INFORMATIONS
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 700×80px |
+| Titre | Informations |
+| Séparateur | Ligne sous le titre |
+
+### 5.2 Champs
+
+| Label | Valeur exemple |
+|-------|----------------|
+| Nombre de lignes attachées | 5 |
+| Nombre de numéros attachés | 12 |
+
+---
+
+## 6. SECTION SÉLECTION
+
+### 6.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 700×340px |
+| Titre | Sélection |
+| Séparateur | Ligne sous le titre |
+
+### 6.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Choisissez le groupe contenant les services que vous souhaitez attacher au groupe actuel : |
+| Couleur | #6B7280 |
+
+### 6.3 Datagrid groupes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×~160px |
+| Header | Background #F9FAFB |
+
+### 6.4 Colonnes
+
+| Colonne | Position |
+|---------|----------|
+| Groupe de téléphonie | x: 35 |
+| Identifiant | x: 350 |
+
+### 6.5 Données exemple
+
+| Groupe | Identifiant | Cliquable |
+|--------|-------------|-----------|
+| Groupe secondaire | ab12345-ovh-2 | Oui (lien bleu) |
+| Groupe test | ab12345-ovh-3 | Oui (lien bleu) |
+| Groupe actuel (désactivé) | ab12345-ovh-1 | Non (grisé) |
+
+### 6.6 Pagination
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Affichage 1-3 sur 3 |
+
+---
+
+## 7. BOUTONS D'ACTION
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Attacher les services sélectionnés | Primary (#0050D7) | 220×36px |
+| Précédent | Outline | 100×36px |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir les informations du groupe
+
+```
+GET /telephony/{billingAccount}/lines/count
+```
+
+Response:
+```json
+{
+  "linesCount": 5,
+  "numbersCount": 12
+}
+```
+
+### 8.2 Lister les autres groupes
+
+```
+GET /telephony
+```
+
+Response:
+```json
+{
+  "billingAccounts": [
+    {
+      "billingAccount": "ab12345-ovh-2",
+      "description": "Groupe secondaire"
+    },
+    {
+      "billingAccount": "ab12345-ovh-3",
+      "description": "Groupe test"
+    }
+  ]
+}
+```
+
+### 8.3 Attacher des services d'un autre groupe
+
+```
+POST /telephony/{billingAccount}/attachFromOtherBillingAccount
+```
+
+Body:
+```json
+{
+  "sourceBillingAccount": "ab12345-ovh-2",
+  "serviceIds": ["line1", "line2", "number1"]
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_lines_group_back` | Retour à l'administration de groupe |
+| `voip_lines_group_title` | Regroupement de lignes |
+| `voip_lines_group_info_title` | Informations |
+| `voip_lines_group_info_lines` | Nombre de lignes attachées |
+| `voip_lines_group_info_numbers` | Nombre de numéros attachés |
+| `voip_lines_group_selection_title` | Sélection |
+| `voip_lines_group_selection_desc` | Choisissez le groupe contenant les services que vous souhaitez attacher au groupe actuel |
+| `voip_lines_group_col_group` | Groupe de téléphonie |
+| `voip_lines_group_col_id` | Identifiant |
+| `voip_lines_group_current` | Groupe actuel (désactivé) |
+| `voip_lines_group_attach` | Attacher les services sélectionnés |
+| `voip_lines_group_previous` | Précédent |

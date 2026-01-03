@@ -1,0 +1,173 @@
+# Cahier des Charges : home/billing/history
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.history.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | history |
+| **Type** | Page full-width avec datagrid |
+| **Description** | Historique des opérations du compte (crédits, débits, conversions) |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×50px | x: 40, y: 115 |
+| Filtre mois | 200×40px | x: 40, y: 160 |
+| Datagrid | 1360×500px | x: 40, y: 220 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Facturation |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Historique des opérations |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. FILTRE PÉRIODE
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Select dropdown |
+| Dimensions | 200×40px |
+| Background | #F3F4F6 |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | Janvier 2026 |
+| Icône | ▼ |
+
+---
+
+## 5. DATAGRID OPÉRATIONS
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×500px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Border radius | 8px 8px 0 0 |
+
+### 5.3 Colonnes
+
+| # | Colonne | Position X | Largeur |
+|---|---------|------------|---------|
+| 1 | Date | 20px | 180px |
+| 2 | Type | 200px | 200px |
+| 3 | Description | 400px | 500px |
+| 4 | Montant | 900px | 200px |
+| 5 | Solde après | 1100px | 200px |
+
+### 5.4 Badges Type
+
+| Type | Background | Couleur | Dimensions |
+|------|------------|---------|------------|
+| Crédit | #DEF7EC | #059669 | 80×22px |
+| Débit | #FEE2E2 | #DC2626 | 80×22px |
+| Conversion | #DBEAFE | #1E40AF | 100×22px |
+
+### 5.5 Style montant
+
+| Type | Couleur | Préfixe |
+|------|---------|---------|
+| Crédit | #059669 | + |
+| Débit | #DC2626 | - |
+
+### 5.6 Données exemple
+
+| Date | Type | Description | Montant | Solde |
+|------|------|-------------|---------|-------|
+| 02/01/2026 10:30 | Crédit | Rechargement compte prépayé | +50,00 € | 125,50 € |
+| 01/01/2026 00:05 | Débit | Prélèvement facture FR2026010001 | -89,99 € | 75,50 € |
+| 28/12/2025 14:22 | Conversion | Conversion points fidélité (500 pts) | +5,00 € | 165,49 € |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Changer mois | Filtrer les opérations par mois |
+| Clic sur référence facture | Naviguer vers la facture |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Historique des opérations
+
+```
+GET /me/billing/movement?month=2026-01
+```
+
+Response:
+```json
+[
+  {
+    "movementId": "mov-001",
+    "date": "2026-01-02T10:30:00Z",
+    "type": "credit",
+    "description": "Rechargement compte prépayé",
+    "amount": 50.00,
+    "balanceAfter": 125.50
+  },
+  {
+    "movementId": "mov-002",
+    "date": "2026-01-01T00:05:00Z",
+    "type": "debit",
+    "description": "Prélèvement facture FR2026010001",
+    "invoiceRef": "FR2026010001",
+    "amount": -89.99,
+    "balanceAfter": 75.50
+  }
+]
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_history_title` | Historique des opérations |
+| `billing_history_col_date` | Date |
+| `billing_history_col_type` | Type |
+| `billing_history_col_description` | Description |
+| `billing_history_col_amount` | Montant |
+| `billing_history_col_balance` | Solde après |
+| `billing_history_type_credit` | Crédit |
+| `billing_history_type_debit` | Débit |
+| `billing_history_type_conversion` | Conversion |

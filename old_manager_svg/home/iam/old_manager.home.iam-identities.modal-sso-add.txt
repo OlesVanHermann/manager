@@ -1,0 +1,228 @@
+# Cahier des Charges : home/iam-identities/modal-sso-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.iam-identities.modal-sso-add.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | iam-identities |
+| **Type** | Modal formulaire avec picker |
+| **Description** | Modal pour configurer un nouveau fournisseur d'identité SSO |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 700px |
+| Position | Centrée (x: 370, y: 80) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 55px |
+| Background | #0050D7 |
+| Border radius | 8px 8px 0 0 |
+| Titre | Configurer un fournisseur d'identité |
+| Couleur titre | #FFFFFF |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. FORMULAIRE
+
+### 4.1 Picker - Type de fournisseur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Type de fournisseur |
+| Type | Card picker (sélection unique) |
+| Layout | 4 cartes en ligne |
+
+| Carte | Icône | Nom | Protocole | Dimensions | État |
+|-------|-------|-----|-----------|------------|------|
+| Azure AD | 🔷 | Azure AD | SAML 2.0 | 155×60px | Sélectionné (#E8F0FE, border #0050D7) |
+| Okta | 🔐 | Okta | SAML 2.0 | 155×60px | Inactif (#F9FAFB, border #E5E7EB) |
+| Google | 🔴 | Google | OIDC | 155×60px | Inactif |
+| SAML | 📄 | SAML | Générique | 155×60px | Inactif |
+
+### 4.2 Champ Nom d'affichage
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nom d'affichage * |
+| Type | Text input |
+| Dimensions | 660×40px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Placeholder | Ex: Azure AD Production |
+
+### 4.3 Champ Entity ID
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Entity ID (Issuer) * |
+| Type | Text input |
+| Dimensions | 660×40px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Placeholder | https://login.microsoftonline.com/... |
+
+### 4.4 Champ SSO URL
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | SSO URL * |
+| Type | Text input |
+| Dimensions | 660×40px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Placeholder | URL de connexion du fournisseur |
+
+### 4.5 Champ Certificat X.509
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Certificat X.509 * |
+| Type | Textarea (code) |
+| Dimensions | 660×80px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Placeholder | Collez le certificat public ici... |
+
+### 4.6 Checkbox activation immédiate
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Checkbox |
+| Dimensions | 20×20px |
+| État | Coché par défaut |
+| Background coché | #0050D7 |
+| Checkmark | ✓ blanc |
+| Label | Activer immédiatement après la création |
+
+### 4.7 Note explicative
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Les utilisateurs pourront se connecter via ce fournisseur dès son activation. |
+| Couleur | #6B7280 |
+| Font-size | 11px |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Séparateur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | y: 640 |
+| Width | 700px |
+| Stroke | 1px #E5E7EB |
+
+### 5.2 Boutons
+
+| Bouton | Style | Dimensions | Background |
+|--------|-------|------------|------------|
+| Annuler | Secondary | 120×36px | #FFFFFF, border #E5E7EB |
+| Configurer | Primary | 120×36px | #0050D7 |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic × | Fermer modal |
+| Clic Annuler | Fermer modal |
+| Clic carte fournisseur | Sélectionner le type et adapter le formulaire |
+| Clic checkbox | Toggle activation immédiate |
+| Clic Configurer | Créer le fournisseur SSO |
+
+---
+
+## 7. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Type fournisseur | Obligatoire (sélection) |
+| Nom d'affichage | Obligatoire |
+| Entity ID | Obligatoire, URL valide |
+| SSO URL | Obligatoire, URL HTTPS valide |
+| Certificat | Obligatoire, format X.509 PEM |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Créer un fournisseur SSO
+
+```
+POST /me/identity/provider
+```
+
+Body:
+```json
+{
+  "type": "saml",
+  "displayName": "Azure AD Production",
+  "entityId": "https://login.microsoftonline.com/abc123/saml2",
+  "ssoUrl": "https://login.microsoftonline.com/abc123/saml2/sso",
+  "certificate": "-----BEGIN CERTIFICATE-----\nMIIDqDCCApC...\n-----END CERTIFICATE-----",
+  "enabled": true
+}
+```
+
+Response:
+```json
+{
+  "providerId": "sso-azure-001",
+  "displayName": "Azure AD Production",
+  "type": "saml",
+  "status": "active",
+  "createdAt": "2026-01-02T10:30:00Z"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_sso_modal_add_title` | Configurer un fournisseur d'identité |
+| `iam_sso_modal_provider_type` | Type de fournisseur |
+| `iam_sso_provider_azure` | Azure AD |
+| `iam_sso_provider_okta` | Okta |
+| `iam_sso_provider_google` | Google |
+| `iam_sso_provider_saml` | SAML |
+| `iam_sso_protocol_saml` | SAML 2.0 |
+| `iam_sso_protocol_oidc` | OIDC |
+| `iam_sso_protocol_generic` | Générique |
+| `iam_sso_modal_displayname` | Nom d'affichage |
+| `iam_sso_modal_entity_id` | Entity ID (Issuer) |
+| `iam_sso_modal_sso_url` | SSO URL |
+| `iam_sso_modal_certificate` | Certificat X.509 |
+| `iam_sso_modal_enable_immediately` | Activer immédiatement après la création |
+| `iam_sso_modal_enable_note` | Les utilisateurs pourront se connecter via ce fournisseur dès son activation. |
+| `iam_sso_modal_cancel` | Annuler |
+| `iam_sso_modal_submit` | Configurer |

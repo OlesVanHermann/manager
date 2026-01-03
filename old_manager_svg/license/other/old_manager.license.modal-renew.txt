@@ -1,0 +1,160 @@
+# Cahier des Charges : license/modal-renew
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.license.modal-renew.svg |
+| **NAV1** | license (Licences) |
+| **NAV2** | - |
+| **Type** | Modal formulaire |
+| **Description** | Modal de renouvellement d'une licence avec choix de durée |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 400px |
+| Position | Centrée (x: 420, y: 230) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Background | #DBEAFE (info) |
+| Titre | Renouveler la licence |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Couleur titre | #1E40AF |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Titre section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Renouvellement de votre licence cPanel |
+| Font-weight | 600 |
+
+### 4.2 Informations licence
+
+| Label | Valeur exemple |
+|-------|----------------|
+| Licence | cPanel license Pro Cloud |
+| Expiration actuelle | 15 mars 2025 |
+
+### 4.3 Options de durée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Durée de renouvellement |
+| Type | Radio buttons |
+
+| Option | Prix | État |
+|--------|------|------|
+| 1 mois | 9,99 € HT | Sélectionné |
+| 6 mois | 54,99 € HT | Non sélectionné |
+| 12 mois | 99,99 € HT | Non sélectionné |
+
+### 4.4 Nouvelle expiration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Nouvelle date d'expiration |
+| Valeur exemple | 15 avril 2025 |
+| Font-weight | 600 |
+| Calcul dynamique | Date actuelle + durée sélectionnée |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline | 120×40px | Gauche |
+| Renouveler | Primary (#0050D7) | 150×40px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Changement durée | Recalcul nouvelle date expiration |
+| Clic Annuler | Fermer modal |
+| Clic × | Fermer modal |
+| Clic Renouveler | Générer bon de commande |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir options renouvellement
+
+```
+GET /license/{licenseType}/{serviceName}/renew/options
+```
+
+Response:
+```json
+{
+  "currentExpiration": "2025-03-15",
+  "durations": [
+    {"months": 1, "price": 9.99},
+    {"months": 6, "price": 54.99},
+    {"months": 12, "price": 99.99}
+  ]
+}
+```
+
+### 7.2 Renouveler licence
+
+```
+POST /order/cart/{cartId}/license/{licenseType}/{serviceName}/renew
+```
+
+Body:
+```json
+{
+  "duration": "P1M"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `license_renew_title` | Renouveler la licence |
+| `license_renew_subtitle` | Renouvellement de votre licence |
+| `license_renew_current` | Licence |
+| `license_renew_expiration` | Expiration actuelle |
+| `license_renew_duration` | Durée de renouvellement |
+| `license_renew_1month` | 1 mois |
+| `license_renew_6months` | 6 mois |
+| `license_renew_12months` | 12 mois |
+| `license_renew_new_expiration` | Nouvelle date d'expiration |
+| `license_renew_cancel` | Annuler |
+| `license_renew_submit` | Renouveler |

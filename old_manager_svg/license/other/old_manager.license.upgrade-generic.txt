@@ -1,0 +1,195 @@
+# Cahier des Charges : license/upgrade-generic
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.license.upgrade-generic.svg |
+| **NAV1** | license (Licences) |
+| **NAV2** | - |
+| **Type** | Page formulaire upgrade générique |
+| **Description** | Page d'upgrade générique applicable à tout type de licence avec avertissement prorata |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| RIGHT PANEL | 1392×765px |
+| Structure | 2 colonnes (récap gauche + form droite) |
+
+---
+
+## 3. HEADER
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Upgrader ma licence |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 3.2 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour à la gestion des licenses |
+| Couleur | #0050D7 |
+
+---
+
+## 4. COLONNE GAUCHE - RÉCAPITULATIF
+
+### 4.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 450×250px |
+| Background | #DBEAFE (info) |
+| Border radius | 8px |
+
+### 4.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Récapitulatif de votre licence actuelle |
+| Font-weight | 600 |
+| Couleur | #1E40AF |
+
+### 4.3 Informations
+
+| Label | Valeur exemple |
+|-------|----------------|
+| Type | cPanel |
+| Version | cPanel license Admin Cloud |
+| Nombre de comptes | 5 comptes |
+| IP | 192.168.1.100 |
+| Service | ns1234567.ip-192-168-1.eu |
+| Expiration | 15 mars 2025 |
+
+---
+
+## 5. COLONNE DROITE - FORMULAIRE
+
+### 5.1 Section 1 : Options
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | 1. Choisissez vos nouvelles options |
+| Font-weight | 600 |
+
+| Champ | Type | Dimensions | Valeur exemple |
+|-------|------|------------|----------------|
+| Nouvelle version | Select | 450×40px | cPanel license Pro Cloud (100 comptes) |
+
+### 5.2 Warning box prorata
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 450×50px |
+| Background | #FEF3C7 (warning) |
+| Icône | ⚠️ |
+| Ligne 1 | L'upgrade vers une version supérieure sera facturé |
+| Ligne 2 | au prorata de la période restante. |
+| Couleur texte | #D97706 |
+
+### 5.3 Section 2 : Durée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | 2. Choisissez une durée |
+| Font-weight | 600 |
+
+| Champ | Type | Dimensions | Valeur exemple |
+|-------|------|------------|----------------|
+| Durée | Select | 450×40px | 12 mois |
+
+### 5.4 Section 3 : Validation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | 3. Validation |
+| Font-weight | 600 |
+| Montant estimé | 299,99 € HT |
+| Description | Cliquez sur "Générer le bon de commande" pour upgrader votre licence. |
+
+---
+
+## 6. BOUTON ACTION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Générer le bon de commande |
+| Style | Primary (#0050D7) |
+| Dimensions | 220×44px |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir options upgrade
+
+```
+GET /license/{licenseType}/{serviceName}/upgrade/options
+```
+
+Response:
+```json
+{
+  "currentLicense": {
+    "type": "cpanel",
+    "version": "admin-cloud",
+    "accounts": 5,
+    "ip": "192.168.1.100",
+    "serviceName": "ns1234567.ip-192-168-1.eu",
+    "expirationDate": "2025-03-15"
+  },
+  "availableUpgrades": [
+    {"version": "pro-cloud", "accounts": 30, "price": 19.99},
+    {"version": "pro-cloud-100", "accounts": 100, "price": 29.99}
+  ],
+  "durations": ["P1M", "P12M"],
+  "proratedBilling": true
+}
+```
+
+### 7.2 Commander upgrade
+
+```
+POST /order/cart/{cartId}/license/{licenseType}/{serviceName}/upgrade
+```
+
+Body:
+```json
+{
+  "version": "pro-cloud-100",
+  "duration": "P12M"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `license_upgrade_generic_title` | Upgrader ma licence |
+| `license_upgrade_generic_back` | Retour à la gestion des licenses |
+| `license_upgrade_generic_summary` | Récapitulatif de votre licence actuelle |
+| `license_upgrade_generic_type` | Type |
+| `license_upgrade_generic_version` | Version |
+| `license_upgrade_generic_accounts` | Nombre de comptes |
+| `license_upgrade_generic_ip` | IP |
+| `license_upgrade_generic_service` | Service |
+| `license_upgrade_generic_expiration` | Expiration |
+| `license_upgrade_generic_step1` | Choisissez vos nouvelles options |
+| `license_upgrade_generic_new_version` | Nouvelle version |
+| `license_upgrade_generic_prorata_warning1` | L'upgrade vers une version supérieure sera facturé |
+| `license_upgrade_generic_prorata_warning2` | au prorata de la période restante. |
+| `license_upgrade_generic_step2` | Choisissez une durée |
+| `license_upgrade_generic_step3` | Validation |
+| `license_upgrade_generic_amount` | Montant estimé |
+| `license_upgrade_generic_submit` | Générer le bon de commande |

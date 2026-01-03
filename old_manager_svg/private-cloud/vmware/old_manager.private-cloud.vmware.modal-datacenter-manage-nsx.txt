@@ -1,0 +1,210 @@
+# Cahier des Charges : private-cloud/vmware/modal-datacenter-manage-nsx
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-datacenter-manage-nsx.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page avec cartes de sélection NSX Edge |
+| **Description** | Page pour redimensionner les nœuds NSX Edge avec 3 tailles disponibles |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | 2 colonnes (LEFT PANEL + RIGHT PANEL) |
+| LEFT PANEL | 280×765px |
+| RIGHT PANEL | 1096×765px |
+| Gap | 16px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Placeholder | Rechercher... |
+
+### 3.2 Liste services
+
+| Propriété | Valeur |
+|-----------|--------|
+| Item sélectionné | pcc-192-0-2-1 |
+| Sous-titre | dc-gra1 |
+| Background sélection | #E8F0FE |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | ← Retour |
+| Couleur lien | #0050D7 |
+| Titre | Modifier les noeuds NSX Edge |
+| Font-size titre | 18px |
+| Font-weight titre | 600 |
+
+### 4.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Par défaut, tous les datacenters virtuels (VDC) NSX disposent d'un cluster NSX Edge composé de deux NSX Edge medium. |
+| Ligne 2 | Vous avez ensuite la possibilité de modifier la taille des Edges, sous réserve de disposer des ressources nécessaires. |
+| Ligne 3 | Cette interface vous permet de redimensionner des NSX Edge Nodes. Ceux-ci sont facturés au tarif de 0,02€ HT par vCPU et par mois. |
+| Couleur | #6B7280 |
+
+---
+
+## 5. INFO BANNER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×70px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Icône | ℹ️ |
+| Ligne 1 | Si une option est grisée, cela signifie que vous ne disposez pas des ressources nécessaires au sein de votre DataCentre Virtuel. |
+| Ligne 2 | Vous devez avoir les ressources CPU, mémoire et disque suffisantes pour le changement de taille de vos NSX Edge. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 6. CARTES NSX EDGE (3 options)
+
+### 6.1 Carte Medium (niveau actuel)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×260px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Header background | #E5E7EB |
+| Titre | NSX Edge medium |
+| Badge | Niveau actuel (#DBEAFE / #1E40AF) |
+| Description | Convient lorsque seules les fonctionnalités L2 à L4 sont requises et que le débit est inférieur à 2 Gbits/s. |
+| Specs | 4 vCPU - 8Go RAM - 200 Go |
+| Prix | à partir de 0,02€ HT/vCPU/mois |
+
+### 6.2 Carte Large (sélectionnée)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 340×260px |
+| Background | #E8F0FE |
+| Border | 2px #0050D7 |
+| Header background | #0050D7 |
+| Couleur titre | #FFFFFF |
+| Titre | NSX Edge large |
+| Radio | Sélectionné (cercle bleu) |
+| Description | Convient lorsque le débit total est de 2 à 10 Gbits/s. Approprié pour l'équilibreur de charge L7. |
+| Specs | 8 vCPU - 32Go RAM - 200 Go |
+| Prix | à partir de 0,02€ HT/vCPU/mois |
+| Couleur prix | #0050D7, font-weight 600 |
+
+### 6.3 Carte Extra Large
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 336×260px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Header background | #F9FAFB |
+| Titre | NSX Edge extra large |
+| Radio | Non sélectionné (cercle vide) |
+| Description | Utilisez le format très grand si vous souhaitez configurer un grand nombre d'homologues BGP. |
+| Specs | 16 vCPU - 64Go RAM - 200 Go |
+| Prix | à partir de 0,02€ HT/vCPU/mois |
+
+---
+
+## 7. NOTE DE PIED
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | * 2x4 vCPU inclus dans l'offre standard |
+| Couleur | #6B7280 |
+| Font-size | 11px |
+
+---
+
+## 8. BOUTONS ACTION
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | Outline (#E5E7EB) | 100×40px |
+| Confirmer | Primary (#0050D7) | 140×40px |
+
+---
+
+## 9. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic carte | Sélectionner cette taille NSX Edge |
+| Clic Retour | Retour à la page précédente |
+| Clic Annuler | Annuler et retour |
+| Clic Confirmer | Appliquer le changement de taille |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Obtenir la configuration NSX Edge actuelle
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsx/edges
+```
+
+Response:
+```json
+{
+  "currentSize": "medium",
+  "availableSizes": ["medium", "large", "extraLarge"],
+  "pricing": {
+    "perVcpu": 0.02,
+    "currency": "EUR"
+  }
+}
+```
+
+### 10.2 Redimensionner les NSX Edge
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/nsx/edges/resize
+```
+
+Body:
+```json
+{
+  "targetSize": "large"
+}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_nsx_manage_title` | Modifier les noeuds NSX Edge |
+| `vmware_nsx_manage_desc1` | Par défaut, tous les datacenters virtuels (VDC) NSX disposent d'un cluster NSX Edge composé de deux NSX Edge medium. |
+| `vmware_nsx_manage_desc2` | Vous avez ensuite la possibilité de modifier la taille des Edges, sous réserve de disposer des ressources nécessaires. |
+| `vmware_nsx_manage_info` | Si une option est grisée, cela signifie que vous ne disposez pas des ressources nécessaires |
+| `vmware_nsx_medium` | NSX Edge medium |
+| `vmware_nsx_large` | NSX Edge large |
+| `vmware_nsx_xlarge` | NSX Edge extra large |
+| `vmware_nsx_current` | Niveau actuel |
+| `vmware_nsx_note` | * 2x4 vCPU inclus dans l'offre standard |
+| `vmware_nsx_cancel` | Annuler |
+| `vmware_nsx_confirm` | Confirmer |

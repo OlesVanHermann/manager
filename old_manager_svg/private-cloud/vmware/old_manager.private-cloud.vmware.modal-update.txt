@@ -1,0 +1,149 @@
+# Cahier des Charges : private-cloud/vmware/modal-update
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-update.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal information avec programmation |
+| **Description** | Modal pour programmer une mise à jour vSphere avec affichage versions et info banner |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 380px |
+| Position | Centrée (x: 420, y: 200) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Programmation de la mise à jour |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Informations versions
+
+| Label | Valeur |
+|-------|--------|
+| Version actuelle | vSphere 7.0 (build 17867351) |
+| Version cible | vSphere 8.0 (build 20920323) |
+
+### 4.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Cette opération rendra l'accès à l'administration de votre plateforme vSphere indisponible pendant environ deux heures. |
+| Font-size | 13px |
+
+### 4.3 Info banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 560×60px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Icône | ℹ️ |
+| Ligne 1 | La date de mise à jour vous sera communiquée par e-mail. |
+| Ligne 2 | Vous pouvez modifier celle-ci à tout moment, avant son échéance. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Programmer la mise à jour | Primary (#0050D7) | 180×40px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic Programmer | Programmer la mise à jour |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les versions disponibles
+
+```
+GET /dedicatedCloud/{serviceName}/upgradeOptions
+```
+
+Response:
+```json
+{
+  "currentVersion": {
+    "name": "vSphere 7.0",
+    "build": "17867351"
+  },
+  "targetVersion": {
+    "name": "vSphere 8.0",
+    "build": "20920323"
+  },
+  "estimatedDowntime": "2 hours"
+}
+```
+
+### 7.2 Programmer la mise à jour
+
+```
+POST /dedicatedCloud/{serviceName}/upgrade/schedule
+```
+
+Body:
+```json
+{
+  "targetVersion": "vSphere 8.0"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_update_title` | Programmation de la mise à jour |
+| `vmware_update_current` | Version actuelle |
+| `vmware_update_target` | Version cible |
+| `vmware_update_warning` | Cette opération rendra l'accès à l'administration de votre plateforme vSphere indisponible |
+| `vmware_update_duration` | pendant environ deux heures |
+| `vmware_update_info` | La date de mise à jour vous sera communiquée par e-mail. |
+| `vmware_update_modify` | Vous pouvez modifier celle-ci à tout moment, avant son échéance. |
+| `vmware_update_cancel` | Annuler |
+| `vmware_update_submit` | Programmer la mise à jour |

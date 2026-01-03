@@ -1,0 +1,217 @@
+# Cahier des Charges : private-cloud/vmware/datacenter-hosts
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.datacenter-hosts.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Page datagrid avec NAV4 tabs datacenter |
+| **Description** | Liste des hosts ESXi d'un datacenter VMware avec informations facturation |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width RIGHT PANEL |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien retour | ← Retour aux datacentres |
+| Couleur | #0050D7 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | dc-1 |
+| Font-size | 20px |
+| Font-weight | 600 |
+| Bouton édition | ✎ (24×24px) |
+
+### 3.3 Sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Production VMware > pcc-192-0-2-1 |
+| Couleur | #6B7280 |
+
+---
+
+## 4. NAV4 - TABS DATACENTER
+
+| Tab | État | Dimensions |
+|-----|------|------------|
+| Dashboard | Inactif | 80×32px |
+| Hosts | Actif | 70×32px |
+| Datastores | Inactif | 90×32px |
+| Machines virtuelles | Inactif | 120×32px |
+| Backup | Inactif | 70×32px |
+| Reseau | Inactif | 70×32px |
+
+---
+
+## 5. SECTION HOSTS
+
+### 5.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Hosts |
+| Font-size | 16px |
+| Font-weight | 600 |
+
+### 5.2 Bouton commande
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commander un host |
+| Dimensions | 140×36px |
+| Background | #0050D7 |
+| Border radius | 4px |
+
+---
+
+## 6. DATAGRID
+
+### 6.1 En-têtes colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| ID | 64px |
+| Nom | 180px |
+| Profil | 150px |
+| Facturation | 120px |
+| Statut | 110px |
+| Datacenter | 120px |
+| Salle | 100px |
+| Baie | 100px |
+| Consommation | 150px |
+| Actions | 60px |
+
+### 6.2 Données exemple
+
+| ID | Nom | Profil | Facturation | Statut | DC | Salle | Baie | Consommation |
+|----|-----|--------|-------------|--------|-------|-------|------|--------------|
+| 123456 | esxi-01.pcc.ovh.net | HOST-128-L+ | Mensuel | Livre | RBX7 | 5R30 | A23 | - |
+| 123457 | esxi-02.pcc.ovh.net | HOST-128-L+ | Horaire | Livre | RBX7 | 5R30 | A24 | 720 heures |
+| 123458 | esxi-03.pcc.ovh.net | HOST-256-L+ | Mensuel | Livre | RBX7 | 5R31 | B12 | - |
+| 123459 | esxi-04.pcc.ovh.net | HOST-128-L+ | Mensuel | Livre | RBX7 | 5R31 | B13 | - |
+
+### 6.3 Badges
+
+| Badge | Background | Couleur |
+|-------|------------|---------|
+| Mensuel | #DEF7EC | #059669 |
+| Horaire | #FEF3C7 | #D97706 |
+| Livre | #DEF7EC | #059669 |
+
+---
+
+## 7. ACTIONMENU
+
+### 7.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 180×44px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+| Shadow | drop-shadow |
+
+### 7.2 Options
+
+| Option | Couleur |
+|--------|---------|
+| Passer en mensuel | #1F2937 |
+
+---
+
+## 8. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position | Sous le tableau |
+| Texte gauche | Page 1 sur 1 |
+| Texte droite | 4 resultats |
+
+---
+
+## 9. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Commander un host | Ouvrir wizard commande host |
+| Clic ⋮ | Ouvrir ActionMenu |
+| Clic Passer en mensuel | Convertir facturation horaire → mensuel |
+| Clic tab NAV4 | Naviguer vers l'onglet sélectionné |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Lister les hosts
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/host
+```
+
+Response:
+```json
+[
+  {
+    "hostId": 123456,
+    "name": "esxi-01.pcc.ovh.net",
+    "profile": "HOST-128-L+",
+    "billing": "monthly",
+    "state": "delivered",
+    "datacenter": "RBX7",
+    "room": "5R30",
+    "rack": "A23",
+    "hourlyConsumption": null
+  }
+]
+```
+
+### 10.2 Convertir en mensuel
+
+```
+POST /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/host/{hostId}/convertToMonthly
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_dc_hosts_title` | Hosts |
+| `vmware_dc_hosts_tab` | Hosts |
+| `vmware_dc_hosts_order` | Commander un host |
+| `vmware_dc_hosts_col_id` | ID |
+| `vmware_dc_hosts_col_name` | Nom |
+| `vmware_dc_hosts_col_profile` | Profil |
+| `vmware_dc_hosts_col_billing` | Facturation |
+| `vmware_dc_hosts_col_status` | Statut |
+| `vmware_dc_hosts_col_datacenter` | Datacenter |
+| `vmware_dc_hosts_col_room` | Salle |
+| `vmware_dc_hosts_col_rack` | Baie |
+| `vmware_dc_hosts_col_consumption` | Consommation |
+| `vmware_dc_hosts_monthly` | Mensuel |
+| `vmware_dc_hosts_hourly` | Horaire |
+| `vmware_dc_hosts_delivered` | Livre |
+| `vmware_dc_hosts_action_monthly` | Passer en mensuel |

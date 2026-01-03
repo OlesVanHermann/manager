@@ -1,0 +1,239 @@
+# Cahier des Charges : web-cloud/cdn/ssl
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.cdn.ssl.svg |
+| **NAV1** | web-cloud (Web Cloud) |
+| **NAV2** | cdn |
+| **NAV4** | ssl |
+| **Type** | Page détail |
+| **Description** | Page de gestion du certificat SSL d'un CDN |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| LEFT PANEL | 280×765px | x: 24 |
+| RIGHT PANEL | 1096×765px | x: 320 |
+| Gap | 16px | - |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 256×34px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | Rechercher... |
+
+### 3.2 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 55px |
+| Background | #E8F0FE |
+| Nom | cdn-12345 |
+| Description | CDN Dedicated |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Header
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | cdn-12345 |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 NAV4 Tabs
+
+| Onglet | État |
+|--------|------|
+| Statistiques | Inactif |
+| **SSL** | **Actif** (#0050D7) |
+| Logs | Inactif |
+| Domaines | Inactif |
+
+---
+
+## 5. CERTIFICAT SSL CARD
+
+### 5.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 780×280px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Header carte
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Certificat SSL |
+| Font-size | 15px |
+| Font-weight | 700 |
+| Séparateur | 1px #E5E7EB |
+
+### 5.3 Informations
+
+| Label | Valeur | Format |
+|-------|--------|--------|
+| Nom | SSL-cdn-12345 | Texte |
+| Common Name (CN) | *.example.com | Texte |
+| Statut | ON | Badge success (#DEF7EC) |
+| Valide depuis | 01/01/2025 | Date |
+| Valide jusqu'au | 01/01/2026 | Date |
+| Fournisseur | Let's Encrypt | Texte |
+
+### 5.4 Boutons d'action (sidebar)
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Générer un certificat | Outline (#E5E7EB) | 224×36px |
+| Mettre à jour | Outline (#E5E7EB) | 224×36px |
+| Supprimer | Outline (#E5E7EB) | 224×36px |
+
+---
+
+## 6. DOMAINES COUVERTS
+
+### 6.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×280px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Header section
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Domaines couverts |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 6.3 Colonnes datagrid
+
+| # | Colonne | Largeur | Alignement |
+|---|---------|---------|------------|
+| 1 | Domaine | 380px | Gauche |
+| 2 | Type | 200px | Gauche |
+| 3 | Statut | 200px | Gauche |
+
+### 6.4 Données exemple
+
+| Domaine | Type | Statut |
+|---------|------|--------|
+| www.example.com | Wildcard | Actif (badge success) |
+| api.example.com | Wildcard | Actif (badge success) |
+| cdn.example.com | Wildcard | Actif (badge success) |
+
+### 6.5 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 45px |
+| Séparateur | 1px #E5E7EB |
+| Font-size | 12px |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les informations SSL
+
+```
+GET /cdn/{serviceName}/ssl
+```
+
+Response:
+```json
+{
+  "name": "SSL-cdn-12345",
+  "cn": "*.example.com",
+  "status": "ok",
+  "validFrom": "2025-01-01T00:00:00Z",
+  "validTo": "2026-01-01T00:00:00Z",
+  "provider": "letsencrypt"
+}
+```
+
+### 7.2 Lister les domaines couverts
+
+```
+GET /cdn/{serviceName}/ssl/domains
+```
+
+Response:
+```json
+[
+  { "domain": "www.example.com", "type": "wildcard", "status": "active" },
+  { "domain": "api.example.com", "type": "wildcard", "status": "active" },
+  { "domain": "cdn.example.com", "type": "wildcard", "status": "active" }
+]
+```
+
+### 7.3 Générer un certificat
+
+```
+POST /cdn/{serviceName}/ssl/generate
+```
+
+### 7.4 Mettre à jour le certificat
+
+```
+PUT /cdn/{serviceName}/ssl
+```
+
+Body:
+```json
+{
+  "certificate": "-----BEGIN CERTIFICATE-----...",
+  "key": "-----BEGIN PRIVATE KEY-----...",
+  "chain": "-----BEGIN CERTIFICATE-----..."
+}
+```
+
+### 7.5 Supprimer le certificat
+
+```
+DELETE /cdn/{serviceName}/ssl
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_ssl_title` | Certificat SSL |
+| `cdn_ssl_name` | Nom |
+| `cdn_ssl_cn` | Common Name (CN) |
+| `cdn_ssl_status` | Statut |
+| `cdn_ssl_valid_from` | Valide depuis |
+| `cdn_ssl_valid_to` | Valide jusqu'au |
+| `cdn_ssl_provider` | Fournisseur |
+| `cdn_ssl_generate` | Générer un certificat |
+| `cdn_ssl_update` | Mettre à jour |
+| `cdn_ssl_delete` | Supprimer |
+| `cdn_ssl_domains_title` | Domaines couverts |
+| `cdn_ssl_col_domain` | Domaine |
+| `cdn_ssl_col_type` | Type |
+| `cdn_ssl_col_status` | Statut |
+| `cdn_ssl_status_on` | ON |
+| `cdn_ssl_status_active` | Actif |

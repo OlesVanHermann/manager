@@ -1,0 +1,244 @@
+# Cahier des Charges : network/vrack/wizard-add-service
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.network.vrack.wizard-add-service.svg |
+| **NAV1** | network (Network) |
+| **NAV2** | vrack |
+| **Type** | Page mapper dual-panel |
+| **Description** | Page de gestion des services du vRack avec interface de transfert bidirectionnel |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width, 2 panneaux |
+| Panel gauche | 550px (Services disponibles) |
+| Panel droit | 550px (Services dans le vRack) |
+| Boutons centraux | 100px |
+| Background | #F6F6F9 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre principal | pn-12345 (Mon vRack) |
+| Sous-titre | Gérer les services associés à votre vRack |
+
+### 3.2 Section description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Services disponibles |
+| Description | Ajoutez ou retirez des services de votre réseau privé vRack |
+
+---
+
+## 4. PANEL GAUCHE - SERVICES DISPONIBLES
+
+### 4.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 550×500px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 4.2 Header panel
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 50px |
+| Background | #F9FAFB |
+| Titre | Services disponibles |
+| Compteur | 12 services |
+
+### 4.3 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 510×36px |
+| Placeholder | Rechercher un service... |
+
+### 4.4 Filtre type
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Dropdown |
+| Dimensions | 200×32px |
+| Valeur par défaut | Type: Tous |
+
+### 4.5 Liste services
+
+| Service | Type | Localisation | Sélectionné |
+|---------|------|--------------|-------------|
+| ns12345.ip-123-45-67.eu | Serveur dédié | Europe | ✓ (bleu) |
+| vps-abcdef.vps.ovh.net | VPS | Gravelines | Non |
+| pcc-123-456-789.ovh.com | Hosted Private Cloud | Roubaix | ✓ (bleu) |
+| loadbalancer-xyz.eu | Load Balancer | Europe | Non |
+
+### 4.6 Style sélection
+
+| État | Background | Checkbox |
+|------|------------|----------|
+| Sélectionné | #E8F0FE | Cercle #0050D7 avec ✓ |
+| Non sélectionné | #FFFFFF avec border | Cercle vide |
+
+---
+
+## 5. BOUTONS CENTRAUX
+
+| Bouton | Dimensions | Action | Style |
+|--------|------------|--------|-------|
+| → | 100×40px | Ajouter au vRack | Primary (#0050D7) |
+| ← | 100×40px | Retirer du vRack | Secondary (outline) |
+
+---
+
+## 6. PANEL DROIT - SERVICES DANS LE VRACK
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 550×500px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Header panel
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Services dans le vRack |
+| Compteur | 3 services |
+
+### 6.3 Services actuels
+
+| Service | Type |
+|---------|------|
+| ns98765.ip-98-76-54.eu | Serveur dédié • Strasbourg |
+| failover.ip-192-168-0.eu | Additional IP Block • /28 |
+| cloud-project-abc123 | Public Cloud Project |
+
+### 6.4 Empty state hint
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Sélectionnez des services à ajouter |
+| Ligne 2 | puis cliquez sur → |
+| Couleur | #6B7280 |
+
+---
+
+## 7. FOOTER
+
+### 7.1 Status
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 2 services sélectionnés pour ajout |
+
+### 7.2 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Appliquer les modifications |
+| Dimensions | 200×40px |
+| Background | #0050D7 |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic service (gauche) | Toggle sélection |
+| Clic service (droite) | Toggle sélection pour retrait |
+| Clic → | Déplacer les sélectionnés vers la droite |
+| Clic ← | Déplacer les sélectionnés vers la gauche |
+| Clic Appliquer | Sauvegarder les modifications |
+| Recherche | Filtrer la liste par nom |
+| Filtre type | Filtrer par type de service |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les services disponibles
+
+```
+GET /vrack/{serviceName}/allowedServices
+```
+
+Response:
+```json
+[
+  {
+    "id": "ns12345",
+    "name": "ns12345.ip-123-45-67.eu",
+    "type": "dedicatedServer",
+    "location": "Europe",
+    "inVrack": false
+  }
+]
+```
+
+### 9.2 Ajouter des services
+
+```
+POST /vrack/{serviceName}/services/batch
+```
+
+Body:
+```json
+{
+  "add": ["ns12345", "pcc-123-456-789"],
+  "remove": []
+}
+```
+
+### 9.3 Retirer des services
+
+```
+POST /vrack/{serviceName}/services/batch
+```
+
+Body:
+```json
+{
+  "add": [],
+  "remove": ["ns98765"]
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vrack_add_service_title` | Gérer les services associés à votre vRack |
+| `vrack_add_service_available` | Services disponibles |
+| `vrack_add_service_in_vrack` | Services dans le vRack |
+| `vrack_add_service_search` | Rechercher un service... |
+| `vrack_add_service_type_all` | Type: Tous |
+| `vrack_add_service_hint_1` | Sélectionnez des services à ajouter |
+| `vrack_add_service_hint_2` | puis cliquez sur → |
+| `vrack_add_service_selected` | services sélectionnés pour ajout |
+| `vrack_add_service_apply` | Appliquer les modifications |
+| `vrack_add_service_type_dedicated` | Serveur dédié |
+| `vrack_add_service_type_vps` | VPS |
+| `vrack_add_service_type_pcc` | Hosted Private Cloud |
+| `vrack_add_service_type_lb` | Load Balancer |
+| `vrack_add_service_type_ip` | Additional IP Block |
+| `vrack_add_service_type_cloud` | Public Cloud Project |

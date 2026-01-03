@@ -1,0 +1,193 @@
+# Cahier des Charges : private-cloud/nutanix/nodes
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.nutanix.nodes.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | nutanix (Nutanix) |
+| **Type** | Page listing noeuds avec Datagrid |
+| **Description** | Liste des nœuds d'un cluster Nutanix avec statuts et actions |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| RIGHT PANEL | 1392×765px |
+
+---
+
+## 3. HEADER
+
+### 3.1 NAV1
+
+| Propriété | Valeur |
+|-----------|--------|
+| Univers actif | Hosted Private Cloud |
+| Indicateur | Barre blanche 3px |
+
+### 3.2 NAV2
+
+| Propriété | Valeur |
+|-----------|--------|
+| Produit actif | Nutanix |
+| Autres | Accueil, VMware on OVHcloud, SAP HANA |
+
+### 3.3 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Cluster Nutanix Production |
+| Font-size | 20px |
+| Font-weight | 600 |
+| Sous-titre | nutanix-abc123 |
+| Lien | ← Retour a la liste |
+
+---
+
+## 4. NAV4 - TABS
+
+| Tab | État | Style |
+|-----|------|-------|
+| Informations générales | Inactif | Outline |
+| Noeuds | Actif | Primary (#0050D7) |
+
+---
+
+## 5. CONTENU - NŒUDS
+
+### 5.1 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Ajouter des noeuds |
+| Style | Primary (#0050D7) |
+| Dimensions | 140×36px |
+
+### 5.2 Datagrid
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1320×300px |
+| Header hauteur | 40px |
+| Row hauteur | 45px |
+
+### 5.3 Colonnes
+
+| Colonne | Largeur | Type |
+|---------|---------|------|
+| Nom d'affichage | 160px | Lien |
+| Type de serveur | 180px | Texte |
+| Statut | 140px | Badge |
+| Localisation | 150px | Texte |
+| OS installé | 170px | Badge |
+| IP nœud | 160px | Texte |
+| CVM IP | 170px | Texte |
+| Actions | 80px | Menu ⋮ |
+
+### 5.4 Données exemple
+
+| Nom | Type | Statut | Localisation | OS | IP nœud | CVM IP |
+|-----|------|--------|--------------|-----|---------|--------|
+| node-nutanix-01 | Scale L | Deployé (vert) | RBX (rbx7) | AHV installé (vert) | 10.0.0.11 | 10.0.0.21 |
+| node-nutanix-02 | Scale L | Deployé (vert) | RBX (rbx7) | AHV installé (vert) | 10.0.0.12 | 10.0.0.22 |
+| node-nutanix-03 | Scale L | Deployé (vert) | RBX (rbx7) | AHV installé (vert) | 10.0.0.13 | 10.0.0.23 |
+| node-nutanix-04 | Scale L | En déploiement (jaune) | RBX (rbx7) | En cours... (jaune) | - | - |
+
+### 5.5 Badges statut
+
+| État | Background | Couleur |
+|------|------------|---------|
+| Deployé | #DEF7EC | #059669 |
+| En déploiement | #FEF3C7 | #D97706 |
+| AHV installé | #DEF7EC | #059669 |
+
+---
+
+## 6. ACTIONMENU PAR NŒUD
+
+| Option | Couleur |
+|--------|---------|
+| Allumer | #1F2937 |
+| Eteindre | #1F2937 |
+| Reinstaller | #1F2937 |
+| Desinstaller | #1F2937 |
+| Resilier | #DC2626 (danger) |
+
+---
+
+## 7. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Page | Page 1 sur 1 |
+| Résultats | 4 resultats |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les nœuds
+
+```
+GET /nutanix/{serviceName}/nodes
+```
+
+Response:
+```json
+{
+  "nodes": [
+    {
+      "nodeId": "node-nutanix-01",
+      "displayName": "node-nutanix-01",
+      "serverType": "scale-l",
+      "status": "deployed",
+      "datacenter": "rbx7",
+      "osStatus": "ahv-installed",
+      "nodeIp": "10.0.0.11",
+      "cvmIp": "10.0.0.21"
+    }
+  ],
+  "total": 4
+}
+```
+
+### 8.2 Éteindre un nœud
+
+```
+POST /nutanix/{serviceName}/nodes/{nodeId}/powerOff
+```
+
+### 8.3 Résilier un nœud
+
+```
+DELETE /nutanix/{serviceName}/nodes/{nodeId}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `nutanix_nodes_title` | Noeuds |
+| `nutanix_nodes_add` | Ajouter des noeuds |
+| `nutanix_col_name` | Nom d'affichage |
+| `nutanix_col_type` | Type de serveur |
+| `nutanix_col_status` | Statut |
+| `nutanix_col_location` | Localisation |
+| `nutanix_col_os` | OS installe |
+| `nutanix_col_node_ip` | IP noeud |
+| `nutanix_col_cvm_ip` | CVM IP |
+| `nutanix_status_deployed` | Deploye |
+| `nutanix_status_deploying` | En deploiement |
+| `nutanix_os_ahv` | AHV installe |
+| `nutanix_action_poweron` | Allumer |
+| `nutanix_action_poweroff` | Eteindre |
+| `nutanix_action_reinstall` | Reinstaller |
+| `nutanix_action_uninstall` | Desinstaller |
+| `nutanix_action_terminate` | Resilier |

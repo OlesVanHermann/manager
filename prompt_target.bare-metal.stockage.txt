@@ -1,0 +1,460 @@
+# PROMPT TARGET - NAV1: bare-metal / NAV2: stockage
+
+Version: v1.0 (2026-01-03)
+
+================================================================================
+## 1. ARBORESCENCE NAV3a/NAV3b/NAV4
+================================================================================
+
+### NAV1: bare-metal
+Position: Header bleu OVH (height: 50px)
+Label: Bare Metal Cloud
+
+### NAV2: stockage
+Position: Sous-header blanc (height: 40px)
+Label: Stockage
+
+### NAV3a - Type de stockage (2 boutons horizontaux - TOP sidecar)
+
+Position: Top du LEFT PANEL, au-dessus de Region
+CSS class: `.stockage-nav3a-tabs`
+
+```
+┌───────────┬───────────┐
+│   File    │   Block   │  <- NAV3a
+│   (15)    │    (6)    │  <- Count badges
+└───────────┴───────────┘
+```
+
+| NAV3a | ID | Label | Description | NAV3b visible |
+|-------|----|-------|-------------|---------------|
+| **File** | `file` | File | Stockage fichier (NFS/CIFS) | OUI: NAS-HA, NetApp |
+| **Block** | `block` | Block | Stockage block | OUI: Ceph, NetApp |
+
+### NAV3b - Sous-type (2 boutons - SOUS la recherche)
+
+Position: Sous [Rechercher...], au-dessus de la liste services
+CSS class: `.stockage-nav3b-tabs`
+Condition: Toujours visible, contenu depend de NAV3a
+
+#### Si NAV3a = File
+```
+┌───────────┬───────────┐
+│  NAS-HA   │  NetApp   │  <- NAV3b (File)
+│   (12)    │    (3)    │
+└───────────┴───────────┘
+```
+
+| NAV3b | ID | Label | Description |
+|-------|----|-------|-------------|
+| **NAS-HA** | `nasha` | NAS-HA | NAS haute disponibilite ZFS |
+| **NetApp** | `netapp` | NetApp | Enterprise NetApp NFS/CIFS |
+
+#### Si NAV3a = Block
+```
+┌───────────┬───────────┐
+│   Ceph    │  NetApp   │  <- NAV3b (Block)
+│    (3)    │    (3)    │
+└───────────┴───────────┘
+```
+
+| NAV3b | ID | Label | Description |
+|-------|----|-------|-------------|
+| **Ceph** | `ceph` | Ceph | Cloud Disk Array (CDA) |
+| **NetApp** | `netapp` | NetApp | Enterprise NetApp iSCSI |
+
+### Region (LEFT PANEL)
+Position: Entre NAV3a et Rechercher
+Type: Dropdown selecteur
+Options: Toutes les regions, EU-West (GRA), EU-West (SBG), CA-East (BHS), ...
+Default: Toutes les regions
+
+### NAV4 - Tabs RIGHT PANEL (selon NAV3a + NAV3b)
+
+#### File > NAS-HA (5 tabs)
+| NAV4 | Label FR | Description | APIs |
+|------|----------|-------------|------|
+| dashboard | Tableau de bord | Infos generales NAS | GET /dedicated/nasha/{id} |
+| partitions | Partitions | Liste partitions | GET /dedicated/nasha/{id}/partition |
+| snapshots | Snapshots | Politiques et snapshots | GET /dedicated/nasha/{id}/partition/{p}/snapshot |
+| access | Acces | ACL par partition | GET /dedicated/nasha/{id}/partition/{p}/access |
+| tasks | Taches | Operations en cours | GET /dedicated/nasha/{id}/task |
+
+#### File > NetApp (5 tabs)
+| NAV4 | Label FR | Description | APIs |
+|------|----------|-------------|------|
+| dashboard | Tableau de bord | Infos generales NetApp | GET /storage/netapp/{id} |
+| volumes | Volumes | Liste volumes NFS | GET /storage/netapp/{id}/share |
+| snapshots | Snapshots | Snapshots par volume | GET /storage/netapp/{id}/share/{v}/snapshot |
+| acl | ACL | Controle acces | GET /storage/netapp/{id}/share/{v}/acl |
+| policies | Policies | Politiques snapshot | GET /storage/netapp/{id}/snapshotPolicy |
+
+#### Block > Ceph (7 tabs)
+| NAV4 | Label FR | Description | APIs |
+|------|----------|-------------|------|
+| dashboard | Tableau de bord | Vue generale cluster | GET /dedicated/ceph/{id} |
+| health | Sante | OSDs, monitors, PGs | GET /dedicated/ceph/{id}/health |
+| pools | Pools | Pools de stockage | GET /dedicated/ceph/{id}/pool |
+| ips | IPs | Controle acces IP | GET /dedicated/ceph/{id}/acl |
+| users | Utilisateurs | Users et permissions | GET /dedicated/ceph/{id}/user |
+| space | Espace | Utilisation stockage | GET /dedicated/ceph/{id}/pool |
+| tasks | Taches | Scrub, recovery | GET /dedicated/ceph/{id}/task |
+
+#### Block > NetApp (5 tabs)
+| NAV4 | Label FR | Description | APIs |
+|------|----------|-------------|------|
+| dashboard | Tableau de bord | Infos generales | GET /storage/netapp/{id} |
+| volumes | Volumes | LUNs iSCSI | GET /storage/netapp/{id}/share |
+| snapshots | Snapshots | Snapshots par LUN | GET /storage/netapp/{id}/share/{v}/snapshot |
+| acl | ACL | Controle acces | GET /storage/netapp/{id}/share/{v}/acl |
+| policies | Policies | Politiques snapshot | GET /storage/netapp/{id}/snapshotPolicy |
+
+================================================================================
+## 2. SPECS LAYOUT
+================================================================================
+
+### Dimensions (TOLERANCE: 0px)
+| Element | Valeur |
+|---------|--------|
+| NAV1 height | 50px |
+| NAV2 height | 40px |
+| Gap NAV2->Content | 15px |
+| Sidebar width | 280px |
+| Gap panels | 16px |
+| Margins | 24px |
+
+### Couleurs
+| Element | Couleur |
+|---------|---------|
+| Primary | #0050D7 |
+| Success | #16A34A |
+| Warning | #F59E0B |
+| Danger | #DC2626 |
+| Background | #F9FAFB |
+| Border | #E5E7EB |
+
+================================================================================
+## 3. PAGES DETAILLEES - FILE > NAS-HA
+================================================================================
+
+### 3.1 NAV4: dashboard (NAS-HA)
+
+Layout: 3 tuiles
+
+#### Tuile Informations
+| Champ | Valeur |
+|-------|--------|
+| Nom | Mon NAS Production |
+| ID | zpool-12345 |
+| Datacenter | Gravelines (GRA) |
+| Type disque | SSD |
+| Taille | 3 To |
+
+#### Tuile Configuration
+| Champ | Valeur |
+|-------|--------|
+| Quota utilise | Progress bar + "1.5 To / 3 To (50%)" |
+| Lien | Creer une partition |
+
+#### Tuile Abonnement
+| Champ | Valeur |
+|-------|--------|
+| Date creation | 15/01/2023 |
+| Prochaine facturation | 15/01/2025 |
+| Renouvellement | Automatique |
+
+---
+
+### 3.2 NAV4: partitions (NAS-HA)
+
+Layout: Metriques + tableau
+
+#### Section Metriques
+| Metrique | Valeur |
+|----------|--------|
+| Espace utilise | Progress bar 50% |
+| Monitoring | Active |
+
+#### Bouton
+Label: + Creer une partition
+Style: Primary
+
+#### Tableau partitions
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom | Link | Nom partition (cliquable) |
+| Protocole | Text | NFS / CIFS |
+| Utilisation | ProgressBar | % utilise |
+| Actions | ActionMenu | Modifier, Supprimer |
+
+---
+
+### 3.3 NAV4: snapshots (NAS-HA)
+
+Layout: Description + compteur + warning + tableau
+
+#### Compteur
+Label: 7 snapshots configures
+
+#### Warning banner (jaune)
+Texte: Les snapshots personnalises ne beneficient pas de la retention automatique.
+
+#### Bouton
+Label: + Creer un snapshot custom
+Style: Outline
+
+#### Tableau snapshots
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Type | Text | Quotidien, Hebdo, Custom |
+| Nom | Text | Nom du snapshot |
+| Options | Select/Action | Config ou supprimer |
+
+---
+
+### 3.4 NAV4: access (NAS-HA)
+
+Layout: Description + bouton + tableau
+
+#### Bouton
+Label: + Ajouter un acces
+Style: Outline
+
+#### Tableau acces
+| Colonne | Type | Description |
+|---------|------|-------------|
+| IP | Text | Adresse IP/CIDR |
+| Type | Text | RO / RW |
+| Description | Text | Description |
+| Actions | Icon | Supprimer |
+
+================================================================================
+## 4. PAGES DETAILLEES - FILE > NETAPP
+================================================================================
+
+### 4.1 NAV4: dashboard (NetApp)
+
+Layout: 3 cartes
+
+#### Carte Informations
+| Champ | Valeur |
+|-------|--------|
+| Nom | Mon NetApp Production |
+| ID | netapp-abc123 |
+| Region | Gravelines (GRA) |
+| Statut | Badge "Actif" vert |
+
+#### Carte Capacite
+| Champ | Valeur |
+|-------|--------|
+| Capacite totale | 10 To |
+| Utilise | 6.2 To (62%) |
+| Disponible | 3.8 To |
+
+#### Carte Performance
+| Champ | Valeur |
+|-------|--------|
+| Type | Performance |
+| IOPS max | 64000 |
+| Debit max | 1024 Mo/s |
+
+---
+
+### 4.2 NAV4: volumes (NetApp)
+
+Layout: Bouton + tableau
+
+#### Bouton
+Label: + Creer un volume
+Style: Primary
+
+#### Tableau volumes
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom | Link | Nom volume |
+| Description | Text | Description |
+| Taille | Text | Capacite |
+| Utilisation | ProgressBar | % utilise |
+| Protocole | Text | NFSv3, NFSv4 |
+| Statut | Badge | available |
+| Actions | ActionMenu | Detail, Snapshot, ACL, Resize, Delete |
+
+---
+
+### 4.3 NAV4: snapshots (NetApp)
+
+Layout: Actions dropdown + tableau + selection politique
+
+#### Bouton Actions
+Label: Actions
+Style: Secondary dropdown
+Options: Creer snapshot, Supprimer selection
+
+#### Tableau snapshots
+| Colonne | Type | Description |
+|---------|------|-------------|
+| Nom | Text | Nom snapshot |
+| Description | Text | Description |
+| Cree le | Date | Date creation |
+| Taille | Text | Taille |
+| Type | Text | Auto/Manuel |
+| Actions | ActionMenu | Restaurer, Supprimer |
+
+#### Section Politiques
+Cards cliquables pour selectionner politique de retention.
+
+---
+
+### 4.4 NAV4: policies (NetApp)
+
+Layout: Description + bouton + grille cartes
+
+#### Bouton
+Label: + Creer une politique
+Style: Primary
+
+#### Cartes politiques
+| Champ | Valeur |
+|-------|--------|
+| Nom | Daily-7, Weekly-4, Monthly-12 |
+| Retention | Nombre de snapshots conserves |
+| Action | Supprimer |
+
+================================================================================
+## 5. PAGES DETAILLEES - BLOCK > CEPH
+================================================================================
+
+(Reprise des specs CDA de cloudstore - voir section 3 du fichier precedent)
+
+### 5.1 NAV4: dashboard (Ceph)
+3 tuiles: Details, Sante, Espace + tableau taches recentes
+
+### 5.2 NAV4: health (Ceph)
+4 cartes statut + barre utilisation + evenements
+
+### 5.3 NAV4: pools (Ceph)
+Message info + bouton + tableau pools (replicated/erasure)
+
+### 5.4 NAV4: ips (Ceph)
+Message info + bouton + tableau ACL IP
+
+### 5.5 NAV4: users (Ceph)
+Message info + bouton + tableau utilisateurs + permissions
+
+### 5.6 NAV4: space (Ceph)
+Donut chart + barres par pool + alertes
+
+### 5.7 NAV4: tasks (Ceph)
+Tableau taches (scrub, deep-scrub, recovery) avec progression
+
+================================================================================
+## 6. MODALES
+================================================================================
+
+### File > NAS-HA
+| Modal | Champs | API |
+|-------|--------|-----|
+| Creer partition | Nom, Taille, Protocole | POST /dedicated/nasha/{id}/partition |
+| Modifier partition | Taille | PUT /dedicated/nasha/{id}/partition/{p} |
+| Supprimer partition | Confirmation | DELETE /dedicated/nasha/{id}/partition/{p} |
+| Creer snapshot | Nom | POST /dedicated/nasha/{id}/partition/{p}/customSnapshot |
+| Supprimer snapshot | Confirmation | DELETE /dedicated/nasha/{id}/partition/{p}/customSnapshot/{s} |
+| Ajouter acces | IP, Type (RO/RW) | POST /dedicated/nasha/{id}/partition/{p}/access |
+| Supprimer acces | Confirmation | DELETE /dedicated/nasha/{id}/partition/{p}/access/{a} |
+| Options ZFS | Compression, Dedup | PUT /dedicated/nasha/{id} |
+
+### File > NetApp
+| Modal | Champs | API |
+|-------|--------|-----|
+| Creer volume | Nom, Taille, Protocole | POST /storage/netapp/{id}/share |
+| Redimensionner | Nouvelle taille | PUT /storage/netapp/{id}/share/{v} |
+| Supprimer volume | Confirmation | DELETE /storage/netapp/{id}/share/{v} |
+| Creer snapshot | Nom | POST /storage/netapp/{id}/share/{v}/snapshot |
+| Restaurer snapshot | Confirmation | POST /storage/netapp/{id}/share/{v}/snapshot/{s}/restore |
+| Supprimer snapshot | Confirmation | DELETE /storage/netapp/{id}/share/{v}/snapshot/{s} |
+| Creer politique | Nom, Retention | POST /storage/netapp/{id}/snapshotPolicy |
+
+### Block > Ceph
+| Modal | Champs | API |
+|-------|--------|-----|
+| Ajouter pool | Nom | POST /dedicated/ceph/{id}/pool |
+| Supprimer pool | Confirmation danger | DELETE /dedicated/ceph/{id}/pool/{p} |
+| Ajouter IP | IP CIDR | POST /dedicated/ceph/{id}/acl |
+| Supprimer IP | Confirmation | DELETE /dedicated/ceph/{id}/acl/{a} |
+| Ajouter utilisateur | Nom | POST /dedicated/ceph/{id}/user |
+| Supprimer utilisateur | Confirmation | DELETE /dedicated/ceph/{id}/user/{u} |
+| Modifier cluster | Nom, CRUSH profile | PUT /dedicated/ceph/{id} |
+
+================================================================================
+## 7. VUE "TOUS LES SERVICES" (par NAV3a/NAV3b)
+================================================================================
+
+Pour chaque combinaison NAV3a+NAV3b, "Tous les services" affiche un tableau agregeant:
+
+### File > NAS-HA - Overview
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du NAS |
+| Datacenter | GRA, SBG, BHS |
+| Taille | Capacite totale |
+| Utilisation | Progress bar |
+| Partitions | Nombre |
+| Actions | Menu |
+
+### File > NetApp - Overview
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du service |
+| Region | GRA, SBG |
+| Capacite | Taille totale |
+| Utilisation | Progress bar |
+| Volumes | Nombre |
+| Statut | Badge |
+| Actions | Menu |
+
+### Block > Ceph - Overview
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du cluster |
+| Statut | Badge Actif |
+| Sante | Badge HEALTHY/WARNING |
+| Datacenter | GRA, SBG |
+| Espace | Progress bar |
+| OSDs | X / Y |
+| Pools | Nombre |
+| Actions | Menu |
+
+### Block > NetApp - Overview
+(Meme structure que File > NetApp)
+
+================================================================================
+## 8. ONBOARDING (Empty states)
+================================================================================
+
+### NAS-HA Onboarding
+| Element | Valeur |
+|---------|--------|
+| Icone | NAS/Stockage |
+| Titre | NAS-HA - Stockage haute disponibilite |
+| Description | Stockage NFS/CIFS avec ZFS |
+| Bouton | Commander |
+
+### NetApp Onboarding
+| Element | Valeur |
+|---------|--------|
+| Icone | NetApp logo |
+| Titre | Enterprise File Storage powered by NetApp |
+| Description | Stockage haute performance |
+| Bouton | Commander |
+
+### Ceph Onboarding
+| Element | Valeur |
+|---------|--------|
+| Icone | Cloud/Ceph |
+| Titre | Cloud Disk Array powered by Ceph |
+| Description | Stockage block evolutif |
+| Bouton | Commander |
+
+================================================================================
+FIN PROMPT TARGET
+================================================================================

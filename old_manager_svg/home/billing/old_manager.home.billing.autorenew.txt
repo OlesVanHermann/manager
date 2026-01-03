@@ -1,0 +1,198 @@
+# Cahier des Charges : home/billing/autorenew
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.autorenew.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | autorenew |
+| **Type** | Page full-width avec datagrid et toggles |
+| **Description** | Gestion du renouvellement automatique des services |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×40px | x: 40, y: 115 |
+| Barre actions | 1360×40px | x: 40, y: 160 |
+| Datagrid | 1360×500px | x: 40, y: 220 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Facturation |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Renouvellement automatique |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. BARRE ACTIONS
+
+### 4.1 Recherche
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Search input |
+| Dimensions | 300×40px |
+| Placeholder | 🔍 Rechercher... |
+| Background | #F3F4F6 |
+
+### 4.2 Bouton action bulk
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Activer le renouvellement auto |
+| Type | Primary |
+| Dimensions | 280×40px |
+| Position | Droite |
+
+---
+
+## 5. DATAGRID SERVICES
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×500px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 45px |
+| Background | #F9FAFB |
+| Checkbox | Sélection multiple |
+
+### 5.3 Colonnes
+
+| # | Colonne | Position X | Largeur |
+|---|---------|------------|---------|
+| 1 | Checkbox | 20px | 40px |
+| 2 | Service | 60px | 290px |
+| 3 | Type | 350px | 150px |
+| 4 | Expiration | 500px | 200px |
+| 5 | Renouvellement | 700px | 200px |
+| 6 | Prix | 900px | 200px |
+| 7 | Actions | 1100px | 200px |
+
+### 5.4 Toggle renouvellement
+
+| État | Background | Position cercle | Label |
+|------|------------|-----------------|-------|
+| Activé | #0050D7 | Droite | Activé |
+| Désactivé | #E5E7EB | Gauche | Désactivé |
+
+### 5.5 Style expiration
+
+| Condition | Couleur |
+|-----------|---------|
+| > 30 jours | #1F2937 |
+| ≤ 30 jours | #D97706 |
+| Expiré | #DC2626 |
+
+### 5.6 Données exemple
+
+| Service | Type | Expiration | Renouvellement | Prix |
+|---------|------|------------|----------------|------|
+| domain.example.com | Domaine | 15/03/2026 | Activé | 9,99 €/an |
+| vps-cloud-456 | VPS | 10/01/2026 | Désactivé | 19,99 €/mois |
+
+### 5.7 Actions
+
+| Action | Couleur |
+|--------|---------|
+| Modifier | #0050D7 |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Saisie recherche | Filtrer la liste |
+| Cocher services | Sélectionner pour action bulk |
+| Clic toggle | Activer/désactiver le renouvellement |
+| Clic Activer le renouvellement auto | Activer pour les services sélectionnés |
+| Clic Modifier | Ouvrir modal configuration renouvellement |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Lister les services
+
+```
+GET /me/service
+```
+
+Response:
+```json
+[
+  {
+    "serviceName": "domain.example.com",
+    "serviceType": "domain",
+    "expirationDate": "2026-03-15",
+    "autoRenew": true,
+    "price": 9.99,
+    "period": "year"
+  }
+]
+```
+
+### 7.2 Modifier le renouvellement
+
+```
+PUT /me/service/{serviceName}/autoRenew
+```
+
+Body:
+```json
+{
+  "autoRenew": true
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_autorenew_title` | Renouvellement automatique |
+| `billing_autorenew_search` | Rechercher... |
+| `billing_autorenew_activate_bulk` | Activer le renouvellement auto |
+| `billing_autorenew_col_service` | Service |
+| `billing_autorenew_col_type` | Type |
+| `billing_autorenew_col_expiration` | Expiration |
+| `billing_autorenew_col_renewal` | Renouvellement |
+| `billing_autorenew_col_price` | Prix |
+| `billing_autorenew_col_actions` | Actions |
+| `billing_autorenew_enabled` | Activé |
+| `billing_autorenew_disabled` | Désactivé |
+| `billing_autorenew_modify` | Modifier |

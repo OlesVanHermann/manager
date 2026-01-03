@@ -1,0 +1,198 @@
+# Cahier des Charges : web-cloud/voip/fax/modal-campaign-read
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.fax.modal-campaign-read.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Modal lecture seule |
+| **Description** | Modal affichant les détails d'une campagne de fax |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 540px |
+| Position | Centrée (x: 420, y: 140) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Détails de la campagne |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × (position droite) |
+| Séparateur | Ligne 1px #E5E7EB |
+
+---
+
+## 4. CONTENU - INFORMATIONS PRINCIPALES
+
+### 4.1 Champs d'information
+
+| Label | Valeur exemple |
+|-------|----------------|
+| Nom de la campagne | Campagne Janvier 2026 |
+| Référence | 02/01/2026 10:30 |
+| Statut | Badge "Terminé" (#DEF7EC) |
+| Résultat | Envoi terminé |
+| Date de début | 02/01/2026 10:30 |
+| Date de fin | 02/01/2026 10:45 |
+| Nombre total | 150 (font-weight 600) |
+
+### 4.2 Style des labels
+
+| Propriété | Valeur |
+|-----------|--------|
+| Couleur label | #6B7280 (muted) |
+| Font-size label | 11px |
+| Position valeur | x: 200px |
+
+---
+
+## 5. CONTENU - DÉTAILS DES RÉSULTATS
+
+### 5.1 Séparateur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Type | Ligne horizontale |
+| Largeur | 552px |
+| Couleur | #E5E7EB |
+
+### 5.2 Statistiques détaillées
+
+| Label | Valeur | Couleur valeur |
+|-------|--------|----------------|
+| En attente | 0 | #1F2937 |
+| Envoyés avec succès | 148 | #059669 (success, bold) |
+| Échoués | 2 | #DC2626 (danger) |
+
+### 5.3 Sections dépliables
+
+| Section | Texte | Couleur |
+|---------|-------|---------|
+| Numéros réussis | ▸ Voir les numéros réussis (148) | #0050D7 |
+| Numéros échoués | ▸ Voir les numéros échoués (2) | #0050D7 |
+
+---
+
+## 6. FOOTER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Séparateur | Ligne 1px #E5E7EB en haut |
+
+### 6.1 Bouton
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| OK | Primary (#0050D7) | 80×36px | Droite |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir les détails d'une campagne
+
+```
+GET /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}
+```
+
+Response:
+```json
+{
+  "id": "camp-12345",
+  "name": "Campagne Janvier 2026",
+  "reference": "02/01/2026 10:30",
+  "status": "done",
+  "result": "completed",
+  "startDate": "2026-01-02T10:30:00Z",
+  "endDate": "2026-01-02T10:45:00Z",
+  "totalCount": 150,
+  "statistics": {
+    "pending": 0,
+    "success": 148,
+    "failed": 2
+  }
+}
+```
+
+### 7.2 Obtenir les numéros réussis
+
+```
+GET /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}/recipients?status=success
+```
+
+Response:
+```json
+{
+  "recipients": [
+    {"+33123456789": "success"},
+    {"+33987654321": "success"}
+  ],
+  "total": 148
+}
+```
+
+### 7.3 Obtenir les numéros échoués
+
+```
+GET /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}/recipients?status=failed
+```
+
+Response:
+```json
+{
+  "recipients": [
+    {"+33111111111": "failed", "error": "Line busy"},
+    {"+33222222222": "failed", "error": "No answer"}
+  ],
+  "total": 2
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_fax_campaign_details_title` | Détails de la campagne |
+| `voip_fax_campaign_details_name` | Nom de la campagne |
+| `voip_fax_campaign_details_reference` | Référence |
+| `voip_fax_campaign_details_status` | Statut |
+| `voip_fax_campaign_details_status_done` | Terminé |
+| `voip_fax_campaign_details_status_pending` | En cours |
+| `voip_fax_campaign_details_result` | Résultat |
+| `voip_fax_campaign_details_result_completed` | Envoi terminé |
+| `voip_fax_campaign_details_start_date` | Date de début |
+| `voip_fax_campaign_details_end_date` | Date de fin |
+| `voip_fax_campaign_details_total` | Nombre total |
+| `voip_fax_campaign_details_pending` | En attente |
+| `voip_fax_campaign_details_success` | Envoyés avec succès |
+| `voip_fax_campaign_details_failed` | Échoués |
+| `voip_fax_campaign_details_view_success` | Voir les numéros réussis |
+| `voip_fax_campaign_details_view_failed` | Voir les numéros échoués |
+| `voip_fax_campaign_details_ok` | OK |

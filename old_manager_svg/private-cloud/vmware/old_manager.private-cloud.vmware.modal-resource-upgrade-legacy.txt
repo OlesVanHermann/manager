@@ -1,0 +1,240 @@
+# Cahier des Charges : private-cloud/vmware/modal-resource-upgrade-legacy
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-resource-upgrade-legacy.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal wizard 3 étapes |
+| **Description** | Modal wizard pour passer au forfait mensuel avec sélection multiple de ressources |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 580px |
+| Position | Centrée (x: 370, y: 130) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Passer au forfait mensuel |
+| Font-size | 16px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position Y | 76px |
+| Nombre d'étapes | 3 |
+
+### 4.2 Étapes
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Sélection | Active (#0050D7) |
+| 2 | Configuration | Inactive (outline) |
+| 3 | Confirmation | Inactive (outline) |
+
+### 4.3 Style stepper
+
+| Élément | Propriété | Valeur |
+|---------|-----------|--------|
+| Cercle actif | Fill | #0050D7 |
+| Cercle actif | Dimensions | r=12px |
+| Cercle inactif | Fill | #FFFFFF |
+| Cercle inactif | Stroke | #E5E7EB |
+| Ligne connexion | Stroke | #E5E7EB |
+| Ligne connexion | Stroke-width | 2px |
+
+---
+
+## 5. CONTENU ÉTAPE 1
+
+### 5.1 Info Banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×50px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Barre latérale | 4px #1E40AF |
+| Titre | ℹ️ Forfait mensuel |
+| Message | Économisez jusqu'à 30% par rapport à la facturation horaire. |
+| Couleur texte | #1E40AF |
+
+### 5.2 Section sélection
+
+| Propriété | Valeur |
+|-----------|--------|
+| Titre | Sélectionnez les ressources à convertir |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 5.3 Cartes ressources
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions carte | 660×70px |
+| Border radius | 6px |
+| Sélection | Radio checkbox |
+
+### 5.4 Ressources disponibles
+
+| Ressource | Description | Prix |
+|-----------|-------------|------|
+| Host L-32 | Intel Xeon Gold 6248 - 32 cores - 384 GB RAM | 250 €/mois |
+| Datastore 3TB | SSD NVMe - 3 TB | 80 €/mois |
+
+### 5.5 Style carte sélectionnée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Border | 2px #0050D7 |
+| Background | #FFFFFF |
+| Radio | Cercle #0050D7 avec ✓ blanc |
+
+### 5.6 Style carte non sélectionnée
+
+| Propriété | Valeur |
+|-----------|--------|
+| Border | 1px #E5E7EB |
+| Background | #FFFFFF |
+| Radio | Cercle vide avec border #E5E7EB |
+
+### 5.7 Style prix
+
+| Propriété | Valeur |
+|-----------|--------|
+| Couleur sélectionné | #0050D7 |
+| Couleur non sélectionné | #6B7280 |
+| Font-weight | 600 |
+
+### 5.8 Résumé
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×50px |
+| Background | #F9FAFB |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+| Label | Total sélectionné |
+| Valeur | 250 €/mois (#0050D7) |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche |
+| Suivant | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic carte ressource | Toggle sélection |
+| Clic Suivant | Passer à l'étape Configuration |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| Sélection | Au moins une ressource doit être sélectionnée |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les ressources éligibles
+
+```
+GET /dedicatedCloud/{serviceName}/datacenter/{datacenterId}/resources/upgradable
+```
+
+Response:
+```json
+[
+  {
+    "id": "host-001",
+    "type": "host",
+    "name": "Host L-32",
+    "description": "Intel Xeon Gold 6248 - 32 cores - 384 GB RAM",
+    "currentBilling": "hourly",
+    "monthlyPrice": { "value": 250, "text": "250 €/mois" }
+  },
+  {
+    "id": "ds-001",
+    "type": "datastore",
+    "name": "Datastore 3TB",
+    "description": "SSD NVMe - 3 TB",
+    "currentBilling": "hourly",
+    "monthlyPrice": { "value": 80, "text": "80 €/mois" }
+  }
+]
+```
+
+### 9.2 Commander le passage au forfait
+
+```
+POST /dedicatedCloud/{serviceName}/resources/upgradeToMonthly
+```
+
+Body:
+```json
+{
+  "resources": ["host-001", "ds-001"],
+  "renewalPeriod": 12
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_upgrade_legacy_title` | Passer au forfait mensuel |
+| `vmware_upgrade_legacy_step_selection` | Sélection |
+| `vmware_upgrade_legacy_step_config` | Configuration |
+| `vmware_upgrade_legacy_step_confirm` | Confirmation |
+| `vmware_upgrade_legacy_info` | Économisez jusqu'à 30% par rapport à la facturation horaire. |
+| `vmware_upgrade_legacy_select` | Sélectionnez les ressources à convertir |
+| `vmware_upgrade_legacy_total` | Total sélectionné |
+| `vmware_upgrade_legacy_cancel` | Annuler |
+| `vmware_upgrade_legacy_next` | Suivant |

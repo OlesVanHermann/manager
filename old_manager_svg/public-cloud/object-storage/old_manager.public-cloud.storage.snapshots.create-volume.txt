@@ -1,0 +1,164 @@
+# Cahier des Charges : public-cloud/storage/snapshots/create-volume
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.storage.snapshots.create-volume.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | storage |
+| **Type** | Page formulaire |
+| **Description** | Formulaire de création d'un volume depuis un snapshot |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| Breadcrumb | mon-projet / Stockage / Volume Snapshot / Créer un volume |
+
+---
+
+## 3. HEADER
+
+| Titre | Créer un volume depuis le snapshot |
+| Font-size | 22px |
+| Font-weight | 600 |
+
+---
+
+## 4. BANDEAU SNAPSHOT SOURCE
+
+| Dimensions | 600×50px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Texte | 📸 Snapshot source : snap-vol-data-20260101 (100 GiB - GRA11) |
+| Font-size | 12px |
+| Couleur texte | #1E40AF |
+
+---
+
+## 5. FORMULAIRE
+
+### 5.1 Dimensions
+
+| Élément | Dimensions |
+|---------|------------|
+| Card formulaire | 800×500px |
+| Padding | 32px |
+
+### 5.2 Champs du formulaire
+
+| Champ | Type | Largeur |
+|-------|------|---------|
+| Nom du volume | Input text | 400px |
+| Taille du volume | Slider + Input | 400px + 100px |
+| Type de volume | Card selector | 3×180px |
+
+### 5.3 Slider taille
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 400px |
+| Minimum | Taille du snapshot (100 GiB) |
+| Hint | Doit être égale ou supérieure à la taille du snapshot |
+
+### 5.4 Types de volume (Card selector)
+
+| Type | Dimensions | Prix |
+|------|------------|------|
+| Classic | 180×80px | 0,0400€/GiB/mois |
+| High Speed | 180×80px (selected) | 0,0720€/GiB/mois |
+| High Speed Gen2 | 180×80px | 0,0800€/GiB/mois |
+
+### 5.5 Style sélection
+
+| État | Style |
+|------|-------|
+| Non sélectionné | Border #E5E7EB 1px |
+| Sélectionné | Border #0050D7 2px + checkmark |
+
+---
+
+## 6. ESTIMATION PRIX
+
+| Dimensions | 736×50px |
+| Background | #DBEAFE |
+| Border radius | 6px |
+| Texte | 💰 Prix estimé : 0,0100€ HT/heure (~7,20€ HT/mois) pour 100 GiB High Speed |
+| Font-size | 12px |
+| Couleur texte | #1E40AF |
+
+---
+
+## 7. FOOTER FORMULAIRE
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| Annuler | Outline | 100×40px |
+| Créer le volume | Primary | 160×40px |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir les détails du snapshot
+
+```
+GET /cloud/project/{projectId}/volume/snapshot/{snapshotId}
+```
+
+Response:
+```json
+{
+  "id": "snap-abc123-def456",
+  "name": "snap-vol-data-20260101",
+  "region": "GRA11",
+  "size": 100,
+  "status": "available"
+}
+```
+
+### 8.2 Créer un volume depuis un snapshot
+
+```
+POST /cloud/project/{projectId}/volume
+```
+
+Body:
+```json
+{
+  "name": "vol-from-snap-20260101",
+  "snapshotId": "snap-abc123-def456",
+  "size": 100,
+  "type": "high-speed",
+  "region": "GRA11"
+}
+```
+
+### 8.3 Obtenir les types de volumes disponibles
+
+```
+GET /cloud/project/{projectId}/capabilities/volume
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_storage_snap_create_vol_title` | Créer un volume depuis le snapshot |
+| `pci_storage_snap_create_vol_source` | Snapshot source |
+| `pci_storage_snap_create_vol_name` | Nom du volume |
+| `pci_storage_snap_create_vol_size` | Taille du volume |
+| `pci_storage_snap_create_vol_size_hint` | Doit être égale ou supérieure à la taille du snapshot |
+| `pci_storage_snap_create_vol_type` | Type de volume |
+| `pci_storage_snap_create_vol_type_classic` | Classic |
+| `pci_storage_snap_create_vol_type_hs` | High Speed |
+| `pci_storage_snap_create_vol_type_hs2` | High Speed Gen2 |
+| `pci_storage_snap_create_vol_price` | Prix estimé |
+| `pci_storage_snap_create_vol_cancel` | Annuler |
+| `pci_storage_snap_create_vol_submit` | Créer le volume |

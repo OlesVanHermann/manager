@@ -1,0 +1,217 @@
+# Cahier des Charges : private-cloud/sap/tab-storage
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.sap.tab-storage.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | sap (SAP HANA) |
+| **Type** | Page onglet avec datagrid |
+| **Description** | Onglet listant les volumes de stockage d'une instance SAP HANA avec barres de progression |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Full-width RIGHT PANEL |
+| Dimensions | 1392×765px |
+| Background | #FFFFFF |
+| Border radius | 8px |
+| Padding | 24px |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | SAP HANA Production |
+| Font-size | 20px |
+| Font-weight | 600 |
+| Bouton édition | ✎ (24×24px) |
+
+### 3.2 Sous-titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | sap-hana-abc123 |
+| Couleur | #6B7280 |
+
+### 3.3 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour a la liste |
+| Couleur | #0050D7 |
+
+---
+
+## 4. NAV4 - TABS
+
+| Tab | État | Style |
+|-----|------|-------|
+| Informations generales | Inactif | Border #0050D7, texte #0050D7 |
+| Serveurs | Inactif | Border #0050D7, texte #0050D7 |
+| Stockage | Actif | Background #0050D7, texte blanc |
+
+---
+
+## 5. DATAGRID
+
+### 5.1 En-têtes colonnes
+
+| Colonne | Largeur | Position X |
+|---------|---------|------------|
+| Volume | 184px | 16 |
+| Type | 150px | 200 |
+| Capacite | 150px | 350 |
+| Utilisation | 250px | 500 |
+| Serveur | 170px | 750 |
+| Statut | 150px | 920 |
+| Actions | 100px | 1100 |
+
+### 5.2 Données exemple
+
+| Volume | Type | Capacite | Utilisation | Serveur | Statut |
+|--------|------|----------|-------------|---------|--------|
+| data-vol-001 | Data | 5 TB NVMe | 70% | sap-hana-node01 | Actif |
+| log-vol-001 | Log | 2 TB NVMe | 30% | sap-hana-node01 | Actif |
+| shared-vol-001 | Shared | 1 TB NVMe | 50% | Tous | Actif |
+| backup-vol-001 | Backup | 2 TB NVMe | 25% | sap-hana-node02 | Actif |
+
+### 5.3 Barre de progression
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 200×12px |
+| Border radius | 6px |
+| Background vide | #E5E7EB |
+| Background rempli | #0050D7 |
+| Texte pourcentage | À droite de la barre |
+
+### 5.4 Badge statut
+
+| Statut | Background | Couleur texte |
+|--------|------------|---------------|
+| Actif | #DEF7EC | #059669 |
+
+---
+
+## 6. ACTIONMENU
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 160×76px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+| Shadow | drop-shadow |
+
+### 6.2 Options
+
+| Option | Couleur |
+|--------|---------|
+| Voir les details | #1F2937 |
+| Etendre le volume | #1F2937 |
+
+---
+
+## 7. PAGINATION
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte gauche | Page 1 sur 1 |
+| Texte droite | 4 volumes |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les volumes de stockage
+
+```
+GET /sap-hana/{serviceName}/storage
+```
+
+Response:
+```json
+[
+  {
+    "volumeId": "data-vol-001",
+    "type": "data",
+    "capacity": "5TB",
+    "used": "3.5TB",
+    "usagePercent": 70,
+    "server": "sap-hana-node01",
+    "status": "active"
+  },
+  {
+    "volumeId": "log-vol-001",
+    "type": "log",
+    "capacity": "2TB",
+    "used": "600GB",
+    "usagePercent": 30,
+    "server": "sap-hana-node01",
+    "status": "active"
+  },
+  {
+    "volumeId": "shared-vol-001",
+    "type": "shared",
+    "capacity": "1TB",
+    "used": "500GB",
+    "usagePercent": 50,
+    "server": "all",
+    "status": "active"
+  },
+  {
+    "volumeId": "backup-vol-001",
+    "type": "backup",
+    "capacity": "2TB",
+    "used": "500GB",
+    "usagePercent": 25,
+    "server": "sap-hana-node02",
+    "status": "active"
+  }
+]
+```
+
+### 8.2 Étendre un volume
+
+```
+POST /sap-hana/{serviceName}/storage/{volumeId}/extend
+```
+
+Body:
+```json
+{
+  "newCapacity": "10TB"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `sap_storage_tab` | Stockage |
+| `sap_storage_col_volume` | Volume |
+| `sap_storage_col_type` | Type |
+| `sap_storage_col_capacity` | Capacite |
+| `sap_storage_col_usage` | Utilisation |
+| `sap_storage_col_server` | Serveur |
+| `sap_storage_col_status` | Statut |
+| `sap_storage_type_data` | Data |
+| `sap_storage_type_log` | Log |
+| `sap_storage_type_shared` | Shared |
+| `sap_storage_type_backup` | Backup |
+| `sap_storage_all_servers` | Tous |
+| `sap_storage_action_details` | Voir les details |
+| `sap_storage_action_extend` | Etendre le volume |

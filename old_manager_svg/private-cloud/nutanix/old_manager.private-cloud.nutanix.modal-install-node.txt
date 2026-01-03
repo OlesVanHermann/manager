@@ -1,0 +1,212 @@
+# Cahier des Charges : private-cloud/nutanix/modal-install-node
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.nutanix.modal-install-node.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | nutanix (Nutanix) |
+| **Type** | Modal formulaire |
+| **Description** | Modal pour configurer et installer un nœud dans un cluster Nutanix |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 580px |
+| Position | Centrée (x: 370, y: 140) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+| Shadow | drop-shadow 0 4px 16px rgba(0,0,0,0.15) |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Background | #FFFFFF |
+| Titre | Installer le node |
+| Font-size titre | 18px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+| Séparateur | Ligne 1px #E5E7EB |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Configurez les parametres reseau pour l'installation du node dans votre cluster Nutanix. |
+| Couleur | #1F2937 |
+| Font-size | 13px |
+
+### 4.2 Info box
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 652×50px |
+| Background | #DBEAFE |
+| Border | 1px #1E40AF |
+| Border radius | 4px |
+| Icône | Cercle bleu avec i |
+| Ligne 1 | Les adresses IP doivent appartenir au meme sous-reseau que votre cluster. |
+| Ligne 2 | Consultez le guide pour plus d'informations. |
+| Couleur texte | #1E40AF |
+
+### 4.3 Champ IP hyperviseur (AHV)
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Adresse IP de l'hyperviseur (AHV) * |
+| Font-weight label | 500 |
+| Description | L'IP doit etre dans le sous-reseau du cluster |
+| Couleur description | #6B7280 |
+| Type | Input text |
+| Dimensions | 652×40px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Valeur exemple | 192.168.1.101 |
+
+### 4.4 Champ IP CVM
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Adresse IP de la CVM * |
+| Font-weight label | 500 |
+| Description | L'IP doit etre dans le sous-reseau du cluster |
+| Couleur description | #6B7280 |
+| Type | Input text |
+| Dimensions | 652×40px |
+| Valeur exemple | 192.168.1.102 |
+
+### 4.5 Champ version AOS
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Version AOS * |
+| Font-weight label | 500 |
+| Type | Select dropdown |
+| Dimensions | 652×40px |
+| Valeur par défaut | 6.5.2.7 LTS (Recommande) |
+| Icône dropdown | ▼ |
+
+### 4.6 Aide
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Les champs marques d'un asterisque (*) sont obligatoires. |
+| Couleur | #6B7280 |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#0050D7) | 100×36px | Gauche |
+| Installer | Primary (#0050D7) | 100×36px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Champs vides | Bouton Installer désactivé |
+| IP invalide | Afficher erreur de validation |
+| Clic Annuler | Fermer modal |
+| Clic × | Fermer modal |
+| Clic Installer | Soumettre installation nœud |
+
+---
+
+## 7. VALIDATION
+
+| Règle | Message erreur |
+|-------|----------------|
+| IP AHV obligatoire | L'adresse IP de l'hyperviseur est requise |
+| IP CVM obligatoire | L'adresse IP de la CVM est requise |
+| Format IP valide | L'adresse IP n'est pas valide |
+| IP dans sous-réseau | L'adresse IP doit appartenir au sous-réseau du cluster |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir versions AOS disponibles
+
+```
+GET /nutanix/{serviceName}/aosVersions
+```
+
+Response:
+```json
+{
+  "versions": [
+    {"version": "6.5.2.7", "type": "LTS", "recommended": true},
+    {"version": "6.5.2.5", "type": "LTS", "recommended": false},
+    {"version": "6.5.1.8", "type": "LTS", "recommended": false}
+  ]
+}
+```
+
+### 8.2 Installer un nœud
+
+```
+POST /nutanix/{serviceName}/nodes/{nodeId}/install
+```
+
+Body:
+```json
+{
+  "ahvIp": "192.168.1.101",
+  "cvmIp": "192.168.1.102",
+  "aosVersion": "6.5.2.7"
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-install-123",
+  "status": "pending",
+  "estimatedDuration": "45 minutes"
+}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `nutanix_install_title` | Installer le node |
+| `nutanix_install_desc` | Configurez les parametres reseau pour l'installation du node dans votre cluster Nutanix. |
+| `nutanix_install_info` | Les adresses IP doivent appartenir au meme sous-reseau que votre cluster. |
+| `nutanix_install_ahv_label` | Adresse IP de l'hyperviseur (AHV) |
+| `nutanix_install_ahv_desc` | L'IP doit etre dans le sous-reseau du cluster |
+| `nutanix_install_cvm_label` | Adresse IP de la CVM |
+| `nutanix_install_cvm_desc` | L'IP doit etre dans le sous-reseau du cluster |
+| `nutanix_install_aos_label` | Version AOS |
+| `nutanix_install_recommended` | Recommande |
+| `nutanix_install_cancel` | Annuler |
+| `nutanix_install_submit` | Installer |

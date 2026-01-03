@@ -1,0 +1,178 @@
+# Cahier des Charges : web-cloud/voip/billingAccount/modal-delete-group
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.billingAccount.modal-delete-group.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page action dangereuse |
+| **Description** | Page de suppression d'un groupe de téléphonie |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px (avec liste groupes) |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Groupe sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Nom | ab12345-ovh-1 |
+| Description | Groupe principal |
+| Badge | Actif (#DEF7EC) |
+| Compteur | 3 groupes |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Lien | ← Retour à l'administration de groupe |
+| Couleur | #0050D7 |
+
+### 4.2 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Supprimer le groupe |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. BANNIÈRE D'AVERTISSEMENT
+
+### 5.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 600×60px |
+| Background | #FEF3C7 |
+| Border radius | 6px |
+
+### 5.2 Contenu
+
+| Propriété | Valeur |
+|-----------|--------|
+| Icône | ⚠️ |
+| Titre | Attention |
+| Couleur titre | #D97706 |
+| Font-weight titre | 600 |
+| Message | La suppression d'un groupe téléphonie entraînera la résiliation des lignes et numéros associés. |
+| Couleur message | #D97706 |
+
+---
+
+## 6. INFORMATIONS
+
+### 6.1 Texte explicatif
+
+| Ligne | Contenu |
+|-------|---------|
+| Ligne 1 | La demande de suppression d'un groupe est planifiée à la date de votre prochaine facturation. |
+| Ligne 2 | Jusqu'à cette date, celle-ci peut être annulée. |
+
+### 6.2 Style
+
+| Propriété | Valeur |
+|-----------|--------|
+| Font-size | 13px |
+| Couleur | #1F2937 |
+
+---
+
+## 7. BOUTON SUPPRIMER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | 🗑 Supprimer ab12345-ovh-1 |
+| Style | Danger (#DC2626) |
+| Dimensions | 200×40px |
+| Border radius | 4px |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Demander la suppression du groupe
+
+```
+POST /telephony/{billingAccount}/cancelTermination
+```
+
+Note: L'API OVH utilise `cancelTermination` pour les résiliations planifiées.
+
+Alternative:
+```
+DELETE /telephony/{billingAccount}
+```
+
+Response:
+```json
+{
+  "status": "pending",
+  "terminationDate": "2026-02-01",
+  "billingAccount": "ab12345-ovh-1"
+}
+```
+
+### 8.2 Annuler la demande de suppression
+
+```
+POST /telephony/{billingAccount}/cancelTermination/cancel
+```
+
+---
+
+## 9. COMPORTEMENT
+
+### 9.1 Confirmation requise
+
+La suppression doit être confirmée via une modal ou un double-clic.
+
+### 9.2 États post-suppression
+
+| État | Description |
+|------|-------------|
+| pending | Suppression planifiée, peut être annulée |
+| confirmed | Suppression confirmée à la date de facturation |
+
+### 9.3 Conséquences
+
+| Élément | Conséquence |
+|---------|-------------|
+| Lignes | Résiliées |
+| Numéros | Libérés |
+| Fax | Résiliés |
+| Historique | Conservation 30 jours après suppression |
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_delete_group_back` | Retour à l'administration de groupe |
+| `voip_delete_group_title` | Supprimer le groupe |
+| `voip_delete_group_warning_title` | Attention |
+| `voip_delete_group_warning_message` | La suppression d'un groupe téléphonie entraînera la résiliation des lignes et numéros associés. |
+| `voip_delete_group_info_line1` | La demande de suppression d'un groupe est planifiée à la date de votre prochaine facturation. |
+| `voip_delete_group_info_line2` | Jusqu'à cette date, celle-ci peut être annulée. |
+| `voip_delete_group_submit` | Supprimer {groupName} |
+| `voip_delete_group_success` | Demande de suppression enregistrée. Elle sera effective le {date}. |
+| `voip_delete_group_cancel` | Annuler la demande de suppression |

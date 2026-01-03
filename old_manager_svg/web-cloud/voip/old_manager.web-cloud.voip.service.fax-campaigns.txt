@@ -1,0 +1,217 @@
+# Cahier des Charges : web-cloud/voip/service/fax-campaigns
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.fax-campaigns.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page listing |
+| **Description** | Page de gestion des campagnes de fax avec liste et actions |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 9 72 12 34 56 |
+| Description | Fax |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Gestion des campagnes de Fax |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 Boutons d'action
+
+| Bouton | Style | Position |
+|--------|-------|----------|
+| + Nouvelle campagne | Primary (#0050D7), 180×36px | Gauche |
+| Filtrer | Outline, 100×36px | Droite |
+
+---
+
+## 5. DATAGRID CAMPAGNES
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×380px |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #F9FAFB |
+| Hauteur | 40px |
+
+### 5.3 Colonnes
+
+| Colonne | Position | Style header |
+|---------|----------|--------------|
+| Campagne | x: 30 | Bleu (#0050D7) |
+| État | x: 350 | Bleu (#0050D7) |
+| Statut | x: 600 | Noir |
+| Actions | x: 950 | Icône ↻ |
+
+### 5.4 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 50px |
+| Ligne paire | Background #F9FAFB |
+| Ligne impaire | Background #FFFFFF |
+| Séparateur | Ligne 1px #E5E7EB |
+
+### 5.5 Données exemple
+
+| Campagne | État | Statut |
+|----------|------|--------|
+| Campagne Noël 2025 | Terminé (badge vert) | Succès |
+| Promo Janvier | En cours d'exécution (badge orange) | Succès partiel |
+| Relance clients | Planifié (badge bleu) | N/A |
+| Test campagne | En erreur (badge rouge) | Échec |
+
+---
+
+## 6. BADGES ÉTAT
+
+| État | Background | Couleur texte |
+|------|------------|---------------|
+| Terminé | #DEF7EC | #059669 |
+| En cours d'exécution | #FEF3C7 | #D97706 |
+| Planifié | #DBEAFE | #1E40AF |
+| En erreur | #FEE2E2 | #DC2626 |
+
+---
+
+## 7. MENU ACTIONS (Dropdown)
+
+### 7.1 Bouton déclencheur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 28×28px |
+| Texte | ... |
+| Style actif | Background #0050D7, texte blanc |
+
+### 7.2 Menu déroulant
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 200×130px |
+| Border radius | 6px |
+| Shadow | drop-shadow |
+
+### 7.3 Options du menu
+
+| Action | Style |
+|--------|-------|
+| Détails | Normal |
+| Lancer la campagne | Normal |
+| Stopper la campagne | Normal |
+| Supprimer | Danger (rouge) |
+
+---
+
+## 8. PAGINATION
+
+### 8.1 Compteur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Affichage 1-4 sur 4 campagnes |
+| Position | Gauche |
+| Couleur | #6B7280 |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Lister les campagnes
+
+```
+GET /telephony/{billingAccount}/fax/{serviceName}/campaigns
+```
+
+Response:
+```json
+{
+  "campaigns": [
+    {
+      "id": "camp-001",
+      "name": "Campagne Noël 2025",
+      "state": "done",
+      "status": "success",
+      "createdAt": "2025-12-15T10:00:00Z"
+    }
+  ],
+  "total": 4
+}
+```
+
+### 9.2 Lancer une campagne
+
+```
+POST /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}/start
+```
+
+### 9.3 Stopper une campagne
+
+```
+POST /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}/stop
+```
+
+### 9.4 Supprimer une campagne
+
+```
+DELETE /telephony/{billingAccount}/fax/{serviceName}/campaigns/{campaignId}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_fax_campaigns_title` | Gestion des campagnes de Fax |
+| `voip_fax_campaigns_new` | Nouvelle campagne |
+| `voip_fax_campaigns_filter` | Filtrer |
+| `voip_fax_campaigns_col_name` | Campagne |
+| `voip_fax_campaigns_col_state` | État |
+| `voip_fax_campaigns_col_status` | Statut |
+| `voip_fax_campaigns_col_actions` | Actions |
+| `voip_fax_campaigns_state_done` | Terminé |
+| `voip_fax_campaigns_state_running` | En cours d'exécution |
+| `voip_fax_campaigns_state_scheduled` | Planifié |
+| `voip_fax_campaigns_state_error` | En erreur |
+| `voip_fax_campaigns_action_details` | Détails |
+| `voip_fax_campaigns_action_start` | Lancer la campagne |
+| `voip_fax_campaigns_action_stop` | Stopper la campagne |
+| `voip_fax_campaigns_action_delete` | Supprimer |
+| `voip_fax_campaigns_pagination` | Affichage {start}-{end} sur {total} campagnes |

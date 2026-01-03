@@ -1,0 +1,140 @@
+# Cahier des Charges : bare-metal/cdn/modal-domain-flush
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.bare-metal.cdn.modal-domain-flush.svg |
+| **NAV1** | bare-metal (Bare Metal Cloud) |
+| **NAV2** | cdn |
+| **Type** | Modal warning |
+| **Description** | Modal de confirmation pour vider le cache d'un domaine CDN |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 260px |
+| Position | Centrée (x: 420, y: 300) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #FFFFFF |
+| Barre latérale | 4px #D97706 (warning) |
+| Titre | Vider le cache du domaine |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermeture | × |
+| Séparateur | 1px #E5E7EB |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Message de confirmation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Êtes-vous sûr de vouloir vider le cache pour le domaine : |
+| Ligne 2 (bold) | cdn.example.com |
+| Font-size | 13-14px |
+
+### 4.2 Warning Banner
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 552×50px |
+| Background | #FEF3C7 |
+| Border radius | 4px |
+| Titre | Attention : |
+| Message | Cette action forcera le rechargement de tous les fichiers depuis le serveur d'origine. |
+| Couleur texte | #D97706 |
+| Font-size | 11px |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#0050D7) | 90×36px | Droite (-) |
+| Confirmer | Primary (#0050D7) | 96×36px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic Confirmer | Vider le cache du domaine, afficher notification succès |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Vider le cache du domaine
+
+```
+POST /cdn/{serviceName}/domain/{domainName}/flush
+```
+
+Response:
+```json
+{
+  "taskId": "task-123456",
+  "status": "pending",
+  "domain": "cdn.example.com"
+}
+```
+
+### 7.2 Vérifier le statut du flush
+
+```
+GET /cdn/{serviceName}/task/{taskId}
+```
+
+Response:
+```json
+{
+  "taskId": "task-123456",
+  "status": "done",
+  "completedAt": "2026-01-02T14:35:00Z"
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `cdn_domain_flush_title` | Vider le cache du domaine |
+| `cdn_domain_flush_confirm` | Êtes-vous sûr de vouloir vider le cache pour le domaine : |
+| `cdn_domain_flush_warning_title` | Attention : |
+| `cdn_domain_flush_warning_message` | Cette action forcera le rechargement de tous les fichiers depuis le serveur d'origine. |
+| `cdn_domain_flush_cancel` | Annuler |
+| `cdn_domain_flush_submit` | Confirmer |
+| `cdn_domain_flush_success` | Le cache du domaine a été vidé avec succès |

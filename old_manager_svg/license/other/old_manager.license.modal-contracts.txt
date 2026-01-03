@@ -1,0 +1,191 @@
+# Cahier des Charges : license/modal-contracts
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.license.modal-contracts.svg |
+| **NAV1** | license (Licences) |
+| **NAV2** | - |
+| **Type** | Modal validation contrats |
+| **Description** | Modal de validation de commande avec acceptation des contrats |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 480px |
+| Position | Centrée (x: 370, y: 180) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Background | #DBEAFE (info) |
+| Titre | Validation de la commande |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Couleur titre | #1E40AF |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Montant à payer
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Montant à payer |
+| Font-weight | 600 |
+| Valeur exemple | 99,99 € HT |
+| Couleur valeur | #0050D7 |
+| Font-size valeur | 16px |
+| Font-weight valeur | 600 |
+| Séparateur | Ligne 1px #E5E7EB |
+
+### 4.2 Titre contrats
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Contrats à accepter |
+| Font-weight | 600 |
+| Description | Veuillez prendre connaissance des contrats suivants : |
+
+### 4.3 Liste des contrats
+
+| Propriété | Valeur |
+|-----------|--------|
+| Container dimensions | 652×140px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+
+| Contrat | Icône | Lien externe |
+|---------|-------|--------------|
+| Conditions Générales de Service OVHcloud | 📄 | ↗ |
+| Conditions Particulières des Licences | 📄 | ↗ |
+| Annexe tarifaire | 📄 | ↗ |
+
+### 4.4 Checkbox acceptation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 18×18px |
+| État | Coché (exemple) |
+| Background coché | #0050D7 |
+| Icône | ✓ blanc |
+| Label | J'ai lu et j'accepte les contrats ci-dessus |
+
+### 4.5 Info box
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 652×40px |
+| Background | #DBEAFE |
+| Icône | ℹ️ |
+| Texte | En validant, vous serez redirigé vers la page de paiement. |
+
+---
+
+## 5. FOOTER
+
+### 5.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline | 120×40px | Gauche |
+| Payer | Primary (#0050D7) | 150×40px | Droite |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic lien contrat | Ouvrir contrat dans nouvel onglet |
+| Checkbox non cochée | Bouton Payer désactivé |
+| Checkbox cochée | Bouton Payer activé |
+| Clic Annuler | Fermer modal |
+| Clic × | Fermer modal |
+| Clic Payer | Redirection vers page paiement |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir contrats à accepter
+
+```
+GET /me/order/{orderId}/contracts
+```
+
+Response:
+```json
+{
+  "contracts": [
+    {
+      "name": "Conditions Générales de Service OVHcloud",
+      "url": "https://www.ovh.com/fr/support/documents_legaux/conditions_generales_service.xml",
+      "required": true
+    },
+    {
+      "name": "Conditions Particulières des Licences",
+      "url": "https://www.ovh.com/fr/support/documents_legaux/conditions_particulieres_licences.xml",
+      "required": true
+    },
+    {
+      "name": "Annexe tarifaire",
+      "url": "https://www.ovh.com/fr/support/documents_legaux/annexe_tarifaire.xml",
+      "required": true
+    }
+  ]
+}
+```
+
+### 7.2 Accepter contrats et payer
+
+```
+POST /me/order/{orderId}/payWithRegisteredPaymentMean
+```
+
+Body:
+```json
+{
+  "paymentMean": "creditCard",
+  "contracts": [true, true, true]
+}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `license_contracts_title` | Validation de la commande |
+| `license_contracts_amount` | Montant à payer |
+| `license_contracts_accept_title` | Contrats à accepter |
+| `license_contracts_accept_desc` | Veuillez prendre connaissance des contrats suivants |
+| `license_contracts_cgs` | Conditions Générales de Service OVHcloud |
+| `license_contracts_cp` | Conditions Particulières des Licences |
+| `license_contracts_tarif` | Annexe tarifaire |
+| `license_contracts_checkbox` | J'ai lu et j'accepte les contrats ci-dessus |
+| `license_contracts_info` | En validant, vous serez redirigé vers la page de paiement. |
+| `license_contracts_cancel` | Annuler |
+| `license_contracts_pay` | Payer |

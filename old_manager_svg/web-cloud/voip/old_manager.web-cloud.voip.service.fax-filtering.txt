@@ -1,0 +1,250 @@
+# Cahier des Charges : web-cloud/voip/service/fax-filtering
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.fax-filtering.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page formulaire avec datagrid |
+| **Description** | Page de configuration du filtrage des fax (liste blanche/noire) |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 9 72 12 34 56 |
+| Description | Fax |
+
+---
+
+## 4. SECTION CONFIGURATION DU FILTRAGE (haut gauche)
+
+### 4.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 500×180px |
+| Titre | Configuration du filtrage |
+| Séparateur | Ligne sous le titre |
+
+### 4.2 Champs
+
+| Champ | Type | Valeur exemple |
+|-------|------|----------------|
+| Type de filtrage | Select dropdown (250×36px) | Pas de filtrage |
+
+### 4.3 Options du dropdown
+
+| Option |
+|--------|
+| Pas de filtrage |
+| Liste blanche |
+| Liste noire |
+
+### 4.4 Checkbox
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Rejeter les appels anonymes |
+| Dimensions checkbox | 16×16px |
+
+---
+
+## 5. SECTION AJOUTER UNE RÈGLE (haut droite)
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 520×180px |
+| Titre | Ajouter une règle |
+| Séparateur | Ligne sous le titre |
+
+### 5.2 Champs
+
+| Champ | Type | Largeur |
+|-------|------|---------|
+| Liste | Select dropdown | 200px |
+| Type | Select dropdown | 150px |
+| Numéro | Input text | 300px |
+
+### 5.3 Options Liste
+
+| Option |
+|--------|
+| Liste blanche |
+| Liste noire |
+
+### 5.4 Options Type
+
+| Option |
+|--------|
+| Numéros |
+| TSI |
+
+### 5.5 Bouton ajouter
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Ajouter |
+| Style | Primary (#0050D7) |
+| Dimensions | 80×36px |
+
+---
+
+## 6. SECTION LISTE DES RÈGLES DE FILTRAGE
+
+### 6.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1040×350px |
+| Titre | Liste des règles de filtrage |
+| Séparateur | Ligne sous le titre |
+
+### 6.2 Toolbar
+
+| Bouton | Dimensions |
+|--------|------------|
+| Supprimer | 100×32px |
+| Exporter | 80×32px |
+| Filtrer par type | 120×32px (aligné droite) |
+
+### 6.3 Colonnes datagrid
+
+| Colonne | Position | Type |
+|---------|----------|------|
+| Checkbox | x: 25 | Checkbox 16×16px |
+| Numéro | x: 60 | Texte |
+| Type | x: 400 | Texte |
+| Refresh | x: 970 | Icône ↻ |
+
+### 6.4 Données exemple
+
+| Numéro | Type |
+|--------|------|
+| 0033612345678 | Liste blanche - Numéros |
+| 0033698765432 | Liste noire - Numéros |
+| MonEntreprise | Liste blanche - TSI |
+
+### 6.5 Pagination
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Affichage 1-3 sur 3 règles |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Obtenir la configuration du filtrage
+
+```
+GET /telephony/{billingAccount}/fax/{serviceName}/screening
+```
+
+Response:
+```json
+{
+  "filterType": "none",
+  "rejectAnonymous": false
+}
+```
+
+### 7.2 Modifier la configuration
+
+```
+PUT /telephony/{billingAccount}/fax/{serviceName}/screening
+```
+
+Body:
+```json
+{
+  "filterType": "whitelist",
+  "rejectAnonymous": true
+}
+```
+
+### 7.3 Lister les règles de filtrage
+
+```
+GET /telephony/{billingAccount}/fax/{serviceName}/screening/rules
+```
+
+Response:
+```json
+{
+  "rules": [
+    {
+      "id": "rule-1",
+      "number": "0033612345678",
+      "listType": "whitelist",
+      "ruleType": "numbers"
+    }
+  ]
+}
+```
+
+### 7.4 Ajouter une règle
+
+```
+POST /telephony/{billingAccount}/fax/{serviceName}/screening/rules
+```
+
+Body:
+```json
+{
+  "number": "0033612345678",
+  "listType": "whitelist",
+  "ruleType": "numbers"
+}
+```
+
+### 7.5 Supprimer une règle
+
+```
+DELETE /telephony/{billingAccount}/fax/{serviceName}/screening/rules/{ruleId}
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_fax_filtering_config_title` | Configuration du filtrage |
+| `voip_fax_filtering_type` | Type de filtrage |
+| `voip_fax_filtering_type_none` | Pas de filtrage |
+| `voip_fax_filtering_type_whitelist` | Liste blanche |
+| `voip_fax_filtering_type_blacklist` | Liste noire |
+| `voip_fax_filtering_reject_anonymous` | Rejeter les appels anonymes |
+| `voip_fax_filtering_add_title` | Ajouter une règle |
+| `voip_fax_filtering_add_list` | Liste |
+| `voip_fax_filtering_add_type` | Type |
+| `voip_fax_filtering_add_number` | Numéro |
+| `voip_fax_filtering_add_submit` | Ajouter |
+| `voip_fax_filtering_rules_title` | Liste des règles de filtrage |
+| `voip_fax_filtering_rules_delete` | Supprimer |
+| `voip_fax_filtering_rules_export` | Exporter |
+| `voip_fax_filtering_rules_filter` | Filtrer par type |
+| `voip_fax_filtering_col_number` | Numéro |
+| `voip_fax_filtering_col_type` | Type |
+| `voip_fax_filtering_type_numbers` | Numéros |
+| `voip_fax_filtering_type_tsi` | TSI |

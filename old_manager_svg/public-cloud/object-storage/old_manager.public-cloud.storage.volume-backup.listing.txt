@@ -1,0 +1,175 @@
+# Cahier des Charges : public-cloud/storage/volume-backup/listing
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.public-cloud.storage.volume-backup.listing.svg |
+| **NAV1** | public-cloud |
+| **NAV2** | storage |
+| **Type** | Listing / Datagrid |
+| **Description** | Liste des sauvegardes de volumes Block Storage |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| Breadcrumb | mon-projet / Stockage / Volume Backup |
+
+---
+
+## 3. HEADER
+
+| Titre | Volume Backup |
+| Font-size | 22px |
+| Font-weight | 600 |
+| Bouton guides | 📖 Guides (100×32px, outline) |
+
+---
+
+## 4. ACTIONS
+
+| Bouton | Style | Dimensions |
+|--------|-------|------------|
+| + Créer un backup | Outline | 220×36px |
+| ↻ (refresh) | Outline | 40×36px |
+
+---
+
+## 5. TABLEAU VOLUME BACKUP
+
+### 5.1 Dimensions
+
+| Largeur | 1392px |
+| Hauteur | 500px |
+
+### 5.2 Colonnes
+
+| Colonne | Largeur |
+|---------|---------|
+| NOM | 160px |
+| ID | 180px |
+| RÉGION | 80px |
+| VOLUME | 180px |
+| DATE DE CRÉATION | 180px |
+| CAPACITÉ | 100px |
+| STATUT | 120px |
+| ACTIONS | 80px |
+
+### 5.3 Statuts
+
+| Statut | Badge | Background | Texte |
+|--------|-------|------------|-------|
+| OK | success | #DEF7EC | #059669 |
+| Création | warning | #FEF3C7 | #D97706 |
+| Restauration | warning | #FEF3C7 | #D97706 |
+| Erreur | error | #FEE2E2 | #DC2626 |
+
+---
+
+## 6. DONNÉES EXEMPLE
+
+| Nom | Région | Volume | Date | Capacité | Statut |
+|-----|--------|--------|------|----------|--------|
+| backup-vol-prod-daily | GRA11 | vol-abc123-production | 01 janv. 2026 à 02:00 | 200 GiB | OK |
+| backup-db-weekly | SBG5 | vol-xyz789-database | 29 déc. 2025 à 03:00 | 500 GiB | OK |
+| backup-new-service | BHS5 | vol-new456-service | 02 janv. 2026 à 12:00 | — | Création |
+| backup-restore-test | GRA11 | vol-rst123-test | 20 déc. 2025 à 14:30 | 50 GiB | Restauration |
+
+---
+
+## 7. MENU ACTIONS
+
+| Dimensions | 180×120px |
+
+| Option | Groupe |
+|--------|--------|
+| Restaurer le volume | - |
+| Créer un volume | - |
+| --- | Séparateur |
+| Supprimer | Danger |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Lister les backups de volumes
+
+```
+GET /cloud/project/{projectId}/volume/backup
+```
+
+Response:
+```json
+[
+  {
+    "id": "vbkp-abc123-def456",
+    "name": "backup-vol-prod-daily",
+    "region": "GRA11",
+    "volumeId": "vol-abc123-production",
+    "createdAt": "2026-01-01T02:00:00Z",
+    "size": 200,
+    "status": "available"
+  }
+]
+```
+
+### 8.2 Restaurer un backup
+
+```
+POST /cloud/project/{projectId}/volume/backup/{backupId}/restore
+```
+
+Body:
+```json
+{
+  "volumeId": "vol-target-id"
+}
+```
+
+### 8.3 Créer un volume depuis un backup
+
+```
+POST /cloud/project/{projectId}/volume
+```
+
+Body:
+```json
+{
+  "name": "new-volume-from-backup",
+  "backupId": "vbkp-abc123-def456",
+  "region": "GRA11"
+}
+```
+
+### 8.4 Supprimer un backup
+
+```
+DELETE /cloud/project/{projectId}/volume/backup/{backupId}
+```
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `pci_storage_backup_title` | Volume Backup |
+| `pci_storage_backup_create` | Créer un backup |
+| `pci_storage_backup_col_name` | NOM |
+| `pci_storage_backup_col_id` | ID |
+| `pci_storage_backup_col_region` | RÉGION |
+| `pci_storage_backup_col_volume` | VOLUME |
+| `pci_storage_backup_col_created` | DATE DE CRÉATION |
+| `pci_storage_backup_col_capacity` | CAPACITÉ |
+| `pci_storage_backup_col_status` | STATUT |
+| `pci_storage_backup_status_ok` | OK |
+| `pci_storage_backup_status_creating` | Création |
+| `pci_storage_backup_status_restoring` | Restauration |
+| `pci_storage_backup_status_error` | Erreur |
+| `pci_storage_backup_action_restore` | Restaurer le volume |
+| `pci_storage_backup_action_create_volume` | Créer un volume |
+| `pci_storage_backup_action_delete` | Supprimer |

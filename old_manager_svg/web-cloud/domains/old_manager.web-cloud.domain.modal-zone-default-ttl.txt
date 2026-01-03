@@ -1,0 +1,170 @@
+# Cahier des Charges : web-cloud/domain/modal-zone-default-ttl
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.domain.modal-zone-default-ttl.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | domains (Domaines et DNS) |
+| **Type** | Modal formulaire |
+| **Description** | Modal de modification du TTL par défaut d'une zone DNS |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 400px |
+| Position | Centrée (x: 420, y: 180) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Modifier le TTL par défaut |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × (position droite) |
+| Séparateur | Ligne 1px #E5E7EB |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Explication
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Le TTL correspond au temps maximum (en secondes) de propagation |
+| Ligne 2 | de mise à jour de la zone DNS. |
+
+### 4.2 Contexte
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Vous êtes sur le point de modifier la valeur du TTL par défaut de la zone |
+| Nom domaine | example.com (font-weight 600) |
+
+### 4.3 Champ TTL
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | TTL par défaut |
+| Description | Valeur conseillée en cas de changements fréquents 3600 secondes, sinon 86400 secondes (1 jour). |
+| Type | Input number |
+| Dimensions | 200×40px |
+| Valeur exemple | 86400 |
+
+### 4.4 Bannière info
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 552×50px |
+| Background | #DBEAFE |
+| Ligne 1 | La modification du TTL sera effective après un temps de propagation |
+| Ligne 2 | de maximum 24h. |
+| Couleur texte | #1E40AF |
+
+---
+
+## 5. FOOTER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Séparateur | Ligne 1px #E5E7EB en haut |
+
+### 5.1 Boutons
+
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Modifier | Primary (#0050D7), 100×36px | Gauche |
+| Annuler | Lien texte bleu | Après bouton |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Obtenir le TTL par défaut
+
+```
+GET /domain/zone/{zoneName}/soa
+```
+
+Response:
+```json
+{
+  "ttl": 86400,
+  "serial": 2026010201,
+  "refresh": 86400,
+  "retry": 3600,
+  "expire": 3600000,
+  "nxdomainTtl": 300
+}
+```
+
+### 6.2 Modifier le TTL par défaut
+
+```
+PUT /domain/zone/{zoneName}/soa
+```
+
+Body:
+```json
+{
+  "ttl": 3600
+}
+```
+
+---
+
+## 7. VALEURS TTL RECOMMANDÉES
+
+| Situation | TTL recommandé |
+|-----------|----------------|
+| Changements fréquents | 3600 (1 heure) |
+| Configuration stable | 86400 (1 jour) |
+| Migration | 300 (5 minutes) |
+
+---
+
+## 8. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Modifier | Enregistrer + Toast succès + Fermer modal |
+| Clic Annuler | Fermer modal sans modification |
+| Clic × | Fermer modal sans modification |
+
+---
+
+## 9. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `domain_ttl_modal_title` | Modifier le TTL par défaut |
+| `domain_ttl_modal_desc_1` | Le TTL correspond au temps maximum (en secondes) de propagation de mise à jour de la zone DNS. |
+| `domain_ttl_modal_context` | Vous êtes sur le point de modifier la valeur du TTL par défaut de la zone |
+| `domain_ttl_modal_label` | TTL par défaut |
+| `domain_ttl_modal_hint` | Valeur conseillée en cas de changements fréquents 3600 secondes, sinon 86400 secondes (1 jour). |
+| `domain_ttl_modal_info` | La modification du TTL sera effective après un temps de propagation de maximum 24h. |
+| `domain_ttl_modal_submit` | Modifier |
+| `domain_ttl_modal_cancel` | Annuler |
+| `domain_ttl_modal_success` | TTL par défaut modifié avec succès |

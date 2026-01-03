@@ -1,0 +1,229 @@
+# Cahier des Charges : private-cloud/vmware/modal-user-rights-edit
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-user-rights-edit.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal formulaire avec select dropdowns |
+| **Description** | Modal pour éditer les droits d'un utilisateur vSphere par datacenter |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 600px |
+| Position | Centrée (x: 370, y: 120) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Édition des droits |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Datacenter
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Datacentre : |
+| Valeur | **dc-rbx-01** |
+| Font-weight valeur | 600 |
+
+---
+
+## 5. CHAMP ACCÈS VSPHERE
+
+### 5.1 Label
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Accès vSphere |
+| Font-size | 13px |
+| Font-weight | 500 |
+
+### 5.2 Select dropdown
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur sélectionnée | Lecture/Écriture |
+| Icône | ▼ |
+
+### 5.3 Texte d'aide
+
+| Ligne | Texte |
+|-------|-------|
+| 1 | Droits globaux de l'utilisateur sur vSphere |
+| 2 | *Accès en écriture* |
+
+---
+
+## 6. CHAMP ACCÈS VMNETWORK
+
+### 6.1 Label
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Accès au vmNetwork |
+| Font-size | 13px |
+| Font-weight | 500 |
+
+### 6.2 Select dropdown
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×40px |
+| Valeur sélectionnée | Operateur |
+
+### 6.3 Texte d'aide
+
+| Ligne | Texte |
+|-------|-------|
+| 1 | Droits de management sur la partie réseau public (VM Network) |
+| 2 | *Permet de configurer des VMs sur le réseau public* |
+
+---
+
+## 7. CHAMP ACCÈS VXLANS
+
+### 7.1 Label
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Accès aux V(x)LANs |
+| Font-size | 13px |
+| Font-weight | 500 |
+
+### 7.2 Select dropdown
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 660×40px |
+| Valeur sélectionnée | Lecture seule |
+
+### 7.3 Texte d'aide
+
+| Ligne | Texte |
+|-------|-------|
+| 1 | Droits de management sur la partie réseau privé |
+| 2 | *Accès en lecture seule* |
+
+---
+
+## 8. CHECKBOX
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 16×16px |
+| État | Coché (#0050D7, checkmark blanc) |
+| Label | Gestion des hôtes et des stockages |
+| Description | Autorise l'ajout et la suppression d'hôtes et de stockages via le plugin OVH dans vSphere. |
+
+---
+
+## 9. FOOTER
+
+### 9.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Centre-droite |
+| Valider | Primary (#0050D7) | 100×40px | Droite |
+
+---
+
+## 10. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic select | Ouvrir dropdown options |
+| Clic checkbox | Toggle option |
+| Clic Annuler | Fermer modal sans sauvegarder |
+| Clic × | Fermer modal |
+| Clic Valider | Sauvegarder droits + fermer modal |
+
+---
+
+## 11. APIS & ENDPOINTS
+
+### 11.1 Obtenir droits utilisateur par datacenter
+
+```
+GET /dedicatedCloud/{serviceName}/user/{userId}/right/{datacenterId}
+```
+
+Response:
+```json
+{
+  "vsphereAccess": "readWrite",
+  "vmNetworkAccess": "operator",
+  "vxlanAccess": "readOnly",
+  "hostStorageManagement": true
+}
+```
+
+### 11.2 Modifier les droits
+
+```
+PUT /dedicatedCloud/{serviceName}/user/{userId}/right/{datacenterId}
+```
+
+Body:
+```json
+{
+  "vsphereAccess": "readWrite",
+  "vmNetworkAccess": "operator",
+  "vxlanAccess": "readOnly",
+  "hostStorageManagement": true
+}
+```
+
+---
+
+## 12. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_rights_edit_title` | Édition des droits |
+| `vmware_rights_datacenter` | Datacentre |
+| `vmware_rights_vsphere` | Accès vSphere |
+| `vmware_rights_vsphere_desc` | Droits globaux de l'utilisateur sur vSphere |
+| `vmware_rights_vmnetwork` | Accès au vmNetwork |
+| `vmware_rights_vmnetwork_desc` | Droits de management sur la partie réseau public (VM Network) |
+| `vmware_rights_vxlan` | Accès aux V(x)LANs |
+| `vmware_rights_vxlan_desc` | Droits de management sur la partie réseau privé |
+| `vmware_rights_host_storage` | Gestion des hôtes et des stockages |
+| `vmware_rights_host_storage_desc` | Autorise l'ajout et la suppression d'hôtes et de stockages via le plugin OVH dans vSphere. |
+| `vmware_rights_readonly` | Lecture seule |
+| `vmware_rights_readwrite` | Lecture/Écriture |
+| `vmware_rights_operator` | Operateur |
+| `vmware_rights_cancel` | Annuler |
+| `vmware_rights_submit` | Valider |

@@ -1,0 +1,410 @@
+################################################################################
+#                                                                              #
+#                   PROMPT TARGET - PUBLIC-CLOUD > INSTANCES                   #
+#                                                                              #
+#                              Version 1.0                                     #
+#                                                                              #
+################################################################################
+
+# 0. VISION PRODUIT
+################################################################################
+
+Instances permet de gerer les machines virtuelles Public Cloud :
+- Creation d'instances (VM) avec choix region, image, flavor
+- Gestion du cycle de vie (start, stop, reboot, shelve, delete)
+- Configuration reseau (IP publiques, IP privees vRack)
+- Snapshots et backups
+- Console VNC
+
+Specificites:
+- Pre-selection region: Si une region est selectionnee dans le sidecar,
+  elle est automatiquement pre-selectionnee dans la modal de creation
+- Format region: EU-West (GRA.FR) dans le sidecar, code court (GRA) dans tableau
+
+
+# 1. NAVIGATION
+################################################################################
+
+NAV1: Public Cloud
+NAV2: Instances (selectionne)
+NAV3: General (dans LEFT PANEL)
+NAV4: [General] [Reseau] [Snapshots] [Console] (vue detail)
+
+## 1.1 Position dans la hierarchie
+
+```
+Public Cloud (NAV1)
+├── Instances* (NAV2 actif)
+├── Block Storage
+├── Object Storage
+├── Databases
+├── Kubernetes
+├── Load Balancer
+├── AI
+├── Registry
+└── Project
+```
+
+## 1.2 URLs
+
+| Ecran | URL |
+|-------|-----|
+| Liste instances | /public-cloud/{projectId}/instances |
+| Detail instance | /public-cloud/{projectId}/instances/{instanceId} |
+| Onglet Reseau | /public-cloud/{projectId}/instances/{instanceId}/network |
+| Onglet Snapshots | /public-cloud/{projectId}/instances/{instanceId}/snapshots |
+| Console VNC | /public-cloud/{projectId}/instances/{instanceId}/console |
+
+
+# 2. LEFT PANEL (280px)
+################################################################################
+
+## 2.1 Structure
+
+```
+┌─────────────────────┐
+│ [General]           │  ← NAV3 (seul choix)
+├─────────────────────┤
+│ Projet          [▼] │  ← Selecteur projet
+│ Mon Projet Prod     │
+├─────────────────────┤
+│ Region          [▼] │  ← Filtre region
+│ EU-West (GRA.FR)    │
+├─────────────────────┤
+│ 🔍 Rechercher...    │  ← Recherche nom instance
+├─────────────────────┤
+│ ●Toutes (12)        │  ← Vue liste (toujours visible)
+│ ○web-server-01      │  ← Liste des instances
+│ ○db-master          │
+│ ○api-gateway        │
+│ ○worker-01          │
+└─────────────────────┘
+```
+
+## 2.2 Selecteur Projet
+
+Source donnees: GET /cloud/project
+Position: En dessous de NAV3, au-dessus de Region
+
+## 2.3 Filtre Region
+
+Source donnees: /api/regions.json
+Format affichage: EU-West (GRA.FR), US-East (VIN.US), etc.
+
+| Groupe | Options |
+|--------|---------|
+| (defaut) | ALL |
+| EUROPE | EU-West (PAR.FR), EU-West (GRA.FR), EU-Central (SBG.FR), etc. |
+| NORTH AMERICA | US-East (VIN.US), CA-East (BHS.CA), etc. |
+| ASIA PACIFIC | AP-Southeast (SGP.SG), AP-Southeast (SYD.AU), etc. |
+
+Comportement:
+- Filtre les instances dans la liste et le tableau
+- Pre-selectionne la region dans la modal de creation
+- Persistance via URL: ?region=eu-west-gra
+
+## 2.4 Element "Toutes"
+
+Toujours en premiere position, non filtrable.
+Affiche la liste de toutes les instances dans le RIGHT PANEL.
+
+
+# 3. RIGHT PANEL - LISTE INSTANCES
+################################################################################
+
+Quand "Toutes" est selectionne dans le LEFT PANEL.
+
+## 3.1 Header
+
+```
+Instances                                   [+ Creer instance]
+Gerez vos machines virtuelles Public Cloud
+```
+
+## 3.2 Bandeau filtre actif
+
+Si une region est selectionnee dans le sidecar:
+```
+Filtre: EU-West (GRA.FR)                    [✕ Effacer]
+```
+
+## 3.3 Barre filtres
+
+| Filtre | Type | Options |
+|--------|------|---------|
+| Recherche | Input | Recherche par nom |
+| Etat | Select | Tous, Running, Stopped, Building, Error |
+
+## 3.4 Colonnes tableau
+
+| Colonne | Largeur | Contenu |
+|---------|---------|---------|
+| Nom | 180px | Nom instance (bold) |
+| Flavor | 100px | Type (b2-15, d2-4...) |
+| Image | 140px | OS name |
+| Region | 80px | Code court (GRA, SBG...) |
+| IP publique | 130px | Adresse IP |
+| Etat | 100px | Dot + texte |
+| Actions | 60px | Menu ⋮ |
+
+## 3.5 Etats instance
+
+| Etat | Couleur | Description |
+|------|---------|-------------|
+| Running | 🟢 #16A34A | Instance active |
+| Stopped | 🔴 #DC2626 | Instance arretee |
+| Building | 🟡 #F59E0B | Creation en cours |
+| Shelved | 🔵 #0EA5E9 | Instance hibernee |
+| Error | 🔴 #DC2626 | Erreur |
+
+## 3.6 Menu actions
+
+| Action | Style |
+|--------|-------|
+| Console VNC | Normal |
+| Redemarrer | Normal |
+| Eteindre/Demarrer | Normal |
+| Redimensionner | Normal |
+| Creer snapshot | Normal |
+| --- | Separateur |
+| Supprimer | Danger |
+
+## 3.7 Footer
+
+```
+12 instances | 🟢 8 Running | 🔴 2 Stopped | 🟡 2 Building
+```
+
+
+# 4. RIGHT PANEL - DETAIL INSTANCE
+################################################################################
+
+Quand une instance est selectionnee dans le LEFT PANEL.
+
+## 4.1 Header
+
+```
+web-server-01                        [Eteindre] [Backup] [⋮]
+b2-15 • GRA • 🟢 Running
+```
+
+## 4.2 NAV4
+
+```
+[General*] [Reseau] [Snapshots] [Console]
+```
+
+
+# 5. NAV4 - GENERAL
+################################################################################
+
+## 5.1 Tiles colonne gauche
+
+### Tile: Informations
+
+| Champ | Valeur |
+|-------|--------|
+| ID | a1b2c3d4-e5f6-... |
+| Region | GRA |
+| Modele | b2-15 |
+| Image | Ubuntu 22.04 |
+| Cle SSH | my-ssh-key |
+
+### Tile: Proprietes
+
+| Champ | Valeur |
+|-------|--------|
+| Processeur | 4 vCores |
+| Memoire | 15 Go |
+| Stockage | 100 Go SSD |
+| Facturation | 25,00 €/mois |
+
+## 5.2 Tiles colonne droite
+
+### Tile: Reseaux Publics
+
+| Champ | Valeur |
+|-------|--------|
+| IPv4 | 51.210.123.45 |
+| Gateway | 51.210.123.1 |
+| Reverse DNS | web-srv.example.com |
+| IPv6 | 2001:41d0::1 |
+
+### Tile: Volumes attaches
+
+Liste des volumes avec bouton [+ Attacher volume]
+
+
+# 6. NAV4 - RESEAU
+################################################################################
+
+## 6.1 Carte IP Publiques
+
+| Colonne | Description |
+|---------|-------------|
+| Adresse IP | Adresse (monospace) |
+| Version | IPv4 ou IPv6 |
+
+## 6.2 Carte IP Privees (vRack)
+
+Bouton [+ Attacher] en haut a droite
+
+| Colonne | Description |
+|---------|-------------|
+| Reseau | Nom du vRack |
+| Adresse IP | IP privee |
+
+
+# 7. NAV4 - SNAPSHOTS
+################################################################################
+
+Liste des snapshots de l'instance.
+Bouton [+ Creer snapshot] en haut.
+
+| Colonne | Description |
+|---------|-------------|
+| Nom | Nom du snapshot |
+| Date | Date de creation |
+| Taille | Taille en Go |
+| Actions | Menu ⋮ |
+
+
+# 8. NAV4 - CONSOLE
+################################################################################
+
+Console VNC integree dans un iframe.
+Bouton [Plein ecran] en haut a droite.
+
+
+# 9. MODALES
+################################################################################
+
+## 9.1 modal-create-instance
+
+Creer une nouvelle instance.
+
+| Champ | Type | Validation |
+|-------|------|------------|
+| Region | Select | Pre-selectionnee si filtre sidecar |
+| Image | Cards | OS selection |
+| Flavor | Cards | Type instance |
+| Nom | Input | Requis, unique |
+| Cle SSH | Select | Cle existante ou nouvelle |
+
+Note: Info "Pre-selectionne depuis le filtre sidecar" si region heritee.
+
+Footer: Estimation cout + [Annuler] [Creer]
+
+## 9.2 modal-delete-instance
+
+Confirmer suppression instance.
+
+| Champ | Type |
+|-------|------|
+| Nom instance | Readonly |
+| Warning | Message attention |
+| Confirmation | Input "DELETE" |
+
+Actions: [Annuler] [Supprimer]
+
+## 9.3 modal-resize-instance
+
+Redimensionner une instance.
+
+| Champ | Type |
+|-------|------|
+| Flavor actuel | Readonly |
+| Nouveau flavor | Cards selection |
+| Estimation | Difference cout |
+
+Actions: [Annuler] [Redimensionner]
+
+
+# 10. APIS & ENDPOINTS
+################################################################################
+
+## 10.1 Instances
+
+```
+GET /cloud/project/{projectId}/instance - Liste instances
+GET /cloud/project/{projectId}/instance/{id} - Detail instance
+POST /cloud/project/{projectId}/instance - Creer instance
+DELETE /cloud/project/{projectId}/instance/{id} - Supprimer
+POST /cloud/project/{projectId}/instance/{id}/reboot - Redemarrer
+POST /cloud/project/{projectId}/instance/{id}/stop - Arreter
+POST /cloud/project/{projectId}/instance/{id}/start - Demarrer
+POST /cloud/project/{projectId}/instance/{id}/shelve - Hiberner
+POST /cloud/project/{projectId}/instance/{id}/unshelve - Reveiller
+PUT /cloud/project/{projectId}/instance/{id}/resize - Redimensionner
+```
+
+## 10.2 Reseau
+
+```
+GET /cloud/project/{projectId}/instance/{id}/interface - Interfaces
+POST /cloud/project/{projectId}/instance/{id}/interface - Attacher vRack
+DELETE /cloud/project/{projectId}/instance/{id}/interface/{ifId} - Detacher
+```
+
+## 10.3 Snapshots
+
+```
+GET /cloud/project/{projectId}/snapshot - Liste snapshots
+POST /cloud/project/{projectId}/instance/{id}/snapshot - Creer snapshot
+DELETE /cloud/project/{projectId}/snapshot/{snapshotId} - Supprimer
+```
+
+
+# 11. REGLES METIER
+################################################################################
+
+## 11.1 Pre-selection region
+
+- Si filtre region actif dans sidecar → pre-selectionne dans modal creation
+- Afficher indication "Pre-selectionne depuis le filtre sidecar"
+
+## 11.2 Format region
+
+- Sidecar: format long "EU-West (GRA.FR)"
+- Tableau: code court "GRA"
+- Modal: format long "EU-West (GRA.FR)"
+
+## 11.3 Estimation cout
+
+- Affichee dans modal creation et resize
+- Format: "X,XX € HT/mois"
+
+## 11.4 Actions par etat
+
+| Etat | Actions disponibles |
+|------|---------------------|
+| Running | Eteindre, Reboot, Snapshot, Resize, Delete |
+| Stopped | Demarrer, Snapshot, Resize, Delete |
+| Shelved | Unshelve, Delete |
+| Building | (aucune) |
+| Error | Delete |
+
+
+# 12. COMPOSANTS ODS UTILISES
+################################################################################
+
+- OdsTabs : NAV4 tabs
+- OdsInput : Recherche, noms
+- OdsSelect : Projet, Region, Etat, Cle SSH
+- OdsDatagrid : Liste instances
+- OdsBadge : Etats (Running/Stopped/etc.)
+- OdsButton : Actions
+- OdsModal : Modales
+- OdsCard : Tiles, Flavors selection
+- OdsTable : IP publiques, IP privees
+
+
+# 13. FICHIERS ASSOCIES
+################################################################################
+
+Documentation : prompt_target.public-cloud.instances.txt (ce fichier)
+Screenshots : prompt_target.public-cloud.instances-screenshot.txt
+
+################################################################################
+#                            FIN DU DOCUMENT                                   #
+################################################################################

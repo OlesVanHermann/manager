@@ -1,0 +1,180 @@
+# Cahier des Charges : home/billing/order-retraction
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.home.billing.order-retraction.svg |
+| **NAV1** | home (Accueil) |
+| **NAV2** | billing |
+| **NAV4** | order-retraction |
+| **Type** | Page avec bannière info et liste |
+| **Description** | Page de droit de rétractation pour les commandes récentes |
+
+---
+
+## 2. LAYOUT
+
+### 2.1 Structure
+
+| Zone | Dimensions | Position |
+|------|------------|----------|
+| Header OVH | 1440×50px | y: 0 |
+| Sous-header | 1440×40px | y: 50 |
+| Header page | 1360×40px | x: 40, y: 115 |
+| Bannière info | 1360×100px | x: 40, y: 180 |
+| Carte commandes | 1360×400px | x: 40, y: 310 |
+
+---
+
+## 3. HEADER PAGE
+
+### 3.1 Breadcrumb
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Facturation |
+| Couleur | #0050D7 |
+| Font-size | 14px |
+| Font-weight | 600 |
+
+### 3.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Droit de rétractation |
+| Font-size | 24px |
+| Font-weight | 600 |
+
+---
+
+## 4. BANNIÈRE INFO LÉGALE
+
+### 4.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×100px |
+| Background | #DBEAFE |
+| Border | 1px #0050D7 |
+| Border radius | 8px |
+
+### 4.2 Contenu
+
+| Élément | Valeur |
+|---------|--------|
+| Icône titre | ℹ |
+| Titre | Information |
+| Font-weight titre | 600 |
+| Texte ligne 1 | Conformément au Code de la consommation, vous disposez d'un délai de 14 jours pour exercer votre droit de rétractation |
+| Texte ligne 2 | à compter de la date de commande, sans avoir à justifier de motifs ni à payer de pénalités. |
+| Couleur texte | #1E40AF |
+| Font-size | 12px |
+
+---
+
+## 5. CARTE COMMANDES ÉLIGIBLES
+
+### 5.1 Conteneur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1360×400px |
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 5.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Commandes éligibles à la rétractation |
+| Font-size | 15px |
+| Font-weight | 700 |
+
+### 5.3 Structure ligne commande
+
+| Élément | Position X | Contenu |
+|---------|------------|---------|
+| Référence | 20px | Commande ORD-XXXX |
+| Date | 350px | Date de commande |
+| Montant | 550px | Montant TTC |
+| Délai | 700px | Délai restant : X jours |
+| Action | 1000px | Bouton Se rétracter |
+
+### 5.4 Bouton rétractation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Se rétracter |
+| Type | Outline danger |
+| Dimensions | 150×32px |
+| Border | 1px #DC2626 |
+| Couleur texte | #DC2626 |
+
+### 5.5 Données exemple
+
+| Référence | Date | Montant | Délai |
+|-----------|------|---------|-------|
+| ORD-2026-001234 | 02/01/2026 | 9,99 € | 12 jours |
+
+### 5.6 État vide
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Aucune autre commande éligible |
+| Couleur | #6B7280 |
+| Position | Centré |
+
+---
+
+## 6. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Se rétracter | Ouvrir modal confirmation rétractation |
+
+---
+
+## 7. APIS & ENDPOINTS
+
+### 7.1 Lister les commandes éligibles
+
+```
+GET /me/order?retractable=true
+```
+
+Response:
+```json
+[
+  {
+    "orderId": "ORD-2026-001234",
+    "date": "2026-01-02T10:00:00Z",
+    "amount": 9.99,
+    "remainingDays": 12,
+    "canRetract": true
+  }
+]
+```
+
+### 7.2 Exercer la rétractation
+
+```
+POST /me/order/{orderId}/retract
+```
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `billing_retraction_title` | Droit de rétractation |
+| `billing_retraction_info_title` | Information |
+| `billing_retraction_info_line1` | Conformément au Code de la consommation, vous disposez d'un délai de 14 jours pour exercer votre droit de rétractation |
+| `billing_retraction_info_line2` | à compter de la date de commande, sans avoir à justifier de motifs ni à payer de pénalités. |
+| `billing_retraction_eligible` | Commandes éligibles à la rétractation |
+| `billing_retraction_order` | Commande {orderId} |
+| `billing_retraction_remaining` | Délai restant : {days} jours |
+| `billing_retraction_button` | Se rétracter |
+| `billing_retraction_empty` | Aucune autre commande éligible |

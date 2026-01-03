@@ -1,0 +1,451 @@
+================================================================================
+PROMPT TARGET - Private Cloud > Nutanix
+================================================================================
+
+| Element                            | Valeur                                                      |
+|------------------------------------|-------------------------------------------------------------|
+| **Prompt**                         | prompt_target.private-cloud.nutanix.txt                     |
+| **Destination finale utilisateur** | ~/target_manager_svg/private-cloud/nutanix/                 |
+| **Destination Claude (outputs)**   | /mnt/user-data/outputs/target_manager_svg/private-cloud/nutanix/ |
+
+Version: v1.0 (2026-01-03)
+Parent:  prompt_target.txt (design system, shell template, composants)
+
+================================================================================
+
+##############################################################################
+# 0. RAPPEL RÈGLES CRITIQUES (voir prompt_target.txt)
+##############################################################################
+
+INTERDIT : Afficher le SVG dans la conversation
+OBLIGATOIRE : tee vers /mnt/user-data/outputs/ + present_files
+FICHIERS PAR PAIRE : target_.{route}.svg + target_.{route}.txt
+
+##############################################################################
+# 1. VUE D'ENSEMBLE
+##############################################################################
+
+### 1.1 Positionnement
+- **NAV1** : Hosted Private Cloud (Header bleu #000E9C, 50px)
+- **NAV2** : Nutanix (Sous-header blanc, 40px) - Actif parmi [General, VMware, Nutanix, Managed Bare Metal, SAP, Veeam, Storage]
+- **NAV3** : [Général] (sélecteur dans LEFT PANEL, au-dessus de Region)
+- **NAV4** : Tabs dans RIGHT PANEL
+
+### 1.2 Objectif
+Gestion des clusters Nutanix on OVHcloud : dashboard, nœuds, IPs et tâches.
+Nutanix est une solution hyperconvergée (HCI) pour virtualisation et stockage.
+
+### 1.3 URL Pattern
+```
+/private-cloud/nutanix                                   → General (All) dashboard
+/private-cloud/nutanix?id={serviceName}                  → Dashboard cluster
+/private-cloud/nutanix?id={serviceName}&tab=nodes        → Nœuds du cluster
+/private-cloud/nutanix?id={serviceName}&tab=ips          → IPs du cluster
+/private-cloud/nutanix?id={serviceName}&tab=licence      → Licence Nutanix
+/private-cloud/nutanix?id={serviceName}&tab=network      → Configuration réseau
+/private-cloud/nutanix?id={serviceName}&tab=ipmi         → Accès IPMI nœuds
+/private-cloud/nutanix?id={serviceName}&tab=tasks        → Tâches du cluster
+```
+
+##############################################################################
+# 2. STRUCTURE NAV COMPLÈTE
+##############################################################################
+
+```
+NAV1: Hosted Private Cloud
+│
+└── NAV2: Nutanix (indicateur sous "Nutanix")
+    │
+    ├── LEFT PANEL (280px)
+    │   │
+    │   ├── NAV3: [Général•] (sélecteur - extensible futur)
+    │   │
+    │   ├── Filtre Region
+    │   │   └── [🌍 Region: ALL ▼] (dropdown + bouton × si ≠ ALL)
+    │   │
+    │   ├── 🔍 Rechercher...
+    │   │
+    │   ├── 📊 General (All)  ← Vue agrégée tous clusters
+    │   │   ─ ─ ─ ─ ─ ─ ─ ─
+    │   ├── 🔷 nutanix-prod-001
+    │   ├── 🔷 nutanix-dev-002
+    │   └── 🔷 nutanix-test-003
+    │
+    └── RIGHT PANEL (1096px)
+        │
+        ├── Header: Titre cluster + metadata + [Accéder à Prism ↗]
+        │
+        └── NAV4: [General][Nodes][IPs][Licence][Network][IPMI][Tasks]
+            │
+            ├── General → Dashboard tiles (Infos, Support, Abonnement)
+            ├── Nodes   → Tableau nœuds du cluster
+            ├── IPs     → Tableau blocs IP
+            ├── Licence → Licence Nutanix, features activées
+            ├── Network → Configuration réseau cluster
+            ├── IPMI    → Accès IPMI des nœuds
+            └── Tasks   → Historique tâches
+```
+
+##############################################################################
+# 3. STRUCTURE LEFT PANEL
+##############################################################################
+
+### 3.1 Layout vertical
+
+```
+┌─────────────────────────────┐
+│ NAV3 - Groupement           │  y=105
+│ ┌─────────────────────────┐ │
+│ │ [Général•]              │ │
+│ └─────────────────────────┘ │
+├─────────────────────────────┤  y=145
+│ Filtre Region               │
+│ ┌─────────────────────────┐ │
+│ │ 🌍 Region: ALL        ▼ │ │
+│ └─────────────────────────┘ │
+├─────────────────────────────┤  y=185
+│ 🔍 Rechercher...            │
+├─────────────────────────────┤  y=225
+│ ┌─────────────────────────┐ │
+│ │ 📊 General (All)        │ │
+│ └─────────────────────────┘ │
+│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │
+│ ┌─────────────────────────┐ │
+│ │ 🔷 nutanix-prod-001     │ │  ← Cluster sélectionné
+│ │   Roubaix │ 🟢 Deployed │ │
+│ └─────────────────────────┘ │
+│ ┌─────────────────────────┐ │
+│ │   nutanix-dev-002       │ │
+│ │   Gravelines │ 🟡       │ │
+│ └─────────────────────────┘ │
+├─────────────────────────────┤
+│ Affichage 1-2 sur 2         │
+└─────────────────────────────┘
+```
+
+### 3.2 Card cluster
+
+```
+┌─────────────────────────────┐
+│ 🔷 nutanix-prod-001         │  ← Icône Nutanix + serviceName
+│   Roubaix │ 🟢 Deployed     │  ← Location │ État badge
+└─────────────────────────────┘
+```
+
+États possibles:
+- 🟢 DEPLOYED (vert)
+- 🟡 DEPLOYING (jaune)
+- 🔴 ERROR (rouge)
+
+##############################################################################
+# 4. NAV4 - TABS DÉTAIL
+##############################################################################
+
+### 4.1 Liste des tabs
+
+| Tab | ID | Description |
+|-----|----|-------------|
+| General | general | Dashboard tiles (5 tiles) |
+| Nodes | nodes | Tableau nœuds du cluster |
+| IPs | ips | Blocs IP publiques |
+| Tasks | tasks | Historique tâches |
+
+### 4.2 Tab: General (Dashboard)
+
+#### Layout 3 colonnes avec tiles
+
+```
+┌────────────────────────┐ ┌────────────────────────┐ ┌────────────────────────┐
+│ Informations générales │ │ Licence                │ │ Support                │
+│ (grande tile)          │ │                        │ │                        │
+│                        │ │ Pack: Nutanix Pro      │ │ Niveau: Business       │
+│ Nom: Cluster Prod      │ │ Fonctionnalités:       │ │ Travaux: Aucun         │
+│ Nom commercial:        │ │ AOS, AHV, Files...     │ │                        │
+│   Nutanix Starter L    │ │ Statut: 🟢 Active      │ │ [Créer un ticket →]    │
+│                        │ │ Expiration: 31/12/2026 │ │                        │
+│ [Accéder à Prism ↗]    │ └────────────────────────┘ └────────────────────────┘
+│                        │
+│ Pack: Nutanix Pro      │ ┌────────────────────────┐ ┌────────────────────────┐
+│ Nœuds: 4 souscrits     │ │ Réseau                 │ │ Abonnement             │
+│   🟢 4 déployés        │ │                        │ │                        │
+│ [Gérer les nœuds →]    │ │ IP publique cluster:   │ │ Date création:         │
+│                        │ │   192.0.2.100          │ │   15/01/2024           │
+│ Tolérance pannes:      │ │ Bande passante: 10Gbps │ │ Renouvellement:        │
+│   Rack awareness       │ │ vRack: pn-12345        │ │   15/01/2027           │
+│ Réplication: RF2       │ │                        │ │ Engagement: 36 mois    │
+│                        │ │ [Augmenter bande       │ │                        │
+│ [Redéployer →]         │ │  passante →]           │ │ [Gérer l'abonnement →] │
+└────────────────────────┘ └────────────────────────┘ └────────────────────────┘
+```
+
+### 4.3 Tab: Nodes
+
+#### Toolbar
+```
+[↻]  [🔍 Rechercher...]                    [+ Ajouter des nœuds]
+```
+
+#### Tableau
+
+| Colonne | Source | Width |
+|---------|--------|-------|
+| Nom d'affichage | node.displayName | 160px |
+| Type de serveur | node.serverType | 150px |
+| Statut | node.status | 120px |
+| Localisation | node.datacenter | 120px |
+| OS installé | node.osStatus | 140px |
+| IP nœud | node.nodeIp | 120px |
+| CVM IP | node.cvmIp | 120px |
+| Actions | ⋮ menu | 50px |
+
+#### Statuts nœud
+
+| État | Badge | Couleur |
+|------|-------|---------|
+| Deployé | 🟢 | #DEF7EC / #059669 |
+| En déploiement | 🟡 | #FEF3C7 / #D97706 |
+| Erreur | 🔴 | #FEE2E2 / #DC2626 |
+| AHV installé | 🟢 | #DEF7EC / #059669 |
+
+#### Actions menu (⋮)
+
+| Option | Style |
+|--------|-------|
+| Allumer | Normal |
+| Éteindre | Normal |
+| Réinstaller | Normal |
+| Désinstaller | Normal |
+| Résilier | Danger (rouge) |
+
+### 4.4 Tab: IPs
+
+#### Toolbar
+```
+[↻]  [🔍 Rechercher...]                    [+ Commander des IPs]
+```
+
+#### Tableau
+
+| Colonne | Source | Width |
+|---------|--------|-------|
+| Bloc IP | ip.block | 180px |
+| Gateway | ip.gateway | 140px |
+| Netmask | ip.netmask | 140px |
+| Datacenter | ip.datacenter | 120px |
+| Statut | ip.status | 100px |
+| Actions | ⋮ menu | 50px |
+
+### 4.5 Tab: Tasks
+
+#### Toolbar
+```
+[↻]  [🔍 Rechercher...]   Filtre: [Toutes ▼]  [7 derniers jours]
+```
+
+#### Tableau
+
+| Colonne | Source | Width |
+|---------|--------|-------|
+| ID | task.taskId | 120px |
+| Action | task.action | 180px |
+| Cible | task.target | 150px |
+| Date | task.createdAt | 140px |
+| État | task.status | 100px |
+| Actions | ⋮ menu | 50px |
+
+##############################################################################
+# 5. GENERAL (ALL) - VUE AGRÉGÉE
+##############################################################################
+
+### 5.1 NAV4: General (All) → Dashboard agrégé
+
+```
+📊 Nutanix — Vue d'ensemble
+2 clusters │ 1 région │ 🟢 1 actif │ 🟡 1 déploiement
+
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│ CLUSTERS    │ │ NŒUDS       │ │ LICENCES    │ │ TÂCHES      │
+│     2       │ │     8       │ │             │ │             │
+│   total     │ │   total     │ │ 🟢 2 actives│ │ 🔵 1 cours  │
+│ 🟢 1  🟡 1  │ │ 🟢 7  🟡 1  │ │             │ │ 🟢 15 done  │
+└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
+
+RÉPARTITION PAR CLUSTER
+┌──────────────────────────────────────────────────────────────┐
+│  Cluster          │ Region    │ Nœuds │ Pack    │ État      │
+├──────────────────────────────────────────────────────────────┤
+│  nutanix-prod-001 │ Roubaix   │ 4/4   │ Pro     │ 🟢        │
+│  nutanix-dev-002  │ Gravelines│ 4/4   │ Starter │ 🟡        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### 5.2 NAV4: General (All) → Nodes agrégé
+
+Tableau avec colonne "Cluster" ajoutée + filtre cluster.
+
+##############################################################################
+# 6. APIS
+##############################################################################
+
+### 6.1 Cluster
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /nutanix | Liste tous les clusters |
+| GET | /nutanix/{serviceName} | Détails cluster |
+| PUT | /nutanix/{serviceName} | Modifier cluster |
+| POST | /nutanix/{serviceName}/redeploy | Redéployer cluster |
+
+### 6.2 Nodes
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /nutanix/{sn}/nodes | Liste nœuds |
+| GET | /nutanix/{sn}/nodes/{nodeId} | Détails nœud |
+| POST | /nutanix/{sn}/nodes | Ajouter nœuds |
+| DELETE | /nutanix/{sn}/nodes/{nodeId} | Résilier nœud |
+| POST | /nutanix/{sn}/nodes/{nodeId}/powerOn | Allumer nœud |
+| POST | /nutanix/{sn}/nodes/{nodeId}/powerOff | Éteindre nœud |
+| POST | /nutanix/{sn}/nodes/{nodeId}/reinstall | Réinstaller nœud |
+| POST | /nutanix/{sn}/nodes/{nodeId}/uninstall | Désinstaller nœud |
+
+### 6.3 Licence
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /nutanix/{sn}/licence | Info licence |
+
+### 6.4 Network
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /nutanix/{sn}/network | Info réseau |
+| POST | /nutanix/{sn}/network/bandwidth | Augmenter bande passante |
+
+### 6.5 IPs
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /nutanix/{sn}/ips | Liste blocs IP |
+| POST | /nutanix/{sn}/ips | Commander IPs |
+| DELETE | /nutanix/{sn}/ips/{id} | Libérer IP |
+
+### 6.6 Tasks
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /nutanix/{sn}/tasks | Liste tâches |
+| GET | /nutanix/{sn}/tasks/{taskId} | Détails tâche |
+
+### 6.7 ServiceInfos
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | /nutanix/{sn}/serviceInfos | Info abonnement |
+
+##############################################################################
+# 7. DONNÉES DYNAMIQUES
+##############################################################################
+
+| Exemple SVG | Source API |
+|-------------|------------|
+| nutanix-prod-001 | GET /nutanix → serviceName |
+| Cluster Nutanix Production | GET /nutanix/{sn} → targetSpec.name |
+| Nutanix Starter L | GET /nutanix/{sn} → commercialName |
+| Nutanix Pro | GET /nutanix/{sn}/licence → pack |
+| 4 souscrits | GET /nutanix/{sn} → nodes.subscribed |
+| 4 déployés | GET /nutanix/{sn} → nodes.deployed |
+| Rack awareness | GET /nutanix/{sn} → faultTolerance |
+| RF2 | GET /nutanix/{sn} → replicationFactor |
+| 192.0.2.100 | GET /nutanix/{sn}/network → publicIp |
+| 10 Gbps | GET /nutanix/{sn}/network → privateBandwidth |
+| pn-12345 | GET /nutanix/{sn}/network → vrack |
+| node-nutanix-01 | GET /nutanix/{sn}/nodes → displayName |
+| Scale L | GET /nutanix/{sn}/nodes → serverType |
+
+##############################################################################
+# 8. INTERACTIONS
+##############################################################################
+
+| Action | Comportement |
+|--------|--------------|
+| Clic "General (All)" | Affiche vue agrégée tous clusters |
+| Clic cluster | Affiche détails du cluster sélectionné |
+| Clic NAV4 tab | Change contenu RIGHT PANEL |
+| Clic "Accéder à Prism ↗" | Ouvre Prism Element dans nouvel onglet |
+| Clic "Ajouter des nœuds" | Ouvre modal commande nœuds |
+| Clic ⋮ menu nœud | Affiche actions (allumer, éteindre, etc.) |
+| Toggle filtre Region | Filtre liste clusters |
+
+##############################################################################
+# 9. MODALES PRINCIPALES
+##############################################################################
+
+### 9.1 Ajouter des nœuds
+- Nombre de nœuds à ajouter
+- Type de serveur (Scale S/M/L/XL)
+- Datacenter
+- Confirmation prix
+- Validation
+
+### 9.2 Redéployer le cluster
+- Avertissement perte données
+- Confirmation nom du cluster
+- Double confirmation
+- Validation
+
+### 9.3 Augmenter la bande passante
+- Bande passante actuelle
+- Nouvelle bande passante (dropdown)
+- Confirmation prix
+- Validation
+
+### 9.4 Éteindre un nœud
+- Avertissement impact
+- Confirmation
+- Validation
+
+### 9.5 Résilier un nœud
+- Avertissement définitif
+- Confirmation nom du nœud
+- Double confirmation
+- Validation
+
+##############################################################################
+# 10. SPÉCIFICITÉS NUTANIX
+##############################################################################
+
+### 10.1 Accès Prism
+
+Nutanix utilise Prism comme interface d'administration :
+- Bouton "Accéder à Prism ↗" dans le header
+- Ouvre https://prism.{serviceName}.nutanix.ovh.net
+- Authentification via credentials vus dans le dashboard
+
+### 10.2 Architecture nœuds
+
+| Élément | Description |
+|---------|-------------|
+| Node | Serveur physique avec hyperviseur AHV |
+| CVM | Controller VM - VM de contrôle sur chaque nœud |
+| Node IP | IP de l'hyperviseur AHV |
+| CVM IP | IP de la Controller VM |
+
+### 10.3 Packs licence
+
+| Pack | Fonctionnalités |
+|------|-----------------|
+| Starter | AOS, AHV basique |
+| Pro | AOS, AHV, Files, Objects |
+| Ultimate | AOS, AHV, Files, Objects, Era, Flow |
+
+### 10.4 Tolérance aux pannes
+
+| Mode | Description |
+|------|-------------|
+| Node awareness | Tolérance panne d'un nœud |
+| Rack awareness | Tolérance panne d'un rack entier |
+
+================================================================================
+FIN PROMPT TARGET - Private Cloud > Nutanix v1.0
+================================================================================

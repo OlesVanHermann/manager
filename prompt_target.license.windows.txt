@@ -1,0 +1,168 @@
+# PROMPT TARGET - NAV1: license / NAV2: windows
+
+Version: v1.0 (2026-01-03)
+
+---
+
+## 1. ARBORESCENCE
+
+### NAV1: Licences
+Position: Header bleu OVH (height: 50px)
+
+### NAV2: Windows
+Position: Sous-header blanc (height: 40px)
+Tabs: [Tableau de bord] [cPanel] [Plesk] [Windows] [SQL Server] [CloudLinux] [DirectAdmin] [SPLA]
+
+### NAV3: Groupements (LEFT PANEL)
+| NAV3 | Label FR | Description |
+|------|----------|-------------|
+| general | Général | Groupement unique |
+
+### Filtre Région
+Position: En dessous de NAV3
+Selecteur: Dropdown régions OVH
+
+### NAV4: Fonctions (RIGHT PANEL)
+
+#### Sidecar "Toutes les licences" sélectionné
+Pas de NAV4 - Affichage datagrid listing
+
+#### Sidecar licence individuelle sélectionnée
+| NAV4 | Label FR | Description |
+|------|----------|-------------|
+| informations | Informations | Détails + clé de produit |
+| activation | Activation | Guide d'activation PowerShell |
+| historique | Historique | Journal des actions |
+
+---
+
+## 2. SPÉCIFICITÉS WINDOWS
+
+### 2.1 Éditions Windows Server
+| Édition | Cores | Description | Prix indicatif |
+|---------|-------|-------------|----------------|
+| 2019 Standard (8 cores) | 8 | Legacy | € 20/mois |
+| 2022 Standard (8 cores) | 8 | Petits serveurs | € 25/mois |
+| 2022 Standard (16 cores) | 16 | Production | € 35/mois |
+| 2022 Datacenter (16 cores) | 16 | Virtualisation | € 70/mois |
+| 2022 Datacenter (32 cores) | 32 | Enterprise | € 140/mois |
+
+### 2.2 Clé de produit (SPÉCIFIQUE WINDOWS)
+| Élément | Description |
+|---------|-------------|
+| Format | XXXXX-XXXXX-XXXXX-XXXXX-XXXXX (25 caractères, 5 groupes) |
+| Affichage | Zone fond sombre (#1F2937), monospace |
+| Bouton | [Copier] |
+| Info | Message "Clé activée automatiquement" |
+
+### 2.3 Carte Spécifications licence (SPÉCIFIQUE WINDOWS)
+| Champ | Description |
+|-------|-------------|
+| Type | SPLA (Services Provider License) |
+| Cores autorisés | Nombre de cores CPU licenciés |
+| CALs incluses | "Illimité" pour SPLA |
+| Activation | Badge "● Activée" ou "○ Non activée" |
+
+### 2.4 Guide d'activation PowerShell (SPÉCIFIQUE WINDOWS)
+NAV4 dédié avec étapes d'activation.
+
+#### Étape 1 : Récupérer la clé
+- Affichage clé de produit
+- Bouton [Copier]
+
+#### Étape 2 : Activer via PowerShell
+```powershell
+# Installer la clé
+slmgr.vbs /ipk XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
+
+# Activer Windows
+slmgr.vbs /ato
+```
+- Note: "Exécuter PowerShell en tant qu'administrateur"
+
+#### Étape 3 : Vérifier l'activation
+```powershell
+# Vérifier le statut
+slmgr.vbs /dli
+```
+- Résultat attendu: "License Status: Licensed"
+- Bouton [Besoin d'aide ?]
+
+---
+
+## 3. PAGES
+
+### 3.1 Page Listing
+Comme cPanel avec colonnes spécifiques Windows:
+- Édition (Version + Standard/Datacenter)
+- Cores (nombre)
+
+### 3.2 Page Détail (NAV4=Informations)
+| Carte | Contenu |
+|-------|---------|
+| Informations générales | Serveur, IP, Édition, Langue, Dates, Coût |
+| Spécifications licence | Type SPLA, Cores, CALs, Activation |
+| Clé de produit | Clé format Windows + [Copier] |
+
+### 3.3 Page Activation (NAV4=Activation)
+Guide étape par étape avec commandes PowerShell.
+
+### 3.4 Page Historique (NAV4=Historique)
+Identique aux autres types.
+
+### 3.5 Page Onboarding
+Identique avec texte Windows Server.
+
+---
+
+## 4. MODALES
+
+### 4.1 Modal Commander
+| Champ | Type | Description |
+|-------|------|-------------|
+| Édition | Radio cards | Version + cores |
+| Adresse IP | Input | Obligatoire |
+
+### 4.2 Modal Résilier
+Identique aux autres types.
+
+### 4.3 Modal Changer IP
+Identique aux autres types.
+
+### 4.4 Modal Upgrade licence
+| Élément | Description |
+|---------|-------------|
+| Offre actuelle | Édition + cores actuels |
+| Nouvelles offres | Radio cards éditions supérieures |
+| Note | "L'upgrade prend effet immédiatement" |
+
+---
+
+## 5. APIS & ENDPOINTS
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /license/windows | GET | Liste licences |
+| /license/windows | POST | Commander |
+| /license/windows/{id} | GET | Détail |
+| /license/windows/{id} | PUT | Modifier |
+| /license/windows/{id} | DELETE | Résilier |
+| /license/windows/{id}/ip | PUT | Changer IP |
+| /license/windows/{id}/upgrade | PUT | Upgrade édition |
+| /license/windows/{id}/key | GET | Clé de produit |
+| /license/windows/{id}/history | GET | Historique |
+| /license/windows/editions | GET | Liste éditions |
+
+---
+
+## 6. DIFFÉRENCES AVEC CPANEL
+
+| Aspect | cPanel | Windows |
+|--------|--------|---------|
+| Clé de produit | Non | Oui (format Microsoft) |
+| Guide activation | Non | Oui (PowerShell) |
+| Cores | Non | Oui (pricing basé sur cores) |
+| CALs | Non | Oui (affiché dans specs) |
+| NAV4 tabs | 2 | 3 (Info, Activation, Historique) |
+| Éditions | Solo/Pro/Admin | Standard/Datacenter + cores |
+

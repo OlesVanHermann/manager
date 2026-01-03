@@ -1,0 +1,207 @@
+# Cahier des Charges : iam/components/action-select
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.iam.components.action-select.svg |
+| **NAV1** | iam |
+| **NAV2** | policies |
+| **Type** | Composant réutilisable |
+| **Description** | Composant de sélection des actions autorisées pour une politique IAM |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px avec recherche et liste politiques |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Recherche
+
+| Dimensions | 256×34px |
+| Placeholder | Rechercher... |
+
+### 3.2 Liste politiques
+
+| Compteur | 3 politiques |
+| Item sélectionné | Background #E8F0FE |
+| Item normal | Background #FFFFFF |
+
+### 3.3 Items exemple
+
+| Politique | Description | Selected |
+|-----------|-------------|----------|
+| admin-policy | Politique administrateur | ✓ |
+| read-only-policy | Lecture seule | |
+| custom-policy | Politique personnalisée | |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Header
+
+| Titre | Sélection des actions |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Description | Sélectionnez les actions autorisées aux identités sur les ressources choisies. |
+
+---
+
+## 5. TOGGLE WILDCARD
+
+| Label | Autoriser toutes les actions |
+| Type | Toggle switch |
+| Dimensions | 44×22px |
+| État | Désactivé (gris) |
+| Description | Toutes les actions existantes et à venir sur tous les types de produits seront autorisées |
+
+---
+
+## 6. SECTIONS COLLAPSIBLES PAR PRODUIT
+
+### 6.1 Style section
+
+| Dimensions | 1056×40px |
+| Background | #F9FAFB |
+| Border | 1px solid #E5E7EB |
+| Border radius | 4px |
+| Icône expand | ▼ (ouvert) / ► (fermé) |
+
+### 6.2 Sections exemple
+
+| Produit | État |
+|---------|------|
+| cloudDB | Ouvert (▼) |
+| hosting | Fermé (►) |
+| domain | Fermé (►) |
+
+---
+
+## 7. LISTE DES ACTIONS (cloudDB déployé)
+
+### 7.1 Structure catégorie
+
+| Élément | Style |
+|---------|-------|
+| Checkbox catégorie | 16×16px |
+| Nom catégorie | Font-weight 600 |
+| Compteur | (3 actions sélectionnées / 8) |
+| Icône expand | ▼ |
+
+### 7.2 Structure action
+
+| Élément | Style |
+|---------|-------|
+| Checkbox | 14×14px |
+| Checkbox checked | Background #0050D7, ✓ blanc |
+| Nom action | Font-size 11px |
+| Description | Font-size 10px, muted |
+
+### 7.3 Actions exemple (database)
+
+| Sélection | Action | Description |
+|-----------|--------|-------------|
+| ✓ | database:apiovh:get | Lire les informations de la base |
+| ✓ | database:apiovh:create | Créer une base de données |
+| ✓ | database:apiovh:delete | Supprimer une base de données |
+| ☐ | database:apiovh:update | Modifier une base de données |
+
+---
+
+## 8. AJOUT MANUEL D'ACTION
+
+### 8.1 Label
+
+| Texte | Ajouter manuellement des actions |
+| Font-size | 12px |
+| Font-weight | 500 |
+
+### 8.2 Champ input
+
+| Dimensions | 400×34px |
+| Background | #F9FAFB |
+| Placeholder | Exemple : cloudDB:apiovh:database/create |
+
+### 8.3 Bouton ajouter
+
+| Dimensions | 100×34px |
+| Style | Outline primary |
+| Texte | + Ajouter |
+
+---
+
+## 9. MESSAGE DE SUCCÈS
+
+| Dimensions | 1056×36px |
+| Background | #DEF7EC |
+| Texte | L'action database:apiovh:create a été ajoutée à cloudDB |
+| Couleur texte | #059669 |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Lister les actions par type de produit
+
+```
+GET /me/iam/resource/{productType}/action
+```
+
+Response:
+```json
+{
+  "categories": [
+    {
+      "name": "database",
+      "actions": [
+        {
+          "action": "database:apiovh:get",
+          "description": "Lire les informations de la base"
+        },
+        {
+          "action": "database:apiovh:create",
+          "description": "Créer une base de données"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 10.2 Ajouter une action à la politique
+
+```
+PUT /me/iam/policy/{policyId}/action
+```
+
+Body:
+```json
+{
+  "action": "database:apiovh:create"
+}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `iam_action_select_title` | Sélection des actions |
+| `iam_action_select_subtitle` | Sélectionnez les actions autorisées aux identités sur les ressources choisies. |
+| `iam_action_select_wildcard_label` | Autoriser toutes les actions |
+| `iam_action_select_wildcard_desc` | Toutes les actions existantes et à venir sur tous les types de produits seront autorisées |
+| `iam_action_select_selected` | actions sélectionnées |
+| `iam_action_select_manual_label` | Ajouter manuellement des actions |
+| `iam_action_select_manual_placeholder` | Exemple : cloudDB:apiovh:database/create |
+| `iam_action_select_add` | Ajouter |
+| `iam_action_select_success` | L'action {action} a été ajoutée à {productType} |

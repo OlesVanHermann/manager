@@ -1,0 +1,192 @@
+# Cahier des Charges : web-cloud/email-exchange/modal-upgrade-300g
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.email-exchange.modal-upgrade-300g.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | emails (Emails) |
+| **Type** | Modal confirmation avec options |
+| **Description** | Modal d'augmentation de la capacité d'un compte Exchange à 300 Gio |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 600px |
+| Hauteur | 340px |
+| Position | Centrée (x: 420, y: 200) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 56px |
+| Background | #F9FAFB |
+| Titre | Augmenter la capacité |
+| Font-size titre | 16px |
+| Font-weight titre | 600 |
+| Bouton fermeture | × (position droite) |
+| Séparateur | Ligne 1px #E5E7EB |
+
+---
+
+## 4. CONTENU
+
+### 4.1 Message de confirmation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Ligne 1 | Êtes-vous certain de vouloir augmenter la capacité de votre compte |
+| Ligne 2 | Exchange à 300Gio ? |
+
+### 4.2 Label options
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Type de paiement : |
+| Couleur | #6B7280 |
+| Font-size | 11px |
+
+### 4.3 Radio buttons
+
+| Option | Sélectionnée | Prix |
+|--------|--------------|------|
+| mensuel | Oui (par défaut) | 9,99 € HT/mois |
+| annuel | Non | 99,99 € HT/an |
+
+### 4.4 Style radio sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle externe | 16px, stroke #0050D7 |
+| Cercle interne | 8px, fill #0050D7 |
+
+### 4.5 Style radio non sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Cercle | 16px, stroke #E5E7EB |
+
+### 4.6 Style prix
+
+| Propriété | Valeur |
+|-----------|--------|
+| Couleur | #DC2626 (rouge danger) |
+| Font-weight | 600 |
+
+---
+
+## 5. FOOTER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur | 60px |
+| Séparateur | Ligne 1px #E5E7EB en haut |
+
+### 5.1 Boutons
+
+| Bouton | Style | Position |
+|--------|-------|----------|
+| Valider | Primary (#0050D7), 100×36px | Gauche |
+| Annuler | Lien texte bleu | Après bouton |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Obtenir les options d'upgrade
+
+```
+GET /email/exchange/{organizationName}/service/{exchangeService}/account/{primaryEmailAddress}/upgrade
+```
+
+Response:
+```json
+{
+  "currentQuota": "50Gi",
+  "availableUpgrades": [
+    {
+      "quota": "300Gi",
+      "pricing": {
+        "monthly": {
+          "price": 9.99,
+          "currency": "EUR",
+          "tax": "HT"
+        },
+        "yearly": {
+          "price": 99.99,
+          "currency": "EUR",
+          "tax": "HT"
+        }
+      }
+    }
+  ]
+}
+```
+
+### 6.2 Commander l'upgrade
+
+```
+POST /email/exchange/{organizationName}/service/{exchangeService}/account/{primaryEmailAddress}/upgrade
+```
+
+Body:
+```json
+{
+  "quota": "300Gi",
+  "duration": "monthly"
+}
+```
+
+Response:
+```json
+{
+  "orderId": "order-12345",
+  "orderUrl": "https://www.ovh.com/order/12345",
+  "status": "pending"
+}
+```
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Valider | Commander l'upgrade + Redirection vers paiement |
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal sans action |
+| Changement radio | Mettre à jour la sélection |
+
+---
+
+## 8. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `exchange_upgrade_modal_title` | Augmenter la capacité |
+| `exchange_upgrade_modal_confirm` | Êtes-vous certain de vouloir augmenter la capacité de votre compte Exchange à 300Gio ? |
+| `exchange_upgrade_modal_payment_type` | Type de paiement |
+| `exchange_upgrade_modal_monthly` | mensuel |
+| `exchange_upgrade_modal_yearly` | annuel |
+| `exchange_upgrade_modal_monthly_price` | 9,99 € HT/mois |
+| `exchange_upgrade_modal_yearly_price` | 99,99 € HT/an |
+| `exchange_upgrade_modal_submit` | Valider |
+| `exchange_upgrade_modal_cancel` | Annuler |
+| `exchange_upgrade_modal_success` | Commande d'upgrade créée avec succès |

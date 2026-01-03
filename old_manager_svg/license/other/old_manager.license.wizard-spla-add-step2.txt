@@ -1,0 +1,240 @@
+# Cahier des Charges : license/wizard-spla-add-step2
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.license.wizard-spla-add-step2.svg |
+| **NAV1** | license (Licences) |
+| **NAV2** | - |
+| **Type** | Page wizard étape 2/3 |
+| **Description** | Étape de sélection du produit Microsoft SPLA |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page pleine largeur (sans LEFT PANEL) |
+| RIGHT PANEL | 1392×765px |
+
+---
+
+## 3. HEADER
+
+### 3.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Ajouter une licence SPLA |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 3.2 Lien retour
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | ← Retour à la gestion des licenses |
+| Couleur | #0050D7 |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Structure
+
+| Étape | Numéro | Label | État |
+|-------|--------|-------|------|
+| Étape 1 | ✓ | Service | Complétée |
+| Étape 2 | 2 | Produit | Active |
+| Étape 3 | 3 | Validation | Pending |
+
+### 4.2 Connecteurs
+
+| Segment | Couleur |
+|---------|---------|
+| 1 → 2 | #0050D7 (complété) |
+| 2 → 3 | #E5E7EB (pending) |
+
+---
+
+## 5. CONTENU ÉTAPE 2 : PRODUIT
+
+### 5.1 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Sélectionnez le produit Microsoft |
+| Font-weight | 600 |
+
+### 5.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Choisissez le produit SPLA à associer à votre serveur : |
+
+---
+
+## 6. OPTIONS PRODUITS (Radio cards)
+
+### 6.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions par carte | 500×80px |
+| Espacement | 15px |
+
+### 6.2 Produits disponibles
+
+| Produit | Description | Détails | Prix |
+|---------|-------------|---------|------|
+| Windows Server Standard | Licence par cœur processeur | Min 8 cœurs/proc, 16 cœurs/serveur | 29,99 €/mois |
+| Windows Server Datacenter | Licence par cœur processeur - VM illimitées | Min 8 cœurs/proc, 16 cœurs/serveur | 149,99 €/mois |
+| SQL Server Standard | Licence par cœur processeur | Minimum 4 cœurs | 199,99 €/mois |
+| SQL Server Enterprise | Licence par cœur - Fonctionnalités avancées | Minimum 4 cœurs | 599,99 €/mois |
+
+### 6.3 État sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Border | 2px #0050D7 |
+| Radio | Rempli #0050D7 avec point blanc |
+
+### 6.4 État non sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #FFFFFF |
+| Border | 1px #E5E7EB |
+| Radio | Vide avec bordure #E5E7EB |
+
+---
+
+## 7. RÉCAPITULATIF (Sidebar)
+
+### 7.1 Container
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 350×200px |
+| Background | #DBEAFE |
+| Border radius | 8px |
+
+### 7.2 Titre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Récapitulatif |
+| Font-weight | 600 |
+| Couleur | #1E40AF |
+
+### 7.3 Informations
+
+| Label | Valeur exemple |
+|-------|----------------|
+| Service | ns5432109.ip-192-168-1.eu |
+| Produit | Windows Server Datacenter |
+| Nombre de cœurs | 16 cœurs |
+
+### 7.4 Total
+
+| Propriété | Valeur |
+|-----------|--------|
+| Séparateur | Ligne 1px #1E40AF opacity 0.3 |
+| Label | Total estimé |
+| Font-weight label | 600 |
+| Couleur label | #1E40AF |
+| Valeur | 149,99 € HT/mois |
+| Font-weight valeur | 600 |
+
+---
+
+## 8. NAVIGATION
+
+### 8.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Précédent | Outline | 120×44px | Gauche |
+| Suivant | Primary (#0050D7) | 120×44px | Droite |
+
+---
+
+## 9. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic produit | Sélection produit, mise à jour récap |
+| Clic Précédent | Retour étape 1 (Service) |
+| Clic Suivant | Aller étape 3 (Validation) |
+| Aucun produit sélectionné | Bouton Suivant désactivé |
+
+---
+
+## 10. APIS & ENDPOINTS
+
+### 10.1 Lister produits SPLA disponibles
+
+```
+GET /license/spla/products
+```
+
+Response:
+```json
+{
+  "products": [
+    {
+      "id": "windows-server-standard",
+      "name": "Windows Server Standard",
+      "description": "Licence par cœur processeur",
+      "minCores": 16,
+      "price": 29.99
+    },
+    {
+      "id": "windows-server-datacenter",
+      "name": "Windows Server Datacenter",
+      "description": "Licence par cœur processeur - VM illimitées",
+      "minCores": 16,
+      "price": 149.99
+    },
+    {
+      "id": "sql-server-standard",
+      "name": "SQL Server Standard",
+      "description": "Licence par cœur processeur",
+      "minCores": 4,
+      "price": 199.99
+    },
+    {
+      "id": "sql-server-enterprise",
+      "name": "SQL Server Enterprise",
+      "description": "Licence par cœur - Fonctionnalités avancées",
+      "minCores": 4,
+      "price": 599.99
+    }
+  ]
+}
+```
+
+---
+
+## 11. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `license_spla_step2_title` | Sélectionnez le produit Microsoft |
+| `license_spla_step2_desc` | Choisissez le produit SPLA à associer à votre serveur |
+| `license_spla_windows_standard` | Windows Server Standard |
+| `license_spla_windows_datacenter` | Windows Server Datacenter |
+| `license_spla_sql_standard` | SQL Server Standard |
+| `license_spla_sql_enterprise` | SQL Server Enterprise |
+| `license_spla_per_core` | Licence par cœur processeur |
+| `license_spla_min_cores` | Minimum X cœurs |
+| `license_spla_recap` | Récapitulatif |
+| `license_spla_service` | Service |
+| `license_spla_product` | Produit |
+| `license_spla_cores` | Nombre de cœurs |
+| `license_spla_total` | Total estimé |
+| `license_spla_previous` | Précédent |
+| `license_spla_next` | Suivant |

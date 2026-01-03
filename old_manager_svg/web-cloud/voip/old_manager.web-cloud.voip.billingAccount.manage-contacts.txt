@@ -1,0 +1,192 @@
+# Cahier des Charges : web-cloud/voip/billingAccount/manage-contacts
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.billingAccount.manage-contacts.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page listing éditable |
+| **Description** | Page de gestion des contacts (NIC admin, tech, facturation) par service |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px (avec liste groupes) |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Groupe sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Nom | ab12345-ovh-1 |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Gestion des contacts |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+### 4.2 Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Attribuez des droits à d'autres personnes pour la gestion de vos lignes, alias ou groupes. |
+| Couleur | #6B7280 |
+| Font-size | 12px |
+
+### 4.3 Bandeau info
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×40px |
+| Background | #DBEAFE |
+| Icône | ℹ️ |
+| Texte | Pour modifier le NIC administrateur ou facturation, merci de contacter le support. |
+| Lien | Contacter le support ↗ |
+| Couleur texte | #1E40AF |
+
+---
+
+## 5. DATAGRID CONTACTS
+
+### 5.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×350px |
+| Border | 1px #E5E7EB |
+| Border radius | 6px |
+
+### 5.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #F9FAFB |
+| Hauteur | 35px |
+
+### 5.3 Colonnes
+
+| Colonne | Position |
+|---------|----------|
+| Service | x: 20 |
+| NIC administrateur | x: 280 |
+| NIC technique | x: 480 |
+| NIC facturation | x: 680 |
+| Actions | x: 900 |
+
+### 5.4 Sections par type
+
+Les lignes sont regroupées par type avec un header de section :
+
+| Section | Background |
+|---------|------------|
+| Groupe | #E5E7EB (opacity 0.3) |
+| Ligne | #E5E7EB (opacity 0.3) |
+| Numéro | #E5E7EB (opacity 0.3) |
+
+### 5.5 Données exemple
+
+**Section Groupe :**
+| Service | NIC admin | NIC tech | NIC billing |
+|---------|-----------|----------|-------------|
+| ab12345-ovh-1 | ab12345-ovh | ab12345-ovh | ab12345-ovh |
+
+**Section Ligne :**
+| Service | NIC admin | NIC tech | NIC billing |
+|---------|-----------|----------|-------------|
+| +33 9 72 12 34 56 | ab12345-ovh | tech-user | ab12345-ovh |
+
+**Section Numéro :**
+| Service | NIC admin | NIC tech | NIC billing |
+|---------|-----------|----------|-------------|
+| +33 9 72 65 43 21 | ab12345-ovh | ab12345-ovh | ab12345-ovh |
+
+### 5.6 Bouton action
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 28×28px |
+| Icône | ✏️ (éditer) |
+| Border | 1px #E5E7EB |
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Lister les contacts par service
+
+```
+GET /telephony/{billingAccount}/serviceInfos
+```
+
+Response:
+```json
+{
+  "services": [
+    {
+      "serviceName": "ab12345-ovh-1",
+      "serviceType": "group",
+      "contactAdmin": "ab12345-ovh",
+      "contactTech": "ab12345-ovh",
+      "contactBilling": "ab12345-ovh"
+    },
+    {
+      "serviceName": "+33972123456",
+      "serviceType": "line",
+      "contactAdmin": "ab12345-ovh",
+      "contactTech": "tech-user",
+      "contactBilling": "ab12345-ovh"
+    }
+  ]
+}
+```
+
+### 6.2 Modifier le contact technique
+
+```
+PUT /telephony/{billingAccount}/service/{serviceName}/changeContact
+```
+
+Body:
+```json
+{
+  "contactTech": "new-tech-user"
+}
+```
+
+---
+
+## 7. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_contacts_title` | Gestion des contacts |
+| `voip_contacts_desc` | Attribuez des droits à d'autres personnes pour la gestion de vos lignes, alias ou groupes. |
+| `voip_contacts_info` | Pour modifier le NIC administrateur ou facturation, merci de contacter le support. |
+| `voip_contacts_support_link` | Contacter le support |
+| `voip_contacts_col_service` | Service |
+| `voip_contacts_col_admin` | NIC administrateur |
+| `voip_contacts_col_tech` | NIC technique |
+| `voip_contacts_col_billing` | NIC facturation |
+| `voip_contacts_col_actions` | Actions |
+| `voip_contacts_section_group` | Groupe |
+| `voip_contacts_section_line` | Ligne |
+| `voip_contacts_section_number` | Numéro |
+| `voip_contacts_action_edit` | Modifier les contacts |

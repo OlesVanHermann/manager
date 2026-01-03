@@ -1,0 +1,215 @@
+# Cahier des Charges : private-cloud/vmware/modal-security-add
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.private-cloud.vmware.modal-security-add.svg |
+| **NAV1** | private-cloud (Hosted Private Cloud) |
+| **NAV2** | vmware (VMware on OVHcloud) |
+| **Type** | Modal wizard 2 étapes |
+| **Description** | Modal pour ajouter une politique de sécurité (plage IP autorisée) |
+
+---
+
+## 2. MODAL
+
+### 2.1 Dimensions
+
+| Propriété | Valeur |
+|-----------|--------|
+| Largeur | 700px |
+| Hauteur | 450px |
+| Position | Centrée (x: 370, y: 200) |
+| Border radius | 8px |
+| Background | #FFFFFF |
+
+### 2.2 Overlay
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | rgba(0, 0, 0, 0.5) |
+
+---
+
+## 3. HEADER
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position Y | 30px |
+| Titre | Ajouter une politique de sécurité |
+| Font-size | 18px |
+| Font-weight | 600 |
+| Bouton fermeture | × (position x: 670) |
+
+---
+
+## 4. STEPPER
+
+### 4.1 Configuration
+
+| Propriété | Valeur |
+|-----------|--------|
+| Position Y | 80px |
+| Nombre d'étapes | 2 |
+
+### 4.2 Étapes
+
+| Étape | Label | État |
+|-------|-------|------|
+| 1 | Réseau | Active (#0050D7) |
+| 2 | Confirmation | Inactive (#E5E7EB) |
+
+### 4.3 Style stepper
+
+| Élément | Propriété | Valeur |
+|---------|-----------|--------|
+| Cercle actif | Fill | #0050D7 |
+| Cercle actif | Dimensions | r=12px |
+| Cercle inactif | Fill | #E5E7EB |
+| Ligne connexion | Stroke | #E5E7EB |
+| Ligne connexion | Stroke-width | 2px |
+| Ligne connexion | Largeur | ~240px |
+
+---
+
+## 5. FORMULAIRE (ÉTAPE 1)
+
+### 5.1 Champ Adresse IP ou bloc réseau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Adresse IP ou bloc réseau |
+| Font-size label | 12px |
+| Font-weight | 500 |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions input | 400×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Valeur exemple | 192.168.1.0/24 |
+
+### 5.2 Champ Description
+
+| Propriété | Valeur |
+|-----------|--------|
+| Label | Description (optionnel) |
+| Font-size label | 12px |
+| Font-weight | 500 |
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions input | 400×40px |
+| Border | 1px #E5E7EB |
+| Border radius | 4px |
+| Placeholder | Réseau interne bureaux |
+| Couleur placeholder | #6B7280 |
+
+---
+
+## 6. FOOTER
+
+### 6.1 Boutons
+
+| Bouton | Style | Dimensions | Position |
+|--------|-------|------------|----------|
+| Annuler | Outline (#E5E7EB) | 100×40px | Gauche (x: 0) |
+| Suivant → | Primary (#0050D7) | 120×40px | Droite (x: 540) |
+
+---
+
+## 7. COMPORTEMENT
+
+| Action | Résultat |
+|--------|----------|
+| Clic Annuler | Fermer modal sans action |
+| Clic × | Fermer modal |
+| Clic Suivant → | Passer à l'étape Confirmation |
+
+---
+
+## 8. VALIDATIONS
+
+| Champ | Règles |
+|-------|--------|
+| IP/Réseau | Obligatoire, format IP ou CIDR valide |
+| Description | Optionnel, max 255 caractères |
+
+### 8.1 Formats acceptés
+
+| Format | Exemple | Description |
+|--------|---------|-------------|
+| IP unique | 192.168.1.50 | Une seule adresse IP |
+| CIDR /8 | 10.0.0.0/8 | Bloc classe A |
+| CIDR /16 | 172.16.0.0/16 | Bloc classe B |
+| CIDR /24 | 192.168.1.0/24 | Bloc classe C |
+| CIDR /32 | 192.168.1.50/32 | IP unique (équivalent) |
+
+---
+
+## 9. APIS & ENDPOINTS
+
+### 9.1 Ajouter une politique de sécurité
+
+```
+POST /dedicatedCloud/{serviceName}/security/ipRange
+```
+
+Body:
+```json
+{
+  "ip": "192.168.1.0/24",
+  "description": "Réseau interne bureaux"
+}
+```
+
+Response:
+```json
+{
+  "taskId": "task-123456",
+  "ipRangeId": "range-001",
+  "status": "pending"
+}
+```
+
+### 9.2 Valider le format IP
+
+```
+POST /dedicatedCloud/{serviceName}/security/ipRange/validate
+```
+
+Body:
+```json
+{
+  "ip": "192.168.1.0/24"
+}
+```
+
+Response:
+```json
+{
+  "valid": true,
+  "type": "cidr",
+  "network": "192.168.1.0",
+  "mask": 24,
+  "addressCount": 256
+}
+```
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `vmware_security_add_title` | Ajouter une politique de sécurité |
+| `vmware_security_add_step_network` | Réseau |
+| `vmware_security_add_step_confirm` | Confirmation |
+| `vmware_security_add_ip` | Adresse IP ou bloc réseau |
+| `vmware_security_add_desc` | Description |
+| `vmware_security_add_optional` | optionnel |
+| `vmware_security_add_cancel` | Annuler |
+| `vmware_security_add_next` | Suivant → |
+| `vmware_security_add_invalid_ip` | Format IP invalide |
+| `vmware_security_add_required` | Ce champ est obligatoire |

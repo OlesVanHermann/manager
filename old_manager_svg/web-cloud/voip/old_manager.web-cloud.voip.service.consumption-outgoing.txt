@@ -1,0 +1,235 @@
+# Cahier des Charges : web-cloud/voip/service/consumption-outgoing
+
+## 1. VUE D'ENSEMBLE
+
+| Champ | Valeur |
+|-------|--------|
+| **Fichier SVG** | old_manager.web-cloud.voip.service.consumption-outgoing.svg |
+| **NAV1** | web-cloud |
+| **NAV2** | voip |
+| **Type** | Page listing |
+| **Description** | Page de consommation des appels sortants d'une ligne |
+
+---
+
+## 2. LAYOUT
+
+| Zone | Valeur |
+|------|--------|
+| Type | Page avec LEFT PANEL |
+| LEFT PANEL | 280px |
+| RIGHT PANEL | 1096×765px |
+
+---
+
+## 3. LEFT PANEL
+
+### 3.1 Service sélectionné
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #E8F0FE |
+| Numéro | +33 1 23 45 67 89 |
+| Description | Ligne principale |
+| Badge | Actif (#DEF7EC) |
+
+---
+
+## 4. RIGHT PANEL
+
+### 4.1 Titre page
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Consommation - Appels sortants |
+| Font-size | 18px |
+| Font-weight | 600 |
+
+---
+
+## 5. RÉSUMÉ DE CONSOMMATION
+
+### 5.1 Informations affichées
+
+| Information | Exemple |
+|-------------|---------|
+| Période | Période : 01/12/2025 - 31/12/2025 |
+| Appels inclus | Appels inclus dans le forfait : 245 appels - Durée totale : 12:34:56 |
+| Appels hors forfait | Appels hors forfait : 12 appels - Durée : 00:45:23 - Coût : 8.50 EUR HT |
+
+### 5.2 Bouton filtre
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Filtrer |
+| Style | Outline (#FFFFFF, border #E5E7EB) |
+| Dimensions | 100×32px |
+| Position | Droite |
+
+---
+
+## 6. DATAGRID APPELS SORTANTS
+
+### 6.1 Card
+
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | 1056×550px |
+| Border | 1px #E5E7EB |
+| Border radius | 8px |
+
+### 6.2 Header tableau
+
+| Propriété | Valeur |
+|-----------|--------|
+| Background | #F9FAFB |
+| Hauteur | 35px |
+| Border radius | 8px (haut) |
+
+### 6.3 Colonnes
+
+| Colonne | Position | Largeur |
+|---------|----------|---------|
+| Date | x: 16 | 184px |
+| Numéro appelé | x: 200 | 200px |
+| Durée | x: 400 | 150px |
+| Type | x: 550 | 150px |
+| Destination | x: 700 | 200px |
+| Prix HT | x: 900 | 156px |
+
+### 6.4 Style lignes
+
+| Propriété | Valeur |
+|-----------|--------|
+| Hauteur ligne | 45px |
+| Séparateur | Ligne 1px #E5E7EB |
+| Background | #FFFFFF |
+
+### 6.5 Données exemple
+
+| Date | Numéro appelé | Durée | Type | Destination | Prix HT |
+|------|---------------|-------|------|-------------|---------|
+| 02/01/2026 14:32 | +33 6 12 34 56 78 | 00:05:23 | Sortant | Mobile France | 0.00 EUR |
+| 02/01/2026 11:15 | +33 1 45 67 89 01 | 00:12:45 | Sortant | Fixe France | 0.00 EUR |
+| 02/01/2026 09:30 | +49 30 12345678 | 00:08:12 | Sortant | International | 2.45 EUR |
+| 01/01/2026 16:45 | +33 8 91 23 45 67 | 00:02:34 | Sortant | Spécial | 1.20 EUR |
+| 01/01/2026 14:20 | +33 6 98 76 54 32 | 00:15:00 | Sortant | Mobile France | 0.00 EUR |
+| 01/01/2026 10:10 | +33 1 23 45 67 00 | 00:03:45 | Sortant | Fixe France | 0.00 EUR |
+
+---
+
+## 7. PAGINATION
+
+### 7.1 Compteur
+
+| Propriété | Valeur |
+|-----------|--------|
+| Texte | Page 1 sur 15 |
+| Position | Gauche |
+| Font-size | 11px |
+| Couleur | #6B7280 |
+
+### 7.2 Navigation
+
+| Propriété | Valeur |
+|-----------|--------|
+| Style boutons | 28×28px, border radius 4px |
+| Bouton actif | Background #0050D7, texte blanc |
+| Bouton inactif | Background #FFFFFF, border #E5E7EB |
+| Pages affichées | 1, 2, 3 |
+
+---
+
+## 8. APIS & ENDPOINTS
+
+### 8.1 Obtenir le résumé de consommation
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/summary?period=2025-12
+```
+
+Response:
+```json
+{
+  "period": {
+    "start": "2025-12-01",
+    "end": "2025-12-31"
+  },
+  "included": {
+    "calls": 245,
+    "duration": "12:34:56"
+  },
+  "extra": {
+    "calls": 12,
+    "duration": "00:45:23",
+    "cost": 8.50
+  }
+}
+```
+
+### 8.2 Lister les appels sortants
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/outgoing?page=1&limit=10
+```
+
+Response:
+```json
+{
+  "calls": [
+    {
+      "id": "call-001",
+      "date": "2026-01-02T14:32:00Z",
+      "calledNumber": "+33612345678",
+      "duration": "00:05:23",
+      "type": "outgoing",
+      "destination": "Mobile France",
+      "priceExcludingTax": 0.00
+    }
+  ],
+  "totalPages": 15,
+  "currentPage": 1,
+  "totalCalls": 150
+}
+```
+
+### 8.3 Filtrer les appels
+
+```
+GET /telephony/{billingAccount}/line/{serviceName}/consumption/outgoing?destination=international&dateFrom=2026-01-01&dateTo=2026-01-31
+```
+
+---
+
+## 9. TYPES DE DESTINATION
+
+| Type | Description |
+|------|-------------|
+| Fixe France | Appels vers numéros fixes français |
+| Mobile France | Appels vers numéros mobiles français |
+| International | Appels vers l'étranger |
+| Spécial | Appels vers numéros spéciaux (08xx) |
+
+---
+
+## 10. TRADUCTIONS (i18n)
+
+| Clé | Valeur FR |
+|-----|-----------|
+| `voip_consumption_outgoing_title` | Consommation - Appels sortants |
+| `voip_consumption_outgoing_period` | Période : {start} - {end} |
+| `voip_consumption_outgoing_included` | Appels inclus dans le forfait : {calls} appels - Durée totale : {duration} |
+| `voip_consumption_outgoing_extra` | Appels hors forfait : {calls} appels - Durée : {duration} - Coût : {cost} EUR HT |
+| `voip_consumption_outgoing_filter` | Filtrer |
+| `voip_consumption_outgoing_col_date` | Date |
+| `voip_consumption_outgoing_col_number` | Numéro appelé |
+| `voip_consumption_outgoing_col_duration` | Durée |
+| `voip_consumption_outgoing_col_type` | Type |
+| `voip_consumption_outgoing_col_destination` | Destination |
+| `voip_consumption_outgoing_col_price` | Prix HT |
+| `voip_consumption_outgoing_type_outgoing` | Sortant |
+| `voip_consumption_outgoing_dest_landline` | Fixe France |
+| `voip_consumption_outgoing_dest_mobile` | Mobile France |
+| `voip_consumption_outgoing_dest_international` | International |
+| `voip_consumption_outgoing_dest_special` | Spécial |
+| `voip_consumption_outgoing_pagination` | Page {current} sur {total} |
