@@ -2,9 +2,10 @@
 PROMPT TARGET - SIDECAR LEFT (LEFT PANEL)
 ================================================================================
 
-Version: v3 (2026-01-01)
+Version: v4 (2026-01-04)
 Parent:  prompt_target_check.txt (specs layout)
 Changelog:
+- v4: Ajout règle sidecar NAV1 vs NAV2, structure complète avec ALL, fix NAV3b position
 - v3: Terminologie officielle NAV1-NAV4 avec positions fixes
 - v2: Ajout NAV3 selector en sidebar (section 3.5), mise à jour statuts
 - v1: Version initiale
@@ -49,6 +50,52 @@ RÈGLES DE POSITION :
 IMPORTANT :
 - NAV3 (Groupement) est TOUJOURS dans le LEFT PANEL, AU-DESSUS de la recherche
 - NAV4 (Fonction) est TOUJOURS dans le RIGHT PANEL (tabs principaux)
+
+--------------------------------------------------------------------------------
+## 0.1 RÈGLE SIDECAR : NAV1 vs NAV2
+--------------------------------------------------------------------------------
+
+| Page | Sidecar | Contenu |
+|------|---------|---------|
+| general NAV1 | **NON** | Dashboard univers (pas de liste services) |
+| general NAV2 | **OUI** | Liste services avec ALL en premier |
+
+**Exemples :**
+- `/web-cloud` (NAV1 general) → PAS de sidecar, dashboard Web Cloud
+- `/web-cloud/voip` (NAV2 general) → AVEC sidecar, liste des groupes VoIP
+- `/web-cloud/voip/line/{id}` (service) → AVEC sidecar, ligne sélectionnée
+
+--------------------------------------------------------------------------------
+## 0.2 STRUCTURE SIDECAR COMPLÈTE
+--------------------------------------------------------------------------------
+
+```
+┌─────────────────────────────────────┐
+│  NAV3a [Général] [Sites] [Expert]   │  ← NAV3a (TOUJOURS au-dessus)
+├─────────────────────────────────────┤
+│  🌍 Région: [EU ▾]                  │  ← Région (OPTIONNEL)
+├─────────────────────────────────────┤
+│  NAV3b [Lignes] [Numéros] [Fax]     │  ← NAV3b (OPTIONNEL, si existe)
+├─────────────────────────────────────┤
+│  🔍 Rechercher...                   │  ← Search
+├─────────────────────────────────────┤
+│  📋 ALL                        [12] │  ← ALL en 1er (compte total)
+├─────────────────────────────────────┤
+│  🌐 service1.example.com     [Actif]│  ← Services (scrollable)
+│  🌐 service2.example.com     [Actif]│
+├─────────────────────────────────────┤
+│  Page 1/N    ‹  1  2  3  ›          │  ← Pagination
+└─────────────────────────────────────┘
+```
+
+**Ordre strict (de haut en bas) :**
+1. NAV3a - Groupement principal (si applicable)
+2. Région - Sélecteur région (optionnel)
+3. NAV3b - Sous-groupement (optionnel)
+4. Recherche - Barre de recherche
+5. ALL - Item "Tous les services" avec compteur
+6. Liste - Services filtrés
+7. Pagination - Si > 20 items
 
 ================================================================================
 # 1. TABLEAU COMPARATIF DETAILLE
@@ -644,6 +691,34 @@ const TABS = [
 | Exemples | Domains, Emails | Hosting, VoIP |
 
 Voir prompt_target.web-cloud.hosting.txt pour l'implémentation complète.
+
+## 3.6 Deux types de sidecar
+
+### TYPE A : NAV3 simple
+
+Ordre du haut vers le bas :
+1. NAV3 (groupement unique)
+2. Region (optionnel)
+3. [Rechercher...]
+4. Tous les services (ALL en premier)
+5. Liste des services
+
+### TYPE B : NAV3 double (NAV3a + NAV3b)
+
+Ordre du haut vers le bas :
+1. NAV3a (groupement principal)
+2. Region (optionnel)
+3. NAV3b (sous-groupement)
+4. [Rechercher...]
+5. Tous les services (ALL en premier)
+6. Liste des services
+
+### Quand utiliser Type B
+
+| Critere | Type A | Type B |
+|---------|--------|--------|
+| Groupements | 1-3 | 4+ ou hierarchique |
+| Exemple | Emails, VoIP | Domains (zones/alldom), Hosting |
 
 ================================================================================
 # 4. TABS PATTERN

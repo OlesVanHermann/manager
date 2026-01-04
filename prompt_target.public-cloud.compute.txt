@@ -3,7 +3,7 @@
 # ============================================================================
 # NAV1: Public Cloud
 # NAV2: Compute
-# Version: 1.0
+# Version: 2.0 (2026-01-03)
 # ============================================================================
 
 ## 1. VUE D'ENSEMBLE
@@ -11,40 +11,45 @@
 ### 1.1 Positionnement
 - **NAV1** : Public Cloud (Header bleu #000E9C, 50px)
 - **NAV2** : Compute (Sous-header blanc, 40px) - Actif parmi [Projet, Compute, Storage, Databases, Containers, AI/ML, Network]
-- **NAV3** : Filtres dropdown dans sidecar (Region + Projet)
+- **NAV3** : General (filtres Region + Projet dans sidecar)
 - **NAV4** : Tabs contextuels dans RIGHT PANEL
 
 ### 1.2 Objectif
-Gestion des ressources de calcul : Instances, Images, SSH Keys, Flavors, et configurations associées.
+Gestion des ressources de calcul : Instances, Images, SSH Keys, Flavors, et configurations associees.
 
 ### 1.3 URL Pattern
 ```
-/public-cloud/compute                           → Dashboard (General ALL)
-/public-cloud/compute/instances                 → Liste Instances
-/public-cloud/compute/images                    → Liste Images
-/public-cloud/compute/ssh-keys                  → Liste SSH Keys
-/public-cloud/compute/flavors                   → Catalogue Flavors
-/public-cloud/compute/instance/{instanceId}     → Détail instance
-/public-cloud/compute/image/{imageId}           → Détail image
+/public-cloud/compute                           -> Dashboard (Tous les services)
+/public-cloud/compute/instances                 -> Liste Instances
+/public-cloud/compute/images                    -> Liste Images
+/public-cloud/compute/ssh-keys                  -> Liste SSH Keys
+/public-cloud/compute/flavors                   -> Catalogue Flavors
+/public-cloud/compute/instance/{instanceId}     -> Detail instance
+/public-cloud/compute/image/{imageId}           -> Detail image
 ```
 
 ---
 
 ## 2. STRUCTURE NAV3 (SIDECAR - LEFT PANEL 280px)
 
-### 2.1 Filtres (haut de sidecar)
+### 2.1 Structure Sidecar
 ```
-┌───────────────────────┐
-│ NAV3 - Filtres        │
-│ [🌍 Region: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
-│ [🗂️ Projet: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
-├───────────────────────┤
-│ 🔍 Rechercher...      │
-├───────────────────────┤
-│  📊 General (ALL)     │  ← Toujours présent, retour dashboard
-│  ─────────────────    │
-│  (liste instances)    │  ← Filtrée par NAV3
-└───────────────────────┘
++-------------------------+
+| NAV3: [General*]        |  <- Groupement (un seul)
++-------------------------+
+| [Region: ALL         v] |  <- Dropdown Region + x si != ALL
+| [Projet: ALL         v] |  <- Dropdown Projet + x si != ALL
++-------------------------+
+| [Rechercher...]         |
++-------------------------+
+| Tous les services    <  |  <- Premier = vue agregee (dashboard)
+| -------------------     |
+| web-server-prod         |
+| api-server-01           |
+| db-server               |
+| worker-01               |
+| ...                     |
++-------------------------+
 ```
 
 ### 2.2 Dropdown Region
@@ -52,78 +57,78 @@ Source: `/api/regions.json`
 
 | Groupe | Options |
 |--------|---------|
-| (défaut) | 🌍 ALL |
+| (defaut) | ALL |
 | EUROPE | EU-West (PAR.FR), EU-West (GRA.FR), EU-West (RBX.FR), EU-Central (SBG.FR), EU-Central (LIM.DE), EU-West (ERI.UK), EU-East (WAW.PL), EU-South (MIL.IT) |
-| EUROPE SOUVERAIN | EU-West (RBX.FR-SOV) 🛡️SNC, EU-Central (SBG.FR-SOV) 🛡️SNC, EU-West (GRA.FR-SOV) 🛡️SNC, EU-West (PAR.FR-SOV) 🛡️SNC, EU-South (MIL.IT-SOV) 🛡️G5 |
+| EUROPE SOUVERAIN | EU-West (RBX.FR-SOV) SNC, EU-Central (SBG.FR-SOV) SNC, EU-West (GRA.FR-SOV) SNC, EU-West (PAR.FR-SOV) SNC, EU-South (MIL.IT-SOV) G5 |
 | NORTH AMERICA | US-East (VIN.US), US-West (HIL.US), CA-East (BHS.CA), CA-East (TOR.CA) |
 | ASIA PACIFIC | AP-Southeast (SGP.SG), AP-Southeast (SYD.AU), AP-South (MUM.IN) |
 
 ### 2.3 Dropdown Projet
-- **ALL** : Tous les projets (défaut)
+- **ALL** : Tous les projets (defaut)
 - Liste dynamique des projets de l'utilisateur
 
 ### 2.4 Liste services (sidecar)
-Affiche toutes les instances filtrées par NAV3 :
-- 🖥️ web-server-prod
-- 🖥️ api-server-01
-- 🖥️ db-server
-- 🖥️ worker-01
+Affiche toutes les instances filtrees par NAV3 :
+- web-server-prod
+- api-server-01
+- db-server
+- worker-01
 - ...
 
 ---
 
 ## 3. STRUCTURE NAV4 (RIGHT PANEL - TABS)
 
-### 3.1 NAV4 - Vue General (ALL) sélectionné dans sidecar
+### 3.1 NAV4 - Vue "Tous les services" (dashboard)
 ```
 [General] Instances  Images  SSH Keys  Flavors
 ```
 
 | Tab | Description | Action |
 |-----|-------------|--------|
-| **General** | Dashboard récapitulatif | Vue par défaut |
-| **Instances** | Liste toutes instances | [+ Créer] |
+| **General** | Dashboard recapitulatif | Vue par defaut |
+| **Instances** | Liste toutes instances | [+ Creer] |
 | **Images** | Liste images (OS, snapshots, custom) | [+ Importer] |
-| **SSH Keys** | Liste clés SSH | [+ Ajouter] |
+| **SSH Keys** | Liste cles SSH | [+ Ajouter] |
 | **Flavors** | Catalogue des types d'instances | Consultation |
 
-### 3.2 NAV4 - Instance sélectionnée dans sidecar
+### 3.2 NAV4 - Instance selectionnee dans sidecar
 ```
-[General]  IAM   KMS   Observabilité  Volumes  Network  Console
+[General]  IAM   KMS   Observabilite  Volumes  Network  Console
 ```
 
 | Tab | Description |
 |-----|-------------|
 | **General** | Informations instance, actions |
-| **IAM** | Permissions, rôles |
+| **IAM** | Permissions, roles |
 | **KMS** | Chiffrement disques |
-| **Observabilité** | Métriques CPU/RAM/Disk/Network |
-| **Volumes** | Volumes attachés |
-| **Network** | Interfaces réseau, IPs, Security Groups |
-| **Console** | Console VNC/série |
+| **Observabilite** | Metriques CPU/RAM/Disk/Network |
+| **Volumes** | Volumes attaches |
+| **Network** | Interfaces reseau, IPs, Security Groups |
+| **Console** | Console VNC/serie |
 
 ---
 
 ## 4. TYPES DE RESSOURCES COMPUTE
 
-### 4.1 Instances (🖥️)
+### 4.1 Instances
 - **Description** : Machines virtuelles
 - **Types** : General Purpose, CPU Optimized, RAM Optimized, GPU
-- **États** : ACTIVE, SHUTOFF, BUILD, ERROR, RESCUE
-- **Actions** : Start, Stop, Reboot, Rescue, Rebuild, Resize, Snapshot, Delete
+- **Etats** : ACTIVE, SHUTOFF, BUILD, ERROR, RESCUE, SHELVED
+- **Actions** : Start, Stop, Reboot, Shelve, Unshelve, Rescue, Backup, Resize, Delete, Edit, Reinstall
 
-### 4.2 Images (💿)
-- **Types** : 
+### 4.2 Images
+- **Types** :
   - Public (OS officiels : Ubuntu, Debian, CentOS, Windows...)
   - Private (snapshots, imports)
-  - Shared (partagées entre projets)
-- **Actions** : Créer instance, Supprimer (private only)
+  - Shared (partagees entre projets)
+- **Actions** : Creer instance, Supprimer (private only)
 
-### 4.3 SSH Keys (🔑)
-- **Description** : Clés publiques pour accès SSH
+### 4.3 SSH Keys
+- **Description** : Cles publiques pour acces SSH
 - **Actions** : Ajouter, Supprimer
 
-### 4.4 Flavors (📐)
+### 4.4 Flavors
 - **Description** : Types/tailles d'instances disponibles
 - **Familles** :
   - **b2-** : Balanced (general purpose)
@@ -137,195 +142,209 @@ Affiche toutes les instances filtrées par NAV3 :
 
 ## 5. CONTENU PAR TAB
 
-### 5.1 Dashboard (General ALL)
+### 5.1 Dashboard (Tous les services)
 ```
-┌─────────────────────────────────────────────────────────┐
-│ Dashboard Compute                                       │
-│                                                         │
-│ ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
-│ │    26    │  │    18    │  │     8    │  │    12    │ │
-│ │Instances │  │ 🟢 Active│  │ ⚪ Stopped│  │ SSH Keys │ │
-│ └──────────┘  └──────────┘  └──────────┘  └──────────┘ │
-│                                                         │
-│ Instances par région                                    │
-│ ─────────────────────────────────────────               │
-│ • GRA: 15 instances (12 active)                        │
-│ • SBG: 8 instances (5 active)                          │
-│ • BHS: 3 instances (1 active)                          │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| Dashboard Compute                                          |
+|                                                            |
+| +----------+  +----------+  +----------+  +----------+     |
+| |    26    |  |    18    |  |     8    |  |    12    |     |
+| |Instances |  | Active   |  | Stopped  |  | SSH Keys |     |
+| +----------+  +----------+  +----------+  +----------+     |
+|                                                            |
+| Instances par region                                       |
+| -------------------------------------------                |
+| - GRA: 15 instances (12 active)                           |
+| - SBG: 8 instances (5 active)                             |
+| - BHS: 3 instances (1 active)                             |
++-----------------------------------------------------------+
 ```
 
 ### 5.2 Liste Instances
 ```
-┌─────────────────────────────────────────────────────────┐
-│ Instances                               [+ Créer]       │
-│                                                         │
-│ Nom            │ Projet │ Région │ Flavor │ IP      │ ⋮ │
-│ ───────────────┼────────┼────────┼────────┼─────────┼───│
-│ web-server-prod│ Prod   │ GRA    │ b2-15  │ 1.2.3.4 │ ⋮ │
-│ api-server-01  │ Prod   │ GRA    │ b2-7   │ 1.2.3.5 │ ⋮ │
-│ db-server      │ Prod   │ GRA    │ r2-30  │ 1.2.3.6 │ ⋮ │
-│ worker-01      │ Dev    │ SBG    │ c2-15  │ 5.6.7.8 │ ⋮ │
-│                                                         │
-│ Affichage 1-4 sur 26                          < 1 2 3 > │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| Instances                               [+ Creer]          |
+|                                                            |
+| Nom            | Projet | Region | Flavor | Statut | ...  |
+| ---------------+--------+--------+--------+--------+------ |
+| web-server-prod| Prod   | GRA    | b2-15  | Active | ...  |
+| api-server-01  | Prod   | GRA    | b2-7   | Active | ...  |
+| db-server      | Prod   | GRA    | r2-30  | Active | ...  |
+| worker-01      | Dev    | SBG    | c2-15  | Stopped| ...  |
+|                                                            |
+| Affichage 1-4 sur 26                          < 1 2 3 >   |
++-----------------------------------------------------------+
 ```
 
 ### 5.3 Liste Images
 ```
-┌─────────────────────────────────────────────────────────┐
-│ Images                                  [+ Importer]    │
-│                                                         │
-│ [Toutes] [Public] [Private] [Shared]                   │
-│                                                         │
-│ Nom                │ Type    │ OS      │ Taille │ ⋮    │
-│ ───────────────────┼─────────┼─────────┼────────┼──────│
-│ Ubuntu 24.04 LTS   │ Public  │ Linux   │ 2.5 Go │ ⋮    │
-│ Debian 12          │ Public  │ Linux   │ 2.0 Go │ ⋮    │
-│ Windows Server 2022│ Public  │ Windows │ 15 Go  │ ⋮    │
-│ snap-web-prod-01   │ Private │ Linux   │ 8.0 Go │ ⋮    │
-│ custom-app-image   │ Private │ Linux   │ 5.0 Go │ ⋮    │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| Images                                  [+ Importer]       |
+|                                                            |
+| [Toutes] [Public] [Private] [Shared]                      |
+|                                                            |
+| Nom                | Type    | OS      | Taille | ...     |
+| -------------------+---------+---------+--------+-------  |
+| Ubuntu 24.04 LTS   | Public  | Linux   | 2.5 Go | ...     |
+| Debian 12          | Public  | Linux   | 2.0 Go | ...     |
+| Windows Server 2022| Public  | Windows | 15 Go  | ...     |
+| snap-web-prod-01   | Private | Linux   | 8.0 Go | ...     |
++-----------------------------------------------------------+
 ```
 
 ### 5.4 Liste SSH Keys
 ```
-┌─────────────────────────────────────────────────────────┐
-│ SSH Keys                                [+ Ajouter]     │
-│                                                         │
-│ Nom             │ Fingerprint              │ Région │ ⋮ │
-│ ────────────────┼──────────────────────────┼────────┼───│
-│ deploy-key      │ SHA256:abc123def456...   │ Global │ ⋮ │
-│ dev-laptop      │ SHA256:xyz789ghi012...   │ Global │ ⋮ │
-│ ci-cd-key       │ SHA256:mno345pqr678...   │ GRA    │ ⋮ │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| SSH Keys                                [+ Ajouter]        |
+|                                                            |
+| Nom             | Fingerprint              | Region | ...  |
+| ----------------+--------------------------+--------+----- |
+| deploy-key      | SHA256:abc123def456...   | Global | ...  |
+| dev-laptop      | SHA256:xyz789ghi012...   | Global | ...  |
+| ci-cd-key       | SHA256:mno345pqr678...   | GRA    | ...  |
++-----------------------------------------------------------+
 ```
 
 ### 5.5 Catalogue Flavors
 ```
-┌─────────────────────────────────────────────────────────┐
-│ Flavors (Types d'instances)                             │
-│                                                         │
-│ [Tous] [General] [CPU] [RAM] [GPU] [Disk]              │
-│                                                         │
-│ Nom     │ vCPU │ RAM    │ Disk   │ Prix/h  │ Dispo    │
-│ ────────┼──────┼────────┼────────┼─────────┼──────────│
-│ b2-7    │ 2    │ 7 Go   │ 50 Go  │ 0.02€   │ GRA, SBG │
-│ b2-15   │ 4    │ 15 Go  │ 100 Go │ 0.04€   │ GRA, SBG │
-│ b2-30   │ 8    │ 30 Go  │ 200 Go │ 0.08€   │ GRA, SBG │
-│ c2-7    │ 2    │ 7 Go   │ 50 Go  │ 0.025€  │ GRA      │
-│ c2-15   │ 4    │ 15 Go  │ 100 Go │ 0.05€   │ GRA      │
-│ r2-30   │ 2    │ 30 Go  │ 50 Go  │ 0.045€  │ GRA, SBG │
-│ r2-60   │ 4    │ 60 Go  │ 100 Go │ 0.09€   │ GRA      │
-│ t1-45   │ 4    │ 45 Go  │ 200 Go │ 0.90€   │ GRA      │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| Flavors (Types d'instances)                                |
+|                                                            |
+| [Tous] [General] [CPU] [RAM] [GPU] [Disk]                 |
+|                                                            |
+| Nom     | vCPU | RAM    | Disk   | Prix/h  | Dispo        |
+| --------+------+--------+--------+---------+------------- |
+| b2-7    | 2    | 7 Go   | 50 Go  | 0.02E   | GRA, SBG     |
+| b2-15   | 4    | 15 Go  | 100 Go | 0.04E   | GRA, SBG     |
+| c2-7    | 2    | 7 Go   | 50 Go  | 0.025E  | GRA          |
+| r2-30   | 2    | 30 Go  | 50 Go  | 0.045E  | GRA, SBG     |
+| t1-45   | 4    | 45 Go  | 200 Go | 0.90E   | GRA          |
++-----------------------------------------------------------+
 ```
 
-### 5.6 Détail Instance - General
+### 5.6 Detail Instance - General
 ```
-┌─────────────────────────────────────────────────────────┐
-│ ← Retour   web-server-prod                              │
-├─────────────────────────────────────────────────────────┤
-│ [General] IAM  KMS  Observabilité  Volumes  Network  Console │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│ ┌───────────────────────┐ ┌───────────────────────────┐ │
-│ │ Informations          │ │ Réseau                    │ │
-│ ├───────────────────────┤ ├───────────────────────────┤ │
-│ │ Nom: web-server-prod  │ │ IP Publique: 1.2.3.4     │ │
-│ │ ID: inst-a1b2c3d4     │ │ IP Privée: 10.0.0.5      │ │
-│ │ Projet: Prod          │ │ MAC: fa:16:3e:xx:xx:xx   │ │
-│ │ Région: GRA           │ │                           │ │
-│ │ Flavor: b2-15         │ │ [Ajouter IP]             │ │
-│ │ Image: Ubuntu 24.04   │ └───────────────────────────┘ │
-│ │ Statut: 🟢 ACTIVE     │                               │
-│ │ Créé: 01/12/2025      │ ┌───────────────────────────┐ │
-│ │ SSH Key: deploy-key   │ │ Actions                   │ │
-│ └───────────────────────┘ ├───────────────────────────┤ │
-│                           │ [▶ Start]  [⏹ Stop]       │ │
-│                           │ [🔄 Reboot] [🛟 Rescue]   │ │
-│                           │ [📐 Resize] [📸 Snapshot] │ │
-│                           │ [🔧 Rebuild][🗑️ Delete]   │ │
-│                           └───────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| <- Retour   web-server-prod                   ACTIVE      |
++-----------------------------------------------------------+
+| [General] IAM  KMS  Observabilite  Volumes  Network Console|
++-----------------------------------------------------------+
+|                                                            |
+| +------------------------+ +---------------------------+   |
+| | Informations           | | Reseau                    |   |
+| +------------------------+ +---------------------------+   |
+| | Nom: web-server-prod   | | IP Pub: 1.2.3.4          |   |
+| | ID: inst-a1b2c3d4      | | IP Priv: 10.0.0.5        |   |
+| | Projet: Prod           | |                           |   |
+| | Region: GRA            | | [Ajouter IP]             |   |
+| | Flavor: b2-15          | +---------------------------+   |
+| | Image: Ubuntu 24.04    |                                 |
+| | SSH Key: deploy-key    | +---------------------------+   |
+| | Cree: 01/12/2025       | | Actions                   |   |
+| +------------------------+ +---------------------------+   |
+|                            | [Stop] [Reboot]           |   |
+|                            | [Resize] [Snap]           |   |
+|                            | [Supprimer]               |   |
+|                            +---------------------------+   |
++-----------------------------------------------------------+
 ```
 
-### 5.7 Détail Instance - Observabilité
+### 5.7 Detail Instance - Observabilite
 ```
-┌─────────────────────────────────────────────────────────┐
-│ ← Retour   web-server-prod                              │
-├─────────────────────────────────────────────────────────┤
-│ General  IAM  KMS  [Observabilité]  Volumes  Network  Console │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│ Période: [Dernière heure ▼]                            │
-│                                                         │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ CPU Usage                                           │ │
-│ │     ▄▄▄▄                                            │ │
-│ │ ▄▄▄█████▄▄▄▄▄▄▄▄▄▄▄▄                              │ │
-│ │ 0%────────────────────100%     Avg: 35%  Max: 78%  │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ Memory Usage                                        │ │
-│ │ █████████████████████████████                      │ │
-│ │ 0%────────────────────100%     Avg: 62%  Max: 75%  │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ Network I/O                                         │ │
-│ │ IN:  ████░░░░░░  450 Mbps                          │ │
-│ │ OUT: ██░░░░░░░░  180 Mbps                          │ │
-│ └─────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| <- Retour   web-server-prod                   ACTIVE      |
++-----------------------------------------------------------+
+| General  IAM  KMS  [Observabilite]  Volumes  Network Console|
++-----------------------------------------------------------+
+|                                                            |
+| Periode: [Derniere heure v]                               |
+|                                                            |
+| +-------------------------------------------------------+ |
+| | CPU Usage                             Avg:35% Max:78% | |
+| |     ####                                              | |
+| | ######## ############################################  | |
+| +-------------------------------------------------------+ |
+| +-------------------------------------------------------+ |
+| | Memory Usage                          Avg:62% Max:75% | |
+| | ########################### ..........                | |
+| +-------------------------------------------------------+ |
+| +-------------------------------------------------------+ |
+| | Network I/O                                           | |
+| | IN:  #### .......  450 Mbps                          | |
+| | OUT: ## .........  180 Mbps                          | |
+| +-------------------------------------------------------+ |
++-----------------------------------------------------------+
 ```
 
-### 5.8 Détail Instance - Volumes
+### 5.8 Detail Instance - Volumes
 ```
-┌─────────────────────────────────────────────────────────┐
-│ ← Retour   web-server-prod                              │
-├─────────────────────────────────────────────────────────┤
-│ General  IAM  KMS  Observabilité  [Volumes]  Network  Console │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│ Volumes attachés                        [+ Attacher]    │
-│                                                         │
-│ Nom           │ Type       │ Taille │ Device    │ ⋮    │
-│ ──────────────┼────────────┼────────┼───────────┼──────│
-│ boot-disk     │ High-speed │ 50 Go  │ /dev/sda  │ ⋮    │
-│ data-volume   │ Classic    │ 200 Go │ /dev/sdb  │ ⋮    │
-│ backup-vol    │ Classic    │ 100 Go │ /dev/sdc  │ ⋮    │
-│                                                         │
-│ Actions: Détacher, Snapshot, Redimensionner            │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| <- Retour   web-server-prod                   ACTIVE      |
++-----------------------------------------------------------+
+| General  IAM  KMS  Observabilite  [Volumes]  Network Console|
++-----------------------------------------------------------+
+|                                                            |
+| Volumes attaches (2)                       [+ Attacher]   |
+| +-------------------------------------------------------+ |
+| | Nom            | Taille | Mount    | Actions          | |
+| +----------------+--------+----------+------------------+ |
+| | data-vol-01    | 100 Go | /dev/vdb | [Detacher]       | |
+| | logs-vol       | 50 Go  | /dev/vdc | [Detacher]       | |
+| +-------------------------------------------------------+ |
+|                                                            |
++-----------------------------------------------------------+
 ```
 
-### 5.9 Détail Instance - Network
+### 5.9 Detail Instance - Network
 ```
-┌─────────────────────────────────────────────────────────┐
-│ ← Retour   web-server-prod                              │
-├─────────────────────────────────────────────────────────┤
-│ General  IAM  KMS  Observabilité  Volumes  [Network]  Console │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│ Interfaces réseau                                       │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ eth0 (Public)                                       │ │
-│ │ IP: 1.2.3.4 │ MAC: fa:16:3e:xx:xx:xx               │ │
-│ │ Network: Ext-Net                                    │ │
-│ └─────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ eth1 (Private)                                      │ │
-│ │ IP: 10.0.0.5 │ MAC: fa:16:3e:yy:yy:yy              │ │
-│ │ Network: my-private-net                             │ │
-│ └─────────────────────────────────────────────────────┘ │
-│                                                         │
-│ Security Groups                                         │
-│ ─────────────────────────────────────────               │
-│ • default (22/tcp, 80/tcp, 443/tcp)                    │
-│ • web-servers (80/tcp, 443/tcp from 0.0.0.0/0)        │
-│                                                         │
-│ [Gérer Security Groups]  [Ajouter interface]           │
-└─────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| <- Retour   web-server-prod                   ACTIVE      |
++-----------------------------------------------------------+
+| General  IAM  KMS  Observabilite  Volumes  [Network] Console|
++-----------------------------------------------------------+
+|                                                            |
+| +------------------------+  +---------------------------+ |
+| | IP Publiques           |  | IP Privees                | |
+| +------------------------+  +---------------------------+ |
+| | IPv4: 51.210.10.25     |  | net-prod: 10.0.1.5       | |
+| | IPv6: 2001:41d0::1     |  |                           | |
+| |                        |  | [+ Attacher reseau]      | |
+| +------------------------+  +---------------------------+ |
+|                                                            |
+| Security Groups                           [+ Ajouter]     |
+| +-------------------------------------------------------+ |
+| | default     | 3 regles | Inbound/Outbound            | |
+| +-------------------------------------------------------+ |
++-----------------------------------------------------------+
+```
+
+### 5.10 Detail Instance - Console
+```
++-----------------------------------------------------------+
+| <- Retour   web-server-prod                   ACTIVE      |
++-----------------------------------------------------------+
+| General  IAM  KMS  Observabilite  Volumes  Network [Console]|
++-----------------------------------------------------------+
+|                                                            |
+| Console                                                    |
+|                                                            |
+| +-----------------------------------------------------+   |
+| | Console VNC                                         |   |
+| |                                                     |   |
+| | Accedez a la console graphique de votre instance    |   |
+| | via VNC.                                            |   |
+| |                                                     |   |
+| |             [Ouvrir la console VNC]                 |   |
+| +-----------------------------------------------------+   |
+|                                                            |
+| +-----------------------------------------------------+   |
+| | Console Serie                                       |   |
+| |                                                     |   |
+| | Accedez a la console serie pour debug.             |   |
+| |                                                     |   |
+| |             [Ouvrir la console serie]              |   |
+| +-----------------------------------------------------+   |
++-----------------------------------------------------------+
 ```
 
 ---
@@ -345,6 +364,8 @@ POST   /cloud/project/{projectId}/instance/{instanceId}/rescue
 POST   /cloud/project/{projectId}/instance/{instanceId}/resize
 POST   /cloud/project/{projectId}/instance/{instanceId}/snapshot
 POST   /cloud/project/{projectId}/instance/{instanceId}/rebuild
+POST   /cloud/project/{projectId}/instance/{instanceId}/shelve
+POST   /cloud/project/{projectId}/instance/{instanceId}/unshelve
 ```
 
 ### 6.2 Images
@@ -369,7 +390,7 @@ GET    /cloud/project/{projectId}/flavor
 GET    /cloud/project/{projectId}/flavor/{flavorId}
 ```
 
-### 6.5 Métriques (Observabilité)
+### 6.5 Metriques (Observabilite)
 ```
 GET    /cloud/project/{projectId}/instance/{instanceId}/monitoring
 ```
@@ -383,42 +404,42 @@ GET    /cloud/project/{projectId}/instance/{instanceId}/monitoring
 |---------|-------------|
 | Nom | Nom de l'instance (lien) |
 | Projet | Nom du projet |
-| Région | Code région (GRA, SBG...) |
+| Region | Code region (GRA, SBG...) |
 | Flavor | Type d'instance (b2-15...) |
-| IP | IP publique principale |
 | Statut | Badge (ACTIVE, SHUTOFF...) |
-| ⋮ | Menu actions |
+| ... | Menu actions |
 
 ### 7.2 Badges statut Instance
-| Statut | Couleur | Icône |
-|--------|---------|-------|
-| ACTIVE | Vert | 🟢 |
-| SHUTOFF | Gris | ⚪ |
-| BUILD | Jaune | 🟡 |
-| ERROR | Rouge | 🔴 |
-| RESCUE | Orange | 🟠 |
-| REBOOT | Jaune | 🟡 |
+| Statut | Couleur |
+|--------|---------|
+| ACTIVE | Vert |
+| SHUTOFF | Gris |
+| BUILD | Jaune |
+| ERROR | Rouge |
+| RESCUE | Orange |
+| SHELVED | Bleu |
 
-### 7.3 Cards métriques
+### 7.3 Cards metriques
 ```
-┌─────────────────────────────────────────────────────┐
-│ CPU Usage                                           │
-│     ▄▄▄▄                                            │
-│ ▄▄▄█████▄▄▄▄▄▄▄▄▄▄▄▄                              │
-│ 0%────────────────────100%     Avg: 35%  Max: 78%  │
-└─────────────────────────────────────────────────────┘
++-------------------------------------------------------+
+| CPU Usage                             Avg:35% Max:78% |
+|     ####                                              |
+| ######## ############################################  |
++-------------------------------------------------------+
 ```
 
 ### 7.4 Boutons actions Instance
 ```
-[▶ Start]   - Démarrer (si SHUTOFF)
-[⏹ Stop]    - Arrêter (si ACTIVE)
-[🔄 Reboot] - Redémarrer
-[🛟 Rescue] - Mode rescue
-[📐 Resize] - Changer flavor
-[📸 Snapshot] - Créer image
-[🔧 Rebuild] - Réinstaller
-[🗑️ Delete] - Supprimer
+[Start]    - Demarrer (si SHUTOFF)
+[Stop]     - Arreter (si ACTIVE)
+[Reboot]   - Redemarrer
+[Shelve]   - Mettre en veille
+[Rescue]   - Mode rescue
+[Resize]   - Changer flavor
+[Snapshot] - Creer image
+[Edit]     - Modifier nom
+[Reinstall]- Reinstaller
+[Delete]   - Supprimer
 ```
 
 ---
@@ -426,67 +447,127 @@ GET    /cloud/project/{projectId}/instance/{instanceId}/monitoring
 ## 8. COMPORTEMENTS
 
 ### 8.1 Filtrage NAV3
-- Changement Region → Filtre liste instances + dashboard
-- Changement Projet → Filtre liste instances + dashboard
+- Changement Region -> Filtre liste instances + dashboard
+- Changement Projet -> Filtre liste instances + dashboard
 - Combinaison AND des deux filtres
 
-### 8.2 Navigation sidecar → RIGHT PANEL
-- Clic "General (ALL)" → NAV4 = [General] Instances Images SSH Keys Flavors
-- Clic instance → NAV4 = [General] IAM KMS Observabilité Volumes Network Console
+### 8.2 Navigation sidecar -> RIGHT PANEL
+- Clic "Tous les services" -> NAV4 = [General] Instances Images SSH Keys Flavors
+- Clic instance -> NAV4 = [General] IAM KMS Observabilite Volumes Network Console
 
 ### 8.3 Actions instance
-- Actions désactivées selon statut (ex: Stop désactivé si SHUTOFF)
-- Confirmation requise pour Delete, Rebuild
-- Refresh automatique après action
+- Actions desactivees selon statut (ex: Stop desactive si SHUTOFF)
+- Confirmation requise pour Delete, Reinstall
+- Refresh automatique apres action
 
 ### 8.4 Console VNC
 - Ouverture dans nouvel onglet ou modal
-- Token temporaire pour accès sécurisé
+- Token temporaire pour acces securise
 
 ---
 
-## 9. MODALS
+## 9. MODALS (13 variantes)
 
-### 9.1 Modal Créer Instance
-Champs :
-- Projet (dropdown)
-- Région (dropdown)
-- Nom (text)
-- Image (dropdown avec recherche)
-- Flavor (sélecteur avec specs)
-- SSH Key (dropdown multi-select)
-- Network (dropdown)
-- Volume boot (taille, type)
-- User data (textarea, optionnel)
+### 9.1 Modal Stop Instance
+- **Titre** : Arreter l'instance
+- **Champs** : Aucun
+- **Warning** : Instance sera arretee mais reste facturee. Utiliser Shelve pour ne plus etre facture.
+- **Boutons** : [Annuler] [Arreter]
 
-### 9.2 Modal Resize
-- Flavor actuel (lecture seule)
-- Nouveau flavor (dropdown filtré par compatibilité)
-- Avertissement : redémarrage requis
+### 9.2 Modal Start Instance
+- **Titre** : Demarrer l'instance
+- **Champs** : Aucun
+- **Info** : L'instance sera redemarree et vous serez de nouveau facture.
+- **Boutons** : [Annuler] [Demarrer]
 
-### 9.3 Modal Snapshot
-- Nom du snapshot
-- Description (optionnel)
+### 9.3 Modal Reboot Instance
+- **Titre** : Redemarrer l'instance
+- **Champs** :
+  - Type de redemarrage (Soft ACPI / Hard reset)
+- **Boutons** : [Annuler] [Redemarrer]
+
+### 9.4 Modal Shelve Instance
+- **Titre** : Mettre en veille (Shelve)
+- **Champs** : Aucun
+- **Info** : Vous ne serez plus facture pour les ressources compute, mais le stockage restera facture.
+- **Boutons** : [Annuler] [Mettre en veille]
+
+### 9.5 Modal Unshelve Instance
+- **Titre** : Reactiver l'instance (Unshelve)
+- **Champs** : Aucun
+- **Info** : La facturation des ressources compute reprendra.
+- **Boutons** : [Annuler] [Reactiver]
+
+### 9.6 Modal Rescue Mode
+- **Titre** : Mode Rescue
+- **Champs** :
+  - Image de rescue (dropdown)
+- **Info** : L'instance demarrera sur une image temporaire. Vos disques seront montes pour recuperation.
+- **Boutons** : [Annuler] [Activer Rescue]
+
+### 9.7 Modal Backup/Snapshot Instance
+- **Titre** : Creer un snapshot
+- **Champs** :
+  - Nom du snapshot (text)
+  - Type (Snapshot / Backup)
+- **Info** : Estimation cout base sur taille disque
+- **Boutons** : [Annuler] [Creer]
+
+### 9.8 Modal Attach Volume
+- **Titre** : Attacher un volume
+- **Champs** :
+  - Volume a attacher (dropdown)
+- **Info** : Liste des volumes disponibles dans la meme region
+- **Boutons** : [Annuler] [Attacher]
+
+### 9.9 Modal Attach Network
+- **Titre** : Attacher un reseau prive
+- **Champs** :
+  - Reseau prive (dropdown)
+  - Adresse IP (DHCP / IP fixe)
+- **Boutons** : [Annuler] [Attacher]
+
+### 9.10 Modal Billing Monthly
+- **Titre** : Passer en facturation mensuelle
+- **Champs** : Aucun
+- **Info** : Comparaison cout horaire vs mensuel avec economie
+- **Warning** : Cette action est irreversible
+- **Boutons** : [Annuler] [Passer mensuel]
+
+### 9.11 Modal Delete Instance
+- **Titre** : Supprimer l'instance
+- **Champs** : Aucun
+- **Warning** : Cette action est irreversible. Toutes les donnees seront perdues.
+- **Boutons** : [Annuler] [Supprimer]
+
+### 9.12 Modal Edit Instance
+- **Titre** : Modifier l'instance
+- **Champs** :
+  - Nom (text)
+- **Boutons** : [Annuler] [Enregistrer]
+
+### 9.13 Modal Reinstall Instance
+- **Titre** : Reinstaller l'instance
+- **Champs** :
+  - Nouvelle image (dropdown)
+  - Cle SSH (dropdown)
+- **Warning** : Toutes les donnees seront supprimees. Cette action est irreversible.
+- **Boutons** : [Annuler] [Reinstaller]
 
 ---
 
-## 10. ESTIMATIONS FICHIERS SVG
+## 10. FICHIERS SS REFERENCES
 
-| Écran | Fichier |
-|-------|---------|
-| Dashboard Compute | target_.public-cloud.compute.svg |
-| Liste Instances | target_.public-cloud.compute.instances.svg |
-| Liste Images | target_.public-cloud.compute.images.svg |
-| Liste SSH Keys | target_.public-cloud.compute.sshkeys.svg |
-| Catalogue Flavors | target_.public-cloud.compute.flavors.svg |
-| Détail Instance | target_.public-cloud.compute.instance.detail.svg |
-| Instance - IAM | target_.public-cloud.compute.instance.iam.svg |
-| Instance - Observabilité | target_.public-cloud.compute.instance.obs.svg |
-| Instance - Volumes | target_.public-cloud.compute.instance.volumes.svg |
-| Instance - Network | target_.public-cloud.compute.instance.network.svg |
-| Instance - Console | target_.public-cloud.compute.instance.console.svg |
-| Modal Créer | target_.public-cloud.compute.instance.create.svg |
-| Modal Resize | target_.public-cloud.compute.instance.resize.svg |
-| Modal Delete | target_.public-cloud.compute.instance.delete.svg |
+| Ecran | Fichier SS | Variantes |
+|-------|------------|-----------|
+| Dashboard + Listes | target_.public-cloud.instances.ss | 4 |
+| Detail Instance | target_.public-cloud.instances.instance-detail.ss | 7 (general, iam, kms, observabilite, volumes, network, console) |
+| Modals Instance | target_.public-cloud.instances.modals.ss | 13 |
+| Onboarding | target_.public-cloud.instances.onboarding.ss | 1 |
+| Create | target_.public-cloud.instances.create.ss | 1 |
+| Delete | target_.public-cloud.instances.modal-delete.ss | 1 |
+| Images | target_.public-cloud.compute.images.ss | 4 (list, detail, import modal, delete modal) |
+| SSH Keys | target_.public-cloud.compute.sshkeys.ss | 3 (list, add modal, delete modal) |
+| Flavors | target_.public-cloud.compute.flavors.ss | 2 (list, detail) |
 
-**Total estimé : ~20-25 fichiers SVG + TXT**
+**Total : 9 fichiers SS couvrant 36 variantes**

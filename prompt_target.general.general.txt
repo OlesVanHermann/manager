@@ -1,5 +1,117 @@
 # PROMPT_TARGET.GENERAL.GENERAL.TXT
-# NAV1=General > NAV2=General (Dashboard)
+# NAV1=General - Master Design System + Dashboard
+
+Version: v2.0 (2026-01-04)
+
+---
+
+# PART 1: MASTER DESIGN SYSTEM (NAV1=General)
+
+## OVERVIEW
+
+NAV1 "General" regroupe les fonctions transversales du compte OVHcloud:
+- Dashboard global
+- Gestion du compte utilisateur
+- Facturation et paiements
+- Support client
+- API et tokens
+- Empreinte carbone
+
+## NAVIGATION HIERARCHY
+
+```
+NAV1: [General*] Bare Metal | Hosted Private | Public Cloud | Web Cloud | Network | IAM
+       ═════════
+
+NAV2: General | Mon compte | Facturation | Support | API | Carbon
+      (6 items)
+```
+
+## NAV2 STRUCTURE
+
+| # | NAV2 | Route | SIDECAR | NAV3 | NAV4 |
+|---|------|-------|---------|------|------|
+| 1 | General | /general | NO | NO | NO |
+| 2 | Mon compte | /general/account | NO | [General*] | 6 tabs |
+| 3 | Facturation | /general/billing | NO | [General*] | 11 tabs |
+| 4 | Support | /general/support | YES | [General*] [Niveau Support] | 3 tabs |
+| 5 | API | /general/api | YES | [General*] [Token] | varies |
+| 6 | Carbon | /general/carbon | YES | [General*] | NO |
+
+## LAYOUT SPECIFICATIONS
+
+```
+Canvas: 1440 x 900 px
+├── NAV1: y=0, h=50px (blue #000E9C header)
+├── NAV2: y=50, h=40px (white sub-header)
+├── Padding-top: 15px
+└── Content: y=105
+    ├── LEFT PANEL (SIDECAR): x=24, w=280px
+    ├── Gap: 16px
+    └── RIGHT PANEL: flex:1, padding-right=24px
+```
+
+## SIDECAR RULES
+
+- NAV2=General: NO SIDECAR (dashboard full-width)
+- NAV2=Mon compte: NO SIDECAR
+- NAV2=Facturation: NO SIDECAR
+- NAV2=Support: SIDECAR with ticket list (when NAV3=General)
+- NAV2=API: SIDECAR with categories (NAV3=General) or tokens (NAV3=Token)
+- NAV2=Carbon: SIDECAR with service filters
+
+## NAV3 DISPLAY RULE
+
+NAV3 is ALWAYS displayed even if only one tab (General), for consistency.
+Exception: NAV2=General (dashboard) has no NAV3.
+
+## COMPONENT LIBRARY
+
+### Buttons
+- Primary: [Action] - blue background
+- Secondary: [Action] - white background, border
+- Danger: [Supprimer] - red
+- Icon: [PDF] [Edit] [X]
+
+### Tables
+- Header: grey background
+- Rows: white, hover highlight
+- Checkbox column for multi-select
+- Actions column with ... menu
+- Pagination: "Affichage 1-10 sur N"
+
+### Status Badges
+- GREEN: Active/Payee/Resolu
+- YELLOW: Pending/A regler/En attente
+- RED: Error/Impayee/Urgent
+- GREY: Inactive/Disabled
+
+### Cards
+- White background
+- Border-radius: 8px
+- Shadow: subtle
+- Padding: 16px
+
+### Forms
+- Label above input
+- Input full-width or appropriate
+- Validation inline
+- Actions: [Annuler] [Enregistrer]
+
+## FILE REFERENCES
+
+- prompt_target.general.general.txt (this file - dashboard)
+- prompt_target.general.account.txt (mon compte)
+- prompt_target.general.billing.txt (facturation)
+- prompt_target.general.support.txt (support)
+- prompt_target.general.api.txt (api)
+- prompt_target.general.carbon.txt (carbon)
+
+Each has corresponding .*.ss files in target_manager_svg/general/<nav2>/
+
+---
+
+# PART 2: NAV2=General (Dashboard)
 
 ## ROUTE
 /general
@@ -17,7 +129,7 @@ SIDECAR: (none - full width)
 Dashboard principal affichant une vue d'ensemble du compte:
 - Alertes et notifications urgentes
 - Grille des services actifs
-- Dernière facture
+- Derniere facture
 - Suivi des commandes
 - Tickets support ouverts
 - Actions rapides
@@ -30,19 +142,19 @@ Full-width (no sidecar), widget-based grid layout.
 ### 1. Alert Banner (optional)
 - Position: top
 - Types: warning (unpaid invoice), info (KYC pending), error (service issue)
-- Action button: [Régler] [Compléter] [Voir]
+- Action button: [Regler] [Completer] [Voir]
 
 ### 2. Services Grid
 - Title: "Mes services (N)"
 - Cards: icon + name + count
 - Categories: Domaines, Hosting, VPS, Emails, Databases, VoIP, etc.
-- Click → navigate to universe
+- Click -> navigate to universe
 
 ### 3. Last Invoice Widget
 - Reference number
 - Amount TTC
 - Date
-- Actions: [📥 PDF] [Toutes les factures →]
+- Actions: [PDF] [Toutes les factures ->]
 
 ### 4. Order Tracking Widget
 - Order number + product name
@@ -52,15 +164,15 @@ Full-width (no sidecar), widget-based grid layout.
 ### 5. Open Tickets Widget
 - List of recent tickets (max 3)
 - Ticket ID + subject + date
-- Link: [Voir tous les tickets →]
+- Link: [Voir tous les tickets ->]
 
 ### 6. Quick Actions
-- Buttons: [📄 Factures] [👤 Compte] [❓ Support]
+- Buttons: [Factures] [Compte] [Support]
 - Primary CTA: [+ Commander un service]
 
 ## STATES
 - Default: all widgets populated
-- Empty: no services → onboarding CTA
+- Empty: no services -> onboarding CTA
 - Alert: unpaid invoice banner visible
 - Loading: skeleton placeholders
 
@@ -71,3 +183,50 @@ Full-width (no sidecar), widget-based grid layout.
 | Click invoice PDF | Download PDF |
 | Click ticket | Open ticket detail |
 | Click "Commander" | Open order catalog |
+
+---
+
+## FICHIERS .ss ASSOCIES
+
+| Fichier | Description |
+|---------|-------------|
+| target_.general.general.ss | Dashboard principal |
+| target_.general.general.state-empty.ss | Empty state / nouveau compte |
+| target_.general.general.state-loading.ss | Etat chargement |
+| target_.general.general.state-error.ss | Etat erreur |
+| target_.general.general.alert-unpaid.ss | Alerte facture impayee |
+| target_.general.general.alert-multiple.ss | Alertes multiples |
+| target_.general.general.dropdown-*.ss | Dropdowns divers |
+| target_.general.general.widget-*.ss | Widgets |
+
+Localisation: `/home/ubuntu/target_manager_svg/general/general/`
+
+---
+
+## RAPPEL STRUCTURE SIDECAR (pour autres NAV2)
+
+Pour les autres NAV2 (account, billing, support, api, carbon):
+
+**Type A: Sidecar simple**
+```
++-------------------------+
+| LEFT PANEL (280px)      |
++-------------------------+
+| NAV3: [General]         |
++-------------------------+
+| [Rechercher...]         |
++-------------------------+
+| * Tous les elements     |  <- ALL toujours en 1er
+| o element-001           |
+| o element-002           |
++-------------------------+
+```
+
+**Header .ss Type A:**
+```
+# NAV1: general | NAV2: account | NAV3: General / Liste elements (ALL 1er) | NAV4: Profile
+```
+
+============================================================================
+FIN PROMPT TARGET - General / General
+============================================================================

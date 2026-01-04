@@ -3,7 +3,7 @@
 # ============================================================================
 # NAV1: Public Cloud
 # NAV2: Storage
-# Version: 1.0
+# Version: 2.0 (2026-01-03)
 # ============================================================================
 
 ## 1. VUE D'ENSEMBLE
@@ -11,141 +11,330 @@
 ### 1.1 Positionnement
 - **NAV1** : Public Cloud (Header bleu #000E9C, 50px)
 - **NAV2** : Storage (Sous-header blanc, 40px) - Actif parmi [Projet, Compute, Storage, Databases, Containers, AI/ML, Network]
-- **NAV3** : Filtres dropdown dans sidecar (Region + Projet)
+- **NAV3** : General (filtres Region + Projet dans sidecar)
 - **NAV4** : Tabs contextuels dans RIGHT PANEL
 
 ### 1.2 Objectif
-Gestion unifiée de tous les services de stockage : Block Storage, Object Storage, File Storage, Archive, Snapshots et Backups.
+Gestion unifiee de tous les services de stockage : Block Storage, Object Storage, Cold Archive, Snapshots et Backups.
 
 ### 1.3 URL Pattern
 ```
-/public-cloud/storage                           → Dashboard (General ALL)
-/public-cloud/storage/block                     → Liste Block Storage
-/public-cloud/storage/object                    → Liste Object Storage
-/public-cloud/storage/file                      → Liste File Storage
-/public-cloud/storage/archive                   → Liste Archive
-/public-cloud/storage/snapshot                  → Liste tous Snapshots
-/public-cloud/storage/backup                    → Liste tous Backups
-/public-cloud/storage/block/{volumeId}          → Détail volume
-/public-cloud/storage/snapshot/{snapshotId}     → Détail snapshot
+/public-cloud/storage                           -> Dashboard (Tous les services)
+/public-cloud/storage/block                     -> Liste Block Storage
+/public-cloud/storage/object                    -> Liste Object Storage
+/public-cloud/storage/archive                   -> Liste Cold Archive
+/public-cloud/storage/snapshot                  -> Liste tous Snapshots
+/public-cloud/storage/backup                    -> Liste tous Backups
+/public-cloud/storage/block/{volumeId}          -> Detail volume
+/public-cloud/storage/object/{containerId}      -> Detail container
+/public-cloud/storage/archive/{archiveId}       -> Detail archive
+/public-cloud/storage/snapshot/{snapshotId}     -> Detail snapshot
 ```
 
 ---
 
 ## 2. STRUCTURE NAV3 (SIDECAR - LEFT PANEL 280px)
 
-### 2.1 Filtres (haut de sidecar)
+### 2.1 Structure Sidecar
 ```
-┌───────────────────────┐
-│ NAV3 - Filtres        │
-│ [🌍 Region: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
-│ [🗂️ Projet: ALL    ▼] │  ← Dropdown + bouton × si ≠ ALL
-├───────────────────────┤
-│ 🔍 Rechercher...      │
-├───────────────────────┤
-│  📊 General (ALL)     │  ← Toujours présent, retour dashboard
-│  ─────────────────    │
-│  (liste services)     │  ← Filtrée par NAV3
-└───────────────────────┘
++-------------------------+
+| NAV3: [General*]        |  <- Groupement (un seul)
++-------------------------+
+| [Region: ALL         v] |  <- Dropdown Region + x si != ALL
+| [Projet: ALL         v] |  <- Dropdown Projet + x si != ALL
++-------------------------+
+| [Rechercher...]         |
++-------------------------+
+| Tous les services    <  |  <- Premier = vue agregee (dashboard)
+| -------------------     |
+| volume-prod             |  <- Block Storage
+| backup-vol              |
+| db-storage              |
+| bucket-assets           |  <- Object Storage
+| bucket-logs             |
+| snap-vol-prod-01        |  <- Snapshots
+| snap-vol-prod-02        |
+| backup-weekly           |  <- Backups
++-------------------------+
 ```
 
-### 2.2 Dropdown Region
+### 2.2 Icones par type de service
+| Type | Icone | Couleur |
+|------|-------|---------|
+| Block Storage | Box | Bleu |
+| Object Storage | Bucket | Orange |
+| Cold Archive | Archive | Violet |
+| Snapshot | Camera | Vert |
+| Backup | Save | Gris |
+
+### 2.3 Dropdown Region
 Source: `/api/regions.json`
 
 | Groupe | Options |
 |--------|---------|
-| (défaut) | 🌍 ALL |
+| (defaut) | ALL |
 | EUROPE | EU-West (PAR.FR), EU-West (GRA.FR), EU-West (RBX.FR), EU-Central (SBG.FR), EU-Central (LIM.DE), EU-West (ERI.UK), EU-East (WAW.PL), EU-South (MIL.IT) |
-| EUROPE SOUVERAIN | EU-West (RBX.FR-SOV) 🛡️SNC, EU-Central (SBG.FR-SOV) 🛡️SNC, EU-West (GRA.FR-SOV) 🛡️SNC, EU-West (PAR.FR-SOV) 🛡️SNC, EU-South (MIL.IT-SOV) 🛡️G5 |
+| EUROPE SOUVERAIN | EU-West (RBX.FR-SOV) SNC, EU-Central (SBG.FR-SOV) SNC, EU-West (GRA.FR-SOV) SNC, EU-West (PAR.FR-SOV) SNC, EU-South (MIL.IT-SOV) G5 |
 | NORTH AMERICA | US-East (VIN.US), US-West (HIL.US), CA-East (BHS.CA), CA-East (TOR.CA) |
 | ASIA PACIFIC | AP-Southeast (SGP.SG), AP-Southeast (SYD.AU), AP-South (MUM.IN) |
 
-### 2.3 Dropdown Projet
-- **ALL** : Tous les projets (défaut)
+### 2.4 Dropdown Projet
+- **ALL** : Tous les projets (defaut)
 - Liste dynamique des projets de l'utilisateur
 
-### 2.4 Bouton Reset (×)
-- Visible uniquement si valeur ≠ ALL
-- Clic → Reset vers ALL
-- Position : à droite du dropdown
-
-### 2.5 Liste services (sidecar)
-Affiche tous les services Storage filtrés par NAV3 :
-- 📦 Volumes (Block Storage)
-- 🪣 Buckets (Object Storage)
-- 📁 Shares (File Storage)
-- 🗄️ Archives
-- 📸 Snapshots
-- 💾 Backups
+### 2.5 Bouton Reset (x)
+- Visible uniquement si valeur != ALL
+- Clic -> Reset vers ALL
+- Position : a droite du dropdown
 
 ---
 
 ## 3. STRUCTURE NAV4 (RIGHT PANEL - TABS)
 
-### 3.1 NAV4 - Vue General (ALL) sélectionné dans sidecar
+### 3.1 NAV4 - Vue "Tous les services" (dashboard)
 ```
-[General] Block  Object  File  Archive  Snap  Bkp
+[General] Block  Object  Archive  Snap  Bkp
 ```
 
 | Tab | Description | Action |
 |-----|-------------|--------|
-| **General** | Dashboard récapitulatif | Vue par défaut |
-| **Block** | Liste Block Storage | [+ Créer] |
-| **Object** | Liste Object Storage | [+ Créer] |
-| **File** | Liste File Storage | [+ Créer] |
-| **Archive** | Liste Archive Storage | [+ Créer] |
+| **General** | Dashboard recapitulatif | Vue par defaut |
+| **Block** | Liste Block Storage | [+ Creer] |
+| **Object** | Liste Object Storage | [+ Creer] |
+| **Archive** | Liste Cold Archive | [+ Creer] |
 | **Snap** | Liste tous Snapshots | [+ Snapshot] |
 | **Bkp** | Liste tous Backups | [+ Backup] |
 
-### 3.2 NAV4 - Service sélectionné dans sidecar
+### 3.2 NAV4 - Volume Block Storage selectionne
 ```
-[General]  IAM   KMS   Observabilité  Snap  Bkp
+[General]  IAM   KMS   Observabilite  Snap  Bkp
 ```
 
 | Tab | Description |
 |-----|-------------|
-| **General** | Informations du service, actions |
-| **IAM** | Permissions, rôles, utilisateurs |
-| **KMS** | Chiffrement, clés |
-| **Observabilité** | Métriques, logs, alertes |
-| **Snap** | Snapshots de ce service |
-| **Bkp** | Backups de ce service |
+| **General** | Informations volume, instance attachee, actions |
+| **IAM** | Permissions, roles, utilisateurs |
+| **KMS** | Chiffrement, cles |
+| **Observabilite** | Metriques I/O, latence |
+| **Snap** | Snapshots de ce volume |
+| **Bkp** | Backups de ce volume |
+
+### 3.3 NAV4 - Container Object Storage selectionne
+```
+[Objets]  General  Replication  Lifecycle
+```
+
+| Tab | Description |
+|-----|-------------|
+| **Objets** | Explorateur fichiers, navigation dossiers |
+| **General** | Infos, parametres, utilisation, stats |
+| **Replication** | Regles de replication cross-region |
+| **Lifecycle** | Regles de cycle de vie (archivage, suppression) |
+
+### 3.4 NAV4 - Cold Archive selectionnee
+```
+[General]  Objets  Restaurations
+```
+
+| Tab | Description |
+|-----|-------------|
+| **General** | Informations archive, couts, actions |
+| **Objets** | Liste des objets archives |
+| **Restaurations** | Historique des restaurations |
 
 ---
 
 ## 4. TYPES DE SERVICES STORAGE
 
-### 4.1 Block Storage (📦)
+### 4.1 Block Storage
 - **Description** : Volumes attachables aux instances
 - **Types** : Classic, High-speed, High-speed-gen2
-- **Actions** : Attacher, Détacher, Redimensionner, Snapshot, Backup, Supprimer
+- **Etats** : in-use, available, creating, error
+- **Actions** : Attacher, Detacher, Redimensionner, Snapshot, Backup, Supprimer
 
-### 4.2 Object Storage (🪣)
+### 4.2 Object Storage (S3)
 - **Description** : Stockage objet compatible S3
-- **Classes** : Standard, High Performance
-- **Actions** : Gérer accès, Politique, Versioning, Lifecycle, Supprimer
+- **Classes** : Standard, Infrequent Access, High Performance
+- **Parametres** : Versioning, Encryption, Public Access
+- **Actions** : Upload, Download, Delete, Replication, Lifecycle
 
-### 4.3 File Storage (📁)
-- **Description** : Partages NFS/CIFS
-- **Actions** : Gérer ACL, Redimensionner, Snapshot, Supprimer
+### 4.3 Cold Archive
+- **Description** : Stockage froid longue duree
+- **Caracteristiques** :
+  - Cout: 0.0012E/Go/mois
+  - Retention minimum: 180 jours
+  - Delai de restauration: 12-48h
+- **Actions** : Restaurer (Standard/Express), Supprimer
 
-### 4.4 Archive (🗄️)
-- **Description** : Stockage froid longue durée
-- **Actions** : Restaurer, Supprimer
+### 4.4 Snapshot
+- **Description** : Image instantanee d'un volume
+- **Actions** : Creer volume depuis snapshot, Supprimer
 
-### 4.5 Snapshot (📸)
-- **Description** : Image instantanée d'un volume
-- **Actions** : Créer volume depuis snapshot, Supprimer
-
-### 4.6 Backup (💾)
-- **Description** : Sauvegarde planifiée
-- **Actions** : Restaurer, Créer volume, Supprimer
+### 4.5 Backup
+- **Description** : Sauvegarde planifiee
+- **Actions** : Restaurer, Creer volume, Supprimer
 
 ---
 
-## 5. APIS & ENDPOINTS
+## 5. CONTENU PAR TAB
 
-### 5.1 Block Storage
+### 5.1 Dashboard (Tous les services)
+```
++-----------------------------------------------------------+
+| Dashboard Storage (tous projets, toutes regions)           |
+|                                                            |
+| +----------+  +----------+  +----------+                   |
+| |  3 Vol   |  |  5 Obj   |  |  4 Snap  |                   |
+| |  Block   |  |  Object  |  | Snapshot |                   |
+| +----------+  +----------+  +----------+                   |
+|                                                            |
+| Utilisation totale: 2.7 To                                |
+| Repartition: Block 1.7To | Object 800Go | Snap 200Go       |
++-----------------------------------------------------------+
+```
+
+### 5.2 Liste Block Storage
+```
++-----------------------------------------------------------+
+| Storage                                  [+ Creer]         |
++-----------------------------------------------------------+
+| General [Block] Object  Archive  Snap  Bkp                |
++-----------------------------------------------------------+
+|                                                            |
+| Block Storage                                              |
+|                                                            |
+| Nom          | Projet | Region | Type       | Taille | ... |
+| -------------+--------+--------+------------+--------+---- |
+| volume-prod  | Prod   | GRA    | High-speed | 500Go  | ... |
+| backup-vol   | Prod   | SBG    | Classic    | 1To    | ... |
+| db-storage   | Dev    | GRA    | High-speed | 200Go  | ... |
+|                                                            |
+| Affichage 1-3 sur 3                          < 1 >        |
++-----------------------------------------------------------+
+```
+
+### 5.3 Liste Object Storage
+```
++-----------------------------------------------------------+
+| Storage                                  [+ Creer]         |
++-----------------------------------------------------------+
+| General Block [Object] Archive  Snap  Bkp                 |
++-----------------------------------------------------------+
+|                                                            |
+| Object Storage (Buckets S3)                               |
+|                                                            |
+| Nom          | Projet | Region | Objets | Taille | ...    |
+| -------------+--------+--------+--------+--------+------- |
+| bucket-assets| Prod   | GRA    | 1,234  | 450Go  | ...    |
+| bucket-logs  | Prod   | GRA    | 8,901  | 350Go  | ...    |
+|                                                            |
++-----------------------------------------------------------+
+```
+
+### 5.4 Detail Volume - General
+```
++-----------------------------------------------------------+
+| <- Retour   volume-prod                                    |
++-----------------------------------------------------------+
+| [General]  IAM   KMS   Observabilite  Snap  Bkp           |
++-----------------------------------------------------------+
+|                                                            |
+| +------------------------+ +---------------------------+   |
+| | Informations           | | Instance attachee         |   |
+| +------------------------+ +---------------------------+   |
+| | Nom: volume-prod       | | web-server-prod           |   |
+| | ID: vol-a1b2c3d4       | |                           |   |
+| | Projet: Prod           | | [Detacher]                |   |
+| | Region: GRA            | +---------------------------+   |
+| | Type: High-speed       |                                 |
+| | Taille: 500 Go         | +---------------------------+   |
+| | Statut: in-use         | | Actions                   |   |
+| | Cree: 01/06/2024       | +---------------------------+   |
+| +------------------------+ | [Redimensionner]          |   |
+|                            | [Creer snapshot]          |   |
+|                            | [Supprimer]               |   |
+|                            +---------------------------+   |
++-----------------------------------------------------------+
+```
+
+### 5.5 Detail Container Object Storage - Objets
+```
++-----------------------------------------------------------+
+| <- Retour   prod-assets                     S3 Actif      |
++-----------------------------------------------------------+
+| [Objets] General Replication Lifecycle                    |
++-----------------------------------------------------------+
+| Chemin: /images/                         [+ Upload]       |
+|                                                            |
+| +-------------------------------------------------------+ |
+| | | Nom          | Taille | Type   | Modifie           | |
+| +-+--------------+--------+--------+-------------------+ |
+| | | thumbnails/  | -      | Folder | -                 | |
+| |x| hero.jpg     | 2.4 Mo | image  | 27/12/2024        | |
+| | | logo.png     | 156 Ko | image  | 25/12/2024        | |
+| | | data.json    | 45 Ko  | json   | 24/12/2024        | |
+| +-------------------------------------------------------+ |
+| 1 - 50 sur 15,420 objets                Page 1/309 [< >]  |
++-----------------------------------------------------------+
+```
+
+### 5.6 Detail Container Object Storage - General
+```
++-----------------------------------------------------------+
+| <- Retour   prod-assets                     S3 Actif      |
++-----------------------------------------------------------+
+| Objets [General] Replication Lifecycle                    |
++-----------------------------------------------------------+
+|                                                            |
+| +------------------------+ +---------------------------+   |
+| | Informations           | | Parametres                |   |
+| +------------------------+ +---------------------------+   |
+| | Type: S3               | | Versioning: On            |   |
+| | Classe: Standard       | | Encryption: AES-256       |   |
+| | Region: GRA            | | Public: Off               |   |
+| | Cree: 15/12/2024       | |                           |   |
+| +------------------------+ +---------------------------+   |
+|                                                            |
+| +------------------------+ +---------------------------+   |
+| | Utilisation            | | Statistiques              |   |
+| +------------------------+ +---------------------------+   |
+| | Objets: 15,420         | | GET: 1.2M/mois            |   |
+| | Stockage: 45.6 Go      | | PUT: 50K/mois             |   |
+| | Cout: ~2.50E/mois      | | Bande passante: 120Go     |   |
+| +------------------------+ +---------------------------+   |
++-----------------------------------------------------------+
+```
+
+### 5.7 Detail Cold Archive
+```
++-----------------------------------------------------------+
+| <- Retour   backup-2023                      Active       |
++-----------------------------------------------------------+
+| [General] Objets Restaurations                            |
++-----------------------------------------------------------+
+|                                                            |
+| +------------------------+ +---------------------------+   |
+| | Informations           | | Stockage                  |   |
+| +------------------------+ +---------------------------+   |
+| | Nom: backup-2023       | | Taille: 2.5 To            |   |
+| | Region: GRA            | | Objets: 15,420            |   |
+| | Cree: 01/01/2024       | | Cout: ~3E/mois            |   |
+| | Classe: Cold           | |                           |   |
+| +------------------------+ +---------------------------+   |
+|                                                            |
+| +-------------------------------------------------------+ |
+| | Actions                                               | |
+| +-------------------------------------------------------+ |
+| | [Restaurer]  [Supprimer]                              | |
+| +-------------------------------------------------------+ |
++-----------------------------------------------------------+
+```
+
+---
+
+## 6. APIS & ENDPOINTS
+
+### 6.1 Block Storage
 ```
 GET    /cloud/project/{projectId}/volume
 GET    /cloud/project/{projectId}/volume/{volumeId}
@@ -157,15 +346,26 @@ POST   /cloud/project/{projectId}/volume/{volumeId}/detach
 POST   /cloud/project/{projectId}/volume/{volumeId}/snapshot
 ```
 
-### 5.2 Object Storage
+### 6.2 Object Storage
 ```
 GET    /cloud/project/{projectId}/storage
 GET    /cloud/project/{projectId}/storage/container/{containerId}
 POST   /cloud/project/{projectId}/storage
 DELETE /cloud/project/{projectId}/storage/container/{containerId}
+PUT    /cloud/project/{projectId}/storage/container/{containerId}/versioning
+PUT    /cloud/project/{projectId}/storage/container/{containerId}/encryption
 ```
 
-### 5.3 Snapshots
+### 6.3 Cold Archive
+```
+GET    /cloud/project/{projectId}/storage/coldArchive
+GET    /cloud/project/{projectId}/storage/coldArchive/{archiveId}
+POST   /cloud/project/{projectId}/storage/coldArchive
+DELETE /cloud/project/{projectId}/storage/coldArchive/{archiveId}
+POST   /cloud/project/{projectId}/storage/coldArchive/{archiveId}/restore
+```
+
+### 6.4 Snapshots
 ```
 GET    /cloud/project/{projectId}/volume/snapshot
 GET    /cloud/project/{projectId}/volume/snapshot/{snapshotId}
@@ -173,7 +373,7 @@ POST   /cloud/project/{projectId}/volume/snapshot
 DELETE /cloud/project/{projectId}/volume/snapshot/{snapshotId}
 ```
 
-### 5.4 Backups
+### 6.5 Backups
 ```
 GET    /cloud/project/{projectId}/volume/backup
 POST   /cloud/project/{projectId}/volume/{volumeId}/backup
@@ -183,104 +383,148 @@ POST   /cloud/project/{projectId}/volume/backup/{backupId}/restore
 
 ---
 
-## 6. COMPOSANTS UI
+## 7. COMPOSANTS UI
 
-### 6.1 Datagrid colonnes par type
-
-**Block Storage**
+### 7.1 Datagrid colonnes Block Storage
 | Colonne | Description |
 |---------|-------------|
 | Nom | Nom du volume (lien) |
 | Projet | Nom du projet |
-| Région | Code région (GRA, SBG...) |
+| Region | Code region (GRA, SBG...) |
 | Type | Classic, High-speed |
 | Taille | En Go/To |
-| Instance | Instance attachée ou "-" |
 | Statut | in-use, available |
-| ⋮ | Menu actions |
+| ... | Menu actions |
 
-**Object Storage**
+### 7.2 Datagrid colonnes Object Storage
 | Colonne | Description |
 |---------|-------------|
 | Nom | Nom du bucket |
 | Projet | Nom du projet |
-| Région | Code région |
-| Classe | Standard, High Perf |
+| Region | Code region |
 | Objets | Nombre d'objets |
 | Taille | Taille totale |
-| ⋮ | Menu actions |
+| ... | Menu actions |
 
-**Snapshots**
-| Colonne | Description |
-|---------|-------------|
-| Nom | Nom du snapshot |
-| Volume source | Volume d'origine |
-| Projet | Nom du projet |
-| Région | Code région |
-| Taille | Taille snapshot |
-| Date | Date création |
-| ⋮ | Menu actions |
-
-### 6.2 Cards détail service
-
-**Card Informations**
-- Nom, ID, Projet, Région, Type, Taille, Statut, Date création
-
-**Card Instance attachée** (Block Storage)
-- Nom instance, lien vers instance, bouton Détacher
-
-**Card Actions**
-- Boutons contextuels selon type service
-
-### 6.3 Badges statut
-| Statut | Couleur | Classe |
-|--------|---------|--------|
-| in-use | Vert | badge-success |
-| available | Gris | badge-default |
-| creating | Jaune | badge-warning |
-| error | Rouge | badge-error |
+### 7.3 Badges statut
+| Statut | Couleur |
+|--------|---------|
+| in-use | Vert |
+| available | Gris |
+| creating | Jaune |
+| error | Rouge |
+| restoring | Orange |
 
 ---
 
-## 7. COMPORTEMENTS
+## 8. COMPORTEMENTS
 
-### 7.1 Filtrage NAV3
-- Changement Region → Filtre liste sidecar + RIGHT PANEL
-- Changement Projet → Filtre liste sidecar + RIGHT PANEL
-- Les deux filtres sont combinés (AND)
-- Reset × → Retour à ALL pour ce filtre
+### 8.1 Filtrage NAV3
+- Changement Region -> Filtre liste sidecar + RIGHT PANEL
+- Changement Projet -> Filtre liste sidecar + RIGHT PANEL
+- Les deux filtres sont combines (AND)
+- Reset x -> Retour a ALL pour ce filtre
 
-### 7.2 Navigation sidecar → RIGHT PANEL
-- Clic "General (ALL)" → NAV4 = [General] Block Object File Archive Snap Bkp
-- Clic service → NAV4 = [General] IAM KMS Observabilité Snap Bkp
+### 8.2 Navigation sidecar -> RIGHT PANEL
+- Clic "Tous les services" -> NAV4 = [General] Block Object Archive Snap Bkp
+- Clic volume -> NAV4 = [General] IAM KMS Observabilite Snap Bkp
+- Clic container -> NAV4 = [Objets] General Replication Lifecycle
+- Clic archive -> NAV4 = [General] Objets Restaurations
 
-### 7.3 Persistance NAV4
-- Changement de service dans sidecar → NAV4 reset à General
-- Changement de filtre NAV3 → NAV4 conservé si "General (ALL)" sinon reset
-
-### 7.4 Création service
-- Depuis NAV4 General (ALL) : Clic sur tab Block/Object/File → Bouton [+ Créer]
-- Modal ou page de création selon complexité
+### 8.3 Persistance NAV4
+- Changement de service dans sidecar -> NAV4 reset a General
+- Changement de filtre NAV3 -> NAV4 conserve si "Tous les services" sinon reset
 
 ---
 
-## 8. ESTIMATIONS FICHIERS SVG
+## 9. MODALS
 
-| Écran | Fichier |
-|-------|---------|
-| Dashboard Storage | target_.public-cloud.storage.svg |
-| Liste Block | target_.public-cloud.storage.block.svg |
-| Liste Object | target_.public-cloud.storage.object.svg |
-| Liste File | target_.public-cloud.storage.file.svg |
-| Liste Archive | target_.public-cloud.storage.archive.svg |
-| Liste Snap | target_.public-cloud.storage.snap.svg |
-| Liste Backup | target_.public-cloud.storage.backup.svg |
-| Détail Volume | target_.public-cloud.storage.block.detail.svg |
-| Détail Volume - IAM | target_.public-cloud.storage.block.detail.iam.svg |
-| Détail Volume - Snap | target_.public-cloud.storage.block.detail.snap.svg |
-| Détail Snapshot | target_.public-cloud.storage.snap.detail.svg |
-| Modal Créer Volume | target_.public-cloud.storage.block.create.svg |
-| Modal Attacher | target_.public-cloud.storage.block.attach.svg |
-| Modal Supprimer | target_.public-cloud.storage.block.delete.svg |
+### 9.1 Block Storage Modals
 
-**Total estimé : ~25-30 fichiers SVG + TXT**
+#### Modal Creer Volume
+- **Champs** : Projet, Region, Nom, Type (Classic/High-speed), Taille (10Go-4To)
+- **Boutons** : [Annuler] [Creer]
+
+#### Modal Supprimer Volume
+- **Warning** : Action irreversible, donnees perdues
+- **Boutons** : [Annuler] [Supprimer]
+
+#### Modal Attacher Volume
+- **Champs** : Instance (dropdown)
+- **Boutons** : [Annuler] [Attacher]
+
+#### Modal Redimensionner Volume
+- **Champs** : Nouvelle taille (>= taille actuelle)
+- **Warning** : Necessite un reboot de l'instance
+- **Boutons** : [Annuler] [Redimensionner]
+
+### 9.2 Object Storage Modals (8 variantes)
+
+#### Modal Upload Objet
+- **Champs** : Zone drag&drop, bouton Parcourir
+- **Info** : Liste fichiers selectionnes
+- **Boutons** : [Annuler] [Upload]
+
+#### Modal Supprimer Objet
+- **Info** : Chemin, Taille
+- **Warning** : Si versioning actif, peut etre restaure
+- **Boutons** : [Annuler] [Supprimer]
+
+#### Modal Supprimer Container
+- **Warning** : Action irreversible, X objets supprimes
+- **Champs** : Confirmation (taper nom container)
+- **Boutons** : [Annuler] [Supprimer]
+
+#### Modal Restaurer Objet
+- **Champs** : Version a restaurer (liste)
+- **Boutons** : [Annuler] [Restaurer]
+
+#### Modal Activer Versioning
+- **Warning** : Une fois active, ne peut etre que suspendu
+- **Boutons** : [Annuler] [Activer]
+
+#### Modal Activer Encryption
+- **Champs** : Type (SSE-S3 / SSE-KMS)
+- **Info** : Applique aux nouveaux objets seulement
+- **Boutons** : [Annuler] [Activer]
+
+#### Modal Changer Classe Stockage
+- **Champs** : Nouvelle classe (Standard / IA / High Perf)
+- **Info** : Frais de recuperation pour IA
+- **Boutons** : [Annuler] [Appliquer]
+
+#### Modal Creer Replication
+- **Champs** : Region destination, Container destination (nouveau/existant)
+- **Options** : Repliquer objets existants, Repliquer metadonnees
+- **Boutons** : [Annuler] [Creer]
+
+### 9.3 Cold Archive Modals
+
+#### Modal Restaurer Archive
+- **Champs** :
+  - Mode (Standard 12-48h gratuit / Express 1-5h +0.02E/Go)
+  - Objets (Tous / Prefixe)
+  - Destination (container Object Storage)
+- **Boutons** : [Annuler] [Restaurer]
+
+---
+
+## 10. FICHIERS SS REFERENCES
+
+| Ecran | Fichier SS | Variantes |
+|-------|------------|-----------|
+| Dashboard + Listes | target_.public-cloud.storage.ss | 7 (dashboard, block, object, snap, filtres) |
+| Detail Volume | target_.public-cloud.storage.volume-detail.ss | 3 (general, iam, snapshots) |
+| Detail Snapshot | target_.public-cloud.storage.snapshot-detail.ss | 1 |
+| Modal Create Volume | target_.public-cloud.storage.modal-create.ss | 1 |
+| Modal Delete Volume | target_.public-cloud.storage.modal-delete.ss | 1 |
+| Object Storage List | target_.public-cloud.object-storage.ss | 1 |
+| Object Storage Detail | target_.public-cloud.object-storage.detail.ss | 4 (objets, dashboard, replication, lifecycle) |
+| Object Storage Onboarding | target_.public-cloud.object-storage.onboarding.ss | 1 |
+| Object Storage Create | target_.public-cloud.object-storage.create.ss | 1 |
+| Object Storage Modals | target_.public-cloud.object-storage.modals.ss | 8 |
+| Cold Archive | target_.public-cloud.cold-archive.ss | 4 (list, detail, onboarding, restore modal) |
+
+**Localisation : `/home/ubuntu/target_manager_svg/public-cloud/object-storage/` et `/home/ubuntu/target_manager_svg/public-cloud/block-storage/`**
+
+**Total : 11 fichiers SS couvrant 32 variantes**
